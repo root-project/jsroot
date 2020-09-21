@@ -6,9 +6,12 @@
 
       let jsroot = factory({}),
           norjs = (typeof requirejs=='undefined'),
-          paths = jsroot._.sources;
+          paths = [];
 
       jsroot._.amd = true; // inidcation that require will be used for loading of functionality
+
+      for (let module in jsroot._.sources)
+         paths.push(jsroot._.get_module_src(jsroot._.sources[module]));
 
       if (norjs) {
          // just define locations
@@ -102,43 +105,6 @@
          }
       }
 
-      let dir = JSROOT.source_dir + "scripts/",
-          ext = JSROOT.source_min ? ".min" : "",
-          ldir = JSROOT.use_full_libs ? JSROOT.source_dir + "libs/" : dir,
-          lext = JSROOT.use_full_libs ? "" : ".min";
-
-      JSROOT._.sources = {
-            'd3'                   : ldir + 'd3' + lext,
-            'jquery'               : ldir + 'jquery' + lext,
-            'jquery-ui'            : ldir + 'jquery-ui' + lext,
-            'jqueryui-mousewheel'  : dir + 'jquery.mousewheel.min',
-            'jqueryui-touch-punch' : dir + 'touch-punch.min',
-            'rawinflate'           : ldir+'rawinflate' + lext,
-            'MathJax'              : 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg',
-            'dat.gui'              : ldir+'dat.gui' + lext,
-            'threejs'              : ldir+'three' + lext,
-            'threejs_jsroot'       : ldir+'three.extra' + lext,
-            'JSRootCore'           : dir + 'JSRootCore' + ext,
-            'JSRootMath'           : dir+'JSRootMath'+ext,
-            'JSRootIOEvolution'    : dir+'JSRootIOEvolution'+ext,
-            'JSRootTree'           : dir+'JSRootTree'+ext,
-            'JSRoot.openui5'       : dir+'JSRoot.openui5'+ext,
-            'JSRootPainter'        : dir+'JSRootPainter'+ext,
-            'JSRootPainter.v6'     : dir+'JSRootPainter.v6'+ext,
-            'JSRootPainter.hist'   : dir+'JSRootPainter.hist'+ext,
-            'JSRootPainter.hist3d' : dir+'JSRootPainter.hist3d'+ext,
-            'JSRootPainter.more'   : dir+'JSRootPainter.more'+ext,
-            'JSRootPainter.hierarchy' : dir+'JSRootPainter.hierarchy'+ext,
-            'JSRootPainter.jquery' : dir+'JSRootPainter.jquery'+ext,
-            'JSRootPainter.v7'     : dir+'JSRootPainter.v7'+ext,
-            'JSRootPainter.v7hist' : dir+'JSRootPainter.v7hist'+ext,
-            'JSRootPainter.v7more' : dir+'JSRootPainter.v7more'+ext,
-            'JSRoot3DPainter'      : dir+'JSRoot3DPainter'+ext,
-            'ThreeCSG'             : dir+'ThreeCSG'+ext,
-            'JSRootGeoBase'        : dir+'JSRootGeoBase'+ext,
-            'JSRootGeoPainter'     : dir+'JSRootGeoPainter'+ext
-      };
-
       JSROOT.touches = ('ontouchend' in document); // identify if touch events are supported
       JSROOT.browser.isOpera = !!window.opera || navigator.userAgent.indexOf(' OPR/') >= 0;
       JSROOT.browser.isFirefox = typeof InstallTrigger !== 'undefined';
@@ -149,6 +115,48 @@
    }
 
    JSROOT.browser.isWebKit = JSROOT.browser.isChrome || JSROOT.browser.isSafari || JSROOT.browser.isOpera;
+
+   JSROOT._.sources = {
+         'd3'                   : { src: 'd3', libs: true, extract: "d3", node: "d3" },
+         'jquery'               : { src: 'jquery', libs: true,  extract: "$" },
+         'jquery-ui'            : { src: 'jquery-ui', libs: true, extract: "$" },
+         'jqueryui-mousewheel'  : { src: 'jquery.mousewheel', onlymin: true, extract: "$" },
+         'jqueryui-touch-punch' : { src: 'touch-punch', onlymin: true, extract: "$" },
+         'rawinflate'           : { src: 'rawinflate', libs: true },
+         'MathJax'              : { src: 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg', extract: "MathJax", node: "mathjax" },
+         'dat.gui'              : { src: 'dat.gui', libs: true, extract: "dat" },
+         'threejs'              : { src: 'three', libs: true, extract: "THREE", node: "three" },
+         'threejs_jsroot'       : { src: 'three.extra', libs: true },
+         'JSRootCore'           : { src: 'JSRootCore' },
+         'JSRootMath'           : { src: 'JSRootMath' },
+         'JSRootIOEvolution'    : { src: 'JSRootIOEvolution' },
+         'JSRootTree'           : { src: 'JSRootTree' },
+         'JSRoot.openui5'       : { src: 'JSRoot.openui5' },
+         'JSRootPainter'        : { src: 'JSRootPainter' },
+         'JSRootPainter.v6'     : { src: 'JSRootPainter.v6' },
+         'JSRootPainter.hist'   : { src: 'JSRootPainter.hist' },
+         'JSRootPainter.hist3d' : { src: 'JSRootPainter.hist3d' },
+         'JSRootPainter.more'   : { src: 'JSRootPainter.more' },
+         'JSRootPainter.hierarchy' : { src: 'JSRootPainter.hierarchy' },
+         'JSRootPainter.jquery' : { src: 'JSRootPainter.jquery' },
+         'JSRootPainter.v7'     : { src: 'JSRootPainter.v7' },
+         'JSRootPainter.v7hist' : { src: 'JSRootPainter.v7hist' },
+         'JSRootPainter.v7more' : { src: 'JSRootPainter.v7more' },
+         'JSRoot3DPainter'      : { src: 'JSRoot3DPainter' },
+         'ThreeCSG'             : { src: 'ThreeCSG' },
+         'JSRootGeoBase'        : { src: 'JSRootGeoBase' },
+         'JSRootGeoPainter'     : { src: 'JSRootGeoPainter' }
+   }
+
+   JSROOT._.get_module_src = function(entry) {
+      if (JSROOT.nodejs)
+         return "./" + entry.src + ".js";
+      let dir = (entry.libs && JSROOT.use_full_libs && !JSROOT.source_min) ? JSROOT.source_dir + "libs/" : JSROOT.source_dir + "scripts/";
+      let ext = (JSROOT.source_min || (entry.libs && !JSROOT.use_full_libs) || entry.onlymin) ? ".min" : ""
+      if (this.amd) return dir + entry.src + ext;
+      return dir + entry.src + ext + ".js";
+   }
+
 
    JSROOT.constants = {
       Render3D: {
@@ -315,10 +323,9 @@
          return define(need, factoryFunc);
 
       function getModuleName(src) {
-         let ks = Object.keys(_.sources);
-         for (let k=0; k < ks.length; ++k)
-            if (_.sources[ks[k]] + ".js" == src)
-               return ks[k];
+         for (let mod in _.sources)
+            if (_.get_module_src(_.sources[mod]) == src)
+               return mod;
          return src;
       }
 
@@ -394,10 +401,16 @@
             if (m && (m.module !== undefined)) continue;
 
              if (!m) {
-                m = _.modules[need[k]] = { jsroot: _.sources[need[k]] ? true : false };
-                m.src = m.jsroot ? _.sources[need[k]] + ".js" : need[k];
-                if (m.jsroot && (m.src.indexOf('libs/d3.js') >= 0))
-                   m.extract = "d3";
+                let jsmodule = _.sources[need[k]];
+
+                m = _.modules[need[k]] = {};
+                if (jsmodule) {
+                   m.jsroot = true;
+                   m.src = _.get_module_src(jsmodule);
+                   m.extract = jsmodule.extract;
+                } else {
+                   m.src = need[k];
+                }
              }
 
              if (m.failure) {
@@ -427,9 +440,8 @@
 
             if (!m.jsroot || m.extract)
                element.onload = () => {
-                  console.log('Did loading of ', m.src, m.extract);
                   m.module = m.extract ? globalThis[m.extract] : 1;
-                  console.log('Did extract', !!m.module);
+                  console.log('Loading done', m.src, "extract", m.extract)
                   finish_loading(m); // mark script loaded
                };
             element.onerror = () => { m.failure = true; req.failed(); }
