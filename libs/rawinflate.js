@@ -1,34 +1,12 @@
-/*
- * $Id$
- *
- * original:
- * http://www.onicos.com/staff/iz/amuse/javascript/expert/inflate.txt
- */
-
-
-(function( factory ) {
-   if ( typeof define === "function" && define.amd ) {
-      define( ['JSRootCore'], factory );
-   } else
-   if (typeof exports === 'object' && typeof module !== 'undefined') {
-      factory(require("./JSRootCore.js"));
-   } else {
-      if (typeof JSROOT == 'undefined')
-         throw new Error('JSROOT is not defined', 'rawinflate.js');
-
-      if (typeof JSROOT.ZIP !== 'undefined')
-         throw new Error('JSROOT.ZIP already exists', 'rawinflate.js');
-
-      factory(JSROOT);
-   }
-} (function(JSROOT) {
-
-   "use strict";
-
 /* Copyright (C) 1999 Masanao Izumo <iz@onicos.co.jp>
  * Version: 1.0.0.1
  * LastModified: Dec 25 1999
+ * original: http://www.onicos.com/staff/iz/amuse/javascript/expert/inflate.txt
  */
+
+JSROOT.require([], function() {
+
+   "use strict";
 
 /* Interface:
  * data = zip_inflate(src);
@@ -798,8 +776,4 @@ JSROOT.LZ4.uncompress = function (input, output, sIdx, eIdx) {
    return j
 }
 
-
-
-return JSROOT;
-
-}));
+});

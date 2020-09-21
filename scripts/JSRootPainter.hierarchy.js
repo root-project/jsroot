@@ -1,23 +1,7 @@
 /// @file JSRootPainter.hierarchy.js
 /// Hierarchy display functionality
 
-(function( factory ) {
-   if ( typeof define === "function" && define.amd ) {
-      define( ['JSRootPainter', 'd3'], factory );
-   } else if (typeof exports === 'object' && typeof module !== 'undefined') {
-      let jsroot = require("./JSRootPainter.js");
-      factory(jsroot, require("d3"));
-      module.exports = jsroot;
-   } else {
-      if (typeof d3 != 'object')
-         throw new Error('This extension requires d3.js', 'JSRootPainter.hierarchy.js');
-      if (typeof JSROOT == 'undefined')
-         throw new Error('JSROOT is not defined', 'JSRootPainter.hierarchy.js');
-      if (typeof JSROOT.Painter != 'object')
-         throw new Error('JSROOT.Painter not defined', 'JSRootPainter.hierarchy.js');
-      factory(JSROOT, d3);
-   }
-} (function(JSROOT, d3) {
+JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
 
    "use strict";
 
@@ -2900,4 +2884,4 @@
 
    return JSROOT;
 
-}));
+});

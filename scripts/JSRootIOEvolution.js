@@ -1,21 +1,7 @@
 /// @file JSRootIOEvolution.js
 /// I/O methods of JavaScript ROOT
 
-(function(factory) {
-   if (typeof define === "function" && define.amd) {
-      define(['JSRootCore', 'rawinflate'], factory);
-   } else if (typeof exports === 'object' && typeof module !== 'undefined') {
-      factory(require("./JSRootCore.js"), require("./rawinflate.min.js"));
-   } else {
-      if (typeof JSROOT == 'undefined')
-         throw new Error("JSROOT I/O requires JSRootCore.js", "JSRootIOEvolution.js");
-      if (typeof JSROOT.ZIP == 'undefined')
-         throw new Error("JSROOT I/O requires rawinflate.js", "JSRootIOEvolution.js");
-      if (typeof JSROOT.IO == "object")
-         throw new Error("This JSROOT IO already loaded", "JSRootIOEvolution.js");
-      factory(JSROOT);
-   }
-}(function(JSROOT) {
+JSROOT.require(['rawinflate'], function() {
 
    "use strict";
 
@@ -3092,9 +3078,5 @@
    JSROOT.TNodejsFile = TNodejsFile;
 
    return JSROOT;
-
-}));
-
-
-// JSRootIOEvolution.js ends
+})
 

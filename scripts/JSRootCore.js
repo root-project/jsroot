@@ -5,40 +5,10 @@
    if ( typeof define === "function" && define.amd ) {
 
       let jsroot = factory({}),
-          dir = jsroot.source_dir + "scripts/",
-          ext = jsroot.source_min ? ".min" : "",
           norjs = (typeof requirejs=='undefined'),
-          paths = {
-            'd3'                   : dir+'d3.min',
-            'jquery'               : dir+'jquery.min',
-            'jquery-ui'            : dir+'jquery-ui.min',
-            'jqueryui-mousewheel'  : dir+'jquery.mousewheel.min',
-            'jqueryui-touch-punch' : dir+'touch-punch.min',
-            'rawinflate'           : dir+'rawinflate.min',
-            'MathJax'              : 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg',
-            'dat.gui'              : dir+'dat.gui.min',
-            'threejs'              : dir+'three.min',
-            'threejs_jsroot'       : dir+'three.extra.min',
-            'JSRootCore'           : dir+'JSRootCore'+ext,
-            'JSRootMath'           : dir+'JSRootMath'+ext,
-            'JSRootIOEvolution'    : dir+'JSRootIOEvolution'+ext,
-            'JSRootTree'           : dir+'JSRootTree'+ext,
-            'JSRoot.openui5'       : dir+'JSRoot.openui5'+ext,
-            'JSRootPainter'        : dir+'JSRootPainter'+ext,
-            'JSRootPainter.v6'     : dir+'JSRootPainter.v6'+ext,
-            'JSRootPainter.hist'   : dir+'JSRootPainter.hist'+ext,
-            'JSRootPainter.hist3d' : dir+'JSRootPainter.hist3d'+ext,
-            'JSRootPainter.more'   : dir+'JSRootPainter.more'+ext,
-            'JSRootPainter.hierarchy' : dir+'JSRootPainter.hierarchy'+ext,
-            'JSRootPainter.jquery' : dir+'JSRootPainter.jquery'+ext,
-            'JSRootPainter.v7'     : dir+'JSRootPainter.v7'+ext,
-            'JSRootPainter.v7hist' : dir+'JSRootPainter.v7hist'+ext,
-            'JSRootPainter.v7more' : dir+'JSRootPainter.v7more'+ext,
-            'JSRoot3DPainter'      : dir+'JSRoot3DPainter'+ext,
-            'ThreeCSG'             : dir+'ThreeCSG'+ext,
-            'JSRootGeoBase'        : dir+'JSRootGeoBase'+ext,
-            'JSRootGeoPainter'     : dir+'JSRootGeoPainter'+ext
-         };
+          paths = jsroot._.sources;
+
+      jsroot._.amd = true; // inidcation that require will be used for loading of functionality
 
       if (norjs) {
          // just define locations
@@ -72,6 +42,8 @@
      if (norjs || !require.specified("jsroot"))
         define('jsroot', [], jsroot);
 
+     globalThis.JSROOT = jsroot;
+
    } else if (typeof exports === 'object' && typeof module !== 'undefined') {
       // processing with Node.js
 
@@ -80,14 +52,16 @@
 
       factory(exports);
 
+      globalThis.JSROOT = exports;
+
    } else {
 
       if (typeof JSROOT != 'undefined')
          throw new Error("JSROOT is already defined", "JSRootCore.js");
 
-      JSROOT = {};
+      globalThis.JSROOT = {};
 
-      factory(JSROOT);
+      factory(globalThis.JSROOT);
    }
 } (function(JSROOT) {
 
@@ -101,6 +75,7 @@
    JSROOT.nocache = false;      // when specified, used as extra URL parameter to load JSROOT scripts
    JSROOT.wrong_http_response_handling = false; // when configured, try to handle wrong content-length response from server
    JSROOT.sources = ['core'];   // indicates which major sources were loaded
+   JSROOT._ = { modules: {} }; // internal JSROOT data, not a part of public API
 
    JSROOT.id_counter = 1;       // avoid id value 0, starts from 1
    if (JSROOT.BatchMode === undefined)
@@ -108,7 +83,7 @@
 
    //openuicfg // DO NOT DELETE, used to configure openui5 usage like JSROOT.openui5src = "nojsroot";
 
-   // JSROOT.use_full_libs = true;
+   JSROOT.use_full_libs = true;
 
    JSROOT.touches = false;
    JSROOT.key_handling = true;  // enable/disable key press handling in JSROOT
@@ -126,6 +101,43 @@
             console.log("Set JSROOT.source_dir to " + JSROOT.source_dir + ", " + JSROOT.version);
          }
       }
+
+      let dir = JSROOT.source_dir + "scripts/",
+          ext = JSROOT.source_min ? ".min" : "",
+          ldir = JSROOT.use_full_libs ? JSROOT.source_dir + "libs/" : dir,
+          lext = JSROOT.use_full_libs ? "" : ".min";
+
+      JSROOT._.sources = {
+            'd3'                   : ldir + 'd3' + lext,
+            'jquery'               : ldir + 'jquery' + lext,
+            'jquery-ui'            : ldir + 'jquery-ui' + lext,
+            'jqueryui-mousewheel'  : dir + 'jquery.mousewheel.min',
+            'jqueryui-touch-punch' : dir + 'touch-punch.min',
+            'rawinflate'           : ldir+'rawinflate' + lext,
+            'MathJax'              : 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg',
+            'dat.gui'              : ldir+'dat.gui' + lext,
+            'threejs'              : ldir+'three' + lext,
+            'threejs_jsroot'       : ldir+'three.extra' + lext,
+            'JSRootCore'           : dir + 'JSRootCore' + ext,
+            'JSRootMath'           : dir+'JSRootMath'+ext,
+            'JSRootIOEvolution'    : dir+'JSRootIOEvolution'+ext,
+            'JSRootTree'           : dir+'JSRootTree'+ext,
+            'JSRoot.openui5'       : dir+'JSRoot.openui5'+ext,
+            'JSRootPainter'        : dir+'JSRootPainter'+ext,
+            'JSRootPainter.v6'     : dir+'JSRootPainter.v6'+ext,
+            'JSRootPainter.hist'   : dir+'JSRootPainter.hist'+ext,
+            'JSRootPainter.hist3d' : dir+'JSRootPainter.hist3d'+ext,
+            'JSRootPainter.more'   : dir+'JSRootPainter.more'+ext,
+            'JSRootPainter.hierarchy' : dir+'JSRootPainter.hierarchy'+ext,
+            'JSRootPainter.jquery' : dir+'JSRootPainter.jquery'+ext,
+            'JSRootPainter.v7'     : dir+'JSRootPainter.v7'+ext,
+            'JSRootPainter.v7hist' : dir+'JSRootPainter.v7hist'+ext,
+            'JSRootPainter.v7more' : dir+'JSRootPainter.v7more'+ext,
+            'JSRoot3DPainter'      : dir+'JSRoot3DPainter'+ext,
+            'ThreeCSG'             : dir+'ThreeCSG'+ext,
+            'JSRootGeoBase'        : dir+'JSRootGeoBase'+ext,
+            'JSRootGeoPainter'     : dir+'JSRootGeoPainter'+ext
+      };
 
       JSROOT.touches = ('ontouchend' in document); // identify if touch events are supported
       JSROOT.browser.isOpera = !!window.opera || navigator.userAgent.indexOf(' OPR/') >= 0;
@@ -266,6 +278,171 @@
          fPaintTextFormat : "g",
          fTimeOffset : 788918400 // UTC time at 01/01/95
       };
+
+   /** @brief Central method to load JSROOT functionality, normally used only by JSROOT itself
+     * If factoryFunc not provided, returns promise for load
+     * @private */
+   JSROOT.require = function(need, factoryFunc) {
+      let _ = this._;
+
+      if (typeof need == "string")
+         need = need.split(";");
+
+      for (let k =  0; k < need.length; ++k) {
+         switch(need[k]) {
+            case "2d" : need[k] = "JSRootPainter"; break;
+            case "v6" : need[k] = "JSRootPainter.v6"; break;
+            case "hist" : need[k] = "JSRootPainter.hist"; break;
+            case "hist3d" : need[k] = "JSRootPainter.hist3d"; break;
+            case "hierarchy": need[k] = "JSRootPainter.hierarchy"; break;
+            case "io" : need[k] = "JSRootIOEvolution"; break;
+            case "tree" : need[k] = "JSRootTree"; break;
+            case "3d" : need[k] = "JSRoot3DPainter"; break;
+            case "more2d": need[k] = "JSRootPainter.more"; break;
+            case "geom": need[k] = "JSRootGeoPainter"; break;
+            case "v7" : need[k] = "JSRootPainter.v7"; break;
+            case "v7hist" : need[k] = "JSRootPainter.v7hist"; break;
+            case "v7hist3d" : need[k] = "JSRootPainter.v7hist3d"; break;
+            case "v7more" : need[k] = "JSRootPainter.v7more"; break;
+            case "jq2d" : need[k] = "JSRootPainter.jquery"; break;
+            default: if (need[k].indexOf("load:") == 0) need[k] = need[k].substr(5);
+         }
+      }
+
+      need = need.filter(elem => !!elem);
+
+      if (_.amd)
+         return define(need, factoryFunc);
+
+      function getModuleName(src) {
+         let ks = Object.keys(_.sources);
+         for (let k=0; k < ks.length; ++k)
+            if (_.sources[ks[k]] + ".js" == src)
+               return ks[k];
+         return src;
+      }
+
+      let thisModule, thisSrc;
+
+      if (factoryFunc) {
+         if (document.currentScript) {
+            thisSrc = document.currentScript.src;
+            thisModule = getModuleName(thisSrc);
+         }
+         if (!thisModule)
+            throw Error("Cannot define module for" + document.currentScript.src);
+       }
+
+      console.log('Call require ', need, 'from', document.currentScript ? document.currentScript.src : "???", "module", thisModule);
+
+      function finish_loading(m) {
+         let waiting = m.waiting;
+         delete m.loading; // clear loading flag
+         delete m.waiting;
+
+         if (waiting) waiting.forEach(func => func(true));
+      }
+
+      function handle_func(req, is_ok) {
+         console.log('Call HANDLING FUNC', req.need, req.thisModule, 'isok', is_ok);
+
+         if (req.processed) return;
+         if (!is_ok) return req.failed();
+         let arr = [];
+         for (let k = 0; k < req.need.length; ++k) {
+            let m = _.modules[req.need[k]];
+            if (!m) return req.failed();
+            if (m.module === undefined) return; // not yet ready
+            arr.push(m.module);
+         }
+
+         req.processed = true;
+
+         if (req.thisModule) {
+
+            let m = _.modules[req.thisModule];
+
+            if (req.factoryFunc)
+               m.module = req.factoryFunc(...arr);
+
+            console.log('Did loading of ', req.thisModule)
+
+            if (m.module === undefined) m.module = 1; // just to have some value
+
+            finish_loading(m);
+         }
+
+         if (req.resolve)
+             req.resolve(arr.length == 1 ? arr[0] : arr);
+      }
+
+      function analyze(resolve, reject) {
+         let handler, srcs = [],
+             req = { need: need, thisModule: thisModule, factoryFunc: factoryFunc, resolve: resolve, reject: reject,
+                     failed: function(msg) { this.processed = true; if (this.reject) this.reject(Error(msg || "JSROOT.require failed")); } };
+
+         if (req.factoryFunc && req.thisModule) {
+
+            let m = _.modules[req.thisModule];
+            if (!m)
+               m = _.modules[req.thisModule] = { jsroot: true, src: thisSrc, loading: true };
+         }
+
+         for (let k = 0; k < need.length; ++k) {
+            let m = _.modules[need[k]];
+
+            if (m && (m.module !== undefined)) continue;
+
+             if (!m) {
+                m = _.modules[need[k]] = { jsroot: _.sources[need[k]] ? true : false };
+                m.src = m.jsroot ? _.sources[need[k]] + ".js" : need[k];
+                if (m.jsroot && (m.src.indexOf('libs/d3.js') >= 0))
+                   m.extract = "d3";
+             }
+
+             if (m.failure) {
+               // module loading failed, no nee to continue
+               if(reject) reject(Error("Loading of module " + need[k] + "failed"));
+               return;
+             }
+
+             if (!m.loading) {
+                 m.loading = true;
+                 srcs.push(m);
+             }
+             if (!m.waiting) m.waiting = [];
+             if (!handler) handler = handle_func.bind(this, req);
+             m.waiting.push(handler);
+         }
+
+         if (!handler)
+            return handle_func(req, true);
+
+         srcs.forEach(m => {
+            let element = document.createElement("script");
+            element.setAttribute('type', "text/javascript");
+            console.log('Start loading of ', m.src);
+            element.setAttribute('src', m.src);
+            document.getElementsByTagName("head")[0].appendChild(element);
+
+            if (!m.jsroot || m.extract)
+               element.onload = () => {
+                  console.log('Did loading of ', m.src, m.extract);
+                  m.module = m.extract ? globalThis[m.extract] : 1;
+                  console.log('Did extract', !!m.module);
+                  finish_loading(m); // mark script loaded
+               };
+            element.onerror = () => { m.failure = true; req.failed(); }
+         });
+      }
+
+      if (factoryFunc)
+         analyze();
+      else
+         return new Promise(function(resolve,reject) {
+            analyze(resolve,reject);
+         });
+   }
 
    /** Generate mask for given bit
     *
@@ -1445,22 +1622,22 @@
 
    // Open ROOT file, defined in JSRootIOEvolution.js
    JSROOT.OpenFile = function(filename, callback) {
-      return JSROOT.load("io").then(() => JSROOT.OpenFile(filename, callback));
+      return JSROOT.require("JSRootIOEvolution").then(() => JSROOT.OpenFile(filename, callback));
    }
 
    // Draw object, defined in JSRootPainter.js
    JSROOT.draw = function(divid, obj, opt) {
-      return JSROOT.load("2d").then(() => JSROOT.draw(divid, obj, opt));
+      return JSROOT.require("JSRootPainter").then(() => JSROOT.draw(divid, obj, opt));
    }
 
    // Redaraw object, defined in JSRootPainter.js
    JSROOT.redraw = function(divid, obj, opt) {
-      return JSROOT.load("2d").then(() => JSROOT.redraw(divid, obj, opt));
+      return JSROOT.require("JSRootPainter").then(() => JSROOT.redraw(divid, obj, opt));
    }
 
    // Create SVG, defined in JSRootPainter.js
    JSROOT.MakeSVG = function(args) {
-      return JSROOT.load("2d").then(() => JSROOT.MakeSVG(args));
+      return JSROOT.require("JSRootPainter").then(() => JSROOT.MakeSVG(args));
    }
 
    /** @summary Method to build JSROOT GUI with browser
@@ -1503,7 +1680,8 @@
 
       if (user_scripts) requirements += "load:" + user_scripts + ";";
 
-      JSROOT.load(requirements, debugout).then(() => {
+      // TODO: restore debugout
+      JSROOT.require(requirements).then(() => {
          JSROOT.CallBack(JSROOT.findFunction(nobrowser ? 'JSROOT.BuildNobrowserGUI' : 'JSROOT.BuildGUI'));
          JSROOT.CallBack(andThen);
       });
@@ -2435,12 +2613,12 @@
 
       if ((prereq.length>0) || (onload!=null))
          window_on_load(() => {
-            if (prereq.length>0) {
-               JSROOT.load(prereq).then(onload);
-            } else if (onload) {
+            JSROOT.require(prereq).then(() => {
+               if (onload) {
                   onload = JSROOT.findFunction(onload);
                   if (typeof onload == 'function') onload();
-               }
+                }
+            })
          });
 
       return this;

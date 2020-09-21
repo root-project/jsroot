@@ -1,29 +1,13 @@
-(function(factory) {
-   if (typeof define === "function" && define.amd) {
-      define(['JSRootCore', 'd3'], factory);
-   } else if (typeof exports === 'object' && typeof module !== 'undefined') {
-      let jsroot = require("./JSRootCore.js");
-      factory(jsroot, require("d3"));
-      if (jsroot.nodejs) jsroot.Painter.readStyleFromURL("?interactive=0&tooltip=0&nomenu&noprogress&notouch&toolbar=0&webgl=0");
-      module.exports = jsroot;
-   } else {
-      if (typeof JSROOT == 'undefined')
-         throw new Error('JSROOT is not defined', 'JSRootPainter.js');
-      if (typeof d3 != 'object')
-         throw new Error('d3 is not defined', 'JSRootPainter.js');
-      if (typeof JSROOT.Painter == 'object')
-         throw new Error('JSROOT.Painter already defined', 'JSRootPainter.js');
-      factory(JSROOT, d3);
-   }
-}(function(JSROOT, d3) {
+JSROOT.require(['d3'], function(d3) {
+
+   console.log('Loading painter');
 
    "use strict";
 
    JSROOT.sources.push("2d");
 
    // do it here while require.js does not provide method to load css files
-   if (typeof define === "function" && define.amd)
-      JSROOT.loadScript('$$$style/JSRootPainter.css');
+   JSROOT.loadScript('$$$style/JSRootPainter.css');
 
    if (!JSROOT._test_d3_) {
       if ((typeof d3 == 'object') && d3.version && (d3.version[0] === "6")) {
@@ -6454,7 +6438,7 @@
 
       if (opt == 'inspect') {
          if (Painter.drawInspector) return Painter.drawInspector(divid, obj);
-         return JSROOT.load("hierarchy").then(() => JSROOT.Painter.drawInspector(divid, obj));
+         return JSROOT.require("hierarchy").then(() => JSROOT.Painter.drawInspector(divid, obj));
       }
 
       let handle = null;
@@ -6535,7 +6519,7 @@
          if (!prereq.length)
             return completeDraw(null);
 
-         JSROOT.load(prereq).then(() => {
+         JSROOT.require(prereq).then(() => {
             let func = JSROOT.findFunction(funcname);
             if (!func) {
                alert('Fail to find function ' + funcname + ' after loading ' + prereq);
@@ -6806,6 +6790,8 @@
    JSROOT.TObjectPainter = TObjectPainter;
    JSROOT.TooltipHandler = TooltipHandler;
 
+   if (JSROOT.nodejs) JSROOT.Painter.readStyleFromURL("?interactive=0&tooltip=0&nomenu&noprogress&notouch&toolbar=0&webgl=0");
+
    return JSROOT;
 
-}));
+});

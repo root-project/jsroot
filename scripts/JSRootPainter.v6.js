@@ -1,21 +1,7 @@
 /// @file JSRootPainter.v6.js
 /// JavaScript ROOT graphics for main ROOT6 classes
 
-(function( factory ) {
-   if ( typeof define === "function" && define.amd ) {
-      define( ['JSRootPainter', 'd3'], factory );
-   } else if (typeof exports === 'object' && typeof module !== 'undefined') {
-       factory(require("./JSRootPainter.js"), require("d3"));
-   } else {
-      if (typeof d3 != 'object')
-         throw new Error('This extension requires d3.js', 'JSRootPainter.v6.js');
-      if (typeof JSROOT == 'undefined')
-         throw new Error('JSROOT is not defined', 'JSRootPainter.v6.js');
-      if (typeof JSROOT.Painter != 'object')
-         throw new Error('JSROOT.Painter not defined', 'JSRootPainter.v6.js');
-      factory(JSROOT, d3);
-   }
-} (function(JSROOT, d3) {
+JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
 
    "use strict";
 
@@ -5086,5 +5072,4 @@
    JSROOT.Painter.drawPadSnapshot = drawPadSnapshot;
 
    return JSROOT;
-
-}));
+});
