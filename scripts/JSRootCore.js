@@ -116,20 +116,15 @@
    JSROOT.browser = { isOpera: false, isFirefox: true, isSafari: false, isChrome: false, isWin: false };
 
    if ((typeof document !== "undefined") && (typeof window !== "undefined")) {
-      let scripts = document.getElementsByTagName('script');
-      for (let n = 0; n < scripts.length; ++n) {
-         if (!scripts[n].src || (typeof scripts[n].src !== 'string')) continue;
-
-         const pos = scripts[n].src.indexOf("scripts/JSRootCore.");
-         if (pos<0) continue;
-
-         JSROOT.source_dir = scripts[n].src.substr(0, pos);
-         JSROOT.source_min = scripts[n].src.indexOf("scripts/JSRootCore.min.js") >= 0;
-         JSROOT.source_fullpath = scripts[n].src;
-
-         if ((console!==undefined) && (typeof console.log == 'function'))
+      let script = document.currentScript;
+      if (script && (typeof script.src == "string")) {
+         const pos = script.src.indexOf("scripts/JSRootCore.");
+         if (pos >= 0) {
+            JSROOT.source_dir = script.src.substr(0, pos);
+            JSROOT.source_min = script.src.indexOf("scripts/JSRootCore.min.js") >= 0;
+            JSROOT.source_fullpath = script.src;
             console.log("Set JSROOT.source_dir to " + JSROOT.source_dir + ", " + JSROOT.version);
-         break;
+         }
       }
 
       JSROOT.touches = ('ontouchend' in document); // identify if touch events are supported
