@@ -73,9 +73,10 @@ echo "// Content of examples/js/math/SimplexNoise.js" >> $tgt
 tail -n+2 $src/examples/js/math/SimplexNoise.js >> $tgt
 echo "" >> $tgt
 
+echo "if (JSROOT.nodejs) module.exports = THREE;" >> $tgt
 echo "return THREE;" >> $tgt
 echo "" >> $tgt
-echo "}));" >> $tgt
+echo "});" >> $tgt
 
 echo Producing three.extra.min.js
 

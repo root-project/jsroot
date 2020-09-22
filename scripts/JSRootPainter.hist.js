@@ -16,7 +16,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
             "M460.293,0H339.237c-28.521,0-51.721,23.194-51.721,51.712v89.918c0,28.512,23.2,51.718,51.721,51.718h121.045   c28.521,0,51.721-23.2,51.721-51.718V51.712C512.002,23.194,488.802,0,460.293,0z M465.03,141.63c0,2.611-2.122,4.745-4.748,4.745   H339.237c-2.614,0-4.747-2.128-4.747-4.745V51.712c0-2.614,2.133-4.739,4.747-4.739h121.045c2.626,0,4.748,2.125,4.748,4.739 V141.63z "+
             "M172.768,256.149H51.726c-28.524,0-51.724,23.205-51.724,51.726v89.915c0,28.504,23.2,51.715,51.724,51.715h121.042   c28.518,0,51.724-23.199,51.724-51.715v-89.915C224.486,279.354,201.286,256.149,172.768,256.149z M177.512,397.784   c0,2.615-2.124,4.736-4.75,4.736H51.726c-2.626-0.006-4.751-2.121-4.751-4.736v-89.909c0-2.626,2.125-4.753,4.751-4.753h121.042 c2.62,0,4.75,2.116,4.75,4.753L177.512,397.784L177.512,397.784z "+
             "M460.293,256.149H339.237c-28.521,0-51.721,23.199-51.721,51.726v89.915c0,28.504,23.2,51.715,51.721,51.715h121.045   c28.521,0,51.721-23.199,51.721-51.715v-89.915C512.002,279.354,488.802,256.149,460.293,256.149z M465.03,397.784   c0,2.615-2.122,4.736-4.748,4.736H339.237c-2.614,0-4.747-2.121-4.747-4.736v-89.909c0-2.626,2.121-4.753,4.747-4.753h121.045 c2.615,0,4.748,2.116,4.748,4.753V397.784z"
-   };
+   }
 
    JSROOT.Painter.CreateDefaultPalette = function() {
 
@@ -4274,7 +4274,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
    TH1Painter.prototype.Draw3D = function(call_back, reason) {
       this.mode3d = true;
       let painter = this;
-      JSROOT.load('hist3d').then(() => painter.Draw3D(call_back, reason));
+      JSROOT.require('hist3d').then(() => painter.Draw3D(call_back, reason));
    }
 
    TH1Painter.prototype.Redraw = function(reason) {
@@ -6212,7 +6212,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
    TH2Painter.prototype.Draw3D = function(call_back, resize) {
       this.mode3d = true;
       let painter = this;
-      JSROOT.load('hist3d').then(() => painter.Draw3D(call_back, resize));
+      JSROOT.require('hist3d').then(() => painter.Draw3D(call_back, resize));
    }
 
    TH2Painter.prototype.CallDrawFunc = function(callback, reason) {

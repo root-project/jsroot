@@ -1,32 +1,11 @@
 /// @file JSRoot3DPainter.js
 /// JavaScript ROOT 3D graphics
 
-(function( factory ) {
-   if ( typeof define === "function" && define.amd ) {
-      define( ['JSRootPainter', 'd3', 'threejs_jsroot'], factory );
-   } else if (typeof exports === 'object' && typeof module !== 'undefined') {
-      let jsroot = require("./JSRootPainter.js"),
-          threejs = require("./three.extra.min.js");
-      factory(jsroot, require("d3"), threejs,
-              jsroot.nodejs || (typeof document=='undefined') ? jsroot.nodejs_document : document);
-      module.exports = threejs;
-   } else {
-      if (typeof JSROOT == 'undefined')
-         throw new Error('JSROOT is not defined', 'JSRoot3DPainter.js');
-      if (typeof d3 != 'object')
-         throw new Error('This extension requires d3.js', 'JSRoot3DPainter.js');
-      if (typeof THREE == 'undefined')
-         throw new Error('THREE is not defined', 'JSRoot3DPainter.js');
-      factory(JSROOT, d3, THREE);
-   }
-} (function(JSROOT, d3, THREE, document) {
+JSROOT.require(['d3','threejs_jsroot'], function(d3, THREE) {
 
    "use strict";
 
    JSROOT.sources.push("3d");
-
-   if ((typeof document == 'undefined') && (typeof window == 'object'))
-      document = window.document;
 
    if (typeof JSROOT.Painter != 'object')
       throw new Error('JSROOT.Painter is not defined', 'JSRoot3DPainter.js');
@@ -54,6 +33,8 @@
          args.premultipliedAlpha = false;
 
       let need_workaround = false, renderer;
+
+      let document = JSROOT.get_document();
 
       if (render3d == rc.WebGL) {
          // interactive WebGL Rendering
@@ -1012,6 +993,8 @@
       if (!args.style || (this.k !== 1) || JSROOT.BatchMode)
          return this.Complete();
 
+      let document = JSROOT.get_document();
+
       let handler = new JSROOT.TAttMarkerHandler({ style: args.style, color: args.color, size: 8 });
 
       let plainSVG = '<svg width="64" height="64" xmlns="http://www.w3.org/2000/svg">' +
@@ -1091,7 +1074,8 @@
 
    JSROOT.Painter.Create3DLineMaterial = Create3DLineMaterial;
 
+   if (JSROOT.nodejs) module.exports = THREE;
    return THREE;
 
-}));
+});
 

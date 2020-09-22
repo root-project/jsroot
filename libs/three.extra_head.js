@@ -1,29 +1,10 @@
 // Collection of additional THREE.js classes, required in JSROOT
 
-(function( factory ) {
-   if ( typeof define === "function" && define.amd ) {
-      define( ['JSRootCore', 'threejs'], factory );
-   } else
-   if (typeof exports === 'object' && typeof module !== 'undefined') {
-      let jsroot = require("./JSRootCore.js");
-      let threejs = require("three");
-      factory(jsroot, threejs, jsroot.nodejs || (typeof document=='undefined') ? jsroot.nodejs_document : document);
-      module.exports = threejs;
-   } else {
-
-      if (typeof JSROOT == 'undefined')
-         throw new Error('JSROOT is not defined', 'three.extra.js');
-
-      if (typeof THREE == 'undefined')
-         throw new Error('THREE is not defined', 'three.extra.js');
-
-      factory(JSROOT, THREE, document);
-   }
-} (function(JSROOT, THREE, document) {
+JSROOT.require(['three'], function(THREE) {
 
    "use strict";
 
-   if ((typeof document=='undefined') && (typeof window=='object')) document = window.document;
+   if (JSROOT.nodejs) module.exports = THREE;
 
    // ===============================================================
 

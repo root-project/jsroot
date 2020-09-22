@@ -1,14 +1,4 @@
-(function( factory ) {
-   if ( typeof define === "function" && define.amd ) {
-      define( [ 'threejs' ], factory );
-   } else if (typeof exports === 'object' && typeof module !== 'undefined') {
-      module.exports = factory(require("three"));
-   } else {
-      if (typeof THREE == 'undefined')
-         throw new Error('THREE is not defined', 'ThreeCSG.js');
-      ThreeBSP = factory(THREE);
-   }
-} (function(THREE) {
+JSROOT.require(['three'], function(THREE) {
 
    "use strict";
 
@@ -910,5 +900,5 @@
 
    return ThreeBSP;
 
-}));
+});
 

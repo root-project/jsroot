@@ -2,23 +2,7 @@
 /// Bootstraping of OpenUI5 functionality in JSROOT
 /// Openui5 loaded directly in the script
 
-(function( factory ) {
-   if ( typeof define === "function" && define.amd ) {
-      define( ['JSRootCore', 'jquery', 'jquery-ui' ], factory );
-   } else {
-
-      if (typeof JSROOT == 'undefined')
-         throw new Error('JSROOT is not defined', 'JSRoot.openui5.js');
-
-      if (typeof jQuery == 'undefined')
-         throw new Error('jQuery not defined', 'JSRoot.openui5.js');
-
-      if (typeof jQuery.ui == 'undefined')
-         throw new Error('jQuery-ui not defined','JSRoot.openui5.js');
-
-      factory(JSROOT);
-   }
-} (function(JSROOT) {
+JSROOT.require(['jquery', 'jquery-ui'], function($) {
 
    "use strict";
 
@@ -106,5 +90,5 @@
 
    return JSROOT;
 
-}));
+});
 

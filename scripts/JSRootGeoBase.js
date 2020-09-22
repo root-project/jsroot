@@ -1,23 +1,7 @@
 /** @file JSRootGeoBase.js */
 /// Basic functions for work with TGeo classes
 
-(function( factory ) {
-   if ( typeof define === "function" && define.amd ) {
-      define( [ 'JSRootCore', 'threejs', 'ThreeCSG' ], factory );
-   } else if (typeof exports === 'object' && typeof module !== 'undefined') {
-      let jsroot = require("./JSRootCore.js");
-      factory(jsroot, require("three"), require("./ThreeCSG.js"));
-      module.exports = jsroot;
-   } else {
-      if (typeof JSROOT == 'undefined')
-         throw new Error('JSROOT is not defined', 'JSRootGeoBase.js');
-      if (typeof THREE == 'undefined')
-         throw new Error('THREE is not defined', 'JSRootGeoBase.js');
-      if (typeof ThreeBSP == 'undefined')
-         throw new Error('ThreeBSP is not defined', 'JSRootGeoBase.js');
-      factory(JSROOT, THREE, ThreeBSP);
-   }
-} (function( JSROOT, THREE, ThreeBSP ) {
+JSROOT.require(['three', 'ThreeCSG' ], function(THREE, ThreeBSP) {
 
    "use strict";
 
@@ -3718,5 +3702,5 @@
 
    return JSROOT;
 
-}));
+});
 

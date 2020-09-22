@@ -12,9 +12,9 @@
 
       jsroot._.amd = true; // inidcation that require will be used for loading of functionality
 
-      for (let module in jsroot._.sources)
-         if (module != 'JSRootCore')
-            paths[module] = jsroot._.get_module_src(jsroot._.sources[module]);
+      for (let src in jsroot._.sources)
+         if (src != 'JSRootCore')
+            paths[src] = jsroot._.get_module_src(jsroot._.sources[src]);
 
       if (norjs) {
          // just define locations
@@ -26,9 +26,9 @@
          else console.warn("Require.js paths changed - please contact JSROOT developers");
 
          // check if modules are already loaded
-         for (let module in paths)
-            if (requirejs.defined(module) || (cfg_paths && (module in cfg_paths)))
-               delete paths[module];
+         for (let p in paths)
+            if (requirejs.defined(p) || (cfg_paths && (p in cfg_paths)))
+               delete paths[p];
 
          // configure all dependencies
          requirejs.config({
@@ -130,9 +130,9 @@
          'jqueryui-mousewheel'  : { src: 'jquery.mousewheel', onlymin: true, extract: "$" },
          'jqueryui-touch-punch' : { src: 'touch-punch', onlymin: true, extract: "$" },
          'rawinflate'           : { src: 'rawinflate', libs: true },
-         'MathJax'              : { src: 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg', extract: "MathJax", node: "mathjax" },
+         'mathjax'              : { src: 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg', extract: "MathJax", node: "mathjax" },
          'dat.gui'              : { src: 'dat.gui', libs: true, extract: "dat" },
-         'threejs'              : { src: 'three', libs: true, extract: "THREE", node: "three" },
+         'three'                : { src: 'three', libs: true, extract: "THREE", node: "three" },
          'threejs_jsroot'       : { src: 'three.extra', libs: true },
          'JSRootCore'           : { src: 'JSRootCore' },
          'JSRootMath'           : { src: 'JSRootMath' },
@@ -294,6 +294,18 @@
          fTimeOffset : 788918400 // UTC time at 01/01/95
       };
 
+
+    /** Method returns current document used in the @private  */
+    JSROOT.get_document = function() {
+       if (JSROOT.nodejs)
+          return JSROOT.nodejs_document;
+       if (typeof document !== 'undefined')
+          return document;
+       if (typeof window == 'object')
+          return window.document;
+       return udefined;
+    }
+
    /** @brief Central method to load JSROOT functionality, normally used only by JSROOT itself
      * If factoryFunc not provided, returns promise for load
      * @private */
@@ -360,15 +372,33 @@
                   modname = "./" + src.src + ".min.js";
                else
                   modname = "./" + src.src + ".js";
+               console.log('Call require', modname);
                let load = require(modname);
+               if ((modname == 'three') || (need[k] == 'threejs_jsroot')) {
+                  console.log('After loading ',need[k], typeof load.Vector3);
+                  console.log('After loading ', need[k], load.Vector3);
+               }
+
                if (load === undefined) load = 1;
+
                m = _.modules[need[k]] = { module: load };
+            } else {
+               if (need[k] == "three")
+                  console.log('Returnrning three as', m.module.Vector3);
             }
             arr.push(m.module);
          }
 
-         if (factoryFunc)
-            return factoryFunc(...arr);
+         if (factoryFunc) {
+            console.log('Calling factory func ', need, arr.length);
+            let res = factoryFunc(...arr);
+            if (need[0] == 'three') {
+               console.log('arr[0]', arr[0].Vector3, 'res', res.Vector3)
+               console.log('module', module.exports.Vector3)
+            }
+            module.exports = res;
+            return;
+         }
 
          return Promise.resolve(arr);
       }
@@ -393,8 +423,6 @@
             throw Error("Cannot define module for" + document.currentScript.src);
        }
 
-      console.log('Call require ', need, 'from', document.currentScript ? document.currentScript.src : "???", "module", thisModule);
-
       function finish_loading(m) {
          let waiting = m.waiting;
          delete m.loading; // clear loading flag
@@ -404,8 +432,6 @@
       }
 
       function handle_func(req, is_ok) {
-         console.log('Call HANDLING FUNC', req.need, req.thisModule, 'isok', is_ok);
-
          if (req.processed) return;
          if (!is_ok) return req.failed();
          let arr = [];

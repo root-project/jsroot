@@ -6067,7 +6067,7 @@ JSROOT.require(['d3'], function(d3) {
          this.SetDivId(this.divid);
 
          if (mathjax)
-            JSROOT.load('mathjax').then(() => MathJax.Hub.Typeset(frame.node()));
+            JSROOT.require('mathjax').then(() => MathJax.Hub.Typeset(frame.node()));
       }
 
       painter.Draw();
@@ -6656,13 +6656,13 @@ JSROOT.require(['d3'], function(d3) {
       if (!JSROOT.nodejs)
          return build(d3.select('body').append("div").style("visible", "hidden"));
 
-      if (JSROOT.nodejs_document)
-         return build(JSROOT.nodejs_window.d3.select('body').append('div'));
-
-      // use eval while old minifier is not able to parse newest Node.js syntax
-      eval('const { JSDOM } = require("jsdom"); JSROOT.nodejs_window = (new JSDOM("<!DOCTYPE html>hello")).window;');
-      JSROOT.nodejs_document = JSROOT.nodejs_window.document; // used with three.js
-      JSROOT.nodejs_window.d3 = d3.select(JSROOT.nodejs_document); //get d3 into the dom
+      if (!JSROOT.nodejs_document) {
+         // use eval while old minifier is not able to parse newest Node.js syntax
+         const { JSDOM } = require("jsdom");
+         JSROOT.nodejs_window = (new JSDOM("<!DOCTYPE html>hello")).window;
+         JSROOT.nodejs_document = JSROOT.nodejs_window.document; // used with three.js
+         JSROOT.nodejs_window.d3 = d3.select(JSROOT.nodejs_document); //get d3 into the dom
+      }
 
       return build(JSROOT.nodejs_window.d3.select('body').append('div'));
    }
