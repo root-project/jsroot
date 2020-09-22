@@ -5,8 +5,6 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
 
    "use strict";
 
-   JSROOT.sources.push("hierarchy");
-
    // ===========================================================================================
 
    /// function use to draw all items from TList or TObjArray inserted into the TCanvas list of primitives

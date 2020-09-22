@@ -13,7 +13,7 @@
 
       JSROOT.openui5libs = "sap.ui.core, sap.m";
 
-      JSROOT.load('openui5').then(() => {
+      JSROOT.require('openui5').then(() => {
 
          sap.ui.loader.config({
             paths: {
@@ -39,7 +39,7 @@
 
            }); // sap.ui.require
 
-      }); // JSROOT.load
+      });
 
       </script>
    </head>

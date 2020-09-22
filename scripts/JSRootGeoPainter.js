@@ -5,13 +5,7 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], function(d3, THREE) {
 
    "use strict";
 
-   JSROOT.sources.push("geom");
-
-   if (!JSROOT.nodejs)
-      JSROOT.loadScript('$$$style/JSRootGeoPainter.css');
-
-   if (typeof JSROOT.GEO !== 'object')
-      console.error('JSROOT.GEO namespace is not defined')
+   JSROOT.loadScript('$$$style/JSRootGeoPainter.css');
 
    // ============================================================================================
 

@@ -84,7 +84,6 @@
    JSROOT.source_fullpath = ""; // full name of source script
    JSROOT.nocache = false;      // when specified, used as extra URL parameter to load JSROOT scripts
    JSROOT.wrong_http_response_handling = false; // when configured, try to handle wrong content-length response from server
-   JSROOT.sources = ['core'];   // indicates which major sources were loaded
    JSROOT._ = { modules: {} }; // internal JSROOT data, not a part of public API
 
    JSROOT.id_counter = 1;       // avoid id value 0, starts from 1
@@ -130,7 +129,7 @@
          'jqueryui-mousewheel'  : { src: 'jquery.mousewheel', onlymin: true, extract: "$" },
          'jqueryui-touch-punch' : { src: 'touch-punch', onlymin: true, extract: "$" },
          'rawinflate'           : { src: 'rawinflate', libs: true },
-         'mathjax'              : { src: 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg', extract: "MathJax", node: "mathjax" },
+         'mathjax'              : { src: 'https://cdn.jsdelivr.net/npm/mathjax@3.1.2/es5/tex-svg', extract: "MathJax", node: "mathjax" },
          'dat.gui'              : { src: 'dat.gui', libs: true, extract: "dat" },
          'three'                : { src: 'three', libs: true, extract: "THREE", node: "three" },
          'threejs_jsroot'       : { src: 'three.extra', libs: true },
@@ -156,8 +155,9 @@
    }
 
    JSROOT._.get_module_src = function(entry) {
-      if (JSROOT.nodejs)
-         return "./" + entry.src + ".js";
+      if (entry.src.indexOf('http') == 0)
+         return entry.src + ".js";
+
       let dir = (entry.libs && JSROOT.use_full_libs && !JSROOT.source_min) ? JSROOT.source_dir + "libs/" : JSROOT.source_dir + "scripts/";
       let ext = (JSROOT.source_min || (entry.libs && !JSROOT.use_full_libs) || entry.onlymin) ? ".min" : ""
       if (this.amd) return dir + entry.src + ext;
@@ -306,9 +306,29 @@
        return udefined;
     }
 
-   /** @brief Central method to load JSROOT functionality, normally used only by JSROOT itself
-     * If factoryFunc not provided, returns promise for load
-     * @private */
+   /** @brief Central method to load JSROOT functionality
+     * @desc Following components can be
+     *    - 'io'     TFile functionality
+     *    - 'tree'   TTree support
+     *    - '2d'     basic 2d graphic (TCanvas/TPad/TFrame)
+     *    - '3d'     basic 3d graphic (three.js)
+     *    - 'hist'   histograms 2d drawing (SVG)
+     *    - 'hist3d' histograms 3d drawing (WebGL)
+     *    - 'more2d' extra 2d graphic (TGraph, TF1)
+     *    - 'v7'     ROOT v7 graphics
+     *    - 'v7hist' ROOT v7 histograms 2d drawing (SVG)
+     *    - 'v7hist3d' v7 histograms 3d drawing (WebGL)
+     *    - 'v7more' ROOT v7 special classes
+     *    - 'math'   some methods from TMath class
+     *    - 'jq'     jQuery and jQuery-ui
+     *    - 'hierarchy' hierarchy browser
+     *    - 'jq2d'   jQuery-dependent part of hierarchy
+     *    - 'openui5' OpenUI5 and related functionality
+     *    - 'geom'    TGeo support
+     *    - 'simple'  for basic user interface
+     * @param {Array} need - array of required components
+     * @param {Function} [factoryFunc] - function to initialize functionality
+     * @returns {Promise} when factoryFunc not specified */
    JSROOT.require = function(need, factoryFunc) {
       let _ = this._;
 
@@ -374,19 +394,12 @@
                   modname = "./" + src.src + ".min.js";
                else
                   modname = "./" + src.src + ".js";
-               console.log('Call require', modname);
                let load = require(modname);
-               if ((modname == 'three') || (need[k] == 'threejs_jsroot')) {
-                  console.log('After loading ',need[k], typeof load.Vector3);
-                  console.log('After loading ', need[k], load.Vector3);
-               }
-
                if (load === undefined) load = 1;
-
                m = _.modules[need[k]] = { module: load };
             } else {
                if (need[k] == "three")
-                  console.log('Returnrning three as', m.module.Vector3);
+                  console.log('Returning three as', m.module.Vector3);
             }
             arr.push(m.module);
          }
@@ -734,8 +747,6 @@
 
       return obj;
    }
-
-   JSROOT.debug = 0;
 
    /** @summary Just copies (not clone) all fields from source to the target object
     * @desc This is simple replacement of jQuery.extend method
@@ -1267,444 +1278,57 @@
    }
 
    /**
-    * @summary Dynamic script loader
+    * @summary Load script or CSS file into the browser
     *
-    * @desc One could specify list of scripts or style files, separated by semicolon ';'
-    * one can prepend file name with '$$$' - than file will be loaded from JSROOT location
-    * This location can be set by JSROOT.source_dir or it will be detected automatically
-    * by the position of JSRootCore.js file, which must be loaded by normal methods:
-    * <script type="text/javascript" src="scripts/JSRootCore.js"></script>
-    * When all scripts are loaded, callback function will be called
-    *
-    * @private
+    * @desc Normal JSROOT functionality should be loaded via @ref JSROOT.require method
+    * @returns {Promise}
     */
-   JSROOT.loadScript = function(urllist, callback, debugout, from_previous) {
-
-      delete JSROOT.complete_script_load;
-
-      if (from_previous) {
-         if (debugout)
-            document.getElementById(debugout).innerHTML = "";
-         else
-            JSROOT.progress();
-
-         if (!urllist) return JSROOT.CallBack(callback);
+   JSROOT.loadScript = function(url) {
+      if (url.indexOf("$$$")===0) {
+         url = url.slice(3);
+         if ((url.indexOf("style/")==0) && JSROOT.source_min &&
+             (url.lastIndexOf('.css')==url.length-4) && (url.indexOf('.min.css') < 0))
+               url = url.slice(0, url.length-4) + '.min.css';
+         url = JSROOT.source_dir + url;
       }
 
-      if (!urllist) return JSROOT.CallBack(callback);
-
-      let filename = urllist, separ = filename.indexOf(";"), isrootjs = false;
-
-      if (separ>0) {
-         filename = filename.substr(0, separ);
-         urllist = urllist.substr(separ+1);
-      } else {
-         urllist = "";
-      }
-
-      let completeLoad = JSROOT.loadScript.bind(JSROOT, urllist, callback, debugout, true);
-
-      if (filename.indexOf('&&&scripts/')===0) {
-         isrootjs = true;
-         filename = filename.slice(3);
-         if (JSROOT.use_full_libs) filename = "libs/" + filename.slice(8, filename.length-7) + ".js";
-      } else if (filename.indexOf("$$$")===0) {
-         isrootjs = true;
-         filename = filename.slice(3);
-         if ((filename.indexOf("style/")==0) && JSROOT.source_min &&
-             (filename.lastIndexOf('.css')==filename.length-4) &&
-             (filename.indexOf('.min.css')<0))
-            filename = filename.slice(0, filename.length-4) + '.min.css';
-      }
+      let element, isstyle = url.indexOf(".css") > 0;
 
       if (JSROOT.nodejs) {
-         if ((filename.indexOf("scripts/")===0) && (filename.indexOf(".js")>0)) {
-            console.log('load', filename);
-            require("." + filename.substr(7));
-         }
-         return completeLoad();
+         let res = isstyle ? null : require(url);
+         return Promise.resolve(res);
       }
-
-      let isstyle = filename.indexOf('.css') > 0;
 
       if (isstyle) {
          let styles = document.getElementsByTagName('link');
          for (let n = 0; n < styles.length; ++n) {
             if (!styles[n].href || (styles[n].type !== 'text/css') || (styles[n].rel !== 'stylesheet')) continue;
-
-            if (styles[n].href.indexOf(filename)>=0) return completeLoad();
+            if (styles[n].href == url) return Promise.resolve();
          }
 
       } else {
          let scripts = document.getElementsByTagName('script');
-
          for (let n = 0; n < scripts.length; ++n) {
-            let src = scripts[n].src;
-            if (!src) continue;
-
-            if ((src.indexOf(filename)>=0) && (src.indexOf("load=")<0))
-               // avoid wrong decision when script name is specified as more argument
-               return completeLoad();
+            if (scripts[n].src == url) return Promise.resolve();
          }
       }
-
-      if (isrootjs && JSROOT.source_dir) filename = JSROOT.source_dir + filename;
-
-      let element = null;
-
-      if (debugout)
-         document.getElementById(debugout).innerHTML = "loading " + filename + " ...";
-      else
-         JSROOT.progress("loading " + filename + " ...");
-
-      if (JSROOT.nocache && isrootjs && (filename.indexOf("?")<0))
-         filename += "?stamp=" + JSROOT.nocache;
 
       if (isstyle) {
          element = document.createElement("link");
          element.setAttribute("rel", "stylesheet");
          element.setAttribute("type", "text/css");
-         element.setAttribute("href", filename);
+         element.setAttribute("href", url);
       } else {
          element = document.createElement("script");
          element.setAttribute('type', "text/javascript");
-         element.setAttribute('src', filename);
+         element.setAttribute('src', url);
       }
 
-      JSROOT.complete_script_load = completeLoad;
+      return new Promise((resolve, reject) => {
+         element.onload = resolve;
+         element.onerror = reject;
 
-      element.onload = function() {
-         element.onload = null;
-         if (JSROOT.complete_script_load) JSROOT.complete_script_load();
-      }
-
-      document.getElementsByTagName("head")[0].appendChild(element);
-   }
-
-   /** @summary Load JSROOT functionality.
-    *
-    * @desc As first argument, required components should be specified:
-    *
-    *    - 'io'     TFile functionality
-    *    - 'tree'   TTree support
-    *    - '2d'     basic 2d graphic (TCanvas/TPad/TFrame)
-    *    - '3d'     basic 3d graphic (three.js)
-    *    - 'hist'   histograms 2d drawing (SVG)
-    *    - 'hist3d' histograms 3d drawing (WebGL)
-    *    - 'more2d' extra 2d graphic (TGraph, TF1)
-    *    - 'v7'     ROOT v7 graphics
-    *    - 'v7hist' ROOT v7 histograms 2d drawing (SVG)
-    *    - 'v7hist3d' v7 histograms 3d drawing (WebGL)
-    *    - 'v7more' ROOT v7 special classes
-    *    - 'math'   some methods from TMath class
-    *    - 'jq'     jQuery and jQuery-ui
-    *    - 'hierarchy' hierarchy browser
-    *    - 'jq2d'   jQuery-dependent part of hierarchy
-    *    - 'openui5' OpenUI5 and related functionality
-    *    - 'geom'    TGeo support
-    *    - 'simple'  for basic user interface
-    *    - 'load:<path/script.js>' list of user-specific scripts at the end of kind string
-    *
-    * One could combine several components, separating them by semicolon.
-    * Depending of available components, either require.js or plain script loading will be used
-    *
-    * @param {string} kind - modules to load
-    * @param {function} callback - called when all specified modules are loaded
-    *
-    * @example
-    * JSROOT.AssertPrerequisites("io;tree", function() {
-    *    let selector = new JSROOT.TSelector;
-    * });
-    */
-
-   JSROOT.AssertPrerequisites = function(kind, callback, debugout) {
-      // one could specify kind of requirements
-
-      let jsroot = JSROOT;
-
-      if (jsroot.doing_assert === undefined) jsroot.doing_assert = [];
-      if (jsroot.ready_modules === undefined) jsroot.ready_modules = [];
-
-      if (!kind || (typeof kind !== 'string'))
-         return jsroot.CallBack(callback);
-
-      if (kind === '__next__') {
-         if (jsroot.doing_assert.length==0) return;
-         let req = jsroot.doing_assert[0];
-         if (req.running) return;
-         kind = req._kind;
-         callback = req._callback;
-         debugout = req._debug;
-      } else {
-         jsroot.doing_assert.push({_kind:kind, _callback:callback, _debug: debugout});
-         if (jsroot.doing_assert.length > 1) return;
-      }
-
-      function normal_callback() {
-         let req = jsroot.doing_assert.shift();
-         for (let n=0;n<req.modules.length;++n)
-            jsroot.ready_modules.push(req.modules[n]);
-         jsroot.CallBack(req._callback);
-         jsroot.AssertPrerequisites('__next__');
-      }
-
-      jsroot.doing_assert[0].running = true;
-
-      if (kind[kind.length-1]!=";") kind+=";";
-
-      let ext = jsroot.source_min ? ".min" : "",
-          need_jquery = false,
-          use_require = (typeof define === "function") && define.amd,
-          mainfiles = "",
-          extrafiles = "", // scripts for direct loading
-          modules = [],  // modules used for require.js
-          load_callback = normal_callback;
-
-      if ((kind.indexOf('io;')>=0) || (kind.indexOf('tree;')>=0))
-         if (jsroot.sources.indexOf("io")<0) {
-            mainfiles += "&&&scripts/rawinflate.min.js;" +
-                         "$$$scripts/JSRootIOEvolution" + ext + ".js;";
-            modules.push('rawinflate', 'JSRootIOEvolution');
-         }
-
-      if ((kind.indexOf('math;')>=0) || (kind.indexOf('tree;')>=0) || (kind.indexOf('more2d;')>=0))
-         if (jsroot.sources.indexOf("math")<0) {
-            mainfiles += '$$$scripts/JSRootMath' + ext + ".js;";
-            modules.push('JSRootMath');
-         }
-
-      if (kind.indexOf('tree;')>=0)
-         if (jsroot.sources.indexOf("tree")<0) {
-            mainfiles += "$$$scripts/JSRootTree" + ext + ".js;";
-            modules.push('JSRootTree');
-         }
-
-      if ((kind.indexOf('2d;')>=0) || (kind.indexOf('v6;')>=0) || (kind.indexOf('v7;')>=0) ||
-          (kind.indexOf("3d;")>=0) || (kind.indexOf("geom;")>=0)) {
-          if (!use_require && (typeof d3 != 'object') && (jsroot._test_d3_ === undefined)) {
-             mainfiles += '&&&scripts/d3.min.js;';
-             jsroot._test_d3_ = null;
-         }
-         if (jsroot.sources.indexOf("2d") < 0) {
-            modules.push('JSRootPainter');
-            mainfiles += '$$$scripts/JSRootPainter' + ext + ".js;";
-            extrafiles += '$$$style/JSRootPainter' + ext + '.css;';
-         }
-         if ((jsroot.sources.indexOf("v6") < 0) && (kind.indexOf('v7') < 0)) {
-            mainfiles += '$$$scripts/JSRootPainter.v6' + ext + ".js;";
-            modules.push('JSRootPainter.v6');
-         }
-      }
-
-      if (kind.indexOf('jq;')>=0) need_jquery = true;
-
-      if ((kind.indexOf('v6;')>=0) && (jsroot.sources.indexOf("v6")<0)) {
-         mainfiles += '$$$scripts/JSRootPainter.v6' + ext + ".js;";
-         modules.push('JSRootPainter.v6');
-      }
-
-      if ((kind.indexOf('v7;')>=0) && (jsroot.sources.indexOf("v7")<0)) {
-         mainfiles += '$$$scripts/JSRootPainter.v7' + ext + ".js;";
-         modules.push('JSRootPainter.v7');
-      }
-
-      if ((kind.indexOf('v7hist;')>=0) || (kind.indexOf('v7hist3d;')>=0)) {
-         if(jsroot.sources.indexOf("v7hist") < 0) {
-            mainfiles += '$$$scripts/JSRootPainter.v7hist' + ext + ".js;";
-            modules.push('JSRootPainter.v7hist');
-         }
-      } else if (((kind.indexOf('hist;')>=0) || (kind.indexOf('hist3d;')>=0)) && (jsroot.sources.indexOf("hist")<0)) {
-         mainfiles += '$$$scripts/JSRootPainter.hist' + ext + ".js;";
-         modules.push('JSRootPainter.hist');
-      }
-
-      if ((kind.indexOf('v7more;')>=0) && (jsroot.sources.indexOf("v7more")<0)) {
-         mainfiles += '$$$scripts/JSRootPainter.v7more' + ext + ".js;";
-         modules.push('JSRootPainter.v7more');
-      }
-
-      if ((kind.indexOf('more2d;')>=0) && (jsroot.sources.indexOf("more2d")<0)) {
-         mainfiles += '$$$scripts/JSRootPainter.more' + ext + ".js;";
-         modules.push('JSRootPainter.more');
-      }
-
-      if (((kind.indexOf('hierarchy;')>=0) || (kind.indexOf('jq2d;')>=0)) && (jsroot.sources.indexOf("hierarchy")<0)) {
-         mainfiles += '$$$scripts/JSRootPainter.hierarchy' + ext + ".js;";
-         modules.push('JSRootPainter.hierarchy');
-      }
-
-      if ((kind.indexOf('jq2d;')>=0) && (jsroot.sources.indexOf("jq2d")<0)) {
-         mainfiles += '$$$scripts/JSRootPainter.jquery' + ext + ".js;";
-         modules.push('JSRootPainter.jquery');
-         need_jquery = true;
-      }
-
-      if ((kind.indexOf('openui5;')>=0) && (jsroot.sources.indexOf("openui5")<0)) {
-         mainfiles += '$$$scripts/JSRoot.openui5' + ext + ".js;";
-         modules.push('JSRoot.openui5');
-         need_jquery = true;
-      }
-
-      if (((kind.indexOf("3d;")>=0) || (kind.indexOf("geom;")>=0)) && (jsroot.sources.indexOf("3d")<0)) {
-         mainfiles += "&&&scripts/three.min.js;"+
-                      "&&&scripts/three.extra.min.js;" +
-                      "$$$scripts/JSRoot3DPainter" + ext + ".js;";
-      }
-
-      if (kind.indexOf('v7hist3d;')>=0) {
-         if ((jsroot.sources.indexOf("v7hist3d")<0)) {
-            mainfiles += '$$$scripts/JSRootPainter.v7hist3d' + ext + ".js;";
-            modules.push('JSRootPainter.v7hist3d');
-         }
-      } else if ((kind.indexOf('hist3d;')>=0) && (jsroot.sources.indexOf("hist3d")<0)) {
-         mainfiles += '$$$scripts/JSRootPainter.hist3d' + ext + ".js;";
-         modules.push('JSRootPainter.hist3d');
-      }
-
-      if (kind.indexOf("datgui;")>=0) {
-         if (!JSROOT.nodejs && (typeof window !='undefined')) {
-            mainfiles += "&&&scripts/dat.gui.min.js;";
-            modules.push('dat.gui');
-         }
-      }
-
-      if ((kind.indexOf("geom;")>=0) && (jsroot.sources.indexOf("geom")<0)) {
-         mainfiles += "$$$scripts/ThreeCSG" + ext + ".js;" +
-                      "$$$scripts/JSRootGeoBase" + ext + ".js;" +
-                      "$$$scripts/JSRootGeoPainter" + ext + ".js;";
-         extrafiles += "$$$style/JSRootGeoPainter" + ext + ".css;";
-         modules.push('ThreeCSG', 'JSRootGeoBase', 'JSRootGeoPainter');
-      }
-
-      if (kind.indexOf("mathjax;")>=0) {
-
-         if (typeof MathJax == 'undefined') {
-
-            load_callback = function() {}
-
-            let svg_config = {
-                scale: 1,                      // global scaling factor for all expressions
-                minScale: .5,                  // smallest scaling factor to use
-                mtextInheritFont: false,       // true to make mtext elements use surrounding font
-                merrorInheritFont: true,       // true to make merror text use surrounding font
-                mathmlSpacing: false,          // true for MathML spacing rules, false for TeX rules
-                skipAttributes: {},            // RFDa and other attributes NOT to copy to the output
-                exFactor: .5,                  // default size of ex in em units
-                displayAlign: 'center',        // default for indentalign when set to 'auto'
-                displayIndent: '0',            // default for indentshift when set to 'auto'
-                fontCache: 'local',            // or 'global' or 'none'
-                localID: null,                 // ID to use for local font cache (for single equation processing)
-                internalSpeechTitles: true,    // insert <title> tags with speech content
-                titleID: 0                     // initial id number to use for aria-labeledby titles
-             };
-
-            if (JSROOT.nodejs) {
-               require("mathjax").init({
-                  loader: {
-                     load: ['input/tex', 'output/svg', '[tex]/color']
-                   },
-                   tex: {
-                      packages: {'[+]': ['color']}
-                   },
-                   svg: svg_config,
-                   config: {
-                      JSDOM: require('jsdom').JSDOM
-                   },
-                   startup: {
-                      typeset: false,
-                      ready: function() {
-                            MathJax.startup.registerConstructor('jsdomAdaptor', () => {
-                               return new MathJax._.adaptors.HTMLAdaptor.HTMLAdaptor(new MathJax.config.config.JSDOM().window);
-                            });
-                            MathJax.startup.useAdaptor('jsdomAdaptor', true);
-                            MathJax.startup.defaultReady();
-                      }
-                   }
-               }).then(normal_callback);
-            } else {
-               window.MathJax = {
-                  options: {
-                     enableMenu: false
-                  },
-                  loader: {
-                     load: ['[tex]/color']
-                  },
-                  tex: {
-                     packages: {'[+]': ['color']}
-                  },
-                  svg: svg_config,
-                  startup: {
-                     ready: function() {
-                        MathJax.startup.defaultReady();
-                        normal_callback();
-                     }
-                  }
-               };
-
-               mainfiles += "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js;";
-
-               modules.push('MathJax');
-            }
-         }
-      }
-
-      if (kind.indexOf("simple;")>=0) {
-         need_jquery = true;
-      }
-
-      if (need_jquery && !jsroot.load_jquery) {
-         const has_jq = (typeof jQuery != 'undefined');
-         let lst_jq = "";
-
-         if (has_jq)
-            jsroot.console('Reuse existing jQuery ' + jQuery.fn.jquery + ", required 3.1.1", debugout);
-         else
-            lst_jq += "&&&scripts/jquery.min.js;";
-         if (has_jq && typeof $.ui != 'undefined') {
-            jsroot.console('Reuse existing jQuery-ui ' + $.ui.version + ", required 1.12.1", debugout);
-         } else {
-            lst_jq += "&&&scripts/jquery-ui.min.js;";
-            extrafiles += '$$$style/jquery-ui' + ext + '.css;';
-         }
-
-         if (jsroot.touches) {
-            lst_jq += '$$$scripts/touch-punch.min.js;';
-            modules.push('jqueryui-touch-punch');
-         }
-
-         modules.splice(0, 0, 'jquery', 'jquery-ui', 'jqueryui-mousewheel');
-         mainfiles = lst_jq + mainfiles;
-
-         jsroot.load_jquery = true;
-      }
-
-      let pos = kind.indexOf("user:");
-      if (pos < 0) pos = kind.indexOf("load:");
-      if (pos >= 0) extrafiles += kind.slice(pos+5);
-
-      // check if modules already loaded
-      for (let n=modules.length-1;n>=0;--n)
-         if (jsroot.ready_modules.indexOf(modules[n])>=0)
-            modules.splice(n,1);
-
-      // no modules means no main files
-      if (modules.length===0) mainfiles = "";
-
-      jsroot.doing_assert[0].modules = modules;
-
-      if ((modules.length>0) && (typeof define === "function") && define.amd) {
-         jsroot.console("loading " + JSON.stringify(modules) + " with require.js", debugout);
-         require(modules, function() {
-            jsroot.loadScript(extrafiles, load_callback, debugout);
-         });
-      } else {
-         jsroot.loadScript(mainfiles + extrafiles, load_callback, debugout);
-      }
-   }
-
-   JSROOT.load = function(kind, debugout) {
-      return new Promise(function(resolve) {
-         JSROOT.AssertPrerequisites(kind, resolve, debugout);
+         document.getElementsByTagName("head")[0].appendChild(element);
       });
    }
 
@@ -1737,7 +1361,7 @@
          user_scripts = null;
       }
 
-      let debugout = null,
+      let debugout,
           nobrowser = JSROOT.GetUrlOption('nobrowser')!=null,
           requirements = "2d;hierarchy;",
           simplegui = document.getElementById('simpleGUI');
@@ -1759,7 +1383,7 @@
 
       if (user_scripts == 'check_existing_elements') {
          user_scripts = null;
-         if (debugout == null) return;
+         if (!debugout) return;
       }
 
       if (!nobrowser) requirements += 'jq2d;';

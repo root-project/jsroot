@@ -5,8 +5,6 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
 
    "use strict";
 
-   JSROOT.sources.push("v6");
-
    // identifier used in TWebCanvas painter
    JSROOT.WebSnapIds = { kNone: 0,  kObject: 1, kSVG: 2, kSubPad: 3, kColors: 4, kStyle: 5 };
 

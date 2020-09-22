@@ -5,8 +5,6 @@ JSROOT.require(['rawinflate'], function() {
 
    "use strict";
 
-   JSROOT.sources.push("io");
-
    JSROOT.IO = {
       kBase: 0, kOffsetL: 20, kOffsetP: 40,
       kChar: 1, kShort: 2, kInt: 3, kLong: 4, kFloat: 5, kCounter: 6, kCharStar: 7, kDouble: 8, kDouble32: 9, kLegacyChar: 10,

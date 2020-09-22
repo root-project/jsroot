@@ -5,11 +5,6 @@ JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.v7hist'], function(d3, T
 
    "use strict";
 
-   JSROOT.sources.push("v7hist3d");
-
-   if (typeof JSROOT.v7.RHistPainter === 'undefined')
-      throw new Error('JSROOT.v7.RHistPainter is not defined', 'JSRootPainter.v7hist3d.js');
-
    JSROOT.v7.RFramePainter.prototype.SetCameraPosition = function(first_time) {
       let max3d = Math.max(0.75*this.size_xy3d, this.size_z3d);
 

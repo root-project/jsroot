@@ -5,8 +5,6 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
 
    "use strict";
 
-   JSROOT.sources.push("v7");
-
    JSROOT.v7 = {}; // placeholder for v7-relevant code
 
    /** Evaluate attributes using fAttr storage and configured RStyle */

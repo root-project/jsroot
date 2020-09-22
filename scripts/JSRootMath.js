@@ -2,11 +2,8 @@
   * Special mathematical functions */
 
 JSROOT.require([], function() {
-   // math methods for Javascript ROOT
 
    "use strict";
-
-   JSROOT.sources.push("math");
 
    JSROOT.Math = {};
 

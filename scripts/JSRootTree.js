@@ -5,8 +5,6 @@ JSROOT.require(['JSRootIOEvolution', 'JSRootMath'], function() {
 
    "use strict";
 
-   JSROOT.sources.push("tree");
-
    JSROOT.BranchType = {
       kLeafNode: 0, kBaseClassNode: 1, kObjectNode: 2, kClonesNode: 3,
       kSTLNode: 4, kClonesMemberNode: 31, kSTLMemberNode: 41

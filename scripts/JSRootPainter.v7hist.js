@@ -5,10 +5,6 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
 
    "use strict";
 
-   JSROOT.sources.push("v7hist");
-
-   // =============================================================
-
    function RHistPainter(histo) {
       JSROOT.TObjectPainter.call(this, histo);
       this.csstype = "hist";

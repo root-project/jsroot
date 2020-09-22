@@ -6,8 +6,6 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter'], function(d3) {
 
    "use strict";
 
-   JSROOT.sources.push("more2d");
-
    function drawText() {
       let text = this.GetObject(),
           w = this.pad_width(), h = this.pad_height(),

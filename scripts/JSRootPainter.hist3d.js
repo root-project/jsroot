@@ -5,8 +5,6 @@ JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.hist'], function(d3, THR
 
    "use strict";
 
-   JSROOT.sources.push("hist3d");
-
    if (typeof JSROOT.THistPainter === 'undefined')
       throw new Error('JSROOT.THistPainter is not defined', 'JSRootPainter.hist3d.js');
 

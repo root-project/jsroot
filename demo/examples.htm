@@ -229,7 +229,7 @@
                if (ii && !isNaN(parseInt(ii))) testinterval = parseInt(ii);
                                           else testinterval = interval;
                if (running) return;
-               return JSROOT.load("2d;hierarchy").then(() => RunBigTest(0));
+               return JSROOT.require("hierarchy").then(() => RunBigTest(0));
             }
 
             if (!keyid) return; // this is indication of test break
@@ -362,7 +362,7 @@
             }
 
             // all painter assigned to viewer element will be automatically informed about resize
-            JSROOT.load("2d;hierarchy").then(() => JSROOT.RegisterForResize('viewer'));
+            JSROOT.require("2d;hierarchy").then(() => JSROOT.RegisterForResize('viewer'));
 
             select_key = JSROOT.GetUrlOption("select", window.location.href);
             if (!select_key && (JSROOT.GetUrlOption("geom", window.location.href) !== null)) select_key = "TGeo";

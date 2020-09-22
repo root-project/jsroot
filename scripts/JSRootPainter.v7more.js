@@ -5,10 +5,6 @@ JSROOT.require(['JSRootPainter'], function() {
 
    "use strict";
 
-   JSROOT.sources.push("v7more");
-
-   // =================================================================================
-
    function drawText() {
       let text         = this.GetObject(),
           pp           = this.pad_painter(),

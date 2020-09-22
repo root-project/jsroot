@@ -6,8 +6,6 @@ JSROOT.require(['jquery', 'jquery-ui'], function($) {
 
    "use strict";
 
-   JSROOT.sources.push("openui5");
-
    var load_callback = JSROOT.complete_script_load;
    delete JSROOT.complete_script_load; // normal callback is intercepted - we need to instantiate openui5
 

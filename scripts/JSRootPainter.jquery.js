@@ -5,10 +5,7 @@ JSROOT.require(['d3', 'jquery', 'jquery-ui', 'JSRootPainter.hierarchy'], functio
 
    "use strict";
 
-   JSROOT.sources.push("jq2d");
-
-   if (!JSROOT.nodejs)
-      JSROOT.loadScript('$$$style/jquery-ui.css');
+   JSROOT.loadScript('$$$style/jquery-ui.css');
 
    JSROOT.Painter.createMenu = function(painter, maincallback, show_event) {
       let menuname = 'root_ctx_menu';

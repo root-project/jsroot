@@ -5,8 +5,6 @@ JSROOT.require(['d3','threejs_jsroot'], function(d3, THREE) {
 
    "use strict";
 
-   JSROOT.sources.push("3d");
-
    if (typeof JSROOT.Painter != 'object')
       throw new Error('JSROOT.Painter is not defined', 'JSRoot3DPainter.js');
 
