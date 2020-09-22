@@ -430,15 +430,19 @@
       if (factoryFunc) {
          if (document.currentScript) {
             thisSrc = document.currentScript.src;
-            let separ = typeof thisSrc == 'string' ? thisSrc.indexOf('?') : -1;
+            let separ = (typeof thisSrc == 'string') ? thisSrc.indexOf('?') : -1;
             if (separ > 0) thisSrc = thisSrc.substr(0, separ);
             thisModule = getModuleName(thisSrc);
          }
          if (!thisModule)
             throw Error("Cannot define module for" + document.currentScript.src);
-       }
+      }
 
-      function finish_loading(m) {
+      function finish_loading(m, res, no_promise) {
+         if (!no_promise && (typeof res == 'object') && res.then)
+            return res.then(promise_res => finish_loading(m, promise_res, true));
+
+         m.module = res || 1; // just to have some value
          let waiting = m.waiting;
          delete m.loading; // clear loading flag
          delete m.waiting;
@@ -461,16 +465,12 @@
 
          if (req.thisModule) {
 
-            let m = _.modules[req.thisModule];
+            let m = _.modules[req.thisModule], res;
 
             if (req.factoryFunc)
-               m.module = req.factoryFunc(...arr);
+               res = req.factoryFunc(...arr);
 
-            // console.log('Did loading of ', req.thisModule)
-
-            if (m.module === undefined) m.module = 1; // just to have some value
-
-            finish_loading(m);
+            finish_loading(m, res);
          }
 
          if (req.resolve)
@@ -532,10 +532,7 @@
             document.getElementsByTagName("head")[0].appendChild(element);
 
             if (!m.jsroot || m.extract)
-               element.onload = () => {
-                  m.module = m.extract ? globalThis[m.extract] : 1;
-                  finish_loading(m); // mark script loaded
-               };
+               element.onload = () => finish_loading(m, m.extract ? globalThis[m.extract] : 1); // mark script loaded
             element.onerror = () => { m.failure = true; req.failed(); }
          });
       }

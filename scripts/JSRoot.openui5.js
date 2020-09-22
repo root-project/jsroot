@@ -2,12 +2,11 @@
 /// Bootstraping of OpenUI5 functionality in JSROOT
 /// Openui5 loaded directly in the script
 
-JSROOT.require(['jquery', 'jquery-ui'], function($) {
+JSROOT.require(['jquery', 'jquery-ui'], function() {
 
    "use strict";
 
-   var load_callback = JSROOT.complete_script_load;
-   delete JSROOT.complete_script_load; // normal callback is intercepted - we need to instantiate openui5
+   let resolveFunc;
 
    JSROOT.completeUI5Loading = function() {
       // when running with THttpServer, automatically set "rootui5" folder
@@ -22,8 +21,10 @@ JSROOT.require(['jquery', 'jquery-ui'], function($) {
          }
       });
 
-      JSROOT.CallBack(load_callback);
-      load_callback = null;
+      if (resolveFunc) {
+         resolveFunc(sap);
+         resolveFunc = null;
+      }
    }
 
    function TryOpenOpenUI(sources) {
@@ -86,7 +87,8 @@ JSROOT.require(['jquery', 'jquery-ui'], function($) {
 
    TryOpenOpenUI(openui5_sources);
 
-   return JSROOT;
+   // return Promise let loader wait before dependent source will be invoked
+   return new Promise(resolve => { resolveFunc = resolve; });
 
 });
 
