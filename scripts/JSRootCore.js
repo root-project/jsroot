@@ -326,6 +326,8 @@
 
       need = need.filter(elem => !!elem);
 
+      // loading with require.js
+
       if (_.amd) {
          if (!factoryFunc)
             return new Promise(function(resolve) {
@@ -341,6 +343,37 @@
             factoryFunc();
          return;
       }
+
+      // loading inside node.js
+
+      if (this.nodejs) {
+         let arr = [];
+
+         for (let k = 0; k < need.length; ++k) {
+            let m = _.modules[need[k]];
+            if (!m) {
+               let src = _.sources[need[k]], modname;
+               if (!src) throw Error("No module found " + need[k]);
+               if (src.node)
+                  modname = src.node;
+               else if (src.libs)
+                  modname = "./" + src.src + ".min.js";
+               else
+                  modname = "./" + src.src + ".js";
+               let load = require(modname);
+               if (load === undefined) load = 1;
+               m = _.modules[need[k]] = { module: load };
+            }
+            arr.push(m.module);
+         }
+
+         if (factoryFunc)
+            return factoryFunc(...arr);
+
+         return Promise.resolve(arr);
+      }
+
+      // direct loading
 
       function getModuleName(src) {
          for (let mod in _.sources)
