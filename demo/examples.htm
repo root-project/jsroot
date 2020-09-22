@@ -158,7 +158,9 @@
                if (!use_requirejs) return FillContent();
 
                require([scripts + 'JSRootCore.js'], function(handle) {
-                  JSROOT = handle;
+                  // JSROOT = handle;
+                  console.log('Has JSROOT', typeof JSROOT);
+
                   FillContent();
                });
            });

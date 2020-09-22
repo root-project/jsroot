@@ -4,8 +4,6 @@
 (function( factory ) {
    if ( typeof define === "function" && define.amd ) {
 
-      console.log('Loading JSROOT inside require.js');
-
       let jsroot = factory({}),
           norjs = (typeof requirejs=='undefined'),
           paths = {};
@@ -40,7 +38,7 @@
          });
       }
 
-      // define( jsroot );
+      define( jsroot );
 
       if (norjs || !require.specified("JSRootCore"))
          define('JSRootCore', [], jsroot);
