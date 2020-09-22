@@ -3220,7 +3220,6 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], function(d3, THREE) {
             if (tmout === -2222) return; // special case to check if rendering timeout was active
          }
 
-
          JSROOT.Painter.BeforeRender3D(this._renderer);
 
          let tm1 = new Date();
@@ -3243,7 +3242,7 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], function(d3, THREE) {
 
          if ((this.first_render_tm === 0) && measure) {
             this.first_render_tm = tm2.getTime() - tm1.getTime();
-            JSROOT.console('First render tm = ' + this.first_render_tm);
+            JSROOT.console('three.js r' + THREE.REVISION + ', first render tm = ' + this.first_render_tm);
          }
 
          return JSROOT.Painter.AfterRender3D(this._renderer);

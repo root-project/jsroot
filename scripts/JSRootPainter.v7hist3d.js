@@ -248,7 +248,7 @@ JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.v7hist'], function(d3, T
          if (this.first_render_tm === 0) {
             this.first_render_tm = tm2.getTime() - tm1.getTime();
             this.enable_highlight = (this.first_render_tm < 1200) && this.IsTooltipAllowed();
-            console.log('First render tm = ' + this.first_render_tm);
+            console.log('three.js r' + THREE.REVISION + ', first render tm = ' + this.first_render_tm);
          }
 
          return;
