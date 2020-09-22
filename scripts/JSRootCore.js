@@ -154,14 +154,17 @@
          'JSRootGeoPainter'     : { src: 'JSRootGeoPainter' }
    }
 
-   JSROOT._.get_module_src = function(entry) {
+   JSROOT._.get_module_src = function(entry, fullyQualified) {
       if (entry.src.indexOf('http') == 0)
          return entry.src + ".js";
 
       let dir = (entry.libs && JSROOT.use_full_libs && !JSROOT.source_min) ? JSROOT.source_dir + "libs/" : JSROOT.source_dir + "scripts/";
       let ext = (JSROOT.source_min || (entry.libs && !JSROOT.use_full_libs) || entry.onlymin) ? ".min" : ""
       if (this.amd) return dir + entry.src + ext;
-      return dir + entry.src + ext + ".js";
+      let res = dir + entry.src + ext + ".js";
+
+      if (fullyQualified && JSROOT.nocache) res += "?stamp=" + JSROOT.nocache;
+      return res;
    }
 
 
@@ -427,6 +430,8 @@
       if (factoryFunc) {
          if (document.currentScript) {
             thisSrc = document.currentScript.src;
+            let separ = typeof thisSrc == 'string' ? thisSrc.indexOf('?') : -1;
+            if (separ > 0) thisSrc = thisSrc.substr(0, separ);
             thisModule = getModuleName(thisSrc);
          }
          if (!thisModule)
@@ -495,7 +500,7 @@
                 m = _.modules[need[k]] = {};
                 if (jsmodule) {
                    m.jsroot = true;
-                   m.src = _.get_module_src(jsmodule);
+                   m.src = _.get_module_src(jsmodule, true);
                    m.extract = jsmodule.extract;
                 } else {
                    m.src = need[k];
@@ -523,14 +528,12 @@
          srcs.forEach(m => {
             let element = document.createElement("script");
             element.setAttribute('type', "text/javascript");
-            // console.log('Start loading of ', m.src);
             element.setAttribute('src', m.src);
             document.getElementsByTagName("head")[0].appendChild(element);
 
             if (!m.jsroot || m.extract)
                element.onload = () => {
                   m.module = m.extract ? globalThis[m.extract] : 1;
-                  // console.log('Loading done', m.src, "extract", m.extract)
                   finish_loading(m); // mark script loaded
                };
             element.onerror = () => { m.failure = true; req.failed(); }
