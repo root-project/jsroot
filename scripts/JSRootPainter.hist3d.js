@@ -1,7 +1,6 @@
 /// @file JSRootPainter.hist3d.js
 /// 3D histogram graphics
 
-
 JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.hist'], function(d3, THREE) {
 
    "use strict";

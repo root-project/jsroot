@@ -1,3 +1,6 @@
+/// @file JSRootPainter.js
+/// Baisc JavaScript ROOT painter classes
+
 JSROOT.require(['d3'], function(d3) {
 
    "use strict";
@@ -5,7 +8,8 @@ JSROOT.require(['d3'], function(d3) {
    JSROOT.sources.push("2d");
 
    // do it here while require.js does not provide method to load css files
-   JSROOT.loadScript('$$$style/JSRootPainter.css');
+   if (!JSROOT.nodejs)
+      JSROOT.loadScript('$$$style/JSRootPainter.css');
 
    if (!JSROOT._test_d3_) {
       if ((typeof d3 == 'object') && d3.version && (d3.version[0] === "6")) {
@@ -405,7 +409,7 @@ JSROOT.require(['d3'], function(d3) {
       if (evt && (typeof evt == "object"))
          if ((evt.clientX !== undefined) && (evt.clientY !== undefined))
             show_evnt = { clientX: evt.clientX, clientY: evt.clientY };
-      JSROOT.load('hierarchy;jq2d;').then(() => {
+      JSROOT.require(['JSRootPainter.hierarchy', 'JSRootPainter.jquery']).then(() => {
          document.body.style.cursor = 'auto';
          Painter.createMenu(painter, maincallback, show_evnt);
       });
@@ -2183,7 +2187,7 @@ JSROOT.require(['d3'], function(d3) {
          if (arg.openui5src) JSROOT.openui5src = arg.openui5src;
          if (arg.openui5libs) JSROOT.openui5libs = arg.openui5libs;
          if (arg.openui5theme) JSROOT.openui5theme = arg.openui5theme;
-         return JSROOT.load(arg.prereq, arg.prereq_logdiv).then(() => { delete arg.prereq; return JSROOT.ConnectWebWindow(arg); });
+         return JSROOT.require(arg.prereq /*, arg.prereq_logdiv */).then(() => { delete arg.prereq; return JSROOT.ConnectWebWindow(arg); });
       }
 
       // special hold script, prevents headless browser from too early exit
@@ -2248,7 +2252,7 @@ JSROOT.require(['d3'], function(d3) {
          handle.Connect();
 
          if (arg.prereq2) {
-            JSROOT.load(arg.prereq2).then(() => {
+            JSROOT.require(arg.prereq2).then(() => {
                delete arg.prereq2; // indicate that func is loaded
                if (!arg.first_recv || arg.first_msg) resolveFunc(handle);
             });
@@ -2744,9 +2748,7 @@ JSROOT.require(['d3'], function(d3) {
    /** @summary Assign snapid to the painter
    *
    * @desc Identifier used to communicate with server side and identifies object on the server
-   * @private
-   */
-
+   * @private */
    TObjectPainter.prototype.AssignSnapId = function(id) {
       this.snapid = id;
    }
@@ -4650,21 +4652,16 @@ JSROOT.require(['d3'], function(d3) {
    }
 
    /** @summary Redraw object
-    *
     * @desc Basic method, should be reimplemented in all derived objects
     * for the case when drawing should be repeated
-    * @abstract
-    */
-
-   TObjectPainter.prototype.Redraw = function(/*reason*/) {
+    * @abstract */
+   TObjectPainter.prototype.Redraw = function() {
    }
 
    /** @summary Start text drawing
-    *
-    * @desc required before any text can be drawn
-    */
+     * @desc required before any text can be drawn
+     * @private */
    TObjectPainter.prototype.StartTextDrawing = function(font_face, font_size, draw_g, max_font_size) {
-      // we need to preserve font to be able rescale at the end
 
       if (!draw_g) draw_g = this.draw_g;
 
@@ -5637,7 +5634,7 @@ JSROOT.require(['d3'], function(d3) {
 
       let options = { em: font.size, ex: font.size/2, family: font.name, scale: 1, containerWidth: -1, lineWidth: 100000 };
 
-      JSROOT.load('mathjax').then(() => {
+      JSROOT.require('mathjax').then(() => {
          MathJax.tex2svgPromise(mtext, options).then(elem => {
             let svg = d3.select(elem).select("svg");
             svg.remove();

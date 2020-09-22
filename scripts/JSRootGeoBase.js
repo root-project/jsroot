@@ -1,7 +1,7 @@
 /** @file JSRootGeoBase.js */
 /// Basic functions for work with TGeo classes
 
-JSROOT.require(['three', 'ThreeCSG' ], function(THREE, ThreeBSP) {
+JSROOT.require(['three', 'ThreeCSG'], function(THREE, ThreeBSP) {
 
    "use strict";
 
@@ -3700,7 +3700,8 @@ JSROOT.require(['three', 'ThreeCSG' ], function(THREE, ThreeBSP) {
       return box3;
    }
 
-   return JSROOT;
+   if (JSROOT.nodejs) module.exports = THREE;
+   return THREE;
 
 });
 

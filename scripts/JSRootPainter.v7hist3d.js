@@ -1,29 +1,11 @@
 /// @file JSRootPainter.hist3d.js
 /// 3D histogram graphics
 
-(function( factory ) {
-   if ( typeof define === "function" && define.amd ) {
-      define( [ 'JSRootPainter.v7hist', 'd3', 'JSRoot3DPainter'], factory );
-   } else if (typeof exports === 'object' && typeof module !== 'undefined') {
-      let jsroot = require("./JSRootPainter.v7hist.js");
-      factory(jsroot, require("d3"), require("./JSRoot3DPainter.js"),
-              jsroot.nodejs || (typeof document=='undefined') ? jsroot.nodejs_document : document);
-   } else {
-      if (typeof JSROOT == 'undefined')
-         throw new Error('JSROOT is not defined', 'JSRootPainter.v7hist3d.js');
-      if (typeof d3 != 'object')
-         throw new Error('This extension requires d3.js', 'JSRootPainter.v7hist3d.js');
-      if (typeof THREE == 'undefined')
-         throw new Error('THREE is not defined', 'JSRootPainter.v7hist3d.js');
-      factory(JSROOT, d3, THREE);
-   }
-} (function(JSROOT, d3, THREE, document) {
+JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.v7hist'], function(d3, THREE) {
 
    "use strict";
 
    JSROOT.sources.push("v7hist3d");
-
-   if ((typeof document=='undefined') && (typeof window=='object')) document = window.document;
 
    if (typeof JSROOT.v7.RHistPainter === 'undefined')
       throw new Error('JSROOT.v7.RHistPainter is not defined', 'JSRootPainter.v7hist3d.js');
@@ -226,6 +208,7 @@
          // special handling for direct SVG renderer
          // probably, here one can use canvas renderer - after modifications
          // let rrr = new THREE.SVGRenderer({ precision: 0, astext: true });
+         let document = JSROOT.get_document();
          let rrr = THREE.CreateSVGRenderer(false, 0, document);
          rrr.setSize(this.scene_width, this.scene_height);
          rrr.render(this.scene, this.camera);
@@ -3075,4 +3058,4 @@
    }
 
    return JSROOT;
-}));
+});

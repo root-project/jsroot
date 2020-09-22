@@ -1,32 +1,13 @@
 /** JavaScript ROOT 3D geometry painter
  * @file JSRootGeoPainter.js */
 
-(function( factory ) {
-   if ( typeof define === "function" && define.amd ) {
-      define( [ 'JSRootGeoBase', 'd3', 'JSRoot3DPainter', 'dat.gui' ], factory );
-   } else if (typeof exports === 'object' && typeof module !== 'undefined') {
-      factory(require("./JSRootGeoBase.js"), require("d3"), require("./JSRoot3DPainter.js"),
-              undefined, jsroot.nodejs || (typeof document=='undefined') ? jsroot.nodejs_document : document);
-   } else {
-      if (typeof JSROOT == 'undefined')
-         throw new Error('JSROOT is not defined', 'JSRootGeoPainter.js');
-      if (typeof JSROOT.Painter != 'object')
-         throw new Error('JSROOT.Painter is not defined', 'JSRootGeoPainter.js');
-      if (typeof d3 == 'undefined')
-         throw new Error('d3 is not defined', 'JSRootGeoPainter.js');
-      if (typeof THREE == 'undefined')
-         throw new Error('THREE is not defined', 'JSRootGeoPainter.js');
-      factory( JSROOT, d3, THREE );
-   }
-} (function( JSROOT, d3, THREE, _dat, document ) {
+JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], function(d3, THREE) {
 
    "use strict";
 
    JSROOT.sources.push("geom");
 
-   if ((typeof document=='undefined') && (typeof window=='object')) document = window.document;
-
-   if ((typeof define === "function") && define.amd)
+   if (!JSROOT.nodejs)
       JSROOT.loadScript('$$$style/JSRootGeoPainter.css');
 
    if (typeof JSROOT.GEO !== 'object')
@@ -840,15 +821,7 @@
       // while complete geo drawing can be removed until dat is loaded - just check and ignore callback
       if (!this.ctrl) return;
 
-      let usedat = _dat;
-      if (!usedat && (typeof dat == 'object'))
-         usedat = dat;
-
-      if (on === 'load') {
-         if (typeof usedat == 'undefined')
-            throw new Error('dat.gui is not defined', 'JSRootGeoPainter.js');
-         on = true;
-      } else if (on === 'toggle') {
+      if (on === 'toggle') {
          on = !this._datgui;
       } else if (on === undefined) {
          on = this.ctrl.show_controls;
@@ -867,12 +840,16 @@
 
       if (!on) return;
 
-      if (typeof usedat == 'undefined')
-         return JSROOT.load("datgui").then(this.showControlOptions.bind(this,"load"));
-
       let painter = this;
 
-      this._datgui = new usedat.GUI({ autoPlace: false, width: Math.min(650, painter._renderer.domElement.width / 2) });
+      JSROOT.require('dat.gui').then(dat => painter.buildDatGui(dat));
+   }
+
+   TGeoPainter.prototype.buildDatGui = function(dat) {
+      if (!dat)
+         throw Error('Fail to load dat.gui');
+
+      this._datgui = new dat.GUI({ autoPlace: false, width: Math.min(650, this._renderer.domElement.width / 2) });
 
       let main = this.select_main();
       if (main.style('position')=='static') main.style('position','relative');
@@ -896,7 +873,7 @@
 
          this._datgui.add(this.ctrl, 'projectPos', bound.min[axis], bound.max[axis])
              .name(axis.toUpperCase() + ' projection')
-             .onChange(() => painter.startDrawGeometry());
+             .onChange(this.startDrawGeometry.bind(this));
 
       } else {
          // Clipping Options
@@ -2068,6 +2045,7 @@
 
       if (this._fit_main_area && !this._webgl) {
          // create top-most SVG for geomtery drawings
+         let document = JSROOT.get_document();
          let svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
          d3.select(svg).attr("width",w).attr("height",h);
          svg.appendChild(this._renderer.jsroot_dom);
@@ -2169,6 +2147,7 @@
       let dataUrl = this._renderer.domElement.toDataURL("image/png");
       if (filename==="asis") return dataUrl;
       dataUrl.replace("image/png", "image/octet-stream");
+      let document = JSROOT.get_document();
       let link = document.createElement('a');
       if (typeof link.download === 'string') {
          document.body.appendChild(link); //Firefox requires the link to be in the body
@@ -4654,6 +4633,6 @@
 
    JSROOT.Painter.GeoDrawingControl = GeoDrawingControl;
 
-   return JSROOT.Painter;
+   return JSROOT;
 
-}));
+});

@@ -898,6 +898,7 @@ JSROOT.require(['three'], function(THREE) {
       if ( this.back ) this.back.clipTo( node );
    }
 
+   if (JSROOT.nodejs) module.exports = ThreeBSP;
    return ThreeBSP;
 
 });

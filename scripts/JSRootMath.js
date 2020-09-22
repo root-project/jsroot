@@ -1,22 +1,7 @@
 /** @file JSRootMath.js
   * Special mathematical functions */
 
-/** @namespace JSROOT.Math
-  * Holder of mathematical functions, analogue to TMath class of ROOT */
-
-(function( factory ) {
-   if ( typeof define === "function" && define.amd ) {
-      define( ['JSRootCore'], factory );
-   } else if (typeof exports === 'object' && typeof module !== 'undefined') {
-       factory(require("./JSRootCore.js"));
-   } else {
-      if (typeof JSROOT == 'undefined')
-         throw new Error("This extension requires JSRootCore.js", "JSRootMath.js");
-      if (typeof JSROOT.Math == "object")
-         throw new Error("This JSROOT Math already loaded", "JSRootMath.js");
-      factory(JSROOT);
-   }
-} (function(JSROOT) {
+JSROOT.require([], function() {
    // math methods for Javascript ROOT
 
    "use strict";
@@ -715,4 +700,4 @@
 
    return JSROOT;
 
-}));
+});

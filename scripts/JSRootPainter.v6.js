@@ -3726,7 +3726,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
             if (snap.fScripts.indexOf("load:") == 0) arg = snap.fScripts; else
             if (snap.fScripts.indexOf("assert:") == 0) arg = snap.fScripts.substr(7);
             if (arg) {
-               JSROOT.load(arg).then(this.DrawNextSnap.bind(this, snap.fPrimitives, -1, call_back));
+               JSROOT.require(arg).then(this.DrawNextSnap.bind(this, snap.fPrimitives, -1, call_back));
             } else {
                console.log('Calling eval ' + snap.fScripts.length);
                eval(snap.fScripts);
@@ -4479,7 +4479,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
 
       let pthis = this;
 
-      JSROOT.load("jq2d").then(() => {
+      JSROOT.require("JSRootPainter.jquery").then(() => {
 
          let grid = new JSROOT.GridDisplay(origin.node(), layout_kind);
 
@@ -4804,7 +4804,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
 
       let pthis = this;
 
-      JSROOT.load('openui5').then(() => {
+      JSROOT.require('openui5').then(() => {
 
          d3.select("#ged_placeholder").text("");
 

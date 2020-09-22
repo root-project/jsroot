@@ -1,35 +1,13 @@
 /// @file JSRootPainter.jquery.js
 /// Part of JavaScript ROOT graphics, dependent from jQuery functionality
 
-(function( factory ) {
-   if ( typeof define === "function" && define.amd ) {
-      define( ['JSRootPainter.hierarchy', 'd3', 'jquery', 'jquery-ui'], factory );
-   } else {
-
-      if (typeof jQuery == 'undefined')
-         throw new Error('jQuery not defined', 'JSRootPainter.jquery.js');
-
-      if (typeof jQuery.ui == 'undefined')
-         throw new Error('jQuery-ui not defined','JSRootPainter.jquery.js');
-
-      if (typeof d3 != 'object')
-         throw new Error('This extension requires d3.v3.js', 'JSRootPainter.jquery.js');
-
-      if (typeof JSROOT == 'undefined')
-         throw new Error('JSROOT is not defined', 'JSRootPainter.jquery.js');
-
-      if (typeof JSROOT.Painter != 'object')
-         throw new Error('JSROOT.Painter not defined', 'JSRootPainter.jquery.js');
-
-      factory(JSROOT, d3, jQuery);
-   }
-} (function(JSROOT, d3, $) {
+JSROOT.require(['d3', 'jquery', 'jquery-ui', 'JSRootPainter.hierarchy'], function(d3, $) {
 
    "use strict";
 
    JSROOT.sources.push("jq2d");
 
-   if ( typeof define === "function" && define.amd )
+   if (!JSROOT.nodejs)
       JSROOT.loadScript('$$$style/jquery-ui.css');
 
    JSROOT.Painter.createMenu = function(painter, maincallback, show_event) {
@@ -2206,5 +2184,5 @@
 
    return JSROOT;
 
-}));
+});
 

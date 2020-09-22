@@ -550,7 +550,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
    BrowserLayout.prototype.CreateStatusLine = function(height, mode) {
       if (!this.gui_div) return '';
       let pthis = this;
-      JSROOT.load('jq2d').then(() => {
+      JSROOT.require('jq2d').then(() => {
          pthis.CreateStatusLine(height, mode);
       });
       return this.gui_div + "_status";
@@ -851,7 +851,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
    HierarchyPainter.prototype.RefreshHtml = function(callback) {
       if (!this.divid) return JSROOT.CallBack(callback);
       let hpainter = this;
-      JSROOT.load('jq2d').then(() => {
+      JSROOT.require('jq2d').then(() => {
           hpainter.RefreshHtml(callback);
       });
    }
@@ -935,7 +935,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
 
       let hpainter = this;
 
-      JSROOT.load(item._prereq || '').then(() => {
+      JSROOT.require(item._prereq || '').then(() => {
 
          let player_func = JSROOT.findFunction(item._player);
          if (!player_func) return JSROOT.CallBack(call_back, null);
@@ -1084,7 +1084,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
       }
 
       if (itemname == "$legend")
-         return JSROOT.load("v6;hist").then(() => {
+         return JSROOT.require("hist").then(() => {
             let res = JSROOT.Painter.produceLegend(divid, opt);
             JSROOT.CallBack(drop_callback, res);
          });
@@ -1459,7 +1459,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
          }
 
          if (handle && handle.expand) {
-            JSROOT.load(handle.prereq).then(() => {
+            JSROOT.require(handle.prereq).then(() => {
                _item._expand = JSROOT.findFunction(handle.expand);
                if (_item._expand) return DoExpandItem(_item, _obj, _name);
                JSROOT.CallBack(call_back);
@@ -1814,7 +1814,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
          if (scripts.length > 0) scripts = "user:" + scripts;
 
          // use load, while it protect us from race conditions
-         JSROOT.load(modules + scripts).then(() => {
+         JSROOT.require(modules + scripts).then(() => {
 
             painter.ForEach(item => {
                if (!('_drawfunc' in item) || !('_kind' in item)) return;
@@ -2058,7 +2058,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
           ((this.disp_kind.indexOf("grid") == 0) && (this.disp_kind.indexOf("gridi") < 0)))
            this.disp = new GridDisplay(this.disp_frameid, this.disp_kind);
       else
-         return JSROOT.load('jq2d').then(this.CreateDisplay.bind(this, callback));
+         return JSROOT.require('jq2d').then(this.CreateDisplay.bind(this, callback));
 
       if (this.disp)
          this.disp.CleanupFrame = this.CleanupFrame.bind(this);
@@ -2284,8 +2284,10 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
       if (gui_div)
          this.PrepareGuiDiv(gui_div, this.disp_kind);
 
-      if (prereq.length>0) JSROOT.load(prereq).then(OpenAllFiles);
-      else OpenAllFiles();
+      if (prereq.length>0)
+         JSROOT.require(prereq).then(OpenAllFiles);
+      else
+         OpenAllFiles();
    }
 
    HierarchyPainter.prototype.PrepareGuiDiv = function(myDiv, layout) {
@@ -2323,7 +2325,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
       if (!this.gui_div) return;
 
       let hpainter = this;
-      JSROOT.load('jq2d').then(() => {
+      JSROOT.require('jq2d').then(() => {
           hpainter.CreateBrowser(browser_kind, update_html, call_back);
       });
    }

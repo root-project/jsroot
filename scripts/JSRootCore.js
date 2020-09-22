@@ -323,6 +323,7 @@
             case "hist3d" : need[k] = "JSRootPainter.hist3d"; break;
             case "hierarchy": need[k] = "JSRootPainter.hierarchy"; break;
             case "io" : need[k] = "JSRootIOEvolution"; break;
+            case "math" : need[k] = "JSRootMath"; break;
             case "tree" : need[k] = "JSRootTree"; break;
             case "3d" : need[k] = "JSRoot3DPainter"; break;
             case "more2d": need[k] = "JSRootPainter.more"; break;
@@ -332,6 +333,7 @@
             case "v7hist3d" : need[k] = "JSRootPainter.v7hist3d"; break;
             case "v7more" : need[k] = "JSRootPainter.v7more"; break;
             case "jq2d" : need[k] = "JSRootPainter.jquery"; break;
+            case "openui5" : need[k] = "JSRoot.openui5"; break;
             default: if (need[k].indexOf("load:") == 0) need[k] = need[k].substr(5);
          }
       }
@@ -390,17 +392,12 @@
          }
 
          if (factoryFunc) {
-            console.log('Calling factory func ', need, arr.length);
-            let res = factoryFunc(...arr);
-            if (need[0] == 'three') {
-               console.log('arr[0]', arr[0].Vector3, 'res', res.Vector3)
-               console.log('module', module.exports.Vector3)
-            }
-            module.exports = res;
+            factoryFunc(...arr);
+            // TODO: how to access module.exports = res; of calling function
             return;
          }
 
-         return Promise.resolve(arr);
+         return Promise.resolve(arr.length == 1 ? arr[0] : arr);
       }
 
       // direct loading
@@ -451,7 +448,7 @@
             if (req.factoryFunc)
                m.module = req.factoryFunc(...arr);
 
-            console.log('Did loading of ', req.thisModule)
+            // console.log('Did loading of ', req.thisModule)
 
             if (m.module === undefined) m.module = 1; // just to have some value
 
@@ -513,14 +510,14 @@
          srcs.forEach(m => {
             let element = document.createElement("script");
             element.setAttribute('type', "text/javascript");
-            console.log('Start loading of ', m.src);
+            // console.log('Start loading of ', m.src);
             element.setAttribute('src', m.src);
             document.getElementsByTagName("head")[0].appendChild(element);
 
             if (!m.jsroot || m.extract)
                element.onload = () => {
                   m.module = m.extract ? globalThis[m.extract] : 1;
-                  console.log('Loading done', m.src, "extract", m.extract)
+                  // console.log('Loading done', m.src, "extract", m.extract)
                   finish_loading(m); // mark script loaded
                };
             element.onerror = () => { m.failure = true; req.failed(); }
@@ -2647,7 +2644,7 @@
       if (arg.openui5src) JSROOT.openui5src = arg.openui5src;
       if (arg.openui5libs) JSROOT.openui5libs = arg.openui5libs;
       if (arg.openui5theme) JSROOT.openui5theme = arg.openui5theme;
-      return JSROOT.load("2d;" + (arg && arg.prereq ? arg.prereq : ""), (arg ? arg.prereq_logdiv : undefined)).then(() => {
+      return JSROOT.require("2d;" + (arg && arg.prereq ? arg.prereq : "") /*, (arg ? arg.prereq_logdiv : undefined) */).then(() => {
          if (arg && arg.prereq) delete arg.prereq;
          return JSROOT.ConnectWebWindow(arg);
       });

@@ -1,23 +1,7 @@
 /// @file JSRootPainter.v7hist.js
 /// JavaScript ROOT v7 graphics for histogram classes
 
-(function( factory ) {
-   if ( typeof define === "function" && define.amd ) {
-      define( ['JSRootPainter', 'd3'], factory );
-   } else if (typeof exports === 'object' && typeof module !== 'undefined') {
-      let jsroot = require("./JSRootPainter.js");
-      factory(jsroot, require("d3"));
-      module.exports = jsroot;
-   } else {
-      if (typeof d3 != 'object')
-         throw new Error('This extension requires d3.js', 'JSRootPainter.v7hist.js');
-      if (typeof JSROOT == 'undefined')
-         throw new Error('JSROOT is not defined', 'JSRootPainter.v7hist.js');
-      if (typeof JSROOT.Painter != 'object')
-         throw new Error('JSROOT.Painter not defined', 'JSRootPainter.v7hist.js');
-      factory(JSROOT, d3);
-   }
-} (function(JSROOT, d3) {
+JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
 
    "use strict";
 
@@ -1855,7 +1839,7 @@
    RH1Painter.prototype.Draw3D = function(call_back, reason) {
       this.mode3d = true;
       let painter = this;
-      JSROOT.load('v7hist3d').then(() => painter.Draw3D(call_back, reason));
+      JSROOT.require('JSRootPainter.v7hist').then(() => painter.Draw3D(call_back, reason));
    }
 
    RH1Painter.prototype.Redraw = function(reason) {
@@ -3642,7 +3626,7 @@
    RH2Painter.prototype.Draw3D = function(call_back, reason) {
       this.mode3d = true;
       let painter = this;
-      JSROOT.load('v7hist3d').then(() => painter.Draw3D(call_back, reason));
+      JSROOT.require('JSRootPainter.v7hist').then(() => painter.Draw3D(call_back, reason));
    }
 
    RH2Painter.prototype.CallDrawFunc = function(callback, reason) {
@@ -3754,7 +3738,7 @@
          default: o.Box = 10;
       }
 
-      JSROOT.load('v7hist3d').then(() => {
+      JSROOT.require('JSRootPainter.v7hist').then(() => {
          painter.ScanContent();
          painter.Redraw();
          painter.DrawingReady();
@@ -3995,4 +3979,4 @@
 
    return JSROOT;
 
-}));
+});

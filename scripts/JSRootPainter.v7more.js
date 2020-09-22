@@ -1,19 +1,7 @@
 /// @file JSRootPainter.v7more.js
 /// JavaScript ROOT v7 graphics for different classes
 
-(function( factory ) {
-   if ( typeof define === "function" && define.amd ) {
-      define( ['JSRootPainter'], factory );
-   } else if (typeof exports === 'object' && typeof module !== 'undefined') {
-       factory(require("./JSRootPainter.js"));
-   } else {
-      if (typeof JSROOT == 'undefined')
-         throw new Error('JSROOT is not defined', 'JSRootPainter.v7hist.js');
-      if (typeof JSROOT.Painter != 'object')
-         throw new Error('JSROOT.Painter not defined', 'JSRootPainter.v7hist.js');
-      factory(JSROOT);
-   }
-} (function(JSROOT) {
+JSROOT.require(['JSRootPainter'], function() {
 
    "use strict";
 
@@ -266,4 +254,4 @@
 
    return JSROOT;
 
-}));
+});

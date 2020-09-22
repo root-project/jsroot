@@ -2,21 +2,7 @@
 /// Part of JavaScript ROOT graphics with more classes like TEllipse, TLine, ...
 /// Such classes are rarely used and therefore loaded only on demand
 
-(function( factory ) {
-   if ( typeof define === "function" && define.amd ) {
-      define( ['JSRootPainter', 'd3', 'JSRootMath'], factory );
-   } else if (typeof exports === 'object' && typeof module !== 'undefined') {
-      factory(require("./JSRootPainter.js"), require("d3"), require("./JSRootMath.js"));
-   } else {
-      if (typeof d3 != 'object')
-         throw new Error('This extension requires d3.js', 'JSRootPainter.more.js');
-      if (typeof JSROOT == 'undefined')
-         throw new Error('JSROOT is not defined', 'JSRootPainter.more.js');
-      if (typeof JSROOT.Painter != 'object')
-         throw new Error('JSROOT.Painter not defined', 'JSRootPainter.more.js');
-      factory(JSROOT, d3);
-   }
-} (function(JSROOT, d3) {
+JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter'], function(d3) {
 
    "use strict";
 
@@ -781,7 +767,7 @@
       if (JSROOT.Math !== undefined)
          return painter.PerformDraw();
 
-      return JSROOT.load("math").then(() => painter.PerformDraw());
+      return JSROOT.require("JSRootMath").then(() => painter.PerformDraw());
    }
 
    // =======================================================================
@@ -4016,7 +4002,7 @@
       } else {
 
          if ((args==='player') || !args) {
-            JSROOT.load("jq2d").then(() => {
+            JSROOT.require("JSRootPainter.jquery").then(() => {
                JSROOT.CreateTreePlayer(painter);
                painter.ConfigureTree(tree);
                painter.Show(divid);
@@ -4053,7 +4039,7 @@
          // redirect drawing to the player
          args.player_create = 1;
          args.player_intermediate = intermediate;
-         JSROOT.load("jq2d").then(() => {
+         JSROOT.require("JSRootPainter.jquery").then(() => {
             JSROOT.CreateTreePlayer(painter);
             painter.ConfigureTree(tree);
             painter.Show(divid, args);
@@ -4096,4 +4082,4 @@
 
    return JSROOT;
 
-}));
+});
