@@ -1,10 +1,10 @@
-var jsroot = require("jsroot");
+let jsroot = require("jsroot");
 
 jsroot.OpenFile("https://root.cern/js/files/hsimple.root").then(f => {
    f.ReadObject("ntuple;1").then(tree => {
       tree.Draw({ expr: "px:py:pz", dump: true, numentries: 100 }, function(res) {
          console.log("NumEntries", res.length);
-         var sumx = 0, sumy = 0, sumz = 0;
+         let sumx = 0, sumy = 0, sumz = 0;
          res.forEach(function(item) {
             sumx += item.x;
             sumy += item.y;

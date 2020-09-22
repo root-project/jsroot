@@ -1,5 +1,5 @@
-var jsroot = require("jsroot");
-var fs = require("fs");
+let jsroot = require("jsroot");
+let fs = require("fs");
 
 console.log('JSROOT version', jsroot.version);
 
