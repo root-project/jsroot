@@ -4,6 +4,7 @@
 1. Fix - tooltip handling for TH2 Error draw
 2. Fix - use proper "fixed" position for enlarged drawing
 3. Fix - correctly extract TF1 parameter names
+4. Fix - keep stat box when update histogram drawing
 
 
 ## Changes in 5.8.1
