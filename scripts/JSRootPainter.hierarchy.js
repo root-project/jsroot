@@ -611,7 +611,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
             function ReadFileObject(file) {
                if (!fff._file) fff._file = file;
 
-               if (file == null) return JSROOT.CallBack(callback, item, null);
+               if (!file) return JSROOT.CallBack(callback, item, null);
 
                file.ReadObject(itemname).then(obj => {
 
@@ -645,8 +645,8 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
             }
 
             if (fff._file) ReadFileObject(fff._file); else
-            if (fff._localfile) new JSROOT.TLocalFile(fff._localfile, ReadFileObject); else
-            if (fff._fullurl) new JSROOT.TFile(fff._fullurl, ReadFileObject);
+            if (fff._localfile) JSROOT.OpenFile(fff._localfile).then(f => ReadFileObject(f));
+            if (fff._fullurl) JSROOT.OpenFile(fff._fullurl).then(f => ReadFileObject(f));
          }
       };
 
@@ -1596,22 +1596,15 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
       let pthis = this;
 
       JSROOT.progress("Opening " + filepath + " ...");
+
       JSROOT.OpenFile(filepath).then(file => {
-         JSROOT.progress();
-         if (!file) {
-            // make CORS warning
-            if (!d3.select("#gui_fileCORS").style("background","red").empty())
-               setTimeout(function() { d3.select("#gui_fileCORS").style("background",''); }, 5000);
-            return JSROOT.CallBack(call_back, false);
-         }
 
          let h1 = pthis.FileHierarchy(file);
          h1._isopen = true;
          if (pthis.h == null) {
             pthis.h = h1;
             if (pthis._topname) h1._name = pthis._topname;
-         } else
-         if (pthis.h._kind == 'TopFolder') {
+         } else if (pthis.h._kind == 'TopFolder') {
             pthis.h._childs.push(h1);
          }  else {
             let h0 = pthis.h, topname = (h0._kind == "ROOT.TFile") ? "Files" : "Items";
@@ -1619,7 +1612,12 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
          }
 
          pthis.RefreshHtml(call_back);
-      });
+      }).catch(() => {
+         // make CORS warning
+         if (!d3.select("#gui_fileCORS").style("background","red").empty())
+             setTimeout(function() { d3.select("#gui_fileCORS").style("background",''); }, 5000);
+         JSROOT.CallBack(call_back, false);
+      }).finally(() => JSROOT.progress());
    }
 
    HierarchyPainter.prototype.ApplyStyle = function(style, call_back) {

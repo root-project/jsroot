@@ -2998,6 +2998,10 @@ JSROOT.require(['rawinflate'], function() {
     */
 
    JSROOT.OpenFile = function(filename, callback) {
+
+
+
+
       let promise = new Promise(function(resolve) {
          if (JSROOT.nodejs) {
             if (filename.indexOf("file://") == 0)
