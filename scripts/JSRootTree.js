@@ -2106,7 +2106,7 @@ JSROOT.require(['JSRootIOEvolution', 'JSRootMath'], function() {
                bitems[k].done = true;
 
                let blob = (places.length > 2) ? blobs[n++] : blobs,
-                  buf = JSROOT.CreateTBuffer(blob, 0, handle.file),
+                  buf = new JSROOT.TBuffer(blob, 0, handle.file),
                   basket = buf.ClassStreamer({}, "TBasket");
 
                if (basket.fNbytes !== bitems[k].branch.fBasketBytes[bitems[k].basket])
@@ -2124,7 +2124,7 @@ JSROOT.require(['JSRootIOEvolution', 'JSRootMath'], function() {
                   let objblob = JSROOT.R__unzip(blob, basket.fObjlen, false, buf.o);
 
                   if (objblob) {
-                     buf = JSROOT.CreateTBuffer(objblob, 0, handle.file);
+                     buf = new JSROOT.TBuffer(objblob, 0, handle.file);
                      buf.raw_shift = basket.fKeylen;
                      buf.fTagOffset = basket.fKeylen;
                   } else {
@@ -2201,7 +2201,7 @@ JSROOT.require(['JSRootIOEvolution', 'JSRootMath'], function() {
                      if (bitem.raw)
                         bitem.raw.locate(0); // reset pointer - same branch may be read several times
                      else
-                        bitem.raw = JSROOT.CreateTBuffer(null, 0, handle.file); // create dummy buffer - basket has no data
+                        bitem.raw = new JSROOT.TBuffer(null, 0, handle.file); // create dummy buffer - basket has no data
                      bitem.raw.raw_shift = bskt.fKeylen;
 
                      if (bskt.fBufferRef && (elem.branch.fEntryOffsetLen > 0))

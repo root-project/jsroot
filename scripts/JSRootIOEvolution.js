@@ -689,29 +689,33 @@ JSROOT.require(['rawinflate'], function() {
 
    // =======================================================================
 
-   JSROOT.CreateTBuffer = function(blob, pos, file, length) {
-      return new TBuffer(blob, pos, file, length);
-   }
+   /** @brief Reconstruct ROOT object from binary buffer
+     * @desc Method can be used to reconstruct ROOT object from binary buffer
+     * Buffer can be requested from online server with request like:
+     *    http://localhost:8080/Files/job1.root/hpx/root.bin
+     *  One also requires buffer with streamer infos, requested with command
+     *    http://localhost:8080/StreamerInfo/root.bin
+     * And one should provide class name of the object
+     *
+     * Method provided for convenience only to see how binary JSROOT.IO works.
+     * It is strongly recommended to use JSON representation:
+     *    http://localhost:8080/Files/job1.root/hpx/root.json
+     *
+     * @param {string} class_name - Class name of the object
+     * @param {binary} obj_rawdata - data of object root.bin request
+     * @param {binary} sinfo_rawdata - data of streamer info root.bin request
+     * @returns {object} - created JavaScript object
+     */
 
    JSROOT.ReconstructObject = function(class_name, obj_rawdata, sinfo_rawdata) {
-      // method can be used to reconstruct ROOT object from binary buffer
-      // Buffer can be requested from online server with request like:
-      //   http://localhost:8080/Files/job1.root/hpx/root.bin
-      // One also requires buffer with streamer infos, requested with command
-      //   http://localhost:8080/StreamerInfo/root.bin
-      // And one should provide class name of the object
-      //
-      // Method provided for convenience only to see how binary JSROOT.IO works.
-      // It is strongly recommended to use JSON representation:
-      //   http://localhost:8080/Files/job1.root/hpx/root.json
 
       let file = new TFile;
-      let buf = JSROOT.CreateTBuffer(sinfo_rawdata, 0, file);
+      let buf = new TBuffer(sinfo_rawdata, 0, file);
       file.ExtractStreamerInfos(buf);
 
       let obj = {};
 
-      buf = JSROOT.CreateTBuffer(obj_rawdata, 0, file);
+      buf = new TBuffer(obj_rawdata, 0, file);
       buf.MapObject(obj, 1);
       buf.ClassStreamer(obj, class_name);
 
@@ -780,7 +784,7 @@ JSROOT.require(['rawinflate'], function() {
          return file.ReadBuffer([this.fSeekKeys, this.fNbytesKeys]).then(blob => {
             //*-* -------------Read keys of the top directory
 
-            let buf = JSROOT.CreateTBuffer(blob, 0, file);
+            let buf = new TBuffer(blob, 0, file);
 
             buf.ReadTKey();
             const nkeys = buf.ntoi4();
@@ -796,82 +800,53 @@ JSROOT.require(['rawinflate'], function() {
 
    } // class TDirectory
 
-   // ==============================================================================
-   // A class that reads ROOT files.
-   //
-   ////////////////////////////////////////////////////////////////////////////////
-   // A ROOT file is a suite of consecutive data records (TKey's) with
-   // the following format (see also the TKey class). If the key is
-   // located past the 32 bit file limit (> 2 GB) then some fields will
-   // be 8 instead of 4 bytes:
-   //    1->4            Nbytes    = Length of compressed object (in bytes)
-   //    5->6            Version   = TKey version identifier
-   //    7->10           ObjLen    = Length of uncompressed object
-   //    11->14          Datime    = Date and time when object was written to file
-   //    15->16          KeyLen    = Length of the key structure (in bytes)
-   //    17->18          Cycle     = Cycle of key
-   //    19->22 [19->26] SeekKey   = Pointer to record itself (consistency check)
-   //    23->26 [27->34] SeekPdir  = Pointer to directory header
-   //    27->27 [35->35] lname     = Number of bytes in the class name
-   //    28->.. [36->..] ClassName = Object Class Name
-   //    ..->..          lname     = Number of bytes in the object name
-   //    ..->..          Name      = lName bytes with the name of the object
-   //    ..->..          lTitle    = Number of bytes in the object title
-   //    ..->..          Title     = Title of the object
-   //    ----->          DATA      = Data bytes associated to the object
-   //
+   /** @class TFile
+     * @summary Interface to read objects from ROOT files.
+     * @desc Use {@link JSROOT.OpenFile} to create instance of the class */
 
-   /**
-    * @summary Interface to read objects from ROOT files.
-    *
-    * @desc Use {@link JSROOT.OpenFile} to create instance of the class
-    * @constructor
-    * @memberof JSROOT
-    * @param {string} url - file URL
-    * @param {function} newfile_callback - function called when file header is read
-    */
    class TFile {
+
       constructor(url) {
-      this._typename = "TFile";
-      this.fEND = 0;
-      this.fFullURL = url;
-      this.fURL = url;
-      this.fAcceptRanges = true; // when disabled ('+' at the end of file name), complete file content read with single operation
-      this.fUseStampPar = "stamp=" + (new Date).getTime(); // use additional time stamp parameter for file name to avoid browser caching problem
-      this.fFileContent = null; // this can be full or partial content of the file (if ranges are not supported or if 1K header read from file)
-      // stored as TBuffer instance
-      this.fMaxRanges = 200; // maximal number of file ranges requested at once
-      this.fDirectories = [];
-      this.fKeys = [];
-      this.fSeekInfo = 0;
-      this.fNbytesInfo = 0;
-      this.fTagOffset = 0;
-      this.fStreamers = 0;
-      this.fStreamerInfos = null;
-      this.fFileName = "";
-      this.fStreamers = [];
-      this.fBasicTypes = {}; // custom basic types, in most case enumerations
+         this._typename = "TFile";
+         this.fEND = 0;
+         this.fFullURL = url;
+         this.fURL = url;
+         this.fAcceptRanges = true; // when disabled ('+' at the end of file name), complete file content read with single operation
+         this.fUseStampPar = "stamp=" + (new Date).getTime(); // use additional time stamp parameter for file name to avoid browser caching problem
+         this.fFileContent = null; // this can be full or partial content of the file (if ranges are not supported or if 1K header read from file)
+         // stored as TBuffer instance
+         this.fMaxRanges = 200; // maximal number of file ranges requested at once
+         this.fDirectories = [];
+         this.fKeys = [];
+         this.fSeekInfo = 0;
+         this.fNbytesInfo = 0;
+         this.fTagOffset = 0;
+         this.fStreamers = 0;
+         this.fStreamerInfos = null;
+         this.fFileName = "";
+         this.fStreamers = [];
+         this.fBasicTypes = {}; // custom basic types, in most case enumerations
 
-      if (typeof this.fURL != 'string') return this;
+         if (typeof this.fURL != 'string') return this;
 
-      if (this.fURL[this.fURL.length - 1] === "+") {
-         this.fURL = this.fURL.substr(0, this.fURL.length - 1);
-         this.fAcceptRanges = false;
+         if (this.fURL[this.fURL.length - 1] === "+") {
+            this.fURL = this.fURL.substr(0, this.fURL.length - 1);
+            this.fAcceptRanges = false;
+         }
+
+         if (this.fURL[this.fURL.length - 1] === "-") {
+            this.fURL = this.fURL.substr(0, this.fURL.length - 1);
+            this.fUseStampPar = false;
+         }
+
+         if (this.fURL.indexOf("file://") == 0) {
+            this.fUseStampPar = false;
+            this.fAcceptRanges = false;
+         }
+
+         const pos = Math.max(this.fURL.lastIndexOf("/"), this.fURL.lastIndexOf("\\"));
+         this.fFileName = pos >= 0 ? this.fURL.substr(pos + 1) : this.fURL;
       }
-
-      if (this.fURL[this.fURL.length - 1] === "-") {
-         this.fURL = this.fURL.substr(0, this.fURL.length - 1);
-         this.fUseStampPar = false;
-      }
-
-      if (this.fURL.indexOf("file://") == 0) {
-         this.fUseStampPar = false;
-         this.fAcceptRanges = false;
-      }
-
-      const pos = Math.max(this.fURL.lastIndexOf("/"), this.fURL.lastIndexOf("\\"));
-      this.fFileName = pos >= 0 ? this.fURL.substr(pos + 1) : this.fURL;
-   }
 
       /** @summary Open file
        * @returns {Promise} after file keys are read
@@ -964,7 +939,7 @@ JSROOT.require(['rawinflate'], function() {
             if (res && (place[0] === 0) && (place.length === 2) && !file.fFileContent) {
                // special case - keep content of first request (could be complete file) in memory
 
-               file.fFileContent = JSROOT.CreateTBuffer((typeof res == 'string') ? res : new DataView(res));
+               file.fFileContent = new TBuffer((typeof res == 'string') ? res : new DataView(res));
 
                if (!file.fAcceptRanges)
                   file.fEND = file.fFileContent.length;
@@ -1176,11 +1151,11 @@ JSROOT.require(['rawinflate'], function() {
             let buf;
 
             if (key.fObjlen <= key.fNbytes - key.fKeylen) {
-               buf = JSROOT.CreateTBuffer(blob1, 0, file);
+               buf = new TBuffer(blob1, 0, file);
             } else {
                let objbuf = JSROOT.R__unzip(blob1, key.fObjlen);
                if (!objbuf) return Promise.reject(Error("Fail to UNZIP buffer"));
-               buf = JSROOT.CreateTBuffer(objbuf, 0, file);
+               buf = new TBuffer(objbuf, 0, file);
             }
 
             buf.fTagOffset = key.fKeylen;
@@ -1350,7 +1325,7 @@ JSROOT.require(['rawinflate'], function() {
 
          // with the first readbuffer we read bigger amount to create header cache
          return this.ReadBuffer([0, 1024]).then(blob => {
-            let buf = JSROOT.CreateTBuffer(blob, 0, file);
+            let buf = new TBuffer(blob, 0, file);
 
             if (buf.substring(0, 4) !== 'root')
                return Promise.reject(Error("NOT A ROOT FILE! " + file.fURL));
@@ -1401,7 +1376,7 @@ JSROOT.require(['rawinflate'], function() {
             return file.ReadBuffer([file.fBEGIN, Math.max(300, nbytes)]);
          }).then(blob3 => {
 
-            let buf3 = JSROOT.CreateTBuffer(blob3, 0, file);
+            let buf3 = new TBuffer(blob3, 0, file);
 
             // keep only title from TKey data
             file.fTitle = buf3.ReadTKey().fTitle;
@@ -1418,14 +1393,14 @@ JSROOT.require(['rawinflate'], function() {
             return file.ReadBuffer([file.fSeekKeys, file.fNbytesKeys, file.fSeekInfo, file.fNbytesInfo]);
          }).then(blobs => {
 
-            let buf4 = JSROOT.CreateTBuffer(blobs[0], 0, file);
+            let buf4 = new TBuffer(blobs[0], 0, file);
 
             buf4.ReadTKey(); //
             const nkeys = buf4.ntoi4();
             for (let i = 0; i < nkeys; ++i)
                file.fKeys.push(buf4.ReadTKey());
 
-            let buf5 = JSROOT.CreateTBuffer(blobs[1], 0, file),
+            let buf5 = new TBuffer(blobs[1], 0, file),
                si_key = buf5.ReadTKey();
             if (!si_key)
                return Promise.reject(Error("Fail to read data for TKeys"));
@@ -2783,7 +2758,7 @@ JSROOT.require(['rawinflate'], function() {
                // buffer includes again complete TKey data - exclude it
                let blob = buf.extract([buf.o + obj.fKeylen, sz - obj.fKeylen]);
 
-               obj.fBufferRef = JSROOT.CreateTBuffer(blob, 0, buf.fFile, sz - obj.fKeylen);
+               obj.fBufferRef = new TBuffer(blob, 0, buf.fFile, sz - obj.fKeylen);
                obj.fBufferRef.fTagOffset = obj.fKeylen;
             }
 
