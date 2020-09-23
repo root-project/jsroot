@@ -167,7 +167,7 @@ JSROOT.require(['rawinflate'], function() {
          return type_name == "TArrayL64" ? JSROOT.IO.kLong64 : -1;
       }
 
-   };
+   }
 
 
    JSROOT.addUserStreamer = function(type, user_streamer) {
@@ -177,7 +177,8 @@ JSROOT.require(['rawinflate'], function() {
    JSROOT.R__unzip = function(arr, tgtsize, noalert, src_shift) {
       // Reads header envelope, determines zipped size and unzip content
 
-      let totallen = arr.byteLength, curr = src_shift || 0, fullres = 0, tgtbuf = null, HDRSIZE = 9;
+      const HDRSIZE = 9;
+      let totallen = arr.byteLength, curr = src_shift || 0, fullres = 0, tgtbuf = null;
 
       function getChar(o) { return String.fromCharCode(arr.getUint8(o)); }
 
@@ -193,38 +194,38 @@ JSROOT.require(['rawinflate'], function() {
          }
 
          if (getChar(curr) == 'Z' && getChar(curr + 1) == 'L' && getCode(curr + 2) == 8) { fmt = "new"; off = 2; } else
-         if (getChar(curr) == 'C' && getChar(curr + 1) == 'S' && getCode(curr + 2) == 8) { fmt = "old"; off = 0; } else
-         if (getChar(curr) == 'X' && getChar(curr + 1) == 'Z') fmt = "LZMA"; else
-         if (getChar(curr) == 'L' && getChar(curr + 1) == '4') { fmt = "LZ4"; off = 0; CHKSUM = 8; }
+            if (getChar(curr) == 'C' && getChar(curr + 1) == 'S' && getCode(curr + 2) == 8) { fmt = "old"; off = 0; } else
+               if (getChar(curr) == 'X' && getChar(curr + 1) == 'Z') fmt = "LZMA"; else
+                  if (getChar(curr) == 'L' && getChar(curr + 1) == '4') { fmt = "LZ4"; off = 0; CHKSUM = 8; }
 
-      /*
-            if (fmt == "LZMA") {
-              console.log('find LZMA');
-              console.log('chars', getChar(curr), getChar(curr+1), getChar(curr+2));
+         /*
+               if (fmt == "LZMA") {
+                 console.log('find LZMA');
+                 console.log('chars', getChar(curr), getChar(curr+1), getChar(curr+2));
 
-              for(let n=0;n<20;++n)
-                console.log('codes',n,getCode(curr+n));
+                 for(let n=0;n<20;++n)
+                   console.log('codes',n,getCode(curr+n));
 
-              const srcsize = HDRSIZE + ((getCode(curr+3) & 0xff) | ((getCode(curr+4) & 0xff) << 8) | ((getCode(curr+5) & 0xff) << 16));
+                 const srcsize = HDRSIZE + ((getCode(curr+3) & 0xff) | ((getCode(curr+4) & 0xff) << 8) | ((getCode(curr+5) & 0xff) << 16));
 
-              const tgtsize0 = ((getCode(curr+6) & 0xff) | ((getCode(curr+7) & 0xff) << 8) | ((getCode(curr+8) & 0xff) << 16));
+                 const tgtsize0 = ((getCode(curr+6) & 0xff) | ((getCode(curr+7) & 0xff) << 8) | ((getCode(curr+8) & 0xff) << 16));
 
-              console.log('srcsize',srcsize, tgtsize0, tgtsize);
+                 console.log('srcsize',srcsize, tgtsize0, tgtsize);
 
-              off = 0;
+                 off = 0;
 
-              let uint8arr = new Uint8Array(arr.buffer, arr.byteOffset + curr + HDRSIZE + off, arr.byteLength - curr - HDRSIZE - off);
+                 let uint8arr = new Uint8Array(arr.buffer, arr.byteOffset + curr + HDRSIZE + off, arr.byteLength - curr - HDRSIZE - off);
 
-              JSROOT.LZMA.decompress(uint8arr, function on_decompress_complete(result) {
-                 console.log("Decompressed done", typeof result, result);
-               }, function on_decompress_progress_update(percent) {
-                 /// Decompressing progress code goes here.
-                 console.log("Decompressing: " + (percent * 100) + "%");
-               });
+                 JSROOT.LZMA.decompress(uint8arr, function on_decompress_complete(result) {
+                    console.log("Decompressed done", typeof result, result);
+                  }, function on_decompress_progress_update(percent) {
+                    /// Decompressing progress code goes here.
+                    console.log("Decompressing: " + (percent * 100) + "%");
+                  });
 
-              return null;
-            }
-      */
+                 return null;
+               }
+         */
 
          /*   C H E C K   H E A D E R   */
          if ((fmt !== "new") && (fmt !== "old") && (fmt !== "LZ4")) {
@@ -547,31 +548,30 @@ JSROOT.require(['rawinflate'], function() {
          res = new Array(maxindx[0]);
          for (let n = 0; n < maxindx[0]; ++n)
             res[n] = func(this, handle);
-      } else
-         if (ndim === 2) {
-            res = new Array(maxindx[0]);
-            for (let n = 0; n < maxindx[0]; ++n) {
-               let res2 = new Array(maxindx[1]);
-               for (let k = 0; k < maxindx[1]; ++k)
-                  res2[k] = func(this, handle);
-               res[n] = res2;
-            }
-         } else {
-            let indx = [], arr = [], k;
-            for (k = 0; k < ndim; ++k) { indx[k] = 0; arr[k] = []; }
-            res = arr[0];
-            while (indx[0] < maxindx[0]) {
-               k = ndim - 1;
-               arr[k].push(func(this, handle));
-               ++indx[k];
-               while ((indx[k] === maxindx[k]) && (k > 0)) {
-                  indx[k] = 0;
-                  arr[k - 1].push(arr[k]);
-                  arr[k] = [];
-                  ++indx[--k];
-               }
+      } else if (ndim === 2) {
+         res = new Array(maxindx[0]);
+         for (let n = 0; n < maxindx[0]; ++n) {
+            let res2 = new Array(maxindx[1]);
+            for (let k = 0; k < maxindx[1]; ++k)
+               res2[k] = func(this, handle);
+            res[n] = res2;
+         }
+      } else {
+         let indx = [], arr = [], k;
+         for (k = 0; k < ndim; ++k) { indx[k] = 0; arr[k] = []; }
+         res = arr[0];
+         while (indx[0] < maxindx[0]) {
+            k = ndim - 1;
+            arr[k].push(func(this, handle));
+            ++indx[k];
+            while ((indx[k] === maxindx[k]) && (k > 0)) {
+               indx[k] = 0;
+               arr[k - 1].push(arr[k]);
+               arr[k] = [];
+               ++indx[--k];
             }
          }
+      }
 
       return res;
    }
@@ -619,10 +619,8 @@ JSROOT.require(['rawinflate'], function() {
 
    TBuffer.prototype.ReadClass = function() {
       // read class definition from I/O buffer
-      let classInfo = { name: -1 },
-         tag = 0,
-         bcnt = this.ntou4(),
-         startpos = this.o;
+      let classInfo = { name: -1 }, tag = 0, bcnt = this.ntou4();
+      const startpos = this.o;
 
       if (!(bcnt & JSROOT.IO.kByteCountMask) || (bcnt == JSROOT.IO.kNewClassTag)) {
          tag = bcnt;
@@ -1324,7 +1322,7 @@ JSROOT.require(['rawinflate'], function() {
 
       let arr = [];
 
-      for(let indx = 0; indx < this.fKeys.length; ++indx)
+      for (let indx = 0; indx < this.fKeys.length; ++indx)
          if (this.fKeys[indx].fClassName == 'TFormula')
             arr.push(this.ReadObject(this.fKeys[indx].fName, this.fKeys[indx].fCycle));
 
@@ -1784,9 +1782,8 @@ JSROOT.require(['rawinflate'], function() {
                member.arrlength = element.fMaxIndex[element.fArrayDim - 1];
                member.minus1 = true;
                member.func = function(buf, obj) {
-                  obj[this.name] = buf.ReadNdimArray(this, function(buf, handle) {
-                     return buf.ReadFastArray(handle.arrlength, handle.type - JSROOT.IO.kOffsetL);
-                  });
+                  obj[this.name] = buf.ReadNdimArray(this, (buf, handle) =>
+                     buf.ReadFastArray(handle.arrlength, handle.type - JSROOT.IO.kOffsetL));
                };
             }
             break;
@@ -1800,9 +1797,8 @@ JSROOT.require(['rawinflate'], function() {
                member.minus1 = true; // one dimension used for char*
                member.arrlength = element.fMaxIndex[element.fArrayDim - 1];
                member.func = function(buf, obj) {
-                  obj[this.name] = buf.ReadNdimArray(this, function(buf, handle) {
-                     return buf.ReadFastString(handle.arrlength);
-                  });
+                  obj[this.name] = buf.ReadNdimArray(this, (buf, handle) =>
+                     buf.ReadFastString(handle.arrlength));
                };
             }
             break;
@@ -1887,7 +1883,7 @@ JSROOT.require(['rawinflate'], function() {
                      member.arrlength = element.fMaxIndex[element.fArrayDim - 1];
                      member.minus1 = true;
                      member.func = function(buf, obj) {
-                        obj[this.name] = buf.ReadNdimArray(this, function(buf, handle) { return handle.readarr(buf, handle.arrlength); });
+                        obj[this.name] = buf.ReadNdimArray(this, (buf, handle) => handle.readarr(buf, handle.arrlength));
                      };
                   }
             break;
@@ -1895,9 +1891,7 @@ JSROOT.require(['rawinflate'], function() {
          case JSROOT.IO.kAnyP:
          case JSROOT.IO.kObjectP:
             member.func = function(buf, obj) {
-               obj[this.name] = buf.ReadNdimArray(this, function(buf) {
-                  return buf.ReadObjectAny();
-               });
+               obj[this.name] = buf.ReadNdimArray(this, buf => buf.ReadObjectAny());
             };
             break;
 
@@ -1924,9 +1918,7 @@ JSROOT.require(['rawinflate'], function() {
 
                   if (element.fArrayLength > 1) {
                      member.func = function(buf, obj) {
-                        obj[this.name] = buf.ReadNdimArray(this, function(buf, handle) {
-                           return buf.ClassStreamer({}, handle.classname);
-                        });
+                        obj[this.name] = buf.ReadNdimArray(this, (buf, handle) => buf.ClassStreamer({}, handle.classname));
                      };
                   } else {
                      member.func = function(buf, obj) {
@@ -1947,7 +1939,7 @@ JSROOT.require(['rawinflate'], function() {
             member.arrkind = JSROOT.IO.GetArrayKind(classname);
             if (member.arrkind < 0) member.classname = classname;
             member.func = function(buf, obj) {
-               obj[this.name] = buf.ReadNdimArray(this, function(buf, handle) {
+               obj[this.name] = buf.ReadNdimArray(this, (buf, handle) => {
                   if (handle.arrkind > 0) return buf.ReadFastArray(buf.ntou4(), handle.arrkind);
                   if (handle.arrkind === 0) return buf.ReadTString();
                   return buf.ClassStreamer({}, handle.classname);
@@ -1978,7 +1970,7 @@ JSROOT.require(['rawinflate'], function() {
             member.typename = element.fTypeName;
             member.func = function(buf, obj) {
                const ver = buf.ReadVersion();
-               obj[this.name] = buf.ReadNdimArray(this, function(buf, handle) {
+               obj[this.name] = buf.ReadNdimArray(this, (buf, handle) => {
                   if (handle.typename === 'TString') return buf.ReadTString();
                   return buf.ClassStreamer({}, handle.typename);
                });
@@ -2012,7 +2004,7 @@ JSROOT.require(['rawinflate'], function() {
 
             if (member.readitem !== undefined) {
                member.read_loop = function(buf, cnt) {
-                  return buf.ReadNdimArray(this, function(buf2, member2) {
+                  return buf.ReadNdimArray(this, (buf2, member2) => {
                      let itemarr = new Array(cnt);
                      for (let i = 0; i < cnt; ++i)
                         itemarr[i] = member2.readitem(buf2);
@@ -2030,7 +2022,7 @@ JSROOT.require(['rawinflate'], function() {
                   // this is special functions, used by branch in the STL container
 
                   const ver = buf.ReadVersion();
-                 let sz0 = obj[this.stl_size], res = new Array(sz0);
+                  let sz0 = obj[this.stl_size], res = new Array(sz0);
 
                   for (let loop0 = 0; loop0 < sz0; ++loop0) {
                      let cnt = obj[this.cntname][loop0];
@@ -2128,7 +2120,7 @@ JSROOT.require(['rawinflate'], function() {
                   if ((stl === JSROOT.IO.kSTLmap) || (stl === JSROOT.IO.kSTLmultimap)) {
 
                      const p1 = member.typename.indexOf("<"),
-                           p2 = member.typename.lastIndexOf(">");
+                        p2 = member.typename.lastIndexOf(">");
 
                      member.pairtype = "pair<" + member.typename.substr(p1 + 1, p2 - p1 - 1) + ">";
 
@@ -2178,7 +2170,7 @@ JSROOT.require(['rawinflate'], function() {
                   member.func = function(buf, obj) {
                      const ver = this.read_version(buf);
 
-                     let res = buf.ReadNdimArray(this, function(buf2, member2) { return member2.readelem(buf2); });
+                     let res = buf.ReadNdimArray(this, (buf2, member2) => member2.readelem(buf2));
 
                      if (!buf.CheckBytecount(ver, this.typename)) res = null;
                      obj[this.name] = res;
@@ -2191,7 +2183,7 @@ JSROOT.require(['rawinflate'], function() {
                      const ver = this.read_version(buf, cnt);
 
                      for (let n = 0; n < cnt; ++n)
-                        arr[n] = buf.ReadNdimArray(this, function(buf2, member2) { return member2.readelem(buf2); });
+                        arr[n] = buf.ReadNdimArray(this, (buf2, member2) => member2.readelem(buf2));
 
                      if (ver) buf.CheckBytecount(ver, "branch " + this.typename);
 
@@ -2201,7 +2193,7 @@ JSROOT.require(['rawinflate'], function() {
                      // function to read array from member-wise streaming
                      const ver = this.read_version(buf);
                      for (let i = 0; i < n; ++i)
-                        arr[i][this.name] = buf.ReadNdimArray(this, function(buf2, member2) { return member2.readelem(buf2); });
+                        arr[i][this.name] = buf.ReadNdimArray(this, (buf2, member2) => member2.readelem(buf2));
                      buf.CheckBytecount(ver, this.typename);
                   }
                   member.objs_branch_func = function(buf, obj) {
@@ -2215,7 +2207,7 @@ JSROOT.require(['rawinflate'], function() {
 
                      for (let n = 0; n < arr.length; ++n) {
                         let obj1 = this.get(arr, n);
-                        obj1[this.name] = buf.ReadNdimArray(this, function(buf2, member2) { return member2.readelem(buf2); });
+                        obj1[this.name] = buf.ReadNdimArray(this, (buf2, member2) => member2.readelem(buf2));
                      }
 
                      if (ver) buf.CheckBytecount(ver, "branch " + this.typename);
@@ -2311,7 +2303,7 @@ JSROOT.require(['rawinflate'], function() {
    TNodejsFile.prototype.ReadBuffer = function(place, result_callback, filename, progress_callback) {
 
       if (filename)
-         throw new Error("Cannot access other local file " +  filename);
+         throw new Error("Cannot access other local file " + filename);
 
       if (!this.fs || !this.fd)
          throw new Error("File is not opened " + this.fFileName);
@@ -2620,7 +2612,7 @@ JSROOT.require(['rawinflate'], function() {
 
          if ((elem.fSTLtype === JSROOT.IO.kSTLmultimap) &&
             ((elem.fTypeName.indexOf("std::set") === 0) ||
-               (elem.fTypeName.indexOf("set")  === 0))) elem.fSTLtype = JSROOT.IO.kSTLset;
+               (elem.fTypeName.indexOf("set") === 0))) elem.fSTLtype = JSROOT.IO.kSTLset;
 
          if ((elem.fSTLtype === JSROOT.IO.kSTLset) &&
             ((elem.fTypeName.indexOf("std::multimap") === 0) ||
