@@ -807,9 +807,7 @@ JSROOT.require(['rawinflate'], function() {
 
       let dir = this, file = this.fFile;
 
-      file.ReadBuffer([this.fSeekKeys, this.fNbytesKeys], function(blob) {
-         if (!blob) return JSROOT.CallBack(readkeys_callback, null);
-
+      file.ReadBuffer([this.fSeekKeys, this.fNbytesKeys]).then(blob => {
          //*-* -------------Read keys of the top directory
 
          let buf = JSROOT.CreateTBuffer(blob, 0, file);
@@ -823,7 +821,7 @@ JSROOT.require(['rawinflate'], function() {
          file.fDirectories.push(dir);
 
          JSROOT.CallBack(readkeys_callback, dir);
-      });
+      }).catch(() => JSROOT.CallBack(readkeys_callback, null));
    }
 
    // ==============================================================================
@@ -922,13 +920,14 @@ JSROOT.require(['rawinflate'], function() {
 
    /** @summary read buffer(s) from the file
     * @private */
-   TFile.prototype.ReadBuffer = function(place, result_callback, filename, progress_callback) {
+   TFile.prototype.ReadBuffer = function(place, filename, progress_callback) {
 
       if ((this.fFileContent !== null) && !filename && (!this.fAcceptRanges || this.fFileContent.can_extract(place)))
-         return result_callback(this.fFileContent.extract(place));
+         return Promise.resolve(this.fFileContent.extract(place));
 
-      let file = this, fileurl = file.fURL,
-         first = 0, last = 0, blobs = [], read_callback; // array of requested segments
+      let file = this, fileurl = file.fURL, resolveFunc, rejectFunc,
+          promise = new Promise((resolve,reject) => { resolveFunc = resolve; rejectFunc = reject; }),
+          first = 0, last = 0, blobs = [], read_callback; // array of requested segments
 
       if (filename && (typeof filename === 'string') && (filename.length > 0)) {
          const pos = fileurl.lastIndexOf("/");
@@ -940,7 +939,7 @@ JSROOT.require(['rawinflate'], function() {
          if (increment) {
             first = last;
             last = Math.min(first + file.fMaxRanges * 2, place.length);
-            if (first >= place.length) return result_callback(blobs);
+            if (first >= place.length) return resolveFunc(blobs);
          }
 
          let fullurl = fileurl, ranges = "bytes", totalsz = 0;
@@ -995,7 +994,7 @@ JSROOT.require(['rawinflate'], function() {
             if (!file.fAcceptRanges)
                file.fEND = file.fFileContent.length;
 
-            return result_callback(file.fFileContent.extract(place));
+            return resolveFunc(file.fFileContent.extract(place));
          }
 
          if (!res) {
@@ -1011,13 +1010,13 @@ JSROOT.require(['rawinflate'], function() {
                return send_new_request();
             }
 
-            return result_callback(null);
+            return rejectFunc(Error("Fail to read with several ranges"));
          }
 
          // if only single segment requested, return result as is
          if (last - first === 2) {
             let b = new DataView(res);
-            if (place.length === 2) return result_callback(b);
+            if (place.length === 2) return resolveFunc(b);
             blobs.push(b);
             return send_new_request(true);
          }
@@ -1054,9 +1053,8 @@ JSROOT.require(['rawinflate'], function() {
                return send_new_request(true);
             }
 
-            console.error('Server returns normal response when multipart was requested, disable multirange support');
-
-            if ((file.fMaxRanges === 1) || (first !== 0)) return result_callback(null);
+            if ((file.fMaxRanges === 1) || (first !== 0))
+               return rejectFunc(Error('Server returns normal response when multipart was requested, disable multirange support'));
 
             file.fMaxRanges = 1;
             last = Math.min(last, file.fMaxRanges * 2);
@@ -1084,10 +1082,8 @@ JSROOT.require(['rawinflate'], function() {
                code2 = view.getUint8(o + 1);
 
                if ((code1 == 13) && (code2 == 10)) {
-                  if ((line.length > 2) && (line.substr(0, 2) == '--') && (line !== boundary)) {
-                     console.error('Decode multipart message, expect boundary ', boundary, 'got ', line);
-                     return result_callback(null);
-                  }
+                  if ((line.length > 2) && (line.substr(0, 2) == '--') && (line !== boundary))
+                     return rejectFunc(Error('Decode multipart message, expect boundary' + boundary + ' got ' + line));
 
                   line = line.toLowerCase();
 
@@ -1114,10 +1110,8 @@ JSROOT.require(['rawinflate'], function() {
                o++;
             }
 
-            if (!finish_header) {
-               console.error('Cannot decode header in multipart message ');
-               return result_callback(null);
-            }
+            if (!finish_header)
+               return rejectFunc(Error('Cannot decode header in multipart message'));
 
             if (segm_start > segm_last) {
                // fall-back solution, believe that segments same as requested
@@ -1138,6 +1132,8 @@ JSROOT.require(['rawinflate'], function() {
       }
 
       send_new_request(true);
+
+      return promise;
    }
 
    /** @summary Get directory with given name and cycle
@@ -1207,9 +1203,7 @@ JSROOT.require(['rawinflate'], function() {
 
       let file = this;
 
-      this.ReadBuffer([key.fSeekKey + key.fKeylen, key.fNbytes - key.fKeylen], function(blob1) {
-
-         if (!blob1) return callback(null);
+      this.ReadBuffer([key.fSeekKey + key.fKeylen, key.fNbytes - key.fKeylen]).then(blob1 => {
 
          let buf = null;
 
@@ -1224,7 +1218,7 @@ JSROOT.require(['rawinflate'], function() {
          buf.fTagOffset = key.fKeylen;
 
          callback(buf);
-      });
+      }).catch(() => callback(null));
    }
 
    /** @summary Method called when TTree object is streamed
@@ -1396,7 +1390,7 @@ JSROOT.require(['rawinflate'], function() {
       let file = this;
 
       // with the first readbuffer we read bigger amount to create header cache
-      this.ReadBuffer([0, 1024], function(blob) {
+      this.ReadBuffer([0, 1024]).then(blob => {
          if (!blob) return JSROOT.CallBack(readkeys_callback, null);
 
          let buf = JSROOT.CreateTBuffer(blob, 0, file);
@@ -1450,8 +1444,7 @@ JSROOT.require(['rawinflate'], function() {
          if (file.fVersion >= 40000) nbytes += 12;
 
          // this part typically read from the header, no need to optimize
-         file.ReadBuffer([file.fBEGIN, Math.max(300, nbytes)], function(blob3) {
-            if (!blob3) return JSROOT.CallBack(readkeys_callback, null);
+         file.ReadBuffer([file.fBEGIN, Math.max(300, nbytes)]).then(blob3 => {
 
             let buf3 = JSROOT.CreateTBuffer(blob3, 0, file);
 
@@ -1469,9 +1462,7 @@ JSROOT.require(['rawinflate'], function() {
             }
 
             // read with same request keys and streamer infos
-            file.ReadBuffer([file.fSeekKeys, file.fNbytesKeys, file.fSeekInfo, file.fNbytesInfo], function(blobs) {
-
-               if (!blobs) return JSROOT.CallBack(readkeys_callback, null);
+            file.ReadBuffer([file.fSeekKeys, file.fNbytesKeys, file.fSeekInfo, file.fNbytesInfo]).then(blobs => {
 
                let buf4 = JSROOT.CreateTBuffer(blobs[0], 0, file);
 
@@ -1487,12 +1478,11 @@ JSROOT.require(['rawinflate'], function() {
                file.fKeys.push(si_key);
                file.ReadObjBuffer(si_key, function(blob6) {
                   if (blob6) file.ExtractStreamerInfos(blob6);
-
                   return JSROOT.CallBack(readkeys_callback, file);
                });
             });
          });
-      });
+      }).catch(() => JSROOT.CallBack(readkeys_callback, null));
    }
 
    /** @summary Read the directory content from  a root file
@@ -2237,24 +2227,28 @@ JSROOT.require(['rawinflate'], function() {
 
    TLocalFile.prototype = Object.create(TFile.prototype);
 
-   TLocalFile.prototype.ReadBuffer = function(place, result_callback, filename, progress_callback) {
+   TLocalFile.prototype.ReadBuffer = function(place, filename /*, progress_callback */) {
 
-      if (filename)
-         throw new Error("Cannot access other local file " + filename)
+      let file = this.fLocalFile;
 
-      let reader = new FileReader(), cnt = 0, blobs = [], file = this.fLocalFile;
+      return new Promise((resolve, reject) => {
+         if (filename)
+            return reject(Error("Cannot access other local file " + filename));
 
-      reader.onload = function(evnt) {
-         let res = new DataView(evnt.target.result);
-         if (place.length === 2) return result_callback(res);
+         let reader = new FileReader(), cnt = 0, blobs = [];
 
-         blobs.push(res);
-         cnt += 2;
-         if (cnt >= place.length) return result_callback(blobs);
-         reader.readAsArrayBuffer(file.slice(place[cnt], place[cnt] + place[cnt + 1]));
-      }
+         reader.onload = function(evnt) {
+            let res = new DataView(evnt.target.result);
+            if (place.length === 2) return resolve(res);
 
-      reader.readAsArrayBuffer(file.slice(place[0], place[0] + place[1]));
+            blobs.push(res);
+            cnt += 2;
+            if (cnt >= place.length) return resolve(blobs);
+            reader.readAsArrayBuffer(file.slice(place[cnt], place[cnt] + place[cnt + 1]));
+         }
+
+         reader.readAsArrayBuffer(file.slice(place[0], place[0] + place[1]));
+      });
    }
 
    // =============================================================
@@ -2296,28 +2290,32 @@ JSROOT.require(['rawinflate'], function() {
 
    TNodejsFile.prototype = Object.create(TFile.prototype);
 
-   TNodejsFile.prototype.ReadBuffer = function(place, result_callback, filename, progress_callback) {
+   TNodejsFile.prototype.ReadBuffer = function(place, filename /*, progress_callback */) {
 
-      if (filename)
-         throw new Error("Cannot access other local file " + filename);
+      let file = this;
 
-      if (!this.fs || !this.fd)
-         throw new Error("File is not opened " + this.fFileName);
+      return new Promise((resolve, reject) => {
+         if (filename)
+            return reject(Error("Cannot access other local file " + filename));
 
-      let cnt = 0, blobs = [], file = this;
+         if (!file.fs || !file.fd)
+            return reject(Error("File is not opened " + file.fFileName));
 
-      function readfunc(err, bytesRead, buf) {
+         let cnt = 0, blobs = [];
 
-         let res = new DataView(buf.buffer, buf.byteOffset, place[cnt + 1]);
-         if (place.length === 2) return result_callback(res);
+         function readfunc(err, bytesRead, buf) {
 
-         blobs.push(res);
-         cnt += 2;
-         if (cnt >= place.length) return result_callback(blobs);
-         file.fs.read(file.fd, new Buffer(place[cnt + 1]), 0, place[cnt + 1], place[cnt], readfunc);
-      }
+            let res = new DataView(buf.buffer, buf.byteOffset, place[cnt + 1]);
+            if (place.length === 2) return resolve(res);
 
-      file.fs.read(file.fd, new Buffer(place[1]), 0, place[1], place[0], readfunc);
+            blobs.push(res);
+            cnt += 2;
+            if (cnt >= place.length) return resolve(blobs);
+            file.fs.read(file.fd, new Buffer(place[cnt + 1]), 0, place[cnt + 1], place[cnt], readfunc);
+         }
+
+         file.fs.read(file.fd, new Buffer(place[1]), 0, place[1], place[0], readfunc);
+      });
    }
 
    // =========================================

@@ -2139,14 +2139,14 @@ JSROOT.require(['JSRootIOEvolution', 'JSRootMath'], function() {
             }
 
             if (ExtractPlaces())
-               handle.file.ReadBuffer(places, ProcessBlobs, filename, ReadProgress);
+               handle.file.ReadBuffer(places, filename, ReadProgress).then(ProcessBlobs).catch(() => ProcessBlobs(null));
             else
                JSROOT.CallBack(baskets_call_back, bitems);
          }
 
          // extract places where to read
          if (ExtractPlaces())
-            handle.file.ReadBuffer(places, ProcessBlobs, filename, ReadProgress);
+            handle.file.ReadBuffer(places, filename, ReadProgress).then(ProcessBlobs).catch(() => ProcessBlobs(null));
          else
             JSROOT.CallBack(baskets_call_back, null);
       }
