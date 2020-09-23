@@ -177,12 +177,10 @@ JSROOT.require(['rawinflate'], function() {
    JSROOT.R__unzip = function(arr, tgtsize, noalert, src_shift) {
       // Reads header envelope, determines zipped size and unzip content
 
-      const HDRSIZE = 9;
-      let totallen = arr.byteLength, curr = src_shift || 0, fullres = 0, tgtbuf = null;
-
-      function getChar(o) { return String.fromCharCode(arr.getUint8(o)); }
-
-      function getCode(o) { return arr.getUint8(o); }
+      const HDRSIZE = 9, totallen = arr.byteLength;
+      let curr = src_shift || 0, fullres = 0, tgtbuf = null,
+          getChar = o => String.fromCharCode(arr.getUint8(o)),
+          getCode = o => arr.getUint8(o);
 
       while (fullres < tgtsize) {
 
@@ -914,6 +912,7 @@ JSROOT.require(['rawinflate'], function() {
    }
 
    /** @summary read buffer(s) from the file
+    * @returns {Promise} with read buffers
     * @private */
    TFile.prototype.ReadBuffer = function(place, filename, progress_callback) {
 
@@ -1223,7 +1222,6 @@ JSROOT.require(['rawinflate'], function() {
 
    /** @summary Read any object from a root file
     * @desc One could specify cycle number in the object name or as separate argument
-    * Last argument should be callback function, while data reading from file is asynchron
     * @param {string} obj_name - name of object, may include cycle number like "hpxpy;1"
     * @param {number} [cycle=undefined] - cycle number
     * @param {boolean} [only_dir=false] - if true, only TDirectory derived class will be read
@@ -1243,9 +1241,9 @@ JSROOT.require(['rawinflate'], function() {
 
       let file = this, isdir, read_key;
 
-         // we use callback version while in some cases we need to
-         // read sub-directory to get list of keys
-         // in such situation calls are asynchrone
+      // one uses Promises while in some cases we need to
+      // read sub-directory to get list of keys
+      // in such situation calls are asynchrone
       return this.GetKey(obj_name, cycle).then(key => {
 
          if ((obj_name == "StreamerInfo") && (key.fClassName == "TList"))
@@ -1981,8 +1979,8 @@ JSROOT.require(['rawinflate'], function() {
                member.branch_func = function(buf, obj) {
                   // this is special functions, used by branch in the STL container
 
-                  const ver = buf.ReadVersion();
-                  let sz0 = obj[this.stl_size], res = new Array(sz0);
+                  const ver = buf.ReadVersion(), sz0 = obj[this.stl_size];
+                  let res = new Array(sz0);
 
                   for (let loop0 = 0; loop0 < sz0; ++loop0) {
                      let cnt = obj[this.cntname][loop0];
@@ -2080,7 +2078,7 @@ JSROOT.require(['rawinflate'], function() {
                   if ((stl === JSROOT.IO.kSTLmap) || (stl === JSROOT.IO.kSTLmultimap)) {
 
                      const p1 = member.typename.indexOf("<"),
-                        p2 = member.typename.lastIndexOf(">");
+                           p2 = member.typename.lastIndexOf(">");
 
                      member.pairtype = "pair<" + member.typename.substr(p1 + 1, p2 - p1 - 1) + ">";
 
@@ -2138,9 +2136,9 @@ JSROOT.require(['rawinflate'], function() {
 
                   member.branch_func = function(buf, obj) {
                      // special function to read data from STL branch
-                     const cnt = obj[this.stl_size];
+                     const cnt = obj[this.stl_size],
+                           ver = this.read_version(buf, cnt);
                      let arr = new Array(cnt);
-                     const ver = this.read_version(buf, cnt);
 
                      for (let n = 0; n < cnt; ++n)
                         arr[n] = buf.ReadNdimArray(this, (buf2, member2) => member2.readelem(buf2));
@@ -2233,7 +2231,7 @@ JSROOT.require(['rawinflate'], function() {
 
    // =============================================================
 
-   function TNodejsFile(filename, newfile_callback) {
+   function TNodejsFile(filename) {
       TFile.call(this, null);
       this.fUseStampPar = false;
       this.fEND = 0;
