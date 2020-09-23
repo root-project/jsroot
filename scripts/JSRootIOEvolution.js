@@ -174,8 +174,8 @@ JSROOT.require(['rawinflate'], function() {
       JSROOT.IO.CustomStreamers[type] = user_streamer;
    }
 
+   /** Reads header envelope, determines zipped size and unzip content */
    JSROOT.R__unzip = function(arr, tgtsize, noalert, src_shift) {
-      // Reads header envelope, determines zipped size and unzip content
 
       const HDRSIZE = 9, totallen = arr.byteLength;
       let curr = src_shift || 0, fullres = 0, tgtbuf = null,
@@ -257,456 +257,435 @@ JSROOT.require(['rawinflate'], function() {
 
    // =================================================================================
 
-   function TBuffer(arr, pos, file, length) {
-      // buffer takes with DataView as first argument
-      this._typename = "TBuffer";
-      this.arr = arr;
-      this.o = pos || 0;
-      this.fFile = file;
-      this.length = length || (arr ? arr.byteLength : 0); // use size of array view, blob buffer can be much bigger
-      this.ClearObjectMap();
-      this.fTagOffset = 0;
-      this.last_read_version = 0;
-      return this;
-   }
+   class TBuffer {
 
-   TBuffer.prototype.locate = function(pos) {
-      this.o = pos;
-   }
-
-   TBuffer.prototype.shift = function(cnt) {
-      this.o += cnt;
-   }
-
-   TBuffer.prototype.remain = function() {
-      return this.length - this.o;
-   }
-
-   TBuffer.prototype.GetMappedObject = function(tag) {
-      return this.fObjectMap[tag];
-   }
-
-   TBuffer.prototype.MapObject = function(tag, obj) {
-      if (obj !== null)
-         this.fObjectMap[tag] = obj;
-   }
-
-   TBuffer.prototype.MapClass = function(tag, classname) {
-      this.fClassMap[tag] = classname;
-   }
-
-   TBuffer.prototype.GetMappedClass = function(tag) {
-      if (tag in this.fClassMap) return this.fClassMap[tag];
-      return -1;
-   }
-
-   TBuffer.prototype.ClearObjectMap = function() {
-      this.fObjectMap = {};
-      this.fClassMap = {};
-      this.fObjectMap[0] = null;
-      this.fDisplacement = 0;
-   }
-
-   TBuffer.prototype.ReadVersion = function() {
-      // read class version from I/O buffer
-      let ver = {}, bytecnt = this.ntou4(); // byte count
-
-      if (bytecnt & JSROOT.IO.kByteCountMask)
-         ver.bytecnt = bytecnt - JSROOT.IO.kByteCountMask - 2; // one can check between Read version and end of streamer
-      else
-         this.o -= 4; // rollback read bytes, this is old buffer without byte count
-
-      this.last_read_version = ver.val = this.ntoi2();
-      this.last_read_checksum = 0;
-      ver.off = this.o;
-
-      if ((ver.val <= 0) && ver.bytecnt && (ver.bytecnt >= 4)) {
-         ver.checksum = this.ntou4();
-         if (!this.fFile.FindSinfoCheckum(ver.checksum)) {
-            // JSROOT.console('Fail to find streamer info with check sum ' + ver.checksum + ' version ' + ver.val);
-            this.o -= 4; // not found checksum in the list
-            delete ver.checksum; // remove checksum
-         } else {
-            this.last_read_checksum = ver.checksum;
-         }
-      }
-      return ver;
-   }
-
-   TBuffer.prototype.CheckBytecount = function(ver, where) {
-      if ((ver.bytecnt !== undefined) && (ver.off + ver.bytecnt !== this.o)) {
-         if (where != null) {
-            // alert("Missmatch in " + where + " bytecount expected = " + ver.bytecnt + "  got = " + (this.o-ver.off));
-            console.log("Missmatch in " + where + " bytecount expected = " + ver.bytecnt + "  got = " + (this.o - ver.off));
-         }
-         this.o = ver.off + ver.bytecnt;
-         return false;
-      }
-      return true;
-   }
-
-   TBuffer.prototype.ReadTString = function() {
-      // stream a TString object from buffer
-      // std::string uses similar binary format
-      let len = this.ntou1();
-      // large strings
-      if (len == 255) len = this.ntou4();
-      if (len == 0) return "";
-
-      const pos = this.o;
-      this.o += len;
-
-      return (this.codeAt(pos) == 0) ? '' : this.substring(pos, pos + len);
-   }
-
-   TBuffer.prototype.ReadFastString = function(n) {
-      // read Char_t array as string
-      // string either contains all symbols or until 0 symbol
-
-      let res = "", code, closed = false;
-      for (let i = 0; (n < 0) || (i < n); ++i) {
-         code = this.ntou1();
-         if (code == 0) { closed = true; if (n < 0) break; }
-         if (!closed) res += String.fromCharCode(code);
+      constructor(arr, pos, file, length) {
+         // buffer takes with DataView as first argument
+         this._typename = "TBuffer";
+         this.arr = arr;
+         this.o = pos || 0;
+         this.fFile = file;
+         this.length = length || (arr ? arr.byteLength : 0); // use size of array view, blob buffer can be much bigger
+         this.ClearObjectMap();
+         this.fTagOffset = 0;
+         this.last_read_version = 0;
       }
 
-      return res;
-   }
+      locate(pos) { this.o = pos; }
+      shift(cnt) { this.o += cnt; }
+      remain() { return this.length - this.o; }
+      GetMappedObject(tag) { return this.fObjectMap[tag]; }
+      MapObject(tag, obj) { if (obj !== null) this.fObjectMap[tag] = obj; }
+      MapClass(tag, classname) { this.fClassMap[tag] = classname; }
+      GetMappedClass(tag) { return (tag in this.fClassMap) ? this.fClassMap[tag] : -1; }
 
-   TBuffer.prototype.ntou1 = function() {
-      return this.arr.getUint8(this.o++);
-   }
-
-   TBuffer.prototype.ntou2 = function() {
-      const o = this.o; this.o += 2;
-      return this.arr.getUint16(o);
-   }
-
-   TBuffer.prototype.ntou4 = function() {
-      const o = this.o; this.o += 4;
-      return this.arr.getUint32(o);
-   }
-
-   TBuffer.prototype.ntou8 = function() {
-      const high = this.arr.getUint32(this.o); this.o += 4;
-      const low = this.arr.getUint32(this.o); this.o += 4;
-      return high * 0x100000000 + low;
-   }
-
-   TBuffer.prototype.ntoi1 = function() {
-      return this.arr.getInt8(this.o++);
-   }
-
-   TBuffer.prototype.ntoi2 = function() {
-      const o = this.o; this.o += 2;
-      return this.arr.getInt16(o);
-   }
-
-   TBuffer.prototype.ntoi4 = function() {
-      const o = this.o; this.o += 4;
-      return this.arr.getInt32(o);
-   }
-
-   TBuffer.prototype.ntoi8 = function() {
-      const high = this.arr.getUint32(this.o); this.o += 4;
-      const low = this.arr.getUint32(this.o); this.o += 4;
-      if (high < 0x80000000) return high * 0x100000000 + low;
-      return -1 - ((~high) * 0x100000000 + ~low);
-   }
-
-   TBuffer.prototype.ntof = function() {
-      const o = this.o; this.o += 4;
-      return this.arr.getFloat32(o);
-   }
-
-   TBuffer.prototype.ntod = function() {
-      const o = this.o; this.o += 8;
-      return this.arr.getFloat64(o);
-   }
-
-   TBuffer.prototype.ReadFastArray = function(n, array_type) {
-      // read array of n values from the I/O buffer
-
-      let array, i = 0, o = this.o, view = this.arr;
-      switch (array_type) {
-         case JSROOT.IO.kDouble:
-            array = new Float64Array(n);
-            for (; i < n; ++i, o += 8)
-               array[i] = view.getFloat64(o);
-            break;
-         case JSROOT.IO.kFloat:
-            array = new Float32Array(n);
-            for (; i < n; ++i, o += 4)
-               array[i] = view.getFloat32(o);
-            break;
-         case JSROOT.IO.kLong:
-         case JSROOT.IO.kLong64:
-            array = new Float64Array(n);
-            for (; i < n; ++i)
-               array[i] = this.ntoi8();
-            return array; // exit here to avoid conflicts
-         case JSROOT.IO.kULong:
-         case JSROOT.IO.kULong64:
-            array = new Float64Array(n);
-            for (; i < n; ++i)
-               array[i] = this.ntou8();
-            return array; // exit here to avoid conflicts
-         case JSROOT.IO.kInt:
-         case JSROOT.IO.kCounter:
-            array = new Int32Array(n);
-            for (; i < n; ++i, o += 4)
-               array[i] = view.getInt32(o);
-            break;
-         case JSROOT.IO.kBits:
-         case JSROOT.IO.kUInt:
-            array = new Uint32Array(n);
-            for (; i < n; ++i, o += 4)
-               array[i] = view.getUint32(o);
-            break;
-         case JSROOT.IO.kShort:
-            array = new Int16Array(n);
-            for (; i < n; ++i, o += 2)
-               array[i] = view.getInt16(o);
-            break;
-         case JSROOT.IO.kUShort:
-            array = new Uint16Array(n);
-            for (; i < n; ++i, o += 2)
-               array[i] = view.getUint16(o);
-            break;
-         case JSROOT.IO.kChar:
-            array = new Int8Array(n);
-            for (; i < n; ++i)
-               array[i] = view.getInt8(o++);
-            break;
-         case JSROOT.IO.kBool:
-         case JSROOT.IO.kUChar:
-            array = new Uint8Array(n);
-            for (; i < n; ++i)
-               array[i] = view.getUint8(o++);
-            break;
-         case JSROOT.IO.kTString:
-            array = new Array(n);
-            for (; i < n; ++i)
-               array[i] = this.ReadTString();
-            return array; // exit here to avoid conflicts
-         case JSROOT.IO.kDouble32:
-            throw new Error('kDouble32 should not be used in ReadFastArray');
-         case JSROOT.IO.kFloat16:
-            throw new Error('kFloat16 should not be used in ReadFastArray');
-         default:
-            array = new Uint32Array(n);
-            for (; i < n; ++i, o += 4)
-               array[i] = view.getUint32(o);
-            break;
+      ClearObjectMap() {
+         this.fObjectMap = {};
+         this.fClassMap = {};
+         this.fObjectMap[0] = null;
+         this.fDisplacement = 0;
       }
 
-      this.o = o;
+      ReadVersion() {
+         // read class version from I/O buffer
+         let ver = {}, bytecnt = this.ntou4(); // byte count
 
-      return array;
-   }
+         if (bytecnt & JSROOT.IO.kByteCountMask)
+            ver.bytecnt = bytecnt - JSROOT.IO.kByteCountMask - 2; // one can check between Read version and end of streamer
+         else
+            this.o -= 4; // rollback read bytes, this is old buffer without byte count
 
-   TBuffer.prototype.can_extract = function(place) {
-      for (let n = 0; n < place.length; n += 2)
-         if (place[n] + place[n + 1] > this.length) return false;
-      return true;
-   }
+         this.last_read_version = ver.val = this.ntoi2();
+         this.last_read_checksum = 0;
+         ver.off = this.o;
 
-   TBuffer.prototype.extract = function(place) {
-      if (!this.arr || !this.arr.buffer || !this.can_extract(place)) return null;
-      if (place.length === 2) return new DataView(this.arr.buffer, this.arr.byteOffset + place[0], place[1]);
-
-      let res = new Array(place.length / 2);
-
-      for (let n = 0; n < place.length; n += 2)
-         res[n / 2] = new DataView(this.arr.buffer, this.arr.byteOffset + place[n], place[n + 1]);
-
-      return res; // return array of buffers
-   }
-
-   TBuffer.prototype.codeAt = function(pos) {
-      return this.arr.getUint8(pos);
-   }
-
-   TBuffer.prototype.substring = function(beg, end) {
-      let res = "";
-      for (let n = beg; n < end; ++n)
-         res += String.fromCharCode(this.arr.getUint8(n));
-      return res;
-   }
-
-   TBuffer.prototype.ReadNdimArray = function(handle, func) {
-      let ndim = handle.fArrayDim, maxindx = handle.fMaxIndex, res;
-      if ((ndim < 1) && (handle.fArrayLength > 0)) { ndim = 1; maxindx = [handle.fArrayLength]; }
-      if (handle.minus1) --ndim;
-
-      if (ndim < 1) return func(this, handle);
-
-      if (ndim === 1) {
-         res = new Array(maxindx[0]);
-         for (let n = 0; n < maxindx[0]; ++n)
-            res[n] = func(this, handle);
-      } else if (ndim === 2) {
-         res = new Array(maxindx[0]);
-         for (let n = 0; n < maxindx[0]; ++n) {
-            let res2 = new Array(maxindx[1]);
-            for (let k = 0; k < maxindx[1]; ++k)
-               res2[k] = func(this, handle);
-            res[n] = res2;
-         }
-      } else {
-         let indx = [], arr = [], k;
-         for (k = 0; k < ndim; ++k) { indx[k] = 0; arr[k] = []; }
-         res = arr[0];
-         while (indx[0] < maxindx[0]) {
-            k = ndim - 1;
-            arr[k].push(func(this, handle));
-            ++indx[k];
-            while ((indx[k] === maxindx[k]) && (k > 0)) {
-               indx[k] = 0;
-               arr[k - 1].push(arr[k]);
-               arr[k] = [];
-               ++indx[--k];
+         if ((ver.val <= 0) && ver.bytecnt && (ver.bytecnt >= 4)) {
+            ver.checksum = this.ntou4();
+            if (!this.fFile.FindSinfoCheckum(ver.checksum)) {
+               // JSROOT.console('Fail to find streamer info with check sum ' + ver.checksum + ' version ' + ver.val);
+               this.o -= 4; // not found checksum in the list
+               delete ver.checksum; // remove checksum
+            } else {
+               this.last_read_checksum = ver.checksum;
             }
          }
+         return ver;
       }
 
-      return res;
-   }
-
-   TBuffer.prototype.ReadTKey = function(key) {
-      if (!key) key = {};
-      this.ClassStreamer(key, 'TKey');
-      let name = key.fName.replace(/['"]/g, '');
-      if (name !== key.fName) {
-         key.fRealName = key.fName;
-         key.fName = name;
-      }
-      return key;
-   }
-
-   TBuffer.prototype.ReadBasketEntryOffset = function(basket, offset) {
-      // this is remaining part of TBasket streamer to decode fEntryOffset
-      // after unzipping of the TBasket data
-
-      this.locate(basket.fLast - offset);
-
-      if (this.remain() <= 0) {
-         if (!basket.fEntryOffset && (basket.fNevBuf <= 1)) basket.fEntryOffset = [basket.fKeylen];
-         if (!basket.fEntryOffset) console.warn("No fEntryOffset when expected for basket with", basket.fNevBuf, "entries");
-         return;
+      CheckBytecount(ver, where) {
+         if ((ver.bytecnt !== undefined) && (ver.off + ver.bytecnt !== this.o)) {
+            if (where != null) {
+               // alert("Missmatch in " + where + " bytecount expected = " + ver.bytecnt + "  got = " + (this.o-ver.off));
+               console.log("Missmatch in " + where + " bytecount expected = " + ver.bytecnt + "  got = " + (this.o - ver.off));
+            }
+            this.o = ver.off + ver.bytecnt;
+            return false;
+         }
+         return true;
       }
 
-      const nentries = this.ntoi4();
-      // there is error in file=reco_103.root&item=Events;2/PCaloHits_g4SimHits_EcalHitsEE_Sim.&opt=dump;num:10;first:101
-      // it is workaround, but normally I/O should fail here
-      if ((nentries < 0) || (nentries > this.remain() * 4)) {
-         console.error("Error when reading entries offset from basket fNevBuf", basket.fNevBuf, "remains", this.remain(), "want to read", nentries);
-         if (basket.fNevBuf <= 1) basket.fEntryOffset = [basket.fKeylen];
-         return;
+      ReadTString() {
+         // stream a TString object from buffer
+         // std::string uses similar binary format
+         let len = this.ntou1();
+         // large strings
+         if (len == 255) len = this.ntou4();
+         if (len == 0) return "";
+
+         const pos = this.o;
+         this.o += len;
+
+         return (this.codeAt(pos) == 0) ? '' : this.substring(pos, pos + len);
       }
 
-      basket.fEntryOffset = this.ReadFastArray(nentries, JSROOT.IO.kInt);
-      if (!basket.fEntryOffset) basket.fEntryOffset = [basket.fKeylen];
+      ReadFastString(n) {
+         // read Char_t array as string
+         // string either contains all symbols or until 0 symbol
 
-      if (this.remain() > 0)
-         basket.fDisplacement = this.ReadFastArray(this.ntoi4(), JSROOT.IO.kInt);
-      else
-         basket.fDisplacement = undefined;
-   }
+         let res = "", code, closed = false;
+         for (let i = 0; (n < 0) || (i < n); ++i) {
+            code = this.ntou1();
+            if (code == 0) { closed = true; if (n < 0) break; }
+            if (!closed) res += String.fromCharCode(code);
+         }
 
-   TBuffer.prototype.ReadClass = function() {
-      // read class definition from I/O buffer
-      let classInfo = { name: -1 }, tag = 0, bcnt = this.ntou4();
-      const startpos = this.o;
-
-      if (!(bcnt & JSROOT.IO.kByteCountMask) || (bcnt == JSROOT.IO.kNewClassTag)) {
-         tag = bcnt;
-         bcnt = 0;
-      } else {
-         tag = this.ntou4();
+         return res;
       }
-      if (!(tag & JSROOT.IO.kClassMask)) {
-         classInfo.objtag = tag + this.fDisplacement; // indicate that we have deal with objects tag
+
+      ntou1() {
+         return this.arr.getUint8(this.o++);
+      }
+
+      ntou2() {
+         const o = this.o; this.o += 2;
+         return this.arr.getUint16(o);
+      }
+
+      ntou4() {
+         const o = this.o; this.o += 4;
+         return this.arr.getUint32(o);
+      }
+
+      ntou8() {
+         const high = this.arr.getUint32(this.o); this.o += 4;
+         const low = this.arr.getUint32(this.o); this.o += 4;
+         return high * 0x100000000 + low;
+      }
+
+      ntoi1() {
+         return this.arr.getInt8(this.o++);
+      }
+
+      ntoi2() {
+         const o = this.o; this.o += 2;
+         return this.arr.getInt16(o);
+      }
+
+      ntoi4() {
+         const o = this.o; this.o += 4;
+         return this.arr.getInt32(o);
+      }
+
+      ntoi8() {
+         const high = this.arr.getUint32(this.o); this.o += 4;
+         const low = this.arr.getUint32(this.o); this.o += 4;
+         if (high < 0x80000000) return high * 0x100000000 + low;
+         return -1 - ((~high) * 0x100000000 + ~low);
+      }
+
+      ntof() {
+         const o = this.o; this.o += 4;
+         return this.arr.getFloat32(o);
+      }
+
+      ntod() {
+         const o = this.o; this.o += 8;
+         return this.arr.getFloat64(o);
+      }
+
+      /** Reads array of n values from the I/O buffer */
+      ReadFastArray(n, array_type) {
+         let array, i = 0, o = this.o, view = this.arr;
+         switch (array_type) {
+            case JSROOT.IO.kDouble:
+               array = new Float64Array(n);
+               for (; i < n; ++i, o += 8)
+                  array[i] = view.getFloat64(o);
+               break;
+            case JSROOT.IO.kFloat:
+               array = new Float32Array(n);
+               for (; i < n; ++i, o += 4)
+                  array[i] = view.getFloat32(o);
+               break;
+            case JSROOT.IO.kLong:
+            case JSROOT.IO.kLong64:
+               array = new Float64Array(n);
+               for (; i < n; ++i)
+                  array[i] = this.ntoi8();
+               return array; // exit here to avoid conflicts
+            case JSROOT.IO.kULong:
+            case JSROOT.IO.kULong64:
+               array = new Float64Array(n);
+               for (; i < n; ++i)
+                  array[i] = this.ntou8();
+               return array; // exit here to avoid conflicts
+            case JSROOT.IO.kInt:
+            case JSROOT.IO.kCounter:
+               array = new Int32Array(n);
+               for (; i < n; ++i, o += 4)
+                  array[i] = view.getInt32(o);
+               break;
+            case JSROOT.IO.kBits:
+            case JSROOT.IO.kUInt:
+               array = new Uint32Array(n);
+               for (; i < n; ++i, o += 4)
+                  array[i] = view.getUint32(o);
+               break;
+            case JSROOT.IO.kShort:
+               array = new Int16Array(n);
+               for (; i < n; ++i, o += 2)
+                  array[i] = view.getInt16(o);
+               break;
+            case JSROOT.IO.kUShort:
+               array = new Uint16Array(n);
+               for (; i < n; ++i, o += 2)
+                  array[i] = view.getUint16(o);
+               break;
+            case JSROOT.IO.kChar:
+               array = new Int8Array(n);
+               for (; i < n; ++i)
+                  array[i] = view.getInt8(o++);
+               break;
+            case JSROOT.IO.kBool:
+            case JSROOT.IO.kUChar:
+               array = new Uint8Array(n);
+               for (; i < n; ++i)
+                  array[i] = view.getUint8(o++);
+               break;
+            case JSROOT.IO.kTString:
+               array = new Array(n);
+               for (; i < n; ++i)
+                  array[i] = this.ReadTString();
+               return array; // exit here to avoid conflicts
+            case JSROOT.IO.kDouble32:
+               throw new Error('kDouble32 should not be used in ReadFastArray');
+            case JSROOT.IO.kFloat16:
+               throw new Error('kFloat16 should not be used in ReadFastArray');
+            default:
+               array = new Uint32Array(n);
+               for (; i < n; ++i, o += 4)
+                  array[i] = view.getUint32(o);
+               break;
+         }
+
+         this.o = o;
+
+         return array;
+      }
+
+      can_extract(place) {
+         for (let n = 0; n < place.length; n += 2)
+            if (place[n] + place[n + 1] > this.length) return false;
+         return true;
+      }
+
+      extract(place) {
+         if (!this.arr || !this.arr.buffer || !this.can_extract(place)) return null;
+         if (place.length === 2) return new DataView(this.arr.buffer, this.arr.byteOffset + place[0], place[1]);
+
+         let res = new Array(place.length / 2);
+
+         for (let n = 0; n < place.length; n += 2)
+            res[n / 2] = new DataView(this.arr.buffer, this.arr.byteOffset + place[n], place[n + 1]);
+
+         return res; // return array of buffers
+      }
+
+      codeAt(pos) {
+         return this.arr.getUint8(pos);
+      }
+
+      substring(beg, end) {
+         let res = "";
+         for (let n = beg; n < end; ++n)
+            res += String.fromCharCode(this.arr.getUint8(n));
+         return res;
+      }
+
+      ReadNdimArray(handle, func) {
+         let ndim = handle.fArrayDim, maxindx = handle.fMaxIndex, res;
+         if ((ndim < 1) && (handle.fArrayLength > 0)) { ndim = 1; maxindx = [handle.fArrayLength]; }
+         if (handle.minus1) --ndim;
+
+         if (ndim < 1) return func(this, handle);
+
+         if (ndim === 1) {
+            res = new Array(maxindx[0]);
+            for (let n = 0; n < maxindx[0]; ++n)
+               res[n] = func(this, handle);
+         } else if (ndim === 2) {
+            res = new Array(maxindx[0]);
+            for (let n = 0; n < maxindx[0]; ++n) {
+               let res2 = new Array(maxindx[1]);
+               for (let k = 0; k < maxindx[1]; ++k)
+                  res2[k] = func(this, handle);
+               res[n] = res2;
+            }
+         } else {
+            let indx = [], arr = [], k;
+            for (k = 0; k < ndim; ++k) { indx[k] = 0; arr[k] = []; }
+            res = arr[0];
+            while (indx[0] < maxindx[0]) {
+               k = ndim - 1;
+               arr[k].push(func(this, handle));
+               ++indx[k];
+               while ((indx[k] === maxindx[k]) && (k > 0)) {
+                  indx[k] = 0;
+                  arr[k - 1].push(arr[k]);
+                  arr[k] = [];
+                  ++indx[--k];
+               }
+            }
+         }
+
+         return res;
+      }
+
+      ReadTKey(key) {
+         if (!key) key = {};
+         this.ClassStreamer(key, 'TKey');
+         let name = key.fName.replace(/['"]/g, '');
+         if (name !== key.fName) {
+            key.fRealName = key.fName;
+            key.fName = name;
+         }
+         return key;
+      }
+
+      ReadBasketEntryOffset(basket, offset) {
+         // this is remaining part of TBasket streamer to decode fEntryOffset
+         // after unzipping of the TBasket data
+
+         this.locate(basket.fLast - offset);
+
+         if (this.remain() <= 0) {
+            if (!basket.fEntryOffset && (basket.fNevBuf <= 1)) basket.fEntryOffset = [basket.fKeylen];
+            if (!basket.fEntryOffset) console.warn("No fEntryOffset when expected for basket with", basket.fNevBuf, "entries");
+            return;
+         }
+
+         const nentries = this.ntoi4();
+         // there is error in file=reco_103.root&item=Events;2/PCaloHits_g4SimHits_EcalHitsEE_Sim.&opt=dump;num:10;first:101
+         // it is workaround, but normally I/O should fail here
+         if ((nentries < 0) || (nentries > this.remain() * 4)) {
+            console.error("Error when reading entries offset from basket fNevBuf", basket.fNevBuf, "remains", this.remain(), "want to read", nentries);
+            if (basket.fNevBuf <= 1) basket.fEntryOffset = [basket.fKeylen];
+            return;
+         }
+
+         basket.fEntryOffset = this.ReadFastArray(nentries, JSROOT.IO.kInt);
+         if (!basket.fEntryOffset) basket.fEntryOffset = [basket.fKeylen];
+
+         if (this.remain() > 0)
+            basket.fDisplacement = this.ReadFastArray(this.ntoi4(), JSROOT.IO.kInt);
+         else
+            basket.fDisplacement = undefined;
+      }
+
+      ReadClass() {
+         // read class definition from I/O buffer
+         let classInfo = { name: -1 }, tag = 0, bcnt = this.ntou4();
+         const startpos = this.o;
+
+         if (!(bcnt & JSROOT.IO.kByteCountMask) || (bcnt == JSROOT.IO.kNewClassTag)) {
+            tag = bcnt;
+            bcnt = 0;
+         } else {
+            tag = this.ntou4();
+         }
+         if (!(tag & JSROOT.IO.kClassMask)) {
+            classInfo.objtag = tag + this.fDisplacement; // indicate that we have deal with objects tag
+            return classInfo;
+         }
+         if (tag == JSROOT.IO.kNewClassTag) {
+            // got a new class description followed by a new object
+            classInfo.name = this.ReadFastString(-1);
+
+            if (this.GetMappedClass(this.fTagOffset + startpos + JSROOT.IO.kMapOffset) === -1)
+               this.MapClass(this.fTagOffset + startpos + JSROOT.IO.kMapOffset, classInfo.name);
+         } else {
+            // got a tag to an already seen class
+            const clTag = (tag & ~JSROOT.IO.kClassMask) + this.fDisplacement;
+            classInfo.name = this.GetMappedClass(clTag);
+
+            if (classInfo.name === -1)
+               JSROOT.alert("Did not found class with tag " + clTag);
+         }
+
          return classInfo;
       }
-      if (tag == JSROOT.IO.kNewClassTag) {
-         // got a new class description followed by a new object
-         classInfo.name = this.ReadFastString(-1);
 
-         if (this.GetMappedClass(this.fTagOffset + startpos + JSROOT.IO.kMapOffset) === -1)
-            this.MapClass(this.fTagOffset + startpos + JSROOT.IO.kMapOffset, classInfo.name);
-      } else {
-         // got a tag to an already seen class
-         const clTag = (tag & ~JSROOT.IO.kClassMask) + this.fDisplacement;
-         classInfo.name = this.GetMappedClass(clTag);
+      ReadObjectAny() {
+         const objtag = this.fTagOffset + this.o + JSROOT.IO.kMapOffset,
+               clRef = this.ReadClass();
 
-         if (classInfo.name === -1)
-            JSROOT.alert("Did not found class with tag " + clTag);
-      }
+         // class identified as object and should be handled so
+         if ('objtag' in clRef)
+            return this.GetMappedObject(clRef.objtag);
 
-      return classInfo;
-   }
+         if (clRef.name === -1) return null;
 
-   TBuffer.prototype.ReadObjectAny = function() {
-      let objtag = this.fTagOffset + this.o + JSROOT.IO.kMapOffset,
-         clRef = this.ReadClass();
+         const arrkind = JSROOT.IO.GetArrayKind(clRef.name);
+         let obj;
 
-      // class identified as object and should be handled so
-      if ('objtag' in clRef)
-         return this.GetMappedObject(clRef.objtag);
+         if (arrkind === 0) {
+            obj = this.ReadTString();
+         } else if (arrkind > 0) {
+            // reading array, can map array only afterwards
+            obj = this.ReadFastArray(this.ntou4(), arrkind);
+            this.MapObject(objtag, obj);
+         } else {
+            // reading normal object, should map before to
+            obj = {};
+            this.MapObject(objtag, obj);
+            this.ClassStreamer(obj, clRef.name);
+         }
 
-      if (clRef.name === -1) return null;
-
-      const arrkind = JSROOT.IO.GetArrayKind(clRef.name);
-      let obj;
-
-      if (arrkind === 0) {
-         obj = this.ReadTString();
-      } else if (arrkind > 0) {
-         // reading array, can map array only afterwards
-         obj = this.ReadFastArray(this.ntou4(), arrkind);
-         this.MapObject(objtag, obj);
-      } else {
-         // reading normal object, should map before to
-         obj = {};
-         this.MapObject(objtag, obj);
-         this.ClassStreamer(obj, clRef.name);
-      }
-
-      return obj;
-   }
-
-   TBuffer.prototype.ClassStreamer = function(obj, classname) {
-
-      if (obj._typename === undefined) obj._typename = classname;
-
-      let direct = JSROOT.IO.DirectStreamers[classname];
-      if (direct) {
-         direct(this, obj);
          return obj;
       }
 
-      const ver = this.ReadVersion();
+      ClassStreamer(obj, classname) {
 
-      let streamer = this.fFile.GetStreamer(classname, ver);
+         if (obj._typename === undefined) obj._typename = classname;
 
-      if (streamer !== null) {
+         let direct = JSROOT.IO.DirectStreamers[classname];
+         if (direct) {
+            direct(this, obj);
+            return obj;
+         }
 
-         for (let n = 0; n < streamer.length; ++n)
-            streamer[n].func(this, obj);
+         const ver = this.ReadVersion();
 
-      } else {
-         // just skip bytes belonging to not-recognized object
-         // console.warn('skip object ', classname);
+         let streamer = this.fFile.GetStreamer(classname, ver);
 
-         JSROOT.addMethods(obj);
+         if (streamer !== null) {
+
+            for (let n = 0; n < streamer.length; ++n)
+               streamer[n].func(this, obj);
+
+         } else {
+            // just skip bytes belonging to not-recognized object
+            // console.warn('skip object ', classname);
+
+            JSROOT.addMethods(obj);
+         }
+
+         this.CheckBytecount(ver, classname);
+
+         return obj;
       }
 
-      this.CheckBytecount(ver, classname);
-
-      return obj;
-   }
-
+   } // class TBuffer
 
    // =======================================================================
 
@@ -744,75 +723,78 @@ JSROOT.require(['rawinflate'], function() {
    // A class that reads a TDirectory from a buffer.
 
    // ctor
-   function TDirectory(file, dirname, cycle) {
-      this.fFile = file;
-      this._typename = "TDirectory";
-      this.dir_name = dirname;
-      this.dir_cycle = cycle;
-      this.fKeys = [];
-      return this;
-   }
+   class TDirectory {
 
-   TDirectory.prototype.GetKey = function(keyname, cycle, only_direct) {
-      // retrieve a key by its name and cycle in the list of keys
-
-      if (typeof cycle != 'number') cycle = -1;
-      let bestkey = null;
-      for (let i = 0; i < this.fKeys.length; ++i) {
-         let key = this.fKeys[i];
-         if (!key || (key.fName!==keyname)) continue;
-         if (key.fCycle == cycle) { bestkey = key; break; }
-         if ((cycle < 0) && (!bestkey || (key.fCycle > bestkey.fCycle))) bestkey = key;
-      }
-      if (bestkey)
-         return only_direct ? bestkey : Promise.resolve(bestkey);
-
-      let pos = keyname.lastIndexOf("/");
-      // try to handle situation when object name contains slashed (bad practice anyway)
-      while (pos > 0) {
-         let dirname = keyname.substr(0, pos),
-             subname = keyname.substr(pos+1),
-             dirkey = this.GetKey(dirname, undefined, true);
-
-         if (dirkey && !only_direct && (dirkey.fClassName.indexOf("TDirectory")==0))
-            return this.fFile.ReadObject(this.dir_name + "/" + dirname, 1)
-                             .then(newdir => newdir.GetKey(subname, cycle));
-
-         pos = keyname.lastIndexOf("/", pos-1);
+      constructor(file, dirname, cycle) {
+         this.fFile = file;
+         this._typename = "TDirectory";
+         this.dir_name = dirname;
+         this.dir_cycle = cycle;
+         this.fKeys = [];
       }
 
-      return only_direct ? null : Promise.reject(Error("Key not found " + keyname));
-   }
+      GetKey(keyname, cycle, only_direct) {
+         // retrieve a key by its name and cycle in the list of keys
 
-   TDirectory.prototype.ReadObject = function(obj_name, cycle) {
-      return this.fFile.ReadObject(this.dir_name + "/" + obj_name, cycle);
-   }
+         if (typeof cycle != 'number') cycle = -1;
+         let bestkey = null;
+         for (let i = 0; i < this.fKeys.length; ++i) {
+            let key = this.fKeys[i];
+            if (!key || (key.fName!==keyname)) continue;
+            if (key.fCycle == cycle) { bestkey = key; break; }
+            if ((cycle < 0) && (!bestkey || (key.fCycle > bestkey.fCycle))) bestkey = key;
+         }
+         if (bestkey)
+            return only_direct ? bestkey : Promise.resolve(bestkey);
 
-   TDirectory.prototype.ReadKeys = function(objbuf) {
+         let pos = keyname.lastIndexOf("/");
+         // try to handle situation when object name contains slashed (bad practice anyway)
+         while (pos > 0) {
+            let dirname = keyname.substr(0, pos),
+                subname = keyname.substr(pos+1),
+                dirkey = this.GetKey(dirname, undefined, true);
 
-      objbuf.ClassStreamer(this, 'TDirectory');
+            if (dirkey && !only_direct && (dirkey.fClassName.indexOf("TDirectory")==0))
+               return this.fFile.ReadObject(this.dir_name + "/" + dirname, 1)
+                                .then(newdir => newdir.GetKey(subname, cycle));
 
-      if ((this.fSeekKeys <= 0) || (this.fNbytesKeys <= 0))
-         return Promise.resolve(this);
+            pos = keyname.lastIndexOf("/", pos-1);
+         }
 
-      let dir = this, file = this.fFile;
+         return only_direct ? null : Promise.reject(Error("Key not found " + keyname));
+      }
 
-      return file.ReadBuffer([this.fSeekKeys, this.fNbytesKeys]).then(blob => {
-         //*-* -------------Read keys of the top directory
+      ReadObject(obj_name, cycle) {
+         return this.fFile.ReadObject(this.dir_name + "/" + obj_name, cycle);
+      }
 
-         let buf = JSROOT.CreateTBuffer(blob, 0, file);
+      ReadKeys(objbuf) {
 
-         buf.ReadTKey();
-         const nkeys = buf.ntoi4();
+         objbuf.ClassStreamer(this, 'TDirectory');
 
-         for (let i = 0; i < nkeys; ++i)
-            dir.fKeys.push(buf.ReadTKey());
+         if ((this.fSeekKeys <= 0) || (this.fNbytesKeys <= 0))
+            return Promise.resolve(this);
 
-         file.fDirectories.push(dir);
+         let dir = this, file = this.fFile;
 
-         return dir;
-      });
-   }
+         return file.ReadBuffer([this.fSeekKeys, this.fNbytesKeys]).then(blob => {
+            //*-* -------------Read keys of the top directory
+
+            let buf = JSROOT.CreateTBuffer(blob, 0, file);
+
+            buf.ReadTKey();
+            const nkeys = buf.ntoi4();
+
+            for (let i = 0; i < nkeys; ++i)
+               dir.fKeys.push(buf.ReadTKey());
+
+            file.fDirectories.push(dir);
+
+            return dir;
+         });
+      }
+
+   } // class TDirectory
 
    // ==============================================================================
    // A class that reads ROOT files.
