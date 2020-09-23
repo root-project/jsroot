@@ -7,6 +7,10 @@ JSROOT.require(['d3', 'jquery', 'jquery-ui', 'JSRootPainter.hierarchy'], functio
 
    JSROOT.loadScript('$$$style/jquery-ui.css');
 
+   if (typeof jQuery === 'undefined') globalThis.jQuery = $;
+   // one can load these plugins afterwards - they only used in interactive mode
+   JSROOT.require(['jqueryui-mousewheel', 'jqueryui-touch-punch']);
+
    JSROOT.Painter.createMenu = function(painter, maincallback, show_event) {
       let menuname = 'root_ctx_menu';
 
