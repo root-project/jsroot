@@ -194,9 +194,9 @@ JSROOT.require(['rawinflate'], function() {
          }
 
          if (getChar(curr) == 'Z' && getChar(curr + 1) == 'L' && getCode(curr + 2) == 8) { fmt = "new"; off = 2; } else
-            if (getChar(curr) == 'C' && getChar(curr + 1) == 'S' && getCode(curr + 2) == 8) { fmt = "old"; off = 0; } else
-               if (getChar(curr) == 'X' && getChar(curr + 1) == 'Z') fmt = "LZMA"; else
-                  if (getChar(curr) == 'L' && getChar(curr + 1) == '4') { fmt = "LZ4"; off = 0; CHKSUM = 8; }
+         if (getChar(curr) == 'C' && getChar(curr + 1) == 'S' && getCode(curr + 2) == 8) { fmt = "old"; off = 0; } else
+         if (getChar(curr) == 'X' && getChar(curr + 1) == 'Z') fmt = "LZMA"; else
+         if (getChar(curr) == 'L' && getChar(curr + 1) == '4') { fmt = "LZ4"; off = 0; CHKSUM = 8; }
 
          /*
                if (fmt == "LZMA") {
@@ -233,7 +233,7 @@ JSROOT.require(['rawinflate'], function() {
             return null;
          }
 
-         let srcsize = HDRSIZE + ((getCode(curr + 3) & 0xff) | ((getCode(curr + 4) & 0xff) << 8) | ((getCode(curr + 5) & 0xff) << 16));
+         const srcsize = HDRSIZE + ((getCode(curr + 3) & 0xff) | ((getCode(curr + 4) & 0xff) << 8) | ((getCode(curr + 5) & 0xff) << 16));
 
          let uint8arr = new Uint8Array(arr.buffer, arr.byteOffset + curr + HDRSIZE + off + CHKSUM, Math.min(arr.byteLength - curr - HDRSIZE - off - CHKSUM, srcsize - HDRSIZE - CHKSUM));
 
@@ -242,8 +242,7 @@ JSROOT.require(['rawinflate'], function() {
 
          let tgt8arr = new Uint8Array(tgtbuf, fullres);
 
-         let reslen = (fmt === "LZ4") ? JSROOT.LZ4.uncompress(uint8arr, tgt8arr)
-            : JSROOT.ZIP.inflate(uint8arr, tgt8arr);
+         const reslen = (fmt === "LZ4") ? JSROOT.LZ4.uncompress(uint8arr, tgt8arr) : JSROOT.ZIP.inflate(uint8arr, tgt8arr);
          if (reslen <= 0) break;
 
          fullres += reslen;
@@ -1903,29 +1902,26 @@ JSROOT.require(['rawinflate'], function() {
             if (classname[classname.length - 1] == "*")
                classname = classname.substr(0, classname.length - 1);
 
-            let arrkind = JSROOT.IO.GetArrayKind(classname);
+            const arrkind = JSROOT.IO.GetArrayKind(classname);
 
             if (arrkind > 0) {
                member.arrkind = arrkind;
-               member.func = function(buf, obj) {
-                  obj[this.name] = buf.ReadFastArray(buf.ntou4(), this.arrkind);
-               };
-            } else
-               if (arrkind === 0) {
-                  member.func = function(buf, obj) { obj[this.name] = buf.ReadTString(); };
-               } else {
-                  member.classname = classname;
+               member.func = function(buf, obj) { obj[this.name] = buf.ReadFastArray(buf.ntou4(), this.arrkind); };
+            } else if (arrkind === 0) {
+               member.func = function(buf, obj) { obj[this.name] = buf.ReadTString(); };
+            } else {
+               member.classname = classname;
 
-                  if (element.fArrayLength > 1) {
-                     member.func = function(buf, obj) {
-                        obj[this.name] = buf.ReadNdimArray(this, (buf, handle) => buf.ClassStreamer({}, handle.classname));
-                     };
-                  } else {
-                     member.func = function(buf, obj) {
-                        obj[this.name] = buf.ClassStreamer({}, this.classname);
-                     };
-                  }
+               if (element.fArrayLength > 1) {
+                  member.func = function(buf, obj) {
+                     obj[this.name] = buf.ReadNdimArray(this, (buf, handle) => buf.ClassStreamer({}, handle.classname));
+                  };
+               } else {
+                  member.func = function(buf, obj) {
+                     obj[this.name] = buf.ClassStreamer({}, this.classname);
+                  };
                }
+            }
             break;
          }
          case JSROOT.IO.kOffsetL + JSROOT.IO.kObject:
