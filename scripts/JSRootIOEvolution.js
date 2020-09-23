@@ -812,7 +812,7 @@ JSROOT.require(['rawinflate'], function() {
 
          file.fDirectories.push(dir);
 
-         return Promise.resolve(dir);
+         return dir;
       });
    }
 
@@ -1191,7 +1191,7 @@ JSROOT.require(['rawinflate'], function() {
 
       return this.ReadBuffer([key.fSeekKey + key.fKeylen, key.fNbytes - key.fKeylen]).then(blob1 => {
 
-         let buf = null;
+         let buf;
 
          if (key.fObjlen <= key.fNbytes - key.fKeylen) {
             buf = JSROOT.CreateTBuffer(blob1, 0, file);
@@ -1203,7 +1203,7 @@ JSROOT.require(['rawinflate'], function() {
 
          buf.fTagOffset = key.fKeylen;
 
-         return Promise.resolve(buf);
+         return buf;
       });
    }
 
@@ -1247,12 +1247,12 @@ JSROOT.require(['rawinflate'], function() {
       return this.GetKey(obj_name, cycle).then(key => {
 
          if ((obj_name == "StreamerInfo") && (key.fClassName == "TList"))
-            return Promise.resolve(file.fStreamerInfos);
+            return file.fStreamerInfos;
 
          if ((key.fClassName == 'TDirectory' || key.fClassName == 'TDirectoryFile')) {
             isdir = true;
             let dir = file.GetDir(obj_name, cycle);
-            if (dir) return Promise.resolve(dir);
+            if (dir) return dir;
          }
 
          if (!isdir && only_dir)
@@ -1275,15 +1275,14 @@ JSROOT.require(['rawinflate'], function() {
          if ((read_key.fClassName === 'TF1') || (read_key.fClassName === 'TF2'))
             return file.ReadFormulas(obj);
 
-         if (!file.readTrees)
-            return Promise.resolve(obj);
+         if (!file.readTrees) return obj;
 
          return JSROOT.require('tree').then(() => {
             if (file.readTrees) {
                file.readTrees.forEach(function(t) { JSROOT.extend(t, JSROOT.TreeMethods); })
                delete file.readTrees;
             }
-            return Promise.resolve(obj);
+            return obj;
          });
       });
    }
@@ -1441,7 +1440,7 @@ JSROOT.require(['rawinflate'], function() {
          let buf4 = JSROOT.CreateTBuffer(blobs[0], 0, file);
 
          buf4.ReadTKey(); //
-         let nkeys = buf4.ntoi4();
+         const nkeys = buf4.ntoi4();
          for (let i = 0; i < nkeys; ++i)
             file.fKeys.push(buf4.ReadTKey());
 
@@ -1454,7 +1453,7 @@ JSROOT.require(['rawinflate'], function() {
          return file.ReadObjBuffer(si_key);
       }).then(blob6 => {
           file.ExtractStreamerInfos(blob6);
-          return Promise.resolve(file);
+          return file;
       });
    }
 
