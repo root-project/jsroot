@@ -755,59 +755,51 @@ JSROOT.require(['rawinflate'], function() {
       return this;
    }
 
-   TDirectory.prototype.GetKey = function(keyname, cycle, call_back) {
+   TDirectory.prototype.GetKey = function(keyname, cycle, only_direct) {
       // retrieve a key by its name and cycle in the list of keys
 
       if (typeof cycle != 'number') cycle = -1;
       let bestkey = null;
       for (let i = 0; i < this.fKeys.length; ++i) {
          let key = this.fKeys[i];
-         if (!key || (key.fName !== keyname)) continue;
+         if (!key || (key.fName!==keyname)) continue;
          if (key.fCycle == cycle) { bestkey = key; break; }
          if ((cycle < 0) && (!bestkey || (key.fCycle > bestkey.fCycle))) bestkey = key;
       }
-      if (bestkey) {
-         JSROOT.CallBack(call_back, bestkey);
-         return bestkey;
-      }
+      if (bestkey)
+         return only_direct ? bestkey : Promise.resolve(bestkey);
 
       let pos = keyname.lastIndexOf("/");
       // try to handle situation when object name contains slashed (bad practice anyway)
       while (pos > 0) {
          let dirname = keyname.substr(0, pos),
-            subname = keyname.substr(pos + 1),
-            dirkey = this.GetKey(dirname);
+             subname = keyname.substr(pos+1),
+             dirkey = this.GetKey(dirname, undefined, true);
 
-         if ((dirkey !== null) && (typeof call_back == 'function') &&
-            (dirkey.fClassName.indexOf("TDirectory") == 0)) {
+         if (dirkey && !only_direct && (dirkey.fClassName.indexOf("TDirectory")==0))
+            return this.fFile.ReadObject(this.dir_name + "/" + dirname, 1)
+                             .then(newdir => newdir.GetKey(subname, cycle));
 
-            this.fFile.ReadObject(this.dir_name + "/" + dirname, 1).then(newdir => {
-               if (newdir) newdir.GetKey(subname, cycle, call_back);
-            });
-            return null;
-         }
-
-         pos = keyname.lastIndexOf("/", pos - 1);
+         pos = keyname.lastIndexOf("/", pos-1);
       }
 
-      JSROOT.CallBack(call_back, null);
-      return null;
+      return only_direct ? null : Promise.reject(Error("Key not found " + keyname));
    }
 
    TDirectory.prototype.ReadObject = function(obj_name, cycle) {
       return this.fFile.ReadObject(this.dir_name + "/" + obj_name, cycle);
    }
 
-   TDirectory.prototype.ReadKeys = function(objbuf, readkeys_callback) {
+   TDirectory.prototype.ReadKeys = function(objbuf) {
 
       objbuf.ClassStreamer(this, 'TDirectory');
 
       if ((this.fSeekKeys <= 0) || (this.fNbytesKeys <= 0))
-         return JSROOT.CallBack(readkeys_callback, this);
+         return Promise.resolve(this);
 
       let dir = this, file = this.fFile;
 
-      file.ReadBuffer([this.fSeekKeys, this.fNbytesKeys]).then(blob => {
+      return file.ReadBuffer([this.fSeekKeys, this.fNbytesKeys]).then(blob => {
          //*-* -------------Read keys of the top directory
 
          let buf = JSROOT.CreateTBuffer(blob, 0, file);
@@ -820,8 +812,8 @@ JSROOT.require(['rawinflate'], function() {
 
          file.fDirectories.push(dir);
 
-         JSROOT.CallBack(readkeys_callback, dir);
-      }).catch(() => JSROOT.CallBack(readkeys_callback, null));
+         return Promise.resolve(dir);
+      });
    }
 
    // ==============================================================================
@@ -860,6 +852,7 @@ JSROOT.require(['rawinflate'], function() {
     */
    function TFile(url, newfile_callback) {
       this._typename = "TFile";
+      this.fFile = this;
       this.fEND = 0;
       this.fFullURL = url;
       this.fURL = url;
@@ -898,22 +891,22 @@ JSROOT.require(['rawinflate'], function() {
 
       const pos = Math.max(this.fURL.lastIndexOf("/"), this.fURL.lastIndexOf("\\"));
       this.fFileName = pos >= 0 ? this.fURL.substr(pos + 1) : this.fURL;
+      let file = this, promise;
 
       if (!this.fAcceptRanges) {
-         this.ReadKeys(newfile_callback);
+         promise = this.ReadKeys();
       } else {
-         let file = this;
-         JSROOT.HttpRequest(this.fURL, "head").then(function(res) {
+         promise = JSROOT.HttpRequest(this.fURL, "head").then(res => {
             const accept_ranges = res.getResponseHeader("Accept-Ranges");
             if (!accept_ranges) file.fAcceptRanges = false;
             const len = res.getResponseHeader("Content-Length");
             if (len) file.fEND = parseInt(len);
             else file.fAcceptRanges = false;
-            file.ReadKeys(newfile_callback);
-         }).catch(function() {
-            JSROOT.CallBack(newfile_callback, null);
+            return file.ReadKeys();
          });
       }
+
+      promise.then(f => newfile_callback(f)).catch(() => newfile_callback(null));
 
       return this;
    }
@@ -1158,7 +1151,7 @@ JSROOT.require(['rawinflate'], function() {
    /** @summary Retrieve a key by its name and cycle in the list of keys
     * @desc callback used when keys must be read first from the directory
     * @private */
-   TFile.prototype.GetKey = function(keyname, cycle, getkey_callback) {
+   TFile.prototype.GetKey = function(keyname, cycle, only_direct) {
 
       if (typeof cycle != 'number') cycle = -1;
       let bestkey = null;
@@ -1168,42 +1161,35 @@ JSROOT.require(['rawinflate'], function() {
          if (key.fCycle == cycle) { bestkey = key; break; }
          if ((cycle < 0) && (!bestkey || (key.fCycle > bestkey.fCycle))) bestkey = key;
       }
-      if (bestkey) {
-         JSROOT.CallBack(getkey_callback, bestkey);
-         return bestkey;
-      }
+      if (bestkey)
+         return only_direct ? bestkey : Promise.resolve(bestkey);
 
       let pos = keyname.lastIndexOf("/");
-      // try to handle situation when object name contains slashed (bad practice anyway)
+      // try to handle situation when object name contains slashes (bad practice anyway)
       while (pos > 0) {
          let dirname = keyname.substr(0, pos),
             subname = keyname.substr(pos + 1),
             dir = this.GetDir(dirname);
 
-         if (dir) return dir.GetKey(subname, cycle, getkey_callback);
+         if (dir) return dir.GetKey(subname, cycle, only_direct);
 
-         let dirkey = this.GetKey(dirname);
-         if (dirkey && getkey_callback && (dirkey.fClassName.indexOf("TDirectory") == 0)) {
-            this.ReadObject(dirname).then(newdir => {
-               if (newdir) newdir.GetKey(subname, cycle, getkey_callback);
-            });
-            return null;
-         }
+         let dirkey = this.GetKey(dirname, undefined, true);
+         if (dirkey && !only_direct && (dirkey.fClassName.indexOf("TDirectory") == 0))
+            return this.ReadObject(dirname).then(newdir => newdir.GetKey(subname, cycle));
 
          pos = keyname.lastIndexOf("/", pos - 1);
       }
 
-      JSROOT.CallBack(getkey_callback, null);
-      return null;
+      return only_direct ? null : Promise.reject(Error("Key not found " + keyname));
    }
 
    /** @summary Read and inflate object buffer described by its key
     * @private */
-   TFile.prototype.ReadObjBuffer = function(key, callback) {
+   TFile.prototype.ReadObjBuffer = function(key) {
 
       let file = this;
 
-      this.ReadBuffer([key.fSeekKey + key.fKeylen, key.fNbytes - key.fKeylen]).then(blob1 => {
+      return this.ReadBuffer([key.fSeekKey + key.fKeylen, key.fNbytes - key.fKeylen]).then(blob1 => {
 
          let buf = null;
 
@@ -1211,14 +1197,14 @@ JSROOT.require(['rawinflate'], function() {
             buf = JSROOT.CreateTBuffer(blob1, 0, file);
          } else {
             let objbuf = JSROOT.R__unzip(blob1, key.fObjlen);
-            if (!objbuf) return callback(null);
+            if (!objbuf) return Promise.reject(Error("Fail to UNZIP buffer"));
             buf = JSROOT.CreateTBuffer(objbuf, 0, file);
          }
 
          buf.fTagOffset = key.fKeylen;
 
-         callback(buf);
-      }).catch(() => callback(null));
+         return Promise.resolve(buf);
+      });
    }
 
    /** @summary Method called when TTree object is streamed
@@ -1253,60 +1239,53 @@ JSROOT.require(['rawinflate'], function() {
       // remove leading slashes
       while (obj_name.length && (obj_name[0] == "/")) obj_name = obj_name.substr(1);
 
-      let file = this;
-
-      return new Promise((resolve, reject) => {
+      let file = this, isdir, read_key;
 
          // we use callback version while in some cases we need to
          // read sub-directory to get list of keys
          // in such situation calls are asynchrone
-         this.GetKey(obj_name, cycle, function(key) {
+      return this.GetKey(obj_name, cycle).then(key => {
 
-            // FIXME: one should reject, but in hierarchy painter null handled in resolve, try jstests -k TTree
-            if (!key)
-               return resolve(null);
+         if ((obj_name == "StreamerInfo") && (key.fClassName == "TList"))
+            return Promise.resolve(file.fStreamerInfos);
 
-            if ((obj_name == "StreamerInfo") && (key.fClassName == "TList"))
-               return resolve(file.fStreamerInfos);
+         if ((key.fClassName == 'TDirectory' || key.fClassName == 'TDirectoryFile')) {
+            isdir = true;
+            let dir = file.GetDir(obj_name, cycle);
+            if (dir) return Promise.resolve(dir);
+         }
 
-            let isdir = false;
-            if ((key.fClassName == 'TDirectory' || key.fClassName == 'TDirectoryFile')) {
-               isdir = true;
-               let dir = file.GetDir(obj_name, cycle);
-               if (dir) return resolve(dir);
+         if (!isdir && only_dir)
+            return Promise.reject(Error("Key ${obj_name} is not directory}"));
+
+         read_key = key;
+
+         return file.ReadObjBuffer(key);
+      }).then(buf => {
+         if (isdir) {
+            let dir = new TDirectory(file, obj_name, cycle);
+            dir.fTitle = read_key.fTitle;
+            return dir.ReadKeys(buf);
+         }
+
+         let obj = {};
+         buf.MapObject(1, obj); // tag object itself with id==1
+         buf.ClassStreamer(obj, read_key.fClassName);
+
+         if ((read_key.fClassName === 'TF1') || (read_key.fClassName === 'TF2'))
+            return file.ReadFormulas(obj);
+
+         if (!file.readTrees)
+            return Promise.resolve(obj);
+
+         return JSROOT.require('tree').then(() => {
+            if (file.readTrees) {
+               file.readTrees.forEach(function(t) { JSROOT.extend(t, JSROOT.TreeMethods); })
+               delete file.readTrees;
             }
-
-            if (!isdir && only_dir)
-               return reject(Error("Key ${obj_name} is not directory}"));
-
-            file.ReadObjBuffer(key, function(buf) {
-               if (!buf) return reject(Error("Fail to read buffer for ${obj_name}"));
-
-               if (isdir) {
-                  let dir = new TDirectory(file, obj_name, cycle);
-                  dir.fTitle = key.fTitle;
-                  return dir.ReadKeys(buf, resolve);
-               }
-
-               let obj = {};
-               buf.MapObject(1, obj); // tag object itself with id==1
-               buf.ClassStreamer(obj, key.fClassName);
-
-               if ((key.fClassName === 'TF1') || (key.fClassName === 'TF2'))
-                  return file.ReadFormulas(obj).then(resolve);
-
-               if (file.readTrees)
-                  return JSROOT.require('tree').then(() => {
-                     if (file.readTrees) {
-                        file.readTrees.forEach(function(t) { JSROOT.extend(t, JSROOT.TreeMethods); })
-                        delete file.readTrees;
-                     }
-                     resolve(obj);
-                  });
-               resolve(obj);
-            }); // end of ReadObjBuffer callback
-         }); // end of GetKey callback
-      }); // Promise constructor
+            return Promise.resolve(obj);
+         });
+      });
    }
 
    /** @summary read formulas from the file and add them to TF1/TF2 objects
@@ -1385,20 +1364,17 @@ JSROOT.require(['rawinflate'], function() {
 
    /** @summary Read file keys
     * @private */
-   TFile.prototype.ReadKeys = function(readkeys_callback) {
+   TFile.prototype.ReadKeys = function() {
 
       let file = this;
 
       // with the first readbuffer we read bigger amount to create header cache
-      this.ReadBuffer([0, 1024]).then(blob => {
-         if (!blob) return JSROOT.CallBack(readkeys_callback, null);
-
+      return this.ReadBuffer([0, 1024]).then(blob => {
          let buf = JSROOT.CreateTBuffer(blob, 0, file);
 
-         if (buf.substring(0, 4) !== 'root') {
-            JSROOT.alert("NOT A ROOT FILE! " + file.fURL);
-            return JSROOT.CallBack(readkeys_callback, null);
-         }
+         if (buf.substring(0, 4) !== 'root')
+            return Promise.reject(Error("NOT A ROOT FILE! " + file.fURL));
+
          buf.shift(4);
 
          file.fVersion = buf.ntou4();
@@ -1427,13 +1403,11 @@ JSROOT.require(['rawinflate'], function() {
 
          // empty file
          if (!file.fSeekInfo || !file.fNbytesInfo)
-            return JSROOT.CallBack(readkeys_callback, null);
+            return Promise.reject(Error("Empty file " + file.fURL));
 
          // extra check to prevent reading of corrupted data
-         if (!file.fNbytesName || file.fNbytesName > 100000) {
-            JSROOT.console("Init : cannot read directory info of file " + file.fURL);
-            return JSROOT.CallBack(readkeys_callback, null);
-         }
+         if (!file.fNbytesName || file.fNbytesName > 100000)
+            return Promise.reject(Error("Init : cannot read directory info of file " + file.fURL));
 
          //*-*-------------Read directory info
          let nbytes = file.fNbytesName + 22;
@@ -1444,45 +1418,44 @@ JSROOT.require(['rawinflate'], function() {
          if (file.fVersion >= 40000) nbytes += 12;
 
          // this part typically read from the header, no need to optimize
-         file.ReadBuffer([file.fBEGIN, Math.max(300, nbytes)]).then(blob3 => {
+         return file.ReadBuffer([file.fBEGIN, Math.max(300, nbytes)]);
+      }).then(blob3 => {
 
-            let buf3 = JSROOT.CreateTBuffer(blob3, 0, file);
+         let buf3 = JSROOT.CreateTBuffer(blob3, 0, file);
 
-            // keep only title from TKey data
-            file.fTitle = buf3.ReadTKey().fTitle;
+         // keep only title from TKey data
+         file.fTitle = buf3.ReadTKey().fTitle;
 
-            buf3.locate(file.fNbytesName);
+         buf3.locate(file.fNbytesName);
 
-            // we read TDirectory part of TFile
-            buf3.ClassStreamer(file, 'TDirectory');
+         // we read TDirectory part of TFile
+         buf3.ClassStreamer(file, 'TDirectory');
 
-            if (!file.fSeekKeys) {
-               JSROOT.console("Empty keys list in " + file.fURL);
-               return JSROOT.CallBack(readkeys_callback, null);
-            }
+         if (!file.fSeekKeys)
+            return Promise.reject(Error("Empty keys list in " + file.fURL));
 
-            // read with same request keys and streamer infos
-            file.ReadBuffer([file.fSeekKeys, file.fNbytesKeys, file.fSeekInfo, file.fNbytesInfo]).then(blobs => {
+         // read with same request keys and streamer infos
+         return file.ReadBuffer([file.fSeekKeys, file.fNbytesKeys, file.fSeekInfo, file.fNbytesInfo]);
+      }).then(blobs => {
 
-               let buf4 = JSROOT.CreateTBuffer(blobs[0], 0, file);
+         let buf4 = JSROOT.CreateTBuffer(blobs[0], 0, file);
 
-               buf4.ReadTKey(); //
-               let nkeys = buf4.ntoi4();
-               for (let i = 0; i < nkeys; ++i)
-                  file.fKeys.push(buf4.ReadTKey());
+         buf4.ReadTKey(); //
+         let nkeys = buf4.ntoi4();
+         for (let i = 0; i < nkeys; ++i)
+            file.fKeys.push(buf4.ReadTKey());
 
-               let buf5 = JSROOT.CreateTBuffer(blobs[1], 0, file),
-                  si_key = buf5.ReadTKey();
-               if (!si_key) return JSROOT.CallBack(readkeys_callback, null);
+         let buf5 = JSROOT.CreateTBuffer(blobs[1], 0, file),
+            si_key = buf5.ReadTKey();
+         if (!si_key)
+            return Promise.reject(Error("Fail to read data for TKeys"));
 
-               file.fKeys.push(si_key);
-               file.ReadObjBuffer(si_key, function(blob6) {
-                  if (blob6) file.ExtractStreamerInfos(blob6);
-                  return JSROOT.CallBack(readkeys_callback, file);
-               });
-            });
-         });
-      }).catch(() => JSROOT.CallBack(readkeys_callback, null));
+         file.fKeys.push(si_key);
+         return file.ReadObjBuffer(si_key);
+      }).then(blob6 => {
+          file.ExtractStreamerInfos(blob6);
+          return Promise.resolve(file);
+      });
    }
 
    /** @summary Read the directory content from  a root file
@@ -2221,7 +2194,7 @@ JSROOT.require(['rawinflate'], function() {
       this.fFullURL = file.name;
       this.fURL = file.name;
       this.fFileName = file.name;
-      this.ReadKeys(newfile_callback);
+      this.ReadKeys().then(newfile_callback).catch(() => newfile_callback(null));
       return this;
    }
 
@@ -2276,14 +2249,7 @@ JSROOT.require(['rawinflate'], function() {
 
          pthis.fd = fd;
 
-         // return JSROOT.CallBack(newfile_callback, pthis);
-
-         pthis.ReadKeys(newfile_callback);
-
-         //let buffer = new Buffer(100);
-         //fs.read(fd, buffer, 0, 100, 0, function(err, num) {
-         //    console.log(buffer.toString('utf8', 0, num));
-         //});
+         pthis.ReadKeys().then(newfile_callback).catch(() => newfile_callback(null));
       });
       return this;
    }
