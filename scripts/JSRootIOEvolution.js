@@ -850,9 +850,8 @@ JSROOT.require(['rawinflate'], function() {
     * @param {string} url - file URL
     * @param {function} newfile_callback - function called when file header is read
     */
-   function TFile(url, newfile_callback) {
+   function TFile(url) {
       this._typename = "TFile";
-      this.fFile = this;
       this.fEND = 0;
       this.fFullURL = url;
       this.fURL = url;
@@ -891,24 +890,27 @@ JSROOT.require(['rawinflate'], function() {
 
       const pos = Math.max(this.fURL.lastIndexOf("/"), this.fURL.lastIndexOf("\\"));
       this.fFileName = pos >= 0 ? this.fURL.substr(pos + 1) : this.fURL;
-      let file = this, promise;
-
-      if (!this.fAcceptRanges) {
-         promise = this.ReadKeys();
-      } else {
-         promise = JSROOT.HttpRequest(this.fURL, "head").then(res => {
-            const accept_ranges = res.getResponseHeader("Accept-Ranges");
-            if (!accept_ranges) file.fAcceptRanges = false;
-            const len = res.getResponseHeader("Content-Length");
-            if (len) file.fEND = parseInt(len);
-            else file.fAcceptRanges = false;
-            return file.ReadKeys();
-         });
-      }
-
-      promise.then(f => newfile_callback(f)).catch(() => newfile_callback(null));
 
       return this;
+   }
+
+   /** @summary Open files
+    * @returns {Promise} after file keys are read
+    * @private */
+   TFile.prototype.Open = function() {
+      let file = this;
+
+      if (!this.fAcceptRanges)
+         return this.ReadKeys();
+
+      return JSROOT.HttpRequest(this.fURL, "head").then(res => {
+         const accept_ranges = res.getResponseHeader("Accept-Ranges");
+         if (!accept_ranges) file.fAcceptRanges = false;
+         const len = res.getResponseHeader("Content-Length");
+         if (len) file.fEND = parseInt(len);
+         else file.fAcceptRanges = false;
+         return file.ReadKeys();
+      });
    }
 
    /** @summary read buffer(s) from the file
@@ -2185,7 +2187,7 @@ JSROOT.require(['rawinflate'], function() {
 
    // =============================================================
 
-   function TLocalFile(file, newfile_callback) {
+   function TLocalFile(file) {
       TFile.call(this, null);
       this.fUseStampPar = false;
       this.fLocalFile = file;
@@ -2193,11 +2195,17 @@ JSROOT.require(['rawinflate'], function() {
       this.fFullURL = file.name;
       this.fURL = file.name;
       this.fFileName = file.name;
-      this.ReadKeys().then(newfile_callback).catch(() => newfile_callback(null));
       return this;
    }
 
    TLocalFile.prototype = Object.create(TFile.prototype);
+
+   /** @summary Open file
+    * @returns {Promise} after file keys are read
+    * @private */
+   TLocalFile.prototype.Open = function() {
+      return this.ReadKeys();
+   }
 
    TLocalFile.prototype.ReadBuffer = function(place, filename /*, progress_callback */) {
 
@@ -2232,28 +2240,33 @@ JSROOT.require(['rawinflate'], function() {
       this.fFullURL = filename;
       this.fURL = filename;
       this.fFileName = filename;
-
-      let pthis = this;
-
-      pthis.fs = require('fs');
-
-      pthis.fs.open(filename, 'r', function(status, fd) {
-         if (status) {
-            console.log(status.message);
-            return JSROOT.CallBack(newfile_callback, null);
-         }
-         let stats = pthis.fs.fstatSync(fd);
-
-         pthis.fEND = stats.size;
-
-         pthis.fd = fd;
-
-         pthis.ReadKeys().then(newfile_callback).catch(() => newfile_callback(null));
-      });
       return this;
    }
 
    TNodejsFile.prototype = Object.create(TFile.prototype);
+
+   /** @summary Open file
+    * @returns {Promise} after file keys are read
+    * @private */
+   TNodejsFile.prototype.Open = function() {
+      let file = this;
+
+      file.fs = require('fs');
+
+      file.fs.open(filename, 'r', function(status, fd) {
+         if (status) {
+            console.log(status.message);
+            return Promise.reject(Error("Not possible to open " + filename + " inside node.js"));
+         }
+         let stats = file.fs.fstatSync(fd);
+
+         file.fEND = stats.size;
+
+         file.fd = fd;
+
+         return file.ReadKeys();
+      });
+   }
 
    TNodejsFile.prototype.ReadBuffer = function(place, filename /*, progress_callback */) {
 
@@ -2999,23 +3012,22 @@ JSROOT.require(['rawinflate'], function() {
 
    JSROOT.OpenFile = function(filename, callback) {
 
+      let file;
 
+      if (JSROOT.nodejs) {
+         if (filename.indexOf("file://") == 0)
+            file = new TNodejsFile(filename.substr(7));
+         else if (filename.indexOf("http") !== 0)
+            file = new TNodejsFile(filename);
+      }
 
+      if (!file && (typeof filename === 'object') && filename.size && filename.name)
+         file = new TLocalFile(filename);
 
-      let promise = new Promise(function(resolve) {
-         if (JSROOT.nodejs) {
-            if (filename.indexOf("file://") == 0)
-               return new TNodejsFile(filename.substr(7), resolve);
+      if (!file)
+         file = new TFile(filename);
 
-            if (filename.indexOf("http") !== 0)
-               return new TNodejsFile(filename, resolve);
-         }
-
-         if (typeof filename === 'object' && filename.size && filename.name)
-            return new TLocalFile(filename, resolve);
-
-         return new TFile(filename, resolve);
-      });
+      let promise = file ? file.Open() : Promise.reject(Error("No way to open file " + filename));
 
       return callback ? promise.then(callback) : promise;
    }

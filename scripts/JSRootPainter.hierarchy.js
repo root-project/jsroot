@@ -645,7 +645,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
             }
 
             if (fff._file) ReadFileObject(fff._file); else
-            if (fff._localfile) JSROOT.OpenFile(fff._localfile).then(f => ReadFileObject(f));
+            if (fff._localfile) JSROOT.OpenFile(fff._localfile).then(f => ReadFileObject(f)); else
             if (fff._fullurl) JSROOT.OpenFile(fff._fullurl).then(f => ReadFileObject(f));
          }
       };
