@@ -589,7 +589,15 @@ JSROOT.require([], function() {
          if (arg.openui5src) JSROOT.openui5src = arg.openui5src;
          if (arg.openui5libs) JSROOT.openui5libs = arg.openui5libs;
          if (arg.openui5theme) JSROOT.openui5theme = arg.openui5theme;
-         return JSROOT.require(arg.prereq /*, arg.prereq_logdiv */).then(() => { delete arg.prereq; return JSROOT.ConnectWebWindow(arg); });
+         return JSROOT.require(arg.prereq /*, arg.prereq_logdiv */).then(() => {
+            delete arg.prereq;
+            if (arg.prereq_logdiv && document) {
+               let elem = document.getElementById(arg.prereq_logdiv);
+               if (elem) elem.innerHTML = '';
+               delete arg.prereq_logdiv;
+            }
+            return JSROOT.ConnectWebWindow(arg);
+         });
       }
 
       // special hold script, prevents headless browser from too early exit

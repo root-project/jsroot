@@ -1351,6 +1351,11 @@
       return JSROOT.require("JSRootPainter").then(() => JSROOT.MakeSVG(args));
    }
 
+   // FIXME: temporary here, just for transition period from v5 -> v6
+   JSROOT.AssertPrerequisites = function(req, callback) {
+      JSROOT.require(req).then(callback);
+   }
+
    /** @summary Method to build JSROOT GUI with browser
     * @private
     */
@@ -2267,7 +2272,12 @@
       if (arg.openui5src) JSROOT.openui5src = arg.openui5src;
       if (arg.openui5libs) JSROOT.openui5libs = arg.openui5libs;
       if (arg.openui5theme) JSROOT.openui5theme = arg.openui5theme;
-      return JSROOT.require("JSRoot.webwindow;" + (arg && arg.prereq ? arg.prereq : "") /*, (arg ? arg.prereq_logdiv : undefined) */).then(() => {
+      return JSROOT.require("JSRoot.webwindow;" + (arg && arg.prereq ? arg.prereq : "")).then(() => {
+         if (arg && arg.prereq_logdiv && document) {
+            let elem = document.getElementById(arg.prereq_logdiv);
+            if (elem) elem.innerHTML = '';
+            delete arg.prereq_logdiv;
+         }
          if (arg && arg.prereq) delete arg.prereq;
          return JSROOT.ConnectWebWindow(arg);
       });
