@@ -591,4 +591,92 @@ JSROOT.require(['JSRootPainter'], function() {
    }
 
 
+   /** Load MathJax functionality, one need not only to load script but wait for initialization */
+   JSROOT.Painter.LoadMathjax = function() {
+      let loading = (JSROOT._.mj_loading !== undefined);
+
+      if (!loading && (typeof MathJax != "undefined"))
+         return Promise.resolve(MathJax);
+
+      if (!loading) JSROOT._.mj_loading = [];
+
+      let promise = new Promise(resolve => { JSROOT._.mj_loading ? JSROOT._.mj_loading.push(resolve) : resolve(MathJax); });
+
+      if (loading) return promise;
+
+      let svg_config = {
+          scale: 1,                      // global scaling factor for all expressions
+          minScale: .5,                  // smallest scaling factor to use
+          mtextInheritFont: false,       // true to make mtext elements use surrounding font
+          merrorInheritFont: true,       // true to make merror text use surrounding font
+          mathmlSpacing: false,          // true for MathML spacing rules, false for TeX rules
+          skipAttributes: {},            // RFDa and other attributes NOT to copy to the output
+          exFactor: .5,                  // default size of ex in em units
+          displayAlign: 'center',        // default for indentalign when set to 'auto'
+          displayIndent: '0',            // default for indentshift when set to 'auto'
+          fontCache: 'local',            // or 'global' or 'none'
+          localID: null,                 // ID to use for local font cache (for single equation processing)
+          internalSpeechTitles: true,    // insert <title> tags with speech content
+          titleID: 0                     // initial id number to use for aria-labeledby titles
+      };
+
+      if (!JSROOT.nodejs)
+         window.MathJax = {
+            options: {
+               enableMenu: false
+            },
+            loader: {
+               load: ['[tex]/color']
+            },
+            tex: {
+               packages: {'[+]': ['color']}
+            },
+            svg: svg_config,
+            startup: {
+               ready: function() {
+                  MathJax.startup.defaultReady();
+                  let arr = JSROOT._.mj_loading;
+                  delete JSROOT._.mj_loading;
+                  arr.forEach(func => func(MathJax));
+               }
+            }
+         };
+
+      JSROOT.require('mathjax').then(mj => {
+
+         if (!JSROOT.nodejs) return; // no need for something else, handled with ready
+
+         // return Promise with mathjax loading
+         mj.init({
+            loader: {
+               load: ['input/tex', 'output/svg', '[tex]/color']
+             },
+             tex: {
+                packages: {'[+]': ['color']}
+             },
+             svg: svg_config,
+             config: {
+                JSDOM: require('jsdom').JSDOM
+             },
+             startup: {
+                typeset: false,
+                ready: function() {
+                      MathJax.startup.registerConstructor('jsdomAdaptor', () => {
+                         return new MathJax._.adaptors.HTMLAdaptor.HTMLAdaptor(new MathJax.config.config.JSDOM().window);
+                      });
+                      MathJax.startup.useAdaptor('jsdomAdaptor', true);
+                      MathJax.startup.defaultReady();
+                      let arr = JSROOT._.mj_loading;
+                      delete JSROOT._.mj_loading;
+                      arr.forEach(func => func(MathJax));
+                }
+             }
+         });
+      });
+
+      return promise;
+   }
+
+   JSROOT.Painter.DoMathjax = function()
+
 })

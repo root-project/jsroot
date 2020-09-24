@@ -4289,7 +4289,6 @@ JSROOT.require(['d3'], function(d3) {
          Painter.LoadMathjax().then(() => {
             MathJax.tex2svgPromise(mtext, options).then(elem => {
                let svg = d3.select(elem).select("svg");
-               svg.remove();
                fo_g.append(function() { return svg.node(); });
                painter.FinishTextDrawing(arg.draw_g, null, true); // check if all other elements are completed
             });
@@ -4328,85 +4327,7 @@ JSROOT.require(['d3'], function(d3) {
 
    /** Load MathJax functionality, one need not only to load script but wait for initialization */
    Painter.LoadMathjax = function() {
-      if (JSROOT._.mj_loading !== undefined)
-         return new Promise(resolve => { JSROOT._.mj_loading ? JSROOT._.mj_loading.push(resolve) : resolve(); });
-
-      if (typeof MathJax != "undefined")
-         return Promise.resolve(MathJax);
-
-      JSROOT._.mj_loading = [];
-
-      let svg_config = {
-          scale: 1,                      // global scaling factor for all expressions
-          minScale: .5,                  // smallest scaling factor to use
-          mtextInheritFont: false,       // true to make mtext elements use surrounding font
-          merrorInheritFont: true,       // true to make merror text use surrounding font
-          mathmlSpacing: false,          // true for MathML spacing rules, false for TeX rules
-          skipAttributes: {},            // RFDa and other attributes NOT to copy to the output
-          exFactor: .5,                  // default size of ex in em units
-          displayAlign: 'center',        // default for indentalign when set to 'auto'
-          displayIndent: '0',            // default for indentshift when set to 'auto'
-          fontCache: 'local',            // or 'global' or 'none'
-          localID: null,                 // ID to use for local font cache (for single equation processing)
-          internalSpeechTitles: true,    // insert <title> tags with speech content
-          titleID: 0                     // initial id number to use for aria-labeledby titles
-      };
-
-      let did_init = false;
-
-      if (!JSROOT.nodejs)
-         window.MathJax = {
-            options: {
-               enableMenu: false
-            },
-            loader: {
-               load: ['[tex]/color']
-            },
-            tex: {
-               packages: {'[+]': ['color']}
-            },
-            svg: svg_config,
-            startup: {
-               ready: function() {
-                  MathJax.startup.defaultReady();
-                  did_init = true;
-                  JSROOT._.mj_loading.forEach(func => func());
-                  delete JSROOT._.mj_loading;
-               }
-            }
-         };
-
-      return JSROOT.require('mathjax').then(mj => {
-         if (!JSROOT.nodejs) {
-            if (did_init) return mj;
-            return new Promise(resolve => { JSROOT._.mj_loading ? JSROOT._.mj_loading.push(resolve) : resolve(); })
-         }
-         // return Promise with mathjax loading
-         return mj.init({
-            loader: {
-               load: ['input/tex', 'output/svg', '[tex]/color']
-             },
-             tex: {
-                packages: {'[+]': ['color']}
-             },
-             svg: svg_config,
-             config: {
-                JSDOM: require('jsdom').JSDOM
-             },
-             startup: {
-                typeset: false,
-                ready: function() {
-                      MathJax.startup.registerConstructor('jsdomAdaptor', () => {
-                         return new MathJax._.adaptors.HTMLAdaptor.HTMLAdaptor(new MathJax.config.config.JSDOM().window);
-                      });
-                      MathJax.startup.useAdaptor('jsdomAdaptor', true);
-                      MathJax.startup.defaultReady();
-                      JSROOT._.mj_loading.forEach(func => func());
-                      delete JSROOT._.mj_loading;
-                }
-             }
-         });
-      });
+      return JSROOT.require(['JSRoot.latex']).then(() => Painter.LoadMathjax());
    }
 
    // ===========================================================
