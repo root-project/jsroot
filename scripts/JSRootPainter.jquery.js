@@ -1154,11 +1154,9 @@ JSROOT.require(['d3', 'jquery', 'JSRootPainter.hierarchy'], function(d3, $) {
 
       if (this.disp_kind == "tabs")
          this.disp = new TabsDisplay(this.disp_frameid);
-      else
-      if (this.disp_kind.indexOf("flex")==0)
+      else if (this.disp_kind.indexOf("flex")==0)
          this.disp = new FlexibleDisplay(this.disp_frameid);
-      else
-      if (this.disp_kind.indexOf("coll")==0)
+      else if (this.disp_kind.indexOf("coll")==0)
          this.disp = new CollapsibleDisplay(this.disp_frameid);
       else
          this.disp = new JSROOT.GridDisplay(this.disp_frameid, this.disp_kind);
@@ -1428,420 +1426,420 @@ JSROOT.require(['d3', 'jquery', 'JSRootPainter.hierarchy'], function(d3, $) {
 
    // ==================================================
 
-   function CollapsibleDisplay(frameid) {
-      JSROOT.MDIDisplay.call(this, frameid);
-      this.cnt = 0; // use to count newly created frames
-   }
-
-   CollapsibleDisplay.prototype = Object.create(JSROOT.MDIDisplay.prototype);
-
-   CollapsibleDisplay.prototype.ForEachFrame = function(userfunc,  only_visible) {
-      let topid = this.frameid + '_collapsible';
-
-      if (document.getElementById(topid) == null) return;
-
-      if (typeof userfunc != 'function') return;
-
-      $('#' + topid + ' .collapsible_draw').each(function() {
-
-         // check if only visible specified
-         if (only_visible && $(this).is(":hidden")) return;
-
-         userfunc($(this).get(0));
-      });
-   }
-
-   CollapsibleDisplay.prototype.GetActiveFrame = function() {
-      let found = JSROOT.MDIDisplay.prototype.GetActiveFrame.call(this);
-      if (found && !$(found).is(":hidden")) return found;
-
-      found = null;
-      this.ForEachFrame(function(frame) {
-         if (!found) found = frame;
-      }, true);
-
-      return found;
-   }
-
-   CollapsibleDisplay.prototype.ActivateFrame = function(frame) {
-      if ($(frame).is(":hidden")) {
-         $(frame).prev().toggleClass("ui-accordion-header-active ui-state-active ui-state-default ui-corner-bottom")
-                 .find("> .ui-icon").toggleClass("ui-icon-triangle-1-e ui-icon-triangle-1-s").end()
-                 .next().toggleClass("ui-accordion-content-active").slideDown(0);
+   class CollapsibleDisplay extends JSROOT.MDIDisplay {
+      constructor(frameid) {
+         super(frameid);
+         this.cnt = 0; // use to count newly created frames
       }
-      $(frame).prev()[0].scrollIntoView();
-      // remember title
-      this.active_frame_title = d3.select(frame).attr('frame_title');
-   }
 
-   CollapsibleDisplay.prototype.CreateFrame = function(title) {
+      ForEachFrame(userfunc,  only_visible) {
+         let topid = this.frameid + '_collapsible';
 
-      this.BeforeCreateFrame(title);
+         if (document.getElementById(topid) == null) return;
 
-      let topid = this.frameid + '_collapsible';
+         if (typeof userfunc != 'function') return;
 
-      if (document.getElementById(topid) == null)
-         $("#"+this.frameid).append('<div id="'+ topid  + '" class="jsroot ui-accordion ui-accordion-icons ui-widget ui-helper-reset" style="overflow:auto; overflow-y:scroll; height:100%; padding-left: 2px; padding-right: 2px"></div>');
+         $('#' + topid + ' .collapsible_draw').each(function() {
 
-      let mdi = this,
-          hid = topid + "_sub" + this.cnt++,
-          uid = hid + "h",
-          entryInfo = "<h5 id=\"" + uid + "\">" +
-                        "<span class='ui-icon ui-icon-triangle-1-e'></span>" +
-                        "<a> " + title + "</a>&nbsp; " +
-                        "<button type='button' class='jsroot_collaps_closebtn' style='float:right; width:1.4em' title='close canvas'/>" +
-                        " </h5>\n" +
-                        "<div class='collapsible_draw' id='" + hid + "'></div>\n";
+            // check if only visible specified
+            if (only_visible && $(this).is(":hidden")) return;
 
-      $("#" + topid).append(entryInfo);
+            userfunc($(this).get(0));
+         });
+      }
 
-      $('#' + uid)
-            .addClass("ui-accordion-header ui-helper-reset ui-state-default ui-corner-top ui-corner-bottom")
-            .hover(function() { $(this).toggleClass("ui-state-hover"); })
-            .click( function() {
-                     $(this).toggleClass("ui-accordion-header-active ui-state-active ui-state-default ui-corner-bottom")
-                           .find("> .ui-icon").toggleClass("ui-icon-triangle-1-e ui-icon-triangle-1-s")
-                           .end().next().toggleClass("ui-accordion-content-active").slideToggle(0);
-                     let sub = $(this).next(), hide_drawing = sub.is(":hidden");
-                     sub.css('display', hide_drawing ? 'none' : '');
-                     if (!hide_drawing) JSROOT.resize(sub.get(0));
-                  })
-            .next()
-            .addClass("ui-accordion-content ui-helper-reset ui-widget-content ui-corner-bottom")
-            .hide();
+      GetActiveFrame() {
+         let found = super.GetActiveFrame();
+         if (found && !$(found).is(":hidden")) return found;
 
-      $('#' + uid).find(" .jsroot_collaps_closebtn")
-           .button({ icons: { primary: "ui-icon-close" }, text: false })
-           .click(function(){
-              mdi.CleanupFrame($(this).parent().next().attr('id'));
-              $(this).parent().next().remove(); // remove drawing
-              $(this).parent().remove();  // remove header
-           });
+         found = null;
+         this.ForEachFrame(function(frame) {
+            if (!found) found = frame;
+         }, true);
 
-      $('#' + uid)
-            .toggleClass("ui-accordion-header-active ui-state-active ui-state-default ui-corner-bottom")
-            .find("> .ui-icon").toggleClass("ui-icon-triangle-1-e ui-icon-triangle-1-s").end().next()
-            .toggleClass("ui-accordion-content-active").slideToggle(0);
+         return found;
+      }
 
-      return $("#" + hid).attr('frame_title', title).css('overflow','hidden')
-                         .attr('can_resize','height') // inform JSROOT that it can resize height of the
-                         .css('position','relative') // this required for correct positioning of 3D canvas in WebKit
-                         .get(0);
-    }
+      ActivateFrame(frame) {
+         if ($(frame).is(":hidden")) {
+            $(frame).prev().toggleClass("ui-accordion-header-active ui-state-active ui-state-default ui-corner-bottom")
+                    .find("> .ui-icon").toggleClass("ui-icon-triangle-1-e ui-icon-triangle-1-s").end()
+                    .next().toggleClass("ui-accordion-content-active").slideDown(0);
+         }
+         $(frame).prev()[0].scrollIntoView();
+         // remember title
+         this.active_frame_title = d3.select(frame).attr('frame_title');
+      }
+
+      CreateFrame(title) {
+
+         this.BeforeCreateFrame(title);
+
+         let topid = this.frameid + '_collapsible';
+
+         if (document.getElementById(topid) == null)
+            $("#"+this.frameid).append('<div id="'+ topid  + '" class="jsroot ui-accordion ui-accordion-icons ui-widget ui-helper-reset" style="overflow:auto; overflow-y:scroll; height:100%; padding-left: 2px; padding-right: 2px"></div>');
+
+         let mdi = this,
+             hid = topid + "_sub" + this.cnt++,
+             uid = hid + "h",
+             entryInfo = "<h5 id=\"" + uid + "\">" +
+                           "<span class='ui-icon ui-icon-triangle-1-e'></span>" +
+                           "<a> " + title + "</a>&nbsp; " +
+                           "<button type='button' class='jsroot_collaps_closebtn' style='float:right; width:1.4em' title='close canvas'/>" +
+                           " </h5>\n" +
+                           "<div class='collapsible_draw' id='" + hid + "'></div>\n";
+
+         $("#" + topid).append(entryInfo);
+
+         $('#' + uid)
+               .addClass("ui-accordion-header ui-helper-reset ui-state-default ui-corner-top ui-corner-bottom")
+               .hover(function() { $(this).toggleClass("ui-state-hover"); })
+               .click( function() {
+                        $(this).toggleClass("ui-accordion-header-active ui-state-active ui-state-default ui-corner-bottom")
+                              .find("> .ui-icon").toggleClass("ui-icon-triangle-1-e ui-icon-triangle-1-s")
+                              .end().next().toggleClass("ui-accordion-content-active").slideToggle(0);
+                        let sub = $(this).next(), hide_drawing = sub.is(":hidden");
+                        sub.css('display', hide_drawing ? 'none' : '');
+                        if (!hide_drawing) JSROOT.resize(sub.get(0));
+                     })
+               .next()
+               .addClass("ui-accordion-content ui-helper-reset ui-widget-content ui-corner-bottom")
+               .hide();
+
+         $('#' + uid).find(" .jsroot_collaps_closebtn")
+              .button({ icons: { primary: "ui-icon-close" }, text: false })
+              .click(function(){
+                 mdi.CleanupFrame($(this).parent().next().attr('id'));
+                 $(this).parent().next().remove(); // remove drawing
+                 $(this).parent().remove();  // remove header
+              });
+
+         $('#' + uid)
+               .toggleClass("ui-accordion-header-active ui-state-active ui-state-default ui-corner-bottom")
+               .find("> .ui-icon").toggleClass("ui-icon-triangle-1-e ui-icon-triangle-1-s").end().next()
+               .toggleClass("ui-accordion-content-active").slideToggle(0);
+
+         return $("#" + hid).attr('frame_title', title).css('overflow','hidden')
+                            .attr('can_resize','height') // inform JSROOT that it can resize height of the
+                            .css('position','relative') // this required for correct positioning of 3D canvas in WebKit
+                            .get(0);
+       }
+
+    } // class CollapsibleDisplay
 
    // ================================================
 
-   function TabsDisplay(frameid) {
-      JSROOT.MDIDisplay.call(this, frameid);
-      this.cnt = 0;
-   }
+   class TabsDisplay extends JSROOT.MDIDisplay {
 
-   TabsDisplay.prototype = Object.create(JSROOT.MDIDisplay.prototype);
-
-   TabsDisplay.prototype.ForEachFrame = function(userfunc, only_visible) {
-      let topid = this.frameid + '_tabs';
-
-      if (document.getElementById(topid) == null) return;
-
-      if (typeof userfunc != 'function') return;
-
-      let cnt = -1;
-      let active = $('#' + topid).tabs("option", "active");
-
-      $('#' + topid + '> .tabs_draw').each(function() {
-         cnt++;
-         if (!only_visible || (cnt == active))
-            userfunc($(this).get(0));
-      });
-   }
-
-   TabsDisplay.prototype.GetActiveFrame = function() {
-      let found = null;
-      this.ForEachFrame(function(frame) {
-         if (!found) found = frame;
-      }, true);
-
-      return found;
-   }
-
-   TabsDisplay.prototype.ActivateFrame = function(frame) {
-      let cnt = 0, id = -1;
-      this.ForEachFrame(function(fr) {
-         if ($(fr).attr('id') == $(frame).attr('id')) id = cnt;
-         cnt++;
-      });
-      $('#' + this.frameid + "_tabs").tabs("option", "active", id);
-
-      this.active_frame_title = d3.select(frame).attr('frame_title');
-   }
-
-   TabsDisplay.prototype.CreateFrame = function(title) {
-
-      this.BeforeCreateFrame(title);
-
-      let mdi = this,
-          topid = this.frameid + '_tabs',
-          hid = topid + "_sub" + this.cnt++,
-          li = '<li><a href="#' + hid + '">' + title
-                 + '</a><span class="ui-icon ui-icon-close" style="float: left; margin: 0.4em 0.2em 0 0; cursor: pointer;" role="presentation">Remove Tab</span></li>',
-         cont = '<div class="tabs_draw" id="' + hid + '"></div>';
-
-      if (document.getElementById(topid) == null) {
-         $("#" + this.frameid).append('<div id="' + topid + '" class="jsroot">' + ' <ul>' + li + ' </ul>' + cont + '</div>');
-
-         let tabs = $("#" + topid)
-                       .css('overflow','hidden')
-                       .tabs({
-                          heightStyle : "fill",
-                          activate : function (event,ui) {
-                             $(ui.newPanel).css('overflow', 'hidden');
-                             JSROOT.resize($(ui.newPanel).get(0));
-                           }
-                        });
-
-         tabs.delegate("span.ui-icon-close", "click", function() {
-            let panelId = $(this).closest("li").remove().attr("aria-controls");
-            mdi.CleanupFrame(panelId);
-            $("#" + panelId).remove();
-            tabs.tabs("refresh");
-            if ($('#' + topid + '> .tabs_draw').length == 0)
-               $("#" + topid).remove();
-
-         });
-      } else {
-         $("#" + topid).find("> .ui-tabs-nav").append(li);
-         $("#" + topid).append(cont);
-         $("#" + topid).tabs("refresh");
-         $("#" + topid).tabs("option", "active", -1);
+      constructor(frameid) {
+         super(frameid);
+         this.cnt = 0;
       }
-      $('#' + hid)
-         .empty()
-         .css('overflow', 'hidden')
-         .attr('frame_title', title);
 
-      return $('#' + hid).get(0);
-   }
+      ForEachFrame(userfunc, only_visible) {
+         let topid = this.frameid + '_tabs';
 
-   TabsDisplay.prototype.CheckMDIResize = function(frame_id, size) {
-      $("#" + this.frameid + '_tabs').tabs("refresh");
-      JSROOT.MDIDisplay.prototype.CheckMDIResize.call(this, frame_id, size);
-   }
+         if (document.getElementById(topid) == null) return;
+
+         if (typeof userfunc != 'function') return;
+
+         let cnt = -1;
+         let active = $('#' + topid).tabs("option", "active");
+
+         $('#' + topid + '> .tabs_draw').each(function() {
+            cnt++;
+            if (!only_visible || (cnt == active))
+               userfunc($(this).get(0));
+         });
+      }
+
+      GetActiveFrame() {
+         let found = null;
+         this.ForEachFrame(frame => { if (!found) found = frame; }, true);
+         return found;
+      }
+
+      ActivateFrame(frame) {
+         let cnt = 0, id = -1;
+         this.ForEachFrame(fr => {
+            if ($(fr).attr('id') == $(frame).attr('id')) id = cnt;
+            cnt++;
+         });
+         $('#' + this.frameid + "_tabs").tabs("option", "active", id);
+
+         this.active_frame_title = d3.select(frame).attr('frame_title');
+      }
+
+      CreateFrame(title) {
+
+         this.BeforeCreateFrame(title);
+
+         let mdi = this,
+             topid = this.frameid + '_tabs',
+             hid = topid + "_sub" + this.cnt++,
+             li = '<li><a href="#' + hid + '">' + title
+                    + '</a><span class="ui-icon ui-icon-close" style="float: left; margin: 0.4em 0.2em 0 0; cursor: pointer;" role="presentation">Remove Tab</span></li>',
+            cont = '<div class="tabs_draw" id="' + hid + '"></div>';
+
+         if (document.getElementById(topid) == null) {
+            $("#" + this.frameid).append('<div id="' + topid + '" class="jsroot">' + ' <ul>' + li + ' </ul>' + cont + '</div>');
+
+            let tabs = $("#" + topid)
+                          .css('overflow','hidden')
+                          .tabs({
+                             heightStyle : "fill",
+                             activate : function (event,ui) {
+                                $(ui.newPanel).css('overflow', 'hidden');
+                                JSROOT.resize($(ui.newPanel).get(0));
+                              }
+                           });
+
+            tabs.delegate("span.ui-icon-close", "click", function() {
+               let panelId = $(this).closest("li").remove().attr("aria-controls");
+               mdi.CleanupFrame(panelId);
+               $("#" + panelId).remove();
+               tabs.tabs("refresh");
+               if ($('#' + topid + '> .tabs_draw').length == 0)
+                  $("#" + topid).remove();
+
+            });
+         } else {
+            $("#" + topid).find("> .ui-tabs-nav").append(li);
+            $("#" + topid).append(cont);
+            $("#" + topid).tabs("refresh");
+            $("#" + topid).tabs("option", "active", -1);
+         }
+         $('#' + hid)
+            .empty()
+            .css('overflow', 'hidden')
+            .attr('frame_title', title);
+
+         return $('#' + hid).get(0);
+      }
+
+      CheckMDIResize(frame_id, size) {
+         $("#" + this.frameid + '_tabs').tabs("refresh");
+         super.CheckMDIResize(frame_id, size);
+      }
+
+   } // class TabsDisplay
 
    // ==================================================
 
-   function FlexibleDisplay(frameid) {
-      JSROOT.MDIDisplay.call(this, frameid);
-      this.cnt = 0; // use to count newly created frames
-   }
+   class FlexibleDisplay extends JSROOT.MDIDisplay {
 
-   FlexibleDisplay.prototype = Object.create(JSROOT.MDIDisplay.prototype);
-
-   FlexibleDisplay.prototype.ForEachFrame = function(userfunc,  only_visible) {
-      let topid = this.frameid + '_flex';
-
-      if (document.getElementById(topid) == null) return;
-      if (typeof userfunc != 'function') return;
-
-      $('#' + topid + ' .flex_draw').each(function() {
-         // check if only visible specified
-         if (only_visible && $(this).is(":hidden")) return;
-
-         userfunc($(this).get(0));
-      });
-   }
-
-   FlexibleDisplay.prototype.GetActiveFrame = function() {
-      let found = JSROOT.MDIDisplay.prototype.GetActiveFrame.call(this);
-      if (found && !$(found).is(":hidden")) return found;
-
-      found = null;
-      this.ForEachFrame(function(frame) {
-         if (!found) found = frame;
-      }, true);
-
-      return found;
-   }
-
-   FlexibleDisplay.prototype.ActivateFrame = function(frame) {
-      this.active_frame_title = d3.select(frame).attr('frame_title');
-   }
-
-   FlexibleDisplay.prototype.CreateFrame = function(title) {
-
-      this.BeforeCreateFrame(title);
-
-      let topid = this.frameid + '_flex';
-
-      if (document.getElementById(topid) == null)
-         $("#" + this.frameid).append('<div id="'+ topid  + '" class="jsroot" style="overflow:none; height:100%; width:100%"></div>');
-
-      let mdi = this,
-          top = $("#" + topid),
-          w = top.width(),
-          h = top.height(),
-          subid = topid + "_frame" + this.cnt;
-
-      let entry ='<div id="' + subid + '" class="flex_frame" style="position:absolute">' +
-                  '<div class="ui-widget-header flex_header">'+
-                    '<p>'+title+'</p>' +
-                    '<button type="button" style="float:right; width:1.4em"/>' +
-                    '<button type="button" style="float:right; width:1.4em"/>' +
-                    '<button type="button" style="float:right; width:1.4em"/>' +
-                   '</div>' +
-                  '<div id="' + subid + '_cont" class="flex_draw"></div>' +
-                 '</div>';
-
-      top.append(entry);
-
-      function PopupWindow(div) {
-         if (div === 'first') {
-            div = null;
-            $('#' + topid + ' .flex_frame').each(function() {
-               if (!$(this).is(":hidden") && ($(this).prop('state') != "minimal")) div = $(this);
-            });
-            if (!div) return;
-         }
-
-         div.appendTo(div.parent());
-
-         if (div.prop('state') == "minimal") return;
-
-         div = div.find(".flex_draw").get(0);
-         let dummy = new JSROOT.TObjectPainter();
-         dummy.SetDivId(div, -1);
-         JSROOT.Painter.SelectActivePad({ pp: dummy.canv_painter(), active: true });
-
-         JSROOT.resize(div);
+      constructor(frameid) {
+         super(frameid);
+         this.cnt = 0; // use to count newly created frames
       }
 
-      function ChangeWindowState(main, state) {
-         let curr = main.prop('state');
-         if (!curr) curr = "normal";
-         main.prop('state', state);
-         if (state==curr) return;
+      ForEachFrame(userfunc,  only_visible) {
+         let topid = this.frameid + '_flex';
 
-         if (curr == "normal") {
-            main.prop('original_height', main.height());
-            main.prop('original_width', main.width());
-            main.prop('original_top', main.css('top'));
-            main.prop('original_left', main.css('left'));
-         }
+         if (document.getElementById(topid) == null) return;
+         if (typeof userfunc != 'function') return;
 
-         main.find(".jsroot_minbutton").find('.ui-icon')
-             .toggleClass("ui-icon-triangle-1-s", state!="minimal")
-             .toggleClass("ui-icon-triangle-2-n-s", state=="minimal");
+         $('#' + topid + ' .flex_draw').each(function() {
+            // check if only visible specified
+            if (only_visible && $(this).is(":hidden")) return;
 
-         main.find(".jsroot_maxbutton").find('.ui-icon')
-             .toggleClass("ui-icon-triangle-1-n", state!="maximal")
-             .toggleClass("ui-icon-triangle-2-n-s", state=="maximal");
-
-         switch (state) {
-            case "minimal":
-               main.height(main.find('.flex_header').height()).width("auto");
-               main.find(".flex_draw").css("display","none");
-               main.find(".ui-resizable-handle").css("display","none");
-               break;
-            case "maximal":
-               main.height("100%").width("100%").css('left','').css('top','');
-               main.find(".flex_draw").css("display","");
-               main.find(".ui-resizable-handle").css("display","none");
-               break;
-            default:
-               main.find(".flex_draw").css("display","");
-               main.find(".ui-resizable-handle").css("display","");
-               main.height(main.prop('original_height'))
-                   .width(main.prop('original_width'));
-               if (curr!="minimal")
-                  main.css('left', main.prop('original_left'))
-                      .css('top', main.prop('original_top'));
-         }
-
-         if (state !== "minimal")
-            PopupWindow(main);
-         else
-            PopupWindow("first");
+            userfunc($(this).get(0));
+         });
       }
 
-      $("#" + subid)
-         .css('left', parseInt(w * (this.cnt % 5)/10))
-         .css('top', parseInt(h * (this.cnt % 5)/10))
-         .width(Math.round(w * 0.58))
-         .height(Math.round(h * 0.58))
-         .resizable({
-            helper: "jsroot-flex-resizable-helper",
-            start: function(event, ui) {
-               // bring element to front when start resizing
-               PopupWindow($(this));
-            },
-            stop: function(event, ui) {
-               let rect = { width : ui.size.width-1, height : ui.size.height - $(this).find(".flex_header").height()-1 };
-               JSROOT.resize($(this).find(".flex_draw").get(0), rect);
-            }
-          })
-          .draggable({
-            containment: "parent",
-            start: function(event, ui) {
-               // bring element to front when start dragging
-               PopupWindow($(this));
+      GetActiveFrame() {
+         let found = super.GetActiveFrame();
+         if (found && !$(found).is(":hidden")) return found;
 
-               let ddd = $(this).find(".flex_draw");
+         found = null;
+         this.ForEachFrame(frame => { if (!found) found = frame; }, true);
 
-               // block dragging when mouse below header
-               let elementMouseIsOver = document.elementFromPoint(event.clientX, event.clientY);
-               let isparent = false;
-               $(elementMouseIsOver).parents().map(function() { if ($(this).get(0) === ddd.get(0)) isparent = true; });
-               if (isparent) return false;
+         return found;
+      }
+
+      ActivateFrame(frame) {
+         this.active_frame_title = d3.select(frame).attr('frame_title');
+      }
+
+      CreateFrame(title) {
+
+         this.BeforeCreateFrame(title);
+
+         let topid = this.frameid + '_flex';
+
+         if (document.getElementById(topid) == null)
+            $("#" + this.frameid).append('<div id="'+ topid  + '" class="jsroot" style="overflow:none; height:100%; width:100%"></div>');
+
+         let mdi = this,
+             top = $("#" + topid),
+             w = top.width(),
+             h = top.height(),
+             subid = topid + "_frame" + this.cnt;
+
+         let entry ='<div id="' + subid + '" class="flex_frame" style="position:absolute">' +
+                     '<div class="ui-widget-header flex_header">'+
+                       '<p>'+title+'</p>' +
+                       '<button type="button" style="float:right; width:1.4em"/>' +
+                       '<button type="button" style="float:right; width:1.4em"/>' +
+                       '<button type="button" style="float:right; width:1.4em"/>' +
+                      '</div>' +
+                     '<div id="' + subid + '_cont" class="flex_draw"></div>' +
+                    '</div>';
+
+         top.append(entry);
+
+         function PopupWindow(div) {
+            if (div === 'first') {
+               div = null;
+               $('#' + topid + ' .flex_frame').each(function() {
+                  if (!$(this).is(":hidden") && ($(this).prop('state') != "minimal")) div = $(this);
+               });
+               if (!div) return;
             }
-         })
-       .click(function() { PopupWindow($(this)); })
-       .find('.flex_header')
-         // .hover(function() { $(this).toggleClass("ui-state-hover"); })
-         .click(function() {
-            PopupWindow($(this).parent());
-         })
-         .dblclick(function() {
-            let main = $(this).parent();
-            if (main.prop('state') == "normal")
-               ChangeWindowState(main, "maximal");
+
+            div.appendTo(div.parent());
+
+            if (div.prop('state') == "minimal") return;
+
+            div = div.find(".flex_draw").get(0);
+            let dummy = new JSROOT.TObjectPainter();
+            dummy.SetDivId(div, -1);
+            JSROOT.Painter.SelectActivePad({ pp: dummy.canv_painter(), active: true });
+
+            JSROOT.resize(div);
+         }
+
+         function ChangeWindowState(main, state) {
+            let curr = main.prop('state');
+            if (!curr) curr = "normal";
+            main.prop('state', state);
+            if (state==curr) return;
+
+            if (curr == "normal") {
+               main.prop('original_height', main.height());
+               main.prop('original_width', main.width());
+               main.prop('original_top', main.css('top'));
+               main.prop('original_left', main.css('left'));
+            }
+
+            main.find(".jsroot_minbutton").find('.ui-icon')
+                .toggleClass("ui-icon-triangle-1-s", state!="minimal")
+                .toggleClass("ui-icon-triangle-2-n-s", state=="minimal");
+
+            main.find(".jsroot_maxbutton").find('.ui-icon')
+                .toggleClass("ui-icon-triangle-1-n", state!="maximal")
+                .toggleClass("ui-icon-triangle-2-n-s", state=="maximal");
+
+            switch (state) {
+               case "minimal":
+                  main.height(main.find('.flex_header').height()).width("auto");
+                  main.find(".flex_draw").css("display","none");
+                  main.find(".ui-resizable-handle").css("display","none");
+                  break;
+               case "maximal":
+                  main.height("100%").width("100%").css('left','').css('top','');
+                  main.find(".flex_draw").css("display","");
+                  main.find(".ui-resizable-handle").css("display","none");
+                  break;
+               default:
+                  main.find(".flex_draw").css("display","");
+                  main.find(".ui-resizable-handle").css("display","");
+                  main.height(main.prop('original_height'))
+                      .width(main.prop('original_width'));
+                  if (curr!="minimal")
+                     main.css('left', main.prop('original_left'))
+                         .css('top', main.prop('original_top'));
+            }
+
+            if (state !== "minimal")
+               PopupWindow(main);
             else
-               ChangeWindowState(main, "normal");
-         })
-        .find("button")
-           .first()
-           .attr('title','close canvas')
-           .button({ icons: { primary: "ui-icon-close" }, text: false })
-           .click(function() {
-              let main = $(this).parent().parent();
-              mdi.CleanupFrame(main.find(".flex_draw").get(0));
-              main.remove();
-              PopupWindow('first'); // set active as first window
-           })
-           .next()
-           .attr('title','maximize canvas')
-           .addClass('jsroot_maxbutton')
-           .button({ icons: { primary: "ui-icon-triangle-1-n" }, text: false })
-           .click(function() {
-              let main = $(this).parent().parent();
-              let maximize = $(this).find('.ui-icon').hasClass("ui-icon-triangle-1-n");
-              ChangeWindowState(main, maximize ? "maximal" : "normal");
-           })
-           .next()
-           .attr('title','minimize canvas')
-           .addClass('jsroot_minbutton')
-           .button({ icons: { primary: "ui-icon-triangle-1-s" }, text: false })
-           .click(function() {
-              let main = $(this).parent().parent();
-              let minimize = $(this).find('.ui-icon').hasClass("ui-icon-triangle-1-s");
-              ChangeWindowState(main, minimize ? "minimal" : "normal");
-           });
+               PopupWindow("first");
+         }
 
-      // set default z-index to avoid overlap of these special elements
-      $("#" + subid).find(".ui-resizable-handle").css('z-index', '');
+         $("#" + subid)
+            .css('left', parseInt(w * (this.cnt % 5)/10))
+            .css('top', parseInt(h * (this.cnt % 5)/10))
+            .width(Math.round(w * 0.58))
+            .height(Math.round(h * 0.58))
+            .resizable({
+               helper: "jsroot-flex-resizable-helper",
+               start: function(event, ui) {
+                  // bring element to front when start resizing
+                  PopupWindow($(this));
+               },
+               stop: function(event, ui) {
+                  let rect = { width : ui.size.width-1, height : ui.size.height - $(this).find(".flex_header").height()-1 };
+                  JSROOT.resize($(this).find(".flex_draw").get(0), rect);
+               }
+             })
+             .draggable({
+               containment: "parent",
+               start: function(event, ui) {
+                  // bring element to front when start dragging
+                  PopupWindow($(this));
 
-      this.cnt++;
+                  let ddd = $(this).find(".flex_draw");
 
-      return $("#" + subid + "_cont").attr('frame_title', title).get(0);
-   }
+                  // block dragging when mouse below header
+                  let elementMouseIsOver = document.elementFromPoint(event.clientX, event.clientY);
+                  let isparent = false;
+                  $(elementMouseIsOver).parents().map(function() { if ($(this).get(0) === ddd.get(0)) isparent = true; });
+                  if (isparent) return false;
+               }
+            })
+          .click(function() { PopupWindow($(this)); })
+          .find('.flex_header')
+            // .hover(function() { $(this).toggleClass("ui-state-hover"); })
+            .click(function() {
+               PopupWindow($(this).parent());
+            })
+            .dblclick(function() {
+               let main = $(this).parent();
+               if (main.prop('state') == "normal")
+                  ChangeWindowState(main, "maximal");
+               else
+                  ChangeWindowState(main, "normal");
+            })
+           .find("button")
+              .first()
+              .attr('title','close canvas')
+              .button({ icons: { primary: "ui-icon-close" }, text: false })
+              .click(function() {
+                 let main = $(this).parent().parent();
+                 mdi.CleanupFrame(main.find(".flex_draw").get(0));
+                 main.remove();
+                 PopupWindow('first'); // set active as first window
+              })
+              .next()
+              .attr('title','maximize canvas')
+              .addClass('jsroot_maxbutton')
+              .button({ icons: { primary: "ui-icon-triangle-1-n" }, text: false })
+              .click(function() {
+                 let main = $(this).parent().parent();
+                 let maximize = $(this).find('.ui-icon').hasClass("ui-icon-triangle-1-n");
+                 ChangeWindowState(main, maximize ? "maximal" : "normal");
+              })
+              .next()
+              .attr('title','minimize canvas')
+              .addClass('jsroot_minbutton')
+              .button({ icons: { primary: "ui-icon-triangle-1-s" }, text: false })
+              .click(function() {
+                 let main = $(this).parent().parent();
+                 let minimize = $(this).find('.ui-icon').hasClass("ui-icon-triangle-1-s");
+                 ChangeWindowState(main, minimize ? "minimal" : "normal");
+              });
+
+         // set default z-index to avoid overlap of these special elements
+         $("#" + subid).find(".ui-resizable-handle").css('z-index', '');
+
+         this.cnt++;
+
+         return $("#" + subid + "_cont").attr('frame_title', title).get(0);
+      }
+
+   } // class FlexibleDisplay
 
    // ================== new grid with flexible boundaries ========
 
@@ -2151,7 +2149,7 @@ JSROOT.require(['d3', 'jquery', 'JSRootPainter.hierarchy'], function(d3, $) {
       if (!frame) return null;
 
       let divid = d3.select(frame).attr('id'),
-          player = new JSROOT.TBasePainter();
+          player = new JSROOT.BasePainter();
 
       if (item._childs && !asleaf)
          for (let n=0;n<item._childs.length;++n) {

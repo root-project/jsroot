@@ -2498,369 +2498,354 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
 
    // MDIDisplay - class to manage multiple document interface for drawings
 
-   function MDIDisplay(frameid) {
-      JSROOT.TBasePainter.call(this);
-      this.frameid = frameid;
-      this.SetDivId(frameid);
-      this.select_main().property('mdi', this);
-      this.CleanupFrame = JSROOT.cleanup; // use standard cleanup function by default
-      this.active_frame_title = ""; // keep title of active frame
-   }
+   class MDIDisplay extends JSROOT.BasePainter {
+      constructor(frameid) {
+         super();
+         this.frameid = frameid;
+         this.SetDivId(frameid);
+         this.select_main().property('mdi', this);
+         this.CleanupFrame = JSROOT.cleanup; // use standard cleanup function by default
+         this.active_frame_title = ""; // keep title of active frame
+      }
 
-   MDIDisplay.prototype = Object.create(JSROOT.TBasePainter.prototype);
+      BeforeCreateFrame(title) { this.active_frame_title = title; }
 
-   MDIDisplay.prototype.BeforeCreateFrame = function(title) {
-      this.active_frame_title = title;
-   }
+      /** method dedicated to iterate over existing panels
+        * @param {function} userfunc is called with arguments (frame)
+        * @param {boolean} only_visible let select only visible frames */
+      ForEachFrame(/* userfunc, only_visible */) { console.warn("ForEachFrame not implemented in MDIDisplay"); }
 
-   MDIDisplay.prototype.ForEachFrame = function(/* userfunc, only_visible */) {
-      // method dedicated to iterate over existing panels
-      // provided userfunc is called with arguments (frame)
+      /** method dedicated to iterate over existing panles
+        * @param {function} userfunc is called with arguments (painter, frame)
+        * @param {boolean} only_visible let select only visible frames */
+      ForEachPainter(userfunc, only_visible) {
 
-      console.warn("ForEachFrame not implemented in MDIDisplay");
-   }
+         this.ForEachFrame(frame => {
+            let dummy = new JSROOT.TObjectPainter();
+            dummy.SetDivId(frame, -1);
+            dummy.ForEachPainter(painter => userfunc(painter, frame));
+         }, only_visible);
+      }
 
-   MDIDisplay.prototype.ForEachPainter = function(userfunc, only_visible) {
-      // method dedicated to iterate over existing panles
-      // provided userfunc is called with arguments (painter, frame)
+      NumDraw() {
+         let cnt = 0;
+         this.ForEachFrame(() => ++cnt);
+         return cnt;
+      }
 
-      this.ForEachFrame(function(frame) {
-         let dummy = new JSROOT.TObjectPainter();
-         dummy.SetDivId(frame, -1);
-         dummy.ForEachPainter(function(painter) { userfunc(painter, frame); });
-      }, only_visible);
-   }
+      FindFrame(searchtitle, force) {
+         let found_frame = null;
 
-   MDIDisplay.prototype.NumDraw = function() {
-      let cnt = 0;
-      this.ForEachFrame(function() { ++cnt; });
-      return cnt;
-   }
+         this.ForEachFrame(frame => {
+            if (d3.select(frame).attr('frame_title') == searchtitle)
+               found_frame = frame;
+         });
 
-   MDIDisplay.prototype.FindFrame = function(searchtitle, force) {
-      let found_frame = null;
+         if ((found_frame == null) && force)
+            found_frame = this.CreateFrame(searchtitle);
 
-      this.ForEachFrame(function(frame) {
-         if (d3.select(frame).attr('frame_title') == searchtitle)
-            found_frame = frame;
-      });
+         return found_frame;
+      }
 
-      if ((found_frame == null) && force)
-         found_frame = this.CreateFrame(searchtitle);
+      ActivateFrame(frame) { this.active_frame_title = d3.select(frame).attr('frame_title'); }
 
-      return found_frame;
-   }
+      GetActiveFrame() { return this.FindFrame(this.active_frame_title); }
 
-   MDIDisplay.prototype.ActivateFrame = function(frame) {
-      this.active_frame_title = d3.select(frame).attr('frame_title');
-   }
+      CheckMDIResize(only_frame_id, size) {
+         // perform resize for each frame
+         let resized_frame = null;
 
-   MDIDisplay.prototype.GetActiveFrame = function() {
-      return this.FindFrame(this.active_frame_title);
-   }
+         this.ForEachPainter(function(painter, frame) {
 
-   MDIDisplay.prototype.CheckMDIResize = function(only_frame_id, size) {
-      // perform resize for each frame
-      let resized_frame = null;
+            if (only_frame_id && (d3.select(frame).attr('id') != only_frame_id)) return;
 
-      this.ForEachPainter(function(painter, frame) {
+            if ((painter.GetItemName()!==null) && (typeof painter.CheckResize == 'function')) {
+               // do not call resize for many painters on the same frame
+               if (resized_frame === frame) return;
+               painter.CheckResize(size);
+               resized_frame = frame;
+            }
+         });
+      }
 
-         if (only_frame_id && (d3.select(frame).attr('id') != only_frame_id)) return;
+      Reset() {
+         this.active_frame_title = "";
 
-         if ((painter.GetItemName()!==null) && (typeof painter.CheckResize == 'function')) {
-            // do not call resize for many painters on the same frame
-            if (resized_frame === frame) return;
-            painter.CheckResize(size);
-            resized_frame = frame;
-         }
-      });
-   }
+         this.ForEachFrame(this.CleanupFrame);
 
-   MDIDisplay.prototype.Reset = function() {
+         this.select_main().html("").property('mdi', null);
+      }
 
-      this.active_frame_title = "";
+      Draw(title, obj, drawopt) {
+         // draw object with specified options
+         if (!obj) return;
 
-      this.ForEachFrame(this.CleanupFrame);
+         if (!JSROOT.canDraw(obj._typename, drawopt)) return;
 
-      this.select_main().html("").property('mdi', null);
-   }
+         let frame = this.FindFrame(title, true);
 
-   MDIDisplay.prototype.Draw = function(title, obj, drawopt) {
-      // draw object with specified options
-      if (!obj) return;
+         this.ActivateFrame(frame);
 
-      if (!JSROOT.canDraw(obj._typename, drawopt)) return;
-
-      let frame = this.FindFrame(title, true);
-
-      this.ActivateFrame(frame);
-
-      return JSROOT.redraw(frame, obj, drawopt);
-   }
+         return JSROOT.redraw(frame, obj, drawopt);
+      }
+   } // class MDIDisplay
 
 
    // ==================================================
 
-   function CustomDisplay() {
-      JSROOT.MDIDisplay.call(this, "dummy");
-      this.frames = {}; // array of configured frames
-   }
-
-   CustomDisplay.prototype = Object.create(MDIDisplay.prototype);
-
-   CustomDisplay.prototype.AddFrame = function(divid, itemname) {
-      if (!(divid in this.frames)) this.frames[divid] = "";
-
-      this.frames[divid] += (itemname + ";");
-   }
-
-   CustomDisplay.prototype.ForEachFrame = function(userfunc /* ,  only_visible */) {
-      let ks = Object.keys(this.frames);
-      for (let k = 0; k < ks.length; ++k) {
-         let node = d3.select("#"+ks[k]);
-         if (!node.empty())
-            JSROOT.CallBack(userfunc, node.node());
+   class CustomDisplay extends MDIDisplay {
+      constructor() {
+         super("dummy");
+         this.frames = {}; // array of configured frames
       }
-   }
 
-   CustomDisplay.prototype.CreateFrame = function(title) {
+      AddFrame(divid, itemname) {
+         if (!(divid in this.frames)) this.frames[divid] = "";
 
-      this.BeforeCreateFrame(title);
-
-      let ks = Object.keys(this.frames);
-      for (let k = 0; k < ks.length; ++k) {
-         let items = this.frames[ks[k]];
-         if (items.indexOf(title+";")>=0)
-            return d3.select("#"+ks[k]).node();
+         this.frames[divid] += (itemname + ";");
       }
-      return null;
-   }
 
-   CustomDisplay.prototype.Reset = function() {
-      MDIDisplay.prototype.Reset.call(this);
-      this.ForEachFrame(function(frame) {
-         d3.select(frame).html("");
-      });
-   }
+      ForEachFrame(userfunc /* ,  only_visible */) {
+         let ks = Object.keys(this.frames);
+         for (let k = 0; k < ks.length; ++k) {
+            let node = d3.select("#"+ks[k]);
+            if (!node.empty())
+               JSROOT.CallBack(userfunc, node.node());
+         }
+      }
+
+      CreateFrame(title) {
+         this.BeforeCreateFrame(title);
+
+         let ks = Object.keys(this.frames);
+         for (let k = 0; k < ks.length; ++k) {
+            let items = this.frames[ks[k]];
+            if (items.indexOf(title+";")>=0)
+               return d3.select("#"+ks[k]).node();
+         }
+         return null;
+      }
+
+      Reset() {
+         super.Reset();
+         this.ForEachFrame(frame => d3.select(frame).html(""));
+      }
+   } // class CustomDisplay
 
    // ================================================
 
-   function GridDisplay(frameid, kind, kind2) {
-      // following kinds are supported
-      //  vertical or horizontal - only first letter matters, defines basic orientation
-      //   'x' in the name disable interactive separators
-      //   v4 or h4 - 4 equal elements in specified direction
-      //   v231 -  created 3 vertical elements, first divided on 2, second on 3 and third on 1 part
-      //   v23_52 - create two vertical elements with 2 and 3 subitems, size ratio 5:2
-      //   gridNxM - normal grid layout without interactive separators
-      //   gridiNxM - grid layout with interactive separators
-      //   simple - no layout, full frame used for object drawings
+   class GridDisplay extends MDIDisplay {
 
-      JSROOT.MDIDisplay.call(this, frameid);
+      constructor(frameid, kind, kind2) {
+         // following kinds are supported
+         //  vertical or horizontal - only first letter matters, defines basic orientation
+         //   'x' in the name disable interactive separators
+         //   v4 or h4 - 4 equal elements in specified direction
+         //   v231 -  created 3 vertical elements, first divided on 2, second on 3 and third on 1 part
+         //   v23_52 - create two vertical elements with 2 and 3 subitems, size ratio 5:2
+         //   gridNxM - normal grid layout without interactive separators
+         //   gridiNxM - grid layout with interactive separators
+         //   simple - no layout, full frame used for object drawings
 
-      this.framecnt = 0;
-      this.getcnt = 0;
-      this.groups = [];
-      this.vertical = kind && (kind[0] == 'v');
-      this.use_separarators = !kind || (kind.indexOf("x")<0);
-      this.simple_layout = false;
+         super(frameid);
 
-      this.select_main().style('overflow','hidden');
+         this.framecnt = 0;
+         this.getcnt = 0;
+         this.groups = [];
+         this.vertical = kind && (kind[0] == 'v');
+         this.use_separarators = !kind || (kind.indexOf("x")<0);
+         this.simple_layout = false;
 
-      if (kind === "simple") {
-         this.simple_layout = true;
-         this.use_separarators = false;
-         this.framecnt = 1;
-         return;
-      }
+         this.select_main().style('overflow','hidden');
 
-      let num = 2, arr = undefined, sizes = undefined;
-
-      if ((kind.indexOf("grid") == 0) || kind2) {
-         if (kind2) kind = kind + "x" + kind2;
-               else kind = kind.substr(4).trim();
-         this.use_separarators = false;
-         if (kind[0]==="i") {
-            this.use_separarators = true;
-            kind = kind.substr(1);
-         }
-
-         let separ = kind.indexOf("x"), sizex = 3, sizey = 3;
-
-         if (separ > 0) {
-            sizey = parseInt(kind.substr(separ + 1));
-            sizex = parseInt(kind.substr(0, separ));
-         } else {
-            sizex = sizey = parseInt(kind);
-         }
-
-         if (isNaN(sizex)) sizex = 3;
-         if (isNaN(sizey)) sizey = 3;
-
-         if (sizey>1) {
-            this.vertical = true;
-            num = sizey;
-            if (sizex>1) {
-               arr = new Array(num);
-               for (let k=0;k<num;++k) arr[k] = sizex;
-            }
-         } else
-         if (sizex > 1) {
-            this.vertical = false;
-            num = sizex;
-         } else {
+         if (kind === "simple") {
             this.simple_layout = true;
             this.use_separarators = false;
             this.framecnt = 1;
             return;
          }
-         kind = "";
-      }
 
-      if (kind && kind.indexOf("_")>0) {
-         let arg = parseInt(kind.substr(kind.indexOf("_")+1), 10);
-         if (!isNaN(arg) && (arg>10)) {
-            kind = kind.substr(0, kind.indexOf("_"));
-            sizes = [];
-            while (arg>0) {
-               sizes.unshift(Math.max(arg % 10, 1));
-               arg = Math.round((arg-sizes[0])/10);
-               if (sizes[0]===0) sizes[0]=1;
+         let num = 2, arr = undefined, sizes = undefined;
+
+         if ((kind.indexOf("grid") == 0) || kind2) {
+            if (kind2) kind = kind + "x" + kind2;
+                  else kind = kind.substr(4).trim();
+            this.use_separarators = false;
+            if (kind[0]==="i") {
+               this.use_separarators = true;
+               kind = kind.substr(1);
+            }
+
+            let separ = kind.indexOf("x"), sizex = 3, sizey = 3;
+
+            if (separ > 0) {
+               sizey = parseInt(kind.substr(separ + 1));
+               sizex = parseInt(kind.substr(0, separ));
+            } else {
+               sizex = sizey = parseInt(kind);
+            }
+
+            if (isNaN(sizex)) sizex = 3;
+            if (isNaN(sizey)) sizey = 3;
+
+            if (sizey>1) {
+               this.vertical = true;
+               num = sizey;
+               if (sizex>1) {
+                  arr = new Array(num);
+                  for (let k=0;k<num;++k) arr[k] = sizex;
+               }
+            } else
+            if (sizex > 1) {
+               this.vertical = false;
+               num = sizex;
+            } else {
+               this.simple_layout = true;
+               this.use_separarators = false;
+               this.framecnt = 1;
+               return;
+            }
+            kind = "";
+         }
+
+         if (kind && kind.indexOf("_")>0) {
+            let arg = parseInt(kind.substr(kind.indexOf("_")+1), 10);
+            if (!isNaN(arg) && (arg>10)) {
+               kind = kind.substr(0, kind.indexOf("_"));
+               sizes = [];
+               while (arg>0) {
+                  sizes.unshift(Math.max(arg % 10, 1));
+                  arg = Math.round((arg-sizes[0])/10);
+                  if (sizes[0]===0) sizes[0]=1;
+               }
             }
          }
-      }
 
-      kind = kind ? parseInt(kind.replace( /^\D+/g, ''), 10) : 0;
-      if (kind && (kind>1)) {
-         if (kind<10) {
-            num = kind;
-         } else {
-            arr = [];
-            while (kind>0) {
-               arr.unshift(kind % 10);
-               kind = Math.round((kind-arr[0])/10);
-               if (arr[0]==0) arr[0]=1;
+         kind = kind ? parseInt(kind.replace( /^\D+/g, ''), 10) : 0;
+         if (kind && (kind>1)) {
+            if (kind<10) {
+               num = kind;
+            } else {
+               arr = [];
+               while (kind>0) {
+                  arr.unshift(kind % 10);
+                  kind = Math.round((kind-arr[0])/10);
+                  if (arr[0]==0) arr[0]=1;
+               }
+               num = arr.length;
             }
-            num = arr.length;
          }
+
+         if (sizes && (sizes.length!==num)) sizes = undefined;
+
+         if (!this.simple_layout)
+            this.CreateGroup(this, this.select_main(), num, arr, sizes);
       }
 
-      if (sizes && (sizes.length!==num)) sizes = undefined;
+      CreateGroup(handle, main, num, childs, sizes) {
 
-      if (!this.simple_layout)
-         this.CreateGroup(this, this.select_main(), num, arr, sizes);
-   }
+         if (!sizes) sizes = new Array(num);
+         let sum1 = 0, sum2 = 0;
+         for (let n=0;n<num;++n) sum1 += (sizes[n] || 1);
+         for (let n=0;n<num;++n) {
+            sizes[n] = Math.round(100 * (sizes[n] || 1) / sum1);
+            sum2 += sizes[n];
+            if (n==num-1) sizes[n] += (100-sum2); // make 100%
+         }
 
-   GridDisplay.prototype = Object.create(MDIDisplay.prototype);
+         for (let cnt = 0; cnt<num; ++cnt) {
+            let group = { id: cnt, drawid: -1, position: 0, size: sizes[cnt] };
+            if (cnt>0) group.position = handle.groups[cnt-1].position + handle.groups[cnt-1].size;
+            group.position0 = group.position;
 
-   GridDisplay.prototype.CreateGroup = function(handle, main, num, childs, sizes) {
+            if (!childs || !childs[cnt] || childs[cnt]<2) group.drawid = this.framecnt++;
 
-      if (!sizes) sizes = new Array(num);
-      let sum1 = 0, sum2 = 0;
-      for (let n=0;n<num;++n) sum1 += (sizes[n] || 1);
-      for (let n=0;n<num;++n) {
-         sizes[n] = Math.round(100 * (sizes[n] || 1) / sum1);
-         sum2 += sizes[n];
-         if (n==num-1) sizes[n] += (100-sum2); // make 100%
+            handle.groups.push(group);
+
+            let elem = main.append("div").attr('groupid', group.id);
+
+            if (handle.vertical)
+               elem.style('float', 'bottom').style('height',group.size+'%').style('width','100%');
+            else
+               elem.style('float', 'left').style('width',group.size+'%').style('height','100%');
+
+            if (group.drawid>=0) {
+               elem.classed('jsroot_newgrid', true);
+               if (typeof this.frameid === 'string')
+                  elem.attr('id', this.frameid + "_" + group.drawid);
+            } else {
+               elem.style('display','flex').style('flex-direction', handle.vertical ? "row" : "column");
+            }
+
+            if (childs && (childs[cnt]>1)) {
+               group.vertical = !handle.vertical;
+               group.groups = [];
+               elem.style('overflow','hidden');
+               this.CreateGroup(group, elem, childs[cnt]);
+            }
+         }
+
+         if (this.use_separarators && this.CreateSeparator)
+            for (let cnt=1;cnt<num;++cnt)
+               this.CreateSeparator(handle, main, handle.groups[cnt]);
       }
 
-      for (let cnt = 0; cnt<num; ++cnt) {
-         let group = { id: cnt, drawid: -1, position: 0, size: sizes[cnt] };
-         if (cnt>0) group.position = handle.groups[cnt-1].position + handle.groups[cnt-1].size;
-         group.position0 = group.position;
-
-         if (!childs || !childs[cnt] || childs[cnt]<2) group.drawid = this.framecnt++;
-
-         handle.groups.push(group);
-
-         let elem = main.append("div").attr('groupid', group.id);
-
-         if (handle.vertical)
-            elem.style('float', 'bottom').style('height',group.size+'%').style('width','100%');
+      ForEachFrame(userfunc /*, only_visible */) {
+         if (this.simple_layout)
+            userfunc(this.GetFrame());
          else
-            elem.style('float', 'left').style('width',group.size+'%').style('height','100%');
-
-         if (group.drawid>=0) {
-            elem.classed('jsroot_newgrid', true);
-            if (typeof this.frameid === 'string')
-               elem.attr('id', this.frameid + "_" + group.drawid);
-         } else {
-            elem.style('display','flex').style('flex-direction', handle.vertical ? "row" : "column");
-         }
-
-         if (childs && (childs[cnt]>1)) {
-            group.vertical = !handle.vertical;
-            group.groups = [];
-            elem.style('overflow','hidden');
-            this.CreateGroup(group, elem, childs[cnt]);
-         }
+            this.select_main().selectAll('.jsroot_newgrid').each(function() {
+               userfunc(d3.select(this).node());
+            });
       }
 
-      if (this.use_separarators && this.CreateSeparator)
-         for (let cnt=1;cnt<num;++cnt)
-            this.CreateSeparator(handle, main, handle.groups[cnt]);
-   }
+      GetActiveFrame() {
+         if (this.simple_layout) return this.GetFrame();
 
-   GridDisplay.prototype.ForEachFrame = function(userfunc /*, only_visible */) {
-      if (this.simple_layout)
-         userfunc(this.GetFrame());
-      else
+         let found = super.GetActiveFrame();
+         if (found) return found;
+
+         this.ForEachFrame(frame => { if (!found) found = frame; }, true);
+
+         return found;
+      }
+
+      ActivateFrame(frame) { this.active_frame_title = d3.select(frame).attr('frame_title'); }
+
+      GetFrame(id) {
+         if (this.simple_layout)
+            return this.select_main('origin').node();
+         let res = null;
          this.select_main().selectAll('.jsroot_newgrid').each(function() {
-            userfunc(d3.select(this).node());
+            if (id-- === 0) res = this;
          });
-   }
-
-   GridDisplay.prototype.GetActiveFrame = function() {
-      if (this.simple_layout) return this.GetFrame();
-
-      let found = MDIDisplay.prototype.GetActiveFrame.call(this);
-      if (found) return found;
-
-      this.ForEachFrame(function(frame) {
-         if (!found) found = frame;
-      }, true);
-
-      return found;
-   }
-
-   GridDisplay.prototype.ActivateFrame = function(frame) {
-      this.active_frame_title = d3.select(frame).attr('frame_title');
-   }
-
-   GridDisplay.prototype.GetFrame = function(id) {
-      if (this.simple_layout)
-         return this.select_main('origin').node();
-      let res = null;
-      this.select_main().selectAll('.jsroot_newgrid').each(function() {
-         if (id-- === 0) res = this;
-      });
-      return res;
-   }
-
-   GridDisplay.prototype.NumGridFrames = function() {
-      return this.framecnt;
-   }
-
-   GridDisplay.prototype.CreateFrame = function(title) {
-      this.BeforeCreateFrame(title);
-
-      let frame = null, maxloop = this.framecnt || 2;
-
-      while (!frame && maxloop--) {
-         frame = this.GetFrame(this.getcnt);
-         if (!this.simple_layout && this.framecnt)
-            this.getcnt = (this.getcnt+1) % this.framecnt;
-
-         if (d3.select(frame).classed("jsroot_fixed_frame")) frame = null;
+         return res;
       }
 
-      if (frame) {
-         this.CleanupFrame(frame);
-         d3.select(frame).attr('frame_title', title);
+      NumGridFrames() { return this.framecnt; }
+
+      CreateFrame(title) {
+         this.BeforeCreateFrame(title);
+
+         let frame = null, maxloop = this.framecnt || 2;
+
+         while (!frame && maxloop--) {
+            frame = this.GetFrame(this.getcnt);
+            if (!this.simple_layout && this.framecnt)
+               this.getcnt = (this.getcnt+1) % this.framecnt;
+
+            if (d3.select(frame).classed("jsroot_fixed_frame")) frame = null;
+         }
+
+         if (frame) {
+            this.CleanupFrame(frame);
+            d3.select(frame).attr('frame_title', title);
+         }
+
+         return frame;
       }
 
-      return frame;
-   }
+   } // class GridDisplay
 
 
    // export all functions and classes

@@ -3833,7 +3833,7 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter'], function(d3) {
 
 
    JSROOT.Painter.drawJSImage = function(divid, obj, opt) {
-      let painter = new JSROOT.TBasePainter();
+      let painter = new JSROOT.BasePainter();
       painter.SetDivId(divid, -1);
 
       let main = painter.select_main();
