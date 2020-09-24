@@ -38,7 +38,7 @@
          });
       }
 
-      define( jsroot );
+      // define( jsroot );
 
       if (norjs || !require.specified("JSRootCore"))
          define('JSRootCore', [], jsroot);
