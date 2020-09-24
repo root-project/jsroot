@@ -136,6 +136,7 @@
          'JSRootIOEvolution'    : { src: 'JSRootIOEvolution' },
          'JSRootTree'           : { src: 'JSRootTree' },
          'JSRoot.openui5'       : { src: 'JSRoot.openui5' },
+         'JSRoot.latex'         : { src: 'JSRoot.latex' },
          'JSRoot.webwindow'     : { src: 'JSRoot.webwindow' },
          'JSRootPainter'        : { src: 'JSRootPainter' },
          'JSRootPainter.v6'     : { src: 'JSRootPainter.v6' },
@@ -356,6 +357,7 @@
             case "v7more" : need[k] = "JSRootPainter.v7more"; break;
             case "jq2d" : need[k] = "JSRootPainter.jquery"; break;
             case "openui5" : need[k] = "JSRoot.openui5"; break;
+            case "latex" : need[k] = "JSRoot.latex"; break;
             default: if (need[k].indexOf("load:") == 0) need[k] = need[k].substr(5);
          }
       }
