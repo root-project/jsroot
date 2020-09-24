@@ -2180,7 +2180,7 @@ JSROOT.require(['d3', 'jquery', 'JSRootPainter.hierarchy'], function(d3, $) {
    JSROOT.drawLeafPlayer = function(hpainter, itemname) {
       return JSROOT.drawTreePlayer(hpainter, itemname, false, true);
    }
-   
+
    // return promise with loading of remaining components
    return JSROOT.require(['jquery-ui','jqueryui-mousewheel', 'jqueryui-touch-punch']);
 });

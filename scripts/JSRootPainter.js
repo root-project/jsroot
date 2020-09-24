@@ -1559,452 +1559,446 @@ JSROOT.require(['d3'], function(d3) {
 
    // ========================================================================================
 
-   /**
-    * @summary Basic painter class.
-    * @constructor
-    * @memberof JSROOT
-    */
+   /** @class Basic painter class. */
 
-   function TBasePainter() {
-      this.divid = null; // either id of element (preferable) or element itself
-   }
-
-   /** @summary Access painter reference, stored in first child element.
-    *
-    *    - on === true - set *this* as painter
-    *    - on === false - delete painter reference
-    *    - on === undefined - return painter
-    *
-    * @param {boolean} on - that to perfrom
-    * @private
-    */
-   TBasePainter.prototype.AccessTopPainter = function(on) {
-      let main = this.select_main().node(),
-         chld = main ? main.firstChild : null;
-      if (!chld) return null;
-      if (on === true) chld.painter = this; else
-         if (on === false) delete chld.painter;
-      return chld.painter;
-   }
-
-   /** @summary Generic method to cleanup painter */
-   TBasePainter.prototype.Cleanup = function(keep_origin) {
-
-      let origin = this.select_main('origin');
-      if (!origin.empty() && !keep_origin) origin.html("");
-      if (this._changed_layout)
-         this.set_layout_kind('simple');
-      this.AccessTopPainter(false);
-      this.divid = null;
-      delete this._selected_main;
-
-      if (this._hpainter && typeof this._hpainter.ClearPainter === 'function') this._hpainter.ClearPainter(this);
-
-      delete this._changed_layout;
-      delete this._hitemname;
-      delete this._hdrawopt;
-      delete this._hpainter;
-   }
-
-   /** @summary Function should be called by the painter when first drawing is completed
-    * @private */
-
-   TBasePainter.prototype.DrawingReady = function(res_painter, res_value) {
-      let res = (res_value === undefined) ? true : !!res_value;
-      this._ready_called_ = res;
-      if (this._ready_callbacks_ !== undefined) {
-         let callbacks = (res ? this._ready_callbacks_ : this._reject_callbacks_) || [];
-         if (!this._return_res_painter) res_painter = this;
-
-         delete this._return_res_painter;
-         delete this._ready_callbacks_;
-         delete this._reject_callbacks_;
-
-         while (callbacks.length)
-            JSROOT.CallBack(callbacks.shift(), res_painter);
+   class BasePainter {
+      constructor() {
+         this.divid = null; // either id of element (preferable) or element itself
       }
+
+      /** @summary Access painter reference, stored in first child element.
+       *
+       *    - on === true - set *this* as painter
+       *    - on === false - delete painter reference
+       *    - on === undefined - return painter
+       *
+       * @param {boolean} on - that to perfrom
+       * @private
+       */
+      AccessTopPainter(on) {
+         let main = this.select_main().node(),
+            chld = main ? main.firstChild : null;
+         if (!chld) return null;
+         if (on === true) chld.painter = this; else
+            if (on === false) delete chld.painter;
+         return chld.painter;
+      }
+
+      /** @summary Generic method to cleanup painter */
+      Cleanup(keep_origin) {
+
+         let origin = this.select_main('origin');
+         if (!origin.empty() && !keep_origin) origin.html("");
+         if (this._changed_layout)
+            this.set_layout_kind('simple');
+         this.AccessTopPainter(false);
+         this.divid = null;
+         delete this._selected_main;
+
+         if (this._hpainter && typeof this._hpainter.ClearPainter === 'function') this._hpainter.ClearPainter(this);
+
+         delete this._changed_layout;
+         delete this._hitemname;
+         delete this._hdrawopt;
+         delete this._hpainter;
+      }
+
+      /** @summary Function should be called by the painter when first drawing is completed
+       * @private */
+
+      DrawingReady(res_painter, res_value) {
+         let res = (res_value === undefined) ? true : !!res_value;
+         this._ready_called_ = res;
+         if (this._ready_callbacks_ !== undefined) {
+            let callbacks = (res ? this._ready_callbacks_ : this._reject_callbacks_) || [];
+            if (!this._return_res_painter) res_painter = this;
+
+            delete this._return_res_painter;
+            delete this._ready_callbacks_;
+            delete this._reject_callbacks_;
+
+            while (callbacks.length)
+               JSROOT.CallBack(callbacks.shift(), res_painter);
+         }
+         return this;
+      }
+
+      /** @summary Function should be called when first drawing fails
+       * @private */
+
+      DrawingFail(res_painter) { return this.DrawingReady(res_painter, false); }
+
+      /** @summary Call back will be called when painter ready with the drawing
+       * @private
+       */
+      WhenReady(resolveFunc, rejectFunc) {
+         if (typeof resolveFunc !== 'function') return;
+         if ('_ready_called_' in this)
+            return JSROOT.CallBack(resolveFunc, this);
+         if (!this._ready_callbacks_)
+            this._ready_callbacks_ = [resolveFunc];
+         else
+            this._ready_callbacks_.push(resolveFunc);
+         if (rejectFunc) {
+            if (!this._reject_callbacks_)
+               this._reject_callbacks_ = [rejectFunc];
+            else
+               this._reject_callbacks_.push(rejectFunc);
+         }
+      }
+
+      /** @summary Create Promise object which will be completed when drawing is ready
+       * @private
+       */
+      Promise(is_ready) {
+         if (is_ready)
+            this.DrawingReady(this);
+
+         if (this._ready_called_)
+            return Promise.resolve(this); // painting is done, we could return promise
+
+         let pthis = this;
+         return new Promise(function(resolve, reject) {
+            pthis.WhenReady(resolve, reject);
+         });
+      }
+
+      /** @summary Reset ready state - painter should again call DrawingReady to signal readyness
+      * @private
+      */
+      ResetReady() {
+         delete this._ready_called_;
+         delete this._ready_callbacks_;
+      }
+
+      /** @summary Returns drawn object
+       * @abstract */
+      GetObject() { }
+
+      /** @summary Returns true if type match with drawn object type
+       * @param {string} typename - type name to check with
+       * @returns {boolean} true if draw objects matches with provided type name
+       * @abstract
+       * @private */
+      MatchObjectType(/* typename */) {}
+
+      /** @summary Called to update drawn object content
+       * @returns {boolean} true if update was performed
+       * @abstract
+       * @private */
+      UpdateObject(/* obj */) {}
+
+      /** @summary Redraw all objects in current pad
+       * @param {string} reason - why redraw performed, can be "zoom" or empty ]
+       * @abstract
+       * @private */
+      RedrawPad(/* reason */) {}
+
+      /** @summary Updates object and readraw it
+       * @param {object} obj - new version of object, values will be updated in original object
+       * @returns {boolean} true if object updated and redrawn */
+      RedrawObject(obj) {
+         if (!this.UpdateObject(obj)) return false;
+         let current = document.body.style.cursor;
+         document.body.style.cursor = 'wait';
+         this.RedrawPad();
+         document.body.style.cursor = current;
+         return true;
+      }
+
+      /** @summary Checks if draw elements were resized and drawing should be updated
+       * @returns {boolean} true if resize was detected
+       * @abstract
+       * @private */
+      CheckResize(/* arg */) {}
+
+      /** @summary access to main HTML element used for drawing - typically <div> element
+        * @desc if main element was layouted, returns main element inside layout
+       * @param {string} is_direct - if 'origin' specified, returns original element even if actual drawing moved to some other place
+       * @returns {object} d3.select for main element for drawing, defined with this.divid. */
+      select_main(is_direct) {
+
+         if (!this.divid) return d3.select(null);
+
+         let res = this._selected_main;
+         if (!res) {
+            if (typeof this.divid == "string") {
+               let id = this.divid;
+               if (id[0] != '#') id = "#" + id;
+               res = d3.select(id);
+               if (!res.empty()) this.divid = res.node();
+            } else {
+               res = d3.select(this.divid);
+            }
+            this._selected_main = res;
+         }
+
+         if (!res || res.empty() || (is_direct === 'origin')) return res;
+
+         let use_enlarge = res.property('use_enlarge'),
+            layout = res.property('layout') || 'simple',
+            layout_selector = (layout == 'simple') ? "" : res.property('layout_selector');
+
+         if (layout_selector) res = res.select(layout_selector);
+
+         // one could redirect here
+         if (!is_direct && !res.empty() && use_enlarge) res = d3.select("#jsroot_enlarge_div");
+
+         return res;
+      }
+
+      /** @summary Returns string with value of main element id attribute
+      * @desc if main element does not have id, it will be generated */
+      get_main_id() {
+         let elem = this.select_main();
+         if (elem.empty()) return "";
+         let id = elem.attr("id");
+         if (!id) {
+            id = "jsroot_element_" + JSROOT.id_counter++;
+            elem.attr("id", id);
+         }
+         return id;
+      }
+
+      /** @summary Returns layout kind
+       * @private
+       */
+      get_layout_kind() {
+         let origin = this.select_main('origin'),
+            layout = origin.empty() ? "" : origin.property('layout');
+
+         return layout || 'simple';
+      }
+
+      /** @summary Set layout kind
+       * @private
+       */
+      set_layout_kind(kind, main_selector) {
+         // change layout settings
+         let origin = this.select_main('origin');
+         if (!origin.empty()) {
+            if (!kind) kind = 'simple';
+            origin.property('layout', kind);
+            origin.property('layout_selector', (kind != 'simple') && main_selector ? main_selector : null);
+            this._changed_layout = (kind !== 'simple'); // use in cleanup
+         }
+      }
+
+      /** @summary Function checks if geometry of main div was changed.
+       *
+       * @desc returns size of area when main div is drawn
+       * take into account enlarge state
+       *
+       * @private
+       */
+      check_main_resize(check_level, new_size, height_factor) {
+
+         let enlarge = this.enlarge_main('state'),
+            main_origin = this.select_main('origin'),
+            main = this.select_main(),
+            lmt = 5; // minimal size
+
+         if (enlarge !== 'on') {
+            if (new_size && new_size.width && new_size.height)
+               main_origin.style('width', new_size.width + "px")
+                  .style('height', new_size.height + "px");
+         }
+
+         let rect_origin = this.get_visible_rect(main_origin, true),
+            can_resize = main_origin.attr('can_resize'),
+            do_resize = false;
+
+         if (can_resize == "height")
+            if (height_factor && Math.abs(rect_origin.width * height_factor - rect_origin.height) > 0.1 * rect_origin.width) do_resize = true;
+
+         if (((rect_origin.height <= lmt) || (rect_origin.width <= lmt)) &&
+            can_resize && can_resize !== 'false') do_resize = true;
+
+         if (do_resize && (enlarge !== 'on')) {
+            // if zero size and can_resize attribute set, change container size
+
+            if (rect_origin.width > lmt) {
+               height_factor = height_factor || 0.66;
+               main_origin.style('height', Math.round(rect_origin.width * height_factor) + 'px');
+            } else if (can_resize !== 'height') {
+               main_origin.style('width', '200px').style('height', '100px');
+            }
+         }
+
+         let rect = this.get_visible_rect(main),
+            old_h = main.property('draw_height'), old_w = main.property('draw_width');
+
+         rect.changed = false;
+
+         if (old_h && old_w && (old_h > 0) && (old_w > 0)) {
+            if ((old_h !== rect.height) || (old_w !== rect.width))
+               if ((check_level > 1) || (rect.width / old_w < 0.66) || (rect.width / old_w > 1.5) ||
+                  (rect.height / old_h < 0.66) && (rect.height / old_h > 1.5)) rect.changed = true;
+         } else {
+            rect.changed = true;
+         }
+
+         return rect;
+      }
+
+      /** @summary Try enlarge main drawing element to full HTML page.
+       *
+       * @desc Possible values for parameter:
+       *
+       *    - true - try to enlarge
+       *    - false - cancel enlarge state
+       *    - 'toggle' - toggle enlarge state
+       *    - 'state' - return current state
+       *    - 'verify' - check if element can be enlarged
+       *
+       * if action not specified, just return possibility to enlarge main div
+       *
+       * @private
+       */
+      enlarge_main(action, skip_warning) {
+
+         let main = this.select_main(true),
+            origin = this.select_main('origin');
+
+         if (main.empty() || !JSROOT.gStyle.CanEnlarge || (origin.property('can_enlarge') === false)) return false;
+
+         if (action === undefined) return true;
+
+         if (action === 'verify') return true;
+
+         let state = origin.property('use_enlarge') ? "on" : "off";
+
+         if (action === 'state') return state;
+
+         if (action === 'toggle') action = (state === "off");
+
+         let enlarge = d3.select("#jsroot_enlarge_div");
+
+         if ((action === true) && (state !== "on")) {
+            if (!enlarge.empty()) return false;
+
+            enlarge = d3.select(document.body)
+               .append("div")
+               .attr("id", "jsroot_enlarge_div");
+
+            let rect1 = this.get_visible_rect(main),
+               rect2 = this.get_visible_rect(enlarge);
+
+            // if new enlarge area not big enough, do not do it
+            if ((rect2.width <= rect1.width) || (rect2.height <= rect1.height))
+               if (rect2.width * rect2.height < rect1.width * rect1.height) {
+                  if (!skip_warning)
+                     console.log('Enlarged area ' + rect2.width + "x" + rect2.height + ' smaller then original drawing ' + rect1.width + "x" + rect1.height);
+                  enlarge.remove();
+                  return false;
+               }
+
+            while (main.node().childNodes.length > 0)
+               enlarge.node().appendChild(main.node().firstChild);
+
+            origin.property('use_enlarge', true);
+
+            return true;
+         }
+         if ((action === false) && (state !== "off")) {
+
+            while (enlarge.node() && enlarge.node().childNodes.length > 0)
+               main.node().appendChild(enlarge.node().firstChild);
+
+            enlarge.remove();
+            origin.property('use_enlarge', false);
+            return true;
+         }
+
+         return false;
+      }
+
+      /** @summary Return CSS value in given HTML element
+       * @private */
+      GetStyleValue(elem, name) {
+         if (!elem || elem.empty()) return 0;
+         let value = elem.style(name);
+         if (!value || (typeof value !== 'string')) return 0;
+         value = parseFloat(value.replace("px", ""));
+         return isNaN(value) ? 0 : Math.round(value);
+      }
+
+      /** @summary Returns rect with width/height which correspond to the visible area of drawing region of element.
+       * @private */
+      get_visible_rect(elem, fullsize) {
+
+         if (JSROOT.nodejs)
+            return { width: parseInt(elem.attr("width")), height: parseInt(elem.attr("height")) };
+
+         let rect = elem.node().getBoundingClientRect(),
+            res = { width: Math.round(rect.width), height: Math.round(rect.height) };
+
+         if (!fullsize) {
+            // this is size exclude padding area
+            res.width -= this.GetStyleValue(elem, 'padding-left') + this.GetStyleValue(elem, 'padding-right');
+            res.height -= this.GetStyleValue(elem, 'padding-top') - this.GetStyleValue(elem, 'padding-bottom');
+         }
+
+         return res;
+      }
+
+      /** @summary Assign painter to specified element
+       *
+       * @desc base painter does not creates canvas or frames
+       * it registered in the first child element
+       *
+       * @param {string|object} divid - element ID or DOM Element
+       */
+      SetDivId(divid) {
+         if (divid !== undefined) {
+            this.divid = divid;
+            delete this._selected_main;
+         }
+
+         this.AccessTopPainter(true);
+      }
+
+      /** @summary Set item name, associated with the painter
+       *
+       * @desc Used by {@link JSROOT.HiearchyPainter}
+       * @private
+       */
+      SetItemName(name, opt, hpainter) {
+         if (typeof name === 'string') this._hitemname = name;
+         else delete this._hitemname;
+         // only upate draw option, never delete. null specified when update drawing
+         if (typeof opt === 'string') this._hdrawopt = opt;
+
+         this._hpainter = hpainter;
+      }
+
+      /** @summary Returns assigned item name */
+      GetItemName() { return ('_hitemname' in this) ? this._hitemname : null; }
+
+      /** @summary Returns assigned item draw option
+       * @private */
+      GetItemDrawOpt() { return ('_hdrawopt' in this) ? this._hdrawopt : ""; }
+
+      /** @summary Check if it makes sense to zoom inside specified axis range
+       * @param {string} axis - name of axis like 'x', 'y', 'z'
+       * @param {number} left - left axis range
+       * @param {number} right - right axis range
+       * @returns true is zooming makes sense
+       * @abstract
+       * @private
+       */
+      CanZoomIn = function(/* axis, left, right */) { }
+
+   } // class BasePainter
+
+   // FIXME: for backward compatibility with v5, will be remove in JSROOT v7
+   function TBasePainter() {
+      let obj = new BasePainter;
+      JSROOT.extend(this, obj);
       return this;
    }
-
-   /** @summary Function should be called when first drawing fails
-    * @private */
-
-   TBasePainter.prototype.DrawingFail = function(res_painter) {
-      return this.DrawingReady(res_painter, false);
-   }
-
-   /** @summary Call back will be called when painter ready with the drawing
-    * @private
-    */
-   TBasePainter.prototype.WhenReady = function(resolveFunc, rejectFunc) {
-      if (typeof resolveFunc !== 'function') return;
-      if ('_ready_called_' in this)
-         return JSROOT.CallBack(resolveFunc, this);
-      if (!this._ready_callbacks_)
-         this._ready_callbacks_ = [resolveFunc];
-      else
-         this._ready_callbacks_.push(resolveFunc);
-      if (rejectFunc) {
-         if (!this._reject_callbacks_)
-            this._reject_callbacks_ = [rejectFunc];
-         else
-            this._reject_callbacks_.push(rejectFunc);
-      }
-   }
-
-   /** @summary Create Promise object which will be completed when drawing is ready
-    * @private
-    */
-   TBasePainter.prototype.Promise = function(is_ready) {
-      if (is_ready)
-         this.DrawingReady(this);
-
-      if (this._ready_called_)
-         return Promise.resolve(this); // painting is done, we could return promise
-
-      let pthis = this;
-      return new Promise(function(resolve, reject) {
-         pthis.WhenReady(resolve, reject);
-      });
-   }
-
-   /** @summary Reset ready state - painter should again call DrawingReady to signal readyness
-   * @private
-   */
-   TBasePainter.prototype.ResetReady = function() {
-      delete this._ready_called_;
-      delete this._ready_callbacks_;
-   }
-
-   /** @summary Returns drawn object
-    * @abstract */
-   TBasePainter.prototype.GetObject = function() {
-   }
-
-   /** @summary Returns true if type match with drawn object type
-    * @param {string} typename - type name to check with
-    * @returns {boolean} true if draw objects matches with provided type name
-    * @abstract
-    * @private */
-   TBasePainter.prototype.MatchObjectType = function(/*typename*/) {
-   }
-
-   /** @summary Called to update drawn object content
-    * @returns {boolean} true if update was performed
-    * @abstract
-    * @private */
-   TBasePainter.prototype.UpdateObject = function(/* obj */) {
-   }
-
-   /** @summary Redraw all objects in current pad
-    * @param {string} reason - why redraw performed, can be "zoom" or empty ]
-    * @abstract
-    * @private */
-   TBasePainter.prototype.RedrawPad = function(/*reason*/) {
-   }
-
-   /** @summary Updates object and readraw it
-    * @param {object} obj - new version of object, values will be updated in original object
-    * @returns {boolean} true if object updated and redrawn */
-   TBasePainter.prototype.RedrawObject = function(obj) {
-      if (!this.UpdateObject(obj)) return false;
-      let current = document.body.style.cursor;
-      document.body.style.cursor = 'wait';
-      this.RedrawPad();
-      document.body.style.cursor = current;
-      return true;
-   }
-
-   /** @summary Checks if draw elements were resized and drawing should be updated
-    * @returns {boolean} true if resize was detected
-    * @abstract
-    * @private */
-   TBasePainter.prototype.CheckResize = function(/* arg */) {
-   }
-
-   /** @summary access to main HTML element used for drawing - typically <div> element
-     * @desc if main element was layouted, returns main element inside layout
-    * @param {string} is_direct - if 'origin' specified, returns original element even if actual drawing moved to some other place
-    * @returns {object} d3.select for main element for drawing, defined with this.divid. */
-   TBasePainter.prototype.select_main = function(is_direct) {
-
-      if (!this.divid) return d3.select(null);
-
-      let res = this._selected_main;
-      if (!res) {
-         if (typeof this.divid == "string") {
-            let id = this.divid;
-            if (id[0] != '#') id = "#" + id;
-            res = d3.select(id);
-            if (!res.empty()) this.divid = res.node();
-         } else {
-            res = d3.select(this.divid);
-         }
-         this._selected_main = res;
-      }
-
-      if (!res || res.empty() || (is_direct === 'origin')) return res;
-
-      let use_enlarge = res.property('use_enlarge'),
-         layout = res.property('layout') || 'simple',
-         layout_selector = (layout == 'simple') ? "" : res.property('layout_selector');
-
-      if (layout_selector) res = res.select(layout_selector);
-
-      // one could redirect here
-      if (!is_direct && !res.empty() && use_enlarge) res = d3.select("#jsroot_enlarge_div");
-
-      return res;
-   }
-
-   /** @summary Returns string with value of main element id attribute
-   *
-   * @desc if main element does not have id, it will be generated */
-   TBasePainter.prototype.get_main_id = function() {
-      let elem = this.select_main();
-      if (elem.empty()) return "";
-      let id = elem.attr("id");
-      if (!id) {
-         id = "jsroot_element_" + JSROOT.id_counter++;
-         elem.attr("id", id);
-      }
-      return id;
-   }
-
-   /** @summary Returns layout kind
-    * @private
-    */
-   TBasePainter.prototype.get_layout_kind = function() {
-      let origin = this.select_main('origin'),
-         layout = origin.empty() ? "" : origin.property('layout');
-
-      return layout || 'simple';
-   }
-
-   /** @summary Set layout kind
-    * @private
-    */
-   TBasePainter.prototype.set_layout_kind = function(kind, main_selector) {
-      // change layout settings
-      let origin = this.select_main('origin');
-      if (!origin.empty()) {
-         if (!kind) kind = 'simple';
-         origin.property('layout', kind);
-         origin.property('layout_selector', (kind != 'simple') && main_selector ? main_selector : null);
-         this._changed_layout = (kind !== 'simple'); // use in cleanup
-      }
-   }
-
-   /** @summary Function checks if geometry of main div was changed.
-    *
-    * @desc returns size of area when main div is drawn
-    * take into account enlarge state
-    *
-    * @private
-    */
-   TBasePainter.prototype.check_main_resize = function(check_level, new_size, height_factor) {
-
-      let enlarge = this.enlarge_main('state'),
-         main_origin = this.select_main('origin'),
-         main = this.select_main(),
-         lmt = 5; // minimal size
-
-      if (enlarge !== 'on') {
-         if (new_size && new_size.width && new_size.height)
-            main_origin.style('width', new_size.width + "px")
-               .style('height', new_size.height + "px");
-      }
-
-      let rect_origin = this.get_visible_rect(main_origin, true),
-         can_resize = main_origin.attr('can_resize'),
-         do_resize = false;
-
-      if (can_resize == "height")
-         if (height_factor && Math.abs(rect_origin.width * height_factor - rect_origin.height) > 0.1 * rect_origin.width) do_resize = true;
-
-      if (((rect_origin.height <= lmt) || (rect_origin.width <= lmt)) &&
-         can_resize && can_resize !== 'false') do_resize = true;
-
-      if (do_resize && (enlarge !== 'on')) {
-         // if zero size and can_resize attribute set, change container size
-
-         if (rect_origin.width > lmt) {
-            height_factor = height_factor || 0.66;
-            main_origin.style('height', Math.round(rect_origin.width * height_factor) + 'px');
-         } else if (can_resize !== 'height') {
-            main_origin.style('width', '200px').style('height', '100px');
-         }
-      }
-
-      let rect = this.get_visible_rect(main),
-         old_h = main.property('draw_height'), old_w = main.property('draw_width');
-
-      rect.changed = false;
-
-      if (old_h && old_w && (old_h > 0) && (old_w > 0)) {
-         if ((old_h !== rect.height) || (old_w !== rect.width))
-            if ((check_level > 1) || (rect.width / old_w < 0.66) || (rect.width / old_w > 1.5) ||
-               (rect.height / old_h < 0.66) && (rect.height / old_h > 1.5)) rect.changed = true;
-      } else {
-         rect.changed = true;
-      }
-
-      return rect;
-   }
-
-   /** @summary Try enlarge main drawing element to full HTML page.
-    *
-    * @desc Possible values for parameter:
-    *
-    *    - true - try to enlarge
-    *    - false - cancel enlarge state
-    *    - 'toggle' - toggle enlarge state
-    *    - 'state' - return current state
-    *    - 'verify' - check if element can be enlarged
-    *
-    * if action not specified, just return possibility to enlarge main div
-    *
-    * @private
-    */
-   TBasePainter.prototype.enlarge_main = function(action, skip_warning) {
-
-      let main = this.select_main(true),
-         origin = this.select_main('origin');
-
-      if (main.empty() || !JSROOT.gStyle.CanEnlarge || (origin.property('can_enlarge') === false)) return false;
-
-      if (action === undefined) return true;
-
-      if (action === 'verify') return true;
-
-      let state = origin.property('use_enlarge') ? "on" : "off";
-
-      if (action === 'state') return state;
-
-      if (action === 'toggle') action = (state === "off");
-
-      let enlarge = d3.select("#jsroot_enlarge_div");
-
-      if ((action === true) && (state !== "on")) {
-         if (!enlarge.empty()) return false;
-
-         enlarge = d3.select(document.body)
-            .append("div")
-            .attr("id", "jsroot_enlarge_div");
-
-         let rect1 = this.get_visible_rect(main),
-            rect2 = this.get_visible_rect(enlarge);
-
-         // if new enlarge area not big enough, do not do it
-         if ((rect2.width <= rect1.width) || (rect2.height <= rect1.height))
-            if (rect2.width * rect2.height < rect1.width * rect1.height) {
-               if (!skip_warning)
-                  console.log('Enlarged area ' + rect2.width + "x" + rect2.height + ' smaller then original drawing ' + rect1.width + "x" + rect1.height);
-               enlarge.remove();
-               return false;
-            }
-
-         while (main.node().childNodes.length > 0)
-            enlarge.node().appendChild(main.node().firstChild);
-
-         origin.property('use_enlarge', true);
-
-         return true;
-      }
-      if ((action === false) && (state !== "off")) {
-
-         while (enlarge.node() && enlarge.node().childNodes.length > 0)
-            main.node().appendChild(enlarge.node().firstChild);
-
-         enlarge.remove();
-         origin.property('use_enlarge', false);
-         return true;
-      }
-
-      return false;
-   }
-
-   /** @summary Return CSS value in given HTML element
-    * @private */
-   TBasePainter.prototype.GetStyleValue = function(elem, name) {
-      if (!elem || elem.empty()) return 0;
-      let value = elem.style(name);
-      if (!value || (typeof value !== 'string')) return 0;
-      value = parseFloat(value.replace("px", ""));
-      return isNaN(value) ? 0 : Math.round(value);
-   }
-
-   /** @summary Returns rect with width/height which correspond to the visible area of drawing region of element.
-    * @private */
-   TBasePainter.prototype.get_visible_rect = function(elem, fullsize) {
-
-      if (JSROOT.nodejs)
-         return { width: parseInt(elem.attr("width")), height: parseInt(elem.attr("height")) };
-
-      let rect = elem.node().getBoundingClientRect(),
-         res = { width: Math.round(rect.width), height: Math.round(rect.height) };
-
-      if (!fullsize) {
-         // this is size exclude padding area
-         res.width -= this.GetStyleValue(elem, 'padding-left') + this.GetStyleValue(elem, 'padding-right');
-         res.height -= this.GetStyleValue(elem, 'padding-top') - this.GetStyleValue(elem, 'padding-bottom');
-      }
-
-      return res;
-   }
-
-   /** @summary Assign painter to specified element
-    *
-    * @desc base painter does not creates canvas or frames
-    * it registered in the first child element
-    *
-    * @param {string|object} divid - element ID or DOM Element
-    */
-   TBasePainter.prototype.SetDivId = function(divid) {
-      if (divid !== undefined) {
-         this.divid = divid;
-         delete this._selected_main;
-      }
-
-      this.AccessTopPainter(true);
-   }
-
-   /** @summary Set item name, associated with the painter
-    *
-    * @desc Used by {@link JSROOT.HiearchyPainter}
-    * @private
-    */
-   TBasePainter.prototype.SetItemName = function(name, opt, hpainter) {
-      if (typeof name === 'string') this._hitemname = name;
-      else delete this._hitemname;
-      // only upate draw option, never delete. null specified when update drawing
-      if (typeof opt === 'string') this._hdrawopt = opt;
-
-      this._hpainter = hpainter;
-   }
-
-   /** @summary Returns assigned item name
-    * @private */
-   TBasePainter.prototype.GetItemName = function() {
-      return ('_hitemname' in this) ? this._hitemname : null;
-   }
-
-   /** @summary Returns assigned item draw option
-    * @private */
-   TBasePainter.prototype.GetItemDrawOpt = function() {
-      return ('_hdrawopt' in this) ? this._hdrawopt : "";
-   }
-
-   /** @summary Check if it makes sense to zoom inside specified axis range
-    * @param {string} axis - name of axis like 'x', 'y', 'z'
-    * @param {number} left - left axis range
-    * @param {number} right - right axis range
-    * @returns true is zooming makes sense
-    * @abstract
-    * @private
-    */
-   TBasePainter.prototype.CanZoomIn = function(/* axis, left, right */) {
-   }
+   TBasePainter.prototype = Object.create(BasePainter.prototype);
+   JSROOT.TBasePainter = TBasePainter;
 
    // ==============================================================================
 
@@ -5403,7 +5397,7 @@ JSROOT.require(['d3'], function(d3) {
 
    Painter.drawRawText = function(divid, txt /*, opt*/) {
 
-      let painter = new TBasePainter();
+      let painter = new BasePainter();
       painter.txt = txt;
       painter.SetDivId(divid);
 
@@ -6150,9 +6144,12 @@ JSROOT.require(['d3'], function(d3) {
    JSROOT.TAttLineHandler = TAttLineHandler;
    JSROOT.TAttFillHandler = TAttFillHandler;
    JSROOT.TAttMarkerHandler = TAttMarkerHandler;
-   JSROOT.TBasePainter = TBasePainter;
-   JSROOT.TObjectPainter = TObjectPainter;
    JSROOT.TooltipHandler = TooltipHandler;
+   JSROOT.BasePainter = BasePainter;
+
+
+   JSROOT.TObjectPainter = TObjectPainter;
+
 
    if (JSROOT.nodejs) JSROOT.Painter.readStyleFromURL("?interactive=0&tooltip=0&nomenu&noprogress&notouch&toolbar=0&webgl=0");
 

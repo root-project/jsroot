@@ -4153,7 +4153,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
 //   RPadPainter.prototype.DrawingReady = function(res_painter) {
 //      let main = this.main_painter();
 //      if (main && main.mode3d && typeof main.Render3D == 'function') main.Render3D(-2222);
-//      TBasePainter.prototype.DrawingReady.call(this, res_painter);
+//      BasePainter.prototype.DrawingReady.call(this, res_painter);
 //   }
 
    RPadPainter.prototype.DecodeOptions = function(opt) {

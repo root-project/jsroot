@@ -1351,7 +1351,7 @@
       return JSROOT.require("JSRootPainter").then(() => JSROOT.MakeSVG(args));
    }
 
-   // FIXME: temporary here, just for transition period from v5 -> v6
+   // FIXME: for backward compatibility with v5, will be remove in JSROOT v7
    JSROOT.AssertPrerequisites = function(req, callback) {
       JSROOT.require(req).then(callback);
    }
