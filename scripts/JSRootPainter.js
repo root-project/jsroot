@@ -4754,8 +4754,9 @@ JSROOT.require(['d3'], function(d3) {
        */
       DrawText(arg) {
 
-         let label = arg.text || "",
-            align = ['start', 'middle'];
+         if (!arg.text) arg.text = "";
+
+         let align = ['start', 'middle'];
 
          if (typeof arg.align == 'string') {
             align = arg.align.split(";");
@@ -4807,10 +4808,10 @@ JSROOT.require(['d3'], function(d3) {
          }
 
          let font = arg.draw_g.property('text_font'),
-            use_mathjax = (arg.latex == 2);
+             use_mathjax = (arg.latex == 2);
 
          if (arg.latex === 1)
-            use_mathjax = (JSROOT.gStyle.Latex > 3) || ((JSROOT.gStyle.Latex == 3) && JSROOT.Painter.isAnyLatex(label));
+            use_mathjax = (JSROOT.gStyle.Latex > 3) || ((JSROOT.gStyle.Latex == 3) && JSROOT.Painter.isAnyLatex(arg.text));
 
          if (!use_mathjax || arg.nomathjax) {
 
@@ -4823,29 +4824,15 @@ JSROOT.require(['d3'], function(d3) {
 
             arg.font = font; // use in latex conversion
 
-            arg.plain = !arg.latex || (JSROOT.gStyle.Latex < 2) || (this.produceLatex(txt, label, arg) === 0);
+            arg.plain = !arg.latex || (JSROOT.gStyle.Latex < 2) || (this.produceLatex(txt, arg.text, arg) === 0);
 
-            if (arg.plain) {
-               if (arg.latex && (JSROOT.gStyle.Latex == 1)) label = Painter.translateLaTeX(label); // replace latex symbols
-               txt.text(label);
-            }
+            if (arg.plain)
+               this.producePlainText(txt, arg);
 
-            // complete rectangle with very rougth size estimations
-            arg.box = !JSROOT.nodejs && !JSROOT.gStyle.ApproxTextSize && !arg.fast ? this.GetBoundarySizes(txt.node()) :
-               (arg.text_rect || { height: arg.font_size * 1.2, width: JSROOT.Painter.approxTextWidth(font, label) });
-
-            txt.attr('class', 'hidden_text')
-               .attr('visibility', 'hidden') // hide elements until text drawing is finished
-               .property("_arg", arg);
-
-            if (arg.box.width > arg.draw_g.property('max_text_width')) arg.draw_g.property('max_text_width', arg.box.width);
-            if (arg.scale) this.TextScaleFactor(1.05 * arg.box.width / arg.width, arg.draw_g);
-            if (arg.scale) this.TextScaleFactor(1. * arg.box.height / arg.height, arg.draw_g);
-
-            return arg.box.width;
+            return this.postprocessPlainText(txt, arg);
          }
 
-         let mtext = JSROOT.Painter.translateMath(label, arg.latex, arg.color, this),
+         let mtext = JSROOT.Painter.translateMath(arg.text, arg.latex, arg.color, this),
              fo_g = arg.draw_g.append("svg:g")
                               .attr('class', 'math_svg')
                               .attr('visibility', 'hidden')
@@ -4867,6 +4854,31 @@ JSROOT.require(['d3'], function(d3) {
          });
 
          return 0;
+      }
+
+      /** Just add plain text to the SVG text elements */
+      producePlainText(txt, arg) {
+         if (arg.latex && (JSROOT.gStyle.Latex == 1))
+            arg.text = Painter.translateLaTeX(arg.text); // replace latex symbols
+         txt.text(arg.text);
+      }
+
+      /** After normal SVG generated, check and recalculate some properties */
+      postprocessPlainText(txt, arg) {
+         // complete rectangle with very rougth size estimations
+
+         arg.box = !JSROOT.nodejs && !JSROOT.gStyle.ApproxTextSize && !arg.fast ? this.GetBoundarySizes(txt.node()) :
+                  (arg.text_rect || { height: arg.font_size * 1.2, width: JSROOT.Painter.approxTextWidth(arg.font, arg.text) });
+
+         txt.attr('class', 'hidden_text')
+            .attr('visibility', 'hidden') // hide elements until text drawing is finished
+            .property("_arg", arg);
+
+         if (arg.box.width > arg.draw_g.property('max_text_width')) arg.draw_g.property('max_text_width', arg.box.width);
+         if (arg.scale) this.TextScaleFactor(1.05 * arg.box.width / arg.width, arg.draw_g);
+         if (arg.scale) this.TextScaleFactor(1. * arg.box.height / arg.height, arg.draw_g);
+
+         return arg.box.width;
       }
 
    } // class ObjectPainter
