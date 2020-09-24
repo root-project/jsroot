@@ -831,7 +831,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
 
    function TFramePainter(tframe) {
       if (tframe && tframe.$dummy) tframe = null;
-      JSROOT.TooltipHandler.call(this, tframe);
+      JSROOT.TObjectPainter.call(this, tframe);
       this.zoom_kind = 0;
       this.mode3d = false;
       this.shrink_frame_left = 0.;
@@ -843,9 +843,10 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
       this.axes_drawn = false;
       this.keys_handler = null;
       this.projection = 0; // different projections
+      JSROOT.TooltipHandler.assign(this);
    }
 
-   TFramePainter.prototype = Object.create(JSROOT.TooltipHandler.prototype);
+   TFramePainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
 
    /** @summary Returns frame painter - object itself
     * @private */
@@ -860,7 +861,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
    }
 
    TFramePainter.prototype.GetTipName = function(append) {
-      let res = JSROOT.TooltipHandler.prototype.GetTipName.call(this) || "TFrame";
+      let res = JSROOT.TObjectPainter.prototype.GetTipName.call(this) || "TFrame";
       if (append) res+=append;
       return res;
    }
@@ -1571,7 +1572,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
       delete this._click_handler;
       delete this._dblclick_handler;
 
-      JSROOT.TooltipHandler.prototype.Cleanup.call(this);
+      JSROOT.TObjectPainter.prototype.Cleanup.call(this);
    }
 
    TFramePainter.prototype.Redraw = function(/*reason*/) {

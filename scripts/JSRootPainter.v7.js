@@ -1023,7 +1023,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
 
 
    function RFramePainter(tframe) {
-      JSROOT.TooltipHandler.call(this, tframe);
+      JSROOT.TObjectPainter.call(this, tframe);
       this.csstype = "frame";
       this.mode3d = false;
       this.shrink_frame_left = 0.;
@@ -1034,9 +1034,10 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
       this.axes_drawn = false;
       this.keys_handler = null;
       this.mode3d = false;
+      JSROOT.TooltipHandler.assign(this);
    }
 
-   RFramePainter.prototype = Object.create(JSROOT.TooltipHandler.prototype);
+   RFramePainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
 
    RFramePainter.prototype.frame_painter = function() {
       return this;
@@ -1049,7 +1050,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
    }
 
    RFramePainter.prototype.GetTipName = function(append) {
-      let res = JSROOT.TooltipHandler.prototype.GetTipName.call(this) || "RFrame";
+      let res = JSROOT.TObjectPainter.prototype.GetTipName.call(this) || "RFrame";
       if (append) res+=append;
       return res;
    }
@@ -1512,7 +1513,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
       delete this._click_handler;
       delete this._dblclick_handler;
 
-      JSROOT.TooltipHandler.prototype.Cleanup.call(this);
+      JSROOT.TObjectPainter.prototype.Cleanup.call(this);
    }
 
    RFramePainter.prototype.Redraw = function() {

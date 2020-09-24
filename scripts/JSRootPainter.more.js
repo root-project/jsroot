@@ -2011,12 +2011,13 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter'], function(d3) {
    // ==============================================================
 
    function TGraphPolargramPainter(polargram) {
-      JSROOT.TooltipHandler.call(this, polargram);
+      JSROOT.TObjectPainter.call(this, polargram);
       this.$polargram = true; // indicate that this is polargram
       this.zoom_rmin = this.zoom_rmax = 0;
+      JSROOT.TooltipHandler.assign(this);
    }
 
-   TGraphPolargramPainter.prototype = Object.create(JSROOT.TooltipHandler.prototype);
+   TGraphPolargramPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
 
    TGraphPolargramPainter.prototype.translate = function(angle, radius, keep_float) {
       let _rx = this.r(radius), _ry = _rx/this.szx*this.szy,
