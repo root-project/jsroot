@@ -1,15 +1,13 @@
 /// @file JSRootPainter.jquery.js
 /// Part of JavaScript ROOT graphics, dependent from jQuery functionality
 
-JSROOT.require(['d3', 'jquery', 'jquery-ui', 'JSRootPainter.hierarchy'], function(d3, $) {
+JSROOT.require(['d3', 'jquery', 'JSRootPainter.hierarchy'], function(d3, $) {
 
    "use strict";
 
    JSROOT.loadScript('$$$style/jquery-ui.css');
 
    if (typeof jQuery === 'undefined') globalThis.jQuery = $;
-   // one can load these plugins afterwards - they only used in interactive mode
-   JSROOT.require(['jqueryui-mousewheel', 'jqueryui-touch-punch']);
 
    JSROOT.Painter.createMenu = function(painter, maincallback, show_event) {
       let menuname = 'root_ctx_menu';
@@ -2182,8 +2180,8 @@ JSROOT.require(['d3', 'jquery', 'jquery-ui', 'JSRootPainter.hierarchy'], functio
    JSROOT.drawLeafPlayer = function(hpainter, itemname) {
       return JSROOT.drawTreePlayer(hpainter, itemname, false, true);
    }
-
-   return JSROOT;
-
+   
+   // return promise with loading of remaining components
+   return JSROOT.require(['jquery-ui','jqueryui-mousewheel', 'jqueryui-touch-punch']);
 });
 
