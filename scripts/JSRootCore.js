@@ -136,6 +136,7 @@
          'JSRootIOEvolution'    : { src: 'JSRootIOEvolution' },
          'JSRootTree'           : { src: 'JSRootTree' },
          'JSRoot.openui5'       : { src: 'JSRoot.openui5' },
+         'JSRoot.webwindow'     : { src: 'JSRoot.webwindow' },
          'JSRootPainter'        : { src: 'JSRootPainter' },
          'JSRootPainter.v6'     : { src: 'JSRootPainter.v6' },
          'JSRootPainter.hist'   : { src: 'JSRootPainter.hist' },
@@ -2259,14 +2260,14 @@
       if ((msg !== undefined) && (typeof msg=="string")) JSROOT.console(msg);
    }
 
-   // connect to the TWebWindow instance
+   /** Connects to the RWebWindow instance, returns Promise */
    JSROOT.ConnectWebWindow = function(arg) {
       if (typeof arg == 'function') arg = { callback: arg };
 
       if (arg.openui5src) JSROOT.openui5src = arg.openui5src;
       if (arg.openui5libs) JSROOT.openui5libs = arg.openui5libs;
       if (arg.openui5theme) JSROOT.openui5theme = arg.openui5theme;
-      return JSROOT.require("2d;" + (arg && arg.prereq ? arg.prereq : "") /*, (arg ? arg.prereq_logdiv : undefined) */).then(() => {
+      return JSROOT.require("JSRoot.webwindow;" + (arg && arg.prereq ? arg.prereq : "") /*, (arg ? arg.prereq_logdiv : undefined) */).then(() => {
          if (arg && arg.prereq) delete arg.prereq;
          return JSROOT.ConnectWebWindow(arg);
       });

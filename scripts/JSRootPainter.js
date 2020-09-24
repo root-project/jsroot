@@ -73,55 +73,50 @@ JSROOT.require(['d3'], function(d3) {
 
    // ==========================================================================================
 
-   /** @summary Draw options interpreter.
-    * @constructor
-    * @memberof JSROOT
-    */
-   function DrawOptions(opt) {
-      this.opt = opt && (typeof opt == "string") ? opt.toUpperCase().trim() : "";
-      this.part = "";
-   }
-
-   /** @summary Returns true if remaining options are empty. */
-   DrawOptions.prototype.empty = function() {
-      return this.opt.length === 0;
-   }
-
-   /** @summary Returns remaining part of the draw options. */
-   DrawOptions.prototype.remain = function() {
-      return this.opt;
-   }
-
-   /** @summary Checks if given option exists */
-   DrawOptions.prototype.check = function(name, postpart) {
-      let pos = this.opt.indexOf(name);
-      if (pos < 0) return false;
-      this.opt = this.opt.substr(0, pos) + this.opt.substr(pos + name.length);
-      this.part = "";
-      if (!postpart) return true;
-
-      let pos2 = pos;
-      while ((pos2 < this.opt.length) && (this.opt[pos2] !== ' ') && (this.opt[pos2] !== ',') && (this.opt[pos2] !== ';')) pos2++;
-      if (pos2 > pos) {
-         this.part = this.opt.substr(pos, pos2 - pos);
-         this.opt = this.opt.substr(0, pos) + this.opt.substr(pos2);
+   /** @summary Draw options interpreter */
+   class DrawOptions {
+      constructor(opt) {
+         this.opt = opt && (typeof opt == "string") ? opt.toUpperCase().trim() : "";
+         this.part = "";
       }
-      return true;
-   }
 
-   /** @summary Returns remaining part of found option as integer. */
-   DrawOptions.prototype.partAsInt = function(offset, dflt) {
-      let val = this.part.replace(/^\D+/g, '');
-      val = val ? parseInt(val, 10) : Number.NaN;
-      return isNaN(val) ? (dflt || 0) : val + (offset || 0);
-   }
+      /** @summary Returns true if remaining options are empty. */
+      empty() { return this.opt.length === 0; }
 
-   /** @summary Returns remaining part of found option as float. */
-   DrawOptions.prototype.partAsFloat = function(offset, dflt) {
-      let val = this.part.replace(/^\D+/g, '');
-      val = val ? parseFloat(val) : Number.NaN;
-      return isNaN(val) ? (dflt || 0) : val + (offset || 0);
-   }
+      /** @summary Returns remaining part of the draw options. */
+      remain() { return this.opt; }
+
+      /** @summary Checks if given option exists */
+      check(name, postpart) {
+         let pos = this.opt.indexOf(name);
+         if (pos < 0) return false;
+         this.opt = this.opt.substr(0, pos) + this.opt.substr(pos + name.length);
+         this.part = "";
+         if (!postpart) return true;
+
+         let pos2 = pos;
+         while ((pos2 < this.opt.length) && (this.opt[pos2] !== ' ') && (this.opt[pos2] !== ',') && (this.opt[pos2] !== ';')) pos2++;
+         if (pos2 > pos) {
+            this.part = this.opt.substr(pos, pos2 - pos);
+            this.opt = this.opt.substr(0, pos) + this.opt.substr(pos2);
+         }
+         return true;
+      }
+
+      /** @summary Returns remaining part of found option as integer. */
+      partAsInt(offset, dflt) {
+         let val = this.part.replace(/^\D+/g, '');
+         val = val ? parseInt(val, 10) : Number.NaN;
+         return isNaN(val) ? (dflt || 0) : val + (offset || 0);
+      }
+
+      /** @summary Returns remaining part of found option as float. */
+      partAsFloat(offset, dflt) {
+         let val = this.part.replace(/^\D+/g, '');
+         val = val ? parseFloat(val) : Number.NaN;
+         return isNaN(val) ? (dflt || 0) : val + (offset || 0);
+      }
+   } // class DrawOptions
 
    // ============================================================================================
 
@@ -641,14 +636,14 @@ JSROOT.require(['d3'], function(d3) {
          this.ndig = 0;
          this.used = true;
          this.changed = false;
-   
+
          this.func = this.Apply.bind(this);
-   
+
          this.SetArgs(args);
-   
+
          this.changed = false;
       }
-   
+
       /** @summary Set marker attributes.
        *
        * @param {object} args - arguments can be
@@ -659,20 +654,20 @@ JSROOT.require(['d3'], function(d3) {
        */
       SetArgs(args) {
          if ((typeof args == 'object') && (typeof args.fMarkerStyle == 'number')) args = { attr: args };
-   
+
          if (args.attr) {
             if (args.color === undefined) args.color = Painter.root_colors[args.attr.fMarkerColor];
             if (!args.style || (args.style < 0)) args.style = args.attr.fMarkerStyle;
             if (!args.size) args.size = args.attr.fMarkerSize;
          }
-   
+
          this.Change(args.color, args.style, args.size);
       }
-   
+
       /** @summary Reset position, used for optimization of drawing of multiple markers
        * @private */
       reset_pos() { this.lastx = this.lasty = null; }
-   
+
       /** @summary Create marker path for given position.
        *
        * @desc When drawing many elementary points, created path may depend from previously produced markers.
@@ -684,20 +679,20 @@ JSROOT.require(['d3'], function(d3) {
       create(x, y) {
          if (!this.optimized)
             return "M" + (x + this.x0).toFixed(this.ndig) + "," + (y + this.y0).toFixed(this.ndig) + this.marker;
-   
+
          // use optimized handling with relative position
          let xx = Math.round(x), yy = Math.round(y), m1 = "M" + xx + "," + yy + "h1",
             m2 = (this.lastx === null) ? m1 : ("m" + (xx - this.lastx) + "," + (yy - this.lasty) + "h1");
          this.lastx = xx + 1; this.lasty = yy;
          return (m2.length < m1.length) ? m2 : m1;
       }
-   
+
       /** @summary Returns full size of marker */
       GetFullSize() { return this.scale * this.size; }
-   
+
       /** @summary Returns approximate length of produced marker string */
       MarkerLength() { return this.marker ? this.marker.length : 10; }
-   
+
       /** @summary Change marker attributes.
        *
        *  @param {string} color - marker color
@@ -706,13 +701,13 @@ JSROOT.require(['d3'], function(d3) {
        */
       Change(color, style, size) {
          this.changed = true;
-   
+
          if (color !== undefined) this.color = color;
          if ((style !== undefined) && (style >= 0)) this.style = style;
          if (size !== undefined) this.size = size; else size = this.size;
-   
+
          this.x0 = this.y0 = 0;
-   
+
          if ((this.style === 1) || (this.style === 777)) {
             this.fill = false;
             this.marker = "h1";
@@ -721,28 +716,28 @@ JSROOT.require(['d3'], function(d3) {
             this.reset_pos();
             return true;
          }
-   
+
          this.optimized = false;
-   
+
          let marker_kind = Painter.root_markers[this.style];
          if (marker_kind === undefined) marker_kind = 100;
          let shape = marker_kind % 100;
-   
+
          this.fill = (marker_kind >= 100);
-   
+
          switch (this.style) {
             case 1: this.size = 1; this.scale = 1; break;
             case 6: this.size = 2; this.scale = 1; break;
             case 7: this.size = 3; this.scale = 1; break;
             default: this.size = size; this.scale = 8;
          }
-   
+
          size = this.GetFullSize();
-   
+
          this.ndig = (size > 7) ? 0 : ((size > 2) ? 1 : 2);
          if (shape == 6) this.ndig++;
          let half = (size / 2).toFixed(this.ndig), full = size.toFixed(this.ndig);
-   
+
          switch (shape) {
             case 0: // circle
                this.x0 = -parseFloat(half);
@@ -796,26 +791,26 @@ JSROOT.require(['d3'], function(d3) {
                this.marker = "l" + half + ",-" + half + "l" + half + "," + half + "l-" + half + "," + half + "z";
                break;
          }
-   
+
          return true;
       }
-   
+
       getStrokeColor() { return this.stroke ? this.color : "none"; }
-   
+
       getFillColor() { return this.fill ? this.color : "none"; }
-   
+
       /** @summary Apply marker styles to created element */
       Apply(selection) {
          selection.style('stroke', this.stroke ? this.color : "none");
          selection.style('fill', this.fill ? this.color : "none");
       }
-   
+
       /** @summary Method used when color or pattern were changed with OpenUi5 widgets.
        * @private */
       verifyDirectChange(/* painter */) {
          this.Change(this.color, parseInt(this.style), parseFloat(this.size));
       }
-   
+
       /** @summary Create sample with marker in given SVG element
        *
        * @param {selection} svg - SVG element
@@ -825,7 +820,7 @@ JSROOT.require(['d3'], function(d3) {
        */
       CreateSample(svg, width, height) {
          this.reset_pos();
-   
+
          svg.append("path")
             .attr("d", this.create(width / 2, height / 2))
             .call(this.func);
@@ -837,15 +832,15 @@ JSROOT.require(['d3'], function(d3) {
    /** Handle for line attributes */
 
    class TAttLineHandler {
-      
+
       constructor(args) {
          this.func = this.Apply.bind(this);
          this.used = true;
          if (args._typename && (args.fLineStyle !== undefined)) args = { attr: args };
-   
+
          this.SetArgs(args);
       }
-   
+
       /**
        * @summary Set line attributes.
        *
@@ -865,14 +860,14 @@ JSROOT.require(['d3'], function(d3) {
          } else if (typeof args.color == 'number') {
             args.color = Painter.root_colors[args.color];
          }
-   
+
          if (args.width === undefined)
             args.width = (args.color && args.color != 'none') ? 1 : 0;
-   
+
          this.color = (args.width === 0) ? 'none' : args.color;
          this.width = args.width;
          this.style = args.style;
-   
+
          if (args.can_excl) {
             this.excl_side = this.excl_width = 0;
             if (Math.abs(this.width) > 99) {
@@ -882,17 +877,17 @@ JSROOT.require(['d3'], function(d3) {
                this.width = Math.abs(this.width % 100); // line width
             }
          }
-   
+
          // if custom color number used, use lightgrey color to show lines
          if (!this.color && (this.width > 0))
             this.color = 'lightgrey';
       }
-   
+
       /**
        * @summary Change exclusion attributes.
        * @private
        */
-   
+
       ChangeExcl(side, width) {
          if (width !== undefined) this.excl_width = width;
          if (side !== undefined) {
@@ -901,16 +896,16 @@ JSROOT.require(['d3'], function(d3) {
          }
          this.changed = true;
       }
-   
+
       /** @returns true if line attribute is empty and will not be applied. */
       empty() { return this.color == 'none'; }
-   
+
       /**
        * @summary Applies line attribute to selection.
        *
        * @param {object} selection - d3.js selection
        */
-   
+
       Apply(selection) {
          this.used = true;
          if (this.empty())
@@ -922,7 +917,7 @@ JSROOT.require(['d3'], function(d3) {
                .style('stroke-width', this.width)
                .style('stroke-dasharray', Painter.root_line_styles[this.style] || null);
       }
-   
+
       /**
        * @summary Change line attributes
        * @private
@@ -933,7 +928,7 @@ JSROOT.require(['d3'], function(d3) {
          if (style !== undefined) this.style = style;
          this.changed = true;
       }
-   
+
       /**
        * @summary Create sample element inside primitive SVG - used in context menu
        * @private
@@ -951,10 +946,9 @@ JSROOT.require(['d3'], function(d3) {
    /** Handle for fill attributes. */
 
    class TAttFillHandler {
-      
 
       /** @param {object} args - different arguments to set fill attributes
-       * @param {number} [args.kind = 2] - 1 means object drawing where combination fillcolor==0 and fillstyle==1001 means no filling,  2 means all other objects where such combination is white-color filling 
+       * @param {number} [args.kind = 2] - 1 means object drawing where combination fillcolor==0 and fillstyle==1001 means no filling,  2 means all other objects where such combination is white-color filling
        */
       constructor(args) {
          this.color = "none";
@@ -967,7 +961,7 @@ JSROOT.require(['d3'], function(d3) {
          this.SetArgs(args);
          this.changed = false; // unset change property that
       }
-   
+
       /** @summary Set fill style as arguments */
       SetArgs(args) {
          if (args.attr && (typeof args.attr == 'object')) {
@@ -976,36 +970,36 @@ JSROOT.require(['d3'], function(d3) {
          }
          this.Change(args.color, args.pattern, args.svg, args.color_as_svg);
       }
-   
+
       /** @summary Apply fill style to selection */
       Apply(selection) {
          this.used = true;
-   
+
          selection.style('fill', this.fillcolor());
-   
+
          if ('opacity' in this)
             selection.style('opacity', this.opacity);
-   
+
          if ('antialias' in this)
             selection.style('antialias', this.antialias);
       }
-   
+
       /** @summary Returns fill color (or pattern url) */
       fillcolor() { return this.pattern_url || this.color; }
-   
+
       /** @summary Returns fill color without pattern url.
        *
        * @desc If empty, alternative color will be provided
        * @param {string} [altern=undefined] - alternative color which returned when fill color not exists
        * @private */
       fillcoloralt(altern) { return this.color && (this.color != "none") ? this.color : altern; }
-   
+
       /** @summary Returns true if color not specified or fill style not specified */
       empty() {
          let fill = this.fillcolor();
          return !fill || (fill == 'none');
       }
-   
+
       /** @summary Set solid fill color as fill pattern
        * @param {string} col - solid color */
       SetSolidColor(col) {
@@ -1013,23 +1007,23 @@ JSROOT.require(['d3'], function(d3) {
          this.color = col;
          this.pattern = 1001;
       }
-   
+
       /** @summary Check if solid fill is used, also color can be checked
        * @param {string} [solid_color = undefined] - when specified, checks if fill color matches */
       isSolid(solid_color) {
          if (this.pattern !== 1001) return false;
          return !solid_color || solid_color == this.color;
       }
-   
+
       /** @summary Method used when color or pattern were changed with OpenUi5 widgets
        * @private */
       verifyDirectChange(painter) {
          if (typeof this.pattern == 'string') this.pattern = parseInt(this.pattern);
          if (isNaN(this.pattern)) this.pattern = 0;
-   
+
          this.Change(this.color, this.pattern, painter ? painter.svg_canvas() : null, true);
       }
-   
+
       /** @summary Method to change fill attributes.
        *
        * @param {number} color - color index
@@ -1040,70 +1034,70 @@ JSROOT.require(['d3'], function(d3) {
       Change(color, pattern, svg, color_as_svg) {
          delete this.pattern_url;
          this.changed = true;
-   
+
          if ((color !== undefined) && !isNaN(color) && !color_as_svg)
             this.colorindx = parseInt(color);
-   
+
          if ((pattern !== undefined) && !isNaN(pattern)) {
             this.pattern = parseInt(pattern);
             delete this.opacity;
             delete this.antialias;
          }
-   
+
          if ((this.pattern == 1000) && (this.colorindx === 0)) {
             this.pattern_url = 'white';
             return true;
          }
-   
+
          if (this.pattern == 1000) this.pattern = 1001;
-   
+
          if (this.pattern < 1001) {
             this.pattern_url = 'none';
             return true;
          }
-   
+
          if (this.isSolid() && (this.colorindx === 0) && (this.kind === 1) && !color_as_svg) {
             this.pattern_url = 'none';
             return true;
          }
-   
+
          let indx = this.colorindx;
-   
+
          if (color_as_svg) {
             this.color = color;
             indx = 10000 + JSROOT.id_counter++; // use fictional unique index far away from existing color indexes
          } else {
             this.color = JSROOT.Painter.root_colors[indx];
          }
-   
+
          if (typeof this.color != 'string') this.color = "none";
-   
+
          if (this.isSolid()) return true;
-   
+
          if ((this.pattern >= 4000) && (this.pattern <= 4100)) {
             // special transparent colors (use for subpads)
             this.opacity = (this.pattern - 4000) / 100;
             return true;
          }
-   
+
          if (!svg || svg.empty() || (this.pattern < 3000)) return false;
-   
+
          let id = "pat_" + this.pattern + "_" + indx,
             defs = svg.select('.canvas_defs');
-   
+
          if (defs.empty())
             defs = svg.insert("svg:defs", ":first-child").attr("class", "canvas_defs");
-   
+
          this.pattern_url = "url(#" + id + ")";
          this.antialias = false;
-   
+
          if (!defs.select("." + id).empty()) {
             if (color_as_svg) console.log('find id in def', id);
             return true;
          }
-   
+
          let lines = "", lfill = null, fills = "", fills2 = "", w = 2, h = 2;
-   
+
          switch (this.pattern) {
             case 3001: w = h = 2; fills = "M0,0h1v1h-1zM1,1h1v1h-1z"; break;
             case 3002: w = 4; h = 2; fills = "M1,0h1v1h-1zM3,1h1v1h-1z"; break;
@@ -1144,23 +1138,23 @@ JSROOT.require(['d3'], function(d3) {
                   // same as 3002, see TGX11.cxx, line 2234
                   w = 4; h = 2; fills = "M1,0h1v1h-1zM3,1h1v1h-1z"; break;
                }
-   
+
                let code = this.pattern % 1000,
                   k = code % 10, j = ((code - k) % 100) / 10, i = (code - j * 10 - k) / 100;
                if (!i) break;
-   
+
                let sz = i * 12;  // axis distance between lines
-   
+
                w = h = 6 * sz; // we use at least 6 steps
-   
+
                function produce(dy, swap) {
                   let pos = [], step = sz, y1 = 0, y2, max = h;
-   
+
                   // reduce step for smaller angles to keep normal distance approx same
                   if (Math.abs(dy) < 3) step = Math.round(sz / 12 * 9);
                   if (dy == 0) { step = Math.round(sz / 12 * 8); y1 = step / 2; }
                   else if (dy > 0) max -= step; else y1 = step;
-   
+
                   while (y1 <= max) {
                      y2 = y1 + dy * step;
                      if (y2 < 0) {
@@ -1180,7 +1174,7 @@ JSROOT.require(['d3'], function(d3) {
                      if (swap) lines += "M" + pos[k + 1] + "," + pos[k] + "L" + pos[k + 3] + "," + pos[k + 2];
                      else lines += "M" + pos[k] + "," + pos[k + 1] + "L" + pos[k + 2] + "," + pos[k + 3];
                }
-   
+
                switch (j) {
                   case 0: produce(0); break;
                   case 1: produce(1); break;
@@ -1192,7 +1186,7 @@ JSROOT.require(['d3'], function(d3) {
                   case 8: produce(1, true); break;
                   case 9: produce(0, true); break;
                }
-   
+
                switch (k) {
                   case 0: if (j) produce(0); break;
                   case 1: produce(-1); break;
@@ -1204,15 +1198,15 @@ JSROOT.require(['d3'], function(d3) {
                   case 8: produce(-1, true); break;
                   case 9: if (j != 9) produce(0, true); break;
                }
-   
+
                break;
          }
-   
+
          if (!fills && !lines) return false;
-   
+
          let patt = defs.append('svg:pattern').attr("id", id).attr("class", id).attr("patternUnits", "userSpaceOnUse")
             .attr("width", w).attr("height", h);
-   
+
          if (fills2) {
             let col = d3.rgb(this.color);
             col.r = Math.round((col.r + 255) / 2); col.g = Math.round((col.g + 255) / 2); col.b = Math.round((col.b + 255) / 2);
@@ -1220,17 +1214,17 @@ JSROOT.require(['d3'], function(d3) {
          }
          if (fills) patt.append("svg:path").attr("d", fills).style("fill", this.color);
          if (lines) patt.append("svg:path").attr("d", lines).style('stroke', this.color).style("stroke-width", 1).style("fill", lfill);
-   
+
          return true;
       }
-   
+
       /** @summary Create sample of fill pattern inside SVG
        * @private */
       CreateSample(sample_svg, width, height) {
-   
+
          // we need to create extra handle to change
          let sample = new TAttFillHandler({ svg: sample_svg, pattern: this.pattern, color: this.color, color_as_svg: true });
-   
+
          sample_svg.append("path")
             .attr("d", "M0,0h" + width + "v" + height + "h-" + width + "z")
             .call(sample.func);
@@ -1561,673 +1555,6 @@ JSROOT.require(['d3'], function(d3) {
             "h" + conv(bins[0].grx - bin.grx) + "Z";
 
       return res;
-   }
-
-   // ==============================================================================
-
-   function LongPollSocket(addr, _raw, _args) {
-      this.path = addr;
-      this.connid = null;
-      this.req = null;
-      this.raw = _raw;
-      this.args = _args;
-
-      this.nextrequest("", "connect");
-   }
-
-   LongPollSocket.prototype.nextrequest = function(data, kind) {
-      let url = this.path, reqmode = "buf", post = null;
-      if (kind === "connect") {
-         url += this.raw ? "?raw_connect" : "?txt_connect";
-         if (this.args) url += "&" + this.args;
-         console.log('longpoll connect ' + url + ' raw = ' + this.raw);
-         this.connid = "connect";
-      } else if (kind === "close") {
-         if ((this.connid === null) || (this.connid === "close")) return;
-         url += "?connection=" + this.connid + "&close";
-         this.connid = "close";
-         reqmode = "text;sync"; // use sync mode to close connection before browser window closed
-      } else if ((this.connid === null) || (typeof this.connid !== 'number')) {
-         if (!JSROOT.browser.qt5) console.error("No connection");
-         return;
-      } else {
-         url += "?connection=" + this.connid;
-         if (kind === "dummy") url += "&dummy";
-      }
-
-      if (data) {
-         if (this.raw) {
-            // special workaround to avoid POST request, use base64 coding
-            url += "&post=" + btoa(data);
-         } else {
-            // send data with post request - most efficient way
-            reqmode = "post";
-            post = data;
-         }
-      }
-
-      let req = JSROOT.NewHttpRequest(url, reqmode, function(res) {
-         // this set to the request itself, res is response
-
-         if (this.handle.req === this)
-            this.handle.req = null; // get response for existing dummy request
-
-         if (res === null)
-            return this.handle.processreq(null);
-
-         if (this.handle.raw) {
-            // raw mode - all kind of reply data packed into binary buffer
-            // first 4 bytes header "txt:" or "bin:"
-            // after the "bin:" there is length of optional text argument like "bin:14  :optional_text"
-            // and immedaitely after text binary data. Server sends binary data so, that offset should be multiple of 8
-
-            let str = "", i = 0, u8Arr = new Uint8Array(res), offset = u8Arr.length;
-            if (offset < 4) {
-               if (!JSROOT.browser.qt5) console.error('longpoll got short message in raw mode ' + offset);
-               return this.handle.processreq(null);
-            }
-
-            while (i < 4) str += String.fromCharCode(u8Arr[i++]);
-            if (str != "txt:") {
-               str = "";
-               while ((i < offset) && (String.fromCharCode(u8Arr[i]) != ':')) str += String.fromCharCode(u8Arr[i++]);
-               ++i;
-               offset = i + parseInt(str.trim());
-            }
-
-            str = "";
-            while (i < offset) str += String.fromCharCode(u8Arr[i++]);
-
-            if (str) {
-               if (str == "<<nope>>") str = "";
-               this.handle.processreq(str);
-            }
-            if (offset < u8Arr.length)
-               this.handle.processreq(res, offset);
-         } else if (this.getResponseHeader("Content-Type") == "application/x-binary") {
-            // binary reply with optional header
-            let extra_hdr = this.getResponseHeader("LongpollHeader");
-            if (extra_hdr) this.handle.processreq(extra_hdr);
-            this.handle.processreq(res, 0);
-         } else {
-            // text reply
-            if (res && typeof res !== "string") {
-               let str = "", u8Arr = new Uint8Array(res);
-               for (let i = 0; i < u8Arr.length; ++i)
-                  str += String.fromCharCode(u8Arr[i]);
-               res = str;
-            }
-            if (res == "<<nope>>") res = "";
-            this.handle.processreq(res);
-         }
-      });
-
-      req.handle = this;
-      if (kind === "dummy") this.req = req; // remember last dummy request, wait for reply
-      req.send(post);
-   }
-
-   LongPollSocket.prototype.processreq = function(res, _offset) {
-      if (res === null) {
-         if (typeof this.onerror === 'function') this.onerror("receive data with connid " + (this.connid || "---"));
-         // if (typeof this.onclose === 'function') this.onclose();
-         this.connid = null;
-         return;
-      }
-
-      if (this.connid === "connect") {
-         if (!res) {
-            this.connid = null;
-            if (typeof this.onerror === 'function') this.onerror("connection rejected");
-            return;
-         }
-
-         this.connid = parseInt(res);
-         console.log('Get new longpoll connection with id ' + this.connid);
-         if (typeof this.onopen == 'function') this.onopen();
-      } else if (this.connid === "close") {
-         if (typeof this.onclose == 'function') this.onclose();
-         return;
-      } else {
-         if ((typeof this.onmessage === 'function') && res)
-            this.onmessage({ data: res, offset: _offset });
-      }
-
-      if (!this.req) this.nextrequest("", "dummy"); // send new poll request when necessary
-   }
-
-   LongPollSocket.prototype.send = function(str) {
-      this.nextrequest(str);
-   }
-
-   LongPollSocket.prototype.close = function() {
-      this.nextrequest("", "close");
-   }
-
-   // ========================================================================================
-
-   function FileDumpSocket(receiver) {
-      this.receiver = receiver;
-      this.protocol = [];
-      this.cnt = 0;
-      JSROOT.HttpRequest("protocol.json", "text").then(this.get_protocol.bind(this));
-   }
-
-   FileDumpSocket.prototype.get_protocol = function(res) {
-      if (!res) return;
-      this.protocol = JSON.parse(res);
-      if (typeof this.onopen == 'function') this.onopen();
-      this.next_operation();
-   }
-
-   FileDumpSocket.prototype.send = function(/*str*/) {
-      if (this.protocol[this.cnt] == "send") {
-         this.cnt++;
-         setTimeout(this.next_operation.bind(this), 10);
-      }
-   }
-
-   FileDumpSocket.prototype.close = function() {
-   }
-
-   FileDumpSocket.prototype.next_operation = function() {
-      // when file request running - just ignore
-      if (this.wait_for_file) return;
-      let fname = this.protocol[this.cnt];
-      if (!fname) return;
-      if (fname == "send") return; // waiting for send
-      // console.log("getting file", fname, "wait", this.wait_for_file);
-      this.wait_for_file = true;
-      this.cnt++;
-      JSROOT.HttpRequest(fname, (fname.indexOf(".bin") > 0 ? "buf" : "text")).then(this.get_file.bind(this, fname));
-   }
-
-   FileDumpSocket.prototype.get_file = function(fname, res) {
-      this.wait_for_file = false;
-      if (!res) return;
-      if (this.receiver.ProvideData)
-         this.receiver.ProvideData(1, res, 0);
-      setTimeout(this.next_operation.bind(this), 10);
-   }
-
-   // ========================================================================================
-
-
-   /** Client communication handle for TWebWindow.
-    *
-    * Should be created with {@link JSROOT.ConnectWebWindow} function
-    *
-    * @constructor
-    * @memberof JSROOT
-    */
-   function WebWindowHandle(socket_kind) {
-      this.kind = socket_kind;
-      this.state = 0;
-      this.cansend = 10;
-      this.ackn = 10;
-   }
-
-   /** Returns arguments specified in the RWebWindow::SetUserArgs() method
-    * Can be any valid JSON expression. Undefined by default.
-    * If field parameter specified and user args is object, returns correspondent member of the user args object */
-   WebWindowHandle.prototype.GetUserArgs = function(field) {
-      if (field && (typeof field == 'string')) {
-         return (this.user_args && (typeof this.user_args == 'object')) ? this.user_args[field] : undefined;
-      }
-
-      return this.user_args;
-   }
-
-   /** @summary Set callbacks receiver.
-    *
-    * Following function can be defined in receiver object:
-    *    - OnWebsocketMsg
-    *    - OnWebsocketOpened,
-    *    - OnWebsocketClosed */
-   WebWindowHandle.prototype.SetReceiver = function(obj) {
-      this.receiver = obj;
-   }
-
-   /** Cleanup and close connection. */
-   WebWindowHandle.prototype.Cleanup = function() {
-      delete this.receiver;
-      this.Close(true);
-   }
-
-   /** Invoke method in the receiver.
-    * @private */
-   WebWindowHandle.prototype.InvokeReceiver = function(brdcst, method, arg, arg2) {
-      if (this.receiver && (typeof this.receiver[method] == 'function'))
-         this.receiver[method](this, arg, arg2);
-
-      if (brdcst && this.channels) {
-         let ks = Object.keys(this.channels);
-         for (let n = 0; n < ks.length; ++n)
-            this.channels[ks[n]].InvokeReceiver(false, method, arg, arg2);
-      }
-   }
-
-   /** Provide data for receiver. When no queue - do it directly.
-    * @private */
-   WebWindowHandle.prototype.ProvideData = function(chid, _msg, _len) {
-      if (this.wait_first_recv) {
-         console.log("FIRST MESSAGE", chid, _msg);
-         delete this.wait_first_recv;
-         return this.InvokeReceiver(false, "OnWebsocketOpened");
-      }
-
-      if ((chid > 1) && this.channels) {
-         let channel = this.channels[chid];
-         if (channel)
-            return channel.ProvideData(1, _msg, _len);
-      }
-
-      let force_queue = _len && (_len < 0);
-
-      if (!force_queue && (!this.msgqueue || !this.msgqueue.length))
-         return this.InvokeReceiver(false, "OnWebsocketMsg", _msg, _len);
-
-      if (!this.msgqueue) this.msgqueue = [];
-      if (force_queue) _len = undefined;
-
-      this.msgqueue.push({ ready: true, msg: _msg, len: _len });
-   }
-
-   /** Reserve entry in queue for data, which is not yet decoded.
-    * @private */
-   WebWindowHandle.prototype.ReserveQueueItem = function() {
-      if (!this.msgqueue) this.msgqueue = [];
-      let item = { ready: false, msg: null, len: 0 };
-      this.msgqueue.push(item);
-      return item;
-   }
-
-   /** Reserver entry in queue for data, which is not yet decoded.
-    * @private */
-   WebWindowHandle.prototype.DoneItem = function(item, _msg, _len) {
-      item.ready = true;
-      item.msg = _msg;
-      item.len = _len;
-      this.ProcessQueue();
-   }
-
-   /** Process completed messages in the queue @private */
-   WebWindowHandle.prototype.ProcessQueue = function() {
-      if (this._loop_msgqueue || !this.msgqueue) return;
-      this._loop_msgqueue = true;
-      while ((this.msgqueue.length > 0) && this.msgqueue[0].ready) {
-         let front = this.msgqueue.shift();
-         this.InvokeReceiver(false, "OnWebsocketMsg", front.msg, front.len);
-      }
-      if (this.msgqueue.length == 0)
-         delete this.msgqueue;
-      delete this._loop_msgqueue;
-   }
-
-   /** Close connection. */
-   WebWindowHandle.prototype.Close = function(force) {
-      if (this.master) {
-         this.master.Send("CLOSECH=" + this.channelid, 0);
-         delete this.master.channels[this.channelid];
-         delete this.master;
-         return;
-      }
-
-      if (this.timerid) {
-         clearTimeout(this.timerid);
-         delete this.timerid;
-      }
-
-      if (this._websocket && (this.state > 0)) {
-         this.state = force ? -1 : 0; // -1 prevent socket from reopening
-         this._websocket.onclose = null; // hide normal handler
-         this._websocket.close();
-         delete this._websocket;
-      }
-   }
-
-   /** Returns if one can send text message to server. Checks number of send credits */
-   WebWindowHandle.prototype.CanSend = function(numsend) {
-      return (this.cansend >= (numsend || 1));
-   }
-
-   /** Send text message via the connection. */
-   WebWindowHandle.prototype.Send = function(msg, chid) {
-      if (this.master)
-         return this.master.Send(msg, this.channelid);
-
-      if (!this._websocket || (this.state <= 0)) return false;
-
-      if (isNaN(chid) || (chid === undefined)) chid = 1; // when not configured, channel 1 is used - main widget
-
-      if (this.cansend <= 0) console.error('should be queued before sending cansend: ' + this.cansend);
-
-      let prefix = this.ackn + ":" + this.cansend + ":" + chid + ":";
-      this.ackn = 0;
-      this.cansend--; // decrease number of allowed send packets
-
-      this._websocket.send(prefix + msg);
-      if (this.kind === "websocket") {
-         if (this.timerid) clearTimeout(this.timerid);
-         this.timerid = setTimeout(this.KeepAlive.bind(this), 10000);
-      }
-
-      return true;
-   }
-
-   /** Inject message(s) into input queue, for debug purposes only
-     * @private */
-   WebWindowHandle.prototype.Inject = function(msg, chid, immediate) {
-      // use timeout to avoid too deep call stack
-      if (!immediate)
-         return setTimeout(this.Inject.bind(this, msg, chid, true), 0);
-
-      if (chid === undefined) chid = 1;
-
-      if (Array.isArray(msg)) {
-         for (let k = 0; k < msg.length; ++k)
-            this.ProvideData(chid, (typeof msg[k] == "string") ? msg[k] : JSON.stringify(msg[k]), -1);
-         this.ProcessQueue();
-      } else if (msg) {
-         this.ProvideData(chid, typeof msg == "string" ? msg : JSON.stringify(msg));
-      }
-   }
-
-   /** Send keepalive message.
-    * @private */
-   WebWindowHandle.prototype.KeepAlive = function() {
-      delete this.timerid;
-      this.Send("KEEPALIVE", 0);
-   }
-
-   /** Method open channel, which will share same connection, but can be used independently from main
-    * @private */
-   WebWindowHandle.prototype.CreateChannel = function() {
-      if (this.master)
-         return master.CreateChannel();
-
-      let channel = new WebWindowHandle("channel");
-      channel.wait_first_recv = true; // first received message via the channel is confirmation of established connection
-
-      if (!this.channels) {
-         this.channels = {};
-         this.freechannelid = 2;
-      }
-
-      channel.master = this;
-      channel.channelid = this.freechannelid++;
-
-      // register
-      this.channels[channel.channelid] = channel;
-
-      // now server-side entity should be initialized and init message send from server side!
-      return channel;
-   }
-
-   /** Returns used channel ID, 1 by default */
-   WebWindowHandle.prototype.getChannelId = function() {
-      return this.channelid && this.master ? this.channelid : 1;
-   }
-
-
-   /** Method opens relative path with the same kind of socket.
-    * @private
-    */
-   WebWindowHandle.prototype.CreateRelative = function(relative) {
-      if (!relative || !this.kind || !this.href) return null;
-
-      let handle = new WebWindowHandle(this.kind);
-      console.log('Try to connect ', this.href + relative);
-      handle.Connect(this.href + relative);
-      return handle;
-   }
-
-   /** Create configured socket for current object. */
-   WebWindowHandle.prototype.Connect = function(href) {
-
-      this.Close();
-
-      let pthis = this, ntry = 0, args = (this.key ? ("key=" + this.key) : "");
-
-      function retry_open(first_time) {
-
-         if (pthis.state != 0) return;
-
-         if (!first_time) console.log("try connect window again" + (new Date()).getTime());
-
-         if (pthis._websocket) pthis._websocket.close();
-         delete pthis._websocket;
-
-         let conn = null;
-         if (!href) {
-            href = window.location.href;
-            if (href && href.indexOf("#") > 0) href = href.substr(0, href.indexOf("#"));
-            if (href && href.lastIndexOf("/") > 0) href = href.substr(0, href.lastIndexOf("/") + 1);
-         }
-         pthis.href = href;
-         ntry++;
-
-         if (first_time) console.log('Opening web socket at ' + href);
-
-         if (ntry > 2) JSROOT.progress("Trying to connect " + href);
-
-         let path = href;
-
-         if (pthis.kind == "file") {
-            path += "root.filedump";
-            conn = new FileDumpSocket(pthis);
-            console.log('configure protocol log ' + path);
-         } else if ((pthis.kind === 'websocket') && first_time) {
-            path = path.replace("http://", "ws://").replace("https://", "wss://") + "root.websocket";
-            if (args) path += "?" + args;
-            console.log('configure websocket ' + path);
-            conn = new WebSocket(path);
-         } else {
-            path += "root.longpoll";
-            console.log('configure longpoll ' + path);
-            conn = new LongPollSocket(path, (pthis.kind === 'rawlongpoll'), args);
-         }
-
-         if (!conn) return;
-
-         pthis._websocket = conn;
-
-         conn.onopen = function() {
-            if (ntry > 2) JSROOT.progress();
-            pthis.state = 1;
-
-            let key = pthis.key || "";
-
-            pthis.Send("READY=" + key, 0); // need to confirm connection
-            pthis.InvokeReceiver(false, "OnWebsocketOpened");
-         }
-
-         conn.onmessage = function(e) {
-            let msg = e.data;
-
-            if (pthis.next_binary) {
-
-               let binchid = pthis.next_binary;
-               delete pthis.next_binary;
-
-               if (msg instanceof Blob) {
-                  // this is case of websocket
-                  // console.log('Get Blob object - convert to buffer array');
-                  let reader = new FileReader, qitem = pthis.ReserveQueueItem();
-                  reader.onload = function(event) {
-                     // The file's text will be printed here
-                     pthis.DoneItem(qitem, event.target.result, 0);
-                  }
-                  reader.readAsArrayBuffer(msg, e.offset || 0);
-               } else {
-                  // console.log('got array ' + (typeof msg) + ' len = ' + msg.byteLength);
-                  // this is from CEF or LongPoll handler
-                  pthis.ProvideData(binchid, msg, e.offset || 0);
-               }
-
-               return;
-            }
-
-            if (typeof msg != 'string') return console.log("unsupported message kind: " + (typeof msg));
-
-            let i1 = msg.indexOf(":"),
-               credit = parseInt(msg.substr(0, i1)),
-               i2 = msg.indexOf(":", i1 + 1),
-               // cansend = parseInt(msg.substr(i1 + 1, i2 - i1)),  // TODO: take into account when sending messages
-               i3 = msg.indexOf(":", i2 + 1),
-               chid = parseInt(msg.substr(i2 + 1, i3 - i2));
-
-            pthis.ackn++;            // count number of received packets,
-            pthis.cansend += credit; // how many packets client can send
-
-            msg = msg.substr(i3 + 1);
-
-            if (chid == 0) {
-               console.log('GET chid=0 message', msg);
-               if (msg == "CLOSE") {
-                  pthis.Close(true); // force closing of socket
-                  pthis.InvokeReceiver(true, "OnWebsocketClosed");
-               }
-            } else if (msg == "$$binary$$") {
-               pthis.next_binary = chid;
-            } else if (msg == "$$nullbinary$$") {
-               pthis.ProvideData(chid, new ArrayBuffer(0), 0);
-            } else {
-               pthis.ProvideData(chid, msg);
-            }
-
-            if (pthis.ackn > 7)
-               pthis.Send('READY', 0); // send dummy message to server
-         }
-
-         conn.onclose = function() {
-            delete pthis._websocket;
-            if (pthis.state > 0) {
-               console.log('websocket closed');
-               pthis.state = 0;
-               pthis.InvokeReceiver(true, "OnWebsocketClosed");
-            }
-         }
-
-         conn.onerror = function(err) {
-            console.log("websocket error " + err);
-            if (pthis.state > 0) {
-               pthis.InvokeReceiver(true, "OnWebsocketError", err);
-               pthis.state = 0;
-            }
-         }
-
-         // only in interactive mode try to reconnect
-         if (!JSROOT.BatchMode)
-            setTimeout(retry_open, 3000); // after 3 seconds try again
-
-      } // retry_open
-
-      retry_open(true); // call for the first time
-   }
-
-   /** @summary Method used to initialize connection to web window.
-    *
-    * @param {object} arg - arguments
-    * @param {string} [arg.prereq] - prerequicities, which should be loaded
-    * @param {string} [arg.openui5src] - source of openui5, either URL like "https://openui5.hana.ondemand.com" or "jsroot" which provides its own reduced openui5 package
-    * @param {string} [arg.openui5libs] - list of openui5 libraries loaded, default is "sap.m, sap.ui.layout, sap.ui.unified"
-    * @param {string} [arg.socket_kind] - kind of connection longpoll|websocket, detected automatically from URL
-    * @param {object} arg.receiver - instance of receiver for websocket events, allows to initiate connection immediately
-    * @param {string} arg.first_recv - required prefix in the first message from TWebWindow, remain part of message will be returned as arg.first_msg
-    * @param {string} [arg.prereq2] - second part of prerequcities, which is loaded parallel to connecting with WebWindow
-    * @param {function} arg.callback - function which is called with WebWindowHandle or when establish connection and get first portion of data
-    * @returns {Promise} - ready-to-use WebWindowHandle instance
-    */
-
-   JSROOT.ConnectWebWindow = function(arg) {
-      if (typeof arg == 'function') arg = { callback: arg }; else
-         if (!arg || (typeof arg != 'object')) arg = {};
-
-      if (arg.prereq) {
-         if (arg.openui5src) JSROOT.openui5src = arg.openui5src;
-         if (arg.openui5libs) JSROOT.openui5libs = arg.openui5libs;
-         if (arg.openui5theme) JSROOT.openui5theme = arg.openui5theme;
-         return JSROOT.require(arg.prereq /*, arg.prereq_logdiv */).then(() => { delete arg.prereq; return JSROOT.ConnectWebWindow(arg); });
-      }
-
-      // special hold script, prevents headless browser from too early exit
-      if ((JSROOT.GetUrlOption("batch_mode") !== null) && JSROOT.GetUrlOption("key") && (JSROOT.browser.isChromeHeadless || JSROOT.browser.isChrome))
-         JSROOT.loadScript("root_batch_holder.js?key=" + JSROOT.GetUrlOption("key"));
-
-      if (!arg.platform)
-         arg.platform = JSROOT.GetUrlOption("platform");
-
-      if (arg.platform == "qt5") JSROOT.browser.qt5 = true; else
-         if (arg.platform == "cef3") JSROOT.browser.cef3 = true;
-
-      if (arg.batch === undefined)
-         arg.batch = (JSROOT.GetUrlOption("batch_mode") !== null); //  && (JSROOT.browser.qt5 || JSROOT.browser.cef3 || JSROOT.browser.isChrome);
-
-      if (arg.batch) JSROOT.BatchMode = true;
-
-      if (!arg.socket_kind)
-         arg.socket_kind = JSROOT.GetUrlOption("ws");
-
-      if (!arg.socket_kind) {
-         if (JSROOT.browser.qt5) arg.socket_kind = "rawlongpoll"; else
-            if (JSROOT.browser.cef3) arg.socket_kind = "longpoll"; else arg.socket_kind = "websocket";
-      }
-
-      // only for debug purposes
-      // arg.socket_kind = "longpoll";
-
-      let promise = new Promise((resolveFunc) => {
-         let handle = new WebWindowHandle(arg.socket_kind);
-         handle.user_args = arg.user_args;
-
-         if (window) {
-            window.onbeforeunload = handle.Close.bind(handle, true);
-            if (JSROOT.browser.qt5) window.onqt5unload = window.onbeforeunload;
-         }
-
-         handle.key = JSROOT.GetUrlOption("key");
-
-         if (arg.first_recv) {
-            arg.receiver = {
-               OnWebsocketOpened: () => { }, // dummy function when websocket connected
-
-               OnWebsocketMsg: (handle, msg) => {
-                  // console.log('Get message ' + msg + ' handle ' + !!handle);
-                  if (msg.indexOf(arg.first_recv) != 0)
-                     return handle.Close();
-                  arg.first_msg = msg.substr(arg.first_recv.length);
-
-                  if (!arg.prereq2) resolveFunc(handle);
-               },
-
-               OnWebsocketClosed: () => { JSROOT.CloseCurrentWindow(); } // // when connection closed, close panel as well
-            };
-         }
-
-         if (!arg.receiver)
-            return resolveFunc(handle);
-
-         // when receiver is exists, it handles itself callbacks
-         handle.SetReceiver(arg.receiver);
-         handle.Connect();
-
-         if (arg.prereq2) {
-            JSROOT.require(arg.prereq2).then(() => {
-               delete arg.prereq2; // indicate that func is loaded
-               if (!arg.first_recv || arg.first_msg) resolveFunc(handle);
-            });
-         } else if (!arg.first_recv) {
-            resolveFunc(handle);
-         }
-      });
-
-      // if callback specified, old API is used, callback getting handler and arg again
-      // TODO: remove it once all RWebWindow implementations in ROOT adjusted
-      if (arg.callback)
-         return promise.then(h => arg.callback(h, arg));
-
-      return promise;
    }
 
    // ========================================================================================
@@ -6818,8 +6145,6 @@ JSROOT.require(['d3'], function(d3) {
 
    Painter.createRootColors();
 
-   JSROOT.LongPollSocket = LongPollSocket;
-   JSROOT.WebWindowHandle = WebWindowHandle;
    JSROOT.DrawOptions = DrawOptions;
    JSROOT.ColorPalette = ColorPalette;
    JSROOT.TAttLineHandler = TAttLineHandler;
