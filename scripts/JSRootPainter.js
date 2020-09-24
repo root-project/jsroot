@@ -3959,6 +3959,7 @@ JSROOT.require(['d3'], function(d3) {
          if (checking_mathjax || draw_g.property('mathjax_use')) {
 
             let missing = 0;
+
             svgs = draw_g.selectAll(".math_svg");
 
             svgs.each(function() {
@@ -3968,7 +3969,7 @@ JSROOT.require(['d3'], function(d3) {
             });
 
             // is any svg missing we should wait until drawing is really finished
-            if (missing) {
+            if (missing || draw_g.property('latex_counter')) {
                if (call_ready) draw_g.node().text_callback = call_ready;
                return 0;
             }
@@ -4736,6 +4737,11 @@ JSROOT.require(['d3'], function(d3) {
          return true;
       }
 
+      produceLatexPromise(node, label, arg) {
+         let res = this.produceLatex(node, label, arg);
+         return Promise.resolve(res);
+      }
+
       /** @summary draw text
        *
        *  @param {object} arg - different text draw options
@@ -4808,7 +4814,8 @@ JSROOT.require(['d3'], function(d3) {
          }
 
          let font = arg.draw_g.property('text_font'),
-             use_mathjax = (arg.latex == 2);
+             use_mathjax = (arg.latex == 2),
+             painter = this;
 
          if (arg.latex === 1)
             use_mathjax = (JSROOT.gStyle.Latex > 3) || ((JSROOT.gStyle.Latex == 3) && JSROOT.Painter.isAnyLatex(arg.text));
@@ -4824,10 +4831,29 @@ JSROOT.require(['d3'], function(d3) {
 
             arg.font = font; // use in latex conversion
 
-            arg.plain = !arg.latex || (JSROOT.gStyle.Latex < 2) || (this.produceLatex(txt, arg.text, arg) === 0);
+            arg.plain = !arg.latex || (JSROOT.gStyle.Latex < 2);
 
-            if (arg.plain)
-               this.producePlainText(txt, arg);
+            if (!arg.plain) {
+               arg.draw_g.property('mathjax_use', true);  // one need to know that mathjax is used
+               let counter = arg.draw_g.property('latex_counter') || 0;
+               arg.draw_g.property('latex_counter', counter + 1);
+               this.produceLatexPromise(txt, arg.text, arg).then(res => {
+                  counter = arg.draw_g.property('latex_counter') || 1;
+                  arg.draw_g.property('latex_counter', counter - 1);
+                  if (res === 0) {
+                     arg.plain = true;
+                     painter.producePlainText(txt, arg);
+                  }
+
+                  painter.postprocessPlainText(txt, arg);
+
+                  painter.FinishTextDrawing(arg.draw_g, null, true); // check if all other elements are completed
+               });
+               return 0;
+            }
+
+            // normal drawing
+            this.producePlainText(txt, arg);
 
             return this.postprocessPlainText(txt, arg);
          }
@@ -4839,8 +4865,6 @@ JSROOT.require(['d3'], function(d3) {
                               .property('_arg', arg);
 
          arg.draw_g.property('mathjax_use', true);  // one need to know that mathjax is used
-
-         let painter = this;
 
          let options = { em: font.size, ex: font.size/2, family: font.name, scale: 1, containerWidth: -1, lineWidth: 100000 };
 
