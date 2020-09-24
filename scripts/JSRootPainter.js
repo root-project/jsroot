@@ -1987,18 +1987,9 @@ JSROOT.require(['d3'], function(d3) {
        * @abstract
        * @private
        */
-      CanZoomIn = function(/* axis, left, right */) { }
+      CanZoomIn(/* axis, left, right */) {}
 
    } // class BasePainter
-
-   // FIXME: for backward compatibility with v5, will be remove in JSROOT v7
-   function TBasePainter() {
-      let obj = new BasePainter;
-      JSROOT.extend(this, obj);
-      return this;
-   }
-   TBasePainter.prototype = Object.create(BasePainter.prototype);
-   JSROOT.TBasePainter = TBasePainter;
 
    // ==============================================================================
 
@@ -2061,7 +2052,7 @@ JSROOT.require(['d3'], function(d3) {
          delete this.rstyle;
          delete this.csstype;
 
-         TBasePainter.prototype.Cleanup.call(this, keep_origin);
+         super.Cleanup(keep_origin);
       }
 
       /** @summary Returns drawn object */
@@ -4895,16 +4886,6 @@ JSROOT.require(['d3'], function(d3) {
    } // class ObjectPainter
 
 
-   // FIXME: for backward compatibility with v5, will be remove in JSROOT v7
-   function TObjectPainter(obj, opt) {
-      let p = new ObjectPainter(obj, opt);
-      JSROOT.extend(this, p);
-      return this;
-   }
-   TObjectPainter.prototype = Object.create(ObjectPainter.prototype);
-   JSROOT.TObjectPainter = TObjectPainter;
-
-
    /** Load MathJax functionality, one need not only to load script but wait for initialization */
    Painter.LoadMathjax = function() {
       if (JSROOT._.mj_loading !== undefined)
@@ -6127,10 +6108,31 @@ JSROOT.require(['d3'], function(d3) {
    JSROOT.BasePainter = BasePainter;
    JSROOT.ObjectPainter = ObjectPainter;
 
-
-
-
    if (JSROOT.nodejs) JSROOT.Painter.readStyleFromURL("?interactive=0&tooltip=0&nomenu&noprogress&notouch&toolbar=0&webgl=0");
+
+
+   // FIXME: for backward compatibility with v5, will be removed in JSROOT v7
+   function TBasePainter() {
+      // redu constructor
+      this.divid = null;
+      return this;
+   }
+   TBasePainter.prototype = Object.create(new BasePainter);
+
+   function TObjectPainter(obj, opt) {
+      // redo BasePainter and ObjectPainter
+      this.divid = null;
+      this.draw_g = null; // container for all drawn objects
+      this.pad_name = ""; // name of pad where object is drawn
+      this.main = null;  // main painter, received from pad
+      if (typeof opt == "string") this.options = { original: opt };
+      this.AssignObject(obj);
+      return this;
+   }
+   TObjectPainter.prototype = Object.create(new ObjectPainter);
+
+   JSROOT.TBasePainter = TBasePainter;
+   JSROOT.TObjectPainter = TObjectPainter;
 
    return JSROOT;
 

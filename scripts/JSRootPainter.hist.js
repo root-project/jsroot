@@ -6172,6 +6172,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
    }
 
    TH2Painter.prototype.CanZoomIn = function(axis,min,max) {
+
       // check if it makes sense to zoom inside specified axis range
       if (axis=="z") return true;
 
