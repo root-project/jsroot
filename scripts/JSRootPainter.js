@@ -4136,8 +4136,6 @@ JSROOT.require(['d3'], function(d3) {
                arg.dy = ((arg.align[1] == 'top') ? (arg.top_shift || 1) : (arg.align[1] == 'middle') ? (arg.mid_shift || 0.5) : 0) * arg.box.height;
             }
 
-            // if (arg.text.length>20) console.log(arg.x, arg.y, arg.dx, arg.dy);
-
             if (!arg.rotate) { arg.x += arg.dx; arg.y += arg.dy; arg.dx = arg.dy = 0; }
 
             // use translate and then rotate to avoid complex sign calculations
@@ -4145,15 +4143,6 @@ JSROOT.require(['d3'], function(d3) {
             if (arg.rotate) trans += " rotate(" + Math.round(arg.rotate) + ")";
             if (arg.dx || arg.dy) trans += " translate(" + Math.round(arg.dx) + "," + Math.round(arg.dy) + ")";
             if (trans) txt.attr("transform", trans);
-
-            if (JSROOT.browser.isWebKit && draw_g.node().insertAdjacentHTML && arg.large_latex) {
-               // this is workaround for sporadic placement problem in Chrome/Opera
-               // Due to unclear reasons tspan elements placed wrongly
-               // Full refresh of created elements (including text itself) solves problem
-               let html = txt.node().outerHTML;
-               txt.remove();
-               draw_g.node().insertAdjacentHTML('beforeend', html);
-            }
          });
 
          if (!call_ready) call_ready = draw_g.node().text_callback;
@@ -4822,9 +4811,6 @@ JSROOT.require(['d3'], function(d3) {
 
          if (arg.latex === 1)
             use_mathjax = (JSROOT.gStyle.Latex > 3) || ((JSROOT.gStyle.Latex == 3) && JSROOT.Painter.isAnyLatex(label));
-
-         // only Firefox can correctly rotate incapsulated SVG, produced by MathJax
-         // if (!use_normal_text && (h<0) && !JSROOT.browser.isFirefox) use_normal_text = true;
 
          if (!use_mathjax || arg.nomathjax) {
 
