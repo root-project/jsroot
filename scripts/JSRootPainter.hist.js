@@ -229,6 +229,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
 
    TPavePainter.prototype.AssignFinishPave = function() {
       function func() {
+         // console.log('Calling FinishPave', this.FirstRun);
          // function used to signal drawing ready, required when text drawing postponed due to mathjax
          if (this.FirstRun <= 0) return;
          this.FirstRun--;
@@ -1341,6 +1342,8 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
          painter.UseContextMenu = true;
       }
 
+      // console.log('drawing ', pave._typename);
+
       switch (pave._typename) {
          case "TPaveLabel":
             painter.PaveDrawFunc = painter.DrawPaveLabel;
@@ -1365,6 +1368,8 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
       painter.DrawPave(opt);
 
       painter.FinishPave(); // call finish pave at least once
+
+      //console.log('Done drawing ', pave._typename);
 
       return painter;
    }
