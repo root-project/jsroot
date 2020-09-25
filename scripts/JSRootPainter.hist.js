@@ -2157,10 +2157,7 @@
       if (!this.is_main_painter() || this.options.Same) return;
 
       var fp = this.frame_painter();
-      if (!fp) return;
-
-      fp.DrawAxes(false, this.options.Axis < 0, this.options.AxisPos, this.options.Zscale);
-      fp.DrawGrids();
+      if (fp) fp.DrawAxes(false, this.options.Axis < 0, this.options.AxisPos, this.options.Zscale);
    }
 
    THistPainter.prototype.ToggleTitle = function(arg) {
