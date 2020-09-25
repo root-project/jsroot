@@ -691,6 +691,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
                      let txt = d3.select(this), tr = txt.attr("transform");
                      txt.attr("transform", tr + " rotate(25)").style("text-anchor", "start");
                   });
+
                checkTextCallBack(true);
             });
 
@@ -769,6 +770,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
             title_g.attr('transform', 'translate(' + shift_x + ',' + shift_y +  ')')
                    .property('shift_x', shift_x)
                    .property('shift_y', shift_y);
+
             checkTextCallBack(true);
          });
 

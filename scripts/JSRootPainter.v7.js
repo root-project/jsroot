@@ -664,7 +664,17 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
           axis_g = layer, tickSize = 0.03,
           scaling_size = 100, draw_lines = true,
           pad_w = this.pad_width() || 10,
-          pad_h = this.pad_height() || 10;
+          pad_h = this.pad_height() || 10,
+          resolveFunc, totalTextCallbacks = 0, totalDone = false,
+          promise = new Promise(resolve => { resolveFunc = resolve; });
+
+      let checkTextCallBack = (is_callback) => {
+          if (is_callback) totalTextCallbacks--; else totalDone = true;
+          if (!totalTextCallbacks && totalDone && resolveFunc) {
+            resolveFunc(true);
+            resolveFunc = null;
+         }
+      };
 
       this.vertical = vertical;
 
@@ -883,13 +893,15 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
 
          }
 
+         totalTextCallbacks += label_g.length;
          for (let lcnt = 0; lcnt < label_g.length; ++lcnt)
             this.FinishTextDrawing(label_g[lcnt], () => {
               if (lbls_tilt)
-                 label_g[lcnt].selectAll("text").each(function() {
+                 label_g[lcnt].selectAll("text").each(() => {
                      let txt = d3.select(this), tr = txt.attr("transform");
                      txt.attr("transform", tr + " rotate(25)").style("text-anchor", "start");
                  });
+               checkTextCallBack(true);
             });
 
          if (label_g.length > 1) side = -side;
@@ -956,7 +968,8 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
          if (vertical && (axis.fTitleOffset == 0) && ('getBoundingClientRect' in axis_g.node()))
             axis_rect = axis_g.node().getBoundingClientRect();
 
-         this.FinishTextDrawing(title_g, function() {
+         totalTextCallbacks++;
+         this.FinishTextDrawing(title_g, () => {
             if (axis_rect) {
                let title_rect = title_g.node().getBoundingClientRect();
                shift_x = (side>0) ? Math.round(axis_rect.left - title_rect.right - title_fontsize*0.3) :
@@ -966,6 +979,8 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
             title_g.attr('transform', 'translate(' + shift_x + ',' + shift_y +  ')')
                    .property('shift_x', shift_x)
                    .property('shift_y', shift_y);
+
+            checkTextCallBack(true);
          });
 
 
@@ -980,6 +995,10 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
 
          this.position = rect1.left - rect2.left; // use to control left position of Y scale
       }
+
+      checkTextCallBack(false);
+
+      return promise;
    }
 
    RAxisPainter.prototype.Redraw = function() {
@@ -1407,21 +1426,27 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
       }
 
       if (!disable_axis_draw) {
-         draw_horiz.DrawAxis(false, layer, w, h,
-                             draw_horiz.invert_side ? undefined : "translate(0," + h + ")",
-                             false, show_second_ticks ? -h : 0, disable_axis_draw);
+         let promise1 = draw_horiz.DrawAxis(false, layer, w, h,
+                                            draw_horiz.invert_side ? undefined : "translate(0," + h + ")",
+                                            false, show_second_ticks ? -h : 0, disable_axis_draw);
 
-         draw_vertical.DrawAxis(true, layer, w, h,
-                                draw_vertical.invert_side ? "translate(" + w + ",0)" : undefined,
-                                false, show_second_ticks ? w : 0, disable_axis_draw,
-                                draw_vertical.invert_side ? 0 : this.frame_x());
+         let promise2 = draw_vertical.DrawAxis(true, layer, w, h,
+                                               draw_vertical.invert_side ? "translate(" + w + ",0)" : undefined,
+                                               false, show_second_ticks ? w : 0, disable_axis_draw,
+                                               draw_vertical.invert_side ? 0 : this.frame_x());
 
-         this.DrawGrids();
+         let painter = this;
+
+         return Promise.all([promise1, promise2]).then(() => {
+             painter.DrawGrids();
+             painter.axes_drawn = true;
+             return true;
+         });
       }
 
       this.axes_drawn = true;
 
-      return true;
+      return Promise.resolve(true);
    }
 
    RFramePainter.prototype.SizeChanged = function() {
