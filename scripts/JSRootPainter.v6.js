@@ -568,10 +568,40 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
              rotate_lbls = axis.TestBit(JSROOT.EAxisBits.kLabelsVert),
              textscale = 1, maxtextlen = 0, lbls_tilt = false, labelfont = null,
              label_g = [ axis_g.append("svg:g").attr("class","axis_labels") ],
-             lbl_pos = handle.lbl_pos || handle.major;
+             lbl_pos = handle.lbl_pos || handle.major,
+             total_draw_cnt = 0, all_done = 0;
 
          if (this.lbls_both_sides)
             label_g.push(axis_g.append("svg:g").attr("class","axis_labels").attr("transform", vertical ? "translate(" + w + ",0)" : "translate(0," + (-h) + ")"));
+
+         // function called when text text is drawn to analyze width, required to correctly scale all labels
+         function process_drawtext_ready(painter) {
+            let textwidth = this.result_width;
+
+            if (textwidth && ((!vertical && !rotate_lbls) || (vertical && rotate_lbls)) && (painter.kind != 'log')) {
+               let maxwidth = this.gap_before*0.45 + this.gap_after*0.45;
+               if (!this.gap_before) maxwidth = 0.9*this.gap_after; else
+               if (!this.gap_after) maxwidth = 0.9*this.gap_before;
+               textscale = Math.min(textscale, maxwidth / textwidth);
+            } else if (vertical && max_text_width && this.normal_side && (max_text_width - labeloffset > 20) && (textwidth > max_text_width - labeloffset)) {
+               textscale = Math.min(textscale, (max_text_width - labeloffset) / textwidth);
+            }
+
+            total_draw_cnt--;
+            if ((all_done != 1) || (total_draw_cnt > 0)) return;
+
+            all_done = 2; // mark that function is finished
+
+            if ((textscale > 0.01) && (textscale < 0.7) && !vertical && !rotate_lbls && (maxtextlen > 5) && !painter.lbls_both_sides) {
+               lbls_tilt = true;
+               textscale *= 3;
+            }
+
+            for (let cnt = 0; cnt < this.lgs.length; ++cnt) {
+               if ((textscale > 0.01) && (textscale < 1))
+                  painter.TextScaleFactor(1/textscale, this.lgs[cnt]);
+            }
+         }
 
          for (let lcnt = 0; lcnt < label_g.length; ++lcnt) {
 
@@ -589,17 +619,19 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
                let lbl = this.format(lbl_pos[nmajor], true);
                if (lbl === null) continue;
 
-               let pos = Math.round(this.func(lbl_pos[nmajor])),
-                   gap_before = (nmajor>0) ? Math.abs(Math.round(pos - this.func(lbl_pos[nmajor-1]))) : 0,
-                   gap_after = (nmajor<lbl_pos.length-1) ? Math.abs(Math.round(this.func(lbl_pos[nmajor+1])-pos)) : 0;
+               let arg = { text: lbl, color: label_color, latex: 1, draw_g: label_g[lcnt], normal_side: (lcnt == 0), lgs: label_g };
+
+               let pos = Math.round(this.func(lbl_pos[nmajor]));
+
+               arg.gap_before = (nmajor>0) ? Math.abs(Math.round(pos - this.func(lbl_pos[nmajor-1]))) : 0;
+
+               arg.gap_after = (nmajor<lbl_pos.length-1) ? Math.abs(Math.round(this.func(lbl_pos[nmajor+1])-pos)) : 0;
 
                if (center_lbls) {
-                  let gap = gap_after || gap_before;
+                  let gap = arg.gap_after || arg.gap_before;
                   pos = Math.round(pos - (vertical ? 0.5*gap : -0.5*gap));
                   if ((pos < -5) || (pos > (vertical ? h : w) + 5)) continue;
                }
-
-               let arg = { text: lbl, color: label_color, latex: 1, draw_g: label_g[lcnt] };
 
                maxtextlen = Math.max(maxtextlen, lbl.length);
 
@@ -615,16 +647,10 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
 
                if (rotate_lbls) arg.rotate = 270;
 
-               let textwidth = this.DrawText(arg);
+               arg.post_process = process_drawtext_ready;
 
-               if (textwidth && ((!vertical && !rotate_lbls) || (vertical && rotate_lbls)) && (this.kind != 'log')) {
-                  let maxwidth = gap_before*0.45 + gap_after*0.45;
-                  if (!gap_before) maxwidth = 0.9*gap_after; else
-                  if (!gap_after) maxwidth = 0.9*gap_before;
-                  textscale = Math.min(textscale, maxwidth / textwidth);
-               } else if (vertical && max_text_width && !lcnt && (max_text_width - labeloffset > 20) && (textwidth > max_text_width - labeloffset)) {
-                  textscale = Math.min(textscale, (max_text_width - labeloffset) / textwidth);
-               }
+               total_draw_cnt++;
+               this.DrawText(arg);
 
                if (lastpos && (pos!=lastpos) && ((vertical && !rotate_lbls) || (!vertical && rotate_lbls))) {
                   let axis_step = Math.abs(pos-lastpos);
@@ -645,26 +671,21 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
                });
          }
 
-         if ((textscale > 0.01) && (textscale < 0.7) && !vertical && !rotate_lbls && (maxtextlen > 5) && !this.lbls_both_sides) {
-            lbls_tilt = true;
-            textscale *= 3;
-         }
+         all_done = 1;
 
-         for (let lcnt = 0; lcnt < label_g.length; ++lcnt) {
-            if ((textscale > 0.01) && (textscale < 1))
-               this.TextScaleFactor(1/textscale, label_g[lcnt]);
-
-            this.FinishTextDrawing(label_g[lcnt]);
-            if (lbls_tilt)
-               label_g[lcnt].selectAll("text").each(function() {
-                  let txt = d3.select(this), tr = txt.attr("transform");
-                  txt.attr("transform", tr + " rotate(25)").style("text-anchor", "start");
-               });
-         }
+         for (let lcnt = 0; lcnt < label_g.length; ++lcnt)
+            this.FinishTextDrawing(label_g[lcnt], () => {
+              if (lbls_tilt)
+                 label_g[lcnt].selectAll("text").each(function() {
+                     let txt = d3.select(this), tr = txt.attr("transform");
+                     txt.attr("transform", tr + " rotate(25)").style("text-anchor", "start");
+                 });
+            });
 
          if (label_g.length > 1) side = -side;
 
          if (labelfont) labelsize = labelfont.size; // use real font size
+
       }
 
       if (JSROOT.gStyle.Zooming && !this.disable_zooming) {

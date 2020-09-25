@@ -3782,11 +3782,11 @@ JSROOT.require(['d3'], function(d3) {
 
          draw_g.call(font.func);
 
-         draw_g.property('draw_text_completed', false)
+         draw_g.property('draw_text_completed', false) // indicate that draw operations submitted
+               .property('all_args',[]) // array of all submitted args, makes easier to analyze them
                .property('text_font', font)
                .property('mathjax_use', false)
                .property('text_factor', 0.)
-               .property('svg_factor', 0.)
                .property('max_text_width', 0) // keep maximal text width, use it later
                .property('max_font_size', max_font_size)
                .property("_fast_drawing", pp && pp._fast_drawing);
@@ -3829,26 +3829,16 @@ JSROOT.require(['d3'], function(d3) {
             draw_g.property('draw_text_completed', true); // mark that text drawing is completed
          }
 
-         let svgs = null;
+         let all_args = draw_g.property('all_args'), missing = 0;
 
-         if (checking_mathjax || draw_g.property('mathjax_use')) {
+         all_args.forEach(arg => { if (!arg.ready) missing++; });
 
-            let missing = 0;
-
-            svgs = draw_g.selectAll(".math_svg");
-
-            svgs.each(function() {
-               let fo_g = d3.select(this);
-               if (fo_g.node().parentNode !== draw_g.node()) return;
-               if (fo_g.select("svg").empty()) missing++;
-            });
-
-            // is any svg missing we should wait until drawing is really finished
-            if (missing || draw_g.property('latex_counter')) {
-               if (call_ready) draw_g.node().text_callback = call_ready;
-               return 0;
-            }
+         if (missing > 0) {
+            if (call_ready) draw_g.node().text_callback = call_ready;
+            return 0;
          }
+
+         draw_g.property('all_args', null); // clear all_args property
 
          // adjust font size (if there are normal text)
          let painter = this,
@@ -3869,40 +3859,26 @@ JSROOT.require(['d3'], function(d3) {
             font_size = font.size;
          }
 
-         if (svgs)
-            svgs.each(function() {
-               let fo_g = d3.select(this);
-               // only direct parent
-               if (fo_g.node().parentNode !== draw_g.node()) return;
+         all_args.forEach(arg => {
+            if (arg.fo_g && arg.repairMathJaxSvgSize) {
+               let svg = arg.fo_g.select("svg"); // MathJax svg
+               svg_factor = Math.max(svg_factor, arg.repairMathJaxSvgSize(painter, arg.fo_g, svg, arg, font_size));
+            }
+         });
 
-               let arg = fo_g.property("_arg"),
-                   svg = fo_g.select("svg"); // MathJax svg
-
-               svg_factor = Math.max(svg_factor, arg.repairMathJaxSvgSize(painter, fo_g, svg, arg, font_size));
-            });
-
-
-         if (svgs)
-            svgs.each(function() {
-               let fo_g = d3.select(this);
-               // only direct parent
-               if (fo_g.node().parentNode !== draw_g.node()) return;
-
-               let arg = fo_g.property("_arg"),
-                   svg = fo_g.select("svg"); // MathJax svg
-
-               arg.applyAttributesToMathJax(painter, fo_g, svg, arg, font_size, svg_factor);
-            });
+         all_args.forEach(arg => {
+            if (arg.fo_g && arg.applyAttributesToMathJax) {
+               let svg = arg.fo_g.select("svg"); // MathJax svg
+               arg.applyAttributesToMathJax(painter, arg.fo_g, svg, arg, font_size, svg_factor);
+               delete arg.fo_g; // remove reference
+            }
+         });
 
          // now hidden text after rescaling can be shown
-         draw_g.selectAll('.hidden_text').attr('visibility', null).attr('class', null).each(function() {
-            // case when scaling is changed and we can shift text position only after final text size is defined
-            let txt = d3.select(this),
-               arg = txt.property("_arg");
-
-            txt.property("_arg", null);
-
-            if (!arg) return;
+         all_args.forEach(arg => {
+            if (!arg.txt) return; // only normal text is processed
+            let txt = arg.txt;
+            txt.attr('visibility', null);
 
             if (JSROOT.nodejs) {
                if (arg.scale && (f > 0)) { arg.box.width = arg.box.width / f; arg.box.height = arg.box.height / f; }
@@ -3956,6 +3932,7 @@ JSROOT.require(['d3'], function(d3) {
 
          // if specified, call ready function
          JSROOT.CallBack(call_ready);
+         return 0;
       }
 
       produceLatexPromise(node, label, arg) {
@@ -4036,6 +4013,10 @@ JSROOT.require(['d3'], function(d3) {
             }
          }
 
+         // include drawing into list of all args
+         arg.draw_g.property('all_args').push(arg);
+         arg.ready = false; // indicates if drawing is ready for post-processing
+
          let font = arg.draw_g.property('text_font'),
              use_mathjax = (arg.latex == 2),
              painter = this;
@@ -4057,12 +4038,7 @@ JSROOT.require(['d3'], function(d3) {
             arg.plain = !arg.latex || (JSROOT.gStyle.Latex < 2);
 
             if (!arg.plain) {
-               arg.draw_g.property('mathjax_use', true);  // one need to know that mathjax is used
-               let counter = arg.draw_g.property('latex_counter') || 0;
-               arg.draw_g.property('latex_counter', counter + 1);
                this.produceLatexPromise(txt, arg.text, arg).then(res => {
-                  counter = arg.draw_g.property('latex_counter') || 1;
-                  arg.draw_g.property('latex_counter', counter - 1);
                   if (res === 0) {
                      arg.plain = true;
                      painter.producePlainText(txt, arg);
@@ -4082,14 +4058,15 @@ JSROOT.require(['d3'], function(d3) {
          }
 
          let fo_g = arg.draw_g.append("svg:g")
-                              .attr('class', 'math_svg')
-                              .attr('visibility', 'hidden')
+                              .attr('visibility', 'hidden') // hide text until drawing is finished
                               .property('_arg', arg);
 
          arg.draw_g.property('mathjax_use', true);  // one need to know that mathjax is used
          arg.font = font;
+         arg.fo_g = fo_g; // keep element
 
          Painter.DoMathjax(painter, fo_g, arg, () => {
+            arg.ready = true;
             painter.FinishTextDrawing(arg.draw_g, null, true); // check if all other elements are completed
          });
 
@@ -4110,13 +4087,21 @@ JSROOT.require(['d3'], function(d3) {
          arg.box = !JSROOT.nodejs && !JSROOT.gStyle.ApproxTextSize && !arg.fast ? this.GetBoundarySizes(txt.node()) :
                   (arg.text_rect || { height: arg.font_size * 1.2, width: JSROOT.Painter.approxTextWidth(arg.font, arg.text) });
 
-         txt.attr('class', 'hidden_text')
-            .attr('visibility', 'hidden') // hide elements until text drawing is finished
-            .property("_arg", arg);
+         txt.attr('visibility', 'hidden'); // hide elements until text drawing is finished
+
+         arg.txt = txt; // keep reference on element
 
          if (arg.box.width > arg.draw_g.property('max_text_width')) arg.draw_g.property('max_text_width', arg.box.width);
          if (arg.scale) this.TextScaleFactor(1.05 * arg.box.width / arg.width, arg.draw_g);
          if (arg.scale) this.TextScaleFactor(1. * arg.box.height / arg.height, arg.draw_g);
+
+         arg.result_width = arg.box.width;
+
+         arg.ready = true;
+
+         // in some cases
+         if (typeof arg.post_process == 'function')
+            arg.post_process(this);
 
          return arg.box.width;
       }

@@ -876,7 +876,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
       let trans = "translate(" + arg.x + "," + arg.y + ")";
       if (arg.rotate) trans += " rotate(" + arg.rotate + ")";
 
-      fo_g.attr('transform', trans).attr('visibility', null).property('_arg', null);
+      fo_g.attr('transform', trans).attr('visibility', null);
    }
 
    JSROOT.Painter.DoMathjax = function(painter, fo_g, arg, callback) {

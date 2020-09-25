@@ -3912,11 +3912,23 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
             this.DrawText({ align: (j == 0) ? "middle" : "start", x: margin_x, y: posy,
                             width: width-2*margin_x, height: stepy, text: lines[j], color: text_color, draw_g: text_g });
          } else {
-            let parts = lines[j].split("="), sumw = 0;
+            let parts = lines[j].split("="), args = [];
+
+            for (let n = 0; n < 2; ++n) {
+               let arg = {
+                  align: (n == 0) ? "start" : "end", x: margin_x, y: posy,
+                  width: width-2*margin_x, height: stepy, text: parts[n], color: text_color, draw_g: text_g,
+                  _expected_width: width-2*margin_x, _args: args,
+                  post_process: function(painter) {
+                    if (this._args[0].ready && this._args[1].ready)
+                       painter.TextScaleFactor(1.05*(this._args[0].result_width && this._args[1].result_width)/this.__expected_width, this.draw_g);
+                  }
+               };
+               args.push(arg);
+            }
+
             for (let n = 0; n < 2; ++n)
-               sumw += this.DrawText({ align: (n == 0) ? "start" : "end", x: margin_x, y: posy,
-                                       width: width-2*margin_x, height: stepy, text: parts[n], color: text_color, draw_g: text_g });
-            this.TextScaleFactor(1.05*sumw/(width-2*margin_x), text_g);
+               this.DrawText(args[n]);
          }
       }
 
