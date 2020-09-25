@@ -2147,8 +2147,8 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
 
    THistPainter.prototype.DrawAxes = function() {
       // axes can be drawn only for main histogram
-
-      if (!this.is_main_painter() || this.options.Same) return;
+      if (!this.is_main_painter() || this.options.Same)
+         return Promise.resolve(false);
 
       var fp = this.frame_painter();
       if (fp) fp.DrawAxes(false, this.options.Axis < 0, this.options.AxisPos, this.options.Zscale);
@@ -4273,12 +4273,15 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
       if (typeof this.DrawColorPalette === 'function')
          this.DrawColorPalette(false);
 
-      this.DrawAxes();
-      this.DrawBins();
-      this.DrawTitle();
-      this.UpdateStatWebCanvas();
-      this.AddInteractive();
-      JSROOT.CallBack(call_back);
+     let painter = this;
+
+      this.DrawAxes().then(() => {
+         painter.DrawBins();
+         painter.DrawTitle();
+         painter.UpdateStatWebCanvas();
+         painter.AddInteractive();
+         JSROOT.CallBack(call_back);
+      });
    }
 
    TH1Painter.prototype.Draw3D = function(call_back, reason) {
@@ -6204,20 +6207,23 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
       // draw new palette, resize frame if required
       let pp = this.DrawColorPalette(this.options.Zscale && (this.options.Color || this.options.Contour), true);
 
-      this.DrawAxes();
+      let painter = this;
 
-      this.DrawBins();
+      this.DrawAxes().then(() => {
 
-      // redraw palette till the end when contours are available
-      if (pp) pp.DrawPave();
+         painter.DrawBins();
 
-      this.DrawTitle();
+         // redraw palette till the end when contours are available
+         if (pp) pp.DrawPave();
 
-      this.UpdateStatWebCanvas();
+         painter.DrawTitle();
 
-      this.AddInteractive();
+         painter.UpdateStatWebCanvas();
 
-      JSROOT.CallBack(call_back);
+         painter.AddInteractive();
+
+         JSROOT.CallBack(call_back);
+      });
    }
 
    TH2Painter.prototype.Draw3D = function(call_back, resize) {

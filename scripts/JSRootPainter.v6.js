@@ -442,11 +442,21 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
           axis_g = layer, tickSize = 0.03,
           scaling_size = 100, draw_lines = true,
           pad_w = this.pad_width() || 10,
-          pad_h = this.pad_height() || 10;
+          pad_h = this.pad_height() || 10,
+          resolveFunc, totalTextCallbacks = 0, totalDone = false,
+          promise = new Promise(resolve => { resolveFunc = resolve; });
+
+      let checkTextCallBack = (is_callback) => {
+          if (is_callback) totalTextCallbacks--; else totalDone = true;
+          if (!totalTextCallbacks && totalDone && resolveFunc) {
+            resolveFunc(true);
+            resolveFunc = null;
+         }
+      };
 
       this.vertical = vertical;
 
-      function myXor(a,b) { return ( a && !b ) || (!a && b); }
+      let myXor = (a,b) => ( a && !b ) || (!a && b);
 
       // shift for second ticks set (if any)
       if (!second_shift) second_shift = 0; else
@@ -673,19 +683,20 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
 
          all_done = 1;
 
+         totalTextCallbacks += label_g.length;
          for (let lcnt = 0; lcnt < label_g.length; ++lcnt)
             this.FinishTextDrawing(label_g[lcnt], () => {
-              if (lbls_tilt)
-                 label_g[lcnt].selectAll("text").each(function() {
+               if (lbls_tilt)
+                  label_g[lcnt].selectAll("text").each(function() {
                      let txt = d3.select(this), tr = txt.attr("transform");
                      txt.attr("transform", tr + " rotate(25)").style("text-anchor", "start");
-                 });
+                  });
+               checkTextCallBack(true);
             });
 
          if (label_g.length > 1) side = -side;
 
          if (labelfont) labelsize = labelfont.size; // use real font size
-
       }
 
       if (JSROOT.gStyle.Zooming && !this.disable_zooming) {
@@ -747,7 +758,8 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
          if (vertical && (axis.fTitleOffset == 0) && ('getBoundingClientRect' in axis_g.node()))
             axis_rect = axis_g.node().getBoundingClientRect();
 
-         this.FinishTextDrawing(title_g, function() {
+         totalTextCallbacks++;
+         this.FinishTextDrawing(title_g, () => {
             if (axis_rect) {
                let title_rect = title_g.node().getBoundingClientRect();
                shift_x = (side>0) ? Math.round(axis_rect.left - title_rect.right - title_fontsize*0.3) :
@@ -757,6 +769,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
             title_g.attr('transform', 'translate(' + shift_x + ',' + shift_y +  ')')
                    .property('shift_x', shift_x)
                    .property('shift_y', shift_y);
+            checkTextCallBack(true);
          });
 
 
@@ -771,6 +784,10 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
 
          this.position = rect1.left - rect2.left; // use to control left position of Y scale
       }
+
+      checkTextCallBack(false);
+
+      return promise;
    }
 
    TAxisPainter.prototype.Redraw = function() {
@@ -824,7 +841,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
 
       this.CreateG();
 
-      this.DrawAxis(vertical, this.draw_g, w, h, "translate(" + x1 + "," + y2 +")", reverse);
+      return this.DrawAxis(vertical, this.draw_g, w, h, "translate(" + x1 + "," + y2 +")", reverse);
    }
 
    JSROOT.Painter.drawGaxis = function(divid, obj /*, opt*/) {
@@ -834,9 +851,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
 
       painter.disable_zooming = true;
 
-      painter.Redraw();
-
-      return painter.DrawingReady();
+      return painter.Redraw().then(() => painter);
    }
 
    // ===============================================
@@ -1371,6 +1386,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
       return value.toPrecision(4);
    }
 
+   /** draw axes, return Promise which ready when drawing is completed */
    TFramePainter.prototype.DrawAxes = function(shrink_forbidden, disable_axis_draw, AxisPos, has_x_obstacle) {
       // axes can be drawn only for main histogram
 
@@ -1378,7 +1394,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
 
       this.CleanupAxes();
 
-      if ((this.xmin==this.xmax) || (this.ymin==this.ymax)) return false;
+      if ((this.xmin==this.xmax) || (this.ymin==this.ymax)) return Promise.resolve(false);
 
       if (AxisPos === undefined) AxisPos = 0;
 
@@ -1417,40 +1433,46 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
       }
 
       if (!disable_axis_draw) {
-         draw_horiz.DrawAxis(false, layer, w, h,
-                             draw_horiz.invert_side ? undefined : "translate(0," + h + ")",
-                             false, pad.fTickx ? -h : 0, disable_axis_draw);
+         let promise1 = draw_horiz.DrawAxis(false, layer, w, h,
+                                            draw_horiz.invert_side ? undefined : "translate(0," + h + ")",
+                                            false, pad.fTickx ? -h : 0, disable_axis_draw);
 
-         draw_vertical.DrawAxis(true, layer, w, h,
-                                draw_vertical.invert_side ? "translate(" + w + ",0)" : undefined,
-                                false, pad.fTicky ? w : 0, disable_axis_draw,
-                                draw_vertical.invert_side ? 0 : this.frame_x());
+         let promise2 = draw_vertical.DrawAxis(true, layer, w, h,
+                                               draw_vertical.invert_side ? "translate(" + w + ",0)" : undefined,
+                                               false, pad.fTicky ? w : 0, disable_axis_draw,
+                                               draw_vertical.invert_side ? 0 : this.frame_x());
 
-         this.DrawGrids();
+         let painter = this;
+
+         return Promise.all([promise1, promise2]).then(() => {
+            painter.DrawGrids();
+
+            if (!shrink_forbidden && JSROOT.gStyle.CanAdjustFrame) {
+
+               let shrink = 0., ypos = draw_vertical.position;
+
+               if ((-0.2*w < ypos) && (ypos < 0)) {
+                  shrink = -ypos/w + 0.001;
+                  painter.shrink_frame_left += shrink;
+               } else if ((ypos>0) && (ypos<0.3*w) && (painter.shrink_frame_left > 0) && (ypos/w > painter.shrink_frame_left)) {
+                  shrink = -painter.shrink_frame_left;
+                  painter.shrink_frame_left = 0.;
+               }
+
+               if (shrink != 0) {
+                  painter.Shrink(shrink, 0);
+                  painter.Redraw();
+                  return painter.DrawAxes(true);
+               }
+
+               painter.axes_drawn = true;
+               return true; // finished
+            }
+         });
       }
 
-      if (!shrink_forbidden && JSROOT.gStyle.CanAdjustFrame && !disable_axis_draw) {
-
-         let shrink = 0., ypos = draw_vertical.position;
-
-         if ((-0.2*w < ypos) && (ypos < 0)) {
-            shrink = -ypos/w + 0.001;
-            this.shrink_frame_left += shrink;
-         } else if ((ypos>0) && (ypos<0.3*w) && (this.shrink_frame_left > 0) && (ypos/w > this.shrink_frame_left)) {
-            shrink = -this.shrink_frame_left;
-            this.shrink_frame_left = 0.;
-         }
-
-         if (shrink != 0) {
-            this.Shrink(shrink, 0);
-            this.Redraw();
-            this.DrawAxes(true);
-         }
-      }
-
-      this.axes_drawn = true;
-
-      return true;
+      painter.axes_drawn = true;
+      return Promise.resolve(true);
    }
 
    TFramePainter.prototype.UpdateAttributes = function(force) {
@@ -2876,18 +2898,18 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
    TPadPainter.prototype.SelectObjectPainter = function(_painter, pos) {
       let istoppad = (this.iscan || !this.has_canvas),
           canp = istoppad ? this : this.canv_painter(),
-          pp = _painter instanceof TPadPainter ? _painter : _painter.pad_painter();
+          p_p = (_painter instanceof TPadPainter) ? _painter : _painter.pad_painter();
 
       if (pos && !istoppad)
          this.CalcAbsolutePosition(this.svg_pad(this.this_pad_name), pos);
 
-      JSROOT.Painter.SelectActivePad({ pp: pp, active: true });
+      JSROOT.Painter.SelectActivePad({ pp: p_p, active: true });
 
       if (typeof canp.SelectActivePad == "function")
-         canp.SelectActivePad(pp, _painter, pos);
+         canp.SelectActivePad(p_p, _painter, pos);
 
       if (canp.pad_events_receiver)
-         canp.pad_events_receiver({ what: "select", padpainter: pp, painter: _painter, position: pos });
+         canp.pad_events_receiver({ what: "select", padpainter: p_p, painter: _painter, position: pos });
    }
 
    /// method redirect call to pad events receiver

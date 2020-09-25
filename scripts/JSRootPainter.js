@@ -4037,14 +4037,19 @@ JSROOT.require(['d3'], function(d3) {
 
             arg.plain = !arg.latex || (JSROOT.gStyle.Latex < 2);
 
+            console.log('Draw', arg.text, 'plain', arg.plain);
+
+            arg.txt = txt; // keep refernce on element
+            txt.text("should_be_" + arg.text);
+
             if (!arg.plain) {
-               this.produceLatexPromise(txt, arg.text, arg).then(res => {
+               this.produceLatexPromise(arg.txt, arg.text, arg).then(res => {
                   if (res === 0) {
                      arg.plain = true;
-                     painter.producePlainText(txt, arg);
+                     painter.producePlainText(arg.txt, arg);
                   }
 
-                  painter.postprocessPlainText(txt, arg);
+                  painter.postprocessPlainText(arg.txt, arg);
 
                   painter.FinishTextDrawing(arg.draw_g, null, true); // check if all other elements are completed
                });
@@ -4077,6 +4082,7 @@ JSROOT.require(['d3'], function(d3) {
       producePlainText(txt, arg) {
          if (arg.latex && (JSROOT.gStyle.Latex == 1))
             arg.text = Painter.translateLaTeX(arg.text); // replace latex symbols
+         console.log('Assign text', arg.text, 'now is', txt.text());
          txt.text(arg.text);
       }
 
@@ -4088,8 +4094,6 @@ JSROOT.require(['d3'], function(d3) {
                   (arg.text_rect || { height: arg.font_size * 1.2, width: JSROOT.Painter.approxTextWidth(arg.font, arg.text) });
 
          txt.attr('visibility', 'hidden'); // hide elements until text drawing is finished
-
-         arg.txt = txt; // keep reference on element
 
          if (arg.box.width > arg.draw_g.property('max_text_width')) arg.draw_g.property('max_text_width', arg.box.width);
          if (arg.scale) this.TextScaleFactor(1.05 * arg.box.width / arg.width, arg.draw_g);
@@ -5092,6 +5096,8 @@ JSROOT.require(['d3'], function(d3) {
          JSROOT.svg_workaround = undefined;
 
          return JSROOT.draw(main.node(), args.object, args.option || "").then(() => {
+
+            console.log('Drawing for SVG done');
 
             let has_workarounds = JSROOT.Painter.ProcessSVGWorkarounds && JSROOT.svg_workaround;
 

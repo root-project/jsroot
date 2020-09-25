@@ -205,7 +205,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
    RHistPainter.prototype.DrawAxes = function() {
       // return true when axes was drawn
       let main = this.frame_painter();
-      if (!main) return false;
+      if (!main) return Promise.resolve(false);
 
       if (this.is_main_painter() && this.draw_content) {
          main.CleanupAxes();
@@ -1821,14 +1821,16 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
       this.Clear3DScene();
       this.mode3d = false;
 
-      if (!this.DrawAxes())
-         return JSROOT.CallBack(call_back);
+      let painter = this;
 
-      this.DrawingBins(call_back, reason, function() {
-         // called when bins received from server, must be reentrant
-         this.DrawBins();
-         this.UpdateStatWebCanvas();
-         this.AddInteractive();
+      this.DrawAxes().then(res => {
+         if (!res) return JSROOT.CallBack(call_back);
+         painter.DrawingBins(call_back, reason, () => {
+            // called when bins received from server, must be reentrant
+            painter.DrawBins();
+            painter.UpdateStatWebCanvas();
+            painter.AddInteractive();
+         });
       });
    }
 
@@ -3608,14 +3610,16 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
       // draw new palette, resize frame if required
       // let pp = this.DrawColorPalette(this.options.Zscale && (this.options.Color || this.options.Contour), true);
 
-      if (!this.DrawAxes())
-         return JSROOT.CallBack(call_back);
+      let painter = this;
 
-      this.DrawingBins(call_back, reason, function() {
-         // called when bins received from server, must be reentrant
-         this.DrawBins();
-         this.UpdateStatWebCanvas();
-         this.AddInteractive();
+      this.DrawAxes().then(res => {
+         if (!res) return JSROOT.CallBack(call_back);
+         painter.DrawingBins(call_back, reason, () => {
+            // called when bins received from server, must be reentrant
+            painter.DrawBins();
+            painter.UpdateStatWebCanvas();
+            painter.AddInteractive();
+         });
       });
    }
 
