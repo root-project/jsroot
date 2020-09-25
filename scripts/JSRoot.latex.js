@@ -677,7 +677,137 @@ JSROOT.require(['JSRootPainter'], function() {
       return promise;
    }
 
-   JSROOT.Painter.DoMathjax = function(mtext, arg, callback) {
+
+   JSROOT.Painter.math_symbols_map = {
+         '#LT': "\\langle",
+         '#GT': "\\rangle",
+         '#club': "\\clubsuit",
+         '#spade': "\\spadesuit",
+         '#heart': "\\heartsuit",
+         '#diamond': "\\diamondsuit",
+         '#voidn': "\\wp",
+         '#voidb': "f",
+         '#copyright': "(c)",
+         '#ocopyright': "(c)",
+         '#trademark': "TM",
+         '#void3': "TM",
+         '#oright': "R",
+         '#void1': "R",
+         '#3dots': "\\ldots",
+         '#lbar': "\\mid",
+         '#void8': "\\mid",
+         '#divide': "\\div",
+         '#Jgothic': "\\Im",
+         '#Rgothic': "\\Re",
+         '#doublequote': "\"",
+         '#plus': "+",
+         '#minus': "-",
+         '#\/': "/",
+         '#upoint': ".",
+         '#aa': "\\mathring{a}",
+         '#AA': "\\mathring{A}",
+         '#omicron': "o",
+         '#Alpha': "A",
+         '#Beta': "B",
+         '#Epsilon': "E",
+         '#Zeta': "Z",
+         '#Eta': "H",
+         '#Iota': "I",
+         '#Kappa': "K",
+         '#Mu': "M",
+         '#Nu': "N",
+         '#Omicron': "O",
+         '#Rho': "P",
+         '#Tau': "T",
+         '#Chi': "X",
+         '#varomega': "\\varpi",
+         '#corner': "?",
+         '#ltbar': "?",
+         '#bottombar': "?",
+         '#notsubset': "?",
+         '#arcbottom': "?",
+         '#cbar': "?",
+         '#arctop': "?",
+         '#topbar': "?",
+         '#arcbar': "?",
+         '#downleftarrow': "?",
+         '#splitline': "\\genfrac{}{}{0pt}{}",
+         '#it': "\\textit",
+         '#bf': "\\textbf",
+         '#frac': "\\frac",
+         '#left{': "\\lbrace",
+         '#right}': "\\rbrace",
+         '#left\\[': "\\lbrack",
+         '#right\\]': "\\rbrack",
+         '#\\[\\]{': "\\lbrack",
+         ' } ': "\\rbrack",
+         '#\\[': "\\lbrack",
+         '#\\]': "\\rbrack",
+         '#{': "\\lbrace",
+         '#}': "\\rbrace",
+         ' ': "\\;"
+    };
+
+   /** @summary Function translates ROOT TLatex into MathJax format */
+   JSROOT.Painter.translateMath = function(str, kind, color, painter) {
+
+      if (kind != 2) {
+         for (let x in JSROOT.Painter.math_symbols_map)
+            str = str.replace(new RegExp(x, 'g'), JSROOT.Painter.math_symbols_map[x]);
+
+         for (let x in JSROOT.Painter.symbols_map)
+            if (x.length > 2)
+               str = str.replace(new RegExp(x, 'g'), "\\" + x.substr(1));
+
+         // replace all #color[]{} occurances
+         let clean = "", first = true;
+         while (str) {
+            let p = str.indexOf("#color[");
+            if ((p < 0) && first) { clean = str; break; }
+            first = false;
+            if (p != 0) {
+               let norm = (p < 0) ? str : str.substr(0, p);
+               clean += norm;
+               if (p < 0) break;
+            }
+
+            str = str.substr(p + 7);
+            p = str.indexOf("]{");
+            if (p <= 0) break;
+            let colindx = parseInt(str.substr(0, p));
+            if (isNaN(colindx)) break;
+            let col = painter.get_color(colindx), cnt = 1;
+            str = str.substr(p + 2);
+            p = -1;
+            while (cnt && (++p < str.length)) {
+               if (str[p] == '{') cnt++; else if (str[p] == '}') cnt--;
+            }
+            if (cnt != 0) break;
+
+            let part = str.substr(0, p);
+            str = str.substr(p + 1);
+            if (part)
+               clean += "\\color{" + col + '}{' + part + "}";
+         }
+
+         str = clean;
+      } else {
+         str = str.replace(/\\\^/g, "\\hat");
+      }
+
+      if (typeof color != 'string') return str;
+
+      // MathJax SVG converter use colors in normal form
+      //if (color.indexOf("rgb(")>=0)
+      //   color = color.replace(/rgb/g, "[RGB]")
+      //                .replace(/\(/g, '{')
+      //                .replace(/\)/g, '}');
+      return "\\color{" + color + '}{' + str + "}";
+   }
+
+   JSROOT.Painter.DoMathjax = function(painter, arg, callback) {
+      let mtext = JSROOT.Painter.translateMath(arg.text, arg.latex, arg.color, painter);
+
       JSROOT.Painter.LoadMathjax().then(() => {
          let options = { em: arg.font.size, ex: arg.font.size/2, family: arg.font.name, scale: 1, containerWidth: -1, lineWidth: 100000 };
          MathJax.tex2svgPromise(mtext, options).then(callback);
