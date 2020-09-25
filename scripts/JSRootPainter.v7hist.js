@@ -1432,9 +1432,13 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
       }
 
       let close_path = "";
-      if (!this.fillatt.empty()) {
-         let h0 = height + 3, gry0 = Math.round(pmain.gry(0));
-         if (gry0 <= 0) h0 = -3; else if (gry0 < height) h0 = gry0;
+      let fill_for_interactive = !JSROOT.BatchMode && this.fillatt.empty() && options.Hist && (JSROOT.gStyle.Tooltip > 0) && !draw_markers && !show_line;
+      if (!this.fillatt.empty() || fill_for_interactive) {
+         let h0 = height + 3;
+         if (fill_for_interactive) {
+            let gry0 = Math.round(pmain.gry(0));
+            if (gry0 <= 0) h0 = -3; else if (gry0 < height) h0 = gry0;
+         }
          close_path = "L"+currx+","+h0 + "L"+startx+","+h0 + "Z";
          if (res.length>0) res += close_path;
       }
@@ -1468,8 +1472,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
                 .attr("d", path_marker)
                 .call(this.markeratt.func);
 
-      } else
-      if (res && options.Hist) {
+      } else if (res && options.Hist) {
          this.draw_g.append("svg:path")
                     .attr("d", res)
                     .style("stroke-linejoin","miter")
