@@ -1,7 +1,7 @@
 /// @file JSRoot.latex.js
 /// Latex / MathJax processing
 
-JSROOT.require(['JSRootPainter'], function() {
+JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
 
    "use strict";
 
@@ -678,7 +678,7 @@ JSROOT.require(['JSRootPainter'], function() {
    }
 
 
-   JSROOT.Painter.math_symbols_map = {
+   let math_symbols_map = {
          '#LT': "\\langle",
          '#GT': "\\rangle",
          '#club': "\\clubsuit",
@@ -752,8 +752,8 @@ JSROOT.require(['JSRootPainter'], function() {
    JSROOT.Painter.translateMath = function(str, kind, color, painter) {
 
       if (kind != 2) {
-         for (let x in JSROOT.Painter.math_symbols_map)
-            str = str.replace(new RegExp(x, 'g'), JSROOT.Painter.math_symbols_map[x]);
+         for (let x in math_symbols_map)
+            str = str.replace(new RegExp(x, 'g'), math_symbols_map[x]);
 
          for (let x in JSROOT.Painter.symbols_map)
             if (x.length > 2)
@@ -805,12 +805,94 @@ JSROOT.require(['JSRootPainter'], function() {
       return "\\color{" + color + '}{' + str + "}";
    }
 
-   JSROOT.Painter.DoMathjax = function(painter, arg, callback) {
+   function repairMathJaxSvgSize(painter, fo_g, svg, arg, font_size) {
+      function transform(value) {
+         if (!value || (typeof value !== "string")) return null;
+         if (value.indexOf("ex") !== value.length - 2) return null;
+         value = parseFloat(value.substr(0, value.length - 2));
+         return isNaN(value) ? null : value * font_size * 0.5;
+      }
+
+      let width = transform(svg.attr("width")),
+          height = transform(svg.attr("height")),
+          valign = svg.attr("style");
+
+      if (valign && valign.indexOf("vertical-align:") == 0 && valign.indexOf("ex;") == valign.length - 3) {
+         valign = transform(valign.substr(16, valign.length - 17));
+      } else {
+         valign = null;
+      }
+
+      width = (!width || (width <= 0.5)) ? 1 : Math.round(width);
+      height = (!height || (height <= 0.5)) ? 1 : Math.round(height);
+
+      svg.attr("width", width).attr('height', height).attr("style", null);
+
+      if (!JSROOT.nodejs) {
+         let box = painter.GetBoundarySizes(fo_g.node());
+         width = 1.05 * box.width; height = 1.05 * box.height;
+      }
+
+      arg.valign = valign;
+
+      return arg.scale ? Math.max(width / arg.width, height / arg.height) : 0;
+   }
+
+   function applyAttributesToMathJax(painter, fo_g, svg, arg, font_size, svg_factor) {
+      let mw = parseInt(svg.attr("width")),
+          mh = parseInt(svg.attr("height"));
+
+      if (!isNaN(mh) && !isNaN(mw)) {
+         if (svg_factor > 0.) {
+            mw = mw / svg_factor;
+            mh = mh / svg_factor;
+            svg.attr("width", Math.round(mw)).attr("height", Math.round(mh));
+         }
+      } else {
+         let box = painter.GetBoundarySizes(fo_g.node()); // sizes before rotation
+         mw = box.width || mw || 100;
+         mh = box.height || mh || 10;
+      }
+
+      if ((svg_factor > 0.) && arg.valign) arg.valign = arg.valign / svg_factor;
+
+      if (arg.valign === null) arg.valign = (font_size - mh) / 2;
+
+      let sign = { x: 1, y: 1 }, nx = "x", ny = "y";
+      if (arg.rotate == 180) { sign.x = sign.y = -1; } else
+         if ((arg.rotate == 270) || (arg.rotate == 90)) {
+            sign.x = (arg.rotate == 270) ? -1 : 1;
+            sign.y = -sign.x;
+            nx = "y"; ny = "x"; // replace names to which align applied
+         }
+
+      if (arg.align[0] == 'middle') arg[nx] += sign.x * (arg.width - mw) / 2; else
+         if (arg.align[0] == 'end') arg[nx] += sign.x * (arg.width - mw);
+
+      if (arg.align[1] == 'middle') arg[ny] += sign.y * (arg.height - mh) / 2; else
+         if (arg.align[1] == 'bottom') arg[ny] += sign.y * (arg.height - mh); else
+            if (arg.align[1] == 'bottom-base') arg[ny] += sign.y * (arg.height - mh - arg.valign);
+
+      let trans = "translate(" + arg.x + "," + arg.y + ")";
+      if (arg.rotate) trans += " rotate(" + arg.rotate + ")";
+
+      fo_g.attr('transform', trans).attr('visibility', null).property('_arg', null);
+   }
+
+   JSROOT.Painter.DoMathjax = function(painter, fo_g, arg, callback) {
       let mtext = JSROOT.Painter.translateMath(arg.text, arg.latex, arg.color, painter);
 
       JSROOT.Painter.LoadMathjax().then(() => {
          let options = { em: arg.font.size, ex: arg.font.size/2, family: arg.font.name, scale: 1, containerWidth: -1, lineWidth: 100000 };
-         MathJax.tex2svgPromise(mtext, options).then(callback);
+         MathJax.tex2svgPromise(mtext, options).then(elem => {
+            let svg = d3.select(elem).select("svg");
+            fo_g.append(function() { return svg.node(); });
+
+            arg.repairMathJaxSvgSize = repairMathJaxSvgSize;
+            arg.applyAttributesToMathJax = applyAttributesToMathJax;
+
+            callback(arg);
+         });
       });
    }
 

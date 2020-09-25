@@ -3783,12 +3783,13 @@ JSROOT.require(['d3'], function(d3) {
          draw_g.call(font.func);
 
          draw_g.property('draw_text_completed', false)
-            .property('text_font', font)
-            .property('mathjax_use', false)
-            .property('text_factor', 0.)
-            .property('max_text_width', 0) // keep maximal text width, use it later
-            .property('max_font_size', max_font_size)
-            .property("_fast_drawing", pp && pp._fast_drawing);
+               .property('text_font', font)
+               .property('mathjax_use', false)
+               .property('text_factor', 0.)
+               .property('svg_factor', 0.)
+               .property('max_text_width', 0) // keep maximal text width, use it later
+               .property('max_font_size', max_font_size)
+               .property("_fast_drawing", pp && pp._fast_drawing);
 
          if (draw_g.property("_fast_drawing"))
             draw_g.property("_font_too_small", (max_font_size && (max_font_size < 5)) || (font.size < 4));
@@ -3868,52 +3869,18 @@ JSROOT.require(['d3'], function(d3) {
             font_size = font.size;
          }
 
-         // first analyze all MathJax SVG and repair width/height attributes
          if (svgs)
             svgs.each(function() {
                let fo_g = d3.select(this);
+               // only direct parent
                if (fo_g.node().parentNode !== draw_g.node()) return;
 
-               let vvv = fo_g.select("svg");
-               if (vvv.empty()) {
-                  console.log('MathJax SVG ouptut error');
-                  return;
-               }
+               let arg = fo_g.property("_arg"),
+                   svg = fo_g.select("svg"); // MathJax svg
 
-               function transform(value) {
-                  if (!value || (typeof value !== "string")) return null;
-                  if (value.indexOf("ex") !== value.length - 2) return null;
-                  value = parseFloat(value.substr(0, value.length - 2));
-                  return isNaN(value) ? null : value * font_size * 0.5;
-               }
-
-               let width = transform(vvv.attr("width")),
-                  height = transform(vvv.attr("height")),
-                  valign = vvv.attr("style");
-
-               if (valign && valign.indexOf("vertical-align:") == 0 && valign.indexOf("ex;") == valign.length - 3) {
-                  valign = transform(valign.substr(16, valign.length - 17));
-               } else {
-                  valign = null;
-               }
-
-               width = (!width || (width <= 0.5)) ? 1 : Math.round(width);
-               height = (!height || (height <= 0.5)) ? 1 : Math.round(height);
-
-               vvv.attr("width", width).attr('height', height).attr("style", null);
-
-               if (!JSROOT.nodejs) {
-                  let box = painter.GetBoundarySizes(fo_g.node());
-                  width = 1.05 * box.width; height = 1.05 * box.height;
-               }
-
-               let arg = fo_g.property("_arg");
-
-               arg.valign = valign;
-
-               if (arg.scale)
-                  svg_factor = Math.max(svg_factor, width / arg.width, height / arg.height);
+               svg_factor = Math.max(svg_factor, arg.repairMathJaxSvgSize(painter, fo_g, svg, arg, font_size));
             });
+
 
          if (svgs)
             svgs.each(function() {
@@ -3922,45 +3889,9 @@ JSROOT.require(['d3'], function(d3) {
                if (fo_g.node().parentNode !== draw_g.node()) return;
 
                let arg = fo_g.property("_arg"),
-                   m = fo_g.select("svg"), // MathJax svg
-                   mw = parseInt(m.attr("width")),
-                   mh = parseInt(m.attr("height"));
+                   svg = fo_g.select("svg"); // MathJax svg
 
-               if (!isNaN(mh) && !isNaN(mw)) {
-                  if (svg_factor > 0.) {
-                     mw = mw / svg_factor;
-                     mh = mh / svg_factor;
-                     m.attr("width", Math.round(mw)).attr("height", Math.round(mh));
-                  }
-               } else {
-                  let box = painter.GetBoundarySizes(fo_g.node()); // sizes before rotation
-                  mw = box.width || mw || 100;
-                  mh = box.height || mh || 10;
-               }
-
-               if ((svg_factor > 0.) && arg.valign) arg.valign = arg.valign / svg_factor;
-
-               if (arg.valign === null) arg.valign = (font_size - mh) / 2;
-
-               let sign = { x: 1, y: 1 }, nx = "x", ny = "y";
-               if (arg.rotate == 180) { sign.x = sign.y = -1; } else
-                  if ((arg.rotate == 270) || (arg.rotate == 90)) {
-                     sign.x = (arg.rotate == 270) ? -1 : 1;
-                     sign.y = -sign.x;
-                     nx = "y"; ny = "x"; // replace names to which align applied
-                  }
-
-               if (arg.align[0] == 'middle') arg[nx] += sign.x * (arg.width - mw) / 2; else
-                  if (arg.align[0] == 'end') arg[nx] += sign.x * (arg.width - mw);
-
-               if (arg.align[1] == 'middle') arg[ny] += sign.y * (arg.height - mh) / 2; else
-                  if (arg.align[1] == 'bottom') arg[ny] += sign.y * (arg.height - mh); else
-                     if (arg.align[1] == 'bottom-base') arg[ny] += sign.y * (arg.height - mh - arg.valign);
-
-               let trans = "translate(" + arg.x + "," + arg.y + ")";
-               if (arg.rotate) trans += " rotate(" + arg.rotate + ")";
-
-               fo_g.attr('transform', trans).attr('visibility', null).property('_arg', null);
+               arg.applyAttributesToMathJax(painter, fo_g, svg, arg, font_size, svg_factor);
             });
 
          // now hidden text after rescaling can be shown
@@ -4158,9 +4089,7 @@ JSROOT.require(['d3'], function(d3) {
          arg.draw_g.property('mathjax_use', true);  // one need to know that mathjax is used
          arg.font = font;
 
-         Painter.DoMathjax(painter, arg, elem => {
-            let svg = d3.select(elem).select("svg");
-            fo_g.append(function() { return svg.node(); });
+         Painter.DoMathjax(painter, fo_g, arg, () => {
             painter.FinishTextDrawing(arg.draw_g, null, true); // check if all other elements are completed
          });
 
@@ -4196,8 +4125,8 @@ JSROOT.require(['d3'], function(d3) {
 
 
    /** Load MathJax functionality, one need not only to load script but wait for initialization */
-   Painter.DoMathjax = function(painter, arg, callback) {
-      return JSROOT.require(['JSRoot.latex']).then(() => Painter.DoMathjax(painter, arg, callback));
+   Painter.DoMathjax = function(painter, fo_g, arg, callback) {
+      return JSROOT.require(['JSRoot.latex']).then(() => Painter.DoMathjax(painter, fo_g, arg, callback));
    }
 
    // ===========================================================
