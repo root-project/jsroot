@@ -677,6 +677,11 @@ JSROOT.require(['JSRootPainter'], function() {
       return promise;
    }
 
-   JSROOT.Painter.DoMathjax = function()
+   JSROOT.Painter.DoMathjax = function(mtext, arg, callback) {
+      JSROOT.Painter.LoadMathjax().then(() => {
+         let options = { em: arg.font.size, ex: arg.font.size/2, family: arg.font.name, scale: 1, containerWidth: -1, lineWidth: 100000 };
+         MathJax.tex2svgPromise(mtext, options).then(callback);
+      });
+   }
 
 })

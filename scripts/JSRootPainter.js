@@ -4283,15 +4283,12 @@ JSROOT.require(['d3'], function(d3) {
                               .property('_arg', arg);
 
          arg.draw_g.property('mathjax_use', true);  // one need to know that mathjax is used
+         arg.font = font;
 
-         let options = { em: font.size, ex: font.size/2, family: font.name, scale: 1, containerWidth: -1, lineWidth: 100000 };
-
-         Painter.LoadMathjax().then(() => {
-            MathJax.tex2svgPromise(mtext, options).then(elem => {
-               let svg = d3.select(elem).select("svg");
-               fo_g.append(function() { return svg.node(); });
-               painter.FinishTextDrawing(arg.draw_g, null, true); // check if all other elements are completed
-            });
+         Painter.DoMathjax(mtext, arg, elem => {
+            let svg = d3.select(elem).select("svg");
+            fo_g.append(function() { return svg.node(); });
+            painter.FinishTextDrawing(arg.draw_g, null, true); // check if all other elements are completed
          });
 
          return 0;
@@ -4326,8 +4323,8 @@ JSROOT.require(['d3'], function(d3) {
 
 
    /** Load MathJax functionality, one need not only to load script but wait for initialization */
-   Painter.LoadMathjax = function() {
-      return JSROOT.require(['JSRoot.latex']).then(() => Painter.LoadMathjax());
+   Painter.DoMathjax = function(mtext, arg, callback) {
+      return JSROOT.require(['JSRoot.latex']).then(() => Painter.DoMathjax(mtext, arg, callback));
    }
 
    // ===========================================================
