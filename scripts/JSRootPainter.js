@@ -2711,8 +2711,10 @@ JSROOT.require(['d3'], function(d3) {
          let svg_c = this.svg_canvas();
 
          if (svg_c.empty() && (is_main > 0) && (is_main !== 5)) {
-            // FIXME: drawCanvas should not be here !!!!!
-            JSROOT.Painter.drawCanvas(divid, null, ((is_main == 2) || (is_main == 4)) ? "noframe" : "");
+            if (typeof JSROOT.Painter.drawCanvas == 'function')
+                JSROOT.Painter.drawCanvas(divid, null, ((is_main == 2) || (is_main == 4)) ? "noframe" : "");
+            else
+                return alert("Fail to draw TCanvas - please contact JSROOT developers");
             svg_c = this.svg_canvas();
             this.create_canvas = true;
          }
