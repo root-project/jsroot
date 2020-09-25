@@ -3883,8 +3883,12 @@
          }
       }
 
-      var h0 = height + 3, gry0 = Math.round(pmain.gry(0));
-      if (gry0 <= 0) h0 = -3; else if (gry0 < height) h0 = gry0;
+      var fill_for_interactive = !JSROOT.BatchMode && this.fillatt.empty() && draw_hist && (JSROOT.gStyle.Tooltip > 0) && !draw_markers && !show_line,
+          h0 = height + 3;
+      if (!fill_for_interactive) {
+         var gry0 = Math.round(pmain.gry(0));
+         if (gry0 <= 0) h0 = -3; else if (gry0 < height) h0 = gry0;
+      }
       var close_path = "L"+currx+","+h0 + "L"+startx+","+h0 + "Z";
 
       if (draw_markers || show_line) {
@@ -3918,7 +3922,7 @@
       }
 
       if ((res.length > 0) && draw_hist) {
-         if (!this.fillatt.empty())
+         if (!this.fillatt.empty() || fill_for_interactive)
             res += close_path;
          this.draw_g.append("svg:path")
                     .attr("d", res)
