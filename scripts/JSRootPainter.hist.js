@@ -578,12 +578,14 @@
                      this.UseTextColor = true;
                   }
 
-                  this.StartTextDrawing(pt.fTextFont, (entry.fTextSize || pt.fTextSize) * can_height, text_g);
+                  let sub_g = text_g.append("svg:g");
+
+                  this.StartTextDrawing(pt.fTextFont, (entry.fTextSize || pt.fTextSize) * can_height, sub_g);
 
                   this.DrawText({ align: entry.fTextAlign || pt.fTextAlign, x: lx, y: ly, text: entry.fTitle, color: jcolor,
-                                  latex: (entry._typename == "TText") ? 0 : 1,  draw_g: text_g, fast: fast_draw });
+                                  latex: (entry._typename == "TText") ? 0 : 1,  draw_g: sub_g, fast: fast_draw });
 
-                  this.FinishTextDrawing(text_g, this.FinishPave);
+                  this.FinishTextDrawing(sub_g, this.FinishPave);
 
                   this.FirstRun++;
 
