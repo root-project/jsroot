@@ -4037,10 +4037,7 @@ JSROOT.require(['d3'], function(d3) {
 
             arg.plain = !arg.latex || (JSROOT.gStyle.Latex < 2);
 
-            console.log('Draw', arg.text, 'plain', arg.plain);
-
             arg.txt = txt; // keep refernce on element
-            txt.text("should_be_" + arg.text);
 
             if (!arg.plain) {
                this.produceLatexPromise(arg.txt, arg.text, arg).then(res => {
@@ -4082,7 +4079,6 @@ JSROOT.require(['d3'], function(d3) {
       producePlainText(txt, arg) {
          if (arg.latex && (JSROOT.gStyle.Latex == 1))
             arg.text = Painter.translateLaTeX(arg.text); // replace latex symbols
-         console.log('Assign text', arg.text, 'now is', txt.text());
          txt.text(arg.text);
       }
 
@@ -5096,8 +5092,6 @@ JSROOT.require(['d3'], function(d3) {
          JSROOT.svg_workaround = undefined;
 
          return JSROOT.draw(main.node(), args.object, args.option || "").then(() => {
-
-            console.log('Drawing for SVG done');
 
             let has_workarounds = JSROOT.Painter.ProcessSVGWorkarounds && JSROOT.svg_workaround;
 

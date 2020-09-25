@@ -1473,7 +1473,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
          });
       }
 
-      painter.axes_drawn = true;
+      this.axes_drawn = true;
       return Promise.resolve(true);
    }
 

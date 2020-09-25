@@ -232,9 +232,10 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
          // function used to signal drawing ready, required when text drawing postponed due to mathjax
          if (this.FirstRun <= 0) return;
          this.FirstRun--;
-         if (this.FirstRun!==0) return;
-         delete this.FinishPave; // no need for that callback
-         this.DrawingReady();
+         if (this.FirstRun===0) {
+            delete this.FinishPave; // no need for that callback
+            this.DrawingReady();
+         }
       }
       this.FirstRun = 1; // counter required to correctly complete drawing
       this.FinishPave = func.bind(this);
@@ -647,7 +648,6 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
             arg.text = lj.fTitle;
             arg.fast = fast_draw;
             if (!arg.color) { this.UseTextColor = true; arg.color = tcolor; }
-
             this.DrawText(arg);
          }
 
@@ -922,7 +922,12 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
 
       this.z_handle.max_tick_size = Math.round(s_width*0.7);
 
-      this.z_handle.DrawAxis(true, this.draw_g, s_width, s_height, "translate(" + s_width + ", 0)");
+      let painter = this;
+
+      painter.FirstRun++;
+      this.z_handle.DrawAxis(true, this.draw_g, s_width, s_height, "translate(" + s_width + ", 0)").then(() => {
+         if (painter.FinishPave) painter.FinishPave();
+      });
 
       if (can_move && ('getBoundingClientRect' in this.draw_g.node())) {
          let rect = this.draw_g.node().getBoundingClientRect();
@@ -1293,6 +1298,8 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
       }
 
       let painter = new JSROOT.TPavePainter(pave);
+
+      painter.AssignFinishPave(); // create handler which controls drawing
 
       painter.SetDivId(divid, 2, onpad);
 
@@ -2165,7 +2172,8 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
    THistPainter.prototype.DrawTitle = function() {
 
       // case when histogram drawn over other histogram (same option)
-      if (!this.is_main_painter() || this.options.Same) return;
+      if (!this.is_main_painter() || this.options.Same)
+         return Promise.resolve(true);
 
       let histo = this.GetHisto(), st = JSROOT.gStyle,
           tpainter = this.FindPainterFor(null, "title"),
@@ -2196,8 +2204,13 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
 
          pt.AddText(histo.fTitle);
          tpainter = JSROOT.Painter.drawPave(this.divid, pt, "postitle");
-         if (tpainter) tpainter.$secondary = true;
+         if (tpainter) {
+            tpainter.$secondary = true;
+            return tpainter.Promise();
+         }
       }
+
+      return Promise.resolve(true);
    }
 
    THistPainter.prototype.processTitleChange = function(arg) {
@@ -4277,7 +4290,8 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
 
       this.DrawAxes().then(() => {
          painter.DrawBins();
-         painter.DrawTitle();
+         return painter.DrawTitle();
+      }).then(() => {
          painter.UpdateStatWebCanvas();
          painter.AddInteractive();
          JSROOT.CallBack(call_back);
@@ -6216,7 +6230,8 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
          // redraw palette till the end when contours are available
          if (pp) pp.DrawPave();
 
-         painter.DrawTitle();
+         return painter.DrawTitle();
+      }).then(() => {
 
          painter.UpdateStatWebCanvas();
 
