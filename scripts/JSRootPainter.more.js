@@ -2,7 +2,7 @@
 /// Part of JavaScript ROOT graphics with more classes like TEllipse, TLine, ...
 /// Such classes are rarely used and therefore loaded only on demand
 
-JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter'], function(d3) {
+JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter.v6'], function(d3) {
 
    "use strict";
 

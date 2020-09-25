@@ -1,7 +1,7 @@
 /// @file JSRootPainter.v7more.js
 /// JavaScript ROOT v7 graphics for different classes
 
-JSROOT.require(['JSRootPainter'], function() {
+JSROOT.require(['JSRootPainter.v7'], function() {
 
    "use strict";
 

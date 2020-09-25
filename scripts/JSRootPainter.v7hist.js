@@ -1,7 +1,7 @@
 /// @file JSRootPainter.v7hist.js
 /// JavaScript ROOT v7 graphics for histogram classes
 
-JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
+JSROOT.require(['d3', 'JSRootPainter.v7'], function(d3) {
 
    "use strict";
 
