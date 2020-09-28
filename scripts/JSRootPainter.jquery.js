@@ -9,19 +9,23 @@ JSROOT.require(['d3', 'jquery', 'JSRootPainter.hierarchy'], function(d3, $) {
 
    if (typeof jQuery === 'undefined') globalThis.jQuery = $;
 
-   JSROOT.Painter.createMenu = function(painter, maincallback, show_event) {
-      let menuname = 'root_ctx_menu';
+   class JQueryMenu {
+      constructor(painter, menuname, show_event) {
+         this.painter = painter;
+         this.menuname = menuname;
+         this.element = null;
+         this.code = "";
+         this.cnt = 1;
+         this.funcs = {};
+         this.separ = false;
+         if (show_event && (typeof show_event == "object"))
+            if ((show_event.clientX !== undefined) && (show_event.clientY !== undefined))
+               this.show_evnt = { clientX: show_event.clientX, clientY: show_event.clientY };
 
-      if (!maincallback && (typeof painter==='function')) { maincallback = painter; painter = null; }
+         this.remove_bind = this.remove.bind(this);
+      }
 
-      let menu = { painter: painter,  element: null, code: "", cnt: 1, funcs: {}, separ: false };
-
-      // copy event values, otherwise they may gone when menu will be shown
-      if (show_event && (typeof show_event == "object"))
-         if ((show_event.clientX !== undefined) && (show_event.clientY !== undefined))
-            menu.show_evnt = { clientX: show_event.clientX, clientY: show_event.clientY };
-
-      menu.add = function(name, arg, func, title) {
+      add(name, arg, func, title) {
          if (name == "separator") { this.code += "<li>-</li>"; this.separ = true; return; }
 
          if (name.indexOf("header:")==0) {
@@ -54,28 +58,28 @@ JSROOT.require(['d3', 'jquery', 'JSRootPainter.hierarchy'], function(d3, $) {
          this.cnt++;
       }
 
-      menu.addchk = function(flag, name, arg, func) {
+      addchk(flag, name, arg, func) {
          return this.add((flag ? "chk:" : "unk:") + name, arg, func);
       }
 
-      menu.size = function() { return this.cnt-1; }
+      size() { return this.cnt-1; }
 
-      menu.addDrawMenu = function(menu_name, opts, call_back) {
+      addDrawMenu(top_name, opts, call_back) {
          if (!opts) opts = [];
          if (opts.length==0) opts.push("");
 
          let without_sub = false;
-         if (menu_name.indexOf("nosub:")==0) {
+         if (top_name.indexOf("nosub:")==0) {
             without_sub = true;
-            menu_name = menu_name.substr(6);
+            top_name = top_name.substr(6);
          }
 
          if (opts.length === 1) {
-            if (opts[0]==='inspect') menu_name = menu_name.replace("Draw", "Inspect");
-            return this.add(menu_name, opts[0], call_back);
+            if (opts[0]==='inspect') top_name = top_name.replace("Draw", "Inspect");
+            return this.add(top_name, opts[0], call_back);
          }
 
-         if (!without_sub) this.add("sub:" + menu_name, opts[0], call_back);
+         if (!without_sub) this.add("sub:" + top_name, opts[0], call_back);
 
          for (let i=0;i<opts.length;++i) {
             let name = opts[i];
@@ -87,7 +91,7 @@ JSROOT.require(['d3', 'jquery', 'JSRootPainter.hierarchy'], function(d3, $) {
                while ((group<opts.length) && (opts[group].indexOf(name)==0)) group++;
             }
 
-            if (without_sub) name = menu_name + " " + name;
+            if (without_sub) name = top_name + " " + name;
 
             if (group < i+2) {
                this.add(name, opts[i], call_back);
@@ -103,7 +107,7 @@ JSROOT.require(['d3', 'jquery', 'JSRootPainter.hierarchy'], function(d3, $) {
       }
 
       /** @summary Add color selection menu entries  */
-      menu.AddColorMenuEntry = function(name, value, set_func, fill_kind) {
+      AddColorMenuEntry(name, value, set_func, fill_kind) {
          if (value === undefined) return;
          this.add("sub:" + name, function() {
             // todo - use jqury dialog here
@@ -130,8 +134,7 @@ JSROOT.require(['d3', 'jquery', 'JSRootPainter.hierarchy'], function(d3, $) {
          this.add("endsub:");
       }
 
-
-      menu.remove = function() {
+      remove() {
          if (this.element!==null) {
             this.element.remove();
             if (this.close_callback) this.close_callback();
@@ -140,9 +143,7 @@ JSROOT.require(['d3', 'jquery', 'JSRootPainter.hierarchy'], function(d3, $) {
          this.element = null;
       }
 
-      menu.remove_bind = menu.remove.bind(menu);
-
-      menu.show = function(event, close_callback) {
+      show(event, close_callback) {
          this.remove();
 
          if (typeof close_callback == 'function') this.close_callback = close_callback;
@@ -151,7 +152,7 @@ JSROOT.require(['d3', 'jquery', 'JSRootPainter.hierarchy'], function(d3, $) {
 
          document.body.addEventListener('click', this.remove_bind);
 
-         let oldmenu = document.getElementById(menuname);
+         let oldmenu = document.getElementById(this.menuname);
          if (oldmenu) oldmenu.parentNode.removeChild(oldmenu);
 
          $(document.body).append('<ul class="jsroot_ctxmenu">' + this.code + '</ul>');
@@ -161,7 +162,7 @@ JSROOT.require(['d3', 'jquery', 'JSRootPainter.hierarchy'], function(d3, $) {
          let pthis = this;
 
          this.element
-            .attr('id', menuname)
+            .attr('id', this.menuname)
             .css('left', event.clientX + window.pageXOffset)
             .css('top', event.clientY + window.pageYOffset)
 //            .css('font-size', '80%')
@@ -174,7 +175,7 @@ JSROOT.require(['d3', 'jquery', 'JSRootPainter.hierarchy'], function(d3, $) {
                       func = cnt ? pthis.funcs[cnt] : null;
                   pthis.remove();
                   if (typeof func == 'function') {
-                     if ('painter' in menu)
+                     if (pthis.painter)
                         func.bind(pthis.painter)(arg); // if 'painter' field set, returned as this to callback
                      else
                         func(arg);
@@ -190,6 +191,16 @@ JSROOT.require(['d3', 'jquery', 'JSRootPainter.hierarchy'], function(d3, $) {
          if (newx!==null) this.element.css('left', (newx>0 ? newx : 0) + window.pageXOffset);
          if (newy!==null) this.element.css('top', (newy>0 ? newy : 0) + window.pageYOffset);
       }
+
+   } // class JQueryMenu
+
+
+   JSROOT.Painter.createMenu = function(painter, maincallback, show_event) {
+      let menuname = 'root_ctx_menu';
+
+      if (!maincallback && (typeof painter==='function')) { maincallback = painter; painter = null; }
+
+      let menu = new JQueryMenu(painter, menuname, show_event);
 
       JSROOT.CallBack(maincallback, menu);
 
