@@ -157,7 +157,11 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
 
          if (!found && !isany) {
             let s = JSROOT.Painter.translateLaTeX(label);
-            if (!curr.lvl && (s == label)) return 0; // indicate that nothing found - plain string
+            if (!curr.lvl && (s == label)) {
+               // nothing need to be done - can do plain svg text
+               this.producePlainText(node, arg);
+               return true;
+            }
             extend_pos(curr, s);
 
             if (curr.accent && (s.length == 1)) {

@@ -4041,12 +4041,7 @@ JSROOT.require(['d3'], function(d3) {
             if (!arg.plain) {
                JSROOT.require(['JSRoot.latex'])
                      .then(() => painter.produceLatex(arg.txt, arg))
-                     .then(res => {
-                        if (res === 0) {
-                           arg.plain = true;
-                           painter.producePlainText(arg.txt, arg);
-                        }
-
+                     .then(() => {
                         painter.postprocessText(arg.txt, arg);
 
                         painter.FinishTextDrawing(arg.draw_g, null, true); // check if all other elements are completed
@@ -4076,6 +4071,7 @@ JSROOT.require(['d3'], function(d3) {
 
       /** Just add plain text to the SVG text elements */
       producePlainText(txt, arg) {
+         arg.plain = true;
          if (arg.latex && (JSROOT.gStyle.Latex == 1))
             arg.text = Painter.translateLaTeX(arg.text); // replace latex symbols
          txt.text(arg.text);
