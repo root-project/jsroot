@@ -1106,7 +1106,7 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], function(d3) {
          });
 
       if (this.UseTextColor)
-         this.TextAttContextMenu(menu);
+         menu.AttTextMenu(this.GetObject());
 
       this.FillAttContextMenu(menu);
 

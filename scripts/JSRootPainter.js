@@ -2748,30 +2748,6 @@ JSROOT.require(['d3'], function(d3) {
             this.control.SwitchTooltip(on);
       }
 
-      /** @summary Add size selection menu entries
-       * @private */
-      AddSizeMenuEntry(menu, name, min, max, step, value, set_func) {
-         if (value === undefined) return;
-
-         menu.add("sub:" + name, function() {
-            // todo - use jqury dialog here
-            let entry = value.toFixed(4);
-            if (step >= 0.1) entry = value.toFixed(2);
-            if (step >= 1) entry = value.toFixed(0);
-            let val = prompt("Enter value of " + name, entry);
-            if (val == null) return;
-            val = parseFloat(val);
-            if (!isNaN(val)) set_func.bind(this)((step >= 1) ? Math.round(val) : val);
-         });
-         for (let val = min; val <= max; val += step) {
-            let entry = val.toFixed(2);
-            if (step >= 0.1) entry = val.toFixed(1);
-            if (step >= 1) entry = val.toFixed(0);
-            menu.addchk((Math.abs(value - val) < step / 2), entry, val, set_func);
-         }
-         menu.add("endsub:");
-      }
-
       /** @summary execute selected menu command, either locally or remotely
        * @private */
       ExecuteMenuCommand(method) {
@@ -2945,7 +2921,7 @@ JSROOT.require(['d3'], function(d3) {
 
          if (this.lineatt && this.lineatt.used) {
             menu.add("sub:" + preffix + "Line att");
-            this.AddSizeMenuEntry(menu, "width", 1, 10, 1, this.lineatt.width,
+            menu.SizeMenu("width", 1, 10, 1, this.lineatt.width,
                function(arg) { this.lineatt.Change(undefined, parseInt(arg)); this.InteractiveRedraw(true, "exec:SetLineWidth(" + arg + ")"); }.bind(this));
             menu.AddColorMenuEntry("color", this.lineatt.color,
                function(arg) { this.lineatt.Change(arg); this.InteractiveRedraw(true, this.GetColorExec(arg, "SetLineColor")); }.bind(this));
@@ -2978,7 +2954,7 @@ JSROOT.require(['d3'], function(d3) {
                   }.bind(this));
                menu.add("endsub:");
 
-               this.AddSizeMenuEntry(menu, "width", 10, 100, 10, this.lineatt.excl_width,
+               menu.SizeMenu("width", 10, 100, 10, this.lineatt.excl_width,
                   function(arg) { this.lineatt.ChangeExcl(undefined, parseInt(arg)); this.InteractiveRedraw(); }.bind(this));
 
                menu.add("endsub:");
@@ -3018,7 +2994,7 @@ JSROOT.require(['d3'], function(d3) {
             menu.add("sub:" + preffix + "Marker att");
             menu.AddColorMenuEntry("color", this.markeratt.color,
                function(arg) { this.markeratt.Change(arg); this.InteractiveRedraw(true, this.GetColorExec(arg, "SetMarkerColor")); }.bind(this));
-            this.AddSizeMenuEntry(menu, "size", 0.5, 6, 0.5, this.markeratt.size,
+            menu.SizeMenu("size", 0.5, 6, 0.5, this.markeratt.size,
                function(arg) { this.markeratt.Change(undefined, undefined, parseFloat(arg)); this.InteractiveRedraw(true, "exec:SetMarkerSize(" + parseInt(arg) + ")"); }.bind(this));
 
             menu.add("sub:style");
@@ -3035,39 +3011,6 @@ JSROOT.require(['d3'], function(d3) {
             menu.add("endsub:");
             menu.add("endsub:");
          }
-      }
-
-      /** @summary Fill context menu for text attributes
-       * @private */
-      TextAttContextMenu(menu, prefix) {
-         // for the moment, text attributes accessed directly from objects
-
-         let obj = this.GetObject();
-         if (!obj || !('fTextColor' in obj)) return;
-
-         menu.add("sub:" + (prefix ? prefix : "Text"));
-         menu.AddColorMenuEntry("color", obj.fTextColor,
-            function(arg) { this.GetObject().fTextColor = parseInt(arg); this.InteractiveRedraw(true, this.GetColorExec(parseInt(arg), "SetTextColor")); }.bind(this));
-
-         let align = [11, 12, 13, 21, 22, 23, 31, 32, 33];
-
-         menu.add("sub:align");
-         for (let n = 0; n < align.length; ++n) {
-            menu.addchk(align[n] == obj.fTextAlign,
-               align[n], align[n],
-               // align[n].toString() + "_h:" + hnames[Math.floor(align[n]/10) - 1] + "_v:" + vnames[align[n]%10-1], align[n],
-               function(arg) { this.GetObject().fTextAlign = parseInt(arg); this.InteractiveRedraw(true, "exec:SetTextAlign(" + arg + ")"); }.bind(this));
-         }
-         menu.add("endsub:");
-
-         menu.add("sub:font");
-         for (let n = 1; n < 16; ++n) {
-            menu.addchk(n == Math.floor(obj.fTextFont / 10), n, n,
-               function(arg) { this.GetObject().fTextFont = parseInt(arg) * 10 + 2; this.InteractiveRedraw(true, "exec:SetTextFont(" + this.GetObject().fTextFont + ")"); }.bind(this));
-         }
-         menu.add("endsub:");
-
-         menu.add("endsub:");
       }
 
       /** @summary Show object in inspector */
