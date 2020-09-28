@@ -3697,10 +3697,12 @@ JSROOT.require(['d3'], function(d3) {
 
          // now hidden text after rescaling can be shown
          all_args.forEach(arg => {
-            if (!arg.txt) return; // only normal text is processed
+            if (!arg.txt_node) return; // only normal text is processed
             any_text = true;
-            let txt = arg.txt;
+            let txt = arg.txt_node;
+            delete arg.txt_node;
             txt.attr('visibility', null);
+
 
             if (JSROOT.nodejs) {
                if (arg.scale && (f > 0)) { arg.box.width = arg.box.width / f; arg.box.height = arg.box.height / f; }
@@ -3845,11 +3847,11 @@ JSROOT.require(['d3'], function(d3) {
 
          if (!use_mathjax || arg.nomathjax) {
 
-            let txt = arg.draw_g.append("svg:text");
+            let txt_node = arg.draw_g.append("svg:text");
 
-            if (arg.color) txt.attr("fill", arg.color);
+            if (arg.color) txt_node.attr("fill", arg.color);
 
-            if (arg.font_size) txt.attr("font-size", arg.font_size);
+            if (arg.font_size) txt_node.attr("font-size", arg.font_size);
             else arg.font_size = font.size;
 
             arg.font = font; // use in latex conversion
@@ -3858,13 +3860,13 @@ JSROOT.require(['d3'], function(d3) {
 
             arg.simple_latex = arg.latex && (JSROOT.gStyle.Latex == 1);
 
-            arg.txt = txt; // keep refernce on element
+            arg.txt_node = txt_node; // keep refernce on element
 
             if (!arg.plain || arg.simple_latex) {
                JSROOT.require(['JSRoot.latex'])
-                     .then(() => { return arg.simple_latex ? painter.producePlainText(arg.txt, arg) : painter.produceLatex(arg.txt, arg); })
+                     .then(() => { return arg.simple_latex ? painter.producePlainText(arg.txt_node, arg) : painter.produceLatex(arg.txt_node, arg); })
                      .then(() => {
-                        painter.postprocessText(arg.txt, arg);
+                        painter.postprocessText(arg.txt_node, arg);
 
                         painter.FinishTextDrawing(arg.draw_g, null, true); // check if all other elements are completed
                     });
@@ -3872,9 +3874,9 @@ JSROOT.require(['d3'], function(d3) {
             }
 
             arg.plain = true;
-            txt.text(arg.text);
+            txt_node.text(arg.text);
 
-            return this.postprocessText(txt, arg);
+            return this.postprocessText(txt_node, arg);
          }
 
          let mj_node = arg.draw_g.append("svg:g")
@@ -3891,13 +3893,13 @@ JSROOT.require(['d3'], function(d3) {
       }
 
       /** After normal SVG generated, check and recalculate some properties */
-      postprocessText(txt, arg) {
+      postprocessText(txt_node, arg) {
          // complete rectangle with very rougth size estimations
 
-         arg.box = !JSROOT.nodejs && !JSROOT.gStyle.ApproxTextSize && !arg.fast ? this.GetBoundarySizes(txt.node()) :
+         arg.box = !JSROOT.nodejs && !JSROOT.gStyle.ApproxTextSize && !arg.fast ? this.GetBoundarySizes(txt_node.node()) :
                   (arg.text_rect || { height: arg.font_size * 1.2, width: arg.font.approxTextWidth(arg.text) });
 
-         txt.attr('visibility', 'hidden'); // hide elements until text drawing is finished
+         txt_node.attr('visibility', 'hidden'); // hide elements until text drawing is finished
 
          if (arg.box.width > arg.draw_g.property('max_text_width')) arg.draw_g.property('max_text_width', arg.box.width);
          if (arg.scale) this.TextScaleFactor(1.05 * arg.box.width / arg.width, arg.draw_g);
