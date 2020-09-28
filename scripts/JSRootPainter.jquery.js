@@ -102,6 +102,35 @@ JSROOT.require(['d3', 'jquery', 'JSRootPainter.hierarchy'], function(d3, $) {
          if (!without_sub) this.add("endsub:");
       }
 
+      /** @summary Add color selection menu entries  */
+      menu.AddColorMenuEntry = function(name, value, set_func, fill_kind) {
+         if (value === undefined) return;
+         this.add("sub:" + name, function() {
+            // todo - use jqury dialog here
+            let useid = (typeof value !== 'string');
+            let col = prompt("Enter color " + (useid ? "(only id number)" : "(name or id)"), value);
+            if (col == null) return;
+            let id = parseInt(col);
+            if (!isNaN(id) && (JSROOT.Painter.root_colors[id] !== undefined)) {
+               col = JSROOT.Painter.root_colors[id];
+            } else {
+               if (useid) return;
+            }
+            set_func.bind(this)(useid ? id : col);
+         });
+         let useid = (typeof value !== 'string');
+         for (let n = -1; n < 11; ++n) {
+            if ((n < 0) && useid) continue;
+            if ((n == 10) && (fill_kind !== 1)) continue;
+            let col = (n < 0) ? 'none' : JSROOT.Painter.root_colors[n];
+            if ((n == 0) && (fill_kind == 1)) col = 'none';
+            let svg = "<svg width='100' height='18' style='margin:0px;background-color:" + col + "'><text x='4' y='12' style='font-size:12px' fill='" + (n == 1 ? "white" : "black") + "'>" + col + "</text></svg>";
+            this.addchk((value == (useid ? n : col)), svg, (useid ? n : col), set_func);
+         }
+         this.add("endsub:");
+      }
+
+
       menu.remove = function() {
          if (this.element!==null) {
             this.element.remove();

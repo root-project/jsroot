@@ -1806,7 +1806,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
                   function() { faxis.InvertBit(JSROOT.EAxisBits.kCenterLabels); this.RedrawPad(); });
             menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kLabelsVert), "Rotate",
                   function() { faxis.InvertBit(JSROOT.EAxisBits.kLabelsVert); this.RedrawPad(); });
-            this.AddColorMenuEntry(menu, "Color", faxis.fLabelColor,
+            menu.AddColorMenuEntry("Color", faxis.fLabelColor,
                   function(arg) { faxis.fLabelColor = parseInt(arg); this.InteractiveRedraw("pad", this.GetColorExec(parseInt(arg), "SetLabelColor"), kind); }.bind(main || this));
             this.AddSizeMenuEntry(menu, "Offset", 0, 0.1, 0.01, faxis.fLabelOffset,
                   function(arg) { faxis.fLabelOffset = parseFloat(arg); this.RedrawPad(); } );
@@ -1822,7 +1822,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
                   function() { faxis.InvertBit(JSROOT.EAxisBits.kCenterTitle); this.RedrawPad(); });
             menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kRotateTitle), "Rotate",
                   function() { faxis.InvertBit(JSROOT.EAxisBits.kRotateTitle); this.RedrawPad(); });
-            this.AddColorMenuEntry(menu, "Color", faxis.fTitleColor,
+            menu.AddColorMenuEntry("Color", faxis.fTitleColor,
                   function(arg) { faxis.fTitleColor = parseInt(arg); this.InteractiveRedraw("pad", this.GetColorExec(parseInt(arg), "SetTitleColor"), kind); }.bind(main || this));
             this.AddSizeMenuEntry(menu, "Offset", 0, 3, 0.2, faxis.fTitleOffset,
                                   function(arg) { faxis.fTitleOffset = parseFloat(arg); this.RedrawPad(); } );
@@ -1831,12 +1831,12 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
             menu.add("endsub:");
             menu.add("sub:Ticks");
             if (faxis._typename == "TGaxis") {
-               this.AddColorMenuEntry(menu, "Color", faxis.fLineColor,
+               menu.AddColorMenuEntry("Color", faxis.fLineColor,
                         function(arg) { faxis.fLineColor = parseInt(arg); this.RedrawPad(); });
                this.AddSizeMenuEntry(menu,"Size", -0.05, 0.055, 0.01, faxis.fTickSize,
                         function(arg) { faxis.fTickSize = parseFloat(arg); this.RedrawPad(); } );
             } else {
-               this.AddColorMenuEntry(menu, "Color", faxis.fAxisColor,
+               menu.AddColorMenuEntry("Color", faxis.fAxisColor,
                            function(arg) { faxis.fAxisColor = parseInt(arg); this.InteractiveRedraw("pad", this.GetColorExec(parseInt(arg), "SetAxisColor"), kind); }.bind(main || this));
                this.AddSizeMenuEntry(menu,"Size", -0.05, 0.055, 0.01, faxis.fTickLength,
                         function(arg) { faxis.fTickLength = parseFloat(arg); this.RedrawPad(); } );

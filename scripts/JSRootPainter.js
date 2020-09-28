@@ -2748,35 +2748,6 @@ JSROOT.require(['d3'], function(d3) {
             this.control.SwitchTooltip(on);
       }
 
-      /** @summary Add color selection menu entries
-       * @private */
-      AddColorMenuEntry(menu, name, value, set_func, fill_kind) {
-         if (value === undefined) return;
-         menu.add("sub:" + name, function() {
-            // todo - use jqury dialog here
-            let useid = (typeof value !== 'string');
-            let col = prompt("Enter color " + (useid ? "(only id number)" : "(name or id)"), value);
-            if (col == null) return;
-            let id = parseInt(col);
-            if (!isNaN(id) && (JSROOT.Painter.root_colors[id] !== undefined)) {
-               col = JSROOT.Painter.root_colors[id];
-            } else {
-               if (useid) return;
-            }
-            set_func.bind(this)(useid ? id : col);
-         });
-         let useid = (typeof value !== 'string');
-         for (let n = -1; n < 11; ++n) {
-            if ((n < 0) && useid) continue;
-            if ((n == 10) && (fill_kind !== 1)) continue;
-            let col = (n < 0) ? 'none' : JSROOT.Painter.root_colors[n];
-            if ((n == 0) && (fill_kind == 1)) col = 'none';
-            let svg = "<svg width='100' height='18' style='margin:0px;background-color:" + col + "'><text x='4' y='12' style='font-size:12px' fill='" + (n == 1 ? "white" : "black") + "'>" + col + "</text></svg>";
-            menu.addchk((value == (useid ? n : col)), svg, (useid ? n : col), set_func);
-         }
-         menu.add("endsub:");
-      }
-
       /** @summary Add size selection menu entries
        * @private */
       AddSizeMenuEntry(menu, name, min, max, step, value, set_func) {
@@ -2976,7 +2947,7 @@ JSROOT.require(['d3'], function(d3) {
             menu.add("sub:" + preffix + "Line att");
             this.AddSizeMenuEntry(menu, "width", 1, 10, 1, this.lineatt.width,
                function(arg) { this.lineatt.Change(undefined, parseInt(arg)); this.InteractiveRedraw(true, "exec:SetLineWidth(" + arg + ")"); }.bind(this));
-            this.AddColorMenuEntry(menu, "color", this.lineatt.color,
+            menu.AddColorMenuEntry("color", this.lineatt.color,
                function(arg) { this.lineatt.Change(arg); this.InteractiveRedraw(true, this.GetColorExec(arg, "SetLineColor")); }.bind(this));
             menu.add("sub:style", function() {
                let id = prompt("Enter line style id (1-solid)", 1);
@@ -3016,7 +2987,7 @@ JSROOT.require(['d3'], function(d3) {
 
          if (this.fillatt && this.fillatt.used) {
             menu.add("sub:" + preffix + "Fill att");
-            this.AddColorMenuEntry(menu, "color", this.fillatt.colorindx,
+            menu.AddColorMenuEntry("color", this.fillatt.colorindx,
                function(arg) { this.fillatt.Change(parseInt(arg), undefined, this.svg_canvas()); this.InteractiveRedraw(true, this.GetColorExec(parseInt(arg), "SetFillColor")); }.bind(this), this.fillatt.kind);
             menu.add("sub:style", function() {
                let id = prompt("Enter fill style id (1001-solid, 3000..3010)", this.fillatt.pattern);
@@ -3045,7 +3016,7 @@ JSROOT.require(['d3'], function(d3) {
 
          if (this.markeratt && this.markeratt.used) {
             menu.add("sub:" + preffix + "Marker att");
-            this.AddColorMenuEntry(menu, "color", this.markeratt.color,
+            menu.AddColorMenuEntry("color", this.markeratt.color,
                function(arg) { this.markeratt.Change(arg); this.InteractiveRedraw(true, this.GetColorExec(arg, "SetMarkerColor")); }.bind(this));
             this.AddSizeMenuEntry(menu, "size", 0.5, 6, 0.5, this.markeratt.size,
                function(arg) { this.markeratt.Change(undefined, undefined, parseFloat(arg)); this.InteractiveRedraw(true, "exec:SetMarkerSize(" + parseInt(arg) + ")"); }.bind(this));
@@ -3075,7 +3046,7 @@ JSROOT.require(['d3'], function(d3) {
          if (!obj || !('fTextColor' in obj)) return;
 
          menu.add("sub:" + (prefix ? prefix : "Text"));
-         this.AddColorMenuEntry(menu, "color", obj.fTextColor,
+         menu.AddColorMenuEntry("color", obj.fTextColor,
             function(arg) { this.GetObject().fTextColor = parseInt(arg); this.InteractiveRedraw(true, this.GetColorExec(parseInt(arg), "SetTextColor")); }.bind(this));
 
          let align = [11, 12, 13, 21, 22, 23, 31, 32, 33];
