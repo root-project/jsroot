@@ -5,12 +5,196 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
 
    "use strict";
 
+   let symbols_map = {
+      // greek letters
+      '#alpha': '\u03B1',
+      '#beta': '\u03B2',
+      '#chi': '\u03C7',
+      '#delta': '\u03B4',
+      '#varepsilon': '\u03B5',
+      '#phi': '\u03C6',
+      '#gamma': '\u03B3',
+      '#eta': '\u03B7',
+      '#iota': '\u03B9',
+      '#varphi': '\u03C6',
+      '#kappa': '\u03BA',
+      '#lambda': '\u03BB',
+      '#mu': '\u03BC',
+      '#nu': '\u03BD',
+      '#omicron': '\u03BF',
+      '#pi': '\u03C0',
+      '#theta': '\u03B8',
+      '#rho': '\u03C1',
+      '#sigma': '\u03C3',
+      '#tau': '\u03C4',
+      '#upsilon': '\u03C5',
+      '#varomega': '\u03D6',
+      '#omega': '\u03C9',
+      '#xi': '\u03BE',
+      '#psi': '\u03C8',
+      '#zeta': '\u03B6',
+      '#Alpha': '\u0391',
+      '#Beta': '\u0392',
+      '#Chi': '\u03A7',
+      '#Delta': '\u0394',
+      '#Epsilon': '\u0395',
+      '#Phi': '\u03A6',
+      '#Gamma': '\u0393',
+      '#Eta': '\u0397',
+      '#Iota': '\u0399',
+      '#vartheta': '\u03D1',
+      '#Kappa': '\u039A',
+      '#Lambda': '\u039B',
+      '#Mu': '\u039C',
+      '#Nu': '\u039D',
+      '#Omicron': '\u039F',
+      '#Pi': '\u03A0',
+      '#Theta': '\u0398',
+      '#Rho': '\u03A1',
+      '#Sigma': '\u03A3',
+      '#Tau': '\u03A4',
+      '#Upsilon': '\u03A5',
+      '#varsigma': '\u03C2',
+      '#Omega': '\u03A9',
+      '#Xi': '\u039E',
+      '#Psi': '\u03A8',
+      '#Zeta': '\u0396',
+      '#varUpsilon': '\u03D2',
+      '#epsilon': '\u03B5',
+
+      // only required for MathJax to provide correct replacement
+      '#sqrt': '\u221A',
+      '#bar': '',
+      '#overline': '',
+      '#underline': '',
+      '#strike': '',
+
+      // from TLatex tables #2 & #3
+      '#leq': '\u2264',
+      '#/': '\u2044',
+      '#infty': '\u221E',
+      '#voidb': '\u0192',
+      '#club': '\u2663',
+      '#diamond': '\u2666',
+      '#heart': '\u2665',
+      '#spade': '\u2660',
+      '#leftrightarrow': '\u2194',
+      '#leftarrow': '\u2190',
+      '#uparrow': '\u2191',
+      '#rightarrow': '\u2192',
+      '#downarrow': '\u2193',
+      '#circ': '\u02C6', // ^
+      '#pm': '\xB1',
+      '#doublequote': '\u2033',
+      '#geq': '\u2265',
+      '#times': '\xD7',
+      '#propto': '\u221D',
+      '#partial': '\u2202',
+      '#bullet': '\u2022',
+      '#divide': '\xF7',
+      '#neq': '\u2260',
+      '#equiv': '\u2261',
+      '#approx': '\u2248', // should be \u2245 ?
+      '#3dots': '\u2026',
+      '#cbar': '\x7C',
+      '#topbar': '\xAF',
+      '#downleftarrow': '\u21B5',
+      '#aleph': '\u2135',
+      '#Jgothic': '\u2111',
+      '#Rgothic': '\u211C',
+      '#voidn': '\u2118',
+      '#otimes': '\u2297',
+      '#oplus': '\u2295',
+      '#oslash': '\u2205',
+      '#cap': '\u2229',
+      '#cup': '\u222A',
+      '#supseteq': '\u2287',
+      '#supset': '\u2283',
+      '#notsubset': '\u2284',
+      '#subseteq': '\u2286',
+      '#subset': '\u2282',
+      '#int': '\u222B',
+      '#in': '\u2208',
+      '#notin': '\u2209',
+      '#angle': '\u2220',
+      '#nabla': '\u2207',
+      '#oright': '\xAE',
+      '#ocopyright': '\xA9',
+      '#trademark': '\u2122',
+      '#prod': '\u220F',
+      '#surd': '\u221A',
+      '#upoint': '\u02D9',
+      '#corner': '\xAC',
+      '#wedge': '\u2227',
+      '#vee': '\u2228',
+      '#Leftrightarrow': '\u21D4',
+      '#Leftarrow': '\u21D0',
+      '#Uparrow': '\u21D1',
+      '#Rightarrow': '\u21D2',
+      '#Downarrow': '\u21D3',
+      '#LT': '\x3C',
+      '#void1': '\xAE',
+      '#copyright': '\xA9',
+      '#void3': '\u2122',
+      '#sum': '\u2211',
+      '#arctop': '\u239B',
+      '#lbar': '\u23B8',
+      '#arcbottom': '\u239D',
+      '#void8': '',
+      '#bottombar': '\u230A',
+      '#arcbar': '\u23A7',
+      '#ltbar': '\u23A8',
+      '#AA': '\u212B',
+      '#aa': '\u00E5',
+      '#void06': '',
+      '#GT': '\x3E',
+      '#forall': '\u2200',
+      '#exists': '\u2203',
+      '#vec': '',
+      '#dot': '\u22C5',
+      '#hat': '\xB7',
+      '#ddot': '',
+      '#acute': '\acute',
+      '#grave': '',
+      '#check': '\u2713',
+      '#tilde': '\u02DC',
+      '#slash': '\u2044',
+      '#hbar': '\u0127',
+      '#box': '\u25FD',
+      '#Box': '\u2610',
+      '#parallel': '\u2225',
+      '#perp': '\u22A5',
+      '#odot': '\u2299',
+      '#left': '',
+      '#right': '',
+      '{}': ''
+   };
+
+   let symbolsRegexCache;
+
+   let translateLaTeX = str => {
+
+      while ((str.length > 2) && (str[0] == '{') && (str[str.length - 1] == '}'))
+         str = str.substr(1, str.length - 2);
+
+      if (!symbolsRegexCache) {
+         // Create a single regex to detect any symbol to replace
+         symbolsRegexCache = new RegExp('(' + Object.keys(symbols_map).join('|').replace(/\{/g, '\{').replace(/\\}/g, '\\}') + ')', 'g');
+      }
+
+      str = str.replace(symbolsRegexCache, function(ch) { return symbols_map[ch]; });
+
+      str = str.replace(/\{\}/g, "");
+
+      return str;
+   }
+
 
    /** Just add plain text to the SVG text elements */
    JSROOT.ObjectPainter.prototype.producePlainText = function(txt, arg) {
       arg.plain = true;
       if (arg.simple_latex)
-         arg.text = JSROOT.Painter.translateLaTeX(arg.text); // replace latex symbols
+         arg.text = translateLaTeX(arg.text); // replace latex symbols
       txt.text(arg.text);
    }
 
@@ -164,7 +348,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
          }
 
          if (!found && !isany) {
-            let s = JSROOT.Painter.translateLaTeX(label);
+            let s = translateLaTeX(label);
             if (!curr.lvl && (s == label)) {
                // nothing need to be done - can do plain svg text
                this.producePlainText(node, arg);
@@ -188,7 +372,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
          }
 
          if (best > 0) {
-            let s = JSROOT.Painter.translateLaTeX(label.substr(0, best));
+            let s = translateLaTeX(label.substr(0, best));
             if (s.length > 0) {
                extend_pos(curr, s);
                node.append('svg:tspan')
@@ -762,13 +946,13 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
     };
 
    /** @summary Function translates ROOT TLatex into MathJax format */
-   JSROOT.Painter.translateMath = function(str, kind, color, painter) {
+   let translateMath = (str, kind, color, painter) => {
 
       if (kind != 2) {
          for (let x in math_symbols_map)
             str = str.replace(new RegExp(x, 'g'), math_symbols_map[x]);
 
-         for (let x in JSROOT.Painter.symbols_map)
+         for (let x in symbols_map)
             if (x.length > 2)
                str = str.replace(new RegExp(x, 'g'), "\\" + x.substr(1));
 
@@ -894,7 +1078,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
 
    JSROOT.ObjectPainter.prototype.produceMathjax = function(fo_g, arg) {
       let painter = this,
-          mtext = JSROOT.Painter.translateMath(arg.text, arg.latex, arg.color, painter),
+          mtext = translateMath(arg.text, arg.latex, arg.color, painter),
           options = { em: arg.font.size, ex: arg.font.size/2, family: arg.font.name, scale: 1, containerWidth: -1, lineWidth: 100000 };
 
       return JSROOT.Painter.LoadMathjax()
