@@ -1018,7 +1018,7 @@ JSROOT.require(['d3'], function(d3) {
          selection.attr("font-family", this.name);
          if (arg != 'without-size')
             selection.attr("font-size", this.size)
-               .attr("xml:space", "preserve");
+                     .attr("xml:space", "preserve");
          if (this.weight)
             selection.attr("font-weight", this.weight);
          if (this.style)
@@ -1026,6 +1026,14 @@ JSROOT.require(['d3'], function(d3) {
       }
 
       res.func = res.setFont.bind(res);
+
+      res.clearFont = function(selection) {
+         selection.attr("font-family", null)
+                  .attr("font-size", null)
+                  .attr("xml:space", null)
+                  .attr("font-weight", null)
+                  .attr("font-style", null);
+      }
 
       return res;
    }
@@ -3665,7 +3673,7 @@ JSROOT.require(['d3'], function(d3) {
             f = draw_g.property('text_factor'),
             font = draw_g.property('text_font'),
             max_sz = draw_g.property('max_font_size'),
-            font_size = font.size;
+            font_size = font.size, any_text = false;
 
          if ((f > 0) && ((f < 0.9) || (f > 1)))
             font.size = Math.floor(font.size / f);
@@ -3689,6 +3697,7 @@ JSROOT.require(['d3'], function(d3) {
          // now hidden text after rescaling can be shown
          all_args.forEach(arg => {
             if (!arg.txt) return; // only normal text is processed
+            any_text = true;
             let txt = arg.txt;
             txt.attr('visibility', null);
 
@@ -3738,6 +3747,10 @@ JSROOT.require(['d3'], function(d3) {
             if (arg.dx || arg.dy) trans += " translate(" + Math.round(arg.dx) + "," + Math.round(arg.dy) + ")";
             if (trans) txt.attr("transform", trans);
          });
+
+         // when no any normal text drawn - remove font attributes
+         if (!any_text)
+            font.clearFont(draw_g);
 
          if (!call_ready) call_ready = draw_g.node().text_callback;
          draw_g.node().text_callback = null;
