@@ -4268,18 +4268,6 @@ JSROOT.require(['d3'], function(d3) {
       }
    } // TooltipHandler
 
-   JSROOT.TCanvasStatusBits = {
-      kShowEventStatus: JSROOT.BIT(15),
-      kAutoExec: JSROOT.BIT(16),
-      kMenuBar: JSROOT.BIT(17),
-      kShowToolBar: JSROOT.BIT(18),
-      kShowEditor: JSROOT.BIT(19),
-      kMoveOpaque: JSROOT.BIT(20),
-      kResizeOpaque: JSROOT.BIT(21),
-      kIsGrayscale: JSROOT.BIT(22),
-      kShowToolTips: JSROOT.BIT(23)
-   };
-
    JSROOT.EAxisBits = {
       kTickPlus: JSROOT.BIT(9),
       kTickMinus: JSROOT.BIT(10),

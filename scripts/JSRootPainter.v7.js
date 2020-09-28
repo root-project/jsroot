@@ -4678,6 +4678,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
    RCanvasPainter.prototype.CompeteCanvasSnapDrawing = function() {
       if (!this.pad) return;
 
+      // FIXME: to be remove, has nothing to do with RCanvas
       let TCanvasStatusBits = {
          kShowEventStatus  : JSROOT.BIT(15),
          kAutoExec         : JSROOT.BIT(16),

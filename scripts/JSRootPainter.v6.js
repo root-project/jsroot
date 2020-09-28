@@ -4900,6 +4900,18 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
       JSROOT.CallBack(callback, true);
    }
 
+   let TCanvasStatusBits = {
+      kShowEventStatus: JSROOT.BIT(15),
+      kAutoExec: JSROOT.BIT(16),
+      kMenuBar: JSROOT.BIT(17),
+      kShowToolBar: JSROOT.BIT(18),
+      kShowEditor: JSROOT.BIT(19),
+      kMoveOpaque: JSROOT.BIT(20),
+      kResizeOpaque: JSROOT.BIT(21),
+      kIsGrayscale: JSROOT.BIT(22),
+      kShowToolTips: JSROOT.BIT(23)
+   }
+
    TCanvasPainter.prototype.CompeteCanvasSnapDrawing = function() {
       if (!this.pad) return;
 
@@ -4907,11 +4919,11 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
 
       if (this._all_sections_showed) return;
       this._all_sections_showed = true;
-      this.ShowSection("Menu", this.pad.TestBit(JSROOT.TCanvasStatusBits.kMenuBar));
-      this.ShowSection("StatusBar", this.pad.TestBit(JSROOT.TCanvasStatusBits.kShowEventStatus));
-      this.ShowSection("ToolBar", this.pad.TestBit(JSROOT.TCanvasStatusBits.kShowToolBar));
-      this.ShowSection("Editor", this.pad.TestBit(JSROOT.TCanvasStatusBits.kShowEditor));
-      this.ShowSection("ToolTips", this.pad.TestBit(JSROOT.TCanvasStatusBits.kShowToolTips));
+      this.ShowSection("Menu", this.pad.TestBit(TCanvasStatusBits.kMenuBar));
+      this.ShowSection("StatusBar", this.pad.TestBit(TCanvasStatusBits.kShowEventStatus));
+      this.ShowSection("ToolBar", this.pad.TestBit(TCanvasStatusBits.kShowToolBar));
+      this.ShowSection("Editor", this.pad.TestBit(TCanvasStatusBits.kShowEditor));
+      this.ShowSection("ToolTips", this.pad.TestBit(TCanvasStatusBits.kShowToolTips));
    }
 
    /** Method informs that something was changed in the canvas
@@ -4994,10 +5006,10 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
 
    TCanvasPainter.prototype.GetStatusBits = function() {
       let bits = 0;
-      if (this.HasEventStatus()) bits |= JSROOT.TCanvasStatusBits.kShowEventStatus;
-      if (this.HasGed()) bits |= JSROOT.TCanvasStatusBits.kShowEditor;
-      if (this.IsTooltipAllowed()) bits |= JSROOT.TCanvasStatusBits.kShowToolTips;
-      if (this.use_openui) bits |= JSROOT.TCanvasStatusBits.kMenuBar;
+      if (this.HasEventStatus()) bits |= TCanvasStatusBits.kShowEventStatus;
+      if (this.HasGed()) bits |= TCanvasStatusBits.kShowEditor;
+      if (this.IsTooltipAllowed()) bits |= TCanvasStatusBits.kShowToolTips;
+      if (this.use_openui) bits |= TCanvasStatusBits.kMenuBar;
       return bits;
    }
 
