@@ -3787,7 +3787,6 @@ JSROOT.require(['d3'], function(d3) {
          draw_g.property('draw_text_completed', false) // indicate that draw operations submitted
                .property('all_args',[]) // array of all submitted args, makes easier to analyze them
                .property('text_font', font)
-               .property('mathjax_use', false)
                .property('text_factor', 0.)
                .property('max_text_width', 0) // keep maximal text width, use it later
                .property('max_font_size', max_font_size)
@@ -4036,11 +4035,13 @@ JSROOT.require(['d3'], function(d3) {
 
             arg.plain = !arg.latex || (JSROOT.gStyle.Latex < 2);
 
+            arg.simple_latex = arg.latex && (JSROOT.gStyle.Latex == 1);
+
             arg.txt = txt; // keep refernce on element
 
-            if (!arg.plain) {
+            if (!arg.plain || arg.simple_latex) {
                JSROOT.require(['JSRoot.latex'])
-                     .then(() => painter.produceLatex(arg.txt, arg))
+                     .then(() => { return arg.simple_latex ? painter.producePlainText(arg.txt, arg) : painter.produceLatex(arg.txt, arg); })
                      .then(() => {
                         painter.postprocessText(arg.txt, arg);
 
@@ -4049,8 +4050,8 @@ JSROOT.require(['d3'], function(d3) {
                return 0;
             }
 
-            // normal drawing
-            this.producePlainText(txt, arg);
+            arg.plain = true;
+            txt.text(arg.text);
 
             return this.postprocessText(txt, arg);
          }
@@ -4058,7 +4059,6 @@ JSROOT.require(['d3'], function(d3) {
          let fo_g = arg.draw_g.append("svg:g")
                               .attr('visibility', 'hidden'); // hide text until drawing is finished
 
-         arg.draw_g.property('mathjax_use', true);  // one need to know that mathjax is used
          arg.font = font;
          arg.fo_g = fo_g; // keep element
 
@@ -4067,14 +4067,6 @@ JSROOT.require(['d3'], function(d3) {
                .then(() => painter.FinishTextDrawing(arg.draw_g, null, true));
 
          return 0;
-      }
-
-      /** Just add plain text to the SVG text elements */
-      producePlainText(txt, arg) {
-         arg.plain = true;
-         if (arg.latex && (JSROOT.gStyle.Latex == 1))
-            arg.text = Painter.translateLaTeX(arg.text); // replace latex symbols
-         txt.text(arg.text);
       }
 
       /** After normal SVG generated, check and recalculate some properties */

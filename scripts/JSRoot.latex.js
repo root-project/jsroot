@@ -6,6 +6,14 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
    "use strict";
 
 
+   /** Just add plain text to the SVG text elements */
+   JSROOT.ObjectPainter.prototype.producePlainText = function(txt, arg) {
+      arg.plain = true;
+      if (arg.simple_latex)
+         arg.text = JSROOT.Painter.translateLaTeX(arg.text); // replace latex symbols
+      txt.text(arg.text);
+   }
+
    /** @ummary draw TLatex inside element
     *
     * @desc attempt to implement subset of TLatex with plain SVG text and tspan elements
