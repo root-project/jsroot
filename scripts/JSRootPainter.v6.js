@@ -620,7 +620,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
             let lastpos = 0,
                 fix_coord = vertical ? -labeloffset*side : (labeloffset+2)*side + ticks_plusminus*tickSize;
 
-            labelfont = JSROOT.Painter.getFontDetails(axis.fLabelFont, labelsize);
+            labelfont = new JSROOT.FontHandler(axis.fLabelFont, labelsize);
 
             this.StartTextDrawing(labelfont, 'font', label_g[lcnt]);
 

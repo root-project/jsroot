@@ -464,7 +464,8 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
                   scale = foundarg;
                   break;
                case "#font[":
-                  JSROOT.Painter.getFontDetails(foundarg).setFont(subnode, 'without-size');
+                  let subfont = new JSROOT.FontHandler(foundarg);
+                  subfont.setFont(subnode, 'without-size');
                   break;
                case "#it{":
                   curr.italic = true;

@@ -995,26 +995,34 @@ JSROOT.require(['d3'], function(d3) {
 
    // ===========================================================================
 
-   Painter.getFontDetails = function(fontIndex, size) {
+   class FontHandler {
+      constructor(fontIndex, size) {
+         this.name = "Arial";
+         this.size = Math.round(size || 11);
+         this.weight = null;
+         this.style = null;
 
-      let res = { name: "Arial", size: Math.round(size || 11), weight: null, style: null },
-         indx = Math.floor(fontIndex / 10),
-         fontName = Painter.root_fonts[indx] || "";
+         let indx = Math.floor(fontIndex / 10),
+             fontName = Painter.root_fonts[indx] || "";
 
-      while (fontName.length > 0) {
-         if (fontName[0] === 'b') res.weight = "bold"; else
-            if (fontName[0] === 'i') res.style = "italic"; else
-               if (fontName[0] === 'o') res.style = "oblique"; else break;
-         fontName = fontName.substr(1);
+         while (fontName.length > 0) {
+            if (fontName[0] === 'b') this.weight = "bold"; else
+               if (fontName[0] === 'i') this.style = "italic"; else
+                  if (fontName[0] === 'o') this.style = "oblique"; else break;
+            fontName = fontName.substr(1);
+         }
+
+         if (fontName == 'Symbol')
+            this.weight = this.style = null;
+
+         this.name = fontName;
+         this.aver_width = Painter.root_fonts_aver_width[indx] || 0.55;
+
+         this.func = this.setFont.bind(this);
       }
 
-      if (fontName == 'Symbol')
-         res.weight = res.style = null;
-
-      res.name = fontName;
-      res.aver_width = Painter.root_fonts_aver_width[indx] || 0.55;
-
-      res.setFont = function(selection, arg) {
+      /** Assigns font-related attributes */
+      setFont(selection, arg) {
          selection.attr("font-family", this.name);
          if (arg != 'without-size')
             selection.attr("font-size", this.size)
@@ -1025,9 +1033,8 @@ JSROOT.require(['d3'], function(d3) {
             selection.attr("font-style", this.style);
       }
 
-      res.func = res.setFont.bind(res);
-
-      res.clearFont = function(selection) {
+      /** Clears all font-related attributes */
+      clearFont(selection) {
          selection.attr("font-family", null)
                   .attr("font-size", null)
                   .attr("xml:space", null)
@@ -1035,8 +1042,12 @@ JSROOT.require(['d3'], function(d3) {
                   .attr("font-style", null);
       }
 
-      return res;
-   }
+      /** @returns approximate width of given label, required for reasonable scaling of text in node.js */
+      approxTextWidth = function(label) { return label.length * this.size * this.aver_width; }
+
+   } // class FontHandler
+
+  // ===========================================================================
 
    Painter.chooseTimeFormat = function(awidth, ticks) {
       if (awidth < .5) return ticks ? "%S.%L" : "%H:%M:%S.%L";
@@ -1103,16 +1114,6 @@ JSROOT.require(['d3'], function(d3) {
       }
 
       return offset;
-   }
-
-   Painter.approxTextWidth = function(font, label) {
-      // returns approximate width of given label, required for reasonable scaling of text in node.js
-
-      return label.length * font.size * font.aver_width;
-   }
-
-   Painter.isAnyLatex = function(str) {
-      return (str.indexOf("#") >= 0) || (str.indexOf("\\") >= 0) || (str.indexOf("{") >= 0);
    }
 
    /** Function used to provide svg:path for the smoothed curves.
@@ -3601,7 +3602,7 @@ JSROOT.require(['d3'], function(d3) {
 
          if (!draw_g) draw_g = this.draw_g;
 
-         let font = (font_size === 'font') ? font_face : JSROOT.Painter.getFontDetails(font_face, font_size);
+         let font = (font_size === 'font') ? font_face : new FontHandler(font_face, font_size);
 
          let pp = this.pad_painter();
 
@@ -3840,7 +3841,7 @@ JSROOT.require(['d3'], function(d3) {
              painter = this;
 
          if (arg.latex === 1)
-            use_mathjax = (JSROOT.gStyle.Latex > 3) || ((JSROOT.gStyle.Latex == 3) && JSROOT.Painter.isAnyLatex(arg.text));
+            use_mathjax = (JSROOT.gStyle.Latex > 3) || ((JSROOT.gStyle.Latex == 3) && arg.text.match(/[#{\\]/g));
 
          if (!use_mathjax || arg.nomathjax) {
 
@@ -3894,7 +3895,7 @@ JSROOT.require(['d3'], function(d3) {
          // complete rectangle with very rougth size estimations
 
          arg.box = !JSROOT.nodejs && !JSROOT.gStyle.ApproxTextSize && !arg.fast ? this.GetBoundarySizes(txt.node()) :
-                  (arg.text_rect || { height: arg.font_size * 1.2, width: JSROOT.Painter.approxTextWidth(arg.font, arg.text) });
+                  (arg.text_rect || { height: arg.font_size * 1.2, width: arg.font.approxTextWidth(arg.text) });
 
          txt.attr('visibility', 'hidden'); // hide elements until text drawing is finished
 
@@ -3913,7 +3914,7 @@ JSROOT.require(['d3'], function(d3) {
          return arg.box.width;
       }
 
-   } // class ObjectPainter
+   }; // class ObjectPainter
 
    // ===========================================================
 
@@ -3997,7 +3998,7 @@ JSROOT.require(['d3'], function(d3) {
             frame_rect = this.GetFrameRect(),
             pad_width = this.pad_width(),
             pp = this.pad_painter(),
-            font = JSROOT.Painter.getFontDetails(160, textheight),
+            font = new FontHandler(160, textheight),
             status_func = this.GetShowStatusFunc(),
             disable_tootlips = !this.IsTooltipAllowed() || !this.tooltip_enabled;
 
@@ -5057,6 +5058,7 @@ JSROOT.require(['d3'], function(d3) {
    JSROOT.TAttLineHandler = TAttLineHandler;
    JSROOT.TAttFillHandler = TAttFillHandler;
    JSROOT.TAttMarkerHandler = TAttMarkerHandler;
+   JSROOT.FontHandler = FontHandler;
    JSROOT.TooltipHandler = TooltipHandler;
    JSROOT.BasePainter = BasePainter;
    JSROOT.ObjectPainter = ObjectPainter;
