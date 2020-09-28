@@ -1002,12 +1002,12 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
       return "\\color{" + color + '}{' + str + "}";
    }
 
-   function repairMathJaxSvgSize(painter, fo_g, svg, arg, font_size) {
+   function repairMathJaxSvgSize(painter, fo_g, svg, arg) {
       function transform(value) {
          if (!value || (typeof value !== "string")) return null;
          if (value.indexOf("ex") !== value.length - 2) return null;
          value = parseFloat(value.substr(0, value.length - 2));
-         return isNaN(value) ? null : value * font_size * 0.5;
+         return isNaN(value) ? null : value * arg.font.size * 0.5;
       }
 
       let width = transform(svg.attr("width")),
@@ -1086,7 +1086,9 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
              .then(elem => {
                  let svg = d3.select(elem).select("svg");
                  fo_g.append(function() { return svg.node(); });
-                 arg.repairMathJaxSvgSize = repairMathJaxSvgSize;
+
+                 arg.svg_factor = repairMathJaxSvgSize(painter, fo_g, svg, arg);
+
                  arg.applyAttributesToMathJax = applyAttributesToMathJax;
                  arg.ready = true; // mark drawing as ready
                  return arg;

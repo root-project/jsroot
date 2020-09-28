@@ -3668,6 +3668,14 @@ JSROOT.require(['d3'], function(d3) {
             max_sz = draw_g.property('max_font_size'),
             font_size = font.size;
 
+         all_args.forEach(arg => {
+            if (arg.svg_factor) svg_factor = Math.max(svg_factor, arg.svg_factor);
+         });
+
+         if ((svg_factor > 0) && (f > 0) && (f !== 1)) {
+            if (f > svg_factor) svg_factor = f; else f = svg_factor;
+         }
+
          if ((f > 0) && ((f < 0.9) || (f > 1)))
             font.size = Math.floor(font.size / f);
 
@@ -3678,13 +3686,6 @@ JSROOT.require(['d3'], function(d3) {
             draw_g.call(font.func);
             font_size = font.size;
          }
-
-         all_args.forEach(arg => {
-            if (arg.fo_g && arg.repairMathJaxSvgSize) {
-               let svg = arg.fo_g.select("svg"); // MathJax svg
-               svg_factor = Math.max(svg_factor, arg.repairMathJaxSvgSize(painter, arg.fo_g, svg, arg, font_size));
-            }
-         });
 
          all_args.forEach(arg => {
             if (arg.fo_g && arg.applyAttributesToMathJax) {
@@ -5061,14 +5062,14 @@ JSROOT.require(['d3'], function(d3) {
 
    // FIXME: for backward compatibility with v5, will be removed in JSROOT v7
    function TBasePainter() {
-      // redu constructor
+      // redo constructor
       this.divid = null;
       return this;
    }
    TBasePainter.prototype = Object.create(new BasePainter);
 
    function TObjectPainter(obj, opt) {
-      // redo BasePainter and ObjectPainter
+      // redo BasePainter and ObjectPainter constructor
       this.divid = null;
       this.draw_g = null; // container for all drawn objects
       this.pad_name = ""; // name of pad where object is drawn
