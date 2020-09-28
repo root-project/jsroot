@@ -3662,19 +3662,10 @@ JSROOT.require(['d3'], function(d3) {
 
          // adjust font size (if there are normal text)
          let painter = this,
-            svg_factor = 0,
             f = draw_g.property('text_factor'),
             font = draw_g.property('text_font'),
             max_sz = draw_g.property('max_font_size'),
             font_size = font.size;
-
-         all_args.forEach(arg => {
-            if (arg.svg_factor) svg_factor = Math.max(svg_factor, arg.svg_factor);
-         });
-
-         if ((svg_factor > 0) && (f > 0) && (f !== 1)) {
-            if (f > svg_factor) svg_factor = f; else f = svg_factor;
-         }
 
          if ((f > 0) && ((f < 0.9) || (f > 1)))
             font.size = Math.floor(font.size / f);
@@ -3690,7 +3681,7 @@ JSROOT.require(['d3'], function(d3) {
          all_args.forEach(arg => {
             if (arg.fo_g && arg.applyAttributesToMathJax) {
                let svg = arg.fo_g.select("svg"); // MathJax svg
-               arg.applyAttributesToMathJax(painter, arg.fo_g, svg, arg, font_size, svg_factor);
+               arg.applyAttributesToMathJax(painter, arg.fo_g, svg, arg, font_size, f);
                delete arg.fo_g; // remove reference
             }
          });

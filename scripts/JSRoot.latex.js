@@ -1032,7 +1032,8 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
 
       arg.valign = valign;
 
-      return arg.scale ? Math.max(width / arg.width, height / arg.height) : 0;
+      if (arg.scale)
+         painter.TextScaleFactor(Math.max(width / arg.width, height / arg.height), arg.draw_g);
    }
 
    function applyAttributesToMathJax(painter, fo_g, svg, arg, font_size, svg_factor) {
@@ -1087,7 +1088,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
                  let svg = d3.select(elem).select("svg");
                  fo_g.append(function() { return svg.node(); });
 
-                 arg.svg_factor = repairMathJaxSvgSize(painter, fo_g, svg, arg);
+                 repairMathJaxSvgSize(painter, fo_g, svg, arg);
 
                  arg.applyAttributesToMathJax = applyAttributesToMathJax;
                  arg.ready = true; // mark drawing as ready
