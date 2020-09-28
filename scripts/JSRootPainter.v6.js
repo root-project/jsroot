@@ -1713,8 +1713,8 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
                        .attr("height", h);
 
          if (!rotate && !fixpos)
-            painter.AddDrag({ obj: painter, only_resize: true, minwidth: 20, minheight: 20,
-                              redraw: painter.SizeChanged.bind(painter) });
+            JSROOT.DragMoveHandler.AddDrag(painter, { obj: painter, only_resize: true,
+                                         minwidth: 20, minheight: 20, redraw: painter.SizeChanged.bind(painter) });
 
          let tooltip_rect = main_svg;
          tooltip_rect.style("pointer-events","visibleFill")

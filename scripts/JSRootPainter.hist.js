@@ -381,23 +381,27 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], function(d3) {
 
       if (JSROOT.BatchMode || (pt._typename=="TPave")) return;
 
-      // here all kind of interactive settings
+      let painter = this;
 
-      rect.style("pointer-events", "visibleFill")
-          .on("mouseenter", this.ShowObjectStatus.bind(this))
+      JSROOT.require(['JSRoot.interactive']).then(() => {
 
-      // position and size required only for drag functions
-      this.draw_g.attr("x", pos_x)
-                 .attr("y", pos_y)
-                 .attr("width", width)
-                 .attr("height", height);
+         // here all kind of interactive settings
+         rect.style("pointer-events", "visibleFill")
+             .on("mouseenter", painter.ShowObjectStatus.bind(painter))
 
-      this.AddDrag({ obj: pt, minwidth: 10, minheight: 20, canselect: true,
-                     redraw: this.DragRedraw.bind(this),
-                     ctxmenu: JSROOT.touches && JSROOT.gStyle.ContextMenu && this.UseContextMenu });
+         // position and size required only for drag functions
+         painter.draw_g.attr("x", pos_x)
+                       .attr("y", pos_y)
+                       .attr("width", width)
+                       .attr("height", height);
 
-      if (this.UseContextMenu && JSROOT.gStyle.ContextMenu)
-         this.draw_g.on("contextmenu", this.PaveContextMenu.bind(this));
+         JSROOT.DragMoveHandler.AddDrag(painter, { obj: pt, minwidth: 10, minheight: 20, canselect: true,
+                        redraw: this.DragRedraw.bind(this),
+                        ctxmenu: JSROOT.touches && JSROOT.gStyle.ContextMenu && this.UseContextMenu });
+
+         if (painter.UseContextMenu && JSROOT.gStyle.ContextMenu)
+            painter.draw_g.on("contextmenu", this.PaveContextMenu.bind(painter));
+      });
    }
 
    TPavePainter.prototype.DragRedraw = function() {

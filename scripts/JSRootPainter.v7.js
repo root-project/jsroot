@@ -1659,7 +1659,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
                        .attr("height", h);
 
          if (!rotate && !fixpos)
-            painter.AddDrag({ obj: painter, only_resize: true, minwidth: 20, minheight: 20,
+            JSROOT.DragMoveHandler.AddDrag(painter, { obj: painter, only_resize: true, minwidth: 20, minheight: 20,
                               redraw: painter.SizeChanged.bind(painter) });
 
          main_svg.style("pointer-events","visibleFill")
@@ -4835,10 +4835,14 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
 
       if (JSROOT.BatchMode) return;
 
-      if (JSROOT.gStyle.ContextMenu && this.ShowContextMenu)
-         this.draw_g.on("contextmenu", this.ShowContextMenu.bind(this));
+      let painter = this;
 
-      this.AddDrag({ minwidth: 20, minheight: 20, redraw: this.SizeChanged.bind(this) });
+      JSROOT.require(['JSRoot.interactive']).then(() => {
+         if (JSROOT.gStyle.ContextMenu && painter.ShowContextMenu)
+            painter.draw_g.on("contextmenu", painter.ShowContextMenu.bind(painter));
+
+         JSROOT.DragMoveHandler.AddDrag(painter, { minwidth: 20, minheight: 20, redraw: painter.SizeChanged.bind(painter) });
+      });
    }
 
    /** Process interactive moving of the stats box */
@@ -4940,7 +4944,12 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
 
       this.FinishTextDrawing();
 
-      this.AddDrag({ minwidth: 20, minheight: 20, no_change_x: true, redraw: this.Redraw.bind(this,'drag') });
+      if (JSROOT.BatchMode) return;
+
+      let painter = this;
+      JSROOT.require(['JSRoot.interactive']).then(() => {
+         JSROOT.DragMoveHandler.AddDrag(painter, { minwidth: 20, minheight: 20, no_change_x: true, redraw: painter.Redraw.bind(painter,'drag') });
+      });
    }
 
    ////////////////////////////////////////////////////////////////////////////////////////////
@@ -5195,72 +5204,75 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
 
       if (JSROOT.BatchMode) return;
 
-      if (!after_resize)
-         this.AddDrag({ minwidth: 20, minheight: 20, no_change_y: true, redraw: this.DrawPalette.bind(this, true) });
+      let painter = this;
+      JSROOT.require(['JSRoot.interactive']).then(() => {
 
-      if (!JSROOT.gStyle.Zooming) return;
+         if (!after_resize)
+            JSROOT.DragMoveHandler.AddDrag(painter, { minwidth: 20, minheight: 20, no_change_y: true, redraw: painter.DrawPalette.bind(painter, true) });
 
-      let doing_zoom = false, sel1 = 0, sel2 = 0, zoom_rect = null;
+         if (!JSROOT.gStyle.Zooming) return;
 
-      function moveRectSel(evnt) {
+         let doing_zoom = false, sel1 = 0, sel2 = 0, zoom_rect = null;
 
-         if (!doing_zoom) return;
+         function moveRectSel(evnt) {
 
-         evnt.preventDefault();
-         let m = d3.pointer(evnt);
+            if (!doing_zoom) return;
 
-         if (m[1] < sel1) sel1 = m[1]; else sel2 = m[1];
+            evnt.preventDefault();
+            let m = d3.pointer(evnt);
 
-         zoom_rect.attr("y", sel1)
-                 .attr("height", Math.abs(sel2-sel1));
-      }
+            if (m[1] < sel1) sel1 = m[1]; else sel2 = m[1];
 
-      function endRectSel(evnt) {
-         if (!doing_zoom) return;
+            zoom_rect.attr("y", sel1)
+                    .attr("height", Math.abs(sel2-sel1));
+         }
 
-         evnt.preventDefault();
-         d3.select(window).on("mousemove.colzoomRect", null)
-                          .on("mouseup.colzoomRect", null);
-         zoom_rect.remove();
-         zoom_rect = null;
-         doing_zoom = false;
+         function endRectSel(evnt) {
+            if (!doing_zoom) return;
 
-         let zmin = Math.min(z.invert(sel1), z.invert(sel2)),
-             zmax = Math.max(z.invert(sel1), z.invert(sel2));
+            evnt.preventDefault();
+            d3.select(window).on("mousemove.colzoomRect", null)
+                             .on("mouseup.colzoomRect", null);
+            zoom_rect.remove();
+            zoom_rect = null;
+            doing_zoom = false;
 
-         framep.Zoom("z", zmin, zmax);
-      }
+            let zmin = Math.min(z.invert(sel1), z.invert(sel2)),
+                zmax = Math.max(z.invert(sel1), z.invert(sel2));
 
-      function startRectSel(evnt) {
-         // ignore when touch selection is activated
-         if (doing_zoom) return;
-         doing_zoom = true;
+            framep.Zoom("z", zmin, zmax);
+         }
 
-         evnt.preventDefault();
+         function startRectSel(evnt) {
+            // ignore when touch selection is activated
+            if (doing_zoom) return;
+            doing_zoom = true;
 
-         evnt = this;
-         let origin = d3.pointer(evnt);
+            evnt.preventDefault();
 
-         sel1 = sel2 = origin[1];
+            let origin = d3.pointer(evnt);
 
-         zoom_rect = g_btns
-              .append("svg:rect")
-              .attr("class", "zoom")
-              .attr("id", "colzoomRect")
-              .attr("x", "0")
-              .attr("width", palette_width)
-              .attr("y", sel1)
-              .attr("height", 5);
+            sel1 = sel2 = origin[1];
 
-         d3.select(window).on("mousemove.colzoomRect", moveRectSel)
-                          .on("mouseup.colzoomRect", endRectSel, true);
+            zoom_rect = g_btns
+                 .append("svg:rect")
+                 .attr("class", "zoom")
+                 .attr("id", "colzoomRect")
+                 .attr("x", "0")
+                 .attr("width", palette_width)
+                 .attr("y", sel1)
+                 .attr("height", 5);
 
-         evnt.stopPropagation();
-      }
+            d3.select(window).on("mousemove.colzoomRect", moveRectSel)
+                             .on("mouseup.colzoomRect", endRectSel, true);
 
-      this.draw_g.select(".axis_zoom")
-                 .on("mousedown", startRectSel)
-                 .on("dblclick", function() { framep.Unzoom("z"); });
+            evnt.stopPropagation();
+         }
+
+         painter.draw_g.select(".axis_zoom")
+                       .on("mousedown", startRectSel)
+                       .on("dblclick", function() { framep.Unzoom("z"); });
+      });
    }
 
    function drawPalette(divid, palette, opt) {
