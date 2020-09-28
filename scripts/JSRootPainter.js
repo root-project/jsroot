@@ -3832,6 +3832,10 @@ JSROOT.require(['d3'], function(d3) {
          }
 
          let all_args = draw_g.property('all_args'), missing = 0;
+         if (!all_args) {
+            console.log('Text drawing is finished - why?????');
+            return 0;
+         }
 
          all_args.forEach(arg => { if (!arg.ready) missing++; });
 
@@ -4069,10 +4073,9 @@ JSROOT.require(['d3'], function(d3) {
          arg.font = font;
          arg.fo_g = fo_g; // keep element
 
-         Painter.DoMathjax(painter, fo_g, arg, () => {
-            arg.ready = true;
-            painter.FinishTextDrawing(arg.draw_g, null, true); // check if all other elements are completed
-         });
+         JSROOT.require(['JSRoot.latex'])
+               .then(() => Painter.DoMathjax(painter, fo_g, arg))
+               .then(() => painter.FinishTextDrawing(arg.draw_g, null, true));
 
          return 0;
       }
@@ -4109,12 +4112,6 @@ JSROOT.require(['d3'], function(d3) {
       }
 
    } // class ObjectPainter
-
-
-   /** Load MathJax functionality, one need not only to load script but wait for initialization */
-   Painter.DoMathjax = function(painter, fo_g, arg, callback) {
-      return JSROOT.require(['JSRoot.latex']).then(() => Painter.DoMathjax(painter, fo_g, arg, callback));
-   }
 
    // ===========================================================
 
@@ -4944,13 +4941,17 @@ JSROOT.require(['d3'], function(d3) {
          let painter = null;
 
          function performDraw() {
+            let promise;
             if (handle.direct) {
                painter = new ObjectPainter(obj, opt);
                painter.csstype = handle.csstype;
                painter.SetDivId(divid, 2);
                painter.Redraw = handle.func;
-               painter.Redraw();
-               painter.DrawingReady();
+               let promise = painter.Redraw();
+               if (!JSROOT.isPromise(promise)) {
+                  painter.DrawingReady();
+                  promise = undefined;
+               }
             } else {
                painter = handle.func(divid, obj, opt);
 
@@ -4958,7 +4959,7 @@ JSROOT.require(['d3'], function(d3) {
                   painter.options = { original: opt || "" };
             }
 
-            completeDraw(painter);
+            completeDraw(promise || painter);
          }
 
          if (typeof handle.func == 'function')

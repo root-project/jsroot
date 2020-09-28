@@ -879,21 +879,20 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
       fo_g.attr('transform', trans).attr('visibility', null);
    }
 
-   JSROOT.Painter.DoMathjax = function(painter, fo_g, arg, callback) {
+   JSROOT.Painter.DoMathjax = function(painter, fo_g, arg) {
       let mtext = JSROOT.Painter.translateMath(arg.text, arg.latex, arg.color, painter);
+      let options = { em: arg.font.size, ex: arg.font.size/2, family: arg.font.name, scale: 1, containerWidth: -1, lineWidth: 100000 };
 
-      JSROOT.Painter.LoadMathjax().then(() => {
-         let options = { em: arg.font.size, ex: arg.font.size/2, family: arg.font.name, scale: 1, containerWidth: -1, lineWidth: 100000 };
-         MathJax.tex2svgPromise(mtext, options).then(elem => {
-            let svg = d3.select(elem).select("svg");
-            fo_g.append(function() { return svg.node(); });
-
-            arg.repairMathJaxSvgSize = repairMathJaxSvgSize;
-            arg.applyAttributesToMathJax = applyAttributesToMathJax;
-
-            callback(arg);
-         });
-      });
+      return JSROOT.Painter.LoadMathjax()
+             .then(() => MathJax.tex2svgPromise(mtext, options))
+             .then(elem => {
+                 let svg = d3.select(elem).select("svg");
+                 fo_g.append(function() { return svg.node(); });
+                 arg.repairMathJaxSvgSize = repairMathJaxSvgSize;
+                 arg.applyAttributesToMathJax = applyAttributesToMathJax;
+                 arg.ready = true; // mark drawing as ready
+                 return arg;
+              });
    }
 
 })

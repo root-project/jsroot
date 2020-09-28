@@ -51,7 +51,9 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter.v6'], function(d3) {
 
       this.DrawText(arg);
 
-      this.FinishTextDrawing();
+      let painter = this;
+
+      this.FinishTextDrawing(undefined, () => painter.DrawingReady());
 
       this.pos_dx = this.pos_dy = 0;
 
@@ -72,6 +74,8 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter.v6'], function(d3) {
          }
 
       this.AddMove();
+
+      return this.Promise();
    }
 
    // =====================================================================================
