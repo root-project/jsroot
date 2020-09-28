@@ -138,6 +138,7 @@
          'JSRoot.openui5'       : { src: 'JSRoot.openui5' },
          'JSRoot.latex'         : { src: 'JSRoot.latex' },
          'JSRoot.webwindow'     : { src: 'JSRoot.webwindow' },
+         'JSRoot.interactive'   : { src: 'JSRoot.interactive' },
          'JSRootPainter'        : { src: 'JSRootPainter' },
          'JSRootPainter.v6'     : { src: 'JSRootPainter.v6' },
          'JSRootPainter.hist'   : { src: 'JSRootPainter.hist' },

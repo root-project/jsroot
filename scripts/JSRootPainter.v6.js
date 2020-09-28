@@ -881,7 +881,6 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
       this.axes_drawn = false;
       this.keys_handler = null;
       this.projection = 0; // different projections
-      JSROOT.TooltipHandler.assign(this);
    }
 
    TFramePainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
@@ -1704,59 +1703,64 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
 
       if (JSROOT.BatchMode) return;
 
-      this.draw_g.attr("x", lm)
-                 .attr("y", tm)
-                 .attr("width", w)
-                 .attr("height", h);
+      let painter = this;
+      JSROOT.require(['JSRoot.interactive']).then(() => {
+         JSROOT.TooltipHandler.assign(painter);
 
-      if (!rotate && !fixpos)
-         this.AddDrag({ obj: this, only_resize: true, minwidth: 20, minheight: 20,
-                        redraw: this.SizeChanged.bind(this) });
+         painter.draw_g.attr("x", lm)
+                       .attr("y", tm)
+                       .attr("width", w)
+                       .attr("height", h);
 
-      let tooltip_rect = main_svg;
-      tooltip_rect.style("pointer-events","visibleFill")
-                  .property('handlers_set', 0);
+         if (!rotate && !fixpos)
+            painter.AddDrag({ obj: painter, only_resize: true, minwidth: 20, minheight: 20,
+                              redraw: painter.SizeChanged.bind(painter) });
 
-      //  if (tooltip_rect.empty())
-      //     tooltip_rect =
-      //       this.draw_g
-      //          .append("rect")
-      //          .attr("class","interactive_rect")
-      //          .style('opacity',0)
-      //          .style('fill',"none")
-      //          .style("pointer-events","visibleFill")
-      //          .property('handlers_set', 0);
+         let tooltip_rect = main_svg;
+         tooltip_rect.style("pointer-events","visibleFill")
+                     .property('handlers_set', 0);
 
-      let handlers_set = (pp && pp._fast_drawing) ? 0 : 1;
+         //  if (tooltip_rect.empty())
+         //     tooltip_rect =
+         //       painter.draw_g
+         //          .append("rect")
+         //          .attr("class","interactive_rect")
+         //          .style('opacity',0)
+         //          .style('fill',"none")
+         //          .style("pointer-events","visibleFill")
+         //          .property('handlers_set', 0);
 
-      if (tooltip_rect.property('handlers_set') != handlers_set) {
-         let close_handler = handlers_set ? this.ProcessTooltipEvent.bind(this, null) : null,
-             mouse_handler = handlers_set ? this.ProcessTooltipEvent.bind(this, { handler: true, touch: false }) : null;
+         let handlers_set = (pp && pp._fast_drawing) ? 0 : 1;
 
-         tooltip_rect.property('handlers_set', handlers_set)
-                     .on('mouseenter', mouse_handler)
-                     .on('mousemove', mouse_handler)
-                     .on('mouseleave', close_handler);
+         if (tooltip_rect.property('handlers_set') != handlers_set) {
+            let close_handler = handlers_set ? painter.ProcessTooltipEvent.bind(painter, null) : null,
+                mouse_handler = handlers_set ? painter.ProcessTooltipEvent.bind(painter, { handler: true, touch: false }) : null;
 
-         if (JSROOT.touches) {
-            let touch_handler = handlers_set ? this.ProcessTooltipEvent.bind(this, { handler: true, touch: true }) : null;
+            tooltip_rect.property('handlers_set', handlers_set)
+                        .on('mouseenter', mouse_handler)
+                        .on('mousemove', mouse_handler)
+                        .on('mouseleave', close_handler);
 
-            tooltip_rect.on("touchstart", touch_handler)
-                        .on("touchmove", touch_handler)
-                        .on("touchend", close_handler)
-                        .on("touchcancel", close_handler);
+            if (JSROOT.touches) {
+               let touch_handler = handlers_set ? painter.ProcessTooltipEvent.bind(painter, { handler: true, touch: true }) : null;
+
+               tooltip_rect.on("touchstart", touch_handler)
+                           .on("touchmove", touch_handler)
+                           .on("touchend", close_handler)
+                           .on("touchcancel", close_handler);
+            }
          }
-      }
 
-      tooltip_rect.attr("x", 0)
-                  .attr("y", 0)
-                  .attr("width", w)
-                  .attr("height", h);
+         tooltip_rect.attr("x", 0)
+                     .attr("y", 0)
+                     .attr("width", w)
+                     .attr("height", h);
 
-      let hintsg = this.hints_layer().select(".objects_hints");
-      // if tooltips were visible before, try to reconstruct them after short timeout
-      if (!hintsg.empty() && this.IsTooltipAllowed() && (hintsg.property("hints_pad") == this.pad_name))
-         setTimeout(this.ProcessTooltipEvent.bind(this, hintsg.property('last_point'), null), 10);
+         let hintsg = painter.hints_layer().select(".objects_hints");
+         // if tooltips were visible before, try to reconstruct them after short timeout
+         if (!hintsg.empty() && painter.IsTooltipAllowed() && (hintsg.property("hints_pad") == painter.pad_name))
+            setTimeout(painter.ProcessTooltipEvent.bind(painter, hintsg.property('last_point'), null), 10);
+      });
    }
 
    TFramePainter.prototype.ToggleLog = function(axis) {

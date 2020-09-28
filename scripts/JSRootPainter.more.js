@@ -2018,7 +2018,6 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter.v6'], function(d3) {
       JSROOT.TObjectPainter.call(this, polargram);
       this.$polargram = true; // indicate that this is polargram
       this.zoom_rmin = this.zoom_rmax = 0;
-      JSROOT.TooltipHandler.assign(this);
    }
 
    TGraphPolargramPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
@@ -2258,31 +2257,35 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter.v6'], function(d3) {
                 .call(this.gridatt.func);
          }
 
-
       if (JSROOT.BatchMode) return;
 
-      let layer = this.svg_layer("primitives_layer"),
-          interactive = layer.select(".interactive_ellipse");
+      let painter = this;
+      JSROOT.require(['JSRoot.interactive']).then(() => {
+         JSROOT.TooltipHandler.assign(painter);
 
-      if (interactive.empty())
-         interactive = layer.append("g")
-                            .classed("most_upper_primitives", true)
-                            .append("ellipse")
-                            .classed("interactive_ellipse", true)
-                            .attr("cx",0)
-                            .attr("cy",0)
-                            .style("fill", "none")
-                            .style("pointer-events","visibleFill")
-                            .on('mouseenter', this.MouseEvent.bind(this,'enter'))
-                            .on('mousemove', this.MouseEvent.bind(this,'move'))
-                            .on('mouseleave', this.MouseEvent.bind(this,'leave'));
+         let layer = painter.svg_layer("primitives_layer"),
+             interactive = layer.select(".interactive_ellipse");
 
-      interactive.attr("rx", this.szx).attr("ry", this.szy);
+         if (interactive.empty())
+            interactive = layer.append("g")
+                               .classed("most_upper_primitives", true)
+                               .append("ellipse")
+                               .classed("interactive_ellipse", true)
+                               .attr("cx",0)
+                               .attr("cy",0)
+                               .style("fill", "none")
+                               .style("pointer-events","visibleFill")
+                               .on('mouseenter', painter.MouseEvent.bind(painter,'enter'))
+                               .on('mousemove', painter.MouseEvent.bind(painter,'move'))
+                               .on('mouseleave', painter.MouseEvent.bind(painter,'leave'));
 
-      d3.select(interactive.node().parentNode).attr("transform", this.draw_g.attr("transform"));
+         interactive.attr("rx", painter.szx).attr("ry", painter.szy);
 
-      if (JSROOT.gStyle.Zooming && JSROOT.gStyle.ZoomWheel)
-         interactive.on("wheel", this.MouseWheel.bind(this));
+         d3.select(interactive.node().parentNode).attr("transform", painter.draw_g.attr("transform"));
+
+         if (JSROOT.gStyle.Zooming && JSROOT.gStyle.ZoomWheel)
+            interactive.on("wheel", painter.MouseWheel.bind(painter));
+      });
    }
 
    function drawGraphPolargram(divid, polargram /*, opt*/) {
