@@ -1043,7 +1043,7 @@ JSROOT.require(['d3'], function(d3) {
       }
 
       /** @returns approximate width of given label, required for reasonable scaling of text in node.js */
-      approxTextWidth = function(label) { return label.length * this.size * this.aver_width; }
+      approxTextWidth(label) { return label.length * this.size * this.aver_width; }
 
    } // class FontHandler
 
@@ -3845,49 +3845,48 @@ JSROOT.require(['d3'], function(d3) {
          if (arg.latex === 1)
             use_mathjax = (JSROOT.gStyle.Latex > 3) || ((JSROOT.gStyle.Latex == 3) && arg.text.match(/[#{\\]/g));
 
+         arg.font = font; // use in latex conversion
+
+
          if (!use_mathjax || arg.nomathjax) {
 
-            let txt_node = arg.draw_g.append("svg:text");
+            arg.txt_node = arg.draw_g.append("svg:text");
 
-            if (arg.color) txt_node.attr("fill", arg.color);
+            if (arg.color) arg.txt_node.attr("fill", arg.color);
 
-            if (arg.font_size) txt_node.attr("font-size", arg.font_size);
-            else arg.font_size = font.size;
-
-            arg.font = font; // use in latex conversion
+            if (arg.font_size) arg.txt_node.attr("font-size", arg.font_size);
+                          else arg.font_size = font.size;
 
             arg.plain = !arg.latex || (JSROOT.gStyle.Latex < 2);
 
             arg.simple_latex = arg.latex && (JSROOT.gStyle.Latex == 1);
 
-            arg.txt_node = txt_node; // keep refernce on element
-
             if (!arg.plain || arg.simple_latex) {
-               JSROOT.require(['JSRoot.latex'])
-                     .then(() => { return arg.simple_latex ? painter.producePlainText(arg.txt_node, arg) : painter.produceLatex(arg.txt_node, arg); })
-                     .then(() => {
-                        painter.postprocessText(arg.txt_node, arg);
-
-                        painter.FinishTextDrawing(arg.draw_g, null, true); // check if all other elements are completed
-                    });
+               JSROOT.require(['JSRoot.latex']).then(() => {
+                  if (arg.simple_latex)
+                     painter.producePlainText(arg.txt_node, arg)
+                  else
+                     painter.produceLatex(arg.txt_node, arg);
+                  arg.ready = true;
+                  painter.postprocessText(arg.txt_node, arg);
+                  painter.FinishTextDrawing(arg.draw_g, null, true); // check if all other elements are completed
+               });
                return 0;
             }
 
             arg.plain = true;
-            txt_node.text(arg.text);
+            arg.txt_node.text(arg.text);
+            arg.ready = true;
 
-            return this.postprocessText(txt_node, arg);
+            return this.postprocessText(arg.txt_node, arg);
          }
 
-         let mj_node = arg.draw_g.append("svg:g")
+         arg.mj_node = arg.draw_g.append("svg:g")
                               .attr('visibility', 'hidden'); // hide text until drawing is finished
 
-         arg.font = font;
-         arg.mj_node = mj_node; // keep element
-
          JSROOT.require(['JSRoot.latex'])
-               .then(() => painter.produceMathjax(mj_node, arg))
-               .then(() => painter.FinishTextDrawing(arg.draw_g, null, true));
+               .then(() => painter.produceMathjax(arg.mj_node, arg))
+               .then(() => { arg.ready = true; painter.FinishTextDrawing(arg.draw_g, null, true); });
 
          return 0;
       }
@@ -3906,8 +3905,6 @@ JSROOT.require(['d3'], function(d3) {
          if (arg.scale) this.TextScaleFactor(1. * arg.box.height / arg.height, arg.draw_g);
 
          arg.result_width = arg.box.width;
-
-         arg.ready = true;
 
          // in some cases
          if (typeof arg.post_process == 'function')

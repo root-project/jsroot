@@ -1004,7 +1004,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
    }
 
    function repairMathJaxSvgSize(painter, mj_node, svg, arg) {
-      function transform(value) {
+      let transform = value => {
          if (!value || (typeof value !== "string")) return null;
          if (value.indexOf("ex") !== value.length - 2) return null;
          value = parseFloat(value.substr(0, value.length - 2));
@@ -1092,8 +1092,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
                  repairMathJaxSvgSize(painter, mj_node, svg, arg);
 
                  arg.applyAttributesToMathJax = applyAttributesToMathJax;
-                 arg.ready = true; // mark drawing as ready
-                 return arg;
+                 return true;
               });
    }
 
