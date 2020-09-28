@@ -1003,7 +1003,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
       return "\\color{" + color + '}{' + str + "}";
    }
 
-   function repairMathJaxSvgSize(painter, fo_g, svg, arg) {
+   function repairMathJaxSvgSize(painter, mj_node, svg, arg) {
       function transform(value) {
          if (!value || (typeof value !== "string")) return null;
          if (value.indexOf("ex") !== value.length - 2) return null;
@@ -1027,7 +1027,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
       svg.attr("width", width).attr('height', height).attr("style", null);
 
       if (!JSROOT.nodejs) {
-         let box = painter.GetBoundarySizes(fo_g.node());
+         let box = painter.GetBoundarySizes(mj_node.node());
          width = 1.05 * box.width; height = 1.05 * box.height;
       }
 
@@ -1037,7 +1037,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
          painter.TextScaleFactor(Math.max(width / arg.width, height / arg.height), arg.draw_g);
    }
 
-   function applyAttributesToMathJax(painter, fo_g, svg, arg, font_size, svg_factor) {
+   function applyAttributesToMathJax(painter, mj_node, svg, arg, font_size, svg_factor) {
       let mw = parseInt(svg.attr("width")),
           mh = parseInt(svg.attr("height"));
 
@@ -1048,7 +1048,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
             svg.attr("width", Math.round(mw)).attr("height", Math.round(mh));
          }
       } else {
-         let box = painter.GetBoundarySizes(fo_g.node()); // sizes before rotation
+         let box = painter.GetBoundarySizes(mj_node.node()); // sizes before rotation
          mw = box.width || mw || 100;
          mh = box.height || mh || 10;
       }
@@ -1075,10 +1075,10 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
       let trans = "translate(" + arg.x + "," + arg.y + ")";
       if (arg.rotate) trans += " rotate(" + arg.rotate + ")";
 
-      fo_g.attr('transform', trans).attr('visibility', null);
+      mj_node.attr('transform', trans).attr('visibility', null);
    }
 
-   JSROOT.ObjectPainter.prototype.produceMathjax = function(fo_g, arg) {
+   JSROOT.ObjectPainter.prototype.produceMathjax = function(mj_node, arg) {
       let painter = this,
           mtext = translateMath(arg.text, arg.latex, arg.color, painter),
           options = { em: arg.font.size, ex: arg.font.size/2, family: arg.font.name, scale: 1, containerWidth: -1, lineWidth: 100000 };
@@ -1087,9 +1087,9 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
              .then(() => MathJax.tex2svgPromise(mtext, options))
              .then(elem => {
                  let svg = d3.select(elem).select("svg");
-                 fo_g.append(function() { return svg.node(); });
+                 mj_node.append(function() { return svg.node(); });
 
-                 repairMathJaxSvgSize(painter, fo_g, svg, arg);
+                 repairMathJaxSvgSize(painter, mj_node, svg, arg);
 
                  arg.applyAttributesToMathJax = applyAttributesToMathJax;
                  arg.ready = true; // mark drawing as ready

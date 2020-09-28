@@ -3688,10 +3688,10 @@ JSROOT.require(['d3'], function(d3) {
          }
 
          all_args.forEach(arg => {
-            if (arg.fo_g && arg.applyAttributesToMathJax) {
-               let svg = arg.fo_g.select("svg"); // MathJax svg
-               arg.applyAttributesToMathJax(painter, arg.fo_g, svg, arg, font_size, f);
-               delete arg.fo_g; // remove reference
+            if (arg.mj_node && arg.applyAttributesToMathJax) {
+               let svg = arg.mj_node.select("svg"); // MathJax svg
+               arg.applyAttributesToMathJax(painter, arg.mj_node, svg, arg, font_size, f);
+               delete arg.mj_node; // remove reference
             }
          });
 
@@ -3877,14 +3877,14 @@ JSROOT.require(['d3'], function(d3) {
             return this.postprocessText(txt, arg);
          }
 
-         let fo_g = arg.draw_g.append("svg:g")
+         let mj_node = arg.draw_g.append("svg:g")
                               .attr('visibility', 'hidden'); // hide text until drawing is finished
 
          arg.font = font;
-         arg.fo_g = fo_g; // keep element
+         arg.mj_node = mj_node; // keep element
 
          JSROOT.require(['JSRoot.latex'])
-               .then(() => painter.produceMathjax(fo_g, arg))
+               .then(() => painter.produceMathjax(mj_node, arg))
                .then(() => painter.FinishTextDrawing(arg.draw_g, null, true));
 
          return 0;
