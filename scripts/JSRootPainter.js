@@ -2748,52 +2748,6 @@ JSROOT.require(['d3'], function(d3) {
             this.control.SwitchTooltip(on);
       }
 
-      /** @summary Add move handlers for drawn element @private */
-      AddMove() {
-
-         if (!JSROOT.gStyle.MoveResize || JSROOT.BatchMode ||
-            !this.draw_g || this.draw_g.property("assigned_move")) return;
-
-         function detectRightButton(event) {
-            if ('buttons' in event) return event.buttons === 2;
-            else if ('which' in event) return event.which === 3;
-            else if ('button' in event) return event.button === 2;
-            return false;
-         }
-
-         let drag_move = d3.drag().subject(Object),
-            not_changed = true;
-
-         drag_move
-            .on("start", function(evnt) {
-               if (detectRightButton(evnt.sourceEvent)) return;
-               evnt.sourceEvent.preventDefault();
-               evnt.sourceEvent.stopPropagation();
-               let pos = d3.pointer(evnt, this.draw_g.node());
-               not_changed = true;
-               if (this.moveStart)
-                  this.moveStart(pos[0], pos[1]);
-            }.bind(this)).on("drag", function(evnt) {
-               evnt.sourceEvent.preventDefault();
-               evnt.sourceEvent.stopPropagation();
-               not_changed = false;
-               if (this.moveDrag)
-                  this.moveDrag(evnt.dx, evnt.dy);
-            }.bind(this)).on("end", function(evnt) {
-               evnt.sourceEvent.preventDefault();
-               evnt.sourceEvent.stopPropagation();
-               if (this.moveEnd)
-                  this.moveEnd(not_changed);
-               let cp = this.canv_painter();
-               if (cp) cp.SelectObjectPainter(this);
-            }.bind(this));
-
-         this.draw_g
-            .style("cursor", "move")
-            .property("assigned_move", true)
-            .call(drag_move);
-      }
-
       /** @summary Add color selection menu entries
        * @private */
       AddColorMenuEntry(menu, name, value, set_func, fill_kind) {

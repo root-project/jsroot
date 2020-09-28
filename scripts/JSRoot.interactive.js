@@ -556,6 +556,52 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
             pthis.draw_g.style("cursor", "move").call(drag_move);
 
          MakeResizeElements(pthis.draw_g, rect_width(), rect_height(), drag_resize);
+      },
+
+      /** @summary Add move handlers for drawn element @private */
+      AddMove: function(painter) {
+
+         if (!JSROOT.gStyle.MoveResize || JSROOT.BatchMode ||
+            !painter.draw_g || painter.draw_g.property("assigned_move")) return;
+
+         function detectRightButton(event) {
+            if ('buttons' in event) return event.buttons === 2;
+            else if ('which' in event) return event.which === 3;
+            else if ('button' in event) return event.button === 2;
+            return false;
+         }
+
+         let drag_move = d3.drag().subject(Object),
+            not_changed = true;
+
+         drag_move
+            .on("start", function(evnt) {
+               if (detectRightButton(evnt.sourceEvent)) return;
+               evnt.sourceEvent.preventDefault();
+               evnt.sourceEvent.stopPropagation();
+               let pos = d3.pointer(evnt, this.draw_g.node());
+               not_changed = true;
+               if (this.moveStart)
+                  this.moveStart(pos[0], pos[1]);
+            }.bind(painter)).on("drag", function(evnt) {
+               evnt.sourceEvent.preventDefault();
+               evnt.sourceEvent.stopPropagation();
+               not_changed = false;
+               if (this.moveDrag)
+                  this.moveDrag(evnt.dx, evnt.dy);
+            }.bind(painter)).on("end", function(evnt) {
+               evnt.sourceEvent.preventDefault();
+               evnt.sourceEvent.stopPropagation();
+               if (this.moveEnd)
+                  this.moveEnd(not_changed);
+               let cp = this.canv_painter();
+               if (cp) cp.SelectObjectPainter(this);
+            }.bind(painter));
+
+         painter.draw_g
+                .style("cursor", "move")
+                .property("assigned_move", true)
+                .call(drag_move);
       }
 
    } // DragMoveHandler

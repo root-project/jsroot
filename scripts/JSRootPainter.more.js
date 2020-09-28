@@ -55,25 +55,28 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter.v6'], function(d3) {
 
       this.FinishTextDrawing(undefined, () => painter.DrawingReady());
 
-      this.pos_dx = this.pos_dy = 0;
+      if (!JSROOT.BatchMode)
+         JSROOT.require(['JSRoot.interactive']).then(() => {
+            painter.pos_dx = painter.pos_dy = 0;
 
-      if (!this.moveDrag)
-         this.moveDrag = function(dx,dy) {
-            this.pos_dx += dx;
-            this.pos_dy += dy;
-            this.draw_g.attr("transform", "translate(" + this.pos_dx + "," + this.pos_dy + ")");
-        }
+            if (!painter.moveDrag)
+               painter.moveDrag = function(dx,dy) {
+                  this.pos_dx += dx;
+                  this.pos_dy += dy;
+                  this.draw_g.attr("transform", "translate(" + this.pos_dx + "," + this.pos_dy + ")");
+              }
 
-      if (!this.moveEnd)
-         this.moveEnd = function(not_changed) {
-            if (not_changed) return;
-            let text = this.GetObject();
-            text.fX = this.SvgToAxis("x", this.pos_x + this.pos_dx, this.isndc),
-            text.fY = this.SvgToAxis("y", this.pos_y + this.pos_dy, this.isndc);
-            this.WebCanvasExec("SetX(" + text.fX + ");;SetY(" + text.fY + ");;");
-         }
+            if (!painter.moveEnd)
+               painter.moveEnd = function(not_changed) {
+                  if (not_changed) return;
+                  let text = this.GetObject();
+                  text.fX = this.SvgToAxis("x", this.pos_x + this.pos_dx, this.isndc),
+                  text.fY = this.SvgToAxis("y", this.pos_y + this.pos_dy, this.isndc);
+                  this.WebCanvasExec("SetX(" + text.fX + ");;SetY(" + text.fY + ");;");
+               }
 
-      this.AddMove();
+            JSROOT.DragMoveHandler.AddMove(painter);
+         });
 
       return this.Promise();
    }
@@ -434,35 +437,40 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter.v6'], function(d3) {
          elem.style('fill','none');
       }
 
-      if (!this.moveStart)
-         this.moveStart = function(x,y) {
-            let fullsize = Math.sqrt(Math.pow(this.x1-this.x2,2) + Math.pow(this.y1-this.y2,2)),
-                sz1 = Math.sqrt(Math.pow(x-this.x1,2) + Math.pow(y-this.y1,2))/fullsize,
-                sz2 = Math.sqrt(Math.pow(x-this.x2,2) + Math.pow(y-this.y2,2))/fullsize;
-            if (sz1>0.9) this.side = 1; else if (sz2>0.9) this.side = -1; else this.side = 0;
-         }
+      let painter = this;
+      if (!JSROOT.BatchMode)
+         JSROOT.require(['JSRoot.interactive']).then(() => {
 
-      if (!this.moveDrag)
-         this.moveDrag = function(dx,dy) {
-            if (this.side != 1) { this.x1 += dx; this.y1 += dy; }
-            if (this.side != -1) { this.x2 += dx; this.y2 += dy; }
-            this.draw_g.select('path').attr("d", this.createPath());
-         }
+            if (!painter.moveStart)
+               painter.moveStart = function(x,y) {
+                  let fullsize = Math.sqrt(Math.pow(this.x1-this.x2,2) + Math.pow(this.y1-this.y2,2)),
+                      sz1 = Math.sqrt(Math.pow(x-this.x1,2) + Math.pow(y-this.y1,2))/fullsize,
+                      sz2 = Math.sqrt(Math.pow(x-this.x2,2) + Math.pow(y-this.y2,2))/fullsize;
+                  if (sz1>0.9) this.side = 1; else if (sz2>0.9) this.side = -1; else this.side = 0;
+               }
 
-      if (!this.moveEnd)
-         this.moveEnd = function(not_changed) {
-            if (not_changed) return;
-            let arrow = this.GetObject(), exec = "";
-            arrow.fX1 = this.SvgToAxis("x", this.x1, this.isndc);
-            arrow.fX2 = this.SvgToAxis("x", this.x2, this.isndc);
-            arrow.fY1 = this.SvgToAxis("y", this.y1, this.isndc);
-            arrow.fY2 = this.SvgToAxis("y", this.y2, this.isndc);
-            if (this.side != 1) exec += "SetX1(" + arrow.fX1 + ");;SetY1(" + arrow.fY1 + ");;";
-            if (this.side != -1) exec += "SetX2(" + arrow.fX2 + ");;SetY2(" + arrow.fY2 + ");;";
-            this.WebCanvasExec(exec + "Notify();;");
-         }
+            if (!painter.moveDrag)
+               painter.moveDrag = function(dx,dy) {
+                  if (this.side != 1) { this.x1 += dx; this.y1 += dy; }
+                  if (this.side != -1) { this.x2 += dx; this.y2 += dy; }
+                  this.draw_g.select('path').attr("d", this.createPath());
+               }
 
-      this.AddMove();
+            if (!painter.moveEnd)
+               painter.moveEnd = function(not_changed) {
+                  if (not_changed) return;
+                  let arrow = this.GetObject(), exec = "";
+                  arrow.fX1 = this.SvgToAxis("x", this.x1, this.isndc);
+                  arrow.fX2 = this.SvgToAxis("x", this.x2, this.isndc);
+                  arrow.fY1 = this.SvgToAxis("y", this.y1, this.isndc);
+                  arrow.fY2 = this.SvgToAxis("y", this.y2, this.isndc);
+                  if (this.side != 1) exec += "SetX1(" + arrow.fX1 + ");;SetY1(" + arrow.fY1 + ");;";
+                  if (this.side != -1) exec += "SetX2(" + arrow.fX2 + ");;SetY2(" + arrow.fY2 + ");;";
+                  this.WebCanvasExec(exec + "Notify();;");
+               }
+
+            JSROOT.DragMoveHandler.AddMove(painter);
+         });
    }
 
    // =================================================================================
@@ -1986,7 +1994,11 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter.v6'], function(d3) {
       }
       this.SetDivId(divid);
       this.DrawBins();
-      if (this.TestEditable()) this.AddMove();
+      let painter = this;
+      if (this.TestEditable() && !JSROOT.BatchMode)
+         JSROOT.require(['JSRoot.interactive']).then(() => {
+            JSROOT.DragMoveHandler.AddMove(painter);
+          });
       this.DrawNextFunction(0, this.DrawingReady.bind(this));
       return this;
    }
