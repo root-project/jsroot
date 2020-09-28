@@ -3941,13 +3941,6 @@ JSROOT.require(['d3'], function(d3) {
          return 0;
       }
 
-      produceLatexPromise(node, label, arg) {
-         let painter = this;
-         return JSROOT.require(['JSRoot.latex']).then(() => {
-            return painter.produceLatex(node, label, arg);
-         })
-      }
-
       /** @summary draw text
        *
        *  @param {object} arg - different text draw options
@@ -4046,35 +4039,36 @@ JSROOT.require(['d3'], function(d3) {
             arg.txt = txt; // keep refernce on element
 
             if (!arg.plain) {
-               this.produceLatexPromise(arg.txt, arg.text, arg).then(res => {
-                  if (res === 0) {
-                     arg.plain = true;
-                     painter.producePlainText(arg.txt, arg);
-                  }
+               JSROOT.require(['JSRoot.latex'])
+                     .then(() => painter.produceLatex(arg.txt, arg))
+                     .then(res => {
+                        if (res === 0) {
+                           arg.plain = true;
+                           painter.producePlainText(arg.txt, arg);
+                        }
 
-                  painter.postprocessPlainText(arg.txt, arg);
+                        painter.postprocessText(arg.txt, arg);
 
-                  painter.FinishTextDrawing(arg.draw_g, null, true); // check if all other elements are completed
-               });
+                        painter.FinishTextDrawing(arg.draw_g, null, true); // check if all other elements are completed
+                    });
                return 0;
             }
 
             // normal drawing
             this.producePlainText(txt, arg);
 
-            return this.postprocessPlainText(txt, arg);
+            return this.postprocessText(txt, arg);
          }
 
          let fo_g = arg.draw_g.append("svg:g")
-                              .attr('visibility', 'hidden') // hide text until drawing is finished
-                              .property('_arg', arg);
+                              .attr('visibility', 'hidden'); // hide text until drawing is finished
 
          arg.draw_g.property('mathjax_use', true);  // one need to know that mathjax is used
          arg.font = font;
          arg.fo_g = fo_g; // keep element
 
          JSROOT.require(['JSRoot.latex'])
-               .then(() => Painter.DoMathjax(painter, fo_g, arg))
+               .then(() => painter.produceMathjax(fo_g, arg))
                .then(() => painter.FinishTextDrawing(arg.draw_g, null, true));
 
          return 0;
@@ -4088,7 +4082,7 @@ JSROOT.require(['d3'], function(d3) {
       }
 
       /** After normal SVG generated, check and recalculate some properties */
-      postprocessPlainText(txt, arg) {
+      postprocessText(txt, arg) {
          // complete rectangle with very rougth size estimations
 
          arg.box = !JSROOT.nodejs && !JSROOT.gStyle.ApproxTextSize && !arg.fast ? this.GetBoundarySizes(txt.node()) :

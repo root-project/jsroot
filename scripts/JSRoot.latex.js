@@ -11,11 +11,12 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
     * @desc attempt to implement subset of TLatex with plain SVG text and tspan elements
     * @private
     */
-   JSROOT.ObjectPainter.prototype.produceLatex = function(node, label, arg, curr) {
+   JSROOT.ObjectPainter.prototype.produceLatex = function(node, arg, label, curr) {
 
       if (!curr) {
          // initial dy = -0.1 is to move complete from very bottom line like with normal text drawing
          curr = { lvl: 0, x: 0, y: 0, dx: 0, dy: -0.1, fsize: arg.font_size, parent: null };
+         label = arg.text;
          arg.mainnode = node.node();
       }
 
@@ -403,7 +404,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
 
             // if (subpos.square_root) sublabel = "#frac{a}{bc}";
 
-            if (!this.produceLatex(subnode1, sublabel, arg, subpos)) return false;
+            if (!this.produceLatex(subnode1, arg, sublabel, subpos)) return false;
 
             // takeover current possition and deltas
             curr.x = subpos.x;
@@ -879,9 +880,10 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
       fo_g.attr('transform', trans).attr('visibility', null);
    }
 
-   JSROOT.Painter.DoMathjax = function(painter, fo_g, arg) {
-      let mtext = JSROOT.Painter.translateMath(arg.text, arg.latex, arg.color, painter);
-      let options = { em: arg.font.size, ex: arg.font.size/2, family: arg.font.name, scale: 1, containerWidth: -1, lineWidth: 100000 };
+   JSROOT.ObjectPainter.prototype.produceMathjax = function(fo_g, arg) {
+      let painter = this,
+          mtext = JSROOT.Painter.translateMath(arg.text, arg.latex, arg.color, painter),
+          options = { em: arg.font.size, ex: arg.font.size/2, family: arg.font.name, scale: 1, containerWidth: -1, lineWidth: 100000 };
 
       return JSROOT.Painter.LoadMathjax()
              .then(() => MathJax.tex2svgPromise(mtext, options))
