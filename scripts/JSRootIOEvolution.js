@@ -169,12 +169,14 @@ JSROOT.require(['rawinflate'], function() {
 
    }
 
-
+   /** Add custom streamer
+     * @private */
    JSROOT.addUserStreamer = function(type, user_streamer) {
       JSROOT.IO.CustomStreamers[type] = user_streamer;
    }
 
-   /** Reads header envelope, determines zipped size and unzip content */
+   /** Reads header envelope, determines zipped size and unzip content
+     * @private */
    JSROOT.R__unzip = function(arr, tgtsize, noalert, src_shift) {
 
       const HDRSIZE = 9, totallen = arr.byteLength;
@@ -195,35 +197,6 @@ JSROOT.require(['rawinflate'], function() {
          if (getChar(curr) == 'C' && getChar(curr + 1) == 'S' && getCode(curr + 2) == 8) { fmt = "old"; off = 0; } else
          if (getChar(curr) == 'X' && getChar(curr + 1) == 'Z') fmt = "LZMA"; else
          if (getChar(curr) == 'L' && getChar(curr + 1) == '4') { fmt = "LZ4"; off = 0; CHKSUM = 8; }
-
-         /*
-               if (fmt == "LZMA") {
-                 console.log('find LZMA');
-                 console.log('chars', getChar(curr), getChar(curr+1), getChar(curr+2));
-
-                 for(let n=0;n<20;++n)
-                   console.log('codes',n,getCode(curr+n));
-
-                 const srcsize = HDRSIZE + ((getCode(curr+3) & 0xff) | ((getCode(curr+4) & 0xff) << 8) | ((getCode(curr+5) & 0xff) << 16));
-
-                 const tgtsize0 = ((getCode(curr+6) & 0xff) | ((getCode(curr+7) & 0xff) << 8) | ((getCode(curr+8) & 0xff) << 16));
-
-                 console.log('srcsize',srcsize, tgtsize0, tgtsize);
-
-                 off = 0;
-
-                 let uint8arr = new Uint8Array(arr.buffer, arr.byteOffset + curr + HDRSIZE + off, arr.byteLength - curr - HDRSIZE - off);
-
-                 JSROOT.LZMA.decompress(uint8arr, function on_decompress_complete(result) {
-                    console.log("Decompressed done", typeof result, result);
-                  }, function on_decompress_progress_update(percent) {
-                    /// Decompressing progress code goes here.
-                    console.log("Decompressing: " + (percent * 100) + "%");
-                  });
-
-                 return null;
-               }
-         */
 
          /*   C H E C K   H E A D E R   */
          if ((fmt !== "new") && (fmt !== "old") && (fmt !== "LZ4")) {
@@ -802,6 +775,7 @@ JSROOT.require(['rawinflate'], function() {
 
    /** @class TFile
      * @summary Interface to read objects from ROOT files.
+     * @memberOf JSROOT
      * @desc Use {@link JSROOT.OpenFile} to create instance of the class */
 
    class TFile {
@@ -1181,7 +1155,8 @@ JSROOT.require(['rawinflate'], function() {
        * @param {string} obj_name - name of object, may include cycle number like "hpxpy;1"
        * @param {number} [cycle=undefined] - cycle number
        * @param {boolean} [only_dir=false] - if true, only TDirectory derived class will be read
-       * @returns {Promise} - promise with object read
+       * @returns {Promise} promise with object read
+       * @memberof JSROOT.TFile
        */
       ReadObject(obj_name, cycle, only_dir) {
 

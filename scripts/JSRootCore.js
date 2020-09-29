@@ -298,8 +298,8 @@
          fTimeOffset : 788918400 // UTC time at 01/01/95
       };
 
-
-    /** Method returns current document used in the @private  */
+    /** Method returns current document used in the
+      * @private */
     JSROOT.get_document = function() {
        if (JSROOT.nodejs)
           return JSROOT.nodejs_document;
@@ -311,7 +311,9 @@
     }
 
    /** @brief Central method to load JSROOT functionality
-     * @desc Following components can be
+     *
+     * @desc
+     * Following components can be specified
      *    - 'io'     TFile functionality
      *    - 'tree'   TTree support
      *    - '2d'     basic 2d graphic (TCanvas/TPad/TFrame)
@@ -1680,16 +1682,6 @@
       return obj;
    }
 
-   /** @summary Create TList
-    * @desc obsolete, use JSROOT.Create("TList") instead
-    * @deprecated */
-   JSROOT.CreateTList = function() { return JSROOT.Create("TList"); }
-
-   /** @summary Create TAxis
-    * @desc obsolete, use JSROOT.Create("TAxis") instead
-    * @deprecated */
-   JSROOT.CreateTAxis = function() { return JSROOT.Create("TAxis"); }
-
    /** @summary Create histogram object
     * @param {string} typename - histogram typename like TH1I or TH2F
     * @param {number} nbinsx - number of bins on X-axis
@@ -1723,27 +1715,6 @@
          for (let i=0;i<histo.fNcells;++i) histo.fArray[i] = 0;
       }
       return histo;
-   }
-
-   /** @summary Create 1-d histogram
-    * @desc obsolete, use JSROOT.CreateHistogram() instead
-    * @deprecated */
-   JSROOT.CreateTH1 = function(nbinsx) {
-      return JSROOT.CreateHistogram("TH1I", nbinsx);
-   }
-
-   /** @summary Create 2-d histogram
-    * @desc obsolete, use JSROOT.CreateHistogram() instead
-    * @deprecated */
-   JSROOT.CreateTH2 = function(nbinsx, nbinsy) {
-      return JSROOT.CreateHistogram("TH2I", nbinsx, nbinsy);
-   }
-
-   /** @summary Create 3-d histogram
-    * @desc obsolete, use JSROOT.CreateHistogram() instead
-    * @deprecated */
-   JSROOT.CreateTH3 = function(nbinsx, nbinsy, nbinsz) {
-      return JSROOT.CreateHistogram("TH3I", nbinsx, nbinsy, nbinsz);
    }
 
    /** @summary Creates TPolyLine object

@@ -16,7 +16,7 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], function(d3) {
             "M460.293,256.149H339.237c-28.521,0-51.721,23.199-51.721,51.726v89.915c0,28.504,23.2,51.715,51.721,51.715h121.045   c28.521,0,51.721-23.199,51.721-51.715v-89.915C512.002,279.354,488.802,256.149,460.293,256.149z M465.03,397.784   c0,2.615-2.122,4.736-4.748,4.736H339.237c-2.614,0-4.747-2.121-4.747-4.736v-89.909c0-2.626,2.121-4.753,4.747-4.753h121.045 c2.615,0,4.748,2.116,4.748,4.753V397.784z"
    }
 
-   JSROOT.Painter.CreateDefaultPalette = function() {
+   let createDefaultPalette = () => {
 
       function HLStoRGB(h, l, s) {
          let r, g, b;
@@ -49,7 +49,7 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], function(d3) {
       return new JSROOT.ColorPalette(palette);
    }
 
-   JSROOT.Painter.CreateGrayPalette = function() {
+   let createGrayPalette = () => {
       let palette = [];
       for (let i = 0; i < 50; ++i) {
          let code = Math.round((i+2)/60*255);
@@ -58,7 +58,7 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], function(d3) {
       return new JSROOT.ColorPalette(palette);
    }
 
-   JSROOT.Painter.CreateGradientColorTable = function(Stops, Red, Green, Blue, NColors/*, alpha*/) {
+   let createGradientColorTable = (Stops, Red, Green, Blue, NColors/*, alpha*/) => {
       // skip all checks
        let palette = [];
 
@@ -78,8 +78,8 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], function(d3) {
 
    JSROOT.Painter.GetColorPalette = function(col,alfa) {
       col = col || JSROOT.gStyle.Palette;
-      if ((col>0) && (col<10)) return JSROOT.Painter.CreateGrayPalette();
-      if (col < 51) return JSROOT.Painter.CreateDefaultPalette();
+      if ((col>0) && (col<10)) return createGrayPalette();
+      if (col < 51) return createDefaultPalette();
       if (col > 113) col = 57;
       let rgb, stops = [0,0.125,0.25,0.375,0.5,0.625,0.75,0.875,1];
       switch(col) {
@@ -209,10 +209,10 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], function(d3) {
          case 112: rgb = [[26,51,43,33,28,35,74,144,246],[9,24,55,87,118,150,180,200,222],[30,96,112,114,112,101,72,35,0]]; break;
          // Cividis
          case 113: rgb = [[0,5,65,97,124,156,189,224,255],[32,54,77,100,123,148,175,203,234],[77,110,107,111,120,119,111,94,70]]; break;
-         default: return JSROOT.Painter.CreateDefaultPalette();
+         default: return createDefaultPalette();
       }
 
-      return JSROOT.Painter.CreateGradientColorTable(stops, rgb[0], rgb[1], rgb[2], 255, alfa);
+      return createGradientColorTable(stops, rgb[0], rgb[1], rgb[2], 255, alfa);
    }
 
    // ============================================================

@@ -4280,7 +4280,8 @@ JSROOT.require(['d3'], function(d3) {
    if (JSROOT.nodejs) JSROOT.Painter.readStyleFromURL("?interactive=0&tooltip=0&nomenu&noprogress&notouch&toolbar=0&webgl=0");
 
 
-   // FIXME: for backward compatibility with v5, will be removed in JSROOT v7
+   /** Only for backward compatibility with v5, will be removed in later JSROOT versions
+      @deprecated */
    function TBasePainter() {
       // redo constructor
       this.divid = null;
@@ -4288,6 +4289,8 @@ JSROOT.require(['d3'], function(d3) {
    }
    TBasePainter.prototype = Object.create(new BasePainter);
 
+   /** Only for backward compatibility with v5, will be removed in later JSROOT versions
+      @deprecated */
    function TObjectPainter(obj, opt) {
       // redo BasePainter and ObjectPainter constructor
       this.divid = null;
