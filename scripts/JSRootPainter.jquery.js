@@ -289,6 +289,50 @@ JSROOT.require(['d3', 'jquery', 'JSRootPainter.hierarchy'], function(d3, $) {
          }
       }
 
+      AddTAxisMenu(painter, faxis, kind) {
+         this.add("sub:Labels");
+         this.addchk(faxis.TestBit(JSROOT.EAxisBits.kCenterLabels), "Center",
+               function() { faxis.InvertBit(JSROOT.EAxisBits.kCenterLabels); this.RedrawPad(); });
+         this.addchk(faxis.TestBit(JSROOT.EAxisBits.kLabelsVert), "Rotate",
+               function() { faxis.InvertBit(JSROOT.EAxisBits.kLabelsVert); this.RedrawPad(); });
+         this.AddColorMenuEntry("Color", faxis.fLabelColor,
+               function(arg) { faxis.fLabelColor = parseInt(arg); this.InteractiveRedraw("pad", this.GetColorExec(parseInt(arg), "SetLabelColor"), kind); }.bind(painter));
+         this.SizeMenu("Offset", 0, 0.1, 0.01, faxis.fLabelOffset,
+               function(arg) { faxis.fLabelOffset = parseFloat(arg); this.RedrawPad(); } );
+         this.SizeMenu("Size", 0.02, 0.11, 0.01, faxis.fLabelSize,
+               function(arg) { faxis.fLabelSize = parseFloat(arg); this.RedrawPad(); } );
+         this.add("endsub:");
+         this.add("sub:Title");
+         this.add("SetTitle", function() {
+            let t = prompt("Enter axis title", faxis.fTitle);
+            if (t) { faxis.fTitle = t; this.RedrawPad(); }
+         });
+         this.addchk(faxis.TestBit(JSROOT.EAxisBits.kCenterTitle), "Center",
+               function() { faxis.InvertBit(JSROOT.EAxisBits.kCenterTitle); this.RedrawPad(); });
+         this.addchk(faxis.TestBit(JSROOT.EAxisBits.kRotateTitle), "Rotate",
+               function() { faxis.InvertBit(JSROOT.EAxisBits.kRotateTitle); this.RedrawPad(); });
+         this.AddColorMenuEntry("Color", faxis.fTitleColor,
+               function(arg) { faxis.fTitleColor = parseInt(arg); this.InteractiveRedraw("pad", this.GetColorExec(parseInt(arg), "SetTitleColor"), kind); }.bind(painter));
+         this.SizeMenu("Offset", 0, 3, 0.2, faxis.fTitleOffset,
+                               function(arg) { faxis.fTitleOffset = parseFloat(arg); this.RedrawPad(); } );
+         this.SizeMenu("Size", 0.02, 0.11, 0.01, faxis.fTitleSize,
+               function(arg) { faxis.fTitleSize = parseFloat(arg); this.RedrawPad(); } );
+         this.add("endsub:");
+         this.add("sub:Ticks");
+         if (faxis._typename == "TGaxis") {
+            this.AddColorMenuEntry("Color", faxis.fLineColor,
+                     function(arg) { faxis.fLineColor = parseInt(arg); this.RedrawPad(); });
+            this.SizeMenu("Size", -0.05, 0.055, 0.01, faxis.fTickSize,
+                     function(arg) { faxis.fTickSize = parseFloat(arg); this.RedrawPad(); } );
+         } else {
+            this.AddColorMenuEntry("Color", faxis.fAxisColor,
+                        function(arg) { faxis.fAxisColor = parseInt(arg); this.InteractiveRedraw("pad", this.GetColorExec(parseInt(arg), "SetAxisColor"), kind); }.bind(painter));
+            this.SizeMenu("Size", -0.05, 0.055, 0.01, faxis.fTickLength,
+                     function(arg) { faxis.fTickLength = parseFloat(arg); this.RedrawPad(); } );
+         }
+         this.add("endsub:");
+      }
+
       remove() {
          if (this.element!==null) {
             this.element.remove();
