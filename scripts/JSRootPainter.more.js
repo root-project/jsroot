@@ -1088,14 +1088,14 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter.v6'], function(d3) {
           ph: this.pad_height(),
           grx: function(value) {
              if (this.pad.fLogx)
-                value = (value>0) ? JSROOT.log10(value) : this.pad.fUxmin;
+                value = (value>0) ? Math.log10(value) : this.pad.fUxmin;
              else
                 value = (value - this.pad.fX1) / (this.pad.fX2 - this.pad.fX1);
              return value*this.pw;
           },
           gry: function(value) {
              if (this.pad.fLogy)
-                value = (value>0) ? JSROOT.log10(value) : this.pad.fUymin;
+                value = (value>0) ? Math.log10(value) : this.pad.fUymin;
              else
                 value = (value - this.pad.fY1) / (this.pad.fY2 - this.pad.fY1);
              return (1-value)*this.ph;
@@ -2170,7 +2170,7 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter.v6'], function(d3) {
       if (!this.gridatt) this.gridatt = new JSROOT.TAttLineHandler({ color: polar.fLineColor, style: 2, width: 1 });
 
       let range = Math.abs(polar.fRwrmax - polar.fRwrmin);
-      this.ndig = (range <= 0) ? -3 : Math.round(JSROOT.log10(ticks.length / range));
+      this.ndig = (range <= 0) ? -3 : Math.round(Math.log10(ticks.length / range));
 
       // verify that all radius labels are unique
       let lbls = [], indx = 0;
@@ -3215,8 +3215,8 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter.v6'], function(d3) {
          uxmax = rw.xmax + dx;
          if (logy) {
             if (rw.ymin <= 0) rw.ymin = 0.001 * rw.ymax;
-            minimum = rw.ymin / (1 + 0.5 * JSROOT.log10(rw.ymax / rw.ymin));
-            maximum = rw.ymax * (1 + 0.2 * JSROOT.log10(rw.ymax / rw.ymin));
+            minimum = rw.ymin / (1 + 0.5 * Math.log10(rw.ymax / rw.ymin));
+            maximum = rw.ymax * (1 + 0.2 * Math.log10(rw.ymax / rw.ymin));
          } else {
             minimum = rw.ymin - dy;
             maximum = rw.ymax + dy;

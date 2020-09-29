@@ -230,7 +230,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
          };
 
          top._childs.push(item);
-         let namelen = (obj.byteLength < 10) ? 1 : JSROOT.log10(obj.byteLength);
+         let namelen = (obj.byteLength < 10) ? 1 : Math.log10(obj.byteLength);
 
          for (let k=0;k<obj.byteLength;++k) {
             if (k % 16 === 0) {

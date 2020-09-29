@@ -355,7 +355,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
                return ((rnd === val) && (Math.abs(rnd)<1e9)) ? rnd.toString() : JSROOT.FFormat(val, notickexp_fmt || JSROOT.gStyle.fStatFormat);
 
             if (val <= 0) return null;
-            let vlog = JSROOT.log10(val);
+            let vlog = Math.log10(val);
             if (this.moreloglabels || (Math.abs(vlog - Math.round(vlog))<0.001)) {
                if (!this.noexp && !notickexp_fmt)
                   return this.format10Exp(Math.floor(vlog+0.01), val);
@@ -513,8 +513,8 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
          if (!optionNoexp) {
             let maxtick = Math.max(Math.abs(handle.major[0]),Math.abs(handle.major[handle.major.length-1])),
                 mintick = Math.min(Math.abs(handle.major[0]),Math.abs(handle.major[handle.major.length-1])),
-                ord1 = (maxtick > 0) ? Math.round(JSROOT.log10(maxtick)/3)*3 : 0,
-                ord2 = (mintick > 0) ? Math.round(JSROOT.log10(mintick)/3)*3 : 0;
+                ord1 = (maxtick > 0) ? Math.round(Math.log10(maxtick)/3)*3 : 0,
+                ord2 = (mintick > 0) ? Math.round(Math.log10(mintick)/3)*3 : 0;
 
              exclorder3 = (maxtick < 2e4); // do not show 10^3 for values below 20000
 
@@ -2593,7 +2593,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
 
       if ((dmin>0) && (dmin<1)) {
          if (this['log'+item.name]) {
-            let factor = (item.min>0) ? JSROOT.log10(item.max/item.min) : 2;
+            let factor = (item.min>0) ? Math.log10(item.max/item.min) : 2;
             if (factor>10) factor = 10; else if (factor<0.01) factor = 0.01;
             item.min = item.min / Math.pow(10, factor*delta_left*dmin);
             item.max = item.max * Math.pow(10, factor*delta_right*(1-dmin));
@@ -2835,12 +2835,12 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
       }
 
       if (pad.fLogx) {
-         pad.fUxmin = JSROOT.log10(pad.fUxmin);
-         pad.fUxmax = JSROOT.log10(pad.fUxmax);
+         pad.fUxmin = Math.log10(pad.fUxmin);
+         pad.fUxmax = Math.log10(pad.fUxmax);
       }
       if (pad.fLogy) {
-         pad.fUymin = JSROOT.log10(pad.fUymin);
-         pad.fUymax = JSROOT.log10(pad.fUymax);
+         pad.fUymin = Math.log10(pad.fUymin);
+         pad.fUymax = Math.log10(pad.fUymax);
       }
 
       let rx = pad.fUxmax - pad.fUxmin,
@@ -4378,15 +4378,15 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
             canv.fLeftMargin = pad.fLeftMargin;
             canv.fRightMargin = pad.fRightMargin;
             canv.fLogx = main.logx ? 1 : 0;
-            canv.fUxmin = main.logx ? JSROOT.log10(main.scale_xmin) : main.scale_xmin;
-            canv.fUxmax = main.logx ? JSROOT.log10(main.scale_xmax) : main.scale_xmax;
+            canv.fUxmin = main.logx ? Math.log10(main.scale_xmin) : main.scale_xmin;
+            canv.fUxmax = main.logx ? Math.log10(main.scale_xmax) : main.scale_xmax;
             drawopt = "fixframe";
          } else {
             canv.fBottomMargin = pad.fBottomMargin;
             canv.fTopMargin = pad.fTopMargin;
             canv.fLogx = main.logy ? 1 : 0;
-            canv.fUxmin = main.logy ? JSROOT.log10(main.scale_ymin) : main.scale_ymin;
-            canv.fUxmax = main.logy ? JSROOT.log10(main.scale_ymax) : main.scale_ymax;
+            canv.fUxmin = main.logy ? Math.log10(main.scale_ymin) : main.scale_ymin;
+            canv.fUxmax = main.logy ? Math.log10(main.scale_ymax) : main.scale_ymax;
             drawopt = "rotate";
          }
 

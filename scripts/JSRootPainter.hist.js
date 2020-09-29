@@ -275,12 +275,12 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], function(d3) {
             pt.fY1NDC = pt.fY1; pt.fY2NDC = pt.fY2;
          } else if (pad) {
             if (pad.fLogx) {
-               if (pt.fX1 > 0) pt.fX1 = JSROOT.log10(pt.fX1);
-               if (pt.fX2 > 0) pt.fX2 = JSROOT.log10(pt.fX2);
+               if (pt.fX1 > 0) pt.fX1 = Math.log10(pt.fX1);
+               if (pt.fX2 > 0) pt.fX2 = Math.log10(pt.fX2);
             }
             if (pad.fLogy) {
-               if (pt.fY1 > 0) pt.fY1 = JSROOT.log10(pt.fY1);
-               if (pt.fY2 > 0) pt.fY2 = JSROOT.log10(pt.fY2);
+               if (pt.fY1 > 0) pt.fY1 = Math.log10(pt.fY1);
+               if (pt.fY2 > 0) pt.fY2 = Math.log10(pt.fY2);
             }
             pt.fX1NDC = (pt.fX1 - pad.fX1) / (pad.fX2 - pad.fX1);
             pt.fY1NDC = (pt.fY1 - pad.fY1) / (pad.fY2 - pad.fY1);
@@ -6539,8 +6539,8 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], function(d3) {
       if (pad && (this.options.ndim == 1 ? pad.fLogy : pad.fLogz)) {
          if (res.max<=0) res.max = 1;
          if (res.min<=0) res.min = 1e-4*res.max;
-         let kmin = 1/(1 + 0.5*JSROOT.log10(res.max / res.min)),
-             kmax = 1 + 0.2*JSROOT.log10(res.max / res.min);
+         let kmin = 1/(1 + 0.5*Math.log10(res.max / res.min)),
+             kmax = 1 + 0.2*Math.log10(res.max / res.min);
          res.min *= kmin;
          res.max *= kmax;
       } else {

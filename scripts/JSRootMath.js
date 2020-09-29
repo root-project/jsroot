@@ -482,11 +482,6 @@ JSROOT.require([], function() {
    };
 
    /** @memberOf JSROOT.Math */
-   JSROOT.Math.log10 = function(n) {
-      return Math.log(n) / Math.log(10);
-   };
-
-   /** @memberOf JSROOT.Math */
    JSROOT.Math.landau_pdf = function(x, xi, x0) {
       // LANDAU pdf : algorithm from CERNLIB G110 denlan
       // same algorithm is used in GSL

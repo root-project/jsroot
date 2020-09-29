@@ -2257,12 +2257,6 @@
       return sg;
    }
 
-   /** @summary Implements log10
-    * @private */
-   JSROOT.log10 = function(n) {
-      return Math.log(n) / Math.log(10);
-   }
-
    // Dummy function, will be redefined when JSRootPainter is loaded
    JSROOT.progress = function(msg /*, tmout */) {
       if ((msg !== undefined) && (typeof msg=="string")) JSROOT.console(msg);

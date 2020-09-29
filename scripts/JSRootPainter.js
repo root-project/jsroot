@@ -2074,11 +2074,11 @@ JSROOT.require(['d3'], function(d3) {
             if (pad) {
                if (axis == "y") {
                   if (pad.fLogy)
-                     value = (value > 0) ? JSROOT.log10(value) : pad.fUymin;
+                     value = (value > 0) ? Math.log10(value) : pad.fUymin;
                   value = (value - pad.fY1) / (pad.fY2 - pad.fY1);
                } else {
                   if (pad.fLogx)
-                     value = (value > 0) ? JSROOT.log10(value) : pad.fUxmin;
+                     value = (value > 0) ? Math.log10(value) : pad.fUxmin;
                   value = (value - pad.fX1) / (pad.fX2 - pad.fX1);
                }
             }
@@ -2147,7 +2147,7 @@ JSROOT.require(['d3'], function(d3) {
             func.x = function(value) {
                if (this.pad) {
                   if (this.pad.fLogx)
-                     value = (value > 0) ? JSROOT.log10(value) : this.pad.fUxmin;
+                     value = (value > 0) ? Math.log10(value) : this.pad.fUxmin;
                   value = (value - this.pad.fX1) / (this.pad.fX2 - this.pad.fX1);
                }
                return Math.round(value * this.padw);
@@ -2155,7 +2155,7 @@ JSROOT.require(['d3'], function(d3) {
             func.y = function(value) {
                if (this.pad) {
                   if (this.pad.fLogy)
-                     value = (value > 0) ? JSROOT.log10(value) : this.pad.fUymin;
+                     value = (value > 0) ? Math.log10(value) : this.pad.fUymin;
                   value = (value - this.pad.fY1) / (this.pad.fY2 - this.pad.fY1);
                }
                return Math.round((1 - value) * this.padh);
