@@ -650,7 +650,7 @@ JSROOT.require(['d3', 'JSRootPainter.v7'], function(d3) {
             });
       }
 
-      this.FillAttContextMenu(menu);
+      menu.AddAttributesMenu(this);
 
       if (this.histogram_updated && this.zoom_changed_interactive)
          menu.add('Let update zoom', function() {

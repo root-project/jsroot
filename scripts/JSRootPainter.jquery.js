@@ -159,14 +159,15 @@ JSROOT.require(['d3', 'jquery', 'JSRootPainter.hierarchy'], function(d3, $) {
 
       /** @summary Fill context menu for text attributes
        * @private */
-      AttTextMenu(obj, prefix) {
+      AddTextAttributesMenu(painter, prefix) {
          // for the moment, text attributes accessed directly from objects
 
+         let obj = painter.GetObject();
          if (!obj || !('fTextColor' in obj)) return;
 
          this.add("sub:" + (prefix ? prefix : "Text"));
          this.AddColorMenuEntry("color", obj.fTextColor,
-            function(arg) { this.GetObject().fTextColor = parseInt(arg); this.InteractiveRedraw(true, this.GetColorExec(parseInt(arg), "SetTextColor")); }.bind(this));
+            function(arg) { this.GetObject().fTextColor = parseInt(arg); this.InteractiveRedraw(true, this.GetColorExec(parseInt(arg), "SetTextColor")); }.bind(painter));
 
          let align = [11, 12, 13, 21, 22, 23, 31, 32, 33];
 
@@ -175,20 +176,118 @@ JSROOT.require(['d3', 'jquery', 'JSRootPainter.hierarchy'], function(d3, $) {
             this.addchk(align[n] == obj.fTextAlign,
                align[n], align[n],
                // align[n].toString() + "_h:" + hnames[Math.floor(align[n]/10) - 1] + "_v:" + vnames[align[n]%10-1], align[n],
-               function(arg) { this.GetObject().fTextAlign = parseInt(arg); this.InteractiveRedraw(true, "exec:SetTextAlign(" + arg + ")"); }.bind(this));
+               function(arg) { this.GetObject().fTextAlign = parseInt(arg); this.InteractiveRedraw(true, "exec:SetTextAlign(" + arg + ")"); }.bind(painter));
          }
          this.add("endsub:");
 
          this.add("sub:font");
          for (let n = 1; n < 16; ++n) {
             this.addchk(n == Math.floor(obj.fTextFont / 10), n, n,
-               function(arg) { this.GetObject().fTextFont = parseInt(arg) * 10 + 2; this.InteractiveRedraw(true, "exec:SetTextFont(" + this.GetObject().fTextFont + ")"); }.bind(this));
+               function(arg) { this.GetObject().fTextFont = parseInt(arg) * 10 + 2; this.InteractiveRedraw(true, "exec:SetTextFont(" + this.GetObject().fTextFont + ")"); }.bind(painter));
          }
          this.add("endsub:");
 
          this.add("endsub:");
       }
 
+      /** @summary Fill context menu for graphical attributes in painter
+       * @private */
+      AddAttributesMenu(painter, preffix) {
+         // this method used to fill entries for different attributes of the object
+         // like TAttFill, TAttLine, ....
+         // all menu call-backs need to be rebind, while menu can be used from other painter
+
+         if (!preffix) preffix = "";
+
+         if (painter.lineatt && painter.lineatt.used) {
+            this.add("sub:" + preffix + "Line att");
+            this.SizeMenu("width", 1, 10, 1, painter.lineatt.width,
+               function(arg) { this.lineatt.Change(undefined, parseInt(arg)); this.InteractiveRedraw(true, "exec:SetLineWidth(" + arg + ")"); }.bind(painter));
+            this.AddColorMenuEntry("color", painter.lineatt.color,
+               function(arg) { this.lineatt.Change(arg); this.InteractiveRedraw(true, this.GetColorExec(arg, "SetLineColor")); }.bind(painter));
+            this.add("sub:style", function() {
+               let id = prompt("Enter line style id (1-solid)", 1);
+               if (id == null) return;
+               id = parseInt(id);
+               if (isNaN(id) || !JSROOT.Painter.root_line_styles[id]) return;
+               this.lineatt.Change(undefined, undefined, id);
+               this.InteractiveRedraw(true, "exec:SetLineStyle(" + id + ")");
+            }.bind(painter));
+            for (let n = 1; n < 11; ++n) {
+               let dash = JSROOT.Painter.root_line_styles[n],
+                   svg = "<svg width='100' height='18'><text x='1' y='12' style='font-size:12px'>" + n + "</text><line x1='30' y1='8' x2='100' y2='8' stroke='black' stroke-width='3' stroke-dasharray='" + dash + "'></line></svg>";
+
+               this.addchk((painter.lineatt.style == n), svg, n, function(arg) { this.lineatt.Change(undefined, undefined, parseInt(arg)); this.InteractiveRedraw(true, "exec:SetLineStyle(" + arg + ")"); }.bind(painter));
+            }
+            this.add("endsub:");
+            this.add("endsub:");
+
+            if (('excl_side' in painter.lineatt) && (painter.lineatt.excl_side !== 0)) {
+               this.add("sub:Exclusion");
+               this.add("sub:side");
+               for (let side = -1; side <= 1; ++side)
+                  this.addchk((painter.lineatt.excl_side == side), side, side, function(arg) {
+                     this.lineatt.ChangeExcl(parseInt(arg));
+                     this.InteractiveRedraw();
+                  }.bind(painter));
+               this.add("endsub:");
+
+               this.SizeMenu("width", 10, 100, 10, painter.lineatt.excl_width,
+                  function(arg) { this.lineatt.ChangeExcl(undefined, parseInt(arg)); this.InteractiveRedraw(); }.bind(painter));
+
+               this.add("endsub:");
+            }
+         }
+
+         if (painter.fillatt && painter.fillatt.used) {
+            this.add("sub:" + preffix + "Fill att");
+            this.AddColorMenuEntry("color", painter.fillatt.colorindx,
+               function(arg) { this.fillatt.Change(parseInt(arg), undefined, this.svg_canvas()); this.InteractiveRedraw(true, this.GetColorExec(parseInt(arg), "SetFillColor")); }.bind(painter), painter.fillatt.kind);
+            this.add("sub:style", function() {
+               let id = prompt("Enter fill style id (1001-solid, 3000..3010)", this.fillatt.pattern);
+               if (!id) return;
+               id = parseInt(id);
+               if (isNaN(id)) return;
+               this.fillatt.Change(undefined, id, this.svg_canvas());
+               this.InteractiveRedraw(true, "exec:SetFillStyle(" + id + ")");
+            }.bind(painter));
+
+            let supported = [1, 1001, 3001, 3002, 3003, 3004, 3005, 3006, 3007, 3010, 3021, 3022];
+
+            for (let n = 0; n < supported.length; ++n) {
+               let sample = painter.createAttFill({ std: false, pattern: supported[n], color: painter.fillatt.colorindx || 1 }),
+                   svg = "<svg width='100' height='18'><text x='1' y='12' style='font-size:12px'>" + supported[n].toString() + "</text><rect x='40' y='0' width='60' height='18' stroke='none' fill='" + sample.fillcolor() + "'></rect></svg>";
+               this.addchk(painter.fillatt.pattern == supported[n], svg, supported[n], function(arg) {
+                  this.fillatt.Change(undefined, parseInt(arg), this.svg_canvas());
+                  this.InteractiveRedraw(true, "exec:SetFillStyle(" + arg + ")");
+               }.bind(painter));
+            }
+            this.add("endsub:");
+            this.add("endsub:");
+         }
+
+         if (painter.markeratt && painter.markeratt.used) {
+            this.add("sub:" + preffix + "Marker att");
+            this.AddColorMenuEntry("color", painter.markeratt.color,
+               function(arg) { this.markeratt.Change(arg); this.InteractiveRedraw(true, this.GetColorExec(arg, "SetMarkerColor")); }.bind(painter));
+            this.SizeMenu("size", 0.5, 6, 0.5, painter.markeratt.size,
+               function(arg) { this.markeratt.Change(undefined, undefined, parseFloat(arg)); this.InteractiveRedraw(true, "exec:SetMarkerSize(" + parseInt(arg) + ")"); }.bind(painter));
+
+            this.add("sub:style");
+            let supported = [1, 2, 3, 4, 5, 6, 7, 8, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34];
+
+            for (let n = 0; n < supported.length; ++n) {
+
+               let clone = new JSROOT.TAttMarkerHandler({ style: supported[n], color: painter.markeratt.color, size: 1.7 }),
+                   svg = "<svg width='60' height='18'><text x='1' y='12' style='font-size:12px'>" + supported[n].toString() + "</text><path stroke='black' fill='" + (clone.fill ? "black" : "none") + "' d='" + clone.create(40, 8) + "'></path></svg>";
+
+               this.addchk(painter.markeratt.style == supported[n], svg, supported[n],
+                  function(arg) { this.markeratt.Change(undefined, parseInt(arg)); this.InteractiveRedraw(true, "exec:SetMarkerStyle(" + arg + ")"); }.bind(painter));
+            }
+            this.add("endsub:");
+            this.add("endsub:");
+         }
+      }
 
       remove() {
          if (this.element!==null) {

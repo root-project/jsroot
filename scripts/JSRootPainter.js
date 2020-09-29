@@ -2758,9 +2758,6 @@ JSROOT.require(['d3'], function(d3) {
             return true;
          }
 
-         let canvp = this.canv_painter();
-         if (!canvp) return false;
-
          return false;
       }
 
@@ -2910,109 +2907,6 @@ JSROOT.require(['d3'], function(d3) {
          return "exec:" + method + "(" + id + ")";
       }
 
-      /** @summary Fill context menu for graphical attributes
-       * @private */
-      FillAttContextMenu(menu, preffix) {
-         // this method used to fill entries for different attributes of the object
-         // like TAttFill, TAttLine, ....
-         // all menu call-backs need to be rebind, while menu can be used from other painter
-
-         if (!preffix) preffix = "";
-
-         if (this.lineatt && this.lineatt.used) {
-            menu.add("sub:" + preffix + "Line att");
-            menu.SizeMenu("width", 1, 10, 1, this.lineatt.width,
-               function(arg) { this.lineatt.Change(undefined, parseInt(arg)); this.InteractiveRedraw(true, "exec:SetLineWidth(" + arg + ")"); }.bind(this));
-            menu.AddColorMenuEntry("color", this.lineatt.color,
-               function(arg) { this.lineatt.Change(arg); this.InteractiveRedraw(true, this.GetColorExec(arg, "SetLineColor")); }.bind(this));
-            menu.add("sub:style", function() {
-               let id = prompt("Enter line style id (1-solid)", 1);
-               if (id == null) return;
-               id = parseInt(id);
-               if (isNaN(id) || !JSROOT.Painter.root_line_styles[id]) return;
-               this.lineatt.Change(undefined, undefined, id);
-               this.InteractiveRedraw(true, "exec:SetLineStyle(" + id + ")");
-            }.bind(this));
-            for (let n = 1; n < 11; ++n) {
-
-               let dash = JSROOT.Painter.root_line_styles[n];
-
-               let svg = "<svg width='100' height='18'><text x='1' y='12' style='font-size:12px'>" + n + "</text><line x1='30' y1='8' x2='100' y2='8' stroke='black' stroke-width='3' stroke-dasharray='" + dash + "'></line></svg>";
-
-               menu.addchk((this.lineatt.style == n), svg, n, function(arg) { this.lineatt.Change(undefined, undefined, parseInt(arg)); this.InteractiveRedraw(true, "exec:SetLineStyle(" + arg + ")"); }.bind(this));
-            }
-            menu.add("endsub:");
-            menu.add("endsub:");
-
-            if (('excl_side' in this.lineatt) && (this.lineatt.excl_side !== 0)) {
-               menu.add("sub:Exclusion");
-               menu.add("sub:side");
-               for (let side = -1; side <= 1; ++side)
-                  menu.addchk((this.lineatt.excl_side == side), side, side, function(arg) {
-                     this.lineatt.ChangeExcl(parseInt(arg));
-                     this.InteractiveRedraw();
-                  }.bind(this));
-               menu.add("endsub:");
-
-               menu.SizeMenu("width", 10, 100, 10, this.lineatt.excl_width,
-                  function(arg) { this.lineatt.ChangeExcl(undefined, parseInt(arg)); this.InteractiveRedraw(); }.bind(this));
-
-               menu.add("endsub:");
-            }
-         }
-
-         if (this.fillatt && this.fillatt.used) {
-            menu.add("sub:" + preffix + "Fill att");
-            menu.AddColorMenuEntry("color", this.fillatt.colorindx,
-               function(arg) { this.fillatt.Change(parseInt(arg), undefined, this.svg_canvas()); this.InteractiveRedraw(true, this.GetColorExec(parseInt(arg), "SetFillColor")); }.bind(this), this.fillatt.kind);
-            menu.add("sub:style", function() {
-               let id = prompt("Enter fill style id (1001-solid, 3000..3010)", this.fillatt.pattern);
-               if (id == null) return;
-               id = parseInt(id);
-               if (isNaN(id)) return;
-               this.fillatt.Change(undefined, id, this.svg_canvas());
-               this.InteractiveRedraw(true, "exec:SetFillStyle(" + id + ")");
-            }.bind(this));
-
-            let supported = [1, 1001, 3001, 3002, 3003, 3004, 3005, 3006, 3007, 3010, 3021, 3022];
-
-            for (let n = 0; n < supported.length; ++n) {
-
-               let sample = this.createAttFill({ std: false, pattern: supported[n], color: this.fillatt.colorindx || 1 }),
-                  svg = "<svg width='100' height='18'><text x='1' y='12' style='font-size:12px'>" + supported[n].toString() + "</text><rect x='40' y='0' width='60' height='18' stroke='none' fill='" + sample.fillcolor() + "'></rect></svg>";
-
-               menu.addchk(this.fillatt.pattern == supported[n], svg, supported[n], function(arg) {
-                  this.fillatt.Change(undefined, parseInt(arg), this.svg_canvas());
-                  this.InteractiveRedraw(true, "exec:SetFillStyle(" + arg + ")");
-               }.bind(this));
-            }
-            menu.add("endsub:");
-            menu.add("endsub:");
-         }
-
-         if (this.markeratt && this.markeratt.used) {
-            menu.add("sub:" + preffix + "Marker att");
-            menu.AddColorMenuEntry("color", this.markeratt.color,
-               function(arg) { this.markeratt.Change(arg); this.InteractiveRedraw(true, this.GetColorExec(arg, "SetMarkerColor")); }.bind(this));
-            menu.SizeMenu("size", 0.5, 6, 0.5, this.markeratt.size,
-               function(arg) { this.markeratt.Change(undefined, undefined, parseFloat(arg)); this.InteractiveRedraw(true, "exec:SetMarkerSize(" + parseInt(arg) + ")"); }.bind(this));
-
-            menu.add("sub:style");
-            let supported = [1, 2, 3, 4, 5, 6, 7, 8, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34];
-
-            for (let n = 0; n < supported.length; ++n) {
-
-               let clone = new TAttMarkerHandler({ style: supported[n], color: this.markeratt.color, size: 1.7 }),
-                  svg = "<svg width='60' height='18'><text x='1' y='12' style='font-size:12px'>" + supported[n].toString() + "</text><path stroke='black' fill='" + (clone.fill ? "black" : "none") + "' d='" + clone.create(40, 8) + "'></path></svg>";
-
-               menu.addchk(this.markeratt.style == supported[n], svg, supported[n],
-                  function(arg) { this.markeratt.Change(undefined, parseInt(arg)); this.InteractiveRedraw(true, "exec:SetMarkerStyle(" + arg + ")"); }.bind(this));
-            }
-            menu.add("endsub:");
-            menu.add("endsub:");
-         }
-      }
-
       /** @summary Show object in inspector */
       ShowInspector(obj) {
          let main = this.select_main(),
@@ -3045,7 +2939,7 @@ JSROOT.require(['d3'], function(d3) {
 
          menu.add("header:" + title);
 
-         this.FillAttContextMenu(menu);
+         menu.AddAttributesMenu(this);
 
          if (menu.size() > 0)
             menu.add('Inspect', this.ShowInspector);

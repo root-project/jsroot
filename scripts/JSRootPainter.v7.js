@@ -2376,7 +2376,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
       menu.addchk(this.IsTooltipAllowed(), "Show tooltips", function() {
          this.SetTooltipAllowed("toggle");
       });
-      this.FillAttContextMenu(menu,alone ? "" : "Frame ");
+      menu.AddAttributesMenu(this, alone ? "" : "Frame ");
       menu.add("separator");
       menu.add("Save as frame.png", function() { this.pad_painter().SaveAs("png", 'frame', 'frame.png'); });
       menu.add("Save as frame.svg", function() { this.pad_painter().SaveAs("svg", 'frame', 'frame.svg'); });
@@ -3369,7 +3369,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
          //menu.addchk(this.pad.fTickx, 'Tick x', 'fTickx', ToggleField);
          //menu.addchk(this.pad.fTicky, 'Tick y', 'fTicky', ToggleField);
 
-         this.FillAttContextMenu(menu);
+         menu.AddAttributesMenu(this);
       }
 
       menu.add("separator");

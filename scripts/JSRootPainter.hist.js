@@ -1106,9 +1106,9 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], function(d3) {
          });
 
       if (this.UseTextColor)
-         menu.AttTextMenu(this.GetObject());
+         menu.AddTextAttributesMenu(this);
 
-      this.FillAttContextMenu(menu);
+      menu.AddAttributesMenu(this);
 
       if (menu.size() > 0)
          menu.add('Inspect', this.ShowInspector);
@@ -2717,7 +2717,7 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], function(d3) {
             });
       }
 
-      this.FillAttContextMenu(menu);
+      menu.AddAttributesMenu(this);
 
       if (this.histogram_updated && fp.zoom_changed_interactive)
          menu.add('Let update zoom', function() {
