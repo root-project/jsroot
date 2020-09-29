@@ -4380,8 +4380,10 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
 
       this.AlignBtns(group, this.pad_width(this.this_pad_name), this.pad_height(this.this_pad_name));
 
-      if (group.property('vertical')) ctrl.attr("y", x);
-      else if (!group.property('leftside')) ctrl.attr("x", x);
+      if (group.property('vertical')) 
+         ctrl.attr("y", x);
+      else if (!group.property('leftside')) 
+         ctrl.attr("x", x);
    }
 
    TPadPainter.prototype.AlignBtns = function(btns, width, height) {
