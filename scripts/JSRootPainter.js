@@ -3713,6 +3713,26 @@ JSROOT.require(['d3'], function(d3) {
       return handle;
    }
 
+   /** @summary Register draw function for the class
+    * @desc List of supported draw options could be provided, separated  with ';'
+    * Several different draw functions for the same class or kind could be specified
+    * @param {object} args - arguments
+    * @param {string} args.name - class name
+    * @param {string} [args.prereq] - prerequicities to load before search for the draw function
+    * @param {string} args.func - name of draw function for the class
+    * @param {string} [args.direct=false] - if true, function is just Redraw() method of ObjectPainter
+    * @param {string} args.opt - list of supported draw options (separated with semicolon) like "col;scat;"
+    * @param {string} [args.icon] - icon name shown for the class in hierarchy browser
+    */
+   JSROOT.addDrawFunc = function(_name, _func, _opt) {
+      if ((arguments.length == 1) && (typeof arguments[0] == 'object')) {
+         drawFuncs.lst.push(arguments[0]);
+         return arguments[0];
+      }
+      let handle = { name: _name, func: _func, opt: _opt };
+      drawFuncs.lst.push(handle);
+      return handle;
+   }
 
    JSROOT.getDrawHandle = function(kind, selector) {
       // return draw handle for specified item kind
@@ -3726,12 +3746,12 @@ JSROOT.require(['d3'], function(d3) {
 
       let first = null;
 
-      if ((selector === null) && (kind in JSROOT.DrawFuncs.cache))
-         return JSROOT.DrawFuncs.cache[kind];
+      if ((selector === null) && (kind in drawFuncs.cache))
+         return drawFuncs.cache[kind];
 
       let search = (kind.indexOf("ROOT.") == 0) ? kind.substr(5) : "kind:" + kind, counter = 0;
-      for (let i = 0; i < JSROOT.DrawFuncs.lst.length; ++i) {
-         let h = JSROOT.DrawFuncs.lst[i];
+      for (let i = 0; i < drawFuncs.lst.length; ++i) {
+         let h = drawFuncs.lst[i];
          if (typeof h.name == "string") {
             if (h.name != search) continue;
          } else {
@@ -3743,7 +3763,7 @@ JSROOT.require(['d3'], function(d3) {
 
          if ((selector === null) || (selector === undefined)) {
             // store found handle in cache, can reuse later
-            if (!(kind in JSROOT.DrawFuncs.cache)) JSROOT.DrawFuncs.cache[kind] = h;
+            if (!(kind in drawFuncs.cache)) drawFuncs.cache[kind] = h;
             return h;
          } else if (typeof selector == 'string') {
             if (!first) first = h;
@@ -3808,7 +3828,7 @@ JSROOT.require(['d3'], function(d3) {
          let newhandle = JSROOT.extend({}, handle);
          // delete newhandle.for_derived; // should we disable?
          newhandle.name = si.fName;
-         JSROOT.DrawFuncs.lst.push(newhandle);
+         drawFuncs.lst.push(newhandle);
       }
    }
 
