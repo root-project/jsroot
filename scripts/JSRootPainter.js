@@ -379,667 +379,656 @@ JSROOT.require(['d3'], function(d3) {
 
    /** @summary Handle for marker attributes */
 
-   class TAttMarkerHandler {
-      constructor(args) {
-         this.x0 = this.y0 = 0;
-         this.color = 'black';
-         this.style = 1;
-         this.size = 8;
-         this.scale = 1;
-         this.stroke = true;
-         this.fill = true;
-         this.marker = "";
-         this.ndig = 0;
-         this.used = true;
-         this.changed = false;
+   function TAttMarkerHandler(args) {
+      this.x0 = this.y0 = 0;
+      this.color = 'black';
+      this.style = 1;
+      this.size = 8;
+      this.scale = 1;
+      this.stroke = true;
+      this.fill = true;
+      this.marker = "";
+      this.ndig = 0;
+      this.used = true;
+      this.changed = false;
 
-         this.func = this.Apply.bind(this);
+      this.func = this.Apply.bind(this);
 
-         this.SetArgs(args);
+      this.SetArgs(args);
 
-         this.changed = false;
+      this.changed = false;
+   }
+
+   /** @summary Set marker attributes.
+    *
+    * @param {object} args - arguments can be
+    * @param {object} args.attr - instance of TAttrMarker (or derived class) or
+    * @param {string} args.color - color in HTML form like grb(1,4,5) or 'green'
+    * @param {number} args.style - marker style
+    * @param {number} args.size - marker size
+    */
+   TAttMarkerHandler.prototype.SetArgs = function(args) {
+      if ((typeof args == 'object') && (typeof args.fMarkerStyle == 'number')) args = { attr: args };
+
+      if (args.attr) {
+         if (args.color === undefined) args.color = Painter.root_colors[args.attr.fMarkerColor];
+         if (!args.style || (args.style < 0)) args.style = args.attr.fMarkerStyle;
+         if (!args.size) args.size = args.attr.fMarkerSize;
       }
 
-      /** @summary Set marker attributes.
-       *
-       * @param {object} args - arguments can be
-       * @param {object} args.attr - instance of TAttrMarker (or derived class) or
-       * @param {string} args.color - color in HTML form like grb(1,4,5) or 'green'
-       * @param {number} args.style - marker style
-       * @param {number} args.size - marker size
-       */
-      SetArgs(args) {
-         if ((typeof args == 'object') && (typeof args.fMarkerStyle == 'number')) args = { attr: args };
+      this.Change(args.color, args.style, args.size);
+   }
 
-         if (args.attr) {
-            if (args.color === undefined) args.color = Painter.root_colors[args.attr.fMarkerColor];
-            if (!args.style || (args.style < 0)) args.style = args.attr.fMarkerStyle;
-            if (!args.size) args.size = args.attr.fMarkerSize;
-         }
+   /** @summary Reset position, used for optimization of drawing of multiple markers
+    * @private */
+   TAttMarkerHandler.prototype.reset_pos = function() { this.lastx = this.lasty = null; }
 
-         this.Change(args.color, args.style, args.size);
-      }
+   /** @summary Create marker path for given position.
+    *
+    * @desc When drawing many elementary points, created path may depend from previously produced markers.
+    *
+    * @param {number} x - first coordinate
+    * @param {number} y - second coordinate
+    * @returns {string} path string
+    */
+   TAttMarkerHandler.prototype.create = function(x, y) {
+      if (!this.optimized)
+         return "M" + (x + this.x0).toFixed(this.ndig) + "," + (y + this.y0).toFixed(this.ndig) + this.marker;
 
-      /** @summary Reset position, used for optimization of drawing of multiple markers
-       * @private */
-      reset_pos() { this.lastx = this.lasty = null; }
+      // use optimized handling with relative position
+      let xx = Math.round(x), yy = Math.round(y), m1 = "M" + xx + "," + yy + "h1",
+         m2 = (this.lastx === null) ? m1 : ("m" + (xx - this.lastx) + "," + (yy - this.lasty) + "h1");
+      this.lastx = xx + 1; this.lasty = yy;
+      return (m2.length < m1.length) ? m2 : m1;
+   }
 
-      /** @summary Create marker path for given position.
-       *
-       * @desc When drawing many elementary points, created path may depend from previously produced markers.
-       *
-       * @param {number} x - first coordinate
-       * @param {number} y - second coordinate
-       * @returns {string} path string
-       */
-      create(x, y) {
-         if (!this.optimized)
-            return "M" + (x + this.x0).toFixed(this.ndig) + "," + (y + this.y0).toFixed(this.ndig) + this.marker;
+   /** @summary Returns full size of marker */
+   TAttMarkerHandler.prototype.GetFullSize = function() { return this.scale * this.size; }
 
-         // use optimized handling with relative position
-         let xx = Math.round(x), yy = Math.round(y), m1 = "M" + xx + "," + yy + "h1",
-            m2 = (this.lastx === null) ? m1 : ("m" + (xx - this.lastx) + "," + (yy - this.lasty) + "h1");
-         this.lastx = xx + 1; this.lasty = yy;
-         return (m2.length < m1.length) ? m2 : m1;
-      }
+   /** @summary Returns approximate length of produced marker string */
+   TAttMarkerHandler.prototype.MarkerLength = function() { return this.marker ? this.marker.length : 10; }
 
-      /** @summary Returns full size of marker */
-      GetFullSize() { return this.scale * this.size; }
+   /** @summary Change marker attributes.
+    *
+    *  @param {string} color - marker color
+    *  @param {number} style - marker style
+    *  @param {number} size - marker size
+    */
+   TAttMarkerHandler.prototype.Change = function(color, style, size) {
+      this.changed = true;
 
-      /** @summary Returns approximate length of produced marker string */
-      MarkerLength() { return this.marker ? this.marker.length : 10; }
+      if (color !== undefined) this.color = color;
+      if ((style !== undefined) && (style >= 0)) this.style = style;
+      if (size !== undefined) this.size = size; else size = this.size;
 
-      /** @summary Change marker attributes.
-       *
-       *  @param {string} color - marker color
-       *  @param {number} style - marker style
-       *  @param {number} size - marker size
-       */
-      Change(color, style, size) {
-         this.changed = true;
+      this.x0 = this.y0 = 0;
 
-         if (color !== undefined) this.color = color;
-         if ((style !== undefined) && (style >= 0)) this.style = style;
-         if (size !== undefined) this.size = size; else size = this.size;
-
-         this.x0 = this.y0 = 0;
-
-         if ((this.style === 1) || (this.style === 777)) {
-            this.fill = false;
-            this.marker = "h1";
-            this.size = 1;
-            this.optimized = true;
-            this.reset_pos();
-            return true;
-         }
-
-         this.optimized = false;
-
-         let marker_kind = Painter.root_markers[this.style];
-         if (marker_kind === undefined) marker_kind = 100;
-         let shape = marker_kind % 100;
-
-         this.fill = (marker_kind >= 100);
-
-         switch (this.style) {
-            case 1: this.size = 1; this.scale = 1; break;
-            case 6: this.size = 2; this.scale = 1; break;
-            case 7: this.size = 3; this.scale = 1; break;
-            default: this.size = size; this.scale = 8;
-         }
-
-         size = this.GetFullSize();
-
-         this.ndig = (size > 7) ? 0 : ((size > 2) ? 1 : 2);
-         if (shape == 6) this.ndig++;
-         let half = (size / 2).toFixed(this.ndig), full = size.toFixed(this.ndig);
-
-         switch (shape) {
-            case 0: // circle
-               this.x0 = -parseFloat(half);
-               full = (parseFloat(half) * 2).toFixed(this.ndig);
-               this.marker = "a" + half + "," + half + ",0,1,0," + full + ",0a" + half + "," + half + ",0,1,0,-" + full + ",0z";
-               break;
-            case 1: // cross
-               let d = (size / 3).toFixed(this.ndig);
-               this.x0 = this.y0 = size / 6;
-               this.marker = "h" + d + "v-" + d + "h-" + d + "v-" + d + "h-" + d + "v" + d + "h-" + d + "v" + d + "h" + d + "v" + d + "h" + d + "z";
-               break;
-            case 2: // diamond
-               this.x0 = -size / 2;
-               this.marker = "l" + half + ",-" + half + "l" + half + "," + half + "l-" + half + "," + half + "z";
-               break;
-            case 3: // square
-               this.x0 = this.y0 = -size / 2;
-               this.marker = "v" + full + "h" + full + "v-" + full + "z";
-               break;
-            case 4: // triangle-up
-               this.y0 = size / 2;
-               this.marker = "l-" + half + ",-" + full + "h" + full + "z";
-               break;
-            case 5: // triangle-down
-               this.y0 = -size / 2;
-               this.marker = "l-" + half + "," + full + "h" + full + "z";
-               break;
-            case 6: // star
-               this.y0 = -size / 2;
-               this.marker = "l" + (size / 3).toFixed(this.ndig) + "," + full +
-                  "l-" + (5 / 6 * size).toFixed(this.ndig) + ",-" + (5 / 8 * size).toFixed(this.ndig) +
-                  "h" + full +
-                  "l-" + (5 / 6 * size).toFixed(this.ndig) + "," + (5 / 8 * size).toFixed(this.ndig) + "z";
-               break;
-            case 7: // asterisk
-               this.x0 = this.y0 = -size / 2;
-               this.marker = "l" + full + "," + full +
-                  "m0,-" + full + "l-" + full + "," + full +
-                  "m0,-" + half + "h" + full + "m-" + half + ",-" + half + "v" + full;
-               break;
-            case 8: // plus
-               this.y0 = -size / 2;
-               this.marker = "v" + full + "m-" + half + ",-" + half + "h" + full;
-               break;
-            case 9: // mult
-               this.x0 = this.y0 = -size / 2;
-               this.marker = "l" + full + "," + full + "m0,-" + full + "l-" + full + "," + full;
-               break;
-            default: // diamand
-               this.x0 = -size / 2;
-               this.marker = "l" + half + ",-" + half + "l" + half + "," + half + "l-" + half + "," + half + "z";
-               break;
-         }
-
+      if ((this.style === 1) || (this.style === 777)) {
+         this.fill = false;
+         this.marker = "h1";
+         this.size = 1;
+         this.optimized = true;
+         this.reset_pos();
          return true;
       }
 
-      getStrokeColor() { return this.stroke ? this.color : "none"; }
+      this.optimized = false;
 
-      getFillColor() { return this.fill ? this.color : "none"; }
+      let marker_kind = Painter.root_markers[this.style];
+      if (marker_kind === undefined) marker_kind = 100;
+      let shape = marker_kind % 100;
 
-      /** @summary Apply marker styles to created element */
-      Apply(selection) {
-         selection.style('stroke', this.stroke ? this.color : "none");
-         selection.style('fill', this.fill ? this.color : "none");
+      this.fill = (marker_kind >= 100);
+
+      switch (this.style) {
+         case 1: this.size = 1; this.scale = 1; break;
+         case 6: this.size = 2; this.scale = 1; break;
+         case 7: this.size = 3; this.scale = 1; break;
+         default: this.size = size; this.scale = 8;
       }
 
-      /** @summary Method used when color or pattern were changed with OpenUi5 widgets.
-       * @private */
-      verifyDirectChange(/* painter */) {
-         this.Change(this.color, parseInt(this.style), parseFloat(this.size));
+      size = this.GetFullSize();
+
+      this.ndig = (size > 7) ? 0 : ((size > 2) ? 1 : 2);
+      if (shape == 6) this.ndig++;
+      let half = (size / 2).toFixed(this.ndig), full = size.toFixed(this.ndig);
+
+      switch (shape) {
+         case 0: // circle
+            this.x0 = -parseFloat(half);
+            full = (parseFloat(half) * 2).toFixed(this.ndig);
+            this.marker = "a" + half + "," + half + ",0,1,0," + full + ",0a" + half + "," + half + ",0,1,0,-" + full + ",0z";
+            break;
+         case 1: // cross
+            let d = (size / 3).toFixed(this.ndig);
+            this.x0 = this.y0 = size / 6;
+            this.marker = "h" + d + "v-" + d + "h-" + d + "v-" + d + "h-" + d + "v" + d + "h-" + d + "v" + d + "h" + d + "v" + d + "h" + d + "z";
+            break;
+         case 2: // diamond
+            this.x0 = -size / 2;
+            this.marker = "l" + half + ",-" + half + "l" + half + "," + half + "l-" + half + "," + half + "z";
+            break;
+         case 3: // square
+            this.x0 = this.y0 = -size / 2;
+            this.marker = "v" + full + "h" + full + "v-" + full + "z";
+            break;
+         case 4: // triangle-up
+            this.y0 = size / 2;
+            this.marker = "l-" + half + ",-" + full + "h" + full + "z";
+            break;
+         case 5: // triangle-down
+            this.y0 = -size / 2;
+            this.marker = "l-" + half + "," + full + "h" + full + "z";
+            break;
+         case 6: // star
+            this.y0 = -size / 2;
+            this.marker = "l" + (size / 3).toFixed(this.ndig) + "," + full +
+               "l-" + (5 / 6 * size).toFixed(this.ndig) + ",-" + (5 / 8 * size).toFixed(this.ndig) +
+               "h" + full +
+               "l-" + (5 / 6 * size).toFixed(this.ndig) + "," + (5 / 8 * size).toFixed(this.ndig) + "z";
+            break;
+         case 7: // asterisk
+            this.x0 = this.y0 = -size / 2;
+            this.marker = "l" + full + "," + full +
+               "m0,-" + full + "l-" + full + "," + full +
+               "m0,-" + half + "h" + full + "m-" + half + ",-" + half + "v" + full;
+            break;
+         case 8: // plus
+            this.y0 = -size / 2;
+            this.marker = "v" + full + "m-" + half + ",-" + half + "h" + full;
+            break;
+         case 9: // mult
+            this.x0 = this.y0 = -size / 2;
+            this.marker = "l" + full + "," + full + "m0,-" + full + "l-" + full + "," + full;
+            break;
+         default: // diamand
+            this.x0 = -size / 2;
+            this.marker = "l" + half + ",-" + half + "l" + half + "," + half + "l-" + half + "," + half + "z";
+            break;
       }
 
-      /** @summary Create sample with marker in given SVG element
-       *
-       * @param {selection} svg - SVG element
-       * @param {number} width - width of sample SVG
-       * @param {number} height - height of sample SVG
-       * @private
-       */
-      CreateSample(svg, width, height) {
-         this.reset_pos();
+      return true;
+   }
 
-         svg.append("path")
-            .attr("d", this.create(width / 2, height / 2))
-            .call(this.func);
-      }
-   } // class TAttMarkerHandler
+   TAttMarkerHandler.prototype.getStrokeColor = function() { return this.stroke ? this.color : "none"; }
+
+   TAttMarkerHandler.prototype.getFillColor = function() { return this.fill ? this.color : "none"; }
+
+   /** @summary Apply marker styles to created element */
+   TAttMarkerHandler.prototype.Apply = function(selection) {
+      selection.style('stroke', this.stroke ? this.color : "none");
+      selection.style('fill', this.fill ? this.color : "none");
+   }
+
+   /** @summary Method used when color or pattern were changed with OpenUi5 widgets.
+    * @private */
+   TAttMarkerHandler.prototype.verifyDirectChange = function(/* painter */) {
+      this.Change(this.color, parseInt(this.style), parseFloat(this.size));
+   }
+
+   /** @summary Create sample with marker in given SVG element
+    *
+    * @param {selection} svg - SVG element
+    * @param {number} width - width of sample SVG
+    * @param {number} height - height of sample SVG
+    * @private
+    */
+   TAttMarkerHandler.prototype.CreateSample = function(svg, width, height) {
+      this.reset_pos();
+
+      svg.append("path")
+         .attr("d", this.create(width / 2, height / 2))
+         .call(this.func);
+   }
 
    // =======================================================================
 
    /** Handle for line attributes */
 
-   class TAttLineHandler {
+   function TAttLineHandler(args) {
+      this.func = this.Apply.bind(this);
+      this.used = true;
+      if (args._typename && (args.fLineStyle !== undefined)) args = { attr: args };
 
-      constructor(args) {
-         this.func = this.Apply.bind(this);
-         this.used = true;
-         if (args._typename && (args.fLineStyle !== undefined)) args = { attr: args };
+      this.SetArgs(args);
+   }
 
-         this.SetArgs(args);
+   /**
+    * @summary Set line attributes.
+    *
+    * @param {object} args - specify attributes by different ways
+    * @param {object} args.attr - TAttLine object with appropriate data members or
+    * @param {string} args.color - color in html like rgb(10,0,0) or "red"
+    * @param {number} args.style - line style number
+    * @param {number} args.width - line width
+    */
+   TAttLineHandler.prototype.SetArgs = function(args) {
+      if (args.attr) {
+         args.color = args.color0 || Painter.root_colors[args.attr.fLineColor];
+         if (args.width === undefined) args.width = args.attr.fLineWidth;
+         args.style = args.attr.fLineStyle;
+      } else if (typeof args.color == 'string') {
+         if ((args.color !== 'none') && !args.width) args.width = 1;
+      } else if (typeof args.color == 'number') {
+         args.color = Painter.root_colors[args.color];
       }
 
-      /**
-       * @summary Set line attributes.
-       *
-       * @param {object} args - specify attributes by different ways
-       * @param {object} args.attr - TAttLine object with appropriate data members or
-       * @param {string} args.color - color in html like rgb(10,0,0) or "red"
-       * @param {number} args.style - line style number
-       * @param {number} args.width - line width
-       */
-      SetArgs(args) {
-         if (args.attr) {
-            args.color = args.color0 || Painter.root_colors[args.attr.fLineColor];
-            if (args.width === undefined) args.width = args.attr.fLineWidth;
-            args.style = args.attr.fLineStyle;
-         } else if (typeof args.color == 'string') {
-            if ((args.color !== 'none') && !args.width) args.width = 1;
-         } else if (typeof args.color == 'number') {
-            args.color = Painter.root_colors[args.color];
+      if (args.width === undefined)
+         args.width = (args.color && args.color != 'none') ? 1 : 0;
+
+      this.color = (args.width === 0) ? 'none' : args.color;
+      this.width = args.width;
+      this.style = args.style;
+
+      if (args.can_excl) {
+         this.excl_side = this.excl_width = 0;
+         if (Math.abs(this.width) > 99) {
+            // exclusion graph
+            this.excl_side = (this.width < 0) ? -1 : 1;
+            this.excl_width = Math.floor(this.width / 100) * 5;
+            this.width = Math.abs(this.width % 100); // line width
          }
-
-         if (args.width === undefined)
-            args.width = (args.color && args.color != 'none') ? 1 : 0;
-
-         this.color = (args.width === 0) ? 'none' : args.color;
-         this.width = args.width;
-         this.style = args.style;
-
-         if (args.can_excl) {
-            this.excl_side = this.excl_width = 0;
-            if (Math.abs(this.width) > 99) {
-               // exclusion graph
-               this.excl_side = (this.width < 0) ? -1 : 1;
-               this.excl_width = Math.floor(this.width / 100) * 5;
-               this.width = Math.abs(this.width % 100); // line width
-            }
-         }
-
-         // if custom color number used, use lightgrey color to show lines
-         if (!this.color && (this.width > 0))
-            this.color = 'lightgrey';
       }
 
-      /**
-       * @summary Change exclusion attributes.
-       * @private
-       */
+      // if custom color number used, use lightgrey color to show lines
+      if (!this.color && (this.width > 0))
+         this.color = 'lightgrey';
+   }
 
-      ChangeExcl(side, width) {
-         if (width !== undefined) this.excl_width = width;
-         if (side !== undefined) {
-            this.excl_side = side;
-            if ((this.excl_width === 0) && (this.excl_side !== 0)) this.excl_width = 20;
-         }
-         this.changed = true;
+   /**
+    * @summary Change exclusion attributes.
+    * @private
+    */
+   TAttLineHandler.prototype.ChangeExcl = function(side, width) {
+      if (width !== undefined) this.excl_width = width;
+      if (side !== undefined) {
+         this.excl_side = side;
+         if ((this.excl_width === 0) && (this.excl_side !== 0)) this.excl_width = 20;
       }
+      this.changed = true;
+   }
 
-      /** @returns true if line attribute is empty and will not be applied. */
-      empty() { return this.color == 'none'; }
+   /** @returns true if line attribute is empty and will not be applied. */
+   TAttLineHandler.prototype.empty = function() { return this.color == 'none'; }
 
-      /**
-       * @summary Applies line attribute to selection.
-       *
-       * @param {object} selection - d3.js selection
-       */
+   /**
+    * @summary Applies line attribute to selection.
+    *
+    * @param {object} selection - d3.js selection
+    */
 
-      Apply(selection) {
-         this.used = true;
-         if (this.empty())
-            selection.style('stroke', null)
-               .style('stroke-width', null)
-               .style('stroke-dasharray', null);
-         else
-            selection.style('stroke', this.color)
-               .style('stroke-width', this.width)
-               .style('stroke-dasharray', Painter.root_line_styles[this.style] || null);
-      }
+   TAttLineHandler.prototype.Apply = function(selection) {
+      this.used = true;
+      if (this.empty())
+         selection.style('stroke', null)
+            .style('stroke-width', null)
+            .style('stroke-dasharray', null);
+      else
+         selection.style('stroke', this.color)
+            .style('stroke-width', this.width)
+            .style('stroke-dasharray', Painter.root_line_styles[this.style] || null);
+   }
 
-      /**
-       * @summary Change line attributes
-       * @private
-       */
-      Change(color, width, style) {
-         if (color !== undefined) this.color = color;
-         if (width !== undefined) this.width = width;
-         if (style !== undefined) this.style = style;
-         this.changed = true;
-      }
+   /**
+    * @summary Change line attributes
+    * @private
+    */
+   TAttLineHandler.prototype.Change = function(color, width, style) {
+      if (color !== undefined) this.color = color;
+      if (width !== undefined) this.width = width;
+      if (style !== undefined) this.style = style;
+      this.changed = true;
+   }
 
-      /**
-       * @summary Create sample element inside primitive SVG - used in context menu
-       * @private
-       */
-      CreateSample(svg, width, height) {
-         svg.append("path")
-            .attr("d", "M0," + height / 2 + "h" + width)
-            .call(this.func);
-      }
-   } // class TAttLineHandler
+   /**
+    * @summary Create sample element inside primitive SVG - used in context menu
+    * @private
+    */
+   TAttLineHandler.prototype.CreateSample = function(svg, width, height) {
+      svg.append("path")
+         .attr("d", "M0," + height / 2 + "h" + width)
+         .call(this.func);
+   }
 
    // =======================================================================
 
 
-   /** Handle for fill attributes. */
+   /** Handle for fill attributes.
+     * @constructor
+     * @param {object} args - different arguments to set fill attributes
+     * @param {number} [args.kind = 2] - 1 means object drawing where combination fillcolor==0 and fillstyle==1001 means no filling,  2 means all other objects where such combination is white-color filling
+     * @private */
 
-   class TAttFillHandler {
+   function TAttFillHandler(args) {
+      this.color = "none";
+      this.colorindx = 0;
+      this.pattern = 0;
+      this.used = true;
+      this.kind = args.kind || 2;
+      this.changed = false;
+      this.func = this.Apply.bind(this);
+      this.SetArgs(args);
+      this.changed = false; // unset change property that
+   }
 
-      /** @param {object} args - different arguments to set fill attributes
-       * @param {number} [args.kind = 2] - 1 means object drawing where combination fillcolor==0 and fillstyle==1001 means no filling,  2 means all other objects where such combination is white-color filling
-       */
-      constructor(args) {
-         this.color = "none";
-         this.colorindx = 0;
-         this.pattern = 0;
-         this.used = true;
-         this.kind = args.kind || 2;
-         this.changed = false;
-         this.func = this.Apply.bind(this);
-         this.SetArgs(args);
-         this.changed = false; // unset change property that
+   /** @summary Set fill style as arguments */
+   TAttFillHandler.prototype.SetArgs = function(args) {
+      if (args.attr && (typeof args.attr == 'object')) {
+         if ((args.pattern === undefined) && (args.attr.fFillStyle !== undefined)) args.pattern = args.attr.fFillStyle;
+         if ((args.color === undefined) && (args.attr.fFillColor !== undefined)) args.color = args.attr.fFillColor;
+      }
+      this.Change(args.color, args.pattern, args.svg, args.color_as_svg);
+   }
+
+   /** @summary Apply fill style to selection */
+   TAttFillHandler.prototype.Apply = function(selection) {
+      this.used = true;
+
+      selection.style('fill', this.fillcolor());
+
+      if ('opacity' in this)
+         selection.style('opacity', this.opacity);
+
+      if ('antialias' in this)
+         selection.style('antialias', this.antialias);
+   }
+
+   /** @summary Returns fill color (or pattern url) */
+   TAttFillHandler.prototype.fillcolor = function() { return this.pattern_url || this.color; }
+
+   /** @summary Returns fill color without pattern url.
+    *
+    * @desc If empty, alternative color will be provided
+    * @param {string} [altern=undefined] - alternative color which returned when fill color not exists
+    * @private */
+   TAttFillHandler.prototype.fillcoloralt = function(altern) { return this.color && (this.color != "none") ? this.color : altern; }
+
+   /** @summary Returns true if color not specified or fill style not specified */
+   TAttFillHandler.prototype.empty = function() {
+      let fill = this.fillcolor();
+      return !fill || (fill == 'none');
+   }
+
+   /** @summary Set solid fill color as fill pattern
+    * @param {string} col - solid color */
+   TAttFillHandler.prototype.SetSolidColor = function(col) {
+      delete this.pattern_url;
+      this.color = col;
+      this.pattern = 1001;
+   }
+
+   /** @summary Check if solid fill is used, also color can be checked
+    * @param {string} [solid_color = undefined] - when specified, checks if fill color matches */
+   TAttFillHandler.prototype.isSolid = function(solid_color) {
+      if (this.pattern !== 1001) return false;
+      return !solid_color || solid_color == this.color;
+   }
+
+   /** @summary Method used when color or pattern were changed with OpenUi5 widgets
+    * @private */
+   TAttFillHandler.prototype.verifyDirectChange = function(painter) {
+      if (typeof this.pattern == 'string') this.pattern = parseInt(this.pattern);
+      if (isNaN(this.pattern)) this.pattern = 0;
+
+      this.Change(this.color, this.pattern, painter ? painter.svg_canvas() : null, true);
+   }
+
+   /** @summary Method to change fill attributes.
+    *
+    * @param {number} color - color index
+    * @param {number} pattern - pattern index
+    * @param {selection} svg - top canvas element for pattern storages
+    * @param {string} [color_as_svg = undefined] - color as HTML string index
+    */
+   TAttFillHandler.prototype.Change = function(color, pattern, svg, color_as_svg) {
+      delete this.pattern_url;
+      this.changed = true;
+
+      if ((color !== undefined) && !isNaN(color) && !color_as_svg)
+         this.colorindx = parseInt(color);
+
+      if ((pattern !== undefined) && !isNaN(pattern)) {
+         this.pattern = parseInt(pattern);
+         delete this.opacity;
+         delete this.antialias;
       }
 
-      /** @summary Set fill style as arguments */
-      SetArgs(args) {
-         if (args.attr && (typeof args.attr == 'object')) {
-            if ((args.pattern === undefined) && (args.attr.fFillStyle !== undefined)) args.pattern = args.attr.fFillStyle;
-            if ((args.color === undefined) && (args.attr.fFillColor !== undefined)) args.color = args.attr.fFillColor;
-         }
-         this.Change(args.color, args.pattern, args.svg, args.color_as_svg);
-      }
-
-      /** @summary Apply fill style to selection */
-      Apply(selection) {
-         this.used = true;
-
-         selection.style('fill', this.fillcolor());
-
-         if ('opacity' in this)
-            selection.style('opacity', this.opacity);
-
-         if ('antialias' in this)
-            selection.style('antialias', this.antialias);
-      }
-
-      /** @summary Returns fill color (or pattern url) */
-      fillcolor() { return this.pattern_url || this.color; }
-
-      /** @summary Returns fill color without pattern url.
-       *
-       * @desc If empty, alternative color will be provided
-       * @param {string} [altern=undefined] - alternative color which returned when fill color not exists
-       * @private */
-      fillcoloralt(altern) { return this.color && (this.color != "none") ? this.color : altern; }
-
-      /** @summary Returns true if color not specified or fill style not specified */
-      empty() {
-         let fill = this.fillcolor();
-         return !fill || (fill == 'none');
-      }
-
-      /** @summary Set solid fill color as fill pattern
-       * @param {string} col - solid color */
-      SetSolidColor(col) {
-         delete this.pattern_url;
-         this.color = col;
-         this.pattern = 1001;
-      }
-
-      /** @summary Check if solid fill is used, also color can be checked
-       * @param {string} [solid_color = undefined] - when specified, checks if fill color matches */
-      isSolid(solid_color) {
-         if (this.pattern !== 1001) return false;
-         return !solid_color || solid_color == this.color;
-      }
-
-      /** @summary Method used when color or pattern were changed with OpenUi5 widgets
-       * @private */
-      verifyDirectChange(painter) {
-         if (typeof this.pattern == 'string') this.pattern = parseInt(this.pattern);
-         if (isNaN(this.pattern)) this.pattern = 0;
-
-         this.Change(this.color, this.pattern, painter ? painter.svg_canvas() : null, true);
-      }
-
-      /** @summary Method to change fill attributes.
-       *
-       * @param {number} color - color index
-       * @param {number} pattern - pattern index
-       * @param {selection} svg - top canvas element for pattern storages
-       * @param {string} [color_as_svg = undefined] - color as HTML string index
-       */
-      Change(color, pattern, svg, color_as_svg) {
-         delete this.pattern_url;
-         this.changed = true;
-
-         if ((color !== undefined) && !isNaN(color) && !color_as_svg)
-            this.colorindx = parseInt(color);
-
-         if ((pattern !== undefined) && !isNaN(pattern)) {
-            this.pattern = parseInt(pattern);
-            delete this.opacity;
-            delete this.antialias;
-         }
-
-         if ((this.pattern == 1000) && (this.colorindx === 0)) {
-            this.pattern_url = 'white';
-            return true;
-         }
-
-         if (this.pattern == 1000) this.pattern = 1001;
-
-         if (this.pattern < 1001) {
-            this.pattern_url = 'none';
-            return true;
-         }
-
-         if (this.isSolid() && (this.colorindx === 0) && (this.kind === 1) && !color_as_svg) {
-            this.pattern_url = 'none';
-            return true;
-         }
-
-         let indx = this.colorindx;
-
-         if (color_as_svg) {
-            this.color = color;
-            indx = 10000 + JSROOT.id_counter++; // use fictional unique index far away from existing color indexes
-         } else {
-            this.color = JSROOT.Painter.root_colors[indx];
-         }
-
-         if (typeof this.color != 'string') this.color = "none";
-
-         if (this.isSolid()) return true;
-
-         if ((this.pattern >= 4000) && (this.pattern <= 4100)) {
-            // special transparent colors (use for subpads)
-            this.opacity = (this.pattern - 4000) / 100;
-            return true;
-         }
-
-         if (!svg || svg.empty() || (this.pattern < 3000)) return false;
-
-         let id = "pat_" + this.pattern + "_" + indx,
-            defs = svg.select('.canvas_defs');
-
-         if (defs.empty())
-            defs = svg.insert("svg:defs", ":first-child").attr("class", "canvas_defs");
-
-         this.pattern_url = "url(#" + id + ")";
-         this.antialias = false;
-
-         if (!defs.select("." + id).empty()) {
-            if (color_as_svg) console.log('find id in def', id);
-            return true;
-         }
-
-         let lines = "", lfill = null, fills = "", fills2 = "", w = 2, h = 2;
-
-         switch (this.pattern) {
-            case 3001: w = h = 2; fills = "M0,0h1v1h-1zM1,1h1v1h-1z"; break;
-            case 3002: w = 4; h = 2; fills = "M1,0h1v1h-1zM3,1h1v1h-1z"; break;
-            case 3003: w = h = 4; fills = "M2,1h1v1h-1zM0,3h1v1h-1z"; break;
-            case 3004: w = h = 8; lines = "M8,0L0,8"; break;
-            case 3005: w = h = 8; lines = "M0,0L8,8"; break;
-            case 3006: w = h = 4; lines = "M1,0v4"; break;
-            case 3007: w = h = 4; lines = "M0,1h4"; break;
-            case 3008:
-               w = h = 10;
-               fills = "M0,3v-3h3ZM7,0h3v3ZM0,7v3h3ZM7,10h3v-3ZM5,2l3,3l-3,3l-3,-3Z";
-               lines = "M0,3l5,5M3,10l5,-5M10,7l-5,-5M7,0l-5,5";
-               break;
-            case 3009: w = 12; h = 12; lines = "M0,0A6,6,0,0,0,12,0M6,6A6,6,0,0,0,12,12M6,6A6,6,0,0,1,0,12"; lfill = "none"; break;
-            case 3010: w = h = 10; lines = "M0,2h10M0,7h10M2,0v2M7,2v5M2,7v3"; break; // bricks
-            case 3011: w = 9; h = 18; lines = "M5,0v8M2,1l6,6M8,1l-6,6M9,9v8M6,10l3,3l-3,3M0,9v8M3,10l-3,3l3,3"; lfill = "none"; break;
-            case 3012: w = 10; h = 20; lines = "M5,1A4,4,0,0,0,5,9A4,4,0,0,0,5,1M0,11A4,4,0,0,1,0,19M10,11A4,4,0,0,0,10,19"; lfill = "none"; break;
-            case 3013: w = h = 7; lines = "M0,0L7,7M7,0L0,7"; lfill = "none"; break;
-            case 3014: w = h = 16; lines = "M0,0h16v16h-16v-16M0,12h16M12,0v16M4,0v8M4,4h8M0,8h8M8,4v8"; lfill = "none"; break;
-            case 3015: w = 6; h = 12; lines = "M2,1A2,2,0,0,0,2,5A2,2,0,0,0,2,1M0,7A2,2,0,0,1,0,11M6,7A2,2,0,0,0,6,11"; lfill = "none"; break;
-            case 3016: w = 12; h = 7; lines = "M0,1A3,2,0,0,1,3,3A3,2,0,0,0,9,3A3,2,0,0,1,12,1"; lfill = "none"; break;
-            case 3017: w = h = 4; lines = "M3,1l-2,2"; break;
-            case 3018: w = h = 4; lines = "M1,1l2,2"; break;
-            case 3019:
-               w = h = 12;
-               lines = "M1,6A5,5,0,0,0,11,6A5,5,0,0,0,1,6h-1h1A5,5,0,0,1,6,11v1v-1" +
-                  "A5,5,0,0,1,11,6h1h-1A5,5,0,0,1,6,1v-1v1A5,5,0,0,1,1,6";
-               lfill = "none";
-               break;
-            case 3020: w = 7; h = 12; lines = "M1,0A2,3,0,0,0,3,3A2,3,0,0,1,3,9A2,3,0,0,0,1,12"; lfill = "none"; break;
-            case 3021: w = h = 8; lines = "M8,2h-2v4h-4v2M2,0v2h-2"; lfill = "none"; break; // left stairs
-            case 3022: w = h = 8; lines = "M0,2h2v4h4v2M6,0v2h2"; lfill = "none"; break; // right stairs
-            case 3023: w = h = 8; fills = "M4,0h4v4zM8,4v4h-4z"; fills2 = "M4,0L0,4L4,8L8,4Z"; break;
-            case 3024: w = h = 16; fills = "M0,8v8h2v-8zM8,0v8h2v-8M4,14v2h12v-2z"; fills2 = "M0,2h8v6h4v-6h4v12h-12v-6h-4z"; break;
-            case 3025: w = h = 18; fills = "M5,13v-8h8ZM18,0v18h-18l5,-5h8v-8Z"; break;
-            default:
-               if ((this.pattern > 3025) && (this.pattern < 3100)) {
-                  // same as 3002, see TGX11.cxx, line 2234
-                  w = 4; h = 2; fills = "M1,0h1v1h-1zM3,1h1v1h-1z"; break;
-               }
-
-               let code = this.pattern % 1000,
-                  k = code % 10, j = ((code - k) % 100) / 10, i = (code - j * 10 - k) / 100;
-               if (!i) break;
-
-               let sz = i * 12;  // axis distance between lines
-
-               w = h = 6 * sz; // we use at least 6 steps
-
-               function produce(dy, swap) {
-                  let pos = [], step = sz, y1 = 0, y2, max = h;
-
-                  // reduce step for smaller angles to keep normal distance approx same
-                  if (Math.abs(dy) < 3) step = Math.round(sz / 12 * 9);
-                  if (dy == 0) { step = Math.round(sz / 12 * 8); y1 = step / 2; }
-                  else if (dy > 0) max -= step; else y1 = step;
-
-                  while (y1 <= max) {
-                     y2 = y1 + dy * step;
-                     if (y2 < 0) {
-                        let x2 = Math.round(y1 / (y1 - y2) * w);
-                        pos.push(0, y1, x2, 0);
-                        pos.push(w, h - y1, w - x2, h);
-                     } else if (y2 > h) {
-                        let x2 = Math.round((h - y1) / (y2 - y1) * w);
-                        pos.push(0, y1, x2, h);
-                        pos.push(w, h - y1, w - x2, 0);
-                     } else {
-                        pos.push(0, y1, w, y2);
-                     }
-                     y1 += step;
-                  }
-                  for (let k = 0; k < pos.length; k += 4)
-                     if (swap) lines += "M" + pos[k + 1] + "," + pos[k] + "L" + pos[k + 3] + "," + pos[k + 2];
-                     else lines += "M" + pos[k] + "," + pos[k + 1] + "L" + pos[k + 2] + "," + pos[k + 3];
-               }
-
-               switch (j) {
-                  case 0: produce(0); break;
-                  case 1: produce(1); break;
-                  case 2: produce(2); break;
-                  case 3: produce(3); break;
-                  case 4: produce(6); break;
-                  case 6: produce(3, true); break;
-                  case 7: produce(2, true); break;
-                  case 8: produce(1, true); break;
-                  case 9: produce(0, true); break;
-               }
-
-               switch (k) {
-                  case 0: if (j) produce(0); break;
-                  case 1: produce(-1); break;
-                  case 2: produce(-2); break;
-                  case 3: produce(-3); break;
-                  case 4: produce(-6); break;
-                  case 6: produce(-3, true); break;
-                  case 7: produce(-2, true); break;
-                  case 8: produce(-1, true); break;
-                  case 9: if (j != 9) produce(0, true); break;
-               }
-
-               break;
-         }
-
-         if (!fills && !lines) return false;
-
-         let patt = defs.append('svg:pattern').attr("id", id).attr("class", id).attr("patternUnits", "userSpaceOnUse")
-            .attr("width", w).attr("height", h);
-
-         if (fills2) {
-            let col = d3.rgb(this.color);
-            col.r = Math.round((col.r + 255) / 2); col.g = Math.round((col.g + 255) / 2); col.b = Math.round((col.b + 255) / 2);
-            patt.append("svg:path").attr("d", fills2).style("fill", col);
-         }
-         if (fills) patt.append("svg:path").attr("d", fills).style("fill", this.color);
-         if (lines) patt.append("svg:path").attr("d", lines).style('stroke', this.color).style("stroke-width", 1).style("fill", lfill);
-
+      if ((this.pattern == 1000) && (this.colorindx === 0)) {
+         this.pattern_url = 'white';
          return true;
       }
 
-      /** @summary Create sample of fill pattern inside SVG
-       * @private */
-      CreateSample(sample_svg, width, height) {
+      if (this.pattern == 1000) this.pattern = 1001;
 
-         // we need to create extra handle to change
-         let sample = new TAttFillHandler({ svg: sample_svg, pattern: this.pattern, color: this.color, color_as_svg: true });
-
-         sample_svg.append("path")
-            .attr("d", "M0,0h" + width + "v" + height + "h-" + width + "z")
-            .call(sample.func);
+      if (this.pattern < 1001) {
+         this.pattern_url = 'none';
+         return true;
       }
-   } // class TAttFillHandler
+
+      if (this.isSolid() && (this.colorindx === 0) && (this.kind === 1) && !color_as_svg) {
+         this.pattern_url = 'none';
+         return true;
+      }
+
+      let indx = this.colorindx;
+
+      if (color_as_svg) {
+         this.color = color;
+         indx = 10000 + JSROOT.id_counter++; // use fictional unique index far away from existing color indexes
+      } else {
+         this.color = JSROOT.Painter.root_colors[indx];
+      }
+
+      if (typeof this.color != 'string') this.color = "none";
+
+      if (this.isSolid()) return true;
+
+      if ((this.pattern >= 4000) && (this.pattern <= 4100)) {
+         // special transparent colors (use for subpads)
+         this.opacity = (this.pattern - 4000) / 100;
+         return true;
+      }
+
+      if (!svg || svg.empty() || (this.pattern < 3000)) return false;
+
+      let id = "pat_" + this.pattern + "_" + indx,
+         defs = svg.select('.canvas_defs');
+
+      if (defs.empty())
+         defs = svg.insert("svg:defs", ":first-child").attr("class", "canvas_defs");
+
+      this.pattern_url = "url(#" + id + ")";
+      this.antialias = false;
+
+      if (!defs.select("." + id).empty()) {
+         if (color_as_svg) console.log('find id in def', id);
+         return true;
+      }
+
+      let lines = "", lfill = null, fills = "", fills2 = "", w = 2, h = 2;
+
+      switch (this.pattern) {
+         case 3001: w = h = 2; fills = "M0,0h1v1h-1zM1,1h1v1h-1z"; break;
+         case 3002: w = 4; h = 2; fills = "M1,0h1v1h-1zM3,1h1v1h-1z"; break;
+         case 3003: w = h = 4; fills = "M2,1h1v1h-1zM0,3h1v1h-1z"; break;
+         case 3004: w = h = 8; lines = "M8,0L0,8"; break;
+         case 3005: w = h = 8; lines = "M0,0L8,8"; break;
+         case 3006: w = h = 4; lines = "M1,0v4"; break;
+         case 3007: w = h = 4; lines = "M0,1h4"; break;
+         case 3008:
+            w = h = 10;
+            fills = "M0,3v-3h3ZM7,0h3v3ZM0,7v3h3ZM7,10h3v-3ZM5,2l3,3l-3,3l-3,-3Z";
+            lines = "M0,3l5,5M3,10l5,-5M10,7l-5,-5M7,0l-5,5";
+            break;
+         case 3009: w = 12; h = 12; lines = "M0,0A6,6,0,0,0,12,0M6,6A6,6,0,0,0,12,12M6,6A6,6,0,0,1,0,12"; lfill = "none"; break;
+         case 3010: w = h = 10; lines = "M0,2h10M0,7h10M2,0v2M7,2v5M2,7v3"; break; // bricks
+         case 3011: w = 9; h = 18; lines = "M5,0v8M2,1l6,6M8,1l-6,6M9,9v8M6,10l3,3l-3,3M0,9v8M3,10l-3,3l3,3"; lfill = "none"; break;
+         case 3012: w = 10; h = 20; lines = "M5,1A4,4,0,0,0,5,9A4,4,0,0,0,5,1M0,11A4,4,0,0,1,0,19M10,11A4,4,0,0,0,10,19"; lfill = "none"; break;
+         case 3013: w = h = 7; lines = "M0,0L7,7M7,0L0,7"; lfill = "none"; break;
+         case 3014: w = h = 16; lines = "M0,0h16v16h-16v-16M0,12h16M12,0v16M4,0v8M4,4h8M0,8h8M8,4v8"; lfill = "none"; break;
+         case 3015: w = 6; h = 12; lines = "M2,1A2,2,0,0,0,2,5A2,2,0,0,0,2,1M0,7A2,2,0,0,1,0,11M6,7A2,2,0,0,0,6,11"; lfill = "none"; break;
+         case 3016: w = 12; h = 7; lines = "M0,1A3,2,0,0,1,3,3A3,2,0,0,0,9,3A3,2,0,0,1,12,1"; lfill = "none"; break;
+         case 3017: w = h = 4; lines = "M3,1l-2,2"; break;
+         case 3018: w = h = 4; lines = "M1,1l2,2"; break;
+         case 3019:
+            w = h = 12;
+            lines = "M1,6A5,5,0,0,0,11,6A5,5,0,0,0,1,6h-1h1A5,5,0,0,1,6,11v1v-1" +
+               "A5,5,0,0,1,11,6h1h-1A5,5,0,0,1,6,1v-1v1A5,5,0,0,1,1,6";
+            lfill = "none";
+            break;
+         case 3020: w = 7; h = 12; lines = "M1,0A2,3,0,0,0,3,3A2,3,0,0,1,3,9A2,3,0,0,0,1,12"; lfill = "none"; break;
+         case 3021: w = h = 8; lines = "M8,2h-2v4h-4v2M2,0v2h-2"; lfill = "none"; break; // left stairs
+         case 3022: w = h = 8; lines = "M0,2h2v4h4v2M6,0v2h2"; lfill = "none"; break; // right stairs
+         case 3023: w = h = 8; fills = "M4,0h4v4zM8,4v4h-4z"; fills2 = "M4,0L0,4L4,8L8,4Z"; break;
+         case 3024: w = h = 16; fills = "M0,8v8h2v-8zM8,0v8h2v-8M4,14v2h12v-2z"; fills2 = "M0,2h8v6h4v-6h4v12h-12v-6h-4z"; break;
+         case 3025: w = h = 18; fills = "M5,13v-8h8ZM18,0v18h-18l5,-5h8v-8Z"; break;
+         default:
+            if ((this.pattern > 3025) && (this.pattern < 3100)) {
+               // same as 3002, see TGX11.cxx, line 2234
+               w = 4; h = 2; fills = "M1,0h1v1h-1zM3,1h1v1h-1z"; break;
+            }
+
+            let code = this.pattern % 1000,
+               k = code % 10, j = ((code - k) % 100) / 10, i = (code - j * 10 - k) / 100;
+            if (!i) break;
+
+            let sz = i * 12;  // axis distance between lines
+
+            w = h = 6 * sz; // we use at least 6 steps
+
+            function produce(dy, swap) {
+               let pos = [], step = sz, y1 = 0, y2, max = h;
+
+               // reduce step for smaller angles to keep normal distance approx same
+               if (Math.abs(dy) < 3) step = Math.round(sz / 12 * 9);
+               if (dy == 0) { step = Math.round(sz / 12 * 8); y1 = step / 2; }
+               else if (dy > 0) max -= step; else y1 = step;
+
+               while (y1 <= max) {
+                  y2 = y1 + dy * step;
+                  if (y2 < 0) {
+                     let x2 = Math.round(y1 / (y1 - y2) * w);
+                     pos.push(0, y1, x2, 0);
+                     pos.push(w, h - y1, w - x2, h);
+                  } else if (y2 > h) {
+                     let x2 = Math.round((h - y1) / (y2 - y1) * w);
+                     pos.push(0, y1, x2, h);
+                     pos.push(w, h - y1, w - x2, 0);
+                  } else {
+                     pos.push(0, y1, w, y2);
+                  }
+                  y1 += step;
+               }
+               for (let k = 0; k < pos.length; k += 4)
+                  if (swap) lines += "M" + pos[k + 1] + "," + pos[k] + "L" + pos[k + 3] + "," + pos[k + 2];
+                  else lines += "M" + pos[k] + "," + pos[k + 1] + "L" + pos[k + 2] + "," + pos[k + 3];
+            }
+
+            switch (j) {
+               case 0: produce(0); break;
+               case 1: produce(1); break;
+               case 2: produce(2); break;
+               case 3: produce(3); break;
+               case 4: produce(6); break;
+               case 6: produce(3, true); break;
+               case 7: produce(2, true); break;
+               case 8: produce(1, true); break;
+               case 9: produce(0, true); break;
+            }
+
+            switch (k) {
+               case 0: if (j) produce(0); break;
+               case 1: produce(-1); break;
+               case 2: produce(-2); break;
+               case 3: produce(-3); break;
+               case 4: produce(-6); break;
+               case 6: produce(-3, true); break;
+               case 7: produce(-2, true); break;
+               case 8: produce(-1, true); break;
+               case 9: if (j != 9) produce(0, true); break;
+            }
+
+            break;
+      }
+
+      if (!fills && !lines) return false;
+
+      let patt = defs.append('svg:pattern').attr("id", id).attr("class", id).attr("patternUnits", "userSpaceOnUse")
+         .attr("width", w).attr("height", h);
+
+      if (fills2) {
+         let col = d3.rgb(this.color);
+         col.r = Math.round((col.r + 255) / 2); col.g = Math.round((col.g + 255) / 2); col.b = Math.round((col.b + 255) / 2);
+         patt.append("svg:path").attr("d", fills2).style("fill", col);
+      }
+      if (fills) patt.append("svg:path").attr("d", fills).style("fill", this.color);
+      if (lines) patt.append("svg:path").attr("d", lines).style('stroke', this.color).style("stroke-width", 1).style("fill", lfill);
+
+      return true;
+   }
+
+   /** @summary Create sample of fill pattern inside SVG
+    * @private */
+   TAttFillHandler.prototype.CreateSample = function(sample_svg, width, height) {
+
+      // we need to create extra handle to change
+      let sample = new TAttFillHandler({ svg: sample_svg, pattern: this.pattern, color: this.color, color_as_svg: true });
+
+      sample_svg.append("path")
+         .attr("d", "M0,0h" + width + "v" + height + "h-" + width + "z")
+         .call(sample.func);
+   }
 
    // ===========================================================================
 
-   class FontHandler {
-      constructor(fontIndex, size) {
-         this.name = "Arial";
-         this.size = Math.round(size || 11);
-         this.weight = null;
-         this.style = null;
+   function FontHandler(fontIndex, size) {
+      this.name = "Arial";
+      this.size = Math.round(size || 11);
+      this.weight = null;
+      this.style = null;
 
-         let indx = Math.floor(fontIndex / 10),
-             fontName = Painter.root_fonts[indx] || "";
+      let indx = Math.floor(fontIndex / 10),
+          fontName = Painter.root_fonts[indx] || "";
 
-         while (fontName.length > 0) {
-            if (fontName[0] === 'b') this.weight = "bold"; else
-               if (fontName[0] === 'i') this.style = "italic"; else
-                  if (fontName[0] === 'o') this.style = "oblique"; else break;
-            fontName = fontName.substr(1);
-         }
-
-         if (fontName == 'Symbol')
-            this.weight = this.style = null;
-
-         this.name = fontName;
-         this.aver_width = Painter.root_fonts_aver_width[indx] || 0.55;
-
-         this.func = this.setFont.bind(this);
+      while (fontName.length > 0) {
+         if (fontName[0] === 'b') this.weight = "bold"; else
+            if (fontName[0] === 'i') this.style = "italic"; else
+               if (fontName[0] === 'o') this.style = "oblique"; else break;
+         fontName = fontName.substr(1);
       }
 
-      /** Assigns font-related attributes */
-      setFont(selection, arg) {
-         selection.attr("font-family", this.name);
-         if (arg != 'without-size')
-            selection.attr("font-size", this.size)
-                     .attr("xml:space", "preserve");
-         if (this.weight)
-            selection.attr("font-weight", this.weight);
-         if (this.style)
-            selection.attr("font-style", this.style);
-      }
+      if (fontName == 'Symbol')
+         this.weight = this.style = null;
 
-      /** Clears all font-related attributes */
-      clearFont(selection) {
-         selection.attr("font-family", null)
-                  .attr("font-size", null)
-                  .attr("xml:space", null)
-                  .attr("font-weight", null)
-                  .attr("font-style", null);
-      }
+      this.name = fontName;
+      this.aver_width = Painter.root_fonts_aver_width[indx] || 0.55;
 
-      /** @returns approximate width of given label, required for reasonable scaling of text in node.js */
-      approxTextWidth(label) { return label.length * this.size * this.aver_width; }
+      this.func = this.setFont.bind(this);
+   }
 
-   } // class FontHandler
+   /** Assigns font-related attributes */
+   FontHandler.prototype.setFont = function(selection, arg) {
+      selection.attr("font-family", this.name);
+      if (arg != 'without-size')
+         selection.attr("font-size", this.size)
+                  .attr("xml:space", "preserve");
+      if (this.weight)
+         selection.attr("font-weight", this.weight);
+      if (this.style)
+         selection.attr("font-style", this.style);
+   }
+
+   /** Clears all font-related attributes */
+   FontHandler.prototype.clearFont = function(selection) {
+      selection.attr("font-family", null)
+               .attr("font-size", null)
+               .attr("xml:space", null)
+               .attr("font-weight", null)
+               .attr("font-style", null);
+   }
+
+   /** @returns approximate width of given label, required for reasonable scaling of text in node.js */
+   FontHandler.prototype.approxTextWidth = function(label) { return label.length * this.size * this.aver_width; }
 
   // ===========================================================================
 
