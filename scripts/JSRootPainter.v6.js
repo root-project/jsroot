@@ -6,848 +6,845 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
    "use strict";
 
    // identifier used in TWebCanvas painter
-   JSROOT.WebSnapIds = { kNone: 0,  kObject: 1, kSVG: 2, kSubPad: 3, kColors: 4, kStyle: 5 };
+   let webSnapIds = { kNone: 0,  kObject: 1, kSVG: 2, kSubPad: 3, kColors: 4, kStyle: 5 };
 
    // =======================================================================
 
 
-   /**
-    * @summary Painter for TAxis/TGaxis objects.
-    *
-    * @constructor
-    * @memberof JSROOT
-    * @arguments JSROOT.TObjectPainter
-    * @param {object} axis - object to draw
-    * @param {boolean} embedded - if true, painter used in other objects painters
-    */
+   /** @summary Painter for TAxis/TGaxis objects.  */
 
-   function TAxisPainter(axis, embedded) {
-      JSROOT.TObjectPainter.call(this, axis);
+   class TAxisPainter extends JSROOT.ObjectPainter {
 
-      this.embedded = embedded; // indicate that painter embedded into the histo painter
+    /** Create TAxis Painter
+      * @param {object} axis - object to draw
+      * @param {boolean} embedded - if true, painter used in other objects painters */
+      constructor(axis, embedded) {
+         super(axis);
 
-      this.name = "yaxis";
-      this.kind = "normal";
-      this.func = null;
-      this.order = 0; // scaling order for axis labels
+         this.embedded = embedded; // indicate that painter embedded into the histo painter
 
-      this.full_min = 0;
-      this.full_max = 1;
-      this.scale_min = 0;
-      this.scale_max = 1;
-      this.ticks = []; // list of major ticks
-      this.invert_side = false;
-      this.lbls_both_sides = false; // draw labels on both sides
-   }
+         this.name = "yaxis";
+         this.kind = "normal";
+         this.func = null;
+         this.order = 0; // scaling order for axis labels
 
-   TAxisPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
-
-   TAxisPainter.prototype.Cleanup = function() {
-
-      this.ticks = [];
-      this.func = null;
-      delete this.format;
-
-      JSROOT.TObjectPainter.prototype.Cleanup.call(this);
-   }
-
-   TAxisPainter.prototype.SetAxisConfig = function(name, kind, func, min, max, smin, smax) {
-      this.name = name;
-      this.kind = kind;
-      this.func = func;
-
-      this.full_min = min;
-      this.full_max = max;
-      this.scale_min = smin;
-      this.scale_max = smax;
-   }
-
-   TAxisPainter.prototype.format10Exp = function(order, value) {
-      let res = "";
-      if (value) {
-         value = Math.round(value/Math.pow(10,order));
-         if ((value!=0) && (value!=1)) res = value.toString() + (JSROOT.gStyle.Latex ? "#times" : "x");
+         this.full_min = 0;
+         this.full_max = 1;
+         this.scale_min = 0;
+         this.scale_max = 1;
+         this.ticks = []; // list of major ticks
+         this.invert_side = false;
+         this.lbls_both_sides = false; // draw labels on both sides
       }
-      res += "10";
-      if (JSROOT.gStyle.Latex > 1) return res + "^{" + order + "}";
-      let superscript_symbols = {
-            '0': '\u2070', '1': '\xB9', '2': '\xB2', '3': '\xB3', '4': '\u2074', '5': '\u2075',
-            '6': '\u2076', '7': '\u2077', '8': '\u2078', '9': '\u2079', '-': '\u207B'
-         };
-      let str = order.toString();
-      for (let n=0;n<str.length;++n) res += superscript_symbols[str[n]];
-      return res;
-   }
 
-   TAxisPainter.prototype.CreateFormatFuncs = function() {
+      Cleanup() {
 
-      let axis = this.GetObject(),
-          is_gaxis = (axis && axis._typename === 'TGaxis');
+         this.ticks = [];
+         this.func = null;
+         delete this.format;
 
-      delete this.format;// remove formatting func
+         super.Cleanup();
+      }
 
-      let ndiv = 508;
-      if (is_gaxis) ndiv = axis.fNdiv; else
-      if (axis) ndiv = Math.max(axis.fNdivisions, 4);
+      SetAxisConfig(name, kind, func, min, max, smin, smax) {
+         this.name = name;
+         this.kind = kind;
+         this.func = func;
 
-      this.nticks = ndiv % 100;
-      this.nticks2 = (ndiv % 10000 - this.nticks) / 100;
-      this.nticks3 = Math.floor(ndiv/10000);
+         this.full_min = min;
+         this.full_max = max;
+         this.scale_min = smin;
+         this.scale_max = smax;
+      }
 
-      if (axis && !is_gaxis && (this.nticks > 7)) this.nticks = 7;
-
-      let gr_range = Math.abs(this.func.range()[1] - this.func.range()[0]);
-      if (gr_range<=0) gr_range = 100;
-
-      if (this.kind == 'time') {
-         if (this.nticks > 8) this.nticks = 8;
-
-         let scale_range = this.scale_max - this.scale_min,
-             tf1 = JSROOT.Painter.getTimeFormat(axis),
-             tf2 = JSROOT.Painter.chooseTimeFormat(scale_range / gr_range, false);
-
-         if ((tf1.length == 0) || (scale_range < 0.1 * (this.full_max - this.full_min)))
-            tf1 = JSROOT.Painter.chooseTimeFormat(scale_range / this.nticks, true);
-
-         this.tfunc1 = this.tfunc2 = d3.timeFormat(tf1);
-         if (tf2!==tf1)
-            this.tfunc2 = d3.timeFormat(tf2);
-
-         this.format = function(d, asticks) {
-            return asticks ? this.tfunc1(d) : this.tfunc2(d);
+      format10Exp(order, value) {
+         let res = "";
+         if (value) {
+            value = Math.round(value/Math.pow(10,order));
+            if ((value!=0) && (value!=1)) res = value.toString() + (JSROOT.gStyle.Latex ? "#times" : "x");
          }
+         res += "10";
+         if (JSROOT.gStyle.Latex > 1) return res + "^{" + order + "}";
+         let superscript_symbols = {
+               '0': '\u2070', '1': '\xB9', '2': '\xB2', '3': '\xB3', '4': '\u2074', '5': '\u2075',
+               '6': '\u2076', '7': '\u2077', '8': '\u2078', '9': '\u2079', '-': '\u207B'
+            };
+         let str = order.toString();
+         for (let n=0;n<str.length;++n) res += superscript_symbols[str[n]];
+         return res;
+      }
 
-      } else if (this.kind == 'log') {
-         if (this.nticks2 > 1) {
-            this.nticks *= this.nticks2; // all log ticks (major or minor) created centrally
+      CreateFormatFuncs() {
+
+         let axis = this.GetObject(),
+             is_gaxis = (axis && axis._typename === 'TGaxis');
+
+         delete this.format;// remove formatting func
+
+         let ndiv = 508;
+         if (is_gaxis) ndiv = axis.fNdiv; else
+         if (axis) ndiv = Math.max(axis.fNdivisions, 4);
+
+         this.nticks = ndiv % 100;
+         this.nticks2 = (ndiv % 10000 - this.nticks) / 100;
+         this.nticks3 = Math.floor(ndiv/10000);
+
+         if (axis && !is_gaxis && (this.nticks > 7)) this.nticks = 7;
+
+         let gr_range = Math.abs(this.func.range()[1] - this.func.range()[0]);
+         if (gr_range<=0) gr_range = 100;
+
+         if (this.kind == 'time') {
+            if (this.nticks > 8) this.nticks = 8;
+
+            let scale_range = this.scale_max - this.scale_min,
+                tf1 = JSROOT.Painter.getTimeFormat(axis),
+                tf2 = JSROOT.Painter.chooseTimeFormat(scale_range / gr_range, false);
+
+            if ((tf1.length == 0) || (scale_range < 0.1 * (this.full_max - this.full_min)))
+               tf1 = JSROOT.Painter.chooseTimeFormat(scale_range / this.nticks, true);
+
+            this.tfunc1 = this.tfunc2 = d3.timeFormat(tf1);
+            if (tf2!==tf1)
+               this.tfunc2 = d3.timeFormat(tf2);
+
+            this.format = function(d, asticks) {
+               return asticks ? this.tfunc1(d) : this.tfunc2(d);
+            }
+
+         } else if (this.kind == 'log') {
+            if (this.nticks2 > 1) {
+               this.nticks *= this.nticks2; // all log ticks (major or minor) created centrally
+               this.nticks2 = 1;
+            }
+            this.noexp = axis ? axis.TestBit(JSROOT.EAxisBits.kNoExponent) : false;
+            if ((this.scale_max < 300) && (this.scale_min > 0.3)) this.noexp = true;
+            this.moreloglabels = axis ? axis.TestBit(JSROOT.EAxisBits.kMoreLogLabels) : false;
+
+            this.format = function(d, asticks, notickexp_fmt) {
+               let val = parseFloat(d), rnd = Math.round(val);
+               if (!asticks)
+                  return ((rnd === val) && (Math.abs(rnd)<1e9)) ? rnd.toString() : JSROOT.FFormat(val, notickexp_fmt || JSROOT.gStyle.fStatFormat);
+
+               if (val <= 0) return null;
+               let vlog = JSROOT.log10(val);
+               if (this.moreloglabels || (Math.abs(vlog - Math.round(vlog))<0.001)) {
+                  if (!this.noexp && !notickexp_fmt)
+                     return this.format10Exp(Math.floor(vlog+0.01), val);
+
+                  return (vlog<0) ? val.toFixed(Math.round(-vlog+0.5)) : val.toFixed(0);
+               }
+               return null;
+            }
+         } else if (this.kind == 'labels') {
+            this.nticks = 50; // for text output allow max 50 names
+            let scale_range = this.scale_max - this.scale_min;
+            if (this.nticks > scale_range)
+               this.nticks = Math.round(scale_range);
+
+            this.regular_labels = true;
+
+            if (axis && axis.fNbins && axis.fLabels) {
+               if ((axis.fNbins != Math.round(axis.fXmax - axis.fXmin)) ||
+                   (axis.fXmin != 0) || (axis.fXmax != axis.fNbins)) {
+                  this.regular_labels = false;
+               }
+            }
+
             this.nticks2 = 1;
-         }
-         this.noexp = axis ? axis.TestBit(JSROOT.EAxisBits.kNoExponent) : false;
-         if ((this.scale_max < 300) && (this.scale_min > 0.3)) this.noexp = true;
-         this.moreloglabels = axis ? axis.TestBit(JSROOT.EAxisBits.kMoreLogLabels) : false;
 
-         this.format = function(d, asticks, notickexp_fmt) {
-            let val = parseFloat(d), rnd = Math.round(val);
-            if (!asticks)
-               return ((rnd === val) && (Math.abs(rnd)<1e9)) ? rnd.toString() : JSROOT.FFormat(val, notickexp_fmt || JSROOT.gStyle.fStatFormat);
+            this.axis = axis;
 
-            if (val <= 0) return null;
-            let vlog = JSROOT.log10(val);
-            if (this.moreloglabels || (Math.abs(vlog - Math.round(vlog))<0.001)) {
-               if (!this.noexp && !notickexp_fmt)
-                  return this.format10Exp(Math.floor(vlog+0.01), val);
-
-               return (vlog<0) ? val.toFixed(Math.round(-vlog+0.5)) : val.toFixed(0);
+            this.format = function(d) {
+               let indx = parseFloat(d);
+               if (!this.regular_labels)
+                  indx = (indx - this.axis.fXmin)/(this.axis.fXmax - this.axis.fXmin) * this.axis.fNbins;
+               indx = Math.floor(indx);
+               if ((indx<0) || (indx>=this.axis.fNbins)) return null;
+               for (let i = 0; i < this.axis.fLabels.arr.length; ++i) {
+                  let tstr = this.axis.fLabels.arr[i];
+                  if (tstr.fUniqueID === indx+1) return tstr.fString;
+               }
+               return null;
             }
-            return null;
-         }
-      } else if (this.kind == 'labels') {
-         this.nticks = 50; // for text output allow max 50 names
-         let scale_range = this.scale_max - this.scale_min;
-         if (this.nticks > scale_range)
-            this.nticks = Math.round(scale_range);
+         } else {
 
-         this.regular_labels = true;
+            this.order = 0;
+            this.ndig = 0;
 
-         if (axis && axis.fNbins && axis.fLabels) {
-            if ((axis.fNbins != Math.round(axis.fXmax - axis.fXmin)) ||
-                (axis.fXmin != 0) || (axis.fXmax != axis.fNbins)) {
-               this.regular_labels = false;
+            this.format = function(d, asticks, fmt) {
+               let val = parseFloat(d);
+               if (asticks && this.order) val = val / Math.pow(10, this.order);
+
+               if (val === Math.round(val))
+                  return (Math.abs(val)<1e9) ? val.toFixed(0) : val.toExponential(4);
+
+               if (asticks) return (this.ndig>10) ? val.toExponential(this.ndig-11) : val.toFixed(this.ndig);
+
+               return JSROOT.FFormat(val, fmt || JSROOT.gStyle.fStatFormat);
             }
          }
+      }
 
-         this.nticks2 = 1;
-
-         this.axis = axis;
-
-         this.format = function(d) {
-            let indx = parseFloat(d);
-            if (!this.regular_labels)
-               indx = (indx - this.axis.fXmin)/(this.axis.fXmax - this.axis.fXmin) * this.axis.fNbins;
-            indx = Math.floor(indx);
-            if ((indx<0) || (indx>=this.axis.fNbins)) return null;
-            for (let i = 0; i < this.axis.fLabels.arr.length; ++i) {
-               let tstr = this.axis.fLabels.arr[i];
-               if (tstr.fUniqueID === indx+1) return tstr.fString;
-            }
-            return null;
+      ProduceTicks(ndiv, ndiv2) {
+         if (!this.noticksopt) {
+            let arr = this.func.ticks(ndiv * (ndiv2 || 1));
+            // FIXME: workaround - prvent creation too much log ticks when min >= 1, but this should be checked differently
+            if ((this.kind == "log") && (arr.length > 30) && this.scale_min > 0.8)
+                arr = this.func.ticks(10);
+            return arr;
          }
-      } else {
+
+         if (ndiv2) ndiv = (ndiv-1) * ndiv2;
+         let dom = this.func.domain(), ticks = [];
+         for (let n=0;n<=ndiv;++n)
+            ticks.push((dom[0]*(ndiv-n) + dom[1]*n)/ndiv);
+         return ticks;
+      }
+
+      CreateTicks(only_major_as_array, optionNoexp, optionNoopt, optionInt) {
+         // function used to create array with minor/middle/major ticks
+
+         if (optionNoopt && this.nticks && (this.kind == "normal")) this.noticksopt = true;
+
+         let handle = { nminor: 0, nmiddle: 0, nmajor: 0, func: this.func };
+
+         handle.minor = handle.middle = handle.major = this.ProduceTicks(this.nticks);
+
+         if (only_major_as_array) {
+            let res = handle.major, delta = (this.scale_max - this.scale_min)*1e-5;
+            if (res[0] > this.scale_min + delta) res.unshift(this.scale_min);
+            if (res[res.length-1] < this.scale_max - delta) res.push(this.scale_max);
+            return res;
+         }
+
+         if ((this.kind == 'labels') && !this.regular_labels) {
+            handle.lbl_pos = [];
+            for (let n=0;n<this.axis.fNbins;++n) {
+               let x = this.axis.fXmin + n / this.axis.fNbins * (this.axis.fXmax - this.axis.fXmin);
+               if ((x >= this.scale_min) && (x < this.scale_max)) handle.lbl_pos.push(x);
+            }
+         }
+
+         if (this.nticks2 > 1) {
+            handle.minor = handle.middle = this.ProduceTicks(handle.major.length, this.nticks2);
+
+            let gr_range = Math.abs(this.func.range()[1] - this.func.range()[0]);
+
+            // avoid black filling by middle-size
+            if ((handle.middle.length <= handle.major.length) || (handle.middle.length > gr_range/3.5)) {
+               handle.minor = handle.middle = handle.major;
+            } else
+            if ((this.nticks3 > 1) && (this.kind !== 'log'))  {
+               handle.minor = this.ProduceTicks(handle.middle.length, this.nticks3);
+               if ((handle.minor.length <= handle.middle.length) || (handle.minor.length > gr_range/1.7)) handle.minor = handle.middle;
+            }
+         }
+
+         handle.reset = function() {
+            this.nminor = this.nmiddle = this.nmajor = 0;
+         }
+
+         handle.next = function(doround) {
+            if (this.nminor >= this.minor.length) return false;
+
+            this.tick = this.minor[this.nminor++];
+            this.grpos = this.func(this.tick);
+            if (doround) this.grpos = Math.round(this.grpos);
+            this.kind = 3;
+
+            if ((this.nmiddle < this.middle.length) && (Math.abs(this.grpos - this.func(this.middle[this.nmiddle])) < 1)) {
+               this.nmiddle++;
+               this.kind = 2;
+            }
+
+            if ((this.nmajor < this.major.length) && (Math.abs(this.grpos - this.func(this.major[this.nmajor])) < 1) ) {
+               this.nmajor++;
+               this.kind = 1;
+            }
+            return true;
+         }
+
+         handle.last_major = function() {
+            return (this.kind !== 1) ? false : this.nmajor == this.major.length;
+         }
+
+         handle.next_major_grpos = function() {
+            if (this.nmajor >= this.major.length) return null;
+            return this.func(this.major[this.nmajor]);
+         }
 
          this.order = 0;
          this.ndig = 0;
 
-         this.format = function(d, asticks, fmt) {
-            let val = parseFloat(d);
-            if (asticks && this.order) val = val / Math.pow(10, this.order);
+         // at the moment when drawing labels, we can try to find most optimal text representation for them
 
-            if (val === Math.round(val))
-               return (Math.abs(val)<1e9) ? val.toFixed(0) : val.toExponential(4);
+         if ((this.kind == "normal") && (handle.major.length > 0)) {
 
-            if (asticks) return (this.ndig>10) ? val.toExponential(this.ndig-11) : val.toFixed(this.ndig);
+            let maxorder = 0, minorder = 0, exclorder3 = false;
 
-            return JSROOT.FFormat(val, fmt || JSROOT.gStyle.fStatFormat);
-         }
-      }
-   }
+            if (!optionNoexp) {
+               let maxtick = Math.max(Math.abs(handle.major[0]),Math.abs(handle.major[handle.major.length-1])),
+                   mintick = Math.min(Math.abs(handle.major[0]),Math.abs(handle.major[handle.major.length-1])),
+                   ord1 = (maxtick > 0) ? Math.round(JSROOT.log10(maxtick)/3)*3 : 0,
+                   ord2 = (mintick > 0) ? Math.round(JSROOT.log10(mintick)/3)*3 : 0;
 
-   TAxisPainter.prototype.ProduceTicks = function(ndiv, ndiv2) {
-      if (!this.noticksopt) {
-         let arr = this.func.ticks(ndiv * (ndiv2 || 1));
-         // FIXME: workaround - prvent creation too much log ticks when min >= 1, but this should be checked differently
-         if ((this.kind == "log") && (arr.length > 30) && this.scale_min > 0.8)
-             arr = this.func.ticks(10);
-         return arr;
-      }
+                exclorder3 = (maxtick < 2e4); // do not show 10^3 for values below 20000
 
-      if (ndiv2) ndiv = (ndiv-1) * ndiv2;
-      let dom = this.func.domain(), ticks = [];
-      for (let n=0;n<=ndiv;++n)
-         ticks.push((dom[0]*(ndiv-n) + dom[1]*n)/ndiv);
-      return ticks;
-   }
+                if (maxtick || mintick) {
+                   maxorder = Math.max(ord1,ord2) + 3;
+                   minorder = Math.min(ord1,ord2) - 3;
+                }
+            }
 
-   TAxisPainter.prototype.CreateTicks = function(only_major_as_array, optionNoexp, optionNoopt, optionInt) {
-      // function used to create array with minor/middle/major ticks
+            // now try to find best combination of order and ndig for labels
 
-      if (optionNoopt && this.nticks && (this.kind == "normal")) this.noticksopt = true;
+            let bestorder = 0, bestndig = this.ndig, bestlen = 1e10;
 
-      let handle = { nminor: 0, nmiddle: 0, nmajor: 0, func: this.func };
-
-      handle.minor = handle.middle = handle.major = this.ProduceTicks(this.nticks);
-
-      if (only_major_as_array) {
-         let res = handle.major, delta = (this.scale_max - this.scale_min)*1e-5;
-         if (res[0] > this.scale_min + delta) res.unshift(this.scale_min);
-         if (res[res.length-1] < this.scale_max - delta) res.push(this.scale_max);
-         return res;
-      }
-
-      if ((this.kind == 'labels') && !this.regular_labels) {
-         handle.lbl_pos = [];
-         for (let n=0;n<this.axis.fNbins;++n) {
-            let x = this.axis.fXmin + n / this.axis.fNbins * (this.axis.fXmax - this.axis.fXmin);
-            if ((x >= this.scale_min) && (x < this.scale_max)) handle.lbl_pos.push(x);
-         }
-      }
-
-      if (this.nticks2 > 1) {
-         handle.minor = handle.middle = this.ProduceTicks(handle.major.length, this.nticks2);
-
-         let gr_range = Math.abs(this.func.range()[1] - this.func.range()[0]);
-
-         // avoid black filling by middle-size
-         if ((handle.middle.length <= handle.major.length) || (handle.middle.length > gr_range/3.5)) {
-            handle.minor = handle.middle = handle.major;
-         } else
-         if ((this.nticks3 > 1) && (this.kind !== 'log'))  {
-            handle.minor = this.ProduceTicks(handle.middle.length, this.nticks3);
-            if ((handle.minor.length <= handle.middle.length) || (handle.minor.length > gr_range/1.7)) handle.minor = handle.middle;
-         }
-      }
-
-      handle.reset = function() {
-         this.nminor = this.nmiddle = this.nmajor = 0;
-      }
-
-      handle.next = function(doround) {
-         if (this.nminor >= this.minor.length) return false;
-
-         this.tick = this.minor[this.nminor++];
-         this.grpos = this.func(this.tick);
-         if (doround) this.grpos = Math.round(this.grpos);
-         this.kind = 3;
-
-         if ((this.nmiddle < this.middle.length) && (Math.abs(this.grpos - this.func(this.middle[this.nmiddle])) < 1)) {
-            this.nmiddle++;
-            this.kind = 2;
-         }
-
-         if ((this.nmajor < this.major.length) && (Math.abs(this.grpos - this.func(this.major[this.nmajor])) < 1) ) {
-            this.nmajor++;
-            this.kind = 1;
-         }
-         return true;
-      }
-
-      handle.last_major = function() {
-         return (this.kind !== 1) ? false : this.nmajor == this.major.length;
-      }
-
-      handle.next_major_grpos = function() {
-         if (this.nmajor >= this.major.length) return null;
-         return this.func(this.major[this.nmajor]);
-      }
-
-      this.order = 0;
-      this.ndig = 0;
-
-      // at the moment when drawing labels, we can try to find most optimal text representation for them
-
-      if ((this.kind == "normal") && (handle.major.length > 0)) {
-
-         let maxorder = 0, minorder = 0, exclorder3 = false;
-
-         if (!optionNoexp) {
-            let maxtick = Math.max(Math.abs(handle.major[0]),Math.abs(handle.major[handle.major.length-1])),
-                mintick = Math.min(Math.abs(handle.major[0]),Math.abs(handle.major[handle.major.length-1])),
-                ord1 = (maxtick > 0) ? Math.round(JSROOT.log10(maxtick)/3)*3 : 0,
-                ord2 = (mintick > 0) ? Math.round(JSROOT.log10(mintick)/3)*3 : 0;
-
-             exclorder3 = (maxtick < 2e4); // do not show 10^3 for values below 20000
-
-             if (maxtick || mintick) {
-                maxorder = Math.max(ord1,ord2) + 3;
-                minorder = Math.min(ord1,ord2) - 3;
-             }
-         }
-
-         // now try to find best combination of order and ndig for labels
-
-         let bestorder = 0, bestndig = this.ndig, bestlen = 1e10;
-
-         for (let order = minorder; order <= maxorder; order+=3) {
-            if (exclorder3 && (order===3)) continue;
-            this.order = order;
-            this.ndig = 0;
-            let lbls = [], indx = 0, totallen = 0;
-            while (indx<handle.major.length) {
-               let lbl = this.format(handle.major[indx], true);
-               if (lbls.indexOf(lbl)<0) {
-                  lbls.push(lbl);
-                  totallen += lbl.length;
-                  indx++;
-                  continue;
+            for (let order = minorder; order <= maxorder; order+=3) {
+               if (exclorder3 && (order===3)) continue;
+               this.order = order;
+               this.ndig = 0;
+               let lbls = [], indx = 0, totallen = 0;
+               while (indx<handle.major.length) {
+                  let lbl = this.format(handle.major[indx], true);
+                  if (lbls.indexOf(lbl)<0) {
+                     lbls.push(lbl);
+                     totallen += lbl.length;
+                     indx++;
+                     continue;
+                  }
+                  if (++this.ndig > 15) break; // not too many digits, anyway it will be exponential
+                  lbls = []; indx = 0; totallen = 0;
                }
-               if (++this.ndig > 15) break; // not too many digits, anyway it will be exponential
-               lbls = []; indx = 0; totallen = 0;
+
+               // for order==0 we should virtually remove "0." and extra label on top
+               if (!order && (this.ndig<4)) totallen-=(handle.major.length*2+3);
+
+               if (totallen < bestlen) {
+                  bestlen = totallen;
+                  bestorder = this.order;
+                  bestndig = this.ndig;
+               }
             }
 
-            // for order==0 we should virtually remove "0." and extra label on top
-            if (!order && (this.ndig<4)) totallen-=(handle.major.length*2+3);
+            this.order = bestorder;
+            this.ndig = bestndig;
 
-            if (totallen < bestlen) {
-               bestlen = totallen;
-               bestorder = this.order;
-               bestndig = this.ndig;
+            if (optionInt) {
+               if (this.order) console.warn('Axis painter - integer labels are configured, but axis order ' + this.order + ' is preferable');
+               if (this.ndig) console.warn('Axis painter - integer labels are configured, but ' + this.ndig + ' decimal digits are required');
+               this.ndig = 0;
+               this.order = 0;
             }
          }
 
-         this.order = bestorder;
-         this.ndig = bestndig;
-
-         if (optionInt) {
-            if (this.order) console.warn('Axis painter - integer labels are configured, but axis order ' + this.order + ' is preferable');
-            if (this.ndig) console.warn('Axis painter - integer labels are configured, but ' + this.ndig + ' decimal digits are required');
-            this.ndig = 0;
-            this.order = 0;
-         }
+         return handle;
       }
 
-      return handle;
-   }
+      IsCenterLabels() {
+         if (this.kind === 'labels') return true;
+         if (this.kind === 'log') return false;
+         let axis = this.GetObject();
+         return axis && axis.TestBit(JSROOT.EAxisBits.kCenterLabels);
+      }
 
-   TAxisPainter.prototype.IsCenterLabels = function() {
-      if (this.kind === 'labels') return true;
-      if (this.kind === 'log') return false;
-      let axis = this.GetObject();
-      return axis && axis.TestBit(JSROOT.EAxisBits.kCenterLabels);
-   }
+      AddTitleDrag(title_g, vertical, offset_k, reverse, axis_length) {
+         if (!JSROOT.gStyle.MoveResize) return;
 
-   TAxisPainter.prototype.AddTitleDrag = function(title_g, vertical, offset_k, reverse, axis_length) {
-      if (!JSROOT.gStyle.MoveResize) return;
+         let pthis = this,  drag_rect = null,
+             acc_x, acc_y, new_x, new_y, sign_0, alt_pos,
+             drag_move = d3.drag().subject(Object);
 
-      let pthis = this,  drag_rect = null,
-          acc_x, acc_y, new_x, new_y, sign_0, alt_pos,
-          drag_move = d3.drag().subject(Object);
-
-      drag_move
-         .on("start",  function(evnt) {
-
-            evnt.sourceEvent.preventDefault();
-            evnt.sourceEvent.stopPropagation();
-
-            let box = title_g.node().getBBox(), // check that elements visible, request precise value
-                axis = pthis.GetObject();
-
-            new_x = acc_x = title_g.property('shift_x');
-            new_y = acc_y = title_g.property('shift_y');
-
-            sign_0 = vertical ? (acc_x>0) : (acc_y>0); // sign should remain
-
-            if (axis.TestBit(JSROOT.EAxisBits.kCenterTitle))
-               alt_pos = (reverse === vertical) ? axis_length : 0;
-            else
-               alt_pos = Math.round(axis_length/2);
-
-            drag_rect = title_g.append("rect")
-                 .classed("zoom", true)
-                 .attr("x", box.x)
-                 .attr("y", box.y)
-                 .attr("width", box.width)
-                 .attr("height", box.height)
-                 .style("cursor", "move");
-//                 .style("pointer-events","none"); // let forward double click to underlying elements
-          }).on("drag", function(evnt) {
-               if (!drag_rect) return;
+         drag_move
+            .on("start",  function(evnt) {
 
                evnt.sourceEvent.preventDefault();
                evnt.sourceEvent.stopPropagation();
 
-               acc_x += evnt.dx;
-               acc_y += evnt.dy;
-
-               let set_x = title_g.property('shift_x'),
-                   set_y = title_g.property('shift_y');
-
-               if (vertical) {
-                  set_x = acc_x;
-                  if (Math.abs(acc_y - set_y) > Math.abs(acc_y - alt_pos)) set_y = alt_pos;
-               } else {
-                  set_y = acc_y;
-                  if (Math.abs(acc_x - set_x) > Math.abs(acc_x - alt_pos)) set_x = alt_pos;
-               }
-
-               if (sign_0 === (vertical ? (set_x>0) : (set_y>0))) {
-                  new_x = set_x; new_y = set_y;
-                  title_g.attr('transform', 'translate(' + new_x + ',' + new_y +  ')');
-               }
-
-          }).on("end", function(evnt) {
-               if (!drag_rect) return;
-
-               evnt.sourceEvent.preventDefault();
-               evnt.sourceEvent.stopPropagation();
-
-               title_g.property('shift_x', new_x)
-                      .property('shift_y', new_y);
-
-               let axis = pthis.GetObject();
-
-               axis.fTitleOffset = (vertical ? new_x : new_y) / offset_k;
-               if ((vertical ? new_y : new_x) === alt_pos) axis.InvertBit(JSROOT.EAxisBits.kCenterTitle);
-
-               drag_rect.remove();
-               drag_rect = null;
-            });
-
-      title_g.style("cursor", "move").call(drag_move);
-   }
-
-   TAxisPainter.prototype.DrawAxis = function(vertical, layer, w, h, transform, reverse, second_shift, disable_axis_drawing, max_text_width) {
-      // function draws  TAxis or TGaxis object
-
-      let axis = this.GetObject(), chOpt = "",
-          is_gaxis = (axis && axis._typename === 'TGaxis'),
-          axis_g = layer, tickSize = 0.03,
-          scaling_size = 100, draw_lines = true,
-          pad_w = this.pad_width() || 10,
-          pad_h = this.pad_height() || 10,
-          resolveFunc, totalTextCallbacks = 0, totalDone = false,
-          promise = new Promise(resolve => { resolveFunc = resolve; });
-
-      let checkTextCallBack = (is_callback) => {
-          if (is_callback) totalTextCallbacks--; else totalDone = true;
-          if (!totalTextCallbacks && totalDone && resolveFunc) {
-            resolveFunc(true);
-            resolveFunc = null;
-         }
-      };
-
-      this.vertical = vertical;
-
-      let myXor = (a,b) => ( a && !b ) || (!a && b);
-
-      // shift for second ticks set (if any)
-      if (!second_shift) second_shift = 0; else
-      if (this.invert_side) second_shift = -second_shift;
-
-      if (is_gaxis) {
-         this.createAttLine({ attr: axis });
-         draw_lines = axis.fLineColor != 0;
-         chOpt = axis.fChopt;
-         tickSize = axis.fTickSize;
-         scaling_size = (vertical ? 1.7*h : 0.6*w);
-      } else {
-         this.createAttLine({ color: axis.fAxisColor, width: 1, style: 1 });
-         chOpt = myXor(vertical, this.invert_side) ? "-S" : "+S";
-         tickSize = axis.fTickLength;
-         scaling_size = (vertical ? pad_w : pad_h);
-      }
-
-      // indicate that attributes created not for TAttLine, therefore cannot be updated as TAttLine in GED
-      this.lineatt.not_standard = true;
-
-      if (!is_gaxis || (this.name === "zaxis")) {
-         axis_g = layer.select("." + this.name + "_container");
-         if (axis_g.empty())
-            axis_g = layer.append("svg:g").attr("class",this.name + "_container");
-         else
-            axis_g.selectAll("*").remove();
-      }
-
-      if (!disable_axis_drawing && draw_lines)
-         axis_g.append("svg:line")
-               .attr("x1",0).attr("y1",0)
-               .attr("x2",vertical ? 0 : w)
-               .attr("y2", vertical ? h : 0)
-               .call(this.lineatt.func);
-
-      axis_g.attr("transform", transform || null);
-
-      let side = 1, ticks_plusminus = 0,
-          text_scaling_size = Math.min(pad_w, pad_h),
-          optionPlus = (chOpt.indexOf("+")>=0),
-          optionMinus = (chOpt.indexOf("-")>=0),
-          optionSize = (chOpt.indexOf("S")>=0),
-          // optionY = (chOpt.indexOf("Y")>=0),
-          // optionUp = (chOpt.indexOf("0")>=0),
-          // optionDown = (chOpt.indexOf("O")>=0),
-          optionUnlab = (chOpt.indexOf("U")>=0),  // no labels
-          optionNoopt = (chOpt.indexOf("N")>=0),  // no ticks position optimization
-          optionInt = (chOpt.indexOf("I")>=0),    // integer labels
-          optionNoexp = axis.TestBit(JSROOT.EAxisBits.kNoExponent);
-
-      if (is_gaxis && axis.TestBit(JSROOT.EAxisBits.kTickPlus)) optionPlus = true;
-      if (is_gaxis && axis.TestBit(JSROOT.EAxisBits.kTickMinus)) optionMinus = true;
-
-      if (optionPlus && optionMinus) { side = 1; ticks_plusminus = 1; } else
-      if (optionMinus) { side = myXor(reverse,vertical) ? 1 : -1; } else
-      if (optionPlus) { side = myXor(reverse,vertical) ? -1 : 1; }
-
-      tickSize = Math.round((optionSize ? tickSize : 0.03) * scaling_size);
-
-      if (this.max_tick_size && (tickSize > this.max_tick_size)) tickSize = this.max_tick_size;
-
-      this.CreateFormatFuncs();
-
-      let res = "", res2 = "", lastpos = 0, lasth = 0;
-
-      // first draw ticks
-
-      this.ticks = [];
-
-      let handle = this.CreateTicks(false, optionNoexp, optionNoopt, optionInt);
-
-      while (handle.next(true)) {
-
-         let h1 = Math.round(tickSize/4), h2 = 0;
-
-         if (handle.kind < 3)
-            h1 = Math.round(tickSize/2);
-
-         if (handle.kind == 1) {
-            // if not showing labels, not show large tick
-            if (!('format' in this) || (this.format(handle.tick,true)!==null)) h1 = tickSize;
-            this.ticks.push(handle.grpos); // keep graphical positions of major ticks
-         }
-
-         if (ticks_plusminus > 0) h2 = -h1; else
-         if (side < 0) { h2 = -h1; h1 = 0; } else { h2 = 0; }
-
-         if (res.length == 0) {
-            res = vertical ? ("M"+h1+","+handle.grpos) : ("M"+handle.grpos+","+(-h1));
-            res2 = vertical ? ("M"+(second_shift-h1)+","+handle.grpos) : ("M"+handle.grpos+","+(second_shift+h1));
-         } else {
-            res += vertical ? ("m"+(h1-lasth)+","+(handle.grpos-lastpos)) : ("m"+(handle.grpos-lastpos)+","+(lasth-h1));
-            res2 += vertical ? ("m"+(lasth-h1)+","+(handle.grpos-lastpos)) : ("m"+(handle.grpos-lastpos)+","+(h1-lasth));
-         }
-
-         res += vertical ? ("h"+ (h2-h1)) : ("v"+ (h1-h2));
-         res2 += vertical ? ("h"+ (h1-h2)) : ("v"+ (h2-h1));
-
-         lastpos = handle.grpos;
-         lasth = h2;
-      }
-
-      if ((res.length > 0) && !disable_axis_drawing && draw_lines)
-         axis_g.append("svg:path").attr("d", res).call(this.lineatt.func);
-
-      if ((second_shift!==0) && (res2.length>0) && !disable_axis_drawing  && draw_lines)
-         axis_g.append("svg:path").attr("d", res2).call(this.lineatt.func);
-
-      let labelsize = Math.round( (axis.fLabelSize < 1) ? axis.fLabelSize * text_scaling_size : axis.fLabelSize);
-      if ((labelsize <= 0) || (Math.abs(axis.fLabelOffset) > 1.1)) optionUnlab = true; // disable labels when size not specified
-
-      // draw labels (sometime on both sides)
-      if (!disable_axis_drawing && !optionUnlab) {
-
-         let label_color = this.get_color(axis.fLabelColor),
-             labeloffset = Math.round(Math.abs(axis.fLabelOffset)*text_scaling_size),
-             center_lbls = this.IsCenterLabels(),
-             rotate_lbls = axis.TestBit(JSROOT.EAxisBits.kLabelsVert),
-             textscale = 1, maxtextlen = 0, lbls_tilt = false, labelfont = null,
-             label_g = [ axis_g.append("svg:g").attr("class","axis_labels") ],
-             lbl_pos = handle.lbl_pos || handle.major,
-             total_draw_cnt = 0, all_done = 0;
-
-         if (this.lbls_both_sides)
-            label_g.push(axis_g.append("svg:g").attr("class","axis_labels").attr("transform", vertical ? "translate(" + w + ",0)" : "translate(0," + (-h) + ")"));
-
-         // function called when text text is drawn to analyze width, required to correctly scale all labels
-         function process_drawtext_ready(painter) {
-            let textwidth = this.result_width;
-
-            if (textwidth && ((!vertical && !rotate_lbls) || (vertical && rotate_lbls)) && (painter.kind != 'log')) {
-               let maxwidth = this.gap_before*0.45 + this.gap_after*0.45;
-               if (!this.gap_before) maxwidth = 0.9*this.gap_after; else
-               if (!this.gap_after) maxwidth = 0.9*this.gap_before;
-               textscale = Math.min(textscale, maxwidth / textwidth);
-            } else if (vertical && max_text_width && this.normal_side && (max_text_width - labeloffset > 20) && (textwidth > max_text_width - labeloffset)) {
-               textscale = Math.min(textscale, (max_text_width - labeloffset) / textwidth);
-            }
-
-            total_draw_cnt--;
-            if ((all_done != 1) || (total_draw_cnt > 0)) return;
-
-            all_done = 2; // mark that function is finished
-
-            if ((textscale > 0.01) && (textscale < 0.7) && !vertical && !rotate_lbls && (maxtextlen > 5) && !painter.lbls_both_sides) {
-               lbls_tilt = true;
-               textscale *= 3;
-            }
-
-            for (let cnt = 0; cnt < this.lgs.length; ++cnt) {
-               if ((textscale > 0.01) && (textscale < 1))
-                  painter.TextScaleFactor(1/textscale, this.lgs[cnt]);
-            }
-         }
-
-         for (let lcnt = 0; lcnt < label_g.length; ++lcnt) {
-
-            if (lcnt > 0) side = -side;
-
-            let lastpos = 0,
-                fix_coord = vertical ? -labeloffset*side : (labeloffset+2)*side + ticks_plusminus*tickSize;
-
-            labelfont = new JSROOT.FontHandler(axis.fLabelFont, labelsize);
-
-            this.StartTextDrawing(labelfont, 'font', label_g[lcnt]);
-
-            for (let nmajor=0;nmajor<lbl_pos.length;++nmajor) {
-
-               let lbl = this.format(lbl_pos[nmajor], true);
-               if (lbl === null) continue;
-
-               let arg = { text: lbl, color: label_color, latex: 1, draw_g: label_g[lcnt], normal_side: (lcnt == 0), lgs: label_g };
-
-               let pos = Math.round(this.func(lbl_pos[nmajor]));
-
-               arg.gap_before = (nmajor>0) ? Math.abs(Math.round(pos - this.func(lbl_pos[nmajor-1]))) : 0;
-
-               arg.gap_after = (nmajor<lbl_pos.length-1) ? Math.abs(Math.round(this.func(lbl_pos[nmajor+1])-pos)) : 0;
-
-               if (center_lbls) {
-                  let gap = arg.gap_after || arg.gap_before;
-                  pos = Math.round(pos - (vertical ? 0.5*gap : -0.5*gap));
-                  if ((pos < -5) || (pos > (vertical ? h : w) + 5)) continue;
-               }
-
-               maxtextlen = Math.max(maxtextlen, lbl.length);
-
-               if (vertical) {
-                  arg.x = fix_coord;
-                  arg.y = pos;
-                  arg.align = rotate_lbls ? ((side<0) ? 23 : 20) : ((side<0) ? 12 : 32);
-               } else {
-                  arg.x = pos;
-                  arg.y = fix_coord;
-                  arg.align = rotate_lbls ? ((side<0) ? 12 : 32) : ((side<0) ? 20 : 23);
-               }
-
-               if (rotate_lbls) arg.rotate = 270;
-
-               arg.post_process = process_drawtext_ready;
-
-               total_draw_cnt++;
-               this.DrawText(arg);
-
-               if (lastpos && (pos!=lastpos) && ((vertical && !rotate_lbls) || (!vertical && rotate_lbls))) {
-                  let axis_step = Math.abs(pos-lastpos);
-                  textscale = Math.min(textscale, 0.9*axis_step/labelsize);
-               }
-
-               lastpos = pos;
-            }
-
-            if (this.order)
-               this.DrawText({ color: label_color,
-                               x: vertical ? side*5 : w+5,
-                               y: this.has_obstacle ? fix_coord : (vertical ? -3 : -3*side),
-                               align: vertical ? ((side<0) ? 30 : 10) : ( myXor(this.has_obstacle, (side<0)) ? 13 : 10 ),
-                               latex: 1,
-                               text: '#times' + this.format10Exp(this.order),
-                               draw_g: label_g[lcnt]
+               let box = title_g.node().getBBox(), // check that elements visible, request precise value
+                   axis = pthis.GetObject();
+
+               new_x = acc_x = title_g.property('shift_x');
+               new_y = acc_y = title_g.property('shift_y');
+
+               sign_0 = vertical ? (acc_x>0) : (acc_y>0); // sign should remain
+
+               if (axis.TestBit(JSROOT.EAxisBits.kCenterTitle))
+                  alt_pos = (reverse === vertical) ? axis_length : 0;
+               else
+                  alt_pos = Math.round(axis_length/2);
+
+               drag_rect = title_g.append("rect")
+                    .classed("zoom", true)
+                    .attr("x", box.x)
+                    .attr("y", box.y)
+                    .attr("width", box.width)
+                    .attr("height", box.height)
+                    .style("cursor", "move");
+   //                 .style("pointer-events","none"); // let forward double click to underlying elements
+             }).on("drag", function(evnt) {
+                  if (!drag_rect) return;
+
+                  evnt.sourceEvent.preventDefault();
+                  evnt.sourceEvent.stopPropagation();
+
+                  acc_x += evnt.dx;
+                  acc_y += evnt.dy;
+
+                  let set_x = title_g.property('shift_x'),
+                      set_y = title_g.property('shift_y');
+
+                  if (vertical) {
+                     set_x = acc_x;
+                     if (Math.abs(acc_y - set_y) > Math.abs(acc_y - alt_pos)) set_y = alt_pos;
+                  } else {
+                     set_y = acc_y;
+                     if (Math.abs(acc_x - set_x) > Math.abs(acc_x - alt_pos)) set_x = alt_pos;
+                  }
+
+                  if (sign_0 === (vertical ? (set_x>0) : (set_y>0))) {
+                     new_x = set_x; new_y = set_y;
+                     title_g.attr('transform', 'translate(' + new_x + ',' + new_y +  ')');
+                  }
+
+             }).on("end", function(evnt) {
+                  if (!drag_rect) return;
+
+                  evnt.sourceEvent.preventDefault();
+                  evnt.sourceEvent.stopPropagation();
+
+                  title_g.property('shift_x', new_x)
+                         .property('shift_y', new_y);
+
+                  let axis = pthis.GetObject();
+
+                  axis.fTitleOffset = (vertical ? new_x : new_y) / offset_k;
+                  if ((vertical ? new_y : new_x) === alt_pos) axis.InvertBit(JSROOT.EAxisBits.kCenterTitle);
+
+                  drag_rect.remove();
+                  drag_rect = null;
                });
+
+         title_g.style("cursor", "move").call(drag_move);
+      }
+
+      DrawAxis(vertical, layer, w, h, transform, reverse, second_shift, disable_axis_drawing, max_text_width) {
+         // function draws  TAxis or TGaxis object
+
+         let axis = this.GetObject(), chOpt = "",
+             is_gaxis = (axis && axis._typename === 'TGaxis'),
+             axis_g = layer, tickSize = 0.03,
+             scaling_size = 100, draw_lines = true,
+             pad_w = this.pad_width() || 10,
+             pad_h = this.pad_height() || 10,
+             resolveFunc, totalTextCallbacks = 0, totalDone = false,
+             promise = new Promise(resolve => { resolveFunc = resolve; });
+
+         let checkTextCallBack = (is_callback) => {
+             if (is_callback) totalTextCallbacks--; else totalDone = true;
+             if (!totalTextCallbacks && totalDone && resolveFunc) {
+               resolveFunc(true);
+               resolveFunc = null;
+            }
+         };
+
+         this.vertical = vertical;
+
+         let myXor = (a,b) => ( a && !b ) || (!a && b);
+
+         // shift for second ticks set (if any)
+         if (!second_shift) second_shift = 0; else
+         if (this.invert_side) second_shift = -second_shift;
+
+         if (is_gaxis) {
+            this.createAttLine({ attr: axis });
+            draw_lines = axis.fLineColor != 0;
+            chOpt = axis.fChopt;
+            tickSize = axis.fTickSize;
+            scaling_size = (vertical ? 1.7*h : 0.6*w);
+         } else {
+            this.createAttLine({ color: axis.fAxisColor, width: 1, style: 1 });
+            chOpt = myXor(vertical, this.invert_side) ? "-S" : "+S";
+            tickSize = axis.fTickLength;
+            scaling_size = (vertical ? pad_w : pad_h);
          }
 
-         all_done = 1;
+         // indicate that attributes created not for TAttLine, therefore cannot be updated as TAttLine in GED
+         this.lineatt.not_standard = true;
 
-         totalTextCallbacks += label_g.length;
-         for (let lcnt = 0; lcnt < label_g.length; ++lcnt)
-            this.FinishTextDrawing(label_g[lcnt], () => {
-               if (lbls_tilt)
-                  label_g[lcnt].selectAll("text").each(function() {
-                     let txt = d3.select(this), tr = txt.attr("transform");
-                     txt.attr("transform", tr + " rotate(25)").style("text-anchor", "start");
+         if (!is_gaxis || (this.name === "zaxis")) {
+            axis_g = layer.select("." + this.name + "_container");
+            if (axis_g.empty())
+               axis_g = layer.append("svg:g").attr("class",this.name + "_container");
+            else
+               axis_g.selectAll("*").remove();
+         }
+
+         if (!disable_axis_drawing && draw_lines)
+            axis_g.append("svg:line")
+                  .attr("x1",0).attr("y1",0)
+                  .attr("x2",vertical ? 0 : w)
+                  .attr("y2", vertical ? h : 0)
+                  .call(this.lineatt.func);
+
+         axis_g.attr("transform", transform || null);
+
+         let side = 1, ticks_plusminus = 0,
+             text_scaling_size = Math.min(pad_w, pad_h),
+             optionPlus = (chOpt.indexOf("+")>=0),
+             optionMinus = (chOpt.indexOf("-")>=0),
+             optionSize = (chOpt.indexOf("S")>=0),
+             // optionY = (chOpt.indexOf("Y")>=0),
+             // optionUp = (chOpt.indexOf("0")>=0),
+             // optionDown = (chOpt.indexOf("O")>=0),
+             optionUnlab = (chOpt.indexOf("U")>=0),  // no labels
+             optionNoopt = (chOpt.indexOf("N")>=0),  // no ticks position optimization
+             optionInt = (chOpt.indexOf("I")>=0),    // integer labels
+             optionNoexp = axis.TestBit(JSROOT.EAxisBits.kNoExponent);
+
+         if (is_gaxis && axis.TestBit(JSROOT.EAxisBits.kTickPlus)) optionPlus = true;
+         if (is_gaxis && axis.TestBit(JSROOT.EAxisBits.kTickMinus)) optionMinus = true;
+
+         if (optionPlus && optionMinus) { side = 1; ticks_plusminus = 1; } else
+         if (optionMinus) { side = myXor(reverse,vertical) ? 1 : -1; } else
+         if (optionPlus) { side = myXor(reverse,vertical) ? -1 : 1; }
+
+         tickSize = Math.round((optionSize ? tickSize : 0.03) * scaling_size);
+
+         if (this.max_tick_size && (tickSize > this.max_tick_size)) tickSize = this.max_tick_size;
+
+         this.CreateFormatFuncs();
+
+         let res = "", res2 = "", lastpos = 0, lasth = 0;
+
+         // first draw ticks
+
+         this.ticks = [];
+
+         let handle = this.CreateTicks(false, optionNoexp, optionNoopt, optionInt);
+
+         while (handle.next(true)) {
+
+            let h1 = Math.round(tickSize/4), h2 = 0;
+
+            if (handle.kind < 3)
+               h1 = Math.round(tickSize/2);
+
+            if (handle.kind == 1) {
+               // if not showing labels, not show large tick
+               if (!('format' in this) || (this.format(handle.tick,true)!==null)) h1 = tickSize;
+               this.ticks.push(handle.grpos); // keep graphical positions of major ticks
+            }
+
+            if (ticks_plusminus > 0) h2 = -h1; else
+            if (side < 0) { h2 = -h1; h1 = 0; } else { h2 = 0; }
+
+            if (res.length == 0) {
+               res = vertical ? ("M"+h1+","+handle.grpos) : ("M"+handle.grpos+","+(-h1));
+               res2 = vertical ? ("M"+(second_shift-h1)+","+handle.grpos) : ("M"+handle.grpos+","+(second_shift+h1));
+            } else {
+               res += vertical ? ("m"+(h1-lasth)+","+(handle.grpos-lastpos)) : ("m"+(handle.grpos-lastpos)+","+(lasth-h1));
+               res2 += vertical ? ("m"+(lasth-h1)+","+(handle.grpos-lastpos)) : ("m"+(handle.grpos-lastpos)+","+(h1-lasth));
+            }
+
+            res += vertical ? ("h"+ (h2-h1)) : ("v"+ (h1-h2));
+            res2 += vertical ? ("h"+ (h1-h2)) : ("v"+ (h2-h1));
+
+            lastpos = handle.grpos;
+            lasth = h2;
+         }
+
+         if ((res.length > 0) && !disable_axis_drawing && draw_lines)
+            axis_g.append("svg:path").attr("d", res).call(this.lineatt.func);
+
+         if ((second_shift!==0) && (res2.length>0) && !disable_axis_drawing  && draw_lines)
+            axis_g.append("svg:path").attr("d", res2).call(this.lineatt.func);
+
+         let labelsize = Math.round( (axis.fLabelSize < 1) ? axis.fLabelSize * text_scaling_size : axis.fLabelSize);
+         if ((labelsize <= 0) || (Math.abs(axis.fLabelOffset) > 1.1)) optionUnlab = true; // disable labels when size not specified
+
+         // draw labels (sometime on both sides)
+         if (!disable_axis_drawing && !optionUnlab) {
+
+            let label_color = this.get_color(axis.fLabelColor),
+                labeloffset = Math.round(Math.abs(axis.fLabelOffset)*text_scaling_size),
+                center_lbls = this.IsCenterLabels(),
+                rotate_lbls = axis.TestBit(JSROOT.EAxisBits.kLabelsVert),
+                textscale = 1, maxtextlen = 0, lbls_tilt = false, labelfont = null,
+                label_g = [ axis_g.append("svg:g").attr("class","axis_labels") ],
+                lbl_pos = handle.lbl_pos || handle.major,
+                total_draw_cnt = 0, all_done = 0;
+
+            if (this.lbls_both_sides)
+               label_g.push(axis_g.append("svg:g").attr("class","axis_labels").attr("transform", vertical ? "translate(" + w + ",0)" : "translate(0," + (-h) + ")"));
+
+            // function called when text text is drawn to analyze width, required to correctly scale all labels
+            function process_drawtext_ready(painter) {
+               let textwidth = this.result_width;
+
+               if (textwidth && ((!vertical && !rotate_lbls) || (vertical && rotate_lbls)) && (painter.kind != 'log')) {
+                  let maxwidth = this.gap_before*0.45 + this.gap_after*0.45;
+                  if (!this.gap_before) maxwidth = 0.9*this.gap_after; else
+                  if (!this.gap_after) maxwidth = 0.9*this.gap_before;
+                  textscale = Math.min(textscale, maxwidth / textwidth);
+               } else if (vertical && max_text_width && this.normal_side && (max_text_width - labeloffset > 20) && (textwidth > max_text_width - labeloffset)) {
+                  textscale = Math.min(textscale, (max_text_width - labeloffset) / textwidth);
+               }
+
+               total_draw_cnt--;
+               if ((all_done != 1) || (total_draw_cnt > 0)) return;
+
+               all_done = 2; // mark that function is finished
+
+               if ((textscale > 0.01) && (textscale < 0.7) && !vertical && !rotate_lbls && (maxtextlen > 5) && !painter.lbls_both_sides) {
+                  lbls_tilt = true;
+                  textscale *= 3;
+               }
+
+               for (let cnt = 0; cnt < this.lgs.length; ++cnt) {
+                  if ((textscale > 0.01) && (textscale < 1))
+                     painter.TextScaleFactor(1/textscale, this.lgs[cnt]);
+               }
+            }
+
+            for (let lcnt = 0; lcnt < label_g.length; ++lcnt) {
+
+               if (lcnt > 0) side = -side;
+
+               let lastpos = 0,
+                   fix_coord = vertical ? -labeloffset*side : (labeloffset+2)*side + ticks_plusminus*tickSize;
+
+               labelfont = new JSROOT.FontHandler(axis.fLabelFont, labelsize);
+
+               this.StartTextDrawing(labelfont, 'font', label_g[lcnt]);
+
+               for (let nmajor=0;nmajor<lbl_pos.length;++nmajor) {
+
+                  let lbl = this.format(lbl_pos[nmajor], true);
+                  if (lbl === null) continue;
+
+                  let arg = { text: lbl, color: label_color, latex: 1, draw_g: label_g[lcnt], normal_side: (lcnt == 0), lgs: label_g };
+
+                  let pos = Math.round(this.func(lbl_pos[nmajor]));
+
+                  arg.gap_before = (nmajor>0) ? Math.abs(Math.round(pos - this.func(lbl_pos[nmajor-1]))) : 0;
+
+                  arg.gap_after = (nmajor<lbl_pos.length-1) ? Math.abs(Math.round(this.func(lbl_pos[nmajor+1])-pos)) : 0;
+
+                  if (center_lbls) {
+                     let gap = arg.gap_after || arg.gap_before;
+                     pos = Math.round(pos - (vertical ? 0.5*gap : -0.5*gap));
+                     if ((pos < -5) || (pos > (vertical ? h : w) + 5)) continue;
+                  }
+
+                  maxtextlen = Math.max(maxtextlen, lbl.length);
+
+                  if (vertical) {
+                     arg.x = fix_coord;
+                     arg.y = pos;
+                     arg.align = rotate_lbls ? ((side<0) ? 23 : 20) : ((side<0) ? 12 : 32);
+                  } else {
+                     arg.x = pos;
+                     arg.y = fix_coord;
+                     arg.align = rotate_lbls ? ((side<0) ? 12 : 32) : ((side<0) ? 20 : 23);
+                  }
+
+                  if (rotate_lbls) arg.rotate = 270;
+
+                  arg.post_process = process_drawtext_ready;
+
+                  total_draw_cnt++;
+                  this.DrawText(arg);
+
+                  if (lastpos && (pos!=lastpos) && ((vertical && !rotate_lbls) || (!vertical && rotate_lbls))) {
+                     let axis_step = Math.abs(pos-lastpos);
+                     textscale = Math.min(textscale, 0.9*axis_step/labelsize);
+                  }
+
+                  lastpos = pos;
+               }
+
+               if (this.order)
+                  this.DrawText({ color: label_color,
+                                  x: vertical ? side*5 : w+5,
+                                  y: this.has_obstacle ? fix_coord : (vertical ? -3 : -3*side),
+                                  align: vertical ? ((side<0) ? 30 : 10) : ( myXor(this.has_obstacle, (side<0)) ? 13 : 10 ),
+                                  latex: 1,
+                                  text: '#times' + this.format10Exp(this.order),
+                                  draw_g: label_g[lcnt]
                   });
+            }
+
+            all_done = 1;
+
+            totalTextCallbacks += label_g.length;
+            for (let lcnt = 0; lcnt < label_g.length; ++lcnt)
+               this.FinishTextDrawing(label_g[lcnt], () => {
+                  if (lbls_tilt)
+                     label_g[lcnt].selectAll("text").each(function() {
+                        let txt = d3.select(this), tr = txt.attr("transform");
+                        txt.attr("transform", tr + " rotate(25)").style("text-anchor", "start");
+                     });
+
+                  checkTextCallBack(true);
+               });
+
+            if (label_g.length > 1) side = -side;
+
+            if (labelfont) labelsize = labelfont.size; // use real font size
+         }
+
+         if (JSROOT.gStyle.Zooming && !this.disable_zooming) {
+            let r = axis_g.append("svg:rect")
+                          .attr("class", "axis_zoom")
+                          .style("opacity", "0")
+                          .style("cursor", "crosshair");
+
+            if (vertical)
+               r.attr("x", (side>0) ? (-2*labelsize - 3) : 3)
+                .attr("y", 0)
+                .attr("width", 2*labelsize + 3)
+                .attr("height", h)
+            else
+               r.attr("x", 0).attr("y", (side>0) ? 0 : -labelsize - 3)
+                .attr("width", w).attr("height", labelsize + 3);
+         }
+
+         if ((axis.fTitle.length > 0) && !disable_axis_drawing) {
+            let title_g = axis_g.append("svg:g").attr("class", "axis_title"),
+                title_fontsize = (axis.fTitleSize >= 1) ? axis.fTitleSize : Math.round(axis.fTitleSize * text_scaling_size),
+                title_offest_k = 1.6*(axis.fTitleSize<1 ? axis.fTitleSize : axis.fTitleSize/(this.pad_height("") || 10)),
+                center = axis.TestBit(JSROOT.EAxisBits.kCenterTitle),
+                rotate = axis.TestBit(JSROOT.EAxisBits.kRotateTitle) ? -1 : 1,
+                title_color = this.get_color(is_gaxis ? axis.fTextColor : axis.fTitleColor),
+                shift_x = 0, shift_y = 0;
+
+            this.StartTextDrawing(axis.fTitleFont, title_fontsize, title_g);
+
+            let myxor = ((rotate<0) && !reverse) || ((rotate>=0) && reverse);
+
+            if (vertical) {
+               title_offest_k *= -side*pad_w;
+
+               shift_x = Math.round(title_offest_k*axis.fTitleOffset);
+
+               if ((this.name == "zaxis") && is_gaxis && ('getBoundingClientRect' in axis_g.node())) {
+                  // special handling for color palette labels - draw them always on right side
+                  let rect = axis_g.node().getBoundingClientRect();
+                  if (shift_x < rect.width - tickSize) shift_x = Math.round(rect.width - tickSize);
+               }
+
+               shift_y = Math.round(center ? h/2 : (reverse ? h : 0));
+
+               this.DrawText({ align: (center ? "middle" : (myxor ? "begin" : "end" )) + ";middle",
+                               rotate: (rotate<0) ? 90 : 270,
+                               text: axis.fTitle, color: title_color, draw_g: title_g });
+            } else {
+               title_offest_k *= side*pad_h;
+
+               shift_x = Math.round(center ? w/2 : (reverse ? 0 : w));
+               shift_y = Math.round(title_offest_k*axis.fTitleOffset);
+               this.DrawText({ align: (center ? 'middle' : (myxor ? 'begin' : 'end')) + ";middle",
+                               rotate: (rotate<0) ? 180 : 0,
+                               text: axis.fTitle, color: title_color, draw_g: title_g });
+            }
+
+            let axis_rect = null;
+            if (vertical && (axis.fTitleOffset == 0) && ('getBoundingClientRect' in axis_g.node()))
+               axis_rect = axis_g.node().getBoundingClientRect();
+
+            totalTextCallbacks++;
+            this.FinishTextDrawing(title_g, () => {
+               if (axis_rect) {
+                  let title_rect = title_g.node().getBoundingClientRect();
+                  shift_x = (side>0) ? Math.round(axis_rect.left - title_rect.right - title_fontsize*0.3) :
+                                       Math.round(axis_rect.right - title_rect.left + title_fontsize*0.3);
+               }
+
+               title_g.attr('transform', 'translate(' + shift_x + ',' + shift_y +  ')')
+                      .property('shift_x', shift_x)
+                      .property('shift_y', shift_y);
 
                checkTextCallBack(true);
             });
 
-         if (label_g.length > 1) side = -side;
 
-         if (labelfont) labelsize = labelfont.size; // use real font size
+            this.AddTitleDrag(title_g, vertical, title_offest_k, reverse, vertical ? h : w);
+         }
+
+         this.position = 0;
+
+         if (!disable_axis_drawing && ('getBoundingClientRect' in axis_g.node())) {
+            let rect1 = axis_g.node().getBoundingClientRect(),
+                rect2 = this.svg_pad().node().getBoundingClientRect();
+
+            this.position = rect1.left - rect2.left; // use to control left position of Y scale
+         }
+
+         checkTextCallBack(false);
+
+         return promise;
       }
 
-      if (JSROOT.gStyle.Zooming && !this.disable_zooming) {
-         let r = axis_g.append("svg:rect")
-                       .attr("class", "axis_zoom")
-                       .style("opacity", "0")
-                       .style("cursor", "crosshair");
+      Redraw() {
 
-         if (vertical)
-            r.attr("x", (side>0) ? (-2*labelsize - 3) : 3)
-             .attr("y", 0)
-             .attr("width", 2*labelsize + 3)
-             .attr("height", h)
-         else
-            r.attr("x", 0).attr("y", (side>0) ? 0 : -labelsize - 3)
-             .attr("width", w).attr("height", labelsize + 3);
-      }
+         let gaxis = this.GetObject(),
+             x1 = this.AxisToSvg("x", gaxis.fX1),
+             y1 = this.AxisToSvg("y", gaxis.fY1),
+             x2 = this.AxisToSvg("x", gaxis.fX2),
+             y2 = this.AxisToSvg("y", gaxis.fY2),
+             w = x2 - x1, h = y1 - y2,
+             vertical = Math.abs(w) < Math.abs(h),
+             func = null, reverse = false, kind = "normal",
+             min = gaxis.fWmin, max = gaxis.fWmax,
+             domain_min = min, domain_max = max;
 
-      if ((axis.fTitle.length > 0) && !disable_axis_drawing) {
-         let title_g = axis_g.append("svg:g").attr("class", "axis_title"),
-             title_fontsize = (axis.fTitleSize >= 1) ? axis.fTitleSize : Math.round(axis.fTitleSize * text_scaling_size),
-             title_offest_k = 1.6*(axis.fTitleSize<1 ? axis.fTitleSize : axis.fTitleSize/(this.pad_height("") || 10)),
-             center = axis.TestBit(JSROOT.EAxisBits.kCenterTitle),
-             rotate = axis.TestBit(JSROOT.EAxisBits.kRotateTitle) ? -1 : 1,
-             title_color = this.get_color(is_gaxis ? axis.fTextColor : axis.fTitleColor),
-             shift_x = 0, shift_y = 0;
+         if (gaxis.fChopt.indexOf("t")>=0) {
+            func = d3.scaleTime();
+            kind = "time";
+            this.toffset = JSROOT.Painter.getTimeOffset(gaxis);
+            domain_min = new Date(this.toffset + min*1000);
+            domain_max = new Date(this.toffset + max*1000);
+         } else if (gaxis.fChopt.indexOf("G")>=0) {
+            func = d3.scaleLog();
+            kind = "log";
+         } else {
+            func = d3.scaleLinear();
+            kind = "normal";
+         }
 
-         this.StartTextDrawing(axis.fTitleFont, title_fontsize, title_g);
-
-         let myxor = ((rotate<0) && !reverse) || ((rotate>=0) && reverse);
+         func.domain([domain_min, domain_max]);
 
          if (vertical) {
-            title_offest_k *= -side*pad_w;
-
-            shift_x = Math.round(title_offest_k*axis.fTitleOffset);
-
-            if ((this.name == "zaxis") && is_gaxis && ('getBoundingClientRect' in axis_g.node())) {
-               // special handling for color palette labels - draw them always on right side
-               let rect = axis_g.node().getBoundingClientRect();
-               if (shift_x < rect.width - tickSize) shift_x = Math.round(rect.width - tickSize);
+            if (h > 0) {
+               func.range([h,0]);
+            } else {
+               let d = y1; y1 = y2; y2 = d;
+               h = -h; reverse = true;
+               func.range([0,h]);
             }
-
-            shift_y = Math.round(center ? h/2 : (reverse ? h : 0));
-
-            this.DrawText({ align: (center ? "middle" : (myxor ? "begin" : "end" )) + ";middle",
-                            rotate: (rotate<0) ? 90 : 270,
-                            text: axis.fTitle, color: title_color, draw_g: title_g });
          } else {
-            title_offest_k *= side*pad_h;
-
-            shift_x = Math.round(center ? w/2 : (reverse ? 0 : w));
-            shift_y = Math.round(title_offest_k*axis.fTitleOffset);
-            this.DrawText({ align: (center ? 'middle' : (myxor ? 'begin' : 'end')) + ";middle",
-                            rotate: (rotate<0) ? 180 : 0,
-                            text: axis.fTitle, color: title_color, draw_g: title_g });
-         }
-
-         let axis_rect = null;
-         if (vertical && (axis.fTitleOffset == 0) && ('getBoundingClientRect' in axis_g.node()))
-            axis_rect = axis_g.node().getBoundingClientRect();
-
-         totalTextCallbacks++;
-         this.FinishTextDrawing(title_g, () => {
-            if (axis_rect) {
-               let title_rect = title_g.node().getBoundingClientRect();
-               shift_x = (side>0) ? Math.round(axis_rect.left - title_rect.right - title_fontsize*0.3) :
-                                    Math.round(axis_rect.right - title_rect.left + title_fontsize*0.3);
+            if (w > 0) {
+               func.range([0,w]);
+            } else {
+               let d = x1; x1 = x2; x2 = d;
+               w = -w; reverse = true;
+               func.range([w,0]);
             }
-
-            title_g.attr('transform', 'translate(' + shift_x + ',' + shift_y +  ')')
-                   .property('shift_x', shift_x)
-                   .property('shift_y', shift_y);
-
-            checkTextCallBack(true);
-         });
-
-
-         this.AddTitleDrag(title_g, vertical, title_offest_k, reverse, vertical ? h : w);
-      }
-
-      this.position = 0;
-
-      if (!disable_axis_drawing && ('getBoundingClientRect' in axis_g.node())) {
-         let rect1 = axis_g.node().getBoundingClientRect(),
-             rect2 = this.svg_pad().node().getBoundingClientRect();
-
-         this.position = rect1.left - rect2.left; // use to control left position of Y scale
-      }
-
-      checkTextCallBack(false);
-
-      return promise;
-   }
-
-   TAxisPainter.prototype.Redraw = function() {
-
-      let gaxis = this.GetObject(),
-          x1 = this.AxisToSvg("x", gaxis.fX1),
-          y1 = this.AxisToSvg("y", gaxis.fY1),
-          x2 = this.AxisToSvg("x", gaxis.fX2),
-          y2 = this.AxisToSvg("y", gaxis.fY2),
-          w = x2 - x1, h = y1 - y2,
-          vertical = Math.abs(w) < Math.abs(h),
-          func = null, reverse = false, kind = "normal",
-          min = gaxis.fWmin, max = gaxis.fWmax,
-          domain_min = min, domain_max = max;
-
-      if (gaxis.fChopt.indexOf("t")>=0) {
-         func = d3.scaleTime();
-         kind = "time";
-         this.toffset = JSROOT.Painter.getTimeOffset(gaxis);
-         domain_min = new Date(this.toffset + min*1000);
-         domain_max = new Date(this.toffset + max*1000);
-      } else if (gaxis.fChopt.indexOf("G")>=0) {
-         func = d3.scaleLog();
-         kind = "log";
-      } else {
-         func = d3.scaleLinear();
-         kind = "normal";
-      }
-
-      func.domain([domain_min, domain_max]);
-
-      if (vertical) {
-         if (h > 0) {
-            func.range([h,0]);
-         } else {
-            let d = y1; y1 = y2; y2 = d;
-            h = -h; reverse = true;
-            func.range([0,h]);
          }
-      } else {
-         if (w > 0) {
-            func.range([0,w]);
-         } else {
-            let d = x1; x1 = x2; x2 = d;
-            w = -w; reverse = true;
-            func.range([w,0]);
-         }
+
+         this.SetAxisConfig(vertical ? "yaxis" : "xaxis", kind, func, min, max, min, max);
+
+         this.CreateG();
+
+         return this.DrawAxis(vertical, this.draw_g, w, h, "translate(" + x1 + "," + y2 +")", reverse);
       }
 
-      this.SetAxisConfig(vertical ? "yaxis" : "xaxis", kind, func, min, max, min, max);
-
-      this.CreateG();
-
-      return this.DrawAxis(vertical, this.draw_g, w, h, "translate(" + x1 + "," + y2 +")", reverse);
-   }
+   } // class TAxisPainter
 
    JSROOT.Painter.drawGaxis = function(divid, obj /*, opt*/) {
-      let painter = new JSROOT.TAxisPainter(obj, false);
+      let painter = new TAxisPainter(obj, false);
 
       painter.SetDivId(divid);
 
@@ -858,1879 +855,1860 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
 
    // ===============================================
 
-   /**
-    * @summary Painter for TFrame object.
-    *
-    * @constructor
-    * @memberof JSROOT
-    * @arguments JSROOT.TObjectPainter
-    * @param {object} tframe - TFrame object to draw
-    */
+   /** @summary Painter for TFrame object. */
 
-   function TFramePainter(tframe) {
-      if (tframe && tframe.$dummy) tframe = null;
-      JSROOT.TObjectPainter.call(this, tframe);
-      this.zoom_kind = 0;
-      this.mode3d = false;
-      this.shrink_frame_left = 0.;
-      this.x_kind = 'normal'; // 'normal', 'log', 'time', 'labels'
-      this.y_kind = 'normal'; // 'normal', 'log', 'time', 'labels'
-      this.xmin = this.xmax = 0; // no scale specified, wait for objects drawing
-      this.ymin = this.ymax = 0; // no scale specified, wait for objects drawing
-      this.ranges_set = false;
-      this.axes_drawn = false;
-      this.keys_handler = null;
-      this.projection = 0; // different projections
-   }
+   class TFramePainter extends JSROOT.ObjectPainter {
 
-   TFramePainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
+      constructor(tframe) {
+         super((tframe && tframe.$dummy) ? null : tframe);
+         this.zoom_kind = 0;
+         this.mode3d = false;
+         this.shrink_frame_left = 0.;
+         this.x_kind = 'normal'; // 'normal', 'log', 'time', 'labels'
+         this.y_kind = 'normal'; // 'normal', 'log', 'time', 'labels'
+         this.xmin = this.xmax = 0; // no scale specified, wait for objects drawing
+         this.ymin = this.ymax = 0; // no scale specified, wait for objects drawing
+         this.ranges_set = false;
+         this.axes_drawn = false;
+         this.keys_handler = null;
+         this.projection = 0; // different projections
+      }
 
-   /** @summary Returns frame painter - object itself
-    * @private */
-   TFramePainter.prototype.frame_painter = function() {
-      return this;
-   }
+      /** @summary Returns frame painter - object itself */
+      frame_painter() { return this; }
 
-   /** @summary Set active flag for frame - can block some events
-    * @private */
-   TFramePainter.prototype.SetActive = function(/* on */) {
-      // do nothing here - key handler is handled differently
-   }
+      /** @summary Set active flag for frame - can block some events
+       * @private */
+      SetActive(/* on */) {
+         // do nothing here - key handler is handled differently
+      }
 
-   TFramePainter.prototype.GetTipName = function(append) {
-      let res = JSROOT.TObjectPainter.prototype.GetTipName.call(this) || "TFrame";
-      if (append) res+=append;
-      return res;
-   }
+      GetTipName(append) {
+         let res = super.GetTipName() || "TFrame";
+         if (append) res+=append;
+         return res;
+      }
 
-   TFramePainter.prototype.Shrink = function(shrink_left, shrink_right) {
-      this.fX1NDC += shrink_left;
-      this.fX2NDC -= shrink_right;
-   }
+      Shrink(shrink_left, shrink_right) {
+         this.fX1NDC += shrink_left;
+         this.fX2NDC -= shrink_right;
+      }
 
-   TFramePainter.prototype.SetLastEventPos = function(pnt) {
-      // set position of last context menu event, can be
-      this.fLastEventPnt = pnt;
-   }
+      /** Set position of last context menu event */
+      SetLastEventPos(pnt) {
+         this.fLastEventPnt = pnt;
+      }
 
-   TFramePainter.prototype.GetLastEventPos = function() {
-      // return position of last event
-      return this.fLastEventPnt;
-   }
+      /** return position of last event */
+      GetLastEventPos() { return this.fLastEventPnt; }
 
-   TFramePainter.prototype.ProjectAitoff2xy = function(l, b) {
-      let DegToRad = Math.PI/180,
-          alpha2 = (l/2)*DegToRad,
-          delta  = b*DegToRad,
-          r2     = Math.sqrt(2),
-          f      = 2*r2/Math.PI,
-          cdec   = Math.cos(delta),
-          denom  = Math.sqrt(1. + cdec*Math.cos(alpha2)),
-          res = {
-             x: cdec*Math.sin(alpha2)*2.*r2/denom/f/DegToRad,
-             y: Math.sin(delta)*r2/denom/f/DegToRad
-          };
-      //  x *= -1.; // for a skymap swap left<->right
-      return res;
-   }
+      ProjectAitoff2xy(l, b) {
+         let DegToRad = Math.PI/180,
+             alpha2 = (l/2)*DegToRad,
+             delta  = b*DegToRad,
+             r2     = Math.sqrt(2),
+             f      = 2*r2/Math.PI,
+             cdec   = Math.cos(delta),
+             denom  = Math.sqrt(1. + cdec*Math.cos(alpha2)),
+             res = {
+                x: cdec*Math.sin(alpha2)*2.*r2/denom/f/DegToRad,
+                y: Math.sin(delta)*r2/denom/f/DegToRad
+             };
+         //  x *= -1.; // for a skymap swap left<->right
+         return res;
+      }
 
-   TFramePainter.prototype.ProjectMercator2xy = function(l, b) {
-      let aid = Math.tan((Math.PI/2 + b/180*Math.PI)/2);
-      return { x: l, y: Math.log(aid) };
-   }
+      ProjectMercator2xy(l, b) {
+         let aid = Math.tan((Math.PI/2 + b/180*Math.PI)/2);
+         return { x: l, y: Math.log(aid) };
+      }
 
-   TFramePainter.prototype.ProjectSinusoidal2xy = function(l, b) {
-      return { x: l*Math.cos(b/180*Math.PI), y: b };
-   }
+      ProjectSinusoidal2xy(l, b) {
+         return { x: l*Math.cos(b/180*Math.PI), y: b };
+      }
 
-   TFramePainter.prototype.ProjectParabolic2xy = function(l, b) {
-      return {
-         x: l*(2.*Math.cos(2*b/180*Math.PI/3) - 1),
-         y: 180*Math.sin(b/180*Math.PI/3)
-      };
-   }
+      ProjectParabolic2xy(l, b) {
+         return {
+            x: l*(2.*Math.cos(2*b/180*Math.PI/3) - 1),
+            y: 180*Math.sin(b/180*Math.PI/3)
+         };
+      }
 
-   TFramePainter.prototype.RecalculateRange = function(Proj) {
-      // not yet used, could be useful in the future
+      RecalculateRange(Proj) {
+         this.projection = Proj || 0;
+         if (!this.projection) return;
 
-      this.projection = Proj || 0;
+         let pnts = []; // all extremes which used to find
+         if (this.projection == 1) {
+            // TODO : check x range not lower than -180 and not higher than 180
+            pnts.push(this.ProjectAitoff2xy(this.scale_xmin, this.scale_ymin));
+            pnts.push(this.ProjectAitoff2xy(this.scale_xmin, this.scale_ymax));
+            pnts.push(this.ProjectAitoff2xy(this.scale_xmax, this.scale_ymax));
+            pnts.push(this.ProjectAitoff2xy(this.scale_xmax, this.scale_ymin));
+            if (this.scale_ymin<0 && this.scale_ymax>0) {
+               // there is an  'equator', check its range in the plot..
+               pnts.push(this.ProjectAitoff2xy(this.scale_xmin*0.9999, 0));
+               pnts.push(this.ProjectAitoff2xy(this.scale_xmax*0.9999, 0));
+            }
+            if (this.scale_xmin<0 && this.scale_xmax>0) {
+               pnts.push(this.ProjectAitoff2xy(0, this.scale_ymin));
+               pnts.push(this.ProjectAitoff2xy(0, this.scale_ymax));
+            }
+         } else if (this.projection == 2) {
+            if (this.scale_ymin <= -90 || this.scale_ymax >=90) {
+               console.warn("Mercator Projection", "Latitude out of range", this.scale_ymin, this.scale_ymax);
+               this.projection = 0;
+               return;
+            }
+            pnts.push(this.ProjectMercator2xy(this.scale_xmin, this.scale_ymin));
+            pnts.push(this.ProjectMercator2xy(this.scale_xmax, this.scale_ymax));
 
-      if (!this.projection) return;
-
-      let pnts = []; // all extremes which used to find
-      if (this.projection == 1) {
-         // TODO : check x range not lower than -180 and not higher than 180
-         pnts.push(this.ProjectAitoff2xy(this.scale_xmin, this.scale_ymin));
-         pnts.push(this.ProjectAitoff2xy(this.scale_xmin, this.scale_ymax));
-         pnts.push(this.ProjectAitoff2xy(this.scale_xmax, this.scale_ymax));
-         pnts.push(this.ProjectAitoff2xy(this.scale_xmax, this.scale_ymin));
-         if (this.scale_ymin<0 && this.scale_ymax>0) {
-            // there is an  'equator', check its range in the plot..
-            pnts.push(this.ProjectAitoff2xy(this.scale_xmin*0.9999, 0));
-            pnts.push(this.ProjectAitoff2xy(this.scale_xmax*0.9999, 0));
+         } else if (this.projection == 3) {
+            pnts.push(this.ProjectSinusoidal2xy(this.scale_xmin, this.scale_ymin));
+            pnts.push(this.ProjectSinusoidal2xy(this.scale_xmin, this.scale_ymax));
+            pnts.push(this.ProjectSinusoidal2xy(this.scale_xmax, this.scale_ymax));
+            pnts.push(this.ProjectSinusoidal2xy(this.scale_xmax, this.scale_ymin));
+            if (this.scale_ymin<0 && this.scale_ymax>0) {
+               pnts.push(this.ProjectSinusoidal2xy(this.scale_xmin, 0));
+               pnts.push(this.ProjectSinusoidal2xy(this.scale_xmax, 0));
+            }
+            if (this.scale_xmin<0 && this.scale_xmax>0) {
+               pnts.push(this.ProjectSinusoidal2xy(0, this.scale_ymin));
+               pnts.push(this.ProjectSinusoidal2xy(0, this.scale_ymax));
+            }
+         } else if (this.projection == 4) {
+            pnts.push(this.ProjectParabolic2xy(this.scale_xmin, this.scale_ymin));
+            pnts.push(this.ProjectParabolic2xy(this.scale_xmin, this.scale_ymax));
+            pnts.push(this.ProjectParabolic2xy(this.scale_xmax, this.scale_ymax));
+            pnts.push(this.ProjectParabolic2xy(this.scale_xmax, this.scale_ymin));
+            if (this.scale_ymin<0 && this.scale_ymax>0) {
+               pnts.push(this.ProjectParabolic2xy(this.scale_xmin, 0));
+               pnts.push(this.ProjectParabolic2xy(this.scale_xmax, 0));
+            }
+            if (this.scale_xmin<0 && this.scale_xmax>0) {
+               pnts.push(this.ProjectParabolic2xy(0, this.scale_ymin));
+               pnts.push(this.ProjectParabolic2xy(0, this.scale_ymax));
+            }
          }
-         if (this.scale_xmin<0 && this.scale_xmax>0) {
-            pnts.push(this.ProjectAitoff2xy(0, this.scale_ymin));
-            pnts.push(this.ProjectAitoff2xy(0, this.scale_ymax));
-         }
-      } else if (this.projection == 2) {
-         if (this.scale_ymin <= -90 || this.scale_ymax >=90) {
-            console.warn("Mercator Projection", "Latitude out of range", this.scale_ymin, this.scale_ymax);
-            this.projection = 0;
-            return;
-         }
-         pnts.push(this.ProjectMercator2xy(this.scale_xmin, this.scale_ymin));
-         pnts.push(this.ProjectMercator2xy(this.scale_xmax, this.scale_ymax));
 
-      } else if (this.projection == 3) {
-         pnts.push(this.ProjectSinusoidal2xy(this.scale_xmin, this.scale_ymin));
-         pnts.push(this.ProjectSinusoidal2xy(this.scale_xmin, this.scale_ymax));
-         pnts.push(this.ProjectSinusoidal2xy(this.scale_xmax, this.scale_ymax));
-         pnts.push(this.ProjectSinusoidal2xy(this.scale_xmax, this.scale_ymin));
-         if (this.scale_ymin<0 && this.scale_ymax>0) {
-            pnts.push(this.ProjectSinusoidal2xy(this.scale_xmin, 0));
-            pnts.push(this.ProjectSinusoidal2xy(this.scale_xmax, 0));
-         }
-         if (this.scale_xmin<0 && this.scale_xmax>0) {
-            pnts.push(this.ProjectSinusoidal2xy(0, this.scale_ymin));
-            pnts.push(this.ProjectSinusoidal2xy(0, this.scale_ymax));
-         }
-      } else if (this.projection == 4) {
-         pnts.push(this.ProjectParabolic2xy(this.scale_xmin, this.scale_ymin));
-         pnts.push(this.ProjectParabolic2xy(this.scale_xmin, this.scale_ymax));
-         pnts.push(this.ProjectParabolic2xy(this.scale_xmax, this.scale_ymax));
-         pnts.push(this.ProjectParabolic2xy(this.scale_xmax, this.scale_ymin));
-         if (this.scale_ymin<0 && this.scale_ymax>0) {
-            pnts.push(this.ProjectParabolic2xy(this.scale_xmin, 0));
-            pnts.push(this.ProjectParabolic2xy(this.scale_xmax, 0));
-         }
-         if (this.scale_xmin<0 && this.scale_xmax>0) {
-            pnts.push(this.ProjectParabolic2xy(0, this.scale_ymin));
-            pnts.push(this.ProjectParabolic2xy(0, this.scale_ymax));
+         this.original_xmin = this.scale_xmin;
+         this.original_xmax = this.scale_xmax;
+         this.original_ymin = this.scale_ymin;
+         this.original_ymax = this.scale_ymax;
+
+         this.scale_xmin = this.scale_xmax = pnts[0].x;
+         this.scale_ymin = this.scale_ymax = pnts[0].y;
+
+         for (let n = 1; n < pnts.length; ++n) {
+            this.scale_xmin = Math.min(this.scale_xmin, pnts[n].x);
+            this.scale_xmax = Math.max(this.scale_xmax, pnts[n].x);
+            this.scale_ymin = Math.min(this.scale_ymin, pnts[n].y);
+            this.scale_ymax = Math.max(this.scale_ymax, pnts[n].y);
          }
       }
 
-      this.original_xmin = this.scale_xmin;
-      this.original_xmax = this.scale_xmax;
-      this.original_ymin = this.scale_ymin;
-      this.original_ymax = this.scale_ymax;
+      SetAxesRanges(xaxis, xmin, xmax, yaxis, ymin, ymax, zaxis, zmin, zmax) {
+         this.ranges_set = true;
 
-      this.scale_xmin = this.scale_xmax = pnts[0].x;
-      this.scale_ymin = this.scale_ymax = pnts[0].y;
+         this.xaxis = xaxis;
+         this.xmin = xmin;
+         this.xmax = xmax;
 
-      for (let n=1;n<pnts.length;++n) {
-         this.scale_xmin = Math.min(this.scale_xmin, pnts[n].x);
-         this.scale_xmax = Math.max(this.scale_xmax, pnts[n].x);
-         this.scale_ymin = Math.min(this.scale_ymin, pnts[n].y);
-         this.scale_ymax = Math.max(this.scale_ymax, pnts[n].y);
+         this.yaxis = yaxis;
+         this.ymin = ymin;
+         this.ymax = ymax;
+
+         this.zaxis = zaxis;
+         this.zmin = zmin;
+         this.zmax = zmax;
       }
-   }
 
-   TFramePainter.prototype.SetAxesRanges = function(xaxis, xmin, xmax, yaxis, ymin, ymax, zaxis, zmin, zmax) {
-      // if (this.axes_drawn) return;
-
-      this.ranges_set = true;
-
-      this.xaxis = xaxis;
-      this.xmin = xmin;
-      this.xmax = xmax;
-
-      this.yaxis = yaxis;
-      this.ymin = ymin;
-      this.ymax = ymax;
-
-      this.zaxis = zaxis;
-      this.zmin = zmin;
-      this.zmax = zmax;
-   }
-
-   TFramePainter.prototype.GetAxis = function(name) {
-      switch(name) {
-         case "x": return this.xaxis;
-         case "y": return this.yaxis;
-         case "z": return this.zaxis;
-      }
-      return null;
-   }
-
-   TFramePainter.prototype.CheckAxisZoom = function(name) {
-      let axis = this.GetAxis(name);
-      if (axis && axis.TestBit(JSROOT.EAxisBits.kAxisRange)) {
-         if ((axis.fFirst !== axis.fLast) && ((axis.fFirst > 1) || (axis.fLast < axis.fNbins))) {
-            this['zoom_' + name + 'min'] = axis.fFirst > 1 ? axis.GetBinLowEdge(axis.fFirst) : axis.fXmin;
-            this['zoom_' + name + 'max'] = axis.fLast < axis.fNbins ? axis.GetBinLowEdge(axis.fLast+1) : axis.fXmax;
-            // reset user range for main painter
-            axis.InvertBit(JSROOT.EAxisBits.kAxisRange);
-            axis.fFirst = 1; axis.fLast = axis.fNbins
+      GetAxis(name) {
+         switch(name) {
+            case "x": return this.xaxis;
+            case "y": return this.yaxis;
+            case "z": return this.zaxis;
          }
+         return null;
       }
-   }
 
-   TFramePainter.prototype.CheckPadUserRange = function(pad, name) {
-      if (!pad) return;
-
-      // seems to be, not allways user range calculated
-      let umin = pad['fU' + name + 'min'],
-          umax = pad['fU' + name + 'max'],
-          eps = 1e-7;
-
-      if (name == "x") {
-         if ((Math.abs(pad.fX1) > eps) || (Math.abs(pad.fX2-1) > eps)) {
-            let dx = pad.fX2 - pad.fX1;
-            umin = pad.fX1 + dx*pad.fLeftMargin;
-            umax = pad.fX2 - dx*pad.fRightMargin;
-         }
-      } else {
-         if ((Math.abs(pad.fY1) > eps) || (Math.abs(pad.fY2-1) > eps)) {
-            let dy = pad.fY2 - pad.fY1;
-            umin = pad.fY1 + dy*pad.fBottomMargin;
-            umax = pad.fY2 - dy*pad.fTopMargin;
+      CheckAxisZoom(name) {
+         let axis = this.GetAxis(name);
+         if (axis && axis.TestBit(JSROOT.EAxisBits.kAxisRange)) {
+            if ((axis.fFirst !== axis.fLast) && ((axis.fFirst > 1) || (axis.fLast < axis.fNbins))) {
+               this['zoom_' + name + 'min'] = axis.fFirst > 1 ? axis.GetBinLowEdge(axis.fFirst) : axis.fXmin;
+               this['zoom_' + name + 'max'] = axis.fLast < axis.fNbins ? axis.GetBinLowEdge(axis.fLast+1) : axis.fXmax;
+               // reset user range for main painter
+               axis.InvertBit(JSROOT.EAxisBits.kAxisRange);
+               axis.fFirst = 1; axis.fLast = axis.fNbins
+            }
          }
       }
 
-      if ((umin>=umax) || (Math.abs(umin)<eps && Math.abs(umax-1)<eps)) return;
+      CheckPadUserRange(pad, name) {
+         if (!pad) return;
 
-      if (pad['fLog' + name] > 0) {
-         umin = Math.exp(umin * Math.log(10));
-         umax = Math.exp(umax * Math.log(10));
+         // seems to be, not allways user range calculated
+         let umin = pad['fU' + name + 'min'],
+             umax = pad['fU' + name + 'max'],
+             eps = 1e-7;
+
+         if (name == "x") {
+            if ((Math.abs(pad.fX1) > eps) || (Math.abs(pad.fX2-1) > eps)) {
+               let dx = pad.fX2 - pad.fX1;
+               umin = pad.fX1 + dx*pad.fLeftMargin;
+               umax = pad.fX2 - dx*pad.fRightMargin;
+            }
+         } else {
+            if ((Math.abs(pad.fY1) > eps) || (Math.abs(pad.fY2-1) > eps)) {
+               let dy = pad.fY2 - pad.fY1;
+               umin = pad.fY1 + dy*pad.fBottomMargin;
+               umax = pad.fY2 - dy*pad.fTopMargin;
+            }
+         }
+
+         if ((umin>=umax) || (Math.abs(umin)<eps && Math.abs(umax-1)<eps)) return;
+
+         if (pad['fLog' + name] > 0) {
+            umin = Math.exp(umin * Math.log(10));
+            umax = Math.exp(umax * Math.log(10));
+         }
+
+         let aname = name;
+         if (this.swap_xy) aname = (name=="x") ? "y" : "x";
+         let smin = 'scale_' + aname + 'min',
+             smax = 'scale_' + aname + 'max';
+
+         eps = (this[smax] - this[smin]) * 1e-7;
+
+         if ((Math.abs(umin - this[smin]) > eps) || (Math.abs(umax - this[smax]) > eps)) {
+            this["zoom_" + aname + "min"] = umin;
+            this["zoom_" + aname + "max"] = umax;
+         }
       }
 
-      let aname = name;
-      if (this.swap_xy) aname = (name=="x") ? "y" : "x";
-      let smin = 'scale_' + aname + 'min',
-          smax = 'scale_' + aname + 'max';
+      CreateXY(opts) {
 
-      eps = (this[smax] - this[smin]) * 1e-7;
+         this.CleanXY(); // remove all previous configurations
 
-      if ((Math.abs(umin - this[smin]) > eps) || (Math.abs(umax - this[smax]) > eps)) {
-         this["zoom_" + aname + "min"] = umin;
-         this["zoom_" + aname + "max"] = umax;
+         if (!opts) opts = {};
+
+         this.swap_xy = opts.swap_xy || false;
+         this.reverse_x = opts.reverse_x || false;
+         this.reverse_y = opts.reverse_y || false;
+
+         this.logx = this.logy = false;
+
+         let w = this.frame_width(), h = this.frame_height(), pad = this.root_pad();
+
+         this.scale_xmin = this.xmin;
+         this.scale_xmax = this.xmax;
+
+         this.scale_ymin = this.ymin;
+         this.scale_ymax = this.ymax;
+
+         if (opts.extra_y_space) {
+            let log_scale = this.swap_xy ? pad.fLogx : pad.fLogy;
+            if (log_scale && (this.scale_ymax > 0))
+               this.scale_ymax = Math.exp(Math.log(this.scale_ymax)*1.1);
+            else
+               this.scale_ymax += (this.scale_ymax - this.scale_ymin) * 0.1;
+         }
+
+         if (opts.check_pad_range) {
+            // take zooming out of pad or axis attributes
+
+            this.zoom_xmin = this.zoom_xmax = 0;
+            this.zoom_ymin = this.zoom_ymax = 0;
+            this.zoom_zmin = this.zoom_zmax = 0;
+
+            this.CheckAxisZoom('x');
+            if (opts.ndim && (opts.ndim > 1)) this.CheckAxisZoom('y');
+            if (opts.ndim && (opts.ndim > 2)) this.CheckAxisZoom('z');
+
+            if (opts.check_pad_range === "pad_range") {
+               let canp = this.canv_painter();
+               // ignore range set in the online canvas
+               if (!canp || !canp.online_canvas) {
+                  this.CheckPadUserRange(pad, 'x');
+                  this.CheckPadUserRange(pad, 'y');
+               }
+            }
+         }
+
+         if ((this.zoom_ymin == this.zoom_ymax) && (opts.zoom_ymin != opts.zoom_ymax) && !this.zoom_changed_interactive) {
+            this.zoom_ymin = opts.zoom_ymin;
+            this.zoom_ymax = opts.zoom_ymax;
+         }
+
+         if (this.zoom_xmin != this.zoom_xmax) {
+            this.scale_xmin = this.zoom_xmin;
+            this.scale_xmax = this.zoom_xmax;
+         }
+
+         if (this.zoom_ymin != this.zoom_ymax) {
+            this.scale_ymin = this.zoom_ymin;
+            this.scale_ymax = this.zoom_ymax;
+         }
+
+         // projection should be assigned
+         this.RecalculateRange(opts.Proj);
+
+         if (this.xaxis.fTimeDisplay) {
+            this.x_kind = 'time';
+            this.timeoffsetx = JSROOT.Painter.getTimeOffset(this.xaxis);
+            this.ConvertX = function(x) { return new Date(this.timeoffsetx + x*1000); };
+            this.RevertX = function(grx) { return (this.x.invert(grx) - this.timeoffsetx) / 1000; };
+         } else {
+            this.x_kind = !this.xaxis.fLabels ? 'normal' : 'labels';
+            this.ConvertX = function(x) { return x; };
+            this.RevertX = function(grx) { return this.x.invert(grx); };
+         }
+
+         if (this.x_kind == 'time') {
+            this.x = d3.scaleTime();
+         } else if (this.swap_xy ? pad.fLogy : pad.fLogx) {
+            this.logx = true;
+
+            if (this.scale_xmax <= 0) this.scale_xmax = 0;
+
+            if ((this.scale_xmin <= 0) && this.xaxis && !this.swap_xy)
+               for (let i=0;i<this.xaxis.fNbins;++i) {
+                  this.scale_xmin = Math.max(this.scale_xmin, this.xaxis.GetBinLowEdge(i+1));
+                  if (this.scale_xmin>0) break;
+               }
+
+            if ((this.scale_xmin <= 0) || (this.scale_xmin >= this.scale_xmax))
+               this.scale_xmin = this.scale_xmax * 0.0001;
+
+            this.x = d3.scaleLog();
+         } else {
+            this.x = d3.scaleLinear();
+         }
+
+         let gr_range_x = this.reverse_x ? [ w, 0 ] : [ 0, w ],
+             gr_range_y = this.reverse_y ? [ 0, h ] : [ h, 0 ];
+
+         this.x.domain([this.ConvertX(this.scale_xmin), this.ConvertX(this.scale_xmax)])
+               .range(this.swap_xy ? gr_range_y : gr_range_x);
+
+         if (this.x_kind == 'time') {
+            // we emulate scale functionality
+            this.grx = function(val) { return this.x(this.ConvertX(val)); }
+         } else if (this.logx) {
+            this.grx = function(val) { return (val < this.scale_xmin) ? (this.swap_xy ? this.x.range()[0]+5 : -5) : this.x(val); }
+         } else {
+            this.grx = this.x;
+         }
+
+         if (this.yaxis.fTimeDisplay) {
+            this.y_kind = 'time';
+            this.timeoffsety = JSROOT.Painter.getTimeOffset(this.yaxis);
+            this.ConvertY = function(y) { return new Date(this.timeoffsety + y*1000); };
+            this.RevertY = function(gry) { return (this.y.invert(gry) - this.timeoffsety) / 1000; };
+         } else {
+            this.y_kind = !this.yaxis.fLabels ? 'normal' : 'labels';
+            this.ConvertY = function(y) { return y; };
+            this.RevertY = function(gry) { return this.y.invert(gry); };
+         }
+
+         if (this.swap_xy ? pad.fLogx : pad.fLogy) {
+            this.logy = true;
+            if (this.scale_ymax <= 0)
+               this.scale_ymax = 1;
+            else
+            if ((this.zoom_ymin === this.zoom_ymax) && (opts.ndim==1) && this.draw_content)
+               this.scale_ymax*=1.8;
+
+            // this is for 2/3 dim histograms - find first non-negative bin
+            if ((this.scale_ymin <= 0) && this.yaxis && (opts.ndim>1) && !this.swap_xy)
+               for (let i=0;i<this.yaxis.fNbins;++i) {
+                  this.scale_ymin = Math.max(this.scale_ymin, this.yaxis.GetBinLowEdge(i+1));
+                  if (this.scale_ymin>0) break;
+               }
+
+            if ((this.scale_ymin <= 0) && (opts.ymin_nz) && (opts.ymin_nz < 1e-2*this.ymax))
+               this.scale_ymin = 0.3 * opts.ymin_nz;
+
+            if ((this.scale_ymin <= 0) || (this.scale_ymin >= this.scale_ymax))
+               this.scale_ymin = 3e-4 * this.scale_ymax;
+
+            this.y = d3.scaleLog();
+         } else if (this.y_kind == 'time') {
+            this.y = d3.scaleTime();
+         } else {
+            this.y = d3.scaleLinear()
+         }
+
+         this.y.domain([ this.ConvertY(this.scale_ymin), this.ConvertY(this.scale_ymax) ])
+               .range(this.swap_xy ? gr_range_x : gr_range_y);
+
+         if (this.y_kind == 'time') {
+            // we emulate scale functionality
+            this.gry = function(val) { return this.y(this.ConvertY(val)); }
+         } else if (this.logy) {
+            // make protection for log
+            this.gry = function(val) { return (val < this.scale_ymin) ? (this.swap_xy ? -5 : this.y.range()[0]+5) : this.y(val); }
+         } else {
+            this.gry = this.y;
+         }
+
+         this.SetRootPadRange(pad);
       }
-   }
 
-   TFramePainter.prototype.CreateXY = function(opts) {
+      /** Set selected range back to TPad object */
+      SetRootPadRange(pad, is3d) {
+         if (!pad || !this.ranges_set) return;
 
-      this.CleanXY(); // remove all previous configurations
+         if (is3d) {
+            // this is fake values, algorithm should be copied from TView3D class of ROOT
+            // pad.fLogx = pad.fLogy = 0;
+            pad.fUxmin = pad.fUymin = -0.9;
+            pad.fUxmax = pad.fUymax = 0.9;
+         } else {
+            pad.fLogx = (this.swap_xy ? this.logy : this.logx) ? 1 : 0;
+            pad.fUxmin = pad.fLogx ? JSROOT.log10(this.scale_xmin) : this.scale_xmin;
+            pad.fUxmax = pad.fLogx ? JSROOT.log10(this.scale_xmax) : this.scale_xmax;
+            pad.fLogy = (this.swap_xy ? this.logx : this.logy) ? 1 : 0;
+            pad.fUymin = pad.fLogy ? JSROOT.log10(this.scale_ymin) : this.scale_ymin;
+            pad.fUymax = pad.fLogy ? JSROOT.log10(this.scale_ymax) : this.scale_ymax;
+         }
 
-      if (!opts) opts = {};
+         let rx = pad.fUxmax - pad.fUxmin,
+             mx = 1 - pad.fLeftMargin - pad.fRightMargin,
+             ry = pad.fUymax - pad.fUymin,
+             my = 1 - pad.fBottomMargin - pad.fTopMargin;
 
-      this.swap_xy = opts.swap_xy || false;
-      this.reverse_x = opts.reverse_x || false;
-      this.reverse_y = opts.reverse_y || false;
+         if (mx <= 0) mx = 0.01; // to prevent overflow
+         if (my <= 0) my = 0.01;
 
-      this.logx = this.logy = false;
+         pad.fX1 = pad.fUxmin - rx/mx*pad.fLeftMargin;
+         pad.fX2 = pad.fUxmax + rx/mx*pad.fRightMargin;
+         pad.fY1 = pad.fUymin - ry/my*pad.fBottomMargin;
+         pad.fY2 = pad.fUymax + ry/my*pad.fTopMargin;
+      }
 
-      let w = this.frame_width(), h = this.frame_height(), pad = this.root_pad();
 
-      this.scale_xmin = this.xmin;
-      this.scale_xmax = this.xmax;
+      /** grid can only be drawn by first painter */
+      DrawGrids() {
 
-      this.scale_ymin = this.ymin;
-      this.scale_ymax = this.ymax;
+         let layer = this.svg_frame().select(".grid_layer");
 
-      if (opts.extra_y_space) {
-         let log_scale = this.swap_xy ? pad.fLogx : pad.fLogy;
-         if (log_scale && (this.scale_ymax > 0))
-            this.scale_ymax = Math.exp(Math.log(this.scale_ymax)*1.1);
+         layer.selectAll(".xgrid").remove();
+         layer.selectAll(".ygrid").remove();
+
+         let pad = this.root_pad(),
+             h = this.frame_height(),
+             w = this.frame_width(),
+             grid_style = JSROOT.gStyle.fGridStyle;
+
+         if ((grid_style < 0) || (grid_style >= JSROOT.Painter.root_line_styles.length)) grid_style = 11;
+
+         // add a grid on x axis, if the option is set
+         if (pad && pad.fGridx && this.x_handle) {
+            let gridx = "";
+            for (let n=0;n<this.x_handle.ticks.length;++n)
+               if (this.swap_xy)
+                  gridx += "M0,"+this.x_handle.ticks[n]+"h"+w;
+               else
+                  gridx += "M"+this.x_handle.ticks[n]+",0v"+h;
+
+            let colid = (JSROOT.gStyle.fGridColor > 0) ? JSROOT.gStyle.fGridColor : (this.GetAxis("x") ? this.GetAxis("x").fAxisColor : 1),
+                grid_color = this.get_color(colid) || "black";
+
+            if (gridx.length > 0)
+              layer.append("svg:path")
+                   .attr("class", "xgrid")
+                   .attr("d", gridx)
+                   .style('stroke', grid_color)
+                   .style("stroke-width", JSROOT.gStyle.fGridWidth)
+                   .style("stroke-dasharray", JSROOT.Painter.root_line_styles[grid_style]);
+         }
+
+         // add a grid on y axis, if the option is set
+         if (pad && pad.fGridy && this.y_handle) {
+            let gridy = "";
+            for (let n=0;n<this.y_handle.ticks.length;++n)
+               if (this.swap_xy)
+                  gridy += "M"+this.y_handle.ticks[n]+",0v"+h;
+               else
+                  gridy += "M0,"+this.y_handle.ticks[n]+"h"+w;
+
+            let colid = (JSROOT.gStyle.fGridColor > 0) ? JSROOT.gStyle.fGridColor : (this.GetAxis("y") ? this.GetAxis("y").fAxisColor : 1),
+                grid_color = this.get_color(colid) || "black";
+
+            if (gridy.length > 0)
+              layer.append("svg:path")
+                   .attr("class", "ygrid")
+                   .attr("d", gridy)
+                   .style('stroke',grid_color)
+                   .style("stroke-width",JSROOT.gStyle.fGridWidth)
+                   .style("stroke-dasharray", JSROOT.Painter.root_line_styles[grid_style]);
+         }
+      }
+
+      AxisAsText(axis, value) {
+         if (axis == "x") {
+            if (this.x_kind == 'time')
+               value = this.ConvertX(value);
+            if (this.x_handle && ('format' in this.x_handle))
+               return this.x_handle.format(value, false, JSROOT.gStyle.XValuesFormat);
+         } else if (axis == "y") {
+            if (this.y_kind == 'time')
+               value = this.ConvertY(value);
+            if (this.y_handle && ('format' in this.y_handle))
+               return this.y_handle.format(value, false, false, JSROOT.gStyle.YValuesFormat);
+         } else {
+            if (this.z_handle && ('format' in this.z_handle))
+               return this.z_handle.format(value, false, false, JSROOT.gStyle.ZValuesFormat);
+         }
+
+         return value.toPrecision(4);
+      }
+
+      /** draw axes, return Promise which ready when drawing is completed */
+      DrawAxes(shrink_forbidden, disable_axis_draw, AxisPos, has_x_obstacle) {
+         // axes can be drawn only for main histogram
+
+         // if (this.axes_drawn) return true;
+
+         this.CleanupAxes();
+
+         if ((this.xmin==this.xmax) || (this.ymin==this.ymax)) return Promise.resolve(false);
+
+         if (AxisPos === undefined) AxisPos = 0;
+
+         let layer = this.svg_frame().select(".axis_layer"),
+             w = this.frame_width(),
+             h = this.frame_height(),
+             pad = this.root_pad();
+
+         this.x_handle = new TAxisPainter(this.xaxis, true);
+         this.x_handle.SetDivId(this.divid, -1);
+         this.x_handle.pad_name = this.pad_name;
+
+         this.x_handle.SetAxisConfig("xaxis",
+                                     (this.logx && (this.x_kind !== "time")) ? "log" : this.x_kind,
+                                     this.x, this.xmin, this.xmax, this.scale_xmin, this.scale_xmax);
+         this.x_handle.invert_side = (AxisPos >= 10);
+         this.x_handle.lbls_both_sides = !this.x_handle.invert_side && (pad.fTickx > 1); // labels on both sides
+         this.x_handle.has_obstacle = has_x_obstacle;
+
+         this.y_handle = new TAxisPainter(this.yaxis, true);
+         this.y_handle.SetDivId(this.divid, -1);
+         this.y_handle.pad_name = this.pad_name;
+
+         this.y_handle.SetAxisConfig("yaxis",
+                                     (this.logy && this.y_kind !== "time") ? "log" : this.y_kind,
+                                     this.y, this.ymin, this.ymax, this.scale_ymin, this.scale_ymax);
+         this.y_handle.invert_side = ((AxisPos % 10) === 1);
+         this.y_handle.lbls_both_sides = !this.y_handle.invert_side && (pad.fTicky > 1); // labels on both sides
+
+         let draw_horiz = this.swap_xy ? this.y_handle : this.x_handle,
+             draw_vertical = this.swap_xy ? this.x_handle : this.y_handle;
+
+         if (!disable_axis_draw) {
+            let pp = this.pad_painter();
+            if (pp && pp._fast_drawing) disable_axis_draw = true;
+         }
+
+         if (!disable_axis_draw) {
+            let promise1 = draw_horiz.DrawAxis(false, layer, w, h,
+                                               draw_horiz.invert_side ? undefined : "translate(0," + h + ")",
+                                               false, pad.fTickx ? -h : 0, disable_axis_draw);
+
+            let promise2 = draw_vertical.DrawAxis(true, layer, w, h,
+                                                  draw_vertical.invert_side ? "translate(" + w + ",0)" : undefined,
+                                                  false, pad.fTicky ? w : 0, disable_axis_draw,
+                                                  draw_vertical.invert_side ? 0 : this.frame_x());
+
+            let painter = this;
+
+            return Promise.all([promise1, promise2]).then(() => {
+               painter.DrawGrids();
+
+               if (!shrink_forbidden && JSROOT.gStyle.CanAdjustFrame) {
+
+                  let shrink = 0., ypos = draw_vertical.position;
+
+                  if ((-0.2*w < ypos) && (ypos < 0)) {
+                     shrink = -ypos/w + 0.001;
+                     painter.shrink_frame_left += shrink;
+                  } else if ((ypos>0) && (ypos<0.3*w) && (painter.shrink_frame_left > 0) && (ypos/w > painter.shrink_frame_left)) {
+                     shrink = -painter.shrink_frame_left;
+                     painter.shrink_frame_left = 0.;
+                  }
+
+                  if (shrink != 0) {
+                     painter.Shrink(shrink, 0);
+                     painter.Redraw();
+                     return painter.DrawAxes(true);
+                  }
+
+                  painter.axes_drawn = true;
+                  return true; // finished
+               }
+            });
+         }
+
+         this.axes_drawn = true;
+         return Promise.resolve(true);
+      }
+
+      UpdateAttributes(force) {
+         let pad = this.root_pad(),
+             tframe = this.GetObject();
+
+         if ((this.fX1NDC === undefined) || (force && !this.modified_NDC)) {
+            if (!pad || (pad.fLeftMargin===undefined)) {
+               JSROOT.extend(this, JSROOT.gStyle.FrameNDC);
+            } else {
+               JSROOT.extend(this, {
+                  fX1NDC: pad.fLeftMargin,
+                  fX2NDC: 1 - pad.fRightMargin,
+                  fY1NDC: pad.fBottomMargin,
+                  fY2NDC: 1 - pad.fTopMargin
+               });
+            }
+         }
+
+         if (this.fillatt === undefined) {
+            if (tframe) this.createAttFill({ attr: tframe });
+            else if (pad && pad.fFrameFillColor) this.createAttFill({ pattern: pad.fFrameFillStyle, color: pad.fFrameFillColor });
+            else if (pad) this.createAttFill({ attr: pad });
+            else this.createAttFill({ pattern: 1001, color: 0 });
+
+            // force white color for the canvas frame
+            if (!tframe && this.fillatt.empty() && this.pad_painter() && this.pad_painter().iscan)
+               this.fillatt.SetSolidColor('white');
+         }
+
+         if (!tframe && pad && (pad.fFrameLineColor!==undefined))
+            this.createAttLine({ color: pad.fFrameLineColor, width: pad.fFrameLineWidth, style: pad.fFrameLineStyle });
          else
-            this.scale_ymax += (this.scale_ymax - this.scale_ymin) * 0.1;
+            this.createAttLine({ attr: tframe, color: 'black' });
       }
 
-      if (opts.check_pad_range) {
-         // take zooming out of pad or axis attributes
+      /** Function called at the end of resize of frame
+        * One should apply changes to the pad
+        * @private */
+      SizeChanged() {
+
+         let pad = this.root_pad();
+
+         if (pad) {
+            pad.fLeftMargin = this.fX1NDC;
+            pad.fRightMargin = 1 - this.fX2NDC;
+            pad.fBottomMargin = this.fY1NDC;
+            pad.fTopMargin = 1 - this.fY2NDC;
+            this.SetRootPadRange(pad);
+         }
+
+         this.InteractiveRedraw("pad", "frame");
+      }
+
+       /** remove all kinds of X/Y function for axes transformation */
+      CleanXY() {
+         delete this.x; delete this.grx;
+         delete this.ConvertX; delete this.RevertX;
+         delete this.y; delete this.gry;
+         delete this.ConvertY; delete this.RevertY;
+         delete this.z; delete this.grz;
+      }
+
+      CleanupAxes() {
+         // remove all axes drawings
+         if (this.x_handle) {
+            this.x_handle.Cleanup();
+            delete this.x_handle;
+         }
+
+         if (this.y_handle) {
+            this.y_handle.Cleanup();
+            delete this.y_handle;
+         }
+
+         if (this.z_handle) {
+            this.z_handle.Cleanup();
+            delete this.z_handle;
+         }
+         if (this.draw_g) {
+            this.draw_g.select(".grid_layer").selectAll("*").remove();
+            this.draw_g.select(".axis_layer").selectAll("*").remove();
+         }
+         this.axes_drawn = false;
+      }
+
+      /** Returns frame rectangle plus extra info for hint display */
+      CleanFrameDrawings() {
+
+         // cleanup all 3D drawings if any
+         if (typeof this.Create3DScene === 'function')
+            this.Create3DScene(-1);
+
+         this.CleanupAxes();
+         this.CleanXY();
+
+         this.ranges_set = false;
+
+         this.xmin = this.xmax = 0;
+         this.ymin = this.ymax = 0;
+         this.zmin = this.zmax = 0;
 
          this.zoom_xmin = this.zoom_xmax = 0;
          this.zoom_ymin = this.zoom_ymax = 0;
          this.zoom_zmin = this.zoom_zmax = 0;
 
-         this.CheckAxisZoom('x');
-         if (opts.ndim && (opts.ndim > 1)) this.CheckAxisZoom('y');
-         if (opts.ndim && (opts.ndim > 2)) this.CheckAxisZoom('z');
+         this.scale_xmin = this.scale_xmax = 0;
+         this.scale_ymin = this.scale_ymax = 0;
+         this.scale_zmin = this.scale_zmax = 0;
 
-         if (opts.check_pad_range === "pad_range") {
-            let canp = this.canv_painter();
-            // ignore range set in the online canvas
-            if (!canp || !canp.online_canvas) {
-               this.CheckPadUserRange(pad, 'x');
-               this.CheckPadUserRange(pad, 'y');
-            }
+         if (this.draw_g) {
+            this.draw_g.select(".main_layer").selectAll("*").remove();
+            this.draw_g.select(".upper_layer").selectAll("*").remove();
+         }
+
+         this.xaxis = null;
+         this.yaxis = null;
+         this.zaxis = null;
+
+         if (this.draw_g) {
+            this.draw_g.selectAll("*").remove();
+            this.draw_g.on("mousedown", null)
+                       .on("dblclick", null)
+                       .on("wheel", null)
+                       .on("contextmenu", null)
+                       .property('interactive_set', null);
+            this.draw_g.remove();
+         }
+
+         this.draw_g = null;
+
+         if (this.keys_handler) {
+            window.removeEventListener('keydown', this.keys_handler, false);
+            this.keys_handler = null;
          }
       }
 
-      if ((this.zoom_ymin == this.zoom_ymax) && (opts.zoom_ymin != opts.zoom_ymax) && !this.zoom_changed_interactive) {
-         this.zoom_ymin = opts.zoom_ymin;
-         this.zoom_ymax = opts.zoom_ymax;
+      Cleanup() {
+         this.CleanFrameDrawings();
+         delete this._click_handler;
+         delete this._dblclick_handler;
+
+         super.Cleanup();
       }
 
-      if (this.zoom_xmin != this.zoom_xmax) {
-         this.scale_xmin = this.zoom_xmin;
-         this.scale_xmax = this.zoom_xmax;
-      }
+      Redraw(/*reason*/) {
 
-      if (this.zoom_ymin != this.zoom_ymax) {
-         this.scale_ymin = this.zoom_ymin;
-         this.scale_ymax = this.zoom_ymax;
-      }
-
-      // projection should be assigned
-      this.RecalculateRange(opts.Proj);
-
-      if (this.xaxis.fTimeDisplay) {
-         this.x_kind = 'time';
-         this.timeoffsetx = JSROOT.Painter.getTimeOffset(this.xaxis);
-         this.ConvertX = function(x) { return new Date(this.timeoffsetx + x*1000); };
-         this.RevertX = function(grx) { return (this.x.invert(grx) - this.timeoffsetx) / 1000; };
-      } else {
-         this.x_kind = !this.xaxis.fLabels ? 'normal' : 'labels';
-         this.ConvertX = function(x) { return x; };
-         this.RevertX = function(grx) { return this.x.invert(grx); };
-      }
-
-      if (this.x_kind == 'time') {
-         this.x = d3.scaleTime();
-      } else if (this.swap_xy ? pad.fLogy : pad.fLogx) {
-         this.logx = true;
-
-         if (this.scale_xmax <= 0) this.scale_xmax = 0;
-
-         if ((this.scale_xmin <= 0) && this.xaxis && !this.swap_xy)
-            for (let i=0;i<this.xaxis.fNbins;++i) {
-               this.scale_xmin = Math.max(this.scale_xmin, this.xaxis.GetBinLowEdge(i+1));
-               if (this.scale_xmin>0) break;
-            }
-
-         if ((this.scale_xmin <= 0) || (this.scale_xmin >= this.scale_xmax))
-            this.scale_xmin = this.scale_xmax * 0.0001;
-
-         this.x = d3.scaleLog();
-      } else {
-         this.x = d3.scaleLinear();
-      }
-
-      let gr_range_x = this.reverse_x ? [ w, 0 ] : [ 0, w ],
-          gr_range_y = this.reverse_y ? [ 0, h ] : [ h, 0 ];
-
-      this.x.domain([this.ConvertX(this.scale_xmin), this.ConvertX(this.scale_xmax)])
-            .range(this.swap_xy ? gr_range_y : gr_range_x);
-
-      if (this.x_kind == 'time') {
-         // we emulate scale functionality
-         this.grx = function(val) { return this.x(this.ConvertX(val)); }
-      } else if (this.logx) {
-         this.grx = function(val) { return (val < this.scale_xmin) ? (this.swap_xy ? this.x.range()[0]+5 : -5) : this.x(val); }
-      } else {
-         this.grx = this.x;
-      }
-
-      if (this.yaxis.fTimeDisplay) {
-         this.y_kind = 'time';
-         this.timeoffsety = JSROOT.Painter.getTimeOffset(this.yaxis);
-         this.ConvertY = function(y) { return new Date(this.timeoffsety + y*1000); };
-         this.RevertY = function(gry) { return (this.y.invert(gry) - this.timeoffsety) / 1000; };
-      } else {
-         this.y_kind = !this.yaxis.fLabels ? 'normal' : 'labels';
-         this.ConvertY = function(y) { return y; };
-         this.RevertY = function(gry) { return this.y.invert(gry); };
-      }
-
-      if (this.swap_xy ? pad.fLogx : pad.fLogy) {
-         this.logy = true;
-         if (this.scale_ymax <= 0)
-            this.scale_ymax = 1;
-         else
-         if ((this.zoom_ymin === this.zoom_ymax) && (opts.ndim==1) && this.draw_content)
-            this.scale_ymax*=1.8;
-
-         // this is for 2/3 dim histograms - find first non-negative bin
-         if ((this.scale_ymin <= 0) && this.yaxis && (opts.ndim>1) && !this.swap_xy)
-            for (let i=0;i<this.yaxis.fNbins;++i) {
-               this.scale_ymin = Math.max(this.scale_ymin, this.yaxis.GetBinLowEdge(i+1));
-               if (this.scale_ymin>0) break;
-            }
-
-         if ((this.scale_ymin <= 0) && (opts.ymin_nz) && (opts.ymin_nz < 1e-2*this.ymax))
-            this.scale_ymin = 0.3 * opts.ymin_nz;
-
-         if ((this.scale_ymin <= 0) || (this.scale_ymin >= this.scale_ymax))
-            this.scale_ymin = 3e-4 * this.scale_ymax;
-
-         this.y = d3.scaleLog();
-      } else if (this.y_kind == 'time') {
-         this.y = d3.scaleTime();
-      } else {
-         this.y = d3.scaleLinear()
-      }
-
-      this.y.domain([ this.ConvertY(this.scale_ymin), this.ConvertY(this.scale_ymax) ])
-            .range(this.swap_xy ? gr_range_x : gr_range_y);
-
-      if (this.y_kind == 'time') {
-         // we emulate scale functionality
-         this.gry = function(val) { return this.y(this.ConvertY(val)); }
-      } else if (this.logy) {
-         // make protection for log
-         this.gry = function(val) { return (val < this.scale_ymin) ? (this.swap_xy ? -5 : this.y.range()[0]+5) : this.y(val); }
-      } else {
-         this.gry = this.y;
-      }
-
-      this.SetRootPadRange(pad);
-   }
-
-   /** Set selected range back to TPad object */
-   TFramePainter.prototype.SetRootPadRange = function(pad, is3d) {
-      if (!pad || !this.ranges_set) return;
-
-      if (is3d) {
-         // this is fake values, algorithm should be copied from TView3D class of ROOT
-         // pad.fLogx = pad.fLogy = 0;
-         pad.fUxmin = pad.fUymin = -0.9;
-         pad.fUxmax = pad.fUymax = 0.9;
-      } else {
-         pad.fLogx = (this.swap_xy ? this.logy : this.logx) ? 1 : 0;
-         pad.fUxmin = pad.fLogx ? JSROOT.log10(this.scale_xmin) : this.scale_xmin;
-         pad.fUxmax = pad.fLogx ? JSROOT.log10(this.scale_xmax) : this.scale_xmax;
-         pad.fLogy = (this.swap_xy ? this.logx : this.logy) ? 1 : 0;
-         pad.fUymin = pad.fLogy ? JSROOT.log10(this.scale_ymin) : this.scale_ymin;
-         pad.fUymax = pad.fLogy ? JSROOT.log10(this.scale_ymax) : this.scale_ymax;
-      }
-
-      let rx = pad.fUxmax - pad.fUxmin,
-          mx = 1 - pad.fLeftMargin - pad.fRightMargin,
-          ry = pad.fUymax - pad.fUymin,
-          my = 1 - pad.fBottomMargin - pad.fTopMargin;
-
-      if (mx <= 0) mx = 0.01; // to prevent overflow
-      if (my <= 0) my = 0.01;
-
-      pad.fX1 = pad.fUxmin - rx/mx*pad.fLeftMargin;
-      pad.fX2 = pad.fUxmax + rx/mx*pad.fRightMargin;
-      pad.fY1 = pad.fUymin - ry/my*pad.fBottomMargin;
-      pad.fY2 = pad.fUymax + ry/my*pad.fTopMargin;
-   }
-
-
-   TFramePainter.prototype.DrawGrids = function() {
-      // grid can only be drawn by first painter
-
-      let layer = this.svg_frame().select(".grid_layer");
-
-      layer.selectAll(".xgrid").remove();
-      layer.selectAll(".ygrid").remove();
-
-      let pad = this.root_pad(),
-          h = this.frame_height(),
-          w = this.frame_width(),
-          grid_style = JSROOT.gStyle.fGridStyle;
-
-      if ((grid_style < 0) || (grid_style >= JSROOT.Painter.root_line_styles.length)) grid_style = 11;
-
-      // add a grid on x axis, if the option is set
-      if (pad && pad.fGridx && this.x_handle) {
-         let gridx = "";
-         for (let n=0;n<this.x_handle.ticks.length;++n)
-            if (this.swap_xy)
-               gridx += "M0,"+this.x_handle.ticks[n]+"h"+w;
-            else
-               gridx += "M"+this.x_handle.ticks[n]+",0v"+h;
-
-         let colid = (JSROOT.gStyle.fGridColor > 0) ? JSROOT.gStyle.fGridColor : (this.GetAxis("x") ? this.GetAxis("x").fAxisColor : 1),
-             grid_color = this.get_color(colid) || "black";
-
-         if (gridx.length > 0)
-           layer.append("svg:path")
-                .attr("class", "xgrid")
-                .attr("d", gridx)
-                .style('stroke', grid_color)
-                .style("stroke-width", JSROOT.gStyle.fGridWidth)
-                .style("stroke-dasharray", JSROOT.Painter.root_line_styles[grid_style]);
-      }
-
-      // add a grid on y axis, if the option is set
-      if (pad && pad.fGridy && this.y_handle) {
-         let gridy = "";
-         for (let n=0;n<this.y_handle.ticks.length;++n)
-            if (this.swap_xy)
-               gridy += "M"+this.y_handle.ticks[n]+",0v"+h;
-            else
-               gridy += "M0,"+this.y_handle.ticks[n]+"h"+w;
-
-         let colid = (JSROOT.gStyle.fGridColor > 0) ? JSROOT.gStyle.fGridColor : (this.GetAxis("y") ? this.GetAxis("y").fAxisColor : 1),
-             grid_color = this.get_color(colid) || "black";
-
-         if (gridy.length > 0)
-           layer.append("svg:path")
-                .attr("class", "ygrid")
-                .attr("d", gridy)
-                .style('stroke',grid_color)
-                .style("stroke-width",JSROOT.gStyle.fGridWidth)
-                .style("stroke-dasharray", JSROOT.Painter.root_line_styles[grid_style]);
-      }
-   }
-
-   TFramePainter.prototype.AxisAsText = function(axis, value) {
-      if (axis == "x") {
-         if (this.x_kind == 'time')
-            value = this.ConvertX(value);
-         if (this.x_handle && ('format' in this.x_handle))
-            return this.x_handle.format(value, false, JSROOT.gStyle.XValuesFormat);
-      } else if (axis == "y") {
-         if (this.y_kind == 'time')
-            value = this.ConvertY(value);
-         if (this.y_handle && ('format' in this.y_handle))
-            return this.y_handle.format(value, false, false, JSROOT.gStyle.YValuesFormat);
-      } else {
-         if (this.z_handle && ('format' in this.z_handle))
-            return this.z_handle.format(value, false, false, JSROOT.gStyle.ZValuesFormat);
-      }
-
-      return value.toPrecision(4);
-   }
-
-   /** draw axes, return Promise which ready when drawing is completed */
-   TFramePainter.prototype.DrawAxes = function(shrink_forbidden, disable_axis_draw, AxisPos, has_x_obstacle) {
-      // axes can be drawn only for main histogram
-
-      // if (this.axes_drawn) return true;
-
-      this.CleanupAxes();
-
-      if ((this.xmin==this.xmax) || (this.ymin==this.ymax)) return Promise.resolve(false);
-
-      if (AxisPos === undefined) AxisPos = 0;
-
-      let layer = this.svg_frame().select(".axis_layer"),
-          w = this.frame_width(),
-          h = this.frame_height(),
-          pad = this.root_pad();
-
-      this.x_handle = new JSROOT.TAxisPainter(this.xaxis, true);
-      this.x_handle.SetDivId(this.divid, -1);
-      this.x_handle.pad_name = this.pad_name;
-
-      this.x_handle.SetAxisConfig("xaxis",
-                                  (this.logx && (this.x_kind !== "time")) ? "log" : this.x_kind,
-                                  this.x, this.xmin, this.xmax, this.scale_xmin, this.scale_xmax);
-      this.x_handle.invert_side = (AxisPos >= 10);
-      this.x_handle.lbls_both_sides = !this.x_handle.invert_side && (pad.fTickx > 1); // labels on both sides
-      this.x_handle.has_obstacle = has_x_obstacle;
-
-      this.y_handle = new JSROOT.TAxisPainter(this.yaxis, true);
-      this.y_handle.SetDivId(this.divid, -1);
-      this.y_handle.pad_name = this.pad_name;
-
-      this.y_handle.SetAxisConfig("yaxis",
-                                  (this.logy && this.y_kind !== "time") ? "log" : this.y_kind,
-                                  this.y, this.ymin, this.ymax, this.scale_ymin, this.scale_ymax);
-      this.y_handle.invert_side = ((AxisPos % 10) === 1);
-      this.y_handle.lbls_both_sides = !this.y_handle.invert_side && (pad.fTicky > 1); // labels on both sides
-
-      let draw_horiz = this.swap_xy ? this.y_handle : this.x_handle,
-          draw_vertical = this.swap_xy ? this.x_handle : this.y_handle;
-
-      if (!disable_axis_draw) {
          let pp = this.pad_painter();
-         if (pp && pp._fast_drawing) disable_axis_draw = true;
-      }
+         if (pp) pp.frame_painter_ref = this; // keep direct reference to the frame painter
 
-      if (!disable_axis_draw) {
-         let promise1 = draw_horiz.DrawAxis(false, layer, w, h,
-                                            draw_horiz.invert_side ? undefined : "translate(0," + h + ")",
-                                            false, pad.fTickx ? -h : 0, disable_axis_draw);
+         // first update all attributes from objects
+         this.UpdateAttributes();
 
-         let promise2 = draw_vertical.DrawAxis(true, layer, w, h,
-                                               draw_vertical.invert_side ? "translate(" + w + ",0)" : undefined,
-                                               false, pad.fTicky ? w : 0, disable_axis_draw,
-                                               draw_vertical.invert_side ? 0 : this.frame_x());
+         let width = this.pad_width(),
+             height = this.pad_height(),
+             lm = Math.round(width * this.fX1NDC),
+             w = Math.round(width * (this.fX2NDC - this.fX1NDC)),
+             tm = Math.round(height * (1 - this.fY2NDC)),
+             h = Math.round(height * (this.fY2NDC - this.fY1NDC)),
+             rotate = false, fixpos = false, trans = "translate(" + lm + "," + tm + ")";
+
+         if (pp && pp.options) {
+            if (pp.options.RotateFrame) rotate = true;
+            if (pp.options.FixFrame) fixpos = true;
+         }
+
+         if (rotate) {
+            trans += " rotate(-90) " + "translate(" + -h + ",0)";
+            let d = w; w = h; h = d;
+         }
+
+         this._frame_x = lm;
+         this._frame_y = tm;
+         this._frame_width = w;
+         this._frame_height = h;
+
+         if (this.mode3d) return; // no need to create any elements in 3d mode
+
+         // this is svg:g object - container for every other items belonging to frame
+         this.draw_g = this.svg_layer("primitives_layer").select(".root_frame");
+
+         let top_rect, main_svg;
+
+         if (this.draw_g.empty()) {
+
+            let layer = this.svg_layer("primitives_layer");
+
+            this.draw_g = layer.append("svg:g").attr("class", "root_frame");
+
+            this.draw_g.append("svg:title").text("");
+
+            top_rect = this.draw_g.append("svg:rect");
+
+            // append for the moment three layers - for drawing and axis
+            this.draw_g.append('svg:g').attr('class','grid_layer');
+
+            main_svg = this.draw_g.append('svg:svg')
+                              .attr('class','main_layer')
+                              .attr("x", 0)
+                              .attr("y", 0)
+                              .attr('overflow', 'hidden');
+
+            this.draw_g.append('svg:g').attr('class','axis_layer');
+            this.draw_g.append('svg:g').attr('class','upper_layer');
+         } else {
+            top_rect = this.draw_g.select("rect");
+            main_svg = this.draw_g.select(".main_layer");
+         }
+
+         this.axes_drawn = false;
+
+         this.draw_g.attr("transform", trans);
+
+         top_rect.attr("x", 0)
+                 .attr("y", 0)
+                 .attr("width", w)
+                 .attr("height", h)
+                 .call(this.fillatt.func)
+                 .call(this.lineatt.func);
+
+         main_svg.attr("width", w)
+                 .attr("height", h)
+                 .attr("viewBox", "0 0 " + w + " " + h);
+
+         // let tooltip_rect = this.draw_g.select(".interactive_rect");
+         // if (JSROOT.BatchMode) return tooltip_rect.remove();
+
+         if (JSROOT.BatchMode) return;
 
          let painter = this;
+         JSROOT.require(['JSRoot.interactive']).then(() => {
+            JSROOT.TooltipHandler.assign(painter);
 
-         return Promise.all([promise1, promise2]).then(() => {
-            painter.DrawGrids();
+            painter.draw_g.attr("x", lm)
+                          .attr("y", tm)
+                          .attr("width", w)
+                          .attr("height", h);
 
-            if (!shrink_forbidden && JSROOT.gStyle.CanAdjustFrame) {
+            if (!rotate && !fixpos)
+               JSROOT.DragMoveHandler.AddDrag(painter, { obj: painter, only_resize: true,
+                                            minwidth: 20, minheight: 20, redraw: painter.SizeChanged.bind(painter) });
 
-               let shrink = 0., ypos = draw_vertical.position;
+            let tooltip_rect = main_svg;
+            tooltip_rect.style("pointer-events","visibleFill")
+                        .property('handlers_set', 0);
 
-               if ((-0.2*w < ypos) && (ypos < 0)) {
-                  shrink = -ypos/w + 0.001;
-                  painter.shrink_frame_left += shrink;
-               } else if ((ypos>0) && (ypos<0.3*w) && (painter.shrink_frame_left > 0) && (ypos/w > painter.shrink_frame_left)) {
-                  shrink = -painter.shrink_frame_left;
-                  painter.shrink_frame_left = 0.;
+            //  if (tooltip_rect.empty())
+            //     tooltip_rect =
+            //       painter.draw_g
+            //          .append("rect")
+            //          .attr("class","interactive_rect")
+            //          .style('opacity',0)
+            //          .style('fill',"none")
+            //          .style("pointer-events","visibleFill")
+            //          .property('handlers_set', 0);
+
+            let handlers_set = (pp && pp._fast_drawing) ? 0 : 1;
+
+            if (tooltip_rect.property('handlers_set') != handlers_set) {
+               let close_handler = handlers_set ? painter.ProcessTooltipEvent.bind(painter, null) : null,
+                   mouse_handler = handlers_set ? painter.ProcessTooltipEvent.bind(painter, { handler: true, touch: false }) : null;
+
+               tooltip_rect.property('handlers_set', handlers_set)
+                           .on('mouseenter', mouse_handler)
+                           .on('mousemove', mouse_handler)
+                           .on('mouseleave', close_handler);
+
+               if (JSROOT.touches) {
+                  let touch_handler = handlers_set ? painter.ProcessTooltipEvent.bind(painter, { handler: true, touch: true }) : null;
+
+                  tooltip_rect.on("touchstart", touch_handler)
+                              .on("touchmove", touch_handler)
+                              .on("touchend", close_handler)
+                              .on("touchcancel", close_handler);
                }
-
-               if (shrink != 0) {
-                  painter.Shrink(shrink, 0);
-                  painter.Redraw();
-                  return painter.DrawAxes(true);
-               }
-
-               painter.axes_drawn = true;
-               return true; // finished
             }
+
+            tooltip_rect.attr("x", 0)
+                        .attr("y", 0)
+                        .attr("width", w)
+                        .attr("height", h);
+
+            let hintsg = painter.hints_layer().select(".objects_hints");
+            // if tooltips were visible before, try to reconstruct them after short timeout
+            if (!hintsg.empty() && painter.IsTooltipAllowed() && (hintsg.property("hints_pad") == painter.pad_name))
+               setTimeout(painter.ProcessTooltipEvent.bind(painter, hintsg.property('last_point'), null), 10);
          });
       }
 
-      this.axes_drawn = true;
-      return Promise.resolve(true);
-   }
+      ToggleLog(axis) {
+         let pad = this.root_pad();
+         if (!pad) return;
 
-   TFramePainter.prototype.UpdateAttributes = function(force) {
-      let pad = this.root_pad(),
-          tframe = this.GetObject();
-
-      if ((this.fX1NDC === undefined) || (force && !this.modified_NDC)) {
-         if (!pad || (pad.fLeftMargin===undefined)) {
-            JSROOT.extend(this, JSROOT.gStyle.FrameNDC);
-         } else {
-            JSROOT.extend(this, {
-               fX1NDC: pad.fLeftMargin,
-               fX2NDC: 1 - pad.fRightMargin,
-               fY1NDC: pad.fBottomMargin,
-               fY2NDC: 1 - pad.fTopMargin
-            });
-         }
-      }
-
-      if (this.fillatt === undefined) {
-         if (tframe) this.createAttFill({ attr: tframe });
-         else if (pad && pad.fFrameFillColor) this.createAttFill({ pattern: pad.fFrameFillStyle, color: pad.fFrameFillColor });
-         else if (pad) this.createAttFill({ attr: pad });
-         else this.createAttFill({ pattern: 1001, color: 0 });
-
-         // force white color for the canvas frame
-         if (!tframe && this.fillatt.empty() && this.pad_painter() && this.pad_painter().iscan)
-            this.fillatt.SetSolidColor('white');
-      }
-
-      if (!tframe && pad && (pad.fFrameLineColor!==undefined))
-         this.createAttLine({ color: pad.fFrameLineColor, width: pad.fFrameLineWidth, style: pad.fFrameLineStyle });
-      else
-         this.createAttLine({ attr: tframe, color: 'black' });
-   }
-
-   /** Function called at the end of resize of frame
-     * One should apply changes to the pad
-     * @private */
-   TFramePainter.prototype.SizeChanged = function() {
-
-      let pad = this.root_pad();
-
-      if (pad) {
-         pad.fLeftMargin = this.fX1NDC;
-         pad.fRightMargin = 1 - this.fX2NDC;
-         pad.fBottomMargin = this.fY1NDC;
-         pad.fTopMargin = 1 - this.fY2NDC;
-         this.SetRootPadRange(pad);
-      }
-
-      this.InteractiveRedraw("pad", "frame");
-   }
-
-   TFramePainter.prototype.CleanXY = function() {
-      // remove all kinds of X/Y function for axes transformation
-      delete this.x; delete this.grx;
-      delete this.ConvertX; delete this.RevertX;
-      delete this.y; delete this.gry;
-      delete this.ConvertY; delete this.RevertY;
-      delete this.z; delete this.grz;
-   }
-
-   TFramePainter.prototype.CleanupAxes = function() {
-      // remove all axes drawings
-      if (this.x_handle) {
-         this.x_handle.Cleanup();
-         delete this.x_handle;
-      }
-
-      if (this.y_handle) {
-         this.y_handle.Cleanup();
-         delete this.y_handle;
-      }
-
-      if (this.z_handle) {
-         this.z_handle.Cleanup();
-         delete this.z_handle;
-      }
-      if (this.draw_g) {
-         this.draw_g.select(".grid_layer").selectAll("*").remove();
-         this.draw_g.select(".axis_layer").selectAll("*").remove();
-      }
-      this.axes_drawn = false;
-   }
-
-   /** Returns frame rectangle plus extra info for hint display */
-   TFramePainter.prototype.CleanFrameDrawings = function() {
-
-      // cleanup all 3D drawings if any
-      if (typeof this.Create3DScene === 'function')
-         this.Create3DScene(-1);
-
-      this.CleanupAxes();
-      this.CleanXY();
-
-      this.ranges_set = false;
-
-      this.xmin = this.xmax = 0;
-      this.ymin = this.ymax = 0;
-      this.zmin = this.zmax = 0;
-
-      this.zoom_xmin = this.zoom_xmax = 0;
-      this.zoom_ymin = this.zoom_ymax = 0;
-      this.zoom_zmin = this.zoom_zmax = 0;
-
-      this.scale_xmin = this.scale_xmax = 0;
-      this.scale_ymin = this.scale_ymax = 0;
-      this.scale_zmin = this.scale_zmax = 0;
-
-      if (this.draw_g) {
-         this.draw_g.select(".main_layer").selectAll("*").remove();
-         this.draw_g.select(".upper_layer").selectAll("*").remove();
-      }
-
-      this.xaxis = null;
-      this.yaxis = null;
-      this.zaxis = null;
-
-      if (this.draw_g) {
-         this.draw_g.selectAll("*").remove();
-         this.draw_g.on("mousedown", null)
-                    .on("dblclick", null)
-                    .on("wheel", null)
-                    .on("contextmenu", null)
-                    .property('interactive_set', null);
-         this.draw_g.remove();
-      }
-
-      this.draw_g = null;
-
-      if (this.keys_handler) {
-         window.removeEventListener('keydown', this.keys_handler, false);
-         this.keys_handler = null;
-      }
-   }
-
-   TFramePainter.prototype.Cleanup = function() {
-      this.CleanFrameDrawings();
-      delete this._click_handler;
-      delete this._dblclick_handler;
-
-      JSROOT.TObjectPainter.prototype.Cleanup.call(this);
-   }
-
-   TFramePainter.prototype.Redraw = function(/*reason*/) {
-
-      let pp = this.pad_painter();
-      if (pp) pp.frame_painter_ref = this; // keep direct reference to the frame painter
-
-      // first update all attributes from objects
-      this.UpdateAttributes();
-
-      let width = this.pad_width(),
-          height = this.pad_height(),
-          lm = Math.round(width * this.fX1NDC),
-          w = Math.round(width * (this.fX2NDC - this.fX1NDC)),
-          tm = Math.round(height * (1 - this.fY2NDC)),
-          h = Math.round(height * (this.fY2NDC - this.fY1NDC)),
-          rotate = false, fixpos = false, trans = "translate(" + lm + "," + tm + ")";
-
-      if (pp && pp.options) {
-         if (pp.options.RotateFrame) rotate = true;
-         if (pp.options.FixFrame) fixpos = true;
-      }
-
-      if (rotate) {
-         trans += " rotate(-90) " + "translate(" + -h + ",0)";
-         let d = w; w = h; h = d;
-      }
-
-      this._frame_x = lm;
-      this._frame_y = tm;
-      this._frame_width = w;
-      this._frame_height = h;
-
-      if (this.mode3d) return; // no need to create any elements in 3d mode
-
-      // this is svg:g object - container for every other items belonging to frame
-      this.draw_g = this.svg_layer("primitives_layer").select(".root_frame");
-
-      let top_rect, main_svg;
-
-      if (this.draw_g.empty()) {
-
-         let layer = this.svg_layer("primitives_layer");
-
-         this.draw_g = layer.append("svg:g").attr("class", "root_frame");
-
-         this.draw_g.append("svg:title").text("");
-
-         top_rect = this.draw_g.append("svg:rect");
-
-         // append for the moment three layers - for drawing and axis
-         this.draw_g.append('svg:g').attr('class','grid_layer');
-
-         main_svg = this.draw_g.append('svg:svg')
-                           .attr('class','main_layer')
-                           .attr("x", 0)
-                           .attr("y", 0)
-                           .attr('overflow', 'hidden');
-
-         this.draw_g.append('svg:g').attr('class','axis_layer');
-         this.draw_g.append('svg:g').attr('class','upper_layer');
-      } else {
-         top_rect = this.draw_g.select("rect");
-         main_svg = this.draw_g.select(".main_layer");
-      }
-
-      this.axes_drawn = false;
-
-      this.draw_g.attr("transform", trans);
-
-      top_rect.attr("x", 0)
-              .attr("y", 0)
-              .attr("width", w)
-              .attr("height", h)
-              .call(this.fillatt.func)
-              .call(this.lineatt.func);
-
-      main_svg.attr("width", w)
-              .attr("height", h)
-              .attr("viewBox", "0 0 " + w + " " + h);
-
-      // let tooltip_rect = this.draw_g.select(".interactive_rect");
-      // if (JSROOT.BatchMode) return tooltip_rect.remove();
-
-      if (JSROOT.BatchMode) return;
-
-      let painter = this;
-      JSROOT.require(['JSRoot.interactive']).then(() => {
-         JSROOT.TooltipHandler.assign(painter);
-
-         painter.draw_g.attr("x", lm)
-                       .attr("y", tm)
-                       .attr("width", w)
-                       .attr("height", h);
-
-         if (!rotate && !fixpos)
-            JSROOT.DragMoveHandler.AddDrag(painter, { obj: painter, only_resize: true,
-                                         minwidth: 20, minheight: 20, redraw: painter.SizeChanged.bind(painter) });
-
-         let tooltip_rect = main_svg;
-         tooltip_rect.style("pointer-events","visibleFill")
-                     .property('handlers_set', 0);
-
-         //  if (tooltip_rect.empty())
-         //     tooltip_rect =
-         //       painter.draw_g
-         //          .append("rect")
-         //          .attr("class","interactive_rect")
-         //          .style('opacity',0)
-         //          .style('fill',"none")
-         //          .style("pointer-events","visibleFill")
-         //          .property('handlers_set', 0);
-
-         let handlers_set = (pp && pp._fast_drawing) ? 0 : 1;
-
-         if (tooltip_rect.property('handlers_set') != handlers_set) {
-            let close_handler = handlers_set ? painter.ProcessTooltipEvent.bind(painter, null) : null,
-                mouse_handler = handlers_set ? painter.ProcessTooltipEvent.bind(painter, { handler: true, touch: false }) : null;
-
-            tooltip_rect.property('handlers_set', handlers_set)
-                        .on('mouseenter', mouse_handler)
-                        .on('mousemove', mouse_handler)
-                        .on('mouseleave', close_handler);
-
-            if (JSROOT.touches) {
-               let touch_handler = handlers_set ? painter.ProcessTooltipEvent.bind(painter, { handler: true, touch: true }) : null;
-
-               tooltip_rect.on("touchstart", touch_handler)
-                           .on("touchmove", touch_handler)
-                           .on("touchend", close_handler)
-                           .on("touchcancel", close_handler);
-            }
+         // do not allow log scale for labels
+         if (!pad["fLog" + axis]) {
+            let kind = this[axis+"_kind"];
+            if (this.swap_xy && axis==="x") kind = this.y_kind; else
+            if (this.swap_xy && axis==="y") kind = this.x_kind;
+            if (kind === "labels") return;
          }
 
-         tooltip_rect.attr("x", 0)
-                     .attr("y", 0)
-                     .attr("width", w)
-                     .attr("height", h);
+         // directly change attribute in the pad
+         pad["fLog" + axis] = pad["fLog" + axis] ? 0 : 1;
 
-         let hintsg = painter.hints_layer().select(".objects_hints");
-         // if tooltips were visible before, try to reconstruct them after short timeout
-         if (!hintsg.empty() && painter.IsTooltipAllowed() && (hintsg.property("hints_pad") == painter.pad_name))
-            setTimeout(painter.ProcessTooltipEvent.bind(painter, hintsg.property('last_point'), null), 10);
-      });
-   }
-
-   TFramePainter.prototype.ToggleLog = function(axis) {
-      let pad = this.root_pad();
-      if (!pad) return;
-
-      // do not allow log scale for labels
-      if (!pad["fLog" + axis]) {
-         let kind = this[axis+"_kind"];
-         if (this.swap_xy && axis==="x") kind = this.y_kind; else
-         if (this.swap_xy && axis==="y") kind = this.x_kind;
-         if (kind === "labels") return;
+         this.InteractiveRedraw("pad", "log"+axis);
       }
 
-      // directly change attribute in the pad
-      pad["fLog" + axis] = pad["fLog" + axis] ? 0 : 1;
+      /** fill context menu for the frame
+        * it could be appended to the histogram menus */
+      FillContextMenu(menu, kind, obj) {
 
-      this.InteractiveRedraw("pad", "log"+axis);
-   }
+         let main = this.main_painter(), pad = this.root_pad();
 
-   TFramePainter.prototype.FillContextMenu = function(menu, kind, obj) {
-      // fill context menu for the frame
-      // it could be appended to the histogram menus
+         if ((kind=="x") || (kind=="y") || (kind=="z")) {
+            let faxis = obj || this[kind+'axis'];
+            menu.add("header: " + kind.toUpperCase() + " axis");
+            menu.add("Unzoom", this.Unzoom.bind(this, kind));
+            menu.addchk(pad["fLog" + kind], "SetLog"+kind, this.ToggleLog.bind(this, kind) );
+            menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kMoreLogLabels), "More log",
+                  function() { faxis.InvertBit(JSROOT.EAxisBits.kMoreLogLabels); this.RedrawPad(); });
+            menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kNoExponent), "No exponent",
+                  function() { faxis.InvertBit(JSROOT.EAxisBits.kNoExponent); this.RedrawPad(); });
 
-      let main = this.main_painter(), pad = this.root_pad();
+            if ((kind === "z") && main && main.options && main.options.Zscale)
+               if (typeof main.FillPaletteMenu == 'function') main.FillPaletteMenu(menu);
 
-      if ((kind=="x") || (kind=="y") || (kind=="z")) {
-         let faxis = obj || this[kind+'axis'];
-         menu.add("header: " + kind.toUpperCase() + " axis");
-         menu.add("Unzoom", this.Unzoom.bind(this, kind));
-         menu.addchk(pad["fLog" + kind], "SetLog"+kind, this.ToggleLog.bind(this, kind) );
-         menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kMoreLogLabels), "More log",
-               function() { faxis.InvertBit(JSROOT.EAxisBits.kMoreLogLabels); this.RedrawPad(); });
-         menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kNoExponent), "No exponent",
-               function() { faxis.InvertBit(JSROOT.EAxisBits.kNoExponent); this.RedrawPad(); });
+            if (faxis)
+               menu.AddTAxisMenu(main || this, faxis, kind);
+            return true;
+         }
 
-         if ((kind === "z") && main && main.options && main.options.Zscale)
-            if (typeof main.FillPaletteMenu == 'function') main.FillPaletteMenu(menu);
+         let alone = menu.size() == 0;
 
-         if (faxis)
-            menu.AddTAxisMenu(main || this, faxis, kind);
+         if (alone)
+            menu.add("header:Frame");
+         else
+            menu.add("separator");
+
+         if (this.zoom_xmin !== this.zoom_xmax)
+            menu.add("Unzoom X", this.Unzoom.bind(this,"x"));
+         if (this.zoom_ymin !== this.zoom_ymax)
+            menu.add("Unzoom Y", this.Unzoom.bind(this,"y"));
+         if (this.zoom_zmin !== this.zoom_zmax)
+            menu.add("Unzoom Z", this.Unzoom.bind(this,"z"));
+         menu.add("Unzoom all", this.Unzoom.bind(this,"xyz"));
+
+         if (pad) {
+            menu.addchk(pad.fLogx, "SetLogx", this.ToggleLog.bind(this,"x"));
+            menu.addchk(pad.fLogy, "SetLogy", this.ToggleLog.bind(this,"y"));
+
+            if (main && (typeof main.Dimension === 'function') && (main.Dimension() > 1))
+               menu.addchk(pad.fLogz, "SetLogz", this.ToggleLog.bind(this,"z"));
+            menu.add("separator");
+         }
+
+         menu.addchk(this.IsTooltipAllowed(), "Show tooltips", function() {
+            this.SetTooltipAllowed("toggle");
+         });
+         menu.AddAttributesMenu(this, alone ? "" : "Frame ");
+         menu.add("separator");
+         menu.add("Save as frame.png", function() { this.pad_painter().SaveAs("png", 'frame', 'frame.png'); });
+         menu.add("Save as frame.svg", function() { this.pad_painter().SaveAs("svg", 'frame', 'frame.svg'); });
+
          return true;
       }
 
-      let alone = menu.size() == 0;
-
-      if (alone)
-         menu.add("header:Frame");
-      else
-         menu.add("separator");
-
-      if (this.zoom_xmin !== this.zoom_xmax)
-         menu.add("Unzoom X", this.Unzoom.bind(this,"x"));
-      if (this.zoom_ymin !== this.zoom_ymax)
-         menu.add("Unzoom Y", this.Unzoom.bind(this,"y"));
-      if (this.zoom_zmin !== this.zoom_zmax)
-         menu.add("Unzoom Z", this.Unzoom.bind(this,"z"));
-      menu.add("Unzoom all", this.Unzoom.bind(this,"xyz"));
-
-      if (pad) {
-         menu.addchk(pad.fLogx, "SetLogx", this.ToggleLog.bind(this,"x"));
-         menu.addchk(pad.fLogy, "SetLogy", this.ToggleLog.bind(this,"y"));
-
-         if (main && (typeof main.Dimension === 'function') && (main.Dimension() > 1))
-            menu.addchk(pad.fLogz, "SetLogz", this.ToggleLog.bind(this,"z"));
-         menu.add("separator");
+      FillWebObjectOptions(res) {
+         res.fcust = "frame";
+         res.fopt = [this.scale_xmin || 0, this.scale_ymin || 0, this.scale_xmax || 0, this.scale_ymax || 0];
+         return res;
       }
 
-      menu.addchk(this.IsTooltipAllowed(), "Show tooltips", function() {
-         this.SetTooltipAllowed("toggle");
-      });
-      menu.AddAttributesMenu(this, alone ? "" : "Frame ");
-      menu.add("separator");
-      menu.add("Save as frame.png", function() { this.pad_painter().SaveAs("png", 'frame', 'frame.png'); });
-      menu.add("Save as frame.svg", function() { this.pad_painter().SaveAs("svg", 'frame', 'frame.svg'); });
+      GetFrameRect() {
+         // returns frame rectangle plus extra info for hint display
 
-      return true;
-   }
-
-   TFramePainter.prototype.FillWebObjectOptions = function(res) {
-      res.fcust = "frame";
-      res.fopt = [this.scale_xmin || 0, this.scale_ymin || 0, this.scale_xmax || 0, this.scale_ymax || 0];
-      return res;
-   }
-
-   TFramePainter.prototype.GetFrameRect = function() {
-      // returns frame rectangle plus extra info for hint display
-
-      return {
-         x: this.frame_x(),
-         y: this.frame_y(),
-         width: this.frame_width(),
-         height: this.frame_height(),
-         transform: this.draw_g ? this.draw_g.attr("transform") : "",
-         hint_delta_x: 0,
-         hint_delta_y: 0
-      }
-   }
-
-   TFramePainter.prototype.ProcessFrameClick = function(pnt, dblckick) {
-      // function called when frame is clicked and object selection can be performed
-      // such event can be used to select
-
-      let pp = this.pad_painter();
-      if (!pp) return;
-
-      pnt.painters = true; // provide painters reference in the hints
-      pnt.disabled = true; // do not invoke graphics
-
-      // collect tooltips from pad painter - it has list of all drawn objects
-      let hints = pp.GetTooltips(pnt), exact = null;
-      for (let k=0; (k<hints.length) && !exact; ++k)
-         if (hints[k] && hints[k].exact) exact = hints[k];
-      //if (exact) console.log('Click exact', pnt, exact.painter.GetTipName());
-      //      else console.log('Click frame', pnt);
-
-      let res;
-
-      if (exact) {
-         let handler = dblckick ? this._dblclick_handler : this._click_handler;
-         if (handler) res = handler(exact.user_info, pnt);
+         return {
+            x: this.frame_x(),
+            y: this.frame_y(),
+            width: this.frame_width(),
+            height: this.frame_height(),
+            transform: this.draw_g ? this.draw_g.attr("transform") : "",
+            hint_delta_x: 0,
+            hint_delta_y: 0
+         }
       }
 
-      if (!dblckick)
-         pp.SelectObjectPainter(exact ? exact.painter : this,
-               { x: pnt.x + (this._frame_x || 0),  y: pnt.y + (this._frame_y || 0) });
+       /** Function called when frame is clicked and object selection can be performed
+         * such event can be used to select */
+      ProcessFrameClick(pnt, dblckick) {
 
-      return res;
-   }
+         let pp = this.pad_painter();
+         if (!pp) return;
 
-   TFramePainter.prototype.AddKeysHandler = function() {
-      if (this.keys_handler || JSROOT.BatchMode || (typeof window == 'undefined')) return;
+         pnt.painters = true; // provide painters reference in the hints
+         pnt.disabled = true; // do not invoke graphics
 
-      this.keys_handler = this.ProcessKeyPress.bind(this);
+         // collect tooltips from pad painter - it has list of all drawn objects
+         let hints = pp.GetTooltips(pnt), exact = null;
+         for (let k=0; (k<hints.length) && !exact; ++k)
+            if (hints[k] && hints[k].exact) exact = hints[k];
+         //if (exact) console.log('Click exact', pnt, exact.painter.GetTipName());
+         //      else console.log('Click frame', pnt);
 
-      window.addEventListener('keydown', this.keys_handler, false);
-   }
+         let res;
 
-   TFramePainter.prototype.ProcessKeyPress = function(evnt) {
-      let main = this.select_main();
-      if (!JSROOT.key_handling || main.empty()) return;
+         if (exact) {
+            let handler = dblckick ? this._dblclick_handler : this._click_handler;
+            if (handler) res = handler(exact.user_info, pnt);
+         }
 
-      let key = "";
-      switch (evnt.keyCode) {
-         case 33: key = "PageUp"; break;
-         case 34: key = "PageDown"; break;
-         case 37: key = "ArrowLeft"; break;
-         case 38: key = "ArrowUp"; break;
-         case 39: key = "ArrowRight"; break;
-         case 40: key = "ArrowDown"; break;
-         case 42: key = "PrintScreen"; break;
-         case 106: key = "*"; break;
-         default: return false;
+         if (!dblckick)
+            pp.SelectObjectPainter(exact ? exact.painter : this,
+                  { x: pnt.x + (this._frame_x || 0),  y: pnt.y + (this._frame_y || 0) });
+
+         return res;
       }
 
-      let pp = this.pad_painter();
-      if (JSROOT.Painter.GetActivePad() !== pp) return;
+      AddKeysHandler() {
+         if (this.keys_handler || JSROOT.BatchMode || (typeof window == 'undefined')) return;
 
-      if (evnt.shiftKey) key = "Shift " + key;
-      if (evnt.altKey) key = "Alt " + key;
-      if (evnt.ctrlKey) key = "Ctrl " + key;
+         this.keys_handler = this.ProcessKeyPress.bind(this);
 
-      let zoom = { name: "x", dleft: 0, dright: 0 };
-
-      switch (key) {
-         case "ArrowLeft":  zoom.dleft = -1; zoom.dright = 1; break;
-         case "ArrowRight":  zoom.dleft = 1; zoom.dright = -1; break;
-         case "Ctrl ArrowLeft": zoom.dleft = zoom.dright = -1; break;
-         case "Ctrl ArrowRight": zoom.dleft = zoom.dright = 1; break;
-         case "ArrowUp":  zoom.name = "y"; zoom.dleft = 1; zoom.dright = -1; break;
-         case "ArrowDown":  zoom.name = "y"; zoom.dleft = -1; zoom.dright = 1; break;
-         case "Ctrl ArrowUp": zoom.name = "y"; zoom.dleft = zoom.dright = 1; break;
-         case "Ctrl ArrowDown": zoom.name = "y"; zoom.dleft = zoom.dright = -1; break;
+         window.addEventListener('keydown', this.keys_handler, false);
       }
 
-      if (zoom.dleft || zoom.dright) {
-         if (!JSROOT.gStyle.Zooming) return false;
-         // in 3dmode with orbit control ignore simple arrows
-         if (this.mode3d && (key.indexOf("Ctrl")!==0)) return false;
-         this.AnalyzeMouseWheelEvent(null, zoom, 0.5);
-         this.Zoom(zoom.name, zoom.min, zoom.max);
-         if (zoom.changed) this.zoom_changed_interactive = 2;
-         evnt.stopPropagation();
-         evnt.preventDefault();
-      } else {
-         let func = pp ? pp.FindButton(key) : "";
-         if (func) {
-            pp.PadButtonClick(func);
+      ProcessKeyPress(evnt) {
+         let main = this.select_main();
+         if (!JSROOT.key_handling || main.empty()) return;
+
+         let key = "";
+         switch (evnt.keyCode) {
+            case 33: key = "PageUp"; break;
+            case 34: key = "PageDown"; break;
+            case 37: key = "ArrowLeft"; break;
+            case 38: key = "ArrowUp"; break;
+            case 39: key = "ArrowRight"; break;
+            case 40: key = "ArrowDown"; break;
+            case 42: key = "PrintScreen"; break;
+            case 106: key = "*"; break;
+            default: return false;
+         }
+
+         let pp = this.pad_painter();
+         if (JSROOT.Painter.GetActivePad() !== pp) return;
+
+         if (evnt.shiftKey) key = "Shift " + key;
+         if (evnt.altKey) key = "Alt " + key;
+         if (evnt.ctrlKey) key = "Ctrl " + key;
+
+         let zoom = { name: "x", dleft: 0, dright: 0 };
+
+         switch (key) {
+            case "ArrowLeft":  zoom.dleft = -1; zoom.dright = 1; break;
+            case "ArrowRight":  zoom.dleft = 1; zoom.dright = -1; break;
+            case "Ctrl ArrowLeft": zoom.dleft = zoom.dright = -1; break;
+            case "Ctrl ArrowRight": zoom.dleft = zoom.dright = 1; break;
+            case "ArrowUp":  zoom.name = "y"; zoom.dleft = 1; zoom.dright = -1; break;
+            case "ArrowDown":  zoom.name = "y"; zoom.dleft = -1; zoom.dright = 1; break;
+            case "Ctrl ArrowUp": zoom.name = "y"; zoom.dleft = zoom.dright = 1; break;
+            case "Ctrl ArrowDown": zoom.name = "y"; zoom.dleft = zoom.dright = -1; break;
+         }
+
+         if (zoom.dleft || zoom.dright) {
+            if (!JSROOT.gStyle.Zooming) return false;
+            // in 3dmode with orbit control ignore simple arrows
+            if (this.mode3d && (key.indexOf("Ctrl")!==0)) return false;
+            this.AnalyzeMouseWheelEvent(null, zoom, 0.5);
+            this.Zoom(zoom.name, zoom.min, zoom.max);
+            if (zoom.changed) this.zoom_changed_interactive = 2;
             evnt.stopPropagation();
             evnt.preventDefault();
-         }
-      }
-
-      return true; // just process any key press
-   }
-
-   TFramePainter.prototype.clearInteractiveElements = function() {
-      JSROOT.Painter.closeMenu();
-      if (this.zoom_rect) { this.zoom_rect.remove(); this.zoom_rect = null; }
-      this.zoom_kind = 0;
-
-      // enable tooltip in frame painter
-      this.SwitchTooltip(true);
-   }
-
-   TFramePainter.prototype.startRectSel = function(evnt) {
-      // ignore when touch selection is activated
-
-      if (this.zoom_kind > 100) return;
-
-      // ignore all events from non-left button
-      if ((evnt.which || evnt.button) !== 1) return;
-
-      evnt.preventDefault();
-
-      let frame = this.svg_frame();
-
-      let pos = d3.pointer(evnt, frame.node());
-
-      this.clearInteractiveElements();
-      this.zoom_origin = pos;
-
-      let w = this.frame_width(), h = this.frame_height();
-
-      this.zoom_curr = [ Math.max(0, Math.min(w, this.zoom_origin[0])),
-                         Math.max(0, Math.min(h, this.zoom_origin[1])) ];
-
-      if ((this.zoom_origin[0] < 0) || (this.zoom_origin[0] > w)) {
-         this.zoom_kind = 3; // only y
-         this.zoom_origin[0] = 0;
-         this.zoom_origin[1] = this.zoom_curr[1];
-         this.zoom_curr[0] = w;
-         this.zoom_curr[1] += 1;
-      } else if ((this.zoom_origin[1] < 0) || (this.zoom_origin[1] > h)) {
-         this.zoom_kind = 2; // only x
-         this.zoom_origin[0] = this.zoom_curr[0];
-         this.zoom_origin[1] = 0;
-         this.zoom_curr[0] += 1;
-         this.zoom_curr[1] = h;
-      } else {
-         this.zoom_kind = 1; // x and y
-         this.zoom_origin[0] = this.zoom_curr[0];
-         this.zoom_origin[1] = this.zoom_curr[1];
-      }
-
-      frame.on("mousemove.zoomRect", this.moveRectSel.bind(this))
-           .on("mouseup.zoomRect", this.endRectSel.bind(this), true);
-
-      this.zoom_rect = null;
-
-      // disable tooltips in frame painter
-      this.SwitchTooltip(false);
-
-      evnt.stopPropagation();
-   }
-
-   TFramePainter.prototype.moveRectSel = function(evnt) {
-
-      if ((this.zoom_kind == 0) || (this.zoom_kind > 100)) return;
-
-      evnt.preventDefault();
-      let m = d3.pointer(evnt);
-
-      m[0] = Math.max(0, Math.min(this.frame_width(), m[0]));
-      m[1] = Math.max(0, Math.min(this.frame_height(), m[1]));
-
-      switch (this.zoom_kind) {
-         case 1: this.zoom_curr[0] = m[0]; this.zoom_curr[1] = m[1]; break;
-         case 2: this.zoom_curr[0] = m[0]; break;
-         case 3: this.zoom_curr[1] = m[1]; break;
-      }
-
-      if (this.zoom_rect===null)
-         this.zoom_rect = this.svg_frame()
-                              .append("rect")
-                              .attr("class", "zoom")
-                              .attr("pointer-events","none");
-
-      this.zoom_rect.attr("x", Math.min(this.zoom_origin[0], this.zoom_curr[0]))
-                    .attr("y", Math.min(this.zoom_origin[1], this.zoom_curr[1]))
-                    .attr("width", Math.abs(this.zoom_curr[0] - this.zoom_origin[0]))
-                    .attr("height", Math.abs(this.zoom_curr[1] - this.zoom_origin[1]));
-   }
-
-   TFramePainter.prototype.endRectSel = function(evnt) {
-      if ((this.zoom_kind == 0) || (this.zoom_kind > 100)) return;
-
-      evnt.preventDefault();
-
-      this.svg_frame().on("mousemove.zoomRect", null)
-                      .on("mouseup.zoomRect", null);
-
-      let m = d3.pointer(evnt), changed = [true, true];
-      m[0] = Math.max(0, Math.min(this.frame_width(), m[0]));
-      m[1] = Math.max(0, Math.min(this.frame_height(), m[1]));
-
-      switch (this.zoom_kind) {
-         case 1: this.zoom_curr[0] = m[0]; this.zoom_curr[1] = m[1]; break;
-         case 2: this.zoom_curr[0] = m[0]; changed[1] = false; break; // only X
-         case 3: this.zoom_curr[1] = m[1]; changed[0] = false; break; // only Y
-      }
-
-      let xmin, xmax, ymin, ymax, isany = false,
-          idx = this.swap_xy ? 1 : 0, idy = 1 - idx;
-
-      if (changed[idx] && (Math.abs(this.zoom_curr[idx] - this.zoom_origin[idx]) > 10)) {
-         xmin = Math.min(this.RevertX(this.zoom_origin[idx]), this.RevertX(this.zoom_curr[idx]));
-         xmax = Math.max(this.RevertX(this.zoom_origin[idx]), this.RevertX(this.zoom_curr[idx]));
-         isany = true;
-      }
-
-      if (changed[idy] && (Math.abs(this.zoom_curr[idy] - this.zoom_origin[idy]) > 10)) {
-         ymin = Math.min(this.RevertY(this.zoom_origin[idy]), this.RevertY(this.zoom_curr[idy]));
-         ymax = Math.max(this.RevertY(this.zoom_origin[idy]), this.RevertY(this.zoom_curr[idy]));
-         isany = true;
-      }
-
-      let kind = this.zoom_kind, pnt = (kind===1) ? { x: this.zoom_origin[0], y: this.zoom_origin[1] } : null;
-
-      this.clearInteractiveElements();
-
-      if (isany) {
-         this.zoom_changed_interactive = 2;
-         this.Zoom(xmin, xmax, ymin, ymax);
-      } else {
-         switch (kind) {
-            case 1:
-               this.ProcessFrameClick(pnt);
-               break;
-            case 2: {
-               let pp = this.pad_painter();
-               if (pp) pp.SelectObjectPainter(this.x_handle);
-               break;
-            }
-            case 3: {
-               let pp = this.pad_painter();
-               if (pp) pp.SelectObjectPainter(this.y_handle);
-               break;
-            }
-         }
-      }
-
-      this.zoom_kind = 0;
-   }
-
-   TFramePainter.prototype.mouseDoubleClick = function(evnt) {
-      evnt.preventDefault();
-      let m = d3.pointer(evnt, this.svg_frame().node());
-      this.clearInteractiveElements();
-
-      let valid_x = (m[0] >= 0) && (m[0] <= this.frame_width()),
-          valid_y = (m[1] >= 0) && (m[1] <= this.frame_height());
-
-      if (valid_x && valid_y && this._dblclick_handler)
-         if (this.ProcessFrameClick({ x: m[0], y: m[1] }, true)) return;
-
-      let kind = "xyz";
-      if (!valid_x) kind = this.swap_xy ? "x" : "y"; else
-      if (!valid_y) kind = this.swap_xy ? "y" : "x";
-      if (this.Unzoom(kind)) return;
-
-      let pp = this.pad_painter();
-      if (pp) pp.SelectObjectPainter(pp, { x: m[0]+this.frame_x(), y: m[1]+this.frame_y(), dbl: true });
-   }
-
-   TFramePainter.prototype.ConfigureUserClickHandler = function(handler) {
-      this._click_handler = handler && (typeof handler == 'function') ? handler : null;
-   }
-
-   TFramePainter.prototype.ConfigureUserDblclickHandler = function(handler) {
-      this._dblclick_handler = handler && (typeof handler == 'function') ? handler : null;
-   }
-
-   TFramePainter.prototype.Zoom = function(xmin, xmax, ymin, ymax, zmin, zmax) {
-      // function can be used for zooming into specified range
-      // if both limits for each axis 0 (like xmin==xmax==0), axis will be unzoomed
-
-      // disable zooming when axis conversion is enabled
-      if (this.projection) return false;
-
-      if (xmin==="x") { xmin = xmax; xmax = ymin; ymin = undefined; } else
-      if (xmin==="y") { ymax = ymin; ymin = xmax; xmin = xmax = undefined; } else
-      if (xmin==="z") { zmin = xmax; zmax = ymin; xmin = xmax = ymin = undefined; }
-
-      let zoom_x = (xmin !== xmax), zoom_y = (ymin !== ymax), zoom_z = (zmin !== zmax),
-          unzoom_x = false, unzoom_y = false, unzoom_z = false;
-
-      if (zoom_x) {
-         let cnt = 0;
-         if (xmin <= this.xmin) { xmin = this.xmin; cnt++; }
-         if (xmax >= this.xmax) { xmax = this.xmax; cnt++; }
-         if (cnt === 2) { zoom_x = false; unzoom_x = true; }
-      } else {
-         unzoom_x = (xmin === xmax) && (xmin === 0);
-      }
-
-      if (zoom_y) {
-         let cnt = 0;
-         if (ymin <= this.ymin) { ymin = this.ymin; cnt++; }
-         if (ymax >= this.ymax) { ymax = this.ymax; cnt++; }
-         if (cnt === 2) { zoom_y = false; unzoom_y = true; }
-      } else {
-         unzoom_y = (ymin === ymax) && (ymin === 0);
-      }
-
-      if (zoom_z) {
-         let cnt = 0;
-         if (zmin <= this.zmin) { zmin = this.zmin; cnt++; }
-         if (zmax >= this.zmax) { zmax = this.zmax; cnt++; }
-         if (cnt === 2) { zoom_z = false; unzoom_z = true; }
-      } else {
-         unzoom_z = (zmin === zmax) && (zmin === 0);
-      }
-
-      let changed = false, main = this;
-
-      // first process zooming (if any)
-      if (zoom_x || zoom_y || zoom_z)
-         main.ForEachPainter(function(obj) {
-            if (zoom_x && obj.CanZoomIn("x", xmin, xmax)) {
-               main.zoom_xmin = xmin;
-               main.zoom_xmax = xmax;
-               changed = true;
-               zoom_x = false;
-            }
-            if (zoom_y && obj.CanZoomIn("y", ymin, ymax)) {
-               main.zoom_ymin = ymin;
-               main.zoom_ymax = ymax;
-               changed = true;
-               zoom_y = false;
-            }
-            if (zoom_z && obj.CanZoomIn("z", zmin, zmax)) {
-               main.zoom_zmin = zmin;
-               main.zoom_zmax = zmax;
-               changed = true;
-               zoom_z = false;
-            }
-         });
-
-      // and process unzoom, if any
-      if (unzoom_x || unzoom_y || unzoom_z) {
-         if (unzoom_x) {
-            if (this.zoom_xmin !== this.zoom_xmax) changed = true;
-            this.zoom_xmin = this.zoom_xmax = 0;
-         }
-         if (unzoom_y) {
-            if (this.zoom_ymin !== this.zoom_ymax) changed = true;
-            this.zoom_ymin = this.zoom_ymax = 0;
-         }
-         if (unzoom_z) {
-            if (this.zoom_zmin !== this.zoom_zmax) changed = true;
-            this.zoom_zmin = this.zoom_zmax = 0;
-         }
-
-      // than try to unzoom all overlapped objects
-         if (!changed) {
-            let pp = this.pad_painter();
-            if (pp && pp.painters)
-               pp.painters.forEach(function(painter){
-                  if (painter && (typeof painter.UnzoomUserRange == 'function'))
-                     if (painter.UnzoomUserRange(unzoom_x, unzoom_y, unzoom_z)) changed = true;
-            });
-         }
-      }
-
-      if (changed)
-         this.InteractiveRedraw("pad", "zoom");
-
-      return changed;
-   }
-
-   TFramePainter.prototype.IsAxisZoomed = function(axis) {
-      return this['zoom_'+axis+'min'] !== this['zoom_'+axis+'max'];
-   }
-
-   TFramePainter.prototype.Unzoom = function(dox, doy, doz) {
-      if (typeof dox === 'undefined') { dox = true; doy = true; doz = true; } else
-      if (typeof dox === 'string') { doz = dox.indexOf("z")>=0; doy = dox.indexOf("y")>=0; dox = dox.indexOf("x")>=0; }
-
-      let last = this.zoom_changed_interactive;
-
-      if (dox || doy || doz) this.zoom_changed_interactive = 1;
-
-      let changed = this.Zoom(dox ? 0 : undefined, dox ? 0 : undefined,
-                              doy ? 0 : undefined, doy ? 0 : undefined,
-                              doz ? 0 : undefined, doz ? 0 : undefined);
-
-      // if unzooming has no effect, decrease counter
-      if ((dox || doy || doz) && !changed)
-         this.zoom_changed_interactive = (!isNaN(last) && (last>0)) ? last - 1 : 0;
-
-      return changed;
-   }
-
-   /** Analyze zooming with mouse wheel */
-   TFramePainter.prototype.AnalyzeMouseWheelEvent = function(event, item, dmin, ignore) {
-
-      item.min = item.max = undefined;
-      item.changed = false;
-      if (ignore && item.ignore) return;
-
-      let delta = 0, delta_left = 1, delta_right = 1;
-
-      if ('dleft' in item) { delta_left = item.dleft; delta = 1; }
-      if ('dright' in item) { delta_right = item.dright; delta = 1; }
-
-      if ('delta' in item) {
-         delta = item.delta;
-      } else if (event && event.wheelDelta !== undefined ) {
-         // WebKit / Opera / Explorer 9
-         delta = -event.wheelDelta;
-      } else if (event && event.deltaY !== undefined ) {
-         // Firefox
-         delta = event.deltaY;
-      } else if (event && event.detail !== undefined) {
-         delta = event.detail;
-      }
-
-      if (delta===0) return;
-      delta = (delta<0) ? -0.2 : 0.2;
-
-      delta_left *= delta
-      delta_right *= delta;
-
-      let lmin = item.min = this["scale_"+item.name+"min"],
-          lmax = item.max = this["scale_"+item.name+"max"],
-          gmin = this[item.name+"min"],
-          gmax = this[item.name+"max"];
-
-      if ((item.min === item.max) && (delta<0)) {
-         item.min = gmin;
-         item.max = gmax;
-      }
-
-      if (item.min >= item.max) return;
-
-      if (item.reverse) dmin = 1 - dmin;
-
-      if ((dmin>0) && (dmin<1)) {
-         if (this['log'+item.name]) {
-            let factor = (item.min>0) ? JSROOT.log10(item.max/item.min) : 2;
-            if (factor>10) factor = 10; else if (factor<0.01) factor = 0.01;
-            item.min = item.min / Math.pow(10, factor*delta_left*dmin);
-            item.max = item.max * Math.pow(10, factor*delta_right*(1-dmin));
          } else {
-            let rx_left = (item.max - item.min), rx_right = rx_left;
-            if (delta_left>0) rx_left = 1.001 * rx_left / (1-delta_left);
-            item.min += -delta_left*dmin*rx_left;
-
-            if (delta_right>0) rx_right = 1.001 * rx_right / (1-delta_right);
-
-            item.max -= -delta_right*(1-dmin)*rx_right;
-         }
-         if (item.min >= item.max)
-            item.min = item.max = undefined;
-         else if (delta_left !== delta_right) {
-            // extra check case when moving left or right
-            if (((item.min < gmin) && (lmin===gmin)) ||
-                ((item.max > gmax) && (lmax==gmax)))
-                   item.min = item.max = undefined;
+            let func = pp ? pp.FindButton(key) : "";
+            if (func) {
+               pp.PadButtonClick(func);
+               evnt.stopPropagation();
+               evnt.preventDefault();
+            }
          }
 
-      } else {
-         item.min = item.max = undefined;
+         return true; // just process any key press
       }
 
-      item.changed = ((item.min !== undefined) && (item.max !== undefined));
-   }
+      clearInteractiveElements() {
+         JSROOT.Painter.closeMenu();
+         if (this.zoom_rect) { this.zoom_rect.remove(); this.zoom_rect = null; }
+         this.zoom_kind = 0;
 
-   TFramePainter.prototype.AllowDefaultYZooming = function() {
-      // return true if default Y zooming should be enabled
-      // it is typically for 2-Dim histograms or
-      // when histogram not draw, defined by other painters
+         // enable tooltip in frame painter
+         this.SwitchTooltip(true);
+      }
 
-      let pad_painter = this.pad_painter();
-      if (pad_painter && pad_painter.painters)
-         for (let k = 0; k < pad_painter.painters.length; ++k) {
-            let subpainter = pad_painter.painters[k];
-            if (subpainter && (subpainter.wheel_zoomy !== undefined))
-               return subpainter.wheel_zoomy;
-         }
+      startRectSel(evnt) {
+         // ignore when touch selection is activated
 
-      return false;
-   }
+         if (this.zoom_kind > 100) return;
 
-   TFramePainter.prototype.mouseWheel = function(evnt) {
-      evnt.stopPropagation();
+         // ignore all events from non-left button
+         if ((evnt.which || evnt.button) !== 1) return;
 
-      evnt.preventDefault();
-      this.clearInteractiveElements();
-
-      let itemx = { name: "x", reverse: this.reverse_x, ignore: false },
-          itemy = { name: "y", reverse: this.reverse_y, ignore: !this.AllowDefaultYZooming() },
-          cur = d3.pointer(evnt, this.svg_frame().node()),
-          w = this.frame_width(), h = this.frame_height();
-
-      this.AnalyzeMouseWheelEvent(evnt, this.swap_xy ? itemy : itemx, cur[0] / w, (cur[1] >=0) && (cur[1] <= h));
-
-      this.AnalyzeMouseWheelEvent(evnt, this.swap_xy ? itemx : itemy, 1 - cur[1] / h, (cur[0] >= 0) && (cur[0] <= w));
-
-      this.Zoom(itemx.min, itemx.max, itemy.min, itemy.max);
-
-      if (itemx.changed || itemy.changed) this.zoom_changed_interactive = 2;
-   }
-
-   TFramePainter.prototype.startTouchZoom = function(evnt) {
-      // in case when zooming was started, block any other kind of events
-      if (this.zoom_kind != 0) {
          evnt.preventDefault();
-         evnt.stopPropagation();
-         return;
-      }
 
-      let arr = d3.pointers(evnt, this.svg_frame().node());
-      this.touch_cnt+=1;
+         let frame = this.svg_frame();
 
-      // normally double-touch will be handled
-      // touch with single click used for context menu
-      if (arr.length == 1) {
-         // this is touch with single element
+         let pos = d3.pointer(evnt, frame.node());
 
-         let now = new Date(), diff = now.getTime() - this.last_touch.getTime();
-         this.last_touch = now;
+         this.clearInteractiveElements();
+         this.zoom_origin = pos;
 
-         if ((diff < 300) && this.zoom_curr
-             && (Math.abs(this.zoom_curr[0] - arr[0][0]) < 30)
-             && (Math.abs(this.zoom_curr[1] - arr[0][1]) < 30)) {
+         let w = this.frame_width(), h = this.frame_height();
 
-            evnt.preventDefault();
-            evnt.stopPropagation();
+         this.zoom_curr = [ Math.max(0, Math.min(w, this.zoom_origin[0])),
+                            Math.max(0, Math.min(h, this.zoom_origin[1])) ];
 
-            this.clearInteractiveElements();
-            this.Unzoom("xyz");
-
-            this.last_touch = new Date(0);
-
-            this.svg_frame().on("touchcancel", null)
-                            .on("touchend", null, true);
-         } else if (JSROOT.gStyle.ContextMenu) {
-            this.zoom_curr = arr[0];
-            this.svg_frame().on("touchcancel", this.endTouchSel.bind(this))
-                            .on("touchend", this.endTouchSel.bind(this));
-            evnt.preventDefault();
-            evnt.stopPropagation();
+         if ((this.zoom_origin[0] < 0) || (this.zoom_origin[0] > w)) {
+            this.zoom_kind = 3; // only y
+            this.zoom_origin[0] = 0;
+            this.zoom_origin[1] = this.zoom_curr[1];
+            this.zoom_curr[0] = w;
+            this.zoom_curr[1] += 1;
+         } else if ((this.zoom_origin[1] < 0) || (this.zoom_origin[1] > h)) {
+            this.zoom_kind = 2; // only x
+            this.zoom_origin[0] = this.zoom_curr[0];
+            this.zoom_origin[1] = 0;
+            this.zoom_curr[0] += 1;
+            this.zoom_curr[1] = h;
+         } else {
+            this.zoom_kind = 1; // x and y
+            this.zoom_origin[0] = this.zoom_curr[0];
+            this.zoom_origin[1] = this.zoom_curr[1];
          }
-      }
 
-      if ((arr.length != 2) || !JSROOT.gStyle.Zooming || !JSROOT.gStyle.ZoomTouch) return;
+         frame.on("mousemove.zoomRect", this.moveRectSel.bind(this))
+              .on("mouseup.zoomRect", this.endRectSel.bind(this), true);
 
-      evnt.preventDefault();
-      evnt.stopPropagation();
+         this.zoom_rect = null;
 
-      this.clearInteractiveElements();
-
-      this.svg_frame().on("touchcancel", null)
-                      .on("touchend", null);
-
-      let pnt1 = arr[0], pnt2 = arr[1], w = this.frame_width(), h = this.frame_height();
-
-      this.zoom_curr = [ Math.min(pnt1[0], pnt2[0]), Math.min(pnt1[1], pnt2[1]) ];
-      this.zoom_origin = [ Math.max(pnt1[0], pnt2[0]), Math.max(pnt1[1], pnt2[1]) ];
-
-      if ((this.zoom_curr[0] < 0) || (this.zoom_curr[0] > w)) {
-         this.zoom_kind = 103; // only y
-         this.zoom_curr[0] = 0;
-         this.zoom_origin[0] = w;
-      } else if ((this.zoom_origin[1] > h) || (this.zoom_origin[1] < 0)) {
-         this.zoom_kind = 102; // only x
-         this.zoom_curr[1] = 0;
-         this.zoom_origin[1] = h;
-      } else {
-         this.zoom_kind = 101; // x and y
-      }
-
-      this.SwitchTooltip(false);
-
-      this.zoom_rect = this.svg_frame().append("rect")
-            .attr("class", "zoom")
-            .attr("id", "zoomRect")
-            .attr("x", this.zoom_curr[0])
-            .attr("y", this.zoom_curr[1])
-            .attr("width", this.zoom_origin[0] - this.zoom_curr[0])
-            .attr("height", this.zoom_origin[1] - this.zoom_curr[1]);
-
-      d3.select(window).on("touchmove.zoomRect", this.moveTouchSel.bind(this))
-                       .on("touchcancel.zoomRect", this.endTouchSel.bind(this))
-                       .on("touchend.zoomRect", this.endTouchSel.bind(this));
-   }
-
-   TFramePainter.prototype.moveTouchSel = function(evnt) {
-      if (this.zoom_kind < 100) return;
-
-      evnt.preventDefault();
-
-      let arr = d3.pointers(evnt, this.svg_frame().node());
-
-      if (arr.length != 2)
-         return this.clearInteractiveElements();
-
-      let pnt1 = arr[0], pnt2 = arr[1];
-
-      if (this.zoom_kind != 103) {
-         this.zoom_curr[0] = Math.min(pnt1[0], pnt2[0]);
-         this.zoom_origin[0] = Math.max(pnt1[0], pnt2[0]);
-      }
-      if (this.zoom_kind != 102) {
-         this.zoom_curr[1] = Math.min(pnt1[1], pnt2[1]);
-         this.zoom_origin[1] = Math.max(pnt1[1], pnt2[1]);
-      }
-
-      this.zoom_rect.attr("x", this.zoom_curr[0])
-                     .attr("y", this.zoom_curr[1])
-                     .attr("width", this.zoom_origin[0] - this.zoom_curr[0])
-                     .attr("height", this.zoom_origin[1] - this.zoom_curr[1]);
-
-      if ((this.zoom_origin[0] - this.zoom_curr[0] > 10)
-           || (this.zoom_origin[1] - this.zoom_curr[1] > 10))
+         // disable tooltips in frame painter
          this.SwitchTooltip(false);
 
-      evnt.stopPropagation();
-   }
+         evnt.stopPropagation();
+      }
 
-   TFramePainter.prototype.endTouchSel = function(evnt) {
+      moveRectSel(evnt) {
 
-      this.svg_frame().on("touchcancel", null)
-                      .on("touchend", null);
-
-      if (this.zoom_kind === 0) {
-         // special case - single touch can ends up with context menu
+         if ((this.zoom_kind == 0) || (this.zoom_kind > 100)) return;
 
          evnt.preventDefault();
+         let m = d3.pointer(evnt);
 
-         let now = new Date();
+         m[0] = Math.max(0, Math.min(this.frame_width(), m[0]));
+         m[1] = Math.max(0, Math.min(this.frame_height(), m[1]));
 
-         let diff = now.getTime() - this.last_touch.getTime();
-
-         if ((diff > 500) && (diff < 2000) && !this.IsTooltipShown()) {
-            this.ShowContextMenu('main', { clientX: this.zoom_curr[0], clientY: this.zoom_curr[1] });
-            this.last_touch = new Date(0);
-         } else {
-            this.clearInteractiveElements();
+         switch (this.zoom_kind) {
+            case 1: this.zoom_curr[0] = m[0]; this.zoom_curr[1] = m[1]; break;
+            case 2: this.zoom_curr[0] = m[0]; break;
+            case 3: this.zoom_curr[1] = m[1]; break;
          }
+
+         if (this.zoom_rect===null)
+            this.zoom_rect = this.svg_frame()
+                                 .append("rect")
+                                 .attr("class", "zoom")
+                                 .attr("pointer-events","none");
+
+         this.zoom_rect.attr("x", Math.min(this.zoom_origin[0], this.zoom_curr[0]))
+                       .attr("y", Math.min(this.zoom_origin[1], this.zoom_curr[1]))
+                       .attr("width", Math.abs(this.zoom_curr[0] - this.zoom_origin[0]))
+                       .attr("height", Math.abs(this.zoom_curr[1] - this.zoom_origin[1]));
       }
 
-      if (this.zoom_kind < 100) return;
+      endRectSel(evnt) {
+         if ((this.zoom_kind == 0) || (this.zoom_kind > 100)) return;
 
-      evnt.preventDefault();
-      d3.select(window).on("touchmove.zoomRect", null)
-                       .on("touchend.zoomRect", null)
-                       .on("touchcancel.zoomRect", null);
-
-      let xmin, xmax, ymin, ymax, isany = false,
-          xid = this.swap_xy ? 1 : 0, yid = 1 - xid,
-          changed = [true, true];
-      if (this.zoom_kind === 102) changed[1] = false;
-      if (this.zoom_kind === 103) changed[0] = false;
-
-      if (changed[xid] && (Math.abs(this.zoom_curr[xid] - this.zoom_origin[xid]) > 10)) {
-         xmin = Math.min(this.RevertX(this.zoom_origin[xid]), this.RevertX(this.zoom_curr[xid]));
-         xmax = Math.max(this.RevertX(this.zoom_origin[xid]), this.RevertX(this.zoom_curr[xid]));
-         isany = true;
-      }
-
-      if (changed[yid] && (Math.abs(this.zoom_curr[yid] - this.zoom_origin[yid]) > 10)) {
-         ymin = Math.min(this.RevertY(this.zoom_origin[yid]), this.RevertY(this.zoom_curr[yid]));
-         ymax = Math.max(this.RevertY(this.zoom_origin[yid]), this.RevertY(this.zoom_curr[yid]));
-         isany = true;
-      }
-
-      this.clearInteractiveElements();
-      this.last_touch = new Date(0);
-
-      if (isany) {
-         this.zoom_changed_interactive = 2;
-         this.Zoom(xmin, xmax, ymin, ymax);
-      }
-
-      evnt.stopPropagation();
-   }
-
-   TFramePainter.prototype.ShowContextMenu = function(kind, evnt, obj) {
-
-      // ignore context menu when touches zooming is ongoing
-      if (('zoom_kind' in this) && (this.zoom_kind > 100)) return;
-
-      // this is for debug purposes only, when context menu is where, close is and show normal menu
-      //if (!evnt && !kind && document.getElementById('root_ctx_menu')) {
-      //   let elem = document.getElementById('root_ctx_menu');
-      //   elem.parentNode.removeChild(elem);
-      //   return;
-      //}
-
-      let menu_painter = this, exec_painter = null, frame_corner = false, fp = null; // object used to show context menu
-
-      if (evnt.stopPropagation) {
          evnt.preventDefault();
-         evnt.stopPropagation(); // disable main context menu
 
-         if (!kind) {
-            let ms = d3.pointer(evnt, this.svg_frame().node()),
-                tch = d3.pointers(evnt, this.svg_frame().node()),
-                pp = this.pad_painter(),
-                pnt = null, sel = null;
+         this.svg_frame().on("mousemove.zoomRect", null)
+                         .on("mouseup.zoomRect", null);
 
-            fp = this;
+         let m = d3.pointer(evnt), changed = [true, true];
+         m[0] = Math.max(0, Math.min(this.frame_width(), m[0]));
+         m[1] = Math.max(0, Math.min(this.frame_height(), m[1]));
 
-            if (tch.length === 1) pnt = { x: tch[0][0], y: tch[0][1], touch: true }; else
-            if (ms.length === 2) pnt = { x: ms[0], y: ms[1], touch: false };
+         switch (this.zoom_kind) {
+            case 1: this.zoom_curr[0] = m[0]; this.zoom_curr[1] = m[1]; break;
+            case 2: this.zoom_curr[0] = m[0]; changed[1] = false; break; // only X
+            case 3: this.zoom_curr[1] = m[1]; changed[0] = false; break; // only Y
+         }
 
-            if ((pnt !== null) && (pp !== null)) {
-               pnt.painters = true; // assign painter for every tooltip
-               let hints = pp.GetTooltips(pnt), bestdist = 1000;
-               for (let n=0;n<hints.length;++n)
-                  if (hints[n] && hints[n].menu) {
-                     let dist = ('menu_dist' in hints[n]) ? hints[n].menu_dist : 7;
-                     if (dist < bestdist) { sel = hints[n].painter; bestdist = dist; }
-                  }
+         let xmin, xmax, ymin, ymax, isany = false,
+             idx = this.swap_xy ? 1 : 0, idy = 1 - idx;
+
+         if (changed[idx] && (Math.abs(this.zoom_curr[idx] - this.zoom_origin[idx]) > 10)) {
+            xmin = Math.min(this.RevertX(this.zoom_origin[idx]), this.RevertX(this.zoom_curr[idx]));
+            xmax = Math.max(this.RevertX(this.zoom_origin[idx]), this.RevertX(this.zoom_curr[idx]));
+            isany = true;
+         }
+
+         if (changed[idy] && (Math.abs(this.zoom_curr[idy] - this.zoom_origin[idy]) > 10)) {
+            ymin = Math.min(this.RevertY(this.zoom_origin[idy]), this.RevertY(this.zoom_curr[idy]));
+            ymax = Math.max(this.RevertY(this.zoom_origin[idy]), this.RevertY(this.zoom_curr[idy]));
+            isany = true;
+         }
+
+         let kind = this.zoom_kind, pnt = (kind===1) ? { x: this.zoom_origin[0], y: this.zoom_origin[1] } : null;
+
+         this.clearInteractiveElements();
+
+         if (isany) {
+            this.zoom_changed_interactive = 2;
+            this.Zoom(xmin, xmax, ymin, ymax);
+         } else {
+            switch (kind) {
+               case 1:
+                  this.ProcessFrameClick(pnt);
+                  break;
+               case 2: {
+                  let pp = this.pad_painter();
+                  if (pp) pp.SelectObjectPainter(this.x_handle);
+                  break;
+               }
+               case 3: {
+                  let pp = this.pad_painter();
+                  if (pp) pp.SelectObjectPainter(this.y_handle);
+                  break;
+               }
+            }
+         }
+
+         this.zoom_kind = 0;
+      }
+
+      mouseDoubleClick(evnt) {
+         evnt.preventDefault();
+         let m = d3.pointer(evnt, this.svg_frame().node());
+         this.clearInteractiveElements();
+
+         let valid_x = (m[0] >= 0) && (m[0] <= this.frame_width()),
+             valid_y = (m[1] >= 0) && (m[1] <= this.frame_height());
+
+         if (valid_x && valid_y && this._dblclick_handler)
+            if (this.ProcessFrameClick({ x: m[0], y: m[1] }, true)) return;
+
+         let kind = "xyz";
+         if (!valid_x) kind = this.swap_xy ? "x" : "y"; else
+         if (!valid_y) kind = this.swap_xy ? "y" : "x";
+         if (this.Unzoom(kind)) return;
+
+         let pp = this.pad_painter();
+         if (pp) pp.SelectObjectPainter(pp, { x: m[0]+this.frame_x(), y: m[1]+this.frame_y(), dbl: true });
+      }
+
+      ConfigureUserClickHandler(handler) {
+         this._click_handler = handler && (typeof handler == 'function') ? handler : null;
+      }
+
+      ConfigureUserDblclickHandler(handler) {
+         this._dblclick_handler = handler && (typeof handler == 'function') ? handler : null;
+      }
+
+       /** Function can be used for zooming into specified range
+         * if both limits for each axis 0 (like xmin==xmax==0), axis will be unzoomed */
+      Zoom(xmin, xmax, ymin, ymax, zmin, zmax) {
+
+         // disable zooming when axis conversion is enabled
+         if (this.projection) return false;
+
+         if (xmin==="x") { xmin = xmax; xmax = ymin; ymin = undefined; } else
+         if (xmin==="y") { ymax = ymin; ymin = xmax; xmin = xmax = undefined; } else
+         if (xmin==="z") { zmin = xmax; zmax = ymin; xmin = xmax = ymin = undefined; }
+
+         let zoom_x = (xmin !== xmax), zoom_y = (ymin !== ymax), zoom_z = (zmin !== zmax),
+             unzoom_x = false, unzoom_y = false, unzoom_z = false;
+
+         if (zoom_x) {
+            let cnt = 0;
+            if (xmin <= this.xmin) { xmin = this.xmin; cnt++; }
+            if (xmax >= this.xmax) { xmax = this.xmax; cnt++; }
+            if (cnt === 2) { zoom_x = false; unzoom_x = true; }
+         } else {
+            unzoom_x = (xmin === xmax) && (xmin === 0);
+         }
+
+         if (zoom_y) {
+            let cnt = 0;
+            if (ymin <= this.ymin) { ymin = this.ymin; cnt++; }
+            if (ymax >= this.ymax) { ymax = this.ymax; cnt++; }
+            if (cnt === 2) { zoom_y = false; unzoom_y = true; }
+         } else {
+            unzoom_y = (ymin === ymax) && (ymin === 0);
+         }
+
+         if (zoom_z) {
+            let cnt = 0;
+            if (zmin <= this.zmin) { zmin = this.zmin; cnt++; }
+            if (zmax >= this.zmax) { zmax = this.zmax; cnt++; }
+            if (cnt === 2) { zoom_z = false; unzoom_z = true; }
+         } else {
+            unzoom_z = (zmin === zmax) && (zmin === 0);
+         }
+
+         let changed = false, main = this;
+
+         // first process zooming (if any)
+         if (zoom_x || zoom_y || zoom_z)
+            main.ForEachPainter(function(obj) {
+               if (zoom_x && obj.CanZoomIn("x", xmin, xmax)) {
+                  main.zoom_xmin = xmin;
+                  main.zoom_xmax = xmax;
+                  changed = true;
+                  zoom_x = false;
+               }
+               if (zoom_y && obj.CanZoomIn("y", ymin, ymax)) {
+                  main.zoom_ymin = ymin;
+                  main.zoom_ymax = ymax;
+                  changed = true;
+                  zoom_y = false;
+               }
+               if (zoom_z && obj.CanZoomIn("z", zmin, zmax)) {
+                  main.zoom_zmin = zmin;
+                  main.zoom_zmax = zmax;
+                  changed = true;
+                  zoom_z = false;
+               }
+            });
+
+         // and process unzoom, if any
+         if (unzoom_x || unzoom_y || unzoom_z) {
+            if (unzoom_x) {
+               if (this.zoom_xmin !== this.zoom_xmax) changed = true;
+               this.zoom_xmin = this.zoom_xmax = 0;
+            }
+            if (unzoom_y) {
+               if (this.zoom_ymin !== this.zoom_ymax) changed = true;
+               this.zoom_ymin = this.zoom_ymax = 0;
+            }
+            if (unzoom_z) {
+               if (this.zoom_zmin !== this.zoom_zmax) changed = true;
+               this.zoom_zmin = this.zoom_zmax = 0;
             }
 
-            if (sel) menu_painter = sel; else kind = "frame";
-
-            if (pnt) frame_corner = (pnt.x>0) && (pnt.x<20) && (pnt.y>0) && (pnt.y<20);
-
-            fp.SetLastEventPos(pnt);
-         } else if ((kind=="x") || (kind=="y") || (kind=="z")) {
-            exec_painter = this.main_painter(); // histogram painter delivers items for axis menu
+         // than try to unzoom all overlapped objects
+            if (!changed) {
+               let pp = this.pad_painter();
+               if (pp && pp.painters)
+                  pp.painters.forEach(function(painter){
+                     if (painter && (typeof painter.UnzoomUserRange == 'function'))
+                        if (painter.UnzoomUserRange(unzoom_x, unzoom_y, unzoom_z)) changed = true;
+               });
+            }
          }
+
+         if (changed)
+            this.InteractiveRedraw("pad", "zoom");
+
+         return changed;
       }
 
-      if (!exec_painter) exec_painter = menu_painter;
+      IsAxisZoomed(axis) { return this['zoom_'+axis+'min'] !== this['zoom_'+axis+'max']; }
 
-      JSROOT.Painter.createMenu(menu_painter, function(menu) {
-         let domenu = menu.painter.FillContextMenu(menu, kind, obj);
+      Unzoom(dox, doy, doz) {
+         if (typeof dox === 'undefined') { dox = true; doy = true; doz = true; } else
+         if (typeof dox === 'string') { doz = dox.indexOf("z")>=0; doy = dox.indexOf("y")>=0; dox = dox.indexOf("x")>=0; }
 
-         // fill frame menu by default - or append frame elements when activated in the frame corner
-         if (fp && (!domenu || (frame_corner && (kind!=="frame"))))
-            domenu = fp.FillContextMenu(menu);
+         let last = this.zoom_changed_interactive;
 
-         if (domenu)
-            exec_painter.FillObjectExecMenu(menu, kind, function() {
-                // suppress any running zooming
-                menu.painter.SwitchTooltip(false);
-                menu.show(null, menu.painter.SwitchTooltip.bind(menu.painter, true));
-            });
-      }, evnt);  // end menu creation
-   }
+         if (dox || doy || doz) this.zoom_changed_interactive = 1;
 
-   /** @summary Show axis status message
-   *
-   * @desc method called normally when mouse enter main object element
-   * @private
-   */
-   TFramePainter.prototype.ShowAxisStatus = function(axis_name, evnt) {
-      // method called normally when mouse enter main object element
+         let changed = this.Zoom(dox ? 0 : undefined, dox ? 0 : undefined,
+                                 doy ? 0 : undefined, doy ? 0 : undefined,
+                                 doz ? 0 : undefined, doz ? 0 : undefined);
 
-      let status_func = this.GetShowStatusFunc();
+         // if unzooming has no effect, decrease counter
+         if ((dox || doy || doz) && !changed)
+            this.zoom_changed_interactive = (!isNaN(last) && (last>0)) ? last - 1 : 0;
 
-      if (typeof status_func != "function") return;
-
-      let taxis = this.GetAxis(axis_name), hint_name = axis_name, hint_title = "TAxis",
-          m = d3.pointer(evnt, this.svg_frame().node()), id = (axis_name=="x") ? 0 : 1;
-
-      if (taxis) { hint_name = taxis.fName; hint_title = taxis.fTitle || ("TAxis object for " + axis_name); }
-      if (this.swap_xy) id = 1-id;
-
-      let axis_value = (axis_name=="x") ? this.RevertX(m[id]) : this.RevertY(m[id]);
-
-      status_func(hint_name, hint_title, axis_name + " : " + this.AxisAsText(axis_name, axis_value), m[0]+","+m[1]);
-   }
-
-   /** @summary Activate context menu handler via touch events
-    * @private */
-   TFramePainter.prototype.startTouchMenu = function(kind, evnt) {
-      // method to let activate context menu via touch handler
-
-      let arr = d3.pointers(evnt, this.svg_frame().node());
-      if (arr.length != 1) return;
-
-      if (!kind || (kind=="")) kind = "main";
-      let fld = "touch_" + kind;
-
-      evnt.sourceEvent.preventDefault();
-      evnt.sourceEvent.stopPropagation();
-
-      this[fld] = { dt: new Date(), pos: arr[0] };
-
-      let handler = this.endTouchMenu.bind(this, kind);
-
-      this.svg_frame().on("touchcancel", handler)
-                      .on("touchend", handler);
-   }
-
-   /** @summary Process end-touch event, which can cause content menu to appear
-    * @private */
-   TFramePainter.prototype.endTouchMenu = function(kind, evnt) {
-      let fld = "touch_" + kind;
-
-      if (! (fld in this)) return;
-
-      evnt.sourceEvent.preventDefault();
-      evnt.sourceEvent.stopPropagation();
-
-      let diff = new Date().getTime() - this[fld].dt.getTime();
-
-      this.svg_frame().on("touchcancel", null)
-                      .on("touchend", null);
-
-      if (diff > 500) {
-         let rect = this.svg_frame().node().getBoundingClientRect();
-         this.ShowContextMenu(kind, { clientX: rect.left + this[fld].pos[0],
-                                      clientY: rect.top + this[fld].pos[1] } );
+         return changed;
       }
 
-      delete this[fld];
-   }
+      /** Analyze zooming with mouse wheel */
+      AnalyzeMouseWheelEvent(event, item, dmin, ignore) {
 
-   /** @summary Add interactive functionality to the frame
-    * @private */
-   TFramePainter.prototype.AddInteractive = function() {
+         item.min = item.max = undefined;
+         item.changed = false;
+         if (ignore && item.ignore) return;
 
-      if (JSROOT.BatchMode || (!JSROOT.gStyle.Zooming && !JSROOT.gStyle.ContextMenu)) return;
+         let delta = 0, delta_left = 1, delta_right = 1;
 
-      let pp = this.pad_painter();
-      if (pp && pp._fast_drawing) return;
+         if ('dleft' in item) { delta_left = item.dleft; delta = 1; }
+         if ('dright' in item) { delta_right = item.dright; delta = 1; }
 
-      let svg = this.svg_frame();
+         if ('delta' in item) {
+            delta = item.delta;
+         } else if (event && event.wheelDelta !== undefined ) {
+            // WebKit / Opera / Explorer 9
+            delta = -event.wheelDelta;
+         } else if (event && event.deltaY !== undefined ) {
+            // Firefox
+            delta = event.deltaY;
+         } else if (event && event.detail !== undefined) {
+            delta = event.detail;
+         }
 
-      if (svg.empty()) return;
+         if (delta===0) return;
+         delta = (delta<0) ? -0.2 : 0.2;
 
-      let svg_x = svg.selectAll(".xaxis_container"),
-          svg_y = svg.selectAll(".yaxis_container");
+         delta_left *= delta
+         delta_right *= delta;
 
-      if (!svg.property('interactive_set')) {
-         this.AddKeysHandler();
+         let lmin = item.min = this["scale_"+item.name+"min"],
+             lmax = item.max = this["scale_"+item.name+"max"],
+             gmin = this[item.name+"min"],
+             gmax = this[item.name+"max"];
 
+         if ((item.min === item.max) && (delta<0)) {
+            item.min = gmin;
+            item.max = gmax;
+         }
+
+         if (item.min >= item.max) return;
+
+         if (item.reverse) dmin = 1 - dmin;
+
+         if ((dmin>0) && (dmin<1)) {
+            if (this['log'+item.name]) {
+               let factor = (item.min>0) ? JSROOT.log10(item.max/item.min) : 2;
+               if (factor>10) factor = 10; else if (factor<0.01) factor = 0.01;
+               item.min = item.min / Math.pow(10, factor*delta_left*dmin);
+               item.max = item.max * Math.pow(10, factor*delta_right*(1-dmin));
+            } else {
+               let rx_left = (item.max - item.min), rx_right = rx_left;
+               if (delta_left>0) rx_left = 1.001 * rx_left / (1-delta_left);
+               item.min += -delta_left*dmin*rx_left;
+
+               if (delta_right>0) rx_right = 1.001 * rx_right / (1-delta_right);
+
+               item.max -= -delta_right*(1-dmin)*rx_right;
+            }
+            if (item.min >= item.max)
+               item.min = item.max = undefined;
+            else if (delta_left !== delta_right) {
+               // extra check case when moving left or right
+               if (((item.min < gmin) && (lmin===gmin)) ||
+                   ((item.max > gmax) && (lmax==gmax)))
+                      item.min = item.max = undefined;
+            }
+
+         } else {
+            item.min = item.max = undefined;
+         }
+
+         item.changed = ((item.min !== undefined) && (item.max !== undefined));
+      }
+
+      AllowDefaultYZooming() {
+         // return true if default Y zooming should be enabled
+         // it is typically for 2-Dim histograms or
+         // when histogram not draw, defined by other painters
+
+         let pad_painter = this.pad_painter();
+         if (pad_painter && pad_painter.painters)
+            for (let k = 0; k < pad_painter.painters.length; ++k) {
+               let subpainter = pad_painter.painters[k];
+               if (subpainter && (subpainter.wheel_zoomy !== undefined))
+                  return subpainter.wheel_zoomy;
+            }
+
+         return false;
+      }
+
+      mouseWheel(evnt) {
+         evnt.stopPropagation();
+
+         evnt.preventDefault();
+         this.clearInteractiveElements();
+
+         let itemx = { name: "x", reverse: this.reverse_x, ignore: false },
+             itemy = { name: "y", reverse: this.reverse_y, ignore: !this.AllowDefaultYZooming() },
+             cur = d3.pointer(evnt, this.svg_frame().node()),
+             w = this.frame_width(), h = this.frame_height();
+
+         this.AnalyzeMouseWheelEvent(evnt, this.swap_xy ? itemy : itemx, cur[0] / w, (cur[1] >=0) && (cur[1] <= h));
+
+         this.AnalyzeMouseWheelEvent(evnt, this.swap_xy ? itemx : itemy, 1 - cur[1] / h, (cur[0] >= 0) && (cur[0] <= w));
+
+         this.Zoom(itemx.min, itemx.max, itemy.min, itemy.max);
+
+         if (itemx.changed || itemy.changed) this.zoom_changed_interactive = 2;
+      }
+
+      startTouchZoom(evnt) {
+         // in case when zooming was started, block any other kind of events
+         if (this.zoom_kind != 0) {
+            evnt.preventDefault();
+            evnt.stopPropagation();
+            return;
+         }
+
+         let arr = d3.pointers(evnt, this.svg_frame().node());
+         this.touch_cnt+=1;
+
+         // normally double-touch will be handled
+         // touch with single click used for context menu
+         if (arr.length == 1) {
+            // this is touch with single element
+
+            let now = new Date(), diff = now.getTime() - this.last_touch.getTime();
+            this.last_touch = now;
+
+            if ((diff < 300) && this.zoom_curr
+                && (Math.abs(this.zoom_curr[0] - arr[0][0]) < 30)
+                && (Math.abs(this.zoom_curr[1] - arr[0][1]) < 30)) {
+
+               evnt.preventDefault();
+               evnt.stopPropagation();
+
+               this.clearInteractiveElements();
+               this.Unzoom("xyz");
+
+               this.last_touch = new Date(0);
+
+               this.svg_frame().on("touchcancel", null)
+                               .on("touchend", null, true);
+            } else if (JSROOT.gStyle.ContextMenu) {
+               this.zoom_curr = arr[0];
+               this.svg_frame().on("touchcancel", this.endTouchSel.bind(this))
+                               .on("touchend", this.endTouchSel.bind(this));
+               evnt.preventDefault();
+               evnt.stopPropagation();
+            }
+         }
+
+         if ((arr.length != 2) || !JSROOT.gStyle.Zooming || !JSROOT.gStyle.ZoomTouch) return;
+
+         evnt.preventDefault();
+         evnt.stopPropagation();
+
+         this.clearInteractiveElements();
+
+         this.svg_frame().on("touchcancel", null)
+                         .on("touchend", null);
+
+         let pnt1 = arr[0], pnt2 = arr[1], w = this.frame_width(), h = this.frame_height();
+
+         this.zoom_curr = [ Math.min(pnt1[0], pnt2[0]), Math.min(pnt1[1], pnt2[1]) ];
+         this.zoom_origin = [ Math.max(pnt1[0], pnt2[0]), Math.max(pnt1[1], pnt2[1]) ];
+
+         if ((this.zoom_curr[0] < 0) || (this.zoom_curr[0] > w)) {
+            this.zoom_kind = 103; // only y
+            this.zoom_curr[0] = 0;
+            this.zoom_origin[0] = w;
+         } else if ((this.zoom_origin[1] > h) || (this.zoom_origin[1] < 0)) {
+            this.zoom_kind = 102; // only x
+            this.zoom_curr[1] = 0;
+            this.zoom_origin[1] = h;
+         } else {
+            this.zoom_kind = 101; // x and y
+         }
+
+         this.SwitchTooltip(false);
+
+         this.zoom_rect = this.svg_frame().append("rect")
+               .attr("class", "zoom")
+               .attr("id", "zoomRect")
+               .attr("x", this.zoom_curr[0])
+               .attr("y", this.zoom_curr[1])
+               .attr("width", this.zoom_origin[0] - this.zoom_curr[0])
+               .attr("height", this.zoom_origin[1] - this.zoom_curr[1]);
+
+         d3.select(window).on("touchmove.zoomRect", this.moveTouchSel.bind(this))
+                          .on("touchcancel.zoomRect", this.endTouchSel.bind(this))
+                          .on("touchend.zoomRect", this.endTouchSel.bind(this));
+      }
+
+      moveTouchSel(evnt) {
+         if (this.zoom_kind < 100) return;
+
+         evnt.preventDefault();
+
+         let arr = d3.pointers(evnt, this.svg_frame().node());
+
+         if (arr.length != 2)
+            return this.clearInteractiveElements();
+
+         let pnt1 = arr[0], pnt2 = arr[1];
+
+         if (this.zoom_kind != 103) {
+            this.zoom_curr[0] = Math.min(pnt1[0], pnt2[0]);
+            this.zoom_origin[0] = Math.max(pnt1[0], pnt2[0]);
+         }
+         if (this.zoom_kind != 102) {
+            this.zoom_curr[1] = Math.min(pnt1[1], pnt2[1]);
+            this.zoom_origin[1] = Math.max(pnt1[1], pnt2[1]);
+         }
+
+         this.zoom_rect.attr("x", this.zoom_curr[0])
+                        .attr("y", this.zoom_curr[1])
+                        .attr("width", this.zoom_origin[0] - this.zoom_curr[0])
+                        .attr("height", this.zoom_origin[1] - this.zoom_curr[1]);
+
+         if ((this.zoom_origin[0] - this.zoom_curr[0] > 10)
+              || (this.zoom_origin[1] - this.zoom_curr[1] > 10))
+            this.SwitchTooltip(false);
+
+         evnt.stopPropagation();
+      }
+
+      endTouchSel(evnt) {
+
+         this.svg_frame().on("touchcancel", null)
+                         .on("touchend", null);
+
+         if (this.zoom_kind === 0) {
+            // special case - single touch can ends up with context menu
+
+            evnt.preventDefault();
+
+            let now = new Date();
+
+            let diff = now.getTime() - this.last_touch.getTime();
+
+            if ((diff > 500) && (diff < 2000) && !this.IsTooltipShown()) {
+               this.ShowContextMenu('main', { clientX: this.zoom_curr[0], clientY: this.zoom_curr[1] });
+               this.last_touch = new Date(0);
+            } else {
+               this.clearInteractiveElements();
+            }
+         }
+
+         if (this.zoom_kind < 100) return;
+
+         evnt.preventDefault();
+         d3.select(window).on("touchmove.zoomRect", null)
+                          .on("touchend.zoomRect", null)
+                          .on("touchcancel.zoomRect", null);
+
+         let xmin, xmax, ymin, ymax, isany = false,
+             xid = this.swap_xy ? 1 : 0, yid = 1 - xid,
+             changed = [true, true];
+         if (this.zoom_kind === 102) changed[1] = false;
+         if (this.zoom_kind === 103) changed[0] = false;
+
+         if (changed[xid] && (Math.abs(this.zoom_curr[xid] - this.zoom_origin[xid]) > 10)) {
+            xmin = Math.min(this.RevertX(this.zoom_origin[xid]), this.RevertX(this.zoom_curr[xid]));
+            xmax = Math.max(this.RevertX(this.zoom_origin[xid]), this.RevertX(this.zoom_curr[xid]));
+            isany = true;
+         }
+
+         if (changed[yid] && (Math.abs(this.zoom_curr[yid] - this.zoom_origin[yid]) > 10)) {
+            ymin = Math.min(this.RevertY(this.zoom_origin[yid]), this.RevertY(this.zoom_curr[yid]));
+            ymax = Math.max(this.RevertY(this.zoom_origin[yid]), this.RevertY(this.zoom_curr[yid]));
+            isany = true;
+         }
+
+         this.clearInteractiveElements();
          this.last_touch = new Date(0);
-         this.zoom_kind = 0; // 0 - none, 1 - XY, 2 - only X, 3 - only Y, (+100 for touches)
-         this.zoom_rect = null;
-         this.zoom_origin = null;  // original point where zooming started
-         this.zoom_curr = null;    // current point for zooming
-         this.touch_cnt = 0;
-      }
 
-      if (JSROOT.gStyle.Zooming && !this.projection) {
-         if (JSROOT.gStyle.ZoomMouse) {
-            svg.on("mousedown", this.startRectSel.bind(this));
-            svg.on("dblclick", this.mouseDoubleClick.bind(this));
+         if (isany) {
+            this.zoom_changed_interactive = 2;
+            this.Zoom(xmin, xmax, ymin, ymax);
          }
-         if (JSROOT.gStyle.ZoomWheel)
-            svg.on("wheel", this.mouseWheel.bind(this));
+
+         evnt.stopPropagation();
       }
 
-      if (JSROOT.touches && ((JSROOT.gStyle.Zooming && JSROOT.gStyle.ZoomTouch && !this.projection) || JSROOT.gStyle.ContextMenu))
-         svg.on("touchstart", this.startTouchZoom.bind(this));
+      ShowContextMenu(kind, evnt, obj) {
 
-      if (JSROOT.gStyle.ContextMenu) {
-         if (JSROOT.touches) {
-            svg_x.on("touchstart", this.startTouchMenu.bind(this,"x"));
-            svg_y.on("touchstart", this.startTouchMenu.bind(this,"y"));
+         // ignore context menu when touches zooming is ongoing
+         if (('zoom_kind' in this) && (this.zoom_kind > 100)) return;
+
+         // this is for debug purposes only, when context menu is where, close is and show normal menu
+         //if (!evnt && !kind && document.getElementById('root_ctx_menu')) {
+         //   let elem = document.getElementById('root_ctx_menu');
+         //   elem.parentNode.removeChild(elem);
+         //   return;
+         //}
+
+         let menu_painter = this, exec_painter = null, frame_corner = false, fp = null; // object used to show context menu
+
+         if (evnt.stopPropagation) {
+            evnt.preventDefault();
+            evnt.stopPropagation(); // disable main context menu
+
+            if (!kind) {
+               let ms = d3.pointer(evnt, this.svg_frame().node()),
+                   tch = d3.pointers(evnt, this.svg_frame().node()),
+                   pp = this.pad_painter(),
+                   pnt = null, sel = null;
+
+               fp = this;
+
+               if (tch.length === 1) pnt = { x: tch[0][0], y: tch[0][1], touch: true }; else
+               if (ms.length === 2) pnt = { x: ms[0], y: ms[1], touch: false };
+
+               if ((pnt !== null) && (pp !== null)) {
+                  pnt.painters = true; // assign painter for every tooltip
+                  let hints = pp.GetTooltips(pnt), bestdist = 1000;
+                  for (let n=0;n<hints.length;++n)
+                     if (hints[n] && hints[n].menu) {
+                        let dist = ('menu_dist' in hints[n]) ? hints[n].menu_dist : 7;
+                        if (dist < bestdist) { sel = hints[n].painter; bestdist = dist; }
+                     }
+               }
+
+               if (sel) menu_painter = sel; else kind = "frame";
+
+               if (pnt) frame_corner = (pnt.x>0) && (pnt.x<20) && (pnt.y>0) && (pnt.y<20);
+
+               fp.SetLastEventPos(pnt);
+            } else if ((kind=="x") || (kind=="y") || (kind=="z")) {
+               exec_painter = this.main_painter(); // histogram painter delivers items for axis menu
+            }
          }
-         svg.on("contextmenu", this.ShowContextMenu.bind(this,""));
-         svg_x.on("contextmenu", this.ShowContextMenu.bind(this,"x"));
-         svg_y.on("contextmenu", this.ShowContextMenu.bind(this,"y"));
+
+         if (!exec_painter) exec_painter = menu_painter;
+
+         JSROOT.Painter.createMenu(menu_painter, function(menu) {
+            let domenu = menu.painter.FillContextMenu(menu, kind, obj);
+
+            // fill frame menu by default - or append frame elements when activated in the frame corner
+            if (fp && (!domenu || (frame_corner && (kind!=="frame"))))
+               domenu = fp.FillContextMenu(menu);
+
+            if (domenu)
+               exec_painter.FillObjectExecMenu(menu, kind, function() {
+                   // suppress any running zooming
+                   menu.painter.SwitchTooltip(false);
+                   menu.show(null, menu.painter.SwitchTooltip.bind(menu.painter, true));
+               });
+         }, evnt);  // end menu creation
       }
 
-      svg_x.on("mousemove", this.ShowAxisStatus.bind(this,"x"));
-      svg_y.on("mousemove", this.ShowAxisStatus.bind(this,"y"));
+      /** @summary Show axis status message
+      *
+      * @desc method called normally when mouse enter main object element
+      * @private
+      */
+      ShowAxisStatus(axis_name, evnt) {
 
-      svg.property('interactive_set', true);
-   }
+         let status_func = this.GetShowStatusFunc();
+
+         if (typeof status_func != "function") return;
+
+         let taxis = this.GetAxis(axis_name), hint_name = axis_name, hint_title = "TAxis",
+             m = d3.pointer(evnt, this.svg_frame().node()), id = (axis_name=="x") ? 0 : 1;
+
+         if (taxis) { hint_name = taxis.fName; hint_title = taxis.fTitle || ("TAxis object for " + axis_name); }
+         if (this.swap_xy) id = 1-id;
+
+         let axis_value = (axis_name=="x") ? this.RevertX(m[id]) : this.RevertY(m[id]);
+
+         status_func(hint_name, hint_title, axis_name + " : " + this.AxisAsText(axis_name, axis_value), m[0]+","+m[1]);
+      }
+
+      /** @summary Activate context menu handler via touch events
+       * @private */
+      startTouchMenu(kind, evnt) {
+         // method to let activate context menu via touch handler
+
+         let arr = d3.pointers(evnt, this.svg_frame().node());
+         if (arr.length != 1) return;
+
+         if (!kind || (kind=="")) kind = "main";
+         let fld = "touch_" + kind;
+
+         evnt.sourceEvent.preventDefault();
+         evnt.sourceEvent.stopPropagation();
+
+         this[fld] = { dt: new Date(), pos: arr[0] };
+
+         let handler = this.endTouchMenu.bind(this, kind);
+
+         this.svg_frame().on("touchcancel", handler)
+                         .on("touchend", handler);
+      }
+
+      /** @summary Process end-touch event, which can cause content menu to appear
+       * @private */
+      endTouchMenu(kind, evnt) {
+         let fld = "touch_" + kind;
+
+         if (! (fld in this)) return;
+
+         evnt.sourceEvent.preventDefault();
+         evnt.sourceEvent.stopPropagation();
+
+         let diff = new Date().getTime() - this[fld].dt.getTime();
+
+         this.svg_frame().on("touchcancel", null)
+                         .on("touchend", null);
+
+         if (diff > 500) {
+            let rect = this.svg_frame().node().getBoundingClientRect();
+            this.ShowContextMenu(kind, { clientX: rect.left + this[fld].pos[0],
+                                         clientY: rect.top + this[fld].pos[1] } );
+         }
+
+         delete this[fld];
+      }
+
+      /** @summary Add interactive functionality to the frame
+       * @private */
+      AddInteractive() {
+
+         if (JSROOT.BatchMode || (!JSROOT.gStyle.Zooming && !JSROOT.gStyle.ContextMenu)) return;
+
+         let pp = this.pad_painter();
+         if (pp && pp._fast_drawing) return;
+
+         let svg = this.svg_frame();
+
+         if (svg.empty()) return;
+
+         let svg_x = svg.selectAll(".xaxis_container"),
+             svg_y = svg.selectAll(".yaxis_container");
+
+         if (!svg.property('interactive_set')) {
+            this.AddKeysHandler();
+
+            this.last_touch = new Date(0);
+            this.zoom_kind = 0; // 0 - none, 1 - XY, 2 - only X, 3 - only Y, (+100 for touches)
+            this.zoom_rect = null;
+            this.zoom_origin = null;  // original point where zooming started
+            this.zoom_curr = null;    // current point for zooming
+            this.touch_cnt = 0;
+         }
+
+         if (JSROOT.gStyle.Zooming && !this.projection) {
+            if (JSROOT.gStyle.ZoomMouse) {
+               svg.on("mousedown", this.startRectSel.bind(this));
+               svg.on("dblclick", this.mouseDoubleClick.bind(this));
+            }
+            if (JSROOT.gStyle.ZoomWheel)
+               svg.on("wheel", this.mouseWheel.bind(this));
+         }
+
+         if (JSROOT.touches && ((JSROOT.gStyle.Zooming && JSROOT.gStyle.ZoomTouch && !this.projection) || JSROOT.gStyle.ContextMenu))
+            svg.on("touchstart", this.startTouchZoom.bind(this));
+
+         if (JSROOT.gStyle.ContextMenu) {
+            if (JSROOT.touches) {
+               svg_x.on("touchstart", this.startTouchMenu.bind(this,"x"));
+               svg_y.on("touchstart", this.startTouchMenu.bind(this,"y"));
+            }
+            svg.on("contextmenu", this.ShowContextMenu.bind(this,""));
+            svg_x.on("contextmenu", this.ShowContextMenu.bind(this,"x"));
+            svg_y.on("contextmenu", this.ShowContextMenu.bind(this,"y"));
+         }
+
+         svg_x.on("mousemove", this.ShowAxisStatus.bind(this,"x"));
+         svg_y.on("mousemove", this.ShowAxisStatus.bind(this,"y"));
+
+         svg.property('interactive_set', true);
+      }
+
+   } // class TFramePainter
 
    function drawFrame(divid, obj, opt) {
       let p = new TFramePainter(obj);
@@ -3555,17 +3533,17 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
 
          if (objpainter) {
 
-            if (snap.fKind === JSROOT.WebSnapIds.kObject) { // object itself
+            if (snap.fKind === webSnapIds.kObject) { // object itself
                if (objpainter.UpdateObject(snap.fSnapshot, snap.fOption)) objpainter.Redraw();
                continue; // call next
             }
 
-            if (snap.fKind === JSROOT.WebSnapIds.kSVG) { // update SVG
+            if (snap.fKind === webSnapIds.kSVG) { // update SVG
                if (objpainter.UpdateObject(snap.fSnapshot)) objpainter.Redraw();
                continue; // call next
             }
 
-            if (snap.fKind === JSROOT.WebSnapIds.kSubPad) { // subpad
+            if (snap.fKind === webSnapIds.kSubPad) { // subpad
                return objpainter.RedrawPadSnap(snap, draw_callback);
             }
 
@@ -3573,13 +3551,13 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
          }
 
          // gStyle object
-         if (snap.fKind === JSROOT.WebSnapIds.kStyle) {
+         if (snap.fKind === webSnapIds.kStyle) {
             JSROOT.extend(JSROOT.gStyle, snap.fSnapshot);
             continue;
          }
 
          // list of colors
-         if (snap.fKind === JSROOT.WebSnapIds.kColors) {
+         if (snap.fKind === webSnapIds.kColors) {
 
             let ListOfColors = [], arr = snap.fSnapshot.fOper.split(";");
             for (let n=0;n<arr.length;++n) {
@@ -3612,7 +3590,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
             continue;
          }
 
-         if (snap.fKind === JSROOT.WebSnapIds.kSubPad) { // subpad
+         if (snap.fKind === webSnapIds.kSubPad) { // subpad
 
             let subpad = snap.fSnapshot;
 
@@ -3643,7 +3621,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
          }
 
          // here the case of normal drawing, will be handled in promisecan be improved
-         if ((snap.fKind === JSROOT.WebSnapIds.kObject) || (snap.fKind === JSROOT.WebSnapIds.kSVG))
+         if ((snap.fKind === webSnapIds.kObject) || (snap.fKind === webSnapIds.kSVG))
             return JSROOT.draw(this.divid, snap.fSnapshot, snap.fOption).then(draw_callback);
       }
    }
@@ -4443,14 +4421,19 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
 
    // ==========================================================================================
 
-   /**
-    * @summary Painter for TCanvas object.
-    *
-    * @constructor
-    * @memberof JSROOT
-    * @arguments JSROOT.TPadPainter
-    * @param {object} canvas - TCanvas object to draw
-    */
+   let TCanvasStatusBits = {
+      kShowEventStatus: JSROOT.BIT(15),
+      kAutoExec: JSROOT.BIT(16),
+      kMenuBar: JSROOT.BIT(17),
+      kShowToolBar: JSROOT.BIT(18),
+      kShowEditor: JSROOT.BIT(19),
+      kMoveOpaque: JSROOT.BIT(20),
+      kResizeOpaque: JSROOT.BIT(21),
+      kIsGrayscale: JSROOT.BIT(22),
+      kShowToolTips: JSROOT.BIT(23)
+   }
+
+   /** @summary Painter for TCanvas object. */
 
    function TCanvasPainter(canvas) {
       TPadPainter.call(this, canvas, true);
@@ -4862,18 +4845,6 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
 
       }
       JSROOT.CallBack(callback, true);
-   }
-
-   let TCanvasStatusBits = {
-      kShowEventStatus: JSROOT.BIT(15),
-      kAutoExec: JSROOT.BIT(16),
-      kMenuBar: JSROOT.BIT(17),
-      kShowToolBar: JSROOT.BIT(18),
-      kShowEditor: JSROOT.BIT(19),
-      kMoveOpaque: JSROOT.BIT(20),
-      kResizeOpaque: JSROOT.BIT(21),
-      kIsGrayscale: JSROOT.BIT(22),
-      kShowToolTips: JSROOT.BIT(23)
    }
 
    TCanvasPainter.prototype.CompeteCanvasSnapDrawing = function() {
