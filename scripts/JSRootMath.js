@@ -5,10 +5,10 @@ JSROOT.require([], () =>  {
 
    "use strict";
 
-   JSROOT.Math = {};
+   let mth = {};
 
    /** @memberOf JSROOT.Math */
-   JSROOT.Math.lgam = function( x ) {
+   mth.lgam = function( x ) {
       let p, q, u, w, z, i, sgngam = 1;
       const kMAXLGM  = 2.556348e305;
       const LS2PI  =  0.91893853320467274178;
@@ -117,7 +117,7 @@ JSROOT.require([], () =>  {
     *
     * @memberOf JSROOT.Math
     */
-   JSROOT.Math.Polynomialeval = function(x, a, N) {
+   mth.Polynomialeval = function(x, a, N) {
       if (N==0) return a[0];
 
       let pom = a[0];
@@ -132,7 +132,7 @@ JSROOT.require([], () =>  {
     *
     * @memberOf JSROOT.Math
     */
-   JSROOT.Math.Polynomial1eval = function(x, a, N) {
+   mth.Polynomial1eval = function(x, a, N) {
       if (N==0) return a[0];
 
       let pom = x + a[0];
@@ -142,7 +142,7 @@ JSROOT.require([], () =>  {
    }
 
    /** @memberOf JSROOT.Math */
-   JSROOT.Math.ndtri = function( y0 ) {
+   mth.ndtri = function( y0 ) {
       if ( y0 <= 0.0 )
          return Number.NEGATIVE_INFINITY;
       if ( y0 >= 1.0 )
@@ -240,12 +240,12 @@ JSROOT.require([], () =>  {
       return x;
    }
 
-   JSROOT.Math.normal_quantile = function(z, sigma) {
-      return  sigma * JSROOT.Math.ndtri(z);
+   mth.normal_quantile = function(z, sigma) {
+      return  sigma * mth.ndtri(z);
    }
 
    /** @memberOf JSROOT.Math */
-   JSROOT.Math.igam = function(a,x) {
+   mth.igam = function(a,x) {
       const kMACHEP = 1.11022302462515654042363166809e-16;
       const kMAXLOG = 709.782712893383973096206318587;
 
@@ -278,7 +278,7 @@ JSROOT.require([], () =>  {
    }
 
    /** @memberOf JSROOT.Math */
-   JSROOT.Math.igamc = function(a,x) {
+   mth.igamc = function(a,x) {
       const kMACHEP = 1.11022302462515654042363166809e-16,
             kMAXLOG = 709.782712893383973096206318587,
             kBig = 4.503599627370496e15,
@@ -291,9 +291,9 @@ JSROOT.require([], () =>  {
       if (x <= 0) return 1.0;
 
       if( (x < 1.0) || (x < a) )
-         return ( 1.0 - JSROOT.Math.igam(a,x) );
+         return ( 1.0 - mth.igam(a,x) );
 
-      let ax = a * Math.log(x) - x - JSROOT.Math.lgam(a);
+      let ax = a * Math.log(x) - x - mth.lgam(a);
       if( ax < -kMAXLOG )
          return 0.0;
 
@@ -342,7 +342,7 @@ JSROOT.require([], () =>  {
    }
 
    /** @memberOf JSROOT.Math */
-   JSROOT.Math.igami = function(a, y0) {
+   mth.igami = function(a, y0) {
       let x0, x1, x, yl, yh, y, d, lgm, dithresh, i, dir;
       const kMACHEP = 1.11022302462515654042363166809e-16;
 
@@ -458,17 +458,17 @@ JSROOT.require([], () =>  {
    }
 
    /** @memberOf JSROOT.Math */
-   JSROOT.Math.gamma_quantile_c = function(z, alpha, theta) {
+   mth.gamma_quantile_c = function(z, alpha, theta) {
       return theta * this.igami( alpha, z);
    }
 
    /** @memberOf JSROOT.Math */
-   JSROOT.Math.gamma_quantile = function(z, alpha, theta) {
+   mth.gamma_quantile = function(z, alpha, theta) {
       return theta * this.igami( alpha, 1.- z);
    }
 
    /** @memberOf JSROOT.Math */
-   JSROOT.Math.landau_pdf = function(x, xi, x0) {
+   mth.landau_pdf = function(x, xi, x0) {
       // LANDAU pdf : algorithm from CERNLIB G110 denlan
       // same algorithm is used in GSL
       if (x0===undefined) x0 = 0;
@@ -527,61 +527,61 @@ JSROOT.require([], () =>  {
    }
 
    /** @memberOf JSROOT.Math */
-   JSROOT.Math.Landau = function(x, mpv, sigma, norm) {
+   mth.Landau = function(x, mpv, sigma, norm) {
       if (sigma <= 0) return 0;
-      const den = JSROOT.Math.landau_pdf((x - mpv) / sigma, 1, 0);
+      const den = mth.landau_pdf((x - mpv) / sigma, 1, 0);
       if (!norm) return den;
       return den/sigma;
    }
 
    /** @memberOf JSROOT.Math */
-   JSROOT.Math.inc_gamma_c = function(a,x) {
-      return JSROOT.Math.igamc(a,x);
+   mth.inc_gamma_c = function(a,x) {
+      return mth.igamc(a,x);
    }
 
    /** @memberOf JSROOT.Math */
-   JSROOT.Math.inc_gamma = function(a,x) {
-      return JSROOT.Math.igam(a,x);
+   mth.inc_gamma = function(a,x) {
+      return mth.igam(a,x);
    }
 
-   JSROOT.Math.lgamma = function(z) {
-      return JSROOT.Math.lgam(z);
-   }
-
-   /** @memberOf JSROOT.Math */
-   JSROOT.Math.inc_gamma = function(a,x) {
-      return JSROOT.Math.igam(a,x);
-   }
-
-   JSROOT.Math.lgamma = function(z) {
-      return JSROOT.Math.lgam(z);
+   mth.lgamma = function(z) {
+      return mth.lgam(z);
    }
 
    /** @memberOf JSROOT.Math */
-   JSROOT.Math.chisquared_cdf_c = function(x,r,x0) {
+   mth.inc_gamma = function(a,x) {
+      return mth.igam(a,x);
+   }
+
+   mth.lgamma = function(z) {
+      return mth.lgam(z);
+   }
+
+   /** @memberOf JSROOT.Math */
+   mth.chisquared_cdf_c = function(x,r,x0) {
       if (x0===undefined) x0 = 0;
-      return JSROOT.Math.inc_gamma_c ( 0.5 * r , 0.5*(x-x0) );
+      return mth.inc_gamma_c ( 0.5 * r , 0.5*(x-x0) );
    }
 
    /** @memberOf JSROOT.Math */
-   JSROOT.Math.chisquared_cdf = function(x,r,x0) {
+   mth.chisquared_cdf = function(x,r,x0) {
       if (x0===undefined) x0 = 0;
-      return JSROOT.Math.inc_gamma ( 0.5 * r , 0.5*(x-x0) );
+      return mth.inc_gamma ( 0.5 * r , 0.5*(x-x0) );
    }
 
    /** @memberOf JSROOT.Math */
-   JSROOT.Math.chisquared_pdf = function(x,r,x0) {
+   mth.chisquared_pdf = function(x,r,x0) {
       if (x0===undefined) x0 = 0;
       if ((x-x0) < 0) return 0.0;
       const a = r/2 -1.;
       // let return inf for case x  = x0 and treat special case of r = 2 otherwise will return nan
       if (x == x0 && a == 0) return 0.5;
 
-      return Math.exp ((r/2 - 1) * Math.log((x-x0)/2) - (x-x0)/2 - JSROOT.Math.lgamma(r/2))/2;
+      return Math.exp ((r/2 - 1) * Math.log((x-x0)/2) - (x-x0)/2 - mth.lgamma(r/2))/2;
    }
 
    /** @memberOf JSROOT.Math */
-   JSROOT.Math.Prob = function(chi2, ndf) {
+   mth.Prob = function(chi2, ndf) {
       if (ndf <= 0) return 0; // Set CL to zero in case ndf<=0
 
       if (chi2 <= 0) {
@@ -589,32 +589,32 @@ JSROOT.require([], () =>  {
          else          return 1;
       }
 
-      return JSROOT.Math.chisquared_cdf_c(chi2,ndf,0);
+      return mth.chisquared_cdf_c(chi2,ndf,0);
    }
 
    /** @memberOf JSROOT.Math */
-   JSROOT.Math.Gaus = function(x, mean, sigma) {
+   mth.Gaus = function(x, mean, sigma) {
       return Math.exp(-0.5 * Math.pow((x-mean) / sigma, 2));
    }
 
    /** @memberOf JSROOT.Math */
-   JSROOT.Math.BreitWigner = function(x, mean, gamma) {
+   mth.BreitWigner = function(x, mean, gamma) {
       return gamma/((x-mean)*(x-mean) + gamma*gamma/4) / 2 / Math.PI;
    }
 
    /** @memberOf JSROOT.Math */
-   JSROOT.Math.gaus = function(f, x, i) {
+   mth.gaus = function(f, x, i) {
       // function used when gaus(0) used in the TFormula
       return f.GetParValue(i+0) * Math.exp(-0.5 * Math.pow((x-f.GetParValue(i+1)) / f.GetParValue(i+2), 2));
    }
 
    /** @memberOf JSROOT.Math */
-   JSROOT.Math.gausn = function(f, x, i) {
-      return JSROOT.Math.gaus(f, x, i)/(Math.sqrt(2 * Math.PI) * f.GetParValue(i+2));
+   mth.gausn = function(f, x, i) {
+      return mth.gaus(f, x, i)/(Math.sqrt(2 * Math.PI) * f.GetParValue(i+2));
    }
 
    /** @memberOf JSROOT.Math */
-   JSROOT.Math.gausxy = function(f, x, y, i) {
+   mth.gausxy = function(f, x, y, i) {
       // function used when xygaus(0) used in the TFormula
 
       return f.GetParValue(i+0) * Math.exp(-0.5 * Math.pow((x-f.GetParValue(i+1)) / f.GetParValue(i+2), 2))
@@ -622,18 +622,18 @@ JSROOT.require([], () =>  {
    }
 
    /** @memberOf JSROOT.Math */
-   JSROOT.Math.expo = function(f, x, i) {
+   mth.expo = function(f, x, i) {
       return Math.exp(f.GetParValue(i+0) + f.GetParValue(i+1) * x);
    }
 
    /** @memberOf JSROOT.Math */
-   JSROOT.Math.landau = function(f, x, i) {
-      return JSROOT.Math.Landau(x, f.GetParValue(i+1),f.GetParValue(i+2), false);
+   mth.landau = function(f, x, i) {
+      return mth.Landau(x, f.GetParValue(i+1),f.GetParValue(i+2), false);
    }
 
    /** @memberOf JSROOT.Math */
-   JSROOT.Math.landaun = function(f, x, i) {
-      return JSROOT.Math.Landau(x, f.GetParValue(i+1),f.GetParValue(i+2), true);
+   mth.landaun = function(f, x, i) {
+      return mth.Landau(x, f.GetParValue(i+1),f.GetParValue(i+2), true);
    }
 
    // =========================================================================
@@ -675,6 +675,7 @@ JSROOT.require([], () =>  {
       }
    }
 
-   return JSROOT;
+   JSROOT.Math = mth;
 
+   return JSROOT;
 });
