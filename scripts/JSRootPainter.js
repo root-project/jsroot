@@ -146,8 +146,6 @@ JSROOT.require(['d3'], function(d3) {
          0.587, 0.514, 0.896, 0.587, 0.55]
    };
 
-   JSROOT.Painter = Painter; // export here to avoid ambiguity
-
    Painter.createMenu = function(painter, maincallback, evt) {
       // dummy functions, forward call to the jquery function
       document.body.style.cursor = 'wait';
@@ -816,7 +814,7 @@ JSROOT.require(['d3'], function(d3) {
          this.color = color;
          indx = 10000 + JSROOT.id_counter++; // use fictional unique index far away from existing color indexes
       } else {
-         this.color = JSROOT.Painter.root_colors[indx];
+         this.color = Painter.root_colors[indx];
       }
 
       if (typeof this.color != 'string') this.color = "none";
@@ -1848,7 +1846,7 @@ JSROOT.require(['d3'], function(d3) {
 
       if (!jsarr) {
          let pp = this.canv_painter();
-         jsarr = this.root_colors = (pp && pp.root_colors) ? pp.root_colors : JSROOT.Painter.root_colors;
+         jsarr = this.root_colors = (pp && pp.root_colors) ? pp.root_colors : Painter.root_colors;
       }
 
       return jsarr[indx];
@@ -1860,7 +1858,7 @@ JSROOT.require(['d3'], function(d3) {
       let jsarr = this.root_colors;
       if (!jsarr) {
          let pp = this.canv_painter();
-         jsarr = this.root_colors = (pp && pp.root_colors) ? pp.root_colors : JSROOT.Painter.root_colors;
+         jsarr = this.root_colors = (pp && pp.root_colors) ? pp.root_colors : Painter.root_colors;
       }
       let indx = jsarr.indexOf(color);
       if (indx >= 0) return indx;
@@ -1895,8 +1893,8 @@ JSROOT.require(['d3'], function(d3) {
       if (!cp) return null;
       if (cp.custom_palette && !palettedid) return cp.custom_palette;
 
-      if (force && JSROOT.Painter.GetColorPalette)
-         cp.custom_palette = JSROOT.Painter.GetColorPalette(palettedid);
+      if (force && Painter.GetColorPalette)
+         cp.custom_palette = Painter.GetColorPalette(palettedid);
 
       return cp.custom_palette;
    }
@@ -2212,7 +2210,7 @@ JSROOT.require(['d3'], function(d3) {
     *  @private
     */
    ObjectPainter.prototype.embed_3d = function(render3d) {
-      render3d = JSROOT.Painter.GetRender3DKind(render3d);
+      render3d = Painter.GetRender3DKind(render3d);
 
       // all non-webgl elements can be embedded into SVG as is
       if (render3d !== JSROOT.constants.Render3D.WebGL)
@@ -2515,8 +2513,8 @@ JSROOT.require(['d3'], function(d3) {
       let svg_c = this.svg_canvas();
 
       if (svg_c.empty() && (is_main > 0) && (is_main !== 5)) {
-         if (typeof JSROOT.Painter.drawCanvas == 'function')
-             JSROOT.Painter.drawCanvas(divid, null, ((is_main == 2) || (is_main == 4)) ? "noframe" : "");
+         if (typeof Painter.drawCanvas == 'function')
+             Painter.drawCanvas(divid, null, ((is_main == 2) || (is_main == 4)) ? "noframe" : "");
          else
              return alert("Fail to draw TCanvas - please contact JSROOT developers");
          svg_c = this.svg_canvas();
@@ -2538,8 +2536,8 @@ JSROOT.require(['d3'], function(d3) {
 
       // create TFrame element if not exists
       if (this.svg_frame().select(".main_layer").empty() && ((is_main == 1) || (is_main == 3) || (is_main == 4))) {
-         if (typeof JSROOT.Painter.drawFrame == 'function')
-            JSROOT.Painter.drawFrame(divid, null, (is_main == 4) ? "3d" : "");
+         if (typeof Painter.drawFrame == 'function')
+            Painter.drawFrame(divid, null, (is_main == 4) ? "3d" : "");
          if ((is_main != 4) && this.svg_frame().empty()) return alert("Fail to draw dummy TFrame");
       }
 
@@ -2865,7 +2863,7 @@ JSROOT.require(['d3'], function(d3) {
     * For higher color numbers TColor::GetColor(r,g,b) will be invoked to ensure color is exists
     * @private */
    ObjectPainter.prototype.GetColorExec = function(col, method) {
-      let id = -1, arr = JSROOT.Painter.root_colors;
+      let id = -1, arr = Painter.root_colors;
       if (typeof col == "string") {
          if (!col || (col == "none")) id = 0; else
             for (let k = 1; k < arr.length; ++k)
@@ -2933,7 +2931,7 @@ JSROOT.require(['d3'], function(d3) {
       // return function used to display object status
       // automatically disabled when drawing is enlarged - status line will be invisible
 
-      let pp = this.canv_painter(), res = JSROOT.Painter.ShowStatus;
+      let pp = this.canv_painter(), res = Painter.ShowStatus;
 
       if (pp && (typeof pp.ShowCanvasStatus === 'function')) res = pp.ShowCanvasStatus.bind(pp);
 
@@ -3611,8 +3609,8 @@ JSROOT.require(['d3'], function(d3) {
       { name: "TWebPainting", icon: "img_graph", prereq: "more2d", func: "JSROOT.Painter.drawWebPainting" },
       { name: "TCanvasWebSnapshot", icon: "img_canvas", prereq: "v6", func: "JSROOT.Painter.drawPadSnapshot" },
       { name: "TPadWebSnapshot", sameas: "TCanvasWebSnapshot" },
-      { name: "kind:Text", icon: "img_text", func: JSROOT.Painter.drawRawText },
-      { name: "TObjString", icon: "img_text", func: JSROOT.Painter.drawRawText },
+      { name: "kind:Text", icon: "img_text", func: Painter.drawRawText },
+      { name: "TObjString", icon: "img_text", func: Painter.drawRawText },
       { name: "TF1", icon: "img_tf1", prereq: "math;more2d", func: "JSROOT.Painter.drawFunction" },
       { name: "TF2", icon: "img_tf2", prereq: "math;hist", func: "JSROOT.Painter.drawTF2" },
       { name: "TSpline3", icon: "img_tf1", prereq: "more2d", func: "JSROOT.Painter.drawSpline" },
@@ -3900,10 +3898,8 @@ JSROOT.require(['d3'], function(d3) {
       if (!obj || (typeof obj !== 'object'))
          return Promise.reject(new Error('not an object in JSROOT.draw'));
 
-      if (opt == 'inspect') {
-         if (Painter.drawInspector) return Painter.drawInspector(divid, obj);
-         return JSROOT.require("hierarchy").then(() => JSROOT.Painter.drawInspector(divid, obj));
-      }
+      if (opt == 'inspect')
+         return JSROOT.require("hierarchy").then(() => Painter.drawInspector(divid, obj));
 
       let handle = null;
       if ('_typename' in obj) handle = JSROOT.getDrawHandle("ROOT." + obj._typename, opt);
@@ -4096,7 +4092,7 @@ JSROOT.require(['d3'], function(d3) {
 
          return JSROOT.draw(main.node(), args.object, args.option || "").then(() => {
 
-            let has_workarounds = JSROOT.Painter.ProcessSVGWorkarounds && JSROOT.svg_workaround;
+            let has_workarounds = Painter.ProcessSVGWorkarounds && JSROOT.svg_workaround;
 
             main.select('svg').attr("xmlns", "http://www.w3.org/2000/svg")
                .attr("xmlns:xlink", "http://www.w3.org/1999/xlink")
@@ -4107,7 +4103,7 @@ JSROOT.require(['d3'], function(d3) {
             let svg = main.html();
 
             if (has_workarounds)
-               svg = JSROOT.Painter.ProcessSVGWorkarounds(svg);
+               svg = Painter.ProcessSVGWorkarounds(svg);
 
             svg = svg.replace(/url\(\&quot\;\#(\w+)\&quot\;\)/g, "url(#$1)")  // decode all URL
                .replace(/ class=\"\w*\"/g, "")                                // remove all classes
@@ -4250,6 +4246,9 @@ JSROOT.require(['d3'], function(d3) {
 
    Painter.createRootColors();
 
+   if (JSROOT.nodejs) Painter.readStyleFromURL("?interactive=0&tooltip=0&nomenu&noprogress&notouch&toolbar=0&webgl=0");
+
+   JSROOT.Painter = Painter;
    JSROOT.DrawOptions = DrawOptions;
    JSROOT.ColorPalette = ColorPalette;
    JSROOT.TAttLineHandler = TAttLineHandler;
@@ -4258,8 +4257,6 @@ JSROOT.require(['d3'], function(d3) {
    JSROOT.FontHandler = FontHandler;
    JSROOT.BasePainter = BasePainter;
    JSROOT.ObjectPainter = ObjectPainter;
-
-   if (JSROOT.nodejs) JSROOT.Painter.readStyleFromURL("?interactive=0&tooltip=0&nomenu&noprogress&notouch&toolbar=0&webgl=0");
 
 
    /** Only for backward compatibility with v5, will be removed in later JSROOT versions */
