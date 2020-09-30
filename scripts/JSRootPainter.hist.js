@@ -5104,11 +5104,11 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], function(d3) {
           frame_h = this.frame_height(),
           levels = this.GetContour(),
           palette = this.GetPalette(),
-          painter = this, main = this.frame_painter();
+          main = this.frame_painter(),
+          func = main.GetProjectionFunc();
 
-      function BuildPath(xp,yp,iminus,iplus) {
-         let cmd = "", last, pnt,
-             func = main.GetProjectionFunc();
+      let BuildPath = (xp,yp,iminus,iplus) => {
+         let cmd = "", last, pnt;
          for (let i = iminus; i <= iplus; ++i) {
             if (func) {
                pnt = func(xp[i], yp[i]);
@@ -5147,25 +5147,25 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], function(d3) {
       }
 
       this.BuildContour(handle, levels, palette,
-         function(colindx,xp,yp,iminus,iplus) {
+         (colindx,xp,yp,iminus,iplus) => {
             let icol = palette.getColor(colindx),
-                fillcolor = icol, lineatt = null;
+                fillcolor = icol, lineatt;
 
-            switch (painter.options.Contour) {
+            switch (this.options.Contour) {
                case 1: break;
                case 11: fillcolor = 'none'; lineatt = new JSROOT.TAttLineHandler({ color: icol } ); break;
                case 12: fillcolor = 'none'; lineatt = new JSROOT.TAttLineHandler({ color: 1, style: (colindx%5 + 1), width: 1 }); break;
-               case 13: fillcolor = 'none'; lineatt = painter.lineatt; break;
+               case 13: fillcolor = 'none'; lineatt = this.lineatt; break;
                case 14: break;
             }
 
-            let elem = painter.draw_g
+            let elem = this.draw_g
                           .append("svg:path")
                           .attr("class","th2_contour")
                           .attr("d", BuildPath(xp,yp,iminus,iplus) + (fillcolor == 'none' ? "" : "z"))
                           .style("fill", fillcolor);
 
-            if (lineatt!==null)
+            if (lineatt)
                elem.call(lineatt.func);
             else
                elem.style('stroke','none');

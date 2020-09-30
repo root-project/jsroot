@@ -2528,26 +2528,18 @@ JSROOT.require(['d3', 'JSRootPainter.v7'], function(d3) {
           main = this.frame_painter(),
           palette = main.GetPalette(),
           levels = palette.GetContour(),
-          painter = this;
+          func = main.GetProjectionFunc(this.options.Proj);
 
-      function BuildPath(xp,yp,iminus,iplus) {
-         let cmd = "", last = null, pnt = null, i;
-         for (i=iminus;i<=iplus;++i) {
-            pnt = null;
-            switch (painter.options.Proj) {
-               case 1: pnt = main.ProjectAitoff2xy(xp[i], yp[i]); break;
-               case 2: pnt = main.ProjectMercator2xy(xp[i], yp[i]); break;
-               case 3: pnt = main.ProjectSinusoidal2xy(xp[i], yp[i]); break;
-               case 4: pnt = main.ProjectParabolic2xy(xp[i], yp[i]); break;
-            }
-            if (pnt) {
-               pnt.x = main.grx(pnt.x);
-               pnt.y = main.gry(pnt.y);
+      let BuildPath = (xp,yp,iminus,iplus) => {
+         let cmd = "", last, pnt;
+         for (let i = iminus; i <= iplus; ++i) {
+            if (func) {
+               pnt = func(xp[i], yp[i]);
+               pnt.x = Math.round(main.grx(pnt.x));
+               pnt.y = Math.round(main.gry(pnt.y));
             } else {
-               pnt = { x: xp[i], y: yp[i] };
+               pnt = { x: Math.round(xp[i]), y: Math.round(yp[i]) };
             }
-            pnt.x = Math.round(pnt.x);
-            pnt.y = Math.round(pnt.y);
             if (!cmd) cmd = "M" + pnt.x + "," + pnt.y;
             else if ((pnt.x != last.x) && (pnt.y != last.y)) cmd +=  "l" + (pnt.x - last.x) + "," + (pnt.y - last.y);
             else if (pnt.x != last.x) cmd +=  "h" + (pnt.x - last.x);
@@ -2579,25 +2571,25 @@ JSROOT.require(['d3', 'JSRootPainter.v7'], function(d3) {
       }
 
       this.BuildContour(handle, levels, palette,
-         function(colindx,xp,yp,iminus,iplus) {
+         (colindx,xp,yp,iminus,iplus) => {
             let icol = palette.getColor(colindx),
-                fillcolor = icol, lineatt = null;
+                fillcolor = icol, lineatt;
 
-            switch (painter.options.Contour) {
+            switch (this.options.Contour) {
                case 1: break;
                case 11: fillcolor = 'none'; lineatt = new JSROOT.TAttLineHandler({ color: icol }); break;
                case 12: fillcolor = 'none'; lineatt = new JSROOT.TAttLineHandler({ color:1, style: (colindx%5 + 1), width: 1 }); break;
-               case 13: fillcolor = 'none'; lineatt = painter.lineatt; break;
+               case 13: fillcolor = 'none'; lineatt = this.lineatt; break;
                case 14: break;
             }
 
-            let elem = painter.draw_g
+            let elem = this.draw_g
                           .append("svg:path")
                           .attr("class","th2_contour")
                           .attr("d", BuildPath(xp,yp,iminus,iplus) + (fillcolor == 'none' ? "" : "z"))
                           .style("fill", fillcolor);
 
-            if (lineatt!==null)
+            if (lineatt)
                elem.call(lineatt.func);
             else
                elem.style('stroke','none');

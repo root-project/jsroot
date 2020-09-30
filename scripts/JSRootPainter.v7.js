@@ -1057,6 +1057,36 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
 
    // ==========================================================================================
 
+      let ProjectAitoff2xy = (l, b) => {
+      const DegToRad = Math.PI/180,
+            alpha2 = (l/2)*DegToRad,
+            delta  = b*DegToRad,
+            r2     = Math.sqrt(2),
+            f      = 2*r2/Math.PI,
+            cdec   = Math.cos(delta),
+            denom  = Math.sqrt(1. + cdec*Math.cos(alpha2));
+      return {
+         x: cdec*Math.sin(alpha2)*2.*r2/denom/f/DegToRad,
+         y: Math.sin(delta)*r2/denom/f/DegToRad
+      };
+   }
+
+   let ProjectMercator2xy = (l, b) => {
+      const aid = Math.tan((Math.PI/2 + b/180*Math.PI)/2);
+      return { x: l, y: Math.log(aid) };
+   }
+
+   let ProjectSinusoidal2xy = (l, b) => {
+      return { x: l*Math.cos(b/180*Math.PI), y: b };
+   }
+
+   let ProjectParabolic2xy = (l, b) => {
+      return {
+         x: l*(2.*Math.cos(2*b/180*Math.PI/3) - 1),
+         y: 180*Math.sin(b/180*Math.PI/3)
+      };
+   }
+
 
    function RFramePainter(tframe) {
       JSROOT.ObjectPainter.call(this, tframe);
@@ -1122,94 +1152,38 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
       this.createv7AttLine("border_");
    }
 
-   RFramePainter.prototype.ProjectAitoff2xy = function(l, b) {
-      let DegToRad = Math.PI/180,
-          alpha2 = (l/2)*DegToRad,
-          delta  = b*DegToRad,
-          r2     = Math.sqrt(2),
-          f      = 2*r2/Math.PI,
-          cdec   = Math.cos(delta),
-          denom  = Math.sqrt(1. + cdec*Math.cos(alpha2)),
-          res = {
-             x: cdec*Math.sin(alpha2)*2.*r2/denom/f/DegToRad,
-             y: Math.sin(delta)*r2/denom/f/DegToRad
-          };
-      //  x *= -1.; // for a skymap swap left<->right
-      return res;
-   }
-
-   RFramePainter.prototype.ProjectMercator2xy = function(l, b) {
-      let aid = Math.tan((Math.PI/2 + b/180*Math.PI)/2);
-      return { x: l, y: Math.log(aid) };
-   }
-
-   RFramePainter.prototype.ProjectSinusoidal2xy = function(l, b) {
-      return { x: l*Math.cos(b/180*Math.PI), y: b };
-   }
-
-   RFramePainter.prototype.ProjectParabolic2xy = function(l, b) {
-      return {
-         x: l*(2.*Math.cos(2*b/180*Math.PI/3) - 1),
-         y: 180*Math.sin(b/180*Math.PI/3)
-      };
+   /** Returns coordinates transformation func */
+   RFramePainter.prototype.GetProjectionFunc = function(Proj) {
+      switch (Proj) {
+         case 1: return ProjectAitoff2xy;
+         case 2: return ProjectMercator2xy;
+         case 3: return ProjectSinusoidal2xy;
+         case 4: return ProjectParabolic2xy;
+      }
    }
 
    RFramePainter.prototype.RecalculateRange = function(Proj) {
       // not yet used, could be useful in the future
 
-      if (!Proj) return;
+      if ((Proj == 2) && ((this.scale_ymin <= -90 || this.scale_ymax >=90))) {
+         console.warn("Mercator Projection", "Latitude out of range", this.scale_ymin, this.scale_ymax);
+         Proj = 0;
+      }
 
-      let pnts = []; // all extremes which used to find
-      if (Proj == 1) {
-         // TODO : check x range not lower than -180 and not higher than 180
-         pnts.push(this.ProjectAitoff2xy(this.scale_xmin, this.scale_ymin));
-         pnts.push(this.ProjectAitoff2xy(this.scale_xmin, this.scale_ymax));
-         pnts.push(this.ProjectAitoff2xy(this.scale_xmax, this.scale_ymax));
-         pnts.push(this.ProjectAitoff2xy(this.scale_xmax, this.scale_ymin));
-         if (this.scale_ymin<0 && this.scale_ymax>0) {
-            // there is an  'equator', check its range in the plot..
-            pnts.push(this.ProjectAitoff2xy(this.scale_xmin*0.9999, 0));
-            pnts.push(this.ProjectAitoff2xy(this.scale_xmax*0.9999, 0));
-         }
-         if (this.scale_xmin<0 && this.scale_xmax>0) {
-            pnts.push(this.ProjectAitoff2xy(0, this.scale_ymin));
-            pnts.push(this.ProjectAitoff2xy(0, this.scale_ymax));
-         }
-      } else if (Proj == 2) {
-         if (this.scale_ymin <= -90 || this.scale_ymax >=90) {
-            console.warn("Mercator Projection", "Latitude out of range", this.scale_ymin, this.scale_ymax);
-            this.options.Proj = 0;
-            return;
-         }
-         pnts.push(this.ProjectMercator2xy(this.scale_xmin, this.scale_ymin));
-         pnts.push(this.ProjectMercator2xy(this.scale_xmax, this.scale_ymax));
+      let func = this.GetProjectionFunc(Proj);
+      if (!func) return;
 
-      } else if (Proj == 3) {
-         pnts.push(this.ProjectSinusoidal2xy(this.scale_xmin, this.scale_ymin));
-         pnts.push(this.ProjectSinusoidal2xy(this.scale_xmin, this.scale_ymax));
-         pnts.push(this.ProjectSinusoidal2xy(this.scale_xmax, this.scale_ymax));
-         pnts.push(this.ProjectSinusoidal2xy(this.scale_xmax, this.scale_ymin));
-         if (this.scale_ymin<0 && this.scale_ymax>0) {
-            pnts.push(this.ProjectSinusoidal2xy(this.scale_xmin, 0));
-            pnts.push(this.ProjectSinusoidal2xy(this.scale_xmax, 0));
-         }
-         if (this.scale_xmin<0 && this.scale_xmax>0) {
-            pnts.push(this.ProjectSinusoidal2xy(0, this.scale_ymin));
-            pnts.push(this.ProjectSinusoidal2xy(0, this.scale_ymax));
-         }
-      } else if (Proj == 4) {
-         pnts.push(this.ProjectParabolic2xy(this.scale_xmin, this.scale_ymin));
-         pnts.push(this.ProjectParabolic2xy(this.scale_xmin, this.scale_ymax));
-         pnts.push(this.ProjectParabolic2xy(this.scale_xmax, this.scale_ymax));
-         pnts.push(this.ProjectParabolic2xy(this.scale_xmax, this.scale_ymin));
-         if (this.scale_ymin<0 && this.scale_ymax>0) {
-            pnts.push(this.ProjectParabolic2xy(this.scale_xmin, 0));
-            pnts.push(this.ProjectParabolic2xy(this.scale_xmax, 0));
-         }
-         if (this.scale_xmin<0 && this.scale_xmax>0) {
-            pnts.push(this.ProjectParabolic2xy(0, this.scale_ymin));
-            pnts.push(this.ProjectParabolic2xy(0, this.scale_ymax));
-         }
+      let pnts = [ func(this.scale_xmin, this.scale_ymin),
+                   func(this.scale_xmin, this.scale_ymax),
+                   func(this.scale_xmax, this.scale_ymax),
+                   func(this.scale_xmax, this.scale_ymin) ];
+      if (this.scale_xmin<0 && this.scale_xmax>0) {
+         pnts.push(func(0, this.scale_ymin));
+         pnts.push(func(0, this.scale_ymax));
+      }
+      if (this.scale_ymin<0 && this.scale_ymax>0) {
+         pnts.push(func(this.scale_xmin, 0));
+         pnts.push(func(this.scale_xmax, 0));
       }
 
       this.original_xmin = this.scale_xmin;
@@ -1220,7 +1194,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
       this.scale_xmin = this.scale_xmax = pnts[0].x;
       this.scale_ymin = this.scale_ymax = pnts[0].y;
 
-      for (let n=1;n<pnts.length;++n) {
+      for (let n = 1; n < pnts.length; ++n) {
          this.scale_xmin = Math.min(this.scale_xmin, pnts[n].x);
          this.scale_xmax = Math.max(this.scale_xmax, pnts[n].x);
          this.scale_ymin = Math.min(this.scale_ymin, pnts[n].y);
@@ -4146,9 +4120,9 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
 
       this.AlignBtns(group, this.pad_width(this.this_pad_name), this.pad_height(this.this_pad_name));
 
-      if (group.property('vertical')) 
+      if (group.property('vertical'))
          ctrl.attr("y", x);
-      else if (!group.property('leftside')) 
+      else if (!group.property('leftside'))
          ctrl.attr("x", x);
    }
 
