@@ -5107,23 +5107,16 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], function(d3) {
           painter = this, main = this.frame_painter();
 
       function BuildPath(xp,yp,iminus,iplus) {
-         let cmd = "", last = null, pnt = null, i;
-         for (i=iminus;i<=iplus;++i) {
-            pnt = null;
-            switch (main.projection) {
-               case 1: pnt = main.ProjectAitoff2xy(xp[i], yp[i]); break;
-               case 2: pnt = main.ProjectMercator2xy(xp[i], yp[i]); break;
-               case 3: pnt = main.ProjectSinusoidal2xy(xp[i], yp[i]); break;
-               case 4: pnt = main.ProjectParabolic2xy(xp[i], yp[i]); break;
-            }
-            if (pnt) {
-               pnt.x = main.grx(pnt.x);
-               pnt.y = main.gry(pnt.y);
+         let cmd = "", last, pnt,
+             func = main.GetProjectionFunc();
+         for (let i = iminus; i <= iplus; ++i) {
+            if (func) {
+               pnt = func(xp[i], yp[i]);
+               pnt.x = Math.round(main.grx(pnt.x));
+               pnt.y = Math.round(main.gry(pnt.y));
             } else {
-               pnt = { x: xp[i], y: yp[i] };
+               pnt = { x: Math.round(xp[i]), y: Math.round(yp[i]) };
             }
-            pnt.x = Math.round(pnt.x);
-            pnt.y = Math.round(pnt.y);
             if (!cmd) cmd = "M" + pnt.x + "," + pnt.y;
             else if ((pnt.x != last.x) && (pnt.y != last.y)) cmd +=  "l" + (pnt.x - last.x) + "," + (pnt.y - last.y);
             else if (pnt.x != last.x) cmd +=  "h" + (pnt.x - last.x);

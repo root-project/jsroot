@@ -853,6 +853,37 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
 
    // ===============================================
 
+   let ProjectAitoff2xy = (l, b) => {
+      const DegToRad = Math.PI/180,
+            alpha2 = (l/2)*DegToRad,
+            delta  = b*DegToRad,
+            r2     = Math.sqrt(2),
+            f      = 2*r2/Math.PI,
+            cdec   = Math.cos(delta),
+            denom  = Math.sqrt(1. + cdec*Math.cos(alpha2));
+      return {
+         x: cdec*Math.sin(alpha2)*2.*r2/denom/f/DegToRad,
+         y: Math.sin(delta)*r2/denom/f/DegToRad
+      };
+   }
+
+   let ProjectMercator2xy = (l, b) => {
+      const aid = Math.tan((Math.PI/2 + b/180*Math.PI)/2);
+      return { x: l, y: Math.log(aid) };
+   }
+
+   let ProjectSinusoidal2xy = (l, b) => {
+      return { x: l*Math.cos(b/180*Math.PI), y: b };
+   }
+
+   let ProjectParabolic2xy = (l, b) => {
+      return {
+         x: l*(2.*Math.cos(2*b/180*Math.PI/3) - 1),
+         y: 180*Math.sin(b/180*Math.PI/3)
+      };
+   }
+
+
    /** @summary Painter for TFrame object. */
 
    function TFramePainter(tframe) {
@@ -900,93 +931,38 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
    /** return position of last event */
    TFramePainter.prototype.GetLastEventPos = function() { return this.fLastEventPnt; }
 
-   TFramePainter.prototype.ProjectAitoff2xy = function(l, b) {
-      let DegToRad = Math.PI/180,
-          alpha2 = (l/2)*DegToRad,
-          delta  = b*DegToRad,
-          r2     = Math.sqrt(2),
-          f      = 2*r2/Math.PI,
-          cdec   = Math.cos(delta),
-          denom  = Math.sqrt(1. + cdec*Math.cos(alpha2)),
-          res = {
-             x: cdec*Math.sin(alpha2)*2.*r2/denom/f/DegToRad,
-             y: Math.sin(delta)*r2/denom/f/DegToRad
-          };
-      //  x *= -1.; // for a skymap swap left<->right
-      return res;
-   }
-
-   TFramePainter.prototype.ProjectMercator2xy = function(l, b) {
-      let aid = Math.tan((Math.PI/2 + b/180*Math.PI)/2);
-      return { x: l, y: Math.log(aid) };
-   }
-
-   TFramePainter.prototype.ProjectSinusoidal2xy = function(l, b) {
-      return { x: l*Math.cos(b/180*Math.PI), y: b };
-   }
-
-   TFramePainter.prototype.ProjectParabolic2xy = function(l, b) {
-      return {
-         x: l*(2.*Math.cos(2*b/180*Math.PI/3) - 1),
-         y: 180*Math.sin(b/180*Math.PI/3)
-      };
+   /** Returns coordinates transformation func */
+   TFramePainter.prototype.GetProjectionFunc = function() {
+      switch (this.projection) {
+         case 1: return ProjectAitoff2xy;
+         case 2: return ProjectMercator2xy;
+         case 3: return ProjectSinusoidal2xy;
+         case 4: return ProjectParabolic2xy;
+      }
    }
 
    TFramePainter.prototype.RecalculateRange = function(Proj) {
       this.projection = Proj || 0;
-      if (!this.projection) return;
 
-      let pnts = []; // all extremes which used to find
-      if (this.projection == 1) {
-         // TODO : check x range not lower than -180 and not higher than 180
-         pnts.push(this.ProjectAitoff2xy(this.scale_xmin, this.scale_ymin));
-         pnts.push(this.ProjectAitoff2xy(this.scale_xmin, this.scale_ymax));
-         pnts.push(this.ProjectAitoff2xy(this.scale_xmax, this.scale_ymax));
-         pnts.push(this.ProjectAitoff2xy(this.scale_xmax, this.scale_ymin));
-         if (this.scale_ymin<0 && this.scale_ymax>0) {
-            // there is an  'equator', check its range in the plot..
-            pnts.push(this.ProjectAitoff2xy(this.scale_xmin*0.9999, 0));
-            pnts.push(this.ProjectAitoff2xy(this.scale_xmax*0.9999, 0));
-         }
-         if (this.scale_xmin<0 && this.scale_xmax>0) {
-            pnts.push(this.ProjectAitoff2xy(0, this.scale_ymin));
-            pnts.push(this.ProjectAitoff2xy(0, this.scale_ymax));
-         }
-      } else if (this.projection == 2) {
-         if (this.scale_ymin <= -90 || this.scale_ymax >=90) {
-            console.warn("Mercator Projection", "Latitude out of range", this.scale_ymin, this.scale_ymax);
-            this.projection = 0;
-            return;
-         }
-         pnts.push(this.ProjectMercator2xy(this.scale_xmin, this.scale_ymin));
-         pnts.push(this.ProjectMercator2xy(this.scale_xmax, this.scale_ymax));
+      if ((this.projection == 2) && ((this.scale_ymin <= -90 || this.scale_ymax >=90))) {
+         console.warn("Mercator Projection", "Latitude out of range", this.scale_ymin, this.scale_ymax);
+         this.projection = 0;
+      }
 
-      } else if (this.projection == 3) {
-         pnts.push(this.ProjectSinusoidal2xy(this.scale_xmin, this.scale_ymin));
-         pnts.push(this.ProjectSinusoidal2xy(this.scale_xmin, this.scale_ymax));
-         pnts.push(this.ProjectSinusoidal2xy(this.scale_xmax, this.scale_ymax));
-         pnts.push(this.ProjectSinusoidal2xy(this.scale_xmax, this.scale_ymin));
-         if (this.scale_ymin<0 && this.scale_ymax>0) {
-            pnts.push(this.ProjectSinusoidal2xy(this.scale_xmin, 0));
-            pnts.push(this.ProjectSinusoidal2xy(this.scale_xmax, 0));
-         }
-         if (this.scale_xmin<0 && this.scale_xmax>0) {
-            pnts.push(this.ProjectSinusoidal2xy(0, this.scale_ymin));
-            pnts.push(this.ProjectSinusoidal2xy(0, this.scale_ymax));
-         }
-      } else if (this.projection == 4) {
-         pnts.push(this.ProjectParabolic2xy(this.scale_xmin, this.scale_ymin));
-         pnts.push(this.ProjectParabolic2xy(this.scale_xmin, this.scale_ymax));
-         pnts.push(this.ProjectParabolic2xy(this.scale_xmax, this.scale_ymax));
-         pnts.push(this.ProjectParabolic2xy(this.scale_xmax, this.scale_ymin));
-         if (this.scale_ymin<0 && this.scale_ymax>0) {
-            pnts.push(this.ProjectParabolic2xy(this.scale_xmin, 0));
-            pnts.push(this.ProjectParabolic2xy(this.scale_xmax, 0));
-         }
-         if (this.scale_xmin<0 && this.scale_xmax>0) {
-            pnts.push(this.ProjectParabolic2xy(0, this.scale_ymin));
-            pnts.push(this.ProjectParabolic2xy(0, this.scale_ymax));
-         }
+      let func = this.GetProjectionFunc();
+      if (!func) return;
+
+      let pnts = [ func(this.scale_xmin, this.scale_ymin),
+                   func(this.scale_xmin, this.scale_ymax),
+                   func(this.scale_xmax, this.scale_ymax),
+                   func(this.scale_xmax, this.scale_ymin) ];
+      if (this.scale_xmin<0 && this.scale_xmax>0) {
+         pnts.push(func(0, this.scale_ymin));
+         pnts.push(func(0, this.scale_ymax));
+      }
+      if (this.scale_ymin<0 && this.scale_ymax>0) {
+         pnts.push(func(this.scale_xmin, 0));
+         pnts.push(func(this.scale_xmax, 0));
       }
 
       this.original_xmin = this.scale_xmin;
