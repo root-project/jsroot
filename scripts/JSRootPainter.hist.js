@@ -847,8 +847,7 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], (d3) => {
 
    TPavePainter.prototype.DrawPaletteAxis = function(s_width, s_height, arg) {
 
-      let pthis = this,
-          palette = this.GetObject(),
+      let palette = this.GetObject(),
           axis = palette.fAxis,
           can_move = (typeof arg == "string") && (arg.indexOf('can_move') > 0),
           postpone_draw = (typeof arg == "string") && (arg.indexOf('postpone') > 0),
@@ -919,7 +918,7 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], (d3) => {
                }).append("svg:title").text(contour[i].toFixed(2) + " - " + contour[i+1].toFixed(2));
 
             if (JSROOT.gStyle.Zooming)
-               r.on("dblclick", function() { pthis.frame_painter().Unzoom("z"); });
+               r.on("dblclick", () => this.frame_painter().Unzoom("z"));
          }
 
 
@@ -961,12 +960,12 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], (d3) => {
                   .attr("height", Math.abs(sel2-sel1));
       }
 
-      function endRectSel(evnt) {
+      let endRectSel = evnt => {
          if (!doing_zoom) return;
 
          evnt.preventDefault();
-         pthis.draw_g.on("mousemove.colzoomRect", null)
-                     .on("mouseup.colzoomRect", null);
+         this.draw_g.on("mousemove.colzoomRect", null)
+                    .on("mouseup.colzoomRect", null);
          zoom_rect.remove();
          zoom_rect = null;
          doing_zoom = false;
@@ -974,10 +973,10 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], (d3) => {
          let zmin = Math.min(z.invert(sel1), z.invert(sel2)),
              zmax = Math.max(z.invert(sel1), z.invert(sel2));
 
-         pthis.frame_painter().Zoom("z", zmin, zmax);
+         this.frame_painter().Zoom("z", zmin, zmax);
       }
 
-      function startRectSel(evnt) {
+      let startRectSel = evnt => {
          // ignore when touch selection is activated
          if (doing_zoom) return;
          doing_zoom = true;
@@ -988,7 +987,7 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], (d3) => {
 
          sel1 = sel2 = origin[1];
 
-         zoom_rect = pthis.draw_g
+         zoom_rect = this.draw_g
                 .append("svg:rect")
                 .attr("class", "zoom")
                 .attr("id", "colzoomRect")
@@ -997,8 +996,8 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], (d3) => {
                 .attr("y", sel1)
                 .attr("height", 5);
 
-         pthis.draw_g.on("mousemove.colzoomRect", moveRectSel)
-                     .on("mouseup.colzoomRect", endRectSel, true);
+         this.draw_g.on("mousemove.colzoomRect", moveRectSel)
+                    .on("mouseup.colzoomRect", endRectSel, true);
 
          evnt.stopPropagation();
       }
@@ -1006,7 +1005,7 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], (d3) => {
       if (JSROOT.gStyle.Zooming)
          this.draw_g.select(".axis_zoom")
                     .on("mousedown", startRectSel)
-                    .on("dblclick", function() { pthis.frame_painter().Unzoom("z"); });
+                    .on("dblclick", () => { this.frame_painter().Unzoom("z"); });
    }
 
    TPavePainter.prototype.FillContextMenu = function(menu) {
@@ -3658,7 +3657,6 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], (d3) => {
           pmain = this.frame_painter(),
           histo = this.GetHisto(),
           xaxis = histo.fXaxis,
-          pthis = this,
           res = "", lastbin = false,
           startx, currx, curry, x, grx, y, gry, curry_min, curry_max, prevy, prevx, i, bestimin, bestimax,
           exclude_zero = !this.options.Zero,
@@ -3740,7 +3738,7 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], (d3) => {
       if (draw_any_but_hist) use_minmax = true;
 
       // just to get correct values for the specified bin
-      function extract_bin(bin) {
+      let extract_bin = bin => {
          bincont = histo.getBinContent(bin+1);
          if (exclude_zero && (bincont===0)) return false;
          mx1 = Math.round(pmain.grx(xaxis.GetBinLowEdge(bin+1)));
@@ -3756,16 +3754,16 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], (d3) => {
          return true;
       }
 
-      function draw_errbin() {
-         if (pthis.options.errorX > 0) {
-            mmx1 = Math.round(midx - (mx2-mx1)*pthis.options.errorX);
-            mmx2 = Math.round(midx + (mx2-mx1)*pthis.options.errorX);
+      let draw_errbin = () => {
+         if (this.options.errorX > 0) {
+            mmx1 = Math.round(midx - (mx2-mx1)*this.options.errorX);
+            mmx2 = Math.round(midx + (mx2-mx1)*this.options.errorX);
             path_err += "M" + (mmx1+dend) +","+ my + endx + "h" + (mmx2-mmx1-2*dend) + endx;
          }
          path_err += "M" + midx +"," + (my-yerr1+dend) + endy + "v" + (yerr1+yerr2-2*dend) + endy;
       }
 
-      function draw_bin(bin) {
+      let draw_bin = bin => {
          if (extract_bin(bin)) {
             if (show_text) {
                let cont = text_profile ? histo.fBinEntries[bin+1] : bincont;
@@ -3774,9 +3772,9 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], (d3) => {
                   let lbl = (cont === Math.round(cont)) ? cont.toString() : JSROOT.FFormat(cont, JSROOT.gStyle.fPaintTextFormat);
 
                   if (text_angle)
-                     pthis.DrawText({ align: 12, x: midx, y: Math.round(my - 2 - text_size/5), width: 0, height: 0, rotate: text_angle, text: lbl, color: text_col, latex: 0 });
+                     this.DrawText({ align: 12, x: midx, y: Math.round(my - 2 - text_size/5), width: 0, height: 0, rotate: text_angle, text: lbl, color: text_col, latex: 0 });
                   else
-                     pthis.DrawText({ align: 22, x: Math.round(mx1 + (mx2-mx1)*0.1), y: Math.round(my-2-text_size), width: Math.round((mx2-mx1)*0.8), height: text_size, text: lbl, color: text_col, latex: 0 });
+                     this.DrawText({ align: 22, x: Math.round(mx1 + (mx2-mx1)*0.1), y: Math.round(my-2-text_size), width: Math.round((mx2-mx1)*0.8), height: text_size, text: lbl, color: text_col, latex: 0 });
                }
             }
 
@@ -3789,7 +3787,7 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], (d3) => {
                      path_fill += "M" + mx1 +","+(my-yerr1) +
                                   "h" + (mx2-mx1) + "v" + (yerr1+yerr2+1) + "h-" + (mx2-mx1) + "z";
                   if ((path_marker !== null) && do_marker)
-                     path_marker += pthis.markeratt.create(midx, my);
+                     path_marker += this.markeratt.create(midx, my);
                   if ((path_err !== null) && do_err)
                      draw_errbin();
                }
@@ -3803,7 +3801,7 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], (d3) => {
             for (i = left; i < right; ++i) {
                if (extract_bin(i)) {
                   if (path_marker !== null)
-                     path_marker += pthis.markeratt.create(midx, my);
+                     path_marker += this.markeratt.create(midx, my);
                   if (path_err !== null)
                      draw_errbin();
                }
