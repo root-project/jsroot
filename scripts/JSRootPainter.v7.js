@@ -579,18 +579,18 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
    RAxisPainter.prototype.AddTitleDrag = function(title_g, vertical, offset_k, reverse, axis_length) {
       if (!JSROOT.gStyle.MoveResize) return;
 
-      let pthis = this,  drag_rect = null,
+      let drag_rect = null,
           acc_x, acc_y, new_x, new_y, sign_0, alt_pos,
           drag_move = d3.drag().subject(Object);
 
       drag_move
-         .on("start",  function(evnt) {
+         .on("start", evnt => {
 
             evnt.sourceEvent.preventDefault();
             evnt.sourceEvent.stopPropagation();
 
             let box = title_g.node().getBBox(), // check that elements visible, request precise value
-                axis = pthis.GetObject();
+                axis = this.GetObject();
 
             new_x = acc_x = title_g.property('shift_x');
             new_y = acc_y = title_g.property('shift_y');
@@ -610,7 +610,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
                  .attr("height", box.height)
                  .style("cursor", "move");
 //                 .style("pointer-events","none"); // let forward double click to underlying elements
-          }).on("drag", function(evnt) {
+          }).on("drag", evnt => {
                if (!drag_rect) return;
 
                evnt.sourceEvent.preventDefault();
@@ -635,7 +635,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
                   title_g.attr('transform', 'translate(' + new_x + ',' + new_y +  ')');
                }
 
-          }).on("end", function(evnt) {
+          }).on("end", evnt => {
                if (!drag_rect) return;
 
                evnt.sourceEvent.preventDefault();
@@ -644,7 +644,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
                title_g.property('shift_x', new_x)
                       .property('shift_y', new_y);
 
-               let axis = pthis.GetObject();
+               let axis = this.GetObject();
 
                axis.fTitleOffset = (vertical ? new_x : new_y) / offset_k;
                if ((vertical ? new_y : new_x) === alt_pos) axis.InvertBit(JSROOT.EAxisBits.kCenterTitle);
@@ -3934,40 +3934,38 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
 
          if (JSROOT.Painter.closeMenu()) return;
 
-         let pthis = this;
-
-         JSROOT.Painter.createMenu(this, function(menu) {
+         JSROOT.Painter.createMenu(this, menu => {
             menu.add("header:Menus");
 
-            if (pthis.iscan)
-               menu.add("Canvas", "pad", pthis.ItemContextMenu);
+            if (this.iscan)
+               menu.add("Canvas", "pad", this.ItemContextMenu);
             else
-               menu.add("Pad", "pad", pthis.ItemContextMenu);
+               menu.add("Pad", "pad", this.ItemContextMenu);
 
-            if (pthis.frame_painter())
-               menu.add("Frame", "frame", pthis.ItemContextMenu);
+            if (this.frame_painter())
+               menu.add("Frame", "frame", this.ItemContextMenu);
 
-            let main = pthis.main_painter();
+            let main = this.main_painter();
 
             if (main) {
-               menu.add("X axis", "xaxis", pthis.ItemContextMenu);
-               menu.add("Y axis", "yaxis", pthis.ItemContextMenu);
+               menu.add("X axis", "xaxis", this.ItemContextMenu);
+               menu.add("Y axis", "yaxis", this.ItemContextMenu);
                if ((typeof main.Dimension === 'function') && (main.Dimension() > 1))
-                  menu.add("Z axis", "zaxis", pthis.ItemContextMenu);
+                  menu.add("Z axis", "zaxis", this.ItemContextMenu);
             }
 
-            if (pthis.painters && (pthis.painters.length>0)) {
+            if (this.painters && (this.painters.length>0)) {
                menu.add("separator");
                let shown = [];
-               for (let n=0;n<pthis.painters.length;++n) {
-                  let pp = pthis.painters[n];
+               for (let n=0;n<this.painters.length;++n) {
+                  let pp = this.painters[n];
                   let obj = pp ? pp.GetObject() : null;
                   if (!obj || (shown.indexOf(obj)>=0)) continue;
 
                   let name = ('_typename' in obj) ? (obj._typename + "::") : "";
                   if ('fName' in obj) name += obj.fName;
                   if (name.length==0) name = "item" + n;
-                  menu.add(name, n, pthis.ItemContextMenu);
+                  menu.add(name, n, this.ItemContextMenu);
                }
             }
 
@@ -4290,8 +4288,6 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
          return JSROOT.CallBack(call_back, true);
       }
 
-      let pthis = this;
-
       JSROOT.require("JSRootPainter.jquery").then(() => {
 
          let grid = new JSROOT.GridDisplay(origin.node(), layout_kind);
@@ -4311,7 +4307,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
          for (let k=0;k<lst.length;++k)
             main.node().appendChild(lst[k]);
 
-         pthis.set_layout_kind(layout_kind, ".central_panel");
+         this.set_layout_kind(layout_kind, ".central_panel");
 
          // remove reference to MDIDisplay, solves resize problem
          origin.property('mdi', null);
@@ -4344,7 +4340,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
 
       if (this.proj_painter === 1) {
 
-         let canv = JSROOT.Create("TCanvas"), pthis = this, pad = this.root_pad(), main = this.main_painter(), drawopt;
+         let canv = JSROOT.Create("TCanvas"), pad = this.root_pad(), main = this.main_painter(), drawopt;
 
          if (kind == "X") {
             canv.fLeftMargin = pad.fLeftMargin;
@@ -4366,9 +4362,9 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
 
          if (this.DrawInUI5ProjectionArea) {
             // copy frame attributes
-            this.DrawInUI5ProjectionArea(canv, drawopt, function(painter) { pthis.proj_painter = painter; })
+            this.DrawInUI5ProjectionArea(canv, drawopt, painter => { this.proj_painter = painter; })
          } else {
-            this.DrawInSidePanel(canv, drawopt, function(painter) { pthis.proj_painter = painter; })
+            this.DrawInSidePanel(canv, drawopt, painter => { this.proj_painter = painter; })
          }
       } else {
          let hp = this.proj_painter.main_painter();
@@ -4389,9 +4385,9 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
 
    /// function called when canvas menu item Save is called
    RCanvasPainter.prototype.SaveCanvasAsFile = function(fname) {
-      let pthis = this, pnt = fname.indexOf(".");
-      this.CreateImage(fname.substr(pnt+1), function(res) {
-         pthis.SendWebsocket("SAVE:" + fname + ":" + res);
+      let pnt = fname.indexOf(".");
+      this.CreateImage(fname.substr(pnt+1), res => {
+         this.SendWebsocket("SAVE:" + fname + ":" + res);
       })
    }
 

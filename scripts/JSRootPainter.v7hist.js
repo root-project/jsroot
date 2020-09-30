@@ -1234,7 +1234,7 @@ JSROOT.require(['d3', 'JSRootPainter.v7'], (d3) => {
           right = handle.i2,
           di = handle.stepi,
           pmain = this.frame_painter(),
-          pthis = this, histo = this.GetHisto(), xaxis = this.GetAxis("x"),
+          histo = this.GetHisto(), xaxis = this.GetAxis("x"),
           res = "", lastbin = false,
           startx, currx, curry, x, grx, y, gry, curry_min, curry_max, prevy, prevx, i, bestimin, bestimax,
           exclude_zero = !options.Zero,
@@ -1302,7 +1302,7 @@ JSROOT.require(['d3', 'JSRootPainter.v7'], (d3) => {
 
       if (draw_markers || show_text || show_line) use_minmax = true;
 
-      function draw_bin(besti) {
+      let draw_bin = besti => {
          bincont = histo.getBinContent(besti+1);
          if (!exclude_zero || (bincont!==0)) {
             mx1 = Math.round(pmain.grx(xaxis.GetBinCoord(besti)));
@@ -1323,9 +1323,9 @@ JSROOT.require(['d3', 'JSRootPainter.v7'], (d3) => {
                   let lbl = (cont === Math.round(cont)) ? cont.toString() : JSROOT.FFormat(cont, JSROOT.gStyle.fPaintTextFormat);
 
                   if (text_angle)
-                     pthis.DrawText({ align: 12, x: midx, y: Math.round(my - 2 - text_size/5), width: 0, height: 0, rotate: text_angle, text: lbl, color: text_col, latex: 0 });
+                     this.DrawText({ align: 12, x: midx, y: Math.round(my - 2 - text_size/5), width: 0, height: 0, rotate: text_angle, text: lbl, color: text_col, latex: 0 });
                   else
-                     pthis.DrawText({ align: 22, x: Math.round(mx1 + (mx2-mx1)*0.1), y: Math.round(my-2-text_size), width: Math.round((mx2-mx1)*0.8), height: text_size, text: lbl, color: text_col, latex: 0 });
+                     this.DrawText({ align: 22, x: Math.round(mx1 + (mx2-mx1)*0.1), y: Math.round(my-2-text_size), width: Math.round((mx2-mx1)*0.8), height: text_size, text: lbl, color: text_col, latex: 0 });
                }
             }
 
@@ -1338,11 +1338,11 @@ JSROOT.require(['d3', 'JSRootPainter.v7'], (d3) => {
                      path_fill += "M" + mx1 +","+(my-yerr1) +
                                   "h" + (mx2-mx1) + "v" + (yerr1+yerr2+1) + "h-" + (mx2-mx1) + "z";
                   if (path_marker !== null)
-                     path_marker += pthis.markeratt.create(midx, my);
+                     path_marker += this.markeratt.create(midx, my);
                   if (path_err !== null) {
-                     if (pthis.options.errorX > 0) {
-                        let mmx1 = Math.round(midx - (mx2-mx1)*pthis.options.errorX),
-                            mmx2 = Math.round(midx + (mx2-mx1)*pthis.options.errorX);
+                     if (this.options.errorX > 0) {
+                        let mmx1 = Math.round(midx - (mx2-mx1)*this.options.errorX),
+                            mmx2 = Math.round(midx + (mx2-mx1)*this.options.errorX);
                         path_err += "M" + (mmx1+dend) +","+ my + endx + "h" + (mmx2-mmx1-2*dend) + endx;
                      }
                      path_err += "M" + midx +"," + (my-yerr1+dend) + endy + "v" + (yerr1+yerr2-2*dend) + endy;

@@ -1,12 +1,9 @@
 /// @file JSRoot3DPainter.js
 /// JavaScript ROOT 3D graphics
 
-JSROOT.require(['d3','threejs_jsroot'], (d3, THREE) => {
+JSROOT.require(['d3','threejs_jsroot','JSRootPainter'], (d3, THREE) => {
 
    "use strict";
-
-   if (typeof JSROOT.Painter != 'object')
-      throw new Error('JSROOT.Painter is not defined', 'JSRoot3DPainter.js');
 
    /** Creates renderer for the 3D drawings
     *

@@ -4101,40 +4101,38 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
 
          if (JSROOT.Painter.closeMenu()) return;
 
-         let pthis = this;
-
-         JSROOT.Painter.createMenu(this, function(menu) {
+         JSROOT.Painter.createMenu(this, menu => {
             menu.add("header:Menus");
 
-            if (pthis.iscan)
-               menu.add("Canvas", "pad", pthis.ItemContextMenu);
+            if (this.iscan)
+               menu.add("Canvas", "pad", this.ItemContextMenu);
             else
-               menu.add("Pad", "pad", pthis.ItemContextMenu);
+               menu.add("Pad", "pad", this.ItemContextMenu);
 
-            if (pthis.frame_painter())
-               menu.add("Frame", "frame", pthis.ItemContextMenu);
+            if (this.frame_painter())
+               menu.add("Frame", "frame", this.ItemContextMenu);
 
-            let main = pthis.main_painter();
+            let main = this.main_painter();
 
             if (main) {
-               menu.add("X axis", "xaxis", pthis.ItemContextMenu);
-               menu.add("Y axis", "yaxis", pthis.ItemContextMenu);
+               menu.add("X axis", "xaxis", this.ItemContextMenu);
+               menu.add("Y axis", "yaxis", this.ItemContextMenu);
                if ((typeof main.Dimension === 'function') && (main.Dimension() > 1))
-                  menu.add("Z axis", "zaxis", pthis.ItemContextMenu);
+                  menu.add("Z axis", "zaxis", this.ItemContextMenu);
             }
 
-            if (pthis.painters && (pthis.painters.length>0)) {
+            if (this.painters && (this.painters.length > 0)) {
                menu.add("separator");
                let shown = [];
-               for (let n=0;n<pthis.painters.length;++n) {
-                  let pp = pthis.painters[n];
+               for (let n=0;n<this.painters.length;++n) {
+                  let pp = this.painters[n];
                   let obj = pp ? pp.GetObject() : null;
                   if (!obj || (shown.indexOf(obj)>=0)) continue;
 
                   let name = ('_typename' in obj) ? (obj._typename + "::") : "";
                   if ('fName' in obj) name += obj.fName;
                   if (name.length==0) name = "item" + n;
-                  menu.add(name, n, pthis.ItemContextMenu);
+                  menu.add(name, n, this.ItemContextMenu);
                }
             }
 
@@ -4679,7 +4677,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
    TCanvasPainter.prototype.PadButtonClick = function(funcname, evnt) {
       if (funcname == "ToggleGed") return this.ActivateGed(this, null, "toggle");
       if (funcname == "ToggleStatus") return this.ActivateStatusBar("toggle");
-      PadButtonClick.call(this, funcname, evnt);
+      TPadPainter.prototype.PadButtonClick.call(this, funcname, evnt);
    }
 
    TCanvasPainter.prototype.testUI5 = function() {

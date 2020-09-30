@@ -547,10 +547,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
 
    BrowserLayout.prototype.CreateStatusLine = function(height, mode) {
       if (!this.gui_div) return '';
-      let pthis = this;
-      JSROOT.require('jq2d').then(() => {
-         pthis.CreateStatusLine(height, mode);
-      });
+      JSROOT.require('jq2d').then(() => this.CreateStatusLine(height, mode));
       return this.gui_div + "_status";
    }
 
@@ -814,7 +811,6 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
 
       let hitem = this.Find(itemname),
           url = this.GetOnlineItemUrl(hitem) + "/cmd.json",
-          pthis = this,
           d3node = d3.select((typeof callback == 'function') ? undefined : callback);
 
       if ('_numargs' in hitem)
@@ -833,14 +829,14 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
       }
 
       if (typeof callback != 'function')
-         callback = function(res) {
+         callback = res => {
             if (d3node.empty()) return;
             let col = ((res!=null) && (res!='false')) ? 'green' : 'red';
             if (hitem && hitem._title) d3node.attr('title', hitem._title + " lastres=" + res);
             d3node.style('background', col);
             setTimeout(function() { d3node.style('background', ''); }, 2000);
-            if ((col == 'green') && ('_hreload' in hitem)) pthis.reload();
-            if ((col == 'green') && ('_update_item' in hitem)) pthis.updateItems(hitem._update_item.split(";"));
+            if ((col == 'green') && ('_hreload' in hitem)) this.reload();
+            if ((col == 'green') && ('_update_item' in hitem)) this.updateItems(hitem._update_item.split(";"));
          }
 
       JSROOT.HttpRequest(url, 'text').then(callback, callback);
@@ -1549,8 +1545,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
       this.ForEachJsonFile(function(item) { if (item._jsonfile==filepath) isfileopened = true; });
       if (isfileopened) return JSROOT.CallBack(call_back);
 
-      let pthis = this;
-      JSROOT.HttpRequest(filepath, 'object').then(function(res) {
+      JSROOT.HttpRequest(filepath, 'object').then(res => {
          let h1 = { _jsonfile: filepath, _kind: "ROOT." + res._typename, _jsontmp: res, _name: filepath.split("/").pop() };
          if (res.fTitle) h1._title = res.fTitle;
          h1._get = function(item,itemname,callback) {
@@ -1561,13 +1556,13 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
                JSROOT.CallBack(callback, item, item._jsontmp);
             });
          }
-         if (pthis.h == null) pthis.h = h1; else
-         if (pthis.h._kind == 'TopFolder') pthis.h._childs.push(h1); else {
-            let h0 = pthis.h, topname = ('_jsonfile' in h0) ? "Files" : "Items";
-            pthis.h = { _name: topname, _kind: 'TopFolder', _childs : [h0, h1] };
+         if (!this.h) this.h = h1; else
+         if (this.h._kind == 'TopFolder') this.h._childs.push(h1); else {
+            let h0 = this.h, topname = ('_jsonfile' in h0) ? "Files" : "Items";
+            this.h = { _name: topname, _kind: 'TopFolder', _childs : [h0, h1] };
          }
 
-         pthis.RefreshHtml(call_back);
+         this.RefreshHtml(call_back);
       }).catch(function() { JSROOT.CallBack(call_back); });
    }
 
@@ -1591,25 +1586,23 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
       this.ForEachRootFile(function(item) { if (item._fullurl===filepath) isfileopened = true; });
       if (isfileopened) return JSROOT.CallBack(call_back);
 
-      let pthis = this;
-
       JSROOT.progress("Opening " + filepath + " ...");
 
       JSROOT.OpenFile(filepath).then(file => {
 
-         let h1 = pthis.FileHierarchy(file);
+         let h1 = this.FileHierarchy(file);
          h1._isopen = true;
-         if (pthis.h == null) {
-            pthis.h = h1;
-            if (pthis._topname) h1._name = pthis._topname;
-         } else if (pthis.h._kind == 'TopFolder') {
-            pthis.h._childs.push(h1);
+         if (this.h == null) {
+            this.h = h1;
+            if (this._topname) h1._name = this._topname;
+         } else if (this.h._kind == 'TopFolder') {
+            this.h._childs.push(h1);
          }  else {
-            let h0 = pthis.h, topname = (h0._kind == "ROOT.TFile") ? "Files" : "Items";
-            pthis.h = { _name: topname, _kind: 'TopFolder', _childs : [h0, h1], _isopen: true };
+            let h0 = this.h, topname = (h0._kind == "ROOT.TFile") ? "Files" : "Items";
+            this.h = { _name: topname, _kind: 'TopFolder', _childs : [h0, h1], _isopen: true };
          }
 
-         pthis.RefreshHtml(call_back);
+         this.RefreshHtml(call_back);
       }).catch(() => {
          // make CORS warning
          if (!d3.select("#gui_fileCORS").style("background","red").empty())
@@ -1686,7 +1679,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
    HierarchyPainter.prototype.GetOnlineItem = function(item, itemname, callback, option) {
       // method used to request object from the http server
 
-      let url = itemname, h_get = false, req = "", req_kind = "object", pthis = this, draw_handle = null;
+      let url = itemname, h_get = false, req = "", req_kind = "object", draw_handle = null;
 
       if (option === 'hierarchy_expand') { h_get = true; option = undefined; }
 
@@ -1706,7 +1699,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
 
          if (typeof func == 'function') {
             // ask to make request
-            let dreq = func(pthis, item, url, option);
+            let dreq = func(this, item, url, option);
             // result can be simple string or object with req and kind fields
             if (dreq!=null)
                if (typeof dreq == 'string') req = dreq; else {
@@ -1731,7 +1724,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
       if (url.length > 0) url += "/";
       url += req;
 
-      let itemreq = JSROOT.NewHttpRequest(url, req_kind, function(obj) {
+      let itemreq = JSROOT.NewHttpRequest(url, req_kind, obj => {
 
          let func = null;
 
@@ -1741,7 +1734,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
             func = draw_handle.after_request;
 
          if (typeof func == 'function') {
-            let res = func(pthis, item, obj, option, itemreq);
+            let res = func(this, item, obj, option, itemreq);
             if ((res!=null) && (typeof res == "object")) obj = res;
          }
 
