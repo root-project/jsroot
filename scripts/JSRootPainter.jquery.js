@@ -113,7 +113,7 @@ JSROOT.require(['d3', 'jquery', 'JSRootPainter.hierarchy'], (d3, $) => {
             // todo - use jqury dialog here
             let useid = (typeof value !== 'string');
             let col = prompt("Enter color " + (useid ? "(only id number)" : "(name or id)"), value);
-            if (col == null) return;
+            if (!col) return;
             let id = parseInt(col);
             if (!isNaN(id) && (JSROOT.Painter.root_colors[id] !== undefined)) {
                col = JSROOT.Painter.root_colors[id];
@@ -144,7 +144,7 @@ JSROOT.require(['d3', 'jquery', 'JSRootPainter.hierarchy'], (d3, $) => {
             if (step >= 0.1) entry = value.toFixed(2);
             if (step >= 1) entry = value.toFixed(0);
             let val = prompt("Enter value of " + name, entry);
-            if (val == null) return;
+            if (!val) return;
             val = parseFloat(val);
             if (!isNaN(val)) set_func.bind(this)((step >= 1) ? Math.round(val) : val);
          });
@@ -207,7 +207,7 @@ JSROOT.require(['d3', 'jquery', 'JSRootPainter.hierarchy'], (d3, $) => {
                function(arg) { this.lineatt.Change(arg); this.InteractiveRedraw(true, this.GetColorExec(arg, "SetLineColor")); }.bind(painter));
             this.add("sub:style", function() {
                let id = prompt("Enter line style id (1-solid)", 1);
-               if (id == null) return;
+               if (!id) return;
                id = parseInt(id);
                if (isNaN(id) || !JSROOT.Painter.root_line_styles[id]) return;
                this.lineatt.Change(undefined, undefined, id);
@@ -1388,7 +1388,7 @@ JSROOT.require(['d3', 'jquery', 'JSRootPainter.hierarchy'], (d3, $) => {
       }
 
       // check that we can found frame where drawing should be done
-      if (document.getElementById(this.disp_frameid) == null)
+      if (!document.getElementById(this.disp_frameid))
          return JSROOT.CallBack(callback, null);
 
       if (this.disp_kind == "tabs")
@@ -1674,7 +1674,7 @@ JSROOT.require(['d3', 'jquery', 'JSRootPainter.hierarchy'], (d3, $) => {
       ForEachFrame(userfunc,  only_visible) {
          let topid = this.frameid + '_collapsible';
 
-         if (document.getElementById(topid) == null) return;
+         if (!document.getElementById(topid)) return;
 
          if (typeof userfunc != 'function') return;
 
@@ -1716,7 +1716,7 @@ JSROOT.require(['d3', 'jquery', 'JSRootPainter.hierarchy'], (d3, $) => {
 
          let topid = this.frameid + '_collapsible';
 
-         if (document.getElementById(topid) == null)
+         if (!document.getElementById(topid))
             $("#"+this.frameid).append('<div id="'+ topid  + '" class="jsroot ui-accordion ui-accordion-icons ui-widget ui-helper-reset" style="overflow:auto; overflow-y:scroll; height:100%; padding-left: 2px; padding-right: 2px"></div>');
 
          let mdi = this,
@@ -1779,7 +1779,7 @@ JSROOT.require(['d3', 'jquery', 'JSRootPainter.hierarchy'], (d3, $) => {
       ForEachFrame(userfunc, only_visible) {
          let topid = this.frameid + '_tabs';
 
-         if (document.getElementById(topid) == null) return;
+         if (!document.getElementById(topid)) return;
 
          if (typeof userfunc != 'function') return;
 
@@ -1821,7 +1821,7 @@ JSROOT.require(['d3', 'jquery', 'JSRootPainter.hierarchy'], (d3, $) => {
                     + '</a><span class="ui-icon ui-icon-close" style="float: left; margin: 0.4em 0.2em 0 0; cursor: pointer;" role="presentation">Remove Tab</span></li>',
             cont = '<div class="tabs_draw" id="' + hid + '"></div>';
 
-         if (document.getElementById(topid) == null) {
+         if (!document.getElementById(topid)) {
             $("#" + this.frameid).append('<div id="' + topid + '" class="jsroot">' + ' <ul>' + li + ' </ul>' + cont + '</div>');
 
             let tabs = $("#" + topid)
@@ -1876,7 +1876,7 @@ JSROOT.require(['d3', 'jquery', 'JSRootPainter.hierarchy'], (d3, $) => {
       ForEachFrame(userfunc,  only_visible) {
          let topid = this.frameid + '_flex';
 
-         if (document.getElementById(topid) == null) return;
+         if (!document.getElementById(topid)) return;
          if (typeof userfunc != 'function') return;
 
          $('#' + topid + ' .flex_draw').each(function() {
@@ -1907,7 +1907,7 @@ JSROOT.require(['d3', 'jquery', 'JSRootPainter.hierarchy'], (d3, $) => {
 
          let topid = this.frameid + '_flex';
 
-         if (document.getElementById(topid) == null)
+         if (!document.getElementById(topid))
             $("#" + this.frameid).append('<div id="'+ topid  + '" class="jsroot" style="overflow:none; height:100%; width:100%"></div>');
 
          let mdi = this,

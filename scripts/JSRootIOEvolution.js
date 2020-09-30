@@ -285,7 +285,7 @@ JSROOT.require(['rawinflate'], () => {
 
    TBuffer.prototype.CheckBytecount = function(ver, where) {
       if ((ver.bytecnt !== undefined) && (ver.off + ver.bytecnt !== this.o)) {
-         if (where != null) {
+         if (where) {
             // alert("Missmatch in " + where + " bytecount expected = " + ver.bytecnt + "  got = " + (this.o-ver.off));
             console.log("Missmatch in " + where + " bytecount expected = " + ver.bytecnt + "  got = " + (this.o - ver.off));
          }

@@ -275,7 +275,7 @@ JSROOT.require(['d3'], (d3) => {
    }
 
    Painter.MakeColorRGB = function(col) {
-      if ((col == null) || (col._typename != 'TColor')) return null;
+      if (!col || (col._typename != 'TColor')) return null;
       let rgb = Math.round(col.fRed * 255) + "," + Math.round(col.fGreen * 255) + "," + Math.round(col.fBlue * 255);
       if ((col.fAlpha === undefined) || (col.fAlpha == 1.))
          rgb = "rgb(" + rgb + ")";
@@ -3089,14 +3089,16 @@ JSROOT.require(['d3'], (d3) => {
          delete this.UserTooltipTHandle;
       }
 
-      if (data == null)
+      if (!data)
          return this.UserTooltipCallback(data);
 
-      this.UserTooltipTHandle = setTimeout(function(d) {
-         // only after timeout user function will be called
+      let d = data;
+
+     // only after timeout user function will be called
+      this.UserTooltipTHandle = setTimeout(() => {
          delete this.UserTooltipTHandle;
-         this.UserTooltipCallback(d);
-      }.bind(this, data), this.UserTooltipTimeout);
+         if (this.UserTooltipCallback) this.UserTooltipCallback(d);
+      }, this.UserTooltipTimeout);
    }
 
    /** @summary Redraw object
@@ -3767,7 +3769,7 @@ JSROOT.require(['d3'], (d3) => {
       if (!lst) return;
 
       function CheckBaseClasses(si, lvl) {
-         if (si.fElements == null) return null;
+         if (!si.fElements) return null;
          if (lvl > 10) return null; // protect against recursion
 
          for (let j = 0; j < si.fElements.arr.length; ++j) {

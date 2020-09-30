@@ -187,8 +187,8 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
 
          if (key.fClassName == 'TDirectory' || key.fClassName == 'TDirectoryFile') {
             let dir = null;
-            if ((dirname!=null) && (file!=null)) dir = file.GetDir(dirname + key.fName);
-            if (dir == null) {
+            if (dirname && file) dir = file.GetDir(dirname + key.fName);
+            if (!dir) {
                item._more = true;
                item._expand = function(node, obj) {
                   // one can get expand call from child objects - ignore them
@@ -563,7 +563,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
       this.h = null; // hierarchy
       this.with_icons = true;
       this.background = backgr;
-      this.files_monitoring = (frameid == null); // by default files monitored when nobrowser option specified
+      this.files_monitoring = !frameid; // by default files monitored when nobrowser option specified
       this.nobrowser = (frameid === null);
       if (!this.nobrowser) this.SetDivId(frameid); // this is required to be able cleanup painter
 
@@ -1592,7 +1592,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
 
          let h1 = this.FileHierarchy(file);
          h1._isopen = true;
-         if (this.h == null) {
+         if (!this.h) {
             this.h = h1;
             if (this._topname) h1._name = this._topname;
          } else if (this.h._kind == 'TopFolder') {
@@ -1640,7 +1640,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
 
    HierarchyPainter.prototype.GetFileProp = function(itemname) {
       let item = this.Find(itemname);
-      if (item == null) return null;
+      if (!item) return null;
 
       let subname = item._name;
       while (item._parent) {
@@ -1766,7 +1766,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
 
       function AdoptHierarchy(result) {
          painter.h = result;
-         if (painter.h == null) return;
+         if (!result) return;
 
          if (('_title' in painter.h) && (painter.h._title!='')) document.title = painter.h._title;
 
@@ -2038,7 +2038,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
       }
 
       // check that we can found frame where drawing should be done
-      if (document.getElementById(this.disp_frameid) == null)
+      if (!document.getElementById(this.disp_frameid))
          return JSROOT.CallBack(callback, null);
 
       if ((this.disp_kind == "simple") ||
@@ -2532,7 +2532,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
                found_frame = frame;
          });
 
-         if ((found_frame == null) && force)
+         if (!found_frame && force)
             found_frame = this.CreateFrame(searchtitle);
 
          return found_frame;
