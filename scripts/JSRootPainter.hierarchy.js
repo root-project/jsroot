@@ -561,7 +561,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
    // HierarchyPainter
 
    function HierarchyPainter(name, frameid, backgr) {
-      JSROOT.TBasePainter.call(this);
+      JSROOT.BasePainter.call(this);
       this.name = name;
       this.h = null; // hierarchy
       this.with_icons = true;
@@ -575,13 +575,13 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
          JSROOT.hpainter = this;
    }
 
-   HierarchyPainter.prototype = Object.create(JSROOT.TBasePainter.prototype);
+   HierarchyPainter.prototype = Object.create(JSROOT.BasePainter.prototype);
 
    HierarchyPainter.prototype.Cleanup = function() {
       // clear drawing and browser
       this.clear(true);
 
-      JSROOT.TBasePainter.prototype.Cleanup.call(this);
+      JSROOT.BasePainter.prototype.Cleanup.call(this);
 
       if (JSROOT.hpainter === this)
          JSROOT.hpainter = null;
@@ -2521,7 +2521,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
       ForEachPainter(userfunc, only_visible) {
 
          this.ForEachFrame(frame => {
-            let dummy = new JSROOT.TObjectPainter();
+            let dummy = new JSROOT.ObjectPainter();
             dummy.SetDivId(frame, -1);
             dummy.ForEachPainter(painter => userfunc(painter, frame));
          }, only_visible);

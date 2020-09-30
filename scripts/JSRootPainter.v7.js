@@ -8,7 +8,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
    JSROOT.v7 = {}; // placeholder for v7-relevant code
 
    /** Evaluate attributes using fAttr storage and configured RStyle */
-   JSROOT.TObjectPainter.prototype.v7EvalAttr = function(name, dflt) {
+   JSROOT.ObjectPainter.prototype.v7EvalAttr = function(name, dflt) {
       let obj = this.GetObject();
       if (!obj) return dflt;
 
@@ -36,7 +36,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
       return dflt;
    }
 
-   JSROOT.TObjectPainter.prototype.v7SetAttr = function(name, value) {
+   JSROOT.ObjectPainter.prototype.v7SetAttr = function(name, value) {
       let obj = this.GetObject();
 
       if (obj && obj.fAttr && obj.fAttr.m)
@@ -44,7 +44,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
    }
 
    /** Decode pad length from string, return pixel value */
-   JSROOT.TObjectPainter.prototype.v7EvalLength = function(name, sizepx, dflt) {
+   JSROOT.ObjectPainter.prototype.v7EvalLength = function(name, sizepx, dflt) {
       if (sizepx <= 0) sizepx = 1;
 
       let value = this.v7EvalAttr(name);
@@ -105,7 +105,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
    }
 
    /** Evaluate RColor using attribute storage and configured RStyle */
-   JSROOT.TObjectPainter.prototype.v7EvalColor = function(name, dflt) {
+   JSROOT.ObjectPainter.prototype.v7EvalColor = function(name, dflt) {
       let rgb = this.v7EvalAttr(name + "_rgb", "");
 
       if (rgb)
@@ -115,7 +115,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
    }
 
    /** Create this.fillatt object based on v7 fill attributes */
-   JSROOT.TObjectPainter.prototype.createv7AttFill = function(prefix) {
+   JSROOT.ObjectPainter.prototype.createv7AttFill = function(prefix) {
       if (!prefix || (typeof prefix != "string")) prefix = "fill_";
 
       let fill_color = this.v7EvalColor(prefix + "color", ""),
@@ -127,7 +127,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
    }
 
    /** Create this.lineatt object based on v7 line attributes */
-   JSROOT.TObjectPainter.prototype.createv7AttLine = function(prefix) {
+   JSROOT.ObjectPainter.prototype.createv7AttLine = function(prefix) {
       if (!prefix || (typeof prefix != "string")) prefix = "line_";
 
       let line_color = this.v7EvalColor(prefix + "color", "black"),
@@ -137,7 +137,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
       this.createAttLine({ color: line_color, width: line_width, style: line_style });
    }
 
-   JSROOT.TObjectPainter.prototype.createv7AttMarker = function(prefix) {
+   JSROOT.ObjectPainter.prototype.createv7AttMarker = function(prefix) {
       if (!prefix || (typeof prefix != "string")) prefix = "marker_";
 
       let marker_color = this.v7EvalColor(prefix + "color", "black"),
@@ -148,7 +148,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
    }
 
    /** Create RChangeAttr, which can be applied on the server side */
-   JSROOT.TObjectPainter.prototype.v7AttrChange = function(req,name,value,kind) {
+   JSROOT.ObjectPainter.prototype.v7AttrChange = function(req,name,value,kind) {
       if (!this.snapid)
          return false;
 
@@ -184,7 +184,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
    }
 
    /** Sends accumulated attribute changes to server */
-   JSROOT.TObjectPainter.prototype.v7SendAttrChanges = function(req, do_update) {
+   JSROOT.ObjectPainter.prototype.v7SendAttrChanges = function(req, do_update) {
       let canp = this.canv_painter();
       if (canp && req && req._typename) {
          if (do_update !== undefined) req.update = do_update ? true : false;
@@ -197,7 +197,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
     * @param req is object derived from DrawableRequest, including correct _typename
     * @param method is method of painter object which will be called when getting reply
     * @private */
-   JSROOT.TObjectPainter.prototype.v7SubmitRequest = function(kind, req, method) {
+   JSROOT.ObjectPainter.prototype.v7SubmitRequest = function(kind, req, method) {
       let canp = this.canv_painter();
       if (!canp || !canp.SubmitDrawableRequest) return null;
 
@@ -215,7 +215,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
    * @desc Overwrite default method
    * @private */
 
-   JSROOT.TObjectPainter.prototype.AssignSnapId = function(id) {
+   JSROOT.ObjectPainter.prototype.AssignSnapId = function(id) {
       this.snapid = id;
       if (this.snapid && this._pending_request) {
          let req = this._pending_request;
@@ -230,7 +230,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
     * kOffline means no server there,
     * kLessTraffic advise not to send commands if offline functionality available
     * kNormal is standard functionality with RCanvas on server side*/
-   JSROOT.TObjectPainter.prototype.v7CommMode = function() {
+   JSROOT.ObjectPainter.prototype.v7CommMode = function() {
       let canp = this.canv_painter();
       if (!canp || !canp.SubmitDrawableRequest || !canp._websocket)
          return JSROOT.v7.CommMode.kOffline;
@@ -243,7 +243,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
    function RAxisPainter(embedded, cssprefix) {
       let dummy = JSROOT.Create("TAxis"); // just dummy before all attributes are implemented
 
-      JSROOT.TObjectPainter.call(this, dummy);
+      JSROOT.ObjectPainter.call(this, dummy);
 
       this.embedded = embedded; // indicate that painter embedded into the histo painter
       this.csstype = "frame"; // for the moment only via frame one can set axis attributes
@@ -263,7 +263,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
       this.lbls_both_sides = false; // draw labels on both sides
    }
 
-   RAxisPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
+   RAxisPainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
 
    RAxisPainter.prototype.Cleanup = function() {
 
@@ -271,7 +271,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
       this.func = null;
       delete this.format;
 
-      JSROOT.TObjectPainter.prototype.Cleanup.call(this);
+      JSROOT.ObjectPainter.prototype.Cleanup.call(this);
    }
 
    RAxisPainter.prototype.SetAxisConfig = function(name, kind, func, min, max, smin, smax) {
@@ -1059,7 +1059,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
 
 
    function RFramePainter(tframe) {
-      JSROOT.TObjectPainter.call(this, tframe);
+      JSROOT.ObjectPainter.call(this, tframe);
       this.csstype = "frame";
       this.mode3d = false;
       this.shrink_frame_left = 0.;
@@ -1072,7 +1072,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
       this.mode3d = false;
    }
 
-   RFramePainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
+   RFramePainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
 
    RFramePainter.prototype.frame_painter = function() {
       return this;
@@ -1085,7 +1085,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
    }
 
    RFramePainter.prototype.GetTipName = function(append) {
-      let res = JSROOT.TObjectPainter.prototype.GetTipName.call(this) || "RFrame";
+      let res = JSROOT.ObjectPainter.prototype.GetTipName.call(this) || "RFrame";
       if (append) res+=append;
       return res;
    }
@@ -1554,7 +1554,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
       delete this._click_handler;
       delete this._dblclick_handler;
 
-      JSROOT.TObjectPainter.prototype.Cleanup.call(this);
+      JSROOT.ObjectPainter.prototype.Cleanup.call(this);
    }
 
    RFramePainter.prototype.Redraw = function() {
@@ -2889,7 +2889,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
    // ===========================================================================
 
    function RPadPainter(pad, iscan) {
-      JSROOT.TObjectPainter.call(this, pad);
+      JSROOT.ObjectPainter.call(this, pad);
       this.csstype = "pad";
       this.pad = pad;
       this.iscan = iscan; // indicate if working with canvas
@@ -2904,7 +2904,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
       this.has_canvas = true;
    }
 
-   RPadPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
+   RPadPainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
 
    RPadPainter.prototype.Cleanup = function() {
       // cleanup only pad itself, all child elements will be collected and cleanup separately
@@ -2930,7 +2930,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
 
       JSROOT.Painter.SelectActivePad({ pp: this, active: false });
 
-      JSROOT.TObjectPainter.prototype.Cleanup.call(this);
+      JSROOT.ObjectPainter.prototype.Cleanup.call(this);
    }
 
    /** @summary Cleanup primitives from pad - selector lets define which painters to remove
@@ -4756,11 +4756,11 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
    // ======================================================================================
 
    function RPavePainter(pave, opt, csstype) {
-      JSROOT.TObjectPainter.call(this, pave, opt);
+      JSROOT.ObjectPainter.call(this, pave, opt);
       this.csstype = csstype || "pave";
    }
 
-   RPavePainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
+   RPavePainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
 
    RPavePainter.prototype.DrawContent = function() {
       // do nothing, will be reimplemented in derived classes
@@ -5083,11 +5083,11 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
    // =============================================================
 
    function RPalettePainter(palette) {
-      JSROOT.TObjectPainter.call(this, palette);
+      JSROOT.ObjectPainter.call(this, palette);
       this.csstype = "palette";
    }
 
-   RPalettePainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
+   RPalettePainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
 
    RPalettePainter.prototype.GetPalette = function() {
       let drawable = this.GetObject();

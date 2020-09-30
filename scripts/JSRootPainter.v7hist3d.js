@@ -1403,7 +1403,7 @@ JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.v7hist'], function(d3, T
 
    JSROOT.Painter.drawAxis3D = function(divid, axis /*, opt */) {
 
-      let painter = new JSROOT.TObjectPainter(axis);
+      let painter = new JSROOT.ObjectPainter(axis);
 
       if (!('_main' in axis))
          painter.SetDivId(divid);

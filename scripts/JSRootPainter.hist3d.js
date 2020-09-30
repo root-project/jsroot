@@ -1440,7 +1440,7 @@ JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.hist'], function(d3, THR
 
    JSROOT.Painter.drawAxis3D = function(divid, axis /*, opt*/) {
 
-      let painter = new JSROOT.TObjectPainter(axis);
+      let painter = new JSROOT.ObjectPainter(axis);
 
       if (!('_main' in axis))
          painter.SetDivId(divid);
@@ -3042,10 +3042,10 @@ JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.hist'], function(d3, THR
    // ===========================================================================================
 
    function TGraph2DPainter(graph) {
-      JSROOT.TObjectPainter.call(this, graph);
+      JSROOT.ObjectPainter.call(this, graph);
    }
 
-   TGraph2DPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
+   TGraph2DPainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
 
    TGraph2DPainter.prototype.DecodeOptions = function(opt) {
       let d = new JSROOT.DrawOptions(opt);
@@ -3418,7 +3418,7 @@ JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.hist'], function(d3, THR
 
    JSROOT.Painter.drawPolyMarker3D = function(divid, poly /*, opt*/) {
 
-      let painter = new JSROOT.TObjectPainter(poly);
+      let painter = new JSROOT.ObjectPainter(poly);
 
       painter.SetDivId(divid);
 

@@ -46,7 +46,7 @@ JSROOT.require(['rawinflate'], function() {
       // used for special classes like TRef or TBasket
       DirectStreamers: {},
 
-      // TOBject bits
+      // TObject bits
       kIsReferenced: JSROOT.BIT(4),
       kHasUUID: JSROOT.BIT(5),
 

@@ -498,16 +498,16 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter.v6'], function(d3) {
     *
     * @constructor
     * @memberof JSROOT
-    * @arguments JSROOT.TObjectPainter
+    * @arguments JSROOT.ObjectPainter
     * @param {object} tf1 - TF1 object to draw
     */
 
    function TF1Painter(tf1) {
-      JSROOT.TObjectPainter.call(this, tf1);
+      JSROOT.ObjectPainter.call(this, tf1);
       this.bins = null;
    }
 
-   TF1Painter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
+   TF1Painter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
 
    TF1Painter.prototype.Eval = function(x) {
       return this.GetObject().evalPar(x);
@@ -787,12 +787,12 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter.v6'], function(d3) {
     *
     * @constructor
     * @memberof JSROOT
-    * @arguments JSROOT.TObjectPainter
+    * @arguments JSROOT.ObjectPainter
     * @param {object} graph - TGraph object to draw
     */
 
    function TGraphPainter(graph) {
-      JSROOT.TObjectPainter.call(this, graph);
+      JSROOT.ObjectPainter.call(this, graph);
       this.axes_draw = false; // indicate if graph histogram was drawn for axes
       this.bins = null;
       this.xmin = this.ymin = this.xmax = this.ymax = 0;
@@ -803,7 +803,7 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter.v6'], function(d3) {
                          this.is_bent || graph._typename.match(/^RooHist/);
    }
 
-   TGraphPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
+   TGraphPainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
 
    TGraphPainter.prototype.Redraw = function() {
       this.DrawBins();
@@ -812,7 +812,7 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter.v6'], function(d3) {
    TGraphPainter.prototype.Cleanup = function() {
       delete this.interactive_bin; // break mouse handling
       delete this.bins;
-      JSROOT.TObjectPainter.prototype.Cleanup.call(this);
+      JSROOT.ObjectPainter.prototype.Cleanup.call(this);
    }
 
    TGraphPainter.prototype.DecodeOptions = function(opt) {
@@ -1798,7 +1798,7 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter.v6'], function(d3) {
    }
 
    TGraphPainter.prototype.FillContextMenu = function(menu) {
-      JSROOT.TObjectPainter.prototype.FillContextMenu.call(this, menu);
+      JSROOT.ObjectPainter.prototype.FillContextMenu.call(this, menu);
 
       if (!this.snapid)
          menu.addchk(this.TestEditable(), "Editable", this.TestEditable.bind(this, true));
@@ -1807,7 +1807,7 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter.v6'], function(d3) {
    }
 
    TGraphPainter.prototype.ExecuteMenuCommand = function(method, args) {
-      if (JSROOT.TObjectPainter.prototype.ExecuteMenuCommand.call(this,method,args)) return true;
+      if (JSROOT.ObjectPainter.prototype.ExecuteMenuCommand.call(this,method,args)) return true;
 
       let canp = this.canv_painter(), fp = this.frame_painter();
 
@@ -2027,12 +2027,12 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter.v6'], function(d3) {
    // ==============================================================
 
    function TGraphPolargramPainter(polargram) {
-      JSROOT.TObjectPainter.call(this, polargram);
+      JSROOT.ObjectPainter.call(this, polargram);
       this.$polargram = true; // indicate that this is polargram
       this.zoom_rmin = this.zoom_rmax = 0;
    }
 
-   TGraphPolargramPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
+   TGraphPolargramPainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
 
    TGraphPolargramPainter.prototype.translate = function(angle, radius, keep_float) {
       let _rx = this.r(radius), _ry = _rx/this.szx*this.szy,
@@ -2322,10 +2322,10 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter.v6'], function(d3) {
    // ==============================================================
 
    function TGraphPolarPainter(graph) {
-      JSROOT.TObjectPainter.call(this, graph);
+      JSROOT.ObjectPainter.call(this, graph);
    }
 
-   TGraphPolarPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
+   TGraphPolarPainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
 
    TGraphPolarPainter.prototype.Redraw = function() {
       this.DrawBins();
@@ -2552,11 +2552,11 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter.v6'], function(d3) {
    // ==============================================================
 
    function TSplinePainter(spline) {
-      JSROOT.TObjectPainter.call(this, spline);
+      JSROOT.ObjectPainter.call(this, spline);
       this.bins = null;
    }
 
-   TSplinePainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
+   TSplinePainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
 
    TSplinePainter.prototype.UpdateObject = function(obj, opt) {
       let spline = this.GetObject();
@@ -2855,10 +2855,10 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter.v6'], function(d3) {
    // =============================================================
 
    function TGraphTimePainter(gr) {
-      JSROOT.TObjectPainter.call(this, gr);
+      JSROOT.ObjectPainter.call(this, gr);
    }
 
-   TGraphTimePainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
+   TGraphTimePainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
 
    TGraphTimePainter.prototype.Redraw = function() {
       if (this.step === undefined) this.StartDrawing(false);
@@ -3000,11 +3000,11 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter.v6'], function(d3) {
    // =============================================================
 
    function TEfficiencyPainter(eff) {
-      JSROOT.TObjectPainter.call(this, eff);
+      JSROOT.ObjectPainter.call(this, eff);
       this.fBoundary = 'Normal';
    }
 
-   TEfficiencyPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
+   TEfficiencyPainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
 
    TEfficiencyPainter.prototype.GetEfficiency = function(bin) {
       let obj = this.GetObject(),
@@ -3104,17 +3104,17 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter.v6'], function(d3) {
    // =============================================================
 
    function TMultiGraphPainter(mgraph) {
-      JSROOT.TObjectPainter.call(this, mgraph);
+      JSROOT.ObjectPainter.call(this, mgraph);
       this.firstpainter = null;
       this.autorange = false;
       this.painters = []; // keep painters to be able update objects
    }
 
-   TMultiGraphPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
+   TMultiGraphPainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
 
    TMultiGraphPainter.prototype.Cleanup = function() {
       this.painters = [];
-      JSROOT.TObjectPainter.prototype.Cleanup.call(this);
+      JSROOT.ObjectPainter.prototype.Cleanup.call(this);
    }
 
    TMultiGraphPainter.prototype.UpdateObject = function(obj) {
@@ -3346,7 +3346,7 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter.v6'], function(d3) {
 
    function drawWebPainting(divid, obj, opt) {
 
-      let painter = new JSROOT.TObjectPainter(obj, opt);
+      let painter = new JSROOT.ObjectPainter(obj, opt);
 
       painter.UpdateObject = function(obj) {
          if (!this.MatchObjectType(obj)) return false;
@@ -3517,17 +3517,17 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter.v6'], function(d3) {
     *
     * @constructor
     * @memberof JSROOT
-    * @arguments JSROOT.TObjectPainter
+    * @arguments JSROOT.ObjectPainter
     * @param {object} obj - TASImage object to draw
     * @param {string} opt - string draw options
     */
 
    function TASImagePainter(obj, opt) {
-      JSROOT.TObjectPainter.call(this, obj, opt);
+      JSROOT.ObjectPainter.call(this, obj, opt);
       this.wheel_zoomy = true;
    }
 
-   TASImagePainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
+   TASImagePainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
 
    TASImagePainter.prototype.DecodeOptions = function(opt) {
       this.options = { Zscale: false };
@@ -3989,7 +3989,7 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter.v6'], function(d3) {
     * @private */
    JSROOT.Painter.drawTree = function(divid, obj, opt) {
 
-      let painter = new JSROOT.TObjectPainter(obj),
+      let painter = new JSROOT.ObjectPainter(obj),
           tree = obj, args = opt;
 
       if (obj._typename == "TBranchFunc") {

@@ -6,7 +6,7 @@ JSROOT.require(['d3', 'JSRootPainter.v7'], function(d3) {
    "use strict";
 
    function RHistPainter(histo) {
-      JSROOT.TObjectPainter.call(this, histo);
+      JSROOT.ObjectPainter.call(this, histo);
       this.csstype = "hist";
       this.draw_content = true;
       this.nbinsx = 0;
@@ -19,7 +19,7 @@ JSROOT.require(['d3', 'JSRootPainter.v7'], function(d3) {
       this.GetHisto(true);
    }
 
-   RHistPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
+   RHistPainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
 
    // function ensure that frame is drawn on the canvas
    RHistPainter.prototype.PrepareFrame = function(divid, mode3d) {
@@ -186,7 +186,7 @@ JSROOT.require(['d3', 'JSRootPainter.v7'], function(d3) {
 
       delete this.options;
 
-      JSROOT.TObjectPainter.prototype.Cleanup.call(this);
+      JSROOT.ObjectPainter.prototype.Cleanup.call(this);
    }
 
    RHistPainter.prototype.Dimension = function() {

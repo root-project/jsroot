@@ -149,7 +149,7 @@ JSROOT.require(['JSRootPainter.v7'], function() {
          if (entry.fDrawableId != "custom") {
             objp = pp.FindSnap(entry.fDrawableId, true);
          } else if (entry.fDrawable.fIO) {
-            objp = new JSROOT.TObjectPainter(entry.fDrawable.fIO);
+            objp = new JSROOT.ObjectPainter(entry.fDrawable.fIO);
             if (entry.fLine) objp.createv7AttLine();
             if (entry.fFill) objp.createv7AttFill();
             if (entry.fMarker) objp.createv7AttMarker();

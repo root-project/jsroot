@@ -1942,7 +1942,7 @@ JSROOT.require(['d3', 'jquery', 'JSRootPainter.hierarchy'], function(d3, $) {
             if (div.prop('state') == "minimal") return;
 
             div = div.find(".flex_draw").get(0);
-            let dummy = new JSROOT.TObjectPainter();
+            let dummy = new JSROOT.ObjectPainter();
             dummy.SetDivId(div, -1);
             JSROOT.Painter.SelectActivePad({ pp: dummy.canv_painter(), active: true });
 

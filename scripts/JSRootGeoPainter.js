@@ -160,7 +160,7 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], function(d3, THREE) {
       if (obj && (obj._typename.indexOf('TGeoVolume') === 0))
          obj = { _typename:"TGeoNode", fVolume: obj, fName: obj.fName, $geoh: obj.$geoh, _proxy: true };
 
-      JSROOT.TObjectPainter.call(this, obj);
+      JSROOT.ObjectPainter.call(this, obj);
 
       this.no_default_title = true; // do not set title to main DIV
       this.mode3d = true; // indication of 3D mode
@@ -200,7 +200,7 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], function(d3, THREE) {
       this.Cleanup(true);
    }
 
-   TGeoPainter.prototype = Object.create( JSROOT.TObjectPainter.prototype );
+   TGeoPainter.prototype = Object.create( JSROOT.ObjectPainter.prototype );
 
    TGeoPainter.prototype.CreateToolbar = function() {
       if (this._toolbar || !this._webgl || this.ctrl.notoolbar) return;
@@ -3862,7 +3862,7 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], function(d3, THREE) {
          delete this.geo_manager;
          delete this._highlight_handlers;
 
-         JSROOT.TObjectPainter.prototype.Cleanup.call(this);
+         JSROOT.ObjectPainter.prototype.Cleanup.call(this);
 
          delete this.ctrl;
          delete this.options;

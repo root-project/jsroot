@@ -219,13 +219,13 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], function(d3) {
 
    // painter class for objects, derived from TPave
    function TPavePainter(pave) {
-      JSROOT.TObjectPainter.call(this, pave);
+      JSROOT.ObjectPainter.call(this, pave);
       this.Enabled = true;
       this.UseContextMenu = true;
       this.UseTextColor = false; // indicates if text color used, enabled menu entry
    }
 
-   TPavePainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
+   TPavePainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
 
    TPavePainter.prototype.AssignFinishPave = function() {
       function func() {
@@ -1291,7 +1291,7 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], function(d3) {
          delete this.z_handle;
       }
 
-      JSROOT.TObjectPainter.prototype.Cleanup.call(this);
+      JSROOT.ObjectPainter.prototype.Cleanup.call(this);
    }
 
    function drawPave(divid, pave, opt) {
@@ -1751,12 +1751,12 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], function(d3) {
     *
     * @constructor
     * @memberof JSROOT
-    * @arguments JSROOT.TObjectPainter
+    * @arguments JSROOT.ObjectPainter
     * @param {object} histo - histogram object
     */
 
    function THistPainter(histo) {
-      JSROOT.TObjectPainter.call(this, histo);
+      JSROOT.ObjectPainter.call(this, histo);
       this.draw_content = true;
       this.nbinsx = 0;
       this.nbinsy = 0;
@@ -1765,7 +1765,7 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], function(d3) {
       this.hist_painter_id = JSROOT.id_counter++; // assign unique identifier for hist painter
    }
 
-   THistPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
+   THistPainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
 
    THistPainter.prototype.GetHisto = function() {
       return this.GetObject();
@@ -1812,7 +1812,7 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], function(d3) {
       delete this.fContour;
       delete this.options;
 
-      JSROOT.TObjectPainter.prototype.Cleanup.call(this);
+      JSROOT.ObjectPainter.prototype.Cleanup.call(this);
    }
 
    THistPainter.prototype.Dimension = function() {
@@ -6418,20 +6418,20 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], function(d3) {
    // ====================================================================
 
    function THStackPainter(stack, opt) {
-      JSROOT.TObjectPainter.call(this, stack, opt);
+      JSROOT.ObjectPainter.call(this, stack, opt);
 
       this.firstpainter = null;
       this.painters = []; // keep painters to be able update objects
    }
 
-   THStackPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
+   THStackPainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
 
    THStackPainter.prototype.Cleanup = function() {
       let pp = this.pad_painter();
       if (pp) pp.CleanPrimitives(this.Selector.bind(this, true));
       delete this.firstpainter;
       delete this.painters;
-      JSROOT.TObjectPainter.prototype.Cleanup.call(this);
+      JSROOT.ObjectPainter.prototype.Cleanup.call(this);
    }
 
    THStackPainter.prototype.HasErrors = function(hist) {
