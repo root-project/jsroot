@@ -1656,18 +1656,17 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
 
       if (JSROOT.BatchMode) return;
 
-      let painter = this;
       JSROOT.require(['JSRoot.interactive']).then(() => {
-         JSROOT.TooltipHandler.assign(painter);
+         JSROOT.TooltipHandler.assign(this);
 
-         painter.draw_g.attr("x", lm)
-                       .attr("y", tm)
-                       .attr("width", w)
-                       .attr("height", h);
+         this.draw_g.attr("x", lm)
+                    .attr("y", tm)
+                    .attr("width", w)
+                    .attr("height", h);
 
          if (!rotate && !fixpos)
-            JSROOT.DragMoveHandler.AddDrag(painter, { obj: painter, only_resize: true,
-                                         minwidth: 20, minheight: 20, redraw: painter.SizeChanged.bind(painter) });
+            JSROOT.DragMoveHandler.AddDrag(this, { obj: this, only_resize: true,
+                                         minwidth: 20, minheight: 20, redraw: this.SizeChanged.bind(this) });
 
          let tooltip_rect = main_svg;
          tooltip_rect.style("pointer-events","visibleFill")
@@ -1675,7 +1674,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
 
          //  if (tooltip_rect.empty())
          //     tooltip_rect =
-         //       painter.draw_g
+         //       this.draw_g
          //          .append("rect")
          //          .attr("class","interactive_rect")
          //          .style('opacity',0)
@@ -1686,8 +1685,8 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
          let handlers_set = (pp && pp._fast_drawing) ? 0 : 1;
 
          if (tooltip_rect.property('handlers_set') != handlers_set) {
-            let close_handler = handlers_set ? painter.ProcessTooltipEvent.bind(painter, null) : null,
-                mouse_handler = handlers_set ? painter.ProcessTooltipEvent.bind(painter, { handler: true, touch: false }) : null;
+            let close_handler = handlers_set ? this.ProcessTooltipEvent.bind(this, null) : null,
+                mouse_handler = handlers_set ? this.ProcessTooltipEvent.bind(this, { handler: true, touch: false }) : null;
 
             tooltip_rect.property('handlers_set', handlers_set)
                         .on('mouseenter', mouse_handler)
@@ -1695,7 +1694,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
                         .on('mouseleave', close_handler);
 
             if (JSROOT.touches) {
-               let touch_handler = handlers_set ? painter.ProcessTooltipEvent.bind(painter, { handler: true, touch: true }) : null;
+               let touch_handler = handlers_set ? this.ProcessTooltipEvent.bind(this, { handler: true, touch: true }) : null;
 
                tooltip_rect.on("touchstart", touch_handler)
                            .on("touchmove", touch_handler)
@@ -1709,10 +1708,10 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
                      .attr("width", w)
                      .attr("height", h);
 
-         let hintsg = painter.hints_layer().select(".objects_hints");
+         let hintsg = this.hints_layer().select(".objects_hints");
          // if tooltips were visible before, try to reconstruct them after short timeout
-         if (!hintsg.empty() && painter.IsTooltipAllowed() && (hintsg.property("hints_pad") == painter.pad_name))
-            setTimeout(painter.ProcessTooltipEvent.bind(painter, hintsg.property('last_point'), null), 10);
+         if (!hintsg.empty() && this.IsTooltipAllowed() && (hintsg.property("hints_pad") == this.pad_name))
+            setTimeout(this.ProcessTooltipEvent.bind(this, hintsg.property('last_point'), null), 10);
       });
    }
 
@@ -4444,8 +4443,6 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
          return JSROOT.CallBack(call_back, true);
       }
 
-      let pthis = this;
-
       JSROOT.require("JSRootPainter.jquery").then(() => {
 
          let grid = new JSROOT.GridDisplay(origin.node(), layout_kind);
@@ -4465,7 +4462,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
          for (let k=0;k<lst.length;++k)
             main.node().appendChild(lst[k]);
 
-         pthis.set_layout_kind(layout_kind, ".central_panel");
+         this.set_layout_kind(layout_kind, ".central_panel");
 
          // remove reference to MDIDisplay, solves resize problem
          origin.property('mdi', null);
@@ -4769,8 +4766,6 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
       this.brlayout.SetBrowserTitle("GED");
       this.brlayout.ToggleBrowserKind(kind || "float");
 
-      let pthis = this;
-
       JSROOT.require('openui5').then(() => {
 
          d3.select("#ged_placeholder").text("");
@@ -4788,19 +4783,19 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
 
                oGed.placeAt("ged_placeholder");
 
-               pthis.ged_view = oGed;
+               this.ged_view = oGed;
 
                // TODO: should be moved into Ged controller - it must be able to detect canvas painter itself
-               pthis.RegisterForPadEvents(oGed.getController().padEventsReceiver.bind(oGed.getController()));
+               this.RegisterForPadEvents(oGed.getController().padEventsReceiver.bind(oGed.getController()));
 
-               pthis.SelectObjectPainter(objpainter);
+               this.SelectObjectPainter(objpainter);
 
-               pthis.ProcessChanges("sbits", pthis);
+               this.ProcessChanges("sbits", this);
 
                // finally invoke all callbacks
-               let arr = pthis._ged_callbacks;
-               delete pthis._ged_callbacks;
-               arr.forEach(function(func) { JSROOT.CallBack(func, true) });
+               let arr = this._ged_callbacks;
+               delete this._ged_callbacks;
+               arr.forEach(func => func(true));
             });
          });
       });
