@@ -1209,12 +1209,12 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
          active_mesh = active_mesh ? [ active_mesh ] : [];
          let extras = this.getExtrasContainer();
          if (extras)
-            extras.traverse(function(obj3d) {
+            extras.traverse(obj3d => {
                if ((obj3d.geo_object === geo_object) && (active_mesh.indexOf(obj3d)<0)) active_mesh.push(obj3d);
             });
       } else if (geo_stack && this._toplevel) {
          active_mesh = [];
-         this._toplevel.traverse(function(mesh) {
+         this._toplevel.traverse(mesh => {
             if ((mesh instanceof THREE.Mesh) && JSROOT.GEO.IsSameStack(mesh.stack, geo_stack)) active_mesh.push(mesh);
          });
       } else {
