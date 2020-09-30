@@ -749,7 +749,7 @@ JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.hist'], (d3, THREE) => {
       let xtickslines = JSROOT.Painter.createLineSegments( ticks, lineMaterial );
       xcont.add(xtickslines);
 
-      lbls.forEach(function(lbl) {
+      lbls.forEach(lbl => {
          let w = lbl.boundingBox.max.x - lbl.boundingBox.min.x,
              posx = lbl.center ? lbl.grx - w/2 : grmaxx - w,
              m = new THREE.Matrix4();
@@ -771,7 +771,7 @@ JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.hist'], (d3, THREE) => {
       xcont.position.set(0, grmaxy, grminz);
       xcont.rotation.x = 3/4*Math.PI;
       xcont.add(new THREE.LineSegments(xtickslines.geometry, lineMaterial));
-      lbls.forEach(function(lbl) {
+      lbls.forEach(lbl => {
 
          let w = lbl.boundingBox.max.x - lbl.boundingBox.min.x,
              posx = lbl.center ? lbl.grx + w/2 : grmaxx,
@@ -842,7 +842,7 @@ JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.hist'], (d3, THREE) => {
          ycont.add(yticksline);
          //ycont.add(new THREE.Mesh(ggg1, textMaterial));
 
-         lbls.forEach(function(lbl) {
+         lbls.forEach(lbl => {
 
             let w = lbl.boundingBox.max.x - lbl.boundingBox.min.x,
                 posy = lbl.center ? lbl.gry + w/2 : grmaxy,
@@ -867,7 +867,7 @@ JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.hist'], (d3, THREE) => {
          ycont.rotation.y = -3/4*Math.PI;
          ycont.add(new THREE.LineSegments(yticksline.geometry, lineMaterial));
          //ycont.add(new THREE.Mesh(ggg2, textMaterial));
-         lbls.forEach(function(lbl) {
+         lbls.forEach(lbl => {
             let w = lbl.boundingBox.max.x - lbl.boundingBox.min.x,
                 posy = lbl.center ? lbl.gry - w/2 : grmaxy - w,
                 m = new THREE.Matrix4();
@@ -968,7 +968,7 @@ JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.hist'], (d3, THREE) => {
       for (let n=0;n<4;++n) {
          zcont.push(new THREE.Object3D());
 
-         lbls.forEach(function(lbl) {
+         lbls.forEach(lbl => {
             let m = new THREE.Matrix4();
             // matrix to swap y and z scales and shift along z to its position
             m.set(-text_scale,          0,  0, 2*ticklen,
@@ -1089,24 +1089,23 @@ JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.hist'], (d3, THREE) => {
           handle = this.PrepareColorDraw({ rounding: false, use3d: true, extra: 1 }),
           i1 = handle.i1, i2 = handle.i2, j1 = handle.j1, j2 = handle.j2,
           i, j, k, vert, x1, x2, y1, y2, binz1, binz2, reduced, nobottom, notop,
-          pthis = this,
           histo = this.GetHisto(),
           basehisto = histo ? histo.$baseh : null,
           split_faces = (this.options.Lego === 11) || (this.options.Lego === 13); // split each layer on two parts
 
       if ((i1 >= i2) || (j1 >= j2)) return;
 
-      function GetBinContent(ii,jj, level) {
+      let GetBinContent = (ii,jj, level) => {
          // return bin content in binz1, binz2, reduced flags
          // return true if bin should be displayed
 
          binz2 = histo.getBinContent(ii+1, jj+1);
          if (basehisto)
             binz1 = basehisto.getBinContent(ii+1, jj+1);
-         else if (pthis.options.BaseLine !== false)
-            binz1 = pthis.options.BaseLine;
+         else if (this.options.BaseLine !== false)
+            binz1 = this.options.BaseLine;
          else
-            binz1 = pthis.options.Zero ? axis_zmin : 0;
+            binz1 = this.options.Zero ? axis_zmin : 0;
          if (binz2 < binz1) { let d = binz1; binz1 = binz2; binz2 = d; }
 
          if ((binz1 >= zmax) || (binz2 < zmin)) return false;
@@ -1117,9 +1116,9 @@ JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.hist'], (d3, THREE) => {
 
          if (histo['$baseh']) return false; // do not draw empty bins on top of other bins
 
-         if (pthis.options.Zero || (axis_zmin>0)) return true;
+         if (this.options.Zero || (axis_zmin>0)) return true;
 
-         return pthis._show_empty_bins;
+         return this._show_empty_bins;
       }
 
       // if bin ID fit into 16 bit, use smaller arrays for intersect indexes
@@ -2004,8 +2003,7 @@ JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.hist'], (d3, THREE) => {
    }
 
    JSROOT.TH2Painter.prototype.DrawError = function() {
-      let pthis = this,
-          main = this.frame_painter(),
+      let main = this.frame_painter(),
           histo = this.GetHisto(),
           handle = this.PrepareColorDraw({ rounding: false, use3d: true, extra: 1 }),
           zmin = main.grz.domain()[0],
@@ -2013,10 +2011,10 @@ JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.hist'], (d3, THREE) => {
           i, j, bin, binz, binerr, x1, y1, x2, y2, z1, z2,
           nsegments = 0, lpos = null, binindx = null, lindx = 0;
 
-       function check_skip_min() {
+       let check_skip_min = () => {
           // return true if minimal histogram value should be skipped
-          if (pthis.options.Zero || (zmin>0)) return false;
-          return !pthis._show_empty_bins;
+          if (this.options.Zero || (zmin > 0)) return false;
+          return !this._show_empty_bins;
        }
 
        // loop over the points - first loop counts points, second fill arrays
