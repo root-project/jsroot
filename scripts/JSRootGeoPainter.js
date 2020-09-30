@@ -18,23 +18,21 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
    }
 
    Toolbar.prototype.addButtons = function(buttons) {
-      let pthis = this;
-
       this.buttonsNames = [];
-      buttons.forEach(function(buttonGroup) {
-         let group = pthis.element.append('div').attr('class', 'toolbar-group');
+      buttons.forEach(buttonGroup => {
+         let group = this.element.append('div').attr('class', 'toolbar-group');
 
-         buttonGroup.forEach(function(buttonConfig) {
+         buttonGroup.forEach(buttonConfig => {
             let buttonName = buttonConfig.name;
             if (!buttonName) {
                throw new Error('must provide button \'name\' in button config');
             }
-            if (pthis.buttonsNames.indexOf(buttonName) !== -1) {
+            if (this.buttonsNames.indexOf(buttonName) !== -1) {
                throw new Error('button name \'' + buttonName + '\' is taken');
             }
-            pthis.buttonsNames.push(buttonName);
+            this.buttonsNames.push(buttonName);
 
-            pthis.createButton(group, buttonConfig);
+            this.createButton(group, buttonConfig);
          });
       });
    }
@@ -257,7 +255,6 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
    }
 
    TGeoPainter.prototype.InitVRMode = function() {
-      let pthis = this;
       // Dolly contains camera and controllers in VR Mode
       // Allows moving the user in the scene
       this._dolly = new THREE.Group();
@@ -268,15 +265,15 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
       this._raycasterEnd = new THREE.Vector3();
       this._raycasterOrigin = new THREE.Vector3();
 
-      navigator.getVRDisplays().then(function (displays) {
+      navigator.getVRDisplays().then(displays => {
          let vrDisplay = displays[0];
          if (!vrDisplay) return;
-         pthis._renderer.vr.setDevice(vrDisplay);
-         pthis._vrDisplay = vrDisplay;
+         this._renderer.vr.setDevice(vrDisplay);
+         this._vrDisplay = vrDisplay;
          if (vrDisplay.stageParameters) {
-            pthis._standingMatrix.fromArray(vrDisplay.stageParameters.sittingToStandingTransform);
+            this._standingMatrix.fromArray(vrDisplay.stageParameters.sittingToStandingTransform);
          }
-         pthis.InitVRControllersGeometry();
+         this.InitVRControllersGeometry();
       });
    }
 
@@ -360,27 +357,26 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
          this.ExitVRMode();
          return;
       }
-      let pthis = this;
       this._previousCameraPosition = this._camera.position.clone();
       this._previousCameraRotation = this._camera.rotation.clone();
-      this._vrDisplay.requestPresent([{ source: this._renderer.domElement }]).then(function() {
-         pthis._previousCameraNear = pthis._camera.near;
-         pthis._dolly.position.set(pthis._camera.position.x/4, - pthis._camera.position.y/8, - pthis._camera.position.z/4);
-         pthis._camera.position.set(0,0,0);
-         pthis._dolly.add(pthis._camera);
-         pthis._camera.near = 0.1;
-         pthis._camera.updateProjectionMatrix();
-         pthis._renderer.vr.enabled = true;
-         pthis._renderer.setAnimationLoop(function () {
-            pthis.UpdateVRControllers();
-            pthis.Render3D(0);
+      this._vrDisplay.requestPresent([{ source: this._renderer.domElement }]).then(() => {
+         this._previousCameraNear = this._camera.near;
+         this._dolly.position.set(this._camera.position.x/4, - this._camera.position.y/8, - this._camera.position.z/4);
+         this._camera.position.set(0,0,0);
+         this._dolly.add(this._camera);
+         this._camera.near = 0.1;
+         this._camera.updateProjectionMatrix();
+         this._renderer.vr.enabled = true;
+         this._renderer.setAnimationLoop(() => {
+            this.UpdateVRControllers();
+            this.Render3D(0);
          });
       });
       this._renderer.vr.enabled = true;
 
-      window.addEventListener( 'keydown', function ( event ) {
+      window.addEventListener( 'keydown', event => {
          // Esc Key turns VR mode off
-         if (event.keyCode === 27) pthis.ExitVRMode();
+         if (event.keyCode === 27) this.ExitVRMode();
       });
    }
 
@@ -1854,7 +1850,7 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
 
 
    TGeoPainter.prototype.doProjection = function() {
-      let toplevel = this.getProjectionSource(), pthis = this;
+      let toplevel = this.getProjectionSource();
 
       if (!toplevel) return false;
 
@@ -1873,16 +1869,16 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
          this.ctrl.projectPos = mean;
       }
 
-      toplevel.traverse(function(mesh) {
+      toplevel.traverse(mesh => {
          if (!(mesh instanceof THREE.Mesh) || !mesh.stack) return;
 
-         let geom2 = JSROOT.GEO.projectGeometry(mesh.geometry, mesh.parent.matrixWorld, pthis.ctrl.project, pthis.ctrl.projectPos, mesh._flippedMesh);
+         let geom2 = JSROOT.GEO.projectGeometry(mesh.geometry, mesh.parent.matrixWorld, this.ctrl.project, this.ctrl.projectPos, mesh._flippedMesh);
 
          if (!geom2) return;
 
          let mesh2 = new THREE.Mesh( geom2, mesh.material.clone() );
 
-         pthis._toplevel.add(mesh2);
+         this._toplevel.add(mesh2);
 
          mesh2.stack = mesh.stack;
       });
@@ -3261,7 +3257,7 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
       this._worker_ready = false;
       this._worker_jobs = 0; // counter how many requests send to worker
 
-      let pthis = this;
+      let painter = this;
 
       this._worker = new Worker(JSROOT.source_dir + "scripts/JSRootGeoWorker.js");
 
@@ -3278,11 +3274,11 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
          e.data.tm3 = new Date().getTime();
 
          if ('init' in e.data) {
-            pthis._worker_ready = true;
+            painter._worker_ready = true;
             return JSROOT.console('Worker ready: ' + (e.data.tm3 - e.data.tm0));
          }
 
-         pthis.processWorkerReply(e.data);
+         painter.processWorkerReply(e.data);
       };
 
       // send initialization message with clones
