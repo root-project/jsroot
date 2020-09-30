@@ -1507,22 +1507,31 @@ JSROOT.require(['rawinflate'], () => {
 
    // =======================================================================
 
-   /** @brief Reconstruct ROOT object from binary buffer
-     * @desc Method can be used to reconstruct ROOT object from binary buffer
-     * Buffer can be requested from online server with request like:
-     *    http://localhost:8080/Files/job1.root/hpx/root.bin
-     *  One also requires buffer with streamer infos, requested with command
-     *    http://localhost:8080/StreamerInfo/root.bin
-     * And one should provide class name of the object
+   /** @summary Reconstruct ROOT object from binary buffer
+     * @desc Method can be used to reconstruct ROOT objects from binary buffer
+     * which can be requested from running THttpServer, using **root.bin** request
+     * To decode data, one has to request streamer infos data __after__ object data
+     * as it shown in example.
      *
-     * Method provided for convenience only to see how binary io works.
-     * It is strongly recommended to use JSON representation:
-     *    http://localhost:8080/Files/job1.root/hpx/root.json
+     * Method provided for convenience only to see how binary IO works.
+     * It is strongly recommended to use **root.json** request to get data directly in
+     * JSON format
      *
      * @param {string} class_name - Class name of the object
      * @param {binary} obj_rawdata - data of object root.bin request
      * @param {binary} sinfo_rawdata - data of streamer info root.bin request
      * @returns {object} - created JavaScript object
+     * @example
+     * JSROOT.HttpRequest("http://localhost:8080/Files/job1.root/hpx/root.bin", "buf")
+     *       .then(obj_data => JSROOT.HttpRequest("http://localhost:8080/StreamerInfo/root.bin", "buf"))
+     *       .then(si_data => JSROOT.ReconstructObject("TH1F", obj_data, si_data))
+     *       .then(histo => console.log(`Get histogram with title = ${histo.fTitle}`))
+     *       .catch(err => console.error(err.message));
+     *
+     * // same data via root.json request
+     * JSROOT.HttpRequest("http://localhost:8080/Files/job1.root/hpx/root.json", "object")
+     *       .then(histo => console.log(`Get histogram with title = ${histo.fTitle}`))
+     *       .catch(err => console.error(err.message));
      */
 
    JSROOT.ReconstructObject = function(class_name, obj_rawdata, sinfo_rawdata) {

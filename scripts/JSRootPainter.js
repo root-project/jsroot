@@ -4259,7 +4259,8 @@ JSROOT.require(['d3'], (d3) => {
    JSROOT.ObjectPainter = ObjectPainter;
 
 
-   /** Only for backward compatibility with v5, will be removed in later JSROOT versions */
+   /** Only for backward compatibility with v5, will be removed in later JSROOT versions
+     * @private */
    JSROOT.TBasePainter = BasePainter;
    JSROOT.TObjectPainter = ObjectPainter;
 

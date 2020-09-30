@@ -1132,39 +1132,8 @@
       }
    }
 
-   /**
-    * @summary Create asynchronous XMLHttpRequest object.
-    *
-    * @desc One should call req.send() to submit request
-    * kind of the request can be:
-    *
-    *    - "bin" - abstract binary data, result as string
-    *    - "buf" - abstract binary data, result as ArrayBuffer (default)
-    *    - "text" - returns req.responseText
-    *    - "object" - returns JSROOT.parse(req.responseText)
-    *    - "multi" - returns correctly parsed multi.json request
-    *    - "xml" - returns req.responseXML
-    *    - "head" - returns request itself, uses "HEAD" method
-    *    - "post" - creates post request, req.send(post_data) should be called
-    *
-    * Result will be returned to the callback function.
-    * Request will be set as *this* pointer in the callback.
-    * If failed, request returns null
-    *
-    * @param {string} url - URL for the request
-    * @param {string} kind - kind of requested data
-    * @param {function} user_accept_callback - called when request is completed
-    * @param {function} user_reject_callback - get Error() with description, when not specified accepct_callback(null) is called
-    * @returns {object} XMLHttpRequest object
-    *
-    * @example
-    * JSROOT.NewHttpRequest("https://root.cern/js/files/thstack.json.gz", "object",
-    *                       function(res) {
-    *     if (res) console.log('Retrieve object', res._typename);
-    *         else console.error('Fail to get object');
-    * }).send();
-    */
-
+   /** Old request method, kept only for internal use
+     * @private */
    JSROOT.NewHttpRequest = function(url, kind, user_accept_callback, user_reject_callback) {
 
       let xhr = JSROOT.nodejs ? new (require("xhr2"))() : new XMLHttpRequest();
@@ -1257,24 +1226,34 @@
    }
 
    /**
-    * @summary Submit http request with specified URL and return Promise.
+    * @summary Submit asynchronoues http request
     *
-    * @desc See @JSROOT.NewHttpRequest for supported kinds.
+    * @desc One should call req.send() to submit request
+    * kind of the request can be:
+    *
+    *    - "bin" - abstract binary data, result as string
+    *    - "buf" - abstract binary data, result as ArrayBuffer (default)
+    *    - "text" - returns req.responseText
+    *    - "object" - returns JSROOT.parse(req.responseText)
+    *    - "multi" - returns correctly parsed multi.json request
+    *    - "xml" - returns req.responseXML
+    *    - "head" - returns request itself, uses "HEAD" request method
+    *    - "post" - creates post request, submits req.send(post_data)
     *
     * @param {string} url - URL for the request
     * @param {string} kind - kind of requested data
-    * @param {string} [send_arg] - send argument when post request is created
-    * @returns {object} Promise
+    * @param {string} [post_data] - data submitted with post kind of request
+    * @returns {Promise} Promise for requested data, result type depends from the kind
     *
     * @example
     * JSROOT.HttpRequest("https://root.cern/js/files/thstack.json.gz", "object")
-    *       .then(function(obj) { console.log("Get object of type ", obj._typename); })
-    *       .catch(function(err) { console.error(err.message) });
+    *       .then(obj => console.log(`"Get object of type ${obj._typename}`))
+    *       .catch(err => console.error(err.message));
     */
 
-   JSROOT.HttpRequest = function(url, kind, send_arg) {
+   JSROOT.HttpRequest = function(url, kind, post_data) {
       return new Promise(function(accept, reject) {
-         JSROOT.NewHttpRequest(url, kind, accept, reject).send(send_arg || null);
+         JSROOT.NewHttpRequest(url, kind, accept, reject).send(post_data || null);
       });
    }
 
@@ -2230,7 +2209,7 @@
       if ((msg !== undefined) && (typeof msg=="string")) JSROOT.console(msg);
    }
 
-   /** Connects to the RWebWindow instance, returns Promise */
+   // Connects to the RWebWindow instance
    JSROOT.ConnectWebWindow = function(arg) {
       if (typeof arg == 'function') arg = { callback: arg };
 

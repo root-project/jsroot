@@ -561,7 +561,7 @@ JSROOT.require([], () => {
    /** @summary Method used to initialize connection to web window.
     *
     * @param {object} arg - arguments
-    * @param {string} [arg.prereq] - prerequicities, which should be loaded
+    * @param {string} [arg.prereq] - prerequicities, which should be loaded first
     * @param {string} [arg.openui5src] - source of openui5, either URL like "https://openui5.hana.ondemand.com" or "jsroot" which provides its own reduced openui5 package
     * @param {string} [arg.openui5libs] - list of openui5 libraries loaded, default is "sap.m, sap.ui.layout, sap.ui.unified"
     * @param {string} [arg.socket_kind] - kind of connection longpoll|websocket, detected automatically from URL
@@ -569,7 +569,7 @@ JSROOT.require([], () => {
     * @param {string} arg.first_recv - required prefix in the first message from TWebWindow, remain part of message will be returned as arg.first_msg
     * @param {string} [arg.prereq2] - second part of prerequcities, which is loaded parallel to connecting with WebWindow
     * @param {function} arg.callback - function which is called with WebWindowHandle or when establish connection and get first portion of data
-    * @returns {Promise} - ready-to-use WebWindowHandle instance
+    * @returns {Promise} ready-to-use WebWindowHandle instance
     */
 
    JSROOT.ConnectWebWindow = function(arg) {
