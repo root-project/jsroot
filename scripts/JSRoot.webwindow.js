@@ -7,192 +7,185 @@ JSROOT.require([], () => {
 
    /** emulate websocket via long-poll http requests */
 
-   class LongPollSocket {
+   function LongPollSocket(addr, _raw, _args) {
+      this.path = addr;
+      this.connid = null;
+      this.req = null;
+      this.raw = _raw;
+      this.args = _args;
 
-      constructor(addr, _raw, _args) {
-         this.path = addr;
-         this.connid = null;
-         this.req = null;
-         this.raw = _raw;
-         this.args = _args;
+      this.nextrequest("", "connect");
+   }
 
-         this.nextrequest("", "connect");
+   LongPollSocket.prototype.nextrequest = function(data, kind) {
+      let url = this.path, reqmode = "buf", post = null;
+      if (kind === "connect") {
+         url += this.raw ? "?raw_connect" : "?txt_connect";
+         if (this.args) url += "&" + this.args;
+         console.log('longpoll connect ' + url + ' raw = ' + this.raw);
+         this.connid = "connect";
+      } else if (kind === "close") {
+         if ((this.connid === null) || (this.connid === "close")) return;
+         url += "?connection=" + this.connid + "&close";
+         this.connid = "close";
+         reqmode = "text;sync"; // use sync mode to close connection before browser window closed
+      } else if ((this.connid === null) || (typeof this.connid !== 'number')) {
+         if (!JSROOT.browser.qt5) console.error("No connection");
+         return;
+      } else {
+         url += "?connection=" + this.connid;
+         if (kind === "dummy") url += "&dummy";
       }
 
-      nextrequest(data, kind) {
-         let url = this.path, reqmode = "buf", post = null;
-         if (kind === "connect") {
-            url += this.raw ? "?raw_connect" : "?txt_connect";
-            if (this.args) url += "&" + this.args;
-            console.log('longpoll connect ' + url + ' raw = ' + this.raw);
-            this.connid = "connect";
-         } else if (kind === "close") {
-            if ((this.connid === null) || (this.connid === "close")) return;
-            url += "?connection=" + this.connid + "&close";
-            this.connid = "close";
-            reqmode = "text;sync"; // use sync mode to close connection before browser window closed
-         } else if ((this.connid === null) || (typeof this.connid !== 'number')) {
-            if (!JSROOT.browser.qt5) console.error("No connection");
-            return;
+      if (data) {
+         if (this.raw) {
+            // special workaround to avoid POST request, use base64 coding
+            url += "&post=" + btoa(data);
          } else {
-            url += "?connection=" + this.connid;
-            if (kind === "dummy") url += "&dummy";
+            // send data with post request - most efficient way
+            reqmode = "post";
+            post = data;
          }
+      }
 
-         if (data) {
-            if (this.raw) {
-               // special workaround to avoid POST request, use base64 coding
-               url += "&post=" + btoa(data);
-            } else {
-               // send data with post request - most efficient way
-               reqmode = "post";
-               post = data;
-            }
-         }
+      let req = JSROOT.NewHttpRequest(url, reqmode, function(res) {
+         // this set to the request itself, res is response
 
-         let req = JSROOT.NewHttpRequest(url, reqmode, function(res) {
-            // this set to the request itself, res is response
+         if (this.handle.req === this)
+            this.handle.req = null; // get response for existing dummy request
 
-            if (this.handle.req === this)
-               this.handle.req = null; // get response for existing dummy request
+         if (res === null)
+            return this.handle.processreq(null);
 
-            if (res === null)
+         if (this.handle.raw) {
+            // raw mode - all kind of reply data packed into binary buffer
+            // first 4 bytes header "txt:" or "bin:"
+            // after the "bin:" there is length of optional text argument like "bin:14  :optional_text"
+            // and immedaitely after text binary data. Server sends binary data so, that offset should be multiple of 8
+
+            let str = "", i = 0, u8Arr = new Uint8Array(res), offset = u8Arr.length;
+            if (offset < 4) {
+               if (!JSROOT.browser.qt5) console.error('longpoll got short message in raw mode ' + offset);
                return this.handle.processreq(null);
+            }
 
-            if (this.handle.raw) {
-               // raw mode - all kind of reply data packed into binary buffer
-               // first 4 bytes header "txt:" or "bin:"
-               // after the "bin:" there is length of optional text argument like "bin:14  :optional_text"
-               // and immedaitely after text binary data. Server sends binary data so, that offset should be multiple of 8
-
-               let str = "", i = 0, u8Arr = new Uint8Array(res), offset = u8Arr.length;
-               if (offset < 4) {
-                  if (!JSROOT.browser.qt5) console.error('longpoll got short message in raw mode ' + offset);
-                  return this.handle.processreq(null);
-               }
-
-               while (i < 4) str += String.fromCharCode(u8Arr[i++]);
-               if (str != "txt:") {
-                  str = "";
-                  while ((i < offset) && (String.fromCharCode(u8Arr[i]) != ':')) str += String.fromCharCode(u8Arr[i++]);
-                  ++i;
-                  offset = i + parseInt(str.trim());
-               }
-
+            while (i < 4) str += String.fromCharCode(u8Arr[i++]);
+            if (str != "txt:") {
                str = "";
-               while (i < offset) str += String.fromCharCode(u8Arr[i++]);
-
-               if (str) {
-                  if (str == "<<nope>>") str = "";
-                  this.handle.processreq(str);
-               }
-               if (offset < u8Arr.length)
-                  this.handle.processreq(res, offset);
-            } else if (this.getResponseHeader("Content-Type") == "application/x-binary") {
-               // binary reply with optional header
-               let extra_hdr = this.getResponseHeader("LongpollHeader");
-               if (extra_hdr) this.handle.processreq(extra_hdr);
-               this.handle.processreq(res, 0);
-            } else {
-               // text reply
-               if (res && typeof res !== "string") {
-                  let str = "", u8Arr = new Uint8Array(res);
-                  for (let i = 0; i < u8Arr.length; ++i)
-                     str += String.fromCharCode(u8Arr[i]);
-                  res = str;
-               }
-               if (res == "<<nope>>") res = "";
-               this.handle.processreq(res);
-            }
-         });
-
-         req.handle = this;
-         if (kind === "dummy") this.req = req; // remember last dummy request, wait for reply
-         req.send(post);
-      }
-
-      processreq(res, _offset) {
-         if (res === null) {
-            if (typeof this.onerror === 'function') this.onerror("receive data with connid " + (this.connid || "---"));
-            // if (typeof this.onclose === 'function') this.onclose();
-            this.connid = null;
-            return;
-         }
-
-         if (this.connid === "connect") {
-            if (!res) {
-               this.connid = null;
-               if (typeof this.onerror === 'function') this.onerror("connection rejected");
-               return;
+               while ((i < offset) && (String.fromCharCode(u8Arr[i]) != ':')) str += String.fromCharCode(u8Arr[i++]);
+               ++i;
+               offset = i + parseInt(str.trim());
             }
 
-            this.connid = parseInt(res);
-            console.log('Get new longpoll connection with id ' + this.connid);
-            if (typeof this.onopen == 'function') this.onopen();
-         } else if (this.connid === "close") {
-            if (typeof this.onclose == 'function') this.onclose();
-            return;
+            str = "";
+            while (i < offset) str += String.fromCharCode(u8Arr[i++]);
+
+            if (str) {
+               if (str == "<<nope>>") str = "";
+               this.handle.processreq(str);
+            }
+            if (offset < u8Arr.length)
+               this.handle.processreq(res, offset);
+         } else if (this.getResponseHeader("Content-Type") == "application/x-binary") {
+            // binary reply with optional header
+            let extra_hdr = this.getResponseHeader("LongpollHeader");
+            if (extra_hdr) this.handle.processreq(extra_hdr);
+            this.handle.processreq(res, 0);
          } else {
-            if ((typeof this.onmessage === 'function') && res)
-               this.onmessage({ data: res, offset: _offset });
+            // text reply
+            if (res && typeof res !== "string") {
+               let str = "", u8Arr = new Uint8Array(res);
+               for (let i = 0; i < u8Arr.length; ++i)
+                  str += String.fromCharCode(u8Arr[i]);
+               res = str;
+            }
+            if (res == "<<nope>>") res = "";
+            this.handle.processreq(res);
          }
+      });
 
-         if (!this.req) this.nextrequest("", "dummy"); // send new poll request when necessary
+      req.handle = this;
+      if (kind === "dummy") this.req = req; // remember last dummy request, wait for reply
+      req.send(post);
+   }
+
+   LongPollSocket.prototype.processreq = function(res, _offset) {
+      if (res === null) {
+         if (typeof this.onerror === 'function') this.onerror("receive data with connid " + (this.connid || "---"));
+         // if (typeof this.onclose === 'function') this.onclose();
+         this.connid = null;
+         return;
       }
 
-      send(str) { this.nextrequest(str); }
+      if (this.connid === "connect") {
+         if (!res) {
+            this.connid = null;
+            if (typeof this.onerror === 'function') this.onerror("connection rejected");
+            return;
+         }
 
-      close() { this.nextrequest("", "close"); }
-   } // class LongPollSocket
+         this.connid = parseInt(res);
+         console.log('Get new longpoll connection with id ' + this.connid);
+         if (typeof this.onopen == 'function') this.onopen();
+      } else if (this.connid === "close") {
+         if (typeof this.onclose == 'function') this.onclose();
+         return;
+      } else {
+         if ((typeof this.onmessage === 'function') && res)
+            this.onmessage({ data: res, offset: _offset });
+      }
+
+      if (!this.req) this.nextrequest("", "dummy"); // send new poll request when necessary
+   }
+
+   LongPollSocket.prototype.send = function(str) { this.nextrequest(str); }
+
+   LongPollSocket.prototype.close = function() { this.nextrequest("", "close"); }
 
    // ========================================================================================
 
-   class FileDumpSocket {
+   function FileDumpSocket(receiver) {
+      this.receiver = receiver;
+      this.protocol = [];
+      this.cnt = 0;
+      JSROOT.HttpRequest("protocol.json", "text").then(res => this.get_protocol(res));
+   }
 
-      constructor(receiver) {
-         this.receiver = receiver;
-         this.protocol = [];
-         this.cnt = 0;
-         JSROOT.HttpRequest("protocol.json", "text").then(this.get_protocol.bind(this));
-      }
+   FileDumpSocket.prototype.get_protocol = function(res) {
+      if (!res) return;
+      this.protocol = JSON.parse(res);
+      if (typeof this.onopen == 'function') this.onopen();
+      this.next_operation();
+   }
 
-      get_protocol(res) {
-         if (!res) return;
-         this.protocol = JSON.parse(res);
-         if (typeof this.onopen == 'function') this.onopen();
-         this.next_operation();
-      }
-
-      send(/*str*/) {
-         if (this.protocol[this.cnt] == "send") {
-            this.cnt++;
-            setTimeout(this.next_operation.bind(this), 10);
-         }
-      }
-
-      close() {}
-
-      next_operation() {
-         // when file request running - just ignore
-         if (this.wait_for_file) return;
-         let fname = this.protocol[this.cnt];
-         if (!fname) return;
-         if (fname == "send") return; // waiting for send
-         // console.log("getting file", fname, "wait", this.wait_for_file);
-         this.wait_for_file = true;
+   FileDumpSocket.prototype.send = function(/* str */) {
+      if (this.protocol[this.cnt] == "send") {
          this.cnt++;
-         JSROOT.HttpRequest(fname, (fname.indexOf(".bin") > 0 ? "buf" : "text")).then(this.get_file.bind(this));
-      }
-
-      get_file(res) {
-         this.wait_for_file = false;
-         if (!res) return;
-         if (this.receiver.ProvideData)
-            this.receiver.ProvideData(1, res, 0);
          setTimeout(this.next_operation.bind(this), 10);
       }
+   }
 
-   } // class FileDumpSocket
+   FileDumpSocket.prototype.close = function() {}
+
+   FileDumpSocket.prototype.next_operation = function() {
+      // when file request running - just ignore
+      if (this.wait_for_file) return;
+      let fname = this.protocol[this.cnt];
+      if (!fname) return;
+      if (fname == "send") return; // waiting for send
+      // console.log("getting file", fname, "wait", this.wait_for_file);
+      this.wait_for_file = true;
+      this.cnt++;
+      JSROOT.HttpRequest(fname, (fname.indexOf(".bin") > 0 ? "buf" : "text")).then(this.get_file.bind(this));
+   }
+
+   FileDumpSocket.prototype.get_file = function(res) {
+      this.wait_for_file = false;
+      if (!res) return;
+      if (this.receiver.ProvideData)
+         this.receiver.ProvideData(1, res, 0);
+      setTimeout(this.next_operation.bind(this), 10);
+   }
 
    // ========================================================================================
 
@@ -201,370 +194,368 @@ JSROOT.require([], () => {
     * Should be created with {@link JSROOT.ConnectWebWindow} function
     */
 
-   class WebWindowHandle {
-      constructor(socket_kind) {
-         this.kind = socket_kind;
-         this.state = 0;
-         this.cansend = 10;
-         this.ackn = 10;
+   function WebWindowHandle(socket_kind) {
+      this.kind = socket_kind;
+      this.state = 0;
+      this.cansend = 10;
+      this.ackn = 10;
+   }
+
+   /** Returns arguments specified in the RWebWindow::SetUserArgs() method
+    * Can be any valid JSON expression. Undefined by default.
+    * If field parameter specified and user args is object, returns correspondent member of the user args object */
+   WebWindowHandle.prototype.GetUserArgs = function(field) {
+      if (field && (typeof field == 'string')) {
+         return (this.user_args && (typeof this.user_args == 'object')) ? this.user_args[field] : undefined;
       }
 
-      /** Returns arguments specified in the RWebWindow::SetUserArgs() method
-       * Can be any valid JSON expression. Undefined by default.
-       * If field parameter specified and user args is object, returns correspondent member of the user args object */
-      GetUserArgs(field) {
-         if (field && (typeof field == 'string')) {
-            return (this.user_args && (typeof this.user_args == 'object')) ? this.user_args[field] : undefined;
-         }
+      return this.user_args;
+   }
 
-         return this.user_args;
+   /** @summary Set callbacks receiver.
+    *
+    * Following function can be defined in receiver object:
+    *    - OnWebsocketMsg
+    *    - OnWebsocketOpened,
+    *    - OnWebsocketClosed */
+   WebWindowHandle.prototype.SetReceiver = function(obj) {
+      this.receiver = obj;
+   }
+
+   /** Cleanup and close connection. */
+   WebWindowHandle.prototype.Cleanup = function() {
+      delete this.receiver;
+      this.Close(true);
+   }
+
+   /** Invoke method in the receiver.
+    * @private */
+   WebWindowHandle.prototype.InvokeReceiver = function(brdcst, method, arg, arg2) {
+      if (this.receiver && (typeof this.receiver[method] == 'function'))
+         this.receiver[method](this, arg, arg2);
+
+      if (brdcst && this.channels) {
+         let ks = Object.keys(this.channels);
+         for (let n = 0; n < ks.length; ++n)
+            this.channels[ks[n]].InvokeReceiver(false, method, arg, arg2);
+      }
+   }
+
+   /** Provide data for receiver. When no queue - do it directly.
+    * @private */
+   WebWindowHandle.prototype.ProvideData = function(chid, _msg, _len) {
+      if (this.wait_first_recv) {
+         console.log("FIRST MESSAGE", chid, _msg);
+         delete this.wait_first_recv;
+         return this.InvokeReceiver(false, "OnWebsocketOpened");
       }
 
-      /** @summary Set callbacks receiver.
-       *
-       * Following function can be defined in receiver object:
-       *    - OnWebsocketMsg
-       *    - OnWebsocketOpened,
-       *    - OnWebsocketClosed */
-      SetReceiver(obj) {
-         this.receiver = obj;
+      if ((chid > 1) && this.channels) {
+         let channel = this.channels[chid];
+         if (channel)
+            return channel.ProvideData(1, _msg, _len);
       }
 
-      /** Cleanup and close connection. */
-      Cleanup() {
-         delete this.receiver;
-         this.Close(true);
+      let force_queue = _len && (_len < 0);
+
+      if (!force_queue && (!this.msgqueue || !this.msgqueue.length))
+         return this.InvokeReceiver(false, "OnWebsocketMsg", _msg, _len);
+
+      if (!this.msgqueue) this.msgqueue = [];
+      if (force_queue) _len = undefined;
+
+      this.msgqueue.push({ ready: true, msg: _msg, len: _len });
+   }
+
+   /** Reserve entry in queue for data, which is not yet decoded.
+    * @private */
+   WebWindowHandle.prototype.ReserveQueueItem = function() {
+      if (!this.msgqueue) this.msgqueue = [];
+      let item = { ready: false, msg: null, len: 0 };
+      this.msgqueue.push(item);
+      return item;
+   }
+
+   /** Reserver entry in queue for data, which is not yet decoded.
+    * @private */
+   WebWindowHandle.prototype.DoneItem = function(item, _msg, _len) {
+      item.ready = true;
+      item.msg = _msg;
+      item.len = _len;
+      this.ProcessQueue();
+   }
+
+   /** Process completed messages in the queue @private */
+   WebWindowHandle.prototype.ProcessQueue = function() {
+      if (this._loop_msgqueue || !this.msgqueue) return;
+      this._loop_msgqueue = true;
+      while ((this.msgqueue.length > 0) && this.msgqueue[0].ready) {
+         let front = this.msgqueue.shift();
+         this.InvokeReceiver(false, "OnWebsocketMsg", front.msg, front.len);
+      }
+      if (this.msgqueue.length == 0)
+         delete this.msgqueue;
+      delete this._loop_msgqueue;
+   }
+
+   /** Close connection. */
+   WebWindowHandle.prototype.Close = function(force) {
+      if (this.master) {
+         this.master.Send("CLOSECH=" + this.channelid, 0);
+         delete this.master.channels[this.channelid];
+         delete this.master;
+         return;
       }
 
-      /** Invoke method in the receiver.
-       * @private */
-      InvokeReceiver(brdcst, method, arg, arg2) {
-         if (this.receiver && (typeof this.receiver[method] == 'function'))
-            this.receiver[method](this, arg, arg2);
-
-         if (brdcst && this.channels) {
-            let ks = Object.keys(this.channels);
-            for (let n = 0; n < ks.length; ++n)
-               this.channels[ks[n]].InvokeReceiver(false, method, arg, arg2);
-         }
-      }
-
-      /** Provide data for receiver. When no queue - do it directly.
-       * @private */
-      ProvideData(chid, _msg, _len) {
-         if (this.wait_first_recv) {
-            console.log("FIRST MESSAGE", chid, _msg);
-            delete this.wait_first_recv;
-            return this.InvokeReceiver(false, "OnWebsocketOpened");
-         }
-
-         if ((chid > 1) && this.channels) {
-            let channel = this.channels[chid];
-            if (channel)
-               return channel.ProvideData(1, _msg, _len);
-         }
-
-         let force_queue = _len && (_len < 0);
-
-         if (!force_queue && (!this.msgqueue || !this.msgqueue.length))
-            return this.InvokeReceiver(false, "OnWebsocketMsg", _msg, _len);
-
-         if (!this.msgqueue) this.msgqueue = [];
-         if (force_queue) _len = undefined;
-
-         this.msgqueue.push({ ready: true, msg: _msg, len: _len });
-      }
-
-      /** Reserve entry in queue for data, which is not yet decoded.
-       * @private */
-      ReserveQueueItem() {
-         if (!this.msgqueue) this.msgqueue = [];
-         let item = { ready: false, msg: null, len: 0 };
-         this.msgqueue.push(item);
-         return item;
-      }
-
-      /** Reserver entry in queue for data, which is not yet decoded.
-       * @private */
-      DoneItem(item, _msg, _len) {
-         item.ready = true;
-         item.msg = _msg;
-         item.len = _len;
-         this.ProcessQueue();
-      }
-
-      /** Process completed messages in the queue @private */
-      ProcessQueue() {
-         if (this._loop_msgqueue || !this.msgqueue) return;
-         this._loop_msgqueue = true;
-         while ((this.msgqueue.length > 0) && this.msgqueue[0].ready) {
-            let front = this.msgqueue.shift();
-            this.InvokeReceiver(false, "OnWebsocketMsg", front.msg, front.len);
-         }
-         if (this.msgqueue.length == 0)
-            delete this.msgqueue;
-         delete this._loop_msgqueue;
-      }
-
-      /** Close connection. */
-      Close(force) {
-         if (this.master) {
-            this.master.Send("CLOSECH=" + this.channelid, 0);
-            delete this.master.channels[this.channelid];
-            delete this.master;
-            return;
-         }
-
-         if (this.timerid) {
-            clearTimeout(this.timerid);
-            delete this.timerid;
-         }
-
-         if (this._websocket && (this.state > 0)) {
-            this.state = force ? -1 : 0; // -1 prevent socket from reopening
-            this._websocket.onclose = null; // hide normal handler
-            this._websocket.close();
-            delete this._websocket;
-         }
-      }
-
-      /** Returns if one can send text message to server. Checks number of send credits */
-      CanSend(numsend) {
-         return (this.cansend >= (numsend || 1));
-      }
-
-      /** Send text message via the connection. */
-      Send(msg, chid) {
-         if (this.master)
-            return this.master.Send(msg, this.channelid);
-
-         if (!this._websocket || (this.state <= 0)) return false;
-
-         if (isNaN(chid) || (chid === undefined)) chid = 1; // when not configured, channel 1 is used - main widget
-
-         if (this.cansend <= 0) console.error('should be queued before sending cansend: ' + this.cansend);
-
-         let prefix = this.ackn + ":" + this.cansend + ":" + chid + ":";
-         this.ackn = 0;
-         this.cansend--; // decrease number of allowed send packets
-
-         this._websocket.send(prefix + msg);
-         if (this.kind === "websocket") {
-            if (this.timerid) clearTimeout(this.timerid);
-            this.timerid = setTimeout(this.KeepAlive.bind(this), 10000);
-         }
-
-         return true;
-      }
-
-      /** Inject message(s) into input queue, for debug purposes only
-        * @private */
-      Inject(msg, chid, immediate) {
-         // use timeout to avoid too deep call stack
-         if (!immediate)
-            return setTimeout(this.Inject.bind(this, msg, chid, true), 0);
-
-         if (chid === undefined) chid = 1;
-
-         if (Array.isArray(msg)) {
-            for (let k = 0; k < msg.length; ++k)
-               this.ProvideData(chid, (typeof msg[k] == "string") ? msg[k] : JSON.stringify(msg[k]), -1);
-            this.ProcessQueue();
-         } else if (msg) {
-            this.ProvideData(chid, typeof msg == "string" ? msg : JSON.stringify(msg));
-         }
-      }
-
-      /** Send keepalive message.
-       * @private */
-      KeepAlive() {
+      if (this.timerid) {
+         clearTimeout(this.timerid);
          delete this.timerid;
-         this.Send("KEEPALIVE", 0);
       }
 
-      /** Method open channel, which will share same connection, but can be used independently from main
-       * @private */
-      CreateChannel() {
-         if (this.master)
-            return master.CreateChannel();
+      if (this._websocket && (this.state > 0)) {
+         this.state = force ? -1 : 0; // -1 prevent socket from reopening
+         this._websocket.onclose = null; // hide normal handler
+         this._websocket.close();
+         delete this._websocket;
+      }
+   }
 
-         let channel = new WebWindowHandle("channel");
-         channel.wait_first_recv = true; // first received message via the channel is confirmation of established connection
+   /** Returns if one can send text message to server. Checks number of send credits */
+   WebWindowHandle.prototype.CanSend = function(numsend) {
+      return (this.cansend >= (numsend || 1));
+   }
 
-         if (!this.channels) {
-            this.channels = {};
-            this.freechannelid = 2;
+   /** Send text message via the connection. */
+   WebWindowHandle.prototype.Send = function(msg, chid) {
+      if (this.master)
+         return this.master.Send(msg, this.channelid);
+
+      if (!this._websocket || (this.state <= 0)) return false;
+
+      if (isNaN(chid) || (chid === undefined)) chid = 1; // when not configured, channel 1 is used - main widget
+
+      if (this.cansend <= 0) console.error('should be queued before sending cansend: ' + this.cansend);
+
+      let prefix = this.ackn + ":" + this.cansend + ":" + chid + ":";
+      this.ackn = 0;
+      this.cansend--; // decrease number of allowed send packets
+
+      this._websocket.send(prefix + msg);
+      if (this.kind === "websocket") {
+         if (this.timerid) clearTimeout(this.timerid);
+         this.timerid = setTimeout(this.KeepAlive.bind(this), 10000);
+      }
+
+      return true;
+   }
+
+   /** Inject message(s) into input queue, for debug purposes only
+     * @private */
+   WebWindowHandle.prototype.Inject = function(msg, chid, immediate) {
+      // use timeout to avoid too deep call stack
+      if (!immediate)
+         return setTimeout(this.Inject.bind(this, msg, chid, true), 0);
+
+      if (chid === undefined) chid = 1;
+
+      if (Array.isArray(msg)) {
+         for (let k = 0; k < msg.length; ++k)
+            this.ProvideData(chid, (typeof msg[k] == "string") ? msg[k] : JSON.stringify(msg[k]), -1);
+         this.ProcessQueue();
+      } else if (msg) {
+         this.ProvideData(chid, typeof msg == "string" ? msg : JSON.stringify(msg));
+      }
+   }
+
+   /** Send keepalive message.
+    * @private */
+   WebWindowHandle.prototype.KeepAlive = function() {
+      delete this.timerid;
+      this.Send("KEEPALIVE", 0);
+   }
+
+   /** Method open channel, which will share same connection, but can be used independently from main
+    * @private */
+   WebWindowHandle.prototype.CreateChannel = function() {
+      if (this.master)
+         return master.CreateChannel();
+
+      let channel = new WebWindowHandle("channel");
+      channel.wait_first_recv = true; // first received message via the channel is confirmation of established connection
+
+      if (!this.channels) {
+         this.channels = {};
+         this.freechannelid = 2;
+      }
+
+      channel.master = this;
+      channel.channelid = this.freechannelid++;
+
+      // register
+      this.channels[channel.channelid] = channel;
+
+      // now server-side entity should be initialized and init message send from server side!
+      return channel;
+   }
+
+   /** Returns used channel ID, 1 by default */
+   WebWindowHandle.prototype.getChannelId = function() { return this.channelid && this.master ? this.channelid : 1; }
+
+   /** Method opens relative path with the same kind of socket.
+    * @private
+    */
+   WebWindowHandle.prototype.CreateRelative = function(relative) {
+      if (!relative || !this.kind || !this.href) return null;
+
+      let handle = new WebWindowHandle(this.kind);
+      console.log('Try to connect ', this.href + relative);
+      handle.Connect(this.href + relative);
+      return handle;
+   }
+
+   /** Create configured socket for current object. */
+   WebWindowHandle.prototype.Connect = function(href) {
+
+      this.Close();
+
+      let pthis = this, ntry = 0, args = (this.key ? ("key=" + this.key) : "");
+
+      function retry_open(first_time) {
+
+         if (pthis.state != 0) return;
+
+         if (!first_time) console.log("try connect window again" + (new Date()).getTime());
+
+         if (pthis._websocket) pthis._websocket.close();
+         delete pthis._websocket;
+
+         let conn = null;
+         if (!href) {
+            href = window.location.href;
+            if (href && href.indexOf("#") > 0) href = href.substr(0, href.indexOf("#"));
+            if (href && href.lastIndexOf("/") > 0) href = href.substr(0, href.lastIndexOf("/") + 1);
+         }
+         pthis.href = href;
+         ntry++;
+
+         if (first_time) console.log('Opening web socket at ' + href);
+
+         if (ntry > 2) JSROOT.progress("Trying to connect " + href);
+
+         let path = href;
+
+         if (pthis.kind == "file") {
+            path += "root.filedump";
+            conn = new FileDumpSocket(pthis);
+            console.log('configure protocol log ' + path);
+         } else if ((pthis.kind === 'websocket') && first_time) {
+            path = path.replace("http://", "ws://").replace("https://", "wss://") + "root.websocket";
+            if (args) path += "?" + args;
+            console.log('configure websocket ' + path);
+            conn = new WebSocket(path);
+         } else {
+            path += "root.longpoll";
+            console.log('configure longpoll ' + path);
+            conn = new LongPollSocket(path, (pthis.kind === 'rawlongpoll'), args);
          }
 
-         channel.master = this;
-         channel.channelid = this.freechannelid++;
+         if (!conn) return;
 
-         // register
-         this.channels[channel.channelid] = channel;
+         pthis._websocket = conn;
 
-         // now server-side entity should be initialized and init message send from server side!
-         return channel;
-      }
+         conn.onopen = function() {
+            if (ntry > 2) JSROOT.progress();
+            pthis.state = 1;
 
-      /** Returns used channel ID, 1 by default */
-      getChannelId() { return this.channelid && this.master ? this.channelid : 1; }
+            let key = pthis.key || "";
 
-      /** Method opens relative path with the same kind of socket.
-       * @private
-       */
-      CreateRelative(relative) {
-         if (!relative || !this.kind || !this.href) return null;
+            pthis.Send("READY=" + key, 0); // need to confirm connection
+            pthis.InvokeReceiver(false, "OnWebsocketOpened");
+         }
 
-         let handle = new WebWindowHandle(this.kind);
-         console.log('Try to connect ', this.href + relative);
-         handle.Connect(this.href + relative);
-         return handle;
-      }
+         conn.onmessage = function(e) {
+            let msg = e.data;
 
-      /** Create configured socket for current object. */
-      Connect(href) {
+            if (pthis.next_binary) {
 
-         this.Close();
+               let binchid = pthis.next_binary;
+               delete pthis.next_binary;
 
-         let pthis = this, ntry = 0, args = (this.key ? ("key=" + this.key) : "");
-
-         function retry_open(first_time) {
-
-            if (pthis.state != 0) return;
-
-            if (!first_time) console.log("try connect window again" + (new Date()).getTime());
-
-            if (pthis._websocket) pthis._websocket.close();
-            delete pthis._websocket;
-
-            let conn = null;
-            if (!href) {
-               href = window.location.href;
-               if (href && href.indexOf("#") > 0) href = href.substr(0, href.indexOf("#"));
-               if (href && href.lastIndexOf("/") > 0) href = href.substr(0, href.lastIndexOf("/") + 1);
-            }
-            pthis.href = href;
-            ntry++;
-
-            if (first_time) console.log('Opening web socket at ' + href);
-
-            if (ntry > 2) JSROOT.progress("Trying to connect " + href);
-
-            let path = href;
-
-            if (pthis.kind == "file") {
-               path += "root.filedump";
-               conn = new FileDumpSocket(pthis);
-               console.log('configure protocol log ' + path);
-            } else if ((pthis.kind === 'websocket') && first_time) {
-               path = path.replace("http://", "ws://").replace("https://", "wss://") + "root.websocket";
-               if (args) path += "?" + args;
-               console.log('configure websocket ' + path);
-               conn = new WebSocket(path);
-            } else {
-               path += "root.longpoll";
-               console.log('configure longpoll ' + path);
-               conn = new LongPollSocket(path, (pthis.kind === 'rawlongpoll'), args);
-            }
-
-            if (!conn) return;
-
-            pthis._websocket = conn;
-
-            conn.onopen = function() {
-               if (ntry > 2) JSROOT.progress();
-               pthis.state = 1;
-
-               let key = pthis.key || "";
-
-               pthis.Send("READY=" + key, 0); // need to confirm connection
-               pthis.InvokeReceiver(false, "OnWebsocketOpened");
-            }
-
-            conn.onmessage = function(e) {
-               let msg = e.data;
-
-               if (pthis.next_binary) {
-
-                  let binchid = pthis.next_binary;
-                  delete pthis.next_binary;
-
-                  if (msg instanceof Blob) {
-                     // this is case of websocket
-                     // console.log('Get Blob object - convert to buffer array');
-                     let reader = new FileReader, qitem = pthis.ReserveQueueItem();
-                     reader.onload = function(event) {
-                        // The file's text will be printed here
-                        pthis.DoneItem(qitem, event.target.result, 0);
-                     }
-                     reader.readAsArrayBuffer(msg, e.offset || 0);
-                  } else {
-                     // console.log('got array ' + (typeof msg) + ' len = ' + msg.byteLength);
-                     // this is from CEF or LongPoll handler
-                     pthis.ProvideData(binchid, msg, e.offset || 0);
+               if (msg instanceof Blob) {
+                  // this is case of websocket
+                  // console.log('Get Blob object - convert to buffer array');
+                  let reader = new FileReader, qitem = pthis.ReserveQueueItem();
+                  reader.onload = function(event) {
+                     // The file's text will be printed here
+                     pthis.DoneItem(qitem, event.target.result, 0);
                   }
-
-                  return;
-               }
-
-               if (typeof msg != 'string') return console.log("unsupported message kind: " + (typeof msg));
-
-               let i1 = msg.indexOf(":"),
-                  credit = parseInt(msg.substr(0, i1)),
-                  i2 = msg.indexOf(":", i1 + 1),
-                  // cansend = parseInt(msg.substr(i1 + 1, i2 - i1)),  // TODO: take into account when sending messages
-                  i3 = msg.indexOf(":", i2 + 1),
-                  chid = parseInt(msg.substr(i2 + 1, i3 - i2));
-
-               pthis.ackn++;            // count number of received packets,
-               pthis.cansend += credit; // how many packets client can send
-
-               msg = msg.substr(i3 + 1);
-
-               if (chid == 0) {
-                  console.log('GET chid=0 message', msg);
-                  if (msg == "CLOSE") {
-                     pthis.Close(true); // force closing of socket
-                     pthis.InvokeReceiver(true, "OnWebsocketClosed");
-                  }
-               } else if (msg == "$$binary$$") {
-                  pthis.next_binary = chid;
-               } else if (msg == "$$nullbinary$$") {
-                  pthis.ProvideData(chid, new ArrayBuffer(0), 0);
+                  reader.readAsArrayBuffer(msg, e.offset || 0);
                } else {
-                  pthis.ProvideData(chid, msg);
+                  // console.log('got array ' + (typeof msg) + ' len = ' + msg.byteLength);
+                  // this is from CEF or LongPoll handler
+                  pthis.ProvideData(binchid, msg, e.offset || 0);
                }
 
-               if (pthis.ackn > 7)
-                  pthis.Send('READY', 0); // send dummy message to server
+               return;
             }
 
-            conn.onclose = function() {
-               delete pthis._websocket;
-               if (pthis.state > 0) {
-                  console.log('websocket closed');
-                  pthis.state = 0;
+            if (typeof msg != 'string') return console.log("unsupported message kind: " + (typeof msg));
+
+            let i1 = msg.indexOf(":"),
+               credit = parseInt(msg.substr(0, i1)),
+               i2 = msg.indexOf(":", i1 + 1),
+               // cansend = parseInt(msg.substr(i1 + 1, i2 - i1)),  // TODO: take into account when sending messages
+               i3 = msg.indexOf(":", i2 + 1),
+               chid = parseInt(msg.substr(i2 + 1, i3 - i2));
+
+            pthis.ackn++;            // count number of received packets,
+            pthis.cansend += credit; // how many packets client can send
+
+            msg = msg.substr(i3 + 1);
+
+            if (chid == 0) {
+               console.log('GET chid=0 message', msg);
+               if (msg == "CLOSE") {
+                  pthis.Close(true); // force closing of socket
                   pthis.InvokeReceiver(true, "OnWebsocketClosed");
                }
+            } else if (msg == "$$binary$$") {
+               pthis.next_binary = chid;
+            } else if (msg == "$$nullbinary$$") {
+               pthis.ProvideData(chid, new ArrayBuffer(0), 0);
+            } else {
+               pthis.ProvideData(chid, msg);
             }
 
-            conn.onerror = function(err) {
-               console.log("websocket error " + err);
-               if (pthis.state > 0) {
-                  pthis.InvokeReceiver(true, "OnWebsocketError", err);
-                  pthis.state = 0;
-               }
+            if (pthis.ackn > 7)
+               pthis.Send('READY', 0); // send dummy message to server
+         }
+
+         conn.onclose = function() {
+            delete pthis._websocket;
+            if (pthis.state > 0) {
+               console.log('websocket closed');
+               pthis.state = 0;
+               pthis.InvokeReceiver(true, "OnWebsocketClosed");
             }
+         }
 
-            // only in interactive mode try to reconnect
-            if (!JSROOT.BatchMode)
-               setTimeout(retry_open, 3000); // after 3 seconds try again
+         conn.onerror = function(err) {
+            console.log("websocket error " + err);
+            if (pthis.state > 0) {
+               pthis.InvokeReceiver(true, "OnWebsocketError", err);
+               pthis.state = 0;
+            }
+         }
 
-         } // retry_open
+         // only in interactive mode try to reconnect
+         if (!JSROOT.BatchMode)
+            setTimeout(retry_open, 3000); // after 3 seconds try again
 
-         retry_open(true); // call for the first time
-      }
-   } // class WebWindowHandle
+      } // retry_open
+
+      retry_open(true); // call for the first time
+   }
 
 
    /** @summary Method used to initialize connection to web window.
