@@ -1623,18 +1623,17 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
 
       if (JSROOT.BatchMode) return;
 
-      let painter = this;
       JSROOT.require(['JSRoot.interactive']).then(() => {
-         JSROOT.TooltipHandler.assign(painter);
+         JSROOT.TooltipHandler.assign(this);
 
-         painter.draw_g.attr("x", lm)
-                       .attr("y", tm)
-                       .attr("width", w)
-                       .attr("height", h);
+         this.draw_g.attr("x", lm)
+                    .attr("y", tm)
+                    .attr("width", w)
+                    .attr("height", h);
 
          if (!rotate && !fixpos)
-            JSROOT.DragMoveHandler.AddDrag(painter, { obj: painter, only_resize: true, minwidth: 20, minheight: 20,
-                              redraw: painter.SizeChanged.bind(painter) });
+            JSROOT.DragMoveHandler.AddDrag(this, { obj: this, only_resize: true, minwidth: 20, minheight: 20,
+                              redraw: this.SizeChanged.bind(this) });
 
          main_svg.style("pointer-events","visibleFill")
                  .property('handlers_set', 0);
@@ -1642,8 +1641,8 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
          let handlers_set = (pp && pp._fast_drawing) ? 0 : 1;
 
          if (main_svg.property('handlers_set') != handlers_set) {
-            let close_handler = handlers_set ? painter.ProcessTooltipEvent.bind(painter, null) : null,
-                mouse_handler = handlers_set ? painter.ProcessTooltipEvent.bind(painter, { handler: true, touch: false }) : null;
+            let close_handler = handlers_set ? this.ProcessTooltipEvent.bind(this, null) : null,
+                mouse_handler = handlers_set ? this.ProcessTooltipEvent.bind(this, { handler: true, touch: false }) : null;
 
             main_svg.property('handlers_set', handlers_set)
                     .on('mouseenter', mouse_handler)
@@ -1651,7 +1650,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
                     .on('mouseleave', close_handler);
 
             if (JSROOT.touches) {
-               let touch_handler = handlers_set ? painter.ProcessTooltipEvent.bind(painter, { handler: true, touch: true }) : null;
+               let touch_handler = handlers_set ? this.ProcessTooltipEvent.bind(this, { handler: true, touch: true }) : null;
 
                main_svg.on("touchstart", touch_handler)
                        .on("touchmove", touch_handler)
@@ -1665,10 +1664,10 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
                  .attr("width", w)
                  .attr("height", h);
 
-         let hintsg = painter.hints_layer().select(".objects_hints");
+         let hintsg = this.hints_layer().select(".objects_hints");
          // if tooltips were visible before, try to reconstruct them after short timeout
-         if (!hintsg.empty() && painter.IsTooltipAllowed() && (hintsg.property("hints_pad") == painter.pad_name))
-            setTimeout(painter.ProcessTooltipEvent.bind(painter, hintsg.property('last_point'), null), 10);
+         if (!hintsg.empty() && this.IsTooltipAllowed() && (hintsg.property("hints_pad") == this.pad_name))
+            setTimeout(this.ProcessTooltipEvent.bind(this, hintsg.property('last_point'), null), 10);
       });
    }
 

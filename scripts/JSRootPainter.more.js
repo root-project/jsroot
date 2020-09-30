@@ -2270,11 +2270,10 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter.v6'], (d3) => {
 
       if (JSROOT.BatchMode) return;
 
-      let painter = this;
       JSROOT.require(['JSRoot.interactive']).then(() => {
-         JSROOT.TooltipHandler.assign(painter);
+         JSROOT.TooltipHandler.assign(this);
 
-         let layer = painter.svg_layer("primitives_layer"),
+         let layer = this.svg_layer("primitives_layer"),
              interactive = layer.select(".interactive_ellipse");
 
          if (interactive.empty())
@@ -2286,16 +2285,16 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter.v6'], (d3) => {
                                .attr("cy",0)
                                .style("fill", "none")
                                .style("pointer-events","visibleFill")
-                               .on('mouseenter', painter.MouseEvent.bind(painter,'enter'))
-                               .on('mousemove', painter.MouseEvent.bind(painter,'move'))
-                               .on('mouseleave', painter.MouseEvent.bind(painter,'leave'));
+                               .on('mouseenter', () => this.MouseEvent('enter'))
+                               .on('mousemove', () => this.MouseEvent('move'))
+                               .on('mouseleave', () => this.MouseEvent('leave'));
 
-         interactive.attr("rx", painter.szx).attr("ry", painter.szy);
+         interactive.attr("rx", this.szx).attr("ry", this.szy);
 
-         d3.select(interactive.node().parentNode).attr("transform", painter.draw_g.attr("transform"));
+         d3.select(interactive.node().parentNode).attr("transform", this.draw_g.attr("transform"));
 
          if (JSROOT.gStyle.Zooming && JSROOT.gStyle.ZoomWheel)
-            interactive.on("wheel", painter.MouseWheel.bind(painter));
+            interactive.on("wheel", () => this.MouseWheel());
       });
    }
 
