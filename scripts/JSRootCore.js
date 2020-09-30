@@ -404,9 +404,6 @@
                let load = require(modname);
                if (load === undefined) load = 1;
                m = _.modules[need[k]] = { module: load };
-            } else {
-               if (need[k] == "three")
-                  console.log('Returning three as', m.module.Vector3);
             }
             arr.push(m.module);
          }
