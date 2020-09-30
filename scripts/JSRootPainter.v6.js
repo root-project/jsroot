@@ -1,7 +1,7 @@
 /// @file JSRootPainter.v6.js
 /// JavaScript ROOT graphics for main ROOT6 classes
 
-JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
+JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
 
    "use strict";
 

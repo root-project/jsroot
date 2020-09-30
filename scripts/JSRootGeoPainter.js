@@ -1,7 +1,7 @@
 /** JavaScript ROOT 3D geometry painter
  * @file JSRootGeoPainter.js */
 
-JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], function(d3, THREE) {
+JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
 
    "use strict";
 

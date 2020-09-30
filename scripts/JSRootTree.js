@@ -1,7 +1,7 @@
 /// @file JSRootTree.js
 /// Collect all TTree-relevant methods like reading and processing
 
-JSROOT.require(['JSRootIOEvolution', 'JSRootMath'], function() {
+JSROOT.require(['JSRootIOEvolution', 'JSRootMath'], () => {
 
    "use strict";
 

@@ -1,7 +1,7 @@
 /// @file JSRootPainter.jquery.js
 /// Part of JavaScript ROOT graphics, dependent from jQuery functionality
 
-JSROOT.require(['d3', 'jquery', 'JSRootPainter.hierarchy'], function(d3, $) {
+JSROOT.require(['d3', 'jquery', 'JSRootPainter.hierarchy'], (d3, $) => {
 
    "use strict";
 

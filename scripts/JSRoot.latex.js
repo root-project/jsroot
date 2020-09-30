@@ -1,7 +1,7 @@
 /// @file JSRoot.latex.js
 /// Latex / MathJax processing
 
-JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
+JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
 
    "use strict";
 

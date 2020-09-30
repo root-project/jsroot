@@ -1,12 +1,9 @@
 /// @file JSRootPainter.hist3d.js
 /// 3D histogram graphics
 
-JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.hist'], function(d3, THREE) {
+JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.hist'], (d3, THREE) => {
 
    "use strict";
-
-   if (typeof JSROOT.THistPainter === 'undefined')
-      throw new Error('JSROOT.THistPainter is not defined', 'JSRootPainter.hist3d.js');
 
    JSROOT.TFramePainter.prototype.SetCameraPosition = function(first_time, pad) {
       let max3d = Math.max(0.75*this.size_xy3d, this.size_z3d);

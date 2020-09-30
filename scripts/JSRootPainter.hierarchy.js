@@ -1,7 +1,7 @@
 /// @file JSRootPainter.hierarchy.js
 /// Hierarchy display functionality
 
-JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
+JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
 
    "use strict";
 

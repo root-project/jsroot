@@ -1,7 +1,7 @@
 /// @file JSRootPainter.js
 /// Baisc JavaScript ROOT painter classes
 
-JSROOT.require(['d3'], function(d3) {
+JSROOT.require(['d3'], (d3) => {
 
    "use strict";
 

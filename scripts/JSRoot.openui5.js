@@ -2,7 +2,7 @@
 /// Bootstraping of OpenUI5 functionality in JSROOT
 /// Openui5 loaded directly in the script
 
-JSROOT.require(['jquery', 'jquery-ui'], function() {
+JSROOT.require(['jquery', 'jquery-ui'], () => {
 
    "use strict";
 

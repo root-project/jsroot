@@ -1,7 +1,7 @@
 /// @file JSRootPainter.v7hist.js
 /// JavaScript ROOT v7 graphics for histogram classes
 
-JSROOT.require(['d3', 'JSRootPainter.v7'], function(d3) {
+JSROOT.require(['d3', 'JSRootPainter.v7'], (d3) => {
 
    "use strict";
 
@@ -1840,14 +1840,14 @@ JSROOT.require(['d3', 'JSRootPainter.v7'], function(d3) {
    RH1Painter.prototype.Draw3D = function(call_back, reason) {
       this.mode3d = true;
       let painter = this;
-      JSROOT.require('JSRootPainter.v7hist').then(() => painter.Draw3D(call_back, reason));
+      JSROOT.require('JSRootPainter.v7hist3d').then(() => painter.Draw3D(call_back, reason));
    }
 
    RH1Painter.prototype.Redraw = function(reason) {
       this.CallDrawFunc(null, reason);
    }
 
-   function drawHist1(divid, histo, opt) {
+   let drawHist1 = (divid, histo, opt) => {
       // create painter and add it to canvas
       let painter = new RH1Painter(histo);
 
@@ -3621,7 +3621,7 @@ JSROOT.require(['d3', 'JSRootPainter.v7'], function(d3) {
    RH2Painter.prototype.Draw3D = function(call_back, reason) {
       this.mode3d = true;
       let painter = this;
-      JSROOT.require('JSRootPainter.v7hist').then(() => painter.Draw3D(call_back, reason));
+      JSROOT.require('JSRootPainter.v7hist3d').then(() => painter.Draw3D(call_back, reason));
    }
 
    RH2Painter.prototype.CallDrawFunc = function(callback, reason) {
@@ -3639,7 +3639,7 @@ JSROOT.require(['d3', 'JSRootPainter.v7'], function(d3) {
       this.CallDrawFunc(null, reason);
    }
 
-   function drawHist2(divid, obj, opt) {
+   let drawHist2 = (divid, obj, opt) => {
       // create painter and add it to canvas
       let painter = new RH2Painter(obj);
 
@@ -3713,7 +3713,7 @@ JSROOT.require(['d3', 'JSRootPainter.v7'], function(d3) {
       return 3;
    }
 
-   function drawHist3(divid, histo /*, opt*/) {
+   let drawHist3 = (divid, histo /*, opt*/) => {
       // create painter and add it to canvas
       let painter = new RH3Painter(histo);
 
@@ -3733,7 +3733,7 @@ JSROOT.require(['d3', 'JSRootPainter.v7'], function(d3) {
          default: o.Box = 10;
       }
 
-      JSROOT.require('JSRootPainter.v7hist').then(() => {
+      JSROOT.require('JSRootPainter.v7hist3d').then(() => {
          painter.ScanContent();
          painter.Redraw();
          painter.DrawingReady();

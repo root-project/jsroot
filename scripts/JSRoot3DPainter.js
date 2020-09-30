@@ -1,7 +1,7 @@
 /// @file JSRoot3DPainter.js
 /// JavaScript ROOT 3D graphics
 
-JSROOT.require(['d3','threejs_jsroot'], function(d3, THREE) {
+JSROOT.require(['d3','threejs_jsroot'], (d3, THREE) => {
 
    "use strict";
 
