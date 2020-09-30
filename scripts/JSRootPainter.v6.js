@@ -352,18 +352,18 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
    TAxisPainter.prototype.AddTitleDrag = function(title_g, vertical, offset_k, reverse, axis_length) {
       if (!JSROOT.gStyle.MoveResize) return;
 
-      let pthis = this,  drag_rect = null,
+      let drag_rect = null,
           acc_x, acc_y, new_x, new_y, sign_0, alt_pos,
           drag_move = d3.drag().subject(Object);
 
       drag_move
-         .on("start",  function(evnt) {
+         .on("start", evnt => {
 
             evnt.sourceEvent.preventDefault();
             evnt.sourceEvent.stopPropagation();
 
             let box = title_g.node().getBBox(), // check that elements visible, request precise value
-                axis = pthis.GetObject();
+                axis = this.GetObject();
 
             new_x = acc_x = title_g.property('shift_x');
             new_y = acc_y = title_g.property('shift_y');
@@ -383,7 +383,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
                  .attr("height", box.height)
                  .style("cursor", "move");
 //                 .style("pointer-events","none"); // let forward double click to underlying elements
-          }).on("drag", function(evnt) {
+          }).on("drag", evnt => {
                if (!drag_rect) return;
 
                evnt.sourceEvent.preventDefault();
@@ -408,7 +408,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
                   title_g.attr('transform', 'translate(' + new_x + ',' + new_y +  ')');
                }
 
-          }).on("end", function(evnt) {
+          }).on("end", evnt => {
                if (!drag_rect) return;
 
                evnt.sourceEvent.preventDefault();
@@ -417,7 +417,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
                title_g.property('shift_x', new_x)
                       .property('shift_y', new_y);
 
-               let axis = pthis.GetObject();
+               let axis = this.GetObject();
 
                axis.fTitleOffset = (vertical ? new_x : new_y) / offset_k;
                if ((vertical ? new_y : new_x) === alt_pos) axis.InvertBit(JSROOT.EAxisBits.kCenterTitle);
@@ -4495,7 +4495,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
       if (this.proj_painter === 1) {
 
          let canv = JSROOT.Create("TCanvas"),
-             pthis = this, pad = this.root_pad(),
+             pad = this.root_pad(),
              main = this.frame_painter_ref, drawopt;
 
          if (kind == "X") {
@@ -4518,9 +4518,9 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
 
          if (this.DrawInUI5ProjectionArea) {
             // copy frame attributes
-            this.DrawInUI5ProjectionArea(canv, drawopt, function(painter) { pthis.proj_painter = painter; })
+            this.DrawInUI5ProjectionArea(canv, drawopt, painter => { this.proj_painter = painter; })
          } else {
-            this.DrawInSidePanel(canv, drawopt, function(painter) { pthis.proj_painter = painter; })
+            this.DrawInSidePanel(canv, drawopt, painter => { this.proj_painter = painter; })
          }
       } else {
          let hp = this.proj_painter.main_painter();
@@ -4542,9 +4542,9 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
 
    /// function called when canvas menu item Save is called
    TCanvasPainter.prototype.SaveCanvasAsFile = function(fname) {
-      let pthis = this, pnt = fname.indexOf(".");
-      this.CreateImage(fname.substr(pnt+1), function(res) {
-         pthis.SendWebsocket("SAVE:" + fname + ":" + res);
+      let pnt = fname.indexOf(".");
+      this.CreateImage(fname.substr(pnt+1), res => {
+         this.SendWebsocket("SAVE:" + fname + ":" + res);
       })
    }
 
@@ -4625,11 +4625,11 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
       } else if (msg.substr(0,6)=='SNAP6:') {
          // This is snapshot, produced with ROOT6
 
-         let snap = JSROOT.parse(msg.substr(6)), pthis = this;
+         let snap = JSROOT.parse(msg.substr(6));
 
-         this.RedrawPadSnap(snap, function() {
-            pthis.CompeteCanvasSnapDrawing();
-            let ranges = pthis.GetWebPadOptions(); // all data, including subpads
+         this.RedrawPadSnap(snap, () => {
+            this.CompeteCanvasSnapDrawing();
+            let ranges = this.GetWebPadOptions(); // all data, including subpads
             if (ranges) ranges = ":" + ranges;
             handle.Send("READY6:" + snap.fVersion + ranges); // send ready message back when drawing completed
          });

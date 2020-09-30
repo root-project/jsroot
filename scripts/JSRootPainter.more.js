@@ -753,11 +753,11 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter.v6'], (d3) => {
 
    TF1Painter.prototype.PerformDraw = function() {
       if (this.main_painter() === null) {
-         let histo = this.CreateDummyHisto(), pthis = this;
+         let histo = this.CreateDummyHisto();
          return JSROOT.draw(this.divid, histo, "AXIS").then(() => {
-            pthis.SetDivId(pthis.divid);
-            pthis.Redraw();
-            return pthis.DrawingReady();
+            this.SetDivId(this.divid);
+            this.Redraw();
+            return this.DrawingReady();
          });
       }
 
@@ -1107,8 +1107,7 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter.v6'], (d3) => {
 
    TGraphPainter.prototype.DrawBins = function() {
 
-      let pthis = this,
-          pmain = this.get_main(),
+      let pmain = this.get_main(),
           w = this.frame_width(),
           h = this.frame_height(),
           graph = this.GetObject(),
@@ -1239,27 +1238,27 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter.v6'], (d3) => {
 
       if (this.options.Errors || this.options.Rect || this.options.Bar) {
 
-         drawbins = this.OptimizeBins(5000, function(pnt,i) {
+         drawbins = this.OptimizeBins(5000, (pnt,i) => {
 
             let grx = pmain.grx(pnt.x);
 
             // when drawing bars, take all points
-            if (!pthis.options.Bar && ((grx<0) || (grx>w))) return true;
+            if (!this.options.Bar && ((grx<0) || (grx>w))) return true;
 
             let gry = pmain.gry(pnt.y);
 
-            if (!pthis.options.Bar && !pthis.options.OutRange && ((gry<0) || (gry>h))) return true;
+            if (!this.options.Bar && !this.options.OutRange && ((gry<0) || (gry>h))) return true;
 
             pnt.grx1 = Math.round(grx);
             pnt.gry1 = Math.round(gry);
 
-            if (pthis.has_errors) {
+            if (this.has_errors) {
                pnt.grx0 = Math.round(pmain.grx(pnt.x - pnt.exlow) - grx);
                pnt.grx2 = Math.round(pmain.grx(pnt.x + pnt.exhigh) - grx);
                pnt.gry0 = Math.round(pmain.gry(pnt.y - pnt.eylow) - gry);
                pnt.gry2 = Math.round(pmain.gry(pnt.y + pnt.eyhigh) - gry);
 
-               if (pthis.is_bent) {
+               if (this.is_bent) {
                   pnt.grdx0 = Math.round(pmain.gry(pnt.y + graph.fEXlowd[i]) - gry);
                   pnt.grdx2 = Math.round(pmain.gry(pnt.y + graph.fEXhighd[i]) - gry);
                   pnt.grdy0 = Math.round(pmain.grx(pnt.x + graph.fEYlowd[i]) - grx);
@@ -1301,15 +1300,15 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter.v6'], (d3) => {
          let yy0 = Math.round(pmain.gry(0));
 
          nodes.append("svg:rect")
-            .attr("x", function(d) { return Math.round(-d.width/2); })
-            .attr("y", function(d) {
+            .attr("x", d => Math.round(-d.width/2))
+            .attr("y", d => {
                 d.bar = true; // element drawn as bar
-                if (pthis.options.Bar!==1) return 0;
+                if (this.options.Bar!==1) return 0;
                 return (d.gry1 > yy0) ? yy0-d.gry1 : 0;
              })
-            .attr("width", function(d) { return Math.round(d.width); })
-            .attr("height", function(d) {
-                if (pthis.options.Bar!==1) return h > d.gry1 ? h - d.gry1 : 0;
+            .attr("width", d => Math.round(d.width))
+            .attr("height", d => {
+                if (this.options.Bar!==1) return h > d.gry1 ? h - d.gry1 : 0;
                 return Math.abs(yy0 - d.gry1);
              })
             .call(this.fillatt.func);
