@@ -1309,8 +1309,8 @@ JSROOT.require(['d3', 'jquery', 'JSRootPainter.hierarchy'], function(d3, $) {
             let items = [];
 
             if (painter.disp)
-               painter.disp.ForEachPainter(function(p) {
-                  if (p.GetItemName()!=null)
+               painter.disp.ForEachPainter(p => {
+                  if (p.GetItemName())
                      items.push(p.GetItemName());
                });
 

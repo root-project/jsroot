@@ -1803,7 +1803,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
 
       // first process zooming (if any)
       if (zoom_x || zoom_y || zoom_z)
-         this.ForEachPainter(function(obj) {
+         this.ForEachPainter(obj => {
             if (zoom_x && obj.CanZoomIn("x", xmin, xmax)) {
                fp.zoom_xmin = xmin;
                fp.zoom_xmax = xmax;
@@ -3792,9 +3792,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
 //      document.body.style.cursor = 'wait';
 
       if (!use_frame) // do not make transformations for the frame
-      painter.ForEachPainterInPad(function(pp) {
-
-         // console.log('Check painter pp', pp.this_pad_name);
+      painter.ForEachPainterInPad(pp => {
 
          let item = { prnt: pp.svg_pad(pp.this_pad_name) };
          items.push(item);

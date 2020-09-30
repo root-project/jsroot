@@ -3180,11 +3180,10 @@ JSROOT.require(['d3'], function(d3) {
       draw_g.property('all_args', null); // clear all_args property
 
       // adjust font size (if there are normal text)
-      let painter = this,
-         f = draw_g.property('text_factor'),
-         font = draw_g.property('text_font'),
-         max_sz = draw_g.property('max_font_size'),
-         font_size = font.size, any_text = false;
+      let f = draw_g.property('text_factor'),
+          font = draw_g.property('text_font'),
+          max_sz = draw_g.property('max_font_size'),
+          font_size = font.size, any_text = false;
 
       if ((f > 0) && ((f < 0.9) || (f > 1)))
          font.size = Math.floor(font.size / f);
@@ -3200,7 +3199,7 @@ JSROOT.require(['d3'], function(d3) {
       all_args.forEach(arg => {
          if (arg.mj_node && arg.applyAttributesToMathJax) {
             let svg = arg.mj_node.select("svg"); // MathJax svg
-            arg.applyAttributesToMathJax(painter, arg.mj_node, svg, arg, font_size, f);
+            arg.applyAttributesToMathJax(this, arg.mj_node, svg, arg, font_size, f);
             delete arg.mj_node; // remove reference
          }
       });
@@ -3218,7 +3217,7 @@ JSROOT.require(['d3'], function(d3) {
             if (arg.scale && (f > 0)) { arg.box.width = arg.box.width / f; arg.box.height = arg.box.height / f; }
          } else if (!arg.plain && !arg.fast) {
             // exact box dimension only required when complex text was build
-            arg.box = painter.GetBoundarySizes(txt.node());
+            arg.box = this.GetBoundarySizes(txt.node());
          }
 
          // if (arg.text.length>20) console.log(arg.box, arg.align, arg.x, arg.y, 'plain', arg.plain, 'inside', arg.width, arg.height);
@@ -3349,8 +3348,7 @@ JSROOT.require(['d3'], function(d3) {
       arg.ready = false; // indicates if drawing is ready for post-processing
 
       let font = arg.draw_g.property('text_font'),
-          use_mathjax = (arg.latex == 2),
-          painter = this;
+          use_mathjax = (arg.latex == 2);
 
       if (arg.latex === 1)
          use_mathjax = (JSROOT.gStyle.Latex > 3) || ((JSROOT.gStyle.Latex == 3) && arg.text.match(/[#{\\]/g));
@@ -3374,12 +3372,12 @@ JSROOT.require(['d3'], function(d3) {
          if (!arg.plain || arg.simple_latex) {
             JSROOT.require(['JSRoot.latex']).then(() => {
                if (arg.simple_latex)
-                  painter.producePlainText(arg.txt_node, arg)
+                  this.producePlainText(arg.txt_node, arg)
                else
-                  painter.produceLatex(arg.txt_node, arg);
+                  this.produceLatex(arg.txt_node, arg);
                arg.ready = true;
-               painter.postprocessText(arg.txt_node, arg);
-               painter.FinishTextDrawing(arg.draw_g, null, true); // check if all other elements are completed
+               this.postprocessText(arg.txt_node, arg);
+               this.FinishTextDrawing(arg.draw_g, null, true); // check if all other elements are completed
             });
             return 0;
          }
@@ -3395,8 +3393,8 @@ JSROOT.require(['d3'], function(d3) {
                            .attr('visibility', 'hidden'); // hide text until drawing is finished
 
       JSROOT.require(['JSRoot.latex'])
-            .then(() => painter.produceMathjax(arg.mj_node, arg))
-            .then(() => { arg.ready = true; painter.FinishTextDrawing(arg.draw_g, null, true); });
+            .then(() => this.produceMathjax(arg.mj_node, arg))
+            .then(() => { arg.ready = true; this.FinishTextDrawing(arg.draw_g, null, true); });
 
       return 0;
    }
@@ -4155,7 +4153,7 @@ JSROOT.require(['d3'], function(d3) {
          if (typeof arg !== 'object') arg = null;
       let done = false, dummy = new ObjectPainter();
       dummy.SetDivId(divid, -1);
-      dummy.ForEachPainter(function(painter) {
+      dummy.ForEachPainter(painter => {
          if (!done && (typeof painter.CheckResize == 'function'))
             done = painter.CheckResize(arg);
       });
@@ -4184,7 +4182,7 @@ JSROOT.require(['d3'], function(d3) {
    JSROOT.cleanup = function(divid) {
       let dummy = new ObjectPainter(), lst = [];
       dummy.SetDivId(divid, -1);
-      dummy.ForEachPainter(function(painter) {
+      dummy.ForEachPainter(painter => {
          if (lst.indexOf(painter) < 0) lst.push(painter);
       });
       for (let n = 0; n < lst.length; ++n) lst[n].Cleanup();

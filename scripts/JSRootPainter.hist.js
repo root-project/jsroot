@@ -1859,12 +1859,9 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], function(d3) {
 
    /// copy draw options to all other histograms in the pad
    THistPainter.prototype.CopyOptionsToOthers = function() {
-      let pthis = this;
-
-      this.ForEachPainter(function(painter) {
-         if (painter === pthis) return;
-         if (typeof painter.CopyOptionsFrom == 'function')
-            painter.CopyOptionsFrom(pthis);
+      this.ForEachPainter(painter => {
+         if ((painter !== this) && (typeof painter.CopyOptionsFrom == 'function'))
+            painter.CopyOptionsFrom(this);
       }, "objects");
    }
 
@@ -2012,7 +2009,7 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], function(d3) {
 
             // find painters associated with histogram
             if (pp)
-               pp.ForEachPainterInPad(function(objp) {
+               pp.ForEachPainterInPad(objp => {
                   if (objp.child_painter_id === pid)
                      painters.push(objp);
                }, "objects");

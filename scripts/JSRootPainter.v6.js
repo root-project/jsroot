@@ -3962,9 +3962,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
 //      document.body.style.cursor = 'wait';
 
       if (!use_frame) // do not make transformations for the frame
-      painter.ForEachPainterInPad(function(pp) {
-
-         // console.log('Check painter pp', pp.this_pad_name);
+      painter.ForEachPainterInPad(pp => {
 
          let item = { prnt: pp.svg_pad(pp.this_pad_name) };
          items.push(item);
@@ -4889,9 +4887,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
 
       if (!pad_painter.is_active_pad) {
          ischanged = true;
-         this.ForEachPainterInPad(function(pp) {
-            pp.DrawActiveBorder(null, pp === pad_painter);
-         }, "pads");
+         this.ForEachPainterInPad(pp => pp.DrawActiveBorder(null, pp === pad_painter), "pads");
       }
 
       if (obj_painter && (obj_painter.snapid!==undefined) && arg) {
@@ -4930,7 +4926,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
       if (!this.normal_canvas) {
 
          // fill list of primitives from painters
-         this.ForEachPainterInPad(function(p) {
+         this.ForEachPainterInPad(p => {
             if (p.$secondary) return; // ignore all secoandry painters
 
             let subobj = p.GetObject();

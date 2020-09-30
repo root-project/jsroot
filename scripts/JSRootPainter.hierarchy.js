@@ -1028,7 +1028,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
             if (divid.length > 0)
                return (updating ? JSROOT.redraw : JSROOT.draw)(divid, obj, drawopt, display_callback);
 
-            mdi.ForEachPainter(function(p, frame) {
+            mdi.ForEachPainter((p, frame) => {
                if (p.GetItemName() != display_itemname) return;
                // verify that object was drawn with same option as specified now (if any)
                if (!updating && (drawopt!=null) && (p.GetItemDrawOpt()!=drawopt)) return;
@@ -1114,7 +1114,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
 
       let draw_items = [], draw_options = [];
 
-      this.disp.ForEachPainter(function(p) {
+      this.disp.ForEachPainter(p => {
          let itemname = p.GetItemName();
          if (!itemname || (draw_items.indexOf(itemname)>=0)) return;
          if (typeof items == 'array') {
@@ -1139,15 +1139,15 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
 
       if (only_auto_items === "monitoring") only_auto_items = !this._monitoring_on;
 
-      let allitems = [], options = [], hpainter = this;
+      let allitems = [], options = [];
 
       // first collect items
-      this.disp.ForEachPainter(function(p) {
+      this.disp.ForEachPainter(p => {
          let itemname = p.GetItemName(),
              drawopt = p.GetItemDrawOpt();
          if ((typeof itemname != 'string') || (allitems.indexOf(itemname)>=0)) return;
 
-         let item = hpainter.Find(itemname), forced = false;
+         let item = this.Find(itemname), forced = false;
          if (!item || ('_not_monitor' in item) || ('_player' in item)) return;
 
          if ('_always_monitor' in item) {
@@ -1166,12 +1166,10 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
          }
       }, true); // only visible panels are considered
 
-      let painter = this;
-
       // force all files to read again (normally in non-browser mode)
       if (this.files_monitoring && !only_auto_items)
-         this.ForEachRootFile(function(item) {
-            painter.ForEach(function(fitem) { delete fitem._readobj; }, item);
+         this.ForEachRootFile(item => {
+            this.ForEach(fitem => { delete fitem._readobj; }, item);
             delete item._file;
          });
 
@@ -2096,7 +2094,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
       if (handle && handle.draw_field && obj[handle.draw_field])
          obj = obj[handle.draw_field];
 
-      mdi.ForEachPainter(function(p, frame) {
+      mdi.ForEachPainter((p, frame) => {
          if ((p===painter) || (p.GetItemName() != painter.GetItemName())) return;
          mdi.ActivateFrame(frame);
          if (p.RedrawObject(obj)) isany = true;
@@ -2555,7 +2553,7 @@ JSROOT.require(['d3', 'JSRootPainter'], function(d3) {
          // perform resize for each frame
          let resized_frame = null;
 
-         this.ForEachPainter(function(painter, frame) {
+         this.ForEachPainter((painter, frame) => {
 
             if (only_frame_id && (d3.select(frame).attr('id') != only_frame_id)) return;
 
