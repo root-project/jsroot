@@ -2426,6 +2426,16 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
       delete this[fld];
    }
 
+   /** @summary Add interactive keys handlers
+    * @private */
+   RFramePainter.prototype.AddKeysHandler = function() {
+      if (JSROOT.BatchMode) return;
+      JSROOT.require(['JSRoot.interactive']).then(() => {
+         JSROOT.FrameInteractive.assign(this);
+         this.AddKeysHandler();
+      });
+   }
+
    /** @summary Add interactive functionality to the frame
     * @private */
    RFramePainter.prototype.AddInteractive = function() {
@@ -2434,7 +2444,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
 
       JSROOT.require(['JSRoot.interactive']).then(() => {
          JSROOT.FrameInteractive.assign(this);
-         this.AssignInteractiveHandlers();
+         this.AddInteractive();
       });
    }
 
@@ -2548,70 +2558,6 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
       }
 
       item.changed = ((item.min !== undefined) && (item.max !== undefined));
-   }
-
-   RFramePainter.prototype.AddKeysHandler = function() {
-      if (this.keys_handler || JSROOT.BatchMode || (typeof window == 'undefined')) return;
-
-      this.keys_handler = this.ProcessKeyPress.bind(this);
-
-      window.addEventListener('keydown', this.keys_handler, false);
-   }
-
-   RFramePainter.prototype.ProcessKeyPress = function(evnt) {
-      let main = this.select_main();
-      if (!JSROOT.key_handling || main.empty()) return;
-
-      let key = "";
-      switch (evnt.keyCode) {
-         case 33: key = "PageUp"; break;
-         case 34: key = "PageDown"; break;
-         case 37: key = "ArrowLeft"; break;
-         case 38: key = "ArrowUp"; break;
-         case 39: key = "ArrowRight"; break;
-         case 40: key = "ArrowDown"; break;
-         case 42: key = "PrintScreen"; break;
-         case 106: key = "*"; break;
-         default: return false;
-      }
-
-      if (evnt.shiftKey) key = "Shift " + key;
-      if (evnt.altKey) key = "Alt " + key;
-      if (evnt.ctrlKey) key = "Ctrl " + key;
-
-      let zoom = { name: "x", dleft: 0, dright: 0 };
-
-      switch (key) {
-         case "ArrowLeft":  zoom.dleft = -1; zoom.dright = 1; break;
-         case "ArrowRight":  zoom.dleft = 1; zoom.dright = -1; break;
-         case "Ctrl ArrowLeft": zoom.dleft = zoom.dright = -1; break;
-         case "Ctrl ArrowRight": zoom.dleft = zoom.dright = 1; break;
-         case "ArrowUp":  zoom.name = "y"; zoom.dleft = 1; zoom.dright = -1; break;
-         case "ArrowDown":  zoom.name = "y"; zoom.dleft = -1; zoom.dright = 1; break;
-         case "Ctrl ArrowUp": zoom.name = "y"; zoom.dleft = zoom.dright = 1; break;
-         case "Ctrl ArrowDown": zoom.name = "y"; zoom.dleft = zoom.dright = -1; break;
-      }
-
-      if (zoom.dleft || zoom.dright) {
-         if (!JSROOT.gStyle.Zooming) return false;
-         // in 3dmode with orbit control ignore simple arrows
-         if (this.mode3d && (key.indexOf("Ctrl")!==0)) return false;
-         this.AnalyzeMouseWheelEvent(null, zoom, 0.5);
-         this.Zoom(zoom.name, zoom.min, zoom.max);
-         if (zoom.changed) this.zoom_changed_interactive = 2;
-         evnt.stopPropagation();
-         evnt.preventDefault();
-      } else {
-         let pp = this.pad_painter(),
-             func = pp ? pp.FindButton(key) : "";
-         if (func) {
-            pp.PadButtonClick(func);
-            evnt.stopPropagation();
-            evnt.preventDefault();
-         }
-      }
-
-      return true; // just process any key press
    }
 
    RFramePainter.prototype.CreateXY = function() {
