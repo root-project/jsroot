@@ -5,6 +5,7 @@
 2. Fix - use proper "fixed" position for enlarged drawing
 3. Fix - correctly extract TF1 parameter names
 4. Fix - keep stat box when update histogram drawing
+5. Fix - context menu for axes in 3D drawings
 
 
 ## Changes in 5.8.1
