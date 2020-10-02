@@ -242,10 +242,10 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
             evnt.stopPropagation();
 
             if (!JSROOT.Painter.closeMenu())
-               JSROOT.Painter.createMenu(painter, function(menu) {
+               JSROOT.Painter.createMenu(painter, evnt).then(menu => {
                   menu.painter.FillContextMenu(menu);
                   menu.show();
-               }, evnt);
+               });
          }
       });
 
@@ -999,7 +999,7 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
 
    TGeoPainter.prototype.OrbitContext = function(evnt, intersects) {
 
-      JSROOT.Painter.createMenu(this, function(menu) {
+      JSROOT.Painter.createMenu(this, evnt).then(menu => {
          let numitems = 0, numnodes = 0, cnt = 0;
          if (intersects)
             for (let n=0;n<intersects.length;++n) {
@@ -1115,7 +1115,7 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
             }
          }
          menu.show();
-      }, evnt);
+      });
    }
 
    TGeoPainter.prototype.FilterIntersects = function(intersects) {

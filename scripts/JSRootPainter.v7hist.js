@@ -3840,17 +3840,17 @@ JSROOT.require(['d3', 'JSRootPainter.v7'], (d3) => {
       evnt.preventDefault();
       evnt.stopPropagation(); // disable main context menu
 
-      JSROOT.Painter.createMenu(this, function(menu) {
-         let obj = menu.painter.GetObject(),
-             action = menu.painter.ChangeMask.bind(menu.painter);
+      JSROOT.Painter.createMenu(this, evnt).then(menu => {
+         let obj = this.GetObject(),
+             action = this.ChangeMask.bind(this);
 
          menu.add("header: StatBox");
 
          for (let n=0;n<obj.fEntries.length; ++n)
             menu.addchk((obj.fShowMask & (1<<n)), obj.fEntries[n], n, action);
 
-         menu.painter.FillObjectExecMenu(menu, "", function() { menu.show(); });
-      }, evnt);
+         this.FillObjectExecMenu(menu, "", () => menu.show());
+      });
    }
 
    RHistStatsPainter.prototype.DrawStatistic = function(lines) {

@@ -1124,13 +1124,13 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], (d3) => {
       evnt.stopPropagation(); // disable main context menu
       evnt.preventDefault();  // disable browser context menu
 
-      JSROOT.Painter.createMenu(this, function(menu) {
+      JSROOT.Painter.createMenu(this, evnt).then(menu => {
          menu.painter.FillContextMenu(menu);
 
          menu.painter.FillObjectExecMenu(menu, "title", function() {
             menu.show();
         });
-      }, evnt); // end menu creation
+      });
    }
 
    TPavePainter.prototype.IsStats = function() {

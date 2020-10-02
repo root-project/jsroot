@@ -1315,7 +1315,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
 
          this.clearInteractiveElements();
 
-         JSROOT.Painter.createMenu(menu_painter, function(menu) {
+         JSROOT.Painter.createMenu(menu_painter, evnt).then(menu => {
             let domenu = menu.painter.FillContextMenu(menu, kind, obj);
 
             // fill frame menu by default - or append frame elements when activated in the frame corner
@@ -1328,7 +1328,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
                    menu.painter.SwitchTooltip(false);
                    menu.show(null, menu.painter.SwitchTooltip.bind(menu.painter, true));
                });
-         }, evnt);  // end menu creation
+         });
       },
 
      /** @summary Activate context menu handler via touch events

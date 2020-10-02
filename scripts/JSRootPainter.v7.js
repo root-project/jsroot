@@ -2637,12 +2637,12 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
          if (fp) fp.SetLastEventPos();
       }
 
-      JSROOT.Painter.createMenu(this, function(menu) {
+      JSROOT.Painter.createMenu(this, evnt).then(menu => {
 
          menu.painter.FillContextMenu(menu);
 
          menu.painter.FillObjectExecMenu(menu, "", function() { menu.show(); });
-      }, evnt); // end menu creation
+      });
    }
 
    RPadPainter.prototype.Redraw = function(reason) {
@@ -3016,10 +3016,10 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
 
        if (!selp || (typeof selp.FillContextMenu !== 'function')) return;
 
-       JSROOT.Painter.createMenu(selp, function(menu) {
+       JSROOT.Painter.createMenu(selp, evnt).then(menu => {
           if (selp.FillContextMenu(menu,selkind))
              setTimeout(menu.show.bind(menu), 50);
-       }, evnt);
+       });
    }
 
    RPadPainter.prototype.SaveAs = function(kind, full_canvas, filename) {
@@ -3195,7 +3195,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
 
          if (JSROOT.Painter.closeMenu()) return;
 
-         JSROOT.Painter.createMenu(this, menu => {
+         JSROOT.Painter.createMenu(this, evnt).then(menu => {
             menu.add("header:Menus");
 
             if (this.iscan)
@@ -3231,7 +3231,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
             }
 
             menu.show();
-         }, evnt);
+         });
 
          return;
       }

@@ -146,7 +146,7 @@ JSROOT.require(['d3'], (d3) => {
          0.587, 0.514, 0.896, 0.587, 0.55]
    };
 
-   Painter.createMenu = function(painter, maincallback, evt) {
+   Painter.createMenu = function(painter, evt) {
       // dummy functions, forward call to the jquery function
       document.body.style.cursor = 'wait';
       let show_evnt;
@@ -154,9 +154,9 @@ JSROOT.require(['d3'], (d3) => {
       if (evt && (typeof evt == "object"))
          if ((evt.clientX !== undefined) && (evt.clientY !== undefined))
             show_evnt = { clientX: evt.clientX, clientY: evt.clientY };
-      JSROOT.require(['JSRootPainter.jquery']).then(() => {
+      return JSROOT.require(['JSRootPainter.jquery']).then(() => {
          document.body.style.cursor = 'auto';
-         Painter.createMenu(painter, maincallback, show_evnt);
+         return Painter.createMenu(painter, show_evnt);
       });
    }
 

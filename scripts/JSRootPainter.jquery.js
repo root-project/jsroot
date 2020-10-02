@@ -394,16 +394,10 @@ JSROOT.require(['d3', 'jquery', 'JSRootPainter.hierarchy'], (d3, $) => {
    } // class JQueryMenu
 
 
-   JSROOT.Painter.createMenu = function(painter, maincallback, show_event) {
-      let menuname = 'root_ctx_menu';
+   JSROOT.Painter.createMenu = function(painter, show_event) {
+      let menu = new JQueryMenu(painter, 'root_ctx_menu', show_event);
 
-      if (!maincallback && (typeof painter==='function')) { maincallback = painter; painter = null; }
-
-      let menu = new JQueryMenu(painter, menuname, show_event);
-
-      JSROOT.CallBack(maincallback, menu);
-
-      return menu;
+      return Promise.resolve(menu);
    }
 
    // =================================================================================================
@@ -1250,13 +1244,13 @@ JSROOT.require(['d3', 'jquery', 'JSRootPainter.hierarchy'], (d3, $) => {
 
       if (typeof this.fill_context !== 'function') return;
 
-      JSROOT.Painter.createMenu(this, function(menu) {
+      JSROOT.Painter.createMenu(this, evnt).then(menu => {
          menu.painter.fill_context(menu, hitem);
          if (menu.size() > 0) {
             menu.tree_node = elem.parentNode;
             menu.show();
          }
-      }, evnt);
+      });
    }
 
    HierarchyPainter.prototype.tree_contextmenu = function(evnt, elem) {
@@ -1282,7 +1276,7 @@ JSROOT.require(['d3', 'jquery', 'JSRootPainter.hierarchy'], (d3, $) => {
          return el.firstChild.href;
       }
 
-      JSROOT.Painter.createMenu(painter, function(menu) {
+      JSROOT.Painter.createMenu(painter, evnt).then(menu => {
 
          if ((itemname == "") && !('_jsonfile' in hitem)) {
             let addr = "", cnt = 0;
@@ -1369,7 +1363,7 @@ JSROOT.require(['d3', 'jquery', 'JSRootPainter.hierarchy'], (d3, $) => {
             menu.show();
          }
 
-      }, evnt); // end menu creation
+      }); // end menu creation
 
       return false;
    }
