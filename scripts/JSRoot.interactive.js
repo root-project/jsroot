@@ -885,6 +885,292 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
          if (pp) pp.SelectObjectPainter(pp, { x: m[0]+this.frame_x(), y: m[1]+this.frame_y(), dbl: true });
       },
 
+      startTouchZoom: function(evnt) {
+         // in case when zooming was started, block any other kind of events
+         if (this.zoom_kind != 0) {
+            evnt.preventDefault();
+            evnt.stopPropagation();
+            return;
+         }
+
+         let arr = d3.pointers(evnt, this.svg_frame().node());
+         this.touch_cnt+=1;
+
+         // normally double-touch will be handled
+         // touch with single click used for context menu
+         if (arr.length == 1) {
+            // this is touch with single element
+
+            let now = new Date(), diff = now.getTime() - this.last_touch.getTime();
+            this.last_touch = now;
+
+            if ((diff < 300) && this.zoom_curr
+                && (Math.abs(this.zoom_curr[0] - arr[0][0]) < 30)
+                && (Math.abs(this.zoom_curr[1] - arr[0][1]) < 30)) {
+
+               evnt.preventDefault();
+               evnt.stopPropagation();
+
+               this.clearInteractiveElements();
+               this.Unzoom("xyz");
+
+               this.last_touch = new Date(0);
+
+               this.svg_frame().on("touchcancel", null)
+                               .on("touchend", null, true);
+            } else if (JSROOT.gStyle.ContextMenu) {
+               this.zoom_curr = arr[0];
+               this.svg_frame().on("touchcancel", this.endTouchSel.bind(this))
+                               .on("touchend", this.endTouchSel.bind(this));
+               evnt.preventDefault();
+               evnt.stopPropagation();
+            }
+         }
+
+         if ((arr.length != 2) || !JSROOT.gStyle.Zooming || !JSROOT.gStyle.ZoomTouch) return;
+
+         evnt.preventDefault();
+         evnt.stopPropagation();
+
+         this.clearInteractiveElements();
+
+         this.svg_frame().on("touchcancel", null)
+                         .on("touchend", null);
+
+         let pnt1 = arr[0], pnt2 = arr[1], w = this.frame_width(), h = this.frame_height();
+
+         this.zoom_curr = [ Math.min(pnt1[0], pnt2[0]), Math.min(pnt1[1], pnt2[1]) ];
+         this.zoom_origin = [ Math.max(pnt1[0], pnt2[0]), Math.max(pnt1[1], pnt2[1]) ];
+
+         if ((this.zoom_curr[0] < 0) || (this.zoom_curr[0] > w)) {
+            this.zoom_kind = 103; // only y
+            this.zoom_curr[0] = 0;
+            this.zoom_origin[0] = w;
+         } else if ((this.zoom_origin[1] > h) || (this.zoom_origin[1] < 0)) {
+            this.zoom_kind = 102; // only x
+            this.zoom_curr[1] = 0;
+            this.zoom_origin[1] = h;
+         } else {
+            this.zoom_kind = 101; // x and y
+         }
+
+         this.SwitchTooltip(false);
+
+         this.zoom_rect = this.svg_frame().append("rect")
+               .attr("class", "zoom")
+               .attr("id", "zoomRect")
+               .attr("x", this.zoom_curr[0])
+               .attr("y", this.zoom_curr[1])
+               .attr("width", this.zoom_origin[0] - this.zoom_curr[0])
+               .attr("height", this.zoom_origin[1] - this.zoom_curr[1]);
+
+         d3.select(window).on("touchmove.zoomRect", this.moveTouchSel.bind(this))
+                          .on("touchcancel.zoomRect", this.endTouchSel.bind(this))
+                          .on("touchend.zoomRect", this.endTouchSel.bind(this));
+      },
+
+      moveTouchSel: function(evnt) {
+         if (this.zoom_kind < 100) return;
+
+         evnt.preventDefault();
+
+         let arr = d3.pointers(evnt, this.svg_frame().node());
+
+         if (arr.length != 2)
+            return this.clearInteractiveElements();
+
+         let pnt1 = arr[0], pnt2 = arr[1];
+
+         if (this.zoom_kind != 103) {
+            this.zoom_curr[0] = Math.min(pnt1[0], pnt2[0]);
+            this.zoom_origin[0] = Math.max(pnt1[0], pnt2[0]);
+         }
+         if (this.zoom_kind != 102) {
+            this.zoom_curr[1] = Math.min(pnt1[1], pnt2[1]);
+            this.zoom_origin[1] = Math.max(pnt1[1], pnt2[1]);
+         }
+
+         this.zoom_rect.attr("x", this.zoom_curr[0])
+                        .attr("y", this.zoom_curr[1])
+                        .attr("width", this.zoom_origin[0] - this.zoom_curr[0])
+                        .attr("height", this.zoom_origin[1] - this.zoom_curr[1]);
+
+         if ((this.zoom_origin[0] - this.zoom_curr[0] > 10)
+              || (this.zoom_origin[1] - this.zoom_curr[1] > 10))
+            this.SwitchTooltip(false);
+
+         evnt.stopPropagation();
+      },
+
+      endTouchSel: function(evnt) {
+
+         this.svg_frame().on("touchcancel", null)
+                         .on("touchend", null);
+
+         if (this.zoom_kind === 0) {
+            // special case - single touch can ends up with context menu
+
+            evnt.preventDefault();
+
+            let now = new Date();
+
+            let diff = now.getTime() - this.last_touch.getTime();
+
+            if ((diff > 500) && (diff < 2000) && !this.IsTooltipShown()) {
+               this.ShowContextMenu('main', { clientX: this.zoom_curr[0], clientY: this.zoom_curr[1] });
+               this.last_touch = new Date(0);
+            } else {
+               this.clearInteractiveElements();
+            }
+         }
+
+         if (this.zoom_kind < 100) return;
+
+         evnt.preventDefault();
+         d3.select(window).on("touchmove.zoomRect", null)
+                          .on("touchend.zoomRect", null)
+                          .on("touchcancel.zoomRect", null);
+
+         let xmin, xmax, ymin, ymax, isany = false,
+             xid = this.swap_xy ? 1 : 0, yid = 1 - xid,
+             changed = [true, true];
+         if (this.zoom_kind === 102) changed[1] = false;
+         if (this.zoom_kind === 103) changed[0] = false;
+
+         if (changed[xid] && (Math.abs(this.zoom_curr[xid] - this.zoom_origin[xid]) > 10)) {
+            xmin = Math.min(this.RevertX(this.zoom_origin[xid]), this.RevertX(this.zoom_curr[xid]));
+            xmax = Math.max(this.RevertX(this.zoom_origin[xid]), this.RevertX(this.zoom_curr[xid]));
+            isany = true;
+         }
+
+         if (changed[yid] && (Math.abs(this.zoom_curr[yid] - this.zoom_origin[yid]) > 10)) {
+            ymin = Math.min(this.RevertY(this.zoom_origin[yid]), this.RevertY(this.zoom_curr[yid]));
+            ymax = Math.max(this.RevertY(this.zoom_origin[yid]), this.RevertY(this.zoom_curr[yid]));
+            isany = true;
+         }
+
+         this.clearInteractiveElements();
+         this.last_touch = new Date(0);
+
+         if (isany) {
+            this.zoom_changed_interactive = 2;
+            this.Zoom(xmin, xmax, ymin, ymax);
+         }
+
+         evnt.stopPropagation();
+      },
+
+       /** Analyze zooming with mouse wheel */
+      AnalyzeMouseWheelEvent: function(event, item, dmin, ignore) {
+
+         item.min = item.max = undefined;
+         item.changed = false;
+         if (ignore && item.ignore) return;
+
+         let delta = 0, delta_left = 1, delta_right = 1;
+
+         if ('dleft' in item) { delta_left = item.dleft; delta = 1; }
+         if ('dright' in item) { delta_right = item.dright; delta = 1; }
+
+         if ('delta' in item) {
+            delta = item.delta;
+         } else if (event && event.wheelDelta !== undefined ) {
+            // WebKit / Opera / Explorer 9
+            delta = -event.wheelDelta;
+         } else if (event && event.deltaY !== undefined ) {
+            // Firefox
+            delta = event.deltaY;
+         } else if (event && event.detail !== undefined) {
+            delta = event.detail;
+         }
+
+         if (delta===0) return;
+         delta = (delta<0) ? -0.2 : 0.2;
+
+         delta_left *= delta
+         delta_right *= delta;
+
+         let lmin = item.min = this["scale_"+item.name+"min"],
+             lmax = item.max = this["scale_"+item.name+"max"],
+             gmin = this[item.name+"min"],
+             gmax = this[item.name+"max"];
+
+         if ((item.min === item.max) && (delta<0)) {
+            item.min = gmin;
+            item.max = gmax;
+         }
+
+         if (item.min >= item.max) return;
+
+         if (item.reverse) dmin = 1 - dmin;
+
+         if ((dmin>0) && (dmin<1)) {
+            if (this['log'+item.name]) {
+               let factor = (item.min>0) ? Math.log10(item.max/item.min) : 2;
+               if (factor>10) factor = 10; else if (factor<0.01) factor = 0.01;
+               item.min = item.min / Math.pow(10, factor*delta_left*dmin);
+               item.max = item.max * Math.pow(10, factor*delta_right*(1-dmin));
+            } else {
+               let rx_left = (item.max - item.min), rx_right = rx_left;
+               if (delta_left>0) rx_left = 1.001 * rx_left / (1-delta_left);
+               item.min += -delta_left*dmin*rx_left;
+
+               if (delta_right>0) rx_right = 1.001 * rx_right / (1-delta_right);
+
+               item.max -= -delta_right*(1-dmin)*rx_right;
+            }
+            if (item.min >= item.max)
+               item.min = item.max = undefined;
+            else if (delta_left !== delta_right) {
+               // extra check case when moving left or right
+               if (((item.min < gmin) && (lmin===gmin)) ||
+                   ((item.max > gmax) && (lmax==gmax)))
+                      item.min = item.max = undefined;
+            }
+
+         } else {
+            item.min = item.max = undefined;
+         }
+
+         item.changed = ((item.min !== undefined) && (item.max !== undefined));
+      },
+
+      AllowDefaultYZooming: function() {
+         // return true if default Y zooming should be enabled
+         // it is typically for 2-Dim histograms or
+         // when histogram not draw, defined by other painters
+
+         let pad_painter = this.pad_painter();
+         if (pad_painter && pad_painter.painters)
+            for (let k = 0; k < pad_painter.painters.length; ++k) {
+               let subpainter = pad_painter.painters[k];
+               if (subpainter && (subpainter.wheel_zoomy !== undefined))
+                  return subpainter.wheel_zoomy;
+            }
+
+         return false;
+      },
+
+      mouseWheel: function(evnt) {
+         evnt.stopPropagation();
+
+         evnt.preventDefault();
+         this.clearInteractiveElements();
+
+         let itemx = { name: "x", reverse: this.reverse_x, ignore: false },
+             itemy = { name: "y", reverse: this.reverse_y, ignore: !this.AllowDefaultYZooming() },
+             cur = d3.pointer(evnt, this.svg_frame().node()),
+             w = this.frame_width(), h = this.frame_height();
+
+         this.AnalyzeMouseWheelEvent(evnt, this.swap_xy ? itemy : itemx, cur[0] / w, (cur[1] >=0) && (cur[1] <= h));
+
+         this.AnalyzeMouseWheelEvent(evnt, this.swap_xy ? itemx : itemy, 1 - cur[1] / h, (cur[0] >= 0) && (cur[0] <= w));
+
+         this.Zoom(itemx.min, itemx.max, itemy.min, itemy.max);
+
+         if (itemx.changed || itemy.changed) this.zoom_changed_interactive = 2;
+      },
+
       /** Assign frame interactive methods */
       assign: function(painter) {
          painter.AddInteractive = this.AddInteractive;
@@ -894,6 +1180,12 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
          painter.moveRectSel = this.moveRectSel;
          painter.endRectSel = this.endRectSel;
          painter.mouseDoubleClick = this.mouseDoubleClick;
+         painter.startTouchZoom = this.startTouchZoom;
+         painter.moveTouchSel = this.moveTouchSel;
+         painter.endTouchSel = this.endTouchSel;
+         painter.AnalyzeMouseWheelEvent = this.AnalyzeMouseWheelEvent;
+         painter.AllowDefaultYZooming = this.AllowDefaultYZooming;
+         painter.mouseWheel = this.mouseWheel;
       }
 
    } // FrameInterative

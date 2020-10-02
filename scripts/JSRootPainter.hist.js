@@ -2497,25 +2497,6 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], (d3) => {
       return res;
    }
 
-   THistPainter.prototype.AllowDefaultYZooming = function() {
-      // return true if default Y zooming should be enabled
-      // it is typically for 2-Dim histograms or
-      // when histogram not draw, defined by other painters
-
-      if (this.Dimension()>1) return true;
-      if (this.draw_content) return false;
-
-      let pad_painter = this.pad_painter();
-      if (pad_painter &&  pad_painter.painters)
-         for (let k = 0; k < pad_painter.painters.length; ++k) {
-            let subpainter = pad_painter.painters[k];
-            if ((subpainter!==this) && subpainter.wheel_zoomy!==undefined)
-               return subpainter.wheel_zoomy;
-         }
-
-      return false;
-   }
-
    /** @summary Add different interactive handlers
     *
     * @desc only first (main) painter in list allowed to add interactive functionality
@@ -3369,9 +3350,8 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], (d3) => {
          }
       }
 
-      // used in AllowDefaultYZooming
-      if (this.Dimension() > 1) this.wheel_zoomy = true; else
-      if (this.draw_content) this.wheel_zoomy = false;
+      // used in FramePainter.AllowDefaultYZooming
+      this.wheel_zoomy = (this.Dimension() > 1) || !this.draw_content;
    }
 
    /** @summary Count histogram statistic @private */
