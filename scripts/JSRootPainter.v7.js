@@ -2245,7 +2245,8 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
 
          if (!rect.changed) return false;
 
-         btns = this.svg_layer("btns_layer");
+         if (!JSROOT.BatchMode)
+            btns = this.svg_layer("btns_layer");
 
       } else {
 
@@ -2272,9 +2273,11 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
 
          svg.append("svg:g").attr("class","primitives_layer");
          svg.append("svg:g").attr("class","info_layer");
-         btns = svg.append("svg:g").attr("class","btns_layer")
-                                   .property('leftside', JSROOT.gStyle.ToolBarSide == 'left')
-                                   .property('vertical', JSROOT.gStyle.ToolBarVert);
+         if (!JSROOT.BatchMode)
+            btns = svg.append("svg:g")
+                      .attr("class","btns_layer")
+                      .property('leftside', JSROOT.gStyle.ToolBarSide == 'left')
+                      .property('vertical', JSROOT.gStyle.ToolBarVert);
 
          if (JSROOT.gStyle.ContextMenu && !JSROOT.BatchMode)
             svg.select(".canvas_fillrect").on("contextmenu", this.PadContextMenu.bind(this));
@@ -2338,7 +2341,8 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
 
       this._fast_drawing = JSROOT.gStyle.SmallPad && ((rect.width < JSROOT.gStyle.SmallPad.width) || (rect.height < JSROOT.gStyle.SmallPad.height));
 
-      if (this.AlignBtns) this.AlignBtns(btns, rect.width, rect.height);
+      if (this.AlignBtns && btns)
+         this.AlignBtns(btns, rect.width, rect.height);
 
       return true;
    }
@@ -2404,7 +2408,8 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
       if (only_resize) {
          svg_pad = this.svg_pad(this.this_pad_name);
          svg_rect = svg_pad.select(".root_pad_border");
-         btns = this.svg_layer("btns_layer", this.this_pad_name);
+         if (!JSROOT.BatchMode)
+            btns = this.svg_layer("btns_layer", this.this_pad_name);
       } else {
          svg_pad = svg_parent.select(".primitives_layer")
              .append("svg:svg") // here was g before, svg used to blend all drawin outside
@@ -2415,9 +2420,11 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
          svg_rect = svg_pad.append("svg:rect").attr("class", "root_pad_border");
 
          svg_pad.append("svg:g").attr("class","primitives_layer");
-         btns = svg_pad.append("svg:g").attr("class","btns_layer")
-                                       .property('leftside', JSROOT.gStyle.ToolBarSide != 'left')
-                                       .property('vertical', JSROOT.gStyle.ToolBarVert);
+         if (!JSROOT.BatchMode)
+            btns = svg_pad.append("svg:g")
+                          .attr("class","btns_layer")
+                          .property('leftside', JSROOT.gStyle.ToolBarSide != 'left')
+                          .property('vertical', JSROOT.gStyle.ToolBarVert);
 
          if (JSROOT.gStyle.ContextMenu)
             svg_rect.on("contextmenu", this.PadContextMenu.bind(this));
@@ -2462,7 +2469,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
               .select(".draw3d_" + this.this_pad_name)
               .style('display', pad_visible ? '' : 'none');
 
-      if (this.AlignBtns) this.AlignBtns(btns, w, h);
+      if (this.AlignBtns && btns) this.AlignBtns(btns, w, h);
 
       return pad_visible;
    }
