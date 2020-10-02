@@ -725,6 +725,37 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
          return true; // just process any key press
       },
 
+      /** Function called when frame is clicked and object selection can be performed
+        * such event can be used to select */
+      ProcessFrameClick: function(pnt, dblckick) {
+
+         let pp = this.pad_painter();
+         if (!pp) return;
+
+         pnt.painters = true; // provide painters reference in the hints
+         pnt.disabled = true; // do not invoke graphics
+
+         // collect tooltips from pad painter - it has list of all drawn objects
+         let hints = pp.GetTooltips(pnt), exact = null;
+         for (let k=0; (k<hints.length) && !exact; ++k)
+            if (hints[k] && hints[k].exact) exact = hints[k];
+         //if (exact) console.log('Click exact', pnt, exact.painter.GetTipName());
+         //      else console.log('Click frame', pnt);
+
+         let res;
+
+         if (exact) {
+            let handler = dblckick ? this._dblclick_handler : this._click_handler;
+            if (handler) res = handler(exact.user_info, pnt);
+         }
+
+         if (!dblckick)
+            pp.SelectObjectPainter(exact ? exact.painter : this,
+                  { x: pnt.x + (this._frame_x || 0),  y: pnt.y + (this._frame_y || 0) });
+
+         return res;
+      },
+
       startRectSel: function(evnt) {
          // ignore when touch selection is activated
 
@@ -1309,6 +1340,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
          painter.AddInteractive = this.AddInteractive;
          painter.AddKeysHandler = this.AddKeysHandler;
          painter.ProcessKeyPress = this.ProcessKeyPress;
+         painter.ProcessFrameClick = this.ProcessFrameClick;
          painter.startRectSel = this.startRectSel;
          painter.moveRectSel = this.moveRectSel;
          painter.endRectSel = this.endRectSel;

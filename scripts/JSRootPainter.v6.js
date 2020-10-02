@@ -1651,9 +1651,6 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
               .attr("height", h)
               .attr("viewBox", "0 0 " + w + " " + h);
 
-      // let tooltip_rect = this.draw_g.select(".interactive_rect");
-      // if (JSROOT.BatchMode) return tooltip_rect.remove();
-
       if (JSROOT.BatchMode) return;
 
       JSROOT.require(['JSRoot.interactive']).then(() => {
@@ -1668,45 +1665,34 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
             JSROOT.DragMoveHandler.AddDrag(this, { obj: this, only_resize: true,
                                          minwidth: 20, minheight: 20, redraw: this.SizeChanged.bind(this) });
 
-         let tooltip_rect = main_svg;
-         tooltip_rect.style("pointer-events","visibleFill")
-                     .property('handlers_set', 0);
-
-         //  if (tooltip_rect.empty())
-         //     tooltip_rect =
-         //       this.draw_g
-         //          .append("rect")
-         //          .attr("class","interactive_rect")
-         //          .style('opacity',0)
-         //          .style('fill',"none")
-         //          .style("pointer-events","visibleFill")
-         //          .property('handlers_set', 0);
+         main_svg.style("pointer-events","visibleFill")
+                 .property('handlers_set', 0);
 
          let handlers_set = (pp && pp._fast_drawing) ? 0 : 1;
 
-         if (tooltip_rect.property('handlers_set') != handlers_set) {
+         if (main_svg.property('handlers_set') != handlers_set) {
             let close_handler = handlers_set ? this.ProcessTooltipEvent.bind(this, null) : null,
                 mouse_handler = handlers_set ? this.ProcessTooltipEvent.bind(this, { handler: true, touch: false }) : null;
 
-            tooltip_rect.property('handlers_set', handlers_set)
-                        .on('mouseenter', mouse_handler)
-                        .on('mousemove', mouse_handler)
-                        .on('mouseleave', close_handler);
+            main_svg.property('handlers_set', handlers_set)
+                    .on('mouseenter', mouse_handler)
+                    .on('mousemove', mouse_handler)
+                    .on('mouseleave', close_handler);
 
             if (JSROOT.touches) {
                let touch_handler = handlers_set ? this.ProcessTooltipEvent.bind(this, { handler: true, touch: true }) : null;
 
-               tooltip_rect.on("touchstart", touch_handler)
-                           .on("touchmove", touch_handler)
-                           .on("touchend", close_handler)
-                           .on("touchcancel", close_handler);
+               main_svg.on("touchstart", touch_handler)
+                       .on("touchmove", touch_handler)
+                       .on("touchend", close_handler)
+                       .on("touchcancel", close_handler);
             }
          }
 
-         tooltip_rect.attr("x", 0)
-                     .attr("y", 0)
-                     .attr("width", w)
-                     .attr("height", h);
+         main_svg.attr("x", 0)
+                 .attr("y", 0)
+                 .attr("width", w)
+                 .attr("height", h);
 
          let hintsg = this.hints_layer().select(".objects_hints");
          // if tooltips were visible before, try to reconstruct them after short timeout
@@ -1810,37 +1796,6 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
          hint_delta_x: 0,
          hint_delta_y: 0
       }
-   }
-
-    /** Function called when frame is clicked and object selection can be performed
-      * such event can be used to select */
-   TFramePainter.prototype.ProcessFrameClick = function(pnt, dblckick) {
-
-      let pp = this.pad_painter();
-      if (!pp) return;
-
-      pnt.painters = true; // provide painters reference in the hints
-      pnt.disabled = true; // do not invoke graphics
-
-      // collect tooltips from pad painter - it has list of all drawn objects
-      let hints = pp.GetTooltips(pnt), exact = null;
-      for (let k=0; (k<hints.length) && !exact; ++k)
-         if (hints[k] && hints[k].exact) exact = hints[k];
-      //if (exact) console.log('Click exact', pnt, exact.painter.GetTipName());
-      //      else console.log('Click frame', pnt);
-
-      let res;
-
-      if (exact) {
-         let handler = dblckick ? this._dblclick_handler : this._click_handler;
-         if (handler) res = handler(exact.user_info, pnt);
-      }
-
-      if (!dblckick)
-         pp.SelectObjectPainter(exact ? exact.painter : this,
-               { x: pnt.x + (this._frame_x || 0),  y: pnt.y + (this._frame_y || 0) });
-
-      return res;
    }
 
    TFramePainter.prototype.ConfigureUserClickHandler = function(handler) {
