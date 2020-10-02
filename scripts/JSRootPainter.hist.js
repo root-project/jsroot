@@ -4290,22 +4290,19 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], (d3) => {
       if (typeof this.DrawColorPalette === 'function')
          this.DrawColorPalette(false);
 
-     let painter = this;
-
       this.DrawAxes().then(() => {
-         painter.DrawBins();
-         return painter.DrawTitle();
+         this.DrawBins();
+         return this.DrawTitle();
       }).then(() => {
-         painter.UpdateStatWebCanvas();
-         painter.AddInteractive();
+         this.UpdateStatWebCanvas();
+         this.AddInteractive();
          JSROOT.CallBack(call_back);
       });
    }
 
    TH1Painter.prototype.Draw3D = function(call_back, reason) {
       this.mode3d = true;
-      let painter = this;
-      JSROOT.require('hist3d').then(() => painter.Draw3D(call_back, reason));
+      JSROOT.require('hist3d').then(() => this.Draw3D(call_back, reason));
    }
 
    TH1Painter.prototype.Redraw = function(reason) {

@@ -1824,23 +1824,20 @@ JSROOT.require(['d3', 'JSRootPainter.v7'], (d3) => {
       this.Clear3DScene();
       this.mode3d = false;
 
-      let painter = this;
-
       this.DrawAxes().then(res => {
          if (!res) return JSROOT.CallBack(call_back);
-         painter.DrawingBins(call_back, reason, () => {
+         this.DrawingBins(call_back, reason, () => {
             // called when bins received from server, must be reentrant
-            painter.DrawBins();
-            painter.UpdateStatWebCanvas();
-            painter.AddInteractive();
+            this.DrawBins();
+            this.UpdateStatWebCanvas();
+            this.AddInteractive();
          });
       });
    }
 
    RH1Painter.prototype.Draw3D = function(call_back, reason) {
       this.mode3d = true;
-      let painter = this;
-      JSROOT.require('JSRootPainter.v7hist3d').then(() => painter.Draw3D(call_back, reason));
+      JSROOT.require('JSRootPainter.v7hist3d').then(() => this.Draw3D(call_back, reason));
    }
 
    RH1Painter.prototype.Redraw = function(reason) {

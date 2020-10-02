@@ -4664,10 +4664,10 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
          let obj_painter = this.FindSnap(msg.substr(5));
          console.log('GET EDIT ' + msg.substr(5) +  ' found ' + !!obj_painter);
          if (obj_painter)
-            this.ShowSection("Editor", true, function() {
+            this.ShowSection("Editor", true, () => {
                if (this.pad_events_receiver)
                   this.pad_events_receiver({ what: "select", padpainter: this, painter: obj_painter });
-            }.bind(this));
+            });
 
       } else {
          console.log("unrecognized msg " + msg);
@@ -4990,7 +4990,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
       // select global reference - required for keys handling
       JSROOT.Painter.SelectActivePad({ pp: painter, active: true });
 
-      painter.DrawPrimitives(0, function() { painter.ShowButtons(); painter.DrawingReady(); });
+      painter.DrawPrimitives(0, () => { painter.ShowButtons(); painter.DrawingReady(); });
       return painter;
    }
 
@@ -5011,7 +5011,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
       if (painter.enlarge_main('verify'))
          painter.AddButton(JSROOT.ToolbarIcons.circle, "Enlarge canvas", "EnlargePad");
 
-      painter.RedrawPadSnap(snap, function() { painter.ShowButtons(); painter.DrawingReady(); });
+      painter.RedrawPadSnap(snap, () => { painter.ShowButtons(); painter.DrawingReady(); });
 
       return painter;
    }
