@@ -1411,10 +1411,133 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
 
    } // FrameInterative
 
+   let PadButtons = {
+
+      ButtonSize: function(fact) {
+         return Math.round((fact || 1) * (this.iscan || !this.has_canvas ? 16 : 12));
+      },
+
+      AlignBtns:  function(btns, width, height) {
+         let sz0 = this.ButtonSize(1.25), nextx = (btns.property('nextx') || 0) + sz0, btns_x, btns_y;
+
+         if (btns.property('vertical')) {
+            btns_x = btns.property('leftside') ? 2 : (width - sz0);
+            btns_y = height - nextx;
+         } else {
+            btns_x = btns.property('leftside') ? 2 : (width - nextx);
+            btns_y = height - sz0;
+         }
+
+         btns.attr("transform","translate("+btns_x+","+btns_y+")");
+      },
+
+      ToggleButtonsVisibility: function(action) {
+         let group = this.svg_layer("btns_layer", this.this_pad_name),
+             btn = group.select("[name='Toggle']");
+
+         if (btn.empty()) return;
+
+         let state = btn.property('buttons_state');
+
+         if (btn.property('timout_handler')) {
+            if (action!=='timeout') clearTimeout(btn.property('timout_handler'));
+            btn.property('timout_handler', null);
+         }
+
+         let is_visible = false;
+         switch(action) {
+            case 'enable': is_visible = true; break;
+            case 'enterbtn': return; // do nothing, just cleanup timeout
+            case 'timeout': is_visible = false; break;
+            case 'toggle':
+               state = !state;
+               btn.property('buttons_state', state);
+               is_visible = state;
+               break;
+            case 'disable':
+            case 'leavebtn':
+               if (!state) btn.property('timout_handler', setTimeout(this.ToggleButtonsVisibility.bind(this,'timeout'), 500));
+               return;
+         }
+
+         group.selectAll('svg').each(function() {
+            if (this===btn.node()) return;
+            d3.select(this).style('display', is_visible ? "" : "none");
+         });
+      },
+
+      ShowButtons: function() {
+         let group = this.svg_layer("btns_layer", this.this_pad_name);
+         if (group.empty()) return;
+
+         // clean all previous buttons
+         group.selectAll("*").remove();
+
+         let iscan = this.iscan || !this.has_canvas, ctrl,
+             x = group.property('leftside') ? this.ButtonSize(1.25) : 0, y = 0;
+
+         if (this._fast_drawing) {
+            ctrl = JSROOT.ToolbarIcons.CreateSVG(group, JSROOT.ToolbarIcons.circle, this.ButtonSize(), "EnlargePad");
+            ctrl.attr("name", "Enlarge").attr("x", 0).attr("y", 0)
+                // .property("buttons_state", (JSROOT.gStyle.ToolBar!=='popup'))
+                .on("click", this.PadButtonClick.bind(this, "EnlargePad"));
+         } else {
+            ctrl = JSROOT.ToolbarIcons.CreateSVG(group, JSROOT.ToolbarIcons.rect, this.ButtonSize(), "Toggle tool buttons");
+
+            ctrl.attr("name", "Toggle").attr("x", 0).attr("y", 0)
+                .property("buttons_state", (JSROOT.gStyle.ToolBar!=='popup'))
+                .on("click", this.ToggleButtonsVisibility.bind(this, 'toggle'))
+                .on("mouseenter", this.ToggleButtonsVisibility.bind(this, 'enable'))
+                .on("mouseleave", this.ToggleButtonsVisibility.bind(this, 'disable'));
+
+            for (let k=0;k<this._buttons.length;++k) {
+               let item = this._buttons[k];
+
+               let svg = JSROOT.ToolbarIcons.CreateSVG(group, item.btn, this.ButtonSize(),
+                           item.tooltip + (iscan ? "" : (" on pad " + this.this_pad_name)) + (item.keyname ? " (keyshortcut " + item.keyname + ")" : ""));
+
+               if (group.property('vertical'))
+                   svg.attr("x", y).attr("y", x);
+               else
+                  svg.attr("x", x).attr("y", y);
+
+               svg.attr("name", item.funcname)
+                  .style('display', (ctrl.property("buttons_state") ? '' : 'none'))
+                  .on("mouseenter", this.ToggleButtonsVisibility.bind(this, 'enterbtn'))
+                  .on("mouseleave", this.ToggleButtonsVisibility.bind(this, 'leavebtn'));
+
+               if (item.keyname) svg.attr("key", item.keyname);
+
+               svg.on("click", this.PadButtonClick.bind(this, item.funcname));
+
+               x += this.ButtonSize(1.25);
+            }
+         }
+
+         group.property("nextx", x);
+
+         this.AlignBtns(group, this.pad_width(this.this_pad_name), this.pad_height(this.this_pad_name));
+
+         if (group.property('vertical'))
+            ctrl.attr("y", x);
+         else if (!group.property('leftside'))
+            ctrl.attr("x", x);
+      },
+
+      assign: function(painter) {
+         painter.ButtonSize = this.ButtonSize;
+         painter.AlignBtns = this.AlignBtns;
+         painter.ToggleButtonsVisibility = this.ToggleButtonsVisibility;
+         painter.ShowButtons = this.ShowButtons;
+
+      }
+   } // PadButtons
+
    return {
       TooltipHandler: TooltipHandler,
       DragMoveHandler: DragMoveHandler,
-      FrameInteractive: FrameInteractive
+      FrameInteractive: FrameInteractive,
+      PadButtons: PadButtons
    };
 
 })
