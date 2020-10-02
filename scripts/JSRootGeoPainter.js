@@ -1008,7 +1008,7 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
             }
 
          if (numnodes + numitems === 0) {
-            menu.painter.FillContextMenu(menu);
+            this.FillContextMenu(menu);
          } else {
             let many = (numnodes + numitems) > 1;
 
@@ -1021,14 +1021,14 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
                if (obj.geo_name) {
                   itemname = obj.geo_name;
                   if (itemname.indexOf("<prnt>") == 0)
-                     itemname = (menu.painter.GetItemName() || "top") + itemname.substr(6);
+                     itemname = (this.GetItemName() || "top") + itemname.substr(6);
                   name = itemname.substr(itemname.lastIndexOf("/")+1);
                   if (!name) name = itemname;
                   hdr = name;
                } else if (obj.stack) {
-                  name = menu.painter._clones.ResolveStack(obj.stack).name;
-                  itemname = menu.painter.GetStackFullName(obj.stack);
-                  hdr = menu.painter.GetItemName();
+                  name = this._clones.ResolveStack(obj.stack).name;
+                  itemname = this.GetStackFullName(obj.stack);
+                  hdr = this.GetItemName();
                   if (name.indexOf("Nodes/") === 0) hdr = name.substr(6); else
                   if (name.length > 0) hdr = name; else
                   if (!hdr) hdr = "header";
@@ -1040,7 +1040,7 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
 
                menu.add("Browse", itemname, function(arg) { this.ActivateInBrowser([arg], true); });
 
-               if (menu.painter._hpainter)
+               if (this._hpainter)
                   menu.add("Inspect", itemname, function(arg) { this._hpainter.display(arg, "inspect"); });
 
                if (obj.geo_name) {
@@ -1056,7 +1056,7 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
                   continue;
                }
 
-               let wireframe = menu.painter.accessObjectWireFrame(obj);
+               let wireframe = this.accessObjectWireFrame(obj);
 
                if (wireframe!==undefined)
                   menu.addchk(wireframe, "Wireframe", n, function(indx) {
@@ -1093,7 +1093,7 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
                   this.focusCamera(intersects[indx].object);
                });
 
-               if (!menu.painter._geom_viewer)
+               if (!this._geom_viewer)
                menu.add("Hide", n, function(indx) {
                   let resolve = menu.painter._clones.ResolveStack(intersects[indx].object.stack);
 

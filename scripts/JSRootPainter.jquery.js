@@ -1245,7 +1245,7 @@ JSROOT.require(['d3', 'jquery', 'JSRootPainter.hierarchy'], (d3, $) => {
       if (typeof this.fill_context !== 'function') return;
 
       JSROOT.Painter.createMenu(this, evnt).then(menu => {
-         menu.painter.fill_context(menu, hitem);
+         this.fill_context(menu, hitem);
          if (menu.size() > 0) {
             menu.tree_node = elem.parentNode;
             menu.show();

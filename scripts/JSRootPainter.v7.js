@@ -2639,9 +2639,9 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
 
       JSROOT.Painter.createMenu(this, evnt).then(menu => {
 
-         menu.painter.FillContextMenu(menu);
+         this.FillContextMenu(menu);
 
-         menu.painter.FillObjectExecMenu(menu, "", function() { menu.show(); });
+         this.FillObjectExecMenu(menu, "", () => menu.show());
       });
    }
 
