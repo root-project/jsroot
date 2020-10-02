@@ -1656,53 +1656,8 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
       if (JSROOT.BatchMode) return;
 
       JSROOT.require(['JSRoot.interactive']).then(() => {
-         JSROOT.TooltipHandler.assign(this);
-
-         this.draw_g.attr("x", this._frame_x)
-                    .attr("y", this._frame_y)
-                    .attr("width", this._frame_width)
-                    .attr("height", this._frame_height);
-
-         if (!this._frame_rotate && !this._frame_fixpos)
-            JSROOT.DragMoveHandler.AddDrag(this, { obj: this, only_resize: true,
-                                         minwidth: 20, minheight: 20, redraw: this.SizeChanged.bind(this) });
-
-         let main_svg = this.draw_g.select(".main_layer");
-
-         main_svg.style("pointer-events","visibleFill")
-                 .property('handlers_set', 0);
-
-         let pp = this.pad_painter(),
-             handlers_set = (pp && pp._fast_drawing) ? 0 : 1;
-
-         if (main_svg.property('handlers_set') != handlers_set) {
-            let close_handler = handlers_set ? this.ProcessTooltipEvent.bind(this, null) : null,
-                mouse_handler = handlers_set ? this.ProcessTooltipEvent.bind(this, { handler: true, touch: false }) : null;
-
-            main_svg.property('handlers_set', handlers_set)
-                    .on('mouseenter', mouse_handler)
-                    .on('mousemove', mouse_handler)
-                    .on('mouseleave', close_handler);
-
-            if (JSROOT.touches) {
-               let touch_handler = handlers_set ? this.ProcessTooltipEvent.bind(this, { handler: true, touch: true }) : null;
-
-               main_svg.on("touchstart", touch_handler)
-                       .on("touchmove", touch_handler)
-                       .on("touchend", close_handler)
-                       .on("touchcancel", close_handler);
-            }
-         }
-
-         main_svg.attr("x", 0)
-                 .attr("y", 0)
-                 .attr("width", this._frame_width)
-                 .attr("height", this._frame_height);
-
-         let hintsg = this.hints_layer().select(".objects_hints");
-         // if tooltips were visible before, try to reconstruct them after short timeout
-         if (!hintsg.empty() && this.IsTooltipAllowed() && (hintsg.property("hints_pad") == this.pad_name))
-            setTimeout(this.ProcessTooltipEvent.bind(this, hintsg.property('last_point'), null), 10);
+         JSROOT.FrameInteractive.assign(this);
+         this.BasicInteractive();
       });
    }
 
