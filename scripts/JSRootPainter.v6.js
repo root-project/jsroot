@@ -1843,15 +1843,6 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
       return res;
    }
 
-   TFramePainter.prototype.clearInteractiveElements = function() {
-      JSROOT.Painter.closeMenu();
-      if (this.zoom_rect) { this.zoom_rect.remove(); this.zoom_rect = null; }
-      this.zoom_kind = 0;
-
-      // enable tooltip in frame painter
-      this.SwitchTooltip(true);
-   }
-
    TFramePainter.prototype.ConfigureUserClickHandler = function(handler) {
       this._click_handler = handler && (typeof handler == 'function') ? handler : null;
    }
@@ -1979,73 +1970,6 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
       return changed;
    }
 
-   TFramePainter.prototype.ShowContextMenu = function(kind, evnt, obj) {
-
-      // ignore context menu when touches zooming is ongoing
-      if (('zoom_kind' in this) && (this.zoom_kind > 100)) return;
-
-      // this is for debug purposes only, when context menu is where, close is and show normal menu
-      //if (!evnt && !kind && document.getElementById('root_ctx_menu')) {
-      //   let elem = document.getElementById('root_ctx_menu');
-      //   elem.parentNode.removeChild(elem);
-      //   return;
-      //}
-
-      let menu_painter = this, exec_painter = null, frame_corner = false, fp = null; // object used to show context menu
-
-      if (evnt.stopPropagation) {
-         evnt.preventDefault();
-         evnt.stopPropagation(); // disable main context menu
-
-         if (!kind) {
-            let ms = d3.pointer(evnt, this.svg_frame().node()),
-                tch = d3.pointers(evnt, this.svg_frame().node()),
-                pp = this.pad_painter(),
-                pnt = null, sel = null;
-
-            fp = this;
-
-            if (tch.length === 1) pnt = { x: tch[0][0], y: tch[0][1], touch: true }; else
-            if (ms.length === 2) pnt = { x: ms[0], y: ms[1], touch: false };
-
-            if ((pnt !== null) && (pp !== null)) {
-               pnt.painters = true; // assign painter for every tooltip
-               let hints = pp.GetTooltips(pnt), bestdist = 1000;
-               for (let n=0;n<hints.length;++n)
-                  if (hints[n] && hints[n].menu) {
-                     let dist = ('menu_dist' in hints[n]) ? hints[n].menu_dist : 7;
-                     if (dist < bestdist) { sel = hints[n].painter; bestdist = dist; }
-                  }
-            }
-
-            if (sel) menu_painter = sel; else kind = "frame";
-
-            if (pnt) frame_corner = (pnt.x>0) && (pnt.x<20) && (pnt.y>0) && (pnt.y<20);
-
-            fp.SetLastEventPos(pnt);
-         } else if ((kind=="x") || (kind=="y") || (kind=="z")) {
-            exec_painter = this.main_painter(); // histogram painter delivers items for axis menu
-         }
-      }
-
-      if (!exec_painter) exec_painter = menu_painter;
-
-      JSROOT.Painter.createMenu(menu_painter, function(menu) {
-         let domenu = menu.painter.FillContextMenu(menu, kind, obj);
-
-         // fill frame menu by default - or append frame elements when activated in the frame corner
-         if (fp && (!domenu || (frame_corner && (kind!=="frame"))))
-            domenu = fp.FillContextMenu(menu);
-
-         if (domenu)
-            exec_painter.FillObjectExecMenu(menu, kind, function() {
-                // suppress any running zooming
-                menu.painter.SwitchTooltip(false);
-                menu.show(null, menu.painter.SwitchTooltip.bind(menu.painter, true));
-            });
-      }, evnt);  // end menu creation
-   }
-
    /** @summary Show axis status message
    *
    * @desc method called normally when mouse enter main object element
@@ -2066,52 +1990,6 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
       let axis_value = (axis_name=="x") ? this.RevertX(m[id]) : this.RevertY(m[id]);
 
       status_func(hint_name, hint_title, axis_name + " : " + this.AxisAsText(axis_name, axis_value), m[0]+","+m[1]);
-   }
-
-   /** @summary Activate context menu handler via touch events
-    * @private */
-   TFramePainter.prototype.startTouchMenu = function(kind, evnt) {
-      // method to let activate context menu via touch handler
-
-      let arr = d3.pointers(evnt, this.svg_frame().node());
-      if (arr.length != 1) return;
-
-      if (!kind || (kind=="")) kind = "main";
-      let fld = "touch_" + kind;
-
-      evnt.sourceEvent.preventDefault();
-      evnt.sourceEvent.stopPropagation();
-
-      this[fld] = { dt: new Date(), pos: arr[0] };
-
-      let handler = this.endTouchMenu.bind(this, kind);
-
-      this.svg_frame().on("touchcancel", handler)
-                      .on("touchend", handler);
-   }
-
-   /** @summary Process end-touch event, which can cause content menu to appear
-    * @private */
-   TFramePainter.prototype.endTouchMenu = function(kind, evnt) {
-      let fld = "touch_" + kind;
-
-      if (! (fld in this)) return;
-
-      evnt.sourceEvent.preventDefault();
-      evnt.sourceEvent.stopPropagation();
-
-      let diff = new Date().getTime() - this[fld].dt.getTime();
-
-      this.svg_frame().on("touchcancel", null)
-                      .on("touchend", null);
-
-      if (diff > 500) {
-         let rect = this.svg_frame().node().getBoundingClientRect();
-         this.ShowContextMenu(kind, { clientX: rect.left + this[fld].pos[0],
-                                      clientY: rect.top + this[fld].pos[1] } );
-      }
-
-      delete this[fld];
    }
 
    /** @summary Add interactive keys handlers
