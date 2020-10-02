@@ -1189,7 +1189,10 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
             evnt.preventDefault();
             evnt.stopPropagation(); // disable main context menu
 
-            if (!kind) {
+            if (kind == 'painter' && obj) {
+               menu_painter = obj;
+               kind = "";
+            } else if (!kind) {
                let ms = d3.pointer(evnt, this.svg_frame().node()),
                    tch = d3.pointers(evnt, this.svg_frame().node()),
                    pp = this.pad_painter(),
@@ -1218,9 +1221,15 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
             } else if (!this.v7_frame && ((kind=="x") || (kind=="y") || (kind=="z"))) {
                exec_painter = this.main_painter(); // histogram painter delivers items for axis menu
             }
+         } else if (kind == 'painter' && obj) {
+            // this is used in 3D context menu to show special painter
+            menu_painter = obj;
+            kind = "";
          }
 
          if (!exec_painter) exec_painter = menu_painter;
+
+         if (!menu_painter || !menu_painter.FillContextMenu) return;
 
          this.clearInteractiveElements();
 

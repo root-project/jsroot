@@ -381,26 +381,24 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], (d3) => {
 
       if (JSROOT.BatchMode || (pt._typename=="TPave")) return;
 
-      let painter = this;
-
       JSROOT.require(['JSRoot.interactive']).then(() => {
 
          // here all kind of interactive settings
          rect.style("pointer-events", "visibleFill")
-             .on("mouseenter", painter.ShowObjectStatus.bind(painter))
+             .on("mouseenter", this.ShowObjectStatus.bind(this))
 
          // position and size required only for drag functions
-         painter.draw_g.attr("x", pos_x)
-                       .attr("y", pos_y)
-                       .attr("width", width)
-                       .attr("height", height);
+         this.draw_g.attr("x", pos_x)
+                    .attr("y", pos_y)
+                    .attr("width", width)
+                    .attr("height", height);
 
-         JSROOT.DragMoveHandler.AddDrag(painter, { obj: pt, minwidth: 10, minheight: 20, canselect: true,
+         JSROOT.DragMoveHandler.AddDrag(this, { obj: pt, minwidth: 10, minheight: 20, canselect: true,
                         redraw: this.DragRedraw.bind(this),
                         ctxmenu: JSROOT.touches && JSROOT.gStyle.ContextMenu && this.UseContextMenu });
 
-         if (painter.UseContextMenu && JSROOT.gStyle.ContextMenu)
-            painter.draw_g.on("contextmenu", this.PaveContextMenu.bind(painter));
+         if (this.UseContextMenu && JSROOT.gStyle.ContextMenu)
+            this.draw_g.on("contextmenu", this.PaveContextMenu.bind(this));
       });
    }
 
@@ -2509,68 +2507,6 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], (d3) => {
          let fp = this.frame_painter();
          if (fp) fp.AddInteractive();
       }
-   }
-
-   THistPainter.prototype.ShowContextMenu = function(kind, evnt, obj) {
-
-      // this is for debug purposes only, when context menu is where, close is and show normal menu
-      //if (!evnt && !kind && document.getElementById('root_ctx_menu')) {
-      //   let elem = document.getElementById('root_ctx_menu');
-      //   elem.parentNode.removeChild(elem);
-      //   return;
-      //}
-
-      let menu_painter = this, frame_corner = false, fp = null; // object used to show context menu
-
-      if (evnt.stopPropagation) {
-         evnt.preventDefault();
-         evnt.stopPropagation(); // disable main context menu
-
-         if (!kind) {
-            let ms = d3.pointer(evnt, this.svg_frame().node()),
-                tch = d3.pointers(evnt, this.svg_frame().node()),
-                pp = this.pad_painter(),
-                pnt = null, sel = null;
-
-            fp = this.frame_painter();
-
-            if (tch.length === 1) pnt = { x: tch[0][0], y: tch[0][1], touch: true }; else
-            if (ms.length === 2) pnt = { x: ms[0], y: ms[1], touch: false };
-
-            if ((pnt !== null) && (pp !== null)) {
-               pnt.painters = true; // assign painter for every tooltip
-               let hints = pp.GetTooltips(pnt), bestdist = 1000;
-               for (let n=0;n<hints.length;++n)
-                  if (hints[n] && hints[n].menu) {
-                     let dist = ('menu_dist' in hints[n]) ? hints[n].menu_dist : 7;
-                     if (dist < bestdist) { sel = hints[n].painter; bestdist = dist; }
-                  }
-            }
-
-            if (sel!==null) menu_painter = sel; else
-            if (fp!==null) kind = "frame";
-
-            if (pnt!==null) frame_corner = (pnt.x>0) && (pnt.x<20) && (pnt.y>0) && (pnt.y<20);
-
-            if (fp) fp.SetLastEventPos(pnt);
-         }
-      }
-
-      JSROOT.Painter.createMenu(menu_painter, function(menu) {
-         let domenu = menu.painter.FillContextMenu(menu, kind, obj);
-
-         // fill frame menu by default - or append frame elements when activated in the frame corner
-         if (fp && (!domenu || (frame_corner && (kind!=="frame"))))
-            domenu = fp.FillContextMenu(menu);
-
-         if (domenu)
-            menu.painter.FillObjectExecMenu(menu, kind, function() {
-                // suppress any running zooming
-                menu.painter.SwitchTooltip(false);
-                menu.show(null, menu.painter.SwitchTooltip.bind(menu.painter, true));
-            });
-
-      }, evnt);  // end menu creation
    }
 
    /** @summary Invoke dialog to enter and modify user range @private */

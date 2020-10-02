@@ -184,7 +184,7 @@ JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.hist'], (d3, THREE) => {
       }
 
       this.control.ContextMenu = function(pos, intersects) {
-         let kind = "hist", p = obj_painter;
+         let kind = "painter", p = obj_painter;
          if (intersects)
             for (var n=0;n<intersects.length;++n) {
                var mesh = intersects[n].object;

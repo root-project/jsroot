@@ -164,7 +164,7 @@ JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.v7hist'], (d3, THREE) =>
       }
 
       this.control.ContextMenu = function(pos, intersects) {
-         let kind = "hist", p = obj_painter;
+         let kind = "painter", p = obj_painter;
          if (intersects)
             for (var n=0;n<intersects.length;++n) {
                var mesh = intersects[n].object;
@@ -174,8 +174,9 @@ JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.v7hist'], (d3, THREE) =>
                }
             }
 
-         if (typeof p.ShowContextMenu == 'function')
-            p.ShowContextMenu(kind, pos);
+         let fp = obj_painter.frame_painter();
+         if (fp && fp.ShowContextMenu)
+            fp.ShowContextMenu(kind, pos, p);
       }
    }
 
