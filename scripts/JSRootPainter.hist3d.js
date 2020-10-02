@@ -214,13 +214,14 @@
          if (intersects)
             for (var n=0;n<intersects.length;++n) {
                var mesh = intersects[n].object;
-               if (mesh.zoom) { kind = mesh.zoom; break; }
+               if (mesh.zoom) { kind = mesh.zoom; p = obj_painter.frame_painter(); break; }
                if (mesh.painter && typeof mesh.painter.ShowContextMenu === 'function') {
                   p = mesh.painter; break;
                }
             }
 
-         p.ShowContextMenu(kind, pos);
+         if (typeof p.ShowContextMenu == 'function')
+            p.ShowContextMenu(kind, pos);
       }
    }
 
