@@ -398,7 +398,7 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], (d3) => {
                         ctxmenu: JSROOT.touches && JSROOT.gStyle.ContextMenu && this.UseContextMenu });
 
          if (this.UseContextMenu && JSROOT.gStyle.ContextMenu)
-            this.draw_g.on("contextmenu", this.PaveContextMenu.bind(this));
+             this.draw_g.on("contextmenu", this.PaveContextMenu.bind(this));
       });
    }
 
@@ -1114,10 +1114,12 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], (d3) => {
    }
 
    TPavePainter.prototype.PaveContextMenu = function(evnt) {
-
-      // for color palette
-      if (this.z_handle)
-         return this.frame_painter().ShowContextMenu("z", evnt, this.GetObject().fAxis);
+      if (this.z_handle) {
+         let fp = this.frame_painter();
+         if (fp && fp.ShowContextMenu)
+             fp.ShowContextMenu("z", evnt);
+         return;
+      }
 
       evnt.stopPropagation(); // disable main context menu
       evnt.preventDefault();  // disable browser context menu

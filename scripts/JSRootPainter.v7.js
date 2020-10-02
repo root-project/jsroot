@@ -4137,13 +4137,12 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
 
       if (JSROOT.BatchMode) return;
 
-      let painter = this;
-
       JSROOT.require(['JSRoot.interactive']).then(() => {
-         if (JSROOT.gStyle.ContextMenu && painter.ShowContextMenu)
-            painter.draw_g.on("contextmenu", painter.ShowContextMenu.bind(painter));
+         // TODO: provide pave context menu as in v6
+         if (JSROOT.gStyle.ContextMenu && this.PaveContextMenu)
+            this.draw_g.on("contextmenu", this.PaveContextMenu.bind(this));
 
-         JSROOT.DragMoveHandler.AddDrag(painter, { minwidth: 20, minheight: 20, redraw: painter.SizeChanged.bind(painter) });
+         JSROOT.DragMoveHandler.AddDrag(this, { minwidth: 20, minheight: 20, redraw: this.SizeChanged.bind(this) });
       });
    }
 
