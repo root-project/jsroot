@@ -5,7 +5,7 @@ jsroot.OpenFile("https://root.cern/js/files/hsimple.root").then(f => {
       tree.Draw({ expr: "px:py:pz", dump: true, numentries: 100 }, function(res) {
          console.log("NumEntries", res.length);
          let sumx = 0, sumy = 0, sumz = 0;
-         res.forEach(function(item) {
+         res.forEach(item => {
             sumx += item.x;
             sumy += item.y;
             sumz += item.z;

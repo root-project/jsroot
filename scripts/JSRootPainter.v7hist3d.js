@@ -730,7 +730,7 @@ JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.v7hist'], (d3, THREE) =>
       let xtickslines = JSROOT.Painter.createLineSegments( ticks, lineMaterial );
       xcont.add(xtickslines);
 
-      lbls.forEach(function(lbl) {
+      lbls.forEach(lbl => {
          let w = lbl.boundingBox.max.x - lbl.boundingBox.min.x,
              posx = lbl.center ? lbl.grx - w/2 : grmaxx - w,
              m = new THREE.Matrix4();
@@ -752,7 +752,7 @@ JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.v7hist'], (d3, THREE) =>
       xcont.position.set(0, grmaxy, grminz);
       xcont.rotation.x = 3/4*Math.PI;
       xcont.add(new THREE.LineSegments(xtickslines.geometry, lineMaterial));
-      lbls.forEach(function(lbl) {
+      lbls.forEach(lbl => {
 
          let w = lbl.boundingBox.max.x - lbl.boundingBox.min.x,
              posx = lbl.center ? lbl.grx + w/2 : grmaxx,
@@ -823,7 +823,7 @@ JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.v7hist'], (d3, THREE) =>
          ycont.add(yticksline);
          //ycont.add(new THREE.Mesh(ggg1, textMaterial));
 
-         lbls.forEach(function(lbl) {
+         lbls.forEach(lbl => {
 
             let w = lbl.boundingBox.max.x - lbl.boundingBox.min.x,
                 posy = lbl.center ? lbl.gry + w/2 : grmaxy,
@@ -848,7 +848,7 @@ JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.v7hist'], (d3, THREE) =>
          ycont.rotation.y = -3/4*Math.PI;
          ycont.add(new THREE.LineSegments(yticksline.geometry, lineMaterial));
          //ycont.add(new THREE.Mesh(ggg2, textMaterial));
-         lbls.forEach(function(lbl) {
+         lbls.forEach(lbl => {
             let w = lbl.boundingBox.max.x - lbl.boundingBox.min.x,
                 posy = lbl.center ? lbl.gry - w/2 : grmaxy - w,
                 m = new THREE.Matrix4();
@@ -949,7 +949,7 @@ JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.v7hist'], (d3, THREE) =>
       for (let n=0;n<4;++n) {
          zcont.push(new THREE.Object3D());
 
-         lbls.forEach(function(lbl) {
+         lbls.forEach(lbl => {
             let m = new THREE.Matrix4();
             // matrix to swap y and z scales and shift along z to its position
             m.set(-text_scale,          0,  0, 2*ticklen,

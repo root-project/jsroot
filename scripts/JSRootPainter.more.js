@@ -587,7 +587,7 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter.v6'], (d3) => {
          xmin = xmax = bins[0].x;
          ymin = ymax = bins[0].y;
 
-         bins.forEach(function(bin) {
+         bins.forEach(bin => {
             xmin = Math.min(bin.x, xmin);
             xmax = Math.max(bin.x, xmax);
             ymin = Math.min(bin.y, ymin);
@@ -2612,7 +2612,7 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter.v6'], (d3) => {
          xmin = xmax = spline.fPoly[0].fX;
          ymin = ymax = spline.fPoly[0].fY;
 
-         spline.fPoly.forEach(function(knot) {
+         spline.fPoly.forEach(knot => {
             xmin = Math.min(knot.fX, xmin);
             xmax = Math.max(knot.fX, xmax);
             ymin = Math.min(knot.fY, ymin);

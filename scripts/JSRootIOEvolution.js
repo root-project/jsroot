@@ -1166,7 +1166,7 @@ JSROOT.require(['rawinflate'], () => {
 
          return JSROOT.require('tree').then(() => {
             if (file.readTrees) {
-               file.readTrees.forEach(function(t) { JSROOT.extend(t, JSROOT.TreeMethods); })
+               file.readTrees.forEach(t => JSROOT.extend(t, JSROOT.TreeMethods))
                delete file.readTrees;
             }
             return obj;

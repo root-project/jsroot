@@ -2548,13 +2548,13 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
 
       // first count - how many processors are there
       if (this.painters !== null)
-         this.painters.forEach(function(obj) {
+         this.painters.forEach(obj => {
             if ('ProcessTooltip' in obj) painters.push(obj);
          });
 
       if (pnt) pnt.nproc = painters.length;
 
-      painters.forEach(function(obj) {
+      painters.forEach(obj => {
          let hint = obj.ProcessTooltip(pnt);
          if (!hint) hint = { user_info: null };
          hints.push(hint);

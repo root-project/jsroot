@@ -307,7 +307,7 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
       // Has controller list changed?
       if (this.vrControllers && (gamepads.length === this.vrControllers.length)) { return; }
       // Hide meshes.
-      this._controllersMeshes.forEach(function (mesh) { mesh.visible = false; });
+      this._controllersMeshes.forEach(mesh => { mesh.visible = false; });
       this._vrControllers = [];
       for (let i = 0; i < gamepads.length; ++i) {
          if (!gamepads[i] || !gamepads[i].pose) { continue; }
@@ -920,7 +920,7 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
 
       if (this._webgl) {
          let advanced = this._datgui.addFolder('Advanced'), depthcfg = {};
-         this.ctrl.depthMethodItems.forEach(function(i) { depthcfg[i.name] = i.value; });
+         this.ctrl.depthMethodItems.forEach(i => { depthcfg[i.name] = i.value; });
 
          advanced.add(this.ctrl, 'depthTest').name("Depth test")
             .listen().onChange(this.changedDepthTest.bind(this));
@@ -953,7 +953,7 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
       let ssaofolder = this._datgui.addFolder('Smooth Lighting (SSAO)'),
           ssao_handler = this.changedSSAO.bind(this), ssaocfg = {};
 
-      this.ctrl.ssao.outputItems.forEach(function(i) { ssaocfg[i.name] = i.value; });
+      this.ctrl.ssao.outputItems.forEach(i => { ssaocfg[i.name] = i.value; });
 
       ssaofolder.add(this.ctrl.ssao, 'enabled').name('Enable SSAO')
                 .listen().onChange(ssao_handler);
@@ -1072,14 +1072,14 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
                         this._last_manifest.wireframe = !this._last_manifest.wireframe;
 
                      if (this._last_hidden)
-                        this._last_hidden.forEach(function(obj) { obj.visible = true; });
+                        this._last_hidden.forEach(obj => { obj.visible = true; });
 
                      this._last_hidden = [];
 
                      for (let i=0;i<indx;++i)
                         this._last_hidden.push(intersects[i].object);
 
-                     this._last_hidden.forEach(function(obj) { obj.visible = false; });
+                     this._last_hidden.forEach(obj => { obj.visible = false; });
 
                      this._last_manifest = intersects[indx].object.material;
 
@@ -1381,7 +1381,7 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
          if (painter._last_manifest) {
             painter._last_manifest.wireframe = !painter._last_manifest.wireframe;
             if (painter._last_hidden)
-               painter._last_hidden.forEach(function(obj) { obj.visible = true; });
+               painter._last_hidden.forEach(obj => { obj.visible = true; });
             delete painter._last_hidden;
             delete painter._last_manifest;
             painter.Render3D();
@@ -1954,7 +1954,7 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
       }
 
       // keep light power of all soources constant
-      plights.forEach(function(ll) { ll.power = p*4*Math.PI/plights.length; })
+      plights.forEach(ll => { ll.power = p*4*Math.PI/plights.length; })
 
       if (need_render) this.Render3D();
    }

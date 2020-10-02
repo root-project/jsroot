@@ -1851,7 +1851,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
          if (!changed) {
             let pp = this.pad_painter();
             if (pp && pp.painters)
-               pp.painters.forEach(function(painter){
+               pp.painters.forEach(painter => {
                   if (painter && (typeof painter.UnzoomUserRange == 'function'))
                      if (painter.UnzoomUserRange(unzoom_x, unzoom_y, unzoom_z)) changed = true;
             });
@@ -2484,13 +2484,13 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
 
       // first count - how many processors are there
       if (this.painters !== null)
-         this.painters.forEach(function(obj) {
+         this.painters.forEach(obj => {
             if ('ProcessTooltip' in obj) painters.push(obj);
          });
 
       if (pnt) pnt.nproc = painters.length;
 
-      painters.forEach(function(obj) {
+      painters.forEach(obj => {
          let hint = obj.ProcessTooltip(pnt);
          if (!hint) hint = { user_info: null };
          hints.push(hint);

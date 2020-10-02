@@ -1956,7 +1956,7 @@ JSROOT.require(['d3'], (d3) => {
          for (let n = 0; n < chlds.length; ++n)
             if (d3.select(chlds[n]).classed("most_upper_primitives")) up.push(chlds[n]);
 
-         up.forEach(function(top) { d3.select(top).raise(); });
+         up.forEach(top => { d3.select(top).raise(); });
       }
 
       // set attributes for debugging

@@ -2004,7 +2004,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
          this.EnableMonitoring(false);
          // simplify work for javascript and delete all (ok, most of) cross-references
          this.select_main().html("");
-         plainarr.forEach(function(d) { delete d._parent; delete d._childs; delete d._obj; delete d._d3cont; });
+         plainarr.forEach(d => { delete d._parent; delete d._childs; delete d._obj; delete d._d3cont; });
          delete this.h;
       }
    }
