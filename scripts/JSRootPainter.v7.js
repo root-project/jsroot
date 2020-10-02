@@ -1563,6 +1563,8 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
       this._frame_y = tm;
       this._frame_width = w;
       this._frame_height = h;
+      this._frame_rotate = rotate;
+      this._frame_fixpos = fixpos;
 
       if (this.mode3d) return; // no need for real draw in mode3d
 

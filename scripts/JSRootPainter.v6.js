@@ -1602,6 +1602,8 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
       this._frame_y = tm;
       this._frame_width = w;
       this._frame_height = h;
+      this._frame_rotate = rotate;
+      this._frame_fixpos = fixpos;
 
       if (this.mode3d) return; // no need to create any elements in 3d mode
 
@@ -1656,19 +1658,22 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
       JSROOT.require(['JSRoot.interactive']).then(() => {
          JSROOT.TooltipHandler.assign(this);
 
-         this.draw_g.attr("x", lm)
-                    .attr("y", tm)
-                    .attr("width", w)
-                    .attr("height", h);
+         this.draw_g.attr("x", this._frame_x)
+                    .attr("y", this._frame_y)
+                    .attr("width", this._frame_width)
+                    .attr("height", this._frame_height);
 
-         if (!rotate && !fixpos)
+         if (!this._frame_rotate && !this._frame_fixpos)
             JSROOT.DragMoveHandler.AddDrag(this, { obj: this, only_resize: true,
                                          minwidth: 20, minheight: 20, redraw: this.SizeChanged.bind(this) });
+
+         let main_svg = this.draw_g.select(".main_layer");
 
          main_svg.style("pointer-events","visibleFill")
                  .property('handlers_set', 0);
 
-         let handlers_set = (pp && pp._fast_drawing) ? 0 : 1;
+         let pp = this.pad_painter(),
+             handlers_set = (pp && pp._fast_drawing) ? 0 : 1;
 
          if (main_svg.property('handlers_set') != handlers_set) {
             let close_handler = handlers_set ? this.ProcessTooltipEvent.bind(this, null) : null,
@@ -1691,8 +1696,8 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
 
          main_svg.attr("x", 0)
                  .attr("y", 0)
-                 .attr("width", w)
-                 .attr("height", h);
+                 .attr("width", this._frame_width)
+                 .attr("height", this._frame_height);
 
          let hintsg = this.hints_layer().select(".objects_hints");
          // if tooltips were visible before, try to reconstruct them after short timeout
