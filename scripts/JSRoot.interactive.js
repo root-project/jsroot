@@ -618,8 +618,8 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
                     .attr("height", this._frame_height);
 
          if (!this._frame_rotate && !this._frame_fixpos)
-            JSROOT.DragMoveHandler.AddDrag(this, { obj: this, only_resize: true,
-                                         minwidth: 20, minheight: 20, redraw: this.SizeChanged.bind(this) });
+            DragMoveHandler.AddDrag(this, { obj: this, only_resize: true,
+                                    minwidth: 20, minheight: 20, redraw: this.SizeChanged.bind(this) });
 
          let main_svg = this.draw_g.select(".main_layer");
 
@@ -1411,8 +1411,10 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
 
    } // FrameInterative
 
-   JSROOT.TooltipHandler = TooltipHandler;
-   JSROOT.DragMoveHandler = DragMoveHandler;
-   JSROOT.FrameInteractive = FrameInteractive;
+   return {
+      TooltipHandler: TooltipHandler,
+      DragMoveHandler: DragMoveHandler,
+      FrameInteractive: FrameInteractive
+   };
 
 })

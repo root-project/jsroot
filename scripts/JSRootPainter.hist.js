@@ -381,7 +381,7 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], (d3) => {
 
       if (JSROOT.BatchMode || (pt._typename=="TPave")) return;
 
-      JSROOT.require(['JSRoot.interactive']).then(() => {
+      JSROOT.require(['JSRoot.interactive']).then(inter => {
 
          // here all kind of interactive settings
          rect.style("pointer-events", "visibleFill")
@@ -393,7 +393,7 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], (d3) => {
                     .attr("width", width)
                     .attr("height", height);
 
-         JSROOT.DragMoveHandler.AddDrag(this, { obj: pt, minwidth: 10, minheight: 20, canselect: true,
+         inter.DragMoveHandler.AddDrag(this, { obj: pt, minwidth: 10, minheight: 20, canselect: true,
                         redraw: this.DragRedraw.bind(this),
                         ctxmenu: JSROOT.touches && JSROOT.gStyle.ContextMenu && this.UseContextMenu });
 

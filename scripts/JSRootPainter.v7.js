@@ -1625,8 +1625,8 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
 
       if (JSROOT.BatchMode) return;
 
-      JSROOT.require(['JSRoot.interactive']).then(() => {
-         JSROOT.FrameInteractive.assign(this);
+      JSROOT.require(['JSRoot.interactive']).then(inter => {
+         inter.FrameInteractive.assign(this);
          this.BasicInteractive();
       });
    }
@@ -1905,8 +1905,8 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
     * @private */
    RFramePainter.prototype.AddKeysHandler = function() {
       if (JSROOT.BatchMode) return;
-      JSROOT.require(['JSRoot.interactive']).then(() => {
-         JSROOT.FrameInteractive.assign(this);
+      JSROOT.require(['JSRoot.interactive']).then(inter => {
+         inter.FrameInteractive.assign(this);
          this.AddKeysHandler();
       });
    }
@@ -1917,8 +1917,8 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
 
       if (JSROOT.BatchMode || (!JSROOT.gStyle.Zooming && !JSROOT.gStyle.ContextMenu)) return;
 
-      JSROOT.require(['JSRoot.interactive']).then(() => {
-         JSROOT.FrameInteractive.assign(this);
+      JSROOT.require(['JSRoot.interactive']).then(inter => {
+         inter.FrameInteractive.assign(this);
          this.AddInteractive();
       });
    }
@@ -4066,12 +4066,12 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
 
       if (JSROOT.BatchMode) return;
 
-      JSROOT.require(['JSRoot.interactive']).then(() => {
+      JSROOT.require(['JSRoot.interactive']).then(inter => {
          // TODO: provide pave context menu as in v6
          if (JSROOT.gStyle.ContextMenu && this.PaveContextMenu)
             this.draw_g.on("contextmenu", this.PaveContextMenu.bind(this));
 
-         JSROOT.DragMoveHandler.AddDrag(this, { minwidth: 20, minheight: 20, redraw: this.SizeChanged.bind(this) });
+         inter.DragMoveHandler.AddDrag(this, { minwidth: 20, minheight: 20, redraw: this.SizeChanged.bind(this) });
       });
    }
 
@@ -4174,12 +4174,9 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
 
       this.FinishTextDrawing();
 
-      if (JSROOT.BatchMode) return;
-
-      let painter = this;
-      JSROOT.require(['JSRoot.interactive']).then(() => {
-         JSROOT.DragMoveHandler.AddDrag(painter, { minwidth: 20, minheight: 20, no_change_x: true, redraw: painter.Redraw.bind(painter,'drag') });
-      });
+      if (!JSROOT.BatchMode)
+         JSROOT.require(['JSRoot.interactive'])
+               .then(inter => inter.DragMoveHandler.AddDrag(this, { minwidth: 20, minheight: 20, no_change_x: true, redraw: this.Redraw.bind(this,'drag') }));
    }
 
    ////////////////////////////////////////////////////////////////////////////////////////////
@@ -4434,11 +4431,10 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
 
       if (JSROOT.BatchMode) return;
 
-      let painter = this;
-      JSROOT.require(['JSRoot.interactive']).then(() => {
+      JSROOT.require(['JSRoot.interactive']).then(inter => {
 
          if (!after_resize)
-            JSROOT.DragMoveHandler.AddDrag(painter, { minwidth: 20, minheight: 20, no_change_y: true, redraw: painter.DrawPalette.bind(painter, true) });
+            inter.DragMoveHandler.AddDrag(this, { minwidth: 20, minheight: 20, no_change_y: true, redraw: this.DrawPalette.bind(this, true) });
 
          if (!JSROOT.gStyle.Zooming) return;
 
@@ -4499,9 +4495,9 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
             evnt.stopPropagation();
          }
 
-         painter.draw_g.select(".axis_zoom")
-                       .on("mousedown", startRectSel)
-                       .on("dblclick", function() { framep.Unzoom("z"); });
+         this.draw_g.select(".axis_zoom")
+                    .on("mousedown", startRectSel)
+                    .on("dblclick", function() { framep.Unzoom("z"); });
       });
    }
 

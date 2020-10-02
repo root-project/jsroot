@@ -1655,8 +1655,8 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
 
       if (JSROOT.BatchMode) return;
 
-      JSROOT.require(['JSRoot.interactive']).then(() => {
-         JSROOT.FrameInteractive.assign(this);
+      JSROOT.require(['JSRoot.interactive']).then(inter => {
+         inter.FrameInteractive.assign(this);
          this.BasicInteractive();
       });
    }
@@ -1911,8 +1911,8 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
     * @private */
    TFramePainter.prototype.AddKeysHandler = function() {
       if (JSROOT.BatchMode) return;
-      JSROOT.require(['JSRoot.interactive']).then(() => {
-         JSROOT.FrameInteractive.assign(this);
+      JSROOT.require(['JSRoot.interactive']).then(inter => {
+         inter.FrameInteractive.assign(this);
          this.AddKeysHandler();
       });
    }
@@ -1922,8 +1922,8 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
    TFramePainter.prototype.AddInteractive = function() {
       if (JSROOT.BatchMode || (!JSROOT.gStyle.Zooming && !JSROOT.gStyle.ContextMenu)) return;
 
-      JSROOT.require(['JSRoot.interactive']).then(() => {
-         JSROOT.FrameInteractive.assign(this);
+      JSROOT.require(['JSRoot.interactive']).then(inter => {
+         inter.FrameInteractive.assign(this);
          this.AddInteractive();
       });
    }

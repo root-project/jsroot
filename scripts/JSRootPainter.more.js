@@ -51,23 +51,21 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter.v6'], (d3) => {
 
       this.DrawText(arg);
 
-      let painter = this;
-
-      this.FinishTextDrawing(undefined, () => painter.DrawingReady());
+      this.FinishTextDrawing(undefined, () => this.DrawingReady());
 
       if (!JSROOT.BatchMode)
-         JSROOT.require(['JSRoot.interactive']).then(() => {
-            painter.pos_dx = painter.pos_dy = 0;
+         JSROOT.require(['JSRoot.interactive']).then(inter => {
+            this.pos_dx = this.pos_dy = 0;
 
-            if (!painter.moveDrag)
-               painter.moveDrag = function(dx,dy) {
+            if (!this.moveDrag)
+               this.moveDrag = function(dx,dy) {
                   this.pos_dx += dx;
                   this.pos_dy += dy;
                   this.draw_g.attr("transform", "translate(" + this.pos_dx + "," + this.pos_dy + ")");
               }
 
-            if (!painter.moveEnd)
-               painter.moveEnd = function(not_changed) {
+            if (!this.moveEnd)
+               this.moveEnd = function(not_changed) {
                   if (not_changed) return;
                   let text = this.GetObject();
                   text.fX = this.SvgToAxis("x", this.pos_x + this.pos_dx, this.isndc),
@@ -75,7 +73,7 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter.v6'], (d3) => {
                   this.WebCanvasExec("SetX(" + text.fX + ");;SetY(" + text.fY + ");;");
                }
 
-            JSROOT.DragMoveHandler.AddMove(painter);
+            inter.DragMoveHandler.AddMove(this);
          });
 
       return this.Promise();
@@ -437,27 +435,26 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter.v6'], (d3) => {
          elem.style('fill','none');
       }
 
-      let painter = this;
       if (!JSROOT.BatchMode)
-         JSROOT.require(['JSRoot.interactive']).then(() => {
+         JSROOT.require(['JSRoot.interactive']).then(inter => {
 
-            if (!painter.moveStart)
-               painter.moveStart = function(x,y) {
+            if (!this.moveStart)
+               this.moveStart = function(x,y) {
                   let fullsize = Math.sqrt(Math.pow(this.x1-this.x2,2) + Math.pow(this.y1-this.y2,2)),
                       sz1 = Math.sqrt(Math.pow(x-this.x1,2) + Math.pow(y-this.y1,2))/fullsize,
                       sz2 = Math.sqrt(Math.pow(x-this.x2,2) + Math.pow(y-this.y2,2))/fullsize;
                   if (sz1>0.9) this.side = 1; else if (sz2>0.9) this.side = -1; else this.side = 0;
                }
 
-            if (!painter.moveDrag)
-               painter.moveDrag = function(dx,dy) {
+            if (!this.moveDrag)
+               this.moveDrag = function(dx,dy) {
                   if (this.side != 1) { this.x1 += dx; this.y1 += dy; }
                   if (this.side != -1) { this.x2 += dx; this.y2 += dy; }
                   this.draw_g.select('path').attr("d", this.createPath());
                }
 
-            if (!painter.moveEnd)
-               painter.moveEnd = function(not_changed) {
+            if (!this.moveEnd)
+               this.moveEnd = function(not_changed) {
                   if (not_changed) return;
                   let arrow = this.GetObject(), exec = "";
                   arrow.fX1 = this.SvgToAxis("x", this.x1, this.isndc);
@@ -469,7 +466,7 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter.v6'], (d3) => {
                   this.WebCanvasExec(exec + "Notify();;");
                }
 
-            JSROOT.DragMoveHandler.AddMove(painter);
+            inter.DragMoveHandler.AddMove(this);
          });
    }
 
@@ -1993,11 +1990,9 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter.v6'], (d3) => {
       }
       this.SetDivId(divid);
       this.DrawBins();
-      let painter = this;
       if (this.TestEditable() && !JSROOT.BatchMode)
-         JSROOT.require(['JSRoot.interactive']).then(() => {
-            JSROOT.DragMoveHandler.AddMove(painter);
-          });
+         JSROOT.require(['JSRoot.interactive'])
+               .then(inter => inter.DragMoveHandler.AddMove(this));
       this.DrawNextFunction(0, this.DrawingReady.bind(this));
       return this;
    }
@@ -2270,8 +2265,8 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter.v6'], (d3) => {
 
       if (JSROOT.BatchMode) return;
 
-      JSROOT.require(['JSRoot.interactive']).then(() => {
-         JSROOT.TooltipHandler.assign(this);
+      JSROOT.require(['JSRoot.interactive']).then(inter => {
+         inter.TooltipHandler.assign(this);
 
          let layer = this.svg_layer("primitives_layer"),
              interactive = layer.select(".interactive_ellipse");
