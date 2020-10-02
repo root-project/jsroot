@@ -2525,7 +2525,7 @@ JSROOT.require(['d3', 'JSRootPainter.v7'], (d3) => {
           main = this.frame_painter(),
           palette = main.GetPalette(),
           levels = palette.GetContour(),
-          func = main.GetProjectionFunc(this.options.Proj);
+          func = main.GetProjectionFunc();
 
       let BuildPath = (xp,yp,iminus,iplus) => {
          let cmd = "", last, pnt;

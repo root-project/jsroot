@@ -1057,7 +1057,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
 
    // ==========================================================================================
 
-      let ProjectAitoff2xy = (l, b) => {
+   let ProjectAitoff2xy = (l, b) => {
       const DegToRad = Math.PI/180,
             alpha2 = (l/2)*DegToRad,
             delta  = b*DegToRad,
@@ -1092,14 +1092,13 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
       JSROOT.ObjectPainter.call(this, tframe);
       this.csstype = "frame";
       this.mode3d = false;
-      this.shrink_frame_left = 0.;
       this.x_kind = 'normal'; // 'normal', 'log', 'time', 'labels'
       this.y_kind = 'normal'; // 'normal', 'log', 'time', 'labels'
       this.xmin = this.xmax = 0; // no scale specified, wait for objects drawing
       this.ymin = this.ymax = 0; // no scale specified, wait for objects drawing
       this.axes_drawn = false;
       this.keys_handler = null;
-      this.mode3d = false;
+      this.projection = 0; // different projections
    }
 
    RFramePainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
@@ -1153,8 +1152,8 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
    }
 
    /** Returns coordinates transformation func */
-   RFramePainter.prototype.GetProjectionFunc = function(Proj) {
-      switch (Proj) {
+   RFramePainter.prototype.GetProjectionFunc = function() {
+      switch (this.projection) {
          case 1: return ProjectAitoff2xy;
          case 2: return ProjectMercator2xy;
          case 3: return ProjectSinusoidal2xy;
@@ -1163,14 +1162,14 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
    }
 
    RFramePainter.prototype.RecalculateRange = function(Proj) {
-      // not yet used, could be useful in the future
+      this.projection = Proj || 0;
 
-      if ((Proj == 2) && ((this.scale_ymin <= -90 || this.scale_ymax >=90))) {
+      if ((this.projection == 2) && ((this.scale_ymin <= -90 || this.scale_ymax >=90))) {
          console.warn("Mercator Projection", "Latitude out of range", this.scale_ymin, this.scale_ymax);
-         Proj = 0;
+         this.projection = 0;
       }
 
-      let func = this.GetProjectionFunc(Proj);
+      let func = this.GetProjectionFunc();
       if (!func) return;
 
       let pnts = [ func(this.scale_xmin, this.scale_ymin),
@@ -1755,7 +1754,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
       // if both limits for each axis 0 (like xmin==xmax==0), axis will be unzoomed
 
       // disable zooming when axis conversion is enabled
-      if (this.options && this.options.Proj) return false;
+      if (this.projection) return false;
 
       if (xmin==="x") { xmin = xmax; xmax = ymin; ymin = undefined; } else
       if (xmin==="y") { ymax = ymin; ymin = xmax; xmin = xmax = undefined; } else
@@ -2430,7 +2429,6 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
    /** @summary Add interactive functionality to the frame
     * @private */
    RFramePainter.prototype.AddInteractive = function() {
-      // only first painter in list allowed to add interactive functionality to the frame
 
       if (JSROOT.BatchMode || (!JSROOT.gStyle.Zooming && !JSROOT.gStyle.ContextMenu)) return;
 
@@ -2455,17 +2453,16 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
          this.touch_cnt = 0;
       }
 
-      if (JSROOT.gStyle.Zooming && (!this.options || !this.options.Proj)) {
+      if (JSROOT.gStyle.Zooming && !this.projection) {
          if (JSROOT.gStyle.ZoomMouse) {
             svg.on("mousedown", this.startRectSel.bind(this));
             svg.on("dblclick", this.mouseDoubleClick.bind(this));
          }
-         if (JSROOT.gStyle.ZoomWheel) {
+         if (JSROOT.gStyle.ZoomWheel)
             svg.on("wheel", this.mouseWheel.bind(this));
-         }
       }
 
-      if (JSROOT.touches && ((JSROOT.gStyle.Zooming && JSROOT.gStyle.ZoomTouch) || JSROOT.gStyle.ContextMenu))
+      if (JSROOT.touches && ((JSROOT.gStyle.Zooming && JSROOT.gStyle.ZoomTouch && !this.projection) || JSROOT.gStyle.ContextMenu))
          svg.on("touchstart", this.startTouchZoom.bind(this));
 
       if (JSROOT.gStyle.ContextMenu) {
@@ -2697,8 +2694,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
       //       this.scale_ymax += (this.scale_ymax - this.scale_ymin) * 0.1;
       // }
 
-      //if (typeof this.RecalculateRange == "function")
-      //   this.RecalculateRange();
+      this.RecalculateRange(0);
 
       if (this._xaxis_timedisplay) {
          this.x_kind = 'time';

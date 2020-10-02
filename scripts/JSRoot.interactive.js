@@ -606,8 +606,13 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
 
    } // DragMoveHandler
 
+   let FrameInteractive = {
+   } // FrameInterative
+
+
 
    JSROOT.TooltipHandler = TooltipHandler;
    JSROOT.DragMoveHandler = DragMoveHandler;
+   JSROOT.FrameInteractive = FrameInteractive;
 
 })
