@@ -553,18 +553,6 @@
     * @private */
    JSROOT.BIT = function(n) { return 1 << (n); }
 
-   /** TH1 status bits
-    * @private */
-   JSROOT.TH1StatusBits = {
-         kNoStats       : JSROOT.BIT(9),  // don't draw stats box
-         kUserContour   : JSROOT.BIT(10), // user specified contour levels
-         kCanRebin      : JSROOT.BIT(11), // can rebin axis
-         kLogX          : JSROOT.BIT(15), // X-axis in log scale
-         kIsZoomed      : JSROOT.BIT(16), // bit set when zooming on Y axis
-         kNoTitle       : JSROOT.BIT(17), // don't draw the histogram title
-         kIsAverage     : JSROOT.BIT(18)  // Bin contents are average (used by Add)
-   }
-
    /**
     * @summary Seed simple random generator
     *

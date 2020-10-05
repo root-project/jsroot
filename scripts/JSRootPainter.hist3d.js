@@ -3116,7 +3116,8 @@ JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.hist'], (d3, THREE) => {
       histo.fZaxis.fXmax = uzmax;
       histo.fMinimum = uzmin;
       histo.fMaximum = uzmax;
-      histo.fBits = histo.fBits | JSROOT.TH1StatusBits.kNoStats;
+      let kNoStats = JSROOT.BIT(9);
+      histo.fBits = histo.fBits | kNoStats;
       return histo;
    }
 

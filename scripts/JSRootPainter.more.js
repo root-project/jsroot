@@ -982,7 +982,8 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter.v6'], (d3) => {
          graph.fHistogram = histo = JSROOT.CreateHistogram("TH1F", 100);
          histo.fName = graph.fName + "_h";
          histo.fTitle = graph.fTitle;
-         histo.fBits = histo.fBits | JSROOT.TH1StatusBits.kNoStats;
+         let kNoStats = JSROOT.BIT(9);
+         histo.fBits = histo.fBits | kNoStats;
          this._own_histogram = true;
       }
 

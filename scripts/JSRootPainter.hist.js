@@ -1725,6 +1725,17 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], (d3) => {
 
    // ==============================================================================
 
+   /** histogram status bits
+     * @private */
+   let TH1StatusBits = {
+      kNoStats       : JSROOT.BIT(9),  // don't draw stats box
+      kUserContour   : JSROOT.BIT(10), // user specified contour levels
+      kCanRebin      : JSROOT.BIT(11), // can rebin axis
+      kLogX          : JSROOT.BIT(15), // X-axis in log scale
+      kIsZoomed      : JSROOT.BIT(16), // bit set when zooming on Y axis
+      kNoTitle       : JSROOT.BIT(17), // don't draw the histogram title
+      kIsAverage     : JSROOT.BIT(18)  // Bin contents are average (used by Add)
+   }
 
    /**
     * @summary Basic painter for histogram classes
@@ -1901,7 +1912,7 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], (d3) => {
          var statpainter = this.FindPainterFor(this.FindStat());
          if (histo.TestBit(JSROOT.TH1StatusBits.kNoStats) != obj.TestBit(JSROOT.TH1StatusBits.kNoStats)) {
             histo.fBits = obj.fBits;
-            if (statpainter) statpainter.Enabled = !histo.TestBit(JSROOT.TH1StatusBits.kNoStats);
+            if (statpainter) statpainter.Enabled = !histo.TestBit(TH1StatusBits.kNoStats);
          }
 
          // special treatment for webcanvas - also name can be changed
@@ -2150,8 +2161,8 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], (d3) => {
    THistPainter.prototype.ToggleTitle = function(arg) {
       let histo = this.GetHisto();
       if (!this.is_main_painter() || !histo) return false;
-      if (arg==='only-check') return !histo.TestBit(JSROOT.TH1StatusBits.kNoTitle);
-      histo.InvertBit(JSROOT.TH1StatusBits.kNoTitle);
+      if (arg==='only-check') return !histo.TestBit(TH1StatusBits.kNoTitle);
+      histo.InvertBit(TH1StatusBits.kNoTitle);
       this.DrawTitle();
    }
 
@@ -2168,7 +2179,7 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], (d3) => {
       if (!pt) pt = this.FindInPrimitives("title");
       if (pt && (pt._typename !== "TPaveText")) pt = null;
 
-      let draw_title = !histo.TestBit(JSROOT.TH1StatusBits.kNoTitle) && (st.fOptTitle > 0);
+      let draw_title = !histo.TestBit(TH1StatusBits.kNoTitle) && (st.fOptTitle > 0);
 
       // histo.fTitle = "#strike{testing} #overline{Title:} #overline{Title:_{X}} #underline{test}  #underline{test^{X}}";
       // histo.fTitle = "X-Y-#overline{V}_{#Phi}";
@@ -2342,7 +2353,7 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], (d3) => {
       if (this.options.PadStats || !histo) return null;
 
       if (!force && !this.options.ForceStat) {
-         if (this.options.NoStat || histo.TestBit(JSROOT.TH1StatusBits.kNoStats) || !JSROOT.gStyle.AutoStat) return null;
+         if (this.options.NoStat || histo.TestBit(TH1StatusBits.kNoStats) || !JSROOT.gStyle.AutoStat) return null;
 
          if (!this.draw_content || !this.is_main_painter()) return null;
       }
@@ -2432,7 +2443,7 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], (d3) => {
       // object will be redraw automatically
       if (func_painter === null) {
          if (func._typename === 'TPaveText' || func._typename === 'TPaveStats') {
-            do_draw = !histo.TestBit(JSROOT.TH1StatusBits.kNoStats) && !this.options.NoStat;
+            do_draw = !histo.TestBit(TH1StatusBits.kNoStats) && !this.options.NoStat;
          } else if (func._typename === 'TF1') {
             do_draw = !func.TestBit(JSROOT.BIT(9));
          } else {
@@ -6250,7 +6261,7 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], (d3) => {
       hist.fMarkerStyle = func.fMarkerStyle;
       hist.fMarkerSize = func.fMarkerSize;
 
-      hist.fBits |= JSROOT.TH1StatusBits.kNoStats;
+      hist.fBits |= TH1StatusBits.kNoStats;
 
       // only for testing - unfortunately, axis settings are not stored with TF2
       // hist.fXaxis.fTitle = "axis X";
