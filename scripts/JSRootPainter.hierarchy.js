@@ -2419,7 +2419,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
          if (!drawing) return;
 
          let func = JSROOT.findFunction('GetCachedObject');
-         let obj = (typeof func == 'function') ? JSROOT.JSONR_unref(func()) : null;
+         let obj = (typeof func == 'function') ? JSROOT.parse(func()) : null;
          if (obj) hpainter._cached_draw_object = obj;
          let opt = JSROOT.GetUrlOption("opt") || "";
 

@@ -586,18 +586,19 @@
       return result + 0.5;
    }
 
-   /** @summary Should be used to reintroduce objects references, produced by TBufferJSON.
+   /** @summary Should be used to parse JSON string reintroduce objects references
     *
-    * @desc Replace all references inside object, object should not be null
-    * Idea of the code taken from JSON-R code, found on
-    * https://github.com/graniteds/jsonr
-    * Only unref part was used, arrays are not accounted as objects
-    * @param {object} obj  object where references will be replaced
-    * @returns {object} same object with replaced references
+    * @desc Replace all references inside object like { "$ref": "1" }
+    * Kept support of old ROOT JSON format as well
+    * @param {object|string} json  object where references will be replaced
+    * @returns {object} parsed object
     * @private */
-   JSROOT.JSONR_unref = function(obj) {
+   JSROOT.parse = function(json) {
 
-      let map = [], newfmt = undefined;
+      if (!json) return null;
+
+      let obj = (typeof json == 'string') ? JSON.parse(json) : json,
+          map = [], newfmt = undefined;
 
       function unref_value(value) {
          if ((value===null) || (value===undefined)) return;
@@ -730,14 +731,14 @@
    }
 
    /** @summary Make deep clone of the object, including all sub-objects
-    * @private */
+     * @returns {object} cloned object */
    JSROOT.clone = function(src, map, nofunc) {
       if (src === null) return null;
 
       if (!map) {
          map = { obj:[], clones:[], nofunc: nofunc };
       } else {
-         let i = map.obj.indexOf(src);
+         const i = map.obj.indexOf(src);
          if (i>=0) return map.clones[i];
       }
 
@@ -783,19 +784,6 @@
       return tgt;
    }
 
-
-   /**
-    * @summary Parse JSON code produced with TBufferJSON.
-    *
-    * @param {string} json string to parse
-    * @return {object|null} returns parsed object
-    */
-   JSROOT.parse = function(json) {
-      if (!json) return null;
-      let obj = JSON.parse(json);
-      return obj ? this.JSONR_unref(obj) : obj;
-   }
-
    /**
     * @summary Parse multi.json request results
     * @desc Method should be used to parse JSON code, produced by multi.json request of THttpServer
@@ -808,7 +796,7 @@
       let arr = JSON.parse(json);
       if (arr && arr.length)
          for (let i=0;i<arr.length;++i)
-            arr[i] = this.JSONR_unref(arr[i]);
+            arr[i] = JSROOT.parse(arr[i]);
       return arr;
    }
 
@@ -1023,8 +1011,9 @@
          if (this.nodejs_checkzip && (this.getResponseHeader("content-encoding") == "gzip")) {
             // special handling of gzipped JSON objects in Node.js
             let zlib = require('zlib'),
-                str = zlib.unzipSync(Buffer.from(this.response));
-            return this.http_callback(JSROOT.parse(str));
+                res = zlib.unzipSync(Buffer.from(this.response)),
+                obj = JSON.parse(res); // zlib returns Buffer, use JSON to parse it
+            return this.http_callback(JSROOT.parse(obj));
          }
 
          switch(this.kind) {
@@ -2129,7 +2118,6 @@
    }
 
    JSROOT.GetUrlOption = GetUrlOption;
-
 
    return JSROOT;
 
