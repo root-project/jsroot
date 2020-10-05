@@ -2806,13 +2806,8 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
 
             padpainter.CreatePadSvg();
 
-            if (snap.fPrimitives && snap.fPrimitives.length > 0) {
-               padpainter.AddButton("camera", "Create PNG", "PadSnapShot");
-               padpainter.AddButton("circle", "Enlarge pad", "EnlargePad");
-
-               if (JSROOT.gStyle.ContextMenu)
-                  padpainter.AddButton("question", "Access context menus", "PadContextMenus");
-            }
+            if (snap.fPrimitives && snap.fPrimitives.length > 0)
+               padpainter.AddPadButtons();
 
             // we select current pad, where all drawing is performed
             let prev_name = padpainter.CurrentPadName(padpainter.this_pad_name);
@@ -2869,15 +2864,6 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
       return null;
    }
 
-   RPadPainter.prototype.AddOnlineButtons = function() {
-      this.AddButton("camera", "Create PNG", "CanvasSnapShot", "Ctrl PrintScreen");
-      if (JSROOT.gStyle.ContextMenu)
-         this.AddButton("question", "Access context menus", "PadContextMenus");
-
-      if (this.enlarge_main('verify'))
-         this.AddButton("circle", "Enlarge canvas", "EnlargePad");
-   }
-
    RPadPainter.prototype.RedrawPadSnap = function(snap, call_back) {
       // for the pad/canvas display item contains list of primitives plus pad attributes
 
@@ -2908,7 +2894,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
 
          this.CreateCanvasSvg(0);
          this.SetDivId(this.divid);  // now add to painters list
-         this.AddOnlineButtons();
+         this.AddPadButtons(true);
 
          this.DrawNextSnap(snap.fPrimitives, -1, call_back);
 
@@ -2961,7 +2947,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
             fp.CleanFrameDrawings();
          }
          if (this.RemoveButtons) this.RemoveButtons();
-         this.AddOnlineButtons();
+         this.AddPadButtons(true);
       }
 
       let prev_name = this.CurrentPadName(this.this_pad_name);
@@ -3322,6 +3308,20 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
       }
    }
 
+   RPadPainter.prototype.AddPadButtons = function(/* is_online */) {
+
+      this.AddButton("camera", "Create PNG", this.iscan ? "CanvasSnapShot" : "PadSnapShot", "Ctrl PrintScreen");
+
+      if (JSROOT.gStyle.ContextMenu)
+         this.AddButton("question", "Access context menus", "PadContextMenus");
+
+      let add_enlarge = !this.iscan && this.has_canvas && this.HasObjectsToDraw()
+
+      if (add_enlarge || this.enlarge_main('verify'))
+         this.AddButton("circle", "Enlarge canvas", "EnlargePad");
+   }
+
+
    RPadPainter.prototype.ShowButtons = function() {
       if (!this._buttons) return;
 
@@ -3415,13 +3415,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
       painter.CreatePadSvg();
 
       if (painter.MatchObjectType("TPad") && (!painter.has_canvas || painter.HasObjectsToDraw())) {
-         painter.AddButton("camera", "Create PNG", "PadSnapShot");
-
-         if ((painter.has_canvas && painter.HasObjectsToDraw()) || painter.enlarge_main('verify'))
-            painter.AddButton("circle", "Enlarge pad", "EnlargePad");
-
-         if (JSROOT.gStyle.ContextMenu)
-            painter.AddButton("question", "Access context menus", "PadContextMenus");
+         painter.AddPadButtons();
       }
 
       // we select current pad, where all drawing is performed
@@ -3891,16 +3885,10 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
       painter.CreateCanvasSvg(0);
       painter.SetDivId(divid);  // now add to painters list
 
-      painter.AddButton("camera", "Create PNG", "CanvasSnapShot", "Ctrl PrintScreen");
-      if (JSROOT.gStyle.ContextMenu)
-         painter.AddButton("question", "Access context menus", "PadContextMenus");
-
-      if (painter.enlarge_main('verify'))
-         painter.AddButton("circle", "Enlarge canvas", "EnlargePad");
-
       JSROOT.Painter.SelectActivePad({ pp: painter, active: false });
 
       painter.DrawPrimitives(0, function() {
+         painter.AddPadButtons();
          painter.ShowButtons();
          painter.DrawingReady();
       });

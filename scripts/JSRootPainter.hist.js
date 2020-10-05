@@ -4205,7 +4205,7 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], (d3) => {
       this.CallDrawFunc(null, reason);
    }
 
-   function drawHistogram1D(divid, histo, opt) {
+   let drawHistogram1D = (divid, histo, opt) => {
       // create painter and add it to canvas
       let painter = new TH1Painter(histo);
 
@@ -4220,8 +4220,8 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], (d3) => {
 
       painter.CreateStat(); // only when required
 
-      painter.CallDrawFunc(function() {
-         painter.DrawNextFunction(0, function() {
+      painter.CallDrawFunc(() => {
+         painter.DrawNextFunction(0, () => {
             if (!painter.options.Mode3D && painter.options.AutoZoom) painter.AutoZoom();
             painter.FillToolbar();
             painter.DrawingReady();
@@ -6150,7 +6150,7 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], (d3) => {
       this.CallDrawFunc(null, reason);
    }
 
-   function drawHistogram2D(divid, histo, opt) {
+   let drawHistogram2D = (divid, histo, opt) => {
       // create painter and add it to canvas
       let painter = new JSROOT.TH2Painter(histo);
 
@@ -6175,15 +6175,15 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], (d3) => {
 
       painter.CreateStat(); // only when required
 
-      painter.CallDrawFunc(function() {
-         this.DrawNextFunction(0, function() {
-            if (!this.Mode3D && this.options.AutoZoom) this.AutoZoom();
-            this.FillToolbar();
-            if (this.options.Project && !this.mode3d)
-               this.ToggleProjection(this.options.Project);
-            this.DrawingReady();
-         }.bind(this));
-      }.bind(painter));
+      painter.CallDrawFunc(() => {
+         painter.DrawNextFunction(0, ()=> {
+            if (!painter.Mode3D && painter.options.AutoZoom) painter.AutoZoom();
+            painter.FillToolbar();
+            if (painter.options.Project && !painter.mode3d)
+               painter.ToggleProjection(painter.options.Project);
+            painter.DrawingReady();
+         });
+      });
 
       return painter;
    }
