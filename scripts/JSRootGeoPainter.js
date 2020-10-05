@@ -590,17 +590,17 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
    TGeoPainter.prototype.TestMatrixes = function() {
       // method can be used to check matrix calculations with current three.js model
 
-      let painter = this, errcnt = 0, totalcnt = 0, totalmax = 0;
+      let errcnt = 0, totalcnt = 0, totalmax = 0;
 
       let arg = {
             domatrix: true,
-            func: function(/*node*/) {
+            func: (/*node*/) => {
 
                let m2 = this.getmatrix();
 
                let entry = this.CopyStack();
 
-               let mesh = painter._clones.CreateObject3D(entry.stack, painter._toplevel, 'mesh');
+               let mesh = this._clones.CreateObject3D(entry.stack, this._toplevel, 'mesh');
 
                if (!mesh) return true;
 
@@ -623,7 +623,7 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
 
                if (max < 1e-4) return true;
 
-               console.log(painter._clones.ResolveStack(entry.stack).name, 'maxdiff', max, 'determ', m1.determinant(), m2.determinant());
+               console.log(this._clones.ResolveStack(entry.stack).name, 'maxdiff', max, 'determ', m1.determinant(), m2.determinant());
 
                errcnt++;
 
@@ -632,11 +632,11 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
          };
 
 
-      tm1 = new Date().getTime();
+      let tm1 = new Date().getTime();
 
       /* let cnt = */ this._clones.ScanVisible(arg);
 
-      tm2 = new Date().getTime();
+      let tm2 = new Date().getTime();
 
       console.log('Compare matrixes total', totalcnt, 'errors', errcnt, 'takes', tm2-tm1, 'maxdiff', totalmax);
    }
@@ -827,11 +827,9 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
          return;
       }
 
-      if (!on) return;
-
-      let painter = this;
-
-      JSROOT.require('dat.gui').then(dat => painter.buildDatGui(dat));
+      if (on)
+         JSROOT.require('dat.gui')
+               .then(dat => this.buildDatGui(dat));
    }
 
    TGeoPainter.prototype.buildDatGui = function(dat) {
@@ -1399,46 +1397,45 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
       this._scene.add( this._tcontrols );
       this._tcontrols.attach( this._toplevel );
       //this._tcontrols.setSize( 1.1 );
-      let painter = this;
 
-      window.addEventListener( 'keydown', function ( event ) {
+      window.addEventListener( 'keydown', event => {
          switch ( event.keyCode ) {
          case 81: // Q
-            painter._tcontrols.setSpace( painter._tcontrols.space === "local" ? "world" : "local" );
+            this._tcontrols.setSpace( this._tcontrols.space === "local" ? "world" : "local" );
             break;
          case 17: // Ctrl
-            painter._tcontrols.setTranslationSnap( Math.ceil( painter._overall_size ) / 50 );
-            painter._tcontrols.setRotationSnap( THREE.Math.degToRad( 15 ) );
+            this._tcontrols.setTranslationSnap( Math.ceil( this._overall_size ) / 50 );
+            this._tcontrols.setRotationSnap( THREE.Math.degToRad( 15 ) );
             break;
          case 84: // T (Translate)
-            painter._tcontrols.setMode( "translate" );
+            this._tcontrols.setMode( "translate" );
             break;
          case 82: // R (Rotate)
-            painter._tcontrols.setMode( "rotate" );
+            this._tcontrols.setMode( "rotate" );
             break;
          case 83: // S (Scale)
-            painter._tcontrols.setMode( "scale" );
+            this._tcontrols.setMode( "scale" );
             break;
          case 187:
          case 107: // +, =, num+
-            painter._tcontrols.setSize( painter._tcontrols.size + 0.1 );
+            this._tcontrols.setSize( this._tcontrols.size + 0.1 );
             break;
          case 189:
          case 109: // -, _, num-
-            painter._tcontrols.setSize( Math.max( painter._tcontrols.size - 0.1, 0.1 ) );
+            this._tcontrols.setSize( Math.max( this._tcontrols.size - 0.1, 0.1 ) );
             break;
          }
       });
       window.addEventListener( 'keyup', function ( event ) {
          switch ( event.keyCode ) {
          case 17: // Ctrl
-            painter._tcontrols.setTranslationSnap( null );
-            painter._tcontrols.setRotationSnap( null );
+            this._tcontrols.setTranslationSnap( null );
+            this._tcontrols.setRotationSnap( null );
             break;
          }
       });
 
-      this._tcontrols.addEventListener( 'change', function() { painter.Render3D(0); });
+      this._tcontrols.addEventListener( 'change', () => this.Render3D(0));
    }
 
    /** Main function in geometry creation loop
@@ -2358,19 +2355,17 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
       let oldTarget = this._controls.target;
 
       // probably, reduce number of frames
-      let frames = 50, step = 0;
-
-      // Amount to change camera position at each step
-      let posIncrement = position.sub(this._camera.position).divideScalar(frames);
-      // Amount to change "lookAt" so it will end pointed at target
-      let targetIncrement = target.sub(oldTarget).divideScalar(frames);
-      // console.log( targetIncrement );
+      let frames = 50, step = 0,
+         // Amount to change camera position at each step
+         posIncrement = position.sub(this._camera.position).divideScalar(frames),
+         // Amount to change "lookAt" so it will end pointed at target
+         targetIncrement = target.sub(oldTarget).divideScalar(frames);
 
       autoClip = autoClip && this._webgl;
 
       // Automatic Clipping
       if (autoClip) {
-         for (let axis = 0; axis<3; ++axis) {
+         for (let axis = 0; axis < 3; ++axis) {
             let cc = this.ctrl.clip[axis];
             if (!cc.enabled) { cc.value = cc.min; cc.enabled = true; }
             cc.inc = ((cc.min + cc.max) / 2 - cc.value) / frames;
@@ -2378,39 +2373,38 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
          this.updateClipping();
       }
 
-      let painter = this;
       this._animating = true;
 
       // Interpolate //
 
-      function animate() {
-         if (painter._animating === undefined) return;
+      let animate = () => {
+         if (this._animating === undefined) return;
 
-         if (painter._animating) {
+         if (this._animating) {
             requestAnimationFrame( animate );
          } else {
-            if (!painter._geom_viewer)
-               painter.startDrawGeometry();
+            if (!this._geom_viewer)
+               this.startDrawGeometry();
          }
          let smoothFactor = -Math.cos( ( 2.0 * Math.PI * step ) / frames ) + 1.0;
-         painter._camera.position.add( posIncrement.clone().multiplyScalar( smoothFactor ) );
+         this._camera.position.add( posIncrement.clone().multiplyScalar( smoothFactor ) );
          oldTarget.add( targetIncrement.clone().multiplyScalar( smoothFactor ) );
-         painter._lookat = oldTarget;
-         painter._camera.lookAt( painter._lookat );
-         painter._camera.updateProjectionMatrix();
+         this._lookthisdTarget;
+         this._camera.lookAt( this._lookat );
+         this._camera.updateProjectionMatrix();
 
          let tm1 = new Date().getTime();
          if (autoClip) {
-            for (let axis = 0; axis<3; ++axis)
-               painter.ctrl.clip[axis].value += painter.ctrl.clip[axis].inc * smoothFactor;
-            painter.updateClipping();
+            for (let axis = 0; axis < 3; ++axis)
+               this.ctrl.clip[axis].value += this.ctrl.clip[axis].inc * smoothFactor;
+            this.updateClipping();
          } else {
-            painter.Render3D(0);
+            this.Render3D(0);
          }
          let tm2 = new Date().getTime();
          if ((step==0) && (tm2-tm1 > 200)) frames = 20;
          step++;
-         painter._animating = step < frames;
+         this._animating = step < frames;
       }
 
       animate();
@@ -2421,22 +2415,22 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
    TGeoPainter.prototype.autorotate = function(speed) {
 
       let rotSpeed = (speed === undefined) ? 2.0 : speed,
-          painter = this, last = new Date();
+          last = new Date();
 
-      function animate() {
-         if (!painter._renderer || !painter.ctrl) return;
+      let animate = () => {
+         if (!this._renderer || !this.ctrl) return;
 
          let current = new Date();
 
-         if ( painter.ctrl.rotate ) requestAnimationFrame( animate );
+         if ( this.ctrl.rotate ) requestAnimationFrame( animate );
 
-         if (painter._controls) {
-            painter._controls.autoRotate = painter.ctrl.rotate;
-            painter._controls.autoRotateSpeed = rotSpeed * ( current.getTime() - last.getTime() ) / 16.6666;
-            painter._controls.update();
+         if (this._controls) {
+            this._controls.autoRotate = this.ctrl.rotate;
+            this._controls.autoRotateSpeed = rotSpeed * ( current.getTime() - last.getTime() ) / 16.6666;
+            this._controls.update();
          }
          last = new Date();
-         painter.Render3D(0);
+         this.Render3D(0);
       }
 
       if (this._webgl) animate();
@@ -2470,17 +2464,17 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
       // need to fill cached value line numvischld
       this._clones.ScanVisible();
 
-      let painter = this, nshapes = 0;
+      let nshapes = 0;
 
       let arg = {
          cnt: [],
-         func: function(node) {
+         func: node => {
             if (this.cnt[this.last]===undefined)
                this.cnt[this.last] = 1;
             else
                this.cnt[this.last]++;
 
-            nshapes += JSROOT.GEO.CountNumShapes(painter._clones.GetNodeShape(node.id));
+            nshapes += JSROOT.GEO.CountNumShapes(this._clones.GetNodeShape(node.id));
 
             // for debugginf - search if there some TGeoHalfSpace
             //if (JSROOT.GEO.HalfSpace) {
@@ -2538,18 +2532,16 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
 
          let func = JSROOT.findFunction(funcname);
 
-         if (!func) return Promise.reject();
+         if (!func) return Promise.reject(Error(`Function ${funcname} not found`));
 
-         let geo_painter = this;
-
-         return new Promise(function(resolve) {
-            func(obj, opt, function(tracks) {
+         return new Promise(resolve => {
+            func(obj, opt, tracks => {
                if (tracks) {
-                  geo_painter.drawExtras(tracks, "", false); // FIXME: probably tracks should be remembered??
-                  geo_painter.updateClipping(true);
-                  geo_painter.Render3D(100);
+                  this.drawExtras(tracks, "", false); // FIXME: probably tracks should be remembered??
+                  this.updateClipping(true);
+                  this.Render3D(100);
                }
-               resolve(geo_painter);
+               resolve(this);
             });
          });
       }
