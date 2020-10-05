@@ -497,13 +497,13 @@ JSROOT.require(['d3', 'JSRootPainter.v7'], (d3) => {
       let pp = this.pad_painter();
       if (!pp) return;
 
-      pp.AddButton(JSROOT.ToolbarIcons.auto_zoom, 'Toggle between unzoom and autozoom-in', 'ToggleZoom', "Ctrl *");
-      pp.AddButton(JSROOT.ToolbarIcons.arrow_right, "Toggle log x", "ToggleLogX", "PageDown");
-      pp.AddButton(JSROOT.ToolbarIcons.arrow_up, "Toggle log y", "ToggleLogY", "PageUp");
+      pp.AddButton("auto_zoom", 'Toggle between unzoom and autozoom-in', 'ToggleZoom', "Ctrl *");
+      pp.AddButton("arrow_right", "Toggle log x", "ToggleLogX", "PageDown");
+      pp.AddButton("arrow_up", "Toggle log y", "ToggleLogY", "PageUp");
       if (this.Dimension() > 1)
-         pp.AddButton(JSROOT.ToolbarIcons.arrow_diag, "Toggle log z", "ToggleLogZ");
+         pp.AddButton("arrow_diag", "Toggle log z", "ToggleLogZ");
       if (this.draw_content)
-         pp.AddButton(JSROOT.ToolbarIcons.statbox, 'Toggle stat box', "ToggleStatBox");
+         pp.AddButton("statbox", 'Toggle stat box', "ToggleStatBox");
       if (!not_shown) pp.ShowButtons();
    }
 
@@ -2007,9 +2007,9 @@ JSROOT.require(['d3', 'JSRootPainter.v7'], (d3) => {
       if (!pp) return;
 
       if (!this.IsTH2Poly())
-         pp.AddButton(JSROOT.ToolbarIcons.th2color, "Toggle color", "ToggleColor");
-      pp.AddButton(JSROOT.ToolbarIcons.th2colorz, "Toggle color palette", "ToggleColorZ");
-      pp.AddButton(JSROOT.ToolbarIcons.th2draw3d, "Toggle 3D mode", "Toggle3D");
+         pp.AddButton("th2color", "Toggle color", "ToggleColor");
+      pp.AddButton("th2colorz", "Toggle color palette", "ToggleColorZ");
+      pp.AddButton("th2draw3d", "Toggle 3D mode", "Toggle3D");
       pp.ShowButtons();
    }
 

@@ -3823,7 +3823,7 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter.v6'], (d3) => {
    TASImagePainter.prototype.FillToolbar = function() {
       let pp = this.pad_painter(), obj = this.GetObject();
       if (pp && obj && obj.fPalette) {
-         pp.AddButton(JSROOT.ToolbarIcons.th2colorz, "Toggle color palette", "ToggleColorZ");
+         pp.AddButton("th2colorz", "Toggle color palette", "ToggleColorZ");
          pp.ShowButtons();
       }
    }

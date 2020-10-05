@@ -2820,11 +2820,11 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
             padpainter.CreatePadSvg();
 
             if (padpainter.MatchObjectType("TPad") && snap.fPrimitives.length > 0) {
-               padpainter.AddButton(JSROOT.ToolbarIcons.camera, "Create PNG", "PadSnapShot");
-               padpainter.AddButton(JSROOT.ToolbarIcons.circle, "Enlarge pad", "EnlargePad");
+               padpainter.AddButton("camera", "Create PNG", "PadSnapShot");
+               padpainter.AddButton("circle", "Enlarge pad", "EnlargePad");
 
                if (JSROOT.gStyle.ContextMenu)
-                  padpainter.AddButton(JSROOT.ToolbarIcons.question, "Access context menus", "PadContextMenus");
+                  padpainter.AddButton("question", "Access context menus", "PadContextMenus");
             }
 
             // we select current pad, where all drawing is performed
@@ -2861,16 +2861,16 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
    }
 
    TPadPainter.prototype.AddOnlineButtons = function() {
-      this.AddButton(JSROOT.ToolbarIcons.camera, "Create PNG", "CanvasSnapShot", "Ctrl PrintScreen");
+      this.AddButton("camera", "Create PNG", "CanvasSnapShot", "Ctrl PrintScreen");
       if (JSROOT.gStyle.ContextMenu)
-         this.AddButton(JSROOT.ToolbarIcons.question, "Access context menus", "PadContextMenus");
+         this.AddButton("question", "Access context menus", "PadContextMenus");
 
       if (this.enlarge_main('verify'))
-         this.AddButton(JSROOT.ToolbarIcons.circle, "Enlarge canvas", "EnlargePad");
+         this.AddButton("circle", "Enlarge canvas", "EnlargePad");
 
       if (this.brlayout) {
-         this.AddButton(JSROOT.ToolbarIcons.diamand, "Toggle Ged", "ToggleGed");
-         this.AddButton(JSROOT.ToolbarIcons.three_circles, "Toggle Status", "ToggleStatus");
+         this.AddButton("diamand", "Toggle Ged", "ToggleGed");
+         this.AddButton("three_circles", "Toggle Status", "ToggleStatus");
       }
    }
 
@@ -3489,13 +3489,13 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
       painter.CreatePadSvg();
 
       if (painter.MatchObjectType("TPad") && (!painter.has_canvas || painter.HasObjectsToDraw())) {
-         painter.AddButton(JSROOT.ToolbarIcons.camera, "Create PNG", "PadSnapShot");
+         painter.AddButton("camera", "Create PNG", "PadSnapShot");
 
          if ((painter.has_canvas && painter.HasObjectsToDraw()) || painter.enlarge_main('verify'))
-            painter.AddButton(JSROOT.ToolbarIcons.circle, "Enlarge pad", "EnlargePad");
+            painter.AddButton("circle", "Enlarge pad", "EnlargePad");
 
          if (JSROOT.gStyle.ContextMenu)
-            painter.AddButton(JSROOT.ToolbarIcons.question, "Access context menus", "PadContextMenus");
+            painter.AddButton("question", "Access context menus", "PadContextMenus");
       }
 
       // we select current pad, where all drawing is performed
@@ -3849,7 +3849,8 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
       this.ProcessChanges("sbits", this);
    }
 
-   /** Function used to activate GED @private */
+   /** Function used to activate GED
+    * @private */
    TCanvasPainter.prototype.ActivateGed = function(objpainter, kind, mode, callback) {
       if (this.testUI5() || !this.brlayout)
          return JSROOT.CallBack(callback);
@@ -3876,14 +3877,17 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
 
       let btns = this.brlayout.CreateBrowserBtns();
 
-      JSROOT.ToolbarIcons.CreateSVG(btns, JSROOT.ToolbarIcons.diamand, 15, "toggle fix-pos mode")
-                         .style("margin","3px").on("click", this.brlayout.Toggle.bind(this.brlayout, 'fix'));
+      JSROOT.require(['JSRoot.interactive']).then(inter => {
 
-      JSROOT.ToolbarIcons.CreateSVG(btns, JSROOT.ToolbarIcons.circle, 15, "toggle float mode")
-                         .style("margin","3px").on("click", this.brlayout.Toggle.bind(this.brlayout, 'float'));
+         inter.ToolbarIcons.CreateSVG(btns, inter.ToolbarIcons.diamand, 15, "toggle fix-pos mode")
+                            .style("margin","3px").on("click", () => this.brlayout.Toggle('fix'));
 
-     JSROOT.ToolbarIcons.CreateSVG(btns, JSROOT.ToolbarIcons.cross, 15, "delete GED")
-                         .style("margin","3px").on("click", this.RemoveGed.bind(this));
+         inter.ToolbarIcons.CreateSVG(btns, inter.ToolbarIcons.circle, 15, "toggle float mode")
+                            .style("margin","3px").on("click", () => this.brlayout.Toggle('float'));
+
+         inter.ToolbarIcons.CreateSVG(btns, inter.ToolbarIcons.cross, 15, "delete GED")
+                            .style("margin","3px").on("click", () => this.RemoveGed());
+      });
 
       // be aware, that jsroot_browser_hierarchy required for flexible layout that element use full browser area
       this.brlayout.SetBrowserContent("<div class='jsroot_browser_hierarchy' id='ged_placeholder'>Loading GED ...</div>");
@@ -4105,12 +4109,12 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
       painter.CreateCanvasSvg(0);
       painter.SetDivId(divid);  // now add to painters list
 
-      painter.AddButton(JSROOT.ToolbarIcons.camera, "Create PNG", "CanvasSnapShot", "Ctrl PrintScreen");
+      painter.AddButton("camera", "Create PNG", "CanvasSnapShot", "Ctrl PrintScreen");
       if (JSROOT.gStyle.ContextMenu)
-         painter.AddButton(JSROOT.ToolbarIcons.question, "Access context menus", "PadContextMenus");
+         painter.AddButton("question", "Access context menus", "PadContextMenus");
 
       if (painter.enlarge_main('verify'))
-         painter.AddButton(JSROOT.ToolbarIcons.circle, "Enlarge canvas", "EnlargePad");
+         painter.AddButton("circle", "Enlarge canvas", "EnlargePad");
 
       if (nocanvas && opt.indexOf("noframe") < 0)
          drawFrame(divid, null);
@@ -4132,12 +4136,12 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
 
       painter.SetDivId(divid, -1); // just assign id
 
-      painter.AddButton(JSROOT.ToolbarIcons.camera, "Create PNG", "CanvasSnapShot", "Ctrl PrintScreen");
+      painter.AddButton("camera", "Create PNG", "CanvasSnapShot", "Ctrl PrintScreen");
       if (JSROOT.gStyle.ContextMenu)
-         painter.AddButton(JSROOT.ToolbarIcons.question, "Access context menus", "PadContextMenus");
+         painter.AddButton("question", "Access context menus", "PadContextMenus");
 
       if (painter.enlarge_main('verify'))
-         painter.AddButton(JSROOT.ToolbarIcons.circle, "Enlarge canvas", "EnlargePad");
+         painter.AddButton("circle", "Enlarge canvas", "EnlargePad");
 
       painter.RedrawPadSnap(snap, () => { painter.ShowButtons(); painter.DrawingReady(); });
 

@@ -9,20 +9,16 @@ JSROOT.require(['d3', 'three', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE, 
 
    // ============================================================================================
 
-   function Toolbar(container, buttons, bright) {
+   function Toolbar(container, bright) {
       this.bright = bright;
-      if ((container !== undefined) && (typeof container.append == 'function'))  {
-         this.element = container.append("div").attr('class','jsroot');
-         this.addButtons(buttons);
-      }
+      this.element = container.append("div").attr('class','geo_toolbar_group');
    }
 
    Toolbar.prototype.addButtons = function(buttons) {
       this.buttonsNames = [];
-      buttons.forEach(buttonGroup => {
-         let group = this.element.append('div').attr('class', 'toolbar-group');
 
-         buttonGroup.forEach(buttonConfig => {
+      JSROOT.require(["JSRoot.interactive"]).then(inter => {
+         buttons.forEach(buttonConfig => {
             let buttonName = buttonConfig.name;
             if (!buttonName) {
                throw new Error('must provide button \'name\' in button config');
@@ -30,63 +26,31 @@ JSROOT.require(['d3', 'three', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE, 
             if (this.buttonsNames.indexOf(buttonName) !== -1) {
                throw new Error('button name \'' + buttonName + '\' is taken');
             }
+
             this.buttonsNames.push(buttonName);
 
-            this.createButton(group, buttonConfig);
+            let title = buttonConfig.title || buttonConfig.name;
+
+            if (typeof buttonConfig.click !== 'function')
+               throw new Error('must provide button \'click\' function in button config');
+
+            let button = this.element.append('a')
+                              .attr('class', this.bright ? 'geo_toolbar_btn_bright' : 'geo_toolbar_btn')
+                              .attr('rel', 'tooltip')
+                              .attr('data-title', title)
+                              .on('click', buttonConfig.click);
+
+            inter.ToolbarIcons.CreateSVG(button, inter.ToolbarIcons[buttonConfig.icon], 16, title);
          });
+
       });
    }
 
-   Toolbar.prototype.createButton = function(group, config) {
-
-      let title = config.title;
-      if (title === undefined) title = config.name;
-
-      if (typeof config.click !== 'function')
-         throw new Error('must provide button \'click\' function in button config');
-
-      let button = group.append('a')
-                        .attr('class', this.bright ? 'toolbar-btn-bright' : 'toolbar-btn')
-                        .attr('rel', 'tooltip')
-                        .attr('data-title', title)
-                        .on('click', config.click);
-
-      this.createIcon(button, config.icon || JSROOT.ToolbarIcons.question);
-   }
-
-
    Toolbar.prototype.changeBrightness = function(bright) {
       this.bright = bright;
-      if (!this.element) return;
-
-      this.element.selectAll(bright ? '.toolbar-btn' : ".toolbar-btn-bright")
-                  .attr("class", !bright ? 'toolbar-btn' : "toolbar-btn-bright");
-   }
-
-
-   Toolbar.prototype.createIcon = function(button, thisIcon) {
-      let dimensions = thisIcon.size ? thisIcon.size.split(' ') : [512, 512],
-          width = dimensions[0],
-          height = dimensions[1] || dimensions[0],
-          scale = thisIcon.scale || 1,
-          svg = button.append("svg:svg")
-                      .attr('height', '1em')
-                      .attr('width', '1em')
-                      .attr('viewBox', [0, 0, width, height].join(' '));
-
-      if ('recs' in thisIcon) {
-          let rec = {};
-          for (let n=0;n<thisIcon.recs.length;++n) {
-             JSROOT.extend(rec, thisIcon.recs[n]);
-             svg.append('rect').attr("x", rec.x).attr("y", rec.y)
-                               .attr("width", rec.w).attr("height", rec.h)
-                               .attr("fill", rec.f);
-          }
-       } else {
-          let elem = svg.append('svg:path').attr('d',thisIcon.path);
-          if (scale !== 1)
-             elem.attr('transform', 'scale(' + scale + ' ' + scale +')');
-       }
+      if (this.element)
+         this.element.selectAll(bright ? '.geo_toolbar_btn' : ".geo_toolbar_btn_bright")
+                     .attr("class", !bright ? 'geo_toolbar_btn' : "geo_toolbar_btn_bright");
    }
 
    Toolbar.prototype.Cleanup = function() {
@@ -201,21 +165,21 @@ JSROOT.require(['d3', 'three', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE, 
    TGeoPainter.prototype = Object.create( JSROOT.ObjectPainter.prototype );
 
    TGeoPainter.prototype.CreateToolbar = function() {
-      if (this._toolbar || !this._webgl || this.ctrl.notoolbar) return;
+      if (this._toolbar || !this._webgl || this.ctrl.notoolbar || JSROOT.BatchMode) return;
       let buttonList = [{
          name: 'toImage',
          title: 'Save as PNG',
-         icon: JSROOT.ToolbarIcons.camera,
+         icon: "camera",
          click: () => this.createSnapshot()
       }, {
          name: 'control',
          title: 'Toggle control UI',
-         icon: JSROOT.ToolbarIcons.rect,
+         icon: "rect",
          click: () => this.showControlOptions('toggle')
       }, {
          name: 'enlarge',
          title: 'Enlarge geometry drawing',
-         icon: JSROOT.ToolbarIcons.circle,
+         icon: "circle",
          click: () => this.toggleEnlarge()
       }];
 
@@ -224,7 +188,7 @@ JSROOT.require(['d3', 'three', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE, 
          buttonList.push({
             name: 'entervr',
             title: 'Enter VR (It requires a VR Headset connected)',
-            icon: JSROOT.ToolbarIcons.vrgoggles,
+            icon: "vrgoggles",
             click: () => this.toggleVRMode()
          });
          this.InitVRMode();
@@ -234,7 +198,7 @@ JSROOT.require(['d3', 'three', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE, 
       buttonList.push({
          name: 'menu',
          title: 'Show context menu',
-         icon: JSROOT.ToolbarIcons.question,
+         icon: "question",
          click: evnt => {
 
             evnt.preventDefault();
@@ -250,7 +214,9 @@ JSROOT.require(['d3', 'three', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE, 
 
       let bkgr = new THREE.Color(this.ctrl.background);
 
-      this._toolbar = new Toolbar( this.select_main(), [buttonList], (bkgr.r + bkgr.g + bkgr.b) < 1);
+      this._toolbar = new Toolbar(this.select_main(), (bkgr.r + bkgr.g + bkgr.b) < 1);
+
+      this._toolbar.addButtons(buttonList);
    }
 
    TGeoPainter.prototype.InitVRMode = function() {

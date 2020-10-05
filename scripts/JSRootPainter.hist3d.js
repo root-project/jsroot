@@ -2924,9 +2924,9 @@ JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.hist'], (d3, THREE) => {
       let pp = this.pad_painter();
       if (!pp) return;
 
-      pp.AddButton(JSROOT.ToolbarIcons.auto_zoom, 'Unzoom all axes', 'ToggleZoom', "Ctrl *");
+      pp.AddButton("auto_zoom", 'Unzoom all axes', 'ToggleZoom', "Ctrl *");
       if (this.draw_content)
-         pp.AddButton(JSROOT.ToolbarIcons.statbox, 'Toggle stat box', "ToggleStatBox");
+         pp.AddButton("statbox", 'Toggle stat box', "ToggleStatBox");
       pp.ShowButtons();
    }
 

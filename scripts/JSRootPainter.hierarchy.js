@@ -2271,16 +2271,18 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
       if (!this.exclude_browser) {
          let btns = this.brlayout.CreateBrowserBtns();
 
-         JSROOT.ToolbarIcons.CreateSVG(btns, JSROOT.ToolbarIcons.diamand, 15, "toggle fix-pos browser")
-                            .style("margin","3px").on("click", this.CreateBrowser.bind(this, "fix", true));
+         JSROOT.require(['JSRoot.interactive']).then(inter => {
+            inter.ToolbarIcons.CreateSVG(btns, inter.ToolbarIcons.diamand, 15, "toggle fix-pos browser")
+                               .style("margin","3px").on("click", () => this.CreateBrowser("fix", true));
 
-         if (!this.float_browser_disabled)
-            JSROOT.ToolbarIcons.CreateSVG(btns, JSROOT.ToolbarIcons.circle, 15, "toggle float browser")
-                               .style("margin","3px").on("click", this.CreateBrowser.bind(this, "float", true));
+            if (!this.float_browser_disabled)
+               inter.ToolbarIcons.CreateSVG(btns, inter.ToolbarIcons.circle, 15, "toggle float browser")
+                                  .style("margin","3px").on("click", () => this.CreateBrowser("float", true));
 
-         if (!this.status_disabled)
-            JSROOT.ToolbarIcons.CreateSVG(btns, JSROOT.ToolbarIcons.three_circles, 15, "toggle status line")
-                               .style("margin","3px").on("click", this.CreateStatusLine.bind(this, 0, "toggle"));
+            if (!this.status_disabled)
+               inter.ToolbarIcons.CreateSVG(btns, inter.ToolbarIcons.three_circles, 15, "toggle status line")
+                                  .style("margin","3px").on("click", () => this.CreateStatusLine(0, "toggle"));
+          });
       }
 
       this.SetDisplay(layout, this.brlayout.drawing_divid());

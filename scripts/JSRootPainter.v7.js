@@ -2807,11 +2807,11 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
             padpainter.CreatePadSvg();
 
             if (snap.fPrimitives && snap.fPrimitives.length > 0) {
-               padpainter.AddButton(JSROOT.ToolbarIcons.camera, "Create PNG", "PadSnapShot");
-               padpainter.AddButton(JSROOT.ToolbarIcons.circle, "Enlarge pad", "EnlargePad");
+               padpainter.AddButton("camera", "Create PNG", "PadSnapShot");
+               padpainter.AddButton("circle", "Enlarge pad", "EnlargePad");
 
                if (JSROOT.gStyle.ContextMenu)
-                  padpainter.AddButton(JSROOT.ToolbarIcons.question, "Access context menus", "PadContextMenus");
+                  padpainter.AddButton("question", "Access context menus", "PadContextMenus");
             }
 
             // we select current pad, where all drawing is performed
@@ -2870,12 +2870,12 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
    }
 
    RPadPainter.prototype.AddOnlineButtons = function() {
-      this.AddButton(JSROOT.ToolbarIcons.camera, "Create PNG", "CanvasSnapShot", "Ctrl PrintScreen");
+      this.AddButton("camera", "Create PNG", "CanvasSnapShot", "Ctrl PrintScreen");
       if (JSROOT.gStyle.ContextMenu)
-         this.AddButton(JSROOT.ToolbarIcons.question, "Access context menus", "PadContextMenus");
+         this.AddButton("question", "Access context menus", "PadContextMenus");
 
       if (this.enlarge_main('verify'))
-         this.AddButton(JSROOT.ToolbarIcons.circle, "Enlarge canvas", "EnlargePad");
+         this.AddButton("circle", "Enlarge canvas", "EnlargePad");
    }
 
    RPadPainter.prototype.RedrawPadSnap = function(snap, call_back) {
@@ -3415,13 +3415,13 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
       painter.CreatePadSvg();
 
       if (painter.MatchObjectType("TPad") && (!painter.has_canvas || painter.HasObjectsToDraw())) {
-         painter.AddButton(JSROOT.ToolbarIcons.camera, "Create PNG", "PadSnapShot");
+         painter.AddButton("camera", "Create PNG", "PadSnapShot");
 
          if ((painter.has_canvas && painter.HasObjectsToDraw()) || painter.enlarge_main('verify'))
-            painter.AddButton(JSROOT.ToolbarIcons.circle, "Enlarge pad", "EnlargePad");
+            painter.AddButton("circle", "Enlarge pad", "EnlargePad");
 
          if (JSROOT.gStyle.ContextMenu)
-            painter.AddButton(JSROOT.ToolbarIcons.question, "Access context menus", "PadContextMenus");
+            painter.AddButton("question", "Access context menus", "PadContextMenus");
       }
 
       // we select current pad, where all drawing is performed
@@ -3891,12 +3891,12 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
       painter.CreateCanvasSvg(0);
       painter.SetDivId(divid);  // now add to painters list
 
-      painter.AddButton(JSROOT.ToolbarIcons.camera, "Create PNG", "CanvasSnapShot", "Ctrl PrintScreen");
+      painter.AddButton("camera", "Create PNG", "CanvasSnapShot", "Ctrl PrintScreen");
       if (JSROOT.gStyle.ContextMenu)
-         painter.AddButton(JSROOT.ToolbarIcons.question, "Access context menus", "PadContextMenus");
+         painter.AddButton("question", "Access context menus", "PadContextMenus");
 
       if (painter.enlarge_main('verify'))
-         painter.AddButton(JSROOT.ToolbarIcons.circle, "Enlarge canvas", "EnlargePad");
+         painter.AddButton("circle", "Enlarge canvas", "EnlargePad");
 
       JSROOT.Painter.SelectActivePad({ pp: painter, active: false });
 
