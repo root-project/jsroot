@@ -711,7 +711,7 @@ JSROOT.require(['rawinflate'], () => {
       if ((this.fSeekKeys <= 0) || (this.fNbytesKeys <= 0))
          return Promise.resolve(this);
 
-      let dir = this, file = this.fFile;
+      let file = this.fFile;
 
       return file.ReadBuffer([this.fSeekKeys, this.fNbytesKeys]).then(blob => {
          //*-* -------------Read keys of the top directory
@@ -722,11 +722,11 @@ JSROOT.require(['rawinflate'], () => {
          const nkeys = buf.ntoi4();
 
          for (let i = 0; i < nkeys; ++i)
-            dir.fKeys.push(buf.ReadTKey());
+            this.fKeys.push(buf.ReadTKey());
 
-         file.fDirectories.push(dir);
+         file.fDirectories.push(this);
 
-         return dir;
+         return this;
       });
    }
 
@@ -782,18 +782,16 @@ JSROOT.require(['rawinflate'], () => {
     * @returns {Promise} after file keys are read
     * @private */
    TFile.prototype.Open = function() {
-      let file = this;
-
       if (!this.fAcceptRanges)
          return this.ReadKeys();
 
       return JSROOT.HttpRequest(this.fURL, "head").then(res => {
          const accept_ranges = res.getResponseHeader("Accept-Ranges");
-         if (!accept_ranges) file.fAcceptRanges = false;
+         if (!accept_ranges) this.fAcceptRanges = false;
          const len = res.getResponseHeader("Content-Length");
-         if (len) file.fEND = parseInt(len);
-         else file.fAcceptRanges = false;
-         return file.ReadKeys();
+         if (len) this.fEND = parseInt(len);
+             else this.fAcceptRanges = false;
+         return this.ReadKeys();
       });
    }
 
@@ -1074,18 +1072,16 @@ JSROOT.require(['rawinflate'], () => {
     * @private */
    TFile.prototype.ReadObjBuffer = function(key) {
 
-      let file = this;
-
       return this.ReadBuffer([key.fSeekKey + key.fKeylen, key.fNbytes - key.fKeylen]).then(blob1 => {
 
          let buf;
 
          if (key.fObjlen <= key.fNbytes - key.fKeylen) {
-            buf = new TBuffer(blob1, 0, file);
+            buf = new TBuffer(blob1, 0, this);
          } else {
             let objbuf = JSROOT.R__unzip(blob1, key.fObjlen);
             if (!objbuf) return Promise.reject(Error("Fail to UNZIP buffer"));
-            buf = new TBuffer(objbuf, 0, file);
+            buf = new TBuffer(objbuf, 0, this);
          }
 
          buf.fTagOffset = key.fKeylen;
@@ -2174,23 +2170,24 @@ JSROOT.require(['rawinflate'], () => {
     * @returns {Promise} after file keys are read
     * @private */
    TNodejsFile.prototype.Open = function() {
-      let file = this;
+      this.fs = require('fs');
 
-      file.fs = require('fs');
+      return new Promise((resolve,reject) =>
 
-      file.fs.open(filename, 'r', function(status, fd) {
-         if (status) {
-            console.log(status.message);
-            return Promise.reject(Error("Not possible to open " + filename + " inside node.js"));
-         }
-         let stats = file.fs.fstatSync(fd);
+         this.fs.open(filename, 'r', (status, fd) => {
+            if (status) {
+               console.log(status.message);
+               return reject(Error(`Not possible to open ${filename} inside node.js`));
+            }
+            let stats = this.fs.fstatSync(fd);
 
-         file.fEND = stats.size;
+            this.fEND = stats.size;
 
-         file.fd = fd;
+            this.fd = fd;
 
-         return file.ReadKeys();
-      });
+            this.ReadKeys().then(resolve).catch(reject);
+         })
+      );
    }
 
    /** @brief Read buffer from local file
@@ -2198,14 +2195,12 @@ JSROOT.require(['rawinflate'], () => {
     * @private */
 
    TNodejsFile.prototype.ReadBuffer = function(place, filename /*, progress_callback */) {
-      let file = this;
-
       return new Promise((resolve, reject) => {
          if (filename)
-            return reject(Error("Cannot access other local file " + filename));
+            return reject(Error(`Cannot access other local file ${filename}`));
 
-         if (!file.fs || !file.fd)
-            return reject(Error("File is not opened " + file.fFileName));
+         if (!this.fs || !this.fd)
+            return reject(Error(`File is not opened ${this.fFileName}`));
 
          let cnt = 0, blobs = [];
 
@@ -2217,10 +2212,10 @@ JSROOT.require(['rawinflate'], () => {
             blobs.push(res);
             cnt += 2;
             if (cnt >= place.length) return resolve(blobs);
-            file.fs.read(file.fd, new Buffer(place[cnt + 1]), 0, place[cnt + 1], place[cnt], readfunc);
+            this.fs.read(this.fd, new Buffer(place[cnt + 1]), 0, place[cnt + 1], place[cnt], readfunc);
          }
 
-         file.fs.read(file.fd, new Buffer(place[1]), 0, place[1], place[0], readfunc);
+         this.fs.read(this.fd, new Buffer(place[1]), 0, place[1], place[0], readfunc);
       });
    }
 
