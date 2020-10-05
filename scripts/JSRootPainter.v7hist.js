@@ -3738,7 +3738,7 @@ JSROOT.require(['d3', 'JSRootPainter.v7'], (d3) => {
 
    // =================================================================================
 
-   function drawHistDisplayItem(divid, obj, opt) {
+   let drawHistDisplayItem = (divid, obj, opt) => {
       if (!obj)
          return null;
 
