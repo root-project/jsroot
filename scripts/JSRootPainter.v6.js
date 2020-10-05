@@ -695,7 +695,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
          if (labelfont) labelsize = labelfont.size; // use real font size
       }
 
-      if (JSROOT.gStyle.Zooming && !this.disable_zooming) {
+      if (JSROOT.gStyle.Zooming && !this.disable_zooming && !JSROOT.BatchMode) {
          let r = axis_g.append("svg:rect")
                        .attr("class", "axis_zoom")
                        .style("opacity", "0")
@@ -3014,7 +3014,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
             this.painters.push(fp);
             fp.CleanFrameDrawings();
          }
-         this.RemoveButtons();
+         if (this.RemoveButtons) this.RemoveButtons();
          this.AddOnlineButtons();
       }
 
@@ -3405,25 +3405,6 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
       }
    }
 
-   TPadPainter.prototype.FindButton = function(keyname) {
-      let group = this.svg_layer("btns_layer", this.this_pad_name), found_func = "";
-      if (!group.empty())
-         group.selectAll("svg").each(function() {
-            if (d3.select(this).attr("key") === keyname)
-               found_func = d3.select(this).attr("name");
-         });
-
-      return found_func;
-   }
-
-   TPadPainter.prototype.RemoveButtons = function() {
-      let group = this.svg_layer("btns_layer", this.this_pad_name);
-      if (!group.empty()) {
-         group.selectAll("*").remove();
-         group.property("nextx", null);
-      }
-   }
-
    TPadPainter.prototype.AddButton = function(_btn, _tooltip, _funcname, _keyname) {
       if (!JSROOT.gStyle.ToolBar || JSROOT.BatchMode) return;
 
@@ -3446,7 +3427,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
       if (!this._buttons) return;
 
       JSROOT.require(['JSRoot.interactive']).then(inter => {
-         inter.PadButtons.assign(this);
+         inter.PadButtonsHandler.assign(this);
          this.ShowButtons();
       });
    }

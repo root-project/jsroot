@@ -765,7 +765,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
             evnt.stopPropagation();
             evnt.preventDefault();
          } else {
-            let func = pp ? pp.FindButton(key) : "";
+            let func = pp && pp.FindButton ? pp.FindButton(key) : "";
             if (func) {
                pp.PadButtonClick(func);
                evnt.stopPropagation();
@@ -1411,7 +1411,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
 
    } // FrameInterative
 
-   let PadButtons = {
+   let PadButtonsHandler = {
 
       ButtonSize: function(fact) {
          return Math.round((fact || 1) * (this.iscan || !this.has_canvas ? 16 : 12));
@@ -1464,6 +1464,25 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
             if (this===btn.node()) return;
             d3.select(this).style('display', is_visible ? "" : "none");
          });
+      },
+
+      FindButton: function(keyname) {
+         let group = this.svg_layer("btns_layer", this.this_pad_name), found_func = "";
+         if (!group.empty())
+            group.selectAll("svg").each(function() {
+               if (d3.select(this).attr("key") === keyname)
+                  found_func = d3.select(this).attr("name");
+            });
+
+         return found_func;
+      },
+
+      RemoveButtons: function() {
+         let group = this.svg_layer("btns_layer", this.this_pad_name);
+         if (!group.empty()) {
+            group.selectAll("*").remove();
+            group.property("nextx", null);
+         }
       },
 
       ShowButtons: function() {
@@ -1528,16 +1547,18 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
          painter.ButtonSize = this.ButtonSize;
          painter.AlignBtns = this.AlignBtns;
          painter.ToggleButtonsVisibility = this.ToggleButtonsVisibility;
+         painter.FindButton = this.FindButton;
+         painter.RemoveButtons = this.RemoveButtons;
          painter.ShowButtons = this.ShowButtons;
 
       }
-   } // PadButtons
+   } // PadButtonsHandler
 
    return {
       TooltipHandler: TooltipHandler,
       DragMoveHandler: DragMoveHandler,
       FrameInteractive: FrameInteractive,
-      PadButtons: PadButtons
+      PadButtonsHandler: PadButtonsHandler
    };
 
 })
