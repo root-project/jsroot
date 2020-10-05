@@ -3797,9 +3797,7 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter.v6'], (d3) => {
    }
 
    TASImagePainter.prototype.Redraw = function(reason) {
-      let img = null;
-      if (this.draw_g)
-         img = this.draw_g.select("image");
+      let img = this.draw_g ? this.draw_g.select("image") : null;
 
       if (img && !img.empty() && (reason !== "zoom")) {
          let fw = this.frame_width(), fh = this.frame_height();

@@ -1364,7 +1364,7 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], (d3) => {
     * @desc Should be called when all other objects are painted
     * Invoked when item "$legend" specified in JSROOT URL string
     * @private */
-   function produceLegend(divid, opt) {
+   let produceLegend = (divid, opt) => {
       let main_painter = JSROOT.GetMainPainter(divid);
       if (!main_painter) return;
 
@@ -1400,12 +1400,10 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], (d3) => {
       if (szy>8) szy = 8;
       szy *= 0.1;
 
-      JSROOT.extend(leg, {
-         fX1NDC: szx*pad.fLeftMargin + (1-szx)*(1-pad.fRightMargin),
-         fY1NDC: (1-szy)*(1-pad.fTopMargin) + szy*pad.fBottomMargin,
-         fX2NDC: 0.99-pad.fRightMargin,
-         fY2NDC: 0.99-pad.fTopMargin
-      });
+      leg.fX1NDC = szx*pad.fLeftMargin + (1-szx)*(1-pad.fRightMargin);
+      leg.fY1NDC = (1-szy)*(1-pad.fTopMargin) + szy*pad.fBottomMargin;
+      leg.fX2NDC = 0.99-pad.fRightMargin;
+      leg.fY2NDC = 0.99-pad.fTopMargin;
       leg.fFillStyle = 1001;
 
       return drawPave(divid, leg);
@@ -2666,7 +2664,8 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], (d3) => {
       if (!not_shown) pp.ShowButtons();
    }
 
-   /** @summary Returns tooltip information for 3D drawings @private */
+   /** @summary Returns tooltip information for 3D drawings
+     * @private */
    THistPainter.prototype.Get3DToolTip = function(indx) {
       let histo = this.GetHisto(),
           tip = { bin: indx, name: histo.fName, title: histo.fTitle };
@@ -6191,7 +6190,7 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], (d3) => {
    // =================================================================================
 
 
-   function createTF2Histogram(func, nosave, hist) {
+   let createTF2Histogram = (func, nosave, hist) => {
       let nsave = 0, npx = 0, npy = 0;
       if (!nosave) {
          nsave = func.fSave.length;
@@ -6267,7 +6266,7 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], (d3) => {
    // TF2 always drawn via temporary TH2 object,
    // therefore there is no special painter class
 
-   function drawTF2(divid, func, opt) {
+   let drawTF2 = (divid, func, opt) => {
 
       let d = new JSROOT.DrawOptions(opt);
 
@@ -6635,7 +6634,7 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], (d3) => {
    }
 
    /** @summary draw THStack object */
-   function drawHStack(divid, stack, opt) {
+   let drawHStack = (divid, stack, opt) => {
       // paint the list of histograms
       // By default, histograms are shown stacked.
       // - the first histogram is paint

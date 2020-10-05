@@ -1005,7 +1005,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
 
          if (!updating) JSROOT.progress("Loading " + display_itemname);
 
-         h.get(display_itemname, function(resitem, obj) {
+         h.get(display_itemname, (resitem, obj) => {
 
             if (!updating) JSROOT.progress();
 

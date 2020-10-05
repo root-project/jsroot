@@ -14,7 +14,8 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
    /** @summary Painter for TAxis/TGaxis objects.
     * @constructor
     * @param {object} axis - object to draw
-    * @param {boolean} embedded - if true, painter used in other objects painters */
+    * @param {boolean} embedded - if true, painter used in other objects painters
+    * @private */
 
    function TAxisPainter(axis, embedded) {
       JSROOT.ObjectPainter.call(this, axis);
@@ -3253,7 +3254,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
 
       function reEncode(data) {
          data = encodeURIComponent(data);
-         data = data.replace(/%([0-9A-F]{2})/g, function(match, p1) {
+         data = data.replace(/%([0-9A-F]{2})/g, (match, p1) => {
            let c = String.fromCharCode('0x'+p1);
            return c === '%' ? '%25' : c;
          });
@@ -3387,7 +3388,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
    }
 
    TPadPainter.prototype.AddButton = function(_btn, _tooltip, _funcname, _keyname) {
-      if (!JSROOT.gStyle.ToolBar || JSROOT.BatchMode) return;
+      if (!JSROOT.gStyle.ToolBar || JSROOT.BatchMode || this.batch_mode) return;
 
       if (!this._buttons) this._buttons = [];
       // check if there are duplications

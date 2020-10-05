@@ -3291,7 +3291,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
    }
 
    RPadPainter.prototype.AddButton = function(_btn, _tooltip, _funcname, _keyname) {
-      if (!JSROOT.gStyle.ToolBar || JSROOT.BatchMode) return;
+      if (!JSROOT.gStyle.ToolBar || JSROOT.BatchMode || this.batch_mode) return;
 
       if (!this._buttons) this._buttons = [];
       // check if there are duplications
@@ -3401,7 +3401,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
       if (d.check('TICK')) pad.fTickx = pad.fTicky = 1;
    }
 
-   function drawPad(divid, pad, opt) {
+   let drawPad = (divid, pad, opt) => {
       let painter = new RPadPainter(pad, false);
       painter.DecodeOptions(opt);
 
@@ -3424,7 +3424,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
       JSROOT.Painter.SelectActivePad({ pp: painter, active: false });
 
       // flag used to prevent immediate pad redraw during first draw
-      painter.DrawPrimitives(0, function() {
+      painter.DrawPrimitives(0, () => {
          painter.ShowButtons();
          // we restore previous pad name
          painter.CurrentPadName(prev_name);
@@ -4040,7 +4040,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
       this.DrawPave();
    }
 
-   function drawPave(divid, pave, opt) {
+   let drawPave = (divid, pave, opt) => {
       let painter = new RPavePainter(pave, opt);
 
       painter.SetDivId(divid);
@@ -4424,7 +4424,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
       });
    }
 
-   function drawPalette(divid, palette, opt) {
+   let drawPalette = (divid, palette, opt) => {
       let painter = new RPalettePainter(palette, opt);
 
       painter.SetDivId(divid);
