@@ -2450,7 +2450,10 @@ JSROOT.require(['rawinflate'], () => {
             let p2 = element.fTitle.indexOf("]", p1 + 1);
 
             if ((p1 >= 0) && (p2 >= p1 + 2)) {
-               let arr = JSROOT.ParseAsArray(element.fTitle.substr(p1, p2 - p1 + 1)), nbits = 32;
+
+               let arr = element.fTitle.substr(p1+1, p2 - p1 - 1).split(","), nbits = 32;
+               if (!arr || arr.length < 2)
+                  throw new Error(`Problem to decode range setting from streamer element title ${element.fTitle}`);
 
                if (arr.length === 3) nbits = parseInt(arr[2]);
                if (isNaN(nbits) || (nbits < 2) || (nbits > 32)) nbits = 32;

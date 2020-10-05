@@ -458,6 +458,63 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
       return true;
    }
 
+      /**
+    * @summary Parse string value as array.
+    *
+    * @desc It could be just simple string:  "value" or
+    * array with or without string quotes:  [element], ['elem1',elem2]
+    *
+    * @private
+    */
+   let ParseAsArray = val => {
+
+      let res = [];
+
+      if (typeof val != 'string') return res;
+
+      val = val.trim();
+      if (val=="") return res;
+
+      // return as array with single element
+      if ((val.length<2) || (val[0]!='[') || (val[val.length-1]!=']')) {
+         res.push(val); return res;
+      }
+
+      // try to split ourself, checking quotes and brackets
+      let nbr = 0, nquotes = 0, ndouble = 0, last = 1;
+
+      for (let indx = 1; indx < val.length; ++indx) {
+         if (nquotes > 0) {
+            if (val[indx]==="'") nquotes--;
+            continue;
+         }
+         if (ndouble > 0) {
+            if (val[indx]==='"') ndouble--;
+            continue;
+         }
+         switch (val[indx]) {
+            case "'": nquotes++; break;
+            case '"': ndouble++; break;
+            case "[": nbr++; break;
+            case "]": if (indx < val.length - 1) { nbr--; break; }
+            case ",":
+               if (nbr === 0) {
+                  let sub =  val.substring(last, indx).trim();
+                  if ((sub.length>1) && (sub[0]==sub[sub.length-1]) && ((sub[0]=='"') || (sub[0]=="'")))
+                     sub = sub.substr(1, sub.length-2);
+                  res.push(sub);
+                  last = indx+1;
+               }
+               break;
+         }
+      }
+
+      if (res.length === 0)
+         res.push(val.substr(1, val.length-2).trim());
+
+      return res;
+   }
+
    // =================================================================================================
 
    /// special layout with three different areas for browser (left), status line (bottom) and central drawing
@@ -1207,7 +1264,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
          if (elem) { items[i] = h.itemFullName(elem); continue; }
 
          if (can_split && (items[i][0]=='[') && (items[i][items[i].length-1]==']')) {
-            dropitems[i] = JSROOT.ParseAsArray(items[i]);
+            dropitems[i] = ParseAsArray(items[i]);
             items[i] = dropitems[i].shift();
          } else
          if (can_split && (items[i].indexOf("+") > 0)) {
@@ -1227,7 +1284,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
             }
 
             if ((options[i][0] == "[") && (options[i][options[i].length-1] == "]")) {
-               dropopts[i] = JSROOT.ParseAsArray(options[i]);
+               dropopts[i] = ParseAsArray(options[i]);
                options[i] = dropopts[i].shift();
             } else
             if (options[i].indexOf("+") > 0) {
@@ -2085,14 +2142,35 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
 
    HierarchyPainter.prototype.StartGUI = function(gui_div, gui_call_back, url) {
 
-      function GetOption(opt) {
+      let GetOption = (opt) => {
          let res = JSROOT.GetUrlOption(opt, url);
          if (!res && gui_div && !gui_div.empty() && gui_div.node().hasAttribute(opt)) res = gui_div.attr(opt);
          return res;
       }
 
-      function GetOptionAsArray(opt) {
-         let res = JSROOT.GetUrlOptionAsArray(opt, url);
+      let GetUrlOptionAsArray = (opt, url) => {
+
+         let res = [];
+
+         while (opt.length>0) {
+            let separ = opt.indexOf(";");
+            let part = (separ>0) ? opt.substr(0, separ) : opt;
+
+            if (separ>0) opt = opt.substr(separ+1); else opt = "";
+
+            let canarray = true;
+            if (part[0]=='#') { part = part.substr(1); canarray = false; }
+
+            let val = JSROOT.GetUrlOption(part, url, null);
+
+            if (canarray) res = res.concat(ParseAsArray(val));
+                     else if (val!==null) res.push(val);
+         }
+         return res;
+      }
+
+      let GetOptionAsArray = (opt) => {
+         let res = GetUrlOptionAsArray(opt, url);
          if (res.length>0 || !gui_div || gui_div.empty()) return res;
          while (opt.length>0) {
             let separ = opt.indexOf(";");
@@ -2107,7 +2185,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
 
             let val = gui_div.attr(part);
 
-            if (canarray) res = res.concat(JSROOT.ParseAsArray(val));
+            if (canarray) res = res.concat(ParseAsArray(val));
             else if (val!==null) res.push(val);
          }
          return res;
@@ -2223,11 +2301,11 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
             monitor = this.h._monitoring;
 
          if (('_loadfile' in this.h) && (filesarr.length==0))
-            filesarr = JSROOT.ParseAsArray(this.h._loadfile);
+            filesarr = ParseAsArray(this.h._loadfile);
 
          if (('_drawitem' in this.h) && (itemsarr.length==0)) {
-            itemsarr = JSROOT.ParseAsArray(this.h._drawitem);
-            optionsarr = JSROOT.ParseAsArray(this.h._drawopt);
+            itemsarr = ParseAsArray(this.h._drawitem);
+            optionsarr = ParseAsArray(this.h._drawopt);
          }
 
          if (('_layout' in this.h) && !layout && ((this.is_online != "draw") || (itemsarr.length > 1)))
