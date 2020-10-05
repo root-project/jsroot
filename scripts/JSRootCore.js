@@ -48,7 +48,7 @@
 
       globalThis.JSROOT = jsroot;
 
-      jsroot.Initialize();
+      jsroot._.init();
 
    } else if (typeof exports === 'object' && typeof module !== 'undefined') {
       // processing with Node.js
@@ -69,7 +69,7 @@
 
       factory(globalThis.JSROOT);
 
-      JSROOT.Initialize();
+      JSROOT._.init();
    }
 } (function(JSROOT) {
 
@@ -82,7 +82,10 @@
    JSROOT.source_fullpath = ""; // full name of source script
    JSROOT.nocache = false;      // when specified, used as extra URL parameter to load JSROOT scripts
    JSROOT.wrong_http_response_handling = false; // when configured, try to handle wrong content-length response from server
-   JSROOT._ = { modules: {} }; // internal JSROOT data, not a part of public API
+
+   /** Internal data, not a public data
+      @private */
+   JSROOT._ = { modules: {} };
 
    JSROOT.id_counter = 1;       // avoid id value 0, starts from 1
    if (JSROOT.BatchMode === undefined)
@@ -333,7 +336,7 @@
      *    - 'geom'    TGeo support
      *    - 'simple'  for basic user interface
      * @param {Array} need - array of required components
-     * @param {Function} [factoryFunc] - function to initialize functionality
+     * @param {Function} [factoryFunc] - function to initialize functionality, only once per script file
      * @returns {Promise} when factoryFunc not specified */
    JSROOT.require = function(need, factoryFunc) {
       let _ = this._;
@@ -633,17 +636,17 @@
             // this is ROOT-coded array
             let arr = null, dflt = (value.$arr==="Bool") ? false : 0;
             switch (value.$arr) {
-               case "Int8" : arr = new Int8Array(value.len); break;
-               case "Uint8" : arr = new Uint8Array(value.len); break;
-               case "Int16" : arr = new Int16Array(value.len); break;
-               case "Uint16" : arr = new Uint16Array(value.len); break;
-               case "Int32" : arr = new Int32Array(value.len); break;
-               case "Uint32" : arr = new Uint32Array(value.len); break;
-               case "Float32" : arr = new Float32Array(value.len); break;
-               case "Int64" :
-               case "Uint64" :
-               case "Float64" : arr = new Float64Array(value.len); break;
-               default : arr = new Array(value.len); break;
+               case "Int8": arr = new Int8Array(value.len); break;
+               case "Uint8": arr = new Uint8Array(value.len); break;
+               case "Int16": arr = new Int16Array(value.len); break;
+               case "Uint16": arr = new Uint16Array(value.len); break;
+               case "Int32": arr = new Int32Array(value.len); break;
+               case "Uint32": arr = new Uint32Array(value.len); break;
+               case "Float32": arr = new Float32Array(value.len); break;
+               case "Int64":
+               case "Uint64":
+               case "Float64": arr = new Float64Array(value.len); break;
+               default: arr = new Array(value.len); break;
             }
             for (let k=0;k<value.len;++k) arr[k] = dflt;
 
@@ -780,48 +783,6 @@
       return tgt;
    }
 
-   /**
-    * @summary Clear all functions from the contained objects
-    *
-    * Only such objects can be cloned when transfer to Worker or converted into JSON
-    * @param {object} src  object where functions will be removed
-    * @returns {object} same object after all functions are removed
-    * @private
-    */
-   JSROOT.clear_func = function(src, map) {
-      if (src === null) return src;
-
-      let proto = Object.prototype.toString.apply(src);
-
-      if (proto === '[object Array]') {
-         for (let n=0;n<src.length;n++)
-            if (typeof src[n] === 'object')
-               JSROOT.clear_func(src[n], map);
-         return src;
-      }
-
-      if ((proto.indexOf('[object ') == 0) && (proto.indexOf('Array]') == proto.length-6)) return src;
-
-      if (!map) map = [];
-      let nomap = (map.length == 0);
-      if ('__clean_func__' in src) return src;
-
-      map.push(src);
-      src['__clean_func__'] = true;
-
-      for (let k in src) {
-         if (typeof src[k] === 'object')
-            JSROOT.clear_func(src[k], map);
-         else
-         if (typeof src[k] === 'function') delete src[k];
-      }
-
-      if (nomap)
-         for (let n=0;n<map.length;++n)
-            delete map[n]['__clean_func__'];
-
-      return src;
-   }
 
    /**
     * @summary Parse JSON code produced with TBufferJSON.
@@ -914,11 +875,13 @@
     * If option not found, null is returned (or default value value is provided)
     *
     * @param {string} opt option to search
-    * @param {string} full URL with options, document.URL will be used when not specified
+    * @param {string} [url] URL string with options, document.URL will be used when not specified
+    * @param {string} [dflt] default value returned when parameter value not found
     * @returns {string|null} found value
     * @private
+    * @memberOf JSROOT
     */
-   JSROOT.GetUrlOption = function(opt, url, dflt) {
+   let GetUrlOption = (opt, url, dflt) => {
 
       if (dflt === undefined) dflt = null;
       if ((opt===null) || (typeof opt != 'string') || (opt.length==0)) return dflt;
@@ -1041,7 +1004,7 @@
          let canarray = true;
          if (part[0]=='#') { part = part.substr(1); canarray = false; }
 
-         let val = this.GetUrlOption(part, url, null);
+         let val = GetUrlOption(part, url, null);
 
          if (canarray) res = res.concat(JSROOT.ParseAsArray(val));
                   else if (val!==null) res.push(val);
@@ -1059,11 +1022,10 @@
    JSROOT.findFunction = function(name) {
       if (typeof name === 'function') return name;
       if (typeof name !== 'string') return null;
-      let names = name.split('.'), elem = null;
-      if (typeof window === 'object') elem = window;
+      let names = name.split('.'), elem = globalThis;
       if (names[0]==='JSROOT') { elem = this; names.shift(); }
 
-      for (let n=0;elem && (n<names.length);++n)
+      for (let n=0;elem && (n < names.length);++n)
          elem = elem[names[n]];
 
       return (typeof elem == 'function') ? elem : null;
@@ -1311,15 +1273,15 @@
       }
 
       let debugout,
-          nobrowser = JSROOT.GetUrlOption('nobrowser')!=null,
+          nobrowser = GetUrlOption('nobrowser')!=null,
           requirements = "2d;hierarchy;",
           simplegui = document.getElementById('simpleGUI');
 
-      if (JSROOT.GetUrlOption('libs')!==null) JSROOT.use_full_libs = true;
+      if (GetUrlOption('libs')!==null) JSROOT.use_full_libs = true;
 
       if (simplegui) {
          debugout = 'simpleGUI';
-         if (JSROOT.GetUrlOption('file') || JSROOT.GetUrlOption('files')) requirements += "io;";
+         if (GetUrlOption('file') || GetUrlOption('files')) requirements += "io;";
          if (simplegui.getAttribute('nobrowser') && (simplegui.getAttribute('nobrowser')!="false")) nobrowser = true;
       } else if (document.getElementById('onlineGUI')) {
          debugout = 'onlineGUI';
@@ -1337,7 +1299,7 @@
 
       if (!nobrowser) requirements += 'jq2d;';
 
-      if (!user_scripts) user_scripts = JSROOT.GetUrlOption("autoload") || JSROOT.GetUrlOption("load");
+      if (!user_scripts) user_scripts = GetUrlOption("autoload") || GetUrlOption("load");
 
       if (user_scripts) requirements += "load:" + user_scripts + ";";
 
@@ -1622,15 +1584,14 @@
       return obj;
    }
 
-   /** @summary Create histogram object
+   /** @summary Create histogram object of specified type
     * @param {string} typename - histogram typename like TH1I or TH2F
     * @param {number} nbinsx - number of bins on X-axis
     * @param {number} [nbinsy] - number of bins on Y-axis (for 2D/3D histograms)
     * @param {number} [nbinsz] - number of bins on Z-axis (for 3D histograms)
+    * @returns {Object} created histogram object
     */
    JSROOT.CreateHistogram = function(typename, nbinsx, nbinsy, nbinsz) {
-      // create histogram object of specified type
-      // if bins numbers are specified, appropriate typed array will be created
       let histo = JSROOT.Create(typename);
       if (!histo.fXaxis || !histo.fYaxis || !histo.fZaxis) return null;
       histo.fName = "hist"; histo.fTitle = "title";
@@ -1644,12 +1605,12 @@
       }
       if (histo.fNcells > 0) {
          switch (typename[3]) {
-            case "C" : histo.fArray = new Int8Array(histo.fNcells); break;
-            case "S" : histo.fArray = new Int16Array(histo.fNcells); break;
-            case "I" : histo.fArray = new Int32Array(histo.fNcells); break;
-            case "F" : histo.fArray = new Float32Array(histo.fNcells); break;
-            case "L" : histo.fArray = new Float64Array(histo.fNcells); break;
-            case "D" : histo.fArray = new Float64Array(histo.fNcells); break;
+            case "C": histo.fArray = new Int8Array(histo.fNcells); break;
+            case "S": histo.fArray = new Int16Array(histo.fNcells); break;
+            case "I": histo.fArray = new Int32Array(histo.fNcells); break;
+            case "F": histo.fArray = new Float32Array(histo.fNcells); break;
+            case "L": histo.fArray = new Float64Array(histo.fNcells); break;
+            case "D": histo.fArray = new Float64Array(histo.fNcells); break;
             default: histo.fArray = new Array(histo.fNcells); break;
          }
          for (let i=0;i<histo.fNcells;++i) histo.fArray[i] = 0;
@@ -2080,7 +2041,7 @@
     *
     * JSROOT implements some basic methods for different ROOT classes.
     * @param {object} obj - object where methods are assigned
-    * @param {string} typename - optional typename, if not specified, obj._typename will be used
+    * @param {string} [typename] - optional typename, if not specified, obj._typename will be used
     * @private
     */
    JSROOT.addMethods = function(obj, typename) {
@@ -2195,7 +2156,7 @@
     * Called when script is loaded. Process URL parameters, supplied with JSRootCore.js script
     * @private
     */
-   JSROOT.Initialize = function() {
+   JSROOT._.init = function() {
 
       if (JSROOT.source_fullpath.length === 0) return this;
 
@@ -2211,32 +2172,32 @@
 
       let src = JSROOT.source_fullpath;
 
-      if (JSROOT.GetUrlOption('nocache', src) != null) JSROOT.nocache = (new Date).getTime(); // use timestamp to overcome cache limitation
-      if ((JSROOT.GetUrlOption('wrong_http_response', src) != null) || (JSROOT.GetUrlOption('wrong_http_response') != null))
+      if (GetUrlOption('nocache', src) != null) JSROOT.nocache = (new Date).getTime(); // use timestamp to overcome cache limitation
+      if ((GetUrlOption('wrong_http_response', src) != null) || (GetUrlOption('wrong_http_response') != null))
          JSROOT.wrong_http_response_handling = true; // server may send wrong content length by partial requests, use other method to control this
 
-      if (JSROOT.GetUrlOption('gui', src) !== null)
+      if (GetUrlOption('gui', src) !== null)
          return window_on_load(() => JSROOT.BuildSimpleGUI());
 
       if ( typeof define === "function" && define.amd )
          return window_on_load(() => JSROOT.BuildSimpleGUI('check_existing_elements'));
 
       let prereq = "";
-      if (JSROOT.GetUrlOption('io', src)!=null) prereq += "io;";
-      if (JSROOT.GetUrlOption('tree', src)!=null) prereq += "tree;";
-      if (JSROOT.GetUrlOption('2d', src)!=null) prereq += "2d;";
-      if (JSROOT.GetUrlOption('v7', src)!=null) prereq += "v7;";
-      if (JSROOT.GetUrlOption('hist', src)!=null) prereq += "2d;hist;";
-      if (JSROOT.GetUrlOption('hierarchy', src)!=null) prereq += "2d;hierarchy;";
-      if (JSROOT.GetUrlOption('jq2d', src)!=null) prereq += "2d;hierarchy;jq2d;";
-      if (JSROOT.GetUrlOption('more2d', src)!=null) prereq += "more2d;";
-      if (JSROOT.GetUrlOption('geom', src)!=null) prereq += "geom;";
-      if (JSROOT.GetUrlOption('3d', src)!=null) prereq += "3d;";
-      if (JSROOT.GetUrlOption('math', src)!=null) prereq += "math;";
-      if (JSROOT.GetUrlOption('mathjax', src)!=null) prereq += "mathjax;";
-      if (JSROOT.GetUrlOption('openui5', src)!=null) prereq += "openui5;";
-      let user = JSROOT.GetUrlOption('load', src),
-          onload = JSROOT.GetUrlOption('onload', src);
+      if (GetUrlOption('io', src)!=null) prereq += "io;";
+      if (GetUrlOption('tree', src)!=null) prereq += "tree;";
+      if (GetUrlOption('2d', src)!=null) prereq += "2d;";
+      if (GetUrlOption('v7', src)!=null) prereq += "v7;";
+      if (GetUrlOption('hist', src)!=null) prereq += "2d;hist;";
+      if (GetUrlOption('hierarchy', src)!=null) prereq += "2d;hierarchy;";
+      if (GetUrlOption('jq2d', src)!=null) prereq += "2d;hierarchy;jq2d;";
+      if (GetUrlOption('more2d', src)!=null) prereq += "more2d;";
+      if (GetUrlOption('geom', src)!=null) prereq += "geom;";
+      if (GetUrlOption('3d', src)!=null) prereq += "3d;";
+      if (GetUrlOption('math', src)!=null) prereq += "math;";
+      if (GetUrlOption('mathjax', src)!=null) prereq += "mathjax;";
+      if (GetUrlOption('openui5', src)!=null) prereq += "openui5;";
+      let user = GetUrlOption('load', src),
+          onload = GetUrlOption('onload', src);
 
       if (user) prereq += "io;2d;load:" + user;
 
@@ -2252,6 +2213,9 @@
 
       return this;
    }
+
+   JSROOT.GetUrlOption = GetUrlOption;
+
 
    return JSROOT;
 

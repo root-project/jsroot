@@ -2443,43 +2443,42 @@ JSROOT.require(['rawinflate'], () => {
             element.fXmin = buf.ntod();
             element.fXmax = buf.ntod();
             element.fFactor = buf.ntod();
-         } else
-            if ((ver > 3) && (element.fBits & JSROOT.BIT(6))) { // kHasRange
+         } else if ((ver > 3) && (element.fBits & JSROOT.BIT(6))) { // kHasRange
 
-               let p1 = element.fTitle.indexOf("[");
-               if ((p1 >= 0) && (element.fType > io.kOffsetP)) p1 = element.fTitle.indexOf("[", p1 + 1);
-               let p2 = element.fTitle.indexOf("]", p1 + 1);
+            let p1 = element.fTitle.indexOf("[");
+            if ((p1 >= 0) && (element.fType > io.kOffsetP)) p1 = element.fTitle.indexOf("[", p1 + 1);
+            let p2 = element.fTitle.indexOf("]", p1 + 1);
 
-               if ((p1 >= 0) && (p2 >= p1 + 2)) {
-                  let arr = JSROOT.ParseAsArray(element.fTitle.substr(p1, p2 - p1 + 1)), nbits = 32;
+            if ((p1 >= 0) && (p2 >= p1 + 2)) {
+               let arr = JSROOT.ParseAsArray(element.fTitle.substr(p1, p2 - p1 + 1)), nbits = 32;
 
-                  if (arr.length === 3) nbits = parseInt(arr[2]);
-                  if (isNaN(nbits) || (nbits < 2) || (nbits > 32)) nbits = 32;
+               if (arr.length === 3) nbits = parseInt(arr[2]);
+               if (isNaN(nbits) || (nbits < 2) || (nbits > 32)) nbits = 32;
 
-                  function parse_range(val) {
-                     if (!val) return 0;
-                     if (val.indexOf("pi") < 0) return parseFloat(val);
-                     val = val.trim();
-                     let sign = 1.;
-                     if (val[0] == "-") { sign = -1; val = val.substr(1); }
-                     switch (val) {
-                        case "2pi":
-                        case "2*pi":
-                        case "twopi": return sign * 2 * Math.PI;
-                        case "pi/2": return sign * Math.PI / 2;
-                        case "pi/4": return sign * Math.PI / 4;
-                     }
-                     return sign * Math.PI;
+               function parse_range(val) {
+                  if (!val) return 0;
+                  if (val.indexOf("pi") < 0) return parseFloat(val);
+                  val = val.trim();
+                  let sign = 1.;
+                  if (val[0] == "-") { sign = -1; val = val.substr(1); }
+                  switch (val) {
+                     case "2pi":
+                     case "2*pi":
+                     case "twopi": return sign * 2 * Math.PI;
+                     case "pi/2": return sign * Math.PI / 2;
+                     case "pi/4": return sign * Math.PI / 4;
                   }
-
-                  element.fXmin = parse_range(arr[0]);
-                  element.fXmax = parse_range(arr[1]);
-
-                  const bigint = (nbits < 32) ? (1 << nbits) : 0xffffffff;
-                  if (element.fXmin < element.fXmax) element.fFactor = bigint / (element.fXmax - element.fXmin);
-                  else if (nbits < 15) element.fXmin = nbits;
+                  return sign * Math.PI;
                }
+
+               element.fXmin = parse_range(arr[0]);
+               element.fXmax = parse_range(arr[1]);
+
+               const bigint = (nbits < 32) ? (1 << nbits) : 0xffffffff;
+               if (element.fXmin < element.fXmax) element.fFactor = bigint / (element.fXmax - element.fXmin);
+               else if (nbits < 15) element.fXmin = nbits;
             }
+         }
       };
 
       cs['TStreamerBase'] = function(buf, elem) {
