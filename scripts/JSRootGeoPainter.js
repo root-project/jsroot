@@ -202,22 +202,21 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
 
    TGeoPainter.prototype.CreateToolbar = function() {
       if (this._toolbar || !this._webgl || this.ctrl.notoolbar) return;
-      let painter = this;
       let buttonList = [{
          name: 'toImage',
          title: 'Save as PNG',
          icon: JSROOT.ToolbarIcons.camera,
-         click: function() { painter.createSnapshot(); }
+         click: () => this.createSnapshot()
       }, {
          name: 'control',
          title: 'Toggle control UI',
          icon: JSROOT.ToolbarIcons.rect,
-         click: function() { painter.showControlOptions('toggle'); }
+         click: () => this.showControlOptions('toggle')
       }, {
          name: 'enlarge',
          title: 'Enlarge geometry drawing',
          icon: JSROOT.ToolbarIcons.circle,
-         click: function() { painter.toggleEnlarge(); }
+         click: () => this.toggleEnlarge()
       }];
 
       // Only show VR icon if WebVR API available.
@@ -226,7 +225,7 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
             name: 'entervr',
             title: 'Enter VR (It requires a VR Headset connected)',
             icon: JSROOT.ToolbarIcons.vrgoggles,
-            click: function() { painter.toggleVRMode(); }
+            click: () => this.toggleVRMode()
          });
          this.InitVRMode();
       }
@@ -236,13 +235,13 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
          name: 'menu',
          title: 'Show context menu',
          icon: JSROOT.ToolbarIcons.question,
-         click: function(evnt) {
+         click: evnt => {
 
             evnt.preventDefault();
             evnt.stopPropagation();
 
             if (!JSROOT.Painter.closeMenu())
-               JSROOT.Painter.createMenu(painter, evnt).then(menu => {
+               JSROOT.Painter.createMenu(this, evnt).then(menu => {
                   menu.painter.FillContextMenu(menu);
                   menu.show();
                });

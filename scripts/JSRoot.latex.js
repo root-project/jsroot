@@ -1079,8 +1079,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
    }
 
    JSROOT.ObjectPainter.prototype.produceMathjax = function(mj_node, arg) {
-      let painter = this,
-          mtext = translateMath(arg.text, arg.latex, arg.color, painter),
+      let mtext = translateMath(arg.text, arg.latex, arg.color, this),
           options = { em: arg.font.size, ex: arg.font.size/2, family: arg.font.name, scale: 1, containerWidth: -1, lineWidth: 100000 };
 
       return JSROOT.Painter.LoadMathjax()
@@ -1089,7 +1088,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
                  let svg = d3.select(elem).select("svg");
                  mj_node.append(function() { return svg.node(); });
 
-                 repairMathJaxSvgSize(painter, mj_node, svg, arg);
+                 repairMathJaxSvgSize(this, mj_node, svg, arg);
 
                  arg.applyAttributesToMathJax = applyAttributesToMathJax;
                  return true;

@@ -1396,10 +1396,8 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
                                                false, pad.fTicky ? w : 0, disable_axis_draw,
                                                draw_vertical.invert_side ? 0 : this.frame_x());
 
-         let painter = this;
-
          return Promise.all([promise1, promise2]).then(() => {
-            painter.DrawGrids();
+            this.DrawGrids();
 
             if (!shrink_forbidden && JSROOT.gStyle.CanAdjustFrame) {
 
@@ -1407,19 +1405,19 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
 
                if ((-0.2*w < ypos) && (ypos < 0)) {
                   shrink = -ypos/w + 0.001;
-                  painter.shrink_frame_left += shrink;
-               } else if ((ypos>0) && (ypos<0.3*w) && (painter.shrink_frame_left > 0) && (ypos/w > painter.shrink_frame_left)) {
-                  shrink = -painter.shrink_frame_left;
-                  painter.shrink_frame_left = 0.;
+                  this.shrink_frame_left += shrink;
+               } else if ((ypos>0) && (ypos<0.3*w) && (this.shrink_frame_left > 0) && (ypos/w > this.shrink_frame_left)) {
+                  shrink = -this.shrink_frame_left;
+                  this.shrink_frame_left = 0.;
                }
 
                if (shrink != 0) {
-                  painter.Shrink(shrink, 0);
-                  painter.Redraw();
-                  return painter.DrawAxes(true);
+                  this.Shrink(shrink, 0);
+                  this.Redraw();
+                  return this.DrawAxes(true);
                }
 
-               painter.axes_drawn = true;
+               this.axes_drawn = true;
                return true; // finished
             }
          });
