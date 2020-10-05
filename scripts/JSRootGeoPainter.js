@@ -1,7 +1,7 @@
 /** JavaScript ROOT 3D geometry painter
  * @file JSRootGeoPainter.js */
 
-JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
+JSROOT.require(['d3', 'three', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE, geo) => {
 
    "use strict";
 
@@ -399,10 +399,10 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
    }
 
    TGeoPainter.prototype.ModifyVisisbility = function(name, sign) {
-      if (JSROOT.GEO.NodeKind(this.GetGeometry()) !== 0) return;
+      if (geo.NodeKind(this.GetGeometry()) !== 0) return;
 
       if (name == "")
-         return JSROOT.GEO.SetBit(this.GetGeometry().fVolume, JSROOT.GEO.BITS.kVisThis, (sign === "+"));
+         return geo.SetBit(this.GetGeometry().fVolume, geo.BITS.kVisThis, (sign === "+"));
 
       let regexp, exact = false;
 
@@ -416,7 +416,7 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
       }
 
       this.FindNodeWithVolume(regexp, function(arg) {
-         JSROOT.GEO.InvisibleAll.call(arg.node.fVolume, (sign !== "+"));
+         geo.InvisibleAll.call(arg.node.fVolume, (sign !== "+"));
          return exact ? arg : null; // continue search if not exact expression provided
       });
    }
@@ -742,7 +742,7 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
             node.matrix0 = node.matrix.clone();
             node.minvert = new THREE.Matrix4().getInverse( node.matrixWorld );
 
-            let box3 = JSROOT.GEO.getBoundingBox(mesh, null, true),
+            let box3 = geo.getBoundingBox(mesh, null, true),
                 signz = mesh._flippedMesh ? -1 : 1;
 
             // real center of mesh in local coordinates
@@ -1095,12 +1095,12 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
                   let resolve = menu.painter._clones.ResolveStack(intersects[indx].object.stack);
 
                   if (resolve.obj && (resolve.node.kind === 0) && resolve.obj.fVolume) {
-                     JSROOT.GEO.SetBit(resolve.obj.fVolume, JSROOT.GEO.BITS.kVisThis, false);
-                     JSROOT.GEO.updateBrowserIcons(resolve.obj.fVolume, this._hpainter);
+                     geo.SetBit(resolve.obj.fVolume, geo.BITS.kVisThis, false);
+                     geo.updateBrowserIcons(resolve.obj.fVolume, this._hpainter);
                   } else
                   if (resolve.obj && (resolve.node.kind === 1)) {
                      resolve.obj.fRnrSelf = false;
-                     JSROOT.GEO.updateBrowserIcons(resolve.obj, this._hpainter);
+                     geo.updateBrowserIcons(resolve.obj, this._hpainter);
                   }
                   // intersects[arg].object.visible = false;
                   // this.Render3D();
@@ -1172,9 +1172,9 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
 
       if (!this.ctrl.select_in_view || this._draw_all_nodes) return;
 
-      let matrix = JSROOT.GEO.CreateProjectionMatrix(this._camera);
+      let matrix = geo.CreateProjectionMatrix(this._camera);
 
-      let frustum = JSROOT.GEO.CreateFrustum(matrix);
+      let frustum = geo.CreateFrustum(matrix);
 
       // check if overall bounding box seen
       if (!frustum.CheckBox(this.getGeomBoundingBox(this._toplevel)))
@@ -1212,7 +1212,7 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
       } else if (geo_stack && this._toplevel) {
          active_mesh = [];
          this._toplevel.traverse(mesh => {
-            if ((mesh instanceof THREE.Mesh) && JSROOT.GEO.IsSameStack(mesh.stack, geo_stack)) active_mesh.push(mesh);
+            if ((mesh instanceof THREE.Mesh) && geo.IsSameStack(mesh.stack, geo_stack)) active_mesh.push(mesh);
          });
       } else {
          active_mesh = active_mesh ? [ active_mesh ] : [];
@@ -1364,7 +1364,7 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
 
          if (!resolve || !resolve.obj) return tooltip;
 
-         let lines = JSROOT.GEO.provideInfo(resolve.obj);
+         let lines = geo.provideInfo(resolve.obj);
          lines.unshift(tooltip);
 
          return { name: resolve.obj.fName, title: resolve.obj.fTitle || resolve.obj._typename, lines: lines };
@@ -1469,9 +1469,9 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
          if (this.ctrl.select_in_view && !this._first_drawing) {
             // extract camera projection matrix for selection
 
-            matrix = JSROOT.GEO.CreateProjectionMatrix(this._camera);
+            matrix = geo.CreateProjectionMatrix(this._camera);
 
-            frustum = JSROOT.GEO.CreateFrustum(matrix);
+            frustum = geo.CreateFrustum(matrix);
 
             // check if overall bounding box seen
             if (frustum.CheckBox(this.getGeomBoundingBox(this._toplevel))) {
@@ -1590,7 +1590,7 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
                // only submit not-done items
                if (item.ready || item.geom) {
                   // this is place holder for existing geometry
-                  clone = { id: item.id, ready: true, nfaces: JSROOT.GEO.numGeometryFaces(item.geom), refcnt: item.refcnt };
+                  clone = { id: item.id, ready: true, nfaces: geo.numGeometryFaces(item.geom), refcnt: item.refcnt };
                } else {
                   clone = JSROOT.clone(item, null, true);
                   cnt++;
@@ -1729,7 +1729,7 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
       if (obj3d.matrixWorld.determinant() > -0.9) {
          mesh = new THREE.Mesh( shape.geom, prop.material );
       } else {
-         mesh = JSROOT.GEO.createFlippedMesh(shape, prop.material);
+         mesh = geo.createFlippedMesh(shape, prop.material);
       }
 
       obj3d.add(mesh);
@@ -1776,7 +1776,7 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
             let entry = this._more_nodes[n];
             let obj3d = this._clones.CreateObject3D(entry.stack, this._toplevel, 'delete_mesh');
             JSROOT.Painter.DisposeThreejsObject(obj3d);
-            JSROOT.GEO.cleanupShape(entry.server_shape);
+            geo.cleanupShape(entry.server_shape);
             delete entry.server_shape;
          }
 
@@ -1836,7 +1836,7 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
       topitem.traverse(function(mesh) {
          if (check_any || (mesh.stack && (mesh instanceof THREE.Mesh)) ||
              (mesh.main_track && (mesh instanceof THREE.LineSegments)))
-            JSROOT.GEO.getBoundingBox(mesh, box3);
+            geo.getBoundingBox(mesh, box3);
       });
 
       if (scalar !== undefined) box3.expandByVector(box3.getSize(new THREE.Vector3()).multiplyScalar(scalar));
@@ -1868,7 +1868,7 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
       toplevel.traverse(mesh => {
          if (!(mesh instanceof THREE.Mesh) || !mesh.stack) return;
 
-         let geom2 = JSROOT.GEO.projectGeometry(mesh.geometry, mesh.parent.matrixWorld, this.ctrl.project, this.ctrl.projectPos, mesh._flippedMesh);
+         let geom2 = geo.projectGeometry(mesh.geometry, mesh.parent.matrixWorld, this.ctrl.project, this.ctrl.projectPos, mesh._flippedMesh);
 
          if (!geom2) return;
 
@@ -2389,7 +2389,7 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
          let smoothFactor = -Math.cos( ( 2.0 * Math.PI * step ) / frames ) + 1.0;
          this._camera.position.add( posIncrement.clone().multiplyScalar( smoothFactor ) );
          oldTarget.add( targetIncrement.clone().multiplyScalar( smoothFactor ) );
-         this._lookthisdTarget;
+         this._lookat = oldTarget;
          this._camera.lookAt( this._lookat );
          this._camera.updateProjectionMatrix();
 
@@ -2474,14 +2474,14 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
             else
                this.cnt[this.last]++;
 
-            nshapes += JSROOT.GEO.CountNumShapes(this._clones.GetNodeShape(node.id));
+            nshapes += geo.CountNumShapes(this._clones.GetNodeShape(node.id));
 
             // for debugginf - search if there some TGeoHalfSpace
-            //if (JSROOT.GEO.HalfSpace) {
+            //if (geo.HalfSpace) {
             //    let entry = this.CopyStack();
             //    let res = painter._clones.ResolveStack(entry.stack);
             //    console.log('SAW HALF SPACE', res.name);
-            //    JSROOT.GEO.HalfSpace = false;
+            //    geo.HalfSpace = false;
             //}
             return true;
          }
@@ -2824,7 +2824,7 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
    }
 
    TGeoPainter.prototype.drawExtraShape = function(obj, itemname) {
-      let toplevel = JSROOT.GEO.build(obj);
+      let toplevel = geo.build(obj);
       if (!toplevel) return false;
 
       toplevel.geo_name = itemname;
@@ -2840,7 +2840,7 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
 
       if (!prnt) {
          prnt = this.GetGeometry();
-         if (!prnt && (JSROOT.GEO.NodeKind(prnt)!==0)) return null;
+         if (!prnt && (geo.NodeKind(prnt)!==0)) return null;
          itemname = this.geo_manager ? prnt.fName : "";
          first_level = true;
          volumes = [];
@@ -2875,17 +2875,19 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
    /** Process script option - load and execute some gGeomManager-related calls */
    TGeoPainter.prototype.checkScript = function(script_name, call_back) {
 
-      let painter = this, draw_obj = this.GetGeometry(), name_prefix = "";
+      let draw_obj = this.GetGeometry(), name_prefix = "";
 
       if (this.geo_manager) name_prefix = draw_obj.fName;
 
-      if (!script_name || (script_name.length<3) || (JSROOT.GEO.NodeKind(draw_obj)!==0))
+      if (!script_name || (script_name.length<3) || (geo.NodeKind(draw_obj)!==0))
          return JSROOT.CallBack(call_back, draw_obj, name_prefix);
 
+      let painter = this;
+
       let mgr = {
-            GetVolume: function (name) {
+            GetVolume: name => {
                let regexp = new RegExp("^"+name+"$");
-               let currnode = painter.FindNodeWithVolume(regexp, function(arg) { return arg; } );
+               let currnode = painter.FindNodeWithVolume(regexp, arg => arg);
 
                if (!currnode) console.log('Did not found '+name + ' volume');
 
@@ -2894,7 +2896,7 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
                    found: currnode,
                    fVolume: currnode ? currnode.node.fVolume : null,
                    InvisibleAll: function(flag) {
-                      JSROOT.GEO.InvisibleAll.call(this.fVolume, flag);
+                      geo.InvisibleAll.call(this.fVolume, flag);
                    },
                    Draw: function() {
                       if (!this.found || !this.fVolume) return;
@@ -2912,16 +2914,16 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
                 };
             },
 
-            DefaultColors: function() {
+            DefaultColors: () => {
                painter.ctrl.dflt_colors = true;
             },
 
-            SetMaxVisNodes: function(limit) {
+            SetMaxVisNodes: limit => {
                if (!painter.ctrl.maxnodes)
                   painter.ctrl.maxnodes = pasrseInt(limit) || 0;
             },
 
-            SetVisLevel: function(limit) {
+            SetVisLevel: limit => {
                if (!painter.ctrl.vislevel)
                   painter.ctrl.vislevel = parseInt(limit) || 0;
             }
@@ -2929,10 +2931,8 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
 
       JSROOT.progress('Loading macro ' + script_name);
 
-      JSROOT.HttpRequest(script_name, "text").then(function(res) {
+      JSROOT.HttpRequest(script_name, "text").then(res => {
          let lines = res.split('\n');
-
-         ProcessNextLine(0);
 
          function ProcessNextLine(indx) {
 
@@ -2971,6 +2971,8 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
 
             JSROOT.CallBack(call_back, draw_obj, name_prefix);
          }
+
+         ProcessNextLine(0);
 
       }).catch(function() {
          JSROOT.CallBack(call_back, draw_obj, name_prefix);
@@ -3021,7 +3023,7 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
 
          this._clones_owner = true;
 
-         this._clones = new JSROOT.GEO.ClonedNodes(draw_obj);
+         this._clones = new geo.ClonedNodes(draw_obj);
 
          let lvl = this.ctrl.vislevel, maxnodes = this.ctrl.maxnodes;
          if (this.geo_manager) {
@@ -3180,7 +3182,7 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
       this._last_camera_position = origin; // remember current camera position
 
       if (!this.ctrl.project && this._webgl)
-         JSROOT.GEO.produceRenderOrder(this._toplevel, origin, this.ctrl.depthMethod, this._clones);
+         geo.produceRenderOrder(this._toplevel, origin, this.ctrl.depthMethod, this._clones);
    }
 
    /** @brief Call 3D rendering of the geometry
@@ -3266,21 +3268,22 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
 
          if ('init' in e.data) {
             painter._worker_ready = true;
-            return JSROOT.console('Worker ready: ' + (e.data.tm3 - e.data.tm0));
+            JSROOT.console('Worker ready: ' + (e.data.tm3 - e.data.tm0));
+         } else {
+            painter.processWorkerReply(e.data);
          }
-
-         painter.processWorkerReply(e.data);
       };
 
       // send initialization message with clones
-      this._worker.postMessage( {
+      this._worker.postMessage({
          init: true,   // indicate init command for worker
          browser: JSROOT.browser,
          tm0: new Date().getTime(),
          vislevel: this._clones.GetVisLevel(),
          maxvisnodes: this._clones.GetMaxVisNodes(),
          clones: this._clones.nodes,
-         sortmap: this._clones.sortmap  } );
+         sortmap: this._clones.sortmap
+      });
    }
 
    TGeoPainter.prototype.canSubmitToWorker = function(force) {
@@ -3976,9 +3979,9 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
    TGeoPainter.prototype.changedWireFrame = function() {
       if (!this._scene) return;
 
-      let painter = this, on = this.ctrl.wireframe;
+      let on = this.ctrl.wireframe;
 
-      this._scene.traverse(function(obj) { painter.accessObjectWireFrame(obj, on); });
+      this._scene.traverse(obj => this.accessObjectWireFrame(obj, on));
 
       this.Render3D();
    }
@@ -4032,14 +4035,14 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
    }
 
    JSROOT.Painter.CreateGeoPainter = function(divid, obj, opt) {
-      JSROOT.GEO.GradPerSegm = JSROOT.gStyle.GeoGradPerSegm;
-      JSROOT.GEO.CompressComp = JSROOT.gStyle.GeoCompressComp;
+      geo.GradPerSegm = JSROOT.gStyle.GeoGradPerSegm;
+      geo.CompressComp = JSROOT.gStyle.GeoCompressComp;
 
       let painter = new TGeoPainter(obj);
 
       // one could use TGeoManager setting, but for some example JSROOT does not build composites
       // if (obj && obj._typename=='TGeoManager' && (obj.fNsegments > 3))
-      //   JSROOT.GEO.GradPerSegm = 360/obj.fNsegments;
+      //   geo.GradPerSegm = 360/obj.fNsegments;
 
       painter.SetDivId(divid, 5);
 
@@ -4073,7 +4076,7 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
          shape = obj.fMasterVolume.fShape;
       } else if (obj._typename === 'TGeoOverlap') {
          extras = obj.fMarker; extras_path = "<prnt>/Marker";
-         obj = JSROOT.GEO.buildOverlapVolume(obj);
+         obj = geo.buildOverlapVolume(obj);
          if (!opt) opt = "wire";
       } else if ('fVolume' in obj) {
          if (obj.fVolume) shape = obj.fVolume.fShape;
@@ -4085,7 +4088,7 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
          let maxlvl = 1;
          opt = opt.substr(4);
          if (opt[0] == "x") {  maxlvl = 999; opt = opt.substr(1) + "_vislvl999"; }
-         obj = JSROOT.GEO.buildCompositeVolume(shape, maxlvl);
+         obj = geo.buildCompositeVolume(shape, maxlvl);
       }
 
       if (!obj && shape)
@@ -4126,7 +4129,7 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
 
    /** Function used to build hierarchy of elements of composite shapes
     * @private */
-   JSROOT.GEO.buildCompositeVolume = function(comp, maxlvl, side) {
+   geo.buildCompositeVolume = function(comp, maxlvl, side) {
 
       if (maxlvl === undefined) maxlvl = 1;
       if (!side) {
@@ -4135,8 +4138,8 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
       }
 
       let vol = JSROOT.Create("TGeoVolume");
-      JSROOT.GEO.SetBit(vol, JSROOT.GEO.BITS.kVisThis, true);
-      JSROOT.GEO.SetBit(vol, JSROOT.GEO.BITS.kVisDaughters, true);
+      geo.SetBit(vol, geo.BITS.kVisThis, true);
+      geo.SetBit(vol, geo.BITS.kVisDaughters, true);
 
       if ((side && (comp._typename!=='TGeoCompositeShape')) || (maxlvl<=0)) {
          vol.fName = side;
@@ -4150,18 +4153,18 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
       vol.fName = "";
 
       let node1 = JSROOT.Create("TGeoNodeMatrix");
-      JSROOT.GEO.SetBit(node1, JSROOT.GEO.BITS.kVisThis, true);
-      JSROOT.GEO.SetBit(node1, JSROOT.GEO.BITS.kVisDaughters, true);
+      geo.SetBit(node1, geo.BITS.kVisThis, true);
+      geo.SetBit(node1, geo.BITS.kVisDaughters, true);
       node1.fName = "Left";
       node1.fMatrix = comp.fNode.fLeftMat;
-      node1.fVolume = JSROOT.GEO.buildCompositeVolume(comp.fNode.fLeft, maxlvl-1, side + "Left");
+      node1.fVolume = geo.buildCompositeVolume(comp.fNode.fLeft, maxlvl-1, side + "Left");
 
       let node2 = JSROOT.Create("TGeoNodeMatrix");
-      JSROOT.GEO.SetBit(node2, JSROOT.GEO.BITS.kVisThis, true);
-      JSROOT.GEO.SetBit(node2, JSROOT.GEO.BITS.kVisDaughters, true);
+      geo.SetBit(node2, geo.BITS.kVisThis, true);
+      geo.SetBit(node2, geo.BITS.kVisDaughters, true);
       node2.fName = "Right";
       node2.fMatrix = comp.fNode.fRightMat;
-      node2.fVolume = JSROOT.GEO.buildCompositeVolume(comp.fNode.fRight, maxlvl-1, side + "Right");
+      node2.fVolume = geo.buildCompositeVolume(comp.fNode.fRight, maxlvl-1, side + "Right");
 
       vol.fNodes = JSROOT.Create("TList");
       vol.fNodes.Add(node1);
@@ -4174,11 +4177,11 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
 
    /** Function used to build hierarchy of elements of overlap object
     * @private */
-   JSROOT.GEO.buildOverlapVolume = function(overlap) {
+   geo.buildOverlapVolume = function(overlap) {
 
       let vol = JSROOT.Create("TGeoVolume");
 
-      JSROOT.GEO.SetBit(vol, JSROOT.GEO.BITS.kVisDaughters, true);
+      geo.SetBit(vol, geo.BITS.kVisDaughters, true);
       vol.$geoh = true; // workaround, let know browser that we are in volumes hierarchy
       vol.fName = "";
 
@@ -4201,13 +4204,13 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
       return vol;
    }
 
-   JSROOT.GEO.provideVisStyle = function(obj) {
+   geo.provideVisStyle = function(obj) {
       if ((obj._typename === 'TEveGeoShapeExtract') || (obj._typename === 'ROOT::Experimental::REveGeoShapeExtract'))
          return obj.fRnrSelf ? " geovis_this" : "";
 
-      let vis = !JSROOT.GEO.TestBit(obj, JSROOT.GEO.BITS.kVisNone) &&
-                JSROOT.GEO.TestBit(obj, JSROOT.GEO.BITS.kVisThis),
-          chld = JSROOT.GEO.TestBit(obj, JSROOT.GEO.BITS.kVisDaughters);
+      let vis = !geo.TestBit(obj, geo.BITS.kVisNone) &&
+                geo.TestBit(obj, geo.BITS.kVisThis),
+          chld = geo.TestBit(obj, geo.BITS.kVisDaughters);
 
       if (chld && (!obj.fNodes || (obj.fNodes.arr.length === 0))) chld = false;
 
@@ -4218,7 +4221,7 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
    }
 
 
-   JSROOT.GEO.getBrowserItem = function(item, itemname, callback) {
+   geo.getBrowserItem = function(item, itemname, callback) {
       // mark object as belong to the hierarchy, require to
       if (item._geoobj) item._geoobj.$geoh = true;
 
@@ -4226,14 +4229,14 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
    }
 
 
-   JSROOT.GEO.createItem = function(node, obj, name) {
+   geo.createItem = function(node, obj, name) {
       let sub = {
          _kind: "ROOT." + obj._typename,
-         _name: name ? name : JSROOT.GEO.ObjectName(obj),
+         _name: name ? name : geo.ObjectName(obj),
          _title: obj.fTitle,
          _parent: node,
          _geoobj: obj,
-         _get: JSROOT.GEO.getBrowserItem
+         _get: geo.getBrowserItem
       };
 
       let volume, shape, subnodes, iseve = false;
@@ -4265,14 +4268,14 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
 
          if (subnodes) {
             sub._more = true;
-            sub._expand = JSROOT.GEO.expandObject;
+            sub._expand = geo.expandObject;
          } else
          if (shape && (shape._typename === "TGeoCompositeShape") && shape.fNode) {
             sub._more = true;
             sub._shape = shape;
             sub._expand = function(node /*, obj */) {
-               JSROOT.GEO.createItem(node, node._shape.fNode.fLeft, 'Left');
-               JSROOT.GEO.createItem(node, node._shape.fNode.fRight, 'Right');
+               geo.createItem(node, node._shape.fNode.fLeft, 'Left');
+               geo.createItem(node, node._shape.fNode.fRight, 'Right');
                return true;
             }
          }
@@ -4283,18 +4286,18 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
             if (sub._title == "")
                sub._title = shape._typename;
 
-            sub._icon = JSROOT.GEO.getShapeIcon(shape);
+            sub._icon = geo.getShapeIcon(shape);
          } else {
             sub._icon = sub._more ? "img_geocombi" : "img_geobbox";
          }
 
          if (volume)
-            sub._icon += JSROOT.GEO.provideVisStyle(volume);
+            sub._icon += geo.provideVisStyle(volume);
          else if (iseve)
-            sub._icon += JSROOT.GEO.provideVisStyle(obj);
+            sub._icon += geo.provideVisStyle(obj);
 
-         sub._menu = JSROOT.GEO.provideMenu;
-         sub._icon_click  = JSROOT.GEO.browserIconClick;
+         sub._menu = geo.provideMenu;
+         sub._icon_click  = geo.browserIconClick;
       }
 
       if (!node._childs) node._childs = [];
@@ -4314,7 +4317,7 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
       return sub;
    }
 
-   JSROOT.GEO.createList = function(parent, lst, name, title) {
+   geo.createList = function(parent, lst, name, title) {
 
       if (!lst || !('arr' in lst) || (lst.arr.length==0)) return;
 
@@ -4344,10 +4347,10 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
 
          node._childs = [];
 
-         JSROOT.GEO.CheckDuplicates(null, lst.arr);
+         geo.CheckDuplicates(null, lst.arr);
 
          for (let n in lst.arr)
-            JSROOT.GEO.createItem(node, lst.arr[n]);
+            geo.createItem(node, lst.arr[n]);
 
          return true;
       }
@@ -4357,7 +4360,7 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
 
    };
 
-   JSROOT.GEO.provideMenu = function(menu, item, hpainter) {
+   geo.provideMenu = function(menu, item, hpainter) {
 
       if (!item._geoobj) return false;
 
@@ -4386,25 +4389,25 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
       function ToggleEveVisibility(arg) {
          if (arg === 'self') {
             obj.fRnrSelf = !obj.fRnrSelf;
-            item._icon = item._icon.split(" ")[0] + JSROOT.GEO.provideVisStyle(obj);
+            item._icon = item._icon.split(" ")[0] + geo.provideVisStyle(obj);
             hpainter.UpdateTreeNode(item);
          } else {
             ScanEveVisible(obj, { assign: (arg === "true") }, true);
             hpainter.ForEach(function(m) {
                // update all child items
                if (m._geoobj && m._icon) {
-                  m._icon = item._icon.split(" ")[0] + JSROOT.GEO.provideVisStyle(m._geoobj);
+                  m._icon = item._icon.split(" ")[0] + geo.provideVisStyle(m._geoobj);
                   hpainter.UpdateTreeNode(m);
                }
             }, item);
          }
 
-         JSROOT.GEO.findItemWithPainter(item, 'testGeomChanges');
+         geo.findItemWithPainter(item, 'testGeomChanges');
       }
 
       function ToggleMenuBit(arg) {
-         JSROOT.GEO.ToggleBit(vol, arg);
-         let newname = item._icon.split(" ")[0] + JSROOT.GEO.provideVisStyle(vol);
+         geo.ToggleBit(vol, arg);
+         let newname = item._icon.split(" ")[0] + geo.provideVisStyle(vol);
          hpainter.ForEach(function(m) {
             // update all items with that volume
             if (item._volume === m._volume) {
@@ -4414,13 +4417,13 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
          });
 
          hpainter.UpdateTreeNode(item);
-         JSROOT.GEO.findItemWithPainter(item, 'testGeomChanges');
+         geo.findItemWithPainter(item, 'testGeomChanges');
       }
 
-      if ((item._geoobj._typename.indexOf("TGeoNode")===0) && JSROOT.GEO.findItemWithPainter(item))
+      if ((item._geoobj._typename.indexOf("TGeoNode")===0) && geo.findItemWithPainter(item))
          menu.add("Focus", function() {
 
-           let drawitem = JSROOT.GEO.findItemWithPainter(item);
+           let drawitem = geo.findItemWithPainter(item);
 
            if (!drawitem) return;
 
@@ -4438,18 +4441,18 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
             menu.addchk((res.hidden==0), "Daughters", (res.hidden!=0) ? "true" : "false", ToggleEveVisibility);
 
       } else {
-         menu.addchk(JSROOT.GEO.TestBit(vol, JSROOT.GEO.BITS.kVisNone), "Invisible",
-               JSROOT.GEO.BITS.kVisNone, ToggleMenuBit);
-         menu.addchk(JSROOT.GEO.TestBit(vol, JSROOT.GEO.BITS.kVisThis), "Visible",
-               JSROOT.GEO.BITS.kVisThis, ToggleMenuBit);
-         menu.addchk(JSROOT.GEO.TestBit(vol, JSROOT.GEO.BITS.kVisDaughters), "Daughters",
-               JSROOT.GEO.BITS.kVisDaughters, ToggleMenuBit);
+         menu.addchk(geo.TestBit(vol, geo.BITS.kVisNone), "Invisible",
+               geo.BITS.kVisNone, ToggleMenuBit);
+         menu.addchk(geo.TestBit(vol, geo.BITS.kVisThis), "Visible",
+               geo.BITS.kVisThis, ToggleMenuBit);
+         menu.addchk(geo.TestBit(vol, geo.BITS.kVisDaughters), "Daughters",
+               geo.BITS.kVisDaughters, ToggleMenuBit);
       }
 
       return true;
    }
 
-   JSROOT.GEO.findItemWithPainter = function(hitem, funcname) {
+   geo.findItemWithPainter = function(hitem, funcname) {
       while (hitem) {
          if (hitem._painter && hitem._painter._camera) {
             if (funcname && typeof hitem._painter[funcname] == 'function')
@@ -4461,42 +4464,42 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
       return null;
    }
 
-   JSROOT.GEO.updateBrowserIcons = function(obj, hpainter) {
+   geo.updateBrowserIcons = function(obj, hpainter) {
       if (!obj || !hpainter) return;
 
       hpainter.ForEach(function(m) {
          // update all items with that volume
          if ((obj === m._volume) || (obj === m._geoobj)) {
-            m._icon = m._icon.split(" ")[0] + JSROOT.GEO.provideVisStyle(obj);
+            m._icon = m._icon.split(" ")[0] + geo.provideVisStyle(obj);
             hpainter.UpdateTreeNode(m);
          }
       });
    }
 
-   JSROOT.GEO.browserIconClick = function(hitem, hpainter) {
+   geo.browserIconClick = function(hitem, hpainter) {
       if (hitem._volume) {
          if (hitem._more && hitem._volume.fNodes && (hitem._volume.fNodes.arr.length>0))
-            JSROOT.GEO.ToggleBit(hitem._volume, JSROOT.GEO.BITS.kVisDaughters);
+            geo.ToggleBit(hitem._volume, geo.BITS.kVisDaughters);
          else
-            JSROOT.GEO.ToggleBit(hitem._volume, JSROOT.GEO.BITS.kVisThis);
+            geo.ToggleBit(hitem._volume, geo.BITS.kVisThis);
 
-         JSROOT.GEO.updateBrowserIcons(hitem._volume, hpainter);
+         geo.updateBrowserIcons(hitem._volume, hpainter);
 
-         JSROOT.GEO.findItemWithPainter(hitem, 'testGeomChanges');
+         geo.findItemWithPainter(hitem, 'testGeomChanges');
          return false; // no need to update icon - we did it ourself
       }
 
       if (hitem._geoobj && (( hitem._geoobj._typename == "TEveGeoShapeExtract") || ( hitem._geoobj._typename == "ROOT::Experimental::REveGeoShapeExtract"))) {
          hitem._geoobj.fRnrSelf = !hitem._geoobj.fRnrSelf;
 
-         JSROOT.GEO.updateBrowserIcons(hitem._geoobj, hpainter);
-         JSROOT.GEO.findItemWithPainter(hitem, 'testGeomChanges');
+         geo.updateBrowserIcons(hitem._geoobj, hpainter);
+         geo.findItemWithPainter(hitem, 'testGeomChanges');
          return false; // no need to update icon - we did it ourself
       }
 
 
       // first check that geo painter assigned with the item
-      let drawitem = JSROOT.GEO.findItemWithPainter(hitem);
+      let drawitem = geo.findItemWithPainter(hitem);
       if (!drawitem) return false;
 
       let newstate = drawitem._painter.ExtraObjectVisible(hpainter, hitem, true);
@@ -4505,7 +4508,7 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
       return (newstate!==undefined) ? true : false;
    }
 
-   JSROOT.GEO.getShapeIcon = function(shape) {
+   geo.getShapeIcon = function(shape) {
       switch (shape._typename) {
          case "TGeoArb8" : return "img_geoarb8";
          case "TGeoCone" : return "img_geocone";
@@ -4532,13 +4535,13 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
       return "img_geotube";
    }
 
-   JSROOT.GEO.getBrowserIcon = function(hitem, hpainter) {
+   geo.getBrowserIcon = function(hitem, hpainter) {
       let icon = "";
       if (hitem._kind == 'ROOT.TEveTrack') icon = 'img_evetrack'; else
       if (hitem._kind == 'ROOT.TEvePointSet') icon = 'img_evepoints'; else
       if (hitem._kind == 'ROOT.TPolyMarker3D') icon = 'img_evepoints';
       if (icon.length>0) {
-         let drawitem = JSROOT.GEO.findItemWithPainter(hitem);
+         let drawitem = geo.findItemWithPainter(hitem);
          if (drawitem)
             if (drawitem._painter.ExtraObjectVisible(hpainter, hitem))
                icon += " geovis_this";
@@ -4546,7 +4549,7 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
       return icon;
    }
 
-   JSROOT.GEO.expandObject = function(parent, obj) {
+   geo.expandObject = function(parent, obj) {
       if (!parent || !obj) return false;
 
       let isnode = (obj._typename.indexOf('TGeoNode') === 0),
@@ -4560,18 +4563,18 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
       if (parent._childs) return true;
 
       if (ismanager) {
-         JSROOT.GEO.createList(parent, obj.fMaterials, "Materials", "list of materials");
-         JSROOT.GEO.createList(parent, obj.fMedia, "Media", "list of media");
-         JSROOT.GEO.createList(parent, obj.fTracks, "Tracks", "list of tracks");
-         JSROOT.GEO.createList(parent, obj.fOverlaps, "Overlaps", "list of detected overlaps");
-         JSROOT.GEO.createItem(parent, obj.fMasterVolume);
+         geo.createList(parent, obj.fMaterials, "Materials", "list of materials");
+         geo.createList(parent, obj.fMedia, "Media", "list of media");
+         geo.createList(parent, obj.fTracks, "Tracks", "list of tracks");
+         geo.createList(parent, obj.fOverlaps, "Overlaps", "list of detected overlaps");
+         geo.createItem(parent, obj.fMasterVolume);
          return true;
       }
 
       if (isoverlap) {
-         JSROOT.GEO.createItem(parent, obj.fVolume1);
-         JSROOT.GEO.createItem(parent, obj.fVolume2);
-         JSROOT.GEO.createItem(parent, obj.fMarker, 'Marker');
+         geo.createItem(parent, obj.fVolume1);
+         geo.createItem(parent, obj.fVolume2);
+         geo.createItem(parent, obj.fMarker, 'Marker');
          return true;
       }
 
@@ -4588,8 +4591,8 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
 
       if (!subnodes && shape && (shape._typename === "TGeoCompositeShape") && shape.fNode) {
          if (!parent._childs) {
-            JSROOT.GEO.createItem(parent, shape.fNode.fLeft, 'Left');
-            JSROOT.GEO.createItem(parent, shape.fNode.fRight, 'Right');
+            geo.createItem(parent, shape.fNode.fLeft, 'Left');
+            geo.createItem(parent, shape.fNode.fRight, 'Right');
          }
 
          return true;
@@ -4597,17 +4600,17 @@ JSROOT.require(['d3', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE) => {
 
       if (!subnodes) return false;
 
-      JSROOT.GEO.CheckDuplicates(obj, subnodes);
+      geo.CheckDuplicates(obj, subnodes);
 
       for (let i=0;i<subnodes.length;++i)
-         JSROOT.GEO.createItem(parent, subnodes[i]);
+         geo.createItem(parent, subnodes[i]);
 
       return true;
    }
 
-   JSROOT.addDrawFunc({ name: "TGeoVolumeAssembly", icon: 'img_geoassembly', func: JSROOT.Painter.drawGeoObject, expand: JSROOT.GEO.expandObject, opt: ";more;all;count" });
-   JSROOT.addDrawFunc({ name: "TEvePointSet", icon_get: JSROOT.GEO.getBrowserIcon, icon_click: JSROOT.GEO.browserIconClick });
-   JSROOT.addDrawFunc({ name: "TEveTrack", icon_get: JSROOT.GEO.getBrowserIcon, icon_click: JSROOT.GEO.browserIconClick });
+   JSROOT.addDrawFunc({ name: "TGeoVolumeAssembly", icon: 'img_geoassembly', func: JSROOT.Painter.drawGeoObject, expand: geo.expandObject, opt: ";more;all;count" });
+   JSROOT.addDrawFunc({ name: "TEvePointSet", icon_get: geo.getBrowserIcon, icon_click: geo.browserIconClick });
+   JSROOT.addDrawFunc({ name: "TEveTrack", icon_get: geo.getBrowserIcon, icon_click: geo.browserIconClick });
 
    JSROOT.TGeoPainter = TGeoPainter;
 

@@ -3702,7 +3702,8 @@ JSROOT.require(['three', 'ThreeCSG'], (THREE, ThreeBSP) => {
 
    JSROOT.GEO = geo;
 
-   if (JSROOT.nodejs) module.exports = THREE;
-   return THREE;
+   if (JSROOT.nodejs) module.exports = geo;
+
+   return geo;
 });
 
