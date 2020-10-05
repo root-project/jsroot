@@ -563,24 +563,6 @@
          kIsZoomed      : JSROOT.BIT(16), // bit set when zooming on Y axis
          kNoTitle       : JSROOT.BIT(17), // don't draw the histogram title
          kIsAverage     : JSROOT.BIT(18)  // Bin contents are average (used by Add)
-   };
-
-   /** Wrapper for console.log, let redirect output to specified div element
-    * @private */
-   JSROOT.console = function(value, divid) {
-      if ((typeof divid == 'string') && document.getElementById(divid))
-         document.getElementById(divid).innerHTML = value;
-      else
-      if ((typeof console != 'undefined') && (typeof console.log == 'function'))
-         console.log(value);
-   }
-
-   /** @summary Wrapper for alert, throws Error in Node.js
-    * @private */
-   JSROOT.alert = function(msg) {
-      if (this.nodeis) throw new Error(msg);
-      if (typeof alert === 'function') alert(msg);
-      else JSROOT.console('ALERT: ' + msg);
    }
 
    /**
@@ -723,12 +705,6 @@
             value._typename = value['$pair'];
             delete value['$pair'];
             return; // pair object is not counted in the objects map
-         }
-
-         // debug code, can be commented out later
-         if (map.indexOf(value) >= 0) {
-            JSROOT.console('should never happen - object already in the map');
-            return;
          }
 
          // add object to object map
@@ -2206,7 +2182,7 @@
 
    // Dummy function, will be redefined when JSRootPainter is loaded
    JSROOT.progress = function(msg /*, tmout */) {
-      if ((msg !== undefined) && (typeof msg=="string")) JSROOT.console(msg);
+      if ((msg !== undefined) && (typeof msg=="string")) console.log(msg);
    }
 
    // Connects to the RWebWindow instance

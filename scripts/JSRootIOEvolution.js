@@ -189,7 +189,7 @@ JSROOT.require(['rawinflate'], () => {
          let fmt = "unknown", off = 0, CHKSUM = 0;
 
          if (curr + HDRSIZE >= totallen) {
-            if (!noalert) JSROOT.alert("Error R__unzip: header size exceeds buffer size");
+            if (!noalert) console.error("Error R__unzip: header size exceeds buffer size");
             return null;
          }
 
@@ -200,7 +200,7 @@ JSROOT.require(['rawinflate'], () => {
 
          /*   C H E C K   H E A D E R   */
          if ((fmt !== "new") && (fmt !== "old") && (fmt !== "LZ4")) {
-            if (!noalert) JSROOT.alert("R__unzip: " + fmt + " format is not supported!");
+            if (!noalert) console.error(`R__unzip: ${fmt} format is not supported!`);
             return null;
          }
 
@@ -221,7 +221,7 @@ JSROOT.require(['rawinflate'], () => {
       }
 
       if (fullres !== tgtsize) {
-         if (!noalert) JSROOT.alert("R__unzip: fail to unzip data expects " + tgtsize + " , got " + fullres);
+         if (!noalert) console.error(`R__unzip: fail to unzip data expects ${tgtsize} , got ${fullres}`);
          return null;
       }
 
@@ -273,7 +273,7 @@ JSROOT.require(['rawinflate'], () => {
       if ((ver.val <= 0) && ver.bytecnt && (ver.bytecnt >= 4)) {
          ver.checksum = this.ntou4();
          if (!this.fFile.FindSinfoCheckum(ver.checksum)) {
-            // JSROOT.console('Fail to find streamer info with check sum ' + ver.checksum + ' version ' + ver.val);
+            // console.error(`Fail to find streamer info with check sum ${ver.checksum} version ${ver.val}`);
             this.o -= 4; // not found checksum in the list
             delete ver.checksum; // remove checksum
          } else {
@@ -590,7 +590,7 @@ JSROOT.require(['rawinflate'], () => {
          classInfo.name = this.GetMappedClass(clTag);
 
          if (classInfo.name === -1)
-            JSROOT.alert("Did not found class with tag " + clTag);
+            console.error(`Did not found class with tag ${clTag}`);
       }
 
       return classInfo;
@@ -1935,7 +1935,7 @@ JSROOT.require(['rawinflate'], () => {
                }
 
             } else {
-               JSROOT.console('fail to provide function for ' + element.fName + ' (' + element.fTypeName + ')  typ = ' + element.fType);
+               console.error(`fail to provide function for ${element.fName} (${element.fTypeName})  typ = ${element.fType}`);
                member.func = function(buf, obj) {
                   const ver = buf.ReadVersion();
                   buf.CheckBytecount(ver);
@@ -2017,7 +2017,7 @@ JSROOT.require(['rawinflate'], () => {
                      member.streamer = io.GetPairStreamer(member.si, member.pairtype, file);
 
                      if (!member.streamer || (member.streamer.length !== 2)) {
-                        JSROOT.console('Fail to build streamer for pair ' + member.pairtype);
+                        console.error(`Fail to build streamer for pair ${member.pairtype}`);
                         delete member.streamer;
                      }
 
@@ -2030,7 +2030,7 @@ JSROOT.require(['rawinflate'], () => {
                      }
 
             if (!member.readelem) {
-               JSROOT.console('failed to create streamer for element ' + member.typename + ' ' + member.name + ' element ' + element._typename + ' STL type ' + element.fSTLtype);
+               console.error(`'failed to create streamer for element ${member.typename} ${member.name} element ${element._typename} STL type ${element.fSTLtype}`);
                member.func = function(buf, obj) {
                   const ver = buf.ReadVersion();
                   buf.CheckBytecount(ver);
@@ -2103,7 +2103,7 @@ JSROOT.require(['rawinflate'], () => {
          }
 
          default:
-            JSROOT.console('fail to provide function for ' + element.fName + ' (' + element.fTypeName + ')  typ = ' + element.fType);
+            console.error(`fail to provide function for ${element.fName} (${element.fTypeName})  typ = ${element.fType}`);
 
             member.func = function(/*buf, obj*/) { };  // do nothing, fix in the future
       }

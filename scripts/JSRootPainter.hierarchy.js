@@ -1036,7 +1036,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
             if (painter) return display_callback();
 
             if (updating) {
-               JSROOT.console("something went wrong - did not found painter when doing update of " + display_itemname);
+               console.warn(`something went wrong - did not found painter when doing update of ${display_itemname}`);
                return display_callback();
             }
 
@@ -2356,13 +2356,13 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
 
       painter.h = { _name : "StreamerInfo", _childs : [] };
 
-      for ( let i = 0; i < lst.arr.length; ++i) {
+      for (let i = 0; i < lst.arr.length; ++i) {
          let entry = lst.arr[i]
 
          if (entry._typename == "TList") continue;
 
          if (typeof (entry.fName) == 'undefined') {
-            JSROOT.console("strange element in StreamerInfo with type " + entry._typename);
+            console.warn(`strange element in StreamerInfo with type ${entry._typename}`);
             continue;
          }
 

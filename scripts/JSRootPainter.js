@@ -3984,7 +3984,7 @@ JSROOT.require(['d3'], (d3) => {
       }
 
       if (can_painter)
-         JSROOT.console("Cannot find painter to update object of type " + obj._typename);
+         console.warn(`Cannot find painter to update object of type ${obj._typename}`);
 
       JSROOT.cleanup(divid);
 

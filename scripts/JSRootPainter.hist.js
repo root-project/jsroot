@@ -6335,7 +6335,7 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], (d3) => {
          if ((hnext.fNbins != hprev.fNbins) ||
              (hnext.fXaxis.fXmin != hprev.fXaxis.fXmin) ||
              (hnext.fXaxis.fXmax != hprev.fXaxis.fXmax)) {
-            JSROOT.console("When drawing THStack, cannot sum-up histograms " + hnext.fName + " and " + hprev.fName);
+            console.warn(`When drawing THStack, cannot sum-up histograms ${hnext.fName} and ${hprev.fName}`);
             lst.Clear();
             return false;
          }

@@ -3120,7 +3120,7 @@ JSROOT.require(['d3', 'three', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE, 
       let take_time = now - this._startm;
 
       if (this._first_drawing)
-         JSROOT.console('Create tm = ' + take_time + ' meshes ' + this.ctrl.info.num_meshes + ' faces ' + this.ctrl.info.num_faces);
+         console.log(`Create tm = ${take_time} meshes ${this.ctrl.info.num_meshes} faces ${this.ctrl.info.num_faces}`);
 
       if (take_time > 300) {
          JSROOT.progress('Rendering geometry');
@@ -3197,7 +3197,7 @@ JSROOT.require(['d3', 'three', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE, 
 
          if ((this.first_render_tm === 0) && measure) {
             this.first_render_tm = tm2.getTime() - tm1.getTime();
-            JSROOT.console('three.js r' + THREE.REVISION + ', first render tm = ' + this.first_render_tm);
+            console.log(`three.js r${THREE.REVISION}, first render tm = ${this.first_render_tm}`);
          }
 
          return JSROOT.Painter.AfterRender3D(this._renderer);
@@ -3225,7 +3225,7 @@ JSROOT.require(['d3', 'three', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE, 
          if (typeof e.data !== 'object') return;
 
          if ('log' in e.data)
-            return JSROOT.console('geo: ' + e.data.log);
+            return console.log(`geo: ${e.data.log}`);
 
          if ('progress' in e.data)
             return JSROOT.progress(e.data.progress);
@@ -3234,7 +3234,7 @@ JSROOT.require(['d3', 'three', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE, 
 
          if ('init' in e.data) {
             painter._worker_ready = true;
-            JSROOT.console('Worker ready: ' + (e.data.tm3 - e.data.tm0));
+            console.log(`Worker ready: ${e.data.tm3 - e.data.tm0}`);
          } else {
             painter.processWorkerReply(e.data);
          }
