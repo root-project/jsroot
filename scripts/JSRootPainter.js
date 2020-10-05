@@ -1335,9 +1335,8 @@ JSROOT.require(['d3'], (d3) => {
       if (this._ready_called_)
          return Promise.resolve(this); // painting is done, we could return promise
 
-      let painter = this;
-      return new Promise(function(resolve, reject) {
-         painter.WhenReady(resolve, reject);
+      return new Promise((resolve, reject) => {
+         this.WhenReady(resolve, reject);
       });
    }
 

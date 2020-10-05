@@ -1430,28 +1430,29 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter.v6'], (d3) => {
 
       let height = this.frame_height(),
           pmain = this.frame_painter(),
-          painter = this,
+          esz = this.error_size,
+          isbar1 = (this.options.Bar===1),
           findbin = null, best_dist2 = 1e10, best = null,
           msize = this.marker_size ? Math.round(this.marker_size/2 + 1.5) : 0;
 
-      this.draw_g.selectAll('.grpoint').each(function() {
+      this.draw_g.selectAll('.grpoint').each(() => {
          let d = d3.select(this).datum();
          if (d===undefined) return;
          let dist2 = Math.pow(pnt.x - d.grx1, 2);
          if (pnt.nproc===1) dist2 += Math.pow(pnt.y - d.gry1, 2);
          if (dist2 >= best_dist2) return;
 
-         let rect = null;
+         let rect;
 
          if (d.error || d.rect || d.marker) {
-            rect = { x1: Math.min(-painter.error_size, d.grx0, -msize),
-                     x2: Math.max(painter.error_size, d.grx2, msize),
-                     y1: Math.min(-painter.error_size, d.gry2, -msize),
-                     y2: Math.max(painter.error_size, d.gry0, msize) };
+            rect = { x1: Math.min(-esz, d.grx0, -msize),
+                     x2: Math.max(esz, d.grx2, msize),
+                     y1: Math.min(-esz, d.gry2, -msize),
+                     y2: Math.max(esz, d.gry0, msize) };
          } else if (d.bar) {
              rect = { x1: -d.width/2, x2: d.width/2, y1: 0, y2: height - d.gry1 };
 
-             if (painter.options.Bar===1) {
+             if (isbar1) {
                 let yy0 = pmain.gry(0);
                 rect.y1 = (d.gry1 > yy0) ? yy0-d.gry1 : 0;
                 rect.y2 = (d.gry1 > yy0) ? 0 : yy0-d.gry1;

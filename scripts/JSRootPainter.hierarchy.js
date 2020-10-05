@@ -1062,13 +1062,11 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
    }
 
    HierarchyPainter.prototype.dropitem = function(itemname, divid, opt, call_back) {
-      let h = this;
-
       if (opt && typeof opt === 'function') { call_back = opt; opt = ""; }
       if (opt===undefined) opt = "";
 
-      function drop_callback(drop_painter) {
-         if (drop_painter && (typeof drop_painter === 'object')) drop_painter.SetItemName(itemname, null, h);
+      let drop_callback = drop_painter => {
+         if (drop_painter && (typeof drop_painter === 'object')) drop_painter.SetItemName(itemname, null, this);
          JSROOT.CallBack(call_back);
       }
 
@@ -1078,7 +1076,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
             JSROOT.CallBack(drop_callback, res);
          });
 
-      h.get(itemname, function(item, obj) {
+      this.get(itemname, (item, obj) => {
 
          if (!obj) return JSROOT.CallBack(call_back);
 
@@ -1090,7 +1088,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
          if (main_painter && main_painter.accept_drops)
             return JSROOT.draw(divid, obj, "same " + opt).then(drop_callback);
 
-         h.CleanupFrame(divid);
+         this.CleanupFrame(divid);
          return JSROOT.draw(divid, obj, opt).then(drop_callback);
       });
 

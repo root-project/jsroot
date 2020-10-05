@@ -1408,11 +1408,9 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
                                                false, show_second_ticks ? w : 0, disable_axis_draw,
                                                draw_vertical.invert_side ? 0 : this.frame_x());
 
-         let painter = this;
-
          return Promise.all([promise1, promise2]).then(() => {
-             painter.DrawGrids();
-             painter.axes_drawn = true;
+             this.DrawGrids();
+             this.axes_drawn = true;
              return true;
          });
       }
@@ -1721,7 +1719,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
          unzoom_z = (zmin === zmax) && (zmin === 0);
       }
 
-      let changed = false, fp = this, changes = {},
+      let changed = false, changes = {},
           r_x = "", r_y = "", r_z = "",
          req = {
          _typename: "ROOT::Experimental::RFrame::RUserRanges",
@@ -1733,32 +1731,32 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
       if (zoom_x || zoom_y || zoom_z)
          this.ForEachPainter(obj => {
             if (zoom_x && obj.CanZoomIn("x", xmin, xmax)) {
-               fp.zoom_xmin = xmin;
-               fp.zoom_xmax = xmax;
+               this.zoom_xmin = xmin;
+               this.zoom_xmax = xmax;
                changed = true; r_x = "0";
                zoom_x = false;
-               fp.v7AttrChange(changes, "x_zoommin", xmin);
-               fp.v7AttrChange(changes, "x_zoommax", xmax);
+               this.v7AttrChange(changes, "x_zoommin", xmin);
+               this.v7AttrChange(changes, "x_zoommax", xmax);
                req.values[0] = xmin; req.values[1] = xmax;
                req.flags[0] = req.flags[1] = true;
             }
             if (zoom_y && obj.CanZoomIn("y", ymin, ymax)) {
-               fp.zoom_ymin = ymin;
-               fp.zoom_ymax = ymax;
+               this.zoom_ymin = ymin;
+               this.zoom_ymax = ymax;
                changed = true; r_y = "1";
                zoom_y = false;
-               fp.v7AttrChange(changes, "y_zoommin", ymin);
-               fp.v7AttrChange(changes, "y_zoommax", ymax);
+               this.v7AttrChange(changes, "y_zoommin", ymin);
+               this.v7AttrChange(changes, "y_zoommax", ymax);
                req.values[2] = ymin; req.values[3] = ymax;
                req.flags[2] = req.flags[3] = true;
             }
             if (zoom_z && obj.CanZoomIn("z", zmin, zmax)) {
-               fp.zoom_zmin = zmin;
-               fp.zoom_zmax = zmax;
+               this.zoom_zmin = zmin;
+               this.zoom_zmax = zmax;
                changed = true; r_z = "2";
                zoom_z = false;
-               fp.v7AttrChange(changes, "z_zoommin", zmin);
-               fp.v7AttrChange(changes, "z_zoommax", zmax);
+               this.v7AttrChange(changes, "z_zoommin", zmin);
+               this.v7AttrChange(changes, "z_zoommax", zmax);
                req.values[4] = zmin; req.values[5] = zmax;
                req.flags[4] = req.flags[5] = true;
             }
@@ -1769,22 +1767,22 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
          if (unzoom_x) {
             if (this.zoom_xmin !== this.zoom_xmax) { changed = true; r_x = "0"; }
             this.zoom_xmin = this.zoom_xmax = 0;
-            fp.v7AttrChange(changes, "x_zoommin", null);
-            fp.v7AttrChange(changes, "x_zoommax", null);
+            this.v7AttrChange(changes, "x_zoommin", null);
+            this.v7AttrChange(changes, "x_zoommax", null);
             req.values[0] = req.values[1] = -1;
          }
          if (unzoom_y) {
             if (this.zoom_ymin !== this.zoom_ymax) { changed = true; r_y = "1"; }
             this.zoom_ymin = this.zoom_ymax = 0;
-            fp.v7AttrChange(changes, "y_zoommin", null);
-            fp.v7AttrChange(changes, "y_zoommax", null);
+            this.v7AttrChange(changes, "y_zoommin", null);
+            this.v7AttrChange(changes, "y_zoommax", null);
             req.values[2] = req.values[3] = -1;
          }
          if (unzoom_z) {
             if (this.zoom_zmin !== this.zoom_zmax) { changed = true; r_z = "2"; }
             this.zoom_zmin = this.zoom_zmax = 0;
-            fp.v7AttrChange(changes, "z_zoommin", null);
-            fp.v7AttrChange(changes, "z_zoommax", null);
+            this.v7AttrChange(changes, "z_zoommin", null);
+            this.v7AttrChange(changes, "z_zoommax", null);
             req.values[4] = req.values[5] = -1;
          }
       }
@@ -2966,12 +2964,11 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
          this.AddOnlineButtons();
       }
 
-      let padpainter = this,
-          prev_name = padpainter.CurrentPadName(padpainter.this_pad_name);
+      let prev_name = this.CurrentPadName(this.this_pad_name);
 
-      padpainter.DrawNextSnap(snap.fPrimitives, -1, function() {
-         padpainter.CurrentPadName(prev_name);
-         call_back(padpainter);
+      this.DrawNextSnap(snap.fPrimitives, -1, () => {
+         this.CurrentPadName(prev_name);
+         call_back(this);
       });
    }
 

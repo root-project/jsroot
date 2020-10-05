@@ -1805,26 +1805,26 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
          unzoom_z = (zmin === zmax) && (zmin === 0);
       }
 
-      let changed = false, main = this;
+      let changed = false;
 
       // first process zooming (if any)
       if (zoom_x || zoom_y || zoom_z)
-         main.ForEachPainter(obj => {
+         this.ForEachPainter(obj => {
             if (zoom_x && obj.CanZoomIn("x", xmin, xmax)) {
-               main.zoom_xmin = xmin;
-               main.zoom_xmax = xmax;
+               this.zoom_xmin = xmin;
+               this.zoom_xmax = xmax;
                changed = true;
                zoom_x = false;
             }
             if (zoom_y && obj.CanZoomIn("y", ymin, ymax)) {
-               main.zoom_ymin = ymin;
-               main.zoom_ymax = ymax;
+               this.zoom_ymin = ymin;
+               this.zoom_ymax = ymax;
                changed = true;
                zoom_y = false;
             }
             if (zoom_z && obj.CanZoomIn("z", zmin, zmax)) {
-               main.zoom_zmin = zmin;
-               main.zoom_zmax = zmax;
+               this.zoom_zmin = zmin;
+               this.zoom_zmax = zmax;
                changed = true;
                zoom_z = false;
             }
@@ -3018,12 +3018,11 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
          this.AddOnlineButtons();
       }
 
-      let padpainter = this,
-          prev_name = padpainter.CurrentPadName(padpainter.this_pad_name);
+      let prev_name = this.CurrentPadName(this.this_pad_name);
 
-      padpainter.DrawNextSnap(snap.fPrimitives, -1, function() {
-         padpainter.CurrentPadName(prev_name);
-         JSROOT.CallBack(call_back, padpainter);
+      this.DrawNextSnap(snap.fPrimitives, -1, () => {
+         this.CurrentPadName(prev_name);
+         JSROOT.CallBack(call_back, this);
       });
    }
 

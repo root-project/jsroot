@@ -578,14 +578,14 @@ JSROOT.require(['d3', 'jquery', 'JSRootPainter.hierarchy'], (d3, $) => {
          tgt_drawing = "0px";
       }
 
-      let pthis = this, visible_at_the_end  = !this.browser_visible, _duration = fast_close ? 0 : 700;
+      let visible_at_the_end  = !this.browser_visible, _duration = fast_close ? 0 : 700;
 
       this.browser_visible = 'changing';
 
-      area.transition().style('left', tgt).duration(_duration).on("end", function() {
+      area.transition().style('left', tgt).duration(_duration).on("end", () => {
          if (fast_close) return;
-         pthis.browser_visible = visible_at_the_end;
-         if (visible_at_the_end) pthis.SetButtonsPosition();
+         this.browser_visible = visible_at_the_end;
+         if (visible_at_the_end) this.SetButtonsPosition();
       });
 
       if (!visible_at_the_end)
@@ -2193,14 +2193,13 @@ JSROOT.require(['d3', 'jquery', 'JSRootPainter.hierarchy'], (d3, $) => {
                      " First: <input class='treedraw_first' style='width:7em;margin-left:5px' title='first entry to process (default first)'></input>" +
                      " <button class='treedraw_clear' title='Clear drawing'>Clear</button>");
 
-          let numentries, p = this;
-          if (this.local_tree) numentries = this.local_tree.fEntries || 0;
+          let numentries = this.local_tree ? this.local_tree.fEntries : 0;
 
           main.find(".treedraw_cut").val(args && args.parse_cut ? args.parse_cut : "").keyup(this.keyup);
           main.find(".treedraw_opt").val(args && args.drawopt ? args.drawopt : "").keyup(this.keyup);
-          main.find(".treedraw_number").val(args && args.numentries ? args.numentries : "").spinner({ numberFormat: "n", min: 0, page: 1000, max: numentries }).keyup(this.keyup);
-          main.find(".treedraw_first").val(args && args.firstentry ? args.firstentry : "").spinner({ numberFormat: "n", min: 0, page: 1000, max: numentries }).keyup(this.keyup);
-          main.find(".treedraw_clear").button().click(function() { JSROOT.cleanup(p.drawid); });
+          main.find(".treedraw_number").val(args && args.numentries ? args.numentries : "").spinner({ numberFormat: "n", min: 0, page: 1000, max: numentries || 0 }).keyup(this.keyup);
+          main.find(".treedraw_first").val(args && args.firstentry ? args.firstentry : "").spinner({ numberFormat: "n", min: 0, page: 1000, max: numentries || 0 }).keyup(this.keyup);
+          main.find(".treedraw_clear").button().click(() => JSROOT.cleanup(this.drawid));
       }
 
       player.Show = function(divid, args) {
@@ -2265,13 +2264,11 @@ JSROOT.require(['d3', 'jquery', 'JSRootPainter.hierarchy'], (d3, $) => {
             if (isNaN(args.firstentry)) delete args.firstentry;
          }
 
-         let p = this;
+         if (args.drawopt) JSROOT.cleanup(this.drawid);
 
-         if (args.drawopt) JSROOT.cleanup(p.drawid);
-
-         p.local_tree.Draw(args, function(histo, hopt /*, intermediate*/) {
-            JSROOT.redraw(p.drawid, histo, hopt);
-         });
+         this.local_tree.Draw(args, (histo, hopt /*, intermediate*/) =>
+            JSROOT.redraw(this.drawid, histo, hopt)
+         );
       }
 
       player.PerformDraw = function() {
@@ -2311,12 +2308,10 @@ JSROOT.require(['d3', 'jquery', 'JSRootPainter.hierarchy'], (d3, $) => {
          }
          url += '&_ret_object_=' + hname;
 
-         let player = this;
-
-         function SubmitDrawRequest() {
-            JSROOT.HttpRequest(url, 'object').then(function(res) {
-               JSROOT.cleanup(player.drawid);
-               JSROOT.draw(player.drawid, res, option);
+         let SubmitDrawRequest = () => {
+            JSROOT.HttpRequest(url, 'object').then(res => {
+               JSROOT.cleanup(this.drawid);
+               JSROOT.draw(this.drawid, res, option);
             });
          }
 
