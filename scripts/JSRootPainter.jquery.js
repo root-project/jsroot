@@ -1263,9 +1263,8 @@ JSROOT.require(['d3', 'jquery', 'JSRootPainter.hierarchy'], (d3, $) => {
       let hitem = this.Find(itemname);
       if (!hitem) return;
 
-      let painter = this,
-          onlineprop = painter.GetOnlineProp(itemname),
-          fileprop = painter.GetFileProp(itemname);
+      let onlineprop = this.GetOnlineProp(itemname),
+          fileprop = this.GetFileProp(itemname);
 
       function qualifyURL(url) {
          function escapeHTML(s) {
@@ -1276,20 +1275,19 @@ JSROOT.require(['d3', 'jquery', 'JSRootPainter.hierarchy'], (d3, $) => {
          return el.firstChild.href;
       }
 
-      JSROOT.Painter.createMenu(painter, evnt).then(menu => {
+      JSROOT.Painter.createMenu(this, evnt).then(menu => {
 
          if ((itemname == "") && !('_jsonfile' in hitem)) {
-            let addr = "", cnt = 0;
-            function separ() { return cnt++ > 0 ? "&" : "?"; }
+            let files = [], addr = "", cnt = 0,
+                separ = () => (cnt++ > 0) ? "&" : "?";
 
-            let files = [];
-            painter.ForEachRootFile(function(item) { files.push(item._file.fFullURL); });
+            this.ForEachRootFile(item => files.push(item._file.fFullURL));
 
-            if (!painter.GetTopOnlineItem())
+            if (!this.GetTopOnlineItem())
                addr = JSROOT.source_dir + "index.htm";
 
-            if (painter.IsMonitoring())
-               addr += separ() + "monitoring=" + painter.MonitoringInterval();
+            if (this.IsMonitoring())
+               addr += separ() + "monitoring=" + this.MonitoringInterval();
 
             if (files.length==1)
                addr += separ() + "file=" + files[0];
@@ -1297,13 +1295,13 @@ JSROOT.require(['d3', 'jquery', 'JSRootPainter.hierarchy'], (d3, $) => {
                if (files.length>1)
                   addr += separ() + "files=" + JSON.stringify(files);
 
-            if (painter['disp_kind'])
-               addr += separ() + "layout=" + painter.disp_kind.replace(/ /g, "");
+            if (this.disp_kind)
+               addr += separ() + "layout=" + this.disp_kind.replace(/ /g, "");
 
             let items = [];
 
-            if (painter.disp)
-               painter.disp.ForEachPainter(p => {
+            if (this.disp)
+               this.disp.ForEachPainter(p => {
                   if (p.GetItemName())
                      items.push(p.GetItemName());
                });
@@ -1314,10 +1312,10 @@ JSROOT.require(['d3', 'jquery', 'JSRootPainter.hierarchy'], (d3, $) => {
                addr += separ() + "items=" + JSON.stringify(items);
             }
 
-            menu.add("Direct link", function() { window.open(addr); });
-            menu.add("Only items", function() { window.open(addr + "&nobrowser"); });
+            menu.add("Direct link", () => window.open(addr));
+            menu.add("Only items", () => window.open(addr + "&nobrowser"));
          } else if (onlineprop) {
-            painter.FillOnlineMenu(menu, onlineprop, itemname);
+            this.FillOnlineMenu(menu, onlineprop, itemname);
          } else {
             let sett = JSROOT.getDrawSettings(hitem._kind, 'nosame');
 
@@ -1328,7 +1326,7 @@ JSROOT.require(['d3', 'jquery', 'JSRootPainter.hierarchy'], (d3, $) => {
             }
 
             if (sett.opts)
-               menu.addDrawMenu("Draw", sett.opts, function(arg) { this.display(itemname, arg); });
+               menu.addDrawMenu("Draw", sett.opts, arg => this.display(itemname, arg));
 
             if (fileprop && sett.opts && !fileprop.localfile) {
                let filepath = qualifyURL(fileprop.fileurl);
@@ -1341,20 +1339,20 @@ JSROOT.require(['d3', 'jquery', 'JSRootPainter.hierarchy'], (d3, $) => {
                   filepath += "&item=" + name;
                }
 
-               menu.addDrawMenu("Draw in new tab", sett.opts, function(arg) {
+               menu.addDrawMenu("Draw in new tab", sett.opts, arg => {
                   window.open(JSROOT.source_dir + "index.htm?nobrowser&"+filepath +"&opt="+arg);
                });
             }
 
             if (sett.expand && !('_childs' in hitem) && (hitem._more || !('_more' in hitem)))
-               menu.add("Expand", function() { painter.expand(itemname); });
+               menu.add("Expand", () => this.expand(itemname));
 
             if (hitem._kind === "ROOT.TStyle")
-               menu.add("Apply", function() { painter.ApplyStyle(itemname); });
+               menu.add("Apply", () => this.ApplyStyle(itemname));
          }
 
          if (typeof hitem._menu == 'function')
-            hitem._menu(menu, hitem, painter);
+            hitem._menu(menu, hitem, this);
 
          if (menu.size() > 0) {
             menu.tree_node = elem.parentNode;
@@ -1494,7 +1492,7 @@ JSROOT.require(['d3', 'jquery', 'JSRootPainter.hierarchy'], (d3, $) => {
 
       this.brlayout.SetBrowserTitle(this.is_online ? 'ROOT online server' : 'Read a ROOT file');
 
-      let hpainter = this, localfile_read_callback = null;
+      let localfile_read_callback = null;
 
       if (!this.is_online && !this.no_select) {
 
@@ -1508,32 +1506,26 @@ JSROOT.require(['d3', 'jquery', 'JSRootPainter.hierarchy'], (d3, $) => {
                this.OpenRootFile(filename);
          }
 
-         jmain.find(".gui_selectFileName").val("").change(function() {
-            jmain.find(".gui_urlToLoad").val($(this).val());
-         });
-         jmain.find(".gui_fileBtn").button().click(function() {
-            jmain.find(".gui_localFile").click();
+         jmain.find(".gui_selectFileName").val("")
+              .change(() => jmain.find(".gui_urlToLoad").val($(this).val()));
+         jmain.find(".gui_fileBtn").button()
+              .click(() => jmain.find(".gui_localFile").click());
+
+         jmain.find(".gui_ReadFileBtn").button().click(() => this.ReadSelectedFile());
+
+         jmain.find(".gui_ResetUIBtn").button().click(() => this.clear(true));
+
+         jmain.find(".gui_urlToLoad").keyup(e => {
+            if (e.keyCode == 13) this.ReadSelectedFile();
          });
 
-         jmain.find(".gui_ReadFileBtn").button().click(function(){
-            hpainter.ReadSelectedFile();
-         });
-
-         jmain.find(".gui_ResetUIBtn").button().click(function(){
-            hpainter.clear(true);
-         });
-
-         jmain.find(".gui_urlToLoad").keyup(function(e) {
-            if (e.keyCode == 13) hpainter.ReadSelectedFile();
-         });
-
-         jmain.find(".gui_localFile").change(function(evnt) {
+         jmain.find(".gui_localFile").change(evnt => {
             let files = evnt.target.files;
 
             for (let n=0;n<files.length;++n) {
                let f = files[n];
                main.select(".gui_urlToLoad").property('value', f.name);
-               if (hpainter) hpainter.OpenRootFile(f, localfile_read_callback);
+               this.OpenRootFile(f, localfile_read_callback);
             }
 
             localfile_read_callback = null;
@@ -1557,8 +1549,8 @@ JSROOT.require(['d3', 'jquery', 'JSRootPainter.hierarchy'], (d3, $) => {
             jlayout.get(0).appendChild(opt);
         }
 
-         jlayout.change(function() {
-            hpainter.SetDisplay($(this).val() || 'collapsible', hpainter.gui_div + "_drawing");
+         jlayout.change(() => {
+            this.SetDisplay($(this).val() || 'collapsible', this.gui_div + "_drawing");
          });
       }
 
@@ -1580,7 +1572,7 @@ JSROOT.require(['d3', 'jquery', 'JSRootPainter.hierarchy'], (d3, $) => {
 
       let main = d3.select("#" + this.gui_div + " .jsroot_browser");
       if (main.empty() || !this.brlayout) return;
-      let jmain = $(main.node()), hpainter = this;
+      let jmain = $(main.node());
 
       if (this.brlayout) this.brlayout.AdjustBrowserSize();
 
@@ -1609,13 +1601,13 @@ JSROOT.require(['d3', 'jquery', 'JSRootPainter.hierarchy'], (d3, $) => {
             this.brlayout.SetBrowserTitle(this.h._toptitle);
          jmain.find(".gui_monitoring")
            .prop('checked', this.IsMonitoring())
-           .click(function() {
-               hpainter.EnableMonitoring(this.checked);
-               hpainter.updateAll(!this.checked);
+           .click(() => {
+               this.EnableMonitoring(this.checked);
+               this.updateAll(!this.checked);
             });
       } else if (!this.no_select) {
          let fname = "";
-         this.ForEachRootFile(function(item) { if (!fname) fname = item._fullurl; });
+         this.ForEachRootFile(item => { if (!fname) fname = item._fullurl; });
          jmain.find(".gui_urlToLoad").val(fname);
       }
    }

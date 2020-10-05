@@ -924,12 +924,8 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], (d3) => {
 
       this.z_handle.max_tick_size = Math.round(s_width*0.7);
 
-      let painter = this;
-
-      painter.FirstRun++;
-      this.z_handle.DrawAxis(true, this.draw_g, s_width, s_height, "translate(" + s_width + ", 0)").then(() => {
-         if (painter.FinishPave) painter.FinishPave();
-      });
+      this.FirstRun++;
+      this.z_handle.DrawAxis(true, this.draw_g, s_width, s_height, "translate(" + s_width + ", 0)").then(this.FinishPave);
 
       if (can_move && ('getBoundingClientRect' in this.draw_g.node())) {
          let rect = this.draw_g.node().getBoundingClientRect();
@@ -2466,11 +2462,11 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], (d3) => {
    /** @summary Unzoom user range if any @private */
    THistPainter.prototype.UnzoomUserRange = function(dox, doy, doz) {
 
-      let res = false, painter = this, histo = this.GetHisto();
+      let res = false, histo = this.GetHisto();
 
       if (!histo) return false;
 
-      function UnzoomTAxis(obj) {
+      let UnzoomTAxis = obj => {
          if (!obj) return false;
          if (!obj.TestBit(JSROOT.EAxisBits.kAxisRange)) return false;
          if (obj.fFirst === obj.fLast) return false;
@@ -2479,12 +2475,12 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], (d3) => {
          return true;
       }
 
-      function UzoomMinMax(ndim) {
-         if (painter.Dimension()!==ndim) return false;
-         if ((painter.options.minimum===-1111) && (painter.options.maximum===-1111)) return false;
-         if (!painter.draw_content) return false; // if not drawing content, not change min/max
-         painter.options.minimum = painter.options.maximum = -1111;
-         painter.ScanContent(true); // to reset ymin/ymax
+      let UzoomMinMax = ndim => {
+         if (this.Dimension()!==ndim) return false;
+         if ((this.options.minimum===-1111) && (this.options.maximum===-1111)) return false;
+         if (!this.draw_content) return false; // if not drawing content, not change min/max
+         this.options.minimum = this.options.maximum = -1111;
+         this.ScanContent(true); // to reset ymin/ymax
          return true;
       }
 
@@ -2849,18 +2845,13 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], (d3) => {
 
    THistPainter.prototype.FillPaletteMenu = function(menu) {
 
-      let curr = this.options.Palette, hpainter = this;
-      if ((curr===null) || (curr===0)) curr = JSROOT.gStyle.Palette;
+      let curr = this.options.Palette || JSROOT.gStyle.Palette;
 
-      function change(arg) {
-         hpainter.options.Palette = parseInt(arg);
-         hpainter.GetPalette(true);
-         hpainter.Redraw(); // redraw histogram
-      };
-
-      function add(id, name, more) {
-         menu.addchk((id===curr) || more, '<nobr>' + name + '</nobr>', id, change);
-      };
+      let add = (id, name, more) => menu.addchk((id===curr) || more, '<nobr>' + name + '</nobr>', id, arg => {
+         this.options.Palette = parseInt(arg);
+         this.GetPalette(true);
+         this.Redraw(); // redraw histogram
+      });
 
       menu.add("sub:Palette");
 
@@ -6131,21 +6122,19 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], (d3) => {
       // draw new palette, resize frame if required
       let pp = this.DrawColorPalette(this.options.Zscale && (this.options.Color || this.options.Contour), true);
 
-      let painter = this;
-
       this.DrawAxes().then(() => {
 
-         painter.DrawBins();
+         this.DrawBins();
 
          // redraw palette till the end when contours are available
          if (pp) pp.DrawPave();
 
-         return painter.DrawTitle();
+         return this.DrawTitle();
       }).then(() => {
 
-         painter.UpdateStatWebCanvas();
+         this.UpdateStatWebCanvas();
 
-         painter.AddInteractive();
+         this.AddInteractive();
 
          JSROOT.CallBack(call_back);
       });
@@ -6153,8 +6142,7 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], (d3) => {
 
    TH2Painter.prototype.Draw3D = function(call_back, resize) {
       this.mode3d = true;
-      let painter = this;
-      JSROOT.require('hist3d').then(() => painter.Draw3D(call_back, resize));
+      JSROOT.require('hist3d').then(() => this.Draw3D(call_back, resize));
    }
 
    TH2Painter.prototype.CallDrawFunc = function(callback, reason) {
