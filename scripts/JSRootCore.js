@@ -83,7 +83,7 @@
    JSROOT.nocache = false;      // when specified, used as extra URL parameter to load JSROOT scripts
    JSROOT.wrong_http_response_handling = false; // when configured, try to handle wrong content-length response from server
 
-   /** Internal data, not a public data
+   /** Internal, not a public data
       @private */
    JSROOT._ = { modules: {} };
 
@@ -120,8 +120,6 @@
       JSROOT.browser.isWin = navigator.platform.indexOf('Win') >= 0;
       JSROOT.browser.isChromeHeadless = navigator.userAgent.indexOf('HeadlessChrome') >= 0;
    }
-
-   JSROOT.browser.isWebKit = JSROOT.browser.isChrome || JSROOT.browser.isSafari || JSROOT.browser.isOpera;
 
    JSROOT._.sources = {
          'd3'                   : { src: 'd3', libs: true, extract: "d3", node: "d3" },
@@ -549,7 +547,7 @@
          });
    }
 
-   /** Generate mask for given bit
+   /** @summary Generate mask for given bit
     *
     * @param {number} n bit number
     * @returns {Number} produced make
@@ -586,13 +584,11 @@
       return result + 0.5;
    }
 
-   /** @summary Should be used to parse JSON string reintroduce objects references
+   /** @summary Should be used to parse JSON string produced with TBufferJSON class
     *
     * @desc Replace all references inside object like { "$ref": "1" }
-    * Kept support of old ROOT JSON format as well
     * @param {object|string} json  object where references will be replaced
-    * @returns {object} parsed object
-    * @private */
+    * @returns {object} parsed object */
    JSROOT.parse = function(json) {
 
       if (!json) return null;
@@ -613,12 +609,12 @@
 
          if (typeof value !== 'object') return;
 
-         let i, k, res, proto = Object.prototype.toString.apply(value);
+         let proto = Object.prototype.toString.apply(value);
 
          // scan array - it can contain other objects
          if ((proto.indexOf('[object')==0) && (proto.indexOf('Array]')>0)) {
-             for (i = 0; i < value.length; ++i) {
-                res = unref_value(value[i]);
+             for (let i = 0; i < value.length; ++i) {
+                let res = unref_value(value[i]);
                 if (res!==undefined) value[i] = res;
              }
              return;
@@ -674,7 +670,7 @@
                   if (ks[nkey][0]!=='v') throw new Error('Unexpected member ' + ks[nkey] + ' in array decoding');
                   let v = value[ks[nkey++]]; // value
                   if (typeof v === 'object') {
-                     for (let k=0;k<v.length;++k) arr[p++] = v[k];
+                     for (let k = 0; k < v.length; ++k) arr[p++] = v[k];
                   } else {
                      arr[p++] = v;
                      if ((nkey<len) && (ks[nkey][0]=='n')) {
@@ -705,10 +701,10 @@
          // add methods to all objects, where _typename is specified
          if ('_typename' in value) JSROOT.addMethods(value);
 
-         for (k = 0; k < len; ++k) {
-            i = ks[k];
-            res = unref_value(value[i]);
-            if (res!==undefined) value[i] = res;
+         for (let k = 0; k < len; ++k) {
+            let i = ks[k],
+                res = unref_value(value[i]);
+            if (res !== undefined) value[i] = res;
          }
       }
 
@@ -733,10 +729,10 @@
    /** @summary Make deep clone of the object, including all sub-objects
      * @returns {object} cloned object */
    JSROOT.clone = function(src, map, nofunc) {
-      if (src === null) return null;
+      if (!src) return null;
 
       if (!map) {
-         map = { obj:[], clones:[], nofunc: nofunc };
+         map = { obj: [], clones: [], nofunc: nofunc };
       } else {
          const i = map.obj.indexOf(src);
          if (i>=0) return map.clones[i];
@@ -1076,7 +1072,7 @@
     *
     * @example
     * JSROOT.HttpRequest("https://root.cern/js/files/thstack.json.gz", "object")
-    *       .then(obj => console.log(`"Get object of type ${obj._typename}`))
+    *       .then(obj => console.log(`Get object of type ${obj._typename}`))
     *       .catch(err => console.error(err.message));
     */
 
@@ -1632,7 +1628,6 @@
 
       if ((typename === "TPaveText") || (typename === "TPaveStats")) {
          m.AddText = function(txt) {
-            // this.fLines.Add({ _typename: 'TLatex', fTitle: txt, fTextColor: 1 });
             let line = JSROOT.Create("TLatex");
             line.fTitle = txt;
             this.fLines.Add(line);
@@ -1763,7 +1758,7 @@
             }
 
             return oddNodes;
-         };
+         }
       }
 
       if (typename.indexOf("TH1") == 0 ||
@@ -1779,14 +1774,14 @@
             if (bin < this.fSumw2.length)
                return Math.sqrt(this.fSumw2[bin]);
             return Math.sqrt(Math.abs(this.fArray[bin]));
-         };
+         }
          m.setBinContent = function(bin, content) {
             // Set bin content - only trivial case, without expansion
             this.fEntries++;
             this.fTsumw = 0;
             if ((bin>=0) && (bin<this.fArray.length))
                this.fArray[bin] = content;
-         };
+         }
       }
 
       if (typename.indexOf("TH1") == 0) {
@@ -1820,7 +1815,7 @@
 
       if (typename.indexOf("TH3") == 0) {
          m.getBin = function(x, y, z) { return (x + (this.fXaxis.fNbins+2) * (y + (this.fYaxis.fNbins+2) * z)); }
-         m.getBinContent = function(x, y, z) { return this.fArray[this.getBin(x, y, z)]; };
+         m.getBinContent = function(x, y, z) { return this.fArray[this.getBin(x, y, z)]; }
          m.Fill = function(x, y, z, weight) {
             let axis1 = this.fXaxis, axis2 = this.fYaxis, axis3 = this.fZaxis,
                 bin1 = 1 + Math.floor((x - axis1.fXmin) / (axis1.fXmax - axis1.fXmin) * axis1.fNbins),
@@ -1852,15 +1847,14 @@
                if (bin < 0 || bin >= this.fNcells) return 0;
                return this.fBinEntries[bin];
             }
-         }
-         else {
+         } else {
             m.getBin = function(x) { return x; }
             m.getBinContent = function(bin) {
                if (bin < 0 || bin >= this.fNcells) return 0;
                if (this.fBinEntries[bin] < 1e-300) return 0;
                if (!this.fArray) return 0;
                return this.fArray[bin]/this.fBinEntries[bin];
-            };
+            }
          }
          m.getBinEffectiveEntries = function(bin) {
             if (bin < 0 || bin >= this.fNcells) return 0;
@@ -1871,7 +1865,7 @@
             }
             let sumOfWeightsSquare = this.fBinSumw2[bin];
             return (sumOfWeightsSquare > 0) ? sumOfWeights * sumOfWeights / sumOfWeightsSquare : 0;
-         };
+         }
          m.getBinError = function(bin) {
             if (bin < 0 || bin >= this.fNcells) return 0;
             let cont = this.fArray[bin],               // sum of bin w *y
@@ -1879,7 +1873,7 @@
                 err2 = this.fSumw2[bin],               // sum of bin w * y^2
                 neff = this.getBinEffectiveEntries(bin);  // (sum of w)^2 / (sum of w^2)
             if (sum < 1e-300) return 0;                  // for empty bins
-            const EErrorType = { kERRORMEAN: 0, kERRORSPREAD: 1, kERRORSPREADI: 2, kERRORSPREADG : 3 };
+            const EErrorType = { kERRORMEAN: 0, kERRORSPREAD: 1, kERRORSPREADI: 2, kERRORSPREADG: 3 };
             // case the values y are gaussian distributed y +/- sigma and w = 1/sigma^2
             if (this.fErrorMode === EErrorType.kERRORSPREADG)
                return 1.0/Math.sqrt(sum);
@@ -1897,8 +1891,8 @@
             if (this.fErrorMode === EErrorType.kERRORSPREAD) return eprim;
             // default case : fErrorMode = kERRORMEAN
             // return standard error on the mean of y
-            return (eprim/Math.sqrt(neff));
-         };
+            return eprim/Math.sqrt(neff);
+         }
       }
 
       if (typename == "TAxis") {

@@ -4108,12 +4108,6 @@ JSROOT.require(['d3'], (d3) => {
       return done;
    }
 
-   /**
-    * For compatibility, see {@link JSROOT.resize}
-    * @private
-    */
-   JSROOT.CheckElementResize = JSROOT.resize;
-
    /** @summary Returns main painter object for specified HTML element
      * @param {string|object} divid - id or DOM element */
    JSROOT.GetMainPainter = function(divid) {
