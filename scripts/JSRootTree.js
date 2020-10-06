@@ -2460,46 +2460,41 @@ JSROOT.require(['JSRootIOEvolution', 'JSRootMath'], () => {
    JSROOT.TreeMethods.IOTest = function(args, result_callback) {
       // generic I/O test for all branches in the tree
 
-      if (!args.names && !args.bracnhes) {
+      args.branches = [];
+      args.names = [];
+      args.nchilds = [];
+      args.nbr = 0;
 
-         args.branches = [];
-         args.names = [];
-         args.nchilds = [];
-         args.nbr = 0;
+      function CollectBranches(obj, prntname) {
+         if (!obj || !obj.fBranches) return 0;
 
-         function CollectBranches(obj, prntname) {
-            if (!obj || !obj.fBranches) return 0;
+         let cnt = 0;
 
-            let cnt = 0;
+         for (let n = 0; n < obj.fBranches.arr.length; ++n) {
+            let br = obj.fBranches.arr[n],
+               name = (prntname ? prntname + "/" : "") + br.fName;
+            args.branches.push(br);
+            args.names.push(name);
+            args.nchilds.push(0);
+            let pos = args.nchilds.length - 1;
+            cnt += br.fLeaves ? br.fLeaves.arr.length : 0;
+            let nchld = CollectBranches(br, name);
 
-            for (let n = 0; n < obj.fBranches.arr.length; ++n) {
-               let br = obj.fBranches.arr[n],
-                  name = (prntname ? prntname + "/" : "") + br.fName;
-               args.branches.push(br);
-               args.names.push(name);
-               args.nchilds.push(0);
-               let pos = args.nchilds.length - 1;
-               cnt += br.fLeaves ? br.fLeaves.arr.length : 0;
-               let nchld = CollectBranches(br, name);
+            cnt += nchld;
+            args.nchilds[pos] = nchld;
 
-               cnt += nchld;
-               args.nchilds[pos] = nchld;
-
-            }
-            return cnt;
          }
-
-         let numleaves = CollectBranches(this);
-
-         args.names.push("Total are " + args.branches.length + " branches with " + numleaves + " leaves");
+         return cnt;
       }
 
+      let numleaves = CollectBranches(this);
+
+      args.names.push("Total are " + args.branches.length + " branches with " + numleaves + " leaves");
+
       args.lasttm = new Date().getTime();
-      args.lastnbr = args.nbr;
+      args.lastnbr = 0;
 
-      let tree = this;
-
-      function TestNextBranch() {
+      let TestNextBranch = () => {
 
          let selector = new TSelector;
 
@@ -2524,16 +2519,18 @@ JSROOT.require(['JSRootIOEvolution', 'JSRootMath'], () => {
 
             let now = new Date().getTime();
 
-            if ((now - args.lasttm > 5000) || (args.nbr - args.lastnbr > 50))
-               setTimeout(tree.IOTest.bind(tree, args, result_callback), 100); // use timeout to avoid deep recursion
-            else
+            if ((now - args.lasttm > 5000) || (args.nbr - args.lastnbr > 50)) {
+               args.lasttm = now;
+               args.lastnbr = args.nbr;
+               setTimeout(TestNextBranch, 1); // use timeout to avoid deep recursion
+            } else
                TestNextBranch();
          }
 
          JSROOT.progress("br " + args.nbr + "/" + args.branches.length + " " + args.names[args.nbr]);
 
          let br = args.branches[args.nbr],
-            object_class = JSROOT.IO.GetBranchObjectClass(br, tree),
+            object_class = JSROOT.IO.GetBranchObjectClass(br, this),
             num = br.fEntries,
             skip_branch = (!br.fLeaves || (br.fLeaves.arr.length === 0));
 
@@ -2561,7 +2558,7 @@ JSROOT.require(['JSRootIOEvolution', 'JSRootMath'], () => {
             // keep console output for debug purposes
             console.log('test branch', br.fName, 'first', (drawargs.firstentry || 0), "num", drawargs.numentries);
 
-            tree.Process(selector, drawargs);
+            this.Process(selector, drawargs);
          }
       }
 
