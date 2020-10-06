@@ -2441,7 +2441,7 @@ JSROOT.require(['JSRootIOEvolution', 'JSRootMath'], () => {
 
       // special debugging code
       if (args.expr === "testio")
-         return this.IOTest(args, result_callback);
+         return this.IOTest(args).then(res => JSROOT.CallBack(result_callback, res.obj, res.opt));
 
       let selector = new TDrawSelector(result_callback);
 
@@ -2457,7 +2457,7 @@ JSROOT.require(['JSRootIOEvolution', 'JSRootMath'], () => {
       return this.Process(selector, args);
    }
 
-   JSROOT.TreeMethods.IOTest = function(args, result_callback) {
+   JSROOT.TreeMethods.IOTest = function(args) {
       // generic I/O test for all branches in the tree
 
       args.branches = [];
@@ -2514,7 +2514,7 @@ JSROOT.require(['JSRootIOEvolution', 'JSRootMath'], () => {
 
             if (args.nbr >= args.branches.length) {
                JSROOT.progress();
-               return JSROOT.CallBack(result_callback, args.names, "inspect");
+               return args.resolveFunc({ obj: args.names, opt: "inspect" });
             }
 
             let now = new Date().getTime();
@@ -2562,7 +2562,10 @@ JSROOT.require(['JSRootIOEvolution', 'JSRootMath'], () => {
          }
       }
 
-      TestNextBranch();
+      return new Promise(resolve => {
+         args.resolveFunc = resolve;
+         TestNextBranch();
+      });
    }
 
    JSROOT.TSelector = TSelector;
