@@ -61,7 +61,7 @@ JSROOT.require(['d3'], (d3) => {
 
    // ============================================================================================
 
-   let Painter = {
+   let jsrp = {
       Coord: {
          kCARTESIAN: 1,
          kPOLAR: 2,
@@ -93,7 +93,7 @@ JSROOT.require(['d3'], (d3) => {
          0.587, 0.514, 0.896, 0.587, 0.55]
    };
 
-   Painter.createMenu = function(painter, evt) {
+   jsrp.createMenu = function(painter, evt) {
       // dummy functions, forward call to the jquery function
       document.body.style.cursor = 'wait';
       let show_evnt;
@@ -103,17 +103,17 @@ JSROOT.require(['d3'], (d3) => {
             show_evnt = { clientX: evt.clientX, clientY: evt.clientY };
       return JSROOT.require(['JSRootPainter.jquery']).then(() => {
          document.body.style.cursor = 'auto';
-         return Painter.createMenu(painter, show_evnt);
+         return jsrp.createMenu(painter, show_evnt);
       });
    }
 
-   Painter.closeMenu = function(menuname) {
+   jsrp.closeMenu = function(menuname) {
       let x = document.getElementById(menuname || 'root_ctx_menu');
       if (x) { x.parentNode.removeChild(x); return true; }
       return false;
    }
 
-   Painter.readStyleFromURL = function(url) {
+   jsrp.readStyleFromURL = function(url) {
       let optimize = JSROOT.GetUrlOption("optimize", url);
       if (optimize == "") JSROOT.gStyle.OptimizeDraw = 2; else
          if (optimize !== null) {
@@ -194,7 +194,7 @@ JSROOT.require(['d3'], (d3) => {
    }
 
    /** Function that generates all root colors */
-   Painter.createRootColors = function() {
+   jsrp.createRootColors = function() {
       let colorMap = ['white', 'black', 'red', 'green', 'blue', 'yellow', 'magenta', 'cyan', 'rgb(89,212,84)', 'rgb(89,84,217)', 'white'];
       colorMap[110] = 'white';
 
@@ -218,10 +218,10 @@ JSROOT.require(['d3'], (d3) => {
          }
       }
 
-      Painter.root_colors = colorMap;
+      jsrp.root_colors = colorMap;
    }
 
-   Painter.MakeColorRGB = function(col) {
+   jsrp.MakeColorRGB = function(col) {
       if (!col || (col._typename != 'TColor')) return null;
       let rgb = Math.round(col.fRed * 255) + "," + Math.round(col.fGreen * 255) + "," + Math.round(col.fBlue * 255);
       if ((col.fAlpha === undefined) || (col.fAlpha == 1.))
@@ -243,7 +243,7 @@ JSROOT.require(['d3'], (d3) => {
    }
 
    /** Add new colors from object array. */
-   Painter.extendRootColors = function(jsarr, objarr) {
+   jsrp.extendRootColors = function(jsarr, objarr) {
       if (!jsarr) {
          jsarr = [];
          for (let n = 0; n < this.root_colors.length; ++n)
@@ -260,7 +260,7 @@ JSROOT.require(['d3'], (d3) => {
             if (!col || (col._typename != 'TColor')) continue;
 
             if ((col.fNumber >= 0) && (col.fNumber <= 10000))
-               rgb_array[col.fNumber] = Painter.MakeColorRGB(col);
+               rgb_array[col.fNumber] = jsrp.MakeColorRGB(col);
          }
       }
 
@@ -276,7 +276,7 @@ JSROOT.require(['d3'], (d3) => {
     * Either TObjArray of TColor instances or just plain array with rgb() code.
     * List of colors typically stored together with TCanvas primitives
     * @private */
-   Painter.adoptRootColors = function(objarr) {
+   jsrp.adoptRootColors = function(objarr) {
       this.extendRootColors(this.root_colors, objarr);
    }
 
@@ -286,7 +286,7 @@ JSROOT.require(['d3'], (d3) => {
     * @returns {value} - rendering kind, see JSROOT.constants.Render3D
     * @private
     */
-   Painter.GetRender3DKind = function(render3d) {
+   jsrp.GetRender3DKind = function(render3d) {
       if (!render3d) render3d = JSROOT.BatchMode ? JSROOT.settings.Render3DBatch : JSROOT.settings.Render3D;
       let rc = JSROOT.constants.Render3D;
 
@@ -356,7 +356,7 @@ JSROOT.require(['d3'], (d3) => {
       if ((typeof args == 'object') && (typeof args.fMarkerStyle == 'number')) args = { attr: args };
 
       if (args.attr) {
-         if (args.color === undefined) args.color = Painter.root_colors[args.attr.fMarkerColor];
+         if (args.color === undefined) args.color = jsrp.root_colors[args.attr.fMarkerColor];
          if (!args.style || (args.style < 0)) args.style = args.attr.fMarkerStyle;
          if (!args.size) args.size = args.attr.fMarkerSize;
       }
@@ -419,7 +419,7 @@ JSROOT.require(['d3'], (d3) => {
 
       this.optimized = false;
 
-      let marker_kind = Painter.root_markers[this.style];
+      let marker_kind = jsrp.root_markers[this.style];
       if (marker_kind === undefined) marker_kind = 100;
       let shape = marker_kind % 100;
 
@@ -549,13 +549,13 @@ JSROOT.require(['d3'], (d3) => {
     */
    TAttLineHandler.prototype.SetArgs = function(args) {
       if (args.attr) {
-         args.color = args.color0 || Painter.root_colors[args.attr.fLineColor];
+         args.color = args.color0 || jsrp.root_colors[args.attr.fLineColor];
          if (args.width === undefined) args.width = args.attr.fLineWidth;
          args.style = args.attr.fLineStyle;
       } else if (typeof args.color == 'string') {
          if ((args.color !== 'none') && !args.width) args.width = 1;
       } else if (typeof args.color == 'number') {
-         args.color = Painter.root_colors[args.color];
+         args.color = jsrp.root_colors[args.color];
       }
 
       if (args.width === undefined)
@@ -611,7 +611,7 @@ JSROOT.require(['d3'], (d3) => {
       else
          selection.style('stroke', this.color)
             .style('stroke-width', this.width)
-            .style('stroke-dasharray', Painter.root_line_styles[this.style] || null);
+            .style('stroke-dasharray', jsrp.root_line_styles[this.style] || null);
    }
 
    /**
@@ -761,7 +761,7 @@ JSROOT.require(['d3'], (d3) => {
          this.color = color;
          indx = 10000 + JSROOT.id_counter++; // use fictional unique index far away from existing color indexes
       } else {
-         this.color = Painter.root_colors[indx];
+         this.color = jsrp.root_colors[indx];
       }
 
       if (typeof this.color != 'string') this.color = "none";
@@ -933,7 +933,7 @@ JSROOT.require(['d3'], (d3) => {
       this.style = null;
 
       let indx = Math.floor(fontIndex / 10),
-          fontName = Painter.root_fonts[indx] || "";
+          fontName = jsrp.root_fonts[indx] || "";
 
       while (fontName.length > 0) {
          if (fontName[0] === 'b') this.weight = "bold"; else
@@ -946,7 +946,7 @@ JSROOT.require(['d3'], (d3) => {
          this.weight = this.style = null;
 
       this.name = fontName;
-      this.aver_width = Painter.root_fonts_aver_width[indx] || 0.55;
+      this.aver_width = jsrp.root_fonts_aver_width[indx] || 0.55;
 
       this.func = this.setFont.bind(this);
    }
@@ -977,7 +977,7 @@ JSROOT.require(['d3'], (d3) => {
 
   // ===========================================================================
 
-   Painter.chooseTimeFormat = function(awidth, ticks) {
+   jsrp.chooseTimeFormat = function(awidth, ticks) {
       if (awidth < .5) return ticks ? "%S.%L" : "%H:%M:%S.%L";
       if (awidth < 30) return ticks ? "%Mm%S" : "%H:%M:%S";
       awidth /= 60; if (awidth < 30) return ticks ? "%Hh%M" : "%d/%m %H:%M";
@@ -989,13 +989,13 @@ JSROOT.require(['d3'], (d3) => {
    }
 
    /** @summary Returns time format @private */
-   Painter.getTimeFormat = function(axis) {
+   jsrp.getTimeFormat = function(axis) {
       let idF = axis.fTimeFormat.indexOf('%F');
       return (idF >= 0) ? axis.fTimeFormat.substr(0, idF) : axis.fTimeFormat;
    }
 
    /** @summary Return time offset value for given TAxis object @private */
-   Painter.getTimeOffset = function(axis) {
+   jsrp.getTimeOffset = function(axis) {
       let dflt_time_offset = 788918400000;
       if (!axis) return dflt_time_offset;
       let idF = axis.fTimeFormat.indexOf('%F');
@@ -1051,7 +1051,7 @@ JSROOT.require(['d3'], (d3) => {
     * If first symbol "L", then it used to continue drawing
     * @private
     */
-   Painter.BuildSvgPath = function(kind, bins, height, ndig) {
+   jsrp.BuildSvgPath = function(kind, bins, height, ndig) {
 
       let smooth = kind.indexOf("bezier") >= 0;
 
@@ -1792,7 +1792,7 @@ JSROOT.require(['d3'], (d3) => {
 
       if (!jsarr) {
          let pp = this.canv_painter();
-         jsarr = this.root_colors = (pp && pp.root_colors) ? pp.root_colors : Painter.root_colors;
+         jsarr = this.root_colors = (pp && pp.root_colors) ? pp.root_colors : jsrp.root_colors;
       }
 
       return jsarr[indx];
@@ -1804,7 +1804,7 @@ JSROOT.require(['d3'], (d3) => {
       let jsarr = this.root_colors;
       if (!jsarr) {
          let pp = this.canv_painter();
-         jsarr = this.root_colors = (pp && pp.root_colors) ? pp.root_colors : Painter.root_colors;
+         jsarr = this.root_colors = (pp && pp.root_colors) ? pp.root_colors : jsrp.root_colors;
       }
       let indx = jsarr.indexOf(color);
       if (indx >= 0) return indx;
@@ -1839,8 +1839,8 @@ JSROOT.require(['d3'], (d3) => {
       if (!cp) return null;
       if (cp.custom_palette && !palettedid) return cp.custom_palette;
 
-      if (force && Painter.GetColorPalette)
-         cp.custom_palette = Painter.GetColorPalette(palettedid);
+      if (force && jsrp.GetColorPalette)
+         cp.custom_palette = jsrp.GetColorPalette(palettedid);
 
       return cp.custom_palette;
    }
@@ -2156,7 +2156,7 @@ JSROOT.require(['d3'], (d3) => {
     *  @private
     */
    ObjectPainter.prototype.embed_3d = function(render3d) {
-      render3d = Painter.GetRender3DKind(render3d);
+      render3d = jsrp.GetRender3DKind(render3d);
 
       // all non-webgl elements can be embedded into SVG as is
       if (render3d !== JSROOT.constants.Render3D.WebGL)
@@ -2459,8 +2459,8 @@ JSROOT.require(['d3'], (d3) => {
       let svg_c = this.svg_canvas();
 
       if (svg_c.empty() && (is_main > 0) && (is_main !== 5)) {
-         if (typeof Painter.drawCanvas == 'function')
-             Painter.drawCanvas(divid, null, ((is_main == 2) || (is_main == 4)) ? "noframe" : "");
+         if (typeof jsrp.drawCanvas == 'function')
+             jsrp.drawCanvas(divid, null, ((is_main == 2) || (is_main == 4)) ? "noframe" : "");
          else
              return alert("Fail to draw TCanvas - please contact JSROOT developers");
          svg_c = this.svg_canvas();
@@ -2482,8 +2482,8 @@ JSROOT.require(['d3'], (d3) => {
 
       // create TFrame element if not exists
       if (this.svg_frame().select(".main_layer").empty() && ((is_main == 1) || (is_main == 3) || (is_main == 4))) {
-         if (typeof Painter.drawFrame == 'function')
-            Painter.drawFrame(divid, null, (is_main == 4) ? "3d" : "");
+         if (typeof jsrp.drawFrame == 'function')
+            jsrp.drawFrame(divid, null, (is_main == 4) ? "3d" : "");
          if ((is_main != 4) && this.svg_frame().empty()) return alert("Fail to draw dummy TFrame");
       }
 
@@ -2809,7 +2809,7 @@ JSROOT.require(['d3'], (d3) => {
     * For higher color numbers TColor::GetColor(r,g,b) will be invoked to ensure color is exists
     * @private */
    ObjectPainter.prototype.GetColorExec = function(col, method) {
-      let id = -1, arr = Painter.root_colors;
+      let id = -1, arr = jsrp.root_colors;
       if (typeof col == "string") {
          if (!col || (col == "none")) id = 0; else
             for (let k = 1; k < arr.length; ++k)
@@ -2877,7 +2877,7 @@ JSROOT.require(['d3'], (d3) => {
       // return function used to display object status
       // automatically disabled when drawing is enlarged - status line will be invisible
 
-      let pp = this.canv_painter(), res = Painter.ShowStatus;
+      let pp = this.canv_painter(), res = jsrp.ShowStatus;
 
       if (pp && (typeof pp.ShowCanvasStatus === 'function')) res = pp.ShowCanvasStatus.bind(pp);
 
@@ -3378,7 +3378,7 @@ JSROOT.require(['d3'], (d3) => {
     *  @param {object} args.pp - pad painter
     *  @param {boolean} [args.active = false] - is pad activated or not
     * @private */
-   Painter.SelectActivePad = function(args) {
+   jsrp.SelectActivePad = function(args) {
       if (args.active) {
          if (this.$active_pp && (typeof this.$active_pp.SetActive == 'function'))
             this.$active_pp.SetActive(false);
@@ -3396,7 +3396,7 @@ JSROOT.require(['d3'], (d3) => {
     * @desc Should be used only for keyboard handling
     * @private */
 
-   Painter.GetActivePad = function() {
+   jsrp.GetActivePad = function() {
       return this.$active_pp;
    }
 
@@ -3423,7 +3423,7 @@ JSROOT.require(['d3'], (d3) => {
    // ================= painter of raw text ========================================
 
 
-   Painter.drawRawText = function(divid, txt /*, opt*/) {
+   jsrp.drawRawText = function(divid, txt /*, opt*/) {
 
       let painter = new BasePainter();
       painter.txt = txt;
@@ -3555,8 +3555,8 @@ JSROOT.require(['d3'], (d3) => {
       { name: "TWebPainting", icon: "img_graph", prereq: "more2d", func: "JSROOT.Painter.drawWebPainting" },
       { name: "TCanvasWebSnapshot", icon: "img_canvas", prereq: "v6", func: "JSROOT.Painter.drawPadSnapshot" },
       { name: "TPadWebSnapshot", sameas: "TCanvasWebSnapshot" },
-      { name: "kind:Text", icon: "img_text", func: Painter.drawRawText },
-      { name: "TObjString", icon: "img_text", func: Painter.drawRawText },
+      { name: "kind:Text", icon: "img_text", func: jsrp.drawRawText },
+      { name: "TObjString", icon: "img_text", func: jsrp.drawRawText },
       { name: "TF1", icon: "img_tf1", prereq: "math;more2d", func: ".drawFunction" },
       { name: "TF2", icon: "img_tf2", prereq: "math;hist", func: ".drawTF2" },
       { name: "TSpline3", icon: "img_tf1", prereq: "more2d", func: ".drawSpline" },
@@ -3846,7 +3846,7 @@ JSROOT.require(['d3'], (d3) => {
          return Promise.reject(Error('not an object in JSROOT.draw'));
 
       if (opt == 'inspect')
-         return JSROOT.require("hierarchy").then(() => Painter.drawInspector(divid, obj));
+         return JSROOT.require("hierarchy").then(() => jsrp.drawInspector(divid, obj));
 
       let handle;
       if ('_typename' in obj)
@@ -3854,7 +3854,7 @@ JSROOT.require(['d3'], (d3) => {
       else if ('_kind' in obj)
          handle = JSROOT.getDrawHandle(obj._kind, opt);
       else
-         return JSROOT.require("hierarchy").then(() => Painter.drawInspector(divid, obj));
+         return JSROOT.require("hierarchy").then(() => jsrp.drawInspector(divid, obj));
 
       // this is case of unsupported class, close it normally
       if (!handle)
@@ -4047,7 +4047,7 @@ JSROOT.require(['d3'], (d3) => {
 
          return JSROOT.draw(main.node(), args.object, args.option || "").then(() => {
 
-            let has_workarounds = Painter.ProcessSVGWorkarounds && JSROOT.svg_workaround;
+            let has_workarounds = jsrp.ProcessSVGWorkarounds && JSROOT.svg_workaround;
 
             main.select('svg').attr("xmlns", "http://www.w3.org/2000/svg")
                .attr("xmlns:xlink", "http://www.w3.org/1999/xlink")
@@ -4058,7 +4058,7 @@ JSROOT.require(['d3'], (d3) => {
             let svg = main.html();
 
             if (has_workarounds)
-               svg = Painter.ProcessSVGWorkarounds(svg);
+               svg = jsrp.ProcessSVGWorkarounds(svg);
 
             svg = svg.replace(/url\(\&quot\;\#(\w+)\&quot\;\)/g, "url(#$1)")  // decode all URL
                .replace(/ class=\"\w*\"/g, "")                                // remove all classes
@@ -4274,9 +4274,9 @@ JSROOT.require(['d3'], (d3) => {
       window.open('', '_self').close();
    }
 
-   Painter.createRootColors();
+   jsrp.createRootColors();
 
-   if (JSROOT.nodejs) Painter.readStyleFromURL("?interactive=0&tooltip=0&nomenu&noprogress&notouch&toolbar=0&webgl=0");
+   if (JSROOT.nodejs) jsrp.readStyleFromURL("?interactive=0&tooltip=0&nomenu&noprogress&notouch&toolbar=0&webgl=0");
 
    JSROOT.DrawOptions = DrawOptions;
    JSROOT.ColorPalette = ColorPalette;
@@ -4292,9 +4292,9 @@ JSROOT.require(['d3'], (d3) => {
    JSROOT.TBasePainter = BasePainter;
    JSROOT.TObjectPainter = ObjectPainter;
 
-   JSROOT.Painter = Painter;
-   if (JSROOT.nodejs) module.exports = Painter;
+   JSROOT.Painter = jsrp;
+   if (JSROOT.nodejs) module.exports = jsrp;
 
-   return Painter;
+   return jsrp;
 
 });
