@@ -10,8 +10,8 @@ JSROOT.require([], () =>  {
    /** @memberOf JSROOT.Math */
    mth.lgam = function( x ) {
       let p, q, u, w, z, i, sgngam = 1;
-      const kMAXLGM  = 2.556348e305;
-      const LS2PI  =  0.91893853320467274178;
+      const kMAXLGM = 2.556348e305,
+            LS2PI = 0.91893853320467274178;
 
       const A = [
          8.11614167470508450300E-4,
@@ -19,18 +19,14 @@ JSROOT.require([], () =>  {
          7.93650340457716943945E-4,
          -2.77777777730099687205E-3,
          8.33333333333331927722E-2
-      ];
-
-      const B = [
+      ], B = [
          -1.37825152569120859100E3,
          -3.88016315134637840924E4,
          -3.31612992738871184744E5,
          -1.16237097492762307383E6,
          -1.72173700820839662146E6,
          -8.53555664245765465627E5
-      ];
-
-      const C = [
+      ], C = [
       /* 1.00000000000000000000E0, */
          -3.51815701436523470549E2,
          -1.70642106651881159223E4,
@@ -45,7 +41,7 @@ JSROOT.require([], () =>  {
 
       if ( x < -34.0 ) {
          q = -x;
-         w = this.lgam(q);
+         w = mth.lgam(q);
          p = Math.floor(q);
          if ( p==q )//_unur_FP_same(p,q)
             return Number.POSITIVE_INFINITY;
@@ -91,7 +87,7 @@ JSROOT.require([], () =>  {
             return Math.log(z);
          p -= 2.0;
          x = x + p;
-         p = x * this.Polynomialeval(x, B, 5 ) / this.Polynomial1eval( x, C, 6);
+         p = x * mth.Polynomialeval(x, B, 5 ) / mth.Polynomial1eval( x, C, 6);
          return Math.log(z) + p;
       }
       if ( x > kMAXLGM )
@@ -107,7 +103,7 @@ JSROOT.require([], () =>  {
                - 2.7777777777777777777778e-3) *p
                + 0.0833333333333333333333) / x;
       else
-         q += this.Polynomialeval( p, A, 4 ) / x;
+         q += mth.Polynomialeval( p, A, 4 ) / x;
       return q;
    }
 
@@ -154,9 +150,7 @@ JSROOT.require([], () =>  {
            -5.66762857469070293439E1,
             1.39312609387279679503E1,
            -1.23916583867381258016E0
-      ];
-
-      const Q0 = [
+      ], Q0 = [
             1.95448858338141759834E0,
             4.67627912898881538453E0,
             8.63602421390890590575E1,
@@ -165,9 +159,7 @@ JSROOT.require([], () =>  {
            -8.20372256168333339912E1,
             1.59056225126211695515E1,
            -1.18331621121330003142E0
-      ];
-
-      const P1 = [
+      ], P1 = [
             4.05544892305962419923E0,
             3.15251094599893866154E1,
             5.71628192246421288162E1,
@@ -177,9 +169,7 @@ JSROOT.require([], () =>  {
            -1.40256079171354495875E-1,
            -3.50424626827848203418E-2,
            -8.57456785154685413611E-4
-      ];
-
-      const Q1 = [
+      ], Q1 = [
             1.57799883256466749731E1,
             4.53907635128879210584E1,
             4.13172038254672030440E1,
@@ -188,9 +178,7 @@ JSROOT.require([], () =>  {
            -1.42182922854787788574E-1,
            -3.80806407691578277194E-2,
            -9.33259480895457427372E-4
-      ];
-
-      const P2 = [
+      ], P2 = [
             3.23774891776946035970E0,
             6.91522889068984211695E0,
             3.93881025292474443415E0,
@@ -200,9 +188,7 @@ JSROOT.require([], () =>  {
             3.01581553508235416007E-4,
             2.65806974686737550832E-6,
             6.23974539184983293730E-9
-      ];
-
-      const Q2 = [
+      ], Q2 = [
             6.02427039364742014255E0,
             3.67983563856160859403E0,
             1.37702099489081330271E0,
@@ -211,19 +197,18 @@ JSROOT.require([], () =>  {
             3.28014464682127739104E-4,
             2.89247864745380683936E-6,
             6.79019408009981274425E-9
-      ];
+      ], s2pi = 2.50662827463100050242e0, dd = 0.13533528323661269189;
 
-      const s2pi = 2.50662827463100050242e0;
       let code = 1, y = y0, x, z, y2, x0, x1;
 
-      if ( y > (1.0 - 0.13533528323661269189) ) {
+      if ( y > (1.0 - dd) ) {
          y = 1.0 - y;
          code = 0;
       }
-      if ( y > 0.13533528323661269189 ) {
+      if ( y > dd ) {
          y = y - 0.5;
          y2 = y * y;
-         x = y + y * (y2 * this.Polynomialeval( y2, P0, 4)/ this.Polynomial1eval( y2, Q0, 8 ));
+         x = y + y * (y2 * mth.Polynomialeval( y2, P0, 4)/ mth.Polynomial1eval( y2, Q0, 8 ));
          x = x * s2pi;
          return x;
       }
@@ -231,9 +216,9 @@ JSROOT.require([], () =>  {
       x0 = x - Math.log(x)/x;
       z = 1.0/x;
       if ( x < 8.0 )
-         x1 = z * this.Polynomialeval( z, P1, 8 )/ this.Polynomial1eval( z, Q1, 8 );
+         x1 = z * mth.Polynomialeval( z, P1, 8 )/ mth.Polynomial1eval( z, Q1, 8 );
       else
-         x1 = z * this.Polynomialeval( z, P2, 8 )/ this.Polynomial1eval( z, Q2, 8 );
+         x1 = z * mth.Polynomialeval( z, P2, 8 )/ mth.Polynomial1eval( z, Q2, 8 );
       x = x0 - x1;
       if ( code != 0 )
          x = -x;
@@ -246,8 +231,8 @@ JSROOT.require([], () =>  {
 
    /** @memberOf JSROOT.Math */
    mth.igam = function(a,x) {
-      const kMACHEP = 1.11022302462515654042363166809e-16;
-      const kMAXLOG = 709.782712893383973096206318587;
+      const kMACHEP = 1.11022302462515654042363166809e-16,
+            kMAXLOG = 709.782712893383973096206318587;
 
       // LM: for negative values returns 1.0 instead of zero
       // This is correct if a is a negative integer since Gamma(-n) = +/- inf
@@ -256,10 +241,10 @@ JSROOT.require([], () =>  {
       if (x <= 0)  return 0.0;
 
       if( (x > 1.0) && (x > a ) )
-         return 1.0 - this.igamc(a,x);
+         return 1.0 - mth.igamc(a,x);
 
       /* Compute  x**a * exp(-x) / gamma(a)  */
-      let ax = a * Math.log(x) - x - this.lgam(a);
+      let ax = a * Math.log(x) - x - mth.lgam(a);
       if( ax < -kMAXLOG )
          return 0.0;
 
@@ -343,9 +328,6 @@ JSROOT.require([], () =>  {
 
    /** @memberOf JSROOT.Math */
    mth.igami = function(a, y0) {
-      let x0, x1, x, yl, yh, y, d, lgm, dithresh, i, dir;
-      const kMACHEP = 1.11022302462515654042363166809e-16;
-
       // check the domain
       if (a <= 0) {
          alert("igami : Wrong domain for parameter a (must be > 0)");
@@ -357,25 +339,21 @@ JSROOT.require([], () =>  {
       if (y0 >= 1) {
          return 0;
       }
-      /* bound the solution */
-      const kMAXNUM = Number.MAX_VALUE;
-      x0 = kMAXNUM;
-      yl = 0;
-      x1 = 0;
-      yh = 1.0;
-      dithresh = 5.0 * kMACHEP;
+      const kMACHEP = 1.11022302462515654042363166809e-16,
+            kMAXNUM = Number.MAX_VALUE;
+      let x0 = kMAXNUM, x1 = 0, x, yl = 0, yh = 1, y, d, lgm, dithresh = 5.0 * kMACHEP, i, dir;
 
       /* approximation to inverse function */
       d = 1.0/(9.0*a);
-      y = ( 1.0 - d - this.ndtri(y0) * Math.sqrt(d) );
+      y = ( 1.0 - d - mth.ndtri(y0) * Math.sqrt(d) );
       x = a * y * y * y;
 
-      lgm = this.lgam(a);
+      lgm = mth.lgam(a);
 
       for( i=0; i<10; ++i ) {
          if ( x > x0 || x < x1 )
             break;
-         y = this.igamc(a,x);
+         y = mth.igamc(a,x);
          if ( y < yl || y > yh )
             break;
          if ( y < y0 ) {
@@ -404,7 +382,7 @@ JSROOT.require([], () =>  {
             x = 1.0;
          while ( x0 == kMAXNUM ) {
             x = (1.0 + d) * x;
-            y = this.igamc( a, x );
+            y = mth.igamc( a, x );
             if ( y < y0 ) {
                x0 = x;
                yl = y;
@@ -418,7 +396,7 @@ JSROOT.require([], () =>  {
 
       for( i=0; i<400; ++i ) {
          x = x1  +  d * (x0 - x1);
-         y = this.igamc( a, x );
+         y = mth.igamc( a, x );
          lgm = (x0 - x1)/(x1 + x0);
          if ( Math.abs(lgm) < dithresh )
             break;
@@ -459,12 +437,12 @@ JSROOT.require([], () =>  {
 
    /** @memberOf JSROOT.Math */
    mth.gamma_quantile_c = function(z, alpha, theta) {
-      return theta * this.igami( alpha, z);
+      return theta * mth.igami( alpha, z);
    }
 
    /** @memberOf JSROOT.Math */
    mth.gamma_quantile = function(z, alpha, theta) {
-      return theta * this.igami( alpha, 1.- z);
+      return theta * mth.igami( alpha, 1.- z);
    }
 
    /** @memberOf JSROOT.Math */
@@ -475,20 +453,20 @@ JSROOT.require([], () =>  {
       if (xi <= 0) return 0;
       const v = (x - x0)/xi;
       let u, ue, us, denlan;
-      const p1 = [0.4259894875,-0.1249762550, 0.03984243700, -0.006298287635,   0.001511162253];
-      const q1 = [1.0         ,-0.3388260629, 0.09594393323, -0.01608042283,    0.003778942063];
-      const p2 = [0.1788541609, 0.1173957403, 0.01488850518, -0.001394989411,   0.0001283617211];
-      const q2 = [1.0         , 0.7428795082, 0.3153932961,   0.06694219548,    0.008790609714];
-      const p3 = [0.1788544503, 0.09359161662,0.006325387654, 0.00006611667319,-0.000002031049101];
-      const q3 = [1.0         , 0.6097809921, 0.2560616665,   0.04746722384,    0.006957301675];
-      const p4 = [0.9874054407, 118.6723273,  849.2794360,   -743.7792444,      427.0262186];
-      const q4 = [1.0         , 106.8615961,  337.6496214,    2016.712389,      1597.063511];
-      const p5 = [1.003675074,  167.5702434,  4789.711289,    21217.86767,     -22324.94910];
-      const q5 = [1.0         , 156.9424537,  3745.310488,    9834.698876,      66924.28357];
-      const p6 = [1.000827619,  664.9143136,  62972.92665,    475554.6998,     -5743609.109];
-      const q6 = [1.0         , 651.4101098,  56974.73333,    165917.4725,     -2815759.939];
-      const a1 = [0.04166666667,-0.01996527778, 0.02709538966];
-      const a2 = [-1.845568670,-4.284640743];
+      const p1 = [0.4259894875,-0.1249762550, 0.03984243700, -0.006298287635,   0.001511162253],
+            q1 = [1.0         ,-0.3388260629, 0.09594393323, -0.01608042283,    0.003778942063],
+            p2 = [0.1788541609, 0.1173957403, 0.01488850518, -0.001394989411,   0.0001283617211],
+            q2 = [1.0         , 0.7428795082, 0.3153932961,   0.06694219548,    0.008790609714],
+            p3 = [0.1788544503, 0.09359161662,0.006325387654, 0.00006611667319,-0.000002031049101],
+            q3 = [1.0         , 0.6097809921, 0.2560616665,   0.04746722384,    0.006957301675],
+            p4 = [0.9874054407, 118.6723273,  849.2794360,   -743.7792444,      427.0262186],
+            q4 = [1.0         , 106.8615961,  337.6496214,    2016.712389,      1597.063511],
+            p5 = [1.003675074,  167.5702434,  4789.711289,    21217.86767,     -22324.94910],
+            q5 = [1.0         , 156.9424537,  3745.310488,    9834.698876,      66924.28357],
+            p6 = [1.000827619,  664.9143136,  62972.92665,    475554.6998,     -5743609.109],
+            q6 = [1.0         , 651.4101098,  56974.73333,    165917.4725,     -2815759.939],
+            a1 = [0.04166666667,-0.01996527778, 0.02709538966],
+            a2 = [-1.845568670,-4.284640743];
 
       if (v < -5.5) {
          u   = Math.exp(v+1.0);
