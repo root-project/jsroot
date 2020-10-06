@@ -2,8 +2,6 @@ JSROOT.require(['three'], function(THREE) {
 
    "use strict";
 
-   let ThreeBSP = {};
-
    const EPSILON = 1e-5,
          COPLANAR = 0,
          FRONT = 1,
@@ -827,6 +825,8 @@ JSROOT.require(['three'], function(THREE) {
    }
 
    // ================================================================================================
+
+   let ThreeBSP = {};
 
    ThreeBSP.CreateNormal = function(axis_name, pos, size) {
       // create geometry to make cut on specified axis
