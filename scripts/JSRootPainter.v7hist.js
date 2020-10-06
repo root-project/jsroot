@@ -2261,7 +2261,7 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v7'], (d3, jsrp) => {
       let histo = this.GetHisto(),
           handle = this.PrepareDraw(),
           colPaths = [], currx = [], curry = [],
-          colindx, cmd1, cmd2, i, j, binz, di = handle.stepi, dj = handle.stepj;
+          colindx, cmd1, cmd2, i, j, binz, di = handle.stepi, dj = handle.stepj, dx, dy;
 
       // now start build
       for (i = handle.i1; i < handle.i2; i += di) {
