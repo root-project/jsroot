@@ -239,7 +239,7 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter.v6'], (d3) => {
           af = (pie.fAngularOffset*Math.PI)/180,
           x1 = Math.round(rx*Math.cos(af)), y1 = Math.round(ry*Math.sin(af));
 
-      for (let n=0;n<nb; n++)
+      for (let n=0; n < nb; n++)
          total += pie.fPieSlices[n].fValue;
 
       for (let n=0; n<nb; n++) {

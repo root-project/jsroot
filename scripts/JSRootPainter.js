@@ -3565,6 +3565,7 @@ JSROOT.require(['d3'], (d3) => {
       { name: "TArc", sameas: 'TEllipse' },
       { name: "TCrown", sameas: 'TEllipse' },
       { name: "TPie", icon: 'img_graph', prereq: "more2d", func: "JSROOT.Painter.drawPie", direct: true },
+      { name: "TPieSlice", icon: 'img_graph', dummy: true },
       { name: "TLine", icon: 'img_graph', prereq: "more2d", func: "JSROOT.Painter.drawLine", direct: true },
       { name: "TArrow", icon: 'img_graph', prereq: "more2d", func: "JSROOT.Painter.drawArrow", direct: true },
       { name: "TPolyLine", icon: 'img_graph', prereq: "more2d", func: "JSROOT.Painter.drawPolyLine", direct: true },
@@ -3858,6 +3859,9 @@ JSROOT.require(['d3'], (d3) => {
       // this is case of unsupported class, close it normally
       if (!handle)
          return Promise.reject(Error(`Object of ${obj.kind ? obj.kind : obj._typename} cannot be shown with JSROOT.draw`));
+
+      if (handle.dummy)
+         return Promise.resolve(null);
 
       if (handle.draw_field && obj[handle.draw_field])
          return JSROOT.draw(divid, obj[handle.draw_field], opt);

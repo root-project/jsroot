@@ -699,47 +699,42 @@ Here is [running example](https://root.cern/js/latest/api.htm#custom_html_read_r
 
 Simple TTree::Draw operation can be performed with following code:
 
-    var filename = "https://root.cern/js/files/hsimple.root";
-    JSROOT.OpenFile(filename).then(file => {
-       file.ReadObject("ntuple;1").then(obj => {
-          JSROOT.draw("drawing", obj, "px:py::pz>5");
-       });
-    });
+    JSROOT.OpenFile("https://root.cern/js/files/hsimple.root")
+          .then(file => file.ReadObject("ntuple;1"))
+          .then(tree => JSROOT.draw("drawing", tree, "px:py::pz>5"));
 
 To get access to selected branches, one should use TSelector class:
 
-    var filename = "https://root.cern/js/files/hsimple.root";
-    JSROOT.OpenFile(filename).then(file => {
-       file.ReadObject("ntuple;1").then(tree => {
+    JSROOT.OpenFile("https://root.cern/js/files/hsimple.root")
+          .then(file => file.ReadObject("ntuple;1"))
+          .then(tree => {
 
-          var selector = new JSROOT.TSelector();
+             let selector = new JSROOT.TSelector();
 
-          selector.AddBranch("px");
-          selector.AddBranch("py");
+             selector.AddBranch("px");
+             selector.AddBranch("py");
 
-          var cnt = 0, sumpx = 0, sumpy = 0;
+             let cnt = 0, sumpx = 0, sumpy = 0;
 
-          selector.Begin = function() {
-             // function called before reading of TTree starts
-          }
+             selector.Begin = function() {
+                // function called before reading of TTree starts
+             }
 
-          selector.Process = function() {
-             // function called for every entry
-             sumpx += this.tgtobj.px;
-             sumpy += this.tgtobj.py;
-             cnt++;
-          }
+             selector.Process = function() {
+                // function called for every entry
+                sumpx += this.tgtobj.px;
+                sumpy += this.tgtobj.py;
+                cnt++;
+             }
 
-          selector.Terminate = function(res) {
-             if (!res || (cnt===0)) return;
-             var meanpx = sumpx/cnt, meanpy = sumpy/cnt;
-             console.log('Results', meanpx, meanpy);
-          }
+             selector.Terminate = function(res) {
+                if (!res || (cnt===0)) return;
+                var meanpx = sumpx/cnt, meanpy = sumpy/cnt;
+                console.log(`Results meanpx = ${meanpx} meanpy = ${meanpy}`);
+             }
 
-          tree.Process(selector);
-
+             tree.Process(selector);
        });
-    });
 
 Here is [running example](https://root.cern/js/latest/api.htm#ttree_tselector) and [source code](https://github.com/root-project/jsroot/blob/master/demo/read_tree.htm)
 
