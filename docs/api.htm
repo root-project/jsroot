@@ -118,8 +118,7 @@
       <div id="srcviewer"></div>
 
       <script>
-         var jsroot_path = "./";
-         var filepath = "../files/";
+         var jsroot_path = "./", filepath = "../files/";
 
          document.getElementById( 'version' ).title = JSROOT.version + ", " + JSROOT.source_dir;
 
@@ -132,6 +131,12 @@
             jsroot_path = "https://root.cern/js/dev/";
             filepath = "https://root.cern/js/files/";
          }
+
+         function GetGithubBrunch(is_test) {
+             if (JSROOT.source_dir.indexOf("/dev/") > 0 && !is_test) return "dev/";
+             if (JSROOT.source_dir.indexOf("/v6/") > 0) return "v6/";
+             return "master/";
+          }
 
          var examples = {
             'URL syntax': [
@@ -189,7 +194,7 @@
             'Node.js': [
                { name: "Create SVG", title: "Example how to read object from ROOT file and create SVG", src: "demo/node/makesvg.js", srcload: "github" },
                { name: "Process TTree", title: "Example shows performing of TTree::Draw inside Node.js", src: "demo/node/tree.js", srcload: "github" },
-               { name: "Testing", title : "JSROOT test suite with Node.js", src: "https://github.com/linev/jsroot-test/", srcload: "https://raw.githubusercontent.com/linev/jsroot-test/master/test.js" }
+               { name: "Testing", title: "JSROOT test suite with Node.js", src: "https://github.com/linev/jsroot-test/", srcload: "https://raw.githubusercontent.com/linev/jsroot-test/" + GetGithubBrunch(true) + "test.js" }
              ],
             'httpserver.C' : [
               { link: 'https://github.com/root-project/root/blob/master/tutorials/http/httpserver.C' },
@@ -246,12 +251,6 @@
                 window.location.hash = shortname;
                 ProcessClick(durl);
              });
-         }
-
-         function GetGithubBrunch() {
-            if (JSROOT.source_dir.indexOf("/dev/") > 0) return "dev/";
-            if (JSROOT.source_dir.indexOf("/v6/") > 0) return "v6/";
-            return "master/";
          }
 
          function ProcessSourceClick(entry) {
