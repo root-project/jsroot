@@ -193,7 +193,8 @@ JSROOT.require(['d3'], (d3) => {
       if (geocomp !== null) JSROOT.gStyle.GeoCompressComp = (geocomp !== '0') && (geocomp !== 'false');
    }
 
-   /** Function that generates all root colors */
+   /** Function that generates all root colors, used in jstests to reset colors
+     * @private */
    jsrp.createRootColors = function() {
       let colorMap = ['white', 'black', 'red', 'green', 'blue', 'yellow', 'magenta', 'cyan', 'rgb(89,212,84)', 'rgb(89,84,217)', 'white'];
       colorMap[110] = 'white';
@@ -210,13 +211,12 @@ JSROOT.require(['d3'], (d3) => {
          { col: 791, str: 'ffcd9acd9a669a66339a6600cd9a33ffcd66ff9a00ffcd33cd9a00ffcd00ff9a33cd66006633009a3300cd6633ff9a66ff6600ff6633cd3300ff33009aff3366cd00336600339a0066cd339aff6666ff0066ff3333cd0033ff00cdff9a9acd66669a33669a009acd33cdff669aff00cdff339acd00cdff009affcd66cd9a339a66009a6633cd9a66ffcd00ff6633ffcd00cd9a00ffcd33ff9a00cd66006633009a3333cd6666ff9a00ff9a33ff6600cd3300ff339acdff669acd33669a00339a3366cd669aff0066ff3366ff0033cd0033ff339aff0066cd00336600669a339acd66cdff009aff33cdff009acd00cdffcd9aff9a66cd66339a66009a9a33cdcd66ff9a00ffcd33ff9a00cdcd00ff9a33ff6600cd33006633009a6633cd9a66ff6600ff6633ff3300cd3300ffff339acd00666600339a0033cd3366ff669aff0066ff3366cd0033ff0033ff9acdcd669a9a33669a0066cd339aff66cdff009acd009aff33cdff009a' },
          { col: 920, str: 'cdcdcd9a9a9a666666333333' }];
 
-      for (let indx = 0; indx < moreCol.length; ++indx) {
-         let entry = moreCol[indx];
+      moreCol.forEach(entry => {
          for (let n = 0; n < entry.str.length; n += 6) {
-            let num = parseInt(entry.col) + parseInt(n / 6);
+            let num = entry.col + n / 6;
             colorMap[num] = 'rgb(' + parseInt("0x" + entry.str.slice(n, n + 2)) + "," + parseInt("0x" + entry.str.slice(n + 2, n + 4)) + "," + parseInt("0x" + entry.str.slice(n + 4, n + 6)) + ")";
          }
-      }
+      });
 
       jsrp.root_colors = colorMap;
    }
@@ -4182,29 +4182,26 @@ JSROOT.require(['d3'], (d3) => {
       }
    }
 
-   JSROOT.lastFFormat = "";
-
    /** @summary Converts numeric value to string according to specified format.
     *
     * @param {number} value - value to convert
-    * @param {strting} fmt - format can be like 5.4g or 4.2e or 6.4f
-    * @returns {string} - converted value
+    * @param {strting} [fmt="6.4g"] - format can be like 5.4g or 4.2e or 6.4f
+    * @param {boolean} [ret_fmt=false] - when true returns array with actual format
+    * @returns {string|Array} - converted value or array with value and actual format
     * @private
     */
-   JSROOT.FFormat = function(value, fmt) {
+   JSROOT.FFormat = function(value, fmt, ret_fmt) {
       if (!fmt) fmt = "6.4g";
-
-      JSROOT.lastFFormat = "";
 
       fmt = fmt.trim();
       let len = fmt.length;
-      if (len<2) return value.toFixed(4);
+      if (len<2)
+         return ret_fmt ? [value.toFixed(4), "6.4f"] : value.toFixed(4);
       let last = fmt[len-1];
       fmt = fmt.slice(0,len-1);
-      let isexp = null;
-      let prec = fmt.indexOf(".");
-      if (prec<0) prec = 4; else prec = Number(fmt.slice(prec+1));
-      if (isNaN(prec) || (prec<0) || (prec==null)) prec = 4;
+      let isexp, prec = fmt.indexOf(".");
+      prec = (prec<0) ? 4 : parseInt(fmt.slice(prec+1));
+      if (isNaN(prec) || (prec <=0)) prec = 4;
 
       let significance = false;
       if ((last=='e') || (last=='E')) { isexp = true; } else
@@ -4212,15 +4209,11 @@ JSROOT.require(['d3'], (d3) => {
       if ((last=='f') || (last=='F')) { isexp = false; } else
       if (last=='W') { isexp = false; significance = true; } else
       if ((last=='g') || (last=='G')) {
-         let se = JSROOT.FFormat(value, fmt+'Q'),
-             _fmt = JSROOT.lastFFormat,
-             sg = JSROOT.FFormat(value, fmt+'W');
+         let se = JSROOT.FFormat(value, fmt+'Q', true),
+             sg = JSROOT.FFormat(value, fmt+'W', true);
 
-         if (se.length < sg.length) {
-            JSROOT.lastFFormat = _fmt;
-            return se;
-         }
-         return sg;
+         if (se[0].length < sg[0].length) sg = se;
+         return ret_fmt ? sg : sg[0];
       } else {
          isexp = false;
          prec = 4;
@@ -4231,9 +4224,9 @@ JSROOT.require(['d3'], (d3) => {
          if (significance) prec--;
          if (prec<0) prec = 0;
 
-         JSROOT.lastFFormat = '5.'+prec+'e';
+         let se = value.toExponential(prec);
 
-         return value.toExponential(prec);
+         return ret_fmt ? [se, '5.'+prec+'e'] : se;
       }
 
       let sg = value.toFixed(prec);
@@ -4258,9 +4251,7 @@ JSROOT.require(['d3'], (d3) => {
          }
       }
 
-      JSROOT.lastFFormat = '5.'+prec+'f';
-
-      return sg;
+      return ret_fmt ? [sg, '5.'+prec+'f'] : sg;
    }
 
    /** @summary Tries to close current browser tab

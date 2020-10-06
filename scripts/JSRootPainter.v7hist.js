@@ -3808,13 +3808,11 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v7'], (d3, jsrp) => {
          case "last": fmt = this.lastformat; break;
       }
 
-      delete this.lastformat;
+      let res = JSROOT.FFormat(value, fmt || "6.4g", true);
 
-      let res = JSROOT.FFormat(value, fmt || "6.4g");
+      this.lastformat = res[1];
 
-      this.lastformat = JSROOT.lastFFormat;
-
-      return res;
+      return res[0];
    }
 
    RHistStatsPainter.prototype.DrawContent = function() {
