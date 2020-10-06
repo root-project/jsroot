@@ -1,6 +1,6 @@
 {
   "name": "jsroot",
-  "version": "5.8.1",
+  "version": "5.8.2",
   "engines": {
     "node": ">=0.8"
   },
