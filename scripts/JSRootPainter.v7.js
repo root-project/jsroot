@@ -4464,7 +4464,6 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
    JSROOT.v7.RPalettePainter = RPalettePainter;
    JSROOT.v7.RPadPainter = RPadPainter;
    JSROOT.v7.RCanvasPainter = RCanvasPainter;
-   JSROOT.v7.TCanvasPainter = RCanvasPainter; // temporary, fix in ROOT soon
    JSROOT.v7.RPavePainter = RPavePainter;
    JSROOT.v7.drawFrame = drawFrame;
    JSROOT.v7.drawPad = drawPad;

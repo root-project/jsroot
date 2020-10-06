@@ -4027,7 +4027,7 @@ JSROOT.require(['d3', 'three', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE, 
       return painter;
    }
 
-   JSROOT.Painter.drawGeoObject = function(divid, obj, opt) {
+   let drawGeoObject = (divid, obj, opt) => {
       if (!obj) return null;
 
       let shape = null, extras = null, extras_path = "", is_eve = false;
@@ -4081,15 +4081,10 @@ JSROOT.require(['d3', 'three', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE, 
          painter.addExtra(extras, extras_path);
       }
 
-      // this.ctrl.script_name = 'https://root.cern/js/files/geom/geomAlice.C'
-
       painter.checkScript(painter.ctrl.script_name, painter.prepareObjectDraw.bind(painter));
 
       return painter;
    }
-
-   /// keep for backwards compatibility
-   JSROOT.Painter.drawGeometry = JSROOT.Painter.drawGeoObject;
 
    // ===============================================================================
 
@@ -4574,13 +4569,14 @@ JSROOT.require(['d3', 'three', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE, 
       return true;
    }
 
-   JSROOT.addDrawFunc({ name: "TGeoVolumeAssembly", icon: 'img_geoassembly', func: JSROOT.Painter.drawGeoObject, expand: geo.expandObject, opt: ";more;all;count" });
+   JSROOT.addDrawFunc({ name: "TGeoVolumeAssembly", icon: 'img_geoassembly', func: drawGeoObject, expand: geo.expandObject, opt: ";more;all;count" });
    JSROOT.addDrawFunc({ name: "TEvePointSet", icon_get: geo.getBrowserIcon, icon_click: geo.browserIconClick });
    JSROOT.addDrawFunc({ name: "TEveTrack", icon_get: geo.getBrowserIcon, icon_click: geo.browserIconClick });
 
    JSROOT.TGeoPainter = TGeoPainter;
 
    JSROOT.Painter.GeoDrawingControl = GeoDrawingControl;
+   JSROOT.Painter.drawGeoObject = drawGeoObject;
 
    return JSROOT;
 

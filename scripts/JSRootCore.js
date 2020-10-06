@@ -914,16 +914,28 @@
     * @summary Find function with given name.
     *
     * @desc Function name may include several namespaces like 'JSROOT.Painter.drawFrame'
+    * If function starts with ., it should belong to JSROOT.Painter
     *
     * @private
     */
    JSROOT.findFunction = function(name) {
       if (typeof name === 'function') return name;
       if (typeof name !== 'string') return null;
-      let names = name.split('.'), elem = globalThis;
-      if (names[0]==='JSROOT') { elem = this; names.shift(); }
+      let names, elem;
+      if (name[0] == ".") { // special shortcut for JSROOT.Painter.
+         names = [ name.substr(1) ];
+         elem = JSROOT.Painter;
+      } else {
+         names = name.split('.');
+         if (names[0]==='JSROOT') {
+            elem = JSROOT;
+            names.shift();
+         } else {
+            elem = globalThis;
+         }
+      }
 
-      for (let n=0;elem && (n < names.length);++n)
+      for (let n = 0;elem && (n < names.length); ++n)
          elem = elem[names[n]];
 
       return (typeof elem == 'function') ? elem : null;
