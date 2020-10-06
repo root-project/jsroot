@@ -1,7 +1,7 @@
 /// @file JSRoot.latex.js
 /// Latex / MathJax processing
 
-JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
+JSROOT.require(['d3', 'JSRootPainter'], (d3, jsrp) => {
 
    "use strict";
 
@@ -790,7 +790,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
 
 
    /** Load MathJax functionality, one need not only to load script but wait for initialization */
-   JSROOT.Painter.LoadMathjax = function() {
+   function LoadMathjax() {
       let loading = (JSROOT._.mj_loading !== undefined);
 
       if (!loading && (typeof MathJax != "undefined"))
@@ -1082,7 +1082,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
       let mtext = translateMath(arg.text, arg.latex, arg.color, this),
           options = { em: arg.font.size, ex: arg.font.size/2, family: arg.font.name, scale: 1, containerWidth: -1, lineWidth: 100000 };
 
-      return JSROOT.Painter.LoadMathjax()
+      return LoadMathjax()
              .then(() => MathJax.tex2svgPromise(mtext, options))
              .then(elem => {
                  let svg = d3.select(elem).select("svg");
@@ -1094,5 +1094,8 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
                  return true;
               });
    }
+
+   // used in test suite to reset MathJax state
+   jsrp.LoadMathjax = LoadMathjax;
 
 })

@@ -4278,7 +4278,6 @@ JSROOT.require(['d3'], (d3) => {
 
    if (JSROOT.nodejs) Painter.readStyleFromURL("?interactive=0&tooltip=0&nomenu&noprogress&notouch&toolbar=0&webgl=0");
 
-   JSROOT.Painter = Painter;
    JSROOT.DrawOptions = DrawOptions;
    JSROOT.ColorPalette = ColorPalette;
    JSROOT.TAttLineHandler = TAttLineHandler;
@@ -4288,12 +4287,14 @@ JSROOT.require(['d3'], (d3) => {
    JSROOT.BasePainter = BasePainter;
    JSROOT.ObjectPainter = ObjectPainter;
 
-
    /** Only for backward compatibility with v5, will be removed in later JSROOT versions
      * @private */
    JSROOT.TBasePainter = BasePainter;
    JSROOT.TObjectPainter = ObjectPainter;
 
-   return JSROOT;
+   JSROOT.Painter = Painter;
+   if (JSROOT.nodejs) module.exports = Painter;
+
+   return Painter;
 
 });

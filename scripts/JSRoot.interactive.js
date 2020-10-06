@@ -1,7 +1,7 @@
 /// @file JSRoot.interactive.js
 /// Basic interactive functionality
 
-JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
+JSROOT.require(['d3', 'JSRootPainter'], (d3, jsrp) => {
 
    "use strict";
 
@@ -429,7 +429,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
             .on("start", function(evnt) {
                if (detectRightButton(evnt.sourceEvent)) return;
 
-               JSROOT.Painter.closeMenu(); // close menu
+               jsrp.closeMenu(); // close menu
 
                pthis.SwitchTooltip(false); // disable tooltip
 
@@ -736,7 +736,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
          }
 
          let pp = this.pad_painter();
-         if (JSROOT.Painter.GetActivePad() !== pp) return;
+         if (jsrp.GetActivePad() !== pp) return;
 
          if (evnt.shiftKey) key = "Shift " + key;
          if (evnt.altKey) key = "Alt " + key;
@@ -1315,7 +1315,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
 
          this.clearInteractiveElements();
 
-         JSROOT.Painter.createMenu(menu_painter, evnt).then(menu => {
+         jsrp.createMenu(menu_painter, evnt).then(menu => {
             let domenu = menu.painter.FillContextMenu(menu, kind, obj);
 
             // fill frame menu by default - or append frame elements when activated in the frame corner
@@ -1378,7 +1378,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
       },
 
       clearInteractiveElements: function() {
-         JSROOT.Painter.closeMenu();
+         jsrp.closeMenu();
          if (this.zoom_rect) { this.zoom_rect.remove(); this.zoom_rect = null; }
          this.zoom_kind = 0;
 
