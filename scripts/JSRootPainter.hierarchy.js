@@ -1,7 +1,7 @@
 /// @file JSRootPainter.hierarchy.js
 /// Hierarchy display functionality
 
-JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
+JSROOT.require(['d3', 'JSRootPainter'], (d3, jsrp) => {
 
    "use strict";
 
@@ -132,7 +132,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
            };
 
            switch(obj._typename) {
-              case 'TColor': item._value = JSROOT.Painter.MakeColorRGB(obj); break;
+              case 'TColor': item._value = jsrp.MakeColorRGB(obj); break;
               case 'TText': item._value = obj.fTitle; break;
               case 'TLatex': item._value = obj.fTitle; break;
               case 'TObjString': item._value = obj.fString; break;
@@ -410,7 +410,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
                   item._more = false;
 
                   switch(fld._typename) {
-                     case 'TColor': item._value = JSROOT.Painter.MakeColorRGB(fld); break;
+                     case 'TColor': item._value = jsrp.MakeColorRGB(fld); break;
                      case 'TText': item._value = fld.fTitle; break;
                      case 'TLatex': item._value = fld.fTitle; break;
                      case 'TObjString': item._value = fld.fString; break;
@@ -1129,7 +1129,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
 
       if (itemname == "$legend")
          return JSROOT.require("hist").then(() => {
-            let res = JSROOT.Painter.produceLegend(divid, opt);
+            let res = jsrp.produceLegend(divid, opt);
             JSROOT.CallBack(drop_callback, res);
          });
 
@@ -1734,7 +1734,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
 
          if (h_get) {
             req = 'h.json?compact=3';
-            item._expand = JSROOT.Painter.OnlineHierarchy; // use proper expand function
+            item._expand = jsrp.OnlineHierarchy; // use proper expand function
          } else if ('_make_request' in item) {
             func = JSROOT.findFunction(item._make_request);
          } else if ((draw_handle!=null) && ('make_request' in draw_handle)) {
@@ -1788,14 +1788,14 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
       itemreq.send(null);
    }
 
-   JSROOT.Painter.OnlineHierarchy = function(node, obj) {
+   jsrp.OnlineHierarchy = function(node, obj) {
       // central function for expand of all online items
 
       if (obj && node && ('_childs' in obj)) {
 
          for (let n=0;n<obj._childs.length;++n)
             if (obj._childs[n]._more || obj._childs[n]._childs)
-               obj._childs[n]._expand = JSROOT.Painter.OnlineHierarchy;
+               obj._childs[n]._expand = jsrp.OnlineHierarchy;
 
          node._childs = obj._childs;
          obj._childs = null;
@@ -1821,11 +1821,11 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
             this.GetOnlineItem(item, itemname, callback, option);
          }
 
-         this.h._expand = JSROOT.Painter.OnlineHierarchy;
+         this.h._expand = jsrp.OnlineHierarchy;
 
          let scripts = "", modules = "";
          this.ForEach(function(item) {
-            if ('_childs' in item) item._expand = JSROOT.Painter.OnlineHierarchy;
+            if ('_childs' in item) item._expand = jsrp.OnlineHierarchy;
 
             if ('_autoload' in item) {
                let arr = item._autoload.split(";");
@@ -2392,7 +2392,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
       if (myDiv.attr("ignoreurl") === "true")
          JSROOT.gStyle.IgnoreUrlOptions = true;
 
-      JSROOT.Painter.readStyleFromURL();
+      jsrp.readStyleFromURL();
 
       let guisize = JSROOT.GetUrlOption("divsize");
       if (guisize) {
@@ -2429,7 +2429,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
       });
    }
 
-   JSROOT.Painter.drawStreamerInfo = function(divid, lst) {
+   jsrp.drawStreamerInfo = function(divid, lst) {
       let painter = new JSROOT.HierarchyPainter('sinfo', divid, 'white');
 
       painter.h = { _name : "StreamerInfo", _childs : [] };
@@ -2489,7 +2489,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
 
    // ======================================================================================
 
-   JSROOT.Painter.drawInspector = function(divid, obj) {
+   jsrp.drawInspector = function(divid, obj) {
 
       JSROOT.cleanup(divid);
 
@@ -2900,13 +2900,13 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
 
    // export all functions and classes
 
-   JSROOT.Painter.drawList = drawList;
+   jsrp.drawList = drawList;
 
-   JSROOT.Painter.FolderHierarchy = FolderHierarchy;
-   JSROOT.Painter.ObjectHierarchy = ObjectHierarchy;
-   JSROOT.Painter.TaskHierarchy = TaskHierarchy;
-   JSROOT.Painter.ListHierarchy = ListHierarchy;
-   JSROOT.Painter.KeysHierarchy = KeysHierarchy;
+   jsrp.FolderHierarchy = FolderHierarchy;
+   jsrp.ObjectHierarchy = ObjectHierarchy;
+   jsrp.TaskHierarchy = TaskHierarchy;
+   jsrp.ListHierarchy = ListHierarchy;
+   jsrp.KeysHierarchy = KeysHierarchy;
 
    JSROOT.BrowserLayout = BrowserLayout;
    JSROOT.HierarchyPainter = HierarchyPainter;

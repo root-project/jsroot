@@ -1,7 +1,7 @@
 /** JavaScript ROOT 3D geometry painter
  * @file JSRootGeoPainter.js */
 
-JSROOT.require(['d3', 'three', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE, geo) => {
+JSROOT.require(['d3', 'three', 'JSRootGeoBase', 'JSRootPainter', 'JSRoot3DPainter'], (d3, THREE, geo, jsrp) => {
 
    "use strict";
 
@@ -63,11 +63,11 @@ JSROOT.require(['d3', 'three', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE, 
    //////////////////////
 
    function GeoDrawingControl(mesh) {
-      JSROOT.Painter.InteractiveControl.call(this);
+      jsrp.InteractiveControl.call(this);
       this.mesh = (mesh && mesh.material) ? mesh : null;
    }
 
-   GeoDrawingControl.prototype = Object.create(JSROOT.Painter.InteractiveControl.prototype);
+   GeoDrawingControl.prototype = Object.create(jsrp.InteractiveControl.prototype);
 
    GeoDrawingControl.prototype.setHighlight = function(col, indx) {
       return this.drawSpecial(col, indx);
@@ -204,8 +204,8 @@ JSROOT.require(['d3', 'three', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE, 
             evnt.preventDefault();
             evnt.stopPropagation();
 
-            if (!JSROOT.Painter.closeMenu())
-               JSROOT.Painter.createMenu(this, evnt).then(menu => {
+            if (!jsrp.closeMenu())
+               jsrp.createMenu(this, evnt).then(menu => {
                   menu.painter.FillContextMenu(menu);
                   menu.show();
                });
@@ -463,9 +463,9 @@ JSROOT.require(['d3', 'three', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE, 
 
       if (d.check('BKGR_', true)) {
          let bckgr = null;
-         if (d.partAsInt(1)>0) bckgr = JSROOT.Painter.root_colors[d.partAsInt()]; else
+         if (d.partAsInt(1)>0) bckgr = jsrp.root_colors[d.partAsInt()]; else
          for (let col=0;col<8;++col)
-            if (JSROOT.Painter.root_colors[col].toUpperCase() === d.part) bckgr = JSROOT.Painter.root_colors[col];
+            if (jsrp.root_colors[col].toUpperCase() === d.part) bckgr = jsrp.root_colors[col];
          if (bckgr) res.background = "#" + new THREE.Color(bckgr).getHexString();
       }
 
@@ -962,7 +962,7 @@ JSROOT.require(['d3', 'three', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE, 
 
    TGeoPainter.prototype.OrbitContext = function(evnt, intersects) {
 
-      JSROOT.Painter.createMenu(this, evnt).then(menu => {
+      jsrp.createMenu(this, evnt).then(menu => {
          let numitems = 0, numnodes = 0, cnt = 0;
          if (intersects)
             for (let n=0;n<intersects.length;++n) {
@@ -1284,7 +1284,7 @@ JSROOT.require(['d3', 'three', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE, 
 
       this.SetTooltipAllowed(JSROOT.gStyle.Tooltip > 0);
 
-      this._controls = JSROOT.Painter.CreateOrbitControl(this, this._camera, this._scene, this._renderer, this._lookat);
+      this._controls = jsrp.CreateOrbitControl(this, this._camera, this._scene, this._renderer, this._lookat);
 
       this._controls.mouse_tmout = this.ctrl.mouse_tmout; // set larger timeout for geometry processing
 
@@ -1741,7 +1741,7 @@ JSROOT.require(['d3', 'three', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE, 
          for (let n=0;n<this._more_nodes.length;++n) {
             let entry = this._more_nodes[n];
             let obj3d = this._clones.CreateObject3D(entry.stack, this._toplevel, 'delete_mesh');
-            JSROOT.Painter.DisposeThreejsObject(obj3d);
+            jsrp.DisposeThreejsObject(obj3d);
             geo.cleanupShape(entry.server_shape);
             delete entry.server_shape;
          }
@@ -1816,7 +1816,7 @@ JSROOT.require(['d3', 'three', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE, 
 
       if (!toplevel) return false;
 
-      JSROOT.Painter.DisposeThreejsObject(this._toplevel, true);
+      jsrp.DisposeThreejsObject(this._toplevel, true);
 
       // let axis = this.ctrl.project;
 
@@ -1882,7 +1882,7 @@ JSROOT.require(['d3', 'three', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE, 
 
       if (this._camera._lights != this.ctrl.light.kind) {
          // remove all childs and recreate only necessary lights
-         JSROOT.Painter.DisposeThreejsObject(this._camera, true);
+         jsrp.DisposeThreejsObject(this._camera, true);
 
          this._camera._lights = this.ctrl.light.kind;
 
@@ -1947,7 +1947,7 @@ JSROOT.require(['d3', 'three', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE, 
 
       this._scene.add(this._toplevel);
 
-      this._renderer = JSROOT.Painter.Create3DRenderer(w, h, this.options.Render3D, { antialias: true, logarithmicDepthBuffer: false, preserveDrawingBuffer: true });
+      this._renderer = jsrp.Create3DRenderer(w, h, this.options.Render3D, { antialias: true, logarithmicDepthBuffer: false, preserveDrawingBuffer: true });
 
       this._webgl = (this._renderer.jsroot_render3d === JSROOT.constants.Render3D.WebGL);
 
@@ -2661,7 +2661,7 @@ JSROOT.require(['d3', 'three', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE, 
 
       if (action==="delete") {
          if (extras) this._toplevel.remove(extras);
-         JSROOT.Painter.DisposeThreejsObject(extras);
+         jsrp.DisposeThreejsObject(extras);
          return null;
       }
 
@@ -2678,7 +2678,7 @@ JSROOT.require(['d3', 'three', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE, 
       if (!track || !track.fNpoints) return false;
 
       let track_width = track.fLineWidth || 1,
-          track_color = JSROOT.Painter.root_colors[track.fLineColor] || "rgb(255,0,255)";
+          track_color = jsrp.root_colors[track.fLineColor] || "rgb(255,0,255)";
 
       if (JSROOT.browser.isWin) track_width = 1; // not supported on windows
 
@@ -2700,7 +2700,7 @@ JSROOT.require(['d3', 'three', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE, 
       }
 
       let lineMaterial = new THREE.LineBasicMaterial({ color: track_color, linewidth: track_width }),
-          line = JSROOT.Painter.createLineSegments(buf, lineMaterial);
+          line = jsrp.createLineSegments(buf, lineMaterial);
 
       line.renderOrder = 1000000; // to bring line to the front
       line.geo_name = itemname;
@@ -2719,7 +2719,7 @@ JSROOT.require(['d3', 'three', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE, 
       if (!track || (track.fN <= 0)) return false;
 
       let track_width = track.fLineWidth || 1,
-          track_color = JSROOT.Painter.root_colors[track.fLineColor] || "rgb(255,0,255)";
+          track_color = jsrp.root_colors[track.fLineColor] || "rgb(255,0,255)";
 
       if (JSROOT.browser.isWin) track_width = 1; // not supported on windows
 
@@ -2740,7 +2740,7 @@ JSROOT.require(['d3', 'three', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE, 
       }
 
       let lineMaterial = new THREE.LineBasicMaterial({ color: track_color, linewidth: track_width }),
-          line = JSROOT.Painter.createLineSegments(buf, lineMaterial);
+          line = jsrp.createLineSegments(buf, lineMaterial);
 
       line.renderOrder = 1000000; // to bring line to the front
       line.geo_name = itemname;
@@ -2767,14 +2767,14 @@ JSROOT.require(['d3', 'three', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE, 
           projx = (this.ctrl.project === "x"),
           projy = (this.ctrl.project === "y"),
           projz = (this.ctrl.project === "z"),
-          pnts = new JSROOT.Painter.PointsCreator(size, this._webgl, hit_size);
+          pnts = new jsrp.PointsCreator(size, this._webgl, hit_size);
 
       for (let i=0;i<size;i++)
          pnts.AddPoint(projx ? projv : hit.fP[i*3],
                        projy ? projv : hit.fP[i*3+1],
                        projz ? projv : hit.fP[i*3+2]);
 
-      let mesh = pnts.CreatePoints({ color: JSROOT.Painter.root_colors[hit.fMarkerColor] || "rgb(0,0,255)",
+      let mesh = pnts.CreatePoints({ color: jsrp.root_colors[hit.fMarkerColor] || "rgb(0,0,255)",
                                      style: hit.fMarkerStyle,
                                      callback: function(delayed) { if (delayed) this.Render3D(100); }.bind(this) });
 
@@ -3175,7 +3175,7 @@ JSROOT.require(['d3', 'three', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE, 
             if (tmout === -2222) return; // special case to check if rendering timeout was active
          }
 
-         JSROOT.Painter.BeforeRender3D(this._renderer);
+         jsrp.BeforeRender3D(this._renderer);
 
          let tm1 = new Date();
 
@@ -3200,7 +3200,7 @@ JSROOT.require(['d3', 'three', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE, 
             console.log(`three.js r${THREE.REVISION}, first render tm = ${this.first_render_tm}`);
          }
 
-         return JSROOT.Painter.AfterRender3D(this._renderer);
+         return jsrp.AfterRender3D(this._renderer);
       }
 
       // do not shoot timeout many times
@@ -3394,7 +3394,7 @@ JSROOT.require(['d3', 'three', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE, 
                if ((k % 3) !== naxis) buf[k] = center[k%3];
 
          let lineMaterial = new THREE.LineBasicMaterial({ color: axiscol }),
-             mesh = JSROOT.Painter.createLineSegments(buf, lineMaterial);
+             mesh = jsrp.createLineSegments(buf, lineMaterial);
 
          container.add(mesh);
 
@@ -3779,9 +3779,9 @@ JSROOT.require(['d3', 'three', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE, 
 
          this.helpText();
 
-         JSROOT.Painter.DisposeThreejsObject(this._scene);
+         jsrp.DisposeThreejsObject(this._scene);
 
-         JSROOT.Painter.DisposeThreejsObject(this._full_geom);
+         jsrp.DisposeThreejsObject(this._full_geom);
 
          if (this._tcontrols)
             this._tcontrols.dispose();
@@ -3981,7 +3981,7 @@ JSROOT.require(['d3', 'three', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE, 
       delete this._extraObjects;
       delete this._clipCfg;
 
-      JSROOT.Painter.DisposeThreejsObject(this._toplevel, true);
+      jsrp.DisposeThreejsObject(this._toplevel, true);
 
       this._full_redrawing = true;
    }
@@ -4000,7 +4000,7 @@ JSROOT.require(['d3', 'three', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE, 
       return true;
    }
 
-   JSROOT.Painter.CreateGeoPainter = function(divid, obj, opt) {
+   jsrp.CreateGeoPainter = function(divid, obj, opt) {
       geo.GradPerSegm = JSROOT.gStyle.GeoGradPerSegm;
       geo.CompressComp = JSROOT.gStyle.GeoCompressComp;
 
@@ -4063,7 +4063,7 @@ JSROOT.require(['d3', 'three', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE, 
 
       if (!obj) return null;
 
-      let painter = JSROOT.Painter.CreateGeoPainter(divid, obj, opt);
+      let painter = jsrp.CreateGeoPainter(divid, obj, opt);
 
       if (painter.ctrl.is_main && !obj.$geo_painter)
          obj.$geo_painter = painter;
@@ -4575,8 +4575,8 @@ JSROOT.require(['d3', 'three', 'JSRootGeoBase', 'JSRoot3DPainter'], (d3, THREE, 
 
    JSROOT.TGeoPainter = TGeoPainter;
 
-   JSROOT.Painter.GeoDrawingControl = GeoDrawingControl;
-   JSROOT.Painter.drawGeoObject = drawGeoObject;
+   jsrp.GeoDrawingControl = GeoDrawingControl;
+   jsrp.drawGeoObject = drawGeoObject;
 
    return JSROOT;
 

@@ -1,7 +1,7 @@
 /// @file JSRootPainter.v7more.js
 /// JavaScript ROOT v7 graphics for different classes
 
-JSROOT.require(['JSRootPainter.v7'], () => {
+JSROOT.require(['JSRootPainter', 'JSRootPainter.v7'], (jsrp) => {
 
    "use strict";
 
@@ -55,7 +55,7 @@ JSROOT.require(['JSRootPainter.v7'], () => {
            .style("stroke", line_color)
            .attr("stroke-width", line_width)
 //        .attr("stroke-opacity", line_opacity)
-           .style("stroke-dasharray", JSROOT.Painter.root_line_styles[line_style]);
+           .style("stroke-dasharray", jsrp.root_line_styles[line_style]);
    }
 
    // =================================================================================
@@ -89,7 +89,7 @@ JSROOT.require(['JSRootPainter.v7'], () => {
         .style("stroke", line_color)
         .attr("stroke-width", line_width)
         .attr("fill", fill_color)
-        .style("stroke-dasharray", JSROOT.Painter.root_line_styles[line_style]);
+        .style("stroke-dasharray", jsrp.root_line_styles[line_style]);
    }
 
    // =================================================================================

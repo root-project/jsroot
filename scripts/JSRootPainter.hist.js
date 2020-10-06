@@ -1,7 +1,7 @@
 /// @file JSRootPainter.hist.js
 /// JavaScript ROOT graphics for histogram classes
 
-JSROOT.require(['d3', 'JSRootPainter.v6'], (d3) => {
+JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v6'], (d3, jsrp) => {
 
    "use strict";
 
@@ -65,7 +65,7 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], (d3) => {
        return new JSROOT.ColorPalette(palette);
    }
 
-   JSROOT.Painter.GetColorPalette = function(col,alfa) {
+   jsrp.GetColorPalette = function(col,alfa) {
       col = col || JSROOT.gStyle.Palette;
       if ((col>0) && (col<10)) return createGrayPalette();
       if (col < 51) return createDefaultPalette();
@@ -1109,7 +1109,7 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], (d3) => {
       evnt.stopPropagation(); // disable main context menu
       evnt.preventDefault();  // disable browser context menu
 
-      JSROOT.Painter.createMenu(this, evnt).then(menu => {
+      jsrp.createMenu(this, evnt).then(menu => {
          this.FillContextMenu(menu);
 
          this.FillObjectExecMenu(menu, "title", () => menu.show());
@@ -1426,7 +1426,7 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], (d3) => {
               Lego: 0, Surf: 0, Off: 0, Tri: 0, Proj: 0, AxisPos: 0,
               Spec: false, Pie: false, List: false, Zscale: false, PadPalette: false, Candle: "",
               GLBox: 0, GLColor: false, Project: "",
-              System: JSROOT.Painter.Coord.kCARTESIAN,
+              System: jsrp.Coord.kCARTESIAN,
               AutoColor: false, NoStat: false, ForceStat: false, PadStats: false, PadTitle: false, AutoZoom: false,
               HighRes: 0, Zero: true, Palette: 0, BaseLine: false,
               Optimize: JSROOT.gStyle.OptimizeDraw, Mode3D: false,
@@ -1487,12 +1487,12 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], (d3) => {
       if (d.check('FILL_', true)) {
          if (d.partAsInt(1)>0) this.histoFillColor = d.partAsInt(); else
          for (let col=0;col<8;++col)
-            if (JSROOT.Painter.root_colors[col].toUpperCase() === d.part) this.histoFillColor = col;
+            if (jsrp.root_colors[col].toUpperCase() === d.part) this.histoFillColor = col;
       }
       if (d.check('LINE_', true)) {
-         if (d.partAsInt(1)>0) this.histoLineColor = JSROOT.Painter.root_colors[d.partAsInt()]; else
+         if (d.partAsInt(1)>0) this.histoLineColor = jsrp.root_colors[d.partAsInt()]; else
          for (let col=0;col<8;++col)
-            if (JSROOT.Painter.root_colors[col].toUpperCase() === d.part) this.histoLineColor = d.part;
+            if (jsrp.root_colors[col].toUpperCase() === d.part) this.histoLineColor = d.part;
       }
 
       if (d.check('X+')) this.AxisPos = 10;
@@ -1589,10 +1589,10 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], (d3) => {
       }
 
       if (d.check('SCAT')) this.Scat = true;
-      if (d.check('POL')) this.System = JSROOT.Painter.Coord.kPOLAR;
-      if (d.check('CYL')) this.System = JSROOT.Painter.Coord.kCYLINDRICAL;
-      if (d.check('SPH')) this.System = JSROOT.Painter.Coord.kSPHERICAL;
-      if (d.check('PSR')) this.System = JSROOT.Painter.Coord.kRAPIDITY;
+      if (d.check('POL')) this.System = jsrp.Coord.kPOLAR;
+      if (d.check('CYL')) this.System = jsrp.Coord.kCYLINDRICAL;
+      if (d.check('SPH')) this.System = jsrp.Coord.kSPHERICAL;
+      if (d.check('PSR')) this.System = jsrp.Coord.kRAPIDITY;
 
       if (d.check('TRI', true)) {
          this.Color = false;
@@ -1666,7 +1666,7 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], (d3) => {
           ((this.Surf > 0) || this.Error && (hdim == 2))) this.Mode3D = true;
 
       //if (this.Surf == 15)
-      //   if (this.System == JSROOT.Painter.Coord.kPOLAR || this.System == JSROOT.Painter.Coord.kCARTESIAN)
+      //   if (this.System == jsrp.Coord.kPOLAR || this.System == jsrp.Coord.kCARTESIAN)
       //      this.Surf = 13;
    }
 
@@ -2200,7 +2200,7 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], (d3) => {
          pt.fBorderSize = st.fTitleBorderSize;
 
          pt.AddText(histo.fTitle);
-         tpainter = JSROOT.Painter.drawPave(this.divid, pt, "postitle");
+         tpainter = jsrp.drawPave(this.divid, pt, "postitle");
          if (tpainter) {
             tpainter.$secondary = true;
             return tpainter.Promise();
@@ -3532,8 +3532,8 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], (d3) => {
       }
 
       let kind = (this.options.ErrorKind === 4) ? "bezier" : "line",
-          path1 = JSROOT.Painter.BuildSvgPath(kind, bins1),
-          path2 = JSROOT.Painter.BuildSvgPath("L"+kind, bins2);
+          path1 = jsrp.BuildSvgPath(kind, bins1),
+          path2 = jsrp.BuildSvgPath("L"+kind, bins2);
 
       this.draw_g.append("svg:path")
                  .attr("d", path1.path + path2.path + "Z")
@@ -6468,8 +6468,8 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], (d3) => {
 
          // if there is auto colors assignment, try to provide it
          if (this.options._pfc || this.options._plc || this.options._pmc) {
-            if (!this.palette && JSROOT.Painter.GetColorPalette)
-               this.palette = JSROOT.Painter.GetColorPalette();
+            if (!this.palette && jsrp.GetColorPalette)
+               this.palette = jsrp.GetColorPalette();
             if (this.palette) {
                let color = this.palette.calcColor(rindx, nhists+1);
                let icolor = this.add_color(color);
@@ -6666,12 +6666,12 @@ JSROOT.require(['d3', 'JSRootPainter.v6'], (d3) => {
 
    // =================================================================================
 
-   JSROOT.Painter.drawPave = drawPave;
-   JSROOT.Painter.produceLegend = produceLegend;
-   JSROOT.Painter.drawHistogram1D = drawHistogram1D;
-   JSROOT.Painter.drawHistogram2D = drawHistogram2D;
-   JSROOT.Painter.drawTF2 = drawTF2;
-   JSROOT.Painter.drawHStack = drawHStack;
+   jsrp.drawPave = drawPave;
+   jsrp.produceLegend = produceLegend;
+   jsrp.drawHistogram1D = drawHistogram1D;
+   jsrp.drawHistogram2D = drawHistogram2D;
+   jsrp.drawTF2 = drawTF2;
+   jsrp.drawHStack = drawHStack;
 
    JSROOT.TPavePainter = TPavePainter;
    JSROOT.THistPainter = THistPainter;

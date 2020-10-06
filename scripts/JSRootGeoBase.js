@@ -2793,13 +2793,16 @@ JSROOT.require(['three', 'ThreeCSG'], (THREE, ThreeBSP) => {
 
       if (visible) {
 
-         let _opacity = 1.0;
+         // TODO: maybe correctly extract ROOT colors here?
+         let _opacity = 1.0, jsrp = JSROOT.Painter,
+             root_colors = jsrp ? jsrp.root_colors : ['white', 'black', 'red', 'green', 'blue', 'yellow', 'magenta', 'cyan'];
+
          if (entry.custom_color)
             prop.fillcolor = entry.custom_color;
          else if ((volume.fFillColor > 1) && (volume.fLineColor == 1))
-            prop.fillcolor = JSROOT.Painter.root_colors[volume.fFillColor];
+            prop.fillcolor = root_colors[volume.fFillColor];
          else if (volume.fLineColor >= 0)
-            prop.fillcolor = JSROOT.Painter.root_colors[volume.fLineColor];
+            prop.fillcolor = root_colors[volume.fLineColor];
 
          if (volume.fMedium && volume.fMedium.fMaterial) {
             let mat = volume.fMedium.fMaterial,
@@ -2809,14 +2812,14 @@ JSROOT.require(['three', 'ThreeCSG'], (THREE, ThreeBSP) => {
             if (this.use_dflt_colors) {
                let matZ = Math.round(mat.fZ),
                    icol = this.dflt_table[matZ];
-               prop.fillcolor = JSROOT.Painter.root_colors[icol];
+               prop.fillcolor = root_colors[icol];
                if (mat.fDensity < 0.1) transparency = 60;
             }
 
             if (transparency > 0)
                _opacity = (100.0 - transparency) / 100.0;
             if (prop.fillcolor === undefined)
-               prop.fillcolor = JSROOT.Painter.root_colors[mat.fFillColor];
+               prop.fillcolor = root_colors[mat.fFillColor];
          }
          if (prop.fillcolor === undefined)
             prop.fillcolor = "lightgrey";
@@ -3647,7 +3650,7 @@ JSROOT.require(['three', 'ThreeCSG'], (THREE, ThreeBSP) => {
          let mesh = null;
 
          if (obj3d.matrixWorld.determinant() > -0.9) {
-            mesh = new THREE.Mesh( shape.geom, prop.material );
+            mesh = new THREE.Mesh(shape.geom, prop.material);
          } else {
             mesh = geo.createFlippedMesh(shape, prop.material);
          }

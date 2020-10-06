@@ -1,7 +1,7 @@
 /// @file JSRootPainter.hist3d.js
 /// 3D histogram graphics
 
-JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.hist'], (d3, THREE) => {
+JSROOT.require(['d3', 'JSRootPainter', 'JSRoot3DPainter', 'JSRootPainter.hist'], (d3, jsrp, THREE) => {
 
    "use strict";
 
@@ -42,7 +42,7 @@ JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.hist'], (d3, THREE) => {
 
          this.clear_3d_canvas();
 
-         JSROOT.Painter.DisposeThreejsObject(this.scene);
+         jsrp.DisposeThreejsObject(this.scene);
          if (this.control) this.control.Cleanup();
 
          if (this.renderer) {
@@ -74,7 +74,7 @@ JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.hist'], (d3, THREE) => {
       if ('toplevel' in this) {
          // it is indication that all 3D object created, just replace it with empty
          this.scene.remove(this.toplevel);
-         JSROOT.Painter.DisposeThreejsObject(this.toplevel);
+         jsrp.DisposeThreejsObject(this.toplevel);
          delete this.tooltip_mesh;
          delete this.toplevel;
          if (this.control) this.control.HideTooltip();
@@ -90,7 +90,7 @@ JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.hist'], (d3, THREE) => {
          return;
       }
 
-      render3d = JSROOT.Painter.GetRender3DKind(render3d);
+      render3d = jsrp.GetRender3DKind(render3d);
       let sz = this.size_for_3d(undefined, render3d);
 
       this.size_z3d = 100;
@@ -119,7 +119,7 @@ JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.hist'], (d3, THREE) => {
 
       this.SetCameraPosition(true, this.root_pad());
 
-      this.renderer = JSROOT.Painter.Create3DRenderer(this.scene_width, this.scene_height, render3d);
+      this.renderer = jsrp.Create3DRenderer(this.scene_width, this.scene_height, render3d);
 
       this.webgl = (render3d === JSROOT.constants.Render3D.WebGL);
       this.add_3d_canvas(sz, this.renderer.jsroot_dom, this.webgl);
@@ -129,7 +129,7 @@ JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.hist'], (d3, THREE) => {
 
       if (JSROOT.BatchMode || !this.webgl) return;
 
-      this.control = JSROOT.Painter.CreateOrbitControl(this, this.camera, this.scene, this.renderer, this.lookat);
+      this.control = jsrp.CreateOrbitControl(this, this.camera, this.scene, this.renderer, this.lookat);
 
       let axis_painter = this, obj_painter = this.main_painter();
 
@@ -247,7 +247,7 @@ JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.hist'], (d3, THREE) => {
 
          if (!this.renderer) return;
 
-         JSROOT.Painter.BeforeRender3D(this.renderer);
+         jsrp.BeforeRender3D(this.renderer);
 
          let tm1 = new Date();
 
@@ -259,7 +259,7 @@ JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.hist'], (d3, THREE) => {
          // do rendering, most consuming time
          this.renderer.render(this.scene, this.camera);
 
-         JSROOT.Painter.AfterRender3D(this.renderer);
+         jsrp.AfterRender3D(this.renderer);
 
          let tm2 = new Date();
 
@@ -342,9 +342,9 @@ JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.hist'], (d3, THREE) => {
       } else {
          changed = true;
 
-         let indicies = JSROOT.Painter.Box3D.Indexes,
-             normals = JSROOT.Painter.Box3D.Normals,
-             vertices = JSROOT.Painter.Box3D.Vertices,
+         let indicies = jsrp.Box3D.Indexes,
+             normals = jsrp.Box3D.Normals,
+             vertices = jsrp.Box3D.Vertices,
              pos, norm,
              color = new THREE.Color(tip.color ? tip.color : 0xFF0000),
              opacity = tip.opacity || 1;
@@ -708,7 +708,7 @@ JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.hist'], (d3, THREE) => {
             if (!pnt1 || !pnt2) {
                if (tgtmesh) {
                   this.remove(tgtmesh)
-                  JSROOT.Painter.DisposeThreejsObject(tgtmesh);
+                  jsrp.DisposeThreejsObject(tgtmesh);
                }
                return tgtmesh;
             }
@@ -746,7 +746,7 @@ JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.hist'], (d3, THREE) => {
       xcont.position.set(0, grminy, grminz)
       xcont.rotation.x = 1/4*Math.PI;
       xcont.xyid = 2;
-      let xtickslines = JSROOT.Painter.createLineSegments( ticks, lineMaterial );
+      let xtickslines = jsrp.createLineSegments( ticks, lineMaterial );
       xcont.add(xtickslines);
 
       lbls.forEach(lbl => {
@@ -835,7 +835,7 @@ JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.hist'], (d3, THREE) => {
       }
 
       if (!opts.use_y_for_z) {
-         let yticksline = JSROOT.Painter.createLineSegments(ticks, lineMaterial),
+         let yticksline = jsrp.createLineSegments(ticks, lineMaterial),
              ycont = new THREE.Object3D();
          ycont.position.set(grminx, 0, grminz);
          ycont.rotation.y = -1/4*Math.PI;
@@ -934,7 +934,7 @@ JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.hist'], (d3, THREE) => {
 
          let material = new THREE.LineDashedMaterial({ color: 0x0, dashSize: 2, gapSize: 2 });
 
-         let lines1 = JSROOT.Painter.createLineSegments(zgridx, material);
+         let lines1 = jsrp.createLineSegments(zgridx, material);
          lines1.position.set(0,grmaxy,0);
          lines1.grid = 2; // mark as grid
          lines1.visible = false;
@@ -951,7 +951,7 @@ JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.hist'], (d3, THREE) => {
 
          let material = new THREE.LineDashedMaterial({ color: 0x0, dashSize: 2, gapSize: 2 });
 
-         let lines1 = JSROOT.Painter.createLineSegments(zgridy, material);
+         let lines1 = jsrp.createLineSegments(zgridy, material);
          lines1.position.set(grmaxx,0, 0);
          lines1.grid = 3; // mark as grid
          lines1.visible = false;
@@ -964,7 +964,7 @@ JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.hist'], (d3, THREE) => {
          top.add(lines2);
       }
 
-      let zcont = [], zticksline = JSROOT.Painter.createLineSegments( ticks, lineMaterial );
+      let zcont = [], zticksline = jsrp.createLineSegments( ticks, lineMaterial );
       for (let n=0;n<4;++n) {
          zcont.push(new THREE.Object3D());
 
@@ -1020,7 +1020,7 @@ JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.hist'], (d3, THREE) => {
       // for TAxis3D do not show final cube
       if (this.size_z3d === 0) return;
 
-      let linex_geom = JSROOT.Painter.createLineSegments([grminx,0,0, grmaxx,0,0], lineMaterial, null, true);
+      let linex_geom = jsrp.createLineSegments([grminx,0,0, grmaxx,0,0], lineMaterial, null, true);
       for(let n=0;n<2;++n) {
          let line = new THREE.LineSegments(linex_geom, lineMaterial);
          line.position.set(0, grminy, (n===0) ? grminz : grmaxz);
@@ -1033,7 +1033,7 @@ JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.hist'], (d3, THREE) => {
          top.add(line);
       }
 
-      let liney_geom = JSROOT.Painter.createLineSegments([0,grminy,0, 0,grmaxy,0], lineMaterial, null, true);
+      let liney_geom = jsrp.createLineSegments([0,grminy,0, 0,grmaxy,0], lineMaterial, null, true);
       for(let n=0;n<2;++n) {
          let line = new THREE.LineSegments(liney_geom, lineMaterial);
          line.position.set(grminx, 0, (n===0) ? grminz : grmaxz);
@@ -1046,7 +1046,7 @@ JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.hist'], (d3, THREE) => {
          top.add(line);
       }
 
-      let linez_geom = JSROOT.Painter.createLineSegments([0,0,grminz, 0,0,grmaxz], lineMaterial, null, true);
+      let linez_geom = jsrp.createLineSegments([0,0,grminz, 0,0,grmaxz], lineMaterial, null, true);
       for(let n=0;n<4;++n) {
          let line = new THREE.LineSegments(linez_geom, lineMaterial);
          line.zboxid = zcont[n].zid;
@@ -1074,10 +1074,10 @@ JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.hist'], (d3, THREE) => {
 
       // Perform TH1/TH2 lego plot with BufferGeometry
 
-      let vertices = JSROOT.Painter.Box3D.Vertices,
-          indicies = JSROOT.Painter.Box3D.Indexes,
-          vnormals = JSROOT.Painter.Box3D.Normals,
-          segments = JSROOT.Painter.Box3D.Segments,
+      let vertices = jsrp.Box3D.Vertices,
+          indicies = jsrp.Box3D.Indexes,
+          vnormals = jsrp.Box3D.Normals,
+          segments = jsrp.Box3D.Segments,
           // reduced line segments
           rsegments = [0, 1, 1, 2, 2, 3, 3, 0],
           // reduced vertices
@@ -1418,7 +1418,7 @@ JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.hist'], (d3, THREE) => {
       var material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor) });
       if (!JSROOT.browser.isIE) material.linewidth = histo.fLineWidth;
 
-      let line = JSROOT.Painter.createLineSegments(lpositions, material, uselineindx ? lindicies : null );
+      let line = jsrp.createLineSegments(lpositions, material, uselineindx ? lindicies : null );
 
       /*
       line.painter = this;
@@ -1434,7 +1434,7 @@ JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.hist'], (d3, THREE) => {
 
    // ===================================================================================
 
-   JSROOT.Painter.drawAxis3D = function(divid, axis /*, opt*/) {
+   jsrp.drawAxis3D = function(divid, axis /*, opt*/) {
 
       let painter = new JSROOT.ObjectPainter(axis);
 
@@ -1597,7 +1597,7 @@ JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.hist'], (d3, THREE) => {
          }
       );
 
-      let lines = JSROOT.Painter.createLineSegments(pnts, JSROOT.Painter.Create3DLineMaterial(this, histo));
+      let lines = jsrp.createLineSegments(pnts, jsrp.Create3DLineMaterial(this, histo));
       main.toplevel.add(lines);
    }
 
@@ -1911,7 +1911,7 @@ JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.hist'], (d3, THREE) => {
 
          let lcolor = this.get_color(histo.fLineColor),
              material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor), linewidth: histo.fLineWidth });
-         let line = JSROOT.Painter.createLineSegments(lpos, material);
+         let line = jsrp.createLineSegments(lpos, material);
          line.painter = this;
          main.toplevel.add(line);
       }
@@ -1927,7 +1927,7 @@ JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.hist'], (d3, THREE) => {
          else
             material = new THREE.LineBasicMaterial({ color: new THREE.Color(this.get_color(histo.fLineColor)) });
 
-         let line = JSROOT.Painter.createLineSegments(grid, material);
+         let line = jsrp.createLineSegments(grid, material);
          line.painter = this;
          main.toplevel.add(line);
       }
@@ -2068,7 +2068,7 @@ JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.hist'], (d3, THREE) => {
        // create lines
        let lcolor = this.get_color(this.GetObject().fLineColor),
            material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor), linewidth: this.GetObject().fLineWidth }),
-           line = JSROOT.Painter.createLineSegments(lpos, material);
+           line = jsrp.createLineSegments(lpos, material);
 
        line.painter = this;
        line.intersect_index = binindx;
@@ -2526,7 +2526,7 @@ JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.hist'], (d3, THREE) => {
 
       JSROOT.seed(sumz);
 
-      let pnts = new JSROOT.Painter.PointsCreator(numpixels, main.webgl, main.size_xy3d/200),
+      let pnts = new jsrp.PointsCreator(numpixels, main.webgl, main.size_xy3d/200),
           bins = new Int32Array(numpixels), nbin = 0;
 
       for (i = i1; i < i2; ++i) {
@@ -2643,9 +2643,9 @@ JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.hist'], (d3, THREE) => {
 
       } else {
 
-         let indicies = JSROOT.Painter.Box3D.Indexes,
-             normals = JSROOT.Painter.Box3D.Normals,
-             vertices = JSROOT.Painter.Box3D.Vertices;
+         let indicies = jsrp.Box3D.Indexes,
+             normals = jsrp.Box3D.Normals,
+             vertices = jsrp.Box3D.Vertices;
 
          buffer_size = indicies.length*3;
          single_bin_verts = new Float32Array(buffer_size);
@@ -2748,10 +2748,10 @@ JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.hist'], (d3, THREE) => {
          bin_tooltips[nseq] = new Int32Array(nbins);
 
          if (helper_kind[nseq]===1)
-            helper_indexes[nseq] = new Uint16Array(nbins * JSROOT.Painter.Box3D.MeshSegments.length);
+            helper_indexes[nseq] = new Uint16Array(nbins * jsrp.Box3D.MeshSegments.length);
 
          if (helper_kind[nseq]===2)
-            helper_positions[nseq] = new Float32Array(nbins * JSROOT.Painter.Box3D.Segments.length * 3);
+            helper_positions[nseq] = new Float32Array(nbins * jsrp.Box3D.Segments.length * 3);
       }
 
       let binx, grx, biny, gry, binz, grz;
@@ -2796,7 +2796,7 @@ JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.hist'], (d3, THREE) => {
 
                if (helper_kind[nseq]===1) {
                   // reuse vertices created for the mesh
-                  let helper_segments = JSROOT.Painter.Box3D.MeshSegments;
+                  let helper_segments = jsrp.Box3D.MeshSegments;
                   vvv = nbins * helper_segments.length;
                   let shift = Math.round(nbins * buffer_size/3),
                       helper_i = helper_indexes[nseq];
@@ -2805,11 +2805,11 @@ JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.hist'], (d3, THREE) => {
                }
 
                if (helper_kind[nseq]===2) {
-                  let helper_segments = JSROOT.Painter.Box3D.Segments,
+                  let helper_segments = jsrp.Box3D.Segments,
                       helper_p = helper_positions[nseq];
                   vvv = nbins * helper_segments.length * 3;
                   for (let n=0;n<helper_segments.length;++n, vvv+=3) {
-                     let vert = JSROOT.Painter.Box3D.Vertices[helper_segments[n]];
+                     let vert = jsrp.Box3D.Vertices[helper_segments[n]];
                      helper_p[vvv]   = grx + (vert.x-0.5)*scalex*wei;
                      helper_p[vvv+1] = gry + (vert.y-0.5)*scaley*wei;
                      helper_p[vvv+2] = grz + (vert.z-0.5)*scalez*wei;
@@ -2886,9 +2886,9 @@ JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.hist'], (d3, THREE) => {
 
             if (helper_kind[nseq] === 1) {
                // reuse positions from the mesh - only special index was created
-               lines = JSROOT.Painter.createLineSegments( bin_verts[nseq], helper_material, helper_indexes[nseq] );
+               lines = jsrp.createLineSegments( bin_verts[nseq], helper_material, helper_indexes[nseq] );
             } else {
-               lines = JSROOT.Painter.createLineSegments( helper_positions[nseq], helper_material );
+               lines = jsrp.createLineSegments( helper_positions[nseq], helper_material );
             }
 
             main.toplevel.add(lines);
@@ -3012,7 +3012,7 @@ JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.hist'], (d3, THREE) => {
       });
    }
 
-   JSROOT.Painter.drawHistogram3D = function(divid, histo, opt) {
+   jsrp.drawHistogram3D = function(divid, histo, opt) {
       // create painter and add it to canvas
       let painter = new JSROOT.TH3Painter(histo);
 
@@ -3261,7 +3261,7 @@ JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.hist'], (d3, THREE) => {
              err = null, line = null, ierr = 0, iline = 0;
 
          if (this.options.Markers || this.options.Circles)
-            pnts = new JSROOT.Painter.PointsCreator(size, fp.webgl, scale/3);
+            pnts = new jsrp.PointsCreator(size, fp.webgl, scale/3);
 
          if (this.options.Error)
             err = new Float32Array(size*6*3);
@@ -3328,7 +3328,7 @@ JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.hist'], (d3, THREE) => {
          if (line && (iline>3) && (line.length == iline)) {
             let lcolor = this.get_color(this.GetObject().fLineColor),
                 material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor), linewidth: this.GetObject().fLineWidth }),
-                linemesh = JSROOT.Painter.createLineSegments(line, material);
+                linemesh = jsrp.createLineSegments(line, material);
             fp.toplevel.add(linemesh);
 
             linemesh.graph = graph;
@@ -3346,7 +3346,7 @@ JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.hist'], (d3, THREE) => {
          if (err) {
             let lcolor = this.get_color(this.GetObject().fLineColor),
                 material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor), linewidth: this.GetObject().fLineWidth }),
-                errmesh = JSROOT.Painter.createLineSegments(err, material);
+                errmesh = jsrp.createLineSegments(err, material);
             fp.toplevel.add(errmesh);
 
             errmesh.graph = graph;
@@ -3384,7 +3384,7 @@ JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.hist'], (d3, THREE) => {
       this.CheckCallbacks(0);
    }
 
-   JSROOT.Painter.drawGraph2D = function(divid, gr, opt) {
+   jsrp.drawGraph2D = function(divid, gr, opt) {
       let painter = new JSROOT.TGraph2DPainter(gr);
 
       painter.SetDivId(divid, -1); // just to get access to existing elements
@@ -3412,7 +3412,7 @@ JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.hist'], (d3, THREE) => {
 
    // ===================================================================
 
-   JSROOT.Painter.drawPolyMarker3D = function(divid, poly /*, opt*/) {
+   jsrp.drawPolyMarker3D = function(divid, poly /*, opt*/) {
 
       let painter = new JSROOT.ObjectPainter(poly);
 
@@ -3443,7 +3443,7 @@ JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter.hist'], (d3, THREE) => {
          }
 
          let size = Math.floor(numselect/step),
-             pnts = new JSROOT.Painter.PointsCreator(size, fp.webgl, fp.size_xy3d/100),
+             pnts = new jsrp.PointsCreator(size, fp.webgl, fp.size_xy3d/100),
              index = new Int32Array(size),
              select = 0, icnt = 0;
 

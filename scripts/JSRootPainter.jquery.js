@@ -1,7 +1,7 @@
 /// @file JSRootPainter.jquery.js
 /// Part of JavaScript ROOT graphics, dependent from jQuery functionality
 
-JSROOT.require(['d3', 'jquery', 'JSRootPainter.hierarchy'], (d3, $) => {
+JSROOT.require(['d3', 'jquery', 'JSRootPainter', 'JSRootPainter.hierarchy'], (d3, $, jsrp) => {
 
    "use strict";
 
@@ -115,8 +115,8 @@ JSROOT.require(['d3', 'jquery', 'JSRootPainter.hierarchy'], (d3, $) => {
             let col = prompt("Enter color " + (useid ? "(only id number)" : "(name or id)"), value);
             if (!col) return;
             let id = parseInt(col);
-            if (!isNaN(id) && (JSROOT.Painter.root_colors[id] !== undefined)) {
-               col = JSROOT.Painter.root_colors[id];
+            if (!isNaN(id) && (jsrp.root_colors[id] !== undefined)) {
+               col = jsrp.root_colors[id];
             } else {
                if (useid) return;
             }
@@ -126,7 +126,7 @@ JSROOT.require(['d3', 'jquery', 'JSRootPainter.hierarchy'], (d3, $) => {
          for (let n = -1; n < 11; ++n) {
             if ((n < 0) && useid) continue;
             if ((n == 10) && (fill_kind !== 1)) continue;
-            let col = (n < 0) ? 'none' : JSROOT.Painter.root_colors[n];
+            let col = (n < 0) ? 'none' : jsrp.root_colors[n];
             if ((n == 0) && (fill_kind == 1)) col = 'none';
             let svg = "<svg width='100' height='18' style='margin:0px;background-color:" + col + "'><text x='4' y='12' style='font-size:12px' fill='" + (n == 1 ? "white" : "black") + "'>" + col + "</text></svg>";
             this.addchk((value == (useid ? n : col)), svg, (useid ? n : col), set_func);
@@ -209,12 +209,12 @@ JSROOT.require(['d3', 'jquery', 'JSRootPainter.hierarchy'], (d3, $) => {
                let id = prompt("Enter line style id (1-solid)", 1);
                if (!id) return;
                id = parseInt(id);
-               if (isNaN(id) || !JSROOT.Painter.root_line_styles[id]) return;
+               if (isNaN(id) || !jsrp.root_line_styles[id]) return;
                this.lineatt.Change(undefined, undefined, id);
                this.InteractiveRedraw(true, "exec:SetLineStyle(" + id + ")");
             }.bind(painter));
             for (let n = 1; n < 11; ++n) {
-               let dash = JSROOT.Painter.root_line_styles[n],
+               let dash = jsrp.root_line_styles[n],
                    svg = "<svg width='100' height='18'><text x='1' y='12' style='font-size:12px'>" + n + "</text><line x1='30' y1='8' x2='100' y2='8' stroke='black' stroke-width='3' stroke-dasharray='" + dash + "'></line></svg>";
 
                this.addchk((painter.lineatt.style == n), svg, n, function(arg) { this.lineatt.Change(undefined, undefined, parseInt(arg)); this.InteractiveRedraw(true, "exec:SetLineStyle(" + arg + ")"); }.bind(painter));
@@ -394,7 +394,7 @@ JSROOT.require(['d3', 'jquery', 'JSRootPainter.hierarchy'], (d3, $) => {
    } // class JQueryMenu
 
 
-   JSROOT.Painter.createMenu = function(painter, show_event) {
+   jsrp.createMenu = function(painter, show_event) {
       let menu = new JQueryMenu(painter, 'root_ctx_menu', show_event);
 
       return Promise.resolve(menu);
@@ -653,8 +653,8 @@ JSROOT.require(['d3', 'jquery', 'JSRootPainter.hierarchy'], (d3, $) => {
 
          delete this.status_layout;
 
-         if (this.status_handler && (JSROOT.Painter.ShowStatus === this.status_handler)) {
-            delete JSROOT.Painter.ShowStatus;
+         if (this.status_handler && (jsrp.ShowStatus === this.status_handler)) {
+            delete jsrp.ShowStatus;
             delete this.status_handler;
          }
 
@@ -703,7 +703,7 @@ JSROOT.require(['d3', 'jquery', 'JSRootPainter.hierarchy'], (d3, $) => {
 
       this.status_handler = this.ShowStatus.bind(this);
 
-      JSROOT.Painter.ShowStatus = this.status_handler;
+      jsrp.ShowStatus = this.status_handler;
 
       return id;
    }
@@ -1244,7 +1244,7 @@ JSROOT.require(['d3', 'jquery', 'JSRootPainter.hierarchy'], (d3, $) => {
 
       if (typeof this.fill_context !== 'function') return;
 
-      JSROOT.Painter.createMenu(this, evnt).then(menu => {
+      jsrp.createMenu(this, evnt).then(menu => {
          this.fill_context(menu, hitem);
          if (menu.size() > 0) {
             menu.tree_node = elem.parentNode;
@@ -1275,7 +1275,7 @@ JSROOT.require(['d3', 'jquery', 'JSRootPainter.hierarchy'], (d3, $) => {
          return el.firstChild.href;
       }
 
-      JSROOT.Painter.createMenu(this, evnt).then(menu => {
+      jsrp.createMenu(this, evnt).then(menu => {
 
          if ((itemname == "") && !('_jsonfile' in hitem)) {
             let files = [], addr = "", cnt = 0,
@@ -1640,7 +1640,7 @@ JSROOT.require(['d3', 'jquery', 'JSRootPainter.hierarchy'], (d3, $) => {
       if ((JSROOT.GetUrlOption("nobrowser")!==null) || (myDiv.attr("nobrowser") && myDiv.attr("nobrowser")!=="false"))
          return JSROOT.BuildNobrowserGUI();
 
-      JSROOT.Painter.readStyleFromURL();
+      jsrp.readStyleFromURL();
 
       let hpainter = new JSROOT.HierarchyPainter('root', null);
 
@@ -1930,7 +1930,7 @@ JSROOT.require(['d3', 'jquery', 'JSRootPainter.hierarchy'], (d3, $) => {
             div = div.find(".flex_draw").get(0);
             let dummy = new JSROOT.ObjectPainter();
             dummy.SetDivId(div, -1);
-            JSROOT.Painter.SelectActivePad({ pp: dummy.canv_painter(), active: true });
+            jsrp.SelectActivePad({ pp: dummy.canv_painter(), active: true });
 
             JSROOT.resize(div);
          }

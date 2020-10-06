@@ -1,7 +1,7 @@
 /// @file JSRootPainter.v7hist.js
 /// JavaScript ROOT v7 graphics for histogram classes
 
-JSROOT.require(['d3', 'JSRootPainter.v7'], (d3) => {
+JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v7'], (d3, jsrp) => {
 
    "use strict";
 
@@ -1193,8 +1193,8 @@ JSROOT.require(['d3', 'JSRootPainter.v7'], (d3) => {
       }
 
       let kind = (this.options.ErrorKind === 4) ? "bezier" : "line",
-          path1 = JSROOT.Painter.BuildSvgPath(kind, bins1),
-          path2 = JSROOT.Painter.BuildSvgPath("L"+kind, bins2);
+          path1 = jsrp.BuildSvgPath(kind, bins1),
+          path2 = jsrp.BuildSvgPath("L"+kind, bins2);
 
       if (this.fillatt.empty()) this.fillatt.setSolidColor("blue");
 
@@ -3837,7 +3837,7 @@ JSROOT.require(['d3', 'JSRootPainter.v7'], (d3) => {
       evnt.preventDefault();
       evnt.stopPropagation(); // disable main context menu
 
-      JSROOT.Painter.createMenu(this, evnt).then(menu => {
+      jsrp.createMenu(this, evnt).then(menu => {
          let obj = this.GetObject(),
              action = this.ChangeMask.bind(this);
 

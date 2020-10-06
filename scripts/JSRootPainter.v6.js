@@ -1,7 +1,7 @@
 /// @file JSRootPainter.v6.js
 /// JavaScript ROOT graphics for main ROOT6 classes
 
-JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
+JSROOT.require(['d3', 'JSRootPainter'], (d3, jsrp) => {
 
    "use strict";
 
@@ -99,11 +99,11 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
          if (this.nticks > 8) this.nticks = 8;
 
          let scale_range = this.scale_max - this.scale_min,
-             tf1 = JSROOT.Painter.getTimeFormat(axis),
-             tf2 = JSROOT.Painter.chooseTimeFormat(scale_range / gr_range, false);
+             tf1 = jsrp.getTimeFormat(axis),
+             tf2 = jsrp.chooseTimeFormat(scale_range / gr_range, false);
 
          if ((tf1.length == 0) || (scale_range < 0.1 * (this.full_max - this.full_min)))
-            tf1 = JSROOT.Painter.chooseTimeFormat(scale_range / this.nticks, true);
+            tf1 = jsrp.chooseTimeFormat(scale_range / this.nticks, true);
 
          this.tfunc1 = this.tfunc2 = d3.timeFormat(tf1);
          if (tf2!==tf1)
@@ -804,7 +804,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
       if (gaxis.fChopt.indexOf("t")>=0) {
          func = d3.scaleTime();
          kind = "time";
-         this.toffset = JSROOT.Painter.getTimeOffset(gaxis);
+         this.toffset = jsrp.getTimeOffset(gaxis);
          domain_min = new Date(this.toffset + min*1000);
          domain_max = new Date(this.toffset + max*1000);
       } else if (gaxis.fChopt.indexOf("G")>=0) {
@@ -1131,7 +1131,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
 
       if (this.xaxis.fTimeDisplay) {
          this.x_kind = 'time';
-         this.timeoffsetx = JSROOT.Painter.getTimeOffset(this.xaxis);
+         this.timeoffsetx = jsrp.getTimeOffset(this.xaxis);
          this.ConvertX = function(x) { return new Date(this.timeoffsetx + x*1000); };
          this.RevertX = function(grx) { return (this.x.invert(grx) - this.timeoffsetx) / 1000; };
       } else {
@@ -1178,7 +1178,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
 
       if (this.yaxis.fTimeDisplay) {
          this.y_kind = 'time';
-         this.timeoffsety = JSROOT.Painter.getTimeOffset(this.yaxis);
+         this.timeoffsety = jsrp.getTimeOffset(this.yaxis);
          this.ConvertY = function(y) { return new Date(this.timeoffsety + y*1000); };
          this.RevertY = function(gry) { return (this.y.invert(gry) - this.timeoffsety) / 1000; };
       } else {
@@ -1277,7 +1277,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
           w = this.frame_width(),
           grid_style = JSROOT.gStyle.fGridStyle;
 
-      if ((grid_style < 0) || (grid_style >= JSROOT.Painter.root_line_styles.length)) grid_style = 11;
+      if ((grid_style < 0) || (grid_style >= jsrp.root_line_styles.length)) grid_style = 11;
 
       // add a grid on x axis, if the option is set
       if (pad && pad.fGridx && this.x_handle) {
@@ -1297,7 +1297,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
                 .attr("d", gridx)
                 .style('stroke', grid_color)
                 .style("stroke-width", JSROOT.gStyle.fGridWidth)
-                .style("stroke-dasharray", JSROOT.Painter.root_line_styles[grid_style]);
+                .style("stroke-dasharray", jsrp.root_line_styles[grid_style]);
       }
 
       // add a grid on y axis, if the option is set
@@ -1318,7 +1318,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
                 .attr("d", gridy)
                 .style('stroke',grid_color)
                 .style("stroke-width",JSROOT.gStyle.fGridWidth)
-                .style("stroke-dasharray", JSROOT.Painter.root_line_styles[grid_style]);
+                .style("stroke-dasharray", jsrp.root_line_styles[grid_style]);
       }
    }
 
@@ -1981,7 +1981,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
       this.this_pad_name = "";
       this.has_canvas = false;
 
-      JSROOT.Painter.SelectActivePad({ pp: this, active: false });
+      jsrp.SelectActivePad({ pp: this, active: false });
 
       JSROOT.ObjectPainter.prototype.Cleanup.call(this);
    }
@@ -2054,7 +2054,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
       if (pos && !istoppad)
          this.CalcAbsolutePosition(this.svg_pad(this.this_pad_name), pos);
 
-      JSROOT.Painter.SelectActivePad({ pp: p_p, active: true });
+      jsrp.SelectActivePad({ pp: p_p, active: true });
 
       if (typeof canp.SelectActivePad == "function")
          canp.SelectActivePad(p_p, _painter, pos);
@@ -2365,7 +2365,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
          if (this.options && this.options.CreatePalette) {
             let arr = [];
             for (let n = obj.arr.length - this.options.CreatePalette; n<obj.arr.length; ++n) {
-               let col = JSROOT.Painter.MakeColorRGB(obj.arr[n]);
+               let col = jsrp.MakeColorRGB(obj.arr[n]);
                if (!col) { console.log('Fail to create color for palette'); arr = null; break; }
                arr.push(col);
             }
@@ -2373,11 +2373,11 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
          }
 
          if (!this.options || this.options.GlobalColors) // set global list of colors
-            JSROOT.Painter.adoptRootColors(obj);
+            jsrp.adoptRootColors(obj);
 
          // copy existing colors and extend with new values
          if (this.options && this.options.LocalColors)
-            this.root_colors = JSROOT.Painter.extendRootColors(null, obj);
+            this.root_colors = jsrp.extendRootColors(null, obj);
          return true;
       }
 
@@ -2386,7 +2386,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
          for (let n = 0; n < obj.arr.length; ++n) {
             let col = obj.arr[n];
             if (col && (col._typename == 'TColor')) {
-               arr[n] = JSROOT.Painter.MakeColorRGB(col);
+               arr[n] = jsrp.MakeColorRGB(col);
             } else {
                console.log('Missing color with index ' + n); missing = true;
             }
@@ -2568,7 +2568,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
          if (fp) fp.SetLastEventPos();
       }
 
-      JSROOT.Painter.createMenu(this, evnt).then(menu => {
+      jsrp.createMenu(this, evnt).then(menu => {
          this.FillContextMenu(menu);
          this.FillObjectExecMenu(menu, "", () => menu.show());
       });
@@ -2789,11 +2789,11 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
 
             // set global list of colors
             if (!this.options || this.options.GlobalColors)
-               JSROOT.Painter.adoptRootColors(ListOfColors);
+               jsrp.adoptRootColors(ListOfColors);
 
             // copy existing colors and extend with new values
             if (this.options && this.options.LocalColors)
-               this.root_colors = JSROOT.Painter.extendRootColors(null, ListOfColors);
+               this.root_colors = jsrp.extendRootColors(null, ListOfColors);
 
             // set palette
             if (snap.fSnapshot.fBuf && (!this.options || !this.options.IgnorePalette)) {
@@ -3155,7 +3155,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
 
        if (!selp || (typeof selp.FillContextMenu !== 'function')) return;
 
-       JSROOT.Painter.createMenu(selp, evnt).then(menu => {
+       jsrp.createMenu(selp, evnt).then(menu => {
           if (selp.FillContextMenu(menu, selkind))
              setTimeout(menu.show.bind(menu), 50);
        });
@@ -3329,9 +3329,9 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
             evnt.stopPropagation();
          }
 
-         if (JSROOT.Painter.closeMenu()) return;
+         if (jsrp.closeMenu()) return;
 
-         JSROOT.Painter.createMenu(this, evnt).then(menu => {
+         jsrp.createMenu(this, evnt).then(menu => {
             menu.add("header:Menus");
 
             if (this.iscan)
@@ -3497,7 +3497,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
       let prev_name = painter.has_canvas ? painter.CurrentPadName(painter.this_pad_name) : undefined;
 
       // set active pad
-      JSROOT.Painter.SelectActivePad({ pp: painter, active: true });
+      jsrp.SelectActivePad({ pp: painter, active: true });
 
       // flag used to prevent immediate pad redraw during first draw
       painter.DrawPrimitives(0, () => {
@@ -4110,7 +4110,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
          drawFrame(divid, null);
 
       // select global reference - required for keys handling
-      JSROOT.Painter.SelectActivePad({ pp: painter, active: true });
+      jsrp.SelectActivePad({ pp: painter, active: true });
 
       painter.DrawPrimitives(0, () => { painter.ShowButtons(); painter.DrawingReady(); });
       return painter;
@@ -4138,11 +4138,11 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3) => {
    JSROOT.TPadPainter = TPadPainter;
    JSROOT.TCanvasPainter = TCanvasPainter;
 
-   JSROOT.Painter.drawGaxis = drawGaxis;
-   JSROOT.Painter.drawFrame = drawFrame;
-   JSROOT.Painter.drawPad = drawPad;
-   JSROOT.Painter.drawCanvas = drawCanvas;
-   JSROOT.Painter.drawPadSnapshot = drawPadSnapshot;
+   jsrp.drawGaxis = drawGaxis;
+   jsrp.drawFrame = drawFrame;
+   jsrp.drawPad = drawPad;
+   jsrp.drawCanvas = drawCanvas;
+   jsrp.drawPadSnapshot = drawPadSnapshot;
 
    return JSROOT;
 });

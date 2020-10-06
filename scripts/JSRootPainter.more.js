@@ -2,7 +2,7 @@
 /// Part of JavaScript ROOT graphics with more classes like TEllipse, TLine, ...
 /// Such classes are rarely used and therefore loaded only on demand
 
-JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter.v6'], (d3) => {
+JSROOT.require(['d3', 'JSRootPainter', 'JSRootMath', 'JSRootPainter.v6'], (d3, jsrp) => {
 
    "use strict";
 
@@ -710,7 +710,7 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter.v6'], (d3) => {
             if ((h0 > h) || (h0 < 0)) h0 = h;
          }
 
-         let path = JSROOT.Painter.BuildSvgPath("bezier", this.bins, h0, 2);
+         let path = jsrp.BuildSvgPath("bezier", this.bins, h0, 2);
 
          if (this.lineatt.color != "none")
             this.draw_g.append("svg:path")
@@ -1152,7 +1152,7 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter.v6'], (d3) => {
             bin.gry = pmain.gry(bin.y - bin.eylow);
          }
 
-         let path1 = JSROOT.Painter.BuildSvgPath((this.options.EF > 1) ? "bezier" : "line", drawbins),
+         let path1 = jsrp.BuildSvgPath((this.options.EF > 1) ? "bezier" : "line", drawbins),
              bins2 = [];
 
          for (let n=drawbins.length-1;n>=0;--n) {
@@ -1162,7 +1162,7 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter.v6'], (d3) => {
          }
 
          // build upper part (in reverse direction)
-         let path2 = JSROOT.Painter.BuildSvgPath((this.options.EF > 1) ? "Lbezier" : "Lline", bins2);
+         let path2 = jsrp.BuildSvgPath((this.options.EF > 1) ? "Lbezier" : "Lline", bins2);
 
          this.draw_g.append("svg:path")
                     .attr("d", path1.path + path2.path + "Z")
@@ -1193,7 +1193,7 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter.v6'], (d3) => {
          if (this.options.Curve === 1) kind = "bezier"; else
          if (excl_width!==0) kind+="calc"; // we need to calculated deltas to build exclusion points
 
-         let path = JSROOT.Painter.BuildSvgPath(kind, drawbins);
+         let path = jsrp.BuildSvgPath(kind, drawbins);
 
          if (excl_width!==0) {
             let extrabins = [];
@@ -1206,7 +1206,7 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter.v6'], (d3) => {
                extrabins.push(bin);
             }
 
-            let path2 = JSROOT.Painter.BuildSvgPath("L" + ((this.options.Curve === 1) ? "bezier" : "line"), extrabins);
+            let path2 = jsrp.BuildSvgPath("L" + ((this.options.Curve === 1) ? "bezier" : "line"), extrabins);
 
             this.draw_g.append("svg:path")
                        .attr("d", path.path + path2.path + "Z")
@@ -2405,7 +2405,7 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter.v6'], (d3) => {
 
       if (this.options.curve && bins.length)
          this.draw_g.append("svg:path")
-                 .attr("d", JSROOT.Painter.BuildSvgPath("bezier", bins).path)
+                 .attr("d", jsrp.BuildSvgPath("bezier", bins).path)
                  .style("fill", "none")
                  .call(this.lineatt.func);
 
@@ -2759,7 +2759,7 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter.v6'], (d3) => {
             if ((h0 > h) || (h0 < 0)) h0 = h;
          }
 
-         let path = JSROOT.Painter.BuildSvgPath("bezier", bins, h0, 2);
+         let path = jsrp.BuildSvgPath("bezier", bins, h0, 2);
 
          this.draw_g.append("svg:path")
              .attr("class", "line")
@@ -2829,7 +2829,7 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter.v6'], (d3) => {
       return this.DrawingReady();
    }
 
-   JSROOT.Painter.drawSpline = function(divid, spline, opt) {
+   jsrp.drawSpline = function(divid, spline, opt) {
       let painter = new TSplinePainter(spline);
 
       painter.SetDivId(divid, -1);
@@ -2966,7 +2966,7 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter.v6'], (d3) => {
       return this; // used in promise
    }
 
-   JSROOT.Painter.drawGraphTime = function(divid,gr,opt) {
+   jsrp.drawGraphTime = function(divid,gr,opt) {
 
       let painter = new TGraphTimePainter(gr);
       painter.SetDivId(divid,-1);
@@ -3077,7 +3077,7 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter.v6'], (d3) => {
       gr.fNpoints = j;
    }
 
-   JSROOT.Painter.drawEfficiency = function(divid, eff, opt) {
+   jsrp.drawEfficiency = function(divid, eff, opt) {
 
       if (!eff || !eff.fTotalHistogram || (eff.fTotalHistogram._typename.indexOf("TH1")!=0)) return null;
 
@@ -3295,8 +3295,8 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter.v6'], (d3) => {
 
       // if there is auto colors assignment, try to provide it
       if (this._pfc || this._plc || this._pmc) {
-         if (!this.palette && JSROOT.Painter.GetColorPalette)
-            this.palette = JSROOT.Painter.GetColorPalette();
+         if (!this.palette && jsrp.GetColorPalette)
+            this.palette = jsrp.GetColorPalette();
          if (this.palette) {
             let color = this.palette.calcColor(indx, graphs.arr.length+1);
             let icolor = this.add_color(color);
@@ -3310,7 +3310,7 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter.v6'], (d3) => {
       JSROOT.draw(this.divid, graphs.arr[indx], graphs.opt[indx] || opt).then(this.DrawNextGraph.bind(this, indx+1, opt));
    }
 
-   JSROOT.Painter.drawMultiGraph = function(divid, mgraph, opt) {
+   jsrp.drawMultiGraph = function(divid, mgraph, opt) {
 
       let painter = new TMultiGraphPainter(mgraph);
 
@@ -3482,7 +3482,7 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter.v6'], (d3) => {
                                      y: func.y(obj.fBuf[indx++]),
                                      rotate: -angle,
                                      text: txt,
-                                     color: JSROOT.Painter.root_colors[attr.fTextColor], latex: 0, draw_g: group });
+                                     color: jsrp.root_colors[attr.fTextColor], latex: 0, draw_g: group });
 
                      this.FinishTextDrawing(group);
                   }
@@ -3844,7 +3844,7 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter.v6'], (d3) => {
    // ===================================================================================
 
 
-   JSROOT.Painter.drawJSImage = function(divid, obj, opt) {
+   jsrp.drawJSImage = function(divid, obj, opt) {
       let painter = new JSROOT.BasePainter();
       painter.SetDivId(divid, -1);
 
@@ -3868,7 +3868,7 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter.v6'], (d3) => {
 
    // ==================================================================================================
 
-   JSROOT.Painter.CreateBranchItem = function(node, branch, tree, parent_branch) {
+   jsrp.CreateBranchItem = function(node, branch, tree, parent_branch) {
       if (!node || !branch) return false;
 
       let nb_branches = branch.fBranches ? branch.fBranches.arr.length : 0,
@@ -3922,7 +3922,7 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter.v6'], (d3) => {
               }
 
             for (let i=0; i<bobj.fBranches.arr.length; ++i)
-               JSROOT.Painter.CreateBranchItem(bnode, bobj.fBranches.arr[i], bobj.$tree, bobj);
+               jsrp.CreateBranchItem(bnode, bobj.fBranches.arr[i], bobj.$tree, bobj);
 
             let object_class = JSROOT.IO.GetBranchObjectClass(bobj, bobj.$tree, true),
                 methods = object_class ? JSROOT.getMethods(object_class) : null;
@@ -3964,14 +3964,14 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter.v6'], (d3) => {
       return true;
    }
 
-   JSROOT.Painter.TreeHierarchy = function(node, obj) {
+   jsrp.TreeHierarchy = function(node, obj) {
       if (obj._typename != 'TTree' && obj._typename != 'TNtuple' && obj._typename != 'TNtupleD' ) return false;
 
       node._childs = [];
       node._tree = obj;  // set reference, will be used later by TTree::Draw
 
       for (let i=0; i<obj.fBranches.arr.length; ++i)
-         JSROOT.Painter.CreateBranchItem(node, obj.fBranches.arr[i], obj);
+         jsrp.CreateBranchItem(node, obj.fBranches.arr[i], obj);
 
       return true;
    }
@@ -3980,7 +3980,7 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter.v6'], (d3) => {
     * @desc just envelope for real TTree::Draw method which do the main job
     * Can be also used for the branch and leaf object
     * @private */
-   JSROOT.Painter.drawTree = function(divid, obj, opt) {
+   jsrp.drawTree = function(divid, obj, opt) {
 
       let painter = new JSROOT.ObjectPainter(obj),
           tree = obj, args = opt;
@@ -4077,22 +4077,22 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter.v6'], (d3) => {
    // ==================================================================================================
 
 
-   JSROOT.Painter.drawText = drawText;
-   JSROOT.Painter.drawLine = drawLine;
-   JSROOT.Painter.drawPolyLine = drawPolyLine;
-   JSROOT.Painter.drawArrow = drawArrow;
-   JSROOT.Painter.drawEllipse = drawEllipse;
-   JSROOT.Painter.drawPie = drawPie;
-   JSROOT.Painter.drawBox = drawBox;
-   JSROOT.Painter.drawMarker = drawMarker;
-   JSROOT.Painter.drawPolyMarker = drawPolyMarker;
-   JSROOT.Painter.drawWebPainting = drawWebPainting;
-   JSROOT.Painter.drawRooPlot = drawRooPlot;
-   JSROOT.Painter.drawGraph = drawGraph;
-   JSROOT.Painter.drawFunction = drawFunction;
-   JSROOT.Painter.drawGraphPolar = drawGraphPolar;
-   JSROOT.Painter.drawGraphPolargram = drawGraphPolargram;
-   JSROOT.Painter.drawASImage = drawASImage;
+   jsrp.drawText = drawText;
+   jsrp.drawLine = drawLine;
+   jsrp.drawPolyLine = drawPolyLine;
+   jsrp.drawArrow = drawArrow;
+   jsrp.drawEllipse = drawEllipse;
+   jsrp.drawPie = drawPie;
+   jsrp.drawBox = drawBox;
+   jsrp.drawMarker = drawMarker;
+   jsrp.drawPolyMarker = drawPolyMarker;
+   jsrp.drawWebPainting = drawWebPainting;
+   jsrp.drawRooPlot = drawRooPlot;
+   jsrp.drawGraph = drawGraph;
+   jsrp.drawFunction = drawFunction;
+   jsrp.drawGraphPolar = drawGraphPolar;
+   jsrp.drawGraphPolargram = drawGraphPolargram;
+   jsrp.drawASImage = drawASImage;
 
 
    JSROOT.TF1Painter = TF1Painter;
