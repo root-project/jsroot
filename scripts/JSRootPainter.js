@@ -3842,17 +3842,22 @@ JSROOT.require(['d3'], (d3) => {
    JSROOT.draw = function(divid, obj, opt) {
 
       if (!obj || (typeof obj !== 'object'))
-         return Promise.reject(new Error('not an object in JSROOT.draw'));
+         return Promise.reject(Error('not an object in JSROOT.draw'));
 
       if (opt == 'inspect')
          return JSROOT.require("hierarchy").then(() => Painter.drawInspector(divid, obj));
 
-      let handle = null;
-      if ('_typename' in obj) handle = JSROOT.getDrawHandle("ROOT." + obj._typename, opt);
-      else if ('_kind' in obj) handle = JSROOT.getDrawHandle(obj._kind, opt);
+      let handle;
+      if ('_typename' in obj)
+         handle = JSROOT.getDrawHandle("ROOT." + obj._typename, opt);
+      else if ('_kind' in obj)
+         handle = JSROOT.getDrawHandle(obj._kind, opt);
+      else
+         return JSROOT.require("hierarchy").then(() => Painter.drawInspector(divid, obj));
 
       // this is case of unsupported class, close it normally
-      if (!handle) return Promise.resolve(null);
+      if (!handle)
+         return Promise.reject(Error(`Object of ${obj.kind ? obj.kind : obj._typename} cannot be shown with JSROOT.draw`));
 
       if (handle.draw_field && obj[handle.draw_field])
          return JSROOT.draw(divid, obj[handle.draw_field], opt);
