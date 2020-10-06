@@ -2266,9 +2266,11 @@ JSROOT.require(['d3', 'jquery', 'JSRootPainter.hierarchy'], (d3, $) => {
 
          if (args.drawopt) JSROOT.cleanup(this.drawid);
 
-         this.local_tree.Draw(args, (histo, hopt /*, intermediate*/) =>
-            JSROOT.redraw(this.drawid, histo, hopt)
-         );
+         let process_result = obj => JSROOT.redraw(this.drawid, obj);
+
+         args.progress = process_result;
+
+         this.local_tree.Draw(args).then(process_result);
       }
 
       player.PerformDraw = function() {

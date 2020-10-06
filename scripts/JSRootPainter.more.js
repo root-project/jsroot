@@ -3988,8 +3988,10 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter.v6'], (d3) => {
       if (obj._typename == "TBranchFunc") {
          // fictional object, created only in browser
          args = { expr: "." + obj.func + "()", branch: obj.branch };
-         if (opt && opt.indexOf("dump")==0) args.expr += ">>" + opt; else
-         if (opt) args.expr += opt;
+         if (opt && opt.indexOf("dump")==0)
+            args.expr += ">>" + opt;
+         else if (opt)
+            args.expr += opt;
          tree = obj.branch.$tree;
       } else if (obj.$branch) {
          // this is drawing of the single leaf from the branch
@@ -4035,30 +4037,39 @@ JSROOT.require(['d3', 'JSRootMath', 'JSRootPainter.v6'], (d3) => {
 
       JSROOT.cleanup(divid);
 
-      tree.Draw(args, function(histo, hopt, intermediate) {
+      let create_player = 0, last_intermediate = false;
 
-         let drawid = "";
+      let process_result = function(obj, intermediate) {
 
-         if (!args.player) drawid = divid; else
-         if (args.create_player === 2) drawid = painter.drawid;
+         let drawid;
+
+         if (!args.player)
+            drawid = divid;
+         else if (create_player === 2)
+            drawid = painter.drawid;
 
          if (drawid)
-            return JSROOT.redraw(drawid, histo, hopt).then(intermediate ? null : callback);
+            return JSROOT.redraw(drawid, obj).then(intermediate ? null : callback);
 
-         if (args.create_player === 1) { args.player_intermediate = intermediate; return; }
+         if (create_player === 1) { last_intermediate = intermediate; return; }
 
          // redirect drawing to the player
-         args.player_create = 1;
-         args.player_intermediate = intermediate;
+         player_create = 1;
+         args.player_intermediate = res.progress;
          JSROOT.require("JSRootPainter.jquery").then(() => {
             JSROOT.CreateTreePlayer(painter);
             painter.ConfigureTree(tree);
             painter.Show(divid, args);
-            args.create_player = 2;
-            JSROOT.redraw(painter.drawid, histo, hopt).then(args.player_intermediate ? null : callback);
+            create_player = 2;
+            JSROOT.redraw(painter.drawid, obj).then(last_intermediate ? null : callback);
             painter.SetItemName("TreePlayer"); // item name used by MDI when process resize
          });
-      });
+      }
+
+      args.progress = obj => process_result(obj, true);
+
+      // use in result handling same function as for progress handling
+      tree.Draw(args).then(process_result);
 
       return painter;
    }
