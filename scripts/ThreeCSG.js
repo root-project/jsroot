@@ -279,14 +279,14 @@ JSROOT.require(['three'], function(THREE) {
       this.polygons = [];
       this.front = this.back = undefined;
 
-      if ( !(polygons instanceof Array) || polygons.length === 0 ) return;
+      if (!polygons) return;
 
       this.divider = polygons[0].clone();
 
       let polygon_count = polygons.length,
           front = [], back = [];
 
-      for (let i = 0; i < polygon_count; ++i ) {
+      for (let i = 0; i < polygon_count; ++i) {
          if (nodeid!==undefined) {
             polygons[i].id = nodeid++;
             delete polygons[i].parent;
@@ -519,62 +519,28 @@ JSROOT.require(['three'], function(THREE) {
          // faceVertexUvs = geometry.faceVertexUvs[0][i];
          polygon = new Polygon;
 
-         if ( face instanceof THREE.Face3 ) {
-            useVertexNormals = face.vertexNormals && (face.vertexNormals.length==3);
+         useVertexNormals = face.vertexNormals && (face.vertexNormals.length==3);
 
-            vertex = geometry.vertices[ face.a ];
-            if (useVertexNormals) normal = face.vertexNormals[0];
-            // uvs = faceVertexUvs ? new THREE.Vector2( faceVertexUvs[0].x, faceVertexUvs[0].y ) : null;
-            vertex = new Vertex( vertex.x, vertex.y, vertex.z, normal.x, normal.y, normal.z /*face.normal , uvs */ );
-            if (transfer_matrix) vertex.applyMatrix4(transfer_matrix);
-            polygon.vertices.push( vertex );
+         vertex = geometry.vertices[ face.a ];
+         if (useVertexNormals) normal = face.vertexNormals[0];
+         // uvs = faceVertexUvs ? new THREE.Vector2( faceVertexUvs[0].x, faceVertexUvs[0].y ) : null;
+         vertex = new Vertex( vertex.x, vertex.y, vertex.z, normal.x, normal.y, normal.z /*face.normal , uvs */ );
+         if (transfer_matrix) vertex.applyMatrix4(transfer_matrix);
+         polygon.vertices.push( vertex );
 
-            vertex = geometry.vertices[ face.b ];
-            if (useVertexNormals) normal = face.vertexNormals[1];
-            //uvs = faceVertexUvs ? new THREE.Vector2( faceVertexUvs[1].x, faceVertexUvs[1].y ) : null;
-            vertex = new Vertex( vertex.x, vertex.y, vertex.z, normal.x, normal.y, normal.z /*face.normal , uvs */ );
-            if (transfer_matrix) vertex.applyMatrix4(transfer_matrix);
-            polygon.vertices.push( vertex );
+         vertex = geometry.vertices[ face.b ];
+         if (useVertexNormals) normal = face.vertexNormals[1];
+         //uvs = faceVertexUvs ? new THREE.Vector2( faceVertexUvs[1].x, faceVertexUvs[1].y ) : null;
+         vertex = new Vertex( vertex.x, vertex.y, vertex.z, normal.x, normal.y, normal.z /*face.normal , uvs */ );
+         if (transfer_matrix) vertex.applyMatrix4(transfer_matrix);
+         polygon.vertices.push( vertex );
 
-            vertex = geometry.vertices[ face.c ];
-            if (useVertexNormals) normal = face.vertexNormals[2];
-            // uvs = faceVertexUvs ? new THREE.Vector2( faceVertexUvs[2].x, faceVertexUvs[2].y ) : null;
-            vertex = new Vertex( vertex.x, vertex.y, vertex.z, normal.x, normal.y, normal.z /*face.normal, uvs */ );
-            if (transfer_matrix) vertex.applyMatrix4(transfer_matrix);
-            polygon.vertices.push( vertex );
-         } else if ( typeof THREE.Face4 ) {
-            useVertexNormals = face.vertexNormals && (face.vertexNormals.length==4);
-
-            vertex = geometry.vertices[ face.a ];
-            if (useVertexNormals) normal = face.vertexNormals[0];
-            // uvs = faceVertexUvs ? new THREE.Vector2( faceVertexUvs[0].x, faceVertexUvs[0].y ) : null;
-            vertex = new Vertex( vertex.x, vertex.y, vertex.z, normal.x, normal.y, normal.z /*, uvs */ );
-            if (transfer_matrix) vertex.applyMatrix4(transfer_matrix);
-            polygon.vertices.push( vertex );
-
-            vertex = geometry.vertices[ face.b ];
-            if (useVertexNormals) normal = face.vertexNormals[1];
-            // uvs = faceVertexUvs ? new THREE.Vector2( faceVertexUvs[1].x, faceVertexUvs[1].y ) : null;
-            vertex = new Vertex( vertex.x, vertex.y, vertex.z, normal.x, normal.y, normal.z /*, uvs */ );
-            if (transfer_matrix) vertex.applyMatrix4(transfer_matrix);
-            polygon.vertices.push( vertex );
-
-            vertex = geometry.vertices[ face.c ];
-            if (useVertexNormals) normal = face.vertexNormals[2];
-            // uvs = faceVertexUvs ? new THREE.Vector2( faceVertexUvs[2].x, faceVertexUvs[2].y ) : null;
-            vertex = new Vertex( vertex.x, vertex.y, vertex.z, normal.x, normal.y, normal.z /*, uvs */ );
-            if (transfer_matrix) vertex.applyMatrix4(transfer_matrix);
-            polygon.vertices.push( vertex );
-
-            vertex = geometry.vertices[ face.d ];
-            if (useVertexNormals) normal = face.vertexNormals[3];
-            // uvs = faceVertexUvs ? new THREE.Vector2( faceVertexUvs[3].x, faceVertexUvs[3].y ) : null;
-            vertex = new Vertex( vertex.x, vertex.y, vertex.z, normal.x, normal.y, normal.z /*, uvs */ );
-            if (transfer_matrix) vertex.applyMatrix4(transfer_matrix);
-            polygon.vertices.push( vertex );
-         } else {
-            throw 'Invalid face type at index ' + i;
-         }
+         vertex = geometry.vertices[ face.c ];
+         if (useVertexNormals) normal = face.vertexNormals[2];
+         // uvs = faceVertexUvs ? new THREE.Vector2( faceVertexUvs[2].x, faceVertexUvs[2].y ) : null;
+         vertex = new Vertex( vertex.x, vertex.y, vertex.z, normal.x, normal.y, normal.z /*face.normal, uvs */ );
+         if (transfer_matrix) vertex.applyMatrix4(transfer_matrix);
+         polygon.vertices.push( vertex );
 
          polygon.calculateProperties();
          polygons.push( polygon );
@@ -860,6 +826,8 @@ JSROOT.require(['three'], function(THREE) {
       return mesh;
    }
 
+   // ================================================================================================
+
    ThreeBSP.CreateNormal = function(axis_name, pos, size) {
       // create geometry to make cut on specified axis
 
@@ -893,19 +861,13 @@ JSROOT.require(['three'], function(THREE) {
       return new Geometry(node);
    }
 
-
-   // ================================================================================================
-
-
-   if (JSROOT.nodejs) module.exports = ThreeBSP;
-
    ThreeBSP.Vertex = Vertex;
    ThreeBSP.Geometry = Geometry;
    ThreeBSP.Polygon = Polygon;
 
    ThreeBSP.CreateBufferGeometry = CreateBufferGeometry;
 
-
+   if (JSROOT.nodejs) module.exports = ThreeBSP;
    return ThreeBSP;
 
 });
