@@ -4828,7 +4828,7 @@
 
          dx = handle.grx[i+1] - handle.grx[i];
          x1 = Math.round(handle.grx[i] + dx*handle.xbar1);
-         dx = Math.round(dx*(handle.xbar2-handle.xbar1));
+         dx = Math.round(dx*(handle.xbar2-handle.xbar1)) || 1;
 
          for (j = handle.j1; j < handle.j2; ++j) {
             binz = histo.getBinContent(i + 1, j + 1);
@@ -4841,7 +4841,7 @@
 
             dy = handle.gry[j]-handle.gry[j+1];
             y2 = Math.round(handle.gry[j+1] + dy*handle.ybar1);
-            dy = Math.round(dy*(handle.ybar2-handle.ybar1));
+            dy = Math.round(dy*(handle.ybar2-handle.ybar1)) || 1;
 
             cmd1 = "M"+x1+","+y2;
             if (colPaths[colindx] === undefined) {
