@@ -1127,7 +1127,7 @@
 
    // FIXME: for backward compatibility with v5, will be remove in JSROOT v7
    JSROOT.AssertPrerequisites = function(req, callback) {
-      req = req.replace(/more2d;/g, 'more;').replace(/2d;/g, 'gpad;');
+      req = req.replace(/2d;v7;/g, "v7gpad;").replace(/2d;v6;/g, "gpad;").replace(/more2d;/g, 'more;').replace(/2d;/g, 'gpad;');
       JSROOT.require(req).then(callback);
    }
 
@@ -1926,7 +1926,13 @@
       if (arg.openui5src) JSROOT.openui5src = arg.openui5src;
       if (arg.openui5libs) JSROOT.openui5libs = arg.openui5libs;
       if (arg.openui5theme) JSROOT.openui5theme = arg.openui5theme;
-      return JSROOT.require("webwindow;" + (arg && arg.prereq ? arg.prereq : "")).then(() => {
+
+      let prereq = "webwindow;"; // FIXME: remove for JSROOT v7 once ROOT code is adjusted
+      if (arg && arg.prereq) prereq += arg.prereq.replace(/2d;v7;/g, "v7gpad;").replace(/2d;v6;/g, "gpad;");
+
+      if (arg) console.log('connect', arg.prereq, arg.prereq2)
+
+      return JSROOT.require(prereq).then(() => {
          if (arg && arg.prereq_logdiv && document) {
             let elem = document.getElementById(arg.prereq_logdiv);
             if (elem) elem.innerHTML = '';
