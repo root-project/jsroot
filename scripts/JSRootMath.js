@@ -11,9 +11,8 @@ JSROOT.require([], () =>  {
    mth.lgam = function( x ) {
       let p, q, u, w, z, i, sgngam = 1;
       const kMAXLGM = 2.556348e305,
-            LS2PI = 0.91893853320467274178;
-
-      const A = [
+            LS2PI = 0.91893853320467274178,
+      A = [
          8.11614167470508450300E-4,
          -5.95061904284301438324E-4,
          7.93650340457716943945E-4,
@@ -654,6 +653,7 @@ JSROOT.require([], () =>  {
    }
 
    JSROOT.Math = mth;
+   if (JSROOT.nodejs) module.exports = mth;
 
-   return JSROOT;
+   return mth;
 });

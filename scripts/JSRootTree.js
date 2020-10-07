@@ -1,7 +1,7 @@
 /// @file JSRootTree.js
 /// Collect all TTree-relevant methods like reading and processing
 
-JSROOT.require(['JSRootIOEvolution', 'JSRootMath'], (jsrio) => {
+JSROOT.require(['JSRootIOEvolution', 'JSRootMath'], (jsrio, jsrmath) => {
 
    "use strict";
 
@@ -410,9 +410,9 @@ JSROOT.require(['JSRootIOEvolution', 'JSRootMath'], (jsrio) => {
 
       // support usage of some standard TMath functions
       code = code.replace(/TMath::Exp\(/g, 'Math.exp(')
-         .replace(/TMath::Abs\(/g, 'Math.abs(')
-         .replace(/TMath::Prob\(/g, 'arg.$math.Prob(')
-         .replace(/TMath::Gaus\(/g, 'arg.$math.Gaus(');
+                 .replace(/TMath::Abs\(/g, 'Math.abs(')
+                 .replace(/TMath::Prob\(/g, 'arg.$math.Prob(')
+                 .replace(/TMath::Gaus\(/g, 'arg.$math.Gaus(');
 
       this.func = new Function("arg", "return (" + code + ")");
 
@@ -435,7 +435,7 @@ JSROOT.require(['JSRootIOEvolution', 'JSRootMath'], (jsrio) => {
          return;
       }
 
-      let arg = { $globals: this.globals, $math: JSROOT.Math }, usearrlen = -1, arrs = [];
+      let arg = { $globals: this.globals, $math: jsrmath }, usearrlen = -1, arrs = [];
       for (let n = 0; n < this.branches.length; ++n) {
          let name = "var" + n;
          arg[name] = obj[this.branches[n]];
