@@ -799,6 +799,9 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
    }
 
    TGeoPainter.prototype.buildDatGui = function(dat) {
+      // can happen when dat gui loaded after drawing is already cleaned
+      if (!this._renderer) return;
+
       if (!dat)
          throw Error('Fail to load dat.gui');
 
