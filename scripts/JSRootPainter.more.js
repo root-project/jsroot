@@ -907,10 +907,10 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootMath', 'JSRootPainter.v6'], (d3, j
       if (gr._typename == 'TGraphAsymmErrors' || gr._typename == 'TGraphBentErrors'
           || gr._typename.match(/^RooHist/)) kind = 2;
 
-      this.bins = [];
+      this.bins = new Array(npoints);
 
-      for (let p=0; p<npoints; ++p) {
-         let bin = { x: gr.fX[p], y: gr.fY[p], indx: p };
+      for (let p = 0; p < npoints; ++p) {
+         let bin = this.bins[p] = { x: gr.fX[p], y: gr.fY[p], indx: p };
          switch(kind) {
             case 1:
                bin.exlow = bin.exhigh = gr.fEX[p];
@@ -923,7 +923,6 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootMath', 'JSRootPainter.v6'], (d3, j
                bin.eyhigh = gr.fEYhigh[p];
                break;
          }
-         this.bins.push(bin);
 
          if (p===0) {
             this.xmin = this.xmax = bin.x;
@@ -2966,7 +2965,7 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootMath', 'JSRootPainter.v6'], (d3, j
       return this; // used in promise
    }
 
-   jsrp.drawGraphTime = function(divid,gr,opt) {
+   let drawGraphTime = (divid, gr, opt) => {
 
       let painter = new TGraphTimePainter(gr);
       painter.SetDivId(divid,-1);
@@ -3077,7 +3076,7 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootMath', 'JSRootPainter.v6'], (d3, j
       gr.fNpoints = j;
    }
 
-   jsrp.drawEfficiency = function(divid, eff, opt) {
+   let drawEfficiency = (divid, eff, opt) => {
 
       if (!eff || !eff.fTotalHistogram || (eff.fTotalHistogram._typename.indexOf("TH1")!=0)) return null;
 
@@ -3094,7 +3093,6 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootMath', 'JSRootPainter.v6'], (d3, j
                        return painter;
                     });
    }
-
 
    // =============================================================
 
@@ -4090,7 +4088,9 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootMath', 'JSRootPainter.v6'], (d3, j
    jsrp.drawRooPlot = drawRooPlot;
    jsrp.drawGraph = drawGraph;
    jsrp.drawFunction = drawFunction;
+   jsrp.drawGraphTime = drawGraphTime;
    jsrp.drawGraphPolar = drawGraphPolar;
+   jsrp.drawEfficiency = drawEfficiency;
    jsrp.drawGraphPolargram = drawGraphPolargram;
    jsrp.drawASImage = drawASImage;
 

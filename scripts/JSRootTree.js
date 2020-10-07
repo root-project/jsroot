@@ -1,7 +1,7 @@
 /// @file JSRootTree.js
 /// Collect all TTree-relevant methods like reading and processing
 
-JSROOT.require(['JSRootIOEvolution', 'JSRootMath'], () => {
+JSROOT.require(['JSRootIOEvolution', 'JSRootMath'], (jsrio) => {
 
    "use strict";
 
@@ -10,7 +10,7 @@ JSROOT.require(['JSRootIOEvolution', 'JSRootMath'], () => {
       kSTLNode: 4, kClonesMemberNode: 31, kSTLMemberNode: 41
    };
 
-   JSROOT.IO.BranchBits = {
+   jsrio.BranchBits = {
       kDoNotProcess: JSROOT.BIT(10), // Active bit for branches
       kIsClone: JSROOT.BIT(11), // to indicate a TBranchClones
       kBranchObject: JSROOT.BIT(12), // branch is a TObject*
@@ -345,7 +345,7 @@ JSROOT.require(['JSRootIOEvolution', 'JSRootMath'], () => {
                   if ((br.fType === JSROOT.BranchType.kClonesNode) || (br.fType === JSROOT.BranchType.kSTLNode)) {
                      arriter.push(undefined);
                   } else {
-                     let objclass = JSROOT.IO.GetBranchObjectClass(br, tree, false, true);
+                     let objclass = jsrio.GetBranchObjectClass(br, tree, false, true);
                      if (objclass && JSROOT.IsRootCollection(null, objclass)) arriter.push(undefined);
                   }
                }
@@ -1241,7 +1241,7 @@ JSROOT.require(['JSRootIOEvolution', 'JSRootMath'], () => {
 
    // ======================================================================
 
-   JSROOT.IO.FindBrachStreamerElement = function(branch, file) {
+   jsrio.FindBrachStreamerElement = function(branch, file) {
       // return TStreamerElement associated with the branch - if any
       // unfortunately, branch.fID is not number of element in streamer info
 
@@ -1261,10 +1261,10 @@ JSROOT.require(['JSRootIOEvolution', 'JSRootMath'], () => {
          if (!elem) return false;
          if (elem.fName !== match_name) return false;
          if (elem.fType === branch.fStreamerType) return true;
-         if ((elem.fType === JSROOT.IO.kBool) && (branch.fStreamerType === JSROOT.IO.kUChar)) return true;
-         if (((branch.fStreamerType === JSROOT.IO.kSTL) || (branch.fStreamerType === JSROOT.IO.kSTL + JSROOT.IO.kOffsetL) ||
-            (branch.fStreamerType === JSROOT.IO.kSTLp) || (branch.fStreamerType === JSROOT.IO.kSTLp + JSROOT.IO.kOffsetL))
-            && (elem.fType === JSROOT.IO.kStreamer)) return true;
+         if ((elem.fType === jsrio.kBool) && (branch.fStreamerType === jsrio.kUChar)) return true;
+         if (((branch.fStreamerType === jsrio.kSTL) || (branch.fStreamerType === jsrio.kSTL + jsrio.kOffsetL) ||
+            (branch.fStreamerType === jsrio.kSTLp) || (branch.fStreamerType === jsrio.kSTLp + jsrio.kOffsetL))
+            && (elem.fType === jsrio.kStreamer)) return true;
          console.warn('Should match element', elem.fType, 'with branch', branch.fStreamerType);
          return false;
       }
@@ -1283,7 +1283,7 @@ JSROOT.require(['JSRootIOEvolution', 'JSRootMath'], () => {
    }
 
 
-   JSROOT.IO.DefineMemberTypeName = function(file, parent_class, member_name) {
+   jsrio.DefineMemberTypeName = function(file, parent_class, member_name) {
       // return type name of given member in the class
 
       let s_i = file.FindStreamerInfo(parent_class),
@@ -1293,7 +1293,7 @@ JSROOT.require(['JSRootIOEvolution', 'JSRootMath'], () => {
 
       for (let k = 0; k < arr.length; ++k) {
          if (arr[k].fTypeName === "BASE") {
-            let res = JSROOT.IO.DefineMemberTypeName(file, arr[k].fName, member_name);
+            let res = jsrio.DefineMemberTypeName(file, arr[k].fName, member_name);
             if (res) return res;
          } else
             if (arr[k].fName === member_name) { elem = arr[k]; break; }
@@ -1307,7 +1307,7 @@ JSROOT.require(['JSRootIOEvolution', 'JSRootMath'], () => {
       return clname;
    }
 
-   JSROOT.IO.GetBranchObjectClass = function(branch, tree, with_clones, with_leafs) {
+   jsrio.GetBranchObjectClass = function(branch, tree, with_clones, with_leafs) {
       // return class name of the object, stored in the branch
 
       if (!branch || (branch._typename !== "TBranchElement")) return "";
@@ -1320,26 +1320,26 @@ JSROOT.require(['JSRootIOEvolution', 'JSRootMath'], () => {
       if (with_clones && branch.fClonesName && ((branch.fType === JSROOT.BranchType.kClonesNode) || (branch.fType === JSROOT.BranchType.kSTLNode)))
          return branch.fClonesName;
 
-      let s_elem = JSROOT.IO.FindBrachStreamerElement(branch, tree.$file);
+      let s_elem = jsrio.FindBrachStreamerElement(branch, tree.$file);
 
       if ((branch.fType === JSROOT.BranchType.kBaseClassNode) && s_elem && (s_elem.fTypeName === "BASE"))
          return s_elem.fName;
 
       if (branch.fType === JSROOT.BranchType.kObjectNode) {
-         if (s_elem && ((s_elem.fType === JSROOT.IO.kObject) || (s_elem.fType === JSROOT.IO.kAny)))
+         if (s_elem && ((s_elem.fType === jsrio.kObject) || (s_elem.fType === jsrio.kAny)))
             return s_elem.fTypeName;
          return "TObject";
       }
 
       if ((branch.fType === JSROOT.BranchType.kLeafNode) && s_elem && with_leafs) {
-         if ((s_elem.fType === JSROOT.IO.kObject) || (s_elem.fType === JSROOT.IO.kAny)) return s_elem.fTypeName;
-         if (s_elem.fType === JSROOT.IO.kObjectp) return s_elem.fTypeName.substr(0, s_elem.fTypeName.length - 1);
+         if ((s_elem.fType === jsrio.kObject) || (s_elem.fType === jsrio.kAny)) return s_elem.fTypeName;
+         if (s_elem.fType === jsrio.kObjectp) return s_elem.fTypeName.substr(0, s_elem.fTypeName.length - 1);
       }
 
       return "";
    }
 
-   JSROOT.IO.MakeMethodsList = function(typename) {
+   jsrio.MakeMethodsList = function(typename) {
       // create fast list to assign all methods to the object
 
       let methods = JSROOT.getMethods(typename);
@@ -1363,7 +1363,7 @@ JSROOT.require(['JSRootIOEvolution', 'JSRootMath'], () => {
       return res;
    }
 
-   JSROOT.IO.DetectBranchMemberClass = function(brlst, prefix, start) {
+   jsrio.DetectBranchMemberClass = function(brlst, prefix, start) {
       // try to define classname for the branch member, scanning list of branches
       let clname = "";
       for (let kk = (start || 0); kk < brlst.arr.length; ++kk)
@@ -1407,17 +1407,17 @@ JSROOT.require(['JSRootIOEvolution', 'JSRootMath'], () => {
          // function creates TStreamerElement which corresponds to the elementary leaf
          let datakind = 0;
          switch (leaf._typename) {
-            case 'TLeafF': datakind = JSROOT.IO.kFloat; break;
-            case 'TLeafD': datakind = JSROOT.IO.kDouble; break;
-            case 'TLeafO': datakind = JSROOT.IO.kBool; break;
-            case 'TLeafB': datakind = leaf.fIsUnsigned ? JSROOT.IO.kUChar : JSROOT.IO.kChar; break;
-            case 'TLeafS': datakind = leaf.fIsUnsigned ? JSROOT.IO.kUShort : JSROOT.IO.kShort; break;
-            case 'TLeafI': datakind = leaf.fIsUnsigned ? JSROOT.IO.kUInt : JSROOT.IO.kInt; break;
-            case 'TLeafL': datakind = leaf.fIsUnsigned ? JSROOT.IO.kULong64 : JSROOT.IO.kLong64; break;
-            case 'TLeafC': datakind = JSROOT.IO.kTString; break; // datakind = leaf.fIsUnsigned ? JSROOT.IO.kUChar : JSROOT.IO.kChar; break;
+            case 'TLeafF': datakind = jsrio.kFloat; break;
+            case 'TLeafD': datakind = jsrio.kDouble; break;
+            case 'TLeafO': datakind = jsrio.kBool; break;
+            case 'TLeafB': datakind = leaf.fIsUnsigned ? jsrio.kUChar : jsrio.kChar; break;
+            case 'TLeafS': datakind = leaf.fIsUnsigned ? jsrio.kUShort : jsrio.kShort; break;
+            case 'TLeafI': datakind = leaf.fIsUnsigned ? jsrio.kUInt : jsrio.kInt; break;
+            case 'TLeafL': datakind = leaf.fIsUnsigned ? jsrio.kULong64 : jsrio.kLong64; break;
+            case 'TLeafC': datakind = jsrio.kTString; break; // datakind = leaf.fIsUnsigned ? jsrio.kUChar : jsrio.kChar; break;
             default: return null;
          }
-         return JSROOT.IO.CreateStreamerElement(name || leaf.fName, datakind);
+         return jsrio.CreateStreamerElement(name || leaf.fName, datakind);
       }
 
       function FindInHandle(branch) {
@@ -1496,7 +1496,7 @@ JSROOT.require(['JSRootIOEvolution', 'JSRootMath'], () => {
             GetEntry: function(entry) {
                // This should be equivalent to TBranch::GetEntry() method
                let shift = entry - this.first_entry, off;
-               if (!this.branch.TestBit(JSROOT.IO.BranchBits.kDoNotUseBufferMap))
+               if (!this.branch.TestBit(jsrio.BranchBits.kDoNotUseBufferMap))
                   this.raw.ClearObjectMap();
                if (this.basket.fEntryOffset) {
                   off = this.basket.fEntryOffset[shift];
@@ -1534,10 +1534,10 @@ JSROOT.require(['JSRootIOEvolution', 'JSRootMath'], () => {
 
             let BranchCount2 = branch.fBranchCount2;
 
-            if (!BranchCount2 && (branch.fBranchCount.fStreamerType === JSROOT.IO.kSTL) &&
-               ((branch.fStreamerType === JSROOT.IO.kStreamLoop) || (branch.fStreamerType === JSROOT.IO.kOffsetL + JSROOT.IO.kStreamLoop))) {
+            if (!BranchCount2 && (branch.fBranchCount.fStreamerType === jsrio.kSTL) &&
+               ((branch.fStreamerType === jsrio.kStreamLoop) || (branch.fStreamerType === jsrio.kOffsetL + jsrio.kStreamLoop))) {
                // special case when count member from kStreamLoop not assigned as fBranchCount2
-               let elemd = JSROOT.IO.FindBrachStreamerElement(branch, handle.file),
+               let elemd = jsrio.FindBrachStreamerElement(branch, handle.file),
                   arrd = branch.fBranchCount.fBranches.arr;
 
                if (elemd && elemd.fCountName && arrd)
@@ -1587,7 +1587,7 @@ JSROOT.require(['JSRootIOEvolution', 'JSRootMath'], () => {
                   continue;
                }
 
-               let elem = JSROOT.IO.FindBrachStreamerElement(br, handle.file);
+               let elem = jsrio.FindBrachStreamerElement(br, handle.file);
                if (elem && (elem.fTypeName === "BASE")) {
                   // if branch is data of base class, map it to original target
                   if (br.fTotBytes && !AddBranchForReading(br, target_object, target_name, read_mode)) return false;
@@ -1611,7 +1611,7 @@ JSROOT.require(['JSRootIOEvolution', 'JSRootMath'], () => {
                if (chld_kind > 0) {
                   chld_direct = "$child$";
                   let pp = subname.indexOf(".");
-                  if (pp > 0) chld_direct = JSROOT.IO.DetectBranchMemberClass(lst, branch.fName + "." + subname.substr(0, pp + 1), k) || "TObject";
+                  if (pp > 0) chld_direct = jsrio.DetectBranchMemberClass(lst, branch.fName + "." + subname.substr(0, pp + 1), k) || "TObject";
                }
 
                if (!AddBranchForReading(br, master_target, subname, chld_direct)) return false;
@@ -1635,7 +1635,7 @@ JSROOT.require(['JSRootIOEvolution', 'JSRootMath'], () => {
 
             if ((branch.fType === JSROOT.BranchType.kClonesNode) || (branch.fType === JSROOT.BranchType.kSTLNode)) {
 
-               elem = JSROOT.IO.CreateStreamerElement(target_name, JSROOT.IO.kInt);
+               elem = jsrio.CreateStreamerElement(target_name, jsrio.kInt);
 
                if (!read_mode || ((typeof read_mode === "string") && (read_mode[0] === ".")) || (read_mode === 1)) {
                   handle.process_arrays = false;
@@ -1658,20 +1658,20 @@ JSROOT.require(['JSRootIOEvolution', 'JSRootMath'], () => {
                   }
 
                   if ((typeof read_mode === "string") && (read_mode[0] === ".")) {
-                     member.conttype = JSROOT.IO.DetectBranchMemberClass(branch.fBranches, branch.fName + read_mode);
+                     member.conttype = jsrio.DetectBranchMemberClass(branch.fBranches, branch.fName + read_mode);
                      if (!member.conttype) {
                         console.error('Cannot select object', read_mode, "in the branch", branch.fName);
                         return null;
                      }
                   }
 
-                  member.methods = JSROOT.IO.MakeMethodsList(member.conttype);
+                  member.methods = jsrio.MakeMethodsList(member.conttype);
 
                   child_scan = (branch.fType === JSROOT.BranchType.kClonesNode) ? JSROOT.BranchType.kClonesMemberNode : JSROOT.BranchType.kSTLMemberNode;
                }
             } else
 
-               if ((object_class = JSROOT.IO.GetBranchObjectClass(branch, handle.tree))) {
+               if ((object_class = jsrio.GetBranchObjectClass(branch, handle.tree))) {
 
                   if (read_mode === true) {
                      console.warn('Object branch ' + object_class + ' can not have data to be read directly');
@@ -1682,7 +1682,7 @@ JSROOT.require(['JSRootIOEvolution', 'JSRootMath'], () => {
 
                   let newtgt = new Array(target_object ? (target_object.length + 1) : 1);
                   for (let l = 0; l < newtgt.length - 1; ++l) newtgt[l] = target_object[l];
-                  newtgt[newtgt.length - 1] = { name: target_name, lst: JSROOT.IO.MakeMethodsList(object_class) };
+                  newtgt[newtgt.length - 1] = { name: target_name, lst: jsrio.MakeMethodsList(object_class) };
 
                   if (!ScanBranches(branch.fBranches, newtgt, 0)) return null;
 
@@ -1690,9 +1690,9 @@ JSROOT.require(['JSRootIOEvolution', 'JSRootMath'], () => {
 
                } else if (is_brelem && (nb_leaves === 1) && (leaf.fName === branch.fName) && (branch.fID == -1)) {
 
-                  elem = JSROOT.IO.CreateStreamerElement(target_name, branch.fClassName);
+                  elem = jsrio.CreateStreamerElement(target_name, branch.fClassName);
 
-                  if (elem.fType === JSROOT.IO.kAny) {
+                  if (elem.fType === jsrio.kAny) {
 
                      let streamer = handle.file.GetStreamer(branch.fClassName, { val: branch.fClassVersion, checksum: branch.fCheckSum });
                      if (!streamer) { elem = null; console.warn('not found streamer!'); } else
@@ -1709,17 +1709,17 @@ JSROOT.require(['JSRootIOEvolution', 'JSRootMath'], () => {
                         };
                   }
 
-                  // elem.fType = JSROOT.IO.kAnyP;
+                  // elem.fType = jsrio.kAnyP;
 
                   // only STL containers here
                   // if (!elem.fSTLtype) elem = null;
                } else if (is_brelem && (nb_leaves <= 1)) {
 
-                  elem = JSROOT.IO.FindBrachStreamerElement(branch, handle.file);
+                  elem = jsrio.FindBrachStreamerElement(branch, handle.file);
 
                   // this is basic type - can try to solve problem differently
                   if (!elem && branch.fStreamerType && (branch.fStreamerType < 20))
-                     elem = JSROOT.IO.CreateStreamerElement(target_name, branch.fStreamerType);
+                     elem = jsrio.CreateStreamerElement(target_name, branch.fStreamerType);
 
                } else if (nb_leaves === 1) {
                   // no special constrains for the leaf names
@@ -1732,7 +1732,7 @@ JSROOT.require(['JSRootIOEvolution', 'JSRootMath'], () => {
                   let arr = new Array(nb_leaves), isok = true;
                   for (let l = 0; l < nb_leaves; ++l) {
                      arr[l] = CreateLeafElem(branch.fLeaves.arr[l]);
-                     arr[l] = JSROOT.IO.CreateMember(arr[l], handle.file);
+                     arr[l] = jsrio.CreateMember(arr[l], handle.file);
                      if (!arr[l]) isok = false;
                   }
 
@@ -1755,7 +1755,7 @@ JSROOT.require(['JSRootIOEvolution', 'JSRootMath'], () => {
          }
 
          if (!member) {
-            member = JSROOT.IO.CreateMember(elem, handle.file);
+            member = jsrio.CreateMember(elem, handle.file);
 
             if ((member.base !== undefined) && member.basename) {
                // when element represent base class, we need handling which differ from normal IO
@@ -1782,7 +1782,7 @@ JSROOT.require(['JSRootIOEvolution', 'JSRootMath'], () => {
                target_name = member.name = snames[1];
                member.name1 = snames[0];
                member.subtype1 = read_mode;
-               member.methods1 = JSROOT.IO.MakeMethodsList(member.subtype1);
+               member.methods1 = jsrio.MakeMethodsList(member.subtype1);
                member.get = function(arr, n) {
                   let obj1 = arr[n][this.name1];
                   if (!obj1) obj1 = arr[n][this.name1] = this.methods1.Create();
@@ -1805,8 +1805,8 @@ JSROOT.require(['JSRootIOEvolution', 'JSRootMath'], () => {
                let parent_class = branch.fParentName; // unfortunately, without version
 
                for (let k = 0; k < snames.length; ++k) {
-                  let chld_class = JSROOT.IO.DefineMemberTypeName(handle.file, parent_class, snames[k]);
-                  member.smethods[k] = JSROOT.IO.MakeMethodsList(chld_class || "AbstractClass");
+                  let chld_class = jsrio.DefineMemberTypeName(handle.file, parent_class, snames[k]);
+                  member.smethods[k] = jsrio.MakeMethodsList(chld_class || "AbstractClass");
                   parent_class = chld_class;
                }
                member.get = function(arr, n) {
@@ -1841,7 +1841,7 @@ JSROOT.require(['JSRootIOEvolution', 'JSRootMath'], () => {
 
             handle.process_arrays = false;
 
-            if ((elem.fType === JSROOT.IO.kDouble32) || (elem.fType === JSROOT.IO.kFloat16)) {
+            if ((elem.fType === jsrio.kDouble32) || (elem.fType === jsrio.kFloat16)) {
                // special handling for compressed floats
 
                member.stl_size = item_cnt.name;
@@ -1850,7 +1850,7 @@ JSROOT.require(['JSRootIOEvolution', 'JSRootMath'], () => {
                }
 
             } else
-               if (((elem.fType === JSROOT.IO.kOffsetP + JSROOT.IO.kDouble32) || (elem.fType === JSROOT.IO.kOffsetP + JSROOT.IO.kFloat16)) && branch.fBranchCount2) {
+               if (((elem.fType === jsrio.kOffsetP + jsrio.kDouble32) || (elem.fType === jsrio.kOffsetP + jsrio.kFloat16)) && branch.fBranchCount2) {
                   // special handling for variable arrays of compressed floats in branch - not tested
 
                   member.stl_size = item_cnt.name;
@@ -1864,8 +1864,8 @@ JSROOT.require(['JSRootIOEvolution', 'JSRootMath'], () => {
 
                } else
                   // special handling of simple arrays
-                  if (((elem.fType > 0) && (elem.fType < JSROOT.IO.kOffsetL)) || (elem.fType === JSROOT.IO.kTString) ||
-                     (((elem.fType > JSROOT.IO.kOffsetP) && (elem.fType < JSROOT.IO.kOffsetP + JSROOT.IO.kOffsetL)) && branch.fBranchCount2)) {
+                  if (((elem.fType > 0) && (elem.fType < jsrio.kOffsetL)) || (elem.fType === jsrio.kTString) ||
+                     (((elem.fType > jsrio.kOffsetP) && (elem.fType < jsrio.kOffsetP + jsrio.kOffsetL)) && branch.fBranchCount2)) {
 
                      member = {
                         name: target_name,
@@ -1877,7 +1877,7 @@ JSROOT.require(['JSRootIOEvolution', 'JSRootMath'], () => {
                      };
 
                      if (branch.fBranchCount2) {
-                        member.type -= JSROOT.IO.kOffsetP;
+                        member.type -= jsrio.kOffsetP;
                         member.arr_size = item_cnt2.name;
                         member.func = function(buf, obj) {
                            let sz0 = obj[this.stl_size], sz1 = obj[this.arr_size], arr = new Array(sz0);
@@ -1888,21 +1888,21 @@ JSROOT.require(['JSRootIOEvolution', 'JSRootMath'], () => {
                      }
 
                   } else
-                     if ((elem.fType > JSROOT.IO.kOffsetP) && (elem.fType < JSROOT.IO.kOffsetP + JSROOT.IO.kOffsetL) && member.cntname) {
+                     if ((elem.fType > jsrio.kOffsetP) && (elem.fType < jsrio.kOffsetP + jsrio.kOffsetL) && member.cntname) {
 
                         member.cntname = item_cnt.name;
                      } else
-                        if (elem.fType == JSROOT.IO.kStreamer) {
+                        if (elem.fType == jsrio.kStreamer) {
                            // with streamers one need to extend existing array
 
                            if (item_cnt2)
-                              throw new Error('Second branch counter not supported yet with JSROOT.IO.kStreamer');
+                              throw new Error('Second branch counter not supported yet with jsrio.kStreamer');
 
                            // function provided by normal I/O
                            member.func = member.branch_func;
                            member.stl_size = item_cnt.name;
                         } else
-                           if ((elem.fType === JSROOT.IO.kStreamLoop) || (elem.fType === JSROOT.IO.kOffsetL + JSROOT.IO.kStreamLoop)) {
+                           if ((elem.fType === jsrio.kStreamLoop) || (elem.fType === jsrio.kOffsetL + jsrio.kStreamLoop)) {
                               if (item_cnt2) {
                                  // special solution for kStreamLoop
                                  member.stl_size = item_cnt.name;
@@ -2031,7 +2031,7 @@ JSROOT.require(['JSRootIOEvolution', 'JSRootMath'], () => {
 
          for (let k = 0; k < handle.arr.length; ++k) {
             let elem = handle.arr[k];
-            if ((elem.type <= 0) || (elem.type >= JSROOT.IO.kOffsetL) || (elem.type === JSROOT.IO.kCharStar)) handle.process_arrays = false;
+            if ((elem.type <= 0) || (elem.type >= jsrio.kOffsetL) || (elem.type === jsrio.kCharStar)) handle.process_arrays = false;
          }
 
          if (handle.process_arrays) {
@@ -2041,14 +2041,14 @@ JSROOT.require(['JSRootIOEvolution', 'JSRootMath'], () => {
 
             for (let nn = 0; nn < handle.arr.length; ++nn) {
                let item = handle.arr[nn],
-                  elem = JSROOT.IO.CreateStreamerElement(item.name, item.type);
+                  elem = jsrio.CreateStreamerElement(item.name, item.type);
 
-               elem.fType = item.type + JSROOT.IO.kOffsetL;
+               elem.fType = item.type + jsrio.kOffsetL;
                elem.fArrayLength = 10;
                elem.fArrayDim = 1;
                elem.fMaxIndex[0] = 10; // 10 if artificial number, will be replaced during reading
 
-               item.arrmember = JSROOT.IO.CreateMember(elem, handle.file);
+               item.arrmember = jsrio.CreateMember(elem, handle.file);
             }
          }
       } else {
@@ -2541,7 +2541,7 @@ JSROOT.require(['JSRootIOEvolution', 'JSRootMath'], () => {
          JSROOT.progress("br " + args.nbr + "/" + args.branches.length + " " + args.names[args.nbr]);
 
          let br = args.branches[args.nbr],
-            object_class = JSROOT.IO.GetBranchObjectClass(br, this),
+            object_class = jsrio.GetBranchObjectClass(br, this),
             num = br.fEntries,
             skip_branch = (!br.fLeaves || (br.fLeaves.arr.length === 0));
 

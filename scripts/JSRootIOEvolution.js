@@ -5,7 +5,7 @@ JSROOT.require(['rawinflate'], () => {
 
    "use strict";
 
-   let io = {
+   let jsrio = {
       kBase: 0, kOffsetL: 20, kOffsetP: 40,
       kChar: 1, kShort: 2, kInt: 3, kLong: 4, kFloat: 5, kCounter: 6, kCharStar: 7, kDouble: 8, kDouble32: 9, kLegacyChar: 10,
       kUChar: 11, kUShort: 12, kUInt: 13, kULong: 14, kBits: 15, kLong64: 16, kULong64: 17, kBool: 18, kFloat16: 19,
@@ -60,49 +60,49 @@ JSROOT.require(['rawinflate'], () => {
       GetTypeId: function(typname, norecursion) {
          switch (typname) {
             case "bool":
-            case "Bool_t": return io.kBool;
+            case "Bool_t": return jsrio.kBool;
             case "char":
             case "signed char":
-            case "Char_t": return io.kChar;
+            case "Char_t": return jsrio.kChar;
             case "Color_t":
             case "Style_t":
             case "Width_t":
             case "short":
-            case "Short_t": return io.kShort;
+            case "Short_t": return jsrio.kShort;
             case "int":
             case "EErrorType":
-            case "Int_t": return io.kInt;
+            case "Int_t": return jsrio.kInt;
             case "long":
-            case "Long_t": return io.kLong;
+            case "Long_t": return jsrio.kLong;
             case "float":
-            case "Float_t": return io.kFloat;
+            case "Float_t": return jsrio.kFloat;
             case "double":
-            case "Double_t": return io.kDouble;
+            case "Double_t": return jsrio.kDouble;
             case "unsigned char":
-            case "UChar_t": return io.kUChar;
+            case "UChar_t": return jsrio.kUChar;
             case "unsigned short":
-            case "UShort_t": return io.kUShort;
+            case "UShort_t": return jsrio.kUShort;
             case "unsigned":
             case "unsigned int":
-            case "UInt_t": return io.kUInt;
+            case "UInt_t": return jsrio.kUInt;
             case "unsigned long":
-            case "ULong_t": return io.kULong;
+            case "ULong_t": return jsrio.kULong;
             case "int64_t":
             case "long long":
-            case "Long64_t": return io.kLong64;
+            case "Long64_t": return jsrio.kLong64;
             case "uint64_t":
             case "unsigned long long":
-            case "ULong64_t": return io.kULong64;
-            case "Double32_t": return io.kDouble32;
-            case "Float16_t": return io.kFloat16;
+            case "ULong64_t": return jsrio.kULong64;
+            case "Double32_t": return jsrio.kDouble32;
+            case "Float16_t": return jsrio.kFloat16;
             case "char*":
             case "const char*":
-            case "const Char_t*": return io.kCharStar;
+            case "const Char_t*": return jsrio.kCharStar;
          }
 
          if (!norecursion) {
-            let replace = io.CustomStreamers[typname];
-            if (typeof replace === "string") return io.GetTypeId(replace, true);
+            let replace = jsrio.CustomStreamers[typname];
+            if (typeof replace === "string") return jsrio.GetTypeId(replace, true);
          }
 
          return -1;
@@ -110,19 +110,19 @@ JSROOT.require(['rawinflate'], () => {
 
       GetTypeSize: function(typname) {
          switch (typname) {
-            case io.kBool: return 1;
-            case io.kChar: return 1;
-            case io.kShort: return 2;
-            case io.kInt: return 4;
-            case io.kLong: return 8;
-            case io.kFloat: return 4;
-            case io.kDouble: return 8;
-            case io.kUChar: return 1;
-            case io.kUShort: return 2;
-            case io.kUInt: return 4;
-            case io.kULong: return 8;
-            case io.kLong64: return 8;
-            case io.kULong64: return 8;
+            case jsrio.kBool: return 1;
+            case jsrio.kChar: return 1;
+            case jsrio.kShort: return 2;
+            case jsrio.kInt: return 4;
+            case jsrio.kLong: return 8;
+            case jsrio.kFloat: return 4;
+            case jsrio.kDouble: return 8;
+            case jsrio.kUChar: return 1;
+            case jsrio.kUShort: return 2;
+            case jsrio.kUInt: return 4;
+            case jsrio.kULong: return 8;
+            case jsrio.kLong64: return 8;
+            case jsrio.kULong64: return 8;
          }
          return -1;
       },
@@ -151,20 +151,20 @@ JSROOT.require(['rawinflate'], () => {
          // 0 - if TString (or equivalent)
          // -1 - if any other kind
          if ((type_name === "TString") || (type_name === "string") ||
-            (io.CustomStreamers[type_name] === 'TString')) return 0;
+            (jsrio.CustomStreamers[type_name] === 'TString')) return 0;
          if ((type_name.length < 7) || (type_name.indexOf("TArray") !== 0)) return -1;
          if (type_name.length == 7)
             switch (type_name[6]) {
-               case 'I': return io.kInt;
-               case 'D': return io.kDouble;
-               case 'F': return io.kFloat;
-               case 'S': return io.kShort;
-               case 'C': return io.kChar;
-               case 'L': return io.kLong;
+               case 'I': return jsrio.kInt;
+               case 'D': return jsrio.kDouble;
+               case 'F': return jsrio.kFloat;
+               case 'S': return jsrio.kShort;
+               case 'C': return jsrio.kChar;
+               case 'L': return jsrio.kLong;
                default: return -1;
             }
 
-         return type_name == "TArrayL64" ? io.kLong64 : -1;
+         return type_name == "TArrayL64" ? jsrio.kLong64 : -1;
       }
 
    }
@@ -172,7 +172,7 @@ JSROOT.require(['rawinflate'], () => {
    /** Add custom streamer
      * @private */
    JSROOT.addUserStreamer = function(type, user_streamer) {
-      io.CustomStreamers[type] = user_streamer;
+      jsrio.CustomStreamers[type] = user_streamer;
    }
 
    /** Reads header envelope, determines zipped size and unzip content
@@ -261,8 +261,8 @@ JSROOT.require(['rawinflate'], () => {
       // read class version from I/O buffer
       let ver = {}, bytecnt = this.ntou4(); // byte count
 
-      if (bytecnt & io.kByteCountMask)
-         ver.bytecnt = bytecnt - io.kByteCountMask - 2; // one can check between Read version and end of streamer
+      if (bytecnt & jsrio.kByteCountMask)
+         ver.bytecnt = bytecnt - jsrio.kByteCountMask - 2; // one can check between Read version and end of streamer
       else
          this.o -= 4; // rollback read bytes, this is old buffer without byte count
 
@@ -378,69 +378,69 @@ JSROOT.require(['rawinflate'], () => {
    TBuffer.prototype.ReadFastArray = function(n, array_type) {
       let array, i = 0, o = this.o, view = this.arr;
       switch (array_type) {
-         case io.kDouble:
+         case jsrio.kDouble:
             array = new Float64Array(n);
             for (; i < n; ++i, o += 8)
                array[i] = view.getFloat64(o);
             break;
-         case io.kFloat:
+         case jsrio.kFloat:
             array = new Float32Array(n);
             for (; i < n; ++i, o += 4)
                array[i] = view.getFloat32(o);
             break;
-         case io.kLong:
-         case io.kLong64:
+         case jsrio.kLong:
+         case jsrio.kLong64:
             array = new Float64Array(n);
             for (; i < n; ++i)
                array[i] = this.ntoi8();
             return array; // exit here to avoid conflicts
-         case io.kULong:
-         case io.kULong64:
+         case jsrio.kULong:
+         case jsrio.kULong64:
             array = new Float64Array(n);
             for (; i < n; ++i)
                array[i] = this.ntou8();
             return array; // exit here to avoid conflicts
-         case io.kInt:
-         case io.kCounter:
+         case jsrio.kInt:
+         case jsrio.kCounter:
             array = new Int32Array(n);
             for (; i < n; ++i, o += 4)
                array[i] = view.getInt32(o);
             break;
-         case io.kBits:
-         case io.kUInt:
+         case jsrio.kBits:
+         case jsrio.kUInt:
             array = new Uint32Array(n);
             for (; i < n; ++i, o += 4)
                array[i] = view.getUint32(o);
             break;
-         case io.kShort:
+         case jsrio.kShort:
             array = new Int16Array(n);
             for (; i < n; ++i, o += 2)
                array[i] = view.getInt16(o);
             break;
-         case io.kUShort:
+         case jsrio.kUShort:
             array = new Uint16Array(n);
             for (; i < n; ++i, o += 2)
                array[i] = view.getUint16(o);
             break;
-         case io.kChar:
+         case jsrio.kChar:
             array = new Int8Array(n);
             for (; i < n; ++i)
                array[i] = view.getInt8(o++);
             break;
-         case io.kBool:
-         case io.kUChar:
+         case jsrio.kBool:
+         case jsrio.kUChar:
             array = new Uint8Array(n);
             for (; i < n; ++i)
                array[i] = view.getUint8(o++);
             break;
-         case io.kTString:
+         case jsrio.kTString:
             array = new Array(n);
             for (; i < n; ++i)
                array[i] = this.ReadTString();
             return array; // exit here to avoid conflicts
-         case io.kDouble32:
+         case jsrio.kDouble32:
             throw new Error('kDouble32 should not be used in ReadFastArray');
-         case io.kFloat16:
+         case jsrio.kFloat16:
             throw new Error('kFloat16 should not be used in ReadFastArray');
          default:
             array = new Uint32Array(n);
@@ -554,11 +554,11 @@ JSROOT.require(['rawinflate'], () => {
          return;
       }
 
-      basket.fEntryOffset = this.ReadFastArray(nentries, io.kInt);
+      basket.fEntryOffset = this.ReadFastArray(nentries, jsrio.kInt);
       if (!basket.fEntryOffset) basket.fEntryOffset = [basket.fKeylen];
 
       if (this.remain() > 0)
-         basket.fDisplacement = this.ReadFastArray(this.ntoi4(), io.kInt);
+         basket.fDisplacement = this.ReadFastArray(this.ntoi4(), jsrio.kInt);
       else
          basket.fDisplacement = undefined;
    }
@@ -568,25 +568,25 @@ JSROOT.require(['rawinflate'], () => {
       let classInfo = { name: -1 }, tag = 0, bcnt = this.ntou4();
       const startpos = this.o;
 
-      if (!(bcnt & io.kByteCountMask) || (bcnt == io.kNewClassTag)) {
+      if (!(bcnt & jsrio.kByteCountMask) || (bcnt == jsrio.kNewClassTag)) {
          tag = bcnt;
          bcnt = 0;
       } else {
          tag = this.ntou4();
       }
-      if (!(tag & io.kClassMask)) {
+      if (!(tag & jsrio.kClassMask)) {
          classInfo.objtag = tag + this.fDisplacement; // indicate that we have deal with objects tag
          return classInfo;
       }
-      if (tag == io.kNewClassTag) {
+      if (tag == jsrio.kNewClassTag) {
          // got a new class description followed by a new object
          classInfo.name = this.ReadFastString(-1);
 
-         if (this.GetMappedClass(this.fTagOffset + startpos + io.kMapOffset) === -1)
-            this.MapClass(this.fTagOffset + startpos + io.kMapOffset, classInfo.name);
+         if (this.GetMappedClass(this.fTagOffset + startpos + jsrio.kMapOffset) === -1)
+            this.MapClass(this.fTagOffset + startpos + jsrio.kMapOffset, classInfo.name);
       } else {
          // got a tag to an already seen class
-         const clTag = (tag & ~io.kClassMask) + this.fDisplacement;
+         const clTag = (tag & ~jsrio.kClassMask) + this.fDisplacement;
          classInfo.name = this.GetMappedClass(clTag);
 
          if (classInfo.name === -1)
@@ -597,7 +597,7 @@ JSROOT.require(['rawinflate'], () => {
    }
 
    TBuffer.prototype.ReadObjectAny = function() {
-      const objtag = this.fTagOffset + this.o + io.kMapOffset,
+      const objtag = this.fTagOffset + this.o + jsrio.kMapOffset,
             clRef = this.ReadClass();
 
       // class identified as object and should be handled so
@@ -606,7 +606,7 @@ JSROOT.require(['rawinflate'], () => {
 
       if (clRef.name === -1) return null;
 
-      const arrkind = io.GetArrayKind(clRef.name);
+      const arrkind = jsrio.GetArrayKind(clRef.name);
       let obj;
 
       if (arrkind === 0) {
@@ -629,7 +629,7 @@ JSROOT.require(['rawinflate'], () => {
 
       if (obj._typename === undefined) obj._typename = classname;
 
-      let direct = io.DirectStreamers[classname];
+      let direct = jsrio.DirectStreamers[classname];
       if (direct) {
          direct(this, obj);
          return obj;
@@ -1213,13 +1213,13 @@ JSROOT.require(['rawinflate'], () => {
             let typ = elem.fType, typname = elem.fTypeName;
 
             if (typ >= 60) {
-               if ((typ === io.kStreamer) && (elem._typename == "TStreamerSTL") && elem.fSTLtype && elem.fCtype && (elem.fCtype < 20)) {
-                  let prefix = (io.StlNames[elem.fSTLtype] || "undef") + "<";
+               if ((typ === jsrio.kStreamer) && (elem._typename == "TStreamerSTL") && elem.fSTLtype && elem.fCtype && (elem.fCtype < 20)) {
+                  let prefix = (jsrio.StlNames[elem.fSTLtype] || "undef") + "<";
                   if ((typname.indexOf(prefix) === 0) && (typname[typname.length - 1] == ">")) {
                      typ = elem.fCtype;
                      typname = typname.substr(prefix.length, typname.length - prefix.length - 1).trim();
 
-                     if ((elem.fSTLtype === io.kSTLmap) || (elem.fSTLtype === io.kSTLmultimap))
+                     if ((elem.fSTLtype === jsrio.kSTLmap) || (elem.fSTLtype === jsrio.kSTLmultimap))
                         if (typname.indexOf(",") > 0) typname = typname.substr(0, typname.indexOf(",")).trim();
                         else continue;
                   }
@@ -1230,11 +1230,11 @@ JSROOT.require(['rawinflate'], () => {
                typ = typ % 20;
             }
 
-            const kind = io.GetTypeId(typname);
+            const kind = jsrio.GetTypeId(typname);
             if (kind === typ) continue;
 
-            if ((typ === io.kBits) && (kind === io.kUInt)) continue;
-            if ((typ === io.kCounter) && (kind === io.kInt)) continue;
+            if ((typ === jsrio.kBits) && (kind === jsrio.kUInt)) continue;
+            if ((typ === jsrio.kCounter) && (kind === jsrio.kInt)) continue;
 
             if (typname && typ && (this.fBasicTypes[typname] !== typ)) {
                this.fBasicTypes[typname] = typ;
@@ -1411,7 +1411,7 @@ JSROOT.require(['rawinflate'], () => {
          if (streamer !== undefined) return streamer;
       }
 
-      let custom = io.CustomStreamers[clname];
+      let custom = jsrio.CustomStreamers[clname];
 
       // one can define in the user streamers just aliases
       if (typeof custom === 'string')
@@ -1420,7 +1420,7 @@ JSROOT.require(['rawinflate'], () => {
       // streamer is just separate function
       if (typeof custom === 'function') {
          streamer = [{ typename: clname, func: custom }];
-         return io.AddClassMethods(clname, streamer);
+         return jsrio.AddClassMethods(clname, streamer);
       }
 
       streamer = [];
@@ -1444,11 +1444,11 @@ JSROOT.require(['rawinflate'], () => {
 
       if (s_i.fElements)
          for (let j = 0; j < s_i.fElements.arr.length; ++j)
-            streamer.push(io.CreateMember(s_i.fElements.arr[j], this));
+            streamer.push(jsrio.CreateMember(s_i.fElements.arr[j], this));
 
       this.fStreamers[fullname] = streamer;
 
-      return io.AddClassMethods(clname, streamer);
+      return jsrio.AddClassMethods(clname, streamer);
    }
 
    /** @summary Here we produce list of members, resolving all base classes
@@ -1472,7 +1472,7 @@ JSROOT.require(['rawinflate'], () => {
                   buf.ntoi2(); // read version, why it here??
                   obj.fUniqueID = buf.ntou4();
                   obj.fBits = buf.ntou4();
-                  if (obj.fBits & io.kIsReferenced) buf.ntou2(); // skip pid
+                  if (obj.fBits & jsrio.kIsReferenced) buf.ntou2(); // skip pid
                }
             });
             continue;
@@ -1546,7 +1546,7 @@ JSROOT.require(['rawinflate'], () => {
    }
 
 
-   io.GetPairStreamer = function(si, typname, file) {
+   jsrio.GetPairStreamer = function(si, typname, file) {
       if (!si) {
          if (typname.indexOf("pair") !== 0) return null;
 
@@ -1569,8 +1569,8 @@ JSROOT.require(['rawinflate'], () => {
                return res.trim();
             }
             si = { _typename: 'TStreamerInfo', fVersion: 1, fName: typname, fElements: JSROOT.Create("TList") };
-            si.fElements.Add(io.CreateStreamerElement("first", GetNextName(), file));
-            si.fElements.Add(io.CreateStreamerElement("second", GetNextName(), file));
+            si.fElements.Add(jsrio.CreateStreamerElement("first", GetNextName(), file));
+            si.fElements.Add(jsrio.CreateStreamerElement("second", GetNextName(), file));
          }
       }
 
@@ -1594,7 +1594,7 @@ JSROOT.require(['rawinflate'], () => {
       return streamer;
    }
 
-   io.CreateMember = function(element, file) {
+   jsrio.CreateMember = function(element, file) {
       // create member entry for streamer element, which is used for reading of such data
 
       let member = {
@@ -1605,78 +1605,78 @@ JSROOT.require(['rawinflate'], () => {
       };
 
       if (element.fTypeName === 'BASE') {
-         if (io.GetArrayKind(member.name) > 0) {
+         if (jsrio.GetArrayKind(member.name) > 0) {
             // this is workaround for arrays as base class
             // we create 'fArray' member, which read as any other data member
             member.name = 'fArray';
-            member.type = io.kAny;
+            member.type = jsrio.kAny;
          } else {
             // create streamer for base class
-            member.type = io.kBase;
+            member.type = jsrio.kBase;
             // this.GetStreamer(element.fName);
          }
       }
 
       switch (member.type) {
-         case io.kBase:
+         case jsrio.kBase:
             member.base = element.fBaseVersion; // indicate base class
             member.basename = element.fName; // keep class name
             member.func = function(buf, obj) { buf.ClassStreamer(obj, this.basename); };
             break;
-         case io.kShort:
+         case jsrio.kShort:
             member.func = function(buf, obj) { obj[this.name] = buf.ntoi2(); }; break;
-         case io.kInt:
-         case io.kCounter:
+         case jsrio.kInt:
+         case jsrio.kCounter:
             member.func = function(buf, obj) { obj[this.name] = buf.ntoi4(); }; break;
-         case io.kLong:
-         case io.kLong64:
+         case jsrio.kLong:
+         case jsrio.kLong64:
             member.func = function(buf, obj) { obj[this.name] = buf.ntoi8(); }; break;
-         case io.kDouble:
+         case jsrio.kDouble:
             member.func = function(buf, obj) { obj[this.name] = buf.ntod(); }; break;
-         case io.kFloat:
+         case jsrio.kFloat:
             member.func = function(buf, obj) { obj[this.name] = buf.ntof(); }; break;
-         case io.kLegacyChar:
-         case io.kUChar:
+         case jsrio.kLegacyChar:
+         case jsrio.kUChar:
             member.func = function(buf, obj) { obj[this.name] = buf.ntou1(); }; break;
-         case io.kUShort:
+         case jsrio.kUShort:
             member.func = function(buf, obj) { obj[this.name] = buf.ntou2(); }; break;
-         case io.kBits:
-         case io.kUInt:
+         case jsrio.kBits:
+         case jsrio.kUInt:
             member.func = function(buf, obj) { obj[this.name] = buf.ntou4(); }; break;
-         case io.kULong64:
-         case io.kULong:
+         case jsrio.kULong64:
+         case jsrio.kULong:
             member.func = function(buf, obj) { obj[this.name] = buf.ntou8(); }; break;
-         case io.kBool:
+         case jsrio.kBool:
             member.func = function(buf, obj) { obj[this.name] = buf.ntou1() != 0; }; break;
-         case io.kOffsetL + io.kBool:
-         case io.kOffsetL + io.kInt:
-         case io.kOffsetL + io.kCounter:
-         case io.kOffsetL + io.kDouble:
-         case io.kOffsetL + io.kUChar:
-         case io.kOffsetL + io.kShort:
-         case io.kOffsetL + io.kUShort:
-         case io.kOffsetL + io.kBits:
-         case io.kOffsetL + io.kUInt:
-         case io.kOffsetL + io.kULong:
-         case io.kOffsetL + io.kULong64:
-         case io.kOffsetL + io.kLong:
-         case io.kOffsetL + io.kLong64:
-         case io.kOffsetL + io.kFloat:
+         case jsrio.kOffsetL + jsrio.kBool:
+         case jsrio.kOffsetL + jsrio.kInt:
+         case jsrio.kOffsetL + jsrio.kCounter:
+         case jsrio.kOffsetL + jsrio.kDouble:
+         case jsrio.kOffsetL + jsrio.kUChar:
+         case jsrio.kOffsetL + jsrio.kShort:
+         case jsrio.kOffsetL + jsrio.kUShort:
+         case jsrio.kOffsetL + jsrio.kBits:
+         case jsrio.kOffsetL + jsrio.kUInt:
+         case jsrio.kOffsetL + jsrio.kULong:
+         case jsrio.kOffsetL + jsrio.kULong64:
+         case jsrio.kOffsetL + jsrio.kLong:
+         case jsrio.kOffsetL + jsrio.kLong64:
+         case jsrio.kOffsetL + jsrio.kFloat:
             if (element.fArrayDim < 2) {
                member.arrlength = element.fArrayLength;
                member.func = function(buf, obj) {
-                  obj[this.name] = buf.ReadFastArray(this.arrlength, this.type - io.kOffsetL);
+                  obj[this.name] = buf.ReadFastArray(this.arrlength, this.type - jsrio.kOffsetL);
                };
             } else {
                member.arrlength = element.fMaxIndex[element.fArrayDim - 1];
                member.minus1 = true;
                member.func = function(buf, obj) {
                   obj[this.name] = buf.ReadNdimArray(this, (buf, handle) =>
-                     buf.ReadFastArray(handle.arrlength, handle.type - io.kOffsetL));
+                     buf.ReadFastArray(handle.arrlength, handle.type - jsrio.kOffsetL));
                };
             }
             break;
-         case io.kOffsetL + io.kChar:
+         case jsrio.kOffsetL + jsrio.kChar:
             if (element.fArrayDim < 2) {
                member.arrlength = element.fArrayLength;
                member.func = function(buf, obj) {
@@ -1691,28 +1691,28 @@ JSROOT.require(['rawinflate'], () => {
                };
             }
             break;
-         case io.kOffsetP + io.kBool:
-         case io.kOffsetP + io.kInt:
-         case io.kOffsetP + io.kDouble:
-         case io.kOffsetP + io.kUChar:
-         case io.kOffsetP + io.kShort:
-         case io.kOffsetP + io.kUShort:
-         case io.kOffsetP + io.kBits:
-         case io.kOffsetP + io.kUInt:
-         case io.kOffsetP + io.kULong:
-         case io.kOffsetP + io.kULong64:
-         case io.kOffsetP + io.kLong:
-         case io.kOffsetP + io.kLong64:
-         case io.kOffsetP + io.kFloat:
+         case jsrio.kOffsetP + jsrio.kBool:
+         case jsrio.kOffsetP + jsrio.kInt:
+         case jsrio.kOffsetP + jsrio.kDouble:
+         case jsrio.kOffsetP + jsrio.kUChar:
+         case jsrio.kOffsetP + jsrio.kShort:
+         case jsrio.kOffsetP + jsrio.kUShort:
+         case jsrio.kOffsetP + jsrio.kBits:
+         case jsrio.kOffsetP + jsrio.kUInt:
+         case jsrio.kOffsetP + jsrio.kULong:
+         case jsrio.kOffsetP + jsrio.kULong64:
+         case jsrio.kOffsetP + jsrio.kLong:
+         case jsrio.kOffsetP + jsrio.kLong64:
+         case jsrio.kOffsetP + jsrio.kFloat:
             member.cntname = element.fCountName;
             member.func = function(buf, obj) {
                if (buf.ntou1() === 1)
-                  obj[this.name] = buf.ReadFastArray(obj[this.cntname], this.type - io.kOffsetP);
+                  obj[this.name] = buf.ReadFastArray(obj[this.cntname], this.type - jsrio.kOffsetP);
                else
                   obj[this.name] = new Array();
             };
             break;
-         case io.kOffsetP + io.kChar:
+         case jsrio.kOffsetP + jsrio.kChar:
             member.cntname = element.fCountName;
             member.func = function(buf, obj) {
                if (buf.ntou1() === 1)
@@ -1721,13 +1721,13 @@ JSROOT.require(['rawinflate'], () => {
                   obj[this.name] = null;
             };
             break;
-         case io.kDouble32:
-         case io.kOffsetL + io.kDouble32:
-         case io.kOffsetP + io.kDouble32:
+         case jsrio.kDouble32:
+         case jsrio.kOffsetL + jsrio.kDouble32:
+         case jsrio.kOffsetP + jsrio.kDouble32:
             member.double32 = true;
-         case io.kFloat16:
-         case io.kOffsetL + io.kFloat16:
-         case io.kOffsetP + io.kFloat16:
+         case jsrio.kFloat16:
+         case jsrio.kOffsetL + jsrio.kFloat16:
+         case jsrio.kOffsetP + jsrio.kFloat16:
             if (element.fFactor !== 0) {
                member.factor = 1. / element.fFactor;
                member.min = element.fXmin;
@@ -1752,10 +1752,10 @@ JSROOT.require(['rawinflate'], () => {
                return arr;
             }
 
-            if (member.type < io.kOffsetL) {
+            if (member.type < jsrio.kOffsetL) {
                member.func = function(buf, obj) { obj[this.name] = this.read(buf); }
             } else
-               if (member.type > io.kOffsetP) {
+               if (member.type > jsrio.kOffsetP) {
                   member.cntname = element.fCountName;
                   member.func = function(buf, obj) {
                      if (buf.ntou1() === 1) {
@@ -1777,22 +1777,22 @@ JSROOT.require(['rawinflate'], () => {
                   }
             break;
 
-         case io.kAnyP:
-         case io.kObjectP:
+         case jsrio.kAnyP:
+         case jsrio.kObjectP:
             member.func = function(buf, obj) {
                obj[this.name] = buf.ReadNdimArray(this, buf => buf.ReadObjectAny());
             };
             break;
 
-         case io.kAny:
-         case io.kAnyp:
-         case io.kObjectp:
-         case io.kObject: {
+         case jsrio.kAny:
+         case jsrio.kAnyp:
+         case jsrio.kObjectp:
+         case jsrio.kObject: {
             let classname = (element.fTypeName === 'BASE') ? element.fName : element.fTypeName;
             if (classname[classname.length - 1] == "*")
                classname = classname.substr(0, classname.length - 1);
 
-            const arrkind = io.GetArrayKind(classname);
+            const arrkind = jsrio.GetArrayKind(classname);
 
             if (arrkind > 0) {
                member.arrkind = arrkind;
@@ -1814,15 +1814,15 @@ JSROOT.require(['rawinflate'], () => {
             }
             break;
          }
-         case io.kOffsetL + io.kObject:
-         case io.kOffsetL + io.kAny:
-         case io.kOffsetL + io.kAnyp:
-         case io.kOffsetL + io.kObjectp: {
+         case jsrio.kOffsetL + jsrio.kObject:
+         case jsrio.kOffsetL + jsrio.kAny:
+         case jsrio.kOffsetL + jsrio.kAnyp:
+         case jsrio.kOffsetL + jsrio.kObjectp: {
             let classname = element.fTypeName;
             if (classname[classname.length - 1] == "*")
                classname = classname.substr(0, classname.length - 1);
 
-            member.arrkind = io.GetArrayKind(classname);
+            member.arrkind = jsrio.GetArrayKind(classname);
             if (member.arrkind < 0) member.classname = classname;
             member.func = function(buf, obj) {
                obj[this.name] = buf.ReadNdimArray(this, (buf, handle) => {
@@ -1833,26 +1833,26 @@ JSROOT.require(['rawinflate'], () => {
             }
             break;
          }
-         case io.kChar:
+         case jsrio.kChar:
             member.func = function(buf, obj) { obj[this.name] = buf.ntoi1(); }; break;
-         case io.kCharStar:
+         case jsrio.kCharStar:
             member.func = function(buf, obj) {
                const len = buf.ntoi4();
                obj[this.name] = buf.substring(buf.o, buf.o + len);
                buf.o += len;
             };
             break;
-         case io.kTString:
+         case jsrio.kTString:
             member.func = function(buf, obj) { obj[this.name] = buf.ReadTString(); };
             break;
-         case io.kTObject:
-         case io.kTNamed:
+         case jsrio.kTObject:
+         case jsrio.kTNamed:
             member.typename = element.fTypeName;
             member.func = function(buf, obj) { obj[this.name] = buf.ClassStreamer({}, this.typename); };
             break;
-         case io.kOffsetL + io.kTString:
-         case io.kOffsetL + io.kTObject:
-         case io.kOffsetL + io.kTNamed:
+         case jsrio.kOffsetL + jsrio.kTString:
+         case jsrio.kOffsetL + jsrio.kTObject:
+         case jsrio.kOffsetL + jsrio.kTNamed:
             member.typename = element.fTypeName;
             member.func = function(buf, obj) {
                const ver = buf.ReadVersion();
@@ -1863,8 +1863,8 @@ JSROOT.require(['rawinflate'], () => {
                buf.CheckBytecount(ver, this.typename + "[]");
             };
             break;
-         case io.kStreamLoop:
-         case io.kOffsetL + io.kStreamLoop:
+         case jsrio.kStreamLoop:
+         case jsrio.kOffsetL + jsrio.kStreamLoop:
             member.typename = element.fTypeName;
             member.cntname = element.fCountName;
 
@@ -1879,7 +1879,7 @@ JSROOT.require(['rawinflate'], () => {
             if (member.isptrptr) {
                member.readitem = function(buf) { return buf.ReadObjectAny(); }
             } else {
-               member.arrkind = io.GetArrayKind(member.typename);
+               member.arrkind = jsrio.GetArrayKind(member.typename);
                if (member.arrkind > 0)
                   member.readitem = function(buf) { return buf.ReadFastArray(buf.ntou4(), this.arrkind); }
                else if (member.arrkind === 0)
@@ -1945,7 +1945,7 @@ JSROOT.require(['rawinflate'], () => {
 
             break;
 
-         case io.kStreamer: {
+         case jsrio.kStreamer: {
             member.typename = element.fTypeName;
 
             let stl = (element.fSTLtype || 0) % 40;
@@ -1954,15 +1954,15 @@ JSROOT.require(['rawinflate'], () => {
                (member.typename == "string") || (member.typename == "string*")) {
                member.readelem = function(buf) { return buf.ReadTString(); };
             } else
-               if ((stl === io.kSTLvector) || (stl === io.kSTLlist) ||
-                  (stl === io.kSTLdeque) || (stl === io.kSTLset) ||
-                  (stl === io.kSTLmultiset)) {
+               if ((stl === jsrio.kSTLvector) || (stl === jsrio.kSTLlist) ||
+                  (stl === jsrio.kSTLdeque) || (stl === jsrio.kSTLset) ||
+                  (stl === jsrio.kSTLmultiset)) {
                   let p1 = member.typename.indexOf("<"),
                      p2 = member.typename.lastIndexOf(">");
 
                   member.conttype = member.typename.substr(p1 + 1, p2 - p1 - 1).trim();
 
-                  member.typeid = io.GetTypeId(member.conttype);
+                  member.typeid = jsrio.GetTypeId(member.conttype);
                   if ((member.typeid < 0) && file.fBasicTypes[member.conttype]) {
                      member.typeid = file.fBasicTypes[member.conttype];
                      console.log('!!! Reuse basic type', member.conttype, 'from file streamer infos');
@@ -1986,24 +1986,24 @@ JSROOT.require(['rawinflate'], () => {
                         member.conttype = member.conttype.substr(0, member.conttype.length - 1);
                      }
 
-                     if (element.fCtype === io.kObjectp) member.isptr = true;
+                     if (element.fCtype === jsrio.kObjectp) member.isptr = true;
 
-                     member.arrkind = io.GetArrayKind(member.conttype);
+                     member.arrkind = jsrio.GetArrayKind(member.conttype);
 
-                     member.readelem = io.ReadVectorElement;
+                     member.readelem = jsrio.ReadVectorElement;
 
                      if (!member.isptr && (member.arrkind < 0)) {
 
-                        let subelem = io.CreateStreamerElement("temp", member.conttype);
+                        let subelem = jsrio.CreateStreamerElement("temp", member.conttype);
 
-                        if (subelem.fType === io.kStreamer) {
+                        if (subelem.fType === jsrio.kStreamer) {
                            subelem.$fictional = true;
-                           member.submember = io.CreateMember(subelem, file);
+                           member.submember = jsrio.CreateMember(subelem, file);
                         }
                      }
                   }
                } else
-                  if ((stl === io.kSTLmap) || (stl === io.kSTLmultimap)) {
+                  if ((stl === jsrio.kSTLmap) || (stl === jsrio.kSTLmultimap)) {
 
                      const p1 = member.typename.indexOf("<"),
                            p2 = member.typename.lastIndexOf(">");
@@ -2014,18 +2014,18 @@ JSROOT.require(['rawinflate'], () => {
                      // most probably it is the only one which should be used
                      member.si = file.FindStreamerInfo(member.pairtype);
 
-                     member.streamer = io.GetPairStreamer(member.si, member.pairtype, file);
+                     member.streamer = jsrio.GetPairStreamer(member.si, member.pairtype, file);
 
                      if (!member.streamer || (member.streamer.length !== 2)) {
                         console.error(`Fail to build streamer for pair ${member.pairtype}`);
                         delete member.streamer;
                      }
 
-                     if (member.streamer) member.readelem = io.ReadMapElement;
+                     if (member.streamer) member.readelem = jsrio.ReadMapElement;
                   } else
-                     if (stl === io.kSTLbitset) {
+                     if (stl === jsrio.kSTLbitset) {
                         member.readelem = function(buf/*, obj*/) {
-                           return buf.ReadFastArray(buf.ntou4(), io.kBool);
+                           return buf.ReadFastArray(buf.ntou4(), jsrio.kBool);
                         }
                      }
 
@@ -2042,11 +2042,11 @@ JSROOT.require(['rawinflate'], () => {
                   member.read_version = function(buf, cnt) {
                      if (cnt === 0) return null;
                      const ver = buf.ReadVersion();
-                     this.member_wise = ((ver.val & io.kStreamedMemberWise) !== 0);
+                     this.member_wise = ((ver.val & jsrio.kStreamedMemberWise) !== 0);
 
                      this.stl_version = undefined;
                      if (this.member_wise) {
-                        ver.val = ver.val & ~io.kStreamedMemberWise;
+                        ver.val = ver.val & ~jsrio.kStreamedMemberWise;
                         this.stl_version = { val: buf.ntoi2() };
                         if (this.stl_version.val <= 0) this.stl_version.checksum = buf.ntou4();
                      }
@@ -2219,13 +2219,13 @@ JSROOT.require(['rawinflate'], () => {
       });
    }
 
-   io.ProduceCustomStreamers = function() {
-      let cs = io.CustomStreamers;
+   jsrio.ProduceCustomStreamers = function() {
+      let cs = jsrio.CustomStreamers;
 
       cs['TObject'] = cs['TMethodCall'] = function(buf, obj) {
          obj.fUniqueID = buf.ntou4();
          obj.fBits = buf.ntou4();
-         if (obj.fBits & io.kIsReferenced) buf.ntou2(); // skip pid
+         if (obj.fBits & jsrio.kIsReferenced) buf.ntou2(); // skip pid
       };
 
       cs['TNamed'] = [
@@ -2238,7 +2238,7 @@ JSROOT.require(['rawinflate'], () => {
          { name: 'fName', func: function(buf, obj) { obj.fName = buf.ReadTString(); } },
          { name: 'fTitle', func: function(buf, obj) { obj.fTitle = buf.ReadTString(); } }
       ];
-      io.AddClassMethods('TNamed', cs['TNamed']);
+      jsrio.AddClassMethods('TNamed', cs['TNamed']);
 
       cs['TObjString'] = [
          {
@@ -2250,7 +2250,7 @@ JSROOT.require(['rawinflate'], () => {
          { name: 'fString', func: function(buf, obj) { obj.fString = buf.ReadTString(); } }
       ];
 
-      io.AddClassMethods('TObjString', cs['TObjString']);
+      jsrio.AddClassMethods('TObjString', cs['TObjString']);
 
       cs['TList'] = cs['THashList'] = function(buf, obj) {
          // stream all objects in the list from the I/O buffer
@@ -2337,9 +2337,9 @@ JSROOT.require(['rawinflate'], () => {
          obj.fMajorName = buf.ReadTString();
          obj.fMinorName = buf.ReadTString();
          obj.fN = buf.ntoi8();
-         obj.fIndexValues = buf.ReadFastArray(obj.fN, io.kLong64);
-         if (ver > 1) obj.fIndexValuesMinor = buf.ReadFastArray(obj.fN, io.kLong64);
-         obj.fIndex = buf.ReadFastArray(obj.fN, io.kLong64);
+         obj.fIndexValues = buf.ReadFastArray(obj.fN, jsrio.kLong64);
+         if (ver > 1) obj.fIndexValuesMinor = buf.ReadFastArray(obj.fN, jsrio.kLong64);
+         obj.fIndex = buf.ReadFastArray(obj.fN, jsrio.kLong64);
       };
 
       cs['TRefArray'] = function(buf, obj) {
@@ -2350,7 +2350,7 @@ JSROOT.require(['rawinflate'], () => {
          obj.fLast = nobj - 1;
          obj.fLowerBound = buf.ntoi4();
          /*const pidf = */ buf.ntou2();
-         obj.fUIDs = buf.ReadFastArray(nobj, io.kUInt);
+         obj.fUIDs = buf.ReadFastArray(nobj, jsrio.kUInt);
       };
 
       cs['TCanvas'] = function(buf, obj) {
@@ -2402,7 +2402,7 @@ JSROOT.require(['rawinflate'], () => {
          buf.ClassStreamer(marker, "TObject");
          buf.ClassStreamer(marker, "TAttMarker");
          marker.fN = buf.ntoi4();
-         marker.fP = buf.ReadFastArray(marker.fN * 3, io.kFloat);
+         marker.fP = buf.ReadFastArray(marker.fN * 3, jsrio.kFloat);
          marker.fOption = buf.ReadTString();
          marker.fName = (ver > 1) ? buf.ReadTString() : "TPolyMarker3D";
       };
@@ -2411,7 +2411,7 @@ JSROOT.require(['rawinflate'], () => {
          buf.ClassStreamer(obj, "TObject");
          buf.ClassStreamer(obj, "TAttLine");
          obj.fN = buf.ntoi4();
-         obj.fP = buf.ReadFastArray(obj.fN * 3, io.kFloat);
+         obj.fP = buf.ReadFastArray(obj.fN * 3, jsrio.kFloat);
          obj.fOption = buf.ReadTString();
       };
 
@@ -2432,11 +2432,11 @@ JSROOT.require(['rawinflate'], () => {
          element.fSize = buf.ntou4();
          element.fArrayLength = buf.ntou4();
          element.fArrayDim = buf.ntou4();
-         element.fMaxIndex = buf.ReadFastArray((ver == 1) ? buf.ntou4() : 5, io.kUInt);
+         element.fMaxIndex = buf.ReadFastArray((ver == 1) ? buf.ntou4() : 5, jsrio.kUInt);
          element.fTypeName = buf.ReadTString();
 
-         if ((element.fType === io.kUChar) && ((element.fTypeName == "Bool_t") || (element.fTypeName == "bool")))
-            element.fType = io.kBool;
+         if ((element.fType === jsrio.kUChar) && ((element.fTypeName == "Bool_t") || (element.fTypeName == "bool")))
+            element.fType = jsrio.kBool;
 
          element.fXmin = element.fXmax = element.fFactor = 0;
          if (ver === 3) {
@@ -2446,7 +2446,7 @@ JSROOT.require(['rawinflate'], () => {
          } else if ((ver > 3) && (element.fBits & JSROOT.BIT(6))) { // kHasRange
 
             let p1 = element.fTitle.indexOf("[");
-            if ((p1 >= 0) && (element.fType > io.kOffsetP)) p1 = element.fTitle.indexOf("[", p1 + 1);
+            if ((p1 >= 0) && (element.fType > jsrio.kOffsetP)) p1 = element.fTitle.indexOf("[", p1 + 1);
             let p2 = element.fTitle.indexOf("]", p1 + 1);
 
             if ((p1 >= 0) && (p2 >= p1 + 2)) {
@@ -2504,13 +2504,13 @@ JSROOT.require(['rawinflate'], () => {
          elem.fSTLtype = buf.ntou4();
          elem.fCtype = buf.ntou4();
 
-         if ((elem.fSTLtype === io.kSTLmultimap) &&
+         if ((elem.fSTLtype === jsrio.kSTLmultimap) &&
             ((elem.fTypeName.indexOf("std::set") === 0) ||
-               (elem.fTypeName.indexOf("set") === 0))) elem.fSTLtype = io.kSTLset;
+               (elem.fTypeName.indexOf("set") === 0))) elem.fSTLtype = jsrio.kSTLset;
 
-         if ((elem.fSTLtype === io.kSTLset) &&
+         if ((elem.fSTLtype === jsrio.kSTLset) &&
             ((elem.fTypeName.indexOf("std::multimap") === 0) ||
-               (elem.fTypeName.indexOf("multimap") === 0))) elem.fSTLtype = io.kSTLmultimap;
+               (elem.fTypeName.indexOf("multimap") === 0))) elem.fSTLtype = jsrio.kSTLmultimap;
       };
 
       cs['TStreamerSTLstring'] = function(buf, elem) {
@@ -2585,11 +2585,11 @@ JSROOT.require(['rawinflate'], () => {
             }
          },
          { name: 'fNumPoints', func: function(buf, obj) { obj.fNumPoints = buf.ntou4(); } },
-         { name: 'fPoints', func: function(buf, obj) { obj.fPoints = buf.ReadFastArray(obj.fNumPoints, io.kDouble); } },
-         { name: 'fColorRed', func: function(buf, obj) { obj.fColorRed = buf.ReadFastArray(obj.fNumPoints, io.kUShort); } },
-         { name: 'fColorGreen', func: function(buf, obj) { obj.fColorGreen = buf.ReadFastArray(obj.fNumPoints, io.kUShort); } },
-         { name: 'fColorBlue', func: function(buf, obj) { obj.fColorBlue = buf.ReadFastArray(obj.fNumPoints, io.kUShort); } },
-         { name: 'fColorAlpha', func: function(buf, obj) { obj.fColorAlpha = buf.ReadFastArray(obj.fNumPoints, io.kUShort); } }
+         { name: 'fPoints', func: function(buf, obj) { obj.fPoints = buf.ReadFastArray(obj.fNumPoints, jsrio.kDouble); } },
+         { name: 'fColorRed', func: function(buf, obj) { obj.fColorRed = buf.ReadFastArray(obj.fNumPoints, jsrio.kUShort); } },
+         { name: 'fColorGreen', func: function(buf, obj) { obj.fColorGreen = buf.ReadFastArray(obj.fNumPoints, jsrio.kUShort); } },
+         { name: 'fColorBlue', func: function(buf, obj) { obj.fColorBlue = buf.ReadFastArray(obj.fNumPoints, jsrio.kUShort); } },
+         { name: 'fColorAlpha', func: function(buf, obj) { obj.fColorAlpha = buf.ReadFastArray(obj.fNumPoints, jsrio.kUShort); } }
       ];
 
       cs['TAttImage'] = [
@@ -2608,12 +2608,12 @@ JSROOT.require(['rawinflate'], () => {
 
          if (buf.ntou1() != 0) {
             const size = buf.ntoi4();
-            obj.fPngBuf = buf.ReadFastArray(size, io.kUChar);
+            obj.fPngBuf = buf.ReadFastArray(size, jsrio.kUChar);
          } else {
             buf.ClassStreamer(obj, "TAttImage");
             obj.fWidth = buf.ntoi4();
             obj.fHeight = buf.ntoi4();
-            obj.fImgBuf = buf.ReadFastArray(obj.fWidth * obj.fHeight, io.kDouble);
+            obj.fImgBuf = buf.ReadFastArray(obj.fWidth * obj.fHeight, jsrio.kDouble);
          }
       }
 
@@ -2636,14 +2636,14 @@ JSROOT.require(['rawinflate'], () => {
       cs['TMixture'] = function(buf, obj) {
          buf.ClassStreamer(obj, "TMaterial");
          obj.fNmixt = buf.ntoi4();
-         obj.fAmixt = buf.ReadFastArray(buf.ntoi4(), io.kFloat);
-         obj.fZmixt = buf.ReadFastArray(buf.ntoi4(), io.kFloat);
-         obj.fWmixt = buf.ReadFastArray(buf.ntoi4(), io.kFloat);
+         obj.fAmixt = buf.ReadFastArray(buf.ntoi4(), jsrio.kFloat);
+         obj.fZmixt = buf.ReadFastArray(buf.ntoi4(), jsrio.kFloat);
+         obj.fWmixt = buf.ReadFastArray(buf.ntoi4(), jsrio.kFloat);
       }
 
       // these are direct streamers - not follow version/checksum logic
 
-      let ds = io.DirectStreamers;
+      let ds = jsrio.DirectStreamers;
 
       ds['TQObject'] = ds['TGraphStruct'] = ds['TGraphNode'] = ds['TGraphEdge'] = function() {
          // do nothing
@@ -2709,14 +2709,14 @@ JSROOT.require(['rawinflate'], () => {
 
          if ((flag % 10) != 2) {
             if (obj.fNevBuf) {
-               obj.fEntryOffset = buf.ReadFastArray(buf.ntoi4(), io.kInt);
+               obj.fEntryOffset = buf.ReadFastArray(buf.ntoi4(), jsrio.kInt);
                if ((20 < flag) && (flag < 40))
                   for (let i = 0, kDisplacementMask = 0xFF000000; i < obj.fNevBuf; ++i)
                      obj.fEntryOffset[i] &= ~kDisplacementMask;
             }
 
             if (flag > 40)
-               obj.fDisplacement = buf.ReadFastArray(buf.ntoi4(), io.kInt);
+               obj.fDisplacement = buf.ReadFastArray(buf.ntoi4(), jsrio.kInt);
          }
 
          if ((flag === 1) || (flag > 10)) {
@@ -2737,7 +2737,7 @@ JSROOT.require(['rawinflate'], () => {
 
       ds['TRef'] = function(buf, obj) {
          buf.ClassStreamer(obj, "TObject");
-         if (obj.fBits & io.kHasUUID)
+         if (obj.fBits & jsrio.kHasUUID)
             obj.fUUID = buf.ReadTString();
          else
             obj.fPID = buf.ntou2();
@@ -2746,7 +2746,7 @@ JSROOT.require(['rawinflate'], () => {
       ds['TMatrixTSym<float>'] = function(buf, obj) {
          buf.ClassStreamer(obj, "TMatrixTBase<float>");
          obj.fElements = new Float32Array(obj.fNelems);
-         let arr = buf.ReadFastArray((obj.fNrows * (obj.fNcols + 1)) / 2, io.kFloat), cnt = 0;
+         let arr = buf.ReadFastArray((obj.fNrows * (obj.fNcols + 1)) / 2, jsrio.kFloat), cnt = 0;
          for (let i = 0; i < obj.fNrows; ++i)
             for (let j = i; j < obj.fNcols; ++j)
                obj.fElements[j * obj.fNcols + i] = obj.fElements[i * obj.fNcols + j] = arr[cnt++];
@@ -2755,7 +2755,7 @@ JSROOT.require(['rawinflate'], () => {
       ds['TMatrixTSym<double>'] = function(buf, obj) {
          buf.ClassStreamer(obj, "TMatrixTBase<double>");
          obj.fElements = new Float64Array(obj.fNelems);
-         let arr = buf.ReadFastArray((obj.fNrows * (obj.fNcols + 1)) / 2, io.kDouble), cnt = 0;
+         let arr = buf.ReadFastArray((obj.fNrows * (obj.fNcols + 1)) / 2, jsrio.kDouble), cnt = 0;
          for (let i = 0; i < obj.fNrows; ++i)
             for (let j = i; j < obj.fNcols; ++j)
                obj.fElements[j * obj.fNcols + i] = obj.fElements[i * obj.fNcols + j] = arr[cnt++];
@@ -2763,7 +2763,7 @@ JSROOT.require(['rawinflate'], () => {
 
    }
 
-   io.CreateStreamerElement = function(name, typename, file) {
+   jsrio.CreateStreamerElement = function(name, typename, file) {
       // return function, which could be used for element of the map
 
       let elem = {
@@ -2773,27 +2773,27 @@ JSROOT.require(['rawinflate'], () => {
       };
 
       if (typeof typename === "string") {
-         elem.fType = io.GetTypeId(typename);
+         elem.fType = jsrio.GetTypeId(typename);
          if ((elem.fType < 0) && file && file.fBasicTypes[typename])
             elem.fType = file.fBasicTypes[typename];
       } else {
          elem.fType = typename;
-         typename = elem.fTypeName = io.TypeNames[elem.fType] || "int";
+         typename = elem.fTypeName = jsrio.TypeNames[elem.fType] || "int";
       }
 
       if (elem.fType > 0) return elem; // basic type
 
       // check if there are STL containers
-      let stltype = io.kNotSTL, pos = typename.indexOf("<");
+      let stltype = jsrio.kNotSTL, pos = typename.indexOf("<");
       if ((pos > 0) && (typename.indexOf(">") > pos + 2))
-         for (let stl = 1; stl < io.StlNames.length; ++stl)
-            if (typename.substr(0, pos) === io.StlNames[stl]) {
+         for (let stl = 1; stl < jsrio.StlNames.length; ++stl)
+            if (typename.substr(0, pos) === jsrio.StlNames[stl]) {
                stltype = stl; break;
             }
 
-      if (stltype !== io.kNotSTL) {
+      if (stltype !== jsrio.kNotSTL) {
          elem._typename = 'TStreamerSTL';
-         elem.fType = io.kStreamer;
+         elem.fType = jsrio.kStreamer;
          elem.fSTLtype = stltype;
          elem.fCtype = 0;
          return elem;
@@ -2806,19 +2806,19 @@ JSROOT.require(['rawinflate'], () => {
          elem.fTypeName = typename = typename.substr(0, typename.length - 1);
       }
 
-      const arrkind = io.GetArrayKind(typename);
+      const arrkind = jsrio.GetArrayKind(typename);
 
       if (arrkind == 0) {
-         elem.fType = io.kTString;
+         elem.fType = jsrio.kTString;
          return elem;
       }
 
-      elem.fType = isptr ? io.kAnyP : io.kAny;
+      elem.fType = isptr ? jsrio.kAnyP : jsrio.kAny;
 
       return elem;
    }
 
-   io.ReadVectorElement = function(buf) {
+   jsrio.ReadVectorElement = function(buf) {
 
       if (this.member_wise) {
 
@@ -2876,7 +2876,7 @@ JSROOT.require(['rawinflate'], () => {
       return res;
    }
 
-   io.ReadMapElement = function(buf) {
+   jsrio.ReadMapElement = function(buf) {
       let streamer = this.streamer;
 
       if (this.member_wise) {
@@ -2888,7 +2888,7 @@ JSROOT.require(['rawinflate'], () => {
 
             if (this.si !== si) {
 
-               streamer = io.GetPairStreamer(si, this.pairtype, buf.fFile);
+               streamer = jsrio.GetPairStreamer(si, this.pairtype, buf.fFile);
                if (!streamer || streamer.length !== 2) {
                   console.log('Fail to produce streamer for ', this.pairtype);
                   return null;
@@ -2900,7 +2900,7 @@ JSROOT.require(['rawinflate'], () => {
       const n = buf.ntoi4();
       let i, res = new Array(n);
       if (this.member_wise) {
-         if (buf.ntoi2() == io.kStreamedMemberWise)
+         if (buf.ntoi2() == jsrio.kStreamedMemberWise)
             buf.shift(4);
          else
             buf.shift(-2); // rewind
@@ -2954,11 +2954,9 @@ JSROOT.require(['rawinflate'], () => {
       return callback ? promise.then(callback) : promise;
    }
 
-   io.NativeArray = JSROOT.nodejs || (window && ('Float64Array' in window));
+   jsrio.NativeArray = JSROOT.nodejs || (window && ('Float64Array' in window));
 
-   io.ProduceCustomStreamers();
-
-   JSROOT.IO = io;
+   jsrio.ProduceCustomStreamers();
 
    JSROOT.TBuffer = TBuffer;
    JSROOT.TDirectory = TDirectory;
@@ -2966,7 +2964,9 @@ JSROOT.require(['rawinflate'], () => {
    JSROOT.TLocalFile = TLocalFile;
    JSROOT.TNodejsFile = TNodejsFile;
 
+   JSROOT.IO = jsrio;
+   if (JSROOT.nodejs) module.exports = jsrio;
 
-   return JSROOT;
+   return jsrio;
 })
 
