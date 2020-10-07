@@ -2705,30 +2705,31 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v6'], (d3, jsrp) => {
       return tip;
    }
 
-   THistPainter.prototype.CreateContour = function(nlevels, zmin, zmax, zminpositive) {
-
-      if (nlevels<1) nlevels = JSROOT.gStyle.fNumberContours;
-      this.fContour = [];
+   function HistContour(zmin, zmax) {
+      this.arr = [];
       this.colzmin = zmin;
       this.colzmax = zmax;
+   }
 
-      if (this.root_pad().fLogz) {
-         if (this.colzmax <= 0) this.colzmax = 1.;
+   HistContour.prototype.CreateNormal = function(nlevels, log_scale, zminpositive) {
+      if (log_scale) {
+         if (this.colzmax <= 0)
+            this.colzmax = 1.;
          if (this.colzmin <= 0)
             if ((zminpositive===undefined) || (zminpositive <= 0))
                this.colzmin = 0.0001*this.colzmax;
             else
-               this.colzmin = ((zminpositive < 3) || (zminpositive>100)) ? 0.3*zminpositive : 1;
+               this.colzmin = ((zminpositive < 3) || (zminpositive > 100)) ? 0.3*zminpositive : 1;
          if (this.colzmin >= this.colzmax) this.colzmin = 0.0001*this.colzmax;
 
          let logmin = Math.log(this.colzmin)/Math.log(10),
              logmax = Math.log(this.colzmax)/Math.log(10),
              dz = (logmax-logmin)/nlevels;
-         this.fContour.push(this.colzmin);
+         this.arr.push(this.colzmin);
          for (let level=1; level<nlevels; level++)
-            this.fContour.push(Math.exp((logmin + dz*level)*Math.log(10)));
-         this.fContour.push(this.colzmax);
-         this.fCustomContour = true;
+            this.arr.push(Math.exp((logmin + dz*level)*Math.log(10)));
+         this.arr.push(this.colzmax);
+         this.custom = true;
       } else {
          if ((this.colzmin === this.colzmax) && (this.colzmin !== 0)) {
             this.colzmax += 0.01*Math.abs(this.colzmax);
@@ -2736,13 +2737,35 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v6'], (d3, jsrp) => {
          }
          let dz = (this.colzmax-this.colzmin)/nlevels;
          for (let level=0; level<=nlevels; level++)
-            this.fContour.push(this.colzmin + dz*level);
+            this.arr.push(this.colzmin + dz*level);
       }
+   }
+
+   HistContour.prototype.CreateCustom = function(levels) {
+      this.custom = true;
+      for (let n = 0; n < levels.length; ++n)
+         this.arr.push(levels[n]);
+
+      if (this.colzmax > this.arr[this.arr.length-1])
+         this.arr.push(this.colzmax);
+   }
+
+   THistPainter.prototype.CreateContour = function(nlevels, zmin, zmax, zminpositive) {
+
+      if (nlevels<1) nlevels = JSROOT.gStyle.fNumberContours;
+
+      let cntr = new HistContour(zmin, zmax);
+      cntr.CreateNormal(nlevels, this.root_pad().fLogz, zminpositive);
+
+      this.fContour = cntr.arr;
+      this.colzmin = cntr.colzmin;
+      this.colzmax = cntr.colzmax;
+      this.fCustomContour = cntr.custom;
 
       let fp = this.frame_painter();
       if ((this.Dimension() < 3) && fp) {
-         fp.zmin = this.colzmin;
-         fp.zmax = this.colzmax;
+         fp.zmin = cntr.colzmin;
+         fp.zmax = cntr.colzmax;
       }
 
       return this.fContour;
@@ -2753,6 +2776,7 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v6'], (d3, jsrp) => {
 
       let main = this.main_painter(),
           fp = this.frame_painter();
+
       if (main && (main !== this) && main.fContour) {
          this.fContour = main.fContour;
          this.fCustomContour = main.fCustomContour;
