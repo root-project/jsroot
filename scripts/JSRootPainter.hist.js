@@ -844,14 +844,15 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v6'], (d3, jsrp) => {
           framep = this.frame_painter(),
           zmin = 0, zmax = 100,
           contour = main.fContour,
+          levels = contour ? contour.GetLevels() : null,
           draw_palette = main.fPalette;
 
       if (nbr1<=0) nbr1 = 8;
       axis.fTickSize = 0.6 * s_width / width; // adjust axis ticks size
 
       if (contour && framep) {
-         zmin = Math.min(contour.arr[0], framep.zmin);
-         zmax = Math.max(contour.arr[contour.arr.length-1], framep.zmax);
+         zmin = Math.min(levels[0], framep.zmin);
+         zmax = Math.max(levels[levels.length-1], framep.zmax);
       } else if ((main.gmaxbin!==undefined) && (main.gminbin!==undefined)) {
          // this is case of TH2 (needs only for size adjustment)
          zmin = main.gminbin; zmax = main.gmaxbin;
@@ -881,9 +882,9 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v6'], (d3, jsrp) => {
                     .attr("height", s_height)
                     .style("fill", 'white');
       else
-         for (let i=0;i<contour.arr.length-1;++i) {
-            let z0 = z(contour.arr[i]), z1 = z(contour.arr[i+1]),
-                col = contour.getPaletteColor(draw_palette, (contour.arr[i]+contour.arr[i+1])/2),
+         for (let i=0;i<levels.length-1;++i) {
+            let z0 = z(levels[i]), z1 = z(levels[i+1]),
+                col = contour.getPaletteColor(draw_palette, (levels[i]+levels[i+1])/2),
                 r = this.draw_g.append("svg:rect")
                        .attr("x", 0)
                        .attr("y",  Math.round(z1))
@@ -899,7 +900,7 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v6'], (d3, jsrp) => {
                   d3.select(this).transition().duration(100).style("fill", d3.select(this).property('fill1'));
                }).on('mouseout', function() {
                   d3.select(this).transition().duration(100).style("fill", d3.select(this).property('fill0'));
-               }).append("svg:title").text(contour.arr[i].toFixed(2) + " - " + contour.arr[i+1].toFixed(2));
+               }).append("svg:title").text(levels[i].toFixed(2) + " - " + levels[i+1].toFixed(2));
 
             if (JSROOT.gStyle.Zooming)
                r.on("dblclick", () => this.frame_painter().Unzoom("z"));
@@ -1719,6 +1720,99 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v6'], (d3, jsrp) => {
       }
       return res;
    }
+
+   // ==============================================================================
+
+   function HistContour(zmin, zmax) {
+      this.arr = [];
+      this.colzmin = zmin;
+      this.colzmax = zmax;
+      this.below_min_indx = -1;
+      this.exact_min_indx = 0;
+   }
+
+   HistContour.prototype.GetLevels = function() { return this.arr; }
+
+   HistContour.prototype.CreateNormal = function(nlevels, log_scale, zminpositive) {
+      if (log_scale) {
+         if (this.colzmax <= 0)
+            this.colzmax = 1.;
+         if (this.colzmin <= 0)
+            if ((zminpositive===undefined) || (zminpositive <= 0))
+               this.colzmin = 0.0001*this.colzmax;
+            else
+               this.colzmin = ((zminpositive < 3) || (zminpositive > 100)) ? 0.3*zminpositive : 1;
+         if (this.colzmin >= this.colzmax) this.colzmin = 0.0001*this.colzmax;
+
+         let logmin = Math.log(this.colzmin)/Math.log(10),
+             logmax = Math.log(this.colzmax)/Math.log(10),
+             dz = (logmax-logmin)/nlevels;
+         this.arr.push(this.colzmin);
+         for (let level=1; level<nlevels; level++)
+            this.arr.push(Math.exp((logmin + dz*level)*Math.log(10)));
+         this.arr.push(this.colzmax);
+         this.custom = true;
+      } else {
+         if ((this.colzmin === this.colzmax) && (this.colzmin !== 0)) {
+            this.colzmax += 0.01*Math.abs(this.colzmax);
+            this.colzmin -= 0.01*Math.abs(this.colzmin);
+         }
+         let dz = (this.colzmax-this.colzmin)/nlevels;
+         for (let level=0; level<=nlevels; level++)
+            this.arr.push(this.colzmin + dz*level);
+      }
+   }
+
+   HistContour.prototype.CreateCustom = function(levels) {
+      this.custom = true;
+      for (let n = 0; n < levels.length; ++n)
+         this.arr.push(levels[n]);
+
+      if (this.colzmax > this.arr[this.arr.length-1])
+         this.arr.push(this.colzmax);
+   }
+
+   HistContour.prototype.ConfigIndicies = function(below_min, exact_min) {
+      this.below_min_indx = below_min;
+      this.exact_min_indx = exact_min;
+   }
+
+   HistContour.prototype.getContourIndex = function(zc) {
+      if (this.custom) {
+         let l = 0, r = this.arr.length-1;
+         if (zc < this.arr[0]) return -1;
+         if (zc >= this.arr[r]) return r;
+         while (l < r-1) {
+            let mid = Math.round((l+r)/2);
+            if (this.arr[mid] > zc) r = mid; else l = mid;
+         }
+         return l;
+      }
+
+      // bins less than zmin not drawn
+      if (zc < this.colzmin) return this.below_min_indx;
+
+      // if bin content exactly zmin, draw it when col0 specified or when content is positive
+      if (zc === this.colzmin) return this.exact_min_indx;
+
+      return Math.floor(0.01+(zc-this.colzmin)*(this.arr.length-1)/(this.colzmax-this.colzmin));
+   }
+
+   HistContour.prototype.getPaletteColor = function(palette, zc) {
+      let zindx = this.getContourIndex(zc);
+      if (zindx < 0) return null;
+
+      let pindx = palette.calcColorIndex(zindx, this.arr.length);
+
+      return palette.getColor(pindx);
+   }
+
+   HistContour.prototype.getPaletteIndex = function(palette, zc) {
+      let zindx = this.getContourIndex(zc);
+
+      return (zindx < 0) ? null : palette.calcColorIndex(zindx, this.arr.length);
+   }
+
 
    // ==============================================================================
 
@@ -2704,96 +2798,17 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v6'], (d3, jsrp) => {
       return tip;
    }
 
-   function HistContour(zmin, zmax) {
-      this.arr = [];
-      this.colzmin = zmin;
-      this.colzmax = zmax;
-      this.below_min_indx = -1;
-      this.exact_min_indx = 0;
-   }
-
-   HistContour.prototype.CreateNormal = function(nlevels, log_scale, zminpositive) {
-      if (log_scale) {
-         if (this.colzmax <= 0)
-            this.colzmax = 1.;
-         if (this.colzmin <= 0)
-            if ((zminpositive===undefined) || (zminpositive <= 0))
-               this.colzmin = 0.0001*this.colzmax;
-            else
-               this.colzmin = ((zminpositive < 3) || (zminpositive > 100)) ? 0.3*zminpositive : 1;
-         if (this.colzmin >= this.colzmax) this.colzmin = 0.0001*this.colzmax;
-
-         let logmin = Math.log(this.colzmin)/Math.log(10),
-             logmax = Math.log(this.colzmax)/Math.log(10),
-             dz = (logmax-logmin)/nlevels;
-         this.arr.push(this.colzmin);
-         for (let level=1; level<nlevels; level++)
-            this.arr.push(Math.exp((logmin + dz*level)*Math.log(10)));
-         this.arr.push(this.colzmax);
-         this.custom = true;
-      } else {
-         if ((this.colzmin === this.colzmax) && (this.colzmin !== 0)) {
-            this.colzmax += 0.01*Math.abs(this.colzmax);
-            this.colzmin -= 0.01*Math.abs(this.colzmin);
-         }
-         let dz = (this.colzmax-this.colzmin)/nlevels;
-         for (let level=0; level<=nlevels; level++)
-            this.arr.push(this.colzmin + dz*level);
-      }
-   }
-
-   HistContour.prototype.CreateCustom = function(levels) {
-      this.custom = true;
-      for (let n = 0; n < levels.length; ++n)
-         this.arr.push(levels[n]);
-
-      if (this.colzmax > this.arr[this.arr.length-1])
-         this.arr.push(this.colzmax);
-   }
-
-   HistContour.prototype.ConfigIndicies = function(below_min, exact_min) {
-      this.below_min_indx = below_min;
-      this.exact_min_indx = exact_min;
-   }
-
-   HistContour.prototype.getContourIndex = function(zc) {
-      if (this.custom) {
-         let l = 0, r = this.arr.length-1;
-         if (zc < this.arr[0]) return -1;
-         if (zc >= this.arr[r]) return r;
-         while (l < r-1) {
-            let mid = Math.round((l+r)/2);
-            if (this.arr[mid] > zc) r = mid; else l = mid;
-         }
-         return l;
-      }
-
-      // bins less than zmin not drawn
-      if (zc < this.colzmin) return this.below_min_indx;
-
-      // if bin content exactly zmin, draw it when col0 specified or when content is positive
-      if (zc === this.colzmin) return this.exact_min_indx;
-
-      return Math.floor(0.01+(zc-this.colzmin)*(this.arr.length-1)/(this.colzmax-this.colzmin));
-   }
-
-   HistContour.prototype.getPaletteColor = function(palette, zc, asindx) {
-      let zindx = this.getContourIndex(zc);
-      if (zindx < 0) return null;
-
-      let pindx = palette.calcColorIndex(zindx, this.arr.length);
-
-      return asindx ? pindx : palette.getColor(pindx);
-   }
-
-   THistPainter.prototype.CreateContour = function(nlevels, zmin, zmax, zminpositive) {
-
-      if (nlevels<1) nlevels = JSROOT.gStyle.fNumberContours;
+   THistPainter.prototype.CreateContour = function(nlevels, zmin, zmax, zminpositive, custom_levels) {
 
       let cntr = new HistContour(zmin, zmax);
-      cntr.CreateNormal(nlevels, this.root_pad().fLogz, zminpositive);
 
-      cntr.ConfigIndicies(this.options.Zero ? -1 : 0, (cntr.colzmin != 0) || !this.options.Zero || this.IsTH2Poly() ? 0 : -1);
+      if (custom_levels) {
+         cntr.CreateCustom(custom_levels);
+      } else {
+         if (nlevels < 2) nlevels = JSROOT.gStyle.fNumberContours;
+         cntr.CreateNormal(nlevels, this.root_pad().fLogz, zminpositive);
+         cntr.ConfigIndicies(this.options.Zero ? -1 : 0, (cntr.colzmin != 0) || !this.options.Zero || this.IsTH2Poly() ? 0 : -1);
+      }
 
       let fp = this.frame_painter();
       if ((this.Dimension() < 3) && fp) {
@@ -2806,7 +2821,8 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v6'], (d3, jsrp) => {
    }
 
    THistPainter.prototype.GetContour = function(force_recreate) {
-      if (this.fContour && !force_recreate) return this.fContour;
+      if (this.fContour && !force_recreate)
+         return this.fContour;
 
       let main = this.main_painter(),
           fp = this.frame_painter();
@@ -2818,10 +2834,10 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v6'], (d3, jsrp) => {
 
       // if not initialized, first create contour array
       // difference from ROOT - fContour includes also last element with maxbin, which makes easier to build logz
-      let histo = this.GetObject(), nlevels = JSROOT.gStyle.fNumberContours,
-          zmin = this.minbin, zmax = this.maxbin, zminpos = this.minposbin;
-      if (zmin === zmax) { zmin = this.gminbin; zmax = this.gmaxbin; zminpos = this.gminposbin }
-      if (histo.fContour) nlevels = histo.fContour.length;
+      let histo = this.GetObject(), nlevels = 0,
+          zmin = this.minbin, zmax = this.maxbin, zminpos = this.minposbin,
+          custom_levels;
+      if (zmin === zmax) { zmin = this.gminbin; zmax = this.gmaxbin; zminpos = this.gminposbin; }
       if ((this.options.minimum !== -1111) && (this.options.maximum != -1111)) {
          zmin = this.options.minimum;
          zmax = this.options.maximum;
@@ -2848,11 +2864,11 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v6'], (d3, jsrp) => {
          return this.fContour;
       }
 
-      return this.CreateContour(nlevels, zmin, zmax, zminpos);
+      return this.CreateContour(nlevels, zmin, zmax, zminpos, custom_levels);
    }
 
    THistPainter.prototype.GetContourLevels = function() {
-      return this.GetContour().arr;
+      return this.GetContour().GetLevels();
    }
 
    THistPainter.prototype.GetPalette = function(force) {
@@ -4763,7 +4779,7 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v6'], (d3, jsrp) => {
 
          for (j = handle.j1; j < handle.j2; ++j) {
             binz = histo.getBinContent(i + 1, j + 1);
-            colindx = cntr.getPaletteColor(palette, binz, true);
+            colindx = cntr.getPaletteIndex(palette, binz);
             if (binz===0) {
                if (!this.options.Zero) continue;
                if ((colindx === null) && this._show_empty_bins) colindx = 0;
@@ -5177,7 +5193,7 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v6'], (d3, jsrp) => {
 
       for (i = 0; i < len; ++ i) {
          bin = histo.fBins.arr[i];
-         colindx = cntr.getPaletteColor(palette, bin.fContent, true);
+         colindx = cntr.getPaletteIndex(palette, bin.fContent);
          if (colindx === null) continue;
          if (bin.fContent === 0) {
             if (!this.options.Zero || !this.options.Line) continue;
@@ -6055,7 +6071,7 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v6'], (d3, jsrp) => {
          } else if (h.hide_only_zeros) {
             colindx = (binz === 0) && !this._show_empty_bins ? null : 0;
          } else {
-            colindx = this.GetContour().getPaletteColor(this.GetPalette(), binz, true);
+            colindx = this.GetContour().getPaletteIndex(this.GetPalette(), binz);
             if ((colindx === null) && (binz === 0) && this._show_empty_bins) colindx = 0;
          }
       }

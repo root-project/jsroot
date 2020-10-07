@@ -2125,7 +2125,7 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRoot3DPainter', 'JSRootPainter.hist'],
          bin = histo.fBins.arr[i];
          if (bin.fContent < axis_zmin) continue;
 
-         colindx = cntr.getPaletteColor(palette, bin.fContent, true);
+         colindx = cntr.getPaletteIndex(palette, bin.fContent);
          if (colindx === null) continue;
 
          // check if bin outside visible range
@@ -2701,7 +2701,7 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRoot3DPainter', 'JSRootPainter.hist'],
 
                if (!use_colors) continue;
 
-               let colindx = cntr.getPaletteColor(palette, bin_content, true);
+               let colindx = cntr.getPaletteIndex(palette, bin_content);
                if (colindx !== null) {
                   if (cols_size[colindx] === undefined) {
                      cols_size[colindx] = 0;
@@ -2770,7 +2770,7 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRoot3DPainter', 'JSRootPainter.hist'],
 
                let nseq = 0;
                if (use_colors) {
-                  let colindx = cntr.getPaletteColor(palette, bin_content, true);
+                  let colindx = cntr.getPaletteIndex(palette, bin_content);
                   if (colindx === null) continue;
                   nseq = cols_sequence[colindx];
                }
