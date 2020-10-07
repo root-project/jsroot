@@ -149,6 +149,7 @@
          'JSRootPainter.jquery' : { src: 'JSRootPainter.jquery' },
          'JSRootPainter.v7'     : { src: 'JSRootPainter.v7' },
          'JSRootPainter.v7hist' : { src: 'JSRootPainter.v7hist' },
+         'JSRootPainter.v7hist3d' : { src: 'JSRootPainter.v7hist3d' },
          'JSRootPainter.v7more' : { src: 'JSRootPainter.v7more' },
          'JSRoot3DPainter'      : { src: 'JSRoot3DPainter' },
          'ThreeCSG'             : { src: 'ThreeCSG' },

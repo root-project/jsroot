@@ -4472,6 +4472,8 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3, jsrp) => {
    JSROOT.v7.drawPave = drawPave;
    JSROOT.v7.drawFrameTitle = drawFrameTitle;
 
+   JSROOT.v7.TCanvasPainter = RCanvasPainter; // remove when ROOT code will be adjusted
+
    return JSROOT;
 
 });

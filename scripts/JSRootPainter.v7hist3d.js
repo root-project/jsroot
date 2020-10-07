@@ -2132,15 +2132,12 @@ JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter', 'JSRootPainter.v7hist'
 
    JSROOT.v7.RH2Painter.prototype.DrawPolyLego = function() {
       let histo = this.GetHisto(),
+          palette = this.GetPalette(),
           pmain = this.frame_painter(),
           axis_zmin = pmain.grz.domain()[0],
           axis_zmax = pmain.grz.domain()[1],
           colindx, bin, i, len = histo.fBins.arr.length,
           z0 = pmain.grz(axis_zmin), z1 = z0;
-
-      // force recalculations of contours
-      this.fContour = null;
-      this.fCustomContour = false;
 
       // use global coordinates
       this.maxbin = this.gmaxbin;
@@ -2151,7 +2148,7 @@ JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter', 'JSRootPainter.v7hist'
          bin = histo.fBins.arr[i];
          if (bin.fContent < axis_zmin) continue;
 
-         colindx = this.getContourColor(bin.fContent, true);
+         colindx = palette.getContourIndex(bin.fContent);
          if (colindx === null) continue;
 
          // check if bin outside visible range
