@@ -2579,6 +2579,217 @@ JSROOT.require(['JSRootIOEvolution', 'JSRootMath'], (jsrio) => {
       });
    }
 
+   JSROOT.TreeHierarchy = function(node, obj) {
+      if (obj._typename != 'TTree' && obj._typename != 'TNtuple' && obj._typename != 'TNtupleD' ) return false;
+
+      function CreateBranchItem(node, branch, tree, parent_branch) {
+         if (!node || !branch) return false;
+
+         let nb_branches = branch.fBranches ? branch.fBranches.arr.length : 0,
+             nb_leaves = branch.fLeaves ? branch.fLeaves.arr.length : 0;
+
+         function ClearName(arg) {
+            let pos = arg.indexOf("[");
+            if (pos>0) arg = arg.substr(0, pos);
+            if (parent_branch && arg.indexOf(parent_branch.fName)==0) {
+               arg = arg.substr(parent_branch.fName.length);
+               if (arg[0]===".") arg = arg.substr(1);
+            }
+            return arg;
+         }
+
+         branch.$tree = tree; // keep tree pointer, later do it more smart
+
+         let subitem = {
+               _name : ClearName(branch.fName),
+               _kind : "ROOT." + branch._typename,
+               _title : branch.fTitle,
+               _obj : branch
+         };
+
+         if (!node._childs) node._childs = [];
+
+         node._childs.push(subitem);
+
+         if (branch._typename==='TBranchElement')
+            subitem._title += " from " + branch.fClassName + ";" + branch.fClassVersion;
+
+         if (nb_branches > 0) {
+            subitem._more = true;
+            subitem._expand = function(bnode,bobj) {
+               // really create all sub-branch items
+               if (!bobj) return false;
+
+               if (!bnode._childs) bnode._childs = [];
+
+               if (bobj.fLeaves && (bobj.fLeaves.arr.length === 1) &&
+                   ((bobj.fType === JSROOT.BranchType.kClonesNode) || (bobj.fType === JSROOT.BranchType.kSTLNode))) {
+                    bobj.fLeaves.arr[0].$branch = bobj;
+                    bnode._childs.push({
+                       _name: "@size",
+                       _title: "container size",
+                       _kind: "ROOT.TLeafElement",
+                       _icon: "img_leaf",
+                       _obj: bobj.fLeaves.arr[0],
+                       _more : false
+                    });
+                 }
+
+               for (let i=0; i<bobj.fBranches.arr.length; ++i)
+                  CreateBranchItem(bnode, bobj.fBranches.arr[i], bobj.$tree, bobj);
+
+               let object_class = JSROOT.IO.GetBranchObjectClass(bobj, bobj.$tree, true),
+                   methods = object_class ? JSROOT.getMethods(object_class) : null;
+
+               if (methods && (bobj.fBranches.arr.length>0))
+                  for (let key in methods) {
+                     if (typeof methods[key] !== 'function') continue;
+                     let s = methods[key].toString();
+                     if ((s.indexOf("return")>0) && (s.indexOf("function ()")==0))
+                        bnode._childs.push({
+                           _name: key+"()",
+                           _title: "function " + key + " of class " + object_class,
+                           _kind: "ROOT.TBranchFunc", // fictional class, only for drawing
+                           _obj: { _typename: "TBranchFunc", branch: bobj, func: key },
+                           _more : false
+                        });
+
+                  }
+
+               return true;
+            }
+            return true;
+         } else if (nb_leaves === 1) {
+            subitem._icon = "img_leaf";
+            subitem._more = false;
+         } else if (nb_leaves > 1) {
+            subitem._childs = [];
+            for (let j = 0; j < nb_leaves; ++j) {
+               branch.fLeaves.arr[j].$branch = branch; // keep branch pointer for drawing
+               let leafitem = {
+                  _name : ClearName(branch.fLeaves.arr[j].fName),
+                  _kind : "ROOT." + branch.fLeaves.arr[j]._typename,
+                  _obj: branch.fLeaves.arr[j]
+               }
+               subitem._childs.push(leafitem);
+            }
+         }
+
+         return true;
+      }
+
+      node._childs = [];
+      node._tree = obj;  // set reference, will be used later by TTree::Draw
+
+      for (let i=0; i < obj.fBranches.arr.length; ++i)
+         CreateBranchItem(node, obj.fBranches.arr[i], obj);
+
+      return true;
+   }
+
+   /** @summary function called from JSROOT.draw()
+    * @desc just envelope for real TTree::Draw method which do the main job
+    * Can be also used for the branch and leaf object
+    * @private */
+   JSROOT.drawTree = function(divid, obj, opt) {
+
+      if (!JSROOT.ObjectPainter) {
+         console.error('JSROOT.drawTree called without loading of JSRootPainter.js - how it can happen?');
+         return null;
+      }
+
+      let painter = new JSROOT.ObjectPainter(obj),
+          tree = obj, args = opt;
+
+      if (obj._typename == "TBranchFunc") {
+         // fictional object, created only in browser
+         args = { expr: "." + obj.func + "()", branch: obj.branch };
+         if (opt && opt.indexOf("dump")==0)
+            args.expr += ">>" + opt;
+         else if (opt)
+            args.expr += opt;
+         tree = obj.branch.$tree;
+      } else if (obj.$branch) {
+         // this is drawing of the single leaf from the branch
+         args = { expr: "." + obj.fName + (opt || ""), branch: obj.$branch };
+         if ((args.branch.fType === JSROOT.BranchType.kClonesNode) || (args.branch.fType === JSROOT.BranchType.kSTLNode)) {
+            // special case of size
+            args.expr = opt;
+            args.direct_branch = true;
+         }
+
+         tree = obj.$branch.$tree;
+      } else if (obj.$tree) {
+         // this is drawing of the branch
+
+         // if generic object tried to be drawn without specifying any options, it will be just dump
+         if (!opt && obj.fStreamerType && (obj.fStreamerType !== JSROOT.IO.kTString) &&
+             (obj.fStreamerType >= JSROOT.IO.kObject) && (obj.fStreamerType <= JSROOT.IO.kAnyP)) opt = "dump";
+
+         args = { expr: opt, branch: obj };
+         tree = obj.$tree;
+      } else {
+
+         if ((args==='player') || !args) {
+            JSROOT.require("JSRootPainter.jquery").then(() => {
+               JSROOT.CreateTreePlayer(painter);
+               painter.ConfigureTree(tree);
+               painter.Show(divid);
+               painter.DrawingReady();
+            });
+            return painter;
+         }
+
+         if (typeof args === 'string') args = { expr: args };
+      }
+
+      if (!tree) {
+         console.error('No TTree object available for TTree::Draw');
+         return painter.DrawingReady();
+      }
+
+      let callback = painter.DrawingReady.bind(painter);
+      painter._return_res_painter = true; // indicate that TTree::Draw painter returns not itself but drawing of result object
+
+      JSROOT.cleanup(divid);
+
+      let create_player = 0, last_intermediate = false;
+
+      let process_result = function(obj, intermediate) {
+
+         let drawid;
+
+         if (!args.player)
+            drawid = divid;
+         else if (create_player === 2)
+            drawid = painter.drawid;
+
+         if (drawid)
+            return JSROOT.redraw(drawid, obj).then(intermediate ? null : callback);
+
+         if (create_player === 1) { last_intermediate = intermediate; return; }
+
+         // redirect drawing to the player
+         player_create = 1;
+         args.player_intermediate = res.progress;
+         JSROOT.require("JSRootPainter.jquery").then(() => {
+            JSROOT.CreateTreePlayer(painter);
+            painter.ConfigureTree(tree);
+            painter.Show(divid, args);
+            create_player = 2;
+            JSROOT.redraw(painter.drawid, obj).then(last_intermediate ? null : callback);
+            painter.SetItemName("TreePlayer"); // item name used by MDI when process resize
+         });
+      }
+
+      args.progress = obj => process_result(obj, true);
+
+      // use in result handling same function as for progress handling
+      tree.Draw(args).then(process_result);
+
+      return painter;
+   }
+
    JSROOT.TSelector = TSelector;
    JSROOT.TDrawVariable = TDrawVariable;
    JSROOT.TDrawSelector = TDrawSelector;
