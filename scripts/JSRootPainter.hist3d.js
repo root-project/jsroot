@@ -1129,13 +1129,14 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRoot3DPainter', 'JSRootPainter.hist'],
 
       if ((this.options.Lego === 12) || (this.options.Lego === 14)) {
          // drawing colors levels, axis can not exceed palette
-         levels = this.CreateContour(histo.fContour ? histo.fContour.length : 20, main.lego_zmin, main.lego_zmax);
+         let cntr = this.CreateContour(histo.fContour ? histo.fContour.length : 20, main.lego_zmin, main.lego_zmax);
+         levels = cntr.arr;
          palette = this.GetPalette();
          //axis_zmin = levels[0];
          //axis_zmax = levels[levels.length-1];
       }
 
-      for (let nlevel=0; nlevel<levels.length-1;++nlevel) {
+      for (let nlevel = 0; nlevel < levels.length-1; ++nlevel) {
 
          zmin = levels[nlevel];
          zmax = levels[nlevel+1];
@@ -1576,7 +1577,7 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRoot3DPainter', 'JSRootPainter.hist'],
       let main = this.frame_painter(),
           handle = this.PrepareColorDraw({rounding: false, use3d: true, extra: 100, middle: 0.0 }),
           histo = this.GetHisto(), // get levels
-          levels = this.GetContour(), // init contour if not exists
+          levels = this.GetContourLevels(), // init contour if not exists
           palette = this.GetPalette(),
           layerz = 2*main.size_z3d, pnts = [];
 
@@ -1619,12 +1620,12 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRoot3DPainter', 'JSRootPainter.hist'],
           donormals = false, palette = null;
 
       switch(this.options.Surf) {
-         case 11: ilevels = this.GetContour(); palette = this.GetPalette(); break;
+         case 11: ilevels = this.GetContourLevels(); palette = this.GetPalette(); break;
          case 12:
          case 15: // make surf5 same as surf2
-         case 17: ilevels = this.GetContour(); palette = this.GetPalette(); dolines = false; break;
+         case 17: ilevels = this.GetContourLevels(); palette = this.GetPalette(); dolines = false; break;
          case 14: dolines = false; donormals = true; break;
-         case 16: ilevels = this.GetContour(); dogrid = true; dolines = false; break;
+         case 16: ilevels = this.GetContourLevels(); dogrid = true; dolines = false; break;
          default: ilevels = main.z_handle.CreateTicks(true); dogrid = true; break;
       }
 
@@ -1940,7 +1941,7 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRoot3DPainter', 'JSRootPainter.hist'],
          handle = this.PrepareColorDraw({rounding: false, use3d: true, extra: 100, middle: 0.0 });
 
          // get levels
-         let levels = this.GetContour(), // init contour
+         let levels = this.GetContourLevels(), // init contour
              palette = this.GetPalette(),
              lastcolindx = -1, layerz = 2*main.size_z3d;
 
@@ -2113,19 +2114,18 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRoot3DPainter', 'JSRootPainter.hist'],
           colindx, bin, i, len = histo.fBins.arr.length,
           z0 = pmain.grz(axis_zmin), z1 = z0;
 
-      // force recalculations of contours
-      this.fContour = null;
-
       // use global coordinates
       this.maxbin = this.gmaxbin;
       this.minbin = this.gminbin;
       this.minposbin = this.gminposbin;
 
+      let cntr = this.GetContour(true), palette = this.GetPalette();
+
       for (i = 0; i < len; ++ i) {
          bin = histo.fBins.arr[i];
          if (bin.fContent < axis_zmin) continue;
 
-         colindx = this.getContourColor(bin.fContent, true);
+         colindx = cntr.getPaletteColor(palette, bin.fContent, true);
          if (colindx === null) continue;
 
          // check if bin outside visible range
@@ -2685,7 +2685,9 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRoot3DPainter', 'JSRootPainter.hist'],
           scaley = (main.gry(histo.fYaxis.GetBinLowEdge(j2+1)) - main.gry(histo.fYaxis.GetBinLowEdge(j1+1))) / (j2-j1),
           scalez = (main.grz(histo.fZaxis.GetBinLowEdge(k2+1)) - main.grz(histo.fZaxis.GetBinLowEdge(k1+1))) / (k2-k1);
 
-      let nbins = 0, i, j, k, wei, bin_content, cols_size = [], num_colors = 0, cols_sequence = [];
+      let nbins = 0, i, j, k, wei, bin_content, cols_size = [], num_colors = 0, cols_sequence = [],
+          cntr = use_colors ? this.GetContour() : null,
+          palette = use_colors ? this.GetPalette() : null;
 
       for (i = i1; i < i2; ++i) {
          for (j = j1; j < j2; ++j) {
@@ -2699,7 +2701,7 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRoot3DPainter', 'JSRootPainter.hist'],
 
                if (!use_colors) continue;
 
-               let colindx = this.getContourColor(bin_content, true);
+               let colindx = cntr.getPaletteColor(palette, bin_content, true);
                if (colindx !== null) {
                   if (cols_size[colindx] === undefined) {
                      cols_size[colindx] = 0;
@@ -2768,7 +2770,7 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRoot3DPainter', 'JSRootPainter.hist'],
 
                let nseq = 0;
                if (use_colors) {
-                  let colindx = this.getContourColor(bin_content, true);
+                  let colindx = cntr.getPaletteColor(palette, bin_content, true);
                   if (colindx === null) continue;
                   nseq = cols_sequence[colindx];
                }
@@ -3240,7 +3242,7 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRoot3DPainter', 'JSRootPainter.hist'],
       if (fp.usesvg) scale*=0.3;
 
       if (this.options.Color) {
-         levels = main.GetContour();
+         levels = main.GetContourLevels();
          palette = main.GetPalette();
       }
 

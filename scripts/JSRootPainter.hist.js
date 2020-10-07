@@ -843,14 +843,15 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v6'], (d3, jsrp) => {
           main = this.main_painter(),
           framep = this.frame_painter(),
           zmin = 0, zmax = 100,
-          contour = main.fContour;
+          contour = main.fContour,
+          draw_palette = main.fPalette;
 
       if (nbr1<=0) nbr1 = 8;
       axis.fTickSize = 0.6 * s_width / width; // adjust axis ticks size
 
       if (contour && framep) {
-         zmin = Math.min(contour[0], framep.zmin);
-         zmax = Math.max(contour[contour.length-1], framep.zmax);
+         zmin = Math.min(contour.arr[0], framep.zmin);
+         zmax = Math.max(contour.arr[contour.arr.length-1], framep.zmax);
       } else if ((main.gmaxbin!==undefined) && (main.gminbin!==undefined)) {
          // this is case of TH2 (needs only for size adjustment)
          zmin = main.gminbin; zmax = main.gmaxbin;
@@ -871,7 +872,7 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v6'], (d3, jsrp) => {
 
       this.draw_g.selectAll("rect").style("fill", 'white');
 
-      if (!contour || postpone_draw)
+      if (!contour || !draw_palette || postpone_draw)
          // we need such rect to correctly calculate size
          this.draw_g.append("svg:rect")
                     .attr("x", 0)
@@ -880,12 +881,10 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v6'], (d3, jsrp) => {
                     .attr("height", s_height)
                     .style("fill", 'white');
       else
-         for (let i=0;i<contour.length-1;++i) {
-            let z0 = z(contour[i]),
-                z1 = z(contour[i+1]),
-                col = main.getContourColor((contour[i]+contour[i+1])/2);
-
-            let r = this.draw_g.append("svg:rect")
+         for (let i=0;i<contour.arr.length-1;++i) {
+            let z0 = z(contour.arr[i]), z1 = z(contour.arr[i+1]),
+                col = contour.getPaletteColor(draw_palette, (contour.arr[i]+contour.arr[i+1])/2),
+                r = this.draw_g.append("svg:rect")
                        .attr("x", 0)
                        .attr("y",  Math.round(z1))
                        .attr("width", s_width)
@@ -900,7 +899,7 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v6'], (d3, jsrp) => {
                   d3.select(this).transition().duration(100).style("fill", d3.select(this).property('fill1'));
                }).on('mouseout', function() {
                   d3.select(this).transition().duration(100).style("fill", d3.select(this).property('fill0'));
-               }).append("svg:title").text(contour[i].toFixed(2) + " - " + contour[i+1].toFixed(2));
+               }).append("svg:title").text(contour.arr[i].toFixed(2) + " - " + contour.arr[i+1].toFixed(2));
 
             if (JSROOT.gStyle.Zooming)
                r.on("dblclick", () => this.frame_painter().Unzoom("z"));
@@ -2794,9 +2793,6 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v6'], (d3, jsrp) => {
       let cntr = new HistContour(zmin, zmax);
       cntr.CreateNormal(nlevels, this.root_pad().fLogz, zminpositive);
 
-      this.cntr = cntr;
-      this.fContour = cntr.arr;
-
       cntr.ConfigIndicies(this.options.Zero ? -1 : 0, (cntr.colzmin != 0) || !this.options.Zero || this.IsTH2Poly() ? 0 : -1);
 
       let fp = this.frame_painter();
@@ -2805,17 +2801,17 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v6'], (d3, jsrp) => {
          fp.zmax = cntr.colzmax;
       }
 
-      return this.fContour;
+      this.fContour = cntr;
+      return cntr;
    }
 
-   THistPainter.prototype.GetContour = function() {
-      if (this.fContour) return this.fContour;
+   THistPainter.prototype.GetContour = function(force_recreate) {
+      if (this.fContour && !force_recreate) return this.fContour;
 
       let main = this.main_painter(),
           fp = this.frame_painter();
 
       if (main && (main !== this) && main.fContour) {
-         this.cntr = main.cntr;
          this.fContour = main.fContour;
          return this.fContour;
       }
@@ -2848,23 +2844,15 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v6'], (d3, jsrp) => {
             fp.zmin = cntr.colzmin;
             fp.zmax = cntr.colzmax;
          }
+         this.fContour = cntr;
          return this.fContour;
       }
 
       return this.CreateContour(nlevels, zmin, zmax, zminpos);
    }
 
-   /// return index from contours array, which corresponds to the content value **zc**
-   THistPainter.prototype.getContourIndex = function(zc) {
-      this.GetContour();
-      return this.cntr.getContourIndex(zc);
-   }
-
-   /// return color from the palette, which corresponds given controur value
-   /// optionally one can return color index of the palette
-   THistPainter.prototype.getContourColor = function(zc, asindx) {
-      this.GetContour();
-      return this.cntr.getPaletteColor(this.GetPalette(), zc, asindx);
+   THistPainter.prototype.GetContourLevels = function() {
+      return this.GetContour().arr;
    }
 
    THistPainter.prototype.GetPalette = function(force) {
@@ -4284,7 +4272,6 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v6'], (d3, jsrp) => {
 
    function TH2Painter(histo) {
       THistPainter.call(this, histo);
-      this.fContour = null; // contour levels
       this.fPalette = null;
       this.wheel_zoomy = true;
    }
@@ -4765,6 +4752,8 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v6'], (d3, jsrp) => {
 
       let tm1 = new Date().getTime();
 
+      let cntr = this.GetContour(), palette = this.GetPalette();
+
       // now start build
       for (i = handle.i1; i < handle.i2; ++i) {
 
@@ -4774,7 +4763,7 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v6'], (d3, jsrp) => {
 
          for (j = handle.j1; j < handle.j2; ++j) {
             binz = histo.getBinContent(i + 1, j + 1);
-            colindx = this.getContourColor(binz, true);
+            colindx = cntr.getPaletteColor(palette, binz, true);
             if (binz===0) {
                if (!this.options.Zero) continue;
                if ((colindx === null) && this._show_empty_bins) colindx = 0;
@@ -5035,7 +5024,7 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v6'], (d3, jsrp) => {
       let handle = this.PrepareColorDraw({ rounding: false, extra: 100, original: this.options.Proj != 0 }),
           frame_w = this.frame_width(),
           frame_h = this.frame_height(),
-          levels = this.GetContour(),
+          levels = this.GetContourLevels(),
           palette = this.GetPalette(),
           main = this.frame_painter(),
           func = main.GetProjectionFunc();
@@ -5179,16 +5168,16 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v6'], (d3, jsrp) => {
           i, len = histo.fBins.arr.length;
 
       // force recalculations of contours
-      this.fContour = null;
-
       // use global coordinates
       this.maxbin = this.gmaxbin;
       this.minbin = this.gminbin;
       this.minposbin = this.gminposbin;
 
+      let cntr = this.GetContour(true), palette = this.GetPalette();
+
       for (i = 0; i < len; ++ i) {
          bin = histo.fBins.arr[i];
-         colindx = this.getContourColor(bin.fContent, true);
+         colindx = cntr.getPaletteColor(palette, bin.fContent, true);
          if (colindx === null) continue;
          if (bin.fContent === 0) {
             if (!this.options.Zero || !this.options.Line) continue;
@@ -5659,7 +5648,7 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v6'], (d3, jsrp) => {
       if (this.maxbin > 0.7) factor = 0.7/this.maxbin;
 
       let nlevels = Math.round(handle.max - handle.min);
-      this.CreateContour((nlevels > 50) ? 50 : nlevels, this.minposbin, this.maxbin, this.minposbin);
+      let cntr = this.CreateContour((nlevels > 50) ? 50 : nlevels, this.minposbin, this.maxbin, this.minposbin);
 
       // now start build
       for (i = handle.i1; i < handle.i2; ++i) {
@@ -5671,7 +5660,7 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v6'], (d3, jsrp) => {
             ch = handle.gry[j] - handle.gry[j+1];
             if (cw*ch <= 0) continue;
 
-            colindx = this.getContourIndex(binz/cw/ch);
+            colindx = cntr.getContourIndex(binz/cw/ch);
             if (colindx < 0) continue;
 
             cmd1 = "M"+handle.grx[i]+","+handle.gry[j+1];
@@ -5701,7 +5690,7 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v6'], (d3, jsrp) => {
       this.createAttMarker({ attr: histo });
 
       for (colindx=0;colindx<colPaths.length;++colindx)
-        if ((colPaths[colindx] !== undefined) && (colindx<this.fContour.length)) {
+        if ((colPaths[colindx] !== undefined) && (colindx < cntr.arr.length)) {
            let pattern_class = "scatter_" + colindx,
                pattern = defs.select('.' + pattern_class);
            if (pattern.empty())
@@ -5712,7 +5701,7 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v6'], (d3, jsrp) => {
            else
               pattern.selectAll("*").remove();
 
-           let npix = Math.round(factor*this.fContour[colindx]*cell_w[colindx]*cell_h[colindx]);
+           let npix = Math.round(factor*cntr.arr[colindx]*cell_w[colindx]*cell_h[colindx]);
            if (npix<1) npix = 1;
 
            let arrx = new Float32Array(npix), arry = new Float32Array(npix);
@@ -6066,7 +6055,7 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v6'], (d3, jsrp) => {
          } else if (h.hide_only_zeros) {
             colindx = (binz === 0) && !this._show_empty_bins ? null : 0;
          } else {
-            colindx = this.getContourColor(binz, true);
+            colindx = this.GetContour().getPaletteColor(this.GetPalette(), binz, true);
             if ((colindx === null) && (binz === 0) && this._show_empty_bins) colindx = 0;
          }
       }
