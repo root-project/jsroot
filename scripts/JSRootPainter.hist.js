@@ -4763,60 +4763,58 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v6'], (d3, jsrp) => {
    TH2Painter.prototype.DrawBinsColor = function() {
       let histo = this.GetHisto(),
           handle = this.PrepareColorDraw(),
-          colPaths = [], currx = [], curry = [],
-          colindx, cmd1, cmd2, i, j, binz, x1, dx, y2, dy;
-
-      let tm1 = new Date().getTime();
-
-      let cntr = this.GetContour(), palette = this.GetPalette();
+          cntr = this.GetContour(),
+          palette = this.GetPalette(),
+          entries = [],
+          skip_zero = !this.options.Zero,
+          show_empty = this._show_empty_bins;
 
       // now start build
-      for (i = handle.i1; i < handle.i2; ++i) {
+      for (let i = handle.i1; i < handle.i2; ++i) {
 
-         dx = handle.grx[i+1] - handle.grx[i];
-         x1 = Math.round(handle.grx[i] + dx*handle.xbar1);
+         let dx = handle.grx[i+1] - handle.grx[i],
+             x1 = Math.round(handle.grx[i] + dx*handle.xbar1);
          dx = Math.round(dx*(handle.xbar2-handle.xbar1)) || 1;
 
-         for (j = handle.j1; j < handle.j2; ++j) {
-            binz = histo.getBinContent(i + 1, j + 1);
-            colindx = cntr.getPaletteIndex(palette, binz);
-            if (binz===0) {
-               if (!this.options.Zero) continue;
-               if ((colindx === null) && this._show_empty_bins) colindx = 0;
-            }
-            if (colindx === null) continue;
+         for (let j = handle.j1; j < handle.j2; ++j) {
+            let binz = histo.getBinContent(i + 1, j + 1),
+                is_zero = (binz === 0);
+            if (is_zero && skip_zero) continue;
 
-            dy = handle.gry[j]-handle.gry[j+1];
-            y2 = Math.round(handle.gry[j+1] + dy*handle.ybar1);
+            let colindx = cntr.getPaletteIndex(palette, binz);
+            if (colindx === null) {
+               if (is_zero && show_empty)
+                  colindx = 0;
+                else
+                   continue;
+            }
+
+            let dy = handle.gry[j] - handle.gry[j+1],
+                y2 = Math.round(handle.gry[j+1] + dy*handle.ybar1);
             dy = Math.round(dy*(handle.ybar2-handle.ybar1)) || 1;
 
-            cmd1 = "M"+x1+","+y2;
-            if (colPaths[colindx] === undefined) {
-               colPaths[colindx] = cmd1;
-            } else{
-               cmd2 = "m" + (x1-currx[colindx]) + "," + (y2-curry[colindx]);
-               colPaths[colindx] += (cmd2.length < cmd1.length) ? cmd2 : cmd1;
+            let cmd1 = "M"+x1+","+y2,
+                entry = entries[colindx];
+            if (!entry) {
+               entry = entries[colindx] = { path: cmd1 };
+            } else {
+               let cmd2 = "m" + (x1-entry.x) + "," + (y2-entry.y);
+               entry.path += (cmd2.length < cmd1.length) ? cmd2 : cmd1;
             }
-
-            currx[colindx] = x1;
-            curry[colindx] = y2;
-
-            colPaths[colindx] += "v"+dy + "h"+dx + "v"+(-dy) + "z";
+            entry.x = x1;
+            entry.y = y2;
+            entry.path += "v"+dy + "h"+dx + "v"+(-dy) + "z";
          }
       }
 
-      let tm2 = new Date().getTime();
-
-      console.log(`Takes ${tm2-tm1}`)
-
-
-      for (colindx=0;colindx<colPaths.length;++colindx)
-        if (colPaths[colindx] !== undefined)
+      entries.forEach((entry,colindx) => {
+        if (entry)
            this.draw_g
                .append("svg:path")
                .attr("palette-index", colindx)
-               .attr("fill", this.fPalette.getColor(colindx))
-               .attr("d", colPaths[colindx]);
+               .attr("fill", palette.getColor(colindx))
+               .attr("d", entry.path);
+      });
 
       return handle;
    }
