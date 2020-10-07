@@ -853,3 +853,18 @@ as `jsrootsys/scripts/JSRootCore.js`. And when trying to access files from local
 
 JSROOT provides [example](https://root.cern/js/latest/demo/openui5/) showing usage of JSROOT drawing in the OpenUI5,
 [source code](https://github.com/root-project/jsroot/tree/master/demo/openui5) can be found in repository.
+
+
+### Migration v5 -> v6
+
+In JSROOT v6 release many incompatible changes where done. Here small info about.
+
+Instead of `JSROOT.JSONR_unref` one can use `JSROOT.parse`. If object is provided to `JSROOT.parse` it just replaces all
+references which were introduced by `TBufferJSON::ToJSON()` method.
+
+Instead of `JSROOT.console` one should use `console.log`. Instead of `JSROOT.alert` one should use `console.error`.
+
+Painter classes were renamed:
+   - `JSROOT.TBasePainter` -> `JSROOT.BasePainter`
+   - `JSROOT.TObjectPainter` -> `JSROOT.ObjectPainter`
+

@@ -2787,7 +2787,6 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v6'], (d3, jsrp) => {
       return asindx ? pindx : palette.getColor(pindx);
    }
 
-
    THistPainter.prototype.CreateContour = function(nlevels, zmin, zmax, zminpositive) {
 
       if (nlevels<1) nlevels = JSROOT.gStyle.fNumberContours;
@@ -2797,9 +2796,6 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v6'], (d3, jsrp) => {
 
       this.cntr = cntr;
       this.fContour = cntr.arr;
-      this.colzmin = cntr.colzmin;
-      this.colzmax = cntr.colzmax;
-      this.fCustomContour = cntr.custom;
 
       cntr.ConfigIndicies(this.options.Zero ? -1 : 0, (cntr.colzmin != 0) || !this.options.Zero || this.IsTH2Poly() ? 0 : -1);
 
@@ -2821,9 +2817,6 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v6'], (d3, jsrp) => {
       if (main && (main !== this) && main.fContour) {
          this.cntr = main.cntr;
          this.fContour = main.fContour;
-         this.fCustomContour = main.fCustomContour;
-         this.colzmin = main.colzmin;
-         this.colzmax = main.colzmax;
          return this.fContour;
       }
 
@@ -2852,13 +2845,11 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v6'], (d3, jsrp) => {
          if (zmax > this.fContour[this.fContour.length-1])
             this.fContour.push(zmax);
          if ((this.Dimension()<3) && fp) {
-            fp.zmin = this.colzmin;
-            fp.zmax = this.colzmax;
+            fp.zmin = cntr.colzmin;
+            fp.zmax = cntr.colzmax;
          }
          return this.fContour;
       }
-
-      this.fCustomContour = false;
 
       return this.CreateContour(nlevels, zmin, zmax, zminpos);
    }
@@ -3159,7 +3150,6 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v6'], (d3, jsrp) => {
 
       // force recalculation of z levels
       this.fContour = null;
-      this.fCustomContour = false;
 
       return res;
    }
@@ -4295,7 +4285,6 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v6'], (d3, jsrp) => {
    function TH2Painter(histo) {
       THistPainter.call(this, histo);
       this.fContour = null; // contour levels
-      this.fCustomContour = false; // are this user-defined levels (can be irregular)
       this.fPalette = null;
       this.wheel_zoomy = true;
    }
@@ -4303,7 +4292,6 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v6'], (d3, jsrp) => {
    TH2Painter.prototype = Object.create(THistPainter.prototype);
 
    TH2Painter.prototype.Cleanup = function() {
-      delete this.fCustomContour;
       delete this.tt_handle;
 
       THistPainter.prototype.Cleanup.call(this);
@@ -5192,7 +5180,6 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v6'], (d3, jsrp) => {
 
       // force recalculations of contours
       this.fContour = null;
-      this.fCustomContour = false;
 
       // use global coordinates
       this.maxbin = this.gmaxbin;

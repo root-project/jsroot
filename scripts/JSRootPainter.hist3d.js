@@ -2115,7 +2115,6 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRoot3DPainter', 'JSRootPainter.hist'],
 
       // force recalculations of contours
       this.fContour = null;
-      this.fCustomContour = false;
 
       // use global coordinates
       this.maxbin = this.gmaxbin;
