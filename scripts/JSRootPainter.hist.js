@@ -1274,7 +1274,7 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v6'], (d3, jsrp) => {
       JSROOT.ObjectPainter.prototype.Cleanup.call(this);
    }
 
-   function drawPave(divid, pave, opt) {
+   let drawPave = (divid, pave, opt) => {
       // one could force drawing of PaveText on specific sub-pad
       let onpad;
       if ((typeof opt == 'string') && (opt.indexOf("onpad:")==0)) {
@@ -2128,14 +2128,14 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v6'], (d3, jsrp) => {
 
             // remove all function which are not found in new list of primitives
             if (pp && (painters.length > 0))
-               pp.CleanPrimitives(function(p) { return painters.indexOf(p) >= 0; });
+               pp.CleanPrimitives(p => painters.indexOf(p) >= 0);
 
             // plot new objects on the same pad - will works only for simple drawings already loaded
             if (pp && (newfuncs.length > 0)) {
                let arr = [], prev_name = pp.has_canvas ? pp.CurrentPadName(pp.this_pad_name) : undefined;
                for (let k = 0; k < newfuncs.length; ++k)
                   arr.push(JSROOT.draw_new(this.divid, newfuncs[k]));
-               Promise.all(arr).then(function(parr) {
+               Promise.all(arr).then(parr => {
                   for (let k = 0; k < parr.length; ++k)
                      if (parr[k]) parr[k].child_painter_id = pid;
                   pp.CurrentPadName(prev_name);
@@ -3314,7 +3314,8 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v6'], (d3, jsrp) => {
       this.wheel_zoomy = (this.Dimension() > 1) || !this.draw_content;
    }
 
-   /** @summary Count histogram statistic @private */
+   /** @summary Count histogram statistic
+     * @private */
    TH1Painter.prototype.CountStat = function(cond) {
       let profile = this.IsTProfile(),
           histo = this.GetHisto(), xaxis = histo.fXaxis,
@@ -4407,7 +4408,7 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v6'], (d3, jsrp) => {
          if (kind) kind += this.projection_width;
          let kinds = ["X1", "X2", "X3", "X5", "X10", "Y1", "Y2", "Y3", "Y5", "Y10"];
          if (this.is_projection) kinds.push("Off");
-         for (let k=0;k<kinds.length;++k)
+         for (let k = 0; k < kinds.length; ++k)
             menu.addchk(kind==kinds[k], kinds[k], kinds[k], this.ToggleProjection);
          menu.add("endsub:");
 
@@ -4559,8 +4560,10 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v6'], (d3, jsrp) => {
          for (i = 0; i < this.nbinsx; ++i) {
             for (j = 0; j < this.nbinsy; ++j) {
                let bin_content = histo.getBinContent(i+1, j+1);
-               if (bin_content < this.gminbin) this.gminbin = bin_content; else
-                  if (bin_content > this.gmaxbin) this.gmaxbin = bin_content;
+               if (bin_content < this.gminbin)
+                  this.gminbin = bin_content;
+               else if (bin_content > this.gmaxbin)
+                  this.gmaxbin = bin_content;
                if (bin_content > 0)
                   if ((this.gminposbin===null) || (this.gminposbin > bin_content)) this.gminposbin = bin_content;
             }
@@ -5082,31 +5085,29 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v6'], (d3, jsrp) => {
              .style("fill", palette.calcColor(0, levels.length));
       }
 
-      this.BuildContour(handle, levels, palette,
-         (colindx,xp,yp,iminus,iplus) => {
-            let icol = palette.getColor(colindx),
-                fillcolor = icol, lineatt;
+      this.BuildContour(handle, levels, palette, (colindx,xp,yp,iminus,iplus) => {
+         let icol = palette.getColor(colindx),
+             fillcolor = icol, lineatt;
 
-            switch (this.options.Contour) {
-               case 1: break;
-               case 11: fillcolor = 'none'; lineatt = new JSROOT.TAttLineHandler({ color: icol } ); break;
-               case 12: fillcolor = 'none'; lineatt = new JSROOT.TAttLineHandler({ color: 1, style: (colindx%5 + 1), width: 1 }); break;
-               case 13: fillcolor = 'none'; lineatt = this.lineatt; break;
-               case 14: break;
-            }
-
-            let elem = this.draw_g
-                          .append("svg:path")
-                          .attr("class","th2_contour")
-                          .attr("d", BuildPath(xp,yp,iminus,iplus) + (fillcolor == 'none' ? "" : "z"))
-                          .style("fill", fillcolor);
-
-            if (lineatt)
-               elem.call(lineatt.func);
-            else
-               elem.style('stroke','none');
+         switch (this.options.Contour) {
+            case 1: break;
+            case 11: fillcolor = 'none'; lineatt = new JSROOT.TAttLineHandler({ color: icol } ); break;
+            case 12: fillcolor = 'none'; lineatt = new JSROOT.TAttLineHandler({ color: 1, style: (colindx%5 + 1), width: 1 }); break;
+            case 13: fillcolor = 'none'; lineatt = this.lineatt; break;
+            case 14: break;
          }
-      );
+
+         let elem = this.draw_g
+                       .append("svg:path")
+                       .attr("class","th2_contour")
+                       .attr("d", BuildPath(xp,yp,iminus,iplus) + (fillcolor == 'none' ? "" : "z"))
+                       .style("fill", fillcolor);
+
+         if (lineatt)
+            elem.call(lineatt.func);
+         else
+            elem.style('stroke','none');
+      });
 
       handle.hide_only_zeros = true; // text drawing suppress only zeros
 
@@ -5329,8 +5330,8 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v6'], (d3, jsrp) => {
           i,j, dn = 1e-30, dx, dy, xc,yc,
           dxn,dyn,x1,x2,y1,y2, anr,si,co,
           handle = this.PrepareColorDraw({ rounding: false }),
-          scale_x  = (handle.grx[handle.i2] - handle.grx[handle.i1])/(handle.i2 - handle.i1 + 1-0.03)/2,
-          scale_y  = (handle.gry[handle.j2] - handle.gry[handle.j1])/(handle.j2 - handle.j1 + 1-0.03)/2;
+          scale_x = (handle.grx[handle.i2] - handle.grx[handle.i1])/(handle.i2 - handle.i1 + 1-0.03)/2,
+          scale_y = (handle.gry[handle.j2] - handle.gry[handle.j1])/(handle.j2 - handle.j1 + 1-0.03)/2;
 
       for (let loop=0;loop<2;++loop)
          for (i = handle.i1; i < handle.i2; ++i)
@@ -5477,14 +5478,14 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v6'], (d3, jsrp) => {
             elem.call(this.lineatt.func);
       }
 
-      if ((btn1.length>0) && (this.fillatt.color !== 'none'))
+      if ((btn1.length > 0) && (this.fillatt.color !== 'none'))
          this.draw_g.append("svg:path")
                     .attr("d", btn1)
                     .style("stroke","none")
                     .call(this.fillatt.func)
                     .style("fill", d3.rgb(this.fillatt.color).brighter(0.5).toString());
 
-      if (btn2.length>0)
+      if (btn2.length > 0)
          this.draw_g.append("svg:path")
                     .attr("d", btn2)
                     .style("stroke","none")
@@ -5633,17 +5634,17 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v6'], (d3, jsrp) => {
 
          this.markeratt.reset_pos();
 
-         let path = "", k, npix;
+         let path = "";
          for (i = handle.i1; i < handle.i2; ++i) {
             cw = handle.grx[i+1] - handle.grx[i];
             for (j = handle.j1; j < handle.j2; ++j) {
                ch = handle.gry[j] - handle.gry[j+1];
                binz = histo.getBinContent(i + 1, j + 1);
 
-               npix = Math.round(scale*binz);
+               let npix = Math.round(scale*binz);
                if (npix<=0) continue;
 
-               for (k=0;k<npix;++k)
+               for (let k = 0; k < npix; ++k)
                   path += this.markeratt.create(
                             Math.round(handle.grx[i] + cw * JSROOT.random()),
                             Math.round(handle.gry[j+1] + ch * JSROOT.random()));
