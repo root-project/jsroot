@@ -1,7 +1,7 @@
-/// @file JSRootPainter.v7hist.js
+/// @file JSRoot.v7hist.js
 /// JavaScript ROOT v7 graphics for histogram classes
 
-JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v7'], (d3, jsrp) => {
+JSROOT.require(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
    "use strict";
 
@@ -1837,7 +1837,7 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v7'], (d3, jsrp) => {
 
    RH1Painter.prototype.Draw3D = function(call_back, reason) {
       this.mode3d = true;
-      JSROOT.require('JSRootPainter.v7hist3d').then(() => this.Draw3D(call_back, reason));
+      JSROOT.require('v7hist3d').then(() => this.Draw3D(call_back, reason));
    }
 
    RH1Painter.prototype.Redraw = function(reason) {
@@ -3615,7 +3615,7 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v7'], (d3, jsrp) => {
 
    RH2Painter.prototype.Draw3D = function(call_back, reason) {
       this.mode3d = true;
-      JSROOT.require('JSRootPainter.v7hist3d').then(() => this.Draw3D(call_back, reason));
+      JSROOT.require('v7hist3d').then(() => this.Draw3D(call_back, reason));
    }
 
    RH2Painter.prototype.CallDrawFunc = function(callback, reason) {
@@ -3727,7 +3727,7 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v7'], (d3, jsrp) => {
          default: o.Box = 10;
       }
 
-      JSROOT.require('JSRootPainter.v7hist3d').then(() => {
+      JSROOT.require('v7hist3d').then(() => {
          painter.ScanContent();
          painter.Redraw();
          painter.DrawingReady();

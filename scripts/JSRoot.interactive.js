@@ -1,7 +1,7 @@
 /// @file JSRoot.interactive.js
 /// Basic interactive functionality
 
-JSROOT.require(['d3', 'JSRootPainter'], (d3, jsrp) => {
+JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
 
    "use strict";
 

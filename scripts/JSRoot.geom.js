@@ -1,7 +1,7 @@
-/** JavaScript ROOT 3D geometry painter
- * @file JSRootGeoPainter.js */
+/// @file JSRoot.geom.js
+/// JavaScript ROOT 3D geometry painter
 
-JSROOT.require(['d3', 'three', 'JSRootGeoBase', 'JSRootPainter', 'JSRoot3DPainter'], (d3, THREE, geo, jsrp) => {
+JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, jsrp) => {
 
    "use strict";
 
@@ -17,7 +17,7 @@ JSROOT.require(['d3', 'three', 'JSRootGeoBase', 'JSRootPainter', 'JSRoot3DPainte
    Toolbar.prototype.addButtons = function(buttons) {
       this.buttonsNames = [];
 
-      JSROOT.require(["JSRoot.interactive"]).then(inter => {
+      JSROOT.require(["interactive"]).then(inter => {
          buttons.forEach(buttonConfig => {
             let buttonName = buttonConfig.name;
             if (!buttonName) {

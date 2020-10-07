@@ -1,4 +1,4 @@
-/** @file JSRootMath.js
+/** @file JSRoot.math.js
   * Special mathematical functions */
 
 JSROOT.require([], () =>  {

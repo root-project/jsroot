@@ -1,7 +1,7 @@
-/// @file JSRootPainter.hist.js
-/// JavaScript ROOT graphics for histogram classes
+/// @file JSRoot.hist.js
+/// JSROOT graphics for histogram classes
 
-JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v6'], (d3, jsrp) => {
+JSROOT.require(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    "use strict";
 
@@ -370,7 +370,7 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v6'], (d3, jsrp) => {
 
       if (JSROOT.BatchMode || (pt._typename=="TPave")) return;
 
-      JSROOT.require(['JSRoot.interactive']).then(inter => {
+      JSROOT.require(['interactive']).then(inter => {
 
          // here all kind of interactive settings
          rect.style("pointer-events", "visibleFill")

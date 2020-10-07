@@ -1,7 +1,7 @@
-/// @file JSRootPainter.hierarchy.js
+/// @file JSRoot.hierarchy.js
 /// Hierarchy display functionality
 
-JSROOT.require(['d3', 'JSRootPainter'], (d3, jsrp) => {
+JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
 
    "use strict";
 
@@ -2349,7 +2349,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3, jsrp) => {
       if (!this.exclude_browser) {
          let btns = this.brlayout.CreateBrowserBtns();
 
-         JSROOT.require(['JSRoot.interactive']).then(inter => {
+         JSROOT.require(['interactive']).then(inter => {
             inter.ToolbarIcons.CreateSVG(btns, inter.ToolbarIcons.diamand, 15, "toggle fix-pos browser")
                                .style("margin","3px").on("click", () => this.CreateBrowser("fix", true));
 

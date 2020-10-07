@@ -1,7 +1,7 @@
-/// @file JSRootPainter.v6.js
-/// JavaScript ROOT graphics for main ROOT6 classes
+/// @file JSRoot.gpad.js
+/// JSROOT TPad/TCanvas/TFrame support
 
-JSROOT.require(['d3', 'JSRootPainter'], (d3, jsrp) => {
+JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
 
    "use strict";
 
@@ -1654,7 +1654,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3, jsrp) => {
 
       if (JSROOT.BatchMode) return;
 
-      JSROOT.require(['JSRoot.interactive']).then(inter => {
+      JSROOT.require(['interactive']).then(inter => {
          inter.FrameInteractive.assign(this);
          this.BasicInteractive();
       });
@@ -1910,7 +1910,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3, jsrp) => {
     * @private */
    TFramePainter.prototype.AddKeysHandler = function() {
       if (JSROOT.BatchMode) return;
-      JSROOT.require(['JSRoot.interactive']).then(inter => {
+      JSROOT.require(['interactive']).then(inter => {
          inter.FrameInteractive.assign(this);
          this.AddKeysHandler();
       });
@@ -1921,7 +1921,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3, jsrp) => {
    TFramePainter.prototype.AddInteractive = function() {
       if (JSROOT.BatchMode || (!JSROOT.gStyle.Zooming && !JSROOT.gStyle.ContextMenu)) return;
 
-      JSROOT.require(['JSRoot.interactive']).then(inter => {
+      JSROOT.require(['interactive']).then(inter => {
          inter.FrameInteractive.assign(this);
          this.AddInteractive();
       });
@@ -3406,7 +3406,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3, jsrp) => {
    TPadPainter.prototype.ShowButtons = function() {
       if (!this._buttons) return;
 
-      JSROOT.require(['JSRoot.interactive']).then(inter => {
+      JSROOT.require(['interactive']).then(inter => {
          inter.PadButtonsHandler.assign(this);
          this.ShowButtons();
       });
@@ -3560,7 +3560,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3, jsrp) => {
          return JSROOT.CallBack(call_back, true);
       }
 
-      JSROOT.require("JSRootPainter.jquery").then(() => {
+      JSROOT.require("jq2d").then(() => {
 
          let grid = new JSROOT.GridDisplay(origin.node(), layout_kind);
 
@@ -3870,7 +3870,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3, jsrp) => {
 
       let btns = this.brlayout.CreateBrowserBtns();
 
-      JSROOT.require(['JSRoot.interactive']).then(inter => {
+      JSROOT.require(['interactive']).then(inter => {
 
          inter.ToolbarIcons.CreateSVG(btns, inter.ToolbarIcons.diamand, 15, "toggle fix-pos mode")
                             .style("margin","3px").on("click", () => this.brlayout.Toggle('fix'));

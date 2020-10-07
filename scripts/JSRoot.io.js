@@ -1,4 +1,4 @@
-/// @file JSRootIOEvolution.js
+/// @file JSRoot.io.js
 /// I/O methods of JavaScript ROOT
 
 JSROOT.require(['rawinflate'], () => {
@@ -1921,7 +1921,7 @@ JSROOT.require(['rawinflate'], () => {
                member.objs_branch_func = function(buf, obj) {
                   // special function when branch read as part of complete object
                   // objects already preallocated and only appropriate member must be set
-                  // see code in JSRootTree.js for reference
+                  // see code in JSRoot.tree.js for reference
 
                   const ver = buf.ReadVersion();
                   let arr = obj[this.name0]; // objects array where reading is done
@@ -2085,7 +2085,7 @@ JSROOT.require(['rawinflate'], () => {
                   member.objs_branch_func = function(buf, obj) {
                      // special function when branch read as part of complete object
                      // objects already preallocated and only appropriate member must be set
-                     // see code in JSRootTree.js for reference
+                     // see code in JSRoot.tree.js for reference
 
                      let arr = obj[this.name0]; // objects array where reading is done
 

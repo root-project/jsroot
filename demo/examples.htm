@@ -364,7 +364,7 @@
             }
 
             // all painter assigned to viewer element will be automatically informed about resize
-            JSROOT.require("2d;hierarchy").then(() => JSROOT.RegisterForResize('viewer'));
+            JSROOT.require("gpad;hierarchy").then(() => JSROOT.RegisterForResize('viewer'));
 
             select_key = JSROOT.GetUrlOption("select", window.location.href);
             if (!select_key && (JSROOT.GetUrlOption("geom", window.location.href) !== null)) select_key = "TGeo";

@@ -2,7 +2,9 @@ JSROOT = {}; // just place holder for JSROOT.GEO functions
 
 JSROOT.BIT = function(n) { return 1 << (n); }
 
-importScripts("three.min.js", "ThreeCSG.js", "JSRootGeoBase.js");
+// TODO: implement simple JSROOT.require wrapper
+
+importScripts("three.min.js", "JSRoot.csg.js", "JSRoot.geobase.js");
 
 // if (console) console.log('geoworker started ' + THREE.REVISION);
 

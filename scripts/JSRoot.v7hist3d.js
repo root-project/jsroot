@@ -1,7 +1,7 @@
-/// @file JSRootPainter.hist3d.js
-/// 3D histogram graphics
+/// @file JSRoot.v7hist3d.js
+/// ROOT7 histogram 3D graphics
 
-JSROOT.require(['d3', 'JSRoot3DPainter', 'JSRootPainter', 'JSRootPainter.v7hist'], (d3, THREE, jsrp) => {
+JSROOT.require(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
 
    "use strict";
 

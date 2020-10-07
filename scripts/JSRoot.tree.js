@@ -1,7 +1,7 @@
-/// @file JSRootTree.js
-/// Collect all TTree-relevant methods like reading and processing
+/// @file JSRoot.tree.js
+/// Collect all TTree-relevant methods for reading, drawing and hierarchy browsing
 
-JSROOT.require(['JSRootIOEvolution', 'JSRootMath'], (jsrio, jsrmath) => {
+JSROOT.require(['io', 'math'], (jsrio, jsrmath) => {
 
    "use strict";
 
@@ -2694,7 +2694,7 @@ JSROOT.require(['JSRootIOEvolution', 'JSRootMath'], (jsrio, jsrmath) => {
    JSROOT.drawTree = function(divid, obj, opt) {
 
       if (!JSROOT.ObjectPainter) {
-         console.error('JSROOT.drawTree called without loading of JSRootPainter.js - how it can happen?');
+         console.error('JSROOT.drawTree called without loading of JSRoot.painter.js - how it can happen?');
          return null;
       }
 
@@ -2731,7 +2731,7 @@ JSROOT.require(['JSRootIOEvolution', 'JSRootMath'], (jsrio, jsrmath) => {
       } else {
 
          if ((args==='player') || !args) {
-            JSROOT.require("JSRootPainter.jquery").then(() => {
+            JSROOT.require("jq2d").then(() => {
                JSROOT.CreateTreePlayer(painter);
                painter.ConfigureTree(tree);
                painter.Show(divid);
@@ -2772,7 +2772,7 @@ JSROOT.require(['JSRootIOEvolution', 'JSRootMath'], (jsrio, jsrmath) => {
          // redirect drawing to the player
          player_create = 1;
          args.player_intermediate = res.progress;
-         JSROOT.require("JSRootPainter.jquery").then(() => {
+         JSROOT.require("jq2d").then(() => {
             JSROOT.CreateTreePlayer(painter);
             painter.ConfigureTree(tree);
             painter.Show(divid, args);

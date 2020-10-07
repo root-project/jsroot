@@ -1,7 +1,7 @@
-/** @file JSRootGeoBase.js */
+/** @file JSRoot.geobase.js */
 /// Basic functions for work with TGeo classes
 
-JSROOT.require(['three', 'ThreeCSG'], (THREE, ThreeBSP) => {
+JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
 
    "use strict";
 

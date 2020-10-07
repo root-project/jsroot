@@ -1,4 +1,4 @@
-/// @file JSRootPainter.js
+/// @file JSRoot.painter.js
 /// Baisc JavaScript ROOT painter classes
 
 JSROOT.require(['d3'], (d3) => {
@@ -101,7 +101,7 @@ JSROOT.require(['d3'], (d3) => {
       if (evt && (typeof evt == "object"))
          if ((evt.clientX !== undefined) && (evt.clientY !== undefined))
             show_evnt = { clientX: evt.clientX, clientY: evt.clientY };
-      return JSROOT.require(['JSRootPainter.jquery']).then(() => {
+      return JSROOT.require(['jq2d']).then(() => {
          document.body.style.cursor = 'auto';
          return jsrp.createMenu(painter, show_evnt);
       });
@@ -3318,7 +3318,7 @@ JSROOT.require(['d3'], (d3) => {
          arg.simple_latex = arg.latex && (JSROOT.gStyle.Latex == 1);
 
          if (!arg.plain || arg.simple_latex) {
-            JSROOT.require(['JSRoot.latex']).then(() => {
+            JSROOT.require(['latex']).then(() => {
                if (arg.simple_latex)
                   this.producePlainText(arg.txt_node, arg)
                else
@@ -3340,7 +3340,7 @@ JSROOT.require(['d3'], (d3) => {
       arg.mj_node = arg.draw_g.append("svg:g")
                            .attr('visibility', 'hidden'); // hide text until drawing is finished
 
-      JSROOT.require(['JSRoot.latex'])
+      JSROOT.require(['latex'])
             .then(() => this.produceMathjax(arg.mj_node, arg))
             .then(() => { arg.ready = true; this.FinishTextDrawing(arg.draw_g, null, true); });
 
@@ -3557,18 +3557,18 @@ JSROOT.require(['d3'], (d3) => {
       { name: "TPadWebSnapshot", sameas: "TCanvasWebSnapshot" },
       { name: "kind:Text", icon: "img_text", func: jsrp.drawRawText },
       { name: "TObjString", icon: "img_text", func: jsrp.drawRawText },
-      { name: "TF1", icon: "img_tf1", prereq: "math;more2d", func: ".drawFunction" },
+      { name: "TF1", icon: "img_tf1", prereq: "math;more", func: ".drawFunction" },
       { name: "TF2", icon: "img_tf2", prereq: "math;hist", func: ".drawTF2" },
-      { name: "TSpline3", icon: "img_tf1", prereq: "more2d", func: ".drawSpline" },
-      { name: "TSpline5", icon: "img_tf1", prereq: "more2d", func: ".drawSpline" },
-      { name: "TEllipse", icon: 'img_graph', prereq: "more2d", func: ".drawEllipse", direct: true },
+      { name: "TSpline3", icon: "img_tf1", prereq: "more", func: ".drawSpline" },
+      { name: "TSpline5", icon: "img_tf1", prereq: "more", func: ".drawSpline" },
+      { name: "TEllipse", icon: 'img_graph', prereq: "more", func: ".drawEllipse", direct: true },
       { name: "TArc", sameas: 'TEllipse' },
       { name: "TCrown", sameas: 'TEllipse' },
-      { name: "TPie", icon: 'img_graph', prereq: "more2d", func: ".drawPie", direct: true },
+      { name: "TPie", icon: 'img_graph', prereq: "more", func: ".drawPie", direct: true },
       { name: "TPieSlice", icon: 'img_graph', dummy: true },
-      { name: "TLine", icon: 'img_graph', prereq: "more2d", func: ".drawLine", direct: true },
-      { name: "TArrow", icon: 'img_graph', prereq: "more2d", func: ".drawArrow", direct: true },
-      { name: "TPolyLine", icon: 'img_graph', prereq: "more2d", func: ".drawPolyLine", direct: true },
+      { name: "TLine", icon: 'img_graph', prereq: "more", func: ".drawLine", direct: true },
+      { name: "TArrow", icon: 'img_graph', prereq: "more", func: ".drawArrow", direct: true },
+      { name: "TPolyLine", icon: 'img_graph', prereq: "more", func: ".drawPolyLine", direct: true },
       { name: "TCurlyLine", sameas: 'TPolyLine' },
       { name: "TCurlyArc", sameas: 'TPolyLine' },
       { name: "TGaxis", icon: "img_graph", prereq: "v6", func: "JSROOT.Painter.drawGaxis" },

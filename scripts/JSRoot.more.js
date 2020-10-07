@@ -1,8 +1,8 @@
-/// @file JSRootPainter.more.js
+/// @file JSRoot.more.js
 /// Part of JavaScript ROOT graphics with more classes like TEllipse, TLine, ...
 /// Such classes are rarely used and therefore loaded only on demand
 
-JSROOT.require(['d3', 'JSRootPainter', 'JSRootMath', 'JSRootPainter.v6'], (d3, jsrp) => {
+JSROOT.require(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
    "use strict";
 
@@ -54,7 +54,7 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootMath', 'JSRootPainter.v6'], (d3, j
       this.FinishTextDrawing(undefined, () => this.DrawingReady());
 
       if (!JSROOT.BatchMode)
-         JSROOT.require(['JSRoot.interactive']).then(inter => {
+         JSROOT.require(['interactive']).then(inter => {
             this.pos_dx = this.pos_dy = 0;
 
             if (!this.moveDrag)
@@ -436,7 +436,7 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootMath', 'JSRootPainter.v6'], (d3, j
       }
 
       if (!JSROOT.BatchMode)
-         JSROOT.require(['JSRoot.interactive']).then(inter => {
+         JSROOT.require(['interactive']).then(inter => {
 
             if (!this.moveStart)
                this.moveStart = function(x,y) {
@@ -774,7 +774,7 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootMath', 'JSRootPainter.v6'], (d3, j
       if (JSROOT.Math !== undefined)
          return painter.PerformDraw();
 
-      return JSROOT.require("JSRootMath").then(() => painter.PerformDraw());
+      return JSROOT.require("math").then(() => painter.PerformDraw());
    }
 
    // =======================================================================
@@ -1992,7 +1992,7 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootMath', 'JSRootPainter.v6'], (d3, j
       this.SetDivId(divid);
       this.DrawBins();
       if (this.TestEditable() && !JSROOT.BatchMode)
-         JSROOT.require(['JSRoot.interactive'])
+         JSROOT.require(['interactive'])
                .then(inter => inter.DragMoveHandler.AddMove(this));
       this.DrawNextFunction(0, this.DrawingReady.bind(this));
       return this;
@@ -2266,7 +2266,7 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootMath', 'JSRootPainter.v6'], (d3, j
 
       if (JSROOT.BatchMode) return;
 
-      JSROOT.require(['JSRoot.interactive']).then(inter => {
+      JSROOT.require(['interactive']).then(inter => {
          inter.TooltipHandler.assign(this);
 
          let layer = this.svg_layer("primitives_layer"),
@@ -3008,7 +3008,7 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootMath', 'JSRootPainter.v6'], (d3, j
       return total ? passed/total : 0;
    }
 
-/**  implementing of  beta_quantile requires huge number of functions in JSRootMath.js
+/**  implementing of  beta_quantile requires huge number of functions in JSRoot.math.js
 
    TEfficiencyPainter.prototype.ClopperPearson = function(total,passed,level,bUpper) {
       let alpha = (1.0 - level) / 2;

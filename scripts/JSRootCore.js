@@ -132,30 +132,11 @@
          'dat.gui'              : { src: 'dat.gui', libs: true, extract: "dat" },
          'three'                : { src: 'three', libs: true, extract: "THREE", node: "three" },
          'threejs_jsroot'       : { src: 'three.extra', libs: true },
-         'JSRootCore'           : { src: 'JSRootCore' },
-         'JSRootMath'           : { src: 'JSRootMath' },
-         'JSRootIOEvolution'    : { src: 'JSRootIOEvolution' },
-         'JSRootTree'           : { src: 'JSRootTree' },
-         'JSRoot.openui5'       : { src: 'JSRoot.openui5' },
-         'JSRoot.latex'         : { src: 'JSRoot.latex' },
-         'JSRoot.webwindow'     : { src: 'JSRoot.webwindow' },
-         'JSRoot.interactive'   : { src: 'JSRoot.interactive' },
-         'JSRootPainter'        : { src: 'JSRootPainter' },
-         'JSRootPainter.v6'     : { src: 'JSRootPainter.v6' },
-         'JSRootPainter.hist'   : { src: 'JSRootPainter.hist' },
-         'JSRootPainter.hist3d' : { src: 'JSRootPainter.hist3d' },
-         'JSRootPainter.more'   : { src: 'JSRootPainter.more' },
-         'JSRootPainter.hierarchy' : { src: 'JSRootPainter.hierarchy' },
-         'JSRootPainter.jquery' : { src: 'JSRootPainter.jquery' },
-         'JSRootPainter.v7'     : { src: 'JSRootPainter.v7' },
-         'JSRootPainter.v7hist' : { src: 'JSRootPainter.v7hist' },
-         'JSRootPainter.v7hist3d' : { src: 'JSRootPainter.v7hist3d' },
-         'JSRootPainter.v7more' : { src: 'JSRootPainter.v7more' },
-         'JSRoot3DPainter'      : { src: 'JSRoot3DPainter' },
-         'ThreeCSG'             : { src: 'ThreeCSG' },
-         'JSRootGeoBase'        : { src: 'JSRootGeoBase' },
-         'JSRootGeoPainter'     : { src: 'JSRootGeoPainter' }
-   }
+         'JSRootCore'           : { src: 'JSRootCore' }
+    };
+    ['base3d','csg','geobase','geom','geoworker','gpad','hierarchy','hist','hist3d','interactive','io','jq2d','latex',
+      'math','more','openui5','painter','tree','v7gpad','v7hist','v7hist3d','v7more','webwindow']
+         .forEach(item => JSROOT._.sources[item] = { src: "JSRoot." + item });
 
    JSROOT._.get_module_src = function(entry, fullyQualified) {
       if (entry.src.indexOf('http') == 0)
@@ -333,7 +314,6 @@
      *    - 'jq2d'   jQuery-dependent part of hierarchy
      *    - 'openui5' OpenUI5 and related functionality
      *    - 'geom'    TGeo support
-     *    - 'simple'  for basic user interface
      * @param {Array} need - array of required components
      * @param {Function} [factoryFunc] - function to initialize functionality, only once per script file
      * @returns {Promise} when factoryFunc not specified */
@@ -342,30 +322,6 @@
 
       if (typeof need == "string")
          need = need.split(";");
-
-      for (let k =  0; k < need.length; ++k) {
-         switch(need[k]) {
-            case "2d" : need[k] = "JSRootPainter"; break;
-            case "v6" : need[k] = "JSRootPainter.v6"; break;
-            case "hist" : need[k] = "JSRootPainter.hist"; break;
-            case "hist3d" : need[k] = "JSRootPainter.hist3d"; break;
-            case "hierarchy": need[k] = "JSRootPainter.hierarchy"; break;
-            case "io" : need[k] = "JSRootIOEvolution"; break;
-            case "math" : need[k] = "JSRootMath"; break;
-            case "tree" : need[k] = "JSRootTree"; break;
-            case "3d" : need[k] = "JSRoot3DPainter"; break;
-            case "more2d": need[k] = "JSRootPainter.more"; break;
-            case "geom": need[k] = "JSRootGeoPainter"; break;
-            case "v7" : need[k] = "JSRootPainter.v7"; break;
-            case "v7hist" : need[k] = "JSRootPainter.v7hist"; break;
-            case "v7hist3d" : need[k] = "JSRootPainter.v7hist3d"; break;
-            case "v7more" : need[k] = "JSRootPainter.v7more"; break;
-            case "jq2d" : need[k] = "JSRootPainter.jquery"; break;
-            case "openui5" : need[k] = "JSRoot.openui5"; break;
-            case "latex" : need[k] = "JSRoot.latex"; break;
-            default: if (need[k].indexOf("load:") == 0) need[k] = need[k].substr(5);
-         }
-      }
 
       need = need.filter(elem => !!elem);
 
@@ -479,7 +435,6 @@
          if (req.resolve)
              req.resolve(arr.length == 1 ? arr[0] : arr);
       }
-
       function analyze(resolve, reject) {
          let handler, srcs = [],
              req = { need: need, thisModule: thisModule, factoryFunc: factoryFunc, resolve: resolve, reject: reject,
@@ -1150,28 +1105,29 @@
       });
    }
 
-   // Open ROOT file, defined in JSRootIOEvolution.js
+   // Open ROOT file, defined in JSRoot.io.js
    JSROOT.OpenFile = function(filename, callback) {
-      return JSROOT.require("JSRootIOEvolution").then(() => JSROOT.OpenFile(filename, callback));
+      return JSROOT.require("io").then(() => JSROOT.OpenFile(filename, callback));
    }
 
-   // Draw object, defined in JSRootPainter.js
+   // Draw object, defined in JSRoot.painter.js
    JSROOT.draw = function(divid, obj, opt) {
-      return JSROOT.require("JSRootPainter").then(() => JSROOT.draw(divid, obj, opt));
+      return JSROOT.require("painter").then(() => JSROOT.draw(divid, obj, opt));
    }
 
-   // Redaraw object, defined in JSRootPainter.js
+   // Redaraw object, defined in JSRoot.painter.js
    JSROOT.redraw = function(divid, obj, opt) {
-      return JSROOT.require("JSRootPainter").then(() => JSROOT.redraw(divid, obj, opt));
+      return JSROOT.require("painter").then(() => JSROOT.redraw(divid, obj, opt));
    }
 
-   // Create SVG, defined in JSRootPainter.js
+   // Create SVG, defined in JSRoot.painter.js
    JSROOT.MakeSVG = function(args) {
-      return JSROOT.require("JSRootPainter").then(() => JSROOT.MakeSVG(args));
+      return JSROOT.require("painter").then(() => JSROOT.MakeSVG(args));
    }
 
    // FIXME: for backward compatibility with v5, will be remove in JSROOT v7
    JSROOT.AssertPrerequisites = function(req, callback) {
+      req = req.replace(/more2d;/g, 'more;').replace(/2d;/g, 'gpad;');
       JSROOT.require(req).then(callback);
    }
 
@@ -1186,7 +1142,7 @@
 
       let debugout,
           nobrowser = GetUrlOption('nobrowser')!=null,
-          requirements = "2d;hierarchy;",
+          requirements = "gpad;hierarchy;",
           simplegui = document.getElementById('simpleGUI');
 
       if (GetUrlOption('libs')!==null) JSROOT.use_full_libs = true;
@@ -1958,7 +1914,7 @@
       this.extend(obj, this.getMethods(typename || obj._typename, obj));
    }
 
-   // Dummy function, will be redefined when JSRootPainter is loaded
+   // Dummy function, will be redefined when JSRoot.painter is loaded
    JSROOT.progress = function(msg /*, tmout */) {
       if ((msg !== undefined) && (typeof msg=="string")) console.log(msg);
    }
@@ -1970,7 +1926,7 @@
       if (arg.openui5src) JSROOT.openui5src = arg.openui5src;
       if (arg.openui5libs) JSROOT.openui5libs = arg.openui5libs;
       if (arg.openui5theme) JSROOT.openui5theme = arg.openui5theme;
-      return JSROOT.require("JSRoot.webwindow;" + (arg && arg.prereq ? arg.prereq : "")).then(() => {
+      return JSROOT.require("webwindow;" + (arg && arg.prereq ? arg.prereq : "")).then(() => {
          if (arg && arg.prereq_logdiv && document) {
             let elem = document.getElementById(arg.prereq_logdiv);
             if (elem) elem.innerHTML = '';
@@ -2014,21 +1970,21 @@
       let prereq = "";
       if (GetUrlOption('io', src)!=null) prereq += "io;";
       if (GetUrlOption('tree', src)!=null) prereq += "tree;";
-      if (GetUrlOption('2d', src)!=null) prereq += "2d;";
-      if (GetUrlOption('v7', src)!=null) prereq += "v7;";
-      if (GetUrlOption('hist', src)!=null) prereq += "2d;hist;";
-      if (GetUrlOption('hierarchy', src)!=null) prereq += "2d;hierarchy;";
-      if (GetUrlOption('jq2d', src)!=null) prereq += "2d;hierarchy;jq2d;";
-      if (GetUrlOption('more2d', src)!=null) prereq += "more2d;";
+      if (GetUrlOption('2d', src)!=null) prereq += "gpad;";
+      if (GetUrlOption('v7', src)!=null) prereq += "v7gpad;";
+      if (GetUrlOption('hist', src)!=null) prereq += "hist;";
+      if (GetUrlOption('hierarchy', src)!=null) prereq += "hierarchy;";
+      if (GetUrlOption('jq2d', src)!=null) prereq += "jq2d;";
+      if (GetUrlOption('more2d', src)!=null) prereq += "more;";
       if (GetUrlOption('geom', src)!=null) prereq += "geom;";
-      if (GetUrlOption('3d', src)!=null) prereq += "3d;";
+      if (GetUrlOption('3d', src)!=null) prereq += "base3d;";
       if (GetUrlOption('math', src)!=null) prereq += "math;";
       if (GetUrlOption('mathjax', src)!=null) prereq += "mathjax;";
       if (GetUrlOption('openui5', src)!=null) prereq += "openui5;";
       let user = GetUrlOption('load', src),
           onload = GetUrlOption('onload', src);
 
-      if (user) prereq += "io;2d;load:" + user;
+      if (user) prereq += "io;gpad;load:" + user;
 
       if ((prereq.length>0) || (onload!=null))
          window_on_load(() => {

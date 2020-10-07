@@ -1,7 +1,7 @@
-/// @file JSRootPainter.v7.js
+/// @file JSRoot.v7gpad.js
 /// JavaScript ROOT graphics for ROOT v7 classes
 
-JSROOT.require(['d3', 'JSRootPainter'], (d3, jsrp) => {
+JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
 
    "use strict";
 
@@ -1623,7 +1623,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3, jsrp) => {
 
       if (JSROOT.BatchMode) return;
 
-      JSROOT.require(['JSRoot.interactive']).then(inter => {
+      JSROOT.require(['interactive']).then(inter => {
          inter.FrameInteractive.assign(this);
          this.BasicInteractive();
       });
@@ -1903,7 +1903,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3, jsrp) => {
     * @private */
    RFramePainter.prototype.AddKeysHandler = function() {
       if (JSROOT.BatchMode) return;
-      JSROOT.require(['JSRoot.interactive']).then(inter => {
+      JSROOT.require(['interactive']).then(inter => {
          inter.FrameInteractive.assign(this);
          this.AddKeysHandler();
       });
@@ -1915,7 +1915,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3, jsrp) => {
 
       if (JSROOT.BatchMode || (!JSROOT.gStyle.Zooming && !JSROOT.gStyle.ContextMenu)) return;
 
-      JSROOT.require(['JSRoot.interactive']).then(inter => {
+      JSROOT.require(['interactive']).then(inter => {
          inter.FrameInteractive.assign(this);
          this.AddInteractive();
       });
@@ -3325,7 +3325,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3, jsrp) => {
    RPadPainter.prototype.ShowButtons = function() {
       if (!this._buttons) return;
 
-      JSROOT.require(['JSRoot.interactive']).then(inter => {
+      JSROOT.require(['interactive']).then(inter => {
          inter.PadButtonsHandler.assign(this);
          this.ShowButtons();
       });
@@ -3478,7 +3478,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3, jsrp) => {
          return JSROOT.CallBack(call_back, true);
       }
 
-      JSROOT.require("JSRootPainter.jquery").then(() => {
+      JSROOT.require("jq2d").then(() => {
 
          let grid = new JSROOT.GridDisplay(origin.node(), layout_kind);
 
@@ -3989,7 +3989,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3, jsrp) => {
 
       if (JSROOT.BatchMode) return;
 
-      JSROOT.require(['JSRoot.interactive']).then(inter => {
+      JSROOT.require(['interactive']).then(inter => {
          // TODO: provide pave context menu as in v6
          if (JSROOT.gStyle.ContextMenu && this.PaveContextMenu)
             this.draw_g.on("contextmenu", this.PaveContextMenu.bind(this));
@@ -4098,7 +4098,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3, jsrp) => {
       this.FinishTextDrawing();
 
       if (!JSROOT.BatchMode)
-         JSROOT.require(['JSRoot.interactive'])
+         JSROOT.require(['interactive'])
                .then(inter => inter.DragMoveHandler.AddDrag(this, { minwidth: 20, minheight: 20, no_change_x: true, redraw: this.Redraw.bind(this,'drag') }));
    }
 
@@ -4354,7 +4354,7 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3, jsrp) => {
 
       if (JSROOT.BatchMode) return;
 
-      JSROOT.require(['JSRoot.interactive']).then(inter => {
+      JSROOT.require(['interactive']).then(inter => {
 
          if (!after_resize)
             inter.DragMoveHandler.AddDrag(this, { minwidth: 20, minheight: 20, no_change_y: true, redraw: this.DrawPalette.bind(this, true) });
@@ -4439,7 +4439,6 @@ JSROOT.require(['d3', 'JSRootPainter'], (d3, jsrp) => {
 
       return painter.DrawingReady();
    }
-
 
    // JSROOT.addDrawFunc({ name: "ROOT::Experimental::RPadDisplayItem", icon: "img_canvas", func: drawPad, opt: "" });
 
