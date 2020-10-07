@@ -2709,6 +2709,8 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v6'], (d3, jsrp) => {
       this.arr = [];
       this.colzmin = zmin;
       this.colzmax = zmax;
+      this.below_min_indx = -1;
+      this.exact_min_indx = 0;
    }
 
    HistContour.prototype.CreateNormal = function(nlevels, log_scale, zminpositive) {
@@ -2750,6 +2752,42 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v6'], (d3, jsrp) => {
          this.arr.push(this.colzmax);
    }
 
+   HistContour.prototype.ConfigIndicies = function(below_min, exact_min) {
+      this.below_min_indx = below_min;
+      this.exact_min_indx = exact_min;
+   }
+
+   HistContour.prototype.getContourIndex = function(zc) {
+      if (this.custom) {
+         let l = 0, r = this.arr.length-1;
+         if (zc < this.arr[0]) return -1;
+         if (zc >= this.arr[r]) return r;
+         while (l < r-1) {
+            let mid = Math.round((l+r)/2);
+            if (this.arr[mid] > zc) r = mid; else l = mid;
+         }
+         return l;
+      }
+
+      // bins less than zmin not drawn
+      if (zc < this.colzmin) return this.below_min_indx;
+
+      // if bin content exactly zmin, draw it when col0 specified or when content is positive
+      if (zc === this.colzmin) return this.exact_min_indx;
+
+      return Math.floor(0.01+(zc-this.colzmin)*(this.arr.length-1)/(this.colzmax-this.colzmin));
+   }
+
+   HistContour.prototype.getPaletteColor = function(palette, zc, asindx) {
+      let zindx = this.getContourIndex(zc);
+      if (zindx < 0) return null;
+
+      let pindx = palette.calcColorIndex(zindx, this.arr.length);
+
+      return asindx ? pindx : palette.getColor(pindx);
+   }
+
+
    THistPainter.prototype.CreateContour = function(nlevels, zmin, zmax, zminpositive) {
 
       if (nlevels<1) nlevels = JSROOT.gStyle.fNumberContours;
@@ -2757,10 +2795,13 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v6'], (d3, jsrp) => {
       let cntr = new HistContour(zmin, zmax);
       cntr.CreateNormal(nlevels, this.root_pad().fLogz, zminpositive);
 
+      this.cntr = cntr;
       this.fContour = cntr.arr;
       this.colzmin = cntr.colzmin;
       this.colzmax = cntr.colzmax;
       this.fCustomContour = cntr.custom;
+
+      cntr.ConfigIndicies(this.options.Zero ? -1 : 0, (cntr.colzmin != 0) || !this.options.Zero || this.IsTH2Poly() ? 0 : -1);
 
       let fp = this.frame_painter();
       if ((this.Dimension() < 3) && fp) {
@@ -2778,6 +2819,7 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v6'], (d3, jsrp) => {
           fp = this.frame_painter();
 
       if (main && (main !== this) && main.fContour) {
+         this.cntr = main.cntr;
          this.fContour = main.fContour;
          this.fCustomContour = main.fCustomContour;
          this.colzmin = main.colzmin;
@@ -2823,40 +2865,15 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v6'], (d3, jsrp) => {
 
    /// return index from contours array, which corresponds to the content value **zc**
    THistPainter.prototype.getContourIndex = function(zc) {
-
-      let cntr = this.GetContour();
-
-      if (this.fCustomContour) {
-         let l = 0, r = cntr.length-1;
-         if (zc < cntr[0]) return -1;
-         if (zc >= cntr[r]) return r;
-         while (l < r-1) {
-            let mid = Math.round((l+r)/2);
-            if (cntr[mid] > zc) r = mid; else l = mid;
-         }
-         return l;
-      }
-
-      // bins less than zmin not drawn
-      if (zc < this.colzmin) return this.options.Zero ? -1 : 0;
-
-      // if bin content exactly zmin, draw it when col0 specified or when content is positive
-      if (zc===this.colzmin) return ((this.colzmin != 0) || !this.options.Zero || this.IsTH2Poly()) ? 0 : -1;
-
-      return Math.floor(0.01+(zc-this.colzmin)*(cntr.length-1)/(this.colzmax-this.colzmin));
+      this.GetContour();
+      return this.cntr.getContourIndex(zc);
    }
 
    /// return color from the palette, which corresponds given controur value
    /// optionally one can return color index of the palette
    THistPainter.prototype.getContourColor = function(zc, asindx) {
-      let zindx = this.getContourIndex(zc);
-      if (zindx < 0) return null;
-
-      let cntr = this.GetContour(),
-          palette = this.GetPalette(),
-          indx = palette.calcColorIndex(zindx, cntr.length);
-
-      return asindx ? indx : palette.getColor(indx);
+      this.GetContour();
+      return this.cntr.getPaletteColor(this.GetPalette(), zc, asindx);
    }
 
    THistPainter.prototype.GetPalette = function(force) {
