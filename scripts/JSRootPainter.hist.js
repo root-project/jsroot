@@ -2856,7 +2856,9 @@
       }
 
       if (histo.fContour && (histo.fContour.length>1) && histo.TestBit(JSROOT.TH1StatusBits.kUserContour)) {
-         this.fContour = JSROOT.clone(histo.fContour);
+         this.fContour = [];
+         for (let n = 0; n < histo.fContour.length; ++n)
+            this.fContour.push(histo.fContour[n]);
          this.fCustomContour = true;
          this.colzmin = zmin;
          this.colzmax = zmax;
