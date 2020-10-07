@@ -2783,7 +2783,8 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v6'], (d3, jsrp) => {
          this.fCustomContour = true;
          this.colzmin = zmin;
          this.colzmax = zmax;
-         if (zmax > this.fContour[this.fContour.length-1]) this.fContour.push(zmax);
+         if (zmax > this.fContour[this.fContour.length-1])
+            this.fContour.push(zmax);
          if ((this.Dimension()<3) && fp) {
             fp.zmin = this.colzmin;
             fp.zmax = this.colzmax;
@@ -2802,11 +2803,11 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v6'], (d3, jsrp) => {
       let cntr = this.GetContour();
 
       if (this.fCustomContour) {
-         let l = 0, r = cntr.length-1, mid;
+         let l = 0, r = cntr.length-1;
          if (zc < cntr[0]) return -1;
          if (zc >= cntr[r]) return r;
          while (l < r-1) {
-            mid = Math.round((l+r)/2);
+            let mid = Math.round((l+r)/2);
             if (cntr[mid] > zc) r = mid; else l = mid;
          }
          return l;
@@ -4733,6 +4734,8 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v6'], (d3, jsrp) => {
           colPaths = [], currx = [], curry = [],
           colindx, cmd1, cmd2, i, j, binz, x1, dx, y2, dy;
 
+      let tm1 = new Date().getTime();
+
       // now start build
       for (i = handle.i1; i < handle.i2; ++i) {
 
@@ -4767,6 +4770,11 @@ JSROOT.require(['d3', 'JSRootPainter', 'JSRootPainter.v6'], (d3, jsrp) => {
             colPaths[colindx] += "v"+dy + "h"+dx + "v"+(-dy) + "z";
          }
       }
+
+      let tm2 = new Date().getTime();
+
+      console.log(`Takes ${tm2-tm1}`)
+
 
       for (colindx=0;colindx<colPaths.length;++colindx)
         if (colPaths[colindx] !== undefined)

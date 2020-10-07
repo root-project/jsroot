@@ -306,9 +306,8 @@ JSROOT.require(['d3'], (d3) => {
 
       /** @summary Returns color index which correspond to contour index of provided length */
    ColorPalette.prototype.calcColorIndex = function(i, len) {
-      let theColor = Math.floor((i + 0.99) * this.palette.length / (len - 1));
-      if (theColor > this.palette.length - 1) theColor = this.palette.length - 1;
-      return theColor;
+      let plen = this.palette.length, theColor = Math.floor((i + 0.99) * plen / (len - 1));
+      return (theColor > plen - 1) ? plen - 1 : theColor;
     }
 
       /** @summary Returns color with provided index */
