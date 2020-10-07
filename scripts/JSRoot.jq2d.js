@@ -1646,7 +1646,12 @@ JSROOT.require(['d3', 'jquery', 'painter', 'hierarchy'], (d3, $, jsrp) => {
 
       hpainter.is_online = online;
 
-      hpainter.StartGUI(myDiv, hpainter.InitializeBrowser.bind(hpainter));
+      return new Promise(resolveFunc => {
+         hpainter.StartGUI(myDiv, () => {
+            hpainter.InitializeBrowser();
+            resolveFunc(hpainter);
+         });
+      });
    }
 
    // ==================================================

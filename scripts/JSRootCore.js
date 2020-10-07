@@ -299,31 +299,34 @@
      * Following components can be specified
      *    - 'io'     TFile functionality
      *    - 'tree'   TTree support
-     *    - '2d'     basic 2d graphic (TCanvas/TPad/TFrame)
-     *    - '3d'     basic 3d graphic (three.js)
+     *    - 'gpad'   basic 2d graphic (TCanvas/TPad/TFrame)
      *    - 'hist'   histograms 2d drawing (SVG)
      *    - 'hist3d' histograms 3d drawing (WebGL)
-     *    - 'more2d' extra 2d graphic (TGraph, TF1)
-     *    - 'v7'     ROOT v7 graphics
+     *    - 'more'   extra 2d graphic (TGraph, TF1)
+     *    - 'geom'    TGeo support
+     *    - 'v7gpad' ROOT RPad/RCanvas/RFrame
      *    - 'v7hist' ROOT v7 histograms 2d drawing (SVG)
      *    - 'v7hist3d' v7 histograms 3d drawing (WebGL)
      *    - 'v7more' ROOT v7 special classes
      *    - 'math'   some methods from TMath class
-     *    - 'jq'     jQuery and jQuery-ui
      *    - 'hierarchy' hierarchy browser
      *    - 'jq2d'   jQuery-dependent part of hierarchy
      *    - 'openui5' OpenUI5 and related functionality
-     *    - 'geom'    TGeo support
-     * @param {Array} need - array of required components
+     * @param {Array|string} need - list of required components (as array or string separated by semicolon)
      * @param {Function} [factoryFunc] - function to initialize functionality, only once per script file
      * @returns {Promise} when factoryFunc not specified */
    JSROOT.require = function(need, factoryFunc) {
+
+      if (!need && !factoryFunc)
+         return Promise.resolve(null);
+
       let _ = this._;
 
-      if (typeof need == "string")
-         need = need.split(";");
+      if (typeof need == "string") need = need.split(";");
 
       need = need.filter(elem => !!elem);
+
+      need.forEach((name,indx) => { if (name.indexOf("load:")==0) need[indx] = name.substr(5); });
 
       // loading with require.js
 
@@ -1169,13 +1172,13 @@
 
       if (!user_scripts) user_scripts = GetUrlOption("autoload") || GetUrlOption("load");
 
-      if (user_scripts) requirements += "load:" + user_scripts + ";";
+      if (user_scripts) requirements += "io;gpad;";
 
       // TODO: restore debugout
-      JSROOT.require(requirements).then(() => {
-         JSROOT.CallBack(JSROOT.findFunction(nobrowser ? 'JSROOT.BuildNobrowserGUI' : 'JSROOT.BuildGUI'));
-         JSROOT.CallBack(andThen);
-      });
+      JSROOT.require(requirements)
+            .then(() => JSROOT.require(user_scripts))
+            .then(() => JSROOT.CallBack(JSROOT.findFunction(nobrowser ? 'JSROOT.BuildNobrowserGUI' : 'JSROOT.BuildGUI')))
+            .then(() => JSROOT.CallBack(andThen));
    }
 
    /** @summary Create some ROOT classes

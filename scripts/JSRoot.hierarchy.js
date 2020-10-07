@@ -2217,7 +2217,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
       if (title) document.title = title;
 
       let load = GetOption("load");
-      if (load) prereq += ";io;2d;load:" + load;
+      if (load) prereq += ";io;gpad;";
 
       if (expanditems.length==0 && (GetOption("expand")==="")) expanditems.push("");
 
@@ -2262,11 +2262,19 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
 
       if (this.start_without_browser) browser_kind = "";
 
-      if (status || browser_kind) prereq = "jq2d;" + prereq;
+      if (status || browser_kind) prereq += "jq2d;";
 
       this._topname = GetOption("topname");
 
       let OpenAllFiles = () => {
+         if (prereq || load) {
+            // load first prerequicities and then special script
+            let req = prereq;
+            prereq = "";
+            if (!req) { req = load; load = ""; }
+            return JSROOT.require(req).then(OpenAllFiles);
+         }
+
          if (browser_kind) { this.CreateBrowser(browser_kind); browser_kind = ""; }
          if (status!==null) { this.CreateStatusLine(statush, status); status = null; }
          if (jsonarr.length > 0)
@@ -2332,10 +2340,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
       if (gui_div)
          this.PrepareGuiDiv(gui_div, this.disp_kind);
 
-      if (prereq.length>0)
-         JSROOT.require(prereq).then(OpenAllFiles);
-      else
-         OpenAllFiles();
+      OpenAllFiles();
    }
 
    HierarchyPainter.prototype.PrepareGuiDiv = function(myDiv, layout) {
@@ -2415,17 +2420,20 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
 
       hpainter.start_without_browser = true; // indicate that browser not required at the beginning
 
-      hpainter.StartGUI(myDiv, function() {
-         if (!drawing) return;
+      return new Promise(resolveFunc => {
 
-         let func = JSROOT.findFunction('GetCachedObject');
-         let obj = (typeof func == 'function') ? JSROOT.parse(func()) : null;
-         if (obj) hpainter._cached_draw_object = obj;
-         let opt = JSROOT.GetUrlOption("opt") || "";
+         hpainter.StartGUI(myDiv, () => {
+            if (!drawing) return resolveFunc(hpainter);
 
-         if (JSROOT.GetUrlOption("websocket")!==null) opt+=";websocket";
+            let func = JSROOT.findFunction('GetCachedObject');
+            let obj = (typeof func == 'function') ? JSROOT.parse(func()) : null;
+            if (obj) hpainter._cached_draw_object = obj;
+            let opt = JSROOT.GetUrlOption("opt") || "";
 
-         hpainter.display("", opt);
+            if (JSROOT.GetUrlOption("websocket")!==null) opt+=";websocket";
+
+            hpainter.display("", opt, () => resolveFunc(hpainter));
+         });
       });
    }
 
