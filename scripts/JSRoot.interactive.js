@@ -661,12 +661,10 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
 
       AddInteractive: function() {
 
-         let pp = this.pad_painter();
-         if (pp && pp._fast_drawing) return;
-
-         let svg = this.svg_frame();
-
-         if (svg.empty()) return;
+         let pp = this.pad_painter(),
+             svg = this.svg_frame();
+         if ((pp && pp._fast_drawing) || svg.empty())
+            return Promise.resolve(this);
 
          let svg_x = svg.selectAll(".xaxis_container"),
              svg_y = svg.selectAll(".yaxis_container");
@@ -708,6 +706,8 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
          svg_y.on("mousemove", this.ShowAxisStatus.bind(this,"y"));
 
          svg.property('interactive_set', true);
+
+         return Promise.resolve(this);
       },
 
       AddKeysHandler: function() {

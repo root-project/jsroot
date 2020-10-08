@@ -2590,8 +2590,10 @@ JSROOT.require(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       if (this.is_main_painter()) {
          let fp = this.frame_painter();
-         if (fp) fp.AddInteractive();
+         if (fp) return fp.AddInteractive();
       }
+
+      return Promise.resolve(false);
    }
 
    /** @summary Invoke dialog to enter and modify user range @private */
@@ -4207,7 +4209,7 @@ JSROOT.require(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return false;
    }
 
-   TH1Painter.prototype.CallDrawFunc = function(callback, reason) {
+   TH1Painter.prototype.CallDrawFunc = function(reason) {
 
       let main = this.main_painter(),
           fp = this.frame_painter();
@@ -4217,10 +4219,11 @@ JSROOT.require(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       let funcname = this.options.Mode3D ? "Draw3D" : "Draw2D";
 
-      this[funcname](callback, reason);
+      return this[funcname](reason);
    }
 
-   TH1Painter.prototype.Draw2D = function(call_back /*, reason*/) {
+   /** @returns Promise */
+   TH1Painter.prototype.Draw2D = function(/* reason */) {
       this.Clear3DScene();
       this.mode3d = false;
 
@@ -4231,23 +4234,22 @@ JSROOT.require(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (typeof this.DrawColorPalette === 'function')
          this.DrawColorPalette(false);
 
-      this.DrawAxes().then(() => {
+      return this.DrawAxes().then(() => {
          this.DrawBins();
          return this.DrawTitle();
       }).then(() => {
          this.UpdateStatWebCanvas();
-         this.AddInteractive();
-         JSROOT.CallBack(call_back);
+         return this.AddInteractive();
       });
    }
 
-   TH1Painter.prototype.Draw3D = function(call_back, reason) {
+   TH1Painter.prototype.Draw3D = function(reason) {
       this.mode3d = true;
-      JSROOT.require('hist3d').then(() => this.Draw3D(call_back, reason));
+      return JSROOT.require('hist3d').then(() => this.Draw3D(reason));
    }
 
    TH1Painter.prototype.Redraw = function(reason) {
-      this.CallDrawFunc(null, reason);
+      this.CallDrawFunc(reason);
    }
 
    let drawHistogram1D = (divid, histo, opt) => {
@@ -4265,7 +4267,7 @@ JSROOT.require(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       painter.CreateStat(); // only when required
 
-      painter.CallDrawFunc(() => {
+      painter.CallDrawFunc().then(() => {
          painter.DrawNextFunction(0, () => {
             if (!painter.options.Mode3D && painter.options.AutoZoom) painter.AutoZoom();
             painter.FillToolbar();
@@ -6149,7 +6151,8 @@ JSROOT.require(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return !obj || (obj.FindBin(max,0.5) - obj.FindBin(min,0) > 1);
    }
 
-   TH2Painter.prototype.Draw2D = function(call_back /*, resize*/) {
+   /** @returns {Promise} */
+   TH2Painter.prototype.Draw2D = function(/* reason */) {
 
       this.Clear3DScene();
       this.mode3d = false;
@@ -6159,7 +6162,7 @@ JSROOT.require(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       // draw new palette, resize frame if required
       let pp = this.DrawColorPalette(this.options.Zscale && (this.options.Color || this.options.Contour), true);
 
-      this.DrawAxes().then(() => {
+      return this.DrawAxes().then(() => {
 
          this.DrawBins();
 
@@ -6171,18 +6174,16 @@ JSROOT.require(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          this.UpdateStatWebCanvas();
 
-         this.AddInteractive();
-
-         JSROOT.CallBack(call_back);
+         return this.AddInteractive();
       });
    }
 
-   TH2Painter.prototype.Draw3D = function(call_back, resize) {
+   TH2Painter.prototype.Draw3D = function(reason) {
       this.mode3d = true;
-      JSROOT.require('hist3d').then(() => this.Draw3D(call_back, resize));
+      return JSROOT.require('hist3d').then(() => this.Draw3D(reason));
    }
 
-   TH2Painter.prototype.CallDrawFunc = function(callback, reason) {
+   TH2Painter.prototype.CallDrawFunc = function(reason) {
 
       let main = this.main_painter(),
           fp = this.frame_painter();
@@ -6191,11 +6192,11 @@ JSROOT.require(['d3', 'painter', 'gpad'], (d3, jsrp) => {
         this.CopyOptionsFrom(main);
 
       let funcname = this.options.Mode3D ? "Draw3D" : "Draw2D";
-      this[funcname](callback, reason);
+      return this[funcname](reason);
    }
 
    TH2Painter.prototype.Redraw = function(reason) {
-      this.CallDrawFunc(null, reason);
+      this.CallDrawFunc(reason);
    }
 
    let drawHistogram2D = (divid, histo, opt) => {
@@ -6223,7 +6224,7 @@ JSROOT.require(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       painter.CreateStat(); // only when required
 
-      painter.CallDrawFunc(() => {
+      painter.CallDrawFunc().then(() => {
          painter.DrawNextFunction(0, ()=> {
             if (!painter.Mode3D && painter.options.AutoZoom) painter.AutoZoom();
             painter.FillToolbar();

@@ -359,8 +359,10 @@ JSROOT.require(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
       if (this.is_main_painter()) {
          let fp = this.frame_painter();
-         if (fp) fp.AddInteractive();
+         if (fp) return fp.AddInteractive();
       }
+
+      return Promise.resolve(false);
    }
 
 

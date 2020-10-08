@@ -197,6 +197,8 @@ JSROOT.require(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          if (typeof p.ShowContextMenu == 'function')
             p.ShowContextMenu(kind, pos);
       }
+
+      return JSROOT.require("interactive"); // drawing should wait until interactive is loaded
    }
 
    /** @brief Set frame activity flag
@@ -1473,14 +1475,16 @@ JSROOT.require(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
    // ==========================================================================================
 
-   /** @summary Draw 1-D histogram in 3D @private */
-   JSROOT.TH1Painter.prototype.Draw3D = function(call_back, reason) {
+   /** @summary Draw 1-D histogram in 3D
+     * @private
+     */
+   JSROOT.TH1Painter.prototype.Draw3D = function(reason) {
 
       this.mode3d = true;
 
       let main = this.frame_painter(), // who makes axis drawing
           is_main = this.is_main_painter(), // is main histogram
-          histo = this.GetHisto();
+          histo = this.GetHisto(), ret;
 
       if (reason == "resize")  {
 
@@ -1493,7 +1497,7 @@ JSROOT.require(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          this.ScanContent(true); // may be required for axis drawings
 
          if (is_main) {
-            main.Create3DScene(undefined, this.options.Render3D);
+            ret = main.Create3DScene(undefined, this.options.Render3D);
             main.SetAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, 0, 0);
             main.Set3DOptions(this.options);
             main.DrawXYZ(main.toplevel, { use_y_for_z: true, zmult: 1.1, zoom: JSROOT.gStyle.Zooming, ndim: 1 });
@@ -1514,18 +1518,18 @@ JSROOT.require(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          this.DrawTitle();
       }
 
-      JSROOT.CallBack(call_back);
+      return ret ? ret : Promise.resolve(true);
    }
 
    // ==========================================================================================
 
-   JSROOT.TH2Painter.prototype.Draw3D = function(call_back, reason) {
+   JSROOT.TH2Painter.prototype.Draw3D = function(reason) {
 
       this.mode3d = true;
 
       let main = this.frame_painter(), // who makes axis drawing
           is_main = this.is_main_painter(), // is main histogram
-          histo = this.GetHisto();
+          histo = this.GetHisto(), ret;
 
       if (reason == "resize") {
 
@@ -1546,7 +1550,7 @@ JSROOT.require(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          this.DeleteAtt();
 
          if (is_main) {
-            main.Create3DScene(undefined, this.options.Render3D);
+            ret = main.Create3DScene(undefined, this.options.Render3D);
             main.SetAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, this.zmin, this.zmax);
             main.Set3DOptions(this.options);
             main.DrawXYZ(main.toplevel, { zmult: zmult, zoom: JSROOT.gStyle.Zooming, ndim: 2 });
@@ -1569,7 +1573,7 @@ JSROOT.require(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          this.DrawTitle();
       }
 
-      JSROOT.CallBack(call_back);
+      return ret ? ret : Promise.resolve(true);
    }
 
    JSROOT.TH2Painter.prototype.DrawContour3D = function(realz) {
@@ -2900,7 +2904,7 @@ JSROOT.require(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
    TH3Painter.prototype.Redraw = function(reason) {
 
       let main = this.frame_painter(), // who makes axis and 3D drawing
-          histo = this.GetHisto();
+          histo = this.GetHisto(), ret;
 
       if (reason == "resize") {
 
@@ -2908,7 +2912,7 @@ JSROOT.require(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
       } else {
 
-         main.Create3DScene(undefined, this.options.Render3D);
+         ret = main.Create3DScene(undefined, this.options.Render3D);
          main.SetAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, this.zmin, this.zmax);
          main.Set3DOptions(this.options);
          main.DrawXYZ(main.toplevel, { zoom: JSROOT.gStyle.Zooming, ndim: 3 });
@@ -2919,6 +2923,8 @@ JSROOT.require(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       }
 
       this.DrawTitle();
+
+      return ret ? ret : Promise.resolve(true);
    }
 
    TH3Painter.prototype.FillToolbar = function() {
@@ -3025,14 +3031,17 @@ JSROOT.require(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
       painter.ScanContent();
 
-      painter.Redraw();
+      painter.Redraw().then(() => {
 
-      let stats = painter.CreateStat(); // only when required
-      if (stats) JSROOT.draw(painter.divid, stats, "");
+         let stats = painter.CreateStat(); // only when required
+         if (stats) JSROOT.draw(painter.divid, stats, "");
 
-      painter.FillToolbar();
+         painter.FillToolbar();
 
-      return painter.Promise(true);
+         painter.DrawingReady();
+      });
+
+      return painter;
    }
 
    // ===========================================================================================

@@ -1913,11 +1913,12 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
     * @private */
    RFramePainter.prototype.AddInteractive = function() {
 
-      if (JSROOT.BatchMode || (!JSROOT.gStyle.Zooming && !JSROOT.gStyle.ContextMenu)) return;
+      if (JSROOT.BatchMode || (!JSROOT.gStyle.Zooming && !JSROOT.gStyle.ContextMenu))
+         return Promise.resolve(false);
 
-      JSROOT.require(['interactive']).then(inter => {
+      return JSROOT.require(['interactive']).then(inter => {
          inter.FrameInteractive.assign(this);
-         this.AddInteractive();
+         return this.AddInteractive();
       });
    }
 
