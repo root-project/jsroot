@@ -100,7 +100,7 @@
       <script type="text/javascript" src="../demo/examples.js"> </script-->
 
       <script type="text/javascript" >
-         var scripts = "scripts/",
+         let scripts = "scripts/",
              jsroot_path = "./",
              demo_path = "demo/",
              filepath = "../files/",
@@ -108,7 +108,7 @@
              extra_opts = "", // extra options like webgl=no
              select_key = null;  // select the only key like ?select=TH2
 
-         var icon = document.createElement("link");
+         let icon = document.createElement("link");
          icon.setAttribute('src', "img/RootIcon.ico");
          icon.setAttribute('rel', "shortcut icon");
 
@@ -140,7 +140,7 @@
          document.getElementsByTagName("head")[0].appendChild(icon);
 
          function loadScript(name, load_callback) {
-            var element = document.createElement("script");
+            let element = document.createElement("script");
             element.setAttribute('type', "text/javascript");
             element.setAttribute('src', name);
 
@@ -155,24 +155,24 @@
          loadScript(use_requirejs ? "//cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" : scripts + 'JSRootCore.js',
             function() {
 
-               if (!use_requirejs) return FillContent();
+               if (!use_requirejs)
+                  return FillContent();
 
                require([scripts + 'JSRootCore.js'], function(handle) {
                   // JSROOT = handle;
-                  console.log('Has JSROOT', typeof JSROOT);
 
                   FillContent();
                });
            });
 
-         var keyid = null, optid, testfile, testobj, testinterval = 10, hpainter = null;
+         let keyid = null, optid, testfile, testobj, testinterval = 10, hpainter = null;
 
          function ProcessClick(durl, filename, itemname, opt, jsonname) {
 
             keyid = null; // stop execution of running test loop (if any)
 
           //  if (viewer && viewer.contentWindow) {
-          //     var jsroot = viewer.contentWindow.JSROOT;
+          //     let jsroot = viewer.contentWindow.JSROOT;
           //     if (jsroot && jsroot.hpainter) {
           //        console.log('CLEANUP PAINTER IN IFRAME');
           //        jsroot.hpainter.Cleanup();
@@ -186,7 +186,7 @@
                JSROOT.cleanup('viewer');
 
             if (durl.length > 0) {
-               var viewer = document.getElementById( 'viewer_frame' );
+               let viewer = document.getElementById( 'viewer_frame' );
                if (!viewer) {
                   document.getElementById('viewer').innerHTML = "";
                   viewer = document.createElement('iframe');
@@ -224,10 +224,10 @@
 
          function RunBigTest(interval, doinit) {
             if (doinit) {
-               var running = (keyid != null); // indication that test running - no need to relaunch events
+               let running = (keyid != null); // indication that test running - no need to relaunch events
                keyid = select_key || 'TH1'; optid = -1;
                testfile = testobj = null;
-               var ii = JSROOT.GetUrlOption("interval");
+               let ii = JSROOT.GetUrlOption("interval");
                if (ii && !isNaN(parseInt(ii))) testinterval = parseInt(ii);
                                           else testinterval = interval;
                if (running) return;
@@ -241,9 +241,9 @@
                return setTimeout(function() { RunBigTest(0); }, interval);
 
             if (++optid >= examples_main[keyid].length) {
-               var found = false, next = null;
+               let found = false, next = null;
                if (!select_key)
-                  for (var key in examples_main) {
+                  for (let key in examples_main) {
                      if (found) { next = key; break; }
                      if (key == keyid) found = true;
                   }
@@ -254,12 +254,12 @@
                return RunBigTest(0);
             }
 
-            var entry = examples_main[keyid][optid];
+            let entry = examples_main[keyid][optid];
 
             // exclude some entries from the test
             if (entry.notest) return RunBigTest(0);
 
-            var filename = "", itemname = "", jsonname = "", url = "", opt = "";
+            let filename = "", itemname = "", jsonname = "", url = "", opt = "";
 
             if (entry.file) {
                 filename = entry.file;
@@ -301,7 +301,7 @@
                testfile = testobj = null;
                // if (keyid == 'TGeo') return RunBigTest(0);  // ignore TGeo URLs - too complex
 
-               var layout = JSROOT.GetUrlOption("layout", url, "simple"),
+               let layout = JSROOT.GetUrlOption("layout", url, "simple"),
                    nobrowser = JSROOT.GetUrlOption("nobrowser", url, null);
 
                if (nobrowser !== null) {
@@ -353,9 +353,9 @@
                if (typeof examples_more == 'undefined')
                   return loadScript(demo_path + 'examples_more.js', FillContent);
 
-               for (var key in examples_more) {
+               for (let key in examples_more) {
                   if (key in examples_main) {
-                     for (var n in examples_more[key])
+                     for (let n in examples_more[key])
                         examples_main[key].push(examples_more[key][n]);
                   } else {
                      examples_main[key] = examples_more[key];
@@ -371,24 +371,24 @@
 
             document.getElementById( 'version' ).title = JSROOT.version + ", " + JSROOT.source_dir;
 
-            var content = document.getElementById( 'content' );
+            let content = document.getElementById( 'content' );
 
-            for (var key in examples_main) {
+            for (let key in examples_main) {
 
-               var opts = examples_main[key];
+               let opts = examples_main[key];
 
                if (select_key && (key != select_key)) continue;
 
-               var div = document.createElement( 'h2' );
+               let div = document.createElement( 'h2' );
                div.textContent = key;
                content.appendChild( div );
 
-               var url = "", filename = "", itemname = "", jsonname = "";
+               let url = "", filename = "", itemname = "", jsonname = "";
 
-               for (var n=0; n<opts.length;++n) {
-                  var entry = opts[n];
+               for (let n=0; n<opts.length;++n) {
+                  let entry = opts[n];
 
-                  var shortname = key.toLowerCase().replace(" ","_");
+                  let shortname = key.toLowerCase().replace(" ","_");
 
                   jsonname = ""; url = "";
 
@@ -414,8 +414,8 @@
                      }
                   }
 
-                  var opt = ('opt' in entry) ? entry.opt : "";
-                  var aaa = document.createElement( 'a' );
+                  let opt = ('opt' in entry) ? entry.opt : "";
+                  let aaa = document.createElement( 'a' );
 
                   if ('name' in entry)
                      aaa.textContent = entry.name;
@@ -427,7 +427,7 @@
 
                   if (aaa.textContent != "<dflt>") shortname += "_" + aaa.textContent.toLowerCase().replace(" ","_");
 
-                  var prefix = (entry.asurl === "browser") ? "?" : "?nobrowser&";
+                  let prefix = (entry.asurl === "browser") ? "?" : "?nobrowser&";
 
                   if (entry.asurl) {
                      if (jsonname)
@@ -474,11 +474,11 @@
             }
 
             if (window.location.search.indexOf("?more")==0) {
-                var div = document.createElement( 'h2' );
+                let div = document.createElement( 'h2' );
                 div.textContent = "Testing";
                 content.appendChild( div );
 
-                var aaa = document.createElement( 'a' );
+                let aaa = document.createElement( 'a' );
                 aaa.textContent = "run";
                 aaa.title = "Run all examples after each other";
                 content.appendChild( aaa );
