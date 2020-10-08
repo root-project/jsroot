@@ -135,13 +135,14 @@
          'threejs_jsroot'       : { src: 'three.extra', libs: true },
          'JSRootCore'           : { src: 'JSRootCore' }
     };
+
     ['base3d','csg','geobase','geom','geoworker','gpad','hierarchy','hist','hist3d','interactive','io','jq2d','latex',
       'math','more','openui5','painter','tree','v7gpad','v7hist','v7hist3d','v7more','webwindow']
          .forEach(item => JSROOT._.sources[item] = { src: "JSRoot." + item });
 
    JSROOT._.get_module_src = function(entry, fullyQualified) {
       if (entry.src.indexOf('http') == 0)
-         return entry.src + ".js";
+         return this.amd ? entry.src : entry.src + ".js";
 
       let dir = (entry.libs && JSROOT.use_full_libs && !JSROOT.source_min) ? JSROOT.source_dir + "libs/" : JSROOT.source_dir + "scripts/";
       let ext = (JSROOT.source_min || (entry.libs && !JSROOT.use_full_libs) || entry.onlymin) ? ".min" : ""
@@ -333,7 +334,7 @@
 
       if (_.amd) {
          if (!factoryFunc)
-            return new Promise(function(resolve) {
+            return new Promise(resolve => {
                if (need.length > 0)
                   require(need, resolve);
                else
@@ -401,10 +402,7 @@
             throw Error("Cannot define module for" + document.currentScript.src);
       }
 
-      function finish_loading(m, res, no_promise) {
-         if (!no_promise && (typeof res == 'object') && res.then)
-            return res.then(promise_res => finish_loading(m, promise_res, true));
-
+      function finish_loading(m, res) {
          m.module = res || 1; // just to have some value
          let waiting = m.waiting;
          delete m.loading; // clear loading flag
