@@ -65,7 +65,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
             if (!hint) continue;
 
             if (hint.painter && (hint.user_info !== undefined))
-               if (hint.painter.ProvideUserTooltip(hint.user_info)) { };
+               hint.painter.ProvideUserTooltip(hint.user_info);
 
             if (!hint.lines || (hint.lines.length === 0)) {
                hints[n] = null; continue;
@@ -1618,6 +1618,103 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
 
       }
    } // PadButtonsHandler
+
+   /** @summary Configure user-defined tooltip callback
+    *
+    * @desc Hook for the users to get tooltip information when mouse cursor moves over frame area
+    * call_back function will be called every time when new data is selected
+    * when mouse leave frame area, call_back(null) will be called
+    */
+
+   JSROOT.ObjectPainter.prototype.ConfigureUserTooltipCallback = function(call_back, user_timeout) {
+
+      if (!call_back || (typeof call_back !== 'function')) {
+         delete this.UserTooltipCallback;
+         delete this.UserTooltipTimeout;
+         return;
+      }
+
+      if (user_timeout === undefined) user_timeout = 500;
+
+      this.UserTooltipCallback = call_back;
+      this.UserTooltipTimeout = user_timeout;
+   }
+
+   /** @summary Configure user-defined context menu for the object
+   *
+   * @desc fillmenu_func will be called when context menu is actiavted
+   * Arguments fillmenu_func are (menu,kind,call_back)
+   * First is JSROOT menu object, second is object subelement like axis "x" or "y"
+   * Third is call_back which must be called when menu items are filled
+   */
+
+   JSROOT.ObjectPainter.prototype.ConfigureUserContextMenu = function(fillmenu_func) {
+
+      if (!fillmenu_func || (typeof fillmenu_func !== 'function'))
+         delete this.UserContextMenuFunc;
+      else
+         this.UserContextMenuFunc = fillmenu_func;
+   }
+
+   /** @summary Configure user-defined click handler
+   *
+   * @desc Function will be called every time when frame click was perfromed
+   * As argument, tooltip object with selected bins will be provided
+   * If handler function returns true, default handling of click will be disabled
+   */
+
+   JSROOT.ObjectPainter.prototype.ConfigureUserClickHandler = function(handler) {
+      let fp = this.frame_painter();
+      if (fp && typeof fp.ConfigureUserClickHandler == 'function')
+         fp.ConfigureUserClickHandler(handler);
+   }
+
+   /** @summary Configure user-defined dblclick handler
+   *
+   * @desc Function will be called every time when double click was called
+   * As argument, tooltip object with selected bins will be provided
+   * If handler function returns true, default handling of dblclick (unzoom) will be disabled
+   */
+
+   JSROOT.ObjectPainter.prototype.ConfigureUserDblclickHandler = function(handler) {
+      let fp = this.frame_painter();
+      if (fp && typeof fp.ConfigureUserDblclickHandler == 'function')
+         fp.ConfigureUserDblclickHandler(handler);
+   }
+
+   /** @summary Check if user-defined tooltip callback is configured
+    * @returns {boolean}
+    * @private */
+   JSROOT.ObjectPainter.prototype.IsUserTooltipCallback = function() {
+      return typeof this.UserTooltipCallback == 'function';
+   }
+
+   /** @summary Provide tooltips data to user-defained function
+    * @param {object} data - tooltip data
+    * @private */
+   JSROOT.ObjectPainter.prototype.ProvideUserTooltip = function(data) {
+
+      if (!this.IsUserTooltipCallback()) return;
+
+      if (this.UserTooltipTimeout <= 0)
+         return this.UserTooltipCallback(data);
+
+      if (typeof this.UserTooltipTHandle != 'undefined') {
+         clearTimeout(this.UserTooltipTHandle);
+         delete this.UserTooltipTHandle;
+      }
+
+      if (!data)
+         return this.UserTooltipCallback(data);
+
+      let d = data;
+
+     // only after timeout user function will be called
+      this.UserTooltipTHandle = setTimeout(() => {
+         delete this.UserTooltipTHandle;
+         if (this.UserTooltipCallback) this.UserTooltipCallback(d);
+      }, this.UserTooltipTimeout);
+   }
 
    return {
       TooltipHandler: TooltipHandler,
