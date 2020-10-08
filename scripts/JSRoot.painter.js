@@ -152,7 +152,7 @@ JSROOT.require(['d3'], (d3) => {
 
       if (JSROOT.GetUrlOption("nomenu", url) !== null) JSROOT.gStyle.ContextMenu = false;
       if (JSROOT.GetUrlOption("noprogress", url) !== null) JSROOT.gStyle.ProgressBox = false;
-      if (JSROOT.GetUrlOption("notouch", url) !== null) JSROOT.touches = false;
+      if (JSROOT.GetUrlOption("notouch", url) !== null) JSROOT.browser.touches = false;
       if (JSROOT.GetUrlOption("adjframe", url) !== null) JSROOT.gStyle.CanAdjustFrame = true;
 
       let optstat = JSROOT.GetUrlOption("optstat", url);

@@ -1625,7 +1625,7 @@ JSROOT.require(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-m
       return this.brlayout.CreateStatusLine(height, mode);
    }
 
-   JSROOT.BuildGUI = function() {
+   JSROOT.BuildSimpleGUI = function() {
       let myDiv = d3.select('#simpleGUI'), online = false;
 
       if (myDiv.empty()) {

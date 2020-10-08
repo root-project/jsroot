@@ -638,7 +638,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
                     .on('mousemove', mouse_handler)
                     .on('mouseleave', close_handler);
 
-            if (JSROOT.touches) {
+            if (JSROOT.browser.touches) {
                let touch_handler = handlers_set ? this.ProcessTooltipEvent.bind(this, { handler: true, touch: true }) : null;
 
                main_svg.on("touchstart", touch_handler)
@@ -691,11 +691,11 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
                svg.on("wheel", this.mouseWheel.bind(this));
          }
 
-         if (JSROOT.touches && ((JSROOT.gStyle.Zooming && JSROOT.gStyle.ZoomTouch && !this.projection) || JSROOT.gStyle.ContextMenu))
+         if (JSROOT.browser.touches && ((JSROOT.gStyle.Zooming && JSROOT.gStyle.ZoomTouch && !this.projection) || JSROOT.gStyle.ContextMenu))
             svg.on("touchstart", this.startTouchZoom.bind(this));
 
          if (JSROOT.gStyle.ContextMenu) {
-            if (JSROOT.touches) {
+            if (JSROOT.browser.touches) {
                svg_x.on("touchstart", this.startTouchMenu.bind(this,"x"));
                svg_y.on("touchstart", this.startTouchMenu.bind(this,"y"));
             }

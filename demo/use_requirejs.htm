@@ -11,16 +11,10 @@
    <script type='text/javascript'>
 
       // first load JSRootCore.js script
-      require(['../scripts/JSRootCore.min'], function(jsroot) {
+      require(['../scripts/JSRootCore.min'], jsroot => {
 
-         // request data from JSON file
-         jsroot.NewHttpRequest("canvas_tf1.json", 'object', function(obj) {
-
-            // display object
-            jsroot.draw("drawing", obj);
-
-         }).send();
-
+         jsroot.HttpRequest("canvas_tf1.json", 'object')   // request data
+               .then(obj => jsroot.draw("drawing", obj));  // display object
       });
 
    </script>

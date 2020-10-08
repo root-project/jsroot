@@ -39,13 +39,13 @@
          });
       }
 
-      // define( jsroot );
+      define( jsroot );
 
       if (norjs || !require.specified("JSRootCore"))
          define('JSRootCore', [], jsroot);
 
       if (norjs || !require.specified("jsroot"))
-        define('jsroot', [], jsroot);
+         define('jsroot', [], jsroot);
 
       globalThis.JSROOT = jsroot;
 
@@ -66,11 +66,13 @@
       if (typeof JSROOT != 'undefined')
          throw new Error("JSROOT is already defined", "JSRootCore.js");
 
-      globalThis.JSROOT = {};
+      let jsroot = {};
 
-      factory(globalThis.JSROOT);
+      factory(jsroot);
 
-      JSROOT._.init();
+      globalThis.JSROOT = jsroot;
+
+      jsroot._.init();
    }
 } (function(JSROOT) {
 
@@ -84,9 +86,8 @@
    JSROOT.nocache = false;      // when specified, used as extra URL parameter to load JSROOT scripts
    JSROOT.wrong_http_response_handling = false; // when configured, try to handle wrong content-length response from server
 
-   /** Internal, not a public data
-      @private */
-   JSROOT._ = { modules: {} };
+   // internal data
+   let _ = { modules: {} };
 
    JSROOT.id_counter = 1;       // avoid id value 0, starts from 1
    if (JSROOT.BatchMode === undefined)
@@ -96,10 +97,9 @@
 
    // JSROOT.use_full_libs = true;
 
-   JSROOT.touches = false;
    JSROOT.key_handling = true;  // enable/disable key press handling in JSROOT
 
-   JSROOT.browser = { isOpera: false, isFirefox: true, isSafari: false, isChrome: false, isWin: false };
+   let browser = { isOpera: false, isFirefox: true, isSafari: false, isChrome: false, isWin: false, touches: false  };
 
    if ((typeof document !== "undefined") && (typeof window !== "undefined")) {
       let script = document.currentScript;
@@ -113,16 +113,16 @@
          }
       }
 
-      JSROOT.touches = ('ontouchend' in document); // identify if touch events are supported
-      JSROOT.browser.isOpera = !!window.opera || navigator.userAgent.indexOf(' OPR/') >= 0;
-      JSROOT.browser.isFirefox = typeof InstallTrigger !== 'undefined';
-      JSROOT.browser.isSafari = Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0;
-      JSROOT.browser.isChrome = !!window.chrome && !JSROOT.browser.isOpera;
-      JSROOT.browser.isWin = navigator.platform.indexOf('Win') >= 0;
-      JSROOT.browser.isChromeHeadless = navigator.userAgent.indexOf('HeadlessChrome') >= 0;
+      browser.isOpera = !!window.opera || navigator.userAgent.indexOf(' OPR/') >= 0;
+      browser.isFirefox = typeof InstallTrigger !== 'undefined';
+      browser.isSafari = Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0;
+      browser.isChrome = !!window.chrome && !browser.isOpera;
+      browser.isWin = navigator.platform.indexOf('Win') >= 0;
+      browser.isChromeHeadless = navigator.userAgent.indexOf('HeadlessChrome') >= 0;
+      browser.touches = ('ontouchend' in document); // identify if touch events are supported
    }
 
-   JSROOT._.sources = {
+   _.sources = {
          'd3'                   : { src: 'd3', libs: true, extract: "d3", node: "d3" },
          'jquery'               : { src: 'jquery', libs: true,  extract: "$" },
          'jquery-ui'            : { src: 'jquery-ui', libs: true, extract: "$", dep: 'jquery' },
@@ -138,9 +138,9 @@
 
     ['base3d','csg','geobase','geom','geoworker','gpad','hierarchy','hist','hist3d','interactive','io','jq2d','latex',
       'math','more','openui5','painter','tree','v7gpad','v7hist','v7hist3d','v7more','webwindow']
-         .forEach(item => JSROOT._.sources[item] = { src: "JSRoot." + item });
+         .forEach(item => _.sources[item] = { src: "JSRoot." + item });
 
-   JSROOT._.get_module_src = function(entry, fullyQualified) {
+   _.get_module_src = function(entry, fullyQualified) {
       if (entry.src.indexOf('http') == 0)
          return this.amd ? entry.src : entry.src + ".js";
 
@@ -994,7 +994,7 @@
 
          if (this.readyState != 4) return;
 
-         if ((this.status != 200) && (this.status != 206) && !JSROOT.browser.qt5 &&
+         if ((this.status != 200) && (this.status != 206) && !browser.qt5 &&
              // in these special cases browsers not always set status
              !((this.status == 0) && ((url.indexOf("file://")==0) || (url.indexOf("blob:")==0)))) {
                return this.error_callback(Error('Fail to load url ' + url));
@@ -1201,7 +1201,7 @@
       // TODO: restore debugout
       JSROOT.require(requirements)
             .then(() => JSROOT.require(user_scripts))
-            .then(() => JSROOT.CallBack(JSROOT.findFunction(nobrowser ? 'JSROOT.BuildNobrowserGUI' : 'JSROOT.BuildGUI')))
+            .then(() => JSROOT.CallBack(JSROOT.findFunction(nobrowser ? 'JSROOT.BuildNobrowserGUI' : 'JSROOT.BuildSimpleGUI')))
             .then(() => JSROOT.CallBack(andThen));
    }
 
@@ -1974,7 +1974,7 @@
     * Called when script is loaded. Process URL parameters, supplied with JSRootCore.js script
     * @private
     */
-   JSROOT._.init = function() {
+   _.init = function() {
 
       if (JSROOT.source_fullpath.length === 0) return this;
 
@@ -1994,11 +1994,12 @@
       if ((GetUrlOption('wrong_http_response', src) != null) || (GetUrlOption('wrong_http_response') != null))
          JSROOT.wrong_http_response_handling = true; // server may send wrong content length by partial requests, use other method to control this
 
-      if (GetUrlOption('gui', src) !== null)
-         return window_on_load(() => JSROOT.BuildSimpleGUI());
+      // in case of require.js one have to use timeout to decople loading
+      if (_.amd)
+         return window_on_load(() => setTimeout(() => JSROOT.BuildSimpleGUI('check_existing_elements'), 50));
 
-      if ( typeof define === "function" && define.amd )
-         return window_on_load(() => JSROOT.BuildSimpleGUI('check_existing_elements'));
+      if (GetUrlOption('gui', src)!==null)
+         return window_on_load(() => JSROOT.BuildSimpleGUI());
 
       let prereq = "";
       if (GetUrlOption('io', src)!=null) prereq += "io;";
@@ -2032,6 +2033,10 @@
       return this;
    }
 
+   /** internal, non-public data
+     * @private */
+   JSROOT._ = _;
+   JSROOT.browser = browser;
    JSROOT.GetUrlOption = GetUrlOption;
 
    return JSROOT;

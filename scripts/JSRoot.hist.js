@@ -384,7 +384,7 @@ JSROOT.require(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          inter.DragMoveHandler.AddDrag(this, { obj: pt, minwidth: 10, minheight: 20, canselect: true,
                         redraw: this.DragRedraw.bind(this),
-                        ctxmenu: JSROOT.touches && JSROOT.gStyle.ContextMenu && this.UseContextMenu });
+                        ctxmenu: JSROOT.browser.touches && JSROOT.gStyle.ContextMenu && this.UseContextMenu });
 
          if (this.UseContextMenu && JSROOT.gStyle.ContextMenu)
              this.draw_g.on("contextmenu", this.PaveContextMenu.bind(this));
