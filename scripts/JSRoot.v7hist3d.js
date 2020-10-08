@@ -1440,7 +1440,7 @@ JSROOT.require(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
    // ==========================================================================================
 
    /** @summary Draw 1-D histogram in 3D @private */
-   JSROOT.v7.RH1Painter.prototype.Draw3D = function(call_back, reason) {
+   JSROOT.v7.RH1Painter.prototype.Draw3D = function(reason) {
 
       this.mode3d = true;
 
@@ -1449,7 +1449,7 @@ JSROOT.require(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
 
       if (reason == "resize")  {
          if (is_main && main.Resize3D()) main.Render3D();
-         return JSROOT.CallBack(call_back);
+         return Promise.resolve(true);
       }
 
       this.DeleteAtt();
@@ -1464,9 +1464,9 @@ JSROOT.require(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       }
 
       if (!main.mode3d)
-         return JSROOT.CallBack(call_back);
+         return Promise.resolve(true);
 
-      this.DrawingBins(call_back, reason, function() {
+      return this.DrawingBins(reason).then(() => {
          // called when bins received from server, must be reentrant
          let main = this.frame_painter();
 
@@ -1475,13 +1475,14 @@ JSROOT.require(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
          main.Render3D();
          this.UpdateStatWebCanvas();
          main.AddKeysHandler();
+         return true;
       });
 
    }
 
    // ==========================================================================================
 
-   JSROOT.v7.RH2Painter.prototype.Draw3D = function(call_back, reason) {
+   JSROOT.v7.RH2Painter.prototype.Draw3D = function(reason) {
 
       this.mode3d = true;
 
@@ -1491,7 +1492,7 @@ JSROOT.require(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       if (reason == "resize") {
          if (is_main && main.Resize3D()) main.Render3D();
 
-         return JSROOT.CallBack(call_back);
+         return Promise.resolve(true);
       }
 
       let zmult = 1.1;
@@ -1512,9 +1513,9 @@ JSROOT.require(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       }
 
       if (!main.mode3d)
-         return JSROOT.CallBack(call_back);
+         return Promise.resolve(true);
 
-      this.DrawingBins(call_back, reason, function(){
+      return this.DrawingBins(reason).then(() => {
          // called when bins received from server, must be reentrant
          let main = this.frame_painter();
 
@@ -1522,6 +1523,7 @@ JSROOT.require(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
          main.Render3D();
          this.UpdateStatWebCanvas();
          main.AddKeysHandler();
+         return true;
       });
    }
 

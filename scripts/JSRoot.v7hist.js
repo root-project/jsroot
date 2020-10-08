@@ -376,25 +376,18 @@ JSROOT.require(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
       if (req.reqid === this.current_item_reqid) {
 
-         if (reply !== null)
+         if (reply !== null) {
             this.UpdateDisplayItem(this.GetObject(), reply.item);
-         else if (req._draw_call_back === undefined) {
-            return; // timeout can be ignored
          }
 
-         req.method();
+         req.resolveFunc(true);
       }
 
-      let cb = req._draw_call_back;
-      delete req._draw_call_back;
-      JSROOT.CallBack(cb);
    }
 
    /** Special method to request bins from server if existing data insufficient
      * @private */
-   RHistPainter.prototype.DrawingBins = function(call_back, reason, method) {
-
-      method = method.bind(this);
+   RHistPainter.prototype.DrawingBins = function(reason) {
 
       let is_axes_zoomed = false;
       if (reason && (typeof reason == "string") && (reason.indexOf("zoom") == 0)) {
@@ -408,23 +401,22 @@ JSROOT.require(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
          let handle = this.PrepareDraw({ only_indexes: true });
 
          // submit request if histogram data not enough for display
-         if (handle.incomplete) {
-            // use empty kind to always submit request
-            let req = this.v7SubmitRequest("", { _typename: "ROOT::Experimental::RHistDrawableBase::RRequest" },
-                                           this.ProcessItemReply.bind(this));
-            if (req) {
-               this.current_item_reqid = req.reqid; // ignore all previous requests, only this one will be processed
-               req._draw_call_back = call_back;
-               req.method = method;
-               setTimeout(this.ProcessItemReply.bind(this, null, req), 1000); // after 1 s draw something that we can
-               return;
-            }
-         }
+         if (handle.incomplete)
+            return new Promise(resolveFunc => {
+               // use empty kind to always submit request
+               let req = this.v7SubmitRequest("", { _typename: "ROOT::Experimental::RHistDrawableBase::RRequest" },
+                                                  this.ProcessItemReply.bind(this));
+               if (req) {
+                  this.current_item_reqid = req.reqid; // ignore all previous requests, only this one will be processed
+                  req.resolveFunc = resolveFunc;
+                  setTimeout(this.ProcessItemReply.bind(this, null, req), 1000); // after 1 s draw something that we can
+               } else {
+                  resolveFunc(true);
+               }
+            });
       }
 
-      method();
-
-      JSROOT.CallBack(call_back);
+      return Promise.resolve(true);
    }
 
    RHistPainter.prototype.ToggleTitle = function(/*arg*/) {
@@ -1812,7 +1804,7 @@ JSROOT.require(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       return false;
    }
 
-   RH1Painter.prototype.CallDrawFunc = function(callback, reason) {
+   RH1Painter.prototype.CallDrawFunc = function(reason) {
       let main = this.frame_painter();
 
       if (main && (main.mode3d !== this.options.Mode3D) && !this.is_main_painter())
@@ -1820,31 +1812,31 @@ JSROOT.require(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
       let funcname = this.options.Mode3D ? "Draw3D" : "Draw2D";
 
-      this[funcname](callback, reason);
+      return this[funcname](reason);
    }
 
-   RH1Painter.prototype.Draw2D = function(call_back, reason) {
+   RH1Painter.prototype.Draw2D = function(reason) {
       this.Clear3DScene();
       this.mode3d = false;
 
-      this.DrawAxes().then(res => {
-         if (!res) return JSROOT.CallBack(call_back);
-         this.DrawingBins(call_back, reason, () => {
-            // called when bins received from server, must be reentrant
-            this.DrawBins();
-            this.UpdateStatWebCanvas();
-            this.AddInteractive();
-         });
-      });
+      return this.DrawAxes()
+                 .then(res => res ? this.DrawingBins(reason) : false)
+                 .then(res2 => {
+                     if (!res2) return false;
+                     // called when bins received from server, must be reentrant
+                     this.DrawBins();
+                     this.UpdateStatWebCanvas();
+                     return this.AddInteractive();
+                     });
    }
 
-   RH1Painter.prototype.Draw3D = function(call_back, reason) {
+   RH1Painter.prototype.Draw3D = function(reason) {
       this.mode3d = true;
-      JSROOT.require('v7hist3d').then(() => this.Draw3D(call_back, reason));
+      return JSROOT.require('v7hist3d').then(() => this.Draw3D(reason));
    }
 
    RH1Painter.prototype.Redraw = function(reason) {
-      this.CallDrawFunc(null, reason);
+      this.CallDrawFunc(reason);
    }
 
    let drawHist1 = (divid, histo, opt) => {
@@ -1883,7 +1875,7 @@ JSROOT.require(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
       painter.ScanContent();
 
-      painter.CallDrawFunc(function() {
+      painter.CallDrawFunc().then(() => {
          // if (!painter.options.Mode3D && painter.options.AutoZoom) painter.AutoZoom();
          // painter.FillToolbar();
          painter.DrawingReady();
@@ -3597,7 +3589,7 @@ JSROOT.require(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       return (obj.FindBin(max,0.5) - obj.FindBin(min,0) > 1);
    }
 
-   RH2Painter.prototype.Draw2D = function(call_back, reason) {
+   RH2Painter.prototype.Draw2D = function(reason) {
 
       this.mode3d = false;
       this.Clear3DScene();
@@ -3605,23 +3597,23 @@ JSROOT.require(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       // draw new palette, resize frame if required
       // let pp = this.DrawColorPalette(this.options.Zscale && (this.options.Color || this.options.Contour), true);
 
-      this.DrawAxes().then(res => {
-         if (!res) return JSROOT.CallBack(call_back);
-         this.DrawingBins(call_back, reason, () => {
-            // called when bins received from server, must be reentrant
-            this.DrawBins();
-            this.UpdateStatWebCanvas();
-            this.AddInteractive();
-         });
-      });
+      return this.DrawAxes()
+                 .then(res => res ? this.DrawingBins(reason) : false)
+                 .then(res2 => {
+                    // called when bins received from server, must be reentrant
+                    if (!res2) return false;
+                    this.DrawBins();
+                    this.UpdateStatWebCanvas();
+                    return this.AddInteractive();
+                 });
    }
 
-   RH2Painter.prototype.Draw3D = function(call_back, reason) {
+   RH2Painter.prototype.Draw3D = function(reason) {
       this.mode3d = true;
-      JSROOT.require('v7hist3d').then(() => this.Draw3D(call_back, reason));
+      return JSROOT.require('v7hist3d').then(() => this.Draw3D(reason));
    }
 
-   RH2Painter.prototype.CallDrawFunc = function(callback, reason) {
+   RH2Painter.prototype.CallDrawFunc = function(reason) {
       let main = this.frame_painter();
 
       if (main && (main.mode3d !== this.options.Mode3D) && !this.is_main_painter())
@@ -3629,11 +3621,11 @@ JSROOT.require(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
       let funcname = this.options.Mode3D ? "Draw3D" : "Draw2D";
 
-      this[funcname](callback, reason);
+      return this[funcname](reason);
    }
 
    RH2Painter.prototype.Redraw = function(reason) {
-      this.CallDrawFunc(null, reason);
+      this.CallDrawFunc(reason);
    }
 
    let drawHist2 = (divid, obj, opt) => {
@@ -3683,7 +3675,7 @@ JSROOT.require(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
       // painter.CreateStat(); // only when required
 
-      painter.CallDrawFunc(function() {
+      painter.CallDrawFunc().then(() => {
          //if (!this.options.Mode3D && this.options.AutoZoom) this.AutoZoom();
          // this.FillToolbar();
          //if (this.options.Project && !this.mode3d)
