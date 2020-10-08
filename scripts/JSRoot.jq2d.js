@@ -451,7 +451,7 @@ JSROOT.require(['d3', 'jquery', 'painter', 'hierarchy'], (d3, $, jsrp) => {
            .resizable({
               containment: "parent",
               minWidth: 100,
-              resize: function( event, ui ) {
+              resize: function(/* event, ui */) {
                  pthis.SetButtonsPosition();
               },
               stop: function( event, ui ) {
@@ -465,10 +465,10 @@ JSROOT.require(['d3', 'jquery', 'painter', 'hierarchy'], (d3, $, jsrp) => {
              snap: true,
              snapMode: "inner",
              snapTolerance: 10,
-             drag: function( event, ui ) {
+             drag: function(/* event, ui */) {
                 pthis.SetButtonsPosition();
              },
-             stop: function( event, ui ) {
+             stop: function(/* event, ui */) {
                 let bottom = $(this).parent().innerHeight() - $(this).offset().top - $(this).outerHeight();
                 if (bottom<7) $(this).css('height', "").css('bottom', 0);
              }
@@ -488,11 +488,11 @@ JSROOT.require(['d3', 'jquery', 'painter', 'hierarchy'], (d3, $, jsrp) => {
            axis: "x" , cursor: "ew-resize",
            containment: "parent",
            helper : function() { return $(this).clone().css('background-color','grey'); },
-           drag: function(event,ui) {
+           drag: function(/* event,ui */) {
               pthis.SetButtonsPosition();
               pthis.AdjustSeparator(ui.position.left, null);
            },
-           stop: function(event,ui) {
+           stop: function(/* event,ui */) {
               pthis.CheckResize();
            }
         });
@@ -683,7 +683,7 @@ JSROOT.require(['d3', 'jquery', 'painter', 'hierarchy'], (d3, $, jsrp) => {
          drag: function(event,ui) {
             pthis.AdjustSeparator(null, -ui.position.top);
          },
-         stop: function(event,ui) {
+         stop: function(/*event,ui*/) {
             pthis.CheckResize();
          }
       });
@@ -1995,7 +1995,7 @@ JSROOT.require(['d3', 'jquery', 'painter', 'hierarchy'], (d3, $, jsrp) => {
             .height(Math.round(h * 0.58))
             .resizable({
                helper: "jsroot-flex-resizable-helper",
-               start: function(event, ui) {
+               start: function(/* event, ui */) {
                   // bring element to front when start resizing
                   PopupWindow($(this));
                },
@@ -2145,7 +2145,7 @@ JSROOT.require(['d3', 'jquery', 'painter', 'hierarchy'], (d3, $, jsrp) => {
          cursor: handle.vertical ? "ns-resize" : "ew-resize",
          containment: "parent",
          helper : function() { return $(this).clone().css('background-color','grey'); },
-         start: function(event,ui) {
+         start: function(/* event,ui */) {
             // remember start position
             let handle = $(this).prop('handle'),
                 id = parseInt($(this).attr('separator-id'));
@@ -2154,11 +2154,11 @@ JSROOT.require(['d3', 'jquery', 'painter', 'hierarchy'], (d3, $, jsrp) => {
          drag: function(event,ui) {
             $(this).trigger('changePosition', ui);
          },
-         stop: function(event,ui) {
+         stop: function(/* event,ui */) {
             // verify if start position was changed
             let handle = $(this).prop('handle'),
                id = parseInt($(this).attr('separator-id'));
-            if (Math.abs(handle.groups[id].startpos - handle.groups[id].position)<0.5) return;
+            if (Math.abs(handle.groups[id].startpos - handle.groups[id].position) < 0.5) return;
 
             $(this).trigger('resizeGroup', id-1);
             $(this).trigger('resizeGroup', id);
@@ -2401,7 +2401,7 @@ JSROOT.require(['d3', 'jquery', 'painter', 'hierarchy'], (d3, $, jsrp) => {
    }
 
    /// @private
-   /// function used with THttpServer for when tree is not yet loaded
+   /// function used with THttpServer when tree is not yet loaded
    JSROOT.drawLeafPlayer = function(hpainter, itemname) {
       return JSROOT.drawTreePlayer(hpainter, itemname, false, true);
    }
