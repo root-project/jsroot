@@ -1191,16 +1191,17 @@
          user_scripts = null;
       }
 
-      let debugout,
-          nobrowser = GetUrlOption('nobrowser')!=null,
+      let d = decodeUrl(),
+          debugout,
+          nobrowser = d.has('nobrowser'),
           requirements = "gpad;hierarchy;",
           simplegui = document.getElementById('simpleGUI');
 
-      if (GetUrlOption('libs')!==null) JSROOT.use_full_libs = true;
+      if (d.has('libs')) JSROOT.use_full_libs = true;
 
       if (simplegui) {
          debugout = 'simpleGUI';
-         if (GetUrlOption('file') || GetUrlOption('files')) requirements += "io;";
+         if (d.has('file') || d.has('files')) requirements += "io;";
          if (simplegui.getAttribute('nobrowser') && (simplegui.getAttribute('nobrowser')!="false")) nobrowser = true;
       } else if (document.getElementById('onlineGUI')) {
          debugout = 'onlineGUI';
@@ -1218,7 +1219,7 @@
 
       if (!nobrowser) requirements += 'jq2d;';
 
-      if (!user_scripts) user_scripts = GetUrlOption("autoload") || GetUrlOption("load");
+      if (!user_scripts) user_scripts = d.get("autoload") || d.get("load");
 
       if (user_scripts) requirements += "io;gpad;";
 
@@ -2012,35 +2013,33 @@
          return JSROOT;
       }
 
-      let src = JSROOT.source_fullpath;
+      let d = decodeUrl(JSROOT.source_fullpath);
 
-      if (GetUrlOption('nocache', src) != null) JSROOT.nocache = (new Date).getTime(); // use timestamp to overcome cache limitation
-      if ((GetUrlOption('wrong_http_response', src) != null) || (GetUrlOption('wrong_http_response') != null))
+      if (d.has('nocache')) JSROOT.nocache = (new Date).getTime(); // use timestamp to overcome cache limitation
+      if (d.has('wrong_http_response') || decodeUrl().has('wrong_http_response'))
          JSROOT.wrong_http_response_handling = true; // server may send wrong content length by partial requests, use other method to control this
 
       // in case of require.js one have to use timeout to decople loading
       if (_.amd)
          return window_on_load(() => setTimeout(() => JSROOT.BuildSimpleGUI('check_existing_elements'), 50));
 
-      if (GetUrlOption('gui', src)!==null)
+      if (d.has('gui'))
          return window_on_load(() => JSROOT.BuildSimpleGUI());
 
-      let prereq = "";
-      if (GetUrlOption('io', src)!=null) prereq += "io;";
-      if (GetUrlOption('tree', src)!=null) prereq += "tree;";
-      if (GetUrlOption('2d', src)!=null) prereq += "gpad;";
-      if (GetUrlOption('v7', src)!=null) prereq += "v7gpad;";
-      if (GetUrlOption('hist', src)!=null) prereq += "hist;";
-      if (GetUrlOption('hierarchy', src)!=null) prereq += "hierarchy;";
-      if (GetUrlOption('jq2d', src)!=null) prereq += "jq2d;";
-      if (GetUrlOption('more2d', src)!=null) prereq += "more;";
-      if (GetUrlOption('geom', src)!=null) prereq += "geom;";
-      if (GetUrlOption('3d', src)!=null) prereq += "base3d;";
-      if (GetUrlOption('math', src)!=null) prereq += "math;";
-      if (GetUrlOption('mathjax', src)!=null) prereq += "mathjax;";
-      if (GetUrlOption('openui5', src)!=null) prereq += "openui5;";
-      let user = GetUrlOption('load', src),
-          onload = GetUrlOption('onload', src);
+      let prereq = "", user = d.get('load'), onload = d.get('onload');
+      if (d.has('io')) prereq += "io;";
+      if (d.has('tree')) prereq += "tree;";
+      if (d.has('2d')) prereq += "gpad;";
+      if (d.has('v7')) prereq += "v7gpad;";
+      if (d.has('hist')) prereq += "hist;";
+      if (d.has('hierarchy')) prereq += "hierarchy;";
+      if (d.has('jq2d')) prereq += "jq2d;";
+      if (d.has('more2d')) prereq += "more;";
+      if (d.has('geom')) prereq += "geom;";
+      if (d.has('3d')) prereq += "base3d;";
+      if (d.has('math')) prereq += "math;";
+      if (d.has('mathjax')) prereq += "mathjax;";
+      if (d.has('openui5')) prereq += "openui5;";
 
       if (user) prereq += "io;gpad;load:" + user;
 
