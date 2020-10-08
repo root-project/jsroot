@@ -378,6 +378,8 @@ JSROOT.require(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
 
       control.GetMouseIntersects = function(mouse) {
          // domElement gives correct coordinate with canvas render, but isn't always right for webgl renderer
+         if (!this.renderer) return [];
+
          let sz = (this.renderer instanceof THREE.WebGLRenderer) ?
                      this.renderer.getSize(new THREE.Vector2()) :
                      this.renderer.domElement;
@@ -704,9 +706,9 @@ JSROOT.require(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
          }.bind(control);
       }
 
-      control.addEventListener( 'change', control.ChangeEvent.bind(control));
-      control.addEventListener( 'start', control.StartEvent.bind(control));
-      control.addEventListener( 'end', control.EndEvent.bind(control));
+      control.addEventListener('change', control.ChangeEvent.bind(control));
+      control.addEventListener('start', control.StartEvent.bind(control));
+      control.addEventListener('end', control.EndEvent.bind(control));
 
       control.lstn_contextmenu = control.MainProcessContextMenu.bind(control);
       control.lstn_dblclick = control.MainProcessDblClick.bind(control);
