@@ -189,6 +189,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
       return str;
    }
 
+   let ltx = {}; // handle for latex processing
 
    /** Just add plain text to the SVG text elements */
    JSROOT.ObjectPainter.prototype.producePlainText = function(txt_node, arg) {
@@ -788,9 +789,8 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
       return true;
    }
 
-
    /** Load MathJax functionality, one need not only to load script but wait for initialization */
-   function LoadMathjax() {
+   ltx.LoadMathjax = function() {
       let loading = (JSROOT._.mj_loading !== undefined);
 
       if (!loading && (typeof MathJax != "undefined"))
@@ -1082,7 +1082,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
       let mtext = translateMath(arg.text, arg.latex, arg.color, this),
           options = { em: arg.font.size, ex: arg.font.size/2, family: arg.font.name, scale: 1, containerWidth: -1, lineWidth: 100000 };
 
-      return LoadMathjax()
+      return ltx.LoadMathjax()
              .then(() => MathJax.tex2svgPromise(mtext, options))
              .then(elem => {
                  let svg = d3.select(elem).select("svg");
@@ -1095,7 +1095,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
               });
    }
 
-   // used in test suite to reset MathJax state
-   jsrp.LoadMathjax = LoadMathjax;
+   if (JSROOT.nodejs) module.exports = ltx;
+   return ltx;
 
 })
