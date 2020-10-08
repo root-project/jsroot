@@ -1,7 +1,7 @@
 /// @file JSRoot.latex.js
 /// Latex / MathJax processing
 
-JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
+JSROOT.require(['d3'], (d3) => {
 
    "use strict";
 
@@ -192,7 +192,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
    let ltx = {}; // handle for latex processing
 
    /** Just add plain text to the SVG text elements */
-   JSROOT.ObjectPainter.prototype.producePlainText = function(txt_node, arg) {
+   ltx.producePlainText = function(painter, txt_node, arg) {
       arg.plain = true;
       if (arg.simple_latex)
          arg.text = translateLaTeX(arg.text); // replace latex symbols
@@ -204,7 +204,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
     * @desc attempt to implement subset of TLatex with plain SVG text and tspan elements
     * @private
     */
-   JSROOT.ObjectPainter.prototype.produceLatex = function(node, arg, label, curr) {
+   ltx.produceLatex = function(painter, node, arg, label, curr) {
 
       if (!curr) {
          // initial dy = -0.1 is to move complete from very bottom line like with normal text drawing
@@ -352,14 +352,14 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
             let s = translateLaTeX(label);
             if (!curr.lvl && (s == label)) {
                // nothing need to be done - can do plain svg text
-               this.producePlainText(node, arg);
+               ltx.producePlainText(painter, node, arg);
                return true;
             }
             extend_pos(curr, s);
 
             if (curr.accent && (s.length == 1)) {
                let elem = node.append('svg:tspan').text(s),
-                  rect = get_boundary(this, elem, { width: 10000 }),
+                  rect = get_boundary(painter, elem, { width: 10000 }),
                   w = Math.min(rect.width / curr.fsize, 0.5); // at maximum, 0.5 should be used
 
                node.append('svg:tspan').attr('dx', makeem(curr.dx - w)).attr('dy', makeem(curr.dy - 0.2)).text(curr.accent);
@@ -424,7 +424,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
             nextdx = nextdy = 0;
             curr.special = found;
 
-            let rect = get_boundary(this, subnode);
+            let rect = get_boundary(painter, subnode);
             if (rect.width && rect.height) {
                found.w = rect.width / curr.fsize;
                found.h = rect.height / curr.fsize - 0.1;
@@ -451,8 +451,8 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
          } else
             switch (found.name) {
                case "#color[":
-                  if (this.get_color(foundarg))
-                     subnode.attr('fill', this.get_color(foundarg));
+                  if (painter.get_color(foundarg))
+                     subnode.attr('fill', painter.get_color(foundarg));
                   break;
                case "#kern[": // horizontal shift
                   nextdx += foundarg;
@@ -510,7 +510,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
                      curr.dy = -0.4 * scale; // compensate vertical shift back
 
                      if (prevsubpos && (prevsubpos.script === 'super')) {
-                        let rect = get_boundary(this, prevsubpos.node, prevsubpos.rect);
+                        let rect = get_boundary(painter, prevsubpos.node, prevsubpos.rect);
                         subpos.width_limit = rect.width;
                         nextdx -= (rect.width / subpos.fsize + 0.1) * scale;
                      }
@@ -536,7 +536,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
                      subpos.y -= 0.4 * subpos.fsize;
 
                      if (prevsubpos && (prevsubpos.script === 'sub')) {
-                        let rect = get_boundary(this, prevsubpos.node, prevsubpos.rect);
+                        let rect = get_boundary(painter, prevsubpos.node, prevsubpos.rect);
                         subpos.width_limit = rect.width;
                         nextdx -= (rect.width / subpos.fsize + 0.1) * scale;
                      }
@@ -602,7 +602,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
 
             // if (subpos.square_root) sublabel = "#frac{a}{bc}";
 
-            if (!this.produceLatex(subnode1, arg, sublabel, subpos)) return false;
+            if (!ltx.produceLatex(painter, subnode1, arg, sublabel, subpos)) return false;
 
             // takeover current possition and deltas
             curr.x = subpos.x;
@@ -617,7 +617,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
                // special handling for the case when created element does not reach its minimal width
                // use when super-script and subscript should be combined together
 
-               let rect = get_boundary(this, subnode1, subpos.rect);
+               let rect = get_boundary(painter, subnode1, subpos.rect);
                if (rect.width < subpos.width_limit)
                   curr.dx += (subpos.width_limit - rect.width) / curr.fsize;
                delete subpos.width_limit;
@@ -625,7 +625,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
 
             if (curr.special) {
                // case over #sum or #integral one need to compensate width
-               let rect = get_boundary(this, subnode1, subpos.rect);
+               let rect = get_boundary(painter, subnode1, subpos.rect);
                curr.dx -= rect.width / curr.fsize; // compensate width as much as we can
             }
 
@@ -633,8 +633,8 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
                // creating cap for square root
                // while overline symbol does not match with square root, use empty text with overline
                let len = 2, sqrt_dy = 0, yscale = 1,
-                  bs = get_boundary(this, subpos.square_root, subpos.sqrt_rect),
-                  be = get_boundary(this, subnode1, subpos.rect);
+                  bs = get_boundary(painter, subpos.square_root, subpos.sqrt_rect),
+                  be = get_boundary(painter, subnode1, subpos.rect);
 
                // we can compare y coordinates while both nodes (root and element) on the same level
                if ((be.height > bs.height) && (bs.height > 0)) {
@@ -664,7 +664,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
                   break;
                }
 
-               let be = get_boundary(this, subnode1, subpos.rect),
+               let be = get_boundary(painter, subnode1, subpos.rect),
                   len = be.width / subpos.fsize, fact, dy, symb;
                switch (subpos.deco) {
                   case "underline": dy = 0.35; fact = 1.2; symb = '\uFF3F'; break; // '\u2014'; // underline
@@ -682,8 +682,8 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
             if (subpos.braces) {
                // handling braces
 
-               let bs = get_boundary(this, subpos.left_cont, subpos.left_rect),
-                  be = get_boundary(this, subnode1, subpos.rect),
+               let bs = get_boundary(painter, subpos.left_cont, subpos.left_rect),
+                  be = get_boundary(painter, subnode1, subpos.rect),
                   yscale = 1, brace_dy = 0;
 
                // console.log('braces height', bs.height, ' entry height', be.height);
@@ -726,8 +726,8 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
             if (subpos.first && subpos.second) {
                // when two lines created, adjust horizontal position and place divider if required
 
-               let rect1 = get_boundary(this, subpos.first, subpos.rect1),
-                  rect2 = get_boundary(this, subpos.second, subpos.rect),
+               let rect1 = get_boundary(painter, subpos.first, subpos.rect1),
+                  rect2 = get_boundary(painter, subpos.second, subpos.rect),
                   l1 = rect1.width / subpos.fsize,
                   l2 = rect2.width / subpos.fsize,
                   l3 = Math.max(l2, l1);
@@ -1078,8 +1078,8 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
       mj_node.attr('transform', trans).attr('visibility', null);
    }
 
-   JSROOT.ObjectPainter.prototype.produceMathjax = function(mj_node, arg) {
-      let mtext = translateMath(arg.text, arg.latex, arg.color, this),
+   ltx.produceMathjax = function(painter, mj_node, arg) {
+      let mtext = translateMath(arg.text, arg.latex, arg.color, painter),
           options = { em: arg.font.size, ex: arg.font.size/2, family: arg.font.name, scale: 1, containerWidth: -1, lineWidth: 100000 };
 
       return ltx.LoadMathjax()
@@ -1088,7 +1088,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
                  let svg = d3.select(elem).select("svg");
                  mj_node.append(function() { return svg.node(); });
 
-                 repairMathJaxSvgSize(this, mj_node, svg, arg);
+                 repairMathJaxSvgSize(painter, mj_node, svg, arg);
 
                  arg.applyAttributesToMathJax = applyAttributesToMathJax;
                  return true;

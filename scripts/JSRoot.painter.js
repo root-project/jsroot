@@ -3318,11 +3318,11 @@ JSROOT.require(['d3'], (d3) => {
          arg.simple_latex = arg.latex && (JSROOT.gStyle.Latex == 1);
 
          if (!arg.plain || arg.simple_latex) {
-            JSROOT.require(['latex']).then(() => {
+            JSROOT.require(['latex']).then(ltx => {
                if (arg.simple_latex)
-                  this.producePlainText(arg.txt_node, arg)
+                  ltx.producePlainText(this, arg.txt_node, arg);
                else
-                  this.produceLatex(arg.txt_node, arg);
+                  ltx.produceLatex(this, arg.txt_node, arg);
                arg.ready = true;
                this.postprocessText(arg.txt_node, arg);
                this.FinishTextDrawing(arg.draw_g, null, true); // check if all other elements are completed
@@ -3341,7 +3341,7 @@ JSROOT.require(['d3'], (d3) => {
                            .attr('visibility', 'hidden'); // hide text until drawing is finished
 
       JSROOT.require(['latex'])
-            .then(() => this.produceMathjax(arg.mj_node, arg))
+            .then(ltx => ltx.produceMathjax(this, arg.mj_node, arg))
             .then(() => { arg.ready = true; this.FinishTextDrawing(arg.draw_g, null, true); });
 
       return 0;
