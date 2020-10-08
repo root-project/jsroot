@@ -5,7 +5,7 @@ JSROOT.require(['d3', 'jquery', 'painter', 'hierarchy'], (d3, $, jsrp) => {
 
    "use strict";
 
-   JSROOT.loadScript('$$$style/jquery-ui.css');
+   JSROOT.loadScript('$$$style/jquery-ui');
 
    if (typeof jQuery === 'undefined') globalThis.jQuery = $;
 

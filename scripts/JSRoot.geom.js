@@ -5,7 +5,7 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
 
    "use strict";
 
-   JSROOT.loadScript('$$$style/JSRootGeoPainter.css');
+   JSROOT.loadScript('$$$style/JSRoot.geom');
 
    // ============================================================================================
 

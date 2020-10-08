@@ -1062,9 +1062,8 @@
    JSROOT.loadScript = function(url) {
       if (url.indexOf("$$$")===0) {
          url = url.slice(3);
-         if ((url.indexOf("style/")==0) && JSROOT.source_min &&
-             (url.lastIndexOf('.css')==url.length-4) && (url.indexOf('.min.css') < 0))
-               url = url.slice(0, url.length-4) + '.min.css';
+         if ((url.indexOf("style/")==0) && (url.indexOf('.css') < 0))
+            url += JSROOT.source_min ? '.min.css' : ".css";
          url = JSROOT.source_dir + url;
       }
 

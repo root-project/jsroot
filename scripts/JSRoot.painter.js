@@ -5,7 +5,7 @@ JSROOT.require(['d3'], (d3) => {
 
    "use strict";
 
-   JSROOT.loadScript('$$$style/JSRootPainter.css');
+   JSROOT.loadScript('$$$style/JSRoot.painter');
 
    if ((typeof d3 !== 'object') || !d3.version)
       console.error('Fail to detect d3.js');
