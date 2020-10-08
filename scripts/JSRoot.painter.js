@@ -2810,33 +2810,6 @@ JSROOT.require(['d3'], (d3) => {
       delete this.markeratt;
    }
 
-   /** @summary Produce exec string for WebCanas to set color value
-    * @desc Color can be id or string, but should belong to list of known colors
-    * For higher color numbers TColor::GetColor(r,g,b) will be invoked to ensure color is exists
-    * @private */
-   ObjectPainter.prototype.GetColorExec = function(col, method) {
-      let id = -1, arr = jsrp.root_colors;
-      if (typeof col == "string") {
-         if (!col || (col == "none")) id = 0; else
-            for (let k = 1; k < arr.length; ++k)
-               if (arr[k] == col) { id = k; break; }
-         if ((id < 0) && (col.indexOf("rgb") == 0)) id = 9999;
-      } else if (!isNaN(col) && arr[col]) {
-         id = col;
-         col = arr[id];
-      }
-
-      if (id < 0) return "";
-
-      if (id >= 50) {
-         // for higher color numbers ensure that such color exists
-         let c = d3.color(col);
-         id = "TColor::GetColor(" + c.r + "," + c.g + "," + c.b + ")";
-      }
-
-      return "exec:" + method + "(" + id + ")";
-   }
-
    /** @summary Show object in inspector */
    ObjectPainter.prototype.ShowInspector = function(obj) {
       let main = this.select_main(),
@@ -3644,31 +3617,28 @@ JSROOT.require(['d3'], (d3) => {
 
    /** @summary Register draw function for the class
     * @desc List of supported draw options could be provided, separated  with ';'
-    * Several different draw functions for the same class or kind could be specified
     * @param {object} args - arguments
-    * @param {string} args.name - class name
+    * @param {string|regexp} args.name - class name or regexp pattern
     * @param {string} [args.prereq] - prerequicities to load before search for the draw function
     * @param {string} args.func - name of draw function for the class
-    * @param {string} [args.direct=false] - if true, function is just Redraw() method of ObjectPainter
-    * @param {string} args.opt - list of supported draw options (separated with semicolon) like "col;scat;"
+    * @param {boolean} [args.direct=false] - if true, function is just Redraw() method of ObjectPainter
+    * @param {string} [args.opt] - list of supported draw options (separated with semicolon) like "col;scat;"
     * @param {string} [args.icon] - icon name shown for the class in hierarchy browser
+    * @param {string} [args.draw_field] - draw only data member from object, like fHistogram
     */
-   JSROOT.addDrawFunc = function(_name, _func, _opt) {
-      if ((arguments.length == 1) && (typeof arguments[0] == 'object')) {
-         drawFuncs.lst.push(arguments[0]);
-         return arguments[0];
-      }
-      let handle = { name: _name, func: _func, opt: _opt };
-      drawFuncs.lst.push(handle);
-      return handle;
+   JSROOT.addDrawFunc = function(args) {
+      drawFuncs.lst.push(args);
+      return args;
    }
 
+   /** @summary return draw handle for specified item kind
+     * @desc kind could be ROOT.TH1I for ROOT classes or just
+     * kind string like "Command" or "Text"
+     * selector can be used to search for draw handle with specified option (string)
+     * or just sequence id
+     * @private
+     */
    JSROOT.getDrawHandle = function(kind, selector) {
-      // return draw handle for specified item kind
-      // kind could be ROOT.TH1I for ROOT classes or just
-      // kind string like "Command" or "Text"
-      // selector can be used to search for draw handle with specified option (string)
-      // or just sequence id
 
       if (typeof kind != 'string') return null;
       if (selector === "") selector = null;

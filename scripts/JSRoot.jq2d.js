@@ -9,6 +9,33 @@ JSROOT.require(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-m
 
    if (typeof jQuery === 'undefined') globalThis.jQuery = $;
 
+  /** @summary Produce exec string for WebCanas to set color value
+    * @desc Color can be id or string, but should belong to list of known colors
+    * For higher color numbers TColor::GetColor(r,g,b) will be invoked to ensure color is exists
+    * @private */
+   function getColorExec(col, method) {
+      let id = -1, arr = jsrp.root_colors;
+      if (typeof col == "string") {
+         if (!col || (col == "none")) id = 0; else
+            for (let k = 1; k < arr.length; ++k)
+               if (arr[k] == col) { id = k; break; }
+         if ((id < 0) && (col.indexOf("rgb") == 0)) id = 9999;
+      } else if (!isNaN(col) && arr[col]) {
+         id = col;
+         col = arr[id];
+      }
+
+      if (id < 0) return "";
+
+      if (id >= 50) {
+         // for higher color numbers ensure that such color exists
+         let c = d3.color(col);
+         id = "TColor::GetColor(" + c.r + "," + c.g + "," + c.b + ")";
+      }
+
+      return "exec:" + method + "(" + id + ")";
+   }
+
    class JQueryMenu {
       constructor(painter, menuname, show_event) {
          this.painter = painter;
@@ -167,7 +194,7 @@ JSROOT.require(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-m
 
          this.add("sub:" + (prefix ? prefix : "Text"));
          this.AddColorMenuEntry("color", obj.fTextColor,
-            function(arg) { this.GetObject().fTextColor = parseInt(arg); this.InteractiveRedraw(true, this.GetColorExec(parseInt(arg), "SetTextColor")); }.bind(painter));
+            function(arg) { this.GetObject().fTextColor = parseInt(arg); this.InteractiveRedraw(true, getColorExec(parseInt(arg), "SetTextColor")); }.bind(painter));
 
          let align = [11, 12, 13, 21, 22, 23, 31, 32, 33];
 
@@ -204,7 +231,7 @@ JSROOT.require(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-m
             this.SizeMenu("width", 1, 10, 1, painter.lineatt.width,
                function(arg) { this.lineatt.Change(undefined, parseInt(arg)); this.InteractiveRedraw(true, "exec:SetLineWidth(" + arg + ")"); }.bind(painter));
             this.AddColorMenuEntry("color", painter.lineatt.color,
-               function(arg) { this.lineatt.Change(arg); this.InteractiveRedraw(true, this.GetColorExec(arg, "SetLineColor")); }.bind(painter));
+               function(arg) { this.lineatt.Change(arg); this.InteractiveRedraw(true, getColorExec(arg, "SetLineColor")); }.bind(painter));
             this.add("sub:style", function() {
                let id = prompt("Enter line style id (1-solid)", 1);
                if (!id) return;
@@ -242,7 +269,7 @@ JSROOT.require(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-m
          if (painter.fillatt && painter.fillatt.used) {
             this.add("sub:" + preffix + "Fill att");
             this.AddColorMenuEntry("color", painter.fillatt.colorindx,
-               function(arg) { this.fillatt.Change(parseInt(arg), undefined, this.svg_canvas()); this.InteractiveRedraw(true, this.GetColorExec(parseInt(arg), "SetFillColor")); }.bind(painter), painter.fillatt.kind);
+               function(arg) { this.fillatt.Change(parseInt(arg), undefined, this.svg_canvas()); this.InteractiveRedraw(true, getColorExec(parseInt(arg), "SetFillColor")); }.bind(painter), painter.fillatt.kind);
             this.add("sub:style", function() {
                let id = prompt("Enter fill style id (1001-solid, 3000..3010)", this.fillatt.pattern);
                if (!id) return;
@@ -269,7 +296,7 @@ JSROOT.require(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-m
          if (painter.markeratt && painter.markeratt.used) {
             this.add("sub:" + preffix + "Marker att");
             this.AddColorMenuEntry("color", painter.markeratt.color,
-               function(arg) { this.markeratt.Change(arg); this.InteractiveRedraw(true, this.GetColorExec(arg, "SetMarkerColor")); }.bind(painter));
+               function(arg) { this.markeratt.Change(arg); this.InteractiveRedraw(true, getColorExec(arg, "SetMarkerColor")); }.bind(painter));
             this.SizeMenu("size", 0.5, 6, 0.5, painter.markeratt.size,
                function(arg) { this.markeratt.Change(undefined, undefined, parseFloat(arg)); this.InteractiveRedraw(true, "exec:SetMarkerSize(" + parseInt(arg) + ")"); }.bind(painter));
 
@@ -296,7 +323,7 @@ JSROOT.require(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-m
          this.addchk(faxis.TestBit(JSROOT.EAxisBits.kLabelsVert), "Rotate",
                function() { faxis.InvertBit(JSROOT.EAxisBits.kLabelsVert); this.RedrawPad(); });
          this.AddColorMenuEntry("Color", faxis.fLabelColor,
-               function(arg) { faxis.fLabelColor = parseInt(arg); this.InteractiveRedraw("pad", this.GetColorExec(parseInt(arg), "SetLabelColor"), kind); }.bind(painter));
+               function(arg) { faxis.fLabelColor = parseInt(arg); this.InteractiveRedraw("pad", getColorExec(parseInt(arg), "SetLabelColor"), kind); }.bind(painter));
          this.SizeMenu("Offset", 0, 0.1, 0.01, faxis.fLabelOffset,
                function(arg) { faxis.fLabelOffset = parseFloat(arg); this.RedrawPad(); } );
          this.SizeMenu("Size", 0.02, 0.11, 0.01, faxis.fLabelSize,
@@ -312,7 +339,7 @@ JSROOT.require(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-m
          this.addchk(faxis.TestBit(JSROOT.EAxisBits.kRotateTitle), "Rotate",
                function() { faxis.InvertBit(JSROOT.EAxisBits.kRotateTitle); this.RedrawPad(); });
          this.AddColorMenuEntry("Color", faxis.fTitleColor,
-               function(arg) { faxis.fTitleColor = parseInt(arg); this.InteractiveRedraw("pad", this.GetColorExec(parseInt(arg), "SetTitleColor"), kind); }.bind(painter));
+               function(arg) { faxis.fTitleColor = parseInt(arg); this.InteractiveRedraw("pad", getColorExec(parseInt(arg), "SetTitleColor"), kind); }.bind(painter));
          this.SizeMenu("Offset", 0, 3, 0.2, faxis.fTitleOffset,
                                function(arg) { faxis.fTitleOffset = parseFloat(arg); this.RedrawPad(); } );
          this.SizeMenu("Size", 0.02, 0.11, 0.01, faxis.fTitleSize,
@@ -326,7 +353,7 @@ JSROOT.require(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-m
                      function(arg) { faxis.fTickSize = parseFloat(arg); this.RedrawPad(); } );
          } else {
             this.AddColorMenuEntry("Color", faxis.fAxisColor,
-                        function(arg) { faxis.fAxisColor = parseInt(arg); this.InteractiveRedraw("pad", this.GetColorExec(parseInt(arg), "SetAxisColor"), kind); }.bind(painter));
+                        function(arg) { faxis.fAxisColor = parseInt(arg); this.InteractiveRedraw("pad", getColorExec(parseInt(arg), "SetAxisColor"), kind); }.bind(painter));
             this.SizeMenu("Size", -0.05, 0.055, 0.01, faxis.fTickLength,
                      function(arg) { faxis.fTickLength = parseFloat(arg); this.RedrawPad(); } );
          }
