@@ -267,7 +267,7 @@ JSROOT.require(['d3'], (d3) => {
          return res + "em";
       }
 
-      function get_boundary(painter, element, approx_rect) {
+      function get_boundary(element, approx_rect) {
          // actually, it is workaround for getBBox() or getElementBounday,
          // which is not implemented for tspan element in Firefox
 
@@ -359,7 +359,7 @@ JSROOT.require(['d3'], (d3) => {
 
             if (curr.accent && (s.length == 1)) {
                let elem = node.append('svg:tspan').text(s),
-                  rect = get_boundary(painter, elem, { width: 10000 }),
+                  rect = get_boundary(elem, { width: 10000 }),
                   w = Math.min(rect.width / curr.fsize, 0.5); // at maximum, 0.5 should be used
 
                node.append('svg:tspan').attr('dx', makeem(curr.dx - w)).attr('dy', makeem(curr.dy - 0.2)).text(curr.accent);
@@ -424,7 +424,7 @@ JSROOT.require(['d3'], (d3) => {
             nextdx = nextdy = 0;
             curr.special = found;
 
-            let rect = get_boundary(painter, subnode);
+            let rect = get_boundary(subnode);
             if (rect.width && rect.height) {
                found.w = rect.width / curr.fsize;
                found.h = rect.height / curr.fsize - 0.1;
@@ -510,7 +510,7 @@ JSROOT.require(['d3'], (d3) => {
                      curr.dy = -0.4 * scale; // compensate vertical shift back
 
                      if (prevsubpos && (prevsubpos.script === 'super')) {
-                        let rect = get_boundary(painter, prevsubpos.node, prevsubpos.rect);
+                        let rect = get_boundary(prevsubpos.node, prevsubpos.rect);
                         subpos.width_limit = rect.width;
                         nextdx -= (rect.width / subpos.fsize + 0.1) * scale;
                      }
@@ -536,7 +536,7 @@ JSROOT.require(['d3'], (d3) => {
                      subpos.y -= 0.4 * subpos.fsize;
 
                      if (prevsubpos && (prevsubpos.script === 'sub')) {
-                        let rect = get_boundary(painter, prevsubpos.node, prevsubpos.rect);
+                        let rect = get_boundary(prevsubpos.node, prevsubpos.rect);
                         subpos.width_limit = rect.width;
                         nextdx -= (rect.width / subpos.fsize + 0.1) * scale;
                      }
@@ -617,7 +617,7 @@ JSROOT.require(['d3'], (d3) => {
                // special handling for the case when created element does not reach its minimal width
                // use when super-script and subscript should be combined together
 
-               let rect = get_boundary(painter, subnode1, subpos.rect);
+               let rect = get_boundary(subnode1, subpos.rect);
                if (rect.width < subpos.width_limit)
                   curr.dx += (subpos.width_limit - rect.width) / curr.fsize;
                delete subpos.width_limit;
@@ -625,7 +625,7 @@ JSROOT.require(['d3'], (d3) => {
 
             if (curr.special) {
                // case over #sum or #integral one need to compensate width
-               let rect = get_boundary(painter, subnode1, subpos.rect);
+               let rect = get_boundary(subnode1, subpos.rect);
                curr.dx -= rect.width / curr.fsize; // compensate width as much as we can
             }
 
@@ -633,8 +633,8 @@ JSROOT.require(['d3'], (d3) => {
                // creating cap for square root
                // while overline symbol does not match with square root, use empty text with overline
                let len = 2, sqrt_dy = 0, yscale = 1,
-                  bs = get_boundary(painter, subpos.square_root, subpos.sqrt_rect),
-                  be = get_boundary(painter, subnode1, subpos.rect);
+                   bs = get_boundary(subpos.square_root, subpos.sqrt_rect),
+                   be = get_boundary(subnode1, subpos.rect);
 
                // we can compare y coordinates while both nodes (root and element) on the same level
                if ((be.height > bs.height) && (bs.height > 0)) {
@@ -664,7 +664,7 @@ JSROOT.require(['d3'], (d3) => {
                   break;
                }
 
-               let be = get_boundary(painter, subnode1, subpos.rect),
+               let be = get_boundary(subnode1, subpos.rect),
                   len = be.width / subpos.fsize, fact, dy, symb;
                switch (subpos.deco) {
                   case "underline": dy = 0.35; fact = 1.2; symb = '\uFF3F'; break; // '\u2014'; // underline
@@ -682,9 +682,9 @@ JSROOT.require(['d3'], (d3) => {
             if (subpos.braces) {
                // handling braces
 
-               let bs = get_boundary(painter, subpos.left_cont, subpos.left_rect),
-                  be = get_boundary(painter, subnode1, subpos.rect),
-                  yscale = 1, brace_dy = 0;
+               let bs = get_boundary(subpos.left_cont, subpos.left_rect),
+                   be = get_boundary(subnode1, subpos.rect),
+                   yscale = 1, brace_dy = 0;
 
                // console.log('braces height', bs.height, ' entry height', be.height);
 
@@ -726,11 +726,11 @@ JSROOT.require(['d3'], (d3) => {
             if (subpos.first && subpos.second) {
                // when two lines created, adjust horizontal position and place divider if required
 
-               let rect1 = get_boundary(painter, subpos.first, subpos.rect1),
-                  rect2 = get_boundary(painter, subpos.second, subpos.rect),
-                  l1 = rect1.width / subpos.fsize,
-                  l2 = rect2.width / subpos.fsize,
-                  l3 = Math.max(l2, l1);
+               let rect1 = get_boundary(subpos.first, subpos.rect1),
+                   rect2 = get_boundary(subpos.second, subpos.rect),
+                   l1 = rect1.width / subpos.fsize,
+                   l2 = rect2.width / subpos.fsize,
+                   l3 = Math.max(l2, l1);
 
                if (subpos.need_middle) {
                   // starting from content len 1.2 two -- will be inserted
@@ -1086,6 +1086,7 @@ JSROOT.require(['d3'], (d3) => {
              .then(() => MathJax.tex2svgPromise(mtext, options))
              .then(elem => {
                  let svg = d3.select(elem).select("svg");
+                 // when adding element to new node, it will be removed from original parent
                  mj_node.append(function() { return svg.node(); });
 
                  repairMathJaxSvgSize(painter, mj_node, svg, arg);
