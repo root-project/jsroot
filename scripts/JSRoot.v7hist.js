@@ -390,7 +390,8 @@ JSROOT.require(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       JSROOT.CallBack(cb);
    }
 
-   /** Special method to request bins from server if existing data insufficient @private */
+   /** Special method to request bins from server if existing data insufficient
+     * @private */
    RHistPainter.prototype.DrawingBins = function(call_back, reason, method) {
 
       method = method.bind(this);

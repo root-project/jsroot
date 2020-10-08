@@ -1979,7 +1979,8 @@
       if (arg.openui5libs) JSROOT.openui5libs = arg.openui5libs;
       if (arg.openui5theme) JSROOT.openui5theme = arg.openui5theme;
 
-      let prereq = "webwindow;"; // FIXME: remove for JSROOT v7 once ROOT code is adjusted
+      let prereq = "webwindow;";
+      // FIXME: remove for JSROOT v7 once ROOT code is adjusted
       if (arg && arg.prereq) prereq += arg.prereq.replace(/2d;v7;/g, "v7gpad;").replace(/2d;v6;/g, "gpad;");
 
       if (arg) console.log('connect', arg.prereq, arg.prereq2)

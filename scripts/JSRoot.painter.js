@@ -2665,19 +2665,6 @@ JSROOT.require(['d3'], (d3) => {
       if (pad_painter) pad_painter.Redraw(reason);
    }
 
-   /** @summary Switch tooltip mode in frame painter
-    * @private */
-   ObjectPainter.prototype.SwitchTooltip = function(on) {
-      let fp = this.frame_painter();
-      if (fp && fp.SetTooltipEnabled) {
-         fp.SetTooltipEnabled(on);
-         fp.ProcessTooltipEvent(null);
-      }
-      // this is 3D control object
-      if (this.control && (typeof this.control.SwitchTooltip == 'function'))
-         this.control.SwitchTooltip(on);
-   }
-
    /** @summary execute selected menu command, either locally or remotely
     * @private */
    ObjectPainter.prototype.ExecuteMenuCommand = function(method) {
@@ -2704,102 +2691,6 @@ JSROOT.require(['d3'], (d3) => {
       let canp = this.canv_painter();
       if (canp && (typeof canp.SubmitExec == "function"))
          canp.SubmitExec(this, exec, snapid);
-   }
-
-   /** @summary Fill object menu in web canvas
-    * @private */
-   ObjectPainter.prototype.FillObjectExecMenu = function(menu, kind, call_back) {
-
-      if (this.UserContextMenuFunc)
-         return this.UserContextMenuFunc(menu, kind, call_back);
-
-      let canvp = this.canv_painter();
-
-      if (!this.snapid || !canvp || canvp._readonly || !canvp._websocket)
-         return JSROOT.CallBack(call_back);
-
-      function DoExecMenu(arg) {
-         let execp = this.exec_painter || this,
-            cp = execp.canv_painter(),
-            item = execp.args_menu_items[parseInt(arg)];
-
-         if (!item || !item.fName) return;
-
-         // this is special entry, produced by TWebMenuItem, which recognizes editor entries itself
-         if (item.fExec == "Show:Editor") {
-            if (cp && (typeof cp.ActivateGed == 'function'))
-               cp.ActivateGed(execp);
-            return;
-         }
-
-         if (cp && (typeof cp.executeObjectMethod == 'function'))
-            if (cp.executeObjectMethod(execp, item, execp.args_menu_id)) return;
-
-         if (execp.ExecuteMenuCommand(item)) return;
-
-         if (execp.args_menu_id)
-            execp.WebCanvasExec(item.fExec, execp.args_menu_id);
-      }
-
-      function DoFillMenu(_menu, _reqid, _call_back, reply) {
-
-         // avoid multiple call of the callback after timeout
-         if (this._got_menu) return;
-         this._got_menu = true;
-
-         if (reply && (_reqid !== reply.fId))
-            console.error('missmatch between request ' + _reqid + ' and reply ' + reply.fId + ' identifiers');
-
-         let items = reply ? reply.fItems : null;
-
-         if (items && items.length) {
-            if (_menu.size() > 0)
-               _menu.add("separator");
-
-            this.args_menu_items = items;
-            this.args_menu_id = reply.fId;
-
-            let lastclname;
-
-            for (let n = 0; n < items.length; ++n) {
-               let item = items[n];
-
-               if (item.fClassName && lastclname && (lastclname != item.fClassName)) {
-                  _menu.add("endsub:");
-                  lastclname = "";
-               }
-               if (lastclname != item.fClassName) {
-                  lastclname = item.fClassName;
-                  _menu.add("sub:" + lastclname);
-               }
-
-               if ((item.fChecked === undefined) || (item.fChecked < 0))
-                  _menu.add(item.fName, n, DoExecMenu);
-               else
-                  _menu.addchk(item.fChecked, item.fName, n, DoExecMenu);
-            }
-
-            if (lastclname) _menu.add("endsub:");
-         }
-
-         JSROOT.CallBack(_call_back);
-      }
-
-      let reqid = this.snapid;
-      if (kind) reqid += "#" + kind; // use # to separate object id from member specifier like 'x' or 'z'
-
-      let menu_callback = DoFillMenu.bind(this, menu, reqid, call_back);
-
-      this._got_menu = false;
-
-      // if menu painter differs from this, remember it for further usage
-      if (menu.painter)
-         menu.painter.exec_painter = (menu.painter !== this) ? this : undefined;
-
-      canvp.SubmitMenuRequest(this, kind, reqid, menu_callback);
-
-      // set timeout to avoid menu hanging
-      setTimeout(menu_callback, 2000);
    }
 
    /** @summary remove all created draw attributes
