@@ -114,83 +114,89 @@ JSROOT.require(['d3'], (d3) => {
    }
 
    jsrp.readStyleFromURL = function(url) {
-      let optimize = JSROOT.GetUrlOption("optimize", url);
-      if (optimize == "") JSROOT.gStyle.OptimizeDraw = 2; else
-         if (optimize !== null) {
-            JSROOT.gStyle.OptimizeDraw = parseInt(optimize);
-            if (isNaN(JSROOT.gStyle.OptimizeDraw)) JSROOT.gStyle.OptimizeDraw = 2;
-         }
+      let d = JSROOT.decodeUrl(url), g = JSROOT.gStyle;
 
-      let inter = JSROOT.GetUrlOption("interactive", url);
-      if (inter === "nomenu") JSROOT.gStyle.ContextMenu = false;
-      else if (inter !== null) {
+      if (d.has("optimize")) {
+         g.OptimizeDraw = 2;
+         let optimize = d.get("optimize");
+         if (optimize) {
+            optimize = parseInt(optimize);
+            if (!isNaN(optimize)) g.OptimizeDraw = optimize;
+         }
+      }
+
+      let inter = d.get("interactive");
+      if (inter === "nomenu")
+         g.ContextMenu = false;
+      else if (inter !== undefined) {
          if (!inter || (inter == "1")) inter = "111111"; else
             if (inter == "0") inter = "000000";
          if (inter.length === 6) {
-            if (inter[0] == "0") JSROOT.gStyle.ToolBar = false; else
-               if (inter[0] == "1") JSROOT.gStyle.ToolBar = 'popup'; else
-                  if (inter[0] == "2") JSROOT.gStyle.ToolBar = true;
+            switch(inter[0]) {
+               case "0": g.ToolBar = false; break;
+               case "1": g.ToolBar = 'popup'; break;
+               case "2": g.ToolBar = true; break;
+            }
             inter = inter.substr(1);
          }
          if (inter.length == 5) {
-            JSROOT.gStyle.Tooltip = parseInt(inter[0]);
-            JSROOT.gStyle.ContextMenu = (inter[1] != '0');
-            JSROOT.gStyle.Zooming = (inter[2] != '0');
-            JSROOT.gStyle.MoveResize = (inter[3] != '0');
-            JSROOT.gStyle.DragAndDrop = (inter[4] != '0');
+            g.Tooltip = parseInt(inter[0]);
+            g.ContextMenu = (inter[1] != '0');
+            g.Zooming = (inter[2] != '0');
+            g.MoveResize = (inter[3] != '0');
+            g.DragAndDrop = (inter[4] != '0');
          }
       }
 
-      let tt = JSROOT.GetUrlOption("tooltip", url);
-      if (tt !== null) JSROOT.gStyle.Tooltip = parseInt(tt);
+      let tt = d.get("tooltip");
+      if (tt) g.Tooltip = parseInt(tt);
 
-      let mathjax = JSROOT.GetUrlOption("mathjax", url),
-         latex = JSROOT.GetUrlOption("latex", url);
+      let mathjax = d.get("mathjax", null), latex = d.get("latex", null);
 
       if ((mathjax !== null) && (mathjax != "0") && (latex === null)) latex = "math";
-      if (latex !== null) JSROOT.gStyle.Latex = latex; // decoding will be performed with the first text drawing
+      if (latex !== null) g.Latex = latex; // decoding will be performed with the first text drawing
 
-      if (JSROOT.GetUrlOption("nomenu", url) !== null) JSROOT.gStyle.ContextMenu = false;
-      if (JSROOT.GetUrlOption("noprogress", url) !== null) JSROOT.gStyle.ProgressBox = false;
-      if (JSROOT.GetUrlOption("notouch", url) !== null) JSROOT.browser.touches = false;
-      if (JSROOT.GetUrlOption("adjframe", url) !== null) JSROOT.gStyle.CanAdjustFrame = true;
+      if (d.has("nomenu")) g.ContextMenu = false;
+      if (d.has("noprogress")) g.ProgressBox = false;
+      if (d.has("notouch")) JSROOT.browser.touches = false;
+      if (d.has("adjframe")) g.CanAdjustFrame = true;
 
-      let optstat = JSROOT.GetUrlOption("optstat", url);
-      if (optstat !== null) JSROOT.gStyle.fOptStat = parseInt(optstat);
-      let optfit = JSROOT.GetUrlOption("optfit", url);
-      if (optfit !== null) JSROOT.gStyle.fOptFit = parseInt(optfit);
-      JSROOT.gStyle.fStatFormat = JSROOT.GetUrlOption("statfmt", url, JSROOT.gStyle.fStatFormat);
-      JSROOT.gStyle.fFitFormat = JSROOT.GetUrlOption("fitfmt", url, JSROOT.gStyle.fFitFormat);
+      let optstat = d.get("optstat");
+      if (optstat) g.fOptStat = parseInt(optstat);
+      let optfit = d.get("optfit");
+      if (optfit) g.fOptFit = parseInt(optfit);
+      g.fStatFormat = d.get("statfmt", g.fStatFormat);
+      g.fFitFormat = d.get("fitfmt", g.fFitFormat);
 
-      let toolbar = JSROOT.GetUrlOption("toolbar", url);
+      let toolbar = d.get("toolbar", null);
       if (toolbar !== null) {
          let val = null;
          if (toolbar.indexOf('popup') >= 0) val = 'popup';
-         if (toolbar.indexOf('left') >= 0) { JSROOT.gStyle.ToolBarSide = 'left'; val = 'popup'; }
-         if (toolbar.indexOf('right') >= 0) { JSROOT.gStyle.ToolBarSide = 'right'; val = 'popup'; }
-         if (toolbar.indexOf('vert') >= 0) { JSROOT.gStyle.ToolBarVert = true; val = 'popup'; }
+         if (toolbar.indexOf('left') >= 0) { g.ToolBarSide = 'left'; val = 'popup'; }
+         if (toolbar.indexOf('right') >= 0) { g.ToolBarSide = 'right'; val = 'popup'; }
+         if (toolbar.indexOf('vert') >= 0) { g.ToolBarVert = true; val = 'popup'; }
          if (toolbar.indexOf('show') >= 0) val = true;
-         JSROOT.gStyle.ToolBar = val || ((toolbar.indexOf("0") < 0) && (toolbar.indexOf("false") < 0) && (toolbar.indexOf("off") < 0));
+         g.ToolBar = val || ((toolbar.indexOf("0") < 0) && (toolbar.indexOf("false") < 0) && (toolbar.indexOf("off") < 0));
       }
 
-      let palette = JSROOT.GetUrlOption("palette", url);
-      if (palette !== null) {
+      let palette = d.get("palette");
+      if (palette) {
          palette = parseInt(palette);
-         if (!isNaN(palette) && (palette > 0) && (palette < 113)) JSROOT.gStyle.Palette = palette;
+         if (!isNaN(palette) && (palette > 0) && (palette < 113)) g.Palette = palette;
       }
 
-      let render3d = JSROOT.GetUrlOption("render3d", url);
-      if (render3d !== null)
+      let render3d = d.get("render3d");
+      if (render3d)
          JSROOT.settings.Render3D = JSROOT.constants.Render3D.fromString(render3d);
 
-      let embed3d = JSROOT.GetUrlOption("embed3d", url);
-      if (embed3d !== null)
+      let embed3d = d.get("embed3d");
+      if (embed3d)
          JSROOT.settings.Embed3D = JSROOT.constants.Embed3D.fromString(embed3d);
 
-      let geosegm = JSROOT.GetUrlOption("geosegm", url);
-      if (geosegm !== null) JSROOT.gStyle.GeoGradPerSegm = Math.max(2, parseInt(geosegm));
-      let geocomp = JSROOT.GetUrlOption("geocomp", url);
-      if (geocomp !== null) JSROOT.gStyle.GeoCompressComp = (geocomp !== '0') && (geocomp !== 'false');
+      let geosegm = d.get("geosegm");
+      if (geosegm) g.GeoGradPerSegm = Math.max(2, parseInt(geosegm));
+      let geocomp = d.get("geocomp");
+      if (geocomp) g.GeoCompressComp = (geocomp !== '0') && (geocomp !== 'false');
    }
 
    /** Function that generates all root colors, used in jstests to reset colors

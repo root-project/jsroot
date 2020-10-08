@@ -591,27 +591,35 @@ JSROOT.require([], () => {
          });
       }
 
+      let d = JSROOT.decodeUrl();
+
       // special hold script, prevents headless browser from too early exit
-      if ((JSROOT.GetUrlOption("batch_mode") !== null) && JSROOT.GetUrlOption("key") && (JSROOT.browser.isChromeHeadless || JSROOT.browser.isChrome))
-         JSROOT.loadScript("root_batch_holder.js?key=" + JSROOT.GetUrlOption("key"));
+      if (d.has("batch_mode") && d.get("key") && (JSROOT.browser.isChromeHeadless || JSROOT.browser.isChrome))
+         JSROOT.loadScript("root_batch_holder.js?key=" + d.get("key"));
 
       if (!arg.platform)
-         arg.platform = JSROOT.GetUrlOption("platform");
+         arg.platform = d.get("platform");
 
-      if (arg.platform == "qt5") JSROOT.browser.qt5 = true; else
-         if (arg.platform == "cef3") JSROOT.browser.cef3 = true;
+      if (arg.platform == "qt5")
+         JSROOT.browser.qt5 = true;
+      else if (arg.platform == "cef3")
+         JSROOT.browser.cef3 = true;
 
       if (arg.batch === undefined)
-         arg.batch = (JSROOT.GetUrlOption("batch_mode") !== null); //  && (JSROOT.browser.qt5 || JSROOT.browser.cef3 || JSROOT.browser.isChrome);
+         arg.batch = d.has("batch_mode");
 
       if (arg.batch) JSROOT.BatchMode = true;
 
       if (!arg.socket_kind)
-         arg.socket_kind = JSROOT.GetUrlOption("ws");
+         arg.socket_kind = d.get("ws");
 
       if (!arg.socket_kind) {
-         if (JSROOT.browser.qt5) arg.socket_kind = "rawlongpoll"; else
-            if (JSROOT.browser.cef3) arg.socket_kind = "longpoll"; else arg.socket_kind = "websocket";
+         if (JSROOT.browser.qt5)
+            arg.socket_kind = "rawlongpoll";
+         else if (JSROOT.browser.cef3)
+            arg.socket_kind = "longpoll";
+         else
+            arg.socket_kind = "websocket";
       }
 
       // only for debug purposes
@@ -626,7 +634,7 @@ JSROOT.require([], () => {
             if (JSROOT.browser.qt5) window.onqt5unload = window.onbeforeunload;
          }
 
-         handle.key = JSROOT.GetUrlOption("key");
+         handle.key = d.get("key");
 
          if (arg.first_recv) {
             arg.receiver = {

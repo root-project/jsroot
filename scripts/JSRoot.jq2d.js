@@ -1054,7 +1054,7 @@ JSROOT.require(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-m
 
       this.addItemHtml(this.h, maindiv.append("div").attr("class","h_tree"));
 
-      if (status_item && !this.status_disabled && (JSROOT.GetUrlOption('nostatus')===null)) {
+      if (status_item && !this.status_disabled && !JSROOT.decodeUrl().has('nostatus')) {
          let func = JSROOT.findFunction(status_item._status);
          let hdiv = (typeof func == 'function') ? this.CreateStatusLine() : null;
          if (hdiv) func(hdiv, this.itemFullName(status_item));
@@ -1457,7 +1457,7 @@ JSROOT.require(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-m
       } else if (!this.no_select) {
          let myDiv = d3.select("#"+this.gui_div),
              files = myDiv.attr("files") || "../files/hsimple.root",
-             path = JSROOT.GetUrlOption("path") || myDiv.attr("path") || "",
+             path = JSROOT.decodeUrl().get("path") || myDiv.attr("path") || "",
              arrFiles = files.split(';');
 
          guiCode +=
@@ -1637,7 +1637,7 @@ JSROOT.require(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-m
       if (myDiv.attr("ignoreurl") === "true")
          JSROOT.gStyle.IgnoreUrlOptions = true;
 
-      if ((JSROOT.GetUrlOption("nobrowser")!==null) || (myDiv.attr("nobrowser") && myDiv.attr("nobrowser")!=="false"))
+      if (JSROOT.decodeUrl().has("nobrowser") || (myDiv.attr("nobrowser") && myDiv.attr("nobrowser")!=="false"))
          return JSROOT.BuildNobrowserGUI();
 
       jsrp.readStyleFromURL();

@@ -403,12 +403,12 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
                    script_name: "", transparency: 0, rotate: false, background: '#FFFFFF',
                    depthMethod: "dflt", mouse_tmout: 50, trans_radial: 0, trans_z: 0 };
 
-      let _opt = JSROOT.GetUrlOption('_grid');
-      if (_opt !== null && _opt == "true") res._grid = true;
-      _opt = JSROOT.GetUrlOption('_debug');
-      if (_opt !== null && _opt == "true") { res._debug = true; res._grid = true; }
-      if (_opt !== null && _opt == "bound") { res._debug = true; res._grid = true; res._bound = true; }
-      if (_opt !== null && _opt == "full") { res._debug = true; res._grid = true; res._full = true; res._bound = true; }
+      let dd = JSROOT.decodeUrl();
+      if (dd.get('_grid') == "true") res._grid = true;
+      let _opt = dd.get('_debug');
+      if (_opt == "true") { res._debug = true; res._grid = true; }
+      if (_opt == "bound") { res._debug = true; res._grid = true; res._bound = true; }
+      if (_opt == "full") { res._debug = true; res._grid = true; res._full = true; res._bound = true; }
 
       let macro = opt.indexOf("macro:");
       if (macro>=0) {
