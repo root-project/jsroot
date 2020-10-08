@@ -487,7 +487,8 @@
                   m.jsroot = true;
                   m.src = _.get_module_src(jsmodule, true);
                   m.extract = jsmodule.extract;
-               } else {
+                  m.dep = jsmodule.dep; // copy dependence
+              } else {
                   m.src = need[k];
                }
             }
@@ -836,62 +837,85 @@
    }
 
    /**
-    * @summary Analyzes document.URL and extracts options after '?' mark
+    * @summary decodes URL options after '?' mark
+    *
+    * @desc Following options supported ?opt1&opt2=3
+    *
+    * @param {string} [url] URL string with options, document.URL will be used when not specified
+    * @returns {Object} with .has(opt) and .get(opt,dflt) methods
+    * @memberOf JSROOT
+    * @example
+    * let d = JSROOT.decodeUrl("any?opt1&op2=3");
+    * console.log(`Has opt1 ${d.has("opt1")}`); // expecting true
+    * console.log(`Get opt1 ${d.get("opt1")}`); // expecting ""
+    * console.log(`Get opt2 ${d.get("opt2")}`); // expecting "3"
+    * console.log(`Get opt3 ${d.get("opt3","-")}`); // expecting "-"
+    */
+   let decodeUrl = (url) => {
+      let res = {
+         opts: {},
+         has: function(opt) { return this.opts[opt] !== undefined; },
+         get: function(opt,dflt) { let v = this.opts[opt]; return v!==undefined ? v : dflt; }
+      }
+
+      if (!url || (typeof url !== 'string')) {
+         if (JSROOT.gStyle.IgnoreUrlOptions || (typeof document === 'undefined')) return res;
+         url = document.URL;
+      }
+      res.url = url;
+
+      let p1 = url.indexOf("?");
+      if (p1 < 0) return res;
+      url = decodeURI(url.slice(p1+1));
+
+      while (url.length > 0) {
+
+         // try to correctly handle quotes in the URL
+         let pos = 0, nq = 0, eq = -1, firstq = -1;
+         while ((pos < url.length) && ((nq!==0) || ((url[pos]!=="&") && (url[pos]!=="#")))) {
+            switch (url[pos]) {
+               case "'": if (nq >= 0) nq = (nq+1)%2; if (firstq < 0) firstq = pos; break;
+               case '"': if (nq <= 0) nq = (nq-1)%2; if (firstq < 0) firstq = pos; break;
+               case '=': if ((firstq < 0) && (eq < 0)) eq = pos; break;
+            }
+            pos++;
+         }
+
+         if ((eq < 0) && (firstq < 0)) {
+            res.opts[url.substr(0,pos)] = "";
+         } if (eq > 0) {
+            let val = url.slice(eq+1, pos);
+            if (((val[0]==="'") || (val[0]==='"')) && (val[0]===val[val.length-1])) val = val.substr(1, val.length-2);
+            res.opts[url.substr(0,eq)] = val;
+         }
+
+         if ((pos >= url.length) || (url[pos] == '#')) break;
+
+         url = url.substr(pos+1);
+      }
+
+      return res;
+   }
+
+   /**
+    * @summary Returns URL option from url after '?' mark value
     *
     * @desc Following options supported ?opt1&opt2=3
     * In case of opt1 empty string will be returned, in case of opt2 '3'
-    * If option not found, null is returned (or default value value is provided)
+    * If option not found, null is returned (or default value value if provided)
     *
     * @param {string} opt option to search
     * @param {string} [url] URL string with options, document.URL will be used when not specified
     * @param {string} [dflt] default value returned when parameter value not found
     * @returns {string|null} found value
-    * @private
     * @memberOf JSROOT
+    * @private
     */
+
    let GetUrlOption = (opt, url, dflt) => {
-
+      let res = decodeUrl(url);
       if (dflt === undefined) dflt = null;
-      if ((opt===null) || (typeof opt != 'string') || (opt.length==0)) return dflt;
-
-      if (!url) {
-         if (JSROOT.gStyle.IgnoreUrlOptions || (typeof document === 'undefined')) return dflt;
-         url = document.URL;
-      }
-
-      let pos = url.indexOf("?"), nquotes;
-      if (pos<0) return dflt;
-      url = decodeURI(url.slice(pos+1));
-      pos = url.lastIndexOf("#");
-      if (pos>=0) url = url.substr(0,pos);
-
-      while (url.length>0) {
-
-         if (url==opt) return "";
-
-         // try to correctly handle quotes in the URL
-         pos = 0; nquotes = 0;
-         while ((pos < url.length) && ((nquotes!==0) || (url[pos]!=="&"))) {
-            switch (url[pos]) {
-               case "'": if (nquotes>=0) nquotes = (nquotes+1)%2; break;
-               case '"': if (nquotes<=0) nquotes = (nquotes-1)%2; break;
-            }
-            pos++;
-         }
-
-         if (url.indexOf(opt) == 0) {
-            if (url[opt.length]=="&") return "";
-
-            if (url[opt.length]==="=") {
-               url = url.slice(opt.length+1, pos);
-               if (((url[0]==="'") || (url[0]==='"')) && (url[0]===url[url.length-1])) url = url.substr(1, url.length-2);
-               return url;
-            }
-         }
-
-         url = url.substr(pos+1);
-      }
-      return dflt;
+      return res.get(opt, dflt);
    }
 
    /**
@@ -2037,6 +2061,9 @@
      * @private */
    JSROOT._ = _;
    JSROOT.browser = browser;
+   JSROOT.decodeUrl = decodeUrl;
+
+   // FIXME: remove in JSROOT 6.2, keep here to make transition easier
    JSROOT.GetUrlOption = GetUrlOption;
 
    return JSROOT;
