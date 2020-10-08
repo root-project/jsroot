@@ -32,6 +32,7 @@
          requirejs.config({
             paths: paths,
             shim: {
+               'jquery-ui': { deps: ['jquery'] },
                'jqueryui-mousewheel': { deps: ['jquery-ui'] },
                'jqueryui-touch-punch': { deps: ['jquery-ui'] }
             }
@@ -124,9 +125,9 @@
    JSROOT._.sources = {
          'd3'                   : { src: 'd3', libs: true, extract: "d3", node: "d3" },
          'jquery'               : { src: 'jquery', libs: true,  extract: "$" },
-         'jquery-ui'            : { src: 'jquery-ui', libs: true, extract: "$" },
-         'jqueryui-mousewheel'  : { src: 'jquery.mousewheel', onlymin: true, extract: "$" },
-         'jqueryui-touch-punch' : { src: 'touch-punch', onlymin: true, extract: "$" },
+         'jquery-ui'            : { src: 'jquery-ui', libs: true, extract: "$", dep: 'jquery' },
+         'jqueryui-mousewheel'  : { src: 'jquery.mousewheel', onlymin: true, extract: "$", dep: 'jquery-ui' },
+         'jqueryui-touch-punch' : { src: 'touch-punch', onlymin: true, extract: "$", dep: 'jquery-ui' },
          'rawinflate'           : { src: 'rawinflate', libs: true },
          'mathjax'              : { src: 'https://cdn.jsdelivr.net/npm/mathjax@3.1.2/es5/tex-svg', extract: "MathJax", node: "mathjax" },
          'dat.gui'              : { src: 'dat.gui', libs: true, extract: "dat" },
@@ -438,8 +439,33 @@
          if (req.resolve)
              req.resolve(arr.length == 1 ? arr[0] : arr);
       }
+
+      function load_module(req,m) {
+         let element = document.createElement("script");
+         element.setAttribute('type', "text/javascript");
+         element.setAttribute('src', m.src);
+         document.getElementsByTagName("head")[0].appendChild(element);
+
+         if (!m.jsroot || m.extract)
+            element.onload = () => finish_loading(m, m.extract ? globalThis[m.extract] : 1); // mark script loaded
+         element.onerror = () => { m.failure = true; req.failed(); }
+      }
+
+      function after_depend_load(req,d,m) {
+         if (d.module === undefined)
+            return req.failed("Dependend fail to load");
+
+         if (!m.waiting) m.waiting = [];
+         m.waiting.push(handle_func.bind(this, req));
+
+         if (!m.loading) {
+            m.loading = true;
+            load_module(req,m);
+         }
+      }
+
       function analyze(resolve, reject) {
-         let handler, srcs = [],
+         let handler, any_dep, srcs = [],
              req = { need: need, thisModule: thisModule, factoryFunc: factoryFunc, resolve: resolve, reject: reject,
                      failed: function(msg) { this.processed = true; if (this.reject) this.reject(Error(msg || "JSROOT.require failed")); } };
 
@@ -455,47 +481,48 @@
 
             if (m && (m.module !== undefined)) continue;
 
-             if (!m) {
-                let jsmodule = _.sources[need[k]];
+            if (!m) {
+               let jsmodule = _.sources[need[k]];
 
-                m = _.modules[need[k]] = {};
-                if (jsmodule) {
-                   m.jsroot = true;
-                   m.src = _.get_module_src(jsmodule, true);
-                   m.extract = jsmodule.extract;
-                } else {
-                   m.src = need[k];
-                }
-             }
+               m = _.modules[need[k]] = {};
+               if (jsmodule) {
+                  m.jsroot = true;
+                  m.src = _.get_module_src(jsmodule, true);
+                  m.extract = jsmodule.extract;
+               } else {
+                  m.src = need[k];
+               }
+            }
 
-             if (m.failure) {
+            if (m.failure)
                // module loading failed, no nee to continue
-               if(reject) reject(Error("Loading of module " + need[k] + "failed"));
-               return;
-             }
+               return req.failed(`Loading of module ${need[k]} failed`);
 
-             if (!m.loading) {
-                 m.loading = true;
-                 srcs.push(m);
-             }
-             if (!m.waiting) m.waiting = [];
-             if (!handler) handler = handle_func.bind(this, req);
-             m.waiting.push(handler);
+            if (m.dep) {
+               let d = _.modules[m.dep];
+               if (!d)
+                  return req.failed(`Dependend module ${m.dep} not found`);
+               if (d.module === undefined) {
+                  any_dep = true;
+                  if (!d.waiting) d.waiting = [];
+                  d.waiting.push(after_depend_load.bind(this,req,d,m));
+                  continue;
+               }
+            }
+
+            if (!m.loading) {
+               m.loading = true;
+               srcs.push(m);
+            }
+            if (!m.waiting) m.waiting = [];
+            if (!handler) handler = handle_func.bind(this, req);
+            m.waiting.push(handler);
          }
 
-         if (!handler)
+         if (!handler && !any_dep)
             return handle_func(req, true);
 
-         srcs.forEach(m => {
-            let element = document.createElement("script");
-            element.setAttribute('type', "text/javascript");
-            element.setAttribute('src', m.src);
-            document.getElementsByTagName("head")[0].appendChild(element);
-
-            if (!m.jsroot || m.extract)
-               element.onload = () => finish_loading(m, m.extract ? globalThis[m.extract] : 1); // mark script loaded
-            element.onerror = () => { m.failure = true; req.failed(); }
-         });
+         srcs.forEach(m => load_module(req,m));
       }
 
       if (factoryFunc)
