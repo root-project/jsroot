@@ -2142,13 +2142,15 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
 
    HierarchyPainter.prototype.StartGUI = function(gui_div, gui_call_back, url) {
 
+      let d = JSROOT.decodeUrl(url);
+
       let GetOption = (opt) => {
-         let res = JSROOT.GetUrlOption(opt, url);
+         let res = d.get(opt, null);
          if (!res && gui_div && !gui_div.empty() && gui_div.node().hasAttribute(opt)) res = gui_div.attr(opt);
          return res;
       }
 
-      let GetUrlOptionAsArray = (opt, url) => {
+      let GetUrlOptionAsArray = (opt) => {
 
          let res = [];
 
@@ -2161,7 +2163,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
             let canarray = true;
             if (part[0]=='#') { part = part.substr(1); canarray = false; }
 
-            let val = JSROOT.GetUrlOption(part, url, null);
+            let val = d.get(part,null);
 
             if (canarray) res = res.concat(ParseAsArray(val));
                      else if (val!==null) res.push(val);
@@ -2170,7 +2172,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
       }
 
       let GetOptionAsArray = (opt) => {
-         let res = GetUrlOptionAsArray(opt, url);
+         let res = GetUrlOptionAsArray(opt);
          if (res.length>0 || !gui_div || gui_div.empty()) return res;
          while (opt.length>0) {
             let separ = opt.indexOf(";");
@@ -2192,7 +2194,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
       }
 
       let prereq = GetOption('prereq') || "",
-          filesdir = JSROOT.GetUrlOption("path", url) || "", // path used in normal gui
+          filesdir = d.get("path") || "", // path used in normal gui
           filesarr = GetOptionAsArray("#file;files"),
           localfile = GetOption("localfile"),
           jsonarr = GetOptionAsArray("#json;jsons"),
@@ -2399,7 +2401,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
 
       jsrp.readStyleFromURL();
 
-      let guisize = JSROOT.GetUrlOption("divsize");
+      let d = JSROOT.decodeUrl(), guisize = d.get("divsize");
       if (guisize) {
          guisize = guisize.split("x");
          if (guisize.length != 2) guisize = null;
@@ -2428,9 +2430,9 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
             let func = JSROOT.findFunction('GetCachedObject');
             let obj = (typeof func == 'function') ? JSROOT.parse(func()) : null;
             if (obj) hpainter._cached_draw_object = obj;
-            let opt = JSROOT.GetUrlOption("opt") || "";
+            let opt = d.get("opt", "");
 
-            if (JSROOT.GetUrlOption("websocket")!==null) opt+=";websocket";
+            if (d.has("websocket")) opt+=";websocket";
 
             hpainter.display("", opt, () => resolveFunc(hpainter));
          });
