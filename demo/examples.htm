@@ -226,7 +226,7 @@
                let running = (keyid != null); // indication that test running - no need to relaunch events
                keyid = select_key || 'TH1'; optid = -1;
                testfile = testobj = null;
-               let ii = JSROOT.GetUrlOption("interval");
+               let ii = JSROOT.decodeUrl().get("interval");
                if (ii && !isNaN(parseInt(ii))) testinterval = parseInt(ii);
                                           else testinterval = interval;
                if (running) return;
@@ -300,10 +300,11 @@
                testfile = testobj = null;
                // if (keyid == 'TGeo') return RunBigTest(0);  // ignore TGeo URLs - too complex
 
-               let layout = JSROOT.GetUrlOption("layout", url, "simple"),
-                   nobrowser = JSROOT.GetUrlOption("nobrowser", url, null);
+               let d = JSROOT.decodeUrl(url),
+                   layout = d.get("layout", "simple"),
+                   nobrowser = d.has("nobrowser");
 
-               if (nobrowser !== null) {
+               if (nobrowser) {
                   // return RunBigTest(0);
                   document.getElementById('viewer').innerHTML = "";
                   hpainter = new JSROOT.HierarchyPainter('root', null);
@@ -365,8 +366,10 @@
             // all painter assigned to viewer element will be automatically informed about resize
             JSROOT.require("gpad;hierarchy").then(() => JSROOT.RegisterForResize('viewer'));
 
-            select_key = JSROOT.GetUrlOption("select", window.location.href);
-            if (!select_key && (JSROOT.GetUrlOption("geom", window.location.href) !== null)) select_key = "TGeo";
+            let d = JSROOT.decodeUrl();
+
+            select_key = d.get("select");
+            if (!select_key && d.has("geom")) select_key = "TGeo";
 
             document.getElementById( 'version' ).title = JSROOT.version + ", " + JSROOT.source_dir;
 
