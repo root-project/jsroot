@@ -8,7 +8,7 @@
 4. Provide JSROOT.HttpRequest() function, which returns Promise instance
 5. JSROOT.draw/JSROOT.redraw also returns Promise, skip callback parameter
 6. JSROOT.OpenFile() returns Promise, if callback specified, old API will be working
-7. Upgrade three.js to r120:
+7. Upgrade three.js to r121:
    - SoftwareRenderer was deprecated
    - WebGL used both for browser and node.js (via headless-gl)
    - Keep use of SVGRendered as backup solution

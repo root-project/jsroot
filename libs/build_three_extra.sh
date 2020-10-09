@@ -5,8 +5,7 @@
 
 tgt=three.extra.js
 
-src=/home/linev/d/three.js-r120
-#src=/home/linev/git/threejs
+src=~/d/three.js-r121
 
 rm -rf $tgt
 touch $tgt
@@ -80,6 +79,6 @@ echo "});" >> $tgt
 
 echo Producing three.extra.min.js
 
-java -jar /home/linev/d/closure-compiler-v20200830.jar --js $tgt --js_output_file ../scripts/three.extra.min.js
+java -jar ~/d/closure-compiler-v20190909.jar --js $tgt --js_output_file ../scripts/three.extra.min.js
 
 echo Done three.extra.min.js
