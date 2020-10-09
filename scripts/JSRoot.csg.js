@@ -273,7 +273,7 @@ JSROOT.require(['three'], function(THREE) {
 
    // ========================================================================================
 
-   Node = function( polygons, nodeid ) {
+   function Node( polygons, nodeid ) {
       this.polygons = [];
       this.front = this.back = undefined;
 

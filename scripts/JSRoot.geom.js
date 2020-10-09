@@ -2433,17 +2433,17 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
       // need to fill cached value line numvischld
       this._clones.ScanVisible();
 
-      let nshapes = 0;
+      let nshapes = 0, painter = this;
 
       let arg = {
          cnt: [],
-         func: node => {
+         func: function(node) {
             if (this.cnt[this.last]===undefined)
                this.cnt[this.last] = 1;
             else
                this.cnt[this.last]++;
 
-            nshapes += geo.CountNumShapes(this._clones.GetNodeShape(node.id));
+            nshapes += geo.CountNumShapes(painter._clones.GetNodeShape(node.id));
 
             // for debugginf - search if there some TGeoHalfSpace
             //if (geo.HalfSpace) {
