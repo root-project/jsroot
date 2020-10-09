@@ -3173,7 +3173,7 @@ JSROOT.require(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
            if (pattern.empty())
               pattern = defs.append('svg:pattern')
                             .attr("class", pattern_class)
-                            .attr("id", "jsroot_scatter_pattern_" + JSROOT.id_counter++)
+                            .attr("id", "jsroot_scatter_pattern_" + JSROOT._.id_counter++)
                             .attr("patternUnits","userSpaceOnUse");
            else
               pattern.selectAll("*").remove();

@@ -765,7 +765,7 @@ JSROOT.require(['d3'], (d3) => {
 
       if (color_as_svg) {
          this.color = color;
-         indx = 10000 + JSROOT.id_counter++; // use fictional unique index far away from existing color indexes
+         indx = 10000 + JSROOT._.id_counter++; // use fictional unique index far away from existing color indexes
       } else {
          this.color = jsrp.root_colors[indx];
       }
@@ -1384,7 +1384,7 @@ JSROOT.require(['d3'], (d3) => {
       if (elem.empty()) return "";
       let id = elem.attr("id");
       if (!id) {
-         id = "jsroot_element_" + JSROOT.id_counter++;
+         id = "jsroot_element_" + JSROOT._.id_counter++;
          elem.attr("id", id);
       }
       return id;
@@ -2707,7 +2707,7 @@ JSROOT.require(['d3'], (d3) => {
          rect = this.get_visible_rect(main),
          w = Math.round(rect.width * 0.05) + "px",
          h = Math.round(rect.height * 0.05) + "px",
-         id = "root_inspector_" + JSROOT.id_counter++;
+         id = "root_inspector_" + JSROOT._.id_counter++;
 
       main.append("div")
          .attr("id", id)

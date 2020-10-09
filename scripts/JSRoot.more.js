@@ -2984,7 +2984,7 @@ JSROOT.require(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       if (!gr.fFrame.fTitle && gr.fTitle) gr.fFrame.fTitle = gr.fTitle;
 
-      painter.selfid = "grtime" + JSROOT.id_counter++; // use to identify primitives which should be clean
+      painter.selfid = "grtime" + JSROOT._.id_counter++; // use to identify primitives which should be clean
 
       JSROOT.draw(divid, gr.fFrame, "AXIS").then(painter.StartDrawing.bind(painter));
 

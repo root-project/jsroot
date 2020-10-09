@@ -2132,7 +2132,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
          if (pad.fObjectID)
             this.this_pad_name = "pad" + pad.fObjectID; // use objectid as padname
          else
-            this.this_pad_name = "ppp" + JSROOT.id_counter++; // artificical name
+            this.this_pad_name = "ppp" + JSROOT._.id_counter++; // artificical name
       }
       this.painters = []; // complete list of all painters in the pad
       this.has_canvas = true;

@@ -78,27 +78,51 @@
 
    "use strict";
 
+   /** @summary JSROOT version
+     * @desc Typically the string in format "major.minor.patch date" or can be ROOT version when used from ROOT repository
+     */
    JSROOT.version = "pre6 9/10/2020";
 
+   /** @summary Location of JSROOT scripts
+     * @desc Used to load other JSROOT scripts when required
+     */
    JSROOT.source_dir = "";
-   JSROOT.source_min = false;
-   JSROOT.source_fullpath = ""; // full name of source script
-   JSROOT.nocache = false;      // when specified, used as extra URL parameter to load JSROOT scripts
-   JSROOT.wrong_http_response_handling = false; // when configured, try to handle wrong content-length response from server
 
-   // internal data
-   let _ = { modules: {} };
+   /** @summary Let tweak browser caching
+     * @desc When specified, extra URL parameter like ?stamp=unique_value append to each JSROOT script loaded
+     *       In such case browser will be forced to load JSROOT functionality disregards of cache settings
+     * @default false
+     */
+   JSROOT.nocache = false;
 
-   JSROOT.id_counter = 1;       // avoid id value 0, starts from 1
+   /** @summary Let detect and solve problem when browser returns wrong content-length parameter
+     * @desc See [jsroot#189]{@link https://github.com/root-project/jsroot/issues/189} for more info
+     * @default false
+     */
+   JSROOT.wrong_http_response_handling = false;
+
    if (JSROOT.BatchMode === undefined)
-      JSROOT.BatchMode = false; // when true, disables all kind of interactive features
+      /** @summary Indicates if JSROOT runs in batch mode
+        * @default false */
+      JSROOT.BatchMode = false;
+
+   /** @summary Configures keybord key handling
+     * @desc Can be disabled to prevent keys heandling in complex HTML layouts
+     * @default true
+     */
+   JSROOT.key_handling = true;  // enable/disable key press handling in JSROOT
 
    //openuicfg // DO NOT DELETE, used to configure openui5 usage like JSROOT.openui5src = "nojsroot";
 
-   // JSROOT.use_full_libs = true;
+   // internal data
+   let _ = {
+      modules: {},
+      source_min: false,      // minified source
+      use_full_libs: false,   // use full libraries
+      id_counter: 1           // unique id contner, start from 1
+   };
 
-   JSROOT.key_handling = true;  // enable/disable key press handling in JSROOT
-
+   let source_fullpath = "";
    let browser = { isOpera: false, isFirefox: true, isSafari: false, isChrome: false, isWin: false, touches: false  };
 
    if ((typeof document !== "undefined") && (typeof window !== "undefined")) {
@@ -106,9 +130,9 @@
       if (script && (typeof script.src == "string")) {
          const pos = script.src.indexOf("scripts/JSRootCore.");
          if (pos >= 0) {
-            JSROOT.source_dir = script.src.substr(0, pos);
-            JSROOT.source_min = script.src.indexOf("scripts/JSRootCore.min.js") >= 0;
-            JSROOT.source_fullpath = script.src;
+            source_fullpath = script.src;
+            JSROOT.source_dir = source_fullpath.substr(0, pos);
+            _.source_min = source_fullpath.indexOf("scripts/JSRootCore.min.js") >= 0;
             console.log("Set JSROOT.source_dir to " + JSROOT.source_dir + ", " + JSROOT.version);
          }
       }
@@ -144,8 +168,8 @@
       if (entry.src.indexOf('http') == 0)
          return this.amd ? entry.src : entry.src + ".js";
 
-      let dir = (entry.libs && JSROOT.use_full_libs && !JSROOT.source_min) ? JSROOT.source_dir + "libs/" : JSROOT.source_dir + "scripts/";
-      let ext = (JSROOT.source_min || (entry.libs && !JSROOT.use_full_libs) || entry.onlymin) ? ".min" : ""
+      let dir = (entry.libs && _.use_full_libs && !_.source_min) ? JSROOT.source_dir + "libs/" : JSROOT.source_dir + "scripts/";
+      let ext = (_.source_min || (entry.libs && !_.use_full_libs) || entry.onlymin) ? ".min" : ""
       if (this.amd) return dir + entry.src + ext;
       let res = dir + entry.src + ext + ".js";
 
@@ -1112,7 +1136,7 @@
       if (url.indexOf("$$$")===0) {
          url = url.slice(3);
          if ((url.indexOf("style/")==0) && (url.indexOf('.css') < 0))
-            url += JSROOT.source_min ? '.min.css' : ".css";
+            url += _.source_min ? '.min.css' : ".css";
          url = JSROOT.source_dir + url;
       }
 
@@ -1197,7 +1221,7 @@
           requirements = "gpad;hierarchy;",
           simplegui = document.getElementById('simpleGUI');
 
-      if (d.has('libs')) JSROOT.use_full_libs = true;
+      if (d.has('libs')) _.use_full_libs = true;
 
       if (simplegui) {
          debugout = 'simpleGUI';
@@ -2002,7 +2026,7 @@
     */
    _.init = function() {
 
-      if (JSROOT.source_fullpath.length === 0) return this;
+      if (!source_fullpath) return this;
 
       function window_on_load(func) {
          if (func!=null) {
@@ -2014,7 +2038,7 @@
          return JSROOT;
       }
 
-      let d = decodeUrl(JSROOT.source_fullpath);
+      let d = decodeUrl(source_fullpath);
 
       if (d.has('nocache')) JSROOT.nocache = (new Date).getTime(); // use timestamp to overcome cache limitation
       if (d.has('wrong_http_response') || decodeUrl().has('wrong_http_response'))

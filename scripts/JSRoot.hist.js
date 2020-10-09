@@ -1834,7 +1834,7 @@ JSROOT.require(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       this.nbinsy = 0;
       this.accept_drops = true; // indicate that one can drop other objects like doing Draw("same")
       this.mode3d = false;
-      this.hist_painter_id = JSROOT.id_counter++; // assign unique identifier for hist painter
+      this.hist_painter_id = JSROOT._.id_counter++; // assign unique identifier for hist painter
    }
 
    THistPainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
@@ -5695,7 +5695,7 @@ JSROOT.require(['d3', 'painter', 'gpad'], (d3, jsrp) => {
            if (pattern.empty())
               pattern = defs.append('svg:pattern')
                             .attr("class", pattern_class)
-                            .attr("id", "jsroot_scatter_pattern_" + JSROOT.id_counter++)
+                            .attr("id", "jsroot_scatter_pattern_" + JSROOT._.id_counter++)
                             .attr("patternUnits","userSpaceOnUse");
            else
               pattern.selectAll("*").remove();
