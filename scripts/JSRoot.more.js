@@ -3513,6 +3513,7 @@ JSROOT.require(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
     * @arguments JSROOT.ObjectPainter
     * @param {object} obj - TASImage object to draw
     * @param {string} opt - string draw options
+    * @private
     */
 
    function TASImagePainter(obj, opt) {

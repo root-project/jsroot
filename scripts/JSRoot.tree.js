@@ -20,8 +20,8 @@ JSROOT.require(['io', 'math'], (jsrio, jsrmath) => {
    }
 
    /**
-    * @summary class to read data from TTree
-    *
+    * @summary Class to read data from TTree
+    * @desc Instance of TSelector can be used to access TTree data
     * @constructor
     * @memberof JSROOT
     */
@@ -38,10 +38,11 @@ JSROOT.require(['io', 'math'], (jsrio, jsrmath) => {
     * Second parameter defines member name in the tgtobj
     * If selector.AddBranch("px", "read_px") is called,
     * branch will be read into selector.tgtobj.read_px member
-    * @param {string} branch - name of branch (or branch object itself}
-    * @param {string} name - member name in tgtobj where data will be read
-    */
-
+    * If second parameter not specified, branch name (here "px") will be used
+    * If branch object specified as first parameter and second parameter missing,
+    * then member like "br0", "br1" and so on will be assigned
+    * @param {string|Object} branch - name of branch (or branch object itself}
+    * @param {string} [name] - member name in tgtobj where data will be read */
    TSelector.prototype.AddBranch = function(branch, name, direct) {
       if (!name)
          name = (typeof branch === 'string') ? branch : ("br" + this.branches.length);
@@ -51,18 +52,21 @@ JSROOT.require(['io', 'math'], (jsrio, jsrmath) => {
       return this.branches.length - 1;
    }
 
+   /** @summary returns index of branch
+     * @private */
    TSelector.prototype.indexOfBranch = function(branch) {
       return this.branches.indexOf(branch);
    }
 
+   /** @summary returns name of branch
+     * @private */
    TSelector.prototype.nameOfBranch = function(indx) {
       return this.names[indx];
    }
 
    /** @summary function called during TTree processing
     * @abstract
-    * @param {number} progress - current value between 0 and 1
-    */
+    * @param {number} progress - current value between 0 and 1 */
    TSelector.prototype.ShowProgress = function(/* progress */) {
    }
 
@@ -73,8 +77,7 @@ JSROOT.require(['io', 'math'], (jsrio, jsrmath) => {
 
    /** @summary function called before start processing
     * @abstract
-    * @param {object} tree - tree object
-    */
+    * @param {object} tree - tree object */
    TSelector.prototype.Begin = function(/* tree */) {
    }
 
@@ -509,6 +512,7 @@ JSROOT.require(['io', 'math'], (jsrio, jsrmath) => {
     * @constructor
     * @memberof JSROOT
     * @arguments JSROOT.TSelector
+    * @private
     */
    function TDrawSelector() {
       TSelector.call(this);
@@ -1377,16 +1381,16 @@ JSROOT.require(['io', 'math'], (jsrio, jsrmath) => {
 
    /** @summary Process selector
     * @param {object} selector - instance of JSROOT.TSelector class
-    * @param {object} args - different arguments */
+    * @param {object} args - different arguments
+    * @return {Promise} with TSelector instance */
    JSROOT.TreeMethods.Process = function(selector, args) {
       // function similar to the TTree::Process
 
       if (!args) args = {};
 
       if (!selector || !this.$file || !selector.branches) {
-         console.error('required parameter missing for TTree::Process');
          if (selector) selector.Terminate(false);
-         return false;
+         return Promise.reject(Error("required parameter missing for TTree::Process"));
       }
 
       // central handle with all information required for reading
@@ -1981,7 +1985,7 @@ JSROOT.require(['io', 'math'], (jsrio, jsrmath) => {
 
          if (!item) {
             selector.Terminate(false);
-            return false;
+            return Promise.reject(Error("Fail to add branch ${selector.branches[nn]}"));
          }
       }
 
@@ -2007,13 +2011,14 @@ JSROOT.require(['io', 'math'], (jsrio, jsrmath) => {
       }
 
       if (handle.firstentry >= handle.lastentry) {
-         console.warn('No any common events for selected branches');
          selector.Terminate(false);
-         return false;
+         return Promise.reject(Error('No any common events for selected branches'));
       }
 
       handle.process_min = handle.firstentry;
       handle.process_max = handle.lastentry;
+
+      let resolveFunc, rejectFunc; // Promise methods
 
       if (!isNaN(args.firstentry) && (args.firstentry > handle.firstentry) && (args.firstentry < handle.lastentry))
          handle.process_min = args.firstentry;
@@ -2232,8 +2237,10 @@ JSROOT.require(['io', 'math'], (jsrio, jsrmath) => {
             }
          }
 
-         if ((totalsz === 0) && !is_direct)
-            return handle.selector.Terminate(true);
+         if ((totalsz === 0) && !is_direct) {
+            handle.selector.Terminate(true);
+            return resolveFunc(handle.selector);
+         }
 
          handle.staged_prev = handle.staged_now;
          handle.staged_now = min_staged;
@@ -2256,8 +2263,10 @@ JSROOT.require(['io', 'math'], (jsrio, jsrmath) => {
       function ProcessBaskets(bitems) {
          // this is call-back when next baskets are read
 
-         if ((handle.selector.break_execution !== 0) || (bitems === null))
-            return handle.selector.Terminate(false);
+         if ((handle.selector.break_execution !== 0) || (bitems === null)) {
+            handle.selector.Terminate(false);
+            return resolveFunc(handle.selector);
+         }
 
          // redistribute read baskets over branches
          for (let n = 0; n < bitems.length; ++n)
@@ -2281,7 +2290,10 @@ JSROOT.require(['io', 'math'], (jsrio, jsrmath) => {
                   delete elem.basket;
 
                   if ((elem.curr_basket >= elem.numbaskets)) {
-                     if (n == 0) return handle.selector.Terminate(true);
+                     if (n == 0) {
+                        handle.selector.Terminate(true);
+                        return resolveFunc(handle.selector);
+                     }
                      continue; // ignore non-master branch
                   }
 
@@ -2292,8 +2304,8 @@ JSROOT.require(['io', 'math'], (jsrio, jsrmath) => {
                   if (!bitem) {
                      // no data, but no any event processed - problem
                      if (!isanyprocessed) {
-                        console.warn('no data?', elem.branch.fName, elem.curr_basket);
-                        return handle.selector.Terminate(false);
+                        handle.selector.Terminate(false);
+                        return rejectFunc(Error(`no data for ${elem.branch.fName} basket ${elem.curr_basket}`));
                      }
 
                      // try to read next portion of tree data
@@ -2361,17 +2373,25 @@ JSROOT.require(['io', 'math'], (jsrio, jsrmath) => {
                   isanyprocessed = true;
                }
 
-            if (handle.current_entry >= handle.process_max)
-               return handle.selector.Terminate(true);
+            if (handle.current_entry >= handle.process_max) {
+               handle.selector.Terminate(true);
+               return resolveFunc(handle.selector);
+            }
          }
       }
 
-      // call begin before first entry is read
-      handle.selector.Begin(this);
+      return new Promise((resolve, reject) => {
 
-      ReadNextBaskets();
+         resolveFunc = resolve;
+         rejectFunc = reject;
 
-      return true; // indicate that reading of tree will be performed
+         // call begin before first entry is read
+         handle.selector.Begin(this);
+
+         ReadNextBaskets();
+
+      });
+
    }
 
    /** @summary Search branch with specified name

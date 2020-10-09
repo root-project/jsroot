@@ -731,7 +731,7 @@ JSROOT.require(['rawinflate'], () => {
    }
 
    /** @class TFile
-     * @summary Interface to read objects from ROOT files.
+     * @summary Interface to read objects from ROOT files
      * @memberOf JSROOT
      * @constructor
      * @desc Use {@link JSROOT.OpenFile} to create instance of the class */
@@ -1105,10 +1105,13 @@ JSROOT.require(['rawinflate'], () => {
    /** @summary Read any object from a root file
     * @desc One could specify cycle number in the object name or as separate argument
     * @param {string} obj_name - name of object, may include cycle number like "hpxpy;1"
-    * @param {number} [cycle=undefined] - cycle number
-    * @param {boolean} [only_dir=false] - if true, only TDirectory derived class will be read
+    * @param {number} [cycle=undefined] - cycle number, also can be included in obj_name
     * @returns {Promise} promise with object read
-    * @memberof JSROOT.TFile
+    * @example
+    *   JSROOT.OpenFile("https://root.cern/js/files/hsimple.root")
+    *         .then(f => f.ReadObject("hpxpy;1"))
+    *         .then(obj => console.log(`Read object of type ${obj._typename}`))
+    * });
     */
    TFile.prototype.ReadObject = function(obj_name, cycle, only_dir) {
 
@@ -1342,9 +1345,9 @@ JSROOT.require(['rawinflate'], () => {
 
    /** @summary Read the directory content from  a root file
     * @desc If directory was already read - return previously read object
-    * Same functionality as {@link TFile.ReadObject}
+    * Same functionality as {@link ReadObject}
     * @param {string} dir_name - directory name
-    * @param {number} cycle - directory cycle
+    * @param {number} [cycle=undefined] - directory cycle
     * @retunrs {Promise} - read directory */
    TFile.prototype.ReadDirectory = function(dir_name, cycle) {
       return this.ReadObject(dir_name, cycle, true);
