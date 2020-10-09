@@ -63,6 +63,10 @@ JSROOT.require(['d3'], (d3) => {
 
    // ============================================================================================
 
+   /** @namespace
+     * @summary Collection of Painter-related methods and classes
+     * @alias JSROOT.Painter
+     * @private */
    let jsrp = {
       Coord: {
          kCARTESIAN: 1,
@@ -3398,11 +3402,12 @@ JSROOT.require(['d3'], (d3) => {
     * @param {object} args - arguments
     * @param {string|regexp} args.name - class name or regexp pattern
     * @param {string} [args.prereq] - prerequicities to load before search for the draw function
-    * @param {string} args.func - name of draw function for the class
+    * @param {string} args.func - name of draw function for the class or just a function
     * @param {boolean} [args.direct=false] - if true, function is just Redraw() method of ObjectPainter
     * @param {string} [args.opt] - list of supported draw options (separated with semicolon) like "col;scat;"
     * @param {string} [args.icon] - icon name shown for the class in hierarchy browser
     * @param {string} [args.draw_field] - draw only data member from object, like fHistogram
+    * @private
     */
    JSROOT.addDrawFunc = function(args) {
       drawFuncs.lst.push(args);
@@ -4011,7 +4016,8 @@ JSROOT.require(['d3'], (d3) => {
    /** @summary Tries to close current browser tab
      *
      * @desc Many browsers do not allow simple window.close() call,
-     * therefore try several workarounds */
+     * therefore try several workarounds
+     * @private */
 
    JSROOT.CloseCurrentWindow = function() {
       if (!window) return;
