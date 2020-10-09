@@ -1942,7 +1942,8 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
      * @memberof JSROOT
      * @constructor
      * @param {object} pad - TPad object to draw
-     * @param {boolean} iscan - if TCanvas object */
+     * @param {boolean} iscan - if TCanvas object
+     * @private */
 
    function TPadPainter(pad, iscan) {
       JSROOT.ObjectPainter.call(this, pad);
@@ -1960,8 +1961,8 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
 
    TPadPainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
 
+   /** @summary cleanup only pad itself, all child elements will be collected and cleanup separately  */
    TPadPainter.prototype.Cleanup = function() {
-      // cleanup only pad itself, all child elements will be collected and cleanup separately
 
       for (let k=0;k<this.painters.length;++k)
          this.painters[k].Cleanup();

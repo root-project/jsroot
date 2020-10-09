@@ -20,6 +20,7 @@ JSROOT.require(['io', 'math'], (jsrio, jsrmath) => {
    }
 
    /**
+    * @class TSelector
     * @summary Class to read data from TTree
     * @desc Instance of TSelector can be used to access TTree data
     * @constructor
@@ -1375,15 +1376,15 @@ JSROOT.require(['io', 'math'], (jsrio, jsrmath) => {
       return clname;
    }
 
-   /** @namespace JSROOT.TreeMethods
+   /** @namespace
     * @desc these are TTree methods, which are automatically assigned to each TTree object */
-   JSROOT.TreeMethods = {};
+   JSROOT.TTreeMethods = {};
 
    /** @summary Process selector
-    * @param {object} selector - instance of JSROOT.TSelector class
+    * @param {object} selector - instance of {@link JSROOT.TSelector} class
     * @param {object} args - different arguments
     * @return {Promise} with TSelector instance */
-   JSROOT.TreeMethods.Process = function(selector, args) {
+   JSROOT.TTreeMethods.Process = function(selector, args) {
       // function similar to the TTree::Process
 
       if (!args) args = {};
@@ -2397,7 +2398,7 @@ JSROOT.require(['io', 'math'], (jsrio, jsrmath) => {
    /** @summary Search branch with specified name
     * @desc if complex enabled, search branch and rest part
     * @private */
-   JSROOT.TreeMethods.FindBranch = function(name, complex, lst) {
+   JSROOT.TTreeMethods.FindBranch = function(name, complex, lst) {
 
       let top_search = false, search = name, res = null;
 
@@ -2461,7 +2462,7 @@ JSROOT.require(['io', 'math'], (jsrio, jsrmath) => {
      * @param {function} [args.progress=undefined] - function called during histogram accumulation with argument { obj: draw_object, opt: draw_options }
      * @returns {Promise} with object like { obj: draw_object, opt: draw_options }
      */
-   JSROOT.TreeMethods.Draw = function(args) {
+   JSROOT.TTreeMethods.Draw = function(args) {
 
       if (typeof args === 'string') args = { expr: args };
 
@@ -2488,9 +2489,10 @@ JSROOT.require(['io', 'math'], (jsrio, jsrmath) => {
       });
    }
 
-   JSROOT.TreeMethods.IOTest = function(args) {
-      // generic I/O test for all branches in the tree
-
+   /** @summary Performs generic I/O test for all branches in the TTree
+     * @desc Used when "testio" draw option for TTree is specified
+     * @private */
+   JSROOT.TTreeMethods.IOTest = function(args) {
       args.branches = [];
       args.names = [];
       args.nchilds = [];

@@ -1825,6 +1825,7 @@ JSROOT.require(['d3', 'painter', 'gpad'], (d3, jsrp) => {
     * @memberof JSROOT
     * @arguments JSROOT.ObjectPainter
     * @param {object} histo - histogram object
+    * @private
     */
 
    function THistPainter(histo) {
@@ -1843,7 +1844,8 @@ JSROOT.require(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return this.GetObject();
    }
 
-   /** Returns histogram axis @prviate */
+   /** @summary Returns histogram axis
+     * @prviate */
    THistPainter.prototype.GetAxis = function(name) {
       let histo = this.GetObject();
       if (histo)
@@ -3151,6 +3153,7 @@ JSROOT.require(['d3', 'painter', 'gpad'], (d3, jsrp) => {
     * @memberof JSROOT
     * @arguments JSROOT.THistPainter
     * @param {object} histo - histogram object
+    * @private
     */
 
    function TH1Painter(histo) {
@@ -4269,6 +4272,7 @@ JSROOT.require(['d3', 'painter', 'gpad'], (d3, jsrp) => {
     * @memberof JSROOT
     * @arguments JSROOT.THistPainter
     * @param {object} histo - histogram object
+    * @private
     */
 
    function TH2Painter(histo) {

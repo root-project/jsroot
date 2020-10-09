@@ -497,6 +497,7 @@ JSROOT.require(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
     * @memberof JSROOT
     * @arguments JSROOT.ObjectPainter
     * @param {object} tf1 - TF1 object to draw
+    * @private
     */
 
    function TF1Painter(tf1) {
@@ -786,6 +787,7 @@ JSROOT.require(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
     * @memberof JSROOT
     * @arguments JSROOT.ObjectPainter
     * @param {object} graph - TGraph object to draw
+    * @private
     */
 
    function TGraphPainter(graph) {

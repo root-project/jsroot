@@ -103,13 +103,13 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
       }
    }
 
-   ////////////////////////
-
+   ///////////////////////////////////////////////////////////////////////////////
 
    /**
     * @class TGeoPainter
-    * @desc Holder of different functions and classes for drawing geometries
+    * @desc Holder of different functions and classes for geometries drawing
     * @memberof JSROOT
+    * @private
     */
 
    function TGeoPainter(obj) {

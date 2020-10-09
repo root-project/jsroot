@@ -5,8 +5,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
 
    "use strict";
 
-   /** Holder of all TGeo-related functions and classes
-     * @namespace
+   /** @namespace
      * @alias JSROOT.GEO */
    let geo = {
       GradPerSegm: 6,     // grad per segment in cylinder/spherical symmetry shapes
