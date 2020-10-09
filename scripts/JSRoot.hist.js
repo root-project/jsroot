@@ -2510,7 +2510,7 @@ JSROOT.require(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          histo.fFunctions.Add(obj);
    }
 
-   /** @summary Method draws next function from the functions list @private */
+   /** @summary Method draws next function from the functions list */
    THistPainter.prototype.DrawNextFunction = function(indx, callback, painter) {
 
       if (painter && (typeof painter == "object"))
@@ -2543,7 +2543,7 @@ JSROOT.require(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          this.DrawNextFunction(indx+1, callback);
    }
 
-   /** @summary Unzoom user range if any @private */
+   /** @summary Unzoom user range if any */
    THistPainter.prototype.UnzoomUserRange = function(dox, doy, doz) {
 
       let res = false, histo = this.GetHisto();
@@ -2591,7 +2591,8 @@ JSROOT.require(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return Promise.resolve(false);
    }
 
-   /** @summary Invoke dialog to enter and modify user range @private */
+   /** @summary Invoke dialog to enter and modify user range
+     * @private */
    THistPainter.prototype.ChangeUserRange = function(arg) {
       let histo = this.GetHisto(),
           taxis = histo ? histo['f'+arg+"axis"] : null;
@@ -2616,7 +2617,8 @@ JSROOT.require(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       this.Redraw();
    }
 
-   /** @summary Start dialog to modify range of axis where histogram values are displayed @private */
+   /** @summary Start dialog to modify range of axis where histogram values are displayed
+     * @private */
    THistPainter.prototype.ChangeValuesRange = function() {
       let curr;
       if ((this.options.minimum != -1111) && (this.options.maximum != -1111))
@@ -3357,7 +3359,8 @@ JSROOT.require(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return res;
    }
 
-   /** @summary Fill stat box @private */
+   /** @summary Fill stat box
+     * @private */
    TH1Painter.prototype.FillStatistic = function(stat, dostat, dofit) {
 
       // no need to refill statistic if histogram is dummy
@@ -3428,7 +3431,8 @@ JSROOT.require(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return true;
    }
 
-   /** @summary Draw histogram as bars @private */
+   /** @summary Draw histogram as bars
+     * @private */
    TH1Painter.prototype.DrawBars = function(height) {
 
       this.CreateG(true);
@@ -3906,7 +3910,8 @@ JSROOT.require(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return tips;
    }
 
-   /** @summary Process tooltip event @private */
+   /** @summary Process tooltip event
+     * @private */
    TH1Painter.prototype.ProcessTooltip = function(pnt) {
       if ((pnt === null) || !this.draw_content || !this.draw_g || this.options.Mode3D) {
          if (this.draw_g !== null)

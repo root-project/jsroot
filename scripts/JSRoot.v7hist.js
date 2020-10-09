@@ -532,7 +532,8 @@ JSROOT.require(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       return tip;
    }
 
-   /** Create contour levels for currently selected Z range @private */
+   /** Create contour levels for currently selected Z range
+     * @private */
    RHistPainter.prototype.CreateContour = function(main, palette, args) {
       if (!main || !palette) return;
 
@@ -566,7 +567,8 @@ JSROOT.require(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       }
    }
 
-   /** @summary Start dialog to modify range of axis where histogram values are displayed @private */
+   /** @summary Start dialog to modify range of axis where histogram values are displayed
+     * @private */
    RHistPainter.prototype.ChangeValuesRange = function(arg) {
       let pmain = this.frame_painter();
       if (!pmain) return;

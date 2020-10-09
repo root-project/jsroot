@@ -670,12 +670,12 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
       if (!skip_render) this.Render3D(-1);
    }
 
-   /** Reset transformation @private */
+   /** Reset transformation */
    TGeoPainter.prototype.resetTransformation = function() {
       this.changedTransformation("reset");
    }
 
-   /** Method should be called when transformation parameters were changed @private */
+   /** Method should be called when transformation parameters were changed */
    TGeoPainter.prototype.changedTransformation = function(arg) {
       if (!this._toplevel) return;
 
@@ -730,12 +730,12 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
          this.drawSimpleAxis();
    }
 
-   /** @brief Should be called when autorotate property changed @private */
+   /** Should be called when autorotate property changed */
    TGeoPainter.prototype.changedAutoRotate = function() {
       this.autorotate(2.5);
    }
 
-   /** Method should be called when changing axes drawing @private */
+   /** Method should be called when changing axes drawing */
    TGeoPainter.prototype.changedAxes = function() {
       if (typeof this.ctrl._axis == 'string')
          this.ctrl._axis = parseInt(this.ctrl._axis);
@@ -743,7 +743,7 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
       this.drawSimpleAxis();
    }
 
-   /** Method should be called to change background color @private */
+   /** Method should be called to change background color */
    TGeoPainter.prototype.changedBackground = function(val) {
       if (val !== undefined) this.ctrl.background = val;
       this._renderer.setClearColor(this.ctrl.background, 1);
@@ -755,7 +755,7 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
       }
    }
 
-   /** Method should be called when SSAO configuration changed @private */
+   /** Method should be called when SSAO configuration changed */
    TGeoPainter.prototype.changedSSAO = function() {
       if (!this.ctrl.ssao.enabled) {
          this.removeSSAO();
@@ -1278,7 +1278,7 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
          this.ctrl.depthMethod = val;
    }
 
-   /** Add orbit control @private */
+   /** Add orbit control */
    TGeoPainter.prototype.addOrbitControls = function() {
 
       if (this._controls || !this._webgl || JSROOT.BatchMode) return;
@@ -1868,7 +1868,7 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
        return (m1.fFillStyle === m2.fFillStyle) && (m1.fFillColor === m2.fFillColor);
    }
 
-   /** Should be invoked when light configuration changed. @private */
+   /** Should be invoked when light configuration changed */
    TGeoPainter.prototype.changedLight = function(box) {
       if (!this._camera) return;
 
@@ -3541,7 +3541,7 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
       this.RedrawObject('same');
    }
 
-   /** Should be called when configuration of particular axis is changed @private */
+   /** Should be called when configuration of particular axis is changed */
    TGeoPainter.prototype.changedClipping = function(naxis) {
       let clip = this.ctrl.clip;
 
@@ -3557,7 +3557,7 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
       this.updateClipping(false, true);
    }
 
-   /** Should be called when depth test flag is changed @private */
+   /** Should be called when depth test flag is changed */
    TGeoPainter.prototype.changedDepthTest = function() {
       if (!this._toplevel) return;
       let flag = this.ctrl.depthTest;
@@ -3570,20 +3570,20 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
       this.Render3D(0);
    }
 
-   /** Should be called when depth method is changed @private */
+   /** Should be called when depth method is changed */
    TGeoPainter.prototype.changedDepthMethod = function(arg) {
       // force recalculatiion of render order
       delete this._last_camera_position;
       if (arg !== "norender") this.Render3D();
    }
 
-   /** Should be called when configuration of highlight is changed @private */
+   /** Should be called when configuration of highlight is changed */
    TGeoPainter.prototype.changedHighlight = function() {
       if (!this.ctrl.highlight)
          this.HighlightMesh(null);
    }
 
-   /** Assign clipping attributes to the meshes - supported only for webgl @private */
+   /** Assign clipping attributes to the meshes - supported only for webgl */
    TGeoPainter.prototype.updateClipping = function(without_render, force_traverse) {
       if (!this._webgl) return;
 
@@ -3644,7 +3644,7 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
       this._complete_handler = callback;
    }
 
-   /** @brief complete drawing procedure @private */
+   /** Completes drawing procedure */
    TGeoPainter.prototype.completeDraw = function(close_progress) {
 
       let first_time = false, full_redraw = false, check_extras = true;

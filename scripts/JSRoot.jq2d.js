@@ -2374,9 +2374,8 @@ JSROOT.require(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-m
       return player;
    }
 
-   /// @private
-   /// function used with THttpServer to assign player for the TTree object
-
+   /** function used with THttpServer to assign player for the TTree object
+     * @private */
    JSROOT.drawTreePlayer = function(hpainter, itemname, askey, asleaf) {
 
       let item = hpainter.Find(itemname),
@@ -2421,14 +2420,14 @@ JSROOT.require(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-m
       return player;
    }
 
-   /// @private
-   /// function used with THttpServer when tree is not yet loaded
+   /** function used with THttpServer when tree is not yet loaded
+     * @private */
    JSROOT.drawTreePlayerKey = function(hpainter, itemname) {
       return JSROOT.drawTreePlayer(hpainter, itemname, true);
    }
 
-   /// @private
-   /// function used with THttpServer when tree is not yet loaded
+   /** function used with THttpServer when tree is not yet loaded
+     * @private */
    JSROOT.drawLeafPlayer = function(hpainter, itemname) {
       return JSROOT.drawTreePlayer(hpainter, itemname, false, true);
    }

@@ -14,7 +14,8 @@ JSROOT.require(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       }
    }
 
-   /** @summary Create all necessary components for 3D drawings @private */
+   /** @summary Create all necessary components for 3D drawings
+     * @private */
    JSROOT.v7.RFramePainter.prototype.Create3DScene = function(arg, render3d) {
 
       if ((arg!==undefined) && (arg<0)) {
@@ -1036,7 +1037,8 @@ JSROOT.require(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       }
    }
 
-   /** Draw 1D/2D histograms in Lego mode @private */
+   /** Draw 1D/2D histograms in Lego mode
+     * @private */
    JSROOT.v7.RHistPainter.prototype.DrawLego = function() {
 
       if (!this.draw_content) return;
@@ -1438,7 +1440,8 @@ JSROOT.require(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
 
    // ==========================================================================================
 
-   /** @summary Draw 1-D histogram in 3D @private */
+   /** @summary Draw 1-D histogram in 3D
+     * @private */
    JSROOT.v7.RH1Painter.prototype.Draw3D = function(reason) {
 
       this.mode3d = true;
@@ -1526,7 +1529,8 @@ JSROOT.require(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       });
    }
 
-   /** Draw histogram bins in 3D, using provided draw options @private */
+   /** Draw histogram bins in 3D, using provided draw options
+     * @private */
    JSROOT.v7.RH2Painter.prototype.Draw3DBins = function() {
 
       if (!this.draw_content) return;

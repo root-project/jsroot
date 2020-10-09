@@ -1954,7 +1954,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
          this._runMonitoring();
    }
 
-   /** Runs monitoring event loop, @private */
+   /** Runs monitoring event loop */
    HierarchyPainter.prototype._runMonitoring = function(arg) {
       if ((arg == "cleanup") || !this.IsMonitoring()) {
          if (this._monitoring_handle) {

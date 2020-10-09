@@ -985,6 +985,8 @@ JSROOT.require(['d3'], (d3) => {
 
   // ===========================================================================
 
+   /** @summary Tries to choose time format for provided time interval
+     * @private */
    jsrp.chooseTimeFormat = function(awidth, ticks) {
       if (awidth < .5) return ticks ? "%S.%L" : "%H:%M:%S.%L";
       if (awidth < 30) return ticks ? "%Mm%S" : "%H:%M:%S";
@@ -996,13 +998,15 @@ JSROOT.require(['d3'], (d3) => {
       return "%Y";
    }
 
-   /** @summary Returns time format @private */
+   /** @summary Returns time format
+     * @private */
    jsrp.getTimeFormat = function(axis) {
       let idF = axis.fTimeFormat.indexOf('%F');
       return (idF >= 0) ? axis.fTimeFormat.substr(0, idF) : axis.fTimeFormat;
    }
 
-   /** @summary Return time offset value for given TAxis object @private */
+   /** @summary Return time offset value for given TAxis object
+     * @private */
    jsrp.getTimeOffset = function(axis) {
       let dflt_time_offset = 788918400000;
       if (!axis) return dflt_time_offset;

@@ -316,7 +316,7 @@
        return udefined;
     }
 
-   /** @brief Central method to load JSROOT functionality
+   /** @summary Central method to load JSROOT functionality
      *
      * @desc
      * Following components can be specified
@@ -1992,7 +1992,6 @@
       if ((msg !== undefined) && (typeof msg=="string")) console.log(msg);
    }
 
-   // Connects to the RWebWindow instance
    JSROOT.ConnectWebWindow = function(arg) {
       if (typeof arg == 'function') arg = { callback: arg };
 

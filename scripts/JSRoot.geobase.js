@@ -1,4 +1,4 @@
-/** @file JSRoot.geobase.js */
+/// @file JSRoot.geobase.js
 /// Basic functions for work with TGeo classes
 
 JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
@@ -2419,7 +2419,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       return res;
    }
 
-   /** After visibility flags is set, produce idshift for all nodes as it would be maximum level @private */
+   /** After visibility flags is set, produce idshift for all nodes as it would be maximum level */
    ClonedNodes.prototype.ProduceIdShits = function() {
       for (let k=0;k<this.nodes.length;++k)
          this.nodes[k].idshift = -1;
@@ -2438,7 +2438,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       scan_func(this.nodes, this.nodes[0]);
    }
 
-   /** Extract only visibility flags, used to transfer them to the worker @private */
+   /** Extract only visibility flags, used to transfer them to the worker */
    ClonedNodes.prototype.GetVisibleFlags = function() {
       let res = new Array(this.nodes.length);
       for (let n=0;n<this.nodes.length;++n)
@@ -2446,7 +2446,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       return res;
    }
 
-   /** Assign only visibility flags, extracted with GetVisibleFlags @private */
+   /** Assign only visibility flags, extracted with GetVisibleFlags */
    ClonedNodes.prototype.SetVisibleFlags = function(flags) {
       if (!this.nodes || !flags || !flags.length != this.nodes.length)
          return 0;

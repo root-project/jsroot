@@ -558,7 +558,8 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
          MakeResizeElements(pthis.draw_g, rect_width(), rect_height(), drag_resize);
       },
 
-      /** @summary Add move handlers for drawn element @private */
+      /** @summary Add move handlers for drawn element
+        * @private */
       AddMove: function(painter) {
 
          if (!JSROOT.gStyle.MoveResize || JSROOT.BatchMode ||

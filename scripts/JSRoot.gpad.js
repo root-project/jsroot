@@ -1988,10 +1988,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
       JSROOT.ObjectPainter.prototype.Cleanup.call(this);
    }
 
-   /** @summary Cleanup primitives from pad - selector lets define which painters to remove
-    * @private
-    */
-
+   /** @summary Cleanup primitives from pad - selector lets define which painters to remove */
    TPadPainter.prototype.CleanPrimitives = function(selector) {
       if (!selector || (typeof selector !== 'function')) return;
 
@@ -2002,9 +1999,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
          }
    }
 
-   /** @summary Generates automatic color for some objects painters
-    * @private
-    */
+   /** @summary Generates automatic color for some objects painters */
    TPadPainter.prototype.CreateAutoColor = function() {
       let pad = this.root_pad(),
           numprimitives = pad && pad.fPrimitves ? pad.fPrimitves.arr.length : 5;
@@ -3814,13 +3809,13 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
       this.ProcessChanges("sbits", this);
    }
 
-   /** Returns true if GED is present on the canvas @private */
+   /** Returns true if GED is present on the canvas */
    TCanvasPainter.prototype.HasGed = function() {
       if (this.testUI5()) return false;
       return this.brlayout ? this.brlayout.HasContent() : false;
    }
 
-   /** Function used to de-activate GED @private */
+   /** Function used to de-activate GED */
    TCanvasPainter.prototype.RemoveGed = function() {
       if (this.testUI5()) return;
 
@@ -3837,8 +3832,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
       this.ProcessChanges("sbits", this);
    }
 
-   /** Function used to activate GED
-    * @private */
+   /** Function used to activate GED */
    TCanvasPainter.prototype.ActivateGed = function(objpainter, kind, mode, callback) {
       if (this.testUI5() || !this.brlayout)
          return JSROOT.CallBack(callback);
@@ -4063,7 +4057,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
       return res;
    }
 
-   /** Check if TGeo objects in the canvas - draw them directly @private */
+   /** Check if TGeo objects in the canvas - draw them directly */
    TCanvasPainter.prototype.DirectGeoDraw = function() {
       let lst = this.pad ? this.pad.fPrimitives : null;
       if (!lst || (lst.arr.length != 1)) return;

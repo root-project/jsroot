@@ -5,6 +5,8 @@ JSROOT.require(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
    "use strict";
 
+   /** @summary Set default camera position
+     * @private */
    JSROOT.TFramePainter.prototype.SetCameraPosition = function(first_time, pad) {
       let max3d = Math.max(0.75*this.size_xy3d, this.size_z3d);
 
@@ -30,7 +32,8 @@ JSROOT.require(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          this.camera.lookAt(this.lookat);
    }
 
-   /** @summary Create all necessary components for 3D drawings @private */
+   /** @summary Create all necessary components for 3D drawings
+     * @private */
    JSROOT.TFramePainter.prototype.Create3DScene = function(arg, render3d) {
 
       if ((arg!==undefined) && (arg < 0)) {
@@ -1058,7 +1061,8 @@ JSROOT.require(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       }
    }
 
-   /** Draw histograms in 3D mode @private */
+   /** Draw histograms in 3D mode
+     * @private */
    JSROOT.THistPainter.prototype.Draw3DBins = function() {
 
       if (!this.draw_content) return;

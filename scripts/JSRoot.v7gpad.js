@@ -1477,7 +1477,8 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
       this.axes_drawn = false;
    }
 
-   /** Removes all drawn elements of the frame @private */
+   /** Removes all drawn elements of the frame
+     * @private */
    RFramePainter.prototype.CleanFrameDrawings = function() {
       // cleanup all 3D drawings if any
       if (typeof this.Create3DScene === 'function')

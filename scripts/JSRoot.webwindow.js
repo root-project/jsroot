@@ -190,9 +190,12 @@ JSROOT.require([], () => {
    // ========================================================================================
 
 
-   /** Client communication handle for RWebWindow.
+   /**
+    * @class WebWindowHandle
+    * @memberof JSROOT
+    * @summary Client communication handle for RWebWindow.
     * Should be created with {@link JSROOT.ConnectWebWindow} function
-    */
+    * @constructor */
 
    function WebWindowHandle(socket_kind) {
       this.kind = socket_kind;
@@ -201,9 +204,10 @@ JSROOT.require([], () => {
       this.ackn = 10;
    }
 
-   /** Returns arguments specified in the RWebWindow::SetUserArgs() method
-    * Can be any valid JSON expression. Undefined by default.
-    * If field parameter specified and user args is object, returns correspondent member of the user args object */
+   /** @summary Returns arguments specified in the RWebWindow::SetUserArgs() method
+    * @desc Can be any valid JSON expression. Undefined by default.
+    * @param {string} [field] - if specified and user args is object, returns correspondent object member
+    * @returns user arguments object */
    WebWindowHandle.prototype.GetUserArgs = function(field) {
       if (field && (typeof field == 'string')) {
          return (this.user_args && (typeof this.user_args == 'object')) ? this.user_args[field] : undefined;
@@ -213,22 +217,21 @@ JSROOT.require([], () => {
    }
 
    /** @summary Set callbacks receiver.
-    *
-    * Following function can be defined in receiver object:
-    *    - OnWebsocketMsg
-    *    - OnWebsocketOpened,
-    *    - OnWebsocketClosed */
+    * @param {object} obj - object wiith receiver functions
+    * @param {function} obj.OnWebsocketMsg - called when new data receieved from RWebWindow
+    * @param {function} obj.OnWebsocketOpened - called when connection established
+    * @param {function} obj.OnWebsocketClosed - called when connection closed */
    WebWindowHandle.prototype.SetReceiver = function(obj) {
       this.receiver = obj;
    }
 
-   /** Cleanup and close connection. */
+   /** @summary Cleanup and close connection. */
    WebWindowHandle.prototype.Cleanup = function() {
       delete this.receiver;
       this.Close(true);
    }
 
-   /** Invoke method in the receiver.
+   /** @summary Invoke method in the receiver.
     * @private */
    WebWindowHandle.prototype.InvokeReceiver = function(brdcst, method, arg, arg2) {
       if (this.receiver && (typeof this.receiver[method] == 'function'))
@@ -241,7 +244,7 @@ JSROOT.require([], () => {
       }
    }
 
-   /** Provide data for receiver. When no queue - do it directly.
+   /** @summary Provide data for receiver. When no queue - do it directly.
     * @private */
    WebWindowHandle.prototype.ProvideData = function(chid, _msg, _len) {
       if (this.wait_first_recv) {
@@ -267,7 +270,7 @@ JSROOT.require([], () => {
       this.msgqueue.push({ ready: true, msg: _msg, len: _len });
    }
 
-   /** Reserve entry in queue for data, which is not yet decoded.
+   /** @summary Reserve entry in queue for data, which is not yet decoded.
     * @private */
    WebWindowHandle.prototype.ReserveQueueItem = function() {
       if (!this.msgqueue) this.msgqueue = [];
@@ -276,7 +279,7 @@ JSROOT.require([], () => {
       return item;
    }
 
-   /** Reserver entry in queue for data, which is not yet decoded.
+   /** @summary Reserver entry in queue for data, which is not yet decoded.
     * @private */
    WebWindowHandle.prototype.DoneItem = function(item, _msg, _len) {
       item.ready = true;
@@ -285,7 +288,8 @@ JSROOT.require([], () => {
       this.ProcessQueue();
    }
 
-   /** Process completed messages in the queue @private */
+   /** @summary Process completed messages in the queue
+     * @private */
    WebWindowHandle.prototype.ProcessQueue = function() {
       if (this._loop_msgqueue || !this.msgqueue) return;
       this._loop_msgqueue = true;
@@ -298,7 +302,7 @@ JSROOT.require([], () => {
       delete this._loop_msgqueue;
    }
 
-   /** Close connection. */
+   /** @summary Close connection. */
    WebWindowHandle.prototype.Close = function(force) {
       if (this.master) {
          this.master.Send("CLOSECH=" + this.channelid, 0);
@@ -320,12 +324,15 @@ JSROOT.require([], () => {
       }
    }
 
-   /** Returns if one can send text message to server. Checks number of send credits */
+   /** @summary Checks number of credits for send operation
+     * @parame {number} [numsend = 1] - number of required send operations
+     * @returns true if one allow to send text message to server. */
    WebWindowHandle.prototype.CanSend = function(numsend) {
       return (this.cansend >= (numsend || 1));
    }
 
-   /** Send text message via the connection. */
+   /** @summary Send text message via the connection.
+     * @param {string} msg - text message to send */
    WebWindowHandle.prototype.Send = function(msg, chid) {
       if (this.master)
          return this.master.Send(msg, this.channelid);
@@ -349,7 +356,7 @@ JSROOT.require([], () => {
       return true;
    }
 
-   /** Inject message(s) into input queue, for debug purposes only
+   /** @summary Inject message(s) into input queue, for debug purposes only
      * @private */
    WebWindowHandle.prototype.Inject = function(msg, chid, immediate) {
       // use timeout to avoid too deep call stack
@@ -367,14 +374,14 @@ JSROOT.require([], () => {
       }
    }
 
-   /** Send keepalive message.
+   /** @summary Send keepalive message.
     * @private */
    WebWindowHandle.prototype.KeepAlive = function() {
       delete this.timerid;
       this.Send("KEEPALIVE", 0);
    }
 
-   /** Method open channel, which will share same connection, but can be used independently from main
+   /** @summary Method open channel, which will share same connection, but can be used independently from main
     * @private */
    WebWindowHandle.prototype.CreateChannel = function() {
       if (this.master)
@@ -398,12 +405,11 @@ JSROOT.require([], () => {
       return channel;
    }
 
-   /** Returns used channel ID, 1 by default */
+   /** @summary Returns used channel ID, 1 by default */
    WebWindowHandle.prototype.getChannelId = function() { return this.channelid && this.master ? this.channelid : 1; }
 
-   /** Method opens relative path with the same kind of socket.
-    * @private
-    */
+   /** @summary Method opens relative path with the same kind of socket.
+    * @private */
    WebWindowHandle.prototype.CreateRelative = function(relative) {
       if (!relative || !this.kind || !this.href) return null;
 
@@ -413,7 +419,8 @@ JSROOT.require([], () => {
       return handle;
    }
 
-   /** Create configured socket for current object. */
+   /** @summary Create configured socket for current object.
+     * @private */
    WebWindowHandle.prototype.Connect = function(href) {
 
       this.Close();
