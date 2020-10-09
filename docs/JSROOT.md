@@ -756,7 +756,7 @@ Any supported TGeo object can be drawn with normal JSROOR.draw() function.
 If necessary, one can create three.js model for supported object directly and use such model
 separately. This can be done with the function:
 
-    var opt = { numfaces: 100000};
+    var opt = { numfaces: 100000 };
     var obj3d = JSROOT.GEO.build(obj, opt);
     scene.add( obj3d );
 
@@ -765,7 +765,8 @@ Following options can be specified:
    - numfaces - approximate maximal number of faces in three.js model (default 100000)
    - numnodes - approximate maximal number of meshes in three.js model (default 1000)
    - doubleside - use double-side material (default only front side is set)
-   - wireframe - show wireframe for created materials (default - off)
+   - wireframe - show wireframe for created object (default - off)
+   - dflt_colors - assign default ROOT colors for the volumes
 
 When transparent volumes appeared in the model, one could use JSROOT.GEO.produceRenderOrder() function
 to correctly set rendering order. It should be used as:

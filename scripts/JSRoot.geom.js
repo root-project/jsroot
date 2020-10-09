@@ -1141,9 +1141,9 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
 
       if (!this.ctrl.select_in_view || this._draw_all_nodes) return;
 
-      let matrix = geo.CreateProjectionMatrix(this._camera);
+      let matrix = geo.createProjectionMatrix(this._camera);
 
-      let frustum = geo.CreateFrustum(matrix);
+      let frustum = geo.createFrustum(matrix);
 
       // check if overall bounding box seen
       if (!frustum.CheckBox(this.getGeomBoundingBox(this._toplevel)))
@@ -1333,7 +1333,7 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
 
          if (!resolve || !resolve.obj) return tooltip;
 
-         let lines = geo.provideInfo(resolve.obj);
+         let lines = geo.provideObjectInfo(resolve.obj);
          lines.unshift(tooltip);
 
          return { name: resolve.obj.fName, title: resolve.obj.fTitle || resolve.obj._typename, lines: lines };
@@ -1438,9 +1438,9 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
          if (this.ctrl.select_in_view && !this._first_drawing) {
             // extract camera projection matrix for selection
 
-            matrix = geo.CreateProjectionMatrix(this._camera);
+            matrix = geo.createProjectionMatrix(this._camera);
 
-            frustum = geo.CreateFrustum(matrix);
+            frustum = geo.createFrustum(matrix);
 
             // check if overall bounding box seen
             if (frustum.CheckBox(this.getGeomBoundingBox(this._toplevel))) {
@@ -1559,7 +1559,7 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
                // only submit not-done items
                if (item.ready || item.geom) {
                   // this is place holder for existing geometry
-                  clone = { id: item.id, ready: true, nfaces: geo.numGeometryFaces(item.geom), refcnt: item.refcnt };
+                  clone = { id: item.id, ready: true, nfaces: geo.countGeometryFaces(item.geom), refcnt: item.refcnt };
                } else {
                   clone = JSROOT.clone(item, null, true);
                   cnt++;

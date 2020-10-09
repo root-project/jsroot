@@ -89,16 +89,15 @@
    JSROOT.source_dir = "";
 
    /** @summary Let tweak browser caching
-     * @desc When specified, extra URL parameter like ?stamp=unique_value append to each JSROOT script loaded
+     * @desc When specified, extra URL parameter like ```?stamp=unique_value``` append to each JSROOT script loaded
      *       In such case browser will be forced to load JSROOT functionality disregards of cache settings
-     * @default false
-     */
+     * @default false */
    JSROOT.nocache = false;
 
    /** @summary Let detect and solve problem when browser returns wrong content-length parameter
      * @desc See [jsroot#189]{@link https://github.com/root-project/jsroot/issues/189} for more info
-     * @default false
-     */
+     * Can be enabled by adding "wrong_http_response" parameter to URL when using JSROOT UI
+     * @default false */
    JSROOT.wrong_http_response_handling = false;
 
    if (JSROOT.BatchMode === undefined)
@@ -108,8 +107,7 @@
 
    /** @summary Configures keybord key handling
      * @desc Can be disabled to prevent keys heandling in complex HTML layouts
-     * @default true
-     */
+     * @default true */
    JSROOT.key_handling = true;  // enable/disable key press handling in JSROOT
 
    //openuicfg // DO NOT DELETE, used to configure openui5 usage like JSROOT.openui5src = "nojsroot";

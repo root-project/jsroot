@@ -1372,7 +1372,7 @@ JSROOT.require(['io', 'math'], (jsrio, jsrmath) => {
    }
 
    /** @namespace JSROOT.TreeMethods
-    * @summary these are TTree methods, which are automatically assigned to every TTree */
+    * @desc these are TTree methods, which are automatically assigned to each TTree object */
    JSROOT.TreeMethods = {};
 
    /** @summary Process selector

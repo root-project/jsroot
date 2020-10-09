@@ -1677,6 +1677,104 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
 
    let createGeometry; // will be function to create geometry
 
+
+   /** @summary Returns geometry bounding box
+    * @memberOf JSROOT.GEO
+    * @private */
+   function geomBoundingBox(geom) {
+      if (!geom) return null;
+
+      let polygons = null;
+
+      if (geom instanceof ThreeBSP.Geometry)
+         polygons = geom.tree.collectPolygons([]);
+      else if (geom.polygons)
+         polygons = geom.polygons;
+
+      if (polygons!==null) {
+         let box = new THREE.Box3();
+         for (let n=0;n<polygons.length;++n) {
+            let polygon = polygons[n], nvert = polygon.vertices.length;
+            for (let k=0;k<nvert;++k)
+               box.expandByPoint(polygon.vertices[k]);
+         }
+         return box;
+      }
+
+      if (!geom.boundingBox) geom.computeBoundingBox();
+
+      return geom.boundingBox.clone();
+   }
+
+   /** @summary Creates half-space geometry for given shape
+    * @desc Just big-enough triangle to make BSP calculations
+    * @memberOf JSROOT.GEO
+    * @private */
+   function createHalfSpace(shape, geom) {
+      if (!shape || !shape.fN || !shape.fP) return null;
+
+      // shape.fP = [0,0,15]; shape.fN = [0,1,1];
+
+      let vertex = new THREE.Vector3(shape.fP[0], shape.fP[1], shape.fP[2]);
+
+      let normal = new THREE.Vector3(shape.fN[0], shape.fN[1], shape.fN[2]);
+      normal.normalize();
+
+      let sz = 1e10;
+      if (geom) {
+         // using real size of other geometry, we probably improve precision
+         let box = geomBoundingBox(geom);
+         if (box) sz = box.getSize(new THREE.Vector3()).length() * 1000;
+      }
+
+      // console.log('normal', normal, 'vertex', vertex, 'size', sz);
+
+      let v1 = new THREE.Vector3(-sz, -sz/2, 0),
+          v2 = new THREE.Vector3(0, sz, 0),
+          v3 = new THREE.Vector3(sz, -sz/2, 0),
+          v4 = new THREE.Vector3(0, 0, -sz);
+
+      let geometry = new THREE.Geometry();
+
+      geometry.vertices.push(v1, v2, v3, v4);
+
+      geometry.faces.push( new THREE.Face3( 0, 2, 1 ) );
+      geometry.faces.push( new THREE.Face3( 0, 1, 3 ) );
+      geometry.faces.push( new THREE.Face3( 1, 2, 3 ) );
+      geometry.faces.push( new THREE.Face3( 2, 0, 3 ) );
+
+      geometry.lookAt(normal);
+      geometry.computeFaceNormals();
+
+      v1.add(vertex);
+      v2.add(vertex);
+      v3.add(vertex);
+      v4.add(vertex);
+      return geometry;
+   }
+
+   /** @summary Returns number of faces for provided geometry
+     * @param geom  - can be THREE.Geometry, THREE.BufferGeometry, ThreeBSP.Geometry or interim array of polygons
+     * @memberOf JSROOT.GEO
+     * @private */
+   function countGeometryFaces(geom) {
+      if (!geom) return 0;
+
+      if (geom instanceof ThreeBSP.Geometry)
+         return geom.tree.numPolygons();
+
+      if (geom.type == 'BufferGeometry') {
+         let attr = geom.getAttribute('position');
+         return attr && attr.count ? Math.round(attr.count / 3) : 0;
+      }
+
+      // special array of polygons
+      if (geom.polygons)
+         return geom.polygons.length;
+
+      return geom.faces.length;
+   }
+
    /** @summary Creates geometrey for composite shape
      * @memberOf JSROOT.GEO
      * @private */
@@ -1700,31 +1798,31 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
          geo.warn('Axis reflections in right composite shape - not supported');
 
       if (shape.fNode.fLeft._typename == "TGeoHalfSpace") {
-         geom1 = geo.createHalfSpace(shape.fNode.fLeft);
+         geom1 = createHalfSpace(shape.fNode.fLeft);
       } else {
          geom1 = createGeometry(shape.fNode.fLeft, faces_limit);
       }
 
       if (!geom1) return null;
 
-      let n1 = geo.numGeometryFaces(geom1), n2 = 0;
+      let n1 = countGeometryFaces(geom1), n2 = 0;
       if (geom1._exceed_limit) n1 += faces_limit;
 
       if (n1 < faces_limit) {
 
          if (shape.fNode.fRight._typename == "TGeoHalfSpace") {
-            geom2 = geo.createHalfSpace(shape.fNode.fRight, geom1);
+            geom2 = createHalfSpace(shape.fNode.fRight, geom1);
          } else {
             geom2 = createGeometry(shape.fNode.fRight, faces_limit);
          }
 
-         n2 = geo.numGeometryFaces(geom2);
+         n2 = countGeometryFaces(geom2);
       }
 
       if ((n1 + n2 >= faces_limit) || !geom2) {
          if (geom1.polygons) {
             geom1 = ThreeBSP.CreateBufferGeometry(geom1.polygons);
-            n1 = geo.numGeometryFaces(geom1);
+            n1 = countGeometryFaces(geom1);
          }
          if (matrix1) geom1.applyMatrix4(matrix1);
          // if (!geom1._exceed_limit) console.log('reach faces limit', faces_limit, 'got', n1, n2);
@@ -1747,10 +1845,10 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
             geo.warn('unsupported bool operation ' + shape.fNode._typename + ', use first geom');
       }
 
-      if (geo.numGeometryFaces(bsp1) === 0) {
+      if (countGeometryFaces(bsp1) === 0) {
          geo.warn('Zero faces in comp shape'
-               + ' left: ' + shape.fNode.fLeft._typename +  ' ' + geo.numGeometryFaces(geom1) + ' faces'
-               + ' right: ' + shape.fNode.fRight._typename + ' ' + geo.numGeometryFaces(geom2) + ' faces'
+               + ' left: ' + shape.fNode.fLeft._typename +  ' ' + countGeometryFaces(geom1) + ' faces'
+               + ' right: ' + shape.fNode.fRight._typename + ' ' + countGeometryFaces(geom2) + ' faces'
                + '  use first');
          bsp1 = new ThreeBSP.Geometry(geom1, matrix1);
       }
@@ -1856,76 +1954,11 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       return limit < 0 ? 0 : null;
    }
 
-   /** Creates half-space geometry for given shape
-    * Just big-enough triangle to make BSP calculations
-    * @memberOf JSROOT.GEO */
-
-   geo.createHalfSpace = function(shape, geom) {
-      if (!shape || !shape.fN || !shape.fP) return null;
-
-      // shape.fP = [0,0,15]; shape.fN = [0,1,1];
-
-      let vertex = new THREE.Vector3(shape.fP[0], shape.fP[1], shape.fP[2]);
-
-      let normal = new THREE.Vector3(shape.fN[0], shape.fN[1], shape.fN[2]);
-      normal.normalize();
-
-      let sz = 1e10;
-      if (geom) {
-         // using real size of other geometry, we probably improve precision
-         let box = geo.geomBoundingBox(geom);
-         if (box) sz = box.getSize(new THREE.Vector3()).length() * 1000;
-      }
-
-      // console.log('normal', normal, 'vertex', vertex, 'size', sz);
-
-      let v1 = new THREE.Vector3(-sz, -sz/2, 0),
-          v2 = new THREE.Vector3(0, sz, 0),
-          v3 = new THREE.Vector3(sz, -sz/2, 0),
-          v4 = new THREE.Vector3(0, 0, -sz);
-
-      let geometry = new THREE.Geometry();
-
-      geometry.vertices.push(v1, v2, v3, v4);
-
-      geometry.faces.push( new THREE.Face3( 0, 2, 1 ) );
-      geometry.faces.push( new THREE.Face3( 0, 1, 3 ) );
-      geometry.faces.push( new THREE.Face3( 1, 2, 3 ) );
-      geometry.faces.push( new THREE.Face3( 2, 0, 3 ) );
-
-      geometry.lookAt(normal);
-      geometry.computeFaceNormals();
-
-      v1.add(vertex);
-      v2.add(vertex);
-      v3.add(vertex);
-      v4.add(vertex);
-
-      /*
-      // it suppose to be top corner of tetrahedron
-      let v0 = vertex.clone().addScaledVector(normal, sz);
-
-      // plane to verify our calculations
-      let plane = new THREE.Plane(normal);
-
-      // translate all vertices and plane
-      plane.translate(vertex);
-
-      console.log('Distance plane to fP', plane.distanceToPoint(vertex), "expect 0");
-      console.log('Distance plane to v0', plane.distanceToPoint(v0), "expect", sz);
-      console.log('Distance plane to v1', plane.distanceToPoint(v1), "expect 0");
-      console.log('Distance plane to v2', plane.distanceToPoint(v2), "expect 0");
-      console.log('Distance plane to v3', plane.distanceToPoint(v3), "expect 0");
-      console.log('Distance plane to v4', plane.distanceToPoint(v4), "expect", sz);
-      console.log('Distoance v0 to v4', v0.distanceTo(v4), "expect 0");
-      */
-
-      // return null;
-      return geometry;
-   }
-
-   /** Provides info about geo object, used for tooltip info */
-   geo.provideInfo = function(obj) {
+   /** @summary Provides info about geo object, used for tooltip info
+     * @param {Object} obj - any kind of TGeo-related object like shape or node or volume
+     * @memberOf JSROOT.GEO
+     * @private */
+   function provideObjectInfo(obj) {
       let info = [], shape = null;
 
       if (obj.fVolume !== undefined) shape = obj.fVolume.fShape; else
@@ -1994,7 +2027,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
          case "TGeoCompositeShape": break;
          case "TGeoShapeAssembly": break;
          case "TGeoScaledShape":
-            info = geo.provideInfo(shape.fShape);
+            info = provideObjectInfo(shape.fShape);
             if (shape.fScale)
                info.unshift('Scale X=' + shape.fScale.fScale[0] + " Y=" + shape.fScale.fScale[1] + " Z=" + shape.fScale.fScale[2]);
             break;
@@ -2003,8 +2036,10 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       return info;
    }
 
-   /** @memberOf JSROOT.GEO */
-   geo.CreateProjectionMatrix = function(camera) {
+   /** @summary Creates projection matrix for the camera
+    * @memberOf JSROOT.GEO
+    * @private */
+   function createProjectionMatrix(camera) {
       let cameraProjectionMatrix = new THREE.Matrix4();
 
       camera.updateMatrixWorld();
@@ -2014,12 +2049,14 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       return cameraProjectionMatrix;
    }
 
-   /** @memberOf JSROOT.GEO */
-   geo.CreateFrustum = function(source) {
+   /** @summary Creates frustum
+     * @memberOf JSROOT.GEO
+     * @private */
+   function createFrustum(source) {
       if (!source) return null;
 
       if (source instanceof THREE.PerspectiveCamera)
-         source = geo.CreateProjectionMatrix(source);
+         source = createProjectionMatrix(source);
 
       let frustum = new THREE.Frustum();
       frustum.setFromMatrix(source);
@@ -2073,101 +2110,6 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       }
 
       return frustum;
-   }
-
-   /** @memberOf JSROOT.GEO */
-   geo.VisibleByCamera = function(camera, matrix, shape) {
-      let frustum = new THREE.Frustum();
-      let cameraProjectionMatrix = new THREE.Matrix4();
-
-      camera.updateMatrixWorld();
-      camera.matrixWorldInverse.getInverse( camera.matrixWorld );
-      cameraProjectionMatrix.multiplyMatrices( camera.projectionMatrix, camera.matrixWorldInverse);
-      frustum.setFromMatrix( cameraProjectionMatrix );
-
-      let corners = [
-         new THREE.Vector3(  shape.fDX/2.0,  shape.fDY/2.0,   shape.fDZ/2.0 ),
-         new THREE.Vector3(  shape.fDX/2.0,  shape.fDY/2.0,  -shape.fDZ/2.0 ),
-         new THREE.Vector3(  shape.fDX/2.0, -shape.fDY/2.0,   shape.fDZ/2.0 ),
-         new THREE.Vector3(  shape.fDX/2.0, -shape.fDY/2.0,  -shape.fDZ/2.0 ),
-         new THREE.Vector3( -shape.fDX/2.0,  shape.fDY/2.0,   shape.fDZ/2.0 ),
-         new THREE.Vector3( -shape.fDX/2.0,  shape.fDY/2.0,  -shape.fDZ/2.0 ),
-         new THREE.Vector3( -shape.fDX/2.0, -shape.fDY/2.0,   shape.fDZ/2.0 ),
-         new THREE.Vector3( -shape.fDX/2.0, -shape.fDY/2.0,  -shape.fDZ/2.0 )
-               ];
-      for (let i = 0; i < corners.length; i++) {
-         if (frustum.containsPoint(corners[i].applyMatrix4(matrix))) return true;
-      }
-
-      return false;
-   }
-
-   /** Returns number of faces for provided geometry
-    * @param geom  - can be THREE.Geometry, THREE.BufferGeometry, ThreeBSP.Geometry or interim array of polygons
-    * @memberOf JSROOT.GEO */
-   geo.numGeometryFaces = function(geom) {
-      if (!geom) return 0;
-
-      if (geom instanceof ThreeBSP.Geometry)
-         return geom.tree.numPolygons();
-
-      if (geom.type == 'BufferGeometry') {
-         let attr = geom.getAttribute('position');
-         return attr && attr.count ? Math.round(attr.count / 3) : 0;
-      }
-
-      // special array of polygons
-      if (geom.polygons)
-         return geom.polygons.length;
-
-      return geom.faces.length;
-   }
-
-   /** Returns number of faces for provided geometry
-    * @param geom  - can be THREE.Geometry, THREE.BufferGeometry, ThreeBSP.Geometry or interim array of polygons
-    * @memberOf JSROOT.GEO */
-   geo.numGeometryVertices = function(geom) {
-      if (!geom) return 0;
-
-      if (geom instanceof ThreeBSP.Geometry)
-         return geom.tree.numPolygons() * 3;
-
-      if (geom.type == 'BufferGeometry') {
-         let attr = geom.getAttribute('position');
-         return attr ? attr.count : 0;
-      }
-
-      if (geom.polygons)
-         return geom.polygons.length * 4;
-
-      return geom.vertices.length;
-   }
-
-   /** Returns bounding box
-    * @memberOf JSROOT.GEO */
-   geo.geomBoundingBox = function(geom) {
-      if (!geom) return null;
-
-      let polygons = null;
-
-      if (geom instanceof ThreeBSP.Geometry)
-         polygons = geom.tree.collectPolygons([]);
-      else if (geom.polygons)
-         polygons = geom.polygons;
-
-      if (polygons!==null) {
-         let box = new THREE.Box3();
-         for (let n=0;n<polygons.length;++n) {
-            let polygon = polygons[n], nvert = polygon.vertices.length;
-            for (let k=0;k<nvert;++k)
-               box.expandByPoint(polygon.vertices[k]);
-         }
-         return box;
-      }
-
-      if (!geom.boundingBox) geom.computeBoundingBox();
-
-      return geom.boundingBox.clone();
    }
 
    /** Compares two stacks. Returns length where stacks are the same
@@ -3226,7 +3168,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
                item.geom = createGeometry(item.shape);
                if (item.geom) created++; // indicate that at least one shape was created
             }
-            item.nfaces = geo.numGeometryFaces(item.geom);
+            item.nfaces = countGeometryFaces(item.geom);
          }
 
          res.shapes++;
@@ -3276,9 +3218,15 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       }
    }
 
-   /** When transformation matrix includes one or several inversion of axis,
-     * one should inverse geometry object, otherwise THREE.js cannot correctly draw it, @private */
-   geo.createFlippedMesh = function(shape, material) {
+  /** @brief Create flipped mesh for the shape
+    * @desc When transformation matrix includes one or several inversion of axis,
+    * one should inverse geometry object, otherwise THREE.js cannot correctly draw it
+    * @param {Object} shape - TGeoShape object
+    * @param {Object} material - material
+    * @memberOf SJROOT.GEO
+    * @private */
+
+   function createFlippedMesh(shape, material) {
 
       let flip =  new THREE.Vector3(1,1,-1);
 
@@ -3361,7 +3309,42 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       return mesh;
    }
 
-   /** Cleanup shape entity
+   /** @summary extract code of Box3.expandByObject
+     * @desc Major difference - do not traverse hierarchy
+     * @private */
+   function getBoundingBox(node, box3, local_coordinates) {
+      if (!node || !node.geometry) return box3;
+
+      if (!box3) { box3 = new THREE.Box3(); box3.makeEmpty(); }
+
+      if (!local_coordinates) node.updateMatrixWorld();
+
+      let v1 = new THREE.Vector3(),
+          geometry = node.geometry;
+
+      if ( geometry.isGeometry ) {
+         let vertices = geometry.vertices;
+         for (let i = 0, l = vertices.length; i < l; i ++ ) {
+            v1.copy( vertices[ i ] );
+            if (!local_coordinates) v1.applyMatrix4( node.matrixWorld );
+            box3.expandByPoint( v1 );
+         }
+      } else if ( geometry.isBufferGeometry ) {
+         let attribute = geometry.attributes.position;
+         if ( attribute !== undefined ) {
+            for (let i = 0, l = attribute.count; i < l; i ++ ) {
+               // v1.fromAttribute( attribute, i ).applyMatrix4( node.matrixWorld );
+               v1.fromBufferAttribute( attribute, i );
+               if (!local_coordinates) v1.applyMatrix4( node.matrixWorld );
+               box3.expandByPoint( v1 );
+            }
+         }
+      }
+
+      return box3;
+   }
+
+   /** @summary Cleanup shape entity
     * @private */
    geo.cleanupShape = function(shape) {
       if (!shape) return;
@@ -3376,7 +3359,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       delete shape.geomZ;
    }
 
-   /** @brief Set rendering order for created hierarchy
+   /** @summary Set rendering order for created hierarchy
     * @desc depending from provided method sort differently objects
     * @param toplevel - top element
     * @param origin - camera position used to provide sorting
@@ -3436,7 +3419,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
                 box3 = mesh.$jsroot_box3;
 
             if (!box3)
-               mesh.$jsroot_box3 = box3 = geo.getBoundingBox(mesh);
+               mesh.$jsroot_box3 = box3 = getBoundingBox(mesh);
 
             if (method === 'size') {
                mesh.$jsroot_distance = box3.getSize(new THREE.Vector3());
@@ -3570,17 +3553,19 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
          process(toplevel, 0, 1, 1000000);
    }
 
-   /** @brief Build three.js model for given geometry object.
-    * @desc Following options can be provided:
-    * opt.vislevel - visibility level like TGeoManager::
-    * opt.numnodes - maximal number of visible nodes
-    * opt.numfaces - approx maximal number of created triangles
-    * opt.dflt_colors - use default ROOT colors
+   /** @summary Build three.js model for given geometry object.
+    * @param {Object} obj - TGeo-object Object
+    * @param {Object} opt - different options
+    * @param {Number} opt.vislevel - visibility level like TGeoManager
+    * @param {Number} [opt.numnodes=1000] - maximal number of visible nodes
+    * @param {Number} [opt.numfaces=100000] - approx maximal number of created triangles
+    * @param {boolean} [opt.doubleside=false] - use double-side material
+    * @param {boolean} [opt.wireframe=false] - show wireframe for created shapes
+    * @param {boolean} [opt.dflt_colors=false] - use default ROOT colors
     */
-   geo.build = function(obj, opt, call_back) {
-      // function can be used to build three.js model for TGeo object
+   geo.build = function(obj, opt) {
 
-      if (!obj) return;
+      if (!obj) return null;
 
       if (!opt) opt = {};
       if (!opt.numfaces) opt.numfaces = 100000;
@@ -3680,7 +3665,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
          if (obj3d.matrixWorld.determinant() > -0.9) {
             mesh = new THREE.Mesh(shape.geom, prop.material);
          } else {
-            mesh = geo.createFlippedMesh(shape, prop.material);
+            mesh = createFlippedMesh(shape, prop.material);
          }
 
          obj3d.add(mesh);
@@ -3691,48 +3676,18 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
          //   mesh.renderOrder = clones.maxdepth - entry.stack.length;
       }
 
-      JSROOT.CallBack(call_back, toplevel);
-
       return toplevel;
    }
 
-   /**  extract code of Box3.expandByObject
-     * Major difference - do not traverse hierarchy */
-
-   geo.getBoundingBox = function(node, box3, local_coordinates) {
-      if (!node || !node.geometry) return box3;
-
-      if (!box3) { box3 = new THREE.Box3(); box3.makeEmpty(); }
-
-      if (!local_coordinates) node.updateMatrixWorld();
-
-      let v1 = new THREE.Vector3(),
-          geometry = node.geometry;
-
-      if ( geometry.isGeometry ) {
-         let vertices = geometry.vertices;
-         for (let i = 0, l = vertices.length; i < l; i ++ ) {
-            v1.copy( vertices[ i ] );
-            if (!local_coordinates) v1.applyMatrix4( node.matrixWorld );
-            box3.expandByPoint( v1 );
-         }
-      } else if ( geometry.isBufferGeometry ) {
-         let attribute = geometry.attributes.position;
-         if ( attribute !== undefined ) {
-            for (let i = 0, l = attribute.count; i < l; i ++ ) {
-               // v1.fromAttribute( attribute, i ).applyMatrix4( node.matrixWorld );
-               v1.fromBufferAttribute( attribute, i );
-               if (!local_coordinates) v1.applyMatrix4( node.matrixWorld );
-               box3.expandByPoint( v1 );
-            }
-         }
-      }
-
-      return box3;
-   }
-
    geo.projectGeometry = projectGeometry;
+   geo.countGeometryFaces = countGeometryFaces;
    geo.createGeometry = createGeometry;
+   geo.createProjectionMatrix = createProjectionMatrix;
+   geo.createFrustum = createFrustum;
+   geo.createFlippedMesh = createFlippedMesh;
+   geo.getBoundingBox = getBoundingBox;
+   geo.provideObjectInfo = provideObjectInfo;
+
    geo.ClonedNodes = ClonedNodes;
    JSROOT.GEO = geo;
 
