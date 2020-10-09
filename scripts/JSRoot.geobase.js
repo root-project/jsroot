@@ -5,15 +5,17 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
 
    "use strict";
 
-   /** @namespace JSROOT.GEO */
-   /// Holder of all TGeo-related functions and classes
+   /** Holder of all TGeo-related functions and classes
+     * @namespace
+     * @alias JSROOT.GEO */
    let geo = {
       GradPerSegm: 6,     // grad per segment in cylinder/spherical symmetry shapes
       CompressComp: true,  // use faces compression in composite shapes
       CompLimit: 20        // maximal number of components in composite shape
    };
 
-   /** @memberOf JSROOT.GEO */
+   /** TGeo-related bits
+     * @private */
    geo.BITS = {
          kVisOverride     : JSROOT.BIT(0),           // volume's vis. attributes are overwritten
          kVisNone         : JSROOT.BIT(1),           // the volume/node is invisible, as well as daughters
@@ -29,26 +31,29 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
          kVisRaytrace     : JSROOT.BIT(15)           // raytracing flag
       };
 
-   /** @memberOf JSROOT.GEO */
+   /** Test fGeoAtt bits
+     * @private */
    geo.TestBit = function(volume, f) {
       let att = volume.fGeoAtt;
       return att === undefined ? false : ((att & f) !== 0);
    }
 
-   /** @memberOf JSROOT.GEO */
+   /** Set fGeoAtt bit
+     * @private */
    geo.SetBit = function(volume, f, value) {
       if (volume.fGeoAtt === undefined) return;
       volume.fGeoAtt = value ? (volume.fGeoAtt | f) : (volume.fGeoAtt & ~f);
    }
 
-   /** @memberOf JSROOT.GEO */
+   /** Toggle fGeoAttBit
+     * @private */
    geo.ToggleBit = function(volume, f) {
       if (volume.fGeoAtt !== undefined)
          volume.fGeoAtt = volume.fGeoAtt ^ (f & 0xffffff);
    }
 
-   /** @memberOf JSROOT.GEO
-    * implementation of TGeoVolume::InvisibleAll */
+   /** Implementation of TGeoVolume::InvisibleAll
+     * @private */
    geo.InvisibleAll = function(flag) {
       if (flag===undefined) flag = true;
 
@@ -64,7 +69,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
    }
 
    /** method used to avoid duplication of warnings
-    * @memberOf JSROOT.GEO */
+    * @private */
    geo.warn = function(msg) {
       if (geo._warn_msgs === undefined) geo._warn_msgs = {};
       if (geo._warn_msgs[msg] !== undefined) return;
@@ -76,7 +81,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
     *  @desc  0 - TGeoNode
     *         1 - TEveGeoNode
     *        -1 - unsupported
-    * @memberOf JSROOT.GEO */
+    * @private */
    geo.NodeKind = function(obj) {
       if ((obj === undefined) || (obj === null) || (typeof obj !== 'object')) return -1;
       return ('fShape' in obj) && ('fTrans' in obj) ? 1 : 0;
@@ -84,7 +89,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
 
    /** @brief Returns number of shapes
     *  @desc Used to count total shapes number in composites
-    * @memberOf JSROOT.GEO */
+    * @private */
    geo.CountNumShapes = function(shape) {
       if (!shape) return 0;
       // if (shape._typename=="TGeoHalfSpace") geo.HalfSpace = true;
@@ -94,7 +99,11 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
 
    // ==========================================================================
 
-   geo.GeometryCreator = function(numfaces) {
+   /** @brief Helper class for geometry creation
+     * @memberOf JSROOT.GEO
+     * @class
+     * @private */
+   function GeometryCreator(numfaces) {
       this.nfaces = numfaces;
       this.indx = 0;
       this.pos = new Float32Array(numfaces*9);
@@ -103,9 +112,9 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       return this;
    }
 
-   geo.GeometryCreator.prototype.AddFace3 = function(x1,y1,z1,
-                                                            x2,y2,z2,
-                                                            x3,y3,z3) {
+   GeometryCreator.prototype.AddFace3 = function(x1,y1,z1,
+                                                 x2,y2,z2,
+                                                 x3,y3,z3) {
       let indx = this.indx, pos = this.pos;
       pos[indx] = x1;
       pos[indx+1] = y1;
@@ -120,14 +129,14 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       this.indx = indx + 9;
    }
 
-   geo.GeometryCreator.prototype.StartPolygon = function() {}
-   geo.GeometryCreator.prototype.StopPolygon = function() {}
+   GeometryCreator.prototype.StartPolygon = function() {}
+   GeometryCreator.prototype.StopPolygon = function() {}
 
-   geo.GeometryCreator.prototype.AddFace4 = function(x1,y1,z1,
-                                                            x2,y2,z2,
-                                                            x3,y3,z3,
-                                                            x4,y4,z4,
-                                                            reduce) {
+   GeometryCreator.prototype.AddFace4 = function(x1,y1,z1,
+                                                 x2,y2,z2,
+                                                 x3,y3,z3,
+                                                 x4,y4,z4,
+                                                 reduce) {
       // from four vertices one normally creates two faces (1,2,3) and (1,3,4)
       // if (reduce==1), first face is reduced
       // if (reduce==2), second face is reduced
@@ -164,7 +173,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       this.indx = indx;
    }
 
-   geo.GeometryCreator.prototype.SetNormal4 = function(nx1,ny1,nz1,
+   GeometryCreator.prototype.SetNormal4 = function(nx1,ny1,nz1,
                                                               nx2,ny2,nz2,
                                                               nx3,ny3,nz3,
                                                               nx4,ny4,nz4,
@@ -203,7 +212,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       }
    }
 
-   geo.GeometryCreator.prototype.RecalcZ = function(func) {
+   GeometryCreator.prototype.RecalcZ = function(func) {
       let pos = this.pos,
           last = this.indx,
           indx = last - (this.last4 ? 18 : 9);
@@ -229,7 +238,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       return cb;
    }
 
-   geo.GeometryCreator.prototype.CalcNormal = function() {
+   GeometryCreator.prototype.CalcNormal = function() {
       if (!this.cb) {
          this.pA = new THREE.Vector3();
          this.pB = new THREE.Vector3();
@@ -249,7 +258,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       this.SetNormal(this.cb.x, this.cb.y, this.cb.z);
    }
 
-   geo.GeometryCreator.prototype.SetNormal = function(nx,ny,nz) {
+   GeometryCreator.prototype.SetNormal = function(nx,ny,nz) {
       let indx = this.indx - 9, norm = this.norm;
 
       norm[indx]   = norm[indx+3] = norm[indx+6] = nx;
@@ -264,7 +273,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       }
    }
 
-   geo.GeometryCreator.prototype.SetNormal_12_34 = function(nx12,ny12,nz12,nx34,ny34,nz34,reduce) {
+   GeometryCreator.prototype.SetNormal_12_34 = function(nx12,ny12,nz12,nx34,ny34,nz34,reduce) {
       // special shortcut, when same normals can be applied for 1-2 point and 3-4 point
       if (reduce===undefined) reduce = 0;
 
@@ -297,7 +306,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       }
    }
 
-   geo.GeometryCreator.prototype.Create = function() {
+   GeometryCreator.prototype.Create = function() {
       if (this.nfaces !== this.indx/9)
          console.error('Mismatch with created ' + this.nfaces + ' and filled ' + this.indx/9 + ' number of faces');
 
@@ -311,33 +320,33 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
 
    // same methods as GeometryCreator, but with different implementation
 
-   geo.PolygonsCreator = function() {
+   function PolygonsCreator() {
       this.polygons = [];
    }
 
-   geo.PolygonsCreator.prototype.StartPolygon = function(normal) {
+   PolygonsCreator.prototype.StartPolygon = function(normal) {
       this.multi = 1;
       this.mnormal = normal;
    }
 
-   geo.PolygonsCreator.prototype.StopPolygon = function() {
+   PolygonsCreator.prototype.StopPolygon = function() {
       if (!this.multi) return;
       this.multi = 0;
       console.error('Polygon should be already closed at this moment');
    }
 
-   geo.PolygonsCreator.prototype.AddFace3 = function(x1,y1,z1,
-                                                            x2,y2,z2,
-                                                            x3,y3,z3) {
+   PolygonsCreator.prototype.AddFace3 = function(x1,y1,z1,
+                                                 x2,y2,z2,
+                                                 x3,y3,z3) {
       this.AddFace4(x1,y1,z1,x2,y2,z2,x3,y3,z3,x3,y3,z3,2);
    }
 
 
-   geo.PolygonsCreator.prototype.AddFace4 = function(x1,y1,z1,
-                                                            x2,y2,z2,
-                                                            x3,y3,z3,
-                                                            x4,y4,z4,
-                                                            reduce) {
+   PolygonsCreator.prototype.AddFace4 = function(x1,y1,z1,
+                                                 x2,y2,z2,
+                                                 x3,y3,z3,
+                                                 x4,y4,z4,
+                                                 reduce) {
       // from four vertices one normally creates two faces (1,2,3) and (1,3,4)
       // if (reduce==1), first face is reduced
       //  if (reduce==2), second face is reduced
@@ -400,7 +409,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       this.polygons.push(polygon);
    }
 
-   geo.PolygonsCreator.prototype.SetNormal4 = function(nx1,ny1,nz1,
+   PolygonsCreator.prototype.SetNormal4 = function(nx1,ny1,nz1,
                                                               nx2,ny2,nz2,
                                                               nx3,ny3,nz3,
                                                               nx4,ny4,nz4) {
@@ -410,7 +419,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       if (this.v4) this.v4.setnormal(nx4,ny4,nz4);
    }
 
-   geo.PolygonsCreator.prototype.SetNormal_12_34 = function(nx12,ny12,nz12,nx34,ny34,nz34) {
+   PolygonsCreator.prototype.SetNormal_12_34 = function(nx12,ny12,nz12,nx34,ny34,nz34) {
       // special shortcut, when same normals can be applied for 1-2 point and 3-4 point
       this.v1.setnormal(nx12,ny12,nz12);
       if (this.v2) this.v2.setnormal(nx12,ny12,nz12);
@@ -418,7 +427,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       if (this.v4) this.v4.setnormal(nx34,ny34,nz34);
    }
 
-   geo.PolygonsCreator.prototype.CalcNormal = function() {
+   PolygonsCreator.prototype.CalcNormal = function() {
 
       if (!this.cb) {
          this.pA = new THREE.Vector3();
@@ -446,34 +455,36 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
    }
 
 
-   geo.PolygonsCreator.prototype.SetNormal = function(nx,ny,nz) {
+   PolygonsCreator.prototype.SetNormal = function(nx,ny,nz) {
       this.v1.setnormal(nx,ny,nz);
       if (this.v2) this.v2.setnormal(nx,ny,nz);
       this.v3.setnormal(nx,ny,nz);
       if (this.v4) this.v4.setnormal(nx,ny,nz);
    }
 
-   geo.PolygonsCreator.prototype.RecalcZ = function(func) {
+   PolygonsCreator.prototype.RecalcZ = function(func) {
       this.v1.z = func(this.v1.x, this.v1.y, this.v1.z);
       if (this.v2) this.v2.z = func(this.v2.x, this.v2.y, this.v2.z);
       this.v3.z = func(this.v3.x, this.v3.y, this.v3.z);
       if (this.v4) this.v4.z = func(this.v4.x, this.v4.y, this.v4.z);
    }
 
-   geo.PolygonsCreator.prototype.Create = function() {
+   PolygonsCreator.prototype.Create = function() {
       return { polygons: this.polygons };
    }
 
    // ================= all functions to create geometry ===================================
 
-   /** @memberOf JSROOT.GEO */
-   geo.createCubeBuffer = function(shape, faces_limit) {
+   /** @summary Creates cube geometrey
+     * @memberOf JSROOT.GEO
+     * @private */
+   function createCubeBuffer(shape, faces_limit) {
 
       if (faces_limit < 0) return 12;
 
       let dx = shape.fDX, dy = shape.fDY, dz = shape.fDZ;
 
-      let creator = faces_limit ? new geo.PolygonsCreator : new geo.GeometryCreator(12);
+      let creator = faces_limit ? new PolygonsCreator : new GeometryCreator(12);
 
       creator.AddFace4(dx,dy,dz, dx,-dy,dz, dx,-dy,-dz, dx,dy,-dz); creator.SetNormal(1,0,0);
 
@@ -490,12 +501,14 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       return creator.Create();
    }
 
-   /** @memberOf JSROOT.GEO */
-   geo.create8edgesBuffer = function( v, faces_limit ) {
+   /** @summary Creates 8 edges geometry
+     * @memberOf JSROOT.GEO
+     * @private */
+   function create8edgesBuffer( v, faces_limit ) {
 
       let indicies = [ 4,7,6,5,  0,3,7,4,  4,5,1,0,  6,2,1,5,  7,3,2,6,  1,2,3,0 ];
 
-      let creator = (faces_limit > 0) ? new geo.PolygonsCreator : new geo.GeometryCreator(12);
+      let creator = (faces_limit > 0) ? new PolygonsCreator : new GeometryCreator(12);
 
       for (let n=0;n<indicies.length;n+=4) {
          let i1 = indicies[n]*3,
@@ -511,8 +524,10 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       return creator.Create();
    }
 
-   /** @memberOf JSROOT.GEO */
-   geo.createParaBuffer = function( shape, faces_limit ) {
+   /** @summary Creates PARA geometrey
+     * @memberOf JSROOT.GEO
+     * @private */
+   function createParaBuffer( shape, faces_limit ) {
 
       if (faces_limit < 0) return 12;
 
@@ -528,11 +543,13 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
            shape.fZ*txz+txy*shape.fY+shape.fX,  shape.fY+shape.fZ*tyz,   shape.fZ,
            shape.fZ*txz-txy*shape.fY+shape.fX, -shape.fY+shape.fZ*tyz,   shape.fZ ];
 
-      return geo.create8edgesBuffer(v, faces_limit );
+      return create8edgesBuffer(v, faces_limit );
    }
 
-   /** @memberOf JSROOT.GEO */
-   geo.createTrapezoidBuffer = function( shape, faces_limit ) {
+   /** @summary Creates Ttrapezoid geometrey
+     * @memberOf JSROOT.GEO
+     * @private */
+   function createTrapezoidBuffer( shape, faces_limit ) {
 
       if (faces_limit < 0) return 12;
 
@@ -554,12 +571,14 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
             -shape.fDx2, -y2,  shape.fDZ
          ];
 
-      return geo.create8edgesBuffer(v, faces_limit );
+      return create8edgesBuffer(v, faces_limit );
    }
 
 
-   /** @memberOf JSROOT.GEO */
-   geo.createArb8Buffer = function( shape, faces_limit ) {
+   /** @summary Creates arb8 geometrey
+     * @memberOf JSROOT.GEO
+     * @private */
+   function createArb8Buffer( shape, faces_limit ) {
 
       if (faces_limit < 0) return 12;
 
@@ -572,8 +591,8 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
             shape.fXY[5][0], shape.fXY[5][1],  shape.fDZ,
             shape.fXY[6][0], shape.fXY[6][1],  shape.fDZ,
             shape.fXY[7][0], shape.fXY[7][1],  shape.fDZ
-         ],
-         indicies = [
+         ];
+      const indicies = [
             4,7,6,   6,5,4,   3,7,4,   4,0,3,
             5,1,0,   0,4,5,   6,2,1,   1,5,6,
             7,3,2,   2,6,7,   1,2,3,   3,0,1 ];
@@ -607,9 +626,9 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
          }
       }
 
-      let creator = faces_limit ? new geo.PolygonsCreator : new geo.GeometryCreator(numfaces);
+      let creator = faces_limit ? new PolygonsCreator : new GeometryCreator(numfaces);
 
-      // let creator = new geo.GeometryCreator(numfaces);
+      // let creator = new GeometryCreator(numfaces);
 
       for (let n=0; n < indicies.length; n+=6) {
          let i1 = indicies[n]   * 3,
@@ -665,8 +684,10 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       return creator.Create();
    }
 
-   /** @memberOf JSROOT.GEO */
-   geo.createSphereBuffer = function( shape, faces_limit ) {
+   /** @summary Creates sphere geometrey
+     * @memberOf JSROOT.GEO
+     * @private */
+   function createSphereBuffer( shape, faces_limit ) {
       let radius = [shape.fRmax, shape.fRmin],
           phiStart = shape.fPhi1,
           phiLength = shape.fPhi2 - shape.fPhi1,
@@ -675,9 +696,6 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
           widthSegments = shape.fNseg,
           heightSegments = shape.fNz,
           noInside = (radius[1] <= 0);
-
-      // widthSegments = 20; heightSegments = 10;
-      // phiStart = 0; phiLength = 360; thetaStart = 0;  thetaLength = 180;
 
       if (faces_limit > 0) {
          let fact = (noInside ? 2 : 4) * widthSegments * heightSegments / faces_limit;
@@ -720,9 +738,9 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
 
       let numfaces = numoutside * (noInside ? 1 : 2) + numtop + numbottom + numcut;
 
-      let creator = faces_limit ? new geo.PolygonsCreator : new geo.GeometryCreator(numfaces);
+      let creator = faces_limit ? new PolygonsCreator : new GeometryCreator(numfaces);
 
-      // let creator = new geo.GeometryCreator(numfaces);
+      // let creator = new GeometryCreator(numfaces);
 
       for (let side=0;side<2;++side) {
          if ((side===1) && noInside) break;
@@ -794,8 +812,10 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       return creator.Create();
    }
 
-   /** @memberOf JSROOT.GEO */
-   geo.createTubeBuffer = function( shape, faces_limit) {
+   /** @summary Creates tube geometrey
+     * @memberOf JSROOT.GEO
+     * @private */
+   function createTubeBuffer( shape, faces_limit) {
       let outerR, innerR; // inner/outer tube radius
       if ((shape._typename == "TGeoCone") || (shape._typename == "TGeoConeSeg")) {
          outerR = [ shape.fRmax2, shape.fRmax1 ];
@@ -842,7 +862,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
          _sin[seg] = Math.sin(phi0+seg*dphi);
       }
 
-      let creator = faces_limit ? new geo.PolygonsCreator : new geo.GeometryCreator(numfaces);
+      let creator = faces_limit ? new PolygonsCreator : new GeometryCreator(numfaces);
 
       let calcZ;
       if (shape._typename == "TGeoCtub")
@@ -935,8 +955,10 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       return creator.Create();
    }
 
-   /** @memberOf JSROOT.GEO */
-   geo.createEltuBuffer = function( shape , faces_limit ) {
+   /** @summary Creates eltu geometrey
+     * @memberOf JSROOT.GEO
+     * @private */
+   function createEltuBuffer( shape , faces_limit ) {
       let radiusSegments = Math.max(4, Math.round(360/geo.GradPerSegm));
 
       if (faces_limit < 0) return radiusSegments*4;
@@ -950,7 +972,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
           y[seg] = shape.fRmax*Math.sin(phi);
       }
 
-      let creator = faces_limit ? new geo.PolygonsCreator : new geo.GeometryCreator(radiusSegments*4),
+      let creator = faces_limit ? new PolygonsCreator : new GeometryCreator(radiusSegments*4),
           nx1 = 1, ny1 = 0, nx2 = 1, ny2 = 0;
 
       // create tube faces
@@ -984,8 +1006,10 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       return creator.Create();
    }
 
-   /** @memberOf JSROOT.GEO */
-   geo.createTorusBuffer = function( shape, faces_limit ) {
+   /** @summary Creates torus geometrey
+     * @memberOf JSROOT.GEO
+     * @private */
+   function createTorusBuffer( shape, faces_limit ) {
       let radius = shape.fR,
           radialSegments = Math.max(6, Math.round(360/geo.GradPerSegm)),
           tubularSegments = Math.max(8, Math.round(shape.fDphi/geo.GradPerSegm));
@@ -1016,7 +1040,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
          _cost[t] = Math.cos(angle);
       }
 
-      let creator = faces_limit ? new geo.PolygonsCreator : new geo.GeometryCreator(numfaces);
+      let creator = faces_limit ? new PolygonsCreator : new GeometryCreator(numfaces);
 
       // use vectors for normals calculation
       let p1 = new THREE.Vector3(), p2 = new THREE.Vector3(), p3 = new THREE.Vector3(), p4 = new THREE.Vector3(),
@@ -1076,8 +1100,10 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
    }
 
 
-   /** @memberOf JSROOT.GEO */
-   geo.createPolygonBuffer = function( shape, faces_limit ) {
+   /** @summary Creates polygon geometrey
+     * @memberOf JSROOT.GEO
+     * @private */
+   function createPolygonBuffer( shape, faces_limit ) {
       let thetaStart = shape.fPhi1,
           thetaLength = shape.fDphi,
           radiusSegments = 60, factor = 1;
@@ -1171,7 +1197,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
          _sin[seg] = Math.sin(phi0+seg*dphi);
       }
 
-      let creator = faces_limit ? new geo.PolygonsCreator : new geo.GeometryCreator(numfaces);
+      let creator = faces_limit ? new PolygonsCreator : new GeometryCreator(numfaces);
 
       // add sides
       for (let side = 0; side < 2; ++side) {
@@ -1250,8 +1276,10 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       return creator.Create();
    }
 
-   /** @memberOf JSROOT.GEO */
-   geo.createXtruBuffer = function( shape, faces_limit ) {
+   /** @summary Creates xtru geometrey
+     * @memberOf JSROOT.GEO
+     * @private */
+   function createXtruBuffer( shape, faces_limit ) {
       let nfaces = (shape.fNz-1) * shape.fNvert * 2;
 
       if (faces_limit < 0) return nfaces + shape.fNvert*3;
@@ -1270,7 +1298,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
          nfaces += faces.length * 2;
       }
 
-      let creator = faces_limit ? new geo.PolygonsCreator : new geo.GeometryCreator(nfaces);
+      let creator = faces_limit ? new PolygonsCreator : new GeometryCreator(nfaces);
 
       for (let layer = 0; layer < shape.fNz-1; ++layer) {
          let z1 = shape.fZ[layer], scale1 = shape.fScale[layer],
@@ -1308,8 +1336,10 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       return creator.Create();
    }
 
-   /** @memberOf JSROOT.GEO */
-   geo.createParaboloidBuffer = function( shape, faces_limit ) {
+   /** @summary Creates para geometrey
+     * @memberOf JSROOT.GEO
+     * @private */
+   function createParaboloidBuffer( shape, faces_limit ) {
 
       let radiusSegments = Math.max(4, Math.round(360/geo.GradPerSegm)),
           heightSegments = 30;
@@ -1347,7 +1377,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
          _sin[seg] = Math.sin(seg/radiusSegments*2*Math.PI);
       }
 
-      let creator = faces_limit ? new geo.PolygonsCreator : new geo.GeometryCreator(numfaces);
+      let creator = faces_limit ? new PolygonsCreator : new GeometryCreator(numfaces);
 
       let lastz = zmin, lastr = 0, lastnxy = 0, lastnz = -1;
 
@@ -1403,11 +1433,13 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       return creator.Create();
    }
 
-   /** @memberOf JSROOT.GEO */
-   geo.createHypeBuffer = function( shape, faces_limit ) {
+   /** @summary Creates hype geometrey
+     * @memberOf JSROOT.GEO
+     * @private */
+   function createHypeBuffer( shape, faces_limit ) {
 
       if ((shape.fTin===0) && (shape.fTout===0))
-         return geo.createTubeBuffer(shape, faces_limit);
+         return createTubeBuffer(shape, faces_limit);
 
       let radiusSegments = Math.max(4, Math.round(360/geo.GradPerSegm)),
           heightSegments = 30;
@@ -1429,7 +1461,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
          _sin[seg] = Math.sin(seg/radiusSegments*2*Math.PI);
       }
 
-      let creator = faces_limit ? new geo.PolygonsCreator : new geo.GeometryCreator(numfaces);
+      let creator = faces_limit ? new PolygonsCreator : new GeometryCreator(numfaces);
 
       // in-out side
       for (let side=0;side<2;++side) {
@@ -1476,8 +1508,10 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       return creator.Create();
    }
 
-   /** @memberOf JSROOT.GEO */
-   geo.createTessellatedBuffer = function( shape, faces_limit) {
+   /** @summary Creates tessalated geometrey
+     * @memberOf JSROOT.GEO
+     * @private */
+   function createTessellatedBuffer( shape, faces_limit) {
       let numfaces = 0;
 
       for (let i = 0; i < shape.fFacets.length; ++i) {
@@ -1488,7 +1522,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
 
       if (faces_limit < 0) return numfaces;
 
-      let creator = faces_limit ? new geo.PolygonsCreator : new geo.GeometryCreator(numfaces);
+      let creator = faces_limit ? new PolygonsCreator : new GeometryCreator(numfaces);
 
       for (let i = 0; i < shape.fFacets.length; ++i) {
          let f = shape.fFacets[i],
@@ -1509,12 +1543,14 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       return creator.Create();
    }
 
-   /** @memberOf JSROOT.GEO */
+   /** @summary Creates THREE.Matrix4 from TGeoMatrix
+     * @memberOf JSROOT.GEO
+     * @private */
    geo.createMatrix = function(matrix) {
 
       if (!matrix) return null;
 
-      let translation = null, rotation = null, scale = null;
+      let translation, rotation, scale;
 
       switch (matrix._typename) {
          case 'TGeoTranslation': translation = matrix.fTranslation; break;
@@ -1556,10 +1592,11 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       return res;
    }
 
-   /** @memberOf JSROOT.GEO */
+   /** @summary Creates transformation matrix for TGeoNode
+     * @desc created after node visibility flag is checked and volume cut is performed
+     * @memberOf JSROOT.GEO
+     * @private */
    geo.getNodeMatrix = function(kind, node) {
-      // returns transformation matrix for the node
-      // created after node visibility flag is checked and volume cut is performed
 
       let matrix = null;
 
@@ -1638,30 +1675,16 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       return matrix;
    }
 
-   /** @memberOf geo */
-   geo.createComposite = function ( shape, faces_limit ) {
-      /*
-      if ((faces_limit === -1) || (faces_limit === 0))  {
-         let cnt = geo.CountNumShapes(shape);
+   let createGeometry; // will be function to create geometry
 
-         if (cnt > geo.CompLimit) {
-            geo.warn("composite shape " + shape.fShapeId + " has " + cnt + " components, replace by most left");
-            let matrix = new THREE.Matrix4();
-            while (shape.fNode && shape.fNode.fLeft) {
-               let m1 = geo.createMatrix(shape.fNode.fLeftMat);
-               if (m1) matrix.multiply(m1);
-               shape = shape.fNode.fLeft;
-            }
-            let res = geo.createGeometry(shape, faces_limit);
-            if (res && (faces_limit===0)) res.applyMatrix4(matrix);
-            return res;
-         }
-      }
-      */
+   /** @summary Creates geometrey for composite shape
+     * @memberOf JSROOT.GEO
+     * @private */
+   function createComposite( shape, faces_limit ) {
 
       if (faces_limit < 0)
-         return geo.createGeometry(shape.fNode.fLeft, -10) +
-                geo.createGeometry(shape.fNode.fRight, -10);
+         return createGeometry(shape.fNode.fLeft, -10) +
+                createGeometry(shape.fNode.fRight, -10);
 
       let geom1, geom2, bsp1, bsp2, return_bsp = false,
           matrix1 = geo.createMatrix(shape.fNode.fLeftMat),
@@ -1679,7 +1702,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       if (shape.fNode.fLeft._typename == "TGeoHalfSpace") {
          geom1 = geo.createHalfSpace(shape.fNode.fLeft);
       } else {
-         geom1 = geo.createGeometry(shape.fNode.fLeft, faces_limit);
+         geom1 = createGeometry(shape.fNode.fLeft, faces_limit);
       }
 
       if (!geom1) return null;
@@ -1692,7 +1715,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
          if (shape.fNode.fRight._typename == "TGeoHalfSpace") {
             geom2 = geo.createHalfSpace(shape.fNode.fRight, geom1);
          } else {
-            geom2 = geo.createGeometry(shape.fNode.fRight, faces_limit);
+            geom2 = createGeometry(shape.fNode.fRight, faces_limit);
          }
 
          n2 = geo.numGeometryFaces(geom2);
@@ -1735,8 +1758,10 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       return return_bsp ? { polygons: bsp1.toPolygons() } : bsp1.toBufferGeometry();
    }
 
-   /** @memberOf JSROOT.GEO */
-   geo.projectGeometry = function(geom, matrix, projection, position, flippedMesh) {
+   /** @summary Try to create projected geometry
+     * @memberOf JSROOT.GEO
+     * @private */
+   function projectGeometry(geom, matrix, projection, position, flippedMesh) {
 
       if (!geom.boundingBox) geom.computeBoundingBox();
 
@@ -1770,43 +1795,45 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       return bsp2.toBufferGeometry();
    }
 
-   /** Creates geometry model for the provided shape
+   /** @summary Creates geometry model for the provided shape
+    * @desc
+    *  - if limit === 0 (or undefined) returns THREE.BufferGeometry
+    *  - if limit < 0 just returns estimated number of faces
+    *  - if limit > 0 return list of ThreeBSP polygons (used only for composite shapes)
+    * @param {Object} shape - instance of TGeoShape object
+    * @param {Number} limit - defines return value, see details
     * @memberOf JSROOT.GEO
-    *
-    * If @par limit === 0 (or undefined) returns THREE.BufferGeometry
-    * If @par limit < 0 just returns estimated number of faces
-    * If @par limit > 0 return list of ThreeBSP polygons (used only for composite shapes)
-    * */
-   geo.createGeometry = function( shape, limit ) {
+    * @private */
+   createGeometry = function( shape, limit ) {
       if (limit === undefined) limit = 0;
 
       try {
          switch (shape._typename) {
-            case "TGeoBBox": return geo.createCubeBuffer( shape, limit );
-            case "TGeoPara": return geo.createParaBuffer( shape, limit );
+            case "TGeoBBox": return createCubeBuffer( shape, limit );
+            case "TGeoPara": return createParaBuffer( shape, limit );
             case "TGeoTrd1":
-            case "TGeoTrd2": return geo.createTrapezoidBuffer( shape, limit );
+            case "TGeoTrd2": return createTrapezoidBuffer( shape, limit );
             case "TGeoArb8":
             case "TGeoTrap":
-            case "TGeoGtra": return geo.createArb8Buffer( shape, limit );
-            case "TGeoSphere": return geo.createSphereBuffer( shape , limit );
+            case "TGeoGtra": return createArb8Buffer( shape, limit );
+            case "TGeoSphere": return createSphereBuffer( shape , limit );
             case "TGeoCone":
             case "TGeoConeSeg":
             case "TGeoTube":
             case "TGeoTubeSeg":
-            case "TGeoCtub": return geo.createTubeBuffer( shape, limit );
-            case "TGeoEltu": return geo.createEltuBuffer( shape, limit );
-            case "TGeoTorus": return geo.createTorusBuffer( shape, limit );
+            case "TGeoCtub": return createTubeBuffer( shape, limit );
+            case "TGeoEltu": return createEltuBuffer( shape, limit );
+            case "TGeoTorus": return createTorusBuffer( shape, limit );
             case "TGeoPcon":
-            case "TGeoPgon": return geo.createPolygonBuffer( shape, limit );
-            case "TGeoXtru": return geo.createXtruBuffer( shape, limit );
-            case "TGeoParaboloid": return geo.createParaboloidBuffer( shape, limit );
-            case "TGeoHype": return geo.createHypeBuffer( shape, limit );
-            case "TGeoTessellated": return geo.createTessellatedBuffer( shape, limit );
-            case "TGeoCompositeShape": return geo.createComposite( shape, limit );
+            case "TGeoPgon": return createPolygonBuffer( shape, limit );
+            case "TGeoXtru": return createXtruBuffer( shape, limit );
+            case "TGeoParaboloid": return createParaboloidBuffer( shape, limit );
+            case "TGeoHype": return createHypeBuffer( shape, limit );
+            case "TGeoTessellated": return createTessellatedBuffer( shape, limit );
+            case "TGeoCompositeShape": return createComposite( shape, limit );
             case "TGeoShapeAssembly": break;
             case "TGeoScaledShape": {
-               let res = geo.createGeometry(shape.fShape, limit);
+               let res = createGeometry(shape.fShape, limit);
                if (shape.fScale && (limit>=0) && (typeof res === 'object') && (typeof res.scale === 'function'))
                   res.scale(shape.fScale.fScale[0],shape.fScale.fScale[1],shape.fScale.fScale[2]);
                return res;
@@ -2144,7 +2171,6 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
    }
 
    /** Compares two stacks. Returns length where stacks are the same
-    * @memberOf JSROOT.GEO
     * @private */
    geo.CompareStacks = function(stack1, stack2) {
       if (!stack1 || !stack2) return 0;
@@ -2156,7 +2182,6 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
    }
 
    /** Checks if two stack arrays are identical
-    * @memberOf JSROOT.GEO
     * @private */
    geo.IsSameStack = function(stack1, stack2) {
       if (!stack1 || !stack2) return false;
@@ -2170,9 +2195,12 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
 
    // ====================================================================
 
-   // class for working with cloned nodes
 
-   geo.ClonedNodes = function(obj, clones) {
+   /** @brief class for working with cloned nodes
+     * @class
+     * @memberOf JSROOT.GEO
+     * @private */
+   function ClonedNodes(obj, clones) {
       this.toplevel = true; // indicate if object creates top-level structure with Nodes and Volumes folder
       this.name_prefix = ""; // name prefix used for nodes names
       this.maxdepth = 1;  // maximal hierarchy depth, required for transparency
@@ -2188,32 +2216,32 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
    }
 
    /** Set maximal depth for nodes visibility */
-   geo.ClonedNodes.prototype.SetVisLevel = function(lvl) {
+   ClonedNodes.prototype.SetVisLevel = function(lvl) {
       this.vislevel = lvl && !isNaN(lvl) ? lvl : 4;
    }
 
    /** Returns maximal depth for nodes visibility */
-   geo.ClonedNodes.prototype.GetVisLevel = function() {
+   ClonedNodes.prototype.GetVisLevel = function() {
       return this.vislevel;
    }
 
    /** Set maximal depth for nodes visibility */
-   geo.ClonedNodes.prototype.SetMaxVisNodes = function(v) {
+   ClonedNodes.prototype.SetMaxVisNodes = function(v) {
       this.maxnodes = !isNaN(v) ? v : 10000;
    }
 
-   geo.ClonedNodes.prototype.GetMaxVisNodes = function() {
+   ClonedNodes.prototype.GetMaxVisNodes = function() {
       return this.maxnodes;
    }
 
    /** Insert node into existing array */
-   geo.ClonedNodes.prototype.updateNode = function(node) {
+   ClonedNodes.prototype.updateNode = function(node) {
       if (node && !isNaN(node.id) && (node.id < this.nodes.length))
          this.nodes[node.id] = node;
    }
 
    /** Returns TGeoShape for element with given indx */
-   geo.ClonedNodes.prototype.GetNodeShape = function(indx) {
+   ClonedNodes.prototype.GetNodeShape = function(indx) {
       if (!this.origin || !this.nodes) return null;
       let obj = this.origin[indx], clone = this.nodes[indx];
       if (!obj || !clone) return null;
@@ -2225,7 +2253,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       return null;
    }
 
-   geo.ClonedNodes.prototype.Cleanup = function(drawnodes, drawshapes) {
+   ClonedNodes.prototype.Cleanup = function(drawnodes, drawshapes) {
       // function to cleanup as much as possible structures
       // drawnodes and drawshapes are arrays created during building of geometry
 
@@ -2258,7 +2286,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
    }
 
    /** Create complete description for provided Geo object */
-   geo.ClonedNodes.prototype.CreateClones = function(obj, sublevel, kind) {
+   ClonedNodes.prototype.CreateClones = function(obj, sublevel, kind) {
        if (!sublevel) {
 
           if (obj && obj._typename == "$$Shape$$")
@@ -2331,7 +2359,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
              clone.fDZ = shape.fDZ;
              clone.vol = shape.fDX*shape.fDY*shape.fDZ;
              if (shape.$nfaces === undefined)
-                shape.$nfaces = geo.createGeometry(shape, -1);
+                shape.$nfaces = createGeometry(shape, -1);
              clone.nfaces = shape.$nfaces;
              if (clone.nfaces <= 0) clone.vol = 0;
           }
@@ -2361,7 +2389,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
 
    /** Create elementary item with single already existing shape,
     * used by details view of geometry shape */
-   geo.ClonedNodes.prototype.CreateClonesForShape = function(obj) {
+   ClonedNodes.prototype.CreateClonesForShape = function(obj) {
       this.origin = [];
 
       // indicate that just plain shape is used
@@ -2379,7 +2407,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
    }
 
    /** Count all visisble nodes */
-   geo.ClonedNodes.prototype.CountVisibles = function() {
+   ClonedNodes.prototype.CountVisibles = function() {
       let cnt = 0;
       if (this.nodes)
          for (let k=0;k<this.nodes.length;++k)
@@ -2389,7 +2417,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
    }
 
    /** Mark visisble nodes. Set only basic flags, actual visibility depends from hierarchy  */
-   geo.ClonedNodes.prototype.MarkVisibles = function(on_screen, copy_bits, hide_top_volume) {
+   ClonedNodes.prototype.MarkVisibles = function(on_screen, copy_bits, hide_top_volume) {
       if (this.plain_shape) return 1;
       if (!this.origin || !this.nodes) return 0;
 
@@ -2451,7 +2479,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
    }
 
    /** After visibility flags is set, produce idshift for all nodes as it would be maximum level @private */
-   geo.ClonedNodes.prototype.ProduceIdShits = function() {
+   ClonedNodes.prototype.ProduceIdShits = function() {
       for (let k=0;k<this.nodes.length;++k)
          this.nodes[k].idshift = -1;
 
@@ -2470,7 +2498,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
    }
 
    /** Extract only visibility flags, used to transfer them to the worker @private */
-   geo.ClonedNodes.prototype.GetVisibleFlags = function() {
+   ClonedNodes.prototype.GetVisibleFlags = function() {
       let res = new Array(this.nodes.length);
       for (let n=0;n<this.nodes.length;++n)
          res[n] = { vis: this.nodes[n].vis, nochlds: this.nodes[n].nochlds };
@@ -2478,7 +2506,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
    }
 
    /** Assign only visibility flags, extracted with GetVisibleFlags @private */
-   geo.ClonedNodes.prototype.SetVisibleFlags = function(flags) {
+   ClonedNodes.prototype.SetVisibleFlags = function(flags) {
       if (!this.nodes || !flags || !flags.length != this.nodes.length)
          return 0;
 
@@ -2497,7 +2525,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
    /** Scan visible nodes in hierarchy, starting from nodeid
      * Each entry in hierarchy get its unique id, which is not changed with visibility flags
      * @private */
-   geo.ClonedNodes.prototype.ScanVisible = function(arg, vislvl) {
+   ClonedNodes.prototype.ScanVisible = function(arg, vislvl) {
 
       if (!this.nodes) return 0;
 
@@ -2576,7 +2604,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
    /** @brief Return node name with given id.
     * @desc Either original object or description is used
     * @private */
-   geo.ClonedNodes.prototype.GetNodeName = function(nodeid) {
+   ClonedNodes.prototype.GetNodeName = function(nodeid) {
       if (this.origin) {
          let obj = this.origin[nodeid];
          return obj ? geo.ObjectName(obj) : "";
@@ -2587,7 +2615,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
 
    /** @brief Returns description for provide stack
     * @private */
-   geo.ClonedNodes.prototype.ResolveStack = function(stack, withmatrix) {
+   ClonedNodes.prototype.ResolveStack = function(stack, withmatrix) {
 
       let res = { id: 0, obj: null, node: this.nodes[0], name: this.name_prefix };
 
@@ -2627,7 +2655,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
 
    /** Create stack array based on nodes ids array.
     * Ids list should correspond to existing nodes hierarchy */
-   geo.ClonedNodes.prototype.MakeStackByIds = function(ids) {
+   ClonedNodes.prototype.MakeStackByIds = function(ids) {
       if (!ids) return null;
 
       if (ids[0] !== 0) {
@@ -2654,7 +2682,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
    }
 
    /** Retuns ids array which correspond to the stack */
-   geo.ClonedNodes.prototype.MakeIdsByStack = function(stack) {
+   ClonedNodes.prototype.MakeIdsByStack = function(stack) {
       if (!stack) return null;
       let node = this.nodes[0], ids = [0];
       for (let k=0;k<stack.length;++k) {
@@ -2666,7 +2694,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
    }
 
    /** Returns true if stack includes at any place provided nodeid */
-   geo.ClonedNodes.prototype.IsNodeInStack = function(nodeid, stack) {
+   ClonedNodes.prototype.IsNodeInStack = function(nodeid, stack) {
 
       if (!nodeid) return true;
 
@@ -2682,7 +2710,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
    }
 
    /** find stack by name which include names of all parents */
-   geo.ClonedNodes.prototype.FindStackByName = function(fullname) {
+   ClonedNodes.prototype.FindStackByName = function(fullname) {
 
       let names = fullname.split('/'), currid = 0, stack = [];
 
@@ -2705,7 +2733,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
    }
 
    /** @brief Set usage of default ROOT colors */
-   geo.ClonedNodes.prototype.SetDefaultColors = function(on) {
+   ClonedNodes.prototype.SetDefaultColors = function(on) {
       this.use_dflt_colors = on;
       if (this.use_dflt_colors && !this.dflt_table) {
 
@@ -2738,7 +2766,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
 
    /** @brief Provide different properties of draw entry nodeid
     * @desc Only if node visible, material will be created*/
-   geo.ClonedNodes.prototype.getDrawEntryProperties = function(entry) {
+   ClonedNodes.prototype.getDrawEntryProperties = function(entry) {
 
       let clone = this.nodes[entry.nodeid];
       let visible = true;
@@ -2839,7 +2867,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
      * such hierarchy repeats hierarchy of TGeoNodes and set matrix for the objects drawing
      * also set renderOrder, required to handle transparency
      * @private */
-   geo.ClonedNodes.prototype.CreateObject3D = function(stack, toplevel, options) {
+   ClonedNodes.prototype.CreateObject3D = function(stack, toplevel, options) {
 
       let node = this.nodes[0], three_prnt = toplevel, draw_depth = 0,
           force = (typeof options == 'object') || (options==='force');
@@ -2922,7 +2950,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       return three_prnt;
    }
 
-   geo.ClonedNodes.prototype.GetVolumeBoundary = function(viscnt, facelimit, nodeslimit) {
+   ClonedNodes.prototype.GetVolumeBoundary = function(viscnt, facelimit, nodeslimit) {
 
       let result = { min: 0, max: 1, sortidcut: 0 };
 
@@ -2956,7 +2984,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
 
    /** @brief Collects visible nodes, using maxlimit
      * @desc One can use map to define cut based on the volume or serious of cuts */
-   geo.ClonedNodes.prototype.CollectVisibles = function(maxnumfaces, frustum) {
+   ClonedNodes.prototype.CollectVisibles = function(maxnumfaces, frustum) {
 
       // in simple case shape as it is
       if (this.plain_shape)
@@ -3060,7 +3088,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
    /** @brief merge list of drawn objects
      * @desc in current list we should mark if object already exists
      * from previous list we should collect objects which are not there */
-   geo.ClonedNodes.prototype.MergeVisibles = function(current, prev) {
+   ClonedNodes.prototype.MergeVisibles = function(current, prev) {
 
       let indx2 = 0, del = [];
       for (let indx1=0; (indx1<current.length) && (indx2<prev.length); ++indx1) {
@@ -3084,7 +3112,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
 
    /** @brief Collect all uniques shapes which should be build
     *  @desc Check if same shape used many time for drawing */
-   geo.ClonedNodes.prototype.CollectShapes = function(lst) {
+   ClonedNodes.prototype.CollectShapes = function(lst) {
 
       // nothing else - just that single shape
       if (this.plain_shape)
@@ -3137,7 +3165,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       return shapes;
    }
 
-   geo.ClonedNodes.prototype.MergeShapesLists = function(oldlst, newlst) {
+   ClonedNodes.prototype.MergeShapesLists = function(oldlst, newlst) {
 
       if (!oldlst) return newlst;
 
@@ -3179,7 +3207,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       return newlst;
    }
 
-   geo.ClonedNodes.prototype.BuildShapes = function(lst, limit, timelimit) {
+   ClonedNodes.prototype.BuildShapes = function(lst, limit, timelimit) {
 
       let created = 0,
           tm1 = new Date().getTime(),
@@ -3195,7 +3223,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
             item._typename = "$$Shape$$"; // let reuse item for direct drawing
             item.ready = true;
             if (item.geom === undefined) {
-               item.geom = geo.createGeometry(item.shape);
+               item.geom = createGeometry(item.shape);
                if (item.geom) created++; // indicate that at least one shape was created
             }
             item.nfaces = geo.numGeometryFaces(item.geom);
@@ -3591,7 +3619,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       if (obj._typename.indexOf('TGeoVolume') === 0)
          obj = { _typename:"TGeoNode", fVolume: obj, fName: obj.fName, $geoh: obj.$geoh, _proxy: true };
 
-      let clones = new geo.ClonedNodes(obj);
+      let clones = new ClonedNodes(obj);
       clones.SetVisLevel(opt.vislevel);
       clones.SetMaxVisNodes(opt.numnodes);
 
@@ -3703,6 +3731,9 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       return box3;
    }
 
+   geo.projectGeometry = projectGeometry;
+   geo.createGeometry = createGeometry;
+   geo.ClonedNodes = ClonedNodes;
    JSROOT.GEO = geo;
 
    if (JSROOT.nodejs) module.exports = geo;

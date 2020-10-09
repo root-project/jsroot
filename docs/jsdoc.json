@@ -13,7 +13,11 @@
                      "scripts/JSRoot.gpad.js",
                      "scripts/JSRoot.hist.js",
                      "scripts/JSRoot.hist3d.js",
-                     "scripts/JSRoot.more.js" ],
+                     "scripts/JSRoot.more.js",
+                     "scripts/JSRoot.base3d.js",
+                     "scripts/JSRoot.csg.js",
+                     "scripts/JSRoot.geobase.js",
+                     "scripts/JSRoot.geom.js" ],
         "includePattern": ".+\\.js(doc|x)?$",
         "excludePattern": "(^|\\/|\\\\)_"
     },
