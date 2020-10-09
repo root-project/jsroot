@@ -3282,51 +3282,51 @@ JSROOT.require(['d3'], (d3) => {
       window.addEventListener('resize', ProcessResize);
    }
 
-   // list of user painters, called with arguments func(vis, obj, opt)
-   JSROOT.DrawFuncs = { lst:[
-      { name: "TCanvas", icon: "img_canvas", prereq: "v6", func: "JSROOT.Painter.drawCanvas", opt: ";grid;gridx;gridy;tick;tickx;ticky;log;logx;logy;logz", expand_item: "fPrimitives" },
-      { name: "TPad", icon: "img_canvas", prereq: "v6", func: "JSROOT.Painter.drawPad", opt: ";grid;gridx;gridy;tick;tickx;ticky;log;logx;logy;logz", expand_item: "fPrimitives" },
-      { name: "TSlider", icon: "img_canvas", prereq: "v6", func: "JSROOT.Painter.drawPad" },
-      { name: "TFrame", icon: "img_frame", prereq: "v6", func: "JSROOT.Painter.drawFrame" },
-      { name: "TPave", icon: "img_pavetext", prereq: "v6;hist", func: "JSROOT.Painter.drawPave" },
-      { name: "TPaveText", icon: "img_pavetext", prereq: "v6;hist", func: "JSROOT.Painter.drawPave" },
-      { name: "TPavesText", icon: "img_pavetext", prereq: "v6;hist", func: "JSROOT.Painter.drawPave" },
-      { name: "TPaveStats", icon: "img_pavetext", prereq: "v6;hist", func: "JSROOT.Painter.drawPave" },
-      { name: "TPaveLabel", icon: "img_pavelabel", prereq: "v6;hist", func: "JSROOT.Painter.drawPave" },
-      { name: "TDiamond", icon: "img_pavelabel", prereq: "v6;hist", func: "JSROOT.Painter.drawPave" },
-      { name: "TLatex", icon: "img_text", prereq: "more2d", func: "JSROOT.Painter.drawText", direct: true },
-      { name: "TMathText", icon: "img_text", prereq: "more2d", func: "JSROOT.Painter.drawText", direct: true },
-      { name: "TText", icon: "img_text", prereq: "more2d", func: "JSROOT.Painter.drawText", direct: true },
-      { name: /^TH1/, icon: "img_histo1d", prereq: "v6;hist", func: "JSROOT.Painter.drawHistogram1D", opt:";hist;P;P0;E;E1;E2;E3;E4;E1X0;L;LF2;B;B1;A;TEXT;LEGO;same", ctrl: "l" },
-      { name: "TProfile", icon: "img_profile", prereq: "v6;hist", func: "JSROOT.Painter.drawHistogram1D", opt:";E0;E1;E2;p;AH;hist"},
-      { name: "TH2Poly", icon: "img_histo2d", prereq: "v6;hist", func: "JSROOT.Painter.drawHistogram2D", opt:";COL;COL0;COLZ;LCOL;LCOL0;LCOLZ;LEGO;TEXT;same", expand_item: "fBins", theonly: true },
+   // list of registered draw functions
+   let drawFuncs = { lst: [
+      { name: "TCanvas", icon: "img_canvas", prereq: "gpad", func: ".drawCanvas", opt: ";grid;gridx;gridy;tick;tickx;ticky;log;logx;logy;logz", expand_item: "fPrimitives" },
+      { name: "TPad", icon: "img_canvas", prereq: "gpad", func: ".drawPad", opt: ";grid;gridx;gridy;tick;tickx;ticky;log;logx;logy;logz", expand_item: "fPrimitives" },
+      { name: "TSlider", icon: "img_canvas", prereq: "gpad", func: ".drawPad" },
+      { name: "TFrame", icon: "img_frame", prereq: "gpad", func: ".drawFrame" },
+      { name: "TPave", icon: "img_pavetext", prereq: "hist", func: ".drawPave" },
+      { name: "TPaveText", icon: "img_pavetext", prereq: "hist", func: ".drawPave" },
+      { name: "TPavesText", icon: "img_pavetext", prereq: "hist", func: ".drawPave" },
+      { name: "TPaveStats", icon: "img_pavetext", prereq: "hist", func: ".drawPave" },
+      { name: "TPaveLabel", icon: "img_pavelabel", prereq: "hist", func: ".drawPave" },
+      { name: "TDiamond", icon: "img_pavelabel", prereq: "hist", func: ".drawPave" },
+      { name: "TLatex", icon: "img_text", prereq: "more", func: ".drawText", direct: true },
+      { name: "TMathText", icon: "img_text", prereq: "more", func: ".drawText", direct: true },
+      { name: "TText", icon: "img_text", prereq: "more", func: ".drawText", direct: true },
+      { name: /^TH1/, icon: "img_histo1d", prereq: "hist", func: ".drawHistogram1D", opt: ";hist;P;P0;E;E1;E2;E3;E4;E1X0;L;LF2;B;B1;A;TEXT;LEGO;same", ctrl: "l" },
+      { name: "TProfile", icon: "img_profile", prereq: "hist", func: ".drawHistogram1D", opt: ";E0;E1;E2;p;AH;hist" },
+      { name: "TH2Poly", icon: "img_histo2d", prereq: "hist", func: ".drawHistogram2D", opt: ";COL;COL0;COLZ;LCOL;LCOL0;LCOLZ;LEGO;TEXT;same", expand_item: "fBins", theonly: true },
       { name: "TProfile2Poly", sameas: "TH2Poly" },
       { name: "TH2PolyBin", icon: "img_histo2d", draw_field: "fPoly" },
-      { name: /^TH2/, icon: "img_histo2d", prereq: "v6;hist", func: "JSROOT.Painter.drawHistogram2D", opt:";COL;COLZ;COL0;COL1;COL0Z;COL1Z;COLA;BOX;BOX1;PROJ;PROJX1;PROJX2;PROJX3;PROJY1;PROJY2;PROJY3;SCAT;TEXT;TEXTE;TEXTE0;CONT;CONT1;CONT2;CONT3;CONT4;ARR;SURF;SURF1;SURF2;SURF4;SURF6;E;A;LEGO;LEGO0;LEGO1;LEGO2;LEGO3;LEGO4;same", ctrl: "colz" },
+      { name: /^TH2/, icon: "img_histo2d", prereq: "hist", func: ".drawHistogram2D", opt: ";COL;COLZ;COL0;COL1;COL0Z;COL1Z;COLA;BOX;BOX1;PROJ;PROJX1;PROJX2;PROJX3;PROJY1;PROJY2;PROJY3;SCAT;TEXT;TEXTE;TEXTE0;CONT;CONT1;CONT2;CONT3;CONT4;ARR;SURF;SURF1;SURF2;SURF4;SURF6;E;A;LEGO;LEGO0;LEGO1;LEGO2;LEGO3;LEGO4;same", ctrl: "colz" },
       { name: "TProfile2D", sameas: "TH2" },
-      { name: /^TH3/, icon: 'img_histo3d', prereq: "v6;hist3d", func: "JSROOT.Painter.drawHistogram3D", opt:";SCAT;BOX;BOX2;BOX3;GLBOX1;GLBOX2;GLCOL" },
-      { name: "THStack", icon: "img_histo1d", prereq: "v6;hist", func: "JSROOT.Painter.drawHStack", expand_item: "fHists", opt: "NOSTACK;HIST;E;PFC;PLC" },
-      { name: "TPolyMarker3D", icon: 'img_histo3d', prereq: "v6;hist3d", func: "JSROOT.Painter.drawPolyMarker3D" },
-      { name: "TPolyLine3D", icon: 'img_graph', prereq: "3d", func: "JSROOT.Painter.drawPolyLine3D", direct: true },
+      { name: /^TH3/, icon: 'img_histo3d', prereq: "hist3d", func: ".drawHistogram3D", opt: ";SCAT;BOX;BOX2;BOX3;GLBOX1;GLBOX2;GLCOL" },
+      { name: "THStack", icon: "img_histo1d", prereq: "hist", func: ".drawHStack", expand_item: "fHists", opt: "NOSTACK;HIST;E;PFC;PLC" },
+      { name: "TPolyMarker3D", icon: 'img_histo3d', prereq: "hist3d", func: ".drawPolyMarker3D" },
+      { name: "TPolyLine3D", icon: 'img_graph', prereq: "3d", func: ".drawPolyLine3D", direct: true },
       { name: "TGraphStruct" },
       { name: "TGraphNode" },
       { name: "TGraphEdge" },
-      { name: "TGraphTime", icon:"img_graph", prereq: "more2d", func: "JSROOT.Painter.drawGraphTime", opt: "once;repeat;first", theonly: true },
-      { name: "TGraph2D", icon:"img_graph", prereq: "v6;hist3d", func: "JSROOT.Painter.drawGraph2D", opt: ";P;PCOL", theonly: true },
-      { name: "TGraph2DErrors", icon:"img_graph", prereq: "v6;hist3d", func: "JSROOT.Painter.drawGraph2D", opt: ";P;PCOL;ERR", theonly: true },
-      { name: "TGraphPolargram", icon:"img_graph", prereq: "more2d", func: "JSROOT.Painter.drawGraphPolargram", theonly: true },
-      { name: "TGraphPolar", icon:"img_graph", prereq: "more2d", func: "JSROOT.Painter.drawGraphPolar", opt: ";F;L;P;PE", theonly: true },
-      { name: /^TGraph/, icon:"img_graph", prereq: "more2d", func: "JSROOT.Painter.drawGraph", opt: ";L;P" },
-      { name: "TEfficiency", icon:"img_graph", prereq: "more2d", func: "JSROOT.Painter.drawEfficiency", opt: ";AP" },
+      { name: "TGraphTime", icon: "img_graph", prereq: "more", func: ".drawGraphTime", opt: "once;repeat;first", theonly: true },
+      { name: "TGraph2D", icon: "img_graph", prereq: "hist3d", func: ".drawGraph2D", opt: ";P;PCOL", theonly: true },
+      { name: "TGraph2DErrors", icon: "img_graph", prereq: "hist3d", func: ".drawGraph2D", opt: ";P;PCOL;ERR", theonly: true },
+      { name: "TGraphPolargram", icon: "img_graph", prereq: "more", func: ".drawGraphPolargram", theonly: true },
+      { name: "TGraphPolar", icon: "img_graph", prereq: "more", func: ".drawGraphPolar", opt: ";F;L;P;PE", theonly: true },
+      { name: /^TGraph/, icon: "img_graph", prereq: "more", func: ".drawGraph", opt: ";L;P" },
+      { name: "TEfficiency", icon: "img_graph", prereq: "more", func: ".drawEfficiency", opt: ";AP" },
       { name: "TCutG", sameas: "TGraph" },
       { name: /^RooHist/, sameas: "TGraph" },
       { name: /^RooCurve/, sameas: "TGraph" },
-      { name: "RooPlot", icon: "img_canvas", prereq: "more2d", func: "JSROOT.Painter.drawRooPlot" },
-      { name: "TMultiGraph", icon: "img_mgraph", prereq: "more2d", func: "JSROOT.Painter.drawMultiGraph", expand_item: "fGraphs" },
-      { name: "TStreamerInfoList", icon: 'img_question', prereq: "hierarchy",  func: "JSROOT.Painter.drawStreamerInfo" },
-      { name: "TPaletteAxis", icon: "img_colz", prereq: "v6;hist", func: "JSROOT.Painter.drawPave" },
-      { name: "TWebPainting", icon: "img_graph", prereq: "more2d", func: "JSROOT.Painter.drawWebPainting" },
-      { name: "TCanvasWebSnapshot", icon: "img_canvas", prereq: "v6", func: "JSROOT.Painter.drawPadSnapshot" },
+      { name: "RooPlot", icon: "img_canvas", prereq: "more", func: ".drawRooPlot" },
+      { name: "TMultiGraph", icon: "img_mgraph", prereq: "more", func: ".drawMultiGraph", expand_item: "fGraphs" },
+      { name: "TStreamerInfoList", icon: 'img_question', prereq: "hierarchy", func: ".drawStreamerInfo" },
+      { name: "TPaletteAxis", icon: "img_colz", prereq: "hist", func: ".drawPave" },
+      { name: "TWebPainting", icon: "img_graph", prereq: "more", func: ".drawWebPainting" },
+      { name: "TCanvasWebSnapshot", icon: "img_canvas", prereq: "gpad", func: ".drawPadSnapshot" },
       { name: "TPadWebSnapshot", sameas: "TCanvasWebSnapshot" },
       { name: "kind:Text", icon: "img_text", func: jsrp.drawRawText },
       { name: "TObjString", icon: "img_text", func: jsrp.drawRawText },
@@ -3344,22 +3344,22 @@ JSROOT.require(['d3'], (d3) => {
       { name: "TPolyLine", icon: 'img_graph', prereq: "more", func: ".drawPolyLine", direct: true },
       { name: "TCurlyLine", sameas: 'TPolyLine' },
       { name: "TCurlyArc", sameas: 'TPolyLine' },
-      { name: "TGaxis", icon: "img_graph", prereq: "v6", func: "JSROOT.Painter.drawGaxis" },
-      { name: "TLegend", icon: "img_pavelabel", prereq: "v6;hist", func: "JSROOT.Painter.drawPave" },
-      { name: "TBox", icon: 'img_graph', prereq: "more2d", func: "JSROOT.Painter.drawBox", direct: true },
-      { name: "TWbox", icon: 'img_graph', prereq: "more2d", func: "JSROOT.Painter.drawBox", direct: true },
-      { name: "TSliderBox", icon: 'img_graph', prereq: "more2d", func: "JSROOT.Painter.drawBox", direct: true },
-      { name: "TAxis3D", prereq: "v6;hist3d", func: "JSROOT.Painter.drawAxis3D" },
-      { name: "TMarker", icon: 'img_graph', prereq: "more2d", func: "JSROOT.Painter.drawMarker", direct: true },
-      { name: "TPolyMarker", icon: 'img_graph', prereq: "more2d", func: "JSROOT.Painter.drawPolyMarker", direct: true },
-      { name: "TASImage", icon: 'img_mgraph', prereq: "more2d", func: "JSROOT.Painter.drawASImage" },
-      { name: "TJSImage", icon: 'img_mgraph', prereq: "more2d", func: "JSROOT.Painter.drawJSImage", opt: ";scale;center" },
-      { name: "TGeoVolume", icon: 'img_histo3d', prereq: "geom", func: "JSROOT.Painter.drawGeoObject", expand: "JSROOT.GEO.expandObject", opt:";more;all;count;projx;projz;wire;dflt", ctrl: "dflt" },
-      { name: "TEveGeoShapeExtract", icon: 'img_histo3d', prereq: "geom", func: "JSROOT.Painter.drawGeoObject", expand: "JSROOT.GEO.expandObject", opt: ";more;all;count;projx;projz;wire;dflt", ctrl: "dflt"  },
-      { name: "ROOT::Experimental::REveGeoShapeExtract", icon: 'img_histo3d', prereq: "geom", func: "JSROOT.Painter.drawGeoObject", expand: "JSROOT.GEO.expandObject", opt: ";more;all;count;projx;projz;wire;dflt", ctrl: "dflt" },
-      { name: "TGeoOverlap", icon: 'img_histo3d', prereq: "geom", expand: "JSROOT.GEO.expandObject", func: "JSROOT.Painter.drawGeoObject", opt: ";more;all;count;projx;projz;wire;dflt", dflt: "dflt", ctrl: "expand" },
-      { name: "TGeoManager", icon: 'img_histo3d', prereq: "geom", expand: "JSROOT.GEO.expandObject", func: "JSROOT.Painter.drawGeoObject", opt: ";more;all;count;projx;projz;wire;tracks;dflt", dflt: "expand", ctrl: "dflt" },
-      { name: /^TGeo/, icon: 'img_histo3d', prereq: "geom", func: "JSROOT.Painter.drawGeoObject", opt: ";more;all;axis;compa;count;projx;projz;wire;dflt", ctrl: "dflt" },
+      { name: "TGaxis", icon: "img_graph", prereq: "gpad", func: ".drawGaxis" },
+      { name: "TLegend", icon: "img_pavelabel", prereq: "hist", func: ".drawPave" },
+      { name: "TBox", icon: 'img_graph', prereq: "more", func: ".drawBox", direct: true },
+      { name: "TWbox", icon: 'img_graph', prereq: "more", func: ".drawBox", direct: true },
+      { name: "TSliderBox", icon: 'img_graph', prereq: "more", func: ".drawBox", direct: true },
+      { name: "TAxis3D", prereq: "hist3d", func: ".drawAxis3D" },
+      { name: "TMarker", icon: 'img_graph', prereq: "more", func: ".drawMarker", direct: true },
+      { name: "TPolyMarker", icon: 'img_graph', prereq: "more", func: ".drawPolyMarker", direct: true },
+      { name: "TASImage", icon: 'img_mgraph', prereq: "more", func: ".drawASImage" },
+      { name: "TJSImage", icon: 'img_mgraph', prereq: "more", func: ".drawJSImage", opt: ";scale;center" },
+      { name: "TGeoVolume", icon: 'img_histo3d', prereq: "geom", func: ".drawGeoObject", expand: "JSROOT.GEO.expandObject", opt: ";more;all;count;projx;projz;wire;dflt", ctrl: "dflt" },
+      { name: "TEveGeoShapeExtract", icon: 'img_histo3d', prereq: "geom", func: ".drawGeoObject", expand: "JSROOT.GEO.expandObject", opt: ";more;all;count;projx;projz;wire;dflt", ctrl: "dflt" },
+      { name: "ROOT::Experimental::REveGeoShapeExtract", icon: 'img_histo3d', prereq: "geom", func: ".drawGeoObject", expand: "JSROOT.GEO.expandObject", opt: ";more;all;count;projx;projz;wire;dflt", ctrl: "dflt" },
+      { name: "TGeoOverlap", icon: 'img_histo3d', prereq: "geom", expand: "JSROOT.GEO.expandObject", func: ".drawGeoObject", opt: ";more;all;count;projx;projz;wire;dflt", dflt: "dflt", ctrl: "expand" },
+      { name: "TGeoManager", icon: 'img_histo3d', prereq: "geom", expand: "JSROOT.GEO.expandObject", func: ".drawGeoObject", opt: ";more;all;count;projx;projz;wire;tracks;dflt", dflt: "expand", ctrl: "dflt" },
+      { name: /^TGeo/, icon: 'img_histo3d', prereq: "geom", func: ".drawGeoObject", opt: ";more;all;axis;compa;count;projx;projz;wire;dflt", ctrl: "dflt" },
       // these are not draw functions, but provide extra info about correspondent classes
       { name: "kind:Command", icon: "img_execute", execute: true },
       { name: "TFolder", icon: "img_folder", icon2: "img_folderopen", noinspect: true, prereq: "hierarchy", expand: ".FolderHierarchy" },
@@ -3376,38 +3376,16 @@ JSROOT.require(['d3'], (d3) => {
       { name: "TClonesArray", sameas: "TList" },
       { name: "TMap", sameas: "TList" },
       { name: "TColor", icon: "img_color" },
-      { name: "TFile", icon: "img_file", noinspect:true },
-      { name: "TMemFile", icon: "img_file", noinspect:true },
-      { name: "TStyle", icon: "img_question", noexpand:true },
+      { name: "TFile", icon: "img_file", noinspect: true },
+      { name: "TMemFile", icon: "img_file", noinspect: true },
+      { name: "TStyle", icon: "img_question", noexpand: true },
       { name: "Session", icon: "img_globe" },
       { name: "kind:TopFolder", icon: "img_base" },
-      { name: "kind:Folder", icon: "img_folder", icon2: "img_folderopen", noinspect:true },
-
-      { name: "ROOT::Experimental::RCanvas", icon: "img_canvas", prereq: "v7", func: "JSROOT.v7.drawCanvas", opt: "", expand_item: "fPrimitives" },
-      { name: "ROOT::Experimental::RCanvasDisplayItem", icon: "img_canvas", prereq: "v7", func: "JSROOT.v7.drawPadSnapshot", opt: "", expand_item: "fPrimitives" }
-
+      { name: "kind:Folder", icon: "img_folder", icon2: "img_folderopen", noinspect: true },
+      { name: "ROOT::Experimental::RCanvas", icon: "img_canvas", prereq: "v7gpad", func: "JSROOT.v7.drawCanvas", opt: "", expand_item: "fPrimitives" },
+      { name: "ROOT::Experimental::RCanvasDisplayItem", icon: "img_canvas", prereq: "v7gpad", func: "JSROOT.v7.drawPadSnapshot", opt: "", expand_item: "fPrimitives" }
    ], cache: {} };
 
-   /** @summary Register draw function for the class
-    * @desc List of supported draw options could be provided, separated  with ';'
-    * Several different draw functions for the same class or kind could be specified
-    * @param {object} args - arguments
-    * @param {string} args.name - class name
-    * @param {string} [args.prereq] - prerequicities to load before search for the draw function
-    * @param {string} args.func - name of draw function for the class
-    * @param {string} [args.direct=false] - if true, function is just Redraw() method of TObjectPainter
-    * @param {string} args.opt - list of supported draw options (separated with semicolon) like "col;scat;"
-    * @param {string} [args.icon] - icon name shown for the class in hierarchy browser
-    */
-   JSROOT.addDrawFunc = function(_name, _func, _opt) {
-      if ((arguments.length == 1) && (typeof arguments[0] == 'object')) {
-         JSROOT.DrawFuncs.lst.push(arguments[0]);
-         return arguments[0];
-      }
-      var handle = { name:_name, func:_func, opt:_opt };
-      JSROOT.DrawFuncs.lst.push(handle);
-      return handle;
-   }
 
    /** @summary Register draw function for the class
     * @desc List of supported draw options could be provided, separated  with ';'

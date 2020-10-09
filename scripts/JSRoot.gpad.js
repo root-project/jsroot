@@ -3210,9 +3210,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
 
          let can3d = main.access_3d_kind();
 
-         let sz2 = main.size_for_3d(2); // get size of DOM element as it will be embed
-
-         var sz = (can3d == 2) ? sz2 : main.size_for_3d(1);
+         if ((can3d !== 1) && (can3d !== 2)) return;
 
          let sz2 = main.size_for_3d(2); // get size and position of DOM element as it will be embed
 
@@ -3233,13 +3231,8 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
             svg_frame.remove();
          }
 
-         // add svg image
-         item.img = item.prnt.insert("image",".primitives_layer")     // create image object
-                        .attr("x", sz.x)
-                        .attr("y", sz.y)
-                        .attr("width", canvas.width)
-                        .attr("height", canvas.height)
-                        .attr("href", dataUrl);
+         //var origin = main.apply_3d_size(sz3d, true);
+         //origin.remove();
 
          // add svg image
          item.img = item.prnt.insert("image",".primitives_layer")     // create image object

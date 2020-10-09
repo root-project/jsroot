@@ -4328,7 +4328,7 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
 
       if (!item._geoobj) return false;
 
-      var obj = item._geoobj, vol = item._volume,
+      let obj = item._geoobj, vol = item._volume,
           iseve = ((obj._typename === 'TEveGeoShapeExtract') || (obj._typename === 'ROOT::Experimental::REveGeoShapeExtract'));
 
       if (!vol && !iseve) return false;

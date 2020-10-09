@@ -2280,8 +2280,8 @@ JSROOT.require(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
             currx[colindx] = handle.grx[i];
             curry[colindx] = handle.gry[j+dj];
 
-            var dy = (handle.gry[j] - handle.gry[j+dj]) || 1,
-                dx = (handle.grx[i+di] - handle.grx[i]) || 1;
+            dx = (handle.grx[i+di] - handle.grx[i]) || 1;
+            dy = (handle.gry[j] - handle.gry[j+dj]) || 1;
 
             colPaths[colindx] += "v"+dy + "h"+dx + "v"+(-dy) + "z";
          }

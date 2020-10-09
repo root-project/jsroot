@@ -570,7 +570,6 @@ JSROOT.require(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
                   this.FirstRun++;
                   this.FinishTextDrawing(sub_g, this.FinishPave);
-
                } else {
                   lines.push(entry); // make as before
                }
@@ -606,7 +605,6 @@ JSROOT.require(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       }
 
       if (!individual_positioning) {
-
          // for characters like 'p' or 'y' several more pixels required to stay in the box when drawn in last line
          let stepy = height / nlines, margin_x = pt.fMargin * width, max_font_size = 0;
 
@@ -637,7 +635,6 @@ JSROOT.require(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             if (!arg.color) { this.UseTextColor = true; arg.color = tcolor; }
             this.DrawText(arg);
          }
-
          this.FirstRun++;
          this.FinishTextDrawing(text_g, this.FinishPave);
       }
@@ -1283,8 +1280,6 @@ JSROOT.require(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       painter.SetDivId(divid, 2, onpad);
 
-      painter.AssignFinishPave();
-
       if ((pave.fName === "title") && (pave._typename === "TPaveText")) {
          let tpainter = painter.FindPainterFor(null, "title");
          if (tpainter && (tpainter !== painter)) {
@@ -1346,7 +1341,7 @@ JSROOT.require(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       painter.DrawPave(opt);
 
-      painter.FinishPave(); // call finish pave at least once
+      painter.FinishPave(); // at least once finish pave must be called, it will invoke ready state
 
       //console.log('Done drawing ', pave._typename);
 
@@ -1995,8 +1990,8 @@ JSROOT.require(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          // The only that could be done is update of content
 
          // check only stats bit, later other settings can be monitored
-         var statpainter = this.FindPainterFor(this.FindStat());
-         if (histo.TestBit(JSROOT.TH1StatusBits.kNoStats) != obj.TestBit(JSROOT.TH1StatusBits.kNoStats)) {
+         let statpainter = this.FindPainterFor(this.FindStat());
+         if (histo.TestBit(TH1StatusBits.kNoStats) != obj.TestBit(TH1StatusBits.kNoStats)) {
             histo.fBits = obj.fBits;
             if (statpainter) statpainter.Enabled = !histo.TestBit(TH1StatusBits.kNoStats);
          }
@@ -2116,8 +2111,9 @@ JSROOT.require(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                   }
                }
 
+            // stat painter has to be kept even when no object exists in the list
             if (statpainter) {
-               var indx = painters.indexOf(statpainter);
+               let indx = painters.indexOf(statpainter);
                if (indx >= 0) painters.splice(indx, 1);
             }
 
@@ -2240,8 +2236,10 @@ JSROOT.require(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (!this.is_main_painter() || this.options.Same)
          return Promise.resolve(false);
 
-      var fp = this.frame_painter();
-      if (fp) fp.DrawAxes(false, this.options.Axis < 0, this.options.AxisPos, this.options.Zscale);
+      let fp = this.frame_painter();
+      if (!fp) return Promise.resolve(false);
+
+      return fp.DrawAxes(false, this.options.Axis < 0, this.options.AxisPos, this.options.Zscale);
    }
 
    THistPainter.prototype.ToggleTitle = function(arg) {
@@ -2844,22 +2842,11 @@ JSROOT.require(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          zmax = fp.zoom_zmax;
       }
 
-      if (histo.fContour && (histo.fContour.length>1) && histo.TestBit(JSROOT.TH1StatusBits.kUserContour)) {
-         this.fContour = [];
-         for (let n = 0; n < histo.fContour.length; ++n)
-            this.fContour.push(histo.fContour[n]);
-         this.fCustomContour = true;
-         this.colzmin = zmin;
-         this.colzmax = zmax;
-         if (zmax > this.fContour[this.fContour.length-1])
-            this.fContour.push(zmax);
-         if ((this.Dimension()<3) && fp) {
-            fp.zmin = cntr.colzmin;
-            fp.zmax = cntr.colzmax;
-         }
-         this.fContour = cntr;
-         return this.fContour;
-      }
+      if (histo.fContour && (histo.fContour.length > 1))
+         if (histo.TestBit(TH1StatusBits.kUserContour))
+            custom_levels = histo.fContour;
+         else
+            nlevels = histo.fContour.length;
 
       return this.CreateContour(nlevels, zmin, zmax, zminpos, custom_levels);
    }
@@ -3827,13 +3814,13 @@ JSROOT.require(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          }
       }
 
-      var fill_for_interactive = !JSROOT.BatchMode && this.fillatt.empty() && draw_hist && (JSROOT.gStyle.Tooltip > 0) && !draw_markers && !show_line,
+      let fill_for_interactive = !JSROOT.BatchMode && this.fillatt.empty() && draw_hist && (JSROOT.gStyle.Tooltip > 0) && !draw_markers && !show_line,
           h0 = height + 3;
       if (!fill_for_interactive) {
-         var gry0 = Math.round(pmain.gry(0));
+         let gry0 = Math.round(pmain.gry(0));
          if (gry0 <= 0) h0 = -3; else if (gry0 < height) h0 = gry0;
       }
-      var close_path = "L"+currx+","+h0 + "L"+startx+","+h0 + "Z";
+      let close_path = "L"+currx+","+h0 + "L"+startx+","+h0 + "Z";
 
       if (draw_markers || show_line) {
          if ((path_fill !== null) && (path_fill.length > 0))

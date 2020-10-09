@@ -186,16 +186,17 @@ JSROOT.require(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       this.control.ContextMenu = function(pos, intersects) {
          let kind = "painter", p = obj_painter;
          if (intersects)
-            for (var n=0;n<intersects.length;++n) {
-               var mesh = intersects[n].object;
-               if (mesh.zoom) { kind = mesh.zoom; p = obj_painter.frame_painter(); break; }
-               if (mesh.painter && typeof mesh.painter.ShowContextMenu === 'function') {
+            for (let n=0;n<intersects.length;++n) {
+               let mesh = intersects[n].object;
+               if (mesh.zoom) { kind = mesh.zoom; p = null; break; }
+               if (mesh.painter && typeof mesh.painter.FillContextMenu === 'function') {
                   p = mesh.painter; break;
                }
             }
 
-         if (typeof p.ShowContextMenu == 'function')
-            p.ShowContextMenu(kind, pos);
+         let fp = obj_painter.frame_painter();
+         if (fp && fp.ShowContextMenu)
+            fp.ShowContextMenu(kind, pos, p);
       }
 
       return JSROOT.require("interactive"); // drawing should wait until interactive is loaded
@@ -310,11 +311,11 @@ JSROOT.require(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
    JSROOT.TFramePainter.prototype.BinHighlight3D = function(tip, selfmesh) {
 
-      var changed = false, tooltip_mesh = null, changed_self = true,
+      let changed = false, tooltip_mesh = null, changed_self = true,
           want_remove = !tip || (tip.x1===undefined) || !this.enable_highlight,
           mainp = this.main_painter();
 
-      if (mainp && !mainp.IsUserTooltipCallback()) mainp = null;
+      if (mainp && (!mainp.ProvideUserTooltip || !mainp.IsUserTooltipCallback())) mainp = null;
 
       if (this.tooltip_selfmesh) {
          changed_self = (this.tooltip_selfmesh !== selfmesh)
@@ -332,7 +333,7 @@ JSROOT.require(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
       if (want_remove) {
          if (changed) this.Render3D();
-         if (mainp && changed) mainp.ProvideUserTooltip(null);
+         if (changed && mainp) mainp.ProvideUserTooltip(null);
          return;
       }
 
@@ -394,9 +395,9 @@ JSROOT.require(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
       if (changed && mainp && mainp.GetObject())
          mainp.ProvideUserTooltip({ obj: mainp.GetObject(),  name: mainp.GetObject().fName,
-                                   bin: tip.bin, cont: tip.value,
-                                   binx: tip.ix, biny: tip.iy, binz: tip.iz,
-                                   grx: (tip.x1+tip.x2)/2, gry: (tip.y1+tip.y2)/2, grz: (tip.z1+tip.z2)/2 });
+                                    bin: tip.bin, cont: tip.value,
+                                    binx: tip.ix, biny: tip.iy, binz: tip.iz,
+                                    grx: (tip.x1+tip.x2)/2, gry: (tip.y1+tip.y2)/2, grz: (tip.z1+tip.z2)/2 });
    }
 
    JSROOT.TFramePainter.prototype.TestAxisVisibility = function(camera, toplevel, fb, bb) {
@@ -1146,7 +1147,7 @@ JSROOT.require(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          // artificially extend last level of color palette to maximal visible value
          if (palette && (nlevel==levels.length-2) && zmax < axis_zmax) zmax = axis_zmax;
 
-         var z1 = 0, z2 = 0, numvertices = 0, num2vertices = 0,
+         let z1 = 0, z2 = 0, numvertices = 0, num2vertices = 0,
              grzmin = main.grz(zmin), grzmax = main.grz(zmax);
 
          // now calculate size of buffer geometry for boxes
@@ -1417,9 +1418,8 @@ JSROOT.require(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       }
 
       // create boxes
-      var lcolor = this.get_color(histo.fLineColor);
-      var material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor) });
-      if (!JSROOT.browser.isIE) material.linewidth = histo.fLineWidth;
+      let lcolor = this.get_color(histo.fLineColor);
+      let material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor), linewidth: histo.fLineWidth });
 
       let line = jsrp.createLineSegments(lpositions, material, uselineindx ? lindicies : null );
 

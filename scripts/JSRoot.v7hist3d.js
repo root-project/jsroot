@@ -166,10 +166,10 @@ JSROOT.require(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       this.control.ContextMenu = function(pos, intersects) {
          let kind = "painter", p = obj_painter;
          if (intersects)
-            for (var n=0;n<intersects.length;++n) {
-               var mesh = intersects[n].object;
-               if (mesh.zoom) { kind = mesh.zoom; p = obj_painter.frame_painter(); break; }
-               if (mesh.painter && typeof mesh.painter.ShowContextMenu === 'function') {
+            for (let n=0;n<intersects.length;++n) {
+               let mesh = intersects[n].object;
+               if (mesh.zoom) { kind = mesh.zoom; p = null; break; }
+               if (mesh.painter && typeof mesh.painter.FillContextMenu === 'function') {
                   p = mesh.painter; break;
                }
             }
@@ -290,11 +290,11 @@ JSROOT.require(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
 
    JSROOT.v7.RFramePainter.prototype.BinHighlight3D = function(tip, selfmesh) {
 
-      var changed = false, tooltip_mesh = null, changed_self = true,
+      let changed = false, tooltip_mesh = null, changed_self = true,
           want_remove = !tip || (tip.x1===undefined) || !this.enable_highlight,
           mainp = this.main_painter();
 
-      if (mainp && !mainp.IsUserTooltipCallback()) mainp = null;
+      if (mainp && (!mainp.ProvideUserTooltip || !mainp.IsUserTooltipCallback())) mainp = null;
 
       if (this.tooltip_selfmesh) {
          changed_self = (this.tooltip_selfmesh !== selfmesh)
@@ -1114,7 +1114,7 @@ JSROOT.require(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
          // artificially extend last level of color palette to maximal visible value
          if (palette && (nlevel==levels.length-2) && (zmax < axis_zmax)) zmax = axis_zmax;
 
-         var z1 = 0, z2 = 0, numvertices = 0, num2vertices = 0,
+         let z1 = 0, z2 = 0, numvertices = 0, num2vertices = 0,
              grzmin = main.grz(zmin), grzmax = main.grz(zmax);
 
          // now calculate size of buffer geometry for boxes
@@ -1381,9 +1381,8 @@ JSROOT.require(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       }
 
       // create boxes
-      var lcolor = this.v7EvalColor("line_color", "lightblue");
-      var material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor) });
-      if (!JSROOT.browser.isIE) material.linewidth = this.v7EvalAttr("line_width", 1);
+      let lcolor = this.v7EvalColor("line_color", "lightblue");
+      let material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor), linewidth: this.v7EvalAttr("line_width", 1) });
 
       let line = jsrp.createLineSegments(lpositions, material, uselineindx ? lindicies : null );
 

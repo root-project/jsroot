@@ -3061,11 +3061,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
 
          if ((can3d !== 1) && (can3d !== 2)) return;
 
-         var sz2 = main.size_for_3d(2); // get size of DOM element as it will be embed
-
-         var sz = (can3d == 2) ? sz2 : main.size_for_3d(1);
-
-         let sz = (can3d == 2) ? sz2 : main.size_for_3d(1);
+         let sz2 = main.size_for_3d(2); // get size and position of DOM element as it will be embed
 
          let canvas = main.renderer.domElement;
          main.Render3D(0); // WebGL clears buffers, therefore we should render scene and convert immediately
@@ -3090,8 +3086,8 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
 
          // add svg image
          item.img = item.prnt.insert("image",".primitives_layer")     // create image object
-                        .attr("x", sz.x)
-                        .attr("y", sz.y)
+                        .attr("x", sz2.x)
+                        .attr("y", sz2.y)
                         .attr("width", canvas.width)
                         .attr("height", canvas.height)
                         .attr("href", dataUrl);
@@ -3235,59 +3231,6 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
 
          if (!done && (typeof pp.ButtonClick == 'function'))
             done = pp.ButtonClick(funcname);
-      }
-   }
-
-   RPadPainter.prototype.FindButton = function(keyname) {
-      let group = this.svg_layer("btns_layer", this.this_pad_name), found_func = "";
-      if (!group.empty())
-         group.selectAll("svg").each(function() {
-            if (d3.select(this).attr("key") === keyname)
-               found_func = d3.select(this).attr("name");
-         });
-      return found_func;
-   }
-
-   RPadPainter.prototype.toggleButtonsVisibility = function(action) {
-      let group = this.svg_layer("btns_layer", this.this_pad_name),
-          btn = group.select("[name='Toggle']");
-
-      if (btn.empty()) return;
-
-      let state = btn.property('buttons_state');
-
-      if (btn.property('timout_handler')) {
-         if (action!=='timeout') clearTimeout(btn.property('timout_handler'));
-         btn.property('timout_handler', null);
-      }
-
-      let is_visible = false;
-      switch(action) {
-         case 'enable': is_visible = true; break;
-         case 'enterbtn': return; // do nothing, just cleanup timeout
-         case 'timeout': is_visible = false; break;
-         case 'toggle':
-            state = !state;
-            btn.property('buttons_state', state);
-            is_visible = state;
-            break;
-         case 'disable':
-         case 'leavebtn':
-            if (!state) btn.property('timout_handler', setTimeout(this.toggleButtonsVisibility.bind(this,'timeout'), 500));
-            return;
-      }
-
-      group.selectAll('svg').each(function() {
-         if (this===btn.node()) return;
-         d3.select(this).style('display', is_visible ? "" : "none");
-      });
-   }
-
-   RPadPainter.prototype.RemoveButtons = function() {
-      let group = this.svg_layer("btns_layer", this.this_pad_name);
-      if (!group.empty()) {
-         group.selectAll("*").remove();
-         group.property("nextx", null);
       }
    }
 

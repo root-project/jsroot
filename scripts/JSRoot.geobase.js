@@ -1288,8 +1288,8 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
          }
       }
 
-      for (var layer = 0; layer <= shape.fNz-1; layer+=(shape.fNz-1)) {
-         var z = shape.fZ[layer], scale = shape.fScale[layer],
+      for (let layer = 0; layer <= shape.fNz-1; layer+=(shape.fNz-1)) {
+         let z = shape.fZ[layer], scale = shape.fScale[layer],
              x0 = shape.fX0[layer], y0 = shape.fY0[layer];
 
          for (let n=0;n<faces.length;++n) {
@@ -3420,7 +3420,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
                continue;
             }
 
-            var dist = Math.min(origin.distanceTo(box3.min), origin.distanceTo(box3.max));
+            let dist = Math.min(origin.distanceTo(box3.min), origin.distanceTo(box3.max));
 
             let pnt = new THREE.Vector3(box3.min.x, box3.min.y, box3.max.z);
             dist = Math.min(dist, origin.distanceTo(pnt));
@@ -3567,7 +3567,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
          shape = obj; obj = null;
       } else if ((obj._typename === 'TGeoVolumeAssembly') || (obj._typename === 'TGeoVolume')) {
          shape = obj.fShape;
-      } else if ((obj._typename === "TEveGeoShapeExtract") || (obj._typename === "ROOT::Experimental::REveGeoShapeExtract")  ) {
+      } else if ((obj._typename === "TEveGeoShapeExtract") || (obj._typename === "ROOT::Experimental::REveGeoShapeExtract")) {
          shape = obj.fShape;
       } else if (obj._typename === 'TGeoManager') {
          obj = obj.fMasterVolume;
