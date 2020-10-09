@@ -16,7 +16,9 @@ JSROOT.require(['d3'], (d3) => {
 
    // ==========================================================================================
 
-   /** @summary Draw options interpreter */
+   /** @summary Draw options interpreter
+     * @memberOf JSROOT
+     * @private */
    function DrawOptions(opt) {
       this.opt = opt && (typeof opt == "string") ? opt.toUpperCase().trim() : "";
       this.part = "";

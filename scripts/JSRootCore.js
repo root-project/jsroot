@@ -114,12 +114,12 @@
 
    //openuicfg // DO NOT DELETE, used to configure openui5 usage like JSROOT.openui5src = "nojsroot";
 
-   // internal data
+   /** internal data */
    let _ = {
-      modules: {},
-      source_min: false,      // minified source
-      use_full_libs: false,   // use full libraries
-      id_counter: 1           // unique id contner, start from 1
+      modules: {},            ///< list of modules
+      source_min: false,      ///< is minified sources are used
+      use_full_libs: false,   ///< is full libraries are used
+      id_counter: 1           ///< unique id contner, starts from 1
    };
 
    let source_fullpath = "";
@@ -176,7 +176,6 @@
       if (fullyQualified && JSROOT.nocache) res += "?stamp=" + JSROOT.nocache;
       return res;
    }
-
 
    JSROOT.constants = {
       Render3D: {
@@ -866,14 +865,14 @@
     * @desc Following options supported ?opt1&opt2=3
     *
     * @param {string} [url] URL string with options, document.URL will be used when not specified
-    * @returns {Object} with .has(opt) and .get(opt,dflt) methods
+    * @returns {Object} with ```.has(opt)``` and ```.get(opt,dflt)``` methods
     * @memberOf JSROOT
     * @example
     * let d = JSROOT.decodeUrl("any?opt1&op2=3");
-    * console.log(`Has opt1 ${d.has("opt1")}`); // expecting true
-    * console.log(`Get opt1 ${d.get("opt1")}`); // expecting ""
-    * console.log(`Get opt2 ${d.get("opt2")}`); // expecting "3"
-    * console.log(`Get opt3 ${d.get("opt3","-")}`); // expecting "-"
+    * console.log(`Has opt1 ${d.has("opt1")}`);     // true
+    * console.log(`Get opt1 ${d.get("opt1")}`);     // ""
+    * console.log(`Get opt2 ${d.get("opt2")}`);     // "3"
+    * console.log(`Get opt3 ${d.get("opt3","-")}`); // "-"
     */
    let decodeUrl = (url) => {
       let res = {
@@ -2081,8 +2080,6 @@
       return this;
    }
 
-   /** internal, non-public data
-     * @private */
    JSROOT._ = _;
    JSROOT.browser = browser;
    JSROOT.decodeUrl = decodeUrl;
