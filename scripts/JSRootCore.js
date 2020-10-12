@@ -1221,8 +1221,8 @@
    }
 
    // Open ROOT file, defined in JSRoot.io.js
-   JSROOT.OpenFile = function(filename, callback) {
-      return JSROOT.require("io").then(() => JSROOT.OpenFile(filename, callback));
+   JSROOT.openFile = function(filename, callback) {
+      return JSROOT.require("io").then(() => JSROOT.openFile(filename, callback));
    }
 
    // Draw object, defined in JSRoot.painter.js
@@ -2115,6 +2115,12 @@
       req = req.replace(/2d;v7;/g, "v7gpad;").replace(/2d;v6;/g, "gpad;").replace(/more2d;/g, 'more;').replace(/2d;/g, 'gpad;');
       JSROOT.require(req).then(callback);
    }
+
+   JSROOT.OpenFile = function(filename, callback) {
+      let res = JSROOT.openFile(filename);
+      return !callback ? res : res.then(callback);
+   }
+
 
 
    JSROOT._ = _;

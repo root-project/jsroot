@@ -734,7 +734,7 @@ JSROOT.require(['rawinflate'], () => {
      * @summary Interface to read objects from ROOT files
      * @memberOf JSROOT
      * @constructor
-     * @desc Use {@link JSROOT.OpenFile} to create instance of the class */
+     * @desc Use {@link JSROOT.openFile} to create instance of the class */
 
    function TFile(url) {
       this._typename = "TFile";
@@ -1108,7 +1108,7 @@ JSROOT.require(['rawinflate'], () => {
     * @param {number} [cycle=undefined] - cycle number, also can be included in obj_name
     * @returns {Promise} promise with object read
     * @example
-    *   JSROOT.OpenFile("https://root.cern/js/files/hsimple.root")
+    *   JSROOT.openFile("https://root.cern/js/files/hsimple.root")
     *         .then(f => f.ReadObject("hpxpy;1"))
     *         .then(obj => console.log(`Read object of type ${obj._typename}`))
     * });
@@ -2930,12 +2930,10 @@ JSROOT.require(['rawinflate'], () => {
     * @param {string|File} filename - name of file to open or instance of JS object to access local files, see https://developer.mozilla.org/en-US/docs/Web/API/File
     * @returns {object} - Promise with TFile instance when file is opened
     * @example
-    * JSROOT.OpenFile("https://root.cern/js/files/hsimple.root").then(f => {
-    *    console.log("Open file", f.fFileName);
-    * });
-    */
+    * JSROOT.openFile("https://root.cern/js/files/hsimple.root")
+    *        .then(f => console.log(`Open file ${f.fFileName}`)); */
 
-   JSROOT.OpenFile = function(filename, callback) {
+   JSROOT.openFile = function(filename) {
 
       let file;
 
@@ -2952,9 +2950,7 @@ JSROOT.require(['rawinflate'], () => {
       if (!file)
          file = new TFile(filename);
 
-      let promise = file ? file.Open() : Promise.reject(Error("No way to open file " + filename));
-
-      return callback ? promise.then(callback) : promise;
+      return file.Open();
    }
 
    jsrio.NativeArray = JSROOT.nodejs || (window && ('Float64Array' in window));

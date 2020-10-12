@@ -82,7 +82,7 @@
             if (filename.indexOf(".root")>0) {
                // load geometry from ROOT file
                let itemname = d.get("item") || "geom";
-               JSROOT.OpenFile(filename)
+               JSROOT.openFile(filename)
                      .then(file => file.ReadObject(itemname))
                      .then(add_geometry);
             } else {

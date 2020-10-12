@@ -699,8 +699,8 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
             }
 
             if (fff._file) ReadFileObject(fff._file); else
-            if (fff._localfile) JSROOT.OpenFile(fff._localfile).then(f => ReadFileObject(f)); else
-            if (fff._fullurl) JSROOT.OpenFile(fff._fullurl).then(f => ReadFileObject(f));
+            if (fff._localfile) JSROOT.openFile(fff._localfile).then(f => ReadFileObject(f)); else
+            if (fff._fullurl) JSROOT.openFile(fff._fullurl).then(f => ReadFileObject(f));
          }
       };
 
@@ -1634,7 +1634,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
 
       JSROOT.progress("Opening " + filepath + " ...");
 
-      JSROOT.OpenFile(filepath).then(file => {
+      JSROOT.openFile(filepath).then(file => {
 
          let h1 = this.FileHierarchy(file);
          h1._isopen = true;

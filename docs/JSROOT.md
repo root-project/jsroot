@@ -677,7 +677,7 @@ Therefore, callback functions are used to react when the I/O operation completed
 For example, reading an object from a file and displaying it will look like:
 
     var filename = "https://root.cern/js/files/hsimple.root";
-    JSROOT.OpenFile(filename).then(file => {
+    JSROOT.openFile(filename).then(file => {
        file.ReadObject("hpxpy;1").then(obj => {
           JSROOT.draw("drawing", obj, "colz");
        });
@@ -686,7 +686,7 @@ For example, reading an object from a file and displaying it will look like:
 Using async function, one can write following:
 
       async function read_and_draw_async() {
-         let file = await JSROOT.OpenFile(filename);
+         let file = await JSROOT.openFile(filename);
          let obj = await file.ReadObject("hpxpy;1");
          await JSROOT.draw("drawing", obj, "colz");
       }
@@ -701,13 +701,13 @@ Here is [running example](https://root.cern/js/latest/api.htm#custom_html_read_r
 
 Simple TTree::Draw operation can be performed with following code:
 
-    JSROOT.OpenFile("https://root.cern/js/files/hsimple.root")
+    JSROOT.openFile("https://root.cern/js/files/hsimple.root")
           .then(file => file.ReadObject("ntuple;1"))
           .then(tree => JSROOT.draw("drawing", tree, "px:py::pz>5"));
 
 To get access to selected branches, one should use TSelector class:
 
-    JSROOT.OpenFile("https://root.cern/js/files/hsimple.root")
+    JSROOT.openFile("https://root.cern/js/files/hsimple.root")
           .then(file => file.ReadObject("ntuple;1"))
           .then(tree => {
 

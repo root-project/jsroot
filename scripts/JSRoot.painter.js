@@ -3581,7 +3581,7 @@ JSROOT.require(['d3'], (d3) => {
     *
     * @example
     * let filename = "https://root.cern/js/files/hsimple.root";
-    * JSROOT.OpenFile(filename).then(file => {
+    * JSROOT.openFile(filename).then(file => {
     *    file.ReadObject("hpxpy;1").then(obj => {
     *       JSROOT.draw("drawing", obj, "colz;logx;gridx;gridy");
     *    });
