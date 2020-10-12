@@ -629,7 +629,6 @@
    }
 
    /** @summary Generate mask for given bit
-    *
     * @param {number} n bit number
     * @returns {Number} produced make
     * @private */
@@ -637,10 +636,8 @@
 
    /**
     * @summary Seed simple random generator
-    *
-    * @private
     * @param {number} i seed value
-    */
+    * @private */
    JSROOT.seed = function(i) {
       i = Math.abs(i);
       if (i > 1e8) i = Math.abs(1e8 * Math.sin(i)); else
@@ -816,7 +813,7 @@
          map = { obj: [], clones: [], nofunc: nofunc };
       } else {
          const i = map.obj.indexOf(src);
-         if (i>=0) return map.clones[i];
+         if (i >= 0) return map.clones[i];
       }
 
       let proto = Object.prototype.toString.apply(src);
@@ -853,8 +850,7 @@
       for (let k in src) {
          if (typeof src[k] === 'object')
             tgt[k] = JSROOT.clone(src[k], map);
-         else
-         if (!map.nofunc || (typeof src[k]!=='function'))
+         else if (!map.nofunc || (typeof src[k]!=='function'))
             tgt[k] = src[k];
       }
 
@@ -881,7 +877,7 @@
     * @summary Method converts JavaScript object into ROOT-like JSON
     *
     * @desc Produced JSON can be used in JSROOT.parse() again
-    * When performed properly, JSON can be used in TBufferJSON to read data back with C++
+    * When performed properly, JSON can be used in [TBufferJSON::fromJSON()]{@link https://root.cern/doc/master/classTBufferJSON.html#a2ecf0daacdad801e60b8093a404c897d} method to read data back with C++
     */
    JSROOT.toJSON = function(obj) {
       if (!obj || typeof obj !== 'object') return "";
@@ -939,7 +935,6 @@
     *
     * @param {string} [url] URL string with options, document.URL will be used when not specified
     * @returns {Object} with ```.has(opt)``` and ```.get(opt,dflt)``` methods
-    * @memberOf JSROOT
     * @example
     * let d = JSROOT.decodeUrl("any?opt1&op2=3");
     * console.log(`Has opt1 ${d.has("opt1")}`);     // true
@@ -947,7 +942,7 @@
     * console.log(`Get opt2 ${d.get("opt2")}`);     // "3"
     * console.log(`Get opt3 ${d.get("opt3","-")}`); // "-"
     */
-   let decodeUrl = (url) => {
+   JSROOT.decodeUrl = function(url) {
       let res = {
          opts: {},
          has: function(opt) { return this.opts[opt] !== undefined; },
@@ -993,25 +988,9 @@
       return res;
    }
 
-   /**
-    * @summary Returns URL option from url after '?' mark value
-    *
-    * @desc Following options supported ?opt1&opt2=3
-    * In case of opt1 empty string will be returned, in case of opt2 '3'
-    * If option not found, null is returned (or default value value if provided)
-    *
-    * @param {string} opt option to search
-    * @param {string} [url] URL string with options, document.URL will be used when not specified
-    * @param {string} [dflt] default value returned when parameter value not found
-    * @returns {string|null} found value
-    * @memberOf JSROOT
-    * @private
-    */
-
-   let GetUrlOption = (opt, url, dflt) => {
-      let res = decodeUrl(url);
-      if (dflt === undefined) dflt = null;
-      return res.get(opt, dflt);
+   // FIXME: for backward compatibility with v5, will be remove in JSROOT v6.2
+   JSROOT.GetUrlOption = function(opt, url, dflt) {
+      return JSROOT.decodeUrl(url).get(opt, dflt === undefined ? null : dflt);
    }
 
    /**
@@ -1279,15 +1258,9 @@
    }
 
    /** @summary Method to build JSROOT GUI with browser
-    * @private
-    */
-   JSROOT.BuildSimpleGUI = function(user_scripts, andThen) {
-      if (typeof user_scripts == 'function') {
-         andThen = user_scripts;
-         user_scripts = null;
-      }
-
-      let d = decodeUrl(),
+    * @private */
+   JSROOT.BuildSimpleGUI = function(user_scripts) {
+      let d = JSROOT.decodeUrl(),
           debugout,
           nobrowser = d.has('nobrowser'),
           requirements = "gpad;hierarchy;",
@@ -1320,10 +1293,9 @@
       if (user_scripts) requirements += "io;gpad;";
 
       // TODO: restore debugout
-      JSROOT.require(requirements)
-            .then(() => JSROOT.require(user_scripts))
-            .then(() => JSROOT.CallBack(JSROOT.findFunction(nobrowser ? 'JSROOT.BuildNobrowserGUI' : 'JSROOT.BuildSimpleGUI')))
-            .then(() => JSROOT.CallBack(andThen));
+      return JSROOT.require(requirements)
+                   .then(() => JSROOT.require(user_scripts))
+                   .then(() => JSROOT.CallBack(JSROOT.findFunction(nobrowser ? 'JSROOT.BuildNobrowserGUI' : 'JSROOT.BuildSimpleGUI')));
    }
 
    /** @summary Create some ROOT classes
@@ -2067,6 +2039,7 @@
       if ((msg !== undefined) && (typeof msg=="string")) console.log(msg);
    }
 
+   // Connects web window
    JSROOT.ConnectWebWindow = function(arg) {
       if (typeof arg == 'function') arg = { callback: arg };
 
@@ -2091,36 +2064,34 @@
       });
    }
 
-   /** Initialize JSROOT.
-    * Called when script is loaded. Process URL parameters, supplied with JSRootCore.js script
-    * @private
-    */
+   /** @summary Initialize JSROOT.
+    * @desc Called when main JSRootCore.js script is loaded. Process URL parameters, supplied with JSRootCore.js script
+    * @private */
    _.init = function() {
 
       if (!source_fullpath) return this;
 
-      function window_on_load(func) {
-         if (func!=null) {
-            if (document.attachEvent ? document.readyState === 'complete' : document.readyState !== 'loading')
-               func();
-            else
-               window.onload = func;
-         }
-         return JSROOT;
+      function window_on_load() {
+         if (document.attachEvent ? document.readyState === 'complete' : document.readyState !== 'loading')
+            return Promise.resolve(true);
+
+         return new Promise(resolve => {
+            window.onload = resolve;
+         });
       }
 
-      let d = decodeUrl(source_fullpath);
+      let d = JSROOT.decodeUrl(source_fullpath);
 
       if (d.has('nocache')) JSROOT.nocache = (new Date).getTime(); // use timestamp to overcome cache limitation
-      if (d.has('wrong_http_response') || decodeUrl().has('wrong_http_response'))
+      if (d.has('wrong_http_response') || JSROOT.decodeUrl().has('wrong_http_response'))
          JSROOT.wrong_http_response_handling = true; // server may send wrong content length by partial requests, use other method to control this
 
       // in case of require.js one have to use timeout to decople loading
       if (_.amd)
-         return window_on_load(() => setTimeout(() => JSROOT.BuildSimpleGUI('check_existing_elements'), 50));
+         return window_on_load().then(() => setTimeout(() => JSROOT.BuildSimpleGUI('check_existing_elements'), 50));
 
       if (d.has('gui'))
-         return window_on_load(() => JSROOT.BuildSimpleGUI());
+         return window_on_load().then(() => JSROOT.BuildSimpleGUI());
 
       let prereq = "", user = d.get('load'), onload = d.get('onload');
       if (d.has('io')) prereq += "io;";
@@ -2139,25 +2110,15 @@
 
       if (user) prereq += "io;gpad;load:" + user;
 
-      if ((prereq.length>0) || (onload!=null))
-         window_on_load(() => {
-            JSROOT.require(prereq).then(() => {
-               if (onload) {
-                  onload = JSROOT.findFunction(onload);
-                  if (typeof onload == 'function') onload();
-                }
-            })
-         });
+      if (prereq || onload)
+         window_on_load().then(() => JSROOT.require(prereq))
+                         .then(() => JSROOT.CallBack(onload));
 
       return this;
    }
 
    JSROOT._ = _;
    JSROOT.browser = browser;
-   JSROOT.decodeUrl = decodeUrl;
-
-   // FIXME: remove in JSROOT 6.2, keep here to make transition easier
-   JSROOT.GetUrlOption = GetUrlOption;
 
    return JSROOT;
 
