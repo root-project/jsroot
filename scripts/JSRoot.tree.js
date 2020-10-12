@@ -161,7 +161,7 @@ JSROOT.require(['io', 'math'], (jsrio, jsrmath) => {
 
          if (typ === "object") {
             if (obj._typename !== undefined) {
-               if (JSROOT.IsRootCollection(obj)) { obj = obj.arr; typ = "array"; }
+               if (JSROOT.isRootCollection(obj)) { obj = obj.arr; typ = "array"; }
                else typ = "any";
             } else if (!isNaN(obj.length) && (JSROOT.CheckArrayPrototype(obj) > 0)) {
                typ = "array";
@@ -350,7 +350,7 @@ JSROOT.require(['io', 'math'], (jsrio, jsrmath) => {
                      arriter.push(undefined);
                   } else {
                      let objclass = jsrio.GetBranchObjectClass(br, tree, false, true);
-                     if (objclass && JSROOT.IsRootCollection(null, objclass)) arriter.push(undefined);
+                     if (objclass && JSROOT.isRootCollection(null, objclass)) arriter.push(undefined);
                   }
                }
                arriter.push(code.substr(prev, pos2 - prev));
@@ -446,7 +446,7 @@ JSROOT.require(['io', 'math'], (jsrio, jsrmath) => {
 
          // try to check if branch is array and need to be iterated
          if (this.brarray[n] === undefined)
-            this.brarray[n] = (JSROOT.CheckArrayPrototype(arg[name]) > 0) || JSROOT.IsRootCollection(arg[name]);
+            this.brarray[n] = (JSROOT.CheckArrayPrototype(arg[name]) > 0) || JSROOT.isRootCollection(arg[name]);
 
          // no array - no pain
          if (this.brarray[n] === false) continue;

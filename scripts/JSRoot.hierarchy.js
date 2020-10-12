@@ -79,7 +79,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
    }
 
    function ListHierarchy(folder, lst) {
-      if (!JSROOT.IsRootCollection(lst)) return false;
+      if (!JSROOT.isRootCollection(lst)) return false;
 
       if ((lst.arr === undefined) || (lst.arr.length === 0)) {
          folder._more = false;
@@ -415,7 +415,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
                      case 'TLatex': item._value = fld.fTitle; break;
                      case 'TObjString': item._value = fld.fString; break;
                      default:
-                        if (JSROOT.IsRootCollection(fld) && (typeof fld.arr === "object")) {
+                        if (JSROOT.isRootCollection(fld) && (typeof fld.arr === "object")) {
                            item._value = fld.arr.length ? "[...]" : "[]";
                            item._title += ", size:"  + fld.arr.length;
                            if (fld.arr.length>0) item._more = true;
@@ -2540,7 +2540,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
             });
       }
 
-      if (JSROOT.IsRootCollection(obj)) {
+      if (JSROOT.isRootCollection(obj)) {
          painter.h._name = obj.name || obj._typename;
          ListHierarchy(painter.h, obj);
       } else {

@@ -2005,15 +2005,17 @@
    }
 
    /** @summary Add methods for specified type.
-    * Will be automatically applied when decoding JSON string
+    * @desc Will be automatically applied when decoding JSON string
     * @private */
    JSROOT.registerMethods = function(typename, m) {
       JSROOT.methodsCache[typename] = m;
    }
 
    /** @summary Returns true if object represents basic ROOT collections
-    * @private */
-   JSROOT.IsRootCollection = function(lst, typename) {
+     * @desc Checks if type is TList or TObjArray or TClonesArray or TMap or THashList
+     * @param {object} lst - object to check
+     * @param {string} [typename] - or just typename to check */
+   JSROOT.isRootCollection = function(lst, typename) {
       if (lst && (typeof lst === 'object')) {
          if ((lst.$kind === "TList") || (lst.$kind === "TObjArray")) return true;
          if (!typename) typename = lst._typename;
