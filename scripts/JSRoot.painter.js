@@ -163,7 +163,8 @@ JSROOT.require(['d3'], (d3) => {
       let mathjax = d.get("mathjax", null), latex = d.get("latex", null);
 
       if ((mathjax !== null) && (mathjax != "0") && (latex === null)) latex = "math";
-      if (latex !== null) g.Latex = latex; // decoding will be performed with the first text drawing
+      if (latex !== null)
+         s.Latex = JSROOT.constants.Latex.fromString(latex);
 
       if (d.has("nomenu")) s.ContextMenu = false;
       if (d.has("noprogress")) s.ProgressBox = false;
@@ -3059,22 +3060,6 @@ JSROOT.require(['d3'], (d3) => {
          }
       }
 
-      if (typeof JSROOT.gStyle.Latex == 'string') {
-         switch (JSROOT.gStyle.Latex) {
-            case "off": JSROOT.gStyle.Latex = 0; break;
-            case "symbols": JSROOT.gStyle.Latex = 1; break;
-            case "MathJax":
-            case "mathjax":
-            case "math": JSROOT.gStyle.Latex = 3; break;
-            case "AlwaysMathJax":
-            case "alwaysmath":
-            case "alwaysmathjax": JSROOT.gStyle.Latex = 4; break;
-            default:
-               let code = parseInt(JSROOT.gStyle.Latex);
-               JSROOT.gStyle.Latex = (!isNaN(code) && (code >= 0) && (code <= 4)) ? code : 2;
-         }
-      }
-
       // include drawing into list of all args
       arg.draw_g.property('all_args').push(arg);
       arg.ready = false; // indicates if drawing is ready for post-processing
@@ -3083,7 +3068,8 @@ JSROOT.require(['d3'], (d3) => {
           use_mathjax = (arg.latex == 2);
 
       if (arg.latex === 1)
-         use_mathjax = (JSROOT.gStyle.Latex > 3) || ((JSROOT.gStyle.Latex == 3) && arg.text.match(/[#{\\]/g));
+         use_mathjax = (JSROOT.settings.Latex == JSROOT.constants.Latex.AlwaysMathJax) ||
+                       ((JSROOT.settings.Latex == JSROOT.constants.Latex.MathJax) && arg.text.match(/[#{\\]/g));
 
       arg.font = font; // use in latex conversion
 
@@ -3097,9 +3083,9 @@ JSROOT.require(['d3'], (d3) => {
          if (arg.font_size) arg.txt_node.attr("font-size", arg.font_size);
                        else arg.font_size = font.size;
 
-         arg.plain = !arg.latex || (JSROOT.gStyle.Latex < 2);
+         arg.plain = !arg.latex || (JSROOT.settings.Latex == JSROOT.constants.Latex.Off) || (JSROOT.settings.Latex == JSROOT.constants.Latex.Symbols);
 
-         arg.simple_latex = arg.latex && (JSROOT.gStyle.Latex == 1);
+         arg.simple_latex = arg.latex && (JSROOT.settings.Latex == JSROOT.constants.Latex.Symbols);
 
          if (!arg.plain || arg.simple_latex) {
             JSROOT.require(['latex']).then(ltx => {
@@ -3224,7 +3210,7 @@ JSROOT.require(['d3'], (d3) => {
          let txt = (this.txt._typename && (this.txt._typename == "TObjString")) ? this.txt.fString : this.txt.value;
          if (typeof txt != 'string') txt = "<undefined>";
 
-         let mathjax = this.txt.mathjax || (JSROOT.gStyle.Latex == 4);
+         let mathjax = this.txt.mathjax || (JSROOT.settings.Latex == JSROOT.constants.Latex.AlwaysMathJax);
 
          if (!mathjax && !('as_is' in this.txt)) {
             let arr = txt.split("\n"); txt = "";

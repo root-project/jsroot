@@ -175,12 +175,20 @@
       return res;
    }
 
+   /** @namespace
+     * @desc Specialized JSROOT constants, used in {@link JSROOT.settings} */
    JSROOT.constants = {
+      /** @summary Kind of 3D rendering
+        * @namespace */
       Render3D: {
-         Default: 0,     //
-         WebGL: 1,       // use WebGL rendering
-         WebGLImage: 2,  // convert WebGL into svg:image
-         SVG: 3,         // use SVGRenderer
+         /** @summary Default 3D rendering, normally WebGL, if not supported - SVG*/
+         Default: 0,
+         /** @summary Use normal WebGL rendering and place as interactive Canvas element on HTML page */
+         WebGL: 1,
+         /** @summary Use WebGL rendering, but convert into svg image, not interactive */
+         WebGLImage: 2,
+         /** @summary Use SVG rendering, slow, inprecise and not interactive, nor recommendet */
+         SVG: 3,
          fromString: function(s) {
             if ((s === "webgl") || (s == "gl")) return this.WebGL;
             if (s === "img") return this.WebGLImage;
@@ -188,16 +196,54 @@
             return this.Default;
          }
       },
+      /** @summary Way to embed 3D into SVG
+        * @namespace */
       Embed3D: {
-         NoEmbed: -1,  // 3d drawing use full available space
-         Default: 0,   // default
-         Overlay: 1,   // overlay
-         Embed: 2,     // embed
-         EmbedSVG: 3,  // embeding SVG image or SVG structures
+         /** @summary Do not embed 3D drawing, use complete space */
+         NoEmbed: -1,
+         /** @summary Default embeding mode, on Firefox is really ```Embed```, on all other ```Overlay``` */
+         Default: 0,
+         /** @summary WebGL canvas not inserted into SVG, but just overlayed The only way how Chrome browser can be used */
+         Overlay: 1,
+         /** @summary Really embed WebGL Canvas into SVG, only works with Firefox */
+         Embed: 2,
+         /** @summary Embeding, but when SVG rendering or SVG image converion is used
+           * @private */
+         EmbedSVG: 3,
          fromString: function(s) {
             if (s === "embed") return this.Embed;
             if (s === "overlay") return this.Overlay;
             return this.Default;
+         }
+      },
+      /** @summary How to use latex in text drawing
+        * @namespace */
+      Latex: {
+         /** @summary do not use Latex at all for text drawing */
+         Off: 0,
+         /** @summary convert only known latex symbols */
+         Symbols: 1,
+         /** @summary normal latex processing */
+         Normal: 2,
+         /** @summary use MathJax for complex cases, otherwise simple SVG text */
+         MathJax: 3,
+         /** @summary always use MathJax for text rendering */
+         AlwaysMathJax: 4,
+         fromString: function(s) {
+            if (!s || (typeof s !== 'string'))
+               return this.Normal;
+            switch(s){
+               case "off": return this.Off;
+               case "symbols": return this.Symbols;
+               case "MathJax":
+               case "mathjax":
+               case "math": return this.MathJax;
+               case "AlwaysMathJax":
+               case "alwaysmath":
+               case "alwaysmathjax": return this.AlwaysMathJax;
+            }
+            let code = parseInt(s);
+            return (!isNaN(code) && (code >= this.Off) && (code <= this.AlwaysMathJax)) ? code : this.Normal;
          }
       }
    };
@@ -205,11 +251,11 @@
    /** @namespace
      * @desc Central JSROOT settings, independent from {@link JSROOT.gStyle} */
    JSROOT.settings = {
-      /** @summary Render of 3D drawing methods */
+      /** @summary Render of 3D drawing methods, see {@link JSROOT.constants.Render3D} for possible values */
       Render3D: JSROOT.constants.Render3D.Default,
-      /** @summary Render of 3D drawing methods in batch mode */
+      /** @summary Render of 3D drawing methods in batch mode, see {@link JSROOT.constants.Render3D} for possible values */
       Render3DBatch: JSROOT.constants.Render3D.Default,
-      /** @summary Way to embed 3D drawing in SVG */
+      /** @summary Way to embed 3D drawing in SVG, see {@link JSROOT.constants.Embed3D} for possible values */
       Embed3D: JSROOT.constants.Embed3D.Default,
       /** @summary Enable or disable tooltips, default on */
       Tooltip: true,
@@ -253,6 +299,8 @@
       SmallPad: { width: 150, height: 100 },
       /** @summary Default color palette id  */
       Palette: 57,
+      /** @summary Configures Latex usage, see {@link JSROOT.constants.Latex} for possible values */
+      Latex: 2,
       /** @summary custom format for all X values, when not specified {@link JSROOT.gStyle#fStatFormat} is used */
       XValuesFormat : undefined,
       /** @summary custom format for all Y values, when not specified {@link JSROOT.gStyle#fStatFormat} is used */
@@ -266,7 +314,6 @@
      *       or can be load from the file providing style=itemname in the URL
      * @namespace */
    JSROOT.gStyle = {
-         Latex: 2,    // 0 - never, 1 - only latex symbols, 2 - normal TLatex processing (default), 3 - use MathJax for complex case, 4 - use MathJax always
          GeoGradPerSegm: 6, // amount of grads per segment in TGeo spherical shapes like tube
          GeoCompressComp: true, // if one should compress faces after creation of composite shape,
          IgnoreUrlOptions: false, // if true, ignore all kind of URL options in the browser URL

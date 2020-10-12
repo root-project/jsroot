@@ -62,16 +62,18 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
       let res = "";
       if (value) {
          value = Math.round(value/Math.pow(10,order));
-         if ((value!=0) && (value!=1)) res = value.toString() + (JSROOT.gStyle.Latex ? "#times" : "x");
+         if ((value!=0) && (value!=1)) res = value.toString() + (JSROOT.settings.Latex ? "#times" : "x");
       }
       res += "10";
-      if (JSROOT.gStyle.Latex > 1) return res + "^{" + order + "}";
-      let superscript_symbols = {
+      if (JSROOT.settings.Latex > JSROOT.constants.Latex.Symbols)
+         return res + "^{" + order + "}";
+      const superscript_symbols = {
             '0': '\u2070', '1': '\xB9', '2': '\xB2', '3': '\xB3', '4': '\u2074', '5': '\u2075',
             '6': '\u2076', '7': '\u2077', '8': '\u2078', '9': '\u2079', '-': '\u207B'
          };
       let str = order.toString();
-      for (let n=0;n<str.length;++n) res += superscript_symbols[str[n]];
+      for (let n = 0; n < str.length; ++n)
+         res += superscript_symbols[str[n]];
       return res;
    }
 
