@@ -782,39 +782,34 @@ Here is [running example](https://root.cern/js/latest/api.htm#custom_html_geomet
 
 ### Use with Node.js
 
-Starting from version 5.2.0, JSROOT can be used in Node.js. To install it, use:
+To install latest JSROOT relelase, just do:
 
     [shell] npm install jsroot
 
 To use in the Node.js scripts, one should add following line:
 
-     var jsroot = require('jsroot');
+     let jsroot = require('jsroot');
 
 Using JSROOT functionality, one can open binary ROOT files (local and remote), parse ROOT JSON,
 create SVG output. For example, to create SVG image with lego plot, one should do:
 
-    var jsroot = require("jsroot");
-    var fs = require("fs");
+    let jsroot = require("jsroot");
+    let fs = require("fs");
 
-    jsroot.OpenFile("https://root.cern/js/files/hsimple.root").then(file => {
-       file.ReadObject("hpx;1").then(obj => {
-          jsroot.MakeSVG({ object: obj, option: "lego2", width: 1200, height: 800 }).then(svg => {
-             fs.writeFileSync("lego2.svg", svg);
-          });
-       });
-     });
+    jsroot.OpenFile("https://root.cern/js/files/hsimple.root")
+          .then(file => file.ReadObject("hpx;1")
+          .then(obj => jsroot.makeSVG({ object: obj, option: "lego2", width: 1200, height: 800 }))
+          .then(svg => fs.writeFileSync("lego2.svg", svg));
 
 It is also possible to convert any JavaScript object into ROOT JSON string, using **JSROOT.toJSON()** function. Like:
 
-    var jsroot = require("jsroot");
-    var fs = require("fs");
+    let jsroot = require("jsroot");
+    let fs = require("fs");
 
-    jsroot.OpenFile("https://root.cern/js/files/hsimple.root").then(file => {
-       file.ReadObject("hpxpy;1").then(obj => {
-          var json = jsroot.toJSON(obj);
-          fs.writrFileSync("hpxpy.json", json);
-       });
-    });
+    jsroot.OpenFile("https://root.cern/js/files/hsimple.root")
+          .then(file => file.ReadObject("hpxpy;1"))
+          .then(obj => jsroot.toJSON(obj))
+          .then(json => fs.writrFileSync("hpxpy.json", json));
 
 Such JSON string could be parsed by any other JSROOT-based application.
 

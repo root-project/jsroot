@@ -1236,8 +1236,8 @@
    }
 
    // Create SVG, defined in JSRoot.painter.js
-   JSROOT.MakeSVG = function(args) {
-      return JSROOT.require("painter").then(() => JSROOT.MakeSVG(args));
+   JSROOT.makeSVG = function(args) {
+      return JSROOT.require("painter").then(() => JSROOT.makeSVG(args));
    }
 
    /** @summary Method to build JSROOT GUI with browser
@@ -2121,7 +2121,8 @@
       return !callback ? res : res.then(callback);
    }
 
-
+   JSROOT.JSONR_unref = JSROOT.parse;
+   JSROOT.MakeSVG = JSROOT.makeSVG;
 
    JSROOT._ = _;
    JSROOT.browser = browser;

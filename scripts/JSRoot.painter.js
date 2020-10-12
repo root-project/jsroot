@@ -3777,7 +3777,7 @@ JSROOT.require(['d3'], (d3) => {
     * @param {number} [args.height = 800] - image height
     * @returns {Promise} with svg code
     */
-   JSROOT.MakeSVG = function(args) {
+   JSROOT.makeSVG = function(args) {
 
       if (!args) args = {};
 
