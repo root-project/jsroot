@@ -10,7 +10,7 @@
 
    <script type='text/javascript'>
       // here demonstrated that div can be used without id attribute
-      JSROOT.HttpRequest("hpx.json", 'object').then(function(obj) {
+      JSROOT.httpRequest("hpx.json", 'object').then(function(obj) {
          JSROOT.draw(document.getElementsByTagName("div")[0], obj, "hist");
       });
    </script>

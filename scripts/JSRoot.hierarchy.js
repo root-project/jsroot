@@ -896,7 +896,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
             if ((col == 'green') && ('_update_item' in hitem)) this.updateItems(hitem._update_item.split(";"));
          }
 
-      JSROOT.HttpRequest(url, 'text').then(callback, callback);
+      JSROOT.httpRequest(url, 'text').then(callback, callback);
    }
 
    HierarchyPainter.prototype.RefreshHtml = function(callback) {
@@ -1591,13 +1591,13 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
       this.ForEachJsonFile(function(item) { if (item._jsonfile==filepath) isfileopened = true; });
       if (isfileopened) return JSROOT.CallBack(call_back);
 
-      JSROOT.HttpRequest(filepath, 'object').then(res => {
+      JSROOT.httpRequest(filepath, 'object').then(res => {
          let h1 = { _jsonfile: filepath, _kind: "ROOT." + res._typename, _jsontmp: res, _name: filepath.split("/").pop() };
          if (res.fTitle) h1._title = res.fTitle;
          h1._get = function(item,itemname,callback) {
             if (item._jsontmp)
                return JSROOT.CallBack(callback, item, item._jsontmp);
-            JSROOT.HttpRequest(item._jsonfile, 'object').then(function(res) {
+            JSROOT.httpRequest(item._jsonfile, 'object').then(function(res) {
                item._jsontmp = res;
                JSROOT.CallBack(callback, item, item._jsontmp);
             });
@@ -1675,7 +1675,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
             return this.get(item, (item2, obj) => this.ApplyStyle(obj, call_back));
 
          if (style.indexOf('.json') > 0)
-            return JSROOT.HttpRequest(style, 'object')
+            return JSROOT.httpRequest(style, 'object')
                          .then(res => this.ApplyStyle(res, call_back));
       }
 
@@ -1866,7 +1866,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
          return AdoptHierarchy(h);
       }
 
-      JSROOT.HttpRequest(server_address + "h.json?compact=3", 'object').then(AdoptHierarchy);
+      JSROOT.httpRequest(server_address + "h.json?compact=3", 'object').then(AdoptHierarchy);
    }
 
    HierarchyPainter.prototype.GetOnlineProp = function(itemname) {

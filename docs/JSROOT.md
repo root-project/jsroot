@@ -608,7 +608,7 @@ Such JSON representation generated using the [TBufferJSON](https://root.cern/doc
 To access data from a remote web server, it is recommended to use the [XMLHttpRequest](http://en.wikipedia.org/wiki/XMLHttpRequest) class. JSROOT provides a special method to create such object and properly handle it in different browsers.
 For receiving JSON from a server one could use following code:
 
-    JSROOT.HttpRequest("http://your_root_server:8080/Canvases/c1/root.json", "object").then(obj => {
+    JSROOT.httpRequest("http://your_root_server:8080/Canvases/c1/root.json", "object").then(obj => {
        console.log('Read object of type ', obj._typename);
     });
 
@@ -637,7 +637,7 @@ The first argument is the id of the HTML div element, where drawing will be perf
 Here is complete [running example](https://root.cern/js/latest/api.htm#custom_html_read_json) ans [source code](https://github.com/root-project/jsroot/blob/master/demo/read_json.htm):
 
     var filename = "https://root.cern/js/files/th2ul.json.gz";
-    JSROOT.HttpRequest(filename, 'object').then(obj => {
+    JSROOT.httpRequest(filename, 'object').then(obj => {
        JSROOT.draw("drawing", obj, "lego");
     });
 

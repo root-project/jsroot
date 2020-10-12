@@ -3829,15 +3829,15 @@ JSROOT.require(['d3'], (d3) => {
       if (!JSROOT.nodejs)
          return build(d3.select('body').append("div").style("visible", "hidden"));
 
-      if (!JSROOT.nodejs_document) {
+      if (!JSROOT._.nodejs_document) {
          // use eval while old minifier is not able to parse newest Node.js syntax
          const { JSDOM } = require("jsdom");
-         JSROOT.nodejs_window = (new JSDOM("<!DOCTYPE html>hello")).window;
-         JSROOT.nodejs_document = JSROOT.nodejs_window.document; // used with three.js
-         JSROOT.nodejs_window.d3 = d3.select(JSROOT.nodejs_document); //get d3 into the dom
+         JSROOT._.nodejs_window = (new JSDOM("<!DOCTYPE html>hello")).window;
+         JSROOT._.nodejs_document = JSROOT._.nodejs_window.document; // used with three.js
+         JSROOT._.nodejs_window.d3 = d3.select(JSROOT._.nodejs_document); //get d3 into the dom
       }
 
-      return build(JSROOT.nodejs_window.d3.select('body').append('div'));
+      return build(JSROOT._.nodejs_window.d3.select('body').append('div'));
    }
 
    /**

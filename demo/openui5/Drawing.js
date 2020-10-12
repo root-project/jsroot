@@ -60,7 +60,7 @@ sap.ui.define([
             // object was already loaded
             this.drawObject(this.object, this.options);
          } else if (jsonfile) {
-            JSROOT.HttpRequest(jsonfile, 'object').then(function(obj) {
+            JSROOT.httpRequest(jsonfile, 'object').then(function(obj) {
                ctrl.drawObject(obj, ctrl.getDrawopt());
             });
          } else if (fname) {

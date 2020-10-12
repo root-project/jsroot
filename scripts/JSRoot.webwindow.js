@@ -148,7 +148,7 @@ JSROOT.require([], () => {
       this.receiver = receiver;
       this.protocol = [];
       this.cnt = 0;
-      JSROOT.HttpRequest("protocol.json", "text").then(res => this.get_protocol(res));
+      JSROOT.httpRequest("protocol.json", "text").then(res => this.get_protocol(res));
    }
 
    FileDumpSocket.prototype.get_protocol = function(res) {
@@ -176,7 +176,7 @@ JSROOT.require([], () => {
       // console.log("getting file", fname, "wait", this.wait_for_file);
       this.wait_for_file = true;
       this.cnt++;
-      JSROOT.HttpRequest(fname, (fname.indexOf(".bin") > 0 ? "buf" : "text")).then(this.get_file.bind(this));
+      JSROOT.httpRequest(fname, (fname.indexOf(".bin") > 0 ? "buf" : "text")).then(this.get_file.bind(this));
    }
 
    FileDumpSocket.prototype.get_file = function(res) {

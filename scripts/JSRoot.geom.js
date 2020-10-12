@@ -2900,7 +2900,7 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
 
       JSROOT.progress('Loading macro ' + script_name);
 
-      JSROOT.HttpRequest(script_name, "text").then(res => {
+      JSROOT.httpRequest(script_name, "text").then(res => {
          let lines = res.split('\n');
 
          function ProcessNextLine(indx) {

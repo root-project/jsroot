@@ -22,7 +22,7 @@
 
          let request_addr = addr || ("root" + (cnt % 20) + ".json");
 
-         JSROOT.HttpRequest(request_addr, 'object').then(function(histo) {
+         JSROOT.httpRequest(request_addr, 'object').then(function(histo) {
             if (!histo) {
                d3.select('#drawing').html("<h3>Can not get " + request_addr + " from the server</h3>");
                return;

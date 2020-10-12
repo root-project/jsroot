@@ -446,7 +446,7 @@ such kind of requests, which themselvs require data from POST block.
 
 To use `multi.json` request from the JavaScript, one should create special 'POST' HTTP request and properly parse it. JSROOT provides special method to do this:
 
-     JSROOT.HttpRequest("your_server/multi.json?number=3", "multi",
+     JSROOT.httpRequest("your_server/multi.json?number=3", "multi",
                         "Files/job1.root/hpx/root.json\nFiles/job1.root/hpxpy/root.json\nFiles/job1.root/hprof/root.json\n").then(function(res) {
               for (var n=0;n<res.length;++n) {
                  console.log('Requested element ', res[n]._typename);

@@ -5,7 +5,7 @@
 1. Skip IE support
 2. Upgrade d3.js to v6.1.1, due to significant changes in API skip support of older versions
 3. Make heavy use of Promise class
-4. Provide JSROOT.HttpRequest() function, which returns Promise instance
+4. Provide JSROOT.httpRequest() function, which returns Promise instance
 5. JSROOT.draw/JSROOT.redraw also returns Promise, skip callback parameter
 6. JSROOT.OpenFile() returns Promise, if callback specified, old API will be working
 7. Upgrade three.js to r121:

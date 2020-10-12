@@ -379,11 +379,11 @@
       fTimeOffset : 788918400 // UTC time at 01/01/95
    };
 
-    /** Method returns current document used in the
+    /** @summary Method returns current document used in the
       * @private */
     JSROOT.get_document = function() {
        if (JSROOT.nodejs)
-          return JSROOT.nodejs_document;
+          return _.nodejs_document;
        if (typeof document !== 'undefined')
           return document;
        if (typeof window == 'object')
@@ -988,11 +988,6 @@
       return res;
    }
 
-   // FIXME: for backward compatibility with v5, will be remove in JSROOT v6.2
-   JSROOT.GetUrlOption = function(opt, url, dflt) {
-      return JSROOT.decodeUrl(url).get(opt, dflt === undefined ? null : dflt);
-   }
-
    /**
     * @summary Find function with given name.
     *
@@ -1147,10 +1142,7 @@
 
    /**
     * @summary Submit asynchronoues http request
-    *
-    * @desc One should call req.send() to submit request
-    * kind of the request can be:
-    *
+    * @desc Following requests kind can be specified:
     *    - "bin" - abstract binary data, result as string
     *    - "buf" - abstract binary data, result as ArrayBuffer (default)
     *    - "text" - returns req.responseText
@@ -1159,19 +1151,17 @@
     *    - "xml" - returns req.responseXML
     *    - "head" - returns request itself, uses "HEAD" request method
     *    - "post" - creates post request, submits req.send(post_data)
-    *
     * @param {string} url - URL for the request
     * @param {string} kind - kind of requested data
     * @param {string} [post_data] - data submitted with post kind of request
     * @returns {Promise} Promise for requested data, result type depends from the kind
-    *
     * @example
-    * JSROOT.HttpRequest("https://root.cern/js/files/thstack.json.gz", "object")
+    * JSROOT.httpRequest("https://root.cern/js/files/thstack.json.gz", "object")
     *       .then(obj => console.log(`Get object of type ${obj._typename}`))
     *       .catch(err => console.error(err.message));
     */
 
-   JSROOT.HttpRequest = function(url, kind, post_data) {
+   JSROOT.httpRequest = function(url, kind, post_data) {
       return new Promise(function(accept, reject) {
          JSROOT.NewHttpRequest(url, kind, accept, reject).send(post_data || null);
       });
@@ -2119,12 +2109,17 @@
       return this;
    }
 
+   // FIXME: for backward compatibility, will be removed in v6.2
+   JSROOT.GetUrlOption = function(opt, url, dflt) {
+      return JSROOT.decodeUrl(url).get(opt, dflt === undefined ? null : dflt);
+   }
+
    JSROOT._ = _;
    JSROOT.browser = browser;
 
    return JSROOT;
 
-}));
 
-/// JSRootCore.js ends
+
+}));
 

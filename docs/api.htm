@@ -258,7 +258,7 @@
             if (srcload === "github")
                srcload = "https://raw.githubusercontent.com/root-project/jsroot/" + GetGithubBrunch() + entry.src;
 
-            JSROOT.HttpRequest(srcload, "text").then(function(res) {
+            JSROOT.httpRequest(srcload, "text").then(function(res) {
                var viewer = document.getElementById( 'viewer' );
                var srcviewer = document.getElementById( 'srcviewer' );
                viewer.style.display = 'none';

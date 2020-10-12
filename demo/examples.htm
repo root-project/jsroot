@@ -200,7 +200,7 @@
                 document.getElementById('viewer').style['background-color'] = "";
 
                 if (jsonname) {
-                   JSROOT.HttpRequest(jsonname, 'object').then(function(obj) {
+                   JSROOT.httpRequest(jsonname, 'object').then(function(obj) {
                       JSROOT.draw("viewer", obj, opt);
                    });
                 } else {
@@ -322,7 +322,7 @@
                hpainter.StartGUI(null, RunBigTest, url);
             } else if (jsonname.length > 0) {
                testfile = testobj = null;
-               JSROOT.HttpRequest(jsonname, 'object').then(function(obj) {
+               JSROOT.httpRequest(jsonname, 'object').then(function(obj) {
                   testobj = obj;
                   return JSROOT.draw("viewer", obj, opt).then(RunBigTest, RunBigTest);
                });

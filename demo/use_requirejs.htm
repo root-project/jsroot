@@ -13,7 +13,7 @@
       // first load JSRootCore.js script
       require(['../scripts/JSRootCore.min'], jsroot => {
 
-         jsroot.HttpRequest("canvas_tf1.json", 'object')   // request data
+         jsroot.httpRequest("canvas_tf1.json", 'object')   // request data
                .then(obj => jsroot.draw("drawing", obj));  // display object
       });
 

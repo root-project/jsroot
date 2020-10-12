@@ -2343,7 +2343,7 @@ JSROOT.require(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-m
          url += '&_ret_object_=' + hname;
 
          let SubmitDrawRequest = () => {
-            JSROOT.HttpRequest(url, 'object').then(res => {
+            JSROOT.httpRequest(url, 'object').then(res => {
                JSROOT.cleanup(this.drawid);
                JSROOT.draw(this.drawid, res, option);
             });
@@ -2352,7 +2352,7 @@ JSROOT.require(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-m
          if (this.askey) {
             // first let read tree from the file
             this.askey = false;
-            JSROOT.HttpRequest(this.url + "/root.json", 'text').then(SubmitDrawRequest);
+            JSROOT.httpRequest(this.url + "/root.json", 'text').then(SubmitDrawRequest);
          } else {
             SubmitDrawRequest();
          }

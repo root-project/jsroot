@@ -785,7 +785,7 @@ JSROOT.require(['rawinflate'], () => {
       if (!this.fAcceptRanges)
          return this.ReadKeys();
 
-      return JSROOT.HttpRequest(this.fURL, "head").then(res => {
+      return JSROOT.httpRequest(this.fURL, "head").then(res => {
          const accept_ranges = res.getResponseHeader("Accept-Ranges");
          if (!accept_ranges) this.fAcceptRanges = false;
          const len = res.getResponseHeader("Content-Length");
@@ -1521,14 +1521,14 @@ JSROOT.require(['rawinflate'], () => {
      * @param {binary} sinfo_rawdata - data of streamer info root.bin request
      * @returns {object} - created JavaScript object
      * @example
-     * JSROOT.HttpRequest("http://localhost:8080/Files/job1.root/hpx/root.bin", "buf")
-     *       .then(obj_data => JSROOT.HttpRequest("http://localhost:8080/StreamerInfo/root.bin", "buf"))
+     * JSROOT.httpRequest("http://localhost:8080/Files/job1.root/hpx/root.bin", "buf")
+     *       .then(obj_data => JSROOT.httpRequest("http://localhost:8080/StreamerInfo/root.bin", "buf"))
      *       .then(si_data => JSROOT.ReconstructObject("TH1F", obj_data, si_data))
      *       .then(histo => console.log(`Get histogram with title = ${histo.fTitle}`))
      *       .catch(err => console.error(err.message));
      *
      * // same data via root.json request
-     * JSROOT.HttpRequest("http://localhost:8080/Files/job1.root/hpx/root.json", "object")
+     * JSROOT.httpRequest("http://localhost:8080/Files/job1.root/hpx/root.json", "object")
      *       .then(histo => console.log(`Get histogram with title = ${histo.fTitle}`))
      *       .catch(err => console.error(err.message));
      */
