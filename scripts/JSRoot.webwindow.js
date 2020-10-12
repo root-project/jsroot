@@ -194,7 +194,7 @@ JSROOT.require([], () => {
     * @class WebWindowHandle
     * @memberof JSROOT
     * @summary Client communication handle for RWebWindow.
-    * Should be created with {@link JSROOT.ConnectWebWindow} function
+    * Should be created with {@link JSROOT.connectWebWindow} function
     * @constructor */
 
    function WebWindowHandle(socket_kind) {
@@ -579,7 +579,7 @@ JSROOT.require([], () => {
     * @returns {Promise} ready-to-use WebWindowHandle instance
     */
 
-   JSROOT.ConnectWebWindow = function(arg) {
+   JSROOT.connectWebWindow = function(arg) {
       if (typeof arg == 'function') arg = { callback: arg }; else
          if (!arg || (typeof arg != 'object')) arg = {};
 
@@ -594,7 +594,7 @@ JSROOT.require([], () => {
                if (elem) elem.innerHTML = '';
                delete arg.prereq_logdiv;
             }
-            return JSROOT.ConnectWebWindow(arg);
+            return JSROOT.connectWebWindow(arg);
          });
       }
 

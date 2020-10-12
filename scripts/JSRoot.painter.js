@@ -1205,7 +1205,8 @@ JSROOT.require(['d3'], (d3) => {
 
    // ========================================================================================
 
-   /** @class Basic painter class. */
+   /** @class Basic painter class. 
+     * */
 
    function BasePainter() {
       this.divid = null; // either id of element (preferable) or element itself

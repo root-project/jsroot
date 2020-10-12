@@ -778,11 +778,11 @@
          map.push(value);
 
          // add methods to all objects, where _typename is specified
-         if ('_typename' in value) JSROOT.addMethods(value);
+         if (value._typename) JSROOT.addMethods(value);
 
          for (let k = 0; k < len; ++k) {
-            let i = ks[k],
-                res = unref_value(value[i]);
+            const i = ks[k],
+                 res = unref_value(value[i]);
             if (res !== undefined) value[i] = res;
          }
       }
@@ -1554,7 +1554,7 @@
       }
 
       obj._typename = typename;
-      this.addMethods(obj);
+      this.addMethods(obj, typename);
       return obj;
    }
 
@@ -2029,7 +2029,7 @@
    }
 
    // Connects web window
-   JSROOT.ConnectWebWindow = function(arg) {
+   JSROOT.connectWebWindow = function(arg) {
       if (typeof arg == 'function') arg = { callback: arg };
 
       if (arg.openui5src) JSROOT.openui5src = arg.openui5src;
@@ -2049,7 +2049,7 @@
             delete arg.prereq_logdiv;
          }
          if (arg && arg.prereq) delete arg.prereq;
-         return JSROOT.ConnectWebWindow(arg);
+         return JSROOT.connectWebWindow(arg);
       });
    }
 
@@ -2123,11 +2123,12 @@
 
    JSROOT.JSONR_unref = JSROOT.parse;
    JSROOT.MakeSVG = JSROOT.makeSVG;
+   JSROOT.ConnectWebWindow = JSROOT.connectWebWindow;
+
 
    JSROOT._ = _;
    JSROOT.browser = browser;
    JSROOT.gStyle = gStyle;
-
 
    return JSROOT;
 

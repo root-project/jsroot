@@ -2134,7 +2134,7 @@ JSROOT.require(['io', 'math'], (jsrio, jsrmath) => {
                   buf.raw_shift = 0;
                } else {
                   // unpack data and create new blob
-                  let objblob = JSROOT.R__unzip(blob, basket.fObjlen, false, buf.o);
+                  let objblob = jsrio.R__unzip(blob, basket.fObjlen, false, buf.o);
 
                   if (objblob) {
                      buf = new JSROOT.TBuffer(objblob, 0, handle.file);

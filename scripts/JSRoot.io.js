@@ -5,6 +5,11 @@ JSROOT.require(['rawinflate'], () => {
 
    "use strict";
 
+   /** @summary Holder of IO functionality
+     * @alias JSROOT.IO
+     * @namespace
+     * @private */
+
    let jsrio = {
       kBase: 0, kOffsetL: 20, kOffsetP: 40,
       kChar: 1, kShort: 2, kInt: 3, kLong: 4, kFloat: 5, kCounter: 6, kCharStar: 7, kDouble: 8, kDouble32: 9, kLegacyChar: 10,
@@ -50,13 +55,16 @@ JSROOT.require(['rawinflate'], () => {
       kIsReferenced: JSROOT.BIT(4),
       kHasUUID: JSROOT.BIT(5),
 
+      /** @summary Returns true if type is integer */
       IsInteger: function(typ) {
          return ((typ >= this.kChar) && (typ <= this.kLong)) || (typ === this.kCounter) ||
             ((typ >= this.kLegacyChar) && (typ <= this.kBool));
       },
 
+      /** @summary Returns true if numeric type */
       IsNumeric: function(typ) { return (typ > 0) && (typ <= this.kBool) && (typ !== this.kCharStar); },
 
+      /** @summary Returns type by its name */
       GetTypeId: function(typname, norecursion) {
          switch (typname) {
             case "bool":
@@ -108,6 +116,7 @@ JSROOT.require(['rawinflate'], () => {
          return -1;
       },
 
+      /** @summary Get bytes size of the type */
       GetTypeSize: function(typname) {
          switch (typname) {
             case jsrio.kBool: return 1;
@@ -127,6 +136,7 @@ JSROOT.require(['rawinflate'], () => {
          return -1;
       },
 
+      /** @summary Let directly assign methods when doing I/O */
       AddClassMethods: function(clname, streamer) {
          // create additional entries in the streamer, which sets all methods of the class
 
@@ -146,10 +156,9 @@ JSROOT.require(['rawinflate'], () => {
          return streamer;
       },
 
+      /** @summary Analyze and returns arrays kind
+        * @desc 0 if TString (or equivalent), positive value - some basic type, -1 - any other kind */
       GetArrayKind: function(type_name) {
-         // returns type of array
-         // 0 - if TString (or equivalent)
-         // -1 - if any other kind
          if ((type_name === "TString") || (type_name === "string") ||
             (jsrio.CustomStreamers[type_name] === 'TString')) return 0;
          if ((type_name.length < 7) || (type_name.indexOf("TArray") !== 0)) return -1;
@@ -169,15 +178,14 @@ JSROOT.require(['rawinflate'], () => {
 
    }
 
-   /** Add custom streamer
+   /** @summary Add custom streamer
      * @private */
    JSROOT.addUserStreamer = function(type, user_streamer) {
       jsrio.CustomStreamers[type] = user_streamer;
    }
 
-   /** Reads header envelope, determines zipped size and unzip content
-     * @private */
-   JSROOT.R__unzip = function(arr, tgtsize, noalert, src_shift) {
+   /** @summary Reads header envelope, determines zipped size and unzip content */
+   jsrio.R__unzip = function(arr, tgtsize, noalert, src_shift) {
 
       const HDRSIZE = 9, totallen = arr.byteLength;
       let curr = src_shift || 0, fullres = 0, tgtbuf = null,
@@ -230,6 +238,10 @@ JSROOT.require(['rawinflate'], () => {
 
    // =================================================================================
 
+   /** @class
+     * @memberof JSROOT
+     * @private */
+
    function TBuffer(arr, pos, file, length) {
       // buffer takes with DataView as first argument
       this._typename = "TBuffer";
@@ -242,14 +254,28 @@ JSROOT.require(['rawinflate'], () => {
       this.last_read_version = 0;
    }
 
+   /** @summary locate position in the buffer  */
    TBuffer.prototype.locate = function(pos) { this.o = pos; }
+
+   /** @summary shift position in the buffer  */
    TBuffer.prototype.shift = function(cnt) { this.o += cnt; }
+
+   /** @summary Returns remaining place in the buffer */
    TBuffer.prototype.remain = function() { return this.length - this.o; }
+
+   /** @summary Get mapped object with provided tag */
    TBuffer.prototype.GetMappedObject = function(tag) { return this.fObjectMap[tag]; }
+
+   /** @summary Map object */
    TBuffer.prototype.MapObject = function(tag, obj) { if (obj !== null) this.fObjectMap[tag] = obj; }
+
+   /** @summary Map class */
    TBuffer.prototype.MapClass = function(tag, classname) { this.fClassMap[tag] = classname; }
+
+   /** @summary Get mapped class with provided tag */
    TBuffer.prototype.GetMappedClass = function(tag) { return (tag in this.fClassMap) ? this.fClassMap[tag] : -1; }
 
+   /** @summary Clear objects map */
    TBuffer.prototype.ClearObjectMap = function() {
       this.fObjectMap = {};
       this.fClassMap = {};
@@ -257,8 +283,8 @@ JSROOT.require(['rawinflate'], () => {
       this.fDisplacement = 0;
    }
 
+   /** @summary  read class version from I/O buffer */
    TBuffer.prototype.ReadVersion = function() {
-      // read class version from I/O buffer
       let ver = {}, bytecnt = this.ntou4(); // byte count
 
       if (bytecnt & jsrio.kByteCountMask)
@@ -283,6 +309,7 @@ JSROOT.require(['rawinflate'], () => {
       return ver;
    }
 
+   /** @summary Check bytecount after object streaming */
    TBuffer.prototype.CheckBytecount = function(ver, where) {
       if ((ver.bytecnt !== undefined) && (ver.off + ver.bytecnt !== this.o)) {
          if (where) {
@@ -295,6 +322,7 @@ JSROOT.require(['rawinflate'], () => {
       return true;
    }
 
+   /** @summary Read TString object (or equivalent) */
    TBuffer.prototype.ReadTString = function() {
       // stream a TString object from buffer
       // std::string uses similar binary format
@@ -309,9 +337,9 @@ JSROOT.require(['rawinflate'], () => {
       return (this.codeAt(pos) == 0) ? '' : this.substring(pos, pos + len);
    }
 
+    /** @summary read Char_t array as string
+      * @desc string either contains all symbols or until 0 symbol */
    TBuffer.prototype.ReadFastString = function(n) {
-      // read Char_t array as string
-      // string either contains all symbols or until 0 symbol
 
       let res = "", code, closed = false;
       for (let i = 0; (n < 0) || (i < n); ++i) {
@@ -374,7 +402,7 @@ JSROOT.require(['rawinflate'], () => {
       return this.arr.getFloat64(o);
    }
 
-   /** Reads array of n values from the I/O buffer */
+   /** @summary Reads array of n values from the I/O buffer */
    TBuffer.prototype.ReadFastArray = function(n, array_type) {
       let array, i = 0, o = this.o, view = this.arr;
       switch (array_type) {
@@ -533,9 +561,10 @@ JSROOT.require(['rawinflate'], () => {
       return key;
    }
 
+   /** @summary reading basket data
+     * @desc this is remaining part of TBasket streamer to decode fEntryOffset
+     * after unzipping of the TBasket data */
    TBuffer.prototype.ReadBasketEntryOffset = function(basket, offset) {
-      // this is remaining part of TBasket streamer to decode fEntryOffset
-      // after unzipping of the TBasket data
 
       this.locate(basket.fLast - offset);
 
@@ -563,8 +592,8 @@ JSROOT.require(['rawinflate'], () => {
          basket.fDisplacement = undefined;
    }
 
+   /** @summary read class definition from I/O buffer */
    TBuffer.prototype.ReadClass = function() {
-      // read class definition from I/O buffer
       let classInfo = { name: -1 }, tag = 0, bcnt = this.ntou4();
       const startpos = this.o;
 
@@ -658,9 +687,11 @@ JSROOT.require(['rawinflate'], () => {
 
    // ==============================================================================
 
-   // A class that reads a TDirectory from a buffer.
+   /** @class
+     * @summary A class that reads a TDirectory from a buffer.
+     * @memberof JSROOT
+     * @private */
 
-   // ctor
    function TDirectory(file, dirname, cycle) {
       this.fFile = file;
       this._typename = "TDirectory";
@@ -730,7 +761,7 @@ JSROOT.require(['rawinflate'], () => {
       });
    }
 
-   /** @class TFile
+   /** @class
      * @summary Interface to read objects from ROOT files
      * @memberOf JSROOT
      * @constructor
@@ -1079,7 +1110,7 @@ JSROOT.require(['rawinflate'], () => {
          if (key.fObjlen <= key.fNbytes - key.fKeylen) {
             buf = new TBuffer(blob1, 0, this);
          } else {
-            let objbuf = JSROOT.R__unzip(blob1, key.fObjlen);
+            let objbuf = jsrio.R__unzip(blob1, key.fObjlen);
             if (!objbuf) return Promise.reject(Error("Fail to UNZIP buffer"));
             buf = new TBuffer(objbuf, 0, this);
          }
@@ -1523,7 +1554,7 @@ JSROOT.require(['rawinflate'], () => {
      * @example
      * JSROOT.httpRequest("http://localhost:8080/Files/job1.root/hpx/root.bin", "buf")
      *       .then(obj_data => JSROOT.httpRequest("http://localhost:8080/StreamerInfo/root.bin", "buf"))
-     *       .then(si_data => JSROOT.ReconstructObject("TH1F", obj_data, si_data))
+     *       .then(si_data => JSROOT.reconstructObject("TH1F", obj_data, si_data))
      *       .then(histo => console.log(`Get histogram with title = ${histo.fTitle}`))
      *       .catch(err => console.error(err.message));
      *
@@ -1533,7 +1564,7 @@ JSROOT.require(['rawinflate'], () => {
      *       .catch(err => console.error(err.message));
      */
 
-   JSROOT.ReconstructObject = function(class_name, obj_rawdata, sinfo_rawdata) {
+   JSROOT.reconstructObject = function(class_name, obj_rawdata, sinfo_rawdata) {
 
       let file = new TFile;
       let buf = new TBuffer(sinfo_rawdata, 0, file);
