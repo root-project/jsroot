@@ -1285,7 +1285,7 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
 
       let painter = this;
 
-      this.SetTooltipAllowed(JSROOT.gStyle.Tooltip > 0);
+      this.SetTooltipAllowed(JSROOT.settings.Tooltip);
 
       this._controls = jsrp.CreateOrbitControl(this, this._camera, this._scene, this._renderer, this._lookat);
 

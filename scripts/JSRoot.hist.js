@@ -3821,7 +3821,7 @@ JSROOT.require(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          }
       }
 
-      let fill_for_interactive = !JSROOT.BatchMode && this.fillatt.empty() && draw_hist && (JSROOT.gStyle.Tooltip > 0) && !draw_markers && !show_line,
+      let fill_for_interactive = !JSROOT.BatchMode && this.fillatt.empty() && draw_hist && JSROOT.settings.Tooltip && !draw_markers && !show_line,
           h0 = height + 3;
       if (!fill_for_interactive) {
          let gry0 = Math.round(pmain.gry(0));

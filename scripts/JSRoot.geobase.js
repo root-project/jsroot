@@ -3552,10 +3552,10 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
          process(toplevel, 0, 1, 1000000);
    }
 
-   /** @summary Build three.js model for given geometry object.
-    * @param {Object} obj - TGeo-object Object
-    * @param {Object} opt - different options
-    * @param {Number} opt.vislevel - visibility level like TGeoManager
+   /** @summary Build three.js model for given geometry object
+    * @param {Object} obj - TGeo-related object
+    * @param {Object} [opt] - options
+    * @param {Number} [opt.vislevel=undefined] - visibility level like TGeoManager, when not specified - show all
     * @param {Number} [opt.numnodes=1000] - maximal number of visible nodes
     * @param {Number} [opt.numfaces=100000] - approx maximal number of created triangles
     * @param {boolean} [opt.doubleside=false] - use double-side material

@@ -120,7 +120,7 @@ JSROOT.require(['d3'], (d3) => {
    }
 
    jsrp.readStyleFromURL = function(url) {
-      let d = JSROOT.decodeUrl(url), g = JSROOT.gStyle;
+      let d = JSROOT.decodeUrl(url), g = JSROOT.gStyle, s = JSROOT.settings;
 
       if (d.has("optimize")) {
          g.OptimizeDraw = 2;
@@ -155,7 +155,10 @@ JSROOT.require(['d3'], (d3) => {
       }
 
       let tt = d.get("tooltip");
-      if (tt) g.Tooltip = parseInt(tt);
+      if ((tt == "off") || (tt == "false") || (tt == "0"))
+         s.Tooltip = false;
+      else if (d.has("tooltip"))
+         s.Tooltip = true;
 
       let mathjax = d.get("mathjax", null), latex = d.get("latex", null);
 

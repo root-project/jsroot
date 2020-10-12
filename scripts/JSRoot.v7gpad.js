@@ -3385,7 +3385,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
       // used for online canvas painter
       RPadPainter.call(this, canvas, true);
       this._websocket = null;
-      this.tooltip_allowed = (JSROOT.gStyle.Tooltip > 0);
+      this.tooltip_allowed = JSROOT.settings.Tooltip;
    }
 
    RCanvasPainter.prototype = Object.create(RPadPainter.prototype);

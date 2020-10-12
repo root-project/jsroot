@@ -858,7 +858,7 @@ JSROOT provides [example](https://root.cern/js/latest/demo/openui5/) showing usa
 
 ### Migration v5 -> v6
 
-In JSROOT v6 release many incompatible changes where done. Here small info about.
+In JSROOT v6 release some incompatible changes where done. Here small info about.
 
 Instead of `JSROOT.JSONR_unref` one can use `JSROOT.parse`. If object is provided to `JSROOT.parse` it just replaces all
 references which were introduced by `TBufferJSON::ToJSON()` method.
@@ -869,3 +869,5 @@ Painter classes were renamed:
    - `JSROOT.TBasePainter` -> `JSROOT.BasePainter`
    - `JSROOT.TObjectPainter` -> `JSROOT.ObjectPainter`
 
+Many settings where moved from `JSROOT.gStyle` to `JSROOT.settings` object. It was done to keep only TStyle-related members
+in `JSROOT.gStyle`.

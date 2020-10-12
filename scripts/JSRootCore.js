@@ -81,7 +81,7 @@
    /** @summary JSROOT version
      * @desc Typically the string in format "major.minor.patch date" or can be ROOT version when used from ROOT repository
      */
-   JSROOT.version = "pre6 9/10/2020";
+   JSROOT.version = "pre6 12/10/2020";
 
    /** @summary Location of JSROOT scripts
      * @desc Used to load other JSROOT scripts when required
@@ -202,18 +202,27 @@
       }
    };
 
-   // this is global settings independent from gStyle
+   /** @namespace
+     * @desc Central JSROOT settings, independent from {@link JSROOT.gStyle}
+     */
    JSROOT.settings = {
+      /** @summary Render of 3D drawing methods */
       Render3D: JSROOT.constants.Render3D.Default,
+      /** @summary Render of 3D drawing methods in batch mode */
       Render3DBatch: JSROOT.constants.Render3D.Default,
-      Embed3D: JSROOT.constants.Embed3D.Default
+      /** @summary Way to embed 3D drawing in SVG */
+      Embed3D: JSROOT.constants.Embed3D.Default,
+      /** @summary Enable or disable tooltips, default on */
+      Tooltip: true,
+      /** @summary Time in msec for appearance of tooltips, 0 - no animation */
+      TooltipAnimation: 500,
    };
 
-   // default draw styles, can be changed after loading of JSRootCore.js
-   // this style also can be changed providing style=itemname in the URL
+   /** @summary TStyle object like in ROOT
+     * @desc Includes default draw styles, can be changed after loading of JSRootCore.js
+     *       or can be load from the file providing style=itemname in the URL
+     * @namespace */
    JSROOT.gStyle = {
-         Tooltip: 1, // 0 - off, 1 - on
-         TooltipAnimation: 500, // time in msec for appearance of tooltips, 0 - no animation
          ContextMenu: true,
          Zooming: true,  // global zooming flag, enable/disable any kind of interactive zooming
          ZoomMouse: true,  // Zooming with the mouse events

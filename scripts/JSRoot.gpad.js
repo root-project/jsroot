@@ -3520,7 +3520,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
    function TCanvasPainter(canvas) {
       TPadPainter.call(this, canvas, true);
       this._websocket = null;
-      this.tooltip_allowed = (JSROOT.gStyle.Tooltip > 0);
+      this.tooltip_allowed = JSROOT.settings.Tooltip;
    }
 
    TCanvasPainter.prototype = Object.create(TPadPainter.prototype);

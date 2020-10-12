@@ -280,8 +280,8 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
             }
 
             if (was_empty)
-               if (JSROOT.gStyle.TooltipAnimation > 0)
-                  group.transition().duration(JSROOT.gStyle.TooltipAnimation).attrTween("opacity", translateFn());
+               if (JSROOT.settings.TooltipAnimation > 0)
+                  group.transition().duration(JSROOT.settings.TooltipAnimation).attrTween("opacity", translateFn());
                else
                   group.attr('opacity', 1);
          }

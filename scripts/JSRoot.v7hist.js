@@ -1429,7 +1429,7 @@ JSROOT.require(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       }
 
       let close_path = "";
-      let fill_for_interactive = !JSROOT.BatchMode && this.fillatt.empty() && options.Hist && (JSROOT.gStyle.Tooltip > 0) && !draw_markers && !show_line;
+      let fill_for_interactive = !JSROOT.BatchMode && this.fillatt.empty() && options.Hist && JSROOT.settings.Tooltip && !draw_markers && !show_line;
       if (!this.fillatt.empty() || fill_for_interactive) {
          let h0 = height + 3;
          if (fill_for_interactive) {

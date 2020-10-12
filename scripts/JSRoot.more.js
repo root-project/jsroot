@@ -1365,7 +1365,7 @@ JSROOT.require(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          lw = Math.floor((this.lineatt.width-1)/2); // one should take into account half of end-cup line width
 
          let visible = nodes.filter(function(d) { return (d.exlow > 0) || (d.exhigh > 0) || (d.eylow > 0) || (d.eyhigh > 0); });
-         if (!JSROOT.BatchMode && (JSROOT.gStyle.Tooltip > 0))
+         if (!JSROOT.BatchMode && JSROOT.settings.Tooltip)
             visible.append("svg:path")
                    .style("stroke", "none")
                    .style("fill", "none")
