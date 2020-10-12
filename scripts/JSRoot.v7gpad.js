@@ -1140,10 +1140,10 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
 
          let padw = this.pad_width(), padh = this.pad_height();
 
-         this.fX1NDC = this.v7EvalLength("margin_left", padw, JSROOT.gStyle.FrameNDC.fX1NDC)/padw;
-         this.fY1NDC = this.v7EvalLength("margin_bottom", padh, JSROOT.gStyle.FrameNDC.fY1NDC)/padh;
-         this.fX2NDC = 1 - this.v7EvalLength("margin_right", padw, 1-JSROOT.gStyle.FrameNDC.fX2NDC)/padw;
-         this.fY2NDC = 1 - this.v7EvalLength("margin_top", padh, 1-JSROOT.gStyle.FrameNDC.fY2NDC)/padh;
+         this.fX1NDC = this.v7EvalLength("margin_left", padw, JSROOT.settings.FrameNDC.fX1NDC)/padw;
+         this.fY1NDC = this.v7EvalLength("margin_bottom", padh, JSROOT.settings.FrameNDC.fY1NDC)/padh;
+         this.fX2NDC = 1 - this.v7EvalLength("margin_right", padw, 1-JSROOT.settings.FrameNDC.fX2NDC)/padw;
+         this.fY2NDC = 1 - this.v7EvalLength("margin_top", padh, 1-JSROOT.settings.FrameNDC.fY2NDC)/padh;
       }
 
       if (!this.fillatt)
@@ -2339,7 +2339,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
          .attr("height", rect.height)
          .call(this.fillatt.func);
 
-      this._fast_drawing = JSROOT.gStyle.SmallPad && ((rect.width < JSROOT.gStyle.SmallPad.width) || (rect.height < JSROOT.gStyle.SmallPad.height));
+      this._fast_drawing = JSROOT.settings.SmallPad && ((rect.width < JSROOT.settings.SmallPad.width) || (rect.height < JSROOT.settings.SmallPad.height));
 
       if (this.AlignBtns && btns)
          this.AlignBtns(btns, rect.width, rect.height);
@@ -2461,7 +2461,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
               .call(this.fillatt.func)
               .call(this.lineatt.func);
 
-      this._fast_drawing = JSROOT.gStyle.SmallPad && ((w < JSROOT.gStyle.SmallPad.width) || (h < JSROOT.gStyle.SmallPad.height));
+      this._fast_drawing = JSROOT.settings.SmallPad && ((w < JSROOT.settings.SmallPad.width) || (h < JSROOT.settings.SmallPad.height));
 
       if (svg_pad.property('can3d') === 1)
          // special case of 3D canvas overlay

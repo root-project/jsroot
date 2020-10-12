@@ -1003,8 +1003,7 @@ JSROOT.require(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    }
 
    /** @summary Check if user range can be unzommed
-    * @desc Used when graph points covers larger range than provided histogram
-    * @private*/
+    * @desc Used when graph points covers larger range than provided histogram */
    TGraphPainter.prototype.UnzoomUserRange = function(dox, doy /*, doz*/) {
       let graph = this.GetObject();
       if (this._own_histogram || !graph) return false;
@@ -1024,9 +1023,9 @@ JSROOT.require(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       return true;
    }
 
-   /** Returns true if graph drawing can be optimize */
+   /** @summary Returns true if graph drawing can be optimize */
    TGraphPainter.prototype.CanOptimize = function() {
-      return JSROOT.gStyle.OptimizeDraw > 0 && !this.options.NoOpt;
+      return (JSROOT.settings.OptimizeDraw > 0) && !this.options.NoOpt;
    }
 
    /** Returns optimized bins - if optimization enabled */

@@ -668,7 +668,7 @@ JSROOT.require(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
       // TODO: rewrite for RPalette functionality
       let curr = this.options.Palette, hpainter = this;
-      if ((curr===null) || (curr===0)) curr = JSROOT.gStyle.Palette;
+      if ((curr===null) || (curr===0)) curr = JSROOT.settings.Palette;
 
       function change(arg) {
          hpainter.options.Palette = parseInt(arg);

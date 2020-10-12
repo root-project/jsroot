@@ -1434,7 +1434,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
 
       if ((this.fX1NDC === undefined) || (force && !this.modified_NDC)) {
          if (!pad || (pad.fLeftMargin===undefined)) {
-            JSROOT.extend(this, JSROOT.gStyle.FrameNDC);
+            JSROOT.extend(this, JSROOT.settings.FrameNDC);
          } else {
             JSROOT.extend(this, {
                fX1NDC: pad.fLeftMargin,
@@ -2214,7 +2214,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
          .attr("height", rect.height)
          .call(this.fillatt.func);
 
-      this._fast_drawing = JSROOT.gStyle.SmallPad && ((rect.width < JSROOT.gStyle.SmallPad.width) || (rect.height < JSROOT.gStyle.SmallPad.height));
+      this._fast_drawing = JSROOT.settings.SmallPad && ((rect.width < JSROOT.settings.SmallPad.width) || (rect.height < JSROOT.settings.SmallPad.height));
 
       this.DrawActiveBorder(fill_rect);
 
@@ -2332,7 +2332,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
 
       this.DrawActiveBorder(svg_rect);
 
-      this._fast_drawing = JSROOT.gStyle.SmallPad && ((w < JSROOT.gStyle.SmallPad.width) || (h < JSROOT.gStyle.SmallPad.height));
+      this._fast_drawing = JSROOT.settings.SmallPad && ((w < JSROOT.settings.SmallPad.width) || (h < JSROOT.settings.SmallPad.height));
 
       if (svg_pad.property('can3d') === 1)
          // special case of 3D canvas overlay

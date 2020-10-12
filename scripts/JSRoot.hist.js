@@ -66,7 +66,7 @@ JSROOT.require(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    }
 
    jsrp.GetColorPalette = function(col,alfa) {
-      col = col || JSROOT.gStyle.Palette;
+      col = col || JSROOT.settings.Palette;
       if ((col>0) && (col<10)) return createGrayPalette();
       if (col < 51) return createDefaultPalette();
       if (col > 113) col = 57;
@@ -1417,7 +1417,7 @@ JSROOT.require(['d3', 'painter', 'gpad'], (d3, jsrp) => {
               System: jsrp.Coord.kCARTESIAN,
               AutoColor: false, NoStat: false, ForceStat: false, PadStats: false, PadTitle: false, AutoZoom: false,
               HighRes: 0, Zero: true, Palette: 0, BaseLine: false,
-              Optimize: JSROOT.gStyle.OptimizeDraw, Mode3D: false,
+              Optimize: JSROOT.settings.OptimizeDraw, Mode3D: false,
               FrontBox: true, BackBox: true,
               _pmc: false, _plc: false, _pfc: false, need_fillcol: false,
               minimum: -1111, maximum: -1111, ymin: 0, ymax: 0 });
@@ -2439,7 +2439,7 @@ JSROOT.require(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (this.options.PadStats || !histo) return null;
 
       if (!force && !this.options.ForceStat) {
-         if (this.options.NoStat || histo.TestBit(TH1StatusBits.kNoStats) || !JSROOT.gStyle.AutoStat) return null;
+         if (this.options.NoStat || histo.TestBit(TH1StatusBits.kNoStats) || !JSROOT.settings.AutoStat) return null;
 
          if (!this.draw_content || !this.is_main_painter()) return null;
       }
@@ -2867,7 +2867,7 @@ JSROOT.require(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    THistPainter.prototype.FillPaletteMenu = function(menu) {
 
-      let curr = this.options.Palette || JSROOT.gStyle.Palette;
+      let curr = this.options.Palette || JSROOT.settings.Palette;
 
       let add = (id, name, more) => menu.addchk((id===curr) || more, '<nobr>' + name + '</nobr>', id, arg => {
          this.options.Palette = parseInt(arg);
@@ -3729,7 +3729,7 @@ JSROOT.require(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       // check if we should draw markers or error marks directly, skipping optimization
       if (do_marker || do_err)
-         if (!JSROOT.gStyle.OptimizeDraw || ((right-left<50000) && (JSROOT.gStyle.OptimizeDraw==1))) {
+         if (!JSROOT.settings.OptimizeDraw || ((right-left < 50000) && (JSROOT.settings.OptimizeDraw == 1))) {
             for (i = left; i < right; ++i) {
                if (extract_bin(i)) {
                   if (path_marker !== null)

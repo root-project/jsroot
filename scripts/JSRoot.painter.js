@@ -123,11 +123,11 @@ JSROOT.require(['d3'], (d3) => {
       let d = JSROOT.decodeUrl(url), g = JSROOT.gStyle, s = JSROOT.settings;
 
       if (d.has("optimize")) {
-         g.OptimizeDraw = 2;
+         s.OptimizeDraw = 2;
          let optimize = d.get("optimize");
          if (optimize) {
             optimize = parseInt(optimize);
-            if (!isNaN(optimize)) g.OptimizeDraw = optimize;
+            if (!isNaN(optimize)) s.OptimizeDraw = optimize;
          }
       }
 
@@ -187,10 +187,9 @@ JSROOT.require(['d3'], (d3) => {
          s.ToolBar = val || ((toolbar.indexOf("0") < 0) && (toolbar.indexOf("false") < 0) && (toolbar.indexOf("off") < 0));
       }
 
-      let palette = d.get("palette");
-      if (palette) {
-         palette = parseInt(palette);
-         if (!isNaN(palette) && (palette > 0) && (palette < 113)) g.Palette = palette;
+      if (d.has("palette")) {
+         let palette = parseInt(d.get("palette"));
+         if (!isNaN(palette) && (palette > 0) && (palette < 113)) s.Palette = palette;
       }
 
       let render3d = d.get("render3d");

@@ -3235,7 +3235,7 @@ JSROOT.require(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       }
 
       // try to define scale-down factor
-      if ((JSROOT.gStyle.OptimizeDraw > 0) && !fp.webgl) {
+      if ((JSROOT.settings.OptimizeDraw > 0) && !fp.webgl) {
          let numselected = CountSelected(fp.scale_zmin, fp.scale_zmax),
              sizelimit = 50000;
 
@@ -3451,7 +3451,7 @@ JSROOT.require(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
             ++numselect;
          }
 
-         if ((JSROOT.gStyle.OptimizeDraw > 0) && (numselect > sizelimit)) {
+         if ((JSROOT.settings.OptimizeDraw > 0) && (numselect > sizelimit)) {
             step = Math.floor(numselect/sizelimit);
             if (step <= 2) step = 2;
          }
