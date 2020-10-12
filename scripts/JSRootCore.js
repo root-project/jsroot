@@ -534,11 +534,13 @@
              req.resolve(arr.length == 1 ? arr[0] : arr);
       }
 
-      function load_module(req,m) {
+      function load_module(req, m) {
          let element = document.createElement("script");
          element.setAttribute('type', "text/javascript");
          element.setAttribute('src', m.src);
          document.getElementsByTagName("head")[0].appendChild(element);
+         if (_.debug_output)
+            _.debug_output.innerHTML = `Loading ${m.src} ...`;
 
          if (!m.jsroot || m.extract)
             element.onload = () => finish_loading(m, m.extract ? globalThis[m.extract] : 1); // mark script loaded
@@ -1282,10 +1284,13 @@
 
       if (user_scripts) requirements += "io;gpad;";
 
-      // TODO: restore debugout
+      if (debugout)
+         _.debug_output = document.getElementById(debugout);
+
       return JSROOT.require(requirements)
                    .then(() => JSROOT.require(user_scripts))
-                   .then(() => JSROOT.CallBack(JSROOT.findFunction(nobrowser ? 'JSROOT.BuildNobrowserGUI' : 'JSROOT.BuildSimpleGUI')));
+                   .then(() => { if (_.debug_output) { _.debug_output.innerHTML = ""; delete _.debug_output; } })
+                   .then(() => JSROOT.CallBack(nobrowser ? 'JSROOT.BuildNobrowserGUI' : 'JSROOT.BuildSimpleGUI'));
    }
 
    /** @summary Create some ROOT classes
