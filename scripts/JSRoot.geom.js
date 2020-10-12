@@ -4004,8 +4004,8 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
    }
 
    jsrp.CreateGeoPainter = function(divid, obj, opt) {
-      geo.GradPerSegm = JSROOT.gStyle.GeoGradPerSegm;
-      geo.CompressComp = JSROOT.gStyle.GeoCompressComp;
+      geo.GradPerSegm = JSROOT.settings.GeoGradPerSegm;
+      geo.CompressComp = JSROOT.settings.GeoCompressComp;
 
       let painter = new TGeoPainter(obj);
 

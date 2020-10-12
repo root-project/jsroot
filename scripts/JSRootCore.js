@@ -301,82 +301,83 @@
       Palette: 57,
       /** @summary Configures Latex usage, see {@link JSROOT.constants.Latex} for possible values */
       Latex: 2,
-      /** @summary custom format for all X values, when not specified {@link JSROOT.gStyle#fStatFormat} is used */
+      /** @summary Grads per segment in TGeo spherical shapes like tube */
+      GeoGradPerSegm: 6,
+      /** @summary Enables faces compression after creation of composite shape  */
+      GeoCompressComp: true,
+      /** if true, ignore all kind of URL options in the browser URL */
+      IgnoreUrlOptions: false,
+      /** @summary how many items shown on one level of hierarchy */
+      HierarchyLimit: 250,
+      /** @summary custom format for all X values, when not specified {@link JSROOT.gStyle.fStatFormat} is used */
       XValuesFormat : undefined,
-      /** @summary custom format for all Y values, when not specified {@link JSROOT.gStyle#fStatFormat} is used */
+      /** @summary custom format for all Y values, when not specified {@link JSROOT.gStyle.fStatFormat} is used */
       YValuesFormat : undefined,
-      /** @summary custom format for all Z values, when not specified {@link JSROOT.gStyle#fStatFormat} is used */
+      /** @summary custom format for all Z values, when not specified {@link JSROOT.gStyle.fStatFormat} is used */
       ZValuesFormat : undefined,
    };
 
-   /** @summary TStyle object like in ROOT
+   /** @summary Insiance of TStyle object like in ROOT
      * @desc Includes default draw styles, can be changed after loading of JSRootCore.js
      *       or can be load from the file providing style=itemname in the URL
      * @namespace */
    JSROOT.gStyle = {
-         GeoGradPerSegm: 6, // amount of grads per segment in TGeo spherical shapes like tube
-         GeoCompressComp: true, // if one should compress faces after creation of composite shape,
-         IgnoreUrlOptions: false, // if true, ignore all kind of URL options in the browser URL
-         HierarchyLimit: 250,   // how many items shown on one level of hierarchy
-
-         // these are TStyle attributes, which can be changed via URL 'style' parameter or delivered by TWebCanvas
-
-         fOptLogx: 0,
-         fOptLogy: 0,
-         fOptLogz: 0,
-         fOptDate: 0,
-         fOptFile: 0,
-         fOptTitle: 1,
-         fPadBottomMargin: 0.1,
-         fPadTopMargin: 0.1,
-         fPadLeftMargin: 0.1,
-         fPadRightMargin: 0.1,
-         fPadGridX: false,
-         fPadGridY: false,
-         fPadTickX: 0,
-         fPadTickY: 0,
-         fStatColor: 0,
-         fStatTextColor: 1,
-         fStatBorderSize: 1,
-         fStatFont: 42,
-         fStatFontSize: 0,
-         fStatStyle: 1001,
-         fStatFormat: "6.4g",
-         fStatX: 0.98,
-         fStatY: 0.935,
-         fStatW: 0.2,
-         fStatH: 0.16,
-         fTitleAlign: 23,
-         fTitleColor: 0,
-         fTitleTextColor: 1,
-         fTitleBorderSize: 0,
-         fTitleFont: 42,
-         fTitleFontSize: 0.05,
-         fTitleStyle: 0,
-         fTitleX: 0.5,
-         fTitleY: 0.995,
-         fTitleW: 0,
-         fTitleH: 0,
-         fFitFormat: "5.4g",
-         fOptStat: 1111,
-         fOptFit: 0,
-         fNumberContours: 20,
-         fGridColor: 0,
-         fGridStyle: 3,
-         fGridWidth: 1,
-         fFrameFillColor: 0,
-         fFrameFillStyle: 1001,
-         fFrameLineColor: 1,
-         fFrameLineWidth: 1,
-         fFrameLineStyle: 1,
-         fFrameBorderSize: 1,
-         fFrameBorderMode: 0,
-         fEndErrorSize: 2,   // size in pixels of end error for E1 draw options
-         fErrorX: 0.5,   // X size of the error marks for the histogram drawings
-         fHistMinimumZero: false,   // when true, BAR and LEGO drawing using base = 0
-         fPaintTextFormat : "g",
-         fTimeOffset : 788918400 // UTC time at 01/01/95
-      };
+      fOptLogx: 0,
+      fOptLogy: 0,
+      fOptLogz: 0,
+      fOptDate: 0,
+      fOptFile: 0,
+      fOptTitle: 1,
+      fPadBottomMargin: 0.1,
+      fPadTopMargin: 0.1,
+      fPadLeftMargin: 0.1,
+      fPadRightMargin: 0.1,
+      fPadGridX: false,
+      fPadGridY: false,
+      fPadTickX: 0,
+      fPadTickY: 0,
+      fStatColor: 0,
+      fStatTextColor: 1,
+      fStatBorderSize: 1,
+      fStatFont: 42,
+      fStatFontSize: 0,
+      fStatStyle: 1001,
+      fStatFormat: "6.4g",
+      fStatX: 0.98,
+      fStatY: 0.935,
+      fStatW: 0.2,
+      fStatH: 0.16,
+      fTitleAlign: 23,
+      fTitleColor: 0,
+      fTitleTextColor: 1,
+      fTitleBorderSize: 0,
+      fTitleFont: 42,
+      fTitleFontSize: 0.05,
+      fTitleStyle: 0,
+      fTitleX: 0.5,
+      fTitleY: 0.995,
+      fTitleW: 0,
+      fTitleH: 0,
+      fFitFormat: "5.4g",
+      fOptStat: 1111,
+      fOptFit: 0,
+      fNumberContours: 20,
+      fGridColor: 0,
+      fGridStyle: 3,
+      fGridWidth: 1,
+      fFrameFillColor: 0,
+      fFrameFillStyle: 1001,
+      fFrameLineColor: 1,
+      fFrameLineWidth: 1,
+      fFrameLineStyle: 1,
+      fFrameBorderSize: 1,
+      fFrameBorderMode: 0,
+      fEndErrorSize: 2,   // size in pixels of end error for E1 draw options
+      fErrorX: 0.5,   // X size of the error marks for the histogram drawings
+      fHistMinimumZero: false,   // when true, BAR and LEGO drawing using base = 0
+      fPaintTextFormat : "g",
+      fTimeOffset : 788918400 // UTC time at 01/01/95
+   };
 
     /** Method returns current document used in the
       * @private */
@@ -954,7 +955,7 @@
       }
 
       if (!url || (typeof url !== 'string')) {
-         if (JSROOT.gStyle.IgnoreUrlOptions || (typeof document === 'undefined')) return res;
+         if (JSROOT.settings.IgnoreUrlOptions || (typeof document === 'undefined')) return res;
          url = document.URL;
       }
       res.url = url;

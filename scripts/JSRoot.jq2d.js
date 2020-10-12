@@ -852,7 +852,7 @@ JSROOT.require(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-m
          d3cont = d3prnt;
       } else {
          d3cont = d3prnt.append("div");
-         if (arg && (arg >= (hitem._parent._show_limit || JSROOT.gStyle.HierarchyLimit))) break_list = true;
+         if (arg && (arg >= (hitem._parent._show_limit || JSROOT.settings.HierarchyLimit))) break_list = true;
       }
 
       hitem._d3cont = d3cont.node(); // set for direct referencing
@@ -1144,7 +1144,7 @@ JSROOT.require(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-m
 
          if (indx<0) return console.error('internal error');
 
-         prnt._show_limit = (prnt._show_limit || JSROOT.gStyle.HierarchyLimit) * 2;
+         prnt._show_limit = (prnt._show_limit || JSROOT.settings.HierarchyLimit) * 2;
 
          for (let n=indx+1;n<prnt._childs.length;++n) {
             let chld = prnt._childs[n];
@@ -1662,7 +1662,7 @@ JSROOT.require(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-m
       }
 
       if (myDiv.attr("ignoreurl") === "true")
-         JSROOT.gStyle.IgnoreUrlOptions = true;
+         JSROOT.settings.IgnoreUrlOptions = true;
 
       if (JSROOT.decodeUrl().has("nobrowser") || (myDiv.attr("nobrowser") && myDiv.attr("nobrowser")!=="false"))
          return JSROOT.BuildNobrowserGUI();

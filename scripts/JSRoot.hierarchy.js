@@ -263,7 +263,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
       }
 
       let isarray = (proto.lastIndexOf('Array]') == proto.length-6) && (proto.indexOf('[object')==0) && !isNaN(obj.length),
-          compress = isarray && (obj.length > JSROOT.gStyle.HierarchyLimit),  arrcompress = false;
+          compress = isarray && (obj.length > JSROOT.settings.HierarchyLimit),  arrcompress = false;
 
       if (isarray && (top._name==="Object") && !top._parent) top._name = "Array";
 
@@ -2397,7 +2397,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
       }
 
       if (myDiv.attr("ignoreurl") === "true")
-         JSROOT.gStyle.IgnoreUrlOptions = true;
+         JSROOT.settings.IgnoreUrlOptions = true;
 
       jsrp.readStyleFromURL();
 

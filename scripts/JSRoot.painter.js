@@ -202,9 +202,11 @@ JSROOT.require(['d3'], (d3) => {
          JSROOT.settings.Embed3D = JSROOT.constants.Embed3D.fromString(embed3d);
 
       let geosegm = d.get("geosegm");
-      if (geosegm) g.GeoGradPerSegm = Math.max(2, parseInt(geosegm));
+      if (geosegm) s.GeoGradPerSegm = Math.max(2, parseInt(geosegm));
       let geocomp = d.get("geocomp");
-      if (geocomp) g.GeoCompressComp = (geocomp !== '0') && (geocomp !== 'false');
+      if (geocomp) s.GeoCompressComp = (geocomp !== '0') && (geocomp !== 'false') && (geocomp !== 'off');
+
+      if (d.has("hlimit")) s.HierarchyLimit = parseInt(d.get("hlimit"));
    }
 
    /** Function that generates all root colors, used in jstests to reset colors
