@@ -168,7 +168,7 @@ JSROOT.require(['d3'], (d3) => {
       if (d.has("nomenu")) s.ContextMenu = false;
       if (d.has("noprogress")) s.ProgressBox = false;
       if (d.has("notouch")) JSROOT.browser.touches = false;
-      if (d.has("adjframe")) g.CanAdjustFrame = true;
+      if (d.has("adjframe")) s.CanAdjustFrame = true;
 
       let optstat = d.get("optstat");
       if (optstat) g.fOptStat = parseInt(optstat);
@@ -177,15 +177,14 @@ JSROOT.require(['d3'], (d3) => {
       g.fStatFormat = d.get("statfmt", g.fStatFormat);
       g.fFitFormat = d.get("fitfmt", g.fFitFormat);
 
-      let toolbar = d.get("toolbar", null);
-      if (toolbar !== null) {
-         let val = null;
+      if (d.has("toolbar")) {
+         let toolbar = d.get("toolbar", ""), val = null;
          if (toolbar.indexOf('popup') >= 0) val = 'popup';
-         if (toolbar.indexOf('left') >= 0) { g.ToolBarSide = 'left'; val = 'popup'; }
-         if (toolbar.indexOf('right') >= 0) { g.ToolBarSide = 'right'; val = 'popup'; }
-         if (toolbar.indexOf('vert') >= 0) { g.ToolBarVert = true; val = 'popup'; }
+         if (toolbar.indexOf('left') >= 0) { s.ToolBarSide = 'left'; val = 'popup'; }
+         if (toolbar.indexOf('right') >= 0) { s.ToolBarSide = 'right'; val = 'popup'; }
+         if (toolbar.indexOf('vert') >= 0) { s.ToolBarVert = true; val = 'popup'; }
          if (toolbar.indexOf('show') >= 0) val = true;
-         g.ToolBar = val || ((toolbar.indexOf("0") < 0) && (toolbar.indexOf("false") < 0) && (toolbar.indexOf("off") < 0));
+         s.ToolBar = val || ((toolbar.indexOf("0") < 0) && (toolbar.indexOf("false") < 0) && (toolbar.indexOf("off") < 0));
       }
 
       let palette = d.get("palette");
@@ -1503,7 +1502,7 @@ JSROOT.require(['d3'], (d3) => {
       let main = this.select_main(true),
          origin = this.select_main('origin');
 
-      if (main.empty() || !JSROOT.gStyle.CanEnlarge || (origin.property('can_enlarge') === false)) return false;
+      if (main.empty() || !JSROOT.settings.CanEnlarge || (origin.property('can_enlarge') === false)) return false;
 
       if (action === undefined) return true;
 
@@ -3133,11 +3132,12 @@ JSROOT.require(['d3'], (d3) => {
       return 0;
    }
 
-   /** After normal SVG generated, check and recalculate some properties */
+   /** @summary After normal SVG text is generated, check and recalculate some properties
+     * @private */
    ObjectPainter.prototype.postprocessText = function(txt_node, arg) {
       // complete rectangle with very rougth size estimations
 
-      arg.box = !JSROOT.nodejs && !JSROOT.gStyle.ApproxTextSize && !arg.fast ? this.GetBoundarySizes(txt_node.node()) :
+      arg.box = !JSROOT.nodejs && !JSROOT.settings.ApproxTextSize && !arg.fast ? this.GetBoundarySizes(txt_node.node()) :
                (arg.text_rect || { height: arg.font_size * 1.2, width: arg.font.approxTextWidth(arg.text) });
 
       txt_node.attr('visibility', 'hidden'); // hide elements until text drawing is finished

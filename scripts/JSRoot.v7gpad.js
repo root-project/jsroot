@@ -1259,15 +1259,15 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
          if (this.x_kind == 'time')
             value = this.ConvertX(value);
          if (this.x_handle && ('format' in this.x_handle))
-            return this.x_handle.format(value, false, JSROOT.gStyle.XValuesFormat);
+            return this.x_handle.format(value, false, JSROOT.settings.XValuesFormat);
       } else if (axis == "y") {
          if (this.y_kind == 'time')
             value = this.ConvertY(value);
          if (this.y_handle && ('format' in this.y_handle))
-            return this.y_handle.format(value, false, JSROOT.gStyle.YValuesFormat);
+            return this.y_handle.format(value, false, JSROOT.settings.YValuesFormat);
       } else {
          if (this.z_handle && ('format' in this.z_handle))
-            return this.z_handle.format(value, false, JSROOT.gStyle.ZValuesFormat);
+            return this.z_handle.format(value, false, JSROOT.settings.ZValuesFormat);
       }
 
       return value.toPrecision(4);
@@ -2276,8 +2276,8 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
          if (!JSROOT.BatchMode)
             btns = svg.append("svg:g")
                       .attr("class","btns_layer")
-                      .property('leftside', JSROOT.gStyle.ToolBarSide == 'left')
-                      .property('vertical', JSROOT.gStyle.ToolBarVert);
+                      .property('leftside', JSROOT.settings.ToolBarSide == 'left')
+                      .property('vertical', JSROOT.settings.ToolBarVert);
 
          if (JSROOT.settings.ContextMenu && !JSROOT.BatchMode)
             svg.select(".canvas_fillrect").on("contextmenu", this.PadContextMenu.bind(this));
@@ -2423,8 +2423,8 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
          if (!JSROOT.BatchMode)
             btns = svg_pad.append("svg:g")
                           .attr("class","btns_layer")
-                          .property('leftside', JSROOT.gStyle.ToolBarSide != 'left')
-                          .property('vertical', JSROOT.gStyle.ToolBarVert);
+                          .property('leftside', JSROOT.settings.ToolBarSide != 'left')
+                          .property('vertical', JSROOT.settings.ToolBarVert);
 
          if (JSROOT.settings.ContextMenu)
             svg_rect.on("contextmenu", this.PadContextMenu.bind(this));
@@ -3236,7 +3236,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
    }
 
    RPadPainter.prototype.AddButton = function(_btn, _tooltip, _funcname, _keyname) {
-      if (!JSROOT.gStyle.ToolBar || JSROOT.BatchMode || this.batch_mode) return;
+      if (!JSROOT.settings.ToolBar || JSROOT.BatchMode || this.batch_mode) return;
 
       if (!this._buttons) this._buttons = [];
       // check if there are duplications

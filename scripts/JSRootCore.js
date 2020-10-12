@@ -231,6 +231,24 @@
       DragAndDrop: true,
       /** @summary Show progress box */
       ProgressBox: true,
+      /** @summary Show additional tool buttons on the canvas, false - disabled, true - enabled, 'popup' - only toggle button */
+      ToolBar: 'popup',
+      /** @summary Position of toolbar 'left' left-bottom corner on canvas, 'right' - right-bottom corner on canvas, opposite on sub-pads */
+      ToolBarSide: 'left',
+      /** @summary display tool bar vertical (default false) */
+      ToolBarVert: false,
+      /** @summary if drawing inside particular div can be enlarged on full window */
+      CanEnlarge: true,
+      /** @summary if frame position can be adjusted to let show axis or colz labels */
+      CanAdjustFrame: false,
+      /** @summary calculation of text size consumes time and can be skipped to improve performance (but with side effects on text adjustments) */
+      ApproxTextSize: false,
+      /** @summary custom format for all X values, when not specified {@link JSROOT.gStyle#fStatFormat} is used */
+      XValuesFormat : undefined,
+      /** @summary custom format for all Y values, when not specified {@link JSROOT.gStyle#fStatFormat} is used */
+      YValuesFormat : undefined,
+      /** @summary custom format for all Z values, when not specified {@link JSROOT.gStyle#fStatFormat} is used */
+      ZValuesFormat : undefined,
    };
 
    /** @summary TStyle object like in ROOT
@@ -238,12 +256,6 @@
      *       or can be load from the file providing style=itemname in the URL
      * @namespace */
    JSROOT.gStyle = {
-         ToolBar: 'popup',  // show additional tool buttons on the canvas, false - disabled, true - enabled, 'popup' - only toggle button
-         ToolBarSide: 'left', // 'left' left-bottom corner on canvas, 'right' - right-bottom corner on canvas, opposite on sub-pads
-         ToolBarVert: false,  // display tool bar vertical (default false)
-         CanEnlarge: true,  // if drawing inside particular div can be enlarged on full window
-         CanAdjustFrame: false,  // if frame position can be adjusted to let show axis or colz labels
-         ApproxTextSize: false,  // calculation of text size consumes time and can be skipped to improve performance (but with side effects on text adjustments)
          OptimizeDraw: 1, // drawing optimization: 0 - disabled, 1 - only for large (>5000 1d bins, >50 2d bins) histograms, 2 - always
          AutoStat: true,
          FrameNDC: { fX1NDC: 0.07, fY1NDC: 0.12, fX2NDC: 0.95, fY2NDC: 0.88 },
@@ -254,10 +266,6 @@
          IgnoreUrlOptions: false, // if true, ignore all kind of URL options in the browser URL
          HierarchyLimit: 250,   // how many items shown on one level of hierarchy
          SmallPad: { width: 150, height: 100 },   // size of pad, where many features will be deactivated like text draw or zooming
-
-         // XValuesFormat : "6.4g",   // custom format for all X values
-         // YValuesFormat : "6.4g",   // custom format for all Y values
-         // ZValuesFormat : "6.4g",   // custom format for all Z values
 
          // these are TStyle attributes, which can be changed via URL 'style' parameter or delivered by TWebCanvas
 

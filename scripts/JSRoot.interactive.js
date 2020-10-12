@@ -1560,13 +1560,12 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
          if (this._fast_drawing) {
             ctrl = ToolbarIcons.CreateSVG(group, ToolbarIcons.circle, this.ButtonSize(), "EnlargePad");
             ctrl.attr("name", "Enlarge").attr("x", 0).attr("y", 0)
-                // .property("buttons_state", (JSROOT.gStyle.ToolBar!=='popup'))
                 .on("click", this.PadButtonClick.bind(this, "EnlargePad"));
          } else {
             ctrl = ToolbarIcons.CreateSVG(group, ToolbarIcons.rect, this.ButtonSize(), "Toggle tool buttons");
 
             ctrl.attr("name", "Toggle").attr("x", 0).attr("y", 0)
-                .property("buttons_state", (JSROOT.gStyle.ToolBar!=='popup'))
+                .property("buttons_state", (JSROOT.settings.ToolBar!=='popup'))
                 .on("click", this.ToggleButtonsVisibility.bind(this, 'toggle'))
                 .on("mouseenter", this.ToggleButtonsVisibility.bind(this, 'enable'))
                 .on("mouseleave", this.ToggleButtonsVisibility.bind(this, 'disable'));

@@ -579,15 +579,17 @@ For instance, to load functionality with normal 2D graphics and binary ROOT file
 
 One could use minified version of all scripts (as shown in example) - this reduce page loading time significantly.
 
-After main __JSRootCore.js__ script is loaded, one can configure different options in JSROOT.gStyle object.
-It is instance of the TStyle object and contains similar properties. For instance, one can change stat format:
+After main __JSRootCore.js__ script is loaded, one can configure different options in `JSROOT.gStyle` object.
+It is instance of the TStyle object and behaves like `gStyle` variable in ROOT.
+One can change different options directly like:
 
     JSROOT.gStyle.fStatFormat = "7.5g"
 
-Or specify custom format for the X/Y object values:
+There is also `JSROOT.settings` object which contains all other JSROOT settings. For instance,
+one can configure custom values format for different axes:
 
-    JSROOT.gStyle.XValuesFormat = "4.2g"
-    JSROOT.gStyle.YValuesFormat = "6.1f"
+    JSROOT.settings.XValuesFormat = "4.2g"
+    JSROOT.settings.YValuesFormat = "6.1f"
 
 
 ### Use of JSON
