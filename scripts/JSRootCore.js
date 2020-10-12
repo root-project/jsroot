@@ -320,8 +320,9 @@
    /** @summary Insiance of TStyle object like in ROOT
      * @desc Includes default draw styles, can be changed after loading of JSRootCore.js
      *       or can be load from the file providing style=itemname in the URL
+     * @memberOf JSROOT
      * @namespace */
-   JSROOT.gStyle = {
+   let gStyle = {
       fOptLogx: 0,
       fOptLogy: 0,
       fOptLogz: 0,
@@ -379,9 +380,9 @@
       fTimeOffset : 788918400 // UTC time at 01/01/95
    };
 
-    /** @summary Method returns current document used in the
+   /** @summary Method returns current document in use
       * @private */
-    JSROOT.get_document = function() {
+   JSROOT.get_document = function() {
        if (JSROOT.nodejs)
           return _.nodejs_document;
        if (typeof document !== 'undefined')
@@ -650,10 +651,9 @@
 
    /**
     * @summary Simple random generator
-    *
     * @desc Works like Math.random(), but with configurable seed - see {@link JSROOT.seed}
-    * @private
     * @returns {number} random value between 0 (inclusive) and 1.0 (exclusive)
+    * @private
     */
    JSROOT.random = function() {
       if (this.m_z===undefined) return Math.random();
@@ -665,7 +665,6 @@
    }
 
    /** @summary Should be used to parse JSON string produced with TBufferJSON class
-    *
     * @desc Replace all references inside object like { "$ref": "1" }
     * @param {object|string} json  object where references will be replaced
     * @returns {object} parsed object */
@@ -807,7 +806,8 @@
    }
 
    /** @summary Make deep clone of the object, including all sub-objects
-     * @returns {object} cloned object */
+     * @returns {object} cloned object
+     * @private */
    JSROOT.clone = function(src, map, nofunc) {
       if (!src) return null;
 
@@ -990,14 +990,10 @@
       return res;
    }
 
-   /**
-    * @summary Find function with given name.
-    *
+   /** @summary Find function with given name.
     * @desc Function name may include several namespaces like 'JSROOT.Painter.drawFrame'
     * If function starts with ., it should belong to JSROOT.Painter
-    *
-    * @private
-    */
+    * @private  */
    JSROOT.findFunction = function(name) {
       if (typeof name === 'function') return name;
       if (typeof name !== 'string') return null;
@@ -1024,8 +1020,8 @@
    /**
     * @summary Generic method to invoke callback function.
     *
-    * @param {object|function} func either normal function or container like
-    * { obj: object_pointer, func: name of method to call }
+    * @param {object|function|string} func either normal function or container like
+    * { obj: object_pointer, func: name of method to call } or just function name, which can be found with {@link JSROOT.findFunction}
     * @param arg1 first optional argument of callback
     * @param arg2 second optional argument of callback
     *
@@ -1048,7 +1044,7 @@
       }
    }
 
-   /** Old request method, kept only for internal use
+   /** @summary Old request method, kept only for internal use
      * @private */
    JSROOT.NewHttpRequest = function(url, kind, user_accept_callback, user_reject_callback) {
 
@@ -1174,6 +1170,7 @@
     *
     * @desc Normal JSROOT functionality should be loaded via @ref JSROOT.require method
     * @returns {Promise}
+    * @private
     */
    JSROOT.loadScript = function(url) {
       if (url.indexOf("$$$")===0) {
@@ -1216,8 +1213,8 @@
       }
 
       return new Promise((resolve, reject) => {
-         element.onload = resolve;
-         element.onerror = reject;
+         element.onload = () => resolve(true);
+         element.onerror = () => reject(Error(`Fail to load ${url}`));
 
          document.getElementsByTagName("head")[0].appendChild(element);
       });
@@ -1241,12 +1238,6 @@
    // Create SVG, defined in JSRoot.painter.js
    JSROOT.MakeSVG = function(args) {
       return JSROOT.require("painter").then(() => JSROOT.MakeSVG(args));
-   }
-
-   // FIXME: for backward compatibility with v5, will be remove in JSROOT v7
-   JSROOT.AssertPrerequisites = function(req, callback) {
-      req = req.replace(/2d;v7;/g, "v7gpad;").replace(/2d;v6;/g, "gpad;").replace(/more2d;/g, 'more;').replace(/2d;/g, 'gpad;');
-      JSROOT.require(req).then(callback);
    }
 
    /** @summary Method to build JSROOT GUI with browser
@@ -1488,18 +1479,18 @@
                                  fWmax: 100, fWmin: 0 });
             break;
          case 'TAttPad':
-            JSROOT.extend(obj, { fLeftMargin: JSROOT.gStyle.fPadLeftMargin,
-                                 fRightMargin: JSROOT.gStyle.fPadRightMargin,
-                                 fBottomMargin: JSROOT.gStyle.fPadBottomMargin,
-                                 fTopMargin: JSROOT.gStyle.fPadTopMargin,
+            JSROOT.extend(obj, { fLeftMargin: gStyle.fPadLeftMargin,
+                                 fRightMargin: gStyle.fPadRightMargin,
+                                 fBottomMargin: gStyle.fPadBottomMargin,
+                                 fTopMargin: gStyle.fPadTopMargin,
                                  fXfile: 2, fYfile: 2, fAfile: 1, fXstat: 0.99, fYstat: 0.99, fAstat: 2,
-                                 fFrameFillColor: JSROOT.gStyle.fFrameFillColor,
-                                 fFrameFillStyle: JSROOT.gStyle.fFrameFillStyle,
-                                 fFrameLineColor: JSROOT.gStyle.fFrameLineColor,
-                                 fFrameLineWidth: JSROOT.gStyle.fFrameLineWidth,
-                                 fFrameLineStyle: JSROOT.gStyle.fFrameLineStyle,
-                                 fFrameBorderSize: JSROOT.gStyle.fFrameBorderSize,
-                                 fFrameBorderMode: JSROOT.gStyle.fFrameBorderMode });
+                                 fFrameFillColor: gStyle.fFrameFillColor,
+                                 fFrameFillStyle: gStyle.fFrameFillStyle,
+                                 fFrameLineColor: gStyle.fFrameLineColor,
+                                 fFrameLineWidth: gStyle.fFrameLineWidth,
+                                 fFrameLineStyle: gStyle.fFrameLineStyle,
+                                 fFrameBorderSize: gStyle.fFrameBorderSize,
+                                 fFrameBorderMode: gStyle.fFrameBorderMode });
             break;
          case 'TPad':
             JSROOT.Create("TObject", obj);
@@ -1514,13 +1505,13 @@
                                  fXlowNDC: 0, fYlowNDC: 0, fXUpNDC: 0, fYUpNDC: 0, fWNDC: 1, fHNDC: 1,
                                  fAbsXlowNDC: 0, fAbsYlowNDC: 0, fAbsWNDC: 1, fAbsHNDC: 1,
                                  fUxmin: 0, fUymin: 0, fUxmax: 0, fUymax: 0, fTheta: 30, fPhi: 30, fAspectRatio: 0,
-                                 fNumber: 0, fLogx: JSROOT.gStyle.fOptLogx, fLogy: JSROOT.gStyle.fOptLogy, fLogz: JSROOT.gStyle.fOptLogz,
-                                 fTickx: JSROOT.gStyle.fPadTickX,
-                                 fTicky: JSROOT.gStyle.fPadTickY,
+                                 fNumber: 0, fLogx: gStyle.fOptLogx, fLogy: gStyle.fOptLogy, fLogz: gStyle.fOptLogz,
+                                 fTickx: gStyle.fPadTickX,
+                                 fTicky: gStyle.fPadTickY,
                                  fPadPaint: 0, fCrosshair: 0, fCrosshairPos: 0, fBorderSize: 2,
                                  fBorderMode: 0, fModified: false,
-                                 fGridx: JSROOT.gStyle.fPadGridX,
-                                 fGridy: JSROOT.gStyle.fPadGridY,
+                                 fGridx: gStyle.fPadGridX,
+                                 fGridy: gStyle.fPadGridY,
                                  fAbsCoord: false, fEditable: true, fFixedAspectRatio: false,
                                  fPrimitives: JSROOT.Create("TList"), fExecs: null,
                                  fName: "pad", fTitle: "canvas" });
@@ -1643,15 +1634,13 @@
    }
 
    /** @summary Creates THStack object
-    * @desc
-    * As arguments one could specify any number of histograms objects
+    * @desc As arguments one could specify any number of histograms objects
     * @example
     * let nbinsx = 20;
     * let h1 = JSROOT.CreateHistogram("TH1F", nbinsx);
     * let h2 = JSROOT.CreateHistogram("TH1F", nbinsx);
     * let h3 = JSROOT.CreateHistogram("TH1F", nbinsx);
-    * let stack = JSROOT.CreateTHStack(h1, h2, h3);
-    * */
+    * let stack = JSROOT.CreateTHStack(h1, h2, h3); */
    JSROOT.CreateTHStack = function() {
       let stack = JSROOT.Create("THStack");
       for(let i=0; i<arguments.length; ++i)
@@ -1660,8 +1649,12 @@
    }
 
    /** @summary Creates TMultiGraph object
-    * @desc
-    * As arguments one could specify any number of TGraph objects */
+    * @desc As arguments one could specify any number of TGraph objects
+    * @example
+    * let gr1 = JSROOT.CreateTGraph(100);
+    * let gr2 = JSROOT.CreateTGraph(100);
+    * let gr3 = JSROOT.CreateTGraph(100);
+    * let mgr = JSROOT.CreateTMultiGraph(gr1, gr2, gr3); */
    JSROOT.CreateTMultiGraph = function() {
       let mgraph = JSROOT.Create("TMultiGraph");
       for(let i=0; i<arguments.length; ++i)
@@ -1669,14 +1662,13 @@
       return mgraph;
    }
 
-   JSROOT.methodsCache = {}; // variable used to keep methods for known classes
+   let methodsCache = {}; // variable used to keep methods for known classes
 
    /** @summary Returns methods for given typename
-    * @private
-    */
+    * @private */
    JSROOT.getMethods = function(typename, obj) {
 
-      let m = JSROOT.methodsCache[typename],
+      let m = methodsCache[typename],
           has_methods = (m!==undefined);
 
       if (!has_methods) m = {};
@@ -1995,7 +1987,7 @@
       if (typeof JSROOT.getMoreMethods == "function")
          JSROOT.getMoreMethods(m, typename, obj);
 
-      JSROOT.methodsCache[typename] = m;
+      methodsCache[typename] = m;
       return m;
    }
 
@@ -2003,7 +1995,7 @@
     * @desc Will be automatically applied when decoding JSON string
     * @private */
    JSROOT.registerMethods = function(typename, m) {
-      JSROOT.methodsCache[typename] = m;
+      methodsCache[typename] = m;
    }
 
    /** @summary Returns true if object represents basic ROOT collections
@@ -2119,12 +2111,18 @@
       return JSROOT.decodeUrl(url).get(opt, dflt === undefined ? null : dflt);
    }
 
+   JSROOT.AssertPrerequisites = function(req, callback) {
+      req = req.replace(/2d;v7;/g, "v7gpad;").replace(/2d;v6;/g, "gpad;").replace(/more2d;/g, 'more;').replace(/2d;/g, 'gpad;');
+      JSROOT.require(req).then(callback);
+   }
+
+
    JSROOT._ = _;
    JSROOT.browser = browser;
+   JSROOT.gStyle = gStyle;
+
 
    return JSROOT;
-
-
 
 }));
 

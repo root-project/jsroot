@@ -27,9 +27,8 @@ JSROOT.require(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
       if (JSROOT.BatchMode && JSROOT.browser.isChromeHeadless && (kind == rc.WebGLImage))
          args.premultipliedAlpha = false;
 
-      let need_workaround = false, renderer;
-
-      let document = JSROOT.get_document();
+      let need_workaround = false, renderer,
+          doc = JSROOT.get_document();
 
       if (render3d == rc.WebGL) {
          // interactive WebGL Rendering
@@ -37,12 +36,12 @@ JSROOT.require(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
 
       } else if (render3d == rc.SVG) {
          // SVG rendering
-         renderer = THREE.CreateSVGRenderer(false, 0, document);
+         renderer = THREE.CreateSVGRenderer(false, 0, doc);
 
          if (JSROOT.BatchMode) {
             need_workaround = true;
          } else {
-            renderer.jsroot_dom = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            renderer.jsroot_dom = doc.createElementNS('http://www.w3.org/2000/svg', 'svg');
             // d3.select(renderer.jsroot_dom).attr("width", width).attr("height", height);
          }
       } else if (JSROOT.nodejs) {
@@ -69,7 +68,7 @@ JSROOT.require(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
          if (JSROOT.BatchMode) {
             need_workaround = true;
          } else {
-            renderer.jsroot_dom = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+            renderer.jsroot_dom = doc.createElementNS('http://www.w3.org/2000/svg', 'image');
             d3.select(renderer.jsroot_dom).attr("width", width).attr("height", height);
          }
       }
@@ -80,7 +79,7 @@ JSROOT.require(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
          JSROOT.svg_workaround[renderer.workaround_id] = "<svg></svg>"; // dummy, provided in AfterRender3D
 
          // replace DOM element in renderer
-         renderer.jsroot_dom = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+         renderer.jsroot_dom = doc.createElementNS('http://www.w3.org/2000/svg', 'path');
          renderer.jsroot_dom.setAttribute('jsroot_svg_workaround', renderer.workaround_id);
       } else if (!renderer.jsroot_dom) {
          renderer.jsroot_dom = renderer.domElement;
@@ -990,7 +989,7 @@ JSROOT.require(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
       if (!args.style || (this.k !== 1) || JSROOT.BatchMode)
          return this.Complete();
 
-      let document = JSROOT.get_document();
+      let doc = JSROOT.get_document();
 
       let handler = new JSROOT.TAttMarkerHandler({ style: args.style, color: args.color, size: 8 });
 
@@ -1000,7 +999,7 @@ JSROOT.require(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
       this.texture = new THREE.Texture();
       this.texture.needsUpdate = true;
       this.texture.format = THREE.RGBAFormat;
-      this.texture.image = document.createElement('img');
+      this.texture.image = doc.createElement('img');
 
       this.texture.image.onload = this.Complete.bind(this,'loaded')
 

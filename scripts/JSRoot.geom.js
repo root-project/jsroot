@@ -2000,8 +2000,8 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
 
       if (this._fit_main_area && !this._webgl) {
          // create top-most SVG for geomtery drawings
-         let document = JSROOT.get_document();
-         let svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+         let doc = JSROOT.get_document();
+         let svg = doc.createElementNS("http://www.w3.org/2000/svg", "svg");
          d3.select(svg).attr("width",w).attr("height",h);
          svg.appendChild(this._renderer.jsroot_dom);
          return svg;
@@ -2095,25 +2095,25 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
       return this._overall_size;
    }
 
-   /** @brief Create png image with drawing snapshot. */
+   /** @summary Create png image with drawing snapshot. */
    TGeoPainter.prototype.createSnapshot = function(filename) {
       if (!this._renderer) return;
       this.Render3D(0);
       let dataUrl = this._renderer.domElement.toDataURL("image/png");
       if (filename==="asis") return dataUrl;
       dataUrl.replace("image/png", "image/octet-stream");
-      let document = JSROOT.get_document();
-      let link = document.createElement('a');
+      let doc = JSROOT.get_document();
+      let link = doc.createElement('a');
       if (typeof link.download === 'string') {
-         document.body.appendChild(link); //Firefox requires the link to be in the body
+         doc.body.appendChild(link); //Firefox requires the link to be in the body
          link.download = filename || "geometry.png";
          link.href = dataUrl;
          link.click();
-         document.body.removeChild(link); //remove the link when done
+         doc.body.removeChild(link); //remove the link when done
       }
    }
 
-   /** @brief Returns url parameters defining camera position.
+   /** @summary Returns url parameters defining camera position.
     * @desc It is zoom, roty, rotz parameters
     * These parameters applied from default position which is shift along X axis */
    TGeoPainter.prototype.produceCameraUrl = function(prec) {
@@ -2422,7 +2422,7 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
       }
    }
 
-   /** @brief Drawing with "count" option
+   /** @summary Drawing with "count" option
     * @desc Scans hieararchy and check for unique nodes */
    TGeoPainter.prototype.drawCount = function(unqievis, clonetm) {
 
@@ -2955,7 +2955,7 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
       this._clones = clones;
    }
 
-   /** @brief Prepare drawings
+   /** @summary Prepare drawings
     * @private */
    TGeoPainter.prototype.prepareObjectDraw = function(draw_obj, name_prefix) {
 
@@ -3134,7 +3134,7 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
       this.completeDraw(true);
    }
 
-   /** @brief Checks camera position and recalculate rendering order if needed
+   /** @summary Checks camera position and recalculate rendering order if needed
     * @param force - if specified, forces calculations of render order
     * @private
     */
@@ -3154,7 +3154,7 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
          geo.produceRenderOrder(this._toplevel, origin, this.ctrl.depthMethod, this._clones);
    }
 
-   /** @brief Call 3D rendering of the geometry
+   /** @summary Call 3D rendering of the geometry
      * @param tmout - specifies delay, after which actual rendering will be invoked
      * Timeout used to avoid multiple rendering of the picture when several 3D drawings
      * superimposed with each other. If tmeout<=0, rendering performed immediately
@@ -3502,12 +3502,12 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
       this.changedDepthMethod(norender ? "norender" : undefined);
    }
 
-   /** @brief  Toggle axes visibility */
+   /** @summary  Toggle axes visibility */
    TGeoPainter.prototype.toggleAxesDraw = function() {
       this.setAxesDraw("toggle");
    }
 
-   /** @brief Set axes visibility 0 - off, 1 - on, 2 - centered */
+   /** @summary Set axes visibility 0 - off, 1 - on, 2 - centered */
    TGeoPainter.prototype.setAxesDraw = function(on) {
       if (on === "toggle")
          this.ctrl._axis = this.ctrl._axis ? 0 : 1;
@@ -3516,7 +3516,7 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
       this.drawSimpleAxis();
    }
 
-   /** @brief Set auto rotate mode */
+   /** @summary Set auto rotate mode */
    TGeoPainter.prototype.setAutoRotate = function(on) {
       if (this.ctrl.project) return;
       if (on !== undefined) this.ctrl.rotate = on;

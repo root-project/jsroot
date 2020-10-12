@@ -205,13 +205,13 @@ JSROOT.require(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
          // special handling for direct SVG renderer
          // probably, here one can use canvas renderer - after modifications
          // let rrr = new THREE.SVGRenderer({ precision: 0, astext: true });
-         let document = JSROOT.get_document();
-         let rrr = THREE.CreateSVGRenderer(false, 0, document);
+         let doc = JSROOT.get_document(),
+             rrr = THREE.CreateSVGRenderer(false, 0, doc);
          rrr.setSize(this.scene_width, this.scene_height);
          rrr.render(this.scene, this.camera);
          if (rrr.makeOuterHTML) {
             // use text mode, it is faster
-            let d = document.createElement('div');
+            let d = doc.createElement('div');
             d.innerHTML = rrr.makeOuterHTML();
             return d.childNodes[0];
          }

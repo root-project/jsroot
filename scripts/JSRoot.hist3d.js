@@ -205,7 +205,7 @@ JSROOT.require(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       return JSROOT.require("interactive"); // drawing should wait until interactive is loaded
    }
 
-   /** @brief Set frame activity flag
+   /** @summary Set frame activity flag
     * @private */
 
    JSROOT.TFramePainter.prototype.SetActive = function(on) {
@@ -213,7 +213,7 @@ JSROOT.require(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          this.control.enableKeys = on && JSROOT.key_handling;
    }
 
-   /** @brief call 3D rendering of the histogram drawing
+   /** @summary call 3D rendering of the histogram drawing
      * @desc tmout specified delay, after which actual rendering will be invoked
      * Timeout used to avoid multiple rendering of the picture when several 3D drawings
      * superimposed with each other.
@@ -229,13 +229,13 @@ JSROOT.require(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          // special handling for direct SVG renderer
          // probably, here one can use canvas renderer - after modifications
          // let rrr = new THREE.SVGRenderer({ precision: 0, astext: true });
-         let document = JSROOT.get_document();
-         let rrr = THREE.CreateSVGRenderer(false, 0, document);
+         let doc = JSROOT.get_document(),
+             rrr = THREE.CreateSVGRenderer(false, 0, doc);
          rrr.setSize(this.scene_width, this.scene_height);
          rrr.render(this.scene, this.camera);
          if (rrr.makeOuterHTML) {
             // use text mode, it is faster
-            let d = document.createElement('div');
+            let d = doc.createElement('div');
             d.innerHTML = rrr.makeOuterHTML();
             return d.childNodes[0];
          }
