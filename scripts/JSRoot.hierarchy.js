@@ -1103,7 +1103,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
 
             JSROOT.draw(d3.select(frame).attr("id"), obj, drawopt).then(display_callback);
 
-            if (JSROOT.gStyle.DragAndDrop)
+            if (JSROOT.settings.DragAndDrop)
                h.enable_dropping(frame, display_itemname);
 
          }, drawopt);

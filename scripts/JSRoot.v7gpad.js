@@ -577,7 +577,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
    }
 
    RAxisPainter.prototype.AddTitleDrag = function(title_g, vertical, offset_k, reverse, axis_length) {
-      if (!JSROOT.gStyle.MoveResize) return;
+      if (!JSROOT.settings.MoveResize) return;
 
       let drag_rect = null,
           acc_x, acc_y, new_x, new_y, sign_0, alt_pos,
@@ -909,7 +909,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
          if (labelfont) labelsize = labelfont.size; // use real font size
       }
 
-      if (JSROOT.gStyle.Zooming && !this.disable_zooming && !JSROOT.BatchMode) {
+      if (JSROOT.settings.Zooming && !this.disable_zooming && !JSROOT.BatchMode) {
          let r =  axis_g.append("svg:rect")
                         .attr("class", "axis_zoom")
                         .style("opacity", "0")
@@ -1914,7 +1914,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
     * @private */
    RFramePainter.prototype.AddInteractive = function() {
 
-      if (JSROOT.BatchMode || (!JSROOT.gStyle.Zooming && !JSROOT.gStyle.ContextMenu))
+      if (JSROOT.BatchMode || (!JSROOT.settings.Zooming && !JSROOT.settings.ContextMenu))
          return Promise.resolve(false);
 
       return JSROOT.require(['interactive']).then(inter => {
@@ -2279,7 +2279,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
                       .property('leftside', JSROOT.gStyle.ToolBarSide == 'left')
                       .property('vertical', JSROOT.gStyle.ToolBarVert);
 
-         if (JSROOT.gStyle.ContextMenu && !JSROOT.BatchMode)
+         if (JSROOT.settings.ContextMenu && !JSROOT.BatchMode)
             svg.select(".canvas_fillrect").on("contextmenu", this.PadContextMenu.bind(this));
 
          factor = 0.66;
@@ -2426,7 +2426,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
                           .property('leftside', JSROOT.gStyle.ToolBarSide != 'left')
                           .property('vertical', JSROOT.gStyle.ToolBarVert);
 
-         if (JSROOT.gStyle.ContextMenu)
+         if (JSROOT.settings.ContextMenu)
             svg_rect.on("contextmenu", this.PadContextMenu.bind(this));
 
          if (!JSROOT.BatchMode)
@@ -3257,7 +3257,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
 
       this.AddButton("camera", "Create PNG", this.iscan ? "CanvasSnapShot" : "PadSnapShot", "Ctrl PrintScreen");
 
-      if (JSROOT.gStyle.ContextMenu)
+      if (JSROOT.settings.ContextMenu)
          this.AddButton("question", "Access context menus", "PadContextMenus");
 
       let add_enlarge = !this.iscan && this.has_canvas && this.HasObjectsToDraw()
@@ -3936,7 +3936,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
 
       JSROOT.require(['interactive']).then(inter => {
          // TODO: provide pave context menu as in v6
-         if (JSROOT.gStyle.ContextMenu && this.PaveContextMenu)
+         if (JSROOT.settings.ContextMenu && this.PaveContextMenu)
             this.draw_g.on("contextmenu", this.PaveContextMenu.bind(this));
 
          inter.DragMoveHandler.AddDrag(this, { minwidth: 20, minheight: 20, redraw: this.SizeChanged.bind(this) });
@@ -4287,7 +4287,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
                d3.select(this).transition().duration(100).style("fill", d3.select(this).property('fill0'));
             }).append("svg:title").text(contour[i].toFixed(2) + " - " + contour[i+1].toFixed(2));
 
-         if (JSROOT.gStyle.Zooming)
+         if (JSROOT.settings.Zooming)
             r.on("dblclick", function() { framep.Unzoom("z"); });
       }
 
@@ -4304,7 +4304,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
          if (!after_resize)
             inter.DragMoveHandler.AddDrag(this, { minwidth: 20, minheight: 20, no_change_y: true, redraw: this.DrawPalette.bind(this, true) });
 
-         if (!JSROOT.gStyle.Zooming) return;
+         if (!JSROOT.settings.Zooming) return;
 
          let doing_zoom = false, sel1 = 0, sel2 = 0, zoom_rect = null;
 

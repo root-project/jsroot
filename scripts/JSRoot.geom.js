@@ -194,7 +194,7 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
          this.InitVRMode();
       }
 
-      if (JSROOT.gStyle.ContextMenu)
+      if (JSROOT.settings.ContextMenu)
       buttonList.push({
          name: 'menu',
          title: 'Show context menu',

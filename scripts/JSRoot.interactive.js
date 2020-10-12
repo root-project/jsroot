@@ -331,7 +331,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
    let DragMoveHandler = {
        /** @summary Add drag for interactive rectangular elements for painter */
       AddDrag: function(painter, callback) {
-         if (!JSROOT.gStyle.MoveResize || JSROOT.BatchMode) return;
+         if (!JSROOT.settings.MoveResize || JSROOT.BatchMode) return;
 
          let pthis = painter, drag_rect = null, pp = pthis.pad_painter();
          if (pp && pp._fast_drawing) return;
@@ -562,7 +562,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
         * @private */
       AddMove: function(painter) {
 
-         if (!JSROOT.gStyle.MoveResize || JSROOT.BatchMode ||
+         if (!JSROOT.settings.MoveResize || JSROOT.BatchMode ||
             !painter.draw_g || painter.draw_g.property("assigned_move")) return;
 
          function detectRightButton(event) {
@@ -681,19 +681,19 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
             this.touch_cnt = 0;
          }
 
-         if (JSROOT.gStyle.Zooming && !this.projection) {
-            if (JSROOT.gStyle.ZoomMouse) {
+         if (JSROOT.settings.Zooming && !this.projection) {
+            if (JSROOT.settings.ZoomMouse) {
                svg.on("mousedown", this.startRectSel.bind(this));
                svg.on("dblclick", this.mouseDoubleClick.bind(this));
             }
-            if (JSROOT.gStyle.ZoomWheel)
+            if (JSROOT.settings.ZoomWheel)
                svg.on("wheel", this.mouseWheel.bind(this));
          }
 
-         if (JSROOT.browser.touches && ((JSROOT.gStyle.Zooming && JSROOT.gStyle.ZoomTouch && !this.projection) || JSROOT.gStyle.ContextMenu))
+         if (JSROOT.browser.touches && ((JSROOT.settings.Zooming && JSROOT.settings.ZoomTouch && !this.projection) || JSROOT.settings.ContextMenu))
             svg.on("touchstart", this.startTouchZoom.bind(this));
 
-         if (JSROOT.gStyle.ContextMenu) {
+         if (JSROOT.settings.ContextMenu) {
             if (JSROOT.browser.touches) {
                svg_x.on("touchstart", this.startTouchMenu.bind(this,"x"));
                svg_y.on("touchstart", this.startTouchMenu.bind(this,"y"));
@@ -757,7 +757,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
          }
 
          if (zoom.dleft || zoom.dright) {
-            if (!JSROOT.gStyle.Zooming) return false;
+            if (!JSROOT.settings.Zooming) return false;
             // in 3dmode with orbit control ignore simple arrows
             if (this.mode3d && (key.indexOf("Ctrl")!==0)) return false;
             this.AnalyzeMouseWheelEvent(null, zoom, 0.5);
@@ -1001,7 +1001,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
 
                this.svg_frame().on("touchcancel", null)
                                .on("touchend", null, true);
-            } else if (JSROOT.gStyle.ContextMenu) {
+            } else if (JSROOT.settings.ContextMenu) {
                this.zoom_curr = arr[0];
                this.svg_frame().on("touchcancel", this.endTouchSel.bind(this))
                                .on("touchend", this.endTouchSel.bind(this));
@@ -1010,7 +1010,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
             }
          }
 
-         if ((arr.length != 2) || !JSROOT.gStyle.Zooming || !JSROOT.gStyle.ZoomTouch) return;
+         if ((arr.length != 2) || !JSROOT.settings.Zooming || !JSROOT.settings.ZoomTouch) return;
 
          evnt.preventDefault();
          evnt.stopPropagation();

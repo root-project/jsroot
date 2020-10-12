@@ -2291,7 +2291,7 @@ JSROOT.require(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
          d3.select(interactive.node().parentNode).attr("transform", this.draw_g.attr("transform"));
 
-         if (JSROOT.gStyle.Zooming && JSROOT.gStyle.ZoomWheel)
+         if (JSROOT.settings.Zooming && JSROOT.settings.ZoomWheel)
             interactive.on("wheel", () => this.MouseWheel());
       });
    }

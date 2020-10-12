@@ -1462,7 +1462,7 @@ JSROOT.require(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
          main.Create3DScene(undefined, this.options.Render3D);
          main.SetAxesRanges(this.xmin, this.xmax, this.ymin, this.ymax, 0, 0);
          main.Set3DOptions(this.options);
-         main.DrawXYZ(main.toplevel, { use_y_for_z: true, zmult: 1.1, zoom: JSROOT.gStyle.Zooming, ndim: 1 });
+         main.DrawXYZ(main.toplevel, { use_y_for_z: true, zmult: 1.1, zoom: JSROOT.settings.Zooming, ndim: 1 });
       }
 
       if (!main.mode3d)
@@ -1511,7 +1511,7 @@ JSROOT.require(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
          main.Create3DScene(undefined, this.options.Render3D);
          main.SetAxesRanges(this.xmin, this.xmax, this.ymin, this.ymax, this.zmin, this.zmax);
          main.Set3DOptions(this.options);
-         main.DrawXYZ(main.toplevel, { zmult: zmult, zoom: JSROOT.gStyle.Zooming, ndim: 2 });
+         main.DrawXYZ(main.toplevel, { zmult: zmult, zoom: JSROOT.settings.Zooming, ndim: 2 });
       }
 
       if (!main.mode3d)
@@ -2945,7 +2945,7 @@ JSROOT.require(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       main.Create3DScene(undefined, this.options.Render3D);
       main.SetAxesRanges(this.xmin, this.xmax, this.ymin, this.ymax, this.zmin, this.zmax);
       main.Set3DOptions(this.options);
-      main.DrawXYZ(main.toplevel, { zoom: JSROOT.gStyle.Zooming, ndim: 3 });
+      main.DrawXYZ(main.toplevel, { zoom: JSROOT.settings.Zooming, ndim: 3 });
 
       this.DrawingBins(null, reason, function() {
          // called when bins received from server, must be reentrant

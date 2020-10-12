@@ -929,15 +929,15 @@ JSROOT.require(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-m
       }
 
       if ('disp_kind' in h) {
-         if (JSROOT.gStyle.DragAndDrop && can_click)
+         if (JSROOT.settings.DragAndDrop && can_click)
            this.enable_dragging(d3a.node(), itemname);
-         if (JSROOT.gStyle.ContextMenu && can_menu)
+         if (JSROOT.settings.ContextMenu && can_menu)
             d3a.on('contextmenu', function(evnt) { h.tree_contextmenu(evnt, this); });
 
          d3a.on("mouseover", function() { h.tree_mouseover(true, this); })
             .on("mouseleave", function() { h.tree_mouseover(false, this); });
       } else
-      if (hitem._direct_context && JSROOT.gStyle.ContextMenu)
+      if (hitem._direct_context && JSROOT.settings.ContextMenu)
          d3a.on('contextmenu', function(evnt) { h.direct_contextmenu(evnt, this); });
 
       let element_name = hitem._name, element_title = "";
@@ -966,7 +966,7 @@ JSROOT.require(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-m
 
       if (has_childs && (isroot || hitem._isopen)) {
          let d3chlds = d3cont.append("div").attr("class", "h_childs");
-         for (let i=0; i< hitem._childs.length; ++i) {
+         for (let i = 0; i < hitem._childs.length; ++i) {
             let chld = hitem._childs[i];
             chld._parent = hitem;
             if (!this.addItemHtml(chld, d3chlds, i)) break; // if too many items, skip rest

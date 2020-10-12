@@ -384,9 +384,9 @@ JSROOT.require(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          inter.DragMoveHandler.AddDrag(this, { obj: pt, minwidth: 10, minheight: 20, canselect: true,
                         redraw: () => { this.InteractiveRedraw(false, "pave_moved"); this.DrawPave(); },
-                        ctxmenu: JSROOT.browser.touches && JSROOT.gStyle.ContextMenu && this.UseContextMenu });
+                        ctxmenu: JSROOT.browser.touches && JSROOT.settings.ContextMenu && this.UseContextMenu });
 
-         if (this.UseContextMenu && JSROOT.gStyle.ContextMenu)
+         if (this.UseContextMenu && JSROOT.settings.ContextMenu)
              this.draw_g.on("contextmenu", this.PaveContextMenu.bind(this));
       });
    }
@@ -894,7 +894,7 @@ JSROOT.require(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                   d3.select(this).transition().duration(100).style("fill", d3.select(this).property('fill0'));
                }).append("svg:title").text(levels[i].toFixed(2) + " - " + levels[i+1].toFixed(2));
 
-            if (JSROOT.gStyle.Zooming)
+            if (JSROOT.settings.Zooming)
                r.on("dblclick", () => this.frame_painter().Unzoom("z"));
          }
 
@@ -975,7 +975,7 @@ JSROOT.require(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          evnt.stopPropagation();
       }
 
-      if (JSROOT.gStyle.Zooming)
+      if (JSROOT.settings.Zooming)
          this.draw_g.select(".axis_zoom")
                     .on("mousedown", startRectSel)
                     .on("dblclick", () => { this.frame_painter().Unzoom("z"); });

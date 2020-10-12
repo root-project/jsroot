@@ -203,8 +203,7 @@
    };
 
    /** @namespace
-     * @desc Central JSROOT settings, independent from {@link JSROOT.gStyle}
-     */
+     * @desc Central JSROOT settings, independent from {@link JSROOT.gStyle} */
    JSROOT.settings = {
       /** @summary Render of 3D drawing methods */
       Render3D: JSROOT.constants.Render3D.Default,
@@ -216,6 +215,22 @@
       Tooltip: true,
       /** @summary Time in msec for appearance of tooltips, 0 - no animation */
       TooltipAnimation: 500,
+      /** @summary Enables context menu usage */
+      ContextMenu: true,
+      /** @summary Global zooming flag, enable/disable any kind of interactive zooming */
+      Zooming: true,
+      /** @summary Zooming with the mouse events */
+      ZoomMouse: true,
+      /** @summary Zooming with mouse wheel */
+      ZoomWheel: true,
+      /** @summary Zooming on touch devices */
+      ZoomTouch: true,
+      /** @summary Enables move and resize of elements like statbox, title, pave, colz  */
+      MoveResize: true,
+      /** @summary enables drag and drop functionality */
+      DragAndDrop: true,
+      /** @summary Show progress box */
+      ProgressBox: true,
    };
 
    /** @summary TStyle object like in ROOT
@@ -223,13 +238,6 @@
      *       or can be load from the file providing style=itemname in the URL
      * @namespace */
    JSROOT.gStyle = {
-         ContextMenu: true,
-         Zooming: true,  // global zooming flag, enable/disable any kind of interactive zooming
-         ZoomMouse: true,  // Zooming with the mouse events
-         ZoomWheel: true,  // Zooming with mouse wheel
-         ZoomTouch: true,  // Zooming with the touch devices
-         MoveResize: true,   // enable move and resize of elements like statbox, title, pave, colz
-         DragAndDrop: true,  // enables drag and drop functionality
          ToolBar: 'popup',  // show additional tool buttons on the canvas, false - disabled, true - enabled, 'popup' - only toggle button
          ToolBarSide: 'left', // 'left' left-bottom corner on canvas, 'right' - right-bottom corner on canvas, opposite on sub-pads
          ToolBarVert: false,  // display tool bar vertical (default false)
@@ -241,9 +249,6 @@
          FrameNDC: { fX1NDC: 0.07, fY1NDC: 0.12, fX2NDC: 0.95, fY2NDC: 0.88 },
          Palette: 57,
          Latex: 2,    // 0 - never, 1 - only latex symbols, 2 - normal TLatex processing (default), 3 - use MathJax for complex case, 4 - use MathJax always
-         ProgressBox: true,  // show progress box
-         ImageSVG: !JSROOT.nodejs, // when producing SVG images, use <image> elements to insert 3D drawings from three.js,
-                                   // To enable on nodejs, one should call "npm install canvas"
          GeoGradPerSegm: 6, // amount of grads per segment in TGeo spherical shapes like tube
          GeoCompressComp: true, // if one should compress faces after creation of composite shape,
          IgnoreUrlOptions: false, // if true, ignore all kind of URL options in the browser URL

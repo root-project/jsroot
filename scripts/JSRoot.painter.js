@@ -133,7 +133,7 @@ JSROOT.require(['d3'], (d3) => {
 
       let inter = d.get("interactive");
       if (inter === "nomenu")
-         g.ContextMenu = false;
+         s.ContextMenu = false;
       else if (inter !== undefined) {
          if (!inter || (inter == "1")) inter = "111111"; else
             if (inter == "0") inter = "000000";
@@ -146,11 +146,11 @@ JSROOT.require(['d3'], (d3) => {
             inter = inter.substr(1);
          }
          if (inter.length == 5) {
-            g.Tooltip = parseInt(inter[0]);
-            g.ContextMenu = (inter[1] != '0');
-            g.Zooming = (inter[2] != '0');
-            g.MoveResize = (inter[3] != '0');
-            g.DragAndDrop = (inter[4] != '0');
+            s.Tooltip = parseInt(inter[0]);
+            s.ContextMenu = (inter[1] != '0');
+            s.Zooming = (inter[2] != '0');
+            s.MoveResize = (inter[3] != '0');
+            s.DragAndDrop = (inter[4] != '0');
          }
       }
 
@@ -165,8 +165,8 @@ JSROOT.require(['d3'], (d3) => {
       if ((mathjax !== null) && (mathjax != "0") && (latex === null)) latex = "math";
       if (latex !== null) g.Latex = latex; // decoding will be performed with the first text drawing
 
-      if (d.has("nomenu")) g.ContextMenu = false;
-      if (d.has("noprogress")) g.ProgressBox = false;
+      if (d.has("nomenu")) s.ContextMenu = false;
+      if (d.has("noprogress")) s.ProgressBox = false;
       if (d.has("notouch")) JSROOT.browser.touches = false;
       if (d.has("adjframe")) g.CanAdjustFrame = true;
 
@@ -3913,9 +3913,9 @@ JSROOT.require(['d3'], (d3) => {
    JSROOT.progress = function(msg, tmout) {
       if (JSROOT.BatchMode || (typeof document === 'undefined')) return;
       let id = "jsroot_progressbox",
-         box = d3.select("#" + id);
+          box = d3.select("#" + id);
 
-      if (!JSROOT.gStyle.ProgressBox) return box.remove();
+      if (!JSROOT.settings.ProgressBox) return box.remove();
 
       if ((arguments.length == 0) || !msg) {
          if ((tmout !== -1) || (!box.empty() && box.property("with_timeout"))) box.remove();
@@ -3923,9 +3923,7 @@ JSROOT.require(['d3'], (d3) => {
       }
 
       if (box.empty()) {
-         box = d3.select(document.body)
-            .append("div")
-            .attr("id", id);
+         box = d3.select(document.body).append("div").attr("id", id);
          box.append("p");
       }
 

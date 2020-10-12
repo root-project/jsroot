@@ -286,10 +286,10 @@ JSROOT.require(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
    /** @brief Create OrbitControl for painter */
    jsrp.CreateOrbitControl = function(painter, camera, scene, renderer, lookat) {
 
-      if (JSROOT.gStyle.Zooming && JSROOT.gStyle.ZoomWheel)
+      if (JSROOT.settings.Zooming && JSROOT.settings.ZoomWheel)
          renderer.domElement.addEventListener( 'wheel', control_mousewheel);
 
-      let enable_zoom = JSROOT.gStyle.Zooming && JSROOT.gStyle.ZoomMouse,
+      let enable_zoom = JSROOT.settings.Zooming && JSROOT.settings.ZoomMouse,
           enable_select = typeof painter.ProcessMouseClick == "function";
 
       if (enable_zoom || enable_select) {
@@ -329,7 +329,7 @@ JSROOT.require(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
       control.enable_select = enable_select;
 
       control.Cleanup = function() {
-         if (JSROOT.gStyle.Zooming && JSROOT.gStyle.ZoomWheel)
+         if (JSROOT.settings.Zooming && JSROOT.settings.ZoomWheel)
             this.domElement.removeEventListener( 'wheel', control_mousewheel);
          if (this.enable_zoom || this.enable_select) {
             this.domElement.removeEventListener( 'mousedown', control_mousedown);

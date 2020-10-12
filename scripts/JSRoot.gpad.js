@@ -351,7 +351,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
    }
 
    TAxisPainter.prototype.AddTitleDrag = function(title_g, vertical, offset_k, reverse, axis_length) {
-      if (!JSROOT.gStyle.MoveResize) return;
+      if (!JSROOT.settings.MoveResize) return;
 
       let drag_rect = null,
           acc_x, acc_y, new_x, new_y, sign_0, alt_pos,
@@ -696,7 +696,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
          if (labelfont) labelsize = labelfont.size; // use real font size
       }
 
-      if (JSROOT.gStyle.Zooming && !this.disable_zooming && !JSROOT.BatchMode) {
+      if (JSROOT.settings.Zooming && !this.disable_zooming && !JSROOT.BatchMode) {
          let r = axis_g.append("svg:rect")
                        .attr("class", "axis_zoom")
                        .style("opacity", "0")
@@ -1919,7 +1919,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Add interactive functionality to the frame
     * @private */
    TFramePainter.prototype.AddInteractive = function() {
-      if (JSROOT.BatchMode || (!JSROOT.gStyle.Zooming && !JSROOT.gStyle.ContextMenu))
+      if (JSROOT.BatchMode || (!JSROOT.settings.Zooming && !JSROOT.settings.ContextMenu))
          return Promise.resolve(false);
 
       return JSROOT.require(['interactive']).then(inter => {
@@ -2154,7 +2154,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
                       .property('leftside', JSROOT.gStyle.ToolBarSide == 'left')
                       .property('vertical', JSROOT.gStyle.ToolBarVert);
 
-         if (JSROOT.gStyle.ContextMenu && !JSROOT.BatchMode)
+         if (JSROOT.settings.ContextMenu && !JSROOT.BatchMode)
             svg.select(".canvas_fillrect").on("contextmenu", this.PadContextMenu.bind(this));
 
          factor = 0.66;
@@ -2298,7 +2298,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
                           .property('leftside', JSROOT.gStyle.ToolBarSide != 'left')
                           .property('vertical', JSROOT.gStyle.ToolBarVert);
 
-         if (JSROOT.gStyle.ContextMenu)
+         if (JSROOT.settings.ContextMenu)
             svg_rect.on("contextmenu", this.PadContextMenu.bind(this));
 
          if (!JSROOT.BatchMode)
@@ -3408,7 +3408,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
 
       this.AddButton("camera", "Create PNG", this.iscan ? "CanvasSnapShot" : "PadSnapShot", "Ctrl PrintScreen");
 
-      if (JSROOT.gStyle.ContextMenu)
+      if (JSROOT.settings.ContextMenu)
          this.AddButton("question", "Access context menus", "PadContextMenus");
 
       let add_enlarge = !this.iscan && this.has_canvas && this.HasObjectsToDraw()
