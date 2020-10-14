@@ -23,7 +23,6 @@ JSROOT.require(['rawinflate'], () => {
       kNewClassTag: 0xFFFFFFFF,
       kClassMask: 0x80000000,
       Mode: "array", // could be string or array, enable usage of ArrayBuffer in http requests
-      NativeArray: true, // when true, native arrays like Int32Array or Float64Array are used
 
       TypeNames: ["BASE", "char", "short", "int", "long", "float", "int", "const char*", "double", "Double32_t",
          "char", "unsigned  char", "unsigned short", "unsigned", "unsigned long", "unsigned", "Long64_t", "ULong64_t", "bool", "Float16_t"],
@@ -3002,8 +3001,6 @@ JSROOT.require(['rawinflate'], () => {
 
       return file.Open();
    }
-
-   jsrio.NativeArray = JSROOT.nodejs || (window && ('Float64Array' in window));
 
    jsrio.ProduceCustomStreamers();
 
