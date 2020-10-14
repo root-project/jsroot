@@ -296,7 +296,7 @@ JSROOT.require(['io', 'math'], (jsrio, jsrmath) => {
                }
             }
 
-            br = tree.FindBranch(code.substr(pos, pos2 - pos), true);
+            br = tree.FindBranchComplex(code.substr(pos, pos2 - pos));
             if (!br) { pos = pos2 + 1; continue; }
 
             // when full id includes branch name, replace only part of extracted expression
@@ -2404,10 +2404,12 @@ JSROOT.require(['io', 'math'], (jsrio, jsrmath) => {
 
    }
 
-   /** @summary Search branch with specified name
-    * @desc if complex enabled, search branch and rest part
+   /** @summary Special branch search
+    * @desc Name can include extra part, which will be returned in the result
+    * @param {string} name - name of the branch
+    * @returns {Object} with "branch" and "rest" members
     * @private */
-   TTreeMethods.FindBranch = function(name, complex, lst) {
+   TTreeMethods.FindBranchComplex = function(name, lst) {
 
       let top_search = false, search = name, res = null;
 
@@ -2442,8 +2444,8 @@ JSROOT.require(['io', 'math'], (jsrio, jsrmath) => {
          if (brname[pnt - 1] === '.') pnt--;
          if (search[pnt] !== '.') continue;
 
-         res = this.FindBranch(search, complex, lst.arr[n].fBranches);
-         if (!res) res = this.FindBranch(search.substr(pnt + 1), complex, lst.arr[n].fBranches);
+         res = this.FindBranchComplex(search, lst.arr[n].fBranches);
+         if (!res) res = this.FindBranchComplex(search.substr(pnt + 1), lst.arr[n].fBranches);
 
          if (!res) res = { branch: lst.arr[n], rest: search.substr(pnt) };
 
@@ -2454,9 +2456,15 @@ JSROOT.require(['io', 'math'], (jsrio, jsrmath) => {
 
       if (name.length > search.length) res.rest += name.substr(search.length);
 
-      if (!complex && (res.rest.length > 0)) return null;
+      return res;
+   }
 
-      return complex ? res : res.branch;
+   /** @summary Search branch with specified name
+    * @param {string} name - name of the branch
+    * @returns {Object} found branch */
+   TTreeMethods.FindBranch = function(name) {
+      let res = this.FindBranchComplex(name);
+      return (!res || (res.rest.length > 0)) ? null : res.branch;
    }
 
    /** @summary  JSROOT implementation of TTree::Draw
