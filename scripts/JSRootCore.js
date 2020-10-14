@@ -79,9 +79,13 @@
    "use strict";
 
    /** @summary JSROOT version
-     * @desc Typically the string in format "major.minor.patch date" or can be ROOT version when used from ROOT repository
-     */
-   JSROOT.version = "pre6 14/10/2020";
+     * @desc For the JSROOT release the string in format "major.minor.patch" like "6.0.0"
+     * @desc For the ROOT release is string is "ROOT major.minor.patch" like "ROOT 6.24.00" */
+   JSROOT.version = "pre6";
+
+   /** @summary JSROOT version date
+     * @desc Release date in format day/month/year */
+   JSROOT.version_date = "14/10/2020";
 
    /** @summary Location of JSROOT scripts
      * @desc Used to load other JSROOT scripts when required
@@ -131,7 +135,7 @@
             source_fullpath = script.src;
             JSROOT.source_dir = source_fullpath.substr(0, pos);
             _.source_min = source_fullpath.indexOf("scripts/JSRootCore.min.js") >= 0;
-            console.log("Set JSROOT.source_dir to " + JSROOT.source_dir + ", " + JSROOT.version);
+            console.log(`Set JSROOT.source_dir to ${JSROOT.source_dir}, ${JSROOT.version} ${JSROOT.version_date}`);
          }
       }
 
