@@ -2870,7 +2870,7 @@ JSROOT.require(['io', 'math'], (jsrio, jsrmath) => {
    JSROOT.TSelector = TSelector;
    JSROOT.TDrawVariable = TDrawVariable;
    JSROOT.TDrawSelector = TDrawSelector;
-   JSROOT.TTreeMethods = TTreeMethods;
+   jsrio.TTreeMethods = TTreeMethods;
 
    return JSROOT;
 

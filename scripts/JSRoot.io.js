@@ -1133,8 +1133,8 @@ JSROOT.require(['rawinflate'], () => {
     * @private */
    TFile.prototype.AddReadTree = function(obj) {
 
-      if (JSROOT.TTreeMethods)
-         return JSROOT.extend(obj, JSROOT.TTreeMethods);
+      if (jsrio.TTreeMethods)
+         return JSROOT.extend(obj, jsrio.TTreeMethods);
 
       if (this.readTrees === undefined) this.readTrees = [];
 
@@ -1204,7 +1204,7 @@ JSROOT.require(['rawinflate'], () => {
 
          return JSROOT.require('tree').then(() => {
             if (file.readTrees) {
-               file.readTrees.forEach(t => JSROOT.extend(t, JSROOT.TTreeMethods))
+               file.readTrees.forEach(t => JSROOT.extend(t, jsrio.TTreeMethods))
                delete file.readTrees;
             }
             return obj;
