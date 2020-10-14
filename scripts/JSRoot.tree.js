@@ -302,7 +302,7 @@ JSROOT.require(['io', 'math'], (jsrio, jsrmath) => {
             // when full id includes branch name, replace only part of extracted expression
             if (br.branch && (br.rest !== undefined)) {
                pos2 -= br.rest.length;
-               branch_mode = br.read_mode; // maybe selection of the sub-object done
+               branch_mode = undefined; // maybe selection of the sub-object done
                br = br.branch;
             }
 
