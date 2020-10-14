@@ -206,7 +206,16 @@ JSROOT.require(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    // ============================================================
 
-   // painter class for objects, derived from TPave
+   /**
+    * @summary painter class for objects, derived from TPave
+    *
+    * @class
+    * @memberof JSROOT
+    * @extends JSROOT.ObjectPainter
+    * @param {object} pave - TPave-based object
+    * @private
+    */
+
    function TPavePainter(pave) {
       JSROOT.ObjectPainter.call(this, pave);
       this.Enabled = true;
@@ -662,9 +671,8 @@ JSROOT.require(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       }
    }
 
-   /** Method used to convert value to string according specified format
-     * format can be like 5.4g or 4.2e or 6.4f
-     * @private */
+   /** @summary Method used to convert value to string according specified format
+     * @desc format can be like 5.4g or 4.2e or 6.4f */
    TPavePainter.prototype.Format = function(value, fmt) {
       if (!fmt) fmt = "stat";
 
@@ -1351,6 +1359,7 @@ JSROOT.require(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    /** @summary Produce and draw TLegend object for the specified divid
     * @desc Should be called when all other objects are painted
     * Invoked when item "$legend" specified in JSROOT URL string
+    * @memberof JSROOT
     * @private */
    let produceLegend = (divid, opt) => {
       let main_painter = JSROOT.get_main_painter(divid);
@@ -1398,6 +1407,14 @@ JSROOT.require(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    }
 
    // ==============================================================================
+
+   /**
+    * @summary Class to decode histograms draw options
+    *
+    * @class
+    * @memberof JSROOT
+    * @private
+    */
 
    function THistDrawOptions() {
       this.Reset();
@@ -1713,6 +1730,14 @@ JSROOT.require(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    // ==============================================================================
 
+   /**
+    * @summary Handle for histogram contour
+    *
+    * @class
+    * @memberof JSROOT
+    * @private
+    */
+
    function HistContour(zmin, zmax) {
       this.arr = [];
       this.colzmin = zmin;
@@ -1899,8 +1924,7 @@ JSROOT.require(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return 1;
    }
 
-   /** Decode options string opt and fill the option structure
-    * @private */
+   /** @summary Decode options string opt and fill the option structure */
    THistPainter.prototype.DecodeOptions = function(opt) {
       let histo = this.GetHisto(),
           hdim = this.Dimension(),
@@ -1973,7 +1997,7 @@ JSROOT.require(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       this.createAttLine({ attr: histo, color0: this.options.histoLineColor });
    }
 
-   /** @brief Update histogram object
+   /** @summary Update histogram object
     * @param obj - new histogram instance
     * @param opt - new drawing option (optional)
     * @returns {Boolean} - true if histogram was successfully updated */
@@ -2200,8 +2224,7 @@ JSROOT.require(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    }
 
    /** @summary Create x,y objects which maps user coordinates into pixels
-    *  @desc Now moved into TFramePainter
-    *  @private */
+    *  @desc Now moved into TFramePainter */
    THistPainter.prototype.CreateXY = function() {
       if (!this.is_main_painter()) return;
 
@@ -2398,8 +2421,7 @@ JSROOT.require(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return indx;
    }
 
-   /** Find function in histogram list of functions
-    * @private */
+   /** @summary Find function in histogram list of functions */
    THistPainter.prototype.FindFunction = function(type_name, obj_name) {
       let histo = this.GetObject(),
           funcs = histo && histo.fFunctions ? histo.fFunctions.arr : null;
@@ -2414,8 +2436,7 @@ JSROOT.require(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return null;
    }
 
-   /** Find stats box - either in list of functions or as object of correspondent painter
-    * @private */
+   /** Summary Find stats box - either in list of functions or as object of correspondent painter */
    THistPainter.prototype.FindStat = function() {
       if (this.options.PadStats) {
          let p = this.FindPainterFor(null,"stats", "TPaveStats");
@@ -2429,9 +2450,7 @@ JSROOT.require(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return !this.GetObject() || (!this.draw_content && !this.create_stats) || (this.options.Axis>0);
    }
 
-   /** @summary Create stat box for histogram if required
-    * @private
-    */
+   /** @summary Create stat box for histogram if required */
    THistPainter.prototype.CreateStat = function(force) {
 
       let histo = this.GetHisto();

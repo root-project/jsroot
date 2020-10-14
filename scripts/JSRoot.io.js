@@ -2170,6 +2170,17 @@ JSROOT.require(['rawinflate'], () => {
 
    // =============================================================
 
+   /**
+     * @summary Interface to read local file in the browser
+     *
+     * @class
+     * @memberof JSROOT
+     * @extends JSROOT.TFile
+     * @hideconstructor
+     * @desc Use {@link JSROOT.openFile} to create instance of the class
+     * @private
+     */
+
    function TLocalFile(file) {
       TFile.call(this, null);
       this.fUseStampPar = false;
@@ -2212,6 +2223,17 @@ JSROOT.require(['rawinflate'], () => {
 
    // =============================================================
 
+   /**
+     * @summary Interface to read file in node.js
+     *
+     * @class
+     * @memberof JSROOT
+     * @extends JSROOT.TFile
+     * @hideconstructor
+     * @desc Use {@link JSROOT.openFile} to create instance of the class
+     * @private
+     */
+
    function TNodejsFile(filename) {
       TFile.call(this, null);
       this.fUseStampPar = false;
@@ -2223,7 +2245,7 @@ JSROOT.require(['rawinflate'], () => {
 
    TNodejsFile.prototype = Object.create(TFile.prototype)
 
-   /** @brief Open file
+   /** @summary Open file
     * @returns {Promise} after file keys are read
     * @private */
    TNodejsFile.prototype.Open = function() {
@@ -2247,7 +2269,7 @@ JSROOT.require(['rawinflate'], () => {
       );
    }
 
-   /** @brief Read buffer from local file
+   /** @summary Read buffer from local file
     * @returns {Promise} with required blocks
     * @private */
 

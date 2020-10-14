@@ -181,15 +181,14 @@ JSROOT.require(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       }
    }
 
-   /** @brief Set frame activity flag
+   /** @summary Set frame activity flag
     * @private */
-
    JSROOT.v7.RFramePainter.prototype.SetActive = function(on) {
       if (this.control)
          this.control.enableKeys = on && JSROOT.key_handling;
    }
 
-   /** @brief call 3D rendering of the histogram drawing
+   /** @summary call 3D rendering of the histogram drawing
      * @desc tmout specified delay, after which actual rendering will be invoked
      * Timeout used to avoid multiple rendering of the picture when several 3D drawings
      * superimposed with each other.
@@ -198,7 +197,6 @@ JSROOT.require(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
      *  -1111 - immediate rendering with SVG renderer
      *  -2222 - rendering performed only if there were previous calls, which causes timeout activation
      * @private */
-
    JSROOT.v7.RFramePainter.prototype.Render3D = function(tmout) {
 
       if (tmout === -1111) {

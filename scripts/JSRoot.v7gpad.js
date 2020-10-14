@@ -192,7 +192,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
       }
    }
 
-   /** @brief Submit request to server-side drawable
+   /** @summary Submit request to server-side drawable
     * @param kind defines request kind, only single request a time can be submitted
     * @param req is object derived from DrawableRequest, including correct _typename
     * @param method is method of painter object which will be called when getting reply
@@ -2222,7 +2222,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
          canp.pad_events_receiver({ what: "select", padpainter: pp, painter: _painter, position: pos });
    }
 
-   /** @brief Called by framework when pad is supposed to be active and get focus
+   /** @summary Called by framework when pad is supposed to be active and get focus
     * @private */
    RPadPainter.prototype.SetActive = function(on) {
       let fp = this.frame_painter();
@@ -3392,7 +3392,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
 
    RCanvasPainter.prototype = Object.create(RPadPainter.prototype);
 
-   /** @brief Cleanup canvas painter */
+   /** @summary Cleanup canvas painter */
    RCanvasPainter.prototype.Cleanup = function() {
       delete this._websocket;
       delete this._submreq;

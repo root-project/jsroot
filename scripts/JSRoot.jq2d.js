@@ -36,6 +36,15 @@ JSROOT.require(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-m
       return "exec:" + method + "(" + id + ")";
    }
 
+   /**
+    * @summary Class for creating context menu
+    *
+    * @class
+    * @memberof JSROOT
+    * @private
+    * @desc Use {@link JSROOT.Painter.createMenu} to create instance of the menu
+    */
+
    class JQueryMenu {
       constructor(painter, menuname, show_event) {
          this.painter = painter;

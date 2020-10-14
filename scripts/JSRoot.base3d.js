@@ -282,7 +282,7 @@ JSROOT.require(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
    }
 
 
-   /** @brief Create OrbitControl for painter */
+   /** @summary Create OrbitControl for painter */
    jsrp.CreateOrbitControl = function(painter, camera, scene, renderer, lookat) {
 
       if (JSROOT.settings.Zooming && JSROOT.settings.ZoomWheel)

@@ -180,10 +180,12 @@
    }
 
    /** @namespace
-     * @desc Specialized JSROOT constants, used in {@link JSROOT.settings} */
+     * @desc Specialized JSROOT constants, used in {@link JSROOT.settings}
+     * @private */
    JSROOT.constants = {
       /** @desc Kind of 3D rendering, used for {@link JSROOT.settings.Render3D}
-        * @namespace */
+        * @namespace
+        * @private */
       Render3D: {
          /** @summary Default 3D rendering, normally WebGL, if not supported - SVG*/
          Default: 0,
@@ -201,7 +203,8 @@
          }
       },
       /** @desc Way to embed 3D into SVG, used for {@link JSROOT.settings.Embed3D}
-        * @namespace */
+        * @namespace
+        * @private */
       Embed3D: {
          /** @summary Do not embed 3D drawing, use complete space */
          NoEmbed: -1,
@@ -221,7 +224,8 @@
          }
       },
       /** @desc How to use latex in text drawing, used for {@link JSROOT.settings.Latex}
-        * @namespace */
+        * @namespace
+        * @private */
       Latex: {
          /** @summary do not use Latex at all for text drawing */
          Off: 0,
@@ -321,11 +325,11 @@
       ZValuesFormat : undefined,
    };
 
-   /** @summary Insiance of TStyle object like in ROOT
-     * @desc Includes default draw styles, can be changed after loading of JSRootCore.js
-     *       or can be load from the file providing style=itemname in the URL
+   /** @namespace
      * @memberof JSROOT
-     * @namespace */
+     * @desc Insiance of TStyle object like in ROOT
+     * Includes default draw styles, can be changed after loading of JSRootCore.js
+     * or can be load from the file providing style=itemname in the URL */
    let gStyle = {
       fOptLogx: 0,
       fOptLogy: 0,

@@ -1480,8 +1480,7 @@ JSROOT.require(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
    // ==========================================================================================
 
    /** @summary Draw 1-D histogram in 3D
-     * @private
-     */
+     * @private */
    JSROOT.TH1Painter.prototype.Draw3D = function(reason) {
 
       this.mode3d = true;
@@ -1527,6 +1526,8 @@ JSROOT.require(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
    // ==========================================================================================
 
+   /** @summary Draw 2-D histogram in 3D
+     * @private */
    JSROOT.TH2Painter.prototype.Draw3D = function(reason) {
 
       this.mode3d = true;
@@ -2307,6 +2308,16 @@ JSROOT.require(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
    // ==============================================================================
 
+  /**
+    * @summary Painter for TH3 classes
+    *
+    * @class
+    * @memberof JSROOT
+    * @extends JSROOT.THistPainter
+    * @param {object} histo - histogram object
+    * @private
+    */
+
    function TH3Painter(histo) {
       JSROOT.THistPainter.call(this, histo);
 
@@ -3049,6 +3060,16 @@ JSROOT.require(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
    }
 
    // ===========================================================================================
+
+/**
+    * @summary Painter for TGraph2D classes
+    *
+    * @class
+    * @memberof JSROOT
+    * @extends JSROOT.ObjectPainter
+    * @param {object} graph - TGraph2D object
+    * @private
+    */
 
    function TGraph2DPainter(graph) {
       JSROOT.ObjectPainter.call(this, graph);

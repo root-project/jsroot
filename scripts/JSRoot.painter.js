@@ -2481,30 +2481,31 @@ JSROOT.require(['d3'], (d3) => {
     * @desc In some situations canvas may not exists - for instance object drawn as html, not as svg.
     * In such case the only painter will be assigned to the first element
     *
-    * Following value of is_main parameter is allowed:
-    *    -1 - only assign id, this painter not add to painters list,
-    *     0 - normal painter (default),
-    *     1 - major objects like TH1/TH2 (required canvas with frame)
-    *     2 - if canvas missing, create it, but not set as main object
-    *     3 - if canvas and (or) frame missing, create them, but not set as main object
-    *     4 - major objects like TH3 (required canvas and frame in 3d mode)
-    *     5 - major objects like TGeoVolume (do not require canvas)
+    * Following values of kind parameter are allowed:
+    *   -  -1  only assign id, this painter not add to painters list
+    *   -   0  normal painter (default)
+    *   -   1  major objects like TH1/TH2 (required canvas with frame)
+    *   -   2  if canvas missing, create it, but not set as main object
+    *   -   3  if canvas and (or) frame missing, create them, but not set as main object
+    *   -   4  major objects like TH3 (required canvas and frame in 3d mode)
+    *   -   5  major objects like TGeoVolume (do not require canvas)
     *
-    *  @param {string|object} divid - id of div element or directly DOMElement
-    *  @param {number} [kind = 0] - kind of object drawn with painter
-    *  @param {string} [pad_name = undefined] - when specified, subpad name used for object drawin
+    * @param {string|object} divid - id of div element or directly DOMElement
+    * @param {number} [kind = 0] - kind of object drawn with painter
+    * @param {string} [pad_name = undefined] - when specified, subpad name used for object drawin
+    * @private
     */
-   ObjectPainter.prototype.SetDivId = function(divid, is_main, pad_name) {
+   ObjectPainter.prototype.SetDivId = function(divid, kind, pad_name) {
 
       if (divid !== undefined) {
          this.divid = divid;
          delete this._selected_main;
       }
 
-      if (!is_main || isNaN(is_main)) is_main = 0;
+      if (!kind || isNaN(kind)) kind = 0;
 
       // check if element really exists
-      if ((is_main >= 0) && this.select_main(true).empty()) {
+      if ((kind >= 0) && this.select_main(true).empty()) {
          if (typeof divid == 'string') console.error('not found HTML element with id: ' + divid);
          else console.error('specified HTML element can not be selected with d3.select()');
          return false;
@@ -2515,9 +2516,9 @@ JSROOT.require(['d3'], (d3) => {
       // SVG element where canvas is drawn
       let svg_c = this.svg_canvas();
 
-      if (svg_c.empty() && (is_main > 0) && (is_main !== 5)) {
+      if (svg_c.empty() && (kind > 0) && (kind !== 5)) {
          if (typeof jsrp.drawCanvas == 'function')
-             jsrp.drawCanvas(divid, null, ((is_main == 2) || (is_main == 4)) ? "noframe" : "");
+             jsrp.drawCanvas(divid, null, ((kind == 2) || (kind == 4)) ? "noframe" : "");
          else
              return alert("Fail to draw TCanvas - please contact JSROOT developers");
          svg_c = this.svg_canvas();
@@ -2525,7 +2526,7 @@ JSROOT.require(['d3'], (d3) => {
       }
 
       if (svg_c.empty()) {
-         if ((is_main < 0) || (is_main === 5) || this.iscan) return true;
+         if ((kind < 0) || (kind === 5) || this.iscan) return true;
          this.AccessTopPainter(true);
          return true;
       }
@@ -2535,13 +2536,13 @@ JSROOT.require(['d3'], (d3) => {
       if (this.pad_name === undefined)
          this.pad_name = this.CurrentPadName();
 
-      if (is_main < 0) return true;
+      if (kind < 0) return true;
 
       // create TFrame element if not exists
-      if (this.svg_frame().select(".main_layer").empty() && ((is_main == 1) || (is_main == 3) || (is_main == 4))) {
+      if (this.svg_frame().select(".main_layer").empty() && ((kind == 1) || (kind == 3) || (kind == 4))) {
          if (typeof jsrp.drawFrame == 'function')
-            jsrp.drawFrame(divid, null, (is_main == 4) ? "3d" : "");
-         if ((is_main != 4) && this.svg_frame().empty()) return alert("Fail to draw dummy TFrame");
+            jsrp.drawFrame(divid, null, (kind == 4) ? "3d" : "");
+         if ((kind != 4) && this.svg_frame().empty()) return alert("Fail to draw dummy TFrame");
       }
 
       let svg_p = this.svg_pad();
@@ -2555,7 +2556,7 @@ JSROOT.require(['d3'], (d3) => {
             this.rstyle = pp.next_rstyle;
       }
 
-      if (((is_main === 1) || (is_main === 4) || (is_main === 5)) && !svg_p.property('mainpainter'))
+      if (((kind === 1) || (kind === 4) || (kind === 5)) && !svg_p.property('mainpainter'))
          // when this is first main painter in the pad
          svg_p.property('mainpainter', this);
 
@@ -2729,7 +2730,7 @@ JSROOT.require(['d3'], (d3) => {
       return false;
    }
 
-   /** @brief Invoke method for object via WebCanvas functionality
+   /** @summary Invoke method for object via WebCanvas functionality
     * @desc Requires that painter marked with object identifier (this.snapid) or identifier provided as second argument
     * Canvas painter should exists and in non-readonly mode
     * Execution string can look like "Print()".

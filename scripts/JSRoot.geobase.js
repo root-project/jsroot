@@ -2557,7 +2557,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       return res;
    }
 
-   /** @brief Return node name with given id.
+   /** @summary Return node name with given id.
     * @desc Either original object or description is used
     * @private */
    ClonedNodes.prototype.GetNodeName = function(nodeid) {
@@ -2569,7 +2569,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       return node ? node.name : "";
    }
 
-   /** @brief Returns description for provide stack
+   /** @summary Returns description for provide stack
     * @private */
    ClonedNodes.prototype.ResolveStack = function(stack, withmatrix) {
 
@@ -2688,7 +2688,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       return stack;
    }
 
-   /** @brief Set usage of default ROOT colors */
+   /** @summary Set usage of default ROOT colors */
    ClonedNodes.prototype.SetDefaultColors = function(on) {
       this.use_dflt_colors = on;
       if (this.use_dflt_colors && !this.dflt_table) {
@@ -2720,7 +2720,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       }
    }
 
-   /** @brief Provide different properties of draw entry nodeid
+   /** @summary Provide different properties of draw entry nodeid
     * @desc Only if node visible, material will be created*/
    ClonedNodes.prototype.getDrawEntryProperties = function(entry) {
 
@@ -2938,7 +2938,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       return result;
    }
 
-   /** @brief Collects visible nodes, using maxlimit
+   /** @summary Collects visible nodes, using maxlimit
      * @desc One can use map to define cut based on the volume or serious of cuts */
    ClonedNodes.prototype.CollectVisibles = function(maxnumfaces, frustum) {
 
@@ -3041,7 +3041,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       return { lst: arg.items, complete: minVol === 0 };
    }
 
-   /** @brief merge list of drawn objects
+   /** @summary merge list of drawn objects
      * @desc in current list we should mark if object already exists
      * from previous list we should collect objects which are not there */
    ClonedNodes.prototype.MergeVisibles = function(current, prev) {
@@ -3066,7 +3066,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       return del; //
    }
 
-   /** @brief Collect all uniques shapes which should be build
+   /** @summary Collect all uniques shapes which should be build
     *  @desc Check if same shape used many time for drawing */
    ClonedNodes.prototype.CollectShapes = function(lst) {
 
@@ -3232,7 +3232,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       }
    }
 
-  /** @brief Create flipped mesh for the shape
+  /** @summary Create flipped mesh for the shape
     * @desc When transformation matrix includes one or several inversion of axis,
     * one should inverse geometry object, otherwise THREE.js cannot correctly draw it
     * @param {Object} shape - TGeoShape object
@@ -3576,6 +3576,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
     * @param {boolean} [opt.doubleside=false] - use double-side material
     * @param {boolean} [opt.wireframe=false] - show wireframe for created shapes
     * @param {boolean} [opt.dflt_colors=false] - use default ROOT colors
+    * @returns {object} THREE.Object3D with created model
     */
    geo.build = function(obj, opt) {
 

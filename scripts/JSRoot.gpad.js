@@ -16,6 +16,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
     *
     * @class
     * @memberof JSROOT
+    * @extends JSROOT.ObjectPainter
     * @param {object} axis - object to draw
     * @param {boolean} embedded - if true, painter used in other objects painters
     * @private
@@ -2078,14 +2079,14 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
          canp.pad_events_receiver({ what: "redraw", padpainter: pp, painter: _painter });
    }
 
-   /** @brief Called by framework when pad is supposed to be active and get focus
+   /** @summary Called by framework when pad is supposed to be active and get focus
     * @private */
    TPadPainter.prototype.SetActive = function(on) {
       let fp = this.frame_painter();
       if (fp && (typeof fp.SetActive == 'function')) fp.SetActive(on);
    }
 
-   /** @brief Draw pad active border
+   /** @summary Draw pad active border
     * @private */
    TPadPainter.prototype.DrawActiveBorder = function(svg_rect, is_active) {
       if (is_active !== undefined) {
