@@ -81,7 +81,7 @@
    /** @summary JSROOT version
      * @desc Typically the string in format "major.minor.patch date" or can be ROOT version when used from ROOT repository
      */
-   JSROOT.version = "pre6 12/10/2020";
+   JSROOT.version = "pre6 14/10/2020";
 
    /** @summary Location of JSROOT scripts
      * @desc Used to load other JSROOT scripts when required

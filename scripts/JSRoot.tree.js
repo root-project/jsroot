@@ -1377,14 +1377,23 @@ JSROOT.require(['io', 'math'], (jsrio, jsrmath) => {
    }
 
    /** @namespace
-    * @desc these are TTree methods, which are automatically assigned to each TTree object */
-   JSROOT.TTreeMethods = {};
+    * @alias JSROOT.TTree
+    * @desc These are TTree methods, provided in the JSROOT
+    * TTree only can be read from the existing ROOT file, there is no possibility to create and fill tree
+    * @example
+    * JSROOT.openFile("https://root.cern/js/files/hsimple.root")
+    *      .then(file => file.ReadObject("ntuple;1"))
+    *      .then(tree => JSROOT.draw("drawing", tree, "px:py::pz>5"));
+    */
+   let TTreeMethods = {};
 
    /** @summary Process selector
     * @param {object} selector - instance of {@link JSROOT.TSelector} class
-    * @param {object} args - different arguments
+    * @param {object} [args] - different arguments
+    * @param {number} [args.firstentry] - first entry to process, 0 when not specified
+    * @param {number} [args.numentries] - number of entries to process, all when not specified
     * @return {Promise} with TSelector instance */
-   JSROOT.TTreeMethods.Process = function(selector, args) {
+   TTreeMethods.Process = function(selector, args) {
       // function similar to the TTree::Process
 
       if (!args) args = {};
@@ -1650,15 +1659,15 @@ JSROOT.require(['io', 'math'], (jsrio, jsrmath) => {
                      conttype: branch.fClonesName || "TObject",
                      reallocate: args.reallocate_objects,
                      func: function(buf, obj) {
-                        let size = buf.ntoi4(), n = 0;
-                        if (!obj[this.name] || this.reallocate) {
-                           obj[this.name] = new Array(size);
+                        let size = buf.ntoi4(), n = 0, arr = obj[this.name];
+                        if (!arr || this.reallocate) {
+                           arr = obj[this.name] = new Array(size);
                         } else {
-                           n = obj[this.name].length;
-                           obj[this.name].length = size; // reallocate array
+                           n = arr.length;
+                           arr.length = size; // reallocate array
                         }
 
-                        while (n < size) obj[this.name][n++] = this.methods.Create(); // create new objects
+                        while (n < size) arr[n++] = this.methods.Create(); // create new objects
                      }
                   }
 
@@ -2398,7 +2407,7 @@ JSROOT.require(['io', 'math'], (jsrio, jsrmath) => {
    /** @summary Search branch with specified name
     * @desc if complex enabled, search branch and rest part
     * @private */
-   JSROOT.TTreeMethods.FindBranch = function(name, complex, lst) {
+   TTreeMethods.FindBranch = function(name, complex, lst) {
 
       let top_search = false, search = name, res = null;
 
@@ -2462,7 +2471,7 @@ JSROOT.require(['io', 'math'], (jsrio, jsrmath) => {
      * @param {function} [args.progress=undefined] - function called during histogram accumulation with argument { obj: draw_object, opt: draw_options }
      * @returns {Promise} with object like { obj: draw_object, opt: draw_options }
      */
-   JSROOT.TTreeMethods.Draw = function(args) {
+   TTreeMethods.Draw = function(args) {
 
       if (typeof args === 'string') args = { expr: args };
 
@@ -2492,7 +2501,7 @@ JSROOT.require(['io', 'math'], (jsrio, jsrmath) => {
    /** @summary Performs generic I/O test for all branches in the TTree
      * @desc Used when "testio" draw option for TTree is specified
      * @private */
-   JSROOT.TTreeMethods.IOTest = function(args) {
+   TTreeMethods.IOTest = function(args) {
       args.branches = [];
       args.names = [];
       args.nchilds = [];
@@ -2815,6 +2824,7 @@ JSROOT.require(['io', 'math'], (jsrio, jsrmath) => {
    JSROOT.TSelector = TSelector;
    JSROOT.TDrawVariable = TDrawVariable;
    JSROOT.TDrawSelector = TDrawSelector;
+   JSROOT.TTreeMethods = TTreeMethods;
 
    return JSROOT;
 
