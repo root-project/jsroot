@@ -7,7 +7,7 @@ JSROOT.require([], () =>  {
 
    let mth = {};
 
-   /** @memberOf JSROOT.Math */
+   /** @memberof JSROOT.Math */
    mth.lgam = function( x ) {
       let p, q, u, w, z, i, sgngam = 1;
       const kMAXLGM = 2.556348e305,
@@ -110,7 +110,7 @@ JSROOT.require([], () =>  {
     * calculates a value of a polynomial of the form:
     * a[0]x^N+a[1]x^(N-1) + ... + a[N]
     *
-    * @memberOf JSROOT.Math
+    * @memberof JSROOT.Math
     */
    mth.Polynomialeval = function(x, a, N) {
       if (N==0) return a[0];
@@ -125,7 +125,7 @@ JSROOT.require([], () =>  {
     * calculates a value of a polynomial of the form:
     * x^N+a[0]x^(N-1) + ... + a[N-1]
     *
-    * @memberOf JSROOT.Math
+    * @memberof JSROOT.Math
     */
    mth.Polynomial1eval = function(x, a, N) {
       if (N==0) return a[0];
@@ -136,7 +136,7 @@ JSROOT.require([], () =>  {
       return pom;
    }
 
-   /** @memberOf JSROOT.Math */
+   /** @memberof JSROOT.Math */
    mth.ndtri = function( y0 ) {
       if ( y0 <= 0.0 )
          return Number.NEGATIVE_INFINITY;
@@ -228,7 +228,7 @@ JSROOT.require([], () =>  {
       return  sigma * mth.ndtri(z);
    }
 
-   /** @memberOf JSROOT.Math */
+   /** @memberof JSROOT.Math */
    mth.igam = function(a,x) {
       const kMACHEP = 1.11022302462515654042363166809e-16,
             kMAXLOG = 709.782712893383973096206318587;
@@ -261,7 +261,7 @@ JSROOT.require([], () =>  {
       return ans * ax/a;
    }
 
-   /** @memberOf JSROOT.Math */
+   /** @memberof JSROOT.Math */
    mth.igamc = function(a,x) {
       const kMACHEP = 1.11022302462515654042363166809e-16,
             kMAXLOG = 709.782712893383973096206318587,
@@ -325,7 +325,7 @@ JSROOT.require([], () =>  {
       return ans * ax;
    }
 
-   /** @memberOf JSROOT.Math */
+   /** @memberof JSROOT.Math */
    mth.igami = function(a, y0) {
       // check the domain
       if (a <= 0) {
@@ -434,17 +434,17 @@ JSROOT.require([], () =>  {
       return x;
    }
 
-   /** @memberOf JSROOT.Math */
+   /** @memberof JSROOT.Math */
    mth.gamma_quantile_c = function(z, alpha, theta) {
       return theta * mth.igami( alpha, z);
    }
 
-   /** @memberOf JSROOT.Math */
+   /** @memberof JSROOT.Math */
    mth.gamma_quantile = function(z, alpha, theta) {
       return theta * mth.igami( alpha, 1.- z);
    }
 
-   /** @memberOf JSROOT.Math */
+   /** @memberof JSROOT.Math */
    mth.landau_pdf = function(x, xi, x0) {
       // LANDAU pdf : algorithm from CERNLIB G110 denlan
       // same algorithm is used in GSL
@@ -503,7 +503,7 @@ JSROOT.require([], () =>  {
       return denlan/xi;
    }
 
-   /** @memberOf JSROOT.Math */
+   /** @memberof JSROOT.Math */
    mth.Landau = function(x, mpv, sigma, norm) {
       if (sigma <= 0) return 0;
       const den = mth.landau_pdf((x - mpv) / sigma, 1, 0);
@@ -511,12 +511,12 @@ JSROOT.require([], () =>  {
       return den/sigma;
    }
 
-   /** @memberOf JSROOT.Math */
+   /** @memberof JSROOT.Math */
    mth.inc_gamma_c = function(a,x) {
       return mth.igamc(a,x);
    }
 
-   /** @memberOf JSROOT.Math */
+   /** @memberof JSROOT.Math */
    mth.inc_gamma = function(a,x) {
       return mth.igam(a,x);
    }
@@ -525,7 +525,7 @@ JSROOT.require([], () =>  {
       return mth.lgam(z);
    }
 
-   /** @memberOf JSROOT.Math */
+   /** @memberof JSROOT.Math */
    mth.inc_gamma = function(a,x) {
       return mth.igam(a,x);
    }
@@ -534,19 +534,19 @@ JSROOT.require([], () =>  {
       return mth.lgam(z);
    }
 
-   /** @memberOf JSROOT.Math */
+   /** @memberof JSROOT.Math */
    mth.chisquared_cdf_c = function(x,r,x0) {
       if (x0===undefined) x0 = 0;
       return mth.inc_gamma_c ( 0.5 * r , 0.5*(x-x0) );
    }
 
-   /** @memberOf JSROOT.Math */
+   /** @memberof JSROOT.Math */
    mth.chisquared_cdf = function(x,r,x0) {
       if (x0===undefined) x0 = 0;
       return mth.inc_gamma ( 0.5 * r , 0.5*(x-x0) );
    }
 
-   /** @memberOf JSROOT.Math */
+   /** @memberof JSROOT.Math */
    mth.chisquared_pdf = function(x,r,x0) {
       if (x0===undefined) x0 = 0;
       if ((x-x0) < 0) return 0.0;
@@ -557,7 +557,7 @@ JSROOT.require([], () =>  {
       return Math.exp ((r/2 - 1) * Math.log((x-x0)/2) - (x-x0)/2 - mth.lgamma(r/2))/2;
    }
 
-   /** @memberOf JSROOT.Math */
+   /** @memberof JSROOT.Math */
    mth.Prob = function(chi2, ndf) {
       if (ndf <= 0) return 0; // Set CL to zero in case ndf<=0
 
@@ -569,28 +569,28 @@ JSROOT.require([], () =>  {
       return mth.chisquared_cdf_c(chi2,ndf,0);
    }
 
-   /** @memberOf JSROOT.Math */
+   /** @memberof JSROOT.Math */
    mth.Gaus = function(x, mean, sigma) {
       return Math.exp(-0.5 * Math.pow((x-mean) / sigma, 2));
    }
 
-   /** @memberOf JSROOT.Math */
+   /** @memberof JSROOT.Math */
    mth.BreitWigner = function(x, mean, gamma) {
       return gamma/((x-mean)*(x-mean) + gamma*gamma/4) / 2 / Math.PI;
    }
 
-   /** @memberOf JSROOT.Math */
+   /** @memberof JSROOT.Math */
    mth.gaus = function(f, x, i) {
       // function used when gaus(0) used in the TFormula
       return f.GetParValue(i+0) * Math.exp(-0.5 * Math.pow((x-f.GetParValue(i+1)) / f.GetParValue(i+2), 2));
    }
 
-   /** @memberOf JSROOT.Math */
+   /** @memberof JSROOT.Math */
    mth.gausn = function(f, x, i) {
       return mth.gaus(f, x, i)/(Math.sqrt(2 * Math.PI) * f.GetParValue(i+2));
    }
 
-   /** @memberOf JSROOT.Math */
+   /** @memberof JSROOT.Math */
    mth.gausxy = function(f, x, y, i) {
       // function used when xygaus(0) used in the TFormula
 
@@ -598,17 +598,17 @@ JSROOT.require([], () =>  {
                                 * Math.exp(-0.5 * Math.pow((y-f.GetParValue(i+3)) / f.GetParValue(i+4), 2));
    }
 
-   /** @memberOf JSROOT.Math */
+   /** @memberof JSROOT.Math */
    mth.expo = function(f, x, i) {
       return Math.exp(f.GetParValue(i+0) + f.GetParValue(i+1) * x);
    }
 
-   /** @memberOf JSROOT.Math */
+   /** @memberof JSROOT.Math */
    mth.landau = function(f, x, i) {
       return mth.Landau(x, f.GetParValue(i+1),f.GetParValue(i+2), false);
    }
 
-   /** @memberOf JSROOT.Math */
+   /** @memberof JSROOT.Math */
    mth.landaun = function(f, x, i) {
       return mth.Landau(x, f.GetParValue(i+1),f.GetParValue(i+2), true);
    }

@@ -1821,9 +1821,9 @@ JSROOT.require(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    /**
     * @summary Basic painter for histogram classes
     *
-    * @constructor
+    * @class
     * @memberof JSROOT
-    * @arguments JSROOT.ObjectPainter
+    * @extends JSROOT.ObjectPainter
     * @param {object} histo - histogram object
     * @private
     */
@@ -3151,9 +3151,9 @@ JSROOT.require(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    /**
     * @summary Painter for TH1 classes
     *
-    * @constructor
+    * @class
     * @memberof JSROOT
-    * @arguments JSROOT.THistPainter
+    * @extends JSROOT.THistPainter
     * @param {object} histo - histogram object
     * @private
     */
@@ -4273,9 +4273,9 @@ JSROOT.require(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    /**
     * @summary Painter for TH2 classes
     *
-    * @constructor
+    * @class
     * @memberof JSROOT
-    * @arguments JSROOT.THistPainter
+    * @extends JSROOT.THistPainter
     * @param {object} histo - histogram object
     * @private
     */

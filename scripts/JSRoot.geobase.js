@@ -101,10 +101,14 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
 
    // ==========================================================================
 
-   /** @brief Helper class for geometry creation
-     * @memberOf JSROOT.GEO
+   /**
+     * @summary Helper class for geometry creation
+     *
      * @class
-     * @private */
+     * @memberof JSROOT.GEO
+     * @private
+     */
+
    function GeometryCreator(numfaces) {
       this.nfaces = numfaces;
       this.indx = 0;
@@ -320,11 +324,13 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
 
    // ================================================================================
 
-   /** @brief Helper class for ThreeBSP geometry creation
-     * @memberOf JSROOT.GEO
+   /** @summary Helper class for ThreeBSP geometry creation
+     *
      * @class
+     * @memberof JSROOT.GEO
      * @private
      */
+
    function PolygonsCreator() {
       this.polygons = [];
    }
@@ -481,7 +487,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
    // ================= all functions to create geometry ===================================
 
    /** @summary Creates cube geometrey
-     * @memberOf JSROOT.GEO
+     * @memberof JSROOT.GEO
      * @private */
    function createCubeBuffer(shape, faces_limit) {
 
@@ -507,7 +513,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
    }
 
    /** @summary Creates 8 edges geometry
-     * @memberOf JSROOT.GEO
+     * @memberof JSROOT.GEO
      * @private */
    function create8edgesBuffer( v, faces_limit ) {
 
@@ -530,7 +536,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
    }
 
    /** @summary Creates PARA geometrey
-     * @memberOf JSROOT.GEO
+     * @memberof JSROOT.GEO
      * @private */
    function createParaBuffer( shape, faces_limit ) {
 
@@ -552,7 +558,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
    }
 
    /** @summary Creates Ttrapezoid geometrey
-     * @memberOf JSROOT.GEO
+     * @memberof JSROOT.GEO
      * @private */
    function createTrapezoidBuffer( shape, faces_limit ) {
 
@@ -581,7 +587,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
 
 
    /** @summary Creates arb8 geometrey
-     * @memberOf JSROOT.GEO
+     * @memberof JSROOT.GEO
      * @private */
    function createArb8Buffer( shape, faces_limit ) {
 
@@ -690,7 +696,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
    }
 
    /** @summary Creates sphere geometrey
-     * @memberOf JSROOT.GEO
+     * @memberof JSROOT.GEO
      * @private */
    function createSphereBuffer( shape, faces_limit ) {
       let radius = [shape.fRmax, shape.fRmin],
@@ -818,7 +824,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
    }
 
    /** @summary Creates tube geometrey
-     * @memberOf JSROOT.GEO
+     * @memberof JSROOT.GEO
      * @private */
    function createTubeBuffer( shape, faces_limit) {
       let outerR, innerR; // inner/outer tube radius
@@ -961,7 +967,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
    }
 
    /** @summary Creates eltu geometrey
-     * @memberOf JSROOT.GEO
+     * @memberof JSROOT.GEO
      * @private */
    function createEltuBuffer( shape , faces_limit ) {
       let radiusSegments = Math.max(4, Math.round(360/geo.GradPerSegm));
@@ -1012,7 +1018,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
    }
 
    /** @summary Creates torus geometrey
-     * @memberOf JSROOT.GEO
+     * @memberof JSROOT.GEO
      * @private */
    function createTorusBuffer( shape, faces_limit ) {
       let radius = shape.fR,
@@ -1106,7 +1112,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
 
 
    /** @summary Creates polygon geometrey
-     * @memberOf JSROOT.GEO
+     * @memberof JSROOT.GEO
      * @private */
    function createPolygonBuffer( shape, faces_limit ) {
       let thetaStart = shape.fPhi1,
@@ -1282,7 +1288,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
    }
 
    /** @summary Creates xtru geometrey
-     * @memberOf JSROOT.GEO
+     * @memberof JSROOT.GEO
      * @private */
    function createXtruBuffer( shape, faces_limit ) {
       let nfaces = (shape.fNz-1) * shape.fNvert * 2;
@@ -1342,7 +1348,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
    }
 
    /** @summary Creates para geometrey
-     * @memberOf JSROOT.GEO
+     * @memberof JSROOT.GEO
      * @private */
    function createParaboloidBuffer( shape, faces_limit ) {
 
@@ -1439,7 +1445,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
    }
 
    /** @summary Creates hype geometrey
-     * @memberOf JSROOT.GEO
+     * @memberof JSROOT.GEO
      * @private */
    function createHypeBuffer( shape, faces_limit ) {
 
@@ -1514,7 +1520,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
    }
 
    /** @summary Creates tessalated geometrey
-     * @memberOf JSROOT.GEO
+     * @memberof JSROOT.GEO
      * @private */
    function createTessellatedBuffer( shape, faces_limit) {
       let numfaces = 0;
@@ -1549,7 +1555,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
    }
 
    /** @summary Creates THREE.Matrix4 from TGeoMatrix
-     * @memberOf JSROOT.GEO
+     * @memberof JSROOT.GEO
      * @private */
    geo.createMatrix = function(matrix) {
 
@@ -1599,7 +1605,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
 
    /** @summary Creates transformation matrix for TGeoNode
      * @desc created after node visibility flag is checked and volume cut is performed
-     * @memberOf JSROOT.GEO
+     * @memberof JSROOT.GEO
      * @private */
    geo.getNodeMatrix = function(kind, node) {
 
@@ -1684,7 +1690,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
 
 
    /** @summary Returns geometry bounding box
-    * @memberOf JSROOT.GEO
+    * @memberof JSROOT.GEO
     * @private */
    function geomBoundingBox(geom) {
       if (!geom) return null;
@@ -1713,7 +1719,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
 
    /** @summary Creates half-space geometry for given shape
     * @desc Just big-enough triangle to make BSP calculations
-    * @memberOf JSROOT.GEO
+    * @memberof JSROOT.GEO
     * @private */
    function createHalfSpace(shape, geom) {
       if (!shape || !shape.fN || !shape.fP) return null;
@@ -1760,7 +1766,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
 
    /** @summary Returns number of faces for provided geometry
      * @param geom  - can be THREE.Geometry, THREE.BufferGeometry, ThreeBSP.Geometry or interim array of polygons
-     * @memberOf JSROOT.GEO
+     * @memberof JSROOT.GEO
      * @private */
    function countGeometryFaces(geom) {
       if (!geom) return 0;
@@ -1781,7 +1787,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
    }
 
    /** @summary Creates geometrey for composite shape
-     * @memberOf JSROOT.GEO
+     * @memberof JSROOT.GEO
      * @private */
    function createComposite( shape, faces_limit ) {
 
@@ -1862,7 +1868,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
    }
 
    /** @summary Try to create projected geometry
-     * @memberOf JSROOT.GEO
+     * @memberof JSROOT.GEO
      * @private */
    function projectGeometry(geom, matrix, projection, position, flippedMesh) {
 
@@ -1905,7 +1911,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
     *  - if limit > 0 return list of ThreeBSP polygons (used only for composite shapes)
     * @param {Object} shape - instance of TGeoShape object
     * @param {Number} limit - defines return value, see details
-    * @memberOf JSROOT.GEO
+    * @memberof JSROOT.GEO
     * @private */
    createGeometry = function( shape, limit ) {
       if (limit === undefined) limit = 0;
@@ -1961,7 +1967,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
 
    /** @summary Provides info about geo object, used for tooltip info
      * @param {Object} obj - any kind of TGeo-related object like shape or node or volume
-     * @memberOf JSROOT.GEO
+     * @memberof JSROOT.GEO
      * @private */
    function provideObjectInfo(obj) {
       let info = [], shape = null;
@@ -2042,7 +2048,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
    }
 
    /** @summary Creates projection matrix for the camera
-    * @memberOf JSROOT.GEO
+    * @memberof JSROOT.GEO
     * @private */
    function createProjectionMatrix(camera) {
       let cameraProjectionMatrix = new THREE.Matrix4();
@@ -2055,7 +2061,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
    }
 
    /** @summary Creates frustum
-     * @memberOf JSROOT.GEO
+     * @memberof JSROOT.GEO
      * @private */
    function createFrustum(source) {
       if (!source) return null;
@@ -2142,11 +2148,14 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
 
    // ====================================================================
 
-
-   /** @brief class for working with cloned nodes
+   /**
+     * @summary class for working with cloned nodes
+     *
      * @class
-     * @memberOf JSROOT.GEO
-     * @private */
+     * @memberof JSROOT.GEO
+     * @private
+     */
+
    function ClonedNodes(obj, clones) {
       this.toplevel = true; // indicate if object creates top-level structure with Nodes and Volumes folder
       this.name_prefix = ""; // name prefix used for nodes names
@@ -3228,7 +3237,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
     * one should inverse geometry object, otherwise THREE.js cannot correctly draw it
     * @param {Object} shape - TGeoShape object
     * @param {Object} material - material
-    * @memberOf SJROOT.GEO
+    * @memberof SJROOT.GEO
     * @private */
 
    function createFlippedMesh(shape, material) {

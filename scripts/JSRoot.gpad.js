@@ -11,11 +11,15 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
    // =======================================================================
 
 
-   /** @summary Painter for TAxis/TGaxis objects.
-    * @constructor
+   /**
+    * @summary Painter for TAxis/TGaxis objects.
+    *
+    * @class
+    * @memberof JSROOT
     * @param {object} axis - object to draw
     * @param {boolean} embedded - if true, painter used in other objects painters
-    * @private */
+    * @private
+    */
 
    function TAxisPainter(axis, embedded) {
       JSROOT.ObjectPainter.call(this, axis);
@@ -1940,12 +1944,15 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
 
    // ===========================================================================
 
-   /** @summary Painter for TPad object
+   /**
+     * @summary Painter for TPad object
+     *
+     * @class
      * @memberof JSROOT
-     * @constructor
      * @param {object} pad - TPad object to draw
      * @param {boolean} iscan - if TCanvas object
-     * @private */
+     * @private
+     */
 
    function TPadPainter(pad, iscan) {
       JSROOT.ObjectPainter.call(this, pad);
@@ -3514,10 +3521,13 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
       kShowToolTips: JSROOT.BIT(23)
    }
 
-   /** @summary Painter for TCanvas object.
+   /**
+     * @summary Painter for TCanvas object
+     *
+     * @class
      * @memberof JSROOT
-     * @constructor
-     * @private */
+     * @private
+     */
 
    function TCanvasPainter(canvas) {
       TPadPainter.call(this, canvas, true);

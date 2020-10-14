@@ -17,7 +17,7 @@ JSROOT.require(['d3'], (d3) => {
    // ==========================================================================================
 
    /** @summary Draw options interpreter
-     * @memberOf JSROOT
+     * @memberof JSROOT
      * @private */
    function DrawOptions(opt) {
       this.opt = opt && (typeof opt == "string") ? opt.toUpperCase().trim() : "";
@@ -338,7 +338,14 @@ JSROOT.require(['d3'], (d3) => {
 
    // =============================================================================
 
-   /** @summary Handle for marker attributes */
+   /**
+     * @summary Handle for marker attributes
+     *
+     * @class
+     * @memberof JSROOT
+     * @param {object} args - different attributes, see {@link JSROOT.TAttMarkerHandler.SetArgs} for details
+     * @private
+     */
 
    function TAttMarkerHandler(args) {
       this.x0 = this.y0 = 0;
@@ -544,7 +551,14 @@ JSROOT.require(['d3'], (d3) => {
 
    // =======================================================================
 
-   /** Handle for line attributes */
+   /**
+     * @summary Handle for line attributes
+     *
+     * @class
+     * @memberof JSROOT
+     * @param {object} attr - TAttLine object
+     * @private
+     */
 
    function TAttLineHandler(args) {
       this.func = this.Apply.bind(this);
@@ -654,11 +668,15 @@ JSROOT.require(['d3'], (d3) => {
    // =======================================================================
 
 
-   /** Handle for fill attributes.
-     * @constructor
-     * @param {object} args - different arguments to set fill attributes
+   /**
+     * @summary Handle for fill attributes
+     *
+     * @class
+     * @memberof JSROOT
+     * @param {object} args - different arguments to set fill attributes, see {@link JSROOT.TAttFillHandler.SetArgs} for more info
      * @param {number} [args.kind = 2] - 1 means object drawing where combination fillcolor==0 and fillstyle==1001 means no filling,  2 means all other objects where such combination is white-color filling
-     * @private */
+     * @private
+     */
 
    function TAttFillHandler(args) {
       this.color = "none";
@@ -672,7 +690,13 @@ JSROOT.require(['d3'], (d3) => {
       this.changed = false; // unset change property that
    }
 
-   /** @summary Set fill style as arguments */
+   /** @summary Set fill style as arguments
+     * @param {object} args - different arguments to set fill attributes
+     * @param {object} [args.attr] - TAttFill object
+     * @param {number} [args.color] - color id
+     * @param {number} [args.pattern] - filll pattern id
+     * @param {object} [args.svg] - SVG element to store newly created patterns
+     * @param {string} [args.color_as_svg] - color in SVG format */
    TAttFillHandler.prototype.SetArgs = function(args) {
       if (args.attr && (typeof args.attr == 'object')) {
          if ((args.pattern === undefined) && (args.attr.fFillStyle !== undefined)) args.pattern = args.attr.fFillStyle;
@@ -1205,8 +1229,13 @@ JSROOT.require(['d3'], (d3) => {
 
    // ========================================================================================
 
-   /** @class Basic painter class.
-     * */
+   /**
+    * @summary Base painter class in JSROOT
+    *
+    * @class
+    * @memberof JSROOT
+    * @private
+    */
 
    function BasePainter() {
       this.divid = null; // either id of element (preferable) or element itself
@@ -1636,10 +1665,17 @@ JSROOT.require(['d3'], (d3) => {
 
    // ==============================================================================
 
-   /** Basic painter for objects inside TCanvas/TPad
-     * Constructor of ObjectPainter
-     * @param {object} obj - object to draw
-     * @param {string} [opt] - object draw options */
+
+   /**
+    * @summary Painter class for ROOT objects
+    *
+    * @class
+    * @memberof JSROOT
+    * @extends ObjectPainter
+    * @param {object} obj - object to draw
+    * @param {string} [opt] - object draw options
+    * @private
+    */
 
    function ObjectPainter(obj, opt) {
       BasePainter.call(this);

@@ -191,11 +191,12 @@ JSROOT.require([], () => {
 
 
    /**
-    * @class WebWindowHandle
-    * @memberof JSROOT
     * @summary Client communication handle for RWebWindow.
-    * Should be created with {@link JSROOT.connectWebWindow} function
-    * @constructor */
+    *
+    * @class
+    * @memberof JSROOT
+    * @desc Should be created with {@link JSROOT.connectWebWindow} function
+    */
 
    function WebWindowHandle(socket_kind) {
       this.kind = socket_kind;
@@ -325,8 +326,8 @@ JSROOT.require([], () => {
    }
 
    /** @summary Checks number of credits for send operation
-     * @parame {number} [numsend = 1] - number of required send operations
-     * @returns true if one allow to send text message to server. */
+     * @param {number} [numsend = 1] - number of required send operations
+     * @returns true if one allow to send specified number of text message to server */
    WebWindowHandle.prototype.CanSend = function(numsend) {
       return (this.cansend >= (numsend || 1));
    }

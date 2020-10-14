@@ -324,7 +324,7 @@
    /** @summary Insiance of TStyle object like in ROOT
      * @desc Includes default draw styles, can be changed after loading of JSRootCore.js
      *       or can be load from the file providing style=itemname in the URL
-     * @memberOf JSROOT
+     * @memberof JSROOT
      * @namespace */
    let gStyle = {
       fOptLogx: 0,

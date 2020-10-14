@@ -237,9 +237,13 @@ JSROOT.require(['rawinflate'], () => {
 
    // =================================================================================
 
-   /** @class
+   /**
+     * @summary Buffer object to read data from TFile
+     *
+     * @class
      * @memberof JSROOT
-     * @private */
+     * @private
+     */
 
    function TBuffer(arr, pos, file, length) {
       // buffer takes with DataView as first argument
@@ -686,10 +690,13 @@ JSROOT.require(['rawinflate'], () => {
 
    // ==============================================================================
 
-   /** @class
+   /**
      * @summary A class that reads a TDirectory from a buffer.
+     *
+     * @class
      * @memberof JSROOT
-     * @private */
+     * @private
+     */
 
    function TDirectory(file, dirname, cycle) {
       this.fFile = file;
@@ -760,11 +767,14 @@ JSROOT.require(['rawinflate'], () => {
       });
    }
 
-   /** @class
+   /**
      * @summary Interface to read objects from ROOT files
-     * @memberOf JSROOT
-     * @constructor
-     * @desc Use {@link JSROOT.openFile} to create instance of the class */
+     *
+     * @class
+     * @memberof JSROOT
+     * @hideconstructor
+     * @desc Use {@link JSROOT.openFile} to create instance of the class
+     */
 
    function TFile(url) {
       this._typename = "TFile";
@@ -1384,10 +1394,10 @@ JSROOT.require(['rawinflate'], () => {
 
    /** @summary Read the directory content from  a root file
     * @desc If directory was already read - return previously read object
-    * Same functionality as {@link ReadObject}
+    * Same functionality as {@link JSROOT.TFile.ReadObject}
     * @param {string} dir_name - directory name
     * @param {number} [cycle=undefined] - directory cycle
-    * @retunrs {Promise} - read directory */
+    * @returns {Promise} - promise with read directory */
    TFile.prototype.ReadDirectory = function(dir_name, cycle) {
       return this.ReadObject(dir_name, cycle, true);
    }
@@ -1415,6 +1425,9 @@ JSROOT.require(['rawinflate'], () => {
       return null;
    }
 
+   /** @summary Search streamer info with provided checksum
+     * @param {number} checksum
+    * @private */
    TFile.prototype.FindSinfoCheckum = function(checksum) {
       if (!this.fStreamerInfos) return null;
 
@@ -1433,7 +1446,7 @@ JSROOT.require(['rawinflate'], () => {
          }
       }
 
-      cache[checksum] = null; // checksum didnot found, not try again
+      cache[checksum] = null; // checksum didnot found, do not try again
       return null;
    }
 
@@ -1534,6 +1547,8 @@ JSROOT.require(['rawinflate'], () => {
       return tgt;
    }
 
+   /** @summary Fully clenaup TFile data
+    * @private */
    TFile.prototype.Delete = function() {
       this.fDirectories = null;
       this.fKeys = null;

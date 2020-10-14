@@ -490,12 +490,10 @@ JSROOT.require(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
    // ===================================================================================
 
-   /**
-    * @summary Painter for TF1 object.
-    *
-    * @constructor
+   /** @clas
     * @memberof JSROOT
-    * @arguments JSROOT.ObjectPainter
+    * @extends JSROOT.ObjectPainter
+    * @summary Painter for TF1 object.
     * @param {object} tf1 - TF1 object to draw
     * @private
     */
@@ -783,9 +781,9 @@ JSROOT.require(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    /**
     * @summary Painter for TGraph object.
     *
-    * @constructor
+    * @class
     * @memberof JSROOT
-    * @arguments JSROOT.ObjectPainter
+    * @extends JSROOT.ObjectPainter
     * @param {object} graph - TGraph object to draw
     * @private
     */
@@ -3509,9 +3507,9 @@ JSROOT.require(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    /**
     * @summary Painter for TASImage object.
     *
-    * @constructor
+    * @class
     * @memberof JSROOT
-    * @arguments JSROOT.ObjectPainter
+    * @extends JSROOT.ObjectPainter
     * @param {object} obj - TASImage object to draw
     * @param {string} opt - string draw options
     * @private

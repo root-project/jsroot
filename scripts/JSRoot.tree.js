@@ -20,12 +20,13 @@ JSROOT.require(['io', 'math'], (jsrio, jsrmath) => {
    }
 
    /**
-    * @class TSelector
     * @summary Class to read data from TTree
-    * @desc Instance of TSelector can be used to access TTree data
-    * @constructor
+    *
+    * @class
     * @memberof JSROOT
+    * @desc Instance of TSelector can be used to access TTree data
     */
+
    function TSelector() {
       this.branches = []; // list of branches to read
       this.names = []; // list of member names for each branch in tgtobj
@@ -509,11 +510,12 @@ JSROOT.require(['io', 'math'], (jsrio, jsrmath) => {
    /**
     * @summary Selector class for TTree::Draw function
     *
-    * @constructor
+    * @class
     * @memberof JSROOT
-    * @arguments JSROOT.TSelector
+    * @extends JSROOT.TSelector
     * @private
     */
+
    function TDrawSelector() {
       TSelector.call(this);
 
@@ -1375,10 +1377,13 @@ JSROOT.require(['io', 'math'], (jsrio, jsrmath) => {
       return clname;
    }
 
-   /** @namespace
+   /**
+    * @summary JSROOT methods for ROOT TTree class
+    *
+    * @class
     * @alias JSROOT.TTree
-    * @desc These are TTree methods, provided in the JSROOT
-    * TTree only can be read from the existing ROOT file, there is no possibility to create and fill tree
+    * @hideconstructor
+    * @desc TTree only can be read from the existing ROOT file, there is no possibility to create and fill tree
     * @example
     * JSROOT.openFile("https://root.cern/js/files/hsimple.root")
     *      .then(file => file.ReadObject("ntuple;1"))
