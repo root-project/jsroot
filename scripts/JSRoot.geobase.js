@@ -6,7 +6,9 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
    "use strict";
 
    /** @namespace
-     * @alias JSROOT.GEO */
+     * @desc Collection of TGeo-related methods, loaded with ```JSROOT.require('geo').then(geo => ...)```
+     * @alias JSROOT.GEO
+     */
    let geo = {
       GradPerSegm: 6,     // grad per segment in cylinder/spherical symmetry shapes
       CompressComp: true,  // use faces compression in composite shapes
@@ -30,28 +32,28 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
          kVisRaytrace     : JSROOT.BIT(15)           // raytracing flag
       };
 
-   /** Test fGeoAtt bits
+   /** @summary Test fGeoAtt bits
      * @private */
    geo.TestBit = function(volume, f) {
       let att = volume.fGeoAtt;
       return att === undefined ? false : ((att & f) !== 0);
    }
 
-   /** Set fGeoAtt bit
+   /** @summary Set fGeoAtt bit
      * @private */
    geo.SetBit = function(volume, f, value) {
       if (volume.fGeoAtt === undefined) return;
       volume.fGeoAtt = value ? (volume.fGeoAtt | f) : (volume.fGeoAtt & ~f);
    }
 
-   /** Toggle fGeoAttBit
+   /** @summary Toggle fGeoAttBit
      * @private */
    geo.ToggleBit = function(volume, f) {
       if (volume.fGeoAtt !== undefined)
          volume.fGeoAtt = volume.fGeoAtt ^ (f & 0xffffff);
    }
 
-   /** Implementation of TGeoVolume::InvisibleAll
+   /** @summary Implementation of TGeoVolume::InvisibleAll
      * @private */
    geo.InvisibleAll = function(flag) {
       if (flag===undefined) flag = true;
@@ -67,7 +69,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
          }
    }
 
-   /** method used to avoid duplication of warnings
+   /** @summary method used to avoid duplication of warnings
     * @private */
    geo.warn = function(msg) {
       if (geo._warn_msgs === undefined) geo._warn_msgs = {};
@@ -76,17 +78,18 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       console.warn(msg);
    }
 
-   /** @brief Returns kind of the geo node
+   /** @summary Analyze TGeo node kind
     *  @desc  0 - TGeoNode
     *         1 - TEveGeoNode
     *        -1 - unsupported
+    * @returns detected node kind
     * @private */
    geo.NodeKind = function(obj) {
       if ((obj === undefined) || (obj === null) || (typeof obj !== 'object')) return -1;
       return ('fShape' in obj) && ('fTrans' in obj) ? 1 : 0;
    }
 
-   /** @brief Returns number of shapes
+   /** @summary Returns number of shapes
     *  @desc Used to count total shapes number in composites
     * @private */
    geo.CountNumShapes = function(shape) {
@@ -317,8 +320,11 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
 
    // ================================================================================
 
-   // same methods as GeometryCreator, but with different implementation
-
+   /** @brief Helper class for ThreeBSP geometry creation
+     * @memberOf JSROOT.GEO
+     * @class
+     * @private
+     */
    function PolygonsCreator() {
       this.polygons = [];
    }
@@ -409,9 +415,9 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
    }
 
    PolygonsCreator.prototype.SetNormal4 = function(nx1,ny1,nz1,
-                                                              nx2,ny2,nz2,
-                                                              nx3,ny3,nz3,
-                                                              nx4,ny4,nz4) {
+                                                   nx2,ny2,nz2,
+                                                   nx3,ny3,nz3,
+                                                   nx4,ny4,nz4) {
       this.v1.setnormal(nx1,ny1,nz1);
       if (this.v2) this.v2.setnormal(nx2,ny2,nz2);
       this.v3.setnormal(nx3,ny3,nz3);

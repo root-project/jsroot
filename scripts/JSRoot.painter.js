@@ -3506,8 +3506,7 @@ JSROOT.require(['d3'], (d3) => {
    }
 
    /** @summary Provide draw settings for specified class or kind
-    * @private
-    */
+    * @private */
    JSROOT.getDrawSettings = function(kind, selector) {
       let res = { opts: null, inspect: false, expand: false, draw: false, handle: null };
       if (typeof kind != 'string') return res;
@@ -3563,12 +3562,6 @@ JSROOT.require(['d3'], (d3) => {
       return JSROOT.getDrawSettings("ROOT." + classname).opts !== null;
    }
 
-   /** @summary Returns true if provided object looks like a promise
-    * @private */
-   JSROOT.isPromise = function(obj) {
-      return obj && (typeof obj == 'object') && (typeof obj.then == 'function');
-   }
-
    /**
     * @summary Draw object in specified HTML element with given draw options.
     *
@@ -3578,15 +3571,12 @@ JSROOT.require(['d3'], (d3) => {
     * @param {function} drawcallback - function called when drawing is completed, first argument is object painter instance
     *
     * @desc
-    * A complete list of options can be found depending of the object's ROOT class to draw: {@link https://root.cern/js/latest/examples.htm}
+    * An extensive list of support draw options can be found on [JSROOT examples page]{@link https://root.cern/js/latest/examples.htm}
     *
     * @example
-    * let filename = "https://root.cern/js/files/hsimple.root";
-    * JSROOT.openFile(filename).then(file => {
-    *    file.ReadObject("hpxpy;1").then(obj => {
-    *       JSROOT.draw("drawing", obj, "colz;logx;gridx;gridy");
-    *    });
-    * });
+    * JSROOT.openFile("https://root.cern/js/files/hsimple.root")
+    *       .then(file => file.ReadObject("hpxpy;1"))
+    *       .then(obj => JSROOT.draw("drawing", obj, "colz;logx;gridx;gridy"));
     *
     */
 
@@ -3628,8 +3618,12 @@ JSROOT.require(['d3'], (d3) => {
 
       return new Promise(function(resolveFunc, rejectFunc) {
 
+         function isPromise(obj) {
+            return obj && (typeof obj == 'object') && (typeof obj.then == 'function');
+         }
+
          function completeDraw(painter) {
-            if (JSROOT.isPromise(painter)) {
+            if (isPromise(painter)) {
                painter.then(resolveFunc, rejectFunc);
             } else if (painter && (typeof painter == 'object') && (typeof painter.WhenReady == 'function'))
                painter.WhenReady(resolveFunc, rejectFunc);
@@ -3649,14 +3643,14 @@ JSROOT.require(['d3'], (d3) => {
                painter.SetDivId(divid, 2);
                painter.Redraw = handle.func;
                let promise = painter.Redraw();
-               if (!JSROOT.isPromise(promise)) {
+               if (!isPromise(promise)) {
                   painter.DrawingReady();
                   promise = undefined;
                }
             } else {
                painter = handle.func(divid, obj, opt);
 
-               if (!JSROOT.isPromise(painter) && painter && !painter.options)
+               if (!isPromise(painter) && painter && !painter.options)
                   painter.options = { original: opt || "" };
             }
 
@@ -3868,7 +3862,8 @@ JSROOT.require(['d3'], (d3) => {
    }
 
    /** @summary Returns main painter object for specified HTML element - typically histogram painter
-     * @param {string|object} divid - id or DOM element */
+     * @param {string|object} divid - id or DOM element
+     * @private */
    JSROOT.get_main_painter = function(divid) {
       let dummy = new JSROOT.ObjectPainter();
       dummy.SetDivId(divid, -1);
@@ -3936,8 +3931,7 @@ JSROOT.require(['d3'], (d3) => {
     * @param {strting} [fmt="6.4g"] - format can be like 5.4g or 4.2e or 6.4f
     * @param {boolean} [ret_fmt=false] - when true returns array with actual format
     * @returns {string|Array} - converted value or array with value and actual format
-    * @private
-    */
+    * @private */
    JSROOT.FFormat = function(value, fmt, ret_fmt) {
       if (!fmt) fmt = "6.4g";
 

@@ -107,8 +107,9 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
 
    /**
     * @class TGeoPainter
-    * @desc Holder of different functions and classes for geometries drawing
+    * @summary Holder of different functions and classes for geometries drawing
     * @memberof JSROOT
+    * @constructor
     * @private
     */
 
@@ -164,6 +165,7 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
 
    TGeoPainter.prototype = Object.create( JSROOT.ObjectPainter.prototype );
 
+   /** @summary Create toolbar */
    TGeoPainter.prototype.CreateToolbar = function() {
       if (this._toolbar || !this._webgl || this.ctrl.notoolbar || JSROOT.BatchMode) return;
       let buttonList = [{
@@ -219,6 +221,7 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
       this._toolbar.addButtons(buttonList);
    }
 
+   /** @summary Initialize VR mode */
    TGeoPainter.prototype.InitVRMode = function() {
       // Dolly contains camera and controllers in VR Mode
       // Allows moving the user in the scene
@@ -360,6 +363,7 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
       this._vrDisplay.exitPresent();
    }
 
+   /** @summary Returns main geometry object */
    TGeoPainter.prototype.GetGeometry = function() {
       return this.GetObject();
    }
@@ -387,6 +391,7 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
       });
    }
 
+   /** @summary Decode drawing options */
    TGeoPainter.prototype.decodeOptions = function(opt) {
       if (typeof opt != "string") opt = "";
 
@@ -553,8 +558,8 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
       }
    }
 
+   /** @summary  method used to check matrix calculations performance with current three.js model */
    TGeoPainter.prototype.TestMatrixes = function() {
-      // method can be used to check matrix calculations with current three.js model
 
       let errcnt = 0, totalcnt = 0, totalmax = 0;
 
@@ -607,7 +612,7 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
       console.log('Compare matrixes total', totalcnt, 'errors', errcnt, 'takes', tm2-tm1, 'maxdiff', totalmax);
    }
 
-
+   /** @summary Fills context menu */
    TGeoPainter.prototype.FillContextMenu = function(menu) {
       menu.add("header: Draw options");
 
@@ -652,8 +657,9 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
       });
    }
 
-   /** Method used to set transparency for all geometrical shapes
-    * As transperency value one could provide function */
+   /** @summary Method used to set transparency for all geometrical shapes
+    * @param {number|Function} transparency - one could provide function
+    * @param {boolean} [skip_render] - if specified, do not perform rendering */
    TGeoPainter.prototype.changedGlobalTransparency = function(transparency, skip_render) {
       let func = (typeof transparency == 'function') ? transparency : null;
       if (func || (transparency === undefined)) transparency = this.ctrl.transparency;
@@ -670,12 +676,12 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
       if (!skip_render) this.Render3D(-1);
    }
 
-   /** Reset transformation */
+   /** @summary Reset transformation */
    TGeoPainter.prototype.resetTransformation = function() {
       this.changedTransformation("reset");
    }
 
-   /** Method should be called when transformation parameters were changed */
+   /** @summary Method should be called when transformation parameters were changed */
    TGeoPainter.prototype.changedTransformation = function(arg) {
       if (!this._toplevel) return;
 
@@ -730,12 +736,12 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
          this.drawSimpleAxis();
    }
 
-   /** Should be called when autorotate property changed */
+   /** @summary Should be called when autorotate property changed */
    TGeoPainter.prototype.changedAutoRotate = function() {
       this.autorotate(2.5);
    }
 
-   /** Method should be called when changing axes drawing */
+   /** @summary Method should be called when changing axes drawing */
    TGeoPainter.prototype.changedAxes = function() {
       if (typeof this.ctrl._axis == 'string')
          this.ctrl._axis = parseInt(this.ctrl._axis);
@@ -743,7 +749,7 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
       this.drawSimpleAxis();
    }
 
-   /** Method should be called to change background color */
+   /** @summary Method should be called to change background color */
    TGeoPainter.prototype.changedBackground = function(val) {
       if (val !== undefined) this.ctrl.background = val;
       this._renderer.setClearColor(this.ctrl.background, 1);
@@ -755,7 +761,7 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
       }
    }
 
-   /** Method should be called when SSAO configuration changed */
+   /** @summary Method should be called when SSAO configuration changed */
    TGeoPainter.prototype.changedSSAO = function() {
       if (!this.ctrl.ssao.enabled) {
          this.removeSSAO();
@@ -771,7 +777,7 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
       this.updateClipping();
    }
 
-   /** Display control GUI */
+   /** @summary Display control GUI */
    TGeoPainter.prototype.showControlOptions = function(on) {
       // while complete geo drawing can be removed until dat is loaded - just check and ignore callback
       if (!this.ctrl) return;
@@ -798,6 +804,7 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
                .then(dat => this.buildDatGui(dat));
    }
 
+   /** @summary build dat.gui elements  */
    TGeoPainter.prototype.buildDatGui = function(dat) {
       // can happen when dat gui loaded after drawing is already cleaned
       if (!this._renderer) return;
@@ -1161,14 +1168,15 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
       return mainitemname ? (mainitemname + "/" + sub.name) : sub.name;
    }
 
-   /** Add handler which will be called when element is highlighted in geometry drawing
-    * Handler should have HighlightMesh function with same arguments as TGeoPainter  */
+   /** @summary Add handler which will be called when element is highlighted in geometry drawing
+    * @desc Handler should have HighlightMesh function with same arguments as TGeoPainter  */
    TGeoPainter.prototype.AddHighlightHandler = function(handler) {
       if (!handler || typeof handler.HighlightMesh != 'function') return;
       if (!this._highlight_handlers) this._highlight_handlers = [];
       this._highlight_handlers.push(handler);
    }
 
+   /** @summary perform mesh highlight */
    TGeoPainter.prototype.HighlightMesh = function(active_mesh, color, geo_object, geo_index, geo_stack, no_recursive) {
 
       if (geo_object) {
@@ -1244,6 +1252,7 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
       return !!active_mesh;
    }
 
+   /** @summary handle mouse click event */
    TGeoPainter.prototype.ProcessMouseClick = function(pnt, intersects, evnt) {
       if (!intersects.length) return;
 
@@ -1262,7 +1271,7 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
       ctrl.evnt = null;
    }
 
-   /** Configure mouse delay, required for complex geometries */
+   /** @summary Configure mouse delay, required for complex geometries */
    TGeoPainter.prototype.setMouseTmout = function(val) {
       if (this.ctrl)
          this.ctrl.mouse_tmout = val;
@@ -1271,14 +1280,14 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
          this._controls.mouse_tmout = val;
    }
 
-   /** Configure depth method, used for render order production.
-    * Allowed values: "ray", "box","pnt", "size","dflt" */
-   TGeoPainter.prototype.setDepthMethod = function(val) {
+   /** @summary Configure depth method, used for render order production.
+    * @param {string} method - Allowed values: "ray", "box","pnt", "size", "dflt" */
+   TGeoPainter.prototype.setDepthMethod = function(method) {
       if (this.ctrl)
-         this.ctrl.depthMethod = val;
+         this.ctrl.depthMethod = method;
    }
 
-   /** Add orbit control */
+   /** @summary Add orbit control */
    TGeoPainter.prototype.addOrbitControls = function() {
 
       if (this._controls || !this._webgl || JSROOT.BatchMode) return;
@@ -1357,6 +1366,7 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
       }
    }
 
+   /** @summary add transformation control */
    TGeoPainter.prototype.addTransformControl = function() {
       if (this._tcontrols) return;
 
@@ -1407,12 +1417,12 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
       this._tcontrols.addEventListener( 'change', () => this.Render3D(0));
    }
 
-   /** Main function in geometry creation loop
-    * Return false when nothing todo
+   /** @summary Main function in geometry creation loop
+    * @desc Return false when nothing todo
     * return true if one could perform next action immediately
     * return 1 when call after short timeout required
     * return 2 when call must be done from processWorkerReply
-    * @private */
+    * @returns {number} next operation kind, see desc */
    TGeoPainter.prototype.nextDrawAction = function() {
 
       if (!this._clones || (this.drawing_stage == 0)) return false;
@@ -1671,8 +1681,7 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
       return false;
    }
 
-   /** Insert appropriate mesh for given entry
-    * @private*/
+   /** @summary Insert appropriate mesh for given entry */
    TGeoPainter.prototype.createEntryMesh = function(entry, shape, toplevel) {
 
       if (!shape.geom || (shape.nfaces === 0)) {
@@ -1729,10 +1738,9 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
       return true;
    }
 
-   /** function used by geometry viewer to show more nodes
-    * These nodes excluded from selection logic and always inserted into the model
-    * Shape already should be created and assigned to the node
-    * @private */
+   /** @summary used by geometry viewer to show more nodes
+    * @desc These nodes excluded from selection logic and always inserted into the model
+    * Shape already should be created and assigned to the node */
    TGeoPainter.prototype.appendMoreNodes = function(nodes, from_drawing) {
       if (this.drawing_stage && !from_drawing) {
          this._provided_more_nodes = nodes;
@@ -1773,10 +1781,8 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
       if (!from_drawing) this.Render3D();
    }
 
-   /** Returns hierarchy of 3D objects used to produce projection.
-    * Typically external master painter is used, but also internal data can be used
-    * @private */
-
+   /** @summary Returns hierarchy of 3D objects used to produce projection.
+    * @desc Typically external master painter is used, but also internal data can be used */
    TGeoPainter.prototype.getProjectionSource = function() {
       if (this._clones_owner)
          return this._full_geom;
@@ -1791,6 +1797,7 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
       return this._main_painter._toplevel;
    }
 
+   /** @summary Calculate geometry bounding box */
    TGeoPainter.prototype.getGeomBoundingBox = function(topitem, scalar) {
       let box3 = new THREE.Box3(), check_any = !this._clones;
 
@@ -1851,24 +1858,7 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
       return true;
    }
 
-   TGeoPainter.prototype.SameMaterial = function(node1, node2) {
-
-      if ((node1===null) || (node2===null)) return node1 === node2;
-
-      if (node1.fVolume.fLineColor >= 0)
-         return (node1.fVolume.fLineColor === node2.fVolume.fLineColor);
-
-       let m1 = (node1.fVolume.fMedium !== null) ? node1.fVolume.fMedium.fMaterial : null;
-       let m2 = (node2.fVolume.fMedium !== null) ? node2.fVolume.fMedium.fMaterial : null;
-
-       if (m1 === m2) return true;
-
-       if ((m1 === null) || (m2 === null)) return false;
-
-       return (m1.fFillStyle === m2.fFillStyle) && (m1.fFillColor === m2.fFillColor);
-   }
-
-   /** Should be invoked when light configuration changed */
+   /** @summary Should be invoked when light configuration changed */
    TGeoPainter.prototype.changedLight = function(box) {
       if (!this._camera) return;
 
@@ -1924,6 +1914,7 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
       if (need_render) this.Render3D();
    }
 
+   /** @summary Initial scene creation */
    TGeoPainter.prototype.createScene = function(w, h) {
       // three.js 3D drawing
       this._scene = new THREE.Scene();
@@ -2010,7 +2001,7 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
       return this._renderer.jsroot_dom;
    }
 
-
+   /** @summary Start geometry drawing */
    TGeoPainter.prototype.startDrawGeometry = function(force) {
 
       if (!force && (this.drawing_stage!==0)) {
@@ -2055,6 +2046,7 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
       this.continueDraw();
    }
 
+   /** @summary reset all kind of advanced features like SSAO or depth test changes */
    TGeoPainter.prototype.resetAdvanced = function() {
       this.ctrl.ssao.kernelRadius = 16;
       this.ctrl.ssao.output = THREE.SSAOPass.OUTPUT.Default;
@@ -2067,17 +2059,7 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
       this.changedDepthTest();
    }
 
-   TGeoPainter.prototype.getGeomBox = function() {
-      let extras = this.getExtrasContainer('collect');
-
-      let box = this.getGeomBoundingBox(this._toplevel);
-
-      if (extras)
-         for (let k=0;k<extras.length;++k) this._toplevel.add(extras[k]);
-
-      return box;
-   }
-
+   /** @summary returns maximal dimension */
    TGeoPainter.prototype.getOverallSize = function(force) {
       if (!this._overall_size || force) {
          let box = this.getGeomBoundingBox(this._toplevel);
@@ -2145,7 +2127,7 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
       return "roty" + roty.toFixed(prec || 0) + ",rotz" + rotz.toFixed(prec || 0) + ",zoom" + zoom.toFixed(prec || 0);
    }
 
-   /** Calculates current zoom factor */
+   /** @summary Calculates current zoom factor */
    TGeoPainter.prototype.calculateZoom = function() {
       if (this._camera0pos && this._camera && this._lookat) {
          let pos1 = new THREE.Vector3().add(this._camera0pos).sub(this._lookat),
@@ -2157,7 +2139,7 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
    }
 
 
-   /** Place camera to default position */
+   /** @summary Place camera to default position */
    TGeoPainter.prototype.adjustCameraPosition = function(first_time, keep_zoom) {
       if (!this._toplevel) return;
 
@@ -2260,6 +2242,7 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
          this.startDrawGeometry();
    }
 
+   /** @summary Specifies camera position */
    TGeoPainter.prototype.setCameraPosition = function(rotatey, rotatez, zoom) {
       if (!this.ctrl) return;
       this.ctrl.rotatey = rotatey || 0;
@@ -2286,6 +2269,7 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
       this.focusCamera( info, false );
    }
 
+   /** @summary focus camera on speicifed position */
    TGeoPainter.prototype.focusCamera = function( focus, autoClip ) {
 
       if (this.ctrl.project || this.ctrl.ortho_camera)
@@ -2381,6 +2365,7 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
    //   this._controls.update();
    }
 
+   /** @summary actiavte auto rotate */
    TGeoPainter.prototype.autorotate = function(speed) {
 
       let rotSpeed = (speed === undefined) ? 2.0 : speed,
@@ -2405,6 +2390,7 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
       if (this._webgl) animate();
    }
 
+   /** @summary called at the end of scene drawing */
    TGeoPainter.prototype.completeScene = function() {
 
       if ( this.ctrl._debug || this.ctrl._grid ) {
@@ -2486,7 +2472,7 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
       return this;
    }
 
-
+   /** @summary Handle drop operation */
    TGeoPainter.prototype.PerformDrop = function(obj, itemname, hitem, opt) {
 
       if (obj && (obj.$kind==='TTree')) {
@@ -2526,9 +2512,8 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
       return Promise.resolve(this);
    }
 
+   /** @summary function called when mouse is going over the item in the browser */
    TGeoPainter.prototype.MouseOverHierarchy = function(on, itemname, hitem) {
-      // function called when mouse is going over the item in the browser
-
       if (!this.ctrl) return; // protection for cleaned-up painter
 
       let obj = hitem._obj;
@@ -2541,13 +2526,14 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
       this.HighlightMesh(null, 0x00ff00, on ? obj : null);
    }
 
+   /** @summary clear extra drawn objects like tracks or hits */
    TGeoPainter.prototype.clearExtras = function() {
       this.getExtrasContainer("delete");
       delete this._extraObjects; // workaround, later will be normal function
       this.Render3D();
    }
 
-   /** Register extra objects like tracks or hits
+   /** @summary Register extra objects like tracks or hits
     * @desc Rendered after main geometry volumes are created
     * Check if object already exists to prevent duplication */
    TGeoPainter.prototype.addExtra = function(obj, itemname) {
@@ -2563,6 +2549,7 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
       return true;
    }
 
+   /** @summary manipulate visisbility of extra objects, used for HierarhcyPainter */
    TGeoPainter.prototype.ExtraObjectVisible = function(hpainter, hitem, toggle) {
       if (!this._extraObjects) return;
 
@@ -2599,6 +2586,7 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
       return res;
    }
 
+   /** @summary Draw extra object like tracks */
    TGeoPainter.prototype.drawExtras = function(obj, itemname, add_objects) {
       if (!obj || !obj._typename) return false;
 
@@ -2644,6 +2632,7 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
       return isany;
    }
 
+   /** @summary returns container for extra objects */
    TGeoPainter.prototype.getExtrasContainer = function(action, name) {
       if (!this._toplevel) return null;
 
@@ -2677,6 +2666,7 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
       return extras;
    }
 
+   /** @summary drawing TGeoTrack */
    TGeoPainter.prototype.drawGeoTrack = function(track, itemname) {
       if (!track || !track.fNpoints) return false;
 
@@ -2718,6 +2708,7 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
       return true;
    }
 
+   /** @summary Drawing TEveTrack */
    TGeoPainter.prototype.drawEveTrack = function(track, itemname) {
       if (!track || (track.fN <= 0)) return false;
 
@@ -2755,8 +2746,7 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
       return true;
    }
 
-   /** Drawing different hits types like TPolyMarker3d
-    * @private */
+   /** @summary Drawing different hits types like TPolyMarker3d */
    TGeoPainter.prototype.drawHit = function(hit, itemname) {
       if (!hit || !hit.fN || (hit.fN < 0)) return false;
 
@@ -2841,7 +2831,7 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
       return res;
    }
 
-   /** Process script option - load and execute some gGeomManager-related calls */
+   /** @summary Process script option - load and execute some gGeomManager-related calls */
    TGeoPainter.prototype.checkScript = function(script_name, call_back) {
 
       let draw_obj = this.GetGeometry(), name_prefix = "";
@@ -2948,15 +2938,14 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
       });
    }
 
-   /** Assign clones, created outside.
-    * Used by geometry painter, where clones are handled by the server */
+   /** @summary Assign clones, created outside.
+    * @desc Used by geometry painter, where clones are handled by the server */
    TGeoPainter.prototype.assignClones = function(clones) {
       this._clones_owner = true;
       this._clones = clones;
    }
 
-   /** @summary Prepare drawings
-    * @private */
+   /** @summary Prepare drawings */
    TGeoPainter.prototype.prepareObjectDraw = function(draw_obj, name_prefix) {
 
       // if did cleanup - ignore all kind of activity
@@ -3059,9 +3048,8 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
       }
    }
 
+   /** @summary methods show info when first geometry drawing is performed */
    TGeoPainter.prototype.showDrawInfo = function(msg) {
-      // methods show info when first geometry drawing is performed
-
       if (!this._first_drawing || !this._start_drawing_time) return;
 
       let main = this._renderer.domElement.parentNode,
@@ -3077,6 +3065,7 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
 
    }
 
+   /** @summary Reentrant method to perform geometry drawing step by step */
    TGeoPainter.prototype.continueDraw = function() {
 
       // nothing to do - exit
@@ -3135,9 +3124,7 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
    }
 
    /** @summary Checks camera position and recalculate rendering order if needed
-    * @param force - if specified, forces calculations of render order
-    * @private
-    */
+    * @param force - if specified, forces calculations of render order */
    TGeoPainter.prototype.TestCameraPosition = function(force) {
       this._camera.updateMatrixWorld();
       let origin = this._camera.position.clone();
@@ -3329,7 +3316,7 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
          this._slave_painters[k].startDrawGeometry();
    }
 
-   /** Draw axes if configured, otherwise just remove completely */
+   /** @summary Draw axes if configured, otherwise just remove completely */
    TGeoPainter.prototype.drawSimpleAxis = function(norender) {
       this.getExtrasContainer('delete', 'axis');
 
@@ -3523,25 +3510,25 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
       this.autorotate(2.5);
    }
 
-   /** Toggle wireframe mode */
+   /** @summary Toggle wireframe mode */
    TGeoPainter.prototype.toggleWireFrame = function() {
       this.ctrl.wireframe = !this.ctrl.wireframe;
       this.changedWireFrame();
    }
 
-   /** Specify wireframe mode */
+   /** @summary Specify wireframe mode */
    TGeoPainter.prototype.setWireFrame = function(on) {
       this.ctrl.wireframe = on ? true : false;
       this.changedWireFrame();
    }
 
-   /** Specify showtop draw options, relevant only for TGeoManager */
+   /** @summary Specify showtop draw options, relevant only for TGeoManager */
    TGeoPainter.prototype.setShowTop = function(on) {
       this.ctrl.showtop = on ? true : false;
       this.RedrawObject('same');
    }
 
-   /** Should be called when configuration of particular axis is changed */
+   /** @summary Should be called when configuration of particular axis is changed */
    TGeoPainter.prototype.changedClipping = function(naxis) {
       let clip = this.ctrl.clip;
 
@@ -3557,7 +3544,7 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
       this.updateClipping(false, true);
    }
 
-   /** Should be called when depth test flag is changed */
+   /** @summary Should be called when depth test flag is changed */
    TGeoPainter.prototype.changedDepthTest = function() {
       if (!this._toplevel) return;
       let flag = this.ctrl.depthTest;
@@ -3570,20 +3557,20 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
       this.Render3D(0);
    }
 
-   /** Should be called when depth method is changed */
+   /** @summary Should be called when depth method is changed */
    TGeoPainter.prototype.changedDepthMethod = function(arg) {
       // force recalculatiion of render order
       delete this._last_camera_position;
       if (arg !== "norender") this.Render3D();
    }
 
-   /** Should be called when configuration of highlight is changed */
+   /** @summary Should be called when configuration of highlight is changed */
    TGeoPainter.prototype.changedHighlight = function() {
       if (!this.ctrl.highlight)
          this.HighlightMesh(null);
    }
 
-   /** Assign clipping attributes to the meshes - supported only for webgl */
+   /** @summary Assign clipping attributes to the meshes - supported only for webgl */
    TGeoPainter.prototype.updateClipping = function(without_render, force_traverse) {
       if (!this._webgl) return;
 
@@ -3644,7 +3631,7 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
       this._complete_handler = callback;
    }
 
-   /** Completes drawing procedure */
+   /** @summary Completes drawing procedure */
    TGeoPainter.prototype.completeDraw = function(close_progress) {
 
       let first_time = false, full_redraw = false, check_extras = true;
@@ -3742,12 +3729,12 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
       this._drawing_ready = true; // indicate that drawing is completed
    }
 
-   /** Returns true if geometry drawing is completed */
+   /** @summary Returns true if geometry drawing is completed */
    TGeoPainter.prototype.isDrawingReady = function() {
       return this._drawing_ready || false;
    }
 
-   /** Remove already drawn node. Used by geom viewer */
+   /** @summary Remove already drawn node. Used by geom viewer */
    TGeoPainter.prototype.RemoveDrawnNode = function(nodeid) {
       if (!this._draw_nodes) return;
 
@@ -3768,6 +3755,7 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
       }
    }
 
+   /** @summary Cleanup geometry painter */
    TGeoPainter.prototype.Cleanup = function(first_time) {
 
       if (!first_time) {
@@ -3887,6 +3875,7 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
       JSROOT.progress(msg);
    }
 
+   /** @summary Check if HTML element was resized and drawing need to be adjusted */
    TGeoPainter.prototype.CheckResize = function(arg) {
       let pad_painter = this.canv_painter();
 
@@ -4091,7 +4080,7 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
 
    // ===============================================================================
 
-   /** Function used to build hierarchy of elements of composite shapes
+   /** @summary Function used to build hierarchy of elements of composite shapes
     * @private */
    geo.buildCompositeVolume = function(comp, maxlvl, side) {
 
@@ -4139,7 +4128,7 @@ JSROOT.require(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo,
       return vol;
    }
 
-   /** Function used to build hierarchy of elements of overlap object
+   /** @summary Function used to build hierarchy of elements of overlap object
     * @private */
    geo.buildOverlapVolume = function(overlap) {
 
