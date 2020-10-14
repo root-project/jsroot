@@ -2467,6 +2467,37 @@ JSROOT.require(['io', 'math'], (jsrio, jsrmath) => {
       return (!res || (res.rest.length > 0)) ? null : res.branch;
    }
 
+   /** @summary Returns number of branches in the TTree
+    * @desc Checks also sub-branches in the branches
+    * @returns {number} number of branches */
+   TTreeMethods.GetNumBranches = function() {
+      function Count(obj) {
+         if (!obj || !obj.fBranches) return 0;
+         let nchld = 0;
+         obj.fBranches.arr.forEach(sub => nchld += Count(sub));
+         return obj.fBranches.arr.length + nchld;
+      }
+
+      return Count(this);
+   }
+
+   /** @summary Get branch with specified id
+    * @desc All sub-branches checked as well
+    * @returns {Object} branch */
+   TTreeMethods.GetBranch = function(id) {
+      let res, seq = 0;
+      function Scan(obj) {
+         if (obj && obj.fBranches)
+            obj.fBranches.arr.forEach(br => {
+               if (seq++ === id) res = br;
+               if (!res) Scan(br);
+            });
+      }
+
+      Scan(this);
+      return res;
+   }
+
    /** @summary  JSROOT implementation of TTree::Draw
      * @disc in callback returns histogram and draw options
      * @param {object|string} args - different setting or simply draw expression
