@@ -809,6 +809,15 @@ JSROOT.require(['rawinflate'], () => {
       this.fFileName = pos >= 0 ? this.fURL.substr(pos + 1) : this.fURL;
    }
 
+   /** @summary Assign BufferArray with file contentOpen file
+    * @private */
+   TFile.prototype.assignFileContent = function(bufArray) {
+      this.fFileContent = new TBuffer(new DataView(bufArray));
+      this.fAcceptRanges = false;
+      this.fUseStampPar = false;
+      this.fEND = this.fFileContent.length;
+   }
+
    /** @summary Open file
     * @returns {Promise} after file keys are read
     * @private */
@@ -2957,29 +2966,39 @@ JSROOT.require(['rawinflate'], () => {
    /**
     * @summary Open ROOT file for reading
     *
-    * @desc depending from file location, different TFile sub-class will be provided
-    * @param {string|File} filename - name of file to open or instance of JS object to access local files, see https://developer.mozilla.org/en-US/docs/Web/API/File
+    * @desc Generic method to open ROOT file for reading
+    * Following kind of arguments can be provided:
+    *  - string with file URL (see example). In node.js environment local file like "file://hsimple.root" can be specified
+    *  - [File]{@link https://developer.mozilla.org/en-US/docs/Web/API/File} instance which let read local files from browser
+    *  - [ArrayBuffer]{@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer} instance with complete file content
+    * @param {string|object} arg - argument for file open like url, see details
     * @returns {object} - Promise with TFile instance when file is opened
     * @example
     * JSROOT.openFile("https://root.cern/js/files/hsimple.root")
-    *        .then(f => console.log(`Open file ${f.fFileName}`)); */
+    *        .then(f => console.log(`Open file ${f.fFileName}`));
+    */
 
-   JSROOT.openFile = function(filename) {
+   JSROOT.openFile = function(arg) {
 
       let file;
 
-      if (JSROOT.nodejs) {
-         if (filename.indexOf("file://") == 0)
-            file = new TNodejsFile(filename.substr(7));
-         else if (filename.indexOf("http") !== 0)
-            file = new TNodejsFile(filename);
+      if (JSROOT.nodejs && (typeof arg == "string")) {
+         if (arg.indexOf("file://") == 0)
+            file = new TNodejsFile(arg.substr(7));
+         else if (arg.indexOf("http") !== 0)
+            file = new TNodejsFile(arg);
       }
 
-      if (!file && (typeof filename === 'object') && filename.size && filename.name)
-         file = new TLocalFile(filename);
+      if (!file && (typeof arg === 'object') && (arg instanceof ArrayBuffer)) {
+         file = new TFile("localfile.root");
+         file.assignFileContent(arg);
+      }
+
+      if (!file && (typeof arg === 'object') && arg.size && arg.name)
+         file = new TLocalFile(arg);
 
       if (!file)
-         file = new TFile(filename);
+         file = new TFile(arg);
 
       return file.Open();
    }

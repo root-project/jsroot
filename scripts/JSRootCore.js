@@ -80,7 +80,7 @@
 
    /** @summary JSROOT version
      * @desc For the JSROOT release the string in format "major.minor.patch" like "6.0.0"
-     * @desc For the ROOT release is string is "ROOT major.minor.patch" like "ROOT 6.24.00" */
+     *       For the ROOT release is string is "ROOT major.minor.patch" like "ROOT 6.24.00" */
    JSROOT.version = "pre6";
 
    /** @summary JSROOT version date
