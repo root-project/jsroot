@@ -1353,7 +1353,7 @@ JSROOT.require(['d3', 'painter', 'gpad'], (d3, jsrp) => {
     * Invoked when item "$legend" specified in JSROOT URL string
     * @private */
    let produceLegend = (divid, opt) => {
-      let main_painter = JSROOT.GetMainPainter(divid);
+      let main_painter = JSROOT.get_main_painter(divid);
       if (!main_painter) return;
 
       let pp = main_painter.pad_painter(),

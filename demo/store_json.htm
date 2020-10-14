@@ -11,17 +11,13 @@
    <script type='text/javascript'>
 
      // absolute file path can be used as well
-     var filename = "../../files/hsimple.root";
-
-     JSROOT.openFile(filename).then(file => {
-        file.ReadObject("hpxpy;1").then(obj => {
-           JSROOT.draw("drawing", obj, "colz");
-        });
-     });
+     JSROOT.openFile("../../files/hsimple.root")
+           .then(file => file.ReadObject("hpxpy;1"))
+           .then(obj => JSROOT.draw("drawing", obj, "colz"));
 
      function StoreJson() {
         // produce JSON code
-        var json = JSROOT.StoreJSON("drawing");
+        var json = JSROOT.drawingJSON("drawing");
 
         // parse JSON and get new TCanvas
         var obj2 = JSROOT.parse(json);
@@ -39,7 +35,7 @@
 
 <body>
   <div id="drawing" style="width:600px; height:400px"></div>
-  <p>Example show replication of TCanvas with all primitives, using JSROOT.StoreJSON() function</p>
+  <p>Example show replication of TCanvas with all primitives, using JSROOT.drawingJSON() function</p>
   <button onclick="StoreJson()" type="button">Replicate</button>
   <div id="replica" style="width:600px; height:400px"></div>
 

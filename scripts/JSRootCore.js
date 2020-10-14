@@ -884,6 +884,8 @@
     *
     * @desc Produced JSON can be used in JSROOT.parse() again
     * When performed properly, JSON can be used in [TBufferJSON::fromJSON()]{@link https://root.cern/doc/master/classTBufferJSON.html#a2ecf0daacdad801e60b8093a404c897d} method to read data back with C++
+    * @param {object} obj - JavaScript object to convert
+    * @returns {string} produced JSON code
     */
    JSROOT.toJSON = function(obj) {
       if (!obj || typeof obj !== 'object') return "";

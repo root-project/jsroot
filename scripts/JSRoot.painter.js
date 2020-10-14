@@ -1205,7 +1205,7 @@ JSROOT.require(['d3'], (d3) => {
 
    // ========================================================================================
 
-   /** @class Basic painter class. 
+   /** @class Basic painter class.
      * */
 
    function BasePainter() {
@@ -3618,7 +3618,7 @@ JSROOT.require(['d3'], (d3) => {
 
       if (!handle.func) {
          if (opt && (opt.indexOf("same") >= 0)) {
-            let main_painter = JSROOT.GetMainPainter(divid);
+            let main_painter = JSROOT.get_main_painter(divid);
             if (main_painter && (typeof main_painter.PerformDrop === 'function'))
                return main_painter.PerformDrop(obj, "", null, opt);
          }
@@ -3757,7 +3757,7 @@ JSROOT.require(['d3'], (d3) => {
     * @returns {string} produced JSON string
     */
 
-   JSROOT.StoreJSON = function(divid) {
+   JSROOT.drawingJSON = function(divid) {
       let p = new ObjectPainter;
       p.SetDivId(divid, -1);
 
@@ -3867,9 +3867,9 @@ JSROOT.require(['d3'], (d3) => {
       return done;
    }
 
-   /** @summary Returns main painter object for specified HTML element
+   /** @summary Returns main painter object for specified HTML element - typically histogram painter
      * @param {string|object} divid - id or DOM element */
-   JSROOT.GetMainPainter = function(divid) {
+   JSROOT.get_main_painter = function(divid) {
       let dummy = new JSROOT.ObjectPainter();
       dummy.SetDivId(divid, -1);
       return dummy.main_painter(true);
@@ -4031,6 +4031,7 @@ JSROOT.require(['d3'], (d3) => {
      * @private */
    JSROOT.TBasePainter = BasePainter;
    JSROOT.TObjectPainter = ObjectPainter;
+   JSROOT.StoreJSON = JSROOT.drawingJSON;
 
    JSROOT.Painter = jsrp;
    if (JSROOT.nodejs) module.exports = jsrp;

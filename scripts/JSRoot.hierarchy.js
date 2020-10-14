@@ -1137,7 +1137,7 @@ JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
 
          if (!obj) return JSROOT.CallBack(call_back);
 
-         let main_painter = JSROOT.GetMainPainter(divid);
+         let main_painter = JSROOT.get_main_painter(divid);
 
          if (main_painter && (typeof main_painter.PerformDrop === 'function'))
             return main_painter.PerformDrop(obj, itemname, item, opt).then(drop_callback);
