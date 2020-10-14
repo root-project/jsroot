@@ -279,7 +279,6 @@ JSROOT.require(['io', 'math'], (jsrio, jsrmath) => {
             only_branch = undefined;
          } else {
             // first try to find branch
-            while ((pos < code.length) && !is_start_symbol(code[pos])) pos++;
             pos2 = pos;
             while ((pos2 < code.length) && (is_next_symbol(code[pos2]) || code[pos2] === ".")) pos2++;
             if (code[pos2] == "$") {
@@ -2409,7 +2408,7 @@ JSROOT.require(['io', 'math'], (jsrio, jsrmath) => {
     * @param {string} name - name of the branch
     * @returns {Object} with "branch" and "rest" members
     * @private */
-   TTreeMethods.FindBranchComplex = function(name, lst) {
+   TTreeMethods.FindBranchComplex = function(name, lst, only_search) {
 
       let top_search = false, search = name, res = null;
 
@@ -2452,6 +2451,13 @@ JSROOT.require(['io', 'math'], (jsrio, jsrmath) => {
          break;
       }
 
+      if (top_search && !only_search && !res && (search.indexOf("br_") == 0)) {
+         let p = 3;
+         while ((p < search.length) && (search[p] >= '0') && (search[p] <= '9')) ++p;
+         let br = (p > 3) ? this.GetBranch(parseInt(search.slice(3,p))) : null;
+         if (br) res = { branch: br, rest: search.substr(p) };
+      }
+
       if (!top_search || !res) return res;
 
       if (name.length > search.length) res.rest += name.substr(search.length);
@@ -2463,7 +2469,7 @@ JSROOT.require(['io', 'math'], (jsrio, jsrmath) => {
     * @param {string} name - name of the branch
     * @returns {Object} found branch */
    TTreeMethods.FindBranch = function(name) {
-      let res = this.FindBranchComplex(name);
+      let res = this.FindBranchComplex(name, undefined, true);
       return (!res || (res.rest.length > 0)) ? null : res.branch;
    }
 
@@ -2485,6 +2491,7 @@ JSROOT.require(['io', 'math'], (jsrio, jsrmath) => {
     * @desc All sub-branches checked as well
     * @returns {Object} branch */
    TTreeMethods.GetBranch = function(id) {
+      if ((id === undefined) || isNaN(id)) return;
       let res, seq = 0;
       function Scan(obj) {
          if (obj && obj.fBranches)

@@ -217,6 +217,10 @@ JSROOT provides possibility to display TTree data, using [TTree::Draw](https://r
    - [opt=px:py](https://root.cern/js/latest/?file=../files/hsimple.root&item=ntuple;1&opt=px:py)
    - [opt=px:py:pz](https://root.cern/js/latest/?file=../files/hsimple.root&item=ntuple;1&opt=px:py:pz)
 
+It is also possible to use branch by id number specifying name like "br_0", "br_1" and so on:
+
+   - [opt=br_0:br_1](https://root.cern/js/latest/?file=../files/hsimple.root&item=ntuple&opt=br_0:br_1)
+
 Histogram ranges and binning defined after reading first 1000 entries from the tree.
 Like in ROOT, one could configure histogram binning and range directly:
 
