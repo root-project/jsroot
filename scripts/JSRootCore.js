@@ -73,6 +73,8 @@
       globalThis.JSROOT = jsroot;
 
       if (globalThis.sap && globalThis.sap.ui) {
+         console.log('Active SAP loader');
+
          // actiavate SAP loader
          jsroot._.sap = true;
 
@@ -87,7 +89,7 @@
          });
 
          if (globalThis.jQuery)
-            _.modules['jquery'] = { module: globalThis.jQuery };
+            jsroot._.modules['jquery'] = { module: globalThis.jQuery };
       }
 
       jsroot._.init();
@@ -189,7 +191,7 @@
          return _.amd ? entry.src : entry.src + ".js";
 
       if (_.sap)
-         return "jsroot/" + entry.src + ((_.source_min || entry.libs) ? ".min" : "");
+         return "jsroot/scripts/" + entry.src + ((_.source_min || entry.libs) ? ".min" : "");
 
       let dir = (entry.libs && _.use_full_libs && !_.source_min) ? JSROOT.source_dir + "libs/" : JSROOT.source_dir + "scripts/",
           ext = (_.source_min || (entry.libs && !_.use_full_libs) || entry.onlymin) ? ".min" : "";
@@ -515,6 +517,52 @@
          return Promise.resolve(arr.length == 1 ? arr[0] : arr);
       }
 
+      // loading with sap.ui.require
+      if (_.sap) {
+         let req = [], reqindx = [], res = [];
+         for (let k = 0; k < need.length; ++k) {
+            let m = _.modules[need[k]];
+            if (m) {
+               res[k] = m.module;
+            } else {
+               let src = _.sources[need[k]];
+               if (src) {
+                  req.push(_.get_module_src(src));
+               } else {
+                  req.push(need[k]);
+               }
+               reqindx.push(k);
+            }
+         }
+
+         function decode_sap_results(args) {
+            for (let i = 0; i < reqindx.length; ++i) {
+               let k = reqindx[i]; // index in original request
+               let src = _.sources[need[k]];
+               if (src && src.extract) {
+                  let m = _.modules[need[k]];
+                  if (!m) m = _.modules[need[k]] = { module: globalThis[src.extract] };
+                  res[k] = m.module;
+               } else {
+                  res[k] = args[i];
+               }
+            }
+         }
+
+         if (factoryFunc)
+            return sap.ui.define(req, function() {
+               decode_sap_results(arguments);
+               return factoryFunc(...res);
+            });
+         else
+            return new Promise(resolveFunc => {
+               sap.ui.require(req, function() {
+                  decode_sap_results(arguments);
+                  resolveFunc(res.length == 1 ? res[0] : res);
+               });
+            });
+      }
+
       let thisModule, thisSrc;
 
       if (factoryFunc) {
@@ -529,52 +577,8 @@
                }
          }
          if (!thisModule)
-            throw Error("Cannot define module for " + document.currentScript.src);
+            throw Error("Cannot define module for " + (thisSrc || "uncknown script"));
       }
-
-      // loading with sap.ui.require
-      if (_.sap) {
-         let req = [], revindx = [], res = [];
-         for (let k = 0; k < need.length; ++k) {
-            let m = _.modules[need[k]];
-            if (m) {
-               res[k] = m.module;
-            } else {
-               let src = _.sources[need[k]];
-               if (src) {
-                  req.push(_.get_module_src(src));
-               } else {
-                  res.push(need[k]);
-               }
-               revindx.push(k);
-            }
-         }
-
-         function decode_sap_results(args) {
-            for (let i = 0; i < revindx.length; ++i) {
-               let k = revindx[i], // index in original request
-                   src = _.sources[need[k]],
-                   m = _.modules[need[k]];
-               if (src && !m) m = _.modules[need[k]] = { module: args[i] };
-               res[k] = m ? m.module : args[i];
-            }
-         }
-
-         if (factoryFunc && thisModule)
-            return sap.ui.require(req, () => {
-               decode_sap_results(arguments);
-               let z = factoryFunc(...res);
-               _.modules[thisModule] = { module: z || 1 };
-            });
-         else
-            return new Promise(resolveFunc => {
-               sap.ui.require(req, () => {
-                  decode_sap_results(arguments);
-                  resolveFunc(res.length == 0 ? res[0] : res);
-               });
-            });
-      }
-
 
       // direct loading
 

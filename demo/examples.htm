@@ -105,6 +105,7 @@
              demo_path = "demo/",
              filepath = "../files/",
              use_requirejs = false,
+             use_openui5 = false,
              extra_opts = "", // extra options like webgl=no
              select_key = null;  // select the only key like ?select=TH2
 
@@ -112,13 +113,19 @@
          icon.setAttribute('src', "img/RootIcon.ico");
          icon.setAttribute('rel', "shortcut icon");
 
-         if (window.location.search.indexOf("requirejs")>0) {
+         if (window.location.search.indexOf("requirejs") > 0) {
             jsroot_path = "./indexr.htm";
             use_requirejs = true;
             document.title += ' (with require.js)';
          }
 
-         if (window.location.search.indexOf("nowebgl")>0)
+         if ((window.location.search.indexOf("sap") > 0) || (window.location.search.indexOf("openui") > 0)) {
+            jsroot_path = "./indexsap.htm";
+            use_openui5 = true;
+            document.title += ' (with openui5)';
+         }
+
+         if (window.location.search.indexOf("nowebgl") > 0)
             extra_opts = "&webgl=0";
 
          if ((window.location.host.indexOf('jsroot.gsi.de') < 0) &&
@@ -135,7 +142,8 @@
             icon.setAttribute('src', "../img/RootIcon.ico");
          }
 
-         if (window.location.protocol == "file:") filepath = "http://jsroot.gsi.de/files/";
+         if (window.location.protocol == "file:")
+            filepath = "http://jsroot.gsi.de/files/";
 
          document.getElementsByTagName("head")[0].appendChild(icon);
 
@@ -152,17 +160,18 @@
             document.getElementsByTagName("head")[0].appendChild(element);
          }
 
-         loadScript(use_requirejs ? "//cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" : scripts + 'JSRootCore.js',
-            function() {
+         if (use_requirejs) {
+            loadScript("//cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js", () => {
+               require([scripts + 'JSRootCore.js'], FillContent);
+            });
+         } else if (use_openui5) {
+            loadScript("//openui5.hana.ondemand.com/1.72.0/resources/sap-ui-core.js", () => {
+               loadScript(scripts + 'JSRootCore.js', FillContent);
+            });
 
-               if (!use_requirejs)
-                  return FillContent();
-
-               require([scripts + 'JSRootCore.js'], handle => {
-                  // JSROOT = handle;
-                  FillContent();
-               });
-           });
+         } else {
+            loadScript(scripts + 'JSRootCore.js', FillContent);
+         }
 
          let keyid = null, optid, testfile, testobj, testinterval = 10, hpainter = null;
 
