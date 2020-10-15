@@ -517,8 +517,8 @@
          return Promise.resolve(arr.length == 1 ? arr[0] : arr);
       }
 
-      // loading with sap.ui.require
-      if (_.sap) {
+      // loading with sap.ui.require - but not mathjax
+      if (_.sap && ((need.length != 1) || (need[0] != "mathjax"))) {
          let req = [], reqindx = [], res = [];
          for (let k = 0; k < need.length; ++k) {
             let m = _.modules[need[k]];
@@ -526,10 +526,10 @@
                res[k] = m.module;
             } else {
                let src = _.sources[need[k]];
-               if (src) {
-                  req.push(_.get_module_src(src));
-               } else {
+               if (!src) {
                   req.push(need[k]);
+               } else {
+                  req.push(_.get_module_src(src));
                }
                reqindx.push(k);
             }
