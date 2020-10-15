@@ -72,6 +72,24 @@
 
       globalThis.JSROOT = jsroot;
 
+      if (globalThis.sap && globalThis.sap.ui) {
+         // actiavate SAP loader
+         jsroot._.sap = true;
+
+         let rootui5sys = undefined;
+         if (jsroot.source_dir.indexOf("jsrootsys") >= 0)
+            rootui5sys = jsroot.source_dir.replace(/jsrootsys/g, "rootui5sys");
+         sap.ui.loader.config({
+            paths: {
+               jsroot: jsroot.source_dir,
+               rootui5: rootui5sys
+            }
+         });
+
+         if (globalThis.jQuery)
+            _.modules['jquery'] = { module: globalThis.jQuery };
+      }
+
       jsroot._.init();
    }
 } (function(JSROOT) {
@@ -168,11 +186,14 @@
 
    _.get_module_src = function(entry, fullyQualified) {
       if (entry.src.indexOf('http') == 0)
-         return this.amd ? entry.src : entry.src + ".js";
+         return _.amd ? entry.src : entry.src + ".js";
 
-      let dir = (entry.libs && _.use_full_libs && !_.source_min) ? JSROOT.source_dir + "libs/" : JSROOT.source_dir + "scripts/";
-      let ext = (_.source_min || (entry.libs && !_.use_full_libs) || entry.onlymin) ? ".min" : ""
-      if (this.amd) return dir + entry.src + ext;
+      if (_.sap)
+         return "jsroot/" + entry.src + ((_.source_min || entry.libs) ? ".min" : "");
+
+      let dir = (entry.libs && _.use_full_libs && !_.source_min) ? JSROOT.source_dir + "libs/" : JSROOT.source_dir + "scripts/",
+          ext = (_.source_min || (entry.libs && !_.use_full_libs) || entry.onlymin) ? ".min" : "";
+      if (_.amd) return dir + entry.src + ext;
       let res = dir + entry.src + ext + ".js";
 
       if (fullyQualified && JSROOT.nocache) res += "?stamp=" + JSROOT.nocache;
@@ -439,8 +460,6 @@
       if (!need && !factoryFunc)
          return Promise.resolve(null);
 
-      let _ = this._;
-
       if (typeof need == "string") need = need.split(";");
 
       need = need.filter(elem => !!elem);
@@ -466,8 +485,7 @@
       }
 
       // loading inside node.js
-
-      if (this.nodejs) {
+      if (JSROOT.nodejs) {
          let arr = [];
 
          for (let k = 0; k < need.length; ++k) {
@@ -497,15 +515,6 @@
          return Promise.resolve(arr.length == 1 ? arr[0] : arr);
       }
 
-      // direct loading
-
-      function getModuleName(src) {
-         for (let mod in _.sources)
-            if (_.get_module_src(_.sources[mod]) == src)
-               return mod;
-         return src;
-      }
-
       let thisModule, thisSrc;
 
       if (factoryFunc) {
@@ -513,11 +522,61 @@
             thisSrc = document.currentScript.src;
             let separ = (typeof thisSrc == 'string') ? thisSrc.indexOf('?') : -1;
             if (separ > 0) thisSrc = thisSrc.substr(0, separ);
-            thisModule = getModuleName(thisSrc);
+            thisModule = thisSrc;
+            for (let mod in _.sources)
+               if (_.get_module_src(_.sources[mod]) == thisSrc) {
+                  thisModule = mod; break;
+               }
          }
          if (!thisModule)
-            throw Error("Cannot define module for" + document.currentScript.src);
+            throw Error("Cannot define module for " + document.currentScript.src);
       }
+
+      // loading with sap.ui.require
+      if (_.sap) {
+         let req = [], revindx = [], res = [];
+         for (let k = 0; k < need.length; ++k) {
+            let m = _.modules[need[k]];
+            if (m) {
+               res[k] = m.module;
+            } else {
+               let src = _.sources[need[k]];
+               if (src) {
+                  req.push(_.get_module_src(src));
+               } else {
+                  res.push(need[k]);
+               }
+               revindx.push(k);
+            }
+         }
+
+         function decode_sap_results(args) {
+            for (let i = 0; i < revindx.length; ++i) {
+               let k = revindx[i], // index in original request
+                   src = _.sources[need[k]],
+                   m = _.modules[need[k]];
+               if (src && !m) m = _.modules[need[k]] = { module: args[i] };
+               res[k] = m ? m.module : args[i];
+            }
+         }
+
+         if (factoryFunc && thisModule)
+            return sap.ui.require(req, () => {
+               decode_sap_results(arguments);
+               let z = factoryFunc(...res);
+               _.modules[thisModule] = { module: z || 1 };
+            });
+         else
+            return new Promise(resolveFunc => {
+               sap.ui.require(req, () => {
+                  decode_sap_results(arguments);
+                  resolveFunc(res.length == 0 ? res[0] : res);
+               });
+            });
+      }
+
+
+      // direct loading
 
       function finish_loading(m, res) {
          m.module = res || 1; // just to have some value

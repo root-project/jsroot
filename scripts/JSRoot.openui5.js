@@ -66,7 +66,7 @@ JSROOT.require(['jquery', 'jquery-ui'], () => {
       document.getElementsByTagName("head")[0].appendChild(element);
    }
 
-   var openui5_sources = [],
+   let openui5_sources = [],
        openui5_dflt = "https://openui5.hana.ondemand.com/1.72.0/",
        openui5_root = JSROOT.source_dir.replace(/jsrootsys/g, "rootui5sys/distribution");
 
