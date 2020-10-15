@@ -73,7 +73,7 @@
       globalThis.JSROOT = jsroot;
 
       if (globalThis.sap && globalThis.sap.ui) {
-         console.log('Active SAP loader');
+         console.log('Use SAP loader');
 
          // actiavate SAP loader
          jsroot._.sap = true;
@@ -98,14 +98,18 @@
 
    "use strict";
 
-   /** @summary JSROOT version
+   /** @summary JSROOT version id
      * @desc For the JSROOT release the string in format "major.minor.patch" like "6.0.0"
      *       For the ROOT release is string is "ROOT major.minor.patch" like "ROOT 6.24.00" */
-   JSROOT.version = "pre6";
+   JSROOT.version_id = "pre6";
 
    /** @summary JSROOT version date
      * @desc Release date in format day/month/year */
    JSROOT.version_date = "15/10/2020";
+
+   /** @summary JSROOT version id and date
+     * @desc Produced by concatenation of {@link JSROOT.version_id} and {@link JSROOT.version_date} */
+   JSROOT.version = JSROOT.version_id + " " + JSROOT.version_date;
 
    /** @summary Location of JSROOT scripts
      * @desc Used to load other JSROOT scripts when required
@@ -155,7 +159,7 @@
             source_fullpath = script.src;
             JSROOT.source_dir = source_fullpath.substr(0, pos);
             _.source_min = source_fullpath.indexOf("scripts/JSRootCore.min.js") >= 0;
-            console.log(`Set JSROOT.source_dir to ${JSROOT.source_dir}, ${JSROOT.version} ${JSROOT.version_date}`);
+            console.log(`Set JSROOT.source_dir to ${JSROOT.source_dir}, ${JSROOT.version}`);
          }
       }
 
@@ -2172,6 +2176,7 @@
       if (d.has('nocache')) JSROOT.nocache = (new Date).getTime(); // use timestamp to overcome cache limitation
       if (d.has('wrong_http_response') || JSROOT.decodeUrl().has('wrong_http_response'))
          JSROOT.wrong_http_response_handling = true; // server may send wrong content length by partial requests, use other method to control this
+      if (d.has('nosap')) _.sap = undefined; // let ignore sap loader even with openui5 loaded
 
       // in case of require.js one have to use timeout to decople loading
       if (_.amd)
