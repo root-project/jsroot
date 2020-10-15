@@ -27,3 +27,6 @@ JSROOT also implements extensive tree-draw functionality, shown in <tree_draw.js
 
     node tree_draw.js
 
+Possibility to read TTree data, using `JSROOT.TSelector` class shown in <selector.js> example:
+
+    node selector.js
