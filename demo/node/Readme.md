@@ -18,7 +18,12 @@ Example <makesvg.js> you will find in this directory. Just call it:
     node makesvg.js
 
 JSROOT also provides possibility to read arbitrary TTree data without involving
-any peace of native ROOT code. <tree.js> demonstrate such example:
+any peace of native ROOT code. <tree_dump.js> demonstrate how simple dump of TTree
+data can be done:
 
-    node tree.js
+    node tree_dump.js
+
+JSROOT also implements extensive tree-draw functionality, shown in <tree_draw.js> example:
+
+    node tree_draw.js
 
