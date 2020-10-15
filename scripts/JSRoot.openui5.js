@@ -6,9 +6,13 @@ JSROOT.define(['jquery', 'jquery-ui'], () => {
 
    "use strict";
 
+   // very simple - openui5 was loaded before and will be used as is
+   if (typeof sap == 'object')
+      return sap;
+
    let resolveFunc;
 
-   JSROOT.completeUI5Loading = function() {
+   JSROOT._.completeUI5Loading = function() {
       // when running with THttpServer, automatically set "rootui5" folder
       let rootui5sys = undefined;
       if (JSROOT.source_dir.indexOf("jsrootsys") >= 0)
@@ -50,7 +54,7 @@ JSROOT.define(['jquery', 'jquery-ui'], () => {
 
       element.setAttribute('data-sap-ui-preload', 'async'); // '' to disable Component-preload.js
 
-      element.setAttribute('data-sap-ui-evt-oninit', "JSROOT.completeUI5Loading()");
+      element.setAttribute('data-sap-ui-evt-oninit', "JSROOT._.completeUI5Loading()");
 
       element.onerror = function() {
          // remove failed element
@@ -85,10 +89,11 @@ JSROOT.define(['jquery', 'jquery-ui'], () => {
    if (openui5_root && (openui5_sources.indexOf(openui5_root)<0)) openui5_sources.push(openui5_root);
    if (openui5_dflt && (openui5_sources.indexOf(openui5_dflt)<0)) openui5_sources.push(openui5_dflt);
 
-   TryOpenOpenUI(openui5_sources);
-
    // return Promise let loader wait before dependent source will be invoked
-   return new Promise(resolve => { resolveFunc = resolve; });
+   return new Promise(resolve => {
+      resolveFunc = resolve;
+      TryOpenOpenUI(openui5_sources);
+   });
 
 });
 
