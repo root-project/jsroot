@@ -1,7 +1,7 @@
 /** @file JSRoot.math.js
   * Special mathematical functions */
 
-JSROOT.require([], () =>  {
+JSROOT.define([], () =>  {
 
    "use strict";
 

@@ -1,7 +1,7 @@
 /// @file JSRoot.hist3d.js
 /// histogram 3D graphics
 
-JSROOT.require(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
+JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
    "use strict";
 

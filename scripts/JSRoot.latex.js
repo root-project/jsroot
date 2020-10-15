@@ -1,7 +1,7 @@
 /// @file JSRoot.latex.js
 /// Latex / MathJax processing
 
-JSROOT.require(['d3'], (d3) => {
+JSROOT.define(['d3'], (d3) => {
 
    "use strict";
 

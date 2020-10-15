@@ -435,29 +435,7 @@
        return udefined;
     }
 
-   /** @summary Central method to load JSROOT functionality
-     *
-     * @desc
-     * Following components can be specified
-     *    - 'io'     TFile functionality
-     *    - 'tree'   TTree support
-     *    - 'gpad'   basic 2d graphic (TCanvas/TPad/TFrame)
-     *    - 'hist'   histograms 2d drawing (SVG)
-     *    - 'hist3d' histograms 3d drawing (WebGL)
-     *    - 'more'   extra 2d graphic (TGraph, TF1)
-     *    - 'geom'    TGeo support
-     *    - 'v7gpad' ROOT RPad/RCanvas/RFrame
-     *    - 'v7hist' ROOT v7 histograms 2d drawing (SVG)
-     *    - 'v7hist3d' v7 histograms 3d drawing (WebGL)
-     *    - 'v7more' ROOT v7 special classes
-     *    - 'math'   some methods from TMath class
-     *    - 'hierarchy' hierarchy browser
-     *    - 'jq2d'   jQuery-dependent part of hierarchy
-     *    - 'openui5' OpenUI5 and related functionality
-     * @param {Array|string} need - list of required components (as array or string separated by semicolon)
-     * @param {Function} [factoryFunc] - function to initialize functionality, only once per script file
-     * @returns {Promise} when factoryFunc not specified */
-   JSROOT.require = function(need, factoryFunc) {
+   function jsroot_require(need, factoryFunc) {
 
       if (!need && !factoryFunc)
          return Promise.resolve(null);
@@ -518,7 +496,7 @@
       }
 
       // loading with sap.ui.require - but not mathjax
-      if (_.sap && ((need.length != 1) || (need[0] != "mathjax"))) {
+      if (_.sap && (need[0] != "mathjax")) {
          let req = [], reqindx = [], res = [];
          for (let k = 0; k < need.length; ++k) {
             let m = _.modules[need[k]];
@@ -713,6 +691,41 @@
             analyze(resolve,reject);
          });
    }
+
+   /** @summary Central method to load JSROOT functionality
+     *
+     * @desc
+     * Following components can be specified
+     *    - 'io'     TFile functionality
+     *    - 'tree'   TTree support
+     *    - 'gpad'   basic 2d graphic (TCanvas/TPad/TFrame)
+     *    - 'hist'   histograms 2d drawing (SVG)
+     *    - 'hist3d' histograms 3d drawing (WebGL)
+     *    - 'more'   extra 2d graphic (TGraph, TF1)
+     *    - 'geom'    TGeo support
+     *    - 'v7gpad' ROOT RPad/RCanvas/RFrame
+     *    - 'v7hist' ROOT v7 histograms 2d drawing (SVG)
+     *    - 'v7hist3d' v7 histograms 3d drawing (WebGL)
+     *    - 'v7more' ROOT v7 special classes
+     *    - 'math'   some methods from TMath class
+     *    - 'hierarchy' hierarchy browser
+     *    - 'jq2d'   jQuery-dependent part of hierarchy
+     *    - 'openui5' OpenUI5 and related functionality
+     * @param {Array|string} req - list of required components (as array or string separated by semicolon)
+     * @returns {Promise} with array of requirements (or single element) */
+   JSROOT.require = function(req) {
+      return jsroot_require(req);
+   }
+
+   /** @summary Define JSROOT module
+     * @desc Should be only used for JSROOT modules
+     * @param {Array|string} req - requirements, see {@link JSROOT.require} for more details
+     * @param {Function} factoryFunc - called when requirements are fulfilled
+     * @private */
+   JSROOT.define = function(req, factoryFunc) {
+      jsroot_require(req, factoryFunc);
+   }
+
 
    /** @summary Generate mask for given bit
     * @param {number} n bit number

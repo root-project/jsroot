@@ -1,7 +1,7 @@
 /// @file JSRoot.base3d.js
 /// JavaScript ROOT 3D graphics
 
-JSROOT.require(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
+JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
 
    "use strict";
 

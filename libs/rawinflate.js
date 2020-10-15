@@ -4,7 +4,7 @@
  * original: http://www.onicos.com/staff/iz/amuse/javascript/expert/inflate.txt
  */
 
-JSROOT.require([], function() {
+JSROOT.define([], function() {
 
    "use strict";
 

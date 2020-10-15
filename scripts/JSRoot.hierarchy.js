@@ -1,7 +1,7 @@
 /// @file JSRoot.hierarchy.js
 /// Hierarchy display functionality
 
-JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
+JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    "use strict";
 

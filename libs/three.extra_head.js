@@ -1,6 +1,6 @@
 // Collection of additional THREE.js classes, required in JSROOT
 
-JSROOT.require(['three'], function(THREE) {
+JSROOT.define(['three'], function(THREE) {
 
    "use strict";
 

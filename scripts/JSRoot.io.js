@@ -1,7 +1,7 @@
 /// @file JSRoot.io.js
 /// I/O methods of JavaScript ROOT
 
-JSROOT.require(['rawinflate'], () => {
+JSROOT.define(['rawinflate'], () => {
 
    "use strict";
 

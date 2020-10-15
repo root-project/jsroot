@@ -1,7 +1,7 @@
 /// @file JSRoot.gpad.js
 /// JSROOT TPad/TCanvas/TFrame support
 
-JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
+JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    "use strict";
 

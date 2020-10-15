@@ -1,7 +1,7 @@
 /// @file JSRoot.hist.js
 /// JSROOT graphics for histogram classes
 
-JSROOT.require(['d3', 'painter', 'gpad'], (d3, jsrp) => {
+JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    "use strict";
 

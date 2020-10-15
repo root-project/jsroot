@@ -1,4 +1,7 @@
-JSROOT.require(['three'], function(THREE) {
+/// @file JSRoot.csg.js
+/// CSG library for THREE.js
+
+JSROOT.define(['three'], function(THREE) {
 
    "use strict";
 

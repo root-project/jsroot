@@ -1,7 +1,7 @@
 /// @file JSRoot.tree.js
 /// Collect all TTree-relevant methods for reading, drawing and hierarchy browsing
 
-JSROOT.require(['io', 'math'], (jsrio, jsrmath) => {
+JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
 
    "use strict";
 

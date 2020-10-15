@@ -1,7 +1,7 @@
 /// @file JSRoot.v7gpad.js
 /// JavaScript ROOT graphics for ROOT v7 classes
 
-JSROOT.require(['d3', 'painter'], (d3, jsrp) => {
+JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    "use strict";
 

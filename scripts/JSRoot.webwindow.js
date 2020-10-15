@@ -1,7 +1,7 @@
 /// @file JSRoot.webwindow.js
 /// Connections handling to RWebWindow
 
-JSROOT.require([], () => {
+JSROOT.define([], () => {
 
    "use strict";
 
