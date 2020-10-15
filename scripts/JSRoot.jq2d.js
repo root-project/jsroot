@@ -524,7 +524,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
            axis: "x" , cursor: "ew-resize",
            containment: "parent",
            helper : function() { return $(this).clone().css('background-color','grey'); },
-           drag: function(/* event,ui */) {
+           drag: function(event,ui) {
               pthis.SetButtonsPosition();
               pthis.AdjustSeparator(ui.position.left, null);
            },
@@ -1543,7 +1543,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          }
 
          jmain.find(".gui_selectFileName").val("")
-              .change(() => jmain.find(".gui_urlToLoad").val($(this).val()));
+              .change(function() { jmain.find(".gui_urlToLoad").val($(this).val()); });
          jmain.find(".gui_fileBtn").button()
               .click(() => jmain.find(".gui_localFile").click());
 
@@ -1583,10 +1583,11 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
             opt.value = lst[k];
             opt.innerHTML = lst[k];
             jlayout.get(0).appendChild(opt);
-        }
+         }
 
-         jlayout.change(() => {
-            this.SetDisplay($(this).val() || 'collapsible', this.gui_div + "_drawing");
+         let painter = this;
+         jlayout.change(function() {
+            painter.SetDisplay($(this).val() || 'collapsible', painter.gui_div + "_drawing");
          });
       }
 
@@ -1635,11 +1636,12 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
       if (this.is_online) {
          if (this.h && this.h._toptitle)
             this.brlayout.SetBrowserTitle(this.h._toptitle);
+         let painter = this;
          jmain.find(".gui_monitoring")
            .prop('checked', this.IsMonitoring())
-           .click(() => {
-               this.EnableMonitoring(this.checked);
-               this.updateAll(!this.checked);
+           .click(function() {
+               painter.EnableMonitoring(this.checked);
+               painter.updateAll(!this.checked);
             });
       } else if (!this.no_select) {
          let fname = "";
