@@ -1486,7 +1486,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
 
       if (this.is_online) {
          guiCode +='<p> Hierarchy in <a href="h.json">json</a> and <a href="h.xml">xml</a> format</p>'
-                 + '<div style="display:flex;flex-direction:row;">'
+                 + '<div style="display:inline-block;">'
                  + '<label style="margin-right:5px; vertical-align:middle;">'
                  + '<input style="vertical-align:middle;" type="checkbox" name="monitoring" class="gui_monitoring"/>'
                  + 'Monitoring</label>';
