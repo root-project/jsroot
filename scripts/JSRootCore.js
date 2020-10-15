@@ -85,7 +85,7 @@
 
    /** @summary JSROOT version date
      * @desc Release date in format day/month/year */
-   JSROOT.version_date = "14/10/2020";
+   JSROOT.version_date = "15/10/2020";
 
    /** @summary Location of JSROOT scripts
      * @desc Used to load other JSROOT scripts when required
@@ -179,11 +179,11 @@
       return res;
    }
 
-   /** @namespace
-     * @desc Specialized JSROOT constants, used in {@link JSROOT.settings}
+   /** @summary Specialized JSROOT constants, used in {@link JSROOT.settings}
+     * @namespace
      * @private */
    JSROOT.constants = {
-      /** @desc Kind of 3D rendering, used for {@link JSROOT.settings.Render3D}
+      /** @summary Kind of 3D rendering, used for {@link JSROOT.settings.Render3D}
         * @namespace
         * @private */
       Render3D: {
@@ -202,7 +202,7 @@
             return this.Default;
          }
       },
-      /** @desc Way to embed 3D into SVG, used for {@link JSROOT.settings.Embed3D}
+      /** @summary Way to embed 3D into SVG, used for {@link JSROOT.settings.Embed3D}
         * @namespace
         * @private */
       Embed3D: {
@@ -223,7 +223,7 @@
             return this.Default;
          }
       },
-      /** @desc How to use latex in text drawing, used for {@link JSROOT.settings.Latex}
+      /** @summary How to use latex in text drawing, used for {@link JSROOT.settings.Latex}
         * @namespace
         * @private */
       Latex: {
@@ -256,8 +256,8 @@
       }
    };
 
-   /** @namespace
-     * @desc Central JSROOT settings, independent from {@link JSROOT.gStyle} */
+   /** @summary Central JSROOT settings, independent from {@link JSROOT.gStyle}
+     * @namespace */
    JSROOT.settings = {
       /** @summary Render of 3D drawing methods, see {@link JSROOT.constants.Render3D} for possible values */
       Render3D: JSROOT.constants.Render3D.Default,
@@ -313,7 +313,7 @@
       GeoGradPerSegm: 6,
       /** @summary Enables faces compression after creation of composite shape  */
       GeoCompressComp: true,
-      /** if true, ignore all kind of URL options in the browser URL */
+      /** @summary if true, ignore all kind of URL options in the browser URL */
       IgnoreUrlOptions: false,
       /** @summary how many items shown on one level of hierarchy */
       HierarchyLimit: 250,
@@ -327,9 +327,10 @@
 
    /** @namespace
      * @memberof JSROOT
-     * @desc Insiance of TStyle object like in ROOT
-     * Includes default draw styles, can be changed after loading of JSRootCore.js
-     * or can be load from the file providing style=itemname in the URL */
+     * @summary Insiance of TStyle object like in ROOT
+     * @desc Includes default draw styles, can be changed after loading of JSRootCore.js
+     * or can be load from the file providing style=itemname in the URL
+     * See [TStyle docu]{@link https://root.cern/doc/master/classTStyle.html} "Private attributes" section for more detailed info about each value */
    let gStyle = {
       fOptLogx: 0,
       fOptLogy: 0,
@@ -351,6 +352,7 @@
       fStatFont: 42,
       fStatFontSize: 0,
       fStatStyle: 1001,
+      /** @summary Printing format for stats */
       fStatFormat: "6.4g",
       fStatX: 0.98,
       fStatY: 0.935,
@@ -363,10 +365,15 @@
       fTitleFont: 42,
       fTitleFontSize: 0.05,
       fTitleStyle: 0,
+      /** @summary X position of top left corner of title box */
       fTitleX: 0.5,
+      /** @summary Y position of top left corner of title box  */
       fTitleY: 0.995,
+      /** @summary Width of title box */
       fTitleW: 0,
+      /** @summary Height of title box */
       fTitleH: 0,
+      /** @summary Printing format for fit parameters */
       fFitFormat: "5.4g",
       fOptStat: 1111,
       fOptFit: 0,
@@ -381,11 +388,16 @@
       fFrameLineStyle: 1,
       fFrameBorderSize: 1,
       fFrameBorderMode: 0,
-      fEndErrorSize: 2,   // size in pixels of end error for E1 draw options
-      fErrorX: 0.5,   // X size of the error marks for the histogram drawings
-      fHistMinimumZero: false,   // when true, BAR and LEGO drawing using base = 0
-      fPaintTextFormat : "g",
-      fTimeOffset : 788918400 // UTC time at 01/01/95
+      /** @summary size in pixels of end error for E1 draw options */
+      fEndErrorSize: 2,
+      /** @summary X size of the error marks for the histogram drawings */
+      fErrorX: 0.5,
+      /** @summary when true, BAR and LEGO drawing using base = 0  */
+      fHistMinimumZero: false,
+      /** @summary format for bin content */
+      fPaintTextFormat: "g",
+      /** @summary default time offset, UTC time at 01/01/95   */
+      fTimeOffset: 788918400
    };
 
    /** @summary Method returns current document in use

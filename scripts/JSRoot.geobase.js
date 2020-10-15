@@ -5,8 +5,8 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
 
    "use strict";
 
-   /** @namespace
-     * @desc Collection of TGeo-related methods, loaded with ```JSROOT.require('geo').then(geo => ...)```
+   /** @summary Collection of TGeo-related methods, loaded with ```JSROOT.require('geo').then(geo => ...)```
+     * @namespace
      * @alias JSROOT.GEO
      */
    let geo = {
@@ -15,7 +15,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       CompLimit: 20        // maximal number of components in composite shape
    };
 
-   /** TGeo-related bits
+   /** @summary TGeo-related bits
      * @private */
    geo.BITS = {
          kVisOverride     : JSROOT.BIT(0),           // volume's vis. attributes are overwritten
@@ -2123,7 +2123,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       return frustum;
    }
 
-   /** Compares two stacks. Returns length where stacks are the same
+   /** @summary Compares two stacks. Returns length where stacks are the same
     * @private */
    geo.CompareStacks = function(stack1, stack2) {
       if (!stack1 || !stack2) return 0;
@@ -2134,7 +2134,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       return len;
    }
 
-   /** Checks if two stack arrays are identical
+   /** @summary Checks if two stack arrays are identical
     * @private */
    geo.IsSameStack = function(stack1, stack2) {
       if (!stack1 || !stack2) return false;
@@ -2171,32 +2171,33 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       }
    }
 
-   /** Set maximal depth for nodes visibility */
+   /** @summary Set maximal depth for nodes visibility */
    ClonedNodes.prototype.SetVisLevel = function(lvl) {
       this.vislevel = lvl && !isNaN(lvl) ? lvl : 4;
    }
 
-   /** Returns maximal depth for nodes visibility */
+   /** @summary Returns maximal depth for nodes visibility */
    ClonedNodes.prototype.GetVisLevel = function() {
       return this.vislevel;
    }
 
-   /** Set maximal depth for nodes visibility */
+   /** @summary Set maximal depth for nodes visibility */
    ClonedNodes.prototype.SetMaxVisNodes = function(v) {
       this.maxnodes = !isNaN(v) ? v : 10000;
    }
 
+   /** @summary Returns configured maximal number of visible nodes */
    ClonedNodes.prototype.GetMaxVisNodes = function() {
       return this.maxnodes;
    }
 
-   /** Insert node into existing array */
+   /** @summary Insert node into existing array */
    ClonedNodes.prototype.updateNode = function(node) {
       if (node && !isNaN(node.id) && (node.id < this.nodes.length))
          this.nodes[node.id] = node;
    }
 
-   /** Returns TGeoShape for element with given indx */
+   /** @summary Returns TGeoShape for element with given indx */
    ClonedNodes.prototype.GetNodeShape = function(indx) {
       if (!this.origin || !this.nodes) return null;
       let obj = this.origin[indx], clone = this.nodes[indx];
@@ -2209,9 +2210,9 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       return null;
    }
 
+   /** @summary function to cleanup as much as possible structures
+     * @desc Provided parameters drawnodes and drawshapes are arrays created during building of geometry */
    ClonedNodes.prototype.Cleanup = function(drawnodes, drawshapes) {
-      // function to cleanup as much as possible structures
-      // drawnodes and drawshapes are arrays created during building of geometry
 
       if (drawnodes) {
          for (let n=0;n<drawnodes.length;++n) {
@@ -2241,7 +2242,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
 
    }
 
-   /** Create complete description for provided Geo object */
+   /** @summary Create complete description for provided Geo object */
    ClonedNodes.prototype.CreateClones = function(obj, sublevel, kind) {
        if (!sublevel) {
 
@@ -2362,7 +2363,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       this.nodes = [ node ];
    }
 
-   /** Count all visisble nodes */
+   /** @summary Count all visisble nodes */
    ClonedNodes.prototype.CountVisibles = function() {
       let cnt = 0;
       if (this.nodes)
@@ -2372,7 +2373,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       return cnt;
    }
 
-   /** Mark visisble nodes. Set only basic flags, actual visibility depends from hierarchy  */
+   /** @summary Mark visisble nodes. Set only basic flags, actual visibility depends from hierarchy  */
    ClonedNodes.prototype.MarkVisibles = function(on_screen, copy_bits, hide_top_volume) {
       if (this.plain_shape) return 1;
       if (!this.origin || !this.nodes) return 0;
@@ -2434,7 +2435,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       return res;
    }
 
-   /** After visibility flags is set, produce idshift for all nodes as it would be maximum level */
+   /** @summary After visibility flags is set, produce idshift for all nodes as it would be maximum level */
    ClonedNodes.prototype.ProduceIdShits = function() {
       for (let k=0;k<this.nodes.length;++k)
          this.nodes[k].idshift = -1;
@@ -2453,7 +2454,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       scan_func(this.nodes, this.nodes[0]);
    }
 
-   /** Extract only visibility flags, used to transfer them to the worker */
+   /** @summary Extract only visibility flags, used to transfer them to the worker */
    ClonedNodes.prototype.GetVisibleFlags = function() {
       let res = new Array(this.nodes.length);
       for (let n=0;n<this.nodes.length;++n)
@@ -2461,7 +2462,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       return res;
    }
 
-   /** Assign only visibility flags, extracted with GetVisibleFlags */
+   /** @summary Assign only visibility flags, extracted with GetVisibleFlags */
    ClonedNodes.prototype.SetVisibleFlags = function(flags) {
       if (!this.nodes || !flags || !flags.length != this.nodes.length)
          return 0;
@@ -2478,9 +2479,8 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       return res;
    }
 
-   /** Scan visible nodes in hierarchy, starting from nodeid
-     * Each entry in hierarchy get its unique id, which is not changed with visibility flags
-     * @private */
+   /** @summary Scan visible nodes in hierarchy, starting from nodeid
+     * @desc Each entry in hierarchy get its unique id, which is not changed with visibility flags */
    ClonedNodes.prototype.ScanVisible = function(arg, vislvl) {
 
       if (!this.nodes) return 0;
@@ -2558,8 +2558,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
    }
 
    /** @summary Return node name with given id.
-    * @desc Either original object or description is used
-    * @private */
+    * @desc Either original object or description is used */
    ClonedNodes.prototype.GetNodeName = function(nodeid) {
       if (this.origin) {
          let obj = this.origin[nodeid];
@@ -2569,8 +2568,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       return node ? node.name : "";
    }
 
-   /** @summary Returns description for provide stack
-    * @private */
+   /** @summary Returns description for provide stack */
    ClonedNodes.prototype.ResolveStack = function(stack, withmatrix) {
 
       let res = { id: 0, obj: null, node: this.nodes[0], name: this.name_prefix };
@@ -2609,8 +2607,8 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       return res;
    }
 
-   /** Create stack array based on nodes ids array.
-    * Ids list should correspond to existing nodes hierarchy */
+   /** @summary Create stack array based on nodes ids array.
+    * @desc Ids list should correspond to existing nodes hierarchy */
    ClonedNodes.prototype.MakeStackByIds = function(ids) {
       if (!ids) return null;
 
@@ -2637,7 +2635,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       return stack;
    }
 
-   /** Retuns ids array which correspond to the stack */
+   /** @summary Retuns ids array which correspond to the stack */
    ClonedNodes.prototype.MakeIdsByStack = function(stack) {
       if (!stack) return null;
       let node = this.nodes[0], ids = [0];
@@ -2649,7 +2647,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       return ids;
    }
 
-   /** Returns true if stack includes at any place provided nodeid */
+   /** @summary Returns true if stack includes at any place provided nodeid */
    ClonedNodes.prototype.IsNodeInStack = function(nodeid, stack) {
 
       if (!nodeid) return true;
@@ -2665,7 +2663,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       return false;
    }
 
-   /** find stack by name which include names of all parents */
+   /** @summary Find stack by name which include names of all parents */
    ClonedNodes.prototype.FindStackByName = function(fullname) {
 
       let names = fullname.split('/'), currid = 0, stack = [];
@@ -2819,10 +2817,9 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       return prop;
    }
 
-   /** Creates hierarchy of Object3D for given stack entry
-     * such hierarchy repeats hierarchy of TGeoNodes and set matrix for the objects drawing
-     * also set renderOrder, required to handle transparency
-     * @private */
+   /** @summary Creates hierarchy of Object3D for given stack entry
+     * @desc Such hierarchy repeats hierarchy of TGeoNodes and set matrix for the objects drawing
+     * also set renderOrder, required to handle transparency */
    ClonedNodes.prototype.CreateObject3D = function(stack, toplevel, options) {
 
       let node = this.nodes[0], three_prnt = toplevel, draw_depth = 0,
@@ -2906,6 +2903,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       return three_prnt;
    }
 
+   /** @summary Get volume boundary */
    ClonedNodes.prototype.GetVolumeBoundary = function(viscnt, facelimit, nodeslimit) {
 
       let result = { min: 0, max: 1, sortidcut: 0 };
@@ -3041,8 +3039,8 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       return { lst: arg.items, complete: minVol === 0 };
    }
 
-   /** @summary merge list of drawn objects
-     * @desc in current list we should mark if object already exists
+   /** @summary Merge list of drawn objects
+     * @desc In current list we should mark if object already exists
      * from previous list we should collect objects which are not there */
    ClonedNodes.prototype.MergeVisibles = function(current, prev) {
 
@@ -3121,6 +3119,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       return shapes;
    }
 
+   /** @summary Merge shape lists */
    ClonedNodes.prototype.MergeShapesLists = function(oldlst, newlst) {
 
       if (!oldlst) return newlst;
@@ -3163,6 +3162,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
       return newlst;
    }
 
+   /** @summary Build shapes */
    ClonedNodes.prototype.BuildShapes = function(lst, limit, timelimit) {
 
       let created = 0,
@@ -3204,11 +3204,15 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
 
    /// =====================================================================
 
+   /** @summary Returns object name
+     * @private */
    geo.ObjectName = function(obj) {
       if (!obj || !obj.fName) return "";
       return obj.fName + (obj.$geo_suffix ? obj.$geo_suffix : "");
    }
 
+   /** @summary Check duplicates
+     * @private */
    geo.CheckDuplicates = function(parent, chlds) {
       if (parent) {
          if (parent.$geo_checked) return;
@@ -3325,6 +3329,7 @@ JSROOT.require(['three', 'csg'], (THREE, ThreeBSP) => {
 
    /** @summary extract code of Box3.expandByObject
      * @desc Major difference - do not traverse hierarchy
+     * @memberof JSROOT.GEO
      * @private */
    function getBoundingBox(node, box3, local_coordinates) {
       if (!node || !node.geometry) return box3;
