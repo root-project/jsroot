@@ -1688,6 +1688,46 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
 
    let createGeometry; // will be function to create geometry
 
+   /** @summary Returns number of faces for provided geometry
+    * @param {Object} geom  - can be THREE.Geometry, THREE.BufferGeometry, ThreeBSP.Geometry or interim array of polygons
+    * @private */
+   geo.numGeometryFaces = function(geom) {
+      if (!geom) return 0;
+
+      if (geom instanceof ThreeBSP.Geometry)
+         return geom.tree.numPolygons();
+
+      if (geom.type == 'BufferGeometry') {
+         var attr = geom.getAttribute('position');
+         return attr && attr.count ? Math.round(attr.count / 3) : 0;
+      }
+
+      // special array of polygons
+      if (geom.polygons)
+         return geom.polygons.length;
+
+      return geom.faces.length;
+   }
+
+   /** @summary Returns number of faces for provided geometry
+    * @param {Object} geom  - can be THREE.Geometry, THREE.BufferGeometry, ThreeBSP.Geometry or interim array of polygons
+    * @private */
+   geo.numGeometryVertices = function(geom) {
+      if (!geom) return 0;
+
+      if (geom instanceof ThreeBSP.Geometry)
+         return geom.tree.numPolygons() * 3;
+
+      if (geom.type == 'BufferGeometry') {
+         var attr = geom.getAttribute('position');
+         return attr ? attr.count : 0;
+      }
+
+      if (geom.polygons)
+         return geom.polygons.length * 4;
+
+      return geom.vertices.length;
+   }
 
    /** @summary Returns geometry bounding box
     * @memberof JSROOT.GEO
