@@ -565,6 +565,10 @@
       // direct loading
 
       function finish_loading(m, res) {
+         // check if promise was returned
+         if (res && (typeof res == 'object') && (typeof res.then == 'function'))
+            return res.then(pres => finish_loading(m, pres));
+
          m.module = res || 1; // just to have some value
          let waiting = m.waiting;
          delete m.loading; // clear loading flag
@@ -729,7 +733,6 @@
    JSROOT.define = function(req, factoryFunc) {
       jsroot_require(req, factoryFunc);
    }
-
 
    /** @summary Generate mask for given bit
     * @param {number} n bit number
@@ -2140,9 +2143,7 @@
 
       let prereq = "webwindow;";
       // FIXME: remove for JSROOT v7 once ROOT code is adjusted
-      if (arg && arg.prereq) prereq += arg.prereq.replace(/2d;v7;/g, "v7gpad;").replace(/2d;v6;/g, "gpad;");
-
-      if (arg) console.log('connect', arg.prereq, arg.prereq2)
+      if (arg && arg.prereq) prereq += arg.prereq.replace(/;v6;v7/g, ";gpad;v7gpad").replace(/2d;v7;/g, "v7gpad;").replace(/2d;v6;/g, "gpad;");
 
       return JSROOT.require(prereq).then(() => {
          if (arg && arg.prereq_logdiv && document) {
@@ -2215,7 +2216,7 @@
    }
 
    JSROOT.AssertPrerequisites = function(req, callback) {
-      req = req.replace(/2d;v7;/g, "v7gpad;").replace(/2d;v6;/g, "gpad;").replace(/more2d;/g, 'more;').replace(/2d;/g, 'gpad;');
+      req = req.replace(/2d;v7;/g, "v7gpad;").replace(/2d;v6;/g, "gpad;").replace(/more2d;/g, 'more;').replace(/2d;/g, 'gpad;').replace(/;v6;v7/g, ";gpad;v7gpad");
       JSROOT.require(req).then(callback);
    }
 
