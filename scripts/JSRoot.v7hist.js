@@ -3831,17 +3831,20 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       evnt.preventDefault();
       evnt.stopPropagation(); // disable main context menu
 
-      jsrp.createMenu(this, evnt).then(menu => {
-         let obj = this.GetObject(),
-             action = this.ChangeMask.bind(this);
+      JSROOT.require('interactive')
+            .then(() => jsrp.createMenu(this, evnt))
+            .then(menu =>
+         {
+            let obj = this.GetObject(),
+                action = this.ChangeMask.bind(this);
 
-         menu.add("header: StatBox");
+            menu.add("header: StatBox");
 
-         for (let n=0;n<obj.fEntries.length; ++n)
-            menu.addchk((obj.fShowMask & (1<<n)), obj.fEntries[n], n, action);
+            for (let n=0;n<obj.fEntries.length; ++n)
+               menu.addchk((obj.fShowMask & (1<<n)), obj.fEntries[n], n, action);
 
-         this.FillObjectExecMenu(menu, "", () => menu.show());
-      });
+            this.FillObjectExecMenu(menu, "", () => menu.show());
+         });
    }
 
    RHistStatsPainter.prototype.DrawStatistic = function(lines) {

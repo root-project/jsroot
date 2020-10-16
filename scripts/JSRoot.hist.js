@@ -1107,11 +1107,13 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       evnt.stopPropagation(); // disable main context menu
       evnt.preventDefault();  // disable browser context menu
 
-      jsrp.createMenu(this, evnt).then(menu => {
-         this.FillContextMenu(menu);
-
-         this.FillObjectExecMenu(menu, "title", () => menu.show());
-      });
+      JSROOT.require('interactive')
+            .then(() => jsrp.createMenu(this, evnt))
+            .then(menu =>
+         {
+            this.FillContextMenu(menu);
+            this.FillObjectExecMenu(menu, "title", () => menu.show());
+         });
    }
 
    TPavePainter.prototype.IsStats = function() {

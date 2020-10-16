@@ -2649,12 +2649,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (fp) fp.SetLastEventPos();
       }
 
-      jsrp.createMenu(this, evnt).then(menu => {
-
-         this.FillContextMenu(menu);
-
-         this.FillObjectExecMenu(menu, "", () => menu.show());
-      });
+      JSROOT.require('interactive')
+            .then(() => jsrp.createMenu(this, evnt))
+            .then(menu =>
+         {
+            this.FillContextMenu(menu);
+            this.FillObjectExecMenu(menu, "", () => menu.show());
+         });
    }
 
    RPadPainter.prototype.Redraw = function(reason) {
@@ -3861,6 +3862,18 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    // ======================================================================================
 
+   /**
+    * @summary Painter for RPave class
+    *
+    * @class
+    * @memberof JSROOT
+    * @extends ObjectPainter
+    * @param {object} pave - object to draw
+    * @param {string} [opt] - object draw options
+    * @param {string} [csstype] - object css kind
+    * @private
+    */
+
    function RPavePainter(pave, opt, csstype) {
       JSROOT.ObjectPainter.call(this, pave, opt);
       this.csstype = csstype || "pave";
@@ -3897,16 +3910,16 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          // fh = Math.round((1-st.fPadTopMargin-st.fPadBottomMargin)*ph);
       }
 
-      let visible       = this.v7EvalAttr("visible", true),
+      let visible      = this.v7EvalAttr("visible", true),
           pave_cornerx = this.v7EvalLength("cornerx", pw, 0.02),
           pave_cornery = this.v7EvalLength("cornery", ph, -0.02),
           pave_width   = this.v7EvalLength("width", pw, 0.3),
           pave_height  = this.v7EvalLength("height", ph, 0.3),
-          line_width    = this.v7EvalAttr("border_width", 1),
-          line_style    = this.v7EvalAttr("border_style", 1),
-          line_color    = this.v7EvalColor("border_color", "black"),
-          fill_color    = this.v7EvalColor("fill_color", "white"),
-          fill_style    = this.v7EvalAttr("fill_style", 1);
+          line_width   = this.v7EvalAttr("border_width", 1),
+          line_style   = this.v7EvalAttr("border_style", 1),
+          line_color   = this.v7EvalColor("border_color", "black"),
+          fill_color   = this.v7EvalColor("fill_color", "white"),
+          fill_style   = this.v7EvalAttr("fill_style", 1);
 
       this.CreateG(false);
 
@@ -3952,7 +3965,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       });
    }
 
-   /** Process interactive moving of the stats box */
+   /** @summary Process interactive moving of the stats box */
    RPavePainter.prototype.SizeChanged = function() {
       this.pave_width = parseInt(this.draw_g.attr("width"));
       this.pave_height = parseInt(this.draw_g.attr("height"));

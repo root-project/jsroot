@@ -2591,10 +2591,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (fp) fp.SetLastEventPos();
       }
 
-      jsrp.createMenu(this, evnt).then(menu => {
-         this.FillContextMenu(menu);
-         this.FillObjectExecMenu(menu, "", () => menu.show());
-      });
+      JSROOT.require('interactive')
+            .then(() => jsrp.createMenu(this, evnt))
+            .then(menu =>
+         {
+            this.FillContextMenu(menu);
+            this.FillObjectExecMenu(menu, "", () => menu.show());
+         });
    }
 
    TPadPainter.prototype.Redraw = function(reason) {

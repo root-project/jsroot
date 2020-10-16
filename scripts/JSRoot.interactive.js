@@ -1645,9 +1645,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    * @desc fillmenu_func will be called when context menu is actiavted
    * Arguments fillmenu_func are (menu,kind,call_back)
    * First is JSROOT menu object, second is object subelement like axis "x" or "y"
-   * Third is call_back which must be called when menu items are filled
-   */
-
+   * Third is call_back which must be called when menu items are filled */
    JSROOT.ObjectPainter.prototype.ConfigureUserContextMenu = function(fillmenu_func) {
 
       if (!fillmenu_func || (typeof fillmenu_func !== 'function'))
@@ -1660,9 +1658,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    *
    * @desc Function will be called every time when frame click was perfromed
    * As argument, tooltip object with selected bins will be provided
-   * If handler function returns true, default handling of click will be disabled
-   */
-
+   * If handler function returns true, default handling of click will be disabled */
    JSROOT.ObjectPainter.prototype.ConfigureUserClickHandler = function(handler) {
       let fp = this.frame_painter();
       if (fp && typeof fp.ConfigureUserClickHandler == 'function')
@@ -1673,9 +1669,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    *
    * @desc Function will be called every time when double click was called
    * As argument, tooltip object with selected bins will be provided
-   * If handler function returns true, default handling of dblclick (unzoom) will be disabled
-   */
-
+   * If handler function returns true, default handling of dblclick (unzoom) will be disabled */
    JSROOT.ObjectPainter.prototype.ConfigureUserDblclickHandler = function(handler) {
       let fp = this.frame_painter();
       if (fp && typeof fp.ConfigureUserDblclickHandler == 'function')
