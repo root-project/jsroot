@@ -2142,7 +2142,13 @@
 
       let prereq = "webwindow;";
       // FIXME: remove for JSROOT v7 once ROOT code is adjusted
-      if (arg && arg.prereq) prereq += arg.prereq.replace(/;v6;v7/g, ";gpad;v7gpad").replace(/2d;v7;/g, "v7gpad;").replace(/2d;v6;/g, "gpad;");
+      if (arg && arg.prereq)
+         if (arg.prereq == "openui5")
+            prereq += "painter;openui5"; // because of eve7 app, should be fixed there
+         else
+            prereq += arg.prereq.replace(/;v6;v7/g, ";gpad;v7gpad").replace(/2d;v7;/g, "v7gpad;").replace(/2d;v6;/g, "gpad;");
+
+      console.log('Loading', prereq)
 
       return JSROOT.require(prereq).then(() => {
          if (arg && arg.prereq_logdiv && document) {
