@@ -22,6 +22,7 @@
 12. Do not use classes - they are not performant enough compare to Object.prototype
 13. Improve TH2 col drawings for large number of bins - up to factor 5 faster
 14. Rename JSROOT scripts to follow common naming convention
+15. Support openui5 sap.ui.require loader if openui5 loaded before JSRootCore.js script
 
 
 ## Changes in 5.9.0
