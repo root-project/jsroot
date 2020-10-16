@@ -1402,11 +1402,8 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
       return false;
    }
 
-   /** \brief Creates configured JSROOT.MDIDisplay object
-   *
-   * @param callback - called when mdi object created
-   */
-
+   /** @summary Creates configured JSROOT.MDIDisplay object
+   * @param callback - called when mdi object created */
    HierarchyPainter.prototype.CreateDisplay = function(callback) {
 
       if ('disp' in this) {

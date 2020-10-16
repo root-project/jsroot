@@ -458,14 +458,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return true;
    }
 
-      /**
-    * @summary Parse string value as array.
-    *
+   /** @summary Parse string value as array.
     * @desc It could be just simple string:  "value" or
     * array with or without string quotes:  [element], ['elem1',elem2]
-    *
-    * @private
-    */
+    * @private */
    let ParseAsArray = val => {
 
       let res = [];
@@ -612,7 +608,17 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    JSROOT.hpainter = null; // global pointer
 
-   // HierarchyPainter
+   /**
+     * @summary Objects hierarchy painter
+     *
+     * @class
+     * @memberof JSROOT
+     * @extends JSROOT.BasePainter
+     * @param {string} name - painter name
+     * @param {string|object} frameid - place when painter drawn
+     * @param {string} backgr - background color
+     * @private
+     */
 
    function HierarchyPainter(name, frameid, backgr) {
       JSROOT.BasePainter.call(this);
@@ -631,6 +637,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    HierarchyPainter.prototype = Object.create(JSROOT.BasePainter.prototype);
 
+   /** @summary Cleanup hierarchy painter */
    HierarchyPainter.prototype.Cleanup = function() {
       // clear drawing and browser
       this.clear(true);
@@ -641,6 +648,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          JSROOT.hpainter = null;
    }
 
+   /** @summary Create file hierarchy */
    HierarchyPainter.prototype.FileHierarchy = function(file) {
       let painter = this;
 
@@ -712,9 +720,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Iterate over all items in hierarchy
     * @param {function} callback - function called for every item
     * @param {object} [top = null] - top item to start from
-    * @private
-    */
-
+    * @private */
    HierarchyPainter.prototype.ForEach = function(callback, top) {
 
       if (!top) top = this.h;
@@ -738,9 +744,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
     * @param {boolean} [arg.last_exists = false] -  when specified last parent element will be returned
     * @param {boolean} [arg.check_keys = false] - check TFile keys with cycle suffix
     * @param {object} [arg.top = null] - element to start search from
-    * @private
-    */
-
+    * @private */
    HierarchyPainter.prototype.Find = function(arg) {
 
       function find_in_hierarchy(top, fullname) {
@@ -904,9 +908,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       JSROOT.require('jq2d').then(() => this.RefreshHtml(callback));
    }
 
+   /** @summary Get object item with specified name
+     * @desc depending from provided option, same item can generate different object types */
    HierarchyPainter.prototype.get = function(arg, call_back, options) {
-      // get object item with specified name
-      // depending from provided option, same item can generate different object types
 
       if (arg===null) return JSROOT.CallBack(call_back, null, null);
 
@@ -1152,8 +1156,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return true;
    }
 
-   /** Argument is item name or array of string with items name
-     *only already drawn items will be update with same draw option */
+   /** @summary Update items
+     * @desc Argument is item name or array of string with items name
+     * only already drawn items will be update with same draw option */
    HierarchyPainter.prototype.updateItems = function(items) {
 
       if (!this.disp || !items) return;
@@ -1177,7 +1182,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
 
-   /** Method can be used to fetch new objects and update all existing drawings
+   /** @summary Update all elements
+     * @desc Method can be used to fetch new objects and update all existing drawings
      * if only_auto_items specified, only automatic items will be updated */
    HierarchyPainter.prototype.updateAll = function(only_auto_items /*, only_items*/) {
 
@@ -1223,6 +1229,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.displayAll(allitems, options);
    }
 
+   /** @summary Display all provided elements */
    HierarchyPainter.prototype.displayAll = function(items, options, call_back) {
 
       if (!items || (items.length == 0)) return JSROOT.CallBack(call_back);
@@ -1399,9 +1406,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       // dummy function, will be redefined when jquery part loaded
    }
 
+   /** @summary activate (select) specified item
+     * @param {boolean} [force] - if specified, all required sub-levels will be opened */
    HierarchyPainter.prototype.activate = function(items, force) {
-      // activate (select) specified item
-      // if force specified, all required sub-levels will be opened
 
       if (typeof items == 'string') items = [ items ];
 
@@ -1480,6 +1487,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       find_next();
    }
 
+   /** @summary expand specified item */
    HierarchyPainter.prototype.expand = function(itemname, call_back, d3cont, silent) {
       let hitem = this.Find(itemname);
 
@@ -1699,13 +1707,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
 
       return null;
-   }
-
-   JSROOT.MarkAsStreamerInfo = function(h,item,obj) {
-      // this function used on THttpServer to mark streamer infos list
-      // as fictional TStreamerInfoList class, which has special draw function
-      if (obj && (obj._typename=='TList'))
-         obj._typename = 'TStreamerInfoList';
    }
 
    HierarchyPainter.prototype.GetOnlineItemUrl = function(item) {
@@ -1930,7 +1931,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.RefreshHtml();
    }
 
-   /** Configures monitoring interval
+   /** @summary Configures monitoring interval
     * @param interval - repetition interval in ms
     * @param flag - initial monitoring state
     * @private */
@@ -1954,7 +1955,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this._runMonitoring();
    }
 
-   /** Runs monitoring event loop */
+   /** @summary Runs monitoring event loop
+     * @private */
    HierarchyPainter.prototype._runMonitoring = function(arg) {
       if ((arg == "cleanup") || !this.IsMonitoring()) {
          if (this._monitoring_handle) {
@@ -1984,17 +1986,17 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this._monitoring_handle = setTimeout(this._runMonitoring.bind(this,"frame"), this.MonitoringInterval());
    }
 
-   /** Returns configured monitoring interval in ms */
+   /** @summary Returns configured monitoring interval in ms */
    HierarchyPainter.prototype.MonitoringInterval = function() {
       return this._monitoring_interval || 3000;
    }
 
-   /** Enable/disable monitoring */
+   /** @summary Enable/disable monitoring */
    HierarchyPainter.prototype.EnableMonitoring = function(on) {
       this.SetMonitoring(undefined, on);
    }
 
-   /** Returns true when monitoring is enabled */
+   /** @summary Returns true when monitoring is enabled */
    HierarchyPainter.prototype.IsMonitoring = function() {
       return this._monitoring_on;
    }
@@ -2066,10 +2068,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          });
    }
 
-   /** \brief Creates configured JSROOT.MDIDisplay object
-    *
-    * @param callback - called when mdi object created
-    */
+   /** @summary Creates configured JSROOT.MDIDisplay object
+    * @param callback - called when mdi object created */
    HierarchyPainter.prototype.CreateDisplay = function(callback) {
 
       if ('disp' in this) {
@@ -2094,12 +2094,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       JSROOT.CallBack(callback, this.disp);
    }
 
-   /** \brief If possible, creates custom JSROOT.MDIDisplay for given item
-   *
+   /** @summary If possible, creates custom JSROOT.MDIDisplay for given item
    * @param itemname - name of item, for which drawing is created
    * @param custom_kind - display kind
-   * @param callback - callback function, called when mdi object created
-   */
+   * @param callback - callback function, called when mdi object created */
    HierarchyPainter.prototype.CreateCustomDisplay = function(itemname, custom_kind, callback) {
 
       if (this.disp_kind != "simple")
@@ -2385,6 +2383,18 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    // ======================================================================================
 
+   /** @summary tag item in hierarchy painter as streamer info
+     * @desc this function used on THttpServer to mark streamer infos list
+     * as fictional TStreamerInfoList class, which has special draw function
+     * @private */
+   JSROOT.MarkAsStreamerInfo = function(h,item,obj) {
+      if (obj && (obj._typename=='TList'))
+         obj._typename = 'TStreamerInfoList';
+   }
+
+   /** @summary Build gui without visisble hierarchy browser
+     * @desc avoid loading of jquery part
+     * @private */
    JSROOT.BuildNobrowserGUI = function() {
       let myDiv = d3.select('#simpleGUI'),
           online = false, drawing = false;
@@ -2439,6 +2449,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       });
    }
 
+   /** @summary Display streamer info
+     * @private */
    jsrp.drawStreamerInfo = function(divid, lst) {
       let painter = new JSROOT.HierarchyPainter('sinfo', divid, 'white');
 
@@ -2499,6 +2511,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    // ======================================================================================
 
+   /** @summary Display inspector
+     * @private */
    jsrp.drawInspector = function(divid, obj) {
 
       JSROOT.cleanup(divid);

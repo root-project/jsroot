@@ -724,7 +724,7 @@ JSROOT.define(['d3'], (d3) => {
    /** @summary Returns fill color without pattern url.
     *
     * @desc If empty, alternative color will be provided
-    * @param {string} [altern=undefined] - alternative color which returned when fill color not exists
+    * @param {string} [altern] - alternative color which returned when fill color not exists
     * @private */
    TAttFillHandler.prototype.fillcoloralt = function(altern) { return this.color && (this.color != "none") ? this.color : altern; }
 
@@ -966,6 +966,14 @@ JSROOT.define(['d3'], (d3) => {
 
    // ===========================================================================
 
+   /**
+    * @summary Helper class for font handling
+    *
+    * @class
+    * @memberof JSROOT
+    * @private
+    */
+
    function FontHandler(fontIndex, size) {
       this.name = "Arial";
       this.size = Math.round(size || 11);
@@ -991,7 +999,7 @@ JSROOT.define(['d3'], (d3) => {
       this.func = this.setFont.bind(this);
    }
 
-   /** Assigns font-related attributes */
+   /** @summary Assigns font-related attributes */
    FontHandler.prototype.setFont = function(selection, arg) {
       selection.attr("font-family", this.name);
       if (arg != 'without-size')
@@ -1003,7 +1011,7 @@ JSROOT.define(['d3'], (d3) => {
          selection.attr("font-style", this.style);
    }
 
-   /** Clears all font-related attributes */
+   /** @summary Clears all font-related attributes */
    FontHandler.prototype.clearFont = function(selection) {
       selection.attr("font-family", null)
                .attr("font-size", null)
@@ -1012,7 +1020,8 @@ JSROOT.define(['d3'], (d3) => {
                .attr("font-style", null);
    }
 
-   /** @returns approximate width of given label, required for reasonable scaling of text in node.js */
+   /** @summary required for reasonable scaling of text in node.js
+     * @returns approximate width of given label */
    FontHandler.prototype.approxTextWidth = function(label) { return label.length * this.size * this.aver_width; }
 
   // ===========================================================================
@@ -1031,6 +1040,7 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /** @summary Returns time format
+     * @param {TAxis} axis - TAxis object
      * @private */
    jsrp.getTimeFormat = function(axis) {
       let idF = axis.fTimeFormat.indexOf('%F');
@@ -1088,13 +1098,12 @@ JSROOT.define(['d3'], (d3) => {
       return offset;
    }
 
-   /** Function used to provide svg:path for the smoothed curves.
+   /** @summary Function used to provide svg:path for the smoothed curves.
     *
-    * reuse code from d3.js. Used in TH1, TF1 and TGraph painters
+    * @desc reuse code from d3.js. Used in TH1, TF1 and TGraph painters
     * kind should contain "bezier" or "line".
     * If first symbol "L", then it used to continue drawing
-    * @private
-    */
+    * @private */
    jsrp.BuildSvgPath = function(kind, bins, height, ndig) {
 
       let smooth = kind.indexOf("bezier") >= 0;
@@ -1280,7 +1289,6 @@ JSROOT.define(['d3'], (d3) => {
 
    /** @summary Function should be called by the painter when first drawing is completed
     * @private */
-
    BasePainter.prototype.DrawingReady = function(res_painter, res_value) {
       let res = (res_value === undefined) ? true : !!res_value;
       this._ready_called_ = res;
@@ -1300,12 +1308,10 @@ JSROOT.define(['d3'], (d3) => {
 
    /** @summary Function should be called when first drawing fails
     * @private */
-
    BasePainter.prototype.DrawingFail = function(res_painter) { return this.DrawingReady(res_painter, false); }
 
    /** @summary Call back will be called when painter ready with the drawing
-    * @private
-    */
+    * @private */
    BasePainter.prototype.WhenReady = function(resolveFunc, rejectFunc) {
       if (typeof resolveFunc !== 'function') return;
       if ('_ready_called_' in this)
@@ -1323,8 +1329,7 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /** @summary Create Promise object which will be completed when drawing is ready
-    * @private
-    */
+    * @private */
    BasePainter.prototype.Promise = function(is_ready) {
       if (is_ready)
          this.DrawingReady(this);
@@ -1338,8 +1343,7 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /** @summary Reset ready state - painter should again call DrawingReady to signal readyness
-   * @private
-   */
+   * @private */
    BasePainter.prototype.ResetReady = function() {
       delete this._ready_called_;
       delete this._ready_callbacks_;
@@ -1435,8 +1439,7 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /** @summary Returns layout kind
-    * @private
-    */
+    * @private */
    BasePainter.prototype.get_layout_kind = function() {
       let origin = this.select_main('origin'),
          layout = origin.empty() ? "" : origin.property('layout');
@@ -1445,8 +1448,7 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /** @summary Set layout kind
-    * @private
-    */
+    * @private */
    BasePainter.prototype.set_layout_kind = function(kind, main_selector) {
       // change layout settings
       let origin = this.select_main('origin');
@@ -1621,8 +1623,7 @@ JSROOT.define(['d3'], (d3) => {
     * @desc base painter does not creates canvas or frames
     * it registered in the first child element
     *
-    * @param {string|object} divid - element ID or DOM Element
-    */
+    * @param {string|object} divid - element ID or DOM Element */
    BasePainter.prototype.SetDivId = function(divid) {
       if (divid !== undefined) {
          this.divid = divid;
@@ -1635,8 +1636,7 @@ JSROOT.define(['d3'], (d3) => {
    /** @summary Set item name, associated with the painter
     *
     * @desc Used by {@link JSROOT.HiearchyPainter}
-    * @private
-    */
+    * @private */
    BasePainter.prototype.SetItemName = function(name, opt, hpainter) {
       if (typeof name === 'string') this._hitemname = name;
       else delete this._hitemname;
@@ -1699,8 +1699,7 @@ JSROOT.define(['d3'], (d3) => {
 
    /** @summary Generic method to cleanup painter.
     *
-    * @desc Remove object drawing and in case of main painter - also main HTML components
-    */
+    * @desc Remove object drawing and in case of main painter - also main HTML components */
    ObjectPainter.prototype.Cleanup = function() {
 
       this.RemoveDrawG();
@@ -1776,9 +1775,7 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /** @summary Checks if any draw options were changed
-    *
-    * @private
-    */
+    * @private */
    ObjectPainter.prototype.OptionesChanged = function() {
       if (!this.options) return false;
       if (!this.options_store) return true;
@@ -1790,8 +1787,7 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /** @summary Return actual draw options as string
-    * @private
-    */
+    * @private */
    ObjectPainter.prototype.OptionsAsString = function() {
       if (!this.options) return "";
 
@@ -1805,10 +1801,8 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /** @summary Generic method to update object content.
-    *
     * @desc Just copy all members from source object
-    * @param {object} obj - object with new data
-    */
+    * @param {object} obj - object with new data */
    ObjectPainter.prototype.UpdateObject = function(obj) {
       if (!this.MatchObjectType(obj)) return false;
       JSROOT.extend(this.GetObject(), obj);
@@ -1816,10 +1810,8 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /** @summary Returns string which either item or object name.
-    *
     * @desc Such string can be used as tooltip. If result string larger than 20 symbols, it will be cutted.
-    * @private
-    */
+    * @private */
    ObjectPainter.prototype.GetTipName = function(append) {
       let res = this.GetItemName(), obj = this.GetObject();
       if (!res) res = obj && obj.fName ? obj.fName : "";
@@ -1912,7 +1904,7 @@ JSROOT.define(['d3'], (d3) => {
 
    /** @summary Checks if draw elements were resized and drawing should be updated.
     *
-    * @desc Redirects to {@link TPadPainter.CheckCanvasResize}
+    * @desc Redirects to {@link JSROOT.TPadPainter.CheckCanvasResize}
     * @private */
    ObjectPainter.prototype.CheckResize = function(arg) {
       let p = this.canv_painter();
@@ -2043,8 +2035,7 @@ JSROOT.define(['d3'], (d3) => {
     *  @param {boolean} ndc - is value in NDC coordinates
     *  @param {boolean} noround - skip rounding
     *  @returns {number} value of requested coordiantes, rounded if kind.noround not specified
-    *  @private
-    */
+    *  @private */
    ObjectPainter.prototype.AxisToSvg = function(axis, value, ndc, noround) {
       let use_frame = this.draw_g && this.draw_g.property('in_frame'),
          main = use_frame ? this.frame_painter() : null;
@@ -2081,7 +2072,6 @@ JSROOT.define(['d3'], (d3) => {
    *  @returns {number} value of requested coordiantes
    *  @private
    */
-
    ObjectPainter.prototype.SvgToAxis = function(axis, coord, ndc) {
       let use_frame = this.draw_g && this.draw_g.property('in_frame'),
          main = use_frame ? this.frame_painter() : null;
@@ -2156,10 +2146,8 @@ JSROOT.define(['d3'], (d3) => {
    ObjectPainter.prototype.svg_frame = function(pad_name) { return this.svg_layer("primitives_layer", pad_name).select(".root_frame"); }
 
    /** @summary Returns pad width.
-    *
-    * @param {string} [pad_name = undefined] - optional pad name, otherwise where object painter is drawn
-    * @private
-    */
+    * @param {string} [pad_name] - optional pad name, otherwise where object painter is drawn
+    * @private  */
    ObjectPainter.prototype.pad_width = function(pad_name) {
       let res = this.svg_pad(pad_name);
       res = res.empty() ? 0 : res.property("draw_width");
@@ -2167,10 +2155,8 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /** @summary Returns pad height
-    *
-    * @param {string} [pad_name = undefined] - optional pad name, otherwise where object painter is drawn
-    * @private
-    */
+    * @param {string} [pad_name] - optional pad name, otherwise where object painter is drawn
+    * @private */
    ObjectPainter.prototype.pad_height = function(pad_name) {
       let res = this.svg_pad(pad_name);
       res = res.empty() ? 0 : res.property("draw_height");
@@ -2204,14 +2190,8 @@ JSROOT.define(['d3'], (d3) => {
    ObjectPainter.prototype.frame_height = function() { return this.frame_property("_frame_height"); }
 
    /** @summary Returns embed mode for 3D drawings (three.js) inside SVG.
-    *
-    *    0  -  no embedding, 3D drawing take full size of canvas
-    *    1  -  no embedding, canvas placed over svg with proper size (resize problem may appear)
-    *    2  -  embedding via ForeginObject, works only with Firefox
-    *    3  -  embedding as SVG element (image or svg)
-    *
-    *  @private
-    */
+    *  @desc see {@link JSROOT.constants.Embed3D} for supported values
+    *  @private */
    ObjectPainter.prototype.embed_3d = function(render3d) {
       render3d = jsrp.GetRender3DKind(render3d);
 
@@ -2229,10 +2209,9 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /** @summary Access current 3d mode
-    *
-    * @param {string} [new_value = undefined] - when specified, set new 3d mode
-    * @private
-    */
+    * @param {string} [new_value] - when specified, set new 3d mode
+    * @returns current value
+    * @private*/
    ObjectPainter.prototype.access_3d_kind = function(new_value) {
       let svg = this.svg_pad(this.this_pad_name);
       if (svg.empty()) return -1;
@@ -2244,10 +2223,8 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /** @summary Returns size which availble for 3D drawing.
-    *
     * @desc One uses frame sizes for the 3D drawing - like TH2/TH3 objects
-    * @private
-    */
+    * @private */
    ObjectPainter.prototype.size_for_3d = function(can3d, render3d) {
 
       if (can3d === undefined) can3d = this.embed_3d(render3d);
@@ -2577,7 +2554,7 @@ JSROOT.define(['d3'], (d3) => {
       return pos;
    }
 
-   /** @summary Creates marker attributes object.
+   /** @summary Creates marker attributes object
     *
     * @desc Can be used to produce markers in painter.
     * See {@link JSROOT.TAttMarkerHandler} for more info.
@@ -2736,7 +2713,6 @@ JSROOT.define(['d3'], (d3) => {
     * Execution string can look like "Print()".
     * Many methods call can be chained with "Print();;Update();;Clear()"
     * @private */
-
    ObjectPainter.prototype.WebCanvasExec = function(exec, snapid) {
       if (!exec || (typeof exec != 'string')) return;
 
@@ -2925,9 +2901,7 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /** @summary Finish text drawing
-    *
-    * @desc Should be called to complete all text drawing operations
-    */
+    * @desc Should be called to complete all text drawing operations */
    ObjectPainter.prototype.FinishTextDrawing = function(draw_g, call_ready, checking_mathjax) {
       if (!draw_g) draw_g = this.draw_g;
 
@@ -3045,7 +3019,7 @@ JSROOT.define(['d3'], (d3) => {
       return 0;
    }
 
-   /** @summary draw text
+   /** @summary Draw text
     *
     *  @param {object} arg - different text draw options
     *  @param {string} arg.text - text to draw
@@ -3053,13 +3027,13 @@ JSROOT.define(['d3'], (d3) => {
     *  @param {string} [arg.align = undefined] - end;bottom
     *  @param {number} [arg.x = 0] - x position
     *  @param {number} [arg.y = 0] - y position
-    *  @param {number} [arg.width = undefined] - when specified, adjust font size in the specified box
-    *  @param {number} [arg.height = undefined] - when specified, adjust font size in the specified box
+    *  @param {number} [arg.width] - when specified, adjust font size in the specified box
+    *  @param {number} [arg.height] - when specified, adjust font size in the specified box
     *  @param {number} arg.latex - 0 - plain text, 1 - normal TLatex, 2 - math
     *  @param {string} [arg.color=black] - text color
-    *  @param {number} [arg.rotate = undefined] - rotaion angle
-    *  @param {number} [arg.font_size = undefined] - fixed font size
-    *  @param {object} [arg.draw_g = this.draw_g] - element where to place text, if not specified central painter container is used
+    *  @param {number} [arg.rotate] - rotaion angle
+    *  @param {number} [arg.font_size] - fixed font size
+    *  @param {object} [arg.draw_g] - element where to place text, if not specified central draw_g container is used
     */
    ObjectPainter.prototype.DrawText = function(arg) {
 
@@ -3185,9 +3159,9 @@ JSROOT.define(['d3'], (d3) => {
    /** @summary Set active pad painter
     *
     * @desc Should be used to handle key press events, which are global in the web browser
-    *  @param {object} args - functions arguments
-    *  @param {object} args.pp - pad painter
-    *  @param {boolean} [args.active = false] - is pad activated or not
+    * @param {object} args - functions arguments
+    * @param {object} args.pp - pad painter
+    * @param {boolean} [args.active = false] - is pad activated or not
     * @private */
    jsrp.SelectActivePad = function(args) {
       if (args.active) {
@@ -3233,7 +3207,8 @@ JSROOT.define(['d3'], (d3) => {
 
    // ================= painter of raw text ========================================
 
-
+   /** @summary Generic text drawing
+    * @private */
    jsrp.drawRawText = function(divid, txt /*, opt*/) {
 
       let painter = new BasePainter();
@@ -3283,8 +3258,7 @@ JSROOT.define(['d3'], (d3) => {
     * resize will be handled with delay after last resize event
     * handle can be function or object with CheckResize function
     * one could specify delay after which resize event will be handled
-    * @private
-    */
+    * @private */
    JSROOT.RegisterForResize = function(handle, delay) {
 
       if (!handle) return;
@@ -3436,8 +3410,7 @@ JSROOT.define(['d3'], (d3) => {
     * @param {string} [args.opt] - list of supported draw options (separated with semicolon) like "col;scat;"
     * @param {string} [args.icon] - icon name shown for the class in hierarchy browser
     * @param {string} [args.draw_field] - draw only data member from object, like fHistogram
-    * @private
-    */
+    * @private */
    JSROOT.addDrawFunc = function(args) {
       drawFuncs.lst.push(args);
       return args;
@@ -3448,8 +3421,7 @@ JSROOT.define(['d3'], (d3) => {
      * kind string like "Command" or "Text"
      * selector can be used to search for draw handle with specified option (string)
      * or just sequence id
-     * @private
-     */
+     * @private */
    JSROOT.getDrawHandle = function(kind, selector) {
 
       if (typeof kind != 'string') return null;
@@ -3786,9 +3758,7 @@ JSROOT.define(['d3'], (d3) => {
     *
     * @desc Normally it is TCanvas object with list of primitives
     * @param {string|object} divid - id of top div element or directly DOMElement
-    * @returns {string} produced JSON string
-    */
-
+    * @returns {string} produced JSON string */
    JSROOT.drawingJSON = function(divid) {
       let p = new ObjectPainter;
       p.SetDivId(divid, -1);
@@ -3796,7 +3766,6 @@ JSROOT.define(['d3'], (d3) => {
       let canp = p.canv_painter();
       return canp ? canp.ProduceJSON() : "";
    }
-
 
    /** @summary Create SVG image for provided object.
     *
@@ -3808,8 +3777,7 @@ JSROOT.define(['d3'], (d3) => {
     * @param {string} [args.option] - draw options
     * @param {number} [args.width = 1200] - image width
     * @param {number} [args.height = 800] - image height
-    * @returns {Promise} with svg code
-    */
+    * @returns {Promise} with svg code */
    JSROOT.makeSVG = function(args) {
 
       if (!args) args = {};
@@ -3929,8 +3897,7 @@ JSROOT.define(['d3'], (d3) => {
     * if no argument specified, any shown messages will be removed
     * @param {string} msg - message to display
     * @param {number} tmout - optional timeout in milliseconds, after message will disappear
-    * @private
-    */
+    * @private */
    JSROOT.progress = function(msg, tmout) {
       if (JSROOT.BatchMode || (typeof document === 'undefined')) return;
       let id = "jsroot_progressbox",
@@ -4039,7 +4006,6 @@ JSROOT.define(['d3'], (d3) => {
      * @desc Many browsers do not allow simple window.close() call,
      * therefore try several workarounds
      * @private */
-
    JSROOT.CloseCurrentWindow = function() {
       if (!window) return;
       window.close();
@@ -4059,11 +4025,11 @@ JSROOT.define(['d3'], (d3) => {
    JSROOT.BasePainter = BasePainter;
    JSROOT.ObjectPainter = ObjectPainter;
 
-   /** Only for backward compatibility with v5, will be removed in later JSROOT versions
-     * @private */
+   // Only for backward compatibility with v5, will be removed in later JSROOT versions
    JSROOT.TBasePainter = BasePainter;
    JSROOT.TObjectPainter = ObjectPainter;
    JSROOT.StoreJSON = JSROOT.drawingJSON;
+   // end of compatibility mode
 
    JSROOT.Painter = jsrp;
    if (JSROOT.nodejs) module.exports = jsrp;
