@@ -448,7 +448,7 @@
 
       need = need.filter(elem => !!elem);
 
-      need.forEach((name,indx) => { if (name.indexOf("load:")==0) need[indx] = name.substr(5); });
+      need.forEach((name,indx) => { if ((name.indexOf("load:")==0) || (name.indexOf("user:")==0)) need[indx] = name.substr(5); });
 
       // loading with require.js
 
