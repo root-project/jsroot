@@ -1163,7 +1163,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.createv7AttLine("border_");
    }
 
-   /** Returns coordinates transformation func */
+   /** @summary Returns coordinates transformation func */
    RFramePainter.prototype.GetProjectionFunc = function() {
       switch (this.projection) {
          case 1: return ProjectAitoff2xy;
@@ -1636,6 +1636,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (JSROOT.BatchMode) return;
 
       JSROOT.require(['interactive']).then(inter => {
+         top_rect.attr("pointer-events", "visibleFill");  // let process mouse events inside frame
          inter.FrameInteractive.assign(this);
          this.BasicInteractive();
       });
