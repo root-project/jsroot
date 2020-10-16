@@ -104,7 +104,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return Math.round(norm*sizepx + px);
    }
 
-   /** Evaluate RColor using attribute storage and configured RStyle */
+   /** @summary Evaluate RColor using attribute storage and configured RStyle
+     * @private */
    JSROOT.ObjectPainter.prototype.v7EvalColor = function(name, dflt) {
       let rgb = this.v7EvalAttr(name + "_rgb", "");
 
@@ -114,7 +115,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return this.v7EvalAttr(name + "_name", "") || dflt;
    }
 
-   /** Create this.fillatt object based on v7 fill attributes */
+   /** @summary Create this.fillatt object based on v7 fill attributes
+     * @private */
    JSROOT.ObjectPainter.prototype.createv7AttFill = function(prefix) {
       if (!prefix || (typeof prefix != "string")) prefix = "fill_";
 
@@ -126,7 +128,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.fillatt.SetSolidColor(fill_color || "none");
    }
 
-   /** Create this.lineatt object based on v7 line attributes */
+   /** @summary Create this.lineatt object based on v7 line attributes
+     * @private */
    JSROOT.ObjectPainter.prototype.createv7AttLine = function(prefix) {
       if (!prefix || (typeof prefix != "string")) prefix = "line_";
 
@@ -147,7 +150,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.createAttMarker({ color: marker_color, size: marker_size, style: marker_style });
    }
 
-   /** Create RChangeAttr, which can be applied on the server side */
+   /** @summary Create RChangeAttr, which can be applied on the server side */
    JSROOT.ObjectPainter.prototype.v7AttrChange = function(req,name,value,kind) {
       if (!this.snapid)
          return false;
@@ -183,7 +186,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return true;
    }
 
-   /** Sends accumulated attribute changes to server */
+   /** @summary Sends accumulated attribute changes to server */
    JSROOT.ObjectPainter.prototype.v7SendAttrChanges = function(req, do_update) {
       let canp = this.canv_painter();
       if (canp && req && req._typename) {
@@ -659,8 +662,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    RAxisPainter.prototype.DrawAxis = function(vertical, layer, w, h, transform, reverse, second_shift, disable_axis_drawing, max_text_width) {
-      // function draws  TAxis or TGaxis object
-
       let axis = this.GetObject(), chOpt = "",
           is_gaxis = false,
           axis_g = layer, tickSize = 0.03,
@@ -4198,6 +4199,15 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    // =============================================================
 
+   /** @summary painter for RPalette
+    *
+    * @class
+    * @memberof JSROOT
+    * @extends JSROOT.ObjectPainter
+    * @param {object} palette - RPalette object
+    * @private
+    */
+
    function RPalettePainter(palette) {
       JSROOT.ObjectPainter.call(this, palette);
       this.csstype = "palette";
@@ -4331,11 +4341,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          let doing_zoom = false, sel1 = 0, sel2 = 0, zoom_rect = null;
 
-         function moveRectSel(evnt) {
+         let moveRectSel = evnt => {
 
             if (!doing_zoom) return;
 
-            evnt.preventDefault();
             let m = d3.pointer(evnt);
 
             if (m[1] < sel1) sel1 = m[1]; else sel2 = m[1];
@@ -4344,12 +4353,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                     .attr("height", Math.abs(sel2-sel1));
          }
 
-         function endRectSel(evnt) {
+         let endRectSel = evnt => {
             if (!doing_zoom) return;
 
             evnt.preventDefault();
-            d3.select(window).on("mousemove.colzoomRect", null)
-                             .on("mouseup.colzoomRect", null);
+            this.draw_g.on("mousemove.colzoomRect", null)
+                       .on("mouseup.colzoomRect", null);
             zoom_rect.remove();
             zoom_rect = null;
             doing_zoom = false;
@@ -4357,10 +4366,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             let zmin = Math.min(z.invert(sel1), z.invert(sel2)),
                 zmax = Math.max(z.invert(sel1), z.invert(sel2));
 
-            framep.Zoom("z", zmin, zmax);
+            this.frame_painter().Zoom("z", zmin, zmax);
          }
 
-         function startRectSel(evnt) {
+         let startRectSel = evnt => {
             // ignore when touch selection is activated
             if (doing_zoom) return;
             doing_zoom = true;
@@ -4380,8 +4389,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                  .attr("y", sel1)
                  .attr("height", 5);
 
-            d3.select(window).on("mousemove.colzoomRect", moveRectSel)
-                             .on("mouseup.colzoomRect", endRectSel, true);
+            this.draw_g.on("mousemove.colzoomRect", moveRectSel)
+                       .on("mouseup.colzoomRect", endRectSel, true);
 
             evnt.stopPropagation();
          }

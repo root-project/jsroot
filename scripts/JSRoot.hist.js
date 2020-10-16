@@ -207,7 +207,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    // ============================================================
 
    /**
-    * @summary painter class for objects, derived from TPave
+    * @summary painter for TPave-derived classes
     *
     * @class
     * @memberof JSROOT
