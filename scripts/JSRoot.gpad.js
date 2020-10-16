@@ -892,7 +892,15 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
 
-   /** @summary Painter for TFrame object. */
+   /**
+    * @summary Painter class for TFrame, main handler for interactivity
+    *
+    * @class
+    * @memberof JSROOT
+    * @extends ObjectPainter
+    * @param {object} tframe - TFrame object
+    * @private
+    */
 
    function TFramePainter(tframe) {
       JSROOT.ObjectPainter.call(this, (tframe && tframe.$dummy) ? null : tframe);
@@ -931,15 +939,15 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.fX2NDC -= shrink_right;
    }
 
-   /** Set position of last context menu event */
+   /** @summary Set position of last context menu event */
    TFramePainter.prototype.SetLastEventPos = function(pnt) {
       this.fLastEventPnt = pnt;
    }
 
-   /** return position of last event */
+   /** @summary Return position of last event */
    TFramePainter.prototype.GetLastEventPos = function() { return this.fLastEventPnt; }
 
-   /** Returns coordinates transformation func */
+   /** @summary  Returns coordinates transformation func */
    TFramePainter.prototype.GetProjectionFunc = function() {
       switch (this.projection) {
          case 1: return ProjectAitoff2xy;
@@ -1069,6 +1077,15 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
    }
 
+   /** @summary Create x,y objects which maps user coordinates into pixels
+     * @desc While only first painter really need such object, all others just reuse it
+     * following functions are introduced
+     *     this.GetBin[X/Y]  return bin coordinate
+     *     this.Convert[X/Y]  converts root value in JS date when date scale is used
+     *     this.[x,y]  these are d3.scale objects
+     *    this.gr[x,y]  converts root scale into graphical value
+     *    this.Revert[X/Y]  converts graphical coordinates to user coordinates
+     * @private */
    TFramePainter.prototype.CreateXY = function(opts) {
 
       this.CleanXY(); // remove all previous configurations
@@ -1238,7 +1255,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.SetRootPadRange(pad);
    }
 
-   /** Set selected range back to TPad object */
+   /** @summary Set selected range back to TPad object */
    TFramePainter.prototype.SetRootPadRange = function(pad, is3d) {
       if (!pad || !this.ranges_set) return;
 
@@ -1271,7 +1288,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
 
-   /** grid can only be drawn by first painter */
+   /** @summary grid can only be drawn by first painter */
    TFramePainter.prototype.DrawGrids = function() {
 
       let layer = this.svg_frame().select(".grid_layer");
@@ -1348,11 +1365,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return value.toPrecision(4);
    }
 
-   /** draw axes, return Promise which ready when drawing is completed */
+   /** @summary draw axes, return Promise which ready when drawing is completed  */
    TFramePainter.prototype.DrawAxes = function(shrink_forbidden, disable_axis_draw, AxisPos, has_x_obstacle) {
-      // axes can be drawn only for main histogram
-
-      // if (this.axes_drawn) return true;
 
       this.CleanupAxes();
 

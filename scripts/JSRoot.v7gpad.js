@@ -1089,6 +1089,15 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       };
    }
 
+   /**
+    * @summary Painter class for RFrame, main handler for interactivity
+    *
+    * @class
+    * @memberof JSROOT
+    * @extends ObjectPainter
+    * @param {object} tframe - RFrame object
+    * @private
+    */
 
    function RFramePainter(tframe) {
       JSROOT.ObjectPainter.call(this, tframe);
@@ -1276,7 +1285,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
 
-   /* Set axes ranges for drawing, check configured attributes if range already specified */
+   /** @summary Set axes ranges for drawing, check configured attributes if range already specified */
    RFramePainter.prototype.SetAxesRanges = function(xmin, xmax, ymin, ymax, zmin, zmax) {
       if (this.axes_drawn) return;
 
@@ -1356,9 +1365,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    RFramePainter.prototype.DrawAxes = function() {
       // axes can be drawn only for main histogram
 
-      if (this.axes_drawn) return true;
+      if (this.axes_drawn) return Promise.resolve(true);
 
-      if ((this.xmin==this.xmax) || (this.ymin==this.ymax)) return false;
+      if ((this.xmin==this.xmax) || (this.ymin==this.ymax)) return Promise.resolve(false);
 
       this.CleanupAxes();
       this.CleanXY();
@@ -1479,7 +1488,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.axes_drawn = false;
    }
 
-   /** Removes all drawn elements of the frame
+   /** @summary Removes all drawn elements of the frame
      * @private */
    RFramePainter.prototype.CleanFrameDrawings = function() {
       // cleanup all 3D drawings if any
@@ -1632,7 +1641,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       });
    }
 
-   /** Returns frame rectangle plus extra info for hint display */
+   /** @summary Returns frame rectangle plus extra info for hint display */
    RFramePainter.prototype.GetFrameRect = function() {
       return {
          x: this.frame_x(),
@@ -1645,7 +1654,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
    }
 
-   /** Returns palette associated with frame. Either from existing palette painter or just default palette */
+   /** @summary Returns palette associated with frame. Either from existing palette painter or just default palette */
    RFramePainter.prototype.GetPalette = function() {
       let pp = this.FindPainterFor(undefined, undefined, "ROOT::Experimental::RPaletteDrawable");
 
@@ -1824,7 +1833,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return changed;
    }
 
-   /** Fill menu for frame when server is not there */
+   /** @summary Fill menu for frame when server is not there */
    RFramePainter.prototype.FillObjectOfflineMenu = function(menu, kind) {
       if ((kind!="x") && (kind!="y")) return;
 
@@ -1879,10 +1888,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Show axis status message
-   *
-   * @desc method called normally when mouse enter main object element
-   * @private
-   */
+   * @desc method called normally when mouse enter main object element */
    RFramePainter.prototype.ShowAxisStatus = function(axis_name, evnt) {
       // method called normally when mouse enter main object element
 
@@ -1925,15 +1931,16 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       });
    }
 
+   /** @summary Create x,y objects which maps user coordinates into pixels
+     * @desc While only first painter really need such object, all others just reuse it
+     * following functions are introduced
+     *     this.GetBin[X/Y]  return bin coordinate
+     *     this.Convert[X/Y]  converts root value in JS date when date scale is used
+     *     this.[x,y]  these are d3.scale objects
+     *    this.gr[x,y]  converts root scale into graphical value
+     *    this.Revert[X/Y]  converts graphical coordinates to user coordinates
+     * @private */
    RFramePainter.prototype.CreateXY = function() {
-      // here we create x,y objects which maps our physical coordinates into pixels
-      // while only first painter really need such object, all others just reuse it
-      // following functions are introduced
-      //    this.GetBin[X/Y]  return bin coordinate
-      //    this.Convert[X/Y]  converts root value in JS date when date scale is used
-      //    this.[x,y]  these are d3.scale objects
-      //    this.gr[x,y]  converts root scale into graphical value
-      //    this.Revert[X/Y]  converts graphical coordinates to root scale value
 
       this.swap_xy = false;
       this.reverse_x = false;
