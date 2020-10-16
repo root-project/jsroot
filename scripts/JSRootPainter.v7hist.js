@@ -279,8 +279,7 @@
             // make it easy - copy statistics without axes
             horigin.fStatistics = hobj.fStatistics;
 
-
-            histo.fTitle = obj.fTitle;
+            origin.fTitle = obj.fTitle;
          }
       }
 
