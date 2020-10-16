@@ -1,5 +1,5 @@
 /// @file JSRoot.hist3d.js
-/// histogram 3D graphics
+/// histograms 3D graphics
 
 JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
@@ -214,13 +214,12 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
    }
 
    /** @summary call 3D rendering of the histogram drawing
-     * @desc tmout specified delay, after which actual rendering will be invoked
-     * Timeout used to avoid multiple rendering of the picture when several 3D drawings
-     * superimposed with each other.
-     * If tmeout<=0, rendering performed immediately
+     * @desc Timeout used to avoid multiple rendering of the picture when several 3D drawings
+     * superimposed with each other. If tmeout<=0, rendering performed immediately
      * Several special values are used:
-     *  -1111 - immediate rendering with SVG renderer
-     *  -2222 - rendering performed only if there were previous calls, which causes timeout activation
+     *   - -1111 immediate rendering with SVG renderer
+     *   - -2222 rendering performed only if there were previous calls, which causes timeout activation
+     * @param {number} tmout - specifies delay, after which actual rendering will be invoked
      * @private */
 
    JSROOT.TFramePainter.prototype.Render3D = function(tmout) {
@@ -286,6 +285,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       this.render_tmout = setTimeout(this.Render3D.bind(this,0), tmout);
    }
 
+   /** @summary Check is 3D drawing need to be resized */
    JSROOT.TFramePainter.prototype.Resize3D = function() {
 
       let sz = this.size_for_3d(this.access_3d_kind());
@@ -312,6 +312,8 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       return true;
    }
 
+   /** @summary Hilight bin in 3D drawing
+     * @private */
    JSROOT.TFramePainter.prototype.BinHighlight3D = function(tip, selfmesh) {
 
       let changed = false, tooltip_mesh = null, changed_self = true,
@@ -1061,7 +1063,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       }
    }
 
-   /** Draw histograms in 3D mode
+   /** @summary Draw histograms in 3D mode
      * @private */
    JSROOT.THistPainter.prototype.Draw3DBins = function() {
 
@@ -2508,9 +2510,9 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       return lines;
    }
 
+   /** @summary try to draw 3D histogram as scatter plot
+     * @desc if too many points, box will be displayed */
    TH3Painter.prototype.Draw3DScatter = function() {
-      // try to draw 3D histogram as scatter plot
-      // if too many points, box will be displayed
 
       let histo = this.GetObject(),
           main = this.frame_painter(),
@@ -3061,7 +3063,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
    // ===========================================================================================
 
-/**
+   /**
     * @summary Painter for TGraph2D classes
     *
     * @class
@@ -3561,4 +3563,4 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
    JSROOT.TGraph2DPainter = TGraph2DPainter;
 
    return JSROOT;
-});
+})

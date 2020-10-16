@@ -957,6 +957,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
    }
 
+   /** @summary Rcalculate frame ranges using specified projection */
    TFramePainter.prototype.RecalculateRange = function(Proj) {
       this.projection = Proj || 0;
 
@@ -997,6 +998,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
    }
 
+   /** @summary Configure axes ranges */
    TFramePainter.prototype.SetAxesRanges = function(xaxis, xmin, xmax, yaxis, ymin, ymax, zaxis, zmin, zmax) {
       this.ranges_set = true;
 
@@ -1013,6 +1015,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.zmax = zmax;
    }
 
+   /** @summary Retuns axis object */
    TFramePainter.prototype.GetAxis = function(name) {
       switch(name) {
          case "x": return this.xaxis;
@@ -1483,7 +1486,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.createAttLine({ attr: tframe, color: 'black' });
    }
 
-   /** Function called at the end of resize of frame
+   /** @summary Function called at the end of resize of frame
      * One should apply changes to the pad
      * @private */
    TFramePainter.prototype.SizeChanged = function() {
@@ -1501,7 +1504,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.InteractiveRedraw("pad", "frame");
    }
 
-    /** remove all kinds of X/Y function for axes transformation */
+    /** @summary Remove all kinds of X/Y function for axes transformation */
    TFramePainter.prototype.CleanXY = function() {
       delete this.x; delete this.grx;
       delete this.ConvertX; delete this.RevertX;
@@ -1533,7 +1536,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.axes_drawn = false;
    }
 
-   /** Returns frame rectangle plus extra info for hint display */
+   /** @summary Returns frame rectangle plus extra info for hint display */
    TFramePainter.prototype.CleanFrameDrawings = function() {
 
       // cleanup all 3D drawings if any
@@ -1584,6 +1587,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
    }
 
+   /** @summary Cleanup frame */
    TFramePainter.prototype.Cleanup = function() {
       this.CleanFrameDrawings();
       delete this._click_handler;
@@ -1699,8 +1703,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.InteractiveRedraw("pad", "log"+axis);
    }
 
-   /** fill context menu for the frame
-     * it could be appended to the histogram menus */
+   /** @summary Fill context menu for the frame
+     * @desc It could be appended to the histogram menus */
    TFramePainter.prototype.FillContextMenu = function(menu, kind, obj) {
 
       let main = this.main_painter(), pad = this.root_pad();
@@ -1786,8 +1790,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this._dblclick_handler = handler && (typeof handler == 'function') ? handler : null;
    }
 
-    /** Function can be used for zooming into specified range
-      * if both limits for each axis 0 (like xmin==xmax==0), axis will be unzoomed */
+    /** @summary Function can be used for zooming into specified range
+      * @desc if both limits for each axis 0 (like xmin==xmax==0), axis will be unzoomed */
    TFramePainter.prototype.Zoom = function(xmin, xmax, ymin, ymax, zmin, zmax) {
 
       // disable zooming when axis conversion is enabled
@@ -1884,6 +1888,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return changed;
    }
 
+   /** @summary Checks if specified axes zoom */
    TFramePainter.prototype.IsAxisZoomed = function(axis) { return this['zoom_'+axis+'min'] !== this['zoom_'+axis+'max']; }
 
    TFramePainter.prototype.Unzoom = function(dox, doy, doz) {
@@ -1908,8 +1913,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Show axis status message
    *
    * @desc method called normally when mouse enter main object element
-   * @private
-   */
+   * @private */
    TFramePainter.prototype.ShowAxisStatus = function(axis_name, evnt) {
 
       let status_func = this.GetShowStatusFunc();
