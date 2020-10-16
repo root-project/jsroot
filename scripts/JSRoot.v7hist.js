@@ -261,8 +261,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
             // make it easy - copy statistics without axes
             horigin.fStatistics = hobj.fStatistics;
 
-
-            histo.fTitle = obj.fTitle;
+            origin.fTitle = obj.fTitle;
          }
       }
 
