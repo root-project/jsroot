@@ -1096,6 +1096,11 @@ JSROOT.define(['d3'], (d3) => {
               });
    }
 
+   ltx.typesetMathjax = function(node) {
+      return ltx.LoadMathjax()
+                .then(() => MathJax.typesetPromise(node ? [node] : undefined));
+   }
+
    if (JSROOT.nodejs) module.exports = ltx;
    return ltx;
 

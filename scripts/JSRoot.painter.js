@@ -3268,11 +3268,12 @@ JSROOT.define(['d3'], (d3) => {
          this.SetDivId(this.divid);
 
          if (mathjax)
-            JSROOT.require('mathjax').then(() => MathJax.Hub.Typeset(frame.node()));
+            return JSROOT.require('latex').then(ltx => ltx.typesetMathjax(frame.node()));
       }
 
-      painter.Draw();
-      return painter.Promise(true);
+      let promise = painter.Draw();
+
+      return promise ? promise.then(() => painter) : painter.Promise(true);
    }
 
    /** @summary Register handle to react on window resize
