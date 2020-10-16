@@ -381,10 +381,9 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
          req.resolveFunc(true);
       }
-
    }
 
-   /** Special method to request bins from server if existing data insufficient
+   /** @summary Special method to request bins from server if existing data insufficient
      * @private */
    RHistPainter.prototype.DrawingBins = function(reason) {
 

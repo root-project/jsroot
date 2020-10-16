@@ -2945,12 +2945,10 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       main.Set3DOptions(this.options);
       main.DrawXYZ(main.toplevel, { zoom: JSROOT.settings.Zooming, ndim: 3 });
 
-      this.DrawingBins(null, reason, function() {
+      this.DrawingBins(reason).then(() => {
          // called when bins received from server, must be reentrant
 
          let main = this.frame_painter();
-
-         console.log("drawing bins", this.options.Color, this.draw_content);
 
          this.Draw3DBins();
          main.Render3D();
