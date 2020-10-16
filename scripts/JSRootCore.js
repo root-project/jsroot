@@ -2106,7 +2106,8 @@
    /** @summary Returns true if object represents basic ROOT collections
      * @desc Checks if type is TList or TObjArray or TClonesArray or TMap or THashList
      * @param {object} lst - object to check
-     * @param {string} [typename] - or just typename to check */
+     * @param {string} [typename] - or just typename to check
+     * @private */
    JSROOT.isRootCollection = function(lst, typename) {
       if (lst && (typeof lst === 'object')) {
          if ((lst.$kind === "TList") || (lst.$kind === "TObjArray")) return true;
@@ -2118,12 +2119,10 @@
    }
 
    /** @summary Adds specific methods to the object.
-    *
-    * JSROOT implements some basic methods for different ROOT classes.
+    * @desc JSROOT implements some basic methods for different ROOT classes.
     * @param {object} obj - object where methods are assigned
     * @param {string} [typename] - optional typename, if not specified, obj._typename will be used
-    * @private
-    */
+    * @private */
    JSROOT.addMethods = function(obj, typename) {
       this.extend(obj, this.getMethods(typename || obj._typename, obj));
    }

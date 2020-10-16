@@ -3575,13 +3575,19 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
    /** @summary Build three.js model for given geometry object
     * @param {Object} obj - TGeo-related object
     * @param {Object} [opt] - options
-    * @param {Number} [opt.vislevel=undefined] - visibility level like TGeoManager, when not specified - show all
+    * @param {Number} [opt.vislevel] - visibility level like TGeoManager, when not specified - show all
     * @param {Number} [opt.numnodes=1000] - maximal number of visible nodes
     * @param {Number} [opt.numfaces=100000] - approx maximal number of created triangles
     * @param {boolean} [opt.doubleside=false] - use double-side material
     * @param {boolean} [opt.wireframe=false] - show wireframe for created shapes
     * @param {boolean} [opt.dflt_colors=false] - use default ROOT colors
     * @returns {object} THREE.Object3D with created model
+    * @example
+    * JSROOT.require('geom')
+    *       .then(geo => {
+    *           let obj3d = geo.build(obj);
+    *           // this is three.js object and can be now inserted in the scene
+    *        });
     */
    geo.build = function(obj, opt) {
 

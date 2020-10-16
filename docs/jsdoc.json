@@ -20,7 +20,11 @@
                      "scripts/JSRoot.geobase.js",
                      "scripts/JSRoot.geom.js",
                      "scripts/JSRoot.hierarchy.js",
-                     "scripts/JSRoot.jq2d.js" ],
+                     "scripts/JSRoot.jq2d.js",
+                     "scripts/JSRoot.v7gpad.js",
+                     "scripts/JSRoot.v7hist.js",
+                     "scripts/JSRoot.v7hist3d.js",
+                     "scripts/JSRoot.v7more.js" ],
         "includePattern": ".+\\.js(doc|x)?$",
         "excludePattern": "(^|\\/|\\\\)_"
     },

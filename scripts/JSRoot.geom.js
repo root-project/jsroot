@@ -4570,6 +4570,6 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
    jsrp.GeoDrawingControl = GeoDrawingControl;
    jsrp.drawGeoObject = drawGeoObject;
 
-   return JSROOT;
+   return geo;
 
 });
