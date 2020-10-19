@@ -3572,26 +3572,9 @@ JSROOT.define(['d3'], (d3) => {
       return JSROOT.getDrawSettings("ROOT." + classname).opts !== null;
    }
 
-   /**
-    * @summary Draw object in specified HTML element with given draw options.
-    *
-    * @param {string|object} divid - id of div element to draw or directly DOMElement
-    * @param {object} obj - object to draw, object type should be registered before in JSROOT
-    * @param {string} opt - draw options separated by space, comma or semicolon
-    * @param {function} drawcallback - function called when drawing is completed, first argument is object painter instance
-    *
-    * @desc
-    * An extensive list of support draw options can be found on [JSROOT examples page]{@link https://root.cern/js/latest/examples.htm}
-    *
-    * @example
-    * JSROOT.openFile("https://root.cern/js/files/hsimple.root")
-    *       .then(file => file.ReadObject("hpxpy;1"))
-    *       .then(obj => JSROOT.draw("drawing", obj, "colz;logx;gridx;gridy"));
-    *
-    */
-
-   JSROOT.draw = function(divid, obj, opt) {
-
+   /** @summary Implementation of JSROOT.draw
+     * @private */
+   function jsroot_draw(divid, obj, opt) {
       if (!obj || (typeof obj !== 'object'))
          return Promise.reject(Error('not an object in JSROOT.draw'));
 
@@ -3707,6 +3690,32 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /**
+    * @summary Draw object in specified HTML element with given draw options.
+    *
+    * @param {string|object} divid - id of div element to draw or directly DOMElement
+    * @param {object} obj - object to draw, object type should be registered before in JSROOT
+    * @param {string} opt - draw options separated by space, comma or semicolon
+    * @param {function} [callback] - function called when drawing is completed, first argument is object painter instance
+    * @returns {Promise} with painter object only if callback parameter is not specified
+    *
+    * @desc
+    * An extensive list of support draw options can be found on [JSROOT examples page]{@link https://root.cern/js/latest/examples.htm}
+    * Parameter ```callback``` kept only for backward compatibility and will be removed in JSROOT v6.2
+    *
+    * @example
+    * JSROOT.openFile("https://root.cern/js/files/hsimple.root")
+    *       .then(file => file.ReadObject("hpxpy;1"))
+    *       .then(obj => JSROOT.draw("drawing", obj, "colz;logx;gridx;gridy"));
+    *
+    */
+
+   JSROOT.draw = function(divid, obj, opt, callback) {
+      let res = jsroot_draw(divid, obj, opt);
+      if (!callback || (typeof callback != 'function')) return res;
+      res.then(callback).catch(() => callback(null));
+   }
+
+   /**
     * @summary Redraw object in specified HTML element with given draw options.
     *
     * @desc If drawing was not drawn before, it will be performed with {@link JSROOT.draw}.
@@ -3714,44 +3723,48 @@ JSROOT.define(['d3'], (d3) => {
     * @param {string|object} divid - id of div element to draw or directly DOMElement
     * @param {object} obj - object to draw, object type should be registered before in JSROOT
     * @param {string} opt - draw options
-    * @param {function} callback - function called when drawing is completed, first argument will be object painter instance
+    * @param {function} [callback] - function called when drawing is completed, first argument will be object painter instance
+    * @returns {Promise} with painter used only when callback parameter is not specified
     */
-   JSROOT.redraw = function(divid, obj, opt) {
+   JSROOT.redraw = function(divid, obj, opt, callback) {
 
       if (!obj || (typeof obj !== 'object'))
-         return Promise.reject(new Error('not an object in JSROOT.draw'));
+         return callback ? callback(null) : Promise.reject(Error('not an object in JSROOT.redraw'));
 
       let dummy = new ObjectPainter();
       dummy.SetDivId(divid, -1);
-      let can_painter = dummy.canv_painter();
-
-      let handle = null;
-      if (obj._typename) handle = JSROOT.getDrawHandle("ROOT." + obj._typename);
+      let can_painter = dummy.canv_painter(), handle;
+      if (obj._typename)
+         handle = JSROOT.getDrawHandle("ROOT." + obj._typename);
       if (handle && handle.draw_field && obj[handle.draw_field])
          obj = obj[handle.draw_field];
 
       if (can_painter) {
+         let res_painter = null;
          if (obj._typename === "TCanvas") {
             can_painter.RedrawObject(obj);
-            return Promise.resolve(can_painter);
+            res_painter = can_painter;
+         } else {
+            for (let i = 0; i < can_painter.painters.length; ++i) {
+               let painter = can_painter.painters[i];
+               if (painter.MatchObjectType(obj._typename))
+                  if (painter.UpdateObject(obj, opt)) {
+                     can_painter.RedrawPad();
+                     res_painter = painter;
+                     break;
+                  }
+            }
          }
 
-         for (let i = 0; i < can_painter.painters.length; ++i) {
-            let painter = can_painter.painters[i];
-            if (painter.MatchObjectType(obj._typename))
-               if (painter.UpdateObject(obj, opt)) {
-                  can_painter.RedrawPad();
-                  return Promise.resolve(painter);
-               }
-         }
-      }
+         if (res_painter)
+            return callback ? callback(res_painter) : Promise.resolve(res_painter);
 
-      if (can_painter)
          console.warn(`Cannot find painter to update object of type ${obj._typename}`);
+      }
 
       JSROOT.cleanup(divid);
 
-      return JSROOT.draw(divid, obj, opt);
+      return JSROOT.draw(divid, obj, opt, callback);
    }
 
    /** @summary Save object, drawn in specified element, as JSON.
