@@ -105,7 +105,7 @@
 
    /** @summary JSROOT version date
      * @desc Release date in format day/month/year */
-   JSROOT.version_date = "16/10/2020";
+   JSROOT.version_date = "19/10/2020";
 
    /** @summary JSROOT version id and date
      * @desc Produced by concatenation of {@link JSROOT.version_id} and {@link JSROOT.version_date} */
@@ -448,7 +448,18 @@
 
       need = need.filter(elem => !!elem);
 
-      need.forEach((name,indx) => { if ((name.indexOf("load:")==0) || (name.indexOf("user:")==0)) need[indx] = name.substr(5); });
+      need.forEach((name,indx) => {
+         if ((name.indexOf("load:")==0) || (name.indexOf("user:")==0))
+            need[indx] = name.substr(5);
+         else if (name == "jq")
+            need[indx] = "jq2d";
+         else if (name == "2d")
+            need[indx] = "painter";
+         else if (name == "v6")
+            need[indx] = "gpad";
+         else if (name == "v7")
+            need[indx] = "v7gpad";
+      });
 
       // loading with require.js
 
@@ -2221,6 +2232,7 @@
    }
 
    JSROOT.AssertPrerequisites = function(req, callback) {
+      console.log('JSROOT.AssertPrerequisites', req);
       req = req.replace(/2d;v7;/g, "v7gpad;").replace(/2d;v6;/g, "gpad;").replace(/more2d;/g, 'more;').replace(/2d;/g, 'gpad;').replace(/;v6;v7/g, ";gpad;v7gpad");
       JSROOT.require(req).then(callback);
    }

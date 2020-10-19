@@ -1824,7 +1824,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          this.h._expand = jsrp.OnlineHierarchy;
 
-         let scripts = "", modules = "";
+         let scripts = [], modules = [];
          this.ForEach(function(item) {
             if ('_childs' in item) item._expand = jsrp.OnlineHierarchy;
 
@@ -1834,28 +1834,29 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                   if ((arr[n].length>3) &&
                       ((arr[n].lastIndexOf(".js")==arr[n].length-3) ||
                       (arr[n].lastIndexOf(".css")==arr[n].length-4))) {
-                     if (scripts.indexOf(arr[n])<0) scripts+=arr[n]+";";
+                     if (!scripts.find(elem => elem == arr[n])) scripts.push(arr[n]);
                   } else {
-                     if (modules.indexOf(arr[n])<0) modules+=arr[n]+";";
+                     if (arr[n] && !modules.find(elem => elem ==arr[n])) modules.push(arr[n]);
                   }
             }
          });
 
-         if (scripts.length > 0) scripts = "user:" + scripts;
+         JSROOT.require(modules).then(() => {
+            // load scripts after modules are loaded
+            let loading = [];
+            scripts.forEach(src => loading.push(JSROOT.loadScript(src)));
+            Promise.all(loading).then(() => {
+               this.ForEach(item => {
+                  if (!('_drawfunc' in item) || !('_kind' in item)) return;
+                  let typename = "kind:" + item._kind;
+                  if (item._kind.indexOf('ROOT.')==0) typename = item._kind.slice(5);
+                  let drawopt = item._drawopt;
+                  if (!JSROOT.canDraw(typename) || (drawopt!=null))
+                     JSROOT.addDrawFunc({ name: typename, func: item._drawfunc, script: item._drawscript, opt: drawopt });
+               });
 
-         // use load, while it protect us from race conditions
-         JSROOT.require(modules + scripts).then(() => {
-
-            this.ForEach(item => {
-               if (!('_drawfunc' in item) || !('_kind' in item)) return;
-               let typename = "kind:" + item._kind;
-               if (item._kind.indexOf('ROOT.')==0) typename = item._kind.slice(5);
-               let drawopt = item._drawopt;
-               if (!JSROOT.canDraw(typename) || (drawopt!=null))
-                  JSROOT.addDrawFunc({ name: typename, func: item._drawfunc, script: item._drawscript, opt: drawopt });
+               JSROOT.CallBack(user_callback, this);
             });
-
-            JSROOT.CallBack(user_callback, this);
          });
       }
 
