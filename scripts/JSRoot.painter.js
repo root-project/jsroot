@@ -3653,17 +3653,9 @@ JSROOT.define(['d3'], (d3) => {
          if (typeof handle.func == 'function')
             return performDraw();
 
-         let funcname = "", prereq = "";
-         if (typeof handle.func == 'object') {
-            if ('func' in handle.func) funcname = handle.func.func;
-            if ('script' in handle.func) prereq = "user:" + handle.func.script;
-         } else if (typeof handle.func == 'string') {
-            funcname = handle.func;
-            if (('prereq' in handle) && (typeof handle.prereq == 'string')) prereq = handle.prereq;
-            if (('script' in handle) && (typeof handle.script == 'string')) prereq += ";user:" + handle.script;
-         }
-
-         if (!funcname.length) return completeDraw(null);
+         let funcname = handle.func;
+         if (!funcname || (typeof funcname != "string"))
+            return completeDraw(null);
 
          // try to find function without prerequisites
          let func = JSROOT.findFunction(funcname);
@@ -3672,7 +3664,11 @@ JSROOT.define(['d3'], (d3) => {
             return performDraw();
          }
 
-         if (!prereq.length)
+        let prereq = handle.prereq || "";
+        if (handle.script && (typeof handle.script == 'string'))
+           prereq += ";" + handle.script;
+
+         if (!prereq)
             return completeDraw(null);
 
          JSROOT.require(prereq).then(() => {
