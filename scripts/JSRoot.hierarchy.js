@@ -1035,7 +1035,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             respainter.SetItemName(display_itemname, updating ? null : drawopt, h); // mark painter as created from hierarchy
             if (item && !item._painter) item._painter = respainter;
          }
-         JSROOT.CallBack(call_back, respainter || painter, display_itemname);
+
+         // prevent calling many times
+         let f = call_back;
+         call_back = null;
+         JSROOT.CallBack(f, respainter || painter, display_itemname);
       }
 
       h.CreateDisplay(function(mdi) {
@@ -1077,8 +1081,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             if (!updating) JSROOT.progress("Drawing " + display_itemname);
 
-            if (divid.length > 0)
-               return (updating ? JSROOT.redraw : JSROOT.draw)(divid, obj, drawopt, display_callback);
+            if (divid.length > 0) {
+               let draw_func = updating ? JSROOT.redraw : JSROOT.draw;
+               return draw_func(divid, obj, drawopt).then(display_callback).catch(() => display_callback(null));
+            }
 
             mdi.ForEachPainter((p, frame) => {
                if (p.GetItemName() != display_itemname) return;
@@ -1105,7 +1111,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             d3.select(frame).html("");
             mdi.ActivateFrame(frame);
 
-            JSROOT.draw(d3.select(frame).attr("id"), obj, drawopt).then(display_callback);
+            JSROOT.draw(d3.select(frame).attr("id"), obj, drawopt).then(display_callback).catch(() => display_callback(null));
 
             if (JSROOT.settings.DragAndDrop)
                h.enable_dropping(frame, display_itemname);
