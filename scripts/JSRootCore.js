@@ -2217,7 +2217,7 @@
       if (d.has('mathjax')) prereq += "mathjax;";
       if (d.has('openui5')) prereq += "openui5;";
 
-      if (user) prereq += "io;gpad;load:" + user;
+      if (user) prereq += "io;gpad;"+user;
 
       if (prereq || onload)
          window_on_load().then(() => JSROOT.require(prereq))

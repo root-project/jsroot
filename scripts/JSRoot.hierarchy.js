@@ -2289,8 +2289,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          else if (style.length > 0)
             this.ApplyStyle(style.shift(), OpenAllFiles);
          else {
+            this.RefreshHtml();
             this.displayAll(itemsarr, optionsarr, () => {
-               this.RefreshHtml();
+               if (itemsarr) this.RefreshHtml();
                this.SetMonitoring(monitor);
                JSROOT.CallBack(gui_call_back);
            });
