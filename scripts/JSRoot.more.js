@@ -3479,7 +3479,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
                                      y: func.y(obj.fBuf[indx++]),
                                      rotate: -angle,
                                      text: txt,
-                                     color: jsrp.root_colors[attr.fTextColor], latex: 0, draw_g: group });
+                                     color: jsrp.getColor(attr.fTextColor),
+                                     latex: 0, draw_g: group });
 
                      this.FinishTextDrawing(group);
                   }

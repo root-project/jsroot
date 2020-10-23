@@ -468,9 +468,13 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
       if (d.check('BKGR_', true)) {
          let bckgr = null;
-         if (d.partAsInt(1)>0) bckgr = jsrp.root_colors[d.partAsInt()]; else
-         for (let col=0;col<8;++col)
-            if (jsrp.root_colors[col].toUpperCase() === d.part) bckgr = jsrp.root_colors[col];
+         if (d.partAsInt(1) > 0) {
+           bckgr = jsrp.getColor(d.partAsInt());
+         } else {
+            for (let col=0;col<8;++col)
+               if (jsrp.getColor(col).toUpperCase() === d.part)
+                  bckgr = jsrp.getColor(col);
+         }
          if (bckgr) res.background = "#" + new THREE.Color(bckgr).getHexString();
       }
 
@@ -2671,7 +2675,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       if (!track || !track.fNpoints) return false;
 
       let track_width = track.fLineWidth || 1,
-          track_color = jsrp.root_colors[track.fLineColor] || "rgb(255,0,255)";
+          track_color = jsrp.getColor(track.fLineColor) || "rgb(255,0,255)";
 
       if (JSROOT.browser.isWin) track_width = 1; // not supported on windows
 
@@ -2713,7 +2717,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       if (!track || (track.fN <= 0)) return false;
 
       let track_width = track.fLineWidth || 1,
-          track_color = jsrp.root_colors[track.fLineColor] || "rgb(255,0,255)";
+          track_color = jsrp.getColor(track.fLineColor) || "rgb(255,0,255)";
 
       if (JSROOT.browser.isWin) track_width = 1; // not supported on windows
 
@@ -2767,7 +2771,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
                        projy ? projv : hit.fP[i*3+1],
                        projz ? projv : hit.fP[i*3+2]);
 
-      let mesh = pnts.CreatePoints({ color: jsrp.root_colors[hit.fMarkerColor] || "rgb(0,0,255)",
+      let mesh = pnts.CreatePoints({ color: jsrp.getColor(hit.fMarkerColor) || "rgb(0,0,255)",
                                      style: hit.fMarkerStyle,
                                      callback: function(delayed) { if (delayed) this.Render3D(100); }.bind(this) });
 

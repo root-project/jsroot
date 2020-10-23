@@ -1492,14 +1492,22 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (d.check('TICKY') && pad) pad.fTicky = 1;
 
       if (d.check('FILL_', true)) {
-         if (d.partAsInt(1)>0) this.histoFillColor = d.partAsInt(); else
-         for (let col=0;col<8;++col)
-            if (jsrp.root_colors[col].toUpperCase() === d.part) this.histoFillColor = col;
+         if (d.partAsInt(1) > 0) {
+            this.histoFillColor = d.partAsInt();
+         } else {
+            for (let col=0;col<8;++col)
+               if (jsrp.getColor(col).toUpperCase() === d.part)
+                  this.histoFillColor = col;
+         }
       }
       if (d.check('LINE_', true)) {
-         if (d.partAsInt(1)>0) this.histoLineColor = jsrp.root_colors[d.partAsInt()]; else
-         for (let col=0;col<8;++col)
-            if (jsrp.root_colors[col].toUpperCase() === d.part) this.histoLineColor = d.part;
+         if (d.partAsInt(1) > 0) {
+            this.histoLineColor = jsrp.root_colors[d.partAsInt()];
+         } else {
+            for (let col=0;col<8;++col)
+               if (jsrp.getColor(col).toUpperCase() === d.part)
+                  this.histoLineColor = d.part;
+         }
       }
 
       if (d.check('X+')) this.AxisPos = 10;

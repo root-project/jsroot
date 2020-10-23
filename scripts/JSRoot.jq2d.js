@@ -151,8 +151,8 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
             let col = prompt("Enter color " + (useid ? "(only id number)" : "(name or id)"), value);
             if (!col) return;
             let id = parseInt(col);
-            if (!isNaN(id) && (jsrp.root_colors[id] !== undefined)) {
-               col = jsrp.root_colors[id];
+            if (!isNaN(id) && jsrp.getColor(id)) {
+               col = jsrp.getColor(id);
             } else {
                if (useid) return;
             }
@@ -162,7 +162,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          for (let n = -1; n < 11; ++n) {
             if ((n < 0) && useid) continue;
             if ((n == 10) && (fill_kind !== 1)) continue;
-            let col = (n < 0) ? 'none' : jsrp.root_colors[n];
+            let col = (n < 0) ? 'none' : jsrp.getColor(n);
             if ((n == 0) && (fill_kind == 1)) col = 'none';
             let svg = "<svg width='100' height='18' style='margin:0px;background-color:" + col + "'><text x='4' y='12' style='font-size:12px' fill='" + (n == 1 ? "white" : "black") + "'>" + col + "</text></svg>";
             this.addchk((value == (useid ? n : col)), svg, (useid ? n : col), set_func);

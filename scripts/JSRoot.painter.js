@@ -302,6 +302,13 @@ JSROOT.define(['d3'], (d3) => {
       jsrp.extendRootColors(jsrp.root_colors, objarr);
    }
 
+   /** @summary Return ROOT color by index
+     * @desc Color numbering corresponds typical ROOT colors
+     * @returns {String} with RGB color code or existing color name like 'cyan' */
+   jsrp.getColor = function(indx) {
+      return jsrp.root_colors[indx];
+   }
+
    /** @ummary Define rendering kind which will be used for rendering of 3D elements
     *
     * @param {value} [render3d] - preconfigured value, will be used if applicable
@@ -384,7 +391,7 @@ JSROOT.define(['d3'], (d3) => {
       if ((typeof args == 'object') && (typeof args.fMarkerStyle == 'number')) args = { attr: args };
 
       if (args.attr) {
-         if (args.color === undefined) args.color = jsrp.root_colors[args.attr.fMarkerColor];
+         if (args.color === undefined) args.color = jsrp.getColor(args.attr.fMarkerColor);
          if (!args.style || (args.style < 0)) args.style = args.attr.fMarkerStyle;
          if (!args.size) args.size = args.attr.fMarkerSize;
       }
@@ -584,13 +591,13 @@ JSROOT.define(['d3'], (d3) => {
     */
    TAttLineHandler.prototype.SetArgs = function(args) {
       if (args.attr) {
-         args.color = args.color0 || jsrp.root_colors[args.attr.fLineColor];
+         args.color = args.color0 || jsrp.getColor(args.attr.fLineColor);
          if (args.width === undefined) args.width = args.attr.fLineWidth;
          args.style = args.attr.fLineStyle;
       } else if (typeof args.color == 'string') {
          if ((args.color !== 'none') && !args.width) args.width = 1;
       } else if (typeof args.color == 'number') {
-         args.color = jsrp.root_colors[args.color];
+         args.color = jsrp.getColor(args.color);
       }
 
       if (args.width === undefined)
@@ -806,7 +813,7 @@ JSROOT.define(['d3'], (d3) => {
          this.color = color;
          indx = 10000 + JSROOT._.id_counter++; // use fictional unique index far away from existing color indexes
       } else {
-         this.color = jsrp.root_colors[indx];
+         this.color = jsrp.getColor(indx);
       }
 
       if (typeof this.color != 'string') this.color = "none";
