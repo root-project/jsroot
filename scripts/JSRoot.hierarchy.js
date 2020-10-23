@@ -1869,7 +1869,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                      let typename = "kind:" + item._kind;
                      if (item._kind.indexOf('ROOT.')==0) typename = item._kind.slice(5);
                      let drawopt = item._drawopt;
-                     if (!JSROOT.canDraw(typename) || (drawopt!=null))
+                     if (!JSROOT.canDraw(typename) || drawopt)
                         JSROOT.addDrawFunc({ name: typename, func: item._drawfunc, script: item._drawscript, opt: drawopt });
                   });
 

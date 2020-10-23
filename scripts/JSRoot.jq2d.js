@@ -845,7 +845,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
       if ((img1.length==0) && isroot)
          hitem._icon = img1 = "img_base";
 
-      if (hitem._more || ('_expand' in hitem) || ('_player' in hitem))
+      if (hitem._more || hitem._expand || hitem._player || hitem._can_draw)
          can_click = true;
 
       let can_menu = can_click;
