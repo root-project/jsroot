@@ -513,8 +513,16 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    // =================================================================================================
 
-   /// special layout with three different areas for browser (left), status line (bottom) and central drawing
-   /// Main application is normal browser in JSROOT, but later one should be able to use it in ROOT6 canvas
+
+   /**
+     * @summary special layout with three different areas for browser (left), status line (bottom) and central drawing
+     * Main application is normal browser in JSROOT, but later one should be able to use it in ROOT6 canvas
+     *
+     * @class
+     * @memberof JSROOT
+     * @private
+     */
+
    function BrowserLayout(id, hpainter, objpainter) {
       this.gui_div = id;
       this.hpainter = hpainter; // painter for brwoser area (if any)
@@ -538,8 +546,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
    }
 
-   /// method used to create basic elements
-   /// should be called only once
+   /** @summary method used to create basic elements
+     * @desc should be called only once */
    BrowserLayout.prototype.Create = function(with_browser) {
       let main = this.main();
 
@@ -604,12 +612,32 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return this.gui_div + "_status";
    }
 
-   // =========== painter of hierarchical structures =================================
+   // ==============================================================================
+
+
+   /** @summary central function for expand of all online items
+     * @private */
+   function OnlineHierarchy(node, obj) {
+      if (obj && node && ('_childs' in obj)) {
+
+         for (let n=0;n<obj._childs.length;++n)
+            if (obj._childs[n]._more || obj._childs[n]._childs)
+               obj._childs[n]._expand = OnlineHierarchy;
+
+         node._childs = obj._childs;
+         obj._childs = null;
+         return true;
+      }
+
+      return false;
+   }
+
+   // ==============================================================
 
    JSROOT.hpainter = null; // global pointer
 
    /**
-     * @summary Objects hierarchy painter
+     * @summary Painter of hierarchical structures
      *
      * @class
      * @memberof JSROOT
@@ -865,10 +893,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return res;
    }
 
+    /** @summary Eexecutes item marked as 'Command'
+      * @desc If command requires additional arguments, they could be specified as extra arguments
+      * Or they will be requested interactive
+      * @param {String} itemname - name of command item
+      * @param {Function} callback - function called with command result */
    HierarchyPainter.prototype.ExecuteCommand = function(itemname, callback) {
-      // execute item marked as 'Command'
-      // If command requires additional arguments, they could be specified as extra arguments
-      // Or they will be requested interactive
 
       let hitem = this.Find(itemname),
           url = this.GetOnlineItemUrl(hitem) + "/cmd.json",
@@ -1741,7 +1771,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          if (h_get) {
             req = 'h.json?compact=3';
-            item._expand = jsrp.OnlineHierarchy; // use proper expand function
+            item._expand = OnlineHierarchy; // use proper expand function
          } else if ('_make_request' in item) {
             func = JSROOT.findFunction(item._make_request);
          } else if ((draw_handle!=null) && ('make_request' in draw_handle)) {
@@ -1795,23 +1825,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       itemreq.send(null);
    }
 
-   jsrp.OnlineHierarchy = function(node, obj) {
-      // central function for expand of all online items
-
-      if (obj && node && ('_childs' in obj)) {
-
-         for (let n=0;n<obj._childs.length;++n)
-            if (obj._childs[n]._more || obj._childs[n]._childs)
-               obj._childs[n]._expand = jsrp.OnlineHierarchy;
-
-         node._childs = obj._childs;
-         obj._childs = null;
-         return true;
-      }
-
-      return false;
-   }
-
    HierarchyPainter.prototype.OpenOnline = function(server_address, user_callback) {
       let AdoptHierarchy = result => {
          this.h = result;
@@ -1828,11 +1841,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             this.GetOnlineItem(item, itemname, callback, option);
          }
 
-         this.h._expand = jsrp.OnlineHierarchy;
+         this.h._expand = OnlineHierarchy;
 
          let scripts = [], modules = [];
          this.ForEach(function(item) {
-            if ('_childs' in item) item._expand = jsrp.OnlineHierarchy;
+            if ('_childs' in item) item._expand = OnlineHierarchy;
 
             if ('_autoload' in item) {
                let arr = item._autoload.split(";");
