@@ -308,6 +308,16 @@ JSROOT.define(['d3'], (d3) => {
    jsrp.getColor = function(indx) {
       return jsrp.root_colors[indx];
    }
+   /** @summary Add new color
+     * @param {string} rgb - color name or just string with rgb value
+     * @returns {number} index of new color */
+   jsrp.addColor = function(rgb) {
+      let indx = jsrp.root_colors.indexOf(rgb);
+      if (indx >= 0) return indx;
+      jsrp.root_colors.push(rgb);
+      return jsrp.root_colors.length-1;
+   }
+
 
    /** @ummary Define rendering kind which will be used for rendering of 3D elements
     *
