@@ -1131,7 +1131,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          d3a.node().scrollIntoView(false);
    }
 
-   /** Handler for click event of item in the hierarchy */
+   /** @summary Handler for click event of item in the hierarchy */
    HierarchyPainter.prototype.tree_click = function(evnt, node, place) {
       if (!node) return;
 

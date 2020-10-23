@@ -1284,7 +1284,7 @@
    /**
     * @summary Load script or CSS file into the browser
     *
-    * @desc Normal JSROOT functionality should be loaded via @ref JSROOT.require method
+    * @desc Normal JSROOT functionality should be loaded via {@link JSROOT.require} method
     * @returns {Promise}
     * @private
     */
@@ -1303,17 +1303,23 @@
          return Promise.resolve(res);
       }
 
+      function match_url(src) {
+         if (src == url) return true;
+         let indx = src.indexOf(url);
+         return (indx > 0) && (indx + url.length == src.length);
+      }
+
       if (isstyle) {
          let styles = document.getElementsByTagName('link');
          for (let n = 0; n < styles.length; ++n) {
             if (!styles[n].href || (styles[n].type !== 'text/css') || (styles[n].rel !== 'stylesheet')) continue;
-            if (styles[n].href == url) return Promise.resolve();
+            if (match_url(styles[n].href)) return Promise.resolve();
          }
 
       } else {
          let scripts = document.getElementsByTagName('script');
          for (let n = 0; n < scripts.length; ++n) {
-            if (scripts[n].src == url) return Promise.resolve();
+            if (match_url(scripts[n].src)) return Promise.resolve();
          }
       }
 

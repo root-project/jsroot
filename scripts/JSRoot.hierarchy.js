@@ -925,7 +925,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             let col = ((res!=null) && (res!='false')) ? 'green' : 'red';
             if (hitem && hitem._title) d3node.attr('title', hitem._title + " lastres=" + res);
             d3node.style('background', col);
-            setTimeout(function() { d3node.style('background', ''); }, 2000);
+            setTimeout(() => d3node.style('background', ''), 2000);
             if ((col == 'green') && ('_hreload' in hitem)) this.reload();
             if ((col == 'green') && ('_update_item' in hitem)) this.updateItems(hitem._update_item.split(";"));
          }
@@ -1433,6 +1433,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       });
    }
 
+   /** @summary Reload hierarhcy and refresh html code */
    HierarchyPainter.prototype.reload = function() {
       if ('_online' in this.h)
          this.OpenOnline(this.h._online,() => this.RefreshHtml());
