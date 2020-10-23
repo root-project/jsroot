@@ -599,7 +599,7 @@
       if ((img1.length==0) && isroot)
          hitem._icon = img1 = "img_base";
 
-      if (hitem._more || ('_expand' in hitem) || ('_player' in hitem))
+      if (hitem._more || ('_expand' in hitem) || ('_player' in hitem) || hitem._can_draw)
          can_click = true;
 
       var can_menu = can_click;
