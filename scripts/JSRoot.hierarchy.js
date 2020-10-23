@@ -1861,23 +1861,25 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             }
          });
 
-         JSROOT.require(modules).then(() => {
-            // load scripts after modules are loaded
-            let loading = [];
-            scripts.forEach(src => loading.push(JSROOT.loadScript(src)));
-            Promise.all(loading).then(() => {
-               this.ForEach(item => {
-                  if (!('_drawfunc' in item) || !('_kind' in item)) return;
-                  let typename = "kind:" + item._kind;
-                  if (item._kind.indexOf('ROOT.')==0) typename = item._kind.slice(5);
-                  let drawopt = item._drawopt;
-                  if (!JSROOT.canDraw(typename) || (drawopt!=null))
-                     JSROOT.addDrawFunc({ name: typename, func: item._drawfunc, script: item._drawscript, opt: drawopt });
-               });
+         function LoadEveryScript() {
+            if (!scripts.length) return Promise.resolve();
+            return JSROOT.loadScript(scripts.shift()).then(LoadEveryScript, LoadEveryScript);
+         }
 
-               JSROOT.CallBack(user_callback, this);
-            });
-         });
+         JSROOT.require(modules)
+               .then(LoadEveryScript)
+               .then(() => {
+                  this.ForEach(item => {
+                     if (!('_drawfunc' in item) || !('_kind' in item)) return;
+                     let typename = "kind:" + item._kind;
+                     if (item._kind.indexOf('ROOT.')==0) typename = item._kind.slice(5);
+                     let drawopt = item._drawopt;
+                     if (!JSROOT.canDraw(typename) || (drawopt!=null))
+                        JSROOT.addDrawFunc({ name: typename, func: item._drawfunc, script: item._drawscript, opt: drawopt });
+                  });
+
+                  JSROOT.CallBack(user_callback, this);
+               });
       }
 
       if (!server_address) server_address = "";
