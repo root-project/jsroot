@@ -1861,13 +1861,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             }
          });
 
-         function LoadEveryScript() {
-            if (!scripts.length) return Promise.resolve();
-            return JSROOT.loadScript(scripts.shift()).then(LoadEveryScript, LoadEveryScript);
-         }
-
          JSROOT.require(modules)
-               .then(LoadEveryScript)
+               .then(() => JSROOT.loadScript(scripts))
                .then(() => {
                   this.ForEach(item => {
                      if (!('_drawfunc' in item) || !('_kind' in item)) return;

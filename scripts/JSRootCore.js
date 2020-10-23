@@ -1285,10 +1285,22 @@
     * @summary Load script or CSS file into the browser
     *
     * @desc Normal JSROOT functionality should be loaded via {@link JSROOT.require} method
+    * @param {String} url - script or css file URL (or array, in this case they all loaded secuentially)
     * @returns {Promise}
     * @private
     */
    JSROOT.loadScript = function(url) {
+      if (!url)
+         return Promise.resolve(true);
+
+      if (typeof url != 'string') {
+         let scripts = url, loadNext = () => {
+            if (!scripts.length) return Promise.resolve();
+            return JSROOT.loadScript(scripts.shift()).then(loadNext, loadNext);
+         }
+         return loadNext();
+      }
+
       if (url.indexOf("$$$")===0) {
          url = url.slice(3);
          if ((url.indexOf("style/")==0) && (url.indexOf('.css') < 0))
@@ -2223,10 +2235,11 @@
       if (d.has('mathjax')) prereq += "mathjax;";
       if (d.has('openui5')) prereq += "openui5;";
 
-      if (user) prereq += "io;gpad;"+user;
+      if (user) { prereq += "io;gpad;"; user = user.split(";"); }
 
       if (prereq || onload)
          window_on_load().then(() => JSROOT.require(prereq))
+                         .then(() => JSROOT.loadScript(user))
                          .then(() => JSROOT.CallBack(onload));
 
       return this;
