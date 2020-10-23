@@ -317,6 +317,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
       control.renderer = renderer;
       control.raycaster = new THREE.Raycaster();
       control.raycaster.params.Line.threshold = 10;
+      control.raycaster.params.Points.threshold = 5;
       control.mouse_zoom_mesh = null; // zoom mesh, currently used in the zooming
       control.block_ctxt = false; // require to block context menu command appearing after control ends, required in chrome which inject contextmenu when key released
       control.block_mousemove = false; // when true, tooltip or cursor will not react on mouse move

@@ -132,7 +132,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
            };
 
            switch(obj._typename) {
-              case 'TColor': item._value = jsrp.MakeColorRGB(obj); break;
+              case 'TColor': item._value = jsrp.getRGBfromTColor(obj); break;
               case 'TText': item._value = obj.fTitle; break;
               case 'TLatex': item._value = obj.fTitle; break;
               case 'TObjString': item._value = obj.fString; break;
@@ -410,7 +410,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                   item._more = false;
 
                   switch(fld._typename) {
-                     case 'TColor': item._value = jsrp.MakeColorRGB(fld); break;
+                     case 'TColor': item._value = jsrp.getRGBfromTColor(fld); break;
                      case 'TText': item._value = fld.fTitle; break;
                      case 'TLatex': item._value = fld.fTitle; break;
                      case 'TObjString': item._value = fld.fString; break;

@@ -99,8 +99,8 @@ JSROOT.define(['d3'], (d3) => {
          0.587, 0.514, 0.896, 0.587, 0.55]
    };
 
+   // create menu, implemented in jquery part
    jsrp.createMenu = function(painter, evt) {
-      // dummy functions, forward call to the jquery function
       document.body.style.cursor = 'wait';
       let show_evnt;
       // copy event values, otherwise they will gone after scripts loading
@@ -113,12 +113,15 @@ JSROOT.define(['d3'], (d3) => {
       });
    }
 
+   // create menu, implemented in jquery part
    jsrp.closeMenu = function(menuname) {
       let x = document.getElementById(menuname || 'root_ctx_menu');
       if (x) { x.parentNode.removeChild(x); return true; }
       return false;
    }
 
+   /** @summary Read style and settings from URL
+     * @private */
    jsrp.readStyleFromURL = function(url) {
       let d = JSROOT.decodeUrl(url), g = JSROOT.gStyle, s = JSROOT.settings;
 
@@ -209,7 +212,7 @@ JSROOT.define(['d3'], (d3) => {
       if (d.has("hlimit")) s.HierarchyLimit = parseInt(d.get("hlimit"));
    }
 
-   /** Function that generates all root colors, used in jstests to reset colors
+   /** @summary Generates all root colors, used also in jstests to reset colors
      * @private */
    jsrp.createRootColors = function() {
       let colorMap = ['white', 'black', 'red', 'green', 'blue', 'yellow', 'magenta', 'cyan', 'rgb(89,212,84)', 'rgb(89,84,217)', 'white'];
@@ -238,7 +241,9 @@ JSROOT.define(['d3'], (d3) => {
       jsrp.root_colors = colorMap;
    }
 
-   jsrp.MakeColorRGB = function(col) {
+   /** @summary Produces rgb code for TColor object
+     * @private */
+   jsrp.getRGBfromTColor = function(col) {
       if (!col || (col._typename != 'TColor')) return null;
       let rgb = Math.round(col.fRed * 255) + "," + Math.round(col.fGreen * 255) + "," + Math.round(col.fBlue * 255);
       if ((col.fAlpha === undefined) || (col.fAlpha == 1.))
@@ -247,19 +252,20 @@ JSROOT.define(['d3'], (d3) => {
          rgb = "rgba(" + rgb + "," + col.fAlpha.toFixed(3) + ")";
 
       switch (rgb) {
-         case 'rgb(255,255,255)': rgb = 'white'; break;
-         case 'rgb(0,0,0)': rgb = 'black'; break;
-         case 'rgb(255,0,0)': rgb = 'red'; break;
-         case 'rgb(0,255,0)': rgb = 'green'; break;
-         case 'rgb(0,0,255)': rgb = 'blue'; break;
-         case 'rgb(255,255,0)': rgb = 'yellow'; break;
-         case 'rgb(255,0,255)': rgb = 'magenta'; break;
-         case 'rgb(0,255,255)': rgb = 'cyan'; break;
+         case 'rgb(255,255,255)': return 'white';
+         case 'rgb(0,0,0)': return 'black';
+         case 'rgb(255,0,0)': return 'red';
+         case 'rgb(0,255,0)': return 'green';
+         case 'rgb(0,0,255)': return 'blue';
+         case 'rgb(255,255,0)': return 'yellow';
+         case 'rgb(255,0,255)': return 'magenta';
+         case 'rgb(0,255,255)': return 'cyan';
       }
       return rgb;
    }
 
-   /** Add new colors from object array. */
+   /** @summary Add new colors from object array
+     * @private */
    jsrp.extendRootColors = function(jsarr, objarr) {
       if (!jsarr) {
          jsarr = [];
@@ -277,10 +283,9 @@ JSROOT.define(['d3'], (d3) => {
             if (!col || (col._typename != 'TColor')) continue;
 
             if ((col.fNumber >= 0) && (col.fNumber <= 10000))
-               rgb_array[col.fNumber] = jsrp.MakeColorRGB(col);
+               rgb_array[col.fNumber] = jsrp.getRGBfromTColor(col);
          }
       }
-
 
       for (let n = 0; n < rgb_array.length; ++n)
          if (rgb_array[n] && (jsarr[n] != rgb_array[n]))
@@ -289,15 +294,15 @@ JSROOT.define(['d3'], (d3) => {
       return jsarr;
    }
 
-   /** Set global list of colors.
-    * Either TObjArray of TColor instances or just plain array with rgb() code.
+   /** @ummary Set global list of colors.
+    * @desc Either TObjArray of TColor instances or just plain array with rgb() code.
     * List of colors typically stored together with TCanvas primitives
     * @private */
    jsrp.adoptRootColors = function(objarr) {
       jsrp.extendRootColors(jsrp.root_colors, objarr);
    }
 
-   /** Define rendering kind which will be used for rendering of 3D elements
+   /** @ummary Define rendering kind which will be used for rendering of 3D elements
     *
     * @param {value} [render3d] - preconfigured value, will be used if applicable
     * @returns {value} - rendering kind, see JSROOT.constants.Render3D

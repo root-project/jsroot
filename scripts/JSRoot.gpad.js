@@ -2389,7 +2389,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (this.options && this.options.CreatePalette) {
             let arr = [];
             for (let n = obj.arr.length - this.options.CreatePalette; n<obj.arr.length; ++n) {
-               let col = jsrp.MakeColorRGB(obj.arr[n]);
+               let col = jsrp.getRGBfromTColor(obj.arr[n]);
                if (!col) { console.log('Fail to create color for palette'); arr = null; break; }
                arr.push(col);
             }
@@ -2410,7 +2410,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          for (let n = 0; n < obj.arr.length; ++n) {
             let col = obj.arr[n];
             if (col && (col._typename == 'TColor')) {
-               arr[n] = jsrp.MakeColorRGB(col);
+               arr[n] = jsrp.getRGBfromTColor(col);
             } else {
                console.log('Missing color with index ' + n); missing = true;
             }
