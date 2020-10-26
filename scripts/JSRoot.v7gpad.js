@@ -3415,9 +3415,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       RPadPainter.prototype.Cleanup.call(this);
    }
 
-   RCanvasPainter.prototype.ChangeLayout = function(layout_kind, call_back) {
+   /** @summary Changes layout
+     * @returns {Promise} indicating when finished */
+   RCanvasPainter.prototype.ChangeLayout = function(layout_kind) {
       let current = this.get_layout_kind();
-      if (current == layout_kind) return JSROOT.CallBack(call_back, true);
+      if (current == layout_kind)
+         return Promise.resolve(true);
 
       let origin = this.select_main('origin'),
           sidebar = origin.select('.side_panel'),
@@ -3437,10 +3440,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             main.node().appendChild(lst[k]);
          this.set_layout_kind(layout_kind);
          JSROOT.resize(main.node());
-         return JSROOT.CallBack(call_back, true);
+         return Promise.resolve(true);
       }
 
-      JSROOT.require("jq2d").then(() => {
+      return JSROOT.require("jq2d").then(() => {
 
          let grid = new JSROOT.GridDisplay(origin.node(), layout_kind);
 
@@ -3467,24 +3470,26 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          // resize main drawing and let draw extras
          JSROOT.resize(main.node());
 
-         JSROOT.CallBack(call_back, true);
+         return true;
       });
    }
 
-   RCanvasPainter.prototype.ToggleProjection = function(kind, call_back) {
+   /** @summary Toggle projection
+     * @return {Promise} indicating when ready */
+   RCanvasPainter.prototype.ToggleProjection = function(kind) {
       delete this.proj_painter;
 
       if (kind) this.proj_painter = 1; // just indicator that drawing can be preformed
 
       if (this.ShowUI5ProjectionArea)
-         return this.ShowUI5ProjectionArea(kind, call_back);
+         return this.ShowUI5ProjectionArea(kind);
 
       let layout = 'simple';
 
       if (kind == "X") layout = 'vert2_31'; else
       if (kind == "Y") layout = 'horiz2_13';
 
-      this.ChangeLayout(layout, call_back);
+      return this.ChangeLayout(layout);
    }
 
    RCanvasPainter.prototype.DrawProjection = function(kind,hist) {
@@ -3631,7 +3636,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             });
          } else if (cmd.indexOf("ADDPANEL:") == 0) {
             let relative_path = cmd.substr(9);
-            console.log('request panel = ' + relative_path);
             if (!this.ShowUI5Panel) {
                handle.Send(reply + "false");
             } else {
@@ -3643,17 +3647,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                   cpainter: this,
 
                   OnWebsocketOpened: function() {
-                     console.log('Panel socket connected');
                   },
 
                   OnWebsocketMsg: function(panel_handle, msg) {
-
                      let panel_name = (msg.indexOf("SHOWPANEL:")==0) ? msg.substr(10) : "";
-                     console.log('Panel get message ' + msg + " show " + panel_name);
-
-                     this.cpainter.ShowUI5Panel(panel_name, panel_handle, function(res) {
-                        handle.Send(reply + (res ? "true" : "false"));
-                     });
+                     this.cpainter.ShowUI5Panel(panel_name, panel_handle)
+                                  .then(res => handle.Send(reply + (res ? "true" : "false")));
                   },
 
                   OnWebsocketClosed: function() {
