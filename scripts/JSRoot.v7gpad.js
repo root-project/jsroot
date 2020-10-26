@@ -1,4 +1,4 @@
-/// @file JSRoot.v7gpad.js
+re/// @file JSRoot.v7gpad.js
 /// JavaScript ROOT graphics for ROOT v7 classes
 
 JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
@@ -1363,8 +1363,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    }
 
+   /** @summary axes can be drawn only for main histogram  */
    RFramePainter.prototype.DrawAxes = function() {
-      // axes can be drawn only for main histogram
 
       if (this.axes_drawn) return Promise.resolve(true);
 
@@ -2335,8 +2335,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
            .style("bottom", 0);
       }
 
-      // console.log('CANVAS SVG width = ' + rect.width + " height = " + rect.height);
-
       svg.attr("viewBox", "0 0 " + rect.width + " " + rect.height)
          .attr("preserveAspectRatio", "none")  // we do not preserve relative ratio
          .property('height_factor', factor)
@@ -2390,8 +2388,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.ShowButtons();
    }
 
+   /** @summary Create SVG element for the pad
+     * @returns true when pad is displayed and all its items should be redrawn */
    RPadPainter.prototype.CreatePadSvg = function(only_resize) {
-      // returns true when pad is displayed and all its items should be redrawn
 
       if (!this.has_canvas) {
          this.CreateCanvasSvg(only_resize ? 2 : 0);
@@ -2403,7 +2402,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           width = svg_parent.property("draw_width"),
           height = svg_parent.property("draw_height"),
           pad_enlarged = svg_can.property("pad_enlarged"),
-          pad_visible = !pad_enlarged || (pad_enlarged === this.pad),
+          pad_visible = true,
           w = width, h = height, x = 0, y = 0,
           svg_pad = null, svg_rect = null, btns = null;
 
@@ -2414,7 +2413,15 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          h = Math.round(height * this.pad.fSize.fVert.fArr[0]);
       }
 
-      if (pad_enlarged === this.pad) { w = width; h = height; x = y = 0; }
+      if (pad_enlarged) {
+         pad_visible = false;
+         if (pad_enlarged === this.pad)
+            pad_visible = true;
+         else
+            this.ForEachPainterInPad(pp => { if (pp.GetObject() == pad_enlarged) pad_visible = true; }, "pads");
+
+         if (pad_visible) { w = width; h = height; x = y = 0; }
+      }
 
       if (only_resize) {
          svg_pad = this.svg_pad(this.this_pad_name);
@@ -2451,9 +2458,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       this.createAttLine({ attr: this.pad, color0: this.pad.fBorderMode == 0 ? 'none' : '' });
 
-      svg_pad
-              //.attr("transform", "translate(" + x + "," + y + ")") // is not handled for SVG
-             .attr("display", pad_visible ? null : "none")
+      svg_pad.attr("display", pad_visible ? null : "none")
              .attr("viewBox", "0 0 " + w + " " + h) // due to svg
              .attr("preserveAspectRatio", "none")   // due to svg, we do not preserve relative ratio
              .attr("x", x)    // due to svg

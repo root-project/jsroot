@@ -2202,7 +2202,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       this.createAttFill({ attr: this.pad });
 
-      if ((rect.width<=lmt) || (rect.height<=lmt)) {
+      if ((rect.width <= lmt) || (rect.height <= lmt)) {
          svg.style("display", "none");
          console.warn("Hide canvas while geometry too small w=" + rect.width + " h=" + rect.height);
          rect.width = 200; rect.height = 100; // just to complete drawing
