@@ -143,13 +143,14 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
          imageData.data.set( pixels );
          context.putImageData( imageData, 0, 0 );
 
-         let dataUrl = canvas.toDataURL("image/png");
-         let svg = '<image width="' + canvas.width + '" height="' + canvas.height + '" xlink:href="' + dataUrl + '"></image>';
+         let dataUrl = canvas.toDataURL("image/png"),
+             svg = '<image width="' + canvas.width + '" height="' + canvas.height + '" xlink:href="' + dataUrl + '"></image>';
          JSROOT.svg_workaround[renderer.workaround_id] = svg;
       } else if (JSROOT.BatchMode) {
          // this is conversion of WebGL context into svg image
-         let dataUrl = renderer.domElement.toDataURL("image/png");
-         let svg = '<image width="' + canvas.width + '" height="' + canvas.height + '" xlink:href="' + dataUrl + '"></image>';
+         let canvas = renderer.domElement,
+             dataUrl = canvas.toDataURL("image/png"),
+             svg = '<image width="' + canvas.width + '" height="' + canvas.height + '" xlink:href="' + dataUrl + '"></image>';
          JSROOT.svg_workaround[renderer.workaround_id] = svg;
       } else {
          let dataUrl = renderer.domElement.toDataURL("image/png");
