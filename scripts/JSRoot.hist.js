@@ -3213,7 +3213,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    /** @summary Scan content of 1-D histogram
     * @desc Detect min/max values for x and y axis
-    * @param when_axis_changed - true when only zooming was changed, some checks may be skipped */
+    * @param {boolean} when_axis_changed - true when zooming was changed, some checks may be skipped */
    TH1Painter.prototype.ScanContent = function(when_axis_changed) {
 
       if (when_axis_changed && !this.nbinsx) when_axis_changed = false;
