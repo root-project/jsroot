@@ -3062,8 +3062,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       let items = []; // keep list of replaced elements, which should be moved back at the end
 
-//      document.body.style.cursor = 'wait';
-
       if (!use_frame) // do not make transformations for the frame
       painter.ForEachPainterInPad(pp => {
 
@@ -3084,9 +3082,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          let can3d = main.access_3d_kind();
 
-         if ((can3d !== 1) && (can3d !== 2)) return;
+         if ((can3d !== JSROOT.constants.Embed3D.Overlay) && (can3d !== JSROOT.constants.Embed3D.Embed)) return;
 
-         let sz2 = main.size_for_3d(2); // get size and position of DOM element as it will be embed
+         let sz2 = main.size_for_3d(JSROOT.constants.Embed3D.Embed); // get size and position of DOM element as it will be embed
 
          let canvas = main.renderer.domElement;
          main.Render3D(0); // WebGL clears buffers, therefore we should render scene and convert immediately
@@ -3094,7 +3092,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          // remove 3D drawings
 
-         if (can3d == 2) {
+         if (can3d === JSROOT.constants.Embed3D.Embed) {
             item.foreign = item.prnt.select("." + sz2.clname);
             item.foreign.remove();
          }
@@ -3105,9 +3103,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             item.frame_next = item.frame_node.nextSibling;
             svg_frame.remove();
          }
-
-         //var origin = main.apply_3d_size(sz3d, true);
-         //origin.remove();
 
          // add svg image
          item.img = item.prnt.insert("image",".primitives_layer")     // create image object
@@ -3166,10 +3161,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       return new Promise(resolveFunc => {
          image.onload = function() {
-            // if (options.result==="image") return JSROOT.CallBack(call_back, image);
-
-            // console.log('GOT IMAGE', image.width, image.height);
-
             let canvas = document.createElement('canvas');
             canvas.width = image.width;
             canvas.height = image.height;
