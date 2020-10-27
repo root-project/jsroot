@@ -3040,20 +3040,21 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       });
    }
 
-   TPadPainter.prototype.CreateImage = function(format, call_back) {
-      if (format=="pdf") {
-         // use https://github.com/MrRio/jsPDF in the future here
-         JSROOT.CallBack(call_back, btoa("dummy PDF file"));
-      } else if ((format=="png") || (format=="jpeg") || (format=="svg")) {
-         this.ProduceImage(true, format, function(res) {
-            if ((format=="svg") || !res)
-               return JSROOT.CallBack(call_back, res);
+   /** @summary Create image for the pad
+     * @returns {Promise} with image data, coded with btoa() function */
+   TPadPainter.prototype.CreateImage = function(format) {
+      // use https://github.com/MrRio/jsPDF in the future here
+      if (format=="pdf")
+         return Promise.resolve(btoa("dummy PDF file"));
+
+      if ((format=="png") || (format=="jpeg") || (format=="svg"))
+         return this.ProduceImage(true, format).then(res => {
+            if (!res || (format=="svg")) return res;
             let separ = res.indexOf("base64,");
-            JSROOT.CallBack(call_back, (separ>0) ? res.substr(separ+7) : "");
+            return (separ>0) ? res.substr(separ+7) : "";
          });
-      } else {
-         JSROOT.CallBack(call_back, "");
-      }
+
+      return Promise.resolve("");
    }
 
    /** Collects pad information for TWebCanvas, need to update different states */
@@ -3199,7 +3200,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (filename.length === 0) filename = this.iscan ? "canvas" : "pad";
          filename += "." + kind;
       }
-      this.ProduceImage(full_canvas, kind, function(imgdata) {
+      this.ProduceImage(full_canvas, kind).then(imgdata => {
          let a = document.createElement('a');
          a.download = filename;
          a.href = (kind != "svg") ? imgdata : "data:image/svg+xml;charset=utf-8,"+encodeURIComponent(imgdata);
@@ -3209,13 +3210,15 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       });
    }
 
-   TPadPainter.prototype.ProduceImage = function(full_canvas, file_format, call_back) {
+   /** @summary Prodce image for the pad
+     * @returns {Promise} with created image */
+   TPadPainter.prototype.ProduceImage = function(full_canvas, file_format) {
 
       let use_frame = (full_canvas === "frame");
 
       let elem = use_frame ? this.svg_frame() : (full_canvas ? this.svg_canvas() : this.svg_pad(this.this_pad_name));
 
-      if (elem.empty()) return JSROOT.CallBack(call_back);
+      if (elem.empty()) return Promise.resolve("");
 
       let painter = (full_canvas && !use_frame) ? this.canv_painter() : this;
 
@@ -3286,7 +3289,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return decodeURIComponent(data);
       }
 
-      function reconstruct(res) {
+      function reconstruct() {
          for (let k=0;k<items.length;++k) {
             let item = items[k];
 
@@ -3304,8 +3307,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if (item.btns_node) // reinsert buttons
                item.btns_prnt.insertBefore(item.btns_node, item.btns_next);
          }
-
-         JSROOT.CallBack(call_back, res);
       }
 
       let width = elem.property('draw_width'), height = elem.property('draw_height');
@@ -3315,28 +3316,35 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                  elem.node().innerHTML +
                  '</svg>';
 
-      if (file_format == "svg")
-         return reconstruct(svg); // return SVG file as is
+      if (file_format == "svg") {
+         reconstruct();
+         return Promise.resolve(svg); // return SVG file as is
+      }
 
       let doctype = '<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">';
 
       let image = new Image();
-      image.onload = function() {
-         let canvas = document.createElement('canvas');
-         canvas.width = image.width;
-         canvas.height = image.height;
-         let context = canvas.getContext('2d');
-         context.drawImage(image, 0, 0);
 
-         reconstruct(canvas.toDataURL('image/' + file_format));
-      }
+      return new Promise(resolveFunc => {
+         image.onload = function() {
+            let canvas = document.createElement('canvas');
+            canvas.width = image.width;
+            canvas.height = image.height;
+            let context = canvas.getContext('2d');
+            context.drawImage(image, 0, 0);
 
-      image.onerror = function(arg) {
-         console.log('IMAGE ERROR', arg);
-         reconstruct(null);
-      }
+            reconstruct();
+            resolveFunc(canvas.toDataURL('image/' + file_format));
+         }
 
-      image.src = 'data:image/svg+xml;base64,' + window.btoa(reEncode(doctype + svg));
+         image.onerror = function(arg) {
+            console.log('IMAGE ERROR', arg);
+            reconstruct();
+            resolveFunc(null);
+         }
+
+         image.src = 'data:image/svg+xml;base64,' + window.btoa(reEncode(doctype + svg));
+      });
    }
 
    TPadPainter.prototype.PadButtonClick = function(funcname, evnt) {
@@ -3694,12 +3702,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       JSROOT.progress(msg, 7000);
    }
 
-   /// function called when canvas menu item Save is called
+   /** @summary Function called when canvas menu item Save is called */
    TCanvasPainter.prototype.SaveCanvasAsFile = function(fname) {
       let pnt = fname.indexOf(".");
-      this.CreateImage(fname.substr(pnt+1), res => {
-         this.SendWebsocket("SAVE:" + fname + ":" + res);
-      })
+      this.CreateImage(fname.substr(pnt+1))
+          .then(res => this.SendWebsocket("SAVE:" + fname + ":" + res));
    }
 
    TCanvasPainter.prototype.SendSaveCommand = function(fname) {
@@ -3801,9 +3808,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
              cmd = msg.substr(p1+1),
              reply = "REPLY:" + cmdid + ":";
          if ((cmd == "SVG") || (cmd == "PNG") || (cmd == "JPEG")) {
-            this.CreateImage(cmd.toLowerCase(), function(res) {
-               handle.Send(reply + res);
-            });
+            this.CreateImage(cmd.toLowerCase())
+                .then(res => handle.Send(reply + res));
          } else {
             console.log('Unrecognized command ' + cmd);
             handle.Send(reply);
