@@ -5,15 +5,13 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
 
    "use strict";
 
-   /** Creates renderer for the 3D drawings
-    *
+   /** @summary Creates renderer for the 3D drawings
+    * @memberOf JSROOT.Painter
     * @param {value} width - rendering width
     * @param {value} height - rendering height
-    * @param {value} render3d - render type, see JSROOT.constants.Render3D
+    * @param {value} render3d - render type, see {@link JSROOT.constants.Render3D}
     * @param {object} args - different arguments for creating 3D renderer
-    * @private
-    */
-
+    * @private */
    jsrp.Create3DRenderer = function(width, height, render3d, args) {
 
       let rc = JSROOT.constants.Render3D;
@@ -64,13 +62,10 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
 
          need_workaround = true;
       } else {
+         // rendering with WebGL directly into svg image
          renderer = new THREE.WebGLRenderer(args);
-         if (JSROOT.BatchMode) {
-            need_workaround = true;
-         } else {
-            renderer.jsroot_dom = doc.createElementNS('http://www.w3.org/2000/svg', 'image');
-            d3.select(renderer.jsroot_dom).attr("width", width).attr("height", height);
-         }
+         renderer.jsroot_dom = doc.createElementNS('http://www.w3.org/2000/svg', 'image');
+         d3.select(renderer.jsroot_dom).attr("width", width).attr("height", height);
       }
 
       if (need_workaround) {
@@ -144,12 +139,6 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
          context.putImageData( imageData, 0, 0 );
 
          let dataUrl = canvas.toDataURL("image/png"),
-             svg = '<image width="' + canvas.width + '" height="' + canvas.height + '" xlink:href="' + dataUrl + '"></image>';
-         JSROOT.svg_workaround[renderer.workaround_id] = svg;
-      } else if (JSROOT.BatchMode) {
-         // this is conversion of WebGL context into svg image
-         let canvas = renderer.domElement,
-             dataUrl = canvas.toDataURL("image/png"),
              svg = '<image width="' + canvas.width + '" height="' + canvas.height + '" xlink:href="' + dataUrl + '"></image>';
          JSROOT.svg_workaround[renderer.workaround_id] = svg;
       } else {

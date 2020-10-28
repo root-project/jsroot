@@ -3152,6 +3152,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                  elem.node().innerHTML +
                  '</svg>';
 
+      // FIXME: should be no longer needed this way
+      svg = jsrp.ProcessSVGWorkarounds(svg);
+
       if (file_format == "svg") {
          reconstruct();
          return Promise.resolve(svg); // return SVG file as is
