@@ -3847,11 +3847,11 @@ JSROOT.define(['d3'], (d3) => {
 
          main.style("width", args.width + "px").style("height", args.height + "px");
 
-         JSROOT.svg_workaround = undefined;
+         JSROOT._.svg_3ds = undefined;
 
          return JSROOT.draw(main.node(), args.object, args.option || "").then(() => {
 
-            let has_workarounds = jsrp.ProcessSVGWorkarounds && JSROOT.svg_workaround;
+            let has_workarounds = JSROOT._.svg_3ds && jsrp.ProcessSVGWorkarounds;
 
             main.select('svg')
                 .attr("xmlns", "http://www.w3.org/2000/svg")
