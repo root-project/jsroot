@@ -3803,6 +3803,10 @@ JSROOT.define(['d3'], (d3) => {
      * @desc removes extra info or empty elements
      * @private */
    jsrp.CompressSVG = function(svg) {
+
+      // let s = 'try class="abc cdf" second class="kkk aaa" third';
+      // s = s.replace(/ class=\"[a-z0-9 ]*\"/g, "");
+
       svg = svg.replace(/url\(\&quot\;\#(\w+)\&quot\;\)/g, "url(#$1)")        // decode all URL
                .replace(/ class=\"\w*\"/g, "")                                // remove all classes
                .replace(/<g transform=\"translate\(\d+\,\d+\)\"><\/g>/g, "")  // remove all empty groups with transform

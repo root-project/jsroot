@@ -3157,9 +3157,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       svg = jsrp.CompressSVG(svg);
 
-      // let s = 'try class="abc cdf" second class="kkk aaa" third';
-      // s = s.replace(/ class=\"[a-z0-9 ]*\"/g, "");
-
       if (file_format == "svg") {
          reconstruct();
          return Promise.resolve(svg); // return SVG file as is

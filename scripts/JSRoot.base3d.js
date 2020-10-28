@@ -20,11 +20,6 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
 
       if (!args) args = { antialias: true, alpha: true };
 
-      // solves problem with toDataUrl in headless mode of chrome
-      // found https://stackoverflow.com/questions/48011613
-      if (JSROOT.BatchMode && JSROOT.browser.isChromeHeadless && (kind == rc.WebGLImage))
-         args.premultipliedAlpha = false;
-
       let need_workaround = false, renderer,
           doc = JSROOT.get_document();
 
