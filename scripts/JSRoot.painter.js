@@ -3804,12 +3804,11 @@ JSROOT.define(['d3'], (d3) => {
      * @private */
    jsrp.CompressSVG = function(svg) {
 
-      // let s = 'try class="abc cdf" second class="kkk aaa" third';
-      // s = s.replace(/ class=\"[a-z0-9 ]*\"/g, "");
-
       svg = svg.replace(/url\(\&quot\;\#(\w+)\&quot\;\)/g, "url(#$1)")        // decode all URL
                .replace(/ class=\"\w*\"/g, "")                                // remove all classes
                .replace(/ pad=\"\w*\"/g, "")                                  // remove all pad ids
+               .replace(/ title=\"\"/g, "")                                   // remove all empty titles
+               .replace(/<g objname=\"\w*\" objtype=\"\w*\"/g, "<g")          // remove object ids
                .replace(/<g transform=\"translate\(\d+\,\d+\)\"><\/g>/g, "")  // remove all empty groups with transform
                .replace(/<g><\/g>/g, "");                                     // remove all empty groups
 
