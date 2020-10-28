@@ -3152,8 +3152,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                  elem.node().innerHTML +
                  '</svg>';
 
-      // FIXME: should be no longer needed this way
-      svg = jsrp.ProcessSVGWorkarounds(svg);
+      if (jsrp.ProcessSVGWorkarounds)
+         svg = jsrp.ProcessSVGWorkarounds(svg);
+
+      svg = jsrp.CompressSVG(svg);
+
+      // let s = 'try class="abc cdf" second class="kkk aaa" third';
+      // s = s.replace(/ class=\"[a-z0-9 ]*\"/g, "");
 
       if (file_format == "svg") {
          reconstruct();

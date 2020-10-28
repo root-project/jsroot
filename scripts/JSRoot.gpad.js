@@ -3313,6 +3313,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                  elem.node().innerHTML +
                  '</svg>';
 
+      if (jsrp.ProcessSVGWorkarounds)
+         svg = jsrp.ProcessSVGWorkarounds(svg);
+
+      svg = jsrp.CompressSVG(svg);
+
       if (file_format == "svg") {
          reconstruct();
          return Promise.resolve(svg); // return SVG file as is
