@@ -3809,6 +3809,7 @@ JSROOT.define(['d3'], (d3) => {
 
       svg = svg.replace(/url\(\&quot\;\#(\w+)\&quot\;\)/g, "url(#$1)")        // decode all URL
                .replace(/ class=\"\w*\"/g, "")                                // remove all classes
+               .replace(/ pad=\"\w*\"/g, "")                                  // remove all pad ids
                .replace(/<g transform=\"translate\(\d+\,\d+\)\"><\/g>/g, "")  // remove all empty groups with transform
                .replace(/<g><\/g>/g, "");                                     // remove all empty groups
 
