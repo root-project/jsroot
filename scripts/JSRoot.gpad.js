@@ -3995,8 +3995,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.ShowSection("ToolTips", this.pad.TestBit(TCanvasStatusBits.kShowToolTips));
    }
 
-   /** Method informs that something was changed in the canvas
-     * used to update information on the server (when used with web6gui)
+   /** @summary Method informs that something was changed in the canvas
+     * @desc used to update information on the server (when used with web6gui)
      * @private */
    TCanvasPainter.prototype.ProcessChanges = function(kind, painter, subelem) {
       // check if we could send at least one message more - for some meaningful actions
@@ -4039,9 +4039,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          console.log("Sending " + msg.length + "  " + msg.substr(0,40));
          this._websocket.Send(msg);
       }
-
    }
 
+   /** @summary Select active pad on the canvas */
    TCanvasPainter.prototype.SelectActivePad = function(pad_painter, obj_painter, click_pos) {
       if ((this.snapid === undefined) || !pad_painter) return; // only interactive canvas
 
@@ -4080,7 +4080,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return bits;
    }
 
-   /// produce JSON for TCanvas, which can be used to display canvas once again
+   /**  @summary produce JSON for TCanvas, which can be used to display canvas once again */
    TCanvasPainter.prototype.ProduceJSON = function() {
 
       let canv = this.GetObject(),
