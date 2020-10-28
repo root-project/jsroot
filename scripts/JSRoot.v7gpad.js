@@ -3808,6 +3808,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          case "ToolBar": break;
          case "ToolTips": this.SetTooltipAllowed(on); break;
       }
+      return Promise.resolve(true);
    }
 
    RCanvasPainter.prototype.CompeteCanvasSnapDrawing = function() {
