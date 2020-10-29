@@ -2403,7 +2403,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return true;
       }
 
-      let svg_parent = this.svg_pad(),
+      let svg_parent = this.svg_pad(this.pad_name),
           svg_can = this.svg_canvas(),
           width = svg_parent.property("draw_width"),
           height = svg_parent.property("draw_height"),
@@ -2826,7 +2826,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             let padpainter = new RPadPainter(subpad, false);
             padpainter.DecodeOptions("");
-            padpainter.SetDivId(this.divid); // pad painter will be registered in the canvas painters list
+            padpainter.SetDivId(this.divid); // pad painter will be registered in parent painters list
             padpainter.AssignSnapId(snap.fObjectID);
             padpainter.rstyle = snap.fStyle;
 
@@ -2838,7 +2838,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             // we select current pad, where all drawing is performed
             let prev_name = padpainter.CurrentPadName(padpainter.this_pad_name);
 
-            padpainter.DrawNextSnap(snap.fPrimitives, -1, function() {
+            padpainter.DrawNextSnap(snap.fPrimitives, -1, () => {
                padpainter.CurrentPadName(prev_name);
                draw_callback(padpainter);
             });

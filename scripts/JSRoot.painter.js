@@ -1641,10 +1641,8 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /** @summary Assign painter to specified element
-    *
     * @desc base painter does not creates canvas or frames
     * it registered in the first child element
-    *
     * @param {string|object} divid - element ID or DOM Element */
    BasePainter.prototype.SetDivId = function(divid) {
       if (divid !== undefined) {
@@ -1656,7 +1654,6 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /** @summary Set item name, associated with the painter
-    *
     * @desc Used by {@link JSROOT.HiearchyPainter}
     * @private */
    BasePainter.prototype.SetItemName = function(name, opt, hpainter) {
@@ -1991,7 +1988,13 @@ JSROOT.define(['d3'], (d3) => {
    /** @summary This is SVG element, correspondent to current pad
     * @private */
    ObjectPainter.prototype.svg_pad = function(pad_name) {
-      if (pad_name === undefined) pad_name = this.pad_name;
+      if (pad_name === undefined) {
+         if (this.this_pad_name && (this.this_pad_name != this.pad_name)) {
+            console.error('Selecting mismatch this_pad_name', this.this_pad_name, ' pad_name', this.pad_name, this.GetClassName());
+         }
+
+         pad_name = this.pad_name; // either pad itself or pad which belong to
+      }
 
       let c = this.svg_canvas();
       if (!pad_name || c.empty()) return c;
@@ -2030,7 +2033,7 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /** @summary Method returns current pad name
-    * @param {string} [new_name = undefined] - when specified, new current pad name will be configured
+    * @param {string} [new_name] - when specified, new current pad name will be configured
     * @private */
    ObjectPainter.prototype.CurrentPadName = function(new_name) {
       let svg = this.svg_canvas();
@@ -2485,8 +2488,8 @@ JSROOT.define(['d3'], (d3) => {
     *   -   5  major objects like TGeoVolume (do not require canvas)
     *
     * @param {string|object} divid - id of div element or directly DOMElement
-    * @param {number} [kind = 0] - kind of object drawn with painter
-    * @param {string} [pad_name = undefined] - when specified, subpad name used for object drawin
+    * @param {number} [kind] - kind of object drawn with painter
+    * @param {string} [pad_name] - when specified, subpad name used for object drawin
     * @private */
    ObjectPainter.prototype.SetDivId = function(divid, kind, pad_name) {
 
@@ -2532,13 +2535,15 @@ JSROOT.define(['d3'], (d3) => {
       if (kind < 0) return true;
 
       // create TFrame element if not exists
-      if (this.svg_frame().select(".main_layer").empty() && ((kind == 1) || (kind == 3) || (kind == 4))) {
-         if (typeof jsrp.drawFrame == 'function')
-            jsrp.drawFrame(divid, null, (kind == 4) ? "3d" : "");
-         if ((kind != 4) && this.svg_frame().empty()) return alert("Fail to draw dummy TFrame");
-      }
+      if ((kind == 1) || (kind == 3) || (kind == 4))
+         if (this.svg_frame().select(".main_layer").empty()) {
+            if (typeof jsrp.drawFrame == 'function')
+               jsrp.drawFrame(divid, null, (kind == 4) ? "3d" : "");
+            if ((kind != 4) && this.svg_frame().empty())
+               return alert("Fail to draw dummy TFrame");
+         }
 
-      let svg_p = this.svg_pad();
+      let svg_p = this.svg_pad(this.pad_name); // important - padrent pad element accessed here
       if (svg_p.empty()) return true;
 
       let pp = svg_p.property('pad_painter');
