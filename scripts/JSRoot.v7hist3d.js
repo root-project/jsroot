@@ -22,6 +22,9 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
 
          if (!this.mode3d) return;
 
+         if (!this.clear_3d_canvas)
+            return console.error('Strange, why mode3d is configured!!!!', this.mode3d);
+
          //if (typeof this.TestAxisVisibility === 'function')
          this.TestAxisVisibility(null, this.toplevel);
 

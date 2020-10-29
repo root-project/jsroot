@@ -5,23 +5,19 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
 
    "use strict";
 
-  /** @summary Returns embed mode for 3D drawings (three.js) inside SVG.
-    *  @desc see {@link JSROOT.constants.Embed3D} for supported values
-    *  @private */
-   function can_embed_3d(render3d) {
-      render3d = jsrp.GetRender3DKind(render3d);
+   /** @ummary Define rendering kind which will be used for rendering of 3D elements
+    * @memberOf JSROOT.Painter
+    * @param {value} [render3d] - preconfigured value, will be used if applicable
+    * @returns {value} - rendering kind, see JSROOT.constants.Render3D
+    * @private */
+   jsrp.GetRender3DKind = function(render3d) {
+      if (!render3d) render3d = JSROOT.BatchMode ? JSROOT.settings.Render3DBatch : JSROOT.settings.Render3D;
+      let rc = JSROOT.constants.Render3D;
 
-      // all non-webgl elements can be embedded into SVG as is
-      if (render3d !== JSROOT.constants.Render3D.WebGL)
-         return JSROOT.constants.Embed3D.EmbedSVG;
+      if (render3d == rc.Default) render3d = JSROOT.BatchMode ? rc.WebGLImage : rc.WebGL;
+      if (JSROOT.BatchMode && (render3d == rc.WebGL)) render3d = rc.WebGLImage;
 
-      if (JSROOT.settings.Embed3D != JSROOT.constants.Embed3D.Default)
-         return JSROOT.settings.Embed3D;
-
-      if (JSROOT.browser.isFirefox)
-         return JSROOT.constants.Embed3D.Embed;
-
-      return JSROOT.constants.Embed3D.Overlay;
+      return render3d;
    }
 
    let Handling3DDrawings = {};
@@ -45,7 +41,19 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
     * @private */
    Handling3DDrawings.size_for_3d = function(can3d, render3d) {
 
-      if (can3d === undefined) can3d = can_embed_3d(render3d);
+      if (can3d === undefined) {
+         // analyze which render/embed mode can be used
+         can3d = jsrp.GetRender3DKind();
+         // all non-webgl elements can be embedded into SVG as is
+         if (can3d !== JSROOT.constants.Render3D.WebGL)
+            can3d = JSROOT.constants.Embed3D.EmbedSVG;
+         else if (JSROOT.settings.Embed3D != JSROOT.constants.Embed3D.Default)
+            can3d = JSROOT.settings.Embed3D;
+         else if (JSROOT.browser.isFirefox)
+            can3d = JSROOT.constants.Embed3D.Embed;
+         else
+            can3d = JSROOT.constants.Embed3D.Overlay;
+      }
 
       let pad = this.svg_pad(),
          clname = "draw3d_" + (this.pad_name || 'canvas');

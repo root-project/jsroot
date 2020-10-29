@@ -318,23 +318,6 @@ JSROOT.define(['d3'], (d3) => {
       return jsrp.root_colors.length-1;
    }
 
-
-   /** @ummary Define rendering kind which will be used for rendering of 3D elements
-    *
-    * @param {value} [render3d] - preconfigured value, will be used if applicable
-    * @returns {value} - rendering kind, see JSROOT.constants.Render3D
-    * @private
-    */
-   jsrp.GetRender3DKind = function(render3d) {
-      if (!render3d) render3d = JSROOT.BatchMode ? JSROOT.settings.Render3DBatch : JSROOT.settings.Render3D;
-      let rc = JSROOT.constants.Render3D;
-
-      if (render3d == rc.Default) render3d = JSROOT.BatchMode ? rc.WebGLImage : rc.WebGL;
-      if (JSROOT.BatchMode && (render3d == rc.WebGL)) render3d = rc.WebGLImage;
-
-      return render3d;
-   }
-
    // =====================================================================
 
    /** Color palette handle  */
