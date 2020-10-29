@@ -2022,6 +2022,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return this.frame_painter_ref;
    }
 
+   /** @summary Returns SVG element for the specified pad (or itself)
+    * @private */
+   TPadPainter.prototype.svg_pad = function(pad_name) {
+      if (pad_name === undefined)
+         pad_name = this.this_pad_name;
+      return JSROOT.ObjectPainter.prototype.svg_pad.call(this, pad_name);
+   }
+
    /** @summary Cleanup primitives from pad - selector lets define which painters to remove */
    TPadPainter.prototype.CleanPrimitives = function(selector) {
       if (!selector || (typeof selector !== 'function')) return;
@@ -2370,10 +2378,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       this._fast_drawing = JSROOT.settings.SmallPad && ((w < JSROOT.settings.SmallPad.width) || (h < JSROOT.settings.SmallPad.height));
 
-      if (svg_pad.property('can3d') === 1)
-         // special case of 3D canvas overlay
-          this.select_main()
-              .select(".draw3d_" + this.this_pad_name)
+       // special case of 3D canvas overlay
+      if (svg_pad.property('can3d') === JSROOT.constants.Embed3D.Overlay)
+          this.select_main().select(".draw3d_" + this.this_pad_name)
               .style('display', pad_visible ? '' : 'none');
 
       if (this.AlignBtns && btns)
@@ -2643,8 +2650,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    TPadPainter.prototype.RedrawByResize = function() {
-      let fp = this.frame_painter();
-      if (fp && fp.access_3d_kind && (fp.access_3d_kind() === JSROOT.constants.Embed3D.Overlay)) return true;
+      if (this.svg_pad(this.this_pad_name).property('can3d') === JSROOT.constants.Embed3D.Overlay) return true;
 
       for (let i = 0; i < this.painters.length; ++i)
          if (typeof this.painters[i].RedrawByResize === 'function')

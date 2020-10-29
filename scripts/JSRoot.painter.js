@@ -1969,12 +1969,8 @@ JSROOT.define(['d3'], (d3) => {
    /** @summary This is SVG element, correspondent to current pad
     * @private */
    ObjectPainter.prototype.svg_pad = function(pad_name) {
-      if (pad_name === undefined) {
-         if (this.this_pad_name && (this.this_pad_name != this.pad_name)) {
-            console.error('Selecting mismatch this_pad_name', this.this_pad_name, ' pad_name', this.pad_name, this.GetClassName());
-         }
-         pad_name = /* this.this_pad_name || */ this.pad_name; // either pad itself or pad which belong to
-      }
+      if (pad_name === undefined)
+         pad_name = this.pad_name;
 
       let c = this.svg_canvas();
       if (!pad_name || c.empty()) return c;

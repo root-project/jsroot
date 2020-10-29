@@ -469,7 +469,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                   handle.acc_y1 += evnt.dy;
 
                drag_rect.attr("x", Math.min(Math.max(handle.acc_x1, 0), handle.pad_w))
-                  .attr("y", Math.min(Math.max(handle.acc_y1, 0), handle.pad_h));
+                        .attr("y", Math.min(Math.max(handle.acc_y1, 0), handle.pad_h));
 
             }).on("end", function(evnt) {
                if (!drag_rect) return;
@@ -484,7 +484,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                      let rrr = resize_se.node().getBoundingClientRect();
                      pthis.ShowContextMenu('main', { clientX: rrr.left, clientY: rrr.top });
                   } else if (callback.canselect && (spent <= 600)) {
-                     pthis.canv_painter().SelectObjectPainter(pthis);
+                     let cp = pthis.canv_painter();
+                     if (cp) cp.SelectObjectPainter(pthis);
                   }
                }
             });
