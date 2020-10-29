@@ -34,7 +34,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
       let kind = svg.property('can3d');
       if (new_value !== undefined) svg.property('can3d', new_value);
       return ((kind === null) || (kind === undefined)) ? -1 : kind;
-   },
+   }
 
    /** @summary Returns size which availble for 3D drawing.
     * @desc One uses frame sizes for the 3D drawing - like TH2/TH3 objects
