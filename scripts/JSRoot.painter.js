@@ -1903,10 +1903,8 @@ JSROOT.define(['d3'], (d3) => {
       if (cp.custom_palette && !palettedid)
          return cp.custom_palette;
 
-      if (force && jsrp.GetColorPalette) {
-         console.log('Create palette !!!!');
+      if (force && jsrp.GetColorPalette)
          cp.custom_palette = jsrp.GetColorPalette(palettedid);
-       }
 
       return cp.custom_palette;
    }
@@ -1992,8 +1990,7 @@ JSROOT.define(['d3'], (d3) => {
          if (this.this_pad_name && (this.this_pad_name != this.pad_name)) {
             console.error('Selecting mismatch this_pad_name', this.this_pad_name, ' pad_name', this.pad_name, this.GetClassName());
          }
-
-         pad_name = this.pad_name; // either pad itself or pad which belong to
+         pad_name = /* this.this_pad_name || */ this.pad_name; // either pad itself or pad which belong to
       }
 
       let c = this.svg_canvas();
@@ -2329,7 +2326,7 @@ JSROOT.define(['d3'], (d3) => {
 
          this.apply_3d_size(size).remove();
 
-         this.svg_frame().style('display', null);  // clear display property
+         this.svg_frame(this.this_pad_name).style('display', null);  // clear display property
       }
       return can3d;
    }
@@ -2366,7 +2363,7 @@ JSROOT.define(['d3'], (d3) => {
          if (this.svg_pad(this.this_pad_name).empty()) return;
 
          // first hide normal frame
-         this.svg_frame().style('display', 'none');
+         this.svg_frame(this.this_pad_name).style('display', 'none');
 
          let elem = this.apply_3d_size(size);
 
@@ -2384,12 +2381,12 @@ JSROOT.define(['d3'], (d3) => {
 
       if (size.can3d > 1) {
 
-         elem = this.svg_layer(size.clname);
+         elem = this.svg_layer(size.clname, this.this_pad_name);
 
          // elem = layer.select("." + size.clname);
          if (onlyget) return elem;
 
-         let svg = this.svg_pad();
+         let svg = this.svg_pad(this.this_pad_name);
 
          if (size.can3d === JSROOT.constants.Embed3D.EmbedSVG) {
             // this is SVG mode or image mode - just create group to hold element
