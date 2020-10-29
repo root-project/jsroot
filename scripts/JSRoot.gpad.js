@@ -1992,7 +1992,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary cleanup only pad itself, all child elements will be collected and cleanup separately  */
    TPadPainter.prototype.Cleanup = function() {
 
-      for (let k=0;k<this.painters.length;++k)
+      for (let k = 0; k < this.painters.length; ++k)
          this.painters[k].Cleanup();
 
       let svg_p = this.svg_pad(this.this_pad_name);

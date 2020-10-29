@@ -2422,7 +2422,7 @@ JSROOT.define(['d3'], (d3) => {
       if (arg == "pad") {
          this.RedrawPad(reason);
       } else if (arg == "axes") {
-         let main = this.main_painter(true, this.this_pad_name); // works for pad and any object drawn in the pad
+         let main = this.main_painter(true); // works for pad and any object drawn in the pad
          if (main && (typeof main.DrawAxes == 'function'))
             main.DrawAxes();
          else

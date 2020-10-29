@@ -1495,7 +1495,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       },
 
       ToggleButtonsVisibility: function(action) {
-         let group = this.svg_layer("btns_layer", this.this_pad_name),
+         let group = this.svg_layer("btns_layer"),
              btn = group.select("[name='Toggle']");
 
          if (btn.empty()) return;
@@ -1530,7 +1530,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       },
 
       FindButton: function(keyname) {
-         let group = this.svg_layer("btns_layer", this.this_pad_name), found_func = "";
+         let group = this.svg_layer("btns_layer"), found_func = "";
          if (!group.empty())
             group.selectAll("svg").each(function() {
                if (d3.select(this).attr("key") === keyname)
@@ -1541,7 +1541,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       },
 
       RemoveButtons: function() {
-         let group = this.svg_layer("btns_layer", this.this_pad_name);
+         let group = this.svg_layer("btns_layer");
          if (!group.empty()) {
             group.selectAll("*").remove();
             group.property("nextx", null);
@@ -1549,7 +1549,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       },
 
       ShowButtons: function() {
-         let group = this.svg_layer("btns_layer", this.this_pad_name);
+         let group = this.svg_layer("btns_layer");
          if (group.empty()) return;
 
          // clean all previous buttons
@@ -1601,7 +1601,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          group.property("nextx", x);
 
-         this.AlignBtns(group, this.pad_width(this.this_pad_name), this.pad_height(this.this_pad_name));
+         this.AlignBtns(group, this.pad_width(), this.pad_height());
 
          if (group.property('vertical'))
             ctrl.attr("y", x);
