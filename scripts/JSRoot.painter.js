@@ -2140,10 +2140,9 @@ JSROOT.define(['d3'], (d3) => {
    ObjectPainter.prototype.svg_frame = function() { return this.svg_layer("primitives_layer").select(".root_frame"); }
 
    /** @summary Returns pad width.
-    * @param {string} [pad_name] - optional pad name, otherwise where object painter is drawn
     * @private  */
-   ObjectPainter.prototype.pad_width = function(pad_name) {
-      let res = this.svg_pad(pad_name);
+   ObjectPainter.prototype.pad_width = function() {
+      let res = this.svg_pad();
       res = res.empty() ? 0 : res.property("draw_width");
       return isNaN(res) ? 0 : res;
    }
@@ -2151,8 +2150,8 @@ JSROOT.define(['d3'], (d3) => {
    /** @summary Returns pad height
     * @param {string} [pad_name] - optional pad name, otherwise where object painter is drawn
     * @private */
-   ObjectPainter.prototype.pad_height = function(pad_name) {
-      let res = this.svg_pad(pad_name);
+   ObjectPainter.prototype.pad_height = function() {
+      let res = this.svg_pad();
       res = res.empty() ? 0 : res.property("draw_height");
       return isNaN(res) ? 0 : res;
    }
@@ -2186,12 +2185,11 @@ JSROOT.define(['d3'], (d3) => {
 
    /** @summary Returns main object painter on the pad.
     * @desc Normally this is first histogram drawn on the pad, which also draws all axes
-    * @param {boolean} [not_store = undefined] - if true, prevent temporary store of main painter reference
-    * @param {string} [pad_name = undefined] - when specified, returns main painter from specified pad */
-   ObjectPainter.prototype.main_painter = function(not_store, pad_name) {
+    * @param {boolean} [not_store] - if true, prevent temporary store of main painter reference */
+   ObjectPainter.prototype.main_painter = function(not_store) {
       let res = this.main;
       if (!res) {
-         let svg_p = this.svg_pad(pad_name);
+         let svg_p = this.svg_pad();
          if (svg_p.empty()) {
             res = this.AccessTopPainter();
          } else {
@@ -2222,7 +2220,7 @@ JSROOT.define(['d3'], (d3) => {
     *
     * @param {string|object} divid - id of div element or directly DOMElement
     * @param {number} [kind] - kind of object drawn with painter
-    * @param {string} [pad_name] - when specified, subpad name used for object drawin
+    * @param {string} [pad_name] - when specified, subpad name used for object drawing
     * @private */
    ObjectPainter.prototype.SetDivId = function(divid, kind, pad_name) {
 

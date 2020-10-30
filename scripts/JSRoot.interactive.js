@@ -184,7 +184,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             gapy = 10,  // y coordinate, taking into account all gaps
             gapminx = -1111, gapmaxx = -1111,
             minhinty = -frame_shift.y,
-            maxhinty = this.pad_height("") - frame_rect.y - frame_shift.y;
+            maxhinty = this.canv_painter().pad_height() - frame_rect.y - frame_shift.y;
 
          function FindPosInGap(y) {
             for (let n = 0; (n < hints.length) && (y < maxhinty); ++n) {
