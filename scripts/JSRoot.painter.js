@@ -1989,8 +1989,8 @@ JSROOT.define(['d3'], (d3) => {
 
    /** @summary Method selects immediate layer under canvas/pad main element
     * @private */
-   ObjectPainter.prototype.svg_layer = function(name, pad_name) {
-      let svg = this.svg_pad(pad_name);
+   ObjectPainter.prototype.svg_layer = function(name) {
+      let svg = this.svg_pad();
       if (svg.empty()) return svg;
 
       if (name.indexOf("prim#") == 0) {
@@ -1999,7 +1999,7 @@ JSROOT.define(['d3'], (d3) => {
       }
 
       let node = svg.node().firstChild;
-      while (node !== null) {
+      while (node) {
          let elem = d3.select(node);
          if (elem.classed(name)) return elem;
          node = node.nextSibling;
@@ -2135,11 +2135,9 @@ JSROOT.define(['d3'], (d3) => {
       return func;
    }
 
-   /** @summary Returns svg element for the frame.
-    *
-    * @param {string} [pad_name = undefined] - optional pad name, otherwise where object painter is drawn
+   /** @summary Returns svg element for the frame in current pad.
     * @private */
-   ObjectPainter.prototype.svg_frame = function(pad_name) { return this.svg_layer("primitives_layer", pad_name).select(".root_frame"); }
+   ObjectPainter.prototype.svg_frame = function() { return this.svg_layer("primitives_layer").select(".root_frame"); }
 
    /** @summary Returns pad width.
     * @param {string} [pad_name] - optional pad name, otherwise where object painter is drawn
