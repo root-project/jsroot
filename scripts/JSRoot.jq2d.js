@@ -155,7 +155,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
             // todo - use jqury dialog here
             let useid = (typeof value !== 'string');
             let col = prompt("Enter color " + (useid ? "(only id number)" : "(name or id)"), value);
-            if (!col) return;
+            if (col === null) return;
             let id = parseInt(col);
             if (!isNaN(id) && jsrp.getColor(id)) {
                col = jsrp.getColor(id);
@@ -250,7 +250,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
                arg => { painter.lineatt.Change(arg); painter.InteractiveRedraw(true, getColorExec(arg, "SetLineColor")); });
             this.add("sub:style", function() {
                let id = prompt("Enter line style id (1-solid)", 1);
-               if (!id) return;
+               if (id === null) return;
                id = parseInt(id);
                if (isNaN(id) || !jsrp.root_line_styles[id]) return;
                this.lineatt.Change(undefined, undefined, id);
@@ -288,7 +288,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
                arg => { painter.fillatt.Change(arg, undefined, painter.svg_canvas()); painter.InteractiveRedraw(true, getColorExec(arg, "SetFillColor")); }, painter.fillatt.kind);
             this.add("sub:style", function() {
                let id = prompt("Enter fill style id (1001-solid, 3000..3010)", this.fillatt.pattern);
-               if (!id) return;
+               if (id === null) return;
                id = parseInt(id);
                if (isNaN(id)) return;
                this.fillatt.Change(undefined, id, this.svg_canvas());
@@ -337,20 +337,20 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
       AddTAxisMenu(painter, faxis, kind) {
          this.add("sub:Labels");
          this.addchk(faxis.TestBit(JSROOT.EAxisBits.kCenterLabels), "Center",
-               function() { faxis.InvertBit(JSROOT.EAxisBits.kCenterLabels); this.RedrawPad(); });
+               arg => { faxis.InvertBit(JSROOT.EAxisBits.kCenterLabels); painter.InteractiveRedraw("pad", `exec:CenterLabels(${arg})`, kind); });
          this.addchk(faxis.TestBit(JSROOT.EAxisBits.kLabelsVert), "Rotate",
-               function() { faxis.InvertBit(JSROOT.EAxisBits.kLabelsVert); this.RedrawPad(); });
+               arg => { faxis.InvertBit(JSROOT.EAxisBits.kLabelsVert); painter.InteractiveRedraw("pad", `exec:SetBit(TAxis::kLabelsVert,${arg})`, kind); });
          this.AddColorMenu("Color", faxis.fLabelColor,
                arg => { faxis.fLabelColor = arg; painter.InteractiveRedraw("pad", getColorExec(arg, "SetLabelColor"), kind); });
          this.SizeMenu("Offset", 0, 0.1, 0.01, faxis.fLabelOffset,
-               arg => { faxis.fLabelOffset = arg; painter.InteractiveRedraw("pad"); } );
+               arg => { faxis.fLabelOffset = arg; painter.InteractiveRedraw("pad", `exec:SetLabelOffset(${arg})`, kind); } );
          this.SizeMenu("Size", 0.02, 0.11, 0.01, faxis.fLabelSize,
-               arg => { faxis.fLabelSize = arg; painter.InteractiveRedraw("pad"); } );
+               arg => { faxis.fLabelSize = arg; painter.InteractiveRedraw("pad", `exec:SetLabelSize(${arg})`, kind); } );
          this.add("endsub:");
          this.add("sub:Title");
-         this.add("SetTitle", function() {
+         this.add("SetTitle", () => {
             let t = prompt("Enter axis title", faxis.fTitle);
-            if (t) { faxis.fTitle = t; this.RedrawPad(); }
+            if (t!==null) { faxis.fTitle = t; painter.InteractiveRedraw("pad", `exec:SetTitle("${t}")`, kind); }
          });
          this.addchk(faxis.TestBit(JSROOT.EAxisBits.kCenterTitle), "Center",
                arg => { faxis.InvertBit(JSROOT.EAxisBits.kCenterTitle); painter.InteractiveRedraw("pad", `exec:CenterTitle(${arg})`, kind); });
@@ -359,9 +359,9 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          this.AddColorMenu("Color", faxis.fTitleColor,
                arg => { faxis.fTitleColor = arg; painter.InteractiveRedraw("pad", getColorExec(arg, "SetTitleColor"), kind); });
          this.SizeMenu("Offset", 0, 3, 0.2, faxis.fTitleOffset,
-                         arg => { faxis.fTitleOffset = arg; painter.InteractiveRedraw("pad"); } );
+                         arg => { faxis.fTitleOffset = arg; painter.InteractiveRedraw("pad", `exec:SetTitleOffset(${arg})`, kind); });
          this.SizeMenu("Size", 0.02, 0.11, 0.01, faxis.fTitleSize,
-                         arg => { faxis.fTitleSize = arg; painter.InteractiveRedraw("pad"); } );
+                         arg => { faxis.fTitleSize = arg; painter.InteractiveRedraw("pad", `exec:SetTitleSize(${arg})`, kind); });
          this.add("endsub:");
          this.add("sub:Ticks");
          if (faxis._typename == "TGaxis") {
