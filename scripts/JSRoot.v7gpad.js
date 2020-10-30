@@ -2152,13 +2152,21 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    RPadPainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
 
-   RPadPainter.prototype.Cleanup = function() {
-      // cleanup only pad itself, all child elements will be collected and cleanup separately
+   /** @summary Returns SVG element for the specified pad (or itself)
+    * @private */
+   RPadPainter.prototype.svg_pad = function(pad_name) {
+      if (pad_name === undefined)
+         pad_name = this.this_pad_name;
+      return JSROOT.ObjectPainter.prototype.svg_pad.call(this, pad_name);
+   }
 
-      for (let k=0;k<this.painters.length;++k)
+   /** @summary cleanup only pad itself, all child elements will be collected and cleanup separately */ 
+   RPadPainter.prototype.Cleanup = function() {
+
+      for (let k = 0; k < this.painters.length; ++k)
          this.painters[k].Cleanup();
 
-      let svg_p = this.svg_pad(this.this_pad_name);
+      let svg_p = this.svg_pad();
       if (!svg_p.empty()) {
          svg_p.property('pad_painter', null);
          svg_p.property('mainpainter', null);
@@ -2171,7 +2179,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.pad = null;
       this.draw_object = null;
       this.pad_frame = null;
-      this.this_pad_name = "";
+      this.this_pad_name = undefined;
       this.has_canvas = false;
 
       jsrp.SelectActivePad({ pp: this, active: false });
@@ -2183,14 +2191,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
     * @private */
    RPadPainter.prototype.frame_painter = function() {
       return this.frame_painter_ref;
-   }
-
-   /** @summary Returns SVG element for the specified pad (or itself)
-    * @private */
-   RPadPainter.prototype.svg_pad = function(pad_name) {
-      if (pad_name === undefined)
-         pad_name = this.this_pad_name;
-      return JSROOT.ObjectPainter.prototype.svg_pad.call(this, pad_name);
    }
 
    /** @summary Cleanup primitives from pad - selector lets define which painters to remove
@@ -2232,7 +2232,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           pp = _painter instanceof RPadPainter ? _painter : _painter.pad_painter();
 
       if (pos && !istoppad)
-          this.CalcAbsolutePosition(this.svg_pad(this.this_pad_name), pos);
+          this.CalcAbsolutePosition(this.svg_pad(), pos);
 
       jsrp.SelectActivePad({ pp: pp, active: true });
 
@@ -2438,10 +2438,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
 
       if (only_resize) {
-         svg_pad = this.svg_pad(this.this_pad_name);
+         svg_pad = this.svg_pad();
          svg_rect = svg_pad.select(".root_pad_border");
          if (!JSROOT.BatchMode)
-            btns = this.svg_layer("btns_layer", this.this_pad_name);
+            btns = this.svg_layer("btns_layer");
       } else {
          svg_pad = svg_parent.select(".primitives_layer")
              .append("svg:svg") // here was g before, svg used to blend all drawin outside
