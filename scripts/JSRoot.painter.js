@@ -584,13 +584,13 @@ JSROOT.define(['d3'], (d3) => {
     */
    TAttLineHandler.prototype.SetArgs = function(args) {
       if (args.attr) {
-         args.color = args.color0 || jsrp.getColor(args.attr.fLineColor);
+         args.color = args.color0 || (args.painter ? args.painter.get_color(args.attr.fLineColor) : jsrp.getColor(args.attr.fLineColor));
          if (args.width === undefined) args.width = args.attr.fLineWidth;
          args.style = args.attr.fLineStyle;
       } else if (typeof args.color == 'string') {
          if ((args.color !== 'none') && !args.width) args.width = 1;
       } else if (typeof args.color == 'number') {
-         args.color = jsrp.getColor(args.color);
+         args.color = args.painter ? args.painter.get_color(args.color) : jsrp.getColor(args.color);
       }
 
       if (args.width === undefined)
@@ -2338,15 +2338,20 @@ JSROOT.define(['d3'], (d3) => {
    * Instance assigned as this.lineatt data member, recognized by GED editor
    * @param {object} args - either TAttLine or see constructor arguments of {@link JSROOT.TAttLineHandler} */
    ObjectPainter.prototype.createAttLine = function(args) {
-      if (!args || (typeof args !== 'object')) args = { std: true }; else
-         if (args.fLineColor !== undefined && args.fLineStyle !== undefined && args.fLineWidth !== undefined) args = { attr: args, std: false };
+      if (!args || (typeof args !== 'object')) 
+         args = { std: true }; 
+      else if (args.fLineColor !== undefined && args.fLineStyle !== undefined && args.fLineWidth !== undefined) 
+         args = { attr: args, std: false };
 
       if (args.std === undefined) args.std = true;
+      if (args.painter === undefined) args.painter = this;
 
       let handler = args.std ? this.lineatt : null;
 
-      if (!handler) handler = new TAttLineHandler(args);
-      else if (!handler.changed || args.force) handler.SetArgs(args);
+      if (!handler) 
+         handler = new TAttLineHandler(args);
+      else if (!handler.changed || args.force) 
+         handler.SetArgs(args);
 
       if (args.std) this.lineatt = handler;
 
