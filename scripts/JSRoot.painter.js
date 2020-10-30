@@ -384,7 +384,8 @@ JSROOT.define(['d3'], (d3) => {
       if ((typeof args == 'object') && (typeof args.fMarkerStyle == 'number')) args = { attr: args };
 
       if (args.attr) {
-         if (args.color === undefined) args.color = jsrp.getColor(args.attr.fMarkerColor);
+         if (args.color === undefined) 
+            args.color = args.painter ? args.painter.get_color(args.attr.fMarkerColor) : jsrp.getColor(args.attr.fMarkerColor);
          if (!args.style || (args.style < 0)) args.style = args.attr.fMarkerStyle;
          if (!args.size) args.size = args.attr.fMarkerSize;
       }
@@ -707,7 +708,7 @@ JSROOT.define(['d3'], (d3) => {
          if ((args.pattern === undefined) && (args.attr.fFillStyle !== undefined)) args.pattern = args.attr.fFillStyle;
          if ((args.color === undefined) && (args.attr.fFillColor !== undefined)) args.color = args.attr.fFillColor;
       }
-      this.Change(args.color, args.pattern, args.svg, args.color_as_svg);
+      this.Change(args.color, args.pattern, args.svg, args.color_as_svg, args.painter);
    }
 
    /** @summary Apply fill style to selection */
@@ -760,7 +761,7 @@ JSROOT.define(['d3'], (d3) => {
       if (typeof this.pattern == 'string') this.pattern = parseInt(this.pattern);
       if (isNaN(this.pattern)) this.pattern = 0;
 
-      this.Change(this.color, this.pattern, painter ? painter.svg_canvas() : null, true);
+      this.Change(this.color, this.pattern, painter ? painter.svg_canvas() : null, true, painter);
    }
 
    /** @summary Method to change fill attributes.
@@ -768,9 +769,10 @@ JSROOT.define(['d3'], (d3) => {
     * @param {number} color - color index
     * @param {number} pattern - pattern index
     * @param {selection} svg - top canvas element for pattern storages
-    * @param {string} [color_as_svg = undefined] - color as HTML string index
+    * @param {string} [color_as_svg] - when color is string, interpret as normal SVG color
+    * @param {object} [painter] - when specified, used to extract color by index
     */
-   TAttFillHandler.prototype.Change = function(color, pattern, svg, color_as_svg) {
+   TAttFillHandler.prototype.Change = function(color, pattern, svg, color_as_svg, painter) {
       delete this.pattern_url;
       this.changed = true;
 
@@ -806,7 +808,7 @@ JSROOT.define(['d3'], (d3) => {
          this.color = color;
          indx = 10000 + JSROOT._.id_counter++; // use fictional unique index far away from existing color indexes
       } else {
-         this.color = jsrp.getColor(indx);
+         this.color = painter ? painter.get_color(indx) : jsrp.getColor(indx);
       }
 
       if (typeof this.color != 'string') this.color = "none";
@@ -2318,11 +2320,14 @@ JSROOT.define(['d3'], (d3) => {
          if (args.fMarkerColor !== undefined && args.fMarkerStyle !== undefined && args.fMarkerSize !== undefined) args = { attr: args, std: false };
 
       if (args.std === undefined) args.std = true;
+      if (args.painter === undefined) args.painter = this;
 
       let handler = args.std ? this.markeratt : null;
 
-      if (!handler) handler = new TAttMarkerHandler(args);
-      else if (!handler.changed || args.force) handler.SetArgs(args);
+      if (!handler) 
+         handler = new TAttMarkerHandler(args);
+      else if (!handler.changed || args.force) 
+         handler.SetArgs(args);
 
       if (args.std) this.markeratt = handler;
 
@@ -2384,9 +2389,12 @@ JSROOT.define(['d3'], (d3) => {
       let handler = args.std ? this.fillatt : null;
 
       if (!args.svg) args.svg = this.svg_canvas();
+      if (args.painter === undefined) args.painter = this;
 
-      if (!handler) handler = new TAttFillHandler(args);
-      else if (!handler.changed || args.force) handler.SetArgs(args);
+      if (!handler) 
+         handler = new TAttFillHandler(args);
+      else if (!handler.changed || args.force) 
+         handler.SetArgs(args);
 
       if (args.std) this.fillatt = handler;
 
