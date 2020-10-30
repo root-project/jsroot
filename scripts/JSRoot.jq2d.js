@@ -75,7 +75,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          title = title ? " title='" + title + "'" : "";
          if (name.indexOf("sub:")==0) { name = name.substr(4); close_tag = "<ul>"; }
 
-         if (typeof arg == 'function') { func = arg; arg = name;  }
+         if (typeof arg == 'function') { func = arg; arg = name; }
 
          if (name.indexOf("chk:")==0) { item = "<span class='ui-icon ui-icon-check' style='margin:1px'></span>"; name = name.substr(4); } else
          if (name.indexOf("unk:")==0) { item = "<span class='ui-icon ui-icon-blank' style='margin:1px'></span>"; name = name.substr(4); }
@@ -95,7 +95,13 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
       }
 
       addchk(flag, name, arg, func) {
-         return this.add((flag ? "chk:" : "unk:") + name, arg, func);
+         let handler = func;
+         if (typeof arg == 'function') {
+            func = arg;
+            handler = res => func(arg=="1");  
+            arg = flag ? "0" : "1"; 
+         }
+         return this.add((flag ? "chk:" : "unk:") + name, arg, handler);
       }
 
       size() { return this.cnt-1; }
@@ -325,6 +331,8 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          }
       }
 
+      /** @summary Fill context menu for axis
+       * @private */
       AddTAxisMenu(painter, faxis, kind) {
          this.add("sub:Labels");
          this.addchk(faxis.TestBit(JSROOT.EAxisBits.kCenterLabels), "Center",
@@ -344,11 +352,11 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
             if (t) { faxis.fTitle = t; this.RedrawPad(); }
          });
          this.addchk(faxis.TestBit(JSROOT.EAxisBits.kCenterTitle), "Center",
-               function() { faxis.InvertBit(JSROOT.EAxisBits.kCenterTitle); this.RedrawPad(); });
+               arg => { faxis.InvertBit(JSROOT.EAxisBits.kCenterTitle); painter.InteractiveRedraw("pad", `exec:CenterTitle(${arg})`, kind); });
          this.addchk(faxis.TestBit(JSROOT.EAxisBits.kRotateTitle), "Rotate",
                function() { faxis.InvertBit(JSROOT.EAxisBits.kRotateTitle); this.RedrawPad(); });
          this.AddColorMenuEntry("Color", faxis.fTitleColor,
-               function(arg) { faxis.fTitleColor = parseInt(arg); this.InteractiveRedraw("pad", getColorExec(parseInt(arg), "SetTitleColor"), kind); }.bind(painter));
+               arg => { faxis.fTitleColor = parseInt(arg); painter.InteractiveRedraw("pad", getColorExec(parseInt(arg), "SetTitleColor"), kind); });
          this.SizeMenu("Offset", 0, 3, 0.2, faxis.fTitleOffset,
                                function(arg) { faxis.fTitleOffset = parseFloat(arg); this.RedrawPad(); } );
          this.SizeMenu("Size", 0.02, 0.11, 0.01, faxis.fTitleSize,
@@ -364,7 +372,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
             this.AddColorMenuEntry("Color", faxis.fAxisColor,
                         function(arg) { faxis.fAxisColor = parseInt(arg); this.InteractiveRedraw("pad", getColorExec(parseInt(arg), "SetAxisColor"), kind); }.bind(painter));
             this.SizeMenu("Size", -0.05, 0.055, 0.01, faxis.fTickLength,
-                     function(arg) { faxis.fTickLength = parseFloat(arg); this.RedrawPad(); } );
+                     function(arg) { faxis.fTickLength = parseFloat(arg); this.InteractiveRedraw("pad", `exec:SetTickLength(${arg})`, kind); }.bind(painter));
          }
          this.add("endsub:");
       }
