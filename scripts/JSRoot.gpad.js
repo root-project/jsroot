@@ -2651,7 +2651,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    TPadPainter.prototype.RedrawByResize = function() {
-      if (this.svg_pad(this.this_pad_name).property('can3d') === JSROOT.constants.Embed3D.Overlay) return true;
+      if (this.svg_pad().property('can3d') === JSROOT.constants.Embed3D.Overlay) return true;
 
       for (let i = 0; i < this.painters.length; ++i)
          if (typeof this.painters[i].RedrawByResize === 'function')
@@ -2867,7 +2867,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             // we select current pad, where all drawing is performed
             let prev_name = padpainter.CurrentPadName(padpainter.this_pad_name);
-            padpainter.DrawNextSnap(snap.fPrimitives, -1, function() {
+            padpainter.DrawNextSnap(snap.fPrimitives, -1, () => {
                padpainter.CurrentPadName(prev_name);
                draw_callback(padpainter);
             });
@@ -3026,7 +3026,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
 
       if (!isanyfound) {
-         let svg_p = this.svg_pad(this.this_pad_name),
+         let svg_p = this.svg_pad(),
              fp = this.frame_painter();
          if (svg_p && !svg_p.empty())
             svg_p.property('mainpainter', null);
@@ -3109,13 +3109,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (is_top) return JSROOT.toJSON(arg);
    }
 
+   /** @summary returns actual ranges in the pad, which can be applied to the server 
+     * @private */
    TPadPainter.prototype.GetPadRanges = function(r) {
-      // function returns actual ranges in the pad, which can be applied to the server
 
       if (!r) return false;
 
       let main = this.frame_painter(),
-          p = this.svg_pad(this.this_pad_name);
+          p = this.svg_pad();
 
       r.ranges = main && main.ranges_set ? true : false; // indicate that ranges are assigned
 
@@ -3171,7 +3172,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    TPadPainter.prototype.ItemContextMenu = function(name) {
-       let rrr = this.svg_pad(this.this_pad_name).node().getBoundingClientRect();
+       let rrr = this.svg_pad().node().getBoundingClientRect();
        let evnt = { clientX: rrr.left+10, clientY: rrr.top + 10 };
 
        // use timeout to avoid conflict with mouse click and automatic menu close
@@ -3226,7 +3227,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       let use_frame = (full_canvas === "frame");
 
-      let elem = use_frame ? this.svg_frame() : (full_canvas ? this.svg_canvas() : this.svg_pad(this.this_pad_name));
+      let elem = use_frame ? this.svg_frame() : (full_canvas ? this.svg_canvas() : this.svg_pad());
 
       if (elem.empty()) return Promise.resolve("");
 
@@ -3237,11 +3238,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (!use_frame) // do not make transformations for the frame
       painter.ForEachPainterInPad(pp => {
 
-         let item = { prnt: pp.svg_pad(pp.this_pad_name) };
+         let item = { prnt: pp.svg_pad() };
          items.push(item);
 
          // remove buttons from each subpad
-         let btns = pp.svg_layer("btns_layer", pp.this_pad_name);
+         let btns = pp.svg_layer("btns_layer");
          item.btns_node = btns.node();
          if (item.btns_node) {
             item.btns_prnt = item.btns_node.parentNode;

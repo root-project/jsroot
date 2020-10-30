@@ -2609,14 +2609,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          function ToggleGridField(arg) {
             this.pad[arg] = this.pad[arg] ? 0 : 1;
-            let main = this.svg_pad(this.this_pad_name).property('mainpainter');
+            let main = this.main_painter();
             if (main && (typeof main.DrawGrids == 'function')) main.DrawGrids();
          }
 
          function SetTickField(arg) {
             this.pad[arg.substr(1)] = parseInt(arg[0]);
 
-            let main = this.svg_pad(this.this_pad_name).property('mainpainter');
+            let main = this.main_painter();
             if (main && (typeof main.DrawAxes == 'function')) main.DrawAxes();
          }
 
@@ -2656,9 +2656,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    RPadPainter.prototype.PadContextMenu = function(evnt) {
-      if (evnt.stopPropagation) { // this is normal event processing and not emulated jsroot event
+      if (evnt.stopPropagation) { 
+         // this is normal event processing and not emulated jsroot event
          // for debug purposes keep original context menu for small region in top-left corner
-         let pos = d3.pointer(evnt, this.svg_pad(this.this_pad_name).node());
+         let pos = d3.pointer(evnt, this.svg_pad().node());
 
          if (pos && (pos.length==2) && (pos[0]>0) && (pos[0]<10) && (pos[1]>0) && pos[1]<10) return;
 
@@ -2713,7 +2714,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    RPadPainter.prototype.RedrawByResize = function() {
-      if (this.svg_pad(this.this_pad_name).property('can3d') === JSROOT.constants.Embed3D.Overlay) return true;
+      if (this.svg_pad().property('can3d') === JSROOT.constants.Embed3D.Overlay) return true;
 
       for (let i = 0; i < this.painters.length; ++i)
          if (typeof this.painters[i].RedrawByResize === 'function')
@@ -3039,7 +3040,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    RPadPainter.prototype.ItemContextMenu = function(name) {
-       let rrr = this.svg_pad(this.this_pad_name).node().getBoundingClientRect();
+       let rrr = this.svg_pad().node().getBoundingClientRect();
        let evnt = { clientX: rrr.left+10, clientY: rrr.top + 10 };
 
        // use timeout to avoid conflict with mouse click and automatic menu close
@@ -3094,7 +3095,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       let use_frame = (full_canvas === "frame");
 
-      let elem = use_frame ? this.svg_frame() : (full_canvas ? this.svg_canvas() : this.svg_pad(this.this_pad_name));
+      let elem = use_frame ? this.svg_frame() : (full_canvas ? this.svg_canvas() : this.svg_pad());
 
       if (elem.empty()) return Promise.resolve("");
 
@@ -3105,11 +3106,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (!use_frame) // do not make transformations for the frame
       painter.ForEachPainterInPad(pp => {
 
-         let item = { prnt: pp.svg_pad(pp.this_pad_name) };
+         let item = { prnt: pp.svg_pad() };
          items.push(item);
 
          // remove buttons from each subpad
-         let btns = pp.svg_layer("btns_layer", pp.this_pad_name);
+         let btns = pp.svg_layer("btns_layer");
          item.btns_node = btns.node();
          if (item.btns_node) {
             item.btns_prnt = item.btns_node.parentNode;
@@ -3351,8 +3352,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return (len.fArr && (len.fArr.length>indx)) ? len.fArr[indx] : dflt;
       }
 
-      let w = this.pad_width(this.this_pad_name),
-          h = this.pad_height(this.this_pad_name),
+      let w = this.pad_width(),
+          h = this.pad_height(),
           h_norm = GetV(pos.fHoriz, 0, 0),
           h_pixel = GetV(pos.fHoriz, 1, 0),
           h_user = GetV(pos.fHoriz, 2),
