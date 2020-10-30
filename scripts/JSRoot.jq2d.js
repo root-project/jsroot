@@ -149,7 +149,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
       }
 
       /** @summary Add color selection menu entries  */
-      AddColorMenuEntry(name, value, set_func, fill_kind) {
+      AddColorMenu(name, value, set_func, fill_kind) {
          if (value === undefined) return;
          this.add("sub:" + name, function() {
             // todo - use jqury dialog here
@@ -162,7 +162,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
             } else {
                if (useid) return;
             }
-            set_func.bind(this)(useid ? id : col);
+            set_func(useid ? id : col);
          });
          let useid = (typeof value !== 'string');
          for (let n = -1; n < 11; ++n) {
@@ -171,7 +171,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
             let col = (n < 0) ? 'none' : jsrp.getColor(n);
             if ((n == 0) && (fill_kind == 1)) col = 'none';
             let svg = "<svg width='100' height='18' style='margin:0px;background-color:" + col + "'><text x='4' y='12' style='font-size:12px' fill='" + (n == 1 ? "white" : "black") + "'>" + col + "</text></svg>";
-            this.addchk((value == (useid ? n : col)), svg, (useid ? n : col), set_func);
+            this.addchk((value == (useid ? n : col)), svg, (useid ? n : col), res => set_func(useid ? parseInt(res) : res));
          }
          this.add("endsub:");
       }
@@ -188,13 +188,14 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
             let val = prompt("Enter value of " + name, entry);
             if (!val) return;
             val = parseFloat(val);
-            if (!isNaN(val)) set_func.bind(this)((step >= 1) ? Math.round(val) : val);
+            if (!isNaN(val)) set_func((step >= 1) ? Math.round(val) : val);
          });
          for (let val = min; val <= max; val += step) {
             let entry = val.toFixed(2);
             if (step >= 0.1) entry = val.toFixed(1);
             if (step >= 1) entry = val.toFixed(0);
-            this.addchk((Math.abs(value - val) < step / 2), entry, val, set_func);
+            this.addchk((Math.abs(value - val) < step / 2), entry, 
+                        val, res => set_func((step >= 1) ? parseInt(res) : parseFloat(res)));
          }
          this.add("endsub:");
       }
@@ -208,8 +209,8 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          if (!obj || !('fTextColor' in obj)) return;
 
          this.add("sub:" + (prefix ? prefix : "Text"));
-         this.AddColorMenuEntry("color", obj.fTextColor,
-            function(arg) { this.GetObject().fTextColor = parseInt(arg); this.InteractiveRedraw(true, getColorExec(parseInt(arg), "SetTextColor")); }.bind(painter));
+         this.AddColorMenu("color", obj.fTextColor,
+            arg => { obj.fTextColor = arg; painter.InteractiveRedraw(true, getColorExec(arg, "SetTextColor")); });
 
          let align = [11, 12, 13, 21, 22, 23, 31, 32, 33];
 
@@ -244,9 +245,9 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          if (painter.lineatt && painter.lineatt.used) {
             this.add("sub:" + preffix + "Line att");
             this.SizeMenu("width", 1, 10, 1, painter.lineatt.width,
-               function(arg) { this.lineatt.Change(undefined, parseInt(arg)); this.InteractiveRedraw(true, "exec:SetLineWidth(" + arg + ")"); }.bind(painter));
-            this.AddColorMenuEntry("color", painter.lineatt.color,
-               function(arg) { this.lineatt.Change(arg); this.InteractiveRedraw(true, getColorExec(arg, "SetLineColor")); }.bind(painter));
+               arg => { painter.lineatt.Change(undefined, arg); painter.InteractiveRedraw(true, "exec:SetLineWidth(" + arg + ")"); });
+            this.AddColorMenu("color", painter.lineatt.color,
+               arg => { painter.lineatt.Change(arg); painter.InteractiveRedraw(true, getColorExec(arg, "SetLineColor")); });
             this.add("sub:style", function() {
                let id = prompt("Enter line style id (1-solid)", 1);
                if (!id) return;
@@ -275,7 +276,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
                this.add("endsub:");
 
                this.SizeMenu("width", 10, 100, 10, painter.lineatt.excl_width,
-                  function(arg) { this.lineatt.ChangeExcl(undefined, parseInt(arg)); this.InteractiveRedraw(); }.bind(painter));
+                  arg => { painter.lineatt.ChangeExcl(undefined, arg); painter.InteractiveRedraw(); });
 
                this.add("endsub:");
             }
@@ -283,8 +284,8 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
 
          if (painter.fillatt && painter.fillatt.used) {
             this.add("sub:" + preffix + "Fill att");
-            this.AddColorMenuEntry("color", painter.fillatt.colorindx,
-               function(arg) { this.fillatt.Change(parseInt(arg), undefined, this.svg_canvas()); this.InteractiveRedraw(true, getColorExec(parseInt(arg), "SetFillColor")); }.bind(painter), painter.fillatt.kind);
+            this.AddColorMenu("color", painter.fillatt.colorindx,
+               arg => { painter.fillatt.Change(arg, undefined, painter.svg_canvas()); painter.InteractiveRedraw(true, getColorExec(arg, "SetFillColor")); }, painter.fillatt.kind);
             this.add("sub:style", function() {
                let id = prompt("Enter fill style id (1001-solid, 3000..3010)", this.fillatt.pattern);
                if (!id) return;
@@ -310,10 +311,10 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
 
          if (painter.markeratt && painter.markeratt.used) {
             this.add("sub:" + preffix + "Marker att");
-            this.AddColorMenuEntry("color", painter.markeratt.color,
-               function(arg) { this.markeratt.Change(arg); this.InteractiveRedraw(true, getColorExec(arg, "SetMarkerColor")); }.bind(painter));
+            this.AddColorMenu("color", painter.markeratt.color,
+               arg => { painter.markeratt.Change(arg); painter.InteractiveRedraw(true, getColorExec(arg, "SetMarkerColor"));});
             this.SizeMenu("size", 0.5, 6, 0.5, painter.markeratt.size,
-               function(arg) { this.markeratt.Change(undefined, undefined, parseFloat(arg)); this.InteractiveRedraw(true, "exec:SetMarkerSize(" + parseInt(arg) + ")"); }.bind(painter));
+               arg => { painter.markeratt.Change(undefined, undefined, arg); painter.InteractiveRedraw(true, "exec:SetMarkerSize(" + parseInt(arg) + ")"); });
 
             this.add("sub:style");
             let supported = [1, 2, 3, 4, 5, 6, 7, 8, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34];
@@ -339,12 +340,12 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
                function() { faxis.InvertBit(JSROOT.EAxisBits.kCenterLabels); this.RedrawPad(); });
          this.addchk(faxis.TestBit(JSROOT.EAxisBits.kLabelsVert), "Rotate",
                function() { faxis.InvertBit(JSROOT.EAxisBits.kLabelsVert); this.RedrawPad(); });
-         this.AddColorMenuEntry("Color", faxis.fLabelColor,
-               function(arg) { faxis.fLabelColor = parseInt(arg); this.InteractiveRedraw("pad", getColorExec(parseInt(arg), "SetLabelColor"), kind); }.bind(painter));
+         this.AddColorMenu("Color", faxis.fLabelColor,
+               arg => { faxis.fLabelColor = arg; painter.InteractiveRedraw("pad", getColorExec(arg, "SetLabelColor"), kind); });
          this.SizeMenu("Offset", 0, 0.1, 0.01, faxis.fLabelOffset,
-               function(arg) { faxis.fLabelOffset = parseFloat(arg); this.RedrawPad(); } );
+               arg => { faxis.fLabelOffset = arg; painter.InteractiveRedraw("pad"); } );
          this.SizeMenu("Size", 0.02, 0.11, 0.01, faxis.fLabelSize,
-               function(arg) { faxis.fLabelSize = parseFloat(arg); this.RedrawPad(); } );
+               arg => { faxis.fLabelSize = arg; painter.InteractiveRedraw("pad"); } );
          this.add("endsub:");
          this.add("sub:Title");
          this.add("SetTitle", function() {
@@ -354,25 +355,25 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          this.addchk(faxis.TestBit(JSROOT.EAxisBits.kCenterTitle), "Center",
                arg => { faxis.InvertBit(JSROOT.EAxisBits.kCenterTitle); painter.InteractiveRedraw("pad", `exec:CenterTitle(${arg})`, kind); });
          this.addchk(faxis.TestBit(JSROOT.EAxisBits.kRotateTitle), "Rotate",
-               function() { faxis.InvertBit(JSROOT.EAxisBits.kRotateTitle); this.RedrawPad(); });
-         this.AddColorMenuEntry("Color", faxis.fTitleColor,
-               arg => { faxis.fTitleColor = parseInt(arg); painter.InteractiveRedraw("pad", getColorExec(parseInt(arg), "SetTitleColor"), kind); });
+               arg => { faxis.InvertBit(JSROOT.EAxisBits.kRotateTitle); painter.InteractiveRedraw("pad", `exec:RotateTitle(${arg})`, kind); });
+         this.AddColorMenu("Color", faxis.fTitleColor,
+               arg => { faxis.fTitleColor = arg; painter.InteractiveRedraw("pad", getColorExec(arg, "SetTitleColor"), kind); });
          this.SizeMenu("Offset", 0, 3, 0.2, faxis.fTitleOffset,
-                               function(arg) { faxis.fTitleOffset = parseFloat(arg); this.RedrawPad(); } );
+                         arg => { faxis.fTitleOffset = arg; painter.InteractiveRedraw("pad"); } );
          this.SizeMenu("Size", 0.02, 0.11, 0.01, faxis.fTitleSize,
-               function(arg) { faxis.fTitleSize = parseFloat(arg); this.RedrawPad(); } );
+                         arg => { faxis.fTitleSize = arg; painter.InteractiveRedraw("pad"); } );
          this.add("endsub:");
          this.add("sub:Ticks");
          if (faxis._typename == "TGaxis") {
-            this.AddColorMenuEntry("Color", faxis.fLineColor,
-                     function(arg) { faxis.fLineColor = parseInt(arg); this.RedrawPad(); });
+            this.AddColorMenu("Color", faxis.fLineColor,
+                     arg => { faxis.fLineColor = arg; painter.InteractiveRedraw("pad"); });
             this.SizeMenu("Size", -0.05, 0.055, 0.01, faxis.fTickSize,
-                     function(arg) { faxis.fTickSize = parseFloat(arg); this.RedrawPad(); } );
+                     arg => { faxis.fTickSize = arg; painter.InteractiveRedraw("pad"); } );
          } else {
-            this.AddColorMenuEntry("Color", faxis.fAxisColor,
-                        function(arg) { faxis.fAxisColor = parseInt(arg); this.InteractiveRedraw("pad", getColorExec(parseInt(arg), "SetAxisColor"), kind); }.bind(painter));
+            this.AddColorMenu("Color", faxis.fAxisColor,
+                     arg => { faxis.fAxisColor = arg; painter.InteractiveRedraw("pad", getColorExec(arg, "SetAxisColor"), kind); });
             this.SizeMenu("Size", -0.05, 0.055, 0.01, faxis.fTickLength,
-                     function(arg) { faxis.fTickLength = parseFloat(arg); this.InteractiveRedraw("pad", `exec:SetTickLength(${arg})`, kind); }.bind(painter));
+                     arg => { faxis.fTickLength = arg; painter.InteractiveRedraw("pad", `exec:SetTickLength(${arg})`, kind); });
          }
          this.add("endsub:");
       }

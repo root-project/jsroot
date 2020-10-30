@@ -3810,8 +3810,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (!this._websocket) return;
 
       if (subelem) {
-         if ((subelem == "xaxis") || (subelem == "yaxis") || (subelem == "zaxis"))
-            exec = subelem + "#" + exec;
+         if ((subelem == "x") || (subelem == "y") || (subelem == "z"))
+            exec = subelem + "axis#" + exec;
          else
             return console.log(`not recoginzed subelem ${subelem} in SubmitExec`);
        }
