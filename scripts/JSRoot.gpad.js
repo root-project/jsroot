@@ -63,32 +63,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.scale_max = smax;
    }
 
-   TAxisPainter.prototype.format2Exp = function(order, value) {
+   TAxisPainter.prototype.formatExp = function(base, order, value) {
       let res = "";
       if (value) {
-         value = Math.round(value/Math.pow(2,order));
+         value = Math.round(value/Math.pow(base,order));
          if ((value!=0) && (value!=1)) res = value.toString() + (JSROOT.settings.Latex ? "#times" : "x");
       }
-      res += "2";
-      if (JSROOT.settings.Latex > JSROOT.constants.Latex.Symbols)
-         return res + "^{" + order + "}";
-      const superscript_symbols = {
-            '0': '\u2070', '1': '\xB9', '2': '\xB2', '3': '\xB3', '4': '\u2074', '5': '\u2075',
-            '6': '\u2076', '7': '\u2077', '8': '\u2078', '9': '\u2079', '-': '\u207B'
-         };
-      let str = order.toString();
-      for (let n = 0; n < str.length; ++n)
-         res += superscript_symbols[str[n]];
-      return res;
-   }
-
-   TAxisPainter.prototype.format10Exp = function(order, value) {
-      let res = "";
-      if (value) {
-         value = Math.round(value/Math.pow(10,order));
-         if ((value!=0) && (value!=1)) res = value.toString() + (JSROOT.settings.Latex ? "#times" : "x");
-      }
-      res += "10";
+      res += base.toString();
       if (JSROOT.settings.Latex > JSROOT.constants.Latex.Symbols)
          return res + "^{" + order + "}";
       const superscript_symbols = {
@@ -148,38 +129,22 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if ((this.scale_max < 300) && (this.scale_min > 0.3)) this.noexp = true;
          this.moreloglabels = axis ? axis.TestBit(JSROOT.EAxisBits.kMoreLogLabels) : false;
 
-         if (this.kind == 'log10')
-            this.format = function(d, asticks, notickexp_fmt) {
-               let val = parseFloat(d), rnd = Math.round(val);
-               if (!asticks)
-                  return ((rnd === val) && (Math.abs(rnd)<1e9)) ? rnd.toString() : JSROOT.FFormat(val, notickexp_fmt || JSROOT.gStyle.fStatFormat);
-   
-               if (val <= 0) return null;
-               let vlog = Math.log10(val);
-               if (this.moreloglabels || (Math.abs(vlog - Math.round(vlog))<0.001)) {
-                  if (!this.noexp && !notickexp_fmt)
-                     return this.format10Exp(Math.floor(vlog+0.01), val);
-   
-                  return (vlog<0) ? val.toFixed(Math.round(-vlog+0.5)) : val.toFixed(0);
-               }
-               return null;
+         this.format = function(d, asticks, notickexp_fmt) {
+            let val = parseFloat(d), rnd = Math.round(val);
+            if (!asticks)
+               return ((rnd === val) && (Math.abs(rnd)<1e9)) ? rnd.toString() : JSROOT.FFormat(val, notickexp_fmt || JSROOT.gStyle.fStatFormat);
+
+            if (val <= 0) return null;
+            let vlog = Math.log10(val), base = 10;
+            if (this.kind == "log2") { base = 2; vlog = vlog / Math.log10(2); }
+            if (this.moreloglabels || (Math.abs(vlog - Math.round(vlog))<0.001)) {
+               if (!this.noexp && !notickexp_fmt)
+                  return this.formatExp(base, Math.floor(vlog+0.01), val);
+
+               return (vlog < 0) ? val.toFixed(Math.round(-vlog+0.5)) : val.toFixed(0);
             }
-         else
-            this.format = function(d, asticks, notickexp_fmt) {
-               let val = parseFloat(d), rnd = Math.round(val);
-               if (!asticks)
-                  return ((rnd === val) && (Math.abs(rnd)<1e9)) ? rnd.toString() : JSROOT.FFormat(val, notickexp_fmt || JSROOT.gStyle.fStatFormat);
-   
-               if (val <= 0) return null;
-               let vlog = Math.log10(val) / Math.log10(2);
-               if (this.moreloglabels || (Math.abs(vlog - Math.round(vlog))<0.001)) {
-                  if (!this.noexp && !notickexp_fmt)
-                     return this.format2Exp(Math.floor(vlog+0.01), val);
-   
-                  return (vlog<0) ? val.toFixed(Math.round(-vlog+0.5)) : val.toFixed(0);
-               }
-               return null;
-            }
+            return null;
+         }
       } else if (this.kind == 'labels') {
          this.nticks = 50; // for text output allow max 50 names
          let scale_range = this.scale_max - this.scale_min;
@@ -714,7 +679,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                                y: this.has_obstacle ? fix_coord : (vertical ? -3 : -3*side),
                                align: vertical ? ((side<0) ? 30 : 10) : ( myXor(this.has_obstacle, (side<0)) ? 13 : 10 ),
                                latex: 1,
-                               text: '#times' + this.format10Exp(this.order),
+                               text: '#times' + this.formatExp(10, this.order),
                                draw_g: label_g[lcnt]
                });
          }
@@ -1125,9 +1090,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Create x,y objects which maps user coordinates into pixels
      * @desc While only first painter really need such object, all others just reuse it
      * following functions are introduced
-     *     this.GetBin[X/Y]  return bin coordinate
-     *     this.Convert[X/Y]  converts root value in JS date when date scale is used
-     *     this.[x,y]  these are d3.scale objects
+     *    this.GetBin[X/Y]  return bin coordinate
+     *    this.Convert[X/Y]  converts root value in JS date when date scale is used
+     *    this.[x,y]  these are d3.scale objects
      *    this.gr[x,y]  converts root scale into graphical value
      *    this.Revert[X/Y]  converts graphical coordinates to user coordinates
      * @private */
@@ -1748,12 +1713,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       // directly change attribute in the pad
       pad[name] = value;
-      
-      console.log('Apply value ', name, value)
 
       this.InteractiveRedraw("pad", "log"+axis);
    }
-
 
    /** @summary Toggle log state of specified axis */
    TFramePainter.prototype.ToggleLog = function(axis) {
