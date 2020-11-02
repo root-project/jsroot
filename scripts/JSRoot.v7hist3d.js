@@ -1093,7 +1093,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
 
          if (histo['$baseh']) return false; // do not draw empty bins on top of other bins
 
-         if (this.options.Zero || (axis_zmin>0)) return true;
+         if (this.options.Zero || (axis_zmin > 0)) return true;
 
          return this._show_empty_bins;
       }
@@ -1149,7 +1149,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
              normals = new Float32Array(numvertices*3),
              face_to_bins_index = use16indx ? new Uint16Array(numvertices/3) : new Uint32Array(numvertices/3),
              pos2 = null, norm2 = null, face_to_bins_indx2 = null,
-             v = 0, v2 = 0, vert, bin, k, nn;
+             v = 0, v2 = 0, vert, k, nn;
 
          if (num2vertices > 0) {
             pos2 = new Float32Array(num2vertices*3);

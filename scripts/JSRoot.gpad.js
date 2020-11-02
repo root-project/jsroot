@@ -199,7 +199,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (!this.noticksopt) {
          let arr = this.func.ticks(ndiv * (ndiv2 || 1));
          // FIXME: workaround - prvent creation too much log ticks when min >= 1, but this should be checked differently
-         if ((this.kind.indexOf("log") > 0) && (arr.length > 30) && (this.scale_min > 0.8))
+         if ((this.kind.indexOf("log") == 0) && (arr.length > 30) && (this.scale_min > 0.8))
              arr = this.func.ticks(10);
          return arr;
       }
@@ -234,7 +234,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if ((x >= this.scale_min) && (x < this.scale_max)) handle.lbl_pos.push(x);
          }
       }
-
+      
       if ((this.nticks2 > 1) && (this.kind != "log2")) {
          handle.minor = handle.middle = this.ProduceTicks(handle.major.length, this.nticks2);
 
@@ -243,7 +243,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          // avoid black filling by middle-size
          if ((handle.middle.length <= handle.major.length) || (handle.middle.length > gr_range/3.5)) {
             handle.minor = handle.middle = handle.major;
-         } else if ((this.nticks3 > 1) && (this.kind.indexOf("log") !== 0))  {
+         } else if ((this.nticks3 > 1) && (this.kind.indexOf("log") != 0))  {
             handle.minor = this.ProduceTicks(handle.middle.length, this.nticks3);
             if ((handle.minor.length <= handle.middle.length) || (handle.minor.length > gr_range/1.7)) handle.minor = handle.middle;
          }
@@ -1242,7 +1242,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if ((this.scale_ymin <= 0) || (this.scale_ymin >= this.scale_ymax))
             this.scale_ymin = 3e-4 * this.scale_ymax;
 
-         this.y = d3.scaleLog().base(this.logy == 2 ? 2 : 10);
+         this.y = d3.scaleLog().base((this.logy == 2) ? 2 : 10);
       } else if (this.y_kind == 'time') {
          this.y = d3.scaleTime();
       } else {
