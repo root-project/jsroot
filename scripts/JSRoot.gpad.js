@@ -196,30 +196,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    TAxisPainter.prototype.ProduceTicks = function(ndiv, ndiv2) {
-      let dom = this.func.domain(), ticks = [];
-      
-      // bugfix of d3.js - cannot produce scaleLog.base(2).ticks()
-      // see 
-      if (this.kind == "log2") {
-         let min = Math.log(dom[0])/Math.log(2),
-             max = Math.log(dom[1])/Math.log(2),
-             range = Math.abs(max-min), step = 1, interim = [1];
-         if (range > ndiv*3) 
-            step = 4; 
-         else if (range < ndiv/2)
-            interim = [1, 1.25, 1.5, 1.75];
-         
-         let imin = Math.round(min/step)*step; if (imin > min) imin-=step;
-         let imax = Math.round(max/step)*step; if (imax < max) imax+=step;
-         let i = 0;
-         while (imin <= imax) {
-            let val = Math.pow(2, imin) * interim[i];
-            if ((val >= dom[0]) && (val <= dom[1])) ticks.push(val);
-            if ((++i >= interim.length) || (imin < 2)) { imin += step; i = 0; }
-         }
-         return ticks;
-      }
-      
       if (!this.noticksopt) {
          let total = ndiv * (ndiv2 || 1);
          if (this.kind.indexOf("log") == 0)
@@ -227,6 +203,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return this.func.ticks(total);
       }
 
+      let dom = this.func.domain(), ticks = [];
       if (ndiv2) ndiv = (ndiv-1) * ndiv2;
       for (let n=0;n<=ndiv;++n)
          ticks.push((dom[0]*(ndiv-n) + dom[1]*n)/ndiv);
