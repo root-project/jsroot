@@ -2224,12 +2224,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.pad_events_receiver = receiver;
    }
 
-   RPadPainter.prototype.SelectObjectPainter = function(_painter, pos) {
-      // dummy function, redefined in the RCanvasPainter
+   /** @summary method redirect call to pad events receiver */
+   RPadPainter.prototype.SelectObjectPainter = function(_painter, pos, _place) {
 
       let istoppad = (this.iscan || !this.has_canvas),
           canp = istoppad ? this : this.canv_painter(),
-          pp = _painter instanceof RPadPainter ? _painter : _painter.pad_painter();
+          pp = _painter.pad_painter();
 
       if (pos && !istoppad)
           this.CalcAbsolutePosition(this.svg_pad(), pos);
@@ -2240,7 +2240,18 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           canp.SelectActivePad(pp, _painter, pos);
 
       if (canp.pad_events_receiver)
-         canp.pad_events_receiver({ what: "select", padpainter: pp, painter: _painter, position: pos });
+         canp.pad_events_receiver({ what: "select", padpainter: pp, painter: _painter, position: pos, place: _place });
+   }
+   
+   /** @summary method redirect call to pad events receiver 
+    * @private */
+   RPadPainter.prototype.InteractiveObjectRedraw = function(_painter) {
+      let istoppad = (this.iscan || !this.has_canvas),
+          canp = istoppad ? this : this.canv_painter(),
+          pp = _painter.pad_painter();
+
+      if (canp && canp.pad_events_receiver)
+         canp.pad_events_receiver({ what: "redraw", padpainter: pp, painter: _painter });
    }
 
    /** @summary Called by framework when pad is supposed to be active and get focus
@@ -2685,12 +2696,23 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (this._doing_pad_draw)
          return console.log('Prevent pad redrawing');
 
+      console.log('REDRAW PAD');
+
       let showsubitems = true;
 
       if (this.iscan) {
          this.CreateCanvasSvg(2);
       } else {
          showsubitems = this.CreatePadSvg(true);
+      }
+      
+      if (jsrp.GetActivePad() === this) {
+         console.log('REDRAW ACTIVE PAD');
+          let istoppad = (this.iscan || !this.has_canvas),
+              canp = istoppad ? this : this.canv_painter();
+
+         if (canp && canp.pad_events_receiver)
+            canp.pad_events_receiver({ what: "padredraw", padpainter: this });
       }
 
       // even sub-pad is not visible, we should redraw sub-sub-pads to hide them as well
@@ -2701,14 +2723,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    RPadPainter.prototype.NumDrawnSubpads = function() {
-      if (this.painters === undefined) return 0;
+      if (!this.painters) return 0;
 
       let num = 0;
 
-      for (let i = 0; i < this.painters.length; ++i) {
-         let obj = this.painters[i].GetObject();
-         if (obj && (obj._typename === "TPad")) num++;
-      }
+      for (let i = 0; i < this.painters.length; ++i) 
+         if (this.painters[i] instanceof RPadPainter) 
+            num++; 
 
       return num;
    }
@@ -3019,6 +3040,16 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       this.DrawNextSnap(snap.fPrimitives, -1, () => {
          this.CurrentPadName(prev_name);
+         
+         if (jsrp.GetActivePad() === this) {
+            console.log('REDRAW ACTIVE RPAD');
+            let istoppad = (this.iscan || !this.has_canvas),
+                canp = istoppad ? this : this.canv_painter();
+
+            if (canp && canp.pad_events_receiver)
+               canp.pad_events_receiver({ what: "padredraw", padpainter: this });
+         }
+         
          call_back(this);
       });
    }

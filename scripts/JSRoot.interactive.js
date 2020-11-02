@@ -778,8 +778,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return true; // just process any key press
       },
 
-      /** Function called when frame is clicked and object selection can be performed
-        * such event can be used to select */
+      /** @summary Function called when frame is clicked and object selection can be performed
+        * @desc such event can be used to select */
       ProcessFrameClick: function(pnt, dblckick) {
 
          let pp = this.pad_painter();
@@ -935,12 +935,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                   break;
                case 2: {
                   let pp = this.pad_painter();
-                  if (pp) pp.SelectObjectPainter(this.x_handle);
+                  if (pp) pp.SelectObjectPainter(this, undefined, "xaxis");
                   break;
                }
                case 3: {
                   let pp = this.pad_painter();
-                  if (pp) pp.SelectObjectPainter(this.y_handle);
+                  if (pp) pp.SelectObjectPainter(this, undefined, "yaxis");
                   break;
                }
             }

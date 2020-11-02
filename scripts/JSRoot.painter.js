@@ -2950,10 +2950,10 @@ JSROOT.define(['d3'], (d3) => {
 
    /** @summary Set active pad painter
     *
-    * @desc Should be used to handle key press events, which are global in the web browser
+    * @desc Normally be used to handle key press events, which are global in the web browser
     * @param {object} args - functions arguments
     * @param {object} args.pp - pad painter
-    * @param {boolean} [args.active = false] - is pad activated or not
+    * @param {boolean} [args.active] - is pad activated or not
     * @private */
    jsrp.SelectActivePad = function(args) {
       if (args.active) {
