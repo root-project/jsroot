@@ -421,11 +421,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    RAxisPainter.prototype.ProduceTicks = function(ndiv, ndiv2) {
       if (!this.noticksopt) {
-         let arr = this.func.ticks(ndiv * (ndiv2 || 1));
-         // FIXME: workaround - prvent creation too much log ticks when min >= 1, but this should be checked differently
-         if ((this.kind.indexOf("log") == 0) && (arr.length > 30) && this.scale_min > 0.8)
-             arr = this.func.ticks(10);
-         return arr;
+         let total = ndiv * (ndiv2 || 1);
+         if (this.kind.indexOf("log") == 0)
+            return jsrp.PoduceLogTicks(this.func, total);
+         return this.func.ticks(total);
       }
 
       if (ndiv2) ndiv = (ndiv-1) * ndiv2;

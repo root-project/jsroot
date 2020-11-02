@@ -196,16 +196,38 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    TAxisPainter.prototype.ProduceTicks = function(ndiv, ndiv2) {
+      let dom = this.func.domain(), ticks = [];
+      
+      // bugfix of d3.js - cannot produce scaleLog.base(2).ticks()
+      // see 
+      if (this.kind == "log2") {
+         let min = Math.log(dom[0])/Math.log(2),
+             max = Math.log(dom[1])/Math.log(2),
+             range = Math.abs(max-min), step = 1, interim = [1];
+         if (range > ndiv*3) 
+            step = 4; 
+         else if (range < ndiv/2)
+            interim = [1, 1.25, 1.5, 1.75];
+         
+         let imin = Math.round(min/step)*step; if (imin > min) imin-=step;
+         let imax = Math.round(max/step)*step; if (imax < max) imax+=step;
+         let i = 0;
+         while (imin <= imax) {
+            let val = Math.pow(2, imin) * interim[i];
+            if ((val >= dom[0]) && (val <= dom[1])) ticks.push(val);
+            if ((++i >= interim.length) || (imin < 2)) { imin += step; i = 0; }
+         }
+         return ticks;
+      }
+      
       if (!this.noticksopt) {
-         let arr = this.func.ticks(ndiv * (ndiv2 || 1));
-         // FIXME: workaround - prvent creation too much log ticks when min >= 1, but this should be checked differently
-         if ((this.kind.indexOf("log") == 0) && (arr.length > 30) && (this.scale_min > 0.8))
-             arr = this.func.ticks(10);
-         return arr;
+         let total = ndiv * (ndiv2 || 1);
+         if (this.kind.indexOf("log") == 0)
+            return jsrp.PoduceLogTicks(this.func, total);
+         return this.func.ticks(total);
       }
 
       if (ndiv2) ndiv = (ndiv-1) * ndiv2;
-      let dom = this.func.domain(), ticks = [];
       for (let n=0;n<=ndiv;++n)
          ticks.push((dom[0]*(ndiv-n) + dom[1]*n)/ndiv);
       return ticks;
@@ -219,7 +241,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       let handle = { nminor: 0, nmiddle: 0, nmajor: 0, func: this.func };
 
       handle.minor = handle.middle = handle.major = this.ProduceTicks(this.nticks);
-
+      
       if (only_major_as_array) {
          let res = handle.major, delta = (this.scale_max - this.scale_min)*1e-5;
          if (res[0] > this.scale_min + delta) res.unshift(this.scale_min);
