@@ -123,7 +123,8 @@ examples_main = {
      { name:"legend", asurl: true, file: "legends.root", item: "legends;1", latex: "mathjax", title: "TCanvas with TLegend, use MathJax.js" },
      { name:"time", file: "ct.root", item: "ct;1" },
      { name:"2d+3d", file: "mix2d3d.root", item: "Canvas;1", title: "Mixture of 2D and 3D drawings on the same canvas (work properly in Firefox and Chrome)" },
-     { name: "big", file: "bigcanvas.root", item: "big", title: "100 histograms in subpads, for performance testing" }
+     { name: "big", file: "bigcanvas.root", item: "big", title: "100 histograms in subpads, for performance testing" },
+     { name: "log2", file: "tutorials_graphs.root", item: "exclusiongraph2", opt: "log2", title: "Testing log2 option with exclusion example" }
    ],
    TGeo : [
      { name: "logo", asurl: true, file: "geom/rootgeom.root", item: "simple1;1", title:"Geometry from rootgeom.C example" },
@@ -159,7 +160,7 @@ examples_main = {
      { name: "RX", opt: "ARXL", title: "reverse X axis" },
      { name: "RY", opt: "ARYL", title: "reverse Y axis" },
      { name: "docu", file: "graph.root", layout: "vert333", items: ['c1','c47','c4','c48','c41','c42','c43','c44','c45'], title: "several canvas from TGraph documentation page" },
-     { name: "excl", file: "tutorials_graphs.root", item: "exclusiongraph2", title: "Exclusion draw exampl, output of tutorials/graphs/exclusiongraph2.C" },
+     { name: "excl", file: "tutorials_graphs.root", item: "exclusiongraph2", title: "Exclusion draw example, output of tutorials/graphs/exclusiongraph2.C" },
      { name: "plc", file: "tutorials_graphs.root", item: "graphpalettecolor", title: "Automatic set of graph colors, output of tutorials/graphs/graphpalettecolor.C" },
      { name: "shade", file: "tutorials_graphs.root", item: "graphShade", title: "output of tutorials/graphs/graphShade.C" }
    ],
