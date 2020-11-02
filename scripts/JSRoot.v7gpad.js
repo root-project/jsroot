@@ -4412,8 +4412,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       let z = null, z_kind = "normal";
 
       if (framep && framep.logz) {
-         z = d3.scaleLog();
-         z_kind = "log";
+         z = d3.scaleLog().base(10);
+         z_kind = "log10";
       } else {
          z = d3.scaleLinear();
       }

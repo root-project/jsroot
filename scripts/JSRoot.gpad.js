@@ -816,7 +816,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          domain_max = new Date(this.toffset + max*1000);
       } else if (gaxis.fChopt.indexOf("G")>=0) {
          func = d3.scaleLog();
-         kind = "log";
+         kind = "log10";
       } else {
          func = d3.scaleLinear();
          kind = "normal";

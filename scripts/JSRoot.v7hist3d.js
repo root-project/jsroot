@@ -495,15 +495,16 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
                if (xmin>0) break;
             }
          if (xmin <= 0) xmin = 1e-4*xmax;
-         this.grx = d3.scaleLog();
-         this.x_kind = "log";
+         let base = 10;
+         this.grx = d3.scaleLog().base(base);
+         this.x_kind = "log"+10;
+         this.logx = 1;
       } else {
          this.grx = d3.scaleLinear();
          if (this.xaxis && this.xaxis.fLabels) this.x_kind = "labels";
                                           else this.x_kind = "normal";
+         this.logx = 0;
       }
-
-      this.logx = (this.x_kind === "log");
 
       this.grx.domain([ xmin, xmax ]).range([ grminx, grmaxx ]);
       this.x_handle = new JSROOT.v7.RAxisPainter(true, "x_");
@@ -520,15 +521,16 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
             }
 
          if (ymin <= 0) ymin = 1e-4*ymax;
-         this.gry = d3.scaleLog();
-         this.y_kind = "log";
+         let base = 10;
+         this.gry = d3.scaleLog().base(base);
+         this.y_kind = "log"+base;
+         this.logy = 1;
       } else {
          this.gry = d3.scaleLinear();
          if (this.yaxis && this.yaxis.fLabels) this.y_kind = "labels";
                                           else this.y_kind = "normal";
+         this.logy = 0;
       }
-
-      this.logy = (this.y_kind === "log");
 
       this.gry.domain([ ymin, ymax ]).range([ grminy, grmaxy ]);
       this.y_handle = new JSROOT.v7.RAxisPainter(true, "y_");
@@ -539,15 +541,16 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       if (main.logz) {
          if (zmax <= 0) zmax = 1;
          if (zmin <= 0) zmin = 1e-4*zmax;
-         this.grz = d3.scaleLog();
-         this.z_kind = "log";
+         let base = 10;
+         this.grz = d3.scaleLog().base(base);
+         this.z_kind = "log"+base;
+         this.logz = 1;
       } else {
          this.grz = d3.scaleLinear();
          this.z_kind = "normal";
          if (this.zaxis && this.zaxis.fLabels && (opts.ndim === 3)) this.z_kind = "labels";
+         this.logz = 0;
       }
-
-      this.logz = (this.z_kind === "log");
 
       this.grz.domain([ zmin, zmax ]).range([ grminz, grmaxz ]);
 

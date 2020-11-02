@@ -864,8 +864,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       let z = null, z_kind = "normal";
 
       if (this.root_pad().fLogz) {
-         z = d3.scaleLog();
-         z_kind = "log";
+         let base = (this.root_pad().fLogz == 2) ? 2 : 10;
+         z = d3.scaleLog().base(base);
+         z_kind = "log"+base;
       } else {
          z = d3.scaleLinear();
       }
