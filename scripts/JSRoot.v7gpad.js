@@ -288,13 +288,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.scale_max = smax;
    }
 
-   RAxisPainter.prototype.format10Exp = function(order, value) {
+   RAxisPainter.prototype.formatExp = function(base, order, value) {
       let res = "";
       if (value) {
-         value = Math.round(value/Math.pow(10,order));
+         value = Math.round(value/Math.pow(base,order));
          if ((value!=0) && (value!=1)) res = value.toString() + (JSROOT.settings.Latex ? "#times" : "x");
       }
-      res += "10";
+      res += base.toString();
       if (JSROOT.settings.Latex > JSROOT.constants.Latex.Symbols)
          return res + "^{" + order + "}";
       const superscript_symbols = {
@@ -345,7 +345,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             return asticks ? this.tfunc1(d) : this.tfunc2(d);
          }
 
-      } else if (this.kind == 'log') {
+      } else if ((this.kind == 'log2') || (this.kind == 'log10')) {
          if (this.nticks2 > 1) {
             this.nticks *= this.nticks2; // all log ticks (major or minor) created centrally
             this.nticks2 = 1;
@@ -360,10 +360,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                return ((rnd === val) && (Math.abs(rnd)<1e9)) ? rnd.toString() : JSROOT.FFormat(val, notickexp_fmt || JSROOT.gStyle.fStatFormat);
 
             if (val <= 0) return null;
-            let vlog = Math.log10(val);
+            let vlog = Math.log10(val), base = 10;
+            if (this.kind == "log2") { base = 2; vlog = vlog / Math.log10(2); }
             if (this.moreloglabels || (Math.abs(vlog - Math.round(vlog))<0.001)) {
                if (!this.noexp && !notickexp_fmt)
-                  return this.format10Exp(Math.floor(vlog+0.01), val);
+                  return this.formatExp(base, Math.floor(vlog+0.01), val);
 
                return (vlog<0) ? val.toFixed(Math.round(-vlog+0.5)) : val.toFixed(0);
             }
@@ -422,7 +423,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (!this.noticksopt) {
          let arr = this.func.ticks(ndiv * (ndiv2 || 1));
          // FIXME: workaround - prvent creation too much log ticks when min >= 1, but this should be checked differently
-         if ((this.kind == "log") && (arr.length > 30) && this.scale_min > 0.8)
+         if ((this.kind.indexOf("log") == 0) && (arr.length > 30) && this.scale_min > 0.8)
              arr = this.func.ticks(10);
          return arr;
       }
@@ -458,7 +459,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          }
       }
 
-      if (this.nticks2 > 1) {
+      if ((this.nticks2 > 1) && (this.kind != 'log2')) {
          handle.minor = handle.middle = this.ProduceTicks(handle.major.length, this.nticks2);
 
          let gr_range = Math.abs(this.func.range()[1] - this.func.range()[0]);
@@ -467,7 +468,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if ((handle.middle.length <= handle.major.length) || (handle.middle.length > gr_range/3.5)) {
             handle.minor = handle.middle = handle.major;
          } else
-         if ((this.nticks3 > 1) && (this.kind !== 'log'))  {
+         if ((this.nticks3 > 1) && (this.kind.indexOf('log') != 0))  {
             handle.minor = this.ProduceTicks(handle.middle.length, this.nticks3);
             if ((handle.minor.length <= handle.middle.length) || (handle.minor.length > gr_range/1.7)) handle.minor = handle.middle;
          }
@@ -803,7 +804,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          function process_drawtext_ready(painter) {
             let textwidth = this.result_width;
 
-            if (textwidth && ((!vertical && !rotate_lbls) || (vertical && rotate_lbls)) && (painter.kind != 'log')) {
+            if (textwidth && ((!vertical && !rotate_lbls) || (vertical && rotate_lbls)) && (painter.kind.indexOf('log') != 0)) {
                let maxwidth = this.gap_before*0.45 + this.gap_after*0.45;
                if (!this.gap_before) maxwidth = 0.9*this.gap_after; else
                if (!this.gap_after) maxwidth = 0.9*this.gap_before;
@@ -890,7 +891,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                                y: this.has_obstacle ? fix_coord : (vertical ? -3 : -3*side),
                                align: vertical ? ((side<0) ? 30 : 10) : ( myXor(this.has_obstacle, (side<0)) ? 13 : 10 ),
                                latex: 1,
-                               text: '#times' + this.format10Exp(this.order),
+                               text: '#times' + this.formatExp(10, this.order),
                                draw_g: label_g[lcnt]
                });
 
@@ -1384,7 +1385,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.x_handle.rstyle = this.rstyle;
 
       this.x_handle.SetAxisConfig("xaxis",
-                                  (this.logx && (this.x_kind !== "time")) ? "log" : this.x_kind,
+                                  (this.logx && (this.x_kind !== "time")) ? "log" + (this.logx == 2 ? 2 : 10)   : this.x_kind,
                                   this.x, this.xmin, this.xmax, this.scale_xmin, this.scale_xmax);
       this.x_handle.invert_side = false;
       this.x_handle.lbls_both_sides = false;
@@ -1396,7 +1397,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.y_handle.rstyle = this.rstyle;
 
       this.y_handle.SetAxisConfig("yaxis",
-                                  (this.logy && this.y_kind !== "time") ? "log" : this.y_kind,
+                                  (this.logy && this.y_kind !== "time") ? "log" + (this.logy == 2 ? 2 : 10) : this.y_kind,
                                   this.y, this.ymin, this.ymax, this.scale_ymin, this.scale_ymax);
       this.y_handle.invert_side = false; // ((this.options.AxisPos % 10) === 1) || (pad.fTicky > 1);
       this.y_handle.lbls_both_sides = false;
@@ -1951,9 +1952,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       // if (this.options.BarStyle>=20) this.swap_xy = true;
       this.logx = this.logy = this.logz = false;
 
-      this.logx = !!this.v7EvalAttr("x_log");
-      this.logy = !!this.v7EvalAttr("y_log");
-      this.logz = !!this.v7EvalAttr("z_log");
+      this.logx = this.v7EvalAttr("x_log") ? 1 : 0;
+      this.logy = this.v7EvalAttr("y_log") ? 1 : 0;
+      this.logz = this.v7EvalAttr("z_log") ? 1 : 0;
 
       let w = this.frame_width(), h = this.frame_height();
 
