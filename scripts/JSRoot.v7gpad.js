@@ -2220,40 +2220,40 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
    }
 
+   /** @summary register for pad events receiver
+     * @desc in pad painter, while pad may be drawn without canvas
+     * @private */
    RPadPainter.prototype.RegisterForPadEvents = function(receiver) {
       this.pad_events_receiver = receiver;
+   }
+   
+   /** @summary Generate pad events, normally handled by GED 
+     * @desc in pad painter, while pad may be drawn without canvas
+     * @private */
+   RPadPainter.prototype.PadEvent = function(_what, _padpainter, _painter, _position, _place) {
+      if ((_what == "select") && (typeof this.SelectActivePad == 'function'))
+         this.SelectActivePad(_padpainter, _painter, _position);
+      
+      if (this.pad_events_receiver)
+         this.pad_events_receiver({ what: _what, padpainter:  _padpainter, painter: _painter, position: _position, place: _place });
    }
 
    /** @summary method redirect call to pad events receiver */
    RPadPainter.prototype.SelectObjectPainter = function(_painter, pos, _place) {
 
       let istoppad = (this.iscan || !this.has_canvas),
-          canp = istoppad ? this : this.canv_painter(),
-          pp = _painter.pad_painter();
+          canp = istoppad ? this : this.canv_painter();
+          
+      if (_painter === undefined) _painter = this;
 
       if (pos && !istoppad)
           this.CalcAbsolutePosition(this.svg_pad(), pos);
 
-      jsrp.SelectActivePad({ pp: pp, active: true });
+      jsrp.SelectActivePad({ pp: this, active: true });
 
-      if (typeof canp.SelectActivePad == "function")
-          canp.SelectActivePad(pp, _painter, pos);
-
-      if (canp.pad_events_receiver)
-         canp.pad_events_receiver({ what: "select", padpainter: pp, painter: _painter, position: pos, place: _place });
+      canp.PadEvent("select", this, _painter, pos, _place);
    }
    
-   /** @summary method redirect call to pad events receiver 
-    * @private */
-   RPadPainter.prototype.InteractiveObjectRedraw = function(_painter) {
-      let istoppad = (this.iscan || !this.has_canvas),
-          canp = istoppad ? this : this.canv_painter(),
-          pp = _painter.pad_painter();
-
-      if (canp && canp.pad_events_receiver)
-         canp.pad_events_receiver({ what: "redraw", padpainter: pp, painter: _painter });
-   }
-
    /** @summary Called by framework when pad is supposed to be active and get focus
     * @private */
    RPadPainter.prototype.SetActive = function(on) {
@@ -2706,19 +2706,15 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          showsubitems = this.CreatePadSvg(true);
       }
       
-      if (jsrp.GetActivePad() === this) {
-         console.log('REDRAW ACTIVE PAD');
-          let istoppad = (this.iscan || !this.has_canvas),
-              canp = istoppad ? this : this.canv_painter();
-
-         if (canp && canp.pad_events_receiver)
-            canp.pad_events_receiver({ what: "padredraw", padpainter: this });
-      }
-
       // even sub-pad is not visible, we should redraw sub-sub-pads to hide them as well
       for (let i = 0; i < this.painters.length; ++i) {
          let sub = this.painters[i];
          if (showsubitems || sub.this_pad_name) sub.Redraw(reason);
+      }
+      
+      if (jsrp.GetActivePad() === this) {
+         let canp = this.canv_painter();
+         if (canp) canp.PadEvent("padredraw", this);
       }
    }
 
@@ -3042,12 +3038,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.CurrentPadName(prev_name);
          
          if (jsrp.GetActivePad() === this) {
-            console.log('REDRAW ACTIVE RPAD');
-            let istoppad = (this.iscan || !this.has_canvas),
-                canp = istoppad ? this : this.canv_painter();
+            let canp = this.canv_painter();
 
-            if (canp && canp.pad_events_receiver)
-               canp.pad_events_receiver({ what: "padredraw", padpainter: this });
+            if (canp) canp.PadEvent("padredraw", this);
          }
          
          call_back(this);
@@ -3914,7 +3907,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.ShowSection("Editor", this.pad.TestBit(TCanvasStatusBits.kShowEditor));
       this.ShowSection("ToolTips", this.pad.TestBit(TCanvasStatusBits.kShowToolTips));
    }
-
 
    /** @summary Method informs that something was changed in the canvas
      * @desc used to update information on the server (when used with web6gui)
