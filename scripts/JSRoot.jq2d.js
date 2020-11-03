@@ -354,6 +354,8 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          });
          this.addchk(faxis.TestBit(JSROOT.EAxisBits.kCenterTitle), "Center",
                arg => { faxis.InvertBit(JSROOT.EAxisBits.kCenterTitle); painter.InteractiveRedraw("pad", `exec:CenterTitle(${arg})`, kind); });
+         this.addchk(faxis.TestBit(JSROOT.EAxisBits.kOppositeTitle), "Opposite",
+                () => { faxis.InvertBit(JSROOT.EAxisBits.kOppositeTitle); painter.RedrawPad(); });
          this.addchk(faxis.TestBit(JSROOT.EAxisBits.kRotateTitle), "Rotate",
                arg => { faxis.InvertBit(JSROOT.EAxisBits.kRotateTitle); painter.InteractiveRedraw("pad", `exec:RotateTitle(${arg})`, kind); });
          this.AddColorMenu("Color", faxis.fTitleColor,

@@ -25,6 +25,7 @@
 15. Support openui5 sap.ui.require loader if openui5 loaded before JSRootCore.js script
 16. Update jquery to 3.5.1, openui5 to 1.82.2
 17. Add support of log2 scale for axes drawing, can be extended for arbitrary log base
+18. Allow to move axis title to opposite position
 
 
 ## Changes in 5.9.0

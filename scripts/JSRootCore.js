@@ -739,7 +739,7 @@
    /** @summary Define JSROOT module
      * @desc Should be only used for JSROOT modules
      * @param {Array|string} req - requirements, see {@link JSROOT.require} for more details
-     * @param {Function} factoryFunc - called when requirements are fulfilled
+     * @param {Function} factoryFunc - called when requirements are fulfilled, with requested modules
      * @private */
    JSROOT.define = function(req, factoryFunc) {
       jsroot_require(req, factoryFunc);
@@ -747,9 +747,9 @@
 
    /** @summary Generate mask for given bit
     * @param {number} n bit number
-    * @returns {Number} produced make
+    * @returns {Number} produced mask
     * @private */
-   JSROOT.BIT = function(n) { return 1 << (n); }
+   JSROOT.BIT = function(n) { return 1 << n; }
 
    /**
     * @summary Seed simple random generator
