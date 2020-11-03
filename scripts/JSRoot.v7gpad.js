@@ -603,10 +603,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             sign_0 = vertical ? (acc_x>0) : (acc_y>0); // sign should remain
 
+            let off1 = (this.title_align == "middle") ? 0.5*title_length : 0,
+                off2 = (this.title_align == "middle") ? 0 : 0.5*title_length;
+
             if (axis.TestBit(JSROOT.EAxisBits.kCenterTitle))
-               alt_pos = (reverse === vertical) ? axis_length : 0;
+               alt_pos = (reverse === vertical) ? Math.round(axis_length - off1) : Math.round(off1);
             else
-               alt_pos = Math.round(axis_length/2);
+               alt_pos = Math.round(axis_length/2 + (vertical ? -1 : 1) * off2);
 
             drag_rect = title_g.append("rect")
                  .classed("zoom", true)
@@ -942,7 +945,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.StartTextDrawing(axis.fTitleFont, title_fontsize, title_g);
 
          let myxor = ((rotate<0) && !reverse) || ((rotate>=0) && reverse);
-
+         this.title_align = (center ? "middle" : (myxor ? "begin" : "end" ));
+         
          if (vertical) {
             title_offest_k *= -side*pad_w;
 
@@ -956,7 +960,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             shift_y = Math.round(center ? h/2 : (reverse ? h : 0));
 
-            this.DrawText({ align: (center ? "middle" : (myxor ? "begin" : "end" )) + ";middle",
+            this.DrawText({ align: this.title_align+";middle",
                             rotate: (rotate<0) ? 90 : 270,
                             text: axis.fTitle, color: title_color, draw_g: title_g });
          } else {
@@ -964,7 +968,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             shift_x = Math.round(center ? w/2 : (reverse ? 0 : w));
             shift_y = Math.round(title_offest_k*axis.fTitleOffset);
-            this.DrawText({ align: (center ? 'middle' : (myxor ? 'begin' : 'end')) + ";middle",
+            this.DrawText({ align: this.title_align+";middle",
                             rotate: (rotate<0) ? 180 : 0,
                             text: axis.fTitle, color: title_color, draw_g: title_g });
          }

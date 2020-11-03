@@ -2837,11 +2837,16 @@ JSROOT.define(['d3'], (d3) => {
          align = arg.align.split(";");
          if (align.length == 1) align.push('middle');
       } else if (typeof arg.align == 'number') {
-         if ((arg.align / 10) >= 3) align[0] = 'end'; else
-            if ((arg.align / 10) >= 2) align[0] = 'middle';
-         if ((arg.align % 10) == 0) align[1] = 'bottom'; else
-            if ((arg.align % 10) == 1) align[1] = 'bottom-base'; else
-               if ((arg.align % 10) == 3) align[1] = 'top';
+         if ((arg.align / 10) >= 3) 
+            align[0] = 'end'; 
+         else if ((arg.align / 10) >= 2) 
+            align[0] = 'middle';
+         if ((arg.align % 10) == 0) 
+            align[1] = 'bottom'; 
+         else if ((arg.align % 10) == 1) 
+            align[1] = 'bottom-base'; 
+         else if ((arg.align % 10) == 3) 
+            align[1] = 'top';
       }
 
       arg.draw_g = arg.draw_g || this.draw_g;
