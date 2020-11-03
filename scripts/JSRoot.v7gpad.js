@@ -586,7 +586,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (!JSROOT.settings.MoveResize || JSROOT.BatchMode) return;
 
       let drag_rect = null,
-          acc_x, acc_y, new_x, new_y, sign_0, alt_pos,
+          acc_x, acc_y, new_x, new_y, sign_0, alt_pos, curr_indx,
           drag_move = d3.drag().subject(Object);
 
       drag_move
@@ -596,20 +596,36 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             evnt.sourceEvent.stopPropagation();
 
             let box = title_g.node().getBBox(), // check that elements visible, request precise value
-                axis = this.GetObject();
+                axis = this.GetObject(),
+                title_length = vertical ? box.height : box.width,
+                opposite = axis.TestBit(JSROOT.EAxisBits.kOppositeTitle);
 
             new_x = acc_x = title_g.property('shift_x');
             new_y = acc_y = title_g.property('shift_y');
 
-            sign_0 = vertical ? (acc_x>0) : (acc_y>0); // sign should remain
-
-            let off1 = (this.title_align == "middle") ? 0.5*title_length : 0,
-                off2 = (this.title_align == "middle") ? 0 : 0.5*title_length;
-
-            if (axis.TestBit(JSROOT.EAxisBits.kCenterTitle))
-               alt_pos = (reverse === vertical) ? Math.round(axis_length - off1) : Math.round(off1);
+            sign_0 = vertical ? (acc_x > 0) : (acc_y > 0); // sign should remain
+            
+            alt_pos = vertical ? [axis_length, axis_length/2, 0] : [0, axis_length/2, axis_length]; // possible positions
+            let off = vertical ? -title_length/2 : title_length/2;  
+            if (this.title_align == "middle") {
+               alt_pos[0] +=  off;
+               alt_pos[2] -=  off;
+            } else if (this.title_align == "begin") {
+               alt_pos[1] -= off;
+               alt_pos[2] -= 2*off;
+            } else { // end
+               alt_pos[0] += 2*off;
+               alt_pos[1] += off;
+            } 
+            
+            if (axis.TestBit(JSROOT.EAxisBits.kCenterTitle)) 
+               curr_indx = 1;
+            else if (reverse ^ opposite)
+               curr_indx = 0;
             else
-               alt_pos = Math.round(axis_length/2 + (vertical ? -1 : 1) * off2);
+               curr_indx = 2;
+
+            alt_pos[curr_indx] = vertical ? acc_y : acc_x;
 
             drag_rect = title_g.append("rect")
                  .classed("zoom", true)
@@ -629,18 +645,22 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                acc_y += evnt.dy;
 
                let set_x = title_g.property('shift_x'),
-                   set_y = title_g.property('shift_y');
+                   set_y = title_g.property('shift_y'),
+                   p = vertical ? acc_y : acc_x, besti = 0;
+
+               for (let i=1; i<3; ++i)
+                  if (Math.abs(p - alt_pos[i]) < Math.abs(p - alt_pos[besti])) besti = i;
 
                if (vertical) {
                   set_x = acc_x;
-                  if (Math.abs(acc_y - set_y) > Math.abs(acc_y - alt_pos)) set_y = alt_pos;
+                  set_y = alt_pos[besti];
                } else {
                   set_y = acc_y;
-                  if (Math.abs(acc_x - set_x) > Math.abs(acc_x - alt_pos)) set_x = alt_pos;
+                  set_x = alt_pos[besti];
                }
 
-               if (sign_0 === (vertical ? (set_x>0) : (set_y>0))) {
-                  new_x = set_x; new_y = set_y;
+               if (sign_0 === (vertical ? (set_x > 0) : (set_y > 0))) {
+                  new_x = set_x; new_y = set_y; curr_indx = besti;
                   title_g.attr('transform', 'translate(' + new_x + ',' + new_y +  ')');
                }
 
@@ -653,11 +673,23 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                title_g.property('shift_x', new_x)
                       .property('shift_y', new_y);
 
-               let axis = this.GetObject();
+               let axis = this.GetObject(), abits = JSROOT.EAxisBits;
+               
+               function set_bit(bit, on) {
+                  if (axis.TestBit(bit) != on) axis.InvertBit(bit);
+               }
 
                axis.fTitleOffset = (vertical ? new_x : new_y) / offset_k;
-               if ((vertical ? new_y : new_x) === alt_pos) 
-                  axis.InvertBit(JSROOT.EAxisBits.kCenterTitle);
+               if (curr_indx == 1) {
+                  set_bit(abits.kCenterTitle, true);
+                  set_bit(abits.kOppositeTitle, false);
+               } else if (curr_indx == 0) {
+                  set_bit(abits.kCenterTitle, false);
+                  set_bit(abits.kOppositeTitle, true);
+               } else {
+                  set_bit(abits.kCenterTitle, false);
+                  set_bit(abits.kOppositeTitle, false);
+               }
 
                drag_rect.remove();
                drag_rect = null;
@@ -938,14 +970,15 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
              title_fontsize = (axis.fTitleSize >= 1) ? axis.fTitleSize : Math.round(axis.fTitleSize * text_scaling_size),
              title_offest_k = 1.6*(axis.fTitleSize<1 ? axis.fTitleSize : axis.fTitleSize/(this.canv_painter().pad_height() || 10)),
              center = axis.TestBit(JSROOT.EAxisBits.kCenterTitle),
+             opposite = axis.TestBit(JSROOT.EAxisBits.kOppositeTitle),
              rotate = axis.TestBit(JSROOT.EAxisBits.kRotateTitle) ? -1 : 1,
              title_color = this.get_color(axis.fTitleColor),
              shift_x = 0, shift_y = 0;
 
          this.StartTextDrawing(axis.fTitleFont, title_fontsize, title_g);
 
-         let myxor = ((rotate<0) && !reverse) || ((rotate>=0) && reverse);
-         this.title_align = (center ? "middle" : (myxor ? "begin" : "end" ));
+         let xor_reverse = reverse ^ opposite, myxor = (rotate < 0) ^ xor_reverse;
+         this.title_align = center ? "middle" : (myxor ? "begin" : "end");
          
          if (vertical) {
             title_offest_k *= -side*pad_w;
@@ -958,7 +991,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                if (shift_x < rect.width - tickSize) shift_x = Math.round(rect.width - tickSize);
             }
 
-            shift_y = Math.round(center ? h/2 : (reverse ? h : 0));
+            shift_y = Math.round(center ? h/2 : (xor_reverse ? h : 0));
 
             this.DrawText({ align: this.title_align+";middle",
                             rotate: (rotate<0) ? 90 : 270,
@@ -966,7 +999,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          } else {
             title_offest_k *= side*pad_h;
 
-            shift_x = Math.round(center ? w/2 : (reverse ? 0 : w));
+            shift_x = Math.round(center ? w/2 : (xor_reverse ? 0 : w));
             shift_y = Math.round(title_offest_k*axis.fTitleOffset);
             this.DrawText({ align: this.title_align+";middle",
                             rotate: (rotate<0) ? 180 : 0,
