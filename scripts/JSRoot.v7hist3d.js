@@ -612,7 +612,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       if (xaxis && xaxis.fTitle) {
          let text3d = new THREE.TextGeometry(xaxis.fTitle, { font: JSROOT.threejs_font_helvetiker_regular, size: textsize, height: 0, curveSegments: 5 });
          text3d.computeBoundingBox();
-         text3d.center = (xaxis.TestBit(JSROOT.EAxisBits.kCenterTitle));
+         text3d.center = xaxis.TestBit(JSROOT.EAxisBits.kCenterTitle);
          text3d.gry = 2; // factor 2 shift
          text3d.grx = (grminx + grmaxx)/2; // default position for centered title
          lbls.push(text3d);

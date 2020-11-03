@@ -3013,6 +3013,7 @@ JSROOT.define(['d3'], (d3) => {
    // =====================================================================
 
    JSROOT.EAxisBits = {
+      kDecimals: JSROOT.BIT(7),
       kTickPlus: JSROOT.BIT(9),
       kTickMinus: JSROOT.BIT(10),
       kAxisRange: JSROOT.BIT(11),
@@ -3027,7 +3028,7 @@ JSROOT.define(['d3'], (d3) => {
       kLabelsUp: JSROOT.BIT(21),
       kIsInteger: JSROOT.BIT(22),
       kMoreLogLabels: JSROOT.BIT(23),
-      kDecimals: JSROOT.BIT(11)
+      kOppositeTitle: JSROOT.BIT(32) // atrificial bit, not possible to set in ROOT 
    };
 
    // ================= painter of raw text ========================================

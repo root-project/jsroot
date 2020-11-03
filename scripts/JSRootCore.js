@@ -1545,7 +1545,7 @@
             break;
          case 'TH2':
             JSROOT.Create("TH1", obj);
-            JSROOT.extend(obj, { fScalefactor: 1., fTsumwy: 0.,  fTsumwy2: 0, fTsumwxy: 0});
+            JSROOT.extend(obj, { fScalefactor: 1., fTsumwy: 0.,  fTsumwy2: 0, fTsumwxy: 0 });
             break;
          case 'TH2I':
          case 'TH2F':
@@ -1683,7 +1683,7 @@
             JSROOT.Create("TObject", obj);
             JSROOT.Create("TAttLine", obj);
             JSROOT.Create("TAttMarker", obj);
-            JSROOT.extend(obj, { fGeoAtt:0, fNpoints: 0, fPoints: [] });
+            JSROOT.extend(obj, { fGeoAtt: 0, fNpoints: 0, fPoints: [] });
             break;
       }
 

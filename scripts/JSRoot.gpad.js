@@ -415,7 +415,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                   if (Math.abs(acc_x - set_x) > Math.abs(acc_x - alt_pos)) set_x = alt_pos;
                }
 
-               if (sign_0 === (vertical ? (set_x>0) : (set_y>0))) {
+               if (sign_0 === (vertical ? (set_x > 0) : (set_y > 0))) {
                   new_x = set_x; new_y = set_y;
                   title_g.attr('transform', 'translate(' + new_x + ',' + new_y +  ')');
                }
@@ -729,14 +729,18 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
              title_fontsize = (axis.fTitleSize >= 1) ? axis.fTitleSize : Math.round(axis.fTitleSize * text_scaling_size),
              title_offest_k = 1.6*(axis.fTitleSize<1 ? axis.fTitleSize : axis.fTitleSize/(this.canv_painter().pad_height() || 10)),
              center = axis.TestBit(JSROOT.EAxisBits.kCenterTitle),
+             opposite = axis.TestBit(JSROOT.EAxisBits.kOppositeTitle),
              rotate = axis.TestBit(JSROOT.EAxisBits.kRotateTitle) ? -1 : 1,
              title_color = this.get_color(is_gaxis ? axis.fTextColor : axis.fTitleColor),
              shift_x = 0, shift_y = 0;
 
+         // opposite = true;
+
          this.StartTextDrawing(axis.fTitleFont, title_fontsize, title_g);
 
-         let myxor = ((rotate<0) && !reverse) || ((rotate>=0) && reverse);
-         this.title_align = (center ? "middle" : (myxor ? "begin" : "end" ));
+         let xor_reverse = (reverse && !opposite) || (!reverse && opposite);
+         let myxor = ((rotate < 0) && !xor_reverse) || ((rotate >= 0) && xor_reverse);
+         this.title_align = center ? "middle" : (myxor ? "begin" : "end");
 
          if (vertical) {
             title_offest_k *= -side*pad_w;
@@ -749,7 +753,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                if (shift_x < rect.width - tickSize) shift_x = Math.round(rect.width - tickSize);
             }
 
-            shift_y = Math.round(center ? h/2 : (reverse ? h : 0));
+            shift_y = Math.round(center ? h/2 : (xor_reverse ? h : 0));
 
             this.DrawText({ align: this.title_align+";middle",
                             rotate: (rotate<0) ? 90 : 270,
@@ -757,7 +761,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          } else {
             title_offest_k *= side*pad_h;
 
-            shift_x = Math.round(center ? w/2 : (reverse ? 0 : w));
+            shift_x = Math.round(center ? w/2 : (xor_reverse ? 0 : w));
             shift_y = Math.round(title_offest_k*axis.fTitleOffset);
             this.DrawText({ align: this.title_align+";middle",
                             rotate: (rotate<0) ? 180 : 0,
@@ -772,18 +776,18 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.FinishTextDrawing(title_g, () => {
             if (axis_rect) {
                let title_rect = title_g.node().getBoundingClientRect();
-               shift_x = (side>0) ? Math.round(axis_rect.left - title_rect.right - title_fontsize*0.3) :
-                                    Math.round(axis_rect.right - title_rect.left + title_fontsize*0.3);
+               shift_x = (side > 0) ? Math.round(axis_rect.left - title_rect.right - title_fontsize*0.3) :
+                                      Math.round(axis_rect.right - title_rect.left + title_fontsize*0.3);
             }
 
-            title_g.attr('transform', 'translate(' + shift_x + ',' + shift_y +  ')')
+            title_g.attr('transform', 'translate(' + shift_x + ',' + shift_y + ')')
                    .property('shift_x', shift_x)
                    .property('shift_y', shift_y);
 
             checkTextCallBack(true);
          });
 
-         this.AddTitleDrag(title_g, vertical, title_offest_k, reverse, vertical ? h : w);
+         this.AddTitleDrag(title_g, vertical, title_offest_k, xor_reverse, vertical ? h : w);
       }
 
       this.position = 0;
