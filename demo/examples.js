@@ -57,8 +57,8 @@ examples_main = {
      { opt: "scat", title: "scatter plot (used as default draw option)" },
      { name: "box", json: "hbox.json.gz", opt: "box", title: "boxes, area proportional to bin content" },
      { name: "box1", json: "hbox.json.gz", opt: "box1", title: "boxes, area proportional to bin content" },
-     { name: "ctx_cty", opt: "col_ctx_cty", file: "QAresults.root", item: "PIDqa/PIDqa1/ITS/hNsigmaP_ITS_helium-3;1", title: "center x and y axes title" },
-     { name: "optx_opty", opt: "col_optx_opty", file: "QAresults.root", item: "PIDqa/PIDqa1/ITS/hNsigmaP_ITS_triton;1", title: "move x and y axes title to opposite position" }
+     { name: "ctx_cty", opt: "col_ctx_cty", file: "QAresults.root", item: "PIDqa/PIDqa1/ITS/hNsigmaP_ITS_helium-3;1", title: "center title x (ctx) and center title y (cty)" },
+     { name: "otx_oty", opt: "col_otx_oty", file: "QAresults.root", item: "PIDqa/PIDqa1/ITS/hNsigmaP_ITS_triton;1", title: "opposite title x (otx) and opposite title y (oty)" }
    ],
    TH2Poly : [
       { name: "honeycomb", file: "th2poly.root", item: "honeycomb;1", opt: "l,col" },
@@ -126,7 +126,8 @@ examples_main = {
      { name:"time", file: "ct.root", item: "ct;1" },
      { name:"2d+3d", file: "mix2d3d.root", item: "Canvas;1", title: "Mixture of 2D and 3D drawings on the same canvas (work properly in Firefox and Chrome)" },
      { name: "big", file: "bigcanvas.root", item: "big", title: "100 histograms in subpads, for performance testing" },
-     { name: "log2", file: "tutorials_graphs.root", item: "exclusiongraph2", opt: "log2", title: "Testing log2 option with exclusion example" }
+     { name: "log2", file: "tutorials_graphs.root", item: "exclusiongraph2", opt: "log2", title: "log2 for both x and y axes" },
+     { name: "axes", file: "tutorials_graphs.root", item: "exclusiongraph2", opt: "ctx_oty_log2x", title: "Moving axes title ctx - center title x, oty - opposite title y, plus log2x option" }
    ],
    TGeo : [
      { name: "logo", asurl: true, file: "geom/rootgeom.root", item: "simple1;1", title:"Geometry from rootgeom.C example" },
