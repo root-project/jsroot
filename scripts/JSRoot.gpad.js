@@ -3607,6 +3607,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (d.check('OTY')) pad.$OTY = true;
       if (d.check('CTX')) pad.$CTX = true;
       if (d.check('CTY')) pad.$CTY = true;
+      if (d.check('RX')) pad.$RX = true;
+      if (d.check('RY')) pad.$RY = true;
 
       this.OptionsStore(opt);
    }

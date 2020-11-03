@@ -1646,21 +1646,19 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       if (d.check('A')) this.Axis = -1;
       
-      if ((this.Axis >= 0) || this.Color) {
-         if (d.check("RX")) this.RevX = true;
-         if (d.check("RY")) this.RevY = true;
-         let check_axis_bit = (opt, axis, bit) => {
-            let flag = d.check(opt);
-            if (pad && pad['$'+opt]) { flag = true; pad['$'+opt] = undefined; } 
-            if (flag && histo)
-                if (!histo[axis].TestBit(bit)) 
-                   histo[axis].InvertBit(bit); 
-         }
-         check_axis_bit("OTX", "fXaxis", JSROOT.EAxisBits.kOppositeTitle);
-         check_axis_bit("OTY", "fYaxis", JSROOT.EAxisBits.kOppositeTitle);
-         check_axis_bit("CTX", "fXaxis", JSROOT.EAxisBits.kCenterTitle);
-         check_axis_bit("CTY", "fYaxis", JSROOT.EAxisBits.kCenterTitle);
+      if (d.check("RX") || (pad && pad.$RX)) this.RevX = true;
+      if (d.check("RY") || (pad && pad.$RY)) this.RevY = true;
+      let check_axis_bit = (opt, axis, bit) => {
+         let flag = d.check(opt);
+         if (pad && pad['$'+opt]) { flag = true; pad['$'+opt] = undefined; } 
+         if (flag && histo)
+             if (!histo[axis].TestBit(bit)) 
+                histo[axis].InvertBit(bit); 
       }
+      check_axis_bit("OTX", "fXaxis", JSROOT.EAxisBits.kOppositeTitle);
+      check_axis_bit("OTY", "fYaxis", JSROOT.EAxisBits.kOppositeTitle);
+      check_axis_bit("CTX", "fXaxis", JSROOT.EAxisBits.kCenterTitle);
+      check_axis_bit("CTY", "fYaxis", JSROOT.EAxisBits.kCenterTitle);
 
       if (d.check('B1')) { this.BarStyle = 1; this.BaseLine = 0; this.Hist = false; this.need_fillcol = true; }
       if (d.check('B')) { this.BarStyle = 1; this.Hist = false; this.need_fillcol = true; }
