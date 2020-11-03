@@ -56,7 +56,9 @@ examples_main = {
      { opt: "texte0", title: "draw errors in the same line" },
      { opt: "scat", title: "scatter plot (used as default draw option)" },
      { name: "box", json: "hbox.json.gz", opt: "box", title: "boxes, area proportional to bin content" },
-     { name: "box1", json: "hbox.json.gz", opt: "box1", title: "boxes, area proportional to bin content" }
+     { name: "box1", json: "hbox.json.gz", opt: "box1", title: "boxes, area proportional to bin content" },
+     { name: "ctx_cty", opt: "col_ctx_cty", file: "QAresults.root", item: "PIDqa/PIDqa1/ITS/hNsigmaP_ITS_helium-3;1", title: "center x and y axes title" },
+     { name: "optx_opty", opt: "col_optx_opty", file: "QAresults.root", item: "PIDqa/PIDqa1/ITS/hNsigmaP_ITS_triton;1", title: "move x and y axes title to opposite position" }
    ],
    TH2Poly : [
       { name: "honeycomb", file: "th2poly.root", item: "honeycomb;1", opt: "l,col" },

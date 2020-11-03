@@ -3603,6 +3603,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (d.check('TICKX')) pad.fTickx = 1;
       if (d.check('TICKY')) pad.fTicky = 1;
       if (d.check('TICK')) pad.fTickx = pad.fTicky = 1;
+      if (d.check('OPTX')) pad.$optx = true;
+      if (d.check('OPTY')) pad.$opty = true;
+      if (d.check('CTX')) pad.$opty = true;
+      if (d.check('CTY')) pad.$opty = true;
 
       this.OptionsStore(opt);
    }

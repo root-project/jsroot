@@ -1445,6 +1445,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
               minimum: -1111, maximum: -1111, ymin: 0, ymax: 0 });
    }
 
+   /** @summary Decode histogram draw options */
    THistDrawOptions.prototype.Decode = function(opt, hdim, histo, pad, painter) {
       this.orginal = opt; // will be overwritten by OptionsStore call
 
@@ -1644,8 +1645,15 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (d.check('F')) { this.Fill = true; this.need_fillcol = true; }
 
       if (d.check('A')) this.Axis = -1;
-      if ((this.Axis || this.Color) && d.check("RX")) this.RevX = true;
-      if ((this.Axis || this.Color) && d.check("RY")) this.RevY = true;
+      if (this.Axis || this.Color) {
+         if (d.check("RX")) this.RevX = true;
+         if (d.check("RY")) this.RevY = true;
+         let set_axis_bit = (axis, bit) => { if (!axis.TestBit(bit)) axis.InvertBit(bit); }
+         if (d.check("OPTX") && histo) set_axis_bit(histo.fXaxis, JSROOT.EAxisBits.kOppositeTitle);
+         if (d.check("OPTY") && histo) set_axis_bit(histo.fYaxis, JSROOT.EAxisBits.kOppositeTitle);
+         if (d.check("CTX") && histo) set_axis_bit(histo.fXaxis, JSROOT.EAxisBits.kCenterTitle);
+         if (d.check("CTY") && histo) set_axis_bit(histo.fXaxis, JSROOT.EAxisBits.kCenterTitle);
+      }
 
       if (d.check('B1')) { this.BarStyle = 1; this.BaseLine = 0; this.Hist = false; this.need_fillcol = true; }
       if (d.check('B')) { this.BarStyle = 1; this.Hist = false; this.need_fillcol = true; }
