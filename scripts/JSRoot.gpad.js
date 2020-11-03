@@ -356,8 +356,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return axis && axis.TestBit(JSROOT.EAxisBits.kCenterLabels);
    }
 
+   /** @summary Add interactive elements to draw axes title */
    TAxisPainter.prototype.AddTitleDrag = function(title_g, vertical, offset_k, reverse, axis_length) {
-      if (!JSROOT.settings.MoveResize) return;
+      if (!JSROOT.settings.MoveResize || JSROOT.BatchMode) return;
 
       let drag_rect = null,
           acc_x, acc_y, new_x, new_y, sign_0, alt_pos,
@@ -427,7 +428,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                let axis = this.GetObject();
 
                axis.fTitleOffset = (vertical ? new_x : new_y) / offset_k;
-               if ((vertical ? new_y : new_x) === alt_pos) axis.InvertBit(JSROOT.EAxisBits.kCenterTitle);
+               if ((vertical ? new_y : new_x) === alt_pos) 
+                  axis.InvertBit(JSROOT.EAxisBits.kCenterTitle);
 
                drag_rect.remove();
                drag_rect = null;
@@ -775,7 +777,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             checkTextCallBack(true);
          });
-
 
          this.AddTitleDrag(title_g, vertical, title_offest_k, reverse, vertical ? h : w);
       }
@@ -1458,6 +1459,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return Promise.resolve(true);
    }
 
+   /** @summary Update frame attributes
+     * @private */
    TFramePainter.prototype.UpdateAttributes = function(force) {
       let pad = this.root_pad(),
           tframe = this.GetObject();
@@ -1476,10 +1479,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
 
       if (this.fillatt === undefined) {
-         if (tframe) this.createAttFill({ attr: tframe });
-         else if (pad && pad.fFrameFillColor) this.createAttFill({ pattern: pad.fFrameFillStyle, color: pad.fFrameFillColor });
-         else if (pad) this.createAttFill({ attr: pad });
-         else this.createAttFill({ pattern: 1001, color: 0 });
+         if (tframe) 
+            this.createAttFill({ attr: tframe });
+         else if (pad && pad.fFrameFillColor) 
+            this.createAttFill({ pattern: pad.fFrameFillStyle, color: pad.fFrameFillColor });
+         else if (pad) 
+            this.createAttFill({ attr: pad });
+         else 
+            this.createAttFill({ pattern: 1001, color: 0 });
 
          // force white color for the canvas frame
          if (!tframe && this.fillatt.empty() && this.pad_painter() && this.pad_painter().iscan)
@@ -1493,7 +1500,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Function called at the end of resize of frame
-     * One should apply changes to the pad
+     * @desc One should apply changes to the pad
      * @private */
    TFramePainter.prototype.SizeChanged = function() {
 

@@ -581,8 +581,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return axis && axis.TestBit(JSROOT.EAxisBits.kCenterLabels);
    }
 
+   /** @summary Add interactive elements to draw axes title */
    RAxisPainter.prototype.AddTitleDrag = function(title_g, vertical, offset_k, reverse, axis_length) {
-      if (!JSROOT.settings.MoveResize) return;
+      if (!JSROOT.settings.MoveResize || JSROOT.BatchMode) return;
 
       let drag_rect = null,
           acc_x, acc_y, new_x, new_y, sign_0, alt_pos,
@@ -652,7 +653,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                let axis = this.GetObject();
 
                axis.fTitleOffset = (vertical ? new_x : new_y) / offset_k;
-               if ((vertical ? new_y : new_x) === alt_pos) axis.InvertBit(JSROOT.EAxisBits.kCenterTitle);
+               if ((vertical ? new_y : new_x) === alt_pos) 
+                  axis.InvertBit(JSROOT.EAxisBits.kCenterTitle);
 
                drag_rect.remove();
                drag_rect = null;
