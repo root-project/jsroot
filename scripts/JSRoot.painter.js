@@ -384,7 +384,7 @@ JSROOT.define(['d3'], (d3) => {
       if ((typeof args == 'object') && (typeof args.fMarkerStyle == 'number')) args = { attr: args };
 
       if (args.attr) {
-         if (args.color === undefined) 
+         if (args.color === undefined)
             args.color = args.painter ? args.painter.get_color(args.attr.fMarkerColor) : jsrp.getColor(args.attr.fMarkerColor);
          if (!args.style || (args.style < 0)) args.style = args.attr.fMarkerStyle;
          if (!args.size) args.size = args.attr.fMarkerSize;
@@ -991,9 +991,14 @@ JSROOT.define(['d3'], (d3) => {
           fontName = jsrp.root_fonts[indx] || "";
 
       while (fontName.length > 0) {
-         if (fontName[0] === 'b') this.weight = "bold"; else
-            if (fontName[0] === 'i') this.style = "italic"; else
-               if (fontName[0] === 'o') this.style = "oblique"; else break;
+         if (fontName[0] === 'b')
+            this.weight = "bold";
+         else if (fontName[0] === 'i')
+            this.style = "italic";
+         else if (fontName[0] === 'o')
+            this.style = "oblique";
+         else
+            break;
          fontName = fontName.substr(1);
       }
 
@@ -2324,9 +2329,9 @@ JSROOT.define(['d3'], (d3) => {
 
       let handler = args.std ? this.markeratt : null;
 
-      if (!handler) 
+      if (!handler)
          handler = new TAttMarkerHandler(args);
-      else if (!handler.changed || args.force) 
+      else if (!handler.changed || args.force)
          handler.SetArgs(args);
 
       if (args.std) this.markeratt = handler;
@@ -2343,9 +2348,9 @@ JSROOT.define(['d3'], (d3) => {
    * Instance assigned as this.lineatt data member, recognized by GED editor
    * @param {object} args - either TAttLine or see constructor arguments of {@link JSROOT.TAttLineHandler} */
    ObjectPainter.prototype.createAttLine = function(args) {
-      if (!args || (typeof args !== 'object')) 
-         args = { std: true }; 
-      else if (args.fLineColor !== undefined && args.fLineStyle !== undefined && args.fLineWidth !== undefined) 
+      if (!args || (typeof args !== 'object'))
+         args = { std: true };
+      else if (args.fLineColor !== undefined && args.fLineStyle !== undefined && args.fLineWidth !== undefined)
          args = { attr: args, std: false };
 
       if (args.std === undefined) args.std = true;
@@ -2353,9 +2358,9 @@ JSROOT.define(['d3'], (d3) => {
 
       let handler = args.std ? this.lineatt : null;
 
-      if (!handler) 
+      if (!handler)
          handler = new TAttLineHandler(args);
-      else if (!handler.changed || args.force) 
+      else if (!handler.changed || args.force)
          handler.SetArgs(args);
 
       if (args.std) this.lineatt = handler;
@@ -2391,9 +2396,9 @@ JSROOT.define(['d3'], (d3) => {
       if (!args.svg) args.svg = this.svg_canvas();
       if (args.painter === undefined) args.painter = this;
 
-      if (!handler) 
+      if (!handler)
          handler = new TAttFillHandler(args);
-      else if (!handler.changed || args.force) 
+      else if (!handler.changed || args.force)
          handler.SetArgs(args);
 
       if (args.std) this.fillatt = handler;
@@ -2442,7 +2447,7 @@ JSROOT.define(['d3'], (d3) => {
 
       // inform GED that something changes
       let pp = this.pad_painter(), canp = this.canv_painter();
-       
+
       if (canp && (typeof canp.PadEvent == 'function'))
          canp.PadEvent("redraw", pp, this, null, subelem);
 
@@ -2837,15 +2842,15 @@ JSROOT.define(['d3'], (d3) => {
          align = arg.align.split(";");
          if (align.length == 1) align.push('middle');
       } else if (typeof arg.align == 'number') {
-         if ((arg.align / 10) >= 3) 
-            align[0] = 'end'; 
-         else if ((arg.align / 10) >= 2) 
+         if ((arg.align / 10) >= 3)
+            align[0] = 'end';
+         else if ((arg.align / 10) >= 2)
             align[0] = 'middle';
-         if ((arg.align % 10) == 0) 
-            align[1] = 'bottom'; 
-         else if ((arg.align % 10) == 1) 
-            align[1] = 'bottom-base'; 
-         else if ((arg.align % 10) == 3) 
+         if ((arg.align % 10) == 0)
+            align[1] = 'bottom';
+         else if ((arg.align % 10) == 1)
+            align[1] = 'bottom-base';
+         else if ((arg.align % 10) == 3)
             align[1] = 'top';
       }
 
@@ -2954,21 +2959,21 @@ JSROOT.define(['d3'], (d3) => {
    // ===========================================================
 
    /** @summary Produce ticks for d3.scaleLog
-     * @desc Fixing following problem, described [here]{@link https://stackoverflow.com/questions/64649793} 
+     * @desc Fixing following problem, described [here]{@link https://stackoverflow.com/questions/64649793}
      * @private */
    jsrp.PoduceLogTicks = function(func, number) {
       function linearArray(arr) {
          let sum1 = 0, sum2 = 0;
          for (let k=1;k<arr.length;++k) {
-            let diff = (arr[k] - arr[k-1]); 
+            let diff = (arr[k] - arr[k-1]);
             sum1 += diff;
-            sum2 += diff*diff; 
-         } 
+            sum2 += diff*diff;
+         }
          let mean = sum1/(arr.length-1);
          let dev = sum2/(arr.length-1) - mean*mean;
          if (dev <= 0) return true;
          if (Math.abs(mean) < 1e-100) return false;
-         return Math.sqrt(dev)/mean < 1e-10;  
+         return Math.sqrt(dev)/mean < 1e-10;
       }
 
       let arr = func.ticks(number);
@@ -3028,7 +3033,7 @@ JSROOT.define(['d3'], (d3) => {
       kLabelsUp: JSROOT.BIT(21),
       kIsInteger: JSROOT.BIT(22),
       kMoreLogLabels: JSROOT.BIT(23),
-      kOppositeTitle: JSROOT.BIT(32) // atrificial bit, not possible to set in ROOT 
+      kOppositeTitle: JSROOT.BIT(32) // atrificial bit, not possible to set in ROOT
    };
 
    // ================= painter of raw text ========================================

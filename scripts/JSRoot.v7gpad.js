@@ -7,10 +7,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    JSROOT.v7 = {}; // placeholder for v7-relevant code
 
-   /** Evaluate attributes using fAttr storage and configured RStyle */
+   /** @summary Evaluate attributes using fAttr storage and configured RStyle */
    JSROOT.ObjectPainter.prototype.v7EvalAttr = function(name, dflt) {
       let obj = this.GetObject();
       if (!obj) return dflt;
+      if (this.cssprefix) name = this.cssprefix + name;
 
       if (obj.fAttr && obj.fAttr.m) {
          let value = obj.fAttr.m[name];
@@ -19,7 +20,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if (this.rstyle && this.rstyle.fBlocks) {
          let blks = this.rstyle.fBlocks;
-         for (let k=0;k<blks.length;++k) {
+         for (let k = 0; k < blks.length; ++k) {
             let block = blks[k];
 
             let match = (this.csstype && (block.selector == this.csstype)) ||
@@ -38,12 +39,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    JSROOT.ObjectPainter.prototype.v7SetAttr = function(name, value) {
       let obj = this.GetObject();
+      if (this.cssprefix) name = this.cssprefix + name;
 
       if (obj && obj.fAttr && obj.fAttr.m)
          obj.fAttr.m[name] = { v: value };
    }
 
-   /** Decode pad length from string, return pixel value */
+   /** @summary Decode pad length from string, return pixel value */
    JSROOT.ObjectPainter.prototype.v7EvalLength = function(name, sizepx, dflt) {
       if (sizepx <= 0) sizepx = 1;
 
@@ -243,14 +245,19 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    // ================================================================================
 
-   function RAxisPainter(embedded, cssprefix) {
-      let dummy = JSROOT.Create("TAxis"); // just dummy before all attributes are implemented
-
-      JSROOT.ObjectPainter.call(this, dummy);
-
-      this.embedded = embedded; // indicate that painter embedded into the histo painter
-      this.csstype = "frame"; // for the moment only via frame one can set axis attributes
-      this.cssprefix = cssprefix;
+   function RAxisPainter(arg1, cssprefix) {
+      let axis = cssprefix ? arg1.GetObject() : arg1;
+      JSROOT.ObjectPainter.call(this, axis);
+      if (cssprefix) { // drawing from the frame
+         this.embedded = true; // indicate that painter embedded into the histo painter
+         axis = JSROOT.Create("TAxis"); // just dummy before all attributes are implemented
+         this.csstype = arg1.csstype; // for the moment only via frame one can set axis attributes
+         this.cssprefix = cssprefix;
+         this.rstyle = arg1.rstyle;
+      } else {
+         this.csstype = "axis";
+         this.cssprefix = "axis_";
+      }
 
       this.name = "yaxis";
       this.kind = "normal";
@@ -309,20 +316,15 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    RAxisPainter.prototype.CreateFormatFuncs = function() {
 
-      let axis = this.GetObject(),
-          is_gaxis = (axis && axis._typename === 'TGaxis');
-
       delete this.format;// remove formatting func
 
-      let ndiv = 508;
-      if (is_gaxis) ndiv = axis.fNdiv; else
-      if (axis) ndiv = Math.max(axis.fNdivisions, 4);
+      let ndiv = this.v7EvalAttr("ndiv", 508);
 
       this.nticks = ndiv % 100;
       this.nticks2 = (ndiv % 10000 - this.nticks) / 100;
       this.nticks3 = Math.floor(ndiv/10000);
 
-      if (axis && !is_gaxis && (this.nticks > 7)) this.nticks = 7;
+      if (this.nticks > 7) this.nticks = 7;
 
       let gr_range = Math.abs(this.func.range()[1] - this.func.range()[0]);
       if (gr_range<=0) gr_range = 100;
@@ -350,9 +352,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             this.nticks *= this.nticks2; // all log ticks (major or minor) created centrally
             this.nticks2 = 1;
          }
-         this.noexp = axis ? axis.TestBit(JSROOT.EAxisBits.kNoExponent) : false;
+         this.noexp = this.v7EvalAttr("noexp", false);
          if ((this.scale_max < 300) && (this.scale_min > 0.3)) this.noexp = true;
-         this.moreloglabels = axis ? axis.TestBit(JSROOT.EAxisBits.kMoreLogLabels) : false;
+         this.moreloglabels = this.v7EvalAttr("morelbls", false);
 
          this.format = function(d, asticks, notickexp_fmt) {
             let val = parseFloat(d), rnd = Math.round(val);
@@ -577,13 +579,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    RAxisPainter.prototype.IsCenterLabels = function() {
       if (this.kind === 'labels') return true;
       if (this.kind === 'log') return false;
-      let axis = this.GetObject();
-      return axis && axis.TestBit(JSROOT.EAxisBits.kCenterLabels);
+      return this.v7EvalAttr("labels_center", false);
    }
 
    /** @summary Add interactive elements to draw axes title */
    RAxisPainter.prototype.AddTitleDrag = function(title_g, vertical, offset_k, reverse, axis_length) {
       if (!JSROOT.settings.MoveResize || JSROOT.BatchMode) return;
+      return;
 
       let drag_rect = null,
           acc_x, acc_y, new_x, new_y, sign_0, alt_pos, curr_indx,
@@ -604,9 +606,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             new_y = acc_y = title_g.property('shift_y');
 
             sign_0 = vertical ? (acc_x > 0) : (acc_y > 0); // sign should remain
-            
+
             alt_pos = vertical ? [axis_length, axis_length/2, 0] : [0, axis_length/2, axis_length]; // possible positions
-            let off = vertical ? -title_length/2 : title_length/2;  
+            let off = vertical ? -title_length/2 : title_length/2;
             if (this.title_align == "middle") {
                alt_pos[0] +=  off;
                alt_pos[2] -=  off;
@@ -616,9 +618,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             } else { // end
                alt_pos[0] += 2*off;
                alt_pos[1] += off;
-            } 
-            
-            if (axis.TestBit(JSROOT.EAxisBits.kCenterTitle)) 
+            }
+
+            if (axis.TestBit(JSROOT.EAxisBits.kCenterTitle))
                curr_indx = 1;
             else if (reverse ^ opposite)
                curr_indx = 0;
@@ -674,7 +676,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                       .property('shift_y', new_y);
 
                let axis = this.GetObject(), abits = JSROOT.EAxisBits;
-               
+
                function set_bit(bit, on) {
                   if (axis.TestBit(bit) != on) axis.InvertBit(bit);
                }
@@ -698,15 +700,18 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       title_g.style("cursor", "move").call(drag_move);
    }
 
+   /** @summary Performs axis drawing
+     * @returns {Promise} which resolved when drawing is completed */
    RAxisPainter.prototype.DrawAxis = function(vertical, layer, w, h, transform, reverse, second_shift, disable_axis_drawing, max_text_width) {
-      let axis = this.GetObject(), chOpt = "",
-          is_gaxis = false,
+      let chOpt = "",
           axis_g = layer, tickSize = 0.03,
           scaling_size = 100, draw_lines = true,
           pad_w = this.pad_width() || 10,
           pad_h = this.pad_height() || 10,
           resolveFunc, totalTextCallbacks = 0, totalDone = false,
           promise = new Promise(resolve => { resolveFunc = resolve; });
+
+      // create dummy until all attributes are repplaced
 
       let checkTextCallBack = (is_callback) => {
           if (is_callback) totalTextCallbacks--; else totalDone = true;
@@ -718,19 +723,17 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       this.vertical = vertical;
 
-      function myXor(a,b) { return ( a && !b ) || (!a && b); }
-
       // shift for second ticks set (if any)
       if (!second_shift) second_shift = 0; else
       if (this.invert_side) second_shift = -second_shift;
 
-      this.createv7AttLine(this.cssprefix + "line_");
+      this.createv7AttLine("line_");
 
-      chOpt = myXor(vertical, this.invert_side) ? "-S" : "+S";
-      tickSize = axis.fTickLength;
+      chOpt = (vertical ^ this.invert_side) ? "-S" : "+S";
+      tickSize = this.v7EvalAttr("ticklength", 0.03);
       scaling_size = (vertical ? pad_w : pad_h);
 
-      if (!is_gaxis || (this.name === "zaxis")) {
+      if (this.embedded || (this.name === "zaxis")) {
          axis_g = layer.select("." + this.name + "_container");
          if (axis_g.empty())
             axis_g = layer.append("svg:g").attr("class",this.name + "_container");
@@ -758,14 +761,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           optionUnlab = (chOpt.indexOf("U")>=0),  // no labels
           optionNoopt = (chOpt.indexOf("N")>=0),  // no ticks position optimization
           optionInt = (chOpt.indexOf("I")>=0),    // integer labels
-          optionNoexp = axis.TestBit(JSROOT.EAxisBits.kNoExponent);
-
-      if (is_gaxis && axis.TestBit(JSROOT.EAxisBits.kTickPlus)) optionPlus = true;
-      if (is_gaxis && axis.TestBit(JSROOT.EAxisBits.kTickMinus)) optionMinus = true;
+          optionNoexp = this.v7EvalAttr("noexp", false);
 
       if (optionPlus && optionMinus) { side = 1; ticks_plusminus = 1; } else
-      if (optionMinus) { side = myXor(reverse,vertical) ? 1 : -1; } else
-      if (optionPlus) { side = myXor(reverse,vertical) ? -1 : 1; }
+      if (optionMinus) { side = (reverse ^ vertical) ? 1 : -1; } else
+      if (optionPlus) { side = (reverse ^ vertical) ? -1 : 1; }
 
       tickSize = Math.round((optionSize ? tickSize : 0.03) * scaling_size);
 
@@ -818,16 +818,19 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if ((second_shift!==0) && (res2.length>0) && !disable_axis_drawing  && draw_lines)
          axis_g.append("svg:path").attr("d", res2).call(this.lineatt.func);
 
-      let labelsize = Math.round( (axis.fLabelSize < 1) ? axis.fLabelSize * text_scaling_size : axis.fLabelSize);
-      if ((labelsize <= 0) || (Math.abs(axis.fLabelOffset) > 1.1)) optionUnlab = true; // disable labels when size not specified
+      let fLabelSize = this.v7EvalAttr("label_size", 0.03);
+      let fLabelOffset = this.v7EvalAttr("label_offset", 0.01);
+
+      let labelsize = Math.round( (fLabelSize < 1) ? fLabelSize * text_scaling_size : fLabelSize);
+      if ((labelsize <= 0) || (Math.abs(fLabelOffset) > 1.1)) optionUnlab = true; // disable labels when size not specified
 
       // draw labels (on both sides, when needed)
       if (!disable_axis_drawing && !optionUnlab) {
 
-         let label_color = this.get_color(axis.fLabelColor),
-             labeloffset = Math.round(axis.fLabelOffset*text_scaling_size /*+ 0.5*labelsize*/),
+         let label_color = this.v7EvalColor("label_color", "black"),
+             labeloffset = Math.round(fLabelOffset*text_scaling_size),
              center_lbls = this.IsCenterLabels(),
-             rotate_lbls = axis.TestBit(JSROOT.EAxisBits.kLabelsVert),
+             rotate_lbls = this.v7EvalAttr("label_vert", false),
              textscale = 1, maxtextlen = 0, lbls_tilt = false, labelfont = null,
              label_g = [ axis_g.append("svg:g").attr("class","axis_labels") ],
              lbl_pos = handle.lbl_pos || handle.major,
@@ -872,7 +875,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             let lastpos = 0,
                 fix_coord = vertical ? -labeloffset*side : (labeloffset+2)*side + ticks_plusminus*tickSize;
 
-            labelfont = new JSROOT.FontHandler(axis.fLabelFont, labelsize);
+            labelfont = new JSROOT.FontHandler(this.v7EvalAttr("label_font", 41), labelsize);
 
             this.StartTextDrawing(labelfont, 'font', label_g[lcnt]);
 
@@ -925,7 +928,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                this.DrawText({ color: label_color,
                                x: vertical ? side*5 : w+5,
                                y: this.has_obstacle ? fix_coord : (vertical ? -3 : -3*side),
-                               align: vertical ? ((side<0) ? 30 : 10) : ( myXor(this.has_obstacle, (side<0)) ? 13 : 10 ),
+                               align: vertical ? ((side<0) ? 30 : 10) : ((this.has_obstacle ^ (side < 0)) ? 13 : 10),
                                latex: 1,
                                text: '#times' + this.formatExp(10, this.order),
                                draw_g: label_g[lcnt]
@@ -965,27 +968,30 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
              .attr("width", w).attr("height", labelsize + 3);
       }
 
-      if ((axis.fTitle.length > 0) && !disable_axis_drawing) {
+      let fTitle = this.v7EvalAttr("title", "");
+      if (fTitle && !disable_axis_drawing) {
          let title_g = axis_g.append("svg:g").attr("class", "axis_title"),
-             title_fontsize = (axis.fTitleSize >= 1) ? axis.fTitleSize : Math.round(axis.fTitleSize * text_scaling_size),
-             title_offest_k = 1.6*(axis.fTitleSize<1 ? axis.fTitleSize : axis.fTitleSize/(this.canv_painter().pad_height() || 10)),
-             center = axis.TestBit(JSROOT.EAxisBits.kCenterTitle),
-             opposite = axis.TestBit(JSROOT.EAxisBits.kOppositeTitle),
-             rotate = axis.TestBit(JSROOT.EAxisBits.kRotateTitle) ? -1 : 1,
-             title_color = this.get_color(axis.fTitleColor),
+             fTitleSize = this.v7EvalAttr("title_size", 0.03),
+             fTitleOffset = this.v7EvalAttr("title_offset", 0.03),
+             title_fontsize = (fTitleSize >= 1) ? fTitleSize : Math.round(fTitleSize * text_scaling_size),
+             title_offest_k = 1.6*(fTitleSize < 1 ? fTitleSize : fTitleSize/(this.canv_painter().pad_height() || 10)),
+             center = this.v7EvalAttr("title_center", false),
+             opposite = this.v7EvalAttr("title_opposite", false),
+             rotate = this.v7EvalAttr("title_rotate", false) ? -1 : 1,
+             title_color = this.v7EvalColor("title_color", "black"),
              shift_x = 0, shift_y = 0;
 
-         this.StartTextDrawing(axis.fTitleFont, title_fontsize, title_g);
+         this.StartTextDrawing(this.v7EvalAttr("title_font", 41), title_fontsize, title_g);
 
          let xor_reverse = reverse ^ opposite, myxor = (rotate < 0) ^ xor_reverse;
          this.title_align = center ? "middle" : (myxor ? "begin" : "end");
-         
+
          if (vertical) {
             title_offest_k *= -side*pad_w;
 
-            shift_x = Math.round(title_offest_k*axis.fTitleOffset);
+            shift_x = Math.round(title_offest_k*fTitleOffset);
 
-            if ((this.name == "zaxis") && is_gaxis && ('getBoundingClientRect' in axis_g.node())) {
+            if ((this.name == "zaxis") && ('getBoundingClientRect' in axis_g.node())) {
                // special handling for color palette labels - draw them always on right side
                let rect = axis_g.node().getBoundingClientRect();
                if (shift_x < rect.width - tickSize) shift_x = Math.round(rect.width - tickSize);
@@ -995,19 +1001,19 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             this.DrawText({ align: this.title_align+";middle",
                             rotate: (rotate<0) ? 90 : 270,
-                            text: axis.fTitle, color: title_color, draw_g: title_g });
+                            text: fTitle, color: title_color, draw_g: title_g });
          } else {
             title_offest_k *= side*pad_h;
 
             shift_x = Math.round(center ? w/2 : (xor_reverse ? 0 : w));
-            shift_y = Math.round(title_offest_k*axis.fTitleOffset);
+            shift_y = Math.round(title_offest_k*fTitleOffset);
             this.DrawText({ align: this.title_align+";middle",
                             rotate: (rotate<0) ? 180 : 0,
-                            text: axis.fTitle, color: title_color, draw_g: title_g });
+                            text: fTitle, color: title_color, draw_g: title_g });
          }
 
          let axis_rect = null;
-         if (vertical && (axis.fTitleOffset == 0) && ('getBoundingClientRect' in axis_g.node()))
+         if (vertical && (fTitleOffset == 0) && ('getBoundingClientRect' in axis_g.node()))
             axis_rect = axis_g.node().getBoundingClientRect();
 
          totalTextCallbacks++;
@@ -1045,24 +1051,26 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    RAxisPainter.prototype.Redraw = function() {
 
-      let gaxis = this.GetObject(),
-          x1 = this.AxisToSvg("x", gaxis.fX1),
-          y1 = this.AxisToSvg("y", gaxis.fY1),
-          x2 = this.AxisToSvg("x", gaxis.fX2),
-          y2 = this.AxisToSvg("y", gaxis.fY2),
-          w = x2 - x1, h = y1 - y2,
+      let axis = this.GetObject(),
+          pp   = this.pad_painter(),
+          p1   = pp.GetCoordinate(axis.fP1),
+          p2   = pp.GetCoordinate(axis.fP2),
+          w = p2.x - p1.x, h = p1.y - p2.y,
           vertical = Math.abs(w) < Math.abs(h),
           func = null, reverse = false, kind = "normal",
-          min = gaxis.fWmin, max = gaxis.fWmax,
-          domain_min = min, domain_max = max;
+          min = 0, max = 100,
+          domain_min = min, domain_max = max,
+          pos_x = p1.x, pos_y = p2.y;
 
-      if (gaxis.fChopt.indexOf("t")>=0) {
+      console.log('positions', p1, p2, axis.fP1, axis.fP2, axis._typename)
+
+      if (axis.$time_scale) {
          func = d3.scaleTime();
          kind = "time";
          this.toffset = jsrp.getTimeOffset(gaxis);
          domain_min = new Date(this.toffset + min*1000);
          domain_max = new Date(this.toffset + max*1000);
-      } else if (gaxis.fChopt.indexOf("G")>=0) {
+      } else if (axis.$log_scale) {
          func = d3.scaleLog();
          kind = "log";
       } else {
@@ -1076,7 +1084,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (h > 0) {
             func.range([h,0]);
          } else {
-            let d = y1; y1 = y2; y2 = d;
+            pos_y = p1.y;
             h = -h; reverse = true;
             func.range([0,h]);
          }
@@ -1084,7 +1092,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (w > 0) {
             func.range([0,w]);
          } else {
-            let d = x1; x1 = x2; x2 = d;
+            pos_x = p2.x;
             w = -w; reverse = true;
             func.range([w,0]);
          }
@@ -1094,7 +1102,17 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       this.CreateG();
 
-      this.DrawAxis(vertical, this.draw_g, w, h, "translate(" + x1 + "," + y2 +")", reverse);
+      return this.DrawAxis(vertical, this.draw_g, w, h, "translate(" + pos_x + "," + pos_y +")", reverse);
+   }
+
+   let drawRAxis = (divid, obj /*, opt*/) => {
+      let painter = new RAxisPainter(obj);
+
+      painter.SetDivId(divid);
+
+      painter.disable_zooming = true;
+
+      return painter.Redraw().then(() => painter);
    }
 
    // ==========================================================================================
@@ -1417,7 +1435,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       let layer = this.svg_frame().select(".axis_layer"),
           w = this.frame_width(), h = this.frame_height();
 
-      this.x_handle = new RAxisPainter(true, "x_");
+      this.x_handle = new RAxisPainter(this, "x_");
       this.x_handle.SetDivId(this.divid, -1);
       this.x_handle.pad_name = this.pad_name;
       this.x_handle.rstyle = this.rstyle;
@@ -1429,7 +1447,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.x_handle.lbls_both_sides = false;
       this.x_handle.has_obstacle = false;
 
-      this.y_handle = new RAxisPainter(true, "y_");
+      this.y_handle = new RAxisPainter(this, "y_");
       this.y_handle.SetDivId(this.divid, -1);
       this.y_handle.pad_name = this.pad_name;
       this.y_handle.rstyle = this.rstyle;
@@ -2199,7 +2217,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return JSROOT.ObjectPainter.prototype.svg_pad.call(this, pad_name);
    }
 
-   /** @summary cleanup only pad itself, all child elements will be collected and cleanup separately */ 
+   /** @summary cleanup only pad itself, all child elements will be collected and cleanup separately */
    RPadPainter.prototype.Cleanup = function() {
 
       for (let k = 0; k < this.painters.length; ++k)
@@ -2265,14 +2283,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    RPadPainter.prototype.RegisterForPadEvents = function(receiver) {
       this.pad_events_receiver = receiver;
    }
-   
-   /** @summary Generate pad events, normally handled by GED 
+
+   /** @summary Generate pad events, normally handled by GED
      * @desc in pad painter, while pad may be drawn without canvas
      * @private */
    RPadPainter.prototype.PadEvent = function(_what, _padpainter, _painter, _position, _place) {
       if ((_what == "select") && (typeof this.SelectActivePad == 'function'))
          this.SelectActivePad(_padpainter, _painter, _position);
-      
+
       if (this.pad_events_receiver)
          this.pad_events_receiver({ what: _what, padpainter:  _padpainter, painter: _painter, position: _position, place: _place });
    }
@@ -2282,7 +2300,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       let istoppad = (this.iscan || !this.has_canvas),
           canp = istoppad ? this : this.canv_painter();
-          
+
       if (_painter === undefined) _painter = this;
 
       if (pos && !istoppad)
@@ -2292,7 +2310,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       canp.PadEvent("select", this, _painter, pos, _place);
    }
-   
+
    /** @summary Called by framework when pad is supposed to be active and get focus
     * @private */
    RPadPainter.prototype.SetActive = function(on) {
@@ -2706,7 +2724,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    RPadPainter.prototype.PadContextMenu = function(evnt) {
-      if (evnt.stopPropagation) { 
+      if (evnt.stopPropagation) {
          // this is normal event processing and not emulated jsroot event
          // for debug purposes keep original context menu for small region in top-left corner
          let pos = d3.pointer(evnt, this.svg_pad().node());
@@ -2744,13 +2762,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       } else {
          showsubitems = this.CreatePadSvg(true);
       }
-      
+
       // even sub-pad is not visible, we should redraw sub-sub-pads to hide them as well
       for (let i = 0; i < this.painters.length; ++i) {
          let sub = this.painters[i];
          if (showsubitems || sub.this_pad_name) sub.Redraw(reason);
       }
-      
+
       if (jsrp.GetActivePad() === this) {
          let canp = this.canv_painter();
          if (canp) canp.PadEvent("padredraw", this);
@@ -2762,9 +2780,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       let num = 0;
 
-      for (let i = 0; i < this.painters.length; ++i) 
-         if (this.painters[i] instanceof RPadPainter) 
-            num++; 
+      for (let i = 0; i < this.painters.length; ++i)
+         if (this.painters[i] instanceof RPadPainter)
+            num++;
 
       return num;
    }
@@ -3075,13 +3093,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       this.DrawNextSnap(snap.fPrimitives, -1, () => {
          this.CurrentPadName(prev_name);
-         
+
          if (jsrp.GetActivePad() === this) {
             let canp = this.canv_painter();
 
             if (canp) canp.PadEvent("padredraw", this);
          }
-         
+
          call_back(this);
       });
    }
@@ -4003,7 +4021,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       jsrp.SelectActivePad({ pp: painter, active: false });
 
-      painter.DrawPrimitives(0, function() {
+      painter.DrawPrimitives(0, () => {
          painter.AddPadButtons();
          painter.ShowButtons();
          painter.DrawingReady();
@@ -4567,7 +4585,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       painter.CreateG(false);
 
-      painter.z_handle = new JSROOT.v7.RAxisPainter(true, "z_");
+      painter.z_handle = new RAxisPainter(painter, "z_");
       painter.z_handle.SetDivId(divid, -1);
       painter.z_handle.pad_name = painter.pad_name;
       painter.z_handle.invert_side = true;
@@ -4592,7 +4610,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    JSROOT.addDrawFunc({ name: "ROOT::Experimental::RPave", icon: "img_pavetext", func: drawPave, opt: "" });
    JSROOT.addDrawFunc({ name: "ROOT::Experimental::RLegend", icon: "img_graph", prereq: "v7more", func: "JSROOT.v7.drawLegend", opt: "" });
    JSROOT.addDrawFunc({ name: "ROOT::Experimental::RPaveText", icon: "img_pavetext", prereq: "v7more", func: "JSROOT.v7.drawPaveText", opt: "" });
-   JSROOT.addDrawFunc({ name: "ROOT::Experimental::RFrame", icon: "img_frame", func: "JSROOT.v7.drawFrame", opt: "" });
+   JSROOT.addDrawFunc({ name: "ROOT::Experimental::RFrame", icon: "img_frame", func: drawFrame, opt: "" });
+   JSROOT.addDrawFunc({ name: "ROOT::Experimental::RAxisDrawable", icon: "img_frame", func: drawRAxis, opt: "" });
 
    JSROOT.v7.RAxisPainter = RAxisPainter;
    JSROOT.v7.RFramePainter = RFramePainter;
@@ -4600,6 +4619,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    JSROOT.v7.RPadPainter = RPadPainter;
    JSROOT.v7.RCanvasPainter = RCanvasPainter;
    JSROOT.v7.RPavePainter = RPavePainter;
+   JSROOT.v7.drawRAxis = drawRAxis;
    JSROOT.v7.drawFrame = drawFrame;
    JSROOT.v7.drawPad = drawPad;
    JSROOT.v7.drawCanvas = drawCanvas;
