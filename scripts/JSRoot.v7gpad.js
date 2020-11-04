@@ -244,6 +244,48 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    // ================================================================================
+   
+   /** @summary assign methods for the RAxis objects
+     * @private */
+   JSROOT.v7.AssignRAxisMethods = function(axis) {
+      if ((axis._typename == "ROOT::Experimental::RAxisEquidistant") || (axis._typename == "ROOT::Experimental::RAxisLabels")) {
+         if (axis.fInvBinWidth === 0) {
+            axis.$dummy = true;
+            axis.fInvBinWidth = 1;
+            axis.fNBinsNoOver = 0;
+            axis.fLow = 0;
+         }
+         
+         axis.min = axis.fLow;
+         axis.max = axis.fLow + axis.fNBinsNoOver/axis.fInvBinWidth;
+         axis.GetNumBins = function() { return this.fNBinsNoOver; }
+         axis.GetBinCoord = function(bin) { return this.fLow + bin/this.fInvBinWidth; }
+         axis.FindBin = function(x,add) { return Math.floor((x - this.fLow)*this.fInvBinWidth + add); }
+      } else if (axis._typename == "ROOT::Experimental::RAxisIrregular") {
+         axis.min = axis.fBinBorders[0];
+         axis.max = axis.fBinBorders[axis.fBinBorders.length - 1];
+         axis.GetNumBins = function() { return this.fBinBorders.length; }
+         axis.GetBinCoord = function(bin) {
+            let indx = Math.round(bin);
+            if (indx <= 0) return this.fBinBorders[0];
+            if (indx >= this.fBinBorders.length) return this.fBinBorders[this.fBinBorders.length - 1];
+            if (indx==bin) return this.fBinBorders[indx];
+            let indx2 = (bin < indx) ? indx - 1 : indx + 1;
+            return this.fBinBorders[indx] * Math.abs(bin-indx2) + this.fBinBorders[indx2] * Math.abs(bin-indx);
+         }
+         axis.FindBin = function(x,add) {
+            for (let k = 1; k < this.fBinBorders.length; ++k)
+               if (x < this.fBinBorders[k]) return Math.floor(k-1+add);
+            return this.fBinBorders.length - 1;
+         }
+      } 
+
+      // to support some code from ROOT6 drawing
+
+      axis.GetBinCenter = function(bin) { return this.GetBinCoord(bin-0.5); }
+      axis.GetBinLowEdge = function(bin) { return this.GetBinCoord(bin-1); }
+   }
+
 
    function RAxisPainter(arg1, cssprefix) {
       let axis = cssprefix ? arg1.GetObject() : arg1;
@@ -585,7 +627,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Add interactive elements to draw axes title */
    RAxisPainter.prototype.AddTitleDrag = function(title_g, vertical, offset_k, reverse, axis_length) {
       if (!JSROOT.settings.MoveResize || JSROOT.BatchMode) return;
-      return;
 
       let drag_rect = null,
           acc_x, acc_y, new_x, new_y, sign_0, alt_pos, curr_indx,
@@ -1051,15 +1092,15 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    RAxisPainter.prototype.Redraw = function() {
 
-      let axis = this.GetObject(),
+      let drawable = this.GetObject(),
+          axis = drawable.fAxis, 
           pp   = this.pad_painter(),
-          p1   = pp.GetCoordinate(axis.fP1),
-          p2   = pp.GetCoordinate(axis.fP2),
+          p1   = pp.GetCoordinate(drawable.fP1),
+          p2   = pp.GetCoordinate(drawable.fP2),
           w = p2.x - p1.x, h = p1.y - p2.y,
           vertical = Math.abs(w) < Math.abs(h),
           func = null, reverse = false, kind = "normal",
-          min = 0, max = 100,
-          domain_min = min, domain_max = max,
+          min = axis.min, max = axis.max,
           pos_x = p1.x, pos_y = p2.y;
 
       console.log('positions', p1, p2, axis.fP1, axis.fP2, axis._typename)
@@ -1067,7 +1108,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (axis.$time_scale) {
          func = d3.scaleTime();
          kind = "time";
-         this.toffset = jsrp.getTimeOffset(gaxis);
+         this.toffset = jsrp.getTimeOffset(axis);
          domain_min = new Date(this.toffset + min*1000);
          domain_max = new Date(this.toffset + max*1000);
       } else if (axis.$log_scale) {
@@ -1078,7 +1119,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          kind = "normal";
       }
 
-      func.domain([domain_min, domain_max]);
+      func.domain([min, max]);
 
       if (vertical) {
          if (h > 0) {
@@ -1107,6 +1148,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    let drawRAxis = (divid, obj /*, opt*/) => {
       let painter = new RAxisPainter(obj);
+      
+      JSROOT.v7.AssignRAxisMethods(obj.fAxis);
 
       painter.SetDivId(divid);
 
@@ -4611,7 +4654,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    JSROOT.addDrawFunc({ name: "ROOT::Experimental::RLegend", icon: "img_graph", prereq: "v7more", func: "JSROOT.v7.drawLegend", opt: "" });
    JSROOT.addDrawFunc({ name: "ROOT::Experimental::RPaveText", icon: "img_pavetext", prereq: "v7more", func: "JSROOT.v7.drawPaveText", opt: "" });
    JSROOT.addDrawFunc({ name: "ROOT::Experimental::RFrame", icon: "img_frame", func: drawFrame, opt: "" });
-   JSROOT.addDrawFunc({ name: "ROOT::Experimental::RAxisDrawable", icon: "img_frame", func: drawRAxis, opt: "" });
+   JSROOT.addDrawFunc({ name: /^ROOT::Experimental::RAxisDrawable/, icon: "img_frame", func: drawRAxis, opt: "" });
 
    JSROOT.v7.RAxisPainter = RAxisPainter;
    JSROOT.v7.RFramePainter = RFramePainter;
