@@ -1634,6 +1634,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          window.removeEventListener('keydown', this.keys_handler, false);
          this.keys_handler = null;
       }
+      
+      delete this.xaxis;
+      delete this.yaxis;
+      delete this.zaxis;
 
       this.draw_g = null;
       delete this._click_handler;

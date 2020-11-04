@@ -612,7 +612,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       if (xaxis && xaxis.fTitle) {
          let text3d = new THREE.TextGeometry(xaxis.fTitle, { font: JSROOT.threejs_font_helvetiker_regular, size: textsize, height: 0, curveSegments: 5 });
          text3d.computeBoundingBox();
-         text3d.center = xaxis.TestBit(JSROOT.EAxisBits.kCenterTitle);
+         text3d.center = false; // xaxis.TestBit(JSROOT.EAxisBits.kCenterTitle);
          text3d.gry = 2; // factor 2 shift
          text3d.grx = (grminx + grmaxx)/2; // default position for centered title
          lbls.push(text3d);
@@ -816,7 +816,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       if (yaxis && yaxis.fTitle) {
          let text3d = new THREE.TextGeometry(yaxis.fTitle, { font: JSROOT.threejs_font_helvetiker_regular, size: textsize, height: 0, curveSegments: 5 });
          text3d.computeBoundingBox();
-         text3d.center = yaxis.TestBit(JSROOT.EAxisBits.kCenterTitle);
+         text3d.center = false; // yaxis.TestBit(JSROOT.EAxisBits.kCenterTitle);
          text3d.grx = 2; // factor 2 shift
          text3d.gry = (grminy + grmaxy)/2; // default position for centered title
          lbls.push(text3d);
@@ -972,7 +972,8 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
             text3d.computeBoundingBox();
             let draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
                 // draw_height = text3d.boundingBox.max.y - text3d.boundingBox.min.y,
-                posz = zaxis.TestBit(JSROOT.EAxisBits.kCenterTitle) ? (grmaxz + grminz - draw_width)/2 : grmaxz - draw_width;
+                center_title = false, // zaxis.TestBit(JSROOT.EAxisBits.kCenterTitle) 
+                posz = center_title ? (grmaxz + grminz - draw_width)/2 : grmaxz - draw_width;
 
             text3d.rotateZ(Math.PI/2);
 
