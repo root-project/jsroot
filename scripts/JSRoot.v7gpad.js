@@ -1460,10 +1460,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             }
          }
       }
-
    }
 
-   /** @summary axes can be drawn only for main histogram  */
+   /** @summary Draw configured axes on the frame 
+     * @desc axes can be drawn only for main histogram  */
    RFramePainter.prototype.DrawAxes = function() {
 
       if (this.axes_drawn) return Promise.resolve(true);
@@ -1484,7 +1484,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.x_handle.rstyle = this.rstyle;
 
       this.x_handle.SetAxisConfig("xaxis",
-                                  (this.logx && (this.x_kind !== "time")) ? "log" + (this.logx == 2 ? 2 : 10)   : this.x_kind,
+                                  (this.logx && (this.x_kind !== "time")) ? "log" + (this.logx == 2 ? 2 : 10) : this.x_kind,
                                   this.x, this.xmin, this.xmax, this.scale_xmin, this.scale_xmax);
       this.x_handle.invert_side = false;
       this.x_handle.lbls_both_sides = false;
@@ -2040,9 +2040,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Create x,y objects which maps user coordinates into pixels
      * @desc While only first painter really need such object, all others just reuse it
      * following functions are introduced
-     *     this.GetBin[X/Y]  return bin coordinate
-     *     this.Convert[X/Y]  converts root value in JS date when date scale is used
-     *     this.[x,y]  these are d3.scale objects
+     *    this.GetBin[X/Y]  return bin coordinate
+     *    this.Convert[X/Y]  converts root value in JS date when date scale is used
+     *    this.[x,y]  these are d3.scale objects
      *    this.gr[x,y]  converts root scale into graphical value
      *    this.Revert[X/Y]  converts graphical coordinates to user coordinates
      * @private */
@@ -2083,7 +2083,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.ConvertX = function(x) { return new Date(this.timeoffsetx + x*1000); };
          this.RevertX = function(grx) { return (this.x.invert(grx) - this.timeoffsetx) / 1000; };
       } else {
-         this.x_kind = 'normal'; // (this.histo.fXaxis.fLabels==null) ? 'normal' : 'labels';
+         this.x_kind = this.xaxis.fLabelsIndex ? 'labels' : 'normal';
          this.ConvertX = function(x) { return x; };
          this.RevertX = function(grx) { return this.x.invert(grx); };
       }
@@ -2131,7 +2131,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.ConvertY = function(y) { return new Date(this.timeoffsety + y*1000); };
          this.RevertY = function(gry) { return (this.y.invert(gry) - this.timeoffsety) / 1000; };
       } else {
-         this.y_kind = 'normal'; // !this.histo.fYaxis.fLabels ? 'normal' : 'labels';
+         this.y_kind = this.yaxis.fLabelsIndex ? 'labels' : 'normal'; 
          this.ConvertY = function(y) { return y; };
          this.RevertY = function(gry) { return this.y.invert(gry); };
       }

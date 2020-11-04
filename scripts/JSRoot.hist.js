@@ -2282,8 +2282,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       alert("HistPainter.DrawBins not implemented");
    }
 
+    /** @summary Draw axes for histogram 
+      * @desc axes can be drawn only for main histogram */
    THistPainter.prototype.DrawAxes = function() {
-      // axes can be drawn only for main histogram
       if (!this.is_main_painter() || this.options.Same)
          return Promise.resolve(false);
 
@@ -4261,7 +4262,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return this[funcname](reason);
    }
 
-   /** @returns Promise */
+   /** @summary Performs 2D drawing of histogram
+     * @returns {Promise} when ready */
    TH1Painter.prototype.Draw2D = function(/* reason */) {
       this.Clear3DScene();
       this.mode3d = false;
@@ -6180,9 +6182,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return res;
    }
 
+   /** @summary Check if it makes sense to zoom inside specified axis range */
    TH2Painter.prototype.CanZoomIn = function(axis,min,max) {
 
-      // check if it makes sense to zoom inside specified axis range
       if (axis=="z") return true;
 
       let obj = this.GetHisto();
@@ -6191,7 +6193,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return !obj || (obj.FindBin(max,0.5) - obj.FindBin(min,0) > 1);
    }
 
-   /** @returns {Promise} */
+   /** @summary Make 2D drawing for histogram
+     * @returns {Promise} */
    TH2Painter.prototype.Draw2D = function(/* reason */) {
 
       this.Clear3DScene();

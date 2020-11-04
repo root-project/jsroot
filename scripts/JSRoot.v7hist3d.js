@@ -501,8 +501,8 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
          this.logx = 1;
       } else {
          this.grx = d3.scaleLinear();
-         if (this.xaxis && this.xaxis.fLabels) this.x_kind = "labels";
-                                          else this.x_kind = "normal";
+         if (this.xaxis && this.xaxis.fLabelsIndex) this.x_kind = "labels";
+                                               else this.x_kind = "normal";
          this.logx = 0;
       }
 
@@ -527,8 +527,8 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
          this.logy = 1;
       } else {
          this.gry = d3.scaleLinear();
-         if (this.yaxis && this.yaxis.fLabels) this.y_kind = "labels";
-                                          else this.y_kind = "normal";
+         if (this.yaxis && this.yaxis.fLabelsIndex) this.y_kind = "labels";
+                                               else this.y_kind = "normal";
          this.logy = 0;
       }
 
@@ -548,7 +548,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       } else {
          this.grz = d3.scaleLinear();
          this.z_kind = "normal";
-         if (this.zaxis && this.zaxis.fLabels && (opts.ndim === 3)) this.z_kind = "labels";
+         if (this.zaxis && this.zaxis.fLabelsIndex && (opts.ndim === 3)) this.z_kind = "labels";
          this.logz = 0;
       }
 
