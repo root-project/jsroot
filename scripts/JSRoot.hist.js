@@ -2249,16 +2249,20 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       AssignFuncs(histo.fZaxis);
    }
 
-   /** @summary Create x,y objects which maps user coordinates into pixels
-    *  @desc Now moved into TFramePainter */
-   THistPainter.prototype.CreateXY = function() {
-      if (!this.is_main_painter()) return;
+   THistPainter.prototype.DrawBins = function() {
+      alert("HistPainter.DrawBins not implemented");
+   }
 
-      let histo = this.GetHisto(),
-          fp = this.frame_painter();
+    /** @summary Draw axes for histogram 
+      * @desc axes can be drawn only for main histogram */
+   THistPainter.prototype.DrawAxes = function() {
+      if (!this.is_main_painter() /* || this.options.Same */)
+         return Promise.resolve(false);
 
-      if (!fp)
-         return console.warn("histogram drawn without frame - not supported");
+      let fp = this.frame_painter();
+      if (!fp) return Promise.resolve(false);
+      
+      let histo = this.GetHisto();
 
       // artifically add y range to display axes
       if (this.ymin === this.ymax) this.ymax += 1;
@@ -2276,20 +2280,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                     Proj: this.options.Proj,
                     extra_y_space: this.options.Text && (this.options.BarStyle > 0) });
       delete this.check_pad_range;
-   }
-
-   THistPainter.prototype.DrawBins = function() {
-      alert("HistPainter.DrawBins not implemented");
-   }
-
-    /** @summary Draw axes for histogram 
-      * @desc axes can be drawn only for main histogram */
-   THistPainter.prototype.DrawAxes = function() {
-      if (!this.is_main_painter() || this.options.Same)
-         return Promise.resolve(false);
-
-      let fp = this.frame_painter();
-      if (!fp) return Promise.resolve(false);
 
       return fp.DrawAxes(false, this.options.Axis < 0, this.options.AxisPos, this.options.Zscale);
    }
@@ -4273,8 +4263,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (typeof this.DrawColorPalette === 'function')
          this.DrawColorPalette(false);
 
-      this.CreateXY();
-
       return this.DrawAxes().then(() => {
          this.DrawBins();
          return this.DrawTitle();
@@ -4580,7 +4568,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       this.nbinsy = histo.fYaxis.fNbins;
 
       // used in CreateXY method
-
       this.CreateAxisFuncs(true);
 
       if (this.IsTH2Poly()) {
@@ -6202,8 +6189,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       // draw new palette, resize frame if required
       let pp = this.DrawColorPalette(this.options.Zscale && (this.options.Color || this.options.Contour), true);
-
-      this.CreateXY();
 
       return this.DrawAxes().then(() => {
 
