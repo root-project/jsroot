@@ -212,7 +212,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
          main.xmin = main.xmax = 0;
          main.ymin = main.ymax = 0;
          main.zmin = main.zmax = 0;
-         main.SetAxesRanges(this.xmin, this.xmax, this.ymin, this.ymax, this.zmin, this.zmax);
+         main.SetAxesRanges(this.GetAxis("x"), this.xmin, this.xmax, this.GetAxis("y"), this.ymin, this.ymax, this.GetAxis("z"), this.zmin, this.zmax);
       }
 
       return main.DrawAxes();

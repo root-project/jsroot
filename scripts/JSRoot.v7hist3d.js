@@ -507,7 +507,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       }
 
       this.grx.domain([ xmin, xmax ]).range([ grminx, grmaxx ]);
-      this.x_handle = new JSROOT.v7.RAxisPainter(this, "x_");
+      this.x_handle = new JSROOT.v7.RAxisPainter(this, this.xaxis, "x_");
       this.x_handle.SetAxisConfig("xaxis", this.x_kind, this.grx, this.xmin, this.xmax, xmin, xmax);
       this.x_handle.CreateFormatFuncs();
       this.scale_xmin = xmin; this.scale_xmax = xmax;
@@ -533,7 +533,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       }
 
       this.gry.domain([ ymin, ymax ]).range([ grminy, grmaxy ]);
-      this.y_handle = new JSROOT.v7.RAxisPainter(this, "y_");
+      this.y_handle = new JSROOT.v7.RAxisPainter(this, this.yaxis, "y_");
       this.y_handle.SetAxisConfig("yaxis", this.y_kind, this.gry, this.ymin, this.ymax, ymin, ymax);
       this.y_handle.CreateFormatFuncs();
       this.scale_ymin = ymin; this.scale_ymax = ymax;
@@ -556,7 +556,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
 
       // this.SetRootPadRange(pad, true); // set some coordinates typical for 3D projections in ROOT
 
-      this.z_handle = new JSROOT.v7.RAxisPainter(this, "z_");
+      this.z_handle = new JSROOT.v7.RAxisPainter(this, this.zaxis, "z_");
       this.z_handle.SetAxisConfig("zaxis", this.z_kind, this.grz, this.zmin, this.zmax, zmin, zmax);
       this.z_handle.CreateFormatFuncs();
       this.scale_zmin = zmin; this.scale_zmax = zmax;
@@ -1466,7 +1466,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
 
       if (is_main) {
          main.Create3DScene(undefined, this.options.Render3D);
-         main.SetAxesRanges(this.xmin, this.xmax, this.ymin, this.ymax, 0, 0);
+         main.SetAxesRanges(this.GetAxis("x"), this.xmin, this.xmax, null, this.ymin, this.ymax, null, 0, 0);
          main.Set3DOptions(this.options);
          main.DrawXYZ(main.toplevel, { use_y_for_z: true, zmult: 1.1, zoom: JSROOT.settings.Zooming, ndim: 1 });
       }
@@ -1515,7 +1515,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
 
       if (is_main) {
          main.Create3DScene(undefined, this.options.Render3D);
-         main.SetAxesRanges(this.xmin, this.xmax, this.ymin, this.ymax, this.zmin, this.zmax);
+         main.SetAxesRanges(this.GetAxis("x"), this.xmin, this.xmax, this.GetAxis("y"), this.ymin, this.ymax, null, this.zmin, this.zmax);
          main.Set3DOptions(this.options);
          main.DrawXYZ(main.toplevel, { zmult: zmult, zoom: JSROOT.settings.Zooming, ndim: 2 });
       }
@@ -2949,7 +2949,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       }
 
       main.Create3DScene(undefined, this.options.Render3D);
-      main.SetAxesRanges(this.xmin, this.xmax, this.ymin, this.ymax, this.zmin, this.zmax);
+      main.SetAxesRanges(this.GetAxis("x"), this.xmin, this.xmax, this.GetAxis("y"), this.ymin, this.ymax, this.GetAxis("z"), this.zmin, this.zmax);
       main.Set3DOptions(this.options);
       main.DrawXYZ(main.toplevel, { zoom: JSROOT.settings.Zooming, ndim: 3 });
 
