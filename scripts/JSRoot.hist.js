@@ -4270,10 +4270,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       this.ScanContent(true);
 
-      this.CreateXY();
-
       if (typeof this.DrawColorPalette === 'function')
          this.DrawColorPalette(false);
+
+      this.CreateXY();
 
       return this.DrawAxes().then(() => {
          this.DrawBins();
@@ -6200,10 +6200,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       this.Clear3DScene();
       this.mode3d = false;
 
-      this.CreateXY();
-
       // draw new palette, resize frame if required
       let pp = this.DrawColorPalette(this.options.Zscale && (this.options.Color || this.options.Contour), true);
+
+      this.CreateXY();
 
       return this.DrawAxes().then(() => {
 
