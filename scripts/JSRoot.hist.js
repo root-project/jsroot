@@ -2256,7 +2256,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
     /** @summary Draw axes for histogram 
       * @desc axes can be drawn only for main histogram */
    THistPainter.prototype.DrawAxes = function() {
-      if (!this.is_main_painter() /* || this.options.Same */)
+      if (!this.is_main_painter())
          return Promise.resolve(false);
 
       let fp = this.frame_painter();
@@ -2280,6 +2280,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                     Proj: this.options.Proj,
                     extra_y_space: this.options.Text && (this.options.BarStyle > 0) });
       delete this.check_pad_range;
+
+      if (this.options.Same) return Promise.resolve(false);
 
       return fp.DrawAxes(false, this.options.Axis < 0, this.options.AxisPos, this.options.Zscale);
    }
