@@ -337,11 +337,6 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       return Promise.resolve(false);
    }
 
-
-   RHistPainter.prototype.DrawBins = function() {
-      alert("HistPainter.DrawBins not implemented");
-   }
-
    RHistPainter.prototype.ProcessItemReply = function(reply, req) {
       if (!this.IsDisplayItem())
          return console.error('Get item when display normal histogram');
@@ -1169,9 +1164,8 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
                  .call(this.fillatt.func);
    }
 
-   RH1Painter.prototype.DrawBins = function() {
-      // new method, create svg:path expression ourself directly from histogram
-      // all points will be used, compress expression when too large
+   /** @summary Draw 1D histogram as SVG */
+   RH1Painter.prototype.Draw1DBins = function() {
 
       let width = this.frame_width(), height = this.frame_height();
 
@@ -1798,7 +1792,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
                  .then(res2 => {
                      if (!res2) return false;
                      // called when bins received from server, must be reentrant
-                     this.DrawBins();
+                     this.Draw1DBins();
                      this.UpdateStatWebCanvas();
                      return this.AddInteractive();
                      });
@@ -3187,7 +3181,8 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       return handle;
    }
 
-   RH2Painter.prototype.DrawBins = function() {
+   /** @summary Draw RH2 bins in 2D mode */
+   RH2Painter.prototype.Draw2DBins = function() {
 
       if (!this.draw_content)
          return this.RemoveDrawG();
@@ -3572,7 +3567,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
                  .then(res2 => {
                     // called when bins received from server, must be reentrant
                     if (!res2) return false;
-                    this.DrawBins();
+                    this.Draw2DBins();
                     this.UpdateStatWebCanvas();
                     return this.AddInteractive();
                  });

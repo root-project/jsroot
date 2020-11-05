@@ -2257,10 +2257,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
        }
    }
 
-   THistPainter.prototype.DrawBins = function() {
-      alert("HistPainter.DrawBins not implemented");
-   }
-
     /** @summary Draw axes for histogram 
       * @desc axes can be drawn only for main histogram */
    THistPainter.prototype.DrawAxes = function() {
@@ -3614,9 +3610,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                  .call(this.fillatt.func);
    }
 
-   TH1Painter.prototype.DrawBins = function() {
-      // new method, create svg:path expression ourself directly from histogram
-      // all points will be used, compress expression when too large
+   /** @summary Draw TH1 bins in SVG element */
+   TH1Painter.prototype.Draw1DBins = function() {
 
       this.CheckHistDrawAttributes();
 
@@ -4271,7 +4266,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          this.DrawColorPalette(false);
 
       return this.DrawAxes().then(() => {
-         this.DrawBins();
+         this.Draw1DBins();
          return this.DrawTitle();
       }).then(() => {
          this.UpdateStatWebCanvas();
@@ -5789,7 +5784,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return handle;
    }
 
-   TH2Painter.prototype.DrawBins = function() {
+   /** @summary Draw TH2 bins in 2D mode */
+   TH2Painter.prototype.Draw2DBins = function() {
 
       if (!this.draw_content)
          return this.RemoveDrawG();
@@ -6195,7 +6191,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       return this.DrawAxes().then(() => {
 
-         this.DrawBins();
+         this.Draw2DBins();
 
          // redraw palette till the end when contours are available
          if (pp) pp.DrawPave();

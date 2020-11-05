@@ -803,7 +803,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    TGraphPainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
 
    TGraphPainter.prototype.Redraw = function() {
-      this.DrawBins();
+      this.DrawGraph();
    }
 
    TGraphPainter.prototype.Cleanup = function() {
@@ -1103,7 +1103,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       return pmain.pad ? pmain : null;
    }
 
-   TGraphPainter.prototype.DrawBins = function() {
+   /** @summary draw TGraph as SVG */
+   TGraphPainter.prototype.DrawGraph = function() {
 
       let pmain = this.get_main(),
           w = this.frame_width(),
@@ -1747,7 +1748,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       }
    }
 
-   /** Perform moving */
+   /** @summary Perform moving */
    TGraphPainter.prototype.moveDrag = function(dx,dy) {
       this.pos_dx += dx;
       this.pos_dy += dy;
@@ -1759,12 +1760,12 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          if (main && this.move_bin) {
             this.move_bin.x = main.RevertX(this.move_x0 + this.pos_dx);
             this.move_bin.y = main.RevertY(this.move_y0 + this.pos_dy);
-            this.DrawBins();
+            this.DrawGraph();
          }
       }
    }
 
-   /** Complete moving */
+   /** @summary Complete moving */
    TGraphPainter.prototype.moveEnd = function(not_changed) {
       let exec = "";
 
@@ -1782,7 +1783,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
                if ((bin.indx == 0) && this.MatchObjectType('TCutG'))
                   exec += "SetPoint(" + (this.GetObject().fNpoints-1) + "," + bin.x + "," + bin.y + ");;";
             }
-            this.DrawBins();
+            this.DrawGraph();
          }
       } else {
          exec = "SetPoint(" + this.move_bin.indx + "," + this.move_bin.x + "," + this.move_bin.y + ")";
@@ -1991,7 +1992,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          hpainter.$secondary = true;
       }
       this.SetDivId(divid);
-      this.DrawBins();
+      this.DrawGraph();
       if (this.TestEditable() && !JSROOT.BatchMode)
          JSROOT.require(['interactive'])
                .then(inter => inter.DragMoveHandler.AddMove(this));
@@ -2323,7 +2324,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    TGraphPolarPainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
 
    TGraphPolarPainter.prototype.Redraw = function() {
-      this.DrawBins();
+      this.DrawGraphPolar();
    }
 
    TGraphPolarPainter.prototype.DecodeOptions = function(opt) {
@@ -2343,7 +2344,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       this.OptionsStore(opt);
    }
 
-   TGraphPolarPainter.prototype.DrawBins = function() {
+   TGraphPolarPainter.prototype.DrawGraphPolar = function() {
       let graph = this.GetObject(),
           main = this.main_painter();
 
@@ -2515,7 +2516,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
    TGraphPolarPainter.prototype.PerformDrawing = function(divid) {
       this.SetDivId(divid);
-      this.DrawBins();
+      this.DrawGraphPolar();
       this.DrawingReady();
       return this; // will be value resolved by Promise and getting painter
    }
