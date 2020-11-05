@@ -486,6 +486,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
 
       // this.TestAxisVisibility = HPainter_TestAxisVisibility;
 
+/*
       if (this.logx) {
          if (xmax <= 0) xmax = 1.;
          if ((xmin <= 0) && this.xaxis)
@@ -506,11 +507,19 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       }
 
       this.grx.domain([ xmin, xmax ]).range([ grminx, grmaxx ]);
+*/      
       this.x_handle = new JSROOT.v7.RAxisPainter(this, this.xaxis, "x_");
-      this.x_handle.SetAxisConfig("xaxis", this.x_kind, this.grx, this.xmin, this.xmax, xmin, xmax);
+      // this.x_handle.SetAxisConfig("xaxis", this.x_kind, this.grx, this.xmin, this.xmax, xmin, xmax);
+      
+      this.x_handle.AssignKindAndFunc("xaxis", this.xmin, this.xmax, [xmin, xmax], false, [grminx, grmaxx]);
       this.x_handle.CreateFormatFuncs();
       this.scale_xmin = xmin; this.scale_xmax = xmax;
 
+      // TODO: remove this in the future
+      this.x_kind = this.x_handle.kind;
+      this.grx = x => this.x_handle.gr(x);
+      
+/*
       if (this.logy && !opts.use_y_for_z) {
          if (ymax <= 0) ymax = 1.;
          if ((ymin <= 0) && this.yaxis)
@@ -532,12 +541,20 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       }
 
       this.gry.domain([ ymin, ymax ]).range([ grminy, grmaxy ]);
+*/      
       this.y_handle = new JSROOT.v7.RAxisPainter(this, this.yaxis, "y_");
-      this.y_handle.SetAxisConfig("yaxis", this.y_kind, this.gry, this.ymin, this.ymax, ymin, ymax);
+      // this.y_handle.SetAxisConfig("yaxis", this.y_kind, this.gry, this.ymin, this.ymax, ymin, ymax);
+
+      this.y_handle.AssignKindAndFunc("yaxis", this.ymin, this.ymax, [ymin, ymax], false, [grminy, grmaxy]);
+
+      // TODO: remove this in the future
+      this.y_kind = this.y_handle.kind;
+      this.gry = y => this.y_handle.gr(y);
+      
       this.y_handle.CreateFormatFuncs();
       this.scale_ymin = ymin; this.scale_ymax = ymax;
 
-      if (this.logz) {
+/*      if (this.logz) {
          if (zmax <= 0) zmax = 1;
          if (zmin <= 0) zmin = 1e-4*zmax;
          let base = 10;
@@ -552,11 +569,19 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       }
 
       this.grz.domain([ zmin, zmax ]).range([ grminz, grmaxz ]);
+*/      
 
       // this.SetRootPadRange(pad, true); // set some coordinates typical for 3D projections in ROOT
 
       this.z_handle = new JSROOT.v7.RAxisPainter(this, this.zaxis, "z_");
-      this.z_handle.SetAxisConfig("zaxis", this.z_kind, this.grz, this.zmin, this.zmax, zmin, zmax);
+      //this.z_handle.SetAxisConfig("zaxis", this.z_kind, this.grz, this.zmin, this.zmax, zmin, zmax);
+      
+      this.z_handle.AssignKindAndFunc("zaxis", this.zmin, this.zmax, [zmin, zmax], false, [grminz, grmaxz]);
+      
+      // TODO: remove this in the future
+      this.z_kind = this.z_handle.kind;
+      this.grz = z => this.z_handle.gr(z);
+      
       this.z_handle.CreateFormatFuncs();
       this.scale_zmin = zmin; this.scale_zmax = zmax;
 
@@ -1060,8 +1085,8 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
           // reduced vertices
           rvertices = [ new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 1, 0), new THREE.Vector3(1, 1, 0), new THREE.Vector3(1, 0, 0) ],
           main = this.frame_painter(),
-          axis_zmin = main.grz.domain()[0],
-          axis_zmax = main.grz.domain()[1],
+          axis_zmin = main.z_handle.gr.domain()[0],
+          axis_zmax = main.z_handle.gr.domain()[1],
           zmin, zmax,
           handle = this.PrepareDraw({ rounding: false, use3d: true, extra: 1 }),
           i1 = handle.i1, i2 = handle.i2, j1 = handle.j1, j2 = handle.j2, di = handle.stepi, dj = handle.stepj,

@@ -337,6 +337,59 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.scale_min = smin;
       this.scale_max = smax;
    }
+   
+   RAxisPainter.prototype.AssignKindAndFunc = function(name, min, max, domain, vertical, range) {
+      this.name = name;
+      this.full_min = min;
+      this.full_max = max;
+      this.kind = "normal";
+      this.vertical = vertical;
+      
+      if (this.axis && this.axis._timedisplay) {
+         this.kind = 'time';
+         this.timeoffset = jsrp.getTimeOffset(/*this.histo.fXaxis*/);
+         this.Convert = function(v) { return new Date(this.timeoffset + v*1000); };
+         this.Revert = function(gr) { return (this.func.invert(gr) - this.timeoffset) / 1000; };
+      } else {
+         this.kind = (this.axis && this.axis.fLabelsIndex) ? 'labels' : 'normal';
+         this.Convert = function(v) { return v; };
+         this.Revert = function(gr) { return this.func.invert(gr); };
+      }
+
+      if (this.kind == 'time') {
+         this.func = d3.scaleTime();
+      } else if (this.log_scale) {
+         
+         if (domain[1] <= 0) domain[1] = 1;
+         if ((domain[0] <= 0) || (domain[0] >= domain[1]))
+            domain[0] = domain[1] * 0.0001;
+            
+         let base = 10;
+         this.func = d3.scaleLog().base(base);
+      } else {
+         this.func = d3.scaleLinear();
+      }
+      
+      this.scale_min = domain[0];
+      this.scale_max = domain[1];
+      
+      let reverse = false;
+      
+      if (vertical ^ reverse) {
+         let d = range[0]; range[0] = range[1]; range[1] = d;
+      }
+
+      this.func.domain([this.Convert(domain[0]), this.Convert(domain[1])]).range(range);
+
+      if (this.kind == 'time') {
+         // we emulate scale functionality
+         this.gr = function(val) { return this.func(this.Convert(val)); }
+      } else if (this.log_scale) {
+         this.gr = function(val) { return (val < this.scale_xmin) ? (this.vertical ? this.func.range()[0]+5 : -5) : this.func(val); }
+      } else {
+         this.gr = this.func;
+      }
+   }
 
    RAxisPainter.prototype.formatExp = function(base, order, value) {
       let res = "";
@@ -1466,56 +1519,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
    }
 
-   RAxisPainter.prototype.AssignKindAndFunc = function(name, min, max, domain, vertical, grlength) {
-      this.name = name;
-      this.full_min = min;
-      this.full_max = max;
-      this.kind = "normal";
-      this.vertical = vertical;
-      
-      if (this.axis._timedisplay) {
-         this.kind = 'time';
-         this.timeoffset = jsrp.getTimeOffset(/*this.histo.fXaxis*/);
-         this.Convert = function(v) { return new Date(this.timeoffset + v*1000); };
-         this.Revert = function(gr) { return (this.func.invert(gr) - this.timeoffset) / 1000; };
-      } else {
-         this.kind = this.axis.fLabelsIndex ? 'labels' : 'normal';
-         this.Convert = function(v) { return v; };
-         this.Revert = function(gr) { return this.func.invert(gr); };
-      }
-
-      if (this.kind == 'time') {
-         this.func = d3.scaleTime();
-      } else if (this.log_scale) {
-         
-         if (domain[1] <= 0) domain[1] = 1;
-         if ((domain[0] <= 0) || (domain[0] >= domain[1]))
-            domain[0] = domain[1] * 0.0001;
-
-         this.func = d3.scaleLog();
-      } else {
-         this.func = d3.scaleLinear();
-      }
-      
-      this.scale_min = domain[0];
-      this.scale_max = domain[1];
-      
-      let reverse = false;
-
-      this.func.domain([this.Convert(domain[0]), this.Convert(domain[1])])
-               .range((vertical ^ reverse) ? [grlength, 0] : [0, grlength]);
-
-      if (this.kind == 'time') {
-         // we emulate scale functionality
-         this.gr = function(val) { return this.func(this.Convert(val)); }
-      } else if (this.log_scale) {
-         this.gr = function(val) { return (val < this.scale_xmin) ? (this.vertical ? this.func.range()[0]+5 : -5) : this.func(val); }
-      } else {
-         this.gr = this.func;
-      }
-   }
-
-
    /** @summary Draw configured axes on the frame 
      * @desc axes can be drawn only for main histogram  */
    RFramePainter.prototype.DrawAxes = function() {
@@ -1561,14 +1564,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.x_handle.pad_name = this.pad_name;
       this.x_handle.rstyle = this.rstyle;
       
-      this.x_handle.AssignKindAndFunc("xaxis", this.xmin, this.xmax, [this.scale_xmin, this.scale_xmax], false, w);
+      this.x_handle.AssignKindAndFunc("xaxis", this.xmin, this.xmax, [this.scale_xmin, this.scale_xmax], false, [0,w]);
       
       this.y_handle = new RAxisPainter(this, this.yaxis, "y_");
       this.y_handle.SetDivId(this.divid, -1);
       this.y_handle.pad_name = this.pad_name;
       this.y_handle.rstyle = this.rstyle;
 
-      this.y_handle.AssignKindAndFunc("yaxis", this.ymin, this.ymax, [this.scale_ymin, this.scale_ymax], true, h);
+      this.y_handle.AssignKindAndFunc("yaxis", this.ymin, this.ymax, [this.scale_ymin, this.scale_ymax], true, [0,h]);
 
       // TODO: remove this in the future
       this.x_kind = this.x_handle.kind;
