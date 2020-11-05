@@ -320,24 +320,16 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    RAxisPainter.prototype.Cleanup = function() {
       this.ticks = [];
-      this.func = null;
       delete this.format;
       delete this.axis;
+      delete this.Convert;
+      delete this.Revert;
+      delete this.gr;
+      delete this.func;
 
       JSROOT.ObjectPainter.prototype.Cleanup.call(this);
    }
 
-   RAxisPainter.prototype.SetAxisConfig = function(name, kind, func, min, max, smin, smax) {
-      this.name = name;
-      this.kind = kind;
-      this.func = func;
-
-      this.full_min = min;
-      this.full_max = max;
-      this.scale_min = smin;
-      this.scale_max = smax;
-   }
-   
    RAxisPainter.prototype.AssignKindAndFunc = function(name, min, max, domain, vertical, range) {
       this.name = name;
       this.full_min = min;
@@ -1146,49 +1138,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           p2   = pp.GetCoordinate(drawable.fP2),
           w = p2.x - p1.x, h = p1.y - p2.y,
           vertical = Math.abs(w) < Math.abs(h),
-          func = null, reverse = false, kind = "normal",
+          reverse = false,
           min = this.axis.min,
           max = this.axis.max,
           pos_x = p1.x, pos_y = p2.y;
 
-      if (this.axis.fLabelsIndex) {
-         func = d3.scaleLinear();
-         kind = "labels";
-      } else if (this.axis.$time_scale) {
-         func = d3.scaleTime();
-         kind = "time";
-         this.toffset = jsrp.getTimeOffset(axis);
-         domain_min = new Date(this.toffset + min*1000);
-         domain_max = new Date(this.toffset + max*1000);
-      } else if (this.axis.$log_scale) {
-         func = d3.scaleLog();
-         kind = "log";
-      } else {
-         func = d3.scaleLinear();
-         kind = "normal";
-      }
-
-      func.domain([min, max]);
-
-      if (vertical) {
-         if (h > 0) {
-            func.range([h,0]);
-         } else {
-            pos_y = p1.y;
-            h = -h; reverse = true;
-            func.range([0,h]);
-         }
-      } else {
-         if (w > 0) {
-            func.range([0,w]);
-         } else {
-            pos_x = p2.x;
-            w = -w; reverse = true;
-            func.range([w,0]);
-         }
-      }
-
-      this.SetAxisConfig(vertical ? "yaxis" : "xaxis", kind, func, min, max, min, max);
+      this.AssignKindAndFunc("axis", min, max, [min, max], vertical, [0, vertical ? Math.abs(h) : Math.abs(w)]);
 
       this.CreateG();
 
@@ -4490,19 +4445,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           .style("stroke", "black")
           .attr("fill", "none");
 
-      let z = null, z_kind = "normal";
-
-      if (framep && framep.logz) {
-         z = d3.scaleLog().base(10);
-         z_kind = "log10";
-      } else {
-         z = d3.scaleLinear();
-      }
-      z.domain([zmin, zmax]).range([palette_height,0]);
+      this.z_handle.AssignKindAndFunc("zaxis", zmin, zmax, [zmin, zmax], true, [0, palette_height]);
 
       for (let i=0;i<contour.length-1;++i) {
-         let z0 = z(contour[i]),
-             z1 = z(contour[i+1]),
+         let z0 = this.z_handle.gr(contour[i]),
+             z1 = this.z_handle.gr(contour[i+1]),
              col = palette.getContourColor((contour[i]+contour[i+1])/2);
 
          let r = g_btns.append("svg:rect")
@@ -4525,8 +4472,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (JSROOT.settings.Zooming)
             r.on("dblclick", function() { framep.Unzoom("z"); });
       }
-
-      this.z_handle.SetAxisConfig("zaxis", z_kind, z, zmin, zmax, zmin, zmax);
 
       this.z_handle.max_tick_size = Math.round(palette_width*0.3);
 
@@ -4565,7 +4510,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             zoom_rect = null;
             doing_zoom = false;
 
-            let zmin = Math.min(z.invert(sel1), z.invert(sel2)),
+            let z = this.z_handle.gr,
+                zmin = Math.min(z.invert(sel1), z.invert(sel2)),
                 zmax = Math.max(z.invert(sel1), z.invert(sel2));
 
             this.frame_painter().Zoom("z", zmin, zmax);

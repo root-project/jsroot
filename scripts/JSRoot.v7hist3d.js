@@ -509,7 +509,6 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       this.grx.domain([ xmin, xmax ]).range([ grminx, grmaxx ]);
 */      
       this.x_handle = new JSROOT.v7.RAxisPainter(this, this.xaxis, "x_");
-      // this.x_handle.SetAxisConfig("xaxis", this.x_kind, this.grx, this.xmin, this.xmax, xmin, xmax);
       
       this.x_handle.AssignKindAndFunc("xaxis", this.xmin, this.xmax, [xmin, xmax], false, [grminx, grmaxx]);
       this.x_handle.CreateFormatFuncs();
@@ -543,7 +542,6 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       this.gry.domain([ ymin, ymax ]).range([ grminy, grmaxy ]);
 */      
       this.y_handle = new JSROOT.v7.RAxisPainter(this, this.yaxis, "y_");
-      // this.y_handle.SetAxisConfig("yaxis", this.y_kind, this.gry, this.ymin, this.ymax, ymin, ymax);
 
       this.y_handle.AssignKindAndFunc("yaxis", this.ymin, this.ymax, [ymin, ymax], false, [grminy, grmaxy]);
 
@@ -554,27 +552,9 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       this.y_handle.CreateFormatFuncs();
       this.scale_ymin = ymin; this.scale_ymax = ymax;
 
-/*      if (this.logz) {
-         if (zmax <= 0) zmax = 1;
-         if (zmin <= 0) zmin = 1e-4*zmax;
-         let base = 10;
-         this.grz = d3.scaleLog().base(base);
-         this.z_kind = "log"+base;
-         this.logz = 1;
-      } else {
-         this.grz = d3.scaleLinear();
-         this.z_kind = "normal";
-         if (this.zaxis && this.zaxis.fLabelsIndex && (opts.ndim === 3)) this.z_kind = "labels";
-         this.logz = 0;
-      }
-
-      this.grz.domain([ zmin, zmax ]).range([ grminz, grmaxz ]);
-*/      
-
       // this.SetRootPadRange(pad, true); // set some coordinates typical for 3D projections in ROOT
 
       this.z_handle = new JSROOT.v7.RAxisPainter(this, this.zaxis, "z_");
-      //this.z_handle.SetAxisConfig("zaxis", this.z_kind, this.grz, this.zmin, this.zmax, zmin, zmax);
       
       this.z_handle.AssignKindAndFunc("zaxis", this.zmin, this.zmax, [zmin, zmax], false, [grminz, grmaxz]);
       
