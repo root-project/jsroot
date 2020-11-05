@@ -449,7 +449,6 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
           grminy = -this.size_xy3d, grmaxy = this.size_xy3d,
           grminz = 0, grmaxz = 2*this.size_z3d,
           textsize = Math.round(this.size_z3d * 0.05),
-          main = this.frame_painter(),
           xmin = this.xmin, xmax = this.xmax,
           ymin = this.ymin, ymax = this.ymax,
           zmin = this.zmin, zmax = this.zmax,
@@ -487,7 +486,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
 
       // this.TestAxisVisibility = HPainter_TestAxisVisibility;
 
-      if (main.logx) {
+      if (this.logx) {
          if (xmax <= 0) xmax = 1.;
          if ((xmin <= 0) && this.xaxis)
             for (let i=0;i<this.xaxis.GetNumBins();++i) {
@@ -512,7 +511,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       this.x_handle.CreateFormatFuncs();
       this.scale_xmin = xmin; this.scale_xmax = xmax;
 
-      if (main.logy && !opts.use_y_for_z) {
+      if (this.logy && !opts.use_y_for_z) {
          if (ymax <= 0) ymax = 1.;
          if ((ymin <= 0) && this.yaxis)
             for (let i=0;i<this.yaxis.GetNumBins();++i) {
@@ -538,7 +537,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       this.y_handle.CreateFormatFuncs();
       this.scale_ymin = ymin; this.scale_ymax = ymax;
 
-      if (main.logz) {
+      if (this.logz) {
          if (zmax <= 0) zmax = 1;
          if (zmin <= 0) zmin = 1e-4*zmax;
          let base = 10;
@@ -1044,7 +1043,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       }
    }
 
-   /** Draw 1D/2D histograms in Lego mode
+   /** @summary Draw 1D/2D histograms in Lego mode
      * @private */
    JSROOT.v7.RHistPainter.prototype.DrawLego = function() {
 
