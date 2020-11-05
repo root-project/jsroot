@@ -3074,6 +3074,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       this.InteractiveRedraw("pad","drawopt");
    }
 
+   /** @summary Prepare handle for color draw
+     * @private */
    THistPainter.prototype.PrepareColorDraw = function(args) {
 
       if (!args) args = { rounding: true, extra: 0, middle: 0 };
@@ -3200,11 +3202,13 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    THistPainter.prototype.GetAxisBinTip = function(name, axis, bin) {
       let pmain = this.frame_painter(),
           handle = pmain[name+"_handle"],
-          x1 = axis.GetBinLowEdge(bin+1),
-          x2 = axis.GetBinLowEdge(bin+2);
+          x1 = axis.GetBinLowEdge(bin+1);
 
       if (handle.kind === 'labels') 
-         return pmain.AxisAsText(name, x1); 
+         return pmain.AxisAsText(name, x1);
+         
+      let x2 = axis.GetBinLowEdge(bin+2);   
+          
       if (handle.kind === 'time')
          return pmain.AxisAsText(name, (x1+x2)/2); 
 

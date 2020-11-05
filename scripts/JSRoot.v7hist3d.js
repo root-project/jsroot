@@ -2502,20 +2502,9 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
 
       lines.push(this.GetTipName());
 
-      if (pmain.x_kind == 'labels')
-         lines.push("x = " + pmain.AxisAsText("x", xaxis.GetBinCoord(ix)) + "  xbin=" + ix);
-      else
-         lines.push("x = [" + pmain.AxisAsText("x", xaxis.GetBinCoord(ix)) + ", " + pmain.AxisAsText("x", xaxis.GetBinCoord(ix+dx)) + ")   xbin=" + ix);
-
-      if (pmain.y_kind == 'labels')
-         lines.push("y = " + pmain.AxisAsText("y", yaxis.GetBinCoord(iy))  + "  ybin=" + iy);
-      else
-         lines.push("y = [" + pmain.AxisAsText("y", yaxis.GetBinCoord(iy)) + ", " + pmain.AxisAsText("y", yaxis.GetBinCoord(iy+dy)) + ")  ybin=" + iy);
-
-      if (pmain.z_kind == 'labels')
-         lines.push("z = " + pmain.AxisAsText("z", zaxis.GetBinCoord(iz))  + "  zbin=" + iz);
-      else
-         lines.push("z = [" + pmain.AxisAsText("z", zaxis.GetBinCoord(iz)) + ", " + pmain.AxisAsText("z", zaxis.GetBinCoord(iz+dz)) + ")  zbin=" + iz);
+      lines.push("x = " + this.GetAxisBinTip("x", ix, dx) + "  xbin=" + ix);
+      lines.push("y = " + this.GetAxisBinTip("y", iy, dy) + "  ybin=" + iy);
+      lines.push("z = " + this.GetAxisBinTip("z", iz, dz) + "  zbin=" + iz);
 
       let binz = histo.getBinContent(ix+1, iy+1, iz+1),
           lbl = "entries = "+ ((dx>1) || (dy>1) || (dz>1) ? "~" : "");

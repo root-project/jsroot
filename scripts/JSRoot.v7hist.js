@@ -1440,6 +1440,26 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       if (show_text)
          this.FinishTextDrawing(this.draw_g);
    }
+   
+   /** @summary Get tip text for axis bin */
+   RHistPainter.prototype.GetAxisBinTip = function(name, bin, step) {
+      let pmain = this.frame_painter(),
+          handle = pmain[name+"_handle"],
+          axis = this.GetAxis(name),
+          x1 = axis.GetBinCoord(bin);
+          
+
+      if (handle.kind === 'labels') 
+         return pmain.AxisAsText(name, x1);
+          
+      let x2 = axis.GetBinCoord(bin+(step || 1));
+      
+      if (handle.kind === 'time')
+         return pmain.AxisAsText(name, (x1+x2)/2); 
+
+      return "[" + pmain.AxisAsText(name, x1) + ", " + pmain.AxisAsText(name, x2) + ")"; 
+   }
+
 
    RH1Painter.prototype.GetBinTips = function(bin) {
       let tips = [],
@@ -1451,19 +1471,15 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
           x1 = xaxis.GetBinCoord(bin),
           x2 = xaxis.GetBinCoord(bin+di),
           cont = histo.getBinContent(bin+1),
-          xlbl = "", xnormal = false;
+          xlbl = this.GetAxisBinTip("x", bin, di);
 
       if (name.length>0) tips.push(name);
-
-      if (pmain.x_kind === 'labels') xlbl = pmain.AxisAsText("x", x1); else
-      if (pmain.x_kind === 'time') xlbl = pmain.AxisAsText("x", (x1+x2)/2); else
-        { xnormal = true; xlbl = "[" + pmain.AxisAsText("x", x1) + ", " + pmain.AxisAsText("x", x2) + ")"; }
 
       if (this.options.Error || this.options.Mark) {
          tips.push("x = " + xlbl);
          tips.push("y = " + pmain.AxisAsText("y", cont));
          if (this.options.Error) {
-            if (xnormal) tips.push("error x = " + ((x2 - x1) / 2).toPrecision(4));
+            if (xlbl[0] == "[") tips.push("error x = " + ((x2 - x1) / 2).toPrecision(4));
             tips.push("error y = " + histo.getBinError(bin + 1).toPrecision(4));
          }
       } else {
@@ -3222,8 +3238,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
    }
 
    RH2Painter.prototype.GetBinTips = function (i, j) {
-      let lines = [], pmain = this.frame_painter(),
-           xaxis = this.GetAxis("y"), yaxis = this.GetAxis("y"),
+      let lines = [], 
            histo = this.GetHisto(),
            binz = histo.getBinContent(i+1,j+1),
            di = 1, dj = 1;
@@ -3234,16 +3249,8 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       }
 
       lines.push(this.GetTipName() || "histo<2>");
-
-      if (pmain.x_kind == 'labels')
-         lines.push("x = " + pmain.AxisAsText("x", xaxis.GetBinCoord(i)));
-      else
-         lines.push("x = [" + pmain.AxisAsText("x", xaxis.GetBinCoord(i)) + ", " + pmain.AxisAsText("x", xaxis.GetBinCoord(i+di)) + ")");
-
-      if (pmain.y_kind == 'labels')
-         lines.push("y = " + pmain.AxisAsText("y", yaxis.GetBinCoord(j)));
-      else
-         lines.push("y = [" + pmain.AxisAsText("y", yaxis.GetBinCoord(j)) + ", " + pmain.AxisAsText("y", yaxis.GetBinCoord(j+dj)) + ")");
+      lines.push("x = " + this.GetAxisBinTip("x", i, di));
+      lines.push("y = " + this.GetAxisBinTip("y", j, dj));
 
       lines.push("bin = " + i + ", " + j);
 
