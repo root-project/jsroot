@@ -2341,9 +2341,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       let histo = this.GetHisto();
       if (!histo) return;
 
-      this.nbinsx = this.GetAxis("x").GetNumBins();
-      this.nbinsy = this.GetAxis("y").GetNumBins();
-      this.nbinsz = this.GetAxis("z").GetNumBins();
+      this.ExtractAxesProperties(3);
 
       // global min/max, used at the moment in 3D drawing
 
@@ -2365,8 +2363,6 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       }
 
       this.draw_content = this.gmaxbin > 0;
-
-      this.CreateAxisFuncs(true, true);
    }
 
    JSROOT.v7.RH3Painter.prototype.CountStat = function() {

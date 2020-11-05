@@ -1002,7 +1002,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
    }
 
-   /** @summary Rcalculate frame ranges using specified projection */
+   /** @summary Rcalculate frame ranges using specified projection functions */
    TFramePainter.prototype.RecalculateRange = function(Proj) {
       this.projection = Proj || 0;
 
@@ -1761,7 +1761,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.InteractiveRedraw("pad", "log"+axis);
    }
 
-   /** @summary Toggle log state of specified axis */
+   /** @summary Toggle log state on the specified axis */
    TFramePainter.prototype.ToggleLog = function(axis) {
       this.ChangeLog(axis, "toggle");
    }

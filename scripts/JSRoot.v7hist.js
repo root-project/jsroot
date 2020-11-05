@@ -193,13 +193,15 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       return 1;
    }
 
+   /** @summary Scan histogram content
+     * @abstract */
    RHistPainter.prototype.ScanContent = function(/*when_axis_changed*/) {
       // function will be called once new histogram or
       // new histogram content is assigned
       // one should find min,max,nbins, maxcontent values
       // if when_axis_changed === true specified, content will be scanned after axis zoom changed
 
-      alert("HistPainter.prototype.ScanContent not implemented");
+      alert("RHistPainter.prototype.ScanContent not implemented");
    }
 
    RHistPainter.prototype.DrawAxes = function() {
@@ -297,24 +299,29 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       return axis;
    }
 
-   RHistPainter.prototype.CreateAxisFuncs = function(with_y_axis, with_z_axis) {
-      // here functions are defined to convert index to axis value and back
-      // introduced to support non-equidistant bins
+   /** @summary Extract axes ranges and bins numbers 
+     * @desc Also here ensured that all axes objects got their necessary methods */
+   RHistPainter.prototype.ExtractAxesProperties = function(ndim) {
 
       let histo = this.GetHisto();
       if (!histo) return;
 
+      this.nbinsx = this.nbinsy = this.nbinsz = 0;
+
       let axis = this.GetAxis("x");
+      this.nbinsx = axis.GetNumBins();
       this.xmin = axis.min;
       this.xmax = axis.max;
 
-      if (!with_y_axis || !this.nbinsy) return;
+      if (ndim < 2) return;
       axis = this.GetAxis("y");
+      this.nbinsy = axis.GetNumBins();
       this.ymin = axis.min;
       this.ymax = axis.max;
 
-      if (!with_z_axis || !this.nbinsz) return;
+      if (ndim < 3) return;
       axis = this.GetAxis("z");
+      this.nbinsz = axis.GetNumBins();
       this.zmin = axis.min;
       this.zmax = axis.max;
    }
@@ -860,11 +867,8 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
       if (!this.nbinsx && when_axis_changed) when_axis_changed = false;
 
-      if (!when_axis_changed) {
-         this.nbinsx = this.GetAxis("x").GetNumBins();
-         this.nbinsy = 0;
-         this.CreateAxisFuncs(false);
-      }
+      if (!when_axis_changed)
+         this.ExtractAxesProperties(1);
 
       let hmin = 0, hmin_nz = 0, hmax = 0, hsum = 0;
 
@@ -2043,6 +2047,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       if (isany) this.frame_painter().Zoom(xmin, xmax, ymin, ymax);
    }
 
+   /** @summary Scan content of 2-dim histogram */
    RH2Painter.prototype.ScanContent = function(when_axis_changed) {
 
       // no need to rescan histogram while result does not depend from axis selection
@@ -2050,12 +2055,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
       let i, j, histo = this.GetHisto();
 
-      this.nbinsx = this.GetAxis("x").GetNumBins();
-      this.nbinsy = this.GetAxis("y").GetNumBins();
-
-      // used in CreateXY method
-
-      this.CreateAxisFuncs(true);
+      this.ExtractAxesProperties(2);
 
       if (this.IsTH2Poly()) {
          this.gminposbin = null;
