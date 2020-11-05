@@ -96,7 +96,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          if (this.scale_max <= 0) this.scale_max = 1;
 
-         if ((this.scale_min <= 0) && axis && opts.logcheckmin)
+         if ((this.scale_min <= 0) && axis && !opts.logcheckmin)
             for (let i = 0; i < axis.fNbins; ++i) {
                this.scale_min = Math.max(this.scale_min, axis.GetBinLowEdge(i+1));
                if (this.scale_min > 0) break;
@@ -1251,7 +1251,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.x_handle.AssignKindAndFunc("xaxis", this.xmin, this.xmax, this.scale_xmin, this.scale_xmax, this.swap_xy, this.swap_xy ? [0,h] : [0,w],
                                       { reverse: this.reverse_x,
                                         log: this.swap_xy ? pad.fLogy : pad.fLogx,
-                                        logcheckmin: !this.swap_xy, 
+                                        logcheckmin: this.swap_xy, 
                                         logminfactor: 0.0001 });
       
       this.logx = this.x_handle.log;
@@ -1267,7 +1267,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.y_handle.AssignKindAndFunc("yaxis", this.ymin, this.ymax, this.scale_ymin, this.scale_ymax, !this.swap_xy, this.swap_xy ? [0,w] : [0,h],
                                       { reverse: this.reverse_y, 
                                         log: this.swap_xy ? pad.fLogx : pad.fLogy,
-                                        logcheckmin: (opts.ndim > 1) && !this.swap_xy,
+                                        logcheckmin: (opts.ndim < 2) || this.swap_xy,
                                         log_min_nz: opts.ymin_nz && (opts.ymin_nz < 0.01*this.ymax) ? 0.3 * opts.ymin_nz : 0,
                                         logminfactor: 3e-4 });
 
