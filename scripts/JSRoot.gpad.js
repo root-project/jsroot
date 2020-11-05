@@ -338,7 +338,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       // at the moment when drawing labels, we can try to find most optimal text representation for them
 
-      if ((this.kind == "normal") && (handle.major.length > 0)) {
+      if ((this.kind == "normal") && !this.log && (handle.major.length > 0)) {
 
          let maxorder = 0, minorder = 0, exclorder3 = false;
 
@@ -367,7 +367,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             let lbls = [], indx = 0, totallen = 0;
             while (indx < handle.major.length) {
                let lbl = this.format(handle.major[indx], true);
-               if (!lbl) { indx++; continue; }
                if (lbls.indexOf(lbl) < 0) {
                   lbls.push(lbl);
                   totallen += lbl.length;
