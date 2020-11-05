@@ -486,67 +486,21 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
 
       // this.TestAxisVisibility = HPainter_TestAxisVisibility;
 
-/*
-      if (this.logx) {
-         if (xmax <= 0) xmax = 1.;
-         if ((xmin <= 0) && this.xaxis)
-            for (let i=0;i<this.xaxis.GetNumBins();++i) {
-               xmin = Math.max(xmin, this.xaxis.GetBinLowEdge(i+1));
-               if (xmin>0) break;
-            }
-         if (xmin <= 0) xmin = 1e-4*xmax;
-         let base = 10;
-         this.grx = d3.scaleLog().base(base);
-         this.x_kind = "log"+10;
-         this.logx = 1;
-      } else {
-         this.grx = d3.scaleLinear();
-         if (this.xaxis && this.xaxis.fLabelsIndex) this.x_kind = "labels";
-                                               else this.x_kind = "normal";
-         this.logx = 0;
-      }
-
-      this.grx.domain([ xmin, xmax ]).range([ grminx, grmaxx ]);
-*/      
       this.x_handle = new JSROOT.v7.RAxisPainter(this, this.xaxis, "x_");
       
       this.x_handle.AssignKindAndFunc("xaxis", this.xmin, this.xmax, [xmin, xmax], false, [grminx, grmaxx]);
       this.x_handle.CreateFormatFuncs();
-      this.scale_xmin = xmin; this.scale_xmax = xmax;
+      this.scale_xmin = xmin; 
+      this.scale_xmax = xmax;
 
       // TODO: remove this in the future
-      this.x_kind = this.x_handle.kind;
       this.grx = x => this.x_handle.gr(x);
       
-/*
-      if (this.logy && !opts.use_y_for_z) {
-         if (ymax <= 0) ymax = 1.;
-         if ((ymin <= 0) && this.yaxis)
-            for (let i=0;i<this.yaxis.GetNumBins();++i) {
-               ymin = Math.max(ymin, this.yaxis.GetBinLowEdge(i+1));
-               if (ymin>0) break;
-            }
-
-         if (ymin <= 0) ymin = 1e-4*ymax;
-         let base = 10;
-         this.gry = d3.scaleLog().base(base);
-         this.y_kind = "log"+base;
-         this.logy = 1;
-      } else {
-         this.gry = d3.scaleLinear();
-         if (this.yaxis && this.yaxis.fLabelsIndex) this.y_kind = "labels";
-                                               else this.y_kind = "normal";
-         this.logy = 0;
-      }
-
-      this.gry.domain([ ymin, ymax ]).range([ grminy, grmaxy ]);
-*/      
       this.y_handle = new JSROOT.v7.RAxisPainter(this, this.yaxis, "y_");
 
       this.y_handle.AssignKindAndFunc("yaxis", this.ymin, this.ymax, [ymin, ymax], false, [grminy, grmaxy]);
 
       // TODO: remove this in the future
-      this.y_kind = this.y_handle.kind;
       this.gry = y => this.y_handle.gr(y);
       
       this.y_handle.CreateFormatFuncs();
@@ -559,7 +513,6 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       this.z_handle.AssignKindAndFunc("zaxis", this.zmin, this.zmax, [zmin, zmax], false, [grminz, grmaxz]);
       
       // TODO: remove this in the future
-      this.z_kind = this.z_handle.kind;
       this.grz = z => this.z_handle.gr(z);
       
       this.z_handle.CreateFormatFuncs();

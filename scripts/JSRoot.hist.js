@@ -861,18 +861,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          zmin = main.hmin; zmax = main.hmax;
       }
 
-/*
-      let z = null, z_kind = "normal";
-
-      if (this.root_pad().fLogz) {
-         let base = (this.root_pad().fLogz == 2) ? 2 : 10;
-         z = d3.scaleLog().base(base);
-         z_kind = "log"+base;
-      } else {
-         z = d3.scaleLinear();
-      }
-      z.domain([zmin, zmax]).range([s_height,0]);
-*/
       this.draw_g.selectAll("rect").style("fill", 'white');
       
       this.z_handle.AssignKindAndFunc("zaxis", zmin, zmax, zmin, zmax, true, [0,s_height], { log: this.root_pad().fLogz });

@@ -973,8 +973,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.zoom_kind = 0;
       this.mode3d = false;
       this.shrink_frame_left = 0.;
-      this.x_kind = 'normal'; // 'normal', 'log', 'time', 'labels'
-      this.y_kind = 'normal'; // 'normal', 'log', 'time', 'labels'
       this.xmin = this.xmax = 0; // no scale specified, wait for objects drawing
       this.ymin = this.ymax = 0; // no scale specified, wait for objects drawing
       this.ranges_set = false;
@@ -1240,7 +1238,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                                         logminfactor: 0.0001 });
       
       this.logx = this.x_handle.log;
-      this.x_kind = this.x_handle.kind;
       this.grx = x => this.x_handle.gr(x);
       this.scale_xmin = this.x_handle.scale_min;
       this.scale_xmax = this.x_handle.scale_max;
@@ -1257,7 +1254,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                                         logminfactor: 3e-4 });
 
       this.logy = this.y_handle.log;
-      this.y_kind = this.y_handle.kind;
       this.gry = y => this.y_handle.gr(y);
       this.scale_ymin = this.y_handle.scale_min;
       this.scale_ymax = this.y_handle.scale_max;

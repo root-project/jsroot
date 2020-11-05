@@ -514,33 +514,11 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
       // this.TestAxisVisibility = HPainter_TestAxisVisibility;
 
-   /*   if (pad && pad.fLogx) {
-         if (xmax <= 0) xmax = 1.;
-         if ((xmin <= 0) && this.xaxis)
-            for (let i=0;i<this.xaxis.fNbins;++i) {
-               xmin = Math.max(xmin, this.xaxis.GetBinLowEdge(i+1));
-               if (xmin>0) break;
-            }
-         if (xmin <= 0) xmin = 1e-4*xmax;
-         let base = pad.fLogx == 2 ? 2 : 10;
-         this.grx = d3.scaleLog().base(base);
-         this.x_kind = "log"+base;
-         this.logx = pad.fLogx;
-      } else {
-         this.grx = d3.scaleLinear();
-         if (this.xaxis && this.xaxis.fLabels) this.x_kind = "labels";
-                                          else this.x_kind = "normal";
-         this.logx = 0;
-      }
-      this.grx.domain([ xmin, xmax ]).range([ grminx, grmaxx ]);
-      */
-
       this.x_handle = new JSROOT.TAxisPainter(this.xaxis);
       this.x_handle.AssignKindAndFunc("xaxis", this.xmin, this.xmax, xmin, xmax, false, [grminx, grmaxx], 
                                        { log: pad ? pad.fLogx : 0 });
       this.x_handle.CreateFormatFuncs();
       this.logx = this.x_handle.log;
-      this.x_kind = this.x_handle.kind;
       this.scale_xmin = this.x_handle.scale_min; 
       this.scale_xmax = this.x_handle.scale_max;
       this.grx = x => this.x_handle.gr(x);
@@ -551,7 +529,6 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       
       this.y_handle.CreateFormatFuncs();
       this.logy = this.y_handle.log;
-      this.y_kind = this.y_handle.kind;
       this.scale_ymin = this.y_handle.scale_min; 
       this.scale_ymax = this.y_handle.scale_max;
       this.gry = y => this.y_handle.gr(y);
@@ -561,7 +538,6 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
                                        { log: pad ? pad.fLogz : 0 });
       this.z_handle.CreateFormatFuncs();
       this.logz = this.z_handle.log;
-      this.z_kind = this.z_handle.kind;
       this.scale_zmin = this.z_handle.scale_min; 
       this.scale_zmax = this.z_handle.scale_max;
       this.grz = z => this.z_handle.gr(z);

@@ -1204,8 +1204,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       JSROOT.ObjectPainter.call(this, tframe);
       this.csstype = "frame";
       this.mode3d = false;
-      this.x_kind = 'normal'; // 'normal', 'log', 'time', 'labels'
-      this.y_kind = 'normal'; // 'normal', 'log', 'time', 'labels'
       this.xmin = this.xmax = 0; // no scale specified, wait for objects drawing
       this.ymin = this.ymax = 0; // no scale specified, wait for objects drawing
       this.axes_drawn = false;
@@ -1518,10 +1516,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.y_handle.AssignKindAndFunc("yaxis", this.ymin, this.ymax, [this.scale_ymin, this.scale_ymax], true, [0,h]);
 
       // TODO: remove this in the future
-      this.x_kind = this.x_handle.kind;
       this.grx = x => this.x_handle.gr(x);
-
-      this.y_kind = this.y_handle.kind;
       this.gry = y => this.y_handle.gr(y);  
 
       let layer = this.svg_frame().select(".axis_layer");
