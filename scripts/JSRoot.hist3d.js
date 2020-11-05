@@ -2460,20 +2460,9 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
       lines.push(this.GetTipName());
 
-      if (pmain.x_kind == 'labels')
-         lines.push("x = " + pmain.AxisAsText("x", histo.fXaxis.GetBinLowEdge(ix+1)) + "  xbin=" + (ix+1));
-      else
-         lines.push("x = [" + pmain.AxisAsText("x", histo.fXaxis.GetBinLowEdge(ix+1)) + ", " + pmain.AxisAsText("x", histo.fXaxis.GetBinLowEdge(ix+2)) + ")   xbin=" + (ix+1));
-
-      if (pmain.y_kind == 'labels')
-         lines.push("y = " + pmain.AxisAsText("y", histo.fYaxis.GetBinLowEdge(iy+1))  + "  ybin=" + (iy+1));
-      else
-         lines.push("y = [" + pmain.AxisAsText("y", histo.fYaxis.GetBinLowEdge(iy+1)) + ", " + pmain.AxisAsText("y", histo.fYaxis.GetBinLowEdge(iy+2)) + ")  ybin=" + (iy+1));
-
-      if (pmain.z_kind == 'labels')
-         lines.push("z = " + pmain.AxisAsText("z", histo.fZaxis.GetBinLowEdge(iz+1))  + "  zbin=" + (iz+1));
-      else
-         lines.push("z = [" + pmain.AxisAsText("z", histo.fZaxis.GetBinLowEdge(iz+1)) + ", " + pmain.AxisAsText("z", histo.fZaxis.GetBinLowEdge(iz+2)) + ")  zbin=" + (iz+1));
+      lines.push("x = " + this.GetAxisBinTip("x", histo.fXaxis, ix) + "  xbin=" + (ix+1));
+      lines.push("y = " + this.GetAxisBinTip("y", histo.fYaxis, iy) + "  ybin=" + (iy+1));
+      lines.push("z = " + this.GetAxisBinTip("z", histo.fZaxis, iz) + "  zbin=" + (iz+1));
 
       let binz = histo.getBinContent(ix+1, iy+1, iz+1);
       if (binz === Math.round(binz))

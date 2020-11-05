@@ -3195,6 +3195,21 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       return res;
    }
+   
+   /** @summary Get tip text for axis bin */
+   THistPainter.prototype.GetAxisBinTip = function(name, axis, bin) {
+      let pmain = this.frame_painter(),
+          handle = pmain[name+"_handle"],
+          x1 = axis.GetBinLowEdge(bin+1),
+          x2 = axis.GetBinLowEdge(bin+2);
+
+      if (handle.kind === 'labels') 
+         return pmain.AxisAsText(name, x1); 
+      if (handle.kind === 'time')
+         return pmain.AxisAsText(name, (x1+x2)/2); 
+
+      return "[" + pmain.AxisAsText(name, x1) + ", " + pmain.AxisAsText(name, x2) + ")"; 
+   }
 
    // ========================================================================
 
@@ -3928,19 +3943,15 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           x1 = histo.fXaxis.GetBinLowEdge(bin+1),
           x2 = histo.fXaxis.GetBinLowEdge(bin+2),
           cont = histo.getBinContent(bin+1),
-          xlbl = "", xnormal = false;
+          xlbl = this.GetAxisBinTip("x", histo.fXaxis, bin);
 
       if (name.length>0) tips.push(name);
-
-      if (pmain.x_kind === 'labels') xlbl = pmain.AxisAsText("x", x1); else
-      if (pmain.x_kind === 'time') xlbl = pmain.AxisAsText("x", (x1+x2)/2); else
-       { xnormal = true; xlbl = "[" + pmain.AxisAsText("x", x1) + ", " + pmain.AxisAsText("x", x2) + ")"; }
 
       if (this.options.Error || this.options.Mark) {
          tips.push("x = " + xlbl);
          tips.push("y = " + pmain.AxisAsText("y", cont));
          if (this.options.Error) {
-            if (xnormal) tips.push("error x = " + ((x2 - x1) / 2).toPrecision(4));
+            if (xlbl[0] == "[") tips.push("error x = " + ((x2 - x1) / 2).toPrecision(4));
             tips.push("error y = " + histo.getBinError(bin + 1).toPrecision(4));
          }
       } else {
@@ -5826,7 +5837,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       this.tt_handle = handle;
    }
 
-   /** Return text information about histogram bin */
+   /** @summary Return text information about histogram bin */
    TH2Painter.prototype.GetBinTips = function (i, j) {
       let lines = [], pmain = this.frame_painter(),
           histo = this.GetHisto(),
@@ -5834,15 +5845,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       lines.push(this.GetTipName());
 
-      if (pmain.x_kind == 'labels')
-         lines.push("x = " + pmain.AxisAsText("x", histo.fXaxis.GetBinLowEdge(i+1)));
-      else
-         lines.push("x = [" + pmain.AxisAsText("x", histo.fXaxis.GetBinLowEdge(i+1)) + ", " + pmain.AxisAsText("x", histo.fXaxis.GetBinLowEdge(i+2)) + ")");
-
-      if (pmain.y_kind == 'labels')
-         lines.push("y = " + pmain.AxisAsText("y", histo.fYaxis.GetBinLowEdge(j+1)));
-      else
-         lines.push("y = [" + pmain.AxisAsText("y", histo.fYaxis.GetBinLowEdge(j+1)) + ", " + pmain.AxisAsText("y", histo.fYaxis.GetBinLowEdge(j+2)) + ")");
+      lines.push("x = " + this.GetAxisBinTip("x", histo.fXaxis, i));
+      lines.push("y = " + this.GetAxisBinTip("y", histo.fYaxis, j));
 
       lines.push("bin = " + i + ", " + j);
 

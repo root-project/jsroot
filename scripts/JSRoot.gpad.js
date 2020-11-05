@@ -1694,10 +1694,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       // do not allow log scale for labels
       if (!pad[name]) {
-         let kind = this[axis+"_kind"];
-         if (this.swap_xy && axis==="x") kind = this.y_kind; else
-         if (this.swap_xy && axis==="y") kind = this.x_kind;
-         if (kind === "labels") return;
+         if (this.swap_xy && axis==="x") axis = "y"; else
+         if (this.swap_xy && axis==="y") axis = "x";
+         let handle = this[axis + "_handle"];
+         if (handle && (handle.kind === "labels")) return;
       }
       
       if ((value == "toggle") || (value === undefined)) 
