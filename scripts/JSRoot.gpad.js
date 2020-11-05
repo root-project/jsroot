@@ -55,17 +55,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       JSROOT.ObjectPainter.prototype.Cleanup.call(this);
    }
 
-   TAxisPainter.prototype.SetAxisConfig = function(name, kind, func, min, max, smin, smax) {
-      this.name = name;
-      this.kind = kind;
-      this.func = func;
-
-      this.full_min = min;
-      this.full_max = max;
-      this.scale_min = smin;
-      this.scale_max = smax;
-   }
-   
    TAxisPainter.prototype.AssignKindAndFunc = function(name, min, max, smin, smax, vertical, range, opts) {
       this.name = name;
       this.full_min = min;
@@ -1276,103 +1265,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.gry = y => this.y_handle.gr(y);
       this.scale_ymin = this.y_handle.scale_min;
       this.scale_ymax = this.y_handle.scale_max;
-      
-/*
-      if (this.xaxis.fTimeDisplay) {
-         this.x_kind = 'time';
-         this.timeoffsetx = jsrp.getTimeOffset(this.xaxis);
-         this.ConvertX = function(x) { return new Date(this.timeoffsetx + x*1000); };
-         this.RevertX = function(grx) { return (this.x.invert(grx) - this.timeoffsetx) / 1000; };
-      } else {
-         this.x_kind = !this.xaxis.fLabels ? 'normal' : 'labels';
-         this.ConvertX = function(x) { return x; };
-         this.RevertX = function(grx) { return this.x.invert(grx); };
-      }
-
-      if (this.x_kind == 'time') {
-         this.x = d3.scaleTime();
-      } else if (this.swap_xy ? pad.fLogy : pad.fLogx) {
-         this.logx = this.swap_xy ? pad.fLogy : pad.fLogx;
-
-         if (this.scale_xmax <= 0) this.scale_xmax = 0;
-
-         if ((this.scale_xmin <= 0) && this.xaxis && !this.swap_xy)
-            for (let i = 0; i < this.xaxis.fNbins; ++i) {
-               this.scale_xmin = Math.max(this.scale_xmin, this.xaxis.GetBinLowEdge(i+1));
-               if (this.scale_xmin > 0) break;
-            }
-
-         if ((this.scale_xmin <= 0) || (this.scale_xmin >= this.scale_xmax))
-            this.scale_xmin = this.scale_xmax * 0.0001;
-
-         this.x = d3.scaleLog().base((this.logx == 2) ? 2 : 10);
-      } else {
-         this.x = d3.scaleLinear();
-      }
-
-      this.x.domain([this.ConvertX(this.scale_xmin), this.ConvertX(this.scale_xmax)])
-            .range(this.swap_xy ? gr_range_y : gr_range_x);
-
-      if (this.x_kind == 'time') {
-         // we emulate scale functionality
-         this.grx = function(val) { return this.x(this.ConvertX(val)); }
-      } else if (this.logx) {
-         this.grx = function(val) { return (val < this.scale_xmin) ? (this.swap_xy ? this.x.range()[0]+5 : -5) : this.x(val); }
-      } else {
-         this.grx = this.x;
-      }
-
-      if (this.yaxis.fTimeDisplay) {
-         this.y_kind = 'time';
-         this.timeoffsety = jsrp.getTimeOffset(this.yaxis);
-         this.ConvertY = function(y) { return new Date(this.timeoffsety + y*1000); };
-         this.RevertY = function(gry) { return (this.y.invert(gry) - this.timeoffsety) / 1000; };
-      } else {
-         this.y_kind = !this.yaxis.fLabels ? 'normal' : 'labels';
-         this.ConvertY = function(y) { return y; };
-         this.RevertY = function(gry) { return this.y.invert(gry); };
-      }
-
-      if (this.swap_xy ? pad.fLogx : pad.fLogy) {
-         this.logy = this.swap_xy ? pad.fLogx : pad.fLogy;
-         if (this.scale_ymax <= 0)
-            this.scale_ymax = 1;
-         else if ((this.zoom_ymin === this.zoom_ymax) && (opts.ndim==1) && this.draw_content)
-            this.scale_ymax*=1.8;
-
-         // this is for 2/3 dim histograms - find first non-negative bin
-         if ((this.scale_ymin <= 0) && this.yaxis && (opts.ndim>1) && !this.swap_xy)
-            for (let i=0;i<this.yaxis.fNbins;++i) {
-               this.scale_ymin = Math.max(this.scale_ymin, this.yaxis.GetBinLowEdge(i+1));
-               if (this.scale_ymin>0) break;
-            }
-
-         if ((this.scale_ymin <= 0) && opts.ymin_nz && (opts.ymin_nz < 1e-2*this.ymax))
-            this.scale_ymin = 0.3 * opts.ymin_nz;
-
-         if ((this.scale_ymin <= 0) || (this.scale_ymin >= this.scale_ymax))
-            this.scale_ymin = 3e-4 * this.scale_ymax;
-
-         this.y = d3.scaleLog().base((this.logy == 2) ? 2 : 10);
-      } else if (this.y_kind == 'time') {
-         this.y = d3.scaleTime();
-      } else {
-         this.y = d3.scaleLinear()
-      }
-
-      this.y.domain([ this.ConvertY(this.scale_ymin), this.ConvertY(this.scale_ymax) ])
-            .range(this.swap_xy ? gr_range_x : gr_range_y);
-
-      if (this.y_kind == 'time') {
-         // we emulate scale functionality
-         this.gry = function(val) { return this.y(this.ConvertY(val)); }
-      } else if (this.logy) {
-         // make protection for log
-         this.gry = function(val) { return (val < this.scale_ymin) ? (this.swap_xy ? -5 : this.y.range()[0]+5) : this.y(val); }
-      } else {
-         this.gry = this.y;
-      }
-*/      
 
       this.SetRootPadRange(pad);
    }
@@ -1498,27 +1390,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           h = this.frame_height(),
           pad = this.root_pad();
 
-/*
-      this.x_handle = new TAxisPainter(this.xaxis, true);
-      this.x_handle.SetDivId(this.divid, -1);
-      this.x_handle.pad_name = this.pad_name;
-
-      this.x_handle.SetAxisConfig("xaxis",
-                                  (this.logx && (this.x_kind !== "time")) ? "log" + (this.logx == 2 ? 2 : 10) : this.x_kind,
-                                  this.x, this.xmin, this.xmax, this.scale_xmin, this.scale_xmax);
-*/                                  
       this.x_handle.invert_side = (AxisPos >= 10);
       this.x_handle.lbls_both_sides = !this.x_handle.invert_side && (pad.fTickx > 1); // labels on both sides
       this.x_handle.has_obstacle = has_x_obstacle;
-/*
-      this.y_handle = new TAxisPainter(this.yaxis, true);
-      this.y_handle.SetDivId(this.divid, -1);
-      this.y_handle.pad_name = this.pad_name;
 
-      this.y_handle.SetAxisConfig("yaxis",
-                                  (this.logy && this.y_kind !== "time") ? "log" + (this.logy == 2 ? 2 : 10) : this.y_kind,
-                                  this.y, this.ymin, this.ymax, this.scale_ymin, this.scale_ymax);
-*/                                  
       this.y_handle.invert_side = ((AxisPos % 10) === 1);
       this.y_handle.lbls_both_sides = !this.y_handle.invert_side && (pad.fTicky > 1); // labels on both sides
 

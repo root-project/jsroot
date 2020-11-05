@@ -536,7 +536,6 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       */
 
       this.x_handle = new JSROOT.TAxisPainter(this.xaxis);
-      //this.x_handle.SetAxisConfig("xaxis", this.x_kind, this.grx, this.xmin, this.xmax, xmin, xmax);
       this.x_handle.AssignKindAndFunc("xaxis", this.xmin, this.xmax, xmin, xmax, false, [grminx, grmaxx], 
                                        { log: pad ? pad.fLogx : 0 });
       this.x_handle.CreateFormatFuncs();
@@ -546,31 +545,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       this.scale_xmax = this.x_handle.scale_max;
       this.grx = x => this.x_handle.gr(x);
        
-/*      if (pad && pad.fLogy && !opts.use_y_for_z) {
-         if (ymax <= 0) ymax = 1.;
-         if ((ymin <= 0) && this.yaxis)
-            for (let i=0;i<this.yaxis.fNbins;++i) {
-               ymin = Math.max(ymin, this.yaxis.GetBinLowEdge(i+1));
-               if (ymin>0) break;
-            }
-
-         if (ymin <= 0) ymin = 1e-4*ymax;
-         let base = (pad.fLogy == 2) ? 2 : 10; 
-         this.gry = d3.scaleLog().base(base);
-         this.y_kind = "log"+base;
-         this.logy = pad.fLogy;
-      } else {
-         this.gry = d3.scaleLinear();
-         if (this.yaxis && this.yaxis.fLabels) this.y_kind = "labels";
-                                          else this.y_kind = "normal";
-         this.logy = 0;
-      }
-
-      this.gry.domain([ ymin, ymax ]).range([ grminy, grmaxy ]);
-*/
       this.y_handle = new JSROOT.TAxisPainter(this.yaxis);
-      
-      // this.y_handle.SetAxisConfig("yaxis", this.y_kind, this.gry, this.ymin, this.ymax, ymin, ymax);
       this.y_handle.AssignKindAndFunc("yaxis", this.ymin, this.ymax, ymin, ymax, false, [ grminy, grmaxy ], 
                                       { log: pad && !opts.use_y_for_z ? pad.fLogx : 0 });
       
@@ -581,26 +556,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       this.scale_ymax = this.y_handle.scale_max;
       this.gry = y => this.y_handle.gr(y);
 
-/*
-      if (pad && pad.fLogz) {
-         if (zmax <= 0) zmax = 1;
-         if (zmin <= 0) zmin = 1e-4*zmax;
-         let base = (pad.fLogz == 2) ? 2 : 10;
-         this.grz = d3.scaleLog().base(base);
-         this.z_kind = "log" + base;
-         this.logz = pad.fLogz;
-      } else {
-         this.grz = d3.scaleLinear();
-         this.z_kind = "normal";
-         if (this.zaxis && this.zaxis.fLabels && (opts.ndim === 3)) this.z_kind = "labels";
-         this.logz = 0;
-      }
-
-      this.grz.domain([ zmin, zmax ]).range([ grminz, grmaxz ]);
-*/      
-
       this.z_handle = new JSROOT.TAxisPainter(this.zaxis);
-      // this.z_handle.SetAxisConfig("zaxis", this.z_kind, this.grz, this.zmin, this.zmax, zmin, zmax);
       this.z_handle.AssignKindAndFunc("zaxis", this.zmin, this.zmax, zmin, zmax, false, [ grminz, grmaxz ], 
                                        { log: pad ? pad.fLogz : 0 });
       this.z_handle.CreateFormatFuncs();

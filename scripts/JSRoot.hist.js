@@ -861,6 +861,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          zmin = main.hmin; zmax = main.hmax;
       }
 
+/*
       let z = null, z_kind = "normal";
 
       if (this.root_pad().fLogz) {
@@ -871,8 +872,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          z = d3.scaleLinear();
       }
       z.domain([zmin, zmax]).range([s_height,0]);
-
+*/
       this.draw_g.selectAll("rect").style("fill", 'white');
+      
+      this.z_handle.AssignKindAndFunc("zaxis", zmin, zmax, zmin, zmax, true, [0,s_height], { log: this.root_pad().fLogz });
 
       if (!contour || !draw_palette || postpone_draw)
          // we need such rect to correctly calculate size
@@ -884,7 +887,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                     .style("fill", 'white');
       else
          for (let i=0;i<levels.length-1;++i) {
-            let z0 = z(levels[i]), z1 = z(levels[i+1]),
+            let z0 = this.z_handle.gr(levels[i]), 
+                z1 = this.z_handle.gr(levels[i+1]),
                 col = contour.getPaletteColor(draw_palette, (levels[i]+levels[i+1])/2),
                 r = this.draw_g.append("svg:rect")
                        .attr("x", 0)
@@ -907,8 +911,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                r.on("dblclick", () => this.frame_painter().Unzoom("z"));
          }
 
-
-      this.z_handle.SetAxisConfig("zaxis", z_kind, z, zmin, zmax, zmin, zmax);
 
       this.z_handle.max_tick_size = Math.round(s_width*0.7);
 
@@ -951,6 +953,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          zoom_rect.remove();
          zoom_rect = null;
          doing_zoom = false;
+         
+         let z = this.z_handle.gr;
 
          let zmin = Math.min(z.invert(sel1), z.invert(sel2)),
              zmax = Math.max(z.invert(sel1), z.invert(sel2));
@@ -987,7 +991,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (JSROOT.settings.Zooming)
          this.draw_g.select(".axis_zoom")
                     .on("mousedown", startRectSel)
-                    .on("dblclick", () => { this.frame_painter().Unzoom("z"); });
+                    .on("dblclick", () => this.frame_painter().Unzoom("z"));
    }
 
    TPavePainter.prototype.FillContextMenu = function(menu) {
