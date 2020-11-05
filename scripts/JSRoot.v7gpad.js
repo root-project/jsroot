@@ -1365,18 +1365,20 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    RFramePainter.prototype.AxisAsText = function(axis, value) {
-      if (axis == "x") {
-         if (this.x_kind == 'time')
-            value = this.ConvertX(value);
-         if (this.x_handle && ('format' in this.x_handle))
+      if ((axis == "x") && this.x_handle) {
+         if (this.x_handle.kind == 'time')
+            value = this.x_handle.Convert(value);
+         if (this.x_handle.format)
             return this.x_handle.format(value, false, JSROOT.settings.XValuesFormat);
-      } else if (axis == "y") {
-         if (this.y_kind == 'time')
-            value = this.ConvertY(value);
-         if (this.y_handle && ('format' in this.y_handle))
+      } else if ((axis == "y") && this.y_handle) {
+         if (this.y_handle.kind == 'time')
+            value = this.y_handle.Convert(value);
+         if (this.y_handle.format)
             return this.y_handle.format(value, false, JSROOT.settings.YValuesFormat);
-      } else {
-         if (this.z_handle && ('format' in this.z_handle))
+      } else if ((axis == "z") && this.z_handle) {
+         if (this.z_handle.kind == 'time')
+            value = this.z_handle.Convert(value);
+         if (this.z_handle.format)
             return this.z_handle.format(value, false, JSROOT.settings.ZValuesFormat);
       }
 
@@ -1464,6 +1466,56 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
    }
 
+   RAxisPainter.prototype.AssignKindAndFunc = function(name, min, max, domain, vertical, grlength) {
+      this.name = name;
+      this.full_min = min;
+      this.full_max = max;
+      this.kind = "normal";
+      this.vertical = vertical;
+      
+      if (this.axis._timedisplay) {
+         this.kind = 'time';
+         this.timeoffset = jsrp.getTimeOffset(/*this.histo.fXaxis*/);
+         this.Convert = function(v) { return new Date(this.timeoffset + v*1000); };
+         this.Revert = function(gr) { return (this.func.invert(gr) - this.timeoffset) / 1000; };
+      } else {
+         this.kind = this.axis.fLabelsIndex ? 'labels' : 'normal';
+         this.Convert = function(v) { return v; };
+         this.Revert = function(gr) { return this.func.invert(gr); };
+      }
+
+      if (this.kind == 'time') {
+         this.func = d3.scaleTime();
+      } else if (this.log_scale) {
+         
+         if (domain[1] <= 0) domain[1] = 1;
+         if ((domain[0] <= 0) || (domain[0] >= domain[1]))
+            domain[0] = domain[1] * 0.0001;
+
+         this.func = d3.scaleLog();
+      } else {
+         this.func = d3.scaleLinear();
+      }
+      
+      this.scale_min = domain[0];
+      this.scale_max = domain[1];
+      
+      let reverse = false;
+
+      this.func.domain([this.Convert(domain[0]), this.Convert(domain[1])])
+               .range((vertical ^ reverse) ? [grlength, 0] : [0, grlength]);
+
+      if (this.kind == 'time') {
+         // we emulate scale functionality
+         this.gr = function(val) { return this.func(this.Convert(val)); }
+      } else if (this.log_scale) {
+         this.gr = function(val) { return (val < this.scale_xmin) ? (this.vertical ? this.func.range()[0]+5 : -5) : this.func(val); }
+      } else {
+         this.gr = this.func;
+      }
+   }
+
+
    /** @summary Draw configured axes on the frame 
      * @desc axes can be drawn only for main histogram  */
    RFramePainter.prototype.DrawAxes = function() {
@@ -1491,50 +1543,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       this.scale_ymin = this.ymin;
       this.scale_ymax = this.ymax;
-
-      this.RecalculateRange(0);
-
-      if (this._xaxis_timedisplay) {
-         this.x_kind = 'time';
-         this.timeoffsetx = jsrp.getTimeOffset(/*this.histo.fXaxis*/);
-         this.ConvertX = function(x) { return new Date(this.timeoffsetx + x*1000); };
-         this.RevertX = function(grx) { return (this.x.invert(grx) - this.timeoffsetx) / 1000; };
-      } else {
-         this.x_kind = this.xaxis.fLabelsIndex ? 'labels' : 'normal';
-         this.ConvertX = function(x) { return x; };
-         this.RevertX = function(grx) { return this.x.invert(grx); };
-      }
-
+      
       if (this.zoom_xmin != this.zoom_xmax) {
          this.scale_xmin = this.zoom_xmin;
          this.scale_xmax = this.zoom_xmax;
-      }
-
-      if (this.x_kind == 'time') {
-         this.x = d3.scaleTime();
-      } else if (this.logx) {
-         if (this.scale_xmax <= 0) this.scale_xmax = 1;
-         if ((this.scale_xmin <= 0) || (this.scale_xmin >= this.scale_xmax))
-            this.scale_xmin = this.scale_xmax * 0.0001;
-
-         this.x = d3.scaleLog();
-      } else {
-         this.x = d3.scaleLinear();
-      }
-
-      let gr_range_x = this.reverse_x ? [ w, 0 ] : [ 0, w ],
-          gr_range_y = this.reverse_y ? [ 0, h ] : [ h, 0 ];
-
-      this.x.domain([this.ConvertX(this.scale_xmin), this.ConvertX(this.scale_xmax)])
-            .range(this.swap_xy ? gr_range_y : gr_range_x);
-
-      if (this.x_kind == 'time') {
-         // we emulate scale functionality
-         this.grx = function(val) { return this.x(this.ConvertX(val)); }
-      } else if (this.logx) {
-         this.grx = function(val) { return (val < this.scale_xmin) ? (this.swap_xy ? this.x.range()[0]+5 : -5) : this.x(val); }
-      } else {
-         this.grx = this.x;
       }
 
       if (this.zoom_ymin != this.zoom_ymax) {
@@ -1542,66 +1554,38 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.scale_ymax = this.zoom_ymax;
       }
 
-      if (this._yaxis_timedisplay) {
-         this.y_kind = 'time';
-         this.timeoffsety = jsrp.getTimeOffset(/*this.histo.fYaxis*/);
-         this.ConvertY = function(y) { return new Date(this.timeoffsety + y*1000); };
-         this.RevertY = function(gry) { return (this.y.invert(gry) - this.timeoffsety) / 1000; };
-      } else {
-         this.y_kind = this.yaxis.fLabelsIndex ? 'labels' : 'normal'; 
-         this.ConvertY = function(y) { return y; };
-         this.RevertY = function(gry) { return this.y.invert(gry); };
-      }
-
-      if (this.logy) {
-         if (this.scale_ymax <= 0) this.scale_ymax = 1;
-         if ((this.scale_ymin <= 0) || (this.scale_ymin >= this.scale_ymax))
-            this.scale_ymin = 3e-4 * this.scale_ymax;
-
-         this.y = d3.scaleLog();
-      } else if (this.y_kind == 'time') {
-         this.y = d3.scaleTime();
-      } else {
-         this.y = d3.scaleLinear()
-      }
-
-      this.y.domain([ this.ConvertY(this.scale_ymin), this.ConvertY(this.scale_ymax) ])
-            .range(this.swap_xy ? gr_range_x : gr_range_y);
-
-      if (this.y_kind=='time') {
-         // we emulate scale functionality
-         this.gry = function(val) { return this.y(this.ConvertY(val)); }
-      } else if (this.logy) {
-         // make protection for log
-         this.gry = function(val) { return (val < this.scale_ymin) ? (this.swap_xy ? -5 : this.y.range()[0]+5) : this.y(val); }
-      } else {
-         this.gry = this.y;
-      }
-
-      // this is end of former CreateXY function 
-
-      let layer = this.svg_frame().select(".axis_layer");
+      this.RecalculateRange(0);
       
       this.x_handle = new RAxisPainter(this, this.xaxis, "x_");
       this.x_handle.SetDivId(this.divid, -1);
       this.x_handle.pad_name = this.pad_name;
       this.x_handle.rstyle = this.rstyle;
-
-      this.x_handle.SetAxisConfig("xaxis",
-                                  (this.logx && (this.x_kind !== "time")) ? "log" + (this.logx == 2 ? 2 : 10) : this.x_kind,
-                                  this.x, this.xmin, this.xmax, this.scale_xmin, this.scale_xmax);
-      this.x_handle.invert_side = false;
-      this.x_handle.lbls_both_sides = false;
-      this.x_handle.has_obstacle = false;
-
+      
+      this.x_handle.AssignKindAndFunc("xaxis", this.xmin, this.xmax, [this.scale_xmin, this.scale_xmax], false, w);
+      
       this.y_handle = new RAxisPainter(this, this.yaxis, "y_");
       this.y_handle.SetDivId(this.divid, -1);
       this.y_handle.pad_name = this.pad_name;
       this.y_handle.rstyle = this.rstyle;
 
-      this.y_handle.SetAxisConfig("yaxis",
-                                  (this.logy && this.y_kind !== "time") ? "log" + (this.logy == 2 ? 2 : 10) : this.y_kind,
-                                  this.y, this.ymin, this.ymax, this.scale_ymin, this.scale_ymax);
+      this.y_handle.AssignKindAndFunc("yaxis", this.ymin, this.ymax, [this.scale_ymin, this.scale_ymax], true, h);
+
+      // TODO: remove this in the future
+      this.x_kind = this.x_handle.kind;
+      this.grx = x => this.x_handle.gr(x);
+      this.RevertX = x => this.x_handle.Revert(x);  
+
+      this.y_kind = this.y_handle.kind;
+      this.gry = y => this.y_handle.gr(y);  
+      this.RevertY = y => this.x_handle.Revert(y);  
+
+
+      let layer = this.svg_frame().select(".axis_layer");
+      
+      this.x_handle.invert_side = false;
+      this.x_handle.lbls_both_sides = false;
+      this.x_handle.has_obstacle = false;
+
       this.y_handle.invert_side = false; // ((this.options.AxisPos % 10) === 1) || (pad.fTicky > 1);
       this.y_handle.lbls_both_sides = false;
 
@@ -1663,10 +1647,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    RFramePainter.prototype.CleanXY = function() {
       // remove all kinds of X/Y function for axes transformation
-      delete this.x; delete this.grx;
-      delete this.ConvertX; delete this.RevertX;
-      delete this.y; delete this.gry;
-      delete this.ConvertY; delete this.RevertY;
+      delete delete this.grx;
+      delete delete this.gry;
       delete this.z; delete this.grz;
    }
 
