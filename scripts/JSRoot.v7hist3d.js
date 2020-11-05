@@ -1624,7 +1624,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
           i, j, x1, y1, x2, y2, z11, z12, z21, z22,
           di = handle.stepi, dj = handle.stepj,
           numstepi = handle.i2 - handle.i1, numstepj = handle.j2 - handle.j1,
-          axis_zmin = main.grz.domain()[0];
+          axis_zmin = main.z_handle.gr.domain()[0];
 
       if (di > 1) {
          numstepi = Math.round(numstepi/di);
@@ -2043,8 +2043,8 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       let main = this.frame_painter(),
           histo = this.GetHisto(),
           handle = this.PrepareDraw({ rounding: false, use3d: true, extra: 1 }),
-          zmin = main.grz.domain()[0],
-          zmax = main.grz.domain()[1],
+          zmin = main.z_handle.gr.domain()[0],
+          zmax = main.z_handle.gr.domain()[1],
           i, j, binz, binerr, x1, y1, x2, y2, z1, z2,
           nsegments = 0, lpos = null, binindx = null, lindx = 0,
           di = handle.stepi, dj = handle.stepj;
@@ -2150,8 +2150,8 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       let histo = this.GetHisto(),
           palette = this.GetPalette(),
           pmain = this.frame_painter(),
-          axis_zmin = pmain.grz.domain()[0],
-          axis_zmax = pmain.grz.domain()[1],
+          axis_zmin = pmain.z_handle.gr.domain()[0],
+          axis_zmax = pmain.z_handle.gr.domain()[1],
           colindx, bin, i, len = histo.fBins.arr.length,
           z0 = pmain.grz(axis_zmin), z1 = z0;
 
