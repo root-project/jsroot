@@ -943,9 +943,11 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       }
    }
 
+   /** @summary Create histogram for graph
+     * @descgraph bins should be created when calling this function
+     * @param {boolean} only_set_ranges - when specified, just assign ranges
+     * @private */
    TGraphPainter.prototype.CreateHistogram = function(only_set_ranges) {
-      // bins should be created when calling this function
-
       let xmin = this.xmin, xmax = this.xmax, ymin = this.ymin, ymax = this.ymax, set_x = true, set_y = true;
 
       if (xmin >= xmax) xmax = xmin+1;
@@ -1016,7 +1018,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       this.CreateHistogram(arg);
       let hpainter = this.main_painter();
-      if (hpainter) hpainter.CreateAxisFuncs(false);
+      if (hpainter) hpainter.ExtractAxesProperties(1); // just to enforce ranges extraction
 
       return true;
    }

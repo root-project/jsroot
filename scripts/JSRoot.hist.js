@@ -2203,12 +2203,11 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return true;
    }
 
-   THistPainter.prototype.CreateAxisFuncs = function(with_y_axis, with_z_axis) {
-      // here functions are defined to convert index to axis value and back
-      // introduced to support non-equidistant bins
-
-      let histo = this.GetHisto();
-
+   /** @summary Extract axes bins and ranges
+     * @desc here functions are defined to convert index to axis value and back
+     * was introduced to support non-equidistant bins
+     * @private */
+   THistPainter.prototype.ExtractAxesProperties = function(ndim) {
       function AssignFuncs(axis) {
          if (axis.fXbins.length >= axis.fNbins) {
             axis.regular = false;
@@ -2233,6 +2232,11 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          }
       }
 
+      this.nbinsx = this.nbinsy = this.nbinsz = 0;
+
+      let histo = this.GetHisto();
+
+      this.nbinsx = histo.fXaxis.fNbins;
       this.xmin = histo.fXaxis.fXmin;
       this.xmax = histo.fXaxis.fXmax;
       AssignFuncs(histo.fXaxis);
@@ -2240,13 +2244,17 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       this.ymin = histo.fYaxis.fXmin;
       this.ymax = histo.fYaxis.fXmax;
 
-      if (!with_y_axis || (this.nbinsy==0)) return;
+      if (ndim > 1) {
+         this.nbinsy = histo.fYaxis.fNbins;
+         AssignFuncs(histo.fYaxis);
+      }
 
-      AssignFuncs(histo.fYaxis);
-
-      if (!with_z_axis || (this.nbinsz==0)) return;
-
-      AssignFuncs(histo.fZaxis);
+      if (ndim > 2) {
+         this.nbinsz = histo.fZaxis.fNbins;
+         this.zmin = histo.fZaxis.fXmin;
+         this.zmax = histo.fZaxis.fXmax;
+         AssignFuncs(histo.fZaxis);
+       }
    }
 
    THistPainter.prototype.DrawBins = function() {
@@ -3231,11 +3239,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       let histo = this.GetHisto();
 
-      if (!when_axis_changed) {
-         this.nbinsx = histo.fXaxis.fNbins;
-         this.nbinsy = 0;
-         this.CreateAxisFuncs(false);
-      }
+      if (!when_axis_changed)
+         this.ExtractAxesProperties(1);
 
       let left = this.GetSelectIndex("x", "left"),
           right = this.GetSelectIndex("x", "right");
@@ -4566,11 +4571,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       let i, j, histo = this.GetObject();
 
-      this.nbinsx = histo.fXaxis.fNbins;
-      this.nbinsy = histo.fYaxis.fNbins;
-
-      // used in CreateXY method
-      this.CreateAxisFuncs(true);
+      this.ExtractAxesProperties(2);
 
       if (this.IsTH2Poly()) {
          this.gminposbin = null;

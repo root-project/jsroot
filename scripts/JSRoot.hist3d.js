@@ -2337,28 +2337,17 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
    TH3Painter.prototype = Object.create(JSROOT.THistPainter.prototype);
 
+   /** @summary Scan TH3 histogram content */
    TH3Painter.prototype.ScanContent = function(when_axis_changed) {
 
       // no need to rescan histogram while result does not depend from axis selection
       if (when_axis_changed && this.nbinsx && this.nbinsy && this.nbinsz) return;
 
       let histo = this.GetObject();
-
-      this.nbinsx = histo.fXaxis.fNbins;
-      this.nbinsy = histo.fYaxis.fNbins;
-      this.nbinsz = histo.fZaxis.fNbins;
-
-      this.xmin = histo.fXaxis.fXmin;
-      this.xmax = histo.fXaxis.fXmax;
-
-      this.ymin = histo.fYaxis.fXmin;
-      this.ymax = histo.fYaxis.fXmax;
-
-      this.zmin = histo.fZaxis.fXmin;
-      this.zmax = histo.fZaxis.fXmax;
+      
+      this.ExtractAxesProperties(3);
 
       // global min/max, used at the moment in 3D drawing
-
       this.gminbin = this.gmaxbin = histo.getBinContent(1,1,1);
 
       for (let i = 0; i < this.nbinsx; ++i)
@@ -2370,8 +2359,6 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
             }
 
       this.draw_content = this.gmaxbin > 0;
-
-      this.CreateAxisFuncs(true, true);
    }
 
    TH3Painter.prototype.CountStat = function() {
