@@ -5565,7 +5565,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          for (j = 0; j < this.nbinsy; ++j) {
             integral += histo.getBinContent(i+1,j+1);
          }
-         pnt = { bin:i, meany:0, m25y:0, p25y:0, median:0, iqr:0, whiskerp:0, whiskerm:0};
+         pnt = { bin:i, meany:0, m25y:0, p25y:0, median:0, iqr:0, whiskerp:0, whiskerm:0 };
          //estimate quantiles... simple function... not so nice as GetQuantiles
          for (j = 0; j < this.nbinsy; ++j) {
             cont = histo.getBinContent(i+1,j+1);

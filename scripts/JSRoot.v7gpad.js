@@ -374,14 +374,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       this.func.domain([this.Convert(domain[0]), this.Convert(domain[1])]).range(range);
 
-      if (this.kind == 'time') {
-         // we emulate scale functionality
-         this.gr = function(val) { return this.func(this.Convert(val)); }
-      } else if (this.log_scale) {
-         this.gr = function(val) { return (val < this.scale_xmin) ? (this.vertical ? this.func.range()[0]+5 : -5) : this.func(val); }
-      } else {
+      if (this.kind == 'time')
+         this.gr = val => this.func(this.Convert(val));
+      else if (this.log_scale)
+         this.gr = val => (val < this.scale_xmin) ? (this.vertical ? this.func.range()[0]+5 : -5) : this.func(val);
+      else
          this.gr = this.func;
-      }
    }
 
    RAxisPainter.prototype.formatExp = function(base, order, value) {

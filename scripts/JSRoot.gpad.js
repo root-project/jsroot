@@ -72,7 +72,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.kind = 'time';
          this.timeoffset = jsrp.getTimeOffset(axis);
          this.Convert = function(v) { return new Date(this.timeoffset + v*1000); };
-         this.Revert = function(gr) { return (this.func.invert(gr) - this.timeoffsetx) / 1000; };
+         this.Revert = function(gr) { return (this.func.invert(gr) - this.timeoffset) / 1000; };
       } else {
          this.kind = !axis.fLabels ? 'normal' : 'labels';
          this.Convert = function(x) { return x; };
@@ -109,15 +109,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.func.domain([this.Convert(this.scale_min), this.Convert(this.scale_max)])
                .range(range);
 
-      if (this.x_kind == 'time') {
-         // we emulate scale functionality
-         this.gr = function(val) { return this.func(this.Convert(val)); }
-      } else if (this.log) {
-         this.gr = function(val) { return (val < this.scale_min) ? (this.vertical ? this.func.range()[0]+5 : -5) : this.func(val); }
-      } else {
+      if (this.kind == 'time')
+         this.gr = val => this.func(this.Convert(val));
+      else if (this.log)
+         this.gr = val => (val < this.scale_min) ? (this.vertical ? this.func.range()[0]+5 : -5) : this.func(val);
+      else
          this.gr = this.func;
-      }
-      
    }
 
    TAxisPainter.prototype.formatExp = function(base, order, value) {
