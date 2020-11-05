@@ -1985,7 +1985,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       }
    }
 
-   /// copy draw options to all other histograms in the pad
+   /** @summary copy draw options to all other histograms in the pad
+     * @private */
    THistPainter.prototype.CopyOptionsToOthers = function() {
       this.ForEachPainter(painter => {
          if ((painter !== this) && (typeof painter.CopyOptionsFrom == 'function'))
@@ -1993,17 +1994,16 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       }, "objects");
    }
 
+   /** @summary Scan histogram content
+     * @abstract */
    THistPainter.prototype.ScanContent = function(/*when_axis_changed*/) {
       // function will be called once new histogram or
       // new histogram content is assigned
       // one should find min,max,nbins, maxcontent values
       // if when_axis_changed === true specified, content will be scanned after axis zoom changed
-
-      alert("HistPainter.prototype.ScanContent not implemented");
    }
 
    THistPainter.prototype.CheckPadRange = function(use_pad) {
-
       // actual work will be done when frame will draw axes
       if (this.is_main_painter())
          this.check_pad_range = use_pad ? "pad_range" : true;

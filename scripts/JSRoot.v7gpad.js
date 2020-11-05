@@ -1591,9 +1591,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    RFramePainter.prototype.CleanXY = function() {
       // remove all kinds of X/Y function for axes transformation
-      delete delete this.grx;
-      delete delete this.gry;
-      delete delete this.grz;
+      delete this.grx;
+      delete this.gry;
+      delete this.grz;
    }
 
    RFramePainter.prototype.CleanupAxes = function() {

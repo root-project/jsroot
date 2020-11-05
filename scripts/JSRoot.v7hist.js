@@ -200,8 +200,6 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       // new histogram content is assigned
       // one should find min,max,nbins, maxcontent values
       // if when_axis_changed === true specified, content will be scanned after axis zoom changed
-
-      alert("RHistPainter.prototype.ScanContent not implemented");
    }
 
    RHistPainter.prototype.DrawAxes = function() {
