@@ -910,14 +910,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
              idx = this.swap_xy ? 1 : 0, idy = 1 - idx;
 
          if (changed[idx] && (Math.abs(this.zoom_curr[idx] - this.zoom_origin[idx]) > 10)) {
-            xmin = Math.min(this.RevertX(this.zoom_origin[idx]), this.RevertX(this.zoom_curr[idx]));
-            xmax = Math.max(this.RevertX(this.zoom_origin[idx]), this.RevertX(this.zoom_curr[idx]));
+            xmin = Math.min(this.RevertAxis("x", this.zoom_origin[idx]), this.RevertAxis("x", this.zoom_curr[idx]));
+            xmax = Math.max(this.RevertAxis("x", this.zoom_origin[idx]), this.RevertAxis("x", this.zoom_curr[idx]));
             isany = true;
          }
 
          if (changed[idy] && (Math.abs(this.zoom_curr[idy] - this.zoom_origin[idy]) > 10)) {
-            ymin = Math.min(this.RevertY(this.zoom_origin[idy]), this.RevertY(this.zoom_curr[idy]));
-            ymax = Math.max(this.RevertY(this.zoom_origin[idy]), this.RevertY(this.zoom_curr[idy]));
+            ymin = Math.min(this.RevertAxis("y", this.zoom_origin[idy]), this.RevertAxis("y", this.zoom_curr[idy]));
+            ymax = Math.max(this.RevertAxis("y", this.zoom_origin[idy]), this.RevertAxis("y", this.zoom_curr[idy]));
             isany = true;
          }
 
@@ -1122,14 +1122,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (this.zoom_kind === 103) changed[0] = false;
 
          if (changed[xid] && (Math.abs(this.zoom_curr[xid] - this.zoom_origin[xid]) > 10)) {
-            xmin = Math.min(this.RevertX(this.zoom_origin[xid]), this.RevertX(this.zoom_curr[xid]));
-            xmax = Math.max(this.RevertX(this.zoom_origin[xid]), this.RevertX(this.zoom_curr[xid]));
+            xmin = Math.min(this.RevertAxis("x", this.zoom_origin[xid]), this.RevertAxis("x", this.zoom_curr[xid]));
+            xmax = Math.max(this.RevertAxis("x", this.zoom_origin[xid]), this.RevertAxis("x", this.zoom_curr[xid]));
             isany = true;
          }
 
          if (changed[yid] && (Math.abs(this.zoom_curr[yid] - this.zoom_origin[yid]) > 10)) {
-            ymin = Math.min(this.RevertY(this.zoom_origin[yid]), this.RevertY(this.zoom_curr[yid]));
-            ymax = Math.max(this.RevertY(this.zoom_origin[yid]), this.RevertY(this.zoom_curr[yid]));
+            ymin = Math.min(this.RevertAxis("y", this.zoom_origin[yid]), this.RevertAxis("y", this.zoom_curr[yid]));
+            ymax = Math.max(this.RevertAxis("y", this.zoom_origin[yid]), this.RevertAxis("y", this.zoom_curr[yid]));
             isany = true;
          }
 

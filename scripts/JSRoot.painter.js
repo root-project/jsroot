@@ -2075,19 +2075,13 @@ JSROOT.define(['d3'], (d3) => {
    *  @param {number} coord - graphics coordiante.
    *  @param {boolean} ndc - kind of return value
    *  @returns {number} value of requested coordiantes
-   *  @private
-   */
+   *  @private */
    ObjectPainter.prototype.SvgToAxis = function(axis, coord, ndc) {
-      let use_frame = this.draw_g && this.draw_g.property('in_frame'),
-         main = use_frame ? this.frame_painter() : null;
-
-      if (use_frame) main = this.frame_painter();
-
-      if (use_frame && main) {
-         return (axis == "y") ? main.RevertY(coord - (use_frame ? 0 : main.frame_y()))
-            : main.RevertX(coord - (use_frame ? 0 : main.frame_x()));
-      } else if (use_frame) {
-         return 0; // in principal error, while frame calculation requested
+      let use_frame = this.draw_g && this.draw_g.property('in_frame');
+         
+      if (use_frame) {
+         let main = this.frame_painter();
+         return main ? main.RevertAxis(axis, coord) : 0; 
       }
 
       let value = (axis == "y") ? (1 - coord / this.pad_height()) : coord / this.pad_width();
