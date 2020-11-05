@@ -79,8 +79,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.reverse = opts.reverse || false;
       let axis = this.GetObject();
       
-      
-      if (axis.fTimeDisplay) {
+      if (opts.time_scale || axis.fTimeDisplay) {
          this.kind = 'time';
          this.timeoffset = jsrp.getTimeOffset(axis);
          this.Convert = function(v) { return new Date(this.timeoffset + v*1000); };
@@ -199,7 +198,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.noexp = axis ? axis.TestBit(JSROOT.EAxisBits.kNoExponent) : false;
          if ((this.scale_max < 300) && (this.scale_min > 0.3)) this.noexp = true;
          this.moreloglabels = axis ? axis.TestBit(JSROOT.EAxisBits.kMoreLogLabels) : false;
-
+         
          this.format = function(d, asticks, notickexp_fmt) {
             let val = parseFloat(d), rnd = Math.round(val);
             if (!asticks)
@@ -695,7 +694,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          function process_drawtext_ready(painter) {
             let textwidth = this.result_width;
 
-            if (textwidth && ((!vertical && !rotate_lbls) || (vertical && rotate_lbls)) && (painter.kind.indexOf('log') != 0)) {
+            if (textwidth && ((!vertical && !rotate_lbls) || (vertical && rotate_lbls)) && !painter.log) {
                let maxwidth = this.gap_before*0.45 + this.gap_after*0.45;
                if (!this.gap_before) maxwidth = 0.9*this.gap_after; else
                if (!this.gap_after) maxwidth = 0.9*this.gap_before;
@@ -910,49 +909,25 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           y2 = this.AxisToSvg("y", gaxis.fY2),
           w = x2 - x1, h = y1 - y2,
           vertical = Math.abs(w) < Math.abs(h),
-          func = null, reverse = false, kind = "normal",
-          min = gaxis.fWmin, max = gaxis.fWmax,
-          domain_min = min, domain_max = max;
-
-      if (gaxis.fChopt.indexOf("t")>=0) {
-         func = d3.scaleTime();
-         kind = "time";
-         this.toffset = jsrp.getTimeOffset(gaxis);
-         domain_min = new Date(this.toffset + min*1000);
-         domain_max = new Date(this.toffset + max*1000);
-      } else if (gaxis.fChopt.indexOf("G")>=0) {
-         func = d3.scaleLog();
-         kind = "log10";
-      } else {
-         func = d3.scaleLinear();
-         kind = "normal";
+          sz = vertical ? h : w,
+          reverse = false,
+          min = gaxis.fWmin, max = gaxis.fWmax;
+          
+      if (sz < 0) {
+         reverse = true;
+         sz = -sz;
+         if (vertical) y2 = y1; else x1 = x2;
       }
 
-      func.domain([domain_min, domain_max]);
-
-      if (vertical) {
-         if (h > 0) {
-            func.range([h,0]);
-         } else {
-            let d = y1; y1 = y2; y2 = d;
-            h = -h; reverse = true;
-            func.range([0,h]);
-         }
-      } else {
-         if (w > 0) {
-            func.range([0,w]);
-         } else {
-            let d = x1; x1 = x2; x2 = d;
-            w = -w; reverse = true;
-            func.range([w,0]);
-         }
-      }
-
-      this.SetAxisConfig(vertical ? "yaxis" : "xaxis", kind, func, min, max, min, max);
-
+      this.AssignKindAndFunc(vertical ? "yaxis" : "xaxis", min, max, min, max, vertical, [0, sz], {
+         time_scale: gaxis.fChopt.indexOf("t") >= 0,
+         log: (gaxis.fChopt.indexOf("G") >= 0) ? 1 : 0, 
+         reverse: reverse
+      });
+      
       this.CreateG();
 
-      return this.DrawAxis(vertical, this.draw_g, w, h, "translate(" + x1 + "," + y2 +")", reverse);
+      return this.DrawAxis(vertical, this.draw_g, Math.abs(w), Math.abs(h), "translate(" + x1 + "," + y2 +")", reverse);
    }
 
    let drawGaxis = (divid, obj /*, opt*/) => {

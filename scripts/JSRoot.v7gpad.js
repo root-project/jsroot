@@ -922,7 +922,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          function process_drawtext_ready(painter) {
             let textwidth = this.result_width;
 
-            if (textwidth && ((!vertical && !rotate_lbls) || (vertical && rotate_lbls)) && (painter.kind.indexOf('log') != 0)) {
+            if (textwidth && ((!vertical && !rotate_lbls) || (vertical && rotate_lbls)) && !painter.log) {
                let maxwidth = this.gap_before*0.45 + this.gap_after*0.45;
                if (!this.gap_before) maxwidth = 0.9*this.gap_after; else
                if (!this.gap_after) maxwidth = 0.9*this.gap_before;
