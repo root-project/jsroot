@@ -2841,9 +2841,9 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       let draw_obj = this.GetGeometry(), name_prefix = "";
 
       if (this.geo_manager) name_prefix = draw_obj.fName;
-
+      
       if (!script_name || (script_name.length<3) || (geo.NodeKind(draw_obj)!==0))
-         return JSROOT.CallBack(call_back, draw_obj, name_prefix);
+         return call_back(draw_obj, name_prefix);
 
       let painter = this;
 
@@ -2894,7 +2894,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
       JSROOT.progress('Loading macro ' + script_name);
 
-      JSROOT.httpRequest(script_name, "text").then(res => {
+      return JSROOT.httpRequest(script_name, "text").then(res => {
          let lines = res.split('\n');
 
          function ProcessNextLine(indx) {
@@ -2932,13 +2932,13 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
                }
             }
 
-            JSROOT.CallBack(call_back, draw_obj, name_prefix);
+            call_back(draw_obj, name_prefix);
          }
 
          ProcessNextLine(0);
 
-      }).catch(function() {
-         JSROOT.CallBack(call_back, draw_obj, name_prefix);
+      }).catch(() => {
+         call_back(draw_obj, name_prefix);
       });
    }
 
@@ -4079,7 +4079,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          painter.addExtra(extras, extras_path);
       }
 
-      painter.checkScript(painter.ctrl.script_name, painter.prepareObjectDraw.bind(painter));
+      painter.checkScript(painter.ctrl.script_name, (obj,prefix) => painter.prepareObjectDraw(obj, prefix));
 
       return painter;
    }
@@ -4290,10 +4290,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       }
 
       item._get = function(item, itemname, callback) {
-         if ('_geoobj' in item)
-            return JSROOT.CallBack(callback, item, item._geoobj);
-
-         JSROOT.CallBack(callback, item, null);
+         JSROOT.CallBack(callback, item, item._geoobj || null);
       }
 
       item._expand = function(node, lst) {
