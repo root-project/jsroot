@@ -1974,7 +1974,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       let graph = this.GetObject();
 
       if (!graph.fFunctions || (indx >= graph.fFunctions.arr.length))
-         return JSROOT.CallBack(callback);
+         return JSROOT.callBack(callback);
 
       let func = graph.fFunctions.arr[indx], opt = graph.fFunctions.opt[indx];
 
@@ -2886,7 +2886,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       if (!lst || (indx >= lst.arr.length)) {
          delete this._doing_primitives;
-         return JSROOT.CallBack(callback);
+         return JSROOT.callBack(callback);
       }
 
       // handle use to invoke callback only when necessary
@@ -3273,7 +3273,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       let mgraph = this.GetObject();
 
       if (!mgraph.fFunctions || (indx >= mgraph.fFunctions.arr.length))
-         return JSROOT.CallBack(callback);
+         return JSROOT.callBack(callback);
 
       JSROOT.draw(this.divid, mgraph.fFunctions.arr[indx], mgraph.fFunctions.opt[indx])
             .then(this.DrawNextFunction.bind(this, indx+1, callback));

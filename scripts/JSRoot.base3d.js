@@ -1208,7 +1208,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
       let cb = this.callback;
       delete this.callback;
 
-      if (cb) JSROOT.CallBack(cb, pnts);
+      if (cb) JSROOT.callBack(cb, pnts);
 
       return pnts;
    }

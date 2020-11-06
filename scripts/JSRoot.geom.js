@@ -4184,7 +4184,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       // mark object as belong to the hierarchy, require to
       if (item._geoobj) item._geoobj.$geoh = true;
 
-      JSROOT.CallBack(callback, item, item._geoobj);
+      JSROOT.callBack(callback, item, item._geoobj);
    }
 
 
@@ -4290,7 +4290,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       }
 
       item._get = function(item, itemname, callback) {
-         JSROOT.CallBack(callback, item, item._geoobj || null);
+         JSROOT.callBack(callback, item, item._geoobj || null);
       }
 
       item._expand = function(node, lst) {

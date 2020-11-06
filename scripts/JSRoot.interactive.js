@@ -1721,7 +1721,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       let canvp = this.canv_painter();
 
       if (!this.snapid || !canvp || canvp._readonly || !canvp._websocket)
-         return JSROOT.CallBack(call_back);
+         return JSROOT.callBack(call_back);
 
       function DoExecMenu(arg) {
          let execp = this.exec_painter || this,
@@ -1787,7 +1787,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if (lastclname) _menu.add("endsub:");
          }
 
-         JSROOT.CallBack(_call_back);
+         JSROOT.callBack(_call_back);
       }
 
       let reqid = this.snapid;

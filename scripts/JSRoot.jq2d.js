@@ -1029,7 +1029,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
 
    HierarchyPainter.prototype.RefreshHtml = function(callback) {
 
-      if (!this.divid) return JSROOT.CallBack(callback);
+      if (!this.divid) return JSROOT.callBack(callback);
 
       let d3elem = this.select_main();
 
@@ -1046,7 +1046,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
       });
 
       if (!this.h || d3elem.empty())
-         return JSROOT.CallBack(callback);
+         return JSROOT.callBack(callback);
 
       if (factcmds.length) {
          let fastbtns = d3elem.append("div").attr("class","jsroot");
@@ -1107,7 +1107,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          if (hdiv) func(hdiv, this.itemFullName(status_item));
       }
 
-      JSROOT.CallBack(callback);
+      JSROOT.callBack(callback);
    }
 
    HierarchyPainter.prototype.UpdateTreeNode = function(hitem, d3cont) {
@@ -1418,14 +1418,14 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
    HierarchyPainter.prototype.CreateDisplay = function(callback) {
 
       if ('disp' in this) {
-         if (this.disp.NumDraw() > 0) return JSROOT.CallBack(callback, this.disp);
+         if (this.disp.NumDraw() > 0) return JSROOT.callBack(callback, this.disp);
          this.disp.Reset();
          delete this.disp;
       }
 
       // check that we can found frame where drawing should be done
       if (!document.getElementById(this.disp_frameid))
-         return JSROOT.CallBack(callback, null);
+         return JSROOT.callBack(callback, null);
 
       if (this.disp_kind == "tabs")
          this.disp = new TabsDisplay(this.disp_frameid);
@@ -1439,7 +1439,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
       if (this.disp)
          this.disp.CleanupFrame = this.CleanupFrame.bind(this);
 
-      JSROOT.CallBack(callback, this.disp);
+      JSROOT.callBack(callback, this.disp);
    }
 
    HierarchyPainter.prototype.enable_dragging = function(element /*, itemname*/) {
@@ -1485,7 +1485,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
 
          if (update_html) this.brlayout.Toggle(browser_kind);
 
-         JSROOT.CallBack(call_back);
+         JSROOT.callBack(call_back);
 
          return true;
       }
@@ -1608,7 +1608,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
 
       this.brlayout.ToggleBrowserKind(browser_kind || "fix");
 
-      JSROOT.CallBack(call_back);
+      JSROOT.callBack(call_back);
 
       return true;
    }

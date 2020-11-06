@@ -1133,17 +1133,13 @@
       return (typeof elem == 'function') ? elem : null;
    }
 
-   /**
-    * @summary Generic method to invoke callback function.
-    *
+   /** @summary Generic method to invoke callback function.
     * @param {object|function|string} func either normal function or container like
     * { obj: object_pointer, func: name of method to call } or just function name, which can be found with {@link JSROOT.findFunction}
     * @param arg1 first optional argument of callback
-    * @param arg2 second optional argument of callback
-    *
-    * @private
-    */
-   JSROOT.CallBack = function(func, arg1, arg2) {
+    * @param arg2 second optional argument of callback */
+    
+   JSROOT.callBack = function(func, arg1, arg2) {
 
       if (typeof func == 'string') func = JSROOT.findFunction(func);
 
@@ -1415,7 +1411,7 @@
       return JSROOT.require(requirements)
                    .then(() => JSROOT.require(user_scripts))
                    .then(() => { if (_.debug_output) { _.debug_output.innerHTML = ""; delete _.debug_output; } })
-                   .then(() => JSROOT.CallBack(nobrowser ? 'JSROOT.BuildNobrowserGUI' : 'JSROOT.BuildSimpleGUI'));
+                   .then(() => JSROOT.callBack(nobrowser ? 'JSROOT.BuildNobrowserGUI' : 'JSROOT.BuildSimpleGUI'));
    }
 
    /** @summary Create some ROOT classes
@@ -2238,7 +2234,7 @@
       if (prereq || onload)
          window_on_load().then(() => JSROOT.require(prereq))
                          .then(() => JSROOT.loadScript(user))
-                         .then(() => JSROOT.CallBack(onload));
+                         .then(() => JSROOT.callBack(onload));
 
       return this;
    }
@@ -2270,6 +2266,11 @@
    JSROOT.MakeSVG = function(args) {
       console.warn('Using obsolete JSROOT.MakeSVG function, change to JSROOT.makeSVG');
       return JSROOT.makeSVG(args);  
+   }
+   
+   JSROOT.CallBack = function(func, arg1, arg2) {
+      console.warn('Using obsolete JSROOT.CallBack function, change to JSROOT.callBack');
+      return JSROOT.callBack(func, arg1, arg2);  
    }
 
    /// end of backward compatibility block

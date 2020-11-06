@@ -1313,7 +1313,7 @@ JSROOT.define(['d3'], (d3) => {
          delete this._reject_callbacks_;
 
          while (callbacks.length)
-            JSROOT.CallBack(callbacks.shift(), res_painter);
+            JSROOT.callBack(callbacks.shift(), res_painter);
       }
       return this;
    }
@@ -1327,7 +1327,7 @@ JSROOT.define(['d3'], (d3) => {
    BasePainter.prototype.WhenReady = function(resolveFunc, rejectFunc) {
       if (typeof resolveFunc !== 'function') return;
       if ('_ready_called_' in this)
-         return JSROOT.CallBack(resolveFunc, this);
+         return JSROOT.callBack(resolveFunc, this);
       if (!this._ready_callbacks_)
          this._ready_callbacks_ = [resolveFunc];
       else
@@ -2806,7 +2806,7 @@ JSROOT.define(['d3'], (d3) => {
       draw_g.node().text_callback = null;
 
       // if specified, call ready function
-      JSROOT.CallBack(call_ready);
+      JSROOT.callBack(call_ready);
       return 0;
    }
 

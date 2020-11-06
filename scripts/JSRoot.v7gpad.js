@@ -2547,7 +2547,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             delete this._lasttm_tm;
          }
 
-         return JSROOT.CallBack(callback);
+         return JSROOT.callBack(callback);
       }
 
       // handle used to invoke callback only when necessary
@@ -2782,7 +2782,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (!lst || indx >= lst.length) {
             delete this._doing_pad_draw;
             delete this._snaps_map;
-            return JSROOT.CallBack(call_back, this);
+            return JSROOT.callBack(call_back, this);
          }
 
          let snap = lst[indx],
