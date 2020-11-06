@@ -322,7 +322,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.ticks = [];
       delete this.format;
       delete this.axis;
-      delete this.Revert;
       delete this.gr;
       delete this.func;
 
@@ -331,6 +330,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    
    RAxisPainter.prototype.ConvertDate = function(v) {
       return new Date(this.timeoffset + v*1000);
+   }
+   
+   /** @summary Convert graphical point back into axis value */   
+   RAxisPainter.prototype.RevertPoint = function(pnt) {
+      let value = this.func.invert(pnt);
+      return (this.kind == "time") ?  (value - this.timeoffset) / 1000 : value; 
    }
 
    RAxisPainter.prototype.AssignKindAndFunc = function(name, min, max, smin, smax, vertical, range) {
@@ -344,10 +349,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (this.axis && this.axis._timedisplay) {
          this.kind = 'time';
          this.timeoffset = jsrp.getTimeOffset(/*this.histo.fXaxis*/);
-         this.Revert = function(gr) { return (this.func.invert(gr) - this.timeoffset) / 1000; };
       } else {
          this.kind = (this.axis && this.axis.fLabelsIndex) ? 'labels' : 'normal';
-         this.Revert = function(gr) { return this.func.invert(gr); };
       }
 
       if (this.kind == 'time') {
@@ -517,7 +520,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (this.kind == 'time')
          value = this.ConvertDate(value);
       if (this.format) 
-         return handle.format(value, false, fmt);
+         return this.format(value, false, fmt);
       return value.toPrecision(4);
    }
 
@@ -2029,7 +2032,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Convert graphical coordinate into axis value */
    RFramePainter.prototype.RevertAxis = function(axis, pnt) {
       let handle = this[axis+"_handle"];
-      return handle ? handle.Revert(pnt) : 0;
+      return handle ? handle.RevertPoint(pnt) : 0;
    }
 
    /** @summary Show axis status message

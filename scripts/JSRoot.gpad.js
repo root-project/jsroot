@@ -49,13 +49,18 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       delete this.func;
       delete this.format;
       delete this.gr;
-      delete this.Revert;
 
       JSROOT.ObjectPainter.prototype.Cleanup.call(this);
    }
    
    TAxisPainter.prototype.ConvertDate = function(v) {
       return new Date(this.timeoffset + v*1000);
+   }
+
+   /** @summary Convert graphical point back into axis value */   
+   TAxisPainter.prototype.RevertPoint = function(pnt) {
+      let value = this.func.invert(pnt);
+      return (this.kind == "time") ?  (value - this.timeoffset) / 1000 : value; 
    }
 
    TAxisPainter.prototype.AssignKindAndFunc = function(name, min, max, smin, smax, vertical, range, opts) {
@@ -71,10 +76,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (opts.time_scale || axis.fTimeDisplay) {
          this.kind = 'time';
          this.timeoffset = jsrp.getTimeOffset(axis);
-         this.Revert = function(gr) { return (this.func.invert(gr) - this.timeoffset) / 1000; };
       } else {
          this.kind = !axis.fLabels ? 'normal' : 'labels';
-         this.Revert = function(gr) { return this.func.invert(gr); };
       }
 
       if (this.kind == 'time') {
@@ -262,7 +265,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (this.kind == 'time')
          value = this.ConvertDate(value);
       if (this.format) 
-         return handle.format(value, false, fmt);
+         return this.format(value, false, fmt);
       return value.toPrecision(4);
    }
 
@@ -1175,7 +1178,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
      *    this.GetBin[X/Y]  return bin coordinate
      *    this.[x,y]  these are d3.scale objects
      *    this.gr[x,y]  converts root scale into graphical value
-     *    this.Revert[X/Y]  converts graphical coordinates to user coordinates
      * @private */
    TFramePainter.prototype.CreateXY = function(opts) {
 
@@ -1930,7 +1932,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Convert graphical coordinate into axis value */
    TFramePainter.prototype.RevertAxis = function(axis, pnt) {
       let handle = this[axis+"_handle"];
-      return handle ? handle.Revert(pnt) : 0;
+      return handle ? handle.RevertPoint(pnt) : 0;
    }
 
    /** @summary Show axis status message
