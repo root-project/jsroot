@@ -1,5 +1,9 @@
 # JSROOT changelog
 
+## Changes in 5.9.x
+1. Fix zooming in color palette
+
+
 ## Changes in 5.9.0
 1. Support RX and RY drawing option together with COL of TH2
 2. Add support of #overline, #underline, #strike into TLatex parsing (#196)

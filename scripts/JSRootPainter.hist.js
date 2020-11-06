@@ -952,9 +952,9 @@
          d3.event.preventDefault();
          var m = d3.mouse(evnt);
 
-         if (m[1] < sel1) sel1 = m[1]; else sel2 = m[1];
+         sel2 = Math.min(Math.max(m[1], 0), s_height);
 
-         zoom_rect.attr("y", sel1)
+         zoom_rect.attr("y", Math.min(sel1,sel2))
                   .attr("height", Math.abs(sel2-sel1));
       }
 
@@ -993,7 +993,7 @@
                 .attr("x", "0")
                 .attr("width", s_width)
                 .attr("y", sel1)
-                .attr("height", 5);
+                .attr("height", 1);
 
          d3.select(window).on("mousemove.colzoomRect", moveRectSel)
                           .on("mouseup.colzoomRect", endRectSel, true);
