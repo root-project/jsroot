@@ -118,42 +118,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.gr = val => (val < this.scale_min) ? (this.vertical ? this.func.range()[0]+5 : -5) : this.func(val);
       else
          this.gr = this.func;
-         
-      this.CreateFormatFuncs();
-   }
 
-   /** @summary Assign often used members of frame painter 
-     * @private */   
-   TAxisPainter.prototype.AssignFrameMembers = function(fp, axis) {
-      fp["gr"+axis] = this.gr;                    // fp.grx
-      fp["log"+axis] = this.log;                  // fp.logx
-      fp["scale_"+axis+"min"] = this.scale_min;   // fp.scale_xmin
-      fp["scale_"+axis+"max"] = this.scale_max;   // fp.scale_xmax
-   } 
 
-   TAxisPainter.prototype.formatExp = function(base, order, value) {
-      let res = "";
-      if (value) {
-         value = Math.round(value/Math.pow(base,order));
-         if ((value!=0) && (value!=1)) res = value.toString() + (JSROOT.settings.Latex ? "#times" : "x");
-      }
-      res += base.toString();
-      if (JSROOT.settings.Latex > JSROOT.constants.Latex.Symbols)
-         return res + "^{" + order + "}";
-      const superscript_symbols = {
-            '0': '\u2070', '1': '\xB9', '2': '\xB2', '3': '\xB3', '4': '\u2074', '5': '\u2075',
-            '6': '\u2076', '7': '\u2077', '8': '\u2078', '9': '\u2079', '-': '\u207B'
-         };
-      let str = order.toString();
-      for (let n = 0; n < str.length; ++n)
-         res += superscript_symbols[str[n]];
-      return res;
-   }
-
-   TAxisPainter.prototype.CreateFormatFuncs = function() {
-
-      let axis = this.GetObject(),
-          is_gaxis = (axis && axis._typename === 'TGaxis');
+      let is_gaxis = (axis && axis._typename === 'TGaxis');
 
       delete this.format;// remove formatting func
 
@@ -199,15 +166,15 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if ((this.scale_max < 300) && (this.scale_min > 0.3)) this.noexp = true;
          this.moreloglabels = axis ? axis.TestBit(JSROOT.EAxisBits.kMoreLogLabels) : false;
          
-         this.format = function(d, asticks, notickexp_fmt) {
+         this.format = function(d, asticks, fmt) {
             let val = parseFloat(d), rnd = Math.round(val);
             if (!asticks)
-               return ((rnd === val) && (Math.abs(rnd)<1e9)) ? rnd.toString() : JSROOT.FFormat(val, notickexp_fmt || JSROOT.gStyle.fStatFormat);
+               return ((rnd === val) && (Math.abs(rnd)<1e9)) ? rnd.toString() : JSROOT.FFormat(val, fmt || JSROOT.gStyle.fStatFormat);
             if (val <= 0) return null;
             let vlog = Math.log10(val), base = 10;
             if (this.log == 2) { base = 2; vlog = vlog / Math.log10(2); }
             if (this.moreloglabels || (Math.abs(vlog - Math.round(vlog)) < 0.001)) {
-               if (!this.noexp && !notickexp_fmt)
+               if (!this.noexp && (asticks != 2))
                   return this.formatExp(base, Math.floor(vlog+0.01), val);
 
                return (vlog < 0) ? val.toFixed(Math.round(-vlog+0.5)) : val.toFixed(0);
@@ -261,6 +228,35 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          }
       }
    }
+
+   /** @summary Assign often used members of frame painter 
+     * @private */   
+   TAxisPainter.prototype.AssignFrameMembers = function(fp, axis) {
+      fp["gr"+axis] = this.gr;                    // fp.grx
+      fp["log"+axis] = this.log;                  // fp.logx
+      fp["scale_"+axis+"min"] = this.scale_min;   // fp.scale_xmin
+      fp["scale_"+axis+"max"] = this.scale_max;   // fp.scale_xmax
+   } 
+
+   TAxisPainter.prototype.formatExp = function(base, order, value) {
+      let res = "";
+      if (value) {
+         value = Math.round(value/Math.pow(base,order));
+         if ((value!=0) && (value!=1)) res = value.toString() + (JSROOT.settings.Latex ? "#times" : "x");
+      }
+      res += base.toString();
+      if (JSROOT.settings.Latex > JSROOT.constants.Latex.Symbols)
+         return res + "^{" + order + "}";
+      const superscript_symbols = {
+            '0': '\u2070', '1': '\xB9', '2': '\xB2', '3': '\xB3', '4': '\u2074', '5': '\u2075',
+            '6': '\u2076', '7': '\u2077', '8': '\u2078', '9': '\u2079', '-': '\u207B'
+         };
+      let str = order.toString();
+      for (let n = 0; n < str.length; ++n)
+         res += superscript_symbols[str[n]];
+      return res;
+   }
+
    
    /** @summary Convert "raw" axis value into text */
    TAxisPainter.prototype.AxisAsText = function(value, fmt) {

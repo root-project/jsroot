@@ -550,9 +550,12 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       while (xticks.next()) {
          let grx = xticks.grpos,
             is_major = (xticks.kind===1),
-            lbl = this.x_handle.format(xticks.tick, true, true);
-         if (xticks.last_major()) { if (!xaxis || !xaxis.fTitle) lbl = "x"; } else
-            if (lbl === null) { is_major = false; lbl = ""; }
+            lbl = this.x_handle.format(xticks.tick, 2);
+         if (xticks.last_major()) { 
+            if (!xaxis || !xaxis.fTitle) lbl = "x"; 
+         } else if (lbl === null) { 
+            is_major = false; lbl = ""; 
+         }
 
          if (is_major && lbl && (lbl.length>0)) {
             let text3d = new THREE.TextGeometry(lbl, { font: JSROOT.threejs_font_helvetiker_regular, size: textsize, height: 0, curveSegments: 5 });
@@ -756,9 +759,13 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       while (yticks.next()) {
          let gry = yticks.grpos,
              is_major = (yticks.kind===1),
-             lbl = this.y_handle.format(yticks.tick, true, true);
-         if (yticks.last_major()) { if (!yaxis || !yaxis.fTitle) lbl = "y"; }  else
-            if (lbl === null) { is_major = false; lbl = ""; }
+             lbl = this.y_handle.format(yticks.tick, 2);
+             
+         if (yticks.last_major()) { 
+            if (!yaxis || !yaxis.fTitle) lbl = "y"; 
+         }  else if (lbl === null) { 
+            is_major = false; lbl = ""; 
+         }
 
          if (is_major) {
             let text3d = new THREE.TextGeometry(lbl, { font: JSROOT.threejs_font_helvetiker_regular, size: textsize, height: 0, curveSegments: 5 });
@@ -858,7 +865,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       while (zticks.next()) {
          let grz = zticks.grpos,
             is_major = (zticks.kind == 1),
-            lbl = this.z_handle.format(zticks.tick, true, true);
+            lbl = this.z_handle.format(zticks.tick, 2);
          if (lbl === null) { is_major = false; lbl = ""; }
 
          if (is_major && lbl) {
