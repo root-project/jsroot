@@ -653,7 +653,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          if (handle.kind == 1) {
             // if not showing labels, not show large tick
-            if (this.format(handle.tick,true) !== null) h1 = tickSize;
+            // FIXME: for labels last tick is smaller, 
+            if (/*(this.kind == "labels") || */ (this.format(handle.tick,true) !== null)) h1 = tickSize;
             this.ticks.push(handle.grpos); // keep graphical positions of major ticks
          }
 
