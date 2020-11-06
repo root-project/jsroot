@@ -515,17 +515,17 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       // this.TestAxisVisibility = HPainter_TestAxisVisibility;
 
       this.x_handle = new JSROOT.TAxisPainter(this.xaxis);
-      this.x_handle.AssignKindAndFunc("xaxis", this.xmin, this.xmax, xmin, xmax, false, [grminx, grmaxx], 
+      this.x_handle.ConfigureAxis("xaxis", this.xmin, this.xmax, xmin, xmax, false, [grminx, grmaxx], 
                                        { log: pad ? pad.fLogx : 0 });
       this.x_handle.AssignFrameMembers(this,"x");
        
       this.y_handle = new JSROOT.TAxisPainter(this.yaxis);
-      this.y_handle.AssignKindAndFunc("yaxis", this.ymin, this.ymax, ymin, ymax, false, [grminy, grmaxy], 
+      this.y_handle.ConfigureAxis("yaxis", this.ymin, this.ymax, ymin, ymax, false, [grminy, grmaxy], 
                                       { log: pad && !opts.use_y_for_z ? pad.fLogx : 0 });
       this.y_handle.AssignFrameMembers(this,"y");
 
       this.z_handle = new JSROOT.TAxisPainter(this.zaxis);
-      this.z_handle.AssignKindAndFunc("zaxis", this.zmin, this.zmax, zmin, zmax, false, [grminz, grmaxz], 
+      this.z_handle.ConfigureAxis("zaxis", this.zmin, this.zmax, zmin, zmax, false, [grminz, grmaxz], 
                                        { log: pad ? pad.fLogz : 0 });
       this.z_handle.AssignFrameMembers(this,"z");
       

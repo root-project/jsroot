@@ -63,7 +63,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return (this.kind == "time") ?  (value - this.timeoffset) / 1000 : value; 
    }
 
-   TAxisPainter.prototype.AssignKindAndFunc = function(name, min, max, smin, smax, vertical, range, opts) {
+   TAxisPainter.prototype.ConfigureAxis = function(name, min, max, smin, smax, vertical, range, opts) {
       this.name = name;
       this.full_min = min;
       this.full_max = max;
@@ -71,6 +71,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.vertical = vertical;
       this.log = opts.log || 0;
       this.reverse = opts.reverse || false;
+      this.swap_side = opts.swap_side || false;
+
       let axis = this.GetObject();
       
       if (opts.time_scale || axis.fTimeDisplay) {
@@ -287,8 +289,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return ticks;
    }
 
+   /** @summary Creates array with minor/middle/major ticks */
    TAxisPainter.prototype.CreateTicks = function(only_major_as_array, optionNoexp, optionNoopt, optionInt) {
-      // function used to create array with minor/middle/major ticks
 
       if (optionNoopt && this.nticks && (this.kind == "normal")) this.noticksopt = true;
 
@@ -552,7 +554,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary function draws  TAxis or TGaxis object  */
-   TAxisPainter.prototype.DrawAxis = function(layer, w, h, transform, reverse, second_shift, disable_axis_drawing, max_text_width) {
+   TAxisPainter.prototype.DrawAxis = function(layer, w, h, transform, second_shift, disable_axis_drawing, max_text_width) {
 
       let axis = this.GetObject(), chOpt = "",
           is_gaxis = (axis && axis._typename === 'TGaxis'),
@@ -562,7 +564,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           pad_h = this.pad_height() || 10,
           resolveFunc, totalTextCallbacks = 0, totalDone = false,
           promise = new Promise(resolve => { resolveFunc = resolve; }),
-          vertical = this.vertical;
+          vertical = this.vertical, 
+          swap_side = this.swap_side || false; 
 
       let checkTextCallBack = (is_callback) => {
           if (is_callback) totalTextCallbacks--; else totalDone = true;
@@ -626,8 +629,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (is_gaxis && axis.TestBit(JSROOT.EAxisBits.kTickMinus)) optionMinus = true;
 
       if (optionPlus && optionMinus) { side = 1; ticks_plusminus = 1; } else
-      if (optionMinus) { side = (reverse ^ vertical) ? 1 : -1; } else
-      if (optionPlus) { side = (reverse ^ vertical) ? -1 : 1; }
+      if (optionMinus) { side = (swap_side ^ vertical) ? 1 : -1; } else
+      if (optionPlus) { side = (swap_side ^ vertical) ? -1 : 1; }
 
       tickSize = Math.round((optionSize ? tickSize : 0.03) * scaling_size);
 
@@ -840,7 +843,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          this.StartTextDrawing(axis.fTitleFont, title_fontsize, title_g);
 
-         let xor_reverse = reverse ^ opposite, myxor = (rotate < 0) ^ xor_reverse;
+         let xor_reverse = swap_side ^ opposite, myxor = (rotate < 0) ^ xor_reverse;
          
          this.title_align = center ? "middle" : (myxor ? "begin" : "end");
 
@@ -889,7 +892,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             checkTextCallBack(true);
          });
 
-         this.AddTitleDrag(title_g, vertical, title_offest_k, reverse, vertical ? h : w);
+         this.AddTitleDrag(title_g, vertical, title_offest_k, swap_side, vertical ? h : w);
       }
 
       this.position = 0;
@@ -925,15 +928,16 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (vertical) y2 = y1; else x1 = x2;
       }
 
-      this.AssignKindAndFunc(vertical ? "yaxis" : "xaxis", min, max, min, max, vertical, [0, sz], {
+      this.ConfigureAxis(vertical ? "yaxis" : "xaxis", min, max, min, max, vertical, [0, sz], {
          time_scale: gaxis.fChopt.indexOf("t") >= 0,
          log: (gaxis.fChopt.indexOf("G") >= 0) ? 1 : 0, 
-         reverse: reverse
+         reverse: reverse,
+         swap_side: reverse
       });
       
       this.CreateG();
 
-      return this.DrawAxis(this.draw_g, Math.abs(w), Math.abs(h), "translate(" + x1 + "," + y2 +")", reverse);
+      return this.DrawAxis(this.draw_g, Math.abs(w), Math.abs(h), "translate(" + x1 + "," + y2 +")");
    }
 
    let drawGaxis = (divid, obj /*, opt*/) => {
@@ -1250,7 +1254,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.x_handle.SetDivId(this.divid, -1);
       this.x_handle.pad_name = this.pad_name;
       
-      this.x_handle.AssignKindAndFunc("xaxis", this.xmin, this.xmax, this.scale_xmin, this.scale_xmax, this.swap_xy, this.swap_xy ? [0,h] : [0,w],
+      this.x_handle.ConfigureAxis("xaxis", this.xmin, this.xmax, this.scale_xmin, this.scale_xmax, this.swap_xy, this.swap_xy ? [0,h] : [0,w],
                                       { reverse: this.reverse_x,
                                         log: this.swap_xy ? pad.fLogy : pad.fLogx,
                                         logcheckmin: this.swap_xy, 
@@ -1262,7 +1266,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.y_handle.SetDivId(this.divid, -1);
       this.y_handle.pad_name = this.pad_name;
 
-      this.y_handle.AssignKindAndFunc("yaxis", this.ymin, this.ymax, this.scale_ymin, this.scale_ymax, !this.swap_xy, this.swap_xy ? [0,w] : [0,h],
+      this.y_handle.ConfigureAxis("yaxis", this.ymin, this.ymax, this.scale_ymin, this.scale_ymax, !this.swap_xy, this.swap_xy ? [0,w] : [0,h],
                                       { reverse: this.reverse_y, 
                                         log: this.swap_xy ? pad.fLogx : pad.fLogy,
                                         logcheckmin: (opts.ndim < 2) || this.swap_xy,
@@ -1408,11 +1412,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (!disable_axis_draw) {
          let promise1 = draw_horiz.DrawAxis(layer, w, h,
                                             draw_horiz.invert_side ? undefined : "translate(0," + h + ")",
-                                            false, pad.fTickx ? -h : 0, disable_axis_draw);
+                                            pad.fTickx ? -h : 0, disable_axis_draw);
 
          let promise2 = draw_vertical.DrawAxis(layer, w, h,
                                                draw_vertical.invert_side ? "translate(" + w + ",0)" : undefined,
-                                               false, pad.fTicky ? w : 0, disable_axis_draw,
+                                               pad.fTicky ? w : 0, disable_axis_draw,
                                                draw_vertical.invert_side ? 0 : this.frame_x());
 
          return Promise.all([promise1, promise2]).then(() => {
