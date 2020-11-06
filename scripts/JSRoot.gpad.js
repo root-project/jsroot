@@ -49,19 +49,19 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       delete this.func;
       delete this.format;
       delete this.gr;
-      delete this.Convert;
       delete this.Revert;
 
       JSROOT.ObjectPainter.prototype.Cleanup.call(this);
+   }
+   
+   TAxisPainter.prototype.ConvertDate = function(v) {
+      return new Date(this.timeoffset + v*1000);
    }
 
    TAxisPainter.prototype.AssignKindAndFunc = function(name, min, max, smin, smax, vertical, range, opts) {
       this.name = name;
       this.full_min = min;
       this.full_max = max;
-      this.scale_min = smin;
-      this.scale_max = smax;
-      
       this.kind = "normal";
       this.vertical = vertical;
       this.log = opts.log || 0;
@@ -71,46 +71,46 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (opts.time_scale || axis.fTimeDisplay) {
          this.kind = 'time';
          this.timeoffset = jsrp.getTimeOffset(axis);
-         this.Convert = function(v) { return new Date(this.timeoffset + v*1000); };
          this.Revert = function(gr) { return (this.func.invert(gr) - this.timeoffset) / 1000; };
       } else {
          this.kind = !axis.fLabels ? 'normal' : 'labels';
-         this.Convert = function(x) { return x; };
          this.Revert = function(gr) { return this.func.invert(gr); };
       }
 
       if (this.kind == 'time') {
-         this.func = d3.scaleTime();
+         this.func = d3.scaleTime().domain([this.ConvertDate(smin), this.ConvertDate(smax)]);
       } else if (this.log) {
 
-         if (this.scale_max <= 0) this.scale_max = 1;
+         if (smax <= 0) smax = 1;
 
-         if ((this.scale_min <= 0) && axis && !opts.logcheckmin)
+         if ((smin <= 0) && axis && !opts.logcheckmin)
             for (let i = 0; i < axis.fNbins; ++i) {
-               this.scale_min = Math.max(this.scale_min, axis.GetBinLowEdge(i+1));
-               if (this.scale_min > 0) break;
+               smin = Math.max(smin, axis.GetBinLowEdge(i+1));
+               if (smin > 0) break;
             }
             
-         if ((this.scale_min <= 0) && opts.log_min_nz)
-            this.scale_min = opts.log_min_nz;
+         if ((smin <= 0) && opts.log_min_nz)
+            smin = opts.log_min_nz;
 
-         if ((this.scale_min <= 0) || (this.scale_min >= this.scale_max))
-            this.scale_min = this.scale_max * (opts.logminfactor || 1e-4);
+         if ((smin <= 0) || (smin >= smax))
+            smin = smax * (opts.logminfactor || 1e-4);
 
-         this.func = d3.scaleLog().base((this.log == 2) ? 2 : 10);
+         this.func = d3.scaleLog().base((this.log == 2) ? 2 : 10).domain([smin,smax]);
       } else {
-         this.func = d3.scaleLinear();
+         this.func = d3.scaleLinear().domain([smin,smax]);
       }
-
+      
       if (this.vertical ^ this.reverse) {
          let d = range[0]; range[0] = range[1]; range[1] = d;
       }
 
-      this.func.domain([this.Convert(this.scale_min), this.Convert(this.scale_max)])
-               .range(range);
+      this.func.range(range);
+
+      this.scale_min = smin;
+      this.scale_max = smax;
 
       if (this.kind == 'time')
-         this.gr = val => this.func(this.Convert(val));
+         this.gr = val => this.func(this.ConvertDate(val));
       else if (this.log)
          this.gr = val => (val < this.scale_min) ? (this.vertical ? this.func.range()[0]+5 : -5) : this.func(val);
       else
@@ -255,6 +255,15 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             return JSROOT.FFormat(val, fmt || JSROOT.gStyle.fStatFormat);
          }
       }
+   }
+   
+   /** @summary Convert "raw" axis value into text */
+   TAxisPainter.prototype.AxisAsText = function(value, fmt) {
+      if (this.kind == 'time')
+         value = this.ConvertDate(value);
+      if (this.format) 
+         return handle.format(value, false, fmt);
+      return value.toPrecision(4);
    }
 
    TAxisPainter.prototype.ProduceTicks = function(ndiv, ndiv2) {
@@ -1164,7 +1173,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
      * @desc While only first painter really need such object, all others just reuse it
      * following functions are introduced
      *    this.GetBin[X/Y]  return bin coordinate
-     *    this.Convert[X/Y]  converts root value in JS date when date scale is used
      *    this.[x,y]  these are d3.scale objects
      *    this.gr[x,y]  converts root scale into graphical value
      *    this.Revert[X/Y]  converts graphical coordinates to user coordinates
@@ -1355,17 +1363,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
    }
 
+   /** @summary Converts "raw" axis value into text */
    TFramePainter.prototype.AxisAsText = function(axis, value) {
       let handle = this[axis+"_handle"];
       
-      if (handle) {
-         if (handle.kind == 'time')
-            value = handle.Convert(value);
-         if (handle.format) {
-            let fmt = JSROOT.settings[axis.toUpperCase() + "ValuesFormat"];
-            return handle.format(value, false, fmt);
-         }
-      }
+      if (handle) 
+         return handle.AxisAsText(value, JSROOT.settings[axis.toUpperCase() + "ValuesFormat"]);
 
       return value.toPrecision(4);
    }

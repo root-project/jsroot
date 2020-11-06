@@ -322,12 +322,15 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.ticks = [];
       delete this.format;
       delete this.axis;
-      delete this.Convert;
       delete this.Revert;
       delete this.gr;
       delete this.func;
 
       JSROOT.ObjectPainter.prototype.Cleanup.call(this);
+   }
+   
+   RAxisPainter.prototype.ConvertDate = function(v) {
+      return new Date(this.timeoffset + v*1000);
    }
 
    RAxisPainter.prototype.AssignKindAndFunc = function(name, min, max, smin, smax, vertical, range) {
@@ -341,16 +344,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (this.axis && this.axis._timedisplay) {
          this.kind = 'time';
          this.timeoffset = jsrp.getTimeOffset(/*this.histo.fXaxis*/);
-         this.Convert = function(v) { return new Date(this.timeoffset + v*1000); };
          this.Revert = function(gr) { return (this.func.invert(gr) - this.timeoffset) / 1000; };
       } else {
          this.kind = (this.axis && this.axis.fLabelsIndex) ? 'labels' : 'normal';
-         this.Convert = function(v) { return v; };
          this.Revert = function(gr) { return this.func.invert(gr); };
       }
 
       if (this.kind == 'time') {
-         this.func = d3.scaleTime();
+         this.func = d3.scaleTime().domain([this.ConvertDate(smin), this.ConvertDate(smax)]);
       } else if (this.log) {
          
          if (smax <= 0) smax = 1;
@@ -358,9 +359,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             smin = smax * 0.0001;
             
          let base = 10;
-         this.func = d3.scaleLog().base(base);
+         this.func = d3.scaleLog().base(base).domain([smin,smax]);
       } else {
-         this.func = d3.scaleLinear();
+         this.func = d3.scaleLinear().domain([smin,smax]);
       }
       
       this.scale_min = smin;
@@ -372,10 +373,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          let d = range[0]; range[0] = range[1]; range[1] = d;
       }
 
-      this.func.domain([this.Convert(smin), this.Convert(smax)]).range(range);
+      this.func.range(range);
 
       if (this.kind == 'time')
-         this.gr = val => this.func(this.Convert(val));
+         this.gr = val => this.func(this.ConvertDate(val));
       else if (this.log_scale)
          this.gr = val => (val < this.scale_xmin) ? (this.vertical ? this.func.range()[0]+5 : -5) : this.func(val);
       else
@@ -509,6 +510,15 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             return JSROOT.FFormat(val, fmt || JSROOT.gStyle.fStatFormat);
          }
       }
+   }
+   
+   /** @summary Convert "raw" axis value into text */
+   RAxisPainter.prototype.AxisAsText = function(value, fmt) {
+      if (this.kind == 'time')
+         value = this.ConvertDate(value);
+      if (this.format) 
+         return handle.format(value, false, fmt);
+      return value.toPrecision(4);
    }
 
    RAxisPainter.prototype.ProduceTicks = function(ndiv, ndiv2) {
@@ -1375,20 +1385,15 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
    }
 
+   /** @summary Converts "raw" axis value into text */
    RFramePainter.prototype.AxisAsText = function(axis, value) {
       let handle = this[axis+"_handle"];
       
-      if (handle) {
-         if (handle.kind == 'time')
-            value = handle.Convert(value);
-         if (handle.format) {
-            let fmt = JSROOT.settings[axis.toUpperCase() + "ValuesFormat"];
-            return handle.format(value, false, fmt);
-         }
-      }
+      if (handle) 
+         return handle.AxisAsText(value, JSROOT.settings[axis.toUpperCase() + "ValuesFormat"]);
+
       return value.toPrecision(4);
    }
-
 
    /** @summary Set axes ranges for drawing, check configured attributes if range already specified */
    RFramePainter.prototype.SetAxesRanges = function(xaxis, xmin, xmax, yaxis, ymin, ymax, zaxis, zmin, zmax) {
@@ -2069,21 +2074,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          inter.FrameInteractive.assign(this);
          return this.AddInteractive();
       });
-   }
-
-   /** @summary Create x,y objects which maps user coordinates into pixels
-     * @desc While only first painter really need such object, all others just reuse it
-     * following functions are introduced
-     *    this.GetBin[X/Y]  return bin coordinate
-     *    this.Convert[X/Y]  converts root value in JS date when date scale is used
-     *    this.[x,y]  these are d3.scale objects
-     *    this.gr[x,y]  converts root scale into graphical value
-     *    this.Revert[X/Y]  converts graphical coordinates to user coordinates
-     * @private */
-   RFramePainter.prototype.CreateXY = function() {
-
-
-      // this.SetRootPadRange();
    }
 
    /** @summary Set selected range back to pad object - to be implemented */
