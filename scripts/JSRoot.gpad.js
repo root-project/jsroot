@@ -202,7 +202,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (!this.regular_labels)
          indx = (indx - a.fXmin)/(a.fXmax - a.fXmin) * a.fNbins;
       indx = Math.floor(indx);
-      if ((indx < 0) || (indx >= axis.fNbins)) return null;
+      if ((indx < 0) || (indx >= a.fNbins)) return null;
       for (let i = 0; i < a.fLabels.arr.length; ++i) {
          let tstr = a.fLabels.arr[i];
          if (tstr.fUniqueID === indx+1) return tstr.fString;
