@@ -834,6 +834,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
          let grz = zticks.grpos,
             is_major = (zticks.kind == 1),
             lbl = this.z_handle.format(zticks.tick, 2);
+            
          if (lbl === null) { is_major = false; lbl = ""; }
 
          if (is_major && lbl) {

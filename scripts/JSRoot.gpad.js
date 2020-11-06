@@ -153,9 +153,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (tf2!==tf1)
             this.tfunc2 = d3.timeFormat(tf2);
 
-         this.format = function(d, asticks) {
-            return asticks ? this.tfunc1(d) : this.tfunc2(d);
-         }
+         this.format = this.formatTime;
 
       } else if (this.log) {
          if (this.nticks2 > 1) {
@@ -166,21 +164,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if ((this.scale_max < 300) && (this.scale_min > 0.3)) this.noexp = true;
          this.moreloglabels = axis ? axis.TestBit(JSROOT.EAxisBits.kMoreLogLabels) : false;
          
-         this.format = function(d, asticks, fmt) {
-            let val = parseFloat(d), rnd = Math.round(val);
-            if (!asticks)
-               return ((rnd === val) && (Math.abs(rnd)<1e9)) ? rnd.toString() : JSROOT.FFormat(val, fmt || JSROOT.gStyle.fStatFormat);
-            if (val <= 0) return null;
-            let vlog = Math.log10(val), base = 10;
-            if (this.log == 2) { base = 2; vlog = vlog / Math.log10(2); }
-            if (this.moreloglabels || (Math.abs(vlog - Math.round(vlog)) < 0.001)) {
-               if (!this.noexp && (asticks != 2))
-                  return this.formatExp(base, Math.floor(vlog+0.01), val);
-
-               return (vlog < 0) ? val.toFixed(Math.round(-vlog+0.5)) : val.toFixed(0);
-            }
-            return null;
-         }
+         this.format = this.formatLog;
+         
       } else if (this.kind == 'labels') {
          this.nticks = 50; // for text output allow max 50 names
          let scale_range = this.scale_max - this.scale_min;
@@ -198,35 +183,57 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          this.nticks2 = 1;
 
-         this.format = function(d) {
-            let indx = parseFloat(d), a = this.GetObject();
-            if (!this.regular_labels)
-               indx = (indx - a.fXmin)/(a.fXmax - a.fXmin) * a.fNbins;
-            indx = Math.floor(indx);
-            if ((indx < 0) || (indx >= axis.fNbins)) return null;
-            for (let i = 0; i < a.fLabels.arr.length; ++i) {
-               let tstr = a.fLabels.arr[i];
-               if (tstr.fUniqueID === indx+1) return tstr.fString;
-            }
-            return null;
-         }
+         this.format = this.formatLabels;
       } else {
-
          this.order = 0;
          this.ndig = 0;
-
-         this.format = function(d, asticks, fmt) {
-            let val = parseFloat(d);
-            if (asticks && this.order) val = val / Math.pow(10, this.order);
-
-            if (val === Math.round(val))
-               return (Math.abs(val)<1e9) ? val.toFixed(0) : val.toExponential(4);
-
-            if (asticks) return (this.ndig>10) ? val.toExponential(this.ndig-11) : val.toFixed(this.ndig);
-
-            return JSROOT.FFormat(val, fmt || JSROOT.gStyle.fStatFormat);
-         }
+         this.format = this.formatNormal;
       }
+   }
+   
+   TAxisPainter.prototype.formatTime = function(d, asticks) {
+       return asticks ? this.tfunc1(d) : this.tfunc2(d);
+   }
+
+   TAxisPainter.prototype.formatLabels = function(d) {
+      let indx = parseFloat(d), a = this.GetObject();
+      if (!this.regular_labels)
+         indx = (indx - a.fXmin)/(a.fXmax - a.fXmin) * a.fNbins;
+      indx = Math.floor(indx);
+      if ((indx < 0) || (indx >= axis.fNbins)) return null;
+      for (let i = 0; i < a.fLabels.arr.length; ++i) {
+         let tstr = a.fLabels.arr[i];
+         if (tstr.fUniqueID === indx+1) return tstr.fString;
+      }
+      return null;
+   }
+
+   TAxisPainter.prototype.formatLog = function(d, asticks, fmt) {
+      let val = parseFloat(d), rnd = Math.round(val);
+      if (!asticks)
+         return ((rnd === val) && (Math.abs(rnd)<1e9)) ? rnd.toString() : JSROOT.FFormat(val, fmt || JSROOT.gStyle.fStatFormat);
+      if (val <= 0) return null;
+      let vlog = Math.log10(val), base = 10;
+      if (this.log == 2) { base = 2; vlog = vlog / Math.log10(2); }
+      if (this.moreloglabels || (Math.abs(vlog - Math.round(vlog)) < 0.001)) {
+         if (!this.noexp && (asticks != 2))
+            return this.formatExp(base, Math.floor(vlog+0.01), val);
+
+         return (vlog < 0) ? val.toFixed(Math.round(-vlog+0.5)) : val.toFixed(0);
+      }
+      return null;
+   }
+   
+   TAxisPainter.prototype.formatNormal = function(d, asticks, fmt) {
+      let val = parseFloat(d);
+      if (asticks && this.order) val = val / Math.pow(10, this.order);
+
+      if (val === Math.round(val))
+         return (Math.abs(val)<1e9) ? val.toFixed(0) : val.toExponential(4);
+
+      if (asticks) return (this.ndig>10) ? val.toExponential(this.ndig-11) : val.toFixed(this.ndig);
+
+      return JSROOT.FFormat(val, fmt || JSROOT.gStyle.fStatFormat);
    }
 
    /** @summary Assign often used members of frame painter 
@@ -643,7 +650,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          if (handle.kind == 1) {
             // if not showing labels, not show large tick
-            if (!('format' in this) || (this.format(handle.tick,true)!==null)) h1 = tickSize;
+            if (this.format(handle.tick,true) !== null) h1 = tickSize;
             this.ticks.push(handle.grpos); // keep graphical positions of major ticks
          }
 

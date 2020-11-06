@@ -551,6 +551,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          let grx = xticks.grpos,
             is_major = (xticks.kind===1),
             lbl = this.x_handle.format(xticks.tick, 2);
+            
          if (xticks.last_major()) { 
             if (!xaxis || !xaxis.fTitle) lbl = "x"; 
          } else if (lbl === null) { 
@@ -866,6 +867,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          let grz = zticks.grpos,
             is_major = (zticks.kind == 1),
             lbl = this.z_handle.format(zticks.tick, 2);
+            
          if (lbl === null) { is_major = false; lbl = ""; }
 
          if (is_major && lbl) {
