@@ -2078,10 +2078,10 @@ JSROOT.define(['d3'], (d3) => {
    *  @private */
    ObjectPainter.prototype.SvgToAxis = function(axis, coord, ndc) {
       let use_frame = this.draw_g && this.draw_g.property('in_frame');
-         
+
       if (use_frame) {
          let main = this.frame_painter();
-         return main ? main.RevertAxis(axis, coord) : 0; 
+         return main ? main.RevertAxis(axis, coord) : 0;
       }
 
       let value = (axis == "y") ? (1 - coord / this.pad_height()) : coord / this.pad_width();

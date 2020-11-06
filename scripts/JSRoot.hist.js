@@ -862,7 +862,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       }
 
       this.draw_g.selectAll("rect").style("fill", 'white');
-      
+
       this.z_handle.ConfigureAxis("zaxis", zmin, zmax, zmin, zmax, true, [0,s_height], { log: this.root_pad().fLogz });
 
       if (!contour || !draw_palette || postpone_draw)
@@ -875,7 +875,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                     .style("fill", 'white');
       else
          for (let i=0;i<levels.length-1;++i) {
-            let z0 = this.z_handle.gr(levels[i]), 
+            let z0 = this.z_handle.gr(levels[i]),
                 z1 = this.z_handle.gr(levels[i+1]),
                 col = contour.getPaletteColor(draw_palette, (levels[i]+levels[i+1])/2),
                 r = this.draw_g.append("svg:rect")
@@ -926,7 +926,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          evnt.preventDefault();
 
          let m = d3.pointer(evnt, this.draw_g.node());
-         
+
          sel2 = Math.min(Math.max(m[1], 0), s_height);
 
          zoom_rect.attr("y", Math.min(sel1, sel2))
@@ -942,7 +942,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          zoom_rect.remove();
          zoom_rect = null;
          doing_zoom = false;
-         
+
          let z = this.z_handle.gr, z1 = z.invert(sel1), z2 = z.invert(sel2);
 
          this.frame_painter().Zoom("z", Math.min(z1, z2), Math.max(z1, z2));
@@ -1634,15 +1634,15 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (d.check('F')) { this.Fill = true; this.need_fillcol = true; }
 
       if (d.check('A')) this.Axis = -1;
-      
+
       if (d.check("RX") || (pad && pad.$RX)) this.RevX = true;
       if (d.check("RY") || (pad && pad.$RY)) this.RevY = true;
       let check_axis_bit = (opt, axis, bit) => {
          let flag = d.check(opt);
-         if (pad && pad['$'+opt]) { flag = true; pad['$'+opt] = undefined; } 
+         if (pad && pad['$'+opt]) { flag = true; pad['$'+opt] = undefined; }
          if (flag && histo)
-             if (!histo[axis].TestBit(bit)) 
-                histo[axis].InvertBit(bit); 
+             if (!histo[axis].TestBit(bit))
+                histo[axis].InvertBit(bit);
       }
       check_axis_bit("OTX", "fXaxis", JSROOT.EAxisBits.kOppositeTitle);
       check_axis_bit("OTY", "fYaxis", JSROOT.EAxisBits.kOppositeTitle);
@@ -2246,7 +2246,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
        }
    }
 
-    /** @summary Draw axes for histogram 
+    /** @summary Draw axes for histogram
       * @desc axes can be drawn only for main histogram */
    THistPainter.prototype.DrawAxes = function() {
       if (!this.is_main_painter())
@@ -2254,7 +2254,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       let fp = this.frame_painter();
       if (!fp) return Promise.resolve(false);
-      
+
       let histo = this.GetHisto();
 
       // artifically add y range to display axes
@@ -3182,22 +3182,22 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       return res;
    }
-   
+
    /** @summary Get tip text for axis bin */
    THistPainter.prototype.GetAxisBinTip = function(name, axis, bin) {
       let pmain = this.frame_painter(),
           handle = pmain[name+"_handle"],
           x1 = axis.GetBinLowEdge(bin+1);
 
-      if (handle.kind === 'labels') 
+      if (handle.kind === 'labels')
          return pmain.AxisAsText(name, x1);
-         
-      let x2 = axis.GetBinLowEdge(bin+2);   
-          
-      if (handle.kind === 'time')
-         return pmain.AxisAsText(name, (x1+x2)/2); 
 
-      return "[" + pmain.AxisAsText(name, x1) + ", " + pmain.AxisAsText(name, x2) + ")"; 
+      let x2 = axis.GetBinLowEdge(bin+2);
+
+      if (handle.kind === 'time')
+         return pmain.AxisAsText(name, (x1+x2)/2);
+
+      return "[" + pmain.AxisAsText(name, x1) + ", " + pmain.AxisAsText(name, x2) + ")";
    }
 
    // ========================================================================

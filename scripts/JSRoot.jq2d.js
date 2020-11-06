@@ -98,8 +98,8 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          let handler = func;
          if (typeof arg == 'function') {
             func = arg;
-            handler = res => func(arg=="1");  
-            arg = flag ? "0" : "1"; 
+            handler = res => func(arg=="1");
+            arg = flag ? "0" : "1";
          }
          return this.add((flag ? "chk:" : "unk:") + name, arg, handler);
       }
@@ -194,7 +194,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
             let entry = val.toFixed(2);
             if (step >= 0.1) entry = val.toFixed(1);
             if (step >= 1) entry = val.toFixed(0);
-            this.addchk((Math.abs(value - val) < step / 2), entry, 
+            this.addchk((Math.abs(value - val) < step / 2), entry,
                         val, res => set_func((step >= 1) ? parseInt(res) : parseFloat(res)));
          }
          this.add("endsub:");
@@ -2453,4 +2453,3 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
 
    return JSROOT;
 });
-

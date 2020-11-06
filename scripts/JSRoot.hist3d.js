@@ -515,20 +515,20 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       // this.TestAxisVisibility = HPainter_TestAxisVisibility;
 
       this.x_handle = new JSROOT.TAxisPainter(this.xaxis);
-      this.x_handle.ConfigureAxis("xaxis", this.xmin, this.xmax, xmin, xmax, false, [grminx, grmaxx], 
+      this.x_handle.ConfigureAxis("xaxis", this.xmin, this.xmax, xmin, xmax, false, [grminx, grmaxx],
                                        { log: pad ? pad.fLogx : 0 });
       this.x_handle.AssignFrameMembers(this,"x");
-       
+
       this.y_handle = new JSROOT.TAxisPainter(this.yaxis);
-      this.y_handle.ConfigureAxis("yaxis", this.ymin, this.ymax, ymin, ymax, false, [grminy, grmaxy], 
+      this.y_handle.ConfigureAxis("yaxis", this.ymin, this.ymax, ymin, ymax, false, [grminy, grmaxy],
                                       { log: pad && !opts.use_y_for_z ? pad.fLogx : 0 });
       this.y_handle.AssignFrameMembers(this,"y");
 
       this.z_handle = new JSROOT.TAxisPainter(this.zaxis);
-      this.z_handle.ConfigureAxis("zaxis", this.zmin, this.zmax, zmin, zmax, false, [grminz, grmaxz], 
+      this.z_handle.ConfigureAxis("zaxis", this.zmin, this.zmax, zmin, zmax, false, [grminz, grmaxz],
                                        { log: pad ? pad.fLogz : 0 });
       this.z_handle.AssignFrameMembers(this,"z");
-      
+
       this.SetRootPadRange(pad, true); // set some coordinates typical for 3D projections in ROOT
 
       this.x_handle.debug = true;
@@ -551,11 +551,11 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          let grx = xticks.grpos,
             is_major = (xticks.kind===1),
             lbl = this.x_handle.format(xticks.tick, 2);
-            
-         if (xticks.last_major()) { 
-            if (!xaxis || !xaxis.fTitle) lbl = "x"; 
-         } else if (lbl === null) { 
-            is_major = false; lbl = ""; 
+
+         if (xticks.last_major()) {
+            if (!xaxis || !xaxis.fTitle) lbl = "x";
+         } else if (lbl === null) {
+            is_major = false; lbl = "";
          }
 
          if (is_major && lbl && (lbl.length>0)) {
@@ -761,11 +761,11 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          let gry = yticks.grpos,
              is_major = (yticks.kind===1),
              lbl = this.y_handle.format(yticks.tick, 2);
-             
-         if (yticks.last_major()) { 
-            if (!yaxis || !yaxis.fTitle) lbl = "y"; 
-         }  else if (lbl === null) { 
-            is_major = false; lbl = ""; 
+
+         if (yticks.last_major()) {
+            if (!yaxis || !yaxis.fTitle) lbl = "y";
+         }  else if (lbl === null) {
+            is_major = false; lbl = "";
          }
 
          if (is_major) {
@@ -867,7 +867,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          let grz = zticks.grpos,
             is_major = (zticks.kind == 1),
             lbl = this.z_handle.format(zticks.tick, 2);
-            
+
          if (lbl === null) { is_major = false; lbl = ""; }
 
          if (is_major && lbl) {
@@ -2294,7 +2294,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       if (when_axis_changed && this.nbinsx && this.nbinsy && this.nbinsz) return;
 
       let histo = this.GetObject();
-      
+
       this.ExtractAxesProperties(3);
 
       // global min/max, used at the moment in 3D drawing

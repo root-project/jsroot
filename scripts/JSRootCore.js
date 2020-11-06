@@ -1138,7 +1138,7 @@
     * { obj: object_pointer, func: name of method to call } or just function name, which can be found with {@link JSROOT.findFunction}
     * @param arg1 first optional argument of callback
     * @param arg2 second optional argument of callback */
-    
+
    JSROOT.callBack = function(func, arg1, arg2) {
 
       if (typeof func == 'string') func = JSROOT.findFunction(func);
@@ -2260,17 +2260,17 @@
 
    JSROOT.JSONR_unref = function(arg) {
       console.warn('Using obsolete JSROOT.JSONR_unref function, change to JSROOT.parse');
-      return JSROOT.parse(arg);  
+      return JSROOT.parse(arg);
    }
-   
+
    JSROOT.MakeSVG = function(args) {
       console.warn('Using obsolete JSROOT.MakeSVG function, change to JSROOT.makeSVG');
-      return JSROOT.makeSVG(args);  
+      return JSROOT.makeSVG(args);
    }
-   
+
    JSROOT.CallBack = function(func, arg1, arg2) {
       console.warn('Using obsolete JSROOT.CallBack function, change to JSROOT.callBack');
-      return JSROOT.callBack(func, arg1, arg2);  
+      return JSROOT.callBack(func, arg1, arg2);
    }
 
    /// end of backward compatibility block

@@ -2841,7 +2841,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       let draw_obj = this.GetGeometry(), name_prefix = "";
 
       if (this.geo_manager) name_prefix = draw_obj.fName;
-      
+
       if (!script_name || (script_name.length<3) || (geo.NodeKind(draw_obj)!==0))
          return call_back(draw_obj, name_prefix);
 

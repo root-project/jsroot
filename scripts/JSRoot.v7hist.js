@@ -297,7 +297,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       return axis;
    }
 
-   /** @summary Extract axes ranges and bins numbers 
+   /** @summary Extract axes ranges and bins numbers
      * @desc Also here ensured that all axes objects got their necessary methods */
    RHistPainter.prototype.ExtractAxesProperties = function(ndim) {
 
@@ -1440,24 +1440,24 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       if (show_text)
          this.FinishTextDrawing(this.draw_g);
    }
-   
+
    /** @summary Get tip text for axis bin */
    RHistPainter.prototype.GetAxisBinTip = function(name, bin, step) {
       let pmain = this.frame_painter(),
           handle = pmain[name+"_handle"],
           axis = this.GetAxis(name),
           x1 = axis.GetBinCoord(bin);
-          
 
-      if (handle.kind === 'labels') 
+
+      if (handle.kind === 'labels')
          return pmain.AxisAsText(name, x1);
-          
-      let x2 = axis.GetBinCoord(bin+(step || 1));
-      
-      if (handle.kind === 'time')
-         return pmain.AxisAsText(name, (x1+x2)/2); 
 
-      return "[" + pmain.AxisAsText(name, x1) + ", " + pmain.AxisAsText(name, x2) + ")"; 
+      let x2 = axis.GetBinCoord(bin+(step || 1));
+
+      if (handle.kind === 'time')
+         return pmain.AxisAsText(name, (x1+x2)/2);
+
+      return "[" + pmain.AxisAsText(name, x1) + ", " + pmain.AxisAsText(name, x2) + ")";
    }
 
 
@@ -3238,7 +3238,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
    }
 
    RH2Painter.prototype.GetBinTips = function (i, j) {
-      let lines = [], 
+      let lines = [],
            histo = this.GetHisto(),
            binz = histo.getBinContent(i+1,j+1),
            di = 1, dj = 1;
