@@ -488,19 +488,16 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
 
       this.x_handle = new JSROOT.v7.RAxisPainter(this, this.xaxis, "x_");
       this.x_handle.AssignKindAndFunc("xaxis", this.xmin, this.xmax, xmin, xmax, false, [grminx, grmaxx]);
-      this.x_handle.CreateFormatFuncs();
       this.x_handle.AssignFrameMembers(this,"x");
       
       this.y_handle = new JSROOT.v7.RAxisPainter(this, this.yaxis, "y_");
       this.y_handle.AssignKindAndFunc("yaxis", this.ymin, this.ymax, ymin, ymax, false, [grminy, grmaxy]);
-      this.y_handle.CreateFormatFuncs();
       this.y_handle.AssignFrameMembers(this,"y");
 
       // this.SetRootPadRange(pad, true); // set some coordinates typical for 3D projections in ROOT
 
       this.z_handle = new JSROOT.v7.RAxisPainter(this, this.zaxis, "z_");
       this.z_handle.AssignKindAndFunc("zaxis", this.zmin, this.zmax, zmin, zmax, false, [grminz, grmaxz]);
-      this.z_handle.CreateFormatFuncs();
       this.z_handle.AssignFrameMembers(this,"z");
 
       let textMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 }),

@@ -384,6 +384,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.gr = val => (val < this.scale_xmin) ? (this.vertical ? this.func.range()[0]+5 : -5) : this.func(val);
       else
          this.gr = this.func;
+         
+      this.CreateFormatFuncs();
    }
 
    /** @summary Assign often used members of frame painter 
@@ -870,8 +872,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       tickSize = Math.round((optionSize ? tickSize : 0.03) * scaling_size);
 
       if (this.max_tick_size && (tickSize > this.max_tick_size)) tickSize = this.max_tick_size;
-
-      this.CreateFormatFuncs();
 
       let res = "", res2 = "", lastpos = 0, lasth = 0;
 
