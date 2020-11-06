@@ -1,8 +1,9 @@
 // function to extract tracks from ALICE_ESD tree
 // tracks are in https://root.cern/files/alice_ESDs.root
 // geometry in https://root.cern/files/alice_ESDgeometry.root
+// Have to return Promise with list of objects which can be drawn on geometry
 
-function extract_geo_tracks(tree, opt, call_back) {
+function extract_geo_tracks(tree, opt) {
    // as first argument, tree should be provided
 
    console.log('CALL extract_geo_tracks');
@@ -40,13 +41,15 @@ function extract_geo_tracks(tree, opt, call_back) {
       }
    }
 
-   selector.Terminate = function(res) {
-      // function called when processing finishes
-      console.log('Read done num entries', numentry, 'tracks', numtracks);
-      JSROOT.CallBack(call_back, lst);
-   }
+   return new Promise(resolveFunc => {
+      selector.Terminate = function(res) {
+         // function called when processing finishes
+         console.log('Read done num entries', numentry, 'tracks', numtracks);
+         resolveFunc(lst);
+      }
 
-   tree.Process(selector);
+      tree.Process(selector);
+   });
 }
 
 console.log('LOAD alice_esd.js JSROOT', JSROOT.version);

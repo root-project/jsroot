@@ -2474,7 +2474,11 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       return this;
    }
 
-   /** @summary Handle drop operation */
+   /** @summary Handle drop operation
+     * @desc opt parameter can include function name like opt$func_name
+     * Such function should be possible to find via {@link JSROOT.findFunction}
+     * Function has to return Promise with objects to draw on geometry
+     * By default function with name "extract_geo_tracks" is checked */
    TGeoPainter.prototype.PerformDrop = function(obj, itemname, hitem, opt) {
 
       if (obj && (obj.$kind==='TTree')) {
@@ -2482,7 +2486,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
          let funcname = "extract_geo_tracks";
 
-         if (opt && opt.indexOf("$")>0) {
+         if (opt && opt.indexOf("$") > 0) {
             funcname = opt.substr(0, opt.indexOf("$"));
             opt = opt.substr(opt.indexOf("$")+1);
          }
@@ -2491,15 +2495,13 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
          if (!func) return Promise.reject(Error(`Function ${funcname} not found`));
 
-         return new Promise(resolve => {
-            func(obj, opt, tracks => {
-               if (tracks) {
-                  this.drawExtras(tracks, "", false); // FIXME: probably tracks should be remembered??
-                  this.updateClipping(true);
-                  this.Render3D(100);
-               }
-               resolve(this);
-            });
+         return func(obj, opt).then(tracks => {
+            if (tracks) {
+               this.drawExtras(tracks, "", false); // FIXME: probably tracks should be remembered??
+               this.updateClipping(true);
+               this.Render3D(100);
+            }
+            return this;
          });
       }
 
