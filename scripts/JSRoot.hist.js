@@ -903,7 +903,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       this.z_handle.max_tick_size = Math.round(s_width*0.7);
 
       this.FirstRun++;
-      this.z_handle.DrawAxis(true, this.draw_g, s_width, s_height, "translate(" + s_width + ", 0)").then(this.FinishPave);
+      this.z_handle.DrawAxis(this.draw_g, s_width, s_height, "translate(" + s_width + ", 0)").then(this.FinishPave);
 
       if (can_move && ('getBoundingClientRect' in this.draw_g.node())) {
          let rect = this.draw_g.node().getBoundingClientRect();

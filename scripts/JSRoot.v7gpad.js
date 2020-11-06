@@ -801,14 +801,15 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    /** @summary Performs axis drawing
      * @returns {Promise} which resolved when drawing is completed */
-   RAxisPainter.prototype.DrawAxis = function(vertical, layer, w, h, transform, reverse, second_shift, disable_axis_drawing, max_text_width) {
+   RAxisPainter.prototype.DrawAxis = function(layer, w, h, transform, reverse, second_shift, disable_axis_drawing, max_text_width) {
       let chOpt = "",
           axis_g = layer, tickSize = 0.03,
           scaling_size = 100, draw_lines = true,
           pad_w = this.pad_width() || 10,
           pad_h = this.pad_height() || 10,
           resolveFunc, totalTextCallbacks = 0, totalDone = false,
-          promise = new Promise(resolve => { resolveFunc = resolve; });
+          promise = new Promise(resolve => { resolveFunc = resolve; }),
+          vertical = this.vertical;
 
       // create dummy until all attributes are repplaced
 
@@ -1165,7 +1166,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       this.CreateG();
 
-      return this.DrawAxis(vertical, this.draw_g, w, h, "translate(" + pos_x + "," + pos_y +")", reverse);
+      return this.DrawAxis(this.draw_g, w, h, "translate(" + pos_x + "," + pos_y +")", reverse);
    }
 
    let drawRAxis = (divid, obj /*, opt*/) => {
@@ -1486,7 +1487,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return Promise.resolve(false);
 
       this.CleanupAxes();
-      this.CleanXY();
 
       // this is former CreateXY function 
       
@@ -1549,11 +1549,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
 
       if (!disable_axis_draw) {
-         let promise1 = draw_horiz.DrawAxis(false, layer, w, h,
+         let promise1 = draw_horiz.DrawAxis(layer, w, h,
                                             draw_horiz.invert_side ? undefined : "translate(0," + h + ")",
                                             false, show_second_ticks ? -h : 0, disable_axis_draw);
 
-         let promise2 = draw_vertical.DrawAxis(true, layer, w, h,
+         let promise2 = draw_vertical.DrawAxis(layer, w, h,
                                                draw_vertical.invert_side ? "translate(" + w + ",0)" : undefined,
                                                false, show_second_ticks ? w : 0, disable_axis_draw,
                                                draw_vertical.invert_side ? 0 : this.frame_x());
@@ -1595,13 +1595,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.RedrawPad();
    }
 
-   RFramePainter.prototype.CleanXY = function() {
-      // remove all kinds of X/Y function for axes transformation
-      delete this.grx;
-      delete this.gry;
-      delete this.grz;
-   }
-
    RFramePainter.prototype.CleanupAxes = function() {
       // remove all axes drawings
       if (this.x_handle) {
@@ -1623,6 +1616,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.draw_g.select(".axis_layer").selectAll("*").remove();
       }
       this.axes_drawn = false;
+      
+      delete this.grx;
+      delete this.gry;
+      delete this.grz;
    }
 
    /** @summary Removes all drawn elements of the frame
@@ -1633,7 +1630,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.Create3DScene(-1);
 
       this.CleanupAxes();
-      this.CleanXY();
 
       this.xmin = this.xmax = 0;
       this.ymin = this.ymax = 0;
@@ -4378,7 +4374,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       this.z_handle.max_tick_size = Math.round(palette_width*0.3);
 
-      this.z_handle.DrawAxis(true, this.draw_g, palette_width, palette_height, "translate(" + palette_width + ", 0)");
+      this.z_handle.DrawAxis(this.draw_g, palette_width, palette_height, "translate(" + palette_width + ", 0)");
 
       if (JSROOT.BatchMode) return;
 

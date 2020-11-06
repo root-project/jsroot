@@ -3255,15 +3255,16 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       return histo;
    }
 
-   TMultiGraphPainter.prototype.DrawAxis = function(callback) {
-      // draw special histogram
+   /** @summary draw speical histogram for axis
+     * @return {Promise} when ready */
+   TMultiGraphPainter.prototype.DrawAxis = function() {
 
       let mgraph = this.GetObject(),
           histo = this.ScanGraphsRange(mgraph.fGraphs, mgraph.fHistogram, this.root_pad());
 
       // histogram painter will be first in the pad, will define axis and
       // interactive actions
-      JSROOT.draw(this.divid, histo, "AXIS").then(callback);
+      return JSROOT.draw(this.divid, histo, "AXIS");
    }
 
    TMultiGraphPainter.prototype.DrawNextFunction = function(indx, callback) {
@@ -3324,7 +3325,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       painter._pmc = d.check("PMC");
 
       if (d.check("A") || !painter.main_painter()) {
-         painter.DrawAxis(function(hpainter) {
+         painter.DrawAxis().then(hpainter => {
             painter.firstpainter = hpainter;
             painter.SetDivId(divid);
             painter.DrawNextGraph(0, d.remain());

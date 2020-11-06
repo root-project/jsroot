@@ -547,7 +547,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary function draws  TAxis or TGaxis object  */
-   TAxisPainter.prototype.DrawAxis = function(vertical, layer, w, h, transform, reverse, second_shift, disable_axis_drawing, max_text_width) {
+   TAxisPainter.prototype.DrawAxis = function(layer, w, h, transform, reverse, second_shift, disable_axis_drawing, max_text_width) {
 
       let axis = this.GetObject(), chOpt = "",
           is_gaxis = (axis && axis._typename === 'TGaxis'),
@@ -556,7 +556,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           pad_w = this.pad_width() || 10,
           pad_h = this.pad_height() || 10,
           resolveFunc, totalTextCallbacks = 0, totalDone = false,
-          promise = new Promise(resolve => { resolveFunc = resolve; });
+          promise = new Promise(resolve => { resolveFunc = resolve; }),
+          vertical = this.vertical;
 
       let checkTextCallBack = (is_callback) => {
           if (is_callback) totalTextCallbacks--; else totalDone = true;
@@ -565,8 +566,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             resolveFunc = null;
          }
       };
-
-      this.vertical = vertical;
 
       let myXor = (a,b) => ( a && !b ) || (!a && b);
 
@@ -601,7 +600,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (!disable_axis_drawing && draw_lines)
          axis_g.append("svg:line")
                .attr("x1",0).attr("y1",0)
-               .attr("x2",vertical ? 0 : w)
+               .attr("x2", vertical ? 0 : w)
                .attr("y2", vertical ? h : 0)
                .call(this.lineatt.func);
 
@@ -624,8 +623,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (is_gaxis && axis.TestBit(JSROOT.EAxisBits.kTickMinus)) optionMinus = true;
 
       if (optionPlus && optionMinus) { side = 1; ticks_plusminus = 1; } else
-      if (optionMinus) { side = myXor(reverse,vertical) ? 1 : -1; } else
-      if (optionPlus) { side = myXor(reverse,vertical) ? -1 : 1; }
+      if (optionMinus) { side = myXor(reverse, vertical) ? 1 : -1; } else
+      if (optionPlus) { side = myXor(reverse, vertical) ? -1 : 1; }
 
       tickSize = Math.round((optionSize ? tickSize : 0.03) * scaling_size);
 
@@ -933,7 +932,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       
       this.CreateG();
 
-      return this.DrawAxis(vertical, this.draw_g, Math.abs(w), Math.abs(h), "translate(" + x1 + "," + y2 +")", reverse);
+      return this.DrawAxis(this.draw_g, Math.abs(w), Math.abs(h), "translate(" + x1 + "," + y2 +")", reverse);
    }
 
    let drawGaxis = (divid, obj /*, opt*/) => {
@@ -1204,7 +1203,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (log_scale && (this.scale_ymax > 0))
             this.scale_ymax = Math.exp(Math.log(this.scale_ymax)*1.1);
          else
-            this.scale_ymax += (this.scale_ymax - this.scale_ymin) * 0.1;
+            this.scale_ymax += (this.scale_ymax - this.scale_ymin)*0.1;
       }
 
       if (opts.check_pad_range) {
@@ -1406,11 +1405,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
 
       if (!disable_axis_draw) {
-         let promise1 = draw_horiz.DrawAxis(false, layer, w, h,
+         let promise1 = draw_horiz.DrawAxis(layer, w, h,
                                             draw_horiz.invert_side ? undefined : "translate(0," + h + ")",
                                             false, pad.fTickx ? -h : 0, disable_axis_draw);
 
-         let promise2 = draw_vertical.DrawAxis(true, layer, w, h,
+         let promise2 = draw_vertical.DrawAxis(layer, w, h,
                                                draw_vertical.invert_side ? "translate(" + w + ",0)" : undefined,
                                                false, pad.fTicky ? w : 0, disable_axis_draw,
                                                draw_vertical.invert_side ? 0 : this.frame_x());
@@ -1506,9 +1505,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
     /** @summary Remove all kinds of X/Y function for axes transformation */
    TFramePainter.prototype.CleanXY = function() {
-      delete this.x; delete this.grx;
-      delete this.y; delete this.gry;
-      delete this.z; delete this.grz;
+      delete this.grx;
+      delete this.gry;
+      delete this.grz;
       
       if (this.x_handle) {
          this.x_handle.Cleanup();
