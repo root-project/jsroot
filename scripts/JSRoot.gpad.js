@@ -567,8 +567,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          }
       };
 
-      let myXor = (a,b) => ( a && !b ) || (!a && b);
-
       // shift for second ticks set (if any)
       if (!second_shift) second_shift = 0; else
       if (this.invert_side) second_shift = -second_shift;
@@ -581,7 +579,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          scaling_size = (vertical ? 1.7*h : 0.6*w);
       } else {
          this.createAttLine({ color: axis.fAxisColor, width: 1, style: 1 });
-         chOpt = myXor(vertical, this.invert_side) ? "-S" : "+S";
+         chOpt = (vertical ^ this.invert_side) ? "-S" : "+S";
          tickSize = axis.fTickLength;
          scaling_size = (vertical ? pad_w : pad_h);
       }
@@ -623,8 +621,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (is_gaxis && axis.TestBit(JSROOT.EAxisBits.kTickMinus)) optionMinus = true;
 
       if (optionPlus && optionMinus) { side = 1; ticks_plusminus = 1; } else
-      if (optionMinus) { side = myXor(reverse, vertical) ? 1 : -1; } else
-      if (optionPlus) { side = myXor(reverse, vertical) ? -1 : 1; }
+      if (optionMinus) { side = (reverse ^ vertical) ? 1 : -1; } else
+      if (optionPlus) { side = (reverse ^ vertical) ? -1 : 1; }
 
       tickSize = Math.round((optionSize ? tickSize : 0.03) * scaling_size);
 
@@ -785,7 +783,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                this.DrawText({ color: label_color,
                                x: vertical ? side*5 : w+5,
                                y: this.has_obstacle ? fix_coord : (vertical ? -3 : -3*side),
-                               align: vertical ? ((side<0) ? 30 : 10) : ( myXor(this.has_obstacle, (side<0)) ? 13 : 10 ),
+                               align: vertical ? ((side < 0) ? 30 : 10) : ( (this.has_obstacle ^ (side < 0)) ? 13 : 10 ),
                                latex: 1,
                                text: '#times' + this.formatExp(10, this.order),
                                draw_g: label_g[lcnt]

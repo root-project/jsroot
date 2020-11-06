@@ -1128,13 +1128,11 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       if (clip[0].enabled || clip[1].enabled || clip[2].enabled) {
          let clippedIntersects = [];
 
-         function myXor(a,b) { return ( a && !b ) || (!a && b); }
-
          for (let i = 0; i < intersects.length; ++i) {
             let point = intersects[i].point, special = (intersects[i].object.type == "Points"), clipped = true;
 
-            if (clip[0].enabled && myXor(this._clipPlanes[0].normal.dot(point) > this._clipPlanes[0].constant, special)) clipped = false;
-            if (clip[1].enabled && myXor(this._clipPlanes[1].normal.dot(point) > this._clipPlanes[1].constant, special)) clipped = false;
+            if (clip[0].enabled && ((this._clipPlanes[0].normal.dot(point) > this._clipPlanes[0].constant) ^ special)) clipped = false;
+            if (clip[1].enabled && ((this._clipPlanes[1].normal.dot(point) > this._clipPlanes[1].constant) ^ special)) clipped = false;
             if (clip[2].enabled && (this._clipPlanes[2].normal.dot(point) > this._clipPlanes[2].constant)) clipped = false;
 
             if (!clipped) clippedIntersects.push(intersects[i]);
