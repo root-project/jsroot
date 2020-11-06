@@ -3735,12 +3735,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          canv.fPrimitives.Add(hist, "hist");
 
-         if (this.DrawInUI5ProjectionArea) {
-            // copy frame attributes
-            this.DrawInUI5ProjectionArea(canv, drawopt, painter => { this.proj_painter = painter; })
-         } else {
-            this.DrawInSidePanel(canv, drawopt, painter => { this.proj_painter = painter; })
-         }
+         let promise = this.DrawInUI5ProjectionArea 
+                       ? this.DrawInUI5ProjectionArea(canv, drawopt)
+                       : this.DrawInsidePanel(canv, drawopt); 
+
+         promise.then(painter => { this.proj_painter = painter; })
       } else {
          let hp = this.proj_painter.main_painter();
          if (hp) hp.UpdateObject(hist, "hist");
@@ -3748,10 +3747,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
    }
 
-   TCanvasPainter.prototype.DrawInSidePanel = function(canv, opt, call_back) {
+   TCanvasPainter.prototype.DrawInsidePanel = function(canv, opt) {
       let side = this.select_main('origin').select(".side_panel");
-      if (side.empty()) return JSROOT.CallBack(call_back, null);
-      JSROOT.draw(side.node(), canv, opt).then(call_back, call_back);
+      if (side.empty()) return Promise.resolve(null);
+      return JSROOT.draw(side.node(), canv, opt);
    }
 
    TCanvasPainter.prototype.ShowMessage = function(msg) {

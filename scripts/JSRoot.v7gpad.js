@@ -3537,14 +3537,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return this.ChangeLayout(layout);
    }
 
-   RCanvasPainter.prototype.DrawProjection = function(kind,hist) {
+   RCanvasPainter.prototype.DrawProjection = function( /*kind,hist*/) {
       // dummy for the moment
    }
 
-   RCanvasPainter.prototype.DrawInSidePanel = function(canv, opt, call_back) {
+   RCanvasPainter.prototype.DrawInsidePanel = function(canv, opt) {
       let side = this.select_main('origin').select(".side_panel");
-      if (side.empty()) return JSROOT.CallBack(call_back, null);
-      JSROOT.draw(side.node(), canv, opt).then(call_back);
+      if (side.empty()) return Promise.resolve(null);
+      return JSROOT.draw(side.node(), canv, opt);
    }
 
    RCanvasPainter.prototype.ShowMessage = function(msg) {
