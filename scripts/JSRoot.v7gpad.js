@@ -330,7 +330,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       JSROOT.ObjectPainter.prototype.Cleanup.call(this);
    }
 
-   RAxisPainter.prototype.AssignKindAndFunc = function(name, min, max, domain, vertical, range) {
+   RAxisPainter.prototype.AssignKindAndFunc = function(name, min, max, smin, smax, vertical, range) {
       this.name = name;
       this.full_min = min;
       this.full_max = max;
@@ -353,9 +353,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.func = d3.scaleTime();
       } else if (this.log) {
          
-         if (domain[1] <= 0) domain[1] = 1;
-         if ((domain[0] <= 0) || (domain[0] >= domain[1]))
-            domain[0] = domain[1] * 0.0001;
+         if (smax <= 0) smax = 1;
+         if ((smin <= 0) || (smin >= smax))
+            smin = smax * 0.0001;
             
          let base = 10;
          this.func = d3.scaleLog().base(base);
@@ -363,8 +363,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.func = d3.scaleLinear();
       }
       
-      this.scale_min = domain[0];
-      this.scale_max = domain[1];
+      this.scale_min = smin;
+      this.scale_max = smax;
       
       let reverse = false;
       
@@ -372,7 +372,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          let d = range[0]; range[0] = range[1]; range[1] = d;
       }
 
-      this.func.domain([this.Convert(domain[0]), this.Convert(domain[1])]).range(range);
+      this.func.domain([this.Convert(smin), this.Convert(smax)]).range(range);
 
       if (this.kind == 'time')
          this.gr = val => this.func(this.Convert(val));
@@ -381,6 +381,15 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       else
          this.gr = this.func;
    }
+
+   /** @summary Assign often used members of frame painter 
+     * @private */   
+   RAxisPainter.prototype.AssignFrameMembers = function(fp, axis) {
+      fp["gr"+axis] = this.gr;                    // fp.grx
+      fp["log"+axis] = this.log;                  // fp.logx
+      fp["scale_"+axis+"min"] = this.scale_min;   // fp.scale_xmin
+      fp["scale_"+axis+"max"] = this.scale_max;   // fp.scale_xmax
+   } 
 
    RAxisPainter.prototype.formatExp = function(base, order, value) {
       let res = "";
@@ -1139,7 +1148,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           max = this.axis.max,
           pos_x = p1.x, pos_y = p2.y;
 
-      this.AssignKindAndFunc("axis", min, max, [min, max], vertical, [0, vertical ? Math.abs(h) : Math.abs(w)]);
+      this.AssignKindAndFunc("axis", min, max, min, max, vertical, [0, vertical ? Math.abs(h) : Math.abs(w)]);
 
       this.CreateG();
 
@@ -1477,10 +1486,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.reverse_x = false;
       this.reverse_y = false;
 
-      this.logx = this.v7EvalAttr("x_log") ? 1 : 0;
-      this.logy = this.v7EvalAttr("y_log") ? 1 : 0;
-      this.logz = this.v7EvalAttr("z_log") ? 1 : 0;
-
       let w = this.frame_width(), h = this.frame_height();
 
       this.scale_xmin = this.xmin;
@@ -1506,18 +1511,16 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.x_handle.pad_name = this.pad_name;
       this.x_handle.rstyle = this.rstyle;
       
-      this.x_handle.AssignKindAndFunc("xaxis", this.xmin, this.xmax, [this.scale_xmin, this.scale_xmax], false, [0,w]);
-      
+      this.x_handle.AssignKindAndFunc("xaxis", this.xmin, this.xmax, this.scale_xmin, this.scale_xmax, false, [0,w]);
+      this.x_handle.AssignFrameMembers(this,"x");
+
       this.y_handle = new RAxisPainter(this, this.yaxis, "y_");
       this.y_handle.SetDivId(this.divid, -1);
       this.y_handle.pad_name = this.pad_name;
       this.y_handle.rstyle = this.rstyle;
 
-      this.y_handle.AssignKindAndFunc("yaxis", this.ymin, this.ymax, [this.scale_ymin, this.scale_ymax], true, [0,h]);
-
-      // TODO: remove this in the future
-      this.grx = x => this.x_handle.gr(x);
-      this.gry = y => this.y_handle.gr(y);  
+      this.y_handle.AssignKindAndFunc("yaxis", this.ymin, this.ymax, this.scale_ymin, this.scale_ymax, true, [0,h]);
+      this.y_handle.AssignFrameMembers(this,"y");
 
       let layer = this.svg_frame().select(".axis_layer");
       
@@ -4352,7 +4355,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           .style("stroke", "black")
           .attr("fill", "none");
 
-      this.z_handle.AssignKindAndFunc("zaxis", zmin, zmax, [zmin, zmax], true, [0, palette_height]);
+      this.z_handle.AssignKindAndFunc("zaxis", zmin, zmax, zmin, zmax, true, [0, palette_height]);
 
       for (let i=0;i<contour.length-1;++i) {
          let z0 = this.z_handle.gr(contour[i]),

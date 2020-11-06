@@ -518,29 +518,19 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       this.x_handle.AssignKindAndFunc("xaxis", this.xmin, this.xmax, xmin, xmax, false, [grminx, grmaxx], 
                                        { log: pad ? pad.fLogx : 0 });
       this.x_handle.CreateFormatFuncs();
-      this.logx = this.x_handle.log;
-      this.scale_xmin = this.x_handle.scale_min; 
-      this.scale_xmax = this.x_handle.scale_max;
-      this.grx = x => this.x_handle.gr(x);
+      this.x_handle.AssignFrameMembers(this,"x");
        
       this.y_handle = new JSROOT.TAxisPainter(this.yaxis);
       this.y_handle.AssignKindAndFunc("yaxis", this.ymin, this.ymax, ymin, ymax, false, [ grminy, grmaxy ], 
                                       { log: pad && !opts.use_y_for_z ? pad.fLogx : 0 });
-      
       this.y_handle.CreateFormatFuncs();
-      this.logy = this.y_handle.log;
-      this.scale_ymin = this.y_handle.scale_min; 
-      this.scale_ymax = this.y_handle.scale_max;
-      this.gry = y => this.y_handle.gr(y);
+      this.y_handle.AssignFrameMembers(this,"y");
 
       this.z_handle = new JSROOT.TAxisPainter(this.zaxis);
       this.z_handle.AssignKindAndFunc("zaxis", this.zmin, this.zmax, zmin, zmax, false, [ grminz, grmaxz ], 
                                        { log: pad ? pad.fLogz : 0 });
       this.z_handle.CreateFormatFuncs();
-      this.logz = this.z_handle.log;
-      this.scale_zmin = this.z_handle.scale_min; 
-      this.scale_zmax = this.z_handle.scale_max;
-      this.grz = z => this.z_handle.gr(z);
+      this.z_handle.AssignFrameMembers(this,"z");
       
       this.SetRootPadRange(pad, true); // set some coordinates typical for 3D projections in ROOT
 

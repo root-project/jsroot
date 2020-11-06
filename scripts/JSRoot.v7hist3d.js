@@ -487,38 +487,21 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       // this.TestAxisVisibility = HPainter_TestAxisVisibility;
 
       this.x_handle = new JSROOT.v7.RAxisPainter(this, this.xaxis, "x_");
-      
-      this.x_handle.AssignKindAndFunc("xaxis", this.xmin, this.xmax, [xmin, xmax], false, [grminx, grmaxx]);
+      this.x_handle.AssignKindAndFunc("xaxis", this.xmin, this.xmax, xmin, xmax, false, [grminx, grmaxx]);
       this.x_handle.CreateFormatFuncs();
-      this.scale_xmin = xmin; 
-      this.scale_xmax = xmax;
-
-      // TODO: remove this in the future
-      this.grx = x => this.x_handle.gr(x);
+      this.x_handle.AssignFrameMembers(this,"x");
       
       this.y_handle = new JSROOT.v7.RAxisPainter(this, this.yaxis, "y_");
-
-      this.y_handle.AssignKindAndFunc("yaxis", this.ymin, this.ymax, [ymin, ymax], false, [grminy, grmaxy]);
-
-      // TODO: remove this in the future
-      this.gry = y => this.y_handle.gr(y);
-      
+      this.y_handle.AssignKindAndFunc("yaxis", this.ymin, this.ymax, ymin, ymax, false, [grminy, grmaxy]);
       this.y_handle.CreateFormatFuncs();
-      this.scale_ymin = ymin; this.scale_ymax = ymax;
+      this.y_handle.AssignFrameMembers(this,"y");
 
       // this.SetRootPadRange(pad, true); // set some coordinates typical for 3D projections in ROOT
 
       this.z_handle = new JSROOT.v7.RAxisPainter(this, this.zaxis, "z_");
-      
-      this.z_handle.AssignKindAndFunc("zaxis", this.zmin, this.zmax, [zmin, zmax], false, [grminz, grmaxz]);
-      
-      // TODO: remove this in the future
-      this.grz = z => this.z_handle.gr(z);
-      
+      this.z_handle.AssignKindAndFunc("zaxis", this.zmin, this.zmax, zmin, zmax, false, [grminz, grmaxz]);
       this.z_handle.CreateFormatFuncs();
-      this.scale_zmin = zmin; this.scale_zmax = zmax;
-
-      this.x_handle.debug = true;
+      this.z_handle.AssignFrameMembers(this,"z");
 
       let textMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 }),
           lineMaterial = new THREE.LineBasicMaterial({ color: 0x000000 }),

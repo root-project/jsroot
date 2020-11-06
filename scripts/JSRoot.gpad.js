@@ -117,6 +117,15 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.gr = this.func;
    }
 
+   /** @summary Assign often used members of frame painter 
+     * @private */   
+   TAxisPainter.prototype.AssignFrameMembers = function(fp, axis) {
+      fp["gr"+axis] = this.gr;                    // fp.grx
+      fp["log"+axis] = this.log;                  // fp.logx
+      fp["scale_"+axis+"min"] = this.scale_min;   // fp.scale_xmin
+      fp["scale_"+axis+"max"] = this.scale_max;   // fp.scale_xmax
+   } 
+
    TAxisPainter.prototype.formatExp = function(base, order, value) {
       let res = "";
       if (value) {
@@ -1237,10 +1246,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                                         logcheckmin: this.swap_xy, 
                                         logminfactor: 0.0001 });
       
-      this.logx = this.x_handle.log;
-      this.grx = x => this.x_handle.gr(x);
-      this.scale_xmin = this.x_handle.scale_min;
-      this.scale_xmax = this.x_handle.scale_max;
+      this.x_handle.AssignFrameMembers(this,"x");
 
       this.y_handle = new TAxisPainter(this.yaxis, true);
       this.y_handle.SetDivId(this.divid, -1);
@@ -1253,10 +1259,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                                         log_min_nz: opts.ymin_nz && (opts.ymin_nz < 0.01*this.ymax) ? 0.3 * opts.ymin_nz : 0,
                                         logminfactor: 3e-4 });
 
-      this.logy = this.y_handle.log;
-      this.gry = y => this.y_handle.gr(y);
-      this.scale_ymin = this.y_handle.scale_min;
-      this.scale_ymax = this.y_handle.scale_max;
+      this.y_handle.AssignFrameMembers(this,"y");
 
       this.SetRootPadRange(pad);
    }
