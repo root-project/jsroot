@@ -4380,8 +4380,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          let moveRectSel = evnt => {
 
             if (!doing_zoom) return;
+            evnt.preventDefault();
 
-            let m = d3.pointer(evnt);
+            let m = d3.pointer(evnt, this.draw_g.node());
 
             if (m[1] < sel1) sel1 = m[1]; else sel2 = m[1];
 
@@ -4393,8 +4394,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if (!doing_zoom) return;
 
             evnt.preventDefault();
-            this.draw_g.on("mousemove.colzoomRect", null)
-                       .on("mouseup.colzoomRect", null);
+            d3.select(window).on("mousemove.colzoomRect", null)
+                             .on("mouseup.colzoomRect", null);
             zoom_rect.remove();
             zoom_rect = null;
             doing_zoom = false;
@@ -4412,8 +4413,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             doing_zoom = true;
 
             evnt.preventDefault();
+            evnt.stopPropagation();
 
-            let origin = d3.pointer(evnt);
+            let origin = d3.pointer(evnt, this.draw_g.node());
 
             sel1 = sel2 = origin[1];
 
@@ -4426,10 +4428,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                  .attr("y", sel1)
                  .attr("height", 5);
 
-            this.draw_g.on("mousemove.colzoomRect", moveRectSel)
-                       .on("mouseup.colzoomRect", endRectSel, true);
-
-            evnt.stopPropagation();
+            d3.select(window).on("mousemove.colzoomRect", moveRectSel)
+                             .on("mouseup.colzoomRect", endRectSel, true);
          }
 
          this.draw_g.select(".axis_zoom")

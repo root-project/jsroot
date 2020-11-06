@@ -849,8 +849,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             this.zoom_origin[1] = this.zoom_curr[1];
          }
 
-         frame.on("mousemove.zoomRect", this.moveRectSel.bind(this))
-              .on("mouseup.zoomRect", this.endRectSel.bind(this), true);
+         d3.select(window).on("mousemove.zoomRect", this.moveRectSel.bind(this))
+                          .on("mouseup.zoomRect", this.endRectSel.bind(this), true);
 
          this.zoom_rect = null;
 
@@ -865,7 +865,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if ((this.zoom_kind == 0) || (this.zoom_kind > 100)) return;
 
          evnt.preventDefault();
-         let m = d3.pointer(evnt);
+         let m = d3.pointer(evnt, this.svg_frame().node());
 
          m[0] = Math.max(0, Math.min(this.frame_width(), m[0]));
          m[1] = Math.max(0, Math.min(this.frame_height(), m[1]));
@@ -893,10 +893,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          evnt.preventDefault();
 
-         this.svg_frame().on("mousemove.zoomRect", null)
-                         .on("mouseup.zoomRect", null);
+         d3.select(window).on("mousemove.zoomRect", null)
+                          .on("mouseup.zoomRect", null);
 
-         let m = d3.pointer(evnt), changed = [true, true];
+         let m = d3.pointer(evnt, this.svg_frame().node()), changed = [true, true];
          m[0] = Math.max(0, Math.min(this.frame_width(), m[0]));
          m[1] = Math.max(0, Math.min(this.frame_height(), m[1]));
 
