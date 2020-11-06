@@ -920,15 +920,16 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       let doing_zoom = false, sel1 = 0, sel2 = 0, zoom_rect = null;
 
-      function moveRectSel(evnt) {
+      let moveRectSel = evnt => {
 
          if (!doing_zoom) return;
+         evnt.preventDefault();
 
-         let m = d3.pointer(evnt);
+         let m = d3.pointer(evnt, this.draw_g.node());
+         
+         sel2 = Math.min(Math.max(m[1], 0), s_height);
 
-         if (m[1] < sel1) sel1 = m[1]; else sel2 = m[1];
-
-         zoom_rect.attr("y", sel1)
+         zoom_rect.attr("y", Math.min(sel1, sel2))
                   .attr("height", Math.abs(sel2-sel1));
       }
 
@@ -936,18 +937,15 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          if (!doing_zoom) return;
 
          evnt.preventDefault();
-         this.draw_g.on("mousemove.colzoomRect", null)
-                    .on("mouseup.colzoomRect", null);
+         d3.select(window).on("mousemove.colzoomRect", null)
+                          .on("mouseup.colzoomRect", null);
          zoom_rect.remove();
          zoom_rect = null;
          doing_zoom = false;
          
-         let z = this.z_handle.gr;
+         let z = this.z_handle.gr, z1 = z.invert(sel1), z2 = z.invert(sel2);
 
-         let zmin = Math.min(z.invert(sel1), z.invert(sel2)),
-             zmax = Math.max(z.invert(sel1), z.invert(sel2));
-
-         this.frame_painter().Zoom("z", zmin, zmax);
+         this.frame_painter().Zoom("z", Math.min(z1, z2), Math.max(z1, z2));
       }
 
       let startRectSel = evnt => {
@@ -956,8 +954,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          doing_zoom = true;
 
          evnt.preventDefault();
+         evnt.stopPropagation();
 
-         let origin = d3.pointer(evnt);
+         let origin = d3.pointer(evnt, this.draw_g.node());
 
          sel1 = sel2 = origin[1];
 
@@ -968,12 +967,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                 .attr("x", "0")
                 .attr("width", s_width)
                 .attr("y", sel1)
-                .attr("height", 5);
+                .attr("height", 1);
 
-         this.draw_g.on("mousemove.colzoomRect", moveRectSel)
-                    .on("mouseup.colzoomRect", endRectSel, true);
-
-         evnt.stopPropagation();
+         d3.select(window).on("mousemove.colzoomRect", moveRectSel)
+                          .on("mouseup.colzoomRect", endRectSel, true);
       }
 
       if (JSROOT.settings.Zooming)

@@ -4383,11 +4383,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             evnt.preventDefault();
 
             let m = d3.pointer(evnt, this.draw_g.node());
+         
+            sel2 = Math.min(Math.max(m[1], 0), palette_height);
 
-            if (m[1] < sel1) sel1 = m[1]; else sel2 = m[1];
-
-            zoom_rect.attr("y", sel1)
-                    .attr("height", Math.abs(sel2-sel1));
+            zoom_rect.attr("y", Math.min(sel1, sel2))
+                     .attr("height", Math.abs(sel2-sel1));
          }
 
          let endRectSel = evnt => {
@@ -4400,11 +4400,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             zoom_rect = null;
             doing_zoom = false;
 
-            let z = this.z_handle.gr,
-                zmin = Math.min(z.invert(sel1), z.invert(sel2)),
-                zmax = Math.max(z.invert(sel1), z.invert(sel2));
+            let z = this.z_handle.gr, z1 = z.invert(sel1), z2 = z.invert(sel2);
 
-            this.frame_painter().Zoom("z", zmin, zmax);
+            this.frame_painter().Zoom("z", Math.min(z1, z2), Math.max(z1, z2));
          }
 
          let startRectSel = evnt => {
@@ -4426,7 +4424,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                  .attr("x", "0")
                  .attr("width", palette_width)
                  .attr("y", sel1)
-                 .attr("height", 5);
+                 .attr("height", 1);
 
             d3.select(window).on("mousemove.colzoomRect", moveRectSel)
                              .on("mouseup.colzoomRect", endRectSel, true);
