@@ -244,7 +244,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    // ================================================================================
-   
+
    /** @summary assign methods for the RAxis objects
      * @private */
    JSROOT.v7.AssignRAxisMethods = function(axis) {
@@ -255,7 +255,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             axis.fNBinsNoOver = 0;
             axis.fLow = 0;
          }
-         
+
          axis.min = axis.fLow;
          axis.max = axis.fLow + axis.fNBinsNoOver/axis.fInvBinWidth;
          axis.GetNumBins = function() { return this.fNBinsNoOver; }
@@ -278,7 +278,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                if (x < this.fBinBorders[k]) return Math.floor(k-1+add);
             return this.fBinBorders.length - 1;
          }
-      } 
+      }
 
       // to support some code from ROOT6 drawing
 
@@ -327,15 +327,15 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       JSROOT.ObjectPainter.prototype.Cleanup.call(this);
    }
-   
+
    RAxisPainter.prototype.ConvertDate = function(v) {
       return new Date(this.timeoffset + v*1000);
    }
-   
-   /** @summary Convert graphical point back into axis value */   
+
+   /** @summary Convert graphical point back into axis value */
    RAxisPainter.prototype.RevertPoint = function(pnt) {
       let value = this.func.invert(pnt);
-      return (this.kind == "time") ?  (value - this.timeoffset) / 1000 : value; 
+      return (this.kind == "time") ?  (value - this.timeoffset) / 1000 : value;
    }
 
    RAxisPainter.prototype.ConfigureAxis = function(name, min, max, smin, smax, vertical, range, opts) {
@@ -345,10 +345,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.full_max = max;
       this.kind = "normal";
       this.vertical = vertical;
-      this.log = 0;
+      this.log = this.v7EvalAttr("log", 0);
       this.reverse = opts.reverse || false;
       this.swap_side = opts.swap_side || false;
-      
+
       if (this.axis && this.axis._timedisplay) {
          this.kind = 'time';
          this.timeoffset = jsrp.getTimeOffset(/*this.histo.fXaxis*/);
@@ -359,23 +359,22 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (this.kind == 'time') {
          this.func = d3.scaleTime().domain([this.ConvertDate(smin), this.ConvertDate(smax)]);
       } else if (this.log) {
-         
+
          if (smax <= 0) smax = 1;
          if ((smin <= 0) || (smin >= smax))
             smin = smax * 0.0001;
-            
          let base = 10;
+         if (this.log == 2) base = 2;
+                       else this.log = 1; // FIXME: let use more log base in the future
          this.func = d3.scaleLog().base(base).domain([smin,smax]);
       } else {
          this.func = d3.scaleLinear().domain([smin,smax]);
       }
-      
+
       this.scale_min = smin;
       this.scale_max = smax;
-      
-      let reverse = false;
-      
-      if (vertical ^ reverse) {
+
+      if (this.vertical ^ this.reverse) {
          let d = range[0]; range[0] = range[1]; range[1] = d;
       }
 
@@ -383,14 +382,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if (this.kind == 'time')
          this.gr = val => this.func(this.ConvertDate(val));
-      else if (this.log_scale)
+      else if (this.log)
          this.gr = val => (val < this.scale_xmin) ? (this.vertical ? this.func.range()[0]+5 : -5) : this.func(val);
       else
          this.gr = this.func;
-         
+
 
       delete this.format;// remove formatting func
-      
+
       let ndiv = this.v7EvalAttr("ndiv", 508);
 
       this.nticks = ndiv % 100;
@@ -458,7 +457,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
       return null;
    }
-   
+
    RAxisPainter.prototype.formatLog = function(d, asticks, fmt) {
       let val = parseFloat(d), rnd = Math.round(val);
       if (!asticks)
@@ -475,7 +474,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
       return null;
    }
-   
+
    RAxisPainter.prototype.formatNormal = function(d, asticks, fmt) {
       let val = parseFloat(d);
       if (asticks && this.order) val = val / Math.pow(10, this.order);
@@ -489,14 +488,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
 
-   /** @summary Assign often used members of frame painter 
-     * @private */   
+   /** @summary Assign often used members of frame painter
+     * @private */
    RAxisPainter.prototype.AssignFrameMembers = function(fp, axis) {
       fp["gr"+axis] = this.gr;                    // fp.grx
       fp["log"+axis] = this.log;                  // fp.logx
       fp["scale_"+axis+"min"] = this.scale_min;   // fp.scale_xmin
       fp["scale_"+axis+"max"] = this.scale_max;   // fp.scale_xmax
-   } 
+   }
 
    RAxisPainter.prototype.formatExp = function(base, order, value) {
       let res = "";
@@ -521,7 +520,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    RAxisPainter.prototype.AxisAsText = function(value, fmt) {
       if (this.kind == 'time')
          value = this.ConvertDate(value);
-      if (this.format) 
+      if (this.format)
          return this.format(value, false, fmt);
       return value.toPrecision(4);
    }
@@ -803,7 +802,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           pad_h = this.pad_height() || 10,
           resolveFunc, totalTextCallbacks = 0, totalDone = false,
           promise = new Promise(resolve => { resolveFunc = resolve; }),
-          vertical = this.vertical || false, 
+          vertical = this.vertical || false,
           swap_side = this.swap_side || false;
 
       // create dummy until all attributes are repplaced
@@ -815,8 +814,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             resolveFunc = null;
          }
       };
-
-      this.vertical = vertical;
 
       // shift for second ticks set (if any)
       if (!second_shift) second_shift = 0; else
@@ -871,7 +868,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       // first draw ticks
 
       this.ticks = [];
-      
+
       let handle = this.CreateTicks(false, optionNoexp, optionNoopt, optionInt);
 
       while (handle.next(true)) {
@@ -1065,11 +1062,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (fTitle && !disable_axis_drawing) {
          let title_g = axis_g.append("svg:g").attr("class", "axis_title"),
              fTitleSize = this.v7EvalAttr("title_size", 0.03),
-             fTitleOffset = this.v7EvalAttr("title_offset", 0.03),
+             fTitleOffset = this.v7EvalAttr("title_offset", this.vertical ? 0.5 : 1.5),
              title_fontsize = (fTitleSize >= 1) ? fTitleSize : Math.round(fTitleSize * text_scaling_size),
              title_offest_k = 1.6*(fTitleSize < 1 ? fTitleSize : fTitleSize/(this.canv_painter().pad_height() || 10)),
-             center = this.v7EvalAttr("title_center", false),
-             opposite = this.v7EvalAttr("title_opposite", false),
+             title_position = this.v7EvalAttr("title_position", false),
+             center = (title_position == "center"),
+             opposite = (title_position == "left"),
              rotate = this.v7EvalAttr("title_rotate", false) ? -1 : 1,
              title_color = this.v7EvalColor("title_color", "black"),
              shift_x = 0, shift_y = 0;
@@ -1150,15 +1148,22 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           p2   = pp.GetCoordinate(drawable.fP2),
           w = p2.x - p1.x, h = p1.y - p2.y,
           vertical = Math.abs(w) < Math.abs(h),
+          sz = vertical ? h : w,
+          reverse = false,
           min = this.axis.min,
           max = this.axis.max,
           pos_x = p1.x, pos_y = p2.y;
 
-      this.ConfigureAxis("axis", min, max, min, max, vertical, [0, vertical ? Math.abs(h) : Math.abs(w)]);
+      if (sz < 0) {
+          reverse = true;
+          sz = -sz;
+          if (vertical) pos_y = p1.y; else pos_x = p2.x;
+      }
+      this.ConfigureAxis("axis", min, max, min, max, vertical, [0, sz], { reverse: reverse });
 
       this.CreateG();
 
-      return this.DrawAxis(this.draw_g, w, h, "translate(" + pos_x + "," + pos_y +")");
+      return this.DrawAxis(this.draw_g, Math.abs(w), Math.abs(h), "translate(" + pos_x + "," + pos_y +")");
    }
 
    let drawRAxis = (divid, obj /*, opt*/) => {
@@ -1287,7 +1292,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
    }
 
-   /** @summary Rcalculate frame ranges using specified projection functions 
+   /** @summary Rcalculate frame ranges using specified projection functions
      * @desc Not yet used in v7 */
    RFramePainter.prototype.RecalculateRange = function(Proj) {
       this.projection = Proj || 0;
@@ -1384,8 +1389,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Converts "raw" axis value into text */
    RFramePainter.prototype.AxisAsText = function(axis, value) {
       let handle = this[axis+"_handle"];
-      
-      if (handle) 
+
+      if (handle)
          return handle.AxisAsText(value, JSROOT.settings[axis.toUpperCase() + "ValuesFormat"]);
 
       return value.toPrecision(4);
@@ -1394,7 +1399,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Set axes ranges for drawing, check configured attributes if range already specified */
    RFramePainter.prototype.SetAxesRanges = function(xaxis, xmin, xmax, yaxis, ymin, ymax, zaxis, zmin, zmax) {
       if (this.axes_drawn) return;
- 
+
       this.xaxis = xaxis;
       this.yaxis = yaxis;
       this.zaxis = zaxis;
@@ -1471,17 +1476,17 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
    }
 
-   /** @summary Draw configured axes on the frame 
+   /** @summary Draw configured axes on the frame
      * @desc axes can be drawn only for main histogram  */
    RFramePainter.prototype.DrawAxes = function() {
 
-      if (this.axes_drawn || (this.xmin==this.xmax) || (this.ymin==this.ymax)) 
+      if (this.axes_drawn || (this.xmin==this.xmax) || (this.ymin==this.ymax))
          return Promise.resolve(false);
 
       this.CleanupAxes();
 
-      // this is former CreateXY function 
-      
+      // this is former CreateXY function
+
       this.swap_xy = false;
 
       let w = this.frame_width(), h = this.frame_height();
@@ -1491,7 +1496,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       this.scale_ymin = this.ymin;
       this.scale_ymax = this.ymax;
-      
+
       if (this.zoom_xmin != this.zoom_xmax) {
          this.scale_xmin = this.zoom_xmin;
          this.scale_xmax = this.zoom_xmax;
@@ -1503,12 +1508,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
 
       this.RecalculateRange(0);
-      
+
       this.x_handle = new RAxisPainter(this, this.xaxis, "x_");
       this.x_handle.SetDivId(this.divid, -1);
       this.x_handle.pad_name = this.pad_name;
       this.x_handle.rstyle = this.rstyle;
-      
+
       this.x_handle.ConfigureAxis("xaxis", this.xmin, this.xmax, this.scale_xmin, this.scale_xmax, false, [0,w], { reverse: false });
       this.x_handle.AssignFrameMembers(this,"x");
 
@@ -1521,7 +1526,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.y_handle.AssignFrameMembers(this,"y");
 
       let layer = this.svg_frame().select(".axis_layer");
-      
+
       this.x_handle.invert_side = false;
       this.x_handle.lbls_both_sides = false;
       this.x_handle.has_obstacle = false;
@@ -1606,7 +1611,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.draw_g.select(".axis_layer").selectAll("*").remove();
       }
       this.axes_drawn = false;
-      
+
       delete this.grx;
       delete this.gry;
       delete this.grz;
@@ -1656,7 +1661,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          window.removeEventListener('keydown', this.keys_handler, false);
          this.keys_handler = null;
       }
-      
+
       delete this.xaxis;
       delete this.yaxis;
       delete this.zaxis;
@@ -2074,7 +2079,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    RFramePainter.prototype.ToggleLog = function(axis) {
       let handle = this[axis+"_handle"];
       if (!handle || (handle.kind == "labels")) return;
-      
+
       if (this.v7CommMode() == JSROOT.v7.CommMode.kOffline) {
          this.v7SetAttr(axis + "_log", !curr);
          this.RedrawPad();
@@ -4383,7 +4388,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             evnt.preventDefault();
 
             let m = d3.pointer(evnt, this.draw_g.node());
-         
+
             sel2 = Math.min(Math.max(m[1], 0), palette_height);
 
             zoom_rect.attr("y", Math.min(sel1, sel2))
