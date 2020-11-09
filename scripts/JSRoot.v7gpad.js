@@ -844,8 +844,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       let side = 1, ticks_plusminus = 0,
           text_scaling_size = Math.min(pad_w, pad_h),
-          optionPlus = (chOpt.indexOf("+")>=0),
-          optionMinus = (chOpt.indexOf("-")>=0),
           optionSize = (chOpt.indexOf("S")>=0),
           // optionY = (chOpt.indexOf("Y")>=0),
           // optionUp = (chOpt.indexOf("0")>=0),
@@ -853,14 +851,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           optionUnlab = (chOpt.indexOf("U")>=0),  // no labels
           optionNoopt = (chOpt.indexOf("N")>=0),  // no ticks position optimization
           optionInt = (chOpt.indexOf("I")>=0),    // integer labels
-          optionNoexp = this.v7EvalAttr("noexp", false);
+          optionNoexp = this.v7EvalAttr("noexp", false),
+          ticksSide = this.v7EvalAttr("ticks_side", "normal");
 
-      if (optionPlus && optionMinus) { side = 1; ticks_plusminus = 1; } else
-      if (optionMinus) { side = (swap_side ^ vertical) ? 1 : -1; } else
-      if (optionPlus) { side = (swap_side ^ vertical) ? -1 : 1; }
+      if (ticksSide == "both") { side = 1; ticks_plusminus = 1; } else
+      if (ticksSide == "invert") { side = (swap_side ^ vertical) ? 1 : -1; } else
+      if (ticksSide == "normal") { side = (swap_side ^ vertical) ? -1 : 1; }
 
-      tickSize = Math.round((optionSize ? tickSize : 0.03) * scaling_size);
-
+      tickSize = this.v7EvalLength("ticks_size", scaling_size, 0.02)
       if (this.max_tick_size && (tickSize > this.max_tick_size)) tickSize = this.max_tick_size;
 
       let res = "", res2 = "", lastpos = 0, lasth = 0;
