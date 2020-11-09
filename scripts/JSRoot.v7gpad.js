@@ -338,7 +338,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return (this.kind == "time") ?  (value - this.timeoffset) / 1000 : value;
    }
 
-   RAxisPainter.prototype.ConfigureAxis = function(name, min, max, smin, smax, vertical, range, opts) {
+   RAxisPainter.prototype.ConfigureAxis = function(name, min, max, smin, smax, vertical, gr_range, opts) {
       if (!opts) opts = {};
       this.name = name;
       this.full_min = min;
@@ -373,12 +373,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       this.scale_min = smin;
       this.scale_max = smax;
+      
+      this.gr_range = gr_range; 
 
-      if (this.vertical ^ this.reverse) {
-         let d = range[0]; range[0] = range[1]; range[1] = d;
-      }
-
-      this.func.range(range);
+      if (this.reverse)
+         this.func.range([gr_range,0]);
+      else
+         this.func.range([0, gr_range]);
 
       if (this.kind == 'time')
          this.gr = val => this.func(this.ConvertDate(val));
@@ -398,8 +399,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if (this.nticks > 7) this.nticks = 7;
 
-      let gr_range = Math.abs(this.func.range()[1] - this.func.range()[0]);
-      if (gr_range<=0) gr_range = 100;
+      gr_range = Math.abs(gr_range);
+      if (gr_range==0) gr_range = 100;
 
       if (this.kind == 'time') {
          if (this.nticks > 8) this.nticks = 8;
@@ -676,7 +677,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Add interactive elements to draw axes title */
-   RAxisPainter.prototype.AddTitleDrag = function(title_g, vertical, offset_k, reverse, axis_length) {
+   RAxisPainter.prototype.AddTitleDrag = function(title_g, offset_k) {
       if (!JSROOT.settings.MoveResize || JSROOT.BatchMode) return;
 
       let drag_rect = null,
@@ -691,16 +692,15 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             let box = title_g.node().getBBox(), // check that elements visible, request precise value
                 axis = this.GetObject(),
-                title_length = vertical ? box.height : box.width,
-                opposite = axis.TestBit(JSROOT.EAxisBits.kOppositeTitle);
+                title_length = this.vertical ? box.height : box.width;
 
             new_x = acc_x = title_g.property('shift_x');
             new_y = acc_y = title_g.property('shift_y');
 
-            sign_0 = vertical ? (acc_x > 0) : (acc_y > 0); // sign should remain
+            sign_0 = this.vertical ? (acc_x > 0) : (acc_y > 0); // sign should remain
 
-            alt_pos = vertical ? [axis_length, axis_length/2, 0] : [0, axis_length/2, axis_length]; // possible positions
-            let off = vertical ? -title_length/2 : title_length/2;
+            alt_pos = [0, this.gr_range/2, this.gr_range]; // possible positions
+            let off = this.vertical ? -title_length/2 : title_length/2;
             if (this.title_align == "middle") {
                alt_pos[0] +=  off;
                alt_pos[2] -=  off;
@@ -712,14 +712,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                alt_pos[1] += off;
             }
 
-            if (axis.TestBit(JSROOT.EAxisBits.kCenterTitle))
+            if (this.fTitlePos == "center")
                curr_indx = 1;
-            else if (reverse ^ opposite)
+            else if (this.fTitlePos = "left")
                curr_indx = 0;
             else
                curr_indx = 2;
 
-            alt_pos[curr_indx] = vertical ? acc_y : acc_x;
+            alt_pos[curr_indx] = this.vertical ? acc_y : acc_x;
 
             drag_rect = title_g.append("rect")
                  .classed("zoom", true)
@@ -740,20 +740,20 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
                let set_x = title_g.property('shift_x'),
                    set_y = title_g.property('shift_y'),
-                   p = vertical ? acc_y : acc_x, besti = 0;
+                   p = this.vertical ? acc_y : acc_x, besti = 0;
 
                for (let i=1; i<3; ++i)
                   if (Math.abs(p - alt_pos[i]) < Math.abs(p - alt_pos[besti])) besti = i;
 
-               if (vertical) {
+               if (this.vertical) {
                   set_x = acc_x;
                   set_y = alt_pos[besti];
                } else {
-                  set_y = acc_y;
                   set_x = alt_pos[besti];
+                  set_y = acc_y;
                }
 
-               if (sign_0 === (vertical ? (set_x > 0) : (set_y > 0))) {
+               if (sign_0 === (this.vertical ? (set_x > 0) : (set_y > 0))) {
                   new_x = set_x; new_y = set_y; curr_indx = besti;
                   title_g.attr('transform', 'translate(' + new_x + ',' + new_y +  ')');
                }
@@ -769,20 +769,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
                let axis = this.GetObject(), abits = JSROOT.EAxisBits;
 
-               function set_bit(bit, on) {
-                  if (axis.TestBit(bit) != on) axis.InvertBit(bit);
-               }
-
-               axis.fTitleOffset = (vertical ? new_x : new_y) / offset_k;
+               axis.fTitleOffset = (this.vertical ? new_x : new_y) / offset_k;
                if (curr_indx == 1) {
-                  set_bit(abits.kCenterTitle, true);
-                  set_bit(abits.kOppositeTitle, false);
+                  this.fTitlePos = "center";
                } else if (curr_indx == 0) {
-                  set_bit(abits.kCenterTitle, false);
-                  set_bit(abits.kOppositeTitle, true);
+                  this.fTitlePos = "left";
                } else {
-                  set_bit(abits.kCenterTitle, false);
-                  set_bit(abits.kOppositeTitle, false);
+                  this.fTitlePos = "right";
                }
 
                drag_rect.remove();
@@ -792,9 +785,25 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       title_g.style("cursor", "move").call(drag_move);
    }
 
+   /** @summary checks if value inside graphical range, taking into account delta */
+   RAxisPainter.prototype.IsInsideGrRange = function(pos, delta) {
+      if (!delta) delta = 0;
+      if (this.gr_range < 0)
+         return (pos >= this.gr_range - delta) && (pos <= delta);
+      return (pos >= -delta) && (pos <= this.gr_range + delta);
+   }
+   
+   RAxisPainter.prototype.GrRange = function(delta) {
+      if (!delta) delta = 0;
+      if (this.gr_range < 0)
+         return this.gr_range - delta;
+      return this.gr_range + delta;
+   }
+
+
    /** @summary Performs axis drawing
      * @returns {Promise} which resolved when drawing is completed */
-   RAxisPainter.prototype.DrawAxis = function(layer, w, h, transform, second_shift, disable_axis_drawing, max_text_width) {
+   RAxisPainter.prototype.DrawAxis = function(layer, transform, second_shift, disable_axis_drawing, max_text_width) {
       let chOpt = "",
           axis_g = layer, tickSize = 0.03,
           scaling_size = 100, draw_lines = true,
@@ -833,10 +842,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             axis_g.selectAll("*").remove();
       } else {
          if (!disable_axis_drawing && draw_lines)
-            axis_g.append("svg:line")
-                  .attr("x1",0).attr("y1",0)
-                  .attr("x1",vertical ? 0 : w)
-                  .attr("y1", vertical ? h : 0)
+            axis_g.append("svg:path")
+                  .attr("d","M0,0" + (vertical ? "v" : "h") + this.gr_range)
                   .call(this.lineatt.func);
       }
 
@@ -925,7 +932,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
              total_draw_cnt = 0, all_done = 0;
 
          if (this.lbls_both_sides)
-            label_g.push(axis_g.append("svg:g").attr("class","axis_labels").attr("transform", vertical ? "translate(" + w + ",0)" : "translate(0," + (-h) + ")"));
+            label_g.push(axis_g.append("svg:g").attr("class","axis_labels"));
 
          // function called when text text is drawn to analyze width, required to correctly scale all labels
          function process_drawtext_ready(painter) {
@@ -982,7 +989,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                if (center_lbls) {
                   let gap = arg.gap_after || arg.gap_before;
                   pos = Math.round(pos - (vertical ? 0.5*gap : -0.5*gap));
-                  if ((pos < -5) || (pos > (vertical ? h : w) + 5)) continue;
+                  if (!this.IsInsideGrRange(pos, 5)) continue;
                }
 
                maxtextlen = Math.max(maxtextlen, lbl.length);
@@ -1014,8 +1021,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             if (this.order)
                this.DrawText({ color: label_color,
-                               x: vertical ? side*5 : w+5,
-                               y: this.has_obstacle ? fix_coord : (vertical ? -3 : -3*side),
+                               x: vertical ? side*5 : this.GrRange(5),
+                               y: this.has_obstacle ? fix_coord : (vertical ? this.GrRange(3) : -3*side),
                                align: vertical ? ((side<0) ? 30 : 10) : ((this.has_obstacle ^ (side < 0)) ? 13 : 10),
                                latex: 1,
                                text: '#times' + this.formatExp(10, this.order),
@@ -1041,19 +1048,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
 
       if (JSROOT.settings.Zooming && !this.disable_zooming && !JSROOT.BatchMode) {
-         let r =  axis_g.append("svg:rect")
-                        .attr("class", "axis_zoom")
-                        .style("opacity", "0")
-                        .style("cursor", "crosshair");
-
-         if (vertical)
-            r.attr("x", (side>0) ? (-2*labelsize - 3) : 3)
-             .attr("y", 0)
-             .attr("width", 2*labelsize + 3)
-             .attr("height", h)
-         else
-            r.attr("x", 0).attr("y", (side>0) ? 0 : -labelsize-3)
-             .attr("width", w).attr("height", labelsize + 3);
+         let d = vertical ? "v" + this.gr_range + "h" + (side*(-2*labelsize-3)) + "v" + (-this.gr_range)
+                          : "h" + this.gr_range + "v"+(side*(labelsize+3)) + "h" + (-this.gr_range); 
+         axis_g.append("svg:path")
+               .attr("d","M0,0" + d + "z") 
+               .attr("class", "axis_zoom")
+               .style("opacity", "0")
+               .style("cursor", "crosshair");
       }
 
       let fTitle = this.v7EvalAttr("title", "");
@@ -1069,6 +1070,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
              rotate = this.v7EvalAttr("title_rotate", false) ? -1 : 1,
              title_color = this.v7EvalColor("title_color", "black"),
              shift_x = 0, shift_y = 0;
+             
+         this.fTitlePos = title_position; 
 
          this.StartTextDrawing(this.v7EvalAttr("title_font", 41), title_fontsize, title_g);
 
@@ -1086,7 +1089,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                if (shift_x < rect.width - tickSize) shift_x = Math.round(rect.width - tickSize);
             }
 
-            shift_y = Math.round(center ? h/2 : (xor_reverse ? h : 0));
+            shift_y = Math.round(center ? this.gr_range/2 : (xor_reverse ? this.gr_range : 0));
 
             this.DrawText({ align: this.title_align+";middle",
                             rotate: (rotate<0) ? 90 : 270,
@@ -1094,7 +1097,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          } else {
             title_offest_k *= side*pad_h;
 
-            shift_x = Math.round(center ? w/2 : (xor_reverse ? 0 : w));
+            shift_x = Math.round(center ? this.gr_range/2 : (xor_reverse ? 0 : this.gr_range));
             shift_y = Math.round(title_offest_k*fTitleOffset);
             this.DrawText({ align: this.title_align+";middle",
                             rotate: (rotate<0) ? 180 : 0,
@@ -1121,7 +1124,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          });
 
 
-         this.AddTitleDrag(title_g, vertical, title_offest_k, swap_side, vertical ? h : w);
+         this.AddTitleDrag(title_g, title_offest_k);
       }
 
       this.position = 0;
@@ -1142,26 +1145,26 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       let drawable = this.GetObject(),
           pp   = this.pad_painter(),
-          p1   = pp.GetCoordinate(drawable.fP1),
-          p2   = pp.GetCoordinate(drawable.fP2),
-          w = p2.x - p1.x, h = p1.y - p2.y,
-          vertical = Math.abs(w) < Math.abs(h),
-          sz = vertical ? h : w,
-          reverse = false,
+          pos  = pp.GetCoordinate(drawable.fPos),
+          len  = pp.GetPadLength(drawable.fVertical, drawable.fLength),
+          reverse = this.v7EvalAttr("reverse", false),
           min = this.axis.min,
-          max = this.axis.max,
-          pos_x = p1.x, pos_y = p2.y;
+          max = this.axis.max;
 
-      if (sz < 0) {
-          reverse = true;
-          sz = -sz;
-          if (vertical) pos_y = p1.y; else pos_x = p2.x;
-      }
-      this.ConfigureAxis("axis", min, max, min, max, vertical, [0, sz], { reverse: reverse });
+     // in vertical direction axis changes in other direction
+     if (drawable.fVertical) len = -len;
+
+      //if (sz < 0) {
+      //    reverse = true;
+      //    sz = -sz;
+      //    if (vertical) pos_y = p1.y; else pos_x = p2.x;
+      //}
+
+      this.ConfigureAxis("axis", min, max, min, max, drawable.fVertical, len, { reverse: reverse });
 
       this.CreateG();
 
-      return this.DrawAxis(this.draw_g, Math.abs(w), Math.abs(h), "translate(" + pos_x + "," + pos_y +")");
+      return this.DrawAxis(this.draw_g, "translate(" + pos.x + "," + pos.y +")");
    }
 
    let drawRAxis = (divid, obj /*, opt*/) => {
@@ -3331,34 +3334,34 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       });
    }
 
+   /** @summary Calculates RPadLength value */
+   RPadPainter.prototype.GetPadLength = function(vertical, len, ignore_user) {
+      if (!len) return 0;
+      function GetV(indx, dflt) {
+         return (len.fArr && (indx < len.fArr.length)) ? len.fArr[indx] : dflt;
+      }
+
+      let norm = GetV(0, 0),
+          pixel = GetV(1, 0),
+          user = ignore_user ? undefined : GetV(2);
+
+      let res = pixel;
+      if (norm) res += (vertical ? this.pad_height() : this.pad_width()) * norm;
+
+      if (user !== undefined)
+          console.log('Do implement user coordinates');
+      return res;
+   }
+
+
+   /** @summary Calculates pad position for RPadPos values
+    * @param {object} pos - instance of RPadPos */
    RPadPainter.prototype.GetCoordinate = function(pos) {
       let res = { x: 0, y: 0 };
 
-      if (!pos) return res;
-
-      function GetV(len, indx, dflt) {
-         return (len.fArr && (len.fArr.length>indx)) ? len.fArr[indx] : dflt;
-      }
-
-      let w = this.pad_width(),
-          h = this.pad_height(),
-          h_norm = GetV(pos.fHoriz, 0, 0),
-          h_pixel = GetV(pos.fHoriz, 1, 0),
-          h_user = GetV(pos.fHoriz, 2),
-          v_norm = GetV(pos.fVert, 0, 0),
-          v_pixel = GetV(pos.fVert, 1, 0),
-          v_user = GetV(pos.fVert, 2);
-
-      if (!this.pad_frame || (h_user === undefined)) {
-         res.x = h_norm * w + h_pixel;
-      } else {
-         // TO DO - user coordiantes
-      }
-
-      if (!this.pad_frame || (v_user === undefined)) {
-         res.y = h - v_norm * h - v_pixel;
-      } else {
-         //  TO DO - user coordiantes
+      if (pos) {
+         res.x = this.GetPadLength(false, pos.fHoriz);
+         res.y = this.pad_height() - this.GetPadLength(true, pos.fVert);
       }
 
       return res;
