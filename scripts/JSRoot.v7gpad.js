@@ -790,12 +790,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary checks if value inside graphical range, taking into account delta */
-   RAxisPainter.prototype.IsInsideGrRange = function(pos, delta, only_end) {
-      if (!delta) delta = 0;
-      let delta1 = only_end ? 0 : delta; 
+   RAxisPainter.prototype.IsInsideGrRange = function(pos, delta1, delta2) {
+      if (!delta1) delta1 = 0;
+      if (delta2 === undefined) delta2 = delta1;
       if (this.gr_range < 0)
-         return (pos >= this.gr_range - delta) && (pos <= delta1);
-      return (pos >= -delta1) && (pos <= this.gr_range + delta);
+         return (pos >= this.gr_range - delta2) && (pos <= delta1);
+      return (pos >= -delta1) && (pos <= this.gr_range + delta2);
    }
    
    RAxisPainter.prototype.GrRange = function(delta) {
@@ -817,7 +817,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           resolveFunc, totalTextCallbacks = 0, totalDone = false,
           promise = new Promise(resolve => { resolveFunc = resolve; }),
           endingStyle = this.v7EvalAttr("ending_style", ""),
-          endingSize = endingStyle ? Math.round(this.v7EvalLength("ending_size", scaling_size, 0.02)) : 0;
+          endingSize = Math.round(this.v7EvalLength("ending_size", scaling_size, endingStyle ? 0.02 : 0)),
+          startingSize = Math.round(this.v7EvalLength("starting_size", scaling_size, 0));
 
       // create dummy until all attributes are repplaced
 
@@ -843,24 +844,26 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             axis_g.selectAll("*").remove();
       } else {
          if (!disable_axis_drawing && draw_lines) {
-            let path = "M0,0" + (this.vertical ? "v" : "h") + this.gr_range;
+            let path = "M0,0" + (this.vertical ? "v" : "h") + this.gr_range,
+                ending = "";
             
-            if (endingSize != 0) {
-               if (this.gr_range > 0) endingSize = -endingSize; 
+            if (endingSize && endingStyle) {
+               if (this.gr_range > 0) 
+                  endingSize = -endingSize; 
                if (this.vertical) 
-                  path += "l" + Math.round(endingSize*0.7) + "," + endingSize + 
-                          "M0," + this.gr_range + 
-                          "l" + Math.round(-endingSize*0.7) + "," + endingSize;
+                  ending = "l" + Math.round(endingSize*0.7) + "," + endingSize + 
+                           "M0," + this.gr_range + 
+                           "l" + Math.round(-endingSize*0.7) + "," + endingSize;
                else
-                  path += "l" + endingSize + "," + Math.round(0.7*endingSize) + 
-                          "M" + this.gr_range + ",0" +
-                          "l" + endingSize + "," + Math.round(-0.7*endingSize);
+                  ending = "l" + endingSize + "," + Math.round(0.7*endingSize) + 
+                           "M" + this.gr_range + ",0" +
+                           "l" + endingSize + "," + Math.round(-0.7*endingSize);
             }
             
-            let ddd = axis_g.append("svg:path")
-                          .attr("d",path)
-                          .call(this.lineatt.func);
-            if (endingSize) ddd.style('fill', "none");
+            axis_g.append("svg:path")
+                  .attr("d",path + ending)
+                  .call(this.lineatt.func)
+                  .style('fill', ending ? "none" : null);
          }
       }
 
@@ -898,7 +901,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             
          let grpos = handle.grpos - this.axis_shift;
          
-         if (endingSize && !this.IsInsideGrRange(grpos, -Math.abs(endingSize), true)) continue;
+         if ((startingSize || endingSize) && !this.IsInsideGrRange(grpos, -Math.abs(startingSize), -Math.abs(endingSize))) continue;
          
          if (handle.kind == 1) {
             // if not showing labels, not show large tick
@@ -1013,7 +1016,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                
                pos -= this.axis_shift;
 
-               if (endingSize && !this.IsInsideGrRange(pos, -Math.abs(endingSize), true)) continue;
+               if ((startingSize || endingSize) && !this.IsInsideGrRange(pos, -Math.abs(startingSize), -Math.abs(endingSize))) continue;
 
                if (this.vertical) {
                   arg.x = fix_coord;
