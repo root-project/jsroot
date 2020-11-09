@@ -337,8 +337,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       let value = this.func.invert(pnt);
       return (this.kind == "time") ?  (value - this.timeoffset) / 1000 : value;
    }
-
-   RAxisPainter.prototype.ConfigureAxis = function(name, min, max, smin, smax, vertical, gr_range, opts) {
+   
+   /** @summary Configure axis painter 
+     * @desc Axis can be drawn inside frame <g> group with offset to 0 point for the frame
+     * Therefore one should distinguish when caclulated coordinates used for axis drawing itself or for calculation of frame coordinates
+     * @private */
+   RAxisPainter.prototype.ConfigureAxis = function(name, min, max, smin, smax, vertical, frame_range, axis_range, opts) {
       if (!opts) opts = {};
       this.name = name;
       this.full_min = min;
@@ -374,12 +378,16 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.scale_min = smin;
       this.scale_max = smax;
       
-      this.gr_range = gr_range; 
+      this.gr_range = axis_range || 1000; // when not specified, one can ignore it
+      
+      let range = frame_range ? frame_range : [0, this.gr_range]; 
+
+      this.axis_shift = range[1] - this.gr_range;
 
       if (this.reverse)
-         this.func.range([gr_range,0]);
+         this.func.range([range[1], range[0]]);
       else
-         this.func.range([0, gr_range]);
+         this.func.range(range);
 
       if (this.kind == 'time')
          this.gr = val => this.func(this.ConvertDate(val));
@@ -387,7 +395,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.gr = val => (val < this.scale_xmin) ? (this.vertical ? this.func.range()[0]+5 : -5) : this.func(val);
       else
          this.gr = this.func;
-
 
       delete this.format;// remove formatting func
 
@@ -399,8 +406,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if (this.nticks > 7) this.nticks = 7;
 
-      gr_range = Math.abs(gr_range);
-      if (gr_range==0) gr_range = 100;
+      let gr_range = Math.abs(this.gr_range) || 100;
 
       if (this.kind == 'time') {
          if (this.nticks > 8) this.nticks = 8;
@@ -691,7 +697,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             evnt.sourceEvent.stopPropagation();
 
             let box = title_g.node().getBBox(), // check that elements visible, request precise value
-                axis = this.GetObject(),
                 title_length = this.vertical ? box.height : box.width;
 
             new_x = acc_x = title_g.property('shift_x');
@@ -714,7 +719,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             if (this.fTitlePos == "center")
                curr_indx = 1;
-            else if (this.fTitlePos = "left")
+            else if (this.fTitlePos == "left")
                curr_indx = 0;
             else
                curr_indx = 2;
@@ -744,7 +749,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
                for (let i=1; i<3; ++i)
                   if (Math.abs(p - alt_pos[i]) < Math.abs(p - alt_pos[besti])) besti = i;
-
+                  
                if (this.vertical) {
                   set_x = acc_x;
                   set_y = alt_pos[besti];
@@ -767,9 +772,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                title_g.property('shift_x', new_x)
                       .property('shift_y', new_y);
 
-               let axis = this.GetObject(), abits = JSROOT.EAxisBits;
-
-               axis.fTitleOffset = (this.vertical ? new_x : new_y) / offset_k;
+               this.fTitleOffset = (this.vertical ? new_x : new_y) / offset_k;
+               
                if (curr_indx == 1) {
                   this.fTitlePos = "center";
                } else if (curr_indx == 0) {
@@ -862,8 +866,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           ticksSide = this.v7EvalAttr("ticks_side", "normal");
 
       if (ticksSide == "both") { side = 1; ticks_plusminus = 1; } else
-      if (ticksSide == "invert") { side = (swap_side ^ vertical) ? 1 : -1; } else
-      if (ticksSide == "normal") { side = (swap_side ^ vertical) ? -1 : 1; }
+      if (ticksSide == "invert") side = this.invert_side ? 1 : -1; else
+      if (ticksSide == "normal") side = this.invert_side ? -1 : 1;
 
       tickSize = this.v7EvalLength("ticks_size", scaling_size, 0.02)
       if (this.max_tick_size && (tickSize > this.max_tick_size)) tickSize = this.max_tick_size;
@@ -882,28 +886,30 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          if (handle.kind < 3)
             h1 = Math.round(tickSize/2);
-
+            
+         let grpos = handle.grpos - this.axis_shift;
+         
          if (handle.kind == 1) {
             // if not showing labels, not show large tick
             if ((this.kind == "labels") || (this.format(handle.tick,true) !== null)) h1 = tickSize;
-            this.ticks.push(handle.grpos); // keep graphical positions of major ticks
+            this.ticks.push(grpos); // keep graphical positions of major ticks
          }
 
          if (ticks_plusminus > 0) h2 = -h1; else
          if (side < 0) { h2 = -h1; h1 = 0; } else { h2 = 0; }
 
          if (res.length == 0) {
-            res = vertical ? ("M"+h1+","+handle.grpos) : ("M"+handle.grpos+","+(-h1));
-            res2 = vertical ? ("M"+(second_shift-h1)+","+handle.grpos) : ("M"+handle.grpos+","+(second_shift+h1));
+            res = vertical ? ("M"+h1+","+grpos) : ("M"+grpos+","+(-h1));
+            res2 = vertical ? ("M"+(second_shift-h1)+","+grpos) : ("M"+grpos+","+(second_shift+h1));
          } else {
-            res += vertical ? ("m"+(h1-lasth)+","+(handle.grpos-lastpos)) : ("m"+(handle.grpos-lastpos)+","+(lasth-h1));
-            res2 += vertical ? ("m"+(lasth-h1)+","+(handle.grpos-lastpos)) : ("m"+(handle.grpos-lastpos)+","+(h1-lasth));
+            res += vertical ? ("m"+(h1-lasth)+","+(grpos-lastpos)) : ("m"+(grpos-lastpos)+","+(lasth-h1));
+            res2 += vertical ? ("m"+(lasth-h1)+","+(grpos-lastpos)) : ("m"+(grpos-lastpos)+","+(h1-lasth));
          }
 
          res += vertical ? ("h"+ (h2-h1)) : ("v"+ (h1-h2));
          res2 += vertical ? ("h"+ (h1-h2)) : ("v"+ (h2-h1));
 
-         lastpos = handle.grpos;
+         lastpos = grpos;
          lasth = h2;
       }
 
@@ -962,7 +968,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                   painter.TextScaleFactor(1/textscale, this.lgs[cnt]);
             }
          }
-
+         
          for (let lcnt = 0; lcnt < label_g.length; ++lcnt) {
 
             if (lcnt > 0) side = -side;
@@ -996,10 +1002,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
                if (vertical) {
                   arg.x = fix_coord;
-                  arg.y = pos;
+                  arg.y = pos - this.axis_shift;
                   arg.align = rotate_lbls ? ((side<0) ? 23 : 20) : ((side<0) ? 12 : 32);
                } else {
-                  arg.x = pos;
+                  arg.x = pos - this.axis_shift;
                   arg.y = fix_coord;
                   arg.align = rotate_lbls ? ((side<0) ? 12 : 32) : ((side<0) ? 20 : 23);
                }
@@ -1075,8 +1081,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          this.StartTextDrawing(this.v7EvalAttr("title_font", 41), title_fontsize, title_g);
 
-         let xor_reverse = swap_side ^ opposite, myxor = (rotate < 0) ^ xor_reverse;
-         this.title_align = center ? "middle" : (myxor ? "begin" : "end");
+         this.title_align = center ? "middle" : (opposite ? "begin" : "end");
 
          if (vertical) {
             title_offest_k *= -side*pad_w;
@@ -1089,7 +1094,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                if (shift_x < rect.width - tickSize) shift_x = Math.round(rect.width - tickSize);
             }
 
-            shift_y = Math.round(center ? this.gr_range/2 : (xor_reverse ? this.gr_range : 0));
+            shift_y = Math.round(center ? this.gr_range/2 : (opposite ? 0 : this.gr_range));
 
             this.DrawText({ align: this.title_align+";middle",
                             rotate: (rotate<0) ? 90 : 270,
@@ -1097,7 +1102,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          } else {
             title_offest_k *= side*pad_h;
 
-            shift_x = Math.round(center ? this.gr_range/2 : (xor_reverse ? 0 : this.gr_range));
+            shift_x = Math.round(center ? this.gr_range/2 : (opposite ? 0 : this.gr_range));
             shift_y = Math.round(title_offest_k*fTitleOffset);
             this.DrawText({ align: this.title_align+";middle",
                             rotate: (rotate<0) ? 180 : 0,
@@ -1151,7 +1156,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           min = this.axis.min,
           max = this.axis.max;
 
-     // in vertical direction axis changes in other direction
+     // in vertical direction axis drawn in negative direction
      if (drawable.fVertical) len = -len;
 
       //if (sz < 0) {
@@ -1160,7 +1165,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       //    if (vertical) pos_y = p1.y; else pos_x = p2.x;
       //}
 
-      this.ConfigureAxis("axis", min, max, min, max, drawable.fVertical, len, { reverse: reverse });
+      this.ConfigureAxis("axis", min, max, min, max, drawable.fVertical, undefined, len, { reverse: reverse });
 
       this.CreateG();
 
@@ -1515,7 +1520,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.x_handle.pad_name = this.pad_name;
       this.x_handle.rstyle = this.rstyle;
 
-      this.x_handle.ConfigureAxis("xaxis", this.xmin, this.xmax, this.scale_xmin, this.scale_xmax, false, [0,w], { reverse: false });
+      this.x_handle.ConfigureAxis("xaxis", this.xmin, this.xmax, this.scale_xmin, this.scale_xmax, false, [0,w], w, { reverse: false });
       this.x_handle.AssignFrameMembers(this,"x");
 
       this.y_handle = new RAxisPainter(this, this.yaxis, "y_");
@@ -1523,7 +1528,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.y_handle.pad_name = this.pad_name;
       this.y_handle.rstyle = this.rstyle;
 
-      this.y_handle.ConfigureAxis("yaxis", this.ymin, this.ymax, this.scale_ymin, this.scale_ymax, true, [0,h], { reverse: false });
+      this.y_handle.ConfigureAxis("yaxis", this.ymin, this.ymax, this.scale_ymin, this.scale_ymax, true, [h,0], -h, { reverse: false });
       this.y_handle.AssignFrameMembers(this,"y");
 
       let layer = this.svg_frame().select(".axis_layer");
@@ -1545,12 +1550,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
 
       if (!disable_axis_draw) {
-         let promise1 = draw_horiz.DrawAxis(layer, w, h,
-                                            draw_horiz.invert_side ? undefined : "translate(0," + h + ")",
+         let promise1 = draw_horiz.DrawAxis(layer,
+                                            draw_horiz.invert_side ? undefined : "translate(0,"+h+")",
                                             show_second_ticks ? -h : 0, disable_axis_draw);
 
-         let promise2 = draw_vertical.DrawAxis(layer, w, h,
-                                               draw_vertical.invert_side ? "translate(" + w + ",0)" : undefined,
+         let promise2 = draw_vertical.DrawAxis(layer,
+                                               draw_vertical.invert_side ? "translate("+w+","+h+")" : "translate(0,"+h+")",
                                                show_second_ticks ? w : 0, disable_axis_draw,
                                                draw_vertical.invert_side ? 0 : this.frame_x());
 
@@ -4340,16 +4345,16 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           .style("stroke", "black")
           .attr("fill", "none");
 
-      this.z_handle.ConfigureAxis("zaxis", zmin, zmax, zmin, zmax, true, [0, palette_height], { reverse: false });
+      this.z_handle.ConfigureAxis("zaxis", zmin, zmax, zmin, zmax, true, [palette_height, 0], -palette_height, { reverse: false });
 
       for (let i=0;i<contour.length-1;++i) {
          let z0 = this.z_handle.gr(contour[i]),
              z1 = this.z_handle.gr(contour[i+1]),
              col = palette.getContourColor((contour[i]+contour[i+1])/2);
-
+             
          let r = g_btns.append("svg:rect")
                      .attr("x", 0)
-                     .attr("y",  Math.round(z1))
+                     .attr("y", Math.round(z1))
                      .attr("width", palette_width)
                      .attr("height", Math.round(z0) - Math.round(z1))
                      .style("fill", col)
@@ -4370,7 +4375,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       this.z_handle.max_tick_size = Math.round(palette_width*0.3);
 
-      this.z_handle.DrawAxis(this.draw_g, palette_width, palette_height, "translate(" + palette_width + ", 0)");
+      this.z_handle.DrawAxis(this.draw_g, "translate(" + palette_width + "," + palette_height + ")");
 
       if (JSROOT.BatchMode) return;
 
