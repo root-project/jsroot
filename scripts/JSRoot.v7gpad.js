@@ -2946,10 +2946,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       // if canvas size not specified in batch mode, temporary use 900x700 size
       // if (this.batch_mode && this.iscan && (!padattr.fCw || !padattr.fCh)) { padattr.fCw = 900; padattr.fCh = 700; }
 
-      if (this.iscan && snap.fTitle && document)
-         document.title = snap.fTitle;
-
-      if (this.iscan && snap.fTitle && document)
+      if (this.iscan && snap.fTitle && (typeof document !== "undefined"))
          document.title = snap.fTitle;
 
       if (this.snapid === undefined) {

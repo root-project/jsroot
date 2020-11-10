@@ -42,11 +42,9 @@ examples_more = {
       { name: "pie", json: "web6canv/piechart.json.gz", title: "Testing native TPie painting" },
       { name: "trans", json: "web6canv/transparency.json.gz", title: "Testing with TGraph without axes" }
    ],
-//   v7 : [
-//      { name: "th1", opt: "", file: "v7.root", item: "th1", title: "v7 TH1 class" },
-//      { name: "th2", opt: "", file: "v7.root", item: "th2", title: "v7 TH2 class" },
-//      { name: "text", opt: "", file: "v7.root", item: "text", title: "v7 TText class" }
-//   ],
+   v7 : [
+      { name: "axes", opt: "", json: "v7/axes.json.gz", title: "RAxes drawings" }
+   ],
    THStack : [
       { opt: "orig", file: "stacks.root", item: "stacks;1", title: "original example used for JSROOT testing since a while" },
       { name: "json", json: "thstack.json.gz", title: "some special stack from JSON file" }
