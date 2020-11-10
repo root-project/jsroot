@@ -807,7 +807,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    /** @summary Performs axis drawing
      * @returns {Promise} which resolved when drawing is completed */
-   RAxisPainter.prototype.DrawAxis = function(layer, transform, second_shift, disable_axis_drawing, max_text_width) {
+   RAxisPainter.prototype.DrawAxis = function(layer, transform) {
       let axis_g = layer, 
           draw_lines = true,
           pad_w = this.pad_width() || 10,
@@ -819,10 +819,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           endingSize = Math.round(this.v7EvalLength("ending_size", scaling_size, endingStyle ? 0.02 : 0)),
           startingSize = Math.round(this.v7EvalLength("starting_size", scaling_size, 0));
 
-      // shift for second ticks set (if any)
-      if (!second_shift) second_shift = 0; else
-      if (this.invert_side) second_shift = -second_shift;
-
       this.createv7AttLine("line_");
 
       if (this.embedded || (this.name === "zaxis")) {
@@ -832,7 +828,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          else
             axis_g.selectAll("*").remove();
       } else {
-         if (!disable_axis_drawing && draw_lines) {
+         if (draw_lines) {
             let path = "M0,0" + (this.vertical ? "v" : "h") + this.gr_range,
                 ending = "";
             
@@ -875,8 +871,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       let tickSize = this.v7EvalLength("ticks_size", scaling_size, 0.02);
       if (this.max_tick_size && (tickSize > this.max_tick_size)) tickSize = this.max_tick_size;
 
-      let res = "", res2 = "", lastpos = 0, lasth = 0;
-
+      let res = "", lastpos = 0, lasth = 0;
 
       let checkTextCallBack = (is_callback) => {
           if (is_callback) 
@@ -907,7 +902,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          }
       };
 
-
       // first draw ticks
 
       this.ticks = [];
@@ -936,24 +930,18 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          if (res.length == 0) {
             res = this.vertical ? ("M"+h1+","+grpos) : ("M"+grpos+","+(-h1));
-            res2 = this.vertical ? ("M"+(second_shift-h1)+","+grpos) : ("M"+grpos+","+(second_shift+h1));
          } else {
             res += this.vertical ? ("m"+(h1-lasth)+","+(grpos-lastpos)) : ("m"+(grpos-lastpos)+","+(lasth-h1));
-            res2 += this.vertical ? ("m"+(lasth-h1)+","+(grpos-lastpos)) : ("m"+(grpos-lastpos)+","+(h1-lasth));
          }
 
          res += this.vertical ? ("h"+ (h2-h1)) : ("v"+ (h1-h2));
-         res2 += this.vertical ? ("h"+ (h1-h2)) : ("v"+ (h2-h1));
 
          lastpos = grpos;
          lasth = h2;
       }
 
-      if ((res.length > 0) && !disable_axis_drawing && draw_lines)
+      if ((res.length > 0) && draw_lines)
          axis_g.append("svg:path").attr("d", res).call(this.lineatt.func);
-
-      if ((second_shift!==0) && (res2.length>0) && !disable_axis_drawing  && draw_lines)
-         axis_g.append("svg:path").attr("d", res2).call(this.lineatt.func);
 
       let fLabelSize = this.v7EvalAttr("label_size", 0.03);
       let fLabelOffset = this.v7EvalAttr("label_offset", 0.01);
@@ -962,7 +950,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if ((labelsize <= 0) || (Math.abs(fLabelOffset) > 1.1)) optionUnlab = true; // disable labels when size not specified
 
       // draw labels (on both sides, when needed)
-      if (!disable_axis_drawing && !optionUnlab) {
+      if (!optionUnlab) {
 
          let label_color = this.v7EvalColor("label_color", "black"),
              labeloffset = this.v7EvalLength("labels_offset", scaling_size, 0),
@@ -1094,7 +1082,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
 
       let fTitle = this.v7EvalAttr("title", "");
-      if (fTitle && !disable_axis_drawing) {
+      if (fTitle) {
          title_g = axis_g.append("svg:g").attr("class", "axis_title");
          
          let fTitleSize = this.v7EvalAttr("title_size", 0.03),
@@ -1543,7 +1531,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       let draw_horiz = this.swap_xy ? this.y_handle : this.x_handle,
           draw_vertical = this.swap_xy ? this.x_handle : this.y_handle,
-          disable_axis_draw = false, show_second_ticks = false;
+          disable_axis_draw = false;
 
       if (!disable_axis_draw) {
          let pp = this.pad_painter();
@@ -1552,13 +1540,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if (!disable_axis_draw) {
          let promise1 = draw_horiz.DrawAxis(layer,
-                                            draw_horiz.invert_side ? undefined : "translate(0,"+h+")",
-                                            show_second_ticks ? -h : 0, disable_axis_draw);
+                                            draw_horiz.invert_side ? undefined : "translate(0,"+h+")");
 
          let promise2 = draw_vertical.DrawAxis(layer,
-                                               draw_vertical.invert_side ? "translate("+w+","+h+")" : "translate(0,"+h+")",
-                                               show_second_ticks ? w : 0, disable_axis_draw,
-                                               draw_vertical.invert_side ? 0 : this.frame_x());
+                                               draw_vertical.invert_side ? "translate("+w+","+h+")" : "translate(0,"+h+")");
 
          return Promise.all([promise1, promise2]).then(() => {
              this.DrawGrids();
