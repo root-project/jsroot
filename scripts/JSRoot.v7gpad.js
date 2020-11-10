@@ -313,7 +313,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.scale_max = 1;
       this.ticks = []; // list of major ticks
       this.invert_side = false;
-      this.lbls_both_sides = false; // draw labels on both sides
    }
 
    RAxisPainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
@@ -820,16 +819,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           endingSize = Math.round(this.v7EvalLength("ending_size", scaling_size, endingStyle ? 0.02 : 0)),
           startingSize = Math.round(this.v7EvalLength("starting_size", scaling_size, 0));
 
-      // create dummy until all attributes are repplaced
-
-      let checkTextCallBack = (is_callback) => {
-          if (is_callback) totalTextCallbacks--; else totalDone = true;
-          if (!totalTextCallbacks && totalDone && resolveFunc) {
-            resolveFunc(true);
-            resolveFunc = null;
-         }
-      };
-
       // shift for second ticks set (if any)
       if (!second_shift) second_shift = 0; else
       if (this.invert_side) second_shift = -second_shift;
@@ -875,7 +864,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           optionNoopt = false,  // no ticks position optimization
           optionInt = false,    // integer labels
           optionNoexp = false,   // do not create exp
-          ticksSide = this.v7EvalAttr("ticks_side", "normal");
+          ticksSide = this.v7EvalAttr("ticks_side", "normal"),
+          max_lbl_width = 0, max_lbl_height = 0, 
+          title_g = null, title_shift_x = 0, title_shift_y = 0;
 
       if (ticksSide == "both") { side = 1; ticks_plusminus = 1; } else
       if (ticksSide == "invert") side = this.invert_side ? 1 : -1; else
@@ -885,6 +876,37 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (this.max_tick_size && (tickSize > this.max_tick_size)) tickSize = this.max_tick_size;
 
       let res = "", res2 = "", lastpos = 0, lasth = 0;
+
+
+      let checkTextCallBack = (is_callback) => {
+          if (is_callback) 
+             totalTextCallbacks--; 
+          else 
+             totalDone = true;
+          if (!totalTextCallbacks && totalDone && resolveFunc) {
+            // check title position
+
+            if (title_g) {
+               
+               console.log("Max labael", max_lbl_width, max_lbl_height);
+               
+               if (this.vertical) {
+                  title_shift_x -= side * (tickSize/2 + max_lbl_width);
+               } else {
+                  title_shift_y += side * (tickSize/2 + max_lbl_height);
+               }
+               
+               title_g.attr('transform', 'translate(' + title_shift_x + ',' + title_shift_y +  ')')
+                      .property('shift_x', title_shift_x)
+                      .property('shift_y', title_shift_y);
+            }
+
+            resolveFunc(true);
+            resolveFunc = null;
+
+         }
+      };
+
 
       // first draw ticks
 
@@ -943,19 +965,20 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (!disable_axis_drawing && !optionUnlab) {
 
          let label_color = this.v7EvalColor("label_color", "black"),
-             labeloffset = Math.round(fLabelOffset*text_scaling_size),
+             labeloffset = this.v7EvalLength("labels_offset", scaling_size, 0),
              center_lbls = this.IsCenterLabels(),
-             rotate_lbls = this.v7EvalAttr("label_vert", false),
+             rotate_lbls = this.v7EvalAttr("label_vert", false), // not exists
              textscale = 1, maxtextlen = 0, lbls_tilt = false, labelfont = null,
-             label_g = [ axis_g.append("svg:g").attr("class","axis_labels") ],
+             label_g = axis_g.append("svg:g").attr("class","axis_labels"),
              lbl_pos = handle.lbl_pos || handle.major,
              total_draw_cnt = 0, all_done = 0;
 
-         if (this.lbls_both_sides)
-            label_g.push(axis_g.append("svg:g").attr("class","axis_labels"));
-
          // function called when text is drawn to analyze width, required to correctly scale all labels
          function process_drawtext_ready(painter) {
+            
+            max_lbl_width = Math.max(max_lbl_width, this.result_width); 
+            max_lbl_height = Math.max(max_lbl_height, this.result_height);
+            
             let textwidth = this.result_width;
 
             if (textwidth && ((!painter.vertical && !rotate_lbls) || (painter.vertical && rotate_lbls)) && !painter.log) {
@@ -963,110 +986,99 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                if (!this.gap_before) maxwidth = 0.9*this.gap_after; else
                if (!this.gap_after) maxwidth = 0.9*this.gap_before;
                textscale = Math.min(textscale, maxwidth / textwidth);
-            } else if (painter.vertical && max_text_width && this.normal_side && (max_text_width - labeloffset > 20) && (textwidth > max_text_width - labeloffset)) {
-               textscale = Math.min(textscale, (max_text_width - labeloffset) / textwidth);
-            }
+            } 
 
             total_draw_cnt--;
             if ((all_done != 1) || (total_draw_cnt > 0)) return;
 
             all_done = 2; // mark that function is finished
 
-            if ((textscale > 0.01) && (textscale < 0.7) && !painter.vertical && !rotate_lbls && (maxtextlen > 5) && !painter.lbls_both_sides) {
+            if ((textscale > 0.01) && (textscale < 0.7) && !painter.vertical && !rotate_lbls && (maxtextlen > 5)) {
                lbls_tilt = true;
                textscale *= 3;
             }
 
-            for (let cnt = 0; cnt < this.lgs.length; ++cnt) {
-               if ((textscale > 0.01) && (textscale < 1))
-                  painter.TextScaleFactor(1/textscale, this.lgs[cnt]);
-            }
+            if ((textscale > 0.01) && (textscale < 1))
+               painter.TextScaleFactor(1/textscale, this.draw_g);
          }
          
-         for (let lcnt = 0; lcnt < label_g.length; ++lcnt) {
+         let lastpos = 0,
+             fix_coord = this.vertical ? -labeloffset*side : (labeloffset+2)*side + ticks_plusminus*tickSize;
 
-            if (lcnt > 0) side = -side;
+         labelfont = new JSROOT.FontHandler(this.v7EvalAttr("label_font", 41), labelsize);
 
-            let lastpos = 0,
-                fix_coord = this.vertical ? -labeloffset*side : (labeloffset+2)*side + ticks_plusminus*tickSize;
+         this.StartTextDrawing(labelfont, 'font', label_g);
 
-            labelfont = new JSROOT.FontHandler(this.v7EvalAttr("label_font", 41), labelsize);
+         for (let nmajor=0;nmajor<lbl_pos.length;++nmajor) {
 
-            this.StartTextDrawing(labelfont, 'font', label_g[lcnt]);
+            let lbl = this.format(lbl_pos[nmajor], true);
+            if (lbl === null) continue;
 
-            for (let nmajor=0;nmajor<lbl_pos.length;++nmajor) {
+            let pos = Math.round(this.func(lbl_pos[nmajor]));
 
-               let lbl = this.format(lbl_pos[nmajor], true);
-               if (lbl === null) continue;
+            let arg = { text: lbl, color: label_color, latex: 1, draw_g: label_g, normal_side: true };
 
-               let pos = Math.round(this.func(lbl_pos[nmajor]));
+            arg.gap_before = (nmajor>0) ? Math.abs(Math.round(pos - this.func(lbl_pos[nmajor-1]))) : 0,
+            arg.gap_after = (nmajor<lbl_pos.length-1) ? Math.abs(Math.round(this.func(lbl_pos[nmajor+1])-pos)) : 0;
 
-               let arg = { text: lbl, color: label_color, latex: 1, draw_g: label_g[lcnt], normal_side: (lcnt == 0), lgs: label_g };
-
-               arg.gap_before = (nmajor>0) ? Math.abs(Math.round(pos - this.func(lbl_pos[nmajor-1]))) : 0,
-               arg.gap_after = (nmajor<lbl_pos.length-1) ? Math.abs(Math.round(this.func(lbl_pos[nmajor+1])-pos)) : 0;
-
-               if (center_lbls) {
-                  let gap = arg.gap_after || arg.gap_before;
-                  pos = Math.round(pos - (this.vertical ? 0.5*gap : -0.5*gap));
-                  if (!this.IsInsideGrRange(pos, 5)) continue;
-               }
-
-               maxtextlen = Math.max(maxtextlen, lbl.length);
-               
-               pos -= this.axis_shift;
-
-               if ((startingSize || endingSize) && !this.IsInsideGrRange(pos, -Math.abs(startingSize), -Math.abs(endingSize))) continue;
-
-               if (this.vertical) {
-                  arg.x = fix_coord;
-                  arg.y = pos;
-                  arg.align = rotate_lbls ? ((side<0) ? 23 : 20) : ((side<0) ? 12 : 32);
-               } else {
-                  arg.x = pos;
-                  arg.y = fix_coord;
-                  arg.align = rotate_lbls ? ((side<0) ? 12 : 32) : ((side<0) ? 20 : 23);
-               }
-
-               if (rotate_lbls) arg.rotate = 270;
-
-               arg.post_process = process_drawtext_ready;
-
-               total_draw_cnt++;
-               this.DrawText(arg);
-
-               if (lastpos && (pos!=lastpos) && ((this.vertical && !rotate_lbls) || (!this.vertical && rotate_lbls))) {
-                  let axis_step = Math.abs(pos-lastpos);
-                  textscale = Math.min(textscale, 0.9*axis_step/labelsize);
-               }
-
-               lastpos = pos;
+            if (center_lbls) {
+               let gap = arg.gap_after || arg.gap_before;
+               pos = Math.round(pos - (this.vertical ? 0.5*gap : -0.5*gap));
+               if (!this.IsInsideGrRange(pos, 5)) continue;
             }
 
-            if (this.order)
-               this.DrawText({ color: label_color,
-                               x: this.vertical ? side*5 : this.GrRange(5),
-                               y: this.has_obstacle ? fix_coord : (this.vertical ? this.GrRange(3) : -3*side),
-                               align: this.vertical ? ((side<0) ? 30 : 10) : ((this.has_obstacle ^ (side < 0)) ? 13 : 10),
-                               latex: 1,
-                               text: '#times' + this.formatExp(10, this.order),
-                               draw_g: label_g[lcnt]
-               });
+            maxtextlen = Math.max(maxtextlen, lbl.length);
+            
+            pos -= this.axis_shift;
 
+            if ((startingSize || endingSize) && !this.IsInsideGrRange(pos, -Math.abs(startingSize), -Math.abs(endingSize))) continue;
+
+            if (this.vertical) {
+               arg.x = fix_coord;
+               arg.y = pos;
+               arg.align = rotate_lbls ? ((side<0) ? 23 : 20) : ((side<0) ? 12 : 32);
+            } else {
+               arg.x = pos;
+               arg.y = fix_coord;
+               arg.align = rotate_lbls ? ((side<0) ? 12 : 32) : ((side<0) ? 20 : 23);
+            }
+
+            if (rotate_lbls) arg.rotate = 270;
+
+            arg.post_process = process_drawtext_ready;
+
+            total_draw_cnt++;
+            this.DrawText(arg);
+
+            if (lastpos && (pos!=lastpos) && ((this.vertical && !rotate_lbls) || (!this.vertical && rotate_lbls))) {
+               let axis_step = Math.abs(pos-lastpos);
+               textscale = Math.min(textscale, 0.9*axis_step/labelsize);
+            }
+
+            lastpos = pos;
          }
 
-         totalTextCallbacks += label_g.length;
-         for (let lcnt = 0; lcnt < label_g.length; ++lcnt)
-            this.FinishTextDrawing(label_g[lcnt], () => {
-              if (lbls_tilt)
-                 label_g[lcnt].selectAll("text").each(() => {
-                     let txt = d3.select(this), tr = txt.attr("transform");
-                     txt.attr("transform", tr + " rotate(25)").style("text-anchor", "start");
-                 });
-               checkTextCallBack(true);
+         if (this.order)
+            this.DrawText({ color: label_color,
+                            x: this.vertical ? side*5 : this.GrRange(5),
+                            y: this.has_obstacle ? fix_coord : (this.vertical ? this.GrRange(3) : -3*side),
+                            align: this.vertical ? ((side<0) ? 30 : 10) : ((this.has_obstacle ^ (side < 0)) ? 13 : 10),
+                            latex: 1,
+                            text: '#times' + this.formatExp(10, this.order),
+                            draw_g: label_g
             });
 
-         if (label_g.length > 1) side = -side;
+         totalTextCallbacks += 1;
+
+         this.FinishTextDrawing(label_g, () => {
+           if (lbls_tilt)
+              label_g.selectAll("text").each(() => {
+                  let txt = d3.select(this), tr = txt.attr("transform");
+                  txt.attr("transform", tr + " rotate(25)").style("text-anchor", "start");
+              });
+
+            checkTextCallBack(true);
+         });
 
          if (labelfont) labelsize = labelfont.size; // use real font size
       }
@@ -1083,71 +1095,44 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       let fTitle = this.v7EvalAttr("title", "");
       if (fTitle && !disable_axis_drawing) {
-         let title_g = axis_g.append("svg:g").attr("class", "axis_title"),
-             fTitleSize = this.v7EvalAttr("title_size", 0.03),
-             fTitleOffset = this.v7EvalAttr("title_offset", this.vertical ? 0.5 : 1.5),
+         title_g = axis_g.append("svg:g").attr("class", "axis_title");
+         
+         let fTitleSize = this.v7EvalAttr("title_size", 0.03),
              title_fontsize = (fTitleSize >= 1) ? fTitleSize : Math.round(fTitleSize * text_scaling_size),
-             title_offest_k = 1.6*(fTitleSize < 1 ? fTitleSize : fTitleSize/(this.canv_painter().pad_height() || 10)),
              title_position = this.v7EvalAttr("title_position", false),
              center = (title_position == "center"),
              opposite = (title_position == "left"),
              rotate = this.v7EvalAttr("title_rotate", false) ? -1 : 1,
-             title_color = this.v7EvalColor("title_color", "black"),
-             shift_x = 0, shift_y = 0;
-             
+             title_color = this.v7EvalColor("title_color", "black");
+         
+         this.fTitleOffset = this.v7EvalLength("title_offset", scaling_size, 0); 
          this.fTitlePos = title_position; 
 
          this.StartTextDrawing(this.v7EvalAttr("title_font", 41), title_fontsize, title_g);
 
-         this.title_align = center ? "middle" : ((opposite ^ (this.gr_range > 0)) ? "begin" : "end");
+         this.title_align = center ? "middle" : (opposite ? "begin" : "end");
 
          if (this.vertical) {
-            title_offest_k *= -side*pad_w;
-
-            shift_x = Math.round(title_offest_k*fTitleOffset);
-
-            if ((this.name == "zaxis") && ('getBoundingClientRect' in axis_g.node())) {
-               // special handling for color palette labels - draw them always on right side
-               let rect = axis_g.node().getBoundingClientRect();
-               if (shift_x < rect.width - tickSize) shift_x = Math.round(rect.width - tickSize);
-            }
-
-            shift_y = Math.round(center ? this.gr_range/2 : (opposite ? 0 : this.gr_range));
+            title_shift_x = Math.round(side*this.fTitleOffset);
+            title_shift_y = Math.round(center ? this.gr_range/2 : (opposite ? 0 : this.gr_range));
 
             this.DrawText({ align: this.title_align+";middle",
                             rotate: (rotate<0) ? 90 : 270,
                             text: fTitle, color: title_color, draw_g: title_g });
          } else {
-            title_offest_k *= side*pad_h;
-
-            shift_x = Math.round(center ? this.gr_range/2 : (opposite ? 0 : this.gr_range));
-            shift_y = Math.round(title_offest_k*fTitleOffset);
+            title_shift_x = Math.round(center ? this.gr_range/2 : (opposite ? 0 : this.gr_range));
+            title_shift_y = Math.round(side*this.fTitleOffset);
             this.DrawText({ align: this.title_align+";middle",
                             rotate: (rotate<0) ? 180 : 0,
                             text: fTitle, color: title_color, draw_g: title_g });
          }
 
-         let axis_rect = null;
-         if (this.vertical && (fTitleOffset == 0) && ('getBoundingClientRect' in axis_g.node()))
-            axis_rect = axis_g.node().getBoundingClientRect();
-
          totalTextCallbacks++;
          this.FinishTextDrawing(title_g, () => {
-            if (axis_rect) {
-               let title_rect = title_g.node().getBoundingClientRect();
-               shift_x = (side>0) ? Math.round(axis_rect.left - title_rect.right - title_fontsize*0.3) :
-                                    Math.round(axis_rect.right - title_rect.left + title_fontsize*0.3);
-            }
-
-            title_g.attr('transform', 'translate(' + shift_x + ',' + shift_y +  ')')
-                   .property('shift_x', shift_x)
-                   .property('shift_y', shift_y);
-
             checkTextCallBack(true);
          });
 
-
-         this.AddTitleDrag(title_g, title_offest_k);
+         this.AddTitleDrag(title_g, side);
       }
 
       this.position = 0;
@@ -1552,11 +1537,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       let layer = this.svg_frame().select(".axis_layer");
 
       this.x_handle.invert_side = false;
-      this.x_handle.lbls_both_sides = false;
       this.x_handle.has_obstacle = false;
 
       this.y_handle.invert_side = false; // ((this.options.AxisPos % 10) === 1) || (pad.fTicky > 1);
-      this.y_handle.lbls_both_sides = false;
 
       let draw_horiz = this.swap_xy ? this.y_handle : this.x_handle,
           draw_vertical = this.swap_xy ? this.x_handle : this.y_handle,

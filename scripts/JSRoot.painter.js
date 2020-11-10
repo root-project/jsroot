@@ -2682,7 +2682,7 @@ JSROOT.define(['d3'], (d3) => {
     * are there good solution?
     * @private */
    ObjectPainter.prototype.GetBoundarySizes = function(elem) {
-      if (elem === null) { console.warn('empty node in GetBoundarySizes'); return { width: 0, height: 0 }; }
+      if (!elem) { console.warn('empty node in GetBoundarySizes'); return { width: 0, height: 0 }; }
       let box = elem.getBoundingClientRect(); // works always, but returns sometimes results in ex values, which is difficult to use
       if (parseFloat(box.width) > 0) box = elem.getBBox(); // check that elements visible, request precise value
       let res = { width: parseInt(box.width), height: parseInt(box.height) };
@@ -2942,6 +2942,7 @@ JSROOT.define(['d3'], (d3) => {
       if (arg.scale) this.TextScaleFactor(1. * arg.box.height / arg.height, arg.draw_g);
 
       arg.result_width = arg.box.width;
+      arg.result_height = arg.box.height;
 
       // in some cases
       if (typeof arg.post_process == 'function')
