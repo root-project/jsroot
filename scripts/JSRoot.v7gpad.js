@@ -120,7 +120,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Evaluate RAttrText properties
      * @return {Object} FontHandler, can be used directly for the text drawing
      * @private */
-   JSROOT.ObjectPainter.prototype.v7EvalFont = function(name, dflts) {
+   JSROOT.ObjectPainter.prototype.v7EvalFont = function(name, dflts, fontScale) {
 
       if (!dflts) dflts = {}; else
       if (typeof dflts == "number") dflts = { size: dflts };
@@ -131,11 +131,18 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           text_color   = this.v7EvalColor( name + "_color", dflts.color || "none"),
           text_font    = this.v7EvalAttr( name + "_font", dflts.font || 41);
 
+       if (typeof text_size == "string") text_size = parseFloat(text_size);
+       if (isNaN(text_size) || (text_size <= 0)) text_size = 12;
+       if (text_size < 0.5) {
+         if (!fontScale) fontScale = this.pad_height() || 10;
+         text_size*=fontScale;
+      }
+
        let handler = new JSROOT.FontHandler(text_font, text_size);
 
-       if (text_angle) handler.angle = -1 * text_angle;
-       if (text_align !== "none") handler.align = text_align;
-       if (text_color !== "none") handler.color = text_color;
+       if (text_angle) handler.setAngle(-1 * text_angle);
+       if (text_align !== "none") handler.setAlign(text_align);
+       if (text_color !== "none") handler.setColor(text_color);
 
        return handler;
     }
@@ -951,7 +958,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          let pos = Math.round(this.func(lbl_pos[nmajor]));
 
-         let arg = { text: lbl, color: labelsFont.color || "black", latex: 1, draw_g: label_g, normal_side: true };
+         let arg = { text: lbl, latex: 1, draw_g: label_g };
 
          arg.gap_before = (nmajor>0) ? Math.abs(Math.round(pos - this.func(lbl_pos[nmajor-1]))) : 0,
          arg.gap_after = (nmajor<lbl_pos.length-1) ? Math.abs(Math.round(this.func(lbl_pos[nmajor+1])-pos)) : 0;
@@ -994,8 +1001,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
 
       if (this.order)
-         this.DrawText({ color: labelsFont.color || "black",
-                         x: this.vertical ? side*5 : this.GrRange(5),
+         this.DrawText({ x: this.vertical ? side*5 : this.GrRange(5),
                          y: this.has_obstacle ? fix_coord : (this.vertical ? this.GrRange(3) : -3*side),
                          align: this.vertical ? ((side<0) ? 30 : 10) : ((this.has_obstacle ^ (side < 0)) ? 13 : 10),
                          latex: 1,

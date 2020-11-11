@@ -1023,6 +1023,21 @@ JSROOT.define(['d3'], (d3) => {
          selection.attr("font-style", this.style);
    }
 
+   /** @summary Set text color (optional) */
+   FontHandler.prototype.setColor = function(color) {
+      this.color = color;
+   }
+
+   /** @summary Set text align (optional) */
+   FontHandler.prototype.setAlign = function(align) {
+      this.align = align;
+   }
+
+   /** @summary Set text angle (optional) */
+   FontHandler.prototype.setAngle = function(angle) {
+      this.angle = angle;
+   }
+
    /** @summary Clears all font-related attributes */
    FontHandler.prototype.clearFont = function(selection) {
       selection.attr("font-family", null)
@@ -2842,6 +2857,17 @@ JSROOT.define(['d3'], (d3) => {
 
       if (!arg.text) arg.text = "";
 
+      arg.draw_g = arg.draw_g || this.draw_g;
+
+      let font = arg.draw_g.property('text_font');
+      arg.font = font; // use in latex conversion
+
+      if (font) {
+         if (font.color && !arg.color) arg.color = font.color;
+         if (font.align && !arg.align) arg.align = font.align;
+         if (font.angle && !arg.angle) arg.angle = font.angle;
+      }
+
       let align = ['start', 'middle'];
 
       if (typeof arg.align == 'string') {
@@ -2860,7 +2886,6 @@ JSROOT.define(['d3'], (d3) => {
             align[1] = 'top';
       }
 
-      arg.draw_g = arg.draw_g || this.draw_g;
       if (arg.latex === undefined) arg.latex = 1; //  latex 0-text, 1-latex, 2-math
       arg.align = align;
       arg.x = arg.x || 0;
@@ -2886,15 +2911,11 @@ JSROOT.define(['d3'], (d3) => {
       arg.draw_g.property('all_args').push(arg);
       arg.ready = false; // indicates if drawing is ready for post-processing
 
-      let font = arg.draw_g.property('text_font'),
-          use_mathjax = (arg.latex == 2);
+      let use_mathjax = (arg.latex == 2);
 
       if (arg.latex === 1)
          use_mathjax = (JSROOT.settings.Latex == JSROOT.constants.Latex.AlwaysMathJax) ||
                        ((JSROOT.settings.Latex == JSROOT.constants.Latex.MathJax) && arg.text.match(/[#{\\]/g));
-
-      arg.font = font; // use in latex conversion
-
 
       if (!use_mathjax || arg.nomathjax) {
 
