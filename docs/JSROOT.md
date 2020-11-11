@@ -7,7 +7,7 @@ It is the successor of the JSRootIO project.
 
 ## Installing JSROOT
 
-In most practical cases it is not necessary to install JSROOT - it can be used directly from project web sites <https://root.cern/js/> and <http://jsroot.gsi.de/>.
+In most practical cases it is not necessary to install JSROOT - it can be used directly from project web sites <https://root.cern/js/> and <https://jsroot.gsi.de/>.
 
 When required, there are following alternatives to install JSROOT on other web servers:
 

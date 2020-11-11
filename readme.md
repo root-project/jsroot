@@ -22,7 +22,7 @@ Project web pages:
 
 [https://root.cern/js/](https://root.cern/js/)
 
-[http://jsroot.gsi.de](http://jsroot.gsi.de/)
+[https://jsroot.gsi.de](https://jsroot.gsi.de/)
 
 
 # Documentation
