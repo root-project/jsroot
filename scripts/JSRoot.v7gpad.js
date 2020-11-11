@@ -893,7 +893,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           textscale = 1, maxtextlen = 0, lbls_tilt = false,
           label_g = axis_g.append("svg:g").attr("class","axis_labels"),
           lbl_pos = this.handle.lbl_pos || this.handle.major,
-          max_lbl_width = 0, max_lbl_height = 0;
+          max_lbl_width = 0, max_lbl_height = 0, drawCnt = 0, resolveFunc;
 
       // function called when text is drawn to analyze width, required to correctly scale all labels
       function process_drawtext_ready(painter) {
@@ -909,6 +909,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if (!this.gap_after) maxwidth = 0.9*this.gap_before;
             textscale = Math.min(textscale, maxwidth / textwidth);
          }
+
+         drawCnt--;
+         if ((drawCnt === 0) && resolveFunc) resolveFunc(true);
       }
 
       let lastpos = 0,
@@ -956,6 +959,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          arg.post_process = process_drawtext_ready;
 
+         drawCnt++;
          this.DrawText(arg);
 
          if (lastpos && (pos!=lastpos) && ((this.vertical && !rotate_lbls) || (!this.vertical && rotate_lbls))) {
@@ -976,33 +980,38 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                          draw_g: label_g
          });
 
-      return new Promise(resolveFunc => {
+      return new Promise(resolve => {
+         if (drawCnt == 0)
+            resolve(true);
+         else
+            resolveFunc = resolve;
+      }).then(() => {
+         if ((textscale > 0.01) && (textscale < 0.8) && !this.vertical && !rotate_lbls && (maxtextlen > 5)) {
 
-         this.FinishTextDrawing(label_g, () => {
-            if ((textscale > 0.01) && (textscale < 0.8) && !this.vertical && !rotate_lbls && (maxtextlen > 5)) {
+            lbls_tilt = true;
+            textscale *= 3;
+         }
 
-               lbls_tilt = true;
-               textscale *= 3;
-            }
+         if ((textscale > 0.01) && (textscale < 1))
+            this.TextScaleFactor(1/textscale, this.draw_g);
 
-            if ((textscale > 0.01) && (textscale < 1))
-               this.TextScaleFactor(1/textscale, this.draw_g);
+         return this.FinishTextPromise(label_g);
+      }).then(() => {
 
-           if (lbls_tilt)
-              label_g.selectAll("text").each(function () {
-                  let txt = d3.select(this), tr = txt.attr("transform");
-                  txt.attr("transform", tr + " rotate(25)").style("text-anchor", "start");
-              });
+        if (lbls_tilt)
+           label_g.selectAll("text").each(function () {
+               let txt = d3.select(this), tr = txt.attr("transform");
+               txt.attr("transform", tr + " rotate(25)").style("text-anchor", "start");
+           });
 
-            if (this.vertical) {
-               gaps[side] += Math.round(max_lbl_width + 0.5*this.labelsSize);
-            } else {
-               let tilt_height = lbls_tilt ? max_lbl_width * Math.sin(25/180*Math.PI) + max_lbl_height * (Math.cos(25/180*Math.PI) + 0.5) : 0;
-               gaps[side] += Math.round(Math.max(1.5*max_lbl_height, 1.5*this.labelsSize, tilt_height));
-            }
+         if (this.vertical) {
+            gaps[side] += Math.round(max_lbl_width + 0.5*this.labelsSize);
+         } else {
+            let tilt_height = lbls_tilt ? max_lbl_width * Math.sin(25/180*Math.PI) + max_lbl_height * (Math.cos(25/180*Math.PI) + 0.5) : 0;
+            gaps[side] += Math.round(Math.max(1.5*max_lbl_height, 1.5*this.labelsSize, tilt_height));
+         }
 
-            resolveFunc(gaps);
-         });
+         return gaps;
       });
    }
 
@@ -1108,15 +1117,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                 .property('shift_x', title_shift_x)
                 .property('shift_y', title_shift_y);
 
-         return new Promise(resolveFunc => {
-            this.FinishTextDrawing(title_g, () => {
+         this.AddTitleDrag(title_g, side);
 
-               this.AddTitleDrag(title_g, side);
-
-               resolveFunc(true);
-            });
-         });
-
+         return this.FinishTextPromise(title_g);
       });
 
    }
