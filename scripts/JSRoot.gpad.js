@@ -553,8 +553,53 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       title_g.style("cursor", "move").call(drag_move);
    }
 
+
+   TAxisPainter.prototype.DrawTicks = function(axis_g, handle, side, tickSize, ticksPlusMinus, secondShift, real_draw) {
+      let res = "", res2 = "", lastpos = 0, lasth = 0;
+      this.ticks = [];
+
+      while (handle.next(true)) {
+
+         let h1 = Math.round(tickSize/4), h2 = 0;
+
+         if (handle.kind < 3)
+            h1 = Math.round(tickSize/2);
+
+         if (handle.kind == 1) {
+            // if not showing labels, not show large tick
+            // FIXME: for labels last tick is smaller,
+            if (/*(this.kind == "labels") || */ (this.format(handle.tick,true) !== null)) h1 = tickSize;
+            this.ticks.push(handle.grpos); // keep graphical positions of major ticks
+         }
+
+         if (ticksPlusMinus > 0) h2 = -h1; else
+         if (side < 0) { h2 = -h1; h1 = 0; } else { h2 = 0; }
+
+         if (res.length == 0) {
+            res = this.vertical ? ("M"+h1+","+handle.grpos) : ("M"+handle.grpos+","+(-h1));
+            res2 = this.vertical ? ("M"+(secondShift-h1)+","+handle.grpos) : ("M"+handle.grpos+","+(secondShift+h1));
+         } else {
+            res += this.vertical ? ("m"+(h1-lasth)+","+(handle.grpos-lastpos)) : ("m"+(handle.grpos-lastpos)+","+(lasth-h1));
+            res2 += this.vertical ? ("m"+(lasth-h1)+","+(handle.grpos-lastpos)) : ("m"+(handle.grpos-lastpos)+","+(h1-lasth));
+         }
+
+         res += this.vertical ? ("h"+ (h2-h1)) : ("v"+ (h1-h2));
+         res2 += this.vertical ? ("h"+ (h1-h2)) : ("v"+ (h2-h1));
+
+         lastpos = handle.grpos;
+         lasth = h2;
+      }
+
+      if ((res.length > 0) && real_draw)
+         axis_g.append("svg:path").attr("d", res).call(this.lineatt.func);
+
+      if ((secondShift!==0) && (res2.length>0) && real_draw)
+         axis_g.append("svg:path").attr("d", res2).call(this.lineatt.func);
+
+   }
+
    /** @summary function draws  TAxis or TGaxis object  */
-   TAxisPainter.prototype.DrawAxis = function(layer, w, h, transform, second_shift, disable_axis_drawing, max_text_width) {
+   TAxisPainter.prototype.DrawAxis = function(layer, w, h, transform, secondShift, disable_axis_drawing, max_text_width) {
 
       let axis = this.GetObject(), chOpt = "",
           is_gaxis = (axis && axis._typename === 'TGaxis'),
@@ -576,8 +621,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       };
 
       // shift for second ticks set (if any)
-      if (!second_shift) second_shift = 0; else
-      if (this.invert_side) second_shift = -second_shift;
+      if (!secondShift) secondShift = 0; else
+      if (this.invert_side) secondShift = -secondShift;
 
       if (is_gaxis) {
          this.createAttLine({ attr: axis });
@@ -612,7 +657,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       axis_g.attr("transform", transform || null);
 
-      let side = 1, ticks_plusminus = 0,
+      let side = 1, ticksPlusMinus = 0,
           text_scaling_size = Math.min(pad_w, pad_h),
           optionPlus = (chOpt.indexOf("+")>=0),
           optionMinus = (chOpt.indexOf("-")>=0),
@@ -628,59 +673,19 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (is_gaxis && axis.TestBit(JSROOT.EAxisBits.kTickPlus)) optionPlus = true;
       if (is_gaxis && axis.TestBit(JSROOT.EAxisBits.kTickMinus)) optionMinus = true;
 
-      if (optionPlus && optionMinus) { side = 1; ticks_plusminus = 1; } else
+      if (optionPlus && optionMinus) { side = 1; ticksPlusMinus = 1; } else
       if (optionMinus) { side = (swap_side ^ vertical) ? 1 : -1; } else
       if (optionPlus) { side = (swap_side ^ vertical) ? -1 : 1; }
 
       tickSize = Math.round((optionSize ? tickSize : 0.03) * scaling_size);
-
       if (this.max_tick_size && (tickSize > this.max_tick_size)) tickSize = this.max_tick_size;
-
-      let res = "", res2 = "", lastpos = 0, lasth = 0;
 
       // first draw ticks
 
-      this.ticks = [];
-
       let handle = this.CreateTicks(false, optionNoexp, optionNoopt, optionInt);
 
-      while (handle.next(true)) {
+      this.DrawTicks(axis_g, handle, side, tickSize, ticksPlusMinus, secondShift, draw_lines && !disable_axis_drawing);
 
-         let h1 = Math.round(tickSize/4), h2 = 0;
-
-         if (handle.kind < 3)
-            h1 = Math.round(tickSize/2);
-
-         if (handle.kind == 1) {
-            // if not showing labels, not show large tick
-            // FIXME: for labels last tick is smaller,
-            if (/*(this.kind == "labels") || */ (this.format(handle.tick,true) !== null)) h1 = tickSize;
-            this.ticks.push(handle.grpos); // keep graphical positions of major ticks
-         }
-
-         if (ticks_plusminus > 0) h2 = -h1; else
-         if (side < 0) { h2 = -h1; h1 = 0; } else { h2 = 0; }
-
-         if (res.length == 0) {
-            res = vertical ? ("M"+h1+","+handle.grpos) : ("M"+handle.grpos+","+(-h1));
-            res2 = vertical ? ("M"+(second_shift-h1)+","+handle.grpos) : ("M"+handle.grpos+","+(second_shift+h1));
-         } else {
-            res += vertical ? ("m"+(h1-lasth)+","+(handle.grpos-lastpos)) : ("m"+(handle.grpos-lastpos)+","+(lasth-h1));
-            res2 += vertical ? ("m"+(lasth-h1)+","+(handle.grpos-lastpos)) : ("m"+(handle.grpos-lastpos)+","+(h1-lasth));
-         }
-
-         res += vertical ? ("h"+ (h2-h1)) : ("v"+ (h1-h2));
-         res2 += vertical ? ("h"+ (h1-h2)) : ("v"+ (h2-h1));
-
-         lastpos = handle.grpos;
-         lasth = h2;
-      }
-
-      if ((res.length > 0) && !disable_axis_drawing && draw_lines)
-         axis_g.append("svg:path").attr("d", res).call(this.lineatt.func);
-
-      if ((second_shift!==0) && (res2.length>0) && !disable_axis_drawing  && draw_lines)
-         axis_g.append("svg:path").attr("d", res2).call(this.lineatt.func);
 
       let labelsize = Math.round( (axis.fLabelSize < 1) ? axis.fLabelSize * text_scaling_size : axis.fLabelSize);
       if ((labelsize <= 0) || (Math.abs(axis.fLabelOffset) > 1.1)) optionUnlab = true; // disable labels when size not specified
@@ -734,7 +739,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if (lcnt > 0) side = -side;
 
             let lastpos = 0,
-                fix_coord = vertical ? -labeloffset*side : (labeloffset+2)*side + ticks_plusminus*tickSize;
+                fix_coord = vertical ? -labeloffset*side : (labeloffset+2)*side + ticksPlusMinus*tickSize;
 
             labelfont = new JSROOT.FontHandler(axis.fLabelFont, labelsize);
 
