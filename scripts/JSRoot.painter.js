@@ -2692,7 +2692,18 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /** @summary Finish text drawing
-    * @desc Should be called to complete all text drawing operations */
+    * @returns {Promise} when done
+    * @private */
+   ObjectPainter.prototype.FinishTextPromise = function(draw_g) {
+      return new Promise(resolveFunc => {
+          this.FinishTextDrawing(draw_g, resolveFunc);
+      });
+   }
+
+   /** @summary Finish text drawing
+    * @desc Should be called to complete all text drawing operations
+    * @param {function} call_ready - callback function
+    * @private */
    ObjectPainter.prototype.FinishTextDrawing = function(draw_g, call_ready, checking_mathjax) {
       if (!draw_g) draw_g = this.draw_g;
 
@@ -2705,13 +2716,14 @@ JSROOT.define(['d3'], (d3) => {
       let all_args = draw_g.property('all_args'), missing = 0;
       if (!all_args) {
          console.log('Text drawing is finished - why?????');
-         return 0;
+         all_args = [];
       }
 
       all_args.forEach(arg => { if (!arg.ready) missing++; });
 
       if (missing > 0) {
-         if (call_ready) draw_g.node().text_callback = call_ready;
+         if (typeof call_ready == 'function')
+            draw_g.node().text_callback = call_ready;
          return 0;
       }
 

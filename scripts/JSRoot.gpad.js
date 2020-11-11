@@ -604,7 +604,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           textscale = 1, maxtextlen = 0, labelfont = null,
           label_g = [ axis_g.append("svg:g").attr("class","axis_labels") ],
           lbl_pos = handle.lbl_pos || handle.major,
-          firstResolve, numDraw = 0;
+          firstResolve, numDraw = 0, lbl_tilt = false;
 
       if (this.lbls_both_sides)
          label_g.push(axis_g.append("svg:g").attr("class","axis_labels").attr("transform", vertical ? "translate(" + w + ",0)" : "translate(0," + (-h) + ")"));
@@ -699,34 +699,33 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          else
             firstResolve = resolve;
       }).then(() => {
-         let lbl_tilt = ((textscale > 0.01) && (textscale < 0.7) && !this.vertical && !rotate_lbls && (maxtextlen > 5) && (label_g.length == 1));
+         lbl_tilt = ((textscale > 0.01) && (textscale < 0.7) && !this.vertical && !rotate_lbls && (maxtextlen > 5) && (label_g.length == 1));
          if (lbl_tilt) textscale *= 3;
 
          if ((textscale > 0.01) && (textscale < 1))
             for (let cnt = 0; cnt < label_g.length; ++cnt)
                this.TextScaleFactor(1/textscale, label_g[cnt]);
 
-         return new Promise(resolveFunc => {
-            let all_done = label_g.length;
-            for (let lcnt = 0; lcnt < label_g.length; ++lcnt)
-               this.FinishTextDrawing(label_g[lcnt], () => {
-                  if (--all_done !== 0) return;
+         let arr = [];
+         for (let lcnt = 0; lcnt < label_g.length; ++lcnt)
+            arr.push(this.FinishTextPromise(label_g[lcnt]));
 
-                  if (lbl_tilt)
-                     label_g[0].selectAll("text").each(function() {
-                        let txt = d3.select(this), tr = txt.attr("transform");
-                        txt.attr("transform", tr + " rotate(25)").style("text-anchor", "start");
-                     });
+         return Promise.all(arr);
+      }).then(() => {
 
-                  if (labelfont) labelsize = labelfont.size; // use real font size
+         if (lbl_tilt)
+            label_g[0].selectAll("text").each(function() {
+               let txt = d3.select(this), tr = txt.attr("transform");
+               txt.attr("transform", tr + " rotate(25)").style("text-anchor", "start");
+            });
 
-                  if (label_g.length > 1) side = -side;  // FIXME: why it is here???
+         if (labelfont) labelsize = labelfont.size; // use real font size
 
-                  resolveFunc({ side: side, labelsize: labelsize });
-               });
-         });
+         if (label_g.length > 1) side = -side;  // FIXME: why it is here???
 
+         return { side: side, labelsize: labelsize };
       });
+
    }
 
    /** @summary function draws  TAxis or TGaxis object  */
@@ -818,6 +817,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (!disable_axis_drawing && !optionUnlab)
          promise = this.DrawLabels(axis_g, axis, w, h, handle, side, labelsize, labeloffset, tickSize, ticksPlusMinus, max_text_width);
 
+      let title_shift_x = 0, title_shift_y = 0, title_g = null, axis_rect = null, title_fontsize = 0;
+
       return promise.then(args => {
          side = args.side;
          labelsize = args.labelsize;
@@ -849,14 +850,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          if (!axis.fTitle || disable_axis_drawing) return true;
 
-         let title_g = axis_g.append("svg:g").attr("class", "axis_title"),
-             title_fontsize = (axis.fTitleSize >= 1) ? axis.fTitleSize : Math.round(axis.fTitleSize * text_scaling_size),
-             title_offest_k = 1.6*(axis.fTitleSize<1 ? axis.fTitleSize : axis.fTitleSize/(this.canv_painter().pad_height() || 10)),
+         title_g = axis_g.append("svg:g").attr("class", "axis_title");
+         title_fontsize = (axis.fTitleSize >= 1) ? axis.fTitleSize : Math.round(axis.fTitleSize * text_scaling_size);
+
+         let title_offest_k = 1.6*(axis.fTitleSize<1 ? axis.fTitleSize : axis.fTitleSize/(this.canv_painter().pad_height() || 10)),
              center = axis.TestBit(JSROOT.EAxisBits.kCenterTitle),
              opposite = axis.TestBit(JSROOT.EAxisBits.kOppositeTitle),
              rotate = axis.TestBit(JSROOT.EAxisBits.kRotateTitle) ? -1 : 1,
-             title_color = this.get_color(is_gaxis ? axis.fTextColor : axis.fTitleColor),
-             shift_x = 0, shift_y = 0;
+             title_color = this.get_color(is_gaxis ? axis.fTextColor : axis.fTitleColor);
 
          this.StartTextDrawing(axis.fTitleFont, title_fontsize, title_g);
 
@@ -867,15 +868,15 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (vertical) {
             title_offest_k *= -side*pad_w;
 
-            shift_x = Math.round(title_offest_k*axis.fTitleOffset);
+            title_shift_x = Math.round(title_offest_k*axis.fTitleOffset);
 
             if ((this.name == "zaxis") && is_gaxis && ('getBoundingClientRect' in axis_g.node())) {
                // special handling for color palette labels - draw them always on right side
                let rect = axis_g.node().getBoundingClientRect();
-               if (shift_x < rect.width - tickSize) shift_x = Math.round(rect.width - tickSize);
+               if (title_shift_x < rect.width - tickSize) title_shift_x = Math.round(rect.width - tickSize);
             }
 
-            shift_y = Math.round(center ? h/2 : (xor_reverse ? h : 0));
+            title_shift_y = Math.round(center ? h/2 : (xor_reverse ? h : 0));
 
             this.DrawText({ align: this.title_align+";middle",
                             rotate: (rotate<0) ? 90 : 270,
@@ -883,36 +884,35 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          } else {
             title_offest_k *= side*pad_h;
 
-            shift_x = Math.round(center ? w/2 : (xor_reverse ? 0 : w));
-            shift_y = Math.round(title_offest_k*axis.fTitleOffset);
+            title_shift_x = Math.round(center ? w/2 : (xor_reverse ? 0 : w));
+            title_shift_y = Math.round(title_offest_k*axis.fTitleOffset);
             this.DrawText({ align: this.title_align+";middle",
                             rotate: (rotate<0) ? 180 : 0,
                             text: axis.fTitle, color: title_color, draw_g: title_g });
          }
 
-         let axis_rect = null;
          if (vertical && (axis.fTitleOffset == 0) && ('getBoundingClientRect' in axis_g.node()))
             axis_rect = axis_g.node().getBoundingClientRect();
 
-         return new Promise(resolveFunc => {
+         this.AddTitleDrag(title_g, vertical, title_offest_k, swap_side, vertical ? h : w);
 
-            this.FinishTextDrawing(title_g, () => {
+         return this.FinishTextPromise(title_g);
 
-               this.AddTitleDrag(title_g, vertical, title_offest_k, swap_side, vertical ? h : w);
+      }).then(() => {
 
-               if (axis_rect) {
-                  let title_rect = title_g.node().getBoundingClientRect();
-                  shift_x = (side > 0) ? Math.round(axis_rect.left - title_rect.right - title_fontsize*0.3) :
+         if (!title_g) return true;
+
+         if (axis_rect) {
+            let title_rect = title_g.node().getBoundingClientRect();
+            title_shift_x = (side > 0) ? Math.round(axis_rect.left - title_rect.right - title_fontsize*0.3) :
                                          Math.round(axis_rect.right - title_rect.left + title_fontsize*0.3);
-               }
+         }
 
-               title_g.attr('transform', 'translate(' + shift_x + ',' + shift_y + ')')
-                      .property('shift_x', shift_x)
-                      .property('shift_y', shift_y);
+         title_g.attr('transform', 'translate(' + title_shift_x + ',' + title_shift_y + ')')
+                .property('shift_x', title_shift_x)
+                .property('shift_y', title_shift_y);
 
-               resolveFunc(true);
-            });
-         });
+         return true;
 
       });
 
