@@ -117,6 +117,30 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return this.v7EvalAttr(name + "_name", "") || dflt;
    }
 
+   /** @summary Evaluate RAttrText properties
+     * @return {Object} FontHandler, can be used directly for the text drawing
+     * @private */
+   JSROOT.ObjectPainter.prototype.v7EvalFont = function(name, dflts) {
+
+      if (!dflts) dflts = {}; else
+      if (typeof dflts == "number") dflts = { size: dflts };
+
+      let text_size   = this.v7EvalAttr( name + "_size", dflts.size || 12),
+          text_angle   = this.v7EvalAttr( name + "_angle", 0),
+          text_align   = this.v7EvalAttr( name + "_align", "none"),
+          text_color   = this.v7EvalColor( name + "_color", dflts.color || "none"),
+          text_font    = this.v7EvalAttr( name + "_font", dflts.font || 41);
+
+       let handler = new JSROOT.FontHandler(text_font, text_size);
+
+       if (text_angle) handler.angle = -1 * text_angle;
+       if (text_align !== "none") handler.align = text_align;
+       if (text_color !== "none") handler.color = text_color;
+
+       return handler;
+    }
+
+
    /** @summary Create this.fillatt object based on v7 fill attributes
      * @private */
    JSROOT.ObjectPainter.prototype.createv7AttFill = function(prefix) {
@@ -876,7 +900,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
 
       if (res)
-         axis_g.append("svg:path").attr("d", res).call(this.lineatt.func);
+         axis_g.append("svg:path")
+               .attr("d", res)
+               .style('stroke', this.ticksColor || this.lineatt.color);
 
        let gap0 = Math.round(0.25*this.tickSize), gap = Math.round(1.25*this.tickSize);
        return { "-1": (side > 0) || ticks_plusminus ? gap : gap0,
@@ -886,10 +912,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Performs labels drawing
      * @returns {Promise} wwith gaps in both direction */
    RAxisPainter.prototype.DrawLabels = function(axis_g, side, gaps) {
-      let label_color = this.v7EvalColor("labels_color", "black"), // not exists
+      let labelsFont = this.v7EvalFont("labels", { size: 25 }),
           center_lbls = this.IsCenterLabels(),
-          rotate_lbls = this.v7EvalAttr("label_vert", false), // not exists
-          labels_fontid = this.v7EvalAttr("labels_font", 41),   // not exists
+          rotate_lbls = false, // not exists
           textscale = 1, maxtextlen = 0, lbls_tilt = false,
           label_g = axis_g.append("svg:g").attr("class","axis_labels"),
           lbl_pos = this.handle.lbl_pos || this.handle.major,
@@ -917,9 +942,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       let lastpos = 0,
           fix_coord = (this.vertical ? -side : side)*gaps[side] + this.labelsOffset;
 
-      let labelfont = new JSROOT.FontHandler(labels_fontid, this.labelsSize);
-
-      this.StartTextDrawing(labelfont, 'font', label_g);
+      this.StartTextDrawing(labelsFont, 'font', label_g);
 
       for (let nmajor=0;nmajor<lbl_pos.length;++nmajor) {
 
@@ -928,7 +951,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          let pos = Math.round(this.func(lbl_pos[nmajor]));
 
-         let arg = { text: lbl, color: label_color, latex: 1, draw_g: label_g, normal_side: true };
+         let arg = { text: lbl, color: labelsFont.color || "black", latex: 1, draw_g: label_g, normal_side: true };
 
          arg.gap_before = (nmajor>0) ? Math.abs(Math.round(pos - this.func(lbl_pos[nmajor-1]))) : 0,
          arg.gap_after = (nmajor<lbl_pos.length-1) ? Math.abs(Math.round(this.func(lbl_pos[nmajor+1])-pos)) : 0;
@@ -964,14 +987,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          if (lastpos && (pos!=lastpos) && ((this.vertical && !rotate_lbls) || (!this.vertical && rotate_lbls))) {
             let axis_step = Math.abs(pos-lastpos);
-            textscale = Math.min(textscale, 0.9*axis_step/this.labelsSize);
+            textscale = Math.min(textscale, 0.9*axis_step/labelsFont.size);
          }
 
          lastpos = pos;
       }
 
       if (this.order)
-         this.DrawText({ color: label_color,
+         this.DrawText({ color: labelsFont.color || "black",
                          x: this.vertical ? side*5 : this.GrRange(5),
                          y: this.has_obstacle ? fix_coord : (this.vertical ? this.GrRange(3) : -3*side),
                          align: this.vertical ? ((side<0) ? 30 : 10) : ((this.has_obstacle ^ (side < 0)) ? 13 : 10),
@@ -1005,10 +1028,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
            });
 
          if (this.vertical) {
-            gaps[side] += Math.round(max_lbl_width + 0.5*this.labelsSize);
+            gaps[side] += Math.round(max_lbl_width + 0.5*labelsFont.size);
          } else {
             let tilt_height = lbls_tilt ? max_lbl_width * Math.sin(25/180*Math.PI) + max_lbl_height * (Math.cos(25/180*Math.PI) + 0.5) : 0;
-            gaps[side] += Math.round(Math.max(1.5*max_lbl_height, 1.5*this.labelsSize, tilt_height));
+            gaps[side] += Math.round(Math.max(1.5*max_lbl_height, 1.5*labelsFont.size, tilt_height));
          }
 
          return gaps;
@@ -1035,17 +1058,17 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       axis_g.attr("transform", transform || null);
 
+      this.createv7AttLine("line_");
+
       this.endingStyle = this.v7EvalAttr("ending_style", "");
       this.endingSize = Math.round(this.v7EvalLength("ending_size", scaling_size, this.endingStyle ? 0.02 : 0));
       this.startingSize = Math.round(this.v7EvalLength("starting_size", scaling_size, 0));
       this.tickSize = this.v7EvalLength("ticks_size", scaling_size, 0.02);
       this.ticksSide = this.v7EvalAttr("ticks_side", "normal");
+      this.ticksColor = this.v7EvalColor("ticks_color", "");
       this.labelsOffset = this.v7EvalLength("labels_offset", scaling_size, 0);
-      this.labelsSize = this.v7EvalLength("labels_size", scaling_size, 0.03); // not exists
 
       if (this.max_tick_size && (this.tickSize > this.max_tick_size)) this.tickSize = this.max_tick_size;
-
-      this.createv7AttLine("line_");
 
       if (this.standalone)
          this.DrawMainLine(axis_g);
@@ -1054,17 +1077,17 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           optionUnlab = false,  // no labels
           optionNoopt = false,  // no ticks position optimization
           optionInt = false,    // integer labels
-          optionNoexp = false;   // do not create exp
+          optionNoexp = false;  // do not create exp
 
       this.handle = this.CreateTicks(false, optionNoexp, optionNoopt, optionInt);
 
       // first draw ticks
       let tgaps = this.DrawTicks(axis_g, side, true);
 
-      // draw labels (on both sides, when needed)
-      let labels_promise = optionUnlab ? Promise.resolve(tgaps) : this.DrawLabels(axis_g, side, tgaps);
+      // draw labels
+      let labelsPromise = optionUnlab ? Promise.resolve(tgaps) : this.DrawLabels(axis_g, side, tgaps);
 
-      return labels_promise.then(lgaps => {
+      return labelsPromise.then(lgaps => {
          if (JSROOT.settings.Zooming && !this.disable_zooming && !JSROOT.BatchMode) {
             let sz = Math.max(lgaps[side], 10);
 
