@@ -129,7 +129,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           text_angle   = this.v7EvalAttr( name + "_angle", 0),
           text_align   = this.v7EvalAttr( name + "_align", "none"),
           text_color   = this.v7EvalColor( name + "_color", dflts.color || "none"),
-          text_font    = this.v7EvalAttr( name + "_font", dflts.font || 41);
+          text_font    = this.v7EvalAttr( name + "_font", dflts.font || 42);
 
        if (typeof text_size == "string") text_size = parseFloat(text_size);
        if (isNaN(text_size) || (text_size <= 0)) text_size = 12;
@@ -921,7 +921,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    RAxisPainter.prototype.DrawLabels = function(axis_g, side, gaps) {
       let labelsFont = this.v7EvalFont("labels", { size: 25 }),
           center_lbls = this.IsCenterLabels(),
-          rotate_lbls = false, // not exists
+          rotate_lbls = false,
           textscale = 1, maxtextlen = 0, lbls_tilt = false,
           label_g = axis_g.append("svg:g").attr("class","axis_labels"),
           lbl_pos = this.handle.lbl_pos || this.handle.major,
@@ -945,6 +945,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          drawCnt--;
          if ((drawCnt === 0) && resolveFunc) resolveFunc(true);
       }
+
+      labelsFont.roundAngle(180);
+      if (labelsFont.angle) { labelsFont.angle = 270; rotate_lbls = true; }
 
       let lastpos = 0,
           fix_coord = (this.vertical ? -side : side)*gaps[side] + this.labelsOffset;
@@ -984,8 +987,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             arg.y = fix_coord;
             arg.align = rotate_lbls ? ((side<0) ? 12 : 32) : ((side<0) ? 20 : 23);
          }
-
-         if (rotate_lbls) arg.rotate = 270;
 
          arg.post_process = process_drawtext_ready;
 
@@ -1111,19 +1112,18 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          let title_g = axis_g.append("svg:g").attr("class", "axis_title");
 
-         let fTitleSize = this.v7EvalAttr("title_size", 0.03),
-             title_fontsize = (fTitleSize >= 1) ? fTitleSize : Math.round(fTitleSize * text_scaling_size),
+         let titleFont = this.v7EvalFont("title", { size: 0.03 }, pad_h),
              title_position = this.v7EvalAttr("title_position", false),
              center = (title_position == "center"),
              opposite = (title_position == "left"),
-             rotate = this.v7EvalAttr("title_rotate", false) ? -1 : 1,
-             title_color = this.v7EvalColor("title_color", "black"),
              title_shift_x = 0, title_shift_y = 0;
+
+         titleFont.roundAngle(180, this.vertical ? 270 : 0);
 
          this.fTitleOffset = this.v7EvalLength("title_offset", scaling_size, 0);
          this.fTitlePos = title_position;
 
-         this.StartTextDrawing(this.v7EvalAttr("title_font", 41), title_fontsize, title_g);
+         this.StartTextDrawing(titleFont, 'font', title_g);
 
          this.title_align = center ? "middle" : (opposite ? "begin" : "end");
 
@@ -1132,14 +1132,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             title_shift_y = Math.round(center ? this.gr_range/2 : (opposite ? 0 : this.gr_range));
 
             this.DrawText({ align: this.title_align+";middle",
-                            rotate: (rotate<0) ? 90 : 270,
-                            text: fTitle, color: title_color, draw_g: title_g });
+                            text: fTitle, draw_g: title_g });
          } else {
             title_shift_x = Math.round(center ? this.gr_range/2 : (opposite ? 0 : this.gr_range));
             title_shift_y = Math.round(side*(lgaps[side] + this.fTitleOffset));
             this.DrawText({ align: this.title_align+";middle",
-                            rotate: (rotate<0) ? 180 : 0,
-                            text: fTitle, color: title_color, draw_g: title_g });
+                            text: fTitle, draw_g: title_g });
          }
 
          title_g.attr('transform', 'translate(' + title_shift_x + ',' + title_shift_y +  ')')

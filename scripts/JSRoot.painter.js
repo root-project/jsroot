@@ -1038,6 +1038,17 @@ JSROOT.define(['d3'], (d3) => {
       this.angle = angle;
    }
 
+   /** @summary Allign angle to step raster, add optional offset */
+   FontHandler.prototype.roundAngle = function(step, offset) {
+      this.angle = parseInt(this.angle || 0);
+      if (isNaN(this.angle)) this.angle = 0;
+      this.angle = Math.round(this.angle/step) * step + (offset || 0);
+      if (this.angle < 0)
+         this.angle += 360;
+      else if (this.angle >= 360)
+         this.angle -= 360;
+   }
+
    /** @summary Clears all font-related attributes */
    FontHandler.prototype.clearFont = function(selection) {
       selection.attr("font-family", null)
@@ -2865,7 +2876,7 @@ JSROOT.define(['d3'], (d3) => {
       if (font) {
          if (font.color && !arg.color) arg.color = font.color;
          if (font.align && !arg.align) arg.align = font.align;
-         if (font.angle && !arg.angle) arg.angle = font.angle;
+         if (font.angle && !arg.rotate) arg.rotate = font.angle;
       }
 
       let align = ['start', 'middle'];
