@@ -704,6 +704,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return handle;
    }
 
+   /** @summary Is labels should be centered */
    RAxisPainter.prototype.IsCenterLabels = function() {
       if (this.kind === 'labels') return true;
       if (this.kind === 'log') return false;
@@ -732,26 +733,27 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             sign_0 = this.vertical ? (acc_x > 0) : (acc_y > 0); // sign should remain
 
-            // let d = ((this.gr_range > 0) && this.vertical) ? title_length : 0;
-            alt_pos = [0, this.gr_range/2, this.gr_range]; // possible positions
-            let off = this.vertical  ? -title_length/2 : title_length/2;
-            if (this.title_align == "middle") {
-               alt_pos[0] +=  off;
-               alt_pos[2] -=  off;
-            } else if (this.title_align == "begin") {
-               alt_pos[1] -= off;
-               alt_pos[2] -= 2*off;
-            } else { // end
-               alt_pos[0] += 2*off;
-               alt_pos[1] += off;
-            }
-
             if (this.fTitlePos == "center")
                curr_indx = 1;
             else if (this.fTitlePos == "left")
                curr_indx = 0;
             else
                curr_indx = 2;
+
+            // let d = ((this.gr_range > 0) && this.vertical) ? title_length : 0;
+            alt_pos = [0, this.gr_range/2, this.gr_range]; // possible positions
+            let off = this.vertical ? -title_length : title_length,
+                swap = this.IsReverseAxis() ? 2 : 0;
+            if (this.title_align == "middle") {
+               alt_pos[swap] += off/2;
+               alt_pos[2-swap] -= off/2;
+            } else if (this.title_align == "begin") {
+               alt_pos[1] -= off/2;
+               alt_pos[2-swap] -= off;
+            } else { // end
+               alt_pos[swap] += off;
+               alt_pos[1] += off/2;
+            }
 
             alt_pos[curr_indx] = this.vertical ? acc_y : acc_x;
 
@@ -789,7 +791,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
                if (sign_0 === (this.vertical ? (set_x > 0) : (set_y > 0))) {
                   new_x = set_x; new_y = set_y; curr_indx = besti;
-                  title_g.attr('transform', 'translate(' + new_x + ',' + new_y +  ')');
+                  title_g.attr('transform', 'translate(' + Math.round(new_x) + ',' + Math.round(new_y) +  ')');
                }
 
           }).on("end", evnt => {
@@ -832,6 +834,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (this.gr_range < 0)
          return this.gr_range - delta;
       return this.gr_range + delta;
+   }
+
+   /** @summary If axis direction is negative direction */
+   RAxisPainter.prototype.IsReverseAxis = function() {
+      return !this.vertical !== (this.GrRange() > 0);
    }
 
    /** @summary Draw axis ticks
@@ -1080,8 +1087,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (this.standalone)
          this.DrawMainLine(axis_g);
 
-      let text_scaling_size = Math.min(pad_w, pad_h),
-          optionUnlab = false,  // no labels
+      let optionUnlab = false,  // no labels
           optionNoopt = false,  // no ticks position optimization
           optionInt = false,    // integer labels
           optionNoexp = false;  // do not create exp
@@ -1113,7 +1119,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          let title_g = axis_g.append("svg:g").attr("class", "axis_title");
 
          let titleFont = this.v7EvalFont("title", { size: 0.03 }, pad_h),
-             title_position = this.v7EvalAttr("title_position", false),
+             title_position = this.v7EvalAttr("title_position", "right"),
              center = (title_position == "center"),
              opposite = (title_position == "left"),
              title_shift_x = 0, title_shift_y = 0;
@@ -1125,7 +1131,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          this.StartTextDrawing(titleFont, 'font', title_g);
 
-         this.title_align = center ? "middle" : (opposite ? "begin" : "end");
+         this.title_align = center ? "middle" : (opposite ^ this.IsReverseAxis() ? "begin" : "end");
 
          if (this.vertical) {
             title_shift_x = Math.round(-side*(lgaps[side] + this.fTitleOffset));
