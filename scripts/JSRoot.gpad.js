@@ -554,6 +554,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
 
+   /** @summary Draw axis ticks */
    TAxisPainter.prototype.DrawTicks = function(axis_g, handle, side, tickSize, ticksPlusMinus, secondShift, real_draw) {
       let res = "", res2 = "", lastpos = 0, lasth = 0;
       this.ticks = [];
@@ -597,7 +598,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          axis_g.append("svg:path").attr("d", res2).call(this.lineatt.func);
    }
 
-   TAxisPainter.prototype.DrawLabels = function(axis_g, axis, w, h, handle, side, labelsize, labeloffset, tickSize, ticksPlusMinus, max_text_width) {
+   /** @summary Draw axis labels */
+   TAxisPainter.prototype.DrawLabels = function(axis_g, axis, w, h, handle, side, labelSize, labeloffset, tickSize, ticksPlusMinus, max_text_width) {
       let label_color = this.get_color(axis.fLabelColor),
           center_lbls = this.IsCenterLabels(),
           rotate_lbls = axis.TestBit(JSROOT.EAxisBits.kLabelsVert),
@@ -607,7 +609,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           firstResolve, numDraw = 0, lbl_tilt = false;
 
       if (this.lbls_both_sides)
-         label_g.push(axis_g.append("svg:g").attr("class","axis_labels").attr("transform", vertical ? "translate(" + w + ",0)" : "translate(0," + (-h) + ")"));
+         label_g.push(axis_g.append("svg:g").attr("class","axis_labels").attr("transform", this.vertical ? "translate(" + w + ",0)" : "translate(0," + (-h) + ")"));
 
       // function called when text is drawn to analyze width, required to correctly scale all labels
       function process_drawtext_ready(painter) {
@@ -632,7 +634,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          let lastpos = 0,
              fix_coord = this.vertical ? -labeloffset*side : (labeloffset+2)*side + ticksPlusMinus*tickSize;
 
-         labelfont = new JSROOT.FontHandler(axis.fLabelFont, labelsize);
+         labelfont = new JSROOT.FontHandler(axis.fLabelFont, labelSize);
 
          this.StartTextDrawing(labelfont, 'font', label_g[lcnt]);
 
@@ -676,7 +678,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             if (lastpos && (pos!=lastpos) && ((this.vertical && !rotate_lbls) || (!this.vertical && rotate_lbls))) {
                let axis_step = Math.abs(pos-lastpos);
-               textscale = Math.min(textscale, 0.9*axis_step/labelsize);
+               textscale = Math.min(textscale, 0.9*axis_step/labelSize);
             }
 
             lastpos = pos;
@@ -719,11 +721,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                txt.attr("transform", tr + " rotate(25)").style("text-anchor", "start");
             });
 
-         if (labelfont) labelsize = labelfont.size; // use real font size
+         if (labelfont) labelSize = labelfont.size; // use real font size
 
-         if (label_g.length > 1) side = -side;  // FIXME: why it is here???
-
-         return { side: side, labelsize: labelsize };
+         return labelSize;
       });
 
    }
@@ -806,22 +806,20 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       this.DrawTicks(axis_g, handle, side, tickSize, ticksPlusMinus, secondShift, draw_lines && !disable_axis_drawing);
 
-      let labelsize = Math.round( (axis.fLabelSize < 1) ? axis.fLabelSize * text_scaling_size : axis.fLabelSize),
+      let labelSize0 = Math.round( (axis.fLabelSize < 1) ? axis.fLabelSize * text_scaling_size : axis.fLabelSize),
           labeloffset = Math.round(Math.abs(axis.fLabelOffset)*text_scaling_size);
 
-      if ((labelsize <= 0) || (Math.abs(axis.fLabelOffset) > 1.1)) optionUnlab = true; // disable labels when size not specified
+      if ((labelSize0 <= 0) || (Math.abs(axis.fLabelOffset) > 1.1)) optionUnlab = true; // disable labels when size not specified
 
-      let promise = Promise.resolve({ side: side, labelsize: labelsize });
+      let labelsPromise, title_shift_x = 0, title_shift_y = 0, title_g = null, axis_rect = null, title_fontsize = 0;
 
       // draw labels (sometime on both sides)
       if (!disable_axis_drawing && !optionUnlab)
-         promise = this.DrawLabels(axis_g, axis, w, h, handle, side, labelsize, labeloffset, tickSize, ticksPlusMinus, max_text_width);
+         labelsPromise = this.DrawLabels(axis_g, axis, w, h, handle, side, labelSize0, labeloffset, tickSize, ticksPlusMinus, max_text_width);
+      else
+         labelsPromise = Promise.resolve(labelSize0);
 
-      let title_shift_x = 0, title_shift_y = 0, title_g = null, axis_rect = null, title_fontsize = 0;
-
-      return promise.then(args => {
-         side = args.side;
-         labelsize = args.labelsize;
+      return labelsPromise.then(labelSize => {
 
          if (JSROOT.settings.Zooming && !this.disable_zooming && !JSROOT.BatchMode) {
             let r = axis_g.append("svg:rect")
@@ -830,13 +828,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                           .style("cursor", "crosshair");
 
             if (vertical)
-               r.attr("x", (side>0) ? (-2*labelsize - 3) : 3)
+               r.attr("x", (side>0) ? (-2*labelSize - 3) : 3)
                 .attr("y", 0)
-                .attr("width", 2*labelsize + 3)
+                .attr("width", 2*labelSize + 3)
                 .attr("height", h)
             else
-               r.attr("x", 0).attr("y", (side>0) ? 0 : -labelsize - 3)
-                .attr("width", w).attr("height", labelsize + 3);
+               r.attr("x", 0).attr("y", (side>0) ? 0 : -labelSize - 3)
+                .attr("width", w).attr("height", labelSize + 3);
          }
 
          this.position = 0;
