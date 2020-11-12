@@ -127,7 +127,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       let text_size   = this.v7EvalAttr( name + "_size", dflts.size || 12),
           text_angle   = this.v7EvalAttr( name + "_angle", 0),
-          text_align   = this.v7EvalAttr( name + "_align", "none"),
+          text_align   = this.v7EvalAttr( name + "_align", dflts.align || "none"),
           text_color   = this.v7EvalColor( name + "_color", dflts.color || "none"),
           text_font    = this.v7EvalAttr( name + "_font", dflts.font || 42);
 
@@ -4121,11 +4121,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           title_margin = this.v7EvalLength("margin", ph, 0.02),
           title_width  = fw,
           title_height = this.v7EvalLength("height", ph, 0.05),
-          text_size    = this.v7EvalAttr("text_size", 20),
-          text_angle   = -1 * this.v7EvalAttr("text_angle", 0),
-          // text_align   = this.v7EvalAttr("text_align", 22),
-          text_color   = this.v7EvalColor("text_color", "black"),
-          text_font    = this.v7EvalAttr("text_font", 41);
+          textFont     = this.v7EvalFont("text", { size: 24, color: "black", align: 22 });
 
       this.CreateG(false);
 
@@ -4143,9 +4139,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                     .attr("width",title_width).attr("height",title_height);
       }
 
-      let arg = { align: 22, x: title_width/2, y: title_height/2, text: title.fText, rotate: text_angle, color: text_color, latex: 1 };
+      let arg = { x: title_width/2, y: title_height/2, text: title.fText, latex: 1 };
 
-      this.StartTextDrawing(text_font, text_size);
+      this.StartTextDrawing(textFont, 'font');
 
       this.DrawText(arg);
 
