@@ -324,7 +324,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       JSROOT.ObjectPainter.call(this, drawable);
       if (cssprefix) { // drawing from the frame
          this.embedded = true; // indicate that painter embedded into the histo painter
-         axis = JSROOT.Create("TAxis"); // just dummy before all attributes are implemented
          this.csstype = arg1.csstype; // for the moment only via frame one can set axis attributes
          this.cssprefix = cssprefix;
          this.rstyle = arg1.rstyle;
@@ -384,8 +383,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (this.axis && this.axis._timedisplay) {
          this.kind = 'time';
          this.timeoffset = jsrp.getTimeOffset(/*this.histo.fXaxis*/);
+      } else if (this.axis && this.axis.fLabelsIndex) {
+         this.kind = 'labels';
+         delete this.own_labels;
+      } else if (opts.labels) {
+         this.kind = 'labels';
       } else {
-         this.kind = (this.axis && this.axis.fLabelsIndex) ? 'labels' : 'normal';
+         this.kind = 'normal';
       }
 
       if (this.kind == 'time') {
@@ -485,10 +489,16 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    RAxisPainter.prototype.formatLabels = function(d) {
       let indx = Math.round(d);
-      if ((indx < 0) || (indx >= this.axis.fNBinsNoOver)) return null;
-      for (let i = 0; i < this.axis.fLabelsIndex.length; ++i) {
-         let pair = this.axis.fLabelsIndex[i];
-         if (pair.second === indx) return pair.first;
+      if (this.axis && this.axis.fLabelsIndex) {
+         if ((indx < 0) || (indx >= this.axis.fNBinsNoOver)) return null;
+         for (let i = 0; i < this.axis.fLabelsIndex.length; ++i) {
+            let pair = this.axis.fLabelsIndex[i];
+            if (pair.second === indx) return pair.first;
+         }
+      } else {
+         let labels = this.GetObject().fLabels;
+         if (labels && (indx>=0) && (indx < labels.length))
+            return labels[indx];
       }
       return null;
    }
@@ -1163,12 +1173,17 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           pp   = this.pad_painter(),
           pos  = pp.GetCoordinate(drawable.fPos),
           len  = pp.GetPadLength(drawable.fVertical, drawable.fLength),
-          reverse = this.v7EvalAttr("reverse", false),
-          min = this.axis.min,
-          max = this.axis.max;
+          reverse = this.v7EvalAttr("reverse", false), // not yet implemented
+          min = this.v7EvalAttr("min", 0),
+          max = this.v7EvalAttr("max", 100);
 
      // in vertical direction axis drawn in negative direction
      if (drawable.fVertical) len = -len;
+
+     if (drawable.fLabels) {
+        min = 0;
+        max = drawable.fLabels.length;
+     }
 
       //if (sz < 0) {
       //    reverse = true;
@@ -1176,7 +1191,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       //    if (vertical) pos_y = p1.y; else pos_x = p2.x;
       //}
 
-      this.ConfigureAxis("axis", min, max, min, max, drawable.fVertical, undefined, len, { reverse: reverse });
+      this.ConfigureAxis("axis", min, max, min, max, drawable.fVertical, undefined, len, { reverse: reverse, labels: !!drawable.fLabels });
 
       this.CreateG();
 
@@ -1186,9 +1201,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    let drawRAxis = (divid, obj /*, opt*/) => {
-      JSROOT.v7.AssignRAxisMethods(obj.fAxis);
 
-      let painter = new RAxisPainter(obj, obj.fAxis);
+      let painter = new RAxisPainter(obj);
 
       painter.SetDivId(divid);
 
@@ -4479,7 +4493,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    JSROOT.addDrawFunc({ name: "ROOT::Experimental::RLegend", icon: "img_graph", prereq: "v7more", func: "JSROOT.v7.drawLegend", opt: "" });
    JSROOT.addDrawFunc({ name: "ROOT::Experimental::RPaveText", icon: "img_pavetext", prereq: "v7more", func: "JSROOT.v7.drawPaveText", opt: "" });
    JSROOT.addDrawFunc({ name: "ROOT::Experimental::RFrame", icon: "img_frame", func: drawFrame, opt: "" });
-   JSROOT.addDrawFunc({ name: /^ROOT::Experimental::RAxisDrawable/, icon: "img_frame", func: drawRAxis, opt: "" });
+   JSROOT.addDrawFunc({ name: "ROOT::Experimental::RAxisDrawable", icon: "img_frame", func: drawRAxis, opt: "" });
+   JSROOT.addDrawFunc({ name: "ROOT::Experimental::RAxisLabelsDrawable", icon: "img_frame", func: drawRAxis, opt: "" });
 
    JSROOT.v7.RAxisPainter = RAxisPainter;
    JSROOT.v7.RFramePainter = RFramePainter;
