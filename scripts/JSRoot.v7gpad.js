@@ -377,12 +377,18 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.full_max = max;
       this.kind = "normal";
       this.vertical = vertical;
-      this.log = this.v7EvalAttr("log", 0);
+      this.log = false;
+      let _log = this.v7EvalAttr("log", 0);
       this.reverse = opts.reverse || false;
 
-      if (this.axis && this.axis._timedisplay) {
+      if (this.v7EvalAttr("time")) {
          this.kind = 'time';
-         this.timeoffset = jsrp.getTimeOffset(/*this.histo.fXaxis*/);
+         this.timeoffset = 0;
+         let toffset = this.v7EvalAttr("time_offset");
+         if (toffset !== undefined) {
+            toffset = parseFloat(toffset);
+            if (!isNaN(toffset)) this.timeoffset = toffset*1000;
+         }
       } else if (this.axis && this.axis.fLabelsIndex) {
          this.kind = 'labels';
          delete this.own_labels;
@@ -394,15 +400,18 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if (this.kind == 'time') {
          this.func = d3.scaleTime().domain([this.ConvertDate(smin), this.ConvertDate(smax)]);
-      } else if (this.log) {
+      } else if (_log) {
 
          if (smax <= 0) smax = 1;
          if ((smin <= 0) || (smin >= smax))
             smin = smax * 0.0001;
-         let base = 10;
-         if (this.log == 2) base = 2;
-                       else this.log = 1; // FIXME: let use more log base in the future
-         this.func = d3.scaleLog().base(base).domain([smin,smax]);
+         this.log = true;
+         this.logbase = 10;
+         if (Math.abs(_log - Math.exp(1))<0.1)
+            this.logbase = Math.exp(1);
+         else if (_log > 1.9)
+            this.logbase = Math.round(_log);
+         this.func = d3.scaleLog().base(this.logbase).domain([smin,smax]);
       } else {
          this.func = d3.scaleLinear().domain([smin,smax]);
       }
@@ -444,10 +453,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (this.nticks > 8) this.nticks = 8;
 
          let scale_range = this.scale_max - this.scale_min,
-             tf1 = jsrp.getTimeFormat(axis),
+             tf1 = this.v7EvalAttr("time_format", ""),
              tf2 = jsrp.chooseTimeFormat(scale_range / gr_range, false);
 
-         if ((tf1.length == 0) || (scale_range < 0.1 * (this.full_max - this.full_min)))
+         if (!tf1 || (scale_range < 0.1 * (this.full_max - this.full_min)))
             tf1 = jsrp.chooseTimeFormat(scale_range / this.nticks, true);
 
          this.tfunc1 = this.tfunc2 = d3.timeFormat(tf1);
@@ -462,7 +471,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             this.nticks2 = 1;
          }
          this.noexp = this.v7EvalAttr("noexp", false);
-         if ((this.scale_max < 300) && (this.scale_min > 0.3)) this.noexp = true;
+         if ((this.scale_max < 300) && (this.scale_min > 0.3) && (this.logbase == 10)) this.noexp = true;
          this.moreloglabels = this.v7EvalAttr("moreloglbls", false);
 
          this.format = this.formatLog;
@@ -509,8 +518,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return ((rnd === val) && (Math.abs(rnd)<1e9)) ? rnd.toString() : JSROOT.FFormat(val, fmt || JSROOT.gStyle.fStatFormat);
 
       if (val <= 0) return null;
-      let vlog = Math.log10(val), base = 10;
-      if (this.log == 2) { base = 2; vlog = vlog / Math.log10(2); }
+      let vlog = Math.log10(val), base = this.logbase;
+      if (base !== 10) vlog = vlog / Math.log10(base);
       if (this.moreloglabels || (Math.abs(vlog - Math.round(vlog))<0.001)) {
          if (!this.noexp && (asticks != 2))
             return this.formatExp(base, Math.floor(vlog+0.01), val);
@@ -548,7 +557,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          value = Math.round(value/Math.pow(base,order));
          if ((value!=0) && (value!=1)) res = value.toString() + (JSROOT.settings.Latex ? "#times" : "x");
       }
-      res += base.toString();
+      if (Math.abs(base-Math.exp(1)) < 0.001)
+         res += "e";
+      else
+         res += base.toString();
       if (JSROOT.settings.Latex > JSROOT.constants.Latex.Symbols)
          return res + "^{" + order + "}";
       const superscript_symbols = {
@@ -599,7 +611,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return res;
       }
 
-      if ((this.nticks2 > 1) && (this.log != 2)) {
+      if ((this.nticks2 > 1) && (!this.log || (this.logbase === 10))) {
          handle.minor = handle.middle = this.ProduceTicks(handle.major.length, this.nticks2);
 
          let gr_range = Math.abs(this.func.range()[1] - this.func.range()[0]);
