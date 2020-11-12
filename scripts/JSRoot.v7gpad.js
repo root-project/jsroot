@@ -898,9 +898,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       let res = "", ticks_plusminus = 0, lastpos = 0, lasth = 0;
       if (this.ticksSide == "both") {
-         side = 1; ticks_plusminus = 1;
-      } else if (this.ticksSide == "invert")
-         side = -side;
+         side = 1;
+         ticks_plusminus = 1;
+      }
 
       while (this.handle.next(true)) {
 
@@ -1045,14 +1045,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          else
             resolveFunc = resolve;
       }).then(() => {
-         if ((textscale > 0.01) && (textscale < 0.8) && !this.vertical && !rotate_lbls && (maxtextlen > 5)) {
+         if ((textscale > 0.01) && (textscale < 0.8) && !this.vertical && !rotate_lbls && (maxtextlen > 5) && (side>0)) {
 
             lbls_tilt = true;
             textscale *= 3;
          }
 
          if ((textscale > 0.01) && (textscale < 1))
-            this.TextScaleFactor(1/textscale, this.draw_g);
+            this.TextScaleFactor(1/textscale, label_g);
 
          return this.FinishTextPromise(label_g);
       }).then(() => {
@@ -1064,10 +1064,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
            });
 
          if (this.vertical) {
-            gaps[side] += Math.round(max_lbl_width + 0.5*labelsFont.size);
+            gaps[side] += Math.round(max_lbl_width + 0.2*labelsFont.size);
          } else {
-            let tilt_height = lbls_tilt ? max_lbl_width * Math.sin(25/180*Math.PI) + max_lbl_height * (Math.cos(25/180*Math.PI) + 0.5) : 0;
-            gaps[side] += Math.round(Math.max(1.5*max_lbl_height, 1.5*labelsFont.size, tilt_height));
+            let tilt_height = lbls_tilt ? max_lbl_width * Math.sin(25/180*Math.PI) + max_lbl_height * (Math.cos(25/180*Math.PI) + 0.2) : 0;
+            gaps[side] += Math.round(Math.max(1.2*max_lbl_height, 1.2*labelsFont.size, tilt_height));
          }
 
          return gaps;
@@ -1116,6 +1116,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       this.handle = this.CreateTicks(false, optionNoexp, optionNoopt, optionInt);
 
+     if (this.ticksSide == "invert") side = -side;
+
       // first draw ticks
       let tgaps = this.DrawTicks(axis_g, side, true);
 
@@ -1159,12 +1161,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             title_shift_x = Math.round(-side*(lgaps[side] + this.fTitleOffset));
             title_shift_y = Math.round(center ? this.gr_range/2 : (opposite ? 0 : this.gr_range));
 
-            this.DrawText({ align: this.title_align+";middle",
+            this.DrawText({ align: [this.title_align, ((side<0) ? 'top' : 'bottom')],
                             text: fTitle, draw_g: title_g });
          } else {
             title_shift_x = Math.round(center ? this.gr_range/2 : (opposite ? 0 : this.gr_range));
             title_shift_y = Math.round(side*(lgaps[side] + this.fTitleOffset));
-            this.DrawText({ align: this.title_align+";middle",
+            this.DrawText({ align: [this.title_align, ((side>0) ? 'top' : 'bottom')],
                             text: fTitle, draw_g: title_g });
          }
 
