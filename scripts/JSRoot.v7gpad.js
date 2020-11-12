@@ -1128,8 +1128,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (JSROOT.settings.Zooming && !this.disable_zooming && !JSROOT.BatchMode) {
             let sz = Math.max(lgaps[side], 10);
 
-            let d = this.vertical ? "v" + this.gr_range + "h"+(side*sz) + "v" + (-this.gr_range)
-                                  : "h" + this.gr_range + "v"+(-side*sz) + "h" + (-this.gr_range);
+            let d = this.vertical ? "v" + this.gr_range + "h"+(-side*sz) + "v" + (-this.gr_range)
+                                  : "h" + this.gr_range + "v"+(side*sz) + "h" + (-this.gr_range);
             axis_g.append("svg:path")
                   .attr("d","M0,0" + d + "z")
                   .attr("class", "axis_zoom")
@@ -4403,11 +4403,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       this.z_handle.max_tick_size = Math.round(palette_width*0.3);
 
-      this.z_handle.DrawAxis(this.draw_g, "translate(" + palette_width + "," + palette_height + ")", -1);
+      let promise = this.z_handle.DrawAxis(this.draw_g, "translate(" + palette_width + "," + palette_height + ")", -1);
 
       if (JSROOT.BatchMode) return;
 
-      JSROOT.require(['interactive']).then(inter => {
+      promise.then(() => JSROOT.require(['interactive'])).then(inter => {
 
          if (!after_resize)
             inter.DragMoveHandler.AddDrag(this, { minwidth: 20, minheight: 20, no_change_y: true, redraw: this.DrawPalette.bind(this, true) });
