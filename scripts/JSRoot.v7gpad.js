@@ -1074,6 +1074,21 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       });
    }
 
+   /** @summary Add zomming rect to axis drawing */
+   RAxisPainter.prototype.AddZoomingRect = function(axis_g, side, lgaps) {
+      if (JSROOT.settings.Zooming && !this.disable_zooming && !JSROOT.BatchMode) {
+         let sz = Math.max(lgaps[side], 10);
+
+         let d = this.vertical ? "v" + this.gr_range + "h"+(-side*sz) + "v" + (-this.gr_range)
+                               : "h" + this.gr_range + "v"+(side*sz) + "h" + (-this.gr_range);
+         axis_g.append("svg:path")
+               .attr("d","M0,0" + d + "z")
+               .attr("class", "axis_zoom")
+               .style("opacity", "0")
+               .style("cursor", "crosshair");
+      }
+   }
+
    /** @summary Performs axis drawing
      * @returns {Promise} which resolved when drawing is completed */
    RAxisPainter.prototype.DrawAxis = function(layer, transform, side) {
@@ -1116,26 +1131,20 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       this.handle = this.CreateTicks(false, optionNoexp, optionNoopt, optionInt);
 
-     if (this.ticksSide == "invert") side = -side;
+      if (this.ticksSide == "invert") side = -side;
+
+      this.side = side;
 
       // first draw ticks
       let tgaps = this.DrawTicks(axis_g, side, true);
+
+      this.optionUnlab = optionUnlab;
 
       // draw labels
       let labelsPromise = optionUnlab ? Promise.resolve(tgaps) : this.DrawLabels(axis_g, side, tgaps);
 
       return labelsPromise.then(lgaps => {
-         if (JSROOT.settings.Zooming && !this.disable_zooming && !JSROOT.BatchMode) {
-            let sz = Math.max(lgaps[side], 10);
-
-            let d = this.vertical ? "v" + this.gr_range + "h"+(-side*sz) + "v" + (-this.gr_range)
-                                  : "h" + this.gr_range + "v"+(side*sz) + "h" + (-this.gr_range);
-            axis_g.append("svg:path")
-                  .attr("d","M0,0" + d + "z")
-                  .attr("class", "axis_zoom")
-                  .style("opacity", "0")
-                  .style("cursor", "crosshair");
-         }
+         this.AddZoomingRect(axis_g, side, lgaps);
 
          let fTitle = this.v7EvalAttr("title", "");
          if (!fTitle) return true;
@@ -1178,7 +1187,28 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          return this.FinishTextPromise(title_g);
       });
+   }
 
+   /** @summary Draw axis again on opposite frame size */
+   RAxisPainter.prototype.DrawAxisAgain = function(layer, transform) {
+      let axis_g = layer.select("." + this.name + "_container2");
+      if (axis_g.empty())
+         axis_g = layer.append("svg:g").attr("class",this.name + "_container2");
+      else
+         axis_g.selectAll("*").remove();
+
+      axis_g.attr("transform", transform || null);
+
+      // draw ticks again
+      let tgaps = this.DrawTicks(axis_g, -this.side, false);
+
+      // draw labels again
+      let promise = this.optionUnlab ? Promise.resolve(tgaps) : this.DrawLabels(axis_g, -this.side, tgaps);
+
+      return promise.then(lgaps => {
+         this.AddZoomingRect(axis_g, -this.side, lgaps);
+         return true;
+      });
    }
 
    RAxisPainter.prototype.Redraw = function() {
@@ -1535,6 +1565,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       // this is former CreateXY function
 
       this.swap_xy = false;
+      // this.both_sides_x = true;
+      // this.both_sides_y = true;
 
       let w = this.frame_width(), h = this.frame_height();
 
@@ -1586,11 +1618,21 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
 
       if (!disable_axis_draw) {
-         let promise1 = draw_horiz.DrawAxis(layer, "translate(0,"+h+")");
+         let promise1 = draw_horiz.DrawAxis(layer, `translate(0,${h})`);
 
-         let promise2 = draw_vertical.DrawAxis(layer, "translate(0,"+h+")");
+         let promise2 = draw_vertical.DrawAxis(layer, `translate(0,${h})`);
 
          return Promise.all([promise1, promise2]).then(() => {
+
+            let again = [];
+            if (this.both_sides_x)
+               again.push(draw_horiz.DrawAxisAgain(layer, ""));
+
+            if (this.both_sides_y)
+               again.push(draw_vertical.DrawAxisAgain(layer, `translate(${w},${h})`));
+
+             return Promise.all(again);
+         }).then(() => {
              this.DrawGrids();
              this.axes_drawn = true;
              return true;
