@@ -1561,12 +1561,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.CleanupAxes();
 
       this.swap_xy = false;
-      let ticksx = this.v7EvalAttr("ticksx", ""),
-          ticksy = this.v7EvalAttr("ticksy", ""),
+      let ticksx = this.v7EvalAttr("ticksx", 1),
+          ticksy = this.v7EvalAttr("ticksy", 1),
           sidex = 1, sidey = 1;
 
-      if (ticksx == "swap") sidex = -1;
-      if (ticksy == "swap") sidey = -1;
+      // ticksx = 2; ticksy = 2;
+
+      if (this.v7EvalAttr("swapx", false)) sidex = -1;
+      if (this.v7EvalAttr("swapy", false)) sidey = -1;
 
       let w = this.frame_width(), h = this.frame_height();
 
@@ -1625,11 +1627,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return Promise.all([promise1, promise2]).then(() => {
 
             let again = [];
-            if ((ticksx == "both") || (ticksx == "ticks"))
-               again.push(draw_horiz.DrawAxisAgain(layer, "", -sidex, ticksx == "ticks"));
+            if (ticksx > 1)
+               again.push(draw_horiz.DrawAxisAgain(layer, (sidex < 0) ? `translate(0,${h})` : "", -sidex, ticksx == 2));
 
-            if ((ticksy == "both") || (ticksx == "ticks"))
-               again.push(draw_vertical.DrawAxisAgain(layer, `translate(${w},${h})`, -sidey, ticksy == "ticks"));
+            if (ticksy > 1)
+               again.push(draw_vertical.DrawAxisAgain(layer, (sidey < 0) ? `translate(0,${h})` : `translate(${w},${h})`, -sidey, ticksy == 2));
 
              return Promise.all(again);
          }).then(() => {
