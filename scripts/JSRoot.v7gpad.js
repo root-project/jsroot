@@ -1133,8 +1133,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if (this.ticksSide == "invert") side = -side;
 
-      this.side = side;
-
       // first draw ticks
       let tgaps = this.DrawTicks(axis_g, side, true);
 
@@ -1190,7 +1188,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Draw axis again on opposite frame size */
-   RAxisPainter.prototype.DrawAxisAgain = function(layer, transform) {
+   RAxisPainter.prototype.DrawAxisAgain = function(layer, transform, side, only_ticks) {
       let axis_g = layer.select("." + this.name + "_container2");
       if (axis_g.empty())
          axis_g = layer.append("svg:g").attr("class",this.name + "_container2");
@@ -1200,13 +1198,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       axis_g.attr("transform", transform || null);
 
       // draw ticks again
-      let tgaps = this.DrawTicks(axis_g, -this.side, false);
+      let tgaps = this.DrawTicks(axis_g, side, false);
 
       // draw labels again
-      let promise = this.optionUnlab ? Promise.resolve(tgaps) : this.DrawLabels(axis_g, -this.side, tgaps);
+      let promise = this.optionUnlab || only_ticks ? Promise.resolve(tgaps) : this.DrawLabels(axis_g, side, tgaps);
 
       return promise.then(lgaps => {
-         this.AddZoomingRect(axis_g, -this.side, lgaps);
+         this.AddZoomingRect(axis_g, side, lgaps);
          return true;
       });
    }
@@ -1562,11 +1560,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       this.CleanupAxes();
 
-      // this is former CreateXY function
-
       this.swap_xy = false;
-      // this.both_sides_x = true;
-      // this.both_sides_y = true;
+      let ticksx = this.v7EvalAttr("ticksx", ""),
+          ticksy = this.v7EvalAttr("ticksy", ""),
+          sidex = 1, sidey = 1;
+
+      if (ticksx == "swap") sidex = -1;
+      if (ticksy == "swap") sidey = -1;
 
       let w = this.frame_width(), h = this.frame_height();
 
@@ -1618,18 +1618,18 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
 
       if (!disable_axis_draw) {
-         let promise1 = draw_horiz.DrawAxis(layer, `translate(0,${h})`);
+         let promise1 = draw_horiz.DrawAxis(layer, (sidex > 0) ? `translate(0,${h})` : "", sidex);
 
-         let promise2 = draw_vertical.DrawAxis(layer, `translate(0,${h})`);
+         let promise2 = draw_vertical.DrawAxis(layer, (sidey > 0) ? `translate(0,${h})` : `translate(${w},${h})`, sidey);
 
          return Promise.all([promise1, promise2]).then(() => {
 
             let again = [];
-            if (this.both_sides_x)
-               again.push(draw_horiz.DrawAxisAgain(layer, ""));
+            if ((ticksx == "both") || (ticksx == "ticks"))
+               again.push(draw_horiz.DrawAxisAgain(layer, "", -sidex, ticksx == "ticks"));
 
-            if (this.both_sides_y)
-               again.push(draw_vertical.DrawAxisAgain(layer, `translate(${w},${h})`));
+            if ((ticksy == "both") || (ticksx == "ticks"))
+               again.push(draw_vertical.DrawAxisAgain(layer, `translate(${w},${h})`, -sidey, ticksy == "ticks"));
 
              return Promise.all(again);
          }).then(() => {
