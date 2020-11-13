@@ -13,9 +13,23 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (!obj) return dflt;
       if (this.cssprefix) name = this.cssprefix + name;
 
+      function type_check(res) {
+         if (dflt === undefined) return res;
+         let typ1 = typeof dflt;
+         let typ2 = typeof res;
+         if (typ1 == typ2) return res;
+         if (typ1 == 'boolean') {
+            if (typ2 == 'string') return (res != "") && (res != "0") && (res != "no") && (res != "off");
+            return !!res;
+         }
+         if ((typ1 == 'number') && (typ2 == 'string'))
+            return parseFloat(res);
+         return res;
+      }
+
       if (obj.fAttr && obj.fAttr.m) {
          let value = obj.fAttr.m[name];
-         if (value) return value.v; // found value direct in attributes
+         if (value) return type_check(value.v); // found value direct in attributes
       }
 
       if (this.rstyle && this.rstyle.fBlocks) {
@@ -29,7 +43,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             if (match && block.map && block.map.m) {
                let value = block.map.m[name];
-               if (value) return value.v;
+               if (value) return type_check(value.v);
             }
          }
       }
