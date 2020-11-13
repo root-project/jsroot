@@ -140,10 +140,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (typeof dflts == "number") dflts = { size: dflts };
 
       let text_size   = this.v7EvalAttr( name + "_size", dflts.size || 12),
-          text_angle   = this.v7EvalAttr( name + "_angle", 0),
-          text_align   = this.v7EvalAttr( name + "_align", dflts.align || "none"),
-          text_color   = this.v7EvalColor( name + "_color", dflts.color || "none"),
-          text_font    = this.v7EvalAttr( name + "_font", dflts.font || 42);
+          text_angle  = this.v7EvalAttr( name + "_angle", 0),
+          text_align  = this.v7EvalAttr( name + "_align", dflts.align || "none"),
+          text_color  = this.v7EvalColor( name + "_color", dflts.color || "none"),
+          text_font   = this.v7EvalAttr( name + "_font", dflts.font || 42);
 
        if (typeof text_size == "string") text_size = parseFloat(text_size);
        if (isNaN(text_size) || (text_size <= 0)) text_size = 12;
@@ -962,7 +962,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Performs labels drawing
      * @returns {Promise} wwith gaps in both direction */
    RAxisPainter.prototype.DrawLabels = function(axis_g, side, gaps) {
-      let labelsFont = this.v7EvalFont("labels", { size: 25 }),
+      let labelsFont = this.v7EvalFont("labels", { size: 0.03 }),
           center_lbls = this.IsCenterLabels(),
           rotate_lbls = false,
           textscale = 1, maxtextlen = 0, lbls_tilt = false,
@@ -1423,6 +1423,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
    }
 
+   /** @summary Draw frame grids */
    RFramePainter.prototype.DrawGrids = function() {
       // grid can only be drawn by first painter
 
@@ -1445,7 +1446,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          let grid = "";
          for (let n=0;n<this.x_handle.ticks.length;++n)
             if (this.swap_xy)
-               grid += "M0,"+this.x_handle.ticks[n]+"h"+w;
+               grid += "M0,"+(h+this.x_handle.ticks[n])+"h"+w;
             else
                grid += "M"+this.x_handle.ticks[n]+",0v"+h;
 
@@ -1464,7 +1465,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if (this.swap_xy)
                grid += "M"+this.y_handle.ticks[n]+",0v"+h;
             else
-               grid += "M0,"+this.y_handle.ticks[n]+"h"+w;
+               grid += "M0,"+(h+this.y_handle.ticks[n])+"h"+w;
 
          if (grid.length > 0)
           layer.append("svg:path")
