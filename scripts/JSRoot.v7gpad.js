@@ -1285,11 +1285,15 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       menu.addchk(this.log && (this.logbase==2), "log2 scale", 2, arg => this.ChangeLog(arg));
       menu.addchk(this.log && Math.abs(this.logbase - Math.exp(1)) < 0.1, "ln scale", Math.exp(1), arg => this.ChangeLog(arg));
       menu.add("endsub:");
-      menu.add("sub:Title");
-      menu.add("SetTitle", () => {
+      menu.add("sub:Title", () => {
          let t = prompt("Enter axis title", this.fTitle);
          if (t!==null) this.ChangeAxisAttr("title", t);
       });
+
+      menu.SizeMenu("offset", -0.05, 0.05, 0.01, this.fTitleOffset, offset => {
+         this.ChangeAxisAttr("title_offset", offset);
+      });
+
       menu.add("endsub:");
       return true;
    }
