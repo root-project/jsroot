@@ -200,6 +200,14 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          this.add("endsub:");
       }
 
+      /** @summary Add size selection menu entries */
+      SelectMenu(name, values, value, set_func) {
+         this.add("sub:" + name);
+         for (let n = 0; n < values.length; ++n)
+            this.addchk(values[n] == value, values[n], values[n], res => set_func(res));
+         this.add("endsub:");
+      }
+
       /** @summary Fill context menu for text attributes
        * @private */
       AddTextAttributesMenu(painter, prefix) {
