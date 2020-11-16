@@ -1162,8 +1162,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return labelsPromise.then(lgaps => {
          this.AddZoomingRect(axis_g, side, lgaps);
 
-         let fTitle = this.v7EvalAttr("title", "");
-         if (!fTitle) return true;
+         this.fTitle = this.v7EvalAttr("title", "");
+         if (!this.fTitle) return true;
 
          let title_g = axis_g.append("svg:g").attr("class", "axis_title");
 
@@ -1187,12 +1187,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             title_shift_y = Math.round(center ? this.gr_range/2 : (opposite ? 0 : this.gr_range));
 
             this.DrawText({ align: [this.title_align, ((side<0) ? 'top' : 'bottom')],
-                            text: fTitle, draw_g: title_g });
+                            text: this.fTitle, draw_g: title_g });
          } else {
             title_shift_x = Math.round(center ? this.gr_range/2 : (opposite ? 0 : this.gr_range));
             title_shift_y = Math.round(side*(lgaps[side] + this.fTitleOffset));
             this.DrawText({ align: [this.title_align, ((side>0) ? 'top' : 'bottom')],
-                            text: fTitle, draw_g: title_g });
+                            text: this.fTitle, draw_g: title_g });
          }
 
          title_g.attr('transform', 'translate(' + title_shift_x + ',' + title_shift_y +  ')')
@@ -1260,17 +1260,20 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return this.DrawAxis(this.draw_g, "translate(" + pos.x + "," + pos.y +")");
    }
 
+   RAxisPainter.prototype.ChangeAxisAttr = function(name, value) {
+      let changes = {};
+      this.v7AttrChange(changes, name, value);
+      this.v7SendAttrChanges(changes, false); // do not invoke canvas update on the server
+      this.v7SetAttr(name, value);
+      this.RedrawPad();
+   }
+
    RAxisPainter.prototype.ChangeLog = function(arg) {
       if ((this.kind == "labels") || (this.kind == 'time')) return;
       if (arg === 'toggle') arg = this.log ? 0 : 10;
 
       arg = parseFloat(arg);
-      if (isNaN(arg)) return;
-      let changes = {};
-      this.v7AttrChange(changes, "log", arg);
-      this.v7SendAttrChanges(changes, false); // do not invoke canvas update on the server
-      this.v7SetAttr("log", arg);
-      this.RedrawPad();
+      if (!isNaN(arg)) this.ChangeAxisAttr("log", arg);
    }
 
    RAxisPainter.prototype.FillFrameContextMenu = function(menu, kind) {
@@ -1281,7 +1284,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       menu.addchk(this.log && (this.logbase==10), "log10 scale", 10, arg => this.ChangeLog(arg));
       menu.addchk(this.log && (this.logbase==2), "log2 scale", 2, arg => this.ChangeLog(arg));
       menu.addchk(this.log && Math.abs(this.logbase - Math.exp(1)) < 0.1, "ln scale", Math.exp(1), arg => this.ChangeLog(arg));
-
+      menu.add("endsub:");
+      menu.add("sub:Title");
+      menu.add("SetTitle", () => {
+         let t = prompt("Enter axis title", this.fTitle);
+         if (t!==null) this.ChangeAxisAttr("title", t);
+      });
       menu.add("endsub:");
       return true;
    }
