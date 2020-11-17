@@ -954,10 +954,10 @@
       }
    }
 
-   TGraphPainter.prototype.CreateHistogram = function(only_set_ranges) {
+   TGraphPainter.prototype.CreateHistogram = function(histo, set_x, set_y) {
       // bins should be created when calling this function
 
-      var xmin = this.xmin, xmax = this.xmax, ymin = this.ymin, ymax = this.ymax, set_x = true, set_y = true;
+      var xmin = this.xmin, xmax = this.xmax, ymin = this.ymin, ymax = this.ymax;
 
       if (xmin >= xmax) xmax = xmin+1;
       if (ymin >= ymax) ymax = ymin+1;
@@ -967,6 +967,7 @@
 
       // this is draw options with maximal axis range which could be unzoomed
       this.options.HOptions = this.options.Axis + ";ymin:" + minimum + ";ymax:" + maximum;
+      if (histo) return histo;
 
       if ((uxmin<0) && (xmin>=0)) uxmin = xmin*0.9;
       if ((uxmax>0) && (xmax<=0)) uxmax = 0;
@@ -977,18 +978,11 @@
       if (graph.fMaximum != -1111) maximum = ymax = graph.fMaximum;
       if ((minimum < 0) && (ymin >=0)) minimum = 0.9*ymin;
 
-      var kResetHisto = JSROOT.BIT(17);   ///< fHistogram must be reset in GetHistogram
+      histo = graph.fHistogram;
 
-      var histo = graph.fHistogram;
+      if (!set_x && !set_y) set_x = set_y = true;
 
-      if (only_set_ranges) {
-         set_x = only_set_ranges.indexOf("x") >= 0;
-         set_y = only_set_ranges.indexOf("y") >= 0;
-      } else if (histo) {
-         // make logic like in the TGraph::GetHistogram
-         if (!graph.TestBit(kResetHisto)) return histo;
-         graph.InvertBit(kResetHisto);
-      } else {
+      if (!histo) {
          graph.fHistogram = histo = JSROOT.CreateHistogram("TH1F", 100);
          histo.fName = graph.fName + "_h";
          histo.fTitle = graph.fTitle;
@@ -1020,12 +1014,11 @@
       var histo = graph.fHistogram;
       if (!histo) return false;
 
-      var arg = "";
-      if (dox && (histo.fXaxis.fXmin > this.xmin) || (histo.fXaxis.fXmax < this.xmax)) arg += "x";
-      if (doy && (histo.fYaxis.fXmin > this.ymin) || (histo.fYaxis.fXmax < this.ymax)) arg += "y";
-      if (!arg) return false;
+      dox = dox && ((histo.fXaxis.fXmin > this.xmin) || (histo.fXaxis.fXmax < this.xmax));
+      doy = doy && ((histo.fYaxis.fXmin > this.ymin) || (histo.fYaxis.fXmax < this.ymax));
+      if (!dox && !doy) return false;
 
-      this.CreateHistogram(arg);
+      this.CreateHistogram(null, dox, doy);
       var hpainter = this.main_painter();
       if (hpainter) hpainter.CreateAxisFuncs(false);
 
@@ -1863,8 +1856,10 @@
              fp = this.frame_painter();
 
          // if zoom was changed - do not update histogram
-         if (!fp.zoom_changed_interactive)
-            main.UpdateObject(obj.fHistogram || this.CreateHistogram());
+         if (!fp.zoom_changed_interactive) {
+            var histo = this.CreateHistogram(obj.fHistogram);
+            main.UpdateObject(histo, this.options.HOptions);
+         }
 
          main.GetObject().fTitle = graph.fTitle; // copy title
       }
@@ -2021,7 +2016,8 @@
       painter.CreateStat();
 
       if (!painter.main_painter() && painter.options.HOptions) {
-         JSROOT.draw(divid, painter.CreateHistogram(), painter.options.HOptions, painter.PerformDrawing.bind(painter, divid));
+         var histo = painter.CreateHistogram();
+         JSROOT.draw(divid, histo, painter.options.HOptions, painter.PerformDrawing.bind(painter, divid));
       } else {
          painter.PerformDrawing(divid);
       }

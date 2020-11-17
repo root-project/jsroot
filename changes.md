@@ -2,6 +2,7 @@
 
 ## Changes in 5.9.x
 1. Fix zooming in color palette
+2. Fix interactive update of TGraph painting on time scale
 
 
 ## Changes in 5.9.0
