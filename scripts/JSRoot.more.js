@@ -948,8 +948,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
      * @param {object} histo - existing histogram instance
      * @param {boolean} only_set_ranges - when specified, just assign ranges
      * @private */
-   TGraphPainter.prototype.CreateHistogram = function(histo, only_set_ranges) {
-      let xmin = this.xmin, xmax = this.xmax, ymin = this.ymin, ymax = this.ymax, set_x = true, set_y = true;
+   TGraphPainter.prototype.CreateHistogram = function(histo, set_x, set_y) {
+      let xmin = this.xmin, xmax = this.xmax, ymin = this.ymin, ymax = this.ymax;
 
       if (xmin >= xmax) xmax = xmin+1;
       if (ymin >= ymax) ymax = ymin+1;
@@ -973,10 +973,9 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       histo = graph.fHistogram;
 
-      if (only_set_ranges && histo) {
-         set_x = only_set_ranges.indexOf("x") >= 0;
-         set_y = only_set_ranges.indexOf("y") >= 0;
-      } else if (!histo) {
+      if (!set_x && !set_y) set_x = set_y = true;
+
+      if (!histo) {
          histo = graph.fHistogram = JSROOT.CreateHistogram("TH1F", 100);
          histo.fName = graph.fName + "_h";
          histo.fTitle = graph.fTitle;
@@ -1007,14 +1006,12 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       if (this._own_histogram || !graph) return false;
 
       let histo = graph.fHistogram;
-      if (!histo) return false;
 
-      let arg = "";
-      if (dox && (histo.fXaxis.fXmin > this.xmin) || (histo.fXaxis.fXmax < this.xmax)) arg += "x";
-      if (doy && (histo.fYaxis.fXmin > this.ymin) || (histo.fYaxis.fXmax < this.ymax)) arg += "y";
-      if (!arg) return false;
+      dox = dox && histo && ((histo.fXaxis.fXmin > this.xmin) || (histo.fXaxis.fXmax < this.xmax));
+      doy = doy && histo && ((histo.fYaxis.fXmin > this.ymin) || (histo.fYaxis.fXmax < this.ymax));
+      if (!dox && !doy) return false;
 
-      this.CreateHistogram(histo, arg);
+      this.CreateHistogram(null, dox, doy);
       let hpainter = this.main_painter();
       if (hpainter) hpainter.ExtractAxesProperties(1); // just to enforce ranges extraction
 
@@ -2013,7 +2010,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       painter.CreateStat();
 
       if (!painter.main_painter() && painter.options.HOptions) {
-         JSROOT.draw(divid, painter.CreateHistogram(), painter.options.HOptions).then(painter.PerformDrawing.bind(painter, divid));
+         let histo = painter.CreateHistogram();
+         JSROOT.draw(divid, histo, painter.options.HOptions).then(painter.PerformDrawing.bind(painter, divid));
       } else {
          painter.PerformDrawing(divid);
       }
