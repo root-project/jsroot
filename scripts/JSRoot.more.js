@@ -945,9 +945,10 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
    /** @summary Create histogram for graph
      * @descgraph bins should be created when calling this function
+     * @param {object} histo - existing histogram instance
      * @param {boolean} only_set_ranges - when specified, just assign ranges
      * @private */
-   TGraphPainter.prototype.CreateHistogram = function(only_set_ranges) {
+   TGraphPainter.prototype.CreateHistogram = function(histo, only_set_ranges) {
       let xmin = this.xmin, xmax = this.xmax, ymin = this.ymin, ymax = this.ymax, set_x = true, set_y = true;
 
       if (xmin >= xmax) xmax = xmin+1;
@@ -968,19 +969,18 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       if (graph.fMaximum != -1111) maximum = ymax = graph.fMaximum;
       if ((minimum < 0) && (ymin >=0)) minimum = 0.9*ymin;
 
-      let kResetHisto = JSROOT.BIT(17);   ///< fHistogram must be reset in GetHistogram
+      if (histo) {
+         set_x = false;
+         set_y = (histo.fMinimum == -1111) && (histo.fMaximum == -1111);
+      } else {
+         histo = graph.fHistogram;
+      }
 
-      let histo = graph.fHistogram;
-
-      if (only_set_ranges) {
+      if (only_set_ranges && histo) {
          set_x = only_set_ranges.indexOf("x") >= 0;
          set_y = only_set_ranges.indexOf("y") >= 0;
-      } else if (histo) {
-         // make logic like in the TGraph::GetHistogram
-         if (!graph.TestBit(kResetHisto)) return histo;
-         graph.InvertBit(kResetHisto);
-      } else {
-         graph.fHistogram = histo = JSROOT.CreateHistogram("TH1F", 100);
+      } else if (!histo) {
+         histo = graph.fHistogram = JSROOT.CreateHistogram("TH1F", 100);
          histo.fName = graph.fName + "_h";
          histo.fTitle = graph.fTitle;
          let kNoStats = JSROOT.BIT(9);
@@ -992,6 +992,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          histo.fXaxis.fXmin = uxmin;
          histo.fXaxis.fXmax = uxmax;
       }
+
       if (set_y) {
          histo.fYaxis.fXmin = minimum;
          histo.fYaxis.fXmax = maximum;
@@ -1016,7 +1017,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       if (doy && (histo.fYaxis.fXmin > this.ymin) || (histo.fYaxis.fXmax < this.ymax)) arg += "y";
       if (!arg) return false;
 
-      this.CreateHistogram(arg);
+      this.CreateHistogram(histo, arg);
       let hpainter = this.main_painter();
       if (hpainter) hpainter.ExtractAxesProperties(1); // just to enforce ranges extraction
 
@@ -1853,8 +1854,10 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
              fp = this.frame_painter();
 
          // if zoom was changed - do not update histogram
-         if (!fp.zoom_changed_interactive)
-            main.UpdateObject(obj.fHistogram || this.CreateHistogram());
+         if (!fp.zoom_changed_interactive) {
+            let histo = this.CreateHistogram(obj.fHistogram);
+            main.UpdateObject(histo, this.options.HOptions);
+         }
 
          main.GetObject().fTitle = graph.fTitle; // copy title
       }
