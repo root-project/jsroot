@@ -755,16 +755,16 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Used to move axis labels instead of zooming
      * @private */
    RAxisPainter.prototype.processLabelsMove = function(arg, pos) {
+      if (this.optionUnlab || !this.axis_g) return false;
+
+      let label_g = this.axis_g.select(".axis_labels");
+      if (!label_g) return false;
+
       if (arg == 'start') {
          // no moving without labels
-         if (this.optionUnlab) return false;
-
-         let label_g = this.axis_g.select(".axis_labels");
-         if (!label_g) return false;
-
          let box = label_g.node().getBBox();
 
-         this.drag_rect = label_g.append("rect")
+         label_g.append("rect")
                  .classed("zoom", true)
                  .attr("x", box.x)
                  .attr("y", box.y)
@@ -773,22 +773,25 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                  .style("cursor", "move");
          if (this.vertical) {
             this.drag_pos0 = pos[0];
-            this.drag_coord0 = box.x;
          } else {
             this.drag_pos0 = pos[1];
-            this.drag_coord0 = box.y;
          }
 
-         return true;
+         this.labelsOffset0 = this.labelsOffset || 0;
       } else if (arg == 'stop') {
-         this.drag_rect.remove();
-         delete this.drag_rect;
+         label_g.select("rect.zoom").remove();
+         delete this.labelsOffset0;
       } else if (arg == 'move') {
-         if (this.vertical)
-            this.drag_rect.attr("x", this.drag_coord0 + (pos[0] - this.drag_pos0));
-         else
-            this.drag_rect.attr("y", this.drag_coord0 + (pos[1] - this.drag_pos0));
+         if (this.vertical) {
+            this.labelsOffset = this.labelsOffset0 + (pos[0] - this.drag_pos0);
+            label_g.attr('transform', `translate(${this.labelsOffset},0)`);
+         } else {
+            this.labelsOffset = this.labelsOffset0 + (pos[1] - this.drag_pos0);
+            label_g.attr('transform', `translate(0,${this.labelsOffset})`);
+         }
+         if (!this.labelsOffset) label_g.attr('transform', null);
       }
+      return true;
    }
 
    /** @summary Add interactive elements to draw axes title */
@@ -1039,8 +1042,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       labelsFont.roundAngle(180);
       if (labelsFont.angle) { labelsFont.angle = 270; rotate_lbls = true; }
 
-      let lastpos = 0,
-          fix_coord = (this.vertical ? -side : side)*gaps[side] + this.labelsOffset;
+      let lastpos = 0, fix_coord = (this.vertical ? -side : side)*gaps[side];
+
+      if (this.labelsOffset)
+         label_g.attr('transform', this.vertical ? `translate(${this.labelsOffset},0)` : `translate(0,${this.labelsOffset})`);
 
       this.StartTextDrawing(labelsFont, 'font', label_g);
 
