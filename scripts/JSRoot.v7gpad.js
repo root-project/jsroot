@@ -370,6 +370,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       delete this.axis;
       delete this.gr;
       delete this.func;
+      delete this.axis_g;
 
       JSROOT.ObjectPainter.prototype.Cleanup.call(this);
    }
@@ -751,8 +752,47 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return this.v7EvalAttr("labels_center", false);
    }
 
+   /** @summary Used to move axis labels instead of zooming
+     * @private */
+   RAxisPainter.prototype.processLabelsMove = function(arg, pos) {
+      if (arg == 'start') {
+         // no moving without labels
+         if (this.optionUnlab) return false;
+
+         let label_g = this.axis_g.select(".axis_labels");
+         if (!label_g) return false;
+
+         let box = label_g.node().getBBox();
+
+         this.drag_rect = label_g.append("rect")
+                 .classed("zoom", true)
+                 .attr("x", box.x)
+                 .attr("y", box.y)
+                 .attr("width", box.width)
+                 .attr("height", box.height)
+                 .style("cursor", "move");
+         if (this.vertical) {
+            this.drag_pos0 = pos[0];
+            this.drag_coord0 = box.x;
+         } else {
+            this.drag_pos0 = pos[1];
+            this.drag_coord0 = box.y;
+         }
+
+         return true;
+      } else if (arg == 'stop') {
+         this.drag_rect.remove();
+         delete this.drag_rect;
+      } else if (arg == 'move') {
+         if (this.vertical)
+            this.drag_rect.attr("x", this.drag_coord0 + (pos[0] - this.drag_pos0));
+         else
+            this.drag_rect.attr("y", this.drag_coord0 + (pos[1] - this.drag_pos0));
+      }
+   }
+
    /** @summary Add interactive elements to draw axes title */
-   RAxisPainter.prototype.AddTitleDrag = function(title_g, side, scaling_size) {
+   RAxisPainter.prototype.addTitleDrag = function(title_g, side, scaling_size) {
       if (!JSROOT.settings.MoveResize || JSROOT.BatchMode) return;
 
       let drag_rect = null,
@@ -1132,6 +1172,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       this.createv7AttLine("line_");
 
+      this.axis_g = axis_g;
       this.endingStyle = this.v7EvalAttr("ending_style", "");
       this.endingSize = Math.round(this.v7EvalLength("ending_size", scaling_size, this.endingStyle ? 0.02 : 0));
       this.startingSize = Math.round(this.v7EvalLength("starting_size", scaling_size, 0));
@@ -1204,7 +1245,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                 .property('shift_x', title_shift_x)
                 .property('shift_y', title_shift_y);
 
-         this.AddTitleDrag(title_g, side, scaling_size);
+         this.addTitleDrag(title_g, side, scaling_size);
 
          return this.FinishTextPromise(title_g);
       });

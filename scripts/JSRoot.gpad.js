@@ -437,7 +437,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Add interactive elements to draw axes title */
-   TAxisPainter.prototype.AddTitleDrag = function(title_g, vertical, offset_k, reverse, axis_length) {
+   TAxisPainter.prototype.addTitleDrag = function(title_g, vertical, offset_k, reverse, axis_length) {
       if (!JSROOT.settings.MoveResize || JSROOT.BatchMode) return;
 
       let drag_rect = null,
@@ -892,7 +892,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (vertical && (axis.fTitleOffset == 0) && ('getBoundingClientRect' in axis_g.node()))
             axis_rect = axis_g.node().getBoundingClientRect();
 
-         this.AddTitleDrag(title_g, vertical, title_offest_k, swap_side, vertical ? h : w);
+         this.addTitleDrag(title_g, vertical, title_offest_k, swap_side, vertical ? h : w);
 
          return this.FinishTextPromise(title_g);
 
