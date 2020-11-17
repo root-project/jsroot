@@ -763,7 +763,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if (this.mode3d && (key.indexOf("Ctrl")!==0)) return false;
             this.AnalyzeMouseWheelEvent(null, zoom, 0.5);
             this.Zoom(zoom.name, zoom.min, zoom.max);
-            if (zoom.changed) this.zoom_changed_interactive = 2;
+            if (zoom.changed) this.zoomChangedInteractive(zoom.name, true);
             evnt.stopPropagation();
             evnt.preventDefault();
          } else {
@@ -926,7 +926,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.clearInteractiveElements();
 
          if (isany) {
-            this.zoom_changed_interactive = 2;
+            this.zoomChangedInteractive("x", true);
+            this.zoomChangedInteractive("y", true);
             this.Zoom(xmin, xmax, ymin, ymax);
          } else {
             switch (kind) {
@@ -1137,7 +1138,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.last_touch = new Date(0);
 
          if (isany) {
-            this.zoom_changed_interactive = 2;
+            this.zoomChangedInteractive('x', true);
+            this.zoomChangedInteractive('y', true);
             this.Zoom(xmin, xmax, ymin, ymax);
          }
 
@@ -1252,7 +1254,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          this.Zoom(itemx.min, itemx.max, itemy.min, itemy.max);
 
-         if (itemx.changed || itemy.changed) this.zoom_changed_interactive = 2;
+         if (itemx.changed) this.zoomChangedInteractive('x', true);
+         if (itemy.changed) this.zoomChangedInteractive('y', true);
       },
 
       ShowContextMenu: function(kind, evnt, obj) {

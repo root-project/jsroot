@@ -1561,7 +1561,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             this.xmax = xmax;
          }
 
-         if ((this.zoom_xmin == this.zoom_xmax) && !this.zoom_changed_interactive) {
+         if ((this.zoom_xmin == this.zoom_xmax) && !this.zoomChangedInteractive("x")) {
             min = this.v7EvalAttr("x_zoommin");
             max = this.v7EvalAttr("x_zoommax");
 
@@ -1584,7 +1584,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             this.ymax = ymax;
          }
 
-         if ((this.zoom_ymin == this.zoom_ymax) && !this.zoom_changed_interactive) {
+         if ((this.zoom_ymin == this.zoom_ymax) && !this.zoomChangedInteractive("y")) {
             min = this.v7EvalAttr("y_zoommin");
             max = this.v7EvalAttr("y_zoommax");
 
@@ -1607,7 +1607,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             this.zmax = zmax;
          }
 
-         if ((this.zoom_zmin == this.zoom_zmax) && !this.zoom_changed_interactive) {
+         if ((this.zoom_zmin == this.zoom_zmax) && !this.zoomChangedInteractive("z")) {
             min = this.v7EvalAttr("z_zoommin");
             max = this.v7EvalAttr("z_zoommax");
 
@@ -2090,20 +2090,44 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (typeof dox === 'undefined') { dox = true; doy = true; doz = true; } else
       if (typeof dox === 'string') { doz = dox.indexOf("z")>=0; doy = dox.indexOf("y")>=0; dox = dox.indexOf("x")>=0; }
 
-      let last = this.zoom_changed_interactive;
-
-      if (dox || doy || doz) this.zoom_changed_interactive = 2;
-
       let changed = this.Zoom(dox ? 0 : undefined, dox ? 0 : undefined,
                               doy ? 0 : undefined, doy ? 0 : undefined,
                               doz ? 0 : undefined, doz ? 0 : undefined);
 
-      // if unzooming has no effect, decrease counter
-      if ((dox || doy || doz) && !changed)
-         this.zoom_changed_interactive = (!isNaN(last) && (last>0)) ? last - 1 : 0;
+      if (changed && dox) this.zoomChangedInteractive("x", "unzoom");
+      if (changed && doy) this.zoomChangedInteractive("y", "unzoom");
+      if (changed && doz) this.zoomChangedInteractive("z", "unzoom");
 
       return changed;
    }
+
+   /** @summary Mark/check if zoom for specific axis was changed interactively
+     * @private */
+   RFramePainter.prototype.zoomChangedInteractive = function(axis, value) {
+      if (axis == 'reset') {
+         this.zoom_changed_x = this.zoom_changed_y = this.zoom_changed_z = undefined;
+         return;
+      }
+      if (!axis || axis == 'any')
+         return this.zoom_changed_x || this.zoom_changed_y  || this.zoom_changed_z;
+
+      if ((axis !== 'x') && (axis !== 'y') && (axis !== 'z')) return;
+
+      let fld = "zoom_changed_" + axis;
+      if (value === undefined) return this[fld];
+
+      if (value === 'unzoom') {
+         // special handling of unzoom
+         if (this[fld])
+            delete this[fld];
+         else
+            this[fld] = true;
+         return;
+      }
+
+      if (value) this[fld] = true;
+   }
+
 
    /** @summary Fill menu for frame when server is not there */
    RFramePainter.prototype.FillObjectOfflineMenu = function(menu, kind) {

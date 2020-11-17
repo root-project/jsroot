@@ -1239,7 +1239,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          }
       }
 
-      if ((this.zoom_ymin == this.zoom_ymax) && (opts.zoom_ymin != opts.zoom_ymax) && !this.zoom_changed_interactive) {
+      if ((this.zoom_ymin == this.zoom_ymax) && (opts.zoom_ymin != opts.zoom_ymax) && !this.zoomChangedInteractive("y")) {
          this.zoom_ymin = opts.zoom_ymin;
          this.zoom_ymax = opts.zoom_ymax;
       }
@@ -1922,24 +1922,47 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    TFramePainter.prototype.IsAxisZoomed = function(axis) { return this['zoom_'+axis+'min'] !== this['zoom_'+axis+'max']; }
 
 
-   /** @summary Checks if specified axes zoom */
+   /** @summary Unzoom speicied axes */
    TFramePainter.prototype.Unzoom = function(dox, doy, doz) {
       if (typeof dox === 'undefined') { dox = true; doy = true; doz = true; } else
       if (typeof dox === 'string') { doz = dox.indexOf("z")>=0; doy = dox.indexOf("y")>=0; dox = dox.indexOf("x")>=0; }
-
-      let last = this.zoom_changed_interactive;
-
-      if (dox || doy || doz) this.zoom_changed_interactive = 1;
 
       let changed = this.Zoom(dox ? 0 : undefined, dox ? 0 : undefined,
                               doy ? 0 : undefined, doy ? 0 : undefined,
                               doz ? 0 : undefined, doz ? 0 : undefined);
 
-      // if unzooming has no effect, decrease counter
-      if ((dox || doy || doz) && !changed)
-         this.zoom_changed_interactive = (!isNaN(last) && (last>0)) ? last - 1 : 0;
+      if (changed && dox) this.zoomChangedInteractive("x", "unzoom");
+      if (changed && doy) this.zoomChangedInteractive("y", "unzoom");
+      if (changed && doz) this.zoomChangedInteractive("z", "unzoom");
 
       return changed;
+   }
+
+   /** @summary Mark/check if zoom for specific axis was changed interactively
+     * @private */
+   TFramePainter.prototype.zoomChangedInteractive = function(axis, value) {
+      if (axis == 'reset') {
+         this.zoom_changed_x = this.zoom_changed_y = this.zoom_changed_z = undefined;
+         return;
+      }
+      if (!axis || axis == 'any')
+         return this.zoom_changed_x || this.zoom_changed_y  || this.zoom_changed_z;
+
+      if ((axis !== 'x') && (axis !== 'y') && (axis !== 'z')) return;
+
+      let fld = "zoom_changed_" + axis;
+      if (value === undefined) return this[fld];
+
+      if (value === 'unzoom') {
+         // special handling of unzoom
+         if (this[fld])
+            delete this[fld];
+         else
+            this[fld] = true;
+         return;
+      }
+
+      if (value) this[fld] = true;
    }
 
    /** @summary Convert graphical coordinate into axis value */
