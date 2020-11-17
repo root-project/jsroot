@@ -960,6 +960,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       // this is draw options with maximal axis range which could be unzoomed
       this.options.HOptions = this.options.Axis + ";ymin:" + minimum + ";ymax:" + maximum;
 
+      if (histo) return histo;
+
       if ((uxmin<0) && (xmin>=0)) uxmin = xmin*0.9;
       if ((uxmax>0) && (xmax<=0)) uxmax = 0;
 
@@ -969,12 +971,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       if (graph.fMaximum != -1111) maximum = ymax = graph.fMaximum;
       if ((minimum < 0) && (ymin >=0)) minimum = 0.9*ymin;
 
-      if (histo) {
-         set_x = false;
-         set_y = (histo.fMinimum == -1111) && (histo.fMaximum == -1111);
-      } else {
-         histo = graph.fHistogram;
-      }
+      histo = graph.fHistogram;
 
       if (only_set_ranges && histo) {
          set_x = only_set_ranges.indexOf("x") >= 0;
