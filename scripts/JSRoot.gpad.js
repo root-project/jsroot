@@ -1921,6 +1921,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Checks if specified axes zoom */
    TFramePainter.prototype.IsAxisZoomed = function(axis) { return this['zoom_'+axis+'min'] !== this['zoom_'+axis+'max']; }
 
+
+   /** @summary Checks if specified axes zoom */
    TFramePainter.prototype.Unzoom = function(dox, doy, doz) {
       if (typeof dox === 'undefined') { dox = true; doy = true; doz = true; } else
       if (typeof dox === 'string') { doz = dox.indexOf("z")>=0; doy = dox.indexOf("y")>=0; dox = dox.indexOf("x")>=0; }

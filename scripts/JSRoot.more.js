@@ -1844,16 +1844,11 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       // if our own histogram was used as axis drawing, we need update histogram as well
       if (this.axes_draw) {
-         let main = this.main_painter(),
-             fp = this.frame_painter();
+         let histo = this.CreateHistogram(obj.fHistogram);
+         histo.fTitle = graph.fTitle; // copy title
 
-         // if zoom was changed - do not update histogram
-         if (!fp.zoom_changed_interactive) {
-            let histo = this.CreateHistogram(obj.fHistogram);
-            main.UpdateObject(histo, this.options.HOptions);
-         }
-
-         main.GetObject().fTitle = graph.fTitle; // copy title
+         let main = this.main_painter();
+         main.UpdateObject(histo, this.options.HOptions);
       }
 
       return true;
