@@ -199,7 +199,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Create RChangeAttr, which can be applied on the server side */
-   JSROOT.ObjectPainter.prototype.v7AttrChange = function(req,name,value,kind) {
+   JSROOT.ObjectPainter.prototype.v7AttrChange = function(req, name, value, kind) {
       if (!this.snapid)
          return false;
 
@@ -216,20 +216,24 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       req.names.push(name);
       let obj = null;
 
-      if ((value !== null) && (value !== undefined)) {
-         if (!kind)
-            switch(typeof value) {
-               case "number": kind = "double"; break;
-               case "boolean": kind = "boolean"; break;
-            }
-         obj = { _typename: "ROOT::Experimental::RAttrMap::" };
-         switch(kind) {
-            case "none": obj._typename += "NoValue_t"; break;
-            case "boolean": obj._typename += "BoolValue_t"; obj.v = value ? true : false; break;
-            case "int": obj._typename += "IntValue_t"; obj.v = parseInt(value); break;
-            case "double": obj._typename += "DoubleValue_t"; obj.v = parseFloat(value); break;
-            default: obj._typename += "StringValue_t"; obj.v = (typeof value == "string") ? value : JSON.stringify(value); break;
+      if ((value === null) || (value === undefined)) {
+        if (!kind) kind = 'none';
+        if (kind !== 'none') console.error(`Trying to set ${kind} for none value`);
+      }
+
+      if (!kind)
+         switch(typeof value) {
+            case "number": kind = "double"; break;
+            case "boolean": kind = "boolean"; break;
          }
+
+      obj = { _typename: "ROOT::Experimental::RAttrMap::" };
+      switch(kind) {
+         case "none": obj._typename += "NoValue_t"; break;
+         case "boolean": obj._typename += "BoolValue_t"; obj.v = value ? true : false; break;
+         case "int": obj._typename += "IntValue_t"; obj.v = parseInt(value); break;
+         case "double": obj._typename += "DoubleValue_t"; obj.v = parseFloat(value); break;
+         default: obj._typename += "StringValue_t"; obj.v = (typeof value == "string") ? value : JSON.stringify(value); break;
       }
 
       req.values.push(obj);
@@ -1394,17 +1398,20 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (t!==null) this.ChangeAxisAttr("title", t);
       });
 
-      menu.SizeMenu("offset", -0.05, 0.05, 0.01, this.titleOffset/this.scaling_size, offset => {
-         this.ChangeAxisAttr("title_offset", offset);
-      });
+      if (this.fTitle) {
+         menu.SizeMenu("offset", -0.05, 0.05, 0.01, this.titleOffset/this.scaling_size, offset => {
+            this.ChangeAxisAttr("title_offset", offset);
+         });
 
-      menu.SelectMenu("position", ["left", "center", "right"], this.titlePos, pos => {
-         this.ChangeAxisAttr("title_position", pos);
-      });
+         menu.SelectMenu("position", ["left", "center", "right"], this.titlePos, pos => {
+            this.ChangeAxisAttr("title_position", pos);
+         });
 
-      menu.RAttrTextItems(this.titleFont, { noangle: 1, noalign: 1 }, change => {
-         this.ChangeAxisAttr("title_" + change.name, change.value);
-      });
+         menu.RAttrTextItems(this.titleFont, { noangle: 1, noalign: 1 }, change => {
+            console.log('change attribute', change.name, change.value);
+            this.ChangeAxisAttr("title_" + change.name, change.value);
+         });
+      }
 
       menu.add("endsub:");
       return true;

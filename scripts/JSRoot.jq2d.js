@@ -208,10 +208,34 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          this.add("endsub:");
       }
 
+      /** @summary Add color selection menu entries  */
+      RColorMenu(name, value, set_func) {
+         // if (value === undefined) return;
+         let colors = ['black', 'white', 'red', 'green', 'blue', 'yellow', 'magenta', 'cyan'];
+
+         this.add("sub:" + name, () => {
+            // todo - use jqury dialog here
+            let col = prompt("Enter color name - empty string will reset color", value);
+            set_func(col);
+         });
+         let col = null, fillcol = 'black', coltxt = 'default', bkgr = '';
+         for (let n = -1; n < colors.length; ++n) {
+            if (n >= 0) {
+               coltxt = col = colors[n];
+               bkgr = "background-color:" + col;
+               fillcol = (col == 'white') ? 'black' : 'white';
+            }
+            let svg = `<svg width='100' height='18' style='margin:0px;${bkgr}'><text x='4' y='12' style='font-size:12px' fill='${fillcol}'>${coltxt}</text></svg>`;
+            this.addchk(value == col, svg, coltxt, res => set_func(res == 'default' ? null : res));
+         }
+         this.add("endsub:");
+      }
+
+
       /** @summary Add items to change RAttrText */
       RAttrTextItems(fontHandler, opts, set_func) {
          if (!opts) opts = {};
-         this.add("color");
+         this.RColorMenu("color", fontHandler.color, sel => set_func({ name: "color_name", value: sel }));
          if (fontHandler.scaled)
             this.SizeMenu("size", 0.01, 0.10, 0.01, fontHandler.size /fontHandler.scale, sz => set_func({ name: "size", value: sz }));
          else
