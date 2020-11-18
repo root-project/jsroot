@@ -867,7 +867,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          let handle = this.zoom_kind == 2 ? this.x_handle : this.y_handle;
 
-         if (!handle || (typeof handle.processLabelsMove != 'function')) return;
+         if (!handle || (typeof handle.processLabelsMove != 'function') || !this.zoom_lastpos) return;
 
          if (handle.processLabelsMove('start', this.zoom_lastpos)) {
             this.zoom_labels = handle;

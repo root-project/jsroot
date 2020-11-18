@@ -781,6 +781,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       } else if (arg == 'stop') {
          label_g.select("rect.zoom").remove();
          delete this.labelsOffset0;
+         this.ChangeAxisAttr("labels_offset", this.labelsOffset/this.scaling_size, true);
       } else if (arg == 'move') {
          if (this.vertical) {
             this.labelsOffset = this.labelsOffset0 + (pos[0] - this.drag_pos0);
@@ -795,7 +796,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Add interactive elements to draw axes title */
-   RAxisPainter.prototype.addTitleDrag = function(title_g, side, scaling_size) {
+   RAxisPainter.prototype.addTitleDrag = function(title_g, side) {
       if (!JSROOT.settings.MoveResize || JSROOT.BatchMode) return;
 
       let drag_rect = null,
@@ -814,9 +815,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             new_x = acc_x = title_g.property('shift_x');
             new_y = acc_y = title_g.property('shift_y');
 
-            if (this.fTitlePos == "center")
+            if (this.titlePos == "center")
                curr_indx = 1;
-            else if (this.fTitlePos == "left")
+            else if (this.titlePos == "left")
                curr_indx = 0;
             else
                curr_indx = 2;
@@ -884,20 +885,18 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                title_g.property('shift_x', new_x)
                       .property('shift_y', new_y);
 
-               this.fTitleOffset = (this.vertical ? basepos - new_x : new_y - basepos) * side / scaling_size;
+               this.titleOffset = (this.vertical ? basepos - new_x : new_y - basepos) * side;
 
                if (curr_indx == 1) {
-                  this.fTitlePos = "center";
+                  this.titlePos = "center";
                } else if (curr_indx == 0) {
-                  this.fTitlePos = "left";
+                  this.titlePos = "left";
                } else {
-                  this.fTitlePos = "right";
+                  this.titlePos = "right";
                }
 
-               console.log('Submit change ', this.fTitleOffset, this.fTitlePos);
-
-               this.ChangeAxisAttr("title_position", this.fTitlePos, true);
-               this.ChangeAxisAttr("title_offset", this.fTitleOffset, true);
+               this.ChangeAxisAttr("title_position", this.titlePos, true);
+               this.ChangeAxisAttr("title_offset", this.titleOffset/this.scaling_size, true);
 
                drag_rect.remove();
                drag_rect = null;
@@ -1160,8 +1159,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    RAxisPainter.prototype.DrawAxis = function(layer, transform, side) {
       let axis_g = layer,
           pad_w = this.pad_width() || 10,
-          pad_h = this.pad_height() || 10,
-          scaling_size = this.vertical ? pad_w : pad_h;
+          pad_h = this.pad_height() || 10;
 
       if (side === undefined) side = 1;
 
@@ -1178,13 +1176,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.createv7AttLine("line_");
 
       this.axis_g = axis_g;
+      this.scaling_size = this.vertical ? pad_w : pad_h;
       this.endingStyle = this.v7EvalAttr("ending_style", "");
-      this.endingSize = Math.round(this.v7EvalLength("ending_size", scaling_size, this.endingStyle ? 0.02 : 0));
-      this.startingSize = Math.round(this.v7EvalLength("starting_size", scaling_size, 0));
-      this.tickSize = this.v7EvalLength("ticks_size", scaling_size, 0.02);
+      this.endingSize = Math.round(this.v7EvalLength("ending_size", this.scaling_size, this.endingStyle ? 0.02 : 0));
+      this.startingSize = Math.round(this.v7EvalLength("starting_size", this.scaling_size, 0));
+      this.tickSize = this.v7EvalLength("ticks_size", this.scaling_size, 0.02);
       this.ticksSide = this.v7EvalAttr("ticks_side", "normal");
       this.ticksColor = this.v7EvalColor("ticks_color", "");
-      this.labelsOffset = this.v7EvalLength("labels_offset", scaling_size, 0);
+      this.labelsOffset = this.v7EvalLength("labels_offset", this.scaling_size, 0);
 
       if (this.max_tick_size && (this.tickSize > this.max_tick_size)) this.tickSize = this.max_tick_size;
 
@@ -1224,8 +1223,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          titleFont.roundAngle(180, this.vertical ? 270 : 0);
 
-         this.fTitleOffset = this.v7EvalLength("title_offset", scaling_size, 0);
-         this.fTitlePos = title_position;
+         this.titleOffset = this.v7EvalLength("title_offset", this.scaling_size, 0);
+         this.titlePos = title_position;
 
          this.StartTextDrawing(titleFont, 'font', title_g);
 
@@ -1233,14 +1232,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          if (this.vertical) {
             title_basepos = Math.round(-side*(lgaps[side]));
-            title_shift_x = title_basepos + Math.round(-side*this.fTitleOffset);
+            title_shift_x = title_basepos + Math.round(-side*this.titleOffset);
             title_shift_y = Math.round(center ? this.gr_range/2 : (opposite ? 0 : this.gr_range));
             this.DrawText({ align: [this.title_align, ((side<0) ? 'top' : 'bottom')],
                             text: this.fTitle, draw_g: title_g });
          } else {
             title_shift_x = Math.round(center ? this.gr_range/2 : (opposite ? 0 : this.gr_range));
             title_basepos = Math.round(side*lgaps[side]);
-            title_shift_y = title_basepos + Math.round(side*this.fTitleOffset);
+            title_shift_y = title_basepos + Math.round(side*this.titleOffset);
             this.DrawText({ align: [this.title_align, ((side>0) ? 'top' : 'bottom')],
                             text: this.fTitle, draw_g: title_g });
          }
@@ -1250,7 +1249,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                 .property('shift_x', title_shift_x)
                 .property('shift_y', title_shift_y);
 
-         this.addTitleDrag(title_g, side, scaling_size);
+         this.addTitleDrag(title_g, side);
 
          return this.FinishTextPromise(title_g);
       });
@@ -1341,12 +1340,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (t!==null) this.ChangeAxisAttr("title", t);
       });
 
-      menu.SizeMenu("offset", -0.05, 0.05, 0.01, this.fTitleOffset, offset => {
+      menu.SizeMenu("offset", -0.05, 0.05, 0.01, this.titleOffset, offset => {
          console.log('Submit change ', offset);
          this.ChangeAxisAttr("title_offset", offset);
       });
 
-      menu.SelectMenu("position", ["left", "center", "right"], this.fTitlePos, pos => {
+      menu.SelectMenu("position", ["left", "center", "right"], this.titlePos, pos => {
          this.ChangeAxisAttr("title_position", pos);
       });
 
