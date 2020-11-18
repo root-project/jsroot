@@ -1147,10 +1147,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
            });
 
          if (this.vertical) {
-            gaps[side] += Math.round(max_lbl_width + 0.2*this.labelsFont.size) - fix_offset;
+            gaps[side] += Math.round(rotate_lbls ? 1.2*max_lbl_height : max_lbl_width + 0.4*this.labelsFont.size) - fix_offset;
          } else {
             let tilt_height = lbls_tilt ? max_lbl_width * Math.sin(25/180*Math.PI) + max_lbl_height * (Math.cos(25/180*Math.PI) + 0.2) : 0;
-            gaps[side] += Math.round(Math.max(1.2*max_lbl_height, 1.2*this.labelsFont.size, tilt_height)) + fix_offset;
+
+            gaps[side] += Math.round(Math.max(rotate_lbls ? max_lbl_width + 0.4*this.labelsFont.size : 1.2*max_lbl_height, 1.2*this.labelsFont.size, tilt_height)) + fix_offset;
          }
 
          return gaps;
@@ -1231,6 +1232,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.ticksColor = this.v7EvalColor("ticks_color", "");
       this.labelsOffset = this.v7EvalLength("labels_offset", this.scaling_size, 0);
 
+      this.fTitle = this.v7EvalAttr("title", "");
+
       if (this.max_tick_size && (this.tickSize > this.max_tick_size)) this.tickSize = this.max_tick_size;
    }
 
@@ -1279,8 +1282,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       return labelsPromise.then(lgaps => {
          this.addZoomingRect(axis_g, side, lgaps);
-
-         this.fTitle = this.v7EvalAttr("title", "");
 
          return this.drawTitle(axis_g, side, lgaps);
       });
