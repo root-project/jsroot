@@ -147,13 +147,16 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           text_angle  = this.v7EvalAttr( name + "_angle", 0),
           text_align  = this.v7EvalAttr( name + "_align", dflts.align || "none"),
           text_color  = this.v7EvalColor( name + "_color", dflts.color || "none"),
-          text_font   = this.v7EvalAttr( name + "_font", dflts.font || 42);
+          font_family   = this.v7EvalAttr( name + "_font_family", "Arial"),
+          font_style   = this.v7EvalAttr( name + "_font_style", ""),
+          font_weight  = this.v7EvalAttr( name + "_font_weight", "");
+
 
        if (typeof text_size == "string") text_size = parseFloat(text_size);
        if (isNaN(text_size) || (text_size <= 0)) text_size = 12;
        if (!fontScale) fontScale = this.pad_height() || 10;
 
-       let handler = new JSROOT.FontHandler(text_font, text_size, fontScale);
+       let handler = new JSROOT.FontHandler(null, text_size, fontScale, font_family, font_style, font_weight);
 
        if (text_angle) handler.setAngle(-1 * text_angle);
        if (text_align !== "none") handler.setAlign(text_align);

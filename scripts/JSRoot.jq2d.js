@@ -241,7 +241,12 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          else
             this.SizeMenu("size", 6, 20, 2, fontHandler.size, sz => set_func({ name: "size", value: sz }));
 
-         this.add("name");
+         this.SelectMenu("family", ["Arial", "Times New Roman", "Courier New", "Symbol"], fontHandler.name, res => set_func( {name: "font_family", value: res }));
+
+         this.SelectMenu("style", ["normal", "italic", "oblique"], fontHandler.style || "normal", res => set_func( {name: "font_style", value: res == "normal" ? null : res }));
+
+         this.SelectMenu("weight", ["normal", "lighter", "bold", "bolder"], fontHandler.weight || "normal", res => set_func( {name: "font_weight", value: res == "normal" ? null : res }));
+
          if (!opts.noalign)
             this.add("align");
          if (!opts.noangle)
