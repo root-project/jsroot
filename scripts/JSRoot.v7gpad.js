@@ -1282,7 +1282,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       let labelsPromise = optionUnlab ? Promise.resolve(tgaps) : this.drawLabels(axis_g, side, tgaps);
 
       return labelsPromise.then(lgaps => {
-         this.addZoomingRect(axis_g, side, lgaps);
+         // when drawing axis on frame, zoom rect should be always outside
+         this.addZoomingRect(axis_g, this.standalone ? side : this.side, lgaps);
 
          return this.drawTitle(axis_g, side, lgaps);
       });
@@ -1315,7 +1316,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       let labelsPromise = this.optionUnlab ? Promise.resolve(tgaps) : this.drawLabels(this.axis_g, side, tgaps);
 
       return labelsPromise.then(lgaps => {
-         this.addZoomingRect(this.axis_g, side, lgaps);
+         // when drawing axis on frame, zoom rect should be always outside
+         this.addZoomingRect(this.axis_g, this.standalone ? side : this.side, lgaps);
 
          return this.drawTitle(this.axis_g, side, lgaps);
       }).then(() => {
@@ -1333,6 +1335,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          axis_g.selectAll("*").remove();
 
       axis_g.attr("transform", transform || null);
+
+      if (this.ticksSide == "invert") side = -side;
 
       // draw ticks again
       let tgaps = this.DrawTicks(axis_g, side, false);
