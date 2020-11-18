@@ -1232,8 +1232,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.ticksColor = this.v7EvalColor("ticks_color", "");
       this.labelsOffset = this.v7EvalLength("labels_offset", this.scaling_size, 0);
 
-      console.log(this.name, 'ticks color', this.ticksColor)
-
       this.fTitle = this.v7EvalAttr("title", "");
 
       if (this.max_tick_size && (this.tickSize > this.max_tick_size)) this.tickSize = this.max_tick_size;
@@ -1401,16 +1399,17 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    RAxisPainter.prototype.FillAxisContextMenu = function(menu, kind) {
-      if (kind) {
+      if (kind != "z")
          menu.add("header: " + kind.toUpperCase() + " axis");
-         menu.add("Unzoom", () => this.frame_painter().Unzoom(kind));
-         menu.add("sub:Log scale", () => this.ChangeLog('toggle'));
-         menu.addchk(!this.log, "linear", 0, arg => this.ChangeLog(arg));
-         menu.addchk(this.log && (this.logbase==10), "log10", 10, arg => this.ChangeLog(arg));
-         menu.addchk(this.log && (this.logbase==2), "log2", 2, arg => this.ChangeLog(arg));
-         menu.addchk(this.log && Math.abs(this.logbase - Math.exp(1)) < 0.1, "ln", Math.exp(1), arg => this.ChangeLog(arg));
-         menu.add("endsub:");
-      }
+
+      menu.add("Unzoom", () => this.frame_painter().Unzoom(kind));
+
+      menu.add("sub:Log scale", () => this.ChangeLog('toggle'));
+      menu.addchk(!this.log, "linear", 0, arg => this.ChangeLog(arg));
+      menu.addchk(this.log && (this.logbase==10), "log10", 10, arg => this.ChangeLog(arg));
+      menu.addchk(this.log && (this.logbase==2), "log2", 2, arg => this.ChangeLog(arg));
+      menu.addchk(this.log && Math.abs(this.logbase - Math.exp(1)) < 0.1, "ln", Math.exp(1), arg => this.ChangeLog(arg));
+      menu.add("endsub:");
 
       menu.add("sub:Ticks");
       menu.RColorMenu("color", this.ticksColor, col => this.ChangeAxisAttr("ticks_color_name", col, 1));
@@ -1808,17 +1807,22 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       this.x_handle = new RAxisPainter(this, this.xaxis, "x_");
       this.x_handle.SetDivId(this.divid, -1);
-
-      this.x_handle.ConfigureAxis("xaxis", this.xmin, this.xmax, this.scale_xmin, this.scale_xmax, false, [0,w], w, { reverse: false });
-      this.x_handle.AssignFrameMembers(this,"x");
       this.x_handle.snapid = this.snapid;
 
       this.y_handle = new RAxisPainter(this, this.yaxis, "y_");
       this.y_handle.SetDivId(this.divid, -1);
+      this.y_handle.snapid = this.snapid;
+
+      this.z_handle = new RAxisPainter(this, this.zaxis, "z_");
+      this.z_handle.SetDivId(this.divid, -1);
+      this.z_handle.snapid = this.snapid;
+
+      this.x_handle.ConfigureAxis("xaxis", this.xmin, this.xmax, this.scale_xmin, this.scale_xmax, false, [0,w], w, { reverse: false });
+      this.x_handle.AssignFrameMembers(this,"x");
 
       this.y_handle.ConfigureAxis("yaxis", this.ymin, this.ymax, this.scale_ymin, this.scale_ymax, true, [h,0], -h, { reverse: false });
       this.y_handle.AssignFrameMembers(this,"y");
-      this.y_handle.snapid = this.snapid;
+
 
       let layer = this.svg_frame().select(".axis_layer");
 
@@ -2962,8 +2966,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       // prevent redrawing
       if (this._doing_pad_draw)
          return console.log('Prevent pad redrawing');
-
-      console.log('REDRAW PAD');
 
       let showsubitems = true;
 
@@ -4635,14 +4637,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           .style("stroke", "black")
           .attr("fill", "none");
 
-      this.z_handle.ConfigureAxis("zaxis", zmin, zmax, zmin, zmax, true, [palette_height, 0], -palette_height, { reverse: false });
-
-      // only when drawing, snapid can be assigned
-      this.z_handle.snapid = this.snapid;
+      framep.z_handle.ConfigureAxis("zaxis", zmin, zmax, zmin, zmax, true, [palette_height, 0], -palette_height, { reverse: false });
 
       for (let i=0;i<contour.length-1;++i) {
-         let z0 = this.z_handle.gr(contour[i]),
-             z1 = this.z_handle.gr(contour[i+1]),
+         let z0 = framep.z_handle.gr(contour[i]),
+             z1 = framep.z_handle.gr(contour[i+1]),
              col = palette.getContourColor((contour[i]+contour[i+1])/2);
 
          let r = g_btns.append("svg:rect")
@@ -4666,24 +4665,24 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             r.on("dblclick", function() { framep.Unzoom("z"); });
       }
 
-      this.z_handle.max_tick_size = Math.round(palette_width*0.3);
+      framep.z_handle.max_tick_size = Math.round(palette_width*0.3);
 
-      let promise = this.z_handle.drawAxis(this.draw_g, "translate(" + palette_width + "," + palette_height + ")", -1);
+      let promise = framep.z_handle.drawAxis(this.draw_g, "translate(" + palette_width + "," + palette_height + ")", -1);
 
       if (JSROOT.BatchMode) return;
 
       promise.then(() => JSROOT.require(['interactive'])).then(inter => {
 
-         this.draw_g.on("contextmenu", evnt => {
-            evnt.stopPropagation(); // disable main context menu
-            evnt.preventDefault();  // disable browser context menu
-            jsrp.createMenu(this, evnt).then(menu => {
-              menu.add("header:Palette");
-              this.z_handle.FillAxisContextMenu(menu);
-              menu.show();
+         if (JSROOT.settings.ContextMenu)
+            this.draw_g.on("contextmenu", evnt => {
+               evnt.stopPropagation(); // disable main context menu
+               evnt.preventDefault();  // disable browser context menu
+               jsrp.createMenu(this, evnt).then(menu => {
+                 menu.add("header:Palette");
+                 framep.z_handle.FillAxisContextMenu(menu, "z");
+                 menu.show();
+               });
             });
-         });
-
 
          if (!after_resize)
             inter.DragMoveHandler.AddDrag(this, { minwidth: 20, minheight: 20, no_change_y: true, redraw: this.DrawPalette.bind(this, true) });
@@ -4700,7 +4699,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             last_pos = d3.pointer(evnt, this.draw_g.node());
 
             if (moving_labels)
-               return this.z_handle.processLabelsMove('move', last_pos);
+               return framep.z_handle.processLabelsMove('move', last_pos);
 
             sel2 = Math.min(Math.max(last_pos[1], 0), palette_height);
 
@@ -4726,9 +4725,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             doing_zoom = false;
 
             if (moving_labels) {
-               this.z_handle.processLabelsMove('stop', last_pos);
+               framep.z_handle.processLabelsMove('stop', last_pos);
             } else {
-               let z = this.z_handle.gr, z1 = z.invert(sel1), z2 = z.invert(sel2);
+               let z = framep.z_handle.gr, z1 = z.invert(sel1), z2 = z.invert(sel2);
                this.frame_painter().Zoom("z", Math.min(z1, z2), Math.max(z1, z2));
             }
          }
@@ -4760,7 +4759,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                              .on("mouseup.colzoomRect", endRectSel, true);
 
             setTimeout(() => {
-               if (!zoom_rect_visible && this.z_handle.processLabelsMove('start', last_pos))
+               if (!zoom_rect_visible && framep.z_handle.processLabelsMove('start', last_pos))
                   moving_labels = true;
             }, 500)
          }
@@ -4771,7 +4770,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                        .on("dblclick", () => framep.Unzoom("z"));
          }
 
-         this.z_handle.setAfterDrawHandler(assignHandlers);
+         framep.z_handle.setAfterDrawHandler(assignHandlers);
 
          assignHandlers();
       });
