@@ -599,7 +599,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Draw axis labels */
-   TAxisPainter.prototype.DrawLabels = function(axis_g, axis, w, h, handle, side, labelSize, labeloffset, tickSize, ticksPlusMinus, max_text_width) {
+   TAxisPainter.prototype.drawLabels = function(axis_g, axis, w, h, handle, side, labelSize, labeloffset, tickSize, ticksPlusMinus, max_text_width) {
       let label_color = this.get_color(axis.fLabelColor),
           center_lbls = this.IsCenterLabels(),
           rotate_lbls = axis.TestBit(JSROOT.EAxisBits.kLabelsVert),
@@ -631,8 +631,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          if (lcnt > 0) side = -side;
 
-         let lastpos = 0,
-             fix_coord = this.vertical ? -labeloffset*side : (labeloffset+2)*side + ticksPlusMinus*tickSize;
+         let lastpos = 0, fix_coord = this.vertical ? -labeloffset*side : (labeloffset+2)*side + ticksPlusMinus*tickSize;
 
          labelfont = new JSROOT.FontHandler(axis.fLabelFont, labelSize);
 
@@ -815,7 +814,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       // draw labels (sometime on both sides)
       if (!disable_axis_drawing && !optionUnlab)
-         labelsPromise = this.DrawLabels(axis_g, axis, w, h, handle, side, labelSize0, labeloffset, tickSize, ticksPlusMinus, max_text_width);
+         labelsPromise = this.drawLabels(axis_g, axis, w, h, handle, side, labelSize0, labeloffset, tickSize, ticksPlusMinus, max_text_width);
       else
          labelsPromise = Promise.resolve(labelSize0);
 

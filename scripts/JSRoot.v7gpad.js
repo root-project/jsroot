@@ -72,6 +72,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (typeof value == "number")
          return Math.round(value*sizepx);
 
+      if (value === null)
+         return 0;
+
       let norm = 0, px = 0, val = value, operand = 0, pos = 0;
 
       while (val.length > 0) {
@@ -758,7 +761,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (this.optionUnlab || !this.axis_g) return false;
 
       let label_g = this.axis_g.select(".axis_labels");
-      if (!label_g) return false;
+      if (!label_g || (label_g.size() != 1)) return false;
 
       if (arg == 'start') {
          // no moving without labels
@@ -777,20 +780,28 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             this.drag_pos0 = pos[1];
          }
 
-         this.labelsOffset0 = this.labelsOffset || 0;
-      } else if (arg == 'stop') {
-         label_g.select("rect.zoom").remove();
-         delete this.labelsOffset0;
-         this.ChangeAxisAttr("labels_offset", this.labelsOffset/this.scaling_size, true);
-      } else if (arg == 'move') {
+      } else {
+         let offset = label_g.property('fix_offset');
+
          if (this.vertical) {
-            this.labelsOffset = this.labelsOffset0 + (pos[0] - this.drag_pos0);
-            label_g.attr('transform', `translate(${this.labelsOffset},0)`);
+            offset += (pos[0] - this.drag_pos0);
+            label_g.attr('transform', `translate(${offset},0)`);
          } else {
-            this.labelsOffset = this.labelsOffset0 + (pos[1] - this.drag_pos0);
-            label_g.attr('transform', `translate(0,${this.labelsOffset})`);
+            offset += (pos[1] - this.drag_pos0);
+            label_g.attr('transform', `translate(0,${offset})`);
          }
-         if (!this.labelsOffset) label_g.attr('transform', null);
+         if (!offset) label_g.attr('transform', null);
+
+         if (arg == 'stop') {
+            label_g.select("rect.zoom").remove();
+            delete this.drag_pos0;
+            if (offset != label_g.property('fix_offset')) {
+               label_g.property('fix_offset', offset);
+               let side = label_g.property('side') || 1;
+               this.labelsOffset = offset / (this.vertical ? -side : side);
+               this.ChangeAxisAttr("labels_offset", this.labelsOffset/this.scaling_size, true);
+            }
+         }
       }
       return true;
    }
@@ -1010,12 +1021,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    /** @summary Performs labels drawing
      * @returns {Promise} wwith gaps in both direction */
-   RAxisPainter.prototype.DrawLabels = function(axis_g, side, gaps) {
+   RAxisPainter.prototype.drawLabels = function(axis_g, side, gaps) {
       let labelsFont = this.v7EvalFont("labels", { size: 0.03 }),
           center_lbls = this.IsCenterLabels(),
           rotate_lbls = false,
           textscale = 1, maxtextlen = 0, lbls_tilt = false,
-          label_g = axis_g.append("svg:g").attr("class","axis_labels"),
+          label_g = axis_g.append("svg:g").attr("class","axis_labels").property('side', side),
           lbl_pos = this.handle.lbl_pos || this.handle.major,
           max_lbl_width = 0, max_lbl_height = 0, drawCnt = 0, resolveFunc;
 
@@ -1041,10 +1052,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       labelsFont.roundAngle(180);
       if (labelsFont.angle) { labelsFont.angle = 270; rotate_lbls = true; }
 
-      let lastpos = 0, fix_coord = (this.vertical ? -side : side)*gaps[side];
+      let lastpos = 0,
+          fix_offset = (this.vertical ? -side : side)*this.labelsOffset,
+          fix_coord = (this.vertical ? -side : side)*gaps[side];
 
-      if (this.labelsOffset)
-         label_g.attr('transform', this.vertical ? `translate(${this.labelsOffset},0)` : `translate(0,${this.labelsOffset})`);
+      if (fix_offset)
+         label_g.attr('transform', this.vertical ? `translate(${fix_offset},0)` : `translate(0,${fix_offset})`);
+
+      label_g.property('fix_offset', fix_offset);
 
       this.StartTextDrawing(labelsFont, 'font', label_g);
 
@@ -1205,7 +1220,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.optionUnlab = optionUnlab;
 
       // draw labels
-      let labelsPromise = optionUnlab ? Promise.resolve(tgaps) : this.DrawLabels(axis_g, side, tgaps);
+      let labelsPromise = optionUnlab ? Promise.resolve(tgaps) : this.drawLabels(axis_g, side, tgaps);
 
       return labelsPromise.then(lgaps => {
          this.AddZoomingRect(axis_g, side, lgaps);
@@ -1269,7 +1284,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       let tgaps = this.DrawTicks(axis_g, side, false);
 
       // draw labels again
-      let promise = this.optionUnlab || only_ticks ? Promise.resolve(tgaps) : this.DrawLabels(axis_g, side, tgaps);
+      let promise = this.optionUnlab || only_ticks ? Promise.resolve(tgaps) : this.drawLabels(axis_g, side, tgaps);
 
       return promise.then(lgaps => {
          this.AddZoomingRect(axis_g, side, lgaps);
