@@ -1147,7 +1147,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
            });
 
          if (this.vertical) {
-            gaps[side] += Math.round(rotate_lbls ? 1.2*max_lbl_height : max_lbl_width + 0.4*this.labelsFont.size) - fix_offset;
+            gaps[side] += Math.round(rotate_lbls ? 1.2*max_lbl_height : max_lbl_width + 0.4*this.labelsFont.size) - side*fix_offset;
          } else {
             let tilt_height = lbls_tilt ? max_lbl_width * Math.sin(25/180*Math.PI) + max_lbl_height * (Math.cos(25/180*Math.PI) + 0.2) : 0;
 
@@ -1400,15 +1400,17 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (!isNaN(arg)) this.ChangeAxisAttr("log", arg, 2);
    }
 
-   RAxisPainter.prototype.FillFrameContextMenu = function(menu, kind) {
-      menu.add("header: " + kind.toUpperCase() + " axis");
-      menu.add("Unzoom", () => this.frame_painter().Unzoom(kind));
-      menu.add("sub:Log scale", () => this.ChangeLog('toggle'));
-      menu.addchk(!this.log, "linear", 0, arg => this.ChangeLog(arg));
-      menu.addchk(this.log && (this.logbase==10), "log10", 10, arg => this.ChangeLog(arg));
-      menu.addchk(this.log && (this.logbase==2), "log2", 2, arg => this.ChangeLog(arg));
-      menu.addchk(this.log && Math.abs(this.logbase - Math.exp(1)) < 0.1, "ln", Math.exp(1), arg => this.ChangeLog(arg));
-      menu.add("endsub:");
+   RAxisPainter.prototype.FillAxisContextMenu = function(menu, kind) {
+      if (kind) {
+         menu.add("header: " + kind.toUpperCase() + " axis");
+         menu.add("Unzoom", () => this.frame_painter().Unzoom(kind));
+         menu.add("sub:Log scale", () => this.ChangeLog('toggle'));
+         menu.addchk(!this.log, "linear", 0, arg => this.ChangeLog(arg));
+         menu.addchk(this.log && (this.logbase==10), "log10", 10, arg => this.ChangeLog(arg));
+         menu.addchk(this.log && (this.logbase==2), "log2", 2, arg => this.ChangeLog(arg));
+         menu.addchk(this.log && Math.abs(this.logbase - Math.exp(1)) < 0.1, "ln", Math.exp(1), arg => this.ChangeLog(arg));
+         menu.add("endsub:");
+      }
 
       menu.add("sub:Ticks");
       menu.RColorMenu("color", this.ticksColor, col => this.ChangeAxisAttr("ticks_color_name", col, 1));
@@ -2293,7 +2295,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if ((kind=="x") || (kind=="y")) {
          let handle = this[kind+"_handle"];
 
-         return handle ? handle.FillFrameContextMenu(menu, kind) : false;
+         return handle ? handle.FillAxisContextMenu(menu, kind) : false;
       }
 
       let alone = menu.size()==0;
@@ -4671,6 +4673,17 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (JSROOT.BatchMode) return;
 
       promise.then(() => JSROOT.require(['interactive'])).then(inter => {
+
+         this.draw_g.on("contextmenu", evnt => {
+            evnt.stopPropagation(); // disable main context menu
+            evnt.preventDefault();  // disable browser context menu
+            jsrp.createMenu(this, evnt).then(menu => {
+              menu.add("header:Palette");
+              this.z_handle.FillAxisContextMenu(menu);
+              menu.show();
+            });
+         });
+
 
          if (!after_resize)
             inter.DragMoveHandler.AddDrag(this, { minwidth: 20, minheight: 20, no_change_y: true, redraw: this.DrawPalette.bind(this, true) });
