@@ -1232,6 +1232,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.ticksColor = this.v7EvalColor("ticks_color", "");
       this.labelsOffset = this.v7EvalLength("labels_offset", this.scaling_size, 0);
 
+      console.log(this.name, 'ticks color', this.ticksColor)
+
       this.fTitle = this.v7EvalAttr("title", "");
 
       if (this.max_tick_size && (this.tickSize > this.max_tick_size)) this.tickSize = this.max_tick_size;
@@ -1258,9 +1260,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       this.scaling_size = this.vertical ? pad_w : pad_h;
       this.extractDrawAttributes();
-      if (this.ticksSide == "invert") side = -side;
       this.axis_g = axis_g;
       this.side = side;
+
+      if (this.ticksSide == "invert") side = -side;
 
       if (this.standalone)
          this.DrawMainLine(axis_g);
@@ -1302,18 +1305,21 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       this.extractDrawAttributes();
 
+      let side = this.side;
+      if (this.ticksSide == "invert") side = -side;
+
       if (this.standalone)
          this.DrawMainLine(this.axis_g);
 
       // first draw ticks
-      let tgaps = this.DrawTicks(this.axis_g, this.side, false);
+      let tgaps = this.DrawTicks(this.axis_g, side, false);
 
-      let labelsPromise = this.optionUnlab ? Promise.resolve(tgaps) : this.drawLabels(this.axis_g, this.side, tgaps);
+      let labelsPromise = this.optionUnlab ? Promise.resolve(tgaps) : this.drawLabels(this.axis_g, side, tgaps);
 
       return labelsPromise.then(lgaps => {
-         this.addZoomingRect(this.axis_g, this.side, lgaps);
+         this.addZoomingRect(this.axis_g, side, lgaps);
 
-         return this.drawTitle(this.axis_g, this.side, lgaps);
+         return this.drawTitle(this.axis_g, side, lgaps);
       }).then(() => {
          if (typeof this._afterDrawAgain == 'function')
             this._afterDrawAgain();
@@ -1398,10 +1404,17 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       menu.add("header: " + kind.toUpperCase() + " axis");
       menu.add("Unzoom", () => this.frame_painter().Unzoom(kind));
       menu.add("sub:Log scale", () => this.ChangeLog('toggle'));
-      menu.addchk(!this.log, "Linear scale", 0, arg => this.ChangeLog(arg));
-      menu.addchk(this.log && (this.logbase==10), "log10 scale", 10, arg => this.ChangeLog(arg));
-      menu.addchk(this.log && (this.logbase==2), "log2 scale", 2, arg => this.ChangeLog(arg));
-      menu.addchk(this.log && Math.abs(this.logbase - Math.exp(1)) < 0.1, "ln scale", Math.exp(1), arg => this.ChangeLog(arg));
+      menu.addchk(!this.log, "linear", 0, arg => this.ChangeLog(arg));
+      menu.addchk(this.log && (this.logbase==10), "log10", 10, arg => this.ChangeLog(arg));
+      menu.addchk(this.log && (this.logbase==2), "log2", 2, arg => this.ChangeLog(arg));
+      menu.addchk(this.log && Math.abs(this.logbase - Math.exp(1)) < 0.1, "ln", Math.exp(1), arg => this.ChangeLog(arg));
+      menu.add("endsub:");
+
+      menu.add("sub:Ticks");
+      menu.RColorMenu("color", this.ticksColor, col => this.ChangeAxisAttr("ticks_color_name", col, 1));
+      menu.SizeMenu("size", 0, 0.05, 0.01, this.tickSize/this.scaling_size, sz => this.ChangeAxisAttr("ticks_size", sz, 1));
+      menu.SelectMenu("side", ["normal", "invert", "both"], this.ticksSide, side => this.ChangeAxisAttr("ticks_side", side, 1))
+
       menu.add("endsub:");
 
       if (!this.optionUnlab) {
@@ -1410,7 +1423,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             this.ChangeAxisAttr("labels_offset", offset, 1);
          });
          menu.RAttrTextItems(this.labelsFont, { noangle: 1, noalign: 1 }, change => {
-            console.log('change name', change.name);
             this.ChangeAxisAttr("labels_" + change.name, change.value, 1);
          });
          menu.addchk(this.labelsFont.angle, "rotate", res => {
