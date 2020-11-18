@@ -347,7 +347,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.csstype = arg1.csstype; // for the moment only via frame one can set axis attributes
          this.cssprefix = cssprefix;
          this.rstyle = arg1.rstyle;
-         this.snapid = arg1.snapid;
       } else {
          this.csstype = "axis";
          this.cssprefix = "axis_";
@@ -1762,19 +1761,17 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       this.x_handle = new RAxisPainter(this, this.xaxis, "x_");
       this.x_handle.SetDivId(this.divid, -1);
-      this.x_handle.pad_name = this.pad_name;
-      this.x_handle.rstyle = this.rstyle;
 
       this.x_handle.ConfigureAxis("xaxis", this.xmin, this.xmax, this.scale_xmin, this.scale_xmax, false, [0,w], w, { reverse: false });
       this.x_handle.AssignFrameMembers(this,"x");
+      this.x_handle.snapid = this.snapid;
 
       this.y_handle = new RAxisPainter(this, this.yaxis, "y_");
       this.y_handle.SetDivId(this.divid, -1);
-      this.y_handle.pad_name = this.pad_name;
-      this.y_handle.rstyle = this.rstyle;
 
       this.y_handle.ConfigureAxis("yaxis", this.ymin, this.ymax, this.scale_ymin, this.scale_ymax, true, [h,0], -h, { reverse: false });
       this.y_handle.AssignFrameMembers(this,"y");
+      this.y_handle.snapid = this.snapid;
 
       let layer = this.svg_frame().select(".axis_layer");
 
@@ -4593,6 +4590,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       this.z_handle.ConfigureAxis("zaxis", zmin, zmax, zmin, zmax, true, [palette_height, 0], -palette_height, { reverse: false });
 
+      // only when drawing, snapid can be assigned
+      this.z_handle.snapid = this.snapid;
+
       for (let i=0;i<contour.length-1;++i) {
          let z0 = this.z_handle.gr(contour[i]),
              z1 = this.z_handle.gr(contour[i+1]),
@@ -4726,10 +4726,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       painter.CreateG(false);
 
-      painter.z_handle = new RAxisPainter(painter, null, "z_");
+      painter.z_handle = new RAxisPainter(painter, null, "axis_");
       painter.z_handle.SetDivId(divid, -1);
-      painter.z_handle.pad_name = painter.pad_name;
-      painter.z_handle.rstyle = painter.rstyle;
 
       return painter.DrawingReady();
    }
