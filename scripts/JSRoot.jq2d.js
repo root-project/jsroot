@@ -208,6 +208,22 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          this.add("endsub:");
       }
 
+      /** @summary Add items to change RAttrText */
+      RAttrTextItems(fontHandler, opts, set_func) {
+         if (!opts) opts = {};
+         this.add("color");
+         if (fontHandler.scaled)
+            this.SizeMenu("size", 0.01, 0.10, 0.01, fontHandler.size /fontHandler.scale, sz => set_func({ name: "size", value: sz }));
+         else
+            this.SizeMenu("size", 6, 20, 2, fontHandler.size, sz => set_func({ name: "size", value: sz }));
+
+         this.add("name");
+         if (!opts.noalign)
+            this.add("align");
+         if (!opts.noangle)
+            this.add("angle");
+      }
+
       /** @summary Fill context menu for text attributes
        * @private */
       AddTextAttributesMenu(painter, prefix) {

@@ -151,12 +151,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
        if (typeof text_size == "string") text_size = parseFloat(text_size);
        if (isNaN(text_size) || (text_size <= 0)) text_size = 12;
-       if (text_size < 0.5) {
-         if (!fontScale) fontScale = this.pad_height() || 10;
-         text_size*=fontScale;
-      }
+       if (!fontScale) fontScale = this.pad_height() || 10;
 
-       let handler = new JSROOT.FontHandler(text_font, text_size);
+       let handler = new JSROOT.FontHandler(text_font, text_size, fontScale);
 
        if (text_angle) handler.setAngle(-1 * text_angle);
        if (text_align !== "none") handler.setAlign(text_align);
@@ -1177,18 +1174,19 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       let title_g = axis_g.append("svg:g").attr("class", "axis_title");
 
-      let titleFont = this.v7EvalFont("title", { size: 0.03 }, this.pad_height()),
-          title_position = this.v7EvalAttr("title_position", "right"),
+      let title_position = this.v7EvalAttr("title_position", "right"),
           center = (title_position == "center"),
           opposite = (title_position == "left"),
           title_shift_x = 0, title_shift_y = 0, title_basepos = 0;
 
-      titleFont.roundAngle(180, this.vertical ? 270 : 0);
+
+      this.titleFont = this.v7EvalFont("title", { size: 0.03 }, this.pad_height());
+      this.titleFont.roundAngle(180, this.vertical ? 270 : 0);
 
       this.titleOffset = this.v7EvalLength("title_offset", this.scaling_size, 0);
       this.titlePos = title_position;
 
-      this.StartTextDrawing(titleFont, 'font', title_g);
+      this.StartTextDrawing(this.titleFont, 'font', title_g);
 
       this.title_align = center ? "middle" : (opposite ^ this.IsReverseAxis() ? "begin" : "end");
 
@@ -1396,13 +1394,16 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (t!==null) this.ChangeAxisAttr("title", t);
       });
 
-      menu.SizeMenu("offset", -0.05, 0.05, 0.01, this.titleOffset, offset => {
-         console.log('Submit change ', offset);
+      menu.SizeMenu("offset", -0.05, 0.05, 0.01, this.titleOffset/this.scaling_size, offset => {
          this.ChangeAxisAttr("title_offset", offset);
       });
 
       menu.SelectMenu("position", ["left", "center", "right"], this.titlePos, pos => {
          this.ChangeAxisAttr("title_position", pos);
+      });
+
+      menu.RAttrTextItems(this.titleFont, { noangle: 1, noalign: 1 }, change => {
+         this.ChangeAxisAttr("title_" + change.name, change.value);
       });
 
       menu.add("endsub:");

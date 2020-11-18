@@ -981,11 +981,17 @@ JSROOT.define(['d3'], (d3) => {
     * @private
     */
 
-   function FontHandler(fontIndex, size) {
+   function FontHandler(fontIndex, size, scale) {
       this.name = "Arial";
+      if (scale && (size < 1)) {
+         size *= scale;
+         this.scaled = true;
+      }
+
       this.size = Math.round(size || 11);
       this.weight = null;
       this.style = null;
+      this.scale = scale;
 
       let indx = Math.floor(fontIndex / 10),
           fontName = jsrp.root_fonts[indx] || "";
