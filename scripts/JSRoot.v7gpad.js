@@ -780,30 +780,32 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             this.drag_pos0 = pos[1];
          }
 
+         return true;
+      }
+
+      let offset = label_g.property('fix_offset');
+
+      if (this.vertical) {
+         offset += Math.round(pos[0] - this.drag_pos0);
+         label_g.attr('transform', `translate(${offset},0)`);
       } else {
-         let offset = label_g.property('fix_offset');
+         offset += Math.round(pos[1] - this.drag_pos0);
+         label_g.attr('transform', `translate(0,${offset})`);
+      }
+      if (!offset) label_g.attr('transform', null);
 
-         if (this.vertical) {
-            offset += Math.round(pos[0] - this.drag_pos0);
-            label_g.attr('transform', `translate(${offset},0)`);
-         } else {
-            offset += Math.round(pos[1] - this.drag_pos0);
-            label_g.attr('transform', `translate(0,${offset})`);
-         }
-         if (!offset) label_g.attr('transform', null);
-
-         if (arg == 'stop') {
-            label_g.select("rect.zoom").remove();
-            delete this.drag_pos0;
-            if (offset != label_g.property('fix_offset')) {
-               label_g.property('fix_offset', offset);
-               let side = label_g.property('side') || 1;
-               this.labelsOffset = offset / (this.vertical ? -side : side);
-               this.ChangeAxisAttr("labels_offset", this.labelsOffset/this.scaling_size, true);
-               this.drawAxisAgain();
-            }
+      if (arg == 'stop') {
+         label_g.select("rect.zoom").remove();
+         delete this.drag_pos0;
+         if (offset != label_g.property('fix_offset')) {
+            label_g.property('fix_offset', offset);
+            let side = label_g.property('side') || 1;
+            this.labelsOffset = offset / (this.vertical ? -side : side);
+            this.ChangeAxisAttr("labels_offset", this.labelsOffset/this.scaling_size, true);
+            this.drawAxisAgain();
          }
       }
+
       return true;
    }
 
@@ -1279,6 +1281,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       });
    }
 
+   /** @summary Assign handler, which is called when axis redraw by interactive changes
+     * @desc Used by palette painter to reassign iteractive handlers
+     * @private */
+   RAxisPainter.prototype.setAfterDrawHandler = function(handler) {
+      this._afterDrawAgain = handler;
+   }
+
    /** @summary Draw axis with the same settings, used by interactive changes */
    RAxisPainter.prototype.drawAxisAgain = function() {
       if (!this.axis_g || !this.side) return;
@@ -1297,6 +1306,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.addZoomingRect(this.axis_g, this.side, lgaps);
 
          return this.drawTitle(this.axis_g, this.side, lgaps);
+      }).then(() => {
+         if (typeof this._afterDrawAgain == 'function')
+            this._afterDrawAgain();
       });
    }
 
@@ -4620,19 +4632,29 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          if (!JSROOT.settings.Zooming) return;
 
-         let doing_zoom = false, sel1 = 0, sel2 = 0, zoom_rect = null;
+         let doing_zoom = false, sel1 = 0, sel2 = 0, zoom_rect, zoom_rect_visible, moving_labels, last_pos, assignHandlers;
 
          let moveRectSel = evnt => {
 
             if (!doing_zoom) return;
             evnt.preventDefault();
 
-            let m = d3.pointer(evnt, this.draw_g.node());
+            last_pos = d3.pointer(evnt, this.draw_g.node());
 
-            sel2 = Math.min(Math.max(m[1], 0), palette_height);
+            if (moving_labels)
+               return this.z_handle.processLabelsMove('move', last_pos);
+
+            sel2 = Math.min(Math.max(last_pos[1], 0), palette_height);
+
+            let h = Math.abs(sel2-sel1);
+
+            if (!zoom_rect_visible && (h > 1)) {
+               zoom_rect.style('display', null);
+               zoom_rect_visible = true;
+            }
 
             zoom_rect.attr("y", Math.min(sel1, sel2))
-                     .attr("height", Math.abs(sel2-sel1));
+                     .attr("height", h);
          }
 
          let endRectSel = evnt => {
@@ -4645,9 +4667,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             zoom_rect = null;
             doing_zoom = false;
 
-            let z = this.z_handle.gr, z1 = z.invert(sel1), z2 = z.invert(sel2);
-
-            this.frame_painter().Zoom("z", Math.min(z1, z2), Math.max(z1, z2));
+            if (moving_labels) {
+               this.z_handle.processLabelsMove('stop', last_pos);
+            } else {
+               let z = this.z_handle.gr, z1 = z.invert(sel1), z2 = z.invert(sel2);
+               this.frame_painter().Zoom("z", Math.min(z1, z2), Math.max(z1, z2));
+            }
          }
 
          let startRectSel = evnt => {
@@ -4658,10 +4683,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             evnt.preventDefault();
             evnt.stopPropagation();
 
-            let origin = d3.pointer(evnt, this.draw_g.node());
+            last_pos = d3.pointer(evnt, this.draw_g.node());
 
-            sel1 = sel2 = origin[1];
-
+            sel1 = sel2 = last_pos[1];
+            zoom_rect_visible = false;
+            moving_labels = false;
             zoom_rect = g_btns
                  .append("svg:rect")
                  .attr("class", "zoom")
@@ -4669,15 +4695,27 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                  .attr("x", "0")
                  .attr("width", palette_width)
                  .attr("y", sel1)
-                 .attr("height", 1);
+                 .attr("height", 1)
+                 .style('display', 'none');
 
             d3.select(window).on("mousemove.colzoomRect", moveRectSel)
                              .on("mouseup.colzoomRect", endRectSel, true);
+
+            setTimeout(() => {
+               if (!zoom_rect_visible && this.z_handle.processLabelsMove('start', last_pos))
+                  moving_labels = true;
+            }, 500)
          }
 
-         this.draw_g.select(".axis_zoom")
-                    .on("mousedown", startRectSel)
-                    .on("dblclick", function() { framep.Unzoom("z"); });
+         assignHandlers = () => {
+            this.draw_g.selectAll(".axis_zoom, .axis_labels")
+                       .on("mousedown", startRectSel)
+                       .on("dblclick", () => framep.Unzoom("z"));
+         }
+
+         this.z_handle.setAfterDrawHandler(assignHandlers);
+
+         assignHandlers();
       });
    }
 
