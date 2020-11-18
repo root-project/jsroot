@@ -147,9 +147,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           text_angle  = this.v7EvalAttr( name + "_angle", 0),
           text_align  = this.v7EvalAttr( name + "_align", dflts.align || "none"),
           text_color  = this.v7EvalColor( name + "_color", dflts.color || "none"),
-          font_family   = this.v7EvalAttr( name + "_font_family", "Arial"),
-          font_style   = this.v7EvalAttr( name + "_font_style", ""),
-          font_weight  = this.v7EvalAttr( name + "_font_weight", "");
+          font_family = this.v7EvalAttr( name + "_font_family", "Arial"),
+          font_style  = this.v7EvalAttr( name + "_font_style", ""),
+          font_weight = this.v7EvalAttr( name + "_font_weight", "");
 
        if (typeof text_size == "string") text_size = parseFloat(text_size);
        if (isNaN(text_size) || (text_size <= 0)) text_size = 12;
@@ -157,7 +157,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
        let handler = new JSROOT.FontHandler(null, text_size, fontScale, font_family, font_style, font_weight);
 
-       if (text_angle) handler.setAngle(-1 * text_angle);
+       if (text_angle) handler.setAngle(360 - text_angle);
        if (text_align !== "none") handler.setAlign(text_align);
        if (text_color !== "none") handler.setColor(text_color);
 
@@ -1025,8 +1025,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Performs labels drawing
      * @returns {Promise} wwith gaps in both direction */
    RAxisPainter.prototype.drawLabels = function(axis_g, side, gaps) {
-      let labelsFont = this.v7EvalFont("labels", { size: 0.03 }),
-          center_lbls = this.IsCenterLabels(),
+      let center_lbls = this.IsCenterLabels(),
           rotate_lbls = false,
           textscale = 1, maxtextlen = 0, lbls_tilt = false,
           label_g = axis_g.append("svg:g").attr("class","axis_labels").property('side', side),
@@ -1052,8 +1051,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if ((drawCnt === 0) && resolveFunc) resolveFunc(true);
       }
 
-      labelsFont.roundAngle(180);
-      if (labelsFont.angle) { labelsFont.angle = 270; rotate_lbls = true; }
+      this.labelsFont = this.v7EvalFont("labels", { size: 0.03 });
+      this.labelsFont.roundAngle(180);
+      if (this.labelsFont.angle) { this.labelsFont.angle = 270; rotate_lbls = true; }
 
       let lastpos = 0,
           fix_offset = Math.round((this.vertical ? -side : side)*this.labelsOffset),
@@ -1064,7 +1064,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       label_g.property('fix_offset', fix_offset);
 
-      this.StartTextDrawing(labelsFont, 'font', label_g);
+      this.StartTextDrawing(this.labelsFont, 'font', label_g);
 
       for (let nmajor=0;nmajor<lbl_pos.length;++nmajor) {
 
@@ -1107,7 +1107,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          if (lastpos && (pos!=lastpos) && ((this.vertical && !rotate_lbls) || (!this.vertical && rotate_lbls))) {
             let axis_step = Math.abs(pos-lastpos);
-            textscale = Math.min(textscale, 0.9*axis_step/labelsFont.size);
+            textscale = Math.min(textscale, 0.9*axis_step/this.labelsFont.size);
          }
 
          lastpos = pos;
@@ -1147,10 +1147,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
            });
 
          if (this.vertical) {
-            gaps[side] += Math.round(max_lbl_width + 0.2*labelsFont.size) - fix_offset;
+            gaps[side] += Math.round(max_lbl_width + 0.2*this.labelsFont.size) - fix_offset;
          } else {
             let tilt_height = lbls_tilt ? max_lbl_width * Math.sin(25/180*Math.PI) + max_lbl_height * (Math.cos(25/180*Math.PI) + 0.2) : 0;
-            gaps[side] += Math.round(Math.max(1.2*max_lbl_height, 1.2*labelsFont.size, tilt_height)) + fix_offset;
+            gaps[side] += Math.round(Math.max(1.2*max_lbl_height, 1.2*this.labelsFont.size, tilt_height)) + fix_offset;
          }
 
          return gaps;
@@ -1408,6 +1408,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          menu.SizeMenu("offset", -0.05, 0.05, 0.01, this.labelsOffset/this.scaling_size, offset => {
             this.ChangeAxisAttr("labels_offset", offset, 1);
          });
+         menu.RAttrTextItems(this.labelsFont, { noangle: 1, noalign: 1 }, change => {
+            console.log('change name', change.name);
+            this.ChangeAxisAttr("labels_" + change.name, change.value, 1);
+         });
+         menu.addchk(this.labelsFont.angle, "rotate", res => {
+            this.ChangeAxisAttr("labels_angle", res ? 180 : 0, 1);
+         })
          menu.add("endsub:");
       }
 
@@ -1426,7 +1433,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          });
 
          menu.RAttrTextItems(this.titleFont, { noangle: 1, noalign: 1 }, change => {
-            console.log('change attribute', change.name, change.value);
             this.ChangeAxisAttr("title_" + change.name, change.value, 1);
          });
       }
