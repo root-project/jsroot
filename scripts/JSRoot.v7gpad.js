@@ -784,10 +784,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          let offset = label_g.property('fix_offset');
 
          if (this.vertical) {
-            offset += (pos[0] - this.drag_pos0);
+            offset += Math.round(pos[0] - this.drag_pos0);
             label_g.attr('transform', `translate(${offset},0)`);
          } else {
-            offset += (pos[1] - this.drag_pos0);
+            offset += Math.round(pos[1] - this.drag_pos0);
             label_g.attr('transform', `translate(0,${offset})`);
          }
          if (!offset) label_g.attr('transform', null);
@@ -800,6 +800,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                let side = label_g.property('side') || 1;
                this.labelsOffset = offset / (this.vertical ? -side : side);
                this.ChangeAxisAttr("labels_offset", this.labelsOffset/this.scaling_size, true);
+               this.drawAxisAgain();
             }
          }
       }
@@ -1053,8 +1054,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (labelsFont.angle) { labelsFont.angle = 270; rotate_lbls = true; }
 
       let lastpos = 0,
-          fix_offset = (this.vertical ? -side : side)*this.labelsOffset,
-          fix_coord = (this.vertical ? -side : side)*gaps[side];
+          fix_offset = Math.round((this.vertical ? -side : side)*this.labelsOffset),
+          fix_coord = Math.round((this.vertical ? -side : side)*gaps[side]);
 
       if (fix_offset)
          label_g.attr('transform', this.vertical ? `translate(${fix_offset},0)` : `translate(0,${fix_offset})`);
@@ -1144,10 +1145,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
            });
 
          if (this.vertical) {
-            gaps[side] += Math.round(max_lbl_width + 0.2*labelsFont.size);
+            gaps[side] += Math.round(max_lbl_width + 0.2*labelsFont.size) - fix_offset;
          } else {
             let tilt_height = lbls_tilt ? max_lbl_width * Math.sin(25/180*Math.PI) + max_lbl_height * (Math.cos(25/180*Math.PI) + 0.2) : 0;
-            gaps[side] += Math.round(Math.max(1.2*max_lbl_height, 1.2*labelsFont.size, tilt_height));
+            gaps[side] += Math.round(Math.max(1.2*max_lbl_height, 1.2*labelsFont.size, tilt_height)) + fix_offset;
          }
 
          return gaps;
@@ -1155,7 +1156,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Add zomming rect to axis drawing */
-   RAxisPainter.prototype.AddZoomingRect = function(axis_g, side, lgaps) {
+   RAxisPainter.prototype.addZoomingRect = function(axis_g, side, lgaps) {
       if (JSROOT.settings.Zooming && !this.disable_zooming && !JSROOT.BatchMode) {
          let sz = Math.max(lgaps[side], 10);
 
@@ -1169,9 +1170,54 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
    }
 
+   /** @summary Draw axis title */
+   RAxisPainter.prototype.drawTitle = function(axis_g, side, lgaps) {
+      if (!this.fTitle) return Promise.resolve(true);
+
+      let title_g = axis_g.append("svg:g").attr("class", "axis_title");
+
+      let titleFont = this.v7EvalFont("title", { size: 0.03 }, this.pad_height()),
+          title_position = this.v7EvalAttr("title_position", "right"),
+          center = (title_position == "center"),
+          opposite = (title_position == "left"),
+          title_shift_x = 0, title_shift_y = 0, title_basepos = 0;
+
+      titleFont.roundAngle(180, this.vertical ? 270 : 0);
+
+      this.titleOffset = this.v7EvalLength("title_offset", this.scaling_size, 0);
+      this.titlePos = title_position;
+
+      this.StartTextDrawing(titleFont, 'font', title_g);
+
+      this.title_align = center ? "middle" : (opposite ^ this.IsReverseAxis() ? "begin" : "end");
+
+      if (this.vertical) {
+         title_basepos = Math.round(-side*(lgaps[side]));
+         title_shift_x = title_basepos + Math.round(-side*this.titleOffset);
+         title_shift_y = Math.round(center ? this.gr_range/2 : (opposite ? 0 : this.gr_range));
+         this.DrawText({ align: [this.title_align, ((side<0) ? 'top' : 'bottom')],
+                         text: this.fTitle, draw_g: title_g });
+      } else {
+         title_shift_x = Math.round(center ? this.gr_range/2 : (opposite ? 0 : this.gr_range));
+         title_basepos = Math.round(side*lgaps[side]);
+         title_shift_y = title_basepos + Math.round(side*this.titleOffset);
+         this.DrawText({ align: [this.title_align, ((side>0) ? 'top' : 'bottom')],
+                         text: this.fTitle, draw_g: title_g });
+      }
+
+      title_g.attr('transform', 'translate(' + title_shift_x + ',' + title_shift_y +  ')')
+             .property('basepos', title_basepos)
+             .property('shift_x', title_shift_x)
+             .property('shift_y', title_shift_y);
+
+      this.addTitleDrag(title_g, side);
+
+      return this.FinishTextPromise(title_g);
+   }
+
    /** @summary Performs axis drawing
      * @returns {Promise} which resolved when drawing is completed */
-   RAxisPainter.prototype.DrawAxis = function(layer, transform, side) {
+   RAxisPainter.prototype.drawAxis = function(layer, transform, side) {
       let axis_g = layer,
           pad_w = this.pad_width() || 10,
           pad_h = this.pad_height() || 10;
@@ -1190,7 +1236,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       this.createv7AttLine("line_");
 
-      this.axis_g = axis_g;
       this.scaling_size = this.vertical ? pad_w : pad_h;
       this.endingStyle = this.v7EvalAttr("ending_style", "");
       this.endingSize = Math.round(this.v7EvalLength("ending_size", this.scaling_size, this.endingStyle ? 0.02 : 0));
@@ -1202,6 +1247,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if (this.max_tick_size && (this.tickSize > this.max_tick_size)) this.tickSize = this.max_tick_size;
 
+      if (this.ticksSide == "invert") side = -side;
+
+      this.axis_g = axis_g;
+      this.side = side;
+
       if (this.standalone)
          this.DrawMainLine(axis_g);
 
@@ -1212,8 +1262,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       this.handle = this.CreateTicks(false, optionNoexp, optionNoopt, optionInt);
 
-      if (this.ticksSide == "invert") side = -side;
-
       // first draw ticks
       let tgaps = this.DrawTicks(axis_g, side, true);
 
@@ -1223,55 +1271,37 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       let labelsPromise = optionUnlab ? Promise.resolve(tgaps) : this.drawLabels(axis_g, side, tgaps);
 
       return labelsPromise.then(lgaps => {
-         this.AddZoomingRect(axis_g, side, lgaps);
+         this.addZoomingRect(axis_g, side, lgaps);
 
          this.fTitle = this.v7EvalAttr("title", "");
-         if (!this.fTitle) return true;
 
-         let title_g = axis_g.append("svg:g").attr("class", "axis_title");
+         return this.drawTitle(axis_g, side, lgaps);
+      });
+   }
 
-         let titleFont = this.v7EvalFont("title", { size: 0.03 }, pad_h),
-             title_position = this.v7EvalAttr("title_position", "right"),
-             center = (title_position == "center"),
-             opposite = (title_position == "left"),
-             title_shift_x = 0, title_shift_y = 0, title_basepos = 0;
+   /** @summary Draw axis with the same settings, used by interactive changes */
+   RAxisPainter.prototype.drawAxisAgain = function() {
+      if (!this.axis_g || !this.side) return;
 
-         titleFont.roundAngle(180, this.vertical ? 270 : 0);
+      this.axis_g.selectAll("*").remove();
 
-         this.titleOffset = this.v7EvalLength("title_offset", this.scaling_size, 0);
-         this.titlePos = title_position;
+      if (this.standalone)
+         this.DrawMainLine(this.axis_g);
 
-         this.StartTextDrawing(titleFont, 'font', title_g);
+      // first draw ticks
+      let tgaps = this.DrawTicks(this.axis_g, this.side, false);
 
-         this.title_align = center ? "middle" : (opposite ^ this.IsReverseAxis() ? "begin" : "end");
+      let labelsPromise = this.optionUnlab ? Promise.resolve(tgaps) : this.drawLabels(this.axis_g, this.side, tgaps);
 
-         if (this.vertical) {
-            title_basepos = Math.round(-side*(lgaps[side]));
-            title_shift_x = title_basepos + Math.round(-side*this.titleOffset);
-            title_shift_y = Math.round(center ? this.gr_range/2 : (opposite ? 0 : this.gr_range));
-            this.DrawText({ align: [this.title_align, ((side<0) ? 'top' : 'bottom')],
-                            text: this.fTitle, draw_g: title_g });
-         } else {
-            title_shift_x = Math.round(center ? this.gr_range/2 : (opposite ? 0 : this.gr_range));
-            title_basepos = Math.round(side*lgaps[side]);
-            title_shift_y = title_basepos + Math.round(side*this.titleOffset);
-            this.DrawText({ align: [this.title_align, ((side>0) ? 'top' : 'bottom')],
-                            text: this.fTitle, draw_g: title_g });
-         }
+      return labelsPromise.then(lgaps => {
+         this.addZoomingRect(this.axis_g, this.side, lgaps);
 
-         title_g.attr('transform', 'translate(' + title_shift_x + ',' + title_shift_y +  ')')
-                .property('basepos', title_basepos)
-                .property('shift_x', title_shift_x)
-                .property('shift_y', title_shift_y);
-
-         this.addTitleDrag(title_g, side);
-
-         return this.FinishTextPromise(title_g);
+         return this.drawTitle(this.axis_g, this.side, lgaps);
       });
    }
 
    /** @summary Draw axis again on opposite frame size */
-   RAxisPainter.prototype.DrawAxisAgain = function(layer, transform, side, only_ticks) {
+   RAxisPainter.prototype.drawAxisOtherPlace = function(layer, transform, side, only_ticks) {
       let axis_g = layer.select("." + this.name + "_container2");
       if (axis_g.empty())
          axis_g = layer.append("svg:g").attr("class",this.name + "_container2");
@@ -1287,7 +1317,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       let promise = this.optionUnlab || only_ticks ? Promise.resolve(tgaps) : this.drawLabels(axis_g, side, tgaps);
 
       return promise.then(lgaps => {
-         this.AddZoomingRect(axis_g, side, lgaps);
+         this.addZoomingRect(axis_g, side, lgaps);
          return true;
       });
    }
@@ -1322,7 +1352,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       this.standalone = true;  // no need to clean axis container
 
-      return this.DrawAxis(this.draw_g, "translate(" + pos.x + "," + pos.y +")");
+      return this.drawAxis(this.draw_g, "translate(" + pos.x + "," + pos.y +")");
    }
 
    RAxisPainter.prototype.ChangeAxisAttr = function(name, value, no_redraw) {
@@ -1748,18 +1778,18 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
 
       if (!disable_axis_draw) {
-         let promise1 = draw_horiz.DrawAxis(layer, (sidex > 0) ? `translate(0,${h})` : "", sidex);
+         let promise1 = draw_horiz.drawAxis(layer, (sidex > 0) ? `translate(0,${h})` : "", sidex);
 
-         let promise2 = draw_vertical.DrawAxis(layer, (sidey > 0) ? `translate(0,${h})` : `translate(${w},${h})`, sidey);
+         let promise2 = draw_vertical.drawAxis(layer, (sidey > 0) ? `translate(0,${h})` : `translate(${w},${h})`, sidey);
 
          return Promise.all([promise1, promise2]).then(() => {
 
             let again = [];
             if (ticksx > 1)
-               again.push(draw_horiz.DrawAxisAgain(layer, (sidex < 0) ? `translate(0,${h})` : "", -sidex, ticksx == 2));
+               again.push(draw_horiz.drawAxisOtherPlace(layer, (sidex < 0) ? `translate(0,${h})` : "", -sidex, ticksx == 2));
 
             if (ticksy > 1)
-               again.push(draw_vertical.DrawAxisAgain(layer, (sidey < 0) ? `translate(0,${h})` : `translate(${w},${h})`, -sidey, ticksy == 2));
+               again.push(draw_vertical.drawAxisOtherPlace(layer, (sidey < 0) ? `translate(0,${h})` : `translate(${w},${h})`, -sidey, ticksy == 2));
 
              return Promise.all(again);
          }).then(() => {
@@ -4579,7 +4609,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       this.z_handle.max_tick_size = Math.round(palette_width*0.3);
 
-      let promise = this.z_handle.DrawAxis(this.draw_g, "translate(" + palette_width + "," + palette_height + ")", -1);
+      let promise = this.z_handle.drawAxis(this.draw_g, "translate(" + palette_width + "," + palette_height + ")", -1);
 
       if (JSROOT.BatchMode) return;
 
