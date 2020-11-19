@@ -1476,29 +1476,23 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Method analyze mouse wheel event and returns item with suggested zooming range */
-   RAxisPainter.prototype.analyzeWheelEvent = function(evnt, pos, item) {
+   RAxisPainter.prototype.analyzeWheelEvent = function(evnt, dmin, item, test_ignore) {
       if (!item) item = {};
-
-      let coord = this.vertical ? pos[1] :  pos[0],
-          grrange = this.GrRange(),
-          dmin = coord / Math.abs(grrange);
-
-      if (this.vertical) dmin = 1 - dmin;
 
       let delta = 0, delta_left = 1, delta_right = 1;
 
       if ('dleft' in item) { delta_left = item.dleft; delta = 1; }
       if ('dright' in item) { delta_right = item.dright; delta = 1; }
 
-      if ('delta' in item) {
+      if (item.delta) {
          delta = item.delta;
-      } else {
+      } else if (evnt) {
          delta = evnt.wheelDelta ? -evnt.wheelDelta : (evnt.deltaY || evnt.detail);
       }
 
-      if (!delta) return;
+      if (!delta || (test_ignore && item.ignore)) return;
 
-      delta = (delta<0) ? -0.2 : 0.2;
+      delta = (delta < 0) ? -0.2 : 0.2;
       delta_left *= delta
       delta_right *= delta;
 
@@ -4789,7 +4783,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          if (!JSROOT.settings.Zooming) return;
 
-         let doing_zoom = false, sel1 = 0, sel2 = 0, zoom_rect, zoom_rect_visible, moving_labels, last_pos, assignHandlers;
+         let doing_zoom = false, sel1 = 0, sel2 = 0, zoom_rect, zoom_rect_visible, moving_labels, last_pos;
 
          let moveRectSel = evnt => {
 
@@ -4864,14 +4858,17 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             }, 500)
          }
 
-         assignHandlers = () => {
+         let assignHandlers = () => {
             this.draw_g.selectAll(".axis_zoom, .axis_labels")
                        .on("mousedown", startRectSel)
                        .on("dblclick", () => framep.Unzoom("z"));
 
             if (JSROOT.settings.ZoomWheel)
                this.draw_g.on("wheel", evnt => {
-                  let item = framep.z_handle.analyzeWheelEvent(evnt, d3.pointer(evnt, this.draw_g.node()));
+                  let pos = d3.pointer(evnt, this.draw_g.node()),
+                      coord = 1 - pos[1] / palette_height;
+
+                  let item = framep.z_handle.analyzeWheelEvent(evnt, coord);
                   if (item.changed)
                      framep.Zoom("z", item.min, item.max);
                });
