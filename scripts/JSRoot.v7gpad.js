@@ -4859,8 +4859,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                              .on("mouseup.colzoomRect", endRectSel, true);
 
             setTimeout(() => {
-               if (!zoom_rect_visible && framep.z_handle.processLabelsMove('start', last_pos))
-                  moving_labels = true;
+               if (!zoom_rect_visible && doing_zoom)
+                  moving_labels = framep.z_handle.processLabelsMove('start', last_pos);
             }, 500)
          }
 

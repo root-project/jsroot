@@ -846,7 +846,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
 
             control.painter.AnalyzeMouseWheelEvent(evnt, item, position, false);
 
-            if ((kind==="z") && intersect.object.use_y_for_z) kind="y";
+            if ((kind==="z") && intersect.object.use_y_for_z) kind = "y";
 
             control.painter.Zoom(kind, item.min, item.max);
          }
