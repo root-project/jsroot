@@ -423,7 +423,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          }
 
          let drag_move = d3.drag().subject(Object),
-            drag_resize = d3.drag().subject(Object);
+             drag_resize = d3.drag().subject(Object);
 
          drag_move
             .on("start", function(evnt) {

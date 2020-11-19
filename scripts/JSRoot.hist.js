@@ -374,12 +374,17 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           .call(this.fillatt.func)
           .call(this.lineatt.func);
 
-      if ('PaveDrawFunc' in this)
-         this.PaveDrawFunc(width, height, arg);
+
+      let promise;
+
+      if (typeof this.PaveDrawFunc == 'function')
+         promise = this.PaveDrawFunc(width, height, arg);
 
       if (JSROOT.BatchMode || (pt._typename=="TPave")) return;
 
-      JSROOT.require(['interactive']).then(inter => {
+      if (!promise || !promise.then) promise = Promise.resolve(true);
+
+      promise.then(() => JSROOT.require(['interactive'])).then(inter => {
 
          // here all kind of interactive settings
          rect.style("pointer-events", "visibleFill")
@@ -398,8 +403,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          if (this.UseContextMenu && JSROOT.settings.ContextMenu)
              this.draw_g.on("contextmenu", this.PaveContextMenu.bind(this));
 
-         if (pt._typename == "TPaletteAxis")
+         if (pt._typename == "TPaletteAxis") {
             this.InteractivePaletteAxis(width, height);
+         }
       });
    }
 
@@ -906,20 +912,26 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       this.z_handle.max_tick_size = Math.round(s_width*0.7);
 
       this.FirstRun++;
-      this.z_handle.DrawAxis(this.draw_g, s_width, s_height, "translate(" + s_width + ", 0)").then(this.FinishPave);
 
-      if (can_move && ('getBoundingClientRect' in this.draw_g.node())) {
-         let rect = this.draw_g.node().getBoundingClientRect();
+      return this.z_handle.DrawAxis(this.draw_g, s_width, s_height, "translate(" + s_width + ", 0)").then(() => {
 
-         let shift = (pos_x + parseInt(rect.width)) - Math.round(0.995*width) + 3;
+         if (this.FinishPave) this.FinishPave();
 
-         if (shift > 0) {
-            this.draw_g.attr("x", pos_x - shift).attr("y", pos_y)
-                       .attr("transform", "translate(" + (pos_x-shift) + ", " + pos_y + ")");
-            palette.fX1NDC -= shift/width;
-            palette.fX2NDC -= shift/width;
+         if (can_move && ('getBoundingClientRect' in this.draw_g.node())) {
+            let rect = this.draw_g.node().getBoundingClientRect();
+
+            let shift = (pos_x + parseInt(rect.width)) - Math.round(0.995*width) + 3;
+
+            if (shift > 0) {
+               this.draw_g.attr("x", pos_x - shift).attr("y", pos_y)
+                          .attr("transform", "translate(" + (pos_x-shift) + ", " + pos_y + ")");
+               palette.fX1NDC -= shift/width;
+               palette.fX2NDC -= shift/width;
+            }
          }
-      }
+
+         return true;
+      });
    }
 
    /** @summary Add interactive methods for palette drawoing */
@@ -955,7 +967,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       }
 
       let startRectSel = evnt => {
-         console.log('startRectSel')
          // ignore when touch selection is activated
          if (doing_zoom) return;
          doing_zoom = true;
@@ -984,6 +995,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          this.draw_g.selectAll(".axis_zoom")
                     .on("mousedown", startRectSel)
                     .on("dblclick", () => this.frame_painter().Unzoom("z"));
+
       if (JSROOT.settings.ZoomWheel)
             this.draw_g.on("wheel", evnt => {
                let pos = d3.pointer(evnt, this.draw_g.node()),
