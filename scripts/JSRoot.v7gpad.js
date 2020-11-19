@@ -1429,13 +1429,17 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    RAxisPainter.prototype.PositionChanged = function() {
       let axis_x = parseInt(this.draw_g.attr("x")),
           axis_y = parseInt(this.draw_g.attr("y")),
-          drawable = this.GetObject();
+          drawable = this.GetObject(),
+          xn = axis_x / this.pad_width(),
+          yn = 1 - axis_y / this.pad_height();
 
-      drawable.fPos.fHoriz.fArr = [ axis_x / this.pad_width() ];
-      drawable.fPos.fVert.fArr = [ 1 - axis_y / this.pad_height() ];
+      drawable.fPos.fHoriz.fArr = [ xn ];
+      drawable.fPos.fVert.fArr = [ yn ];
+
+      this.WebCanvasExec("SetPos({" + xn.toFixed(4) + "," + yn.toFixed(4) + "})");
    }
 
-
+   /** @summary Change axis attribute, submit changes to server and redraw axis when specified */
    RAxisPainter.prototype.ChangeAxisAttr = function(name, value, what_redraw) {
       let changes = {};
       this.v7AttrChange(changes, name, value);
