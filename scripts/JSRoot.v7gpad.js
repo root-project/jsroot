@@ -848,10 +848,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             if (this.titlePos == "center")
                curr_indx = 1;
-            else if (this.titlePos == "left")
-               curr_indx = 0;
             else
-               curr_indx = 2;
+               curr_indx = (this.titlePos == "left") ? 0 : 2;
 
             // let d = ((this.gr_range > 0) && this.vertical) ? title_length : 0;
             alt_pos = [0, this.gr_range/2, this.gr_range]; // possible positions
@@ -860,7 +858,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if (this.title_align == "middle") {
                alt_pos[swap] += off/2;
                alt_pos[2-swap] -= off/2;
-            } else if (this.title_align == "begin") {
+            } else if ((this.title_align == "begin") ^ this.isTitleRotated()) {
                alt_pos[1] -= off/2;
                alt_pos[2-swap] -= off;
             } else { // end
@@ -1191,6 +1189,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
    }
 
+   /** @summary Returns true if axis title is rotated */
+   RAxisPainter.prototype.isTitleRotated = function() {
+      return this.titleFont && (this.titleFont.angle != (this.vertical ? 270 : 0));
+   }
+
    /** @summary Draw axis title */
    RAxisPainter.prototype.drawTitle = function(axis_g, side, lgaps) {
       if (!this.fTitle) return Promise.resolve(true);
@@ -1207,21 +1210,23 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.titleOffset = this.v7EvalLength("title_offset", this.scaling_size, 0);
       this.titlePos = title_position;
 
+      let rotated = this.isTitleRotated();
+
       this.StartTextDrawing(this.titleFont, 'font', title_g);
 
-      this.title_align = center ? "middle" : (opposite ^ this.IsReverseAxis() ? "begin" : "end");
+      this.title_align = center ? "middle" : (opposite ^ (this.IsReverseAxis() || rotated) ? "begin" : "end");
 
       if (this.vertical) {
          title_basepos = Math.round(-side*(lgaps[side]));
          title_shift_x = title_basepos + Math.round(-side*this.titleOffset);
          title_shift_y = Math.round(center ? this.gr_range/2 : (opposite ? 0 : this.gr_range));
-         this.DrawText({ align: [this.title_align, ((side<0) ? 'top' : 'bottom')],
+         this.DrawText({ align: [this.title_align, ((side < 0) ^ rotated ? 'top' : 'bottom')],
                          text: this.fTitle, draw_g: title_g });
       } else {
          title_shift_x = Math.round(center ? this.gr_range/2 : (opposite ? 0 : this.gr_range));
          title_basepos = Math.round(side*lgaps[side]);
          title_shift_y = title_basepos + Math.round(side*this.titleOffset);
-         this.DrawText({ align: [this.title_align, ((side>0) ? 'top' : 'bottom')],
+         this.DrawText({ align: [this.title_align, ((side > 0) ^ rotated ? 'top' : 'bottom')],
                          text: this.fTitle, draw_g: title_g });
       }
 
@@ -1464,6 +1469,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          menu.SelectMenu("position", ["left", "center", "right"], this.titlePos, pos => {
             this.ChangeAxisAttr("title_position", pos, 1);
+         });
+
+         menu.addchk(this.isTitleRotated(), "rotate", flag => {
+            this.ChangeAxisAttr("title_angle", flag ? 180 : 0, 1);
          });
 
          menu.RAttrTextItems(this.titleFont, { noangle: 1, noalign: 1 }, change => {
