@@ -441,15 +441,17 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                   acc_y1: Number(pthis.draw_g.attr("y")),
                   pad_w: pthis.pad_width() - rect_width(),
                   pad_h: pthis.pad_height() - rect_height(),
-                  drag_tm: new Date()
+                  drag_tm: new Date(),
+                  path: "v" + rect_height() + "h" + rect_width() + "v" + (-rect_height()) + "z"
                };
 
-               drag_rect = d3.select(pthis.draw_g.node().parentNode).append("rect")
+               drag_rect = d3.select(pthis.draw_g.node().parentNode).append("path")
                   .classed("zoom", true)
                   .attr("x", handle.acc_x1)
                   .attr("y", handle.acc_y1)
                   .attr("width", rect_width())
                   .attr("height", rect_height())
+                  .attr("d", "M" + handle.acc_x1 + "," + handle.acc_y1 + handle.path)
                   .style("cursor", "move")
                   .style("pointer-events", "none") // let forward double click to underlying elements
                   .property('drag_handle', handle);
@@ -468,8 +470,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                if (!callback.no_change_y)
                   handle.acc_y1 += evnt.dy;
 
-               drag_rect.attr("x", Math.min(Math.max(handle.acc_x1, 0), handle.pad_w))
-                        .attr("y", Math.min(Math.max(handle.acc_y1, 0), handle.pad_h));
+               let x = Math.min(Math.max(handle.acc_x1, 0), handle.pad_w),
+                   y = Math.min(Math.max(handle.acc_y1, 0), handle.pad_h);
+
+               drag_rect.attr("x", x)
+                        .attr("y", y)
+                        .attr("d", "M" + x + "," + y + handle.path);
 
             }).on("end", function(evnt) {
                if (!drag_rect) return;
@@ -556,7 +562,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (!callback.only_resize)
             pthis.draw_g.style("cursor", "move").call(drag_move);
 
-         MakeResizeElements(pthis.draw_g, rect_width(), rect_height(), drag_resize);
+         if (!callback.only_move)
+            MakeResizeElements(pthis.draw_g, rect_width(), rect_height(), drag_resize);
       },
 
       /** @summary Add move handlers for drawn element
