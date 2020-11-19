@@ -389,6 +389,23 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return (this.kind == "time") ?  (value - this.timeoffset) / 1000 : value;
    }
 
+   /** @summary Configure only base parameters, later same handle will be used for drawing  */
+   RAxisPainter.prototype.ConfigureZAxis = function(name, fp) {
+      this.name = name;
+      this.kind = "normal";
+      this.log = false;
+      let _log = this.v7EvalAttr("log", 0);
+      if (_log) {
+         this.log = true;
+         this.logbase = 10;
+         if (Math.abs(_log - Math.exp(1))<0.1)
+            this.logbase = Math.exp(1);
+         else if (_log > 1.9)
+            this.logbase = Math.round(_log);
+      }
+      fp.logz = this.log;
+   }
+
    /** @summary Configure axis painter
      * @desc Axis can be drawn inside frame <g> group with offset to 0 point for the frame
      * Therefore one should distinguish when caclulated coordinates used for axis drawing itself or for calculation of frame coordinates
@@ -515,6 +532,15 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
    }
 
+   /** @summary Assign often used members of frame painter
+     * @private */
+   RAxisPainter.prototype.AssignFrameMembers = function(fp, axis) {
+      fp["gr"+axis] = this.gr;                    // fp.grx
+      fp["log"+axis] = this.log;                  // fp.logx
+      fp["scale_"+axis+"min"] = this.scale_min;   // fp.scale_xmin
+      fp["scale_"+axis+"max"] = this.scale_max;   // fp.scale_xmax
+   }
+
    RAxisPainter.prototype.formatTime = function(d, asticks) {
       return asticks ? this.tfunc1(d) : this.tfunc2(d);
    }
@@ -562,16 +588,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (asticks) return (this.ndig>10) ? val.toExponential(this.ndig-11) : val.toFixed(this.ndig);
 
       return JSROOT.FFormat(val, fmt || JSROOT.gStyle.fStatFormat);
-   }
-
-
-   /** @summary Assign often used members of frame painter
-     * @private */
-   RAxisPainter.prototype.AssignFrameMembers = function(fp, axis) {
-      fp["gr"+axis] = this.gr;                    // fp.grx
-      fp["log"+axis] = this.log;                  // fp.logx
-      fp["scale_"+axis+"min"] = this.scale_min;   // fp.scale_xmin
-      fp["scale_"+axis+"max"] = this.scale_max;   // fp.scale_xmax
    }
 
    RAxisPainter.prototype.formatExp = function(base, order, value) {
@@ -1827,6 +1843,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.y_handle.ConfigureAxis("yaxis", this.ymin, this.ymax, this.scale_ymin, this.scale_ymax, true, [h,0], -h, { reverse: false });
       this.y_handle.AssignFrameMembers(this,"y");
 
+      // only get basic properties like log scale
+      this.z_handle.ConfigureZAxis("zaxis", this);
 
       let layer = this.svg_frame().select(".axis_layer");
 
@@ -4731,7 +4749,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if (moving_labels) {
                framep.z_handle.processLabelsMove('stop', last_pos);
             } else {
-               let z = framep.z_handle.gr, z1 = z.invert(sel1), z2 = z.invert(sel2);
+               let z = framep.z_handle.func, z1 = z.invert(sel1), z2 = z.invert(sel2);
                this.frame_painter().Zoom("z", Math.min(z1, z2), Math.max(z1, z2));
             }
          }
