@@ -1377,7 +1377,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           pp   = this.pad_painter(),
           pos  = pp.GetCoordinate(drawable.fPos),
           len  = pp.GetPadLength(drawable.fVertical, drawable.fLength),
-          reverse = this.v7EvalAttr("reverse", false), // not yet implemented
+          reverse = this.v7EvalAttr("reverse", false),
           min = this.v7EvalAttr("min", 0),
           max = this.v7EvalAttr("max", 100);
 
@@ -1401,19 +1401,40 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       this.standalone = true;  // no need to clean axis container
 
-      if (!JSROOT.BatchMode && JSROOT.settings.ContextMenu)
-         this.draw_g.on("contextmenu", evnt => {
-            evnt.stopPropagation(); // disable main context menu
-            evnt.preventDefault();  // disable browser context menu
-            jsrp.createMenu(this, evnt).then(menu => {
-              menu.add("header:RAxisDrawable");
-              this.FillAxisContextMenu(menu, "");
-              menu.show();
-            });
-         });
+      let promise = this.drawAxis(this.draw_g, "translate(" + pos.x + "," + pos.y +")");
 
-      return this.drawAxis(this.draw_g, "translate(" + pos.x + "," + pos.y +")");
+      if (JSROOT.BatchMode) return promise;
+
+      return promise.then(() => JSROOT.require('interactive')).then(inter => {
+         if (JSROOT.settings.ContextMenu)
+            this.draw_g.on("contextmenu", evnt => {
+               evnt.stopPropagation(); // disable main context menu
+               evnt.preventDefault();  // disable browser context menu
+               jsrp.createMenu(this, evnt).then(menu => {
+                 menu.add("header:RAxisDrawable");
+                 this.FillAxisContextMenu(menu, "");
+                 menu.show();
+               });
+            });
+
+         // attributes required only for moving, has no effect for drawing
+         this.draw_g.attr("x", pos.x).attr("y", pos.y)
+                    .attr("width", this.vertical ? 10 : len)
+                    .attr("height", this.vertical ? len : 10);
+         inter.DragMoveHandler.AddDrag(this, { only_move: true, redraw: this.PositionChanged.bind(this) });
+      });
    }
+
+   /** @summary Process interactive moving of the stats box */
+   RAxisPainter.prototype.PositionChanged = function() {
+      let axis_x = parseInt(this.draw_g.attr("x")),
+          axis_y = parseInt(this.draw_g.attr("y")),
+          drawable = this.GetObject();
+
+      drawable.fPos.fHoriz.fArr = [ axis_x / this.pad_width() ];
+      drawable.fPos.fVert.fArr = [ 1 - axis_y / this.pad_height() ];
+   }
+
 
    RAxisPainter.prototype.ChangeAxisAttr = function(name, value, what_redraw) {
       let changes = {};
