@@ -1401,6 +1401,17 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       this.standalone = true;  // no need to clean axis container
 
+      if (!JSROOT.BatchMode && JSROOT.settings.ContextMenu)
+         this.draw_g.on("contextmenu", evnt => {
+            evnt.stopPropagation(); // disable main context menu
+            evnt.preventDefault();  // disable browser context menu
+            jsrp.createMenu(this, evnt).then(menu => {
+              menu.add("header:RAxisDrawable");
+              this.FillAxisContextMenu(menu, "");
+              menu.show();
+            });
+         });
+
       return this.drawAxis(this.draw_g, "translate(" + pos.x + "," + pos.y +")");
    }
 
@@ -1415,6 +1426,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.RedrawPad();
    }
 
+   /** @summary Change axis log scale kind */
    RAxisPainter.prototype.ChangeLog = function(arg) {
       if ((this.kind == "labels") || (this.kind == 'time')) return;
       if (arg === 'toggle') arg = this.log ? 0 : 10;
@@ -1423,11 +1435,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (!isNaN(arg)) this.ChangeAxisAttr("log", arg, 2);
    }
 
+   /** @summary Provide context menu for axis */
    RAxisPainter.prototype.FillAxisContextMenu = function(menu, kind) {
-      if (kind != "z")
-         menu.add("header: " + kind.toUpperCase() + " axis");
 
-      menu.add("Unzoom", () => this.frame_painter().Unzoom(kind));
+      if (kind) menu.add("Unzoom", () => this.frame_painter().Unzoom(kind));
 
       menu.add("sub:Log scale", () => this.ChangeLog('toggle'));
       menu.addchk(!this.log, "linear", 0, arg => this.ChangeLog(arg));
@@ -2401,8 +2412,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if ((kind=="x") || (kind=="y")) {
          let handle = this[kind+"_handle"];
-
-         return handle ? handle.FillAxisContextMenu(menu, kind) : false;
+         if (!handle) return false;
+         menu.add("header: " + kind.toUpperCase() + " axis");
+         return handle.FillAxisContextMenu(menu, kind);
       }
 
       let alone = menu.size()==0;
