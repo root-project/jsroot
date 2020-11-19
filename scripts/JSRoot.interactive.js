@@ -1179,7 +1179,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          evnt.stopPropagation();
       },
 
-       /** Analyze zooming with mouse wheel */
+       /** @summary Analyze zooming with mouse wheel */
       AnalyzeMouseWheelEvent: function(event, item, dmin, ignore) {
 
          item.min = item.max = undefined;
@@ -1254,10 +1254,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          item.changed = ((item.min !== undefined) && (item.max !== undefined));
       },
 
+       /** @summary return true if default Y zooming should be enabled
+         * @desc it is typically for 2-Dim histograms or
+         * when histogram not draw, defined by other painters */
       AllowDefaultYZooming: function() {
-         // return true if default Y zooming should be enabled
-         // it is typically for 2-Dim histograms or
-         // when histogram not draw, defined by other painters
 
          let pad_painter = this.pad_painter();
          if (pad_painter && pad_painter.painters)

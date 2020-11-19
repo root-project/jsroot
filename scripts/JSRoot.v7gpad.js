@@ -621,6 +621,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return value.toPrecision(4);
    }
 
+   /** @summary Produce axis ticks */
    RAxisPainter.prototype.ProduceTicks = function(ndiv, ndiv2) {
       if (!this.noticksopt) {
          let total = ndiv * (ndiv2 || 1);
@@ -944,6 +945,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return (pos >= -delta1) && (pos <= this.gr_range + delta2);
    }
 
+   /** @summary returns graphical range */
    RAxisPainter.prototype.GrRange = function(delta) {
       if (!delta) delta = 0;
       if (this.gr_range < 0)
@@ -951,7 +953,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return this.gr_range + delta;
    }
 
-   /** @summary If axis direction is negative direction */
+   /** @summary If axis direction is negative coordinates direction */
    RAxisPainter.prototype.IsReverseAxis = function() {
       return !this.vertical !== (this.GrRange() > 0);
    }
@@ -1193,13 +1195,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    RAxisPainter.prototype.drawTitle = function(axis_g, side, lgaps) {
       if (!this.fTitle) return Promise.resolve(true);
 
-      let title_g = axis_g.append("svg:g").attr("class", "axis_title");
-
-      let title_position = this.v7EvalAttr("title_position", "right"),
+      let title_g = axis_g.append("svg:g").attr("class", "axis_title"),
+          title_position = this.v7EvalAttr("title_position", "right"),
           center = (title_position == "center"),
           opposite = (title_position == "left"),
           title_shift_x = 0, title_shift_y = 0, title_basepos = 0;
-
 
       this.titleFont = this.v7EvalFont("title", { size: 0.03 }, this.pad_height());
       this.titleFont.roundAngle(180, this.vertical ? 270 : 0);
@@ -1473,6 +1473,79 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       menu.add("endsub:");
       return true;
+   }
+
+   /** @summary Method analyze mouse wheel event and returns item with suggested zooming range */
+   RAxisPainter.prototype.analyzeWheelEvent = function(evnt, pos, item) {
+      if (!item) item = {};
+
+      let coord = this.vertical ? pos[1] :  pos[0],
+          grrange = this.GrRange(),
+          dmin = coord / Math.abs(grrange);
+
+      if (this.vertical) dmin = 1 - dmin;
+
+      let delta = 0, delta_left = 1, delta_right = 1;
+
+      if ('dleft' in item) { delta_left = item.dleft; delta = 1; }
+      if ('dright' in item) { delta_right = item.dright; delta = 1; }
+
+      if ('delta' in item) {
+         delta = item.delta;
+      } else {
+         delta = evnt.wheelDelta ? -evnt.wheelDelta : (evnt.deltaY || evnt.detail);
+      }
+
+      if (!delta) return;
+
+      delta = (delta<0) ? -0.2 : 0.2;
+      delta_left *= delta
+      delta_right *= delta;
+
+      let lmin = item.min = this.scale_min,
+          lmax = item.max = this.scale_max,
+          gmin = this.full_min,
+          gmax = this.full_max;
+
+      if ((item.min === item.max) && (delta < 0)) {
+         item.min = gmin;
+         item.max = gmax;
+      }
+
+      if (item.min >= item.max) return;
+
+      if (item.reverse) dmin = 1 - dmin;
+
+      if ((dmin>0) && (dmin<1)) {
+         if (this.log) {
+            let factor = (item.min>0) ? Math.log10(item.max/item.min) : 2;
+            if (factor>10) factor = 10; else if (factor<0.01) factor = 0.01;
+            item.min = item.min / Math.pow(10, factor*delta_left*dmin);
+            item.max = item.max * Math.pow(10, factor*delta_right*(1-dmin));
+         } else {
+            let rx_left = (item.max - item.min), rx_right = rx_left;
+            if (delta_left>0) rx_left = 1.001 * rx_left / (1-delta_left);
+            item.min += -delta_left*dmin*rx_left;
+            if (delta_right>0) rx_right = 1.001 * rx_right / (1-delta_right);
+
+            item.max -= -delta_right*(1-dmin)*rx_right;
+         }
+         if (item.min >= item.max) {
+               item.min = item.max = undefined;
+          } else if (delta_left !== delta_right) {
+               // extra check case when moving left or right
+               if (((item.min < gmin) && (lmin===gmin)) ||
+                   ((item.max > gmax) && (lmax==gmax)))
+                      item.min = item.max = undefined;
+          }
+
+      } else {
+         item.min = item.max = undefined;
+      }
+
+      item.changed = ((item.min !== undefined) && (item.max !== undefined));
+
+      return item;
    }
 
 
@@ -1955,6 +2028,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
    }
 
+   /** @summary Fully cleanup frame
+     * @private */
    RFramePainter.prototype.Cleanup = function() {
 
       this.CleanFrameDrawings();
@@ -1984,6 +2059,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       JSROOT.ObjectPainter.prototype.Cleanup.call(this);
    }
 
+   /** @summary Redraw frame
+     * @private */
    RFramePainter.prototype.Redraw = function() {
 
       let pp = this.pad_painter();
@@ -2133,9 +2210,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this._dblclick_handler = handler && (typeof handler == 'function') ? handler : null;
    }
 
+   /** @summary function can be used for zooming into specified range
+     * @desc if both limits for each axis 0 (like xmin==xmax==0), axis will be unzoomed */
    RFramePainter.prototype.Zoom = function(xmin, xmax, ymin, ymax, zmin, zmax) {
-      // function can be used for zooming into specified range
-      // if both limits for each axis 0 (like xmin==xmax==0), axis will be unzoomed
 
       // disable zooming when axis conversion is enabled
       if (this.projection) return false;
@@ -2258,6 +2335,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return this['zoom_'+axis+'min'] !== this['zoom_'+axis+'max'];
    }
 
+   /** @summary Unzoom specified axes */
    RFramePainter.prototype.Unzoom = function(dox, doy, doz) {
       if (typeof dox === 'undefined') { dox = true; doy = true; doz = true; } else
       if (typeof dox === 'string') { doz = dox.indexOf("z")>=0; doy = dox.indexOf("y")>=0; dox = dox.indexOf("x")>=0; }
@@ -4790,6 +4868,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             this.draw_g.selectAll(".axis_zoom, .axis_labels")
                        .on("mousedown", startRectSel)
                        .on("dblclick", () => framep.Unzoom("z"));
+
+            if (JSROOT.settings.ZoomWheel)
+               this.draw_g.on("wheel", evnt => {
+                  let item = framep.z_handle.analyzeWheelEvent(evnt, d3.pointer(evnt, this.draw_g.node()));
+                  if (item.changed)
+                     framep.Zoom("z", item.min, item.max);
+               });
          }
 
          framep.z_handle.setAfterDrawHandler(assignHandlers);
