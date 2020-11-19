@@ -1378,8 +1378,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           pos  = pp.GetCoordinate(drawable.fPos),
           len  = pp.GetPadLength(drawable.fVertical, drawable.fLength),
           reverse = this.v7EvalAttr("reverse", false),
-          min = this.v7EvalAttr("min", 0),
-          max = this.v7EvalAttr("max", 100);
+          min = 0, max = 1;
 
      // in vertical direction axis drawn in negative direction
      if (drawable.fVertical) len = -len;
@@ -1387,7 +1386,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
      if (drawable.fLabels) {
         min = 0;
         max = drawable.fLabels.length;
+     } else {
+        min = drawable.fMin;
+        max = drawable.fMax;
      }
+
+     let smin = this.v7EvalAttr("zoommin", min),
+         smax = this.v7EvalAttr("zoommax", max);
 
       //if (sz < 0) {
       //    reverse = true;
@@ -1395,7 +1400,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       //    if (vertical) pos_y = p1.y; else pos_x = p2.x;
       //}
 
-      this.ConfigureAxis("axis", min, max, min, max, drawable.fVertical, undefined, len, { reverse: reverse, labels: !!drawable.fLabels });
+      this.ConfigureAxis("axis", min, max, smin, smax, drawable.fVertical, undefined, len, { reverse: reverse, labels: !!drawable.fLabels });
 
       this.CreateG();
 
