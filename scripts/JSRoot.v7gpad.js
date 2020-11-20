@@ -1866,7 +1866,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       // remove all axes drawings
       if (this.x_handle) {
          this.x_handle.Cleanup();
-          delete this.x_handle;
+         delete this.x_handle;
       }
 
       if (this.y_handle) {
@@ -1877,8 +1877,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (this.z_handle) {
          this.z_handle.Cleanup();
          delete this.z_handle;
-         console.log('CLEANUP Z HANDLE');
       }
+
       if (this.draw_g) {
          this.draw_g.select(".grid_layer").selectAll("*").remove();
          this.draw_g.select(".axis_layer").selectAll("*").remove();
