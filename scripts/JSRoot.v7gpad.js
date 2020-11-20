@@ -1381,25 +1381,22 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           reverse = this.v7EvalAttr("reverse", false),
           min = 0, max = 1;
 
-     // in vertical direction axis drawn in negative direction
-     if (drawable.fVertical) len = -len;
+      // in vertical direction axis drawn in negative direction
+      if (drawable.fVertical) len = -len;
 
-     if (drawable.fLabels) {
-        min = 0;
-        max = drawable.fLabels.length;
-     } else {
-        min = drawable.fMin;
-        max = drawable.fMax;
-     }
+      if (drawable.fLabels) {
+         min = 0;
+         max = drawable.fLabels.length;
+      } else {
+         min = drawable.fMin;
+         max = drawable.fMax;
+      }
 
-     let smin = this.v7EvalAttr("zoommin", min),
-         smax = this.v7EvalAttr("zoommax", max);
-
-      //if (sz < 0) {
-      //    reverse = true;
-      //    sz = -sz;
-      //    if (vertical) pos_y = p1.y; else pos_x = p2.x;
-      //}
+      let smin = this.v7EvalAttr("zoommin"),
+          smax = this.v7EvalAttr("zoommax");
+      if (smin === smax) {
+         smin = min; smax = max;
+      }
 
       this.ConfigureAxis("axis", min, max, smin, smax, drawable.fVertical, undefined, len, { reverse: reverse, labels: !!drawable.fLabels });
 
@@ -1429,6 +1426,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                     .attr("height", this.vertical ? len : 10);
 
          inter.DragMoveHandler.AddDrag(this, { only_move: true, redraw: this.PositionChanged.bind(this) });
+
+         this.draw_g.on("dblclick", () => {
+            this.ChangeAxisAttr("zoommin", undefined);
+            this.ChangeAxisAttr("zoommax", undefined, 1);
+         });
 
          if (JSROOT.settings.ZoomWheel)
             this.draw_g.on("wheel", evnt => {
@@ -1581,7 +1583,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if (item.reverse) dmin = 1 - dmin;
 
-      if ((dmin>0) && (dmin<1)) {
+      if ((dmin > 0) && (dmin < 1)) {
          if (this.log) {
             let factor = (item.min>0) ? Math.log10(item.max/item.min) : 2;
             if (factor>10) factor = 10; else if (factor<0.01) factor = 0.01;
@@ -1592,18 +1594,19 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if (delta_left>0) rx_left = 1.001 * rx_left / (1-delta_left);
             item.min += -delta_left*dmin*rx_left;
             if (delta_right>0) rx_right = 1.001 * rx_right / (1-delta_right);
-
             item.max -= -delta_right*(1-dmin)*rx_right;
          }
          if (item.min >= item.max) {
-               item.min = item.max = undefined;
-          } else if (delta_left !== delta_right) {
-               // extra check case when moving left or right
-               if (((item.min < gmin) && (lmin===gmin)) ||
-                   ((item.max > gmax) && (lmax==gmax)))
-                      item.min = item.max = undefined;
-          }
-
+            item.min = item.max = undefined;
+         } else if (delta_left !== delta_right) {
+            // extra check case when moving left or right
+            if (((item.min < gmin) && (lmin === gmin)) ||
+                ((item.max > gmax) && (lmax === gmax)))
+                   item.min = item.max = undefined;
+         } else {
+            if (item.min < gmin) item.min = gmin;
+            if (item.max > gmax) item.max = gmax;
+         }
       } else {
          item.min = item.max = undefined;
       }
