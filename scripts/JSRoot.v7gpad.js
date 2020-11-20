@@ -409,7 +409,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (this.kind == 'time') {
          this.func = d3.scaleTime().domain([this.ConvertDate(smin), this.ConvertDate(smax)]);
       } else if (_log) {
-
          if (smax <= 0) smax = 1;
          if ((smin <= 0) || (smin >= smax))
             smin = smax * 0.0001;
@@ -1253,6 +1252,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       });
    }
 
+   /** @summary Change zooming in standalone mode */
+   RAxisPainter.prototype.ZoomStandalone = function(min,max) {
+      this.ChangeAxisAttr("zoommin", min);
+      this.ChangeAxisAttr("zoommax", max, 1);
+   }
+
    /** @summary Redraw axis, used in standalone mode for RAxisDrawable */
    RAxisPainter.prototype.Redraw = function() {
 
@@ -1297,6 +1302,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                evnt.preventDefault();  // disable browser context menu
                jsrp.createMenu(this, evnt).then(menu => {
                  menu.add("header:RAxisDrawable");
+                 menu.add("Unzoom", () => this.ZoomStandalone());
                  this.FillAxisContextMenu(menu, "");
                  menu.show();
                });
@@ -1309,10 +1315,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          inter.DragMoveHandler.AddDrag(this, { only_move: true, redraw: this.PositionChanged.bind(this) });
 
-         this.draw_g.on("dblclick", () => {
-            this.ChangeAxisAttr("zoommin", undefined);
-            this.ChangeAxisAttr("zoommax", undefined, 1);
-         });
+         this.draw_g.on("dblclick", () => this.ZoomStandalone());
 
          if (JSROOT.settings.ZoomWheel)
             this.draw_g.on("wheel", evnt => {
@@ -1323,10 +1326,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                    coord = this.vertical ? (1 - pos[1] / len) : pos[0] / len,
                    item = this.analyzeWheelEvent(evnt, coord);
 
-               if (item.changed) {
-                  this.ChangeAxisAttr("zoommin", item.min);
-                  this.ChangeAxisAttr("zoommax", item.max, 1);
-               }
+               if (item.changed) this.ZoomStandalone(item.min, item.max);
             });
 
       });

@@ -3020,33 +3020,6 @@ JSROOT.define(['d3'], (d3) => {
 
    // ===========================================================
 
-   /** @summary Produce ticks for d3.scaleLog
-     * @desc Fixing following problem, described [here]{@link https://stackoverflow.com/questions/64649793}
-     * @private */
-   jsrp.PoduceLogTicks = function(func, number) {
-      function linearArray(arr) {
-         let sum1 = 0, sum2 = 0;
-         for (let k=1;k<arr.length;++k) {
-            let diff = (arr[k] - arr[k-1]);
-            sum1 += diff;
-            sum2 += diff*diff;
-         }
-         let mean = sum1/(arr.length-1);
-         let dev = sum2/(arr.length-1) - mean*mean;
-         if (dev <= 0) return true;
-         if (Math.abs(mean) < 1e-100) return false;
-         return Math.sqrt(dev)/mean < 1e-10;
-      }
-
-      let arr = func.ticks(number);
-      while ((number > 4) && linearArray(arr)) {
-          number = Math.round(number*0.8);
-          arr = func.ticks(number);
-      }
-
-      return arr;
-   }
-
 
    /**
      * @summary Base painter for axis objects in v6/v7
@@ -3176,11 +3149,49 @@ JSROOT.define(['d3'], (d3) => {
       return value.toPrecision(4);
    }
 
+   /** @summary Produce ticks for d3.scaleLog
+     * @desc Fixing following problem, described [here]{@link https://stackoverflow.com/questions/64649793} */
+   AxisBasePainter.prototype.PoduceLogTicks = function(func, number) {
+      function linearArray(arr) {
+         let sum1 = 0, sum2 = 0;
+         for (let k=1;k<arr.length;++k) {
+            let diff = (arr[k] - arr[k-1]);
+            sum1 += diff;
+            sum2 += diff*diff;
+         }
+         let mean = sum1/(arr.length-1);
+         let dev = sum2/(arr.length-1) - mean*mean;
+
+         if (dev <= 0) return true;
+         if (Math.abs(mean) < 1e-100) return false;
+         return Math.sqrt(dev)/mean < 1e-6;
+      }
+
+      let arr = func.ticks(number);
+
+      while ((number > 4) && linearArray(arr)) {
+         number = Math.round(number*0.8);
+         arr = func.ticks(number);
+      }
+
+      // if still linear array, try to sort out "bad" ticks
+      if ((number < 5) && linearArray(arr) && this.logbase) {
+         let arr2 = [];
+         arr.forEach(val => {
+            let pow = Math.log10(val) / Math.log10(this.logbase);
+            if (Math.abs(Math.round(pow) - pow) < 0.01) arr2.push(val);
+         });
+         if (arr2.length > 0) arr = arr2;
+      }
+
+      return arr;
+   }
+
    /** @summary Produce axis ticks */
    AxisBasePainter.prototype.ProduceTicks = function(ndiv, ndiv2) {
       if (!this.noticksopt) {
          let total = ndiv * (ndiv2 || 1);
-         return this.log ? jsrp.PoduceLogTicks(this.func, total) : this.func.ticks(total);
+         return this.log ? this.PoduceLogTicks(this.func, total) : this.func.ticks(total);
       }
 
       let dom = this.func.domain(), ticks = [];
