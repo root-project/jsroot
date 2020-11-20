@@ -189,6 +189,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.createAttLine({ color: line_color, width: line_width, style: line_style });
    }
 
+    /** @summary Create this.markeratt object based on v7 attributes */
    JSROOT.ObjectPainter.prototype.createv7AttMarker = function(prefix) {
       if (!prefix || (typeof prefix != "string")) prefix = "marker_";
 
@@ -700,7 +701,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             label_g.property('fix_offset', offset);
             let side = label_g.property('side') || 1;
             this.labelsOffset = offset / (this.vertical ? -side : side);
-            this.ChangeAxisAttr("labels_offset", this.labelsOffset/this.scaling_size, 1);
+            this.ChangeAxisAttr(1, "labels_offset", this.labelsOffset/this.scaling_size);
          }
       }
 
@@ -805,8 +806,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                   this.titlePos = "right";
                }
 
-               this.ChangeAxisAttr("title_position", this.titlePos);
-               this.ChangeAxisAttr("title_offset", this.titleOffset/this.scaling_size);
+               this.ChangeAxisAttr(0, "title_position", this.titlePos, "title_offset", this.titleOffset/this.scaling_size);
 
                drag_rect.remove();
                drag_rect = null;
@@ -1254,8 +1254,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    /** @summary Change zooming in standalone mode */
    RAxisPainter.prototype.ZoomStandalone = function(min,max) {
-      this.ChangeAxisAttr("zoommin", min);
-      this.ChangeAxisAttr("zoommax", max, 1);
+      this.ChangeAxisAttr(1, "zoommin", min, "zoommax", max);
    }
 
    /** @summary Redraw axis, used in standalone mode for RAxisDrawable */
@@ -1346,18 +1345,22 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.WebCanvasExec("SetPos({" + xn.toFixed(4) + "," + yn.toFixed(4) + "})");
    }
 
-   /** @summary Change axis attribute, submit changes to server and redraw axis when specified */
-   RAxisPainter.prototype.ChangeAxisAttr = function(name, value, what_redraw) {
-      let changes = {};
-      this.v7AttrChange(changes, name, value);
+   /** @summary Change axis attribute, submit changes to server and redraw axis when specified
+     * @desc Arguments as redraw_mode, name1, value1, name2, value2, ... */
+   RAxisPainter.prototype.ChangeAxisAttr = function(redraw_mode) {
+      let changes = {}, indx = 1;
+      while (indx < arguments.length - 1) {
+         this.v7AttrChange(changes, arguments[indx], arguments[indx+1]);
+         this.v7SetAttr(arguments[indx], arguments[indx+1]);
+         indx += 2;
+      }
       this.v7SendAttrChanges(changes, false); // do not invoke canvas update on the server
-      this.v7SetAttr(name, value);
-      if (what_redraw === 1) {
+      if (redraw_mode === 1) {
          if (this.standalone)
             this.Redraw();
          else
             this.drawAxisAgain();
-      } else if (what_redraw)
+      } else if (redraw_mode)
          this.RedrawPad();
    }
 
@@ -1367,7 +1370,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (arg === 'toggle') arg = this.log ? 0 : 10;
 
       arg = parseFloat(arg);
-      if (!isNaN(arg)) this.ChangeAxisAttr("log", arg, 2);
+      if (!isNaN(arg)) this.ChangeAxisAttr(2, "log", arg);
    }
 
    /** @summary Provide context menu for axis */
@@ -1383,46 +1386,46 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       menu.add("endsub:");
 
       menu.add("sub:Ticks");
-      menu.RColorMenu("color", this.ticksColor, col => this.ChangeAxisAttr("ticks_color_name", col, 1));
-      menu.SizeMenu("size", 0, 0.05, 0.01, this.tickSize/this.scaling_size, sz => this.ChangeAxisAttr("ticks_size", sz, 1));
-      menu.SelectMenu("side", ["normal", "invert", "both"], this.ticksSide, side => this.ChangeAxisAttr("ticks_side", side, 1))
+      menu.RColorMenu("color", this.ticksColor, col => this.ChangeAxisAttr(1, "ticks_color_name", col));
+      menu.SizeMenu("size", 0, 0.05, 0.01, this.tickSize/this.scaling_size, sz => this.ChangeAxisAttr(1, "ticks_size", sz));
+      menu.SelectMenu("side", ["normal", "invert", "both"], this.ticksSide, side => this.ChangeAxisAttr(1, "ticks_side", side))
 
       menu.add("endsub:");
 
       if (!this.optionUnlab) {
          menu.add("sub:Labels");
          menu.SizeMenu("offset", -0.05, 0.05, 0.01, this.labelsOffset/this.scaling_size, offset => {
-            this.ChangeAxisAttr("labels_offset", offset, 1);
+            this.ChangeAxisAttr(1, "labels_offset", offset);
          });
          menu.RAttrTextItems(this.labelsFont, { noangle: 1, noalign: 1 }, change => {
-            this.ChangeAxisAttr("labels_" + change.name, change.value, 1);
+            this.ChangeAxisAttr(1, "labels_" + change.name, change.value);
          });
          menu.addchk(this.labelsFont.angle, "rotate", res => {
-            this.ChangeAxisAttr("labels_angle", res ? 180 : 0, 1);
+            this.ChangeAxisAttr(1, "labels_angle", res ? 180 : 0);
          })
          menu.add("endsub:");
       }
 
       menu.add("sub:Title", () => {
          let t = prompt("Enter axis title", this.fTitle);
-         if (t!==null) this.ChangeAxisAttr("title", t, 1);
+         if (t!==null) this.ChangeAxisAttr(1, "title", t);
       });
 
       if (this.fTitle) {
          menu.SizeMenu("offset", -0.05, 0.05, 0.01, this.titleOffset/this.scaling_size, offset => {
-            this.ChangeAxisAttr("title_offset", offset, 1);
+            this.ChangeAxisAttr(1, "title_offset", offset);
          });
 
          menu.SelectMenu("position", ["left", "center", "right"], this.titlePos, pos => {
-            this.ChangeAxisAttr("title_position", pos, 1);
+            this.ChangeAxisAttr(1, "title_position", pos);
          });
 
          menu.addchk(this.isTitleRotated(), "rotate", flag => {
-            this.ChangeAxisAttr("title_angle", flag ? 180 : 0, 1);
+            this.ChangeAxisAttr(1, "title_angle", flag ? 180 : 0);
          });
 
          menu.RAttrTextItems(this.titleFont, { noangle: 1, noalign: 1 }, change => {
-            this.ChangeAxisAttr("title_" + change.name, change.value, 1);
+            this.ChangeAxisAttr(1, "title_" + change.name, change.value);
          });
       }
 
