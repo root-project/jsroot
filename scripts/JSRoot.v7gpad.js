@@ -1861,11 +1861,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.RedrawPad();
    }
 
+   /** @summary Remove all axes drawings */
    RFramePainter.prototype.CleanupAxes = function() {
       // remove all axes drawings
       if (this.x_handle) {
          this.x_handle.Cleanup();
-         delete this.x_handle;
+          delete this.x_handle;
       }
 
       if (this.y_handle) {
@@ -1876,6 +1877,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (this.z_handle) {
          this.z_handle.Cleanup();
          delete this.z_handle;
+         console.log('CLEANUP Z HANDLE');
       }
       if (this.draw_g) {
          this.draw_g.select(".grid_layer").selectAll("*").remove();
@@ -2521,6 +2523,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (fp && (typeof fp.SetActive == 'function')) fp.SetActive(on);
    }
 
+   /** @summary Create SVG element for the canvas */
    RPadPainter.prototype.CreateCanvasSvg = function(check_resize, new_size) {
 
       let factor = null, svg = null, lmt = 5, rect = null, btns;
@@ -4562,6 +4565,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return pal;
    }
 
+   /** @summary Draw palette */
    RPalettePainter.prototype.DrawPalette = function(after_resize) {
 
       let palette = this.GetPalette(),
@@ -4650,7 +4654,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             }).append("svg:title").text(contour[i].toFixed(2) + " - " + contour[i+1].toFixed(2));
 
          if (JSROOT.settings.Zooming)
-            r.on("dblclick", function() { framep.Unzoom("z"); });
+            r.on("dblclick", () => framep.Unzoom("z"));
       }
 
       framep.z_handle.max_tick_size = Math.round(palette_width*0.3);
@@ -4779,13 +4783,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    let drawPalette = (divid, palette, opt) => {
       let painter = new RPalettePainter(palette, opt);
-
       painter.SetDivId(divid);
-
       painter.CreateG(false);
-
-      painter.z_handle = new RAxisPainter(painter, null, "axis_");
-      painter.z_handle.SetDivId(divid, -1);
 
       return painter.DrawingReady();
    }

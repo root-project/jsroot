@@ -3055,7 +3055,7 @@ JSROOT.define(['d3'], (d3) => {
       delete this.tfunc2;
       delete this.gr;
 
-      // cleanup of v7 objects
+      // cleanup of v7 members
       delete this.axis;
       delete this.axis_g;
 
