@@ -1371,6 +1371,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       });
    }
 
+   /** @summary Redraw axis, used in standalone mode for RAxisDrawable */
    RAxisPainter.prototype.Redraw = function() {
 
       let drawable = this.GetObject(),
@@ -1426,7 +1427,24 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.draw_g.attr("x", pos.x).attr("y", pos.y)
                     .attr("width", this.vertical ? 10 : len)
                     .attr("height", this.vertical ? len : 10);
+
          inter.DragMoveHandler.AddDrag(this, { only_move: true, redraw: this.PositionChanged.bind(this) });
+
+         if (JSROOT.settings.ZoomWheel)
+            this.draw_g.on("wheel", evnt => {
+               evnt.stopPropagation();
+               evnt.preventDefault();
+
+               let pos = d3.pointer(evnt, this.draw_g.node()),
+                   coord = this.vertical ? (1 - pos[1] / len) : pos[0] / len,
+                   item = this.analyzeWheelEvent(evnt, coord);
+
+               if (item.changed) {
+                  this.ChangeAxisAttr("zoommin", item.min);
+                  this.ChangeAxisAttr("zoommax", item.max, 1);
+               }
+            });
+
       });
    }
 
@@ -1450,9 +1468,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.v7AttrChange(changes, name, value);
       this.v7SendAttrChanges(changes, false); // do not invoke canvas update on the server
       this.v7SetAttr(name, value);
-      if (what_redraw === 1)
-         this.drawAxisAgain();
-      else if (what_redraw)
+      if (what_redraw === 1) {
+         if (this.standalone)
+            this.Redraw();
+         else
+            this.drawAxisAgain();
+      } else if (what_redraw)
          this.RedrawPad();
    }
 
@@ -4916,6 +4937,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             if (JSROOT.settings.ZoomWheel)
                this.draw_g.on("wheel", evnt => {
+                  evnt.stopPropagation();
+                  evnt.preventDefault();
+
                   let pos = d3.pointer(evnt, this.draw_g.node()),
                       coord = 1 - pos[1] / palette_height;
 
