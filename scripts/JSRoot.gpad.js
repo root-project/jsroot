@@ -32,6 +32,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    TAxisPainter.prototype = Object.create(JSROOT.AxisBasePainter.prototype);
 
+   /** @summary Use in GED to identify kind of axis */
+   RAxisPainter.prototype.GetAxisType = function() { return "TAxis"; }
+
    TAxisPainter.prototype.ConfigureAxis = function(name, min, max, smin, smax, vertical, range, opts) {
       this.name = name;
       this.full_min = min;

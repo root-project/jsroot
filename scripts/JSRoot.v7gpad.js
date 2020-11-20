@@ -358,6 +358,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    RAxisPainter.prototype = Object.create(JSROOT.AxisBasePainter.prototype);
 
+   /** @summary Use in GED to identify kind of axis */
+   RAxisPainter.prototype.GetAxisType = function() { return "RAttrAxis"; }
+
    /** @summary Configure only base parameters, later same handle will be used for drawing  */
    RAxisPainter.prototype.ConfigureZAxis = function(name, fp) {
       this.name = name;
@@ -878,10 +881,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       while (this.handle.next(true)) {
 
-         let h1 = Math.round(this.tickSize/4), h2 = 0;
+         let h1 = Math.round(this.ticksSize/4), h2 = 0;
 
          if (this.handle.kind < 3)
-            h1 = Math.round(this.tickSize/2);
+            h1 = Math.round(this.ticksSize/2);
 
          let grpos = this.handle.grpos - this.axis_shift;
 
@@ -889,7 +892,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          if (this.handle.kind == 1) {
             // if not showing labels, not show large tick
-            if ((this.kind == "labels") || (this.format(this.handle.tick,true) !== null)) h1 = this.tickSize;
+            if ((this.kind == "labels") || (this.format(this.handle.tick,true) !== null)) h1 = this.ticksSize;
 
             if (main_draw) this.ticks.push(grpos); // keep graphical positions of major ticks
          }
@@ -914,7 +917,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                .attr("d", res)
                .style('stroke', this.ticksColor || this.lineatt.color);
 
-       let gap0 = Math.round(0.25*this.tickSize), gap = Math.round(1.25*this.tickSize);
+       let gap0 = Math.round(0.25*this.ticksSize), gap = Math.round(1.25*this.ticksSize);
        return { "-1": (side > 0) || ticks_plusminus ? gap : gap0,
                 "1": (side < 0) || ticks_plusminus ? gap : gap0 };
    }
@@ -1129,14 +1132,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.endingStyle = this.v7EvalAttr("ending_style", "");
       this.endingSize = Math.round(this.v7EvalLength("ending_size", this.scaling_size, this.endingStyle ? 0.02 : 0));
       this.startingSize = Math.round(this.v7EvalLength("starting_size", this.scaling_size, 0));
-      this.tickSize = this.v7EvalLength("ticks_size", this.scaling_size, 0.02);
+      this.ticksSize = this.v7EvalLength("ticks_size", this.scaling_size, 0.02);
       this.ticksSide = this.v7EvalAttr("ticks_side", "normal");
       this.ticksColor = this.v7EvalColor("ticks_color", "");
       this.labelsOffset = this.v7EvalLength("labels_offset", this.scaling_size, 0);
 
       this.fTitle = this.v7EvalAttr("title", "");
 
-      if (this.max_tick_size && (this.tickSize > this.max_tick_size)) this.tickSize = this.max_tick_size;
+      if (this.max_tick_size && (this.ticksSize > this.max_tick_size)) this.ticksSize = this.max_tick_size;
    }
 
    /** @summary Performs axis drawing
@@ -1387,8 +1390,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       menu.add("sub:Ticks");
       menu.RColorMenu("color", this.ticksColor, col => this.ChangeAxisAttr(1, "ticks_color_name", col));
-      menu.SizeMenu("size", 0, 0.05, 0.01, this.tickSize/this.scaling_size, sz => this.ChangeAxisAttr(1, "ticks_size", sz));
-      menu.SelectMenu("side", ["normal", "invert", "both"], this.ticksSide, side => this.ChangeAxisAttr(1, "ticks_side", side))
+      menu.SizeMenu("size", 0, 0.05, 0.01, this.ticksSize/this.scaling_size, sz => this.ChangeAxisAttr(1, "ticks_size", sz));
+      menu.SelectMenu("side", ["normal", "invert", "both"], this.ticksSide, side => this.ChangeAxisAttr(1, "ticks_side", side));
 
       menu.add("endsub:");
 
