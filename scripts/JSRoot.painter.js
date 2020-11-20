@@ -3175,7 +3175,7 @@ JSROOT.define(['d3'], (d3) => {
       }
 
       // if still linear array, try to sort out "bad" ticks
-      if ((number < 5) && linearArray(arr) && this.logbase) {
+      if ((number < 5) && linearArray(arr) && this.logbase && (this.logbase != 10)) {
          let arr2 = [];
          arr.forEach(val => {
             let pow = Math.log10(val) / Math.log10(this.logbase);
