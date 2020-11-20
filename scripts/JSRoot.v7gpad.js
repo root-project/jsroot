@@ -343,7 +343,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    function RAxisPainter(arg1, axis, cssprefix) {
       let drawable = cssprefix ? arg1.GetObject() : arg1;
       this.axis = axis;
-      JSROOT.ObjectPainter.call(this, drawable);
+      JSROOT.AxisBasePainter.call(this, drawable);
       if (cssprefix) { // drawing from the frame
          this.embedded = true; // indicate that painter embedded into the histo painter
          this.csstype = arg1.csstype; // for the moment only via frame one can set axis attributes
@@ -353,31 +353,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.csstype = "axis";
          this.cssprefix = "axis_";
       }
-
-      this.name = "yaxis";
-      this.kind = "normal";
-      this.func = null;
-      this.order = 0; // scaling order for axis labels
-
-      this.full_min = 0;
-      this.full_max = 1;
-      this.scale_min = 0;
-      this.scale_max = 1;
-      this.ticks = []; // list of major ticks
    }
 
-   RAxisPainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
-
-   RAxisPainter.prototype.Cleanup = function() {
-      this.ticks = [];
-      delete this.format;
-      delete this.axis;
-      delete this.gr;
-      delete this.func;
-      delete this.axis_g;
-
-      JSROOT.ObjectPainter.prototype.Cleanup.call(this);
-   }
+   RAxisPainter.prototype = Object.create(JSROOT.AxisBasePainter.prototype);
 
    RAxisPainter.prototype.ConvertDate = function(v) {
       return new Date(this.timeoffset + v*1000);

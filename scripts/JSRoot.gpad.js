@@ -23,35 +23,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
     */
 
    function TAxisPainter(axis, embedded) {
-      JSROOT.ObjectPainter.call(this, axis);
+      JSROOT.AxisBasePainter.call(this, axis);
 
       this.embedded = embedded; // indicate that painter embedded into the histo painter
-
-      this.name = "yaxis";
-      this.kind = "normal";
-      this.func = null;
-      this.order = 0; // scaling order for axis labels
-
-      this.full_min = 0;
-      this.full_max = 1;
-      this.scale_min = 0;
-      this.scale_max = 1;
-      this.ticks = []; // list of major ticks
       this.invert_side = false;
       this.lbls_both_sides = false; // draw labels on both sides
    }
 
-   TAxisPainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
-
-   TAxisPainter.prototype.Cleanup = function() {
-
-      this.ticks = [];
-      delete this.func;
-      delete this.format;
-      delete this.gr;
-
-      JSROOT.ObjectPainter.prototype.Cleanup.call(this);
-   }
+   TAxisPainter.prototype = Object.create(JSROOT.AxisBasePainter.prototype);
 
    TAxisPainter.prototype.ConvertDate = function(v) {
       return new Date(this.timeoffset + v*1000);

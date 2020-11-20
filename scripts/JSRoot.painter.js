@@ -3048,6 +3048,50 @@ JSROOT.define(['d3'], (d3) => {
    }
 
 
+   /**
+     * @summary Base painter for axis objects in v6/v7
+     *
+     * @class
+     * @memberof JSROOT
+     * @param {object} obj - axis object if any
+     * @private
+     */
+
+   function AxisBasePainter(obj) {
+      ObjectPainter.call(this, obj);
+
+      this.name = "yaxis";
+      this.kind = "normal";
+      this.func = null;
+      this.order = 0; // scaling order for axis labels
+
+      this.full_min = 0;
+      this.full_max = 1;
+      this.scale_min = 0;
+      this.scale_max = 1;
+      this.ticks = []; // list of major ticks
+   }
+
+   AxisBasePainter.prototype = Object.create(ObjectPainter.prototype);
+
+   AxisBasePainter.prototype.Cleanup = function() {
+      this.ticks = [];
+      delete this.format;
+      delete this.func;
+      delete this.gr;
+
+      // cleanup of v7 objects
+      delete this.axis;
+      delete this.axis_g;
+
+      ObjectPainter.prototype.Cleanup.call(this);
+   }
+
+
+   // ===========================================================
+
+
+
    /** @summary Set active pad painter
     *
     * @desc Normally be used to handle key press events, which are global in the web browser
@@ -3940,6 +3984,7 @@ JSROOT.define(['d3'], (d3) => {
    JSROOT.FontHandler = FontHandler;
    JSROOT.BasePainter = BasePainter;
    JSROOT.ObjectPainter = ObjectPainter;
+   JSROOT.AxisBasePainter = AxisBasePainter;
 
    // Only for backward compatibility with v5, will be removed in later JSROOT versions
    JSROOT.TBasePainter = BasePainter;
