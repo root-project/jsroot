@@ -221,36 +221,43 @@ JSROOT.define(['rawinflate'], () => {
                let uint8arr = new Uint8Array(arr.buffer, arr.byteOffset + curr + HDRSIZE + off + CHKSUM, Math.min(arr.byteLength - curr - HDRSIZE - off - CHKSUM, srcsize - HDRSIZE - CHKSUM));
       
                if (fmt === "ZSTD") {
-                  const ZstdCodec = require('zstd-codec').ZstdCodec;
+                  
+                  function HandleZsdt(ZstdCodec) {
+                     
+                     ZstdCodec.run(zstd => {
+                        const simple = new zstd.Simple();
+                        // streaming = new zstd.Streaming();
+                        
+                        const data2 = simple.decompress(uint8arr);
+                        // console.log(`tgtsize ${tgtsize} zstd size ${data2.length} offset ${data2.byteOffset} rawlen ${data2.buffer.byteLength}`);
+                        
+                        const reslen = data2.length;  
+                  
+                        if (data2.byteOffset !== 0)
+                           return rejectFunc(Error("ZSTD result with byteOffset != 0"));
+                  
+                        // shortcut when exactly required data unpacked
+                        //if ((tgtsize == reslen) && data2.buffer)
+                        //   resolveFunc(new DataView(data2.buffer));
+                        
+                        // need to copy data while zstd does not provide simple way of doing it
+                        if (!tgtbuf) tgtbuf = new ArrayBuffer(tgtsize);
+                        let tgt8arr = new Uint8Array(tgtbuf, fullres);
+                        
+                        for(let i=0;i<reslen;++i)
+                           tgt8arr[i] = data2[i];
    
-                  return ZstdCodec.run(zstd => {
-                     const simple = new zstd.Simple();
-                     // streaming = new zstd.Streaming();
-                     
-                     const data2 = simple.decompress(uint8arr);
-                     // console.log(`tgtsize ${tgtsize} zstd size ${data2.length} offset ${data2.byteOffset} rawlen ${data2.buffer.byteLength}`);
-                     
-                     const reslen = data2.length;  
-               
-                     if (data2.byteOffset !== 0)
-                        return rejectFunc(Error("ZSTD result with byteOffset != 0"));
-               
-                     // shortcut when exactly required data unpacked
-                     if ((tgtsize == reslen) && data2.buffer)
-                        resolveFunc(new DataView(data2.buffer));
-                     
-                     // need to copy data while zstd does not provide simple way of doing it
-                     if (!tgtbuf) tgtbuf = new ArrayBuffer(tgtsize);
-                     let tgt8arr = new Uint8Array(tgtbuf, fullres);
-                     
-                     for(let i=0;i<reslen;++i)
-                        tgt8arr[i] = data2[i];
-
-                     fullres += reslen;
-                     curr += srcsize;
-                     
-                     NextPortion();
-                  });
+                        fullres += reslen;
+                        curr += srcsize;
+                        
+                        NextPortion();
+                     });
+                  }
+                  
+                  if (JSROOT.nodejs) 
+                     return HandleZsdt(require('zstd-codec').ZstdCodec);
+                  else
+                     return JSROOT.require('zstd-codec').then(HandleZsdt);
                }
       
                //  place for unpacking
