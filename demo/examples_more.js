@@ -138,6 +138,7 @@ examples_more = {
      { name: "taxis", file: "tutorials_graphs.root", item: "timeonaxis3", title: "Custom time format for TGaxis, output of tutorials/graphs/timeonaxis3.C" },
      { name: "gtime", file: "tutorials_graphs.root", item: "gtime", opt: "repeat", title: "Example of TGraphTime, output of tutorials/graphs/gtime.C", testopt: "first" },
      { name: "diamond", file: "tutorials_graphics.root", item: 'diamond',  title: "TDiamond, tutorials/graphics/diamond.C" },
-     { name: "crown", file: "tutorials_graphics.root", item: 'crown',  title: "TCrown, tutorials/graphics/crown.C" }
+     { name: "crown", file: "tutorials_graphics.root", item: 'crown',  title: "TCrown, tutorials/graphics/crown.C" },
+     { name: "zstd", file: "zstd.root", item: 'ccdb_object', zsdt: true, title: "File with ZSTD compression, required zstd-codec.js script" }
    ]
 };

@@ -107,7 +107,8 @@
              use_requirejs = false,
              use_openui5 = false,
              extra_opts = "", // extra options like webgl=no
-             select_key = null;  // select the only key like ?select=TH2
+             select_key = null, // select the only key like ?select=TH2
+             use_zstd = true;
 
          let icon = document.createElement("link");
          icon.setAttribute('src', "img/RootIcon.ico");
@@ -131,6 +132,7 @@
          if ((window.location.host.indexOf('jsroot.gsi.de') < 0) &&
              (window.location.host.indexOf('root.cern') < 0)) {
                 filepath = "https://root.cern/js/files/";
+                use_zstd = false;
          }
 
          if ((window.location.protocol == "file:") || (window.location.host.indexOf('rawgit.com') >= 0)) {
@@ -266,6 +268,7 @@
 
             // exclude some entries from the test
             if (entry.notest) return RunBigTest(0);
+            if (!use_zstd && entry.zstd) return RunBigTest(0);
 
             let filename = "", itemname = "", jsonname = "", url = "", opt = "";
 
