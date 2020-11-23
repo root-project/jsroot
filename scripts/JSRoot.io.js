@@ -190,69 +190,90 @@ JSROOT.define(['rawinflate'], () => {
       let curr = src_shift || 0, fullres = 0, tgtbuf = null,
           getChar = o => String.fromCharCode(arr.getUint8(o)),
           getCode = o => arr.getUint8(o);
+          
+      return new Promise((resolveFunc, rejectFunc) => {
+         
+         function NextPortion() {
 
-      while (fullres < tgtsize) {
+            while (fullres < tgtsize) {
+      
+               let fmt = "unknown", off = 0, CHKSUM = 0;
+      
+               if (curr + HDRSIZE >= totallen) {
+                  if (!noalert) console.error("Error R__unzip: header size exceeds buffer size");
+                  resolveFunc(null);
+               }
+      
+               if (getChar(curr) == 'Z' && getChar(curr + 1) == 'L' && getCode(curr + 2) == 8) { fmt = "new"; off = 2; } else
+               if (getChar(curr) == 'C' && getChar(curr + 1) == 'S' && getCode(curr + 2) == 8) { fmt = "old"; off = 0; } else
+               if (getChar(curr) == 'X' && getChar(curr + 1) == 'Z') fmt = "LZMA"; else
+               if (getChar(curr) == 'Z' && getChar(curr + 1) == 'S' && getCode(curr + 2) == 1) fmt = "ZSTD"; else
+               if (getChar(curr) == 'L' && getChar(curr + 1) == '4') { fmt = "LZ4"; off = 0; CHKSUM = 8; }
+      
+               /*   C H E C K   H E A D E R   */
+               if ((fmt !== "new") && (fmt !== "old") && (fmt !== "LZ4") && (fmt !== "ZSTD")) {
+                  if (!noalert) console.error(`R__unzip: ${fmt} format is not supported!`);
+                  return resolveFunc(null);
+               }
+      
+               const srcsize = HDRSIZE + ((getCode(curr + 3) & 0xff) | ((getCode(curr + 4) & 0xff) << 8) | ((getCode(curr + 5) & 0xff) << 16));
+      
+               let uint8arr = new Uint8Array(arr.buffer, arr.byteOffset + curr + HDRSIZE + off + CHKSUM, Math.min(arr.byteLength - curr - HDRSIZE - off - CHKSUM, srcsize - HDRSIZE - CHKSUM));
+      
+               if (fmt === "ZSTD") {
+                  const ZstdCodec = require('zstd-codec').ZstdCodec;
+   
+                  return ZstdCodec.run(zstd => {
+                     const simple = new zstd.Simple();
+                     // streaming = new zstd.Streaming();
+                     
+                     const data2 = simple.decompress(uint8arr);
+                     // console.log(`tgtsize ${tgtsize} zstd size ${data2.length} offset ${data2.byteOffset} rawlen ${data2.buffer.byteLength}`);
+                     
+                     const reslen = data2.length;  
+               
+                     if (data2.byteOffset !== 0)
+                        return rejectFunc(Error("ZSTD result with byteOffset != 0"));
+               
+                     // shortcut when exactly required data unpacked
+                     if ((tgtsize == reslen) && data2.buffer)
+                        resolveFunc(new DataView(data2.buffer));
+                     
+                     // need to copy data while zstd does not provide simple way of doing it
+                     if (!tgtbuf) tgtbuf = new ArrayBuffer(tgtsize);
+                     let tgt8arr = new Uint8Array(tgtbuf, fullres);
+                     
+                     for(let i=0;i<reslen;++i)
+                        tgt8arr[i] = data2[i];
 
-         let fmt = "unknown", off = 0, CHKSUM = 0;
-
-         if (curr + HDRSIZE >= totallen) {
-            if (!noalert) console.error("Error R__unzip: header size exceeds buffer size");
-            return Promise.resolve(null);
-         }
-
-         if (getChar(curr) == 'Z' && getChar(curr + 1) == 'L' && getCode(curr + 2) == 8) { fmt = "new"; off = 2; } else
-         if (getChar(curr) == 'C' && getChar(curr + 1) == 'S' && getCode(curr + 2) == 8) { fmt = "old"; off = 0; } else
-         if (getChar(curr) == 'X' && getChar(curr + 1) == 'Z') fmt = "LZMA"; else
-         if (getChar(curr) == 'Z' && getChar(curr + 1) == 'S' && getCode(curr + 2) == 1) fmt = "ZSTD"; else
-         if (getChar(curr) == 'L' && getChar(curr + 1) == '4') { fmt = "LZ4"; off = 0; CHKSUM = 8; }
-
-         /*   C H E C K   H E A D E R   */
-         if ((fmt !== "new") && (fmt !== "old") && (fmt !== "LZ4") && (fmt !== "ZSTD")) {
-            if (!noalert) console.error(`R__unzip: ${fmt} format is not supported!`);
-            return Promise.resolve(null);
-         }
-
-         const srcsize = HDRSIZE + ((getCode(curr + 3) & 0xff) | ((getCode(curr + 4) & 0xff) << 8) | ((getCode(curr + 5) & 0xff) << 16));
-
-         let uint8arr = new Uint8Array(arr.buffer, arr.byteOffset + curr + HDRSIZE + off + CHKSUM, Math.min(arr.byteLength - curr - HDRSIZE - off - CHKSUM, srcsize - HDRSIZE - CHKSUM));
-
-         if (fmt === "ZSTD") {
-            return new Promise((resolveFunc, rejectFunc) => {
-               const ZstdCodec = require('zstd-codec').ZstdCodec;
-
-               ZstdCodec.run(zstd => {
-                  let simple = new zstd.Simple();
-                  // streaming = new zstd.Streaming();
-                  
-                  let data2 = simple.decompress(uint8arr);
-                  console.log(`tgtsize ${tgtsize} zstd size ${data2.length} offset ${data2.byteOffset} rawlen ${data2.buffer.byteLength}`);  
+                     fullres += reslen;
+                     curr += srcsize;
+                     
+                     NextPortion();
+                  });
+               }
+      
+               //  place for unpacking
+               if (!tgtbuf) tgtbuf = new ArrayBuffer(tgtsize);
+      
+               let tgt8arr = new Uint8Array(tgtbuf, fullres);
+      
+               const reslen = (fmt === "LZ4") ? JSROOT.LZ4.uncompress(uint8arr, tgt8arr) : JSROOT.ZIP.inflate(uint8arr, tgt8arr);
+               if (reslen <= 0) break;
+      
+               fullres += reslen;
+               curr += srcsize;
+            }
+      
+            if (fullres !== tgtsize) {
+               if (!noalert) console.error(`R__unzip: fail to unzip data expects ${tgtsize}, got ${fullres}`);
+               return resolveFunc(null);
+            }
             
-                  if ((tgtsize == data2.length) && data2.buffer && (data2.byteOffset == 0))
-                     resolveFunc(new DataView(data2.buffer));
-                  else
-                     rejectFunc(Error("Error R__unzip: ZSTD fails"));
-               });
-            });
+            resolveFunc(new DataView(tgtbuf));
          }
-
-         //  place for unpacking
-         if (!tgtbuf) tgtbuf = new ArrayBuffer(tgtsize);
-
-         let tgt8arr = new Uint8Array(tgtbuf, fullres);
-
-         const reslen = (fmt === "LZ4") ? JSROOT.LZ4.uncompress(uint8arr, tgt8arr) : JSROOT.ZIP.inflate(uint8arr, tgt8arr);
-         if (reslen <= 0) break;
-
-         fullres += reslen;
-         curr += srcsize;
-      }
-
-      if (fullres !== tgtsize) {
-         if (!noalert) console.error(`R__unzip: fail to unzip data expects ${tgtsize} , got ${fullres}`);
-         return Promise.resolve(null);
-      }
-
-      return Promise.resolve(new DataView(tgtbuf));
+         NextPortion();
+      });
    }
 
    // =================================================================================
