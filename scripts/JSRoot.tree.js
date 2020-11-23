@@ -2157,20 +2157,23 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
                   } 
                      
                   // unpack data and create new blob
-                  let objblob = jsrio.R__unzip(blob, basket.fObjlen, false, buf.o);
+                  return jsrio.R__unzip(blob, basket.fObjlen, false, buf.o).then(objblob => {
    
-                  if (objblob) {
-                     buf = new JSROOT.TBuffer(objblob, 0, handle.file);
-                     buf.raw_shift = basket.fKeylen;
-                     buf.fTagOffset = basket.fKeylen;
-                  } else {
-                     throw new Error('FAIL TO UNPACK');
-                  }
+                     if (objblob) {
+                        buf = new JSROOT.TBuffer(objblob, 0, handle.file);
+                        buf.raw_shift = basket.fKeylen;
+                        buf.fTagOffset = basket.fKeylen;
+                     } else {
+                        throw new Error('FAIL TO UNPACK');
+                     }
    
-                  bitems[k].raw = buf; // here already unpacked buffer
+                     bitems[k].raw = buf; // here already unpacked buffer
    
-                  if (bitems[k].branch.fEntryOffsetLen > 0)
-                     buf.ReadBasketEntryOffset(basket, buf.raw_shift);
+                     if (bitems[k].branch.fEntryOffsetLen > 0)
+                        buf.ReadBasketEntryOffset(basket, buf.raw_shift);
+                        
+                     DoProcessing();  // continue processing
+                  });
                }
    
                if (ExtractPlaces())

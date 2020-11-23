@@ -1,6 +1,6 @@
 {
   "name": "jsroot",
-  "version": "5.9.0",
+  "version": "5.9.99",
   "engines": {
     "node": ">=0.12"
   },
@@ -28,7 +28,8 @@
     "mathjax": "^3.1.2",
     "three": "^0.121.0",
     "xhr2": "^0.2.0",
-    "zlib": "^1.0.5"
+    "zlib": "^1.0.5",
+    "zstd-codec": "^0.1.2"
   },
   "repository": {
     "type": "git",

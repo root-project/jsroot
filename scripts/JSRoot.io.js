@@ -197,7 +197,7 @@ JSROOT.define(['rawinflate'], () => {
 
          if (curr + HDRSIZE >= totallen) {
             if (!noalert) console.error("Error R__unzip: header size exceeds buffer size");
-            return null;
+            return Promise.resolve(null);
          }
 
          if (getChar(curr) == 'Z' && getChar(curr + 1) == 'L' && getCode(curr + 2) == 8) { fmt = "new"; off = 2; } else
@@ -207,14 +207,33 @@ JSROOT.define(['rawinflate'], () => {
          if (getChar(curr) == 'L' && getChar(curr + 1) == '4') { fmt = "LZ4"; off = 0; CHKSUM = 8; }
 
          /*   C H E C K   H E A D E R   */
-         if ((fmt !== "new") && (fmt !== "old") && (fmt !== "LZ4")) {
+         if ((fmt !== "new") && (fmt !== "old") && (fmt !== "LZ4") && (fmt !== "ZSTD")) {
             if (!noalert) console.error(`R__unzip: ${fmt} format is not supported!`);
-            return null;
+            return Promise.resolve(null);
          }
 
          const srcsize = HDRSIZE + ((getCode(curr + 3) & 0xff) | ((getCode(curr + 4) & 0xff) << 8) | ((getCode(curr + 5) & 0xff) << 16));
 
          let uint8arr = new Uint8Array(arr.buffer, arr.byteOffset + curr + HDRSIZE + off + CHKSUM, Math.min(arr.byteLength - curr - HDRSIZE - off - CHKSUM, srcsize - HDRSIZE - CHKSUM));
+
+         if (fmt === "ZSTD") {
+            return new Promise((resolveFunc, rejectFunc) => {
+               const ZstdCodec = require('zstd-codec').ZstdCodec;
+
+               ZstdCodec.run(zstd => {
+                  let simple = new zstd.Simple();
+                  // streaming = new zstd.Streaming();
+                  
+                  let data2 = simple.decompress(uint8arr);
+                  console.log(`tgtsize ${tgtsize} zstd size ${data2.length} offset ${data2.byteOffset} rawlen ${data2.buffer.byteLength}`);  
+            
+                  if ((tgtsize == data2.length) && data2.buffer && (data2.byteOffset == 0))
+                     resolveFunc(new DataView(data2.buffer));
+                  else
+                     rejectFunc(Error("Error R__unzip: ZSTD fails"));
+               });
+            });
+         }
 
          //  place for unpacking
          if (!tgtbuf) tgtbuf = new ArrayBuffer(tgtsize);
@@ -230,10 +249,10 @@ JSROOT.define(['rawinflate'], () => {
 
       if (fullres !== tgtsize) {
          if (!noalert) console.error(`R__unzip: fail to unzip data expects ${tgtsize} , got ${fullres}`);
-         return null;
+         return Promise.resolve(null);
       }
 
-      return new DataView(tgtbuf);
+      return Promise.resolve(new DataView(tgtbuf));
    }
 
    // =================================================================================
@@ -1124,19 +1143,19 @@ JSROOT.define(['rawinflate'], () => {
 
       return this.ReadBuffer([key.fSeekKey + key.fKeylen, key.fNbytes - key.fKeylen]).then(blob1 => {
 
-         let buf;
-
          if (key.fObjlen <= key.fNbytes - key.fKeylen) {
-            buf = new TBuffer(blob1, 0, this);
-         } else {
-            let objbuf = jsrio.R__unzip(blob1, key.fObjlen);
+            let buf = new TBuffer(blob1, 0, this);
+            buf.fTagOffset = key.fKeylen;
+            return buf;
+         } 
+
+         return jsrio.R__unzip(blob1, key.fObjlen).then(objbuf => {
             if (!objbuf) return Promise.reject(Error("Fail to UNZIP buffer"));
-            buf = new TBuffer(objbuf, 0, this);
-         }
+            let buf = new TBuffer(objbuf, 0, this);
+            buf.fTagOffset = key.fKeylen;   
+            return buf;
 
-         buf.fTagOffset = key.fKeylen;
-
-         return buf;
+         });
       });
    }
 
