@@ -2124,41 +2124,41 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
                return JSROOT.callBack(baskets_call_back, null);
 
             let n = 0, k = 0;
-    
+
             function DoProcessing() {
-            
+
                for (; k < bitems.length; ++k) {
                   if (!bitems[k].selected) continue;
-   
+
                   bitems[k].selected = false;
                   bitems[k].done = true;
-   
+
                   let blob = (places.length > 2) ? blobs[n++] : blobs,
                      buf = new JSROOT.TBuffer(blob, 0, handle.file),
                      basket = buf.ClassStreamer({}, "TBasket");
-   
+
                   if (basket.fNbytes !== bitems[k].branch.fBasketBytes[bitems[k].basket])
                      console.error('mismatch in read basket sizes', bitems[k].branch.fBasketBytes[bitems[k].basket]);
-   
+
                   // items[k].obj = basket; // keep basket object itself if necessary
-   
+
                   bitems[k].bskt_obj = basket; // only number of entries in the basket are relevant for the moment
-   
+
                   if (basket.fKeylen + basket.fObjlen === basket.fNbytes) {
                      // use data from original blob
                      buf.raw_shift = 0;
-                     
+
                      bitems[k].raw = buf; // here already unpacked buffer
-   
+
                     if (bitems[k].branch.fEntryOffsetLen > 0)
                         buf.ReadBasketEntryOffset(basket, buf.raw_shift);
-                    
+
                     continue;
-                  } 
-                     
+                  }
+
                   // unpack data and create new blob
                   return jsrio.R__unzip(blob, basket.fObjlen, false, buf.o).then(objblob => {
-   
+
                      if (objblob) {
                         buf = new JSROOT.TBuffer(objblob, 0, handle.file);
                         buf.raw_shift = basket.fKeylen;
@@ -2166,22 +2166,22 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
                      } else {
                         throw new Error('FAIL TO UNPACK');
                      }
-   
+
                      bitems[k].raw = buf; // here already unpacked buffer
-   
+
                      if (bitems[k].branch.fEntryOffsetLen > 0)
                         buf.ReadBasketEntryOffset(basket, buf.raw_shift);
-                        
+
                      DoProcessing();  // continue processing
                   });
                }
-   
+
                if (ExtractPlaces())
                   handle.file.ReadBuffer(places, filename, ReadProgress).then(ProcessBlobs).catch(() => ProcessBlobs(null));
                else
                   JSROOT.callBack(baskets_call_back, bitems);
              }
-             
+
              DoProcessing();
          }
 
