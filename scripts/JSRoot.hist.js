@@ -5104,7 +5104,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           func = main.GetProjectionFunc();
 
       function BuildPath(xp,yp,iminus,iplus,do_close) {
-         let cmd = "", last, pnt, first, isany;
+         let cmd = "", last, pnt, first, isany, matched;
          for (let i = iminus; i <= iplus; ++i) {
             if (func) {
                pnt = func(xp[i], yp[i]);
@@ -5117,7 +5117,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                cmd = "M" + pnt.x + "," + pnt.y; first = pnt;
             } else if ((i == iplus) && first && (pnt.x == first.x) && (pnt.y == first.y)) {
                if (!isany) return ""; // all same points
-               cmd += "z"; do_close = false;
+               cmd += "z"; do_close = false; matched = true;
             } else if ((pnt.x != last.x) && (pnt.y != last.y)) {
                cmd +=  "l" + (pnt.x - last.x) + "," + (pnt.y - last.y); isany = true;
             } else if (pnt.x != last.x) {
@@ -5128,8 +5128,82 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             last = pnt;
          }
 
+         if (do_close && !matched && !func)
+            return "<failed>";
          if (do_close) cmd += "z";
          return cmd;
+      }
+
+      function get_line_intersection(p0_x, p0_y, p1_x, p1_y, p2_x, p2_y, p3_x, p3_y)
+      {
+          let s02_x, s02_y, s10_x, s10_y, s32_x, s32_y, s_numer, t_numer, denom, t;
+          s10_x = p1_x - p0_x;
+          s10_y = p1_y - p0_y;
+          s32_x = p3_x - p2_x;
+          s32_y = p3_y - p2_y;
+
+          denom = s10_x * s32_y - s32_x * s10_y;
+          if (denom == 0)
+              return 0; // Collinear
+          let denomPositive = denom > 0;
+
+          s02_x = p0_x - p2_x;
+          s02_y = p0_y - p2_y;
+          s_numer = s10_x * s02_y - s10_y * s02_x;
+          if ((s_numer < 0) == denomPositive)
+              return null; // No collision
+
+          t_numer = s32_x * s02_y - s32_y * s02_x;
+          if ((t_numer < 0) == denomPositive)
+              return null; // No collision
+
+          if (((s_numer > denom) == denomPositive) || ((t_numer > denom) == denomPositive))
+              return null; // No collision
+          // Collision detected
+          t = t_numer / denom;
+          return { x: Math.round(p0_x + (t * s10_x)), y: Math.round(p0_y + (t * s10_y)) };
+      }
+
+      function get_segm_intersection(segm1, segm2) {
+         return get_line_intersection(segm1.x1, segm1.y1, segm1.x2, segm1.y2, segm2.x1, segm2.y1, segm2.x2, segm2.y2);
+      }
+
+      // try to build path which fills area to outside borders
+      function BuildPathOutside(xp,yp,iminus,iplus,side) {
+
+         let points = [{ x:0, y:0 }, {x:frame_w, y:0}, {x:frame_w, y:frame_h}, {x:0, y:frame_h} ];
+
+         function get_intersect(i,di) {
+            let segm = { x1: xp[i], y1: yp[i], x2: 2*xp[i] - xp[i+di], y2: 2*yp[i] - yp[i+di] };
+            for (let i=0;i<4;++i) {
+               let res = get_segm_intersection(segm, { x1: points[i].x, y1: points[i].y, x2: points[(i+1)%4].x, y2: points[(i+1)%4].y});
+               if (res) {
+                  res.indx = i + 0.5;
+                  return res;
+               }
+            }
+            return null;
+         }
+
+         let pnt1 = get_intersect(iminus, 1);
+         let pnt2 = get_intersect(iplus, -1);
+         if (!pnt1 || !pnt2) return "";
+
+         // TODO: now side is always same direction, could be that side should be checked more precise
+         let indx = pnt2.indx, step = side*0.5;
+
+         let dd = BuildPath(xp,yp,iminus,iplus);
+
+         dd += "L" + pnt2.x + "," + pnt2.y;
+
+         while (Math.abs(indx - pnt1.indx) > 0.1) {
+            indx = Math.round(indx + step) % 4;
+            dd += "L" + points[indx].x + "," + points[indx].y;
+            indx += step;
+         }
+
+         dd += "L" + pnt1.x + "," + pnt1.y;
+         return dd;
       }
 
       if (this.options.Contour === 14) {
@@ -5159,12 +5233,14 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          switch (this.options.Contour) {
             case 1: break;
             case 11: fillcolor = 'none'; lineatt = new JSROOT.TAttLineHandler({ color: icol } ); break;
-            case 12: fillcolor = 'none'; lineatt = new JSROOT.TAttLineHandler({ color: 1, style: (colindx%5 + 1), width: 1 }); break;
+            case 12: fillcolor = 'none'; lineatt = new JSROOT.TAttLineHandler({ color: 1, style: (ipoly%5 + 1), width: 1 }); break;
             case 13: fillcolor = 'none'; lineatt = this.lineatt; break;
             case 14: break;
          }
 
          let dd = BuildPath(xp, yp, iminus, iplus, fillcolor != 'none');
+         if (dd == "<failed>")
+            dd = BuildPathOutside(xp, yp, iminus, iplus, 1);
          if (!dd) return;
 
          let elem = this.draw_g
