@@ -27,7 +27,8 @@ examples_more = {
      { name: "docu_surf", file: "histpainter6.root", layout: "grid4x2", items: ['draw_surf', 'draw_surf1', 'draw_surf2', 'draw_surf3', 'draw_surf4', 'draw_surf5', 'draw_surf7', 'draw_surf2_cont1'], title: "several TH2 SURF examples from THistPainter documentation page" },
      { name: "lego_tf2", file: "https://root.cern/files/StressIOPluginsTestFiles/stress_5.root", item:"h2form", opt:"lego", title: "Combination of th2 an tf2 in 3D" },
      { name: "tut1", file: "tutorials_hist.root", layout: "grid2x2", items: ['thstack2palettecolor', 'reverseaxis', 'hlabels2', 'labels3'], opts: ['0lego1_pfc'], title: "Macro outputs from $ROOTSYS/tutorials/hist" },
-     { name: "earth", file: "tutorials_graphics.root", item: 'earth',  title: "Earth projections, tutorials/graphics/earth.C" }
+     { name: "earth", file: "tutorials_graphics.root", item: 'earth',  title: "Earth projections, tutorials/graphics/earth.C" },
+     { name: "hard_cont", file: "hard_contour.root", item: 'hard_contour',  title: "Complex contour plot without closed lines, trying to fix it", opt:"cont" }
    ],
    TH2Poly : [
       { name: "germany", url: "?nobrowser&file=$$$th2poly.root&item=europe;1/[13]", title: "Draw single TH2PolyBin from europe map" },
