@@ -4877,6 +4877,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return handle;
    }
 
+   /** @summary Build contour lines */
    TH2Painter.prototype.BuildContour = function(handle, levels, palette, contour_func) {
       let histo = this.GetObject(),
           kMAXCONTOUR = 2004,
@@ -5092,6 +5093,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       }
    }
 
+   /** @summary Draw histogram bins as contour */
    TH2Painter.prototype.DrawBinsContour = function() {
       let handle = this.PrepareColorDraw({ rounding: false, extra: 100, original: this.options.Proj != 0 }),
           frame_w = this.frame_width(),
@@ -5101,8 +5103,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           main = this.frame_painter(),
           func = main.GetProjectionFunc();
 
-      let BuildPath = (xp,yp,iminus,iplus) => {
-         let cmd = "", last, pnt;
+      function BuildPath(xp,yp,iminus,iplus,do_close) {
+         let cmd = "", last, pnt, first;
          for (let i = iminus; i <= iplus; ++i) {
             if (func) {
                pnt = func(xp[i], yp[i]);
@@ -5111,17 +5113,26 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             } else {
                pnt = { x: Math.round(xp[i]), y: Math.round(yp[i]) };
             }
-            if (!cmd) cmd = "M" + pnt.x + "," + pnt.y;
-            else if ((pnt.x != last.x) && (pnt.y != last.y)) cmd +=  "l" + (pnt.x - last.x) + "," + (pnt.y - last.y);
-            else if (pnt.x != last.x) cmd +=  "h" + (pnt.x - last.x);
-            else if (pnt.y != last.y) cmd +=  "v" + (pnt.y - last.y);
+            if (!cmd) {
+               cmd = "M" + pnt.x + "," + pnt.y; first = pnt;
+            } else if ((i == iplus) && do_close && first && (pnt.x == first.x) && (pnt.y == first.y)) {
+               cmd += "z"; do_close = false;
+            } else if ((pnt.x != last.x) && (pnt.y != last.y))
+               cmd +=  "l" + (pnt.x - last.x) + "," + (pnt.y - last.y);
+            else if (pnt.x != last.x)
+               cmd +=  "h" + (pnt.x - last.x);
+            else if (pnt.y != last.y)
+               cmd +=  "v" + (pnt.y - last.y);
             last = pnt;
          }
+
+         if (do_close) cmd += "z";
+
          return cmd;
       }
 
-      if (this.options.Contour===14) {
-         let dd = "M0,0h"+frame_w+"v"+frame_h+"h-"+frame_w;
+      if (this.options.Contour === 14) {
+         let dd = "M0,0h"+frame_w+"v"+frame_h+"h-"+frame_w+"z";
          if (this.options.Proj) {
             let sz = handle.j2 - handle.j1, xd = new Float32Array(sz*2), yd = new Float32Array(sz*2);
             for (let i=0;i<sz;++i) {
@@ -5130,17 +5141,17 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                xd[i+sz] = handle.origx[handle.i2];
                yd[i+sz] = (handle.origy[handle.j2]*(i+0.5) + handle.origy[handle.j1]*(sz-0.5-i))/sz;
             }
-            dd = BuildPath(xd,yd,0,2*sz-1);
+            dd = BuildPath(xd,yd,0,2*sz-1, true);
          }
 
          this.draw_g
              .append("svg:path")
-             .attr("d", dd + "z")
+             .attr("d", dd)
              .style('stroke','none')
              .style("fill", palette.calcColor(0, levels.length));
       }
 
-      this.BuildContour(handle, levels, palette, (colindx,xp,yp,iminus,iplus) => {
+      this.BuildContour(handle, levels, palette, (colindx,xp,yp,iminus,iplus,ipoly) => {
          let icol = palette.getColor(colindx),
              fillcolor = icol, lineatt;
 
@@ -5155,7 +5166,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          let elem = this.draw_g
                        .append("svg:path")
                        .attr("class","th2_contour")
-                       .attr("d", BuildPath(xp,yp,iminus,iplus) + (fillcolor == 'none' ? "" : "z"))
+                       .attr("d", BuildPath(xp,yp,iminus,iplus,fillcolor != 'none'))
                        .style("fill", fillcolor);
 
          if (lineatt)
