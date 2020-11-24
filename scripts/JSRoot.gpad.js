@@ -2859,11 +2859,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return null;
    }
 
+   /** @summary Redraw pad snap
+     * @desc Online version of drawing pad primitives
+     * for the canvas snapshot contains list of objects
+     * as first entry, graphical properties of canvas itself is provided
+     * in ROOT6 it also includes primitives, but we ignore them */
    TPadPainter.prototype.RedrawPadSnap = function(snap, call_back) {
-      // for the canvas snapshot contains list of objects
-      // as first entry, graphical properties of canvas itself is provided
-      // in ROOT6 it also includes primitives, but we ignore them
-
       if (!snap || !snap.fPrimitives) return;
 
       this.is_active_pad = !!snap.fActive; // enforce boolean flag
