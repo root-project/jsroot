@@ -5104,7 +5104,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           func = main.GetProjectionFunc();
 
       function BuildPath(xp,yp,iminus,iplus,do_close) {
-         let cmd = "", last, pnt, first;
+         let cmd = "", last, pnt, first, isany;
          for (let i = iminus; i <= iplus; ++i) {
             if (func) {
                pnt = func(xp[i], yp[i]);
@@ -5116,18 +5116,19 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             if (!cmd) {
                cmd = "M" + pnt.x + "," + pnt.y; first = pnt;
             } else if ((i == iplus) && first && (pnt.x == first.x) && (pnt.y == first.y)) {
+               if (!isany) return ""; // all same points
                cmd += "z"; do_close = false;
-            } else if ((pnt.x != last.x) && (pnt.y != last.y))
-               cmd +=  "l" + (pnt.x - last.x) + "," + (pnt.y - last.y);
-            else if (pnt.x != last.x)
-               cmd +=  "h" + (pnt.x - last.x);
-            else if (pnt.y != last.y)
-               cmd +=  "v" + (pnt.y - last.y);
+            } else if ((pnt.x != last.x) && (pnt.y != last.y)) {
+               cmd +=  "l" + (pnt.x - last.x) + "," + (pnt.y - last.y); isany = true;
+            } else if (pnt.x != last.x) {
+               cmd +=  "h" + (pnt.x - last.x); isany = true;
+            } else if (pnt.y != last.y) {
+               cmd +=  "v" + (pnt.y - last.y); isany = true;
+            }
             last = pnt;
          }
 
          if (do_close) cmd += "z";
-
          return cmd;
       }
 
@@ -5163,10 +5164,13 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             case 14: break;
          }
 
+         let dd = BuildPath(xp, yp, iminus, iplus, fillcolor != 'none');
+         if (!dd) return;
+
          let elem = this.draw_g
                        .append("svg:path")
                        .attr("class","th2_contour")
-                       .attr("d", BuildPath(xp, yp, iminus, iplus, fillcolor != 'none'))
+                       .attr("d", dd)
                        .style("fill", fillcolor);
 
          if (lineatt)
