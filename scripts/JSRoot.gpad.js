@@ -2442,7 +2442,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
        @return {Promise} when drawing completed */
    TPadPainter.prototype.DrawPrimitives = function(indx) {
 
-      if (indx===0) {
+      if (!indx) {
+         indx = 0;
          // flag used to prevent immediate pad redraw during normal drawing sequence
          this._doing_pad_draw = true;
 
@@ -3521,11 +3522,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       jsrp.SelectActivePad({ pp: painter, active: true });
 
       // flag used to prevent immediate pad redraw during first draw
-      return painter.DrawPrimitives(0).then(() => {
+      return painter.DrawPrimitives().then(() => {
          painter.ShowButtons();
          // we restore previous pad name
          painter.CurrentPadName(prev_name);
-         painter.DrawingReady();
          return painter;
       });
    }
@@ -3763,6 +3763,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       JSROOT.CloseCurrentWindow();
    }
 
+   /** @summary Handle websocket messages */
    TCanvasPainter.prototype.OnWebsocketMsg = function(handle, msg) {
       console.log("GET MSG len:" + msg.length + " " + msg.substr(0,60));
 
@@ -3775,7 +3776,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          let snap = JSROOT.parse(msg.substr(6));
 
          this.RedrawPadSnap(snap, () => {
-            this.CompeteCanvasSnapDrawing();
+            this.CompleteCanvasSnapDrawing();
             let ranges = this.GetWebPadOptions(); // all data, including subpads
             if (ranges) ranges = ":" + ranges;
             handle.Send("READY6:" + snap.fVersion + ranges); // send ready message back when drawing completed
@@ -3959,7 +3960,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return Promise.resolve(true);
    }
 
-   TCanvasPainter.prototype.CompeteCanvasSnapDrawing = function() {
+   /** @summary Handle websocket messages */
+   TCanvasPainter.prototype.CompleteCanvasSnapDrawing = function() {
       if (!this.pad) return;
 
       if (document) document.title = this.pad.fTitle;
@@ -4130,9 +4132,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       // select global reference - required for keys handling
       jsrp.SelectActivePad({ pp: painter, active: true });
 
-      return painter.DrawPrimitives(0).then(() => {
+      return painter.DrawPrimitives().then(() => {
          painter.ShowButtons();
-         painter.DrawingReady();
          return painter;
       });
    }

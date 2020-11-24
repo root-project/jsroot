@@ -2818,7 +2818,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Draw pad primitives */
    RPadPainter.prototype.DrawPrimitives = function(indx) {
 
-      if (indx===0) {
+      if (!indx) {
+         indx = 0;
          // flag used to prevent immediate pad redraw during normal drawing sequence
          this._doing_pad_draw = true;
 
@@ -3723,11 +3724,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       jsrp.SelectActivePad({ pp: painter, active: false });
 
       // flag used to prevent immediate pad redraw during first draw
-      return painter.DrawPrimitives(0).then(() => {
+      return painter.DrawPrimitives().then(() => {
          painter.ShowButtons();
          // we restore previous pad name
          painter.CurrentPadName(prev_name);
-         painter.DrawingReady();
          return painter;
       });
    }
@@ -4108,7 +4108,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return Promise.resolve(true);
    }
 
-   RCanvasPainter.prototype.CompeteCanvasSnapDrawing = function() {
+   RCanvasPainter.prototype.CompleteCanvasSnapDrawing = function() {
       if (!this.pad) return;
 
       // FIXME: to be remove, has nothing to do with RCanvas
@@ -4191,10 +4191,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       jsrp.SelectActivePad({ pp: painter, active: false });
 
-      return painter.DrawPrimitives(0).then(() => {
+      return painter.DrawPrimitives().then(() => {
          painter.AddPadButtons();
          painter.ShowButtons();
-         painter.DrawingReady();
          return painter;
       });
    }

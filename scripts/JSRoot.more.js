@@ -2871,8 +2871,10 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    /** @summary Return time painet primitives */
    TGraphTimePainter.prototype.DrawPrimitives = function(indx) {
 
-      if (indx===0)
+      if (!indx) {
+         indx = 0;
          this._doing_primitives = true;
+      }
 
       let lst = this.GetObject().fSteps.arr[this.step];
 
@@ -2924,7 +2926,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          pp.CleanPrimitives(this.Selector.bind(this));
 
          // draw ptrimitives again
-         this.DrawPrimitives(0).then(() => this.ContineDrawing());
+         this.DrawPrimitives().then(() => this.ContineDrawing());
       } else if (this.running_timeout) {
          clearTimeout(this.running_timeout);
          delete this.running_timeout;
@@ -2957,7 +2959,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       this.step = 0;
 
-      return this.DrawPrimitives(0).then(() => {
+      return this.DrawPrimitives().then(() => {
          this.ContineDrawing();
          return this; // used in drawGraphTime promise
       });
