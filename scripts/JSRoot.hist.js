@@ -5134,21 +5134,20 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          return cmd;
       }
 
-      function get_line_intersection(p0_x, p0_y, p1_x, p1_y, p2_x, p2_y, p3_x, p3_y)
-      {
+      function get_segm_intersection(segm1, segm2) {
           let s02_x, s02_y, s10_x, s10_y, s32_x, s32_y, s_numer, t_numer, denom, t;
-          s10_x = p1_x - p0_x;
-          s10_y = p1_y - p0_y;
-          s32_x = p3_x - p2_x;
-          s32_y = p3_y - p2_y;
+          s10_x = segm1.x2 - segm1.x1;
+          s10_y = segm1.y2 - segm1.y1;
+          s32_x = segm2.x2 - segm2.x1;
+          s32_y = segm2.y2 - segm2.y1;
 
           denom = s10_x * s32_y - s32_x * s10_y;
           if (denom == 0)
               return 0; // Collinear
           let denomPositive = denom > 0;
 
-          s02_x = p0_x - p2_x;
-          s02_y = p0_y - p2_y;
+          s02_x = segm1.x1 - segm2.x1;
+          s02_y = segm1.y1 - segm2.y1;
           s_numer = s10_x * s02_y - s10_y * s02_x;
           if ((s_numer < 0) == denomPositive)
               return null; // No collision
@@ -5161,11 +5160,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
               return null; // No collision
           // Collision detected
           t = t_numer / denom;
-          return { x: Math.round(p0_x + (t * s10_x)), y: Math.round(p0_y + (t * s10_y)) };
-      }
-
-      function get_segm_intersection(segm1, segm2) {
-         return get_line_intersection(segm1.x1, segm1.y1, segm1.x2, segm1.y2, segm2.x1, segm2.y1, segm2.x2, segm2.y2);
+          return { x: Math.round(segm1.x1 + (t * s10_x)), y: Math.round(segm1.y1 + (t * s10_y)) };
       }
 
       // try to build path which fills area to outside borders
