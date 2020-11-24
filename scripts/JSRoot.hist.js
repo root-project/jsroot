@@ -5115,7 +5115,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             }
             if (!cmd) {
                cmd = "M" + pnt.x + "," + pnt.y; first = pnt;
-            } else if ((i == iplus) && do_close && first && (pnt.x == first.x) && (pnt.y == first.y)) {
+            } else if ((i == iplus) && first && (pnt.x == first.x) && (pnt.y == first.y)) {
                cmd += "z"; do_close = false;
             } else if ((pnt.x != last.x) && (pnt.y != last.y))
                cmd +=  "l" + (pnt.x - last.x) + "," + (pnt.y - last.y);
@@ -5166,7 +5166,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          let elem = this.draw_g
                        .append("svg:path")
                        .attr("class","th2_contour")
-                       .attr("d", BuildPath(xp,yp,iminus,iplus,fillcolor != 'none'))
+                       .attr("d", BuildPath(xp, yp, iminus, iplus, fillcolor != 'none'))
                        .style("fill", fillcolor);
 
          if (lineatt)

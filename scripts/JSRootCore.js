@@ -1292,7 +1292,7 @@
 
       if (typeof url != 'string') {
          let scripts = url, loadNext = () => {
-            if (!scripts.length) return Promise.resolve();
+            if (!scripts.length) return Promise.resolve(true);
             return JSROOT.loadScript(scripts.shift()).then(loadNext, loadNext);
          }
          return loadNext();
@@ -1315,21 +1315,22 @@
       function match_url(src) {
          if (src == url) return true;
          let indx = src.indexOf(url);
-         return (indx > 0) && (indx + url.length == src.length);
+         return (indx > 0) && (indx + url.length == src.length) && (src[indx-1] == "/");
       }
 
       if (isstyle) {
          let styles = document.getElementsByTagName('link');
          for (let n = 0; n < styles.length; ++n) {
             if (!styles[n].href || (styles[n].type !== 'text/css') || (styles[n].rel !== 'stylesheet')) continue;
-            if (match_url(styles[n].href)) return Promise.resolve();
+            if (match_url(styles[n].href))
+               return Promise.resolve();
          }
 
       } else {
          let scripts = document.getElementsByTagName('script');
-         for (let n = 0; n < scripts.length; ++n) {
-            if (match_url(scripts[n].src)) return Promise.resolve();
-         }
+         for (let n = 0; n < scripts.length; ++n)
+            if (match_url(scripts[n].src))
+               return Promise.resolve();
       }
 
       if (isstyle) {
@@ -1346,7 +1347,6 @@
       return new Promise((resolve, reject) => {
          element.onload = () => resolve(true);
          element.onerror = () => reject(Error(`Fail to load ${url}`));
-
          document.getElementsByTagName("head")[0].appendChild(element);
       });
    }

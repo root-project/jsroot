@@ -2515,7 +2515,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
             }
             if (!cmd) {
                cmd = "M" + pnt.x + "," + pnt.y; first = pnt;
-            } else if ((i == iplus) && do_close && first && (pnt.x == first.x) && (pnt.y == first.y)) {
+            } else if ((i == iplus) && first && (pnt.x == first.x) && (pnt.y == first.y)) {
                cmd += "z"; do_close = false;
             } else if ((pnt.x != last.x) && (pnt.y != last.y))
                cmd +=  "l" + (pnt.x - last.x) + "," + (pnt.y - last.y);
