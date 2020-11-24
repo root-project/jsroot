@@ -2427,7 +2427,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return null;
    }
 
-   /** Return true if any objects beside sub-pads exists in the pad */
+   /** @summary Return true if any objects beside sub-pads exists in the pad */
    TPadPainter.prototype.HasObjectsToDraw = function() {
 
       if (!this.pad || !this.pad.fPrimitives) return false;
@@ -2438,7 +2438,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return false;
    }
 
-   TPadPainter.prototype.DrawPrimitives = function(indx, callback, ppainter) {
+   /** @summary Draw pad primitives
+       @return {Promise} when drawing completed */
+   TPadPainter.prototype.DrawPrimitives = function(indx) {
 
       if (indx===0) {
          // flag used to prevent immediate pad redraw during normal drawing sequence
@@ -2451,9 +2453,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this._num_primitives = this.pad && this.pad.fPrimitives ? this.pad.fPrimitives.arr.length : 0;
       }
 
-      if (ppainter && (typeof ppainter == 'object'))
-         ppainter._primitive = true; // mark painter as belonging to primitives
-
       if (indx >= this._num_primitives) {
          delete this._doing_pad_draw;
          if (this._start_tm) {
@@ -2463,13 +2462,17 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             delete this._lasttm_tm;
          }
 
-         return JSROOT.callBack(callback);
+         return Promise.resolve();
       }
 
       // use of Promise should avoid large call-stack depth when many primitives are drawn
-      let handle_func = this.DrawPrimitives.bind(this, indx+1, callback);
+      return JSROOT.draw(this.divid, this.pad.fPrimitives.arr[indx], this.pad.fPrimitives.opt[indx]).then(ppainter=> {
+         if (ppainter && (typeof ppainter == 'object'))
+            ppainter._primitive = true; // mark painter as belonging to primitives
 
-      JSROOT.draw(this.divid, this.pad.fPrimitives.arr[indx], this.pad.fPrimitives.opt[indx]).then(handle_func);
+         return this.DrawPrimitives(indx+1);
+
+      });
    }
 
    TPadPainter.prototype.GetTooltips = function(pnt) {
@@ -3518,14 +3521,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       jsrp.SelectActivePad({ pp: painter, active: true });
 
       // flag used to prevent immediate pad redraw during first draw
-      painter.DrawPrimitives(0, () => {
+      return painter.DrawPrimitives(0).then(() => {
          painter.ShowButtons();
          // we restore previous pad name
          painter.CurrentPadName(prev_name);
          painter.DrawingReady();
+         return painter;
       });
-
-      return painter;
    }
 
    // ==========================================================================================
@@ -4128,8 +4130,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       // select global reference - required for keys handling
       jsrp.SelectActivePad({ pp: painter, active: true });
 
-      painter.DrawPrimitives(0, () => { painter.ShowButtons(); painter.DrawingReady(); });
-      return painter;
+      return painter.DrawPrimitives(0).then(() => {
+         painter.ShowButtons();
+         painter.DrawingReady();
+         return painter;
+      });
    }
 
    let drawPadSnapshot = (divid, snap /*, opt*/) => {

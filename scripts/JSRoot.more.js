@@ -2868,24 +2868,25 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       this.OptionsStore(opt);
    }
 
-   TGraphTimePainter.prototype.DrawPrimitives = function(indx, callback, ppainter) {
+   /** @summary Return time painet primitives */
+   TGraphTimePainter.prototype.DrawPrimitives = function(indx) {
 
       if (indx===0)
          this._doing_primitives = true;
 
       let lst = this.GetObject().fSteps.arr[this.step];
 
-      if (ppainter) ppainter.$grtimeid = this.selfid; // indicator that painter created by ourself
-
       if (!lst || (indx >= lst.arr.length)) {
          delete this._doing_primitives;
-         return JSROOT.callBack(callback);
+         return Promise.resolve();
       }
 
-      // handle use to invoke callback only when necessary
-      let handle_func = this.DrawPrimitives.bind(this, indx+1, callback);
+      return JSROOT.draw(this.divid, lst.arr[indx], lst.opt[indx]).then(ppainter => {
 
-      JSROOT.draw(this.divid, lst.arr[indx], lst.opt[indx]).then(handle_func);
+         if (ppainter) ppainter.$grtimeid = this.selfid; // indicator that painter created by ourself
+         return this.DrawPrimitives(indx+1);
+
+      });
    }
 
    TGraphTimePainter.prototype.Selector = function(p) {
@@ -2923,7 +2924,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          pp.CleanPrimitives(this.Selector.bind(this));
 
          // draw ptrimitives again
-         this.DrawPrimitives(0, this.ContineDrawing.bind(this));
+         this.DrawPrimitives(0).then(() => this.ContineDrawing());
       } else if (this.running_timeout) {
          clearTimeout(this.running_timeout);
          delete this.running_timeout;
@@ -2950,14 +2951,16 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       }
    }
 
+   /** @ummary Start drawing of graph time */
    TGraphTimePainter.prototype.StartDrawing = function(once_again) {
       if (once_again!==false) this.SetDivId(this.divid);
 
       this.step = 0;
 
-      this.DrawPrimitives(0, this.ContineDrawing.bind(this));
-
-      return this; // used in promise
+      return this.DrawPrimitives(0).then(() => {
+         this.ContineDrawing();
+         return this; // used in drawGraphTime promise
+      });
    }
 
    let drawGraphTime = (divid, gr, opt) => {
@@ -2981,9 +2984,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       painter.selfid = "grtime" + JSROOT._.id_counter++; // use to identify primitives which should be clean
 
-      JSROOT.draw(divid, gr.fFrame, "AXIS").then(painter.StartDrawing.bind(painter));
-
-      return painter; // first drawing down via tmout, therefore return painter
+      return JSROOT.draw(divid, gr.fFrame, "AXIS").then(() => painter.StartDrawing());
    }
 
    // =============================================================
