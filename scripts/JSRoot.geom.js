@@ -3214,7 +3214,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
       let painter = this;
 
-      this._worker = new Worker(JSROOT.source_dir + "scripts/JSRootGeoWorker.js");
+      this._worker = new Worker(JSROOT.source_dir + "scripts/JSRoot.geoworker.js");
 
       this._worker.onmessage = function(e) {
 
