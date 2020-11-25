@@ -960,7 +960,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Get object item with specified name
      * @desc depending from provided option, same item can generate different object types
      * @returns {Promise} with object like { item, obj, itemname } */
-   HierarchyPainter.prototype.get = function(arg, options) {
+   HierarchyPainter.prototype.getObject = function(arg, options) {
 
       let itemname, item, result = { item: null, obj: null };
 
@@ -1003,7 +1003,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                if (!res) return resolveFunc(result);
                let newparentname = this.itemFullName(d.last);
                if (newparentname.length>0) newparentname+="/";
-               this.get( { name: newparentname + d.rest, rest: d.rest }, options).then(resolveFunc);
+               this.getObject( { name: newparentname + d.rest, rest: d.rest }, options).then(resolveFunc);
             }, null, true);
          });
       }
@@ -1126,7 +1126,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          if (!updating) JSROOT.progress("Loading " + display_itemname);
 
-         h.get(display_itemname, drawopt).then(result => {
+         h.getObject(display_itemname, drawopt).then(result => {
             if (!updating) JSROOT.progress();
 
             if (!item) item = result.item;
@@ -1198,7 +1198,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             JSROOT.callBack(drop_callback, res);
          });
 
-      this.get(itemname).then(res => {
+      this.getObject(itemname).then(res => {
 
          if (!res.obj) return JSROOT.callBack(call_back);
 
@@ -1306,7 +1306,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          d3.select("#" + h.disp_frameid).html("<h2>Start I/O test</h2>")
 
          let tm0 = new Date();
-         return h.get(items[0]).then(() => {
+         return h.getObject(items[0]).then(() => {
             let tm1 = new Date();
             d3.select("#" + h.disp_frameid).append("h2").html("Item " + items[0] + " reading time = " + (tm1.getTime() - tm0.getTime()) + "ms");
             return JSROOT.callBack(call_back);
@@ -1620,7 +1620,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       JSROOT.progress("Loading " + itemname);
 
-      this.get(itemname, "hierarchy_expand").then(res => {
+      this.getObject(itemname, "hierarchy_expand").then(res => {
 
          JSROOT.progress();
 
@@ -1729,14 +1729,16 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }).finally(() => JSROOT.progress());
    }
 
-   HierarchyPainter.prototype.ApplyStyle = function(style, call_back) {
+   /** @summary Apply loaded TStyle object
+     * @desc One also can specify item name of JSON file name where style is loaded */
+   HierarchyPainter.prototype.applyStyle = function(style) {
       if (!style)
-         return JSROOT.callBack(call_back);
+         return Promise.resolve();
 
       if (typeof style === 'object') {
          if (style._typename === "TStyle")
             JSROOT.extend(JSROOT.gStyle, style);
-         return JSROOT.callBack(call_back);
+         return Promise.resolve();
       }
 
       if (typeof style === 'string') {
@@ -1744,14 +1746,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          let item = this.Find({ name: style, allow_index: true, check_keys: true });
 
          if (item!==null)
-            return this.get(item).then(res => this.ApplyStyle(res.obj, call_back));
+            return this.getObject(item).then(res => this.applyStyle(res.obj));
 
          if (style.indexOf('.json') > 0)
             return JSROOT.httpRequest(style, 'object')
-                         .then(res => this.ApplyStyle(res, call_back));
+                         .then(res => this.applyStyle(res));
       }
 
-      return JSROOT.callBack(call_back);
+      return Promise.resolve();
    }
 
    HierarchyPainter.prototype.GetFileProp = function(itemname) {
@@ -2335,7 +2337,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          } else if (expanditems.length > 0)
             this.expand(expanditems.shift(), OpenAllFiles);
          else if (style.length > 0)
-            this.ApplyStyle(style.shift(), OpenAllFiles);
+            this.applyStyle(style.shift()).then(OpenAllFiles);
          else {
             this.RefreshHtml();
             this.displayAll(itemsarr, optionsarr, () => {

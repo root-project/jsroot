@@ -1448,7 +1448,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
                menu.add("Expand", () => this.expand(itemname));
 
             if (hitem._kind === "ROOT.TStyle")
-               menu.add("Apply", () => this.ApplyStyle(itemname));
+               menu.add("Apply", () => this.applyStyle(itemname));
          }
 
          if (typeof hitem._menu == 'function')
