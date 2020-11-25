@@ -68,7 +68,7 @@ JSROOT.define(['jquery', 'jquery-ui'], () => {
    rootui5sys = JSROOT.source_dir.replace(/jsrootsys/g, "rootui5sys");
    if (rootui5sys == JSROOT.source_dir) {
       // if jsrootsys location not detected, try to guess it
-      if (window.location.port && !JSROOT.openui5src || JSROOT.openui5src == 'nojsroot' || JSROOT.openui5src == 'jsroot')
+      if (window.location.port && (window.location.pathname.indexOf("/win") >= 0) && (!JSROOT.openui5src || JSROOT.openui5src == 'nojsroot' || JSROOT.openui5src == 'jsroot'))
          rootui5sys = window.location.origin + window.location.pathname + "../rootui5sys/";
       else
          rootui5sys = undefined;
