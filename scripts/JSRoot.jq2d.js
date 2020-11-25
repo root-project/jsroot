@@ -1381,7 +1381,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
             let files = [], addr = "", cnt = 0,
                 separ = () => (cnt++ > 0) ? "&" : "?";
 
-            this.ForEachRootFile(item => files.push(item._file.fFullURL));
+            this.forEachRootFile(item => files.push(item._file.fFullURL));
 
             if (!this.GetTopOnlineItem())
                addr = JSROOT.source_dir + "index.htm";
@@ -1706,7 +1706,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
             });
       } else if (!this.no_select) {
          let fname = "";
-         this.ForEachRootFile(item => { if (!fname) fname = item._fullurl; });
+         this.forEachRootFile(item => { if (!fname) fname = item._fullurl; });
          jmain.find(".gui_urlToLoad").val(fname);
       }
    }

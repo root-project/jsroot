@@ -4309,8 +4309,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
       if (!parent._childs) parent._childs = [];
       parent._childs.push(item);
-
-   };
+   }
 
    geo.provideMenu = function(menu, item, hpainter) {
 
