@@ -1651,7 +1651,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
 
          let painter = this;
          jlayout.change(function() {
-            painter.SetDisplay($(this).val() || 'collapsible', painter.gui_div + "_drawing");
+            painter.setDisplay($(this).val() || 'collapsible', painter.gui_div + "_drawing");
          });
       }
 
@@ -2470,7 +2470,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
 
       let root_version = top._root_version ? parseInt(top._root_version) : 396545; // by default use version number 6-13-01
 
-      let mdi = hpainter.GetDisplay();
+      let mdi = hpainter.getDisplay();
       if (!mdi) return null;
 
       let frame = mdi.FindFrame(itemname, true);

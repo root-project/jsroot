@@ -1055,6 +1055,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       });
    }
 
+   /** @summary Checks if item can be displayed with given draw option */
    HierarchyPainter.prototype.canDisplay = function(item, drawopt) {
       if (!item) return false;
       if (item._player) return true;
@@ -1064,11 +1065,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return handle && (('func' in handle) || ('draw_field' in handle));
    }
 
+   /** @summary Returns true if given item displayed */
    HierarchyPainter.prototype.isItemDisplayed = function(itemname) {
-      let mdi = this.GetDisplay();
-      if (!mdi) return false;
-
-      return mdi.FindFrame(itemname) !== null;
+      let mdi = this.getDisplay();
+      return mdi ? mdi.FindFrame(itemname) !== null : false;
    }
 
    HierarchyPainter.prototype.display = function(itemname, drawopt, call_back) {
@@ -1700,6 +1700,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          }
    }
 
+   HierarchyPainter.prototype.OpenRootFile = function(filepath, cb) {
+      JSROOT.warnOnce("HierarchyPainter.OpenRootFile is obsolete, use openRootFile instead");
+      return this.openRootFile(filepath).then(cb);
+   }
+
    /** @summary Open ROOT file */
    HierarchyPainter.prototype.openRootFile = function(filepath) {
       // first check that file with such URL already opened
@@ -2057,6 +2062,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    HierarchyPainter.prototype.SetDisplay = function(layout, frameid) {
+      JSROOT.warnOnce("HierarchyPainter.SetDisplay is obsolete, use setDisplay instead");
+      return this.setDisplay(layout, frameid);
+   }
+
+   /** @summary Assign MDI object */
+   HierarchyPainter.prototype.setDisplay = function(layout, frameid) {
       if (!frameid && (typeof layout == 'object')) {
          this.disp = layout;
          this.disp_kind = 'custom';
@@ -2107,8 +2118,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
    }
 
-   HierarchyPainter.prototype.GetDisplay = function() {
-      return ('disp' in this) ? this.disp : null;
+   /** @summary Returns actual MDI display object */
+   HierarchyPainter.prototype.getDisplay = function() {
+      return this.disp;
    }
 
    HierarchyPainter.prototype.CleanupFrame = function(divid) {
@@ -2429,7 +2441,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           });
       }
 
-      this.SetDisplay(layout, this.brlayout.drawing_divid());
+      this.setDisplay(layout, this.brlayout.drawing_divid());
    }
 
    HierarchyPainter.prototype.CreateStatusLine = function(height, mode) {

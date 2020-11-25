@@ -11,16 +11,14 @@
    <script type='text/javascript'>
 
       function createGUI() {
-         var h = new JSROOT.HierarchyPainter("example", "myTreeDiv");
+         let h = new JSROOT.HierarchyPainter("example", "myTreeDiv");
 
          // configure 'simple' in provided <div> element
          // one also can specify "grid2x2" or "flex" or "tabs"
-         h.SetDisplay("simple", "myMainDiv");
+         h.setDisplay("simple", "myMainDiv");
 
          // open file and display element
-         h.OpenRootFile("../../files/hsimple.root", function() {
-            h.display("hpxpy;1","colz");
-         });
+         h.openRootFile("../../files/hsimple.root").then(() => h.display("hpxpy;1","colz"));
       }
 
    </script>
