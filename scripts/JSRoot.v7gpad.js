@@ -3055,8 +3055,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
    }
 
-   /** @summary function called when drawing next snapshot from the list
-     * @desc it is also used as callback for drawing of previous snap
+   /** @summary Function called when drawing next snapshot from the list
      * @returns {Promise} with pad painter when ready
      * @private */
    RPadPainter.prototype.DrawNextSnap = function(lst, indx) {
