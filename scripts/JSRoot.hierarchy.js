@@ -2160,7 +2160,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (this.disp)
          this.disp.CleanupFrame = this.CleanupFrame.bind(this);
 
-      Promise.resolve(this.disp);
+      return Promise.resolve(this.disp);
    }
 
    /** @summary If possible, creates custom JSROOT.MDIDisplay for given item
