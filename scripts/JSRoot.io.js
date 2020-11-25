@@ -3026,7 +3026,7 @@ JSROOT.define(['rawinflate'], () => {
 
       const n = buf.ntoi4();
       let i, res = new Array(n);
-      if (this.member_wise) {
+      if (this.member_wise && (buf.remain() >= 6)) {
          if (buf.ntoi2() == jsrio.kStreamedMemberWise)
             buf.shift(4);
          else
