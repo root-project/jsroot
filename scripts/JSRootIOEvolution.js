@@ -3013,7 +3013,7 @@
       }
 
       var i, n = buf.ntoi4(), res = new Array(n);
-      if (this.member_wise) {
+      if (this.member_wise && (buf.remain() >= 6)) {
          if (buf.ntoi2() == JSROOT.IO.kStreamedMemberWise)
             buf.shift(4);
          else
