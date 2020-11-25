@@ -183,7 +183,9 @@ JSROOT.define(['rawinflate'], () => {
       jsrio.CustomStreamers[type] = user_streamer;
    }
 
-   /** @summary Reads header envelope, determines zipped size and unzip content */
+   /** @summary Reads header envelope, determines zipped size and unzip content
+     * @returns {Promise} with unzipped content
+     * @private */
    jsrio.R__unzip = function(arr, tgtsize, noalert, src_shift) {
 
       const HDRSIZE = 9, totallen = arr.byteLength;
@@ -191,38 +193,37 @@ JSROOT.define(['rawinflate'], () => {
           getChar = o => String.fromCharCode(arr.getUint8(o)),
           getCode = o => arr.getUint8(o);
 
-      return new Promise((resolveFunc, rejectFunc) => {
+      function NextPortion() {
 
-         function NextPortion() {
+         while (fullres < tgtsize) {
 
-            while (fullres < tgtsize) {
+            let fmt = "unknown", off = 0, CHKSUM = 0;
 
-               let fmt = "unknown", off = 0, CHKSUM = 0;
+            if (curr + HDRSIZE >= totallen) {
+               if (!noalert) console.error("Error R__unzip: header size exceeds buffer size");
+               return Promise.resolve(null);
+            }
 
-               if (curr + HDRSIZE >= totallen) {
-                  if (!noalert) console.error("Error R__unzip: header size exceeds buffer size");
-                  resolveFunc(null);
-               }
+            if (getChar(curr) == 'Z' && getChar(curr + 1) == 'L' && getCode(curr + 2) == 8) { fmt = "new"; off = 2; } else
+            if (getChar(curr) == 'C' && getChar(curr + 1) == 'S' && getCode(curr + 2) == 8) { fmt = "old"; off = 0; } else
+            if (getChar(curr) == 'X' && getChar(curr + 1) == 'Z' && getCode(curr + 2) == 0) fmt = "LZMA"; else
+            if (getChar(curr) == 'Z' && getChar(curr + 1) == 'S' && getCode(curr + 2) == 1) fmt = "ZSTD"; else
+            if (getChar(curr) == 'L' && getChar(curr + 1) == '4') { fmt = "LZ4"; off = 0; CHKSUM = 8; }
 
-               if (getChar(curr) == 'Z' && getChar(curr + 1) == 'L' && getCode(curr + 2) == 8) { fmt = "new"; off = 2; } else
-               if (getChar(curr) == 'C' && getChar(curr + 1) == 'S' && getCode(curr + 2) == 8) { fmt = "old"; off = 0; } else
-               if (getChar(curr) == 'X' && getChar(curr + 1) == 'Z' && getCode(curr + 2) == 0) fmt = "LZMA"; else
-               if (getChar(curr) == 'Z' && getChar(curr + 1) == 'S' && getCode(curr + 2) == 1) fmt = "ZSTD"; else
-               if (getChar(curr) == 'L' && getChar(curr + 1) == '4') { fmt = "LZ4"; off = 0; CHKSUM = 8; }
+            /*   C H E C K   H E A D E R   */
+            if ((fmt !== "new") && (fmt !== "old") && (fmt !== "LZ4") && (fmt !== "ZSTD")) {
+               if (!noalert) console.error(`R__unzip: ${fmt} format is not supported!`);
+               return Promise.resolve(null);
+            }
 
-               /*   C H E C K   H E A D E R   */
-               if ((fmt !== "new") && (fmt !== "old") && (fmt !== "LZ4") && (fmt !== "ZSTD")) {
-                  if (!noalert) console.error(`R__unzip: ${fmt} format is not supported!`);
-                  return resolveFunc(null);
-               }
+            const srcsize = HDRSIZE + ((getCode(curr + 3) & 0xff) | ((getCode(curr + 4) & 0xff) << 8) | ((getCode(curr + 5) & 0xff) << 16));
 
-               const srcsize = HDRSIZE + ((getCode(curr + 3) & 0xff) | ((getCode(curr + 4) & 0xff) << 8) | ((getCode(curr + 5) & 0xff) << 16));
+            let uint8arr = new Uint8Array(arr.buffer, arr.byteOffset + curr + HDRSIZE + off + CHKSUM, Math.min(arr.byteLength - curr - HDRSIZE - off - CHKSUM, srcsize - HDRSIZE - CHKSUM));
 
-               let uint8arr = new Uint8Array(arr.buffer, arr.byteOffset + curr + HDRSIZE + off + CHKSUM, Math.min(arr.byteLength - curr - HDRSIZE - off - CHKSUM, srcsize - HDRSIZE - CHKSUM));
+            if (fmt === "ZSTD")  {
+               function HandleZsdt(ZstdCodec) {
 
-               if (fmt === "ZSTD") {
-
-                  function HandleZsdt(ZstdCodec) {
+                  return new Promise((resolveFunc, rejectFunc) => {
 
                      ZstdCodec.run(zstd => {
                         const simple = new zstd.Simple();
@@ -249,38 +250,37 @@ JSROOT.define(['rawinflate'], () => {
 
                         fullres += reslen;
                         curr += srcsize;
-
-                        NextPortion();
+                        resolveFunc(true);
                      });
-                  }
-
-                  if (JSROOT.nodejs)
-                     return HandleZsdt(require('zstd-codec').ZstdCodec);
-                  else
-                     return JSROOT.require('zstd-codec').then(HandleZsdt);
+                  });
                }
 
-               //  place for unpacking
-               if (!tgtbuf) tgtbuf = new ArrayBuffer(tgtsize);
-
-               let tgt8arr = new Uint8Array(tgtbuf, fullres);
-
-               const reslen = (fmt === "LZ4") ? JSROOT.LZ4.uncompress(uint8arr, tgt8arr) : JSROOT.ZIP.inflate(uint8arr, tgt8arr);
-               if (reslen <= 0) break;
-
-               fullres += reslen;
-               curr += srcsize;
+               let promise = JSROOT.nodejs ? HandleZsdt(require('zstd-codec').ZstdCodec)
+                                           : JSROOT.require('zstd-codec').then(codec => HandleZsdt(codec));
+               return promise.then(() => NextPortion());
             }
 
-            if (fullres !== tgtsize) {
-               if (!noalert) console.error(`R__unzip: fail to unzip data expects ${tgtsize}, got ${fullres}`);
-               return resolveFunc(null);
-            }
+            //  place for unpacking
+            if (!tgtbuf) tgtbuf = new ArrayBuffer(tgtsize);
 
-            resolveFunc(new DataView(tgtbuf));
+            let tgt8arr = new Uint8Array(tgtbuf, fullres);
+
+            const reslen = (fmt === "LZ4") ? JSROOT.LZ4.uncompress(uint8arr, tgt8arr) : JSROOT.ZIP.inflate(uint8arr, tgt8arr);
+            if (reslen <= 0) break;
+
+            fullres += reslen;
+            curr += srcsize;
          }
-         NextPortion();
-      });
+
+         if (fullres !== tgtsize) {
+            if (!noalert) console.error(`R__unzip: fail to unzip data expects ${tgtsize}, got ${fullres}`);
+            return Promise.resolve(null);
+         }
+
+         return Promise.resolve(new DataView(tgtbuf));
+      }
+
+      return NextPortion();
    }
 
    // =================================================================================
