@@ -215,7 +215,7 @@
                          .then(obj => JSROOT.draw("viewer", obj, opt));
                 } else {
                    JSROOT.openFile(filename)
-                         .then(file => file.readObject(itemname)
+                         .then(file => file.readObject(itemname))
                          .then(obj => JSROOT.draw("viewer", obj, opt));
                 }
              }
@@ -337,8 +337,8 @@
                });
             } else if (filename.length > 0) {
                 JSROOT.openFile(filename)
-                      .then(file => { testfile = file; return testfile.readObject(itemname))
-                      .then(obj => { testobj = obj; return JSROOT.draw("viewer", obj, opt))
+                      .then(file => { testfile = file; return testfile.readObject(itemname); })
+                      .then(obj => { testobj = obj; return JSROOT.draw("viewer", obj, opt); })
                       .then(RunBigTest, RunBigTest);
             } else if (itemname.length > 0) {
                 testfile.readObject(itemname)
