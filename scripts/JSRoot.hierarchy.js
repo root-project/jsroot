@@ -187,7 +187,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          if (key.fClassName == 'TDirectory' || key.fClassName == 'TDirectoryFile') {
             let dir = null;
-            if (dirname && file) dir = file.GetDir(dirname + key.fName);
+            if (dirname && file) dir = file.getDir(dirname + key.fName);
             if (!dir) {
                item._more = true;
                item._expand = function(node, obj) {
@@ -711,7 +711,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                      let d = painter.Find({name:itemname, top:fff, last_exists:true, check_keys:true });
                      if ((d!=null) && ('last' in d) && (d.last!=fff)) {
                         // reconstruct only subdir hierarchy
-                        let dir = file.GetDir(painter.itemFullName(d.last, fff));
+                        let dir = file.getDir(painter.itemFullName(d.last, fff));
                         if (dir) {
                            d.last._name = d.last._keyname;
                            let dirname = painter.itemFullName(d.last, fff);

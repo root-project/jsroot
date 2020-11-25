@@ -349,7 +349,7 @@ JSROOT.define(['rawinflate'], () => {
 
       if ((ver.val <= 0) && ver.bytecnt && (ver.bytecnt >= 4)) {
          ver.checksum = this.ntou4();
-         if (!this.fFile.FindSinfoCheckum(ver.checksum)) {
+         if (!this.fFile.findSinfoCheckum(ver.checksum)) {
             // console.error(`Fail to find streamer info with check sum ${ver.checksum} version ${ver.val}`);
             this.o -= 4; // not found checksum in the list
             delete ver.checksum; // remove checksum
@@ -735,7 +735,7 @@ JSROOT.define(['rawinflate'], () => {
 
       const ver = this.readVersion();
 
-      let streamer = this.fFile.GetStreamer(classname, ver);
+      let streamer = this.fFile.getStreamer(classname, ver);
 
       if (streamer !== null) {
 
@@ -824,7 +824,7 @@ JSROOT.define(['rawinflate'], () => {
 
       let file = this.fFile;
 
-      return file.ReadBuffer([this.fSeekKeys, this.fNbytesKeys]).then(blob => {
+      return file.readBuffer([this.fSeekKeys, this.fNbytesKeys]).then(blob => {
          //*-* -------------Read keys of the top directory
 
          let buf = new TBuffer(blob, 0, file);
@@ -921,7 +921,7 @@ JSROOT.define(['rawinflate'], () => {
    /** @summary read buffer(s) from the file
     * @returns {Promise} with read buffers
     * @private */
-   TFile.prototype.ReadBuffer = function(place, filename, progress_callback) {
+   TFile.prototype.readBuffer = function(place, filename, progress_callback) {
 
       if ((this.fFileContent !== null) && !filename && (!this.fAcceptRanges || this.fFileContent.canExtract(place)))
          return Promise.resolve(this.fFileContent.extract(place));
@@ -1140,7 +1140,7 @@ JSROOT.define(['rawinflate'], () => {
    /** @summary Get directory with given name and cycle
     * @desc Function only can be used for already read directories, which are preserved in the memory
     * @private */
-   TFile.prototype.GetDir = function(dirname, cycle) {
+   TFile.prototype.getDir = function(dirname, cycle) {
 
       if ((cycle === undefined) && (typeof dirname == 'string')) {
          const pos = dirname.lastIndexOf(';');
@@ -1177,7 +1177,7 @@ JSROOT.define(['rawinflate'], () => {
       while (pos > 0) {
          let dirname = keyname.substr(0, pos),
             subname = keyname.substr(pos + 1),
-            dir = this.GetDir(dirname);
+            dir = this.getDir(dirname);
 
          if (dir) return dir.getKey(subname, cycle, only_direct);
 
@@ -1193,9 +1193,9 @@ JSROOT.define(['rawinflate'], () => {
 
    /** @summary Read and inflate object buffer described by its key
     * @private */
-   TFile.prototype.ReadObjBuffer = function(key) {
+   TFile.prototype.readObjBuffer = function(key) {
 
-      return this.ReadBuffer([key.fSeekKey + key.fKeylen, key.fNbytes - key.fKeylen]).then(blob1 => {
+      return this.readBuffer([key.fSeekKey + key.fKeylen, key.fNbytes - key.fKeylen]).then(blob1 => {
 
          if (key.fObjlen <= key.fNbytes - key.fKeylen) {
             let buf = new TBuffer(blob1, 0, this);
@@ -1215,7 +1215,7 @@ JSROOT.define(['rawinflate'], () => {
 
    /** @summary Method called when TTree object is streamed
     * @private */
-   TFile.prototype.AddReadTree = function(obj) {
+   TFile.prototype._addReadTree = function(obj) {
 
       if (jsrio.TTreeMethods)
          return JSROOT.extend(obj, jsrio.TTreeMethods);
@@ -1267,7 +1267,7 @@ JSROOT.define(['rawinflate'], () => {
 
          if ((key.fClassName == 'TDirectory' || key.fClassName == 'TDirectoryFile')) {
             isdir = true;
-            let dir = file.GetDir(obj_name, cycle);
+            let dir = file.getDir(obj_name, cycle);
             if (dir) return dir;
          }
 
@@ -1276,7 +1276,7 @@ JSROOT.define(['rawinflate'], () => {
 
          read_key = key;
 
-         return file.ReadObjBuffer(key);
+         return file.readObjBuffer(key);
       }).then(buf => {
          if (isdir) {
             let dir = new TDirectory(file, obj_name, cycle);
@@ -1289,7 +1289,7 @@ JSROOT.define(['rawinflate'], () => {
          buf.classStreamer(obj, read_key.fClassName);
 
          if ((read_key.fClassName === 'TF1') || (read_key.fClassName === 'TF2'))
-            return file.ReadFormulas(obj);
+            return file._readFormulas(obj);
 
          if (!file.readTrees) return obj;
 
@@ -1305,7 +1305,7 @@ JSROOT.define(['rawinflate'], () => {
 
    /** @summary read formulas from the file and add them to TF1/TF2 objects
     * @private */
-   TFile.prototype.ReadFormulas = function(tf1) {
+   TFile.prototype._readFormulas = function(tf1) {
 
       let arr = [];
 
@@ -1319,9 +1319,9 @@ JSROOT.define(['rawinflate'], () => {
       });
    }
 
-   /** @summary extract streamer infos
+   /** @summary extract streamer infos from the buffer
     * @private */
-   TFile.prototype.ExtractStreamerInfos = function(buf) {
+   TFile.prototype.extractStreamerInfos = function(buf) {
       if (!buf) return;
 
       let lst = {};
@@ -1384,7 +1384,7 @@ JSROOT.define(['rawinflate'], () => {
       let file = this;
 
       // with the first readbuffer we read bigger amount to create header cache
-      return this.ReadBuffer([0, 1024]).then(blob => {
+      return this.readBuffer([0, 1024]).then(blob => {
          let buf = new TBuffer(blob, 0, file);
 
          if (buf.substring(0, 4) !== 'root')
@@ -1433,7 +1433,7 @@ JSROOT.define(['rawinflate'], () => {
          if (file.fVersion >= 40000) nbytes += 12;
 
          // this part typically read from the header, no need to optimize
-         return file.ReadBuffer([file.fBEGIN, Math.max(300, nbytes)]);
+         return file.readBuffer([file.fBEGIN, Math.max(300, nbytes)]);
       }).then(blob3 => {
 
          let buf3 = new TBuffer(blob3, 0, file);
@@ -1450,7 +1450,7 @@ JSROOT.define(['rawinflate'], () => {
             return Promise.reject(Error("Empty keys list in " + file.fURL));
 
          // read with same request keys and streamer infos
-         return file.ReadBuffer([file.fSeekKeys, file.fNbytesKeys, file.fSeekInfo, file.fNbytesInfo]);
+         return file.readBuffer([file.fSeekKeys, file.fNbytesKeys, file.fSeekInfo, file.fNbytesInfo]);
       }).then(blobs => {
 
          let buf4 = new TBuffer(blobs[0], 0, file);
@@ -1466,9 +1466,9 @@ JSROOT.define(['rawinflate'], () => {
             return Promise.reject(Error("Fail to read data for TKeys"));
 
          file.fKeys.push(si_key);
-         return file.ReadObjBuffer(si_key);
+         return file.readObjBuffer(si_key);
       }).then(blob6 => {
-          file.ExtractStreamerInfos(blob6);
+          file.extractStreamerInfos(blob6);
           return file;
       });
    }
@@ -1479,13 +1479,13 @@ JSROOT.define(['rawinflate'], () => {
     * @param {string} dir_name - directory name
     * @param {number} [cycle=undefined] - directory cycle
     * @returns {Promise} - promise with read directory */
-   TFile.prototype.ReadDirectory = function(dir_name, cycle) {
+   TFile.prototype.readDirectory = function(dir_name, cycle) {
       return this.readObject(dir_name, cycle, true);
    }
 
    /** @summary Search for class streamer info
     * @private */
-   TFile.prototype.FindStreamerInfo = function(clname, clversion, clchecksum) {
+   TFile.prototype.findStreamerInfo = function(clname, clversion, clchecksum) {
       if (this.fStreamerInfos)
          for (let i = 0; i < this.fStreamerInfos.arr.length; ++i) {
             let si = this.fStreamerInfos.arr[i];
@@ -1509,7 +1509,7 @@ JSROOT.define(['rawinflate'], () => {
    /** @summary Search streamer info with provided checksum
      * @param {number} checksum
     * @private */
-   TFile.prototype.FindSinfoCheckum = function(checksum) {
+   TFile.prototype.findSinfoCheckum = function(checksum) {
       if (!this.fStreamerInfos) return null;
 
       let cache = this.fStreamerInfos.cache,
@@ -1534,7 +1534,7 @@ JSROOT.define(['rawinflate'], () => {
    /** @summary Returns streamer for the class 'clname',
     * @desc From the list of streamers or generate it from the streamer infos and add it to the list
     * @private */
-   TFile.prototype.GetStreamer = function(clname, ver, s_i) {
+   TFile.prototype.getStreamer = function(clname, ver, s_i) {
 
       // these are special cases, which are handled separately
       if (clname == 'TQObject' || clname == "TBasket") return null;
@@ -1551,7 +1551,7 @@ JSROOT.define(['rawinflate'], () => {
 
       // one can define in the user streamers just aliases
       if (typeof custom === 'string')
-         return this.GetStreamer(custom, ver, s_i);
+         return this.getStreamer(custom, ver, s_i);
 
       // streamer is just separate function
       if (typeof custom === 'function') {
@@ -1567,7 +1567,7 @@ JSROOT.define(['rawinflate'], () => {
       }
 
       // check element in streamer infos, one can have special cases
-      if (!s_i) s_i = this.FindStreamerInfo(clname, ver.val, ver.checksum);
+      if (!s_i) s_i = this.findStreamerInfo(clname, ver.val, ver.checksum);
 
       if (!s_i) {
          delete this.fStreamers[fullname];
@@ -1589,7 +1589,7 @@ JSROOT.define(['rawinflate'], () => {
 
    /** @summary Here we produce list of members, resolving all base classes
     * @private */
-   TFile.prototype.GetSplittedStreamer = function(streamer, tgt) {
+   TFile.prototype.getSplittedStreamer = function(streamer, tgt) {
       if (!streamer) return tgt;
 
       if (!tgt) tgt = [];
@@ -1621,8 +1621,8 @@ JSROOT.define(['rawinflate'], () => {
             ver.val = 1; // need to search version 1 - that happens when several versions of foreign class exists ???
          }
 
-         let parent = this.GetStreamer(elem.basename, ver);
-         if (parent) this.GetSplittedStreamer(parent, tgt);
+         let parent = this.getStreamer(elem.basename, ver);
+         if (parent) this.getSplittedStreamer(parent, tgt);
       }
 
       return tgt;
@@ -1630,7 +1630,7 @@ JSROOT.define(['rawinflate'], () => {
 
    /** @summary Fully clenaup TFile data
     * @private */
-   TFile.prototype.Delete = function() {
+   TFile.prototype.delete = function() {
       this.fDirectories = null;
       this.fKeys = null;
       this.fStreamers = null;
@@ -1672,7 +1672,7 @@ JSROOT.define(['rawinflate'], () => {
 
       let file = new TFile;
       let buf = new TBuffer(sinfo_rawdata, 0, file);
-      file.ExtractStreamerInfos(buf);
+      file.extractStreamerInfos(buf);
 
       let obj = {};
 
@@ -1683,13 +1683,73 @@ JSROOT.define(['rawinflate'], () => {
       return obj;
    }
 
+   /** @summary Function to read vector element in the streamer
+     * @private */
+   function readVectorElement(buf) {
+
+      if (this.member_wise) {
+
+         const n = buf.ntou4();
+         let streamer = null, ver = this.stl_version;
+
+         if (n === 0) return []; // for empty vector no need to search split streamers
+
+         if (n > 1000000) {
+            throw new Error('member-wise streaming of ' + this.conttype + " num " + n + ' member ' + this.name);
+            // return [];
+         }
+
+         if ((ver.val === this.member_ver) && (ver.checksum === this.member_checksum)) {
+            streamer = this.member_streamer;
+         } else {
+            streamer = buf.fFile.getStreamer(this.conttype, ver);
+
+            this.member_streamer = streamer = buf.fFile.getSplittedStreamer(streamer);
+            this.member_ver = ver.val;
+            this.member_checksum = ver.checksum;
+         }
+
+         let res = new Array(n), i, k, member;
+
+         for (i = 0; i < n; ++i)
+            res[i] = { _typename: this.conttype }; // create objects
+         if (!streamer) {
+            console.error('Fail to create split streamer for', this.conttype, 'need to read ', n, 'objects version', ver);
+         } else {
+            for (k = 0; k < streamer.length; ++k) {
+               member = streamer[k];
+               if (member.split_func) {
+                  member.split_func(buf, res, n);
+               } else {
+                  for (i = 0; i < n; ++i)
+                     member.func(buf, res[i]);
+               }
+            }
+         }
+         return res;
+      }
+
+      const n = buf.ntou4();
+      let res = new Array(n), i = 0;
+
+      if (n > 200000) { console.error('vector streaming for of', this.conttype, n); return res; }
+
+      if (this.arrkind > 0) { while (i < n) res[i++] = buf.readFastArray(buf.ntou4(), this.arrkind); }
+      else if (this.arrkind === 0) { while (i < n) res[i++] = buf.readTString(); }
+      else if (this.isptr) { while (i < n) res[i++] = buf.readObjectAny(); }
+      else if (this.submember) { while (i < n) res[i++] = this.submember.readelem(buf); }
+      else { while (i < n) res[i++] = buf.classStreamer({}, this.conttype); }
+
+      return res;
+   }
+
    /** @summary Function creates streamer for std::pair object
      * @private */
-   function GetPairStreamer(si, typname, file) {
+   function getPairStreamer(si, typname, file) {
       if (!si) {
          if (typname.indexOf("pair") !== 0) return null;
 
-         si = file.FindStreamerInfo(typname);
+         si = file.findStreamerInfo(typname);
 
          if (!si) {
             let p1 = typname.indexOf("<"), p2 = typname.lastIndexOf(">");
@@ -1713,7 +1773,7 @@ JSROOT.define(['rawinflate'], () => {
          }
       }
 
-      let streamer = file.GetStreamer(typname, null, si);
+      let streamer = file.getStreamer(typname, null, si);
 
       if (!streamer) return null;
 
@@ -1735,7 +1795,7 @@ JSROOT.define(['rawinflate'], () => {
 
    /** @summary Function used in streamer to read std::map object
      * @private */
-   function ReadMapElement(buf) {
+   function readMapElement(buf) {
       let streamer = this.streamer;
 
       if (this.member_wise) {
@@ -1743,11 +1803,11 @@ JSROOT.define(['rawinflate'], () => {
          const ver = this.stl_version;
 
          if (this.si) {
-            let si = buf.fFile.FindStreamerInfo(this.pairtype, ver.val, ver.checksum);
+            let si = buf.fFile.findStreamerInfo(this.pairtype, ver.val, ver.checksum);
 
             if (this.si !== si) {
 
-               streamer = GetPairStreamer(si, this.pairtype, buf.fFile);
+               streamer = getPairStreamer(si, this.pairtype, buf.fFile);
                if (!streamer || streamer.length !== 2) {
                   console.log('Fail to produce streamer for ', this.pairtype);
                   return null;
@@ -1799,7 +1859,7 @@ JSROOT.define(['rawinflate'], () => {
          } else {
             // create streamer for base class
             member.type = jsrio.kBase;
-            // this.GetStreamer(element.fName);
+            // this.getStreamer(element.fName);
          }
       }
 
@@ -2176,7 +2236,7 @@ JSROOT.define(['rawinflate'], () => {
 
                      member.arrkind = jsrio.GetArrayKind(member.conttype);
 
-                     member.readelem = jsrio.ReadVectorElement;
+                     member.readelem = readVectorElement;
 
                      if (!member.isptr && (member.arrkind < 0)) {
 
@@ -2198,16 +2258,16 @@ JSROOT.define(['rawinflate'], () => {
 
                      // remember found streamer info from the file -
                      // most probably it is the only one which should be used
-                     member.si = file.FindStreamerInfo(member.pairtype);
+                     member.si = file.findStreamerInfo(member.pairtype);
 
-                     member.streamer = GetPairStreamer(member.si, member.pairtype, file);
+                     member.streamer = getPairStreamer(member.si, member.pairtype, file);
 
                      if (!member.streamer || (member.streamer.length !== 2)) {
                         console.error(`Fail to build streamer for pair ${member.pairtype}`);
                         delete member.streamer;
                      }
 
-                     if (member.streamer) member.readelem = ReadMapElement;
+                     if (member.streamer) member.readelem = readMapElement;
                   } else
                      if (stl === jsrio.kSTLbitset) {
                         member.readelem = function(buf/*, obj*/) {
@@ -2327,7 +2387,7 @@ JSROOT.define(['rawinflate'], () => {
     * @private */
    TLocalFile.prototype._open = function() { return this.readKeys(); }
 
-   TLocalFile.prototype.ReadBuffer = function(place, filename /*, progress_callback */) {
+   TLocalFile.prototype.readBuffer = function(place, filename /*, progress_callback */) {
       let file = this.fLocalFile;
 
       return new Promise((resolve, reject) => {
@@ -2402,7 +2462,7 @@ JSROOT.define(['rawinflate'], () => {
     * @returns {Promise} with required blocks
     * @private */
 
-   TNodejsFile.prototype.ReadBuffer = function(place, filename /*, progress_callback */) {
+   TNodejsFile.prototype.readBuffer = function(place, filename /*, progress_callback */) {
       return new Promise((resolve, reject) => {
          if (filename)
             return reject(Error(`Cannot access other local file ${filename}`));
@@ -2503,8 +2563,8 @@ JSROOT.define(['rawinflate'], () => {
          list.fLast = nobjects - 1;
          list.fLowerBound = buf.ntou4();
 
-         let streamer = buf.fFile.GetStreamer(classv, { val: clv });
-         streamer = buf.fFile.GetSplittedStreamer(streamer);
+         let streamer = buf.fFile.getStreamer(classv, { val: clv });
+         streamer = buf.fFile.getSplittedStreamer(streamer);
 
          if (!streamer) {
             console.log('Cannot get member-wise streamer for', classv, clv);
@@ -2739,7 +2799,7 @@ JSROOT.define(['rawinflate'], () => {
 
       cs['TTree'] = {
          name: '$file',
-         func: function(buf, obj) { obj.$kind = "TTree"; obj.$file = buf.fFile; buf.fFile.AddReadTree(obj); }
+         func: function(buf, obj) { obj.$kind = "TTree"; obj.$file = buf.fFile; buf.fFile._addReadTree(obj); }
       }
 
       cs['TVirtualPerfStats'] = "TObject"; // use directly TObject streamer
@@ -3024,64 +3084,6 @@ JSROOT.define(['rawinflate'], () => {
       elem.fType = isptr ? jsrio.kAnyP : jsrio.kAny;
 
       return elem;
-   }
-
-   jsrio.ReadVectorElement = function(buf) {
-
-      if (this.member_wise) {
-
-         const n = buf.ntou4();
-         let streamer = null, ver = this.stl_version;
-
-         if (n === 0) return []; // for empty vector no need to search split streamers
-
-         if (n > 1000000) {
-            throw new Error('member-wise streaming of ' + this.conttype + " num " + n + ' member ' + this.name);
-            // return [];
-         }
-
-         if ((ver.val === this.member_ver) && (ver.checksum === this.member_checksum)) {
-            streamer = this.member_streamer;
-         } else {
-            streamer = buf.fFile.GetStreamer(this.conttype, ver);
-
-            this.member_streamer = streamer = buf.fFile.GetSplittedStreamer(streamer);
-            this.member_ver = ver.val;
-            this.member_checksum = ver.checksum;
-         }
-
-         let res = new Array(n), i, k, member;
-
-         for (i = 0; i < n; ++i)
-            res[i] = { _typename: this.conttype }; // create objects
-         if (!streamer) {
-            console.error('Fail to create split streamer for', this.conttype, 'need to read ', n, 'objects version', ver);
-         } else {
-            for (k = 0; k < streamer.length; ++k) {
-               member = streamer[k];
-               if (member.split_func) {
-                  member.split_func(buf, res, n);
-               } else {
-                  for (i = 0; i < n; ++i)
-                     member.func(buf, res[i]);
-               }
-            }
-         }
-         return res;
-      }
-
-      const n = buf.ntou4();
-      let res = new Array(n), i = 0;
-
-      if (n > 200000) { console.error('vector streaming for of', this.conttype, n); return res; }
-
-      if (this.arrkind > 0) { while (i < n) res[i++] = buf.readFastArray(buf.ntou4(), this.arrkind); }
-      else if (this.arrkind === 0) { while (i < n) res[i++] = buf.readTString(); }
-      else if (this.isptr) { while (i < n) res[i++] = buf.readObjectAny(); }
-      else if (this.submember) { while (i < n) res[i++] = this.submember.readelem(buf); }
-      else { while (i < n) res[i++] = buf.classStreamer({}, this.conttype); }
-
-      return res;
    }
 
    /**

@@ -1253,7 +1253,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
 
       if (!branch || !file || (branch._typename !== "TBranchElement") || (branch.fID < 0) || (branch.fStreamerType < 0)) return null;
 
-      let s_i = file.FindStreamerInfo(branch.fClassName, branch.fClassVersion, branch.fCheckSum),
+      let s_i = file.findStreamerInfo(branch.fClassName, branch.fClassVersion, branch.fCheckSum),
          arr = (s_i && s_i.fElements) ? s_i.fElements.arr : null;
       if (!arr) return null;
 
@@ -1292,7 +1292,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
    jsrio.DefineMemberTypeName = function(file, parent_class, member_name) {
       // return type name of given member in the class
 
-      let s_i = file.FindStreamerInfo(parent_class),
+      let s_i = file.findStreamerInfo(parent_class),
          arr = (s_i && s_i.fElements) ? s_i.fElements.arr : null,
          elem = null;
       if (!arr) return "";
@@ -1712,7 +1712,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
 
                   if (elem.fType === jsrio.kAny) {
 
-                     let streamer = handle.file.GetStreamer(branch.fClassName, { val: branch.fClassVersion, checksum: branch.fCheckSum });
+                     let streamer = handle.file.getStreamer(branch.fClassName, { val: branch.fClassVersion, checksum: branch.fCheckSum });
                      if (!streamer) { elem = null; console.warn('not found streamer!'); } else
                         member = {
                            name: target_name,
@@ -2177,7 +2177,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
                let req = ExtractPlaces();
 
                if (req)
-                  return handle.file.ReadBuffer(req.places, req.filename, ReadProgress).then(blobs => ProcessBlobs(blobs)).catch(() => { return null; });
+                  return handle.file.readBuffer(req.places, req.filename, ReadProgress).then(blobs => ProcessBlobs(blobs)).catch(() => { return null; });
 
                return Promise.resolve(bitems);
              }
@@ -2189,7 +2189,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
 
          // extract places where to read
          if (req)
-            return handle.file.ReadBuffer(req.places, req.filename, ReadProgress).then(blobs => ProcessBlobs(blobs, req.places)).catch(() => { return null; });
+            return handle.file.readBuffer(req.places, req.filename, ReadProgress).then(blobs => ProcessBlobs(blobs, req.places)).catch(() => { return null; });
 
          return Promise.resolve(null);
       }
