@@ -1293,10 +1293,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.displayAll(allitems, options);
    }
 
-   /** @summary Display all provided elements */
-   HierarchyPainter.prototype.displayAll = function(items, options, call_back) {
+   /** @summary Display all provided elements
+     * @returns {Promise} when drawing finished */
+   HierarchyPainter.prototype.displayAll = function(items, options) {
 
-      if (!items || (items.length == 0)) return JSROOT.callBack(call_back);
+      if (!items || (items.length == 0))
+         return Promise.resolve(true);
 
       let h = this;
 
@@ -1312,7 +1314,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return h.getObject(items[0]).then(() => {
             let tm1 = new Date();
             d3.select("#" + h.disp_frameid).append("h2").html("Item " + items[0] + " reading time = " + (tm1.getTime() - tm0.getTime()) + "ms");
-            return JSROOT.callBack(call_back);
+            return Promise.resolve(true);
          });
       }
 
@@ -1389,7 +1391,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          dropitems.splice(n, 1);
       }
 
-      if (items.length == 0) return JSROOT.callBack(call_back);
+      if (items.length == 0)
+         return Promise.resolve(true);
 
       let frame_names = new Array(items.length), items_wait = new Array(items.length);
       for (let n=0; n < items.length;++n) {
@@ -1418,8 +1421,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if (items[n]===items[k]) items_wait[k] = (found_main != k);
       }
 
-      h.createDisplay().then(mdi => {
-         if (!mdi) return JSROOT.callBack(call_back);
+      return this.createDisplay().then(mdi => {
+         if (!mdi) return false;
 
          // Than create empty frames for each item
          for (let i = 0; i < items.length; ++i)
@@ -1435,29 +1438,24 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             dropitems[indx] = null; // mark that all drop items are processed
             items[indx] = null; // mark item as ready
 
-            let isany = false;
-
             for (let cnt = 0; cnt < items.length; ++cnt) {
                if (dropitems[cnt]) isany = true;
                if (items[cnt]===null) continue; // ignore completed item
-               isany = true;
                if (items_wait[cnt] && items.indexOf(items[cnt])===cnt) {
                   items_wait[cnt] = false;
-                  h.display(items[cnt], options[cnt]).then(painter => DropNextItem(cnt, painter));
+                  return h.display(items[cnt], options[cnt]).then(painter => DropNextItem(cnt, painter));
                }
             }
-
-            // only when items drawn and all sub-items dropped, one could perform call-back
-            if (!isany && call_back) {
-               JSROOT.callBack(call_back);
-               call_back = null;
-            }
          }
+
+         let promises = [];
 
          // We start display of all items parallel, but only if they are not the same
          for (let i = 0; i < items.length; ++i)
             if (!items_wait[i])
-               h.display(items[i], options[i]).then(painter => DropNextItem(i, painter));
+               promises.push(h.display(items[i], options[i]).then(painter => DropNextItem(i, painter)));
+
+         return Promise.all(promises);
       });
    }
 
@@ -2360,7 +2358,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             promise = this.applyStyle(style.shift());
          else {
             this.refreshHtml();
-            this.displayAll(itemsarr, optionsarr, () => {
+            this.displayAll(itemsarr, optionsarr).then(() => {
                if (itemsarr) this.refreshHtml();
                this.SetMonitoring(monitor);
                JSROOT.callBack(gui_call_back);
