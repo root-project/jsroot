@@ -2462,7 +2462,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          itemname = hpainter.itemFullName(item);
       }
 
-      let url = hpainter.GetOnlineItemUrl(itemname);
+      let url = hpainter.getOnlineItemUrl(itemname);
       if (!url) return null;
 
       let root_version = top._root_version ? parseInt(top._root_version) : 396545; // by default use version number 6-13-01

@@ -4180,14 +4180,6 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
    }
 
 
-   geo.getBrowserItem = function(item, itemname, callback) {
-      // mark object as belong to the hierarchy, require to
-      if (item._geoobj) item._geoobj.$geoh = true;
-
-      JSROOT.callBack(callback, item, item._geoobj);
-   }
-
-
    geo.createItem = function(node, obj, name) {
       let sub = {
          _kind: "ROOT." + obj._typename,
@@ -4195,7 +4187,11 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          _title: obj.fTitle,
          _parent: node,
          _geoobj: obj,
-         _get: geo.getBrowserItem
+         _get: function(item /* ,itemname */) {
+             // mark object as belong to the hierarchy, require to
+             if (item._geoobj) item._geoobj.$geoh = true;
+             return Promise.resolve(item._geoobj);
+         }
       };
 
       let volume, shape, subnodes, iseve = false;
@@ -4289,8 +4285,8 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
           _parent: parent,
       }
 
-      item._get = function(item, itemname, callback) {
-         JSROOT.callBack(callback, item, item._geoobj || null);
+      item._get = function(item /*, itemname */) {
+         return Promise.resolve(item._geoobj || null);
       }
 
       item._expand = function(node, lst) {
