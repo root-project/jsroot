@@ -1656,15 +1656,16 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          }
    }
 
-   HierarchyPainter.prototype.OpenJsonFile = function(filepath, call_back) {
+   /** @summary Open JSON file */
+   HierarchyPainter.prototype.openJsonFile = function(filepath) {
       let isfileopened = false;
       this.forEachJsonFile(item => { if (item._jsonfile==filepath) isfileopened = true; });
-      if (isfileopened) return JSROOT.callBack(call_back);
+      if (isfileopened) return Promise.resolve();
 
-      JSROOT.httpRequest(filepath, 'object').then(res => {
+      return JSROOT.httpRequest(filepath, 'object').then(res => {
          let h1 = { _jsonfile: filepath, _kind: "ROOT." + res._typename, _jsontmp: res, _name: filepath.split("/").pop() };
          if (res.fTitle) h1._title = res.fTitle;
-         h1._get = function(item,itemname) {
+         h1._get = function(item /* ,itemname */) {
             if (item._jsontmp)
                return Promise.resolve(item._jsontmp);
             return JSROOT.httpRequest(item._jsonfile, 'object')
@@ -1679,8 +1680,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             this.h = { _name: topname, _kind: 'TopFolder', _childs : [h0, h1] };
          }
 
-         this.refreshHtml().then(call_back);
-      }).catch(() => JSROOT.callBack(call_back));
+         return this.refreshHtml();
+      });
    }
 
    /** @summary Call function for each item which corresponds to ROOT file */
@@ -1698,16 +1699,16 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Open ROOT file */
-   HierarchyPainter.prototype.OpenRootFile = function(filepath, call_back) {
+   HierarchyPainter.prototype.openRootFile = function(filepath) {
       // first check that file with such URL already opened
 
       let isfileopened = false;
       this.forEachRootFile(item => { if (item._fullurl===filepath) isfileopened = true; });
-      if (isfileopened) return JSROOT.callBack(call_back);
+      if (isfileopened) return Promise.resolve();
 
       JSROOT.progress("Opening " + filepath + " ...");
 
-      JSROOT.openFile(filepath).then(file => {
+      return JSROOT.openFile(filepath).then(file => {
 
          let h1 = this.fileHierarchy(file);
          h1._isopen = true;
@@ -1721,12 +1722,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             this.h = { _name: topname, _kind: 'TopFolder', _childs : [h0, h1], _isopen: true };
          }
 
-         this.refreshHtml().then(call_back);
+         return this.refreshHtml();
       }).catch(() => {
          // make CORS warning
          if (!d3.select("#gui_fileCORS").style("background","red").empty())
              setTimeout(function() { d3.select("#gui_fileCORS").style("background",''); }, 5000);
-         JSROOT.callBack(call_back, false);
+         return false;
       }).finally(() => JSROOT.progress());
    }
 
@@ -2327,18 +2328,20 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             return JSROOT.require(req).then(OpenAllFiles);
          }
 
+         let promise;
+
          if (browser_kind) { this.CreateBrowser(browser_kind); browser_kind = ""; }
          if (status!==null) { this.CreateStatusLine(statush, status); status = null; }
          if (jsonarr.length > 0)
-            this.OpenJsonFile(jsonarr.shift(), OpenAllFiles);
+            promise = this.openJsonFile(jsonarr.shift());
          else if (filesarr.length > 0)
-            this.OpenRootFile(filesarr.shift(), OpenAllFiles);
-         else if ((localfile!==null) && (typeof this.SelectLocalFile == 'function')) {
-            localfile = null; this.SelectLocalFile(OpenAllFiles);
+            promise = this.openRootFile(filesarr.shift());
+         else if ((localfile!==null) && (typeof this.selectLocalFile == 'function')) {
+            localfile = null; promise = this.selectLocalFile();
          } else if (expanditems.length > 0)
             this.expand(expanditems.shift(), OpenAllFiles);
          else if (style.length > 0)
-            this.applyStyle(style.shift()).then(OpenAllFiles);
+            promise = this.applyStyle(style.shift());
          else {
             this.refreshHtml();
             this.displayAll(itemsarr, optionsarr, () => {
@@ -2347,6 +2350,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                JSROOT.callBack(gui_call_back);
            });
          }
+
+         if (promise) promise.then(OpenAllFiles, OpenAllFiles);
       }
 
       let AfterOnlineOpened = () => {

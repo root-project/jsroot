@@ -1599,9 +1599,9 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
             if (!filename) return;
 
             if ((filename.toLowerCase().lastIndexOf(".json") == filename.length-5))
-               this.OpenJsonFile(filename);
+               this.openJsonFile(filename);
             else
-               this.OpenRootFile(filename);
+               this.openRootFile(filename);
          }
 
          jmain.find(".gui_selectFileName").val("")
@@ -1623,15 +1623,17 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
             for (let n=0;n<files.length;++n) {
                let f = files[n];
                main.select(".gui_urlToLoad").property('value', f.name);
-               this.OpenRootFile(f, localfile_read_callback);
+               this.openRootFile(f).then(localfile_read_callback);
             }
 
             localfile_read_callback = null;
          });
 
-         this.SelectLocalFile = function(read_callback) {
-            localfile_read_callback = read_callback;
-            $("#" + this.gui_div + " .jsroot_browser").find(".gui_localFile").click();
+         this.selectLocalFile = function() {
+            return new Promise(resolveFunc => {
+               localfile_read_callback = resolveFunc;
+               $("#" + this.gui_div + " .jsroot_browser").find(".gui_localFile").click();
+            });
          }
       }
 
