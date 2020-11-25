@@ -1650,8 +1650,9 @@ JSROOT.define(['rawinflate'], () => {
       return obj;
    }
 
-
-   jsrio.GetPairStreamer = function(si, typname, file) {
+   /** @summary Function creates streamer for std::pair object
+     * @private */
+   function GetPairStreamer(si, typname, file) {
       if (!si) {
          if (typname.indexOf("pair") !== 0) return null;
 
@@ -1684,7 +1685,7 @@ JSROOT.define(['rawinflate'], () => {
       if (!streamer) return null;
 
       if (streamer.length !== 2) {
-         console.error('Streamer for pair class contains ', streamer.length, 'elements');
+         console.error(`Streamer for pair class contains ${streamer.length} elements`);
          return null;
       }
 
@@ -1699,9 +1700,56 @@ JSROOT.define(['rawinflate'], () => {
       return streamer;
    }
 
-   jsrio.CreateMember = function(element, file) {
-      // create member entry for streamer element, which is used for reading of such data
+   /** @summary Function used in streamer to read std::map object
+     * @private */
+   function ReadMapElement(buf) {
+      let streamer = this.streamer;
 
+      if (this.member_wise) {
+         // when member-wise streaming is used, version is written
+         const ver = this.stl_version;
+
+         if (this.si) {
+            let si = buf.fFile.FindStreamerInfo(this.pairtype, ver.val, ver.checksum);
+
+            if (this.si !== si) {
+
+               streamer = GetPairStreamer(si, this.pairtype, buf.fFile);
+               if (!streamer || streamer.length !== 2) {
+                  console.log('Fail to produce streamer for ', this.pairtype);
+                  return null;
+               }
+            }
+         }
+      }
+
+      const n = buf.ntoi4();
+      let i, res = new Array(n);
+      if (this.member_wise && (buf.remain() >= 6)) {
+         if (buf.ntoi2() == jsrio.kStreamedMemberWise)
+            buf.shift(4);
+         else
+            buf.shift(-2); // rewind
+      }
+
+      for (i = 0; i < n; ++i) {
+         res[i] = { _typename: this.pairtype };
+         streamer[0].func(buf, res[i]);
+         if (!this.member_wise) streamer[1].func(buf, res[i]);
+      }
+
+      // due-to member-wise streaming second element read after first is completed
+      if (this.member_wise)
+         for (i = 0; i < n; ++i)
+            streamer[1].func(buf, res[i]);
+
+      return res;
+   }
+
+   /** @summary create member entry for streamer element
+     * @desc used for reading of data
+     * @private */
+   jsrio.CreateMember = function(element, file) {
       let member = {
          name: element.fName, type: element.fType,
          fArrayLength: element.fArrayLength,
@@ -2119,14 +2167,14 @@ JSROOT.define(['rawinflate'], () => {
                      // most probably it is the only one which should be used
                      member.si = file.FindStreamerInfo(member.pairtype);
 
-                     member.streamer = jsrio.GetPairStreamer(member.si, member.pairtype, file);
+                     member.streamer = GetPairStreamer(member.si, member.pairtype, file);
 
                      if (!member.streamer || (member.streamer.length !== 2)) {
                         console.error(`Fail to build streamer for pair ${member.pairtype}`);
                         delete member.streamer;
                      }
 
-                     if (member.streamer) member.readelem = jsrio.ReadMapElement;
+                     if (member.streamer) member.readelem = ReadMapElement;
                   } else
                      if (stl === jsrio.kSTLbitset) {
                         member.readelem = function(buf/*, obj*/) {
@@ -2999,50 +3047,6 @@ JSROOT.define(['rawinflate'], () => {
       else if (this.isptr) { while (i < n) res[i++] = buf.ReadObjectAny(); }
       else if (this.submember) { while (i < n) res[i++] = this.submember.readelem(buf); }
       else { while (i < n) res[i++] = buf.ClassStreamer({}, this.conttype); }
-
-      return res;
-   }
-
-   jsrio.ReadMapElement = function(buf) {
-      let streamer = this.streamer;
-
-      if (this.member_wise) {
-         // when member-wise streaming is used, version is written
-         const ver = this.stl_version;
-
-         if (this.si) {
-            let si = buf.fFile.FindStreamerInfo(this.pairtype, ver.val, ver.checksum);
-
-            if (this.si !== si) {
-
-               streamer = jsrio.GetPairStreamer(si, this.pairtype, buf.fFile);
-               if (!streamer || streamer.length !== 2) {
-                  console.log('Fail to produce streamer for ', this.pairtype);
-                  return null;
-               }
-            }
-         }
-      }
-
-      const n = buf.ntoi4();
-      let i, res = new Array(n);
-      if (this.member_wise && (buf.remain() >= 6)) {
-         if (buf.ntoi2() == jsrio.kStreamedMemberWise)
-            buf.shift(4);
-         else
-            buf.shift(-2); // rewind
-      }
-
-      for (i = 0; i < n; ++i) {
-         res[i] = { _typename: this.pairtype };
-         streamer[0].func(buf, res[i]);
-         if (!this.member_wise) streamer[1].func(buf, res[i]);
-      }
-
-      // due-to member-wise streaming second element read after first is completed
-      if (this.member_wise)
-         for (i = 0; i < n; ++i)
-            streamer[1].func(buf, res[i]);
 
       return res;
    }
