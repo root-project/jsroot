@@ -10,25 +10,23 @@
 
    <script type='text/javascript'>
      // absolute file path can be used as well
-     var geom_file = "../../files/geom/evegeoshape.json.gz",
+     let geom_file = "../../files/geom/evegeoshape.json.gz",
          tracks_file = "../../files/geom/eve_tracks.root";
 
-     JSROOT.httpRequest(geom_file, "object").then(obj => {
-        JSROOT.draw("drawing", obj).then(geo_painter => {
-           JSROOT.openFile(tracks_file).then(file => {
-              file.ReadObject("tracks;1").then(tracks => {
-                 // one could simply draw list of tracks
-                 // JSROOT.draw("drawing", tracks, "same");
+     async function draw_geometry_and_tracks() {
+        let obj = await JSROOT.httpRequest(geom_file, "object");
+        let geo_painter = await JSROOT.draw("drawing", obj);
+        let file = await JSROOT.openFile(tracks_file);
+        let tracks = await file.readObject("tracks;1");
 
-                 // or use method of TGeoPainter to draw extras
-                 geo_painter.drawExtras(tracks, "tracks");
+        // one could simply draw list of tracks
+        // JSROOT.draw("drawing", tracks, "same");
 
-                 // use this method if one want to remove all extra objects
-                 // geo_painter.clearExtras();
-              });
-           });
-        });
-     });
+        // or use method of TGeoPainter to draw extras
+        geo_painter.drawExtras(tracks, "tracks");
+     }
+
+     draw_geometry_and_tracks();
 
    </script>
 

@@ -34,6 +34,6 @@ function createSelector() {
 }
 
 jsroot.OpenFile("https://root.cern/js/files/hsimple.root")
-      .then(f => f.ReadObject("ntuple;1"))
+      .then(f => f.readObject("ntuple;1"))
       .then(tree => tree.Process(createSelector()))
       .then(() => console.log("TTree::Process finished"));

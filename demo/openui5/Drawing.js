@@ -65,7 +65,7 @@ sap.ui.define([
             });
          } else if (fname) {
             JSROOT.openFile(fname).then(file => {
-               file.ReadObject(ctrl.getItem()).then(obj => {
+               file.readObject(ctrl.getItem()).then(obj => {
                   ctrl.drawObject(obj, ctrl.getDrawopt());
                });
             });

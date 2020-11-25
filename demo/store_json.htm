@@ -12,15 +12,15 @@
 
      // absolute file path can be used as well
      JSROOT.openFile("../../files/hsimple.root")
-           .then(file => file.ReadObject("hpxpy;1"))
+           .then(file => file.readObject("hpxpy;1"))
            .then(obj => JSROOT.draw("drawing", obj, "colz"));
 
      function StoreJson() {
         // produce JSON code
-        var json = JSROOT.drawingJSON("drawing");
+        let json = JSROOT.drawingJSON("drawing");
 
         // parse JSON and get new TCanvas
-        var obj2 = JSROOT.parse(json);
+        let obj2 = JSROOT.parse(json);
 
         // cleanup previous drawing
         JSROOT.cleanup("replica");

@@ -14,7 +14,7 @@ else
    read_promise = jsroot.openFile(url);
 
 // now read ntuple, perform Draw operation, create SVG file and sve to the disk
-read_promise.then(file => file.ReadObject("ntuple"))
+read_promise.then(file => file.readObject("ntuple"))
             .then(ntuple => ntuple.Draw("px:py::pz>5"))
             .then(hist => jsroot.makeSVG({ object: hist, width: 1200, height: 800 }))
             .then(svg => { fs.writeFileSync("tree_draw.svg", svg); console.log(`Create tree_draw.svg size ${svg.length}`); });

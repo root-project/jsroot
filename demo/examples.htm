@@ -211,15 +211,12 @@
                 document.getElementById('viewer').style['background-color'] = "";
 
                 if (jsonname) {
-                   JSROOT.httpRequest(jsonname, 'object').then(function(obj) {
-                      JSROOT.draw("viewer", obj, opt);
-                   });
+                   JSROOT.httpRequest(jsonname, 'object')
+                         .then(obj => JSROOT.draw("viewer", obj, opt));
                 } else {
-                   JSROOT.openFile(filename).then(file => {
-                      file.ReadObject(itemname).then(obj => {
-                         JSROOT.draw("viewer", obj, opt);
-                      });
-                   });
+                   JSROOT.openFile(filename)
+                         .then(file => file.readObject(itemname)
+                         .then(obj => JSROOT.draw("viewer", obj, opt));
                 }
              }
          };
@@ -339,18 +336,14 @@
                   return JSROOT.draw("viewer", obj, opt).then(RunBigTest, RunBigTest);
                });
             } else if (filename.length > 0) {
-                JSROOT.openFile(filename).then(file => {
-                   testfile = file;
-                   testfile.ReadObject(itemname).then(obj => {
-                      testobj = obj;
-                      JSROOT.draw("viewer", obj, opt).then(RunBigTest, RunBigTest);
-                   });
-                });
+                JSROOT.openFile(filename)
+                      .then(file => { testfile = file; return testfile.readObject(itemname))
+                      .then(obj => { testobj = obj; return JSROOT.draw("viewer", obj, opt))
+                      .then(RunBigTest, RunBigTest);
             } else if (itemname.length > 0) {
-                testfile.ReadObject(itemname).then(obj => {
-                    testobj = obj;
-                    JSROOT.draw("viewer", obj, opt).then(RunBigTest, RunBigTest);
-                 });
+                testfile.readObject(itemname)
+                         .then(obj => { testobj = obj; return JSROOT.draw("viewer", obj, opt); })
+                         .then(RunBigTest, RunBigTest);
             } else {
                 JSROOT.draw("viewer", testobj, opt).then(RunBigTest, RunBigTest);
             }

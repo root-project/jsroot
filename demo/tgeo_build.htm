@@ -83,7 +83,7 @@
                // load geometry from ROOT file
                let itemname = d.get("item") || "geom";
                JSROOT.openFile(filename)
-                     .then(file => file.ReadObject(itemname))
+                     .then(file => file.readObject(itemname))
                      .then(add_geometry);
             } else {
                // load geometry from JSON as object

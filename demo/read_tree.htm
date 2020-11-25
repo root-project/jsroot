@@ -10,16 +10,16 @@
 
    <script type='text/javascript'>
      // absolute file path can be used as well
-     var filename = "../../files/hsimple.root";
-     JSROOT.openFile(filename).then(file => {
-        file.ReadObject("ntuple;1").then(tree => {
+     JSROOT.openFile("../../files/hsimple.root")
+           .then(file => file.readObject("ntuple;1"))
+           .then(tree => {
 
-              var selector = new JSROOT.TSelector();
+              let selector = new JSROOT.TSelector();
 
               selector.AddBranch("px");
               selector.AddBranch("py");
 
-              var cnt = 0, sumpx = 0, sumpy = 0;
+              let cnt = 0, sumpx = 0, sumpy = 0;
 
               selector.Begin = function() {
                  // function called before reading of TTree starts
@@ -47,8 +47,7 @@
               }
 
               tree.Process(selector);
-        });
-     });
+           });
    </script>
 
 </head>

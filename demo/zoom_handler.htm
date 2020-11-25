@@ -13,28 +13,26 @@
 
    <script type='text/javascript'>
 
-      var h1painter = null,
-          filename = "https://root.cern/js/files/hsimple.root";
+      let h1painter = null;
 
-      JSROOT.openFile(filename).then(file => {
-         file.ReadObject("hpx;1").then(obj => {
-            JSROOT.draw("drawth1", obj, "hist").then(painter => {
-               h1painter = painter;
-            });
-         });
-         file.ReadObject("hpxpy;1").then(obj => {
-            JSROOT.draw("drawth2", obj, "col").then(painter => {
-               // zooming handled in frame painter now
-               var fp = painter.frame_painter();
-               // keep old function to be able invoke it again
-               fp.OldZoom = fp.Zoom;
-               // redefine zoom function of TH2 painter to make synchronous zooming of TH1 object
-               fp.Zoom = function(xmin,xmax,ymin,ymax,zmin,zmax) {
-                  if (h1painter) h1painter.frame_painter().Zoom(xmin, xmax);
-                  this.OldZoom(xmin,xmax,ymin,ymax,zmin,zmax);
-               }
-            });
-         });
+      JSROOT.openFile("https://root.cern/js/files/hsimple.root").then(file => {
+         file.readObject("hpx;1")
+             .then(obj1 => JSROOT.draw("drawth1", obj1, "hist"))
+             .then(painter => { h1painter = painter; });
+
+         file.readObject("hpxpy;1")
+             .then(obj2 => JSROOT.draw("drawth2", obj2, "col"))
+             .then(painter => {
+                // zooming handled in frame painter now
+                let fp = painter.frame_painter();
+                // keep old function to be able invoke it again
+                fp.OldZoom = fp.Zoom;
+                // redefine zoom function of TH2 painter to make synchronous zooming of TH1 object
+                fp.Zoom = function(xmin,xmax,ymin,ymax,zmin,zmax) {
+                   if (h1painter) h1painter.frame_painter().Zoom(xmin, xmax);
+                   this.OldZoom(xmin,xmax,ymin,ymax,zmin,zmax);
+                }
+             });
       });
 
    </script>

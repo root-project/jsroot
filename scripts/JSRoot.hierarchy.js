@@ -1642,7 +1642,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          h1._get = function(item,itemname,callback) {
             if (item._jsontmp)
                return JSROOT.callBack(callback, item, item._jsontmp);
-            JSROOT.httpRequest(item._jsonfile, 'object').then(function(res) {
+            JSROOT.httpRequest(item._jsonfile, 'object').then(res => {
                item._jsontmp = res;
                JSROOT.callBack(callback, item, item._jsontmp);
             });
@@ -1654,7 +1654,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          }
 
          this.RefreshHtml(call_back);
-      }).catch(function() { JSROOT.callBack(call_back); });
+      }).catch(() => JSROOT.callBack(call_back));
    }
 
    HierarchyPainter.prototype.ForEachRootFile = function(call_back) {

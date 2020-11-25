@@ -402,40 +402,48 @@ JSROOT.define(['rawinflate'], () => {
       return res;
    }
 
+   /** @summary read uint8_t */
    TBuffer.prototype.ntou1 = function() {
       return this.arr.getUint8(this.o++);
    }
 
+   /** @summary read uint16_t */
    TBuffer.prototype.ntou2 = function() {
       const o = this.o; this.o += 2;
       return this.arr.getUint16(o);
    }
 
+   /** @summary read uint32_t */
    TBuffer.prototype.ntou4 = function() {
       const o = this.o; this.o += 4;
       return this.arr.getUint32(o);
    }
 
+   /** @summary read uint64_t */
    TBuffer.prototype.ntou8 = function() {
       const high = this.arr.getUint32(this.o); this.o += 4;
       const low = this.arr.getUint32(this.o); this.o += 4;
       return high * 0x100000000 + low;
    }
 
+   /** @summary read int8_t */
    TBuffer.prototype.ntoi1 = function() {
       return this.arr.getInt8(this.o++);
    }
 
+   /** @summary read int16_t */
    TBuffer.prototype.ntoi2 = function() {
       const o = this.o; this.o += 2;
       return this.arr.getInt16(o);
    }
 
+   /** @summary read int32_t */
    TBuffer.prototype.ntoi4 = function() {
       const o = this.o; this.o += 4;
       return this.arr.getInt32(o);
    }
 
+   /** @summary read int64_t */
    TBuffer.prototype.ntoi8 = function() {
       const high = this.arr.getUint32(this.o); this.o += 4;
       const low = this.arr.getUint32(this.o); this.o += 4;
@@ -443,11 +451,13 @@ JSROOT.define(['rawinflate'], () => {
       return -1 - ((~high) * 0x100000000 + ~low);
    }
 
+   /** @summary read float */
    TBuffer.prototype.ntof = function() {
       const o = this.o; this.o += 4;
       return this.arr.getFloat32(o);
    }
 
+   /** @summary read double */
    TBuffer.prototype.ntod = function() {
       const o = this.o; this.o += 8;
       return this.arr.getFloat64(o);
@@ -533,12 +543,14 @@ JSROOT.define(['rawinflate'], () => {
       return array;
    }
 
+   /** @summary Check if provided regions can be extracted from the buffer */
    TBuffer.prototype.can_extract = function(place) {
       for (let n = 0; n < place.length; n += 2)
          if (place[n] + place[n + 1] > this.length) return false;
       return true;
    }
 
+   /** @summary Extract area */
    TBuffer.prototype.extract = function(place) {
       if (!this.arr || !this.arr.buffer || !this.can_extract(place)) return null;
       if (place.length === 2) return new DataView(this.arr.buffer, this.arr.byteOffset + place[0], place[1]);
@@ -551,10 +563,12 @@ JSROOT.define(['rawinflate'], () => {
       return res; // return array of buffers
    }
 
+   /** @summary Get code at buffer position */
    TBuffer.prototype.codeAt = function(pos) {
       return this.arr.getUint8(pos);
    }
 
+   /** @summary Get part of buffer as string */
    TBuffer.prototype.substring = function(beg, end) {
       let res = "";
       for (let n = beg; n < end; ++n)
@@ -562,6 +576,7 @@ JSROOT.define(['rawinflate'], () => {
       return res;
    }
 
+   /** @summary Read buffer as N-dim array */
    TBuffer.prototype.ReadNdimArray = function(handle, func) {
       let ndim = handle.fArrayDim, maxindx = handle.fMaxIndex, res;
       if ((ndim < 1) && (handle.fArrayLength > 0)) { ndim = 1; maxindx = [handle.fArrayLength]; }
@@ -601,6 +616,7 @@ JSROOT.define(['rawinflate'], () => {
       return res;
    }
 
+   /** @summary read TKey data */
    TBuffer.prototype.ReadTKey = function(key) {
       if (!key) key = {};
       this.ClassStreamer(key, 'TKey');
@@ -754,8 +770,8 @@ JSROOT.define(['rawinflate'], () => {
       this.fKeys = [];
    }
 
+   /** @summary retrieve a key by its name and cycle in the list of keys */
    TDirectory.prototype.GetKey = function(keyname, cycle, only_direct) {
-      // retrieve a key by its name and cycle in the list of keys
 
       if (typeof cycle != 'number') cycle = -1;
       let bestkey = null;
@@ -776,7 +792,7 @@ JSROOT.define(['rawinflate'], () => {
              dirkey = this.GetKey(dirname, undefined, true);
 
          if (dirkey && !only_direct && (dirkey.fClassName.indexOf("TDirectory")==0))
-            return this.fFile.ReadObject(this.dir_name + "/" + dirname, 1)
+            return this.fFile.readObject(this.dir_name + "/" + dirname, 1)
                              .then(newdir => newdir.GetKey(subname, cycle));
 
          pos = keyname.lastIndexOf("/", pos-1);
@@ -785,10 +801,18 @@ JSROOT.define(['rawinflate'], () => {
       return only_direct ? null : Promise.reject(Error("Key not found " + keyname));
    }
 
+   /** @summary Read object from the directory */
    TDirectory.prototype.ReadObject = function(obj_name, cycle) {
-      return this.fFile.ReadObject(this.dir_name + "/" + obj_name, cycle);
+      JSROOT.warnOnce("Using obolsete TDirectory.ReadObject function, change to TDirectory.readObject");
+      return this.fFile.readObject(this.dir_name + "/" + obj_name, cycle);
    }
 
+   /** @summary Read object from the directory */
+   TDirectory.prototype.readObject = function(obj_name, cycle) {
+      return this.fFile.readObject(this.dir_name + "/" + obj_name, cycle);
+   }
+
+   /** @summary Read list of keys in directory  */
    TDirectory.prototype.ReadKeys = function(objbuf) {
 
       objbuf.ClassStreamer(this, 'TDirectory');
@@ -1157,7 +1181,7 @@ JSROOT.define(['rawinflate'], () => {
 
          let dirkey = this.GetKey(dirname, undefined, true);
          if (dirkey && !only_direct && (dirkey.fClassName.indexOf("TDirectory") == 0))
-            return this.ReadObject(dirname).then(newdir => newdir.GetKey(subname, cycle));
+            return this.readObject(dirname).then(newdir => newdir.GetKey(subname, cycle));
 
          pos = keyname.lastIndexOf("/", pos - 1);
       }
@@ -1199,6 +1223,13 @@ JSROOT.define(['rawinflate'], () => {
       if (this.readTrees.indexOf(obj) < 0) this.readTrees.push(obj);
    }
 
+   /** @summary Read object from the file
+     * @summary Only temporary here, will be deleted in v 6.2 */
+   TFile.prototype.ReadObject = function(obj_name, cycle, only_dir) {
+      JSROOT.warnOnce("Using obolsete TFile.ReadObject function, change to TFile.readObject");
+      return this.readObject(obj_name, cycle, only_dir);
+   }
+
    /** @summary Read any object from a root file
     * @desc One could specify cycle number in the object name or as separate argument
     * @param {string} obj_name - name of object, may include cycle number like "hpxpy;1"
@@ -1206,11 +1237,11 @@ JSROOT.define(['rawinflate'], () => {
     * @returns {Promise} promise with object read
     * @example
     *   JSROOT.openFile("https://root.cern/js/files/hsimple.root")
-    *         .then(f => f.ReadObject("hpxpy;1"))
+    *         .then(f => f.readObject("hpxpy;1"))
     *         .then(obj => console.log(`Read object of type ${obj._typename}`))
     * });
     */
-   TFile.prototype.ReadObject = function(obj_name, cycle, only_dir) {
+   TFile.prototype.readObject = function(obj_name, cycle, only_dir) {
 
       let pos = obj_name.lastIndexOf(";");
       if (pos > 0) {
@@ -1278,7 +1309,7 @@ JSROOT.define(['rawinflate'], () => {
 
       for (let indx = 0; indx < this.fKeys.length; ++indx)
          if (this.fKeys[indx].fClassName == 'TFormula')
-            arr.push(this.ReadObject(this.fKeys[indx].fName, this.fKeys[indx].fCycle));
+            arr.push(this.readObject(this.fKeys[indx].fName, this.fKeys[indx].fCycle));
 
       return Promise.all(arr).then(formulas => {
          formulas.forEach(obj => tf1.addFormula(obj));
@@ -1442,12 +1473,12 @@ JSROOT.define(['rawinflate'], () => {
 
    /** @summary Read the directory content from  a root file
     * @desc If directory was already read - return previously read object
-    * Same functionality as {@link JSROOT.TFile.ReadObject}
+    * Same functionality as {@link JSROOT.TFile.readObject}
     * @param {string} dir_name - directory name
     * @param {number} [cycle=undefined] - directory cycle
     * @returns {Promise} - promise with read directory */
    TFile.prototype.ReadDirectory = function(dir_name, cycle) {
-      return this.ReadObject(dir_name, cycle, true);
+      return this.readObject(dir_name, cycle, true);
    }
 
    /** @summary Search for class streamer info

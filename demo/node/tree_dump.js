@@ -1,7 +1,7 @@
 let jsroot = require("jsroot");
 
 jsroot.OpenFile("https://root.cern/js/files/hsimple.root")
-      .then(f => f.ReadObject("ntuple;1"))
+      .then(f => f.readObject("ntuple;1"))
       .then(tree => tree.Draw({ expr: "px:py:pz", dump: true, numentries: 100 }))
       .then(res => {
          console.log("NumEntries", res.length);
