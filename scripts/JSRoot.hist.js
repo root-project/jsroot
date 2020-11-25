@@ -5182,7 +5182,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          let pnt1 = get_intersect(iminus, 1);
          let pnt2 = get_intersect(iplus, -1);
-         if (!pnt1 || !pnt2) return dd + "z";
+         if (!pnt1 || !pnt2) return "";
 
          let dd = BuildPath(xp,yp,iminus,iplus);
          // TODO: now side is always same direction, could be that side should be checked more precise
