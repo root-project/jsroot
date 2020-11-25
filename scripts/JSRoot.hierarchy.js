@@ -952,9 +952,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       JSROOT.httpRequest(url, 'text').then(callback, callback);
    }
 
-   HierarchyPainter.prototype.RefreshHtml = function(callback) {
-      if (!this.divid) return JSROOT.callBack(callback);
-      JSROOT.require('jq2d').then(() => this.RefreshHtml(callback));
+   HierarchyPainter.prototype.refreshHtml = function() {
+      if (!this.divid) return Promise.resolve();
+      return JSROOT.require('jq2d').then(() => this.refreshHtml());
    }
 
    /** @summary Get object item with specified name
@@ -1461,7 +1461,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Reload hierarhcy and refresh html code */
    HierarchyPainter.prototype.reload = function() {
       if ('_online' in this.h)
-         this.OpenOnline(this.h._online,() => this.RefreshHtml());
+         this.OpenOnline(this.h._online,() => this.refreshHtml());
    }
 
    HierarchyPainter.prototype.UpdateTreeNode = function() {
@@ -1679,7 +1679,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             this.h = { _name: topname, _kind: 'TopFolder', _childs : [h0, h1] };
          }
 
-         this.RefreshHtml(call_back);
+         this.refreshHtml().then(call_back);
       }).catch(() => JSROOT.callBack(call_back));
    }
 
@@ -1697,6 +1697,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          }
    }
 
+   /** @summary Open ROOT file */
    HierarchyPainter.prototype.OpenRootFile = function(filepath, call_back) {
       // first check that file with such URL already opened
 
@@ -1720,7 +1721,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             this.h = { _name: topname, _kind: 'TopFolder', _childs : [h0, h1], _isopen: true };
          }
 
-         this.RefreshHtml(call_back);
+         this.refreshHtml().then(call_back);
       }).catch(() => {
          // make CORS warning
          if (!d3.select("#gui_fileCORS").style("background","red").empty())
@@ -1979,7 +1980,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    HierarchyPainter.prototype.Adopt = function(h) {
       this.h = h;
-      this.RefreshHtml();
+      this.refreshHtml();
    }
 
    /** @summary Configures monitoring interval
@@ -2339,9 +2340,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          else if (style.length > 0)
             this.applyStyle(style.shift()).then(OpenAllFiles);
          else {
-            this.RefreshHtml();
+            this.refreshHtml();
             this.displayAll(itemsarr, optionsarr, () => {
-               if (itemsarr) this.RefreshHtml();
+               if (itemsarr) this.refreshHtml();
                this.SetMonitoring(monitor);
                JSROOT.callBack(gui_call_back);
            });
@@ -2553,12 +2554,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       // painter.select_main().style('overflow','auto');
 
-      painter.RefreshHtml(function() {
+      return painter.refreshHtml().then(() => {
          painter.SetDivId(divid);
-         painter.DrawingReady();
+         return painter;
       });
-
-      return painter;
    }
 
    // ======================================================================================
@@ -2612,12 +2611,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       } else {
          objectHierarchy(painter.h, obj);
       }
-      painter.RefreshHtml(function() {
-         painter.SetDivId(divid);
-         painter.DrawingReady();
-      });
 
-      return painter.Promise();
+      return painter.refreshHtml().then(() => {
+         painter.SetDivId(divid);
+         return painter;
+      });
    }
 
    // ================================================================

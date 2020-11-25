@@ -1075,14 +1075,15 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          return true;
        }
 
-      if (!h) this.RefreshHtml();
+      if (!h) this.refreshHtml();
 
       return false;
    }
 
-   HierarchyPainter.prototype.RefreshHtml = function(callback) {
+   /** @summary Refresh HTML code of hierarchy painter */
+   HierarchyPainter.prototype.refreshHtml = function() {
 
-      if (!this.divid) return JSROOT.callBack(callback);
+      if (!this.divid) return Promise.resolve();
 
       let d3elem = this.select_main();
 
@@ -1092,14 +1093,14 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
             .style('flex-direction','column');
 
       let h = this, factcmds = [], status_item = null;
-      this.ForEach(function(item) {
+      this.ForEach(item => {
          delete item._d3cont; // remove html container
          if (('_fastcmd' in item) && (item._kind == 'Command')) factcmds.push(item);
          if (('_status' in item) && !status_item) status_item = item;
       });
 
       if (!this.h || d3elem.empty())
-         return JSROOT.callBack(callback);
+         return Promise.resolve();
 
       if (factcmds.length) {
          let fastbtns = d3elem.append("div").attr("class","jsroot");
@@ -1160,7 +1161,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          if (hdiv) func(hdiv, this.itemFullName(status_item));
       }
 
-      JSROOT.callBack(callback);
+      return Promise.resolve();
    }
 
    HierarchyPainter.prototype.UpdateTreeNode = function(hitem, d3cont) {
@@ -1655,7 +1656,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
       this.SetDivId(this.gui_div + '_browser_hierarchy');
 
       if (update_html) {
-         this.RefreshHtml();
+         this.refreshHtml();
          this.InitializeBrowser();
       }
 
