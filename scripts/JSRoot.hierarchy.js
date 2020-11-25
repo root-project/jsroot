@@ -11,30 +11,31 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
      * @desc used to draw all items from TList or TObjArray inserted into the TCanvas list of primitives
      * @memberof JSROOT.Painter
      * @private */
-   function drawList(divid, lst, opt, callback) {
-      if (!lst || !lst.arr) return JSROOT.callBack(callback);
+   function drawList(divid, lst, opt) {
+      if (!lst || !lst.arr) return Promise.resolve(null);
 
       let obj = {
         divid: divid,
         lst: lst,
         opt: opt,
         indx: -1,
-        callback: callback,
+        painter: null,
         draw_next: function() {
            while (++this.indx < this.lst.arr.length) {
               let item = this.lst.arr[this.indx],
                   opt = (this.lst.opt && this.lst.opt[this.indx]) ? this.lst.opt[this.indx] : this.opt;
               if (!item) continue;
-              return JSROOT.draw(this.divid, item, opt).then(this.draw_bind); // reenter loop via callback
+              return JSROOT.draw(this.divid, item, opt).then(p => {
+                 if (p && !this.painter) this.painter = p;
+                 return this.draw_next();
+              }); // reenter loop via callback
            }
 
-           return JSROOT.callBack(this.callback);
+           return Promise.resolve(this.painter);
         }
       }
 
-      obj.draw_bind = obj.draw_next.bind(obj);
-
-      obj.draw_next();
+      return obj.draw_next();
    }
 
    // ===================== hierarchy scanning functions ==================================
