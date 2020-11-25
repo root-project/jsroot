@@ -397,7 +397,7 @@
 
                   let shortname = key.toLowerCase().replace(" ","_");
 
-                  jsonname = ""; url = "";
+                  jsonname = ""; url = ""; style = "";
 
                   if ('url' in entry) {
                      url = entry.url.replace(/\$\$\$/g,filepath);
@@ -409,7 +409,7 @@
                         url = ""; filename = entry.file;
                         if ((filename.indexOf("http:")<0) && (filename.indexOf("https:")<0)) filename = filepath + filename;
                      }
-                     if ('item' in entry) { url = ""; itemname = entry.item; } else
+                     if ('item' in entry) { url = ""; itemname = entry.item; style = entry.style; } else
                      if ('items' in entry) {
                         url = "?nobrowser&file=" + filename;
                         if (entry.layout) url += "&layout=" + entry.layout;
@@ -448,14 +448,15 @@
 
                   if (url)
                      aaa.href = jsroot_path + url;
-                  else
-                  if (jsonname)
+                  else if (jsonname)
                      aaa.href = jsroot_path + prefix + "json=" + jsonname;
                   else
                      aaa.href = jsroot_path + prefix + "file=" + filename + "&item=" + itemname;
 
-                  if (opt != "")
+                  if (opt)
                      aaa.href += "&opt=" + opt;
+                  if (style)
+                     aaa.href += "&style=" + style;
 
                   if (extra_opts) aaa.href += extra_opts;
 
