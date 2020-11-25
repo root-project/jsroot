@@ -7,7 +7,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    // ===========================================================================================
 
-   /// function use to draw all items from TList or TObjArray inserted into the TCanvas list of primitives
+   /** @summary draw list content
+     * @desc used to draw all items from TList or TObjArray inserted into the TCanvas list of primitives
+     * @memberof JSROOT.Painter
+     * @private */
    function drawList(divid, lst, opt, callback) {
       if (!lst || !lst.arr) return JSROOT.callBack(callback);
 
@@ -36,7 +39,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    // ===================== hierarchy scanning functions ==================================
 
-   function FolderHierarchy(item, obj) {
+   /** @summary Create hierarchy elements for TFolder object
+     * @memberof JSROOT.Painter
+     * @private */
+   function folderHierarchy(item, obj) {
 
       if (!obj || !('fFolders' in obj) || (obj.fFolders===null)) return false;
 
@@ -55,13 +61,16 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return true;
    }
 
-   function TaskHierarchy(item, obj) {
+   /** @summary Create hierarchy elements for TTask object
+     * @memberof JSROOT.Painter
+     * @private */
+   function taskHierarchy(item, obj) {
       // function can be used for different derived classes
       // we show not only child tasks, but all complex data members
 
       if (!obj || !('fTasks' in obj) || (obj.fTasks === null)) return false;
 
-      ObjectHierarchy(item, obj, { exclude: ['fTasks', 'fName'] } );
+      objectHierarchy(item, obj, { exclude: ['fTasks', 'fName'] } );
 
       if ((obj.fTasks.arr.length===0) && (item._childs.length==0)) { item._more = false; return true; }
 
@@ -78,7 +87,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return true;
    }
 
-   function ListHierarchy(folder, lst) {
+   /** @summary Create hierarchy elements for TList object
+     * @memberof JSROOT.Painter
+     * @private */
+   function listHierarchy(folder, lst) {
       if (!JSROOT.isRootCollection(lst)) return false;
 
       if ((lst.arr === undefined) || (lst.arr.length === 0)) {
@@ -161,7 +173,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return true;
    }
 
-   function KeysHierarchy(folder, keys, file, dirname) {
+   /** @summary Create hierarchy of TKey lists in file or sub-directory
+     * @memberof JSROOT.Painter
+     * @private */
+   function keysHierarchy(folder, keys, file, dirname) {
 
       if (keys === undefined) return false;
 
@@ -192,12 +207,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                item._more = true;
                item._expand = function(node, obj) {
                   // one can get expand call from child objects - ignore them
-                  return KeysHierarchy(node, obj.fKeys);
+                  return keysHierarchy(node, obj.fKeys);
                }
             } else {
                // remove cycle number - we have already directory
                item._name = key.fName;
-               KeysHierarchy(item, dir.fKeys, file, dirname + key.fName + "/");
+               keysHierarchy(item, dir.fKeys, file, dirname + key.fName + "/");
             }
          } else
          if ((key.fClassName == 'TList') && (key.fName == 'StreamerInfo')) {
@@ -213,7 +228,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return true;
    }
 
-   function ObjectHierarchy(top, obj, args) {
+   /** @summary Create hierarchy for arbitrary object
+     * @memberof JSROOT.Painter
+     * @private */
+   function objectHierarchy(top, obj, args) {
       if (!top || (obj===null)) return false;
 
       top._childs = [];
@@ -367,7 +385,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                } else {
                   item._value = "[...]";
                   item._more = true;
-                  item._expand = ObjectHierarchy;
+                  item._expand = objectHierarchy;
                   item._obj = fld;
                }
             } else
@@ -375,7 +393,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                item._title = 'DataView len=' + fld.byteLength;
                item._value = "[...]";
                item._more = true;
-               item._expand = ObjectHierarchy;
+               item._expand = objectHierarchy;
                item._obj = fld;
             }  else
             if (proto === "[object Date]") {
@@ -462,7 +480,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
     * @desc It could be just simple string:  "value" or
     * array with or without string quotes:  [element], ['elem1',elem2]
     * @private */
-   let ParseAsArray = val => {
+   let parseAsArray = val => {
 
       let res = [];
 
@@ -617,12 +635,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    /** @summary central function for expand of all online items
      * @private */
-   function OnlineHierarchy(node, obj) {
+   function onlineHierarchy(node, obj) {
       if (obj && node && ('_childs' in obj)) {
 
          for (let n=0;n<obj._childs.length;++n)
             if (obj._childs[n]._more || obj._childs[n]._childs)
-               obj._childs[n]._expand = OnlineHierarchy;
+               obj._childs[n]._expand = onlineHierarchy;
 
          node._childs = obj._childs;
          obj._childs = null;
@@ -677,7 +695,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Create file hierarchy */
-   HierarchyPainter.prototype.FileHierarchy = function(file) {
+   HierarchyPainter.prototype.fileHierarchy = function(file) {
       let painter = this;
 
       let folder = {
@@ -715,11 +733,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                         if (dir) {
                            d.last._name = d.last._keyname;
                            let dirname = painter.itemFullName(d.last, fff);
-                           KeysHierarchy(d.last, dir.fKeys, file, dirname + "/");
+                           keysHierarchy(d.last, dir.fKeys, file, dirname + "/");
                         }
                      } else {
                         // reconstruct full file hierarchy
-                        KeysHierarchy(fff, file.fKeys, file, "");
+                        keysHierarchy(fff, file.fKeys, file, "");
                      }
                      item = painter.Find({name:itemname, top: fff});
                   }
@@ -740,7 +758,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          }
       };
 
-      KeysHierarchy(folder, file.fKeys, file, "");
+      keysHierarchy(folder, file.fKeys, file, "");
 
       return folder;
    }
@@ -1307,7 +1325,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (elem) { items[i] = h.itemFullName(elem); continue; }
 
          if (can_split && (items[i][0]=='[') && (items[i][items[i].length-1]==']')) {
-            dropitems[i] = ParseAsArray(items[i]);
+            dropitems[i] = parseAsArray(items[i]);
             items[i] = dropitems[i].shift();
          } else
          if (can_split && (items[i].indexOf("+") > 0)) {
@@ -1327,7 +1345,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             }
 
             if ((options[i][0] == "[") && (options[i][options[i].length-1] == "]")) {
-               dropopts[i] = ParseAsArray(options[i]);
+               dropopts[i] = parseAsArray(options[i]);
                options[i] = dropopts[i].shift();
             } else
             if (options[i].indexOf("+") > 0) {
@@ -1565,7 +1583,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             }
          }
 
-         if (_obj && ObjectHierarchy(_item, _obj)) {
+         if (_obj && objectHierarchy(_item, _obj)) {
             _item._isopen = true;
             if (_item._parent && !_item._parent._isopen) {
                _item._parent._isopen = true; // also show parent
@@ -1681,7 +1699,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       JSROOT.openFile(filepath).then(file => {
 
-         let h1 = this.FileHierarchy(file);
+         let h1 = this.fileHierarchy(file);
          h1._isopen = true;
          if (!this.h) {
             this.h = h1;
@@ -1772,7 +1790,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          if (h_get) {
             req = 'h.json?compact=3';
-            item._expand = OnlineHierarchy; // use proper expand function
+            item._expand = onlineHierarchy; // use proper expand function
          } else if ('_make_request' in item) {
             func = JSROOT.findFunction(item._make_request);
          } else if ((draw_handle!=null) && ('make_request' in draw_handle)) {
@@ -1842,11 +1860,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             this.GetOnlineItem(item, itemname, callback, option);
          }
 
-         this.h._expand = OnlineHierarchy;
+         this.h._expand = onlineHierarchy;
 
          let scripts = [], modules = [];
          this.ForEach(function(item) {
-            if ('_childs' in item) item._expand = OnlineHierarchy;
+            if ('_childs' in item) item._expand = onlineHierarchy;
 
             if ('_autoload' in item) {
                let arr = item._autoload.split(";");
@@ -2181,7 +2199,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             let val = d.get(part,null);
 
-            if (canarray) res = res.concat(ParseAsArray(val));
+            if (canarray) res = res.concat(parseAsArray(val));
                      else if (val!==null) res.push(val);
          }
          return res;
@@ -2203,7 +2221,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             let val = gui_div.attr(part);
 
-            if (canarray) res = res.concat(ParseAsArray(val));
+            if (canarray) res = res.concat(parseAsArray(val));
             else if (val!==null) res.push(val);
          }
          return res;
@@ -2328,11 +2346,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             monitor = this.h._monitoring;
 
          if (('_loadfile' in this.h) && (filesarr.length==0))
-            filesarr = ParseAsArray(this.h._loadfile);
+            filesarr = parseAsArray(this.h._loadfile);
 
          if (('_drawitem' in this.h) && (itemsarr.length==0)) {
-            itemsarr = ParseAsArray(this.h._drawitem);
-            optionsarr = ParseAsArray(this.h._drawopt);
+            itemsarr = parseAsArray(this.h._drawitem);
+            optionsarr = parseAsArray(this.h._drawopt);
          }
 
          if (('_layout' in this.h) && !layout && ((this.is_online != "draw") || (itemsarr.length > 1)))
@@ -2575,9 +2593,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if (JSROOT.isRootCollection(obj)) {
          painter.h._name = obj.name || obj._typename;
-         ListHierarchy(painter.h, obj);
+         listHierarchy(painter.h, obj);
       } else {
-         ObjectHierarchy(painter.h, obj);
+         objectHierarchy(painter.h, obj);
       }
       painter.RefreshHtml(function() {
          painter.SetDivId(divid);
@@ -2945,11 +2963,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    jsrp.drawList = drawList;
 
-   jsrp.FolderHierarchy = FolderHierarchy;
-   jsrp.ObjectHierarchy = ObjectHierarchy;
-   jsrp.TaskHierarchy = TaskHierarchy;
-   jsrp.ListHierarchy = ListHierarchy;
-   jsrp.KeysHierarchy = KeysHierarchy;
+   jsrp.folderHierarchy = folderHierarchy;
+   jsrp.taskHierarchy = taskHierarchy;
+   jsrp.listHierarchy = listHierarchy;
+   jsrp.objectHierarchy = objectHierarchy;
+   jsrp.keysHierarchy = keysHierarchy;
 
    JSROOT.BrowserLayout = BrowserLayout;
    JSROOT.HierarchyPainter = HierarchyPainter;
