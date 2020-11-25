@@ -1386,8 +1386,8 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
     * @desc TTree only can be read from the existing ROOT file, there is no possibility to create and fill tree
     * @example
     * JSROOT.openFile("https://root.cern/js/files/hsimple.root")
-    *      .then(file => file.ReadObject("ntuple;1"))
-    *      .then(tree => JSROOT.draw("drawing", tree, "px:py::pz>5"));
+    *       .then(file => file.readObject("ntuple;1"))
+    *       .then(tree => JSROOT.draw("drawing", tree, "px:py::pz>5"));
     */
    let TTreeMethods = {};
 
@@ -1515,7 +1515,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
                // This should be equivalent to TBranch::GetEntry() method
                let shift = entry - this.first_entry, off;
                if (!this.branch.TestBit(jsrio.BranchBits.kDoNotUseBufferMap))
-                  this.raw.ClearObjectMap();
+                  this.raw.clearObjectMap();
                if (this.basket.fEntryOffset) {
                   off = this.basket.fEntryOffset[shift];
                   if (this.basket.fDisplacement)
@@ -1645,8 +1645,8 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
                virtual: leaf.fVirtual,
                func: function(buf, obj) {
                   let clname = this.typename;
-                  if (this.virtual) clname = buf.ReadFastString(buf.ntou1() + 1);
-                  obj[this.name] = buf.ClassStreamer({}, clname);
+                  if (this.virtual) clname = buf.readFastString(buf.ntou1() + 1);
+                  obj[this.name] = buf.classStreamer({}, clname);
                }
             };
          } else
@@ -1779,7 +1779,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
                // when element represent base class, we need handling which differ from normal IO
                member.func = function(buf, obj) {
                   if (!obj[this.name]) obj[this.name] = { _typename: this.basename };
-                  buf.ClassStreamer(obj[this.name], this.basename);
+                  buf.classStreamer(obj[this.name], this.basename);
                };
             }
          }
@@ -1890,7 +1890,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
                         stl_size: item_cnt.name,
                         type: elem.fType,
                         func: function(buf, obj) {
-                           obj[this.name] = buf.ReadFastArray(obj[this.stl_size], this.type);
+                           obj[this.name] = buf.readFastArray(obj[this.stl_size], this.type);
                         }
                      };
 
@@ -1900,7 +1900,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
                         member.func = function(buf, obj) {
                            let sz0 = obj[this.stl_size], sz1 = obj[this.arr_size], arr = new Array(sz0);
                            for (let n = 0; n < sz0; ++n)
-                              arr[n] = (buf.ntou1() === 1) ? buf.ReadFastArray(sz1[n], this.type) : [];
+                              arr[n] = (buf.ntou1() === 1) ? buf.readFastArray(sz1[n], this.type) : [];
                            obj[this.name] = arr;
                         }
                      }
@@ -2133,7 +2133,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
 
                   let blob = blobs.shift(),
                      buf = new JSROOT.TBuffer(blob, 0, handle.file),
-                     basket = buf.ClassStreamer({}, "TBasket");
+                     basket = buf.classStreamer({}, "TBasket");
 
                   if (basket.fNbytes !== bitems[k].branch.fBasketBytes[bitems[k].basket])
                      console.error('mismatch in read basket sizes', bitems[k].branch.fBasketBytes[bitems[k].basket]);
@@ -2149,7 +2149,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
                      bitems[k].raw = buf; // here already unpacked buffer
 
                     if (bitems[k].branch.fEntryOffsetLen > 0)
-                        buf.ReadBasketEntryOffset(basket, buf.raw_shift);
+                        buf.readBasketEntryOffset(basket, buf.raw_shift);
 
                     continue;
                   }
@@ -2168,7 +2168,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
                      bitems[k].raw = buf; // here already unpacked buffer
 
                      if (bitems[k].branch.fEntryOffsetLen > 0)
-                        buf.ReadBasketEntryOffset(basket, buf.raw_shift);
+                        buf.readBasketEntryOffset(basket, buf.raw_shift);
 
                      return DoProcessing(k+1);  // continue processing
                   });
@@ -2248,7 +2248,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
                      bitem.raw.raw_shift = bskt.fKeylen;
 
                      if (bskt.fBufferRef && (elem.branch.fEntryOffsetLen > 0))
-                        bitem.raw.ReadBasketEntryOffset(bskt, bitem.raw.raw_shift);
+                        bitem.raw.readBasketEntryOffset(bskt, bitem.raw.raw_shift);
 
                      bitem.bskt_obj = bskt;
                      is_direct = true;

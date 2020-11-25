@@ -3819,7 +3819,7 @@ JSROOT.define(['d3'], (d3) => {
     *
     * @example
     * JSROOT.openFile("https://root.cern/js/files/hsimple.root")
-    *       .then(file => file.ReadObject("hpxpy;1"))
+    *       .then(file => file.readObject("hpxpy;1"))
     *       .then(obj => JSROOT.draw("drawing", obj, "colz;logx;gridx;gridy"));
     *
     */
