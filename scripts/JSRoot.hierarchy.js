@@ -1037,19 +1037,20 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return JSROOT.redraw(divid, obj, drawopt);
    }
 
-   HierarchyPainter.prototype.player = function(itemname, option, call_back) {
+   /** @summary Starts player for specified item */
+   HierarchyPainter.prototype.player = function(itemname, option) {
       let item = this.Find(itemname);
 
-      if (!item || !item._player) return JSROOT.callBack(call_back, null);
+      if (!item || !item._player) return Promise.resolve(null);
 
-      JSROOT.require(item._prereq || '').then(() => {
+      return JSROOT.require(item._prereq || '').then(() => {
 
          let player_func = JSROOT.findFunction(item._player);
-         if (!player_func) return JSROOT.callBack(call_back, null);
+         if (!player_func) return null;
 
-         this.CreateDisplay(mdi => {
+         return this.createDisplay().then(mdi => {
             let res = mdi ? player_func(this, itemname, option) : null;
-            JSROOT.callBack(call_back, res);
+            return res;
          });
       });
    }
@@ -1099,14 +1100,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          JSROOT.callBack(f, respainter || painter, display_itemname);
       }
 
-      h.CreateDisplay(mdi => {
+      h.createDisplay().then(mdi => {
 
          if (!mdi) return display_callback();
 
          item = h.Find(display_itemname);
 
          if (item && ('_player' in item))
-            return h.player(display_itemname, drawopt, display_callback);
+            return h.player(display_itemname, drawopt).then(display_callback);
 
          updating = (typeof(drawopt)=='string') && (drawopt.indexOf("update:")==0);
 
@@ -1416,7 +1417,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if (items[n]===items[k]) items_wait[k] = (found_main != k);
       }
 
-      h.CreateDisplay(function(mdi) {
+      h.createDisplay().then(mdi => {
          if (!mdi) return JSROOT.callBack(call_back);
 
          // Than create empty frames for each item
@@ -2124,38 +2125,39 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    /** @summary Creates configured JSROOT.MDIDisplay object
     * @param callback - called when mdi object created */
-   HierarchyPainter.prototype.CreateDisplay = function(callback) {
+   HierarchyPainter.prototype.createDisplay = function() {
 
       if ('disp' in this) {
-         if ((this.disp.NumDraw() > 0) || (this.disp_kind == "custom")) return JSROOT.callBack(callback, this.disp);
+         if ((this.disp.NumDraw() > 0) || (this.disp_kind == "custom"))
+            return Promise.resolve(this.disp);
          this.disp.Reset();
          delete this.disp;
       }
 
       // check that we can found frame where drawing should be done
       if (!document.getElementById(this.disp_frameid))
-         return JSROOT.callBack(callback, null);
+         return Promise.resolve(null);
 
       if ((this.disp_kind == "simple") ||
           ((this.disp_kind.indexOf("grid") == 0) && (this.disp_kind.indexOf("gridi") < 0)))
            this.disp = new GridDisplay(this.disp_frameid, this.disp_kind);
       else
-         return JSROOT.require('jq2d').then(this.CreateDisplay.bind(this, callback));
+         return JSROOT.require('jq2d').then(() => this.createDisplay());
 
       if (this.disp)
          this.disp.CleanupFrame = this.CleanupFrame.bind(this);
 
-      JSROOT.callBack(callback, this.disp);
+      Promise.resolve(this.disp);
    }
 
    /** @summary If possible, creates custom JSROOT.MDIDisplay for given item
-   * @param itemname - name of item, for which drawing is created
-   * @param custom_kind - display kind
-   * @param callback - callback function, called when mdi object created */
-   HierarchyPainter.prototype.CreateCustomDisplay = function(itemname, custom_kind, callback) {
+     * @param itemname - name of item, for which drawing is created
+     * @param custom_kind - display kind
+     * @returns {Promise} with mdi object created */
+   HierarchyPainter.prototype.createCustomDisplay = function(itemname, custom_kind) {
 
       if (this.disp_kind != "simple")
-         return this.CreateDisplay(callback);
+         return this.createDisplay();
 
       this.disp_kind = custom_kind;
 
@@ -2163,12 +2165,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (this.disp) {
          let num = this.disp.NumDraw();
          if ((num>1) || ((num==1) && !this.disp.FindFrame(itemname)))
-            return this.CreateDisplay(callback);
+            return this.createDisplay();
          this.disp.Reset();
          delete this.disp;
       }
 
-      this.CreateDisplay(callback);
+      this.createDisplay();
    }
 
    HierarchyPainter.prototype.updateOnOtherFrames = function(painter, obj) {

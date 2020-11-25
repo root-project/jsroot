@@ -1468,18 +1468,18 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
    }
 
    /** @summary Creates configured JSROOT.MDIDisplay object
-   * @param callback - called when mdi object created */
-   HierarchyPainter.prototype.CreateDisplay = function(callback) {
+     * @return {Promise} with created mdi object */
+   HierarchyPainter.prototype.createDisplay = function() {
 
       if ('disp' in this) {
-         if (this.disp.NumDraw() > 0) return JSROOT.callBack(callback, this.disp);
+         if (this.disp.NumDraw() > 0) return Promise.resolve(this.disp);
          this.disp.Reset();
          delete this.disp;
       }
 
       // check that we can found frame where drawing should be done
       if (!document.getElementById(this.disp_frameid))
-         return JSROOT.callBack(callback, null);
+         return Promise.resolve(null);
 
       if (this.disp_kind == "tabs")
          this.disp = new TabsDisplay(this.disp_frameid);
@@ -1493,7 +1493,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
       if (this.disp)
          this.disp.CleanupFrame = this.CleanupFrame.bind(this);
 
-      JSROOT.callBack(callback, this.disp);
+      return Promise.resolve(this.disp);
    }
 
    HierarchyPainter.prototype.enable_dragging = function(element /*, itemname*/) {
