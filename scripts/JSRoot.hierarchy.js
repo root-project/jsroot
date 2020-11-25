@@ -1071,7 +1071,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return mdi ? mdi.FindFrame(itemname) !== null : false;
    }
 
-   HierarchyPainter.prototype.display = function(itemname, drawopt, call_back) {
+
+   /** @summary Display specified item
+     * @return {Promise} with created painter object */
+   HierarchyPainter.prototype.display = function(itemname, drawopt) {
       let h = this,
           painter = null,
           updating = false,
@@ -1086,7 +1089,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          drawopt = drawopt.substr(0, p);
       }
 
-      function display_callback(respainter) {
+      function complete(respainter) {
          if (!updating) JSROOT.progress();
 
          if (respainter && (typeof respainter === 'object') && (typeof respainter.SetItemName === 'function')) {
@@ -1094,30 +1097,27 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if (item && !item._painter) item._painter = respainter;
          }
 
-         // prevent calling many times
-         let f = call_back;
-         call_back = null;
-         JSROOT.callBack(f, respainter || painter, display_itemname);
+         return respainter || painter;
       }
 
-      h.createDisplay().then(mdi => {
+      return h.createDisplay().then(mdi => {
 
-         if (!mdi) return display_callback();
+         if (!mdi) return complete();
 
          item = h.Find(display_itemname);
 
          if (item && ('_player' in item))
-            return h.player(display_itemname, drawopt).then(display_callback);
+            return h.player(display_itemname, drawopt).then(res => complete(res));
 
          updating = (typeof(drawopt)=='string') && (drawopt.indexOf("update:")==0);
 
          if (updating) {
             drawopt = drawopt.substr(7);
-            if (!item || item._doing_update) return display_callback();
+            if (!item || item._doing_update) return complete();
             item._doing_update = true;
          }
 
-         if (item && !h.canDisplay(item, drawopt)) return display_callback();
+         if (item && !h.canDisplay(item, drawopt)) return complete();
 
          let divid = "";
          if ((typeof(drawopt)=='string') && (drawopt.indexOf("divid:")>=0)) {
@@ -1128,20 +1128,20 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          if (!updating) JSROOT.progress("Loading " + display_itemname);
 
-         h.getObject(display_itemname, drawopt).then(result => {
+         return h.getObject(display_itemname, drawopt).then(result => {
             if (!updating) JSROOT.progress();
 
             if (!item) item = result.item;
             let obj = result.obj;
 
             if (updating && item) delete item._doing_update;
-            if (!obj) return display_callback();
+            if (!obj) return complete();
 
             if (!updating) JSROOT.progress("Drawing " + display_itemname);
 
             if (divid.length > 0) {
                let draw_func = updating ? JSROOT.redraw : JSROOT.draw;
-               return draw_func(divid, obj, drawopt).then(display_callback).catch(() => display_callback(null));
+               return draw_func(divid, obj, drawopt).then(p => complete(p)).catch(() => complete(null));
             }
 
             mdi.ForEachPainter((p, frame) => {
@@ -1158,21 +1158,23 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                if (p.RedrawObject(obj)) painter = p;
             });
 
-            if (painter) return display_callback();
+            if (painter) return complete();
 
             if (updating) {
                console.warn(`something went wrong - did not found painter when doing update of ${display_itemname}`);
-               return display_callback();
+               return complete();
             }
 
             let frame = mdi.FindFrame(frame_name, true);
             d3.select(frame).html("");
             mdi.ActivateFrame(frame);
 
-            JSROOT.draw(d3.select(frame).attr("id"), obj, drawopt).then(display_callback).catch(() => display_callback(null));
+            return JSROOT.draw(d3.select(frame).attr("id"), obj, drawopt).then(p => {
+               if (JSROOT.settings.DragAndDrop)
+                  h.enable_dropping(frame, display_itemname);
+               return complete(p);
+            }).catch(() => complete(null));
 
-            if (JSROOT.settings.DragAndDrop)
-               h.enable_dropping(frame, display_itemname);
          });
       });
    }
@@ -1442,7 +1444,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                isany = true;
                if (items_wait[cnt] && items.indexOf(items[cnt])===cnt) {
                   items_wait[cnt] = false;
-                  h.display(items[cnt], options[cnt], DropNextItem.bind(h,cnt));
+                  h.display(items[cnt], options[cnt]).then(painter => DropNextItem(cnt, painter));
                }
             }
 
@@ -1456,7 +1458,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          // We start display of all items parallel, but only if they are not the same
          for (let i = 0; i < items.length; ++i)
             if (!items_wait[i])
-               h.display(items[i], options[i], DropNextItem.bind(h,i));
+               h.display(items[i], options[i]).then(painter => DropNextItem(i, painter));
       });
    }
 
@@ -2517,7 +2519,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             if (d.has("websocket")) opt+=";websocket";
 
-            hpainter.display("", opt, () => resolveFunc(hpainter));
+            hpainter.display("", opt).then(() => resolveFunc(hpainter));
          });
       });
    }
