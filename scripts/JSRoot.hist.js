@@ -5173,6 +5173,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             for (let i=0;i<4;++i) {
                let res = get_segm_intersection(segm, { x1: points[i].x, y1: points[i].y, x2: points[(i+1)%4].x, y2: points[(i+1)%4].y});
                if (res) {
+
                   res.indx = i + 0.5;
                   return res;
                }
@@ -5180,8 +5181,13 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             return null;
          }
 
-         let pnt1 = get_intersect(iminus, 1);
-         let pnt2 = get_intersect(iplus, -1);
+         let pnt1, pnt2;
+         iminus--;
+         while ((iminus < iplus - 1) && !pnt1)
+            pnt1 = get_intersect(++iminus, 1);
+         iplus++;
+         while ((iminus < iplus - 1) && pnt1 && !pnt2)
+            pnt2 = get_intersect(--iplus, -1);
          if (!pnt1 || !pnt2) return "";
 
          let dd = BuildPath(xp,yp,iminus,iplus);
