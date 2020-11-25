@@ -1187,38 +1187,37 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       // here is not defined - implemented with jquery
    }
 
-   HierarchyPainter.prototype.dropitem = function(itemname, divid, opt, call_back) {
+  /** @summary Drop item on specified element for drawing */
+   HierarchyPainter.prototype.dropItem = function(itemname, divid, opt) {
       if (opt && typeof opt === 'function') { call_back = opt; opt = ""; }
       if (opt===undefined) opt = "";
 
-      let drop_callback = drop_painter => {
+      let drop_complete = drop_painter => {
          if (drop_painter && (typeof drop_painter === 'object')) drop_painter.SetItemName(itemname, null, this);
-         JSROOT.callBack(call_back);
+         return drop_painter;
       }
 
       if (itemname == "$legend")
          return JSROOT.require("hist").then(() => {
-            let res = jsrp.produceLegend(divid, opt);
-            JSROOT.callBack(drop_callback, res);
+            let legend_painter = jsrp.produceLegend(divid, opt);
+            return drop_complete(legend_painter);
          });
 
-      this.getObject(itemname).then(res => {
+      return this.getObject(itemname).then(res => {
 
-         if (!res.obj) return JSROOT.callBack(call_back);
+         if (!res.obj) return null;
 
          let main_painter = JSROOT.get_main_painter(divid);
 
-         if (main_painter && (typeof main_painter.PerformDrop === 'function'))
-            return main_painter.PerformDrop(res.obj, itemname, res.item, opt).then(drop_callback);
+         if (main_painter && (typeof main_painter.performDrop === 'function'))
+            return main_painter.performDrop(res.obj, itemname, res.item, opt).then(p => drop_complete(p));
 
          if (main_painter && main_painter.accept_drops)
-            return JSROOT.draw(divid, res.obj, "same " + opt).then(drop_callback);
+            return JSROOT.draw(divid, res.obj, "same " + opt).then(p => drop_complete(p));
 
          this.CleanupFrame(divid);
-         return JSROOT.draw(divid, res.obj, opt).then(drop_callback);
+         return JSROOT.draw(divid, res.obj, opt).then(p => drop_complete(p));
       });
-
-      return true;
    }
 
    /** @summary Update items
@@ -1430,8 +1429,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             }
 
          function DropNextItem(indx, painter) {
-            if (painter && dropitems[indx] && (dropitems[indx].length>0))
-               return h.dropitem(dropitems[indx].shift(), painter.divid, dropopts[indx].shift(), DropNextItem.bind(h, indx, painter));
+            if (painter && dropitems[indx] && (dropitems[indx].length > 0))
+               return h.dropItem(dropitems[indx].shift(), painter.divid, dropopts[indx].shift()).then(() => DropNextItem(indx, painter));
 
             dropitems[indx] = null; // mark that all drop items are processed
             items[indx] = null; // mark item as ready

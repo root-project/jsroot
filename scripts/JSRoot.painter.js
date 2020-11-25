@@ -3721,8 +3721,8 @@ JSROOT.define(['d3'], (d3) => {
       if (!handle.func) {
          if (opt && (opt.indexOf("same") >= 0)) {
             let main_painter = JSROOT.get_main_painter(divid);
-            if (main_painter && (typeof main_painter.PerformDrop === 'function'))
-               return main_painter.PerformDrop(obj, "", null, opt);
+            if (main_painter && (typeof main_painter.performDrop === 'function'))
+               return main_painter.performDrop(obj, "", null, opt);
          }
 
          return Promise.reject(Error('Function not specified'));

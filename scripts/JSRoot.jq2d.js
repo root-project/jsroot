@@ -1515,8 +1515,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          },
          drop: function(event, ui) {
             let dropname = ui.draggable.parent().parent().attr('item');
-            if (!dropname) return false;
-            return h.dropitem(dropname, $(this).attr("id"));
+            if (dropname) h.dropItem(dropname, $(this).attr("id"));
          }
       });
    }
