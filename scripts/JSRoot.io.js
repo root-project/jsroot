@@ -773,7 +773,7 @@ JSROOT.define(['rawinflate'], () => {
    }
 
    /** @summary retrieve a key by its name and cycle in the list of keys */
-   TDirectory.prototype.GetKey = function(keyname, cycle, only_direct) {
+   TDirectory.prototype.getKey = function(keyname, cycle, only_direct) {
 
       if (typeof cycle != 'number') cycle = -1;
       let bestkey = null;
@@ -791,11 +791,11 @@ JSROOT.define(['rawinflate'], () => {
       while (pos > 0) {
          let dirname = keyname.substr(0, pos),
              subname = keyname.substr(pos+1),
-             dirkey = this.GetKey(dirname, undefined, true);
+             dirkey = this.getKey(dirname, undefined, true);
 
          if (dirkey && !only_direct && (dirkey.fClassName.indexOf("TDirectory")==0))
             return this.fFile.readObject(this.dir_name + "/" + dirname, 1)
-                             .then(newdir => newdir.GetKey(subname, cycle));
+                             .then(newdir => newdir.getKey(subname, cycle));
 
          pos = keyname.lastIndexOf("/", pos-1);
       }
@@ -815,7 +815,7 @@ JSROOT.define(['rawinflate'], () => {
    }
 
    /** @summary Read list of keys in directory  */
-   TDirectory.prototype.ReadKeys = function(objbuf) {
+   TDirectory.prototype.readKeys = function(objbuf) {
 
       objbuf.classStreamer(this, 'TDirectory');
 
@@ -904,9 +904,9 @@ JSROOT.define(['rawinflate'], () => {
    /** @summary Open file
     * @returns {Promise} after file keys are read
     * @private */
-   TFile.prototype.Open = function() {
+   TFile.prototype._open = function() {
       if (!this.fAcceptRanges)
-         return this.ReadKeys();
+         return this.readKeys();
 
       return JSROOT.httpRequest(this.fURL, "head").then(res => {
          const accept_ranges = res.getResponseHeader("Accept-Ranges");
@@ -914,7 +914,7 @@ JSROOT.define(['rawinflate'], () => {
          const len = res.getResponseHeader("Content-Length");
          if (len) this.fEND = parseInt(len);
              else this.fAcceptRanges = false;
-         return this.ReadKeys();
+         return this.readKeys();
       });
    }
 
@@ -1159,7 +1159,7 @@ JSROOT.define(['rawinflate'], () => {
    /** @summary Retrieve a key by its name and cycle in the list of keys
     * @desc callback used when keys must be read first from the directory
     * @private */
-   TFile.prototype.GetKey = function(keyname, cycle, only_direct) {
+   TFile.prototype.getKey = function(keyname, cycle, only_direct) {
 
       if (typeof cycle != 'number') cycle = -1;
       let bestkey = null;
@@ -1179,11 +1179,11 @@ JSROOT.define(['rawinflate'], () => {
             subname = keyname.substr(pos + 1),
             dir = this.GetDir(dirname);
 
-         if (dir) return dir.GetKey(subname, cycle, only_direct);
+         if (dir) return dir.getKey(subname, cycle, only_direct);
 
-         let dirkey = this.GetKey(dirname, undefined, true);
+         let dirkey = this.getKey(dirname, undefined, true);
          if (dirkey && !only_direct && (dirkey.fClassName.indexOf("TDirectory") == 0))
-            return this.readObject(dirname).then(newdir => newdir.GetKey(subname, cycle));
+            return this.readObject(dirname).then(newdir => newdir.getKey(subname, cycle));
 
          pos = keyname.lastIndexOf("/", pos - 1);
       }
@@ -1260,7 +1260,7 @@ JSROOT.define(['rawinflate'], () => {
       // one uses Promises while in some cases we need to
       // read sub-directory to get list of keys
       // in such situation calls are asynchrone
-      return this.GetKey(obj_name, cycle).then(key => {
+      return this.getKey(obj_name, cycle).then(key => {
 
          if ((obj_name == "StreamerInfo") && (key.fClassName == "TList"))
             return file.fStreamerInfos;
@@ -1281,7 +1281,7 @@ JSROOT.define(['rawinflate'], () => {
          if (isdir) {
             let dir = new TDirectory(file, obj_name, cycle);
             dir.fTitle = read_key.fTitle;
-            return dir.ReadKeys(buf);
+            return dir.readKeys(buf);
          }
 
          let obj = {};
@@ -1379,7 +1379,7 @@ JSROOT.define(['rawinflate'], () => {
 
    /** @summary Read file keys
     * @private */
-   TFile.prototype.ReadKeys = function() {
+   TFile.prototype.readKeys = function() {
 
       let file = this;
 
@@ -2325,7 +2325,7 @@ JSROOT.define(['rawinflate'], () => {
    /** @summary Open file
     * @returns {Promise} after file keys are read
     * @private */
-   TLocalFile.prototype.Open = function() { return this.ReadKeys(); }
+   TLocalFile.prototype._open = function() { return this.readKeys(); }
 
    TLocalFile.prototype.ReadBuffer = function(place, filename /*, progress_callback */) {
       let file = this.fLocalFile;
@@ -2377,7 +2377,7 @@ JSROOT.define(['rawinflate'], () => {
    /** @summary Open file
     * @returns {Promise} after file keys are read
     * @private */
-   TNodejsFile.prototype.Open = function() {
+   TNodejsFile.prototype._open = function() {
       this.fs = require('fs');
 
       return new Promise((resolve,reject) =>
@@ -2393,7 +2393,7 @@ JSROOT.define(['rawinflate'], () => {
 
             this.fd = fd;
 
-            this.ReadKeys().then(resolve).catch(reject);
+            this.readKeys().then(resolve).catch(reject);
          })
       );
    }
@@ -3121,7 +3121,7 @@ JSROOT.define(['rawinflate'], () => {
       if (!file)
          file = new TFile(arg);
 
-      return file.Open();
+      return file._open();
    }
 
    jsrio.ProduceCustomStreamers();
