@@ -5182,12 +5182,11 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          let pnt1 = get_intersect(iminus, 1);
          let pnt2 = get_intersect(iplus, -1);
-         if (!pnt1 || !pnt2) return "";
-
-         // TODO: now side is always same direction, could be that side should be checked more precise
-         let indx = pnt2.indx, step = side*0.5;
+         if (!pnt1 || !pnt2) return dd + "z";
 
          let dd = BuildPath(xp,yp,iminus,iplus);
+         // TODO: now side is always same direction, could be that side should be checked more precise
+         let indx = pnt2.indx, step = side*0.5;
 
          dd += "L" + pnt2.x + "," + pnt2.y;
 
@@ -5197,8 +5196,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             indx += step;
          }
 
-         dd += "L" + pnt1.x + "," + pnt1.y;
-         return dd;
+         return dd + "L" + pnt1.x + "," + pnt1.y + "z";
       }
 
       if (this.options.Contour === 14) {
