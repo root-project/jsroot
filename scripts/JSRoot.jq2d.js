@@ -1049,6 +1049,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
       return true;
    }
 
+   /** @summary Toggle open state of the item */
    HierarchyPainter.prototype.toggleOpenState = function(isopen, h) {
       let hitem = h ? h : this.h;
 
@@ -1254,7 +1255,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
       // special case - one should expand item
       if (((place == "plusminus") && !('_childs' in hitem) && hitem._more) ||
           ((place == "item") && (dflt === "expand"))) {
-         return this.expand(itemname, null, d3cont);
+         return this.expand(itemname, d3cont);
       }
 
       if (place == "item") {
@@ -1302,7 +1303,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
             return this.display(itemname, drawopt);
 
          if (can_expand || dflt_expand)
-            return this.expand(itemname, null, d3cont);
+            return this.expand(itemname, d3cont);
 
          // cannot draw, but can inspect ROOT objects
          if ((typeof hitem._kind === "string") && (hitem._kind.indexOf("ROOT.")===0) && sett.inspect && (can_draw!==false))

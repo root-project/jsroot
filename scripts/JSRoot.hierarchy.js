@@ -999,13 +999,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if ((arg.rest == d.rest) || (arg.rest.length <= d.rest.length))
                return Promise.resolve(result);
 
-         return new Promise(resolveFunc => {
-            this.expand(parentname, res => {
-               if (!res) return resolveFunc(result);
-               let newparentname = this.itemFullName(d.last);
-               if (newparentname.length>0) newparentname+="/";
-               this.getObject( { name: newparentname + d.rest, rest: d.rest }, options).then(resolveFunc);
-            }, null, true);
+         return this.expand(parentname, null, true).then(res => {
+            if (!res) return result;
+            let newparentname = this.itemFullName(d.last);
+            if (newparentname.length>0) newparentname+="/";
+            return this.getObject( { name: newparentname + d.rest, rest: d.rest }, options);
          });
       }
 
@@ -1385,7 +1383,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          let hitem = h.Find(items[n]);
          if (!hitem || h.canDisplay(hitem, options[n])) continue;
          // try to expand specified item
-         h.expand(items[n], null, null, true);
+         h.expand(items[n], null, true);
          items.splice(n, 1);
          options.splice(n, 1);
          dropitems.splice(n, 1);
@@ -1508,10 +1506,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                // if after last expand no better solution found - skip it
                if ((prev_found!==undefined) && (d.now_found === prev_found)) return find_next();
 
-               return this.expand(d.now_found, res => {
+               return this.expand(d.now_found).then(res => {
                   if (!res) return find_next();
                   let newname = this.itemFullName(d.last);
-                  if (newname.length>0) newname+="/";
+                  if (newname.length > 0) newname+="/";
                   find_next(newname + d.rest, d.now_found);
                });
             }
@@ -1550,11 +1548,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       find_next();
    }
 
-   /** @summary expand specified item */
-   HierarchyPainter.prototype.expand = function(itemname, call_back, d3cont, silent) {
+   /** @summary expand specified item
+     * @returns {Promise} when ready */
+   HierarchyPainter.prototype.expand = function(itemname, d3cont, silent) {
       let hitem = this.Find(itemname);
 
-      if (!hitem && d3cont) return JSROOT.callBack(call_back);
+      if (!hitem && d3cont) return Promise.resolve();
 
       let DoExpandItem = (_item, _obj, _name) => {
          if (!_name) _name = this.itemFullName(_item);
@@ -1568,12 +1567,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          }
 
          if (handle && handle.expand) {
-            JSROOT.require(handle.prereq).then(() => {
+            return JSROOT.require(handle.prereq).then(() => {
                _item._expand = JSROOT.findFunction(handle.expand);
                if (_item._expand) return DoExpandItem(_item, _obj, _name);
-               JSROOT.callBack(call_back);
+               return true; // no need for other checks
             });
-            return true;
          }
 
          // try to use expand function
@@ -1586,8 +1584,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                } else {
                   if (!silent) this.UpdateTreeNode(_item, d3cont);
                }
-               JSROOT.callBack(call_back, _item);
-               return true;
+               return Promise.resolve(_item);
             }
          }
 
@@ -1599,35 +1596,39 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             } else {
                if (!silent) this.UpdateTreeNode(_item, d3cont);
             }
-            JSROOT.callBack(call_back, _item);
-            return true;
+            return Promise.resolve(_item);
          }
 
-         return false;
+         return Promise.resolve(-1);
       }
+
+      let promise = Promise.resolve(-1);
 
       if (hitem) {
          // item marked as it cannot be expanded, also top item cannot be changed
-         if ((hitem._more === false) || (!hitem._parent && hitem._childs)) return JSROOT.callBack(call_back);
+         if ((hitem._more === false) || (!hitem._parent && hitem._childs))
+            return Promise.resolve();
 
          if (hitem._childs && hitem._isopen) {
             hitem._isopen = false;
             if (!silent) this.UpdateTreeNode(hitem, d3cont);
-            return JSROOT.callBack(call_back);
+            return Promise.resolve();
          }
 
-         if (hitem._obj && DoExpandItem(hitem, hitem._obj, itemname)) return;
+         if (hitem._obj) promise = DoExpandItem(hitem, hitem._obj, itemname);
       }
 
-      JSROOT.progress("Loading " + itemname);
+      return promise.then(res => {
+         if (res !== -1) return res; // done
 
-      this.getObject(itemname, "hierarchy_expand").then(res => {
+         JSROOT.progress("Loading " + itemname);
 
-         JSROOT.progress();
+         return this.getObject(itemname, "hierarchy_expand").then(res => {
 
-         if (res.obj && DoExpandItem(res.item, res.obj)) return;
+            JSROOT.progress();
 
-         JSROOT.callBack(call_back);
+            if (res.obj) return DoExpandItem(res.item, res.obj).then(res => { return (res !== -1) ? res : undefined; });
+         });
       });
 
    }
@@ -2353,7 +2354,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          else if ((localfile!==null) && (typeof this.selectLocalFile == 'function')) {
             localfile = null; promise = this.selectLocalFile();
          } else if (expanditems.length > 0)
-            this.expand(expanditems.shift(), OpenAllFiles);
+            promise = this.expand(expanditems.shift());
          else if (style.length > 0)
             promise = this.applyStyle(style.shift());
          else {
