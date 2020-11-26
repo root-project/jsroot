@@ -1460,7 +1460,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Reload hierarhcy and refresh html code */
    HierarchyPainter.prototype.reload = function() {
       if ('_online' in this.h)
-         this.OpenOnline(this.h._online,() => this.refreshHtml());
+         this.openOnline(this.h._online).then(() => this.refreshHtml());
    }
 
    HierarchyPainter.prototype.UpdateTreeNode = function() {
@@ -1868,10 +1868,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       });
    }
 
-   HierarchyPainter.prototype.OpenOnline = function(server_address, user_callback) {
+   /** @summary Access THttpServer with provided address
+     * @returns {Promise} when ready */
+   HierarchyPainter.prototype.openOnline = function(server_address) {
       let AdoptHierarchy = result => {
          this.h = result;
-         if (!result) return;
+         if (!result) return Promise.resolve(null);
 
          if (('_title' in this.h) && (this.h._title!='')) document.title = this.h._title;
 
@@ -1887,7 +1889,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.h._expand = onlineHierarchy;
 
          let scripts = [], modules = [];
-         this.ForEach(function(item) {
+         this.ForEach(item => {
             if ('_childs' in item) item._expand = onlineHierarchy;
 
             if ('_autoload' in item) {
@@ -1903,7 +1905,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             }
          });
 
-         JSROOT.require(modules)
+         return JSROOT.require(modules)
                .then(() => JSROOT.loadScript(scripts))
                .then(() => {
                   this.ForEach(item => {
@@ -1915,7 +1917,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                         JSROOT.addDrawFunc({ name: typename, func: item._drawfunc, script: item._drawscript, opt: drawopt });
                   });
 
-                  JSROOT.callBack(user_callback, this);
+                  return this;
                });
       }
 
@@ -1927,7 +1929,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return AdoptHierarchy(h);
       }
 
-      JSROOT.httpRequest(server_address + "h.json?compact=3", 'object').then(AdoptHierarchy);
+      return JSROOT.httpRequest(server_address + "h.json?compact=3", 'object')
+                   .then(hh => AdoptHierarchy(hh));
    }
 
    HierarchyPainter.prototype.GetOnlineProp = function(itemname) {
@@ -2206,7 +2209,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (this.disp) this.disp.CheckMDIResize(null, size);
    }
 
-   HierarchyPainter.prototype.StartGUI = function(gui_div, gui_call_back, url) {
+   /** @summary Start GUI
+     * @returns {Promise} when ready */
+   HierarchyPainter.prototype.startGUI = function(gui_div, url) {
 
       let d = JSROOT.decodeUrl(url);
 
@@ -2340,7 +2345,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             let req = prereq;
             prereq = "";
             if (!req) { req = load; load = ""; }
-            return JSROOT.require(req).then(OpenAllFiles);
+            return JSROOT.require(req).then(OpenAllFiles, OpenAllFiles);
          }
 
          let promise;
@@ -2359,46 +2364,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             promise = this.applyStyle(style.shift());
          else {
             this.refreshHtml();
-            this.displayAll(itemsarr, optionsarr).then(() => {
+            return this.displayAll(itemsarr, optionsarr).then(() => {
                if (itemsarr) this.refreshHtml();
                this.SetMonitoring(monitor);
-               JSROOT.callBack(gui_call_back);
+               return this; // this is final return
            });
          }
 
-         if (promise) promise.then(OpenAllFiles, OpenAllFiles);
-      }
-
-      let AfterOnlineOpened = () => {
-         // check if server enables monitoring
-
-         if (!this.exclude_browser && !browser_configured && ('_browser' in this.h)) {
-            browser_kind = this.h._browser;
-            if (browser_kind==="no") browser_kind = ""; else
-            if (browser_kind==="off") { browser_kind = ""; status = null; this.exclude_browser = true; }
-         }
-
-         if (('_monitoring' in this.h) && !monitor)
-            monitor = this.h._monitoring;
-
-         if (('_loadfile' in this.h) && (filesarr.length==0))
-            filesarr = parseAsArray(this.h._loadfile);
-
-         if (('_drawitem' in this.h) && (itemsarr.length==0)) {
-            itemsarr = parseAsArray(this.h._drawitem);
-            optionsarr = parseAsArray(this.h._drawopt);
-         }
-
-         if (('_layout' in this.h) && !layout && ((this.is_online != "draw") || (itemsarr.length > 1)))
-            this.disp_kind = this.h._layout;
-
-         if (('_toptitle' in this.h) && this.exclude_browser && document)
-            document.title = this.h._toptitle;
-
-         if (gui_div)
-            this.PrepareGuiDiv(gui_div, this.disp_kind);
-
-         OpenAllFiles();
+         return promise.then(OpenAllFiles, OpenAllFiles);
       }
 
       let h0 = null;
@@ -2408,12 +2381,41 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
 
       if (h0 !== null)
-         return this.OpenOnline(h0, AfterOnlineOpened);
+         return this.openOnline(h0).then(() => {
+            // check if server enables monitoring
+            if (!this.exclude_browser && !browser_configured && ('_browser' in this.h)) {
+               browser_kind = this.h._browser;
+               if (browser_kind==="no") browser_kind = ""; else
+               if (browser_kind==="off") { browser_kind = ""; status = null; this.exclude_browser = true; }
+            }
+
+            if (('_monitoring' in this.h) && !monitor)
+               monitor = this.h._monitoring;
+
+            if (('_loadfile' in this.h) && (filesarr.length==0))
+               filesarr = parseAsArray(this.h._loadfile);
+
+            if (('_drawitem' in this.h) && (itemsarr.length==0)) {
+               itemsarr = parseAsArray(this.h._drawitem);
+               optionsarr = parseAsArray(this.h._drawopt);
+            }
+
+            if (('_layout' in this.h) && !layout && ((this.is_online != "draw") || (itemsarr.length > 1)))
+               this.disp_kind = this.h._layout;
+
+            if (('_toptitle' in this.h) && this.exclude_browser && document)
+               document.title = this.h._toptitle;
+
+            if (gui_div)
+               this.PrepareGuiDiv(gui_div, this.disp_kind);
+
+            return OpenAllFiles();
+         });
 
       if (gui_div)
          this.PrepareGuiDiv(gui_div, this.disp_kind);
 
-      OpenAllFiles();
+      return OpenAllFiles();
    }
 
    HierarchyPainter.prototype.PrepareGuiDiv = function(myDiv, layout) {
@@ -2505,20 +2507,17 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       hpainter.start_without_browser = true; // indicate that browser not required at the beginning
 
-      return new Promise(resolveFunc => {
+      return hpainter.startGUI(myDiv, () => {
+         if (!drawing) return hpainter;
 
-         hpainter.StartGUI(myDiv, () => {
-            if (!drawing) return resolveFunc(hpainter);
+         let func = JSROOT.findFunction('GetCachedObject');
+         let obj = (typeof func == 'function') ? JSROOT.parse(func()) : null;
+         if (obj) hpainter._cached_draw_object = obj;
+         let opt = d.get("opt", "");
 
-            let func = JSROOT.findFunction('GetCachedObject');
-            let obj = (typeof func == 'function') ? JSROOT.parse(func()) : null;
-            if (obj) hpainter._cached_draw_object = obj;
-            let opt = d.get("opt", "");
+         if (d.has("websocket")) opt+=";websocket";
 
-            if (d.has("websocket")) opt+=";websocket";
-
-            hpainter.display("", opt).then(() => resolveFunc(hpainter));
-         });
+         return hpainter.display("", opt).then(() => { return hpainter; });
       });
    }
 

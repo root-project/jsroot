@@ -328,10 +328,10 @@
                   hpainter.setDisplay(layout,"right-div");
                }
 
-               hpainter.StartGUI(null, RunBigTest, url);
+               hpainter.startGUI(null, url).then(RunBigTest, RunBigTest);
             } else if (jsonname.length > 0) {
                testfile = testobj = null;
-               JSROOT.httpRequest(jsonname, 'object').then(function(obj) {
+               JSROOT.httpRequest(jsonname, 'object').then(obj => {
                   testobj = obj;
                   return JSROOT.draw("viewer", obj, opt).then(RunBigTest, RunBigTest);
                });
