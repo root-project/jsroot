@@ -2016,6 +2016,16 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
    // ==============================================================
 
+   /**
+    * @summary Painter for TGraphPolargram objects.
+    *
+    * @class
+    * @memberof JSROOT
+    * @extends JSROOT.ObjectPainter
+    * @param {object} polargram - object to draw
+    * @private
+    */
+
    function TGraphPolargramPainter(polargram) {
       JSROOT.ObjectPainter.call(this, polargram);
       this.$polargram = true; // indicate that this is polargram
@@ -2024,6 +2034,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
    TGraphPolargramPainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
 
+   /** @summary Translate coordinates */
    TGraphPolargramPainter.prototype.translate = function(angle, radius, keep_float) {
       let _rx = this.r(radius), _ry = _rx/this.szx*this.szy,
           pos = {
@@ -2042,8 +2053,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       return pos;
    }
 
+   /** @summary format label for radius ticks */
    TGraphPolargramPainter.prototype.format = function(radius) {
-      // used to format label for radius ticks
 
       if (radius === Math.round(radius)) return radius.toString();
       if (this.ndig>10) return radius.toExponential(4);
@@ -2051,6 +2062,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       return radius.toFixed((this.ndig > 0) ? this.ndig : 0);
    }
 
+   /** @summary Convert axis values to text */
    TGraphPolargramPainter.prototype.AxisAsText = function(axis, value) {
 
       if (axis == "r") {
@@ -2063,21 +2075,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       return (value === Math.round(value)) ? value.toString() : value.toFixed(1);
    }
 
-   TGraphPolargramPainter.prototype.MouseEvent = function(kind, evnt) {
-      let layer = this.svg_layer("primitives_layer"),
-          interactive = layer.select(".interactive_ellipse");
-      if (interactive.empty()) return;
-
-      let pnt = null;
-
-      if (kind !== 'leave') {
-         let pos = d3.pointer(evnt, interactive.node());
-         pnt = { x: pos[0], y: pos[1], touch: false };
-      }
-
-      this.ProcessTooltipEvent(pnt);
-   }
-
+   /** @summary Returns coordinate of frame - without using frame itself */
    TGraphPolargramPainter.prototype.GetFrameRect = function() {
       let pad = this.root_pad(),
           w = this.pad_width(),
@@ -2102,6 +2100,23 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       return rect;
    }
 
+   /** @summary Process mouse event */
+   TGraphPolargramPainter.prototype.MouseEvent = function(kind, evnt) {
+      let layer = this.svg_layer("primitives_layer"),
+          interactive = layer.select(".interactive_ellipse");
+      if (interactive.empty()) return;
+
+      let pnt = null;
+
+      if (kind !== 'leave') {
+         let pos = d3.pointer(evnt, interactive.node());
+         pnt = { x: pos[0], y: pos[1], touch: false };
+      }
+
+      this.ProcessTooltipEvent(pnt);
+   }
+
+   /** @summary Process mouse wheel event */
    TGraphPolargramPainter.prototype.MouseWheel = function(evnt) {
       evnt.stopPropagation();
       evnt.preventDefault();
@@ -2131,6 +2146,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       }
    }
 
+   /** @summary Redraw polargram */
    TGraphPolargramPainter.prototype.Redraw = function() {
       if (!this.is_main_painter()) return;
 
@@ -2301,12 +2317,22 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
           return null;
       }
 
-      painter.SetDivId(divid, 4); // main object without need of frame
+      painter.SetDivId(divid, 6); // main object without need of frame
       painter.Redraw();
       return painter.DrawingReady();
    }
 
    // ==============================================================
+
+   /**
+    * @summary Painter for TGraphPolar objects.
+    *
+    * @class
+    * @memberof JSROOT
+    * @extends JSROOT.ObjectPainter
+    * @param {object} graph - object to draw
+    * @private
+    */
 
    function TGraphPolarPainter(graph) {
       JSROOT.ObjectPainter.call(this, graph);

@@ -2265,6 +2265,7 @@ JSROOT.define(['d3'], (d3) => {
     *   -   3  if canvas and (or) frame missing, create them, but not set as main object
     *   -   4  major objects like TH3 (required canvas and frame in 3d mode)
     *   -   5  major objects like TGeoVolume (do not require canvas)
+    *   -   6  major objects like TGraphPolagram (requires canvas but not TFrame)
     *
     * @param {string|object} divid - id of div element or directly DOMElement
     * @param {number} [kind] - kind of object drawn with painter
@@ -2333,7 +2334,7 @@ JSROOT.define(['d3'], (d3) => {
             this.rstyle = pp.next_rstyle;
       }
 
-      if (((kind === 1) || (kind === 4) || (kind === 5)) && !svg_p.property('mainpainter'))
+      if (((kind === 1) || (kind === 4) || (kind === 5) || (kind === 6)) && !svg_p.property('mainpainter'))
          // when this is first main painter in the pad
          svg_p.property('mainpainter', this);
 
