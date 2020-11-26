@@ -3837,7 +3837,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    TCanvasPainter.prototype.HasEventStatus = function() {
       if (this.testUI5()) return false;
-      return this.brlayout ? this.brlayout.HasStatus() : false;
+      return this.brlayout ? this.brlayout.hasStatus() : false;
    }
 
    TCanvasPainter.prototype.ActivateStatusBar = function(state) {
@@ -3944,7 +3944,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       });
    }
 
-
+   /** @summary Show section of canvas  like menu or editor */
    TCanvasPainter.prototype.ShowSection = function(that, on) {
       if (this.testUI5())
          return Promise.resolve(false);

@@ -617,7 +617,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       delete this.browser_visible;
    }
 
-   BrowserLayout.prototype.HasStatus = function() {
+   /** @summary Returns true when status line exists */
+   BrowserLayout.prototype.hasStatus = function() {
       let main = d3.select("#"+this.gui_div+" .jsroot_browser");
       if (main.empty()) return false;
 
@@ -728,7 +729,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                   // if object was read even when item did not exist try to reconstruct new hierarchy
                   if (!item && obj) {
                      // first try to found last read directory
-                     let d = painter.Find({name:itemname, top:fff, last_exists:true, check_keys:true });
+                     let d = painter.findItem({name:itemname, top:fff, last_exists:true, check_keys:true });
                      if ((d!=null) && ('last' in d) && (d.last!=fff)) {
                         // reconstruct only subdir hierarchy
                         let dir = file.getDir(painter.itemFullName(d.last, fff));
@@ -741,7 +742,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                         // reconstruct full file hierarchy
                         keysHierarchy(fff, file.fKeys, file, "");
                      }
-                     item = painter.Find({name:itemname, top: fff});
+                     item = painter.findItem({name:itemname, top: fff});
                   }
 
                   if (item) {
@@ -792,7 +793,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
     * @param {boolean} [arg.check_keys = false] - check TFile keys with cycle suffix
     * @param {object} [arg.top = null] - element to start search from
     * @private */
-   HierarchyPainter.prototype.Find = function(arg) {
+   HierarchyPainter.prototype.findItem = function(arg) {
 
       function find_in_hierarchy(top, fullname) {
 
@@ -926,7 +927,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       * @returns {Promise} with command result */
    HierarchyPainter.prototype.executeCommand = function(itemname, elem) {
 
-      let hitem = this.Find(itemname),
+      let hitem = this.findItem(itemname),
           url = this.getOnlineItemUrl(hitem) + "/cmd.json",
           d3node = d3.select(elem);
 
@@ -992,10 +993,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
 
       if (item) itemname = this.itemFullName(item);
-           else item = this.Find( { name: itemname, allow_index: true, check_keys: true } );
+           else item = this.findItem( { name: itemname, allow_index: true, check_keys: true } );
 
       // if item not found, try to find nearest parent which could allow us to get inside
-      let d = (item!=null) ? null : this.Find({ name: itemname, last_exists: true, check_keys: true, allow_index: true });
+      let d = (item!=null) ? null : this.findItem({ name: itemname, last_exists: true, check_keys: true, allow_index: true });
 
       // if item not found, try to expand hierarchy central function
       // implements not process get in central method of hierarchy item (if exists)
@@ -1008,7 +1009,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if ((arg.rest == d.rest) || (arg.rest.length <= d.rest.length))
                return Promise.resolve(result);
 
-         return this.expand(parentname, null, true).then(res => {
+         return this.expandItem(parentname, null, true).then(res => {
             if (!res) return result;
             let newparentname = this.itemFullName(d.last);
             if (newparentname.length>0) newparentname+="/";
@@ -1046,7 +1047,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    /** @summary Starts player for specified item */
    HierarchyPainter.prototype.player = function(itemname, option) {
-      let item = this.Find(itemname);
+      let item = this.findItem(itemname);
 
       if (!item || !item._player) return Promise.resolve(null);
 
@@ -1110,7 +1111,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          if (!mdi) return complete();
 
-         item = h.Find(display_itemname);
+         item = h.findItem(display_itemname);
 
          if (item && ('_player' in item))
             return h.player(display_itemname, drawopt).then(res => complete(res));
@@ -1253,7 +1254,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if ((typeof itemname != 'string') || (allitems.indexOf(itemname) >= 0)) return;
 
          if (want_update_all) {
-            let item = this.Find(itemname);
+            let item = this.findItem(itemname);
             if (!item || ('_not_monitor' in item) || ('_player' in item)) return;
             if (!('_always_monitor' in item)) {
                let forced = false, handle = JSROOT.getDrawHandle(item._kind);
@@ -1321,7 +1322,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             can_split = false;
          }
 
-         let elem = h.Find({ name: items[i], check_keys: true });
+         let elem = h.findItem({ name: items[i], check_keys: true });
          if (elem) { items[i] = h.itemFullName(elem); continue; }
 
          if (can_split && (items[i][0]=='[') && (items[i][items[i].length-1]==']')) {
@@ -1337,10 +1338,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             // allow to specify _same_ item in different file
             for (let j = 0; j < dropitems[i].length; ++j) {
                let pos = dropitems[i][j].indexOf("_same_");
-               if ((pos>0) && (h.Find(dropitems[i][j])===null))
+               if ((pos>0) && (h.findItem(dropitems[i][j])===null))
                   dropitems[i][j] = dropitems[i][j].substr(0,pos) + items[i].substr(pos);
 
-               elem = h.Find({ name: dropitems[i][j], check_keys: true });
+               elem = h.findItem({ name: dropitems[i][j], check_keys: true });
                if (elem) dropitems[i][j] = h.itemFullName(elem);
             }
 
@@ -1360,20 +1361,20 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          // also check if subsequent items has _same_, than use name from first item
          let pos = items[i].indexOf("_same_");
-         if ((pos>0) && !h.Find(items[i]) && (i>0))
+         if ((pos>0) && !h.findItem(items[i]) && (i>0))
             items[i] = items[i].substr(0,pos) + items[0].substr(pos);
 
-         elem = h.Find({ name: items[i], check_keys: true });
+         elem = h.findItem({ name: items[i], check_keys: true });
          if (elem) items[i] = h.itemFullName(elem);
       }
 
       // now check that items can be displayed
       for (let n = items.length-1; n>=0; --n) {
          if (images[n]) continue;
-         let hitem = h.Find(items[n]);
+         let hitem = h.findItem(items[n]);
          if (!hitem || h.canDisplay(hitem, options[n])) continue;
          // try to expand specified item
-         h.expand(items[n], null, true);
+         h.expandItem(items[n], null, true);
          items.splice(n, 1);
          options.splice(n, 1);
          dropitems.splice(n, 1);
@@ -1486,10 +1487,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             itemname = items.shift();
          }
 
-         let hitem = this.Find(itemname);
+         let hitem = this.findItem(itemname);
 
          if (!hitem) {
-            let d = this.Find({ name: itemname, last_exists: true, check_keys: true, allow_index: true });
+            let d = this.findItem({ name: itemname, last_exists: true, check_keys: true, allow_index: true });
             if (!d || !d.last) return find_next();
             d.now_found = this.itemFullName(d.last);
 
@@ -1498,7 +1499,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                // if after last expand no better solution found - skip it
                if ((prev_found!==undefined) && (d.now_found === prev_found)) return find_next();
 
-               return this.expand(d.now_found).then(res => {
+               return this.expandItem(d.now_found).then(res => {
                   if (!res) return find_next();
                   let newname = this.itemFullName(d.last);
                   if (newname.length > 0) newname+="/";
@@ -1544,8 +1545,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    /** @summary expand specified item
      * @returns {Promise} when ready */
-   HierarchyPainter.prototype.expand = function(itemname, d3cont, silent) {
-      let hitem = this.Find(itemname);
+   HierarchyPainter.prototype.expandItem = function(itemname, d3cont, silent) {
+      let hitem = this.findItem(itemname);
 
       if (!hitem && d3cont) return Promise.resolve();
 
@@ -1750,7 +1751,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if (typeof style === 'string') {
 
-         let item = this.Find({ name: style, allow_index: true, check_keys: true });
+         let item = this.findItem({ name: style, allow_index: true, check_keys: true });
 
          if (item!==null)
             return this.getObject(item).then(res => this.applyStyle(res.obj));
@@ -1765,7 +1766,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    /** @summary Provides information abouf file item */
    HierarchyPainter.prototype.getFileProp = function(itemname) {
-      let item = this.Find(itemname);
+      let item = this.findItem(itemname);
       if (!item) return null;
 
       let subname = item._name;
@@ -1787,7 +1788,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
      * @desc Such URL can be used  to request data from the server
      * @returns string or null if item is not online */
    HierarchyPainter.prototype.getOnlineItemUrl = function(item) {
-      if (typeof item == "string") item = this.Find(item);
+      if (typeof item == "string") item = this.findItem(item);
       let prnt = item;
       while (prnt && (prnt._online===undefined)) prnt = prnt._parent;
       return prnt ? (prnt._online + this.itemFullName(item, prnt)) : null;
@@ -1938,7 +1939,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Get properties for online item  - server name and relative name
      * @private */
    HierarchyPainter.prototype.getOnlineProp = function(itemname) {
-      let item = this.Find(itemname);
+      let item = this.findItem(itemname);
       if (!item) return null;
 
       let subname = item._name;
@@ -1961,7 +1962,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
      * @private */
    HierarchyPainter.prototype.fillOnlineMenu = function(menu, onlineprop, itemname) {
 
-      let node = this.Find(itemname),
+      let node = this.findItem(itemname),
           sett = JSROOT.getDrawSettings(node._kind, 'nosame;noinspect'),
           handle = JSROOT.getDrawHandle(node._kind),
           root_type = (typeof node._kind == 'string') ? node._kind.indexOf("ROOT.") == 0 : false;
@@ -1972,7 +1973,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
 
       if (!node._childs && (node._more !== false) && (node._more || root_type || sett.expand))
-         menu.add("Expand", () => this.expand(itemname));
+         menu.add("Expand", () => this.expandItem(itemname));
 
       if (handle && ('execute' in handle))
          menu.add("Execute", () => this.executeCommand(itemname, menu.tree_node));
@@ -2375,7 +2376,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          else if ((localfile!==null) && (typeof this.selectLocalFile == 'function')) {
             localfile = null; promise = this.selectLocalFile();
          } else if (expanditems.length > 0)
-            promise = this.expand(expanditems.shift());
+            promise = this.expandItem(expanditems.shift());
          else if (style.length > 0)
             promise = this.applyStyle(style.shift());
          else {
@@ -2463,7 +2464,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.setDisplay(layout, this.brlayout.drawing_divid());
    }
 
-   /** @summary Create status line */
+   /** @summary Create status line
+     * @param {number} [height] - size of the status line
+     * @param [mode] - false / true / "toggle"
+     * @returns {Promise} when ready */
    HierarchyPainter.prototype.createStatusLine = function(height, mode) {
       if (this.status_disabled || !this.gui_div || !this.brlayout)
          return Promise.resolve("");
