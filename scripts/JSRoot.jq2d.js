@@ -702,7 +702,8 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
       }
    }
 
-   /// used together with browser buttons
+   /** @summary Toggle browser kind
+     * @desc used together with browser buttons */
    BrowserLayout.prototype.Toggle = function(browser_kind) {
       if (this.browser_visible!=='changing') {
          if (browser_kind === this.browser_kind) this.ToggleBrowserVisisbility();
@@ -714,7 +715,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
       let main = d3.select("#" + this.gui_div + " .jsroot_browser");
       if (main.empty()) return;
 
-      this.CreateStatusLine("delete");
+      this.createStatusLine("delete");
       let vsepar = main.select(".jsroot_v_separator");
       if (!vsepar.empty())
          $(vsepar.node()).draggable('destroy');
@@ -729,9 +730,9 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
    }
 
    /** @summary Creates status line */
-   BrowserLayout.prototype.CreateStatusLine = function(height, mode) {
+   BrowserLayout.prototype.createStatusLine = function(height, mode) {
       let main = d3.select("#"+this.gui_div+" .jsroot_browser");
-      if (main.empty()) return '';
+      if (main.empty()) return Promise.resolve('');
 
       let id = this.gui_div + "_status",
           line = d3.select("#"+id),
@@ -742,7 +743,8 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
       if (mode===undefined) { mode = true; this.status_layout = "app"; }
 
       if (is_visible) {
-         if ((mode === true) || (this.status_layout==="app")) return id;
+         if ((mode === true) || (this.status_layout==="app"))
+            return Promise.resolve(id);
 
          let hsepar = main.select(".jsroot_h_separator");
 
@@ -759,10 +761,11 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          }
 
          this.AdjustSeparator(null, 0, true);
-         return "";
+         return Promise.resolve("");
       }
 
-      if (mode === false) return "";
+      if (mode === false)
+         return Promise.resolve("");
 
       let left_pos = d3.select("#" + this.gui_div + "_drawing").style('left');
 
@@ -792,7 +795,8 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
 
       this.AdjustSeparator(null, height, true);
 
-      if (this.status_layout == "app") return id;
+      if (this.status_layout == "app")
+         return Promise.resolve(id);
 
       this.status_layout = new JSROOT.GridDisplay(id, 'horizx4_1213');
 
@@ -805,7 +809,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
 
       jsrp.ShowStatus = this.status_handler;
 
-      return id;
+      return Promise.resolve(id);
    }
 
    BrowserLayout.prototype.AdjustSeparator = function(vsepar, hsepar, redraw, first_time) {
@@ -1158,8 +1162,10 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
 
       if (status_item && !this.status_disabled && !JSROOT.decodeUrl().has('nostatus')) {
          let func = JSROOT.findFunction(status_item._status);
-         let hdiv = (typeof func == 'function') ? this.CreateStatusLine() : null;
-         if (hdiv) func(hdiv, this.itemFullName(status_item));
+         if (typeof func == 'function')
+            return this.createStatusLine().then(hdiv => {
+               if (hdiv) func(hdiv, this.itemFullName(status_item));
+            });
       }
 
       return Promise.resolve();
@@ -1521,15 +1527,18 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
       });
    }
 
-   HierarchyPainter.prototype.CreateBrowser = function(browser_kind, update_html, call_back) {
+   /** @summary Create browser elements */
+   HierarchyPainter.prototype.createBrowser = function(browser_kind, update_html) {
 
-      if (!this.gui_div || this.exclude_browser || !this.brlayout) return false;
+      if (!this.gui_div || this.exclude_browser || !this.brlayout)
+         return Promise.resolve(false);
 
       let main = d3.select("#" + this.gui_div + " .jsroot_browser"),
           jmain = $(main.node());
 
       // one requires top-level container
-      if (main.empty()) return false;
+      if (main.empty())
+         return Promise.resolve(false);
 
       if ((browser_kind==="float") && this.float_browser_disabled) browser_kind = "fix";
 
@@ -1539,9 +1548,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
 
          if (update_html) this.brlayout.Toggle(browser_kind);
 
-         JSROOT.callBack(call_back);
-
-         return true;
+         return Promise.resolve(true);
       }
 
       let guiCode = "<p class='jsroot_browser_version'><a href='https://root.cern/js/'>JSROOT</a> version <span style='color:green'><b>" + JSROOT.version + "</b></span></p>";
@@ -1664,9 +1671,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
 
       this.brlayout.ToggleBrowserKind(browser_kind || "fix");
 
-      JSROOT.callBack(call_back);
-
-      return true;
+      return Promise.resolve(true);
    }
 
    HierarchyPainter.prototype.InitializeBrowser = function() {
@@ -1720,11 +1725,6 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
       let chkbox = d3.select("#" + this.gui_div + " .jsroot_browser .gui_monitoring");
       if (!chkbox.empty() && (chkbox.property('checked') !== on))
          chkbox.property('checked', on);
-   }
-
-   HierarchyPainter.prototype.CreateStatusLine = function(height, mode) {
-      if (this.status_disabled || !this.gui_div || !this.brlayout) return '';
-      return this.brlayout.CreateStatusLine(height, mode);
    }
 
    JSROOT.BuildSimpleGUI = function() {

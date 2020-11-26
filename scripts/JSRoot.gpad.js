@@ -3843,7 +3843,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    TCanvasPainter.prototype.ActivateStatusBar = function(state) {
       if (this.testUI5()) return;
       if (this.brlayout)
-         this.brlayout.CreateStatusLine(23, state);
+         this.brlayout.createStatusLine(23, state);
       this.ProcessChanges("sbits", this);
    }
 
@@ -3890,7 +3890,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (mode === false)
          return Promise.resolve(false);
 
-      let btns = this.brlayout.CreateBrowserBtns();
+      let btns = this.brlayout.createBrowserBtns();
 
       JSROOT.require('interactive').then(inter => {
 

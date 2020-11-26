@@ -578,7 +578,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (with_browser) main.append("div").classed("jsroot_browser", true);
    }
 
-   BrowserLayout.prototype.CreateBrowserBtns = function() {
+   /** @summary Create buttons in the layout */
+   BrowserLayout.prototype.createBrowserBtns = function() {
       let br = this.main().select(".jsroot_browser");
       if (br.empty()) return;
       let btns = br.append("div").classed("jsroot_browser_btns", true).classed("jsroot", true);
@@ -626,10 +627,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return !line.empty();
    }
 
-   BrowserLayout.prototype.CreateStatusLine = function(height, mode) {
-      if (!this.gui_div) return '';
-      JSROOT.require('jq2d').then(() => this.CreateStatusLine(height, mode));
-      return this.gui_div + "_status";
+   BrowserLayout.prototype.createStatusLine = function(height, mode) {
+      if (!this.gui_div) return Promise.resolve('');
+      return JSROOT.require('jq2d').then(() => this.createStatusLine(height, mode));
    }
 
    // ==============================================================================
@@ -1541,8 +1541,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
 
       if (force && this.brlayout) {
-         if (!this.brlayout.browser_kind) return this.CreateBrowser('float', true, find_next);
-         if (!this.brlayout.browser_visible) this.brlayout.ToggleBrowserVisisbility();
+         if (!this.brlayout.browser_kind)
+           return this.createBrowser('float', true).then(find_next);
+         if (!this.brlayout.browser_visible)
+            this.brlayout.ToggleBrowserVisisbility();
       }
 
       // use recursion
@@ -2353,9 +2355,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          let promise;
 
-         if (browser_kind) { this.CreateBrowser(browser_kind); browser_kind = ""; }
-         if (status!==null) { this.CreateStatusLine(statush, status); status = null; }
-         if (jsonarr.length > 0)
+         if (browser_kind) {
+            promise = this.createBrowser(browser_kind); browser_kind = "";
+         } else if (status!==null) {
+            promise = this.createStatusLine(statush, status); status = null;
+         } else if (jsonarr.length > 0)
             promise = this.openJsonFile(jsonarr.shift());
          else if (filesarr.length > 0)
             promise = this.openRootFile(filesarr.shift());
@@ -2410,18 +2414,19 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                document.title = this.h._toptitle;
 
             if (gui_div)
-               this.PrepareGuiDiv(gui_div, this.disp_kind);
+               this.prepareGuiDiv(gui_div, this.disp_kind);
 
             return OpenAllFiles();
          });
 
       if (gui_div)
-         this.PrepareGuiDiv(gui_div, this.disp_kind);
+         this.prepareGuiDiv(gui_div, this.disp_kind);
 
       return OpenAllFiles();
    }
 
-   HierarchyPainter.prototype.PrepareGuiDiv = function(myDiv, layout) {
+   /** @summary Prepare div element - create layout and buttons */
+   HierarchyPainter.prototype.prepareGuiDiv = function(myDiv, layout) {
 
       this.gui_div = myDiv.attr('id');
 
@@ -2430,33 +2435,38 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.brlayout.Create(!this.exclude_browser);
 
       if (!this.exclude_browser) {
-         let btns = this.brlayout.CreateBrowserBtns();
+         let btns = this.brlayout.createBrowserBtns();
 
          JSROOT.require(['interactive']).then(inter => {
             inter.ToolbarIcons.CreateSVG(btns, inter.ToolbarIcons.diamand, 15, "toggle fix-pos browser")
-                               .style("margin","3px").on("click", () => this.CreateBrowser("fix", true));
+                               .style("margin","3px").on("click", () => this.createBrowser("fix", true));
 
             if (!this.float_browser_disabled)
                inter.ToolbarIcons.CreateSVG(btns, inter.ToolbarIcons.circle, 15, "toggle float browser")
-                                  .style("margin","3px").on("click", () => this.CreateBrowser("float", true));
+                                  .style("margin","3px").on("click", () => this.createBrowser("float", true));
 
             if (!this.status_disabled)
                inter.ToolbarIcons.CreateSVG(btns, inter.ToolbarIcons.three_circles, 15, "toggle status line")
-                                  .style("margin","3px").on("click", () => this.CreateStatusLine(0, "toggle"));
+                                  .style("margin","3px").on("click", () => this.createStatusLine(0, "toggle"));
           });
       }
 
       this.setDisplay(layout, this.brlayout.drawing_divid());
    }
 
-   HierarchyPainter.prototype.CreateStatusLine = function(height, mode) {
-      if (this.status_disabled || !this.gui_div || !this.brlayout) return '';
-      return this.brlayout.CreateStatusLine(height, mode);
+   /** @summary Create status line */
+   HierarchyPainter.prototype.createStatusLine = function(height, mode) {
+      if (this.status_disabled || !this.gui_div || !this.brlayout)
+         return Promise.resolve("");
+      return this.brlayout.createStatusLine(height, mode);
    }
 
-   HierarchyPainter.prototype.CreateBrowser = function(browser_kind, update_html, call_back) {
-      if (this.gui_div)
-         JSROOT.require('jq2d').then(() => this.CreateBrowser(browser_kind, update_html, call_back));
+   /** @summary Create browser layout */
+   HierarchyPainter.prototype.createBrowser = function(browser_kind, update_html) {
+      if (!this.gui_div)
+         return Promise.resolve(false);
+
+      return JSROOT.require('jq2d').then(() => this.createBrowser(browser_kind, update_html));
    }
 
    // ======================================================================================
