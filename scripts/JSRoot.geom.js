@@ -1308,10 +1308,13 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
       this._controls.ProcessMouseMove = function(intersects) {
 
+         // painter already cleaned up, ignore any incoming events
+         if (!painter.ctrl || !painter._controls) return;
+
          let active_mesh = null, tooltip = null, resolve = null, names = [], geo_object, geo_index;
 
          // try to find mesh from intersections
-         for (let k=0;k<intersects.length;++k) {
+         for (let k = 0; k < intersects.length; ++k) {
             let obj = intersects[k].object, info = null;
             if (!obj) continue;
             if (obj.geo_object) info = obj.geo_name; else
@@ -1355,6 +1358,9 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       }
 
       this._controls.ProcessDblClick = function() {
+         // painter already cleaned up, ignore any incoming events
+         if (!painter.ctrl || !painter._controls) return;
+
          if (painter._last_manifest) {
             painter._last_manifest.wireframe = !painter._last_manifest.wireframe;
             if (painter._last_hidden)
