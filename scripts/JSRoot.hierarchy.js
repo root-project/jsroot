@@ -557,11 +557,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return this.gui_div + "_drawing";
    }
 
-   BrowserLayout.prototype.CheckResize = function() {
-      if (this.hpainter && (typeof this.hpainter.CheckResize == 'function'))
-         this.hpainter.CheckResize();
-      else if (this.objpainter && (typeof this.objpainter.CheckResize == 'function')) {
-         this.objpainter.CheckResize(true);
+   /** @summary Check resize action */
+   BrowserLayout.prototype.checkResize = function() {
+      if (this.hpainter && (typeof this.hpainter.checkResize == 'function'))
+         this.hpainter.checkResize();
+      else if (this.objpainter && (typeof this.objpainter.checkResize == 'function')) {
+         this.objpainter.checkResize(true);
       }
    }
 
@@ -1213,7 +1214,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (main_painter && main_painter.accept_drops)
             return JSROOT.draw(divid, res.obj, "same " + opt).then(p => drop_complete(p));
 
-         this.CleanupFrame(divid);
+         this.cleanupFrame(divid);
          return JSROOT.draw(divid, res.obj, opt).then(p => drop_complete(p));
       });
    }
@@ -2104,7 +2105,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       let plainarr = [];
 
-      this.ForEach(function(item) {
+      this.ForEach(item => {
          delete item._painter; // remove reference on the painter
          // when only display cleared, try to clear all browser items
          if (!withbrowser && (typeof item.clear=='function')) item.clear();
@@ -2126,15 +2127,17 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return this.disp;
    }
 
-   HierarchyPainter.prototype.CleanupFrame = function(divid) {
-      // hook to perform extra actions when frame is cleaned
+   /** @summary method called when MDI element is cleaned up
+     * @desc hook to perform extra actions when frame is cleaned */
+   HierarchyPainter.prototype.cleanupFrame = function(divid) {
 
       let lst = JSROOT.cleanup(divid);
 
       // we remove all painters references from items
-      if (lst && (lst.length>0))
-         this.ForEach(function(item) {
-            if (item._painter && lst.indexOf(item._painter)>=0) delete item._painter;
+      if (lst && (lst.length > 0))
+         this.ForEach(item => {
+            if (item._painter && lst.indexOf(item._painter) >= 0)
+               delete item._painter;
          });
    }
 
@@ -2160,7 +2163,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return JSROOT.require('jq2d').then(() => this.createDisplay());
 
       if (this.disp)
-         this.disp.CleanupFrame = this.CleanupFrame.bind(this);
+         this.disp.cleanupFrame = this.cleanupFrame.bind(this);
 
       return Promise.resolve(this.disp);
    }
@@ -2188,8 +2191,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.createDisplay();
    }
 
+   /** @summary function updates object drawings for other painters */
    HierarchyPainter.prototype.updateOnOtherFrames = function(painter, obj) {
-      // function should update object drawings for other painters
       let mdi = this.disp, handle = null, isany = false;
       if (!mdi) return false;
 
@@ -2205,8 +2208,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return isany;
    }
 
-   HierarchyPainter.prototype.CheckResize = function(size) {
-      if (this.disp) this.disp.CheckMDIResize(null, size);
+   HierarchyPainter.prototype.checkResize = function(size) {
+      if (this.disp) this.disp.checkMDIResize(null, size);
    }
 
    /** @summary Start GUI
@@ -2647,7 +2650,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.frameid = frameid;
          this.SetDivId(frameid);
          this.select_main().property('mdi', this);
-         this.CleanupFrame = JSROOT.cleanup; // use standard cleanup function by default
+         this.cleanupFrame = JSROOT.cleanup; // use standard cleanup function by default
          this.active_frame_title = ""; // keep title of active frame
       }
 
@@ -2694,7 +2697,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       GetActiveFrame() { return this.FindFrame(this.active_frame_title); }
 
-      CheckMDIResize(only_frame_id, size) {
+      checkMDIResize(only_frame_id, size) {
          // perform resize for each frame
          let resized_frame = null;
 
@@ -2702,10 +2705,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             if (only_frame_id && (d3.select(frame).attr('id') != only_frame_id)) return;
 
-            if ((painter.GetItemName()!==null) && (typeof painter.CheckResize == 'function')) {
+            if ((painter.GetItemName()!==null) && (typeof painter.checkResize == 'function')) {
                // do not call resize for many painters on the same frame
                if (resized_frame === frame) return;
-               painter.CheckResize(size);
+               painter.checkResize(size);
                resized_frame = frame;
             }
          });
@@ -2714,7 +2717,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       Reset() {
          this.active_frame_title = "";
 
-         this.ForEachFrame(this.CleanupFrame);
+         this.ForEachFrame(this.cleanupFrame);
 
          this.select_main().html("").property('mdi', null);
       }
@@ -2981,7 +2984,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          }
 
          if (frame) {
-            this.CleanupFrame(frame);
+            this.cleanupFrame(frame);
             d3.select(frame).attr('frame_title', title);
          }
 

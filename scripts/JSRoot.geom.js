@@ -3888,7 +3888,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
    }
 
    /** @summary Check if HTML element was resized and drawing need to be adjusted */
-   TGeoPainter.prototype.CheckResize = function(arg) {
+   TGeoPainter.prototype.checkResize = function(arg) {
       let pad_painter = this.canv_painter();
 
       // firefox is the only browser which correctly supports resize of embedded canvas,
@@ -3918,11 +3918,11 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       return true;
    }
 
+   /** @summary Toggle enlarge state */
    TGeoPainter.prototype.toggleEnlarge = function() {
       if (this.enlarge_main('toggle'))
-        this.CheckResize();
+        this.checkResize();
    }
-
 
    TGeoPainter.prototype.ownedByTransformControls = function(child) {
       let obj = child.parent;

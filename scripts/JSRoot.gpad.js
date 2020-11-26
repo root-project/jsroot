@@ -2220,6 +2220,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return true;
    }
 
+   /** @summary Enlarge pad draw element when possible */
    TPadPainter.prototype.EnlargePad = function(evnt) {
 
       if (evnt) {
@@ -2246,7 +2247,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       let was_fast = this._fast_drawing;
 
-      this.CheckResize({ force: true });
+      this.checkResize(true);
 
       if (this._fast_drawing != was_fast)
          this.ShowButtons();

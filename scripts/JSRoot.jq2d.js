@@ -539,7 +539,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          d3.select("#"+this.gui_div+"_drawing").style('left','0px'); // reset size
          main.select(".jsroot_h_separator").style('left','0px');
          d3.select("#"+this.gui_div+"_status").style('left','0px'); // reset left
-         pthis.CheckResize();
+         pthis.checkResize();
       }
 
       this.browser_kind = kind;
@@ -593,7 +593,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
               pthis.AdjustSeparator(ui.position.left, null);
            },
            stop: function(/* event,ui */) {
-              pthis.CheckResize();
+              pthis.checkResize();
            }
         });
 
@@ -693,7 +693,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
 
       if (!vsepar.empty()) {
          vsepar.transition().style('left', tgt_separ).duration(_duration);
-         drawing.transition().style('left', tgt_drawing).duration(_duration).on("end", this.CheckResize.bind(this));
+         drawing.transition().style('left', tgt_drawing).duration(_duration).on("end", this.checkResize.bind(this));
       }
 
       if (this.status_layout && (this.browser_kind == 'fix')) {
@@ -725,10 +725,10 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
       delete this.browser_visible;
       delete this.browser_kind;
 
-      this.CheckResize();
+      this.checkResize();
    }
 
-   /// method creates status line
+   /** @summary Creates status line */
    BrowserLayout.prototype.CreateStatusLine = function(height, mode) {
       let main = d3.select("#"+this.gui_div+" .jsroot_browser");
       if (main.empty()) return '';
@@ -784,7 +784,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
             pthis.AdjustSeparator(null, -ui.position.top);
          },
          stop: function(/*event,ui*/) {
-            pthis.CheckResize();
+            pthis.checkResize();
          }
       });
 
@@ -849,7 +849,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          main.select(".jsroot_v_separator").style('left',vsepar+'px').style('width',w+"px");
       }
 
-      if (redraw) this.CheckResize();
+      if (redraw) this.checkResize();
    }
 
    BrowserLayout.prototype.ShowStatus = function(name, title, info, coordinates) {
@@ -1492,7 +1492,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          this.disp = new JSROOT.GridDisplay(this.disp_frameid, this.disp_kind);
 
       if (this.disp)
-         this.disp.CleanupFrame = this.CleanupFrame.bind(this);
+         this.disp.cleanupFrame = this.cleanupFrame.bind(this);
 
       return Promise.resolve(this.disp);
    }
@@ -1840,7 +1840,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          $('#' + uid).find(" .jsroot_collaps_closebtn")
               .button({ icons: { primary: "ui-icon-close" }, text: false })
               .click(function(){
-                 mdi.CleanupFrame($(this).parent().next().attr('id'));
+                 mdi.cleanupFrame($(this).parent().next().attr('id'));
                  $(this).parent().next().remove(); // remove drawing
                  $(this).parent().remove();  // remove header
               });
@@ -1927,7 +1927,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
 
             tabs.delegate("span.ui-icon-close", "click", function() {
                let panelId = $(this).closest("li").remove().attr("aria-controls");
-               mdi.CleanupFrame(panelId);
+               mdi.cleanupFrame(panelId);
                $("#" + panelId).remove();
                tabs.tabs("refresh");
                if ($('#' + topid + '> .tabs_draw').length == 0)
@@ -1948,9 +1948,9 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          return $('#' + hid).get(0);
       }
 
-      CheckMDIResize(frame_id, size) {
+      checkMDIResize(frame_id, size) {
          $("#" + this.frameid + '_tabs').tabs("refresh");
-         super.CheckMDIResize(frame_id, size);
+         super.checkMDIResize(frame_id, size);
       }
 
    } // class TabsDisplay
@@ -2138,7 +2138,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
               .button({ icons: { primary: "ui-icon-close" }, text: false })
               .click(function() {
                  let main = $(this).parent().parent();
-                 mdi.CleanupFrame(main.find(".flex_draw").get(0));
+                 mdi.cleanupFrame(main.find(".flex_draw").get(0));
                  main.remove();
                  PopupWindow('first'); // set active as first window
               })
@@ -2345,7 +2345,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
             });
          }
 
-         this.CheckResize();
+         this.checkResize();
       }
 
       player.PerformLocalDraw = function() {
@@ -2431,7 +2431,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          }
       }
 
-      player.CheckResize = function(/*arg*/) {
+      player.checkResize = function(/*arg*/) {
          let main = $(this.select_main().node());
 
          $("#" + this.drawid).width(main.width());
@@ -2447,7 +2447,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
       return player;
    }
 
-   /** function used with THttpServer to assign player for the TTree object
+   /** @summary function used with THttpServer to assign player for the TTree object
      * @private */
    JSROOT.drawTreePlayer = function(hpainter, itemname, askey, asleaf) {
 

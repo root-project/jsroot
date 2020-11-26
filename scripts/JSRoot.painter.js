@@ -1447,7 +1447,7 @@ JSROOT.define(['d3'], (d3) => {
     * @returns {boolean} true if resize was detected
     * @abstract
     * @private */
-   BasePainter.prototype.CheckResize = function(/* arg */) {}
+   BasePainter.prototype.checkResize = function(/* arg */) {}
 
    /** @summary access to main HTML element used for drawing - typically <div> element
      * @desc if main element was layouted, returns main element inside layout
@@ -1957,7 +1957,7 @@ JSROOT.define(['d3'], (d3) => {
    /** @summary Checks if draw elements were resized and drawing should be updated.
     * @desc Redirects to {@link JSROOT.TPadPainter.CheckCanvasResize}
     * @private */
-   ObjectPainter.prototype.CheckResize = function(arg) {
+   ObjectPainter.prototype.checkResize = function(arg) {
       let p = this.canv_painter();
       if (!p) return false;
 
@@ -3376,7 +3376,7 @@ JSROOT.define(['d3'], (d3) => {
     * @desc function used to react on browser window resize event
     * While many resize events could come in short time,
     * resize will be handled with delay after last resize event
-    * handle can be function or object with CheckResize function
+    * handle can be function or object with checkResize function
     * one could specify delay after which resize event will be handled
     * @private */
    JSROOT.RegisterForResize = function(handle, delay) {
@@ -3392,13 +3392,13 @@ JSROOT.define(['d3'], (d3) => {
 
          document.body.style.cursor = 'wait';
          if (typeof handle == 'function') handle(); else
-            if ((typeof handle == 'object') && (typeof handle.CheckResize == 'function')) handle.CheckResize(); else
+            if ((typeof handle == 'object') && (typeof handle.checkResize == 'function')) handle.checkResize(); else
                if (typeof handle == 'string') {
                   let node = d3.select('#' + handle);
                   if (!node.empty()) {
                      let mdi = node.property('mdi');
                      if (mdi) {
-                        mdi.CheckMDIResize();
+                        mdi.checkMDIResize();
                      } else {
                         JSROOT.resize(node.node());
                      }
@@ -4004,8 +4004,8 @@ JSROOT.define(['d3'], (d3) => {
       let done = false, dummy = new ObjectPainter();
       dummy.SetDivId(divid, -1);
       dummy.ForEachPainter(painter => {
-         if (!done && (typeof painter.CheckResize == 'function'))
-            done = painter.CheckResize(arg);
+         if (!done && (typeof painter.checkResize == 'function'))
+            done = painter.checkResize(arg);
       });
       return done;
    }
