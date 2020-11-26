@@ -786,7 +786,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       each_item(top);
    }
 
-   /** @summary Ssearch item in the hierarchy
+   /** @summary Search item in the hierarchy
     * @param {object|string} arg - item name or object with arguments
     * @param {string} arg.name -  item to search
     * @param {boolean} [arg.force = false] - specified elements will be created when not exists
@@ -1067,9 +1067,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Returns true if given item displayed */
    HierarchyPainter.prototype.isItemDisplayed = function(itemname) {
       let mdi = this.getDisplay();
-      return mdi ? mdi.FindFrame(itemname) !== null : false;
+      return mdi ? mdi.findFrame(itemname) !== null : false;
    }
-
 
    /** @summary Display specified item
      * @return {Promise} with created painter object */
@@ -1143,11 +1142,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                return draw_func(divid, obj, drawopt).then(p => complete(p)).catch(() => complete(null));
             }
 
-            mdi.ForEachPainter((p, frame) => {
+            mdi.forEachPainter((p, frame) => {
                if (p.GetItemName() != display_itemname) return;
                // verify that object was drawn with same option as specified now (if any)
                if (!updating && (drawopt!=null) && (p.GetItemDrawOpt()!=drawopt)) return;
-               mdi.ActivateFrame(frame);
+               mdi.activateFrame(frame);
 
                let handle = null;
                if (obj._typename) handle = JSROOT.getDrawHandle("ROOT." + obj._typename);
@@ -1164,9 +1163,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                return complete();
             }
 
-            let frame = mdi.FindFrame(frame_name, true);
+            let frame = mdi.findFrame(frame_name, true);
             d3.select(frame).html("");
-            mdi.ActivateFrame(frame);
+            mdi.activateFrame(frame);
 
             return JSROOT.draw(d3.select(frame).attr("id"), obj, drawopt).then(p => {
                if (JSROOT.settings.DragAndDrop)
@@ -1228,7 +1227,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       let draw_items = [], draw_options = [];
 
-      this.disp.ForEachPainter(p => {
+      this.disp.forEachPainter(p => {
          let itemname = p.GetItemName();
          if (!itemname || (draw_items.indexOf(itemname)>=0)) return;
          if (typeof items == 'array') {
@@ -1257,7 +1256,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       let allitems = [], options = [];
 
       // first collect items
-      this.disp.ForEachPainter(p => {
+      this.disp.forEachPainter(p => {
          let itemname = p.GetItemName(),
              drawopt = p.GetItemDrawOpt();
          if ((typeof itemname != 'string') || (allitems.indexOf(itemname)>=0)) return;
@@ -1426,7 +1425,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          // Than create empty frames for each item
          for (let i = 0; i < items.length; ++i)
             if (options[i].indexOf('update:')!==0) {
-               mdi.CreateFrame(frame_names[i]);
+               mdi.createFrame(frame_names[i]);
                options[i] += "::_display_on_frame_::"+frame_names[i];
             }
 
@@ -2101,7 +2100,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    HierarchyPainter.prototype.clear = function(withbrowser) {
       if (this.disp) {
-         this.disp.Reset();
+         this.disp.cleanup();
          delete this.disp;
       }
 
@@ -2148,9 +2147,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    HierarchyPainter.prototype.createDisplay = function() {
 
       if ('disp' in this) {
-         if ((this.disp.NumDraw() > 0) || (this.disp_kind == "custom"))
+         if ((this.disp.numDraw() > 0) || (this.disp_kind == "custom"))
             return Promise.resolve(this.disp);
-         this.disp.Reset();
+         this.disp.cleanup();
          delete this.disp;
       }
 
@@ -2183,10 +2182,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       // check if display can be erased
       if (this.disp) {
-         let num = this.disp.NumDraw();
-         if ((num>1) || ((num==1) && !this.disp.FindFrame(itemname)))
+         let num = this.disp.numDraw();
+         if ((num > 1) || ((num == 1) && !this.disp.findFrame(itemname)))
             return this.createDisplay();
-         this.disp.Reset();
+         this.disp.cleanup();
          delete this.disp;
       }
 
@@ -2202,9 +2201,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (handle && handle.draw_field && obj[handle.draw_field])
          obj = obj[handle.draw_field];
 
-      mdi.ForEachPainter((p, frame) => {
+      mdi.forEachPainter((p, frame) => {
          if ((p===painter) || (p.GetItemName() != painter.GetItemName())) return;
-         mdi.ActivateFrame(frame);
+         mdi.activateFrame(frame);
          if (p.RedrawObject(obj)) isany = true;
       });
       return isany;
@@ -2664,54 +2663,54 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.active_frame_title = ""; // keep title of active frame
       }
 
-      BeforeCreateFrame(title) { this.active_frame_title = title; }
+      beforeCreateFrame(title) { this.active_frame_title = title; }
 
       /** method dedicated to iterate over existing panels
         * @param {function} userfunc is called with arguments (frame)
         * @param {boolean} only_visible let select only visible frames */
-      ForEachFrame(/* userfunc, only_visible */) { console.warn("ForEachFrame not implemented in MDIDisplay"); }
+      forEachFrame(/* userfunc, only_visible */) { console.warn("forEachFrame not implemented in MDIDisplay"); }
 
       /** method dedicated to iterate over existing panles
         * @param {function} userfunc is called with arguments (painter, frame)
         * @param {boolean} only_visible let select only visible frames */
-      ForEachPainter(userfunc, only_visible) {
+      forEachPainter(userfunc, only_visible) {
 
-         this.ForEachFrame(frame => {
+         this.forEachFrame(frame => {
             let dummy = new JSROOT.ObjectPainter();
             dummy.SetDivId(frame, -1);
-            dummy.ForEachPainter(painter => userfunc(painter, frame));
+            dummy.forEachPainter(painter => userfunc(painter, frame));
          }, only_visible);
       }
 
-      NumDraw() {
+      numDraw() {
          let cnt = 0;
-         this.ForEachFrame(() => ++cnt);
+         this.forEachFrame(() => ++cnt);
          return cnt;
       }
 
-      FindFrame(searchtitle, force) {
+      findFrame(searchtitle, force) {
          let found_frame = null;
 
-         this.ForEachFrame(frame => {
+         this.forEachFrame(frame => {
             if (d3.select(frame).attr('frame_title') == searchtitle)
                found_frame = frame;
          });
 
          if (!found_frame && force)
-            found_frame = this.CreateFrame(searchtitle);
+            found_frame = this.createFrame(searchtitle);
 
          return found_frame;
       }
 
-      ActivateFrame(frame) { this.active_frame_title = d3.select(frame).attr('frame_title'); }
+      activateFrame(frame) { this.active_frame_title = d3.select(frame).attr('frame_title'); }
 
-      GetActiveFrame() { return this.FindFrame(this.active_frame_title); }
+      getActiveFrame() { return this.findFrame(this.active_frame_title); }
 
       checkMDIResize(only_frame_id, size) {
          // perform resize for each frame
          let resized_frame = null;
 
-         this.ForEachPainter((painter, frame) => {
+         this.forEachPainter((painter, frame) => {
 
             if (only_frame_id && (d3.select(frame).attr('id') != only_frame_id)) return;
 
@@ -2724,23 +2723,23 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          });
       }
 
-      Reset() {
+      cleanup() {
          this.active_frame_title = "";
 
-         this.ForEachFrame(this.cleanupFrame);
+         this.forEachFrame(this.cleanupFrame);
 
          this.select_main().html("").property('mdi', null);
       }
 
-      Draw(title, obj, drawopt) {
+      draw(title, obj, drawopt) {
          // draw object with specified options
          if (!obj) return;
 
          if (!JSROOT.canDraw(obj._typename, drawopt)) return;
 
-         let frame = this.FindFrame(title, true);
+         let frame = this.findFrame(title, true);
 
-         this.ActivateFrame(frame);
+         this.activateFrame(frame);
 
          return JSROOT.redraw(frame, obj, drawopt);
       }
@@ -2761,7 +2760,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.frames[divid] += (itemname + ";");
       }
 
-      ForEachFrame(userfunc /* ,  only_visible */) {
+      forEachFrame(userfunc /* ,  only_visible */) {
          let ks = Object.keys(this.frames);
          for (let k = 0; k < ks.length; ++k) {
             let node = d3.select("#"+ks[k]);
@@ -2770,8 +2769,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          }
       }
 
-      CreateFrame(title) {
-         this.BeforeCreateFrame(title);
+      createFrame(title) {
+         this.beforeCreateFrame(title);
 
          let ks = Object.keys(this.frames);
          for (let k = 0; k < ks.length; ++k) {
@@ -2782,9 +2781,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return null;
       }
 
-      Reset() {
-         super.Reset();
-         this.ForEachFrame(frame => d3.select(frame).html(""));
+      cleanup() {
+         super.cleanup();
+         this.forEachFrame(frame => d3.select(frame).html(""));
       }
    } // class CustomDisplay
 
@@ -2895,10 +2894,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (sizes && (sizes.length!==num)) sizes = undefined;
 
          if (!this.simple_layout)
-            this.CreateGroup(this, this.select_main(), num, arr, sizes);
+            this.createGroup(this, this.select_main(), num, arr, sizes);
       }
 
-      CreateGroup(handle, main, num, childs, sizes) {
+      createGroup(handle, main, num, childs, sizes) {
 
          if (!sizes) sizes = new Array(num);
          let sum1 = 0, sum2 = 0;
@@ -2937,38 +2936,38 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                group.vertical = !handle.vertical;
                group.groups = [];
                elem.style('overflow','hidden');
-               this.CreateGroup(group, elem, childs[cnt]);
+               this.createGroup(group, elem, childs[cnt]);
             }
          }
 
-         if (this.use_separarators && this.CreateSeparator)
+         if (this.use_separarators && this.createSeparator)
             for (let cnt=1;cnt<num;++cnt)
-               this.CreateSeparator(handle, main, handle.groups[cnt]);
+               this.createSeparator(handle, main, handle.groups[cnt]);
       }
 
-      ForEachFrame(userfunc /*, only_visible */) {
+      forEachFrame(userfunc /*, only_visible */) {
          if (this.simple_layout)
-            userfunc(this.GetFrame());
+            userfunc(this.getGridFrame());
          else
             this.select_main().selectAll('.jsroot_newgrid').each(function() {
                userfunc(d3.select(this).node());
             });
       }
 
-      GetActiveFrame() {
-         if (this.simple_layout) return this.GetFrame();
+      getActiveFrame() {
+         if (this.simple_layout) return this.getGridFrame();
 
-         let found = super.GetActiveFrame();
+         let found = super.getActiveFrame();
          if (found) return found;
 
-         this.ForEachFrame(frame => { if (!found) found = frame; }, true);
+         this.forEachFrame(frame => { if (!found) found = frame; }, true);
 
          return found;
       }
 
-      ActivateFrame(frame) { this.active_frame_title = d3.select(frame).attr('frame_title'); }
+      activateFrame(frame) { this.active_frame_title = d3.select(frame).attr('frame_title'); }
 
-      GetFrame(id) {
+      getGridFrame(id) {
          if (this.simple_layout)
             return this.select_main('origin').node();
          let res = null;
@@ -2978,15 +2977,15 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return res;
       }
 
-      NumGridFrames() { return this.framecnt; }
+      numGridFrames() { return this.framecnt; }
 
-      CreateFrame(title) {
-         this.BeforeCreateFrame(title);
+      createFrame(title) {
+         this.beforeCreateFrame(title);
 
          let frame = null, maxloop = this.framecnt || 2;
 
          while (!frame && maxloop--) {
-            frame = this.GetFrame(this.getcnt);
+            frame = this.getGridFrame(this.getcnt);
             if (!this.simple_layout && this.framecnt)
                this.getcnt = (this.getcnt+1) % this.framecnt;
 

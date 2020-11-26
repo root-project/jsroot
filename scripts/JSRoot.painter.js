@@ -2451,10 +2451,9 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /** @summary call function for each painter in the pad
+     * @desc Iterate over all known painters
     * @private */
-   ObjectPainter.prototype.ForEachPainter = function(userfunc, kind) {
-      // Iterate over all known painters
-
+   ObjectPainter.prototype.forEachPainter = function(userfunc, kind) {
       // special case of the painter set as pointer of first child of main element
       let painter = this.AccessTopPainter();
       if (painter) {
@@ -2464,7 +2463,7 @@ JSROOT.define(['d3'], (d3) => {
 
       // iterate over all painters from pad list
       let pp = this.pad_painter();
-      if (pp) pp.ForEachPainterInPad(userfunc, kind);
+      if (pp) pp.forEachPainterInPad(userfunc, kind);
    }
 
    /** @summary indicate that redraw was invoked via interactive action (like context menu or zooming)
@@ -4003,7 +4002,7 @@ JSROOT.define(['d3'], (d3) => {
          if (typeof arg !== 'object') arg = null;
       let done = false, dummy = new ObjectPainter();
       dummy.SetDivId(divid, -1);
-      dummy.ForEachPainter(painter => {
+      dummy.forEachPainter(painter => {
          if (!done && (typeof painter.checkResize == 'function'))
             done = painter.checkResize(arg);
       });
@@ -4027,7 +4026,7 @@ JSROOT.define(['d3'], (d3) => {
    JSROOT.cleanup = function(divid) {
       let dummy = new ObjectPainter(), lst = [];
       dummy.SetDivId(divid, -1);
-      dummy.ForEachPainter(painter => {
+      dummy.forEachPainter(painter => {
          if (lst.indexOf(painter) < 0) lst.push(painter);
       });
       for (let n = 0; n < lst.length; ++n) lst[n].Cleanup();

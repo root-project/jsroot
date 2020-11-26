@@ -1755,7 +1755,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       // first process zooming (if any)
       if (zoom_x || zoom_y || zoom_z)
-         this.ForEachPainter(obj => {
+         this.forEachPainter(obj => {
             if (zoom_x && obj.CanZoomIn("x", xmin, xmax)) {
                this.zoom_xmin = xmin;
                this.zoom_xmax = xmax;
@@ -2018,13 +2018,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
      * @param {function} userfunc - function to call
      * @param {string} kind - "all" for all objects (default), "pads" only pads and subpads, "objects" only for object in current pad
      * @private */
-   TPadPainter.prototype.ForEachPainterInPad = function(userfunc, kind) {
+   TPadPainter.prototype.forEachPainterInPad = function(userfunc, kind) {
       if (!kind) kind = "all";
       if (kind!="objects") userfunc(this);
       for (let k = 0; k < this.painters.length; ++k) {
          let sub = this.painters[k];
-         if (typeof sub.ForEachPainterInPad === 'function') {
-            if (kind!="objects") sub.ForEachPainterInPad(userfunc, kind);
+         if (typeof sub.forEachPainterInPad === 'function') {
+            if (kind!="objects") sub.forEachPainterInPad(userfunc, kind);
          } else if (kind != "pads") userfunc(sub);
       }
    }
@@ -3206,7 +3206,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       let items = []; // keep list of replaced elements, which should be moved back at the end
 
       if (!use_frame) // do not make transformations for the frame
-      painter.ForEachPainterInPad(pp => {
+      painter.forEachPainterInPad(pp => {
 
          let item = { prnt: pp.svg_pad() };
          items.push(item);
@@ -3595,11 +3595,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          let grid = new JSROOT.GridDisplay(origin.node(), layout_kind);
 
          if (layout_kind.indexOf("vert")==0) {
-            main = d3.select(grid.GetFrame(0));
-            sidebar = d3.select(grid.GetFrame(1));
+            main = d3.select(grid.getGridFrame(0));
+            sidebar = d3.select(grid.getGridFrame(1));
          } else {
-            main = d3.select(grid.GetFrame(1));
-            sidebar = d3.select(grid.GetFrame(0));
+            main = d3.select(grid.getGridFrame(1));
+            sidebar = d3.select(grid.getGridFrame(0));
          }
 
          main.classed("central_panel", true).style('position','relative');
@@ -4034,7 +4034,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if (!pad_painter.is_active_pad) {
          ischanged = true;
-         this.ForEachPainterInPad(pp => pp.DrawActiveBorder(null, pp === pad_painter), "pads");
+         this.forEachPainterInPad(pp => pp.DrawActiveBorder(null, pp === pad_painter), "pads");
       }
 
       if (obj_painter && (obj_painter.snapid!==undefined) && arg) {
@@ -4073,7 +4073,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (!this.normal_canvas) {
 
          // fill list of primitives from painters
-         this.ForEachPainterInPad(p => {
+         this.forEachPainterInPad(p => {
             if (p.$secondary) return; // ignore all secoandry painters
 
             let subobj = p.GetObject();

@@ -802,7 +802,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
 
       let frame_titles = ['object name','object title','mouse coordinates','object info'];
       for (let k=0;k<4;++k)
-         d3.select(this.status_layout.GetFrame(k)).attr('title', frame_titles[k]).style('overflow','hidden')
+         d3.select(this.status_layout.getGridFrame(k)).attr('title', frame_titles[k]).style('overflow','hidden')
            .append("label").attr("class","jsroot_status_label");
 
       this.status_handler = this.ShowStatus.bind(this);
@@ -859,16 +859,16 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
    BrowserLayout.prototype.ShowStatus = function(name, title, info, coordinates) {
       if (!this.status_layout) return;
 
-      $(this.status_layout.GetFrame(0)).children('label').text(name || "");
-      $(this.status_layout.GetFrame(1)).children('label').text(title || "");
-      $(this.status_layout.GetFrame(2)).children('label').text(coordinates || "");
-      $(this.status_layout.GetFrame(3)).children('label').text(info || "");
+      $(this.status_layout.getGridFrame(0)).children('label').text(name || "");
+      $(this.status_layout.getGridFrame(1)).children('label').text(title || "");
+      $(this.status_layout.getGridFrame(2)).children('label').text(coordinates || "");
+      $(this.status_layout.getGridFrame(3)).children('label').text(info || "");
 
       if (!this.status_layout.first_check) {
          this.status_layout.first_check = true;
          let maxh = 0;
          for (let n=0;n<4;++n)
-            maxh = Math.max(maxh, $(this.status_layout.GetFrame(n)).children('label').outerHeight());
+            maxh = Math.max(maxh, $(this.status_layout.getGridFrame(n)).children('label').outerHeight());
          if ((maxh>5) && ((maxh>this.last_hsepar_height) || (maxh<this.last_hsepar_height+5)))
             this.AdjustSeparator(null, maxh, true);
       }
@@ -1409,7 +1409,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
             let items = [];
 
             if (this.disp)
-               this.disp.ForEachPainter(p => {
+               this.disp.forEachPainter(p => {
                   if (p.GetItemName())
                      items.push(p.GetItemName());
                });
@@ -1479,8 +1479,9 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
    HierarchyPainter.prototype.createDisplay = function() {
 
       if ('disp' in this) {
-         if (this.disp.NumDraw() > 0) return Promise.resolve(this.disp);
-         this.disp.Reset();
+         if (this.disp.numDraw() > 0)
+            return Promise.resolve(this.disp);
+         this.disp.cleanup();
          delete this.disp;
       }
 
@@ -1766,7 +1767,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          this.cnt = 0; // use to count newly created frames
       }
 
-      ForEachFrame(userfunc,  only_visible) {
+      forEachFrame(userfunc,  only_visible) {
          let topid = this.frameid + '_collapsible';
 
          if (!document.getElementById(topid)) return;
@@ -1782,19 +1783,17 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          });
       }
 
-      GetActiveFrame() {
-         let found = super.GetActiveFrame();
+      getActiveFrame() {
+         let found = super.getActiveFrame();
          if (found && !$(found).is(":hidden")) return found;
 
          found = null;
-         this.ForEachFrame(function(frame) {
-            if (!found) found = frame;
-         }, true);
+         this.forEachFrame(frame => { if (!found) found = frame; }, true);
 
          return found;
       }
 
-      ActivateFrame(frame) {
+      activateFrame(frame) {
          if ($(frame).is(":hidden")) {
             $(frame).prev().toggleClass("ui-accordion-header-active ui-state-active ui-state-default ui-corner-bottom")
                     .find("> .ui-icon").toggleClass("ui-icon-triangle-1-e ui-icon-triangle-1-s").end()
@@ -1805,9 +1804,9 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          this.active_frame_title = d3.select(frame).attr('frame_title');
       }
 
-      CreateFrame(title) {
+      createFrame(title) {
 
-         this.BeforeCreateFrame(title);
+         this.beforeCreateFrame(title);
 
          let topid = this.frameid + '_collapsible';
 
@@ -1871,7 +1870,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          this.cnt = 0;
       }
 
-      ForEachFrame(userfunc, only_visible) {
+      forEachFrame(userfunc, only_visible) {
          let topid = this.frameid + '_tabs';
 
          if (!document.getElementById(topid)) return;
@@ -1888,15 +1887,15 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          });
       }
 
-      GetActiveFrame() {
+      getActiveFrame() {
          let found = null;
-         this.ForEachFrame(frame => { if (!found) found = frame; }, true);
+         this.forEachFrame(frame => { if (!found) found = frame; }, true);
          return found;
       }
 
-      ActivateFrame(frame) {
+      activateFrame(frame) {
          let cnt = 0, id = -1;
-         this.ForEachFrame(fr => {
+         this.forEachFrame(fr => {
             if ($(fr).attr('id') == $(frame).attr('id')) id = cnt;
             cnt++;
          });
@@ -1905,9 +1904,9 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          this.active_frame_title = d3.select(frame).attr('frame_title');
       }
 
-      CreateFrame(title) {
+      createFrame(title) {
 
-         this.BeforeCreateFrame(title);
+         this.beforeCreateFrame(title);
 
          let mdi = this,
              topid = this.frameid + '_tabs',
@@ -1968,7 +1967,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          this.cnt = 0; // use to count newly created frames
       }
 
-      ForEachFrame(userfunc,  only_visible) {
+      forEachFrame(userfunc,  only_visible) {
          let topid = this.frameid + '_flex';
 
          if (!document.getElementById(topid)) return;
@@ -1982,23 +1981,23 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          });
       }
 
-      GetActiveFrame() {
-         let found = super.GetActiveFrame();
+      getActiveFrame() {
+         let found = super.getActiveFrame();
          if (found && !$(found).is(":hidden")) return found;
 
          found = null;
-         this.ForEachFrame(frame => { if (!found) found = frame; }, true);
+         this.forEachFrame(frame => { if (!found) found = frame; }, true);
 
          return found;
       }
 
-      ActivateFrame(frame) {
+      activateFrame(frame) {
          this.active_frame_title = d3.select(frame).attr('frame_title');
       }
 
-      CreateFrame(title) {
+      createFrame(title) {
 
-         this.BeforeCreateFrame(title);
+         this.beforeCreateFrame(title);
 
          let topid = this.frameid + '_flex';
 
@@ -2177,7 +2176,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
 
    // ================== new grid with flexible boundaries ========
 
-   JSROOT.GridDisplay.prototype.CreateSeparator = function(handle, main, group) {
+   JSROOT.GridDisplay.prototype.createSeparator = function(handle, main, group) {
       let separ = $(main.append("div").node());
 
       separ.toggleClass('jsroot_separator', true)
@@ -2270,9 +2269,9 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
       });
    }
 
-   // ========== performs tree drawing on server ==================
-
-   JSROOT.CreateTreePlayer = function(player) {
+   /** @summary Create painter to perform tree drawing on server side
+     * @private */
+   JSROOT.createTreePlayer = function(player) {
 
       player.draw_first = true;
 
@@ -2475,7 +2474,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
       let mdi = hpainter.getDisplay();
       if (!mdi) return null;
 
-      let frame = mdi.FindFrame(itemname, true);
+      let frame = mdi.findFrame(itemname, true);
       if (!frame) return null;
 
       let divid = d3.select(frame).attr('id'),
@@ -2490,7 +2489,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
             }
          }
 
-      JSROOT.CreateTreePlayer(player);
+      JSROOT.createTreePlayer(player);
       player.ConfigureOnline(itemname, url, askey, root_version, draw_expr);
       player.Show(divid);
 

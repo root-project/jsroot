@@ -2831,7 +2831,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
 
          if ((args==='player') || !args) {
             JSROOT.require("jq2d").then(() => {
-               JSROOT.CreateTreePlayer(painter);
+               JSROOT.createTreePlayer(painter);
                painter.ConfigureTree(tree);
                painter.Show(divid);
                painter.DrawingReady();
@@ -2872,7 +2872,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
          create_player = 1;
          // args.player_intermediate = res.progress;
          JSROOT.require("jq2d").then(() => {
-            JSROOT.CreateTreePlayer(painter);
+            JSROOT.createTreePlayer(painter);
             painter.ConfigureTree(tree);
             painter.Show(divid, args);
             create_player = 2;

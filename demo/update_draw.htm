@@ -29,7 +29,7 @@
             }
 
             // when use grid layout, use counter value stored in request itself
-            let frame = mdi ? mdi.FindFrame("item" + (this.req_cnt % mdi.NumGridFrames()), true) : 'drawing';
+            let frame = mdi ? mdi.findFrame("item" + (this.req_cnt % mdi.numGridFrames()), true) : 'drawing';
 
             // redraw histogram at specified frame
             JSROOT.redraw(frame, histo, drawopt);

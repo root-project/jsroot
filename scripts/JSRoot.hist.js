@@ -1996,7 +1996,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    /** @summary copy draw options to all other histograms in the pad
      * @private */
    THistPainter.prototype.CopyOptionsToOthers = function() {
-      this.ForEachPainter(painter => {
+      this.forEachPainter(painter => {
          if ((painter !== this) && (typeof painter.CopyOptionsFrom == 'function'))
             painter.CopyOptionsFrom(this);
       }, "objects");
@@ -2146,7 +2146,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
             // find painters associated with histogram
             if (pp)
-               pp.ForEachPainterInPad(objp => {
+               pp.forEachPainterInPad(objp => {
                   if (objp.child_painter_id === pid)
                      painters.push(objp);
                }, "objects");
