@@ -554,11 +554,11 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
       if (this._hpainter) {
          // show browser if it not visible
-         this._hpainter.activate(names, force);
+         this._hpainter.activateItems(names, force);
 
          // if highlight in the browser disabled, suppress in few seconds
          if (!this.ctrl.update_browser)
-            setTimeout(this._hpainter.activate.bind(this._hpainter, []), 2000);
+            setTimeout(() => this._hpainter.activateItems([]), 2000);
       }
    }
 

@@ -664,9 +664,16 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
      * @memberof JSROOT
      * @extends JSROOT.BasePainter
      * @param {string} name - painter name
-     * @param {string|object} frameid - place when painter drawn
+     * @param {string} frameid - element id where painter is drawn
      * @param {string} backgr - background color
-     * @private
+     * @example
+     *    // create hierarchy painter in "myTreeDiv"
+     *    let h = new JSROOT.HierarchyPainter("example", "myTreeDiv");
+     *    // configure 'simple' layout in "myMainDiv"
+     *    // one also can specify "grid2x2" or "flex" or "tabs"
+     *    h.setDisplay("simple", "myMainDiv");
+     *    // open file and display element
+     *    h.openRootFile("https://root.cern/js/files/hsimple.root").then(() => h.display("hpxpy;1","colz"));
      */
 
    function HierarchyPainter(name, frameid, backgr) {
@@ -697,7 +704,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          JSROOT.hpainter = null;
    }
 
-   /** @summary Create file hierarchy */
+   /** @summary Create file hierarchy
+     * @protected */
    HierarchyPainter.prototype.fileHierarchy = function(file) {
       let painter = this;
 
@@ -768,9 +776,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Iterate over all items in hierarchy
-    * @param {function} func - function called for every item
-    * @param {object} [top] - top item to start from
-    * @private */
+     * @param {function} func - function called for every item
+     * @param {object} [top] - top item to start from
+     * @protected */
    HierarchyPainter.prototype.forEachItem = function(func, top) {
       function each_item(item, prnt) {
          if (!item) return;
@@ -786,13 +794,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Search item in the hierarchy
-    * @param {object|string} arg - item name or object with arguments
-    * @param {string} arg.name -  item to search
-    * @param {boolean} [arg.force = false] - specified elements will be created when not exists
-    * @param {boolean} [arg.last_exists = false] -  when specified last parent element will be returned
-    * @param {boolean} [arg.check_keys = false] - check TFile keys with cycle suffix
-    * @param {object} [arg.top = null] - element to start search from
-    * @private */
+     * @param {object|string} arg - item name or object with arguments
+     * @param {string} arg.name -  item to search
+     * @param {boolean} [arg.force] - specified elements will be created when not exists
+     * @param {boolean} [arg.last_exists] -  when specified last parent element will be returned
+     * @param {boolean} [arg.check_keys] - check TFile keys with cycle suffix
+     * @param {object} [arg.top] - element to start search from
+     * @protected */
    HierarchyPainter.prototype.findItem = function(arg) {
 
       function find_in_hierarchy(top, fullname) {
@@ -970,6 +978,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    /** @summary Get object item with specified name
      * @desc depending from provided option, same item can generate different object types
+     * @param {Object} arg - item name or config object
+     * @param {string} arg.name - item name
+     * @param {Object} arg.item - or item itself
+     * @param {string} options - supposed draw options
      * @returns {Promise} with object like { item, obj, itemname } */
    HierarchyPainter.prototype.getObject = function(arg, options) {
 
@@ -1035,17 +1047,22 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return Promise.resolve(result);
    }
 
+   /** @summary Just envelope, one should be able to redefine it for sub-classes
+     * @desc Redirect to {@link JSROOT.draw} method
+     * @protected */
    HierarchyPainter.prototype.draw = function(divid, obj, drawopt) {
-      // just envelope, one should be able to redefine it for sub-classes
       return JSROOT.draw(divid, obj, drawopt);
    }
 
+   /** @summary Just envelope, one should be able to redefine it for sub-classes
+     * @desc Redirect to {@link JSROOT.redraw} method
+     * @protected */
    HierarchyPainter.prototype.redraw = function(divid, obj, drawopt) {
-      // just envelope, one should be able to redefine it for sub-classes
       return JSROOT.redraw(divid, obj, drawopt);
    }
 
-   /** @summary Starts player for specified item */
+   /** @summary Starts player for specified item
+     * @returns {Promise} when ready*/
    HierarchyPainter.prototype.player = function(itemname, option) {
       let item = this.findItem(itemname);
 
@@ -1279,12 +1296,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             delete item._file;
          });
 
-      return this.displayAll(allitems, options);
+      return this.displayItems(allitems, options);
    }
 
    /** @summary Display all provided elements
      * @returns {Promise} when drawing finished */
-   HierarchyPainter.prototype.displayAll = function(items, options) {
+   HierarchyPainter.prototype.displayItems = function(items, options) {
 
       if (!items || (items.length == 0))
          return Promise.resolve(true);
@@ -1448,7 +1465,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       });
    }
 
-   /** @summary Reload hierarhcy and refresh html code
+   /** @summary Reload hierarchy and refresh html code
      * @returns {Promise} when completed */
    HierarchyPainter.prototype.reload = function() {
       if ('_online' in this.h)
@@ -1461,8 +1478,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary activate (select) specified item
+     * @param {Array} items - array of items names
      * @param {boolean} [force] - if specified, all required sub-levels will be opened */
-   HierarchyPainter.prototype.activate = function(items, force) {
+   HierarchyPainter.prototype.activateItems = function(items, force) {
 
       if (typeof items == 'string') items = [ items ];
 
@@ -1471,13 +1489,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.forEachItem(item => { if (item._background) { active.push(item); delete item._background; } });
 
       let mark_active = () => {
-         if (typeof this.UpdateBackground !== 'function') return;
+         if (typeof this.updateBackground !== 'function') return;
 
          for (let n=update.length-1;n>=0;--n)
             this.updateTreeNode(update[n]);
 
          for (let n=0;n<active.length;++n)
-            this.UpdateBackground(active[n], force);
+            this.updateBackground(active[n], force);
       }
 
       let find_next = (itemname, prev_found) => {
@@ -1544,6 +1562,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary expand specified item
+     * @param {String} itemname - item name
      * @returns {Promise} when ready */
    HierarchyPainter.prototype.expandItem = function(itemname, d3cont, silent) {
       let hitem = this.findItem(itemname);
@@ -1629,7 +1648,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Return main online item
-     * @private */
+     * @protected */
    HierarchyPainter.prototype.getTopOnlineItem = function(item) {
       if (item) {
          while (item && (!('_online' in item))) item = item._parent;
@@ -1642,7 +1661,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return null;
    }
 
-   /** @summary Call function for each item which corresponds to JSON file */
+   /** @summary Call function for each item which corresponds to JSON file
+     * @protected */
    HierarchyPainter.prototype.forEachJsonFile = function(func) {
       if (!this.h) return;
       if ('_jsonfile' in this.h)
@@ -1655,7 +1675,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          }
    }
 
-   /** @summary Open JSON file */
+   /** @summary Open JSON file
+     * @returns {Promise} when object ready */
    HierarchyPainter.prototype.openJsonFile = function(filepath) {
       let isfileopened = false;
       this.forEachJsonFile(item => { if (item._jsonfile==filepath) isfileopened = true; });
@@ -2220,6 +2241,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return isany;
    }
 
+   /** @summary Process resize event
+     * @protected */
    HierarchyPainter.prototype.checkResize = function(size) {
       if (this.disp) this.disp.checkMDIResize(null, size);
    }
@@ -2381,7 +2404,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             promise = this.applyStyle(style.shift());
          else {
             this.refreshHtml();
-            return this.displayAll(itemsarr, optionsarr).then(() => {
+            return this.displayItems(itemsarr, optionsarr).then(() => {
                if (itemsarr) this.refreshHtml();
                this.setMonitoring(monitor);
                return this; // this is final return
@@ -2665,7 +2688,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    // ================================================================
 
-   // MDIDisplay - class to manage multiple document interface for drawings
+   /**
+    * @summary Base class to manage multiple document interface for drawings
+    *
+    * @class
+    * @memberof JSROOT
+    * @private
+    */
 
    class MDIDisplay extends JSROOT.BasePainter {
       constructor(frameid) {
@@ -2679,12 +2708,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       beforeCreateFrame(title) { this.active_frame_title = title; }
 
-      /** method dedicated to iterate over existing panels
+      /** @summary method dedicated to iterate over existing panels
         * @param {function} userfunc is called with arguments (frame)
         * @param {boolean} only_visible let select only visible frames */
       forEachFrame(/* userfunc, only_visible */) { console.warn("forEachFrame not implemented in MDIDisplay"); }
 
-      /** method dedicated to iterate over existing panles
+      /** @summary method dedicated to iterate over existing panles
         * @param {function} userfunc is called with arguments (painter, frame)
         * @param {boolean} only_visible let select only visible frames */
       forEachPainter(userfunc, only_visible) {
@@ -2762,13 +2791,22 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    // ==================================================
 
+   /**
+    * @summary Custom MDI display
+    *
+    * @class
+    * @memberof JSROOT
+    * @desc All HTML frames should be created before and add via {@link CustomDisplay.addFrame} calls
+    * @private
+    */
+
    class CustomDisplay extends MDIDisplay {
       constructor() {
          super("dummy");
          this.frames = {}; // array of configured frames
       }
 
-      AddFrame(divid, itemname) {
+      addFrame(divid, itemname) {
          if (!(divid in this.frames)) this.frames[divid] = "";
 
          this.frames[divid] += (itemname + ";");
@@ -2803,18 +2841,28 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    // ================================================
 
+   /**
+    * @summary Generic grid MDI display
+    *
+    * @class
+    * @memberof JSROOT
+    * @private
+    * @param {string} frameid - where grid display is created
+    * @param {string} kind - kind of grid
+    * @desc  following kinds are supported
+    *    - vertical or horizontal - only first letter matters, defines basic orientation
+    *    - 'x' in the name disable interactive separators
+    *    - v4 or h4 - 4 equal elements in specified direction
+    *    - v231 -  created 3 vertical elements, first divided on 2, second on 3 and third on 1 part
+    *    - v23_52 - create two vertical elements with 2 and 3 subitems, size ratio 5:2
+    *    - gridNxM - normal grid layout without interactive separators
+    *    - gridiNxM - grid layout with interactive separators
+    *    -  simple - no layout, full frame used for object drawings
+    */
+
    class GridDisplay extends MDIDisplay {
 
       constructor(frameid, kind, kind2) {
-         // following kinds are supported
-         //  vertical or horizontal - only first letter matters, defines basic orientation
-         //   'x' in the name disable interactive separators
-         //   v4 or h4 - 4 equal elements in specified direction
-         //   v231 -  created 3 vertical elements, first divided on 2, second on 3 and third on 1 part
-         //   v23_52 - create two vertical elements with 2 and 3 subitems, size ratio 5:2
-         //   gridNxM - normal grid layout without interactive separators
-         //   gridiNxM - grid layout with interactive separators
-         //   simple - no layout, full frame used for object drawings
 
          super(frameid);
 

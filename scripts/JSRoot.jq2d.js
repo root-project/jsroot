@@ -883,6 +883,8 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
 
    let HierarchyPainter = JSROOT.HierarchyPainter;
 
+   /** @summary returns true if item is last in parent childs list
+     * @private */
    HierarchyPainter.prototype.isLastSibling = function(hitem) {
       if (!hitem || !hitem._parent || !hitem._parent._childs) return false;
       let chlds = hitem._parent._childs, indx = chlds.indexOf(hitem);
@@ -892,8 +894,9 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
       return true;
    }
 
+   /** @summary Create item html code
+     * @private */
    HierarchyPainter.prototype.addItemHtml = function(hitem, d3prnt, arg) {
-
       if (!hitem || ('_hidden' in hitem)) return true;
 
       let isroot = (hitem === this.h),
@@ -1090,7 +1093,8 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
       return false;
    }
 
-   /** @summary Refresh HTML code of hierarchy painter */
+   /** @summary Refresh HTML code of hierarchy painter
+     * @returns {Promise} when done */
    HierarchyPainter.prototype.refreshHtml = function() {
 
       if (!this.divid) return Promise.resolve();
@@ -1176,6 +1180,8 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
       return Promise.resolve();
    }
 
+   /** @summary Update item node
+     * @private */
    HierarchyPainter.prototype.updateTreeNode = function(hitem, d3cont) {
       if ((d3cont===undefined) || d3cont.empty())  {
          d3cont = d3.select(hitem._d3cont ? hitem._d3cont : null);
@@ -1192,7 +1198,9 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
       if (this.brlayout) this.brlayout.AdjustBrowserSize(true);
    }
 
-   HierarchyPainter.prototype.UpdateBackground = function(hitem, scroll_into_view) {
+   /** @summary Update item background
+     * @private */
+   HierarchyPainter.prototype.updateBackground = function(hitem, scroll_into_view) {
 
       if (!hitem || !hitem._d3cont) return;
 
@@ -1208,7 +1216,8 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          d3a.node().scrollIntoView(false);
    }
 
-   /** @summary Handler for click event of item in the hierarchy */
+   /** @summary Handler for click event of item in the hierarchy
+     * @private */
    HierarchyPainter.prototype.tree_click = function(evnt, node, place) {
       if (!node) return;
 
@@ -1331,6 +1340,8 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
       this.updateTreeNode(hitem, d3cont);
    }
 
+   /** @summary Handler for mouse-over event
+     * @private */
    HierarchyPainter.prototype.tree_mouseover = function(on, elem) {
       let itemname = d3.select(elem.parentNode.parentNode).attr('item');
 
@@ -1347,9 +1358,9 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          painter.MouseOverHierarchy(on, itemname, hitem);
    }
 
+   /** @summary alternative context menu, used in the object inspector
+     * @private */
    HierarchyPainter.prototype.direct_contextmenu = function(evnt, elem) {
-      // this is alternative context menu, used in the object inspector
-
       evnt.preventDefault();
       let itemname = d3.select(elem.parentNode.parentNode).attr('item');
       let hitem = this.findItem(itemname);
@@ -1366,6 +1377,8 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
       });
    }
 
+   /** @summary Handle context menu in the hieararchy
+     * @private */
    HierarchyPainter.prototype.tree_contextmenu = function(evnt, elem) {
       // this is handling of context menu request for the normal objects browser
 
