@@ -1144,7 +1144,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
       if ('disp_kind' in this) {
          d3btns.append("text").text(" | ");
          d3btns.append("a").attr("class", "h_button").text("clear")
-               .attr("title","clear all drawn objects").on("click", h.clear.bind(h,false));
+               .attr("title","clear all drawn objects").on("click", () => this.cleanup(false));
       }
 
       let maindiv =
@@ -1623,7 +1623,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
 
          jmain.find(".gui_ReadFileBtn").button().click(() => this.ReadSelectedFile());
 
-         jmain.find(".gui_ResetUIBtn").button().click(() => this.clear(true));
+         jmain.find(".gui_ResetUIBtn").button().click(() => this.cleanup(true));
 
          jmain.find(".gui_urlToLoad").keyup(e => {
             if (e.keyCode == 13) this.ReadSelectedFile();
@@ -1716,7 +1716,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
            .prop('checked', this.isMonitoring())
            .click(function() {
                painter.enableMonitoring(this.checked);
-               painter.updateAll(!this.checked);
+               painter.updateItems();
             });
       } else if (!this.no_select) {
          let fname = "";

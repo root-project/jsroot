@@ -951,8 +951,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if (hitem && hitem._title) d3node.attr('title', hitem._title + " lastres=" + res);
             d3node.style('background', col);
             setTimeout(() => d3node.style('background', ''), 2000);
-            if ((col == 'green') && ('_hreload' in hitem)) this.reload();
-            if ((col == 'green') && ('_update_item' in hitem)) this.updateItems(hitem._update_item.split(";"));
+            if ((col == 'green') && ('_hreload' in hitem))
+               this.reload();
+            if ((col == 'green') && ('_update_item' in hitem))
+               this.updateItems(hitem._update_item.split(";"));
          }
          return res;
       });
@@ -1225,73 +1227,52 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       });
    }
 
-   /** @summary Update items
-     * @desc Argument is item name or array of string with items name
-     * only already drawn items will be update with same draw option
-     * @returns {Promise} when ready */
-   HierarchyPainter.prototype.updateItems = function(items) {
-
-      if (!this.disp || !items)
-         return Promise.resolve(false);
-
-      let draw_items = [], draw_options = [];
-
-      this.disp.forEachPainter(p => {
-         let itemname = p.GetItemName();
-         if (!itemname || (draw_items.indexOf(itemname) >= 0)) return;
-         if (typeof items == 'array') {
-            if (items.indexOf(itemname) < 0) return;
-         } else {
-            if (items != itemname) return;
-         }
-         draw_items.push(itemname);
-         draw_options.push("update:" + p.GetItemDrawOpt());
-      }, true); // only visible panels are considered
-
-      return this.displayAll(draw_items, draw_options);
-   }
-
-
-   /** @summary Update all elements
+   /** @summary Update specified items
      * @desc Method can be used to fetch new objects and update all existing drawings
-     * if only_auto_items specified, only automatic items will be updated
+     * @param arg - either item name or array of items names to update or true if only only automatic items will be updated
      * @returns {Promise} when ready */
-   HierarchyPainter.prototype.updateAll = function(only_auto_items /*, only_items*/) {
+   HierarchyPainter.prototype.updateItems = function(arg) {
 
       if (!this.disp)
          return Promise.resolve(false);
 
-      if (only_auto_items === "monitoring") only_auto_items = !this._monitoring_on;
+      let allitems = [], options = [], only_auto_items = false, want_update_all = false;
 
-      let allitems = [], options = [];
+      if (typeof arg == "string")
+         arg = [ arg ];
+      else if (typeof arg != 'object') {
+         if (arg === undefined) arg = !this.isMonitoring();
+         want_update_all = true;
+         only_auto_items = !!arg;
+      }
 
       // first collect items
       this.disp.forEachPainter(p => {
-         let itemname = p.GetItemName(),
-             drawopt = p.GetItemDrawOpt();
-         if ((typeof itemname != 'string') || (allitems.indexOf(itemname)>=0)) return;
+         let itemname = p.GetItemName();
 
-         let item = this.Find(itemname), forced = false;
-         if (!item || ('_not_monitor' in item) || ('_player' in item)) return;
+         if ((typeof itemname != 'string') || (allitems.indexOf(itemname) >= 0)) return;
 
-         if ('_always_monitor' in item) {
-            forced = true;
-         } else {
-            let handle = JSROOT.getDrawHandle(item._kind);
-            if (handle && ('monitor' in handle)) {
-               if ((handle.monitor===false) || (handle.monitor=='never')) return;
-               if (handle.monitor==='always') forced = true;
+         if (want_update_all) {
+            let item = this.Find(itemname);
+            if (!item || ('_not_monitor' in item) || ('_player' in item)) return;
+            if (!('_always_monitor' in item)) {
+               let forced = false, handle = JSROOT.getDrawHandle(item._kind);
+               if (handle && ('monitor' in handle)) {
+                  if ((handle.monitor === false) || (handle.monitor == 'never')) return;
+                  if (handle.monitor==='always') forced = true;
+               }
+               if (!forced && only_auto_items) return;
             }
+         } else {
+            if (arg.indexOf(itemname) < 0) return;
          }
 
-         if (forced || !only_auto_items) {
-            allitems.push(itemname);
-            options.push("update:" + drawopt);
-         }
+         allitems.push(itemname);
+         options.push("update:" + p.GetItemDrawOpt());
       }, true); // only visible panels are considered
 
       // force all files to read again (normally in non-browser mode)
-      if (this.files_monitoring && !only_auto_items)
+      if (this.files_monitoring && !only_auto_items && want_update_all)
          this.forEachRootFile(item => {
             this.forEachItem(fitem => { delete fitem._readobj; }, item);
             delete item._file;
@@ -2069,7 +2050,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if (arg == "draw") {
          delete this._monitoring_frame;
-         this.updateAll("monitoring");
+         this.updateItems();
       }
 
       this._monitoring_handle = setTimeout(this._runMonitoring.bind(this,"frame"), this.getMonitoringInterval());
