@@ -2285,14 +2285,12 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          d3.select(interactive.node().parentNode).attr("transform", this.draw_g.attr("transform"));
 
          if (JSROOT.settings.Zooming && JSROOT.settings.ZoomWheel)
-            interactive.on("wheel", () => this.MouseWheel());
+            interactive.on("wheel", evnt => this.MouseWheel(evnt));
       });
    }
 
    function drawGraphPolargram(divid, polargram /*, opt*/) {
-
       let painter = new TGraphPolargramPainter(polargram);
-
       painter.SetDivId(divid, -1); // just to get access to existing elements
 
       let main = painter.main_painter();
@@ -2515,11 +2513,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    }
 
    function drawGraphPolar(divid, graph, opt) {
-
       let painter = new TGraphPolarPainter(graph);
-
       painter.DecodeOptions(opt);
-
       painter.SetDivId(divid, -1); // just to get access to existing elements
 
       let main = painter.main_painter();
@@ -2529,13 +2524,12 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
             return null;
          }
          painter.PerformDrawing(divid);
-
          return painter;
       }
 
       if (!graph.fPolargram) graph.fPolargram = painter.CreatePolargram();
 
-      return JSROOT.draw(divid, graph.fPolargram, "").then(painter.PerformDrawing.bind(painter, divid));
+      return JSROOT.draw(divid, graph.fPolargram, "").then(() => painter.PerformDrawing(divid));
    }
 
    // ==============================================================

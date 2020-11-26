@@ -1499,6 +1499,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       JSROOT.ObjectPainter.prototype.Cleanup.call(this);
    }
 
+   /** @summary Redraw frame */
    TFramePainter.prototype.Redraw = function(/* reason */) {
       let pp = this.pad_painter();
       if (pp) pp.frame_painter_ref = this; // keep direct reference to the frame painter
