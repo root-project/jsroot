@@ -1098,7 +1098,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
             .style('flex-direction','column');
 
       let h = this, factcmds = [], status_item = null;
-      this.ForEach(item => {
+      this.forEachItem(item => {
          delete item._d3cont; // remove html container
          if (('_fastcmd' in item) && (item._kind == 'Command')) factcmds.push(item);
          if (('_status' in item) && !status_item) status_item = item;

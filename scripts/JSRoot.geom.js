@@ -4350,7 +4350,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
             hpainter.updateTreeNode(item);
          } else {
             ScanEveVisible(obj, { assign: (arg === "true") }, true);
-            hpainter.ForEach(function(m) {
+            hpainter.forEachItem(m => {
                // update all child items
                if (m._geoobj && m._icon) {
                   m._icon = item._icon.split(" ")[0] + geo.provideVisStyle(m._geoobj);
@@ -4365,7 +4365,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       function ToggleMenuBit(arg) {
          geo.ToggleBit(vol, arg);
          let newname = item._icon.split(" ")[0] + geo.provideVisStyle(vol);
-         hpainter.ForEach(function(m) {
+         hpainter.forEachItem(m => {
             // update all items with that volume
             if (item._volume === m._volume) {
                m._icon = newname;
@@ -4424,7 +4424,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
    geo.updateBrowserIcons = function(obj, hpainter) {
       if (!obj || !hpainter) return;
 
-      hpainter.ForEach(function(m) {
+      hpainter.forEachItem(m => {
          // update all items with that volume
          if ((obj === m._volume) || (obj === m._geoobj)) {
             m._icon = m._icon.split(" ")[0] + geo.provideVisStyle(obj);

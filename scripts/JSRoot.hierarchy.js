@@ -767,23 +767,21 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Iterate over all items in hierarchy
-    * @param {function} callback - function called for every item
-    * @param {object} [top = null] - top item to start from
+    * @param {function} func - function called for every item
+    * @param {object} [top] - top item to start from
     * @private */
-   HierarchyPainter.prototype.ForEach = function(callback, top) {
-
-      if (!top) top = this.h;
-      if (!top || (typeof callback != 'function')) return;
-      function each_item(item) {
-         callback(item);
+   HierarchyPainter.prototype.forEachItem = function(func, top) {
+      function each_item(item, prnt) {
+         if (!item) return;
+         if (prnt) item._parent = prnt;
+         func(item);
          if ('_childs' in item)
-            for (let n = 0; n < item._childs.length; ++n) {
-               item._childs[n]._parent = item;
-               each_item(item._childs[n]);
-            }
+            for (let n = 0; n < item._childs.length; ++n)
+               each_item(item._childs[n], item);
       }
 
-      each_item(top);
+      if (typeof func == 'function')
+         each_item(top || this.h);
    }
 
    /** @summary Search item in the hierarchy
@@ -894,6 +892,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return find_in_hierarchy(top, itemname);
    }
 
+   /** @summary Produce full string name for item
+     * @param {Object} node - item element
+     * @param {Object} [uptoparent] - up to which parent to continue
+     * @param {boolean} [compact] - if specified, top parent is not included
+     * @returns {string} produced name */
    HierarchyPainter.prototype.itemFullName = function(node, uptoparent, compact) {
 
       if (node && node._kind ==='TopFolder') return "__top_folder__";
@@ -1188,7 +1191,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       // here is not defined - implemented with jquery
    }
 
-  /** @summary Drop item on specified element for drawing */
+  /** @summary Drop item on specified element for drawing
+    * @returns {Promise} when completed */
    HierarchyPainter.prototype.dropItem = function(itemname, divid, opt) {
       if (opt && typeof opt === 'function') { call_back = opt; opt = ""; }
       if (opt===undefined) opt = "";
@@ -1223,16 +1227,18 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    /** @summary Update items
      * @desc Argument is item name or array of string with items name
-     * only already drawn items will be update with same draw option */
+     * only already drawn items will be update with same draw option
+     * @returns {Promise} when ready */
    HierarchyPainter.prototype.updateItems = function(items) {
 
-      if (!this.disp || !items) return;
+      if (!this.disp || !items)
+         return Promise.resolve(false);
 
       let draw_items = [], draw_options = [];
 
       this.disp.forEachPainter(p => {
          let itemname = p.GetItemName();
-         if (!itemname || (draw_items.indexOf(itemname)>=0)) return;
+         if (!itemname || (draw_items.indexOf(itemname) >= 0)) return;
          if (typeof items == 'array') {
             if (items.indexOf(itemname) < 0) return;
          } else {
@@ -1242,8 +1248,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          draw_options.push("update:" + p.GetItemDrawOpt());
       }, true); // only visible panels are considered
 
-      if (draw_items.length > 0)
-         this.displayAll(draw_items, draw_options);
+      return this.displayAll(draw_items, draw_options);
    }
 
 
@@ -1288,7 +1293,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       // force all files to read again (normally in non-browser mode)
       if (this.files_monitoring && !only_auto_items)
          this.forEachRootFile(item => {
-            this.ForEach(fitem => { delete fitem._readobj; }, item);
+            this.forEachItem(fitem => { delete fitem._readobj; }, item);
             delete item._file;
          });
 
@@ -1461,10 +1466,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       });
    }
 
-   /** @summary Reload hierarhcy and refresh html code */
+   /** @summary Reload hierarhcy and refresh html code
+     * @returns {Promise} when completed */
    HierarchyPainter.prototype.reload = function() {
       if ('_online' in this.h)
-         this.openOnline(this.h._online).then(() => this.refreshHtml());
+         return this.openOnline(this.h._online).then(() => this.refreshHtml());
+      return Promise.resolve(false);
    }
 
    HierarchyPainter.prototype.updateTreeNode = function() {
@@ -1479,7 +1486,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       let active = [],  // array of elements to activate
           update = []; // array of elements to update
-      this.ForEach(item => { if (item._background) { active.push(item); delete item._background; } });
+      this.forEachItem(item => { if (item._background) { active.push(item); delete item._background; } });
 
       let mark_active = () => {
          if (typeof this.UpdateBackground !== 'function') return;
@@ -1903,7 +1910,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.h._expand = onlineHierarchy;
 
          let scripts = [], modules = [];
-         this.ForEach(item => {
+         this.forEachItem(item => {
             if ('_childs' in item) item._expand = onlineHierarchy;
 
             if ('_autoload' in item) {
@@ -1922,7 +1929,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return JSROOT.require(modules)
                .then(() => JSROOT.loadScript(scripts))
                .then(() => {
-                  this.ForEach(item => {
+                  this.forEachItem(item => {
                      if (!('_drawfunc' in item) || !('_kind' in item)) return;
                      let typename = "kind:" + item._kind;
                      if (item._kind.indexOf('ROOT.')==0) typename = item._kind.slice(5);
@@ -2114,7 +2121,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    /** @summary Remove painter reference from hierarhcy */
    HierarchyPainter.prototype.removePainter = function(obj_painter) {
-      this.ForEach(item => {
+      this.forEachItem(item => {
          if (item._painter === obj_painter) delete item._painter;
       });
    }
@@ -2128,7 +2135,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       let plainarr = [];
 
-      this.ForEach(item => {
+      this.forEachItem(item => {
          delete item._painter; // remove reference on the painter
          // when only display cleared, try to clear all browser items
          if (!withbrowser && (typeof item.clear=='function')) item.clear();
@@ -2158,7 +2165,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       // we remove all painters references from items
       if (lst && (lst.length > 0))
-         this.ForEach(item => {
+         this.forEachItem(item => {
             if (item._painter && lst.indexOf(item._painter) >= 0)
                delete item._painter;
          });
