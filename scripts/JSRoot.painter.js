@@ -1338,7 +1338,8 @@ JSROOT.define(['d3'], (d3) => {
       this.divid = null;
       delete this._selected_main;
 
-      if (this._hpainter && typeof this._hpainter.ClearPainter === 'function') this._hpainter.ClearPainter(this);
+      if (this._hpainter && typeof this._hpainter.removePainter === 'function')
+         this._hpainter.removePainter(this);
 
       delete this._changed_layout;
       delete this._hitemname;

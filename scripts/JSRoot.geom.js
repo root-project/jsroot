@@ -4347,14 +4347,14 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          if (arg === 'self') {
             obj.fRnrSelf = !obj.fRnrSelf;
             item._icon = item._icon.split(" ")[0] + geo.provideVisStyle(obj);
-            hpainter.UpdateTreeNode(item);
+            hpainter.updateTreeNode(item);
          } else {
             ScanEveVisible(obj, { assign: (arg === "true") }, true);
             hpainter.ForEach(function(m) {
                // update all child items
                if (m._geoobj && m._icon) {
                   m._icon = item._icon.split(" ")[0] + geo.provideVisStyle(m._geoobj);
-                  hpainter.UpdateTreeNode(m);
+                  hpainter.updateTreeNode(m);
                }
             }, item);
          }
@@ -4369,11 +4369,11 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
             // update all items with that volume
             if (item._volume === m._volume) {
                m._icon = newname;
-               hpainter.UpdateTreeNode(m);
+               hpainter.updateTreeNode(m);
             }
          });
 
-         hpainter.UpdateTreeNode(item);
+         hpainter.updateTreeNode(item);
          geo.findItemWithPainter(item, 'testGeomChanges');
       }
 
@@ -4428,7 +4428,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          // update all items with that volume
          if ((obj === m._volume) || (obj === m._geoobj)) {
             m._icon = m._icon.split(" ")[0] + geo.provideVisStyle(obj);
-            hpainter.UpdateTreeNode(m);
+            hpainter.updateTreeNode(m);
          }
       });
    }
