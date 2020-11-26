@@ -711,10 +711,10 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
       }
 
       control.DetectZoomMesh = function(evnt) {
-         let mouse = this.GetMousePos(evnt, {});
-         let intersects = this.GetMouseIntersects(mouse);
+         let mouse = this.GetMousePos(evnt, {}),
+             intersects = this.GetMouseIntersects(mouse);
          if (intersects)
-            for (let n=0;n<intersects.length;++n)
+            for (let n = 0; n < intersects.length; ++n)
                if (intersects[n].object.zoom)
                   return intersects[n];
 
@@ -765,8 +765,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
          this.GetMousePos(evnt, this.mouse_ctxt);
          if (this.control_active)
             this.mouse_ctxt.on = true;
-         else
-         if (this.block_ctxt)
+         else if (this.block_ctxt)
             this.block_ctxt = false;
          else
             this.ContextMenu(this.mouse_ctxt, this.GetMouseIntersects(this.mouse_ctxt));
@@ -778,7 +777,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
 
       control.SwitchTooltip = function(on) {
          this.block_mousemove = !on;
-         if (on===false) {
+         if (on === false) {
             this.tooltip.hide();
             this.RemoveZoomMesh();
          }
@@ -791,6 +790,8 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
       }
 
       control.MainProcessMouseMove = function(evnt) {
+         if (!this.painter) return; // protect when cleanup
+
          if (this.control_active && evnt.buttons && (evnt.buttons & 2))
             this.block_ctxt = true; // if right button in control was active, block next context menu
 
@@ -834,10 +835,10 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
             this.tmout_handle = setTimeout(this.DelayedProcessMouseMove.bind(this), this.mouse_tmout);
       }
 
-
       control.DelayedProcessMouseMove = function() {
          // remove handle - allow to trigger new timeout
          delete this.tmout_handle;
+         if (!this.painter) return; // protect when cleanup
 
          let mouse = this.tmout_mouse,
              intersects = this.GetMouseIntersects(mouse),
@@ -871,9 +872,11 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
          }
 
          document.body.style.cursor = this.cursor_changed ? 'pointer' : 'auto';
-      };
+      }
 
       control.MainProcessMouseLeave = function() {
+         if (!this.painter) return; // protect when cleanup
+
          // do not enter main event at all
          if (this.tmout_handle) {
             clearTimeout(this.tmout_handle);
@@ -886,7 +889,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
             document.body.style.cursor = 'auto';
             this.cursor_changed = false;
          }
-      };
+      }
 
       function control_mousewheel(evnt) {
          // try to handle zoom extra
