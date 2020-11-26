@@ -2475,7 +2475,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
      * @desc this function used on THttpServer to mark streamer infos list
      * as fictional TStreamerInfoList class, which has special draw function
      * @private */
-   JSROOT.MarkAsStreamerInfo = function(h,item,obj) {
+   JSROOT.markAsStreamerInfo = function(h,item,obj) {
       if (obj && (obj._typename=='TList'))
          obj._typename = 'TStreamerInfoList';
    }
@@ -2483,7 +2483,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Build gui without visisble hierarchy browser
      * @desc avoid loading of jquery part
      * @private */
-   JSROOT.BuildNobrowserGUI = function() {
+   JSROOT.buildNobrowserGUI = function() {
       let myDiv = d3.select('#simpleGUI'),
           online = false, drawing = false;
 

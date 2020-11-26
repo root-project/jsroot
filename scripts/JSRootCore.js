@@ -1371,9 +1371,10 @@
       return JSROOT.require("painter").then(() => JSROOT.makeSVG(args));
    }
 
-   /** @summary Method to build JSROOT GUI with browser
-    * @private */
-   JSROOT.BuildSimpleGUI = function(user_scripts) {
+   /** @summary Method to build main JSROOT GUI
+     * @returns {Promise} when ready
+     * @private */
+   JSROOT.buildGUI = function(user_scripts) {
       let d = JSROOT.decodeUrl(),
           debugout,
           nobrowser = d.has('nobrowser'),
@@ -1412,7 +1413,7 @@
       return JSROOT.require(requirements)
                    .then(() => JSROOT.require(user_scripts))
                    .then(() => { if (_.debug_output) { _.debug_output.innerHTML = ""; delete _.debug_output; } })
-                   .then(() => JSROOT.callBack(nobrowser ? 'JSROOT.BuildNobrowserGUI' : 'JSROOT.BuildSimpleGUI'));
+                   .then(() => { return nobrowser ? JSROOT.buildNobrowserGUI() : JSROOT.buildGUI(); });
    }
 
    /** @summary Create some ROOT classes
@@ -2210,10 +2211,10 @@
 
       // in case of require.js one have to use timeout to decople loading
       if (_.amd)
-         return window_on_load().then(() => setTimeout(() => JSROOT.BuildSimpleGUI('check_existing_elements'), 50));
+         return window_on_load().then(() => setTimeout(() => JSROOT.buildGUI('check_existing_elements'), 50));
 
       if (d.has('gui'))
-         return window_on_load().then(() => JSROOT.BuildSimpleGUI());
+         return window_on_load().then(() => JSROOT.buildGUI());
 
       let prereq = "", user = d.get('load'), onload = d.get('onload');
       if (d.has('io')) prereq += "io;";

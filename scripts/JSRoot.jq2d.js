@@ -1666,7 +1666,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
 
       if (update_html) {
          this.refreshHtml();
-         this.InitializeBrowser();
+         this.initializeBrowser();
       }
 
       this.brlayout.ToggleBrowserKind(browser_kind || "fix");
@@ -1674,7 +1674,8 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
       return Promise.resolve(true);
    }
 
-   HierarchyPainter.prototype.InitializeBrowser = function() {
+   /** @summary Initialize browser elements */
+   HierarchyPainter.prototype.initializeBrowser = function() {
 
       let main = d3.select("#" + this.gui_div + " .jsroot_browser");
       if (main.empty() || !this.brlayout) return;
@@ -1727,7 +1728,10 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          chkbox.property('checked', on);
    }
 
-   JSROOT.BuildSimpleGUI = function() {
+   /** @summary Build main JSROOT GUI
+     * @returns {Promise} when completed
+     * @private  */
+   JSROOT.buildGUI = function() {
       let myDiv = d3.select('#simpleGUI'), online = false;
 
       if (myDiv.empty()) {
@@ -1740,7 +1744,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          JSROOT.settings.IgnoreUrlOptions = true;
 
       if (JSROOT.decodeUrl().has("nobrowser") || (myDiv.attr("nobrowser") && myDiv.attr("nobrowser")!=="false"))
-         return JSROOT.BuildNobrowserGUI();
+         return JSROOT.buildNobrowserGUI();
 
       jsrp.readStyleFromURL();
 
@@ -1749,7 +1753,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
       hpainter.is_online = online;
 
       return hpainter.startGUI(myDiv).then(() => {
-         hpainter.InitializeBrowser();
+         hpainter.initializeBrowser();
          return hpainter;
       });
    }
