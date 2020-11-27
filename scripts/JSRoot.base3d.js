@@ -61,7 +61,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
       if (pad.empty()) {
          // this is a case when object drawn without canvas
 
-         let rect = this.get_visible_rect(this.select_main());
+         let rect = jsrp.getElementRect(this.select_main());
 
          if ((rect.height < 10) && (rect.width > 10)) {
             rect.height = Math.round(0.66 * rect.width);

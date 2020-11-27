@@ -2589,7 +2589,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             render_to.style("overflow","auto");
             rect = { width: this.pad.fWinSize[0], height: this.pad.fWinSize[1] };
             if (!rect.width || !rect.height)
-               rect = this.get_visible_rect(render_to);
+               rect = jsrp.getElementRect(render_to);
          } else {
             rect = this.check_main_resize(2, new_size, factor);
          }
@@ -2657,13 +2657,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if (this.iscan || !this.has_canvas || (!pad_enlarged && !this.HasObjectsToDraw() && !this.painters)) {
          if (this._fixed_size) return; // canvas cannot be enlarged in such mode
-         if (!this.enlarge_main('toggle')) return;
-         if (this.enlarge_main('state')=='off') svg_can.property("pad_enlarged", null);
+         if (!this.enlargeMain('toggle')) return;
+         if (this.enlargeMain('state')=='off') svg_can.property("pad_enlarged", null);
       } else if (!pad_enlarged) {
-         this.enlarge_main(true, true);
+         this.enlargeMain(true, true);
          svg_can.property("pad_enlarged", this.pad);
       } else if (pad_enlarged === this.pad) {
-         this.enlarge_main(false);
+         this.enlargeMain(false);
          svg_can.property("pad_enlarged", null);
       } else {
          console.error('missmatch with pad double click events');
@@ -2923,8 +2923,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (this.ToggleEventStatus)
          menu.addchk(this.HasEventStatus(), "Event status", this.ToggleEventStatus.bind(this));
 
-      if (this.enlarge_main() || (this.has_canvas && this.HasObjectsToDraw()))
-         menu.addchk((this.enlarge_main('state')=='on'), "Enlarge " + (this.iscan ? "canvas" : "pad"), this.EnlargePad.bind(this, null));
+      if (this.enlargeMain() || (this.has_canvas && this.HasObjectsToDraw()))
+         menu.addchk((this.enlargeMain('state')=='on'), "Enlarge " + (this.iscan ? "canvas" : "pad"), this.EnlargePad.bind(this, null));
 
       let fname = this.this_pad_name;
       if (fname.length===0) fname = this.iscan ? "canvas" : "pad";
@@ -3618,7 +3618,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       let add_enlarge = !this.iscan && this.has_canvas && this.HasObjectsToDraw()
 
-      if (add_enlarge || this.enlarge_main('verify'))
+      if (add_enlarge || this.enlargeMain('verify'))
          this.AddButton("circle", "Enlarge canvas", "EnlargePad");
    }
 
@@ -3755,7 +3755,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Changes layout
      * @returns {Promise} indicating when finished */
    RCanvasPainter.prototype.ChangeLayout = function(layout_kind) {
-      let current = this.get_layout_kind();
+      let current = this.getLayoutKind();
       if (current == layout_kind)
          return Promise.resolve(true);
 
@@ -3768,14 +3768,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if (!sidebar.empty()) JSROOT.cleanup(sidebar.node());
 
-      this.set_layout_kind("simple"); // restore defaults
+      this.setLayoutKind("simple"); // restore defaults
       origin.html(""); // cleanup origin
 
       if (layout_kind == 'simple') {
          main = origin;
          for (let k=0;k<lst.length;++k)
             main.node().appendChild(lst[k]);
-         this.set_layout_kind(layout_kind);
+         this.setLayoutKind(layout_kind);
          JSROOT.resize(main.node());
          return Promise.resolve(true);
       }
@@ -3799,7 +3799,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          for (let k=0;k<lst.length;++k)
             main.node().appendChild(lst[k]);
 
-         this.set_layout_kind(layout_kind, ".central_panel");
+         this.setLayoutKind(layout_kind, ".central_panel");
 
          // remove reference to MDIDisplay, solves resize problem
          origin.property('mdi', null);

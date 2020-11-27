@@ -1359,7 +1359,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
 
    /** @summary create fast list to assign all methods to the object
      * @private */
-   makeMethodsList = function(typename) {
+   function makeMethodsList(typename) {
       let methods = JSROOT.getMethods(typename);
 
       let res = {
@@ -1381,11 +1381,13 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
       return res;
    }
 
-   jsrio.DetectBranchMemberClass = function(brlst, prefix, start) {
-      // try to define classname for the branch member, scanning list of branches
+   /** @summary try to define classname for the branch member, scanning list of branches
+     * @private */
+   function detectBranchMemberClass(brlst, prefix, start) {
       let clname = "";
       for (let kk = (start || 0); kk < brlst.arr.length; ++kk)
-         if ((brlst.arr[kk].fName.indexOf(prefix) === 0) && brlst.arr[kk].fClassName) clname = brlst.arr[kk].fClassName;
+         if ((brlst.arr[kk].fName.indexOf(prefix) === 0) && brlst.arr[kk].fClassName)
+            clname = brlst.arr[kk].fClassName;
       return clname;
    }
 
@@ -1641,7 +1643,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
                if (chld_kind > 0) {
                   chld_direct = "$child$";
                   let pp = subname.indexOf(".");
-                  if (pp > 0) chld_direct = jsrio.DetectBranchMemberClass(lst, branch.fName + "." + subname.substr(0, pp + 1), k) || "TObject";
+                  if (pp > 0) chld_direct = detectBranchMemberClass(lst, branch.fName + "." + subname.substr(0, pp + 1), k) || "TObject";
                }
 
                if (!AddBranchForReading(br, master_target, subname, chld_direct)) return false;
@@ -1688,7 +1690,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
                   }
 
                   if ((typeof read_mode === "string") && (read_mode[0] === ".")) {
-                     member.conttype = jsrio.DetectBranchMemberClass(branch.fBranches, branch.fName + read_mode);
+                     member.conttype = detectBranchMemberClass(branch.fBranches, branch.fName + read_mode);
                      if (!member.conttype) {
                         console.error('Cannot select object', read_mode, "in the branch", branch.fName);
                         return null;

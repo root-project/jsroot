@@ -3917,7 +3917,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
    /** @summary Toggle enlarge state */
    TGeoPainter.prototype.toggleEnlarge = function() {
-      if (this.enlarge_main('toggle'))
+      if (this.enlargeMain('toggle'))
         this.checkResize();
    }
 
