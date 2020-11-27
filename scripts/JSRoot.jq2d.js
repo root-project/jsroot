@@ -1147,22 +1147,22 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
       d3btns.append("a").attr("class", "h_button").text("close all")
             .attr("title","close all items in the browser").on("click", () => this.toggleOpenState(false));
 
-      if (typeof h.removeInspector == 'function') {
+      if (typeof this.removeInspector == 'function') {
          d3btns.append("text").text(" | ");
          d3btns.append("a").attr("class", "h_button").text("remove")
-               .attr("title","remove inspector").on("click", h.removeInspector.bind(h));
+               .attr("title","remove inspector").on("click", () => this.removeInspector());
       }
 
       if ('_online' in this.h) {
          d3btns.append("text").text(" | ");
          d3btns.append("a").attr("class", "h_button").text("reload")
-               .attr("title","reload object list from the server").on("click", h.reload.bind(h));
+               .attr("title","reload object list from the server").on("click", () => this.reload());
       }
 
       if ('disp_kind' in this) {
          d3btns.append("text").text(" | ");
          d3btns.append("a").attr("class", "h_button").text("clear")
-               .attr("title","clear all drawn objects").on("click", () => this.cleanup(false));
+               .attr("title","clear all drawn objects").on("click", () => this.clearHierarchy(false));
       }
 
       let maindiv =
@@ -1650,7 +1650,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
 
          jmain.find(".gui_ReadFileBtn").button().click(() => this.ReadSelectedFile());
 
-         jmain.find(".gui_ResetUIBtn").button().click(() => this.cleanup(true));
+         jmain.find(".gui_ResetUIBtn").button().click(() => this.clearHierarchy(true));
 
          jmain.find(".gui_urlToLoad").keyup(e => {
             if (e.keyCode == 13) this.ReadSelectedFile();

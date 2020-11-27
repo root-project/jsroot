@@ -696,7 +696,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Cleanup hierarchy painter */
    HierarchyPainter.prototype.Cleanup = function() {
       // clear drawing and browser
-      this.cleanup(true);
+      this.clearHierarchy(true);
 
       JSROOT.BasePainter.prototype.Cleanup.call(this);
 
@@ -1315,13 +1315,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          options.push("");
 
       if ((options.length == 1) && (options[0] == "iotest")) {
-         h.cleanup();
-         d3.select("#" + h.disp_frameid).html("<h2>Start I/O test</h2>")
+         this.clearHierarchy();
+         d3.select("#" + this.disp_frameid).html("<h2>Start I/O test</h2>")
 
          let tm0 = new Date();
-         return h.getObject(items[0]).then(() => {
+         return this.getObject(items[0]).then(() => {
             let tm1 = new Date();
-            d3.select("#" + h.disp_frameid).append("h2").html("Item " + items[0] + " reading time = " + (tm1.getTime() - tm0.getTime()) + "ms");
+            d3.select("#" + this.disp_frameid).append("h2").html("Item " + items[0] + " reading time = " + (tm1.getTime() - tm0.getTime()) + "ms");
             return Promise.resolve(true);
          });
       }
@@ -2147,7 +2147,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Cleanup hierarchy painter */
-   HierarchyPainter.prototype.cleanup = function(withbrowser) {
+   HierarchyPainter.prototype.clearHierarchy = function(withbrowser) {
       if (this.disp) {
          this.disp.cleanup();
          delete this.disp;
@@ -2860,20 +2860,23 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
     * @class
     * @memberof JSROOT
     * @private
-    * @param {string} frameid - where grid display is created
-    * @param {string} kind - kind of grid
-    * @desc  following kinds are supported
-    *    - vertical or horizontal - only first letter matters, defines basic orientation
-    *    - 'x' in the name disable interactive separators
-    *    - v4 or h4 - 4 equal elements in specified direction
-    *    - v231 -  created 3 vertical elements, first divided on 2, second on 3 and third on 1 part
-    *    - v23_52 - create two vertical elements with 2 and 3 subitems, size ratio 5:2
-    *    - gridNxM - normal grid layout without interactive separators
-    *    - gridiNxM - grid layout with interactive separators
-    *    -  simple - no layout, full frame used for object drawings
     */
 
+
    class GridDisplay extends MDIDisplay {
+
+    /** @summary Create GridDisplay instance
+      * @param {string} frameid - where grid display is created
+      * @param {string} kind - kind of grid
+      * @desc  following kinds are supported
+      *    - vertical or horizontal - only first letter matters, defines basic orientation
+      *    - 'x' in the name disable interactive separators
+      *    - v4 or h4 - 4 equal elements in specified direction
+      *    - v231 -  created 3 vertical elements, first divided on 2, second on 3 and third on 1 part
+      *    - v23_52 - create two vertical elements with 2 and 3 subitems, size ratio 5:2
+      *    - gridNxM - normal grid layout without interactive separators
+      *    - gridiNxM - grid layout with interactive separators
+      *    -  simple - no layout, full frame used for object drawings */
 
       constructor(frameid, kind, kind2) {
 
@@ -3029,6 +3032,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             });
       }
 
+      /** @summary Returns active frame */
       getActiveFrame() {
          if (this.simple_layout) return this.getGridFrame();
 
@@ -3040,6 +3044,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return found;
       }
 
+      /** @summary Returns number of frames in grid layout */
+      numGridFrames() { return this.framecnt; }
+
+      /** @summary Return grid frame by its id */
       getGridFrame(id) {
          if (this.simple_layout)
             return this.select_main('origin').node();
@@ -3050,8 +3058,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return res;
       }
 
-      numGridFrames() { return this.framecnt; }
-
+      /** @summary Create new frame */
       createFrame(title) {
          this.beforeCreateFrame(title);
 
@@ -3127,9 +3134,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return frame.node();
       }
 
+      /** @summary Returns number of created frames */
       numFrames() { return this.frames.length; }
 
-      /** when inspector was running, one can better create JSON out of frame */
+      /** @summary returns JSON representation if any
+        * @desc Now works only for inspector, can be called once */
       makeJSON(id, spacing) {
          let frame = this.frames[id];
          if (!frame) return;
@@ -3141,6 +3150,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          }
       }
 
+      /** @summary Create SVG for specified frame id */
       makeSVG(id) {
          let frame = this.frames[id];
          if (!frame) return;
