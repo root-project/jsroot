@@ -1052,16 +1052,16 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Just envelope, one should be able to redefine it for sub-classes
      * @desc Redirect to {@link JSROOT.draw} method
      * @protected */
-   HierarchyPainter.prototype.draw = function(divid, obj, drawopt) {
-      return JSROOT.draw(divid, obj, drawopt);
-   }
+   //HierarchyPainter.prototype.draw = function(divid, obj, drawopt) {
+   //   return JSROOT.draw(divid, obj, drawopt);
+   //}
 
    /** @summary Just envelope, one should be able to redefine it for sub-classes
      * @desc Redirect to {@link JSROOT.redraw} method
      * @protected */
-   HierarchyPainter.prototype.redraw = function(divid, obj, drawopt) {
-      return JSROOT.redraw(divid, obj, drawopt);
-   }
+   //HierarchyPainter.prototype.redraw = function(divid, obj, drawopt) {
+   //   return JSROOT.redraw(divid, obj, drawopt);
+   //}
 
    /** @summary Starts player for specified item
      * @returns {Promise} when ready*/
@@ -1166,8 +1166,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if (!updating) JSROOT.progress("Drawing " + display_itemname);
 
             if (divid.length > 0) {
-               let draw_func = updating ? JSROOT.redraw : JSROOT.draw;
-               return draw_func(divid, obj, drawopt).then(p => complete(p)).catch(() => complete(null));
+               let func = updating ? JSROOT.redraw : JSROOT.draw;
+               return func(divid, obj, drawopt).then(p => complete(p)).catch(() => complete(null));
             }
 
             mdi.forEachPainter((p, frame) => {
@@ -1192,10 +1192,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             }
 
             let frame = mdi.findFrame(frame_name, true);
-            mdi.setEmptyContent(frame);
+            d3.select(frame).html("");
             mdi.activateFrame(frame);
 
-            return mdi.draw(frame, obj, drawopt).then(p => {
+            return JSROOT.draw(frame, obj, drawopt).then(p => {
                if (JSROOT.settings.DragAndDrop)
                   h.enableDrop(frame, display_itemname);
                return complete(p);
@@ -2720,8 +2720,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (frameid != "$batch$") {
             this.SetDivId(frameid);
             this.select_main().property('mdi', this);
-            this.cleanupFrame = JSROOT.cleanup; // use standard cleanup function by default
          }
+         this.cleanupFrame = JSROOT.cleanup; // use standard cleanup function by default
          this.active_frame_title = ""; // keep title of active frame
       }
 
@@ -2741,11 +2741,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             dummy.SetDivId(frame, -1);
             dummy.forEachPainter(painter => userfunc(painter, frame));
          }, only_visible);
-      }
-
-      /** @summary Set empty content for the frame */
-      setEmptyContent(frame) {
-         d3.select(frame).html("");
       }
 
       numDraw() {
@@ -2795,14 +2790,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.forEachFrame(this.cleanupFrame);
 
          this.select_main().html("").property('mdi', null);
-      }
-
-      draw(frame, obj, drawopt) {
-         return JSROOT.draw(d3.select(frame).attr("id"), obj, drawopt);
-      }
-
-      redraw(frame, obj, drawopt) {
-         return JSROOT.redraw(d3.select(frame).attr("id"), obj, drawopt);
       }
 
    } // class MDIDisplay
@@ -3047,8 +3034,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return found;
       }
 
-      activateFrame(frame) { this.active_frame_title = d3.select(frame).attr('frame_title'); }
-
       getGridFrame(id) {
          if (this.simple_layout)
             return this.select_main('origin').node();
@@ -3096,56 +3081,70 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
     */
 
    class BatchDisplay extends MDIDisplay {
-      constructor() {
+      constructor(width, height) {
          super("$batch$");
          this.frames = []; // array of configured frames
+         this.width = width || 1200;
+         this.height = height || 800;
       }
 
       forEachFrame(userfunc) {
-         for (let id = 1; id < this.frames.length; ++id)
-            if (this.frames[id])
-               userfunc(id);
-      }
-
-      forEachPainter() {}
-      setEmptyContent() {}
-
-      findFrame(searchtitle, force) {
-         for (let id = 1; id < this.frames.length; ++id)
-            if (this.frames[id] == searchtitle)
-               return id;
-         return force ? createFrame(title) : 0;
+         this.frames.forEach(userfunc)
       }
 
       createFrame(title) {
          this.beforeCreateFrame(title);
-         let id = this.frames.length;
-         if (id == 0) id = 1; else ++id;
-         this.frames[id] = title;
-         return id;
+
+         let frame;
+         if (!JSROOT.nodejs) {
+            frame = d3.select('body').append("div").style("visible", "hidden");
+         } else {
+            if (!JSROOT._.nodejs_document) {
+             // use eval while old minifier is not able to parse newest Node.js syntax
+               const { JSDOM } = require("jsdom");
+              JSROOT._.nodejs_window = (new JSDOM("<!DOCTYPE html>hello")).window;
+              JSROOT._.nodejs_document = JSROOT._.nodejs_window.document; // used with three.js
+              JSROOT._.nodejs_window.d3 = d3.select(JSROOT._.nodejs_document); //get d3 into the dom
+            }
+            frame = JSROOT._.nodejs_window.d3.select('body').append('div');
+         }
+
+         if (this.frames.length == 0)
+            JSROOT._.svg_3ds = undefined;
+
+         frame.attr("width", this.width).attr("height", this.height);
+         frame.style("width", this.width + "px").style("height", this.height + "px");
+         frame.attr("id","jsroot_batch_" + this.frames.length);
+         frame.attr('frame_title', title);
+         this.frames.push(frame.node());
+
+         return frame.node();
       }
 
-      activateFrame(frame) { this.active_frame_title = this.frames[frame]; }
+      numFrames() { return this.frames.length; }
 
-      cleanupFrame(frame) {
-         if (this.frames[frame])
-            this.frames[frame] = undefined;
+      makeSVG(id) {
+         let frame = this.frames[id];
+         if (!frame) return;
+         let main = d3.select(frame);
+         let has_workarounds = JSROOT._.svg_3ds && jsrp.ProcessSVGWorkarounds;
+         main.select('svg')
+             .attr("xmlns", "http://www.w3.org/2000/svg")
+             .attr("xmlns:xlink", "http://www.w3.org/1999/xlink")
+             .attr("width", this.width)
+             .attr("height", this.height)
+             .attr("style", null).attr("class", null).attr("x", null).attr("y", null);
+
+         let svg = main.html();
+         if (has_workarounds)
+            svg = jsrp.ProcessSVGWorkarounds(svg);
+
+         svg = jsrp.CompressSVG(svg);
+
+         main.remove();
+         return svg;
       }
-
-      cleanup() {
-         this.frames = [];
-      }
-
-      draw(/*frame, obj, drawopt*/) {
-         return Promise.resolve({});
-      }
-
-      redraw(/*frame, obj, drawopt*/) {
-         return Promise.resolve({});
-      }
-
    } // class BatchDisplay
-
 
 
    // export all functions and classes

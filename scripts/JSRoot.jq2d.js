@@ -2023,10 +2023,6 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          return found;
       }
 
-      activateFrame(frame) {
-         this.active_frame_title = d3.select(frame).attr('frame_title');
-      }
-
       createFrame(title) {
 
          this.beforeCreateFrame(title);
