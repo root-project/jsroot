@@ -4,6 +4,7 @@
 1. Fix zooming in color palette
 2. Fix interactive update of TGraph painting on time scale
 3. Fix I/O error in reading std::map (#204)
+4. Fix functionality "open all" / "close all" GUI buttons
 
 
 ## Changes in 5.9.0

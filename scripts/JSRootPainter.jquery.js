@@ -743,7 +743,11 @@
       var hitem = h ? h : this.h;
 
       if (!('_childs' in hitem)) {
-         if (!isopen || this.with_icons || (!hitem._expand && (hitem._more !== true))) return false;
+         if (!isopen) return false;
+         if (this.with_icons) {
+            // in normal hierarchy check precisely if item can be expand
+            if (!hitem._more && !hitem._expand && !this.canExpand(hitem)) return false;
+         }
          this.expand(this.itemFullName(hitem));
          if (hitem._childs) hitem._isopen = true;
          return true;

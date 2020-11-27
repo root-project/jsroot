@@ -1456,6 +1456,13 @@
       find_next();
    }
 
+   HierarchyPainter.prototype.canExpand = function(item) {
+      if (!item) return false;
+      if (item._expand) return true;
+      var handle = JSROOT.getDrawHandle(item._kind, "::expand");
+      return handle && (handle.expand_item || handle.expand);
+   }
+
    HierarchyPainter.prototype.expand = function(itemname, call_back, d3cont, silent) {
       var hpainter = this, hitem = this.Find(itemname);
 
