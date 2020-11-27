@@ -581,15 +581,7 @@
       return JSROOT.Math.igam(a,x);
    };
 
-   JSROOT.Math.lgamma = function(z) {
-      return JSROOT.Math.lgam(z);
-   };
-
    /** @memberOf JSROOT.Math */
-   JSROOT.Math.inc_gamma = function(a,x) {
-      return JSROOT.Math.igam(a,x);
-   };
-
    JSROOT.Math.lgamma = function(z) {
       return JSROOT.Math.lgam(z);
    };
