@@ -1298,7 +1298,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
       this.SetTooltipAllowed(JSROOT.settings.Tooltip);
 
-      this._controls = jsrp.CreateOrbitControl(this, this._camera, this._scene, this._renderer, this._lookat);
+      this._controls = jsrp.createOrbitControl(this, this._camera, this._scene, this._renderer, this._lookat);
 
       this._controls.mouse_tmout = this.ctrl.mouse_tmout; // set larger timeout for geometry processing
 
@@ -1760,7 +1760,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          for (let n=0;n<this._more_nodes.length;++n) {
             let entry = this._more_nodes[n];
             let obj3d = this._clones.CreateObject3D(entry.stack, this._toplevel, 'delete_mesh');
-            jsrp.DisposeThreejsObject(obj3d);
+            jsrp.disposeThreejsObject(obj3d);
             geo.cleanupShape(entry.server_shape);
             delete entry.server_shape;
          }
@@ -1834,7 +1834,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
       if (!toplevel) return false;
 
-      jsrp.DisposeThreejsObject(this._toplevel, true);
+      jsrp.disposeThreejsObject(this._toplevel, true);
 
       // let axis = this.ctrl.project;
 
@@ -1883,7 +1883,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
       if (this._camera._lights != this.ctrl.light.kind) {
          // remove all childs and recreate only necessary lights
-         jsrp.DisposeThreejsObject(this._camera, true);
+         jsrp.disposeThreejsObject(this._camera, true);
 
          this._camera._lights = this.ctrl.light.kind;
 
@@ -2660,7 +2660,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
       if (action==="delete") {
          if (extras) this._toplevel.remove(extras);
-         jsrp.DisposeThreejsObject(extras);
+         jsrp.disposeThreejsObject(extras);
          return null;
       }
 
@@ -3174,7 +3174,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
             if (tmout === -2222) return; // special case to check if rendering timeout was active
          }
 
-         jsrp.BeforeRender3D(this._renderer);
+         jsrp.beforeRender3D(this._renderer);
 
          let tm1 = new Date();
 
@@ -3199,7 +3199,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
             console.log(`three.js r${THREE.REVISION}, first render tm = ${this.first_render_tm}`);
          }
 
-         return jsrp.AfterRender3D(this._renderer);
+         return jsrp.afterRender3D(this._renderer);
       }
 
       // do not shoot timeout many times
@@ -3779,9 +3779,9 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
          this.helpText();
 
-         jsrp.DisposeThreejsObject(this._scene);
+         jsrp.disposeThreejsObject(this._scene);
 
-         jsrp.DisposeThreejsObject(this._full_geom);
+         jsrp.disposeThreejsObject(this._full_geom);
 
          if (this._tcontrols)
             this._tcontrols.dispose();
@@ -3982,7 +3982,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       delete this._extraObjects;
       delete this._clipCfg;
 
-      jsrp.DisposeThreejsObject(this._toplevel, true);
+      jsrp.disposeThreejsObject(this._toplevel, true);
 
       this._full_redrawing = true;
    }

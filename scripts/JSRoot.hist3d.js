@@ -48,7 +48,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
          this.clear_3d_canvas();
 
-         jsrp.DisposeThreejsObject(this.scene);
+         jsrp.disposeThreejsObject(this.scene);
          if (this.control) this.control.Cleanup();
 
          if (this.renderer) {
@@ -80,7 +80,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       if ('toplevel' in this) {
          // it is indication that all 3D object created, just replace it with empty
          this.scene.remove(this.toplevel);
-         jsrp.DisposeThreejsObject(this.toplevel);
+         jsrp.disposeThreejsObject(this.toplevel);
          delete this.tooltip_mesh;
          delete this.toplevel;
          if (this.control) this.control.HideTooltip();
@@ -138,7 +138,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
       if (JSROOT.BatchMode || !this.webgl) return;
 
-      this.control = jsrp.CreateOrbitControl(this, this.camera, this.scene, this.renderer, this.lookat);
+      this.control = jsrp.createOrbitControl(this, this.camera, this.scene, this.renderer, this.lookat);
 
       let axis_painter = this, obj_painter = this.main_painter();
 
@@ -257,7 +257,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
          if (!this.renderer) return;
 
-         jsrp.BeforeRender3D(this.renderer);
+         jsrp.beforeRender3D(this.renderer);
 
          let tm1 = new Date();
 
@@ -269,7 +269,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          // do rendering, most consuming time
          this.renderer.render(this.scene, this.camera);
 
-         jsrp.AfterRender3D(this.renderer);
+         jsrp.afterRender3D(this.renderer);
 
          let tm2 = new Date();
 
@@ -671,7 +671,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
             if (!pnt1 || !pnt2) {
                if (tgtmesh) {
                   this.remove(tgtmesh)
-                  jsrp.DisposeThreejsObject(tgtmesh);
+                  jsrp.disposeThreejsObject(tgtmesh);
                }
                return tgtmesh;
             }
@@ -1569,7 +1569,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          }
       );
 
-      let lines = jsrp.createLineSegments(pnts, jsrp.Create3DLineMaterial(this, histo));
+      let lines = jsrp.createLineSegments(pnts, jsrp.create3DLineMaterial(this, histo));
       main.toplevel.add(lines);
    }
 
