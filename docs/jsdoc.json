@@ -15,6 +15,7 @@
                      "scripts/JSRoot.hist.js",
                      "scripts/JSRoot.hist3d.js",
                      "scripts/JSRoot.more.js",
+                     "scripts/JSRoot.math.js",
                      "scripts/JSRoot.base3d.js",
                      "scripts/JSRoot.csg.js",
                      "scripts/JSRoot.geobase.js",
