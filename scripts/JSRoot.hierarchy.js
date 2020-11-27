@@ -973,7 +973,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Refresh HTML for hierachy painter
      * @returns {Promise} when completed */
    HierarchyPainter.prototype.refreshHtml = function() {
-      if (!this.divid) return Promise.resolve();
+      if (!this.divid || JSROOT.BatchMode) return Promise.resolve();
       return JSROOT.require('jq2d').then(() => this.refreshHtml());
    }
 
@@ -2652,8 +2652,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    jsrp.drawInspector = function(divid, obj) {
 
       JSROOT.cleanup(divid);
-
       let painter = new JSROOT.HierarchyPainter('inspector', divid, 'white');
+
+      // in batch mode HTML drawing is not possible, just keep object reference for a minute
+      if (JSROOT.BatchMode) {
+         painter.select_main().property("_json_object_", obj);
+         return Promise.resolve(painter);
+      }
+
       painter.default_by_click = "expand"; // default action
       painter.with_icons = false;
       painter.h = { _name: "Object", _title: "", _click_action: "expand", _nosimple: false, _do_context: true };
@@ -3123,6 +3129,18 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       numFrames() { return this.frames.length; }
 
+      /** when inspector was running, one can better create JSON out of frame */
+      makeJSON(id, spacing) {
+         let frame = this.frames[id];
+         if (!frame) return;
+         let obj = d3.select(frame).property('_json_object_');
+
+         if (obj) {
+            d3.select(frame).property('_json_object_', null);
+            return JSON.stringify(obj, null, spacing);
+         }
+      }
+
       makeSVG(id) {
          let frame = this.frames[id];
          if (!frame) return;
@@ -3133,7 +3151,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
              .attr("xmlns:xlink", "http://www.w3.org/1999/xlink")
              .attr("width", this.width)
              .attr("height", this.height)
-             .attr("style", null).attr("class", null).attr("x", null).attr("y", null);
+             .attr("title", null).attr("style", null).attr("class", null).attr("x", null).attr("y", null);
 
          let svg = main.html();
          if (has_workarounds)
