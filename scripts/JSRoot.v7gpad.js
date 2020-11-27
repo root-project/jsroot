@@ -3480,8 +3480,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                  elem.node().innerHTML +
                  '</svg>';
 
-      if (jsrp.ProcessSVGWorkarounds)
-         svg = jsrp.ProcessSVGWorkarounds(svg);
+      if (jsrp.processSvgWorkarounds)
+         svg = jsrp.processSvgWorkarounds(svg);
 
       svg = jsrp.CompressSVG(svg);
 

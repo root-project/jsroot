@@ -3948,7 +3948,7 @@ JSROOT.define(['d3'], (d3) => {
 
          return JSROOT.draw(main.node(), args.object, args.option || "").then(() => {
 
-            let has_workarounds = JSROOT._.svg_3ds && jsrp.ProcessSVGWorkarounds;
+            let has_workarounds = JSROOT._.svg_3ds && jsrp.processSvgWorkarounds;
 
             main.select('svg')
                 .attr("xmlns", "http://www.w3.org/2000/svg")
@@ -3960,7 +3960,7 @@ JSROOT.define(['d3'], (d3) => {
             let svg = main.html();
 
             if (has_workarounds)
-               svg = jsrp.ProcessSVGWorkarounds(svg);
+               svg = jsrp.processSvgWorkarounds(svg);
 
             svg = jsrp.CompressSVG(svg);
 

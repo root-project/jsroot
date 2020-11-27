@@ -399,11 +399,15 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
       }
    }
 
-   jsrp.ProcessSVGWorkarounds = function(svg) {
+   /** @summary Special way to insert WebGL drawing into produced SVG batch code
+     * @desc Used only in batch mode for SVG images generation
+     * @private */
+   jsrp.processSvgWorkarounds = function(svg, keep_workarounds) {
       if (!JSROOT._.svg_3ds) return svg;
       for (let k = 0;  k < JSROOT._.svg_3ds.length; ++k)
          svg = svg.replace('<path jsroot_svg_workaround="' + k + '"></path>', JSROOT._.svg_3ds[k]);
-      JSROOT._.svg_3ds = undefined;
+      if (!keep_workarounds)
+         JSROOT._.svg_3ds = undefined;
       return svg;
    }
 

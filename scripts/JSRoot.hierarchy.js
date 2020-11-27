@@ -3145,7 +3145,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          let frame = this.frames[id];
          if (!frame) return;
          let main = d3.select(frame);
-         let has_workarounds = JSROOT._.svg_3ds && jsrp.ProcessSVGWorkarounds;
+         let has_workarounds = JSROOT._.svg_3ds && jsrp.processSvgWorkarounds;
          main.select('svg')
              .attr("xmlns", "http://www.w3.org/2000/svg")
              .attr("xmlns:xlink", "http://www.w3.org/1999/xlink")
@@ -3155,7 +3155,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          let svg = main.html();
          if (has_workarounds)
-            svg = jsrp.ProcessSVGWorkarounds(svg);
+            svg = jsrp.processSvgWorkarounds(svg, id != this.frames.length-1);
 
          svg = jsrp.CompressSVG(svg);
 

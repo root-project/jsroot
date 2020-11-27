@@ -2511,11 +2511,8 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          });
       }
 
-      console.log('Drop element', itemname);
-
       if (this.drawExtras(obj, itemname)) {
          if (hitem) hitem._painter = this; // set for the browser item back pointer
-         console.log('Did drop element', itemname);
          this.Render3D(100);
       }
 
