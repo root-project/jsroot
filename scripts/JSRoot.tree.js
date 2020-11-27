@@ -1,5 +1,4 @@
-/// @file JSRoot.tree.js
-/// Collect all TTree-relevant methods for reading, drawing and hierarchy browsing
+// Collect all TTree-relevant methods for reading, drawing and hierarchy browsing
 
 JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
 
@@ -85,24 +84,23 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
 
    /** @summary function called when next entry extracted from the tree
     * @abstract
-    * @param {number} entry - read entry number
-    */
+    * @param {number} entry - read entry number */
    TSelector.prototype.Process = function(/* entry */) {
    }
 
    /** @summary function called at the very end of processing
     * @abstract
-    * @param {boolean} res - true if all data were correctly processed
-    */
+    * @param {boolean} res - true if all data were correctly processed */
    TSelector.prototype.Terminate = function(/* res */) {
    }
 
    // =================================================================
 
-   JSROOT.CheckArrayPrototype = function(arr, check_content) {
-      // return 0 when not array
-      // 1 - when arbitrary array
-      // 2 - when plain (1-dim) array with same-type content
+   /** @summary Checks array kind
+     * @desc return 0 when not array
+     * 1 - when arbitrary array
+     * 2 - when plain (1-dim) array with same-type content */
+   function checkArrayPrototype(arr, check_content) {
       if (typeof arr !== 'object') return 0;
       let proto = Object.prototype.toString.apply(arr);
       if (proto.indexOf('[object') !== 0) return 0;
@@ -116,15 +114,20 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
          let sub = typeof arr[k];
          if (!typ) typ = sub;
          if (sub !== typ) { plain = false; break; }
-         if ((sub == "object") && JSROOT.CheckArrayPrototype(arr[k])) { plain = false; break; }
+         if ((sub == "object") && checkArrayPrototype(arr[k])) { plain = false; break; }
       }
 
       return plain ? 2 : 1;
    }
 
-   function ArrayIterator(arr, select, tgtobj) {
-      // class used to iterate over all array indexes until number value
+   /**
+    * @summary Class to iterate over array elements
+    *
+    * @class
+    * @private
+    */
 
+   function ArrayIterator(arr, select, tgtobj) {
       this.object = arr;
       this.value = 0; // value always used in iterator
       this.arr = []; // all arrays
@@ -138,6 +141,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
          this.select = []; // empty array, undefined for each dimension means iterate over all indexes
    }
 
+   /** @summary next element */
    ArrayIterator.prototype.next = function() {
       let obj, typ, cnt = this.cnt;
 
@@ -164,7 +168,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
             if (obj._typename !== undefined) {
                if (JSROOT.isRootCollection(obj)) { obj = obj.arr; typ = "array"; }
                else typ = "any";
-            } else if (!isNaN(obj.length) && (JSROOT.CheckArrayPrototype(obj) > 0)) {
+            } else if (!isNaN(obj.length) && (checkArrayPrototype(obj) > 0)) {
                typ = "array";
             } else {
                typ = "any";
@@ -227,6 +231,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
       // return false;
    }
 
+   /** @summary reset iterator */
    ArrayIterator.prototype.reset = function() {
       this.arr = [];
       this.indx = [];
@@ -237,8 +242,15 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
 
    // ============================================================================
 
+   /**
+    * @summary object with single variable in TTree::Draw expression
+    *
+    * @class
+    * @memberof JSROOT
+    * @private
+    */
+
    function TDrawVariable(globals) {
-      // object with single variable in TTree::Draw expression
       this.globals = globals;
 
       this.code = "";
@@ -349,7 +361,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
                   if ((br.fType === JSROOT.BranchType.kClonesNode) || (br.fType === JSROOT.BranchType.kSTLNode)) {
                      arriter.push(undefined);
                   } else {
-                     let objclass = jsrio.GetBranchObjectClass(br, tree, false, true);
+                     let objclass = getBranchObjectClass(br, tree, false, true);
                      if (objclass && JSROOT.isRootCollection(null, objclass)) arriter.push(undefined);
                   }
                }
@@ -446,13 +458,13 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
 
          // try to check if branch is array and need to be iterated
          if (this.brarray[n] === undefined)
-            this.brarray[n] = (JSROOT.CheckArrayPrototype(arg[name]) > 0) || JSROOT.isRootCollection(arg[name]);
+            this.brarray[n] = (checkArrayPrototype(arg[name]) > 0) || JSROOT.isRootCollection(arg[name]);
 
          // no array - no pain
          if (this.brarray[n] === false) continue;
 
          // check if array can be used as is - one dimension and normal values
-         if ((this.brarray[n] === true) && (JSROOT.CheckArrayPrototype(arg[name], true) === 2)) {
+         if ((this.brarray[n] === true) && (checkArrayPrototype(arg[name], true) === 2)) {
             // plain array, can be used as is
             arrs[n] = arg[name];
          } else {
@@ -1153,7 +1165,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
       let res = this.leaf ? this.tgtobj.br0[this.leaf] : this.tgtobj.br0;
 
       if (res && this.copy_fields) {
-         if (JSROOT.CheckArrayPrototype(res) === 0) {
+         if (checkArrayPrototype(res) === 0) {
             this.hist.push(JSROOT.extend({}, res));
          } else {
             this.hist.push(res);
@@ -1247,10 +1259,10 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
 
    // ======================================================================
 
-   jsrio.FindBrachStreamerElement = function(branch, file) {
-      // return TStreamerElement associated with the branch - if any
-      // unfortunately, branch.fID is not number of element in streamer info
-
+   /** @summary return TStreamerElement associated with the branch - if any
+     * @desc unfortunately, branch.fID is not number of element in streamer info
+     * @private */
+   function findBrachStreamerElement(branch, file) {
       if (!branch || !file || (branch._typename !== "TBranchElement") || (branch.fID < 0) || (branch.fStreamerType < 0)) return null;
 
       let s_i = file.findStreamerInfo(branch.fClassName, branch.fClassVersion, branch.fCheckSum),
@@ -1288,10 +1300,9 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
       return null;
    }
 
-
-   jsrio.DefineMemberTypeName = function(file, parent_class, member_name) {
-      // return type name of given member in the class
-
+   /** @summary return type name of given member in the class
+     * @private */
+   function defineMemberTypeName(file, parent_class, member_name) {
       let s_i = file.findStreamerInfo(parent_class),
          arr = (s_i && s_i.fElements) ? s_i.fElements.arr : null,
          elem = null;
@@ -1299,7 +1310,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
 
       for (let k = 0; k < arr.length; ++k) {
          if (arr[k].fTypeName === "BASE") {
-            let res = jsrio.DefineMemberTypeName(file, arr[k].fName, member_name);
+            let res = defineMemberTypeName(file, arr[k].fName, member_name);
             if (res) return res;
          } else
             if (arr[k].fName === member_name) { elem = arr[k]; break; }
@@ -1313,8 +1324,9 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
       return clname;
    }
 
-   jsrio.GetBranchObjectClass = function(branch, tree, with_clones, with_leafs) {
-      // return class name of the object, stored in the branch
+   /** @summary return class name of the object, stored in the branch
+     * @private */
+   function getBranchObjectClass(branch, tree, with_clones, with_leafs) {
 
       if (!branch || (branch._typename !== "TBranchElement")) return "";
 
@@ -1326,7 +1338,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
       if (with_clones && branch.fClonesName && ((branch.fType === JSROOT.BranchType.kClonesNode) || (branch.fType === JSROOT.BranchType.kSTLNode)))
          return branch.fClonesName;
 
-      let s_elem = jsrio.FindBrachStreamerElement(branch, tree.$file);
+      let s_elem = findBrachStreamerElement(branch, tree.$file);
 
       if ((branch.fType === JSROOT.BranchType.kBaseClassNode) && s_elem && (s_elem.fTypeName === "BASE"))
          return s_elem.fName;
@@ -1345,9 +1357,9 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
       return "";
    }
 
-   jsrio.MakeMethodsList = function(typename) {
-      // create fast list to assign all methods to the object
-
+   /** @summary create fast list to assign all methods to the object
+     * @private */
+   makeMethodsList = function(typename) {
       let methods = JSROOT.getMethods(typename);
 
       let res = {
@@ -1555,7 +1567,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
             if (!BranchCount2 && (branch.fBranchCount.fStreamerType === jsrio.kSTL) &&
                ((branch.fStreamerType === jsrio.kStreamLoop) || (branch.fStreamerType === jsrio.kOffsetL + jsrio.kStreamLoop))) {
                // special case when count member from kStreamLoop not assigned as fBranchCount2
-               let elemd = jsrio.FindBrachStreamerElement(branch, handle.file),
+               let elemd = findBrachStreamerElement(branch, handle.file),
                   arrd = branch.fBranchCount.fBranches.arr;
 
                if (elemd && elemd.fCountName && arrd)
@@ -1605,7 +1617,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
                   continue;
                }
 
-               let elem = jsrio.FindBrachStreamerElement(br, handle.file);
+               let elem = findBrachStreamerElement(br, handle.file);
                if (elem && (elem.fTypeName === "BASE")) {
                   // if branch is data of base class, map it to original target
                   if (br.fTotBytes && !AddBranchForReading(br, target_object, target_name, read_mode)) return false;
@@ -1683,13 +1695,13 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
                      }
                   }
 
-                  member.methods = jsrio.MakeMethodsList(member.conttype);
+                  member.methods = makeMethodsList(member.conttype);
 
                   child_scan = (branch.fType === JSROOT.BranchType.kClonesNode) ? JSROOT.BranchType.kClonesMemberNode : JSROOT.BranchType.kSTLMemberNode;
                }
             } else
 
-               if ((object_class = jsrio.GetBranchObjectClass(branch, handle.tree))) {
+               if ((object_class = getBranchObjectClass(branch, handle.tree))) {
 
                   if (read_mode === true) {
                      console.warn('Object branch ' + object_class + ' can not have data to be read directly');
@@ -1700,7 +1712,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
 
                   let newtgt = new Array(target_object ? (target_object.length + 1) : 1);
                   for (let l = 0; l < newtgt.length - 1; ++l) newtgt[l] = target_object[l];
-                  newtgt[newtgt.length - 1] = { name: target_name, lst: jsrio.MakeMethodsList(object_class) };
+                  newtgt[newtgt.length - 1] = { name: target_name, lst: makeMethodsList(object_class) };
 
                   if (!ScanBranches(branch.fBranches, newtgt, 0)) return null;
 
@@ -1733,7 +1745,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
                   // if (!elem.fSTLtype) elem = null;
                } else if (is_brelem && (nb_leaves <= 1)) {
 
-                  elem = jsrio.FindBrachStreamerElement(branch, handle.file);
+                  elem = findBrachStreamerElement(branch, handle.file);
 
                   // this is basic type - can try to solve problem differently
                   if (!elem && branch.fStreamerType && (branch.fStreamerType < 20))
@@ -1800,7 +1812,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
                target_name = member.name = snames[1];
                member.name1 = snames[0];
                member.subtype1 = read_mode;
-               member.methods1 = jsrio.MakeMethodsList(member.subtype1);
+               member.methods1 = makeMethodsList(member.subtype1);
                member.get = function(arr, n) {
                   let obj1 = arr[n][this.name1];
                   if (!obj1) obj1 = arr[n][this.name1] = this.methods1.Create();
@@ -1823,8 +1835,8 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
                let parent_class = branch.fParentName; // unfortunately, without version
 
                for (let k = 0; k < snames.length; ++k) {
-                  let chld_class = jsrio.DefineMemberTypeName(handle.file, parent_class, snames[k]);
-                  member.smethods[k] = jsrio.MakeMethodsList(chld_class || "AbstractClass");
+                  let chld_class = defineMemberTypeName(handle.file, parent_class, snames[k]);
+                  member.smethods[k] = makeMethodsList(chld_class || "AbstractClass");
                   parent_class = chld_class;
                }
                member.get = function(arr, n) {
@@ -2640,7 +2652,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
          JSROOT.progress("br " + args.nbr + "/" + args.branches.length + " " + args.names[args.nbr]);
 
          let br = args.branches[args.nbr],
-            object_class = jsrio.GetBranchObjectClass(br, this),
+            object_class = getBranchObjectClass(br, this),
             num = br.fEntries,
             skip_branch = (!br.fLeaves || (br.fLeaves.arr.length === 0));
 

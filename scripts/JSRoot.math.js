@@ -1,5 +1,4 @@
-/** @file JSRoot.math.js
-  * @desc Special mathematical functions */
+// Special mathematical functions
 
 JSROOT.define([], () =>  {
 
@@ -608,7 +607,7 @@ JSROOT.define([], () =>  {
    }
 
    /** @summary expo function for TFormula */
-     h.expo = function(f, x, i) {
+   mth.expo = function(f, x, i) {
       return Math.exp(f.GetParValue(i+0) + f.GetParValue(i+1) * x);
    }
 
