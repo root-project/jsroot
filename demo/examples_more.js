@@ -130,9 +130,9 @@ examples_more = {
    Misc : [
      { name: "io", url: "?file=$$$iotest.root&layout=grid4x3&items=[ex1,ex2,ex3,ex4,ex5,ex6,ex7,ex8,ex9,ex10,clones,map]&opts=[inspect,inspect,inspect,inspect,inspect,inspect,inspect,inspect,inspect,inspect,inspect,inspect]", title: "Different I/O test classes" },
      { name: "io56", file: "fitLinear56.root", item: "fitLinear6", title: "file with two version from ROOT 5/6 of same object" },
-     { name: "folder", url: "?file=$$$folders.root&expand=RsnMgr;1/input/0/2/10", title: "TFolder class" },
+     { name: "folder", url: "?file=$$$folders.root&expand=RsnMgr;1/input/0/2/10&item=RsnMgr;1/input/0/2/4/hSignal", title: "TFolder class" },
      { name: "task", url: "?file=$$$tasks.root&expand=run;1", title: "TTask class" },
-     { name: "alitask", url: "?file=$$$alitasks.root&expand=RsnMgr;1/input/1/3/9", title: "AliRoot TTask classes" },
+     { name: "alitask", url: "?file=$$$alitasks.root&expand=RsnMgr;1/input/1/3/9&item=RsnMgr;1/input/1/3/8/fOutput/hSignalBadFit", title: "AliRoot TTask classes" },
      { name: "aliQA", asurl: "browser", file: "QAresults_barrel.root", item: "TPC_PerformanceQA/TPCQA;1/AliPerformanceTPC", opt: "inspect", title: "Objects from Alice QA file" },
      { name: "roofit", file: "https://root.cern/files/stressRooFit_v534_ref.root", layout: "grid2x2", items: ['rf101_plot2','rf201_plot1','rf310_plot2','rf708_plot6'], title: "Several RooFit plots (still some classes not work)" },
      { name: "ioperf", asurl: true, file: "https://root.cern/files/aod_orig.root", item: "ioperf;1/fGraphIO", itemfield: "fGraphIO", opt: "", title: "Reading TTreePerfStats object and draw graph, fails in normal ROOT I/O", notest: true },
