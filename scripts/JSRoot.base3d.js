@@ -10,7 +10,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
     * @param {value} [render3d] - preconfigured value, will be used if applicable
     * @returns {value} - rendering kind, see JSROOT.constants.Render3D
     * @private */
-   jsrp.GetRender3DKind = function(render3d) {
+   jsrp.getRender3DKind = function(render3d) {
       if (!render3d) render3d = JSROOT.BatchMode ? JSROOT.settings.Render3DBatch : JSROOT.settings.Render3D;
       let rc = JSROOT.constants.Render3D;
 
@@ -43,7 +43,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
 
       if (can3d === undefined) {
          // analyze which render/embed mode can be used
-         can3d = jsrp.GetRender3DKind();
+         can3d = jsrp.getRender3DKind();
          // all non-webgl elements can be embedded into SVG as is
          if (can3d !== JSROOT.constants.Render3D.WebGL)
             can3d = JSROOT.constants.Embed3D.EmbedSVG;
@@ -269,11 +269,11 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
     * @param {value} render3d - render type, see {@link JSROOT.constants.Render3D}
     * @param {object} args - different arguments for creating 3D renderer
     * @private */
-   jsrp.Create3DRenderer = function(width, height, render3d, args) {
+   jsrp.createRender3D = function(width, height, render3d, args) {
 
       let rc = JSROOT.constants.Render3D;
 
-      render3d = jsrp.GetRender3DKind(render3d);
+      render3d = jsrp.getRender3DKind(render3d);
 
       if (!args) args = { antialias: true, alpha: true };
 
@@ -306,7 +306,17 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
 
          args.context = gl;
 
+         // in node.js too many similar warnings makes it difficult to debug
+         let warn = console.warn;
+         console.warn = function(msg) {
+            if (msg && msg.indexOf("OES_texture_half_float") < 0 &&
+                       msg.indexOf("WEBGL_depth_texture") < 0 && msg.indexOf("OES_vertex_array_object") < 0)
+              console.log("NEW: " + msg);
+         }
+
          renderer = new THREE.WebGLRenderer(args);
+
+         console.warn = warn;
 
          renderer.jsroot_output = new THREE.WebGLRenderTarget(width, height);
 

@@ -96,7 +96,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          return;
       }
 
-      render3d = jsrp.GetRender3DKind(render3d);
+      render3d = jsrp.getRender3DKind(render3d);
 
       jsrp.Assign3DHandler(this);
 
@@ -128,7 +128,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
       this.SetCameraPosition(true, this.root_pad());
 
-      this.renderer = jsrp.Create3DRenderer(this.scene_width, this.scene_height, render3d);
+      this.renderer = jsrp.createRender3D(this.scene_width, this.scene_height, render3d);
 
       this.webgl = (render3d === JSROOT.constants.Render3D.WebGL);
       this.add_3d_canvas(sz, this.renderer.jsroot_dom, this.webgl);

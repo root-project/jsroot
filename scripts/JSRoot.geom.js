@@ -1949,7 +1949,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
       this._scene.add(this._toplevel);
 
-      this._renderer = jsrp.Create3DRenderer(w, h, this.options.Render3D, { antialias: true, logarithmicDepthBuffer: false, preserveDrawingBuffer: true });
+      this._renderer = jsrp.createRender3D(w, h, this.options.Render3D, { antialias: true, logarithmicDepthBuffer: false, preserveDrawingBuffer: true });
 
       this._webgl = (this._renderer.jsroot_render3d === JSROOT.constants.Render3D.WebGL);
 
