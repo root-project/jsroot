@@ -1192,10 +1192,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             }
 
             let frame = mdi.findFrame(frame_name, true);
-            d3.select(frame).html("");
+            mdi.setEmptyContent(frame);
             mdi.activateFrame(frame);
 
-            return JSROOT.draw(d3.select(frame).attr("id"), obj, drawopt).then(p => {
+            return mdi.draw(frame, obj, drawopt).then(p => {
                if (JSROOT.settings.DragAndDrop)
                   h.enableDrop(frame, display_itemname);
                return complete(p);
@@ -2717,11 +2717,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       constructor(frameid) {
          super();
          this.frameid = frameid;
-         if (frameid && (frameid !== "dummy")) {
+         if (frameid != "$batch$") {
             this.SetDivId(frameid);
             this.select_main().property('mdi', this);
+            this.cleanupFrame = JSROOT.cleanup; // use standard cleanup function by default
          }
-         this.cleanupFrame = JSROOT.cleanup; // use standard cleanup function by default
          this.active_frame_title = ""; // keep title of active frame
       }
 
@@ -2736,12 +2736,16 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
         * @param {function} userfunc is called with arguments (painter, frame)
         * @param {boolean} only_visible let select only visible frames */
       forEachPainter(userfunc, only_visible) {
-
          this.forEachFrame(frame => {
             let dummy = new JSROOT.ObjectPainter();
             dummy.SetDivId(frame, -1);
             dummy.forEachPainter(painter => userfunc(painter, frame));
          }, only_visible);
+      }
+
+      /** @summary Set empty content for the frame */
+      setEmptyContent(frame) {
+         d3.select(frame).html("");
       }
 
       numDraw() {
@@ -2793,18 +2797,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.select_main().html("").property('mdi', null);
       }
 
-      draw(title, obj, drawopt) {
-         // draw object with specified options
-         if (!obj) return;
-
-         if (!JSROOT.canDraw(obj._typename, drawopt)) return;
-
-         let frame = this.findFrame(title, true);
-
-         this.activateFrame(frame);
-
-         return JSROOT.redraw(frame, obj, drawopt);
+      draw(frame, obj, drawopt) {
+         return JSROOT.draw(d3.select(frame).attr("id"), obj, drawopt);
       }
+
+      redraw(frame, obj, drawopt) {
+         return JSROOT.redraw(d3.select(frame).attr("id"), obj, drawopt);
+      }
+
    } // class MDIDisplay
 
 
@@ -2846,7 +2846,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          let ks = Object.keys(this.frames);
          for (let k = 0; k < ks.length; ++k) {
             let items = this.frames[ks[k]];
-            if (items.indexOf(title+";")>=0)
+            if (items.indexOf(title+";") >= 0)
                return d3.select("#"+ks[k]).node();
          }
          return null;
@@ -2856,6 +2856,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          super.cleanup();
          this.forEachFrame(frame => d3.select(frame).html(""));
       }
+
    } // class CustomDisplay
 
    // ================================================
@@ -3083,6 +3084,69 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    } // class GridDisplay
 
+   // ==================================================
+
+   /**
+    * @summary Batch MDI display
+    *
+    * @class
+    * @memberof JSROOT
+    * @desc Can be used together with hierarchy painter in node.js
+    * @private
+    */
+
+   class BatchDisplay extends MDIDisplay {
+      constructor() {
+         super("$batch$");
+         this.frames = []; // array of configured frames
+      }
+
+      forEachFrame(userfunc) {
+         for (let id = 1; id < this.frames.length; ++id)
+            if (this.frames[id])
+               userfunc(id);
+      }
+
+      forEachPainter() {}
+      setEmptyContent() {}
+
+      findFrame(searchtitle, force) {
+         for (let id = 1; id < this.frames.length; ++id)
+            if (this.frames[id] == searchtitle)
+               return id;
+         return force ? createFrame(title) : 0;
+      }
+
+      createFrame(title) {
+         this.beforeCreateFrame(title);
+         let id = this.frames.length;
+         if (id == 0) id = 1; else ++id;
+         this.frames[id] = title;
+         return id;
+      }
+
+      activateFrame(frame) { this.active_frame_title = this.frames[frame]; }
+
+      cleanupFrame(frame) {
+         if (this.frames[frame])
+            this.frames[frame] = undefined;
+      }
+
+      cleanup() {
+         this.frames = [];
+      }
+
+      draw(/*frame, obj, drawopt*/) {
+         return Promise.resolve({});
+      }
+
+      redraw(/*frame, obj, drawopt*/) {
+         return Promise.resolve({});
+      }
+
+   } // class BatchDisplay
+
+
 
    // export all functions and classes
 
@@ -3100,6 +3164,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    JSROOT.MDIDisplay = MDIDisplay;
    JSROOT.CustomDisplay = CustomDisplay;
    JSROOT.GridDisplay = GridDisplay;
+   JSROOT.BatchDisplay = BatchDisplay;
 
    return JSROOT;
 
