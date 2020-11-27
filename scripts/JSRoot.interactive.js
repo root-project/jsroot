@@ -1605,12 +1605,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    } // PadButtonsHandler
 
    /** @summary Configure user-defined tooltip callback
-    *
-    * @desc Hook for the users to get tooltip information when mouse cursor moves over frame area
-    * call_back function will be called every time when new data is selected
-    * when mouse leave frame area, call_back(null) will be called
-    */
-
+     * @desc Hook for the users to get tooltip information when mouse cursor moves over frame area
+     * call_back function will be called every time when new data is selected
+     * when mouse leave frame area, call_back(null) will be called */
    JSROOT.ObjectPainter.prototype.ConfigureUserTooltipCallback = function(call_back, user_timeout) {
 
       if (!call_back || (typeof call_back !== 'function')) {

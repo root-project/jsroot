@@ -2890,7 +2890,8 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       pp.ShowButtons();
    }
 
-   TH3Painter.prototype.CanZoomIn = function(axis,min,max) {
+   /** @summary Checks if it makes sense to zoom inside specified axis range */
+   TH3Painter.prototype.canZoomInside = function(axis,min,max) {
       // check if it makes sense to zoom inside specified axis range
       let obj = this.GetHisto();
       if (obj) obj = obj["f"+axis.toUpperCase()+"axis"];

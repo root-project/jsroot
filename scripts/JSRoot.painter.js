@@ -1502,7 +1502,7 @@ JSROOT.define(['d3'], (d3) => {
    /** @summary Function checks if geometry of main div was changed.
      * @desc take into account enlarge state
      * @returns size of area when main div is drawn */
-   BasePainter.prototype.check_main_resize = function(check_level, new_size, height_factor) {
+   BasePainter.prototype.testMainResize = function(check_level, new_size, height_factor) {
 
       let enlarge = this.enlargeMain('state'),
          main_origin = this.select_main('origin'),
@@ -1559,7 +1559,6 @@ JSROOT.define(['d3'], (d3) => {
      *    - 'toggle' - toggle enlarge state
      *    - 'state' - return current state
      *    - 'verify' - check if element can be enlarged
-     *
      * if action not specified, just return possibility to enlarge main div */
    BasePainter.prototype.enlargeMain = function(action, skip_warning) {
 
@@ -1650,16 +1649,6 @@ JSROOT.define(['d3'], (d3) => {
    /** @summary Returns assigned item draw option
     * @private */
    BasePainter.prototype.GetItemDrawOpt = function() { return ('_hdrawopt' in this) ? this._hdrawopt : ""; }
-
-   /** @summary Check if it makes sense to zoom inside specified axis range
-    * @param {string} axis - name of axis like 'x', 'y', 'z'
-    * @param {number} left - left axis range
-    * @param {number} right - right axis range
-    * @returns true is zooming makes sense
-    * @abstract
-    * @private
-    */
-   BasePainter.prototype.CanZoomIn = function(/* axis, left, right */) {}
 
    // ==============================================================================
 

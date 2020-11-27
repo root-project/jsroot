@@ -2913,8 +2913,8 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       pp.ShowButtons();
    }
 
-   JSROOT.v7.RH3Painter.prototype.CanZoomIn = function(axis,min,max) {
-      // check if it makes sense to zoom inside specified axis range
+   /** @summary Checks if it makes sense to zoom inside specified axis range */
+   JSROOT.v7.RH3Painter.prototype.canZoomInside = function(axis,min,max) {
       let obj = this.GetHisto();
       if (obj) obj = obj["f"+axis.toUpperCase()+"axis"];
       return !obj || (obj.FindBin(max,0.5) - obj.FindBin(min,0) > 1);

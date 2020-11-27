@@ -727,7 +727,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       }
    }
 
-   TF1Painter.prototype.CanZoomIn = function(axis,min,max) {
+   /** @summary Checks if it makes sense to zoom inside specified axis range */
+   TF1Painter.prototype.canZoomInside = function(axis,min,max) {
       if (axis!=="x") return false;
 
       let tf1 = this.GetObject();
@@ -1854,7 +1855,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       return true;
    }
 
-   TGraphPainter.prototype.CanZoomIn = function(axis,min,max) {
+   /** @summary Checks if it makes sense to zoom inside specified axis range */
+   TGraphPainter.prototype.canZoomInside = function(axis,min,max) {
       // allow to zoom TGraph only when at least one point in the range
 
       let gr = this.GetObject();
@@ -2812,7 +2814,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
    }
 
-   TSplinePainter.prototype.CanZoomIn = function(axis/*,min,max*/) {
+   /** @summary Checks if it makes sense to zoom inside specified axis range */
+   TSplinePainter.prototype.canZoomInside = function(axis/*,min,max*/) {
       if (axis!=="x") return false;
 
       let spline = this.GetObject();
@@ -3742,7 +3745,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       }
    }
 
-   TASImagePainter.prototype.CanZoomIn = function(axis,min,max) {
+   /** @summary Checks if it makes sense to zoom inside specified axis range */
+   TASImagePainter.prototype.canZoomInside = function(axis,min,max) {
       let obj = this.GetObject();
 
       if (!obj || !obj.fImgBuf)

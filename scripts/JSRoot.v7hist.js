@@ -1776,7 +1776,8 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
          this.frame_painter().Zoom(xaxis.GetBinCoord(left), xaxis.GetBinCoord(right));
    }
 
-   RH1Painter.prototype.CanZoomIn = function(axis,min,max) {
+   /** @summary Checks if it makes sense to zoom inside specified axis range */
+   RH1Painter.prototype.canZoomInside = function(axis,min,max) {
       let xaxis = this.GetAxis("x");
 
       if ((axis=="x") && (xaxis.FindBin(max,0.5) - xaxis.FindBin(min,0) > 1)) return true;
@@ -3560,13 +3561,10 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       return res;
    }
 
-   RH2Painter.prototype.CanZoomIn = function(axis,min,max) {
-      // check if it makes sense to zoom inside specified axis range
-
+   /** @summary Checks if it makes sense to zoom inside specified axis range */
+   RH2Painter.prototype.canZoomInside = function(axis,min,max) {
       if (axis=="z") return true;
-
       let obj = this.GetAxis(axis);
-
       return (obj.FindBin(max,0.5) - obj.FindBin(min,0) > 1);
    }
 

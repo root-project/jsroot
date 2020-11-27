@@ -4258,7 +4258,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          this.frame_painter().Zoom(histo.fXaxis.GetBinLowEdge(left+1), histo.fXaxis.GetBinLowEdge(right+1));
    }
 
-   TH1Painter.prototype.CanZoomIn = function(axis,min,max) {
+   /** @summary Checks if it makes sense to zoom inside specified axis range */
+   TH1Painter.prototype.canZoomInside = function(axis,min,max) {
       let histo = this.GetHisto();
 
       if ((axis=="x") && histo && (histo.fXaxis.FindBin(max,0.5) - histo.fXaxis.FindBin(min,0) > 1)) return true;
@@ -6278,8 +6279,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return res;
    }
 
-   /** @summary Check if it makes sense to zoom inside specified axis range */
-   TH2Painter.prototype.CanZoomIn = function(axis,min,max) {
+   /** @summary Checks if it makes sense to zoom inside specified axis range */
+   TH2Painter.prototype.canZoomInside = function(axis,min,max) {
 
       if (axis=="z") return true;
 

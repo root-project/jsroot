@@ -1756,19 +1756,20 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       // first process zooming (if any)
       if (zoom_x || zoom_y || zoom_z)
          this.forEachPainter(obj => {
-            if (zoom_x && obj.CanZoomIn("x", xmin, xmax)) {
+            if (typeof obj.canZoomInside != 'function') return;
+            if (zoom_x && obj.canZoomInside("x", xmin, xmax)) {
                this.zoom_xmin = xmin;
                this.zoom_xmax = xmax;
                changed = true;
                zoom_x = false;
             }
-            if (zoom_y && obj.CanZoomIn("y", ymin, ymax)) {
+            if (zoom_y && obj.canZoomInside("y", ymin, ymax)) {
                this.zoom_ymin = ymin;
                this.zoom_ymax = ymax;
                changed = true;
                zoom_y = false;
             }
-            if (zoom_z && obj.CanZoomIn("z", zmin, zmax)) {
+            if (zoom_z && obj.canZoomInside("z", zmin, zmax)) {
                this.zoom_zmin = zmin;
                this.zoom_zmax = zmax;
                changed = true;
@@ -2105,7 +2106,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          factor = svg.property('height_factor');
 
-         rect = this.check_main_resize(check_resize, null, factor);
+         rect = this.testMainResize(check_resize, null, factor);
 
          if (!rect.changed) return false;
 
@@ -2163,7 +2164,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if (!rect.width || !rect.height)
                rect = jsrp.getElementRect(render_to);
          } else {
-            rect = this.check_main_resize(2, new_size, factor);
+            rect = this.testMainResize(2, new_size, factor);
          }
       }
 
