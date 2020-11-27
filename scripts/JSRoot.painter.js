@@ -1294,7 +1294,7 @@ JSROOT.define(['d3'], (d3) => {
       if (!fullsize) {
          // this is size exclude padding area
          res.width -= styleValue('padding-left') + styleValue('padding-right');
-         res.height -= styleValue('padding-top') - styleValue('padding-bottom');
+         res.height -= styleValue('padding-top') + styleValue('padding-bottom');
       }
 
       return res;
