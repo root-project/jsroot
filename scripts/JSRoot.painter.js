@@ -1480,19 +1480,6 @@ JSROOT.define(['d3'], (d3) => {
       return res;
    }
 
-   /** @summary Returns string with value of main element id attribute
-   * @desc if main element does not have id, it will be generated */
-   BasePainter.prototype.get_main_id = function() {
-      let elem = this.select_main();
-      if (elem.empty()) return "";
-      let id = elem.attr("id");
-      if (!id) {
-         id = "jsroot_element_" + JSROOT._.id_counter++;
-         elem.attr("id", id);
-      }
-      return id;
-   }
-
    /** @summary Returns layout kind */
    BasePainter.prototype.getLayoutKind = function() {
       let origin = this.select_main('origin'),
