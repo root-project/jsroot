@@ -104,7 +104,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
       }
 
       if (can3d === 1)
-         this.CalcAbsolutePosition(this.svg_pad(), size);
+         size = jsrp.getAbsPosInCanvas(this.svg_pad(), size);
 
       return size;
    }

@@ -141,7 +141,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          let frame_shift = { x: 0, y: 0 }, trans = frame_rect.transform || "";
          if (!pp.iscan) {
-            pp.CalcAbsolutePosition(this.svg_pad(), frame_shift);
+            frame_shift = jsrp.getAbsPosInCanvas(this.svg_pad(), frame_shift);
             trans = "translate(" + frame_shift.x + "," + frame_shift.y + ") " + trans;
          }
 
@@ -745,7 +745,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          }
 
          let pp = this.pad_painter();
-         if (jsrp.GetActivePad() !== pp) return;
+         if (jsrp.getActivePad() !== pp) return;
 
          if (evnt.shiftKey) key = "Shift " + key;
          if (evnt.altKey) key = "Alt " + key;

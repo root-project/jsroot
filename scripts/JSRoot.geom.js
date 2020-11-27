@@ -3044,7 +3044,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          this.add_3d_canvas(size, dom, this._webgl);
 
          // set top painter only when first child exists
-         this.AccessTopPainter(true);
+         this.accessTopPainter(true);
       }
 
       this.CreateToolbar();
@@ -3771,7 +3771,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
          this.removeSSAO();
 
-         this.AccessTopPainter(false); // remove as pointer
+         this.accessTopPainter(false); // remove as pointer
 
          let can3d = this.clear_3d_canvas(); // remove 3d canvas from main HTML element
 

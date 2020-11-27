@@ -2130,7 +2130,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if (!this.register_resize) {
          this.register_resize = true;
-         JSROOT.RegisterForResize(this);
+         JSROOT.registerForResize(this);
       }
    }
 
@@ -3167,7 +3167,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (has_workarounds)
             svg = jsrp.processSvgWorkarounds(svg, id != this.frames.length-1);
 
-         svg = jsrp.CompressSVG(svg);
+         svg = jsrp.compressSVG(svg);
 
          main.remove();
          return svg;

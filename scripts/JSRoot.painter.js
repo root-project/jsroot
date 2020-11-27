@@ -1300,6 +1300,19 @@ JSROOT.define(['d3'], (d3) => {
       return res;
    }
 
+   /** @summary Calculate absolute position of provided element in canvas
+     * @private */
+   jsrp.getAbsPosInCanvas = function(sel, pos) {
+      while (!sel.empty() && !sel.classed('root_canvas') && pos) {
+         let cl = sel.attr("class");
+         if (cl && ((cl.indexOf("root_frame") >= 0) || (cl.indexOf("__root_pad_") >= 0))) {
+            pos.x += sel.property("draw_x") || 0;
+            pos.y += sel.property("draw_y") || 0;
+         }
+         sel = d3.select(sel.node().parentNode);
+      }
+      return pos;
+   }
 
    // ========================================================================================
 
@@ -1321,12 +1334,14 @@ JSROOT.define(['d3'], (d3) => {
     *    - on === false - delete painter reference
     *    - on === undefined - return painter
     * @param {boolean} on - that to perfrom */
-   BasePainter.prototype.AccessTopPainter = function(on) {
+   BasePainter.prototype.accessTopPainter = function(on) {
       let main = this.select_main().node(),
          chld = main ? main.firstChild : null;
       if (!chld) return null;
-      if (on === true) chld.painter = this; else
-         if (on === false) delete chld.painter;
+      if (on === true)
+         chld.painter = this;
+      else if (on === false)
+         delete chld.painter;
       return chld.painter;
    }
 
@@ -1337,7 +1352,7 @@ JSROOT.define(['d3'], (d3) => {
       if (!origin.empty() && !keep_origin) origin.html("");
       if (this._changed_layout)
          this.setLayoutKind('simple');
-      this.AccessTopPainter(false);
+      this.accessTopPainter(false);
       this.divid = null;
       delete this._selected_main;
 
@@ -1628,7 +1643,7 @@ JSROOT.define(['d3'], (d3) => {
          delete this._selected_main;
       }
 
-      this.AccessTopPainter(true);
+      this.accessTopPainter(true);
    }
 
    /** @summary Set item name, associated with the painter
@@ -2170,7 +2185,7 @@ JSROOT.define(['d3'], (d3) => {
       if (!res) {
          let svg_p = this.svg_pad();
          if (svg_p.empty()) {
-            res = this.AccessTopPainter();
+            res = this.accessTopPainter();
          } else {
             res = svg_p.property('mainpainter');
          }
@@ -2184,10 +2199,8 @@ JSROOT.define(['d3'], (d3) => {
    ObjectPainter.prototype.is_main_painter = function() { return this === this.main_painter(); }
 
    /** @summary Assigns id of top element (normally div where drawing is done).
-    *
     * @desc In some situations canvas may not exists - for instance object drawn as html, not as svg.
     * In such case the only painter will be assigned to the first element
-    *
     * Following values of kind parameter are allowed:
     *   -  -1  only assign id, this painter not add to painters list
     *   -   0  normal painter (default)
@@ -2197,11 +2210,9 @@ JSROOT.define(['d3'], (d3) => {
     *   -   4  major objects like TH3 (required canvas and frame in 3d mode)
     *   -   5  major objects like TGeoVolume (do not require canvas)
     *   -   6  major objects like TGraphPolagram (requires canvas but not TFrame)
-    *
     * @param {string|object} divid - id of div element or directly DOMElement
     * @param {number} [kind] - kind of object drawn with painter
-    * @param {string} [pad_name] - when specified, subpad name used for object drawing
-    * @private */
+    * @param {string} [pad_name] - when specified, subpad name used for object drawing */
    ObjectPainter.prototype.SetDivId = function(divid, kind, pad_name) {
 
       if (divid !== undefined) {
@@ -2234,7 +2245,7 @@ JSROOT.define(['d3'], (d3) => {
 
       if (svg_c.empty()) {
          if ((kind < 0) || (kind === 5) || this.iscan) return true;
-         this.AccessTopPainter(true);
+         this.accessTopPainter(true);
          return true;
       }
 
@@ -2270,20 +2281,6 @@ JSROOT.define(['d3'], (d3) => {
          svg_p.property('mainpainter', this);
 
       return true;
-   }
-
-   /** @summary Calculate absolute position of provided selection.
-    * @private */
-   ObjectPainter.prototype.CalcAbsolutePosition = function(sel, pos) {
-      while (!sel.empty() && !sel.classed('root_canvas') && pos) {
-         let cl = sel.attr("class");
-         if (cl && ((cl.indexOf("root_frame") >= 0) || (cl.indexOf("__root_pad_") >= 0))) {
-            pos.x += sel.property("draw_x") || 0;
-            pos.y += sel.property("draw_y") || 0;
-         }
-         sel = d3.select(sel.node().parentNode);
-      }
-      return pos;
    }
 
    /** @summary Creates marker attributes object
@@ -2386,7 +2383,7 @@ JSROOT.define(['d3'], (d3) => {
     * @private */
    ObjectPainter.prototype.forEachPainter = function(userfunc, kind) {
       // special case of the painter set as pointer of first child of main element
-      let painter = this.AccessTopPainter();
+      let painter = this.accessTopPainter();
       if (painter) {
          if (kind !== "pads") userfunc(painter);
          return;
@@ -3200,19 +3197,15 @@ JSROOT.define(['d3'], (d3) => {
       return item;
    }
 
-
    // ===========================================================
 
-
-
    /** @summary Set active pad painter
-    *
-    * @desc Normally be used to handle key press events, which are global in the web browser
-    * @param {object} args - functions arguments
-    * @param {object} args.pp - pad painter
-    * @param {boolean} [args.active] - is pad activated or not
-    * @private */
-   jsrp.SelectActivePad = function(args) {
+     * @desc Normally be used to handle key press events, which are global in the web browser
+     * @param {object} args - functions arguments
+     * @param {object} args.pp - pad painter
+     * @param {boolean} [args.active] - is pad activated or not
+     * @private */
+   jsrp.selectActivePad = function(args) {
       if (args.active) {
          if (this.$active_pp && (typeof this.$active_pp.SetActive == 'function'))
             this.$active_pp.SetActive(false);
@@ -3227,33 +3220,11 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /** @summary Returns current active pad
-    * @desc Should be used only for keyboard handling
-    * @private */
-
-   jsrp.GetActivePad = function() {
+     * @desc Should be used only for keyboard handling
+     * @private */
+   jsrp.getActivePad = function() {
       return this.$active_pp;
    }
-
-   // =====================================================================
-
-   JSROOT.EAxisBits = {
-      kDecimals: JSROOT.BIT(7),
-      kTickPlus: JSROOT.BIT(9),
-      kTickMinus: JSROOT.BIT(10),
-      kAxisRange: JSROOT.BIT(11),
-      kCenterTitle: JSROOT.BIT(12),
-      kCenterLabels: JSROOT.BIT(14),
-      kRotateTitle: JSROOT.BIT(15),
-      kPalette: JSROOT.BIT(16),
-      kNoExponent: JSROOT.BIT(17),
-      kLabelsHori: JSROOT.BIT(18),
-      kLabelsVert: JSROOT.BIT(19),
-      kLabelsDown: JSROOT.BIT(20),
-      kLabelsUp: JSROOT.BIT(21),
-      kIsInteger: JSROOT.BIT(22),
-      kMoreLogLabels: JSROOT.BIT(23),
-      kOppositeTitle: JSROOT.BIT(32) // atrificial bit, not possible to set in ROOT
-   };
 
    // ================= painter of raw text ========================================
 
@@ -3302,14 +3273,13 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /** @summary Register handle to react on window resize
-    *
     * @desc function used to react on browser window resize event
     * While many resize events could come in short time,
     * resize will be handled with delay after last resize event
     * handle can be function or object with checkResize function
     * one could specify delay after which resize event will be handled
     * @private */
-   JSROOT.RegisterForResize = function(handle, delay) {
+   JSROOT.registerForResize = function(handle, delay) {
 
       if (!handle || JSROOT.BatchMode) return;
 
@@ -3829,7 +3799,7 @@ JSROOT.define(['d3'], (d3) => {
    /** @summary Compress SVG code, produced from JSROOT drawing
      * @desc removes extra info or empty elements
      * @private */
-   jsrp.CompressSVG = function(svg) {
+   jsrp.compressSVG = function(svg) {
 
       svg = svg.replace(/url\(\&quot\;\#(\w+)\&quot\;\)/g, "url(#$1)")        // decode all URL
                .replace(/ class=\"\w*\"/g, "")                                // remove all classes
@@ -3892,7 +3862,7 @@ JSROOT.define(['d3'], (d3) => {
             if (has_workarounds)
                svg = jsrp.processSvgWorkarounds(svg);
 
-            svg = jsrp.CompressSVG(svg);
+            svg = jsrp.compressSVG(svg);
 
             main.remove();
 

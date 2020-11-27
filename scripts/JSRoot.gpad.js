@@ -10,6 +10,25 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    // =======================================================================
 
+   JSROOT.EAxisBits = {
+      kDecimals: JSROOT.BIT(7),
+      kTickPlus: JSROOT.BIT(9),
+      kTickMinus: JSROOT.BIT(10),
+      kAxisRange: JSROOT.BIT(11),
+      kCenterTitle: JSROOT.BIT(12),
+      kCenterLabels: JSROOT.BIT(14),
+      kRotateTitle: JSROOT.BIT(15),
+      kPalette: JSROOT.BIT(16),
+      kNoExponent: JSROOT.BIT(17),
+      kLabelsHori: JSROOT.BIT(18),
+      kLabelsVert: JSROOT.BIT(19),
+      kLabelsDown: JSROOT.BIT(20),
+      kLabelsUp: JSROOT.BIT(21),
+      kIsInteger: JSROOT.BIT(22),
+      kMoreLogLabels: JSROOT.BIT(23),
+      kOppositeTitle: JSROOT.BIT(32) // atrificial bit, not possible to set in ROOT
+   };
+
 
    /**
     * @summary Painter for TAxis/TGaxis objects.
@@ -1970,7 +1989,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.this_pad_name = undefined;
       this.has_canvas = false;
 
-      jsrp.SelectActivePad({ pp: this, active: false });
+      jsrp.selectActivePad({ pp: this, active: false });
 
       JSROOT.ObjectPainter.prototype.Cleanup.call(this);
    }
@@ -2042,8 +2061,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
      * @private */
    TPadPainter.prototype.PadEvent = function(_what, _padpainter, _painter, _position, _place) {
 
-      if ((_what == "select") && (typeof this.SelectActivePad == 'function'))
-         this.SelectActivePad(_padpainter, _painter, _position);
+      if ((_what == "select") && (typeof this.selectActivePad == 'function'))
+         this.selectActivePad(_padpainter, _painter, _position);
 
       if (this.pad_events_receiver)
          this.pad_events_receiver({ what: _what, padpainter:  _padpainter, painter: _painter, position: _position, place: _place });
@@ -2057,9 +2076,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (_painter === undefined) _painter = this;
 
       if (pos && !istoppad)
-         this.CalcAbsolutePosition(this.svg_pad(), pos);
+         pos = jsrp.getAbsPosInCanvas(this.svg_pad(), pos);
 
-      jsrp.SelectActivePad({ pp: this, active: true });
+      jsrp.selectActivePad({ pp: this, active: true });
 
       if (canp) canp.PadEvent("select", this, _painter, pos, _place);
    }
@@ -2595,7 +2614,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (showsubitems || sub.this_pad_name) sub.Redraw(reason);
       }
 
-      if (jsrp.GetActivePad() === this) {
+      if (jsrp.getActivePad() === this) {
          let canp = this.canv_painter();
          if (canp) canp.PadEvent("padredraw", this );
       }
@@ -2902,7 +2921,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                this.brlayout.Create(mainid, true);
                // this.brlayout.ToggleBrowserKind("float");
                this.SetDivId(this.brlayout.drawing_divid(), -1);  // assign id for drawing
-               JSROOT.RegisterForResize(this.brlayout);
+               JSROOT.registerForResize(this.brlayout);
             }
          }
 
@@ -3012,7 +3031,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       return this.DrawNextSnap(snap.fPrimitives).then(() => {
          this.CurrentPadName(prev_name);
-         if (jsrp.GetActivePad() === this) {
+         if (jsrp.getActivePad() === this) {
             let canp = this.canv_painter();
             if (canp) canp.PadEvent("padredraw", this);
          }
@@ -3296,7 +3315,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (jsrp.processSvgWorkarounds)
          svg = jsrp.processSvgWorkarounds(svg);
 
-      svg = jsrp.CompressSVG(svg);
+      svg = jsrp.compressSVG(svg);
 
       if (file_format == "svg") {
          reconstruct();
@@ -3522,7 +3541,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       let prev_name = painter.has_canvas ? painter.CurrentPadName(painter.this_pad_name) : undefined;
 
       // set active pad
-      jsrp.SelectActivePad({ pp: painter, active: true });
+      jsrp.selectActivePad({ pp: painter, active: true });
 
       // flag used to prevent immediate pad redraw during first draw
       return painter.DrawPrimitives().then(() => {
@@ -4025,7 +4044,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Select active pad on the canvas */
-   TCanvasPainter.prototype.SelectActivePad = function(pad_painter, obj_painter, click_pos) {
+   TCanvasPainter.prototype.selectActivePad = function(pad_painter, obj_painter, click_pos) {
       if ((this.snapid === undefined) || !pad_painter) return; // only interactive canvas
 
       let arg = null, ischanged = false;
@@ -4133,7 +4152,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          drawFrame(divid, null);
 
       // select global reference - required for keys handling
-      jsrp.SelectActivePad({ pp: painter, active: true });
+      jsrp.selectActivePad({ pp: painter, active: true });
 
       return painter.DrawPrimitives().then(() => {
          painter.ShowButtons();

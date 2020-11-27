@@ -2066,7 +2066,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
             div = div.find(".flex_draw").get(0);
             let dummy = new JSROOT.ObjectPainter();
             dummy.SetDivId(div, -1);
-            jsrp.SelectActivePad({ pp: dummy.canv_painter(), active: true });
+            jsrp.selectActivePad({ pp: dummy.canv_painter(), active: true });
 
             JSROOT.resize(div);
          }
