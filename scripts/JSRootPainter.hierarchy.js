@@ -763,13 +763,13 @@
 
                var allow_index = arg.allow_index;
                if ((localname[0] === '[') && (localname[localname.length-1] === ']') &&
-                   !isNaN(parseInt(localname.substr(1,localname.length-2)))) {
+                    /^\d+$/.test(localname.substr(1,localname.length-2))) {
                   allow_index = true;
                   localname = localname.substr(1,localname.length-2);
                }
 
                // when search for the elements it could be allowed to check index
-               if (allow_index) {
+               if (allow_index && /^\d+$/.test(localname)) {
                   var indx = parseInt(localname);
                   if (!isNaN(indx) && (indx>=0) && (indx<top._childs.length))
                      return process_child(top._childs[indx]);
