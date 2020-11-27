@@ -799,6 +799,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
      * @param {boolean} [arg.force] - specified elements will be created when not exists
      * @param {boolean} [arg.last_exists] -  when specified last parent element will be returned
      * @param {boolean} [arg.check_keys] - check TFile keys with cycle suffix
+     * @param {boolean} [arg.allow_index] - let use sub-item indexes instead of name
      * @param {object} [arg.top] - element to start search from
      * @protected */
    HierarchyPainter.prototype.findItem = function(arg) {
@@ -859,15 +860,15 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
                let allow_index = arg.allow_index;
                if ((localname[0] === '[') && (localname[localname.length-1] === ']') &&
-                   !isNaN(parseInt(localname.substr(1,localname.length-2)))) {
+                    /^\d+$/.test(localname.substr(1,localname.length-2))) {
                   allow_index = true;
                   localname = localname.substr(1,localname.length-2);
                }
 
                // when search for the elements it could be allowed to check index
-               if (allow_index) {
+               if (allow_index && /^\d+$/.test(localname)) {
                   let indx = parseInt(localname);
-                  if (!isNaN(indx) && (indx>=0) && (indx<top._childs.length))
+                  if (!isNaN(indx) && (indx >= 0) && (indx < top._childs.length))
                      return process_child(top._childs[indx]);
                }
             }
@@ -1008,7 +1009,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
            else item = this.findItem( { name: itemname, allow_index: true, check_keys: true } );
 
       // if item not found, try to find nearest parent which could allow us to get inside
-      let d = (item!=null) ? null : this.findItem({ name: itemname, last_exists: true, check_keys: true, allow_index: true });
+
+      let d = item ? null : this.findItem({ name: itemname, last_exists: true, check_keys: true, allow_index: true });
 
       // if item not found, try to expand hierarchy central function
       // implements not process get in central method of hierarchy item (if exists)
@@ -1024,7 +1026,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return this.expandItem(parentname, null, true).then(res => {
             if (!res) return result;
             let newparentname = this.itemFullName(d.last);
-            if (newparentname.length>0) newparentname+="/";
+            if (newparentname.length > 0) newparentname += "/";
             return this.getObject( { name: newparentname + d.rest, rest: d.rest }, options);
          });
       }
