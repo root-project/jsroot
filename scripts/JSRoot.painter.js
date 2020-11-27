@@ -3381,7 +3381,7 @@ JSROOT.define(['d3'], (d3) => {
     * @private */
    JSROOT.RegisterForResize = function(handle, delay) {
 
-      if (!handle) return;
+      if (!handle || JSROOT.BatchMode) return;
 
       let myInterval = null, myDelay = delay ? delay : 300;
 

@@ -2390,7 +2390,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if (this.start_without_browser) browser_kind = "";
 
-      if (status || browser_kind) prereq += "jq2d;";
+      if ((status || browser_kind) && !JSROOT.BatchMode) prereq += "jq2d;";
 
       this._topname = GetOption("topname");
 
@@ -2717,8 +2717,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       constructor(frameid) {
          super();
          this.frameid = frameid;
-         this.SetDivId(frameid);
-         this.select_main().property('mdi', this);
+         if (frameid && (frameid !== "dummy")) {
+            this.SetDivId(frameid);
+            this.select_main().property('mdi', this);
+         }
          this.cleanupFrame = JSROOT.cleanup; // use standard cleanup function by default
          this.active_frame_title = ""; // keep title of active frame
       }
