@@ -1561,31 +1561,46 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       find_next();
    }
 
+   /** @summary Check if item can be (potentially) expand
+     * @private*/
+   HierarchyPainter.prototype.canExpandItem = function(item) {
+      if (!item) return false;
+      if (item._expand) return true;
+      let handle = JSROOT.getDrawHandle(item._kind, "::expand");
+      return handle && (handle.expand_item || handle.expand);
+   }
+
    /** @summary expand specified item
      * @param {String} itemname - item name
      * @returns {Promise} when ready */
    HierarchyPainter.prototype.expandItem = function(itemname, d3cont, silent) {
       let hitem = this.findItem(itemname);
 
-      if (!hitem && d3cont) return Promise.resolve();
+      if (!hitem && d3cont)
+         return Promise.resolve();
 
-      let DoExpandItem = (_item, _obj, _name) => {
-         if (!_name) _name = this.itemFullName(_item);
+      let DoExpandItem = (_item, _obj) => {
 
-         let handle = _item._expand ? null : JSROOT.getDrawHandle(_item._kind, "::expand");
+         if (typeof _item._expand == 'string')
+            _item._expand = JSROOT.findFunction(item._expand);
 
-         if (_obj && handle && handle.expand_item) {
-            _obj = _obj[handle.expand_item]; // just take specified field from the object
-            if (_obj && _obj._typename)
-               handle = JSROOT.getDrawHandle("ROOT."+_obj._typename, "::expand");
-         }
+         if (typeof _item._expand !== 'function') {
+            let handle = JSROOT.getDrawHandle(_item._kind, "::expand");
 
-         if (handle && handle.expand) {
-            return JSROOT.require(handle.prereq).then(() => {
-               _item._expand = JSROOT.findFunction(handle.expand);
-               if (_item._expand) return DoExpandItem(_item, _obj, _name);
-               return true; // no need for other checks
-            });
+            if (handle && handle.expand_item) {
+               _obj = _obj[handle.expand_item];
+              if (_obj && _obj._typename)
+                 handle = JSROOT.getDrawHandle("ROOT."+_obj._typename, "::expand");
+            }
+
+            if (handle && handle.expand) {
+               if (typeof handle.expand == 'string')
+                  return JSROOT.require(handle.prereq).then(() => {
+                     _item._expand = handle.expand = JSROOT.findFunction(handle.expand);
+                     return _item._expand ? DoExpandItem(_item, _obj) : true;
+                  });
+               _item._expand = handle.expand;
+            }
          }
 
          // try to use expand function

@@ -1061,35 +1061,44 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
       return true;
    }
 
-   /** @summary Toggle open state of the item */
+   /** @summary Toggle open state of the item
+     * @desc Used with "open all" / "close all" buttons in normal GUI
+     * @param {boolean} isopen - if items should be expand or closed
+     * @returns {boolean} tru when any item was changed */
    HierarchyPainter.prototype.toggleOpenState = function(isopen, h) {
-      let hitem = h ? h : this.h;
+      let hitem = h || this.h;
 
-      if (!('_childs' in hitem)) {
-         if (!isopen || this.with_icons || (!hitem._expand && (hitem._more !== true))) return false;
+      if (hitem._childs === undefined) {
+         if (!isopen) return false;
+
+         if (this.with_icons) {
+            // in normal hierarchy check precisely if item can be expand
+            if (!hitem._more && !hitem._expand && !this.canExpandItem(hitem)) return false;
+         }
+
          this.expandItem(this.itemFullName(hitem));
-         if (hitem._childs) hitem._isopen = true;
-         return true;
+         if (hitem._childs !== undefined) hitem._isopen = true;
+         return hitem._isopen;
       }
 
-      if ((hitem != this.h) && isopen && !hitem._isopen) {
+      if ((hitem !== this.h) && isopen && !hitem._isopen) {
          // when there are childs and they are not see, simply show them
          hitem._isopen = true;
          return true;
       }
 
       let change_child = false;
-      for (let i=0; i < hitem._childs.length; ++i)
-         if (this.toggleOpenState(isopen, hitem._childs[i])) change_child = true;
+      for (let i = 0; i < hitem._childs.length; ++i)
+         if (this.toggleOpenState(isopen, hitem._childs[i]))
+            change_child = true;
 
-      if ((hitem != this.h) && !isopen && hitem._isopen && !change_child) {
+      if ((hitem !== this.h) && !isopen && hitem._isopen && !change_child) {
          // if none of the childs can be closed, than just close that item
          delete hitem._isopen;
          return true;
        }
 
       if (!h) this.refreshHtml();
-
       return false;
    }
 
@@ -1133,10 +1142,10 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
 
       let d3btns = d3elem.append("p").attr("class", "jsroot").style("margin-bottom","3px").style("margin-top",0);
       d3btns.append("a").attr("class", "h_button").text("open all")
-            .attr("title","open all items in the browser").on("click", h.toggleOpenState.bind(h,true));
+            .attr("title","open all items in the browser").on("click", () => this.toggleOpenState(true));
       d3btns.append("text").text(" | ");
       d3btns.append("a").attr("class", "h_button").text("close all")
-            .attr("title","close all items in the browser").on("click", h.toggleOpenState.bind(h,false));
+            .attr("title","close all items in the browser").on("click", () => this.toggleOpenState(false));
 
       if (typeof h.removeInspector == 'function') {
          d3btns.append("text").text(" | ");
