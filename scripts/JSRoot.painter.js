@@ -3663,7 +3663,7 @@ JSROOT.define(['d3'], (d3) => {
                painter.csstype = handle.csstype;
                painter.SetDivId(divid, 2);
                painter.Redraw = handle.func;
-               let promise = painter.Redraw();
+               promise = painter.Redraw();
                if (!isPromise(promise)) {
                   painter.DrawingReady();
                   promise = undefined;
