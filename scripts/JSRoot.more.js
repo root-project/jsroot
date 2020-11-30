@@ -1962,13 +1962,14 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       return true;
    }
 
-   TGraphPainter.prototype.DrawNextFunction = function(indx, callback) {
-      // method draws next function from the functions list
+   /** @summary method draws next function from the functions list
+     * @returns {Promise} */
+   TGraphPainter.prototype.DrawNextFunction = function(indx) {
 
       let graph = this.GetObject();
 
       if (!graph.fFunctions || (indx >= graph.fFunctions.arr.length))
-         return JSROOT.callBack(callback);
+         return Promise.resolve(this);
 
       let func = graph.fFunctions.arr[indx], opt = graph.fFunctions.opt[indx];
 
@@ -1976,22 +1977,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       // TODO: use weak reference (via pad list of painters and any kind of string)
       func.$main_painter = this;
 
-      JSROOT.draw(this.divid, func, opt).then(this.DrawNextFunction.bind(this, indx+1, callback));
-   }
-
-   TGraphPainter.prototype.PerformDrawing = function(divid, hpainter) {
-      if (hpainter) {
-         this.axes_draw = true;
-         if (!this._own_histogram) this.$primary = true;
-         hpainter.$secondary = true;
-      }
-      this.SetDivId(divid);
-      this.DrawGraph();
-      if (this.TestEditable() && !JSROOT.BatchMode)
-         JSROOT.require(['interactive'])
-               .then(inter => inter.DragMoveHandler.AddMove(this));
-      this.DrawNextFunction(0, this.DrawingReady.bind(this));
-      return this;
+      return JSROOT.draw(this.divid, func, opt).then(() => this.DrawNextFunction(indx+1));
    }
 
    function drawGraph(divid, graph, opt) {
@@ -2006,14 +1992,21 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       painter.CreateStat();
 
+      let promise = Promise.resolve();
+
       if (!painter.main_painter() && painter.options.HOptions) {
          let histo = painter.CreateHistogram();
-         JSROOT.draw(divid, histo, painter.options.HOptions).then(painter.PerformDrawing.bind(painter, divid));
-      } else {
-         painter.PerformDrawing(divid);
+         promise = JSROOT.draw(divid, histo, painter.options.HOptions);
       }
 
-      return painter;
+      return promise.then(() => {
+         painter.SetDivId(divid);
+         painter.DrawGraph();
+         if (painter.TestEditable() && !JSROOT.BatchMode)
+            JSROOT.require(['interactive'])
+                  .then(inter => inter.DragMoveHandler.AddMove(painter));
+         return painter.DrawNextFunction(0);
+      });
    }
 
    // ==============================================================
