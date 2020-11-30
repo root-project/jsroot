@@ -2857,7 +2857,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
 
       if (!tree) {
          console.error('No TTree object available for TTree::Draw');
-         null;
+         return null;
       }
 
       JSROOT.cleanup(divid);
