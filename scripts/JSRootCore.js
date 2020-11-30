@@ -990,15 +990,13 @@
       return arr;
    }
 
-   /**
-    * @summary Method converts JavaScript object into ROOT-like JSON
-    *
-    * @desc Produced JSON can be used in JSROOT.parse() again
-    * When performed properly, JSON can be used in [TBufferJSON::fromJSON()]{@link https://root.cern/doc/master/classTBufferJSON.html#a2ecf0daacdad801e60b8093a404c897d} method to read data back with C++
-    * @param {object} obj - JavaScript object to convert
-    * @returns {string} produced JSON code
-    */
-   JSROOT.toJSON = function(obj) {
+   /** @summary Method converts JavaScript object into ROOT-like JSON
+     * @desc Produced JSON can be used in JSROOT.parse() again
+     * When performed properly, JSON can be used in [TBufferJSON::fromJSON()]{@link https://root.cern/doc/master/classTBufferJSON.html#a2ecf0daacdad801e60b8093a404c897d} method to read data back with C++
+     * @param {object} obj - JavaScript object to convert
+     * @param {number} [spacing] - optional line spacing in JSON
+     * @returns {string} produced JSON code */
+   JSROOT.toJSON = function(obj, spacing) {
       if (!obj || typeof obj !== 'object') return "";
 
       let map = []; // map of stored objects
@@ -1044,7 +1042,7 @@
 
       let tgt = copy_value(obj);
 
-      return JSON.stringify(tgt);
+      return JSON.stringify(tgt, null, spacing);
    }
 
    /**

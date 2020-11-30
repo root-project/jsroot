@@ -19,7 +19,7 @@ examples_main = {
      { name: "text", opt: "hist,text" },
      { name: "lego", opt: "lego2,pal50", r3d: "svg" },
      { opt: "X+Y+" },
-     { opt: "inspect", title: "universal object inspector, can be used for any class" },
+     { opt: "inspect", asurl: true, file: "hsimple.root", item: "hpx;1", title: "universal object inspector, can be used for any class" },
      { name: "docu", file: "histpainter6.root", layout: "vert32", items: ["two_axis","draw_e1","draw_bar","draw_e34","draw_text"], title:"several TH1 examples from THistPainter documentation" }
    ],
    TH2 : [

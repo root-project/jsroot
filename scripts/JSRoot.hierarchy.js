@@ -3140,7 +3140,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          let obj = d3.select(frame).property('_json_object_');
          if (obj) {
             d3.select(frame).property('_json_object_', null);
-            return JSON.stringify(obj, null, spacing);
+            return JSROOT.toJSON(obj, spacing);
          }
       }
 
