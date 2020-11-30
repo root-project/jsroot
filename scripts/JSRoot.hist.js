@@ -838,10 +838,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           framep = this.frame_painter(),
           zmin = 0, zmax = 100,
           contour = main.fContour,
-          levels = contour ? contour.GetLevels() : null,
+          levels = contour ? contour.getLevels() : null,
           draw_palette = main.fPalette;
 
-      if (nbr1<=0) nbr1 = 8;
+      if (nbr1 <= 0) nbr1 = 8;
       axis.fTickSize = 0.6 * s_width / width; // adjust axis ticks size
 
       if (contour && framep) {
@@ -1759,7 +1759,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       this.exact_min_indx = 0;
    }
 
-   HistContour.prototype.GetLevels = function() { return this.arr; }
+   HistContour.prototype.getLevels = function() { return this.arr; }
 
    HistContour.prototype.CreateNormal = function(nlevels, log_scale, zminpositive) {
       if (log_scale) {
@@ -2890,7 +2890,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    }
 
    THistPainter.prototype.GetContourLevels = function() {
-      return this.GetContour().GetLevels();
+      return this.GetContour().getLevels();
    }
 
    THistPainter.prototype.GetPalette = function(force) {

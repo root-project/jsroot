@@ -3562,12 +3562,6 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       return rgba;
    }
 
-   TASImagePainter.prototype.getContourColor = function(zval) {
-      if (!this.fContour || !this.rgba) return "white";
-      let indx = Math.round((zval - this.fContour[0]) / (this.fContour[this.fContour.length-1] - this.fContour[0]) * (this.rgba.length-4)/4) * 4;
-      return "rgba(" + this.rgba[indx] + "," + this.rgba[indx+1] + "," + this.rgba[indx+2] + "," + this.rgba[indx+3] + ")";
-   }
-
    TASImagePainter.prototype.CreateImage = function() {
       let obj = this.GetObject(), is_buf = false, fp = this.frame_painter();
 
@@ -3634,9 +3628,18 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          // max = Math.max.apply(null, obj.fImgBuf);
 
          // create countor like in hist painter to allow palette drawing
-         this.fContour = new Array(200);
+         this.fContour = {
+            arr: new Array(200),
+            rgba: this.rgba,
+            getLevels: function() { return this.arr; },
+            getPaletteColor: function(pal, zval) {
+               if (!this.arr || !this.rgba) return "white";
+               let indx = Math.round((zval - this.arr[0]) / (this.arr[this.arr.length-1] - this.arr[0]) * (this.rgba.length-4)/4) * 4;
+               return "rgba(" + this.rgba[indx] + "," + this.rgba[indx+1] + "," + this.rgba[indx+2] + "," + this.rgba[indx+3] + ")";
+            }
+         }
          for (let k=0;k<200;k++)
-            this.fContour[k] = min + (max-min)/(200-1)*k;
+            this.fContour.arr[k] = min + (max-min)/(200-1)*k;
 
          if (min >= max) max = min + 1;
 
@@ -3746,8 +3749,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       return false;
    }
 
+   /** @summary Draw color palette */
    TASImagePainter.prototype.drawColorPalette = function(enabled, can_move) {
-      // only when create new palette, one could change frame size
 
       if (!this.is_main_painter()) return null;
 
@@ -3760,6 +3763,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          pal.fAxis.fChopt = "+";
 
          this.draw_palette = pal;
+         this.fPalette = true;
       }
 
       let pal_painter = this.FindPainterFor(this.draw_palette);
