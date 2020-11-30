@@ -2846,7 +2846,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
          if ((args==='player') || !args) {
             return JSROOT.require("jq2d").then(() => {
                JSROOT.createTreePlayer(painter);
-               painter.ConfigureTree(tree);
+               painter.configureTree(tree);
                painter.Show(divid);
                return painter;
             });
@@ -2859,8 +2859,6 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
          console.error('No TTree object available for TTree::Draw');
          null;
       }
-
-      painter._return_res_painter = true; // indicate that TTree::Draw painter returns not itself but drawing of result object
 
       JSROOT.cleanup(divid);
 
@@ -2883,16 +2881,17 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
 
          // redirect drawing to the player
          create_player = 1;
-         // args.player_intermediate = res.progress;
+
+         console.log('start drawing player itermediate', intermediate, divid);
          return JSROOT.require("jq2d").then(() => {
             JSROOT.createTreePlayer(painter);
-            painter.ConfigureTree(tree);
+            painter.configureTree(tree);
             painter.Show(divid, args);
             create_player = 2;
             return JSROOT.redraw(painter.drawid, obj).then(objpainter => {
                painter.SetItemName("TreePlayer"); // item name used by MDI when process resize
                if (finalResolve) finalResolve(objpainter);
-               return objpainter;
+               return objpainter; // return painter for histogram
             });
          });
       }

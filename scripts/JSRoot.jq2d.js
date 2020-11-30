@@ -2311,7 +2311,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          this.dflt_expr = dflt_expr;
       }
 
-      player.ConfigureTree = function(tree) {
+      player.configureTree = function(tree) {
          this.local_tree = tree;
       }
 
@@ -2339,13 +2339,16 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
       }
 
       player.Show = function(divid, args) {
-         this.drawid = divid + "_draw";
+
+         this.SetDivId(divid, -1); // just to get access to main element
+
+         let main = $(this.select_main().node());
+
+         this.drawid = "jsroot_tree_player_" + JSROOT._.id_counter++ + "_draw";
 
          this.keyup = this.KeyUp.bind(this);
 
          let show_extra = args && (args.parse_cut || args.numentries || args.firstentry);
-
-         let main = $("#" + divid);
 
          main.html("<div class='treedraw_buttons' style='padding-left:0.5em'>" +
                "<button class='treedraw_exe' title='Execute draw expression'>Draw</button>" +
