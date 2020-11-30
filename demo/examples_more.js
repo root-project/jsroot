@@ -106,7 +106,7 @@ examples_more = {
      { name: "babar", asurl: true, json: "geom/babar_emca.json.gz", opt: "vislvl10" },
      { name: "alice_simple", asurl: true, json: "geom/simple_alice.json.gz", title: "simple alice geomtery" },
      { name: "Dipole", url: "?nobrowser&file=https://root.cern/files/alice2.root&item=Geometry;1/ALIC/Dipole_1", title: "Part of volumes from geo manager" },
-     { name: "count", file: "https://root.cern/files/alice2.root", item: "Geometry;1", opt: "count", title: "Count volume in large geomtery" },
+     { name: "count", asurl: true, file: "https://root.cern/files/alice2.root", item: "Geometry;1", opt: "count", title: "Count volume in large geomtery" },
      { name: "tank", asurl: true, file: "https://root.cern/files/tank.root", item: "geom;1", opt: "z;rotate", title: "Just for fun" },
      { name: "lego", asurl: true, file: "https://root.cern/files/lego.root", item: "geom;1", opt: "z;rotate", title: "Just for fun" },
      { name: "cheon", asurl: true, file: "https://root.cern/files/cheongwadae.root", item: "geom;1", opt: "", title: "One more building" },

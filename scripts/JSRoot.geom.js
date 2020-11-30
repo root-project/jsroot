@@ -2420,9 +2420,9 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
     * @desc Scans hieararchy and check for unique nodes */
    TGeoPainter.prototype.drawCount = function(unqievis, clonetm) {
 
-      let res = 'Unique nodes: ' + this._clones.nodes.length + '<br/>' +
-                'Unique visible: ' + unqievis + '<br/>' +
-                'Time to clone: ' + clonetm + 'ms <br/>';
+      let res = [ 'Unique nodes: ' + this._clones.nodes.length,
+                  'Unique visible: ' + unqievis,
+                  'Time to clone: ' + clonetm + 'ms' ];
 
       // need to fill cached value line numvischld
       this._clones.ScanVisible();
@@ -2454,26 +2454,33 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       let numvis = this._clones.ScanVisible(arg);
       let tm2 = new Date().getTime();
 
-      res += 'Total visible nodes: ' + numvis + '<br/>';
-      res += 'Total shapes: ' + nshapes + '<br/>';
+      res.push('Total visible nodes: ' + numvis, 'Total shapes: ' + nshapes);
 
       for (let lvl=0;lvl<arg.cnt.length;++lvl) {
          if (arg.cnt[lvl] !== undefined)
-            res += ('  lvl' + lvl + ': ' + arg.cnt[lvl] + '<br/>');
+            res.push('  lvl' + lvl + ': ' + arg.cnt[lvl]);
       }
 
-      res += "Time to scan: " + (tm2-tm1) + "ms <br/>";
+      res.push("Time to scan: " + (tm2-tm1) + "ms", "", "Check timing for matrix calculations ...");
 
-      res += "<br/><br/>Check timing for matrix calculations ...<br/>";
+      let elem = this.select_main().style('overflow', 'auto');
 
-      let elem = this.select_main().style('overflow', 'auto').html(res);
+      if (JSROOT.BatchMode)
+         elem.property("_json_object_", res);
+      else
+         res.forEach(str => elem.append("p").text(str));
 
       setTimeout(function() {
          arg.domatrix = true;
          tm1 = new Date().getTime();
          numvis = painter._clones.ScanVisible(arg);
          tm2 = new Date().getTime();
-         elem.append("p").text("Time to scan with matrix: " + (tm2-tm1) + "ms");
+
+         let last_str = "Time to scan with matrix: " + (tm2-tm1) + "ms";
+         if (JSROOT.BatchMode)
+            res.push(last_str);
+         else
+            elem.append("p").text(last_str);
          painter.DrawingReady();
       }, 100);
 
@@ -2844,6 +2851,8 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       let draw_obj = this.GetGeometry(), name_prefix = "";
 
       if (this.geo_manager) name_prefix = draw_obj.fName;
+
+      let result = { obj: draw_obj, prefix: name_prefix };
 
       if (!script_name || (script_name.length<3) || (geo.NodeKind(draw_obj)!==0))
          return call_back(draw_obj, name_prefix);
