@@ -2785,17 +2785,15 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
                        projy ? projv : hit.fP[i*3+1],
                        projz ? projv : hit.fP[i*3+2]);
 
-      let mesh = pnts.CreatePoints({ color: jsrp.getColor(hit.fMarkerColor) || "rgb(0,0,255)",
-                                     style: hit.fMarkerStyle,
-                                     callback: delayed => { if (delayed) this.Render3D(100); }});
-
-      mesh.renderOrder = 1000000; // to bring points to the front
-      mesh.highlightScale = 2;
-
-      mesh.geo_name = itemname;
-      mesh.geo_object = hit;
-
-      this.getExtrasContainer().add(mesh);
+      pnts.createPointsPromise({ color: jsrp.getColor(hit.fMarkerColor) || "rgb(0,0,255)",
+                                 style: hit.fMarkerStyle }).then(mesh => {
+         mesh.renderOrder = 1000000; // to bring points to the front
+         mesh.highlightScale = 2;
+         mesh.geo_name = itemname;
+         mesh.geo_object = hit;
+         this.getExtrasContainer().add(mesh);
+         this.Render3D(100); // use timeout for delayed rendering
+      });
 
       return true;
    }
