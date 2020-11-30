@@ -3520,7 +3520,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          this.StartTextDrawing(42, text_size, this.draw_g, text_size);
       }
 
-
       for (i = left; i < right; ++i) {
          x1 = xaxis.GetBinLowEdge(i+1);
          x2 = xaxis.GetBinLowEdge(i+2);
@@ -3585,7 +3584,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                .style("fill", d3.rgb(this.fillatt.color).darker(0.5).toString());
 
       if (show_text)
-         this.FinishTextDrawing(this.draw_g);
+         this.FinishTextDrawing();
    }
 
    TH1Painter.prototype.DrawFilledErrors = function() {
@@ -3926,7 +3925,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       }
 
       if (show_text)
-         this.FinishTextDrawing(this.draw_g);
+         this.FinishTextDrawing();
 
    }
 

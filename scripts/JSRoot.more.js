@@ -51,10 +51,10 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       this.DrawText(arg);
 
-      this.FinishTextDrawing(undefined, () => this.DrawingReady());
+      return this.FinishTextPromise().then(() => {
+         if (JSROOT.BatchMode) return this;
 
-      if (!JSROOT.BatchMode)
-         JSROOT.require(['interactive']).then(inter => {
+         return JSROOT.require(['interactive']).then(inter => {
             this.pos_dx = this.pos_dy = 0;
 
             if (!this.moveDrag)
@@ -74,9 +74,10 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
                }
 
             inter.DragMoveHandler.AddMove(this);
-         });
 
-      return this.Promise();
+            return this;
+         });
+      });
    }
 
    // =====================================================================================
@@ -3763,7 +3764,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          pal.fAxis.fChopt = "+";
 
          this.draw_palette = pal;
-         this.fPalette = true;
+         this.fPalette = true; // to emulate behaviour of hist painter
       }
 
       let pal_painter = this.FindPainterFor(this.draw_palette);

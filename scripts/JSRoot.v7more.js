@@ -18,7 +18,7 @@ JSROOT.define(['painter', 'v7gpad'], (jsrp) => {
 
       this.DrawText({ x: p.x, y: p.y, text: text.fText, latex: 1 });
 
-      this.FinishTextDrawing();
+      return this.FinishTextPromise();
    }
 
 
@@ -114,7 +114,7 @@ JSROOT.define(['painter', 'v7gpad'], (jsrp) => {
 
       if (legend.fTitle) nlines++;
 
-      if (!nlines || !pp) return;
+      if (!nlines || !pp) return Promise.resolve(this);
 
       let stepy = height / nlines, posy = 0, margin_x = 0.02 * width;
 
@@ -167,7 +167,7 @@ JSROOT.define(['painter', 'v7gpad'], (jsrp) => {
          posy += stepy;
       }
 
-      this.FinishTextDrawing();
+      return this.FinishTextDrawing();
    }
 
    function drawLegend(divid, legend, opt) {
@@ -177,9 +177,7 @@ JSROOT.define(['painter', 'v7gpad'], (jsrp) => {
 
       painter.DrawContent = drawLegendContent;
 
-      painter.DrawPave();
-
-      return painter.DrawingReady();
+      return painter.DrawPave();
    }
 
    // =================================================================================
@@ -206,7 +204,7 @@ JSROOT.define(['painter', 'v7gpad'], (jsrp) => {
          posy += stepy;
       }
 
-      this.FinishTextDrawing();
+      return this.FinishTextPromise();
    }
 
    function drawPaveText(divid, pave, opt) {
@@ -216,9 +214,7 @@ JSROOT.define(['painter', 'v7gpad'], (jsrp) => {
 
       painter.DrawContent = drawPaveTextContent;
 
-      painter.DrawPave();
-
-      return painter.DrawingReady();
+      return painter.DrawPave();
    }
 
 

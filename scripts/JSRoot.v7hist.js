@@ -1439,7 +1439,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       }
 
       if (show_text)
-         this.FinishTextDrawing(this.draw_g);
+         this.FinishTextDrawing();
    }
 
    /** @summary Get tip text for axis bin */
@@ -3786,7 +3786,9 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
    RHistStatsPainter.prototype.DrawContent = function() {
       if (this.FillStatistic())
-         this.DrawStatistic(this.stats_lines);
+         return this.DrawStatistic(this.stats_lines);
+
+      return Promise.resolve(this);
    }
 
    RHistStatsPainter.prototype.ChangeMask = function(nbit) {
@@ -3827,7 +3829,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
           width = this.pave_width,
           height = this.pave_height;
 
-      if (!lines) return;
+      if (!lines) return Promise.resolve(this);
 
       let nlines = lines.length;
       // adjust font size
@@ -3893,8 +3895,6 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
          }
       }
 
-      this.FinishTextDrawing(text_g);
-
       let lpath = "";
 
       if (has_head)
@@ -3908,6 +3908,8 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       }
 
       if (lpath) this.draw_g.append("svg:path").attr("d",lpath) /*.call(this.lineatt.func)*/;
+
+      return this.FinishTextPromise(text_g);
    }
 
    RHistStatsPainter.prototype.Redraw = function(reason) {
@@ -3929,9 +3931,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
       painter.SetDivId(divid);
 
-      painter.DrawPave();
-
-      return painter.DrawingReady();
+      return painter.DrawPave();
    }
 
    JSROOT.v7.RHistPainter = RHistPainter;

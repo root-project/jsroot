@@ -4226,16 +4226,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    RPavePainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
 
    RPavePainter.prototype.DrawContent = function() {
-      // do nothing, will be reimplemented in derived classes
+      return Promise.resolve(this);
    }
 
    RPavePainter.prototype.DrawPave = function() {
-
-      //var framep = this.frame_painter();
-
-      // frame painter must  be there
-      //if (!framep)
-      //   return console.log('no frame painter - no RPave drawing');
 
       let pw = this.pad_width(),
           ph = this.pad_height(),
@@ -4269,7 +4263,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       this.draw_g.classed("most_upper_primitives", true); // this primitive will remain on top of list
 
-      if (!visible) return;
+      if (!visible) return Promise.resolve(this);
 
       if (fill_style == 0) fill_color = "none";
 
@@ -4296,16 +4290,19 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       // here should be fill and draw of text
 
-      this.DrawContent();
+      return this.DrawContent().then(() => {
 
-      if (JSROOT.BatchMode) return;
+         if (JSROOT.BatchMode) return this;
 
-      JSROOT.require(['interactive']).then(inter => {
-         // TODO: provide pave context menu as in v6
-         if (JSROOT.settings.ContextMenu && this.PaveContextMenu)
-            this.draw_g.on("contextmenu", this.PaveContextMenu.bind(this));
+         return JSROOT.require(['interactive']).then(inter => {
+            // TODO: provide pave context menu as in v6
+            if (JSROOT.settings.ContextMenu && this.PaveContextMenu)
+               this.draw_g.on("contextmenu", this.PaveContextMenu.bind(this));
 
-         inter.DragMoveHandler.AddDrag(this, { minwidth: 20, minheight: 20, redraw: this.SizeChanged.bind(this) });
+            inter.DragMoveHandler.AddDrag(this, { minwidth: 20, minheight: 20, redraw: this.SizeChanged.bind(this) });
+
+            return this;
+         });
       });
    }
 
@@ -4356,9 +4353,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       painter.SetDivId(divid);
 
-      painter.DrawPave();
-
-      return painter.DrawingReady();
+      return painter.DrawPave();
    }
 
    // =======================================================================================
