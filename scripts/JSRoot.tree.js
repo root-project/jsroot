@@ -2751,7 +2751,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
                for (let i=0; i<bobj.fBranches.arr.length; ++i)
                   CreateBranchItem(bnode, bobj.fBranches.arr[i], bobj.$tree, bobj);
 
-               let object_class = JSROOT.IO.GetBranchObjectClass(bobj, bobj.$tree, true),
+               let object_class = getBranchObjectClass(bobj, bobj.$tree, true),
                    methods = object_class ? JSROOT.getMethods(object_class) : null;
 
                if (methods && (bobj.fBranches.arr.length>0))
