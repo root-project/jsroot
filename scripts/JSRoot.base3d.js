@@ -1255,7 +1255,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
       let cb = this.callback;
       delete this.callback;
 
-      if (cb) JSROOT.callBack(cb, pnts);
+      if (typeof cb == 'function') cb(pnts);
 
       return pnts;
    }
@@ -1263,8 +1263,10 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
    /** @summary Create points */
    PointsCreator.prototype.CreatePoints = function(args) {
 
-      if (typeof args !== 'object') args = { color: args };
-      if (!args.color) args.color = 'black';
+      if (typeof args !== 'object')
+         args = { color: args };
+      if (!args.color)
+         args.color = 'black';
 
       this.k = 1;
       this.color = args.color;
@@ -1299,6 +1301,15 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
       if (!this.callback)
          return this.Complete();
    }
+
+   /** @summary Create points and return Promise*/
+   PointsCreator.prototype.createPointsPromise = function(args) {
+      return new Promise(resolveFunc => {
+          this.AssignCallback(resolveFunc);
+          this.CreatePoints(args);
+      });
+   }
+
 
    // ==============================================================================
 

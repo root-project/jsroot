@@ -3139,40 +3139,6 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       }
    }
 
-   /** Called when new mesh with points is created. */
-   TGraph2DPainter.prototype.PointsCallback = function(args, mesh) {
-      // mesh.graph = args.graph;
-      // mesh.index = args.index;
-      // mesh.painter = args.painter;
-      // mesh.scale0 = args.scale0;
-      // mesh.tip_color = args.tip_color;
-
-      JSROOT.extend(mesh, args);
-
-      mesh.tip_name = this.GetTipName();
-      mesh.tooltip = this.Graph2DTooltip;
-
-      if (mesh.painter && mesh.painter.toplevel)
-         mesh.painter.toplevel.add(mesh);
-      else
-         console.error('3d scene already disappeared before points were ready')
-
-      this.CheckCallbacks(1);
-   }
-
-   TGraph2DPainter.prototype.CheckCallbacks = function(v) {
-
-      if ((this.points_callback_cnt -= v) > 0) return;
-
-      let fp = this.frame_painter();
-      if (fp) fp.Render3D(100);
-
-      if (!this._drawing_ready) {
-         this._drawing_ready = true;
-         this.DrawingReady();
-      }
-   }
-
    TGraph2DPainter.prototype.Redraw = function() {
 
       let main = this.main_painter(),
@@ -3180,7 +3146,8 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
           graph = this.GetObject(),
           step = 1;
 
-      if (!graph || !main || !fp || !fp.mode3d) return;
+      if (!graph || !main || !fp || !fp.mode3d)
+         return Promise.resolve(this);
 
       function CountSelected(zmin, zmax) {
          let cnt = 0;
@@ -3208,7 +3175,8 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       let markeratt = new JSROOT.TAttMarkerHandler(graph),
           palette = null,
           levels = [fp.scale_zmin, fp.scale_zmax],
-          scale = fp.size_xy3d / 100 * markeratt.GetFullSize();
+          scale = fp.size_xy3d / 100 * markeratt.GetFullSize(),
+          promises = [];
 
       if (this.options.Circles) scale = 0.06*fp.size_xy3d;
 
@@ -3219,8 +3187,6 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          palette = main.GetPalette();
       }
 
-      // how many callbacks are expected
-      this.points_callback_cnt = 0;
 
       for (let lvl=0;lvl<levels.length-1;++lvl) {
 
@@ -3335,27 +3301,37 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          }
 
          if (pnts) {
-            this.points_callback_cnt++;
-
             let fcolor = 'blue';
 
             if (!this.options.Circles)
                fcolor = palette ? palette.calcColor(lvl, levels.length) :
                                   this.get_color(graph.fMarkerColor);
 
-            pnts.AssignCallback(this.PointsCallback.bind(this, {
-               graph: graph,
-               index: index,
-               painter: fp,
-               scale0: 0.3*scale,
-               tip_color: (graph.fMarkerColor === 3) ? 0xFF0000 : 0x00FF00
-            }));
+            let mesh_index = index;
 
-            pnts.CreatePoints({ color: fcolor, style: this.options.Circles ? 4 : graph.fMarkerStyle });
+            promises.push(pnts.createPointsPromise({ color: fcolor, style: this.options.Circles ? 4 : graph.fMarkerStyle }).then(mesh => {
+
+               mesh.graph = graph;
+               mesh.painter = fp;
+               mesh.tip_color = (graph.fMarkerColor === 3) ? 0xFF0000 : 0x00FF00
+               mesh.scale0 = 0.3*scale;
+               mesh.index = mesh_index;
+
+               mesh.tip_name = this.GetTipName();
+               mesh.tooltip = this.Graph2DTooltip;
+
+              if (fp && fp.toplevel)
+                 fp.toplevel.add(mesh);
+              else
+                 console.error('3d scene already disappeared before points were ready')
+            }));
          }
       }
 
-      this.CheckCallbacks(0);
+      return Promise.all(promises).then(() => {
+         if (fp) fp.Render3D(100);
+         return this;
+      });
    }
 
    jsrp.drawGraph2D = function(divid, gr, opt) {
@@ -3367,20 +3343,16 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
       if (painter.main_painter()) {
          painter.SetDivId(divid);
-         painter.Redraw();
-         return painter;
+         return painter.Redraw();
       }
 
       if (!gr.fHistogram)
          gr.fHistogram = painter.CreateHistogram();
 
       return JSROOT.draw(divid, gr.fHistogram, "lego;axis").then(() => {
-         return new Promise(function(resolveFunc, rejectFunc) {
-            painter.ownhisto = true;
-            painter.SetDivId(divid);
-            painter.WhenReady(resolveFunc, rejectFunc);
-            painter.Redraw();
-         });
+         painter.ownhisto = true;
+         painter.SetDivId(divid);
+         return painter.Redraw();
       });
    }
 
@@ -3437,7 +3409,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
             pnts.AddPoint(fp.grx(poly.fP[i]), fp.gry(poly.fP[i+1]), fp.grz(poly.fP[i+2]));
          }
 
-         pnts.AssignCallback(function(mesh) {
+         pnts.AssignCallback(mesh => {
             fp.toplevel.add(mesh);
 
             mesh.tip_color = (poly.fMarkerColor === 3) ? 0xFF0000 : 0x00FF00;

@@ -2825,7 +2825,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          for (let k = 0; k < ks.length; ++k) {
             let node = d3.select("#"+ks[k]);
             if (!node.empty())
-               JSROOT.callBack(userfunc, node.node());
+               userfunc(node.node());
          }
       }
 
