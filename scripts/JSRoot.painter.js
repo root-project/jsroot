@@ -2795,7 +2795,7 @@ JSROOT.define(['d3'], (d3) => {
       draw_g.node().text_callback = null;
 
       // if specified, call ready function
-      JSROOT.callBack(call_ready);
+      JSROOT.callBack(call_ready, this); // IMPORTANT - return painter, may use in draw methods
       return 0;
    }
 

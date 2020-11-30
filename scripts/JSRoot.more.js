@@ -3722,7 +3722,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       if (url && this.is_main_painter() && is_buf && fp) {
 
-         this.DrawColorPalette(this.options.Zscale, true);
+         this.drawColorPalette(this.options.Zscale, true);
 
          fp.SetAxesRanges(JSROOT.Create("TAxis"), 0, 1, JSROOT.Create("TAxis"), 0, 1, null, 0, 0);
          fp.CreateXY({ ndim: 2,
@@ -3746,7 +3746,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       return false;
    }
 
-   TASImagePainter.prototype.DrawColorPalette = function(enabled, can_move) {
+   TASImagePainter.prototype.drawColorPalette = function(enabled, can_move) {
       // only when create new palette, one could change frame size
 
       if (!this.is_main_painter()) return null;
@@ -3784,7 +3784,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       }
 
       if (!pal_painter) {
-         JSROOT.draw(this.divid, this.draw_palette, "onpad:" + this.pad_name).then(function(p) {
+         JSROOT.draw(this.divid, this.draw_palette, "onpad:" + this.pad_name).then(p => {
             // mark painter as secondary - not in list of TCanvas primitives
             p.$secondary = true;
 
@@ -3803,7 +3803,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       if (can_toggle) {
          this.options.Zscale = !this.options.Zscale;
-         this.DrawColorPalette(this.options.Zscale, true);
+         this.drawColorPalette(this.options.Zscale, true);
       }
    }
 

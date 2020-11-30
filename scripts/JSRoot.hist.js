@@ -225,28 +225,17 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    TPavePainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
 
-   TPavePainter.prototype.AssignFinishPave = function() {
-      function func() {
-         // console.log('Calling FinishPave', this.FirstRun);
-         // function used to signal drawing ready, required when text drawing postponed due to mathjax
-         if (this.FirstRun <= 0) return;
-         this.FirstRun--;
-         if (this.FirstRun===0) {
-            delete this.FinishPave; // no need for that callback
-            this.DrawingReady();
-         }
-      }
-      this.FirstRun = 1; // counter required to correctly complete drawing
-      this.FinishPave = func.bind(this);
-   }
-
    /** @summary Draw pave and content */
    TPavePainter.prototype.DrawPave = function(arg) {
 
       this.UseTextColor = false;
 
-      if (!this.Enabled)
-         return this.RemoveDrawG();
+      let promise = Promise.resolve(this);
+
+      if (!this.Enabled) {
+         this.RemoveDrawG();
+         return promise;
+      }
 
       let pt = this.GetObject(), opt = pt.fOption.toUpperCase();
 
@@ -337,9 +326,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          let text_g = this.draw_g.append("svg:g")
                                  .attr("transform", "translate(" + Math.round(width/4) + "," + Math.round(height/4) + ")");
 
-         this.DrawPaveText(w2, h2, arg, text_g);
-
-         return;
+         return this.DrawPaveText(w2, h2, arg, text_g);
       }
 
       // add shadow decoration before main rect
@@ -374,17 +361,13 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           .call(this.fillatt.func)
           .call(this.lineatt.func);
 
-
-      let promise;
-
       if (typeof this.PaveDrawFunc == 'function')
          promise = this.PaveDrawFunc(width, height, arg);
 
-      if (JSROOT.BatchMode || (pt._typename=="TPave")) return;
+      if (JSROOT.BatchMode || (pt._typename=="TPave"))
+         return promise;
 
-      if (!promise || !promise.then) promise = Promise.resolve(true);
-
-      promise.then(() => JSROOT.require(['interactive'])).then(inter => {
+      return promise.then(() => JSROOT.require(['interactive'])).then(inter => {
 
          // here all kind of interactive settings
          rect.style("pointer-events", "visibleFill")
@@ -403,9 +386,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          if (this.UseContextMenu && JSROOT.settings.ContextMenu)
              this.draw_g.on("contextmenu", this.PaveContextMenu.bind(this));
 
-         if (pt._typename == "TPaletteAxis") {
+         if (pt._typename == "TPaletteAxis")
             this.InteractivePaletteAxis(width, height);
-         }
+
+         return this;
       });
    }
 
@@ -425,6 +409,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return res;
    }
 
+   /** @summary draw TPaveLabel object */
    TPavePainter.prototype.DrawPaveLabel = function(_width, _height) {
       this.UseTextColor = true;
 
@@ -434,10 +419,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       this.DrawText({ align: pave.fTextAlign, width: _width, height: _height, text: pave.fLabel, color: this.get_color(pave.fTextColor) });
 
-      this.FirstRun++;
-      this.FinishTextDrawing(null, this.FinishPave);
+      return this.FinishTextPromise();
    }
 
+   /** @summary draw TPaveStats object */
    TPavePainter.prototype.DrawPaveStats = function(width, height) {
 
       if (this.IsStats()) this.FillStatistic();
@@ -528,12 +513,12 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       if (lpath) this.draw_g.append("svg:path").attr("d",lpath).call(this.lineatt.func);
 
-      this.FirstRun++;
-      this.FinishTextDrawing(undefined, this.FinishPave);
-
       this.draw_g.classed("most_upper_primitives", true); // this primitive will remain on top of list
+
+      return this.FinishTextPromise();
    }
 
+   /** @summary draw TPaveText object */
    TPavePainter.prototype.DrawPaveText = function(width, height, dummy_arg, text_g) {
 
       let pt = this.GetObject(),
@@ -542,7 +527,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           can_height = this.pad_height(),
           pp = this.pad_painter(),
           individual_positioning = false,
-          draw_header = (pt.fLabel.length>0);
+          draw_header = (pt.fLabel.length > 0),
+          promises = [];
 
       if (!text_g) text_g = this.draw_g;
 
@@ -586,8 +572,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                   this.DrawText({ align: entry.fTextAlign || pt.fTextAlign, x: lx, y: ly, text: entry.fTitle, color: jcolor,
                                   latex: (entry._typename == "TText") ? 0 : 1,  draw_g: sub_g, fast: fast_draw });
 
-                  this.FirstRun++;
-                  this.FinishTextDrawing(sub_g, this.FinishPave);
+                  promises.push(this.FinishTextPromise(sub_g));
                } else {
                   lines.push(entry); // make as before
                }
@@ -653,8 +638,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             if (!arg.color) { this.UseTextColor = true; arg.color = tcolor; }
             this.DrawText(arg);
          }
-         this.FirstRun++;
-         this.FinishTextDrawing(text_g, this.FinishPave);
+         promises.push(this.FinishTextPromise(text_g));
       }
 
       if (draw_header) {
@@ -673,11 +657,12 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          this.DrawText({ align: 22, x: x, y: y, width: w, height: h, text: pt.fLabel, color: tcolor, draw_g: lbl_g });
 
-         this.FirstRun++;
-         this.FinishTextDrawing(lbl_g, this.FinishPave);
+         promises.push(this.FinishTextPromise(lbl_g));
 
          this.UseTextColor = true;
       }
+
+      return Promise.all(promises).then(() => { return this; });
    }
 
    /** @summary Method used to convert value to string according specified format
@@ -835,10 +820,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       }
 
       // rescale after all entries are shown
-      this.FirstRun++;
-      this.FinishTextDrawing(this.draw_g, this.FinishPave);
+      return this.FinishTextPromise();
    }
 
+   /** @summary draw color palette with axis */
    TPavePainter.prototype.DrawPaletteAxis = function(s_width, s_height, arg) {
 
       let palette = this.GetObject(),
@@ -911,11 +896,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       this.z_handle.max_tick_size = Math.round(s_width*0.7);
 
-      this.FirstRun++;
-
       return this.z_handle.DrawAxis(this.draw_g, s_width, s_height, "translate(" + s_width + ", 0)").then(() => {
-
-         if (this.FinishPave) this.FinishPave();
 
          if (can_move && ('getBoundingClientRect' in this.draw_g.node())) {
             let rect = this.draw_g.node().getBoundingClientRect();
@@ -930,7 +911,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             }
          }
 
-         return true;
+         return this;
       });
    }
 
@@ -1302,8 +1283,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       let painter = new JSROOT.TPavePainter(pave);
 
-      painter.AssignFinishPave(); // create handler which controls drawing
-
       painter.SetDivId(divid, 2, onpad);
 
       if ((pave.fName === "title") && (pave._typename === "TPaveText")) {
@@ -1363,11 +1342,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             break;
       }
 
-      painter.DrawPave(opt);
-
-      painter.FinishPave(); // at least once finish pave must be called, it will invoke ready state
-
-      return painter;
+      return painter.DrawPave(opt);
    }
 
    /** @summary Produce and draw TLegend object for the specified divid
@@ -2311,6 +2286,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       this.DrawTitle();
    }
 
+   /** @summary Draw histogram title */
    THistPainter.prototype.DrawTitle = function() {
 
       // case when histogram drawn over other histogram (same option)
@@ -2345,14 +2321,13 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          pt.fBorderSize = st.fTitleBorderSize;
 
          pt.AddText(histo.fTitle);
-         tpainter = jsrp.drawPave(this.divid, pt, "postitle");
-         if (tpainter) {
-            tpainter.$secondary = true;
-            return tpainter.Promise();
-         }
+         return drawPave(this.divid, pt, "postitle").then(tpainter => {
+            if (tpainter) tpainter.$secondary = true;
+            return this;
+         });
       }
 
-      return Promise.resolve(true);
+      return Promise.resolve(this);
    }
 
    THistPainter.prototype.processTitleChange = function(arg) {
@@ -2957,10 +2932,12 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       menu.add("endsub:");
    }
 
-   THistPainter.prototype.DrawColorPalette = function(enabled, postpone_draw, can_move) {
+   /** @summary draw color palette */
+   THistPainter.prototype.drawColorPalette = function(enabled, postpone_draw, can_move) {
       // only when create new palette, one could change frame size
 
-      if (!this.is_main_painter()) return null;
+      if (!this.is_main_painter())
+         return Promise.resolve(null);
 
       let pal = this.FindFunction('TPaletteAxis'),
           pal_painter = this.FindPainterFor(pal);
@@ -2982,12 +2959,12 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             pal_painter.RemoveDrawG(); // completely remove drawing without need to redraw complete pad
          }
 
-         return null;
+         return Promise.resolve(null);
       }
 
       if (!pal) {
 
-         if (this.options.PadPalette) return null;
+         if (this.options.PadPalette) return Promise.resolve(null);
 
          pal = JSROOT.Create('TPave');
 
@@ -3021,47 +2998,52 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (postpone_draw) arg+=";postpone";
       if (can_move && !this.do_redraw_palette) arg+=";can_move";
 
+      let promise;
+
       if (!pal_painter) {
          // when histogram drawn on sub pad, let draw new axis object on the same pad
          let prev = this.CurrentPadName(this.pad_name);
-         // CAUTION!!! This is very special place where return value of JSROOT.draw is allowed
-         // while palette drawing is in same script. Normally callback should be used
-         pal_painter = drawPave(this.divid, pal, arg);
-         this.CurrentPadName(prev);
+         promise = drawPave(this.divid, pal, arg).then(pp => {
+            this.CurrentPadName(prev);
+            return pp;
+         });
       } else {
          pal_painter.Enabled = true;
-         pal_painter.DrawPave(arg);
+         promise = pal_painter.DrawPave(arg);
       }
 
-      // mark painter as secondary - not in list of TCanvas primitives
-      pal_painter.$secondary = true;
+      return promise.then(pp => {
+         // mark painter as secondary - not in list of TCanvas primitives
+         pp.$secondary = true;
 
-      // make dummy redraw, palette will be updated only from histogram painter
-      pal_painter.Redraw = function() {};
+         // make dummy redraw, palette will be updated only from histogram painter
+         pp.Redraw = function() {};
 
-      // special code to adjust frame position to actual position of palette
-      if (can_move && frame_painter && (pal.fX1NDC-0.005 < frame_painter.fX2NDC) && !this.do_redraw_palette) {
+         // special code to adjust frame position to actual position of palette
+         if (can_move && frame_painter && (pal.fX1NDC - 0.005 < frame_painter.fX2NDC) && !this.do_redraw_palette) {
 
-         this.do_redraw_palette = true;
+            this.do_redraw_palette = true;
 
-         frame_painter.fX2NDC = pal.fX1NDC - 0.01;
-         frame_painter.Redraw();
-         // here we should redraw main object
-         if (!postpone_draw) this.Redraw();
+            frame_painter.fX2NDC = pal.fX1NDC - 0.01;
+            frame_painter.Redraw();
+            // here we should redraw main object
+            if (!postpone_draw) this.Redraw();
 
-         delete this.do_redraw_palette;
-      }
+            delete this.do_redraw_palette;
+         }
 
-      return pal_painter;
+         return pp;
+      });
    }
 
+   /** @summary Toggle color z palette drawing */
    THistPainter.prototype.ToggleColz = function() {
       let can_toggle = this.options.Mode3D ? (this.options.Lego === 12 || this.options.Lego === 14 || this.options.Surf === 11 || this.options.Surf === 12) :
                        this.options.Color || this.options.Contour;
 
       if (can_toggle) {
          this.options.Zscale = !this.options.Zscale;
-         this.DrawColorPalette(this.options.Zscale, false, true);
+         this.drawColorPalette(this.options.Zscale, false, true);
       }
    }
 
@@ -4291,8 +4273,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       this.ScanContent(true);
 
-      if (typeof this.DrawColorPalette === 'function')
-         this.DrawColorPalette(false);
+      if (typeof this.drawColorPalette === 'function')
+         this.drawColorPalette(false);
 
       return this.DrawAxes().then(() => {
          this.Draw1DBins();
@@ -4533,8 +4515,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       this.CopyOptionsToOthers();
 
       this.RedrawPad();
-
-      // this.DrawColorPalette(this.options.Color && this.options.Zscale);
    }
 
    TH2Painter.prototype.AutoZoom = function() {
@@ -6297,16 +6277,18 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       this.Clear3DScene();
       this.mode3d = false;
 
+      let need_palette = this.options.Zscale && (this.options.Color || this.options.Contour);
       // draw new palette, resize frame if required
-      let pp = this.DrawColorPalette(this.options.Zscale && (this.options.Color || this.options.Contour), true);
+      return this.drawColorPalette(need_palette, true).then(pp => {
 
-      return this.DrawAxes().then(() => {
+         return this.DrawAxes().then(() => {
 
-         this.Draw2DBins();
+            this.Draw2DBins();
 
-         // redraw palette till the end when contours are available
-         if (pp) pp.DrawPave();
-
+            // redraw palette till the end when contours are available
+            return pp ? pp.DrawPave() : true;
+         });
+      }).then(() => {
          return this.DrawTitle();
       }).then(() => {
 

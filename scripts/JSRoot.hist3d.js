@@ -1478,7 +1478,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
       if (is_main) {
          // (re)draw palette by resize while canvas may change dimension
-         this.DrawColorPalette(this.options.Zscale && ((this.options.Lego===12) || (this.options.Lego===14)));
+         this.drawColorPalette(this.options.Zscale && ((this.options.Lego===12) || (this.options.Lego===14)));
 
          this.DrawTitle();
       }
@@ -1534,7 +1534,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       if (is_main) {
 
          //  (re)draw palette by resize while canvas may change dimension
-         this.DrawColorPalette(this.options.Zscale && ((this.options.Lego===12) || (this.options.Lego===14) ||
+         this.drawColorPalette(this.options.Zscale && ((this.options.Lego===12) || (this.options.Lego===14) ||
                                (this.options.Surf===11) || (this.options.Surf===12)));
 
          this.DrawTitle();

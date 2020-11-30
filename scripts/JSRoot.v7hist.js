@@ -669,7 +669,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       menu.add("endsub:");
    }
 
-   RHistPainter.prototype.DrawColorPalette = function(/*enabled, postpone_draw, can_move*/) {
+   RHistPainter.prototype.drawColorPalette = function(/*enabled, postpone_draw, can_move*/) {
       // only when create new palette, one could change frame size
 
       return null;
@@ -681,7 +681,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
       if (can_toggle) {
          this.options.Zscale = !this.options.Zscale;
-         this.DrawColorPalette(this.options.Zscale, false, true);
+         this.drawColorPalette(this.options.Zscale, false, true);
       }
    }
 
@@ -2004,8 +2004,6 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       this._can_move_colz = true; // indicate that next redraw can move Z scale
 
       this.Redraw();
-
-      // this.DrawColorPalette(this.options.Color && this.options.Zscale);
    }
 
    RH2Painter.prototype.AutoZoom = function() {
@@ -3572,9 +3570,6 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
       this.mode3d = false;
       this.Clear3DScene();
-
-      // draw new palette, resize frame if required
-      // let pp = this.DrawColorPalette(this.options.Zscale && (this.options.Color || this.options.Contour), true);
 
       return this.DrawAxes()
                  .then(res => res ? this.DrawingBins(reason) : false)
