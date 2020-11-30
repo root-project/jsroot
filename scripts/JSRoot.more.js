@@ -1796,7 +1796,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       JSROOT.ObjectPainter.prototype.FillContextMenu.call(this, menu);
 
       if (!this.snapid)
-         menu.addchk(this.TestEditable(), "Editable", this.TestEditable.bind(this, true));
+         menu.addchk(this.TestEditable(), "Editable", () => this.TestEditable(true));
 
       return menu.size() > 0;
    }
@@ -2833,28 +2833,27 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       this.OptionsStore(opt);
    }
 
-   TSplinePainter.prototype.FirstDraw = function() {
-      this.SetDivId(this.divid);
-      this.Redraw();
-      return this.DrawingReady();
-   }
-
    jsrp.drawSpline = function(divid, spline, opt) {
       let painter = new TSplinePainter(spline);
 
       painter.SetDivId(divid, -1);
       painter.DecodeOptions(opt);
 
+      let promise = Promise.resolve();
       if (!painter.main_painter()) {
          if (painter.options.Same) {
             console.warn('TSpline painter requires histogram to be drawn');
             return null;
          }
          let histo = painter.CreateDummyHisto();
-         return JSROOT.draw(divid, histo, "AXIS").then(painter.FirstDraw.bind(painter));
+         promise = JSROOT.draw(divid, histo, "AXIS");
       }
 
-      return painter.FirstDraw();
+      return promise.then(() => {
+         painter.SetDivId(this.divid);
+         painter.Redraw();
+         return painter;
+      });
    }
 
    // =============================================================
@@ -2907,10 +2906,6 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       });
    }
 
-   TGraphTimePainter.prototype.Selector = function(p) {
-      return p && (p.$grtimeid === this.selfid);
-   }
-
    TGraphTimePainter.prototype.ContineDrawing = function() {
       if (!this.options) return;
 
@@ -2939,7 +2934,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          }
 
          // clear primitives produced by the TGraphTime
-         pp.CleanPrimitives(this.Selector.bind(this));
+         pp.CleanPrimitives(p => (p.$grtimeid === this.selfid));
 
          // draw ptrimitives again
          this.DrawPrimitives().then(() => this.ContineDrawing());
@@ -2949,7 +2944,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
          this.wait_animation_frame = true;
          // use animation frame to disable update in inactive form
-         requestAnimationFrame(this.ContineDrawing.bind(this));
+         requestAnimationFrame(() => this.ContineDrawing());
       } else {
 
          let sleeptime = gr.fSleepTime;
@@ -2965,7 +2960,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
             }
          }
 
-         this.running_timeout = setTimeout(this.ContineDrawing.bind(this), sleeptime);
+         this.running_timeout = setTimeout(() => this.ContineDrawing(), sleeptime);
       }
    }
 
