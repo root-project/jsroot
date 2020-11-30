@@ -1367,25 +1367,24 @@ JSROOT.define(['d3'], (d3) => {
 
    /** @summary Function should be called by the painter when first drawing is completed
     * @private */
-   BasePainter.prototype.DrawingReady = function(res_painter, res_value) {
-      let res = (res_value === undefined) ? true : !!res_value;
-      this._ready_called_ = res;
+   BasePainter.prototype.DrawingReady = function(res_value) {
+      this._ready_called_ = (res_value === undefined) ? true : !!res_value;
       if (this._ready_callbacks_ !== undefined) {
-         let callbacks = (res ? this._ready_callbacks_ : this._reject_callbacks_) || [];
-         if (!this._return_res_painter) res_painter = this;
+         let callbacks = (this._ready_called_ ? this._ready_callbacks_ : this._reject_callbacks_) || [];
 
-         delete this._return_res_painter;
          delete this._ready_callbacks_;
          delete this._reject_callbacks_;
 
          while (callbacks.length)
-            JSROOT.callBack(callbacks.shift(), res_painter);
+            JSROOT.callBack(callbacks.shift(), this);
       }
       return this;
    }
 
    /** @summary Function should be called when first drawing fails */
-   BasePainter.prototype.DrawingFail = function(res_painter) { return this.DrawingReady(res_painter, false); }
+   BasePainter.prototype.DrawingFail = function() {
+      return this.DrawingReady(false);
+   }
 
    /** @summary Call back will be called when painter ready with the drawing */
    BasePainter.prototype.WhenReady = function(resolveFunc, rejectFunc) {

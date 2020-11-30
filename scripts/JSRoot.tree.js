@@ -2844,13 +2844,12 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
       } else {
 
          if ((args==='player') || !args) {
-            JSROOT.require("jq2d").then(() => {
+            return JSROOT.require("jq2d").then(() => {
                JSROOT.createTreePlayer(painter);
                painter.ConfigureTree(tree);
                painter.Show(divid);
-               painter.DrawingReady();
+               return painter;
             });
-            return painter;
          }
 
          if (typeof args === 'string') args = { expr: args };
@@ -2858,15 +2857,14 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
 
       if (!tree) {
          console.error('No TTree object available for TTree::Draw');
-         return painter.DrawingReady();
+         null;
       }
 
-      let callback = painter.DrawingReady.bind(painter);
       painter._return_res_painter = true; // indicate that TTree::Draw painter returns not itself but drawing of result object
 
       JSROOT.cleanup(divid);
 
-      let create_player = 0, last_intermediate = false;
+      let create_player = 0, finalResolve;
 
       let process_result = function(obj, intermediate) {
 
@@ -2878,29 +2876,31 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
             drawid = painter.drawid;
 
          if (drawid)
-            return JSROOT.redraw(drawid, obj).then(intermediate ? null : callback);
+            return JSROOT.redraw(drawid, obj); // return painter for histogram
 
-         if (create_player === 1) { last_intermediate = intermediate; return; }
+         if (create_player === 1)
+            return intermediate ? null : new Promise(resolve => { finalResolve = resolve; });
 
          // redirect drawing to the player
          create_player = 1;
          // args.player_intermediate = res.progress;
-         JSROOT.require("jq2d").then(() => {
+         return JSROOT.require("jq2d").then(() => {
             JSROOT.createTreePlayer(painter);
             painter.ConfigureTree(tree);
             painter.Show(divid, args);
             create_player = 2;
-            JSROOT.redraw(painter.drawid, obj).then(last_intermediate ? null : callback);
-            painter.SetItemName("TreePlayer"); // item name used by MDI when process resize
+            return JSROOT.redraw(painter.drawid, obj).then(objpainter => {
+               painter.SetItemName("TreePlayer"); // item name used by MDI when process resize
+               if (finalResolve) finalResolve(objpainter);
+               return objpainter;
+            });
          });
       }
 
       args.progress = obj => process_result(obj, true);
 
       // use in result handling same function as for progress handling
-      tree.Draw(args).then(process_result);
-
-      return painter;
+      return tree.Draw(args).then(obj => process_result(obj));
    }
 
    JSROOT.TSelector = TSelector;
