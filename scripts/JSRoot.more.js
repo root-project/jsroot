@@ -1964,7 +1964,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
    /** @summary method draws next function from the functions list
      * @returns {Promise} */
-   TGraphPainter.prototype.DrawNextFunction = function(indx) {
+   TGraphPainter.prototype.drawNextFunction = function(indx) {
 
       let graph = this.GetObject();
 
@@ -1977,7 +1977,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       // TODO: use weak reference (via pad list of painters and any kind of string)
       func.$main_painter = this;
 
-      return JSROOT.draw(this.divid, func, opt).then(() => this.DrawNextFunction(indx+1));
+      return JSROOT.draw(this.divid, func, opt).then(() => this.drawNextFunction(indx+1));
    }
 
    function drawGraph(divid, graph, opt) {
@@ -2005,7 +2005,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          if (painter.TestEditable() && !JSROOT.BatchMode)
             JSROOT.require(['interactive'])
                   .then(inter => inter.DragMoveHandler.AddMove(painter));
-         return painter.DrawNextFunction(0);
+         return painter.drawNextFunction(0);
       });
    }
 
@@ -3269,7 +3269,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
    /** @summary draw speical histogram for axis
      * @return {Promise} when ready */
-   TMultiGraphPainter.prototype.DrawAxis = function() {
+   TMultiGraphPainter.prototype.drawAxis = function() {
 
       let mgraph = this.GetObject(),
           histo = this.ScanGraphsRange(mgraph.fGraphs, mgraph.fHistogram, this.root_pad());
@@ -3279,32 +3279,28 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       return JSROOT.draw(this.divid, histo, "AXIS");
    }
 
-   TMultiGraphPainter.prototype.DrawNextFunction = function(indx, callback) {
-      // method draws next function from the functions list
+   /** @summary method draws next function from the functions list  */
+   TMultiGraphPainter.prototype.drawNextFunction = function(indx) {
 
       let mgraph = this.GetObject();
 
       if (!mgraph.fFunctions || (indx >= mgraph.fFunctions.arr.length))
-         return JSROOT.callBack(callback);
+         return Promise.resolve(this);
 
-      JSROOT.draw(this.divid, mgraph.fFunctions.arr[indx], mgraph.fFunctions.opt[indx])
-            .then(this.DrawNextFunction.bind(this, indx+1, callback));
+      return JSROOT.draw(this.divid, mgraph.fFunctions.arr[indx], mgraph.fFunctions.opt[indx])
+                  .then(() => this.drawNextFunction(indx+1));
    }
 
-   TMultiGraphPainter.prototype.DrawNextGraph = function(indx, opt, subp, used_timeout) {
-      if (subp) this.painters.push(subp);
+   /** @summary method draws next graph  */
+   TMultiGraphPainter.prototype.drawNextGraph = function(indx, opt) {
 
       let graphs = this.GetObject().fGraphs;
 
       // at the end of graphs drawing draw functions (if any)
       if (indx >= graphs.arr.length) {
          this._pfc = this._plc = this._pmc = false; // disable auto coloring at the end
-         return this.DrawNextFunction(0, this.DrawingReady.bind(this));
+         return this.drawNextFunction(0);
       }
-
-      // when too many graphs are drawn, avoid deep stack with timeout
-      if ((indx % 500 === 499) && !used_timeout)
-         return setTimeout(this.DrawNextGraph.bind(this,indx,opt,null,true),0);
 
       // if there is auto colors assignment, try to provide it
       if (this._pfc || this._plc || this._pmc) {
@@ -3320,7 +3316,11 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          }
       }
 
-      JSROOT.draw(this.divid, graphs.arr[indx], graphs.opt[indx] || opt).then(this.DrawNextGraph.bind(this, indx+1, opt));
+      return JSROOT.draw(this.divid, graphs.arr[indx], graphs.opt[indx] || opt).then(subp => {
+         if (subp) this.painters.push(subp);
+
+         return this.drawNextGraph(indx+1, opt);
+      });
    }
 
    jsrp.drawMultiGraph = function(divid, mgraph, opt) {
@@ -3336,18 +3336,17 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       painter._plc = d.check("PLC");
       painter._pmc = d.check("PMC");
 
-      if (d.check("A") || !painter.main_painter()) {
-         painter.DrawAxis().then(hpainter => {
-            painter.firstpainter = hpainter;
-            painter.SetDivId(divid);
-            painter.DrawNextGraph(0, d.remain());
+      let promise = Promise.resolve(painter);
+      if (d.check("A") || !painter.main_painter())
+         promise = painter.drawAxis().then(fp => {
+            painter.firstpainter = fp;
+            return painter;
          });
-      } else {
-         painter.SetDivId(divid);
-         painter.DrawNextGraph(0, d.remain());
-      }
 
-      return painter;
+      return promise.then(() => {
+         painter.SetDivId(divid);
+         return painter.drawNextGraph(0, d.remain());
+      })
    }
 
    // =========================================================================================
