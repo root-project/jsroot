@@ -2394,18 +2394,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       this._topname = GetOption("topname");
 
-      let OpenAllFiles = () => {
-         if (prereq || load) {
-            // load first prerequicities and then special script
-            let req = prereq;
-            prereq = "";
-            if (!req) { req = load; load = ""; }
-            return JSROOT.require(req).then(OpenAllFiles, OpenAllFiles);
-         }
-
+      let openAllFiles = () => {
          let promise;
 
-         if (browser_kind) {
+         if (prereq) {
+            promise = JSROOT.require(prereq); prereq = "";
+         } else if (load) {
+            promise = JSROOT.loadScript(load.split(";")); load = "";
+         } else if (browser_kind) {
             promise = this.createBrowser(browser_kind); browser_kind = "";
          } else if (status!==null) {
             promise = this.createStatusLine(statush, status); status = null;
@@ -2428,7 +2424,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
            });
          }
 
-         return promise.then(OpenAllFiles, OpenAllFiles);
+         return promise.then(openAllFiles, openAllFiles);
       }
 
       let h0 = null;
@@ -2466,13 +2462,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if (gui_div)
                this.prepareGuiDiv(gui_div, this.disp_kind);
 
-            return OpenAllFiles();
+            return openAllFiles();
          });
 
       if (gui_div)
          this.prepareGuiDiv(gui_div, this.disp_kind);
 
-      return OpenAllFiles();
+      return openAllFiles();
    }
 
    /** @summary Prepare div element - create layout and buttons */
@@ -2904,7 +2900,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if (kind2) kind = kind + "x" + kind2;
                   else kind = kind.substr(4).trim();
             this.use_separarators = false;
-            if (kind[0]==="i") {
+            if (kind[0] === "i") {
                this.use_separarators = true;
                kind = kind.substr(1);
             }
@@ -2921,15 +2917,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if (isNaN(sizex)) sizex = 3;
             if (isNaN(sizey)) sizey = 3;
 
-            if (sizey>1) {
+            if (sizey > 1) {
                this.vertical = true;
                num = sizey;
                if (sizex>1) {
                   arr = new Array(num);
-                  for (let k=0;k<num;++k) arr[k] = sizex;
+                  for (let k = 0; k < num; ++k) arr[k] = sizex;
                }
-            } else
-            if (sizex > 1) {
+            } else if (sizex > 1) {
                this.vertical = false;
                num = sizex;
             } else {
