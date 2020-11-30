@@ -415,11 +415,11 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       let pave = this.GetObject();
 
-      this.StartTextDrawing(pave.fTextFont, _height/1.2);
+      this.startTextDrawing(pave.fTextFont, _height/1.2);
 
-      this.DrawText({ align: pave.fTextAlign, width: _width, height: _height, text: pave.fLabel, color: this.get_color(pave.fTextColor) });
+      this.drawText({ align: pave.fTextAlign, width: _width, height: _height, text: pave.fLabel, color: this.get_color(pave.fTextColor) });
 
-      return this.FinishTextPromise();
+      return this.finishTextDrawing();
    }
 
    /** @summary draw TPaveStats object */
@@ -454,12 +454,12 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       // for characters like 'p' or 'y' several more pixels required to stay in the box when drawn in last line
       let stepy = height / nlines, has_head = false, margin_x = pt.fMargin * width;
 
-      this.StartTextDrawing(pt.fTextFont, height/(nlines * 1.2));
+      this.startTextDrawing(pt.fTextFont, height/(nlines * 1.2));
 
       this.UseTextColor = true;
 
       if (nlines == 1) {
-         this.DrawText({ align: pt.fTextAlign, width: width, height: height, text: lines[0], color: tcolor, latex: 1 });
+         this.drawText({ align: pt.fTextAlign, width: width, height: height, text: lines[0], color: tcolor, latex: 1 });
       } else
       for (let j = 0; j < nlines; ++j) {
          let posy = j*stepy;
@@ -468,7 +468,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          if (first_stat && (j >= first_stat)) {
             let parts = lines[j].split("|");
             for (let n = 0; n < parts.length; ++n)
-               this.DrawText({ align: "middle", x: width * n / num_cols, y: posy, latex: 0,
+               this.drawText({ align: "middle", x: width * n / num_cols, y: posy, latex: 0,
                                width: width/num_cols, height: stepy, text: parts[n], color: tcolor });
          } else if (lines[j].indexOf('=') < 0) {
             if (j==0) {
@@ -476,7 +476,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                if (lines[j].length > maxlen + 5)
                   lines[j] = lines[j].substr(0,maxlen+2) + "...";
             }
-            this.DrawText({ align: (j == 0) ? "middle" : "start", x: margin_x, y: posy,
+            this.drawText({ align: (j == 0) ? "middle" : "start", x: margin_x, y: posy,
                             width: width-2*margin_x, height: stepy, text: lines[j], color: tcolor });
          } else {
             let parts = lines[j].split("="), args = [];
@@ -495,7 +495,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             }
 
             for (let n = 0; n < 2; ++n)
-               this.DrawText(args[n]);
+               this.drawText(args[n]);
          }
       }
 
@@ -515,7 +515,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       this.draw_g.classed("most_upper_primitives", true); // this primitive will remain on top of list
 
-      return this.FinishTextPromise();
+      return this.finishTextDrawing();
    }
 
    /** @summary draw TPaveText object */
@@ -567,12 +567,12 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
                   let sub_g = text_g.append("svg:g");
 
-                  this.StartTextDrawing(pt.fTextFont, (entry.fTextSize || pt.fTextSize) * can_height, sub_g);
+                  this.startTextDrawing(pt.fTextFont, (entry.fTextSize || pt.fTextSize) * can_height, sub_g);
 
-                  this.DrawText({ align: entry.fTextAlign || pt.fTextAlign, x: lx, y: ly, text: entry.fTitle, color: jcolor,
+                  this.drawText({ align: entry.fTextAlign || pt.fTextAlign, x: lx, y: ly, text: entry.fTitle, color: jcolor,
                                   latex: (entry._typename == "TText") ? 0 : 1,  draw_g: sub_g, fast: fast_draw });
 
-                  promises.push(this.FinishTextPromise(sub_g));
+                  promises.push(this.finishTextDrawing(sub_g));
                } else {
                   lines.push(entry); // make as before
                }
@@ -617,7 +617,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             if (max_font_size < 3) max_font_size = 3;
          }
 
-         this.StartTextDrawing(pt.fTextFont, height/(nlines * 1.2), text_g, max_font_size);
+         this.startTextDrawing(pt.fTextFont, height/(nlines * 1.2), text_g, max_font_size);
 
          for (let j = 0; j < nlines; ++j) {
             let arg = null, lj = lines[j];
@@ -636,9 +636,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             arg.text = lj.fTitle;
             arg.fast = fast_draw;
             if (!arg.color) { this.UseTextColor = true; arg.color = tcolor; }
-            this.DrawText(arg);
+            this.drawText(arg);
          }
-         promises.push(this.FinishTextPromise(text_g));
+         promises.push(this.finishTextDrawing(text_g));
       }
 
       if (draw_header) {
@@ -653,11 +653,11 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                .call(this.fillatt.func)
                .call(this.lineatt.func);
 
-         this.StartTextDrawing(pt.fTextFont, h/1.5, lbl_g);
+         this.startTextDrawing(pt.fTextFont, h/1.5, lbl_g);
 
-         this.DrawText({ align: 22, x: x, y: y, width: w, height: h, text: pt.fLabel, color: tcolor, draw_g: lbl_g });
+         this.drawText({ align: 22, x: x, y: y, width: w, height: h, text: pt.fLabel, color: tcolor, draw_g: lbl_g });
 
-         promises.push(this.FinishTextPromise(lbl_g));
+         promises.push(this.finishTextDrawing(lbl_g));
 
          this.UseTextColor = true;
       }
@@ -719,7 +719,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (legend.fTextSize && (ph*legend.fTextSize > 2) && (ph*legend.fTextSize < font_size))
          font_size = max_font_size = Math.round(ph*legend.fTextSize);
 
-      this.StartTextDrawing(legend.fTextFont, font_size, this.draw_g, max_font_size);
+      this.startTextDrawing(legend.fTextFont, font_size, this.draw_g, max_font_size);
 
       for (let ii = 0; ii < nlines; ++ii) {
          let leg = legend.fPrimitives.arr[ii];
@@ -816,11 +816,11 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                        else if (!any_opt) pos_x = x0 + padding_x;
 
          if (leg.fLabel)
-            this.DrawText({ align: "start", x: pos_x, y: pos_y, width: x0+column_width-pos_x-padding_x, height: step_y, text: leg.fLabel, color: tcolor });
+            this.drawText({ align: "start", x: pos_x, y: pos_y, width: x0+column_width-pos_x-padding_x, height: step_y, text: leg.fLabel, color: tcolor });
       }
 
       // rescale after all entries are shown
-      return this.FinishTextPromise();
+      return this.finishTextDrawing();
    }
 
    /** @summary draw color palette with axis */
@@ -3517,7 +3517,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          if ((histo.fMarkerSize!==1) && text_angle)
             text_size = 0.02*height*histo.fMarkerSize;
 
-         this.StartTextDrawing(42, text_size, this.draw_g, text_size);
+         this.startTextDrawing(42, text_size, this.draw_g, text_size);
       }
 
       for (i = left; i < right; ++i) {
@@ -3558,11 +3558,11 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             let lbl = (y === Math.round(y)) ? y.toString() : JSROOT.FFormat(y, JSROOT.gStyle.fPaintTextFormat);
 
             if (pmain.swap_xy)
-               this.DrawText({ align: 12, x: Math.round(gry1 + text_size/2), y: Math.round(grx1+0.1), height: Math.round(w*0.8), text: lbl, color: text_col, latex: 0 });
+               this.drawText({ align: 12, x: Math.round(gry1 + text_size/2), y: Math.round(grx1+0.1), height: Math.round(w*0.8), text: lbl, color: text_col, latex: 0 });
             else if (text_angle)
-               this.DrawText({ align: 12, x: grx1+w/2, y: Math.round(gry1 - 2 - text_size/5), width: 0, height: 0, rotate: text_angle, text: lbl, color: text_col, latex: 0 });
+               this.drawText({ align: 12, x: grx1+w/2, y: Math.round(gry1 - 2 - text_size/5), width: 0, height: 0, rotate: text_angle, text: lbl, color: text_col, latex: 0 });
             else
-               this.DrawText({ align: 22, x: Math.round(grx1 + w*0.1), y: Math.round(gry1-2-text_size), width: Math.round(w*0.8), height: text_size, text: lbl, color: text_col, latex: 0 });
+               this.drawText({ align: 22, x: Math.round(grx1 + w*0.1), y: Math.round(gry1-2-text_size), width: Math.round(w*0.8), height: text_size, text: lbl, color: text_col, latex: 0 });
          }
       }
 
@@ -3584,7 +3584,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                .style("fill", d3.rgb(this.fillatt.color).darker(0.5).toString());
 
       if (show_text)
-         this.FinishTextDrawing();
+         this.finishTextDrawing();
    }
 
    TH1Painter.prototype.DrawFilledErrors = function() {
@@ -3708,7 +3708,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
              }
          }
 
-         this.StartTextDrawing(42, text_size, this.draw_g, text_size);
+         this.startTextDrawing(42, text_size, this.draw_g, text_size);
       }
 
       // if there are too many points, exclude many vertical drawings at the same X position
@@ -3759,9 +3759,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                   let lbl = (cont === Math.round(cont)) ? cont.toString() : JSROOT.FFormat(cont, JSROOT.gStyle.fPaintTextFormat);
 
                   if (text_angle)
-                     this.DrawText({ align: 12, x: midx, y: Math.round(my - 2 - text_size/5), width: 0, height: 0, rotate: text_angle, text: lbl, color: text_col, latex: 0 });
+                     this.drawText({ align: 12, x: midx, y: Math.round(my - 2 - text_size/5), width: 0, height: 0, rotate: text_angle, text: lbl, color: text_col, latex: 0 });
                   else
-                     this.DrawText({ align: 22, x: Math.round(mx1 + (mx2-mx1)*0.1), y: Math.round(my-2-text_size), width: Math.round((mx2-mx1)*0.8), height: text_size, text: lbl, color: text_col, latex: 0 });
+                     this.drawText({ align: 22, x: Math.round(mx1 + (mx2-mx1)*0.1), y: Math.round(my-2-text_size), width: Math.round((mx2-mx1)*0.8), height: text_size, text: lbl, color: text_col, latex: 0 });
                }
             }
 
@@ -3925,7 +3925,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       }
 
       if (show_text)
-         this.FinishTextDrawing();
+         this.finishTextDrawing();
 
    }
 
@@ -5359,7 +5359,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          if ((histo.fMarkerSize!==1) && text_angle)
              text_size = Math.round(0.02*h*histo.fMarkerSize);
 
-         this.StartTextDrawing(42, text_size, text_g, text_size);
+         this.startTextDrawing(42, text_size, text_g, text_size);
 
          for (i = 0; i < textbins.length; ++ i) {
             bin = textbins[i];
@@ -5375,10 +5375,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                if (!lbl) lbl = bin.fNumber;
             }
 
-            this.DrawText({ align: 22, x: bin._midx, y: bin._midy, rotate: text_angle, text: lbl, color: text_col, latex: 0, draw_g: text_g });
+            this.drawText({ align: 22, x: bin._midx, y: bin._midy, rotate: text_angle, text: lbl, color: text_col, latex: 0, draw_g: text_g });
          }
 
-         this.FinishTextDrawing(text_g);
+         this.finishTextDrawing(text_g);
       }
 
       return { poly: true };
@@ -5403,7 +5403,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       if (histo.fBarOffset!==0) text_offset = histo.fBarOffset*1e-3;
 
-      this.StartTextDrawing(42, text_size, text_g, text_size);
+      this.startTextDrawing(42, text_size, text_g, text_size);
 
       for (i = handle.i1; i < handle.i2; ++i)
          for (j = handle.j1; j < handle.j2; ++j) {
@@ -5441,10 +5441,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                sizey = Math.round(binh*0.8);
             }
 
-            this.DrawText({ align: 22, x: posx, y: posy, width: sizex, height: sizey, rotate: text_angle, text: lbl, color: text_col, latex: use_latex, draw_g: text_g });
+            this.drawText({ align: 22, x: posx, y: posy, width: sizex, height: sizey, rotate: text_angle, text: lbl, color: text_col, latex: use_latex, draw_g: text_g });
          }
 
-      this.FinishTextDrawing(text_g);
+      this.finishTextDrawing(text_g);
 
       handle.hide_only_zeros = true; // text drawing suppress only zeros
 

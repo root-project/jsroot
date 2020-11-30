@@ -544,7 +544,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          labelfont = new JSROOT.FontHandler(axis.fLabelFont, labelSize);
 
-         this.StartTextDrawing(labelfont, 'font', label_g[lcnt]);
+         this.startTextDrawing(labelfont, 'font', label_g[lcnt]);
 
          for (let nmajor=0;nmajor<lbl_pos.length;++nmajor) {
 
@@ -582,7 +582,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             numDraw++;
             arg.post_process = process_drawtext_ready;
 
-            this.DrawText(arg);
+            this.drawText(arg);
 
             if (lastpos && (pos!=lastpos) && ((this.vertical && !rotate_lbls) || (!this.vertical && rotate_lbls))) {
                let axis_step = Math.abs(pos-lastpos);
@@ -593,7 +593,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          }
 
          if (this.order)
-            this.DrawText({ color: label_color,
+            this.drawText({ color: label_color,
                             x: this.vertical ? side*5 : w+5,
                             y: this.has_obstacle ? fix_coord : (this.vertical ? -3 : -3*side),
                             align: this.vertical ? ((side < 0) ? 30 : 10) : ( (this.has_obstacle ^ (side < 0)) ? 13 : 10 ),
@@ -618,7 +618,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          let arr = [];
          for (let lcnt = 0; lcnt < label_g.length; ++lcnt)
-            arr.push(this.FinishTextPromise(label_g[lcnt]));
+            arr.push(this.finishTextDrawing(label_g[lcnt]));
 
          return Promise.all(arr);
       }).then(() => {
@@ -765,7 +765,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
              rotate = axis.TestBit(JSROOT.EAxisBits.kRotateTitle) ? -1 : 1,
              title_color = this.get_color(is_gaxis ? axis.fTextColor : axis.fTitleColor);
 
-         this.StartTextDrawing(axis.fTitleFont, title_fontsize, title_g);
+         this.startTextDrawing(axis.fTitleFont, title_fontsize, title_g);
 
          let xor_reverse = swap_side ^ opposite, myxor = (rotate < 0) ^ xor_reverse;
 
@@ -784,7 +784,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             title_shift_y = Math.round(center ? h/2 : (xor_reverse ? h : 0));
 
-            this.DrawText({ align: this.title_align+";middle",
+            this.drawText({ align: this.title_align+";middle",
                             rotate: (rotate<0) ? 90 : 270,
                             text: axis.fTitle, color: title_color, draw_g: title_g });
          } else {
@@ -792,7 +792,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             title_shift_x = Math.round(center ? w/2 : (xor_reverse ? 0 : w));
             title_shift_y = Math.round(title_offest_k*axis.fTitleOffset);
-            this.DrawText({ align: this.title_align+";middle",
+            this.drawText({ align: this.title_align+";middle",
                             rotate: (rotate<0) ? 180 : 0,
                             text: axis.fTitle, color: title_color, draw_g: title_g });
          }
@@ -802,7 +802,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          this.addTitleDrag(title_g, vertical, title_offest_k, swap_side, vertical ? h : w);
 
-         return this.FinishTextPromise(title_g);
+         return this.finishTextDrawing(title_g);
 
       }).then(() => {
 

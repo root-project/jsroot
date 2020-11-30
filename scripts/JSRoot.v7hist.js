@@ -1242,7 +1242,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
              }
          }
 
-         this.StartTextDrawing(text_font, 'font');
+         this.startTextDrawing(text_font, 'font');
       }
 
       // if there are too many points, exclude many vertical drawings at the same X position
@@ -1281,9 +1281,9 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
                   let lbl = (cont === Math.round(cont)) ? cont.toString() : JSROOT.FFormat(cont, JSROOT.gStyle.fPaintTextFormat);
 
                   if (text_font.angle)
-                     this.DrawText({ align: 12, x: midx, y: Math.round(my - 2 - text_font.size/5), width: 0, height: 0, text: lbl, latex: 0 });
+                     this.drawText({ align: 12, x: midx, y: Math.round(my - 2 - text_font.size/5), width: 0, height: 0, text: lbl, latex: 0 });
                   else
-                     this.DrawText({ x: Math.round(mx1 + (mx2-mx1)*0.1), y: Math.round(my-2-text_font.size), width: Math.round((mx2-mx1)*0.8), height: text_font.size, text: lbl, latex: 0 });
+                     this.drawText({ x: Math.round(mx1 + (mx2-mx1)*0.1), y: Math.round(my-2-text_font.size), width: Math.round((mx2-mx1)*0.8), height: text_font.size, text: lbl, latex: 0 });
                }
             }
 
@@ -1439,7 +1439,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       }
 
       if (show_text)
-         this.FinishTextDrawing();
+         this.finishTextDrawing();
    }
 
    /** @summary Get tip text for axis bin */
@@ -2699,7 +2699,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
          let textFont  = this.v7EvalFont("text", { size: 12, color: "black", align: 22 }),
              text_g = this.draw_g.append("svg:g").attr("class","th2poly_text");
 
-         this.StartTextDrawing(textFont, 'font', text_g);
+         this.startTextDrawing(textFont, 'font', text_g);
 
          for (i = 0; i < textbins.length; ++ i) {
             bin = textbins[i];
@@ -2715,10 +2715,10 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
                if (!lbl) lbl = bin.fNumber;
             }
 
-            this.DrawText({ x: bin._midx, y: bin._midy, text: lbl, latex: 0, draw_g: text_g });
+            this.drawText({ x: bin._midx, y: bin._midy, text: lbl, latex: 0, draw_g: text_g });
          }
 
-         this.FinishTextDrawing(text_g);
+         this.finishTextDrawing(text_g);
       }
 
       return { poly: true };
@@ -2739,7 +2739,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
       if (this.options.BarOffset) text_offset = this.options.BarOffset;
 
-      this.StartTextDrawing(textFont, 'font', text_g);
+      this.startTextDrawing(textFont, 'font', text_g);
 
       for (i = handle.i1; i < handle.i2; i += di)
          for (j = handle.j1; j < handle.j2; j += dj) {
@@ -2767,10 +2767,10 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
                sizey = Math.round(binh*0.8);
             }
 
-            this.DrawText({ align: 22, x: posx, y: posy, width: sizex, height: sizey, text: lbl, latex: 0, draw_g: text_g });
+            this.drawText({ align: 22, x: posx, y: posy, width: sizex, height: sizey, text: lbl, latex: 0, draw_g: text_g });
          }
 
-      this.FinishTextDrawing(text_g);
+      this.finishTextDrawing(text_g);
 
       handle.hide_only_zeros = true; // text drawing suppress only zeros
 
@@ -3853,10 +3853,10 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
          text_g.selectAll("*").remove();
 
       textFont.setSize(height/(nlines * 1.2))
-      this.StartTextDrawing(textFont, 'font' , text_g);
+      this.startTextDrawing(textFont, 'font' , text_g);
 
       if (nlines == 1) {
-         this.DrawText({ width: width, height: height, text: lines[0], latex: 1, draw_g: text_g });
+         this.drawText({ width: width, height: height, text: lines[0], latex: 1, draw_g: text_g });
       } else
       for (let j = 0; j < nlines; ++j) {
          let posy = j*stepy;
@@ -3864,7 +3864,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
          if (first_stat && (j >= first_stat)) {
             let parts = lines[j].split("|");
             for (let n = 0; n < parts.length; ++n)
-               this.DrawText({ align: "middle", x: width * n / num_cols, y: posy, latex: 0,
+               this.drawText({ align: "middle", x: width * n / num_cols, y: posy, latex: 0,
                                width: width/num_cols, height: stepy, text: parts[n], draw_g: text_g });
          } else if (lines[j].indexOf('=') < 0) {
             if (j==0) {
@@ -3872,7 +3872,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
                if (lines[j].length > maxlen + 5)
                   lines[j] = lines[j].substr(0,maxlen+2) + "...";
             }
-            this.DrawText({ align: (j == 0) ? "middle" : "start", x: margin_x, y: posy,
+            this.drawText({ align: (j == 0) ? "middle" : "start", x: margin_x, y: posy,
                             width: width-2*margin_x, height: stepy, text: lines[j], draw_g: text_g });
          } else {
             let parts = lines[j].split("="), args = [];
@@ -3891,7 +3891,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
             }
 
             for (let n = 0; n < 2; ++n)
-               this.DrawText(args[n]);
+               this.drawText(args[n]);
          }
       }
 
@@ -3909,7 +3909,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
       if (lpath) this.draw_g.append("svg:path").attr("d",lpath) /*.call(this.lineatt.func)*/;
 
-      return this.FinishTextPromise(text_g);
+      return this.finishTextDrawing(text_g);
    }
 
    RHistStatsPainter.prototype.Redraw = function(reason) {

@@ -2623,8 +2623,8 @@ JSROOT.define(['d3'], (d3) => {
 
    /** @summary Start text drawing
      * @desc required before any text can be drawn
-     * @private */
-   ObjectPainter.prototype.StartTextDrawing = function(font_face, font_size, draw_g, max_font_size) {
+     * @protected */
+   ObjectPainter.prototype.startTextDrawing = function(font_face, font_size, draw_g, max_font_size) {
 
       if (!draw_g) draw_g = this.draw_g;
 
@@ -2668,27 +2668,24 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /** @summary Finish text drawing
-    * @returns {Promise} when done
-    * @private */
-   ObjectPainter.prototype.FinishTextPromise = function(draw_g) {
-      return new Promise(resolveFunc => {
-          this.FinishTextDrawing(draw_g, resolveFunc);
-      });
-   }
-
-   /** @summary Finish text drawing
-    * @desc Should be called to complete all text drawing operations
-    * @param {function} call_ready - callback function
-    * @private */
-   ObjectPainter.prototype.FinishTextDrawing = function(draw_g, call_ready) {
+     * @desc Should be called to complete all text drawing operations
+     * @param {function} [draw_g] - <g> element for text drawing, this.draw_g used when not specified
+     * @returns {Promise} when text drawing completed
+     * @protected */
+   ObjectPainter.prototype.finishTextDrawing = function(draw_g, skip_promise) {
       if (!draw_g) draw_g = this.draw_g;
       draw_g.property('draw_text_completed', true); // mark that text drawing is completed
-      return this._checkAllTextDrawing(draw_g, call_ready);
+      if (skip_promise)
+         return this._checkAllTextDrawing(draw_g);
+
+      return new Promise(resolveFunc => {
+           this._checkAllTextDrawing(draw_g, resolveFunc);
+      });
    }
 
    /** @summary Analyze if all text draw operations completed
     * @private */
-   ObjectPainter.prototype._checkAllTextDrawing = function(draw_g, call_ready) {
+   ObjectPainter.prototype._checkAllTextDrawing = function(draw_g, resolveFunc) {
 
       let all_args = draw_g.property('all_args'), missing = 0;
       if (!all_args) {
@@ -2699,8 +2696,8 @@ JSROOT.define(['d3'], (d3) => {
       all_args.forEach(arg => { if (!arg.ready) missing++; });
 
       if (missing > 0) {
-         if (typeof call_ready == 'function')
-            draw_g.node().text_callback = call_ready;
+         if (typeof resolveFunc == 'function')
+            draw_g.node().textResolveFunc = resolveFunc;
          return 0;
       }
 
@@ -2791,16 +2788,15 @@ JSROOT.define(['d3'], (d3) => {
       if (!any_text)
          font.clearFont(draw_g);
 
-      if (!call_ready) call_ready = draw_g.node().text_callback;
-      draw_g.node().text_callback = null;
+      if (!resolveFunc) resolveFunc = draw_g.node().textResolveFunc;
+      draw_g.node().textResolveFunc = null;
 
       // if specified, call ready function
-      JSROOT.callBack(call_ready, this); // IMPORTANT - return painter, may use in draw methods
+      if (resolveFunc) resolveFunc(this); // IMPORTANT - return painter, may use in draw methods
       return 0;
    }
 
    /** @summary Draw text
-    *
     *  @param {object} arg - different text draw options
     *  @param {string} arg.text - text to draw
     *  @param {number} [arg.align = 12] - int value like 12 or 31
@@ -2814,8 +2810,8 @@ JSROOT.define(['d3'], (d3) => {
     *  @param {number} [arg.rotate] - rotaion angle
     *  @param {number} [arg.font_size] - fixed font size
     *  @param {object} [arg.draw_g] - element where to place text, if not specified central draw_g container is used
-    */
-   ObjectPainter.prototype.DrawText = function(arg) {
+    * @protected */
+   ObjectPainter.prototype.drawText = function(arg) {
 
       if (!arg.text) arg.text = "";
 

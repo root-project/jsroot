@@ -14,11 +14,11 @@ JSROOT.define(['painter', 'v7gpad'], (jsrp) => {
 
       this.CreateG(use_frame);
 
-      this.StartTextDrawing(textFont, 'font');
+      this.startTextDrawing(textFont, 'font');
 
-      this.DrawText({ x: p.x, y: p.y, text: text.fText, latex: 1 });
+      this.drawText({ x: p.x, y: p.y, text: text.fText, latex: 1 });
 
-      return this.FinishTextPromise();
+      return this.finishTextDrawing();
    }
 
 
@@ -119,10 +119,10 @@ JSROOT.define(['painter', 'v7gpad'], (jsrp) => {
       let stepy = height / nlines, posy = 0, margin_x = 0.02 * width;
 
       textFont.setSize(height/(nlines * 1.2));
-      this.StartTextDrawing(textFont, 'font' );
+      this.startTextDrawing(textFont, 'font' );
 
       if (legend.fTitle) {
-         this.DrawText({ align: 22, latex: 1,
+         this.drawText({ align: 22, latex: 1,
                          width: width - 2*margin_x, height: stepy, x: margin_x, y: posy, text: legend.fTitle });
          posy += stepy;
       }
@@ -130,7 +130,7 @@ JSROOT.define(['painter', 'v7gpad'], (jsrp) => {
       for (let i=0; i<legend.fEntries.length; ++i) {
          let objp = null, entry = legend.fEntries[i];
 
-         this.DrawText({ latex: 1, width: 0.75*width - 3*margin_x, height: stepy, x: 2*margin_x + width*0.25, y: posy, text: entry.fLabel });
+         this.drawText({ latex: 1, width: 0.75*width - 3*margin_x, height: stepy, x: 2*margin_x + width*0.25, y: posy, text: entry.fLabel });
 
          if (entry.fDrawableId != "custom") {
             objp = pp.FindSnap(entry.fDrawableId, true);
@@ -167,7 +167,7 @@ JSROOT.define(['painter', 'v7gpad'], (jsrp) => {
          posy += stepy;
       }
 
-      return this.FinishTextDrawing();
+      return this.finishTextDrawing();
    }
 
    function drawLegend(divid, legend, opt) {
@@ -195,16 +195,16 @@ JSROOT.define(['painter', 'v7gpad'], (jsrp) => {
 
       textFont.setSize(height/(nlines * 1.2))
 
-      this.StartTextDrawing(textFont, 'font');
+      this.startTextDrawing(textFont, 'font');
 
       for (let i=0; i < pavetext.fText.length; ++i) {
          let line = pavetext.fText[i];
 
-         this.DrawText({ latex: 1, width: width - 2*margin_x, height: stepy, x: margin_x, y: posy, text: line });
+         this.drawText({ latex: 1, width: width - 2*margin_x, height: stepy, x: margin_x, y: posy, text: line });
          posy += stepy;
       }
 
-      return this.FinishTextPromise();
+      return this.finishTextDrawing();
    }
 
    function drawPaveText(divid, pave, opt) {

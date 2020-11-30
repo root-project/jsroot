@@ -964,7 +964,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       label_g.property('fix_offset', fix_offset);
 
-      this.StartTextDrawing(this.labelsFont, 'font', label_g);
+      this.startTextDrawing(this.labelsFont, 'font', label_g);
 
       for (let nmajor=0;nmajor<lbl_pos.length;++nmajor) {
 
@@ -1003,7 +1003,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          arg.post_process = process_drawtext_ready;
 
          drawCnt++;
-         this.DrawText(arg);
+         this.drawText(arg);
 
          if (lastpos && (pos!=lastpos) && ((this.vertical && !rotate_lbls) || (!this.vertical && rotate_lbls))) {
             let axis_step = Math.abs(pos-lastpos);
@@ -1014,7 +1014,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
 
       if (this.order)
-         this.DrawText({ x: this.vertical ? side*5 : this.GrRange(5),
+         this.drawText({ x: this.vertical ? side*5 : this.GrRange(5),
                          y: this.has_obstacle ? fix_coord : (this.vertical ? this.GrRange(3) : -3*side),
                          align: this.vertical ? ((side<0) ? 30 : 10) : ((this.has_obstacle ^ (side < 0)) ? 13 : 10),
                          latex: 1,
@@ -1037,7 +1037,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if ((textscale > 0.01) && (textscale < 1))
             this.TextScaleFactor(1/textscale, label_g);
 
-         return this.FinishTextPromise(label_g);
+         return this.finishTextDrawing(label_g);
       }).then(() => {
 
         if (lbls_tilt)
@@ -1096,7 +1096,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       let rotated = this.isTitleRotated();
 
-      this.StartTextDrawing(this.titleFont, 'font', title_g);
+      this.startTextDrawing(this.titleFont, 'font', title_g);
 
       this.title_align = center ? "middle" : (opposite ^ (this.IsReverseAxis() || rotated) ? "begin" : "end");
 
@@ -1104,13 +1104,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          title_basepos = Math.round(-side*(lgaps[side]));
          title_shift_x = title_basepos + Math.round(-side*this.titleOffset);
          title_shift_y = Math.round(center ? this.gr_range/2 : (opposite ? 0 : this.gr_range));
-         this.DrawText({ align: [this.title_align, ((side < 0) ^ rotated ? 'top' : 'bottom')],
+         this.drawText({ align: [this.title_align, ((side < 0) ^ rotated ? 'top' : 'bottom')],
                          text: this.fTitle, draw_g: title_g });
       } else {
          title_shift_x = Math.round(center ? this.gr_range/2 : (opposite ? 0 : this.gr_range));
          title_basepos = Math.round(side*lgaps[side]);
          title_shift_y = title_basepos + Math.round(side*this.titleOffset);
-         this.DrawText({ align: [this.title_align, ((side > 0) ^ rotated ? 'top' : 'bottom')],
+         this.drawText({ align: [this.title_align, ((side > 0) ^ rotated ? 'top' : 'bottom')],
                          text: this.fTitle, draw_g: title_g });
       }
 
@@ -1121,7 +1121,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       this.addTitleDrag(title_g, side);
 
-      return this.FinishTextPromise(title_g);
+      return this.finishTextDrawing(title_g);
    }
 
    /** @summary Extract major draw attributes, which are also used in interactive operations
@@ -4392,11 +4392,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       let arg = { x: title_width/2, y: title_height/2, text: title.fText, latex: 1 };
 
-      this.StartTextDrawing(textFont, 'font');
+      this.startTextDrawing(textFont, 'font');
 
-      this.DrawText(arg);
+      this.drawText(arg);
 
-      this.FinishTextDrawing();
+      this.finishTextDrawing();
 
       if (!JSROOT.BatchMode)
          JSROOT.require(['interactive'])

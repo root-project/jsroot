@@ -47,11 +47,11 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       if (text._typename == 'TLatex') { arg.latex = 1; fact = 0.9; } else
       if (text._typename == 'TMathText') { arg.latex = 2; fact = 0.8; }
 
-      this.StartTextDrawing(text.fTextFont, Math.round((textsize>1) ? textsize : textsize*Math.min(w,h)*fact));
+      this.startTextDrawing(text.fTextFont, Math.round((textsize>1) ? textsize : textsize*Math.min(w,h)*fact));
 
-      this.DrawText(arg);
+      this.drawText(arg);
 
-      return this.FinishTextPromise().then(() => {
+      return this.finishTextDrawing().then(() => {
          if (JSROOT.BatchMode) return this;
 
          return JSROOT.require(['interactive']).then(inter => {
@@ -2193,7 +2193,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          exclude_last = true;
       }
 
-      this.StartTextDrawing(polar.fRadialLabelFont, Math.round(polar.fRadialTextSize * this.szy * 2));
+      this.startTextDrawing(polar.fRadialLabelFont, Math.round(polar.fRadialTextSize * this.szy * 2));
 
       for (let n=0;n<ticks.length;++n) {
          let rx = this.r(ticks[n]), ry = rx/this.szx*this.szy;
@@ -2206,7 +2206,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
              .call(this.lineatt.func);
 
          if ((n < ticks.length-1) || !exclude_last)
-            this.DrawText({ align: 23, x: Math.round(rx), y: Math.round(polar.fRadialTextSize * this.szy * 0.5),
+            this.drawText({ align: 23, x: Math.round(rx), y: Math.round(polar.fRadialTextSize * this.szy * 0.5),
                             text: this.format(ticks[n]), color: this.get_color[polar.fRadialLabelColor], latex: 0 });
 
          if ((nminor>1) && ((n < ticks.length-1) || !exclude_last)) {
@@ -2226,10 +2226,10 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          }
       }
 
-      this.FinishTextDrawing();
+      this.finishTextDrawing();
 
       let fontsize = Math.round(polar.fPolarTextSize * this.szy * 2);
-      this.StartTextDrawing(polar.fPolarLabelFont, fontsize);
+      this.startTextDrawing(polar.fPolarLabelFont, fontsize);
 
       let nmajor = polar.fNdivPol % 100;
       if ((nmajor !== 8) && (nmajor !== 3)) nmajor = 8;
@@ -2248,14 +2248,14 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
          let aindx = Math.round(16 -angle/Math.PI*4) % 8; // index in align table, here absolute angle is important
 
-         this.DrawText({ align: aligns[aindx],
+         this.drawText({ align: aligns[aindx],
                          x: Math.round((this.szx+fontsize)*Math.cos(angle)),
                          y: Math.round((this.szy + fontsize/this.szx*this.szy)*(Math.sin(angle))),
                          text: lbls[n],
                          color: this.get_color[polar.fPolarLabelColor], latex: 1 });
       }
 
-      this.FinishTextDrawing();
+      this.finishTextDrawing();
 
       nminor = Math.floor((polar.fNdivPol % 10000) / 100);
 
@@ -3470,7 +3470,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
                      let group = this.draw_g.append("svg:g");
 
-                     this.StartTextDrawing(attr.fTextFont, height, group);
+                     this.startTextDrawing(attr.fTextFont, height, group);
 
                      let angle = attr.fTextAngle;
                      if (angle >= 360) angle -= Math.floor(angle/360) * 360;
@@ -3485,7 +3485,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
                      }
 
                      // todo - correct support of angle
-                     this.DrawText({ align: attr.fTextAlign,
+                     this.drawText({ align: attr.fTextAlign,
                                      x: func.x(obj.fBuf[indx++]),
                                      y: func.y(obj.fBuf[indx++]),
                                      rotate: -angle,
@@ -3493,7 +3493,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
                                      color: jsrp.getColor(attr.fTextColor),
                                      latex: 0, draw_g: group });
 
-                     this.FinishTextDrawing(group);
+                     this.finishTextDrawing(group);
                   }
                   continue;
                }
