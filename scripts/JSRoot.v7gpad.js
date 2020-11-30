@@ -2953,9 +2953,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       JSROOT.require('interactive')
             .then(() => jsrp.createMenu(this, evnt))
             .then(menu => {
-            this.FillContextMenu(menu);
-            this.FillObjectExecMenu(menu, "", () => menu.show());
-         });
+               this.FillContextMenu(menu);
+               return this.fillObjectExecMenu(menu);
+            }).then(menu => menu.show());
    }
 
    RPadPainter.prototype.Redraw = function(reason) {
@@ -3914,12 +3914,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.RedrawObject(obj);
       } else if (msg.substr(0,9)=="REPL_REQ:") {
          this.ProcessDrawableReply(msg.substr(9));
-      } else if (msg.substr(0,5)=='MENU:') {
-         // this is container with object id and list of menu items
-         let lst = JSROOT.parse(msg.substr(5));
-         // console.log("get MENUS ", typeof lst, 'nitems', lst.length, msg.length-4);
-         if (typeof this._getmenu_callback == 'function')
-            this._getmenu_callback(lst);
       } else if (msg.substr(0,4)=='CMD:') {
          msg = msg.substr(4);
          let p1 = msg.indexOf(":"),
@@ -4040,12 +4034,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return req;
    }
 
-   RCanvasPainter.prototype.SubmitMenuRequest = function(painter, menukind, reqid, call_back) {
-      this.SubmitDrawableRequest("", {
-         _typename: "ROOT::Experimental::RDrawableMenuRequest",
-         menukind: menukind || "",
-         menureqid: reqid, // used to identify menu request
-      }, painter, call_back);
+   RCanvasPainter.prototype.submitMenuRequest = function(painter, menukind, reqid) {
+      return new Promise(resolveFunc => {
+         this.SubmitDrawableRequest("", {
+            _typename: "ROOT::Experimental::RDrawableMenuRequest",
+            menukind: menukind || "",
+            menureqid: reqid, // used to identify menu request
+         }, painter, resolveFunc);
+      });
    }
 
    /** @summary Submit executable command for given painter */

@@ -1300,7 +1300,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                domenu = fp.FillContextMenu(menu);
 
             if (domenu)
-               exec_painter.FillObjectExecMenu(menu, kind, function() {
+               exec_painter.fillObjectExecMenu(menu, kind).then(menu => {
                    // suppress any running zooming
                    menu.painter.SwitchTooltip(false);
                    menu.show(null, menu.painter.SwitchTooltip.bind(menu.painter, true));
@@ -1623,17 +1623,16 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Configure user-defined context menu for the object
-   *
    * @desc fillmenu_func will be called when context menu is actiavted
-   * Arguments fillmenu_func are (menu,kind,call_back)
+   * Arguments fillmenu_func are (menu,kind)
    * First is JSROOT menu object, second is object subelement like axis "x" or "y"
-   * Third is call_back which must be called when menu items are filled */
-   JSROOT.ObjectPainter.prototype.ConfigureUserContextMenu = function(fillmenu_func) {
+   * Function should return promise when items are filled */
+   JSROOT.ObjectPainter.prototype.configureUserContextMenu = function(fillmenu_func) {
 
       if (!fillmenu_func || (typeof fillmenu_func !== 'function'))
-         delete this.UserContextMenuFunc;
+         delete this._userContextMenuFunc;
       else
-         this.UserContextMenuFunc = fillmenu_func;
+         this._userContextMenuFunc = fillmenu_func;
    }
 
    /** @summary Configure user-defined click handler
@@ -1694,15 +1693,15 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    /** @summary Fill object menu in web canvas
     * @private */
-   JSROOT.ObjectPainter.prototype.FillObjectExecMenu = function(menu, kind, call_back) {
+   JSROOT.ObjectPainter.prototype.fillObjectExecMenu = function(menu, kind) {
 
-      if (this.UserContextMenuFunc)
-         return this.UserContextMenuFunc(menu, kind, call_back);
+      if (this._userContextMenuFunc)
+         return this._userContextMenuFunc(menu, kind);
 
       let canvp = this.canv_painter();
 
       if (!this.snapid || !canvp || canvp._readonly || !canvp._websocket)
-         return JSROOT.callBack(call_back);
+         return Promise.resolve(menu);
 
       function DoExecMenu(arg) {
          let execp = this.exec_painter || this,
@@ -1727,7 +1726,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             execp.WebCanvasExec(item.fExec, execp.args_menu_id);
       }
 
-      function DoFillMenu(_menu, _reqid, _call_back, reply) {
+      let DoFillMenu = (_menu, _reqid, _resolveFunc, reply) => {
 
          // avoid multiple call of the callback after timeout
          if (this._got_menu) return;
@@ -1771,13 +1770,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if (lastclname) _menu.add("endsub:");
          }
 
-         JSROOT.callBack(_call_back);
+         _resolveFunc(_menu);
       }
 
       let reqid = this.snapid;
       if (kind) reqid += "#" + kind; // use # to separate object id from member specifier like 'x' or 'z'
-
-      let menu_callback = DoFillMenu.bind(this, menu, reqid, call_back);
 
       this._got_menu = false;
 
@@ -1785,10 +1782,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (menu.painter)
          menu.painter.exec_painter = (menu.painter !== this) ? this : undefined;
 
-      canvp.SubmitMenuRequest(this, kind, reqid, menu_callback);
+      return new Promise(resolveFunc => {
 
-      // set timeout to avoid menu hanging
-      setTimeout(menu_callback, 2000);
+         // set timeout to avoid menu hanging
+         setTimeout(() => DoFillMenu(menu, reqid, resolveFunc), 2000);
+
+         canvp.submitMenuRequest(this, kind, reqid).then(lst => DoFillMenu(menu, reqid, resolveFunc, lst));
+      });
    }
 
   /** @summary Switch tooltip mode in frame painter

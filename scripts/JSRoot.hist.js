@@ -1109,8 +1109,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       jsrp.createMenu(this, evnt).then(menu => {
          this.FillContextMenu(menu);
-         this.FillObjectExecMenu(menu, "title", () => menu.show());
-      });
+         return this.fillObjectExecMenu(menu, "title");
+       }).then(menu => menu.show());
    }
 
    TPavePainter.prototype.IsStats = function() {

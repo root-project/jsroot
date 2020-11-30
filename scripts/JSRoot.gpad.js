@@ -2586,11 +2586,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       JSROOT.require('interactive')
             .then(() => jsrp.createMenu(this, evnt))
-            .then(menu =>
-         {
-            this.FillContextMenu(menu);
-            this.FillObjectExecMenu(menu, "", () => menu.show());
-         });
+            .then(menu => {
+                   this.FillContextMenu(menu);
+                   return this.fillObjectExecMenu(menu, "");
+            }).then(menu => menu.show());
    }
 
    /** @summary redraw pad */
@@ -3721,11 +3720,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.SendWebsocket("PRODUCE:" + fname);
    }
 
-   TCanvasPainter.prototype.SubmitMenuRequest = function(painter, kind, reqid, call_back) {
-      // only single request can be handled
-      this._getmenu_callback = call_back;
-
-      this.SendWebsocket('GETMENU:' + reqid); // request menu items for given painter
+   TCanvasPainter.prototype.submitMenuRequest = function(painter, kind, reqid) {
+      // only single request can be handled, no limit better in RCanvas
+      return new Promise(resolveFunc => {
+         this._getmenu_callback = resolveFunc;
+         this.SendWebsocket('GETMENU:' + reqid); // request menu items for given painter
+      });
    }
 
    TCanvasPainter.prototype.SubmitExec = function(painter, exec, snapid) {

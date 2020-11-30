@@ -3808,18 +3808,17 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
       JSROOT.require('interactive')
             .then(() => jsrp.createMenu(this, evnt))
-            .then(menu =>
-         {
-            let obj = this.GetObject(),
-                action = this.ChangeMask.bind(this);
+            .then(menu => {
+               let obj = this.GetObject(),
+                   action = this.ChangeMask.bind(this);
 
-            menu.add("header: StatBox");
+               menu.add("header: StatBox");
 
-            for (let n=0;n<obj.fEntries.length; ++n)
-               menu.addchk((obj.fShowMask & (1<<n)), obj.fEntries[n], n, action);
+               for (let n=0;n<obj.fEntries.length; ++n)
+                  menu.addchk((obj.fShowMask & (1<<n)), obj.fEntries[n], n, action);
 
-            this.FillObjectExecMenu(menu, "", () => menu.show());
-         });
+               return this.fillObjectExecMenu(menu);
+           }).then(menu => menu.show());
    }
 
    RHistStatsPainter.prototype.DrawStatistic = function(lines) {
