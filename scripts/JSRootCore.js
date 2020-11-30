@@ -1308,7 +1308,13 @@
       let element, isstyle = url.indexOf(".css") > 0;
 
       if (JSROOT.nodejs) {
-         let res = isstyle ? null : require(url);
+         let res = null;
+         if (!isstyle) {
+            if ((url.indexOf("http:") == 0) || (url.indexOf("https:") == 0))
+               return JSROOT.httpRequest(url,"text").then(txt => eval(txt));
+            res = require(url);
+         }
+
          return Promise.resolve(res);
       }
 
