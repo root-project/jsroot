@@ -2420,9 +2420,13 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
     * @desc Scans hieararchy and check for unique nodes */
    TGeoPainter.prototype.drawCount = function(unqievis, clonetm) {
 
+      function makeTime(tm) {
+         return JSROOT.BatchMode ? "anytime ms" : tm.toString() + " ms";
+      }
+
       let res = [ 'Unique nodes: ' + this._clones.nodes.length,
                   'Unique visible: ' + unqievis,
-                  'Time to clone: ' + clonetm + 'ms' ];
+                  'Time to clone: ' + makeTime(clonetm) ];
 
       // need to fill cached value line numvischld
       this._clones.ScanVisible();
@@ -2461,7 +2465,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
             res.push('  lvl' + lvl + ': ' + arg.cnt[lvl]);
       }
 
-      res.push("Time to scan: " + (tm2-tm1) + "ms", "", "Check timing for matrix calculations ...");
+      res.push("Time to scan: " + makeTime(tm2-tm1), "", "Check timing for matrix calculations ...");
 
       let elem = this.select_main().style('overflow', 'auto');
 
@@ -2476,7 +2480,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          numvis = painter._clones.ScanVisible(arg);
          tm2 = new Date().getTime();
 
-         let last_str = "Time to scan with matrix: " + (tm2-tm1) + "ms";
+         let last_str = "Time to scan with matrix: " + makeTime(tm2-tm1);
          if (JSROOT.BatchMode)
             res.push(last_str);
          else
@@ -2845,17 +2849,17 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       return res;
    }
 
-   /** @summary Process script option - load and execute some gGeomManager-related calls */
-   TGeoPainter.prototype.checkScript = function(script_name, call_back) {
+   /** @summary Process script option - load and execute some gGeoManager-related calls */
+   TGeoPainter.prototype.loadMacro = function(script_name) {
 
-      let draw_obj = this.GetGeometry(), name_prefix = "";
+      let result = { obj: this.GetGeometry(), prefix: "" };
 
-      if (this.geo_manager) name_prefix = draw_obj.fName;
+      if (this.geo_manager) result.prefix = result.obj.fName;
 
-      let result = { obj: draw_obj, prefix: name_prefix };
+      // let result = { obj: draw_obj, prefix: name_prefix };
 
-      if (!script_name || (script_name.length<3) || (geo.NodeKind(draw_obj)!==0))
-         return call_back(draw_obj, name_prefix);
+      if (!script_name || (script_name.length < 3) || (geo.NodeKind(result.obj)!==0))
+         return Promise.resolve(result);
 
       let painter = this;
 
@@ -2875,9 +2879,9 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
                    },
                    Draw: function() {
                       if (!this.found || !this.fVolume) return;
-                      draw_obj = this.found.node;
-                      name_prefix = this.found.item;
-                      console.log('Select volume for drawing', this.fVolume.fName, name_prefix);
+                      result.obj = this.found.node;
+                      result.prefix = this.found.item;
+                      console.log('Select volume for drawing', this.fVolume.fName, result.prefix);
                    },
                    SetTransparency: function(lvl) {
                      if (this.fVolume && this.fVolume.fMedium && this.fVolume.fMedium.fMaterial)
@@ -2906,51 +2910,37 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
       JSROOT.progress('Loading macro ' + script_name);
 
-      return JSROOT.httpRequest(script_name, "text").then(res => {
-         let lines = res.split('\n');
+      return JSROOT.httpRequest(script_name, "text").then(script => {
+         let lines = script.split('\n'), indx = 0;
 
-         function ProcessNextLine(indx) {
+         while (indx < lines.length) {
+            let line = lines[indx++].trim();
 
-            let first_tm = new Date().getTime();
-            while (indx < lines.length) {
-               let line = lines[indx++].trim();
+            if (line.indexOf('//')==0) continue;
 
-               if (line.indexOf('//')==0) continue;
+            if (line.indexOf('gGeoManager') < 0) continue;
+            line = line.replace('->GetVolume','.GetVolume');
+            line = line.replace('->InvisibleAll','.InvisibleAll');
+            line = line.replace('->SetMaxVisNodes','.SetMaxVisNodes');
+            line = line.replace('->DefaultColors','.DefaultColors');
+            line = line.replace('->Draw','.Draw');
+            line = line.replace('->SetTransparency','.SetTransparency');
+            line = line.replace('->SetLineColor','.SetLineColor');
+            line = line.replace('->SetVisLevel','.SetVisLevel');
+            if (line.indexOf('->') >= 0) continue;
 
-               if (line.indexOf('gGeoManager')<0) continue;
-               line = line.replace('->GetVolume','.GetVolume');
-               line = line.replace('->InvisibleAll','.InvisibleAll');
-               line = line.replace('->SetMaxVisNodes','.SetMaxVisNodes');
-               line = line.replace('->DefaultColors','.DefaultColors');
-               line = line.replace('->Draw','.Draw');
-               line = line.replace('->SetTransparency','.SetTransparency');
-               line = line.replace('->SetLineColor','.SetLineColor');
-               line = line.replace('->SetVisLevel','.SetVisLevel');
-               if (line.indexOf('->')>=0) continue;
-
-               // console.log(line);
-
-               try {
-                  let func = new Function('gGeoManager',line);
-                  func(mgr);
-               } catch(err) {
-                  console.error('Problem by processing ' + line);
-               }
-
-               let now = new Date().getTime();
-               if (now - first_tm > 300) {
-                  JSROOT.progress('exec ' + line);
-                  return setTimeout(ProcessNextLine.bind(this,indx),1);
-               }
+            try {
+               let func = new Function('gGeoManager', line);
+               func(mgr);
+            } catch(err) {
+               console.error('Problem by processing ' + line);
             }
-
-            call_back(draw_obj, name_prefix);
          }
 
-         ProcessNextLine(0);
-
+         return result;
       }).catch(() => {
-         call_back(draw_obj, name_prefix);
+         console.error('Fail to load ' + script_name);
+         return result;
       });
    }
 
@@ -3996,6 +3986,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       this._full_redrawing = true;
    }
 
+   /** @summary Redraw TGeo object */
    TGeoPainter.prototype.RedrawObject = function(obj) {
       if (!this.UpdateObject(obj))
          return false;
@@ -4091,7 +4082,8 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          painter.addExtra(extras, extras_path);
       }
 
-      painter.checkScript(painter.ctrl.script_name, (obj,prefix) => painter.prepareObjectDraw(obj, prefix));
+      // TODO: convert to Promise-based variant
+      painter.loadMacro(painter.ctrl.script_name).then(arg => painter.prepareObjectDraw(arg.obj, arg.prefix));
 
       return painter;
    }
