@@ -1375,8 +1375,10 @@ JSROOT.define(['d3'], (d3) => {
          delete this._ready_callbacks_;
          delete this._reject_callbacks_;
 
-         while (callbacks.length)
-            JSROOT.callBack(callbacks.shift(), this);
+         while (callbacks.length > 0) {
+            let func = callbacks.shift();
+            func(this);
+         }
       }
       return this;
    }
@@ -1395,7 +1397,7 @@ JSROOT.define(['d3'], (d3) => {
          this._ready_callbacks_ = [resolveFunc];
       else
          this._ready_callbacks_.push(resolveFunc);
-      if (rejectFunc) {
+      if (typeof rejectFunc == 'function') {
          if (!this._reject_callbacks_)
             this._reject_callbacks_ = [rejectFunc];
          else
@@ -2678,14 +2680,15 @@ JSROOT.define(['d3'], (d3) => {
     * @desc Should be called to complete all text drawing operations
     * @param {function} call_ready - callback function
     * @private */
-   ObjectPainter.prototype.FinishTextDrawing = function(draw_g, call_ready, checking_mathjax) {
+   ObjectPainter.prototype.FinishTextDrawing = function(draw_g, call_ready) {
       if (!draw_g) draw_g = this.draw_g;
+      draw_g.property('draw_text_completed', true); // mark that text drawing is completed
+      return this._checkAllTextDrawing(draw_g, call_ready);
+   }
 
-      if (checking_mathjax) {
-         if (!draw_g.property('draw_text_completed')) return;
-      } else {
-         draw_g.property('draw_text_completed', true); // mark that text drawing is completed
-      }
+   /** @summary Analyze if all text draw operations completed
+    * @private */
+   ObjectPainter.prototype._checkAllTextDrawing = function(draw_g, call_ready) {
 
       let all_args = draw_g.property('all_args'), missing = 0;
       if (!all_args) {
@@ -2899,7 +2902,9 @@ JSROOT.define(['d3'], (d3) => {
                   ltx.produceLatex(this, arg.txt_node, arg);
                arg.ready = true;
                this.postprocessText(arg.txt_node, arg);
-               this.FinishTextDrawing(arg.draw_g, null, true); // check if all other elements are completed
+
+               if (arg.draw_g.property('draw_text_completed'))
+                  this._checkAllTextDrawing(arg.draw_g); // check if all other elements are completed
             });
             return 0;
          }
@@ -2916,7 +2921,11 @@ JSROOT.define(['d3'], (d3) => {
 
       JSROOT.require(['latex'])
             .then(ltx => ltx.produceMathjax(this, arg.mj_node, arg))
-            .then(() => { arg.ready = true; this.FinishTextDrawing(arg.draw_g, null, true); });
+            .then(() => {
+               arg.ready = true;
+               if (arg.draw_g.property('draw_text_completed'))
+                  this._checkAllTextDrawing(arg.draw_g);
+            });
 
       return 0;
    }
