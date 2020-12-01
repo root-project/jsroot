@@ -386,7 +386,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       return false;
    }
 
-   RHistPainter.prototype.DrawTitle = function() {
+   RHistPainter.prototype.drawHistTitle = function() {
    }
 
    RHistPainter.prototype.UpdateStatWebCanvas = function() {

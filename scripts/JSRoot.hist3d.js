@@ -1476,12 +1476,10 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          }
       }
 
-      if (is_main) {
+      if (is_main)
          // (re)draw palette by resize while canvas may change dimension
-         this.drawColorPalette(this.options.Zscale && ((this.options.Lego===12) || (this.options.Lego===14)));
-
-         this.DrawTitle();
-      }
+         return this.drawColorPalette(this.options.Zscale && ((this.options.Lego===12) || (this.options.Lego===14)))
+                    .then(() => this.drawHistTitle());
 
       return Promise.resolve(this);
    }
@@ -1531,14 +1529,11 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          }
       }
 
-      if (is_main) {
-
+      if (is_main)
          //  (re)draw palette by resize while canvas may change dimension
-         this.drawColorPalette(this.options.Zscale && ((this.options.Lego===12) || (this.options.Lego===14) ||
-                               (this.options.Surf===11) || (this.options.Surf===12)));
-
-         this.DrawTitle();
-      }
+         return this.drawColorPalette(this.options.Zscale && ((this.options.Lego===12) || (this.options.Lego===14) ||
+                                      (this.options.Surf===11) || (this.options.Surf===12)))
+                    .then(() => this.drawHistTitle());
 
       return Promise.resolve(this);
    }
@@ -2876,9 +2871,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          main.AddKeysHandler();
       }
 
-      this.DrawTitle();
-
-      return Promise.resolve(this);
+      return this.drawHistTitle();
    }
 
    TH3Painter.prototype.FillToolbar = function() {

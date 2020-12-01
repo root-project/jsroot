@@ -2280,14 +2280,17 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    THistPainter.prototype.ToggleTitle = function(arg) {
       let histo = this.GetHisto();
-      if (!this.is_main_painter() || !histo) return false;
-      if (arg==='only-check') return !histo.TestBit(TH1StatusBits.kNoTitle);
+      if (!this.is_main_painter() || !histo)
+         return false;
+      if (arg==='only-check')
+         return !histo.TestBit(TH1StatusBits.kNoTitle);
       histo.InvertBit(TH1StatusBits.kNoTitle);
-      this.DrawTitle();
+      this.drawHistTitle();
    }
 
-   /** @summary Draw histogram title */
-   THistPainter.prototype.DrawTitle = function() {
+   /** @summary Draw histogram title
+     * @returns {Promise} with painter */
+   THistPainter.prototype.drawHistTitle = function() {
 
       // case when histogram drawn over other histogram (same option)
       if (!this.is_main_painter() || this.options.Same)
@@ -2458,7 +2461,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    }
 
    THistPainter.prototype.IgnoreStatsFill = function() {
-      return !this.GetObject() || (!this.draw_content && !this.create_stats) || (this.options.Axis>0);
+      return !this.GetObject() || (!this.draw_content && !this.create_stats) || (this.options.Axis > 0);
    }
 
    /** @summary Create stat box for histogram if required */
@@ -2932,7 +2935,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       menu.add("endsub:");
    }
 
-   /** @summary draw color palette */
+   /** @summary draw color palette
+     * @return {Promise} when done */
    THistPainter.prototype.drawColorPalette = function(enabled, postpone_draw, can_move) {
       // only when create new palette, one could change frame size
 
@@ -4277,7 +4281,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       return this.DrawAxes().then(() => {
          this.Draw1DBins();
-         return this.DrawTitle();
+         return this.drawHistTitle();
       }).then(() => {
          this.UpdateStatWebCanvas();
          return this.AddInteractive();
@@ -6288,7 +6292,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             return pp ? pp.DrawPave() : true;
          });
       }).then(() => {
-         return this.DrawTitle();
+         return this.drawHistTitle();
       }).then(() => {
 
          this.UpdateStatWebCanvas();
