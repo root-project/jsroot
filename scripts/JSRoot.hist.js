@@ -1909,12 +1909,12 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    THistPainter.prototype.Clear3DScene = function() {
       let fp = this.frame_painter();
-      if (fp && typeof fp.Create3DScene === 'function')
-         fp.Create3DScene(-1);
+      if (fp && typeof fp.create3DScene === 'function')
+         fp.create3DScene(-1);
       this.mode3d = false;
    }
 
-   /** Cleanup histogram painter */
+   /** @summary Cleanup histogram painter */
    THistPainter.prototype.Cleanup = function() {
 
       // clear all 3D buffers

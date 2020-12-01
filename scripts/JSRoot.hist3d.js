@@ -33,15 +33,18 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
    }
 
    /** @summary Create all necessary components for 3D drawings
+     * @returns {Promise} whem loading of some components required
      * @private */
-   JSROOT.TFramePainter.prototype.Create3DScene = function(arg, render3d) {
+   JSROOT.TFramePainter.prototype.create3DScene = function(render3d) {
 
-      if ((arg !== undefined) && (arg < 0)) {
+      if (render3d === -1) {
 
          if (!this.mode3d) return;
 
-         if (!this.clear_3d_canvas)
-            return console.error('Strange, why mode3d is configured!!!!', this.mode3d);
+         if (!this.clear_3d_canvas) {
+            console.error('Strange, why mode3d is configured!!!!', this.mode3d);
+            return;
+         }
 
          //if (typeof this.TestAxisVisibility === 'function')
          this.TestAxisVisibility(null, this.toplevel);
@@ -1462,7 +1465,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          this.ScanContent(true); // may be required for axis drawings
 
          if (is_main) {
-            ret = main.Create3DScene(undefined, this.options.Render3D);
+            ret = main.create3DScene(this.options.Render3D);
             main.SetAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, 0, 0);
             main.Set3DOptions(this.options);
             main.DrawXYZ(main.toplevel, { use_y_for_z: true, zmult: 1.1, zoom: JSROOT.settings.Zooming, ndim: 1 });
@@ -1517,7 +1520,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          this.DeleteAtt();
 
          if (is_main) {
-            ret = main.Create3DScene(undefined, this.options.Render3D);
+            ret = main.create3DScene(this.options.Render3D);
             main.SetAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, this.zmin, this.zmax);
             main.Set3DOptions(this.options);
             main.DrawXYZ(main.toplevel, { zmult: zmult, zoom: JSROOT.settings.Zooming, ndim: 2 });
@@ -2541,6 +2544,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       return true;
    }
 
+   /** @summary Actual draw of 3D histogram  */
    TH3Painter.prototype.Draw3DBins = function() {
 
       if (!this.draw_content) return;
@@ -2865,7 +2869,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
       } else {
 
-         ret = main.Create3DScene(undefined, this.options.Render3D);
+         ret = main.create3DScene(this.options.Render3D);
          main.SetAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, this.zmin, this.zmax);
          main.Set3DOptions(this.options);
          main.DrawXYZ(main.toplevel, { zoom: JSROOT.settings.Zooming, ndim: 3 });

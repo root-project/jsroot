@@ -1462,8 +1462,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    TFramePainter.prototype.CleanFrameDrawings = function() {
 
       // cleanup all 3D drawings if any
-      if (typeof this.Create3DScene === 'function')
-         this.Create3DScene(-1);
+      if (typeof this.create3DScene === 'function')
+         this.create3DScene(-1);
 
       this.CleanAxesDrawings();
       this.CleanXY();
