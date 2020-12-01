@@ -3064,6 +3064,88 @@ JSROOT.define(['d3'], (d3) => {
    }
 
 
+   /** @summary Configure user-defined tooltip callback
+     * @desc Hook for the users to get tooltip information when mouse cursor moves over frame area
+     * call_back function will be called every time when new data is selected
+     * when mouse leave frame area, call_back(null) will be called */
+   ObjectPainter.prototype.configureUserTooltipCallback = function(call_back, user_timeout) {
+      if (!call_back || (typeof call_back !== 'function')) {
+         delete this.UserTooltipCallback;
+         delete this.UserTooltipTimeout;
+      } else {
+         this.UserTooltipCallback = call_back;
+         this.UserTooltipTimeout = (user_timeout === undefined) ? 500 : user_timeout;
+      }
+   }
+
+    /** @summary Configure user-defined click handler
+     * @desc Function will be called every time when frame click was perfromed
+     * As argument, tooltip object with selected bins will be provided
+     * If handler function returns true, default handling of click will be disabled */
+   ObjectPainter.prototype.configureUserClickHandler = function(handler) {
+      let fp = this.frame_painter();
+      if (fp && fp.configureUserClickHandler)
+         fp.configureUserClickHandler(handler);
+   }
+
+   /** @summary Configure user-defined dblclick handler
+     * @desc Function will be called every time when double click was called
+     * As argument, tooltip object with selected bins will be provided
+     * If handler function returns true, default handling of dblclick (unzoom) will be disabled */
+   ObjectPainter.prototype.configureUserDblclickHandler = function(handler) {
+      let fp = this.frame_painter();
+      if (fp && fp.configureUserDblclickHandler)
+         fp.configureUserDblclickHandler(handler);
+   }
+
+
+   /** @summary Check if user-defined tooltip callback is configured
+    * @returns {boolean}
+    * @private */
+   ObjectPainter.prototype.IsUserTooltipCallback = function() {
+      return typeof this.UserTooltipCallback == 'function';
+   }
+
+   /** @summary Provide tooltips data to user-defained function
+    * @param {object} data - tooltip data
+    * @private */
+   ObjectPainter.prototype.ProvideUserTooltip = function(data) {
+
+      if (!this.IsUserTooltipCallback()) return;
+
+      if (this.UserTooltipTimeout <= 0)
+         return this.UserTooltipCallback(data);
+
+      if (typeof this.UserTooltipTHandle != 'undefined') {
+         clearTimeout(this.UserTooltipTHandle);
+         delete this.UserTooltipTHandle;
+      }
+
+      if (!data)
+         return this.UserTooltipCallback(data);
+
+      let d = data;
+
+     // only after timeout user function will be called
+      this.UserTooltipTHandle = setTimeout(() => {
+         delete this.UserTooltipTHandle;
+         if (this.UserTooltipCallback) this.UserTooltipCallback(d);
+      }, this.UserTooltipTimeout);
+   }
+
+  /** @summary Switch tooltip mode in frame painter
+    * @private */
+   ObjectPainter.prototype.SwitchTooltip = function(on) {
+      let fp = this.frame_painter();
+      if (fp && fp.SetTooltipEnabled) {
+         fp.SetTooltipEnabled(on);
+         fp.ProcessTooltipEvent(null);
+      }
+      // this is 3D control object
+      if (this.control && (typeof this.control.SwitchTooltip == 'function'))
+         this.control.SwitchTooltip(on);
+   }
+
    // ===========================================================
 
 

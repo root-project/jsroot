@@ -747,11 +747,16 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          this.position = 0;
 
-         if (!disable_axis_drawing && ('getBoundingClientRect' in axis_g.node())) {
-            let rect1 = axis_g.node().getBoundingClientRect(),
-                rect2 = this.svg_pad().node().getBoundingClientRect();
+         if (!disable_axis_drawing) {
+            let node1 = axis_g.node(), node2 = this.svg_pad().node();
+            if (node1 && node2 && node1.getBoundingClientRect && node2.getBoundingClientRect) {
+               let rect1 = node1.getBoundingClientRect(),
+                   rect2 = node2.getBoundingClientRect();
 
-            this.position = rect1.left - rect2.left; // use to control left position of Y scale
+               this.position = rect1.left - rect2.left; // use to control left position of Y scale
+            }
+            if (node1 && !node2)
+              console.warn("Why PAD element missing here???");
          }
 
          if (!axis.fTitle || disable_axis_drawing) return true;
@@ -1721,11 +1726,19 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
    }
 
-   TFramePainter.prototype.ConfigureUserClickHandler = function(handler) {
+   /** @summary Configure user-defined click handler
+     * @desc Function will be called every time when frame click was perfromed
+     * As argument, tooltip object with selected bins will be provided
+     * If handler function returns true, default handling of click will be disabled */
+   TFramePainter.prototype.configureUserClickHandler = function(handler) {
       this._click_handler = handler && (typeof handler == 'function') ? handler : null;
    }
 
-   TFramePainter.prototype.ConfigureUserDblclickHandler = function(handler) {
+   /** @summary Configure user-defined dblclick handler
+     * @desc Function will be called every time when double click was called
+     * As argument, tooltip object with selected bins will be provided
+     * If handler function returns true, default handling of dblclick (unzoom) will be disabled */
+   TFramePainter.prototype.configureUserDblclickHandler = function(handler) {
       this._dblclick_handler = handler && (typeof handler == 'function') ? handler : null;
    }
 

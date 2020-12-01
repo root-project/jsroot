@@ -2091,11 +2091,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return this.fDfltPalette;
    }
 
-   RFramePainter.prototype.ConfigureUserClickHandler = function(handler) {
+   RFramePainter.prototype.configureUserClickHandler = function(handler) {
       this._click_handler = handler && (typeof handler == 'function') ? handler : null;
    }
 
-   RFramePainter.prototype.ConfigureUserDblclickHandler = function(handler) {
+   RFramePainter.prototype.configureUserDblclickHandler = function(handler) {
       this._dblclick_handler = handler && (typeof handler == 'function') ? handler : null;
    }
 

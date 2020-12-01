@@ -6,7 +6,7 @@
 
    <title>Use of tooltip callback in JSROOT</title>
 
-   <script src="../scripts/JSRootCore.js" type="text/javascript"></script>
+   <script src="../scripts/JSRoot.core.js" type="text/javascript"></script>
 
 </head>
 
@@ -15,9 +15,9 @@
    <div id="user_tooltip">Place for info</div>
 
    <form action="">
-      <input type="radio" name="kind" id="btn1" value="Tooltip" checked> Tooltip
-      <input type="radio" name="kind" id="btn2" value="Click"> Click
-      <input type="radio" name="kind" id="btn3" value="Dblclick"> Doubleclk
+      <input type="radio" name="kind" id="btn1" value="Tooltip" checked/> Tooltip
+      <input type="radio" name="kind" id="btn2" value="Click"/> Click
+      <input type="radio" name="kind" id="btn3" value="Dblclick"/> Doubleclk
    </form>
 
    <div id="object_draw" style="width:800px; height:600px"></div>
@@ -66,7 +66,7 @@
 
       /** Fill context menu, call_back must be invoked to show menu
         * kind argument may indicate special element like "x" or "y" axis */
-      function CustomContextMenu(menu, kind, call_back) {
+      function CustomContextMenu(menu, kind) {
          // optional separator
          menu.add("separator");
 
@@ -79,8 +79,8 @@
          // checked menu item
          menu.addchk(toggle_flag, "Toggle something", "toggle", DoExecMenu);
 
-         // invoke call_back to show menu
-         JSROOT.CallBack(call_back, true);
+         // return promise
+         return Promise.resolve(menu);
       }
 
       function updateGUI() {
@@ -108,17 +108,17 @@
 
             let chkd = document.getElementById("btn1").checked;
 
-            painter.ConfigureUserTooltipCallback(chkd ? UserHandler : null);
+            painter.configureUserTooltipCallback(chkd ? UserHandler : null);
 
             chkd = document.getElementById("btn2").checked;
 
-            painter.ConfigureUserClickHandler(chkd ? UserHandler : null);
+            painter.configureUserClickHandler(chkd ? UserHandler : null);
 
             chkd = document.getElementById("btn3").checked;
 
-            painter.ConfigureUserDblclickHandler(chkd ? UserHandler : null);
+            painter.configureUserDblclickHandler(chkd ? UserHandler : null);
 
-            painter.ConfigureUserContextMenu(CustomContextMenu);
+            painter.configureUserContextMenu(CustomContextMenu);
          });
       }
 
