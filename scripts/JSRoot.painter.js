@@ -3503,7 +3503,7 @@ JSROOT.define(['d3'], (d3) => {
       { name: "TAxis3D", prereq: "hist3d", func: ".drawAxis3D" },
       { name: "TMarker", icon: 'img_graph', prereq: "more", func: ".drawMarker", direct: true },
       { name: "TPolyMarker", icon: 'img_graph', prereq: "more", func: ".drawPolyMarker", direct: true },
-      { name: "TASImage", icon: 'img_mgraph', prereq: "more", func: ".drawASImage" },
+      { name: "TASImage", icon: 'img_mgraph', prereq: "more", func: ".drawASImage", opt: ";z" },
       { name: "TJSImage", icon: 'img_mgraph', prereq: "more", func: ".drawJSImage", opt: ";scale;center" },
       { name: "TGeoVolume", icon: 'img_histo3d', prereq: "geom", func: ".drawGeoObject", expand: "JSROOT.GEO.expandObject", opt: ";more;all;count;projx;projz;wire;dflt", ctrl: "dflt" },
       { name: "TEveGeoShapeExtract", icon: 'img_histo3d', prereq: "geom", func: ".drawGeoObject", expand: "JSROOT.GEO.expandObject", opt: ";more;all;count;projx;projz;wire;dflt", ctrl: "dflt" },
@@ -3713,6 +3713,7 @@ JSROOT.define(['d3'], (d3) => {
    /** @summary Implementation of JSROOT.draw
      * @private */
    function jsroot_draw(divid, obj, opt) {
+
       if (!obj || (typeof obj !== 'object'))
          return Promise.reject(Error('not an object in JSROOT.draw'));
 

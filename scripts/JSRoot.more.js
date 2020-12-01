@@ -3534,10 +3534,10 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
    TASImagePainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
 
-   TASImagePainter.prototype.DecodeOptions = function(opt) {
+   TASImagePainter.prototype.decodeOptions = function(opt) {
       this.options = { Zscale: false };
 
-      if (opt && (opt.indexOf("z") >=0)) this.options.Zscale = true;
+      if (opt && (opt.indexOf("z") >= 0)) this.options.Zscale = true;
    }
 
    TASImagePainter.prototype.CreateRGBA = function(nlevels) {
@@ -3563,7 +3563,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       return rgba;
    }
 
-   TASImagePainter.prototype.CreateImage = function() {
+   TASImagePainter.prototype.drawImage = function() {
       let obj = this.GetObject(), is_buf = false, fp = this.frame_painter();
 
       if (obj._blob) {
@@ -3672,7 +3672,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
             canvas.height = ymax - ymin;
          }
 
-         if (!canvas) return;
+         if (!canvas)
+            return Promise.resolve(null);
 
          let context = canvas.getContext('2d'),
              imageData = context.getImageData(0, 0, canvas.width, canvas.height),
@@ -3724,16 +3725,19 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
              .attr("height", this.frame_height())
              .attr("preserveAspectRatio", constRatio ? null : "none");
 
-      if (url && this.is_main_painter() && is_buf && fp) {
+      console.log('z scale', this.options.Zscale, fp)
 
-         this.drawColorPalette(this.options.Zscale, true);
+      if (url && this.is_main_painter() && is_buf && fp)
+         return this.drawColorPalette(this.options.Zscale, true).then(() => {
+            fp.SetAxesRanges(JSROOT.Create("TAxis"), 0, 1, JSROOT.Create("TAxis"), 0, 1, null, 0, 0);
+            fp.CreateXY({ ndim: 2,
+                          check_pad_range: false,
+                          create_canvas: false });
+            fp.AddInteractive();
+            return this;
+         });
 
-         fp.SetAxesRanges(JSROOT.Create("TAxis"), 0, 1, JSROOT.Create("TAxis"), 0, 1, null, 0, 0);
-         fp.CreateXY({ ndim: 2,
-                       check_pad_range: false,
-                       create_canvas: false });
-         fp.AddInteractive();
-      }
+      return Promise.resolve(this);
    }
 
    /** @summary Checks if it makes sense to zoom inside specified axis range */
@@ -3753,7 +3757,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    /** @summary Draw color palette */
    TASImagePainter.prototype.drawColorPalette = function(enabled, can_move) {
 
-      if (!this.is_main_painter()) return null;
+      if (!this.is_main_painter())
+         return Promise.resolve(null);
 
       if (!this.draw_palette) {
          let pal = JSROOT.Create('TPave');
@@ -3774,7 +3779,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
             pal_painter.Enabled = false;
             pal_painter.RemoveDrawG(); // completely remove drawing without need to redraw complete pad
          }
-         return;
+         return Promise.resolve(null);
       }
 
       let frame_painter = this.frame_painter();
@@ -3789,16 +3794,18 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       }
 
       if (!pal_painter) {
-         JSROOT.draw(this.divid, this.draw_palette, "onpad:" + this.pad_name).then(p => {
+         return JSROOT.draw(this.divid, this.draw_palette, "onpad:" + this.pad_name).then(pp => {
             // mark painter as secondary - not in list of TCanvas primitives
-            p.$secondary = true;
+            pp.$secondary = true;
 
             // make dummy redraw, palette will be updated only from histogram painter
-            p.Redraw = function() {};
+            pp.Redraw = function() {};
+
+            return this;
          });
       } else {
          pal_painter.Enabled = true;
-         pal_painter.DrawPave("");
+         return pal_painter.DrawPave("");
       }
    }
 
@@ -3819,7 +3826,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          let fw = this.frame_width(), fh = this.frame_height();
          img.attr("width", fw).attr("height", fh);
       } else {
-         this.CreateImage();
+         this.drawImage();
       }
    }
 
@@ -3844,20 +3851,16 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
    function drawASImage(divid, obj, opt) {
       let painter = new TASImagePainter(obj, opt);
-
-      painter.DecodeOptions(opt);
-
+      painter.decodeOptions(opt);
       painter.SetDivId(divid, 1);
 
-      painter.CreateImage();
-
-      painter.FillToolbar();
-
-      return painter.DrawingReady();
+      return painter.drawImage().then(() => {
+         painter.FillToolbar();
+         return painter;
+      });
    }
 
    // ===================================================================================
-
 
    jsrp.drawJSImage = function(divid, obj, opt) {
       let painter = new JSROOT.BasePainter();
