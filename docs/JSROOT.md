@@ -442,10 +442,10 @@ More details about configuring of CORS headers can be found [here](https://devel
 Alternative - enable CORS requests in the browser. It can be easily done with [CORS Everywhere plugin](https://addons.mozilla.org/de/firefox/addon/cors-everywhere/) for the Firefox browser or [Allow CORS plugin](https://chrome.google.com/webstore/detail/allow-control-allow-origi/nlfbmbojpeacfghkpbjhddihlkkiljbi?hl=en) for the Chrome browser.
 
 
-Next solution - install JSROOT on the server hosting ROOT files. In such configuration JSROOT does not issue CORS requests, therefore server and browsers can be used with their default settings. A simplified variant of such solution - copy only the top index.htm file from JSROOT package and specify the full path to JSRootCore.js script like:
+Next solution - install JSROOT on the server hosting ROOT files. In such configuration JSROOT does not issue CORS requests, therefore server and browsers can be used with their default settings. A simplified variant of such solution - copy only the top index.htm file from JSROOT package and specify the full path to `JSRoot.core.js` script like:
 
     ...
-    <script type="text/javascript" src="https://root.cern/js/latest/scripts/JSRootCore.js?gui"></script>
+    <script type="text/javascript" src="https://root.cern/js/latest/scripts/JSRoot.core.js"></script>
     ...
 
 In the `<div>` element with "simpleGUI" id one can specify many custom parameters, which are allowed in the URL string:
@@ -554,42 +554,35 @@ Many different examples of JSROOT API usage can be found on [JSROOT API examples
 
 ### Scripts loading
 
-Before JSROOT can be used, all appropriate scripts should be loaded.
-HTML pages where JSROOT is used should include the JSRootCore.js script.
+Before JSROOT can be used, all appropriate functionality should be loaded.
+HTML pages where JSROOT is used should include the `JSRoot.core.js` script.
 The `<head>` section of the HTML page should have the following line:
 
-    <script type="text/javascript" src="https://root.cern/js/latest/scripts/JSRootCore.js?2d"></script>
+    <script type="text/javascript" src="https://root.cern/js/latest/scripts/JSRoot.core.js"></script>
 
 Here, the default location of JSROOT is specified. One could have a local copy on the file system or on a private web server. When JSROOT is used with THttpServer, the address looks like:
 
-    <script type="text/javascript" src="http://your_root_server:8080/jsrootsys/scripts/JSRootCore.js?2d"></script>
+    <script type="text/javascript" src="http://your_root_server:8080/jsrootsys/scripts/JSRoot.core.js"></script>
 
-In URL string with JSRootCore.js script one can specify which JSROOT functionality should be loaded:
+Loading core script is enough to get main ROOT functionality - loading files and drawing objects.
+If some extra components should be loaded, one have to use `JSROOT.require()` function like:
 
-    + '2d' basic drawing functionality, support TPad/TCanvas/TFrame
-    + 'hist' histograms drawing
-    + 'more2d' more classes for 2D drawing like TH2/TF1/TEllipse
-    + '3d' 3D drawing for 2D/3D histograms
-    + 'geo' 3D drawing of TGeo classes
-    + 'io' binary file I/O
-    + 'tree' TTree functionality
-    + 'math' advanced mathemathical functions
-    + 'mathjax' loads MathJax.js and use it for latex output
-    + 'openui5' load and configure OpenUI5 toolkit
-    + 'gui' default gui for offline/online applications
-    + 'load' name of user script(s) to load
-    + 'onload' name of function to call when scripts loading completed
-    + 'nocache' avoid use of cache for loading of JSROOT scripts
+```
+    JSROOT.require('hierarchy').then(() => {
+       let h = new JSROOT.HierarchyPainter("example", "myTreeDiv");
 
-For instance, to load functionality with normal 2D graphics and binary ROOT files support, one should specify:
+       // configure 'simple' in provided <div> element
+       // one also can specify "grid2x2" or "flex" or "tabs"
+       h.setDisplay("simple", "myMainDiv");
 
-    <script type="text/javascript" src="https://root.cern/js/latest/scripts/JSRootCore.min.js?2d&io"></script>
+       // open file and display element
+       h.openRootFile("../../files/hsimple.root").then(() => h.display("hpxpy;1","colz"));
+   })
+```
 
-One could use minified version of all scripts (as shown in example) - this reduce page loading time significantly.
-
-After main __JSRootCore.js__ script is loaded, one can configure different options in `JSROOT.gStyle` object.
-It is instance of the TStyle object and behaves like `gStyle` variable in ROOT.
-One can change different options directly like:
+After script loading one can configure different parameters in `JSROOT.gStyle` object.
+It is instance of the `TStyle` object and behaves like `gStyle` variable in ROOT. For instance,
+to change stat format using to display value in stats box:
 
     JSROOT.gStyle.fStatFormat = "7.5g"
 
@@ -624,7 +617,7 @@ Function returns Promise, which provides parsed object (or Error in case of fail
 
 If JSON string was obtained by different method, it should be parsed with:
 
-    var obj = JSROOT.parse(json_string);
+    let obj = JSROOT.parse(json_string);
 
 
 
@@ -830,14 +823,14 @@ First problem is bootstraping of OpenUI5. Most easy solution - specify openui5 U
 
 
       <script type="text/javascript"
-              src="https://root.cern/js/latest/scripts/JSRootCore.min.js?openui5&onload=doInit">
+              src="https://root.cern/js/latest/scripts/JSRoot.core.min.js">
       </script>
 
 JSROOT uses https://openui5.hana.ondemand.com to load latest stable version of OpenUI5. After loading is completed, one can use `sap` to access openui5 functionality. Like:
 
       <script type="text/javascript">
-         function doInit() {
-            jQuery.sap.registerModulePath("NavExample", "./");
+         JSROOT.require('openui5').then(() => {
+            sap.registerModulePath("NavExample", "./");
             new sap.m.App ({
               pages: [
                 new sap.m.Page({
@@ -853,7 +846,7 @@ JSROOT uses https://openui5.hana.ondemand.com to load latest stable version of O
       </script>
 
 There are small details when using OpenUI5 with THttpServer. First of all, location of JSROOT scripts should be specified
-as `jsrootsys/scripts/JSRootCore.js`. And when trying to access files from local disk, one should specify `/currentdir/` folder:
+as `jsrootsys/scripts/JSRoot.core.js`. And when trying to access files from local disk, one should specify `/currentdir/` folder:
 
     jQuery.sap.registerModulePath("NavExample", "/currentdir/");
 
@@ -863,13 +856,12 @@ JSROOT provides [example](https://root.cern/js/latest/demo/openui5/) showing usa
 
 ### Migration v5 -> v6
 
-In JSROOT v6 release some many incompatible changes where done. Here small info about.
+In JSROOT v6 release some many incompatible changes where done.
 
 Main script was renamed to `JSRoot.core.js`. Old `JSRootCore.js` script left to provide partial compatibility
 with old applications, but will be removed in future JSROOT v6.2. All URL parameters for main script will be
 ignored, to load JSROOT functionality one should use `JSROOT.require` function. To create standard GUI,
 `JSROOT.buildGUI` function has to be used.
-
 
 Instead of `JSROOT.JSONR_unref` one can use `JSROOT.parse`. If object is provided to `JSROOT.parse` it just replaces all
 references which were introduced by `TBufferJSON::ToJSON()` method.

@@ -355,7 +355,7 @@
    /** @namespace
      * @memberof JSROOT
      * @summary Insiance of TStyle object like in ROOT
-     * @desc Includes default draw styles, can be changed after loading of JSRootCore.js
+     * @desc Includes default draw styles, can be changed after loading of JSRoot.core.js
      * or can be load from the file providing style=itemname in the URL
      * See [TStyle docu]{@link https://root.cern/doc/master/classTStyle.html} "Private attributes" section for more detailed info about each value */
    let gStyle = {
@@ -2189,21 +2189,12 @@
       });
    }
 
-   /** @summary Initialize JSROOT.
-    * @desc Called when main JSRootCore.js script is loaded. Process URL parameters, supplied with JSRootCore.js script
-    * @private */
+   /** @summary Initialize JSROOT
+     * @desc Called when main JSRoot.core.js script is loaded.
+     * @private */
    _.init = function() {
 
       if (!source_fullpath) return this;
-
-      function window_on_load() {
-         if (document.attachEvent ? document.readyState === 'complete' : document.readyState !== 'loading')
-            return Promise.resolve(true);
-
-         return new Promise(resolve => {
-            window.onload = resolve;
-         });
-      }
 
       let d = JSROOT.decodeUrl(source_fullpath);
 
@@ -2212,39 +2203,8 @@
          JSROOT.wrong_http_response_handling = true; // server may send wrong content length by partial requests, use other method to control this
       if (d.has('nosap')) _.sap = undefined; // let ignore sap loader even with openui5 loaded
 
-      // in case of require.js one have to use timeout to decople loading
-      if (_.amd)
-         return window_on_load().then(() => setTimeout(() => JSROOT.buildGUI('check_existing_elements'), 50));
-
-      if (d.has('gui'))
-         return window_on_load().then(() => JSROOT.buildGUI());
-
-      let prereq = "", user = d.get('load'), onload = d.get('onload');
-      if (d.has('io')) prereq += "io;";
-      if (d.has('tree')) prereq += "tree;";
-      if (d.has('2d')) prereq += "gpad;";
-      if (d.has('v7')) prereq += "v7gpad;";
-      if (d.has('hist')) prereq += "hist;";
-      if (d.has('hierarchy')) prereq += "hierarchy;";
-      if (d.has('jq2d')) prereq += "jq2d;";
-      if (d.has('more2d')) prereq += "more;";
-      if (d.has('geom')) prereq += "geom;";
-      if (d.has('3d')) prereq += "base3d;";
-      if (d.has('math')) prereq += "math;";
-      if (d.has('mathjax')) prereq += "mathjax;";
-      if (d.has('openui5')) prereq += "openui5;";
-
-      if (user) { prereq += "io;gpad;"; user = user.split(";"); }
-
-      if (prereq || onload)
-         window_on_load().then(() => JSROOT.require(prereq))
-                         .then(() => JSROOT.loadScript(user))
-                         .then(() => JSROOT.callBack(onload));
-
       return this;
    }
-
-   /// FIXME: for backward compatibility, will be removed in v6.2
 
    let _warned = {};
    JSROOT.warnOnce = function(msg) {
@@ -2253,8 +2213,6 @@
          _warned[msg] = true;
       }
    }
-
-   /// end of backward compatibility block
 
    JSROOT._ = _;
    JSROOT.browser = browser;
