@@ -6328,8 +6328,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       painter.DecodeOptions(opt);
 
       if (painter.IsTH2Poly()) {
-         if (painter.options.Mode3D) painter.options.Lego = 12; // lego always 12
-         else if (!painter.options.Color) painter.options.Color = true; // default is color
+         if (painter.options.Mode3D)
+            painter.options.Lego = 12; // lego always 12
+         else if (!painter.options.Color)
+            painter.options.Color = true; // default is color
       }
 
       painter._show_empty_bins = false;
@@ -6440,24 +6442,26 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       let hist = createTF2Histogram(func, d.check('NOSAVE'));
 
-      if (d.empty()) opt = "cont3"; else
-      if (d.opt === "SAME") opt = "cont2 same";
-      else opt = d.opt;
+      if (d.empty())
+         opt = "cont3";
+      else if (d.opt === "SAME")
+         opt = "cont2 same";
+      else
+         opt = d.opt;
 
-      let hpainter = drawHistogram2D(divid, hist, opt);
+      return drawHistogram2D(divid, hist, opt).then(hpainter => {
 
-      hpainter.tf2_typename = func._typename;
-      hpainter.tf2_nosave = d.check('NOSAVE');
+         hpainter.tf2_typename = func._typename;
+         hpainter.tf2_nosave = d.check('NOSAVE');
 
-      hpainter.UpdateObject = function(obj /*, opt*/) {
-         if (!obj || (this.tf2_typename != obj._typename)) return false;
+         hpainter.UpdateObject = function(obj /*, opt*/) {
+            if (!obj || (this.tf2_typename != obj._typename)) return false;
+            createTF2Histogram(obj, this.tf2_nosave, this.GetHisto());
+            return true;
+         }
 
-         createTF2Histogram(obj, this.tf2_nosave, this.GetHisto());
-
-         return true;
-      }
-
-      return hpainter;
+         return hpainter;
+      });
    }
 
    // ====================================================================
