@@ -2604,50 +2604,62 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       return res;
    }
 
-   /** @summary Draw extra object like tracks */
+   /** @summary Draw extra object like tracks
+     * @returns {Promise} when ready */
    TGeoPainter.prototype.drawExtras = function(obj, itemname, add_objects) {
-      if (!obj || !obj._typename) return false;
+      if (!obj || !obj._typename)
+         return Promise.resolve(false);
 
       // if object was hidden via menu, do not redraw it with next draw call
-      if (!add_objects && obj.$hidden_via_menu) return false;
+      if (!add_objects && obj.$hidden_via_menu)
+         return Promise.resolve(false);
 
-      let isany = false, do_render = false;
+      let promise, do_render = false;
       if (add_objects === undefined) {
          add_objects = true;
          do_render = true;
       }
 
       if ((obj._typename === "TList") || (obj._typename === "TObjArray")) {
-         if (!obj.arr) return false;
+         if (!obj.arr) return Promise.resolve(false);
+         let promises = [];
          for (let n=0;n<obj.arr.length;++n) {
             let sobj = obj.arr[n], sname = obj.opt ? obj.opt[n] : "";
             if (!sname) sname = (itemname || "<prnt>") + "/[" + n + "]";
-            if (this.drawExtras(sobj, sname, add_objects)) isany = true;
+            promises.push(this.drawExtras(sobj, sname, add_objects));
          }
+         promise = Promise.all(promises).then(arr => { return arr.indexOf(true) > 0; })
       } else if (obj._typename === 'THREE.Mesh') {
          // adding mesh as is
-         this.getExtrasContainer().add(obj);
-         isany = true;
+         this.addToExtrasContainer(obj);
+         promise = Promise.resolve(true);
       } else if (obj._typename === 'TGeoTrack') {
-         if (add_objects && !this.addExtra(obj, itemname)) return false;
-         isany = this.drawGeoTrack(obj, itemname);
+         if (add_objects && !this.addExtra(obj, itemname)) return Promise.resolve(false);
+         promise = this.drawGeoTrack(obj, itemname);
       } else if ((obj._typename === 'TEveTrack') || (obj._typename === 'ROOT::Experimental::TEveTrack')) {
-         if (add_objects && !this.addExtra(obj, itemname)) return false;
-         isany = this.drawEveTrack(obj, itemname);
+         if (add_objects && !this.addExtra(obj, itemname)) return Promise.resolve(false);
+         promise = this.drawEveTrack(obj, itemname);
       } else if ((obj._typename === 'TEvePointSet') || (obj._typename === "ROOT::Experimental::TEvePointSet") || (obj._typename === "TPolyMarker3D")) {
-         if (add_objects && !this.addExtra(obj, itemname)) return false;
-         isany = this.drawHit(obj, itemname);
+         if (add_objects && !this.addExtra(obj, itemname)) return Promise.resolve(false);
+         promise = this.drawHit(obj, itemname);
       } else if ((obj._typename === "TEveGeoShapeExtract") || (obj._typename === "ROOT::Experimental::REveGeoShapeExtract")) {
-         if (add_objects && !this.addExtra(obj, itemname)) return false;
-         isany = this.drawExtraShape(obj, itemname);
+         if (add_objects && !this.addExtra(obj, itemname)) return Promise.resolve(false);
+         promise = this.drawExtraShape(obj, itemname);
       }
 
-      if (isany && do_render) {
-         this.updateClipping(true);
-         this.Render3D(100);
-      }
+      if ((typeof promise != 'object') || !promise.then)
+         promise = Promise.resolve(promise);
 
-      return isany;
+      if (do_render)
+         promise = promise.then(res => {
+            if (res) {
+               this.updateClipping(true);
+               this.Render3D(100);
+            }
+            return res;
+         });
+
+      return promise;
    }
 
    /** @summary returns container for extra objects */
@@ -2682,6 +2694,18 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       }
 
       return extras;
+   }
+
+   /** @summary add object to extras container.
+     * @desc If fail, dispore object */
+   TGeoPainter.prototype.addToExtrasContainer = function(obj, name) {
+      let container = this.getExtrasContainer("", name);
+      if (container) {
+         container.add(obj);
+      } else {
+         console.warn('Fail to add object to extras');
+         jsrp.disposeThreejsObject(obj);
+      }
    }
 
    /** @summary drawing TGeoTrack */
@@ -2721,7 +2745,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       if (itemname && itemname.indexOf("<prnt>/Tracks")==0)
          line.main_track = true;
 
-      this.getExtrasContainer().add(line);
+      this.addToExtrasContainer(line);
 
       return true;
    }
@@ -2759,14 +2783,15 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       line.geo_object = track;
       line.hightlightWidthScale = 2;
 
-      this.getExtrasContainer().add(line);
+      this.addToExtrasContainer(line);
 
       return true;
    }
 
    /** @summary Drawing different hits types like TPolyMarker3d */
    TGeoPainter.prototype.drawHit = function(hit, itemname) {
-      if (!hit || !hit.fN || (hit.fN < 0)) return false;
+      if (!hit || !hit.fN || (hit.fN < 0))
+         return Promise.resolve(false);
 
       // make hit size scaling factor of overall geometry size
       // otherwise it is not possible to correctly see hits at all
@@ -2785,17 +2810,15 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
                        projy ? projv : hit.fP[i*3+1],
                        projz ? projv : hit.fP[i*3+2]);
 
-      pnts.createPointsPromise({ color: jsrp.getColor(hit.fMarkerColor) || "rgb(0,0,255)",
+      return pnts.createPointsPromise({ color: jsrp.getColor(hit.fMarkerColor) || "rgb(0,0,255)",
                                  style: hit.fMarkerStyle }).then(mesh => {
          mesh.renderOrder = 1000000; // to bring points to the front
          mesh.highlightScale = 2;
          mesh.geo_name = itemname;
          mesh.geo_object = hit;
-         this.getExtrasContainer().add(mesh);
-         this.Render3D(100); // use timeout for delayed rendering
+         this.addToExtrasContainer(mesh);
+         return true; // indicate that rendering should be done
       });
-
-      return true;
    }
 
    TGeoPainter.prototype.drawExtraShape = function(obj, itemname) {
@@ -2805,7 +2828,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       toplevel.geo_name = itemname;
       toplevel.geo_object = obj;
 
-      this.getExtrasContainer().add(toplevel);
+      this.addToExtrasContainer(toplevel);
       return true;
    }
 
