@@ -7,7 +7,24 @@
    <title>Demonstrator of online usage of JSROOT</title>
 
    <!--  load JSROOT with 2D graphic -->
-   <script src="../scripts/JSRootCore.js?2d&hierarchy&onload=startGUI" type="text/javascript"></script>
+   <script src="../scripts/JSRoot.core.js" type="text/javascript"></script>
+
+   <style>
+      html {
+         height: 100%;
+      }
+      body {
+         min-height: 100%;
+         margin: 0px;
+         overflow : hidden;
+      }
+  </style>
+
+
+</head>
+
+<body>
+   <div id="drawing" style="position:absolute; left:1px; top:1px; bottom:1px; right:1px"></div>
 
    <script type='text/javascript'>
 
@@ -20,48 +37,45 @@
          // Or one can create root.json file in the application and place it on the webserver
          // To run demo, one should generate rootXX.json files using demo.C macro
 
-         let request_addr = addr || ("root" + (cnt % 20) + ".json");
+         let request_addr = addr || ("root" + (cnt % 20) + ".json"),
+             request_count = cnt++;
 
-         JSROOT.httpRequest(request_addr, 'object').then(function(histo) {
+         JSROOT.httpRequest(request_addr, 'object').then(histo => {
             if (!histo) {
                d3.select('#drawing').html("<h3>Can not get " + request_addr + " from the server</h3>");
                return;
             }
 
             // when use grid layout, use counter value stored in request itself
-            let frame = mdi ? mdi.findFrame("item" + (this.req_cnt % mdi.numGridFrames()), true) : 'drawing';
+            let frame = mdi ? mdi.findFrame("item" + (request_count % mdi.numGridFrames()), true) : 'drawing';
 
             // redraw histogram at specified frame
-            JSROOT.redraw(frame, histo, drawopt);
-         }.bind({ req_cnt: cnt++ })); // bind to fake object to keep request id
+            JSROOT.redraw(frame, histo, drawopt).then(() => {
+               // let adjust drawing when browser will be resized
+               if (!request_count) JSROOT.registerForResize('drawing');
+            });
+         });
       }
 
-      function startGUI() {
-         d3.select('html').style('height','100%');
-         d3.select('body').style({'min-height':'100%', 'margin':'0px', "overflow" :"hidden"});
+      let d = JSROOT.decodeUrl();
 
-         let d = JSROOT.decodeUrl();
+      let monitor = parseInt(d.get("monitoring") || "1000");
 
-         let monitor = parseInt(d.get("monitoring") || "1000");
+      drawopt = d.get("opt");
+      addr = d.get("addr");
 
-         drawopt = d.get("opt");
+      let layout = d.get("layout"), promise = Promise.resolve(this);
 
-         addr = d.get("addr");
+      if (layout)
+          promise = JSROOT.require('hierarchy').then(() => { mdi = new JSROOT.GridDisplay('drawing', layout); });
 
-         let layout = d.get("layout");
-         if (layout) mdi = new JSROOT.GridDisplay('drawing', layout);
-
+      promise.then(() => {
          setInterval(updateGUI, monitor);
+     });
 
-         // let adjust drawing when browser will be resized
-         JSROOT.registerForResize('drawing');
-      }
    </script>
 
-</head>
 
-<body>
-   <div id="drawing" style="position:absolute; left:1px; top:1px; bottom:1px; right:1px"></div>
 </body>
 
 </html>

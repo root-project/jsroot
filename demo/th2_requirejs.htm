@@ -10,9 +10,9 @@
 
    <script type='text/javascript'>
 
-      var cnt = 0, jsroot;
+      var cnt = 0;
 
-      function updateGUI() {
+      function updateGUI(jsroot) {
 
          // this is just generation of histogram
          var histo = jsroot.CreateHistogram("TH2I", 20, 20);
@@ -27,15 +27,13 @@
                }
                histo.setBinContent(bin, val);
             }
-
+         histo.fTitle = "Drawing " + cnt++;
          jsroot.redraw('object_draw', histo, "colz");
-
-         if (cnt++ == 0) setInterval(updateGUI, 3000);
       }
 
-      require(['../scripts/JSRootCore.js'], function(handle) {
-         jsroot = handle;
-         updateGUI();
+      require(['../scripts/JSRoot.core.js'], jsroot => {
+         updateGUI(jsroot);
+         setInterval(() => updateGUI(jsroot), 3000);
       });
 
    </script>
