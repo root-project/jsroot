@@ -2575,7 +2575,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          // for debug purposes keep original context menu for small region in top-left corner
          let pos = d3.pointer(evnt, this.svg_pad().node());
 
-         if (pos && (pos.length==2) && (pos[0]>0) && (pos[0]<10) && (pos[1]>0) && pos[1]<10) return;
+         if (pos && (pos.length==2) && (pos[0] >= 0) && (pos[0] < 10) && (pos[1] >= 0) && (pos[1] < 10)) return;
 
          evnt.stopPropagation(); // disable main context menu
          evnt.preventDefault();  // disable browser context menu
@@ -2584,12 +2584,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (fp) fp.SetLastEventPos();
       }
 
-      JSROOT.require('interactive')
-            .then(() => jsrp.createMenu(this, evnt))
-            .then(menu => {
-                   this.FillContextMenu(menu);
-                   return this.fillObjectExecMenu(menu, "");
-            }).then(menu => menu.show());
+      jsrp.createMenu(this, evnt).then(menu => {
+         this.FillContextMenu(menu);
+         return this.fillObjectExecMenu(menu, "");
+      }).then(menu => menu.show());
    }
 
    /** @summary redraw pad */

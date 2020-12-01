@@ -287,7 +287,6 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       if (this.renderer.setJSROOTSize)
          this.renderer.setJSROOTSize(this.scene_width, this.scene_height);
 
-
       return true;
    }
 
@@ -2463,9 +2462,9 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       return lines;
    }
 
+   /** @summary Try to draw 3D histogram as scatter plot
+     * @desc if too many points, box will be displayed */
    JSROOT.v7.RH3Painter.prototype.Draw3DScatter = function(handle) {
-      // try to draw 3D histogram as scatter plot
-      // if too many points, box will be displayed
 
       let histo = this.GetHisto(),
           main = this.frame_painter(),

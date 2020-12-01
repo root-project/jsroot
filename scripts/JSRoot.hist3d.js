@@ -3182,13 +3182,12 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
       if (this.options.Circles) scale = 0.06*fp.size_xy3d;
 
-      if (fp.usesvg) scale*=0.3;
+      if (fp.usesvg) scale *= 0.3;
 
       if (this.options.Color) {
          levels = main.GetContourLevels();
          palette = main.GetPalette();
       }
-
 
       for (let lvl = 0; lvl < levels.length-1; ++lvl) {
 
@@ -3330,11 +3329,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          }
       }
 
-      console.log('finish drawing of TGraph2D', promises.length, 'levels', levels.length)
-
       return Promise.all(promises).then(() => {
-          console.log('toggle 3D rendering')
-
          if (fp) fp.Render3D(100);
          return this;
       });
@@ -3347,16 +3342,16 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
       painter.DecodeOptions(opt);
 
-      if (painter.main_painter()) {
-         painter.SetDivId(divid);
-         return painter.Redraw();
+      let promise = Promise.resolve(true);
+
+      if (!painter.main_painter()) {
+         if (!gr.fHistogram)
+            gr.fHistogram = painter.CreateHistogram();
+         promise = JSROOT.draw(divid, gr.fHistogram, "lego;axis");
+         painter.ownhisto = true;
       }
 
-      if (!gr.fHistogram)
-         gr.fHistogram = painter.CreateHistogram();
-
-      return JSROOT.draw(divid, gr.fHistogram, "lego;axis").then(() => {
-         painter.ownhisto = true;
+      return promise.then(() => {
          painter.SetDivId(divid);
          return painter.Redraw();
       });
@@ -3374,15 +3369,12 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
          let fp = this.frame_painter();
 
-         if (!fp || !fp.mode3d) {
-            if (!this._did_redraw) this.DrawingReady();
-            this._did_redraw = true;
-            return;
-         }
+         if (!fp || !fp.mode3d)
+            return Promise.resolve(this);
 
          let step = 1, sizelimit = 50000, numselect = 0;
 
-         for (let i=0;i<poly.fP.length;i+=3) {
+         for (let i = 0; i < poly.fP.length; i += 3) {
             if ((poly.fP[i] < fp.scale_xmin) || (poly.fP[i] > fp.scale_xmax) ||
                 (poly.fP[i+1] < fp.scale_ymin) || (poly.fP[i+1] > fp.scale_ymax) ||
                 (poly.fP[i+2] < fp.scale_zmin) || (poly.fP[i+2] > fp.scale_zmax)) continue;
@@ -3415,8 +3407,10 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
             pnts.AddPoint(fp.grx(poly.fP[i]), fp.gry(poly.fP[i+1]), fp.grz(poly.fP[i+2]));
          }
 
-         pnts.AssignCallback(mesh => {
-            fp.toplevel.add(mesh);
+         return pnts.createPointsPromise({ color: this.get_color(poly.fMarkerColor),
+                                           style: poly.fMarkerStyle }).then(mesh => {
+
+            if (fp.toplevel) fp.toplevel.add(mesh);
 
             mesh.tip_color = (poly.fMarkerColor === 3) ? 0xFF0000 : 0x00FF00;
             mesh.tip_name = poly.fName || "Poly3D";
@@ -3455,23 +3449,14 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
                            "z: " + p.AxisAsText("z", this.poly.fP[indx+2])
                          ]
                }
-
             }
 
             fp.Render3D(100); // set large timeout to be able draw other points
-
-            if (!painter._did_redraw) painter.DrawingReady();
-            painter._did_redraw = true;
-
+            return this;
          });
-
-         pnts.CreatePoints({ color: this.get_color(poly.fMarkerColor),
-                             style: poly.fMarkerStyle });
       }
 
-      painter.Redraw();
-
-      return painter;
+      return painter.Redraw();
    }
 
    JSROOT.TH3Painter = TH3Painter;
