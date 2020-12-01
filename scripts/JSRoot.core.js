@@ -11,7 +11,7 @@
       jsroot._.amd = true; // inidcation that require will be used for loading of functionality
 
       for (let src in jsroot._.sources)
-         if (src != 'JSRootCore')
+         if (src != 'JSRoot.core')
             paths[src] = jsroot._.get_module_src(jsroot._.sources[src]);
 
       if (norjs) {
@@ -41,8 +41,8 @@
 
       define( jsroot );
 
-      if (norjs || !require.specified("JSRootCore"))
-         define('JSRootCore', [], jsroot);
+      if (norjs || !require.specified("JSRoot.core"))
+         define('JSRoot.core', [], jsroot);
 
       if (norjs || !require.specified("jsroot"))
          define('jsroot', [], jsroot);
@@ -63,8 +63,8 @@
 
    } else {
 
-      if (typeof JSROOT != 'undefined')
-         throw new Error("JSROOT is already defined", "JSRootCore.js");
+      if ((typeof JSROOT != 'undefined') && !JSROOT._workaround)
+         throw new Error("JSROOT is already defined", "JSRoot.core.js");
 
       let jsroot = {};
 
@@ -183,11 +183,10 @@
          'mathjax'              : { src: 'https://cdn.jsdelivr.net/npm/mathjax@3.1.2/es5/tex-svg', extract: "MathJax", node: "mathjax" },
          'dat.gui'              : { src: 'dat.gui', libs: true, extract: "dat" },
          'three'                : { src: 'three', libs: true, extract: "THREE", node: "three" },
-         'threejs_jsroot'       : { src: 'three.extra', libs: true },
-         'JSRootCore'           : { src: 'JSRootCore' }
+         'threejs_jsroot'       : { src: 'three.extra', libs: true }
     };
 
-    ['base3d','csg','geobase','geom','geoworker','gpad','hierarchy','hist','hist3d','interactive','io','jq2d','latex',
+    ['core', 'base3d','csg','geobase','geom','geoworker','gpad','hierarchy','hist','hist3d','interactive','io','jq2d','latex',
       'math','more','openui5','painter','tree','v7gpad','v7hist','v7hist3d','v7more','webwindow']
          .forEach(item => _.sources[item] = { src: "JSRoot." + item });
 
