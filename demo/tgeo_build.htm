@@ -25,11 +25,7 @@
 
       <script>
 
-         let container, stats;
-
-         let camera, scene, renderer, geom_size = 400, dummy = null;
-
-         let d = JSROOT.decodeUrl();
+         let container, stats,  camera, scene, renderer, geom_size = 400, dummy = null, d;
 
          function add_geometry(obj) {
 
@@ -59,6 +55,8 @@
          }
 
          function init() {
+
+            d = JSROOT.decodeUrl();
 
             container = document.createElement( 'div' );
             document.body.appendChild( container );

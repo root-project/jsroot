@@ -18,16 +18,17 @@
    // absolute file path can be used as well
    let filename = "../../files/transparency_test.root";
 
-   JSROOT.openFile(filename).then(file => {
-      file.readObject("mycolors").then(obj => {
-         JSROOT.require("painter").then(jsrp => {
-            jsrp.adoptRootColors(obj);
-            file.readObject("mg").then(obj_g => {
-               JSROOT.draw("drawing", obj_g, "AL");
-            });
-         });
-      });
-   });
+   async function adopt_colors() {
+      let file = await JSROOT.openFile(filename);
+      let obj = await file.readObject("mycolors");
+      let jsrp = await JSROOT.require("painter");
+      jsrp.adoptRootColors(obj);
+      let obj_g = await file.readObject("mg");
+      await JSROOT.draw("drawing", obj_g, "AL");
+   }
+
+   adopt_colors();
+
   </script>
 </html>
 

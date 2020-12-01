@@ -6,16 +6,16 @@
 
    <title>Use require.js together with JSROOT</title>
 
-   <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../scripts/JSRootCore.min"></script>
+   <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../scripts/JSRoot.core.min"></script>
 
    <script type='text/javascript'>
 
       // first ensure that require is ready (using of data-main is not really good)
-      require(['require'], function(r) {
+      require(['require'], r => {
          // now request JSRootCore
-         require(['JSRootCore'], function(jsroot) {
+         require(['JSRoot.core'], jsroot => {
             // request data from JSON file
-            jsroot.httpRequest("canvas_tf1.json", 'object').then(function(obj) {
+            jsroot.httpRequest("canvas_tf1.json", 'object').then(obj => {
                // display object
                jsroot.draw("drawing", obj, "hist");
             });
