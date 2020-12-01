@@ -225,46 +225,43 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
 
       if (tmout === undefined) tmout = 5; // by default, rendering happens with timeout
 
-      if ((tmout <= 0) || !this.webgl || JSROOT.BatchMode) {
-         if ('render_tmout' in this) {
-            clearTimeout(this.render_tmout);
-         } else {
-            if (tmout === -2222) return; // special case to check if rendering timeout was active
-         }
+      if ((tmout > 0) && this.webgl && JSROOT.BatchMode) {
+          if (this.render_tmout === undefined)
+             this.render_tmout = setTimeout(() => this.Render3D(0), tmout);
+          return;
+       }
 
-         if (!this.renderer) return;
-
-         jsrp.beforeRender3D(this.renderer);
-
-         let tm1 = new Date();
-
-         if (!this.opt3d) this.opt3d = { FrontBox: true, BackBox: true };
-
-         //if (typeof this.TestAxisVisibility === 'function')
-         this.TestAxisVisibility(this.camera, this.toplevel, this.opt3d.FrontBox, this.opt3d.BackBox);
-
-         // do rendering, most consuming time
-         this.renderer.render(this.scene, this.camera);
-
-         jsrp.afterRender3D(this.renderer);
-
-         let tm2 = new Date();
-
-         delete this.render_tmout;
-
-         if (this.first_render_tm === 0) {
-            this.first_render_tm = tm2.getTime() - tm1.getTime();
-            this.enable_highlight = (this.first_render_tm < 1200) && this.IsTooltipAllowed();
-            console.log('three.js r' + THREE.REVISION + ', first render tm = ' + this.first_render_tm);
-         }
-
-         return;
+      if (this.render_tmout !== undefined) {
+         clearTimeout(this.render_tmout);
+      } else {
+         if (tmout === -2222) return; // special case to check if rendering timeout was active
       }
 
-      // no need to shoot rendering once again
-      if ('render_tmout' in this) return;
+      if (!this.renderer) return;
 
-      this.render_tmout = setTimeout(this.Render3D.bind(this,0), tmout);
+      jsrp.beforeRender3D(this.renderer);
+
+      let tm1 = new Date();
+
+      if (!this.opt3d) this.opt3d = { FrontBox: true, BackBox: true };
+
+      //if (typeof this.TestAxisVisibility === 'function')
+      this.TestAxisVisibility(this.camera, this.toplevel, this.opt3d.FrontBox, this.opt3d.BackBox);
+
+      // do rendering, most consuming time
+      this.renderer.render(this.scene, this.camera);
+
+      jsrp.afterRender3D(this.renderer);
+
+      let tm2 = new Date();
+
+      delete this.render_tmout;
+
+      if (this.first_render_tm === 0) {
+         this.first_render_tm = tm2.getTime() - tm1.getTime();
+         this.enable_highlight = (this.first_render_tm < 1200) && this.IsTooltipAllowed();
+         console.log('three.js r' + THREE.REVISION + ', first render tm = ' + this.first_render_tm);
+      }
    }
 
    JSROOT.v7.RFramePainter.prototype.Resize3D = function() {

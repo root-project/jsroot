@@ -251,46 +251,44 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
       if (tmout === undefined) tmout = 5; // by default, rendering happens with timeout
 
-      if ((tmout <= 0) || this.usesvg || JSROOT.BatchMode) {
-         if ('render_tmout' in this) {
-            clearTimeout(this.render_tmout);
-         } else {
-            if (tmout === -2222) return; // special case to check if rendering timeout was active
-         }
-
-         if (!this.renderer) return;
-
-         jsrp.beforeRender3D(this.renderer);
-
-         let tm1 = new Date();
-
-         if (!this.opt3d) this.opt3d = { FrontBox: true, BackBox: true };
-
-         //if (typeof this.TestAxisVisibility === 'function')
-         this.TestAxisVisibility(this.camera, this.toplevel, this.opt3d.FrontBox, this.opt3d.BackBox);
-
-         // do rendering, most consuming time
-         this.renderer.render(this.scene, this.camera);
-
-         jsrp.afterRender3D(this.renderer);
-
-         let tm2 = new Date();
-
-         delete this.render_tmout;
-
-         if (this.first_render_tm === 0) {
-            this.first_render_tm = tm2.getTime() - tm1.getTime();
-            this.enable_highlight = (this.first_render_tm < 1200) && this.IsTooltipAllowed();
-            console.log('three.js r' + THREE.REVISION + ', first render tm = ' + this.first_render_tm);
-         }
-
+      if ((tmout > 0) && !this.usesvg && !JSROOT.BatchMode) {
+         // configure timeout
+         if (this.render_tmout === undefined)
+            this.render_tmout = setTimeout(() => this.Render3D(0), tmout);
          return;
       }
 
-      // no need to shoot rendering once again
-      if ('render_tmout' in this) return;
+      if (this.render_tmout !== undefined) {
+         clearTimeout(this.render_tmout);
+      } else {
+         if (tmout === -2222) return; // special case to check if rendering timeout was active
+      }
 
-      this.render_tmout = setTimeout(this.Render3D.bind(this,0), tmout);
+      if (!this.renderer) return;
+
+      jsrp.beforeRender3D(this.renderer);
+
+      let tm1 = new Date();
+
+      if (!this.opt3d) this.opt3d = { FrontBox: true, BackBox: true };
+
+      //if (typeof this.TestAxisVisibility === 'function')
+      this.TestAxisVisibility(this.camera, this.toplevel, this.opt3d.FrontBox, this.opt3d.BackBox);
+
+      // do rendering, most consuming time
+      this.renderer.render(this.scene, this.camera);
+
+      jsrp.afterRender3D(this.renderer);
+
+      let tm2 = new Date();
+
+      delete this.render_tmout;
+
+      if (this.first_render_tm === 0) {
+         this.first_render_tm = tm2.getTime() - tm1.getTime();
+         this.enable_highlight = (this.first_render_tm < 1200) && this.IsTooltipAllowed();
+         console.log('three.js r' + THREE.REVISION + ', first render tm = ' + this.first_render_tm);
+      }
    }
 
    /** @summary Check is 3D drawing need to be resized */
@@ -3192,7 +3190,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       }
 
 
-      for (let lvl=0;lvl<levels.length-1;++lvl) {
+      for (let lvl = 0; lvl < levels.length-1; ++lvl) {
 
          let lvl_zmin = Math.max(levels[lvl], fp.scale_zmin),
              lvl_zmax = Math.min(levels[lvl+1], fp.scale_zmax);
@@ -3308,8 +3306,8 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
             let fcolor = 'blue';
 
             if (!this.options.Circles)
-               fcolor = palette ? palette.calcColor(lvl, levels.length) :
-                                  this.get_color(graph.fMarkerColor);
+               fcolor = palette ? palette.calcColor(lvl, levels.length)
+                                : this.get_color(graph.fMarkerColor);
 
             let mesh_index = index;
 
@@ -3332,7 +3330,11 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          }
       }
 
+      console.log('finish drawing of TGraph2D', promises.length, 'levels', levels.length)
+
       return Promise.all(promises).then(() => {
+          console.log('toggle 3D rendering')
+
          if (fp) fp.Render3D(100);
          return this;
       });
