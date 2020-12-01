@@ -154,11 +154,11 @@
    if ((typeof document !== "undefined") && (typeof window !== "undefined")) {
       let script = document.currentScript;
       if (script && (typeof script.src == "string")) {
-         const pos = script.src.indexOf("scripts/JSRootCore.");
+         const pos = script.src.indexOf("scripts/JSRoot.core.");
          if (pos >= 0) {
             source_fullpath = script.src;
             JSROOT.source_dir = source_fullpath.substr(0, pos);
-            _.source_min = source_fullpath.indexOf("scripts/JSRootCore.min.js") >= 0;
+            _.source_min = source_fullpath.indexOf("scripts/JSRoot.core.min.js") >= 0;
             console.log(`Set JSROOT.source_dir to ${JSROOT.source_dir}, ${JSROOT.version}`);
          }
       }
@@ -2253,38 +2253,6 @@
          console.warn(msg);
          _warned[msg] = true;
       }
-   }
-
-   JSROOT.GetUrlOption = function(opt, url, dflt) {
-      JSROOT.warnOnce('Using obsolete JSROOT.GetUrlOption, change to JSROOT.decodeUrl');
-      return JSROOT.decodeUrl(url).get(opt, dflt === undefined ? null : dflt);
-   }
-
-   JSROOT.AssertPrerequisites = function(req, callback) {
-      JSROOT.warnOnce('Using obsolete JSROOT.AssertPrerequisites, change to JSROOT.require');
-      req = req.replace(/2d;v7;/g, "v7gpad;").replace(/2d;v6;/g, "gpad;").replace(/more2d;/g, 'more;').replace(/2d;/g, 'gpad;').replace(/;v6;v7/g, ";gpad;v7gpad");
-      JSROOT.require(req).then(callback);
-   }
-
-   JSROOT.OpenFile = function(filename, callback) {
-      JSROOT.warnOnce('Using obsolete JSROOT.OpenFile function, change to JSROOT.openFile');
-      let res = JSROOT.openFile(filename);
-      return !callback ? res : res.then(callback);
-   }
-
-   JSROOT.JSONR_unref = function(arg) {
-      JSROOT.warnOnce('Using obsolete JSROOT.JSONR_unref function, change to JSROOT.parse');
-      return JSROOT.parse(arg);
-   }
-
-   JSROOT.MakeSVG = function(args) {
-      JSROOT.warnOnce('Using obsolete JSROOT.MakeSVG function, change to JSROOT.makeSVG');
-      return JSROOT.makeSVG(args);
-   }
-
-   JSROOT.CallBack = function(func, arg1, arg2) {
-      JSROOT.warnOnce('Using obsolete JSROOT.CallBack function, change to JSROOT.callBack');
-      return JSROOT.callBack(func, arg1, arg2);
    }
 
    /// end of backward compatibility block
