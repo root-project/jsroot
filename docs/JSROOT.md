@@ -1,8 +1,10 @@
 # JavaScript ROOT
 
-The JSROOT project intends to implement ROOT graphics for web browsers.
-Reading of binary ROOT files is supported.
-It is the successor of the JSRootIO project.
+The JSROOT project allows:
+   - reading of binary and JSON ROOT files in JavaScript;
+   - drawing of different ROOT classes in web browsers;
+   - reading and drawing TTree data;
+   - using in node.js.
 
 
 ## Installing JSROOT
@@ -861,7 +863,13 @@ JSROOT provides [example](https://root.cern/js/latest/demo/openui5/) showing usa
 
 ### Migration v5 -> v6
 
-In JSROOT v6 release some incompatible changes where done. Here small info about.
+In JSROOT v6 release some many incompatible changes where done. Here small info about.
+
+Main script was renamed to `JSRoot.core.js`. Old `JSRootCore.js` script left to provide partial compatibility
+with old applications, but will be removed in future JSROOT v6.2. All URL parameters for main script will be
+ignored, to load JSROOT functionality one should use `JSROOT.require` function. To create standard GUI,
+`JSROOT.buildGUI` function has to be used.
+
 
 Instead of `JSROOT.JSONR_unref` one can use `JSROOT.parse`. If object is provided to `JSROOT.parse` it just replaces all
 references which were introduced by `TBufferJSON::ToJSON()` method.

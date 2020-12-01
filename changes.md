@@ -2,6 +2,9 @@
 
 ## Changes in v6
 
+0. Rename JSRootCore.js -> JSRoot.core.js, eliminate all URL parameters.
+   Loading of extra functionality should be done with JSROOT methods like
+   JSROOT.require, JSROOT.loadScript, ...
 1. Skip IE support
 2. Upgrade d3.js to v6.1.1, due to significant changes in API skip support of older versions
 3. Make heavy use of Promise class
@@ -28,6 +31,7 @@
 18. Allow to move axis title to opposite position
 19. Fix zooming in color palette
 20. Add support of ZSTD compression
+
 
 
 ## Changes in 5.9.0

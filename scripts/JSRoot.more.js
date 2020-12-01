@@ -3725,8 +3725,6 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
              .attr("height", this.frame_height())
              .attr("preserveAspectRatio", constRatio ? null : "none");
 
-      console.log('z scale', this.options.Zscale, fp)
-
       if (url && this.is_main_painter() && is_buf && fp)
          return this.drawColorPalette(this.options.Zscale, true).then(() => {
             fp.SetAxesRanges(JSROOT.Create("TAxis"), 0, 1, JSROOT.Create("TAxis"), 0, 1, null, 0, 0);
