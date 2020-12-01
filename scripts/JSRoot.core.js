@@ -195,7 +195,7 @@
          return _.amd ? entry.src : entry.src + ".js";
 
       if (_.sap)
-         return "jsroot/scripts/" + entry.src + ((_.source_min || entry.libs) ? ".min" : "");
+         return "jsroot/scripts/" + entry.src + ((_.source_min || entry.libs || entry.onlymin) ? ".min" : "");
 
       let dir = (entry.libs && _.use_full_libs && !_.source_min) ? JSROOT.source_dir + "libs/" : JSROOT.source_dir + "scripts/",
           ext = (_.source_min || (entry.libs && !_.use_full_libs) || entry.onlymin) ? ".min" : "";
