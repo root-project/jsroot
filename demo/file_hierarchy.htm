@@ -6,11 +6,23 @@
 
    <title>Use of JSROOT hierarchy painter</title>
 
-   <script src="../scripts/JSRootCore.js?jq2d&onload=createGUI" type="text/javascript"></script>
+   <script src="../scripts/JSRoot.core.js" type="text/javascript"></script>
+
+</head>
+
+<body>
+
+  <div style="top: 0; bottom:0; left: 0; right: 0; position: absolute;">
+
+    <div id="myTreeDiv" style="width: 250px; height: 100%; float:left"></div>
+
+    <div id="myMainDiv" style="width: calc(100% - 250px); height: calc(100%); float:right"></div>
+
+  </div>
 
    <script type='text/javascript'>
 
-      function createGUI() {
+      JSROOT.require('hierarchy').then(() => {
          let h = new JSROOT.HierarchyPainter("example", "myTreeDiv");
 
          // configure 'simple' in provided <div> element
@@ -19,22 +31,11 @@
 
          // open file and display element
          h.openRootFile("../../files/hsimple.root").then(() => h.display("hpxpy;1","colz"));
-      }
+      })
 
    </script>
 
-</head>
-
-<body>
-
-  <div style="top: 0; bottom:0; left: 0; right: 0; position: absolute;">
-
-  <div id="myTreeDiv" style="width: 250px; height: 100%; float:left"></div>
-
-  <div id="myMainDiv" style="width: calc(100% - 250px); height: calc(100%); float:right"></div>
-
-  </div>
-
 </body>
+
 </html>
 

@@ -6,23 +6,7 @@
 
    <title>Reading object from the ROOT file</title>
 
-   <script src="../scripts/JSRootCore.min.js?io&2d&onload=DrawMg" type="text/javascript"></script>
-
-   <script type='text/javascript'>
-     // absolute file path can be used as well
-     var filename = "../../files/transparency_test.root";
-
-     function DrawMg() {
-        JSROOT.openFile(filename).then(file => {
-          file.readObject("mycolors").then(obj => {
-           JSROOT.Painter.adoptRootColors(obj);
-           file.readObject("mg").then(obj_g => {
-              JSROOT.draw("drawing", obj_g, "AL");
-           });
-          });
-        });
-     }
-   </script>
+   <script src="../scripts/JSRoot.core.min.js" type="text/javascript"></script>
 
 </head>
 
@@ -30,5 +14,20 @@
   <div id="drawing" style="width:800px; height:600px"></div>
 </body>
 
+  <script type='text/javascript'>
+   // absolute file path can be used as well
+   let filename = "../../files/transparency_test.root";
+
+   JSROOT.openFile(filename).then(file => {
+      file.readObject("mycolors").then(obj => {
+         JSROOT.require("painter").then(jsrp => {
+            jsrp.adoptRootColors(obj);
+            file.readObject("mg").then(obj_g => {
+               JSROOT.draw("drawing", obj_g, "AL");
+            });
+         });
+      });
+   });
+  </script>
 </html>
 

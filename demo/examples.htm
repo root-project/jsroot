@@ -149,30 +149,30 @@
 
          document.getElementsByTagName("head")[0].appendChild(icon);
 
-         function loadScript(name, load_callback) {
+         function loadScript(name) {
             let element = document.createElement("script");
             element.setAttribute('type', "text/javascript");
             element.setAttribute('src', name);
 
-            element.onload = function() {
-               element.onload = null;
-               load_callback();
-            }
-
-            document.getElementsByTagName("head")[0].appendChild(element);
+            return new Promise(resolveFunc => {
+               element.onload = function() {
+                  element.onload = null;
+                  resolveFunc(element);
+               }
+               document.getElementsByTagName("head")[0].appendChild(element);
+            });
          }
 
          if (use_requirejs) {
-            loadScript("//cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js", () => {
-               require([scripts + 'JSRootCore.js'], FillContent);
+            loadScript("//cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js").then(() => {
+               require([scripts + 'JSRoot.core.js'], FillContent);
             });
          } else if (use_openui5) {
-            loadScript("//openui5.hana.ondemand.com/1.72.0/resources/sap-ui-core.js", () => {
-               loadScript(scripts + 'JSRootCore.js', FillContent);
-            });
+            loadScript("//openui5.hana.ondemand.com/1.72.0/resources/sap-ui-core.js")
+              .then(() => loadScript(scripts + 'JSRoot.core.js')).then(FillContent);
 
          } else {
-            loadScript(scripts + 'JSRootCore.js', FillContent);
+            loadScript(scripts + 'JSRoot.core.js').then(FillContent);
          }
 
          let keyid = null, optid, testfile, testobj, testinterval = 10, hpainter = null;
@@ -352,11 +352,11 @@
          function FillContent() {
 
             if (typeof examples_main == 'undefined')
-               return loadScript(demo_path + 'examples.js', FillContent);
+               return loadScript(demo_path + 'examples.js').then(FillContent);
 
             if (window.location.search.indexOf("?more")==0) {
                if (typeof examples_more == 'undefined')
-                  return loadScript(demo_path + 'examples_more.js', FillContent);
+                  return loadScript(demo_path + 'examples_more.js').then(FillContent);
 
                for (let key in examples_more) {
                   if (key in examples_main) {
