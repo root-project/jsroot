@@ -2069,7 +2069,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          histo.fTitle = obj.fTitle;
          histo.fMinimum = obj.fMinimum;
          histo.fMaximum = obj.fMaximum;
-         function CopyAxis(tgt,src) {
+         function CopyAxis(tgt, src) {
             tgt.fTitle = src.fTitle;
             tgt.fLabels = src.fLabels;
             tgt.fXmin = src.fXmin;
@@ -2100,9 +2100,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                tgt.fLast = src.fLast;
                tgt.fBits = src.fBits;
             }
-            CopyZoom(histo.fXaxis, obj.fXaxis,"x");
-            CopyZoom(histo.fYaxis, obj.fYaxis,"y");
-            CopyZoom(histo.fZaxis, obj.fZaxis,"z");
+            CopyZoom(histo.fXaxis, obj.fXaxis, "x");
+            CopyZoom(histo.fYaxis, obj.fYaxis, "y");
+            CopyZoom(histo.fZaxis, obj.fZaxis, "z");
          }
          histo.fSumw2 = obj.fSumw2;
 

@@ -1279,7 +1279,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                let forced = false, handle = JSROOT.getDrawHandle(item._kind);
                if (handle && ('monitor' in handle)) {
                   if ((handle.monitor === false) || (handle.monitor == 'never')) return;
-                  if (handle.monitor==='always') forced = true;
+                  if (handle.monitor == 'always') forced = true;
                }
                if (!forced && only_auto_items) return;
             }
