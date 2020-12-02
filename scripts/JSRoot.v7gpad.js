@@ -930,7 +930,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           textscale = 1, maxtextlen = 0, lbls_tilt = false,
           label_g = axis_g.append("svg:g").attr("class","axis_labels").property('side', side),
           lbl_pos = this.handle.lbl_pos || this.handle.major,
-          max_lbl_width = 0, max_lbl_height = 0, drawCnt = 0, resolveFunc;
+          max_lbl_width = 0, max_lbl_height = 0;
 
       // function called when text is drawn to analyze width, required to correctly scale all labels
       function process_drawtext_ready(painter) {
@@ -947,8 +947,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             textscale = Math.min(textscale, maxwidth / textwidth);
          }
 
-         drawCnt--;
-         if ((drawCnt === 0) && resolveFunc) resolveFunc(true);
+         if ((textscale > 0.01) && (textscale < 0.8) && !this.vertical && !rotate_lbls && (maxtextlen > 5) && (side > 0))
+            lbls_tilt = true;
+
+         let scale = textscale * (lbls_tilt ? 3 : 1);
+         if ((scale > 0.01) && (scale < 1))
+            painter.TextScaleFactor(1/scale, label_g);
       }
 
       this.labelsFont = this.v7EvalFont("labels", { size: 0.03 });
@@ -1002,7 +1006,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          arg.post_process = process_drawtext_ready;
 
-         drawCnt++;
          this.drawText(arg);
 
          if (lastpos && (pos!=lastpos) && ((this.vertical && !rotate_lbls) || (!this.vertical && rotate_lbls))) {
@@ -1022,23 +1025,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                          draw_g: label_g
          });
 
-      return new Promise(resolve => {
-         if (drawCnt == 0)
-            resolve(true);
-         else
-            resolveFunc = resolve;
-      }).then(() => {
-         if ((textscale > 0.01) && (textscale < 0.8) && !this.vertical && !rotate_lbls && (maxtextlen > 5) && (side>0)) {
-
-            lbls_tilt = true;
-            textscale *= 3;
-         }
-
-         if ((textscale > 0.01) && (textscale < 1))
-            this.TextScaleFactor(1/textscale, label_g);
-
-         return this.finishTextDrawing(label_g);
-      }).then(() => {
+      return this.finishTextDrawing(label_g).then(() => {
 
         if (lbls_tilt)
            label_g.selectAll("text").each(function () {
