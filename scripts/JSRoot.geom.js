@@ -2431,9 +2431,10 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       // need to fill cached value line numvischld
       this._clones.ScanVisible();
 
-      let nshapes = 0, painter = this;
+      let nshapes = 0;
 
       let arg = {
+         clones: this._clones,
          cnt: [],
          func: function(node) {
             if (this.cnt[this.last]===undefined)
@@ -2441,9 +2442,9 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
             else
                this.cnt[this.last]++;
 
-            nshapes += geo.CountNumShapes(painter._clones.GetNodeShape(node.id));
+            nshapes += geo.CountNumShapes(this.clones.GetNodeShape(node.id));
 
-            // for debugginf - search if there some TGeoHalfSpace
+            // for debugging - search if there some TGeoHalfSpace
             //if (geo.HalfSpace) {
             //    let entry = this.CopyStack();
             //    let res = painter._clones.ResolveStack(entry.stack);
@@ -2474,21 +2475,21 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       else
          res.forEach(str => elem.append("p").text(str));
 
-      setTimeout(function() {
-         arg.domatrix = true;
-         tm1 = new Date().getTime();
-         numvis = painter._clones.ScanVisible(arg);
-         tm2 = new Date().getTime();
+      return new Promise(resolveFunc => {
+         setTimeout(() => {
+            arg.domatrix = true;
+            tm1 = new Date().getTime();
+            numvis = this._clones.ScanVisible(arg);
+            tm2 = new Date().getTime();
 
-         let last_str = "Time to scan with matrix: " + makeTime(tm2-tm1);
-         if (JSROOT.BatchMode)
-            res.push(last_str);
-         else
-            elem.append("p").text(last_str);
-         painter.DrawingReady();
-      }, 100);
-
-      return this;
+            let last_str = "Time to scan with matrix: " + makeTime(tm2-tm1);
+            if (JSROOT.BatchMode)
+               res.push(last_str);
+            else
+               elem.append("p").text(last_str);
+            resolveFunc(this);
+         }, 100);
+      });
    }
 
    /** @summary Handle drop operation
@@ -2977,12 +2978,13 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       this._clones = clones;
    }
 
-   /** @summary Prepare drawings */
+   /** @summary Prepare drawings
+     * @desc Return value used as promise for painter, therefore should return this */
    TGeoPainter.prototype.prepareObjectDraw = function(draw_obj, name_prefix) {
 
       // if did cleanup - ignore all kind of activity
       if (this.did_cleanup)
-         return;
+         return null;
 
       if (name_prefix == "__geom_viewer_append__") {
          this._new_append_nodes = draw_obj;
@@ -3074,12 +3076,15 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
       this.CreateToolbar();
 
-      if (this._clones) {
-         this.showDrawInfo("Drawing geometry");
-         this.startDrawGeometry(true);
-      } else {
-         this.completeDraw();
-      }
+      if (this._clones)
+         return new Promise(resolveFunc => {
+            this._resolveFunc = resolveFunc;
+            this.showDrawInfo("Drawing geometry");
+            this.startDrawGeometry(true);
+         });
+
+      this.completeDraw();
+      return this;
    }
 
    /** @summary methods show info when first geometry drawing is performed */
@@ -3096,7 +3101,6 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          if (info.empty()) info = d3.select(main).append("p").attr("class","geo_info");
          info.html(msg + ", " + spent.toFixed(1) + "s");
       }
-
    }
 
    /** @summary Reentrant method to perform geometry drawing step by step */
@@ -3661,6 +3665,9 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       return changed;
    }
 
+   /** @summary Assign callback, invoked every time when drawing is completed
+     * @desc Used together with web-based geometry viewer
+     * @private */
    TGeoPainter.prototype.setCompleteHandler = function(callback) {
       this._complete_handler = callback;
    }
@@ -3752,7 +3759,10 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       }
 
       // call it every time, in reality invoked only first time
-      this.DrawingReady();
+      if (typeof this._resolveFunc == 'function') {
+         this._resolveFunc(this);
+         delete this._resolveFunc;
+      }
 
       if (typeof this._complete_handler == 'function')
          this._complete_handler(this);
@@ -4108,10 +4118,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          painter.addExtra(extras, extras_path);
       }
 
-      // TODO: convert to Promise-based variant
-      painter.loadMacro(painter.ctrl.script_name).then(arg => painter.prepareObjectDraw(arg.obj, arg.prefix));
-
-      return painter;
+      return painter.loadMacro(painter.ctrl.script_name).then(arg => painter.prepareObjectDraw(arg.obj, arg.prefix));
    }
 
    // ===============================================================================
