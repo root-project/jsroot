@@ -464,7 +464,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
 
    /** @summary Draw axis ticks */
-   TAxisPainter.prototype.DrawTicks = function(axis_g, handle, side, tickSize, ticksPlusMinus, secondShift, real_draw) {
+   TAxisPainter.prototype.drawTicks = function(axis_g, handle, side, tickSize, ticksPlusMinus, secondShift, real_draw) {
       let res = "", res2 = "", lastpos = 0, lasth = 0;
       this.ticks = [];
 
@@ -532,7 +532,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             textscale = Math.min(textscale, (max_text_width - labeloffset) / textwidth);
          }
 
-         if ((textscale > 0.01) && (textscale < 0.7) && !this.vertical && !rotate_lbls && (maxtextlen > 5) && (label_g.length == 1))
+         if ((textscale > 0.01) && (textscale < 0.7) && !painter.vertical && !rotate_lbls && (maxtextlen > 5) && (label_g.length == 1))
             lbl_tilt = true;
 
          let scale = textscale * (lbl_tilt ? 3 : 1);
@@ -634,7 +634,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    /** @summary function draws  TAxis or TGaxis object
      * @returns Promise*/
-   TAxisPainter.prototype.DrawAxis = function(layer, w, h, transform, secondShift, disable_axis_drawing, max_text_width) {
+   TAxisPainter.prototype.DrawAxis = function(layer, w, h, transform, secondShift, disable_axis_drawing, max_text_width, calculate_position) {
 
       let axis = this.GetObject(), chOpt = "",
           is_gaxis = (axis && axis._typename === 'TGaxis'),
@@ -709,7 +709,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       let handle = this.CreateTicks(false, optionNoexp, optionNoopt, optionInt);
 
-      this.DrawTicks(axis_g, handle, side, tickSize, ticksPlusMinus, secondShift, draw_lines && !disable_axis_drawing);
+      this.drawTicks(axis_g, handle, side, tickSize, ticksPlusMinus, secondShift, draw_lines && !disable_axis_drawing);
 
       let labelSize0 = Math.round( (axis.fLabelSize < 1) ? axis.fLabelSize * text_scaling_size : axis.fLabelSize),
           labeloffset = Math.round(Math.abs(axis.fLabelOffset)*text_scaling_size);
@@ -743,7 +743,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          this.position = 0;
 
-         if (!disable_axis_drawing) {
+         if (calculate_position) {
             let node1 = axis_g.node(), node2 = this.svg_pad().node();
             if (node1 && node2 && node1.getBoundingClientRect && node2.getBoundingClientRect) {
                let rect1 = node1.getBoundingClientRect(),
@@ -752,7 +752,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                this.position = rect1.left - rect2.left; // use to control left position of Y scale
             }
             if (node1 && !node2)
-               console.warn("Why PAD element missing here???");
+               console.warn("Why PAD element missing when search for position");
          }
 
          if (!axis.fTitle || disable_axis_drawing) return true;
@@ -1326,20 +1326,24 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
 
       if (!disable_axis_draw) {
+
+         let can_adjust_frame = !shrink_forbidden && JSROOT.settings.CanAdjustFrame;
+
          let promise1 = draw_horiz.DrawAxis(layer, w, h,
                                             draw_horiz.invert_side ? undefined : "translate(0," + h + ")",
-                                            pad.fTickx ? -h : 0, disable_axis_draw);
+                                            pad.fTickx ? -h : 0, disable_axis_draw,
+                                            undefined, false);
 
          let promise2 = draw_vertical.DrawAxis(layer, w, h,
                                                draw_vertical.invert_side ? "translate(" + w + ",0)" : undefined,
                                                pad.fTicky ? w : 0, disable_axis_draw,
-                                               draw_vertical.invert_side ? 0 : this.frame_x());
+                                               draw_vertical.invert_side ? 0 : this.frame_x(), can_adjust_frame);
 
          return Promise.all([promise1, promise2]).then(() => {
 
             this.DrawGrids();
 
-            if (!shrink_forbidden && JSROOT.settings.CanAdjustFrame) {
+            if (can_adjust_frame) {
 
                let shrink = 0., ypos = draw_vertical.position;
 

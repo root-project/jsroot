@@ -868,7 +868,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Draw axis ticks
      * @returns {Promise} with gaps on left and right side
      * @private */
-   RAxisPainter.prototype.DrawTicks = function(axis_g, side, main_draw) {
+   RAxisPainter.prototype.drawTicks = function(axis_g, side, main_draw) {
       if (main_draw) this.ticks = [];
 
       this.handle.reset();
@@ -947,7 +947,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             textscale = Math.min(textscale, maxwidth / textwidth);
          }
 
-         if ((textscale > 0.01) && (textscale < 0.8) && !this.vertical && !rotate_lbls && (maxtextlen > 5) && (side > 0))
+         if ((textscale > 0.01) && (textscale < 0.8) && !painter.vertical && !rotate_lbls && (maxtextlen > 5) && (side > 0))
             lbls_tilt = true;
 
          let scale = textscale * (lbls_tilt ? 3 : 1);
@@ -1166,7 +1166,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.handle = this.CreateTicks(false, optionNoexp, optionNoopt, optionInt);
 
       // first draw ticks
-      let tgaps = this.DrawTicks(axis_g, side, true);
+      let tgaps = this.drawTicks(axis_g, side, true);
 
       this.optionUnlab = optionUnlab;
 
@@ -1203,7 +1203,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.DrawMainLine(this.axis_g);
 
       // first draw ticks
-      let tgaps = this.DrawTicks(this.axis_g, side, false);
+      let tgaps = this.drawTicks(this.axis_g, side, false);
 
       let labelsPromise = this.optionUnlab ? Promise.resolve(tgaps) : this.drawLabels(this.axis_g, side, tgaps);
 
@@ -1231,7 +1231,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (this.ticksSide == "invert") side = -side;
 
       // draw ticks again
-      let tgaps = this.DrawTicks(axis_g, side, false);
+      let tgaps = this.drawTicks(axis_g, side, false);
 
       // draw labels again
       let promise = this.optionUnlab || only_ticks ? Promise.resolve(tgaps) : this.drawLabels(axis_g, side, tgaps);
