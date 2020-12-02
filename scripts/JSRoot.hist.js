@@ -6496,10 +6496,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return false;
    }
 
+   /** @summary Build sum of all histograms
+     * @desc Build a separate list fStack containing the running sum of all histograms  */
    THStackPainter.prototype.BuildStack = function(stack) {
-      //  build sum of all histograms
-      //  Build a separate list fStack containing the running sum of all histograms
-
       if (!stack.fHists) return false;
       let nhists = stack.fHists.arr.length;
       if (nhists <= 0) return false;
@@ -6606,14 +6605,16 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    }
 
    /** @summary Draw next stack histogram */
-   THStackPainter.prototype.drawNextHisto = function(indx, assign_divid) {
+   THStackPainter.prototype.drawNextHisto = function(indx) {
 
       let stack = this.GetObject(),
           hlst = this.options.nostack ? stack.fHists : stack.fStack,
           nhists = (hlst && hlst.arr) ? hlst.arr.length : 0;
 
-      if (indx >= nhists)
+      if (indx >= nhists) {
+         console.log('All histograms are drawn!');
          return Promise.resolve(this);
+      }
 
       let rindx = this.options.horder ? indx : nhists-indx-1;
       let hist = hlst.arr[rindx];
@@ -6645,7 +6646,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       return JSROOT.draw(this.divid, hist, hopt).then(subp => {
           this.painters.push(subp);
-          if (assign_divid) this.SetDivId(this.divid); // only when first histogram drawn, we could assign divid
           return this.drawNextHisto(indx+1);
       });
    }
@@ -6734,9 +6734,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       stack.fHists = obj.fHists;
       stack.fStack = obj.fStack;
 
-      if (!this.options.nostack) {
+      if (!this.options.nostack)
          this.options.nostack = !this.BuildStack(stack);
-      }
 
       let isany = false;
       if (this.firstpainter) {
@@ -6759,10 +6758,21 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          isany = true;
       }
 
-      // try fully remove old histogram painters
-      let pp = this.pad_painter();
-      if (pp) pp.CleanPrimitives(this.Selector.bind(this, false));
-      this.painters = [];
+      // and now update histograms
+
+      let hlst = this.options.nostack ? stack.fHists : stack.fStack,
+          nhists = (hlst && hlst.arr) ? hlst.arr.length : 0;
+
+      if (nhists !== this.painters.length) {
+         console.error('Mismatch in number of historgams');
+         return false;
+      }
+
+      for (let indx = 0; indx < nhists; ++indx) {
+         let rindx = this.options.horder ? indx : nhists-indx-1;
+         let hist = hlst.arr[rindx];
+         this.painters[indx].UpdateObject(hist);
+      }
 
       this.did_update = isany;
 
@@ -6783,6 +6793,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       // remove flag set in update
       delete this.did_update;
 
+      console.log('Do nothing');
+
+      /*
       let promise = Promise.resolve(this);
 
       console.log('Start redraw stack');
@@ -6790,6 +6803,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          promise = this.firstpainter.Redraw();
 
       return promise.then(() => { console.log('and then redraw histograms'); return this.drawNextHisto(0); });
+      */
    }
 
    /** @summary draw THStack object
@@ -6803,7 +6817,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          return null; // drawing not needed
 
       let painter = new THStackPainter(stack, opt);
-      painter.SetDivId(divid, -1); // it maybe no element to set divid
+      painter.SetDivId(divid, 2); // in list of primitives, but not main painter
       painter.DecodeOptions(opt);
 
      if (!painter.options.nostack)
@@ -6824,12 +6838,11 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          promise = JSROOT.draw(divid, stack.fHistogram, hopt).then(subp => {
              painter.firstpainter = subp;
-             painter.SetDivId(divid); // only when first histogram drawn, we could assign divid
              return painter;
          });
       }
 
-      return promise.then(() => painter.drawNextHisto(0, painter.options.same));
+      return promise.then(() => painter.drawNextHisto(0));
    }
 
    // =================================================================================
