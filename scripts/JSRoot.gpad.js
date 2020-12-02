@@ -2376,7 +2376,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return pad_visible;
    }
 
-   TPadPainter.prototype.CheckSpecial = function(obj) {
+   /** @summary Check if it is special object, which should be handled separately
+     * @desc It can be TStyle or list of colors or palette object
+     * @returns {boolean} tru if any */
+   TPadPainter.prototype.checkSpecial = function(obj) {
 
       if (!obj) return false;
 
@@ -2424,11 +2427,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return false;
    }
 
-   TPadPainter.prototype.CheckSpecialsInPrimitives = function(can) {
+   /** @summary Check if special objects appears in primitives
+     * @desc it could be list of colors or palette */
+   TPadPainter.prototype.checkSpecialsInPrimitives = function(can) {
       let lst = can ? can.fPrimitives : null;
       if (!lst) return;
       for (let i = 0; i < lst.arr.length; ++i) {
-         if (this.CheckSpecial(lst.arr[i])) {
+         if (this.checkSpecial(lst.arr[i])) {
             lst.arr.splice(i,1);
             lst.opt.splice(i,1);
             i--;
@@ -2712,7 +2717,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.pad.fPhi = obj.fPhi;
       this.pad.fTheta = obj.fTheta;
 
-      if (this.iscan) this.CheckSpecialsInPrimitives(obj);
+      if (this.iscan) this.checkSpecialsInPrimitives(obj);
 
       let fp = this.frame_painter();
       if (fp) fp.UpdateAttributes(!fp.modified_NDC);
@@ -4123,14 +4128,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return res;
    }
 
-   /** Check if TGeo objects in the canvas - draw them directly */
-   TCanvasPainter.prototype.DirectGeoDraw = function() {
+   /** @summary Check if TGeo objects in the canvas - draw them directly */
+   TCanvasPainter.prototype.directGeoDraw = function() {
       let lst = this.pad ? this.pad.fPrimitives : null;
-      if (!lst || (lst.arr.length != 1)) return;
-
-      let obj = lst.arr[0];
-      if (obj && obj._typename && (obj._typename.indexOf("TGeo")==0))
-         return JSROOT.draw(this.divid, obj, lst.opt[0]); // return promise
+      if (lst && (lst.arr.length == 1))
+         if (lst.arr[0] && lst.arr[0]._typename && (lst.arr[0]._typename.indexOf("TGeo")==0))
+            return JSROOT.draw(this.divid, lst.arr[0], lst.opt[0]); // return promise
    }
 
    let drawCanvas = (divid, can, opt) => {
@@ -4139,6 +4142,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       let painter = new TCanvasPainter(can);
       painter.SetDivId(divid, -1); // just assign id
+      painter.checkSpecialsInPrimitives(can);
 
       if (!nocanvas && can.fCw && can.fCh && !JSROOT.BatchMode) {
          let rect0 = painter.select_main().node().getBoundingClientRect();
@@ -4148,12 +4152,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          }
       }
 
-      let direct = painter.DirectGeoDraw();
+      let direct = painter.directGeoDraw();
       if (direct) return direct;
 
       painter.DecodeOptions(opt);
       painter.normal_canvas = !nocanvas;
-      painter.CheckSpecialsInPrimitives(can);
       painter.CreateCanvasSvg(0);
       painter.SetDivId(divid);  // now add to painters list
 
