@@ -756,7 +756,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                this.position = rect1.left - rect2.left; // use to control left position of Y scale
             }
             if (node1 && !node2)
-              console.warn("Why PAD element missing here???");
+               console.warn("Why PAD element missing here???");
+            else
+               console.log('position is', this.position)
          }
 
          if (!axis.fTitle || disable_axis_drawing) return true;
@@ -1330,6 +1332,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
 
       if (!disable_axis_draw) {
+         console.log('drawing frame axes')
+
          let promise1 = draw_horiz.DrawAxis(layer, w, h,
                                             draw_horiz.invert_side ? undefined : "translate(0," + h + ")",
                                             pad.fTickx ? -h : 0, disable_axis_draw);
