@@ -1051,7 +1051,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Refresh HTML for hierachy painter
      * @returns {Promise} when completed */
    HierarchyPainter.prototype.refreshHtml = function() {
-      if (!this.divid || JSROOT.BatchMode) return Promise.resolve();
+      if (!this.divid || JSROOT.BatchMode)
+         return Promise.resolve(this);
       return JSROOT.require('jq2d').then(() => this.refreshHtml());
    }
 
@@ -2432,9 +2433,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          for (let i=0;i<jsonarr.length;++i) jsonarr[i] = filesdir + jsonarr[i];
       }
 
-      if ((itemsarr.length==0) && GetOption("item")==="") itemsarr.push("");
+      if ((itemsarr.length == 0) && GetOption("item") === "") itemsarr.push("");
 
-      if ((jsonarr.length==1) && (itemsarr.length==0) && (expanditems.length==0)) itemsarr.push("");
+      if ((jsonarr.length == 1) && (itemsarr.length == 0) && (expanditems.length==0)) itemsarr.push("");
 
       if (!this.disp_kind) {
          if ((typeof layout == "string") && (layout.length > 0))
@@ -2493,22 +2494,25 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             promise = this.expandItem(expanditems.shift());
          else if (style.length > 0)
             promise = this.applyStyle(style.shift());
-         else {
-            this.refreshHtml();
-            return this.displayItems(itemsarr, optionsarr).then(() => {
-               if (itemsarr) this.refreshHtml();
-               this.setMonitoring(monitor);
-               return this; // this is final return
-           });
-         }
+         else
+            return this.refreshHtml()
+                   .then(() => this.displayItems(itemsarr, optionsarr))
+                   .then(() => {
+                      this.setMonitoring(monitor);
+                      return itemsarr ? this.refreshHtml() : this; // this is final return
+                   });
 
          return promise.then(openAllFiles, openAllFiles);
       }
 
       let h0 = null;
       if (this.is_online) {
-         if (typeof GetCachedHierarchy == 'function') h0 = GetCachedHierarchy();
+         if (typeof GetCachedHierarchy == 'function')
+            h0 = GetCachedHierarchy();
          if (typeof h0 !== 'object') h0 = "";
+
+         if ((this.is_online == "draw") && !itemsarr.length)
+            itemsarr.push("");
       }
 
       if (h0 !== null)
@@ -2660,13 +2664,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       return hpainter.startGUI(myDiv, () => {
          if (!drawing) return hpainter;
-
          let func = JSROOT.findFunction('GetCachedObject');
          let obj = (typeof func == 'function') ? JSROOT.parse(func()) : null;
          if (obj) hpainter._cached_draw_object = obj;
          let opt = d.get("opt", "");
 
          if (d.has("websocket")) opt+=";websocket";
+         console.log('try to draw first object');
 
          return hpainter.display("", opt).then(() => { return hpainter; });
       });
