@@ -477,6 +477,84 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return true;
    }
 
+   /** @summary Create hierarchy for streamer info object
+     * @memberof JSROOT.Painter
+     * @private */
+   function createStreamerInfoContent(lst) {
+      let h = { _name : "StreamerInfo", _childs : [] };
+
+      for (let i = 0; i < lst.arr.length; ++i) {
+         let entry = lst.arr[i]
+
+         if (entry._typename == "TList") continue;
+
+         if (typeof entry.fName == 'undefined') {
+            console.warn(`strange element in StreamerInfo with type ${entry._typename}`);
+            continue;
+         }
+
+         let item = {
+            _name : entry.fName + ";" + entry.fClassVersion,
+            _kind : "class " + entry.fName,
+            _title : "class:" + entry.fName + ' version:' + entry.fClassVersion + ' checksum:' + entry.fCheckSum,
+            _icon: "img_class",
+            _childs : []
+         };
+
+         if (entry.fTitle != '') item._title += '  ' + entry.fTitle;
+
+         h._childs.push(item);
+
+         if (typeof entry.fElements == 'undefined') continue;
+         for ( let l = 0; l < entry.fElements.arr.length; ++l) {
+            let elem = entry.fElements.arr[l];
+            if (!elem || !elem.fName) continue;
+            let info = elem.fTypeName + " " + elem.fName,
+                title = elem.fTypeName + " type:" + elem.fType;
+            if (elem.fArrayDim===1)
+               info += "[" + elem.fArrayLength + "]";
+            else
+               for (let dim=0;dim<elem.fArrayDim;++dim)
+                  info+="[" + elem.fMaxIndex[dim] + "]";
+            if (elem.fBaseVersion===4294967295) info += ":-1"; else
+            if (elem.fBaseVersion!==undefined) info += ":" + elem.fBaseVersion;
+            info += ";";
+            if (elem.fTitle != '') info += " // " + elem.fTitle;
+
+            item._childs.push({ _name : info, _title: title, _kind: elem.fTypeName, _icon: (elem.fTypeName == 'BASE') ? "img_class" : "img_member" });
+         }
+         if (item._childs.length == 0) delete item._childs;
+      }
+
+      return h;
+   }
+
+   /** @summary Create hierarchy for object inspector
+     * @memberof JSROOT.Painter
+     * @private */
+   function createInspectorContent(obj) {
+      let h = { _name: "Object", _title: "", _click_action: "expand", _nosimple: false, _do_context: true };
+
+      if ((typeof obj.fName === 'string') && (obj.fName.length > 0))
+         h._name = obj.fName;
+
+      if ((typeof obj.fTitle === 'string') && (obj.fTitle.length > 0))
+         h._title = obj.fTitle;
+
+      if (obj._typename)
+         h._title += "  type:" + obj._typename;
+
+      if (JSROOT.isRootCollection(obj)) {
+         h._name = obj.name || obj._typename;
+         listHierarchy(h, obj);
+      } else {
+         objectHierarchy(h, obj);
+      }
+
+      return h;
+   }
+
+
    /** @summary Parse string value as array.
     * @desc It could be just simple string:  "value" or
     * array with or without string quotes:  [element], ['elem1',elem2]
@@ -1172,10 +1250,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             mdi.forEachPainter((p, frame) => {
                if (p.GetItemName() != display_itemname) return;
-
-               console.log('Has item ', p.GetItemName(), 'drawopt', p.GetItemDrawOpt(), 'new', drawopt)
-
-
                // verify that object was drawn with same option as specified now (if any)
                if (!updating && (drawopt!=null) && (p.GetItemDrawOpt()!=drawopt)) return;
                mdi.activateFrame(frame);
@@ -2522,6 +2596,17 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return JSROOT.require('jq2d').then(() => this.createBrowser(browser_kind, update_html));
    }
 
+   /** @summary Redraw hierarchy
+     * @desc works only when inspector or streamer info is displayed */
+   HierarchyPainter.prototype.RedrawObject = function(obj) {
+      if (!this._inspector && !this._streamer_info) return false;
+      if (this._streamer_info)
+         this.h = createStreamerInfoContent(obj)
+      else
+         this.h = createInspectorContent(obj);
+      return this.refreshHtml().then(() => { this.SetDivId(this.divid); });
+   }
+
    // ======================================================================================
 
    /** @summary tag item in hierarchy painter as streamer info
@@ -2592,50 +2677,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    jsrp.drawStreamerInfo = function(divid, lst) {
       let painter = new HierarchyPainter('sinfo', divid, 'white');
 
-      painter.h = { _name : "StreamerInfo", _childs : [] };
-
-      for (let i = 0; i < lst.arr.length; ++i) {
-         let entry = lst.arr[i]
-
-         if (entry._typename == "TList") continue;
-
-         if (typeof (entry.fName) == 'undefined') {
-            console.warn(`strange element in StreamerInfo with type ${entry._typename}`);
-            continue;
-         }
-
-         let item = {
-            _name : entry.fName + ";" + entry.fClassVersion,
-            _kind : "class " + entry.fName,
-            _title : "class:" + entry.fName + ' version:' + entry.fClassVersion + ' checksum:' + entry.fCheckSum,
-            _icon: "img_class",
-            _childs : []
-         };
-
-         if (entry.fTitle != '') item._title += '  ' + entry.fTitle;
-
-         painter.h._childs.push(item);
-
-         if (typeof entry.fElements == 'undefined') continue;
-         for ( let l = 0; l < entry.fElements.arr.length; ++l) {
-            let elem = entry.fElements.arr[l];
-            if (!elem || !elem.fName) continue;
-            let info = elem.fTypeName + " " + elem.fName,
-                title = elem.fTypeName + " type:" + elem.fType;
-            if (elem.fArrayDim===1)
-               info += "[" + elem.fArrayLength + "]";
-            else
-               for (let dim=0;dim<elem.fArrayDim;++dim)
-                  info+="[" + elem.fMaxIndex[dim] + "]";
-            if (elem.fBaseVersion===4294967295) info += ":-1"; else
-            if (elem.fBaseVersion!==undefined) info += ":" + elem.fBaseVersion;
-            info += ";";
-            if (elem.fTitle != '') info += " // " + elem.fTitle;
-
-            item._childs.push({ _name : info, _title: title, _kind: elem.fTypeName, _icon: (elem.fTypeName == 'BASE') ? "img_class" : "img_member" });
-         }
-         if (item._childs.length == 0) delete item._childs;
-      }
+      painter._streamer_info = true;
+      painter.h = createStreamerInfoContent(lst);
 
       // painter.select_main().style('overflow','auto');
 
@@ -2646,29 +2689,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    // ======================================================================================
-
-
-   HierarchyPainter.prototype.createInspectorContent = function(obj) {
-      let h = { _name: "Object", _title: "", _click_action: "expand", _nosimple: false, _do_context: true };
-
-      if ((typeof obj.fName === 'string') && (obj.fName.length > 0))
-         h._name = obj.fName;
-
-      if ((typeof obj.fTitle === 'string') && (obj.fTitle.length > 0))
-         h._title = obj.fTitle;
-
-      if (obj._typename)
-         h._title += "  type:" + obj._typename;
-
-      if (JSROOT.isRootCollection(obj)) {
-         h._name = obj.name || obj._typename;
-         listHierarchy(h, obj);
-      } else {
-         objectHierarchy(h, obj);
-      }
-
-      return h;
-   }
 
    /** @summary Display inspector
      * @private */
@@ -2709,7 +2729,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             });
       }
 
-      painter.h = painter.createInspectorContent(obj);
+      painter.h = createInspectorContent(obj);
 
       return painter.refreshHtml().then(() => {
          painter.SetDivId(divid);

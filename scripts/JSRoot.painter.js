@@ -1451,9 +1451,9 @@ JSROOT.define(['d3'], (d3) => {
       if (!this.UpdateObject(obj)) return false;
       let current = document.body.style.cursor;
       document.body.style.cursor = 'wait';
-      this.RedrawPad();
+      let res = this.RedrawPad();
       document.body.style.cursor = current;
-      return true;
+      return res || true;
    }
 
    /** @summary Checks if draw elements were resized and drawing should be updated
