@@ -2259,8 +2259,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       // artifically add y range to display axes
       if (this.ymin === this.ymax) this.ymax += 1;
 
-      console.log('Configure ranges for histogram axes', histo.fName, this.xmin, this.xmax);
-
       fp.SetAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, 0, 0);
       fp.CreateXY({ ndim: this.Dimension(),
                     check_pad_range: this.check_pad_range,
@@ -6483,7 +6481,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    THStackPainter.prototype.Cleanup = function() {
       let pp = this.pad_painter();
-      if (pp) pp.CleanPrimitives(this.Selector.bind(this, true));
+      if (pp) pp.CleanPrimitives(objp => { return (objp === this.firstpainter) || (this.painters.indexOf(objp) >= 0); });
       delete this.firstpainter;
       delete this.painters;
       JSROOT.ObjectPainter.prototype.Cleanup.call(this);
@@ -6611,10 +6609,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           hlst = this.options.nostack ? stack.fHists : stack.fStack,
           nhists = (hlst && hlst.arr) ? hlst.arr.length : 0;
 
-      if (indx >= nhists) {
-         console.log('All histograms are drawn!');
+      if (indx >= nhists)
          return Promise.resolve(this);
-      }
 
       let rindx = this.options.horder ? indx : nhists-indx-1;
       let hist = hlst.arr[rindx];
@@ -6733,11 +6729,11 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       stack.fHists = obj.fHists;
       stack.fStack = obj.fStack;
+      stack.fTitle = obj.fTitle;
 
       if (!this.options.nostack)
          this.options.nostack = !this.BuildStack(stack);
 
-      let isany = false;
       if (this.firstpainter) {
          let src = obj.fHistogram;
          if (!src)
@@ -6754,56 +6750,35 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             this.firstpainter.ymin = mm.min;
             this.firstpainter.ymax = mm.max;
          }
-
-         isany = true;
       }
 
       // and now update histograms
-
       let hlst = this.options.nostack ? stack.fHists : stack.fStack,
           nhists = (hlst && hlst.arr) ? hlst.arr.length : 0;
 
       if (nhists !== this.painters.length) {
-         console.error('Mismatch in number of historgams');
-         return false;
+         let pp = this.pad_painter();
+         if (pp) pp.CleanPrimitives(objp => { return this.painters.indexOf(objp) >= 0; });
+         this.painters = [];
+         this.did_update = true;
+      } else {
+         for (let indx = 0; indx < nhists; ++indx) {
+            let rindx = this.options.horder ? indx : nhists-indx-1;
+            let hist = hlst.arr[rindx];
+            this.painters[indx].UpdateObject(hist);
+         }
       }
 
-      for (let indx = 0; indx < nhists; ++indx) {
-         let rindx = this.options.horder ? indx : nhists-indx-1;
-         let hist = hlst.arr[rindx];
-         this.painters[indx].UpdateObject(hist);
-      }
-
-      this.did_update = isany;
-
-      return isany;
+      return true;
    }
 
-   /** @summary Returns true if painter belongs to stack, used in cleanup */
-   THStackPainter.prototype.Selector = function(fullclear, painter) {
-      if (fullclear && (painter===this.firstpainter)) return true;
-      return this.painters.indexOf(painter) >= 0;
-   }
-
-   /** @summary Redraw THStack, changes output only if Update was performed before */
+   /** @summary Redraw THStack,
+     * @desc Do something if previous Update had changed number of histograms */
    THStackPainter.prototype.Redraw = function() {
-      // do nothing in case of simple redraw
-      if (!this.did_update) return;
-
-      // remove flag set in update
-      delete this.did_update;
-
-      console.log('Do nothing');
-
-      /*
-      let promise = Promise.resolve(this);
-
-      console.log('Start redraw stack');
-      if (this.firstpainter)
-         promise = this.firstpainter.Redraw();
-
-      return promise.then(() => { console.log('and then redraw histograms'); return this.drawNextHisto(0); });
-      */
+      if (this.did_update) {
+         delete this.did_update;
+         return this.drawNextHisto(0);
+       }
    }
 
    /** @summary draw THStack object

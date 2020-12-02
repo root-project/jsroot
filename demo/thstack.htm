@@ -21,12 +21,15 @@
 
      function CreateStack(loop) {
         var stack = JSROOT.Create("THStack");
+        stack.fTitle = "Testing THStack update " + loop;
 
        for (var n=0;n<5;n++) {
-           var hist = JSROOT.CreateHistogram("TH1I", 10);
+           // time to time exclude one histogram to see how THStack update is working
+           if ((loop % 5 == 3) && (n == 1)) continue;
+           var hist = JSROOT.CreateHistogram("TH1I", 11);
            hist.fName ="hist"+n;
-           hist.Fill(n*2,10);
-           if (loop%5 === n) hist.Fill(n*2,2);
+           hist.Fill(n*2+1,10);
+           if (loop%5 === n) hist.Fill(n*2+1,2);
            hist.fLineColor = n+2;
            stack.fHists.Add(hist);
         }
@@ -36,7 +39,7 @@
      JSROOT.draw("object_draw", CreateStack(0), "nostack");
 
      var cnt = 0;
-     setInterval(() => JSROOT.redraw("object_draw", CreateStack(++cnt), "nostack"), 3000);
+     setInterval(() => JSROOT.redraw("object_draw", CreateStack(++cnt), "nostack"), 2000);
 
    </script>
 

@@ -725,9 +725,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          labelsPromise = Promise.resolve(labelSize0);
 
       return labelsPromise.then(labelSize => {
-
-         console.log('Labels size', this.name, 'size', labelSize);
-
          if (JSROOT.settings.Zooming && !this.disable_zooming && !JSROOT.BatchMode) {
             let r = axis_g.append("svg:rect")
                           .attr("class", "axis_zoom")
@@ -756,8 +753,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             }
             if (node1 && !node2)
                console.warn("Why PAD element missing here???");
-            else
-               console.log('position is', this.position)
          }
 
          if (!axis.fTitle || disable_axis_drawing) return true;
@@ -1331,8 +1326,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
 
       if (!disable_axis_draw) {
-         console.log('drawing frame axes')
-
          let promise1 = draw_horiz.DrawAxis(layer, w, h,
                                             draw_horiz.invert_side ? undefined : "translate(0," + h + ")",
                                             pad.fTickx ? -h : 0, disable_axis_draw);
@@ -1343,7 +1336,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                                                draw_vertical.invert_side ? 0 : this.frame_x());
 
          return Promise.all([promise1, promise2]).then(() => {
-            console.log('both axes finally drawn');
 
             this.DrawGrids();
 
