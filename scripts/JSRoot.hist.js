@@ -2130,6 +2130,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                for (let n=0;n<obj.fFunctions.arr.length;++n) {
                   let func = obj.fFunctions.arr[n];
                   if (!func || !func._typename) continue;
+
+                  if (!this.needDrawFunc(histo, func)) continue;
+
                   let funcpainter = null, func_indx = -1;
 
                   // try to find matching object in associated list of painters
@@ -2544,14 +2547,23 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          histo.fFunctions.Add(obj);
    }
 
+   /** @summary Check if such function should be drawn directly */
+   THistPainter.prototype.needDrawFunc = function(histo, func) {
+      if (func._typename === 'TPaveText' || func._typename === 'TPaveStats')
+          return !histo.TestBit(TH1StatusBits.kNoStats) && !this.options.NoStat;
+
+       if (func._typename === 'TF1')
+          return !func.TestBit(JSROOT.BIT(9));
+
+       return func._typename !== 'TPaletteAxis';
+   }
+
    /** @summary Method draws next function from the functions list
      * @returns {Promise} fulfilled when drawing is ready */
-   THistPainter.prototype.DrawNextFunction = function(indx) {
-
+   THistPainter.prototype.drawNextFunction = function(indx) {
       let histo = this.GetHisto();
-      if (!this.options.Func || !histo.fFunctions ||
-          (indx >= histo.fFunctions.arr.length))
-             return Promise.resolve(true);
+      if (!this.options.Func || !histo.fFunctions || (indx >= histo.fFunctions.arr.length))
+          return Promise.resolve(true);
 
       let func = histo.fFunctions.arr[indx],
           opt = histo.fFunctions.opt[indx],
@@ -2560,23 +2572,16 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       // no need to do something if painter for object was already done
       // object will be redraw automatically
-      if (func_painter === null) {
-         if (func._typename === 'TPaveText' || func._typename === 'TPaveStats') {
-            do_draw = !histo.TestBit(TH1StatusBits.kNoStats) && !this.options.NoStat;
-         } else if (func._typename === 'TF1') {
-            do_draw = !func.TestBit(JSROOT.BIT(9));
-         } else {
-            do_draw = (func._typename !== 'TPaletteAxis');
-         }
-      }
+      if (func_painter === null)
+         do_draw = this.needDrawFunc(histo, func);
 
       if (!do_draw)
-         return this.DrawNextFunction(indx+1);
+         return this.drawNextFunction(indx+1);
 
       return JSROOT.draw(this.divid, func, opt).then(painter => {
          if (painter && (typeof painter == "object"))
             painter.child_painter_id = this.hist_painter_id;
-         return this.DrawNextFunction(indx+1);
+         return this.drawNextFunction(indx+1);
       });
    }
 
@@ -4313,7 +4318,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       painter.CreateStat(); // only when required
 
       return painter.callDrawFunc()
-            .then(() => painter.DrawNextFunction(0))
+            .then(() => painter.drawNextFunction(0))
             .then(() => {
                if (!painter.options.Mode3D && painter.options.AutoZoom)
                   painter.AutoZoom();
@@ -6350,7 +6355,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       painter.CreateStat(); // only when required
 
       return painter.callDrawFunc()
-                    .then(() => painter.DrawNextFunction(0))
+                    .then(() => painter.drawNextFunction(0))
                     .then(()=> {
          if (!painter.Mode3D && painter.options.AutoZoom) painter.AutoZoom();
             painter.FillToolbar();
