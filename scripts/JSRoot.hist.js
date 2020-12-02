@@ -1091,7 +1091,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       menu.AddAttributesMenu(this);
 
       if (menu.size() > 0)
-         menu.add('Inspect', this.ShowInspector);
+         menu.add('Inspect', this.showInspector);
 
       return menu.size() > 0;
    }
@@ -2165,7 +2165,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             if (pp && (newfuncs.length > 0)) {
                let arr = [], prev_name = pp.has_canvas ? pp.CurrentPadName(pp.this_pad_name) : undefined;
                for (let k = 0; k < newfuncs.length; ++k)
-                  arr.push(JSROOT.draw_new(this.divid, newfuncs[k]));
+                  arr.push(JSROOT.draw(this.divid, newfuncs[k]));
                Promise.all(arr).then(parr => {
                   for (let k = 0; k < parr.length; ++k)
                      if (parr[k]) parr[k].child_painter_id = pid;
@@ -4206,7 +4206,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       menu.addDrawMenu("Draw with", sett.opts, function(arg) {
          if (arg==='inspect')
-            return this.ShowInspector();
+            return this.showInspector();
 
          this.DecodeOptions(arg);
 
@@ -4466,7 +4466,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       menu.addDrawMenu("Draw with", sett.opts, function(arg) {
          if (arg==='inspect')
-            return this.ShowInspector();
+            return this.showInspector();
          this.DecodeOptions(arg);
          this.InteractiveRedraw("pad", "drawopt");
       });

@@ -1172,6 +1172,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             mdi.forEachPainter((p, frame) => {
                if (p.GetItemName() != display_itemname) return;
+
+               console.log('Has item ', p.GetItemName(), 'drawopt', p.GetItemDrawOpt(), 'new', drawopt)
+
+
                // verify that object was drawn with same option as specified now (if any)
                if (!updating && (drawopt!=null) && (p.GetItemDrawOpt()!=drawopt)) return;
                mdi.activateFrame(frame);
@@ -2562,7 +2566,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          myDiv.style('position',"absolute").style('left',0).style('top',0).style('bottom',0).style('right',0).style('padding',1);
       }
 
-      let hpainter = new JSROOT.HierarchyPainter('root', null);
+      let hpainter = new HierarchyPainter('root', null);
 
       if (online) hpainter.is_online = drawing ? "draw" : "online";
       if (drawing) hpainter.exclude_browser = true;
@@ -2586,7 +2590,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Display streamer info
      * @private */
    jsrp.drawStreamerInfo = function(divid, lst) {
-      let painter = new JSROOT.HierarchyPainter('sinfo', divid, 'white');
+      let painter = new HierarchyPainter('sinfo', divid, 'white');
 
       painter.h = { _name : "StreamerInfo", _childs : [] };
 
@@ -2643,12 +2647,35 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    // ======================================================================================
 
+
+   HierarchyPainter.prototype.createInspectorContent = function(obj) {
+      let h = { _name: "Object", _title: "", _click_action: "expand", _nosimple: false, _do_context: true };
+
+      if ((typeof obj.fName === 'string') && (obj.fName.length > 0))
+         h._name = obj.fName;
+
+      if ((typeof obj.fTitle === 'string') && (obj.fTitle.length > 0))
+         h._title = obj.fTitle;
+
+      if (obj._typename)
+         h._title += "  type:" + obj._typename;
+
+      if (JSROOT.isRootCollection(obj)) {
+         h._name = obj.name || obj._typename;
+         listHierarchy(h, obj);
+      } else {
+         objectHierarchy(h, obj);
+      }
+
+      return h;
+   }
+
    /** @summary Display inspector
      * @private */
    jsrp.drawInspector = function(divid, obj) {
 
       JSROOT.cleanup(divid);
-      let painter = new JSROOT.HierarchyPainter('inspector', divid, 'white');
+      let painter = new HierarchyPainter('inspector', divid, 'white');
 
       // in batch mode HTML drawing is not possible, just keep object reference for a minute
       if (JSROOT.BatchMode) {
@@ -2658,22 +2685,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       painter.default_by_click = "expand"; // default action
       painter.with_icons = false;
-      painter.h = { _name: "Object", _title: "", _click_action: "expand", _nosimple: false, _do_context: true };
-      if ((typeof obj.fTitle === 'string') && (obj.fTitle.length>0))
-         painter.h._title = obj.fTitle;
+      painter._inspector = true; // keep
 
       if (painter.select_main().classed("jsroot_inspector"))
          painter.removeInspector = function() {
             this.select_main().remove();
          }
-
-      if (obj._typename)
-         painter.h._title += "  type:" + obj._typename;
-
-      if ((typeof obj.fName === 'string') && (obj.fName.length > 0))
-         painter.h._name = obj.fName;
-
-      // painter.select_main().style('overflow','auto');
 
       painter.fill_context = function(menu, hitem) {
          let sett = JSROOT.getDrawSettings(hitem._kind, 'nosame');
@@ -2685,19 +2702,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                   divid = this.select_main().node().parentNode;
                   this.removeInspector();
                   if (arg == "inspect")
-                     return this.ShowInspector(obj);
+                     return this.showInspector(obj);
                }
                JSROOT.cleanup(divid);
                JSROOT.draw(divid, obj, arg);
             });
       }
 
-      if (JSROOT.isRootCollection(obj)) {
-         painter.h._name = obj.name || obj._typename;
-         listHierarchy(painter.h, obj);
-      } else {
-         objectHierarchy(painter.h, obj);
-      }
+      painter.h = painter.createInspectorContent(obj);
 
       return painter.refreshHtml().then(() => {
          painter.SetDivId(divid);

@@ -1739,7 +1739,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
       menu.addDrawMenu("Draw with", sett.opts, function(arg) {
          if (arg==='inspect')
-            return this.ShowInspector();
+            return this.showInspector();
 
          this.DecodeOptions(arg); // obsolete, should be implemented differently
 
@@ -1956,7 +1956,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
       menu.addDrawMenu("Draw with", sett.opts, function(arg) {
          if (arg==='inspect')
-            return this.ShowInspector();
+            return this.showInspector();
          this.DecodeOptions(arg);
          this.InteractiveRedraw("pad", "drawopt");
       });

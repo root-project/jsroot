@@ -1375,15 +1375,14 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
       let hitem = this.findItem(itemname);
       if (!hitem) return;
 
-      if (typeof this.fill_context !== 'function') return;
-
-      jsrp.createMenu(this, evnt).then(menu => {
-         this.fill_context(menu, hitem);
-         if (menu.size() > 0) {
-            menu.tree_node = elem.parentNode;
-            menu.show();
-         }
-      });
+      if (typeof this.fill_context == 'function')
+         jsrp.createMenu(this, evnt).then(menu => {
+            this.fill_context(menu, hitem);
+            if (menu.size() > 0) {
+               menu.tree_node = elem.parentNode;
+               menu.show();
+            }
+         });
    }
 
    /** @summary Handle context menu in the hieararchy
