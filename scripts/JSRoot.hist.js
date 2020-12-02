@@ -6785,10 +6785,11 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       let promise = Promise.resolve(this);
 
+      console.log('Start redraw stack');
       if (this.firstpainter)
          promise = this.firstpainter.Redraw();
 
-      return promise.then(() => this.drawNextHisto(0));
+      return promise.then(() => { console.log('and then redraw histograms'); return this.drawNextHisto(0); });
    }
 
    /** @summary draw THStack object

@@ -512,10 +512,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       let label_color = this.get_color(axis.fLabelColor),
           center_lbls = this.IsCenterLabels(),
           rotate_lbls = axis.TestBit(JSROOT.EAxisBits.kLabelsVert),
-          textscale = 1, maxtextlen = 0, labelfont = null,
+          textscale = 1, maxtextlen = 0, applied_scale = 0,
           label_g = [ axis_g.append("svg:g").attr("class","axis_labels") ],
-          lbl_pos = handle.lbl_pos || handle.major,
-          firstResolve, numDraw = 0, lbl_tilt = false;
+          lbl_pos = handle.lbl_pos || handle.major, lbl_tilt = false;
 
       if (this.lbls_both_sides)
          label_g.push(axis_g.append("svg:g").attr("class","axis_labels").attr("transform", this.vertical ? "translate(" + w + ",0)" : "translate(0," + (-h) + ")"));
@@ -532,9 +531,19 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          } else if (painter.vertical && max_text_width && this.normal_side && (max_text_width - labeloffset > 20) && (textwidth > max_text_width - labeloffset)) {
             textscale = Math.min(textscale, (max_text_width - labeloffset) / textwidth);
          }
-         if ((--numDraw == 0) && firstResolve)
-            firstResolve(true);
+
+         if ((textscale > 0.01) && (textscale < 0.7) && !this.vertical && !rotate_lbls && (maxtextlen > 5) && (label_g.length == 1))
+            lbl_tilt = true;
+
+         let scale = textscale * (lbl_tilt ? 3 : 1);
+
+         if ((scale > 0.01) && (scale < 1)) {
+            applied_scale = 1/scale;
+            painter.TextScaleFactor(applied_scale, label_g[0]);
+         }
       }
+
+      let labelfont = new JSROOT.FontHandler(axis.fLabelFont, labelSize);
 
       for (let lcnt = 0; lcnt < label_g.length; ++lcnt) {
 
@@ -542,11 +551,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          let lastpos = 0, fix_coord = this.vertical ? -labeloffset*side : (labeloffset+2)*side + ticksPlusMinus*tickSize;
 
-         labelfont = new JSROOT.FontHandler(axis.fLabelFont, labelSize);
-
          this.startTextDrawing(labelfont, 'font', label_g[lcnt]);
 
-         for (let nmajor=0;nmajor<lbl_pos.length;++nmajor) {
+         for (let nmajor = 0; nmajor < lbl_pos.length; ++nmajor) {
 
             let lbl = this.format(lbl_pos[nmajor], true);
             if (lbl === null) continue;
@@ -579,8 +586,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             if (rotate_lbls) arg.rotate = 270;
 
-            numDraw++;
-            arg.post_process = process_drawtext_ready;
+            // only for major text drawing scale factor need to be checked
+            if (lcnt == 0) arg.post_process = process_drawtext_ready;
 
             this.drawText(arg);
 
@@ -603,26 +610,16 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             });
       }
 
-      return new Promise(resolve => {
-         if (numDraw === 0)
-            resolve(true);
-         else
-            firstResolve = resolve;
+      // first complete major labels drawing
+      return this.finishTextDrawing(label_g[0]).then(() => {
+         if (label_g.length > 1) {
+            // now complete drawing of second half with scaling if necessary
+            if (applied_scale)
+               this.TextScaleFactor(applied_scale, label_g[1]);
+            return this.finishTextDrawing(label_g[1]);
+          }
+          return true;
       }).then(() => {
-         lbl_tilt = ((textscale > 0.01) && (textscale < 0.7) && !this.vertical && !rotate_lbls && (maxtextlen > 5) && (label_g.length == 1));
-         if (lbl_tilt) textscale *= 3;
-
-         if ((textscale > 0.01) && (textscale < 1))
-            for (let cnt = 0; cnt < label_g.length; ++cnt)
-               this.TextScaleFactor(1/textscale, label_g[cnt]);
-
-         let arr = [];
-         for (let lcnt = 0; lcnt < label_g.length; ++lcnt)
-            arr.push(this.finishTextDrawing(label_g[lcnt]));
-
-         return Promise.all(arr);
-      }).then(() => {
-
          if (lbl_tilt)
             label_g[0].selectAll("text").each(function() {
                let txt = d3.select(this), tr = txt.attr("transform");
@@ -633,10 +630,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          return labelSize;
       });
-
    }
 
-   /** @summary function draws  TAxis or TGaxis object  */
+   /** @summary function draws  TAxis or TGaxis object
+     * @returns Promise*/
    TAxisPainter.prototype.DrawAxis = function(layer, w, h, transform, secondShift, disable_axis_drawing, max_text_width) {
 
       let axis = this.GetObject(), chOpt = "",
@@ -728,6 +725,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          labelsPromise = Promise.resolve(labelSize0);
 
       return labelsPromise.then(labelSize => {
+
+         console.log('Labels size', this.name, 'size', labelSize);
 
          if (JSROOT.settings.Zooming && !this.disable_zooming && !JSROOT.BatchMode) {
             let r = axis_g.append("svg:rect")
@@ -1344,6 +1343,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                                                draw_vertical.invert_side ? 0 : this.frame_x());
 
          return Promise.all([promise1, promise2]).then(() => {
+            console.log('both axes finally drawn');
+
             this.DrawGrids();
 
             if (!shrink_forbidden && JSROOT.settings.CanAdjustFrame) {
