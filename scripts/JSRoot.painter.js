@@ -3743,17 +3743,19 @@ JSROOT.define(['d3'], (d3) => {
       if (opt == 'inspect')
          return JSROOT.require("hierarchy").then(() => jsrp.drawInspector(divid, obj));
 
-      let handle;
-      if ('_typename' in obj)
+      let handle, type_info;
+      if ('_typename' in obj) {
+         type_info = "type " + obj._typename;
          handle = JSROOT.getDrawHandle("ROOT." + obj._typename, opt);
-      else if ('_kind' in obj)
+      } else if ('_kind' in obj) {
+         type_info = "kind " + obj._kind;
          handle = JSROOT.getDrawHandle(obj._kind, opt);
-      else
+      } else
          return JSROOT.require("hierarchy").then(() => jsrp.drawInspector(divid, obj));
 
       // this is case of unsupported class, close it normally
       if (!handle)
-         return Promise.reject(Error(`Object of ${obj.kind ? obj.kind : obj._typename} cannot be shown with JSROOT.draw`));
+         return Promise.reject(Error(`Object of ${type_info} cannot be shown with JSROOT.draw`));
 
       if (handle.dummy)
          return Promise.resolve(null);
@@ -3768,114 +3770,99 @@ JSROOT.define(['d3'], (d3) => {
                return main_painter.performDrop(obj, "", null, opt);
          }
 
-         return Promise.reject(Error('Function not specified'));
+         return Promise.reject(Error(`Function not specified to draw object ${type_info}`));
       }
 
-      return new Promise(function(resolveFunc, rejectFunc) {
+      function isPromise(obj) {
+         return obj && (typeof obj == 'object') && (typeof obj.then == 'function');
+      }
 
-         function isPromise(obj) {
-            return obj && (typeof obj == 'object') && (typeof obj.then == 'function');
+      function performDraw() {
+         let promise;
+         if (handle.direct) {
+            let painter = new ObjectPainter(obj, opt);
+            painter.csstype = handle.csstype;
+            painter.SetDivId(divid, 2);
+            painter.Redraw = handle.func;
+            promise = painter.Redraw();
+            if (promise === null)
+               return Promise.reject(Error("Fail direct draw for "));
+            if (!isPromise(promise))
+               promise = Promise.resolve(painter);
+         } else {
+            promise = handle.func(divid, obj, opt);
+
+            if (!isPromise(promise))
+               return promise ? Promise.resolve(promise) : Promise.reject(Error(`Fail to draw object ${type_info}`));
          }
 
-         let painter = null;
+         return promise.then(p => {
+            if (p && (typeof p == 'object') && !p.options)
+               p.options = { original: opt || "" }; // keep original draw options
 
-         function performDraw() {
-            let promise;
-            if (handle.direct) {
-               painter = new ObjectPainter(obj, opt);
-               painter.csstype = handle.csstype;
-               painter.SetDivId(divid, 2);
-               painter.Redraw = handle.func;
-               promise = painter.Redraw();
-               if (promise === null)
-                  return rejectFunc();
-               if (!isPromise(promise))
-                  promise = Promise.resolve(painter);
-            } else {
-               promise = handle.func(divid, obj, opt);
-
-               // it is failure
-               if (!isPromise(promise))
-                  return promise ? resolveFunc(promise) : rejectFunc(promise);
-            }
-
-            promise.then(p => {
-               if (p && (typeof p == 'object') && !p.options)
-                  p.options = { origin: opt || "" }; // keep original draw options
-                resolveFunc(p);
-            });
-         }
-
-         if (typeof handle.func == 'function')
-            return performDraw();
-
-         let funcname = handle.func;
-         if (!funcname || (typeof funcname != "string"))
-            return rejectFunc(Error('Draw function not specified'));
-
-         // try to find function without prerequisites
-         let func = JSROOT.findFunction(funcname);
-         if (func) {
-            handle.func = func; // remember function once it is found
-            return performDraw();
-         }
-
-        let prereq = handle.prereq || "";
-        if (handle.script && (typeof handle.script == 'string'))
-           prereq += ";" + handle.script;
-
-         if (!prereq)
-            return rejectFunc(Error(`Prerequicities to load ${funcname} are not specified`));
-
-         JSROOT.require(prereq).then(() => {
-            let func = JSROOT.findFunction(funcname);
-            if (!func)
-               return rejectFunc(Error(`Fail to find function ${funcname} after loading ${prereq}`));
-
-            handle.func = func; // remember function once it found
-
-            performDraw();
+             return p;
          });
-      }); // Promise
+      }
+
+      if (typeof handle.func == 'function')
+         return performDraw();
+
+      let funcname = handle.func;
+      if (typeof funcname != "string")
+         return Promise.reject(Error(`Draw function not specified to draw ${type_info}`));
+
+      // try to find function without prerequisites
+      let func = JSROOT.findFunction(funcname);
+      if (func) {
+         handle.func = func; // remember function once it is found
+         return performDraw();
+      }
+
+      let prereq = handle.prereq || "";
+      if (handle.script && (typeof handle.script == 'string'))
+         prereq += ";" + handle.script;
+
+      if (!prereq)
+         return Promise.reject(Error(`Prerequicities to load ${funcname} are not specified`));
+
+      return JSROOT.require(prereq).then(() => {
+         let func = JSROOT.findFunction(funcname);
+         if (!func)
+            return Promise.reject(Error(`Fail to find function ${funcname} after loading ${prereq}`));
+
+         handle.func = func; // remember function once it found
+
+         return performDraw();
+      });
    }
 
-   /**
-    * @summary Draw object in specified HTML element with given draw options.
-    *
-    * @param {string|object} divid - id of div element to draw or directly DOMElement
-    * @param {object} obj - object to draw, object type should be registered before in JSROOT
-    * @param {string} opt - draw options separated by space, comma or semicolon
-    * @param {function} [callback] - function called when drawing is completed, first argument is object painter instance
-    * @returns {Promise} with painter object only if callback parameter is not specified
-    *
-    * @desc
-    * An extensive list of support draw options can be found on [JSROOT examples page]{@link https://root.cern/js/latest/examples.htm}
-    * Parameter ```callback``` kept only for backward compatibility and will be removed in JSROOT v6.2
-    *
-    * @example
-    * JSROOT.openFile("https://root.cern/js/files/hsimple.root")
-    *       .then(file => file.readObject("hpxpy;1"))
-    *       .then(obj => JSROOT.draw("drawing", obj, "colz;logx;gridx;gridy"));
-    *
-    */
-
+   /** @summary Draw object in specified HTML element with given draw options.
+     * @param {string|object} divid - id of div element to draw or directly DOMElement
+     * @param {object} obj - object to draw, object type should be registered before in JSROOT
+     * @param {string} opt - draw options separated by space, comma or semicolon
+     * @param {function} [callback] - function called when drawing is completed, first argument is object painter instance
+     * @returns {Promise} with painter object only if callback parameter is not specified
+     * @desc An extensive list of support draw options can be found on [JSROOT examples page]{@link https://root.cern/js/latest/examples.htm}
+     * Parameter ```callback``` kept only for backward compatibility and will be removed in JSROOT v6.2
+     * @example
+     * JSROOT.openFile("https://root.cern/js/files/hsimple.root")
+     *       .then(file => file.readObject("hpxpy;1"))
+     *       .then(obj => JSROOT.draw("drawing", obj, "colz;logx;gridx;gridy")); */
    JSROOT.draw = function(divid, obj, opt, callback) {
       let res = jsroot_draw(divid, obj, opt);
       if (!callback || (typeof callback != 'function')) return res;
       res.then(callback).catch(() => callback(null));
    }
 
-   /**
-    * @summary Redraw object in specified HTML element with given draw options.
-    *
-    * @desc If drawing was not drawn before, it will be performed with {@link JSROOT.draw}.
-    * If drawing was already done, that content will be updated
-    * @param {string|object} divid - id of div element to draw or directly DOMElement
-    * @param {object} obj - object to draw, object type should be registered before in JSROOT
-    * @param {string} opt - draw options
-    * @param {function} [callback] - function called when drawing is completed, first argument will be object painter instance
-    * @returns {Promise} with painter used only when callback parameter is not specified
-    */
+   /** @summary Redraw object in specified HTML element with given draw options.
+     * @param {string|object} divid - id of div element to draw or directly DOMElement
+     * @param {object} obj - object to draw, object type should be registered before in JSROOT
+     * @param {string} opt - draw options
+     * @param {function} [callback] - function called when drawing is completed, first argument will be object painter instance
+     * @returns {Promise} with painter used only when callback parameter is not specified
+     * @desc If drawing was not done before, it will be performed with {@link JSROOT.draw}.
+     * Otherwise drawing content will be updated
+     * Parameter ```callback``` kept only for backward compatibility and will be removed in JSROOT v6.2 */
    JSROOT.redraw = function(divid, obj, opt, callback) {
 
       if (!obj || (typeof obj !== 'object'))
@@ -3918,14 +3905,12 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /** @summary Save object, drawn in specified element, as JSON.
-    *
-    * @desc Normally it is TCanvas object with list of primitives
-    * @param {string|object} divid - id of top div element or directly DOMElement
-    * @returns {string} produced JSON string */
+     * @desc Normally it is TCanvas object with list of primitives
+     * @param {string|object} divid - id of top div element or directly DOMElement
+     * @returns {string} produced JSON string */
    JSROOT.drawingJSON = function(divid) {
       let p = new ObjectPainter;
       p.SetDivId(divid, -1);
-
       let canp = p.canv_painter();
       return canp ? canp.ProduceJSON() : "";
    }
