@@ -1365,65 +1365,6 @@ JSROOT.define(['d3'], (d3) => {
       delete this._hpainter;
    }
 
-   /** @summary Function should be called by the painter when first drawing is completed
-    * @private */
-   BasePainter.prototype.DrawingReady = function(res_value) {
-      this._ready_called_ = (res_value === undefined) ? true : !!res_value;
-      if (this._ready_callbacks_ !== undefined) {
-         let callbacks = (this._ready_called_ ? this._ready_callbacks_ : this._reject_callbacks_) || [];
-
-         delete this._ready_callbacks_;
-         delete this._reject_callbacks_;
-
-         while (callbacks.length > 0) {
-            let func = callbacks.shift();
-            func(this);
-         }
-      }
-      return this;
-   }
-
-   /** @summary Function should be called when first drawing fails */
-   BasePainter.prototype.DrawingFail = function() {
-      return this.DrawingReady(false);
-   }
-
-   /** @summary Call back will be called when painter ready with the drawing */
-   BasePainter.prototype.WhenReady = function(resolveFunc, rejectFunc) {
-      if (typeof resolveFunc !== 'function') return;
-      if ('_ready_called_' in this)
-         return JSROOT.callBack(resolveFunc, this);
-      if (!this._ready_callbacks_)
-         this._ready_callbacks_ = [resolveFunc];
-      else
-         this._ready_callbacks_.push(resolveFunc);
-      if (typeof rejectFunc == 'function') {
-         if (!this._reject_callbacks_)
-            this._reject_callbacks_ = [rejectFunc];
-         else
-            this._reject_callbacks_.push(rejectFunc);
-      }
-   }
-
-   /** @summary Create Promise object which will be completed when drawing is ready  */
-   BasePainter.prototype.Promise = function(is_ready) {
-      if (is_ready)
-         this.DrawingReady(this);
-
-      if (this._ready_called_)
-         return Promise.resolve(this); // painting is done, we could return promise
-
-      return new Promise((resolve, reject) => {
-         this.WhenReady(resolve, reject);
-      });
-   }
-
-   /** @summary Reset ready state - painter should again call DrawingReady to signal readyness */
-   BasePainter.prototype.ResetReady = function() {
-      delete this._ready_called_;
-      delete this._ready_callbacks_;
-   }
-
    /** @summary Returns drawn object
      * @abstract */
    BasePainter.prototype.GetObject = function() {}
@@ -3836,17 +3777,6 @@ JSROOT.define(['d3'], (d3) => {
             return obj && (typeof obj == 'object') && (typeof obj.then == 'function');
          }
 
-         function completeDraw(painter) {
-            if (isPromise(painter)) {
-               painter.then(resolveFunc, rejectFunc);
-            } else if (painter && (typeof painter == 'object') && (typeof painter.WhenReady == 'function'))
-               painter.WhenReady(resolveFunc, rejectFunc);
-            else if (painter)
-               resolveFunc(painter);
-            else
-               rejectFunc(Error("fail to draw"));
-         }
-
          let painter = null;
 
          function performDraw() {
@@ -3857,16 +3787,23 @@ JSROOT.define(['d3'], (d3) => {
                painter.SetDivId(divid, 2);
                painter.Redraw = handle.func;
                promise = painter.Redraw();
+               if (promise === null)
+                  return rejectFunc();
                if (!isPromise(promise))
                   promise = Promise.resolve(painter);
             } else {
-               painter = handle.func(divid, obj, opt);
+               promise = handle.func(divid, obj, opt);
 
-               if (!isPromise(painter) && painter && !painter.options)
-                  painter.options = { original: opt || "" };
+               // it is failure
+               if (!isPromise(promise))
+                  return promise ? resolveFunc(promise) : rejectFunc(promise);
             }
 
-            completeDraw(promise || painter);
+            promise.then(p => {
+               if (p && (typeof p == 'object') && !p.options)
+                  p.options = { origin: opt || "" }; // keep original draw options
+                resolveFunc(p);
+            });
          }
 
          if (typeof handle.func == 'function')
@@ -3874,7 +3811,7 @@ JSROOT.define(['d3'], (d3) => {
 
          let funcname = handle.func;
          if (!funcname || (typeof funcname != "string"))
-            return completeDraw(null);
+            return rejectFunc(Error('Draw function not specified'));
 
          // try to find function without prerequisites
          let func = JSROOT.findFunction(funcname);
@@ -3888,14 +3825,12 @@ JSROOT.define(['d3'], (d3) => {
            prereq += ";" + handle.script;
 
          if (!prereq)
-            return completeDraw(null);
+            return rejectFunc(Error(`Prerequicities to load ${funcname} are not specified`));
 
          JSROOT.require(prereq).then(() => {
             let func = JSROOT.findFunction(funcname);
-            if (!func) {
-               alert('Fail to find function ' + funcname + ' after loading ' + prereq);
-               return completeDraw(null);
-            }
+            if (!func)
+               return rejectFunc(Error(`Fail to find function ${funcname} after loading ${prereq}`));
 
             handle.func = func; // remember function once it found
 

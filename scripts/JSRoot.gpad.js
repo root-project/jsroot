@@ -3484,15 +3484,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
    }
 
-   TPadPainter.prototype.DrawingReady = function(res_painter) {
-
-      let main = this.frame_painter();
-
-      if (main && main.mode3d && typeof main.Render3D == 'function') main.Render3D(-2222);
-
-      JSROOT.ObjectPainter.prototype.DrawingReady.call(this, res_painter);
-   }
-
    TPadPainter.prototype.DecodeOptions = function(opt) {
       let pad = this.GetObject();
       if (!pad) return;
