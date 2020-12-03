@@ -868,9 +868,12 @@ references which were introduced by `TBufferJSON::ToJSON()` method.
 
 Instead of `JSROOT.console` one should use `console.log`. Instead of `JSROOT.alert` one should use `console.error`.
 
+Many settings where moved from `JSROOT.gStyle` to `JSROOT.settings` object. It was done to keep only TStyle-related members
+in `JSROOT.gStyle`.
+
 Painter classes were renamed:
    - `JSROOT.TBasePainter` -> `JSROOT.BasePainter`
    - `JSROOT.TObjectPainter` -> `JSROOT.ObjectPainter`
 
-Many settings where moved from `JSROOT.gStyle` to `JSROOT.settings` object. It was done to keep only TStyle-related members
-in `JSROOT.gStyle`.
+Internal `ObjectPainter.DrawingReady` api was deprecated. Draw function has to return `Promise` if object drawing has to be postponded.
+As argument of returned promise object painter has to be used.
