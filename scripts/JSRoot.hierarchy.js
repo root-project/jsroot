@@ -2424,7 +2424,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (title) document.title = title;
 
       let load = GetOption("load");
-      if (load) prereq += ";io;gpad;";
 
       if (expanditems.length==0 && (GetOption("expand")==="")) expanditems.push("");
 
