@@ -2379,7 +2379,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (opt == "3d") p.mode3d = true;
       p.SetDivId(divid, 2);
       p.Redraw();
-      return p.DrawingReady();
+      return Promise.resolve(p);
    }
 
    // ===========================================================================
@@ -4758,8 +4758,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       let painter = new RPalettePainter(palette, opt);
       painter.SetDivId(divid);
       painter.CreateG(false);
-
-      return painter.DrawingReady();
+      return Promise.resolve(painter);
    }
 
    // JSROOT.addDrawFunc({ name: "ROOT::Experimental::RPadDisplayItem", icon: "img_canvas", func: drawPad, opt: "" });

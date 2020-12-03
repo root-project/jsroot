@@ -749,25 +749,21 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       return true;
    }
 
-   TF1Painter.prototype.performDraw = function() {
-      let hpromise = this.main_painter() ? Promise.resolve(true) :
-                     JSROOT.draw(this.divid, this.CreateDummyHisto(), "AXIS");
-
-      return hpromise.then(() => {
-         this.SetDivId(this.divid);
-         this.Redraw();
-         return this;
-      });
-   }
-
    function drawFunction(divid, tf1, opt) {
       let painter = new TF1Painter(tf1);
       painter.SetDivId(divid, -1);
       let d = new JSROOT.DrawOptions(opt);
       painter.nosave = d.check('NOSAVE');
 
-      return JSROOT.require("math").then(() => painter.performDraw());
-   }
+      return JSROOT.require("math").then(() => {
+         if (!painter.main_painter())
+            return JSROOT.draw(divid, painter.CreateDummyHisto(), "AXIS");
+      }).then(() => {
+         painter.SetDivId(divid);
+         painter.Redraw();
+         return painter;
+      });
+    }
 
    // =======================================================================
 
@@ -2303,17 +2299,19 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       let painter = new TGraphPolargramPainter(polargram);
       painter.SetDivId(divid, -1); // just to get access to existing elements
 
-      let main = painter.main_painter();
-
+      let main = painter.main_painter()
       if (main) {
-         if (main.GetObject() === polargram) return main;
-          console.error('Cannot superimpose TGraphPolargram with any other drawings');
-          return null;
+         if (main.GetObject() === polargram) {
+            console.log('Draw polargram agina - why????');
+            return Promise.resolve(main);
+         }
+         console.error('Cannot superimpose TGraphPolargram with any other drawings');
+         return null;
       }
 
       painter.SetDivId(divid, 6); // main object without need of frame
       painter.Redraw();
-      return painter.DrawingReady();
+      return Promise.resolve(painter);
    }
 
    // ==============================================================
@@ -2335,7 +2333,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    TGraphPolarPainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
 
    TGraphPolarPainter.prototype.Redraw = function() {
-      this.DrawGraphPolar();
+      this.drawGraphPolar();
    }
 
    TGraphPolarPainter.prototype.DecodeOptions = function(opt) {
@@ -2355,7 +2353,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       this.OptionsStore(opt);
    }
 
-   TGraphPolarPainter.prototype.DrawGraphPolar = function() {
+   TGraphPolarPainter.prototype.drawGraphPolar = function() {
       let graph = this.GetObject(),
           main = this.main_painter();
 
@@ -2525,31 +2523,30 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       return hint;
    }
 
-   TGraphPolarPainter.prototype.PerformDrawing = function(divid) {
-      this.SetDivId(divid);
-      this.DrawGraphPolar();
-      this.DrawingReady();
-      return this; // will be value resolved by Promise and getting painter
-   }
-
    function drawGraphPolar(divid, graph, opt) {
       let painter = new TGraphPolarPainter(graph);
       painter.DecodeOptions(opt);
       painter.SetDivId(divid, -1); // just to get access to existing elements
 
       let main = painter.main_painter();
-      if (main) {
-         if (!main.$polargram) {
-            console.error('Cannot superimpose TGraphPolar with plain histograms');
-            return null;
-         }
-         painter.PerformDrawing(divid);
-         return painter;
+      if (main && !main.$polargram) {
+         console.error('Cannot superimpose TGraphPolar with plain histograms');
+         return null;
       }
 
-      if (!graph.fPolargram) graph.fPolargram = painter.CreatePolargram();
+      let ppromise = Promise.resolve(main);
 
-      return JSROOT.draw(divid, graph.fPolargram, "").then(() => painter.PerformDrawing(divid));
+      if (!main) {
+         if (!graph.fPolargram)
+            graph.fPolargram = painter.CreatePolargram();
+         ppromise = JSROOT.draw(divid, graph.fPolargram, "");
+      }
+
+      return ppromise.then(() => {
+         painter.SetDivId(divid);
+         painter.drawGraphPolar();
+         return painter;
+      })
    }
 
    // ==============================================================
@@ -2864,7 +2861,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    TGraphTimePainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
 
    TGraphTimePainter.prototype.Redraw = function() {
-      if (this.step === undefined) this.StartDrawing(false);
+      if (this.step === undefined) this.startDrawing();
    }
 
    TGraphTimePainter.prototype.DecodeOptions = function(opt) {
@@ -2905,15 +2902,10 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       });
    }
 
-   TGraphTimePainter.prototype.ContineDrawing = function() {
+   TGraphTimePainter.prototype.continueDrawing = function() {
       if (!this.options) return;
 
       let gr = this.GetObject();
-
-      if (!this.ready_called) {
-         this.ready_called = true;
-         this.DrawingReady(); // do it already here, animation will continue in background
-      }
 
       if (this.options.first) {
          // draw only single frame, cancel all others
@@ -2936,14 +2928,14 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          pp.CleanPrimitives(p => (p.$grtimeid === this.selfid));
 
          // draw ptrimitives again
-         this.DrawPrimitives().then(() => this.ContineDrawing());
+         this.DrawPrimitives().then(() => this.continueDrawing());
       } else if (this.running_timeout) {
          clearTimeout(this.running_timeout);
          delete this.running_timeout;
 
          this.wait_animation_frame = true;
          // use animation frame to disable update in inactive form
-         requestAnimationFrame(() => this.ContineDrawing());
+         requestAnimationFrame(() => this.continueDrawing());
       } else {
 
          let sleeptime = gr.fSleepTime;
@@ -2959,18 +2951,16 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
             }
          }
 
-         this.running_timeout = setTimeout(() => this.ContineDrawing(), sleeptime);
+         this.running_timeout = setTimeout(() => this.continueDrawing(), sleeptime);
       }
    }
 
    /** @ummary Start drawing of graph time */
-   TGraphTimePainter.prototype.StartDrawing = function(once_again) {
-      if (once_again!==false) this.SetDivId(this.divid);
-
+   TGraphTimePainter.prototype.startDrawing = function() {
       this.step = 0;
 
       return this.DrawPrimitives().then(() => {
-         this.ContineDrawing();
+         this.continueDrawing();
          return this; // used in drawGraphTime promise
       });
    }
@@ -2996,7 +2986,10 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       painter.selfid = "grtime" + JSROOT._.id_counter++; // use to identify primitives which should be clean
 
-      return JSROOT.draw(divid, gr.fFrame, "AXIS").then(() => painter.StartDrawing());
+      return JSROOT.draw(divid, gr.fFrame, "AXIS").then(() => {
+         painter.SetDivId(divid)
+         return painter.startDrawing();
+      });
    }
 
    // =============================================================
@@ -3097,7 +3090,6 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       return JSROOT.draw(divid, gr, opt)
                    .then(() => {
                        painter.SetDivId(divid);
-                       painter.DrawingReady();
                        return painter;
                     });
    }
@@ -3508,7 +3500,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       painter.Redraw();
 
-      return painter.DrawingReady();
+      return Promise.resolve(painter);
    }
 
 
@@ -3876,7 +3868,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       painter.SetDivId(divid);
 
-      return painter.DrawingReady();
+      return Promise.resolve(painter);
    }
 
 

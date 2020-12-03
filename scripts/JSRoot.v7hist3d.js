@@ -1392,7 +1392,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
 
       painter.Draw3DAxis();
 
-      return painter.DrawingReady();
+      return Promise.resolve(painter);
    }
 
    // ==========================================================================================

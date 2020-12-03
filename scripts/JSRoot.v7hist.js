@@ -1859,13 +1859,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
       painter.ScanContent();
 
-      painter.callDrawFunc().then(() => {
-         // if (!painter.options.Mode3D && painter.options.AutoZoom) painter.AutoZoom();
-         // painter.FillToolbar();
-         painter.DrawingReady();
-      });
-
-      return painter;
+      return painter.callDrawFunc();
    }
 
    // ==================== painter for TH2 histograms ==============================
@@ -3567,7 +3561,6 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
    }
 
    RH2Painter.prototype.Draw2D = function(reason) {
-
       this.mode3d = false;
       this.Clear3DScene();
 
@@ -3647,17 +3640,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
       painter.ScanContent();
 
-      // painter.CreateStat(); // only when required
-
-      painter.callDrawFunc().then(() => {
-         //if (!this.options.Mode3D && this.options.AutoZoom) this.AutoZoom();
-         // this.FillToolbar();
-         //if (this.options.Project && !this.mode3d)
-         //   this.ToggleProjection(this.options.Project);
-         painter.DrawingReady();
-      });
-
-      return painter;
+      return painter.callDrawFunc();
    }
 
    // =================================================================================
@@ -3696,13 +3679,11 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
          default: o.Box = 10;
       }
 
-      JSROOT.require('v7hist3d').then(() => {
+      return JSROOT.require('v7hist3d').then(() => {
          painter.ScanContent();
          painter.Redraw();
-         painter.DrawingReady();
+         return painter;
       });
-
-      return painter;
    }
 
    // =================================================================================
