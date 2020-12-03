@@ -68,7 +68,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          delete this.pointLight;
          delete this.renderer;
          delete this.control;
-         if ('render_tmout' in this) {
+         if (this.render_tmout) {
             clearTimeout(this.render_tmout);
             delete this.render_tmout;
          }
@@ -222,12 +222,11 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
    }
 
    /** @summary call 3D rendering of the histogram drawing
-     * @desc Timeout used to avoid multiple rendering of the picture when several 3D drawings
-     * superimposed with each other. If tmeout<=0, rendering performed immediately
-     * Several special values are used:
-     *   - -1111 immediate rendering with SVG renderer
-     *   - -2222 rendering performed only if there were previous calls, which causes timeout activation
      * @param {number} tmout - specifies delay, after which actual rendering will be invoked
+     * @desc Timeout used to avoid multiple rendering of the picture when several 3D drawings
+     * superimposed with each other.
+     * If tmeout <= 0, rendering performed immediately
+     * If tmout == -1111, immediate rendering with SVG renderer is performed
      * @private */
    JSROOT.TFramePainter.prototype.Render3D = function(tmout) {
 
@@ -251,16 +250,14 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       if (tmout === undefined) tmout = 5; // by default, rendering happens with timeout
 
       if ((tmout > 0) && !this.usesvg && !JSROOT.BatchMode) {
-         // configure timeout
-         if (this.render_tmout === undefined)
+         if (!this.render_tmout)
             this.render_tmout = setTimeout(() => this.Render3D(0), tmout);
          return;
       }
 
-      if (this.render_tmout !== undefined) {
+      if (this.render_tmout) {
          clearTimeout(this.render_tmout);
-      } else {
-         if (tmout === -2222) return; // special case to check if rendering timeout was active
+         delete this.render_tmout;
       }
 
       if (!this.renderer) return;
@@ -281,7 +278,6 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
       let tm2 = new Date();
 
-      delete this.render_tmout;
 
       if (this.first_render_tm === 0) {
          this.first_render_tm = tm2.getTime() - tm1.getTime();

@@ -4003,20 +4003,16 @@ JSROOT.define(['d3'], (d3) => {
       return build(JSROOT._.nodejs_window.d3.select('body').append('div'));
    }
 
-   /**
-    * @summary Check resize of drawn element
-    *
-    * @desc As first argument divid one should use same argument as for the drawing
-    * As second argument, one could specify "true" value to force redrawing of
-    * the element even after minimal resize of the element
-    * Or one just supply object with exact sizes like { width:300, height:200, force:true };
-    * @param {string|object} divid - id or DOM element
-    * @param {boolean|object} arg - options on how to resize
-    *
-    * @example
-    * JSROOT.resize("drawing", { width: 500, height: 200 } );
-    * JSROOT.resize(document.querySelector("#drawing"), true);
-    */
+   /** @summary Check resize of drawn element
+     * @param {string|object} divid - id or DOM element
+     * @param {boolean|object} arg - options on how to resize
+     * @desc As first argument divid one should use same argument as for the drawing
+     * As second argument, one could specify "true" value to force redrawing of
+     * the element even after minimal resize of the element
+     * Or one just supply object with exact sizes like { width:300, height:200, force:true };
+     * @example
+     * JSROOT.resize("drawing", { width: 500, height: 200 } );
+     * JSROOT.resize(document.querySelector("#drawing"), true); */
    JSROOT.resize = function(divid, arg) {
       if (arg === true) arg = { force: true }; else
          if (typeof arg !== 'object') arg = null;

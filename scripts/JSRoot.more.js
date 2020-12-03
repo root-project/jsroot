@@ -2301,10 +2301,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       let main = painter.main_painter()
       if (main) {
-         if (main.GetObject() === polargram) {
-            console.log('Draw polargram agina - why????');
-            return Promise.resolve(main);
-         }
+         // one can return painter direcly while it has to be ready at this moment
+         if (main.GetObject() === polargram) return main;
          console.error('Cannot superimpose TGraphPolargram with any other drawings');
          return null;
       }

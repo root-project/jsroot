@@ -3185,7 +3185,6 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
      * @desc Timeout used to avoid multiple rendering of the picture when several 3D drawings
      * superimposed with each other. If tmeout<=0, rendering performed immediately
      * Several special values are used:
-     *   -2222 - rendering performed only if there were previous calls, which causes timeout activation
      *   -1    - force recheck of rendering order based on camera position */
    TGeoPainter.prototype.Render3D = function(tmout, measure) {
 
@@ -3205,8 +3204,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
       if (this.render_tmout) {
          clearTimeout(this.render_tmout);
-      } else {
-         if (tmout === -2222) return; // special case to check if rendering timeout was active
+         delete this.render_tmout;
       }
 
       jsrp.beforeRender3D(this._renderer);
@@ -3226,8 +3224,6 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       let tm2 = new Date();
 
       this.last_render_tm = tm2.getTime();
-
-      delete this.render_tmout;
 
       if ((this.first_render_tm === 0) && measure) {
          this.first_render_tm = tm2.getTime() - tm1.getTime();
