@@ -2417,7 +2417,8 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
    }
 
    /** @summary Drawing with "count" option
-    * @desc Scans hieararchy and check for unique nodes */
+     * @desc Scans hieararchy and check for unique nodes
+     * @returns {Promise} with object drawing ready */
    TGeoPainter.prototype.drawCount = function(unqievis, clonetm) {
 
       function makeTime(tm) {
@@ -2979,12 +2980,12 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
    }
 
    /** @summary Prepare drawings
-     * @desc Return value used as promise for painter, therefore should return this */
+     * @desc Return value used as promise for painter */
    TGeoPainter.prototype.prepareObjectDraw = function(draw_obj, name_prefix) {
 
       // if did cleanup - ignore all kind of activity
       if (this.did_cleanup)
-         return null;
+         return Promise.resolve(null);
 
       if (name_prefix == "__geom_viewer_append__") {
          this._new_append_nodes = draw_obj;
@@ -3084,7 +3085,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          });
 
       this.completeDraw();
-      return this;
+      return Promise.resolve(this);
    }
 
    /** @summary methods show info when first geometry drawing is performed */
