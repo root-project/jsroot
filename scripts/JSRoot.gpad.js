@@ -4167,20 +4167,42 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
   /** @summary Ensure TCanvas and TFrame for the painter object
-    * @param {string|boolean} frame_kind  - false for nor frame or "3d" for special 3D mode */
-   let ensureTCanvas = function(painter, frame_kind) {
+    * @param {Object} painter  - painter object to process
+    * @param {Object|string} divid - HTML element or element id
+    * @param {string|boolean} frame_kind  - false for nor frame or "3d" for special 3D mode
+    * @param {boolean|string} [place]  - if true, will be main object else if string - exact pad name
+    * @desc Assign divid, creates TCanvas if necessary, add to list of pad painters and */
+   let ensureTCanvas = function(painter, divid, frame_kind, place) {
       if (!painter) return Promise.reject('Painter not provided in ensureTCanvas');
+
+      // assign divid and pad name as required
+      painter.SetDivId(divid, -1, (typeof place == 'string') ? place : undefined);
 
       // simple check - if canvas there, can use painter
       let svg_c = painter.svg_canvas();
-      let noframe = (frame_kind === false) || (frame_kind == "no") ? "noframe" : "";
+      let noframe = (frame_kind === false) || (frame_kind == "3d")? "noframe" : "";
 
-      let promise = !svg_c.empty() ? Promise.resolve(true) : drawCanvas(painter.divid, null, noframe);
+      let promise = !svg_c.empty() ? Promise.resolve(true) : drawCanvas(divid, null, noframe);
 
       return promise.then(() => {
-         if (noframe) return true;
-         if (!painter.svg_frame().select(".main_layer").empty()) return true;
-         return drawFrame(painter.divid, null, frame_kind || "");
+         if (frame_kind && painter.svg_frame().select(".main_layer").empty())
+            return drawFrame(divid, null, (typeof frame_kind === "string") ? frame_kind : "");
+      }).then(() => {
+         let svg_p = painter.svg_pad(painter.pad_name); // important - parent pad element accessed here
+         if (svg_p.empty()) return painter;
+
+         let pp = svg_p.property('pad_painter');
+         if (pp && (pp !== painter)) {
+             pp.painters.push(painter);
+             // workround to provide style for next object draing
+             if (!painter.rstyle && pp.next_rstyle)
+                painter.rstyle = pp.next_rstyle;
+         }
+
+         if ((place === true) && !svg_p.property('mainpainter'))
+            svg_p.property('mainpainter', painter);
+
+         return painter;
       });
    }
 

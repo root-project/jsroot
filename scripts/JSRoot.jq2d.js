@@ -2338,7 +2338,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
 
       player.Show = function(divid, args) {
 
-         this.SetDivId(divid, -1); // just to get access to main element
+         this.SetDivId(divid, -1);
 
          let main = $(this.select_main().node());
 

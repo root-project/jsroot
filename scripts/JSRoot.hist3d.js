@@ -2966,16 +2966,12 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
    jsrp.drawHistogram3D = function(divid, histo, opt) {
       // create painter and add it to canvas
       let painter = new JSROOT.TH3Painter(histo);
-
-      painter.SetDivId(divid, 4);
-
-      painter.DecodeOptions(opt);
-
-      painter.CheckPadRange();
-
-      painter.ScanContent();
-
-      return painter.Redraw().then(() => {
+      return jsrp.ensureTCanvas(painter, divid, "3d", true).then(() => {
+         painter.DecodeOptions(opt);
+         painter.CheckPadRange();
+         painter.ScanContent();
+         return painter.Redraw();
+      }).then(() => {
          let stats = painter.CreateStat(); // only when required
          if (stats) return JSROOT.draw(divid, stats, "");
       }).then(() => {
