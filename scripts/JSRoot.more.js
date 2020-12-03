@@ -2307,9 +2307,12 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          return null;
       }
 
-      painter.SetDivId(divid, 6); // main object without need of frame
-      painter.Redraw();
-      return Promise.resolve(painter);
+      return jsrp.ensureTCanvas(painter,true).then(() => {
+         painter.SetDivId(divid);
+         painter.setAsMainPainter();
+         painter.Redraw();
+         return painter;
+      });
    }
 
    // ==============================================================

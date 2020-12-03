@@ -2140,6 +2140,15 @@ JSROOT.define(['d3'], (d3) => {
    /** @summary Returns true if this is main painter */
    ObjectPainter.prototype.is_main_painter = function() { return this === this.main_painter(); }
 
+   /** @summary Assign this as main painter on the pad
+     * @desc Main painter typically responsible for axes drawing */
+   ObjectPainter.prototype.setAsMainPainter = function(force) {
+      let svg_p = this.svg_pad();
+      if (!svg_p.empty() && (!svg_p.property('mainpainter') || force))
+         svg_p.property('mainpainter', this);
+   }
+
+
    /** @summary Assigns id of top element (normally div where drawing is done).
     * @desc In some situations canvas may not exists - for instance object drawn as html, not as svg.
     * In such case the only painter will be assigned to the first element
@@ -2207,7 +2216,7 @@ JSROOT.define(['d3'], (d3) => {
                return alert("Fail to draw dummy TFrame");
          }
 
-      let svg_p = this.svg_pad(this.pad_name); // important - padrent pad element accessed here
+      let svg_p = this.svg_pad(this.pad_name); // important - parent pad element accessed here
       if (svg_p.empty()) return true;
 
       let pp = svg_p.property('pad_painter');

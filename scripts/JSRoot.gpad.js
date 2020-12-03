@@ -4166,6 +4166,16 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       });
    }
 
+   let ensureTCanvas = function(painter, noframe) {
+      if (!painter) return Promise.reject('Painter not provided in ensureTCanvas');
+
+      // simple check - if canvas there, can use painter
+      let svg_c = painter.svg_canvas();
+      if (!svg_c.empty()) return Promise.resolve(true);
+
+      return drawCanvas(painter.divid, null, noframe ? "noframe" : "");
+   }
+
    let drawPadSnapshot = (divid, snap /*, opt*/) => {
       // just for debugging without running web canvas
 
@@ -4188,6 +4198,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    jsrp.drawFrame = drawFrame;
    jsrp.drawPad = drawPad;
    jsrp.drawCanvas = drawCanvas;
+   jsrp.ensureTCanvas = ensureTCanvas;
    jsrp.drawPadSnapshot = drawPadSnapshot;
 
    return JSROOT;
