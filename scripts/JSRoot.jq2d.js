@@ -1764,20 +1764,18 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
    /** @summary Build main JSROOT GUI
      * @returns {Promise} when completed
      * @private  */
-   JSROOT.buildGUI = function() {
-      let myDiv = d3.select('#simpleGUI'), online = false;
+   JSROOT.buildGUI = function(gui_element, gui_kind) {
+      let myDiv = (typeof gui_element == 'string') ? d3.select('#' + gui_element) : d3.select(gui_element);
+      if (myDiv.empty()) return alert('no div for gui found');
 
-      if (myDiv.empty()) {
-         myDiv = d3.select('#onlineGUI');
-         if (myDiv.empty()) return alert('no div for gui found');
-         online = true;
-      }
+      let online = false;
+      if (gui_kind == "online") online = true;
 
       if (myDiv.attr("ignoreurl") === "true")
          JSROOT.settings.IgnoreUrlOptions = true;
 
-      if (JSROOT.decodeUrl().has("nobrowser") || (myDiv.attr("nobrowser") && myDiv.attr("nobrowser")!=="false"))
-         return JSROOT.buildNobrowserGUI();
+      if (JSROOT.decodeUrl().has("nobrowser") || (myDiv.attr("nobrowser") && myDiv.attr("nobrowser")!=="false") || (gui_kind == "draw") || (gui_kind == "nobrowser"))
+         return JSROOT.buildNobrowserGUI(gui_element, gui_kind);
 
       jsrp.readStyleFromURL();
 

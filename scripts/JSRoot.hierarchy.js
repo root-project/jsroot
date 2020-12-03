@@ -1954,7 +1954,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
 
       if (!itemname && item && ('_cached_draw_object' in this) && (req.length == 0)) {
-         // special handling for drawGUI when cashed
+         // special handling for online draw when cashed
          let obj = this._cached_draw_object;
          delete this._cached_draw_object;
          return Promise.resolve(obj);
@@ -2625,16 +2625,16 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Build gui without visisble hierarchy browser
      * @desc avoid loading of jquery part
      * @private */
-   JSROOT.buildNobrowserGUI = function() {
-      let myDiv = d3.select('#simpleGUI'),
-          online = false, drawing = false;
+   JSROOT.buildNobrowserGUI = function(gui_element, gui_kind) {
 
-      if (myDiv.empty()) {
+      let myDiv = (typeof gui_element == 'string') ? d3.select('#' + gui_element) : d3.select(gui_element);
+      if (myDiv.empty()) return alert('no div for simple nobrowser gui found');
+
+      let online = false, drawing = false;
+      if (gui_kind == 'online')
          online = true;
-         myDiv = d3.select('#onlineGUI');
-         if (myDiv.empty()) { myDiv = d3.select('#drawGUI'); drawing = true; }
-         if (myDiv.empty()) return alert('no div for simple nobrowser gui found');
-      }
+      else if (gui_kind == 'draw')
+         online = drawing = true;
 
       if (myDiv.attr("ignoreurl") === "true")
          JSROOT.settings.IgnoreUrlOptions = true;

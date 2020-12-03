@@ -448,7 +448,7 @@ Next solution - install JSROOT on the server hosting ROOT files. In such configu
     <script type="text/javascript" src="https://root.cern/js/latest/scripts/JSRoot.core.js"></script>
     ...
 
-In the `<div>` element with "simpleGUI" id one can specify many custom parameters, which are allowed in the URL string:
+In the main `<div>` element one can specify many custom parameters like one do it in URL string:
 
     ...
      <div id="simpleGUI" path="files/path" files="userfile1.root;subdir/usefile2.root">
