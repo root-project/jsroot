@@ -4306,25 +4306,26 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       // create painter and add it to canvas
       let painter = new TH1Painter(histo);
 
-      if (!painter.SetDivId(divid, 1)) return null;
+      return jsrp.ensureTCanvas(painter, divid,  true, true).then(() => {
 
-      // here we deciding how histogram will look like and how will be shown
-      painter.DecodeOptions(opt);
+         // here we deciding how histogram will look like and how will be shown
+         painter.DecodeOptions(opt);
 
-      painter.CheckPadRange(!painter.options.Mode3D);
+         painter.CheckPadRange(!painter.options.Mode3D);
 
-      painter.ScanContent();
+         painter.ScanContent();
 
-      painter.CreateStat(); // only when required
+         painter.CreateStat(); // only when required
 
-      return painter.callDrawFunc()
-            .then(() => painter.drawNextFunction(0))
-            .then(() => {
-               if (!painter.options.Mode3D && painter.options.AutoZoom)
-                  painter.AutoZoom();
-               painter.FillToolbar();
-               return painter;
-            });
+         return painter.callDrawFunc();
+      }).then(() => painter.drawNextFunction(0)).then(() => {
+
+          if (!painter.options.Mode3D && painter.options.AutoZoom)
+             painter.AutoZoom();
+          painter.FillToolbar();
+
+          return painter;
+      });
    }
 
    // ========================================================================
@@ -6330,36 +6331,40 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       // create painter and add it to canvas
       let painter = new JSROOT.TH2Painter(histo);
 
-      if (!painter.SetDivId(divid, 1)) return null;
+      return jsrp.ensureTCanvas(painter, divid,  true, true).then(() => {
 
-      // here we deciding how histogram will look like and how will be shown
-      painter.DecodeOptions(opt);
+         // here we deciding how histogram will look like and how will be shown
+         painter.DecodeOptions(opt);
 
-      if (painter.IsTH2Poly()) {
-         if (painter.options.Mode3D)
-            painter.options.Lego = 12; // lego always 12
-         else if (!painter.options.Color)
-            painter.options.Color = true; // default is color
-      }
+         if (painter.IsTH2Poly()) {
+            if (painter.options.Mode3D)
+               painter.options.Lego = 12; // lego always 12
+            else if (!painter.options.Color)
+               painter.options.Color = true; // default is color
+         }
 
-      painter._show_empty_bins = false;
+         painter._show_empty_bins = false;
 
-      painter._can_move_colz = true;
+         painter._can_move_colz = true;
 
-      // special case for root 3D drawings - pad range is wired
-      painter.CheckPadRange(!painter.options.Mode3D && (painter.options.Contour != 14));
+         // special case for root 3D drawings - pad range is wired
+         painter.CheckPadRange(!painter.options.Mode3D && (painter.options.Contour != 14));
 
-      painter.ScanContent();
+         painter.ScanContent();
 
-      painter.CreateStat(); // only when required
+         painter.CreateStat(); // only when required
 
-      return painter.callDrawFunc()
-                    .then(() => painter.drawNextFunction(0))
-                    .then(()=> {
-         if (!painter.Mode3D && painter.options.AutoZoom) painter.AutoZoom();
-            painter.FillToolbar();
+         return painter.callDrawFunc();
+
+      }).then(() => painter.drawNextFunction(0)).then(()=> {
+
+         if (!painter.Mode3D && painter.options.AutoZoom)
+            painter.AutoZoom();
+
+         painter.FillToolbar();
          if (painter.options.Project && !painter.mode3d)
               painter.ToggleProjection(painter.options.Project);
+
           return painter;
       });
    }
@@ -6795,15 +6800,15 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          return null; // drawing not needed
 
       let painter = new THStackPainter(stack, opt);
-      painter.SetDivId(divid, 2); // in list of primitives, but not main painter
-      painter.DecodeOptions(opt);
 
-     if (!painter.options.nostack)
-          painter.options.nostack = ! painter.BuildStack(stack);
+      return jsrp.ensureTCanvas(painter, divid, false).then(() => {
 
-      let promise = Promise.resolve(painter);
+         painter.DecodeOptions(opt);
 
-      if (!painter.options.same) {
+         if (!painter.options.nostack)
+             painter.options.nostack = ! painter.BuildStack(stack);
+
+         if (painter.options.same) return;
 
          if (!stack.fHistogram)
              stack.fHistogram = painter.CreateHistogram(stack);
@@ -6814,13 +6819,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          // if (mm && (!this.options.nostack || (hist.fMinimum==-1111 && hist.fMaximum==-1111))) hopt += ";minimum:" + mm.min + ";maximum:" + mm.max;
          if (mm) hopt += ";minimum:" + mm.min + ";maximum:" + mm.max;
 
-         promise = JSROOT.draw(divid, stack.fHistogram, hopt).then(subp => {
-             painter.firstpainter = subp;
-             return painter;
+         return JSROOT.draw(divid, stack.fHistogram, hopt).then(subp => {
+            painter.firstpainter = subp;
          });
-      }
-
-      return promise.then(() => painter.drawNextHisto(0));
+      }).then(() => painter.drawNextHisto(0));
    }
 
    // =================================================================================

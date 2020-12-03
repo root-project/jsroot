@@ -1939,10 +1939,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    let drawFrame = (divid, obj, opt) => {
       let p = new TFramePainter(obj);
-      if (opt == "3d") p.mode3d = true;
-      p.SetDivId(divid, 2);
-      p.Redraw();
-      return Promise.resolve(p);
+      return jsrp.ensureTCanvas(p, divid, false).then(() => {
+         if (opt == "3d") p.mode3d = true;
+         p.Redraw();
+         return p;
+      })
    }
 
    // ===========================================================================
