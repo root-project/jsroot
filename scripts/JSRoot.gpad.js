@@ -4166,14 +4166,22 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       });
    }
 
-   let ensureTCanvas = function(painter, noframe) {
+  /** @summary Ensure TCanvas and TFrame for the painter object
+    * @param {string|boolean} frame_kind  - false for nor frame or "3d" for special 3D mode */
+   let ensureTCanvas = function(painter, frame_kind) {
       if (!painter) return Promise.reject('Painter not provided in ensureTCanvas');
 
       // simple check - if canvas there, can use painter
       let svg_c = painter.svg_canvas();
-      if (!svg_c.empty()) return Promise.resolve(true);
+      let noframe = (frame_kind === false) || (frame_kind == "no") ? "noframe" : "";
 
-      return drawCanvas(painter.divid, null, noframe ? "noframe" : "");
+      let promise = !svg_c.empty() ? Promise.resolve(true) : drawCanvas(painter.divid, null, noframe);
+
+      return promise.then(() => {
+         if (noframe) return true;
+         if (!painter.svg_frame().select(".main_layer").empty()) return true;
+         return drawFrame(painter.divid, null, frame_kind || "");
+      });
    }
 
    let drawPadSnapshot = (divid, snap /*, opt*/) => {

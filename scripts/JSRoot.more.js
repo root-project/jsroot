@@ -1971,13 +1971,9 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    function drawGraph(divid, graph, opt) {
 
       let painter = new TGraphPainter(graph);
-
-      painter.SetDivId(divid, -1); // just to get access to existing elements
-
+      painter.SetDivId(divid, -1);
       painter.DecodeOptions(opt);
-
       painter.CreateBins();
-
       painter.CreateStat();
 
       let promise = Promise.resolve();
@@ -2297,7 +2293,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
    function drawGraphPolargram(divid, polargram /*, opt*/) {
       let painter = new TGraphPolargramPainter(polargram);
-      painter.SetDivId(divid, -1); // just to get access to existing elements
+      painter.SetDivId(divid, -1);
 
       let main = painter.main_painter()
       if (main) {
@@ -2307,7 +2303,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          return null;
       }
 
-      return jsrp.ensureTCanvas(painter,true).then(() => {
+      return jsrp.ensureTCanvas(painter,false).then(() => {
          painter.SetDivId(divid);
          painter.setAsMainPainter();
          painter.Redraw();
@@ -2527,7 +2523,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    function drawGraphPolar(divid, graph, opt) {
       let painter = new TGraphPolarPainter(graph);
       painter.DecodeOptions(opt);
-      painter.SetDivId(divid, -1); // just to get access to existing elements
+      painter.SetDivId(divid, -1);
 
       let main = painter.main_painter();
       if (main && !main.$polargram) {
@@ -2847,7 +2843,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       }
 
       return promise.then(() => {
-         painter.SetDivId(this.divid);
+         painter.SetDivId(divid);
          painter.Redraw();
          return painter;
       });
@@ -3313,8 +3309,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    jsrp.drawMultiGraph = function(divid, mgraph, opt) {
 
       let painter = new TMultiGraphPainter(mgraph);
-
-      painter.SetDivId(divid, -1); // it may be no element to set divid
+      painter.SetDivId(divid, -1);
 
       let d = new JSROOT.DrawOptions(opt);
       d.check("3D"); d.check("FB"); // no 3D supported, FB not clear
