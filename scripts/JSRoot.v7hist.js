@@ -2503,7 +2503,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
           func = main.GetProjectionFunc();
 
       let BuildPath = (xp,yp,iminus,iplus,do_close) => {
-         let cmd = "", last, pnt, fisrt, isany;
+         let cmd = "", last, pnt, first, isany;
          for (let i = iminus; i <= iplus; ++i) {
             if (func) {
                pnt = func(xp[i], yp[i]);

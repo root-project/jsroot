@@ -1382,7 +1382,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       menu.add("endsub:");
 
-      if (!this.optionUnlab) {
+      if (!this.optionUnlab && this.labelsFont) {
          menu.add("sub:Labels");
          menu.SizeMenu("offset", -0.05, 0.05, 0.01, this.labelsOffset/this.scaling_size, offset => {
             this.ChangeAxisAttr(1, "labels_offset", offset);
