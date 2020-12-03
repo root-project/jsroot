@@ -3857,10 +3857,8 @@ JSROOT.define(['d3'], (d3) => {
                painter.SetDivId(divid, 2);
                painter.Redraw = handle.func;
                promise = painter.Redraw();
-               if (!isPromise(promise)) {
-                  painter.DrawingReady();
-                  promise = undefined;
-               }
+               if (!isPromise(promise))
+                  promise = Promise.resolve(painter);
             } else {
                painter = handle.func(divid, obj, opt);
 

@@ -749,33 +749,24 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       return true;
    }
 
-   TF1Painter.prototype.PerformDraw = function() {
-      if (this.main_painter() === null) {
-         let histo = this.CreateDummyHisto();
-         return JSROOT.draw(this.divid, histo, "AXIS").then(() => {
-            this.SetDivId(this.divid);
-            this.Redraw();
-            return this.DrawingReady();
-         });
-      }
+   TF1Painter.prototype.performDraw = function() {
+      let hpromise = this.main_painter() ? Promise.resolve(true) :
+                     JSROOT.draw(this.divid, this.CreateDummyHisto(), "AXIS");
 
-      this.SetDivId(this.divid);
-      this.Redraw();
-      return Promise.resolve(this.DrawingReady());
+      return hpromise.then(() => {
+         this.SetDivId(this.divid);
+         this.Redraw();
+         return this;
+      });
    }
 
    function drawFunction(divid, tf1, opt) {
-
       let painter = new TF1Painter(tf1);
-
       painter.SetDivId(divid, -1);
       let d = new JSROOT.DrawOptions(opt);
       painter.nosave = d.check('NOSAVE');
 
-      if (JSROOT.Math !== undefined)
-         return painter.PerformDraw();
-
-      return JSROOT.require("math").then(() => painter.PerformDraw());
+      return JSROOT.require("math").then(() => painter.performDraw());
    }
 
    // =======================================================================

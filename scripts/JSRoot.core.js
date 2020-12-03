@@ -1408,8 +1408,6 @@
 
       if (user_scripts) requirements.push("painter");
 
-      console.log('extra scripts = ', user_scripts, 'req', requirements)
-
       _.debug_output = gui_element;
 
       return JSROOT.require(requirements)

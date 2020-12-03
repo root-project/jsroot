@@ -4323,7 +4323,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                if (!painter.options.Mode3D && painter.options.AutoZoom)
                   painter.AutoZoom();
                painter.FillToolbar();
-               painter.DrawingReady();
                return painter;
             });
    }
@@ -6361,7 +6360,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             painter.FillToolbar();
          if (painter.options.Project && !painter.mode3d)
               painter.ToggleProjection(painter.options.Project);
-          painter.DrawingReady();
           return painter;
       });
    }

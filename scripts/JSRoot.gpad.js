@@ -1942,7 +1942,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (opt == "3d") p.mode3d = true;
       p.SetDivId(divid, 2);
       p.Redraw();
-      return p.DrawingReady();
+      return Promise.resolve(p);
    }
 
    // ===========================================================================

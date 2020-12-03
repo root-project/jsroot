@@ -1436,7 +1436,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
       painter.Draw3DAxis();
 
-      return painter.DrawingReady();
+      return Promise.resolve(painter);
    }
 
    // ==========================================================================================
@@ -2979,17 +2979,13 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
       painter.ScanContent();
 
-      painter.Redraw().then(() => {
-
+      return painter.Redraw().then(() => {
          let stats = painter.CreateStat(); // only when required
-         if (stats) JSROOT.draw(painter.divid, stats, "");
-
+         if (stats) return JSROOT.draw(divid, stats, "");
+      }).then(() => {
          painter.FillToolbar();
-
-         painter.DrawingReady();
+         return painter;
       });
-
-      return painter;
    }
 
    // ===========================================================================================
