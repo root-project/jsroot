@@ -2374,12 +2374,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (handle) handle.ChangeLog('toggle');
    }
 
-   function drawFrame(divid, obj, opt) {
+   function drawRFrame(divid, obj, opt) {
       let p = new RFramePainter(obj);
       if (opt == "3d") p.mode3d = true;
-      p.SetDivId(divid, 2);
-      p.Redraw();
-      return Promise.resolve(p);
+      return JSROOT.v7.ensureRCanvas(p, divid, false).then(() => {
+         p.Redraw();
+         return p;
+      });
    }
 
    // ===========================================================================
@@ -4150,13 +4151,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return this.has_event_status;
    }
 
-   function drawCanvas(divid, can /*, opt */) {
+   function drawRCanvas(divid, can /*, opt */) {
       let nocanvas = !can;
-      if (nocanvas) {
-         console.log("No canvas specified");
-         return null;
-         // can = JSROOT.Create("ROOT::Experimental::TCanvas");
-      }
+      if (nocanvas)
+         can = JSROOT.Create("ROOT::Experimental::TCanvas");
 
       let painter = new RCanvasPainter(can);
       painter.normal_canvas = !nocanvas;
@@ -4184,6 +4182,47 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return painter;
       });
    }
+
+     /** @summary Ensure TCanvas and TFrame for the painter object
+    * @param {Object} painter  - painter object to process
+    * @param {Object|string} divid - HTML element or element id
+    * @param {string|boolean} frame_kind  - false for no frame or "3d" for special 3D mode
+    * @param {boolean} [is_main]  - if true, will be main object
+    * @desc Assign divid, creates TCanvas if necessary, add to list of pad painters and */
+   let ensureRCanvas = function(painter, divid, frame_kind, is_main) {
+      if (!painter) return Promise.reject('Painter not provided in ensureRCanvas');
+
+      // assign divid and pad name as required
+      painter.SetDivId(divid, -1);
+
+      // simple check - if canvas there, can use painter
+      let svg_c = painter.svg_canvas();
+      let noframe = (frame_kind === false) || (frame_kind == "3d")? "noframe" : "";
+
+      let promise = !svg_c.empty() ? Promise.resolve(true) : drawRCanvas(divid, null, noframe);
+
+      return promise.then(() => {
+         if (frame_kind && painter.svg_frame().select(".main_layer").empty())
+            return drawRFrame(divid, null, (typeof frame_kind === "string") ? frame_kind : "");
+      }).then(() => {
+         let svg_p = painter.svg_pad(painter.pad_name); // important - parent pad element accessed here
+         if (svg_p.empty()) return painter;
+
+         let pp = svg_p.property('pad_painter');
+         if (pp && (pp !== painter)) {
+             pp.painters.push(painter);
+             // workround to provide style for next object draing
+             if (!painter.rstyle && pp.next_rstyle)
+                painter.rstyle = pp.next_rstyle;
+         }
+
+         if (is_main && !svg_p.property('mainpainter'))
+            svg_p.property('mainpainter', painter);
+
+         return painter;
+      });
+   }
+
 
    // ======================================================================================
 
@@ -4340,7 +4379,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    // =======================================================================================
 
 
-   function drawFrameTitle(reason) {
+   function drawRFrameTitle(reason) {
       let fp = this.frame_painter();
       if (!fp)
          return console.log('no frame painter - no title');
@@ -4768,7 +4807,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    JSROOT.addDrawFunc({ name: "ROOT::Experimental::RHist3Drawable", icon: "img_histo3d", prereq: "v7hist3d", func: "JSROOT.v7.drawHist3", opt: "" });
    JSROOT.addDrawFunc({ name: "ROOT::Experimental::RHistDisplayItem", icon: "img_histo1d", prereq: "v7hist", func: "JSROOT.v7.drawHistDisplayItem", opt: "" });
    JSROOT.addDrawFunc({ name: "ROOT::Experimental::RText", icon: "img_text", prereq: "v7more", func: "JSROOT.v7.drawText", opt: "", direct: true, csstype: "text" });
-   JSROOT.addDrawFunc({ name: "ROOT::Experimental::RFrameTitle", icon: "img_text", func: drawFrameTitle, opt: "", direct: true, csstype: "title" });
+   JSROOT.addDrawFunc({ name: "ROOT::Experimental::RFrameTitle", icon: "img_text", func: drawRFrameTitle, opt: "", direct: true, csstype: "title" });
    JSROOT.addDrawFunc({ name: "ROOT::Experimental::RPaletteDrawable", icon: "img_text", func: drawPalette, opt: "" });
    JSROOT.addDrawFunc({ name: "ROOT::Experimental::RDisplayHistStat", icon: "img_pavetext", prereq: "v7hist", func: "JSROOT.v7.drawHistStats", opt: "" });
    JSROOT.addDrawFunc({ name: "ROOT::Experimental::RLine", icon: "img_graph", prereq: "v7more", func: "JSROOT.v7.drawLine", opt: "", direct: true, csstype: "line" });
@@ -4777,7 +4816,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    JSROOT.addDrawFunc({ name: "ROOT::Experimental::RPave", icon: "img_pavetext", func: drawPave, opt: "" });
    JSROOT.addDrawFunc({ name: "ROOT::Experimental::RLegend", icon: "img_graph", prereq: "v7more", func: "JSROOT.v7.drawLegend", opt: "" });
    JSROOT.addDrawFunc({ name: "ROOT::Experimental::RPaveText", icon: "img_pavetext", prereq: "v7more", func: "JSROOT.v7.drawPaveText", opt: "" });
-   JSROOT.addDrawFunc({ name: "ROOT::Experimental::RFrame", icon: "img_frame", func: drawFrame, opt: "" });
+   JSROOT.addDrawFunc({ name: "ROOT::Experimental::RFrame", icon: "img_frame", func: drawRFrame, opt: "" });
    JSROOT.addDrawFunc({ name: "ROOT::Experimental::RAxisDrawable", icon: "img_frame", func: drawRAxis, opt: "" });
    JSROOT.addDrawFunc({ name: "ROOT::Experimental::RAxisLabelsDrawable", icon: "img_frame", func: drawRAxis, opt: "" });
 
@@ -4788,12 +4827,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    JSROOT.v7.RCanvasPainter = RCanvasPainter;
    JSROOT.v7.RPavePainter = RPavePainter;
    JSROOT.v7.drawRAxis = drawRAxis;
-   JSROOT.v7.drawFrame = drawFrame;
+   JSROOT.v7.drawRFrame = drawRFrame;
    JSROOT.v7.drawPad = drawPad;
-   JSROOT.v7.drawCanvas = drawCanvas;
+   JSROOT.v7.drawRCanvas = drawRCanvas;
    JSROOT.v7.drawPadSnapshot = drawPadSnapshot;
    JSROOT.v7.drawPave = drawPave;
-   JSROOT.v7.drawFrameTitle = drawFrameTitle;
+   JSROOT.v7.drawRFrameTitle = drawRFrameTitle;
+   JSROOT.v7.ensureRCanvas = ensureRCanvas;
 
    return JSROOT;
 

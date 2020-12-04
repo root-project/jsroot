@@ -3562,7 +3562,7 @@ JSROOT.define(['d3'], (d3) => {
       { name: "Session", icon: "img_globe" },
       { name: "kind:TopFolder", icon: "img_base" },
       { name: "kind:Folder", icon: "img_folder", icon2: "img_folderopen", noinspect: true },
-      { name: "ROOT::Experimental::RCanvas", icon: "img_canvas", prereq: "v7gpad", func: "JSROOT.v7.drawCanvas", opt: "", expand_item: "fPrimitives" },
+      { name: "ROOT::Experimental::RCanvas", icon: "img_canvas", prereq: "v7gpad", func: "JSROOT.v7.drawRCanvas", opt: "", expand_item: "fPrimitives" },
       { name: "ROOT::Experimental::RCanvasDisplayItem", icon: "img_canvas", prereq: "v7gpad", func: "JSROOT.v7.drawPadSnapshot", opt: "", expand_item: "fPrimitives" }
    ], cache: {} };
 

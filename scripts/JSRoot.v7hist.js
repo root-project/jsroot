@@ -20,23 +20,13 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
    RHistPainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
 
-   // function ensure that frame is drawn on the canvas
-   RHistPainter.prototype.PrepareFrame = function(divid, mode3d) {
-      this.SetDivId(divid, -1);
-
-      if (!this.frame_painter())
-         JSROOT.v7.drawFrame(divid, null, mode3d ? "3d" : "");
-
-      return this.SetDivId(divid, mode3d ? 4 : 1);
-   }
-
    RHistPainter.prototype.GetHImpl = function(obj) {
       if (obj && obj.fHistImpl)
          return obj.fHistImpl.fIO;
       return null;
    }
 
-   /** Returns true if RHistDisplayItem is used */
+   /** @summary Returns true if RHistDisplayItem is used */
    RHistPainter.prototype.IsDisplayItem = function() {
       let obj = this.GetObject();
       return obj && obj.fAxes ? true : false;
@@ -1827,39 +1817,40 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       // create painter and add it to canvas
       let painter = new RH1Painter(histo);
 
-      if (!painter.PrepareFrame(divid)) return null;
+      return JSROOT.v7.ensureRCanvas(painter, divid, true, true).then(() => {
 
-      painter.options = { Hist: false, Bar: false, BarStyle: 0,
-                          Error: false, ErrorKind: -1, errorX: JSROOT.gStyle.fErrorX,
-                          Zero: false, Mark: false,
-                          Line: false, Fill: false, Lego: 0, Surf: 0,
-                          Text: false, TextAngle: 0, TextKind: "", AutoColor: 0,
-                          BarOffset: 0., BarWidth: 1., BaseLine: false, Mode3D: false };
+         painter.options = { Hist: false, Bar: false, BarStyle: 0,
+                             Error: false, ErrorKind: -1, errorX: JSROOT.gStyle.fErrorX,
+                             Zero: false, Mark: false,
+                             Line: false, Fill: false, Lego: 0, Surf: 0,
+                             Text: false, TextAngle: 0, TextKind: "", AutoColor: 0,
+                             BarOffset: 0., BarWidth: 1., BaseLine: false, Mode3D: false };
 
-      let d = new JSROOT.DrawOptions(opt);
-      if (d.check('R3D_', true))
-         painter.options.Render3D = JSROOT.constants.Render3D.fromString(d.part.toLowerCase());
+         let d = new JSROOT.DrawOptions(opt);
+         if (d.check('R3D_', true))
+            painter.options.Render3D = JSROOT.constants.Render3D.fromString(d.part.toLowerCase());
 
-      let kind = painter.v7EvalAttr("kind", "hist"),
-          sub = painter.v7EvalAttr("sub", 0),
-          o = painter.options;
+         let kind = painter.v7EvalAttr("kind", "hist"),
+             sub = painter.v7EvalAttr("sub", 0),
+             o = painter.options;
 
-      o.Text = painter.v7EvalAttr("text", false);
-      o.BarOffset = painter.v7EvalAttr("bar_offset", 0.);
-      o.BarWidth = painter.v7EvalAttr("bar_width", 1.);
+         o.Text = painter.v7EvalAttr("text", false);
+         o.BarOffset = painter.v7EvalAttr("bar_offset", 0.);
+         o.BarWidth = painter.v7EvalAttr("bar_width", 1.);
 
-      switch(kind) {
-         case "bar": o.Bar = true; o.BarStyle = sub; break;
-         case "err": o.Error = true; o.ErrorKind = sub; break;
-         case "p": o.Mark = true; break;
-         case "l": o.Line = true; break;
-         case "lego": o.Lego = sub > 0 ? 10+sub : 12; o.Mode3D = true; break;
-         default: o.Hist = true;
-      }
+         switch(kind) {
+            case "bar": o.Bar = true; o.BarStyle = sub; break;
+            case "err": o.Error = true; o.ErrorKind = sub; break;
+            case "p": o.Mark = true; break;
+            case "l": o.Line = true; break;
+            case "lego": o.Lego = sub > 0 ? 10+sub : 12; o.Mode3D = true; break;
+            default: o.Hist = true;
+         }
 
-      painter.ScanContent();
+         painter.ScanContent();
 
-      return painter.callDrawFunc();
+         return painter.callDrawFunc();
+      });
    }
 
    // ==================== painter for TH2 histograms ==============================
@@ -3599,48 +3590,49 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       // create painter and add it to canvas
       let painter = new RH2Painter(obj);
 
-      if (!painter.PrepareFrame(divid)) return null;
+      return JSROOT.v7.ensureRCanvas(painter, divid, true, true).then(() => {
 
-      painter.options = { Hist: false, Error: false, Zero: false, Mark: false,
-                          Line: false, Fill: false, Lego: 0, Surf: 0,
-                          Text: true, TextAngle: 0, TextKind: "",
-                          BaseLine: false, Mode3D: false, AutoColor: 0,
-                          Color: false, Scat: false, ScatCoef: 1, Candle: "", Box: false, BoxStyle: 0, Arrow: false, Contour: 0, Proj: 0,
-                          BarOffset: 0., BarWidth: 1., minimum: -1111, maximum: -1111 };
+         painter.options = { Hist: false, Error: false, Zero: false, Mark: false,
+                             Line: false, Fill: false, Lego: 0, Surf: 0,
+                             Text: true, TextAngle: 0, TextKind: "",
+                             BaseLine: false, Mode3D: false, AutoColor: 0,
+                             Color: false, Scat: false, ScatCoef: 1, Candle: "", Box: false, BoxStyle: 0, Arrow: false, Contour: 0, Proj: 0,
+                             BarOffset: 0., BarWidth: 1., minimum: -1111, maximum: -1111 };
 
-      let kind = painter.v7EvalAttr("kind", ""),
-          sub = painter.v7EvalAttr("sub", 0),
-          o = painter.options;
+         let kind = painter.v7EvalAttr("kind", ""),
+             sub = painter.v7EvalAttr("sub", 0),
+             o = painter.options;
 
-      o.Text = painter.v7EvalAttr("text", false);
+         o.Text = painter.v7EvalAttr("text", false);
 
-      switch(kind) {
-         case "lego": o.Lego = sub > 0 ? 10+sub : 12; o.Mode3D = true; break;
-         case "surf": o.Surf = sub > 0 ? 10+sub : 1; o.Mode3D = true; break;
-         case "box": o.Box = true; o.BoxStyle = 10 + sub; break;
-         case "err": o.Error = true; o.Mode3D = true; break;
-         case "cont": o.Contour = sub > 0 ? 10+sub : 1; break;
-         case "arr": o.Arrow = true; break;
-         case "scat": o.Scat = true; break;
-         case "col": o.Color = true; break;
-         default: if (!o.Text) o.Color = true;
-      }
+         switch(kind) {
+            case "lego": o.Lego = sub > 0 ? 10+sub : 12; o.Mode3D = true; break;
+            case "surf": o.Surf = sub > 0 ? 10+sub : 1; o.Mode3D = true; break;
+            case "box": o.Box = true; o.BoxStyle = 10 + sub; break;
+            case "err": o.Error = true; o.Mode3D = true; break;
+            case "cont": o.Contour = sub > 0 ? 10+sub : 1; break;
+            case "arr": o.Arrow = true; break;
+            case "scat": o.Scat = true; break;
+            case "col": o.Color = true; break;
+            default: if (!o.Text) o.Color = true;
+         }
 
-      // here we deciding how histogram will look like and how will be shown
-      // painter.DecodeOptions(opt);
+         // here we deciding how histogram will look like and how will be shown
+         // painter.DecodeOptions(opt);
 
-      if (painter.IsTH2Poly()) {
-         if (o.Mode3D) o.Lego = 12;
-                  else o.Color = true;
-      }
+         if (painter.IsTH2Poly()) {
+            if (o.Mode3D) o.Lego = 12;
+                     else o.Color = true;
+         }
 
-      painter._show_empty_bins = false;
+         painter._show_empty_bins = false;
 
-      painter._can_move_colz = true;
+         painter._can_move_colz = true;
 
-      painter.ScanContent();
+         painter.ScanContent();
 
-      return painter.callDrawFunc();
+         return painter.callDrawFunc();
+      });
    }
 
    // =================================================================================
@@ -3663,23 +3655,24 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       // create painter and add it to canvas
       let painter = new RH3Painter(histo);
 
-      painter.PrepareFrame(divid, true); // create if necessary frame in 3d mode
+      return JSROOT.v7.ensureRCanvas(painter, divid, "3d", true).then(() => {
 
-      painter.options = { Box: 0, Scatter: false, Sphere: 0, Color: false, minimum: -1111, maximum: -1111 };
+         painter.options = { Box: 0, Scatter: false, Sphere: 0, Color: false, minimum: -1111, maximum: -1111 };
 
-      let kind = painter.v7EvalAttr("kind", ""),
-          sub = painter.v7EvalAttr("sub", 0),
-          o = painter.options;
+         let kind = painter.v7EvalAttr("kind", ""),
+             sub = painter.v7EvalAttr("sub", 0),
+             o = painter.options;
 
-      switch(kind) {
-         case "box": o.Box = 10 + sub; break;
-         case "sphere": o.Sphere = 10 + sub; break;
-         case "col": o.Color = true; break;
-         case "scat": o.Scatter = true;  break;
-         default: o.Box = 10;
-      }
+         switch(kind) {
+            case "box": o.Box = 10 + sub; break;
+            case "sphere": o.Sphere = 10 + sub; break;
+            case "col": o.Color = true; break;
+            case "scat": o.Scatter = true;  break;
+            default: o.Box = 10;
+         }
 
-      return JSROOT.require('v7hist3d').then(() => {
+         return JSROOT.require('v7hist3d');
+      }).then(() => {
          painter.ScanContent();
          painter.Redraw();
          return painter;

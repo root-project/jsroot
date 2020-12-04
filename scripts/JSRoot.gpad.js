@@ -4170,7 +4170,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
   /** @summary Ensure TCanvas and TFrame for the painter object
     * @param {Object} painter  - painter object to process
     * @param {Object|string} divid - HTML element or element id
-    * @param {string|boolean} frame_kind  - false for nor frame or "3d" for special 3D mode
+    * @param {string|boolean} frame_kind  - false for no frame or "3d" for special 3D mode
     * @param {boolean} [is_main]  - if true, will be main object
     * @desc Assign divid, creates TCanvas if necessary, add to list of pad painters and */
    let ensureTCanvas = function(painter, divid, frame_kind, is_main) {

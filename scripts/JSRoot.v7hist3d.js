@@ -1392,7 +1392,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
 
    // ==========================================================================================
 
-   /** @summary Draw 1-D histogram in 3D
+   /** @summary Draw 1-D histogram in 3D mode
      * @private */
    JSROOT.v7.RH1Painter.prototype.Draw3D = function(reason) {
 
@@ -1403,7 +1403,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
 
       if (reason == "resize")  {
          if (is_main && main.Resize3D()) main.Render3D();
-         return Promise.resolve(true);
+         return Promise.resolve(this);
       }
 
       this.DeleteAtt();
@@ -1418,7 +1418,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       }
 
       if (!main.mode3d)
-         return Promise.resolve(true);
+         return Promise.resolve(this);
 
       return this.DrawingBins(reason).then(() => {
          // called when bins received from server, must be reentrant
@@ -1429,7 +1429,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
          main.Render3D();
          this.UpdateStatWebCanvas();
          main.AddKeysHandler();
-         return true;
+         return this;
       });
 
    }
@@ -1446,7 +1446,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       if (reason == "resize") {
          if (is_main && main.Resize3D()) main.Render3D();
 
-         return Promise.resolve(true);
+         return Promise.resolve(this);
       }
 
       let zmult = 1.1;
@@ -1467,7 +1467,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       }
 
       if (!main.mode3d)
-         return Promise.resolve(true);
+         return Promise.resolve(this);
 
       return this.DrawingBins(reason).then(() => {
          // called when bins received from server, must be reentrant
@@ -1477,7 +1477,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
          main.Render3D();
          this.UpdateStatWebCanvas();
          main.AddKeysHandler();
-         return true;
+         return this;
       });
    }
 

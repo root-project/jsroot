@@ -1274,70 +1274,69 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    }
 
    let drawPave = (divid, pave, opt) => {
-      // one could force drawing of PaveText on specific sub-pad
-
       let painter = new JSROOT.TPavePainter(pave);
 
-      painter.SetDivId(divid, 2);
+      return jsrp.ensureTCanvas(painter, divid, false).then(() => {
 
-      if ((pave.fName === "title") && (pave._typename === "TPaveText")) {
-         let tpainter = painter.FindPainterFor(null, "title");
-         if (tpainter && (tpainter !== painter)) {
-            tpainter.DeleteThis();
-         } else if ((opt == "postitle") || painter.IsDummyPos(pave)) {
-            let st = JSROOT.gStyle, fp = painter.frame_painter();
-            if (st && fp) {
-               let midx = st.fTitleX, y2 = st.fTitleY, w = st.fTitleW, h = st.fTitleH;
-               if (!h && fp) h = (y2-fp.fY2NDC)*0.7;
-               if (!w && fp) w = fp.fX2NDC - fp.fX1NDC;
-               if (!h || isNaN(h) || (h<0)) h = 0.06;
-               if (!w || isNaN(w) || (w<0)) w = 0.44;
-               pave.fX1NDC = midx - w/2;
-               pave.fY1NDC = y2 - h;
-               pave.fX2NDC = midx + w/2;
-               pave.fY2NDC = y2;
-               pave.fInit = 1;
+         if ((pave.fName === "title") && (pave._typename === "TPaveText")) {
+            let tpainter = painter.FindPainterFor(null, "title");
+            if (tpainter && (tpainter !== painter)) {
+               tpainter.DeleteThis();
+            } else if ((opt == "postitle") || painter.IsDummyPos(pave)) {
+               let st = JSROOT.gStyle, fp = painter.frame_painter();
+               if (st && fp) {
+                  let midx = st.fTitleX, y2 = st.fTitleY, w = st.fTitleW, h = st.fTitleH;
+                  if (!h && fp) h = (y2-fp.fY2NDC)*0.7;
+                  if (!w && fp) w = fp.fX2NDC - fp.fX1NDC;
+                  if (!h || isNaN(h) || (h<0)) h = 0.06;
+                  if (!w || isNaN(w) || (w<0)) w = 0.44;
+                  pave.fX1NDC = midx - w/2;
+                  pave.fY1NDC = y2 - h;
+                  pave.fX2NDC = midx + w/2;
+                  pave.fY2NDC = y2;
+                  pave.fInit = 1;
+               }
             }
+         } else if (pave._typename === "TPaletteAxis") {
+            pave.fBorderSize = 1;
+            pave.fShadowColor = 0;
+
+            // check some default values of TGaxis object, otherwise axis will not be drawn
+            if (pave.fAxis) {
+               if (!pave.fAxis.fChopt) pave.fAxis.fChopt = "+";
+               if (!pave.fAxis.fNdiv) pave.fAxis.fNdiv = 12;
+               if (!pave.fAxis.fLabelOffset) pave.fAxis.fLabelOffset = 0.005;
+            }
+
+            painter.z_handle = new JSROOT.TAxisPainter(pave.fAxis, true);
+            painter.z_handle.SetDivId(divid, -1);
+
+            painter.UseContextMenu = true;
          }
-      } else if (pave._typename === "TPaletteAxis") {
-         pave.fBorderSize = 1;
-         pave.fShadowColor = 0;
 
-         // check some default values of TGaxis object, otherwise axis will not be drawn
-         if (pave.fAxis) {
-            if (!pave.fAxis.fChopt) pave.fAxis.fChopt = "+";
-            if (!pave.fAxis.fNdiv) pave.fAxis.fNdiv = 12;
-            if (!pave.fAxis.fLabelOffset) pave.fAxis.fLabelOffset = 0.005;
+         switch (pave._typename) {
+            case "TPaveLabel":
+               painter.PaveDrawFunc = painter.DrawPaveLabel;
+               break;
+            case "TPaveStats":
+               painter.PaveDrawFunc = painter.DrawPaveStats;
+               painter.$secondary = true; // indicates that painter created from others
+               break;
+            case "TPaveText":
+            case "TPavesText":
+            case "TDiamond":
+               painter.PaveDrawFunc = painter.DrawPaveText;
+               break;
+            case "TLegend":
+               painter.PaveDrawFunc = painter.DrawPaveLegend;
+               break;
+            case "TPaletteAxis":
+               painter.PaveDrawFunc = painter.DrawPaletteAxis;
+               break;
          }
 
-         painter.z_handle = new JSROOT.TAxisPainter(pave.fAxis, true);
-         painter.z_handle.SetDivId(divid, -1);
-
-         painter.UseContextMenu = true;
-      }
-
-      switch (pave._typename) {
-         case "TPaveLabel":
-            painter.PaveDrawFunc = painter.DrawPaveLabel;
-            break;
-         case "TPaveStats":
-            painter.PaveDrawFunc = painter.DrawPaveStats;
-            painter.$secondary = true; // indicates that painter created from others
-            break;
-         case "TPaveText":
-         case "TPavesText":
-         case "TDiamond":
-            painter.PaveDrawFunc = painter.DrawPaveText;
-            break;
-         case "TLegend":
-            painter.PaveDrawFunc = painter.DrawPaveLegend;
-            break;
-         case "TPaletteAxis":
-            painter.PaveDrawFunc = painter.DrawPaletteAxis;
-            break;
-      }
-
-      return painter.DrawPave(opt);
+         return painter.DrawPave(opt);
+      });
    }
 
    /** @summary Produce and draw TLegend object for the specified divid
