@@ -2162,9 +2162,8 @@ JSROOT.define(['d3'], (d3) => {
     *   -   5  major objects like TGeoVolume (do not require canvas)
     *   -   6  major objects like TGraphPolagram (requires canvas but not TFrame)
     * @param {string|object} divid - id of div element or directly DOMElement
-    * @param {number} [kind] - kind of object drawn with painter
-    * @param {string} [pad_name] - when specified, subpad name used for object drawing */
-   ObjectPainter.prototype.SetDivId = function(divid, kind, pad_name) {
+    * @param {number} [kind] - kind of object drawn with painter */
+   ObjectPainter.prototype.SetDivId = function(divid, kind) {
 
       if (divid !== undefined) {
          this.divid = divid;
@@ -2201,9 +2200,7 @@ JSROOT.define(['d3'], (d3) => {
       }
 
       // SVG element where current pad is drawn (can be canvas itself)
-      this.pad_name = pad_name;
-      if (this.pad_name === undefined)
-         this.pad_name = this.CurrentPadName();
+      this.pad_name = this.CurrentPadName();
 
       if (kind < 0) return true;
 

@@ -4171,13 +4171,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
     * @param {Object} painter  - painter object to process
     * @param {Object|string} divid - HTML element or element id
     * @param {string|boolean} frame_kind  - false for nor frame or "3d" for special 3D mode
-    * @param {boolean|string} [place]  - if true, will be main object else if string - exact pad name
+    * @param {boolean} [is_main]  - if true, will be main object
     * @desc Assign divid, creates TCanvas if necessary, add to list of pad painters and */
-   let ensureTCanvas = function(painter, divid, frame_kind, place) {
+   let ensureTCanvas = function(painter, divid, frame_kind, is_main) {
       if (!painter) return Promise.reject('Painter not provided in ensureTCanvas');
 
       // assign divid and pad name as required
-      painter.SetDivId(divid, -1, (typeof place == 'string') ? place : undefined);
+      painter.SetDivId(divid, -1);
 
       // simple check - if canvas there, can use painter
       let svg_c = painter.svg_canvas();
@@ -4200,7 +4200,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                 painter.rstyle = pp.next_rstyle;
          }
 
-         if ((place === true) && !svg_p.property('mainpainter'))
+         if (is_main && !svg_p.property('mainpainter'))
             svg_p.property('mainpainter', painter);
 
          return painter;

@@ -1275,15 +1275,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    let drawPave = (divid, pave, opt) => {
       // one could force drawing of PaveText on specific sub-pad
-      let onpad;
-      if ((typeof opt == 'string') && (opt.indexOf("onpad:")==0)) {
-         onpad = opt.substr(6);
-         opt = "";
-      }
 
       let painter = new JSROOT.TPavePainter(pave);
 
-      painter.SetDivId(divid, 2, onpad);
+      painter.SetDivId(divid, 2);
 
       if ((pave.fName === "title") && (pave._typename === "TPaveText")) {
          let tpainter = painter.FindPainterFor(null, "title");
@@ -2397,7 +2392,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          return statpainter.Enabled;
       }
 
-      JSROOT.draw(this.divid, stat, "onpad:" + this.pad_name);
+      let prev_name = this.CurrentPadName(this.pad_name);
+      JSROOT.draw(this.divid, stat).then(() => {
+         this.CurrentPadName(prev_name);
+      });
 
       return true;
    }
