@@ -623,42 +623,33 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
    TGeoPainter.prototype.FillContextMenu = function(menu) {
       menu.add("header: Draw options");
 
-      menu.addchk(this.ctrl.update_browser, "Browser update", function() {
+      menu.addchk(this.ctrl.update_browser, "Browser update", () => {
          this.ctrl.update_browser = !this.ctrl.update_browser;
          if (!this.ctrl.update_browser) this.activateInBrowser([]);
       });
-      menu.addchk(this.ctrl.show_controls, "Show Controls", function() {
-         this.showControlOptions('toggle');
-      });
-      menu.addchk(this.ctrl._axis, "Show axes", function() {
-         this.setAxesDraw('toggle');
-      });
-      if (this.geo_manager)
-         menu.addchk(this.ctrl.showtop, "Show top volume", function() {
-            this.setShowTop(!this.ctrl.showtop);
-         });
+      menu.addchk(this.ctrl.show_controls, "Show Controls", () => this.showControlOptions('toggle'));
 
-      menu.addchk(this.ctrl.wireframe, "Wire frame", function() {
-         this.toggleWireFrame();
-      });
-      menu.addchk(this.ctrl.highlight, "Highlight volumes", function() {
+      menu.addchk(this.ctrl._axis, "Show axes", () => this.setAxesDraw('toggle'));
+
+      if (this.geo_manager)
+         menu.addchk(this.ctrl.showtop, "Show top volume", () => this.setShowTop(!this.ctrl.showtop));
+
+      menu.addchk(this.ctrl.wireframe, "Wire frame", () => this.toggleWireFrame());
+
+      menu.addchk(this.ctrl.highlight, "Highlight volumes", () => {
          this.ctrl.highlight = !this.ctrl.highlight;
       });
-      menu.addchk(this.ctrl.highlight_scene, "Highlight scene", function() {
+      menu.addchk(this.ctrl.highlight_scene, "Highlight scene", () => {
          this.ctrl.highlight_scene = !this.ctrl.highlight_scene;
       });
-      menu.add("Reset camera position", function() {
-         this.focusCamera();
-      });
+      menu.add("Reset camera position", () => this.focusCamera());
+
       if (!this._geom_viewer)
-         menu.add("Get camera position", function() {
-            alert("Position (as url): &opt=" + this.produceCameraUrl());
-         });
+         menu.add("Get camera position", () => alert("Position (as url): &opt=" + this.produceCameraUrl()));
+
       if (!this.ctrl.project)
-         menu.addchk(this.ctrl.rotate, "Autorotate", function() {
-            this.setAutoRotate(!this.ctrl.rotate);
-         });
-      menu.addchk(this.ctrl.select_in_view, "Select in view", function() {
+         menu.addchk(this.ctrl.rotate, "Autorotate", () => this.setAutoRotate(!this.ctrl.rotate));
+      menu.addchk(this.ctrl.select_in_view, "Select in view", () => {
          this.ctrl.select_in_view = !this.ctrl.select_in_view;
          if (this.ctrl.select_in_view) this.startDrawGeometry();
       });
@@ -4047,8 +4038,9 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       // if (obj && obj._typename=='TGeoManager' && (obj.fNsegments > 3))
       //   geo.GradPerSegm = 360/obj.fNsegments;
 
-      painter.SetDivId(divid);
+      painter.SetDivId(divid, -1);
       painter.setAsMainPainter();
+      painter.addToPadPrimitives(); // will add to pad primitives if any
 
       painter.options = painter.decodeOptions(opt); // indicator of initialization
 
