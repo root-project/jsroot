@@ -4192,7 +4192,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return promise.then(() => {
          if (frame_kind === false) return;
 
-         if (painter.svg_frame().select(".main_layer").empty())
+         if (painter.svg_frame().select(".main_layer").empty() && !painter.frame_painter())
             return drawFrame(divid, null, (typeof frame_kind === "string") ? frame_kind : "");
       }).then(() => {
          painter.addToPadPrimitives();

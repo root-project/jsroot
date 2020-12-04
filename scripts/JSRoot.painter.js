@@ -3459,7 +3459,7 @@ JSROOT.define(['d3'], (d3) => {
       { name: "TProfile2D", sameas: "TH2" },
       { name: /^TH3/, icon: 'img_histo3d', prereq: "hist3d", func: ".drawHistogram3D", opt: ";SCAT;BOX;BOX2;BOX3;GLBOX1;GLBOX2;GLCOL" },
       { name: "THStack", icon: "img_histo1d", prereq: "hist", func: ".drawHStack", expand_item: "fHists", opt: "NOSTACK;HIST;E;PFC;PLC" },
-      { name: "TPolyMarker3D", icon: 'img_histo3d', prereq: "hist3d", func: ".drawPolyMarker3D" },
+      { name: "TPolyMarker3D", icon: 'img_histo3d', prereq: "hist3d", func: ".drawPolyMarker3D", direct: true, frame: "3d" },
       { name: "TPolyLine3D", icon: 'img_graph', prereq: "base3d", func: ".drawPolyLine3D", direct: true },
       { name: "TGraphStruct" },
       { name: "TGraphNode" },
@@ -3742,7 +3742,7 @@ JSROOT.define(['d3'], (d3) => {
       if (handle.draw_field && obj[handle.draw_field])
          return JSROOT.draw(divid, obj[handle.draw_field], opt);
 
-      if (!handle.func) {
+      if (!handle.func && !handle.direct) {
          if (opt && (opt.indexOf("same") >= 0)) {
             let main_painter = JSROOT.getMainPainter(divid);
             if (main_painter && (typeof main_painter.performDrop === 'function'))
@@ -3761,14 +3761,14 @@ JSROOT.define(['d3'], (d3) => {
          if (handle.direct == "v7") {
             let painter = new ObjectPainter(obj, opt);
             painter.csstype = handle.csstype;
-            promise = jsrp.ensureRCanvas(painter, divid, false).then(() => {
+            promise = jsrp.ensureRCanvas(painter, divid, handle.frame || false).then(() => {
                painter.Redraw = handle.func;
                painter.Redraw();
                return painter;
             })
          } else if (handle.direct) {
             let painter = new ObjectPainter(obj, opt);
-            promise = jsrp.ensureTCanvas(painter, divid, false).then(() => {
+            promise = jsrp.ensureTCanvas(painter, divid, handle.frame || false).then(() => {
                painter.Redraw = handle.func;
                painter.Redraw();
                return painter;

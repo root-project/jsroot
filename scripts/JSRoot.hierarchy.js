@@ -2607,7 +2607,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.h = createStreamerInfoContent(obj)
       else
          this.h = createInspectorContent(obj);
-      return this.refreshHtml().then(() => { this.SetDivId(this.divid); });
+      return this.refreshHtml().then(() => { this.SetDivId(this.divid); }); // base painter
    }
 
    // ======================================================================================
