@@ -2851,7 +2851,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          let padpainter = new TPadPainter(subpad, false);
          padpainter.DecodeOptions(snap.fOption);
-         padpainter.SetDivId(this.divid); // pad painter will be registered in the canvas painters list
+         padpainter.SetDivId(this.divid, -1); // pad painter will be registered in the canvas painters list
+         padpainter.addToPadPrimitives();
          padpainter.snapid = snap.fObjectID;
 
          padpainter.CreatePadSvg();
@@ -2936,14 +2937,15 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if (mainid && (typeof mainid == "string")) {
                this.brlayout = new JSROOT.BrowserLayout(mainid, null, this);
                this.brlayout.Create(mainid, true);
-               // this.brlayout.ToggleBrowserKind("float");
+               // this.brlayout.toggleBrowserKind("float");
                this.SetDivId(this.brlayout.drawing_divid(), -1);  // assign id for drawing
                JSROOT.registerForResize(this.brlayout);
             }
          }
 
          this.CreateCanvasSvg(0);
-         this.SetDivId(this.divid);  // now add to painters list
+         this.SetDivId(this.divid, -1);  // now add to painters list
+         painter.addToPadPrimitives();
          if (!this.batch_mode)
             this.AddPadButtons(true);
 
@@ -3073,7 +3075,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return Promise.resolve("");
    }
 
-   /** Collects pad information for TWebCanvas, need to update different states */
+   /** @summary Collects pad information for TWebCanvas, need to update different states */
    TPadPainter.prototype.GetWebPadOptions = function(arg) {
       let is_top = (arg === undefined), elem = null, scan_subpads = true;
       // no any options need to be collected in readonly mode
@@ -3533,11 +3535,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       let painter = new TPadPainter(pad, false);
       painter.DecodeOptions(opt);
 
-      painter.SetDivId(divid); // pad painter will be registered in the canvas painters list
+      painter.SetDivId(divid, -1); // pad painter will be registered in the canvas painters list
 
       if (painter.svg_canvas().empty()) {
+         // one can draw pad without canvas
          painter.has_canvas = false;
          painter.this_pad_name = "";
+      } else {
+         painter.addToPadPrimitives();
       }
 
       painter.CreatePadSvg();
@@ -3934,9 +3939,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       });
 
       // be aware, that jsroot_browser_hierarchy required for flexible layout that element use full browser area
-      this.brlayout.SetBrowserContent("<div class='jsroot_browser_hierarchy' id='ged_placeholder'>Loading GED ...</div>");
-      this.brlayout.SetBrowserTitle("GED");
-      this.brlayout.ToggleBrowserKind(kind || "float");
+      this.brlayout.setBrowserContent("<div class='jsroot_browser_hierarchy' id='ged_placeholder'>Loading GED ...</div>");
+      this.brlayout.setBrowserTitle("GED");
+      this.brlayout.toggleBrowserKind(kind || "float");
 
       return new Promise(resolveFunc => {
 
@@ -4151,7 +4156,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       painter.DecodeOptions(opt);
       painter.normal_canvas = !nocanvas;
       painter.CreateCanvasSvg(0);
-      painter.SetDivId(divid);  // now add to painters list
+      painter.SetDivId(divid);  // now add to painters list ??????????
 
       painter.AddPadButtons();
 
@@ -4190,17 +4195,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (painter.svg_frame().select(".main_layer").empty())
             return drawFrame(divid, null, (typeof frame_kind === "string") ? frame_kind : "");
       }).then(() => {
-         let svg_p = painter.svg_pad(painter.pad_name); // important - parent pad element accessed here
-         if (svg_p.empty()) return painter;
-
-         let pp = svg_p.property('pad_painter');
-         if (pp && (pp !== painter)) {
-             pp.painters.push(painter);
-             // workround to provide style for next object draing
-             if (!painter.rstyle && pp.next_rstyle)
-                painter.rstyle = pp.next_rstyle;
-         }
-
+         painter.addToPadPrimitives();
          return painter;
       });
    }

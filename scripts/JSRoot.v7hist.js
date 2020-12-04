@@ -3860,9 +3860,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
    function drawHistStats(divid, stats, opt) {
       let painter = new RHistStatsPainter(stats, opt);
 
-      painter.SetDivId(divid);
-
-      return painter.DrawPave();
+      return jsrp.ensureRCanvas(painter, divid, false).then(() => painter.DrawPave());
    }
 
    JSROOT.v7.RHistPainter = RHistPainter;

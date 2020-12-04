@@ -1424,14 +1424,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    let drawRAxis = (divid, obj /*, opt*/) => {
-
       let painter = new RAxisPainter(obj);
-
-      painter.SetDivId(divid);
-
       painter.disable_zooming = true;
-
-      return painter.Redraw().then(() => painter);
+      return jsrp.ensureRCanvas(painter, divid, false)
+                 .then(() => painter.Redraw())
+                 .then(() => painter);
    }
 
    // ==========================================================================================
@@ -4205,17 +4202,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (painter.svg_frame().select(".main_layer").empty())
             return drawRFrame(divid, null, (typeof frame_kind === "string") ? frame_kind : "");
       }).then(() => {
-         let svg_p = painter.svg_pad(painter.pad_name); // important - parent pad element accessed here
-         if (svg_p.empty()) return painter;
-
-         let pp = svg_p.property('pad_painter');
-         if (pp && (pp !== painter)) {
-             pp.painters.push(painter);
-             // workround to provide style for next object draing
-             if (!painter.rstyle && pp.next_rstyle)
-                painter.rstyle = pp.next_rstyle;
-         }
-
+         painter.addToPadPrimitives();
          return painter;
       });
    }
@@ -4368,9 +4355,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    let drawPave = (divid, pave, opt) => {
       let painter = new RPavePainter(pave, opt);
 
-      painter.SetDivId(divid);
-
-      return painter.DrawPave();
+      return jsrp.ensureRCanvas(painter, divid, false).then(() => painter.DrawPave());
    }
 
    // =======================================================================================
@@ -4792,9 +4777,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    let drawPalette = (divid, palette, opt) => {
       let painter = new RPalettePainter(palette, opt);
-      painter.SetDivId(divid);
-      painter.CreateG(false);
-      return Promise.resolve(painter);
+
+      return jsrp.ensureRCanvas(painter, divid, false).then(() => {
+         painter.CreateG(false); // just create container, real drawing will be done by histogram
+         return painter;
+      });
    }
 
    // JSROOT.addDrawFunc({ name: "ROOT::Experimental::RPadDisplayItem", icon: "img_canvas", func: drawPad, opt: "" });

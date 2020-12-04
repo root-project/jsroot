@@ -2140,6 +2140,22 @@ JSROOT.define(['d3'], (d3) => {
          svg_p.property('mainpainter', this);
    }
 
+   /** @summary Add painter to pad list of painters */
+   ObjectPainter.prototype.addToPadPrimitives = function() {
+      let svg_p = this.svg_pad(this.pad_name); // important - parent pad element accessed here
+      if (svg_p.empty()) return false;
+
+      let pp = svg_p.property('pad_painter');
+      if (!pp || (pp === this)) return false;
+
+      if (pp.painters.indexOf(this) < 0)
+         pp.painters.push(this);
+      if (!this.rstyle && pp.next_rstyle)
+         this.rstyle = pp.next_rstyle;
+
+      return true;
+   }
+
    /** @summary Assigns id of top element (normally div where drawing is done).
      * @desc In some situations canvas may not exists - for instance object drawn as html, not as svg.
      * In such case the only painter will be assigned to the first element
@@ -3364,7 +3380,7 @@ JSROOT.define(['d3'], (d3) => {
             main = frame.append("div").style('max-width', '100%').style('max-height', '100%').style('overflow', 'auto');
          main.html(txt);
 
-         // (re) set painter to first child element
+         // (re) set painter to first child element, base painter not requires canvas
          this.SetDivId(this.divid);
 
          if (mathjax)
@@ -3728,7 +3744,7 @@ JSROOT.define(['d3'], (d3) => {
 
       if (!handle.func) {
          if (opt && (opt.indexOf("same") >= 0)) {
-            let main_painter = JSROOT.get_main_painter(divid);
+            let main_painter = JSROOT.getMainPainter(divid);
             if (main_painter && (typeof main_painter.performDrop === 'function'))
                return main_painter.performDrop(obj, "", null, opt);
          }
@@ -3995,7 +4011,7 @@ JSROOT.define(['d3'], (d3) => {
    /** @summary Returns main painter object for specified HTML element - typically histogram painter
      * @param {string|object} divid - id or DOM element
      * @private */
-   JSROOT.get_main_painter = function(divid) {
+   JSROOT.getMainPainter = function(divid) {
       let dummy = new JSROOT.ObjectPainter();
       dummy.SetDivId(divid, -1);
       return dummy.main_painter(true);

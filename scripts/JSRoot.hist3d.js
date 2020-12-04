@@ -1410,7 +1410,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          let main = this.frame_painter();
 
          if (!main || !main._toplevel)
-            return console.warn('no geo object found for 3D axis drawing');
+            return Promise.reject(Error('no 3D frame found for 3D axis drawing'));
 
          let box = new THREE.Box3().setFromObject(main._toplevel);
 
@@ -1428,11 +1428,11 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          main.adjustCameraPosition();
 
          main.Render3D();
+
+         return Promise.resolve(this);
       }
 
-      painter.Draw3DAxis();
-
-      return Promise.resolve(painter);
+      return painter.Draw3DAxis();
    }
 
    // ==========================================================================================

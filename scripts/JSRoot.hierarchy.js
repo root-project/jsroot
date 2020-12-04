@@ -670,7 +670,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.main().select(".jsroot_browser").select(".jsroot_browser_btns").remove();
    }
 
-   BrowserLayout.prototype.SetBrowserContent = function(guiCode) {
+   BrowserLayout.prototype.setBrowserContent = function(guiCode) {
       let main = d3.select("#" + this.gui_div + " .jsroot_browser");
       if (main.empty()) return;
 
@@ -1313,7 +1313,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          if (!res.obj) return null;
 
-         let main_painter = JSROOT.get_main_painter(divid);
+         let main_painter = JSROOT.getMainPainter(divid);
 
          if (main_painter && (typeof main_painter.performDrop === 'function'))
             return main_painter.performDrop(res.obj, itemname, res.item, opt).then(p => drop_complete(p));
@@ -2686,7 +2686,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       // painter.select_main().style('overflow','auto');
 
       return painter.refreshHtml().then(() => {
-         painter.SetDivId(divid);
+         painter.SetDivId(divid); // base painter
          return painter;
       });
    }
@@ -2735,7 +2735,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       painter.h = createInspectorContent(obj);
 
       return painter.refreshHtml().then(() => {
-         painter.SetDivId(divid);
+         painter.SetDivId(divid); // base painter
          return painter;
       });
    }
@@ -2755,7 +2755,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          super();
          this.frameid = frameid;
          if (frameid != "$batch$") {
-            this.SetDivId(frameid);
+            this.SetDivId(frameid); // base painter
             this.select_main().property('mdi', this);
          }
          this.cleanupFrame = JSROOT.cleanup; // use standard cleanup function by default

@@ -13,13 +13,13 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
 
    /// set browser title text
    /// Title also used for dragging of the float browser
-   BrowserLayout.prototype.SetBrowserTitle = function(title) {
+   BrowserLayout.prototype.setBrowserTitle = function(title) {
       let main = d3.select("#" + this.gui_div + " .jsroot_browser");
       if (!main.empty())
          main.select(".jsroot_browser_title").text(title);
    }
 
-   BrowserLayout.prototype.ToggleBrowserKind = function(kind) {
+   BrowserLayout.prototype.toggleBrowserKind = function(kind) {
 
       if (!this.gui_div) return;
 
@@ -214,7 +214,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
    BrowserLayout.prototype.Toggle = function(browser_kind) {
       if (this.browser_visible!=='changing') {
          if (browser_kind === this.browser_kind) this.ToggleBrowserVisisbility();
-                                            else this.ToggleBrowserKind(browser_kind);
+                                            else this.toggleBrowserKind(browser_kind);
       }
    }
 
@@ -1132,9 +1132,9 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
 
       guiCode += '<div id="' + this.gui_div+'_browser_hierarchy" class="jsroot_browser_hierarchy"></div>';
 
-      this.brlayout.SetBrowserContent(guiCode);
+      this.brlayout.setBrowserContent(guiCode);
 
-      this.brlayout.SetBrowserTitle(this.is_online ? 'ROOT online server' : 'Read a ROOT file');
+      this.brlayout.setBrowserTitle(this.is_online ? 'ROOT online server' : 'Read a ROOT file');
 
       let localfile_read_callback = null;
 
@@ -1208,7 +1208,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          this.initializeBrowser();
       }
 
-      this.brlayout.ToggleBrowserKind(browser_kind || "fix");
+      this.brlayout.toggleBrowserKind(browser_kind || "fix");
 
       return Promise.resolve(true);
    }
@@ -1244,7 +1244,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
 
       if (this.is_online) {
          if (this.h && this.h._toptitle)
-            this.brlayout.SetBrowserTitle(this.h._toptitle);
+            this.brlayout.setBrowserTitle(this.h._toptitle);
          let painter = this;
          jmain.find(".gui_monitoring")
            .prop('checked', this.isMonitoring())

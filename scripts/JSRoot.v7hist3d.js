@@ -1352,44 +1352,6 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       main.toplevel.add(line);
    }
 
-   // ===================================================================================
-
-   jsrp.drawAxis3D = function(divid, axis /*, opt */) {
-
-      let painter = new JSROOT.ObjectPainter(axis);
-
-      if (!('_main' in axis))
-         painter.SetDivId(divid);
-
-      painter.Draw3DAxis = function() {
-         let main = this.frame_painter();
-
-         if (!main || !main._toplevel)
-            return console.warn('no geo object found for 3D axis drawing');
-
-         let box = new THREE.Box3().setFromObject(main._toplevel);
-
-         this.xmin = box.min.x; this.xmax = box.max.x;
-         this.ymin = box.min.y; this.ymax = box.max.y;
-         this.zmin = box.min.z; this.zmax = box.max.z;
-
-         // use min/max values directly as graphical coordinates
-         this.size_xy3d = this.size_z3d = 0;
-
-         this.DrawXYZ = JSROOT.v7.RFramePainter.prototype.DrawXYZ; // just reuse axis drawing from frame painter
-
-         this.DrawXYZ(main._toplevel);
-
-         main.adjustCameraPosition();
-
-         main.Render3D();
-      }
-
-      painter.Draw3DAxis();
-
-      return Promise.resolve(painter);
-   }
-
    // ==========================================================================================
 
    /** @summary Draw 1-D histogram in 3D mode
