@@ -548,13 +548,15 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       return res;
    }
 
-   TGeoPainter.prototype.ActivateInBrowser = function(names, force) {
+   /** @summary Activate specified items in the browser */
+   TGeoPainter.prototype.activateInBrowser = function(names, force) {
       // if (this.GetItemName() === null) return;
 
       if (typeof names == 'string') names = [ names ];
 
       if (this._hpainter) {
          // show browser if it not visible
+
          this._hpainter.activateItems(names, force);
 
          // if highlight in the browser disabled, suppress in few seconds
@@ -623,7 +625,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
       menu.addchk(this.ctrl.update_browser, "Browser update", function() {
          this.ctrl.update_browser = !this.ctrl.update_browser;
-         if (!this.ctrl.update_browser) this.ActivateInBrowser([]);
+         if (!this.ctrl.update_browser) this.activateInBrowser([]);
       });
       menu.addchk(this.ctrl.show_controls, "Show Controls", function() {
          this.showControlOptions('toggle');
@@ -1014,9 +1016,9 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
                } else
                   continue;
 
-               menu.add((many ? "sub:" : "header:") + hdr, itemname, function(arg) { this.ActivateInBrowser([arg], true); });
+               menu.add((many ? "sub:" : "header:") + hdr, itemname, arg => this.activateInBrowser([arg], true));
 
-               menu.add("Browse", itemname, function(arg) { this.ActivateInBrowser([arg], true); });
+               menu.add("Browse", itemname, arg => this.activateInBrowser([arg], true));
 
                if (this._hpainter)
                   menu.add("Inspect", itemname, function(arg) { this._hpainter.display(arg, "inspect"); });
@@ -1343,7 +1345,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
          if (painter.ctrl.update_browser) {
             if (painter.ctrl.highlight && tooltip) names = [ tooltip ];
-            painter.ActivateInBrowser(names);
+            painter.activateInBrowser(names);
          }
 
          if (!resolve || !resolve.obj) return tooltip;

@@ -1565,7 +1565,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if (typeof items == 'string') items = [ items ];
 
-      let active = [],  // array of elements to activate
+      let active = [], // array of elements to activate
           update = []; // array of elements to update
       this.forEachItem(item => { if (item._background) { active.push(item); delete item._background; } });
 
@@ -1633,7 +1633,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if (force && this.brlayout) {
          if (!this.brlayout.browser_kind)
-           return this.createBrowser('float', true).then(find_next);
+           return this.createBrowser('float', true).then(() => find_next());
          if (!this.brlayout.browser_visible)
             this.brlayout.ToggleBrowserVisisbility();
       }
