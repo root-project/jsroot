@@ -4187,9 +4187,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
     * @param {Object} painter  - painter object to process
     * @param {Object|string} divid - HTML element or element id
     * @param {string|boolean} frame_kind  - false for no frame or "3d" for special 3D mode
-    * @param {boolean} [is_main]  - if true, will be main object
     * @desc Assign divid, creates TCanvas if necessary, add to list of pad painters and */
-   let ensureRCanvas = function(painter, divid, frame_kind, is_main) {
+   let ensureRCanvas = function(painter, divid, frame_kind) {
       if (!painter) return Promise.reject('Painter not provided in ensureRCanvas');
 
       // assign divid and pad name as required
@@ -4197,12 +4196,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       // simple check - if canvas there, can use painter
       let svg_c = painter.svg_canvas();
-      let noframe = (frame_kind === false) || (frame_kind == "3d")? "noframe" : "";
+      let noframe = (frame_kind === false) || (frame_kind == "3d") ? "noframe" : "";
 
       let promise = !svg_c.empty() ? Promise.resolve(true) : drawRCanvas(divid, null, noframe);
 
       return promise.then(() => {
-         if (frame_kind && painter.svg_frame().select(".main_layer").empty())
+         if (frame_kind === false) return;
+         if (painter.svg_frame().select(".main_layer").empty())
             return drawRFrame(divid, null, (typeof frame_kind === "string") ? frame_kind : "");
       }).then(() => {
          let svg_p = painter.svg_pad(painter.pad_name); // important - parent pad element accessed here
@@ -4215,8 +4215,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
              if (!painter.rstyle && pp.next_rstyle)
                 painter.rstyle = pp.next_rstyle;
          }
-
-         if (is_main) painter.setAsMainPainter();
 
          return painter;
       });

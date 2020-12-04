@@ -2154,7 +2154,6 @@ JSROOT.define(['d3'], (d3) => {
      * Following values of kind parameter are allowed:
      *   -  -1  only assign id, this painter not add to painters list
      *   -   0  normal painter (default)
-     *   -   5  major objects for 3D drawing like TGeoVolume (do not require canvas)
      * @param {string|object} divid - id of div element or directly DOMElement
      * @param {number} [kind] - kind of object drawn with painter */
    ObjectPainter.prototype.SetDivId = function(divid, kind) {
@@ -2164,10 +2163,8 @@ JSROOT.define(['d3'], (d3) => {
          delete this._selected_main;
       }
 
-      if (!kind || isNaN(kind)) kind = 0;
-
       // check if element really exists
-      if ((kind >= 0) && this.select_main(true).empty()) {
+      if ((kind != -1) && this.select_main(true).empty()) {
          if (typeof divid == 'string')
             console.error('not found HTML element' + (typeof divid == 'string' ? ' with id ' + divid : ""));
          return false;
@@ -2176,15 +2173,14 @@ JSROOT.define(['d3'], (d3) => {
       // SVG element where canvas is drawn
       let svg_c = this.svg_canvas();
       if (svg_c.empty()) {
-         if ((kind >= 0) && (kind === 5))
-             this.accessTopPainter(true);
+         if (kind != -1) this.accessTopPainter(true);
          return true;
       }
 
       // SVG element where current pad is drawn (can be canvas itself)
       this.pad_name = this.CurrentPadName();
 
-      if (kind < 0) return true;
+      if (kind == -1) return true;
 
       let svg_p = this.svg_pad(this.pad_name); // important - parent pad element accessed here
       if (svg_p.empty()) return true;

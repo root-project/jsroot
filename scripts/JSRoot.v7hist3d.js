@@ -3005,7 +3005,9 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       // create painter and add it to canvas
       let painter = new RH3Painter(histo);
 
-      return jsrp.ensureRCanvas(painter, divid, "3d", true).then(() => {
+      return jsrp.ensureRCanvas(painter, divid, "3d").then(() => {
+
+         painter.setAsMainPainter();
 
          painter.options = { Box: 0, Scatter: false, Sphere: 0, Color: false, minimum: -1111, maximum: -1111 };
 

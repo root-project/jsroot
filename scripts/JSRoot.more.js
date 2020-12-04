@@ -2300,7 +2300,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       }
 
       let painter = new TGraphPolargramPainter(polargram);
-      return jsrp.ensureTCanvas(painter, divid, false, true).then(() => {
+      return jsrp.ensureTCanvas(painter, divid, false).then(() => {
+         painter.setAsMainPainter();
          painter.Redraw();
          return painter;
       });

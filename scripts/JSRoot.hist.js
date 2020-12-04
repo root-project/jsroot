@@ -4302,7 +4302,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       // create painter and add it to canvas
       let painter = new TH1Painter(histo);
 
-      return jsrp.ensureTCanvas(painter, divid,  true, true).then(() => {
+      return jsrp.ensureTCanvas(painter, divid).then(() => {
+         // tend to be main painter - if first
+         painter.setAsMainPainter();
 
          // here we deciding how histogram will look like and how will be shown
          painter.DecodeOptions(opt);
@@ -6327,7 +6329,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       // create painter and add it to canvas
       let painter = new JSROOT.TH2Painter(histo);
 
-      return jsrp.ensureTCanvas(painter, divid,  true, true).then(() => {
+      return jsrp.ensureTCanvas(painter, divid).then(() => {
+
+         painter.setAsMainPainter();
 
          // here we deciding how histogram will look like and how will be shown
          painter.DecodeOptions(opt);
