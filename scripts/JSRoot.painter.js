@@ -2148,21 +2148,15 @@ JSROOT.define(['d3'], (d3) => {
          svg_p.property('mainpainter', this);
    }
 
-
    /** @summary Assigns id of top element (normally div where drawing is done).
-    * @desc In some situations canvas may not exists - for instance object drawn as html, not as svg.
-    * In such case the only painter will be assigned to the first element
-    * Following values of kind parameter are allowed:
-    *   -  -1  only assign id, this painter not add to painters list
-    *   -   0  normal painter (default)
-    *   -   1  major objects like TH1/TH2 (required canvas with frame)
-    *   -   2  if canvas missing, create it, but not set as main object
-    *   -   3  if canvas and (or) frame missing, create them, but not set as main object
-    *   -   4  major objects like TH3 (required canvas and frame in 3d mode)
-    *   -   5  major objects like TGeoVolume (do not require canvas)
-    *   -   6  major objects like TGraphPolagram (requires canvas but not TFrame)
-    * @param {string|object} divid - id of div element or directly DOMElement
-    * @param {number} [kind] - kind of object drawn with painter */
+     * @desc In some situations canvas may not exists - for instance object drawn as html, not as svg.
+     * In such case the only painter will be assigned to the first element
+     * Following values of kind parameter are allowed:
+     *   -  -1  only assign id, this painter not add to painters list
+     *   -   0  normal painter (default)
+     *   -   5  major objects for 3D drawing like TGeoVolume (do not require canvas)
+     * @param {string|object} divid - id of div element or directly DOMElement
+     * @param {number} [kind] - kind of object drawn with painter */
    ObjectPainter.prototype.SetDivId = function(divid, kind) {
 
       if (divid !== undefined) {
@@ -2174,28 +2168,16 @@ JSROOT.define(['d3'], (d3) => {
 
       // check if element really exists
       if ((kind >= 0) && this.select_main(true).empty()) {
-         if (typeof divid == 'string') console.error('not found HTML element with id: ' + divid);
-         else console.error('specified HTML element can not be selected with d3.select()');
+         if (typeof divid == 'string')
+            console.error('not found HTML element' + (typeof divid == 'string' ? ' with id ' + divid : ""));
          return false;
       }
 
-      this.create_canvas = false;
-
       // SVG element where canvas is drawn
       let svg_c = this.svg_canvas();
-
-      if (svg_c.empty() && (kind > 0) && (kind !== 5)) {
-         if (typeof jsrp.drawCanvas == 'function')
-             jsrp.drawCanvas(divid, null, ((kind == 2) || (kind == 4)) ? "noframe" : "");
-         else
-             return alert("Fail to draw TCanvas - please contact JSROOT developers");
-         svg_c = this.svg_canvas();
-         this.create_canvas = true;
-      }
-
       if (svg_c.empty()) {
-         if ((kind < 0) || (kind === 5) || this.iscan) return true;
-         this.accessTopPainter(true);
+         if ((kind >= 0) && (kind === 5))
+             this.accessTopPainter(true);
          return true;
       }
 
@@ -2203,15 +2185,6 @@ JSROOT.define(['d3'], (d3) => {
       this.pad_name = this.CurrentPadName();
 
       if (kind < 0) return true;
-
-      // create TFrame element if not exists
-      if ((kind == 1) || (kind == 3) || (kind == 4))
-         if (this.svg_frame().select(".main_layer").empty()) {
-            if (typeof jsrp.drawFrame == 'function')
-               jsrp.drawFrame(divid, null, (kind == 4) ? "3d" : "");
-            if ((kind != 4) && this.svg_frame().empty())
-               return alert("Fail to draw dummy TFrame");
-         }
 
       let svg_p = this.svg_pad(this.pad_name); // important - parent pad element accessed here
       if (svg_p.empty()) return true;
@@ -2223,10 +2196,6 @@ JSROOT.define(['d3'], (d3) => {
          if (!this.rstyle && pp.next_rstyle)
             this.rstyle = pp.next_rstyle;
       }
-
-      if (((kind === 1) || (kind === 4) || (kind === 5) || (kind === 6)) && !svg_p.property('mainpainter'))
-         // when this is first main painter in the pad
-         svg_p.property('mainpainter', this);
 
       return true;
    }

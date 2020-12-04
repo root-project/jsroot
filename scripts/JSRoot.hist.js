@@ -2259,7 +2259,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       fp.SetAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, 0, 0);
       fp.CreateXY({ ndim: this.Dimension(),
                     check_pad_range: this.check_pad_range,
-                    create_canvas: this.create_canvas,
                     zoom_ymin: this.zoom_ymin,
                     zoom_ymax: this.zoom_ymax,
                     ymin_nz: this.ymin_nz,

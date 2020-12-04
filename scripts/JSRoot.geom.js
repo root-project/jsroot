@@ -4044,7 +4044,8 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       // if (obj && obj._typename=='TGeoManager' && (obj.fNsegments > 3))
       //   geo.GradPerSegm = 360/obj.fNsegments;
 
-      painter.SetDivId(divid, 5);
+      painter.SetDivId(divid);
+      painter.setAsMainPainter();
 
       painter.options = painter.decodeOptions(opt); // indicator of initialization
 

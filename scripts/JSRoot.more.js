@@ -3710,8 +3710,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          return this.drawColorPalette(this.options.Zscale, true).then(() => {
             fp.SetAxesRanges(JSROOT.Create("TAxis"), 0, 1, JSROOT.Create("TAxis"), 0, 1, null, 0, 0);
             fp.CreateXY({ ndim: 2,
-                          check_pad_range: false,
-                          create_canvas: false });
+                          check_pad_range: false });
             fp.AddInteractive();
             return this;
          });
@@ -3834,12 +3833,12 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    function drawASImage(divid, obj, opt) {
       let painter = new TASImagePainter(obj, opt);
       painter.decodeOptions(opt);
-      painter.SetDivId(divid, 1);
-
-      return painter.drawImage().then(() => {
-         painter.FillToolbar();
-         return painter;
-      });
+      return jsrp.ensureTCanvas(painter, divid)
+                 .then(() => painter.drawImage())
+                 .then(() => {
+                     painter.FillToolbar();
+                     return painter;
+                 });
    }
 
    // ===================================================================================

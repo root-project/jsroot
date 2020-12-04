@@ -4216,8 +4216,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                 painter.rstyle = pp.next_rstyle;
          }
 
-         if (is_main && !svg_p.property('mainpainter'))
-            svg_p.property('mainpainter', painter);
+         if (is_main) painter.setAsMainPainter();
 
          return painter;
       });
