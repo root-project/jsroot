@@ -1817,7 +1817,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       // create painter and add it to canvas
       let painter = new RH1Painter(histo);
 
-      return JSROOT.v7.ensureRCanvas(painter, divid, true, true).then(() => {
+      return jsrp.ensureRCanvas(painter, divid, true, true).then(() => {
 
          painter.options = { Hist: false, Bar: false, BarStyle: 0,
                              Error: false, ErrorKind: -1, errorX: JSROOT.gStyle.fErrorX,
@@ -3590,7 +3590,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       // create painter and add it to canvas
       let painter = new RH2Painter(obj);
 
-      return JSROOT.v7.ensureRCanvas(painter, divid, true, true).then(() => {
+      return jsrp.ensureRCanvas(painter, divid, true, true).then(() => {
 
          painter.options = { Hist: false, Error: false, Zero: false, Mark: false,
                              Line: false, Fill: false, Lego: 0, Surf: 0,

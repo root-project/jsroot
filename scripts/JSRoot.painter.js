@@ -3487,7 +3487,7 @@ JSROOT.define(['d3'], (d3) => {
       { name: /^TH3/, icon: 'img_histo3d', prereq: "hist3d", func: ".drawHistogram3D", opt: ";SCAT;BOX;BOX2;BOX3;GLBOX1;GLBOX2;GLCOL" },
       { name: "THStack", icon: "img_histo1d", prereq: "hist", func: ".drawHStack", expand_item: "fHists", opt: "NOSTACK;HIST;E;PFC;PLC" },
       { name: "TPolyMarker3D", icon: 'img_histo3d', prereq: "hist3d", func: ".drawPolyMarker3D" },
-      { name: "TPolyLine3D", icon: 'img_graph', prereq: "3d", func: ".drawPolyLine3D", direct: true },
+      { name: "TPolyLine3D", icon: 'img_graph', prereq: "base3d", func: ".drawPolyLine3D", direct: true },
       { name: "TGraphStruct" },
       { name: "TGraphNode" },
       { name: "TGraphEdge" },
@@ -3785,25 +3785,30 @@ JSROOT.define(['d3'], (d3) => {
 
       function performDraw() {
          let promise;
-         if (handle.direct) {
+         if (handle.direct == "v7") {
             let painter = new ObjectPainter(obj, opt);
             painter.csstype = handle.csstype;
-            painter.SetDivId(divid, 2);
-            painter.Redraw = handle.func;
-            promise = painter.Redraw();
-            if (promise === null)
-               return Promise.reject(Error("Fail direct draw for "));
-            if (!isPromise(promise))
-               promise = Promise.resolve(painter);
+            promise = jsrp.ensureRCanvas(painter, divid, false).then(() => {
+               painter.Redraw = handle.func;
+               return painter.Redraw();
+            })
+         } else if (handle.direct) {
+            let painter = new ObjectPainter(obj, opt);
+            promise = jsrp.ensureTCanvas(painter, divid, false).then(() => {
+               painter.Redraw = handle.func;
+               return painter.Redraw();
+            });
          } else {
             promise = handle.func(divid, obj, opt);
 
-            if (!isPromise(promise))
-               return promise ? Promise.resolve(promise) : Promise.reject(Error(`Fail to draw object ${type_info}`));
+            if (!isPromise(promise)) promise = Promise.resolve(promise);
          }
 
          return promise.then(p => {
-            if (p && (typeof p == 'object') && !p.options)
+            if (!p)
+               return Promise.reject(Error(`Fail to draw object ${type_info}`));
+
+            if ((typeof p == 'object') && !p.options)
                p.options = { original: opt || "" }; // keep original draw options
 
              return p;
@@ -3817,21 +3822,18 @@ JSROOT.define(['d3'], (d3) => {
       if (typeof funcname != "string")
          return Promise.reject(Error(`Draw function not specified to draw ${type_info}`));
 
-      // try to find function without prerequisites
-      let func = JSROOT.findFunction(funcname);
-      if (func) {
-         handle.func = func; // remember function once it is found
-         return performDraw();
-      }
-
       let prereq = handle.prereq || "";
-      if (handle.script && (typeof handle.script == 'string'))
-         prereq += ";" + handle.script;
+      if (handle.direct == "v7")
+         prereq += ";v7gpad";
+      else if (handle.direct)
+         prereq += ";gpad";
+      let script = handle.script || "";
+      if (script) script = script.split(";");
 
-      if (!prereq)
+      if (!prereq && !script)
          return Promise.reject(Error(`Prerequicities to load ${funcname} are not specified`));
 
-      return JSROOT.require(prereq).then(() => {
+      return JSROOT.require(prereq).then(() => JSROOT.loadScript(script)).then(() => {
          let func = JSROOT.findFunction(funcname);
          if (!func)
             return Promise.reject(Error(`Fail to find function ${funcname} after loading ${prereq}`));
