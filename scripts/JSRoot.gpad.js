@@ -2945,7 +2945,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          this.CreateCanvasSvg(0);
          this.SetDivId(this.divid, -1);  // now add to painters list
-         painter.addToPadPrimitives();
+         this.addToPadPrimitives();
          if (!this.batch_mode)
             this.AddPadButtons(true);
 
