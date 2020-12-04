@@ -3380,7 +3380,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             evnt.stopPropagation();
          }
 
-         if (jsrp.closeMenu()) return;
+         if (jsrp.closeMenu && jsrp.closeMenu()) return;
 
          jsrp.createMenu(this, evnt).then(menu => {
             menu.add("header:Menus");

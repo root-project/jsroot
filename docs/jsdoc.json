@@ -22,6 +22,7 @@
                      "scripts/JSRoot.geobase.js",
                      "scripts/JSRoot.geom.js",
                      "scripts/JSRoot.hierarchy.js",
+                     "scripts/JSRoot.menu.js",
                      "scripts/JSRoot.jq2d.js",
                      "scripts/JSRoot.v7gpad.js",
                      "scripts/JSRoot.v7hist.js",

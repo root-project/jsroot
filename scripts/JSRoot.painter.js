@@ -99,7 +99,6 @@ JSROOT.define(['d3'], (d3) => {
          0.587, 0.514, 0.896, 0.587, 0.55]
    };
 
-   // create menu, implemented in jquery part
    jsrp.createMenu = function(painter, evt) {
       document.body.style.cursor = 'wait';
       let show_evnt;
@@ -107,17 +106,10 @@ JSROOT.define(['d3'], (d3) => {
       if (evt && (typeof evt == "object"))
          if ((evt.clientX !== undefined) && (evt.clientY !== undefined))
             show_evnt = { clientX: evt.clientX, clientY: evt.clientY };
-      return JSROOT.require(['jq2d']).then(() => {
+      return JSROOT.require(['menu']).then(() => {
          document.body.style.cursor = 'auto';
          return jsrp.createMenu(painter, show_evnt);
       });
-   }
-
-   // create menu, implemented in jquery part
-   jsrp.closeMenu = function(menuname) {
-      let x = document.getElementById(menuname || 'root_ctx_menu');
-      if (x) { x.parentNode.removeChild(x); return true; }
-      return false;
    }
 
    /** @summary Read style and settings from URL

@@ -206,11 +206,12 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
             evnt.preventDefault();
             evnt.stopPropagation();
 
-            if (!jsrp.closeMenu())
-               jsrp.createMenu(this, evnt).then(menu => {
-                  menu.painter.FillContextMenu(menu);
-                  menu.show();
-               });
+            if (jsrp.closeMenu && jsrp.closeMenu()) return;
+
+            jsrp.createMenu(this, evnt).then(menu => {
+                menu.painter.FillContextMenu(menu);
+                menu.show();
+            });
          }
       });
 
