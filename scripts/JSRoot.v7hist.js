@@ -191,19 +191,19 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       // if when_axis_changed === true specified, content will be scanned after axis zoom changed
    }
 
-   RHistPainter.prototype.DrawAxes = function() {
+   RHistPainter.prototype.drawFrameAxes = function() {
       // return true when axes was drawn
       let main = this.frame_painter();
       if (!main) return Promise.resolve(false);
 
-      if (this.is_main_painter() && this.draw_content) {
-         main.CleanupAxes();
-         main.xmin = main.xmax = 0;
-         main.ymin = main.ymax = 0;
-         main.zmin = main.zmax = 0;
-         main.SetAxesRanges(this.GetAxis("x"), this.xmin, this.xmax, this.GetAxis("y"), this.ymin, this.ymax, this.GetAxis("z"), this.zmin, this.zmax);
-      }
+      if (!this.is_main_painter() || !this.draw_content)
+        return Promise.resolve(true);
 
+      main.CleanupAxes();
+      main.xmin = main.xmax = 0;
+      main.ymin = main.ymax = 0;
+      main.zmin = main.zmax = 0;
+      main.SetAxesRanges(this.GetAxis("x"), this.xmin, this.xmax, this.GetAxis("y"), this.ymin, this.ymax, this.GetAxis("z"), this.zmin, this.zmax);
       return main.DrawAxes();
    }
 
@@ -313,15 +313,15 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       this.zmax = axis.max;
    }
 
+   /** @summary Add interactive features, only main painter does it */
    RHistPainter.prototype.AddInteractive = function() {
       // only first painter in list allowed to add interactive functionality to the frame
 
-      if (this.is_main_painter()) {
-         let fp = this.frame_painter();
-         if (fp) return fp.AddInteractive();
-      }
+      if (JSROOT.BatchMode || !this.is_main_painter())
+         return true;
 
-      return Promise.resolve(false);
+      let fp = this.frame_painter();
+      return fp ? fp.AddInteractive() : false;
    }
 
    RHistPainter.prototype.ProcessItemReply = function(reply, req) {
@@ -1793,15 +1793,15 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       this.Clear3DScene();
       this.mode3d = false;
 
-      return this.DrawAxes()
-                 .then(res => res ? this.DrawingBins(reason) : false)
+      return this.drawFrameAxes()
+                 .then(res1 => res1 ? this.DrawingBins(reason) : false)
                  .then(res2 => {
                      if (!res2) return false;
                      // called when bins received from server, must be reentrant
                      this.Draw1DBins();
                      this.UpdateStatWebCanvas();
                      return this.AddInteractive();
-                     });
+                 }).then(res3 => res3 ? this : null);
    }
 
    RH1Painter.prototype.Draw3D = function(reason) {
@@ -3555,7 +3555,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       this.mode3d = false;
       this.Clear3DScene();
 
-      return this.DrawAxes()
+      return this.drawFrameAxes()
                  .then(res => res ? this.DrawingBins(reason) : false)
                  .then(res2 => {
                     // called when bins received from server, must be reentrant
@@ -3563,7 +3563,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
                     this.Draw2DBins();
                     this.UpdateStatWebCanvas();
                     return this.AddInteractive();
-                 });
+                 }).then(res3 => res3 ? this : null);;
    }
 
    RH2Painter.prototype.Draw3D = function(reason) {

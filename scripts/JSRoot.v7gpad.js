@@ -1738,7 +1738,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    RFramePainter.prototype.DrawAxes = function() {
 
       if (this.axes_drawn || (this.xmin==this.xmax) || (this.ymin==this.ymax))
-         return Promise.resolve(false);
+         return Promise.resolve(this.axes_drawn);
 
       this.CleanupAxes();
 
@@ -2355,7 +2355,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    RFramePainter.prototype.AddInteractive = function() {
 
       if (JSROOT.BatchMode || (!JSROOT.settings.Zooming && !JSROOT.settings.ContextMenu))
-         return Promise.resolve(false);
+         return Promise.resolve(true);
 
       return JSROOT.require(['interactive']).then(inter => {
          inter.FrameInteractive.assign(this);
