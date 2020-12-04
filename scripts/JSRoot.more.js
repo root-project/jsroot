@@ -759,7 +759,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          if (!painter.main_painter())
             return JSROOT.draw(divid, painter.CreateDummyHisto(), "AXIS");
       }).then(() => {
-         painter.SetDivId(divid);
+         painter.addToPadPrimitives();
          painter.Redraw();
          return painter;
       });
@@ -1991,7 +1991,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       }
 
       return promise.then(() => {
-         painter.SetDivId(divid);
+         painter.addToPadPrimitives();
          painter.DrawGraph();
          // wait until interactive elements assigned
          if (painter.TestEditable() && !JSROOT.BatchMode)
@@ -2536,7 +2536,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       }
 
       return ppromise.then(() => {
-         painter.SetDivId(divid);
+         painter.addToPadPrimitives();
          painter.drawGraphPolar();
          return painter;
       })
@@ -2839,7 +2839,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       }
 
       return promise.then(() => {
-         painter.SetDivId(divid);
+         painter.addToPadPrimitives();
          painter.Redraw();
          return painter;
       });
@@ -2960,16 +2960,16 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
    let drawGraphTime = (divid, gr, opt) => {
 
+      if (!gr.fFrame) {
+         console.error('Frame histogram not exists');
+         return null;
+      }
+
       let painter = new TGraphTimePainter(gr);
       painter.SetDivId(divid,-1);
 
       if (painter.main_painter()) {
          console.error('Cannot draw graph time on top of other histograms');
-         return null;
-      }
-
-      if (!gr.fFrame) {
-         console.error('Frame histogram not exists');
          return null;
       }
 
@@ -2980,7 +2980,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       painter.selfid = "grtime" + JSROOT._.id_counter++; // use to identify primitives which should be clean
 
       return JSROOT.draw(divid, gr.fFrame, "AXIS").then(() => {
-         painter.SetDivId(divid)
+         painter.addToPadPrimitives();
          return painter.startDrawing();
       });
    }
@@ -3075,6 +3075,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       if (!eff || !eff.fTotalHistogram || (eff.fTotalHistogram._typename.indexOf("TH1")!=0)) return null;
 
       let painter = new TEfficiencyPainter(eff);
+      painter.SetDivId(divid, -1);
       painter.options = opt;
 
       let gr = painter.CreateGraph();
@@ -3082,7 +3083,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       return JSROOT.draw(divid, gr, opt)
                    .then(() => {
-                       painter.SetDivId(divid);
+                       painter.addToPadPrimitives();
                        return painter;
                     });
    }
@@ -3322,7 +3323,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          });
 
       return promise.then(() => {
-         painter.SetDivId(divid);
+         painter.addToPadPrimitives();
          return painter.drawNextGraph(0, d.remain());
       })
    }
@@ -3488,7 +3489,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          check_attributes();
       }
 
-      painter.SetDivId(divid);
+      painter.SetDivId(divid, -1);
+      painter.addToPadPrimitives();
 
       painter.Redraw();
 
@@ -3846,7 +3848,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
    jsrp.drawJSImage = function(divid, obj, opt) {
       let painter = new JSROOT.BasePainter();
-      painter.SetDivId(divid, -1);
+      painter.SetDivId(divid); // base painter
 
       let main = painter.select_main();
 
@@ -3860,7 +3862,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          img.attr("style", "margin: 0; position: absolute;  top: 50%; left: 50%; transform: translate(-50%, -50%);");
       }
 
-      painter.SetDivId(divid);
+      painter.setTopPainter();
 
       return Promise.resolve(painter);
    }

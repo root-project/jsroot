@@ -858,12 +858,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    let drawGaxis = (divid, obj /*, opt*/) => {
       let painter = new TAxisPainter(obj, false);
-
-      painter.SetDivId(divid);
-
       painter.disable_zooming = true;
 
-      return painter.Redraw().then(() => painter);
+      return jsrp.ensureTCanvas(painter, divid, false)
+             .then(() => painter.Redraw()).then(() => painter);
    }
 
    // ===============================================
@@ -3535,13 +3533,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       let painter = new TPadPainter(pad, false);
       painter.DecodeOptions(opt);
 
-      painter.SetDivId(divid, -1); // pad painter will be registered in the canvas painters list
+      painter.SetDivId(divid, -1);
 
       if (painter.svg_canvas().empty()) {
          // one can draw pad without canvas
          painter.has_canvas = false;
          painter.this_pad_name = "";
       } else {
+         // pad painter will be registered in the canvas painters list
          painter.addToPadPrimitives();
       }
 

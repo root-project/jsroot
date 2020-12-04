@@ -1863,8 +1863,9 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
                "<hr/>" +
                "<div id='" + this.drawid + "' style='width:100%'></div>");
 
-         // only when main html element created, one can set divid
-         this.SetDivId(divid);
+         // only when main html element created, one can painter
+         // ObjectPainter allow such usage of methods from BasePainter
+         this.setTopPainter();
 
          let p = this;
 

@@ -1337,6 +1337,12 @@ JSROOT.define(['d3'], (d3) => {
       return chld.painter;
    }
 
+   /** @summary Set painter, stored in first child element
+     * @desc Can only be done when first draing ic completed */
+   BasePainter.prototype.setTopPainter = function() {
+      this.accessTopPainter(true);
+   }
+
    /** @summary Generic method to cleanup painter */
    BasePainter.prototype.Cleanup = function(keep_origin) {
 
@@ -3353,8 +3359,8 @@ JSROOT.define(['d3'], (d3) => {
    jsrp.drawRawText = function(divid, txt /*, opt*/) {
 
       let painter = new BasePainter();
-      painter.txt = txt;
       painter.SetDivId(divid);
+      painter.txt = txt;
 
       painter.RedrawObject = function(obj) {
          this.txt = obj;
@@ -3381,7 +3387,7 @@ JSROOT.define(['d3'], (d3) => {
          main.html(txt);
 
          // (re) set painter to first child element, base painter not requires canvas
-         this.SetDivId(this.divid);
+         this.setTopPainter();
 
          if (mathjax)
             return JSROOT.require('latex').then(ltx => { ltx.typesetMathjax(frame.node()); return this; });

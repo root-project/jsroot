@@ -2607,7 +2607,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.h = createStreamerInfoContent(obj)
       else
          this.h = createInspectorContent(obj);
-      return this.refreshHtml().then(() => { this.SetDivId(this.divid); }); // base painter
+      return this.refreshHtml().then(() => { this.setTopPainter(); });
    }
 
    // ======================================================================================
@@ -2686,7 +2686,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       // painter.select_main().style('overflow','auto');
 
       return painter.refreshHtml().then(() => {
-         painter.SetDivId(divid); // base painter
+         painter.setTopPainter();
          return painter;
       });
    }
@@ -2735,7 +2735,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       painter.h = createInspectorContent(obj);
 
       return painter.refreshHtml().then(() => {
-         painter.SetDivId(divid); // base painter
+         painter.setTopPainter();
          return painter;
       });
    }
