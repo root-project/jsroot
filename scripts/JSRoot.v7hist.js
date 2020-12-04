@@ -3637,50 +3637,6 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
    // =================================================================================
 
-
-   // place basic declaration here to be able use it with RHistDisplayItem
-   function RH3Painter(histo) {
-      JSROOT.v7.RHistPainter.call(this, histo);
-
-      this.mode3d = true;
-   }
-
-   RH3Painter.prototype = Object.create(RHistPainter.prototype);
-
-   RH3Painter.prototype.Dimension = function() {
-      return 3;
-   }
-
-   let drawHist3 = (divid, histo /*, opt*/) => {
-      // create painter and add it to canvas
-      let painter = new RH3Painter(histo);
-
-      return JSROOT.v7.ensureRCanvas(painter, divid, "3d", true).then(() => {
-
-         painter.options = { Box: 0, Scatter: false, Sphere: 0, Color: false, minimum: -1111, maximum: -1111 };
-
-         let kind = painter.v7EvalAttr("kind", ""),
-             sub = painter.v7EvalAttr("sub", 0),
-             o = painter.options;
-
-         switch(kind) {
-            case "box": o.Box = 10 + sub; break;
-            case "sphere": o.Sphere = 10 + sub; break;
-            case "col": o.Color = true; break;
-            case "scat": o.Scatter = true;  break;
-            default: o.Box = 10;
-         }
-
-         return JSROOT.require('v7hist3d');
-      }).then(() => {
-         painter.ScanContent();
-         painter.Redraw();
-         return painter;
-      });
-   }
-
-   // =================================================================================
-
    let drawHistDisplayItem = (divid, obj, opt) => {
       if (!obj)
          return null;
@@ -3692,7 +3648,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
          return drawHist2(divid, obj, opt);
 
       if (obj.fAxes.length == 3)
-         return drawHist3(divid, obj, opt);
+         return JSROOT.require("v7hist3d").then(() => JSROOT.v7.drawHist3(divid, obj, opt));
 
       return null;
    }
@@ -3908,11 +3864,9 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
    JSROOT.v7.RHistPainter = RHistPainter;
    JSROOT.v7.RH1Painter = RH1Painter;
    JSROOT.v7.RH2Painter = RH2Painter;
-   JSROOT.v7.RH3Painter = RH3Painter;
 
    JSROOT.v7.drawHist1 = drawHist1;
    JSROOT.v7.drawHist2 = drawHist2;
-   JSROOT.v7.drawHist3 = drawHist3;
 
    JSROOT.v7.drawHistDisplayItem = drawHistDisplayItem;
    JSROOT.v7.drawHistStats = drawHistStats;
