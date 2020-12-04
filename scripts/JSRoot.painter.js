@@ -3790,13 +3790,15 @@ JSROOT.define(['d3'], (d3) => {
             painter.csstype = handle.csstype;
             promise = jsrp.ensureRCanvas(painter, divid, false).then(() => {
                painter.Redraw = handle.func;
-               return painter.Redraw();
+               painter.Redraw();
+               return painter;
             })
          } else if (handle.direct) {
             let painter = new ObjectPainter(obj, opt);
             promise = jsrp.ensureTCanvas(painter, divid, false).then(() => {
                painter.Redraw = handle.func;
-               return painter.Redraw();
+               painter.Redraw();
+               return painter;
             });
          } else {
             promise = handle.func(divid, obj, opt);
