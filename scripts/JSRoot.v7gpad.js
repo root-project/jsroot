@@ -3101,9 +3101,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          let padpainter = new RPadPainter(subpad, false);
          padpainter.DecodeOptions("");
-         padpainter.SetDivId(this.divid); // pad painter will be registered in parent painters list
+         padpainter.SetDivId(this.divid, -1); // pad painter will be registered in parent painters list
          padpainter.AssignSnapId(snap.fObjectID);
          padpainter.rstyle = snap.fStyle;
+         padpainter.addToPadPrimitives();
 
          padpainter.CreatePadSvg();
 
@@ -3119,7 +3120,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          });
       }
 
-      // will be used in SetDivId to assign style to painter
+      // will be used in addToPadPrimitives to assign style to sub-painters
       this.next_rstyle = lst[indx].fStyle || this.rstyle;
 
       if (snap._typename === "ROOT::Experimental::TObjectDisplayItem") {
@@ -3223,7 +3224,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
              this._fixed_size = true;
 
          this.CreateCanvasSvg(0);
-         this.SetDivId(this.divid);  // now add to painters list
          this.AddPadButtons(true);
 
          return this.DrawNextSnap(snap.fPrimitives);
@@ -3683,11 +3683,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       let painter = new RPadPainter(pad, false);
       painter.DecodeOptions(opt);
 
-      painter.SetDivId(divid); // pad painter will be registered in the canvas painters list
+      painter.SetDivId(divid, -1);
 
       if (painter.svg_canvas().empty()) {
          painter.has_canvas = false;
          painter.this_pad_name = "";
+      } else {
+         painter.addToPadPrimitives();
       }
 
       painter.CreatePadSvg();
@@ -4158,7 +4160,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       painter.SetDivId(divid, -1); // just assign id
       painter.CreateCanvasSvg(0);
-      painter.SetDivId(divid);  // now add to painters list
 
       jsrp.selectActivePad({ pp: painter, active: false });
 

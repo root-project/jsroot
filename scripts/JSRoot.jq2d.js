@@ -1201,7 +1201,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          });
       }
 
-      this.SetDivId(this.gui_div + '_browser_hierarchy');
+      this.SetDivId(this.gui_div + '_browser_hierarchy'); // base painter
 
       if (update_html) {
          this.refreshHtml();

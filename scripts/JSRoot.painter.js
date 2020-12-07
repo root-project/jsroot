@@ -2210,6 +2210,34 @@ JSROOT.define(['d3'], (d3) => {
       return true;
    }
 
+   /** @summary Assigns DOM element where object will be drawn.
+     * @param {string|object} elem - either element id or directly DOMElement */
+   ObjectPainter.prototype.setDom = function(elem) {
+
+      if (elem !== undefined) {
+         this.divid = elem;
+         delete this._selected_main;
+      }
+
+      // check if element really exists
+      if (this.select_main(true).empty()) {
+         if (typeof elem == 'string')
+            console.error(`not found HTML element with ${elem} id`);
+         return false;
+      }
+
+      if (this.svg_canvas().empty()) {
+         // when canvas not found - use BasePainter method to set top painter
+         this.setTopPainter();
+      } else {
+         // remember current pad name - where finally object will be draw
+         this.pad_name = this.CurrentPadName();
+      }
+
+      return true;
+   }
+
+
    /** @summary Creates marker attributes object
     *
     * @desc Can be used to produce markers in painter.
@@ -3359,7 +3387,7 @@ JSROOT.define(['d3'], (d3) => {
    jsrp.drawRawText = function(divid, txt /*, opt*/) {
 
       let painter = new BasePainter();
-      painter.SetDivId(divid);
+      painter.SetDivId(divid); // base painter
       painter.txt = txt;
 
       painter.RedrawObject = function(obj) {

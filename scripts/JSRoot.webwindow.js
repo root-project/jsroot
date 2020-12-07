@@ -207,9 +207,9 @@ JSROOT.define([], () => {
    }
 
    /** @summary Returns arguments specified in the RWebWindow::SetUserArgs() method
-    * @desc Can be any valid JSON expression. Undefined by default.
-    * @param {string} [field] - if specified and user args is object, returns correspondent object member
-    * @returns user arguments object */
+     * @desc Can be any valid JSON expression. Undefined by default.
+     * @param {string} [field] - if specified and user args is object, returns correspondent object member
+     * @returns user arguments object */
    WebWindowHandle.prototype.GetUserArgs = function(field) {
       if (field && (typeof field == 'string')) {
          return (this.user_args && (typeof this.user_args == 'object')) ? this.user_args[field] : undefined;
@@ -219,10 +219,10 @@ JSROOT.define([], () => {
    }
 
    /** @summary Set callbacks receiver.
-    * @param {object} obj - object wiith receiver functions
-    * @param {function} obj.OnWebsocketMsg - called when new data receieved from RWebWindow
-    * @param {function} obj.OnWebsocketOpened - called when connection established
-    * @param {function} obj.OnWebsocketClosed - called when connection closed */
+     * @param {object} obj - object wiith receiver functions
+     * @param {function} obj.OnWebsocketMsg - called when new data receieved from RWebWindow
+     * @param {function} obj.OnWebsocketOpened - called when connection established
+     * @param {function} obj.OnWebsocketClosed - called when connection closed */
    WebWindowHandle.prototype.SetReceiver = function(obj) {
       this.receiver = obj;
    }
@@ -331,6 +331,11 @@ JSROOT.define([], () => {
      * @returns true if one allow to send specified number of text message to server */
    WebWindowHandle.prototype.CanSend = function(numsend) {
       return (this.cansend >= (numsend || 1));
+   }
+
+   /** @summary Returns number of possible send operations relative to number of credits*/
+   WebWindowHandle.prototype.getRelCanSend = function() {
+      return !this.credits ? 1 : this.cansend / this.credits;
    }
 
    /** @summary Send text message via the connection.

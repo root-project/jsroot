@@ -1165,7 +1165,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.RecalculateRange(opts.Proj);
 
       this.x_handle = new TAxisPainter(this.xaxis, true);
-      this.x_handle.SetDivId(this.divid, -1);
+      this.x_handle.setDom(this.divid);
       this.x_handle.pad_name = this.pad_name;
 
       this.x_handle.ConfigureAxis("xaxis", this.xmin, this.xmax, this.scale_xmin, this.scale_xmax, this.swap_xy, this.swap_xy ? [0,h] : [0,w],
@@ -1177,7 +1177,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.x_handle.AssignFrameMembers(this,"x");
 
       this.y_handle = new TAxisPainter(this.yaxis, true);
-      this.y_handle.SetDivId(this.divid, -1);
+      this.y_handle.setDom(this.divid);
       this.y_handle.pad_name = this.pad_name;
 
       this.y_handle.ConfigureAxis("yaxis", this.ymin, this.ymax, this.scale_ymin, this.scale_ymax, !this.swap_xy, this.swap_xy ? [0,w] : [0,h],
@@ -2849,7 +2849,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          let padpainter = new TPadPainter(subpad, false);
          padpainter.DecodeOptions(snap.fOption);
-         padpainter.SetDivId(this.divid, -1); // pad painter will be registered in the canvas painters list
+         padpainter.setDom(this.divid); // pad painter will be registered in the canvas painters list
+         padpainter.pad_name = this.this_pad_name;
          padpainter.addToPadPrimitives();
          padpainter.snapid = snap.fObjectID;
 
@@ -2936,14 +2937,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                this.brlayout = new JSROOT.BrowserLayout(mainid, null, this);
                this.brlayout.Create(mainid, true);
                // this.brlayout.toggleBrowserKind("float");
-               this.SetDivId(this.brlayout.drawing_divid(), -1);  // assign id for drawing
+               this.setDom(this.brlayout.drawing_divid());
                JSROOT.registerForResize(this.brlayout);
             }
          }
 
          this.CreateCanvasSvg(0);
-         this.SetDivId(this.divid, -1);  // now add to painters list
-         this.addToPadPrimitives();
          if (!this.batch_mode)
             this.AddPadButtons(true);
 
@@ -3533,7 +3532,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       let painter = new TPadPainter(pad, false);
       painter.DecodeOptions(opt);
 
-      painter.SetDivId(divid, -1);
+      painter.setDom(divid);
 
       if (painter.svg_canvas().empty()) {
          // one can draw pad without canvas
@@ -4138,7 +4137,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (nocanvas) can = JSROOT.Create("TCanvas");
 
       let painter = new TCanvasPainter(can);
-      painter.SetDivId(divid, -1); // just assign id
+      painter.setDom(divid);
       painter.checkSpecialsInPrimitives(can);
 
       if (!nocanvas && can.fCw && can.fCh && !JSROOT.BatchMode) {
@@ -4155,7 +4154,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       painter.DecodeOptions(opt);
       painter.normal_canvas = !nocanvas;
       painter.CreateCanvasSvg(0);
-      painter.SetDivId(divid);  // now add to painters list ??????????
 
       painter.AddPadButtons();
 
@@ -4179,8 +4177,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    let ensureTCanvas = function(painter, divid, frame_kind) {
       if (!painter) return Promise.reject('Painter not provided in ensureTCanvas');
 
-      // assign divid and pad name as required
-      painter.SetDivId(divid, -1);
+      painter.setDom(divid);
 
       // simple check - if canvas there, can use painter
       let svg_c = painter.svg_canvas();
@@ -4206,7 +4203,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       let painter = new TCanvasPainter(can);
       painter.normal_canvas = false;
-      painter.SetDivId(divid, -1); // just assign id
+      painter.setDom(divid);
       painter.AddPadButtons();
 
       return painter.RedrawPadSnap(snap).then(() => { painter.ShowButtons(); return painter; });
