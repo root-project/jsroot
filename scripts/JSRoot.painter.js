@@ -1576,15 +1576,17 @@ JSROOT.define(['d3'], (d3) => {
    /** @summary Assign painter to specified element
      * @desc base painter does not creates canvas or frames
      * it registered in the first child element
-     * @param {string|object} divid - element ID or DOM Element */
-   BasePainter.prototype.SetDivId = function(divid) {
-      if (divid !== undefined) {
-         this.divid = divid;
+     * @param {string|object} elem - element ID or DOM Element */
+   BasePainter.prototype.setDom = function(elem) {
+      if (elem !== undefined) {
+         this.divid = elem;
          delete this._selected_main;
       }
 
-      this.accessTopPainter(true);
+      this.setTopPainter();
    }
+
+   BasePainter.prototype.SetDivId = BasePainter.prototype.setDom;
 
    /** @summary Set item name, associated with the painter
     * @desc Used by {@link JSROOT.HiearchyPainter}
@@ -2211,8 +2213,9 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /** @summary Assigns DOM element where object will be drawn.
-     * @param {string|object} elem - either element id or directly DOMElement */
-   ObjectPainter.prototype.setDom = function(elem) {
+     * @param {string|object} elem - either element id or directly DOMElement 
+     * @param {string} [pad_name] - on which subpad element should be draw, if not specified - used current */
+   ObjectPainter.prototype.setDom = function(elem, pad_name) {
 
       if (elem !== undefined) {
          this.divid = elem;
@@ -2231,7 +2234,7 @@ JSROOT.define(['d3'], (d3) => {
          this.setTopPainter();
       } else {
          // remember current pad name - where finally object will be draw
-         this.pad_name = this.CurrentPadName();
+         this.pad_name = (typeof pad_name == 'string') ? pad_name : this.CurrentPadName();
       }
 
       return true;

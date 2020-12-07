@@ -762,7 +762,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.background = backgr;
       this.files_monitoring = !frameid; // by default files monitored when nobrowser option specified
       this.nobrowser = (frameid === null);
-      if (!this.nobrowser) this.SetDivId(frameid); // this is required to be able cleanup painter
+      if (!this.nobrowser) this.setDom(frameid); // this is required to be able cleanup painter
 
       // remember only very first instance
       if (!JSROOT.hpainter)
@@ -2755,7 +2755,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          super();
          this.frameid = frameid;
          if (frameid != "$batch$") {
-            this.SetDivId(frameid); // base painter
+            this.setDom(frameid);
             this.select_main().property('mdi', this);
          }
          this.cleanupFrame = JSROOT.cleanup; // use standard cleanup function by default
@@ -2775,7 +2775,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       forEachPainter(userfunc, only_visible) {
          this.forEachFrame(frame => {
             let dummy = new JSROOT.ObjectPainter();
-            dummy.SetDivId(frame, -1);
+            dummy.setDom(frame, "");
             dummy.forEachPainter(painter => userfunc(painter, frame));
          }, only_visible);
       }

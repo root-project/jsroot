@@ -1201,7 +1201,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          });
       }
 
-      this.SetDivId(this.gui_div + '_browser_hierarchy'); // base painter
+      this.setDom(this.gui_div + '_browser_hierarchy');
 
       if (update_html) {
          this.refreshHtml();
@@ -1570,7 +1570,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
 
             div = div.find(".flex_draw").get(0);
             let dummy = new JSROOT.ObjectPainter();
-            dummy.SetDivId(div, -1);
+            dummy.setDom(div, "");
             jsrp.selectActivePad({ pp: dummy.canv_painter(), active: true });
 
             JSROOT.resize(div);
@@ -1845,7 +1845,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
 
       player.Show = function(divid, args) {
 
-         this.SetDivId(divid, -1);
+         this.setDom(divid);
 
          let main = $(this.select_main().node());
 
