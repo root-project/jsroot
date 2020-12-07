@@ -1400,11 +1400,26 @@ JSROOT.define(['d3'], (d3) => {
      * @abstract */
    BasePainter.prototype.checkResize = function(/* arg */) {}
 
-   /** @summary access to main HTML element used for drawing - typically <div> element
+
+   /** @summary Assign painter to specified DOM element
+     * @param {string|object} elem - element ID or DOM Element */
+   BasePainter.prototype.setDom = function(elem) {
+      if (elem !== undefined) {
+         this.divid = elem;
+         delete this._selected_main;
+      }
+   }
+
+   /** @summary Returns assigned dom element */
+   BasePainter.prototype.getDom = function() {
+      return this.divid;
+   }
+
+   /** @summary selects main HTML element used for drawing - typically <div> element
      * @desc if main element was layouted, returns main element inside layout
      * @param {string} is_direct - if 'origin' specified, returns original element even if actual drawing moved to some other place
-     * @returns {object} d3.select for main element for drawing, defined with this.divid. */
-   BasePainter.prototype.select_main = function(is_direct) {
+     * @returns {object} d3.select for main element for drawing */
+   BasePainter.prototype.selectDom = function(is_direct) {
 
       if (!this.divid) return d3.select(null);
 
@@ -1434,6 +1449,8 @@ JSROOT.define(['d3'], (d3) => {
 
       return res;
    }
+
+   BasePainter.prototype.select_main = BasePainter.prototype.selectDom;
 
    /** @summary Returns layout kind */
    BasePainter.prototype.getLayoutKind = function() {
@@ -1573,20 +1590,9 @@ JSROOT.define(['d3'], (d3) => {
       return false;
    }
 
-   /** @summary Assign painter to specified element
-     * @desc base painter does not creates canvas or frames
-     * it registered in the first child element
-     * @param {string|object} elem - element ID or DOM Element */
-   BasePainter.prototype.setDom = function(elem) {
-      if (elem !== undefined) {
-         this.divid = elem;
-         delete this._selected_main;
-      }
-   }
-
    /** @summary Set item name, associated with the painter
-    * @desc Used by {@link JSROOT.HiearchyPainter}
-    * @private */
+     * @desc Used by {@link JSROOT.HiearchyPainter}
+     * @private */
    BasePainter.prototype.SetItemName = function(name, opt, hpainter) {
       if (typeof name === 'string') this._hitemname = name;
       else delete this._hitemname;
