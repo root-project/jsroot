@@ -1584,8 +1584,6 @@ JSROOT.define(['d3'], (d3) => {
       }
    }
 
-   BasePainter.prototype.SetDivId = BasePainter.prototype.setDom;
-
    /** @summary Set item name, associated with the painter
     * @desc Used by {@link JSROOT.HiearchyPainter}
     * @private */
@@ -2160,54 +2158,6 @@ JSROOT.define(['d3'], (d3) => {
          pp.painters.push(this);
       if (!this.rstyle && pp.next_rstyle)
          this.rstyle = pp.next_rstyle;
-
-      return true;
-   }
-
-   /** @summary Assigns id of top element (normally div where drawing is done).
-     * @desc In some situations canvas may not exists - for instance object drawn as html, not as svg.
-     * In such case the only painter will be assigned to the first element
-     * Following values of kind parameter are allowed:
-     *   -  -1  only assign id, this painter not add to painters list
-     *   -   0  normal painter (default)
-     * @param {string|object} divid - id of div element or directly DOMElement
-     * @param {number} [kind] - kind of object drawn with painter */
-   ObjectPainter.prototype.SetDivId = function(divid, kind) {
-
-      if (divid !== undefined) {
-         this.divid = divid;
-         delete this._selected_main;
-      }
-
-      // check if element really exists
-      if ((kind != -1) && this.select_main(true).empty()) {
-         if (typeof divid == 'string')
-            console.error('not found HTML element' + (typeof divid == 'string' ? ' with id ' + divid : ""));
-         return false;
-      }
-
-      // SVG element where canvas is drawn
-      let svg_c = this.svg_canvas();
-      if (svg_c.empty()) {
-         if (kind != -1) this.accessTopPainter(true);
-         return true;
-      }
-
-      // SVG element where current pad is drawn (can be canvas itself)
-      this.pad_name = this.CurrentPadName();
-
-      if (kind == -1) return true;
-
-      let svg_p = this.svg_pad(this.pad_name); // important - parent pad element accessed here
-      if (svg_p.empty()) return true;
-
-      let pp = svg_p.property('pad_painter');
-      if (pp && (pp !== this)) {
-         pp.painters.push(this);
-         // workround to provide style for next object draing
-         if (!this.rstyle && pp.next_rstyle)
-            this.rstyle = pp.next_rstyle;
-      }
 
       return true;
    }
