@@ -1402,7 +1402,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
    jsrp.drawAxis3D = function(divid, axis /*, opt*/) {
 
       let painter = new JSROOT.ObjectPainter(axis);
-      painter.setDom(divid);
+      painter.setCanvDom(divid);
 
       if (!('_main' in axis)) {
          painter.addToPadPrimitives();
@@ -3320,7 +3320,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
    jsrp.drawGraph2D = function(divid, gr, opt) {
       let painter = new JSROOT.TGraph2DPainter(gr);
-      painter.setDom(divid);
+      painter.setCanvDom(divid);
       painter.DecodeOptions(opt);
 
       let promise = Promise.resolve(true);

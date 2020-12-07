@@ -686,6 +686,8 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
 
       this.addItemHtml(this.h, maindiv.append("div").attr("class","h_tree"));
 
+      this.setTopPainter(); //assign hpainter as top painter
+
       if (status_item && !this.status_disabled && !JSROOT.decodeUrl().has('nostatus')) {
          let func = JSROOT.findFunction(status_item._status);
          if (typeof func == 'function')
@@ -1570,7 +1572,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
 
             div = div.find(".flex_draw").get(0);
             let dummy = new JSROOT.ObjectPainter();
-            dummy.setDom(div, "");
+            dummy.setCanvDom(div, "");
             jsrp.selectActivePad({ pp: dummy.canv_painter(), active: true });
 
             JSROOT.resize(div);
@@ -1845,7 +1847,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
 
       player.Show = function(divid, args) {
 
-         this.setDom(divid);
+         this.setDom(divid); // base painter
 
          let main = $(this.select_main().node());
 

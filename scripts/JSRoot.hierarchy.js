@@ -1295,6 +1295,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
   /** @summary Drop item on specified element for drawing
     * @returns {Promise} when completed */
    HierarchyPainter.prototype.dropItem = function(itemname, divid, opt) {
+
       if (opt && typeof opt === 'function') { call_back = opt; opt = ""; }
       if (opt===undefined) opt = "";
 
@@ -2775,7 +2776,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       forEachPainter(userfunc, only_visible) {
          this.forEachFrame(frame => {
             let dummy = new JSROOT.ObjectPainter();
-            dummy.setDom(frame, "");
+            dummy.setCanvDom(frame, "");
             dummy.forEachPainter(painter => userfunc(painter, frame));
          }, only_visible);
       }
