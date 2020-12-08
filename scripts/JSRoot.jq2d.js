@@ -2017,7 +2017,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
       if (!frame) return null;
 
       let divid = d3.select(frame).attr('id'),
-          player = new JSROOT.BasePainter();
+          player = new JSROOT.BasePainter(divid);
 
       if (item._childs && !asleaf)
          for (let n=0;n<item._childs.length;++n) {

@@ -3847,8 +3847,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    // ===================================================================================
 
    jsrp.drawJSImage = function(divid, obj, opt) {
-      let painter = new JSROOT.BasePainter();
-      painter.setDom(divid); // base painter
+      let painter = new JSROOT.BasePainter(divid);
 
       let main = painter.selectDom();
 

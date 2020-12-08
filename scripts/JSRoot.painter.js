@@ -1314,10 +1314,12 @@ JSROOT.define(['d3'], (d3) => {
     * @class
     * @memberof JSROOT
     * @private
+    * @param {object|string} [dom] - dom element or id of dom element
     */
 
-   function BasePainter() {
+   function BasePainter(divid) {
       this.divid = null; // either id of DOM element or element itself
+      if (divid !== undefined) this.setDom(divid);
    }
 
    /** @summary Assign painter to specified DOM element
@@ -3332,8 +3334,7 @@ JSROOT.define(['d3'], (d3) => {
      * @private */
    jsrp.drawRawText = function(divid, txt /*, opt*/) {
 
-      let painter = new BasePainter();
-      painter.setDom(divid); // base painter
+      let painter = new BasePainter(divid);
       painter.txt = txt;
 
       painter.RedrawObject = function(obj) {
@@ -3396,8 +3397,7 @@ JSROOT.define(['d3'], (d3) => {
          else if (handle && (typeof handle == 'object') && (typeof handle.checkResize == 'function')) {
             handle.checkResize();
          } else {
-            let dummy = new BasePainter();
-            dummy.setDom(handle);
+            let dummy = new BasePainter(handle);
             let node = dummy.selectDom();
             if (!node.empty()) {
                let mdi = node.property('mdi');
@@ -4152,12 +4152,6 @@ JSROOT.define(['d3'], (d3) => {
    JSROOT.BasePainter = BasePainter;
    JSROOT.ObjectPainter = ObjectPainter;
    JSROOT.AxisBasePainter = AxisBasePainter;
-
-   // Only for backward compatibility with v5, will be removed in later JSROOT versions
-   JSROOT.TBasePainter = BasePainter;
-   JSROOT.TObjectPainter = ObjectPainter;
-   JSROOT.StoreJSON = JSROOT.drawingJSON;
-   // end of compatibility mode
 
    JSROOT.Painter = jsrp;
    if (JSROOT.nodejs) module.exports = jsrp;
