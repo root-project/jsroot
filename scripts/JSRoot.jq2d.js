@@ -946,8 +946,8 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
 
             if (this.disp)
                this.disp.forEachPainter(p => {
-                  if (p.GetItemName())
-                     items.push(p.GetItemName());
+                  if (p.getItemName())
+                     items.push(p.getItemName());
                });
 
             if (items.length == 1) {
@@ -1811,7 +1811,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
       player.draw_first = true;
 
       player.ConfigureOnline = function(itemname, url, askey, root_version, dflt_expr) {
-         this.SetItemName(itemname, "", this);
+         this.setItemName(itemname, "", this);
          this.url = url;
          this.root_version = root_version;
          this.askey = askey;

@@ -1195,8 +1195,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       function complete(respainter) {
          if (!updating) JSROOT.progress();
-         if (respainter && (typeof respainter === 'object') && (typeof respainter.SetItemName === 'function')) {
-            respainter.SetItemName(display_itemname, updating ? null : drawopt, h); // mark painter as created from hierarchy
+         if (respainter && (typeof respainter === 'object') && (typeof respainter.setItemName === 'function')) {
+            respainter.setItemName(display_itemname, updating ? null : drawopt, h); // mark painter as created from hierarchy
             if (item && !item._painter) item._painter = respainter;
          }
 
@@ -1248,9 +1248,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             }
 
             mdi.forEachPainter((p, frame) => {
-               if (p.GetItemName() != display_itemname) return;
+               if (p.getItemName() != display_itemname) return;
                // verify that object was drawn with same option as specified now (if any)
-               if (!updating && (drawopt!=null) && (p.GetItemDrawOpt()!=drawopt)) return;
+               if (!updating && (drawopt!=null) && (p.getItemDrawOpt()!=drawopt)) return;
                mdi.activateFrame(frame);
 
                let handle = null;
@@ -1298,7 +1298,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (opt===undefined) opt = "";
 
       let drop_complete = drop_painter => {
-         if (drop_painter && (typeof drop_painter === 'object')) drop_painter.SetItemName(itemname, null, this);
+         if (drop_painter && (typeof drop_painter === 'object') && (typeof drop_painter.setItemName == 'function'))
+            drop_painter.setItemName(itemname, null, this);
          return drop_painter;
       }
 
@@ -1346,7 +1347,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       // first collect items
       this.disp.forEachPainter(p => {
-         let itemname = p.GetItemName();
+         let itemname = p.getItemName();
 
          if ((typeof itemname != 'string') || (allitems.indexOf(itemname) >= 0)) return;
 
@@ -1366,7 +1367,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          }
 
          allitems.push(itemname);
-         options.push("update:" + p.GetItemDrawOpt());
+         options.push("update:" + p.getItemDrawOpt());
       }, true); // only visible panels are considered
 
       // force all files to read again (normally in non-browser mode)
@@ -2329,7 +2330,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          obj = obj[handle.draw_field];
 
       mdi.forEachPainter((p, frame) => {
-         if ((p===painter) || (p.GetItemName() != painter.GetItemName())) return;
+         if ((p===painter) || (p.getItemName() != painter.getItemName())) return;
          mdi.activateFrame(frame);
          if (p.RedrawObject(obj)) isany = true;
       });
@@ -2836,7 +2837,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             if (only_frame_id && (d3.select(frame).attr('id') != only_frame_id)) return;
 
-            if ((painter.GetItemName()!==null) && (typeof painter.checkResize == 'function')) {
+            if ((painter.getItemName()!==null) && (typeof painter.checkResize == 'function')) {
                // do not call resize for many painters on the same frame
                if (resized_frame === frame) return;
                painter.checkResize(size);

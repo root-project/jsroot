@@ -1363,7 +1363,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          let entry = JSROOT.Create("TLegendEntry");
          entry.fObject = obj;
-         entry.fLabel = (opt == "all") ? obj.fName : painter.GetItemName();
+         entry.fLabel = (opt == "all") ? obj.fName : painter.getItemName();
          entry.fOption = "";
          if (!entry.fLabel) continue;
 

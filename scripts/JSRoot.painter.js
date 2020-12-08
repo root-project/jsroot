@@ -1595,8 +1595,8 @@ JSROOT.define(['d3'], (d3) => {
 
    /** @summary Set item name, associated with the painter
      * @desc Used by {@link JSROOT.HiearchyPainter}
-     * @private */
-   BasePainter.prototype.SetItemName = function(name, opt, hpainter) {
+     * @protected */
+   BasePainter.prototype.setItemName = function(name, opt, hpainter) {
       if (typeof name === 'string')
          this._hitemname = name;
       else
@@ -1608,11 +1608,11 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /** @summary Returns assigned item name */
-   BasePainter.prototype.GetItemName = function() { return ('_hitemname' in this) ? this._hitemname : null; }
+   BasePainter.prototype.getItemName = function() { return ('_hitemname' in this) ? this._hitemname : null; }
 
    /** @summary Returns assigned item draw option
     * @private */
-   BasePainter.prototype.GetItemDrawOpt = function() { return ('_hdrawopt' in this) ? this._hdrawopt : ""; }
+   BasePainter.prototype.getItemDrawOpt = function() { return ('_hdrawopt' in this) ? this._hdrawopt : ""; }
 
    // ==============================================================================
 
@@ -1701,8 +1701,8 @@ JSROOT.define(['d3'], (d3) => {
    /** @summary Change item name
     * @desc When available, used for svg:title proprty
     * @private */
-   ObjectPainter.prototype.SetItemName = function(name, opt, hpainter) {
-      BasePainter.prototype.SetItemName.call(this,name, opt, hpainter);
+   ObjectPainter.prototype.setItemName = function(name, opt, hpainter) {
+      BasePainter.prototype.setItemName.call(this,name, opt, hpainter);
       if (this.no_default_title || (name == "")) return;
       let can = this.svg_canvas();
       if (!can.empty()) can.select("title").text(name);
@@ -1759,7 +1759,7 @@ JSROOT.define(['d3'], (d3) => {
     * @desc Such string can be used as tooltip. If result string larger than 20 symbols, it will be cutted.
     * @private */
    ObjectPainter.prototype.GetTipName = function(append) {
-      let res = this.GetItemName(), obj = this.GetObject();
+      let res = this.getItemName(), obj = this.GetObject();
       if (!res) res = obj && obj.fName ? obj.fName : "";
       if (res.lenght > 20) res = res.substr(0, 17) + "...";
       if (res && append) res += append;
@@ -2461,7 +2461,7 @@ JSROOT.define(['d3'], (d3) => {
       let obj = this.GetObject(),
          status_func = this.GetShowStatusFunc();
 
-      if (obj && status_func) status_func(this.GetItemName() || obj.fName, obj.fTitle || obj._typename, obj._typename);
+      if (obj && status_func) status_func(this.getItemName() || obj.fName, obj.fTitle || obj._typename, obj._typename);
    }
 
 

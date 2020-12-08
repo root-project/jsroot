@@ -550,7 +550,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
    /** @summary Activate specified items in the browser */
    TGeoPainter.prototype.activateInBrowser = function(names, force) {
-      // if (this.GetItemName() === null) return;
+      // if (this.getItemName() === null) return;
 
       if (typeof names == 'string') names = [ names ];
 
@@ -992,14 +992,14 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
                if (obj.geo_name) {
                   itemname = obj.geo_name;
                   if (itemname.indexOf("<prnt>") == 0)
-                     itemname = (this.GetItemName() || "top") + itemname.substr(6);
+                     itemname = (this.getItemName() || "top") + itemname.substr(6);
                   name = itemname.substr(itemname.lastIndexOf("/")+1);
                   if (!name) name = itemname;
                   hdr = name;
                } else if (obj.stack) {
                   name = this._clones.ResolveStack(obj.stack).name;
                   itemname = this.GetStackFullName(obj.stack);
-                  hdr = this.GetItemName();
+                  hdr = this.getItemName();
                   if (name.indexOf("Nodes/") === 0) hdr = name.substr(6); else
                   if (name.length > 0) hdr = name; else
                   if (!hdr) hdr = "header";
@@ -1158,7 +1158,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
    }
 
    TGeoPainter.prototype.GetStackFullName = function(stack) {
-      let mainitemname = this.GetItemName(),
+      let mainitemname = this.getItemName(),
           sub = this.ResolveStack(stack);
       if (!sub || !sub.name) return mainitemname;
       return mainitemname ? (mainitemname + "/" + sub.name) : sub.name;
@@ -1316,7 +1316,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
             if (!info) continue;
 
             if (info.indexOf("<prnt>")==0)
-               info = painter.GetItemName() + info.substr(6);
+               info = painter.getItemName() + info.substr(6);
 
             names.push(info);
 

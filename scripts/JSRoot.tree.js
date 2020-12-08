@@ -2890,7 +2890,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
             painter.Show(args);
             create_player = 2;
             return JSROOT.redraw(painter.drawid, obj).then(objpainter => {
-               painter.SetItemName("TreePlayer"); // item name used by MDI when process resize
+               painter.setItemName("TreePlayer"); // item name used by MDI when process resize
                if (finalResolve) finalResolve(objpainter);
                return objpainter; // return painter for histogram
             });
