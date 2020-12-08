@@ -1427,18 +1427,6 @@ JSROOT.define(['d3'], (d3) => {
      * @abstract */
    BasePainter.prototype.RedrawPad = function(/* reason */) {}
 
-   /** @summary Updates object and readraw it
-     * @param {object} obj - new version of object, values will be updated in original object
-     * @returns {boolean} true if object updated and redrawn */
-   BasePainter.prototype.RedrawObject = function(obj) {
-      if (!this.UpdateObject(obj)) return false;
-      let current = document.body.style.cursor;
-      document.body.style.cursor = 'wait';
-      let res = this.RedrawPad();
-      document.body.style.cursor = current;
-      return res || true;
-   }
-
    /** @summary Checks if draw elements were resized and drawing should be updated
      * @returns {boolean} true if resize was detected
      * @abstract */
@@ -1735,6 +1723,19 @@ JSROOT.define(['d3'], (d3) => {
          return this.options.asString();
 
       return this.options.original || ""; // nothing better, return original draw option
+   }
+
+   /** @summary Updates object and readraw it
+     * @param {object} obj - new version of object, values will be updated in original object
+     * @param {string} [opt] - when specified, new draw options
+     * @returns {boolean} true if object updated and redrawn */
+   ObjectPainter.prototype.redrawObject = function(obj, opt) {
+      if (!this.UpdateObject(obj,opt)) return false;
+      let current = document.body.style.cursor;
+      document.body.style.cursor = 'wait';
+      let res = this.RedrawPad();
+      document.body.style.cursor = current;
+      return res || true;
    }
 
    /** @summary Generic method to update object content.
@@ -3328,7 +3329,7 @@ JSROOT.define(['d3'], (d3) => {
       let painter = new BasePainter(divid);
       painter.txt = txt;
 
-      painter.RedrawObject = function(obj) {
+      painter.redrawObject = function(obj) {
          this.txt = obj;
          this.Draw();
          return true;
@@ -3802,7 +3803,7 @@ JSROOT.define(['d3'], (d3) => {
      * @param {string|object} divid - id of div element to draw or directly DOMElement
      * @param {object} obj - object to draw, object type should be registered before in JSROOT
      * @param {string} opt - draw options separated by space, comma or semicolon
-     * @param {function} [callback] - function called when drawing is completed, first argument is object painter instance
+     * @param {function} [callback] - deprecated, function called when drawing is completed, first argument is object painter instance
      * @returns {Promise} with painter object only if callback parameter is not specified
      * @desc An extensive list of support draw options can be found on [JSROOT examples page]{@link https://root.cern/js/latest/examples.htm}
      * Parameter ```callback``` kept only for backward compatibility and will be removed in JSROOT v6.2
@@ -3820,7 +3821,7 @@ JSROOT.define(['d3'], (d3) => {
      * @param {string|object} divid - id of div element to draw or directly DOMElement
      * @param {object} obj - object to draw, object type should be registered before in JSROOT
      * @param {string} opt - draw options
-     * @param {function} [callback] - function called when drawing is completed, first argument will be object painter instance
+     * @param {function} [callback] - function called when redrawing is completed, first argument will be object painter instance
      * @returns {Promise} with painter used only when callback parameter is not specified
      * @desc If drawing was not done before, it will be performed with {@link JSROOT.draw}.
      * Otherwise drawing content will be updated
@@ -3832,33 +3833,42 @@ JSROOT.define(['d3'], (d3) => {
 
       let dummy = new ObjectPainter();
       dummy.setCanvDom(divid, "");
-      let can_painter = dummy.canv_painter(), handle;
+      let can_painter = dummy.canv_painter(), handle, res_painter = null, redraw_res;
       if (obj._typename)
          handle = JSROOT.getDrawHandle("ROOT." + obj._typename);
       if (handle && handle.draw_field && obj[handle.draw_field])
          obj = obj[handle.draw_field];
 
       if (can_painter) {
-         let res_painter = null;
-         if (obj._typename === "TCanvas") {
-            can_painter.RedrawObject(obj);
-            res_painter = can_painter;
+         if (can_painter.matchObjectType(obj._typename)) {
+            redraw_res = can_painter.redrawObject(obj, opt);
+            if (redraw_res) res_painter = can_painter;
          } else {
             for (let i = 0; i < can_painter.painters.length; ++i) {
                let painter = can_painter.painters[i];
-               if (painter.matchObjectType(obj._typename))
-                  if (painter.UpdateObject(obj, opt)) {
-                     can_painter.RedrawPad();
+               if (painter.matchObjectType(obj._typename)) {
+                  redraw_res = painter.redrawObject(obj, opt);
+                  if (redraw_res) {
                      res_painter = painter;
                      break;
                   }
+               }
             }
          }
+      } else {
+         let top = dummy.getTopPainter();
+         // base painter do not have this method, if it there use it
+         // it can be object painter here or can be specially introduce method to handling redraw!
+         if (top && typeof top.redrawObject == 'function') {
+            redraw_res = top.redrawObject(obj, opt);
+            if (redraw_res) res_painter = top;
+         }
+      }
 
-         if (res_painter)
-            return callback ? callback(res_painter) : Promise.resolve(res_painter);
-
-         console.warn(`Cannot find painter to update object of type ${obj._typename}`);
+      if (res_painter) {
+         if (!redraw_res || (typeof redraw_res != 'object') || !redraw_res.then)
+            redraw_res = Promise.resolve(true);
+         return redraw_res.then(() => { if (callback) callback(res_painter); return res_painter; });
       }
 
       JSROOT.cleanup(divid);

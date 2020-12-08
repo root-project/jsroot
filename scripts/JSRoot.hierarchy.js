@@ -1250,7 +1250,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             mdi.forEachPainter((p, frame) => {
                if (p.getItemName() != display_itemname) return;
                // verify that object was drawn with same option as specified now (if any)
-               if (!updating && (drawopt!=null) && (p.getItemDrawOpt()!=drawopt)) return;
+               if (!updating && drawopt && (p.getItemDrawOpt() != drawopt)) return;
                mdi.activateFrame(frame);
 
                let handle = null;
@@ -1258,7 +1258,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                if (handle && handle.draw_field && obj[handle.draw_field])
                   obj = obj[handle.draw_field];
 
-               if (p.RedrawObject(obj)) painter = p;
+               if ((typeof p.redrawObject == 'function') && p.redrawObject(obj, drawopt)) painter = p;
             });
 
             if (painter) return complete();
@@ -2330,9 +2330,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          obj = obj[handle.draw_field];
 
       mdi.forEachPainter((p, frame) => {
-         if ((p===painter) || (p.getItemName() != painter.getItemName())) return;
+         if ((p === painter) || (p.getItemName() != painter.getItemName())) return;
          mdi.activateFrame(frame);
-         if (p.RedrawObject(obj)) isany = true;
+         if ((typeof p.redrawObject == 'function') && p.redrawObject(obj)) isany = true;
       });
       return isany;
    }
@@ -2625,7 +2625,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    /** @summary Redraw hierarchy
      * @desc works only when inspector or streamer info is displayed */
-   HierarchyPainter.prototype.RedrawObject = function(obj) {
+   HierarchyPainter.prototype.redrawObject = function(obj) {
       if (!this._inspector && !this._streamer_info) return false;
       if (this._streamer_info)
          this.h = createStreamerInfoContent(obj)

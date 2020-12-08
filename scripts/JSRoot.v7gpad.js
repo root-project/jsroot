@@ -3898,7 +3898,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       } else if (msg.substr(0,4)=='JSON') {
          let obj = JSROOT.parse(msg.substr(4));
          // console.log("get JSON ", msg.length-4, obj._typename);
-         this.RedrawObject(obj);
+         this.redrawObject(obj);
       } else if (msg.substr(0,9)=="REPL_REQ:") {
          this.ProcessDrawableReply(msg.substr(9));
       } else if (msg.substr(0,4)=='CMD:') {

@@ -3554,7 +3554,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
    /** @summary Specify showtop draw options, relevant only for TGeoManager */
    TGeoPainter.prototype.setShowTop = function(on) {
       this.ctrl.showtop = on ? true : false;
-      this.RedrawObject('same');
+      this.redrawObject('same');
    }
 
    /** @summary Should be called when configuration of particular axis is changed */
@@ -4015,7 +4015,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
    }
 
    /** @summary Redraw TGeo object */
-   TGeoPainter.prototype.RedrawObject = function(obj) {
+   TGeoPainter.prototype.redrawObject = function(obj) {
       if (!this.UpdateObject(obj))
          return false;
 
