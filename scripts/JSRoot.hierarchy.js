@@ -2465,15 +2465,29 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          }
       }
 
-      if (status==="no") status = null; else
-      if (status==="off") { this.status_disabled = true; status = null; } else
-      if (status==="on") status = true; else
-      if (status!==null) { statush = parseInt(status); if (isNaN(statush) || (statush<5)) statush = 0; status = true; }
-      if (this.no_select==="") this.no_select = true;
+      if (status==="no")
+         status = null;
+      else if (status==="off") {
+         this.status_disabled = true;
+         status = null;
+      } else if (status==="on")
+         status = true;
+      else if (status!==null) {
+         statush = parseInt(status);
+         if (isNaN(statush) || (statush < 5)) statush = 0;
+         status = true;
+      }
+      if (this.no_select === "") this.no_select = true;
 
-      if (!browser_kind) browser_kind = "fix"; else
-      if (browser_kind==="no") browser_kind = ""; else
-      if (browser_kind==="off") { browser_kind = ""; status = null; this.exclude_browser = true; }
+      if (!browser_kind)
+         browser_kind = "fix";
+      else if (browser_kind === "no")
+         browser_kind = "";
+      else if (browser_kind==="off") {
+         browser_kind = "";
+         status = null;
+         this.exclude_browser = true;
+      }
       if (GetOption("nofloat")!==null) this.float_browser_disabled = true;
 
       if (this.start_without_browser) browser_kind = "";
