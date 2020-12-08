@@ -234,7 +234,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
       if (obj !== origin) {
 
-         if (!this.MatchObjectType(obj)) return false;
+         if (!this.matchObjectType(obj)) return false;
 
          if (this.IsDisplayItem()) {
 
@@ -2722,7 +2722,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
           text_g = this.draw_g.append("svg:g").attr("class","th2_text"),
           di = handle.stepi, dj = handle.stepj,
           profile2d = (this.options.TextKind == "E") &&
-                      this.MatchObjectType('TProfile2D') && (typeof histo.getBinEntries=='function');
+                      this.matchObjectType('TProfile2D') && (typeof histo.getBinEntries=='function');
 
       if (this.options.BarOffset) text_offset = this.options.BarOffset;
 

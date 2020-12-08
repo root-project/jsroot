@@ -3011,7 +3011,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
       res.Color = d.check("COL");
       res.Line = d.check("LINE");
-      res.Error = d.check("ERR") && this.MatchObjectType("TGraph2DErrors");
+      res.Error = d.check("ERR") && this.matchObjectType("TGraph2DErrors");
       res.Circles = d.check("P0");
       res.Markers = d.check("P");
 

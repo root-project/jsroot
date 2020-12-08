@@ -1421,12 +1421,6 @@ JSROOT.define(['d3'], (d3) => {
      * @abstract */
    BasePainter.prototype.GetObject = function() {}
 
-   /** @summary Returns true if type match with drawn object type
-     * @param {string} typename - type name to check with
-     * @returns {boolean} true if draw objects matches with provided type name
-     * @abstract */
-   BasePainter.prototype.MatchObjectType = function(/* typename */) {}
-
    /** @summary Called to update drawn object content
      * @returns {boolean} true if update was performed
      * @abstract */
@@ -1607,12 +1601,13 @@ JSROOT.define(['d3'], (d3) => {
       this._hpainter = hpainter;
    }
 
-   /** @summary Returns assigned item name */
+   /** @summary Returns assigned item name
+     * @desc Used with {@link JSROOT.HiearchyPainter} to identify drawn item name */
    BasePainter.prototype.getItemName = function() { return ('_hitemname' in this) ? this._hitemname : null; }
 
    /** @summary Returns assigned item draw option
-    * @private */
-   BasePainter.prototype.getItemDrawOpt = function() { return ('_hdrawopt' in this) ? this._hdrawopt : ""; }
+     * @desc Used with {@link JSROOT.HiearchyPainter} to identify drawn item option */
+   BasePainter.prototype.getItemDrawOpt = function() { return this._hdrawopt || ""; }
 
    // ==============================================================================
 
@@ -1691,7 +1686,7 @@ JSROOT.define(['d3'], (d3) => {
    /** @summary Checks if drawn object matches with provided typename
     * @param {string} arg - typename
     * @param {string} arg._typename - if arg is object, use its typename */
-   ObjectPainter.prototype.MatchObjectType = function(arg) {
+   ObjectPainter.prototype.matchObjectType = function(arg) {
       if (!arg || !this.draw_object) return false;
       if (typeof arg === 'string') return (this.draw_object._typename === arg);
       if (arg._typename) return (this.draw_object._typename === arg._typename);
@@ -1750,7 +1745,7 @@ JSROOT.define(['d3'], (d3) => {
     * @desc Just copy all members from source object
     * @param {object} obj - object with new data */
    ObjectPainter.prototype.UpdateObject = function(obj) {
-      if (!this.MatchObjectType(obj)) return false;
+      if (!this.matchObjectType(obj)) return false;
       JSROOT.extend(this.GetObject(), obj);
       return true;
    }
@@ -3855,7 +3850,7 @@ JSROOT.define(['d3'], (d3) => {
          } else {
             for (let i = 0; i < can_painter.painters.length; ++i) {
                let painter = can_painter.painters[i];
-               if (painter.MatchObjectType(obj._typename))
+               if (painter.matchObjectType(obj._typename))
                   if (painter.UpdateObject(obj, opt)) {
                      can_painter.RedrawPad();
                      res_painter = painter;

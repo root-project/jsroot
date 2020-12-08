@@ -2855,7 +2855,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          padpainter.CreatePadSvg();
 
-         if (padpainter.MatchObjectType("TPad") && snap.fPrimitives.length > 0)
+         if (padpainter.matchObjectType("TPad") && snap.fPrimitives.length > 0)
             padpainter.AddPadButtons();
 
          // we select current pad, where all drawing is performed
@@ -2982,7 +2982,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          let painter, primitive;
          for (let k=0;k<painters.length;++k) {
             if (painters[k].snapid === undefined) continue;
-            if (!painters[k].MatchObjectType(class_name)) continue;
+            if (!painters[k].matchObjectType(class_name)) continue;
             if (obj_name && (!painters[k].GetObject() || (painters[k].GetObject().fName !== obj_name))) continue;
             painter = painters[k];
             break;
@@ -3546,7 +3546,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       painter.CreatePadSvg();
 
-      if (painter.MatchObjectType("TPad") && (!painter.has_canvas || painter.HasObjectsToDraw()))
+      if (painter.matchObjectType("TPad") && (!painter.has_canvas || painter.HasObjectsToDraw()))
          painter.AddPadButtons();
 
       // we select current pad, where all drawing is performed

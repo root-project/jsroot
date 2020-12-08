@@ -3991,7 +3991,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          return true;
       }
 
-      if (!this.MatchObjectType(obj._typename)) return false;
+      if (!this.matchObjectType(obj._typename)) return false;
 
       this.AssignObject(obj);
       return true;

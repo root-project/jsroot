@@ -511,7 +511,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    }
 
    //TF1Painter.prototype.UpdateObject = function(obj, opt) {
-   //   if (!this.MatchObjectType(obj)) return false;
+   //   if (!this.matchObjectType(obj)) return false;
    //   let tf1 = this.GetObject();
    //   tf1.fSave = obj.fSave;
    //   return true;
@@ -1764,14 +1764,14 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
                bin.x = main.RevertAxis("x", main.grx(bin.x) + this.pos_dx);
                bin.y = main.RevertAxis("y", main.gry(bin.y) + this.pos_dy);
                exec += "SetPoint(" + bin.indx + "," + bin.x + "," + bin.y + ");;";
-               if ((bin.indx == 0) && this.MatchObjectType('TCutG'))
+               if ((bin.indx == 0) && this.matchObjectType('TCutG'))
                   exec += "SetPoint(" + (this.GetObject().fNpoints-1) + "," + bin.x + "," + bin.y + ");;";
             }
             this.DrawGraph();
          }
       } else {
          exec = "SetPoint(" + this.move_bin.indx + "," + this.move_bin.x + "," + this.move_bin.y + ")";
-         if ((this.move_bin.indx == 0) && this.MatchObjectType('TCutG'))
+         if ((this.move_bin.indx == 0) && this.matchObjectType('TCutG'))
             exec += ";;SetPoint(" + (this.GetObject().fNpoints-1) + "," + this.move_bin.x + "," + this.move_bin.y + ")";
          delete this.move_binindx;
       }
@@ -1818,7 +1818,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
    /** @summary Update TGraph object */
    TGraphPainter.prototype.UpdateObject = function(obj, opt) {
-      if (!this.MatchObjectType(obj)) return false;
+      if (!this.matchObjectType(obj)) return false;
 
       if ((opt !== undefined) && (opt != this.options.original))
          this.DecodeOptions(opt);
@@ -3105,7 +3105,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    }
 
    TMultiGraphPainter.prototype.UpdateObject = function(obj) {
-      if (!this.MatchObjectType(obj)) return false;
+      if (!this.matchObjectType(obj)) return false;
 
       let mgraph = this.GetObject(),
           graphs = obj.fGraphs;
@@ -3335,7 +3335,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       let painter = new JSROOT.ObjectPainter(obj, opt);
 
       painter.UpdateObject = function(obj) {
-         if (!this.MatchObjectType(obj)) return false;
+         if (!this.matchObjectType(obj)) return false;
          this.draw_object = obj;
          return true;
       }

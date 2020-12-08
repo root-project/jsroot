@@ -1114,7 +1114,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    }
 
    TPavePainter.prototype.IsStats = function() {
-      return this.MatchObjectType('TPaveStats');
+      return this.matchObjectType('TPaveStats');
    }
 
    TPavePainter.prototype.ClearPave = function() {
@@ -1192,7 +1192,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    }
 
    TPavePainter.prototype.UpdateObject = function(obj) {
-      if (!this.MatchObjectType(obj)) return false;
+      if (!this.matchObjectType(obj)) return false;
 
       let pave = this.GetObject();
 
@@ -1890,15 +1890,15 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    }
 
    THistPainter.prototype.IsTProfile = function() {
-      return this.MatchObjectType('TProfile');
+      return this.matchObjectType('TProfile');
    }
 
    THistPainter.prototype.IsTH1K = function() {
-      return this.MatchObjectType('TH1K');
+      return this.matchObjectType('TH1K');
    }
 
    THistPainter.prototype.IsTH2Poly = function() {
-      return this.MatchObjectType(/^TH2Poly/) || this.MatchObjectType(/^TProfile2Poly/);
+      return this.matchObjectType(/^TH2Poly/) || this.matchObjectType(/^TProfile2Poly/);
    }
 
    THistPainter.prototype.Clear3DScene = function() {
@@ -2015,7 +2015,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       if (obj !== histo) {
 
-         if (!this.MatchObjectType(obj)) return false;
+         if (!this.matchObjectType(obj)) return false;
 
          // simple replace of object does not help - one can have different
          // complex relations between histo and stat box, histo and colz axis,
@@ -2131,7 +2131,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
                   // try to find matching object in associated list of painters
                   for (let i=0;i<painters.length;++i)
-                     if (painters[i].MatchObjectType(func._typename) && (painters[i].GetObject().fName === func.fName)) {
+                     if (painters[i].matchObjectType(func._typename) && (painters[i].GetObject().fName === func.fName)) {
                         funcpainter = painters[i];
                         func_indx = i;
                         break;
@@ -5399,7 +5399,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           text_angle = -1*this.options.TextAngle,
           text_g = this.draw_g.append("svg:g").attr("class","th2_text"),
           text_size = 20, text_offset = 0,
-          profile2d = this.MatchObjectType('TProfile2D') && (typeof histo.getBinEntries=='function'),
+          profile2d = this.matchObjectType('TProfile2D') && (typeof histo.getBinEntries=='function'),
           show_err = (this.options.TextKind == "E"),
           use_latex = (show_err && !this.options.TextLine) ? 1 : 0;
 
@@ -5943,7 +5943,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       lines.push("entries = " + ((binz === Math.round(binz)) ? binz : JSROOT.FFormat(binz, JSROOT.gStyle.fStatFormat)));
 
-      if ((this.options.TextKind == "E") || this.MatchObjectType('TProfile2D')) {
+      if ((this.options.TextKind == "E") || this.matchObjectType('TProfile2D')) {
          let errz = histo.getBinError(histo.getBin(i+1,j+1));
          lines.push("error = " + ((errz === Math.round(errz)) ? errz.toString() : JSROOT.FFormat(errz, JSROOT.gStyle.fPaintTextFormat)));
       }
@@ -6731,7 +6731,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    /** @summary Update thstack object */
    THStackPainter.prototype.UpdateObject = function(obj) {
-      if (!this.MatchObjectType(obj)) return false;
+      if (!this.matchObjectType(obj)) return false;
 
       let stack = this.GetObject();
 

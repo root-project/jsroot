@@ -3696,7 +3696,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       painter.CreatePadSvg();
 
-      if (painter.MatchObjectType("TPad") && (!painter.has_canvas || painter.HasObjectsToDraw())) {
+      if (painter.matchObjectType("TPad") && (!painter.has_canvas || painter.HasObjectsToDraw())) {
          painter.AddPadButtons();
       }
 
