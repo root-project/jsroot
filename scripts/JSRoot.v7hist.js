@@ -28,12 +28,12 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
    /** @summary Returns true if RHistDisplayItem is used */
    RHistPainter.prototype.IsDisplayItem = function() {
-      let obj = this.GetObject();
+      let obj = this.getObject();
       return obj && obj.fAxes ? true : false;
    }
 
    RHistPainter.prototype.GetHisto = function(force) {
-      let obj = this.GetObject(), histo = this.GetHImpl(obj);
+      let obj = this.getObject(), histo = this.GetHImpl(obj);
 
       if (histo && (!histo.getBinContent || force)) {
          if (histo.fAxes._2) {
@@ -230,7 +230,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
    RHistPainter.prototype.UpdateObject = function(obj /*, opt*/) {
 
-      let origin = this.GetObject();
+      let origin = this.getObject();
 
       if (obj !== origin) {
 
@@ -262,7 +262,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
    }
 
    RHistPainter.prototype.GetAxis = function(name) {
-      let histo = this.GetHisto(), obj = this.GetObject(), axis = null;
+      let histo = this.GetHisto(), obj = this.getObject(), axis = null;
 
       if (obj && obj.fAxes) {
          switch(name) {
@@ -331,7 +331,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       if (req.reqid === this.current_item_reqid) {
 
          if (reply !== null) {
-            this.UpdateDisplayItem(this.GetObject(), reply.item);
+            this.UpdateDisplayItem(this.getObject(), reply.item);
          }
 
          req.resolveFunc(true);
@@ -1725,7 +1725,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
       menu.add("Auto zoom-in", this.AutoZoom);
 
-      let sett = JSROOT.getDrawSettings("ROOT." + this.GetObject()._typename, 'nosame');
+      let sett = JSROOT.getDrawSettings("ROOT." + this.getObject()._typename, 'nosame');
 
       menu.addDrawMenu("Draw with", sett.opts, function(arg) {
          if (arg==='inspect')
@@ -1939,7 +1939,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
       menu.add("Auto zoom-in", this.AutoZoom);
 
-      let sett = JSROOT.getDrawSettings("ROOT." + this.GetObject()._typename, 'nosame');
+      let sett = JSROOT.getDrawSettings("ROOT." + this.getObject()._typename, 'nosame');
 
       menu.addDrawMenu("Draw with", sett.opts, function(arg) {
          if (arg==='inspect')
@@ -3683,7 +3683,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       let pp = this.pad_painter();
       if (pp && pp._fast_drawing) return false;
 
-      let obj = this.GetObject();
+      let obj = this.getObject();
       if (obj.fLines !== undefined) {
          this.stats_lines = obj.fLines;
          delete obj.fLines;
@@ -3726,7 +3726,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
    }
 
    RHistStatsPainter.prototype.ChangeMask = function(nbit) {
-      let obj = this.GetObject(), mask = (1<<nbit);
+      let obj = this.getObject(), mask = (1<<nbit);
       if (obj.fShowMask & mask)
          obj.fShowMask = obj.fShowMask & ~mask;
       else
@@ -3741,7 +3741,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       evnt.stopPropagation(); // disable main context menu
 
       jsrp.createMenu(this, evnt).then(menu => {
-         let obj = this.GetObject(),
+         let obj = this.getObject(),
              action = this.ChangeMask.bind(this);
 
          menu.add("header: StatBox");
@@ -3848,7 +3848,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
           (this.v7CommMode() == JSROOT.v7.CommMode.kNormal)) {
          let req = {
             _typename: "ROOT::Experimental::RHistStatBoxBase::RRequest",
-            mask: this.GetObject().fShowMask // lines to show in stat box
+            mask: this.getObject().fShowMask // lines to show in stat box
          };
 
          this.v7SubmitRequest("stat", req, this.UpdateStatistic.bind(this));

@@ -1337,12 +1337,12 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
 
    // ============================================================================================================
 
-   /** @summary Drae TPolyLine3D object
+   /** @summary Draw TPolyLine3D object
      * @desc Takes into account dashed properties
      * @private
      * @memberof JSROOT.Painter */
    function drawPolyLine3D() {
-      let line = this.GetObject(),
+      let line = this.getObject(),
           main = this.frame_painter();
 
       if (!main || !main.mode3d || !main.toplevel || !line)

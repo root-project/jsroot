@@ -64,7 +64,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.reverse = opts.reverse || false;
       this.swap_side = opts.swap_side || false;
 
-      let axis = this.GetObject();
+      let axis = this.getObject();
 
       if (opts.time_scale || axis.fTimeDisplay) {
          this.kind = 'time';
@@ -186,7 +186,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    /** @summary Provide label for axis value */
    TAxisPainter.prototype.formatLabels = function(d) {
-      let indx = parseFloat(d), a = this.GetObject();
+      let indx = parseFloat(d), a = this.getObject();
       if (!this.regular_labels)
          indx = (indx - a.fXmin)/(a.fXmax - a.fXmin) * a.fNbins;
       indx = Math.floor(indx);
@@ -216,7 +216,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if ((this.kind == 'labels') && !this.regular_labels) {
          handle.lbl_pos = [];
-         let axis = this.GetObject();
+         let axis = this.getObject();
          for (let n = 0; n < axis.fNbins; ++n) {
             let x = axis.fXmin + n / axis.fNbins * (axis.fXmax - axis.fXmin);
             if ((x >= this.scale_min) && (x < this.scale_max)) handle.lbl_pos.push(x);
@@ -341,7 +341,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    TAxisPainter.prototype.IsCenterLabels = function() {
       if (this.kind === 'labels') return true;
       if (this.log) return false;
-      let axis = this.GetObject();
+      let axis = this.getObject();
       return axis && axis.TestBit(JSROOT.EAxisBits.kCenterLabels);
    }
 
@@ -360,7 +360,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             evnt.sourceEvent.stopPropagation();
 
             let box = title_g.node().getBBox(), // check that elements visible, request precise value
-                axis = this.GetObject(),
+                axis = this.getObject(),
                 title_length = vertical ? box.height : box.width,
                 opposite = axis.TestBit(JSROOT.EAxisBits.kOppositeTitle);
 
@@ -437,7 +437,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                title_g.property('shift_x', new_x)
                       .property('shift_y', new_y);
 
-               let axis = this.GetObject(), abits = JSROOT.EAxisBits;
+               let axis = this.getObject(), abits = JSROOT.EAxisBits;
 
                function set_bit(bit, on) {
                   if (axis.TestBit(bit) != on) axis.InvertBit(bit);
@@ -636,7 +636,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
      * @returns Promise*/
    TAxisPainter.prototype.DrawAxis = function(layer, w, h, transform, secondShift, disable_axis_drawing, max_text_width, calculate_position) {
 
-      let axis = this.GetObject(), chOpt = "",
+      let axis = this.getObject(), chOpt = "",
           is_gaxis = (axis && axis._typename === 'TGaxis'),
           axis_g = layer, tickSize = 0.03,
           scaling_size = 100, draw_lines = true,
@@ -827,7 +827,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    TAxisPainter.prototype.Redraw = function() {
 
-      let gaxis = this.GetObject(),
+      let gaxis = this.getObject(),
           x1 = this.AxisToSvg("x", gaxis.fX1),
           y1 = this.AxisToSvg("y", gaxis.fY1),
           x2 = this.AxisToSvg("x", gaxis.fX2),
@@ -926,10 +926,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    TFramePainter.prototype.frame_painter = function() { return this; }
 
    /** @summary Returns frame or sub-objects, used in GED editor */
-   TFramePainter.prototype.GetObject = function(place) {
+   TFramePainter.prototype.getObject = function(place) {
       if (place === "xaxis") return this.xaxis;
       if (place === "yaxis") return this.yaxis;
-      return JSROOT.ObjectPainter.prototype.GetObject.call(this);
+      return JSROOT.ObjectPainter.prototype.getObject.call(this);
    }
 
    /** @summary Set active flag for frame - can block some events
@@ -1371,7 +1371,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
      * @private */
    TFramePainter.prototype.UpdateAttributes = function(force) {
       let pad = this.root_pad(),
-          tframe = this.GetObject();
+          tframe = this.getObject();
 
       if ((this.fX1NDC === undefined) || (force && !this.modified_NDC)) {
          if (!pad || (pad.fLeftMargin===undefined)) {
@@ -2983,7 +2983,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          for (let k=0;k<painters.length;++k) {
             if (painters[k].snapid === undefined) continue;
             if (!painters[k].matchObjectType(class_name)) continue;
-            if (obj_name && (!painters[k].GetObject() || (painters[k].GetObject().fName !== obj_name))) continue;
+            if (obj_name && (!painters[k].getObject() || (painters[k].getObject().fName !== obj_name))) continue;
             painter = painters[k];
             break;
          }
@@ -3014,7 +3014,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if (snap.fPrimitives[i].fObjectID === sub.snapid) { sub = null; isanyfound = true; break; }
 
          if (sub) {
-            console.log('Remove painter' + k + ' from ' + this.painters.length + ' ' + sub.GetObject()._typename);
+            console.log('Remove painter' + k + ' from ' + this.painters.length + ' ' + sub.getObject()._typename);
             // remove painter which does not found in the list of snaps
             this.painters.splice(k--,1);
             sub.Cleanup(); // cleanup such painter
@@ -3406,7 +3406,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                let shown = [];
                for (let n=0;n<this.painters.length;++n) {
                   let pp = this.painters[n];
-                  let obj = pp ? pp.GetObject() : null;
+                  let obj = pp ? pp.getObject() : null;
                   if (!obj || (shown.indexOf(obj)>=0)) continue;
 
                   let name = ('_typename' in obj) ? (obj._typename + "::") : "";
@@ -3485,7 +3485,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    TPadPainter.prototype.DecodeOptions = function(opt) {
-      let pad = this.GetObject();
+      let pad = this.getObject();
       if (!pad) return;
 
       let d = new JSROOT.DrawOptions(opt);
@@ -4098,7 +4098,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /**  @summary produce JSON for TCanvas, which can be used to display canvas once again */
    TCanvasPainter.prototype.ProduceJSON = function() {
 
-      let canv = this.GetObject(),
+      let canv = this.getObject(),
           fill0 = (canv.fFillStyle == 0);
 
       if (fill0) canv.fFillStyle = 1001;
@@ -4109,7 +4109,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.forEachPainterInPad(p => {
             if (p.$secondary) return; // ignore all secoandry painters
 
-            let subobj = p.GetObject();
+            let subobj = p.getObject();
             if (subobj && subobj._typename)
                canv.fPrimitives.Add(subobj, p.OptionsAsString());
          }, "objects");

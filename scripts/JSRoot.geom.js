@@ -366,7 +366,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
    /** @summary Returns main geometry object */
    TGeoPainter.prototype.GetGeometry = function() {
-      return this.GetObject();
+      return this.getObject();
    }
 
    TGeoPainter.prototype.ModifyVisisbility = function(name, sign) {
@@ -3983,7 +3983,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
    TGeoPainter.prototype.UpdateObject = function(obj) {
       if (obj === "same") return true;
       if (!obj || !obj._typename) return false;
-      if (obj === this.GetObject()) return true;
+      if (obj === this.getObject()) return true;
 
       if (this.geo_manager && (obj._typename == "TGeoManager")) {
          this.geo_manager = obj;

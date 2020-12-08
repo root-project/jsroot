@@ -237,7 +237,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          return promise;
       }
 
-      let pt = this.GetObject(), opt = pt.fOption.toUpperCase();
+      let pt = this.getObject(), opt = pt.fOption.toUpperCase();
 
       if (pt.fInit===0) {
          this.stored = JSROOT.extend({}, pt); // store coordinates to use them when updating
@@ -399,7 +399,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          res = { _typename: "TWebObjectOptions", snapid: this.snapid.toString(), opt: this.OptionsAsString(), fcust: "", fopt: [] };
       }
 
-      let pave = this.GetObject();
+      let pave = this.getObject();
 
       if (pave && pave.fInit) {
          res.fcust = "pave";
@@ -413,7 +413,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    TPavePainter.prototype.DrawPaveLabel = function(_width, _height) {
       this.UseTextColor = true;
 
-      let pave = this.GetObject();
+      let pave = this.getObject();
 
       this.startTextDrawing(pave.fTextFont, _height/1.2);
 
@@ -427,7 +427,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       if (this.IsStats()) this.FillStatistic();
 
-      let pt = this.GetObject(), lines = [],
+      let pt = this.getObject(), lines = [],
           tcolor = this.get_color(pt.fTextColor),
           first_stat = 0, num_cols = 0, maxlen = 0;
 
@@ -521,7 +521,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    /** @summary draw TPaveText object */
    TPavePainter.prototype.DrawPaveText = function(width, height, dummy_arg, text_g) {
 
-      let pt = this.GetObject(),
+      let pt = this.getObject(),
           tcolor = this.get_color(pt.fTextColor),
           nlines = 0, lines = [],
           can_height = this.pad_height(),
@@ -670,7 +670,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    TPavePainter.prototype.Format = function(value, fmt) {
       if (!fmt) fmt = "stat";
 
-      let pave = this.GetObject();
+      let pave = this.getObject();
 
       switch(fmt) {
          case "stat" : fmt = pave.fStatFormat || JSROOT.gStyle.fStatFormat; break;
@@ -688,7 +688,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    TPavePainter.prototype.DrawPaveLegend = function(w, h) {
 
-      let legend = this.GetObject(),
+      let legend = this.getObject(),
           nlines = legend.fPrimitives.arr.length,
           ncols = legend.fNColumns,
           nrows = nlines;
@@ -826,7 +826,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    /** @summary draw color palette with axis */
    TPavePainter.prototype.DrawPaletteAxis = function(s_width, s_height, arg) {
 
-      let palette = this.GetObject(),
+      let palette = this.getObject(),
           axis = palette.fAxis,
           can_move = (typeof arg == "string") && (arg.indexOf('can_move') > 0),
           postpone_draw = (typeof arg == "string") && (arg.indexOf('postpone') > 0),
@@ -990,7 +990,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    /** @summary Fill context menu for the TPave object */
    TPavePainter.prototype.FillContextMenu = function(menu) {
-      let pave = this.GetObject();
+      let pave = this.getObject();
 
       menu.add("header: " + pave._typename + "::" + pave.fName);
       if (this.IsStats()) {
@@ -1118,11 +1118,11 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    }
 
    TPavePainter.prototype.ClearPave = function() {
-      this.GetObject().Clear();
+      this.getObject().Clear();
    }
 
    TPavePainter.prototype.AddText = function(txt) {
-      this.GetObject().AddText(txt);
+      this.getObject().AddText(txt);
    }
 
    TPavePainter.prototype.FillFunctionStat = function(f1, dofit) {
@@ -1161,7 +1161,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       let pp = this.pad_painter();
       if (pp && pp._fast_drawing) return false;
 
-      let pave = this.GetObject(),
+      let pave = this.getObject(),
           main = pave.$main_painter || this.main_painter();
 
       if (pave.fName !== "stats") return false;
@@ -1194,7 +1194,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    TPavePainter.prototype.UpdateObject = function(obj) {
       if (!this.matchObjectType(obj)) return false;
 
-      let pave = this.GetObject();
+      let pave = this.getObject();
 
       if (!pave.modified_NDC && !this.IsDummyPos(obj)) {
          // if position was not modified interactively, update from source object
@@ -1357,7 +1357,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       for (let k=0;k<pp.painters.length;++k) {
          let painter = pp.painters[k],
-             obj = painter.GetObject();
+             obj = painter.getObject();
 
          if (!obj) continue;
 
@@ -1873,13 +1873,13 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    THistPainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
 
    THistPainter.prototype.GetHisto = function() {
-      return this.GetObject();
+      return this.getObject();
    }
 
    /** @summary Returns histogram axis
      * @prviate */
    THistPainter.prototype.GetAxis = function(name) {
-      let histo = this.GetObject();
+      let histo = this.getObject();
       if (histo)
          switch(name) {
             case "x": return histo.fXaxis;
@@ -2131,7 +2131,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
                   // try to find matching object in associated list of painters
                   for (let i=0;i<painters.length;++i)
-                     if (painters[i].matchObjectType(func._typename) && (painters[i].GetObject().fName === func.fName)) {
+                     if (painters[i].matchObjectType(func._typename) && (painters[i].getObject().fName === func.fName)) {
                         funcpainter = painters[i];
                         func_indx = i;
                         break;
@@ -2294,7 +2294,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       let histo = this.GetHisto(), st = JSROOT.gStyle,
           tpainter = this.FindPainterFor(null, "title"),
-          pt = tpainter ? tpainter.GetObject() : null;
+          pt = tpainter ? tpainter.getObject() : null;
 
       if (!pt) pt = this.FindInPrimitives("title");
       if (pt && (pt._typename !== "TPaveText")) pt = null;
@@ -2339,7 +2339,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (arg==="check")
          return (!this.is_main_painter() || this.options.Same) ? null : histo;
 
-      let pt = tpainter.GetObject();
+      let pt = tpainter.getObject();
       pt.Clear();
       pt.AddText(histo.fTitle);
 
@@ -2436,7 +2436,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    /** @summary Find function in histogram list of functions */
    THistPainter.prototype.FindFunction = function(type_name, obj_name) {
-      let histo = this.GetObject(),
+      let histo = this.getObject(),
           funcs = histo && histo.fFunctions ? histo.fFunctions.arr : null;
 
       if (!funcs) return null;
@@ -2453,14 +2453,14 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    THistPainter.prototype.FindStat = function() {
       if (this.options.PadStats) {
          let p = this.FindPainterFor(null,"stats", "TPaveStats");
-         return p ? p.GetObject() : null;
+         return p ? p.getObject() : null;
       }
 
       return this.FindFunction('TPaveStats', 'stats');
    }
 
    THistPainter.prototype.IgnoreStatsFill = function() {
-      return !this.GetObject() || (!this.draw_content && !this.create_stats) || (this.options.Axis > 0);
+      return !this.getObject() || (!this.draw_content && !this.create_stats) || (this.options.Axis > 0);
    }
 
    /** @summary Create stat box for histogram if required */
@@ -2531,7 +2531,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    /** @summary Add function to histogram list of functions */
    THistPainter.prototype.AddFunction = function(obj, asfirst) {
-      let histo = this.GetObject();
+      let histo = this.getObject();
       if (!histo || !obj) return;
 
       if (!histo.fFunctions)
@@ -2871,7 +2871,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       // if not initialized, first create contour array
       // difference from ROOT - fContour includes also last element with maxbin, which makes easier to build logz
-      let histo = this.GetObject(), nlevels = 0,
+      let histo = this.getObject(), nlevels = 0,
           zmin = this.minbin, zmax = this.maxbin, zminpos = this.minposbin,
           custom_levels;
       if (zmin === zmax) { zmin = this.gminbin; zmax = this.gmaxbin; zminpos = this.gminposbin; }
@@ -2952,7 +2952,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (!pal_painter && !pal) {
          pal_painter = this.FindPainterFor(undefined, undefined, "TPaletteAxis");
          if (pal_painter) {
-            pal = pal_painter.GetObject();
+            pal = pal_painter.getObject();
             // add to list of functions
             this.AddFunction(pal, true);
          }
@@ -3230,7 +3230,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    TH1Painter.prototype = Object.create(THistPainter.prototype);
 
    TH1Painter.prototype.ConvertTH1K = function() {
-      let histo = this.GetObject();
+      let histo = this.getObject();
 
       if (histo.fReady) return;
 
@@ -4203,7 +4203,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       menu.add("Auto zoom-in", this.AutoZoom);
 
-      let sett = JSROOT.getDrawSettings("ROOT." + this.GetObject()._typename, 'nosame');
+      let sett = JSROOT.getDrawSettings("ROOT." + this.getObject()._typename, 'nosame');
 
       menu.addDrawMenu("Draw with", sett.opts, function(arg) {
          if (arg==='inspect')
@@ -4465,7 +4465,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          menu.add("Auto zoom-in", this.AutoZoom);
       }
 
-      let sett = JSROOT.getDrawSettings("ROOT." + this.GetObject()._typename, 'nosame');
+      let sett = JSROOT.getDrawSettings("ROOT." + this.getObject()._typename, 'nosame');
 
       menu.addDrawMenu("Draw with", sett.opts, function(arg) {
          if (arg==='inspect')
@@ -4530,7 +4530,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           i2 = this.GetSelectIndex("x", "right", 1),
           j1 = this.GetSelectIndex("y", "left", -1),
           j2 = this.GetSelectIndex("y", "right", 1),
-          i,j, histo = this.GetObject();
+          i,j, histo = this.getObject();
 
       if ((i1 == i2) || (j1 == j2)) return;
 
@@ -4578,7 +4578,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       // no need to rescan histogram while result does not depend from axis selection
       if (when_axis_changed && this.nbinsx && this.nbinsy) return;
 
-      let i, j, histo = this.GetObject();
+      let i, j, histo = this.getObject();
 
       this.ExtractAxesProperties(2);
 
@@ -4867,7 +4867,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    /** @summary Build contour lines */
    TH2Painter.prototype.BuildContour = function(handle, levels, palette, contour_func) {
-      let histo = this.GetObject(),
+      let histo = this.getObject(),
           kMAXCONTOUR = 2004,
           kMAXCOUNT = 2000,
           // arguments used in the PaintContourLine
@@ -5308,7 +5308,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    }
 
    TH2Painter.prototype.DrawPolyBinsColor = function() {
-      let histo = this.GetObject(),
+      let histo = this.getObject(),
           pmain = this.frame_painter(),
           h = this.frame_height(),
           colPaths = [], textbins = [],
@@ -5392,7 +5392,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    }
 
    TH2Painter.prototype.DrawBinsText = function(handle) {
-      let histo = this.GetObject(),
+      let histo = this.getObject(),
           h = this.frame_height(),
           i,j,binz,errz,binw,binh,lbl,lble,posx,posy,sizex,sizey,
           text_col = this.get_color(histo.fMarkerColor),
@@ -5459,7 +5459,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    }
 
    TH2Painter.prototype.DrawBinsArrow = function() {
-      let histo = this.GetObject(), cmd = "",
+      let histo = this.getObject(), cmd = "",
           i,j, dn = 1e-30, dx, dy, xc,yc,
           dxn,dyn,x1,x2,y1,y2, anr,si,co,
           handle = this.PrepareColorDraw({ rounding: false }),
@@ -5526,7 +5526,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    TH2Painter.prototype.DrawBinsBox = function() {
 
-      let histo = this.GetObject(),
+      let histo = this.getObject(),
           handle = this.PrepareColorDraw({ rounding: false }),
           main = this.main_painter();
 
@@ -5752,7 +5752,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    }
 
    TH2Painter.prototype.DrawBinsScatter = function() {
-      let histo = this.GetObject(),
+      let histo = this.getObject(),
           handle = this.PrepareColorDraw({ rounding: true, pixel_density: true }),
           colPaths = [], currx = [], curry = [], cell_w = [], cell_h = [],
           colindx, cmd1, cmd2, i, j, binz, cw, ch, factor = 1.,
@@ -6575,7 +6575,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    THStackPainter.prototype.GetMinMax = function(iserr, pad) {
       let res = { min: 0, max: 0 },
-          stack = this.GetObject();
+          stack = this.getObject();
 
       if (this.options.nostack) {
          for (let i = 0; i < stack.fHists.arr.length; ++i) {
@@ -6613,7 +6613,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    /** @summary Draw next stack histogram */
    THStackPainter.prototype.drawNextHisto = function(indx) {
 
-      let stack = this.GetObject(),
+      let stack = this.getObject(),
           hlst = this.options.nostack ? stack.fHists : stack.fStack,
           nhists = (hlst && hlst.arr) ? hlst.arr.length : 0;
 
@@ -6658,7 +6658,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (!this.options) this.options = {};
       JSROOT.extend(this.options, { ndim: 1, nostack: false, same: false, horder: true, has_errors: false, draw_errors: false, hopt: "" });
 
-      let stack = this.GetObject(),
+      let stack = this.getObject(),
           hist = stack.fHistogram || (stack.fHists ? stack.fHists.arr[0] : null) || (stack.fStack ? stack.fStack.arr[0] : null);
 
       if (hist && (hist._typename.indexOf("TH2")==0)) this.options.ndim = 2;
@@ -6733,7 +6733,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    THStackPainter.prototype.UpdateObject = function(obj) {
       if (!this.matchObjectType(obj)) return false;
 
-      let stack = this.GetObject();
+      let stack = this.getObject();
 
       stack.fHists = obj.fHists;
       stack.fStack = obj.fStack;

@@ -1417,10 +1417,6 @@ JSROOT.define(['d3'], (d3) => {
       delete this._hpainter;
    }
 
-   /** @summary Returns drawn object
-     * @abstract */
-   BasePainter.prototype.GetObject = function() {}
-
    /** @summary Called to update drawn object content
      * @returns {boolean} true if update was performed
      * @abstract */
@@ -1678,7 +1674,7 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /** @summary Returns drawn object */
-   ObjectPainter.prototype.GetObject = function() { return this.draw_object; }
+   ObjectPainter.prototype.getObject = function() { return this.draw_object; }
 
    /** @summary Returns drawn object class name */
    ObjectPainter.prototype.GetClassName = function() { return (this.draw_object ? this.draw_object._typename : "") || ""; }
@@ -1746,7 +1742,7 @@ JSROOT.define(['d3'], (d3) => {
     * @param {object} obj - object with new data */
    ObjectPainter.prototype.UpdateObject = function(obj) {
       if (!this.matchObjectType(obj)) return false;
-      JSROOT.extend(this.GetObject(), obj);
+      JSROOT.extend(this.getObject(), obj);
       return true;
    }
 
@@ -1754,7 +1750,7 @@ JSROOT.define(['d3'], (d3) => {
     * @desc Such string can be used as tooltip. If result string larger than 20 symbols, it will be cutted.
     * @private */
    ObjectPainter.prototype.GetTipName = function(append) {
-      let res = this.getItemName(), obj = this.GetObject();
+      let res = this.getItemName(), obj = this.getObject();
       if (!res) res = obj && obj.fName ? obj.fName : "";
       if (res.lenght > 20) res = res.substr(0, 17) + "...";
       if (res && append) res += append;
@@ -2382,7 +2378,7 @@ JSROOT.define(['d3'], (d3) => {
          .style('right', w);
 
       if (!obj || (typeof obj !== 'object') || !obj._typename)
-         obj = this.GetObject();
+         obj = this.getObject();
 
       JSROOT.draw(id, obj, 'inspect');
    }
@@ -2391,8 +2387,8 @@ JSROOT.define(['d3'], (d3) => {
     * @private */
    ObjectPainter.prototype.FillContextMenu = function(menu) {
       let title = this.GetTipName();
-      if (this.GetObject() && ('_typename' in this.GetObject()))
-         title = this.GetObject()._typename + "::" + title;
+      if (this.getObject() && ('_typename' in this.getObject()))
+         title = this.getObject()._typename + "::" + title;
 
       menu.add("header:" + title);
 
@@ -2453,7 +2449,7 @@ JSROOT.define(['d3'], (d3) => {
    ObjectPainter.prototype.ShowObjectStatus = function() {
       // method called normally when mouse enter main object element
 
-      let obj = this.GetObject(),
+      let obj = this.getObject(),
          status_func = this.GetShowStatusFunc();
 
       if (obj && status_func) status_func(this.getItemName() || obj.fName, obj.fTitle || obj._typename, obj._typename);
@@ -2483,12 +2479,12 @@ JSROOT.define(['d3'], (d3) => {
     * @private */
    ObjectPainter.prototype.FindPainterFor = function(selobj, selname, seltype) {
 
-      let painter = this.pad_painter();
-      let painters = painter ? painter.painters : null;
+      let pp = this.pad_painter();
+      let painters = pp ? pp.painters : null;
       if (!painters) return null;
 
       for (let n = 0; n < painters.length; ++n) {
-         let pobj = painters[n].GetObject();
+         let pobj = painters[n].getObject();
          if (!pobj) continue;
 
          if (selobj && (pobj === selobj)) return painters[n];

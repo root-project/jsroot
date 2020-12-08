@@ -9,7 +9,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    /** @summary Evaluate attributes using fAttr storage and configured RStyle */
    JSROOT.ObjectPainter.prototype.v7EvalAttr = function(name, dflt) {
-      let obj = this.GetObject();
+      let obj = this.getObject();
       if (!obj) return dflt;
       if (this.cssprefix) name = this.cssprefix + name;
 
@@ -53,7 +53,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    /** @summary Set attributes value */
    JSROOT.ObjectPainter.prototype.v7SetAttr = function(name, value) {
-      let obj = this.GetObject();
+      let obj = this.getObject();
       if (this.cssprefix) name = this.cssprefix + name;
 
       if (obj && obj.fAttr && obj.fAttr.m)
@@ -342,7 +342,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
 
    function RAxisPainter(arg1, axis, cssprefix) {
-      let drawable = cssprefix ? arg1.GetObject() : arg1;
+      let drawable = cssprefix ? arg1.getObject() : arg1;
       this.axis = axis;
       JSROOT.AxisBasePainter.call(this, drawable);
       if (cssprefix) { // drawing from the frame
@@ -513,7 +513,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if (pair.second === indx) return pair.first;
          }
       } else {
-         let labels = this.GetObject().fLabels;
+         let labels = this.getObject().fLabels;
          if (labels && (indx>=0) && (indx < labels.length))
             return labels[indx];
       }
@@ -1250,7 +1250,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Redraw axis, used in standalone mode for RAxisDrawable */
    RAxisPainter.prototype.Redraw = function() {
 
-      let drawable = this.GetObject(),
+      let drawable = this.getObject(),
           pp   = this.pad_painter(),
           pos  = pp.GetCoordinate(drawable.fPos),
           len  = pp.GetPadLength(drawable.fVertical, drawable.fLength),
@@ -1325,7 +1325,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    RAxisPainter.prototype.PositionChanged = function() {
       let axis_x = parseInt(this.draw_g.attr("x")),
           axis_y = parseInt(this.draw_g.attr("y")),
-          drawable = this.GetObject(),
+          drawable = this.getObject(),
           xn = axis_x / this.pad_width(),
           yn = 1 - axis_y / this.pad_height();
 
@@ -2695,7 +2695,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (pad_enlarged === this.pad)
             pad_visible = true;
          else
-            this.forEachPainterInPad(pp => { if (pp.GetObject() == pad_enlarged) pad_visible = true; }, "pads");
+            this.forEachPainterInPad(pp => { if (pp.getObject() == pad_enlarged) pad_visible = true; }, "pads");
 
          if (pad_visible) { w = width; h = height; x = y = 0; }
       }
@@ -3546,7 +3546,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                let shown = [];
                for (let n=0;n<this.painters.length;++n) {
                   let pp = this.painters[n];
-                  let obj = pp ? pp.GetObject() : null;
+                  let obj = pp ? pp.getObject() : null;
                   if (!obj || (shown.indexOf(obj)>=0)) continue;
 
                   let name = ('_typename' in obj) ? (obj._typename + "::") : "";
@@ -3652,7 +3652,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    RPadPainter.prototype.DecodeOptions = function(opt) {
-      let pad = this.GetObject();
+      let pad = this.getObject();
       if (!pad) return;
 
       let d = new JSROOT.DrawOptions(opt);
@@ -4373,7 +4373,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           fw           = this.frame_width(),
           // fh           = this.frame_height(),
           ph           = this.pad_height(),
-          title        = this.GetObject(),
+          title        = this.getObject(),
           title_margin = this.v7EvalLength("margin", ph, 0.02),
           title_width  = fw,
           title_height = this.v7EvalLength("height", ph, 0.05),
@@ -4552,7 +4552,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    RPalettePainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
 
    RPalettePainter.prototype.GetPalette = function() {
-      let drawable = this.GetObject();
+      let drawable = this.getObject();
       let pal = drawable ? drawable.fPalette : null;
 
       if (pal && !pal.getColor)
