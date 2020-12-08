@@ -1134,7 +1134,7 @@ JSROOT.define(['d3'], (d3) => {
      * kind should contain "bezier" or "line".
      * If first symbol "L", then it used to continue drawing
      * @private */
-   jsrp.BuildSvgPath = function(kind, bins, height, ndig) {
+   jsrp.buildSvgPath = function(kind, bins, height, ndig) {
 
       let smooth = kind.indexOf("bezier") >= 0;
 
@@ -1317,21 +1317,64 @@ JSROOT.define(['d3'], (d3) => {
     */
 
    function BasePainter() {
-      this.divid = null; // either id of element (preferable) or element itself
+      this.divid = null; // either id of DOM element or element itself
    }
 
-   /** @summary Access painter reference, stored in first child element.
-    *  @desc
-    *    - on === true - set *this* as painter
-    *    - on === false - delete painter reference
-    *    - on === undefined - return painter
-    * @param {boolean} on - that to perfrom */
-   BasePainter.prototype.accessTopPainter = function(on) {
-      let main = this.selectDom().node(),
-         chld = main ? main.firstChild : null;
+   /** @summary Assign painter to specified DOM element
+     * @param {string|object} elem - element ID or DOM Element */
+   BasePainter.prototype.setDom = function(elem) {
+      if (elem !== undefined) {
+         this.divid = elem;
+         delete this._selected_main;
+      }
+   }
+
+   /** @summary Returns assigned dom element */
+   BasePainter.prototype.getDom = function() {
+      return this.divid;
+   }
+
+   /** @summary selects main HTML element used for drawing - typically <div> element
+     * @desc if main element was layouted, returns main element inside layout
+     * @param {string} is_direct - if 'origin' specified, returns original element even if actual drawing moved to some other place
+     * @returns {object} d3.select object for main element for drawing */
+   BasePainter.prototype.selectDom = function(is_direct) {
+
+      if (!this.divid) return d3.select(null);
+
+      let res = this._selected_main;
+      if (!res) {
+         if (typeof this.divid == "string") {
+            let id = this.divid;
+            if (id[0] != '#') id = "#" + id;
+            res = d3.select(id);
+            if (!res.empty()) this.divid = res.node();
+         } else {
+            res = d3.select(this.divid);
+         }
+         this._selected_main = res;
+      }
+
+      if (!res || res.empty() || (is_direct === 'origin')) return res;
+
+      let use_enlarge = res.property('use_enlarge'),
+         layout = res.property('layout') || 'simple',
+         layout_selector = (layout == 'simple') ? "" : res.property('layout_selector');
+
+      if (layout_selector) res = res.select(layout_selector);
+
+      // one could redirect here
+      if (!is_direct && !res.empty() && use_enlarge) res = d3.select("#jsroot_enlarge_div");
+
+      return res;
+   }
+
+   function _accessTopPainter(painter, on) {
+      let main = painter.selectDom().node(),
+          chld = main ? main.firstChild : null;
       if (!chld) return null;
       if (on === true) {
-         chld.painter = this;
+         chld.painter = painter;
       } else if (on === false)
          delete chld.painter;
       return chld.painter;
@@ -1340,7 +1383,17 @@ JSROOT.define(['d3'], (d3) => {
    /** @summary Set painter, stored in first child element
      * @desc Can only be done when first draing ic completed */
    BasePainter.prototype.setTopPainter = function() {
-      return this.accessTopPainter(true);
+      _accessTopPainter(this, true);
+   }
+
+   /** @summary Return top painter set for the selected dom element */
+   BasePainter.prototype.getTopPainter = function() {
+      return _accessTopPainter(this);
+   }
+
+   /** @summary Clear reference on top painter */
+   BasePainter.prototype.clearTopPainter = function() {
+      _accessTopPainter(this, false);
    }
 
    /** @summary Generic method to cleanup painter */
@@ -1349,7 +1402,7 @@ JSROOT.define(['d3'], (d3) => {
       if (!origin.empty() && !keep_origin) origin.html("");
       if (this._changed_layout)
          this.setLayoutKind('simple');
-      this.accessTopPainter(false);
+      this.clearTopPainter();
       this.divid = null;
       delete this._selected_main;
 
@@ -1399,55 +1452,6 @@ JSROOT.define(['d3'], (d3) => {
      * @abstract */
    BasePainter.prototype.checkResize = function(/* arg */) {}
 
-
-   /** @summary Assign painter to specified DOM element
-     * @param {string|object} elem - element ID or DOM Element */
-   BasePainter.prototype.setDom = function(elem) {
-      if (elem !== undefined) {
-         this.divid = elem;
-         delete this._selected_main;
-      }
-   }
-
-   /** @summary Returns assigned dom element */
-   BasePainter.prototype.getDom = function() {
-      return this.divid;
-   }
-
-   /** @summary selects main HTML element used for drawing - typically <div> element
-     * @desc if main element was layouted, returns main element inside layout
-     * @param {string} is_direct - if 'origin' specified, returns original element even if actual drawing moved to some other place
-     * @returns {object} d3.select for main element for drawing */
-   BasePainter.prototype.selectDom = function(is_direct) {
-
-      if (!this.divid) return d3.select(null);
-
-      let res = this._selected_main;
-      if (!res) {
-         if (typeof this.divid == "string") {
-            let id = this.divid;
-            if (id[0] != '#') id = "#" + id;
-            res = d3.select(id);
-            if (!res.empty()) this.divid = res.node();
-         } else {
-            res = d3.select(this.divid);
-         }
-         this._selected_main = res;
-      }
-
-      if (!res || res.empty() || (is_direct === 'origin')) return res;
-
-      let use_enlarge = res.property('use_enlarge'),
-         layout = res.property('layout') || 'simple',
-         layout_selector = (layout == 'simple') ? "" : res.property('layout_selector');
-
-      if (layout_selector) res = res.select(layout_selector);
-
-      // one could redirect here
-      if (!is_direct && !res.empty() && use_enlarge) res = d3.select("#jsroot_enlarge_div");
-
-      return res;
-   }
 
    /** @summary Returns layout kind */
    BasePainter.prototype.getLayoutKind = function() {
@@ -2128,7 +2132,7 @@ JSROOT.define(['d3'], (d3) => {
       if (!res) {
          let svg_p = this.svg_pad();
          if (svg_p.empty()) {
-            res = this.accessTopPainter();
+            res = this.getTopPainter();
          } else {
             res = svg_p.property('mainpainter');
          }
@@ -2286,7 +2290,7 @@ JSROOT.define(['d3'], (d3) => {
       if (pp) {
          pp.forEachPainterInPad(userfunc, kind);
       } else {
-         let painter = this.accessTopPainter();
+         let painter = this.getTopPainter();
          if (painter && (kind !== "pads")) userfunc(painter);
       }
    }

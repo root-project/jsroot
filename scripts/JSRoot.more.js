@@ -710,7 +710,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
             if ((h0 > h) || (h0 < 0)) h0 = h;
          }
 
-         let path = jsrp.BuildSvgPath("bezier", this.bins, h0, 2);
+         let path = jsrp.buildSvgPath("bezier", this.bins, h0, 2);
 
          if (this.lineatt.color != "none")
             this.draw_g.append("svg:path")
@@ -1137,7 +1137,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
             bin.gry = pmain.gry(bin.y - bin.eylow);
          }
 
-         let path1 = jsrp.BuildSvgPath((this.options.EF > 1) ? "bezier" : "line", drawbins),
+         let path1 = jsrp.buildSvgPath((this.options.EF > 1) ? "bezier" : "line", drawbins),
              bins2 = [];
 
          for (let n=drawbins.length-1;n>=0;--n) {
@@ -1147,7 +1147,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          }
 
          // build upper part (in reverse direction)
-         let path2 = jsrp.BuildSvgPath((this.options.EF > 1) ? "Lbezier" : "Lline", bins2);
+         let path2 = jsrp.buildSvgPath((this.options.EF > 1) ? "Lbezier" : "Lline", bins2);
 
          this.draw_g.append("svg:path")
                     .attr("d", path1.path + path2.path + "Z")
@@ -1178,7 +1178,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          if (this.options.Curve === 1) kind = "bezier"; else
          if (excl_width!==0) kind+="calc"; // we need to calculated deltas to build exclusion points
 
-         let path = jsrp.BuildSvgPath(kind, drawbins);
+         let path = jsrp.buildSvgPath(kind, drawbins);
 
          if (excl_width!==0) {
             let extrabins = [];
@@ -1191,7 +1191,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
                extrabins.push(bin);
             }
 
-            let path2 = jsrp.BuildSvgPath("L" + ((this.options.Curve === 1) ? "bezier" : "line"), extrabins);
+            let path2 = jsrp.buildSvgPath("L" + ((this.options.Curve === 1) ? "bezier" : "line"), extrabins);
 
             this.draw_g.append("svg:path")
                        .attr("d", path.path + path2.path + "Z")
@@ -2408,7 +2408,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       if (this.options.curve && bins.length)
          this.draw_g.append("svg:path")
-                 .attr("d", jsrp.BuildSvgPath("bezier", bins).path)
+                 .attr("d", jsrp.buildSvgPath("bezier", bins).path)
                  .style("fill", "none")
                  .call(this.lineatt.func);
 
@@ -2757,7 +2757,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
             if ((h0 > h) || (h0 < 0)) h0 = h;
          }
 
-         let path = jsrp.BuildSvgPath("bezier", bins, h0, 2);
+         let path = jsrp.buildSvgPath("bezier", bins, h0, 2);
 
          this.draw_g.append("svg:path")
              .attr("class", "line")

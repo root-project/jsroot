@@ -3619,8 +3619,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       }
 
       let kind = (this.options.ErrorKind === 4) ? "bezier" : "line",
-          path1 = jsrp.BuildSvgPath(kind, bins1),
-          path2 = jsrp.BuildSvgPath("L"+kind, bins2);
+          path1 = jsrp.buildSvgPath(kind, bins1),
+          path2 = jsrp.buildSvgPath("L"+kind, bins2);
 
       this.draw_g.append("svg:path")
                  .attr("d", path1.path + path2.path + "Z")
