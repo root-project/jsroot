@@ -1845,9 +1845,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
           main.find(".treedraw_clear").button().click(() => JSROOT.cleanup(this.drawid));
       }
 
-      player.Show = function(divid, args) {
-
-         this.setDom(divid); // base painter
+      player.Show = function(args) {
 
          let main = $(this.selectDom().node());
 
@@ -1873,7 +1871,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
 
          if (this.local_tree)
             main.find('.treedraw_buttons').attr('title', "Tree draw player for: " + this.local_tree.fName);
-         main.find('.treedraw_exe').button().click(function() { p.PerformDraw(); });
+         main.find('.treedraw_exe').button().click(() => p.PerformDraw());
          main.find('.treedraw_varexp')
               .val(args && args.parse_expr ? args.parse_expr : (this.dflt_expr || "px:py"))
               .keyup(this.keyup);
@@ -2030,7 +2028,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
 
       JSROOT.createTreePlayer(player);
       player.ConfigureOnline(itemname, url, askey, root_version, draw_expr);
-      player.Show(divid);
+      player.Show();
 
       return player;
    }

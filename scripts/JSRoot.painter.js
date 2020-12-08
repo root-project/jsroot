@@ -1319,7 +1319,7 @@ JSROOT.define(['d3'], (d3) => {
 
    function BasePainter(divid) {
       this.divid = null; // either id of DOM element or element itself
-      if (divid !== undefined) this.setDom(divid);
+      if (divid) this.setDom(divid);
    }
 
    /** @summary Assign painter to specified DOM element

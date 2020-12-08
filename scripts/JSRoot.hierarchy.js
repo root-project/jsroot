@@ -755,14 +755,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
      */
 
    function HierarchyPainter(name, frameid, backgr) {
-      JSROOT.BasePainter.call(this);
+      JSROOT.BasePainter.call(this, frameid);
       this.name = name;
       this.h = null; // hierarchy
       this.with_icons = true;
       this.background = backgr;
       this.files_monitoring = !frameid; // by default files monitored when nobrowser option specified
       this.nobrowser = (frameid === null);
-      if (!this.nobrowser) this.setDom(frameid); // this is required to be able cleanup painter
 
       // remember only very first instance
       if (!JSROOT.hpainter)

@@ -2814,6 +2814,8 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
       let painter = new JSROOT.ObjectPainter(obj),
           tree = obj, args = opt;
 
+      painter.setCanvDom(divid);
+
       if (obj._typename == "TBranchFunc") {
          // fictional object, created only in browser
          args = { expr: "." + obj.func + "()", branch: obj.branch };
@@ -2847,7 +2849,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
             return JSROOT.require("jq2d").then(() => {
                JSROOT.createTreePlayer(painter);
                painter.configureTree(tree);
-               painter.Show(divid);
+               painter.Show();
                return painter;
             });
          }
@@ -2885,7 +2887,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
          return JSROOT.require("jq2d").then(() => {
             JSROOT.createTreePlayer(painter);
             painter.configureTree(tree);
-            painter.Show(divid, args);
+            painter.Show(args);
             create_player = 2;
             return JSROOT.redraw(painter.drawid, obj).then(objpainter => {
                painter.SetItemName("TreePlayer"); // item name used by MDI when process resize
