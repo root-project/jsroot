@@ -3379,7 +3379,7 @@ JSROOT.define(['d3'], (d3) => {
     * @private */
    JSROOT.registerForResize = function(handle, delay) {
 
-      if (!handle || JSROOT.BatchMode) return;
+      if (!handle || JSROOT.BatchMode || (typeof window == 'undefined')) return;
 
       let myInterval = null, myDelay = delay ? delay : 300;
 
@@ -3389,19 +3389,21 @@ JSROOT.define(['d3'], (d3) => {
          myInterval = null;
 
          document.body.style.cursor = 'wait';
-         if (typeof handle == 'function') handle(); else
-            if ((typeof handle == 'object') && (typeof handle.checkResize == 'function')) handle.checkResize(); else
-               if (typeof handle == 'string') {
-                  let node = d3.select('#' + handle);
-                  if (!node.empty()) {
-                     let mdi = node.property('mdi');
-                     if (mdi) {
-                        mdi.checkMDIResize();
-                     } else {
-                        JSROOT.resize(node.node());
-                     }
-                  }
+         if (typeof handle == 'function')
+            handle();
+         else if ((typeof handle == 'object') && (typeof handle.checkResize == 'function'))
+            handle.checkResize();
+        else if (typeof handle == 'string') {
+            let node = d3.select('#' + handle);
+            if (!node.empty()) {
+               let mdi = node.property('mdi');
+               if (mdi && typeof mdi.checkMDIResize == 'function') {
+                  mdi.checkMDIResize();
+               } else {
+                  JSROOT.resize(node.node());
                }
+            }
+         }
          document.body.style.cursor = 'auto';
       }
 
