@@ -3394,8 +3394,10 @@ JSROOT.define(['d3'], (d3) => {
             handle();
          else if (handle && (typeof handle == 'object') && (typeof handle.checkResize == 'function')) {
             handle.checkResize();
-        } else if (typeof handle == 'string') {
-            let node = d3.select('#' + handle);
+         } else {
+            let dummy = new BasePainter();
+            dummy.setDom(handle);
+            let node = dummy.selectDom();
             if (!node.empty()) {
                let mdi = node.property('mdi');
                if (mdi && typeof mdi.checkMDIResize == 'function') {
