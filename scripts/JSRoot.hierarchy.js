@@ -1196,7 +1196,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       function complete(respainter) {
          if (!updating) JSROOT.progress();
-
          if (respainter && (typeof respainter === 'object') && (typeof respainter.SetItemName === 'function')) {
             respainter.SetItemName(display_itemname, updating ? null : drawopt, h); // mark painter as created from hierarchy
             if (item && !item._painter) item._painter = respainter;
@@ -2805,8 +2804,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       getActiveFrame() { return this.findFrame(this.active_frame_title); }
 
+      /** @summary perform resize for each frame */
       checkMDIResize(only_frame_id, size) {
-         // perform resize for each frame
+
          let resized_frame = null;
 
          this.forEachPainter((painter, frame) => {

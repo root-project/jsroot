@@ -1594,8 +1594,10 @@ JSROOT.define(['d3'], (d3) => {
      * @desc Used by {@link JSROOT.HiearchyPainter}
      * @private */
    BasePainter.prototype.SetItemName = function(name, opt, hpainter) {
-      if (typeof name === 'string') this._hitemname = name;
-      else delete this._hitemname;
+      if (typeof name === 'string')
+         this._hitemname = name;
+      else
+         delete this._hitemname;
       // only upate draw option, never delete. null specified when update drawing
       if (typeof opt === 'string') this._hdrawopt = opt;
 
@@ -2162,6 +2164,7 @@ JSROOT.define(['d3'], (d3) => {
 
       if (pp.painters.indexOf(this) < 0)
          pp.painters.push(this);
+
       if (!this.rstyle && pp.next_rstyle)
          this.rstyle = pp.next_rstyle;
 
@@ -2281,16 +2284,14 @@ JSROOT.define(['d3'], (d3) => {
      * @desc Iterate over all known painters
     * @private */
    ObjectPainter.prototype.forEachPainter = function(userfunc, kind) {
-      // special case of the painter set as pointer of first child of main element
-      let painter = this.accessTopPainter();
-      if (painter) {
-         if (kind !== "pads") userfunc(painter);
-         return;
-      }
-
       // iterate over all painters from pad list
       let pp = this.pad_painter();
-      if (pp) pp.forEachPainterInPad(userfunc, kind);
+      if (pp) {
+         pp.forEachPainterInPad(userfunc, kind);
+      } else {
+         let painter = this.accessTopPainter();
+         if (painter && (kind !== "pads")) userfunc(painter);
+      }
    }
 
    /** @summary indicate that redraw was invoked via interactive action (like context menu or zooming)
@@ -3391,9 +3392,9 @@ JSROOT.define(['d3'], (d3) => {
          document.body.style.cursor = 'wait';
          if (typeof handle == 'function')
             handle();
-         else if ((typeof handle == 'object') && (typeof handle.checkResize == 'function'))
+         else if (handle && (typeof handle == 'object') && (typeof handle.checkResize == 'function')) {
             handle.checkResize();
-        else if (typeof handle == 'string') {
+        } else if (typeof handle == 'string') {
             let node = d3.select('#' + handle);
             if (!node.empty()) {
                let mdi = node.property('mdi');
