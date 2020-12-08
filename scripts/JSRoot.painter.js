@@ -1327,7 +1327,7 @@ JSROOT.define(['d3'], (d3) => {
     *    - on === undefined - return painter
     * @param {boolean} on - that to perfrom */
    BasePainter.prototype.accessTopPainter = function(on) {
-      let main = this.select_main().node(),
+      let main = this.selectDom().node(),
          chld = main ? main.firstChild : null;
       if (!chld) return null;
       if (on === true) {
@@ -1345,8 +1345,7 @@ JSROOT.define(['d3'], (d3) => {
 
    /** @summary Generic method to cleanup painter */
    BasePainter.prototype.Cleanup = function(keep_origin) {
-
-      let origin = this.select_main('origin');
+      let origin = this.selectDom('origin');
       if (!origin.empty() && !keep_origin) origin.html("");
       if (this._changed_layout)
          this.setLayoutKind('simple');
@@ -1450,11 +1449,9 @@ JSROOT.define(['d3'], (d3) => {
       return res;
    }
 
-   BasePainter.prototype.select_main = BasePainter.prototype.selectDom;
-
    /** @summary Returns layout kind */
    BasePainter.prototype.getLayoutKind = function() {
-      let origin = this.select_main('origin'),
+      let origin = this.selectDom('origin'),
          layout = origin.empty() ? "" : origin.property('layout');
 
       return layout || 'simple';
@@ -1462,7 +1459,7 @@ JSROOT.define(['d3'], (d3) => {
 
    /** @summary Set layout kind */
    BasePainter.prototype.setLayoutKind = function(kind, main_selector) {
-      let origin = this.select_main('origin');
+      let origin = this.selectDom('origin');
       if (!origin.empty()) {
          if (!kind) kind = 'simple';
          origin.property('layout', kind);
@@ -1477,8 +1474,8 @@ JSROOT.define(['d3'], (d3) => {
    BasePainter.prototype.testMainResize = function(check_level, new_size, height_factor) {
 
       let enlarge = this.enlargeMain('state'),
-         main_origin = this.select_main('origin'),
-         main = this.select_main(),
+         main_origin = this.selectDom('origin'),
+         main = this.selectDom(),
          lmt = 5; // minimal size
 
       if (enlarge !== 'on') {
@@ -1534,8 +1531,8 @@ JSROOT.define(['d3'], (d3) => {
      * if action not specified, just return possibility to enlarge main div */
    BasePainter.prototype.enlargeMain = function(action, skip_warning) {
 
-      let main = this.select_main(true),
-         origin = this.select_main('origin');
+      let main = this.selectDom(true),
+         origin = this.selectDom('origin');
 
       if (main.empty() || !JSROOT.settings.CanEnlarge || (origin.property('can_enlarge') === false)) return false;
 
@@ -1703,7 +1700,7 @@ JSROOT.define(['d3'], (d3) => {
       if (this.no_default_title || (name == "")) return;
       let can = this.svg_canvas();
       if (!can.empty()) can.select("title").text(name);
-                   else this.select_main().attr("title", name);
+                   else this.selectDom().attr("title", name);
    }
 
    /** @summary Store actual options together with original string
@@ -1910,7 +1907,7 @@ JSROOT.define(['d3'], (d3) => {
 
    /** @summary This is main graphical SVG element, where all drawings are performed
     * @private */
-   ObjectPainter.prototype.svg_canvas = function() { return this.select_main().select(".root_canvas"); }
+   ObjectPainter.prototype.svg_canvas = function() { return this.selectDom().select(".root_canvas"); }
 
    /** @summary This is SVG element, correspondent to current pad
     * @private */
@@ -2368,7 +2365,7 @@ JSROOT.define(['d3'], (d3) => {
 
    /** @summary Show object in inspector for provided object */
    ObjectPainter.prototype.showInspector = function(obj) {
-      let main = this.select_main(),
+      let main = this.selectDom(),
          rect = jsrp.getElementRect(main),
          w = Math.round(rect.width * 0.05) + "px",
          h = Math.round(rect.height * 0.05) + "px",
@@ -3328,7 +3325,7 @@ JSROOT.define(['d3'], (d3) => {
    // ================= painter of raw text ========================================
 
    /** @summary Generic text drawing
-    * @private */
+     * @private */
    jsrp.drawRawText = function(divid, txt /*, opt*/) {
 
       let painter = new BasePainter();
@@ -3353,7 +3350,7 @@ JSROOT.define(['d3'], (d3) => {
                txt += "<pre style='margin:0'>" + arr[i] + "</pre>";
          }
 
-         let frame = this.select_main(),
+         let frame = this.selectDom(),
             main = frame.select("div");
          if (main.empty())
             main = frame.append("div").style('max-width', '100%').style('max-height', '100%').style('overflow', 'auto');
@@ -3372,12 +3369,12 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /** @summary Register handle to react on window resize
-    * @desc function used to react on browser window resize event
-    * While many resize events could come in short time,
-    * resize will be handled with delay after last resize event
-    * handle can be function or object with checkResize function
-    * one could specify delay after which resize event will be handled
-    * @private */
+     * @desc function used to react on browser window resize event
+     * While many resize events could come in short time,
+     * resize will be handled with delay after last resize event
+     * handle can be function or object with checkResize function
+     * one could specify delay after which resize event will be handled
+     * @private */
    JSROOT.registerForResize = function(handle, delay) {
 
       if (!handle || JSROOT.BatchMode || (typeof window == 'undefined')) return;
@@ -3524,16 +3521,16 @@ JSROOT.define(['d3'], (d3) => {
 
 
    /** @summary Register draw function for the class
-    * @desc List of supported draw options could be provided, separated  with ';'
-    * @param {object} args - arguments
-    * @param {string|regexp} args.name - class name or regexp pattern
-    * @param {string} [args.prereq] - prerequicities to load before search for the draw function
-    * @param {string} args.func - name of draw function for the class or just a function
-    * @param {boolean} [args.direct=false] - if true, function is just Redraw() method of ObjectPainter
-    * @param {string} [args.opt] - list of supported draw options (separated with semicolon) like "col;scat;"
-    * @param {string} [args.icon] - icon name shown for the class in hierarchy browser
-    * @param {string} [args.draw_field] - draw only data member from object, like fHistogram
-    * @private */
+     * @desc List of supported draw options could be provided, separated  with ';'
+     * @param {object} args - arguments
+     * @param {string|regexp} args.name - class name or regexp pattern
+     * @param {string} [args.prereq] - prerequicities to load before search for the draw function
+     * @param {string} args.func - draw function name or just a function
+     * @param {boolean} [args.direct] - if true, function is just Redraw() method of ObjectPainter
+     * @param {string} [args.opt] - list of supported draw options (separated with semicolon) like "col;scat;"
+     * @param {string} [args.icon] - icon name shown for the class in hierarchy browser
+     * @param {string} [args.draw_field] - draw only data member from object, like fHistogram
+     * @private */
    JSROOT.addDrawFunc = function(args) {
       drawFuncs.lst.push(args);
       return args;
@@ -3683,7 +3680,7 @@ JSROOT.define(['d3'], (d3) => {
       return res;
    }
 
-   /** Returns array with supported draw options for the specified kind
+   /** @summary Returns array with supported draw options for the specified kind
     * @private */
    JSROOT.getDrawOptions = function(kind /*, selector*/) {
       return JSROOT.getDrawSettings(kind).opts;
@@ -4012,11 +4009,9 @@ JSROOT.define(['d3'], (d3) => {
    JSROOT.cleanup = function(divid) {
       let dummy = new ObjectPainter(), lst = [];
       dummy.setCanvDom(divid, "");
-      dummy.forEachPainter(painter => {
-         if (lst.indexOf(painter) < 0) lst.push(painter);
-      });
-      for (let n = 0; n < lst.length; ++n) lst[n].Cleanup();
-      dummy.select_main().html("");
+      dummy.forEachPainter(p => { if (lst.indexOf(p) < 0) lst.push(p); });
+      lst.forEach(p => p.Cleanup());
+      dummy.selectDom().html("");
       return lst;
    }
 

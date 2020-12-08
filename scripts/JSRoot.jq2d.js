@@ -616,7 +616,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
       if (!this.divid)
          return Promise.resolve(this);
 
-      let d3elem = this.select_main();
+      let d3elem = this.selectDom();
 
       d3elem.html("")
             .style('overflow','hidden') // clear html - most simple way
@@ -706,9 +706,9 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          d3cont = d3.select(hitem._d3cont ? hitem._d3cont : null);
          let name = this.itemFullName(hitem);
          if (d3cont.empty())
-            d3cont = this.select_main().select("[item='" + name + "']");
+            d3cont = this.selectDom().select("[item='" + name + "']");
          if (d3cont.empty() && ('_cycle' in hitem))
-            d3cont = this.select_main().select("[item='" + name + ";" + hitem._cycle + "']");
+            d3cont = this.selectDom().select("[item='" + name + ";" + hitem._cycle + "']");
          if (d3cont.empty()) return;
       }
 
@@ -1827,7 +1827,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
       }
 
       player.ShowExtraButtons = function(args) {
-         let main = $(this.select_main().node());
+         let main = $(this.selectDom().node());
 
           main.find(".treedraw_buttons")
              .append(" Cut: <input class='treedraw_cut ui-corner-all ui-widget' style='width:8em;margin-left:5px' title='cut expression'></input>"+
@@ -1849,7 +1849,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
 
          this.setDom(divid); // base painter
 
-         let main = $(this.select_main().node());
+         let main = $(this.selectDom().node());
 
          this.drawid = "jsroot_tree_player_" + JSROOT._.id_counter++ + "_draw";
 
@@ -1893,7 +1893,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
       player.PerformLocalDraw = function() {
          if (!this.local_tree) return;
 
-         let frame = $(this.select_main().node()),
+         let frame = $(this.selectDom().node()),
              args = { expr: frame.find('.treedraw_varexp').val() };
 
          if (frame.find('.treedraw_more').length==0) {
@@ -1924,7 +1924,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
 
          if (this.local_tree) return this.PerformLocalDraw();
 
-         let frame = $(this.select_main().node()),
+         let frame = $(this.selectDom().node()),
              url = this.url + '/exe.json.gz?compact=3&method=Draw',
              expr = frame.find('.treedraw_varexp').val(),
              hname = "h_tree_draw", option = "",
@@ -1974,7 +1974,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
       }
 
       player.checkResize = function(/*arg*/) {
-         let main = $(this.select_main().node());
+         let main = $(this.selectDom().node());
 
          $("#" + this.drawid).width(main.width());
          let h = main.height(),

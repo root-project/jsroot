@@ -61,11 +61,11 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
       if (pad.empty()) {
          // this is a case when object drawn without canvas
 
-         let rect = jsrp.getElementRect(this.select_main());
+         let rect = jsrp.getElementRect(this.selectDom());
 
          if ((rect.height < 10) && (rect.width > 10)) {
             rect.height = Math.round(0.66 * rect.width);
-            this.select_main().style('height', rect.height + "px");
+            this.selectDom().style('height', rect.height + "px");
          }
          rect.x = 0; rect.y = 0; rect.clname = clname; rect.can3d = -1;
          return rect;
@@ -116,7 +116,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
       let can3d = this.access_3d_kind(null);
       if (can3d < 0) {
          // remove first child from main element - if it is canvas
-         let main = this.select_main().node();
+         let main = this.selectDom().node();
          if (main && main.firstChild && main.firstChild.$jsroot) {
             delete main.firstChild.painter;
             main.removeChild(main.firstChild);
@@ -148,7 +148,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
       if (size.can3d === -1) {
          // case when 3D object drawn without canvas
 
-         let main = this.select_main().node();
+         let main = this.selectDom().node();
          if (main !== null) {
             main.appendChild(canv);
             canv.painter = this;
@@ -640,7 +640,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
          control.update();
       }
 
-      control.tooltip = new jsrp.TooltipFor3D(painter.select_main().node(), renderer.domElement);
+      control.tooltip = new jsrp.TooltipFor3D(painter.selectDom().node(), renderer.domElement);
 
       control.painter = painter;
       control.camera = camera;
@@ -879,7 +879,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
 
          this.cursor_changed = false;
          if (tip && this.painter && this.painter.IsTooltipAllowed()) {
-            this.tooltip.check_parent(this.painter.select_main().node());
+            this.tooltip.check_parent(this.painter.selectDom().node());
 
             this.tooltip.show(tip, mouse);
             this.tooltip.pos(this.tmout_ttpos);

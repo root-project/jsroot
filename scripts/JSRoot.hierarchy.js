@@ -2245,7 +2245,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          // cleanup all monitoring loops
          this.enableMonitoring(false);
          // simplify work for javascript and delete all (ok, most of) cross-references
-         this.select_main().html("");
+         this.selectDom().html("");
          plainarr.forEach(d => { delete d._parent; delete d._childs; delete d._obj; delete d._d3cont; });
          delete this.h;
       }
@@ -2707,7 +2707,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       painter._streamer_info = true;
       painter.h = createStreamerInfoContent(lst);
 
-      // painter.select_main().style('overflow','auto');
+      // painter.selectDom().style('overflow','auto');
 
       return painter.refreshHtml().then(() => {
          painter.setTopPainter();
@@ -2726,7 +2726,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       // in batch mode HTML drawing is not possible, just keep object reference for a minute
       if (JSROOT.BatchMode) {
-         painter.select_main().property("_json_object_", obj);
+         painter.selectDom().property("_json_object_", obj);
          return Promise.resolve(painter);
       }
 
@@ -2734,9 +2734,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       painter.with_icons = false;
       painter._inspector = true; // keep
 
-      if (painter.select_main().classed("jsroot_inspector"))
+      if (painter.selectDom().classed("jsroot_inspector"))
          painter.removeInspector = function() {
-            this.select_main().remove();
+            this.selectDom().remove();
          }
 
       painter.fill_context = function(menu, hitem) {
@@ -2746,7 +2746,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                if (!hitem || !hitem._obj) return;
                let obj = hitem._obj, divid = this.divid;
                if (this.removeInspector) {
-                  divid = this.select_main().node().parentNode;
+                  divid = this.selectDom().node().parentNode;
                   this.removeInspector();
                   if (arg == "inspect")
                      return this.showInspector(obj);
@@ -2780,7 +2780,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.frameid = frameid;
          if (frameid != "$batch$") {
             this.setDom(frameid);
-            this.select_main().property('mdi', this);
+            this.selectDom().property('mdi', this);
          }
          this.cleanupFrame = JSROOT.cleanup; // use standard cleanup function by default
          this.active_frame_title = ""; // keep title of active frame
@@ -2851,7 +2851,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          this.forEachFrame(this.cleanupFrame);
 
-         this.select_main().html("").property('mdi', null);
+         this.selectDom().html("").property('mdi', null);
       }
 
    } // class MDIDisplay
@@ -2945,7 +2945,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.use_separarators = !kind || (kind.indexOf("x")<0);
          this.simple_layout = false;
 
-         this.select_main().style('overflow','hidden');
+         this.selectDom().style('overflow','hidden');
 
          if (kind === "simple") {
             this.simple_layout = true;
@@ -3027,7 +3027,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (sizes && (sizes.length!==num)) sizes = undefined;
 
          if (!this.simple_layout)
-            this.createGroup(this, this.select_main(), num, arr, sizes);
+            this.createGroup(this, this.selectDom(), num, arr, sizes);
       }
 
       createGroup(handle, main, num, childs, sizes) {
@@ -3082,7 +3082,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (this.simple_layout)
             userfunc(this.getGridFrame());
          else
-            this.select_main().selectAll('.jsroot_newgrid').each(function() {
+            this.selectDom().selectAll('.jsroot_newgrid').each(function() {
                userfunc(d3.select(this).node());
             });
       }
@@ -3105,9 +3105,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       /** @summary Return grid frame by its id */
       getGridFrame(id) {
          if (this.simple_layout)
-            return this.select_main('origin').node();
+            return this.selectDom('origin').node();
          let res = null;
-         this.select_main().selectAll('.jsroot_newgrid').each(function() {
+         this.selectDom().selectAll('.jsroot_newgrid').each(function() {
             if (id-- === 0) res = this;
          });
          return res;

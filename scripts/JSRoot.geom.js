@@ -217,7 +217,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
       let bkgr = new THREE.Color(this.ctrl.background);
 
-      this._toolbar = new Toolbar(this.select_main(), (bkgr.r + bkgr.g + bkgr.b) < 1);
+      this._toolbar = new Toolbar(this.selectDom(), (bkgr.r + bkgr.g + bkgr.b) < 1);
 
       this._toolbar.addButtons(buttonList);
    }
@@ -812,7 +812,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
       this._datgui = new dat.GUI({ autoPlace: false, width: Math.min(650, this._renderer.domElement.width / 2) });
 
-      let main = this.select_main();
+      let main = this.selectDom();
       if (main.style('position')=='static') main.style('position','relative');
 
       d3.select(this._datgui.domElement)
@@ -1957,7 +1957,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       if (this._fit_main_area && this._webgl) {
          this._renderer.domElement.style.width = "100%";
          this._renderer.domElement.style.height = "100%";
-         let main = this.select_main();
+         let main = this.selectDom();
          if (main.style('position')=='static') main.style('position','relative');
       }
 
@@ -2463,7 +2463,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
       res.push("Time to scan: " + makeTime(tm2-tm1), "", "Check timing for matrix calculations ...");
 
-      let elem = this.select_main().style('overflow', 'auto');
+      let elem = this.selectDom().style('overflow', 'auto');
 
       if (JSROOT.BatchMode)
          elem.property("_json_object_", res);
@@ -3852,7 +3852,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
          this.did_cleanup = true;
 
-         if (can3d < 0) this.select_main().html("");
+         if (can3d < 0) this.selectDom().html("");
       }
 
       if (this._slave_painters)

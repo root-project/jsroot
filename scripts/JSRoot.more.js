@@ -3850,7 +3850,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       let painter = new JSROOT.BasePainter();
       painter.setDom(divid); // base painter
 
-      let main = painter.select_main();
+      let main = painter.selectDom();
 
       // this is example how external image can be inserted
       let img = main.append("img").attr("src", obj.fName).attr("title", obj.fTitle || obj.fName);

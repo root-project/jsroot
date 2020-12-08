@@ -2145,7 +2145,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       } else {
 
-         let render_to = this.select_main();
+         let render_to = this.selectDom();
 
          if (render_to.style('position')=='static')
             render_to.style('position','relative');
@@ -2367,7 +2367,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
        // special case of 3D canvas overlay
       if (svg_pad.property('can3d') === JSROOT.constants.Embed3D.Overlay)
-          this.select_main().select(".draw3d_" + this.this_pad_name)
+          this.selectDom().select(".draw3d_" + this.this_pad_name)
               .style('display', pad_visible ? '' : 'none');
 
       if (this.AlignBtns && btns)
@@ -3601,9 +3601,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (current == layout_kind)
          return Promise.resolve(true);
 
-      let origin = this.select_main('origin'),
+      let origin = this.selectDom('origin'),
           sidebar = origin.select('.side_panel'),
-          main = this.select_main(), lst = [];
+          main = this.selectDom(), lst = [];
 
       while (main.node().firstChild)
          lst.push(main.node().removeChild(main.node().firstChild));
@@ -3712,7 +3712,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    TCanvasPainter.prototype.DrawInsidePanel = function(canv, opt) {
-      let side = this.select_main('origin').select(".side_panel");
+      let side = this.selectDom('origin').select(".side_panel");
       if (side.empty()) return Promise.resolve(null);
       return JSROOT.draw(side.node(), canv, opt);
    }
@@ -4142,9 +4142,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       painter.checkSpecialsInPrimitives(can);
 
       if (!nocanvas && can.fCw && can.fCh && !JSROOT.BatchMode) {
-         let rect0 = painter.select_main().node().getBoundingClientRect();
+         let rect0 = painter.selectDom().node().getBoundingClientRect();
          if (!rect0.height && (rect0.width > 0.1*can.fCw)) {
-            painter.select_main().style("width", can.fCw+"px").style("height", can.fCh+"px");
+            painter.selectDom().style("width", can.fCw+"px").style("height", can.fCh+"px");
             painter._fixed_size = true;
          }
       }
