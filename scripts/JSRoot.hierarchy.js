@@ -2349,29 +2349,32 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       let d = JSROOT.decodeUrl(url);
 
-      let GetOption = (opt) => {
+      function GetOption(opt) {
          let res = d.get(opt, null);
-         if (!res && gui_div && !gui_div.empty() && gui_div.node().hasAttribute(opt)) res = gui_div.attr(opt);
+         if ((res===null) && gui_div && !gui_div.empty() && gui_div.node().hasAttribute(opt))
+            res = gui_div.attr(opt);
          return res;
       }
 
-      let GetUrlOptionAsArray = (opt) => {
+      function GetUrlOptionAsArray(opt) {
 
          let res = [];
 
-         while (opt.length>0) {
+         while (opt.length > 0) {
             let separ = opt.indexOf(";");
             let part = (separ>0) ? opt.substr(0, separ) : opt;
 
-            if (separ>0) opt = opt.substr(separ+1); else opt = "";
+            if (separ > 0) opt = opt.substr(separ+1); else opt = "";
 
             let canarray = true;
             if (part[0]=='#') { part = part.substr(1); canarray = false; }
 
             let val = d.get(part,null);
 
-            if (canarray) res = res.concat(parseAsArray(val));
-                     else if (val!==null) res.push(val);
+            if (canarray)
+               res = res.concat(parseAsArray(val));
+            else if (val!==null)
+               res.push(val);
          }
          return res;
       }
@@ -2413,6 +2416,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           browser_kind = GetOption("browser"),
           browser_configured = !!browser_kind,
           title = GetOption("title");
+
+      if (monitor === null)
+         monitor = 0;
+      else if (monitor === "")
+         monitor = 3000;
+      else
+         monitor = parseInt(monitor);
 
       if (GetOption("float")!==null) { browser_kind = 'float'; browser_configured = true; } else
       if (GetOption("fix")!==null) { browser_kind = 'fix'; browser_configured = true; }
