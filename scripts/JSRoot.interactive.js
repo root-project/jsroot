@@ -18,7 +18,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       IsTooltipShown: function() {
          if (!this.tooltip_enabled || !this.isTooltipAllowed()) return false;
          let hintsg = this.hints_layer().select(".objects_hints");
-         return hintsg.empty() ? false : hintsg.property("hints_pad") == this.pad_name;
+         return hintsg.empty() ? false : hintsg.property("hints_pad") == this.getPadName();
       },
 
       SetTooltipEnabled: function(enabled) {
@@ -148,7 +148,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          // copy transform attributes from frame itself
          hintsg.attr("transform", trans)
             .property("last_point", pnt)
-            .property("hints_pad", this.pad_name);
+            .property("hints_pad", this.getPadName());
 
          let viewmode = hintsg.property('viewmode') || "",
             actualw = 0, posx = pnt.x + frame_rect.hint_delta_x;
@@ -664,7 +664,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          let hintsg = this.hints_layer().select(".objects_hints");
          // if tooltips were visible before, try to reconstruct them after short timeout
-         if (!hintsg.empty() && this.isTooltipAllowed() && (hintsg.property("hints_pad") == this.pad_name))
+         if (!hintsg.empty() && this.isTooltipAllowed() && (hintsg.property("hints_pad") == this.getPadName()))
             setTimeout(this.ProcessTooltipEvent.bind(this, hintsg.property('last_point'), null), 10);
       },
 

@@ -1770,15 +1770,15 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.RecalculateRange(0);
 
       this.x_handle = new RAxisPainter(this.getDom(), this, this.xaxis, "x_");
-      this.x_handle.setPadName(this.pad_name);
+      this.x_handle.setPadName(this.getPadName());
       this.x_handle.snapid = this.snapid;
 
       this.y_handle = new RAxisPainter(this.getDom(), this, this.yaxis, "y_");
-      this.y_handle.setPadName(this.pad_name);
+      this.y_handle.setPadName(this.getPadName());
       this.y_handle.snapid = this.snapid;
 
       this.z_handle = new RAxisPainter(this.getDom(), this, this.zaxis, "z_");
-      this.z_handle.setPadName(this.pad_name);
+      this.z_handle.setPadName(this.getPadName());
       this.z_handle.snapid = this.snapid;
 
       this.x_handle.ConfigureAxis("xaxis", this.xmin, this.xmax, this.scale_xmin, this.scale_xmax, false, [0,w], w, { reverse: false });
@@ -2674,7 +2674,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return true;
       }
 
-      let svg_parent = this.svg_pad(this.pad_name),
+      let svg_parent = this.svg_pad(),
           svg_can = this.svg_canvas(),
           width = svg_parent.property("draw_width"),
           height = svg_parent.property("draw_height"),
@@ -3114,10 +3114,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             padpainter.AddPadButtons();
 
          // we select current pad, where all drawing is performed
-         let prev_name = padpainter.currentPadName(padpainter.this_pad_name);
+         let prev_name = padpainter.selectCurrentPad(padpainter.this_pad_name);
 
          return padpainter.DrawNextSnap(snap.fPrimitives).then(() => {
-            padpainter.currentPadName(prev_name);
+            padpainter.selectCurrentPad(prev_name);
             return this.DrawNextSnap(lst, indx);
          });
       }
@@ -3280,10 +3280,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.AddPadButtons(true);
       }
 
-      let prev_name = this.currentPadName(this.this_pad_name);
+      let prev_name = this.selectCurrentPad(this.this_pad_name);
 
       return this.DrawNextSnap(snap.fPrimitives).then(() => {
-         this.currentPadName(prev_name);
+         this.selectCurrentPad(prev_name);
 
          if (jsrp.getActivePad() === this) {
             let canp = this.canv_painter();
@@ -3700,7 +3700,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
 
       // we select current pad, where all drawing is performed
-      let prev_name = painter.has_canvas ? painter.currentPadName(painter.this_pad_name) : undefined;
+      let prev_name = painter.has_canvas ? painter.selectCurrentPad(painter.this_pad_name) : undefined;
 
       jsrp.selectActivePad({ pp: painter, active: false });
 
@@ -3708,7 +3708,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return painter.DrawPrimitives().then(() => {
          painter.ShowButtons();
          // we restore previous pad name
-         painter.currentPadName(prev_name);
+         painter.selectCurrentPad(prev_name);
          return painter;
       });
    }

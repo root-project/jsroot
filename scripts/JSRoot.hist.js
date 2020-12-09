@@ -1309,7 +1309,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             }
 
             painter.z_handle = new JSROOT.TAxisPainter(divid, pave.fAxis, true);
-            painter.z_handle.setPadName(painter.pad_name);
+            painter.z_handle.setPadName(painter.getPadName());
 
             painter.UseContextMenu = true;
          }
@@ -2160,13 +2160,13 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
             // plot new objects on the same pad - will works only for simple drawings already loaded
             if (pp && (newfuncs.length > 0)) {
-               let arr = [], prev_name = pp.has_canvas ? pp.currentPadName(pp.this_pad_name) : undefined;
+               let arr = [], prev_name = pp.has_canvas ? pp.selectCurrentPad(pp.this_pad_name) : undefined;
                for (let k = 0; k < newfuncs.length; ++k)
                   arr.push(JSROOT.draw(this.getDom(), newfuncs[k]));
                Promise.all(arr).then(parr => {
                   for (let k = 0; k < parr.length; ++k)
                      if (parr[k]) parr[k].child_painter_id = pid;
-                  pp.currentPadName(prev_name);
+                  pp.selectCurrentPad(prev_name);
                });
             }
          }
@@ -2390,9 +2390,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          return statpainter.Enabled;
       }
 
-      let prev_name = this.currentPadName(this.pad_name);
+      let prev_name = this.selectCurrentPad(this.getPadName());
       JSROOT.draw(this.getDom(), stat).then(() => {
-         this.currentPadName(prev_name);
+         this.selectCurrentPad(prev_name);
       });
 
       return true;
@@ -3007,9 +3007,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       if (!pal_painter) {
          // when histogram drawn on sub pad, let draw new axis object on the same pad
-         let prev = this.currentPadName(this.pad_name);
+         let prev = this.selectCurrentPad(this.getPadName());
          promise = drawPave(this.getDom(), pal, arg).then(pp => {
-            this.currentPadName(prev);
+            this.selectCurrentPad(prev);
             return pp;
          });
       } else {

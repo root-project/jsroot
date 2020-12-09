@@ -1582,7 +1582,7 @@ JSROOT.define(['d3'], (d3) => {
       this.draw_g = null; // container for all drawn objects
       this.main = null;  // main painter, received from pad
       if (obj !== undefined) {
-         this.pad_name = divid ? this.currentPadName() : ""; // name of pad where object is drawn
+         this.pad_name = divid ? this.selectCurrentPad() : ""; // name of pad where object is drawn
          this.assignObject(obj);
          if (typeof opt == "string") this.options = { original: opt };
       }
@@ -1602,7 +1602,12 @@ JSROOT.define(['d3'], (d3) => {
      * @desc Should happend before first draw of element is performed, only for special use case
      * @param {string} [pad_name] - on which subpad element should be draw, if not specified - use current */
    ObjectPainter.prototype.setPadName = function(pad_name) {
-      this.pad_name = (typeof pad_name == 'string') ? pad_name : this.currentPadName();
+      this.pad_name = (typeof pad_name == 'string') ? pad_name : this.selectCurrentPad();
+   }
+
+   /** @summary Returns pad name where object is drawn */
+   ObjectPainter.prototype.getPadName = function() {
+      return this.pad_name || "";
    }
 
    /** @summary Assign snapid to the painter
@@ -1624,7 +1629,7 @@ JSROOT.define(['d3'], (d3) => {
       }
 
       // cleanup all existing references
-      this.pad_name = "";
+      delete this.pad_name;
       this.main = null;
       this.draw_object = null;
       delete this.snapid;
@@ -1925,11 +1930,11 @@ JSROOT.define(['d3'], (d3) => {
       return d3.select(null);
    }
 
-   /** @summary Method returns current pad name
-    * @desc When parameter new_name specified, it will be set as new current pad for the canvas
-    * @param {string} [new_name] - when specified, new current pad name will be configured
-    * @private */
-   ObjectPainter.prototype.currentPadName = function(new_name) {
+   /** @summary Method selects current pad name
+     * @param {string} [new_name] - when specified, new current pad name will be configured
+     * @returns {string} previous selected pad or actual pad when new_name not specified
+     * @private */
+   ObjectPainter.prototype.selectCurrentPad = function(new_name) {
       let svg = this.svg_canvas();
       if (svg.empty()) return "";
       let curr = svg.property('current_pad');
@@ -2127,7 +2132,7 @@ JSROOT.define(['d3'], (d3) => {
 
    /** @summary Add painter to pad list of painters */
    ObjectPainter.prototype.addToPadPrimitives = function() {
-      let svg_p = this.svg_pad(this.pad_name); // important - parent pad element accessed here
+      let svg_p = this.svg_pad(); // important - parent pad element accessed here
       if (svg_p.empty()) return false;
 
       let pp = svg_p.property('pad_painter');

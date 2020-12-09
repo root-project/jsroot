@@ -56,7 +56,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
       }
 
       let pad = this.svg_pad(),
-         clname = "draw3d_" + (this.pad_name || 'canvas');
+          clname = "draw3d_" + (this.getPadName() || 'canvas');
 
       if (pad.empty()) {
          // this is a case when object drawn without canvas
