@@ -3729,12 +3729,34 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       delete this._websocket;
       delete this._submreq;
 
+     if (this._changed_layout)
+         this.setLayoutKind('simple');
+      delete this._changed_layout;
+
       RPadPainter.prototype.cleanup.call(this);
+   }
+
+   /** @summary Returns layout kind */
+   RCanvasPainter.prototype.getLayoutKind = function() {
+      let origin = this.selectDom('origin'),
+         layout = origin.empty() ? "" : origin.property('layout');
+      return layout || 'simple';
+   }
+
+   /** @summary Set canvas layout kind */
+   RCanvasPainter.prototype.setLayoutKind = function(kind, main_selector) {
+      let origin = this.selectDom('origin');
+      if (!origin.empty()) {
+         if (!kind) kind = 'simple';
+         origin.property('layout', kind);
+         origin.property('layout_selector', (kind != 'simple') && main_selector ? main_selector : null);
+         this._changed_layout = (kind !== 'simple'); // use in cleanup
+      }
    }
 
    /** @summary Changes layout
      * @returns {Promise} indicating when finished */
-   RCanvasPainter.prototype.ChangeLayout = function(layout_kind) {
+   RCanvasPainter.prototype.changeLayout = function(layout_kind) {
       let current = this.getLayoutKind();
       if (current == layout_kind)
          return Promise.resolve(true);
@@ -3806,7 +3828,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (kind == "X") layout = 'vert2_31'; else
       if (kind == "Y") layout = 'horiz2_13';
 
-      return this.ChangeLayout(layout);
+      return this.changeLayout(layout);
    }
 
    RCanvasPainter.prototype.DrawProjection = function( /*kind,hist*/) {

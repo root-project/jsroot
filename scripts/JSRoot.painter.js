@@ -1338,7 +1338,7 @@ JSROOT.define(['d3'], (d3) => {
 
    /** @summary selects main HTML element used for drawing - typically <div> element
      * @desc if main element was layouted, returns main element inside layout
-     * @param {string} is_direct - if 'origin' specified, returns original element even if actual drawing moved to some other place
+     * @param {string} [is_direct] - if 'origin' specified, returns original element even if actual drawing moved to some other place
      * @returns {object} d3.select object for main element for drawing */
    BasePainter.prototype.selectDom = function(is_direct) {
 
@@ -1403,15 +1403,12 @@ JSROOT.define(['d3'], (d3) => {
       this.clearTopPainter();
       let origin = this.selectDom('origin');
       if (!origin.empty() && !keep_origin) origin.html("");
-      if (this._changed_layout)
-         this.setLayoutKind('simple');
       this.divid = null;
       delete this._selected_main;
 
       if (this._hpainter && typeof this._hpainter.removePainter === 'function')
          this._hpainter.removePainter(this);
 
-      delete this._changed_layout;
       delete this._hitemname;
       delete this._hdrawopt;
       delete this._hpainter;
@@ -1421,26 +1418,6 @@ JSROOT.define(['d3'], (d3) => {
      * @returns {boolean} true if resize was detected
      * @abstract */
    BasePainter.prototype.checkResize = function(/* arg */) {}
-
-
-   /** @summary Returns layout kind */
-   BasePainter.prototype.getLayoutKind = function() {
-      let origin = this.selectDom('origin'),
-         layout = origin.empty() ? "" : origin.property('layout');
-
-      return layout || 'simple';
-   }
-
-   /** @summary Set layout kind */
-   BasePainter.prototype.setLayoutKind = function(kind, main_selector) {
-      let origin = this.selectDom('origin');
-      if (!origin.empty()) {
-         if (!kind) kind = 'simple';
-         origin.property('layout', kind);
-         origin.property('layout_selector', (kind != 'simple') && main_selector ? main_selector : null);
-         this._changed_layout = (kind !== 'simple'); // use in cleanup
-      }
-   }
 
    /** @summary Function checks if geometry of main div was changed.
      * @desc take into account enlarge state
