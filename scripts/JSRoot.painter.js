@@ -1400,11 +1400,11 @@ JSROOT.define(['d3'], (d3) => {
 
    /** @summary Generic method to cleanup painter */
    BasePainter.prototype.Cleanup = function(keep_origin) {
+      this.clearTopPainter();
       let origin = this.selectDom('origin');
       if (!origin.empty() && !keep_origin) origin.html("");
       if (this._changed_layout)
          this.setLayoutKind('simple');
-      this.clearTopPainter();
       this.divid = null;
       delete this._selected_main;
 

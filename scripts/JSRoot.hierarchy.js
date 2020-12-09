@@ -2221,7 +2221,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Remove painter reference from hierarhcy */
    HierarchyPainter.prototype.removePainter = function(obj_painter) {
       this.forEachItem(item => {
-         if (item._painter === obj_painter) delete item._painter;
+         if (item._painter === obj_painter) {
+            // delete painter reference
+            delete item._painter;
+            // also clear data which could be associated with item
+            if (typeof item.clear == 'function') item.clear();
+         }
       });
    }
 
@@ -2237,7 +2242,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.forEachItem(item => {
          delete item._painter; // remove reference on the painter
          // when only display cleared, try to clear all browser items
-         if (!withbrowser && (typeof item.clear=='function')) item.clear();
+         if (!withbrowser && (typeof item.clear == 'function')) item.clear();
          if (withbrowser) plainarr.push(item);
       });
 
