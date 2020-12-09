@@ -1497,12 +1497,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       // do nothing here - key handler is handled differently
    }
 
-   RFramePainter.prototype.GetTipName = function(append) {
-      let res = JSROOT.ObjectPainter.prototype.GetTipName.call(this) || "RFrame";
-      if (append) res+=append;
-      return res;
-   }
-
    RFramePainter.prototype.Shrink = function(shrink_left, shrink_right) {
       this.fX1NDC += shrink_left;
       this.fX2NDC -= shrink_right;

@@ -1454,7 +1454,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
    RH1Painter.prototype.GetBinTips = function(bin) {
       let tips = [],
-          name = this.GetTipName(),
+          name = this.getObjectHint(),
           pmain = this.frame_painter(),
           histo = this.GetHisto(),
           xaxis = this.GetAxis("x"),
@@ -3245,7 +3245,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
          dj = histo.stepy || 1;
       }
 
-      lines.push(this.GetTipName() || "histo<2>");
+      lines.push(this.getObjectHint() || "histo<2>");
       lines.push("x = " + this.GetAxisBinTip("x", i, di));
       lines.push("y = " + this.GetAxisBinTip("y", j, dj));
 
@@ -3266,7 +3266,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
    RH2Painter.prototype.GetCandleTips = function(p) {
       let lines = [], main = this.frame_painter(), xaxis = this.GetAxis("y");
 
-      lines.push(this.GetTipName() || "histo");
+      lines.push(this.getObjectHint() || "histo");
 
       lines.push("x = " + main.AxisAsText("x", xaxis.GetBinCoord(p.bin)));
 
@@ -3309,7 +3309,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
          }
       }
 
-      lines.push(this.GetTipName() || "histo");
+      lines.push(this.getObjectHint() || "histo");
       lines.push("x = " + pmain.AxisAsText("x", realx));
       lines.push("y = " + pmain.AxisAsText("y", realy));
       if (numpoints > 0) lines.push("npnts = " + numpoints);

@@ -1655,8 +1655,9 @@ JSROOT.define(['d3'], (d3) => {
 
    /** @summary Returns drawn object class name */
    ObjectPainter.prototype.getClassName = function() {
-      let obj = this.getObject();
-      return obj ? obj._typename || "" : "";
+      let obj = this.getObject(),
+          clname = obj ? obj._typename : "";
+      return clname || "";
    }
 
    /** @summary Checks if drawn object matches with provided typename
@@ -1738,14 +1739,15 @@ JSROOT.define(['d3'], (d3) => {
       return true;
    }
 
-   /** @summary Returns string which either item or object name.
-    * @desc Such string can be used as tooltip. If result string larger than 20 symbols, it will be cutted.
-    * @private */
-   ObjectPainter.prototype.GetTipName = function(append) {
+   /** @summary Returns string which object hint
+     * @desc It is either item name or object name or class name.
+     * Such string can be used as tooltip.
+     * If result string larger than 20 symbols, it will be cutted. */
+   ObjectPainter.prototype.getObjectHint = function() {
       let res = this.getItemName(), obj = this.getObject();
       if (!res) res = obj && obj.fName ? obj.fName : "";
+      if (!res) res = this.getClassName();
       if (res.lenght > 20) res = res.substr(0, 17) + "...";
-      if (res && append) res += append;
       return res;
    }
 
@@ -2354,7 +2356,7 @@ JSROOT.define(['d3'], (d3) => {
    /** @summary Fill context menu for the object
     * @private */
    ObjectPainter.prototype.FillContextMenu = function(menu) {
-      let title = this.GetTipName();
+      let title = this.getObjectHint();
       if (this.getObject() && ('_typename' in this.getObject()))
          title = this.getObject()._typename + "::" + title;
 

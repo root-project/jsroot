@@ -3936,7 +3936,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    TH1Painter.prototype.GetBinTips = function(bin) {
       let tips = [],
-          name = this.GetTipName(),
+          name = this.getObjectHint(),
           pmain = this.frame_painter(),
           histo = this.GetHisto(),
           x1 = histo.fXaxis.GetBinLowEdge(bin+1),
@@ -5932,7 +5932,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           histo = this.GetHisto(),
           binz = histo.getBinContent(i+1,j+1)
 
-      lines.push(this.GetTipName());
+      lines.push(this.getObjectHint());
 
       lines.push("x = " + this.GetAxisBinTip("x", histo.fXaxis, i));
       lines.push("y = " + this.GetAxisBinTip("y", histo.fYaxis, j));
@@ -5954,7 +5954,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    TH2Painter.prototype.GetCandleTips = function(p) {
       let lines = [], main = this.frame_painter(), histo = this.GetHisto();
 
-      lines.push(this.GetTipName());
+      lines.push(this.getObjectHint());
 
       lines.push("x = " + main.AxisAsText("x", histo.fXaxis.GetBinLowEdge(p.bin+1)));
 
@@ -5997,7 +5997,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          }
       }
 
-      lines.push(this.GetTipName());
+      lines.push(this.getObjectHint());
       lines.push("x = " + pmain.AxisAsText("x", realx));
       lines.push("y = " + pmain.AxisAsText("y", realy));
       if (numpoints > 0) lines.push("npnts = " + numpoints);

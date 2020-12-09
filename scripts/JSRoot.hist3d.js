@@ -2423,7 +2423,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
    TH3Painter.prototype.GetBinTips = function (ix, iy, iz) {
       let lines = [], pmain = this.frame_painter(), histo = this.GetHisto();
 
-      lines.push(this.GetTipName());
+      lines.push(this.getObjectHint());
 
       lines.push("x = " + this.GetAxisBinTip("x", histo.fXaxis, ix) + "  xbin=" + (ix+1));
       lines.push("y = " + this.GetAxisBinTip("y", histo.fYaxis, iy) + "  ybin=" + (iy+1));
@@ -3258,7 +3258,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
             linemesh.index = index;
             linemesh.painter = fp;
             linemesh.scale0 = 0.7*scale;
-            linemesh.tip_name = this.GetTipName();
+            linemesh.tip_name = this.getObjectHint();
             linemesh.tip_color = (graph.fMarkerColor === 3) ? 0xFF0000 : 0x00FF00;
             linemesh.nvertex = 2;
             linemesh.check_next = true;
@@ -3276,7 +3276,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
             errmesh.index = index;
             errmesh.painter = fp;
             errmesh.scale0 = 0.7*scale;
-            errmesh.tip_name = this.GetTipName();
+            errmesh.tip_name = this.getObjectHint();
             errmesh.tip_color = (graph.fMarkerColor === 3) ? 0xFF0000 : 0x00FF00;
             errmesh.nvertex = 6;
 
@@ -3300,7 +3300,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
                mesh.scale0 = 0.3*scale;
                mesh.index = mesh_index;
 
-               mesh.tip_name = this.GetTipName();
+               mesh.tip_name = this.getObjectHint();
                mesh.tooltip = this.Graph2DTooltip;
 
               if (fp && fp.toplevel)

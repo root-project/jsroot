@@ -2416,7 +2416,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
          dz = histo.stepz || 1;
       }
 
-      lines.push(this.GetTipName());
+      lines.push(this.getObjectHint());
 
       lines.push("x = " + this.GetAxisBinTip("x", ix, dx) + "  xbin=" + ix);
       lines.push("y = " + this.GetAxisBinTip("y", iy, dy) + "  ybin=" + iy);

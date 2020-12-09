@@ -660,7 +660,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
              .attr("cy", bin.gry)
              .property("current_bin", best);
 
-      let name = this.GetTipName();
+      let name = this.getObjectHint();
       if (name.length > 0) res.lines.push(name);
 
       let pmain = this.frame_painter();
@@ -1035,7 +1035,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    TGraphPainter.prototype.TooltipText = function(d) {
       let pmain = this.frame_painter(), lines = [];
 
-      lines.push(this.GetTipName());
+      lines.push(this.getObjectHint());
 
       if (d && pmain) {
          lines.push("x = " + pmain.AxisAsText("x", d.x));
@@ -2455,7 +2455,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
                   x: bestpos.x, y: bestpos.y,
                   color1: this.markeratt && this.markeratt.used ? this.markeratt.color : this.lineatt.color,
                   exact: Math.sqrt(best_dist2) < 4,
-                  lines: [ this.GetTipName() ],
+                  lines: [ this.getObjectHint() ],
                   binindx: bestindx,
                   menu_dist: match_distance,
                   radius: match_distance
@@ -2685,7 +2685,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
              .attr("cy", Math.round(res.y))
              .property("current_xx", xx);
 
-      let name = this.GetTipName();
+      let name = this.getObjectHint();
       if (name.length > 0) res.lines.push(name);
       res.lines.push("x = " + main.AxisAsText("x", xx))
       res.lines.push("y = " + main.AxisAsText("y", yy));

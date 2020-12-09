@@ -799,7 +799,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          let hints = pp.GetTooltips(pnt), exact = null;
          for (let k=0; (k<hints.length) && !exact; ++k)
             if (hints[k] && hints[k].exact) exact = hints[k];
-         //if (exact) console.log('Click exact', pnt, exact.painter.GetTipName());
+         //if (exact) console.log('Click exact', pnt, exact.painter.getObjectHint());
          //      else console.log('Click frame', pnt);
 
          let res;
