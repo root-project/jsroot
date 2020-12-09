@@ -1399,7 +1399,7 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /** @summary Generic method to cleanup painter */
-   BasePainter.prototype.Cleanup = function(keep_origin) {
+   BasePainter.prototype.cleanup = function(keep_origin) {
       this.clearTopPainter();
       let origin = this.selectDom('origin');
       if (!origin.empty() && !keep_origin) origin.html("");
@@ -1617,8 +1617,8 @@ JSROOT.define(['d3'], (d3) => {
    ObjectPainter.prototype.AssignSnapId = function(id) { this.snapid = id; }
 
    /** @summary Generic method to cleanup painter.
-    * @desc Remove object drawing and in case of main painter - also main HTML components */
-   ObjectPainter.prototype.Cleanup = function() {
+     * @desc Remove object drawing and in case of main painter - also main HTML components */
+   ObjectPainter.prototype.cleanup = function() {
 
       this.RemoveDrawG();
 
@@ -1648,7 +1648,7 @@ JSROOT.define(['d3'], (d3) => {
       delete this.rstyle;
       delete this.csstype;
 
-      BasePainter.prototype.Cleanup.call(this, keep_origin);
+      BasePainter.prototype.cleanup.call(this, keep_origin);
    }
 
    /** @summary Returns drawn object */
@@ -2501,7 +2501,7 @@ JSROOT.define(['d3'], (d3) => {
          if (k >= 0) pp.painters.splice(k, 1);
       }
 
-      this.Cleanup();
+      this.cleanup();
    }
 
    /** @summary Redraw object
@@ -3064,7 +3064,7 @@ JSROOT.define(['d3'], (d3) => {
 
    AxisBasePainter.prototype = Object.create(ObjectPainter.prototype);
 
-   AxisBasePainter.prototype.Cleanup = function() {
+   AxisBasePainter.prototype.cleanup = function() {
       this.ticks = [];
       delete this.format;
       delete this.func;
@@ -3076,7 +3076,7 @@ JSROOT.define(['d3'], (d3) => {
       delete this.axis;
       delete this.axis_g;
 
-      ObjectPainter.prototype.Cleanup.call(this);
+      ObjectPainter.prototype.cleanup.call(this);
    }
 
    /** @summary Assign often used members of frame painter
@@ -4010,7 +4010,7 @@ JSROOT.define(['d3'], (d3) => {
       let dummy = new ObjectPainter(), lst = [];
       dummy.setCanvDom(divid, "");
       dummy.forEachPainter(p => { if (lst.indexOf(p) < 0) lst.push(p); });
-      lst.forEach(p => p.Cleanup());
+      lst.forEach(p => p.cleanup());
       dummy.selectDom().html("");
       return lst;
    }

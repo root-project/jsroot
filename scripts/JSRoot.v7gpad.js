@@ -1737,7 +1737,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (this.axes_drawn || (this.xmin==this.xmax) || (this.ymin==this.ymax))
          return Promise.resolve(this.axes_drawn);
 
-      this.CleanupAxes();
+      this.cleanupAxes();
 
       this.swap_xy = false;
       let ticksx = this.v7EvalAttr("ticksx", 1),
@@ -1846,20 +1846,20 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Remove all axes drawings */
-   RFramePainter.prototype.CleanupAxes = function() {
+   RFramePainter.prototype.cleanupAxes = function() {
       // remove all axes drawings
       if (this.x_handle) {
-         this.x_handle.Cleanup();
+         this.x_handle.cleanup();
          delete this.x_handle;
       }
 
       if (this.y_handle) {
-         this.y_handle.Cleanup();
+         this.y_handle.cleanup();
          delete this.y_handle;
       }
 
       if (this.z_handle) {
-         this.z_handle.Cleanup();
+         this.z_handle.cleanup();
          delete this.z_handle;
       }
 
@@ -1881,7 +1881,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (typeof this.create3DScene === 'function')
          this.create3DScene(-1);
 
-      this.CleanupAxes();
+      this.cleanupAxes();
 
       this.xmin = this.xmax = 0;
       this.ymin = this.ymax = 0;
@@ -1903,7 +1903,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    /** @summary Fully cleanup frame
      * @private */
-   RFramePainter.prototype.Cleanup = function() {
+   RFramePainter.prototype.cleanup = function() {
 
       this.CleanFrameDrawings();
 
@@ -1929,7 +1929,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       delete this._click_handler;
       delete this._dblclick_handler;
 
-      JSROOT.ObjectPainter.prototype.Cleanup.call(this);
+      JSROOT.ObjectPainter.prototype.cleanup.call(this);
    }
 
    /** @summary Redraw frame
@@ -2409,10 +2409,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary cleanup only pad itself, all child elements will be collected and cleanup separately */
-   RPadPainter.prototype.Cleanup = function() {
+   RPadPainter.prototype.cleanup = function() {
 
       for (let k = 0; k < this.painters.length; ++k)
-         this.painters[k].Cleanup();
+         this.painters[k].cleanup();
 
       let svg_p = this.svg_pad();
       if (!svg_p.empty()) {
@@ -2432,7 +2432,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       jsrp.selectActivePad({ pp: this, active: false });
 
-      JSROOT.ObjectPainter.prototype.Cleanup.call(this);
+      JSROOT.ObjectPainter.prototype.cleanup.call(this);
    }
 
    /** @summary Returns frame painter inside the pad
@@ -2448,7 +2448,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       for (let k = this.painters.length-1; k >= 0; --k)
          if (selector(this.painters[k])) {
-            this.painters[k].Cleanup();
+            this.painters[k].cleanup();
             this.painters.splice(k, 1);
          }
    }
@@ -3254,7 +3254,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (sub) {
             // remove painter which does not found in the list of snaps
             this.painters.splice(k--,1);
-            sub.Cleanup(); // cleanup such painter
+            sub.cleanup(); // cleanup such painter
             isanyremove = true;
          }
       }
@@ -3270,7 +3270,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             svg_p.property('mainpainter', null);
          for (let k=0;k<this.painters.length;++k)
             if (fp !== this.painters[k])
-               this.painters[k].Cleanup();
+               this.painters[k].cleanup();
          this.painters = [];
          if (fp) {
             this.painters.push(fp);
@@ -3726,11 +3726,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    RCanvasPainter.prototype = Object.create(RPadPainter.prototype);
 
    /** @summary Cleanup canvas painter */
-   RCanvasPainter.prototype.Cleanup = function() {
+   RCanvasPainter.prototype.cleanup = function() {
       delete this._websocket;
       delete this._submreq;
 
-      RPadPainter.prototype.Cleanup.call(this);
+      RPadPainter.prototype.cleanup.call(this);
    }
 
    /** @summary Changes layout
@@ -3843,7 +3843,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    RCanvasPainter.prototype.CloseWebsocket = function(force) {
       if (this._websocket) {
          this._websocket.Close(force);
-         this._websocket.Cleanup();
+         this._websocket.cleanup();
          delete this._websocket;
       }
    }

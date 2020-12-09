@@ -37,7 +37,7 @@ sap.ui.define([
             delete this.resizeid;
          }
          if (this.object_painter) {
-            this.object_painter.Cleanup();
+            this.object_painter.cleanup();
             delete this.object_painter;
          }
       },

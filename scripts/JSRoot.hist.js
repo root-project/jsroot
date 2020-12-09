@@ -1264,13 +1264,13 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       this.DrawPave();
    }
 
-   TPavePainter.prototype.Cleanup = function() {
+   TPavePainter.prototype.cleanup = function() {
       if (this.z_handle) {
-         this.z_handle.Cleanup();
+         this.z_handle.cleanup();
          delete this.z_handle;
       }
 
-      JSROOT.ObjectPainter.prototype.Cleanup.call(this);
+      JSROOT.ObjectPainter.prototype.cleanup.call(this);
    }
 
    let drawPave = (divid, pave, opt) => {
@@ -1909,7 +1909,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    }
 
    /** @summary Cleanup histogram painter */
-   THistPainter.prototype.Cleanup = function() {
+   THistPainter.prototype.cleanup = function() {
 
       // clear all 3D buffers
       this.Clear3DScene();
@@ -1918,7 +1918,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       delete this.fContour;
       delete this.options;
 
-      JSROOT.ObjectPainter.prototype.Cleanup.call(this);
+      JSROOT.ObjectPainter.prototype.cleanup.call(this);
    }
 
    THistPainter.prototype.Dimension = function() {
@@ -4346,10 +4346,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    TH2Painter.prototype = Object.create(THistPainter.prototype);
 
-   TH2Painter.prototype.Cleanup = function() {
+   TH2Painter.prototype.cleanup = function() {
       delete this.tt_handle;
 
-      THistPainter.prototype.Cleanup.call(this);
+      THistPainter.prototype.cleanup.call(this);
    }
 
    TH2Painter.prototype.ToggleProjection = function(kind, width) {
@@ -6487,12 +6487,12 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    THStackPainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
 
-   THStackPainter.prototype.Cleanup = function() {
+   THStackPainter.prototype.cleanup = function() {
       let pp = this.pad_painter();
       if (pp) pp.CleanPrimitives(objp => { return (objp === this.firstpainter) || (this.painters.indexOf(objp) >= 0); });
       delete this.firstpainter;
       delete this.painters;
-      JSROOT.ObjectPainter.prototype.Cleanup.call(this);
+      JSROOT.ObjectPainter.prototype.cleanup.call(this);
    }
 
    THStackPainter.prototype.HasErrors = function(hist) {

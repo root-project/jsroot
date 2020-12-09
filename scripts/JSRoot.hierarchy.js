@@ -771,11 +771,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    HierarchyPainter.prototype = Object.create(JSROOT.BasePainter.prototype);
 
    /** @summary Cleanup hierarchy painter */
-   HierarchyPainter.prototype.Cleanup = function() {
+   HierarchyPainter.prototype.cleanup = function() {
       // clear drawing and browser
       this.clearHierarchy(true);
 
-      JSROOT.BasePainter.prototype.Cleanup.call(this);
+      JSROOT.BasePainter.prototype.cleanup.call(this);
 
       if (JSROOT.hpainter === this)
          JSROOT.hpainter = null;
@@ -2216,7 +2216,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       });
    }
 
-   /** @summary Cleanup hierarchy painter */
+   /** @summary Cleanup all items in hierarchy */
    HierarchyPainter.prototype.clearHierarchy = function(withbrowser) {
       if (this.disp) {
          this.disp.cleanup();

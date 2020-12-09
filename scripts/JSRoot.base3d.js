@@ -659,7 +659,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
       control.enable_zoom = enable_zoom;
       control.enable_select = enable_select;
 
-      control.Cleanup = function() {
+      control.cleanup = function() {
          if (JSROOT.settings.Zooming && JSROOT.settings.ZoomWheel)
             this.domElement.removeEventListener( 'wheel', control_mousewheel);
          if (this.enable_zoom || this.enable_select) {

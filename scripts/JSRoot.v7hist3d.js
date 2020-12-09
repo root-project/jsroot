@@ -33,7 +33,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
          this.clear_3d_canvas();
 
          jsrp.disposeThreejsObject(this.scene);
-         if (this.control) this.control.Cleanup();
+         if (this.control) this.control.cleanup();
 
          if (this.renderer) {
             if (this.renderer.dispose) this.renderer.dispose();

@@ -53,7 +53,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
                      .attr("class", !bright ? 'geo_toolbar_btn' : "geo_toolbar_btn_bright");
    }
 
-   Toolbar.prototype.Cleanup = function() {
+   Toolbar.prototype.cleanup = function() {
       if (this.element) {
          this.element.remove();
          delete this.element;
@@ -160,7 +160,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          {name: 'Normal', value: THREE.SSAOPass.OUTPUT.Normal}
       ];
 
-      this.Cleanup(true);
+      this.cleanup(true);
    }
 
    TGeoPainter.prototype = Object.create( JSROOT.ObjectPainter.prototype );
@@ -3792,7 +3792,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
    }
 
    /** @summary Cleanup geometry painter */
-   TGeoPainter.prototype.Cleanup = function(first_time) {
+   TGeoPainter.prototype.cleanup = function(first_time) {
 
       if (!first_time) {
 
@@ -3802,7 +3802,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
          let can3d = this.clear_3d_canvas(); // remove 3d canvas from main HTML element
 
-         if (this._toolbar) this._toolbar.Cleanup(); // remove toolbar
+         if (this._toolbar) this._toolbar.cleanup(); // remove toolbar
 
          this.helpText();
 
@@ -3814,7 +3814,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
             this._tcontrols.dispose();
 
          if (this._controls)
-            this._controls.Cleanup();
+            this._controls.cleanup();
 
          if (this._context_menu)
             this._renderer.domElement.removeEventListener( 'contextmenu', this._context_menu, false );
@@ -3845,7 +3845,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          delete this.geo_manager;
          delete this._highlight_handlers;
 
-         JSROOT.ObjectPainter.prototype.Cleanup.call(this);
+         JSROOT.ObjectPainter.prototype.cleanup.call(this);
 
          delete this.ctrl;
          delete this.options;
@@ -3882,7 +3882,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       delete this._selected_mesh;
 
       if (this._clones && this._clones_owner)
-         this._clones.Cleanup(this._draw_nodes, this._build_shapes);
+         this._clones.cleanup(this._draw_nodes, this._build_shapes);
       delete this._clones;
       delete this._clones_owner;
       delete this._draw_nodes;
@@ -4000,7 +4000,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
    TGeoPainter.prototype.ClearDrawings = function() {
       if (this._clones && this._clones_owner)
-         this._clones.Cleanup(this._draw_nodes, this._build_shapes);
+         this._clones.cleanup(this._draw_nodes, this._build_shapes);
       delete this._clones;
       delete this._clones_owner;
       delete this._draw_nodes;

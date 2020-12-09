@@ -1432,17 +1432,17 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       delete this.grz;
 
       if (this.x_handle) {
-         this.x_handle.Cleanup();
+         this.x_handle.cleanup();
          delete this.x_handle;
       }
 
       if (this.y_handle) {
-         this.y_handle.Cleanup();
+         this.y_handle.cleanup();
          delete this.y_handle;
       }
 
       if (this.z_handle) {
-         this.z_handle.Cleanup();
+         this.z_handle.cleanup();
          delete this.z_handle;
       }
    }
@@ -1512,12 +1512,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Cleanup frame */
-   TFramePainter.prototype.Cleanup = function() {
+   TFramePainter.prototype.cleanup = function() {
       this.CleanFrameDrawings();
       delete this._click_handler;
       delete this._dblclick_handler;
 
-      JSROOT.ObjectPainter.prototype.Cleanup.call(this);
+      JSROOT.ObjectPainter.prototype.cleanup.call(this);
    }
 
    /** @summary Redraw frame */
@@ -1979,10 +1979,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary cleanup only pad itself, all child elements will be collected and cleanup separately */
-   TPadPainter.prototype.Cleanup = function() {
+   TPadPainter.prototype.cleanup = function() {
 
       for (let k = 0; k < this.painters.length; ++k)
-         this.painters[k].Cleanup();
+         this.painters[k].cleanup();
 
       let svg_p = this.svg_pad();
       if (!svg_p.empty()) {
@@ -2002,7 +2002,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       jsrp.selectActivePad({ pp: this, active: false });
 
-      JSROOT.ObjectPainter.prototype.Cleanup.call(this);
+      JSROOT.ObjectPainter.prototype.cleanup.call(this);
    }
 
    /** @summary Returns frame painter inside the pad
@@ -2017,7 +2017,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       for (let k = this.painters.length-1; k >= 0; --k)
          if (selector(this.painters[k])) {
-            this.painters[k].Cleanup();
+            this.painters[k].cleanup();
             this.painters.splice(k, 1);
          }
    }
@@ -3017,7 +3017,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             console.log('Remove painter' + k + ' from ' + this.painters.length + ' ' + sub.getObject()._typename);
             // remove painter which does not found in the list of snaps
             this.painters.splice(k--,1);
-            sub.Cleanup(); // cleanup such painter
+            sub.cleanup(); // cleanup such painter
             isanyremove = true;
          }
       }
@@ -3033,7 +3033,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             svg_p.property('mainpainter', null);
          for (let k=0;k<this.painters.length;++k)
             if (fp !== this.painters[k])
-               this.painters[k].Cleanup();
+               this.painters[k].cleanup();
          this.painters = [];
          if (fp) {
             this.painters.push(fp);
@@ -3766,7 +3766,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    TCanvasPainter.prototype.CloseWebsocket = function(force) {
       if (this._websocket) {
          this._websocket.Close(force);
-         this._websocket.Cleanup();
+         this._websocket.cleanup();
          delete this._websocket;
       }
    }

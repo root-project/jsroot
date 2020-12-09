@@ -185,12 +185,12 @@
           //     let jsroot = viewer.contentWindow.JSROOT;
           //     if (jsroot && jsroot.hpainter) {
           //        console.log('CLEANUP PAINTER IN IFRAME');
-          //        jsroot.hpainter.Cleanup();
+          //        jsroot.hpainter.cleanup();
           //     }
           //  }
 
             if (JSROOT.hpainter)
-               JSROOT.hpainter.Cleanup();
+               JSROOT.hpainter.cleanup();
 
             if (typeof JSROOT.cleanup === 'function')
                JSROOT.cleanup('viewer');
@@ -302,7 +302,7 @@
             // console.log('KEY ', keyid, 'opt', opt);
             // if ((url.length==0) || (keyid != 'Misc')) return RunBigTest(0);
 
-            if (hpainter) { hpainter.Cleanup(); hpainter = null; }
+            if (hpainter) { hpainter.cleanup(); hpainter = null; }
             JSROOT.cleanup("viewer");
 
             if (url.length > 0) {

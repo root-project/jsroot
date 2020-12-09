@@ -788,10 +788,10 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       this.DrawGraph();
    }
 
-   TGraphPainter.prototype.Cleanup = function() {
+   TGraphPainter.prototype.cleanup = function() {
       delete this.interactive_bin; // break mouse handling
       delete this.bins;
-      JSROOT.ObjectPainter.prototype.Cleanup.call(this);
+      JSROOT.ObjectPainter.prototype.cleanup.call(this);
    }
 
    TGraphPainter.prototype.DecodeOptions = function(opt) {
@@ -3092,9 +3092,9 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
    TMultiGraphPainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
 
-   TMultiGraphPainter.prototype.Cleanup = function() {
+   TMultiGraphPainter.prototype.cleanup = function() {
       this.painters = [];
-      JSROOT.ObjectPainter.prototype.Cleanup.call(this);
+      JSROOT.ObjectPainter.prototype.cleanup.call(this);
    }
 
    TMultiGraphPainter.prototype.updateObject = function(obj) {
