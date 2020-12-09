@@ -1817,7 +1817,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       // create painter and add it to canvas
       let painter = new RH1Painter(divid, histo);
 
-      return jsrp.ensureRCanvas(painter, divid).then(() => {
+      return jsrp.ensureRCanvas(painter).then(() => {
 
          painter.setAsMainPainter();
 
@@ -3592,7 +3592,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       // create painter and add it to canvas
       let painter = new RH2Painter(divid, obj);
 
-      return jsrp.ensureRCanvas(painter, divid).then(() => {
+      return jsrp.ensureRCanvas(painter).then(() => {
 
          painter.setAsMainPainter();
 
@@ -3860,7 +3860,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
    function drawHistStats(divid, stats, opt) {
       let painter = new RHistStatsPainter(divid, stats, opt);
 
-      return jsrp.ensureRCanvas(painter, divid, false).then(() => painter.DrawPave());
+      return jsrp.ensureRCanvas(painter, false).then(() => painter.DrawPave());
    }
 
    JSROOT.v7.RHistPainter = RHistPainter;

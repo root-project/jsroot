@@ -2291,7 +2291,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       }
 
       let painter = new TGraphPolargramPainter(divid, polargram);
-      return jsrp.ensureTCanvas(painter, divid, false).then(() => {
+      return jsrp.ensureTCanvas(painter, false).then(() => {
          painter.setAsMainPainter();
          painter.Redraw();
          return painter;
@@ -3820,7 +3820,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    function drawASImage(divid, obj, opt) {
       let painter = new TASImagePainter(divid, obj, opt);
       painter.decodeOptions(opt);
-      return jsrp.ensureTCanvas(painter, divid)
+      return jsrp.ensureTCanvas(painter)
                  .then(() => painter.drawImage())
                  .then(() => {
                      painter.FillToolbar();

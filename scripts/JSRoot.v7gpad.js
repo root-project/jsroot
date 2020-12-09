@@ -1426,7 +1426,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    let drawRAxis = (divid, obj /*, opt*/) => {
       let painter = new RAxisPainter(divid, obj);
       painter.disable_zooming = true;
-      return jsrp.ensureRCanvas(painter, divid, false)
+      return jsrp.ensureRCanvas(painter, false)
                  .then(() => painter.Redraw())
                  .then(() => painter);
    }
@@ -2374,7 +2374,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    function drawRFrame(divid, obj, opt) {
       let p = new RFramePainter(divid, obj);
       if (opt == "3d") p.mode3d = true;
-      return jsrp.ensureRCanvas(p, divid, false).then(() => {
+      return jsrp.ensureRCanvas(p, false).then(() => {
          p.Redraw();
          return p;
       });
@@ -4181,22 +4181,21 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
      /** @summary Ensure TCanvas and TFrame for the painter object
     * @param {Object} painter  - painter object to process
-    * @param {Object|string} divid - HTML element or element id
     * @param {string|boolean} frame_kind  - false for no frame or "3d" for special 3D mode
     * @desc Assign divid, creates TCanvas if necessary, add to list of pad painters and */
-   let ensureRCanvas = function(painter, divid, frame_kind) {
+   let ensureRCanvas = function(painter, frame_kind) {
       if (!painter) return Promise.reject('Painter not provided in ensureRCanvas');
 
       // simple check - if canvas there, can use painter
       let svg_c = painter.svg_canvas();
       let noframe = (frame_kind === false) || (frame_kind == "3d") ? "noframe" : "";
 
-      let promise = !svg_c.empty() ? Promise.resolve(true) : drawRCanvas(divid, null, noframe);
+      let promise = !svg_c.empty() ? Promise.resolve(true) : drawRCanvas(painter.getDom(), null, noframe);
 
       return promise.then(() => {
          if (frame_kind === false) return;
          if (painter.svg_frame().select(".main_layer").empty())
-            return drawRFrame(divid, null, (typeof frame_kind === "string") ? frame_kind : "");
+            return drawRFrame(painter.getDom(), null, (typeof frame_kind === "string") ? frame_kind : "");
       }).then(() => {
          painter.addToPadPrimitives();
          return painter;
@@ -4351,7 +4350,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    let drawPave = (divid, pave, opt) => {
       let painter = new RPavePainter(divid, pave, opt);
 
-      return jsrp.ensureRCanvas(painter, divid, false).then(() => painter.DrawPave());
+      return jsrp.ensureRCanvas(painter, false).then(() => painter.DrawPave());
    }
 
    // =======================================================================================
@@ -4774,7 +4773,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    let drawPalette = (divid, palette, opt) => {
       let painter = new RPalettePainter(divid, palette, opt);
 
-      return jsrp.ensureRCanvas(painter, divid, false).then(() => {
+      return jsrp.ensureRCanvas(painter, false).then(() => {
          painter.CreateG(false); // just create container, real drawing will be done by histogram
          return painter;
       });

@@ -860,7 +860,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       let painter = new TAxisPainter(divid, obj, false);
       painter.disable_zooming = true;
 
-      return jsrp.ensureTCanvas(painter, divid, false)
+      return jsrp.ensureTCanvas(painter, false)
              .then(() => painter.Redraw()).then(() => painter);
    }
 
@@ -1935,7 +1935,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    let drawFrame = (divid, obj, opt) => {
       let p = new TFramePainter(divid, obj);
-      return jsrp.ensureTCanvas(p, divid, false).then(() => {
+      return jsrp.ensureTCanvas(p, false).then(() => {
          if (opt == "3d") p.mode3d = true;
          p.Redraw();
          return p;
@@ -4169,23 +4169,22 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
   /** @summary Ensure TCanvas and TFrame for the painter object
     * @param {Object} painter  - painter object to process
-    * @param {Object|string} divid - HTML element or element id
     * @param {string|boolean} frame_kind  - false for no frame or "3d" for special 3D mode
     * @desc Assign divid, creates TCanvas if necessary, add to list of pad painters and */
-   let ensureTCanvas = function(painter, divid, frame_kind) {
+   let ensureTCanvas = function(painter, frame_kind) {
       if (!painter) return Promise.reject('Painter not provided in ensureTCanvas');
 
       // simple check - if canvas there, can use painter
       let svg_c = painter.svg_canvas();
       let noframe = (frame_kind === false) || (frame_kind == "3d") ? "noframe" : "";
 
-      let promise = !svg_c.empty() ? Promise.resolve(true) : drawCanvas(divid, null, noframe);
+      let promise = !svg_c.empty() ? Promise.resolve(true) : drawCanvas(painter.getDom(), null, noframe);
 
       return promise.then(() => {
          if (frame_kind === false) return;
 
          if (painter.svg_frame().select(".main_layer").empty() && !painter.frame_painter())
-            return drawFrame(divid, null, (typeof frame_kind === "string") ? frame_kind : "");
+            return drawFrame(painter.getDom(), null, (typeof frame_kind === "string") ? frame_kind : "");
       }).then(() => {
          painter.addToPadPrimitives();
          return painter;

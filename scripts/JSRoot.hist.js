@@ -1276,7 +1276,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    let drawPave = (divid, pave, opt) => {
       let painter = new JSROOT.TPavePainter(divid, pave);
 
-      return jsrp.ensureTCanvas(painter, divid, false).then(() => {
+      return jsrp.ensureTCanvas(painter, false).then(() => {
 
          if ((pave.fName === "title") && (pave._typename === "TPaveText")) {
             let tpainter = painter.FindPainterFor(null, "title");
@@ -4302,7 +4302,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       // create painter and add it to canvas
       let painter = new TH1Painter(divid, histo);
 
-      return jsrp.ensureTCanvas(painter, divid).then(() => {
+      return jsrp.ensureTCanvas(painter).then(() => {
          // tend to be main painter - if first
          painter.setAsMainPainter();
 
@@ -6329,7 +6329,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       // create painter and add it to canvas
       let painter = new JSROOT.TH2Painter(divid, histo);
 
-      return jsrp.ensureTCanvas(painter, divid).then(() => {
+      return jsrp.ensureTCanvas(painter).then(() => {
 
          painter.setAsMainPainter();
 
@@ -6801,7 +6801,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       let painter = new THStackPainter(divid, stack, opt);
 
-      return jsrp.ensureTCanvas(painter, divid, false).then(() => {
+      return jsrp.ensureTCanvas(painter, false).then(() => {
 
          painter.DecodeOptions(opt);
 

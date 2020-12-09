@@ -2967,7 +2967,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       // create painter and add it to canvas
       let painter = new RH3Painter(divid, histo);
 
-      return jsrp.ensureRCanvas(painter, divid, "3d").then(() => {
+      return jsrp.ensureRCanvas(painter, "3d").then(() => {
 
          painter.setAsMainPainter();
 
