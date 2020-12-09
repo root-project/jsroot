@@ -3013,7 +3013,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return changed;
    }
 
-   RPadPainter.prototype.UpdateObject = function(obj) {
+   RPadPainter.prototype.updateObject = function(obj) {
       if (!obj) return false;
 
       this.pad.fStyle = obj.fStyle;
@@ -3091,7 +3091,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                return this.DrawNextSnap(lst, indx);
             });
 
-         if (objpainter.UpdateObject(snap.fDrawable || snap.fObject || snap, snap.fOption || ""))
+         if (objpainter.updateObject(snap.fDrawable || snap.fObject || snap, snap.fOption || ""))
             objpainter.Redraw();
 
          return this.DrawNextSnap(lst, indx); // call next
@@ -3232,7 +3232,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
 
       // update only pad/canvas attributes
-      this.UpdateObject(snap);
+      this.updateObject(snap);
 
       // apply all changes in the object (pad or canvas)
       if (this.iscan) {

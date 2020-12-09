@@ -3980,7 +3980,8 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       this.Render3D();
    }
 
-   TGeoPainter.prototype.UpdateObject = function(obj) {
+   /** @summary Update object in geo painter */
+   TGeoPainter.prototype.updateObject = function(obj) {
       if (obj === "same") return true;
       if (!obj || !obj._typename) return false;
       if (obj === this.getObject()) return true;
@@ -4016,7 +4017,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
    /** @summary Redraw TGeo object */
    TGeoPainter.prototype.redrawObject = function(obj) {
-      if (!this.UpdateObject(obj))
+      if (!this.updateObject(obj))
          return false;
 
       this.ClearDrawings();

@@ -1191,7 +1191,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return !p.fInit && !p.fX1 && !p.fX2 && !p.fY1 && !p.fY2 && !p.fX1NDC && !p.fX2NDC && !p.fY1NDC && !p.fY2NDC;
    }
 
-   TPavePainter.prototype.UpdateObject = function(obj) {
+   TPavePainter.prototype.updateObject = function(obj) {
       if (!this.matchObjectType(obj)) return false;
 
       let pave = this.getObject();
@@ -2008,7 +2008,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
     * @param obj - new histogram instance
     * @param opt - new drawing option (optional)
     * @returns {Boolean} - true if histogram was successfully updated */
-   THistPainter.prototype.UpdateObject = function(obj, opt) {
+   THistPainter.prototype.updateObject = function(obj, opt) {
 
       let histo = this.GetHisto(),
           fp = this.frame_painter();
@@ -2141,7 +2141,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                      funcpainter = this.FindPainterFor(null, func.fName, func._typename);
 
                   if (funcpainter) {
-                     funcpainter.UpdateObject(func);
+                     funcpainter.updateObject(func);
                      if (func_indx >= 0) painters.splice(func_indx, 1);
                   } else {
                      newfuncs.push(func);
@@ -6466,7 +6466,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          hpainter.tf2_typename = func._typename;
          hpainter.tf2_nosave = d.check('NOSAVE');
 
-         hpainter.UpdateObject = function(obj /*, opt*/) {
+         hpainter.updateObject = function(obj /*, opt*/) {
             if (!obj || (this.tf2_typename != obj._typename)) return false;
             createTF2Histogram(obj, this.tf2_nosave, this.GetHisto());
             return true;
@@ -6730,7 +6730,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    }
 
    /** @summary Update thstack object */
-   THStackPainter.prototype.UpdateObject = function(obj) {
+   THStackPainter.prototype.updateObject = function(obj) {
       if (!this.matchObjectType(obj)) return false;
 
       let stack = this.getObject();
@@ -6747,7 +6747,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          if (!src)
             src = stack.fHistogram = this.CreateHistogram(stack);
 
-         this.firstpainter.UpdateObject(src);
+         this.firstpainter.updateObject(src);
 
          let mm = this.GetMinMax(this.options.errors || this.options.draw_errors, this.root_pad());
 
@@ -6773,7 +6773,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          for (let indx = 0; indx < nhists; ++indx) {
             let rindx = this.options.horder ? indx : nhists-indx-1;
             let hist = hlst.arr[rindx];
-            this.painters[indx].UpdateObject(hist);
+            this.painters[indx].updateObject(hist);
          }
       }
 

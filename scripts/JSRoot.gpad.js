@@ -2679,7 +2679,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return changed;
    }
 
-   TPadPainter.prototype.UpdateObject = function(obj) {
+   TPadPainter.prototype.updateObject = function(obj) {
       if (!obj) return false;
 
       this.pad.fBits = obj.fBits;
@@ -2729,7 +2729,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          while (p < this.painters.length) {
             let pp = this.painters[p++];
             if (!pp._primitive) continue;
-            if (pp.UpdateObject(obj.fPrimitives.arr[n])) isany = true;
+            if (pp.updateObject(obj.fPrimitives.arr[n])) isany = true;
             break;
          }
       }
@@ -2752,7 +2752,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Function called when drawing next snapshot from the list
-     * it is also used as callback for drawing of previous snap */
+     * @returns {Promise} for drawing of the snap */
    TPadPainter.prototype.DrawNextSnap = function(lst, indx) {
 
       if (indx === undefined) {
@@ -2793,9 +2793,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             return objpainter.RedrawPadSnap(snap).then(() => this.DrawNextSnap(lst, indx));
 
          if (snap.fKind === webSnapIds.kObject) { // object itself
-            if (objpainter.UpdateObject(snap.fSnapshot, snap.fOption)) objpainter.Redraw();
+            if (objpainter.updateObject(snap.fSnapshot, snap.fOption)) objpainter.Redraw();
          } else if (snap.fKind === webSnapIds.kSVG) { // update SVG
-            if (objpainter.UpdateObject(snap.fSnapshot)) objpainter.Redraw();
+            if (objpainter.updateObject(snap.fSnapshot)) objpainter.Redraw();
          }
 
          return this.DrawNextSnap(lst, indx); // call next
@@ -2965,7 +2965,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return this.DrawNextSnap(snap.fPrimitives);
       }
 
-      this.UpdateObject(first); // update only object attributes
+      this.updateObject(first); // update only object attributes
 
       // apply all changes in the object (pad or canvas)
       if (this.iscan) {
@@ -3706,7 +3706,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          promise.then(painter => { this.proj_painter = painter; })
       } else {
          let hp = this.proj_painter.main_painter();
-         if (hp) hp.UpdateObject(hist, "hist");
+         if (hp) hp.updateObject(hist, "hist");
          this.proj_painter.redrawPad();
       }
    }

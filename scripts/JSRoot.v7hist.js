@@ -228,7 +228,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       return true;
    }
 
-   RHistPainter.prototype.UpdateObject = function(obj /*, opt*/) {
+   RHistPainter.prototype.updateObject = function(obj /*, opt*/) {
 
       let origin = this.getObject();
 

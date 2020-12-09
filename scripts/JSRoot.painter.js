@@ -1417,11 +1417,6 @@ JSROOT.define(['d3'], (d3) => {
       delete this._hpainter;
    }
 
-   /** @summary Called to update drawn object content
-     * @returns {boolean} true if update was performed
-     * @abstract */
-   BasePainter.prototype.UpdateObject = function(/* obj */) {}
-
    /** @summary Checks if draw elements were resized and drawing should be updated
      * @returns {boolean} true if resize was detected
      * @abstract */
@@ -1724,12 +1719,12 @@ JSROOT.define(['d3'], (d3) => {
      * @param {object} obj - new version of object, values will be updated in original object
      * @param {string} [opt] - when specified, new draw options
      * @returns {boolean|Promise} for object redraw
-     * @desc Two actions typically done by redraw - update object content via {@link ObjectPainter.prototype.UpdateObject} and
+     * @desc Two actions typically done by redraw - update object content via {@link ObjectPainter.prototype.updateObject} and
       * then redraw correspondent pad via {@link ObjectPainter.prototype.redrawPad}. If possible one should redefine
-      * only UpdateObject function and keep this function unchanged. But for some special painters this function it is the
+      * only updateObject function and keep this function unchanged. But for some special painters this function it is the
       * only way to control how object can be update while requested from the server */
    ObjectPainter.prototype.redrawObject = function(obj, opt) {
-      if (!this.UpdateObject(obj,opt)) return false;
+      if (!this.updateObject(obj,opt)) return false;
       let current = document.body.style.cursor;
       document.body.style.cursor = 'wait';
       let res = this.redrawPad();
@@ -1741,7 +1736,7 @@ JSROOT.define(['d3'], (d3) => {
      * @desc Default implementation just copies first-level members to current object
      * @param {object} obj - object with new data
      * @param {string} [opt] - option which will be used for redrawing */
-   ObjectPainter.prototype.UpdateObject = function(obj /*, opt */) {
+   ObjectPainter.prototype.updateObject = function(obj /*, opt */) {
       if (!this.matchObjectType(obj)) return false;
       JSROOT.extend(this.getObject(), obj);
       return true;
