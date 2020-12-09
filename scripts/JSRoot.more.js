@@ -33,7 +33,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          if (!tcolor) tcolor = 'black';
       }
 
-      this.CreateG(use_frame);
+      this.createG(use_frame);
 
       this.draw_g.attr("transform",null); // remove transofrm from interactive changes
 
@@ -90,7 +90,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
           isndc = line.TestBit(kLineNDC);
 
       // create svg:g container for line drawing
-      this.CreateG();
+      this.createG();
 
       this.draw_g
           .append("svg:line")
@@ -106,7 +106,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    function drawPolyLine() {
 
       // create svg:g container for polyline drawing
-      this.CreateG();
+      this.createG();
 
       let polyline = this.getObject(),
           lineatt = new JSROOT.TAttLineHandler(polyline),
@@ -139,7 +139,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       this.createAttFill({ attr: ellipse });
 
       // create svg:g container for ellipse drawing
-      this.CreateG();
+      this.createG();
 
       let x = this.AxisToSvg("x", ellipse.fX1),
           y = this.AxisToSvg("y", ellipse.fY1),
@@ -226,7 +226,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       let pie = this.getObject();
 
       // create svg:g container for ellipse drawing
-      this.CreateG();
+      this.createG();
 
       let xc = this.AxisToSvg("x", pie.fX),
           yc = this.AxisToSvg("y", pie.fY),
@@ -271,7 +271,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
           fillatt = this.createAttFill(box);
 
       // create svg:g container for box drawing
-      this.CreateG();
+      this.createG();
 
       let x1 = this.AxisToSvg("x", box.fX1),
           x2 = this.AxisToSvg("x", box.fX2),
@@ -323,7 +323,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
           isndc = marker.TestBit(kMarkerNDC);
 
       // create svg:g container for box drawing
-      this.CreateG();
+      this.createG();
 
       let x = this.AxisToSvg("x", marker.fX, isndc),
           y = this.AxisToSvg("y", marker.fY, isndc),
@@ -340,14 +340,14 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    function drawPolyMarker() {
 
       // create svg:g container for box drawing
-      this.CreateG();
+      this.createG();
 
       let poly = this.getObject(),
           att = new JSROOT.TAttMarkerHandler(poly),
           path = "",
           func = this.AxisToSvgFunc();
 
-      for (let n=0;n<poly.fN;++n)
+      for (let n = 0; n < poly.fN; ++n)
          path += att.create(func.x(poly.fX[n]), func.y(poly.fY[n]));
 
       if (path)
@@ -377,7 +377,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       this.createAttLine({ attr: arrow });
 
-      this.CreateG();
+      this.createG();
 
       this.x1 = this.AxisToSvg("x", arrow.fX1, this.isndc, true);
       this.y1 = this.AxisToSvg("y", arrow.fY1, this.isndc, true);
@@ -677,7 +677,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
           fp = this.frame_painter(),
           pmain = this.main_painter();
 
-      this.CreateG(true);
+      this.createG(true);
 
       // recalculate drawing bins when necessary
       this.bins = this.CreateBins(false);
@@ -1091,7 +1091,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       if (!pmain) return;
 
-      this.CreateG(!pmain.pad_layer);
+      this.createG(!pmain.pad_layer);
 
       if (pp && (this.options._pfc || this.options._plc || this.options._pmc)) {
          let icolor = pp.CreateAutoColor(this);
@@ -2130,7 +2130,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       let polar = this.getObject(),
           rect = this.GetFrameRect();
 
-      this.CreateG();
+      this.createG();
 
       this.draw_g.attr("transform", "translate(" + rect.midx + "," + rect.midy + ")");
       this.szx = rect.szx;
@@ -2347,7 +2347,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       if (this.options.err || this.options.line || this.options.curve) this.createAttLine({ attr: graph });
       if (this.options.fill) this.createAttFill({ attr: graph });
 
-      this.CreateG();
+      this.createG();
 
       this.draw_g.attr("transform", main.draw_g.attr("transform"));
 
@@ -2710,7 +2710,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
           spline = this.getObject(),
           pmain = this.frame_painter();
 
-      this.CreateG(true);
+      this.createG(true);
 
       this.knot_size = 5; // used in tooltip handling
 
@@ -3363,7 +3363,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
             }
          }
 
-         this.CreateG();
+         this.createG();
 
          for (k=0;k<arr.length;++k) {
             oper = arr[k][0];
@@ -3686,7 +3686,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       }
 
       if (url)
-         this.CreateG(true)
+         this.createG(true)
              .append("image")
              .attr("href", url)
              .attr("width", this.frame_width())
@@ -3742,7 +3742,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       if (!enabled) {
          if (pal_painter) {
             pal_painter.Enabled = false;
-            pal_painter.RemoveDrawG(); // completely remove drawing without need to redraw complete pad
+            pal_painter.removeG(); // completely remove drawing without need to redraw complete pad
          }
          return Promise.resolve(null);
       }

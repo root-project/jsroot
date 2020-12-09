@@ -233,7 +233,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       let promise = Promise.resolve(this);
 
       if (!this.Enabled) {
-         this.RemoveDrawG();
+         this.removeG();
          return promise;
       }
 
@@ -296,7 +296,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           dy = (opt.indexOf("T")>=0) ? -1 : ((opt.indexOf("B")>=0) ? 1 : 0);
 
       // container used to recalculate coordinates
-      this.CreateG();
+      this.createG();
 
       this.draw_g.attr("transform", "translate(" + pos_x + "," + pos_y + ")");
 
@@ -882,7 +882,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                        .property("fill0", col)
                        .property("fill1", d3.rgb(col).darker(0.5).toString())
 
-            if (this.IsTooltipAllowed())
+            if (this.isTooltipAllowed())
                r.on('mouseover', function() {
                   d3.select(this).transition().duration(100).style("fill", d3.select(this).property('fill1'));
                }).on('mouseout', function() {
@@ -1463,8 +1463,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (d.check('NOSTAT')) this.NoStat = true;
       if (d.check('STAT')) this.ForceStat = true;
 
-      if (d.check('NOTOOLTIP') && painter) painter.SetTooltipAllowed(false);
-      if (d.check('TOOLTIP') && painter) painter.SetTooltipAllowed(true);
+      if (d.check('NOTOOLTIP') && painter) painter.setTooltipAllowed(false);
+      if (d.check('TOOLTIP') && painter) painter.setTooltipAllowed(true);
 
       if (d.check('LOGX') && pad) { pad.fLogx = 1; pad.fUxmin = 0; pad.fUxmax = 1; pad.fX1 = 0; pad.fX2 = 1; }
       if (d.check('LOGY') && pad) { pad.fLogy = 1; pad.fUymin = 0; pad.fUymax = 1; pad.fY1 = 0; pad.fY2 = 1; }
@@ -2712,8 +2712,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          let main = this.main_painter() || this;
 
-         menu.addchk(main.IsTooltipAllowed(), 'Show tooltips', function() {
-            main.SetTooltipAllowed("toggle");
+         menu.addchk(main.isTooltipAllowed(), 'Show tooltips', function() {
+            main.setTooltipAllowed("toggle");
          });
 
          menu.addchk(fp.enable_highlight, 'Highlight bins', function() {
@@ -2961,7 +2961,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (!enabled) {
          if (pal_painter) {
             pal_painter.Enabled = false;
-            pal_painter.RemoveDrawG(); // completely remove drawing without need to redraw complete pad
+            pal_painter.removeG(); // completely remove drawing without need to redraw complete pad
          }
 
          return Promise.resolve(null);
@@ -3497,7 +3497,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
      * @private */
    TH1Painter.prototype.DrawBars = function(height) {
 
-      this.CreateG(true);
+      this.createG(true);
 
       let left = this.GetSelectIndex("x", "left", -1),
           right = this.GetSelectIndex("x", "right", 1),
@@ -3593,7 +3593,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    }
 
    TH1Painter.prototype.DrawFilledErrors = function() {
-      this.CreateG(true);
+      this.createG(true);
 
       let left = this.GetSelectIndex("x", "left", -1),
           right = this.GetSelectIndex("x", "right", 1),
@@ -3636,7 +3636,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       let width = this.frame_width(), height = this.frame_height();
 
       if (!this.draw_content || (width<=0) || (height<=0))
-          return this.RemoveDrawG();
+          return this.removeG();
 
       if (this.options.Bar)
          return this.DrawBars(height);
@@ -3693,9 +3693,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           draw_hist = this.options.Hist && (!this.lineatt.empty() || !this.fillatt.empty());
 
       if (!draw_hist && !draw_any_but_hist)
-         return this.RemoveDrawG();
+         return this.removeG();
 
-      this.CreateG(true);
+      this.createG(true);
 
       if (show_text) {
          text_col = this.get_color(histo.fMarkerColor);
@@ -5892,11 +5892,11 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    TH2Painter.prototype.Draw2DBins = function() {
 
       if (!this.draw_content)
-         return this.RemoveDrawG();
+         return this.removeG();
 
       this.CheckHistDrawAttributes();
 
-      this.CreateG(true);
+      this.createG(true);
 
       let handle = null;
 

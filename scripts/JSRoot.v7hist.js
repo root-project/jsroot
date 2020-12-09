@@ -562,8 +562,8 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
          let main = this.main_painter() || this;
 
-         menu.addchk(main.IsTooltipAllowed(), 'Show tooltips', function() {
-            main.SetTooltipAllowed("toggle");
+         menu.addchk(main.isTooltipAllowed(), 'Show tooltips', function() {
+            main.setTooltipAllowed("toggle");
          });
 
          menu.addchk(fp.enable_highlight, 'Highlight bins', function() {
@@ -1050,7 +1050,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
    RH1Painter.prototype.DrawBars = function(handle, width, height) {
 
-      this.CreateG(true);
+      this.createG(true);
 
       let left = handle.i1, right = handle.i2, di = handle.stepi,
           pmain = this.frame_painter(),
@@ -1119,7 +1119,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
    }
 
    RH1Painter.prototype.DrawFilledErrors = function(handle /*, width, height*/) {
-      this.CreateG(true);
+      this.createG(true);
 
       let left = handle.i1, right = handle.i2, di = handle.stepi,
           pmain = this.frame_painter(),
@@ -1161,7 +1161,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       let width = this.frame_width(), height = this.frame_height();
 
       if (!this.draw_content || (width<=0) || (height<=0))
-         return this.RemoveDrawG();
+         return this.removeG();
 
       this.CheckHistDrawAttributes();
 
@@ -1177,7 +1177,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
    }
 
    RH1Painter.prototype.DrawHistBins = function(handle, width, height) {
-      this.CreateG(true);
+      this.createG(true);
 
       let options = this.options,
           left = handle.i1,
@@ -3196,11 +3196,11 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
    RH2Painter.prototype.Draw2DBins = function() {
 
       if (!this.draw_content)
-         return this.RemoveDrawG();
+         return this.removeG();
 
       this.CheckHistDrawAttributes();
 
-      this.CreateG(true);
+      this.createG(true);
 
       let w = this.frame_width(),
           h = this.frame_height(),

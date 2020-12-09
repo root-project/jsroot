@@ -1290,7 +1290,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
       let painter = this;
 
-      this.SetTooltipAllowed(JSROOT.settings.Tooltip);
+      this.setTooltipAllowed(JSROOT.settings.Tooltip);
 
       this._controls = jsrp.createOrbitControl(this, this._camera, this._scene, this._renderer, this._lookat);
 
@@ -3918,7 +3918,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       // firefox is the only browser which correctly supports resize of embedded canvas,
       // for others we should force canvas redrawing at every step
       if (pad_painter)
-         if (!pad_painter.CheckCanvasResize(arg)) return false;
+         if (!pad_painter.checkCanvasResize(arg)) return false;
 
       let sz = this.size_for_3d();
 

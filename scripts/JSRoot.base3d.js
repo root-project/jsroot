@@ -878,7 +878,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
          }
 
          this.cursor_changed = false;
-         if (tip && this.painter && this.painter.IsTooltipAllowed()) {
+         if (tip && this.painter && this.painter.isTooltipAllowed()) {
             this.tooltip.check_parent(this.painter.selectDom().node());
 
             this.tooltip.show(tip, mouse);

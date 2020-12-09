@@ -851,7 +851,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          swap_side: reverse
       });
 
-      this.CreateG();
+      this.createG();
 
       return this.DrawAxis(this.draw_g, Math.abs(w), Math.abs(h), "translate(" + x1 + "," + y2 +")");
    }
@@ -1449,9 +1449,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    TFramePainter.prototype.CleanAxesDrawings = function() {
       // remove all axes drawings
-      if (this.x_handle) this.x_handle.RemoveDrawG();
-      if (this.y_handle) this.y_handle.RemoveDrawG();
-      if (this.z_handle) this.z_handle.RemoveDrawG();
+      if (this.x_handle) this.x_handle.removeG();
+      if (this.y_handle) this.y_handle.removeG();
+      if (this.z_handle) this.z_handle.removeG();
 
       if (this.draw_g) {
          this.draw_g.select(".grid_layer").selectAll("*").remove();
@@ -1692,8 +1692,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          menu.add("separator");
       }
 
-      menu.addchk(this.IsTooltipAllowed(), "Show tooltips", function() {
-         this.SetTooltipAllowed("toggle");
+      menu.addchk(this.isTooltipAllowed(), "Show tooltips", function() {
+         this.setTooltipAllowed("toggle");
       });
       menu.AddAttributesMenu(this, alone ? "" : "Frame ");
       menu.add("separator");
@@ -2544,7 +2544,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       else
          menu.add("header: Canvas");
 
-      menu.addchk(this.IsTooltipAllowed(), "Show tooltips", this.SetTooltipAllowed.bind(this, "toggle"));
+      menu.addchk(this.isTooltipAllowed(), "Show tooltips", this.setTooltipAllowed.bind(this, "toggle"));
 
       if (!this._websocket) {
 
@@ -2658,7 +2658,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return false;
    }
 
-   TPadPainter.prototype.CheckCanvasResize = function(size, force) {
+   TPadPainter.prototype.checkCanvasResize = function(size, force) {
 
       if (!this.iscan && this.has_canvas) return false;
 
@@ -4012,7 +4012,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          case "StatusBar": this.ActivateStatusBar(on); break;
          case "Editor": return this.ActivateGed(this, null, !!on);
          case "ToolBar": break;
-         case "ToolTips": this.SetTooltipAllowed(on); break;
+         case "ToolTips": this.setTooltipAllowed(on); break;
 
       }
       return Promise.resolve(true);
@@ -4113,7 +4113,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       let bits = 0;
       if (this.HasEventStatus()) bits |= TCanvasStatusBits.kShowEventStatus;
       if (this.HasGed()) bits |= TCanvasStatusBits.kShowEditor;
-      if (this.IsTooltipAllowed()) bits |= TCanvasStatusBits.kShowToolTips;
+      if (this.isTooltipAllowed()) bits |= TCanvasStatusBits.kShowToolTips;
       if (this.use_openui) bits |= TCanvasStatusBits.kMenuBar;
       return bits;
    }

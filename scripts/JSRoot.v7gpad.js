@@ -1276,7 +1276,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       this.ConfigureAxis("axis", min, max, smin, smax, drawable.fVertical, undefined, len, { reverse: reverse, labels: !!drawable.fLabels });
 
-      this.CreateG();
+      this.createG();
 
       this.standalone = true;  // no need to clean axis container
 
@@ -2299,8 +2299,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       menu.add("separator");
 
 
-      menu.addchk(this.IsTooltipAllowed(), "Show tooltips", function() {
-         this.SetTooltipAllowed("toggle");
+      menu.addchk(this.isTooltipAllowed(), "Show tooltips", function() {
+         this.setTooltipAllowed("toggle");
       });
       menu.AddAttributesMenu(this, alone ? "" : "Frame ");
       menu.add("separator");
@@ -2870,7 +2870,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       else
          menu.add("header: Canvas");
 
-      menu.addchk(this.IsTooltipAllowed(), "Show tooltips", this.SetTooltipAllowed.bind(this, "toggle"));
+      menu.addchk(this.isTooltipAllowed(), "Show tooltips", this.setTooltipAllowed.bind(this, "toggle"));
 
       if (!this._websocket) {
 
@@ -2992,7 +2992,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return false;
    }
 
-   RPadPainter.prototype.CheckCanvasResize = function(size, force) {
+   RPadPainter.prototype.checkCanvasResize = function(size, force) {
 
       if (!this.iscan && this.has_canvas) return false;
 
@@ -4102,7 +4102,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          case "StatusBar": break;
          case "Editor": break;
          case "ToolBar": break;
-         case "ToolTips": this.SetTooltipAllowed(on); break;
+         case "ToolTips": this.setTooltipAllowed(on); break;
       }
       return Promise.resolve(true);
    }
@@ -4280,7 +4280,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           fill_color   = this.v7EvalColor("fill_color", "white"),
           fill_style   = this.v7EvalAttr("fill_style", 1);
 
-      this.CreateG(false);
+      this.createG();
 
       this.draw_g.classed("most_upper_primitives", true); // this primitive will remain on top of list
 
@@ -4394,7 +4394,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           title_height = this.v7EvalLength("height", ph, 0.05),
           textFont     = this.v7EvalFont("text", { size: 24, color: "black", align: 22 });
 
-      this.CreateG(false);
+      this.createG();
 
       if (reason == 'drag') {
          title_width = parseInt(this.draw_g.attr("width"));
@@ -4657,7 +4657,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                      .property("fill0", col)
                      .property("fill1", d3.rgb(col).darker(0.5).toString())
 
-         if (this.IsTooltipAllowed())
+         if (this.isTooltipAllowed())
             r.on('mouseover', function() {
                d3.select(this).transition().duration(100).style("fill", d3.select(this).property('fill1'));
             }).on('mouseout', function() {
@@ -4796,7 +4796,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       let painter = new RPalettePainter(divid, palette, opt);
 
       return jsrp.ensureRCanvas(painter, false).then(() => {
-         painter.CreateG(false); // just create container, real drawing will be done by histogram
+         painter.createG(); // just create container, real drawing will be done by histogram
          return painter;
       });
    }

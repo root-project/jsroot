@@ -16,7 +16,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       /** @returns true if tooltip is shown, use to prevent some other action */
       IsTooltipShown: function() {
-         if (!this.tooltip_enabled || !this.IsTooltipAllowed()) return false;
+         if (!this.tooltip_enabled || !this.isTooltipAllowed()) return false;
          let hintsg = this.hints_layer().select(".objects_hints");
          return hintsg.empty() ? false : hintsg.property("hints_pad") == this.pad_name;
       },
@@ -49,7 +49,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             pp = this.pad_painter(),
             font = new JSROOT.FontHandler(160, textheight),
             status_func = this.GetShowStatusFunc(),
-            disable_tootlips = !this.IsTooltipAllowed() || !this.tooltip_enabled;
+            disable_tootlips = !this.isTooltipAllowed() || !this.tooltip_enabled;
 
          if ((pnt === undefined) || (disable_tootlips && !status_func)) pnt = null;
          if (pnt && disable_tootlips) pnt.disabled = true; // indicate that highlighting is not required
@@ -664,7 +664,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          let hintsg = this.hints_layer().select(".objects_hints");
          // if tooltips were visible before, try to reconstruct them after short timeout
-         if (!hintsg.empty() && this.IsTooltipAllowed() && (hintsg.property("hints_pad") == this.pad_name))
+         if (!hintsg.empty() && this.isTooltipAllowed() && (hintsg.property("hints_pad") == this.pad_name))
             setTimeout(this.ProcessTooltipEvent.bind(this, hintsg.property('last_point'), null), 10);
       },
 

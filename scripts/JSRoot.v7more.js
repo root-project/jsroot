@@ -12,7 +12,7 @@ JSROOT.define(['painter', 'v7gpad'], (jsrp) => {
           p         = pp.GetCoordinate(text.fPos),
           textFont  = this.v7EvalFont("text", { size: 12, color: "black", align: 22 });
 
-      this.CreateG(use_frame);
+      this.createG(use_frame);
 
       this.startTextDrawing(textFont, 'font');
 
@@ -34,7 +34,7 @@ JSROOT.define(['painter', 'v7gpad'], (jsrp) => {
            line_style   = this.v7EvalAttr("line_style", 1),
            line_color   = this.v7EvalColor("line_color", "black");
 
-       this.CreateG();
+       this.createG();
 
        this.draw_g
            .append("svg:line")
@@ -64,7 +64,7 @@ JSROOT.define(['painter', 'v7gpad'], (jsrp) => {
            round_width  = this.v7EvalAttr( "box_round_width", 0), // not yet exists
            round_height = this.v7EvalAttr( "box_round_height", 0); // not yet exists
 
-    this.CreateG();
+    this.createG();
 
     if (fill_style == 0) fill_color = "none";
 
@@ -94,7 +94,7 @@ JSROOT.define(['painter', 'v7gpad'], (jsrp) => {
            att          = new JSROOT.TAttMarkerHandler({ style: marker_style, color: marker_color, size: marker_size }),
            path         = att.create(p.x, p.y);
 
-       this.CreateG();
+       this.createG();
 
        if (path)
           this.draw_g.append("svg:path")

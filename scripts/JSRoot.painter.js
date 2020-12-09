@@ -1614,7 +1614,7 @@ JSROOT.define(['d3'], (d3) => {
      * @desc Remove object drawing and in case of main painter - also main HTML components */
    ObjectPainter.prototype.cleanup = function() {
 
-      this.RemoveDrawG();
+      this.removeG();
 
       let keep_origin = true;
 
@@ -1787,14 +1787,14 @@ JSROOT.define(['d3'], (d3) => {
 
    /** @summary returns tooltip allowed flag. Check canvas painter
     * @private */
-   ObjectPainter.prototype.IsTooltipAllowed = function() {
+   ObjectPainter.prototype.isTooltipAllowed = function() {
       let src = this.canv_painter() || this;
       return src.tooltip_allowed ? true : false;
    }
 
    /** @summary returns tooltip allowed flag
     * @private */
-   ObjectPainter.prototype.SetTooltipAllowed = function(on) {
+   ObjectPainter.prototype.setTooltipAllowed = function(on) {
       let src = this.canv_painter() || this;
       src.tooltip_allowed = (on == "toggle") ? !src.tooltip_allowed : on;
    }
@@ -1819,42 +1819,32 @@ JSROOT.define(['d3'], (d3) => {
       return cp.custom_palette;
    }
 
-   /** @summary Method called when interactively changes attribute in given class
-    * @abstract
-    * @private */
-   ObjectPainter.prototype.AttributeChange = function(/* class_name, member_name, new_value */) {
-      // only for objects in web canvas make sense to handle attributes changes from GED
-      // console.log("Changed attribute class = " + class_name + " member = " + member_name + " value = " + new_value);
-   }
-
    /** @summary Checks if draw elements were resized and drawing should be updated.
-    * @desc Redirects to {@link JSROOT.TPadPainter.CheckCanvasResize}
+    * @desc Redirects to {@link JSROOT.TPadPainter.checkCanvasResize}
     * @private */
    ObjectPainter.prototype.checkResize = function(arg) {
       let p = this.canv_painter();
       if (!p) return false;
 
       // only canvas should be checked
-      p.CheckCanvasResize(arg);
+      p.checkCanvasResize(arg);
       return true;
    }
 
    /** @summary removes <g> element with object drawing
-    * @desc generic method to delete all graphical elements, associated with painter */
-   ObjectPainter.prototype.RemoveDrawG = function() {
+     * @desc generic method to delete all graphical elements, associated with the painter */
+   ObjectPainter.prototype.removeG = function() {
       if (this.draw_g) {
          this.draw_g.remove();
-         this.draw_g = null;
+         delete this.draw_g;
       }
    }
 
    /** @summary (re)creates svg:g element for object drawings
-    *
-    * @desc either one attach svg:g to pad list of primitives (default)
-    * or svg:g element created in specified frame layer (default main_layer)
-    * @param {string} [frame_layer=undefined] - when specified, <g> element will be created inside frame layer, otherwise in pad primitives list
-    */
-   ObjectPainter.prototype.CreateG = function(frame_layer) {
+     * @desc either one attach svg:g to pad list of primitives (default)
+     * or svg:g element created in specified frame layer (default main_layer)
+     * @param {string} [frame_layer] - when specified, <g> element will be created inside frame layer, otherwise on the pad  */
+   ObjectPainter.prototype.createG = function(frame_layer) {
       if (this.draw_g) {
          // one should keep svg:g element on its place
          // d3.selectAll(this.draw_g.node().childNodes).remove();
@@ -1955,7 +1945,6 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /** @summary Converts x or y coordinate into SVG pad coordinates.
-    *
     *  @param {string} axis - name like "x" or "y"
     *  @param {number} value - axis value to convert.
     *  @param {boolean} ndc - is value in NDC coordinates
@@ -1968,7 +1957,7 @@ JSROOT.define(['d3'], (d3) => {
 
       if (use_frame && main && main["gr" + axis]) {
          value = (axis == "y") ? main.gry(value) + (use_frame ? 0 : main.frame_y())
-            : main.grx(value) + (use_frame ? 0 : main.frame_x());
+                               : main.grx(value) + (use_frame ? 0 : main.frame_x());
       } else if (use_frame) {
          value = 0; // in principal error, while frame calculation requested
       } else {

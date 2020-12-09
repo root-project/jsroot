@@ -254,7 +254,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
 
       if (this.first_render_tm === 0) {
          this.first_render_tm = tm2.getTime() - tm1.getTime();
-         this.enable_highlight = (this.first_render_tm < 1200) && this.IsTooltipAllowed();
+         this.enable_highlight = (this.first_render_tm < 1200) && this.isTooltipAllowed();
          console.log('three.js r' + THREE.REVISION + ', first render tm = ' + this.first_render_tm);
       }
    }
