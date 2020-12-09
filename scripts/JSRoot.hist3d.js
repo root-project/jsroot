@@ -511,17 +511,17 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
       // this.TestAxisVisibility = HPainter_TestAxisVisibility;
 
-      this.x_handle = new JSROOT.TAxisPainter(this.xaxis);
+      this.x_handle = new JSROOT.TAxisPainter(null, this.xaxis);
       this.x_handle.ConfigureAxis("xaxis", this.xmin, this.xmax, xmin, xmax, false, [grminx, grmaxx],
                                        { log: pad ? pad.fLogx : 0 });
       this.x_handle.AssignFrameMembers(this,"x");
 
-      this.y_handle = new JSROOT.TAxisPainter(this.yaxis);
+      this.y_handle = new JSROOT.TAxisPainter(null, this.yaxis);
       this.y_handle.ConfigureAxis("yaxis", this.ymin, this.ymax, ymin, ymax, false, [grminy, grmaxy],
                                       { log: pad && !opts.use_y_for_z ? pad.fLogx : 0 });
       this.y_handle.AssignFrameMembers(this,"y");
 
-      this.z_handle = new JSROOT.TAxisPainter(this.zaxis);
+      this.z_handle = new JSROOT.TAxisPainter(null, this.zaxis);
       this.z_handle.ConfigureAxis("zaxis", this.zmin, this.zmax, zmin, zmax, false, [grminz, grmaxz],
                                        { log: pad ? pad.fLogz : 0 });
       this.z_handle.AssignFrameMembers(this,"z");
@@ -2273,8 +2273,8 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
     * @private
     */
 
-   function TH3Painter(histo) {
-      JSROOT.THistPainter.call(this, histo);
+   function TH3Painter(divid, histo) {
+      JSROOT.THistPainter.call(this, divid, histo);
 
       this.mode3d = true;
    }
@@ -2967,7 +2967,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
    jsrp.drawHistogram3D = function(divid, histo, opt) {
       // create painter and add it to canvas
-      let painter = new JSROOT.TH3Painter(histo);
+      let painter = new JSROOT.TH3Painter(divid, histo);
       return jsrp.ensureTCanvas(painter, divid, "3d").then(() => {
          painter.setAsMainPainter();
          painter.DecodeOptions(opt);
@@ -2995,8 +2995,8 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
     * @private
     */
 
-   function TGraph2DPainter(graph) {
-      JSROOT.ObjectPainter.call(this, graph);
+   function TGraph2DPainter(divid, graph) {
+      JSROOT.ObjectPainter.call(this, divid, graph);
    }
 
    TGraph2DPainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
@@ -3319,7 +3319,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
    }
 
    jsrp.drawGraph2D = function(divid, gr, opt) {
-      let painter = new JSROOT.TGraph2DPainter(gr);
+      let painter = new JSROOT.TGraph2DPainter(divid, gr);
       painter.setCanvDom(divid);
       painter.DecodeOptions(opt);
 

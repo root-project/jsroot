@@ -499,8 +499,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
     * @private
     */
 
-   function TF1Painter(tf1) {
-      JSROOT.ObjectPainter.call(this, tf1);
+   function TF1Painter(divid, tf1) {
+      JSROOT.ObjectPainter.call(this, divid, tf1);
       this.bins = null;
    }
 
@@ -743,7 +743,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    }
 
    function drawFunction(divid, tf1, opt) {
-      let painter = new TF1Painter(tf1);
+      let painter = new TF1Painter(divid, tf1);
       painter.setCanvDom(divid);
       let d = new JSROOT.DrawOptions(opt);
       painter.nosave = d.check('NOSAVE');
@@ -770,8 +770,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
     * @private
     */
 
-   function TGraphPainter(graph) {
-      JSROOT.ObjectPainter.call(this, graph);
+   function TGraphPainter(divid, graph) {
+      JSROOT.ObjectPainter.call(this, divid, graph);
       this.axes_draw = false; // indicate if graph histogram was drawn for axes
       this.bins = null;
       this.xmin = this.ymin = this.xmax = this.ymax = 0;
@@ -1963,7 +1963,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
    function drawGraph(divid, graph, opt) {
 
-      let painter = new TGraphPainter(graph);
+      let painter = new TGraphPainter(divid, graph);
       painter.setCanvDom(divid);
       painter.DecodeOptions(opt);
       painter.CreateBins();
@@ -2005,8 +2005,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
     * @private
     */
 
-   function TGraphPolargramPainter(polargram) {
-      JSROOT.ObjectPainter.call(this, polargram);
+   function TGraphPolargramPainter(divid, polargram) {
+      JSROOT.ObjectPainter.call(this, divid, polargram);
       this.$polargram = true; // indicate that this is polargram
       this.zoom_rmin = this.zoom_rmax = 0;
    }
@@ -2292,7 +2292,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          return Promise.reject(Error("Cannot superimpose TGraphPolargram with any other drawings"));
       }
 
-      let painter = new TGraphPolargramPainter(polargram);
+      let painter = new TGraphPolargramPainter(divid, polargram);
       return jsrp.ensureTCanvas(painter, divid, false).then(() => {
          painter.setAsMainPainter();
          painter.Redraw();
@@ -2312,8 +2312,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
     * @private
     */
 
-   function TGraphPolarPainter(graph) {
-      JSROOT.ObjectPainter.call(this, graph);
+   function TGraphPolarPainter(divid, graph) {
+      JSROOT.ObjectPainter.call(this, divid, graph);
    }
 
    TGraphPolarPainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
@@ -2510,7 +2510,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    }
 
    function drawGraphPolar(divid, graph, opt) {
-      let painter = new TGraphPolarPainter(graph);
+      let painter = new TGraphPolarPainter(divid, graph);
       painter.DecodeOptions(opt);
       painter.setCanvDom(divid);
 
@@ -2537,8 +2537,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
    // ==============================================================
 
-   function TSplinePainter(spline) {
-      JSROOT.ObjectPainter.call(this, spline);
+   function TSplinePainter(divid, spline) {
+      JSROOT.ObjectPainter.call(this, divid, spline);
       this.bins = null;
    }
 
@@ -2816,7 +2816,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    }
 
    jsrp.drawSpline = function(divid, spline, opt) {
-      let painter = new TSplinePainter(spline);
+      let painter = new TSplinePainter(divid, spline);
 
       painter.setCanvDom(divid);
       painter.DecodeOptions(opt);
@@ -2840,8 +2840,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
    // =============================================================
 
-   function TGraphTimePainter(gr) {
-      JSROOT.ObjectPainter.call(this, gr);
+   function TGraphTimePainter(divid, gr) {
+      JSROOT.ObjectPainter.call(this, divid, gr);
    }
 
    TGraphTimePainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
@@ -2958,7 +2958,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          return null;
       }
 
-      let painter = new TGraphTimePainter(gr);
+      let painter = new TGraphTimePainter(divid, gr);
       painter.setCanvDom(divid);
 
       if (painter.main_painter()) {
@@ -2980,8 +2980,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
    // =============================================================
 
-   function TEfficiencyPainter(eff) {
-      JSROOT.ObjectPainter.call(this, eff);
+   function TEfficiencyPainter(divid, eff) {
+      JSROOT.ObjectPainter.call(this, divid, eff);
       this.fBoundary = 'Normal';
    }
 
@@ -3067,7 +3067,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       if (!eff || !eff.fTotalHistogram || (eff.fTotalHistogram._typename.indexOf("TH1")!=0)) return null;
 
-      let painter = new TEfficiencyPainter(eff);
+      let painter = new TEfficiencyPainter(divid, eff);
       painter.setCanvDom(divid);
       painter.options = opt;
 
@@ -3083,8 +3083,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
    // =============================================================
 
-   function TMultiGraphPainter(mgraph) {
-      JSROOT.ObjectPainter.call(this, mgraph);
+   function TMultiGraphPainter(divid, mgraph) {
+      JSROOT.ObjectPainter.call(this, divid, mgraph);
       this.firstpainter = null;
       this.autorange = false;
       this.painters = []; // keep painters to be able update objects
@@ -3298,7 +3298,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
    jsrp.drawMultiGraph = function(divid, mgraph, opt) {
 
-      let painter = new TMultiGraphPainter(mgraph);
+      let painter = new TMultiGraphPainter(divid, mgraph);
       painter.setCanvDom(divid);
 
       let d = new JSROOT.DrawOptions(opt);
@@ -3504,8 +3504,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
     * @private
     */
 
-   function TASImagePainter(obj, opt) {
-      JSROOT.ObjectPainter.call(this, obj, opt);
+   function TASImagePainter(divid, obj, opt) {
+      JSROOT.ObjectPainter.call(this, divid, obj, opt);
       this.wheel_zoomy = true;
    }
 
@@ -3827,7 +3827,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    }
 
    function drawASImage(divid, obj, opt) {
-      let painter = new TASImagePainter(obj, opt);
+      let painter = new TASImagePainter(divid, obj, opt);
       painter.decodeOptions(opt);
       return jsrp.ensureTCanvas(painter, divid)
                  .then(() => painter.drawImage())

@@ -113,7 +113,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
     * @private
     */
 
-   function TGeoPainter(obj) {
+   function TGeoPainter(divid, obj) {
 
       if (obj && (obj._typename === "TGeoManager")) {
          this.geo_manager = obj;
@@ -123,7 +123,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       if (obj && (obj._typename.indexOf('TGeoVolume') === 0))
          obj = { _typename:"TGeoNode", fVolume: obj, fName: obj.fName, $geoh: obj.$geoh, _proxy: true };
 
-      JSROOT.ObjectPainter.call(this, obj);
+      JSROOT.ObjectPainter.call(this, divid, obj);
 
       this.no_default_title = true; // do not set title to main DIV
       this.mode3d = true; // indication of 3D mode
@@ -163,7 +163,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       this.cleanup(true);
    }
 
-   TGeoPainter.prototype = Object.create( JSROOT.ObjectPainter.prototype );
+   TGeoPainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
 
    /** @summary Create toolbar */
    TGeoPainter.prototype.CreateToolbar = function() {
@@ -4034,7 +4034,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       geo.GradPerSegm = JSROOT.settings.GeoGradPerSegm;
       geo.CompressComp = JSROOT.settings.GeoCompressComp;
 
-      let painter = new TGeoPainter(obj);
+      let painter = new TGeoPainter(divid, obj);
 
       // one could use TGeoManager setting, but for some example JSROOT does not build composites
       // if (obj && obj._typename=='TGeoManager' && (obj.fNsegments > 3))

@@ -341,10 +341,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
 
-   function RAxisPainter(arg1, axis, cssprefix) {
+   function RAxisPainter(divid, arg1, axis, cssprefix) {
       let drawable = cssprefix ? arg1.getObject() : arg1;
       this.axis = axis;
-      JSROOT.AxisBasePainter.call(this, drawable);
+      JSROOT.AxisBasePainter.call(this, divid, drawable);
       if (cssprefix) { // drawing from the frame
          this.embedded = true; // indicate that painter embedded into the histo painter
          this.csstype = arg1.csstype; // for the moment only via frame one can set axis attributes
@@ -1424,7 +1424,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    let drawRAxis = (divid, obj /*, opt*/) => {
-      let painter = new RAxisPainter(obj);
+      let painter = new RAxisPainter(divid, obj);
       painter.disable_zooming = true;
       return jsrp.ensureRCanvas(painter, divid, false)
                  .then(() => painter.Redraw())
@@ -1473,8 +1473,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
     * @private
     */
 
-   function RFramePainter(tframe) {
-      JSROOT.ObjectPainter.call(this, tframe);
+   function RFramePainter(divid, tframe) {
+      JSROOT.ObjectPainter.call(this, divid, tframe);
       this.csstype = "frame";
       this.mode3d = false;
       this.xmin = this.xmax = 0; // no scale specified, wait for objects drawing
@@ -1769,15 +1769,15 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       this.RecalculateRange(0);
 
-      this.x_handle = new RAxisPainter(this, this.xaxis, "x_");
+      this.x_handle = new RAxisPainter(this.divid, this, this.xaxis, "x_");
       this.x_handle.setCanvDom(this.divid, this.pad_name);
       this.x_handle.snapid = this.snapid;
 
-      this.y_handle = new RAxisPainter(this, this.yaxis, "y_");
+      this.y_handle = new RAxisPainter(this.divid, this, this.yaxis, "y_");
       this.y_handle.setCanvDom(this.divid, this.pad_name);
       this.y_handle.snapid = this.snapid;
 
-      this.z_handle = new RAxisPainter(this, this.zaxis, "z_");
+      this.z_handle = new RAxisPainter(this.divid, this, this.zaxis, "z_");
       this.z_handle.setCanvDom(this.divid, this.pad_name);
       this.z_handle.snapid = this.snapid;
 
@@ -2372,7 +2372,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    function drawRFrame(divid, obj, opt) {
-      let p = new RFramePainter(obj);
+      let p = new RFramePainter(divid, obj);
       if (opt == "3d") p.mode3d = true;
       return jsrp.ensureRCanvas(p, divid, false).then(() => {
          p.Redraw();
@@ -2382,8 +2382,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    // ===========================================================================
 
-   function RPadPainter(pad, iscan) {
-      JSROOT.ObjectPainter.call(this, pad);
+   function RPadPainter(divid, pad, iscan) {
+      JSROOT.ObjectPainter.call(this, divid, pad);
       this.csstype = "pad";
       this.pad = pad;
       this.iscan = iscan; // indicate if working with canvas
@@ -3682,9 +3682,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    let drawPad = (divid, pad, opt) => {
-      let painter = new RPadPainter(pad, false);
-      painter.DecodeOptions(opt);
+      let painter = new RPadPainter(divid, pad, false);
       painter.setCanvDom(divid);
+      painter.DecodeOptions(opt);
 
       if (painter.svg_canvas().empty()) {
          painter.has_canvas = false;
@@ -3716,9 +3716,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    // ==========================================================================================
 
-   function RCanvasPainter(canvas) {
+   function RCanvasPainter(divid, canvas) {
       // used for online canvas painter
-      RPadPainter.call(this, canvas, true);
+      RPadPainter.call(this, divid, canvas, true);
       this._websocket = null;
       this.tooltip_allowed = JSROOT.settings.Tooltip;
    }
@@ -4157,9 +4157,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (nocanvas)
          can = JSROOT.Create("ROOT::Experimental::TCanvas");
 
-      let painter = new RCanvasPainter(can);
-      painter.normal_canvas = !nocanvas;
+      let painter = new RCanvasPainter(divid, can);
       painter.setCanvDom(divid); // just assign id
+      painter.normal_canvas = !nocanvas;
       painter.CreateCanvasSvg(0);
 
       jsrp.selectActivePad({ pp: painter, active: false });
@@ -4172,10 +4172,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    function drawPadSnapshot(divid, snap /*, opt*/) {
-      let painter = new RCanvasPainter(null);
+      let painter = new RCanvasPainter(divid, null);
+      painter.setCanvDom(divid);
       painter.normal_canvas = false;
       painter.batch_mode = true;
-      painter.setCanvDom(divid);
       return painter.RedrawPadSnap(snap).then(() => {
          painter.ShowButtons();
          return painter;
@@ -4224,8 +4224,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
     * @private
     */
 
-   function RPavePainter(pave, opt, csstype) {
-      JSROOT.ObjectPainter.call(this, pave, opt);
+   function RPavePainter(divid, pave, opt, csstype) {
+      JSROOT.ObjectPainter.call(this, divid, pave, opt);
       this.csstype = csstype || "pave";
    }
 
@@ -4355,7 +4355,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    let drawPave = (divid, pave, opt) => {
-      let painter = new RPavePainter(pave, opt);
+      let painter = new RPavePainter(divid, pave, opt);
 
       return jsrp.ensureRCanvas(painter, divid, false).then(() => painter.DrawPave());
    }
@@ -4544,8 +4544,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
     * @private
     */
 
-   function RPalettePainter(palette) {
-      JSROOT.ObjectPainter.call(this, palette);
+   function RPalettePainter(divid, palette) {
+      JSROOT.ObjectPainter.call(this, divid, palette);
       this.csstype = "palette";
    }
 
@@ -4778,7 +4778,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    let drawPalette = (divid, palette, opt) => {
-      let painter = new RPalettePainter(palette, opt);
+      let painter = new RPalettePainter(divid, palette, opt);
 
       return jsrp.ensureRCanvas(painter, divid, false).then(() => {
          painter.CreateG(false); // just create container, real drawing will be done by histogram

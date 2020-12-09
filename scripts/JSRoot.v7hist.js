@@ -5,8 +5,8 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
    "use strict";
 
-   function RHistPainter(histo) {
-      JSROOT.ObjectPainter.call(this, histo);
+   function RHistPainter(divid, histo) {
+      JSROOT.ObjectPainter.call(this, divid, histo);
       this.csstype = "hist";
       this.draw_content = true;
       this.nbinsx = 0;
@@ -838,8 +838,8 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
    // ======= RH1 painter================================================
 
-   function RH1Painter(histo) {
-      RHistPainter.call(this, histo);
+   function RH1Painter(divid, histo) {
+      RHistPainter.call(this, divid, histo);
       this.wheel_zoomy = false;
    }
 
@@ -1815,7 +1815,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
    let drawHist1 = (divid, histo, opt) => {
       // create painter and add it to canvas
-      let painter = new RH1Painter(histo);
+      let painter = new RH1Painter(divid, histo);
 
       return jsrp.ensureRCanvas(painter, divid).then(() => {
 
@@ -1857,8 +1857,8 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
    // ==================== painter for TH2 histograms ==============================
 
-   function RH2Painter(histo) {
-      RHistPainter.call(this, histo);
+   function RH2Painter(divid, histo) {
+      RHistPainter.call(this, divid, histo);
       this.wheel_zoomy = true;
    }
 
@@ -3590,7 +3590,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
    let drawHist2 = (divid, obj, opt) => {
       // create painter and add it to canvas
-      let painter = new RH2Painter(obj);
+      let painter = new RH2Painter(divid, obj);
 
       return jsrp.ensureRCanvas(painter, divid).then(() => {
 
@@ -3660,8 +3660,8 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
    // =============================================================
 
 
-   function RHistStatsPainter(palette, opt) {
-      JSROOT.v7.RPavePainter.call(this, palette, opt, "stats");
+   function RHistStatsPainter(divid, palette, opt) {
+      JSROOT.v7.RPavePainter.call(this, divid, palette, opt, "stats");
    }
 
    RHistStatsPainter.prototype = Object.create(JSROOT.v7.RPavePainter.prototype);
@@ -3858,7 +3858,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
    }
 
    function drawHistStats(divid, stats, opt) {
-      let painter = new RHistStatsPainter(stats, opt);
+      let painter = new RHistStatsPainter(divid, stats, opt);
 
       return jsrp.ensureRCanvas(painter, divid, false).then(() => painter.DrawPave());
    }

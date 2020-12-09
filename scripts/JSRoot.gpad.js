@@ -41,8 +41,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
     * @private
     */
 
-   function TAxisPainter(axis, embedded) {
-      JSROOT.AxisBasePainter.call(this, axis);
+   function TAxisPainter(divid, axis, embedded) {
+      JSROOT.AxisBasePainter.call(this, divid, axis);
 
       this.embedded = embedded; // indicate that painter embedded into the histo painter
       this.invert_side = false;
@@ -857,7 +857,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    let drawGaxis = (divid, obj /*, opt*/) => {
-      let painter = new TAxisPainter(obj, false);
+      let painter = new TAxisPainter(divid, obj, false);
       painter.disable_zooming = true;
 
       return jsrp.ensureTCanvas(painter, divid, false)
@@ -907,8 +907,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
     * @private
     */
 
-   function TFramePainter(tframe) {
-      JSROOT.ObjectPainter.call(this, (tframe && tframe.$dummy) ? null : tframe);
+   function TFramePainter(divid, tframe) {
+      JSROOT.ObjectPainter.call(this, divid, (tframe && tframe.$dummy) ? null : tframe);
       this.zoom_kind = 0;
       this.mode3d = false;
       this.shrink_frame_left = 0.;
@@ -1164,7 +1164,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       // projection should be assigned
       this.RecalculateRange(opts.Proj);
 
-      this.x_handle = new TAxisPainter(this.xaxis, true);
+      this.x_handle = new TAxisPainter(this.divid, this.xaxis, true);
       this.x_handle.setCanvDom(this.divid, this.pad_name);
 
       this.x_handle.ConfigureAxis("xaxis", this.xmin, this.xmax, this.scale_xmin, this.scale_xmax, this.swap_xy, this.swap_xy ? [0,h] : [0,w],
@@ -1175,7 +1175,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       this.x_handle.AssignFrameMembers(this,"x");
 
-      this.y_handle = new TAxisPainter(this.yaxis, true);
+      this.y_handle = new TAxisPainter(this.divid, this.yaxis, true);
       this.y_handle.setCanvDom(this.divid, this.pad_name);
 
       this.y_handle.ConfigureAxis("yaxis", this.ymin, this.ymax, this.scale_ymin, this.scale_ymax, !this.swap_xy, this.swap_xy ? [0,w] : [0,h],
@@ -1934,7 +1934,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    let drawFrame = (divid, obj, opt) => {
-      let p = new TFramePainter(obj);
+      let p = new TFramePainter(divid, obj);
       return jsrp.ensureTCanvas(p, divid, false).then(() => {
          if (opt == "3d") p.mode3d = true;
          p.Redraw();
@@ -1954,8 +1954,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
      * @private
      */
 
-   function TPadPainter(pad, iscan) {
-      JSROOT.ObjectPainter.call(this, pad);
+   function TPadPainter(divid, pad, iscan) {
+      JSROOT.ObjectPainter.call(this, divid, pad);
       this.pad = pad;
       this.iscan = iscan; // indicate if working with canvas
       this.this_pad_name = "";
@@ -2847,7 +2847,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          subpad.fPrimitives = null; // clear primitives, they just because of I/O
 
-         let padpainter = new TPadPainter(subpad, false);
+         let padpainter = new TPadPainter(this.divid, subpad, false);
          padpainter.DecodeOptions(snap.fOption);
          padpainter.setCanvDom(this.divid, this.this_pad_name); // pad painter will be registered in the canvas painters list
          padpainter.addToPadPrimitives();
@@ -3529,7 +3529,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    let drawPad = (divid, pad, opt) => {
-      let painter = new TPadPainter(pad, false);
+      let painter = new TPadPainter(divid, pad, false);
       painter.DecodeOptions(opt);
 
       painter.setCanvDom(divid);
@@ -3586,8 +3586,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
      * @private
      */
 
-   function TCanvasPainter(canvas) {
-      TPadPainter.call(this, canvas, true);
+   function TCanvasPainter(divid, canvas) {
+      TPadPainter.call(this, divid, canvas, true);
       this._websocket = null;
       this.tooltip_allowed = JSROOT.settings.Tooltip;
    }
@@ -4137,7 +4137,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       let nocanvas = !can;
       if (nocanvas) can = JSROOT.Create("TCanvas");
 
-      let painter = new TCanvasPainter(can);
+      let painter = new TCanvasPainter(divid, can);
       painter.setCanvDom(divid);
       painter.checkSpecialsInPrimitives(can);
 
@@ -4202,7 +4202,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       let can = JSROOT.Create("TCanvas");
 
-      let painter = new TCanvasPainter(can);
+      let painter = new TCanvasPainter(divid, can);
       painter.normal_canvas = false;
       painter.setCanvDom(divid);
       painter.AddPadButtons();

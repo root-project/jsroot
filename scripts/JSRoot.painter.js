@@ -1597,10 +1597,10 @@ JSROOT.define(['d3'], (d3) => {
     * @private
     */
 
-   function ObjectPainter(obj, opt) {
-      BasePainter.call(this);
+   function ObjectPainter(divid, obj, opt) {
+      BasePainter.call(this, divid);
       this.draw_g = null; // container for all drawn objects
-      this.pad_name = ""; // name of pad where object is drawn
+      this.pad_name = divid ? this.currentPadName() : ""; // name of pad where object is drawn
       this.main = null;  // main painter, received from pad
       this.assignObject(obj);
       if (typeof opt == "string") this.options = { original: opt };
@@ -1614,6 +1614,19 @@ JSROOT.define(['d3'], (d3) => {
          this.draw_object = obj;
       else
          delete this.draw_object;
+   }
+
+   /** @summary Assigns DOM element where canvas is drawn
+     * @param {string|object} elem - either element id or directly DOMElement
+     * @param {string} [pad_name] - on which subpad element should be draw, if not specified - used current */
+   ObjectPainter.prototype.setCanvDom = function(elem, pad_name) {
+
+      this.setDom(elem);
+
+      // remember current pad name - where finally object will be draw
+      this.pad_name = (typeof pad_name == 'string') ? pad_name : this.currentPadName();
+
+      return true;
    }
 
    /** @summary Assign snapid to the painter
@@ -2163,20 +2176,6 @@ JSROOT.define(['d3'], (d3) => {
 
       return true;
    }
-
-   /** @summary Assigns DOM element where canvas is drawn
-     * @param {string|object} elem - either element id or directly DOMElement
-     * @param {string} [pad_name] - on which subpad element should be draw, if not specified - used current */
-   ObjectPainter.prototype.setCanvDom = function(elem, pad_name) {
-
-      this.setDom(elem);
-
-      // remember current pad name - where finally object will be draw
-      this.pad_name = (typeof pad_name == 'string') ? pad_name : this.currentPadName();
-
-      return true;
-   }
-
 
    /** @summary Creates marker attributes object
     *
@@ -3046,12 +3045,13 @@ JSROOT.define(['d3'], (d3) => {
      *
      * @class
      * @memberof JSROOT
+     * @param {place} divid - where object will be drawn
      * @param {object} obj - axis object if any
      * @private
      */
 
-   function AxisBasePainter(obj) {
-      ObjectPainter.call(this, obj);
+   function AxisBasePainter(divid, obj) {
+      ObjectPainter.call(this, divid, obj);
 
       this.name = "yaxis";
       this.kind = "normal";
