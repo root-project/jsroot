@@ -23,7 +23,7 @@ sap.ui.define(['sap/ui/core/mvc/Controller', 'sap/m/MessageToast'],
 
          var painter = panel.getPainter();
          if (painter)
-            MessageToast.show("Access painter for " + painter.GetClassName());
+            MessageToast.show("Access painter for " + painter.getClassName());
 
       }
    });

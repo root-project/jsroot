@@ -2160,13 +2160,13 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
             // plot new objects on the same pad - will works only for simple drawings already loaded
             if (pp && (newfuncs.length > 0)) {
-               let arr = [], prev_name = pp.has_canvas ? pp.CurrentPadName(pp.this_pad_name) : undefined;
+               let arr = [], prev_name = pp.has_canvas ? pp.currentPadName(pp.this_pad_name) : undefined;
                for (let k = 0; k < newfuncs.length; ++k)
                   arr.push(JSROOT.draw(this.divid, newfuncs[k]));
                Promise.all(arr).then(parr => {
                   for (let k = 0; k < parr.length; ++k)
                      if (parr[k]) parr[k].child_painter_id = pid;
-                  pp.CurrentPadName(prev_name);
+                  pp.currentPadName(prev_name);
                });
             }
          }
@@ -2390,9 +2390,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          return statpainter.Enabled;
       }
 
-      let prev_name = this.CurrentPadName(this.pad_name);
+      let prev_name = this.currentPadName(this.pad_name);
       JSROOT.draw(this.divid, stat).then(() => {
-         this.CurrentPadName(prev_name);
+         this.currentPadName(prev_name);
       });
 
       return true;
@@ -3007,9 +3007,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       if (!pal_painter) {
          // when histogram drawn on sub pad, let draw new axis object on the same pad
-         let prev = this.CurrentPadName(this.pad_name);
+         let prev = this.currentPadName(this.pad_name);
          promise = drawPave(this.divid, pal, arg).then(pp => {
-            this.CurrentPadName(prev);
+            this.currentPadName(prev);
             return pp;
          });
       } else {

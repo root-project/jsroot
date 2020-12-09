@@ -3768,10 +3768,10 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       }
 
       if (!pal_painter) {
-         let prev_name = this.CurrentPadName(this.pad_name);
+         let prev_name = this.currentPadName(this.pad_name);
 
          return JSROOT.draw(this.divid, this.draw_palette).then(pp => {
-            this.CurrentPadName(prev_name);
+            this.currentPadName(prev_name);
             // mark painter as secondary - not in list of TCanvas primitives
             pp.$secondary = true;
 

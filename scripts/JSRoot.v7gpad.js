@@ -3114,10 +3114,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             padpainter.AddPadButtons();
 
          // we select current pad, where all drawing is performed
-         let prev_name = padpainter.CurrentPadName(padpainter.this_pad_name);
+         let prev_name = padpainter.currentPadName(padpainter.this_pad_name);
 
          return padpainter.DrawNextSnap(snap.fPrimitives).then(() => {
-            padpainter.CurrentPadName(prev_name);
+            padpainter.currentPadName(prev_name);
             return this.DrawNextSnap(lst, indx);
          });
       }
@@ -3280,10 +3280,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.AddPadButtons(true);
       }
 
-      let prev_name = this.CurrentPadName(this.this_pad_name);
+      let prev_name = this.currentPadName(this.this_pad_name);
 
       return this.DrawNextSnap(snap.fPrimitives).then(() => {
-         this.CurrentPadName(prev_name);
+         this.currentPadName(prev_name);
 
          if (jsrp.getActivePad() === this) {
             let canp = this.canv_painter();
@@ -3701,7 +3701,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
 
       // we select current pad, where all drawing is performed
-      let prev_name = painter.has_canvas ? painter.CurrentPadName(painter.this_pad_name) : undefined;
+      let prev_name = painter.has_canvas ? painter.currentPadName(painter.this_pad_name) : undefined;
 
       jsrp.selectActivePad({ pp: painter, active: false });
 
@@ -3709,7 +3709,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return painter.DrawPrimitives().then(() => {
          painter.ShowButtons();
          // we restore previous pad name
-         painter.CurrentPadName(prev_name);
+         painter.currentPadName(prev_name);
          return painter;
       });
    }

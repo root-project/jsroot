@@ -1660,7 +1660,10 @@ JSROOT.define(['d3'], (d3) => {
    ObjectPainter.prototype.getObject = function() { return this.draw_object; }
 
    /** @summary Returns drawn object class name */
-   ObjectPainter.prototype.GetClassName = function() { return (this.draw_object ? this.draw_object._typename : "") || ""; }
+   ObjectPainter.prototype.getClassName = function() {
+      let obj = this.getObject();
+      return obj ? obj._typename || "" : "";
+   }
 
    /** @summary Checks if drawn object matches with provided typename
     * @param {string} arg - typename
@@ -1944,9 +1947,10 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /** @summary Method returns current pad name
+    * @desc When parameter new_name specified, it will be set as new current pad for the canvas
     * @param {string} [new_name] - when specified, new current pad name will be configured
     * @private */
-   ObjectPainter.prototype.CurrentPadName = function(new_name) {
+   ObjectPainter.prototype.currentPadName = function(new_name) {
       let svg = this.svg_canvas();
       if (svg.empty()) return "";
       let curr = svg.property('current_pad');
@@ -2168,7 +2172,7 @@ JSROOT.define(['d3'], (d3) => {
       this.setDom(elem);
 
       // remember current pad name - where finally object will be draw
-      this.pad_name = (typeof pad_name == 'string') ? pad_name : this.CurrentPadName();
+      this.pad_name = (typeof pad_name == 'string') ? pad_name : this.currentPadName();
 
       return true;
    }
