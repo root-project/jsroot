@@ -491,7 +491,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
    // ===================================================================================
 
-   /** @clas
+   /** @class
     * @memberof JSROOT
     * @extends JSROOT.ObjectPainter
     * @summary Painter for TF1 object.
@@ -744,7 +744,6 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
    function drawFunction(divid, tf1, opt) {
       let painter = new TF1Painter(divid, tf1);
-      painter.setCanvDom(divid);
       let d = new JSROOT.DrawOptions(opt);
       painter.nosave = d.check('NOSAVE');
 
@@ -1964,7 +1963,6 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    function drawGraph(divid, graph, opt) {
 
       let painter = new TGraphPainter(divid, graph);
-      painter.setCanvDom(divid);
       painter.DecodeOptions(opt);
       painter.CreateBins();
       painter.CreateStat();
@@ -2512,7 +2510,6 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    function drawGraphPolar(divid, graph, opt) {
       let painter = new TGraphPolarPainter(divid, graph);
       painter.DecodeOptions(opt);
-      painter.setCanvDom(divid);
 
       let main = painter.main_painter();
       if (main && !main.$polargram) {
@@ -2817,8 +2814,6 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
    jsrp.drawSpline = function(divid, spline, opt) {
       let painter = new TSplinePainter(divid, spline);
-
-      painter.setCanvDom(divid);
       painter.DecodeOptions(opt);
 
       let promise = Promise.resolve();
@@ -2959,7 +2954,6 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       }
 
       let painter = new TGraphTimePainter(divid, gr);
-      painter.setCanvDom(divid);
 
       if (painter.main_painter()) {
          console.error('Cannot draw graph time on top of other histograms');
@@ -3068,7 +3062,6 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       if (!eff || !eff.fTotalHistogram || (eff.fTotalHistogram._typename.indexOf("TH1")!=0)) return null;
 
       let painter = new TEfficiencyPainter(divid, eff);
-      painter.setCanvDom(divid);
       painter.options = opt;
 
       let gr = painter.CreateGraph();
@@ -3299,7 +3292,6 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    jsrp.drawMultiGraph = function(divid, mgraph, opt) {
 
       let painter = new TMultiGraphPainter(divid, mgraph);
-      painter.setCanvDom(divid);
 
       let d = new JSROOT.DrawOptions(opt);
       d.check("3D"); d.check("FB"); // no 3D supported, FB not clear
@@ -3482,7 +3474,6 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          check_attributes();
       }
 
-      painter.setCanvDom(divid);
       painter.addToPadPrimitives();
 
       painter.Redraw();

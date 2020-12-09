@@ -1309,7 +1309,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             }
 
             painter.z_handle = new JSROOT.TAxisPainter(divid, pave.fAxis, true);
-            painter.z_handle.setCanvDom(divid, painter.pad_name);
+            painter.z_handle.setPadName(painter.pad_name);
 
             painter.UseContextMenu = true;
          }

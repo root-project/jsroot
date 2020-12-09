@@ -2814,8 +2814,6 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
       let painter = new JSROOT.ObjectPainter(divid, obj),
           tree = obj, args = opt;
 
-      painter.setCanvDom(divid);
-
       if (obj._typename == "TBranchFunc") {
          // fictional object, created only in browser
          args = { expr: "." + obj.func + "()", branch: obj.branch };

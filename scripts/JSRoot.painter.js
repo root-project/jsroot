@@ -1600,10 +1600,12 @@ JSROOT.define(['d3'], (d3) => {
    function ObjectPainter(divid, obj, opt) {
       BasePainter.call(this, divid);
       this.draw_g = null; // container for all drawn objects
-      this.pad_name = divid ? this.currentPadName() : ""; // name of pad where object is drawn
       this.main = null;  // main painter, received from pad
-      this.assignObject(obj);
-      if (typeof opt == "string") this.options = { original: opt };
+      if (obj !== undefined) {
+         this.pad_name = divid ? this.currentPadName() : ""; // name of pad where object is drawn
+         this.assignObject(obj);
+         if (typeof opt == "string") this.options = { original: opt };
+      }
    }
 
    ObjectPainter.prototype = Object.create(BasePainter.prototype);
@@ -1616,17 +1618,11 @@ JSROOT.define(['d3'], (d3) => {
          delete this.draw_object;
    }
 
-   /** @summary Assigns DOM element where canvas is drawn
-     * @param {string|object} elem - either element id or directly DOMElement
-     * @param {string} [pad_name] - on which subpad element should be draw, if not specified - used current */
-   ObjectPainter.prototype.setCanvDom = function(elem, pad_name) {
-
-      this.setDom(elem);
-
-      // remember current pad name - where finally object will be draw
+   /** @summary Assigns pad name where element will be drawn
+     * @desc Should happend before first draw of element is performed, only for special use case
+     * @param {string} [pad_name] - on which subpad element should be draw, if not specified - use current */
+   ObjectPainter.prototype.setPadName = function(pad_name) {
       this.pad_name = (typeof pad_name == 'string') ? pad_name : this.currentPadName();
-
-      return true;
    }
 
    /** @summary Assign snapid to the painter
@@ -3829,8 +3825,7 @@ JSROOT.define(['d3'], (d3) => {
       if (!obj || (typeof obj !== 'object'))
          return callback ? callback(null) : Promise.reject(Error('not an object in JSROOT.redraw'));
 
-      let dummy = new ObjectPainter();
-      dummy.setCanvDom(divid, "");
+      let dummy = new ObjectPainter(divid);
       let can_painter = dummy.canv_painter(), handle, res_painter = null, redraw_res;
       if (obj._typename)
          handle = JSROOT.getDrawHandle("ROOT." + obj._typename);
@@ -3879,8 +3874,7 @@ JSROOT.define(['d3'], (d3) => {
      * @param {string|object} divid - id of top div element or directly DOMElement
      * @returns {string} produced JSON string */
    JSROOT.drawingJSON = function(divid) {
-      let dummy = new ObjectPainter;
-      dummy.setCanvDom(divid, "");
+      let dummy = new ObjectPainter(divid);
       let canp = dummy.canv_painter();
       return canp ? canp.ProduceJSON() : "";
    }
@@ -3986,8 +3980,7 @@ JSROOT.define(['d3'], (d3) => {
    JSROOT.resize = function(divid, arg) {
       if (arg === true) arg = { force: true }; else
          if (typeof arg !== 'object') arg = null;
-      let done = false, dummy = new ObjectPainter();
-      dummy.setCanvDom(divid, "");
+      let done = false, dummy = new ObjectPainter(divid);
       dummy.forEachPainter(painter => {
          if (!done && (typeof painter.checkResize == 'function'))
             done = painter.checkResize(arg);
@@ -3999,8 +3992,7 @@ JSROOT.define(['d3'], (d3) => {
      * @param {string|object} divid - id or DOM element
      * @private */
    JSROOT.getMainPainter = function(divid) {
-      let dummy = new JSROOT.ObjectPainter();
-      dummy.setCanvDom(divid, "");
+      let dummy = new JSROOT.ObjectPainter(divid);
       return dummy.main_painter(true);
    }
 
@@ -4010,8 +4002,7 @@ JSROOT.define(['d3'], (d3) => {
      * JSROOT.cleanup("drawing");
      * JSROOT.cleanup(document.querySelector("#drawing")); */
    JSROOT.cleanup = function(divid) {
-      let dummy = new ObjectPainter(), lst = [];
-      dummy.setCanvDom(divid, "");
+      let dummy = new ObjectPainter(divid), lst = [];
       dummy.forEachPainter(p => { if (lst.indexOf(p) < 0) lst.push(p); });
       lst.forEach(p => p.cleanup());
       dummy.selectDom().html("");

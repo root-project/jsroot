@@ -2789,8 +2789,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
         * @param {boolean} only_visible let select only visible frames */
       forEachPainter(userfunc, only_visible) {
          this.forEachFrame(frame => {
-            let dummy = new JSROOT.ObjectPainter();
-            dummy.setCanvDom(frame, "");
+            let dummy = new JSROOT.ObjectPainter(frame);
             dummy.forEachPainter(painter => userfunc(painter, frame));
          }, only_visible);
       }

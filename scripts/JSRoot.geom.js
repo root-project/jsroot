@@ -4040,7 +4040,6 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       // if (obj && obj._typename=='TGeoManager' && (obj.fNsegments > 3))
       //   geo.GradPerSegm = 360/obj.fNsegments;
 
-      painter.setCanvDom(divid);
       // painter.addToPadPrimitives(); // will add to pad primitives if any
 
       painter.options = painter.decodeOptions(opt); // indicator of initialization
