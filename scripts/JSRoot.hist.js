@@ -1308,7 +1308,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                if (!pave.fAxis.fLabelOffset) pave.fAxis.fLabelOffset = 0.005;
             }
 
-            painter.z_handle = new JSROOT.TAxisPainter(pave.fAxis, true);
+            painter.z_handle = new JSROOT.TAxisPainter(divid, pave.fAxis, true);
             painter.z_handle.setCanvDom(divid, painter.pad_name);
 
             painter.UseContextMenu = true;

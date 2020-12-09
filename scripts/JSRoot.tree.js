@@ -2811,7 +2811,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
          return null;
       }
 
-      let painter = new JSROOT.ObjectPainter(obj),
+      let painter = new JSROOT.ObjectPainter(divid, obj),
           tree = obj, args = opt;
 
       painter.setCanvDom(divid);

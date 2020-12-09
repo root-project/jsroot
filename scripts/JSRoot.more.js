@@ -3325,7 +3325,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
    function drawWebPainting(divid, obj, opt) {
 
-      let painter = new JSROOT.ObjectPainter(obj, opt);
+      let painter = new JSROOT.ObjectPainter(divid, obj, opt);
 
       painter.updateObject = function(obj) {
          if (!this.matchObjectType(obj)) return false;

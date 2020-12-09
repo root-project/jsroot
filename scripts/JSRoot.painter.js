@@ -3737,7 +3737,7 @@ JSROOT.define(['d3'], (d3) => {
       function performDraw() {
          let promise;
          if (handle.direct == "v7") {
-            let painter = new ObjectPainter(obj, opt);
+            let painter = new ObjectPainter(divid, obj, opt);
             painter.csstype = handle.csstype;
             promise = jsrp.ensureRCanvas(painter, divid, handle.frame || false).then(() => {
                painter.Redraw = handle.func;
@@ -3745,7 +3745,7 @@ JSROOT.define(['d3'], (d3) => {
                return painter;
             })
          } else if (handle.direct) {
-            let painter = new ObjectPainter(obj, opt);
+            let painter = new ObjectPainter(divid, obj, opt);
             promise = jsrp.ensureTCanvas(painter, divid, handle.frame || false).then(() => {
                painter.Redraw = handle.func;
                painter.Redraw();
