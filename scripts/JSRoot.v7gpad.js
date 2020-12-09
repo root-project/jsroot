@@ -274,7 +274,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Assign snapid to the painter
      * @desc Overwrite default method
      * @private */
-   JSROOT.ObjectPainter.prototype.AssignSnapId = function(id) {
+   JSROOT.ObjectPainter.prototype.assignSnapId = function(id) {
       this.snapid = id;
       if (this.snapid && this._pending_request) {
          let req = this._pending_request;
@@ -3037,7 +3037,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          // keep snap id in painter, will be used for the
          if (this.painters.indexOf(objpainter) < 0)
             this.painters.push(objpainter);
-         objpainter.AssignSnapId(lst[indx].fObjectID);
+         objpainter.assignSnapId(lst[indx].fObjectID);
          if (!objpainter.rstyle) objpainter.rstyle = lst[indx].fStyle || this.rstyle;
       }
    }
@@ -3104,7 +3104,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          let padpainter = new RPadPainter(subpad, false);
          padpainter.DecodeOptions("");
          padpainter.setCanvDom(this.divid, this.this_pad_name); // pad painter will be registered in parent painters list
-         padpainter.AssignSnapId(snap.fObjectID);
+         padpainter.assignSnapId(snap.fObjectID);
          padpainter.rstyle = snap.fStyle;
          padpainter.addToPadPrimitives();
 
@@ -3217,7 +3217,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (this.snapid === undefined) {
          // first time getting snap, create all gui elements first
 
-         this.AssignSnapId(snap.fObjectID);
+         this.assignSnapId(snap.fObjectID);
 
          this.draw_object = snap;
          this.pad = snap;

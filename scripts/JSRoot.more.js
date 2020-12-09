@@ -265,7 +265,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    function drawBox() {
 
       let box = this.getObject(),
-          opt = this.OptionsAsString(),
+          opt = this.getDrawOpt(),
           draw_line = (opt.toUpperCase().indexOf("L")>=0),
           lineatt = this.createAttLine(box),
           fillatt = this.createAttFill(box);
@@ -2336,7 +2336,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
           curve: d.check("C")
       });
 
-      this.OptionsStore(opt);
+      this.storeDrawOpt(opt);
    }
 
    TGraphPolarPainter.prototype.drawGraphPolar = function() {
@@ -2812,7 +2812,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          Mark: d.check('P')
       });
 
-      this.OptionsStore(opt);
+      this.storeDrawOpt(opt);
    }
 
    jsrp.drawSpline = function(divid, spline, opt) {
@@ -2862,7 +2862,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
           first: d.check("FIRST")
       });
 
-      this.OptionsStore(opt);
+      this.storeDrawOpt(opt);
    }
 
    /** @summary Return time painet primitives */

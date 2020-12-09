@@ -3018,7 +3018,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       if (!res.Markers && !res.Error && !res.Circles && !res.Line) res.Markers = true;
       if (!res.Markers) res.Color = false;
 
-      this.OptionsStore(opt);
+      this.storeDrawOpt(opt);
    }
 
    TGraph2DPainter.prototype.CreateHistogram = function() {

@@ -396,7 +396,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    TPavePainter.prototype.FillWebObjectOptions = function(res) {
       if (!res) {
          if (!this.snapid) return null;
-         res = { _typename: "TWebObjectOptions", snapid: this.snapid.toString(), opt: this.OptionsAsString(), fcust: "", fopt: [] };
+         res = { _typename: "TWebObjectOptions", snapid: this.snapid.toString(), opt: this.getDrawOpt(), fcust: "", fopt: [] };
       }
 
       let pave = this.getObject();
@@ -1428,7 +1428,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    /** @summary Decode histogram draw options */
    THistDrawOptions.prototype.Decode = function(opt, hdim, histo, pad, painter) {
-      this.orginal = opt; // will be overwritten by OptionsStore call
+      this.orginal = opt; // will be overwritten by storeDrawOpt call
 
       let d = new JSROOT.DrawOptions(opt), check3dbox = "";
 
@@ -1944,7 +1944,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       this.options.Decode(opt || histo.fOption, hdim, histo, pad, this);
 
-      this.OptionsStore(opt); // opt will be return as default draw option, used in webcanvas
+      this.storeDrawOpt(opt); // opt will be return as default draw option, used in webcanvas
    }
 
    THistPainter.prototype.CopyOptionsFrom = function(src) {

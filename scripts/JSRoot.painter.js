@@ -1602,19 +1602,24 @@ JSROOT.define(['d3'], (d3) => {
       this.draw_g = null; // container for all drawn objects
       this.pad_name = ""; // name of pad where object is drawn
       this.main = null;  // main painter, received from pad
+      this.assignObject(obj);
       if (typeof opt == "string") this.options = { original: opt };
-      this.AssignObject(obj);
    }
 
    ObjectPainter.prototype = Object.create(BasePainter.prototype);
 
    /** @summary Assign object to the painter */
-   ObjectPainter.prototype.AssignObject = function(obj) { this.draw_object = ((obj !== undefined) && (typeof obj == 'object')) ? obj : null; }
+   ObjectPainter.prototype.assignObject = function(obj) {
+      if (obj && (typeof obj == 'object'))
+         this.draw_object = obj;
+      else
+         delete this.draw_object;
+   }
 
    /** @summary Assign snapid to the painter
     * @desc Identifier used to communicate with server side and identifies object on the server
     * @private */
-   ObjectPainter.prototype.AssignSnapId = function(id) { this.snapid = id; }
+   ObjectPainter.prototype.assignSnapId = function(id) { this.snapid = id; }
 
    /** @summary Generic method to cleanup painter.
      * @desc Remove object drawing and in case of main painter - also main HTML components */
@@ -1678,9 +1683,9 @@ JSROOT.define(['d3'], (d3) => {
                    else this.selectDom().attr("title", name);
    }
 
-   /** @summary Store actual options together with original string
+   /** @summary Store actual this.options together with original string
     * @private */
-   ObjectPainter.prototype.OptionsStore = function(original) {
+   ObjectPainter.prototype.storeDrawOpt = function(original) {
       if (!this.options) return;
       if (!original) original = "";
       let pp = original.indexOf(";;");
@@ -1689,27 +1694,21 @@ JSROOT.define(['d3'], (d3) => {
       this.options_store = JSROOT.extend({}, this.options);
    }
 
-   /** @summary Checks if any draw options were changed
-    * @private */
-   ObjectPainter.prototype.OptionesChanged = function() {
-      if (!this.options) return false;
-      if (!this.options_store) return true;
-
-      for (let k in this.options)
-         if (this.options[k] !== this.options_store[k]) return true;
-
-      return false;
-   }
-
    /** @summary Return actual draw options as string
+     * @desc if options are not modified - returns original string which was specified for object draw
     * @private */
-   ObjectPainter.prototype.OptionsAsString = function() {
+   ObjectPainter.prototype.getDrawOpt = function() {
       if (!this.options) return "";
+      let changed = false;
+      if (!this.options_store) {
+         changed  = true;
+      } else {
+         for (let k in this.options)
+            if (this.options[k] !== this.options_store[k])
+               changed = true;
+      }
 
-      if (!this.OptionesChanged())
-         return this.options.original || "";
-
-      if (typeof this.options.asString == "function")
+      if (changed && typeof this.options.asString == "function")
          return this.options.asString();
 
       return this.options.original || ""; // nothing better, return original draw option

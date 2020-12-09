@@ -3104,7 +3104,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (typeof sub.GetWebPadOptions == "function") {
             if (scan_subpads) sub.GetWebPadOptions(arg);
          } else if (sub.snapid) {
-            let opt = { _typename: "TWebObjectOptions", snapid: sub.snapid.toString(), opt: sub.OptionsAsString(), fcust: "", fopt: [] };
+            let opt = { _typename: "TWebObjectOptions", snapid: sub.snapid.toString(), opt: sub.getDrawOpt(), fcust: "", fopt: [] };
             if (typeof sub.FillWebObjectOptions == "function")
                opt = sub.FillWebObjectOptions(opt);
             elem.primitives.push(opt);
@@ -3525,7 +3525,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (d.check('RX')) pad.$RX = true;
       if (d.check('RY')) pad.$RY = true;
 
-      this.OptionsStore(opt);
+      this.storeDrawOpt(opt);
    }
 
    let drawPad = (divid, pad, opt) => {
@@ -4111,7 +4111,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             let subobj = p.getObject();
             if (subobj && subobj._typename)
-               canv.fPrimitives.Add(subobj, p.OptionsAsString());
+               canv.fPrimitives.Add(subobj, p.getDrawOpt());
          }, "objects");
       }
 
