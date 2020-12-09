@@ -1164,7 +1164,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       // projection should be assigned
       this.RecalculateRange(opts.Proj);
 
-      this.x_handle = new TAxisPainter(this.divid, this.xaxis, true);
+      this.x_handle = new TAxisPainter(this.getDom(), this.xaxis, true);
       this.x_handle.setPadName(this.pad_name);
 
       this.x_handle.ConfigureAxis("xaxis", this.xmin, this.xmax, this.scale_xmin, this.scale_xmax, this.swap_xy, this.swap_xy ? [0,h] : [0,w],
@@ -1175,7 +1175,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       this.x_handle.AssignFrameMembers(this,"x");
 
-      this.y_handle = new TAxisPainter(this.divid, this.yaxis, true);
+      this.y_handle = new TAxisPainter(this.getDom(), this.yaxis, true);
       this.y_handle.setPadName(this.pad_name);
 
       this.y_handle.ConfigureAxis("yaxis", this.ymin, this.ymax, this.scale_ymin, this.scale_ymax, !this.swap_xy, this.swap_xy ? [0,w] : [0,h],
@@ -2507,7 +2507,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
 
       // use of Promise should avoid large call-stack depth when many primitives are drawn
-      return JSROOT.draw(this.divid, this.pad.fPrimitives.arr[indx], this.pad.fPrimitives.opt[indx]).then(ppainter=> {
+      return JSROOT.draw(this.getDom(), this.pad.fPrimitives.arr[indx], this.pad.fPrimitives.opt[indx]).then(ppainter=> {
          if (ppainter && (typeof ppainter == 'object'))
             ppainter._primitive = true; // mark painter as belonging to primitives
 
@@ -2847,7 +2847,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          subpad.fPrimitives = null; // clear primitives, they just because of I/O
 
-         let padpainter = new TPadPainter(this.divid, subpad, false);
+         let padpainter = new TPadPainter(this.getDom(), subpad, false);
          padpainter.DecodeOptions(snap.fOption);
          padpainter.setPadName(this.this_pad_name); // pad painter will be registered in the canvas painters list
          padpainter.addToPadPrimitives();
@@ -2868,7 +2868,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       // here the case of normal drawing, will be handled in promise
       if ((snap.fKind === webSnapIds.kObject) || (snap.fKind === webSnapIds.kSVG))
-         return JSROOT.draw(this.divid, snap.fSnapshot, snap.fOption).then(objpainter => {
+         return JSROOT.draw(this.getDom(), snap.fSnapshot, snap.fOption).then(objpainter => {
             this.AddObjectPainter(objpainter, lst, indx);
             return this.DrawNextSnap(lst, indx);
          });
@@ -2929,9 +2929,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (!first.fCw || !first.fCh) this._fixed_size = false;
 
          if (JSROOT.BrowserLayout && !this.batch_mode && !this.use_openui && !this.brlayout) {
-            let mainid = this.divid;
-            if (mainid && (typeof mainid == 'object'))
-               mainid = d3.select(mainid).attr("id");
+            let mainid = this.selectDom().attr("id");
             if (mainid && (typeof mainid == "string")) {
                this.brlayout = new JSROOT.BrowserLayout(mainid, null, this);
                this.brlayout.Create(mainid, true);
@@ -4155,7 +4153,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       let lst = this.pad ? this.pad.fPrimitives : null;
       if (lst && (lst.arr.length == 1))
          if (lst.arr[0] && lst.arr[0]._typename && (lst.arr[0]._typename.indexOf("TGeo")==0))
-            return JSROOT.draw(this.divid, lst.arr[0], lst.opt[0]); // return promise
+            return JSROOT.draw(this.getDom(), lst.arr[0], lst.opt[0]); // return promise
    }
 
    let drawCanvas = (divid, can, opt) => {

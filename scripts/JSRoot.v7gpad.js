@@ -1769,15 +1769,15 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       this.RecalculateRange(0);
 
-      this.x_handle = new RAxisPainter(this.divid, this, this.xaxis, "x_");
+      this.x_handle = new RAxisPainter(this.getDom(), this, this.xaxis, "x_");
       this.x_handle.setPadName(this.pad_name);
       this.x_handle.snapid = this.snapid;
 
-      this.y_handle = new RAxisPainter(this.divid, this, this.yaxis, "y_");
+      this.y_handle = new RAxisPainter(this.getDom(), this, this.yaxis, "y_");
       this.y_handle.setPadName(this.pad_name);
       this.y_handle.snapid = this.snapid;
 
-      this.z_handle = new RAxisPainter(this.divid, this, this.zaxis, "z_");
+      this.z_handle = new RAxisPainter(this.getDom(), this, this.zaxis, "z_");
       this.z_handle.setPadName(this.pad_name);
       this.z_handle.snapid = this.snapid;
 
@@ -2833,7 +2833,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
 
       // handle used to invoke callback only when necessary
-      return JSROOT.draw(this.divid, this.pad.fPrimitives[indx], "").then(ppainter => {
+      return JSROOT.draw(this.getDom(), this.pad.fPrimitives[indx], "").then(ppainter => {
          // mark painter as belonging to primitives
          if (ppainter && (typeof ppainter == 'object'))
             ppainter._primitive = true;
@@ -3101,7 +3101,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          let subpad = snap; // not subpad, but just attributes
 
-         let padpainter = new RPadPainter(this.divid, subpad, false);
+         let padpainter = new RPadPainter(this.getDom(), subpad, false);
          padpainter.DecodeOptions("");
          padpainter.setPadName(this.this_pad_name); // pad painter will be registered in parent painters list
          padpainter.assignSnapId(snap.fObjectID);
@@ -3158,12 +3158,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          }
 
          if (!this.frame_painter())
-            return JSROOT.draw(this.divid, { _typename: "TFrame", $dummy: true }, "")
+            return JSROOT.draw(this.getDom(), { _typename: "TFrame", $dummy: true }, "")
                          .then(() => this.DrawNextSnap(lst, indx-1)); // call same object again
       }
 
       // TODO - fDrawable is v7, fObject from v6, maybe use same data member?
-      return JSROOT.draw(this.divid, snap.fDrawable || snap.fObject || snap, snap.fOption || "").then(objpainter => {
+      return JSROOT.draw(this.getDom(), snap.fDrawable || snap.fObject || snap, snap.fOption || "").then(objpainter => {
          this.AddObjectPainter(objpainter, lst, indx);
          return this.DrawNextSnap(lst, indx);
       });

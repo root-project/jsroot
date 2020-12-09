@@ -1420,8 +1420,9 @@ JSROOT.define(['d3'], (d3) => {
    BasePainter.prototype.checkResize = function(/* arg */) {}
 
    /** @summary Function checks if geometry of main div was changed.
-     * @desc take into account enlarge state
-     * @returns size of area when main div is drawn */
+     * @desc take into account enlarge state, used only in PadPainter class
+     * @returns size of area when main div is drawn
+     * @private */
    BasePainter.prototype.testMainResize = function(check_level, new_size, height_factor) {
 
       let enlarge = this.enlargeMain('state'),
@@ -1473,6 +1474,7 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /** @summary Try enlarge main drawing element to full HTML page.
+     * @param {string|boolean} action  - defines that should be done
      * @desc Possible values for parameter:
      *    - true - try to enlarge
      *    - false - cancel enlarge state
@@ -1569,6 +1571,7 @@ JSROOT.define(['d3'], (d3) => {
     * @class
     * @memberof JSROOT
     * @extends ObjectPainter
+    * @param {object|string} dom - identifier of dom element
     * @param {object} obj - object to draw
     * @param {string} [opt] - object draw options
     * @private

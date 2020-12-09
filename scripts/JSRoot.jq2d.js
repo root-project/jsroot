@@ -613,10 +613,9 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
      * @returns {Promise} when done */
    HierarchyPainter.prototype.refreshHtml = function() {
 
-      if (!this.divid)
-         return Promise.resolve(this);
-
       let d3elem = this.selectDom();
+      if (d3elem.empty())
+         return Promise.resolve(this);
 
       d3elem.html("")
             .style('overflow','hidden') // clear html - most simple way

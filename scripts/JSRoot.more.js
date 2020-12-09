@@ -1957,7 +1957,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       // TODO: use weak reference (via pad list of painters and any kind of string)
       func.$main_painter = this;
 
-      return JSROOT.draw(this.divid, func, opt).then(() => this.drawNextFunction(indx+1));
+      return JSROOT.draw(this.getDom(), func, opt).then(() => this.drawNextFunction(indx+1));
    }
 
    function drawGraph(divid, graph, opt) {
@@ -2875,7 +2875,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          return Promise.resolve();
       }
 
-      return JSROOT.draw(this.divid, lst.arr[indx], lst.opt[indx]).then(ppainter => {
+      return JSROOT.draw(this.getDom(), lst.arr[indx], lst.opt[indx]).then(ppainter => {
 
          if (ppainter) ppainter.$grtimeid = this.selfid; // indicator that painter created by ourself
          return this.DrawPrimitives(indx+1);
@@ -3242,7 +3242,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       // histogram painter will be first in the pad, will define axis and
       // interactive actions
-      return JSROOT.draw(this.divid, histo, "AXIS");
+      return JSROOT.draw(this.getDom(), histo, "AXIS");
    }
 
    /** @summary method draws next function from the functions list  */
@@ -3253,7 +3253,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       if (!mgraph.fFunctions || (indx >= mgraph.fFunctions.arr.length))
          return Promise.resolve(this);
 
-      return JSROOT.draw(this.divid, mgraph.fFunctions.arr[indx], mgraph.fFunctions.opt[indx])
+      return JSROOT.draw(this.getDom(), mgraph.fFunctions.arr[indx], mgraph.fFunctions.opt[indx])
                   .then(() => this.drawNextFunction(indx+1));
    }
 
@@ -3282,7 +3282,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          }
       }
 
-      return JSROOT.draw(this.divid, graphs.arr[indx], graphs.opt[indx] || opt).then(subp => {
+      return JSROOT.draw(this.getDom(), graphs.arr[indx], graphs.opt[indx] || opt).then(subp => {
          if (subp) this.painters.push(subp);
 
          return this.drawNextGraph(indx+1, opt);
@@ -3761,7 +3761,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       if (!pal_painter) {
          let prev_name = this.currentPadName(this.pad_name);
 
-         return JSROOT.draw(this.divid, this.draw_palette).then(pp => {
+         return JSROOT.draw(this.getDom(), this.draw_palette).then(pp => {
             this.currentPadName(prev_name);
             // mark painter as secondary - not in list of TCanvas primitives
             pp.$secondary = true;

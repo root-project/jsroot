@@ -2162,7 +2162,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             if (pp && (newfuncs.length > 0)) {
                let arr = [], prev_name = pp.has_canvas ? pp.currentPadName(pp.this_pad_name) : undefined;
                for (let k = 0; k < newfuncs.length; ++k)
-                  arr.push(JSROOT.draw(this.divid, newfuncs[k]));
+                  arr.push(JSROOT.draw(this.getDom(), newfuncs[k]));
                Promise.all(arr).then(parr => {
                   for (let k = 0; k < parr.length; ++k)
                      if (parr[k]) parr[k].child_painter_id = pid;
@@ -2320,7 +2320,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          pt.fBorderSize = st.fTitleBorderSize;
 
          pt.AddText(histo.fTitle);
-         return drawPave(this.divid, pt, "postitle").then(tpainter => {
+         return drawPave(this.getDom(), pt, "postitle").then(tpainter => {
             if (tpainter) tpainter.$secondary = true;
             return this;
          });
@@ -2391,7 +2391,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       }
 
       let prev_name = this.currentPadName(this.pad_name);
-      JSROOT.draw(this.divid, stat).then(() => {
+      JSROOT.draw(this.getDom(), stat).then(() => {
          this.currentPadName(prev_name);
       });
 
@@ -2574,7 +2574,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (!do_draw)
          return this.drawNextFunction(indx+1);
 
-      return JSROOT.draw(this.divid, func, opt).then(painter => {
+      return JSROOT.draw(this.getDom(), func, opt).then(painter => {
          if (painter && (typeof painter == "object"))
             painter.child_painter_id = this.hist_painter_id;
          return this.drawNextFunction(indx+1);
@@ -3008,7 +3008,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (!pal_painter) {
          // when histogram drawn on sub pad, let draw new axis object on the same pad
          let prev = this.currentPadName(this.pad_name);
-         promise = drawPave(this.divid, pal, arg).then(pp => {
+         promise = drawPave(this.getDom(), pal, arg).then(pp => {
             this.currentPadName(prev);
             return pp;
          });
@@ -6648,7 +6648,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if ((rindx > 0) && !this.options.nostack)
          hist.$baseh = hlst.arr[rindx - 1];
 
-      return JSROOT.draw(this.divid, hist, hopt).then(subp => {
+      return JSROOT.draw(this.getDom(), hist, hopt).then(subp => {
           this.painters.push(subp);
           return this.drawNextHisto(indx+1);
       });
