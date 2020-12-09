@@ -1422,11 +1422,6 @@ JSROOT.define(['d3'], (d3) => {
      * @abstract */
    BasePainter.prototype.UpdateObject = function(/* obj */) {}
 
-   /** @summary Redraw all objects in current pad
-     * @param {string} reason - why redraw performed, can be "zoom" or empty ]
-     * @abstract */
-   BasePainter.prototype.RedrawPad = function(/* reason */) {}
-
    /** @summary Checks if draw elements were resized and drawing should be updated
      * @returns {boolean} true if resize was detected
      * @abstract */
@@ -1725,23 +1720,28 @@ JSROOT.define(['d3'], (d3) => {
       return this.options.original || ""; // nothing better, return original draw option
    }
 
-   /** @summary Updates object and readraw it
+   /** @summary Central place to update objects drawing
      * @param {object} obj - new version of object, values will be updated in original object
      * @param {string} [opt] - when specified, new draw options
-     * @returns {boolean} true if object updated and redrawn */
+     * @returns {boolean|Promise} for object redraw
+     * @desc Two actions typically done by redraw - update object content via {@link ObjectPainter.prototype.UpdateObject} and
+      * then redraw correspondent pad via {@link ObjectPainter.prototype.redrawPad}. If possible one should redefine
+      * only UpdateObject function and keep this function unchanged. But for some special painters this function it is the
+      * only way to control how object can be update while requested from the server */
    ObjectPainter.prototype.redrawObject = function(obj, opt) {
       if (!this.UpdateObject(obj,opt)) return false;
       let current = document.body.style.cursor;
       document.body.style.cursor = 'wait';
-      let res = this.RedrawPad();
+      let res = this.redrawPad();
       document.body.style.cursor = current;
       return res || true;
    }
 
    /** @summary Generic method to update object content.
-    * @desc Just copy all members from source object
-    * @param {object} obj - object with new data */
-   ObjectPainter.prototype.UpdateObject = function(obj) {
+     * @desc Default implementation just copies first-level members to current object
+     * @param {object} obj - object with new data
+     * @param {string} [opt] - option which will be used for redrawing */
+   ObjectPainter.prototype.UpdateObject = function(obj /*, opt */) {
       if (!this.matchObjectType(obj)) return false;
       JSROOT.extend(this.getObject(), obj);
       return true;
@@ -2298,13 +2298,13 @@ JSROOT.define(['d3'], (d3) => {
       if ((typeof info == "string") && (info.indexOf("exec:") != 0)) reason = info;
 
       if (arg == "pad") {
-         this.RedrawPad(reason);
+         this.redrawPad(reason);
       } else if (arg == "axes") {
          let main = this.main_painter(true); // works for pad and any object drawn in the pad
          if (main && (typeof main.DrawAxes == 'function'))
             main.DrawAxes();
          else
-            this.RedrawPad(reason);
+            this.redrawPad(reason);
       } else if (arg !== false) {
          this.Redraw(reason);
       }
@@ -2321,7 +2321,7 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /** @summary Redraw all objects in correspondent pad */
-   ObjectPainter.prototype.RedrawPad = function(reason) {
+   ObjectPainter.prototype.redrawPad = function(reason) {
       let pad_painter = this.pad_painter();
       if (pad_painter) pad_painter.Redraw(reason);
    }

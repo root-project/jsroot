@@ -1351,7 +1351,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          else
             this.drawAxisAgain();
       } else if (redraw_mode)
-         this.RedrawPad();
+         this.redrawPad();
    }
 
    /** @summary Change axis log scale kind */
@@ -1842,7 +1842,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.v7AttrChange(changes, "margin_top", 1 - this.fY2NDC);
       this.v7SendAttrChanges(changes, false); // do not invoke canvas update on the server
 
-      this.RedrawPad();
+      this.redrawPad();
    }
 
    /** @summary Remove all axes drawings */

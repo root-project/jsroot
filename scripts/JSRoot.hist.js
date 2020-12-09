@@ -2385,7 +2385,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (statpainter) {
          statpainter.Enabled = !statpainter.Enabled;
          // when stat box is drawn, it always can be drawn individually while it
-         // should be last for colz RedrawPad is used
+         // should be last for colz redrawPad is used
          statpainter.Redraw();
          return statpainter.Enabled;
       }
@@ -2674,7 +2674,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          this.options.maximum = res[1];
        }
 
-       this.RedrawPad();
+       this.redrawPad();
    }
 
    THistPainter.prototype.FillContextMenu = function(menu) {
@@ -4520,7 +4520,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       this.CopyOptionsToOthers();
 
-      this.RedrawPad();
+      this.redrawPad();
    }
 
    TH2Painter.prototype.AutoZoom = function() {

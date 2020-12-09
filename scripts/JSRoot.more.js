@@ -2128,7 +2128,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       if ((this.zoom_rmin != rmin) || (this.zoom_rmax != rmax)) {
          this.zoom_rmin = rmin;
          this.zoom_rmax = rmax;
-         this.RedrawPad();
+         this.redrawPad();
       }
    }
 

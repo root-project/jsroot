@@ -1656,9 +1656,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          menu.addchk(pad["fLog" + kind] == 2, "log2", "2", arg => this.ChangeLog(kind, parseInt(arg)));
          menu.add("endsub:");
          menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kMoreLogLabels), "More log",
-               () => { faxis.InvertBit(JSROOT.EAxisBits.kMoreLogLabels); this.RedrawPad(); });
+               () => { faxis.InvertBit(JSROOT.EAxisBits.kMoreLogLabels); this.redrawPad(); });
          menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kNoExponent), "No exponent",
-               () => { faxis.InvertBit(JSROOT.EAxisBits.kNoExponent); this.RedrawPad(); });
+               () => { faxis.InvertBit(JSROOT.EAxisBits.kNoExponent); this.redrawPad(); });
 
          if ((kind === "z") && main && main.options && main.options.Zscale)
             if (typeof main.FillPaletteMenu == 'function') main.FillPaletteMenu(menu);
@@ -3707,7 +3707,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       } else {
          let hp = this.proj_painter.main_painter();
          if (hp) hp.UpdateObject(hist, "hist");
-         this.proj_painter.RedrawPad();
+         this.proj_painter.redrawPad();
       }
    }
 

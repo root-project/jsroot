@@ -585,7 +585,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
          if (this.draw_content) {
             menu.addchk(!this.options.Zero, 'Suppress zeros', function() {
                this.options.Zero = !this.options.Zero;
-               this.RedrawPad();
+               this.redrawPad();
             });
 
             if ((this.options.Lego==12) || (this.options.Lego==14)) {
