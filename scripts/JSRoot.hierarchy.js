@@ -1127,20 +1127,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return Promise.resolve(result);
    }
 
-   /** @summary Just envelope, one should be able to redefine it for sub-classes
-     * @desc Redirect to {@link JSROOT.draw} method
-     * @protected */
-   //HierarchyPainter.prototype.draw = function(divid, obj, drawopt) {
-   //   return JSROOT.draw(divid, obj, drawopt);
-   //}
-
-   /** @summary Just envelope, one should be able to redefine it for sub-classes
-     * @desc Redirect to {@link JSROOT.redraw} method
-     * @protected */
-   //HierarchyPainter.prototype.redraw = function(divid, obj, drawopt) {
-   //   return JSROOT.redraw(divid, obj, drawopt);
-   //}
-
    /** @summary Starts player for specified item
      * @returns {Promise} when ready*/
    HierarchyPainter.prototype.player = function(itemname, option) {
@@ -1194,6 +1180,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
 
       function complete(respainter) {
+         if (updating && item) delete item._doing_update;
          if (!updating) JSROOT.progress();
          if (respainter && (typeof respainter === 'object') && (typeof respainter.setItemName === 'function')) {
             respainter.setItemName(display_itemname, updating ? null : drawopt, h); // mark painter as created from hierarchy
@@ -1212,7 +1199,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (item && ('_player' in item))
             return h.player(display_itemname, drawopt).then(res => complete(res));
 
-         updating = (typeof(drawopt)=='string') && (drawopt.indexOf("update:")==0);
+         updating = (typeof drawopt == 'string') && (drawopt.indexOf("update:")==0);
 
          if (updating) {
             drawopt = drawopt.substr(7);
@@ -1223,7 +1210,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (item && !h.canDisplay(item, drawopt)) return complete();
 
          let divid = "";
-         if ((typeof(drawopt)=='string') && (drawopt.indexOf("divid:")>=0)) {
+         if ((typeof drawopt == 'string') && (drawopt.indexOf("divid:") >= 0)) {
             let pos = drawopt.indexOf("divid:");
             divid = drawopt.slice(pos+6);
             drawopt = drawopt.slice(0, pos);
@@ -1237,7 +1224,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if (!item) item = result.item;
             let obj = result.obj;
 
-            if (updating && item) delete item._doing_update;
             if (!obj) return complete();
 
             if (!updating) JSROOT.progress("Drawing " + display_itemname);
