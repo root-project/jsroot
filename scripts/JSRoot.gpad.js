@@ -2038,7 +2038,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       let indx = this._auto_color || 0;
       this._auto_color = indx+1;
 
-      let pal = this.get_palette(true);
+      let pal = this.getCustomPalette();
+      if (!pal && jsrp.getColorPalette)
+         pal = this.custom_palette = jsrp.getColorPalette();
 
       if (pal) {
          if (numprimitives < 2) numprimitives = 2;

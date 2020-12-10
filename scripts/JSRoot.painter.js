@@ -1811,26 +1811,6 @@ JSROOT.define(['d3'], (d3) => {
       src.tooltip_allowed = (on == "toggle") ? !src.tooltip_allowed : on;
    }
 
-   /** @summary returns custom palette for the object. If forced, will be created
-    * @private */
-   ObjectPainter.prototype.get_palette = function(force, palettedid) {
-      if (!palettedid) {
-         let pp = this.pad_painter();
-         if (!pp) return null;
-         if (pp.custom_palette) return pp.custom_palette;
-      }
-
-      let cp = this.canv_painter();
-      if (!cp) return null;
-      if (cp.custom_palette && !palettedid)
-         return cp.custom_palette;
-
-      if (force && jsrp.getColorPalette)
-         cp.custom_palette = jsrp.getColorPalette(palettedid);
-
-      return cp.custom_palette;
-   }
-
    /** @summary Checks if draw elements were resized and drawing should be updated.
     * @desc Redirects to {@link JSROOT.TPadPainter.checkCanvasResize}
     * @private */
