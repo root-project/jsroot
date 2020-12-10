@@ -1131,29 +1131,6 @@
       return (typeof elem == 'function') ? elem : null;
    }
 
-   /** @summary Generic method to invoke callback function.
-    * @param {object|function|string} func either normal function or container like
-    * { obj: object_pointer, func: name of method to call } or just function name, which can be found with {@link JSROOT.findFunction}
-    * @param arg1 first optional argument of callback
-    * @param arg2 second optional argument of callback */
-
-   JSROOT.callBack = function(func, arg1, arg2) {
-
-      if (typeof func == 'string') func = JSROOT.findFunction(func);
-
-      if (!func) return;
-
-      if (typeof func == 'function') return func(arg1,arg2);
-
-      if (typeof func != 'object') return;
-
-      if (('obj' in func) && ('func' in func) &&
-         (typeof func.obj == 'object') && (typeof func.func == 'string') &&
-         (typeof func.obj[func.func] == 'function')) {
-             return func.obj[func.func](arg1, arg2);
-      }
-   }
-
    /** @summary Old request method, kept only for internal use
      * @private */
    JSROOT.NewHttpRequest = function(url, kind, user_accept_callback, user_reject_callback) {
