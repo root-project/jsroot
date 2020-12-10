@@ -1919,7 +1919,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       delete this.yaxis;
       delete this.zaxis;
 
-      this.draw_g = null;
+      delete this.draw_g; // frame <g> element managet by the pad
+
       delete this._click_handler;
       delete this._dblclick_handler;
 

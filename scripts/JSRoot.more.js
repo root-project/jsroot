@@ -616,7 +616,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       }
 
       if (cleanup) {
-         if (this.draw_g !== null)
+         if (this.draw_g)
             this.draw_g.select(".tooltip_bin").remove();
          return null;
       }
@@ -2652,7 +2652,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       }
 
       if (cleanup) {
-         if (this.draw_g !== null)
+         if (this.draw_g)
             this.draw_g.select(".tooltip_bin").remove();
          return null;
       }

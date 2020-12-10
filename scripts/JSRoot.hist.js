@@ -3944,7 +3944,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           cont = histo.getBinContent(bin+1),
           xlbl = this.GetAxisBinTip("x", histo.fXaxis, bin);
 
-      if (name.length>0) tips.push(name);
+      if (name.length > 0) tips.push(name);
 
       if (this.options.Error || this.options.Mark) {
          tips.push("x = " + xlbl);
@@ -3970,7 +3970,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
      * @private */
    TH1Painter.prototype.ProcessTooltip = function(pnt) {
       if ((pnt === null) || !this.draw_content || !this.draw_g || this.options.Mode3D) {
-         if (this.draw_g !== null)
+         if (this.draw_g)
             this.draw_g.select(".tooltip_bin").remove();
          return null;
       }
@@ -6011,7 +6011,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    TH2Painter.prototype.ProcessTooltip = function(pnt) {
       if (!pnt || !this.draw_content || !this.draw_g || !this.tt_handle || this.options.Proj) {
-         if (this.draw_g !== null)
+         if (this.draw_g)
             this.draw_g.select(".tooltip_bin").remove();
          return null;
       }

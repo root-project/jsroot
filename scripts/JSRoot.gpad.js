@@ -1497,7 +1497,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.draw_g.remove();
       }
 
-      this.draw_g = null;
+      delete this.draw_g; // frame <g> element managet by the pad
 
       if (this.keys_handler) {
          window.removeEventListener('keydown', this.keys_handler, false);

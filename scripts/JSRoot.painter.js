@@ -1579,7 +1579,7 @@ JSROOT.define(['d3'], (d3) => {
 
    function ObjectPainter(divid, obj, opt) {
       BasePainter.call(this, divid);
-      this.draw_g = null; // container for all drawn objects
+      // this.draw_g = undefined; // container for all drawn objects
       this.main = null;  // main painter, received from pad
       if (obj !== undefined) {
          this.pad_name = divid ? this.selectCurrentPad() : ""; // name of pad where object is drawn
