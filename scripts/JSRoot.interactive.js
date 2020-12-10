@@ -21,7 +21,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return hintsg.empty() ? false : hintsg.property("hints_pad") == this.getPadName();
       },
 
-      SetTooltipEnabled: function(enabled) {
+      setTooltipEnabled: function(enabled) {
          if (enabled !== undefined) this.tooltip_enabled = enabled;
       },
 
@@ -322,11 +322,25 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          painter.tooltip_enabled = true;
          painter.hints_layer = this.hints_layer;
          painter.IsTooltipShown = this.IsTooltipShown;
-         painter.SetTooltipEnabled = this.SetTooltipEnabled;
+         painter.setTooltipEnabled = this.setTooltipEnabled;
          painter.ProcessTooltipEvent = this.ProcessTooltipEvent;
       }
 
    } // TooltipHandler
+
+   let setPainterTooltipEnabled = (painter,on) => {
+      if (!painter) return;
+
+      let fp = painter.frame_painter();
+      if (fp && typeof fp.setTooltipEnabled == 'function') {
+         fp.setTooltipEnabled(on);
+         fp.ProcessTooltipEvent(null);
+      }
+      // this is 3D control object
+      if (this.control && (typeof this.control.setTooltipEnabled == 'function'))
+         this.control.setTooltipEnabled(on);
+   }
+
 
    let DragMoveHandler = {
        /** @summary Add drag for interactive rectangular elements for painter */
@@ -399,7 +413,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             drag_rect.remove();
             drag_rect = null;
 
-            pthis.SwitchTooltip(true);
+            setPainterTooltipEnabled(pthis, true);
 
             MakeResizeElements(pthis.draw_g, newwidth, newheight);
 
@@ -431,7 +445,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
                if (jsrp.closeMenu) jsrp.closeMenu(); // close menu
 
-               pthis.SwitchTooltip(false); // disable tooltip
+               setPainterTooltipEnabled(pthis, false); // disable tooltip
 
                evnt.sourceEvent.preventDefault();
                evnt.sourceEvent.stopPropagation();
@@ -503,7 +517,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                evnt.sourceEvent.stopPropagation();
                evnt.sourceEvent.preventDefault();
 
-               pthis.SwitchTooltip(false); // disable tooltip
+               setPainterTooltipEnabled(pthis, false); // disable tooltip
 
                let handle = {
                   acc_x1: Number(pthis.draw_g.attr("x")),
@@ -861,7 +875,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.zoom_rect = null;
 
          // disable tooltips in frame painter
-         this.SwitchTooltip(false);
+         setPainterTooltipEnabled(this, false);
 
          evnt.stopPropagation();
 
@@ -1079,7 +1093,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             this.zoom_kind = 101; // x and y
          }
 
-         this.SwitchTooltip(false);
+         setPainterTooltipEnabled(this, false);
 
          this.zoom_rect = this.svg_frame().append("rect")
                .attr("class", "zoom")
@@ -1122,7 +1136,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          if ((this.zoom_origin[0] - this.zoom_curr[0] > 10)
               || (this.zoom_origin[1] - this.zoom_curr[1] > 10))
-            this.SwitchTooltip(false);
+            setPainterTooltipEnabled(this, false);
 
          evnt.stopPropagation();
       },
@@ -1302,8 +1316,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if (domenu)
                exec_painter.fillObjectExecMenu(menu, kind).then(menu => {
                    // suppress any running zooming
-                   menu.painter.SwitchTooltip(false);
-                   menu.show(null, menu.painter.SwitchTooltip.bind(menu.painter, true));
+                   setPainterTooltipEnabled(menu.painter, false);
+                   menu.show().then(() => setPainterTooltipEnabled(menu.painter, true));
                });
          });
       },
@@ -1365,7 +1379,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
 
          // enable tooltip in frame painter
-         this.SwitchTooltip(true);
+         setPainterTooltipEnabled(this, true);
       },
 
       /** Assign frame interactive methods */

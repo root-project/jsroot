@@ -2976,19 +2976,6 @@ JSROOT.define(['d3'], (d3) => {
       }, this.UserTooltipTimeout);
    }
 
-  /** @summary Switch tooltip mode in frame painter
-    * @private */
-   ObjectPainter.prototype.SwitchTooltip = function(on) {
-      let fp = this.frame_painter();
-      if (fp && fp.SetTooltipEnabled) {
-         fp.SetTooltipEnabled(on);
-         fp.ProcessTooltipEvent(null);
-      }
-      // this is 3D control object
-      if (this.control && (typeof this.control.SwitchTooltip == 'function'))
-         this.control.SwitchTooltip(on);
-   }
-
    // ===========================================================
 
 

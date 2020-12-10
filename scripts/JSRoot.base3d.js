@@ -794,7 +794,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
          // do nothing, function called when context menu want to be activated
       }
 
-      control.SwitchTooltip = function(on) {
+      control.setTooltipEnabled = function(on) {
          this.block_mousemove = !on;
          if (on === false) {
             this.tooltip.hide();

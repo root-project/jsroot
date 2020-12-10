@@ -3202,7 +3202,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
        jsrp.createMenu(selp, evnt).then(menu => {
           if (selp.FillContextMenu(menu, selkind))
-             setTimeout(menu.show.bind(menu), 50);
+             setTimeout(() => menu.show(), 50);
        });
    }
 
