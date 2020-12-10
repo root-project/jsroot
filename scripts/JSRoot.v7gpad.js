@@ -2517,7 +2517,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Create SVG element for the canvas */
-   RPadPainter.prototype.CreateCanvasSvg = function(check_resize, new_size) {
+   RPadPainter.prototype.createCanvasSvg = function(check_resize, new_size) {
 
       let factor = null, svg = null, lmt = 5, rect = null, btns;
 
@@ -2674,10 +2674,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    /** @summary Create SVG element for the pad
      * @returns true when pad is displayed and all its items should be redrawn */
-   RPadPainter.prototype.CreatePadSvg = function(only_resize) {
+   RPadPainter.prototype.createPadSvg = function(only_resize) {
 
       if (!this.has_canvas) {
-         this.CreateCanvasSvg(only_resize ? 2 : 0);
+         this.createCanvasSvg(only_resize ? 2 : 0);
          return true;
       }
 
@@ -2959,9 +2959,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       let showsubitems = true;
 
       if (this.iscan) {
-         this.CreateCanvasSvg(2);
+         this.createCanvasSvg(2);
       } else {
-         showsubitems = this.CreatePadSvg(true);
+         showsubitems = this.createPadSvg(true);
       }
 
       // even sub-pad is not visible, we should redraw sub-sub-pads to hide them as well
@@ -3009,7 +3009,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if (!force) force = this.RedrawByResize();
 
-      let changed = this.CreateCanvasSvg(force ? 2 : 1, size);
+      let changed = this.createCanvasSvg(force ? 2 : 1, size);
 
       // if canvas changed, redraw all its subitems.
       // If redrawing was forced for canvas, same applied for sub-elements
@@ -3115,7 +3115,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          padpainter.rstyle = snap.fStyle;
          padpainter.addToPadPrimitives();
 
-         padpainter.CreatePadSvg();
+         padpainter.createPadSvg();
 
          if (snap.fPrimitives && snap.fPrimitives.length > 0)
             padpainter.AddPadButtons();
@@ -3232,7 +3232,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (this.batch_mode && this.iscan)
              this._fixed_size = true;
 
-         this.CreateCanvasSvg(0);
+         this.createCanvasSvg(0);
          this.AddPadButtons(true);
 
          return this.DrawNextSnap(snap.fPrimitives);
@@ -3243,9 +3243,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       // apply all changes in the object (pad or canvas)
       if (this.iscan) {
-         this.CreateCanvasSvg(2);
+         this.createCanvasSvg(2);
       } else {
-         this.CreatePadSvg(true);
+         this.createPadSvg(true);
       }
 
       let isanyfound = false, isanyremove = false;
@@ -3700,7 +3700,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          painter.addToPadPrimitives();
       }
 
-      painter.CreatePadSvg();
+      painter.createPadSvg();
 
       if (painter.matchObjectType("TPad") && (!painter.has_canvas || painter.HasObjectsToDraw())) {
          painter.AddPadButtons();
@@ -4187,7 +4187,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       let painter = new RCanvasPainter(divid, can);
       painter.normal_canvas = !nocanvas;
-      painter.CreateCanvasSvg(0);
+      painter.createCanvasSvg(0);
 
       jsrp.selectActivePad({ pp: painter, active: false });
 

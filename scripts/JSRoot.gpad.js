@@ -2106,7 +2106,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       svg_rect.call(lineatt.func);
    }
 
-   TPadPainter.prototype.CreateCanvasSvg = function(check_resize, new_size) {
+   /** @summary Create SVG element for canvas */
+   TPadPainter.prototype.createCanvasSvg = function(check_resize, new_size) {
 
       let factor = null, svg = null, lmt = 5, rect = null, btns;
 
@@ -2121,6 +2122,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          factor = svg.property('height_factor');
 
          rect = this.testMainResize(check_resize, null, factor);
+
+         console.log('rect', rect)
 
          if (!rect.changed) return false;
 
@@ -2212,8 +2215,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
            .style("bottom", 0);
       }
 
-      // console.log('CANVAS SVG width = ' + rect.width + " height = " + rect.height);
-
       svg.attr("viewBox", "0 0 " + rect.width + " " + rect.height)
          .attr("preserveAspectRatio", "none")  // we do not preserve relative ratio
          .property('height_factor', factor)
@@ -2272,10 +2273,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    /** @summary Create main SVG element for pad
      * @returns true when pad is displayed and all its items should be redrawn */
-   TPadPainter.prototype.CreatePadSvg = function(only_resize) {
+   TPadPainter.prototype.createPadSvg = function(only_resize) {
 
       if (!this.has_canvas) {
-         this.CreateCanvasSvg(only_resize ? 2 : 0);
+         this.createCanvasSvg(only_resize ? 2 : 0);
          return true;
       }
 
@@ -2602,9 +2603,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       let showsubitems = true;
 
       if (this.iscan) {
-         this.CreateCanvasSvg(2);
+         this.createCanvasSvg(2);
       } else {
-         showsubitems = this.CreatePadSvg(true);
+         showsubitems = this.createPadSvg(true);
       }
 
       // even sub-pad is not visible, we should redraw sub-sub-pads to hide them as well
@@ -2642,6 +2643,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return false;
    }
 
+
+   /** @summary Check resize of canvas  */
    TPadPainter.prototype.checkCanvasResize = function(size, force) {
 
       if (!this.iscan && this.has_canvas) return false;
@@ -2652,7 +2655,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if (!force) force = this.RedrawByResize();
 
-      let changed = this.CreateCanvasSvg(force ? 2 : 1, size);
+      let changed = this.createCanvasSvg(force ? 2 : 1, size);
+
+      console.log('check canvas resize', changed, this.painters.length);
 
       // if canvas changed, redraw all its subitems.
       // If redrawing was forced for canvas, same applied for sub-elements
@@ -2663,6 +2668,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return changed;
    }
 
+   /** @summary Update TPad object */
    TPadPainter.prototype.updateObject = function(obj) {
       if (!obj) return false;
 
@@ -2837,7 +2843,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          padpainter.addToPadPrimitives();
          padpainter.snapid = snap.fObjectID;
 
-         padpainter.CreatePadSvg();
+         padpainter.createPadSvg();
 
          if (padpainter.matchObjectType("TPad") && snap.fPrimitives.length > 0)
             padpainter.AddPadButtons();
@@ -2923,7 +2929,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             }
          }
 
-         this.CreateCanvasSvg(0);
+         this.createCanvasSvg(0);
 
          if (!this.batch_mode)
             this.AddPadButtons(true);
@@ -2951,9 +2957,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       // apply all changes in the object (pad or canvas)
       if (this.iscan) {
-         this.CreateCanvasSvg(2);
+         this.createCanvasSvg(2);
       } else {
-         this.CreatePadSvg(true);
+         this.createPadSvg(true);
       }
 
       let isanyfound = false, isanyremove = false;
@@ -3515,6 +3521,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       painter.DecodeOptions(opt);
 
       if (painter.svg_canvas().empty()) {
+         console.log('draw as standalone pad')
          // one can draw pad without canvas
          painter.has_canvas = false;
          painter.this_pad_name = "";
@@ -3524,7 +3531,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          painter.addToPadPrimitives();
       }
 
-      painter.CreatePadSvg();
+      painter.createPadSvg();
 
       if (painter.matchObjectType("TPad") && (!painter.has_canvas || painter.HasObjectsToDraw()))
          painter.AddPadButtons();
@@ -4160,7 +4167,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       painter.DecodeOptions(opt);
       painter.normal_canvas = !nocanvas;
-      painter.CreateCanvasSvg(0);
+      painter.createCanvasSvg(0);
 
       painter.AddPadButtons();
 

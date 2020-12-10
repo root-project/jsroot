@@ -2116,10 +2116,9 @@ JSROOT.define(['d3'], (d3) => {
 
    /** @summary Add painter to pad list of painters */
    ObjectPainter.prototype.addToPadPrimitives = function() {
-      let svg_p = this.svg_pad(); // important - parent pad element accessed here
-      if (svg_p.empty()) return false;
-
+      let svg_p = this.svg_pad(this.pad_name); // important - must be here, otherwise pad_painter makes troubles
       let pp = svg_p.property('pad_painter');
+
       if (!pp || (pp === this)) return false;
 
       if (pp.painters.indexOf(this) < 0)
