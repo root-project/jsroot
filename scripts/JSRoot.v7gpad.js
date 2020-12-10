@@ -3697,7 +3697,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          painter.this_pad_name = "";
          painter.setTopPainter();
       } else {
-         painter.addToPadPrimitives();
+         painter.addToPadPrimitives(painter.pad_name);
       }
 
       painter.createPadSvg();

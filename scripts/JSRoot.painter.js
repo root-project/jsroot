@@ -2105,7 +2105,8 @@ JSROOT.define(['d3'], (d3) => {
    ObjectPainter.prototype.isMainPainter = function() { return this === this.getMainPainter(); }
 
    /** @summary Assign this as main painter on the pad
-     * @desc Main painter typically responsible for axes drawing */
+     * @desc Main painter typically responsible for axes drawing
+     * Should not be used by pad/canvas painters, but rather by objects which are drawing axis */
    ObjectPainter.prototype.setAsMainPainter = function(force) {
       let svg_p = this.svg_pad();
       if (svg_p.empty())
@@ -2114,10 +2115,10 @@ JSROOT.define(['d3'], (d3) => {
          svg_p.property('mainpainter', this);
    }
 
-   /** @summary Add painter to pad list of painters */
-   ObjectPainter.prototype.addToPadPrimitives = function() {
-      let svg_p = this.svg_pad(this.pad_name); // important - must be here, otherwise pad_painter makes troubles
-      let pp = svg_p.property('pad_painter');
+   /** @summary Add painter to pad list of painters
+     * @param {string} [pad_name] - optional pad name where painter should be add */
+   ObjectPainter.prototype.addToPadPrimitives = function(pad_name) {
+      let pp = this.pad_painter(pad_name); // important - pad_name must be here, otherwise PadPainter class confuses itself
 
       if (!pp || (pp === this)) return false;
 

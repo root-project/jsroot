@@ -2123,8 +2123,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          rect = this.testMainResize(check_resize, null, factor);
 
-         console.log('rect', rect)
-
          if (!rect.changed) return false;
 
          if (!JSROOT.BatchMode)
@@ -2656,8 +2654,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (!force) force = this.RedrawByResize();
 
       let changed = this.createCanvasSvg(force ? 2 : 1, size);
-
-      console.log('check canvas resize', changed, this.painters.length);
 
       // if canvas changed, redraw all its subitems.
       // If redrawing was forced for canvas, same applied for sub-elements
@@ -3521,14 +3517,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       painter.DecodeOptions(opt);
 
       if (painter.svg_canvas().empty()) {
-         console.log('draw as standalone pad')
          // one can draw pad without canvas
          painter.has_canvas = false;
          painter.this_pad_name = "";
          painter.setTopPainter();
       } else {
          // pad painter will be registered in the canvas painters list
-         painter.addToPadPrimitives();
+         painter.addToPadPrimitives(painter.pad_name);
       }
 
       painter.createPadSvg();
