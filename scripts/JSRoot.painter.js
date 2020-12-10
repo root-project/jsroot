@@ -1580,7 +1580,7 @@ JSROOT.define(['d3'], (d3) => {
    function ObjectPainter(divid, obj, opt) {
       BasePainter.call(this, divid);
       // this.draw_g = undefined; // container for all drawn objects
-      this.main = null;  // main painter, received from pad
+      // this._main_painter = undefined;  // main painter in the correspondent pad
       if (obj !== undefined) {
          this.pad_name = divid ? this.selectCurrentPad() : ""; // name of pad where object is drawn
          this.assignObject(obj);
@@ -1623,14 +1623,14 @@ JSROOT.define(['d3'], (d3) => {
 
       let keep_origin = true;
 
-      if (this.is_main_painter()) {
+      if (this.isMainPainter()) {
          let pp = this.pad_painter();
          if (!pp || pp.normal_canvas === false) keep_origin = false;
       }
 
       // cleanup all existing references
       delete this.pad_name;
-      this.main = null;
+      delete this._main_painter;
       this.draw_object = null;
       delete this.snapid;
 
@@ -2091,10 +2091,11 @@ JSROOT.define(['d3'], (d3) => {
    ObjectPainter.prototype.frame_height = function() { return _frame_property(this, "_frame_height"); }
 
    /** @summary Returns main object painter on the pad.
-     * @desc Normally this is first histogram drawn on the pad, which also draws all axes
+     * @desc Typically it is first histogram drawn on the pad and which draws frame axes
+     * But it also can be special usecase as TASImage or TGraphPolargram
      * @param {boolean} [not_store] - if true, prevent temporary store of main painter reference */
-   ObjectPainter.prototype.main_painter = function(not_store) {
-      let res = this.main;
+   ObjectPainter.prototype.getMainPainter = function(not_store) {
+      let res = this._main_painter;
       if (!res) {
          let svg_p = this.svg_pad();
          if (svg_p.empty()) {
@@ -2103,13 +2104,13 @@ JSROOT.define(['d3'], (d3) => {
             res = svg_p.property('mainpainter');
          }
          if (!res) res = null;
-         if (!not_store) this.main = res;
+         if (!not_store) this._main_painter = res;
       }
       return res;
    }
 
    /** @summary Returns true if this is main painter */
-   ObjectPainter.prototype.is_main_painter = function() { return this === this.main_painter(); }
+   ObjectPainter.prototype.isMainPainter = function() { return this === this.getMainPainter(); }
 
    /** @summary Assign this as main painter on the pad
      * @desc Main painter typically responsible for axes drawing */
@@ -2166,11 +2167,10 @@ JSROOT.define(['d3'], (d3) => {
 
 
    /** @summary Creates line attributes object.
-   *
-   * @desc Can be used to produce lines in painter.
-   * See {@link JSROOT.TAttLineHandler} for more info.
-   * Instance assigned as this.lineatt data member, recognized by GED editor
-   * @param {object} args - either TAttLine or see constructor arguments of {@link JSROOT.TAttLineHandler} */
+     * @desc Can be used to produce lines in painter.
+     * See {@link JSROOT.TAttLineHandler} for more info.
+     * Instance assigned as this.lineatt data member, recognized by GED editor
+     * @param {object} args - either TAttLine or see constructor arguments of {@link JSROOT.TAttLineHandler} */
    ObjectPainter.prototype.createAttLine = function(args) {
       if (!args || (typeof args !== 'object'))
          args = { std: true };
@@ -2194,21 +2194,18 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /** @summary Creates fill attributes object.
-    *
-    * @desc Method dedicated to create fill attributes, bound to canvas SVG
-    * otherwise newly created patters will not be usable in the canvas
-    * See {@link JSROOT.TAttFillHandler} for more info.
-    * Instance assigned as this.fillatt data member, recognized by GED editor
-
-    * @param {object} args - for special cases one can specify TAttFill as args or number of parameters
-    * @param {boolean} [args.std = true] - this is standard fill attribute for object and should be used as this.fillatt
-    * @param {object} [args.attr = null] - object, derived from TAttFill
-    * @param {number} [args.pattern = undefined] - integer index of fill pattern
-    * @param {number} [args.color = undefined] - integer index of fill color
-    * @param {string} [args.color_as_svg = undefined] - color will be specified as SVG string, not as index from color palette
-    * @param {number} [args.kind = undefined] - some special kind which is handled differently from normal patterns
-    * @returns created handle
-   */
+     * @desc Method dedicated to create fill attributes, bound to canvas SVG
+     * otherwise newly created patters will not be usable in the canvas
+     * See {@link JSROOT.TAttFillHandler} for more info.
+     * Instance assigned as this.fillatt data member, recognized by GED editors
+     * @param {object} args - for special cases one can specify TAttFill as args or number of parameters
+     * @param {boolean} [args.std = true] - this is standard fill attribute for object and should be used as this.fillatt
+     * @param {object} [args.attr = null] - object, derived from TAttFill
+     * @param {number} [args.pattern = undefined] - integer index of fill pattern
+     * @param {number} [args.color = undefined] - integer index of fill color
+     * @param {string} [args.color_as_svg = undefined] - color will be specified as SVG string, not as index from color palette
+     * @param {number} [args.kind = undefined] - some special kind which is handled differently from normal patterns
+     * @returns created handle */
    ObjectPainter.prototype.createAttFill = function(args) {
       if (!args || (typeof args !== 'object')) args = { std: true }; else
          if (args._typename && args.fFillColor !== undefined && args.fFillStyle !== undefined) args = { attr: args, std: false };
@@ -2257,7 +2254,7 @@ JSROOT.define(['d3'], (d3) => {
       if (arg == "pad") {
          this.redrawPad(reason);
       } else if (arg == "axes") {
-         let main = this.main_painter(true); // works for pad and any object drawn in the pad
+         let main = this.getMainPainter(true); // works for pad and any object drawn in the pad
          if (main && (typeof main.DrawAxes == 'function'))
             main.DrawAxes();
          else
@@ -3957,7 +3954,7 @@ JSROOT.define(['d3'], (d3) => {
      * @private */
    JSROOT.getMainPainter = function(divid) {
       let dummy = new JSROOT.ObjectPainter(divid);
-      return dummy.main_painter(true);
+      return dummy.getMainPainter(true);
    }
 
    /** @summary Safely remove all JSROOT objects from specified element

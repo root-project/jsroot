@@ -196,7 +196,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       let main = this.frame_painter();
       if (!main) return Promise.resolve(false);
 
-      if (!this.is_main_painter() || !this.draw_content)
+      if (!this.isMainPainter() || !this.draw_content)
         return Promise.resolve(true);
 
       main.cleanupAxes();
@@ -317,7 +317,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
    RHistPainter.prototype.AddInteractive = function() {
       // only first painter in list allowed to add interactive functionality to the frame
 
-      if (JSROOT.BatchMode || !this.is_main_painter())
+      if (JSROOT.BatchMode || !this.isMainPainter())
          return true;
 
       let fp = this.frame_painter();
@@ -560,7 +560,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
          if (menu.size() > 0)
             menu.add("separator");
 
-         let main = this.main_painter() || this;
+         let main = this.getMainPainter() || this;
 
          menu.addchk(main.isTooltipAllowed(), 'Show tooltips', function() {
             main.setTooltipAllowed("toggle");
@@ -614,7 +614,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
    /** @summary Update palette drawing */
    RHistPainter.prototype.UpdatePaletteDraw = function() {
-      if (this.is_main_painter()) {
+      if (this.isMainPainter()) {
          let pp = this.FindPainterFor(undefined, undefined, "ROOT::Experimental::RPaletteDrawable");
          if (pp) pp.DrawPalette();
       }
@@ -1781,7 +1781,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
    RH1Painter.prototype.callDrawFunc = function(reason) {
       let main = this.frame_painter();
 
-      if (main && (main.mode3d !== this.options.Mode3D) && !this.is_main_painter())
+      if (main && (main.mode3d !== this.options.Mode3D) && !this.isMainPainter())
          this.options.Mode3D = main.mode3d;
 
       let funcname = this.options.Mode3D ? "Draw3D" : "Draw2D";
@@ -3576,7 +3576,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
    RH2Painter.prototype.callDrawFunc = function(reason) {
       let main = this.frame_painter();
 
-      if (main && (main.mode3d !== this.options.Mode3D) && !this.is_main_painter())
+      if (main && (main.mode3d !== this.options.Mode3D) && !this.isMainPainter())
          this.options.Mode3D = main.mode3d;
 
       let funcname = this.options.Mode3D ? "Draw3D" : "Draw2D";
@@ -3691,7 +3691,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       }
 
       if (this.v7CommMode() == JSROOT.v7.CommMode.kOffline) {
-         let main = this.main_painter();
+         let main = this.getMainPainter();
          if (!main || (typeof main.FillStatistic !== 'function')) return false;
          // we take statistic from main painter
          return main.FillStatistic(this, JSROOT.gStyle.fOptStat, JSROOT.gStyle.fOptFit);

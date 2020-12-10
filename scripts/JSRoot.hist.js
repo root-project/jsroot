@@ -834,7 +834,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           pos_x = parseInt(this.draw_g.attr("x")), // pave position
           pos_y = parseInt(this.draw_g.attr("y")),
           width = this.pad_width(),
-          main = this.main_painter(),
+          main = this.getMainPainter(),
           framep = this.frame_painter(),
           zmin = 0, zmax = 100,
           contour = main.fContour,
@@ -1162,7 +1162,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (pp && pp._fast_drawing) return false;
 
       let pave = this.getObject(),
-          main = pave.$main_painter || this.main_painter();
+          main = pave.$main_painter || this.getMainPainter();
 
       if (pave.fName !== "stats") return false;
       if (!main || (typeof main.FillStatistic !== 'function')) return false;
@@ -1982,7 +1982,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    THistPainter.prototype.CheckPadRange = function(use_pad) {
       // actual work will be done when frame will draw axes
-      if (this.is_main_painter())
+      if (this.isMainPainter())
          this.check_pad_range = use_pad ? "pad_range" : true;
    }
 
@@ -2245,7 +2245,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
     /** @summary Draw axes for histogram
       * @desc axes can be drawn only for main histogram */
    THistPainter.prototype.DrawAxes = function() {
-      if (!this.is_main_painter())
+      if (!this.isMainPainter())
          return Promise.resolve(false);
 
       let fp = this.frame_painter();
@@ -2276,7 +2276,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    THistPainter.prototype.ToggleTitle = function(arg) {
       let histo = this.GetHisto();
-      if (!this.is_main_painter() || !histo)
+      if (!this.isMainPainter() || !histo)
          return false;
       if (arg==='only-check')
          return !histo.TestBit(TH1StatusBits.kNoTitle);
@@ -2289,7 +2289,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    THistPainter.prototype.drawHistTitle = function() {
 
       // case when histogram drawn over other histogram (same option)
-      if (!this.is_main_painter() || this.options.Same)
+      if (!this.isMainPainter() || this.options.Same)
          return Promise.resolve(true);
 
       let histo = this.GetHisto(), st = JSROOT.gStyle,
@@ -2337,7 +2337,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (!histo || !tpainter) return null;
 
       if (arg==="check")
-         return (!this.is_main_painter() || this.options.Same) ? null : histo;
+         return (!this.isMainPainter() || this.options.Same) ? null : histo;
 
       let pt = tpainter.getObject();
       pt.Clear();
@@ -2473,7 +2473,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (!force && !this.options.ForceStat) {
          if (this.options.NoStat || histo.TestBit(TH1StatusBits.kNoStats) || !JSROOT.settings.AutoStat) return null;
 
-         if (!this.draw_content || !this.is_main_painter()) return null;
+         if (!this.draw_content || !this.isMainPainter()) return null;
       }
 
       let stats = this.FindStat(), st = JSROOT.gStyle,
@@ -2621,7 +2621,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
     */
    THistPainter.prototype.AddInteractive = function() {
 
-      if (this.is_main_painter()) {
+      if (this.isMainPainter()) {
          let fp = this.frame_painter();
          if (fp) return fp.AddInteractive();
       }
@@ -2710,7 +2710,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          if (menu.size() > 0)
             menu.add("separator");
 
-         let main = this.main_painter() || this;
+         let main = this.getMainPainter() || this;
 
          menu.addchk(main.isTooltipAllowed(), 'Show tooltips', function() {
             main.setTooltipAllowed("toggle");
@@ -2767,7 +2767,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       let fp = this.frame_painter();
 
-      if (!this.is_main_painter() || !fp) return false;
+      if (!this.isMainPainter() || !fp) return false;
 
       switch(funcname) {
          case "ToggleZoom":
@@ -2861,7 +2861,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (this.fContour && !force_recreate)
          return this.fContour;
 
-      let main = this.main_painter(),
+      let main = this.getMainPainter(),
           fp = this.frame_painter();
 
       if (main && (main !== this) && main.fContour) {
@@ -2941,7 +2941,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    THistPainter.prototype.drawColorPalette = function(enabled, postpone_draw, can_move) {
       // only when create new palette, one could change frame size
 
-      if (!this.is_main_painter())
+      if (!this.isMainPainter())
          return Promise.resolve(null);
 
       let pal = this.FindFunction('TPaletteAxis'),
@@ -4258,7 +4258,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    TH1Painter.prototype.callDrawFunc = function(reason) {
 
-      let main = this.main_painter(),
+      let main = this.getMainPainter(),
           fp = this.frame_painter();
 
      if ((main !== this) && fp && (fp.mode3d !== this.options.Mode3D))
@@ -4481,7 +4481,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    TH2Painter.prototype.ButtonClick = function(funcname) {
       if (THistPainter.prototype.ButtonClick.call(this, funcname)) return true;
 
-      if (this !== this.main_painter()) return false;
+      if (this !== this.getMainPainter()) return false;
 
       switch(funcname) {
          case "ToggleColor": this.ToggleColor(); break;
@@ -5528,7 +5528,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       let histo = this.getObject(),
           handle = this.PrepareColorDraw({ rounding: false }),
-          main = this.main_painter();
+          main = this.getMainPainter();
 
       if (main===this) {
          if (main.maxbin === main.minbin) {
@@ -6311,7 +6311,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    TH2Painter.prototype.callDrawFunc = function(reason) {
 
-      let main = this.main_painter(),
+      let main = this.getMainPainter(),
           fp = this.frame_painter();
 
      if ((main !== this) && fp && (fp.mode3d !== this.options.Mode3D))

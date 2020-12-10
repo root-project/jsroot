@@ -675,7 +675,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       let h = this.frame_height(),
           tf1 = this.getObject(),
           fp = this.frame_painter(),
-          pmain = this.main_painter();
+          pmain = this.getMainPainter();
 
       this.createG(true);
 
@@ -748,7 +748,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       painter.nosave = d.check('NOSAVE');
 
       return JSROOT.require("math").then(() => {
-         if (!painter.main_painter())
+         if (!painter.getMainPainter())
             return JSROOT.draw(divid, painter.CreateDummyHisto(), "AXIS");
       }).then(() => {
          painter.addToPadPrimitives();
@@ -795,7 +795,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
    TGraphPainter.prototype.DecodeOptions = function(opt) {
 
-      if (!opt) opt = this.main_painter() ? "lp" : "alp";
+      if (!opt) opt = this.getMainPainter() ? "lp" : "alp";
 
       if ((typeof opt == "string") && (opt.indexOf("same ")==0))
          opt = opt.substr(5);
@@ -993,7 +993,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       if (!dox && !doy) return false;
 
       this.CreateHistogram(null, dox, doy);
-      let hpainter = this.main_painter();
+      let hpainter = this.getMainPainter();
       if (hpainter) hpainter.ExtractAxesProperties(1); // just to enforce ranges extraction
 
       return true;
@@ -1829,7 +1829,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          let histo = this.CreateHistogram(obj.fHistogram);
          histo.fTitle = graph.fTitle; // copy title
 
-         let main = this.main_painter();
+         let main = this.getMainPainter();
          main.updateObject(histo, this.options.HOptions);
       }
 
@@ -1969,7 +1969,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       let promise = Promise.resolve();
 
-      if (!painter.main_painter() && painter.options.HOptions) {
+      if (!painter.getMainPainter() && painter.options.HOptions) {
          let histo = painter.CreateHistogram();
          promise = JSROOT.draw(divid, histo, painter.options.HOptions).then(hist_painter => {
             if (hist_painter) {
@@ -2125,7 +2125,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
    /** @summary Redraw polargram */
    TGraphPolargramPainter.prototype.Redraw = function() {
-      if (!this.is_main_painter()) return;
+      if (!this.isMainPainter()) return;
 
       let polar = this.getObject(),
           rect = this.GetFrameRect();
@@ -2339,7 +2339,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
    TGraphPolarPainter.prototype.drawGraphPolar = function() {
       let graph = this.getObject(),
-          main = this.main_painter();
+          main = this.getMainPainter();
 
       if (!graph || !main || !main.$polargram) return;
 
@@ -2436,7 +2436,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       if (!pnt) return null;
 
       let graph = this.getObject(),
-          main = this.main_painter(),
+          main = this.getMainPainter(),
           best_dist2 = 1e10, bestindx = -1, bestpos = null;
 
       for (let n=0;n<graph.fNpoints;++n) {
@@ -2511,7 +2511,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       let painter = new TGraphPolarPainter(divid, graph);
       painter.DecodeOptions(opt);
 
-      let main = painter.main_painter();
+      let main = painter.getMainPainter();
       if (main && !main.$polargram) {
          console.error('Cannot superimpose TGraphPolar with plain histograms');
          return null;
@@ -2817,7 +2817,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       painter.DecodeOptions(opt);
 
       let promise = Promise.resolve();
-      if (!painter.main_painter()) {
+      if (!painter.getMainPainter()) {
          if (painter.options.Same) {
             console.warn('TSpline painter requires histogram to be drawn');
             return null;
@@ -2955,7 +2955,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       let painter = new TGraphTimePainter(divid, gr);
 
-      if (painter.main_painter()) {
+      if (painter.getMainPainter()) {
          console.error('Cannot draw graph time on top of other histograms');
          return null;
       }
@@ -3301,7 +3301,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       painter._pmc = d.check("PMC");
 
       let promise = Promise.resolve(painter);
-      if (d.check("A") || !painter.main_painter())
+      if (d.check("A") || !painter.getMainPainter())
          promise = painter.drawAxis().then(fp => {
             painter.firstpainter = fp;
             return painter;
@@ -3693,7 +3693,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
              .attr("height", this.frame_height())
              .attr("preserveAspectRatio", constRatio ? null : "none");
 
-      if (url && this.is_main_painter() && is_buf && fp)
+      if (url && this.isMainPainter() && is_buf && fp)
          return this.drawColorPalette(this.options.Zscale, true).then(() => {
             fp.SetAxesRanges(JSROOT.Create("TAxis"), 0, 1, JSROOT.Create("TAxis"), 0, 1, null, 0, 0);
             fp.CreateXY({ ndim: 2,
@@ -3722,7 +3722,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    /** @summary Draw color palette */
    TASImagePainter.prototype.drawColorPalette = function(enabled, can_move) {
 
-      if (!this.is_main_painter())
+      if (!this.isMainPainter())
          return Promise.resolve(null);
 
       if (!this.draw_palette) {
@@ -3799,7 +3799,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    }
 
    TASImagePainter.prototype.ButtonClick = function(funcname) {
-      if (this !== this.main_painter()) return false;
+      if (!this.isMainPainter()) return false;
 
       switch(funcname) {
          case "ToggleColorZ": this.ToggleColz(); break;

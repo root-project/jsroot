@@ -1278,7 +1278,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
                fp.SetLastEventPos(pnt);
             } else if (!this.v7_frame && ((kind=="x") || (kind=="y") || (kind=="z"))) {
-               exec_painter = this.main_painter(); // histogram painter delivers items for axis menu
+               exec_painter = this.getMainPainter(); // histogram painter delivers items for axis menu
             }
          } else if (kind == 'painter' && obj) {
             // this is used in 3D context menu to show special painter

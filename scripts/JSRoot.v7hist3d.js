@@ -123,7 +123,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
 
       this.control = jsrp.createOrbitControl(this, this.camera, this.scene, this.renderer, this.lookat);
 
-      let axis_painter = this, obj_painter = this.main_painter();
+      let axis_painter = this, obj_painter = this.getMainPainter();
 
       this.control.ProcessMouseMove = function(intersects) {
          let tip = null, mesh = null, zoom_mesh = null;
@@ -289,7 +289,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
 
       let changed = false, tooltip_mesh = null, changed_self = true,
           want_remove = !tip || (tip.x1===undefined) || !this.enable_highlight,
-          mainp = this.main_painter();
+          mainp = this.getMainPainter();
 
       if (mainp && (!mainp.ProvideUserTooltip || !mainp.IsUserTooltipCallback())) mainp = null;
 
@@ -1361,7 +1361,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       this.mode3d = true;
 
       let main = this.frame_painter(), // who makes axis drawing
-          is_main = this.is_main_painter(); // is main histogram
+          is_main = this.isMainPainter(); // is main histogram
 
       if (reason == "resize")  {
          if (is_main && main.Resize3D()) main.Render3D();
@@ -1403,7 +1403,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       this.mode3d = true;
 
       let main = this.frame_painter(), // who makes axis drawing
-          is_main = this.is_main_painter(); // is main histogram
+          is_main = this.isMainPainter(); // is main histogram
 
       if (reason == "resize") {
          if (is_main && main.Resize3D()) main.Render3D();

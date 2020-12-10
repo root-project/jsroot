@@ -2871,14 +2871,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          function ToggleGridField(arg) {
             this.pad[arg] = this.pad[arg] ? 0 : 1;
-            let main = this.main_painter();
+            let main = this.getMainPainter();
             if (main && (typeof main.DrawGrids == 'function')) main.DrawGrids();
          }
 
          function SetTickField(arg) {
             this.pad[arg.substr(1)] = parseInt(arg[0]);
 
-            let main = this.main_painter();
+            let main = this.getMainPainter();
             if (main && (typeof main.DrawAxes == 'function')) main.DrawAxes();
          }
 
@@ -3321,7 +3321,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           case "xaxis":
           case "yaxis":
           case "zaxis":
-             selp = this.main_painter();
+             selp = this.getMainPainter();
              selkind = name[0];
              break;
           case "frame":
@@ -3527,7 +3527,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if (this.frame_painter())
                menu.add("Frame", "frame", this.ItemContextMenu);
 
-            let main = this.main_painter();
+            let main = this.getMainPainter();
 
             if (main) {
                menu.add("X axis", "xaxis", this.ItemContextMenu);

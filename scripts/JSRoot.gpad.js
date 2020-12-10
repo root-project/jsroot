@@ -1638,7 +1638,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
      * @desc It could be appended to the histogram menus */
    TFramePainter.prototype.FillContextMenu = function(menu, kind, obj) {
 
-      let main = this.main_painter(), pad = this.root_pad();
+      let main = this.getMainPainter(), pad = this.root_pad();
 
       if ((kind=="x") || (kind=="y") || (kind=="z")) {
          let faxis = obj || this[kind+'axis'];
@@ -3384,7 +3384,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if (this.frame_painter())
                menu.add("Frame", "frame", this.ItemContextMenu);
 
-            let main = this.main_painter();
+            let main = this.getMainPainter();
 
             if (main) {
                menu.add("X axis", "xaxis", this.ItemContextMenu);
@@ -3722,7 +3722,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          promise.then(painter => { this.proj_painter = painter; })
       } else {
-         let hp = this.proj_painter.main_painter();
+         let hp = this.proj_painter.getMainPainter();
          if (hp) hp.updateObject(hist, "hist");
          this.proj_painter.redrawPad();
       }

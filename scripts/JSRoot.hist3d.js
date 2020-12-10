@@ -143,7 +143,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
       this.control = jsrp.createOrbitControl(this, this.camera, this.scene, this.renderer, this.lookat);
 
-      let axis_painter = this, obj_painter = this.main_painter();
+      let axis_painter = this, obj_painter = this.getMainPainter();
 
       this.control.ProcessMouseMove = function(intersects) {
 
@@ -319,7 +319,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
       let changed = false, tooltip_mesh = null, changed_self = true,
           want_remove = !tip || (tip.x1===undefined) || !this.enable_highlight,
-          mainp = this.main_painter();
+          mainp = this.getMainPainter();
 
       if (mainp && (!mainp.ProvideUserTooltip || !mainp.IsUserTooltipCallback())) mainp = null;
 
@@ -1445,7 +1445,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       this.mode3d = true;
 
       let main = this.frame_painter(), // who makes axis drawing
-          is_main = this.is_main_painter(), // is main histogram
+          is_main = this.isMainPainter(), // is main histogram
           histo = this.GetHisto();
 
       if (reason == "resize")  {
@@ -1490,7 +1490,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       this.mode3d = true;
 
       let main = this.frame_painter(), // who makes axis drawing
-          is_main = this.is_main_painter(), // is main histogram
+          is_main = this.isMainPainter(), // is main histogram
           histo = this.GetHisto();
 
       if (reason == "resize") {
@@ -3125,7 +3125,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
    TGraph2DPainter.prototype.Redraw = function() {
 
-      let main = this.main_painter(),
+      let main = this.getMainPainter(),
           fp = this.frame_painter(),
           graph = this.getObject(),
           step = 1;
@@ -3323,7 +3323,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
       let promise = Promise.resolve(true);
 
-      if (!painter.main_painter()) {
+      if (!painter.getMainPainter()) {
          if (!gr.fHistogram)
             gr.fHistogram = painter.CreateHistogram();
          promise = JSROOT.draw(divid, gr.fHistogram, "lego;axis");
