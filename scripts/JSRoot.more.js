@@ -475,17 +475,16 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
    function drawRooPlot(divid, plot) {
 
-      return new Promise((resolve) => {
+      let hpainter;
 
-         let cnt = -1, hpainter = null;
+      function DrawNextItem(cnt) {
+         if (cnt >= plot._items.arr.length) return hpainter;
+         return JSROOT.draw(divid, plot._items.arr[cnt], plot._items.opt[cnt]).then(() => DrawNextItem(cnt+1));
+      }
 
-         function DrawNextItem(p) {
-            if (!hpainter) hpainter = p;
-            if (++cnt >= plot._items.arr.length) return resolve(hpainter);
-            JSROOT.draw(divid, plot._items.arr[cnt], plot._items.opt[cnt]).then(DrawNextItem);
-         }
-
-         JSROOT.draw(divid, plot._hist, "hist").then(DrawNextItem);
+      return JSROOT.draw(divid, plot._hist, "hist").then(hp => {
+         hpainter = hp;
+         return DrawNextItem(0);
       });
    }
 
@@ -495,6 +494,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
     * @memberof JSROOT
     * @extends JSROOT.ObjectPainter
     * @summary Painter for TF1 object.
+    * @param {object|string} dom - DOM element for drawing or element id
     * @param {object} tf1 - TF1 object to draw
     * @private
     */
