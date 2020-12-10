@@ -1175,7 +1175,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
          geometry.setAttribute( 'normal', new THREE.BufferAttribute( normals, 3 ) );
          // geometry.computeVertexNormals();
 
-         let rootcolor = 3, fcolor = this.get_color(rootcolor);
+         let rootcolor = 3, fcolor = this.getColor(rootcolor);
 
          if (palette) {
             fcolor = palette.getColor(nlevel); // calcColor in v6
@@ -1826,8 +1826,8 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
             if (palette) {
                fcolor = palette.getColor(lvl-1);
             } else {
-               fcolor = fFillColor > 1 ? this.get_color(fFillColor) : 'white';
-               if ((this.options.Surf === 14) && (fFillColor<2)) fcolor = this.get_color(48);
+               fcolor = fFillColor > 1 ? this.getColor(fFillColor) : 'white';
+               if ((this.options.Surf === 14) && (fFillColor<2)) fcolor = this.getColor(48);
             }
 
             if (this.options.Surf === 14)
@@ -1847,7 +1847,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
          if (nsegments*6 !== lindx)
             console.error('SURF lines mismmatch nsegm', nsegments, ' lindx', lindx, 'difference', nsegments*6 - lindx);
 
-         let lcolor = this.get_color(7),
+         let lcolor = this.getColor(7),
              material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor), linewidth: this.v7EvalAttr("line_width", 1) }),
              line = jsrp.createLineSegments(lpos, material);
          line.painter = this;

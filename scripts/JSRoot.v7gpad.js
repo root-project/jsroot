@@ -1595,7 +1595,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           gridx = this.v7EvalAttr("gridx", false),
           gridy = this.v7EvalAttr("gridy", false),
           grid_style = JSROOT.gStyle.fGridStyle,
-          grid_color = (JSROOT.gStyle.fGridColor > 0) ? this.get_color(JSROOT.gStyle.fGridColor) : "black";
+          grid_color = (JSROOT.gStyle.fGridColor > 0) ? this.getColor(JSROOT.gStyle.fGridColor) : "black";
 
       if ((grid_style < 0) || (grid_style >= jsrp.root_line_styles.length)) grid_style = 11;
 

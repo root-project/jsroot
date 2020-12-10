@@ -382,7 +382,7 @@ JSROOT.define(['d3'], (d3) => {
 
       if (args.attr) {
          if (args.color === undefined)
-            args.color = args.painter ? args.painter.get_color(args.attr.fMarkerColor) : jsrp.getColor(args.attr.fMarkerColor);
+            args.color = args.painter ? args.painter.getColor(args.attr.fMarkerColor) : jsrp.getColor(args.attr.fMarkerColor);
          if (!args.style || (args.style < 0)) args.style = args.attr.fMarkerStyle;
          if (!args.size) args.size = args.attr.fMarkerSize;
       }
@@ -574,13 +574,13 @@ JSROOT.define(['d3'], (d3) => {
      * @param {number} args.width - line width */
    TAttLineHandler.prototype.SetArgs = function(args) {
       if (args.attr) {
-         args.color = args.color0 || (args.painter ? args.painter.get_color(args.attr.fLineColor) : jsrp.getColor(args.attr.fLineColor));
+         args.color = args.color0 || (args.painter ? args.painter.getColor(args.attr.fLineColor) : jsrp.getColor(args.attr.fLineColor));
          if (args.width === undefined) args.width = args.attr.fLineWidth;
          args.style = args.attr.fLineStyle;
       } else if (typeof args.color == 'string') {
          if ((args.color !== 'none') && !args.width) args.width = 1;
       } else if (typeof args.color == 'number') {
-         args.color = args.painter ? args.painter.get_color(args.color) : jsrp.getColor(args.color);
+         args.color = args.painter ? args.painter.getColor(args.color) : jsrp.getColor(args.color);
       }
 
       if (args.width === undefined)
@@ -780,7 +780,7 @@ JSROOT.define(['d3'], (d3) => {
          this.color = color;
          indx = 10000 + JSROOT._.id_counter++; // use fictional unique index far away from existing color indexes
       } else {
-         this.color = painter ? painter.get_color(indx) : jsrp.getColor(indx);
+         this.color = painter ? painter.getColor(indx) : jsrp.getColor(indx);
       }
 
       if (typeof this.color != 'string') this.color = "none";
@@ -1766,8 +1766,10 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /** @summary returns color from current list of colors
-    * @private */
-   ObjectPainter.prototype.get_color = function(indx) {
+     * @desc First checks canvas painter and then just access global list of colors
+     * @param {number} indx - color index
+     * @returns {string} with SVG color name or rgb() */
+   ObjectPainter.prototype.getColor = function(indx) {
       let jsarr = this.root_colors;
 
       if (!jsarr) {
@@ -1780,7 +1782,7 @@ JSROOT.define(['d3'], (d3) => {
 
    /** @summary add color to list of colors
     * @private */
-   ObjectPainter.prototype.add_color = function(color) {
+   ObjectPainter.prototype.addColor = function(color) {
       let jsarr = this.root_colors;
       if (!jsarr) {
          let pp = this.canv_painter();

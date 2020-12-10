@@ -315,8 +315,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          if ((brd > 1) && (pt.fShadowColor > 0) && (dx || dy) && !this.fillatt.empty())
             this.draw_g.append("svg:path")
                  .attr("d","M0,"+(h2+brd) + dpath)
-                 .style("fill", this.get_color(pt.fShadowColor))
-                 .style("stroke", this.get_color(pt.fShadowColor))
+                 .style("fill", this.getColor(pt.fShadowColor))
+                 .style("stroke", this.getColor(pt.fShadowColor))
                  .style("stroke-width", "1px");
 
          this.draw_g.append("svg:path")
@@ -332,7 +332,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       // add shadow decoration before main rect
       if ((brd > 1) && (pt.fShadowColor > 0) && !pt.fNpaves && (dx || dy)) {
-         let spath = "", scol = this.get_color(pt.fShadowColor);
+         let spath = "", scol = this.getColor(pt.fShadowColor);
          if (this.fillatt.empty()) {
             if ((dx<0) && (dy<0))
                spath = "M0,0v"+(height-brd)+"h-"+brd+"v-"+height+"h"+width+"v"+brd;
@@ -418,7 +418,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       this.startTextDrawing(pave.fTextFont, _height/1.2);
 
-      this.drawText({ align: pave.fTextAlign, width: _width, height: _height, text: pave.fLabel, color: this.get_color(pave.fTextColor) });
+      this.drawText({ align: pave.fTextAlign, width: _width, height: _height, text: pave.fLabel, color: this.getColor(pave.fTextColor) });
 
       return this.finishTextDrawing();
    }
@@ -429,7 +429,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (this.IsStats()) this.FillStatistic();
 
       let pt = this.getObject(), lines = [],
-          tcolor = this.get_color(pt.fTextColor),
+          tcolor = this.getColor(pt.fTextColor),
           first_stat = 0, num_cols = 0, maxlen = 0;
 
       // now draw TLine and TBox objects
@@ -523,7 +523,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    TPavePainter.prototype.DrawPaveText = function(width, height, dummy_arg, text_g) {
 
       let pt = this.getObject(),
-          tcolor = this.get_color(pt.fTextColor),
+          tcolor = this.getColor(pt.fTextColor),
           nlines = 0, lines = [],
           can_height = this.pad_height(),
           pp = this.pad_painter(),
@@ -560,7 +560,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                   if ((lx>0) && (lx<1)) lx = Math.round(lx*width); else lx = pt.fMargin * width;
                   if ((ly>0) && (ly<1)) ly = Math.round((1-ly)*height); else ly = ytext;
 
-                  let jcolor = entry.fTextColor ? this.get_color(entry.fTextColor) : "";
+                  let jcolor = entry.fTextColor ? this.getColor(entry.fTextColor) : "";
                   if (!jcolor) {
                      jcolor = tcolor;
                      this.UseTextColor = true;
@@ -627,7 +627,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                arg = { x:0, y:0, width: width, height: height };
             } else {
                arg = { x: margin_x, y: j*stepy, width: width-2*margin_x, height: stepy };
-               if (lj.fTextColor) arg.color = this.get_color(lj.fTextColor);
+               if (lj.fTextColor) arg.color = this.getColor(lj.fTextColor);
                if (lj.fTextSize) arg.font_size = Math.round(lj.fTextSize*can_height);
             }
 
@@ -707,7 +707,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       if (nrows<1) nrows = 1;
 
-      let tcolor = this.get_color(legend.fTextColor),
+      let tcolor = this.getColor(legend.fTextColor),
           column_width = Math.round(w/ncols),
           padding_x = Math.round(0.03*w/ncols),
           padding_y = Math.round(0.03*h),
@@ -3517,7 +3517,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             gry2 = Math.round(pmain.gry(this.options.BaseLine));
 
       if (show_text) {
-         text_col = this.get_color(histo.fMarkerColor);
+         text_col = this.getColor(histo.fMarkerColor);
          text_angle = -1*this.options.TextAngle;
          text_size = 20;
 
@@ -3700,7 +3700,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       this.createG(true);
 
       if (show_text) {
-         text_col = this.get_color(histo.fMarkerColor);
+         text_col = this.getColor(histo.fMarkerColor);
          text_angle = -1*this.options.TextAngle;
          text_size = 20;
 
@@ -5360,7 +5360,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          }
 
       if (textbins.length > 0) {
-         let text_col = this.get_color(histo.fMarkerColor),
+         let text_col = this.getColor(histo.fMarkerColor),
              text_angle = -1*this.options.TextAngle,
              text_g = this.draw_g.append("svg:g").attr("class","th2poly_text"),
              text_size = 12;
@@ -5397,7 +5397,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       let histo = this.getObject(),
           h = this.frame_height(),
           i,j,binz,errz,binw,binh,lbl,lble,posx,posy,sizex,sizey,
-          text_col = this.get_color(histo.fMarkerColor),
+          text_col = this.getColor(histo.fMarkerColor),
           text_angle = -1*this.options.TextAngle,
           text_g = this.draw_g.append("svg:g").attr("class","th2_text"),
           text_size = 20, text_offset = 0,
@@ -6649,7 +6649,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             this.palette = jsrp.GetColorPalette();
          if (this.palette) {
             let color = this.palette.calcColor(rindx, nhists+1);
-            let icolor = this.add_color(color);
+            let icolor = this.addColor(color);
 
             if (this.options._pfc) hist.fFillColor = icolor;
             if (this.options._plc) hist.fLineColor = icolor;

@@ -10,7 +10,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       let text = this.getObject(),
           w = this.pad_width(), h = this.pad_height(),
           pos_x = text.fX, pos_y = text.fY,
-          tcolor = this.get_color(text.fTextColor),
+          tcolor = this.getColor(text.fTextColor),
           use_frame = false,
           fact = 1., textsize = text.fTextSize || 0.05,
           main = this.frame_painter();
@@ -1650,7 +1650,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       if (this.fillatt && this.fillatt.used && !this.fillatt.empty()) res.color2 = this.fillatt.fillcolor();
 
       if (!islines) {
-         res.color1 = this.get_color(gr.fMarkerColor);
+         res.color1 = this.getColor(gr.fMarkerColor);
          if (!res.color2) res.color2 = res.color1;
       }
 
@@ -2190,7 +2190,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
          if ((n < ticks.length-1) || !exclude_last)
             this.drawText({ align: 23, x: Math.round(rx), y: Math.round(polar.fRadialTextSize * this.szy * 0.5),
-                            text: this.format(ticks[n]), color: this.get_color[polar.fRadialLabelColor], latex: 0 });
+                            text: this.format(ticks[n]), color: this.getColor[polar.fRadialLabelColor], latex: 0 });
 
          if ((nminor>1) && ((n < ticks.length-1) || !exclude_last)) {
             let dr = (ticks[1] - ticks[0]) / nminor;
@@ -2235,7 +2235,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
                          x: Math.round((this.szx+fontsize)*Math.cos(angle)),
                          y: Math.round((this.szy + fontsize/this.szx*this.szy)*(Math.sin(angle))),
                          text: lbls[n],
-                         color: this.get_color[polar.fPolarLabelColor], latex: 1 });
+                         color: this.getColor[polar.fPolarLabelColor], latex: 1 });
       }
 
       this.finishTextDrawing();
@@ -3321,7 +3321,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
             this.palette = jsrp.GetColorPalette();
          if (this.palette) {
             let color = this.palette.calcColor(indx, graphs.arr.length+1);
-            let icolor = this.add_color(color);
+            let icolor = this.addColor(color);
 
             if (this._pfc) graphs.arr[indx].fFillColor = icolor;
             if (this._plc) graphs.arr[indx].fLineColor = icolor;

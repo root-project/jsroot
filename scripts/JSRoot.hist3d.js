@@ -1217,7 +1217,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          // geometry.computeVertexNormals();
 
          let rootcolor = histo.fFillColor,
-             fcolor = this.get_color(rootcolor);
+             fcolor = this.getColor(rootcolor);
 
          if (palette) {
             fcolor = palette.calcColor(nlevel, levels.length);
@@ -1380,7 +1380,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       }
 
       // create boxes
-      let lcolor = this.get_color(histo.fLineColor);
+      let lcolor = this.getColor(histo.fLineColor);
       let material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor), linewidth: histo.fLineWidth });
 
       let line = jsrp.createLineSegments(lpositions, material, uselineindx ? lindicies : null );
@@ -1853,8 +1853,8 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
             if (palette) {
                fcolor = palette.calcColor(lvl, levels.length);
             } else {
-               fcolor = histo.fFillColor > 1 ? this.get_color(histo.fFillColor) : 'white';
-               if ((this.options.Surf === 14) && (histo.fFillColor<2)) fcolor = this.get_color(48);
+               fcolor = histo.fFillColor > 1 ? this.getColor(histo.fFillColor) : 'white';
+               if ((this.options.Surf === 14) && (histo.fFillColor<2)) fcolor = this.getColor(48);
             }
             if (this.options.Surf === 14)
                material = new THREE.MeshLambertMaterial( { color: fcolor, side: THREE.DoubleSide  } );
@@ -1873,7 +1873,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          if (nsegments*6 !== lindx)
             console.error('SURF lines mismmatch nsegm', nsegments, ' lindx', lindx, 'difference', nsegments*6 - lindx);
 
-         let lcolor = this.get_color(histo.fLineColor),
+         let lcolor = this.getColor(histo.fLineColor),
              material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor), linewidth: histo.fLineWidth });
          let line = jsrp.createLineSegments(lpos, material);
          line.painter = this;
@@ -1889,7 +1889,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          if (this.options.Surf === 1)
             material = new THREE.LineDashedMaterial( { color: 0x0, dashSize: 2, gapSize: 2 } );
          else
-            material = new THREE.LineBasicMaterial({ color: new THREE.Color(this.get_color(histo.fLineColor)) });
+            material = new THREE.LineBasicMaterial({ color: new THREE.Color(this.getColor(histo.fLineColor)) });
 
          let line = jsrp.createLineSegments(grid, material);
          line.painter = this;
@@ -2030,7 +2030,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
        }
 
        // create lines
-       let lcolor = this.get_color(this.getObject().fLineColor),
+       let lcolor = this.getColor(this.getObject().fLineColor),
            material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor), linewidth: this.getObject().fLineWidth }),
            line = jsrp.createLineSegments(lpos, material);
 
@@ -2499,7 +2499,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          }
       }
 
-      let mesh = pnts.CreatePoints(this.get_color(histo.fMarkerColor));
+      let mesh = pnts.CreatePoints(this.getColor(histo.fMarkerColor));
       main.toplevel.add(mesh);
 
       mesh.bins = bins;
@@ -2543,7 +2543,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          if (this.Draw3DScatter()) return;
 
       let rootcolor = this.getObject().fFillColor,
-          fillcolor = this.get_color(rootcolor),
+          fillcolor = this.getColor(rootcolor),
           main = this.frame_painter(),
           buffer_size = 0, use_lambert = false,
           use_helper = false, use_colors = false, use_opacity = 1, use_scale = true,
@@ -2832,7 +2832,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          main.toplevel.add(combined_bins);
 
          if (helper_kind[nseq] > 0) {
-            let lcolor = this.get_color(this.getObject().fLineColor),
+            let lcolor = this.getColor(this.getObject().fLineColor),
                 helper_material = new THREE.LineBasicMaterial( { color: lcolor } ),
                 lines = null;
 
@@ -3251,7 +3251,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          }
 
          if (line && (iline>3) && (line.length == iline)) {
-            let lcolor = this.get_color(this.getObject().fLineColor),
+            let lcolor = this.getColor(this.getObject().fLineColor),
                 material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor), linewidth: this.getObject().fLineWidth }),
                 linemesh = jsrp.createLineSegments(line, material);
             fp.toplevel.add(linemesh);
@@ -3269,7 +3269,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          }
 
          if (err) {
-            let lcolor = this.get_color(this.getObject().fLineColor),
+            let lcolor = this.getColor(this.getObject().fLineColor),
                 material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor), linewidth: this.getObject().fLineWidth }),
                 errmesh = jsrp.createLineSegments(err, material);
             fp.toplevel.add(errmesh);
@@ -3290,7 +3290,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
             if (!this.options.Circles)
                fcolor = palette ? palette.calcColor(lvl, levels.length)
-                                : this.get_color(graph.fMarkerColor);
+                                : this.getColor(graph.fMarkerColor);
 
             let mesh_index = index;
 
@@ -3382,7 +3382,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          pnts.AddPoint(fp.grx(poly.fP[i]), fp.gry(poly.fP[i+1]), fp.grz(poly.fP[i+2]));
       }
 
-      return pnts.createPointsPromise({ color: this.get_color(poly.fMarkerColor),
+      return pnts.createPointsPromise({ color: this.getColor(poly.fMarkerColor),
                                         style: poly.fMarkerStyle }).then(mesh => {
 
          if (fp.toplevel) fp.toplevel.add(mesh);

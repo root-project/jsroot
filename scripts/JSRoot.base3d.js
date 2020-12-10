@@ -1320,7 +1320,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
    function create3DLineMaterial(painter, obj) {
       if (!painter || !obj) return null;
 
-      let lcolor = painter.get_color(obj.fLineColor),
+      let lcolor = painter.getColor(obj.fLineColor),
           material = null,
           style = obj.fLineStyle ? jsrp.root_line_styles[obj.fLineStyle] : "",
           dash = style ? style.split(",") : [];

@@ -450,8 +450,8 @@ JSROOT.define(['d3'], (d3) => {
          } else
             switch (found.name) {
                case "#color[":
-                  if (painter.get_color(foundarg))
-                     subnode.attr('fill', painter.get_color(foundarg));
+                  if (painter.getColor(foundarg))
+                     subnode.attr('fill', painter.getColor(foundarg));
                   break;
                case "#kern[": // horizontal shift
                   nextdx += foundarg;
@@ -973,7 +973,7 @@ JSROOT.define(['d3'], (d3) => {
             if (p <= 0) break;
             let colindx = parseInt(str.substr(0, p));
             if (isNaN(colindx)) break;
-            let col = painter.get_color(colindx), cnt = 1;
+            let col = painter.getColor(colindx), cnt = 1;
             str = str.substr(p + 2);
             p = -1;
             while (cnt && (++p < str.length)) {

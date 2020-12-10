@@ -509,7 +509,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    /** @summary Draw axis labels */
    TAxisPainter.prototype.drawLabels = function(axis_g, axis, w, h, handle, side, labelSize, labeloffset, tickSize, ticksPlusMinus, max_text_width) {
-      let label_color = this.get_color(axis.fLabelColor),
+      let label_color = this.getColor(axis.fLabelColor),
           center_lbls = this.IsCenterLabels(),
           rotate_lbls = axis.TestBit(JSROOT.EAxisBits.kLabelsVert),
           textscale = 1, maxtextlen = 0, applied_scale = 0,
@@ -764,7 +764,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
              center = axis.TestBit(JSROOT.EAxisBits.kCenterTitle),
              opposite = axis.TestBit(JSROOT.EAxisBits.kOppositeTitle),
              rotate = axis.TestBit(JSROOT.EAxisBits.kRotateTitle) ? -1 : 1,
-             title_color = this.get_color(is_gaxis ? axis.fTextColor : axis.fTitleColor);
+             title_color = this.getColor(is_gaxis ? axis.fTextColor : axis.fTitleColor);
 
          this.startTextDrawing(axis.fTitleFont, title_fontsize, title_g);
 
@@ -1243,7 +1243,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                gridx += "M"+this.x_handle.ticks[n]+",0v"+h;
 
          let colid = (JSROOT.gStyle.fGridColor > 0) ? JSROOT.gStyle.fGridColor : (this.GetAxis("x") ? this.GetAxis("x").fAxisColor : 1),
-             grid_color = this.get_color(colid) || "black";
+             grid_color = this.getColor(colid) || "black";
 
          if (gridx.length > 0)
            layer.append("svg:path")
@@ -1264,7 +1264,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                gridy += "M0,"+this.y_handle.ticks[n]+"h"+w;
 
          let colid = (JSROOT.gStyle.fGridColor > 0) ? JSROOT.gStyle.fGridColor : (this.GetAxis("y") ? this.GetAxis("y").fAxisColor : 1),
-             grid_color = this.get_color(colid) || "black";
+             grid_color = this.getColor(colid) || "black";
 
          if (gridy.length > 0)
            layer.append("svg:path")
@@ -2034,7 +2034,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (indx >= numprimitives) indx = numprimitives - 1;
          let palindx = Math.round(indx * (pal.getLength()-3) / (numprimitives-1));
          let colvalue = pal.getColor(palindx);
-         let colindx = this.add_color(colvalue);
+         let colindx = this.addColor(colvalue);
          return colindx;
       }
 
