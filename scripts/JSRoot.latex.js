@@ -291,7 +291,7 @@ JSROOT.define(['d3'], (d3) => {
          if (tspans.size() > 3) arg.large_latex = true;
 
          tspans.each(function() { if (important.indexOf(this) < 0) d3.select(this).attr('display', 'none'); });
-         let box = jsrp.GetBoundarySizes(arg.mainnode);
+         let box = jsrp.getElementRect(d3.select(arg.mainnode), 'bbox');
 
          tspans.each(function() { if (important.indexOf(this) < 0) d3.select(this).attr('display', null); });
 
@@ -1027,7 +1027,7 @@ JSROOT.define(['d3'], (d3) => {
       svg.attr("width", width).attr('height', height).attr("style", null);
 
       if (!JSROOT.nodejs) {
-         let box = jsrp.GetBoundarySizes(mj_node.node());
+         let box = jsrp.getElementRect(mj_node, 'bbox');
          width = 1.05 * box.width; height = 1.05 * box.height;
       }
 
@@ -1048,7 +1048,7 @@ JSROOT.define(['d3'], (d3) => {
             svg.attr("width", Math.round(mw)).attr("height", Math.round(mh));
          }
       } else {
-         let box = jsrp.GetBoundarySizes(mj_node.node()); // sizes before rotation
+         let box = jsrp.getElementRect(mj_node, 'bbox'); // sizes before rotation
          mw = box.width || mw || 100;
          mh = box.height || mh || 10;
       }

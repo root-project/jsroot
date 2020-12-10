@@ -1269,9 +1269,9 @@ JSROOT.define(['d3'], (d3) => {
    /** @summary Returns visible rect of element
      * @desc Excluding padding area, provides special handling in node.js
      * @private */
-   jsrp.getElementRect = function(elem, fullsize) {
+   jsrp.getElementRect = (elem, sizearg) => {
       if (JSROOT.nodejs)
-         return { width: parseInt(elem.attr("width")), height: parseInt(elem.attr("height")) };
+         return { x: 0, y: 0, width: parseInt(elem.attr("width")), height: parseInt(elem.attr("height")) };
 
       function styleValue(name) {
          let value = elem.style(name);
@@ -1280,30 +1280,26 @@ JSROOT.define(['d3'], (d3) => {
          return isNaN(value) ? 0 : Math.round(value);
       }
 
-      let rect = elem.node().getBoundingClientRect(),
-          res = { width: Math.round(rect.width), height: Math.round(rect.height) };
+      let rect = elem.node().getBoundingClientRect();
+      if ((sizearg == 'bbox') && (parseFloat(box.width) > 0))
+         rect = elem.node().getBBox();
 
-      if (!fullsize) {
+      let res = { x: 0, y: 0, width: parseInt(rect.width), height: parseInt(rect.height) };
+      if (rect.left !== undefined) {
+         res.x = parseInt(rect.left);
+         res.y = parseInt(rect.top);
+      } else if (rect.x !== undefined) {
+         res.x = parseInt(rect.x);
+         res.y = parseInt(rect.y);
+      }
+
+      if (sizearg === undefined) {
          // this is size exclude padding area
          res.width -= styleValue('padding-left') + styleValue('padding-right');
          res.height -= styleValue('padding-top') + styleValue('padding-bottom');
       }
 
       return res;
-   }
-
-   /** @summary Calculate absolute position of provided element in canvas
-     * @private */
-   jsrp.getAbsPosInCanvas = (sel, pos) => {
-      while (!sel.empty() && !sel.classed('root_canvas') && pos) {
-         let cl = sel.attr("class");
-         if (cl && ((cl.indexOf("root_frame") >= 0) || (cl.indexOf("__root_pad_") >= 0))) {
-            pos.x += sel.property("draw_x") || 0;
-            pos.y += sel.property("draw_y") || 0;
-         }
-         sel = d3.select(sel.node().parentNode);
-      }
-      return pos;
    }
 
    /** @summary getBBox does not work in mozilla when object is not displayed or not visible :(
@@ -1323,6 +1319,21 @@ JSROOT.define(['d3'], (d3) => {
          res.y = parseInt(box.y);
       }
       return res;
+   }
+
+
+   /** @summary Calculate absolute position of provided element in canvas
+     * @private */
+   jsrp.getAbsPosInCanvas = (sel, pos) => {
+      while (!sel.empty() && !sel.classed('root_canvas') && pos) {
+         let cl = sel.attr("class");
+         if (cl && ((cl.indexOf("root_frame") >= 0) || (cl.indexOf("__root_pad_") >= 0))) {
+            pos.x += sel.property("draw_x") || 0;
+            pos.y += sel.property("draw_y") || 0;
+         }
+         sel = d3.select(sel.node().parentNode);
+      }
+      return pos;
    }
 
    // ========================================================================================
