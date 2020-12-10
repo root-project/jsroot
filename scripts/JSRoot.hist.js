@@ -489,7 +489,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                   _expected_width: width-2*margin_x, _args: args,
                   post_process: function(painter) {
                     if (this._args[0].ready && this._args[1].ready)
-                       painter.TextScaleFactor(1.05*(this._args[0].result_width+this._args[1].result_width)/this._expected_width, painter.draw_g);
+                       painter.scaleTextDrawing(1.05*(this._args[0].result_width+this._args[1].result_width)/this._expected_width, painter.draw_g);
                   }
                };
                args.push(arg);

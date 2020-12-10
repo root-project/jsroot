@@ -952,7 +952,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          let scale = textscale * (lbls_tilt ? 3 : 1);
          if ((scale > 0.01) && (scale < 1))
-            painter.TextScaleFactor(1/scale, label_g);
+            painter.scaleTextDrawing(1/scale, label_g);
       }
 
       this.labelsFont = this.v7EvalFont("labels", { size: 0.03 });

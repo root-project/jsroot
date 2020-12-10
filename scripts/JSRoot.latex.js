@@ -291,7 +291,7 @@ JSROOT.define(['d3'], (d3) => {
          if (tspans.size() > 3) arg.large_latex = true;
 
          tspans.each(function() { if (important.indexOf(this) < 0) d3.select(this).attr('display', 'none'); });
-         let box = painter.GetBoundarySizes(arg.mainnode);
+         let box = jsrp.GetBoundarySizes(arg.mainnode);
 
          tspans.each(function() { if (important.indexOf(this) < 0) d3.select(this).attr('display', null); });
 
@@ -1027,14 +1027,14 @@ JSROOT.define(['d3'], (d3) => {
       svg.attr("width", width).attr('height', height).attr("style", null);
 
       if (!JSROOT.nodejs) {
-         let box = painter.GetBoundarySizes(mj_node.node());
+         let box = jsrp.GetBoundarySizes(mj_node.node());
          width = 1.05 * box.width; height = 1.05 * box.height;
       }
 
       arg.valign = valign;
 
       if (arg.scale)
-         painter.TextScaleFactor(Math.max(width / arg.width, height / arg.height), arg.draw_g);
+         painter.scaleTextDrawing(Math.max(width / arg.width, height / arg.height), arg.draw_g);
    }
 
    function applyAttributesToMathJax(painter, mj_node, svg, arg, font_size, svg_factor) {
@@ -1048,7 +1048,7 @@ JSROOT.define(['d3'], (d3) => {
             svg.attr("width", Math.round(mw)).attr("height", Math.round(mh));
          }
       } else {
-         let box = painter.GetBoundarySizes(mj_node.node()); // sizes before rotation
+         let box = jsrp.GetBoundarySizes(mj_node.node()); // sizes before rotation
          mw = box.width || mw || 100;
          mh = box.height || mh || 10;
       }

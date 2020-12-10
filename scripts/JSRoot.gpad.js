@@ -539,7 +539,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          if ((scale > 0.01) && (scale < 1)) {
             applied_scale = 1/scale;
-            painter.TextScaleFactor(applied_scale, label_g[0]);
+            painter.scaleTextDrawing(applied_scale, label_g[0]);
          }
       }
 
@@ -615,7 +615,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (label_g.length > 1) {
             // now complete drawing of second half with scaling if necessary
             if (applied_scale)
-               this.TextScaleFactor(applied_scale, label_g[1]);
+               this.scaleTextDrawing(applied_scale, label_g[1]);
             return this.finishTextDrawing(label_g[1]);
           }
           return true;

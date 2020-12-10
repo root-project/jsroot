@@ -1294,7 +1294,7 @@ JSROOT.define(['d3'], (d3) => {
 
    /** @summary Calculate absolute position of provided element in canvas
      * @private */
-   jsrp.getAbsPosInCanvas = function(sel, pos) {
+   jsrp.getAbsPosInCanvas = (sel, pos) => {
       while (!sel.empty() && !sel.classed('root_canvas') && pos) {
          let cl = sel.attr("class");
          if (cl && ((cl.indexOf("root_frame") >= 0) || (cl.indexOf("__root_pad_") >= 0))) {
@@ -1304,6 +1304,25 @@ JSROOT.define(['d3'], (d3) => {
          sel = d3.select(sel.node().parentNode);
       }
       return pos;
+   }
+
+   /** @summary getBBox does not work in mozilla when object is not displayed or not visible :(
+     * @desc getBoundingClientRect() returns wrong sizes for MathJax
+     * are there good solution?
+     * @private */
+   jsrp.GetBoundarySizes = elem => {
+      if (!elem) { console.warn('empty node in GetBoundarySizes'); return { width: 0, height: 0 }; }
+      let box = elem.getBoundingClientRect(); // works always, but returns sometimes results in ex values, which is difficult to use
+      if (parseFloat(box.width) > 0) box = elem.getBBox(); // check that elements visible, request precise value
+      let res = { width: parseInt(box.width), height: parseInt(box.height) };
+      if ('left' in box) {
+         res.x = parseInt(box.left);
+         res.y = parseInt(box.right);
+       } else if ('x' in box) {
+         res.x = parseInt(box.x);
+         res.y = parseInt(box.y);
+      }
+      return res;
    }
 
    // ========================================================================================
@@ -2489,25 +2508,15 @@ JSROOT.define(['d3'], (d3) => {
          draw_g.property("_font_too_small", (max_font_size && (max_font_size < 5)) || (font.size < 4));
    }
 
-   /** @summary function used to remember maximal text scaling factor
-    * @private */
-   ObjectPainter.prototype.TextScaleFactor = function(value, draw_g) {
+   /** @summary Apply scaling factor to all drawn text in the <g> element
+     * @desc Can be applied at any time - even in the pstprocess callbacks of text draw
+     * @param {number} factor - scaling factor
+     * @param {object} [draw_g] - drawing element for the text
+     * @protected */
+   ObjectPainter.prototype.scaleTextDrawing = function(factor, draw_g) {
       if (!draw_g) draw_g = this.draw_g;
-      if (value && (value > draw_g.property('text_factor'))) draw_g.property('text_factor', value);
-   }
-
-   /** @summary getBBox does not work in mozilla when object is not displayed or not visible :(
-     * getBoundingClientRect() returns wrong sizes for MathJax
-     * are there good solution?
-     * @private */
-   ObjectPainter.prototype.GetBoundarySizes = function(elem) {
-      if (!elem) { console.warn('empty node in GetBoundarySizes'); return { width: 0, height: 0 }; }
-      let box = elem.getBoundingClientRect(); // works always, but returns sometimes results in ex values, which is difficult to use
-      if (parseFloat(box.width) > 0) box = elem.getBBox(); // check that elements visible, request precise value
-      let res = { width: parseInt(box.width), height: parseInt(box.height) };
-      if ('left' in box) { res.x = parseInt(box.left); res.y = parseInt(box.right); } else
-         if ('x' in box) { res.x = parseInt(box.x); res.y = parseInt(box.y); }
-      return res;
+      if (factor && (factor > draw_g.property('text_factor')))
+         draw_g.property('text_factor', factor);
    }
 
    /** @summary Finish text drawing
@@ -2582,7 +2591,7 @@ JSROOT.define(['d3'], (d3) => {
             if (arg.scale && (f > 0)) { arg.box.width = arg.box.width / f; arg.box.height = arg.box.height / f; }
          } else if (!arg.plain && !arg.fast) {
             // exact box dimension only required when complex text was build
-            arg.box = this.GetBoundarySizes(txt.node());
+            arg.box = jsrp.GetBoundarySizes(txt.node());
          }
 
          // if (arg.text.length>20) console.log(arg.box, arg.align, arg.x, arg.y, 'plain', arg.plain, 'inside', arg.width, arg.height);
@@ -2772,14 +2781,14 @@ JSROOT.define(['d3'], (d3) => {
    ObjectPainter.prototype.postprocessText = function(txt_node, arg) {
       // complete rectangle with very rougth size estimations
 
-      arg.box = !JSROOT.nodejs && !JSROOT.settings.ApproxTextSize && !arg.fast ? this.GetBoundarySizes(txt_node.node()) :
+      arg.box = !JSROOT.nodejs && !JSROOT.settings.ApproxTextSize && !arg.fast ? jsrp.GetBoundarySizes(txt_node.node()) :
                (arg.text_rect || { height: arg.font_size * 1.2, width: arg.font.approxTextWidth(arg.text) });
 
       txt_node.attr('visibility', 'hidden'); // hide elements until text drawing is finished
 
       if (arg.box.width > arg.draw_g.property('max_text_width')) arg.draw_g.property('max_text_width', arg.box.width);
-      if (arg.scale) this.TextScaleFactor(1.05 * arg.box.width / arg.width, arg.draw_g);
-      if (arg.scale) this.TextScaleFactor(1. * arg.box.height / arg.height, arg.draw_g);
+      if (arg.scale) this.scaleTextDrawing(1.05 * arg.box.width / arg.width, arg.draw_g);
+      if (arg.scale) this.scaleTextDrawing(1. * arg.box.height / arg.height, arg.draw_g);
 
       arg.result_width = arg.box.width;
       arg.result_height = arg.box.height;
