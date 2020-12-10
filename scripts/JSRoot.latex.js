@@ -210,7 +210,7 @@ JSROOT.define(['d3'], (d3) => {
          // initial dy = -0.1 is to move complete from very bottom line like with normal text drawing
          curr = { lvl: 0, x: 0, y: 0, dx: 0, dy: -0.1, fsize: arg.font_size, parent: null };
          label = arg.text;
-         arg.mainnode = node.node();
+         arg.mainnode = node;
       }
 
       function extend_pos(pos, value) {
@@ -276,22 +276,21 @@ JSROOT.define(['d3'], (d3) => {
 
          let important = [], prnt = element.node();
 
-         // if (element.node().getBBox && !JSROOT.browser.isFirefox) return element.node().getBBox();
-
-         while (prnt && (prnt != arg.mainnode)) {
+         while (prnt && (prnt != arg.mainnode.node())) {
             important.push(prnt);
             prnt = prnt.parentNode;
          }
 
          element.selectAll('tspan').each(function() { important.push(this) });
 
-         let tspans = d3.select(arg.mainnode).selectAll('tspan');
+         let tspans = arg.mainnode.selectAll('tspan');
 
          // this is just workaround to know that many elements are created and in Chrome we need to redo them once again
          if (tspans.size() > 3) arg.large_latex = true;
 
          tspans.each(function() { if (important.indexOf(this) < 0) d3.select(this).attr('display', 'none'); });
-         let box = jsrp.getElementRect(d3.select(arg.mainnode), 'bbox');
+
+         let box = jsrp.getElementRect(arg.mainnode, 'bbox');
 
          tspans.each(function() { if (important.indexOf(this) < 0) d3.select(this).attr('display', null); });
 

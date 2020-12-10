@@ -264,7 +264,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                      .call(font.func)
                      .text(hint.lines[l]);
 
-                  let box = jsrp.GetBoundarySizes(txt.node());
+                  let box = jsrp.getElementRect(txt, 'bbox');
 
                   actualw = Math.max(actualw, box.width);
                }

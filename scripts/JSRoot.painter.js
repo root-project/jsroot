@@ -1267,10 +1267,15 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /** @summary Returns visible rect of element
-     * @desc Excluding padding area, provides special handling in node.js
+     * @param {object} elem - d3.select object with element
+     * @param {string} [kind] - which size method is used
+     * @desc kind = 'bbox' use getBBox, works only with SVG
+     * kind = 'full' - full size of element, using getBoundingClientRect function
+     * kind = 'nopadding' - excludes padding area
+     * With node.js can use "width" and "height" attributes when provided in element
      * @private */
    jsrp.getElementRect = (elem, sizearg) => {
-      if (JSROOT.nodejs)
+      if (JSROOT.nodejs && (sizearg != 'bbox'))
          return { x: 0, y: 0, width: parseInt(elem.attr("width")), height: parseInt(elem.attr("height")) };
 
       function styleValue(name) {
@@ -1281,7 +1286,7 @@ JSROOT.define(['d3'], (d3) => {
       }
 
       let rect = elem.node().getBoundingClientRect();
-      if ((sizearg == 'bbox') && (parseFloat(box.width) > 0))
+      if ((sizearg == 'bbox') && (parseFloat(rect.width) > 0))
          rect = elem.node().getBBox();
 
       let res = { x: 0, y: 0, width: parseInt(rect.width), height: parseInt(rect.height) };
@@ -1293,7 +1298,7 @@ JSROOT.define(['d3'], (d3) => {
          res.y = parseInt(rect.y);
       }
 
-      if (sizearg === undefined) {
+      if ((sizearg === undefined) || (sizearg == 'nopadding')) {
          // this is size exclude padding area
          res.width -= styleValue('padding-left') + styleValue('padding-right');
          res.height -= styleValue('padding-top') + styleValue('padding-bottom');
@@ -1301,26 +1306,6 @@ JSROOT.define(['d3'], (d3) => {
 
       return res;
    }
-
-   /** @summary getBBox does not work in mozilla when object is not displayed or not visible :(
-     * @desc getBoundingClientRect() returns wrong sizes for MathJax
-     * are there good solution?
-     * @private */
-   jsrp.GetBoundarySizes = elem => {
-      if (!elem) { console.warn('empty node in GetBoundarySizes'); return { width: 0, height: 0 }; }
-      let box = elem.getBoundingClientRect(); // works always, but returns sometimes results in ex values, which is difficult to use
-      if (parseFloat(box.width) > 0) box = elem.getBBox(); // check that elements visible, request precise value
-      let res = { width: parseInt(box.width), height: parseInt(box.height) };
-      if ('left' in box) {
-         res.x = parseInt(box.left);
-         res.y = parseInt(box.right);
-       } else if ('x' in box) {
-         res.x = parseInt(box.x);
-         res.y = parseInt(box.y);
-      }
-      return res;
-   }
-
 
    /** @summary Calculate absolute position of provided element in canvas
      * @private */
@@ -2602,7 +2587,7 @@ JSROOT.define(['d3'], (d3) => {
             if (arg.scale && (f > 0)) { arg.box.width = arg.box.width / f; arg.box.height = arg.box.height / f; }
          } else if (!arg.plain && !arg.fast) {
             // exact box dimension only required when complex text was build
-            arg.box = jsrp.GetBoundarySizes(txt.node());
+            arg.box = jsrp.getElementRect(txt, 'bbox');
          }
 
          // if (arg.text.length>20) console.log(arg.box, arg.align, arg.x, arg.y, 'plain', arg.plain, 'inside', arg.width, arg.height);
@@ -2792,7 +2777,7 @@ JSROOT.define(['d3'], (d3) => {
    ObjectPainter.prototype.postprocessText = function(txt_node, arg) {
       // complete rectangle with very rougth size estimations
 
-      arg.box = !JSROOT.nodejs && !JSROOT.settings.ApproxTextSize && !arg.fast ? jsrp.GetBoundarySizes(txt_node.node()) :
+      arg.box = !JSROOT.nodejs && !JSROOT.settings.ApproxTextSize && !arg.fast ? jsrp.getElementRect(txt_node, 'bbox') :
                (arg.text_rect || { height: arg.font_size * 1.2, width: arg.font.approxTextWidth(arg.text) });
 
       txt_node.attr('visibility', 'hidden'); // hide elements until text drawing is finished
