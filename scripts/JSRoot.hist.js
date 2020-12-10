@@ -1992,9 +1992,11 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    }
 
    /** @summary Generates automatic color for some objects painters */
-   THistPainter.prototype.createAutoColor = function() {
-      let pad = this.root_pad(),
-          numprimitives = pad && pad.fPrimitves ? pad.fPrimitves.arr.length : 5;
+   THistPainter.prototype.createAutoColor = function(numprimitives) {
+      if (!numprimitives) {
+         let pad = this.root_pad();
+         numprimitives = pad && pad.fPrimitves ? pad.fPrimitves.arr.length : 5;
+      }
 
       let indx = this._auto_color || 0;
       this._auto_color = indx+1;
@@ -6679,14 +6681,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          hopt = "E";
       hopt += " same nostat";
 
-      // if there is auto colors assignment, try to provide it
       if (this.options._pfc || this.options._plc || this.options._pmc) {
-         if (!this.palette)
-            this.palette = getColorPalette();
-         if (this.palette) {
-            let color = this.palette.calcColor(rindx, nhists+1);
-            let icolor = this.addColor(color);
-
+         let mp = this.getMainPainter();
+         if (mp && mp.createAutoColor) {
+            let icolor = mp.createAutoColor(nhists);
             if (this.options._pfc) hist.fFillColor = icolor;
             if (this.options._plc) hist.fLineColor = icolor;
             if (this.options._pmc) hist.fMarkerColor = icolor;
@@ -6831,7 +6829,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    }
 
    /** @summary Redraw THStack,
-     * @desc Do something if previous Update had changed number of histograms */
+     * @desc Do something if previous update had changed number of histograms */
    THStackPainter.prototype.Redraw = function() {
       if (this.did_update) {
          delete this.did_update;

@@ -1096,7 +1096,6 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       if (this.options._pfc || this.options._plc || this.options._pmc) {
          let mp = this.getMainPainter();
          if (mp && mp.createAutoColor) {
-            console.log('create auto color');
             let icolor = mp.createAutoColor();
             if (this.options._pfc) { graph.fFillColor = icolor; delete this.fillatt; }
             if (this.options._plc) { graph.fLineColor = icolor; delete this.lineatt; }
@@ -3320,7 +3319,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       if (this._pfc || this._plc || this._pmc) {
          let mp = this.getMainPainter();
          if (mp && mp.createAutoColor) {
-            let icolor = mp.createAutoColor();
+            let icolor = mp.createAutoColor(graphs.arr.length);
             if (this._pfc) graphs.arr[indx].fFillColor = icolor;
             if (this._plc) graphs.arr[indx].fLineColor = icolor;
             if (this._pmc) graphs.arr[indx].fMarkerColor = icolor;
