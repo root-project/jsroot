@@ -1087,21 +1087,22 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
           w = this.frame_width(),
           h = this.frame_height(),
           graph = this.getObject(),
-          excl_width = 0,
-          pp = this.pad_painter();
+          excl_width = 0;
 
       if (!pmain) return;
 
       this.createG(!pmain.pad_layer);
 
-      if (pp && (this.options._pfc || this.options._plc || this.options._pmc)) {
-         let icolor = pp.createAutoColor();
-
-         if (this.options._pfc) { graph.fFillColor = icolor; delete this.fillatt; }
-         if (this.options._plc) { graph.fLineColor = icolor; delete this.lineatt; }
-         if (this.options._pmc) { graph.fMarkerColor = icolor; delete this.markeratt; }
-
-         this.options._pfc = this.options._plc = this.options._pmc = false;
+      if (this.options._pfc || this.options._plc || this.options._pmc) {
+         let mp = this.getMainPainter();
+         if (mp && mp.createAutoColor) {
+            console.log('create auto color');
+            let icolor = mp.createAutoColor();
+            if (this.options._pfc) { graph.fFillColor = icolor; delete this.fillatt; }
+            if (this.options._plc) { graph.fLineColor = icolor; delete this.lineatt; }
+            if (this.options._pmc) { graph.fMarkerColor = icolor; delete this.markeratt; }
+            this.options._pfc = this.options._plc = this.options._pmc = false;
+         }
       }
 
       this.createAttLine({ attr: graph, can_excl: true });
@@ -3317,6 +3318,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       // if there is auto colors assignment, try to provide it
       if (this._pfc || this._plc || this._pmc) {
+
          // function should be loaded after drawing axis histogram, but check anyway
          if (!this.palette && jsrp.getColorPalette)
             this.palette = jsrp.getColorPalette();

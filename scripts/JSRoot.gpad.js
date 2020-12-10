@@ -2029,32 +2029,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return cp ? cp.custom_palette : null;
    }
 
-
-   /** @summary Generates automatic color for some objects painters */
-   TPadPainter.prototype.createAutoColor = function() {
-      let pad = this.root_pad(),
-          numprimitives = pad && pad.fPrimitves ? pad.fPrimitves.arr.length : 5;
-
-      let indx = this._auto_color || 0;
-      this._auto_color = indx+1;
-
-      let pal = this.getCustomPalette();
-      if (!pal && jsrp.getColorPalette)
-         pal = this.custom_palette = jsrp.getColorPalette();
-
-      if (pal) {
-         if (numprimitives < 2) numprimitives = 2;
-         if (indx >= numprimitives) indx = numprimitives - 1;
-         let palindx = Math.round(indx * (pal.getLength()-3) / (numprimitives-1));
-         let colvalue = pal.getColor(palindx);
-         let colindx = this.addColor(colvalue);
-         return colindx;
-      }
-
-      this._auto_color = this._auto_color % 8;
-      return indx+2;
-   }
-
    /** @summary Call function for each painter in pad
      * @param {function} userfunc - function to call
      * @param {string} kind - "all" for all objects (default), "pads" only pads and subpads, "objects" only for object in current pad

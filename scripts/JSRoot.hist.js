@@ -68,13 +68,13 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    /** @summary Create color palette
      * @memberof JSROOT.Painter
      * @private */
-   function getColorPalette(col,alfa) {
-      col = col || JSROOT.settings.Palette;
-      if ((col>0) && (col<10)) return createGrayPalette();
-      if (col < 51) return createDefaultPalette();
-      if (col > 113) col = 57;
+   function getColorPalette(id,alfa) {
+      id = id || JSROOT.settings.Palette;
+      if ((id > 0) && (id < 10)) return createGrayPalette();
+      if (id < 51) return createDefaultPalette();
+      if (id > 113) id = 57;
       let rgb, stops = [0,0.125,0.25,0.375,0.5,0.625,0.75,0.875,1];
-      switch(col) {
+      switch(id) {
          // Deep Sea
          case 51: rgb = [[0,9,13,17,24,32,27,25,29],[0,0,0,2,37,74,113,160,221],[28,42,59,78,98,129,154,184,221]]; break;
          // Grey Scale
@@ -1991,17 +1991,43 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          this.check_pad_range = use_pad ? "pad_range" : true;
    }
 
+   /** @summary Generates automatic color for some objects painters */
+   THistPainter.prototype.createAutoColor = function() {
+      let pad = this.root_pad(),
+          numprimitives = pad && pad.fPrimitves ? pad.fPrimitves.arr.length : 5;
+
+      let indx = this._auto_color || 0;
+      this._auto_color = indx+1;
+
+      let pal = this.getHistPalette();
+
+      if (pal) {
+         if (numprimitives < 2) numprimitives = 2;
+         if (indx >= numprimitives) indx = numprimitives - 1;
+         let palindx = Math.round(indx * (pal.getLength()-3) / (numprimitives-1));
+         let colvalue = pal.getColor(palindx);
+         let colindx = this.addColor(colvalue);
+         return colindx;
+      }
+
+      this._auto_color = this._auto_color % 8;
+      return indx+2;
+   }
+
+
    THistPainter.prototype.CheckHistDrawAttributes = function() {
 
-      let histo = this.GetHisto(),
-          pp = this.pad_painter();
+      let histo = this.GetHisto();
 
-      if (pp && (this.options._pfc || this.options._plc || this.options._pmc)) {
-         let icolor = pp.createAutoColor();
-         if (this.options._pfc) { histo.fFillColor = icolor; delete this.fillatt; }
-         if (this.options._plc) { histo.fLineColor = icolor; delete this.lineatt; }
-         if (this.options._pmc) { histo.fMarkerColor = icolor; delete this.markeratt; }
-         this.options._pfc = this.options._plc = this.options._pmc = false;
+      if (this.options._pfc || this.options._plc || this.options._pmc) {
+         let mp = this.getMainPainter();
+         if (mp && mp.createAutoColor) {
+            let icolor = mp.createAutoColor();
+            if (this.options._pfc) { histo.fFillColor = icolor; delete this.fillatt; }
+            if (this.options._plc) { histo.fLineColor = icolor; delete this.lineatt; }
+            if (this.options._pmc) { histo.fMarkerColor = icolor; delete this.markeratt; }
+            this.options._pfc = this.options._plc = this.options._pmc = false;
+         }
       }
 
       this.createAttFill({ attr: histo, color: this.options.histoFillColor, kind: 1 });
