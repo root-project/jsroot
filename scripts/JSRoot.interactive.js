@@ -65,7 +65,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if (!hint) continue;
 
             if (hint.painter && (hint.user_info !== undefined))
-               hint.painter.ProvideUserTooltip(hint.user_info);
+               hint.painter.provideUserTooltip(hint.user_info);
 
             if (!hint.lines || (hint.lines.length === 0)) {
                hints[n] = null; continue;

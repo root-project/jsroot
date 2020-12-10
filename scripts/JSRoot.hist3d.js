@@ -321,7 +321,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
           want_remove = !tip || (tip.x1===undefined) || !this.enable_highlight,
           mainp = this.getMainPainter();
 
-      if (mainp && (!mainp.ProvideUserTooltip || !mainp.IsUserTooltipCallback())) mainp = null;
+      if (mainp && (!mainp.provideUserTooltip || !mainp.hasUserTooltip())) mainp = null;
 
       if (this.tooltip_selfmesh) {
          changed_self = (this.tooltip_selfmesh !== selfmesh)
@@ -339,7 +339,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
       if (want_remove) {
          if (changed) this.Render3D();
-         if (changed && mainp) mainp.ProvideUserTooltip(null);
+         if (changed && mainp) mainp.provideUserTooltip(null);
          return;
       }
 
@@ -400,7 +400,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          tip.$painter.RedrawProjection(tip.ix-1, tip.ix, tip.iy-1, tip.iy);
 
       if (changed && mainp && mainp.getObject())
-         mainp.ProvideUserTooltip({ obj: mainp.getObject(),  name: mainp.getObject().fName,
+         mainp.provideUserTooltip({ obj: mainp.getObject(),  name: mainp.getObject().fName,
                                     bin: tip.bin, cont: tip.value,
                                     binx: tip.ix, biny: tip.iy, binz: tip.iz,
                                     grx: (tip.x1+tip.x2)/2, gry: (tip.y1+tip.y2)/2, grz: (tip.z1+tip.z2)/2 });

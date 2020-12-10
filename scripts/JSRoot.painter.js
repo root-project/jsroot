@@ -2497,9 +2497,9 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /** @summary getBBox does not work in mozilla when object is not displayed or not visible :(
-    * getBoundingClientRect() returns wrong sizes for MathJax
-    * are there good solution?
-    * @private */
+     * getBoundingClientRect() returns wrong sizes for MathJax
+     * are there good solution?
+     * @private */
    ObjectPainter.prototype.GetBoundarySizes = function(elem) {
       if (!elem) { console.warn('empty node in GetBoundarySizes'); return { width: 0, height: 0 }; }
       let box = elem.getBoundingClientRect(); // works always, but returns sometimes results in ex values, which is difficult to use
@@ -2515,14 +2515,12 @@ JSROOT.define(['d3'], (d3) => {
      * @param {function} [draw_g] - <g> element for text drawing, this.draw_g used when not specified
      * @returns {Promise} when text drawing completed
      * @protected */
-   ObjectPainter.prototype.finishTextDrawing = function(draw_g, skip_promise) {
+   ObjectPainter.prototype.finishTextDrawing = function(draw_g) {
       if (!draw_g) draw_g = this.draw_g;
       draw_g.property('draw_text_completed', true); // mark that text drawing is completed
-      if (skip_promise)
-         return this._checkAllTextDrawing(draw_g);
 
       return new Promise(resolveFunc => {
-           this._checkAllTextDrawing(draw_g, resolveFunc);
+         this._checkAllTextDrawing(draw_g, resolveFunc);
       });
    }
 
@@ -2907,24 +2905,27 @@ JSROOT.define(['d3'], (d3) => {
    }
 
 
-   /** @summary Configure user-defined tooltip callback
+   /** @summary Configure user-defined tooltip handler
      * @desc Hook for the users to get tooltip information when mouse cursor moves over frame area
-     * call_back function will be called every time when new data is selected
-     * when mouse leave frame area, call_back(null) will be called */
-   ObjectPainter.prototype.configureUserTooltipCallback = function(call_back, user_timeout) {
-      if (!call_back || (typeof call_back !== 'function')) {
-         delete this.UserTooltipCallback;
-         delete this.UserTooltipTimeout;
+     * Hanlder function will be called every time when new data is selected
+     * when mouse leave frame area, handler(null) will be called
+     * @param {function} handler - function called when tooltip is produced
+     * @param {number} [tmout = 100] - delay in ms before tooltip delivered */
+   ObjectPainter.prototype.configureUserTooltipHandler = function(handler, tmout) {
+      if (!handler || (typeof handler !== 'function')) {
+         delete this._user_tooltip_handler;
+         delete this._user_tooltip_timeout;
       } else {
-         this.UserTooltipCallback = call_back;
-         this.UserTooltipTimeout = (user_timeout === undefined) ? 500 : user_timeout;
+         this._user_tooltip_handler = handler;
+         this._user_tooltip_timeout = tmout || 100;
       }
    }
 
     /** @summary Configure user-defined click handler
      * @desc Function will be called every time when frame click was perfromed
      * As argument, tooltip object with selected bins will be provided
-     * If handler function returns true, default handling of click will be disabled */
+     * If handler function returns true, default handling of click will be disabled
+     * @param {function} handler - function called when mouse click is done */
    ObjectPainter.prototype.configureUserClickHandler = function(handler) {
       let fp = this.frame_painter();
       if (fp && fp.configureUserClickHandler)
@@ -2934,7 +2935,8 @@ JSROOT.define(['d3'], (d3) => {
    /** @summary Configure user-defined dblclick handler
      * @desc Function will be called every time when double click was called
      * As argument, tooltip object with selected bins will be provided
-     * If handler function returns true, default handling of dblclick (unzoom) will be disabled */
+     * If handler function returns true, default handling of dblclick (unzoom) will be disabled
+     * @param {function} handler - function called when mouse double click is done */
    ObjectPainter.prototype.configureUserDblclickHandler = function(handler) {
       let fp = this.frame_painter();
       if (fp && fp.configureUserDblclickHandler)
@@ -2942,38 +2944,38 @@ JSROOT.define(['d3'], (d3) => {
    }
 
 
-   /** @summary Check if user-defined tooltip callback is configured
+   /** @summary Check if user-defined tooltip function is configured
     * @returns {boolean}
     * @private */
-   ObjectPainter.prototype.IsUserTooltipCallback = function() {
-      return typeof this.UserTooltipCallback == 'function';
+   ObjectPainter.prototype.hasUserTooltip = function() {
+      return typeof this._user_tooltip_handler == 'function';
    }
 
-   /** @summary Provide tooltips data to user-defained function
-    * @param {object} data - tooltip data
-    * @private */
-   ObjectPainter.prototype.ProvideUserTooltip = function(data) {
+   /** @summary Provide tooltips data to user-defined function
+     * @param {object} data - tooltip data
+     * @private */
+   ObjectPainter.prototype.provideUserTooltip = function(data) {
 
-      if (!this.IsUserTooltipCallback()) return;
+      if (!this.hasUserTooltip()) return;
 
-      if (this.UserTooltipTimeout <= 0)
-         return this.UserTooltipCallback(data);
+      if (this._user_tooltip_timeout <= 0)
+         return this._user_tooltip_handler(data);
 
-      if (typeof this.UserTooltipTHandle != 'undefined') {
-         clearTimeout(this.UserTooltipTHandle);
-         delete this.UserTooltipTHandle;
+      if (this._user_tooltip_handle) {
+         clearTimeout(this._user_tooltip_handle);
+         delete this._user_tooltip_handle;
       }
 
       if (!data)
-         return this.UserTooltipCallback(data);
+         return this._user_tooltip_handler(data);
 
       let d = data;
 
-     // only after timeout user function will be called
-      this.UserTooltipTHandle = setTimeout(() => {
-         delete this.UserTooltipTHandle;
-         if (this.UserTooltipCallback) this.UserTooltipCallback(d);
-      }, this.UserTooltipTimeout);
+      // only after timeout user function will be called
+      this._user_tooltip_handle = setTimeout(() => {
+         delete this._user_tooltip_handle;
+         if (this._user_tooltip_handler) this._user_tooltip_handler(d);
+      }, this._user_tooltip_timeout);
    }
 
    // ===========================================================
