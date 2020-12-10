@@ -1987,12 +1987,11 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /** @summary Converts pad SVG x or y coordinates into axis values.
-   *
-   *  @param {string} axis - name like "x" or "y"
-   *  @param {number} coord - graphics coordiante.
-   *  @param {boolean} ndc - kind of return value
-   *  @returns {number} value of requested coordiantes
-   *  @private */
+     * @param {string} axis - name like "x" or "y"
+     * @param {number} coord - graphics coordiante.
+     * @param {boolean} ndc - kind of return value
+     * @returns {number} value of requested coordiantes
+     * @private */
    ObjectPainter.prototype.SvgToAxis = function(axis, coord, ndc) {
       let use_frame = this.draw_g && this.draw_g.property('in_frame');
 
@@ -2075,8 +2074,8 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /** @summary Returns frame painter in current pad
-    * @desc Pad has direct reference on frame if any
-    * @private */
+     * @desc Pad has direct reference on frame if any
+     * @private */
    ObjectPainter.prototype.frame_painter = function() {
       let pp = this.pad_painter();
       return pp ? pp.frame_painter() : null;
@@ -2084,26 +2083,26 @@ JSROOT.define(['d3'], (d3) => {
 
    /** @summary Returns property of the frame painter
     * @private */
-   ObjectPainter.prototype.frame_property = function(name) {
-      let pp = this.frame_painter();
-      return pp && pp[name] ? pp[name] : 0;
+   function _frame_property(painter, name) {
+      let fp = painter.frame_painter();
+      return fp && fp[name] ? fp[name] : 0;
    }
 
-   /** @summary Returns frame X coordinate relative to current pad */
-   ObjectPainter.prototype.frame_x = function() { return this.frame_property("_frame_x"); }
+   /** @summary Returns frame X coordinate relative to pad */
+   ObjectPainter.prototype.frame_x = function() { return _frame_property(this, "_frame_x"); }
 
-   /** @summary Returns frame Y coordinate relative to current pad */
-   ObjectPainter.prototype.frame_y = function() { return this.frame_property("_frame_y"); }
+   /** @summary Returns frame Y coordinate relative to pad */
+   ObjectPainter.prototype.frame_y = function() { return _frame_property(this, "_frame_y"); }
 
    /** @summary Returns frame width */
-   ObjectPainter.prototype.frame_width = function() { return this.frame_property("_frame_width"); }
+   ObjectPainter.prototype.frame_width = function() { return _frame_property(this, "_frame_width"); }
 
    /** @summary Returns frame height */
-   ObjectPainter.prototype.frame_height = function() { return this.frame_property("_frame_height"); }
+   ObjectPainter.prototype.frame_height = function() { return _frame_property(this, "_frame_height"); }
 
    /** @summary Returns main object painter on the pad.
-    * @desc Normally this is first histogram drawn on the pad, which also draws all axes
-    * @param {boolean} [not_store] - if true, prevent temporary store of main painter reference */
+     * @desc Normally this is first histogram drawn on the pad, which also draws all axes
+     * @param {boolean} [not_store] - if true, prevent temporary store of main painter reference */
    ObjectPainter.prototype.main_painter = function(not_store) {
       let res = this.main;
       if (!res) {
@@ -2150,12 +2149,11 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /** @summary Creates marker attributes object
-    *
-    * @desc Can be used to produce markers in painter.
-    * See {@link JSROOT.TAttMarkerHandler} for more info.
-    * Instance assigned as this.markeratt data member, recognized by GED editor
-    * @param {object} args - either TAttMarker or see arguments of {@link JSROOT.TAttMarkerHandler}
-    * @returns created handler */
+     * @desc Can be used to produce markers in painter.
+     * See {@link JSROOT.TAttMarkerHandler} for more info.
+     * Instance assigned as this.markeratt data member, recognized by GED editor
+     * @param {object} args - either TAttMarker or see arguments of {@link JSROOT.TAttMarkerHandler}
+     * @returns {object} created handler */
    ObjectPainter.prototype.createAttMarker = function(args) {
       if (!args || (typeof args !== 'object')) args = { std: true }; else
          if (args.fMarkerColor !== undefined && args.fMarkerStyle !== undefined && args.fMarkerSize !== undefined) args = { attr: args, std: false };
