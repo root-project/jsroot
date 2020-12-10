@@ -2268,7 +2268,8 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
     * @class
     * @memberof JSROOT
     * @extends JSROOT.THistPainter
-    * @param {object} histo - histogram object
+    * @param {object|string} dom - DOM element for drawing or element id
+    * @param {object} histo - TH3-derived object
     * @private
     */
 
@@ -2990,6 +2991,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
     * @class
     * @memberof JSROOT
     * @extends JSROOT.ObjectPainter
+    * @param {object|string} dom - DOM element for drawing or element id
     * @param {object} graph - TGraph2D object
     * @private
     */

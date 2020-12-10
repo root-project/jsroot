@@ -902,7 +902,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
     *
     * @class
     * @memberof JSROOT
-    * @extends ObjectPainter
+    * @extends JSROOT.ObjectPainter
+    * @param {object|string} dom - DOM element for drawing or element id
     * @param {object} tframe - TFrame object
     * @private
     */
@@ -1943,6 +1944,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
      *
      * @class
      * @memberof JSROOT
+     * @extends JSROOT.ObjectPainter
+     * @param {object|string} dom - DOM element for drawing or element id
      * @param {object} pad - TPad object to draw
      * @param {boolean} iscan - if TCanvas object
      * @private

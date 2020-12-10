@@ -1750,20 +1750,6 @@ JSROOT.define(['d3'], (d3) => {
       return res;
    }
 
-   /** @summary returns pad painter for specified pad
-    * @private */
-   ObjectPainter.prototype.pad_painter = function(pad_name) {
-      let elem = this.svg_pad(typeof pad_name == "string" ? pad_name : undefined);
-      return elem.empty() ? null : elem.property('pad_painter');
-   }
-
-   /** @summary returns canvas painter
-    * @private */
-   ObjectPainter.prototype.canv_painter = function() {
-      let elem = this.svg_canvas();
-      return elem.empty() ? null : elem.property('pad_painter');
-   }
-
    /** @summary returns color from current list of colors
     * @private */
    ObjectPainter.prototype.get_color = function(indx) {
@@ -1946,12 +1932,39 @@ JSROOT.define(['d3'], (d3) => {
       return curr;
    }
 
+   /** @summary returns pad painter for specified pad */
+   ObjectPainter.prototype.pad_painter = function(pad_name) {
+      let elem = this.svg_pad(typeof pad_name == "string" ? pad_name : undefined);
+      return elem.empty() ? null : elem.property('pad_painter');
+   }
+
+   /** @summary returns canvas painter */
+   ObjectPainter.prototype.canv_painter = function() {
+      let elem = this.svg_canvas();
+      return elem.empty() ? null : elem.property('pad_painter');
+   }
+
    /** @summary Returns ROOT TPad object
     * @private */
    ObjectPainter.prototype.root_pad = function() {
-      let pad_painter = this.pad_painter();
-      return pad_painter ? pad_painter.pad : null;
+      let pp = this.pad_painter();
+      return pp ? pp.pad : null;
    }
+
+   /** @summary Returns pad width */
+   ObjectPainter.prototype.pad_width = function() {
+      let res = this.svg_pad();
+      res = res.empty() ? 0 : res.property("draw_width");
+      return isNaN(res) ? 0 : res;
+   }
+
+   /** @summary Returns pad height */
+   ObjectPainter.prototype.pad_height = function() {
+      let res = this.svg_pad();
+      res = res.empty() ? 0 : res.property("draw_height");
+      return isNaN(res) ? 0 : res;
+   }
+
 
    /** @summary Return functor, which can convert x and y coordinates into pixels, used for drawing
      * @desc X and Y coordinates can be converted by calling func.x(x) and func.y(y)
@@ -2042,26 +2055,8 @@ JSROOT.define(['d3'], (d3) => {
       return value;
    }
 
-   /** @summary Returns svg element for the frame in current pad.
-    * @private */
+   /** @summary Returns svg element for the frame in current pad */
    ObjectPainter.prototype.svg_frame = function() { return this.svg_layer("primitives_layer").select(".root_frame"); }
-
-   /** @summary Returns pad width.
-    * @private  */
-   ObjectPainter.prototype.pad_width = function() {
-      let res = this.svg_pad();
-      res = res.empty() ? 0 : res.property("draw_width");
-      return isNaN(res) ? 0 : res;
-   }
-
-   /** @summary Returns pad height
-    * @param {string} [pad_name] - optional pad name, otherwise where object painter is drawn
-    * @private */
-   ObjectPainter.prototype.pad_height = function() {
-      let res = this.svg_pad();
-      res = res.empty() ? 0 : res.property("draw_height");
-      return isNaN(res) ? 0 : res;
-   }
 
    /** @summary Returns frame painter in current pad
      * @desc Pad has direct reference on frame if any
@@ -2276,8 +2271,8 @@ JSROOT.define(['d3'], (d3) => {
 
    /** @summary Redraw all objects in correspondent pad */
    ObjectPainter.prototype.redrawPad = function(reason) {
-      let pad_painter = this.pad_painter();
-      if (pad_painter) pad_painter.Redraw(reason);
+      let pp = this.pad_painter();
+      if (pp) pp.Redraw(reason);
    }
 
    /** @summary execute selected menu command, either locally or remotely
@@ -3002,7 +2997,7 @@ JSROOT.define(['d3'], (d3) => {
      *
      * @class
      * @memberof JSROOT
-     * @param {place} divid - where object will be drawn
+    * @param {object|string} dom - DOM element for drawing or element id
      * @param {object} obj - axis object if any
      * @private
      */

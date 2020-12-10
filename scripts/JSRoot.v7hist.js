@@ -5,6 +5,16 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
    "use strict";
 
+   /** @summary Base painter ]class for RHist objects
+    *
+    * @class
+    * @memberof JSROOT
+    * @extends JSROOT.ObjectPainter
+    * @param {object|string} dom - DOM element for drawing or element id
+    * @param {object} histo - RHist object
+    * @private
+    */
+
    function RHistPainter(divid, histo) {
       JSROOT.ObjectPainter.call(this, divid, histo);
       this.csstype = "hist";

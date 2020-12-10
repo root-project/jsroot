@@ -765,6 +765,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
     * @class
     * @memberof JSROOT
     * @extends JSROOT.ObjectPainter
+    * @param {object|string} dom - DOM element for drawing or element id
     * @param {object} graph - TGraph object to draw
     * @private
     */
@@ -1999,6 +2000,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
     * @class
     * @memberof JSROOT
     * @extends JSROOT.ObjectPainter
+    * @param {object|string} dom - DOM element for drawing or element id
     * @param {object} polargram - object to draw
     * @private
     */
@@ -2306,6 +2308,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
     * @class
     * @memberof JSROOT
     * @extends JSROOT.ObjectPainter
+    * @param {object|string} dom - DOM element for drawing or element id
     * @param {object} graph - object to draw
     * @private
     */
@@ -2533,6 +2536,17 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    }
 
    // ==============================================================
+
+   /**
+    * @summary Painter for TSpline objects.
+    *
+    * @class
+    * @memberof JSROOT
+    * @extends JSROOT.ObjectPainter
+    * @param {object|string} dom - DOM element for drawing or element id
+    * @param {object} spline - TSpline object to draw
+    * @private
+    */
 
    function TSplinePainter(divid, spline) {
       JSROOT.ObjectPainter.call(this, divid, spline);
@@ -2835,6 +2849,17 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
    // =============================================================
 
+   /**
+    * @summary Painter for TGraphTime object
+    *
+    * @class
+    * @memberof JSROOT
+    * @extends JSROOT.ObjectPainter
+    * @param {object|string} dom - DOM element for drawing or element id
+    * @param {object} gr - TGraphtime object to draw
+    * @private
+    */
+
    function TGraphTimePainter(divid, gr) {
       JSROOT.ObjectPainter.call(this, divid, gr);
    }
@@ -2974,6 +2999,17 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
    // =============================================================
 
+   /**
+    * @summary Painter for TEfficiency object
+    *
+    * @class
+    * @memberof JSROOT
+    * @extends JSROOT.ObjectPainter
+    * @param {object|string} dom - DOM element for drawing or element id
+    * @param {object} eff - TEfficiency object to draw
+    * @private
+    */
+
    function TEfficiencyPainter(divid, eff) {
       JSROOT.ObjectPainter.call(this, divid, eff);
       this.fBoundary = 'Normal';
@@ -3075,6 +3111,17 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    }
 
    // =============================================================
+
+   /**
+    * @summary Painter for TMultiGraph object.
+    *
+    * @class
+    * @memberof JSROOT
+    * @extends JSROOT.ObjectPainter
+    * @param {object|string} dom - DOM element for drawing or element id
+    * @param {object} obj - TMultiGraph object to draw
+    * @private
+    */
 
    function TMultiGraphPainter(divid, mgraph) {
       JSROOT.ObjectPainter.call(this, divid, mgraph);
@@ -3490,8 +3537,9 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
     * @class
     * @memberof JSROOT
     * @extends JSROOT.ObjectPainter
+    * @param {object|string} dom - DOM element for drawing or element id
     * @param {object} obj - TASImage object to draw
-    * @param {string} opt - string draw options
+    * @param {string} [opt] - string draw options
     * @private
     */
 

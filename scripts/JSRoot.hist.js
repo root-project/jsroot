@@ -212,6 +212,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
     * @class
     * @memberof JSROOT
     * @extends JSROOT.ObjectPainter
+    * @param {object|string} dom - DOM element for drawing or element id
     * @param {object} pave - TPave-based object
     * @private
     */
@@ -1856,7 +1857,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
     * @class
     * @memberof JSROOT
     * @extends JSROOT.ObjectPainter
-    * @param {object} histo - histogram object
+    * @param {object|string} dom - DOM element for drawing or element id
+    * @param {object} histo - TH1 derived histogram object
     * @private
     */
 
@@ -6477,6 +6479,18 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    }
 
    // ====================================================================
+
+   /**
+    * @summary Painter class for histogram stacks
+    *
+    * @class
+    * @memberof JSROOT
+    * @extends JSROOT.ObjectPainter
+    * @param {object|string} dom - DOM element for drawing or element id
+    * @param {object} stack - THStack object
+    * @param {string} [opt] - draw options
+    * @private
+    */
 
    function THStackPainter(divid, stack, opt) {
       JSROOT.ObjectPainter.call(this, divid, stack, opt);

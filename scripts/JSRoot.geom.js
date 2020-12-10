@@ -110,6 +110,9 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
     *
     * @class
     * @memberof JSROOT
+    * @summary Painter for TF1 object.
+    * @param {object|string} dom - DOM element for drawing or element id
+    * @param {object} obj - Tsupported TGeo object
     * @private
     */
 

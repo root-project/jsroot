@@ -1468,7 +1468,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
     *
     * @class
     * @memberof JSROOT
-    * @extends ObjectPainter
+    * @extends JSROOT.ObjectPainter
+    * @param {object|string} dom - DOM element for drawing or element id
     * @param {object} tframe - RFrame object
     * @private
     */
@@ -1581,10 +1582,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
    }
 
-   /** @summary Draw frame grids */
+   /** @summary Draw frame grids
+     * @desc grid can only be drawn by first painter */
    RFramePainter.prototype.DrawGrids = function() {
-      // grid can only be drawn by first painter
-
       let layer = this.svg_frame().select(".grid_layer");
 
       layer.selectAll(".xgrid").remove();
@@ -1609,11 +1609,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                grid += "M"+this.x_handle.ticks[n]+",0v"+h;
 
          if (grid.length > 0)
-          layer.append("svg:path")
-               .attr("class", "xgrid")
-               .attr("d", grid)
-               .style('stroke',grid_color).style("stroke-width",JSROOT.gStyle.fGridWidth)
-               .style("stroke-dasharray", jsrp.root_line_styles[grid_style]);
+            layer.append("svg:path")
+                 .attr("class", "xgrid")
+                 .attr("d", grid)
+                 .style('stroke',grid_color).style("stroke-width",JSROOT.gStyle.fGridWidth)
+                 .style("stroke-dasharray", jsrp.root_line_styles[grid_style]);
       }
 
       // add a grid on y axis, if the option is set
@@ -2376,6 +2376,18 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    // ===========================================================================
+
+   /**
+    * @summary Painter class for RPad
+    *
+    * @class
+    * @memberof JSROOT
+    * @extends JSROOT.ObjectPainter
+    * @param {object|string} dom - DOM element for drawing or element id
+    * @param {object} pad - RPad object
+    * @param {boolean} [iscan] - true when used for RCanvas
+    * @private
+    */
 
    function RPadPainter(divid, pad, iscan) {
       JSROOT.ObjectPainter.call(this, divid, pad);
@@ -4196,11 +4208,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       });
    }
 
-     /** @summary Ensure TCanvas and TFrame for the painter object
-    * @param {Object} painter  - painter object to process
-    * @param {string|boolean} frame_kind  - false for no frame or "3d" for special 3D mode
-    * @desc Assign divid, creates TCanvas if necessary, add to list of pad painters and */
-   let ensureRCanvas = function(painter, frame_kind) {
+   /** @summary Ensure RCanvas and RFrame for the painter object
+     * @param {Object} painter  - painter object to process
+     * @param {string|boolean} frame_kind  - false for no frame or "3d" for special 3D mode
+     * @desc Assign divid, creates and draw RCanvas and RFrame if necessary, add painter to pad list of painters
+     * @returns {Promise} for ready */
+   let ensureRCanvas = (painter, frame_kind) => {
       if (!painter) return Promise.reject('Painter not provided in ensureRCanvas');
 
       // simple check - if canvas there, can use painter
@@ -4227,7 +4240,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
     *
     * @class
     * @memberof JSROOT
-    * @extends ObjectPainter
+    * @extends JSROOT.ObjectPainter
+    * @param {object|string} dom - DOM element for drawing or element id
     * @param {object} pave - object to draw
     * @param {string} [opt] - object draw options
     * @param {string} [csstype] - object css kind
@@ -4373,6 +4387,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    // =======================================================================================
 
 
+   /** @summary Function used for direct draw of RFrameTitle
+     * @memberof JSROOT.Painter
+     * @private */
    function drawRFrameTitle(reason) {
       let fp = this.frame_painter();
       if (!fp)
@@ -4550,6 +4567,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
     * @class
     * @memberof JSROOT
     * @extends JSROOT.ObjectPainter
+    * @param {object|string} dom - DOM element for drawing or element id
     * @param {object} palette - RPalette object
     * @private
     */
