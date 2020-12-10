@@ -1661,8 +1661,7 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /** @summary Checks if drawn object matches with provided typename
-    * @param {string} arg - typename
-    * @param {string} arg._typename - if arg is object, use its typename */
+    * @param {string|object} arg - typename (or object with _typename member) */
    ObjectPainter.prototype.matchObjectType = function(arg) {
       if (!arg || !this.draw_object) return false;
       if (typeof arg === 'string') return (this.draw_object._typename === arg);
@@ -1671,8 +1670,8 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /** @summary Change item name
-    * @desc When available, used for svg:title proprty
-    * @private */
+     * @desc When available, used for svg:title proprty
+     * @private */
    ObjectPainter.prototype.setItemName = function(name, opt, hpainter) {
       BasePainter.prototype.setItemName.call(this,name, opt, hpainter);
       if (this.no_default_title || (name == "")) return;
@@ -1792,16 +1791,19 @@ JSROOT.define(['d3'], (d3) => {
       return jsarr.length - 1;
    }
 
-   /** @summary returns tooltip allowed flag. Check canvas painter
-    * @private */
+   /** @summary returns tooltip allowed flag.
+     * @desc If available, checks in canvas painter
+     * @private */
    ObjectPainter.prototype.isTooltipAllowed = function() {
       let src = this.canv_painter() || this;
       return src.tooltip_allowed ? true : false;
    }
 
-   /** @summary returns tooltip allowed flag
-    * @private */
+   /** @summary change tooltip allowed flag
+     * @param {boolean|string} [on = true] set tooltip allowed state or 'toggle'
+     * @private */
    ObjectPainter.prototype.setTooltipAllowed = function(on) {
+      if (on === undefined) on = true;
       let src = this.canv_painter() || this;
       src.tooltip_allowed = (on == "toggle") ? !src.tooltip_allowed : on;
    }
@@ -1951,48 +1953,72 @@ JSROOT.define(['d3'], (d3) => {
       return pad_painter ? pad_painter.pad : null;
    }
 
-   /** @summary Converts x or y coordinate into SVG pad coordinates.
+   /** @summary Return functor, which can convert x and y coordinates into pixels, used for drawing
+     * @desc X and Y coordinates can be converted by calling func.x(x) and func.y(y)
+     * @param {boolean} isndc - if NDC coordinates will be used
+     * @param {boolean} [noround] - if set, return coordinates will not be rounded
+     * @private */
+   ObjectPainter.prototype.getAxisToSvgFunc = function(isndc, nornd) {
+      let func = { isndc: isndc, nornd: nornd },
+          use_frame = this.draw_g && this.draw_g.property('in_frame');
+      if (use_frame) func.main = this.frame_painter();
+      if (func.main && func.main.grx && func.main.gry) {
+         if (nornd) {
+            func.x = function(x) { return this.main.grx(x); }
+            func.y = function(y) { return this.main.gry(y); }
+         } else {
+            func.x = function(x) { return Math.round(this.main.grx(x)); }
+            func.y = function(y) { return Math.round(this.main.gry(y)); }
+         }
+      } else if (!use_frame) {
+         if (!isndc) func.pad = this.root_pad(); // need for NDC conversion
+         func.padw = this.pad_width();
+         func.x = function(value) {
+            if (this.pad) {
+               if (this.pad.fLogx)
+                  value = (value > 0) ? Math.log10(value) : this.pad.fUxmin;
+               value = (value - this.pad.fX1) / (this.pad.fX2 - this.pad.fX1);
+            }
+            value *= this.padw;
+            return this.nornd ? value : Math.round(value);
+         }
+         func.padh = this.pad_height();
+         func.y = function(value) {
+            if (this.pad) {
+               if (this.pad.fLogy)
+                  value = (value > 0) ? Math.log10(value) : this.pad.fUymin;
+               value = (value - this.pad.fY1) / (this.pad.fY2 - this.pad.fY1);
+            }
+            value = (1 - value) * this.padh;
+            return this.nornd ? value : Math.round(value);
+         }
+      } else {
+         console.error('Problem to create functor for', this.getClassName());
+         func.x = () => 0;
+         func.y = () => 0;
+
+      }
+      return func;
+   }
+
+   /** @summary Converts x or y coordinate into SVG coordinates.
     *  @param {string} axis - name like "x" or "y"
     *  @param {number} value - axis value to convert.
     *  @param {boolean} ndc - is value in NDC coordinates
-    *  @param {boolean} noround - skip rounding
-    *  @returns {number} value of requested coordiantes, rounded if kind.noround not specified
-    *  @private */
-   ObjectPainter.prototype.AxisToSvg = function(axis, value, ndc, noround) {
-      let use_frame = this.draw_g && this.draw_g.property('in_frame'),
-         main = use_frame ? this.frame_painter() : null;
-
-      if (use_frame && main && main["gr" + axis]) {
-         value = (axis == "y") ? main.gry(value) + (use_frame ? 0 : main.frame_y())
-                               : main.grx(value) + (use_frame ? 0 : main.frame_x());
-      } else if (use_frame) {
-         value = 0; // in principal error, while frame calculation requested
-      } else {
-         let pad = ndc ? null : this.root_pad();
-         if (pad) {
-            if (axis == "y") {
-               if (pad.fLogy)
-                  value = (value > 0) ? Math.log10(value) : pad.fUymin;
-               value = (value - pad.fY1) / (pad.fY2 - pad.fY1);
-            } else {
-               if (pad.fLogx)
-                  value = (value > 0) ? Math.log10(value) : pad.fUxmin;
-               value = (value - pad.fX1) / (pad.fX2 - pad.fX1);
-            }
-         }
-         value = (axis == "y") ? (1 - value) * this.pad_height() : value * this.pad_width();
-      }
-
-      return noround ? value : Math.round(value);
+    *  @param {boolean} [noround] - skip rounding
+    *  @returns {number} value of requested coordiantes */
+   ObjectPainter.prototype.axisToSvg = function(axis, value, ndc, noround) {
+      let func = this.getAxisToSvgFunc(ndc, noround);
+      return func[axis](value);
    }
 
    /** @summary Converts pad SVG x or y coordinates into axis values.
+     * @desc Reverse transformation for {@link ObjectPainter.axisToSvg}
      * @param {string} axis - name like "x" or "y"
      * @param {number} coord - graphics coordiante.
      * @param {boolean} ndc - kind of return value
-     * @returns {number} value of requested coordiantes
-     * @private */
-   ObjectPainter.prototype.SvgToAxis = function(axis, coord, ndc) {
+     * @returns {number} value of requested coordiantes */
+   ObjectPainter.prototype.svgToAxis = function(axis, coord, ndc) {
       let use_frame = this.draw_g && this.draw_g.property('in_frame');
 
       if (use_frame) {
@@ -2014,42 +2040,6 @@ JSROOT.define(['d3'], (d3) => {
       }
 
       return value;
-   }
-
-   /** @summary Return functor, which can convert x and y coordinates into pixels, used for drawing
-    * @desc Produce functor can convert x and y value by calling func.x(x) and func.y(y)
-    * @param {boolean} isndc - if NDC coordinates will be used
-    * @private */
-   ObjectPainter.prototype.AxisToSvgFunc = function(isndc) {
-      let func = { isndc: isndc }, use_frame = this.draw_g && this.draw_g.property('in_frame');
-      if (use_frame) func.main = this.frame_painter();
-      if (func.main && !isndc && func.main.grx && func.main.gry) {
-         func.offx = func.main.frame_x();
-         func.offy = func.main.frame_y();
-         func.x = function(x) { return Math.round(this.main.grx(x) + this.offx); }
-         func.y = function(y) { return Math.round(this.main.gry(y) + this.offy); }
-      } else {
-         if (!isndc) func.pad = this.root_pad(); // need for NDC conversion
-         func.padh = this.pad_height();
-         func.padw = this.pad_width();
-         func.x = function(value) {
-            if (this.pad) {
-               if (this.pad.fLogx)
-                  value = (value > 0) ? Math.log10(value) : this.pad.fUxmin;
-               value = (value - this.pad.fX1) / (this.pad.fX2 - this.pad.fX1);
-            }
-            return Math.round(value * this.padw);
-         }
-         func.y = function(value) {
-            if (this.pad) {
-               if (this.pad.fLogy)
-                  value = (value > 0) ? Math.log10(value) : this.pad.fUymin;
-               value = (value - this.pad.fY1) / (this.pad.fY2 - this.pad.fY1);
-            }
-            return Math.round((1 - value) * this.padh);
-         }
-      }
-      return func;
    }
 
    /** @summary Returns svg element for the frame in current pad.

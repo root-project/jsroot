@@ -37,8 +37,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       this.draw_g.attr("transform",null); // remove transofrm from interactive changes
 
-      this.pos_x = this.AxisToSvg("x", pos_x, this.isndc);
-      this.pos_y = this.AxisToSvg("y", pos_y, this.isndc);
+      this.pos_x = this.axisToSvg("x", pos_x, this.isndc);
+      this.pos_y = this.axisToSvg("y", pos_y, this.isndc);
 
       let arg = { align: text.fTextAlign, x: this.pos_x, y: this.pos_y, text: text.fTitle, color: tcolor, latex: 0 };
 
@@ -68,8 +68,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
                this.moveEnd = function(not_changed) {
                   if (not_changed) return;
                   let text = this.getObject();
-                  text.fX = this.SvgToAxis("x", this.pos_x + this.pos_dx, this.isndc),
-                  text.fY = this.SvgToAxis("y", this.pos_y + this.pos_dy, this.isndc);
+                  text.fX = this.svgToAxis("x", this.pos_x + this.pos_dx, this.isndc),
+                  text.fY = this.svgToAxis("y", this.pos_y + this.pos_dy, this.isndc);
                   this.WebCanvasExec("SetX(" + text.fX + ");;SetY(" + text.fY + ");;");
                }
 
@@ -94,10 +94,10 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       this.draw_g
           .append("svg:line")
-          .attr("x1", this.AxisToSvg("x", line.fX1, isndc))
-          .attr("y1", this.AxisToSvg("y", line.fY1, isndc))
-          .attr("x2", this.AxisToSvg("x", line.fX2, isndc))
-          .attr("y2", this.AxisToSvg("y", line.fY2, isndc))
+          .attr("x1", this.axisToSvg("x", line.fX1, isndc))
+          .attr("y1", this.axisToSvg("y", line.fY1, isndc))
+          .attr("x2", this.axisToSvg("x", line.fX2, isndc))
+          .attr("y2", this.axisToSvg("y", line.fY2, isndc))
           .call(lineatt.func);
    }
 
@@ -113,7 +113,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
           fillatt = this.createAttFill(polyline),
           kPolyLineNDC = JSROOT.BIT(14),
           isndc = polyline.TestBit(kPolyLineNDC),
-          cmd = "", func = this.AxisToSvgFunc(isndc);
+          cmd = "", func = this.getAxisToSvgFunc(isndc);
 
       for (let n=0;n<=polyline.fLastPoint;++n)
          cmd += ((n>0) ? "L" : "M") + func.x(polyline.fX[n]) + "," + func.y(polyline.fY[n]);
@@ -141,19 +141,19 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       // create svg:g container for ellipse drawing
       this.createG();
 
-      let x = this.AxisToSvg("x", ellipse.fX1),
-          y = this.AxisToSvg("y", ellipse.fY1),
-          rx = this.AxisToSvg("x", ellipse.fX1 + ellipse.fR1) - x,
-          ry = y - this.AxisToSvg("y", ellipse.fY1 + ellipse.fR2);
+      let x = this.axisToSvg("x", ellipse.fX1),
+          y = this.axisToSvg("y", ellipse.fY1),
+          rx = this.axisToSvg("x", ellipse.fX1 + ellipse.fR1) - x,
+          ry = y - this.axisToSvg("y", ellipse.fY1 + ellipse.fR2);
 
       if (ellipse._typename == "TCrown") {
          if (ellipse.fR1 <= 0) {
             // handle same as ellipse with equal radius
-            rx = this.AxisToSvg("x", ellipse.fX1 + ellipse.fR2) - x;
+            rx = this.axisToSvg("x", ellipse.fX1 + ellipse.fR2) - x;
          } else {
             let rx1 = rx, ry2 = ry,
-                ry1 = y - this.AxisToSvg("y", ellipse.fY1 + ellipse.fR1),
-                rx2 = this.AxisToSvg("x", ellipse.fX1 + ellipse.fR2) - x;
+                ry1 = y - this.axisToSvg("y", ellipse.fY1 + ellipse.fR1),
+                rx2 = this.axisToSvg("x", ellipse.fX1 + ellipse.fR2) - x;
 
             let elem = this.draw_g
                           .attr("transform","translate("+x+","+y+")")
@@ -228,10 +228,10 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       // create svg:g container for ellipse drawing
       this.createG();
 
-      let xc = this.AxisToSvg("x", pie.fX),
-          yc = this.AxisToSvg("y", pie.fY),
-          rx = this.AxisToSvg("x", pie.fX + pie.fRadius) - xc,
-          ry = this.AxisToSvg("y", pie.fY + pie.fRadius) - yc;
+      let xc = this.axisToSvg("x", pie.fX),
+          yc = this.axisToSvg("y", pie.fY),
+          rx = this.axisToSvg("x", pie.fX + pie.fRadius) - xc,
+          ry = this.axisToSvg("y", pie.fY + pie.fRadius) - yc;
 
       this.draw_g.attr("transform","translate("+xc+","+yc+")");
 
@@ -273,10 +273,10 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       // create svg:g container for box drawing
       this.createG();
 
-      let x1 = this.AxisToSvg("x", box.fX1),
-          x2 = this.AxisToSvg("x", box.fX2),
-          y1 = this.AxisToSvg("y", box.fY1),
-          y2 = this.AxisToSvg("y", box.fY2),
+      let x1 = this.axisToSvg("x", box.fX1),
+          x2 = this.axisToSvg("x", box.fX2),
+          y1 = this.axisToSvg("y", box.fY1),
+          y2 = this.axisToSvg("y", box.fY2),
           xx = Math.min(x1,x2), yy = Math.min(y1,y2),
           ww = Math.abs(x2-x1), hh = Math.abs(y1-y2);
 
@@ -325,8 +325,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       // create svg:g container for box drawing
       this.createG();
 
-      let x = this.AxisToSvg("x", marker.fX, isndc),
-          y = this.AxisToSvg("y", marker.fY, isndc),
+      let x = this.axisToSvg("x", marker.fX, isndc),
+          y = this.axisToSvg("y", marker.fY, isndc),
           path = att.create(x,y);
 
       if (path)
@@ -345,7 +345,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       let poly = this.getObject(),
           att = new JSROOT.TAttMarkerHandler(poly),
           path = "",
-          func = this.AxisToSvgFunc();
+          func = this.getAxisToSvgFunc();
 
       for (let n = 0; n < poly.fN; ++n)
          path += att.create(func.x(poly.fX[n]), func.y(poly.fY[n]));
@@ -379,10 +379,10 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       this.createG();
 
-      this.x1 = this.AxisToSvg("x", arrow.fX1, this.isndc, true);
-      this.y1 = this.AxisToSvg("y", arrow.fY1, this.isndc, true);
-      this.x2 = this.AxisToSvg("x", arrow.fX2, this.isndc, true);
-      this.y2 = this.AxisToSvg("y", arrow.fY2, this.isndc, true);
+      this.x1 = this.axisToSvg("x", arrow.fX1, this.isndc, true);
+      this.y1 = this.axisToSvg("y", arrow.fY1, this.isndc, true);
+      this.x2 = this.axisToSvg("x", arrow.fX2, this.isndc, true);
+      this.y2 = this.axisToSvg("y", arrow.fY2, this.isndc, true);
 
       this.rotate = function(angle, x0, y0) {
          let dx = this.wsize * Math.cos(angle), dy = this.wsize * Math.sin(angle), res = "";
@@ -458,10 +458,10 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
                this.moveEnd = function(not_changed) {
                   if (not_changed) return;
                   let arrow = this.getObject(), exec = "";
-                  arrow.fX1 = this.SvgToAxis("x", this.x1, this.isndc);
-                  arrow.fX2 = this.SvgToAxis("x", this.x2, this.isndc);
-                  arrow.fY1 = this.SvgToAxis("y", this.y1, this.isndc);
-                  arrow.fY2 = this.SvgToAxis("y", this.y2, this.isndc);
+                  arrow.fX1 = this.svgToAxis("x", this.x1, this.isndc);
+                  arrow.fX2 = this.svgToAxis("x", this.x2, this.isndc);
+                  arrow.fY1 = this.svgToAxis("y", this.y1, this.isndc);
+                  arrow.fY2 = this.svgToAxis("y", this.y2, this.isndc);
                   if (this.side != 1) exec += "SetX1(" + arrow.fX1 + ");;SetY1(" + arrow.fY1 + ");;";
                   if (this.side != -1) exec += "SetX2(" + arrow.fX2 + ");;SetY2(" + arrow.fY2 + ");;";
                   this.WebCanvasExec(exec + "Notify();;");
@@ -3337,7 +3337,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       painter.Redraw = function() {
 
-         let obj = this.getObject(), func = this.AxisToSvgFunc();
+         let obj = this.getObject(), func = this.getAxisToSvgFunc();
 
          if (!obj || !obj.fOper || !func) return;
 
