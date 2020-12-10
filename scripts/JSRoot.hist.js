@@ -65,7 +65,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
        return new JSROOT.ColorPalette(palette);
    }
 
-   jsrp.GetColorPalette = function(col,alfa) {
+   /** @summary Create color palette
+     * @memberof JSROOT.Painter
+     * @private */
+   function getColorPalette(col,alfa) {
       col = col || JSROOT.settings.Palette;
       if ((col>0) && (col<10)) return createGrayPalette();
       if (col < 51) return createDefaultPalette();
@@ -1994,7 +1997,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           pp = this.pad_painter();
 
       if (pp && (this.options._pfc || this.options._plc || this.options._pmc)) {
-         let icolor = pp.CreateAutoColor();
+         let icolor = pp.createAutoColor();
          if (this.options._pfc) { histo.fFillColor = icolor; delete this.fillatt; }
          if (this.options._plc) { histo.fLineColor = icolor; delete this.lineatt; }
          if (this.options._pmc) { histo.fMarkerColor = icolor; delete this.markeratt; }
@@ -2899,9 +2902,16 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return this.GetContour().getLevels();
    }
 
-   THistPainter.prototype.GetPalette = function(force) {
-      if (!this.fPalette || force)
-         this.fPalette = this.get_palette(true, this.options.Palette);
+   /** @summary Returns color palette associated with histogram
+     * @desc Create if required, checks pad and canvas for custom palette */
+   THistPainter.prototype.getHistPalette = function(force) {
+      if (force) this.fPalette = null;
+      if (!this.fPalette && !this.options.Palette) {
+         let pp = this.pad_painter();
+         if (pp) this.fPalette = pp.getCustomPalette();
+      }
+      if (!this.fPalette)
+         this.fPalette = getColorPalette(this.options.Palette);
       return this.fPalette;
    }
 
@@ -2911,7 +2921,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       let add = (id, name, more) => menu.addchk((id===curr) || more, '<nobr>' + name + '</nobr>', id, arg => {
          this.options.Palette = parseInt(arg);
-         this.GetPalette(true);
+         this.getHistPalette(true);
          this.Redraw(); // redraw histogram
       });
 
@@ -4812,7 +4822,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       let histo = this.GetHisto(),
           handle = this.PrepareColorDraw(),
           cntr = this.GetContour(),
-          palette = this.GetPalette(),
+          palette = this.getHistPalette(),
           entries = [],
           skip_zero = !this.options.Zero,
           show_empty = this._show_empty_bins;
@@ -5089,7 +5099,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           frame_w = this.frame_width(),
           frame_h = this.frame_height(),
           levels = this.GetContourLevels(),
-          palette = this.GetPalette(),
+          palette = this.getHistPalette(),
           main = this.frame_painter(),
           func = main.GetProjectionFunc();
 
@@ -5323,7 +5333,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       this.minbin = this.gminbin;
       this.minposbin = this.gminposbin;
 
-      let cntr = this.GetContour(true), palette = this.GetPalette();
+      let cntr = this.GetContour(true), palette = this.getHistPalette();
 
       for (i = 0; i < len; ++ i) {
          bin = histo.fBins.arr[i];
@@ -6199,7 +6209,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          } else if (h.hide_only_zeros) {
             colindx = (binz === 0) && !this._show_empty_bins ? null : 0;
          } else {
-            colindx = this.GetContour().getPaletteIndex(this.GetPalette(), binz);
+            colindx = this.GetContour().getPaletteIndex(this.getHistPalette(), binz);
             if ((colindx === null) && (binz === 0) && this._show_empty_bins) colindx = 0;
          }
       }
@@ -6215,7 +6225,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                   color2: this.fillatt ? this.fillatt.fillcoloralt('blue') : "blue",
                   lines: this.GetBinTips(i, j), exact: true, menu: true };
 
-      if (this.options.Color) res.color2 = this.GetPalette().getColor(colindx);
+      if (this.options.Color) res.color2 = this.getHistPalette().getColor(colindx);
 
       if (pnt.disabled && !this.is_projection) {
          ttrect.remove();
@@ -6645,8 +6655,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       // if there is auto colors assignment, try to provide it
       if (this.options._pfc || this.options._plc || this.options._pmc) {
-         if (!this.palette && jsrp.GetColorPalette)
-            this.palette = jsrp.GetColorPalette();
+         if (!this.palette)
+            this.palette = getColorPalette();
          if (this.palette) {
             let color = this.palette.calcColor(rindx, nhists+1);
             let icolor = this.addColor(color);
@@ -6841,6 +6851,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    // =================================================================================
 
+   jsrp.getColorPalette = getColorPalette;
    jsrp.drawPave = drawPave;
    jsrp.produceLegend = produceLegend;
    jsrp.drawHistogram1D = drawHistogram1D;

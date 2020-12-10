@@ -838,7 +838,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
          }
       }
 
-      res.palette = pmain.GetPalette();
+      res.palette = pmain.getHistPalette();
 
       if (res.palette)
          this.CreateContour(pmain, res.palette, args);
@@ -2495,7 +2495,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
    RH2Painter.prototype.DrawBinsContour = function(frame_w,frame_h) {
       let handle = this.PrepareDraw({ rounding: false, extra: 100, original: this.options.Proj != 0 }),
           main = this.frame_painter(),
-          palette = main.GetPalette(),
+          palette = main.getHistPalette(),
           levels = palette.GetContour(),
           func = main.GetProjectionFunc();
 
@@ -2648,7 +2648,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
           colPaths = [], textbins = [],
           colindx, cmd, bin, item,
           i, len = histo.fBins.arr.length,
-          palette = pmain.GetPalette();
+          palette = pmain.getHistPalette();
 
       // force recalculations of contours
       // use global coordinates

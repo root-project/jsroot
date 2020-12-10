@@ -1053,7 +1053,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       if ((this.options.Lego === 12) || (this.options.Lego === 14)) {
          // drawing colors levels, axis can not exceed palette
 
-         palette = main.GetPalette();
+         palette = main.getHistPalette();
          this.CreateContour(main, palette, { full_z_range: true });
          levels = palette.GetContour();
          axis_zmin = levels[0];
@@ -1492,7 +1492,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       // for contour plots one requires handle with full range
       let main = this.frame_painter(),
           handle = this.PrepareDraw({rounding: false, use3d: true, extra: 100, middle: 0.0 }),
-          palette = main.GetPalette(),
+          palette = main.getHistPalette(),
           layerz = 2*main.size_z3d, pnts = [];
 
       this.CreateContour(main, palette, { full_z_range: true });
@@ -1559,7 +1559,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       }
 
       if (need_palette > 0) {
-         palette = main.GetPalette();
+         palette = main.getHistPalette();
          if (need_palette == 2)
             this.CreateContour(main, palette, { full_z_range: true });
          ilevels = palette.GetContour();
@@ -1879,7 +1879,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
 
          // get levels
          let levels = this.GetContour(), // init contour
-             palette = this.GetPalette(),
+             palette = this.getHistPalette(),
              lastcolindx = -1, layerz = 2*main.size_z3d;
 
          this.BuildContour(handle, levels, palette,
@@ -2051,7 +2051,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
 
    JSROOT.v7.RH2Painter.prototype.DrawPolyLego = function() {
       let histo = this.GetHisto(),
-          palette = this.GetPalette(),
+          palette = this.getHistPalette(),
           pmain = this.frame_painter(),
           axis_zmin = pmain.z_handle.gr.domain()[0],
           axis_zmax = pmain.z_handle.gr.domain()[1],
@@ -2619,7 +2619,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
           palette = null;
 
       if (use_colors) {
-         palette = main.GetPalette();
+         palette = main.getHistPalette();
          this.CreateContour(main, palette);
       }
 

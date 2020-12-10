@@ -2019,18 +2019,29 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          }
    }
 
+  /** @summary returns custom palette associated with pad or top canvas
+    * @private */
+   TPadPainter.prototype.getCustomPalette = function() {
+      if (this.custom_palette)
+         return this.custom_palette;
+
+      let cp = this.canv_painter();
+      return cp ? cp.custom_palette : null;
+   }
+
+
    /** @summary Generates automatic color for some objects painters */
-   TPadPainter.prototype.CreateAutoColor = function() {
+   TPadPainter.prototype.createAutoColor = function() {
       let pad = this.root_pad(),
           numprimitives = pad && pad.fPrimitves ? pad.fPrimitves.arr.length : 5;
-
-      let pal = this.get_palette(true);
 
       let indx = this._auto_color || 0;
       this._auto_color = indx+1;
 
+      let pal = this.get_palette(true);
+
       if (pal) {
-         if (numprimitives<2) numprimitives = 2;
+         if (numprimitives < 2) numprimitives = 2;
          if (indx >= numprimitives) indx = numprimitives - 1;
          let palindx = Math.round(indx * (pal.getLength()-3) / (numprimitives-1));
          let colvalue = pal.getColor(palindx);

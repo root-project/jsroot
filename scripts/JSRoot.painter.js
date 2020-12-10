@@ -1825,8 +1825,8 @@ JSROOT.define(['d3'], (d3) => {
       if (cp.custom_palette && !palettedid)
          return cp.custom_palette;
 
-      if (force && jsrp.GetColorPalette)
-         cp.custom_palette = jsrp.GetColorPalette(palettedid);
+      if (force && jsrp.getColorPalette)
+         cp.custom_palette = jsrp.getColorPalette(palettedid);
 
       return cp.custom_palette;
    }

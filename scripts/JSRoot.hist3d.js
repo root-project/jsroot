@@ -1096,7 +1096,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          // drawing colors levels, axis can not exceed palette
          let cntr = this.CreateContour(histo.fContour ? histo.fContour.length : 20, main.lego_zmin, main.lego_zmax);
          levels = cntr.arr;
-         palette = this.GetPalette();
+         palette = this.getHistPalette();
          //axis_zmin = levels[0];
          //axis_zmax = levels[levels.length-1];
       }
@@ -1541,7 +1541,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
           handle = this.PrepareColorDraw({rounding: false, use3d: true, extra: 100, middle: 0.0 }),
           histo = this.GetHisto(), // get levels
           levels = this.GetContourLevels(), // init contour if not exists
-          palette = this.GetPalette(),
+          palette = this.getHistPalette(),
           layerz = 2*main.size_z3d, pnts = [];
 
       this.BuildContour(handle, levels, palette,
@@ -1583,10 +1583,10 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
           donormals = false, palette = null;
 
       switch(this.options.Surf) {
-         case 11: ilevels = this.GetContourLevels(); palette = this.GetPalette(); break;
+         case 11: ilevels = this.GetContourLevels(); palette = this.getHistPalette(); break;
          case 12:
          case 15: // make surf5 same as surf2
-         case 17: ilevels = this.GetContourLevels(); palette = this.GetPalette(); dolines = false; break;
+         case 17: ilevels = this.GetContourLevels(); palette = this.getHistPalette(); dolines = false; break;
          case 14: dolines = false; donormals = true; break;
          case 16: ilevels = this.GetContourLevels(); dogrid = true; dolines = false; break;
          default: ilevels = main.z_handle.CreateTicks(true); dogrid = true; break;
@@ -1905,7 +1905,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
          // get levels
          let levels = this.GetContourLevels(), // init contour
-             palette = this.GetPalette(),
+             palette = this.getHistPalette(),
              lastcolindx = -1, layerz = 2*main.size_z3d;
 
          this.BuildContour(handle, levels, palette,
@@ -2082,7 +2082,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       this.minbin = this.gminbin;
       this.minposbin = this.gminposbin;
 
-      let cntr = this.GetContour(true), palette = this.GetPalette();
+      let cntr = this.GetContour(true), palette = this.getHistPalette();
 
       for (i = 0; i < len; ++ i) {
          bin = histo.fBins.arr[i];
@@ -2638,7 +2638,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
       let nbins = 0, i, j, k, wei, bin_content, cols_size = [], num_colors = 0, cols_sequence = [],
           cntr = use_colors ? this.GetContour() : null,
-          palette = use_colors ? this.GetPalette() : null;
+          palette = use_colors ? this.getHistPalette() : null;
 
       for (i = i1; i < i2; ++i) {
          for (j = j1; j < j2; ++j) {
@@ -3170,7 +3170,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
       if (this.options.Color) {
          levels = main.GetContourLevels();
-         palette = main.GetPalette();
+         palette = main.getHistPalette();
       }
 
       for (let lvl = 0; lvl < levels.length-1; ++lvl) {

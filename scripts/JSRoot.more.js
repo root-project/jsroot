@@ -1005,7 +1005,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       return (JSROOT.settings.OptimizeDraw > 0) && !this.options.NoOpt;
    }
 
-   /** Returns optimized bins - if optimization enabled */
+   /** @summary Returns optimized bins - if optimization enabled */
    TGraphPainter.prototype.OptimizeBins = function(maxpnt, filter_func) {
       if ((this.bins.length < 30) && !filter_func) return this.bins;
 
@@ -1095,7 +1095,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       this.createG(!pmain.pad_layer);
 
       if (pp && (this.options._pfc || this.options._plc || this.options._pmc)) {
-         let icolor = pp.CreateAutoColor(this);
+         let icolor = pp.createAutoColor();
 
          if (this.options._pfc) { graph.fFillColor = icolor; delete this.fillatt; }
          if (this.options._plc) { graph.fLineColor = icolor; delete this.lineatt; }
@@ -3317,8 +3317,9 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       // if there is auto colors assignment, try to provide it
       if (this._pfc || this._plc || this._pmc) {
-         if (!this.palette && jsrp.GetColorPalette)
-            this.palette = jsrp.GetColorPalette();
+         // function should be loaded after drawing axis histogram, but check anyway
+         if (!this.palette && jsrp.getColorPalette)
+            this.palette = jsrp.getColorPalette();
          if (this.palette) {
             let color = this.palette.calcColor(indx, graphs.arr.length+1);
             let icolor = this.addColor(color);

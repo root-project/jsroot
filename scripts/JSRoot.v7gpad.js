@@ -2044,10 +2044,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Returns palette associated with frame. Either from existing palette painter or just default palette */
-   RFramePainter.prototype.GetPalette = function() {
+   RFramePainter.prototype.getHistPalette = function() {
       let pp = this.FindPainterFor(undefined, undefined, "ROOT::Experimental::RPaletteDrawable");
 
-      if (pp) return pp.GetPalette();
+      if (pp) return pp.getHistPalette();
 
       if (!this.fDfltPalette) {
          this.fDfltPalette = {
@@ -4579,7 +4579,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    RPalettePainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
 
-   RPalettePainter.prototype.GetPalette = function() {
+   RPalettePainter.prototype.getHistPalette = function() {
       let drawable = this.getObject();
       let pal = drawable ? drawable.fPalette : null;
 
@@ -4592,7 +4592,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Draw palette */
    RPalettePainter.prototype.DrawPalette = function(after_resize) {
 
-      let palette = this.GetPalette(),
+      let palette = this.getHistPalette(),
           contour = palette.GetContour(),
           framep = this.frame_painter();
 
