@@ -3318,14 +3318,9 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       // if there is auto colors assignment, try to provide it
       if (this._pfc || this._plc || this._pmc) {
-
-         // function should be loaded after drawing axis histogram, but check anyway
-         if (!this.palette && jsrp.getColorPalette)
-            this.palette = jsrp.getColorPalette();
-         if (this.palette) {
-            let color = this.palette.calcColor(indx, graphs.arr.length+1);
-            let icolor = this.addColor(color);
-
+         let mp = this.getMainPainter();
+         if (mp && mp.createAutoColor) {
+            let icolor = mp.createAutoColor();
             if (this._pfc) graphs.arr[indx].fFillColor = icolor;
             if (this._plc) graphs.arr[indx].fLineColor = icolor;
             if (this._pmc) graphs.arr[indx].fMarkerColor = icolor;
