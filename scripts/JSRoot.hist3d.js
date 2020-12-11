@@ -3132,8 +3132,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
           graph = this.getObject(),
           step = 1;
 
-      if (!graph || !main || !fp || !fp.mode3d)
-         return Promise.resolve(this);
+      if (!graph || !main || !fp || !fp.mode3d) return;
 
       function CountSelected(zmin, zmax) {
          let cnt = 0;
@@ -3161,8 +3160,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       let markeratt = new JSROOT.TAttMarkerHandler(graph),
           palette = null,
           levels = [fp.scale_zmin, fp.scale_zmax],
-          scale = fp.size_xy3d / 100 * markeratt.GetFullSize(),
-          promises = [];
+          scale = fp.size_xy3d / 100 * markeratt.GetFullSize();
 
       if (this.options.Circles) scale = 0.06*fp.size_xy3d;
 
@@ -3292,31 +3290,22 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
                fcolor = palette ? palette.calcColor(lvl, levels.length)
                                 : this.getColor(graph.fMarkerColor);
 
-            let mesh_index = index;
+            let mesh = pnts.CreatePoints({ color: fcolor, style: this.options.Circles ? 4 : graph.fMarkerStyle });
 
-            promises.push(pnts.createPointsPromise({ color: fcolor, style: this.options.Circles ? 4 : graph.fMarkerStyle }).then(mesh => {
+            mesh.graph = graph;
+            mesh.painter = fp;
+            mesh.tip_color = (graph.fMarkerColor === 3) ? 0xFF0000 : 0x00FF00
+            mesh.scale0 = 0.3*scale;
+            mesh.index = index;
 
-               mesh.graph = graph;
-               mesh.painter = fp;
-               mesh.tip_color = (graph.fMarkerColor === 3) ? 0xFF0000 : 0x00FF00
-               mesh.scale0 = 0.3*scale;
-               mesh.index = mesh_index;
+            mesh.tip_name = this.getObjectHint();
+            mesh.tooltip = this.Graph2DTooltip;
 
-               mesh.tip_name = this.getObjectHint();
-               mesh.tooltip = this.Graph2DTooltip;
-
-              if (fp && fp.toplevel)
-                 fp.toplevel.add(mesh);
-              else
-                 console.error('3d scene already disappeared before points were ready')
-            }));
+            fp.toplevel.add(mesh);
          }
       }
 
-      return Promise.all(promises).then(() => {
-         if (fp) fp.Render3D(100);
-         return this;
-      });
+      if (fp) fp.Render3D(100);
    }
 
    jsrp.drawGraph2D = function(divid, gr, opt) {
@@ -3334,7 +3323,8 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
       return promise.then(() => {
          painter.addToPadPrimitives();
-         return painter.Redraw();
+         painter.Redraw();
+         return painter;
       });
    }
 
@@ -3344,7 +3334,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
       let fp = this.frame_painter();
 
-      if (!fp || !fp.mode3d)
+      if (!fp || !fp.mode3d || !fp.toplevel)
          return Promise.reject(Error("Fail to draw poly markers without 3D mode"));
 
       let step = 1, sizelimit = 50000, numselect = 0, poly = this.getObject();
@@ -3382,53 +3372,53 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          pnts.AddPoint(fp.grx(poly.fP[i]), fp.gry(poly.fP[i+1]), fp.grz(poly.fP[i+2]));
       }
 
-      return pnts.createPointsPromise({ color: this.getColor(poly.fMarkerColor),
-                                        style: poly.fMarkerStyle }).then(mesh => {
+      let mesh = pnts.CreatePoints({ color: this.getColor(poly.fMarkerColor),
+                                     style: poly.fMarkerStyle });
 
-         if (fp.toplevel) fp.toplevel.add(mesh);
+      mesh.tip_color = (poly.fMarkerColor === 3) ? 0xFF0000 : 0x00FF00;
+      mesh.tip_name = poly.fName || "Poly3D";
+      mesh.poly = poly;
+      mesh.painter = fp;
+      mesh.scale0 = 0.7*pnts.scale;
+      mesh.index = index;
 
-         mesh.tip_color = (poly.fMarkerColor === 3) ? 0xFF0000 : 0x00FF00;
-         mesh.tip_name = poly.fName || "Poly3D";
-         mesh.poly = poly;
-         mesh.painter = fp;
-         mesh.scale0 = 0.7*pnts.scale;
-         mesh.index = index;
+      fp.toplevel.add(mesh);
 
-         mesh.tooltip = function(intersect) {
-            if (isNaN(intersect.index)) {
-               console.error('intersect.index not provided, check three.js version', THREE.REVISION, 'expected r102');
-               return null;
-            }
-            let indx = Math.floor(intersect.index / this.nvertex);
-            if ((indx<0) || (indx >= this.index.length)) return null;
-
-            indx = this.index[indx];
-
-            let p = this.painter,
-                grx = p.grx(this.poly.fP[indx]),
-                gry = p.gry(this.poly.fP[indx+1]),
-                grz = p.grz(this.poly.fP[indx+2]);
-
-            return  {
-               x1: grx - this.scale0,
-               x2: grx + this.scale0,
-               y1: gry - this.scale0,
-               y2: gry + this.scale0,
-               z1: grz - this.scale0,
-               z2: grz + this.scale0,
-               color: this.tip_color,
-               lines: [ this.tip_name,
-                        "pnt: " + indx/3,
-                        "x: " + p.AxisAsText("x", this.poly.fP[indx]),
-                        "y: " + p.AxisAsText("y", this.poly.fP[indx+1]),
-                        "z: " + p.AxisAsText("z", this.poly.fP[indx+2])
-                      ]
-            }
+      mesh.tooltip = function(intersect) {
+         if (isNaN(intersect.index)) {
+            console.error('intersect.index not provided, check three.js version', THREE.REVISION, 'expected r102');
+            return null;
          }
+         let indx = Math.floor(intersect.index / this.nvertex);
+         if ((indx<0) || (indx >= this.index.length)) return null;
 
-         fp.Render3D(100); // set large timeout to be able draw other points
-         return this;
-      });
+         indx = this.index[indx];
+
+         let p = this.painter,
+             grx = p.grx(this.poly.fP[indx]),
+             gry = p.gry(this.poly.fP[indx+1]),
+             grz = p.grz(this.poly.fP[indx+2]);
+
+         return  {
+            x1: grx - this.scale0,
+            x2: grx + this.scale0,
+            y1: gry - this.scale0,
+            y2: gry + this.scale0,
+            z1: grz - this.scale0,
+            z2: grz + this.scale0,
+            color: this.tip_color,
+            lines: [ this.tip_name,
+                     "pnt: " + indx/3,
+                     "x: " + p.AxisAsText("x", this.poly.fP[indx]),
+                     "y: " + p.AxisAsText("y", this.poly.fP[indx+1]),
+                     "z: " + p.AxisAsText("z", this.poly.fP[indx+2])
+                   ]
+         }
+      }
+
+      fp.Render3D(100); // set timeout to be able draw other points
+
+      return Promise.resolve(this);
    }
 
 

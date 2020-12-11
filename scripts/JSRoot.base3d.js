@@ -1272,11 +1272,6 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
       return pnts;
    }
 
-   /** @summary Create points and return Promise*/
-   PointsCreator.prototype.createPointsPromise = function(args) {
-      return Promise.resolve(this.CreatePoints(args));
-   }
-
 
    // ==============================================================================
 
