@@ -1241,6 +1241,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
       // special dots
       if (!args.style) k = 1.1; else
       if (args.style === 1) k = 0.3; else
+      if (args.style === 2) args.style = 3; else // just avoid plot of "+" sign, issue #205
       if (args.style === 6) k = 0.5; else
       if (args.style === 7) k = 0.7;
 
@@ -1261,7 +1262,9 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
          // let need_replace = JSROOT.nodejs && !globalThis.document;
          // if (need_replace) globalThis.document = JSROOT.get_document();
 
-         let texture = new THREE.TextureLoader().load( 'data:image/svg+xml;utf8,' + plainSVG, () => { console.log('texture loading completed !!')} );
+         console.log('plain svg', plainSVG);
+
+         let texture = new THREE.TextureLoader().load( 'data:image/svg+xml;utf8,' + plainSVG);
 
          // if (need_replace) globalThis.document = undefined;
 
