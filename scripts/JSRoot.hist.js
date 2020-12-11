@@ -2977,7 +2977,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    }
 
    /** @summary draw color palette
-     * @return {Promise} when done */
+     * @returns {Promise} when done */
    THistPainter.prototype.drawColorPalette = function(enabled, postpone_draw, can_move) {
       // only when create new palette, one could change frame size
 

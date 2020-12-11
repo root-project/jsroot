@@ -136,7 +136,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Evaluate RAttrText properties
-     * @return {Object} FontHandler, can be used directly for the text drawing
+     * @returns {Object} FontHandler, can be used directly for the text drawing
      * @private */
    JSROOT.ObjectPainter.prototype.v7EvalFont = function(name, dflts, fontScale) {
 
@@ -3206,7 +3206,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    /** @summary Redraw pad snap
      * @desc Online version of drawing pad primitives
-     * @return {Promise} with pad painter*/
+     * @returns {Promise} with pad painter*/
    RPadPainter.prototype.RedrawPadSnap = function(snap) {
       // for the pad/canvas display item contains list of primitives plus pad attributes
 
@@ -3821,7 +3821,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Toggle projection
-     * @return {Promise} indicating when ready */
+     * @returns {Promise} indicating when ready */
    RCanvasPainter.prototype.ToggleProjection = function(kind) {
       delete this.proj_painter;
 

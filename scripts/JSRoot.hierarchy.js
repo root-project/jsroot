@@ -1163,7 +1163,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Display specified item
-     * @return {Promise} with created painter object */
+     * @returns {Promise} with created painter object */
    HierarchyPainter.prototype.display = function(itemname, drawopt) {
       let h = this,
           painter = null,

@@ -3281,7 +3281,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    }
 
    /** @summary draw speical histogram for axis
-     * @return {Promise} when ready */
+     * @returns {Promise} when ready */
    TMultiGraphPainter.prototype.drawAxis = function() {
 
       let mgraph = this.getObject(),

@@ -2462,7 +2462,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Draw pad primitives
-       @return {Promise} when drawing completed */
+     * @returns {Promise} when drawing completed */
    TPadPainter.prototype.DrawPrimitives = function(indx) {
 
       if (!indx) {
@@ -3663,7 +3663,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Toggle projection
-     * @return {Promise} indicating when ready */
+     * @returns {Promise} indicating when ready */
    TCanvasPainter.prototype.ToggleProjection = function(kind) {
       delete this.proj_painter;
 

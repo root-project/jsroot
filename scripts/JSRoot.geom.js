@@ -2495,7 +2495,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
      * Such function should be possible to find via {@link JSROOT.findFunction}
      * Function has to return Promise with objects to draw on geometry
      * By default function with name "extract_geo_tracks" is checked
-     * @return {Promise} handling of drop operation */
+     * @returns {Promise} handling of drop operation */
    TGeoPainter.prototype.performDrop = function(obj, itemname, hitem, opt) {
 
       if (obj && (obj.$kind==='TTree')) {
