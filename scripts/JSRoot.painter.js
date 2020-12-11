@@ -3975,7 +3975,7 @@ JSROOT.define(['d3'], (d3) => {
 
       if (!isNaN(tmout) && (tmout > 0)) {
          box.property("with_timeout", true);
-         setTimeout(JSROOT.progress.bind(JSROOT, '', -1), tmout);
+         setTimeout(() => JSROOT.progress('', -1), tmout);
       }
    }
 

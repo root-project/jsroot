@@ -1335,22 +1335,22 @@
    }
 
    // Open ROOT file, defined in JSRoot.io.js
-   JSROOT.openFile = function(filename, callback) {
+   JSROOT.openFile = (filename, callback) => {
       return jsroot_require("io").then(() => JSROOT.openFile(filename, callback));
    }
 
    // Draw object, defined in JSRoot.painter.js
-   JSROOT.draw = function(divid, obj, opt) {
+   JSROOT.draw = (divid, obj, opt) => {
       return jsroot_require("painter").then(() => JSROOT.draw(divid, obj, opt));
    }
 
    // Redaraw object, defined in JSRoot.painter.js
-   JSROOT.redraw = function(divid, obj, opt) {
+   JSROOT.redraw = (divid, obj, opt) => {
       return jsroot_require("painter").then(() => JSROOT.redraw(divid, obj, opt));
    }
 
    // Create SVG, defined in JSRoot.painter.js
-   JSROOT.makeSVG = function(args) {
+   JSROOT.makeSVG = args => {
       return jsroot_require("painter").then(() => JSROOT.makeSVG(args));
    }
 
@@ -1359,7 +1359,7 @@
      * @param {string} [gui_kind = "gui"] - kind of the gui: "gui", "online", "draw"
      * @returns {Promise} when ready
      * @private */
-   JSROOT.buildGUI = function(gui_element, gui_kind) {
+   JSROOT.buildGUI = (gui_element, gui_kind) => {
       let d = JSROOT.decodeUrl(),
           nobrowser = d.has('nobrowser'),
           requirements = ["hierarchy"];
@@ -1677,7 +1677,7 @@
      * @param {number} [nbinsy] - number of bins on Y-axis (for 2D/3D histograms)
      * @param {number} [nbinsz] - number of bins on Z-axis (for 3D histograms)
      * @returns {Object} created histogram object */
-   JSROOT.createHistogram = function(typename, nbinsx, nbinsy, nbinsz) {
+   JSROOT.createHistogram = (typename, nbinsx, nbinsy, nbinsz) => {
       let histo = create(typename);
       if (!histo.fXaxis || !histo.fYaxis || !histo.fZaxis) return null;
       histo.fName = "hist"; histo.fTitle = "title";
@@ -1707,7 +1707,7 @@
    /** @summary Creates TPolyLine object
      * @param {number} npoints - number of points
      * @param {boolean} [use_int32] - use Int32Array type for points, default is Float32Array */
-   JSROOT.createTPolyLine = function(npoints, use_int32) {
+   JSROOT.createTPolyLine = (npoints, use_int32) => {
       let poly = create("TPolyLine");
       if (npoints) {
          poly.fN = npoints;
@@ -1727,7 +1727,7 @@
      * @param {number} npoints - number of points in TGraph
      * @param {array} [xpts] - array with X coordinates
      * @param {array} [ypts] - array with Y coordinates */
-   JSROOT.createTGraph = function(npoints, xpts, ypts) {
+   JSROOT.createTGraph = (npoints, xpts, ypts) => {
       let graph = extend(create("TGraph"), { fBits: 0x408, fName: "graph", fTitle: "title" });
 
       if (npoints>0) {
@@ -2126,7 +2126,7 @@
    }
 
    // Dummy function, will be redefined when JSRoot.painter is loaded
-   JSROOT.progress = function(msg /*, tmout */) {
+   JSROOT.progress = (msg /*, tmout */) => {
       if ((msg !== undefined) && (typeof msg=="string")) console.log(msg);
    }
 
