@@ -1228,38 +1228,6 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
       this.indx+=3;
    }
 
-   /** @summary If callback function assigned, created mesh always will be returned as callback */
-   PointsCreator.prototype.AssignCallback = function(callback) {
-      this.callback = callback;
-   }
-
-   /** @summary Complete creation */
-   PointsCreator.prototype.Complete = function(arg) {
-
-      let material;
-
-      if (this.texture) {
-         if ((arg == 'loaded') && this.texture.onUpdate) this.texture.onUpdate( this.texture );
-         if (this._did_create) return;
-         material = new THREE.PointsMaterial( { size: (this.webgl ? 3 : 1) * this.scale, map: this.texture, transparent: true } );
-      } else {
-         if (this._did_create) return;
-         material = new THREE.PointsMaterial( { size: (this.webgl ? 3 : 1) * this.scale * this.k, color: this.color } );
-      }
-
-      this._did_create = true;
-
-      let pnts = new THREE.Points(this.geom, material);
-      pnts.nvertex = 1;
-
-      let cb = this.callback;
-      delete this.callback;
-
-      if (typeof cb == 'function') cb(pnts);
-
-      return pnts;
-   }
-
    /** @summary Create points */
    PointsCreator.prototype.CreatePoints = function(args) {
 
@@ -1278,27 +1246,35 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
       if (args.style === 6) this.k = 0.5; else
       if (args.style === 7) this.k = 0.7;
 
+      let material;
+
       // this is plain creation of points, no texture loading
-      if (!args.style || (this.k !== 1) || JSROOT.BatchMode)
-         return this.Complete();
+      if (!args.style || (this.k !== 1) || JSROOT.BatchMode) {
 
-      let handler = new JSROOT.TAttMarkerHandler({ style: args.style, color: args.color, size: 8 });
+         material = new THREE.PointsMaterial( { size: (this.webgl ? 3 : 1) * this.scale * this.k, color: this.color } );
 
-      let plainSVG = '<svg width="64" height="64" xmlns="http://www.w3.org/2000/svg">' +
-                     '<path d="' + handler.create(32,32) + '" stroke="' + handler.getStrokeColor() + '" stroke-width="1" fill="' + handler.getFillColor() + '"/>' +
-                     '</svg>';
+      } else {
 
-      this.texture = new THREE.TextureLoader().load( 'data:image/svg+xml;utf8,' + plainSVG );
+         let handler = new JSROOT.TAttMarkerHandler({ style: args.style, color: args.color, size: 8 });
 
-      return this.Complete();
+         let plainSVG = '<svg width="64" height="64" xmlns="http://www.w3.org/2000/svg">' +
+                        '<path d="' + handler.create(32,32) + '" stroke="' + handler.getStrokeColor() + '" stroke-width="1" fill="' + handler.getFillColor() + '"/>' +
+                        '</svg>';
+
+         let texture = new THREE.TextureLoader().load( 'data:image/svg+xml;utf8,' + plainSVG );
+
+         material = new THREE.PointsMaterial( { size: (this.webgl ? 3 : 1) * this.scale, map: texture, transparent: true } );
+      }
+
+      let pnts = new THREE.Points(this.geom, material);
+      pnts.nvertex = 1;
+
+      return pnts;
    }
 
    /** @summary Create points and return Promise*/
    PointsCreator.prototype.createPointsPromise = function(args) {
-      return new Promise(resolveFunc => {
-          this.AssignCallback(resolveFunc);
-          this.CreatePoints(args);
-      });
+      return Promise.resolve(this.CreatePoints(args));
    }
 
 

@@ -2794,8 +2794,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
    /** @summary Drawing different hits types like TPolyMarker3d */
    TGeoPainter.prototype.drawHit = function(hit, itemname) {
-      if (!hit || !hit.fN || (hit.fN < 0))
-         return Promise.resolve(false);
+      if (!hit || !hit.fN || (hit.fN < 0)) return false;
 
       // make hit size scaling factor of overall geometry size
       // otherwise it is not possible to correctly see hits at all
@@ -2814,15 +2813,15 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
                        projy ? projv : hit.fP[i*3+1],
                        projz ? projv : hit.fP[i*3+2]);
 
-      return pnts.createPointsPromise({ color: jsrp.getColor(hit.fMarkerColor) || "rgb(0,0,255)",
-                                 style: hit.fMarkerStyle }).then(mesh => {
-         mesh.renderOrder = 1000000; // to bring points to the front
-         mesh.highlightScale = 2;
-         mesh.geo_name = itemname;
-         mesh.geo_object = hit;
-         this.addToExtrasContainer(mesh);
-         return true; // indicate that rendering should be done
-      });
+      let mesh = pnts.CreatePoints({ color: jsrp.getColor(hit.fMarkerColor) || "rgb(0,0,255)",
+                                     style: hit.fMarkerStyle });
+      mesh.renderOrder = 1000000; // to bring points to the front
+      mesh.highlightScale = 2;
+      mesh.geo_name = itemname;
+      mesh.geo_object = hit;
+      this.addToExtrasContainer(mesh);
+
+      return true; // indicate that rendering should be done
    }
 
    TGeoPainter.prototype.drawExtraShape = function(obj, itemname) {
