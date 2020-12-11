@@ -140,7 +140,9 @@
 
    //openuicfg // DO NOT DELETE, used to configure openui5 usage like JSROOT.openui5src = "nojsroot";
 
-   /** internal data */
+   /** @summary internal data
+     * @memberof JSROOT
+     * @private */
    let _ = {
       modules: {},            ///< list of modules
       source_min: false,      ///< is minified sources are used
@@ -359,21 +361,29 @@
      * or can be load from the file providing style=itemname in the URL
      * See [TStyle docu]{@link https://root.cern/doc/master/classTStyle.html} "Private attributes" section for more detailed info about each value */
    let gStyle = {
+      /** @summary Default log x scale */
       fOptLogx: 0,
+      /** @summary Default log y scale */
       fOptLogy: 0,
+      /** @summary Default log z scale */
       fOptLogz: 0,
       fOptDate: 0,
       fOptFile: 0,
+      /** @summary Draw histogram title */
       fOptTitle: 1,
       fPadBottomMargin: 0.1,
       fPadTopMargin: 0.1,
       fPadLeftMargin: 0.1,
       fPadRightMargin: 0.1,
+      /** @summary TPad.fGridx default value */
       fPadGridX: false,
+      /** @summary TPad.fGridy default value */
       fPadGridY: false,
       fPadTickX: 0,
       fPadTickY: 0,
+      /** @summary Default color of stat box */
       fStatColor: 0,
+      /** @summary Default color of text in stat box */
       fStatTextColor: 1,
       fStatBorderSize: 1,
       fStatFont: 42,
@@ -712,7 +722,6 @@
    }
 
    /** @summary Central method to load JSROOT functionality
-     *
      * @desc
      * Following components can be specified
      *    - 'io'     TFile functionality
@@ -751,10 +760,9 @@
     * @private */
    JSROOT.BIT = function(n) { return 1 << n; }
 
-   /**
-    * @summary Seed simple random generator
-    * @param {number} i seed value
-    * @private */
+   /** @summary Seed simple random generator
+     * @param {number} i seed value
+     * @private */
    JSROOT.seed = function(i) {
       i = Math.abs(i);
       if (i > 1e8) i = Math.abs(1e8 * Math.sin(i)); else
@@ -763,12 +771,10 @@
       this.m_z = 987654321;
    }
 
-   /**
-    * @summary Simple random generator
-    * @desc Works like Math.random(), but with configurable seed - see {@link JSROOT.seed}
-    * @returns {number} random value between 0 (inclusive) and 1.0 (exclusive)
-    * @private
-    */
+   /** @summary Simple random generator
+     * @desc Works like Math.random(), but with configurable seed - see {@link JSROOT.seed}
+     * @returns {number} random value between 0 (inclusive) and 1.0 (exclusive)
+     * @private */
    JSROOT.random = function() {
       if (this.m_z===undefined) return Math.random();
       this.m_z = (36969 * (this.m_z & 65535) + (this.m_z >> 16)) & 0xffffffff;
@@ -973,13 +979,10 @@
       return tgt;
    }
 
-   /**
-    * @summary Parse multi.json request results
-    * @desc Method should be used to parse JSON code, produced by multi.json request of THttpServer
-    *
-    * @param {string} json string to parse
-    * @return {Array|null} returns array of parsed elements
-    */
+   /** @summary Parse multi.json request results
+     * @desc Method should be used to parse JSON code, produced by multi.json request of THttpServer
+     * @param {string} json string to parse
+     * @return {Array|null} returns array of parsed elements */
    JSROOT.parse_multi = function(json) {
       if (!json) return null;
       let arr = JSON.parse(json);
@@ -1044,20 +1047,16 @@
       return JSON.stringify(tgt, null, spacing);
    }
 
-   /**
-    * @summary decodes URL options after '?' mark
-    *
-    * @desc Following options supported ?opt1&opt2=3
-    *
-    * @param {string} [url] URL string with options, document.URL will be used when not specified
-    * @returns {Object} with ```.has(opt)``` and ```.get(opt,dflt)``` methods
-    * @example
-    * let d = JSROOT.decodeUrl("any?opt1&op2=3");
-    * console.log(`Has opt1 ${d.has("opt1")}`);     // true
-    * console.log(`Get opt1 ${d.get("opt1")}`);     // ""
-    * console.log(`Get opt2 ${d.get("opt2")}`);     // "3"
-    * console.log(`Get opt3 ${d.get("opt3","-")}`); // "-"
-    */
+   /** @summary decodes URL options after '?' mark
+     * @desc Following options supported ?opt1&opt2=3
+     * @param {string} [url] URL string with options, document.URL will be used when not specified
+     * @returns {Object} with ```.has(opt)``` and ```.get(opt,dflt)``` methods
+     * @example
+     * let d = JSROOT.decodeUrl("any?opt1&op2=3");
+     * console.log(`Has opt1 ${d.has("opt1")}`);     // true
+     * console.log(`Get opt1 ${d.get("opt1")}`);     // ""
+     * console.log(`Get opt2 ${d.get("opt2")}`);     // "3"
+     * console.log(`Get opt3 ${d.get("opt3","-")}`); // "-" */
    JSROOT.decodeUrl = function(url) {
       let res = {
          opts: {},
@@ -1225,41 +1224,34 @@
       return xhr;
    }
 
-   /**
-    * @summary Submit asynchronoues http request
-    * @desc Following requests kind can be specified:
-    *    - "bin" - abstract binary data, result as string
-    *    - "buf" - abstract binary data, result as ArrayBuffer (default)
-    *    - "text" - returns req.responseText
-    *    - "object" - returns JSROOT.parse(req.responseText)
-    *    - "multi" - returns correctly parsed multi.json request
-    *    - "xml" - returns req.responseXML
-    *    - "head" - returns request itself, uses "HEAD" request method
-    *    - "post" - creates post request, submits req.send(post_data)
-    * @param {string} url - URL for the request
-    * @param {string} kind - kind of requested data
-    * @param {string} [post_data] - data submitted with post kind of request
-    * @returns {Promise} Promise for requested data, result type depends from the kind
-    * @example
-    * JSROOT.httpRequest("https://root.cern/js/files/thstack.json.gz", "object")
-    *       .then(obj => console.log(`Get object of type ${obj._typename}`))
-    *       .catch(err => console.error(err.message));
-    */
-
+   /** @summary Submit asynchronoues http request
+     * @desc Following requests kind can be specified:
+     *    - "bin" - abstract binary data, result as string
+     *    - "buf" - abstract binary data, result as ArrayBuffer (default)
+     *    - "text" - returns req.responseText
+     *    - "object" - returns JSROOT.parse(req.responseText)
+     *    - "multi" - returns correctly parsed multi.json request
+     *    - "xml" - returns req.responseXML
+     *    - "head" - returns request itself, uses "HEAD" request method
+     *    - "post" - creates post request, submits req.send(post_data)
+     * @param {string} url - URL for the request
+     * @param {string} kind - kind of requested data
+     * @param {string} [post_data] - data submitted with post kind of request
+     * @returns {Promise} Promise for requested data, result type depends from the kind
+     * @example
+     * JSROOT.httpRequest("https://root.cern/js/files/thstack.json.gz", "object")
+     *       .then(obj => console.log(`Get object of type ${obj._typename}`))
+     *       .catch(err => console.error(err.message)); */
    JSROOT.httpRequest = function(url, kind, post_data) {
       return new Promise(function(accept, reject) {
          JSROOT.NewHttpRequest(url, kind, accept, reject).send(post_data || null);
       });
    }
 
-   /**
-    * @summary Load script or CSS file into the browser
-    *
-    * @desc Normal JSROOT functionality should be loaded via {@link JSROOT.require} method
-    * @param {String} url - script or css file URL (or array, in this case they all loaded secuentially)
-    * @returns {Promise}
-    * @private
-    */
+   /** @summary Load script or CSS file into the browser
+     * @desc Normal JSROOT functionality should be loaded via {@link JSROOT.require} method
+     * @param {String} url - script or css file URL (or array, in this case they all loaded secuentially)
+     * @returns {Promise} */
    JSROOT.loadScript = function(url) {
       if (!url)
          return Promise.resolve(true);
@@ -1394,13 +1386,12 @@
    }
 
    /** @summary Create some ROOT classes
-    *
-    * @param {string} typename - ROOT class name
-    * @example
-    * let obj = JSROOT.Create("TNamed");
-    * obj.fName = "name";
-    * obj.fTitle = "title";
-    */
+     * @desc Supported classes: "TObject", "TNamed", "TList", "TAxis", "TLine", "TText", "TLatex", "TPad", "TCanvas"
+     * @param {string} typename - ROOT class name
+     * @example
+     * let obj = JSROOT.Create("TNamed");
+     * obj.fName = "name";
+     * obj.fTitle = "title"; */
    JSROOT.Create = function(typename, target) {
       let obj = target || {};
 
@@ -1668,13 +1659,12 @@
    }
 
    /** @summary Create histogram object of specified type
-    * @param {string} typename - histogram typename like TH1I or TH2F
-    * @param {number} nbinsx - number of bins on X-axis
-    * @param {number} [nbinsy] - number of bins on Y-axis (for 2D/3D histograms)
-    * @param {number} [nbinsz] - number of bins on Z-axis (for 3D histograms)
-    * @returns {Object} created histogram object
-    */
-   JSROOT.CreateHistogram = function(typename, nbinsx, nbinsy, nbinsz) {
+     * @param {string} typename - histogram typename like 'TH1I' or 'TH2F'
+     * @param {number} nbinsx - number of bins on X-axis
+     * @param {number} [nbinsy] - number of bins on Y-axis (for 2D/3D histograms)
+     * @param {number} [nbinsz] - number of bins on Z-axis (for 3D histograms)
+     * @returns {Object} created histogram object */
+   JSROOT.createHistogram = function(typename, nbinsx, nbinsy, nbinsz) {
       let histo = JSROOT.Create(typename);
       if (!histo.fXaxis || !histo.fYaxis || !histo.fZaxis) return null;
       histo.fName = "hist"; histo.fTitle = "title";
@@ -1702,9 +1692,9 @@
    }
 
    /** @summary Creates TPolyLine object
-    * @param {number} npoints - number of points
-    * @param {boolean} [use_int32] - use Int32Array type for points, default is Float32Array */
-   JSROOT.CreateTPolyLine = function(npoints, use_int32) {
+     * @param {number} npoints - number of points
+     * @param {boolean} [use_int32] - use Int32Array type for points, default is Float32Array */
+   JSROOT.createTPolyLine = function(npoints, use_int32) {
       let poly = JSROOT.Create("TPolyLine");
       if (npoints) {
          poly.fN = npoints;
@@ -1721,10 +1711,10 @@
    }
 
    /** @summary Creates TGraph object
-    * @param {number} npoints - number of points in TGraph
-    * @param {array} [xpts] - array with X coordinates
-    * @param {array} [ypts] - array with Y coordinates */
-   JSROOT.CreateTGraph = function(npoints, xpts, ypts) {
+     * @param {number} npoints - number of points in TGraph
+     * @param {array} [xpts] - array with X coordinates
+     * @param {array} [ypts] - array with Y coordinates */
+   JSROOT.createTGraph = function(npoints, xpts, ypts) {
       let graph = JSROOT.extend(JSROOT.Create("TGraph"), { fBits: 0x408, fName: "graph", fTitle: "title" });
 
       if (npoints>0) {
@@ -1733,7 +1723,7 @@
          const usex = (typeof xpts == 'object') && (xpts.length === npoints);
          const usey = (typeof ypts == 'object') && (ypts.length === npoints);
 
-         for (let i=0;i<npoints;++i) {
+         for (let i = 0; i < npoints; ++i) {
             graph.fX.push(usex ? xpts[i] : i/npoints);
             graph.fY.push(usey ? ypts[i] : i/npoints);
          }
@@ -1743,14 +1733,14 @@
    }
 
    /** @summary Creates THStack object
-    * @desc As arguments one could specify any number of histograms objects
-    * @example
-    * let nbinsx = 20;
-    * let h1 = JSROOT.CreateHistogram("TH1F", nbinsx);
-    * let h2 = JSROOT.CreateHistogram("TH1F", nbinsx);
-    * let h3 = JSROOT.CreateHistogram("TH1F", nbinsx);
-    * let stack = JSROOT.CreateTHStack(h1, h2, h3); */
-   JSROOT.CreateTHStack = function() {
+     * @desc As arguments one could specify any number of histograms objects
+     * @example
+     * let nbinsx = 20;
+     * let h1 = JSROOT.createHistogram("TH1F", nbinsx);
+     * let h2 = JSROOT.createHistogram("TH1F", nbinsx);
+     * let h3 = JSROOT.createHistogram("TH1F", nbinsx);
+     * let stack = JSROOT.createTHStack(h1, h2, h3); */
+   JSROOT.createTHStack = function() {
       let stack = JSROOT.Create("THStack");
       for(let i=0; i<arguments.length; ++i)
          stack.fHists.Add(arguments[i], "");
@@ -1758,13 +1748,13 @@
    }
 
    /** @summary Creates TMultiGraph object
-    * @desc As arguments one could specify any number of TGraph objects
-    * @example
-    * let gr1 = JSROOT.CreateTGraph(100);
-    * let gr2 = JSROOT.CreateTGraph(100);
-    * let gr3 = JSROOT.CreateTGraph(100);
-    * let mgr = JSROOT.CreateTMultiGraph(gr1, gr2, gr3); */
-   JSROOT.CreateTMultiGraph = function() {
+     * @desc As arguments one could specify any number of TGraph objects
+     * @example
+     * let gr1 = JSROOT.createTGraph(100);
+     * let gr2 = JSROOT.createTGraph(100);
+     * let gr3 = JSROOT.createTGraph(100);
+     * let mgr = JSROOT.createTMultiGraph(gr1, gr2, gr3); */
+   JSROOT.createTMultiGraph = function() {
       let mgraph = JSROOT.Create("TMultiGraph");
       for(let i=0; i<arguments.length; ++i)
           mgraph.fGraphs.Add(arguments[i], "");
@@ -2101,8 +2091,8 @@
    }
 
    /** @summary Add methods for specified type.
-    * @desc Will be automatically applied when decoding JSON string
-    * @private */
+     * @desc Will be automatically applied when decoding JSON string
+     * @private */
    JSROOT.registerMethods = function(typename, m) {
       methodsCache[typename] = m;
    }
@@ -2123,10 +2113,10 @@
    }
 
    /** @summary Adds specific methods to the object.
-    * @desc JSROOT implements some basic methods for different ROOT classes.
-    * @param {object} obj - object where methods are assigned
-    * @param {string} [typename] - optional typename, if not specified, obj._typename will be used
-    * @private */
+     * @desc JSROOT implements some basic methods for different ROOT classes.
+     * @param {object} obj - object where methods are assigned
+     * @param {string} [typename] - optional typename, if not specified, obj._typename will be used
+     * @private */
    JSROOT.addMethods = function(obj, typename) {
       this.extend(obj, this.getMethods(typename || obj._typename, obj));
    }

@@ -4449,12 +4449,12 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       if (!this.proj_hist) {
          if (this.is_projection == "X") {
-            this.proj_hist = JSROOT.CreateHistogram("TH1D", this.nbinsx);
+            this.proj_hist = JSROOT.createHistogram("TH1D", this.nbinsx);
             JSROOT.extend(this.proj_hist.fXaxis, histo.fXaxis);
             this.proj_hist.fName = "xproj";
             this.proj_hist.fTitle = "X projection";
          } else {
-            this.proj_hist = JSROOT.CreateHistogram("TH1D", this.nbinsy);
+            this.proj_hist = JSROOT.createHistogram("TH1D", this.nbinsy);
             JSROOT.extend(this.proj_hist.fXaxis, histo.fYaxis);
             this.proj_hist.fName = "yproj";
             this.proj_hist.fTitle = "Y projection";
@@ -5036,7 +5036,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                   if ((ipoly >= 0) && (ipoly < levels.length)) {
                      poly = polys[ipoly];
                      if (!poly)
-                        poly = polys[ipoly] = JSROOT.CreateTPolyLine(kMAXCONTOUR*4, true);
+                        poly = polys[ipoly] = JSROOT.createTPolyLine(kMAXCONTOUR*4, true);
 
                      np = poly.fLastPoint;
                      if (np < poly.fN-2) {
@@ -6425,7 +6425,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          let dx = (func.fSave[nsave-5] - func.fSave[nsave-6]) / npx / 2,
              dy = (func.fSave[nsave-3] - func.fSave[nsave-4]) / npy / 2;
 
-         if (!hist) hist = JSROOT.CreateHistogram("TH2F", npx+1, npy+1);
+         if (!hist) hist = JSROOT.createHistogram("TH2F", npx+1, npy+1);
 
          hist.fXaxis.fXmin = func.fSave[nsave-6] - dx;
          hist.fXaxis.fXmax = func.fSave[nsave-5] + dx;
@@ -6441,7 +6441,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          npx = Math.max(func.fNpx, 2);
          npy = Math.max(func.fNpy, 2);
 
-         if (!hist) hist = JSROOT.CreateHistogram("TH2F", npx, npy);
+         if (!hist) hist = JSROOT.createHistogram("TH2F", npx, npy);
 
          hist.fXaxis.fXmin = func.fXmin;
          hist.fXaxis.fXmax = func.fXmax;
@@ -6740,18 +6740,18 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       this.options.horder = this.options.nostack || dolego;
    }
 
-   THStackPainter.prototype.CreateHistogram = function(stack) {
+   THStackPainter.prototype.createHistogram = function(stack) {
       let histos = stack.fHists,
           numhistos = histos ? histos.arr.length : 0;
 
       if (!numhistos) {
-         let histo = JSROOT.CreateHistogram("TH1I", 100);
+         let histo = JSROOT.createHistogram("TH1I", 100);
          histo.fTitle = stack.fTitle;
          return histo;
       }
 
       let h0 = histos.arr[0];
-      let histo = JSROOT.CreateHistogram((this.options.ndim==1) ? "TH1I" : "TH2I", h0.fXaxis.fNbins, h0.fYaxis.fNbins);
+      let histo = JSROOT.createHistogram((this.options.ndim==1) ? "TH1I" : "TH2I", h0.fXaxis.fNbins, h0.fYaxis.fNbins);
       histo.fName = "axis_hist";
       JSROOT.extend(histo.fXaxis, h0.fXaxis);
       if (this.options.ndim==2)
@@ -6793,7 +6793,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (this.firstpainter) {
          let src = obj.fHistogram;
          if (!src)
-            src = stack.fHistogram = this.CreateHistogram(stack);
+            src = stack.fHistogram = this.createHistogram(stack);
 
          this.firstpainter.updateObject(src);
 
@@ -6859,7 +6859,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          if (painter.options.same) return;
 
          if (!stack.fHistogram)
-             stack.fHistogram = painter.CreateHistogram(stack);
+             stack.fHistogram = painter.createHistogram(stack);
 
          let mm = painter.GetMinMax(painter.options.errors || painter.options.draw_errors,  painter.root_pad());
 

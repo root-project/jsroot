@@ -2407,7 +2407,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
                   if ((ipoly >= 0) && (ipoly < levels.length)) {
                      poly = polys[ipoly];
                      if (!poly)
-                        poly = polys[ipoly] = JSROOT.CreateTPolyLine(kMAXCONTOUR*4, true);
+                        poly = polys[ipoly] = JSROOT.createTPolyLine(kMAXCONTOUR*4, true);
 
                      np = poly.fLastPoint;
                      if (np < poly.fN-2) {

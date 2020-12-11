@@ -871,9 +871,13 @@ Instead of `JSROOT.console` one should use `console.log`. Instead of `JSROOT.ale
 Many settings where moved from `JSROOT.gStyle` to `JSROOT.settings` object. It was done to keep only TStyle-related members
 in `JSROOT.gStyle`.
 
-Painter classes were renamed:
+Painter classes were renamed and made public:
    - `JSROOT.TBasePainter` -> `JSROOT.BasePainter`
    - `JSROOT.TObjectPainter` -> `JSROOT.ObjectPainter`
 
 Internal `ObjectPainter.DrawingReady` api was deprecated. Draw function has to return `Promise` if object drawing has to be postponded.
 As argument of returned promise object painter has to be used.
+
+Many function names where adjusted to naming conventions. Like:
+   - `JSROOT.CreateHistogram` -> `JSROOT.createHistogram`
+   - `JSROOT.CreateTGraph` -> `JSROOT.createTGraph`

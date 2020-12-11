@@ -930,7 +930,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
      * @param {object} histo - existing histogram instance
      * @param {boolean} only_set_ranges - when specified, just assign ranges
      * @private */
-   TGraphPainter.prototype.CreateHistogram = function(histo, set_x, set_y) {
+   TGraphPainter.prototype.createHistogram = function(histo, set_x, set_y) {
       let xmin = this.xmin, xmax = this.xmax, ymin = this.ymin, ymax = this.ymax;
 
       if (xmin >= xmax) xmax = xmin+1;
@@ -958,7 +958,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       if (!set_x && !set_y) set_x = set_y = true;
 
       if (!histo) {
-         histo = graph.fHistogram = JSROOT.CreateHistogram("TH1F", 100);
+         histo = graph.fHistogram = JSROOT.createHistogram("TH1F", 100);
          histo.fName = graph.fName + "_h";
          histo.fTitle = graph.fTitle;
          let kNoStats = JSROOT.BIT(9);
@@ -993,7 +993,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       doy = doy && histo && ((histo.fYaxis.fXmin > this.ymin) || (histo.fYaxis.fXmax < this.ymax));
       if (!dox && !doy) return false;
 
-      this.CreateHistogram(null, dox, doy);
+      this.createHistogram(null, dox, doy);
       let hpainter = this.getMainPainter();
       if (hpainter) hpainter.ExtractAxesProperties(1); // just to enforce ranges extraction
 
@@ -1827,7 +1827,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       // if our own histogram was used as axis drawing, we need update histogram as well
       if (this.axes_draw) {
-         let histo = this.CreateHistogram(obj.fHistogram);
+         let histo = this.createHistogram(obj.fHistogram);
          histo.fTitle = graph.fTitle; // copy title
 
          let main = this.getMainPainter();
@@ -1971,7 +1971,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       let promise = Promise.resolve();
 
       if (!painter.getMainPainter() && painter.options.HOptions) {
-         let histo = painter.CreateHistogram();
+         let histo = painter.createHistogram();
          promise = JSROOT.draw(divid, histo, painter.options.HOptions).then(hist_painter => {
             if (hist_painter) {
                painter.axes_draw = true;

@@ -3021,7 +3021,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       this.storeDrawOpt(opt);
    }
 
-   TGraph2DPainter.prototype.CreateHistogram = function() {
+   TGraph2DPainter.prototype.createHistogram = function() {
       let gr = this.getObject(),
           xmin = gr.fX[0], xmax = xmin,
           ymin = gr.fY[0], ymax = ymin,
@@ -3064,7 +3064,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       if (graph.fMinimum != -1111) uzmin = graph.fMinimum;
       if (graph.fMaximum != -1111) uzmax = graph.fMaximum;
 
-      let histo = JSROOT.CreateHistogram("TH2I", 10, 10);
+      let histo = JSROOT.createHistogram("TH2I", 10, 10);
       histo.fName = graph.fName + "_h";
       histo.fTitle = graph.fTitle;
       histo.fXaxis.fXmin = uxmin;
@@ -3315,7 +3315,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
       if (!painter.getMainPainter()) {
          if (!gr.fHistogram)
-            gr.fHistogram = painter.CreateHistogram();
+            gr.fHistogram = painter.createHistogram();
          promise = JSROOT.draw(divid, gr.fHistogram, "lego;axis");
          painter.ownhisto = true;
       }

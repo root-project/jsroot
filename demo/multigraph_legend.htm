@@ -39,7 +39,7 @@
             xpts.push(i);
             ypts.push(50*Math.sin((i+cnt)));
          }
-         var graph1 = JSROOT.CreateTGraph(npoints, xpts, ypts);
+         var graph1 = JSROOT.createTGraph(npoints, xpts, ypts);
          graph1.fLineColor = 2;
          graph1.fMarkerSize = 2;
 
@@ -48,14 +48,14 @@
             xpts.push(i);
             ypts.push(50*Math.cos((i+cnt)));
          }
-         var graph2 = JSROOT.CreateTGraph(npoints, xpts, ypts);
+         var graph2 = JSROOT.createTGraph(npoints, xpts, ypts);
          graph2.fLineColor = 3;
          graph2.fMarkerSize = 2;
 
-         var mgraph = JSROOT.CreateTMultiGraph(graph1, graph2);
+         var mgraph = JSROOT.createTMultiGraph(graph1, graph2);
          mgraph.fTitle = "Drawing " + cnt++;
 
-         var h1 = JSROOT.CreateHistogram("TH1I", 20);
+         var h1 = JSROOT.createHistogram("TH1I", 20);
          h1.fName = "axis_draw";
          h1.fTitle = mgraph.fTitle;
          h1.fXaxis.fTitle = "xaxis"+cnt;

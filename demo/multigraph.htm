@@ -34,7 +34,7 @@
                  default: xpts.push(i); ypts.push(i); break;
              }
          }
-         var graph1 = JSROOT.CreateTGraph(npoints, xpts, ypts);
+         var graph1 = JSROOT.createTGraph(npoints, xpts, ypts);
          graph1.fLineColor = 2;
          graph1.fMarkerSize = 2;
          xpts = [];
@@ -45,11 +45,11 @@
                  default: xpts.push(i); ypts.push(Math.sqrt(i)); break;
              }
          }
-         var graph2 = JSROOT.CreateTGraph(npoints, xpts, ypts);
+         var graph2 = JSROOT.createTGraph(npoints, xpts, ypts);
          graph2.fLineColor = 3;
          graph2.fMarkerSize = 2;
 
-         var mgraph = JSROOT.CreateTMultiGraph(graph1, graph2);
+         var mgraph = JSROOT.createTMultiGraph(graph1, graph2);
          mgraph.fTitle = "Drawing " + cnt++;
 
          // set fixed Y-range if required
