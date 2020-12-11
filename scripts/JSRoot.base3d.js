@@ -1239,6 +1239,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
       let k = 1;
 
       // special dots
+      if (!args.style) k = 1.1; else
       if (args.style === 1) k = 0.3; else
       if (args.style === 6) k = 0.5; else
       if (args.style === 7) k = 0.7;

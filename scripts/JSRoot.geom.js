@@ -2788,7 +2788,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       if (hit_size <= 0.2) hit_size = 0.2;
 
       let hit_style = hit.fMarkerStyle;
-      if (hit_style == 4) hit_style = 1; // style 4 is very bad for hits representation
+      if (hit_style == 4) { hit_style = 7; hit_size *= 1.5; } // style 4 is very bad for hits representation
 
       let size = hit.fN,
           projv = this.ctrl.projectPos,
