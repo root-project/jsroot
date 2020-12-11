@@ -1,6 +1,6 @@
 // special handling for the amore::core::String_t which is redifinition of TString
-JSROOT.require("io").then(() => {
-   JSROOT.addUserStreamer("amore::core::String_t", "TString");
+JSROOT.require("io").then(jsrio => {
+   jsrio.addUserStreamer("amore::core::String_t", "TString");
 });
 
 // register class and identify, that 'fVal' field should be used for drawing

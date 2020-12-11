@@ -3515,7 +3515,7 @@ JSROOT.define(['d3'], (d3) => {
    /** @summary Scan streamer infos for derived classes
     * @desc Assign draw functions for such derived classes
     * @private */
-   JSROOT.addStreamerInfos = function(lst) {
+   jsrp.addStreamerInfos = function(lst) {
       if (!lst) return;
 
       function CheckBaseClasses(si, lvl) {

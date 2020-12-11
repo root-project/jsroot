@@ -9,8 +9,8 @@
 // JSROOT searches for checksum and rall-back when streamer info not found
 // This is a case for pool::Token class, therefore checksum should be skipped here
 
-JSROOT.require("io").then(() => {
-   JSROOT.addUserStreamer(
+JSROOT.require("io").then(jsrio => {
+   jsrio.addUserStreamer(
          "pool::Token",
          function(buf, obj) {
             obj._typename = "pool::Token";
