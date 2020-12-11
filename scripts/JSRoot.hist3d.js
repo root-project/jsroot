@@ -278,7 +278,6 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
       let tm2 = new Date();
 
-
       if (this.first_render_tm === 0) {
          this.first_render_tm = tm2.getTime() - tm1.getTime();
          this.enable_highlight = (this.first_render_tm < 1200) && this.isTooltipAllowed();
@@ -3305,7 +3304,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          }
       }
 
-      if (fp) fp.Render3D(100);
+      fp.Render3D(100);
    }
 
    jsrp.drawGraph2D = function(divid, gr, opt) {

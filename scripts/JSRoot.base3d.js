@@ -1216,7 +1216,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
 
       this.pos = new Float32Array(size*3);
       this.geom = new THREE.BufferGeometry();
-      this.geom.setAttribute( 'position', new THREE.BufferAttribute( this.pos, 3 ) );
+      this.geom.setAttribute('position', new THREE.BufferAttribute(this.pos, 3));
       this.indx = 0;
    }
 
@@ -1236,32 +1236,33 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
       if (!args.color)
          args.color = 'black';
 
-      this.k = 1;
-      this.color = args.color;
-
-      this._did_create = false;
+      let k = 1;
 
       // special dots
-      if (args.style === 1) this.k = 0.3; else
-      if (args.style === 6) this.k = 0.5; else
-      if (args.style === 7) this.k = 0.7;
+      if (args.style === 1) k = 0.3; else
+      if (args.style === 6) k = 0.5; else
+      if (args.style === 7) k = 0.7;
 
       let material;
 
-      // this is plain creation of points, no texture loading
-      if (!args.style || (this.k !== 1) || JSROOT.BatchMode) {
-
-         material = new THREE.PointsMaterial( { size: (this.webgl ? 3 : 1) * this.scale * this.k, color: this.color } );
+      if (!args.style || (k !== 1) || JSROOT.nodejs) {
+         // this is plain creation of points, no texture loading, which does not work in node.js
+         material = new THREE.PointsMaterial( { size: (this.webgl ? 3 : 1) * this.scale * k, color: args.color } );
 
       } else {
 
          let handler = new JSROOT.TAttMarkerHandler({ style: args.style, color: args.color, size: 8 });
 
-         let plainSVG = '<svg width="64" height="64" xmlns="http://www.w3.org/2000/svg">' +
-                        '<path d="' + handler.create(32,32) + '" stroke="' + handler.getStrokeColor() + '" stroke-width="1" fill="' + handler.getFillColor() + '"/>' +
+         let plainSVG = '<svg width="70" height="70" xmlns="http://www.w3.org/2000/svg">' +
+                        '<path d="' + handler.create(35,35) + '" stroke="' + handler.getStrokeColor() + '" stroke-width="4" fill="' + handler.getFillColor() + '"/>' +
                         '</svg>';
 
-         let texture = new THREE.TextureLoader().load( 'data:image/svg+xml;utf8,' + plainSVG );
+         // let need_replace = JSROOT.nodejs && !globalThis.document;
+         // if (need_replace) globalThis.document = JSROOT.get_document();
+
+         let texture = new THREE.TextureLoader().load( 'data:image/svg+xml;utf8,' + plainSVG, () => { console.log('texture loading completed !!')} );
+
+         // if (need_replace) globalThis.document = undefined;
 
          material = new THREE.PointsMaterial( { size: (this.webgl ? 3 : 1) * this.scale, map: texture, transparent: true } );
       }

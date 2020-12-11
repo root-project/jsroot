@@ -2799,7 +2799,10 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       // make hit size scaling factor of overall geometry size
       // otherwise it is not possible to correctly see hits at all
       let hit_size = hit.fMarkerSize * this.getOverallSize() * 0.005;
-      if (hit_size <= 0) hit_size = 1;
+      if (hit_size <= 0.2) hit_size = 0.2;
+
+      let hit_style = hit.fMarkerStyle;
+      if (hit_style == 4) hit_style = 1; // style 4 is very bad for hits representation
 
       let size = hit.fN,
           projv = this.ctrl.projectPos,
@@ -2813,8 +2816,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
                        projy ? projv : hit.fP[i*3+1],
                        projz ? projv : hit.fP[i*3+2]);
 
-      let mesh = pnts.CreatePoints({ color: jsrp.getColor(hit.fMarkerColor) || "rgb(0,0,255)",
-                                     style: hit.fMarkerStyle });
+      let mesh = pnts.CreatePoints({ color: jsrp.getColor(hit.fMarkerColor) || "rgb(0,0,255)", style: hit_style });
       mesh.renderOrder = 1000000; // to bring points to the front
       mesh.highlightScale = 2;
       mesh.geo_name = itemname;
