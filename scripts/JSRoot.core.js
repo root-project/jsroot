@@ -1349,6 +1349,9 @@
       return jsroot_require("painter").then(() => JSROOT.redraw(divid, obj, opt));
    }
 
+   // Dummy, when painter is not yet loaded, should happens nothing
+   JSROOT.cleanup = () => { return; }
+
    // Create SVG, defined in JSRoot.painter.js
    JSROOT.makeSVG = args => {
       return jsroot_require("painter").then(() => JSROOT.makeSVG(args));
@@ -1719,7 +1722,6 @@
             poly.fY = new Float32Array(npoints);
          }
       }
-
       return poly;
    }
 

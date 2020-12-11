@@ -152,7 +152,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
               default: if (lst.opt && lst.opt[i] && lst.opt[i].length) item._value = lst.opt[i];
            }
 
-           if (do_context && JSROOT.canDraw(obj._typename)) item._direct_context = true;
+           if (do_context && jsrp.canDraw(obj._typename)) item._direct_context = true;
 
            // if name is integer value, it should match array index
            if (!item._name || (!isNaN(parseInt(item._name)) && (parseInt(item._name)!==i))
@@ -409,7 +409,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
                if (fld._typename) {
                   item._title = fld._typename;
-                  if (do_context && JSROOT.canDraw(fld._typename)) item._direct_context = true;
+                  if (do_context && jsrp.canDraw(fld._typename)) item._direct_context = true;
                }
 
                // check if object already shown in hierarchy (circular dependency)
@@ -2019,8 +2019,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                      let typename = "kind:" + item._kind;
                      if (item._kind.indexOf('ROOT.')==0) typename = item._kind.slice(5);
                      let drawopt = item._drawopt;
-                     if (!JSROOT.canDraw(typename) || drawopt)
-                        JSROOT.addDrawFunc({ name: typename, func: item._drawfunc, script: item._drawscript, opt: drawopt });
+                     if (!jsrp.canDraw(typename) || drawopt)
+                        jsrp.addDrawFunc({ name: typename, func: item._drawfunc, script: item._drawscript, opt: drawopt });
                   });
 
                   return this;

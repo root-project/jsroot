@@ -4579,9 +4579,9 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       return true;
    }
 
-   JSROOT.addDrawFunc({ name: "TGeoVolumeAssembly", icon: 'img_geoassembly', func: drawGeoObject, expand: geo.expandObject, opt: ";more;all;count" });
-   JSROOT.addDrawFunc({ name: "TEvePointSet", icon_get: geo.getBrowserIcon, icon_click: geo.browserIconClick });
-   JSROOT.addDrawFunc({ name: "TEveTrack", icon_get: geo.getBrowserIcon, icon_click: geo.browserIconClick });
+   jsrp.addDrawFunc({ name: "TGeoVolumeAssembly", icon: 'img_geoassembly', func: drawGeoObject, expand: geo.expandObject, opt: ";more;all;count" });
+   jsrp.addDrawFunc({ name: "TEvePointSet", icon_get: geo.getBrowserIcon, icon_click: geo.browserIconClick });
+   jsrp.addDrawFunc({ name: "TEveTrack", icon_get: geo.getBrowserIcon, icon_click: geo.browserIconClick });
 
    JSROOT.TGeoPainter = TGeoPainter;
 
