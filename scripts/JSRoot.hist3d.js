@@ -234,7 +234,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          // special handling for direct SVG renderer
          // probably, here one can use canvas renderer - after modifications
          // let rrr = new THREE.SVGRenderer({ precision: 0, astext: true });
-         let doc = JSROOT.get_document(),
+         let doc = JSROOT._.get_document(),
              rrr = THREE.CreateSVGRenderer(false, 0, doc);
          rrr.setSize(this.scene_width, this.scene_height);
          rrr.render(this.scene, this.camera);

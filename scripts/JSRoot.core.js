@@ -438,16 +438,16 @@
    };
 
    /** @summary Method returns current document in use
-      * @private */
-   JSROOT.get_document = function() {
-       if (JSROOT.nodejs)
-          return _.nodejs_document;
-       if (typeof document !== 'undefined')
-          return document;
-       if (typeof window == 'object')
-          return window.document;
-       return udefined;
-    }
+     * @private */
+   _.get_document = function() {
+      if (JSROOT.nodejs)
+         return _.nodejs_document;
+      if (typeof document !== 'undefined')
+         return document;
+      if (typeof window == 'object')
+         return window.document;
+      return udefined;
+   }
 
    function jsroot_require(need, factoryFunc) {
 
@@ -784,8 +784,32 @@
       return result + 0.5;
    }
 
+   /** @summary Just copies (not clone) all fields from source to the target object
+     * @desc Simple replacement of jQuery.extend method
+     * @memberof JSROOT
+     * @private */
+   let extend = (tgt, src) => {
+      if ((src === null) || (typeof src !== 'object')) return tgt;
+      if ((tgt === null) || (typeof tgt !== 'object')) tgt = {};
+
+      for (let k in src)
+         tgt[k] = src[k];
+
+      return tgt;
+   }
+
+   /** @summary Adds specific methods to the object.
+     * @desc JSROOT implements some basic methods for different ROOT classes.
+     * @param {object} obj - object where methods are assigned
+     * @param {string} [typename] - optional typename, if not specified, obj._typename will be used
+     * @memberof JSROOT
+     * @private */
+   let addMethods = (obj, typename) => {
+      extend(obj, JSROOT.getMethods(typename || obj._typename, obj));
+   }
+
    /** @summary Should be used to parse JSON string produced with TBufferJSON class
-    * @desc Replace all references inside object like { "$ref": "1" }
+     * @desc Replace all references inside object like { "$ref": "1" }
     * @param {object|string} json  object where references will be replaced
     * @returns {object} parsed object */
    JSROOT.parse = function(json) {
@@ -898,7 +922,7 @@
          map.push(value);
 
          // add methods to all objects, where _typename is specified
-         if (value._typename) JSROOT.addMethods(value);
+         if (value._typename) addMethods(value);
 
          for (let k = 0; k < len; ++k) {
             const i = ks[k],
@@ -910,20 +934,6 @@
       unref_value(obj);
 
       return obj;
-   }
-
-   /** @summary Just copies (not clone) all fields from source to the target object
-     * @desc Simple replacement of jQuery.extend method
-     * @memberof JSROOT
-     * @private */
-   let extend = (tgt, src) => {
-      if ((src === null) || (typeof src !== 'object')) return tgt;
-      if ((tgt === null) || (typeof tgt !== 'object')) tgt = {};
-
-      for (let k in src)
-         tgt[k] = src[k];
-
-      return tgt;
    }
 
    /** @summary Make deep clone of the object, including all sub-objects
@@ -1656,7 +1666,7 @@
       }
 
       obj._typename = typename;
-      JSROOT.addMethods(obj, typename);
+      addMethods(obj, typename);
       return obj;
    }
 
@@ -1766,7 +1776,7 @@
    let methodsCache = {}; // variable used to keep methods for known classes
 
    /** @summary Returns methods for given typename
-    * @private */
+     * @private */
    JSROOT.getMethods = function(typename, obj) {
 
       let m = methodsCache[typename],
@@ -2114,15 +2124,6 @@
              (typename === 'TObjArray') || (typename === 'TClonesArray');
    }
 
-   /** @summary Adds specific methods to the object.
-     * @desc JSROOT implements some basic methods for different ROOT classes.
-     * @param {object} obj - object where methods are assigned
-     * @param {string} [typename] - optional typename, if not specified, obj._typename will be used
-     * @private */
-   JSROOT.addMethods = function(obj, typename) {
-      this.extend(obj, this.getMethods(typename || obj._typename, obj));
-   }
-
    // Dummy function, will be redefined when JSRoot.painter is loaded
    JSROOT.progress = function(msg /*, tmout */) {
       if ((msg !== undefined) && (typeof msg=="string")) console.log(msg);
@@ -2185,6 +2186,7 @@
    JSROOT.gStyle = gStyle;
    JSROOT.create = create;
    JSROOT.extend = extend;
+   JSROOT.addMethods = addMethods;
 
    return JSROOT;
 

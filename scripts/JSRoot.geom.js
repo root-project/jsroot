@@ -1996,7 +1996,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
       if (this._fit_main_area && !this._webgl) {
          // create top-most SVG for geomtery drawings
-         let doc = JSROOT.get_document();
+         let doc = JSROOT._.get_document();
          let svg = doc.createElementNS("http://www.w3.org/2000/svg", "svg");
          d3.select(svg).attr("width",w).attr("height",h);
          svg.appendChild(this._renderer.jsroot_dom);
@@ -2089,7 +2089,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       let dataUrl = this._renderer.domElement.toDataURL("image/png");
       if (filename==="asis") return dataUrl;
       dataUrl.replace("image/png", "image/octet-stream");
-      let doc = JSROOT.get_document();
+      let doc = JSROOT._.get_document();
       let link = doc.createElement('a');
       if (typeof link.download === 'string') {
          doc.body.appendChild(link); //Firefox requires the link to be in the body

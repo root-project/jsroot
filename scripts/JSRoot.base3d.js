@@ -257,18 +257,18 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
    }
 
    /** @summary Assigns method to handle 3D drawings inside SVG
-    * @private */
+     * @private */
    jsrp.Assign3DHandler = function(painter) {
       JSROOT.extend(painter, Handling3DDrawings);
    }
 
    /** @summary Creates renderer for the 3D drawings
-    * @memberOf JSROOT.Painter
-    * @param {value} width - rendering width
-    * @param {value} height - rendering height
-    * @param {value} render3d - render type, see {@link JSROOT.constants.Render3D}
-    * @param {object} args - different arguments for creating 3D renderer
-    * @private */
+     * @memberOf JSROOT.Painter
+     * @param {value} width - rendering width
+     * @param {value} height - rendering height
+     * @param {value} render3d - render type, see {@link JSROOT.constants.Render3D}
+     * @param {object} args - different arguments for creating 3D renderer
+     * @private */
    jsrp.createRender3D = function(width, height, render3d, args) {
 
       let rc = JSROOT.constants.Render3D;
@@ -278,7 +278,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
       if (!args) args = { antialias: true, alpha: true };
 
       let need_workaround = false, renderer,
-          doc = JSROOT.get_document();
+          doc = JSROOT._.get_document();
 
       if (render3d == rc.WebGL) {
          // interactive WebGL Rendering
@@ -1260,7 +1260,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
                         '</svg>';
 
          // let need_replace = JSROOT.nodejs && !globalThis.document;
-         // if (need_replace) globalThis.document = JSROOT.get_document();
+         // if (need_replace) globalThis.document = JSROOT._.get_document();
 
          console.log('plain svg', plainSVG);
 
