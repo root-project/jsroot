@@ -456,7 +456,7 @@ To use `multi.json` request from the JavaScript, one should create special 'POST
                console.error("Fail to handle multi.json request");
             });
 
-Here argument "multi" identifies, that server response should be parsed with `JSROOT.parse_multi()` function, which correctly interprets JSON code, produced by `multi.json` request. When sending such request to the server, one should provide list of objects names and not forget "?number=N" parameter in the request URL string.
+Here argument "multi" identifies, that server response should be parsed with `JSROOT.parseMulti()` function, which correctly interprets JSON code, produced by `multi.json` request. When sending such request to the server, one should provide list of objects names and not forget "?number=N" parameter in the request URL string.
 
 
 ## Websockets supports

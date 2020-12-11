@@ -990,11 +990,11 @@
       return tgt;
    }
 
-   /** @summary Parse multi.json request results
+   /** @summary Parse response from multi.json request
      * @desc Method should be used to parse JSON code, produced by multi.json request of THttpServer
      * @param {string} json string to parse
-     * @return {Array|null} returns array of parsed elements */
-   JSROOT.parse_multi = function(json) {
+     * @returns {Array} array of parsed elements */
+   JSROOT.parseMulti = function(json) {
       if (!json) return null;
       let arr = JSON.parse(json);
       if (arr && arr.length)
@@ -1202,7 +1202,7 @@
             case "posttext":
             case "text": return this.http_callback(this.responseText);
             case "object": return this.http_callback(JSROOT.parse(this.responseText));
-            case "multi": return this.http_callback(JSROOT.parse_multi(this.responseText));
+            case "multi": return this.http_callback(JSROOT.parseMulti(this.responseText));
             case "head": return this.http_callback(this);
          }
 
@@ -1336,22 +1336,22 @@
 
    // Open ROOT file, defined in JSRoot.io.js
    JSROOT.openFile = function(filename, callback) {
-      return JSROOT.require("io").then(() => JSROOT.openFile(filename, callback));
+      return jsroot_require("io").then(() => JSROOT.openFile(filename, callback));
    }
 
    // Draw object, defined in JSRoot.painter.js
    JSROOT.draw = function(divid, obj, opt) {
-      return JSROOT.require("painter").then(() => JSROOT.draw(divid, obj, opt));
+      return jsroot_require("painter").then(() => JSROOT.draw(divid, obj, opt));
    }
 
    // Redaraw object, defined in JSRoot.painter.js
    JSROOT.redraw = function(divid, obj, opt) {
-      return JSROOT.require("painter").then(() => JSROOT.redraw(divid, obj, opt));
+      return jsroot_require("painter").then(() => JSROOT.redraw(divid, obj, opt));
    }
 
    // Create SVG, defined in JSRoot.painter.js
    JSROOT.makeSVG = function(args) {
-      return JSROOT.require("painter").then(() => JSROOT.makeSVG(args));
+      return jsroot_require("painter").then(() => JSROOT.makeSVG(args));
    }
 
    /** @summary Method to build main JSROOT GUI
@@ -1390,10 +1390,11 @@
 
       _.debug_output = gui_element;
 
-      return JSROOT.require(requirements)
-                   .then(() => JSROOT.require(user_scripts))
-                   .then(() => { gui_element.innerHTML = ""; delete _.debug_output; })
-                   .then(() => { return nobrowser ? JSROOT.buildNobrowserGUI(gui_element, gui_kind) : JSROOT.buildGUI(gui_element, gui_kind); });
+      return jsroot_require(requirements).then(() => JSROOT.loadScript(user_scripts)).then(() => {
+         gui_element.innerHTML = "";
+         delete _.debug_output;
+         return nobrowser ? JSROOT.buildNobrowserGUI(gui_element, gui_kind) : JSROOT.buildGUI(gui_element, gui_kind);
+      });
    }
 
    /** @summary Create some ROOT classes
@@ -2145,7 +2146,7 @@
       let prereq = "webwindow;";
       if (arg && arg.prereq) prereq += arg.prereq;
 
-      return JSROOT.require(prereq).then(() => {
+      return jsroot_require(prereq).then(() => {
          if (arg && arg.prereq_logdiv && document) {
             let elem = document.getElementById(arg.prereq_logdiv);
             if (elem) elem.innerHTML = '';
