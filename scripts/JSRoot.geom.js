@@ -2494,7 +2494,8 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
      * @desc opt parameter can include function name like opt$func_name
      * Such function should be possible to find via {@link JSROOT.findFunction}
      * Function has to return Promise with objects to draw on geometry
-     * By default function with name "extract_geo_tracks" is checked */
+     * By default function with name "extract_geo_tracks" is checked
+     * @return {Promise} handling of drop operation */
    TGeoPainter.prototype.performDrop = function(obj, itemname, hitem, opt) {
 
       if (obj && (obj.$kind==='TTree')) {
@@ -2521,13 +2522,12 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          });
       }
 
-      return this.drawExtras(obj, itemname).then(res => {
-         if (res) {
-            if (hitem) hitem._painter = this; // set for the browser item back pointer
-            this.Render3D(100);
-         }
-         return this;
-      });
+      if (this.drawExtras(obj, itemname)) {
+         if (hitem) hitem._painter = this; // set for the browser item back pointer
+         this.Render3D(100);
+      }
+
+      return Promise.resolve(this);
    }
 
    /** @summary function called when mouse is going over the item in the browser */
@@ -2608,62 +2608,48 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
      * @returns {Promise} when ready */
    TGeoPainter.prototype.drawExtras = function(obj, itemname, add_objects) {
       if (!obj || !obj._typename)
-         return Promise.resolve(false);
+         return false;
 
       // if object was hidden via menu, do not redraw it with next draw call
       if (!add_objects && obj.$hidden_via_menu)
-         return Promise.resolve(false);
+         return false;
 
-      let promise, do_render = false;
+      let is_any = false, do_render = false;
       if (add_objects === undefined) {
          add_objects = true;
          do_render = true;
       }
 
       if ((obj._typename === "TList") || (obj._typename === "TObjArray")) {
-         if (!obj.arr) return Promise.resolve(false);
-         let promises = [];
+         if (!obj.arr) return false;
          for (let n=0;n<obj.arr.length;++n) {
             let sobj = obj.arr[n], sname = obj.opt ? obj.opt[n] : "";
             if (!sname) sname = (itemname || "<prnt>") + "/[" + n + "]";
-            promises.push(this.drawExtras(sobj, sname, add_objects));
+            if (this.drawExtras(sobj, sname, add_objects)) is_any = true;
          }
-         promise = Promise.all(promises).then(arr => {
-            let res = false;
-            arr.forEach(elem => { if (elem) res = true; });
-            return res;
-         })
       } else if (obj._typename === 'THREE.Mesh') {
          // adding mesh as is
          this.addToExtrasContainer(obj);
-         promise = Promise.resolve(true);
+         is_any = true;
       } else if (obj._typename === 'TGeoTrack') {
-         if (add_objects && !this.addExtra(obj, itemname)) return Promise.resolve(false);
-         promise = this.drawGeoTrack(obj, itemname);
+         if (add_objects && !this.addExtra(obj, itemname)) return false;
+         is_any = this.drawGeoTrack(obj, itemname);
       } else if ((obj._typename === 'TEveTrack') || (obj._typename === 'ROOT::Experimental::TEveTrack')) {
-         if (add_objects && !this.addExtra(obj, itemname)) return Promise.resolve(false);
-         promise = this.drawEveTrack(obj, itemname);
+         if (add_objects && !this.addExtra(obj, itemname)) return false;
+         is_any = this.drawEveTrack(obj, itemname);
       } else if ((obj._typename === 'TEvePointSet') || (obj._typename === "ROOT::Experimental::TEvePointSet") || (obj._typename === "TPolyMarker3D")) {
-         if (add_objects && !this.addExtra(obj, itemname)) return Promise.resolve(false);
-         promise = this.drawHit(obj, itemname);
+         if (add_objects && !this.addExtra(obj, itemname)) return false;
+         is_any = this.drawHit(obj, itemname);
       } else if ((obj._typename === "TEveGeoShapeExtract") || (obj._typename === "ROOT::Experimental::REveGeoShapeExtract")) {
-         if (add_objects && !this.addExtra(obj, itemname)) return Promise.resolve(false);
-         promise = this.drawExtraShape(obj, itemname);
+         if (add_objects && !this.addExtra(obj, itemname)) return false;
+         is_any = this.drawExtraShape(obj, itemname);
       }
 
-      if ((typeof promise != 'object') || !promise.then)
-         promise = Promise.resolve(promise);
-
-      if (do_render)
-         promise = promise.then(res => {
-            if (res) {
-               this.updateClipping(true);
-               this.Render3D(100);
-            }
-            return res;
-         });
-
-      return promise;
+      if (do_render && is_any) {
+         this.updateClipping(true);
+         this.Render3D(100);
+      }
+      return is_any;
    }
 
    /** @summary returns container for extra objects */
