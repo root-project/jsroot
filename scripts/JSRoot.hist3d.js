@@ -101,7 +101,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
       render3d = jsrp.getRender3DKind(render3d);
 
-      jsrp.Assign3DHandler(this);
+      jsrp.assign3DHandler(this);
 
       let sz = this.size_for_3d(undefined, render3d);
 
