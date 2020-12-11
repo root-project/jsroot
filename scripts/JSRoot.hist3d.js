@@ -2952,7 +2952,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
    TH3Painter.prototype.FillHistContextMenu = function(menu) {
 
-      let sett = JSROOT.getDrawSettings("ROOT." + this.getObject()._typename, 'nosame');
+      let sett = jsrp.getDrawSettings("ROOT." + this.getObject()._typename, 'nosame');
 
       menu.addDrawMenu("Draw with", sett.opts, function(arg) {
          if (arg==='inspect')

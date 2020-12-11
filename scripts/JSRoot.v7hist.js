@@ -1735,7 +1735,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
       menu.add("Auto zoom-in", this.AutoZoom);
 
-      let sett = JSROOT.getDrawSettings("ROOT." + this.getObject()._typename, 'nosame');
+      let sett = jsrp.getDrawSettings("ROOT." + this.getObject()._typename, 'nosame');
 
       menu.addDrawMenu("Draw with", sett.opts, function(arg) {
          if (arg==='inspect')
@@ -1949,7 +1949,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
       menu.add("Auto zoom-in", this.AutoZoom);
 
-      let sett = JSROOT.getDrawSettings("ROOT." + this.getObject()._typename, 'nosame');
+      let sett = jsrp.getDrawSettings("ROOT." + this.getObject()._typename, 'nosame');
 
       menu.addDrawMenu("Draw with", sett.opts, function(arg) {
          if (arg==='inspect')

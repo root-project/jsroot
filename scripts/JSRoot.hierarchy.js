@@ -1152,7 +1152,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (item._player) return true;
       if (item._can_draw !== undefined) return item._can_draw;
       if (drawopt == 'inspect') return true;
-      let handle = JSROOT.getDrawHandle(item._kind, drawopt);
+      let handle = jsrp.getDrawHandle(item._kind, drawopt);
       return handle && (('func' in handle) || ('draw_field' in handle));
    }
 
@@ -1240,7 +1240,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                mdi.activateFrame(frame);
 
                let handle = null;
-               if (obj._typename) handle = JSROOT.getDrawHandle("ROOT." + obj._typename);
+               if (obj._typename) handle = jsrp.getDrawHandle("ROOT." + obj._typename);
                if (handle && handle.draw_field && obj[handle.draw_field])
                   obj = obj[handle.draw_field];
 
@@ -1341,7 +1341,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             let item = this.findItem(itemname);
             if (!item || ('_not_monitor' in item) || ('_player' in item)) return;
             if (!('_always_monitor' in item)) {
-               let forced = false, handle = JSROOT.getDrawHandle(item._kind);
+               let forced = false, handle = jsrp.getDrawHandle(item._kind);
                if (handle && ('monitor' in handle)) {
                   if ((handle.monitor === false) || (handle.monitor == 'never')) return;
                   if (handle.monitor == 'always') forced = true;
@@ -1633,7 +1633,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    HierarchyPainter.prototype.canExpandItem = function(item) {
       if (!item) return false;
       if (item._expand) return true;
-      let handle = JSROOT.getDrawHandle(item._kind, "::expand");
+      let handle = jsrp.getDrawHandle(item._kind, "::expand");
       return handle && (handle.expand_item || handle.expand);
    }
 
@@ -1652,12 +1652,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             _item._expand = JSROOT.findFunction(item._expand);
 
          if (typeof _item._expand !== 'function') {
-            let handle = JSROOT.getDrawHandle(_item._kind, "::expand");
+            let handle = jsrp.getDrawHandle(_item._kind, "::expand");
 
             if (handle && handle.expand_item) {
                _obj = _obj[handle.expand_item];
               if (_obj && _obj._typename)
-                 handle = JSROOT.getDrawHandle("ROOT."+_obj._typename, "::expand");
+                 handle = jsrp.getDrawHandle("ROOT."+_obj._typename, "::expand");
             }
 
             if (handle && handle.expand) {
@@ -1913,7 +1913,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (item) {
          url = this.getOnlineItemUrl(item);
          let func = null;
-         if ('_kind' in item) draw_handle = JSROOT.getDrawHandle(item._kind);
+         if ('_kind' in item) draw_handle = jsrp.getDrawHandle(item._kind);
 
          if (h_get) {
             req = 'h.json?compact=3';
@@ -2066,8 +2066,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    HierarchyPainter.prototype.fillOnlineMenu = function(menu, onlineprop, itemname) {
 
       let node = this.findItem(itemname),
-          sett = JSROOT.getDrawSettings(node._kind, 'nosame;noinspect'),
-          handle = JSROOT.getDrawHandle(node._kind),
+          sett = jsrp.getDrawSettings(node._kind, 'nosame;noinspect'),
+          handle = jsrp.getDrawHandle(node._kind),
           root_type = (typeof node._kind == 'string') ? node._kind.indexOf("ROOT.") == 0 : false;
 
       if (sett.opts && (node._can_draw !== false)) {
@@ -2316,7 +2316,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       let mdi = this.disp, handle = null, isany = false;
       if (!mdi) return false;
 
-      if (obj._typename) handle = JSROOT.getDrawHandle("ROOT." + obj._typename);
+      if (obj._typename) handle = jsrp.getDrawHandle("ROOT." + obj._typename);
       if (handle && handle.draw_field && obj[handle.draw_field])
          obj = obj[handle.draw_field];
 
@@ -2731,7 +2731,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          }
 
       painter.fill_context = function(menu, hitem) {
-         let sett = JSROOT.getDrawSettings(hitem._kind, 'nosame');
+         let sett = jsrp.getDrawSettings(hitem._kind, 'nosame');
          if (sett.opts)
             menu.addDrawMenu("nosub:Draw", sett.opts, function(arg) {
                if (!hitem || !hitem._obj) return;

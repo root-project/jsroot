@@ -3463,8 +3463,9 @@ JSROOT.define(['d3'], (d3) => {
      * kind string like "Command" or "Text"
      * selector can be used to search for draw handle with specified option (string)
      * or just sequence id
+     * @memberof JSROOT.Painter
      * @private */
-   JSROOT.getDrawHandle = function(kind, selector) {
+   function getDrawHandle(kind, selector) {
 
       if (typeof kind != 'string') return null;
       if (selector === "") selector = null;
@@ -3484,7 +3485,7 @@ JSROOT.define(['d3'], (d3) => {
          }
 
          if (h.sameas !== undefined)
-            return JSROOT.getDrawHandle("ROOT." + h.sameas, selector);
+            return getDrawHandle("ROOT." + h.sameas, selector);
 
          if ((selector === null) || (selector === undefined)) {
             // store found handle in cache, can reuse later
@@ -3526,7 +3527,7 @@ JSROOT.define(['d3'], (d3) => {
             let element = si.fElements.arr[j];
             if (element.fTypeName !== 'BASE') continue;
 
-            let handle = JSROOT.getDrawHandle("ROOT." + element.fName);
+            let handle = getDrawHandle("ROOT." + element.fName);
             if (handle && !handle.for_derived) handle = null;
 
             // now try find that base class of base in the list
@@ -3544,7 +3545,7 @@ JSROOT.define(['d3'], (d3) => {
 
       for (let n = 0; n < lst.arr.length; ++n) {
          let si = lst.arr[n];
-         if (JSROOT.getDrawHandle("ROOT." + si.fName) !== null) continue;
+         if (getDrawHandle("ROOT." + si.fName) !== null) continue;
 
          let handle = CheckBaseClasses(si, 0);
 
@@ -3558,15 +3559,16 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /** @summary Provide draw settings for specified class or kind
-    * @private */
-   JSROOT.getDrawSettings = function(kind, selector) {
+     * @memberof JSROOT.Painter
+     * @private */
+   function getDrawSettings(kind, selector) {
       let res = { opts: null, inspect: false, expand: false, draw: false, handle: null };
       if (typeof kind != 'string') return res;
       let isany = false, noinspect = false, canexpand = false;
       if (typeof selector !== 'string') selector = "";
 
       for (let cnt = 0; cnt < 1000; ++cnt) {
-         let h = JSROOT.getDrawHandle(kind, cnt);
+         let h = getDrawHandle(kind, cnt);
          if (!h) break;
          if (!res.handle) res.handle = h;
          if (h.noinspect) noinspect = true;
@@ -3604,14 +3606,14 @@ JSROOT.define(['d3'], (d3) => {
 
    /** @summary Returns array with supported draw options for the specified kind
     * @private */
-   JSROOT.getDrawOptions = function(kind /*, selector*/) {
-      return JSROOT.getDrawSettings(kind).opts;
+   jsrp.getDrawOptions = function(kind /*, selector*/) {
+      return getDrawSettings(kind).opts;
    }
 
    /** @summary Returns true if provided object class can be drawn
     * @private */
    jsrp.canDraw = function(classname) {
-      return JSROOT.getDrawSettings("ROOT." + classname).opts !== null;
+      return getDrawSettings("ROOT." + classname).opts !== null;
    }
 
    /** @summary Implementation of JSROOT.draw
@@ -3627,10 +3629,10 @@ JSROOT.define(['d3'], (d3) => {
       let handle, type_info;
       if ('_typename' in obj) {
          type_info = "type " + obj._typename;
-         handle = JSROOT.getDrawHandle("ROOT." + obj._typename, opt);
+         handle = getDrawHandle("ROOT." + obj._typename, opt);
       } else if ('_kind' in obj) {
          type_info = "kind " + obj._kind;
-         handle = JSROOT.getDrawHandle(obj._kind, opt);
+         handle = getDrawHandle(obj._kind, opt);
       } else
          return JSROOT.require("hierarchy").then(() => jsrp.drawInspector(divid, obj));
 
@@ -3760,7 +3762,7 @@ JSROOT.define(['d3'], (d3) => {
       let dummy = new ObjectPainter(divid);
       let can_painter = dummy.canv_painter(), handle, res_painter = null, redraw_res;
       if (obj._typename)
-         handle = JSROOT.getDrawHandle("ROOT." + obj._typename);
+         handle = getDrawHandle("ROOT." + obj._typename);
       if (handle && handle.draw_field && obj[handle.draw_field])
          obj = obj[handle.draw_field];
 
@@ -4057,6 +4059,9 @@ JSROOT.define(['d3'], (d3) => {
    jsrp.createRootColors();
 
    if (JSROOT.nodejs) jsrp.readStyleFromURL("?interactive=0&tooltip=0&nomenu&noprogress&notouch&toolbar=0&webgl=0");
+
+   jsrp.getDrawHandle = getDrawHandle;
+   jsrp.getDrawSettings = getDrawSettings;
 
    JSROOT.DrawOptions = DrawOptions;
    JSROOT.ColorPalette = ColorPalette;
