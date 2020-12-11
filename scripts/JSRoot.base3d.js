@@ -1282,24 +1282,15 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
       if (!args.style || (this.k !== 1) || JSROOT.BatchMode)
          return this.Complete();
 
-      let doc = JSROOT.get_document();
-
       let handler = new JSROOT.TAttMarkerHandler({ style: args.style, color: args.color, size: 8 });
 
       let plainSVG = '<svg width="64" height="64" xmlns="http://www.w3.org/2000/svg">' +
-                     '<path d="' + handler.create(32,32) + '" stroke="' + handler.getStrokeColor() + '" fill="' + handler.getFillColor() + '"/></svg>';
+                     '<path d="' + handler.create(32,32) + '" stroke="' + handler.getStrokeColor() + '" stroke-width="1" fill="' + handler.getFillColor() + '"/>' +
+                     '</svg>';
 
-      this.texture = new THREE.Texture();
-      this.texture.needsUpdate = true;
-      this.texture.format = THREE.RGBAFormat;
-      this.texture.image = doc.createElement('img');
+      this.texture = new THREE.TextureLoader().load( 'data:image/svg+xml;utf8,' + plainSVG );
 
-      this.texture.image.onload = this.Complete.bind(this,'loaded')
-
-      this.texture.image.src = 'data:image/svg+xml;utf8,' + plainSVG;
-
-      if (!this.callback)
-         return this.Complete();
+      return this.Complete();
    }
 
    /** @summary Create points and return Promise*/
