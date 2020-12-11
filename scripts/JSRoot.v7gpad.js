@@ -3906,7 +3906,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    RCanvasPainter.prototype.OnWebsocketClosed = function(/*handle*/) {
-      JSROOT.CloseCurrentWindow();
+      jsrp.closeCurrentWindow();
    }
 
    RCanvasPainter.prototype.OnWebsocketMsg = function(handle, msg) {

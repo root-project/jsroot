@@ -3039,7 +3039,7 @@ JSROOT.define(['d3'], (d3) => {
    AxisBasePainter.prototype.formatLog = function(d, asticks, fmt) {
       let val = parseFloat(d), rnd = Math.round(val);
       if (!asticks)
-         return ((rnd === val) && (Math.abs(rnd)<1e9)) ? rnd.toString() : JSROOT.FFormat(val, fmt || JSROOT.gStyle.fStatFormat);
+         return ((rnd === val) && (Math.abs(rnd)<1e9)) ? rnd.toString() : jsrp.floatToString(val, fmt || JSROOT.gStyle.fStatFormat);
       if (val <= 0) return null;
       let vlog = Math.log10(val), base = this.logbase;
       if (base !== 10) vlog = vlog / Math.log10(base);
@@ -3062,7 +3062,7 @@ JSROOT.define(['d3'], (d3) => {
 
       if (asticks) return (this.ndig>10) ? val.toExponential(this.ndig-11) : val.toFixed(this.ndig);
 
-      return JSROOT.FFormat(val, fmt || JSROOT.gStyle.fStatFormat);
+      return jsrp.floatToString(val, fmt || JSROOT.gStyle.fStatFormat);
    }
 
    /** @summary Provide label for exponential form */
@@ -3980,13 +3980,11 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /** @summary Converts numeric value to string according to specified format.
-    *
-    * @param {number} value - value to convert
-    * @param {strting} [fmt="6.4g"] - format can be like 5.4g or 4.2e or 6.4f
-    * @param {boolean} [ret_fmt=false] - when true returns array with actual format
-    * @returns {string|Array} - converted value or array with value and actual format
-    * @private */
-   JSROOT.FFormat = function(value, fmt, ret_fmt) {
+     * @param {number} value - value to convert
+     * @param {string} [fmt="6.4g"] - format can be like 5.4g or 4.2e or 6.4f
+     * @param {boolean} [ret_fmt] - when true returns array with value and actual format like ["0.1","6.4f"]
+     * @returns {string|Array} - converted value or array with value and actual format */
+   jsrp.floatToString = function(value, fmt, ret_fmt) {
       if (!fmt) fmt = "6.4g";
 
       fmt = fmt.trim();
@@ -4005,8 +4003,8 @@ JSROOT.define(['d3'], (d3) => {
       if ((last=='f') || (last=='F')) { isexp = false; } else
       if (last=='W') { isexp = false; significance = true; } else
       if ((last=='g') || (last=='G')) {
-         let se = JSROOT.FFormat(value, fmt+'Q', true),
-             sg = JSROOT.FFormat(value, fmt+'W', true);
+         let se = jsrp.floatToString(value, fmt+'Q', true),
+             sg = jsrp.floatToString(value, fmt+'W', true);
 
          if (se[0].length < sg[0].length) sg = se;
          return ret_fmt ? sg : sg[0];
@@ -4051,11 +4049,10 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /** @summary Tries to close current browser tab
-     *
      * @desc Many browsers do not allow simple window.close() call,
      * therefore try several workarounds
      * @private */
-   JSROOT.CloseCurrentWindow = function() {
+   jsrp.closeCurrentWindow = function() {
       if (!window) return;
       window.close();
       window.open('', '_self').close();

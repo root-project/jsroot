@@ -3804,7 +3804,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    TCanvasPainter.prototype.OnWebsocketClosed = function(/*handle*/) {
-      JSROOT.CloseCurrentWindow();
+      jsrp.closeCurrentWindow();
    }
 
    /** @summary Handle websocket messages */

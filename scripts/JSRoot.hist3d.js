@@ -2433,7 +2433,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       if (binz === Math.round(binz))
          lines.push("entries = " + binz);
       else
-         lines.push("entries = " + JSROOT.FFormat(binz, JSROOT.gStyle.fStatFormat));
+         lines.push("entries = " + jsrp.floatToString(binz, JSROOT.gStyle.fStatFormat));
 
       return lines;
    }
