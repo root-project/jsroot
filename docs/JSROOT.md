@@ -881,3 +881,4 @@ As argument of returned promise object painter has to be used.
 Many function names where adjusted to naming conventions. Like:
    - `JSROOT.CreateHistogram` -> `JSROOT.createHistogram`
    - `JSROOT.CreateTGraph` -> `JSROOT.createTGraph`
+   - `JSROOT.Create` -> `JSROOT.create`

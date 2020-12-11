@@ -12,7 +12,7 @@ function extract_geo_tracks(tree, opt) {
 
    selector.AddBranch("ESDfriend.fTracks.fPoints","pnts");
 
-   var lst = JSROOT.Create("TList"), numentry = 0, numtracks = 0;
+   var lst = JSROOT.create("TList"), numentry = 0, numtracks = 0;
 
    selector.Process = function() {
       // function called for every entry
@@ -26,7 +26,7 @@ function extract_geo_tracks(tree, opt) {
          numtracks++;
          var arr = pnts[p];
          if (!arr.fNPoints) continue;
-         var track = JSROOT.Create("TGeoTrack");
+         var track = JSROOT.create("TGeoTrack");
          track.fNpoints = arr.fNPoints;
          track.fPoints = new Float32Array(track.fNpoints*3);
          for (var k=0;k<track.fNpoints;++k) {

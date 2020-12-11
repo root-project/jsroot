@@ -3686,7 +3686,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if (this.proj_painter === 1) {
 
-         let canv = JSROOT.Create("TCanvas"),
+         let canv = JSROOT.create("TCanvas"),
              pad = this.root_pad(),
              main = this.frame_painter(), drawopt;
 
@@ -4144,7 +4144,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    let drawCanvas = (divid, can, opt) => {
       let nocanvas = !can;
-      if (nocanvas) can = JSROOT.Create("TCanvas");
+      if (nocanvas) can = JSROOT.create("TCanvas");
 
       let painter = new TCanvasPainter(divid, can);
       painter.checkSpecialsInPrimitives(can);
@@ -4205,7 +4205,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    let drawPadSnapshot = (divid, snap /*, opt*/) => {
       // just for debugging without running web canvas
 
-      let can = JSROOT.Create("TCanvas");
+      let can = JSROOT.create("TCanvas");
 
       let painter = new TCanvasPainter(divid, can);
       painter.normal_canvas = false;

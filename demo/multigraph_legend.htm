@@ -18,7 +18,7 @@
       let cnt = 0;
 
       function CreateLegendEntry(obj, lbl) {
-         var entry = JSROOT.Create("TLegendEntry");
+         var entry = JSROOT.create("TLegendEntry");
          entry.fObject = obj;
          entry.fLabel = lbl;
          entry.fOption = "l";
@@ -56,9 +56,9 @@
          h1.fXaxis.fTitle = "xaxis"+cnt;
          h1.fYaxis.fTitle = "yaxis"+cnt;
          h1.fXaxis.fLabelSize = 0.02;
-         h1.fXaxis.fLabels = JSROOT.Create("THashList");
+         h1.fXaxis.fLabels = JSROOT.create("THashList");
          for (let i=0; i<npoints; i++) {
-            let lbl = JSROOT.Create("TObjString");
+            let lbl = JSROOT.create("TObjString");
             lbl.fString = 'pnt'+((i+cnt)%20);
             lbl.fUniqueID = i+1;
             h1.fXaxis.fLabels.Add(lbl, "");
@@ -67,7 +67,7 @@
          h1.fYaxis.fXmax = +60;
          mgraph.fHistogram = h1;
 
-         let leg = JSROOT.Create("TLegend");
+         let leg = JSROOT.create("TLegend");
          // leg.fName = "graphs_legend";
          JSROOT.extend(leg, { fX1NDC: 0.2, fY1NDC:0.75, fX2NDC: 0.6, fY2NDC:0.9 });
 

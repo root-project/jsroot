@@ -819,9 +819,9 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
 
    TDrawSelector.prototype.GetBitsBins = function(nbits, res) {
       res.nbins = res.max = nbits;
-      res.fLabels = JSROOT.Create("THashList");
+      res.fLabels = JSROOT.create("THashList");
       for (let k = 0; k < nbits; ++k) {
-         let s = JSROOT.Create("TObjString");
+         let s = JSROOT.create("TObjString");
          s.fString = k.toString();
          s.fUniqueID = k + 1;
          res.fLabels.Add(s);
@@ -872,9 +872,9 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
          res.lbls.sort();
          res.max = res.nbins = res.lbls.length;
 
-         res.fLabels = JSROOT.Create("THashList");
+         res.fLabels = JSROOT.create("THashList");
          for (let k = 0; k < res.lbls.length; ++k) {
-            let s = JSROOT.Create("TObjString");
+            let s = JSROOT.create("TObjString");
             s.fString = res.lbls[k];
             s.fUniqueID = k + 1;
             if (s.fString === "") s.fString = "<empty>";

@@ -2556,7 +2556,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
     * Check if object already exists to prevent duplication */
    TGeoPainter.prototype.addExtra = function(obj, itemname) {
       if (this._extraObjects === undefined)
-         this._extraObjects = JSROOT.Create("TList");
+         this._extraObjects = JSROOT.create("TList");
 
       if (this._extraObjects.arr.indexOf(obj)>=0) return false;
 
@@ -4078,7 +4078,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       }
 
       if (!obj && shape)
-         obj = JSROOT.extend(JSROOT.Create("TEveGeoShapeExtract"),
+         obj = JSROOT.extend(JSROOT.create("TEveGeoShapeExtract"),
                    { fTrans: null, fShape: shape, fRGBA: [0, 1, 0, 1], fElements: null, fRnrSelf: true });
 
       if (!obj) return null;
@@ -4116,7 +4116,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          side = "";
       }
 
-      let vol = JSROOT.Create("TGeoVolume");
+      let vol = JSROOT.create("TGeoVolume");
       geo.SetBit(vol, geo.BITS.kVisThis, true);
       geo.SetBit(vol, geo.BITS.kVisDaughters, true);
 
@@ -4131,21 +4131,21 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       vol.$geoh = true; // workaround, let know browser that we are in volumes hierarchy
       vol.fName = "";
 
-      let node1 = JSROOT.Create("TGeoNodeMatrix");
+      let node1 = JSROOT.create("TGeoNodeMatrix");
       geo.SetBit(node1, geo.BITS.kVisThis, true);
       geo.SetBit(node1, geo.BITS.kVisDaughters, true);
       node1.fName = "Left";
       node1.fMatrix = comp.fNode.fLeftMat;
       node1.fVolume = geo.buildCompositeVolume(comp.fNode.fLeft, maxlvl-1, side + "Left");
 
-      let node2 = JSROOT.Create("TGeoNodeMatrix");
+      let node2 = JSROOT.create("TGeoNodeMatrix");
       geo.SetBit(node2, geo.BITS.kVisThis, true);
       geo.SetBit(node2, geo.BITS.kVisDaughters, true);
       node2.fName = "Right";
       node2.fMatrix = comp.fNode.fRightMat;
       node2.fVolume = geo.buildCompositeVolume(comp.fNode.fRight, maxlvl-1, side + "Right");
 
-      vol.fNodes = JSROOT.Create("TList");
+      vol.fNodes = JSROOT.create("TList");
       vol.fNodes.Add(node1);
       vol.fNodes.Add(node2);
 
@@ -4158,25 +4158,25 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
     * @private */
    geo.buildOverlapVolume = function(overlap) {
 
-      let vol = JSROOT.Create("TGeoVolume");
+      let vol = JSROOT.create("TGeoVolume");
 
       geo.SetBit(vol, geo.BITS.kVisDaughters, true);
       vol.$geoh = true; // workaround, let know browser that we are in volumes hierarchy
       vol.fName = "";
 
-      let node1 = JSROOT.Create("TGeoNodeMatrix");
+      let node1 = JSROOT.create("TGeoNodeMatrix");
       node1.fName = overlap.fVolume1.fName || "Overlap1";
       node1.fMatrix = overlap.fMatrix1;
       node1.fVolume = overlap.fVolume1;
       // node1.fVolume.fLineColor = 2; // color assigned with _splitColors
 
-      let node2 = JSROOT.Create("TGeoNodeMatrix");
+      let node2 = JSROOT.create("TGeoNodeMatrix");
       node2.fName = overlap.fVolume2.fName || "Overlap2";
       node2.fMatrix = overlap.fMatrix2;
       node2.fVolume = overlap.fVolume2;
       // node2.fVolume.fLineColor = 3;  // color assigned with _splitColors
 
-      vol.fNodes = JSROOT.Create("TList");
+      vol.fNodes = JSROOT.create("TList");
       vol.fNodes.Add(node1);
       vol.fNodes.Add(node2);
 

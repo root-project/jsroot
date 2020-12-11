@@ -1357,7 +1357,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           pad = main_painter.root_pad();
       if (!pp || !pad) return;
 
-      let leg = JSROOT.Create("TLegend");
+      let leg = JSROOT.create("TLegend");
 
       for (let k=0;k<pp.painters.length;++k) {
          let painter = pp.painters[k],
@@ -1365,7 +1365,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          if (!obj) continue;
 
-         let entry = JSROOT.Create("TLegendEntry");
+         let entry = JSROOT.create("TLegendEntry");
          entry.fObject = obj;
          entry.fLabel = (opt == "all") ? obj.fName : painter.getItemName();
          entry.fOption = "";
@@ -2342,7 +2342,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          if (draw_title) pt.AddText(histo.fTitle);
          if (tpainter) tpainter.Redraw();
       } else if (draw_title && !tpainter && histo.fTitle && !this.options.PadTitle) {
-         pt = JSROOT.Create("TPaveText");
+         pt = JSROOT.create("TPaveText");
          pt.fName = "title";
          pt.fTextFont = st.fTitleFont;
          pt.fTextSize = st.fTitleFontSize;
@@ -2532,7 +2532,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       if (stats) return stats;
 
-      stats = JSROOT.Create('TPaveStats');
+      stats = JSROOT.create('TPaveStats');
       JSROOT.extend(stats, { fName: 'stats',
                              fOptStat: optstat,
                              fOptFit: optfit,
@@ -2568,7 +2568,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (!histo || !obj) return;
 
       if (!histo.fFunctions)
-         histo.fFunctions = JSROOT.Create("TList");
+         histo.fFunctions = JSROOT.create("TList");
 
       if (asfirst)
          histo.fFunctions.AddFirst(obj);
@@ -3011,9 +3011,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          if (this.options.PadPalette) return Promise.resolve(null);
 
-         pal = JSROOT.Create('TPave');
+         pal = JSROOT.create('TPave');
 
-         JSROOT.extend(pal, { _typename: "TPaletteAxis", fName: "TPave", fH: null, fAxis: JSROOT.Create('TGaxis'),
+         JSROOT.extend(pal, { _typename: "TPaletteAxis", fName: "TPave", fH: null, fAxis: JSROOT.create('TGaxis'),
                                fX1NDC: 0.91, fX2NDC: 0.95, fY1NDC: 0.1, fY2NDC: 0.9, fInit: 1 } );
 
          let zaxis = this.GetHisto().fZaxis;
@@ -6560,7 +6560,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (!stack.fHists) return false;
       let nhists = stack.fHists.arr.length;
       if (nhists <= 0) return false;
-      let lst = JSROOT.Create("TList");
+      let lst = JSROOT.create("TList");
       lst.Add(JSROOT.clone(stack.fHists.arr[0]), stack.fHists.opt[0]);
       for (let i=1;i<nhists;++i) {
          let hnext = JSROOT.clone(stack.fHists.arr[i]),

@@ -933,7 +933,7 @@
 
 ## Changes in 3.1
 1. Correctly show tooltips in case of overlapped objects
-2. Implement JSROOT.Create() method to create supported
+2. Implement JSROOT.create() method to create supported
    in JavaScript ROOT classes like TH1 or TGraph
 3. Fix problem with JSROOT.draw in HTML element with zero width (display:none)
 4. Provide possibility to load user scripts with JSROOT.BuildSimpleGUI

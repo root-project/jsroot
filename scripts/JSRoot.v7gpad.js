@@ -4183,7 +4183,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    function drawRCanvas(divid, can /*, opt */) {
       let nocanvas = !can;
       if (nocanvas)
-         can = JSROOT.Create("ROOT::Experimental::TCanvas");
+         can = JSROOT.create("ROOT::Experimental::TCanvas");
 
       let painter = new RCanvasPainter(divid, can);
       painter.normal_canvas = !nocanvas;

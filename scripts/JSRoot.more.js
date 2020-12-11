@@ -591,7 +591,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          if (ymin < 0.0) ymin *= 1.05;
       }
 
-      let histo = JSROOT.Create("TH1I"),
+      let histo = JSROOT.create("TH1I"),
           tf1 = this.getObject();
 
       histo.fName = tf1.fName + "_hist";
@@ -1901,7 +1901,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       let st = JSROOT.gStyle;
 
-      stats = JSROOT.Create('TPaveStats');
+      stats = JSROOT.create('TPaveStats');
       JSROOT.extend(stats, { fName : 'stats',
                              fOptStat: 0,
                              fOptFit: st.fOptFit || 111,
@@ -2420,7 +2420,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    }
 
    TGraphPolarPainter.prototype.CreatePolargram = function() {
-      let polargram = JSROOT.Create("TGraphPolargram"),
+      let polargram = JSROOT.create("TGraphPolargram"),
           gr = this.getObject();
 
       let rmin = gr.fY[0] || 0, rmax = rmin;
@@ -2627,7 +2627,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          if (ymin < 0.0) ymin *= 1.05;
       }
 
-      let histo = JSROOT.Create("TH1I");
+      let histo = JSROOT.create("TH1I");
 
       histo.fName = spline.fName + "_hist";
       histo.fTitle = spline.fTitle;
@@ -3069,7 +3069,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    }
 
    TEfficiencyPainter.prototype.CreateGraph = function() {
-      let gr = JSROOT.Create('TGraphAsymmErrors');
+      let gr = JSROOT.create('TGraphAsymmErrors');
       gr.fName = "eff_graph";
       return gr;
    }
@@ -3266,7 +3266,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       // Create a temporary histogram to draw the axis (if necessary)
       if (!histo) {
-         histo = JSROOT.Create("TH1I");
+         histo = JSROOT.create("TH1I");
          histo.fTitle = mgraph.fTitle;
          histo.fXaxis.fXmin = uxmin;
          histo.fXaxis.fXmax = uxmax;
@@ -3740,7 +3740,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       if (url && this.isMainPainter() && is_buf && fp)
          return this.drawColorPalette(this.options.Zscale, true).then(() => {
-            fp.SetAxesRanges(JSROOT.Create("TAxis"), 0, 1, JSROOT.Create("TAxis"), 0, 1, null, 0, 0);
+            fp.SetAxesRanges(JSROOT.create("TAxis"), 0, 1, JSROOT.create("TAxis"), 0, 1, null, 0, 0);
             fp.CreateXY({ ndim: 2,
                           check_pad_range: false });
             fp.AddInteractive();
@@ -3771,9 +3771,9 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          return Promise.resolve(null);
 
       if (!this.draw_palette) {
-         let pal = JSROOT.Create('TPave');
+         let pal = JSROOT.create('TPave');
 
-         JSROOT.extend(pal, { _typename: "TPaletteAxis", fName: "TPave", fH: null, fAxis: JSROOT.Create('TGaxis'),
+         JSROOT.extend(pal, { _typename: "TPaletteAxis", fName: "TPave", fH: null, fAxis: JSROOT.create('TGaxis'),
                                fX1NDC: 0.91, fX2NDC: 0.95, fY1NDC: 0.1, fY2NDC: 0.9, fInit: 1 } );
 
          pal.fAxis.fChopt = "+";
