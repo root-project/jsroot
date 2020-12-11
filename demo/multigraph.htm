@@ -11,58 +11,49 @@
 </head>
 
 <body>
-  <h3>Text Before </h3>
-
-  <div id="object_draw" style="width: 800px; height:600px"></div>
-
-  <h3>Text After</h3>
+  <div id="object_draw" style="width: 1200px; height:800px"></div>
 
    <script type='text/javascript'>
 
-      var cnt = 0, drawing_ready = true;
+      let cnt = 0;
 
       function updateGUI() {
-         if (!drawing_ready) return;
 
         // this is just generation of graph
-         var npoints = 20;
-         var xpts=[];
-         var ypts=[];
-         for (var i=0; i<npoints; i++) {
+         const npoints = 20;
+         let xpts = [], ypts = [];
+         for (let i=0; i < npoints; i++) {
              switch(cnt%2) {
                  case 1 : xpts.push(i); ypts.push(5*i); break;
                  default: xpts.push(i); ypts.push(i); break;
              }
          }
-         var graph1 = JSROOT.createTGraph(npoints, xpts, ypts);
+         let graph1 = JSROOT.createTGraph(npoints, xpts, ypts);
          graph1.fLineColor = 2;
          graph1.fMarkerSize = 2;
          xpts = [];
          ypts = [];
-         for (i=0; i<npoints; i++) {
+         for (let i = 0; i < npoints; i++) {
              switch(cnt%2) {
                  case 1 : xpts.push(i); ypts.push(i*i); break;
                  default: xpts.push(i); ypts.push(Math.sqrt(i)); break;
              }
          }
-         var graph2 = JSROOT.createTGraph(npoints, xpts, ypts);
+         let graph2 = JSROOT.createTGraph(npoints, xpts, ypts);
          graph2.fLineColor = 3;
          graph2.fMarkerSize = 2;
 
-         var mgraph = JSROOT.createTMultiGraph(graph1, graph2);
+         let mgraph = JSROOT.createTMultiGraph(graph1, graph2);
          mgraph.fTitle = "Drawing " + cnt++;
 
          // set fixed Y-range if required
          // mgraph.fMinimum = 0;
          // mgraph.fMaximum = 400;
 
-         drawing_ready = false;
-         JSROOT.redraw('object_draw', mgraph, "").then(() => { drawing_ready = true; });
+         JSROOT.redraw('object_draw', mgraph, "").then(() => setTimeout(updateGUI, 3000));
       }
 
       updateGUI();
-
-      setInterval(updateGUI, 3000);
 
    </script>
 
