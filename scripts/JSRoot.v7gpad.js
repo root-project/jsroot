@@ -2681,6 +2681,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return true;
       }
 
+      console.log('this pad name ', this.this_pad_name, ' drawn', this.pad_name);
+
       let svg_parent = this.svg_pad(),
           svg_can = this.svg_canvas(),
           width = svg_parent.property("draw_width"),
@@ -3110,7 +3112,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          let padpainter = new RPadPainter(this.getDom(), subpad, false);
          padpainter.DecodeOptions("");
-         padpainter.setPadName(this.this_pad_name); // pad painter will be registered in parent painters list
+         padpainter.setPadName(this.this_pad_name); // only set parent pad name
          padpainter.assignSnapId(snap.fObjectID);
          padpainter.rstyle = snap.fStyle;
          padpainter.addToPadPrimitives();
