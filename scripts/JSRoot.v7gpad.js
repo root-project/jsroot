@@ -2681,9 +2681,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return true;
       }
 
-      console.log('this pad name ', this.this_pad_name, ' drawn', this.pad_name);
-
-      let svg_parent = this.svg_pad(),
+      let svg_parent = this.svg_pad(this.pad_name), // this.pad_name MUST be here to select parent pad
           svg_can = this.svg_canvas(),
           width = svg_parent.property("draw_width"),
           height = svg_parent.property("draw_height"),
