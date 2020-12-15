@@ -2118,6 +2118,7 @@ JSROOT.define(['d3'], (d3) => {
    /** @summary Add painter to pad list of painters
      * @param {string} [pad_name] - optional pad name where painter should be add */
    ObjectPainter.prototype.addToPadPrimitives = function(pad_name) {
+      if (pad_name !== undefined) this.setPadName(pad_name);
       let pp = this.pad_painter(pad_name); // important - pad_name must be here, otherwise PadPainter class confuses itself
 
       if (!pp || (pp === this)) return false;

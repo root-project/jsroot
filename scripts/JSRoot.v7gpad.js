@@ -3110,10 +3110,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          let padpainter = new RPadPainter(this.getDom(), subpad, false);
          padpainter.DecodeOptions("");
-         padpainter.setPadName(this.this_pad_name); // only set parent pad name
+         padpainter.addToPadPrimitives(this.this_pad_name); // only set parent pad name
          padpainter.assignSnapId(snap.fObjectID);
          padpainter.rstyle = snap.fStyle;
-         padpainter.addToPadPrimitives(this.this_pad_name);
 
          padpainter.createPadSvg();
 
@@ -3697,7 +3696,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          painter.this_pad_name = "";
          painter.setTopPainter();
       } else {
-         painter.addToPadPrimitives(painter.pad_name);
+         painter.addToPadPrimitives(painter.pad_name); // must be here due to pad painter
       }
 
       painter.createPadSvg();

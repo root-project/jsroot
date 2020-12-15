@@ -2835,8 +2835,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          let padpainter = new TPadPainter(this.getDom(), subpad, false);
          padpainter.DecodeOptions(snap.fOption);
-         padpainter.setPadName(this.this_pad_name); // pad painter will be registered in the canvas painters list
-         padpainter.addToPadPrimitives();
+         padpainter.addToPadPrimitives(this.this_pad_name);
          padpainter.snapid = snap.fObjectID;
 
          padpainter.createPadSvg();
