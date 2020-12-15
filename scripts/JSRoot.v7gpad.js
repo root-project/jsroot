@@ -3113,7 +3113,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          padpainter.setPadName(this.this_pad_name); // only set parent pad name
          padpainter.assignSnapId(snap.fObjectID);
          padpainter.rstyle = snap.fStyle;
-         padpainter.addToPadPrimitives();
+         padpainter.addToPadPrimitives(this.this_pad_name);
 
          padpainter.createPadSvg();
 
