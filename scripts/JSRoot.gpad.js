@@ -3240,7 +3240,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          }
 
          let main = pp.frame_painter();
-         if (!main || (typeof main.Render3D !== 'function')) return;
+         if (!main || (typeof main.Render3D !== 'function') || (typeof main.access_3d_kind !== 'function')) return;
 
          let can3d = main.access_3d_kind();
 
