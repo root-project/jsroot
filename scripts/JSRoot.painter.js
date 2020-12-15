@@ -1897,8 +1897,8 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /** @summary Method selects immediate layer under canvas/pad main element
-     * @param {string} name - layer name 
-     * @param {string} [pad_name] - select pad name, use configured this.pad_name by default 
+     * @param {string} name - layer name
+     * @param {string} [pad_name] - select pad name, use configured this.pad_name by default
      * @private */
    ObjectPainter.prototype.svg_layer = function(name, pad_name) {
       let svg = this.svg_pad(pad_name);
@@ -2406,27 +2406,10 @@ JSROOT.define(['d3'], (d3) => {
    }
 
 
-   /** @summary try to find object by name in list of pad primitives
-    * @desc used to find title drawing
-    * @private */
-   ObjectPainter.prototype.FindInPrimitives = function(objname) {
-      let painter = this.pad_painter();
-
-      let arr = painter && painter.pad && painter.pad.fPrimitives ? painter.pad.fPrimitives.arr : null;
-
-      if (arr && arr.length)
-         for (let n = 0; n < arr.length; ++n) {
-            let prim = arr[n];
-            if (('fName' in prim) && (prim.fName === objname)) return prim;
-         }
-
-      return null;
-   }
-
    /** @summary Try to find painter for specified object
-    * @desc can be used to find painter for some special objects, registered as
-    * histogram functions
-    * @private */
+     * @desc can be used to find painter for some special objects, registered as
+     * histogram functions
+     * @private */
    ObjectPainter.prototype.FindPainterFor = function(selobj, selname, seltype) {
 
       let pp = this.pad_painter();

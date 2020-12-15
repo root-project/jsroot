@@ -2427,6 +2427,23 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
    }
 
+   /** @summary try to find object by name in list of pad primitives
+     * @desc used to find title drawing
+     * @private */
+   TPadPainter.prototype.findInPrimitives = function(objname) {
+      let arr = this.pad && this.pad.fPrimitives ? this.pad.fPrimitives.arr : null;
+
+      if (arr && arr.length && objname)
+         for (let n = 0; n < arr.length; ++n) {
+            let prim = arr[n];
+            if (prim.fName === objname) return prim;
+         }
+
+      return null;
+   }
+
+
+
    TPadPainter.prototype.RemovePrimitive = function(obj) {
       if (!this.pad || !this.pad.fPrimitives) return;
       let indx = this.pad.fPrimitives.arr.indexOf(obj);
