@@ -2044,6 +2044,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
    }
 
+   /** @summary For pad painter equivalent to forEachPainterInPad */
+   TPadPainter.prototype.forEachPainter = TPadPainter.prototype.forEachPainterInPad;
+
    /** @summary register for pad events receiver
      * @desc in pad painter, while pad may be drawn without canvas
      * @private */
@@ -3161,7 +3164,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    TPadPainter.prototype.ItemContextMenu = function(name) {
-       let rrr = this.svg_pad().node().getBoundingClientRect();
+       let rrr = this.svg_pad(this.this_pad_name).node().getBoundingClientRect();
        let evnt = { clientX: rrr.left+10, clientY: rrr.top + 10 };
 
        // use timeout to avoid conflict with mouse click and automatic menu close
@@ -3216,7 +3219,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       let use_frame = (full_canvas === "frame");
 
-      let elem = use_frame ? this.svg_frame() : (full_canvas ? this.svg_canvas() : this.svg_pad());
+      let elem = use_frame ? this.svg_frame() : (full_canvas ? this.svg_canvas() : this.svg_pad(this.this_pad_name));
 
       if (elem.empty()) return Promise.resolve("");
 
@@ -3227,7 +3230,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (!use_frame) // do not make transformations for the frame
       painter.forEachPainterInPad(pp => {
 
-         let item = { prnt: pp.svg_pad() };
+         let item = { prnt: pp.svg_pad(pp.this_pad_name) };
          items.push(item);
 
          // remove buttons from each subpad
@@ -3686,7 +3689,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (this.proj_painter === 1) {
 
          let canv = JSROOT.create("TCanvas"),
-             pad = this.root_pad(),
+             pad = this.pad,
              main = this.frame_painter(), drawopt;
 
          if (kind == "X") {
