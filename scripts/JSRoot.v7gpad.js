@@ -2536,7 +2536,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (!rect.changed) return false;
 
          if (!JSROOT.BatchMode)
-            btns = this.svg_layer("btns_layer");
+            btns = this.svg_layer("btns_layer", this.this_pad_name);
 
       } else {
 
@@ -2711,7 +2711,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          svg_pad = this.svg_pad();
          svg_rect = svg_pad.select(".root_pad_border");
          if (!JSROOT.BatchMode)
-            btns = this.svg_layer("btns_layer");
+            btns = this.svg_layer("btns_layer", this.this_pad_name);
       } else {
          svg_pad = svg_parent.select(".primitives_layer")
              .append("svg:svg") // here was g before, svg used to blend all drawin outside
@@ -3391,7 +3391,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          items.push(item);
 
          // remove buttons from each subpad
-         let btns = pp.svg_layer("btns_layer");
+         let btns = pp.svg_layer("btns_layer", this.this_pad_name);
          item.btns_node = btns.node();
          if (item.btns_node) {
             item.btns_prnt = item.btns_node.parentNode;

@@ -1897,9 +1897,11 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /** @summary Method selects immediate layer under canvas/pad main element
-    * @private */
-   ObjectPainter.prototype.svg_layer = function(name) {
-      let svg = this.svg_pad();
+     * @param {string} name - layer name 
+     * @param {string} [pad_name] - select pad name, use configured this.pad_name by default 
+     * @private */
+   ObjectPainter.prototype.svg_layer = function(name, pad_name) {
+      let svg = this.svg_pad(pad_name);
       if (svg.empty()) return svg;
 
       if (name.indexOf("prim#") == 0) {
