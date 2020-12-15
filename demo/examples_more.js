@@ -44,7 +44,9 @@ examples_more = {
       { name: "trans", json: "web6canv/transparency.json.gz", title: "Testing with TGraph without axes" }
    ],
    v7 : [
-      { name: "axes", opt: "", json: "v7/axes.json.gz", title: "RAxes drawings" }
+      { name: "axes", opt: "", json: "v7/axes.json.gz", title: "RAxes drawings" },
+      { name: "rh1", opt: "", json: "v7/draw_rh1.json.gz", title: "draw_rh1.cxx macro output" },
+      { name: "rh2", opt: "", json: "v7/draw_rh2.json.gz", title: "draw_rh2.cxx macro output" }
    ],
    THStack : [
       { opt: "orig", file: "stacks.root", item: "stacks;1", title: "original example used for JSROOT testing since a while" },
