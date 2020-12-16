@@ -2239,30 +2239,22 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /** @summary indicate that redraw was invoked via interactive action (like context menu or zooming)
-    * @desc Use to catch such action by GED and by server-side
-    * @private */
+     * @desc Use to catch such action by GED and by server-side
+     * @private */
    ObjectPainter.prototype.InteractiveRedraw = function(arg, info, subelem) {
 
       let reason;
       if ((typeof info == "string") && (info.indexOf("exec:") != 0)) reason = info;
-
-      if (arg == "pad") {
+      if (arg == "pad")
          this.redrawPad(reason);
-      } else if (arg == "axes") {
-         let main = this.getMainPainter(true); // works for pad and any object drawn in the pad
-         if (main && (typeof main.DrawAxes == 'function'))
-            main.DrawAxes();
-         else
-            this.redrawPad(reason);
-      } else if (arg !== false) {
+      else if (arg !== false)
          this.Redraw(reason);
-      }
 
       // inform GED that something changes
-      let pp = this.pad_painter(), canp = this.canv_painter();
+      let canp = this.canv_painter();
 
       if (canp && (typeof canp.PadEvent == 'function'))
-         canp.PadEvent("redraw", pp, this, null, subelem);
+         canp.PadEvent("redraw", this.pad_painter(), this, null, subelem);
 
       // inform server that drawopt changes
       if (canp && (typeof canp.ProcessChanges == 'function'))

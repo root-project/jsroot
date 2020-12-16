@@ -2972,6 +2972,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }).then(menu => menu.show());
    }
 
+   RPadPainter.prototype.redrawPad = function(reason) {
+      this.Redraw(reason);
+   }
+
    RPadPainter.prototype.Redraw = function(reason) {
 
       // prevent redrawing

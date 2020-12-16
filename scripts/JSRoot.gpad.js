@@ -2570,7 +2570,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          function SetPadField(arg) {
             this.pad[arg.substr(1)] = parseInt(arg[0]);
-            this.InteractiveRedraw("axes", arg.substr(1));
+            this.InteractiveRedraw("pad", arg.substr(1));
          }
 
          menu.addchk(this.pad.fGridx, 'Grid x', (this.pad.fGridx ? '0' : '1') + 'fGridx', SetPadField);
@@ -2626,6 +2626,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.FillContextMenu(menu);
          return this.fillObjectExecMenu(menu, "");
       }).then(menu => menu.show());
+   }
+
+   /** @summary Redraw pad means redraw ourself */
+   TPadPainter.prototype.redrawPad = function(reason) {
+      this.Redraw(reason);
    }
 
    /** @summary redraw pad */
