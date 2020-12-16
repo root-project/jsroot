@@ -2312,13 +2312,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Show axis status message
-   * @desc method called normally when mouse enter main object element */
+    * @desc method called normally when mouse enter main object element */
    RFramePainter.prototype.ShowAxisStatus = function(axis_name, evnt) {
-      // method called normally when mouse enter main object element
-
-      let status_func = this.GetShowStatusFunc();
-
-      if (typeof status_func != "function") return;
 
       let taxis = null, hint_name = axis_name, hint_title = "TAxis",
           m = d3.pointer(evnt, this.svg_frame().node()), id = (axis_name=="x") ? 0 : 1;
@@ -2329,7 +2324,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       let axis_value = this.RevertAxis(axis_name, m[id]);
 
-      status_func(hint_name, hint_title, axis_name + " : " + this.AxisAsText(axis_name, axis_value), m[0]+","+m[1]);
+      this.showObjectStatus(hint_name, hint_title, axis_name + " : " + this.AxisAsText(axis_name, axis_value), m[0]+","+m[1]);
    }
 
    /** @summary Add interactive keys handlers
@@ -2597,7 +2592,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             frect.style("pointer-events", "visibleFill")
                  .on("dblclick", this.EnlargePad.bind(this))
                  .on("click", this.SelectObjectPainter.bind(this, this, null))
-                 .on("mouseenter", this.ShowObjectStatus.bind(this));
+                 .on("mouseenter", () => this.showObjectStatus());
 
          svg.append("svg:g").attr("class","primitives_layer");
          svg.append("svg:g").attr("class","info_layer");
@@ -2770,7 +2765,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             svg_rect.attr("pointer-events", "visibleFill") // get events also for not visible rect
                     .on("dblclick", this.EnlargePad.bind(this))
                     .on("click", this.SelectObjectPainter.bind(this, this, null))
-                    .on("mouseenter", this.ShowObjectStatus.bind(this));
+                    .on("mouseenter", () => this.showObjectStatus());
       }
 
       this.createAttFill({ attr: this.pad });

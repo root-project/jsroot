@@ -48,10 +48,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             pad_width = this.pad_width(),
             pp = this.pad_painter(),
             font = new JSROOT.FontHandler(160, textheight),
-            status_func = this.GetShowStatusFunc(),
             disable_tootlips = !this.isTooltipAllowed() || !this.tooltip_enabled;
 
-         if ((pnt === undefined) || (disable_tootlips && !status_func)) pnt = null;
          if (pnt && disable_tootlips) pnt.disabled = true; // indicate that highlighting is not required
          if (pnt) pnt.painters = true; // get also painter
 
@@ -97,33 +95,31 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          let layer = this.hints_layer(),
             hintsg = layer.select(".objects_hints"); // group with all tooltips
 
-         if (status_func) {
-            let title = "", name = "", info = "",
-               hint = null, best_dist2 = 1e10, best_hint = null,
-               coordinates = pnt ? Math.round(pnt.x) + "," + Math.round(pnt.y) : "";
-            // try to select hint with exact match of the position when several hints available
-            for (let k = 0; k < (hints ? hints.length : 0); ++k) {
-               if (!hints[k]) continue;
-               if (!hint) hint = hints[k];
-               if (hints[k].exact && (!hint || !hint.exact)) { hint = hints[k]; break; }
+         let title = "", name = "", info = "",
+            hint = null, best_dist2 = 1e10, best_hint = null,
+            coordinates = pnt ? Math.round(pnt.x) + "," + Math.round(pnt.y) : "";
+         // try to select hint with exact match of the position when several hints available
+         for (let k = 0; k < (hints ? hints.length : 0); ++k) {
+            if (!hints[k]) continue;
+            if (!hint) hint = hints[k];
+            if (hints[k].exact && (!hint || !hint.exact)) { hint = hints[k]; break; }
 
-               if (!pnt || (hints[k].x === undefined) || (hints[k].y === undefined)) continue;
+            if (!pnt || (hints[k].x === undefined) || (hints[k].y === undefined)) continue;
 
-               let dist2 = (pnt.x - hints[k].x) * (pnt.x - hints[k].x) + (pnt.y - hints[k].y) * (pnt.y - hints[k].y);
-               if (dist2 < best_dist2) { best_dist2 = dist2; best_hint = hints[k]; }
-            }
-
-            if ((!hint || !hint.exact) && (best_dist2 < 400)) hint = best_hint;
-
-            if (hint) {
-               name = (hint.lines && hint.lines.length > 1) ? hint.lines[0] : hint.name;
-               title = hint.title || "";
-               info = hint.line;
-               if (!info && hint.lines) info = hint.lines.slice(1).join(' ');
-            }
-
-            status_func(name, title, info, coordinates);
+            let dist2 = (pnt.x - hints[k].x) * (pnt.x - hints[k].x) + (pnt.y - hints[k].y) * (pnt.y - hints[k].y);
+            if (dist2 < best_dist2) { best_dist2 = dist2; best_hint = hints[k]; }
          }
+
+         if ((!hint || !hint.exact) && (best_dist2 < 400)) hint = best_hint;
+
+         if (hint) {
+            name = (hint.lines && hint.lines.length > 1) ? hint.lines[0] : hint.name;
+            title = hint.title || "";
+            info = hint.line;
+            if (!info && hint.lines) info = hint.lines.slice(1).join(' ');
+         }
+
+         this.showObjectStatus(name, title, info, coordinates);
 
          // end of closing tooltips
          if (!pnt || disable_tootlips || (hints.length === 0) || (maxlen === 0) || (nhints > 15)) {

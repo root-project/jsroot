@@ -873,10 +873,9 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
 
          let mouse = this.tmout_mouse,
              intersects = this.GetMouseIntersects(mouse),
-             tip = this.ProcessMouseMove(intersects),
-             status_func = this.painter.GetShowStatusFunc();
+             tip = this.ProcessMouseMove(intersects);
 
-         if (tip && status_func) {
+         if (tip) {
             let name = "", title = "", coord = "", info = "";
             if (mouse) coord = mouse.x.toFixed(0)+ "," + mouse.y.toFixed(0);
             if (typeof tip == "string") {
@@ -886,7 +885,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
                if (tip.line) info = tip.line; else
                if (tip.lines) { info = tip.lines.slice(1).join(' '); name = tip.lines[0]; }
             }
-            status_func(name, title, info, coord);
+            this.painter.showObjectStatus(name, title, info, coord);
          }
 
          this.cursor_changed = false;

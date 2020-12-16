@@ -375,7 +375,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          // here all kind of interactive settings
          rect.style("pointer-events", "visibleFill")
-             .on("mouseenter", this.ShowObjectStatus.bind(this))
+             .on("mouseenter", () => this.showObjectStatus());
 
          // position and size required only for drag functions
          this.draw_g.attr("x", pos_x)

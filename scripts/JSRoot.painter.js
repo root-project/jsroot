@@ -2380,32 +2380,31 @@ JSROOT.define(['d3'], (d3) => {
       return "exec:" + method + "(" + id + ")";
    }
 
-
-
-   /** @summary returns function used to display object status
-    * @private */
-   ObjectPainter.prototype.GetShowStatusFunc = function() {
-      // return function used to display object status
-      // automatically disabled when drawing is enlarged - status line will be invisible
-
-      let pp = this.canv_painter(), res = jsrp.ShowStatus;
-
-      if (pp && (typeof pp.ShowCanvasStatus === 'function')) res = pp.ShowCanvasStatus.bind(pp);
-
-      if (res && (this.enlargeMain('state') === 'on')) res = null;
-
-      return res;
-   }
-
    /** @summary shows objects status
-    * @private */
-   ObjectPainter.prototype.ShowObjectStatus = function() {
-      // method called normally when mouse enter main object element
+     * @desc Either used canvas painter method or globaly assigned
+     * When no parameters are specified, just basic object properties are shown 
+     * @private */
+   ObjectPainter.prototype.showObjectStatus = function(name, title, info, info2) {
+      let cp = this.canv_painter();
 
-      let obj = this.getObject(),
-         status_func = this.GetShowStatusFunc();
+      if (cp && (typeof cp.ShowCanvasStatus !== 'function')) cp = null;
+      
+      if (!cp && (typeof jsrp.ShowStatus !== 'function')) return false;
 
-      if (obj && status_func) status_func(this.getItemName() || obj.fName, obj.fTitle || obj._typename, obj._typename);
+      if (this.enlargeMain('state') === 'on') return false;
+
+      if ((name === undefined) && (title === undefined)) {
+         let obj = this.getObject();
+         if (!obj) return;
+         name = this.getItemName() || obj.fName;
+         title = obj.fTitle || obj._typename;
+         info = obj._typename;
+      }
+      
+      if (cp) 
+         cp.ShowCanvasStatus(name, title, info, info2);
+      else
+         jsrp.ShowStatus(name, title, info, info2);
    }
 
    /** @summary Redraw object
