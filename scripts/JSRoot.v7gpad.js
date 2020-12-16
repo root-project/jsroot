@@ -2421,6 +2421,18 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return this.svg_pad(this.this_pad_name);
    }
 
+   RPadPainter.prototype.getMainPainter = function(not_store) {
+      let svg_p = this.svg_this_pad();
+      return svg_p.empty() ? null : svg_p.property('mainpainter');
+   }
+
+   RPadPainter.prototype.setMainPainter = function(painter, force) {
+      let svg_p = this.svg_this_pad();
+      if (!svg_p.empty())
+         if (force || !svg_p.property('mainpainter'))
+             svg_p.property('mainpainter', painter);
+   }
+
    /** @summary cleanup only pad itself, all child elements will be collected and cleanup separately */
    RPadPainter.prototype.cleanup = function() {
 
@@ -3570,7 +3582,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if (this.frame_painter())
                menu.add("Frame", "frame", this.ItemContextMenu);
 
-            let main = this.getMainPainter();
+            let main = this.getMainPainter(); // here pad painter method
 
             if (main) {
                menu.add("X axis", "xaxis", this.ItemContextMenu);
