@@ -2050,14 +2050,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary register for pad events receiver
      * @desc in pad painter, while pad may be drawn without canvas
      * @private */
-   TPadPainter.prototype.RegisterForPadEvents = function(receiver) {
+   TPadPainter.prototype.registerForPadEvents = function(receiver) {
       this.pad_events_receiver = receiver;
    }
 
    /** @summary Generate pad events, normally handled by GED
     * @desc in pad painter, while pad may be drawn without canvas
      * @private */
-   TPadPainter.prototype.PadEvent = function(_what, _padpainter, _painter, _position, _place) {
+   TPadPainter.prototype.producePadEvent = function(_what, _padpainter, _painter, _position, _place) {
 
       if ((_what == "select") && (typeof this.selectActivePad == 'function'))
          this.selectActivePad(_padpainter, _painter, _position);
@@ -2078,7 +2078,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       jsrp.selectActivePad({ pp: this, active: true });
 
-      if (canp) canp.PadEvent("select", this, _painter, pos, _place);
+      if (canp) canp.producePadEvent("select", this, _painter, pos, _place);
    }
 
    /** @summary Called by framework when pad is supposed to be active and get focus
@@ -2656,7 +2656,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if (jsrp.getActivePad() === this) {
          let canp = this.canv_painter();
-         if (canp) canp.PadEvent("padredraw", this );
+         if (canp) canp.producePadEvent("padredraw", this );
       }
    }
 
@@ -3074,7 +3074,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.selectCurrentPad(prev_name);
          if (jsrp.getActivePad() === this) {
             let canp = this.canv_painter();
-            if (canp) canp.PadEvent("padredraw", this);
+            if (canp) canp.producePadEvent("padredraw", this);
          }
          return this;
       });
@@ -3899,7 +3899,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          console.log('GET EDIT ' + msg.substr(5) +  ' found ' + !!obj_painter);
          if (obj_painter)
             this.ShowSection("Editor", true)
-                .then(() => this.PadEvent("select", obj_painter.pad_painter(), obj_painter));
+                .then(() => this.producePadEvent("select", obj_painter.pad_painter(), obj_painter));
 
       } else {
          console.log("unrecognized msg " + msg);
@@ -3940,7 +3940,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    TCanvasPainter.prototype.RemoveGed = function() {
       if (this.testUI5()) return;
 
-      this.RegisterForPadEvents(null);
+      this.registerForPadEvents(null);
 
       if (this.ged_view) {
          this.ged_view.getController().cleanupGed();
@@ -4013,7 +4013,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                   this.ged_view = oGed;
 
                   // TODO: should be moved into Ged controller - it must be able to detect canvas painter itself
-                  this.RegisterForPadEvents(oGed.getController().padEventsReceiver.bind(oGed.getController()));
+                  this.registerForPadEvents(oGed.getController().padEventsReceiver.bind(oGed.getController()));
 
                   let pp = objpainter ? objpainter.pad_painter() : null;
                   if (pp) pp.SelectObjectPainter(objpainter);

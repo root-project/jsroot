@@ -2500,14 +2500,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary register for pad events receiver
      * @desc in pad painter, while pad may be drawn without canvas
      * @private */
-   RPadPainter.prototype.RegisterForPadEvents = function(receiver) {
+   RPadPainter.prototype.registerForPadEvents = function(receiver) {
       this.pad_events_receiver = receiver;
    }
 
    /** @summary Generate pad events, normally handled by GED
      * @desc in pad painter, while pad may be drawn without canvas
      * @private */
-   RPadPainter.prototype.PadEvent = function(_what, _padpainter, _painter, _position, _place) {
+   RPadPainter.prototype.producePadEvent = function(_what, _padpainter, _painter, _position, _place) {
       if ((_what == "select") && (typeof this.selectActivePad == 'function'))
          this.selectActivePad(_padpainter, _painter, _position);
 
@@ -2528,7 +2528,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       jsrp.selectActivePad({ pp: this, active: true });
 
-      canp.PadEvent("select", this, _painter, pos, _place);
+      canp.producePadEvent("select", this, _painter, pos, _place);
    }
 
    /** @summary Called by framework when pad is supposed to be active and get focus
@@ -2998,7 +2998,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if (jsrp.getActivePad() === this) {
          let canp = this.canv_painter();
-         if (canp) canp.PadEvent("padredraw", this);
+         if (canp) canp.producePadEvent("padredraw", this);
       }
    }
 
@@ -3320,7 +3320,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (jsrp.getActivePad() === this) {
             let canp = this.canv_painter();
 
-            if (canp) canp.PadEvent("padredraw", this);
+            if (canp) canp.producePadEvent("padredraw", this);
          }
 
          return this;

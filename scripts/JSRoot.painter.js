@@ -2253,8 +2253,8 @@ JSROOT.define(['d3'], (d3) => {
       // inform GED that something changes
       let canp = this.canv_painter();
 
-      if (canp && (typeof canp.PadEvent == 'function'))
-         canp.PadEvent("redraw", this.pad_painter(), this, null, subelem);
+      if (canp && (typeof canp.producePadEvent == 'function'))
+         canp.producePadEvent("redraw", this.pad_painter(), this, null, subelem);
 
       // inform server that drawopt changes
       if (canp && (typeof canp.ProcessChanges == 'function'))
