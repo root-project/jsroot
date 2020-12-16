@@ -93,7 +93,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
       }
 
       let pw = this.pad_width(), x2 = pw - size.x - size.width,
-         ph = this.pad_height(), y2 = ph - size.y - size.height;
+          ph = this.pad_height(), y2 = ph - size.y - size.height;
 
       if ((x2 >= 0) && (y2 >= 0)) {
          // while 3D canvas uses area also for the axis labels, extend area relative to normal frame

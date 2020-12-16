@@ -1964,6 +1964,18 @@ JSROOT.define(['d3'], (d3) => {
       return isNaN(res) ? 0 : res;
    }
 
+   /** @summary Returns object with width and height properties
+     * @returns {object} res with res.width and res.height */
+   ObjectPainter.prototype.getPadRect = function() {
+      let res = { x:0, y: 0, width: 0, height: 0 },
+          svg = this.svg_pad();
+      if (!svg.empty()) {
+         res.width = svg.property("draw_width") || 0;
+         res.height = svg.property("draw_height") || 0; 
+      }
+      return res;
+   }
+
 
    /** @summary Return functor, which can convert x and y coordinates into pixels, used for drawing
      * @desc X and Y coordinates can be converted by calling func.x(x) and func.y(y)
