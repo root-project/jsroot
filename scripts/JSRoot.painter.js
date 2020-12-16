@@ -2410,9 +2410,9 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /** @summary Redraw object
-    * @desc Basic method, should be reimplemented in all derived objects
-    * for the case when drawing should be repeated
-    * @abstract */
+     * @desc Basic method, should be reimplemented in all derived objects
+     * for the case when drawing should be repeated
+     * @abstract */
    ObjectPainter.prototype.Redraw = function(/* reason */) {}
 
    /** @summary Start text drawing
