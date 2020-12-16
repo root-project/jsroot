@@ -2195,7 +2195,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       // this.v7SendAttrChanges(changes);
 
       if (changed)
-         this.InteractiveRedraw("pad", "zoom" + r_x + r_y + r_z);
+         this.interactiveRedraw("pad", "zoom" + r_x + r_y + r_z);
 
       return changed;
    }

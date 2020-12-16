@@ -2959,7 +2959,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
 
          this.DecodeOptions(arg);
 
-         this.InteractiveRedraw(true, "drawopt");
+         this.interactiveRedraw(true, "drawopt");
       });
    }
 

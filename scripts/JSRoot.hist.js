@@ -384,7 +384,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                     .attr("height", height);
 
          inter.DragMoveHandler.AddDrag(this, { obj: pt, minwidth: 10, minheight: 20, canselect: true,
-                        redraw: () => { this.InteractiveRedraw(false, "pave_moved"); this.DrawPave(); },
+                        redraw: () => { this.interactiveRedraw(false, "pave_moved"); this.DrawPave(); },
                         ctxmenu: JSROOT.browser.touches && JSROOT.settings.ContextMenu && this.UseContextMenu });
 
          if (this.UseContextMenu && JSROOT.settings.ContextMenu)
@@ -1004,21 +1004,21 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             pave.fY2NDC = JSROOT.gStyle.fStatY;
             pave.fY1NDC = pave.fY2NDC - JSROOT.gStyle.fStatH;
             pave.fInit = 1;
-            this.InteractiveRedraw(true, "pave_moved")
+            this.interactiveRedraw(true, "pave_moved")
          });
 
          menu.add("SetStatFormat", function() {
             let fmt = prompt("Enter StatFormat", pave.fStatFormat);
             if (fmt) {
                pave.fStatFormat = fmt;
-               this.InteractiveRedraw(true, 'exec:SetStatFormat("'+fmt+'")');
+               this.interactiveRedraw(true, 'exec:SetStatFormat("'+fmt+'")');
             }
          });
          menu.add("SetFitFormat", function() {
             let fmt = prompt("Enter FitFormat", pave.fFitFormat);
             if (fmt) {
                pave.fFitFormat = fmt;
-               this.InteractiveRedraw(true, 'exec:SetFitFormat("'+fmt+'")');
+               this.interactiveRedraw(true, 'exec:SetFitFormat("'+fmt+'")');
             }
          });
          menu.add("separator");
@@ -1029,7 +1029,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                fmt = parseInt(fmt);
                if (!isNaN(fmt) && (fmt>=0)) {
                   pave.fOptStat = parseInt(fmt);
-                  this.InteractiveRedraw(true, "exec:SetOptStat("+fmt+")");
+                  this.interactiveRedraw(true, "exec:SetOptStat("+fmt+")");
                }
             }
          });
@@ -1042,10 +1042,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                newopt -= (oldopt>0 ? oldopt : -1) * parseInt(Math.pow(10, arg % 10));
                if (arg % 100 < 10) {
                   pave.fOptStat = newopt;
-                  this.InteractiveRedraw(true, "exec:SetOptStat("+newopt+")");
+                  this.interactiveRedraw(true, "exec:SetOptStat("+newopt+")");
                } else {
                   pave.fOptFit = newopt;
-                  this.InteractiveRedraw(true, "exec:SetOptFit("+newopt+")");
+                  this.interactiveRedraw(true, "exec:SetOptFit("+newopt+")");
                }
             });
          }
@@ -1068,7 +1068,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                fmt = parseInt(fmt);
                if (!isNaN(fmt) && (fmt>=0)) {
                   pave.fOptFit = fmt;
-                  this.InteractiveRedraw(true, "exec:SetOptFit("+fmt+")");
+                  this.interactiveRedraw(true, "exec:SetOptFit("+fmt+")");
                }
             }
          });
@@ -1086,7 +1086,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             pave.fX2NDC = 0.72;
             pave.fY2NDC = 0.99;
             pave.fInit = 1;
-            this.InteractiveRedraw(true, "pave_moved");
+            this.interactiveRedraw(true, "pave_moved");
          });
 
       if (this.UseTextColor)
@@ -1285,7 +1285,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          if ((pave.fName === "title") && (pave._typename === "TPaveText")) {
             let tpainter = painter.pad_painter().findPainterFor(null, "title");
             if (tpainter && (tpainter !== painter)) {
-               tpainter.DeleteThis();
+               tpainter.removeFromPadPrimitives();
+               tpainter.cleanup();
             } else if ((opt == "postitle") || painter.IsDummyPos(pave)) {
                let st = JSROOT.gStyle, fp = painter.frame_painter();
                if (st && fp) {
@@ -2776,7 +2777,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          if (this.draw_content) {
             menu.addchk(!this.options.Zero, 'Suppress zeros', function() {
                this.options.Zero = !this.options.Zero;
-               this.InteractiveRedraw("pad");
+               this.interactiveRedraw("pad");
             });
 
             if ((this.options.Lego==12) || (this.options.Lego==14)) {
@@ -3116,7 +3117,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       }
 
       this.CopyOptionsToOthers();
-      this.InteractiveRedraw("pad","drawopt");
+      this.interactiveRedraw("pad","drawopt");
    }
 
    /** @summary Prepare handle for color draw
@@ -4264,7 +4265,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             this.fillatt.Change(5,1001);
 
          // redraw all objects in pad, inform dependent objects
-         this.InteractiveRedraw("pad", "drawopt");
+         this.interactiveRedraw("pad", "drawopt");
       });
    }
 
@@ -4520,7 +4521,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          if (arg==='inspect')
             return this.showInspector();
          this.DecodeOptions(arg);
-         this.InteractiveRedraw("pad", "drawopt");
+         this.interactiveRedraw("pad", "drawopt");
       });
 
       if (this.options.Color)

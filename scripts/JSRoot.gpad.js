@@ -1417,7 +1417,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.SetRootPadRange(pad);
       }
 
-      this.InteractiveRedraw("pad", "frame");
+      this.interactiveRedraw("pad", "frame");
    }
 
     /** @summary Remove all kinds of X/Y function for axes transformation */
@@ -1627,7 +1627,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       // directly change attribute in the pad
       pad[name] = value;
 
-      this.InteractiveRedraw("pad", "log"+axis);
+      this.interactiveRedraw("pad", "log"+axis);
    }
 
    /** @summary Toggle log state on the specified axis */
@@ -1828,7 +1828,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
 
       if (changed)
-         this.InteractiveRedraw("pad", "zoom");
+         this.interactiveRedraw("pad", "zoom");
 
       return changed;
    }
@@ -2570,7 +2570,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          function SetPadField(arg) {
             this.pad[arg.substr(1)] = parseInt(arg[0]);
-            this.InteractiveRedraw("pad", arg.substr(1));
+            this.interactiveRedraw("pad", arg.substr(1));
          }
 
          menu.addchk(this.pad.fGridx, 'Grid x', (this.pad.fGridx ? '0' : '1') + 'fGridx', SetPadField);

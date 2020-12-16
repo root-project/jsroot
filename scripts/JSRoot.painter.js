@@ -2134,6 +2134,18 @@ JSROOT.define(['d3'], (d3) => {
       return true;
    }
 
+   /** @summary Remove painter from pad list of painters */
+   ObjectPainter.prototype.removeFromPadPrimitives = function() {
+      let pp = this.pad_painter();
+
+      if (!pp || (pp === this)) return false;
+
+      let k = pp.painters.indexOf(this);
+      if (k >= 0) pp.painters.splice(k, 1);
+      return true;
+   }
+
+
    /** @summary Creates marker attributes object
      * @desc Can be used to produce markers in painter.
      * See {@link JSROOT.TAttMarkerHandler} for more info.
@@ -2241,7 +2253,7 @@ JSROOT.define(['d3'], (d3) => {
    /** @summary indicate that redraw was invoked via interactive action (like context menu or zooming)
      * @desc Use to catch such action by GED and by server-side
      * @private */
-   ObjectPainter.prototype.InteractiveRedraw = function(arg, info, subelem) {
+   ObjectPainter.prototype.interactiveRedraw = function(arg, info, subelem) {
 
       let reason;
       if ((typeof info == "string") && (info.indexOf("exec:") != 0)) reason = info;
@@ -2395,17 +2407,6 @@ JSROOT.define(['d3'], (d3) => {
          status_func = this.GetShowStatusFunc();
 
       if (obj && status_func) status_func(this.getItemName() || obj.fName, obj.fTitle || obj._typename, obj._typename);
-   }
-
-   /** @summary Remove painter from list of painters and cleanup all drawings */
-   ObjectPainter.prototype.DeleteThis = function() {
-      let pp = this.pad_painter();
-      if (pp) {
-         let k = pp.painters.indexOf(this);
-         if (k >= 0) pp.painters.splice(k, 1);
-      }
-
-      this.cleanup();
    }
 
    /** @summary Redraw object

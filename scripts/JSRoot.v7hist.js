@@ -700,7 +700,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       }
 
       this.CopyOptionsToOthers();
-      this.InteractiveRedraw("pad", "drawopt");
+      this.interactiveRedraw("pad", "drawopt");
    }
 
    /** @summary Calculate histogram inidicies and axes values for each visible bin */
@@ -1747,7 +1747,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
             this.fillatt.Change(5,1001);
 
          // redraw all objects
-         this.InteractiveRedraw("pad", "drawopt");
+         this.interactiveRedraw("pad", "drawopt");
       });
    }
 
@@ -1955,7 +1955,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
          if (arg==='inspect')
             return this.showInspector();
          this.DecodeOptions(arg);
-         this.InteractiveRedraw("pad", "drawopt");
+         this.interactiveRedraw("pad", "drawopt");
       });
 
       if (this.options.Color)

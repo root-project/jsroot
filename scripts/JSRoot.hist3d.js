@@ -2960,7 +2960,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
          this.DecodeOptions(arg);
 
-         this.InteractiveRedraw(true, "drawopt");
+         this.interactiveRedraw(true, "drawopt");
       });
    }
 
