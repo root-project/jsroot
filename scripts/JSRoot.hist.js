@@ -748,7 +748,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             if ('fFillColor' in mo) o_fill = mo;
             if ('fMarkerColor' in mo) o_marker = mo;
 
-            painter = this.FindPainterFor(mo);
+            painter = this.pad_painter().findPainterFor(mo);
          }
 
          // Draw fill pattern (in a box)
@@ -1283,7 +1283,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return jsrp.ensureTCanvas(painter, false).then(() => {
 
          if ((pave.fName === "title") && (pave._typename === "TPaveText")) {
-            let tpainter = painter.FindPainterFor(null, "title");
+            let tpainter = painter.pad_painter().findPainterFor(null, "title");
             if (tpainter && (tpainter !== painter)) {
                tpainter.DeleteThis();
             } else if ((opt == "postitle") || painter.IsDummyPos(pave)) {
@@ -2044,7 +2044,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    THistPainter.prototype.updateObject = function(obj, opt) {
 
       let histo = this.GetHisto(),
-          fp = this.frame_painter();
+          fp = this.frame_painter(),
+          pp = this.pad_painter();
 
       if (obj !== histo) {
 
@@ -2056,7 +2057,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          // The only that could be done is update of content
 
          // check only stats bit, later other settings can be monitored
-         let statpainter = this.FindPainterFor(this.FindStat());
+         let statpainter = pp ? pp.findPainterFor(this.FindStat()) : null;
          if (histo.TestBit(TH1StatusBits.kNoStats) != obj.TestBit(TH1StatusBits.kNoStats)) {
             histo.fBits = obj.fBits;
             if (statpainter) statpainter.Enabled = !histo.TestBit(TH1StatusBits.kNoStats);
@@ -2144,7 +2145,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          if (this.options.Func) {
 
-            let painters = [], newfuncs = [], pp = this.pad_painter(), pid = this.hist_painter_id;
+            let painters = [], newfuncs = [], pid = this.hist_painter_id;
 
             // find painters associated with histogram
             if (pp)
@@ -2171,7 +2172,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                      }
                   // or just in generic list of painted objects
                   if (!funcpainter && func.fName)
-                     funcpainter = this.FindPainterFor(null, func.fName, func._typename);
+                     funcpainter = pp ? pp.findPainterFor(null, func.fName, func._typename) : null;
 
                   if (funcpainter) {
                      funcpainter.updateObject(func);
@@ -2327,7 +2328,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       let histo = this.GetHisto(), st = JSROOT.gStyle,
           pp = this.pad_painter(),
-          tpainter = this.FindPainterFor(null, "title"),
+          tpainter = pp ? pp.findPainterFor(null, "title") : null,
           pt = tpainter ? tpainter.getObject() : null;
 
       if (!pt && pp && pp.findInPrimitives)
@@ -2367,7 +2368,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    THistPainter.prototype.processTitleChange = function(arg) {
 
       let histo = this.GetHisto(),
-          tpainter = this.FindPainterFor(null, "title");
+          pp = this.pad_painter(),
+          tpainter = pp ? pp.findPainterFor(null, "title") : null;
 
       if (!histo || !tpainter) return null;
 
@@ -2387,14 +2389,15 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (!this.snapid) return;
 
       let stat = this.FindStat(),
-          statpainter = this.FindPainterFor(stat);
+          pp = this.pad_painter(),
+          statpainter = pp ? pp.findPainterFor(stat) : null;
 
       if (statpainter && !statpainter.snapid) statpainter.Redraw();
    }
 
    THistPainter.prototype.ToggleStat = function(arg) {
 
-      let stat = this.FindStat(), statpainter = null;
+      let stat = this.FindStat(), pp = this.pad_painter(), statpainter = null;
 
       if (!arg) arg = "";
 
@@ -2403,7 +2406,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          // when statbox created first time, one need to draw it
          stat = this.CreateStat(true);
       } else {
-         statpainter = this.FindPainterFor(stat);
+         statpainter = pp ? pp.findPainterFor(stat) : null;
       }
 
       if (arg=='only-check') return statpainter ? statpainter.Enabled : false;
@@ -2484,10 +2487,12 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return null;
    }
 
-   /** Summary Find stats box - either in list of functions or as object of correspondent painter */
+   /** @summary Find stats box
+     * @desc either in list of functions or as object of correspondent painter */
    THistPainter.prototype.FindStat = function() {
       if (this.options.PadStats) {
-         let p = this.FindPainterFor(null,"stats", "TPaveStats");
+         let pp = this.pad_painter(),
+             p = pp ? pp.findPainterFor(null,"stats", "TPaveStats") : null;
          return p ? p.getObject() : null;
       }
 
@@ -2598,8 +2603,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       let func = histo.fFunctions.arr[indx],
           opt = histo.fFunctions.opt[indx],
+          pp = this.pad_painter(),
           do_draw = false,
-          func_painter = this.FindPainterFor(func);
+          func_painter = pp ? pp.findPainterFor(func) : null;
 
       // no need to do something if painter for object was already done
       // object will be redraw automatically
@@ -2987,12 +2993,13 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          return Promise.resolve(null);
 
       let pal = this.FindFunction('TPaletteAxis'),
-          pal_painter = this.FindPainterFor(pal);
+          pp = this.pad_painter(),
+          pal_painter = pp ? pp.findPainterFor(pal) : null;
 
       if (this._can_move_colz) { can_move = true; delete this._can_move_colz; }
 
       if (!pal_painter && !pal) {
-         pal_painter = this.FindPainterFor(undefined, undefined, "TPaletteAxis");
+         pal_painter = pp ? pp.findPainterFor(undefined, undefined, "TPaletteAxis") : null;
          if (pal_painter) {
             pal = pal_painter.getObject();
             // add to list of functions

@@ -2442,6 +2442,23 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return null;
    }
 
+   /** @summary Try to find painter for specified object
+     * @desc can be used to find painter for some special objects, registered as
+     * histogram functions
+     * @private */
+   TPadPainter.prototype.findPainterFor = function(selobj, selname, seltype) {
+      for (let n = 0; n < this.painters.length; ++n) {
+         let pobj = this.painters[n].getObject();
+         if (!pobj) continue;
+
+         if (selobj && (pobj === selobj)) return this.painters[n];
+         if (!selname && !seltype) continue;
+         if (selname && (pobj.fName !== selname)) continue;
+         if (seltype && (pobj._typename !== seltype)) continue;
+         return this.painters[n];
+      }
+      return null;
+   }
 
 
    TPadPainter.prototype.RemovePrimitive = function(obj) {

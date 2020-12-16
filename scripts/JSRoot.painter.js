@@ -2405,31 +2405,6 @@ JSROOT.define(['d3'], (d3) => {
       if (obj && status_func) status_func(this.getItemName() || obj.fName, obj.fTitle || obj._typename, obj._typename);
    }
 
-
-   /** @summary Try to find painter for specified object
-     * @desc can be used to find painter for some special objects, registered as
-     * histogram functions
-     * @private */
-   ObjectPainter.prototype.FindPainterFor = function(selobj, selname, seltype) {
-
-      let pp = this.pad_painter();
-      let painters = pp ? pp.painters : null;
-      if (!painters) return null;
-
-      for (let n = 0; n < painters.length; ++n) {
-         let pobj = painters[n].getObject();
-         if (!pobj) continue;
-
-         if (selobj && (pobj === selobj)) return painters[n];
-         if (!selname && !seltype) continue;
-         if (selname && (pobj.fName !== selname)) continue;
-         if (seltype && (pobj._typename !== seltype)) continue;
-         return painters[n];
-      }
-
-      return null;
-   }
-
    /** @summary Remove painter from list of painters and cleanup all drawings */
    ObjectPainter.prototype.DeleteThis = function() {
       let pp = this.pad_painter();

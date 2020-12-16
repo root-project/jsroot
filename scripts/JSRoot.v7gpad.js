@@ -2045,7 +2045,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    /** @summary Returns palette associated with frame. Either from existing palette painter or just default palette */
    RFramePainter.prototype.getHistPalette = function() {
-      let pp = this.FindPainterFor(undefined, undefined, "ROOT::Experimental::RPaletteDrawable");
+      let pp = this.pad_painter().findPainterFor(undefined, undefined, "ROOT::Experimental::RPaletteDrawable");
 
       if (pp) return pp.getHistPalette();
 
@@ -2459,6 +2459,25 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             this.painters.splice(k, 1);
          }
    }
+
+   /** @summary Try to find painter for specified object
+     * @desc can be used to find painter for some special objects, registered as
+     * histogram functions
+     * @private */
+   RPadPainter.prototype.findPainterFor = function(selobj, selname, seltype) {
+      for (let n = 0; n < this.painters.length; ++n) {
+         let pobj = this.painters[n].getObject();
+         if (!pobj) continue;
+
+         if (selobj && (pobj === selobj)) return this.painters[n];
+         if (!selname && !seltype) continue;
+         if (selname && (pobj.fName !== selname)) continue;
+         if (seltype && (pobj._typename !== seltype)) continue;
+         return this.painters[n];
+      }
+      return null;
+   }
+
 
    /** @summary Call function for each painter in pad
      * @param {function} userfunc - function to call

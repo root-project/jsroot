@@ -625,7 +625,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
    /** @summary Update palette drawing */
    RHistPainter.prototype.UpdatePaletteDraw = function() {
       if (this.isMainPainter()) {
-         let pp = this.FindPainterFor(undefined, undefined, "ROOT::Experimental::RPaletteDrawable");
+         let pp = this.pad_painter().findPainterFor(undefined, undefined, "ROOT::Experimental::RPaletteDrawable");
          if (pp) pp.DrawPalette();
       }
    }

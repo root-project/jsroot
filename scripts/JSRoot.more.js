@@ -3141,7 +3141,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       if (!this.matchObjectType(obj)) return false;
 
       let mgraph = this.getObject(),
-          graphs = obj.fGraphs;
+          graphs = obj.fGraphs,
+          pp = this.pad_painter();
 
       mgraph.fTitle = obj.fTitle;
 
@@ -3163,7 +3164,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          for (let i = 0; i < obj.fFunctions.arr.length; ++i) {
             let func = obj.fFunctions.arr[i];
             if (!func || !func._typename || !func.fName) continue;
-            let funcpainter = this.FindPainterFor(null, func.fName, func._typename);
+            let funcpainter = pp ? pp.findPainterFor(null, func.fName, func._typename) : null;
             if (funcpainter) funcpainter.updateObject(func);
          }
 
@@ -3782,7 +3783,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          this.fPalette = true; // to emulate behaviour of hist painter
       }
 
-      let pal_painter = this.FindPainterFor(this.draw_palette);
+      let pal_painter = this.pad_painter().findPainterFor(this.draw_palette);
 
       if (!enabled) {
          if (pal_painter) {
