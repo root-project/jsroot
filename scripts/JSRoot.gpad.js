@@ -1981,16 +1981,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return this.svg_pad(this.this_pad_name);
    }
 
-   TPadPainter.prototype.getMainPainter = function(not_store) {
-      let svg_p = this.svg_this_pad();
-      return svg_p.empty() ? null : svg_p.property('mainpainter');
+   TPadPainter.prototype.getMainPainter = function() {
+      return this.main_painter_ref || null;
    }
 
    TPadPainter.prototype.setMainPainter = function(painter, force) {
-      let svg_p = this.svg_this_pad();
-      if (!svg_p.empty())
-         if (force || !svg_p.property('mainpainter'))
-             svg_p.property('mainpainter', painter);
+      if (!this.main_painter_ref || force)
+         this.main_painter_ref = painter;
    }
 
 
@@ -2003,10 +2000,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       let svg_p = this.svg_this_pad();
       if (!svg_p.empty()) {
          svg_p.property('pad_painter', null);
-         svg_p.property('mainpainter', null);
          if (!this.iscan) svg_p.remove();
       }
 
+      delete this.main_painter_ref;
       delete this.frame_painter_ref;
       delete this.pads_cache;
       delete this.custom_palette;
@@ -2160,7 +2157,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          svg = render_to.append("svg")
              .attr("class", "jsroot root_canvas")
              .property('pad_painter', this) // this is custom property
-             .property('mainpainter', null) // this is custom property
              .property('current_pad', "") // this is custom property
              .property('redraw_by_resize', false); // could be enabled to force redraw by each resize
 
@@ -2323,8 +2319,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
              .append("svg:svg") // here was g before, svg used to blend all drawin outside
              .classed("__root_pad_" + this.this_pad_name, true)
              .attr("pad", this.this_pad_name) // set extra attribute  to mark pad name
-             .property('pad_painter', this) // this is custom property
-             .property('mainpainter', null); // this is custom property
+             .property('pad_painter', this); // this is custom property
          svg_rect = svg_pad.append("svg:rect").attr("class", "root_pad_border");
 
          svg_pad.append("svg:g").attr("class","primitives_layer");
@@ -3071,13 +3066,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
 
       if (!isanyfound) {
-         let svg_p = this.svg_this_pad(),
-             fp = this.frame_painter();
-         if (svg_p && !svg_p.empty())
-            svg_p.property('mainpainter', null);
+         let fp = this.frame_painter();
          for (let k=0;k<this.painters.length;++k)
             if (fp !== this.painters[k])
                this.painters[k].cleanup();
+         delete this.main_painter_ref;
          this.painters = [];
          if (fp) {
             this.painters.push(fp);
