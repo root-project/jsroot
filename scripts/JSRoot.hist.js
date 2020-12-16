@@ -291,10 +291,11 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          }
       }
 
-      let pos_x = Math.round(pt.fX1NDC * this.pad_width()),
-          pos_y = Math.round((1.0 - pt.fY2NDC) * this.pad_height()),
-          width = Math.round((pt.fX2NDC - pt.fX1NDC) * this.pad_width()),
-          height = Math.round((pt.fY2NDC - pt.fY1NDC) * this.pad_height()),
+      let pad_rect = this.getPadRect(), 
+          pos_x = Math.round(pt.fX1NDC * pad_rect.width),
+          pos_y = Math.round((1.0 - pt.fY2NDC) * pad_rect.height),
+          width = Math.round((pt.fX2NDC - pt.fX1NDC) * pad_rect.width),
+          height = Math.round((pt.fY2NDC - pt.fY1NDC) * pad_rect.height),
           brd = pt.fBorderSize,
           dx = (opt.indexOf("L")>=0) ? -1 : ((opt.indexOf("R")>=0) ? 1 : 0),
           dy = (opt.indexOf("T")>=0) ? -1 : ((opt.indexOf("B")>=0) ? 1 : 0);
@@ -359,11 +360,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                .call(this.fillatt.func)
                .call(this.lineatt.func);
 
-      let rect =
-         this.draw_g.append("svg:path")
-          .attr("d", "M0,0h"+width + "v"+height + "h-"+width + "z")
-          .call(this.fillatt.func)
-          .call(this.lineatt.func);
+      let rect = this.draw_g.append("svg:path")
+                     .attr("d", "M0,0h"+width + "v"+height + "h-"+width + "z")
+                     .call(this.fillatt.func)
+                     .call(this.lineatt.func);
 
       if (typeof this.PaveDrawFunc == 'function')
          promise = this.PaveDrawFunc(width, height, arg);
@@ -528,7 +528,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       let pt = this.getObject(),
           tcolor = this.getColor(pt.fTextColor),
           nlines = 0, lines = [],
-          can_height = this.pad_height(),
+          rect = this.getPadRect(),
           pp = this.pad_painter(),
           individual_positioning = false,
           draw_header = (pt.fLabel.length > 0),
@@ -571,7 +571,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
                   let sub_g = text_g.append("svg:g");
 
-                  this.startTextDrawing(pt.fTextFont, (entry.fTextSize || pt.fTextSize) * can_height, sub_g);
+                  this.startTextDrawing(pt.fTextFont, (entry.fTextSize || pt.fTextSize) * rect.height, sub_g);
 
                   this.drawText({ align: entry.fTextAlign || pt.fTextAlign, x: lx, y: ly, text: entry.fTitle, color: jcolor,
                                   latex: (entry._typename == "TText") ? 0 : 1,  draw_g: sub_g, fast: fast_draw });
@@ -617,7 +617,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          // for single line (typically title) limit font size
          if ((nlines == 1) && (pt.fTextSize > 0)) {
-            max_font_size = Math.round(pt.fTextSize*can_height);
+            max_font_size = Math.round(pt.fTextSize*rect.height);
             if (max_font_size < 3) max_font_size = 3;
          }
 
@@ -631,7 +631,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             } else {
                arg = { x: margin_x, y: j*stepy, width: width-2*margin_x, height: stepy };
                if (lj.fTextColor) arg.color = this.getColor(lj.fTextColor);
-               if (lj.fTextSize) arg.font_size = Math.round(lj.fTextSize*can_height);
+               if (lj.fTextSize) arg.font_size = Math.round(lj.fTextSize*rect.height);
             }
 
             arg.align = pt.fTextAlign;
@@ -717,7 +717,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           step_y = (h - 2*padding_y)/nrows,
           font_size = 0.9*step_y,
           max_font_size = 0, // not limited in the beggining
-          ph = this.pad_height(),
+          ph = this.getPadRect().height,
           any_opt = false, i = -1;
 
       if (legend.fTextSize && (ph*legend.fTextSize > 2) && (ph*legend.fTextSize < font_size))
@@ -837,7 +837,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           nbr1 = axis.fNdiv % 100,
           pos_x = parseInt(this.draw_g.attr("x")), // pave position
           pos_y = parseInt(this.draw_g.attr("y")),
-          width = this.pad_width(),
+          width = this.getPadRect().width,
           main = this.getMainPainter(),
           framep = this.frame_painter(),
           zmin = 0, zmax = 100,

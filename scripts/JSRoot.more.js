@@ -8,7 +8,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
    function drawText() {
       let text = this.getObject(),
-          w = this.pad_width(), h = this.pad_height(),
+          rect = this.getPadRect(),
+          w = rect.width, h = rect.height,
           pos_x = text.fX, pos_y = text.fY,
           tcolor = this.getColor(text.fTextColor),
           use_frame = false,
@@ -359,9 +360,10 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    // ======================================================================================
 
    function drawArrow() {
-      let arrow = this.getObject(), kLineNDC = JSROOT.BIT(14), oo = arrow.fOption;
+      let arrow = this.getObject(), kLineNDC = JSROOT.BIT(14), 
+          oo = arrow.fOption, rect = this.getPadRect();
 
-      this.wsize = Math.max(3, Math.round(Math.max(this.pad_width(), this.pad_height()) * arrow.fArrowSize*0.8));
+      this.wsize = Math.max(3, Math.round(Math.max(rect.width, rect.height) * arrow.fArrowSize*0.8));
       this.isndc = arrow.TestBit(kLineNDC);
       this.angle2 = arrow.fAngle/2/180 * Math.PI;
       this.beg = this.mid = this.end = 0;
@@ -1055,12 +1057,14 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       let pmain = this.frame_painter();
 
       if (pmain && pmain.grx && pmain.gry) return pmain;
+      
+      let rect = this.getPadRect();
 
       pmain = {
           pad_layer: true,
           pad: this.root_pad(),
-          pw: this.pad_width(),
-          ph: this.pad_height(),
+          pw: rect.width,
+          ph: rect.height,
           grx: function(value) {
              if (this.pad.fLogx)
                 value = (value>0) ? Math.log10(value) : this.pad.fUxmin;
@@ -2057,8 +2061,9 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    /** @summary Returns coordinate of frame - without using frame itself */
    TGraphPolargramPainter.prototype.GetFrameRect = function() {
       let pad = this.root_pad(),
-          w = this.pad_width(),
-          h = this.pad_height(),
+          prect = this.getPadRect(),
+          w = prect.width,
+          h = prect.height,
           rect = {};
 
       rect.szx = Math.round(Math.max(0.1, 0.5 - Math.max(pad.fLeftMargin, pad.fRightMargin))*w);
@@ -3479,7 +3484,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
                      check_attributes();
 
-                     let height = (attr.fTextSize > 1) ? attr.fTextSize : this.pad_height() * attr.fTextSize;
+                     let height = (attr.fTextSize > 1) ? attr.fTextSize : this.getPadRect().height * attr.fTextSize;
 
                      let group = this.draw_g.append("svg:g");
 

@@ -153,7 +153,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
        if (typeof text_size == "string") text_size = parseFloat(text_size);
        if (isNaN(text_size) || (text_size <= 0)) text_size = 12;
-       if (!fontScale) fontScale = this.pad_height() || 10;
+       if (!fontScale) fontScale = this.getPadRect().height || 10;
 
        let handler = new JSROOT.FontHandler(null, text_size, fontScale, font_family, font_style, font_weight);
 
@@ -1075,7 +1075,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           opposite = (title_position == "left"),
           title_shift_x = 0, title_shift_y = 0, title_basepos = 0;
 
-      this.titleFont = this.v7EvalFont("title", { size: 0.03 }, this.pad_height());
+      this.titleFont = this.v7EvalFont("title", { size: 0.03 }, this.getPadRect().height);
       this.titleFont.roundAngle(180, this.vertical ? 270 : 0);
 
       this.titleOffset = this.v7EvalLength("title_offset", this.scaling_size, 0);
@@ -1132,9 +1132,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Performs axis drawing
      * @returns {Promise} which resolved when drawing is completed */
    RAxisPainter.prototype.drawAxis = function(layer, transform, side) {
-      let axis_g = layer,
-          pad_w = this.pad_width() || 10,
-          pad_h = this.pad_height() || 10;
+      let axis_g = layer, rect = this.getPadRect();
 
       if (side === undefined) side = 1;
 
@@ -1148,7 +1146,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       axis_g.attr("transform", transform || null);
 
-      this.scaling_size = this.vertical ? pad_w : pad_h;
+      this.scaling_size = this.vertical ? rect.width : rect.height;
       this.extractDrawAttributes();
       this.axis_g = axis_g;
       this.side = side;
@@ -1321,13 +1319,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       });
    }
 
-   /** @summary Process interactive moving of the stats box */
+   /** @summary Process interactive moving of the axis drawing */
    RAxisPainter.prototype.PositionChanged = function() {
       let axis_x = parseInt(this.draw_g.attr("x")),
           axis_y = parseInt(this.draw_g.attr("y")),
           drawable = this.getObject(),
-          xn = axis_x / this.pad_width(),
-          yn = 1 - axis_y / this.pad_height();
+          rect = this.getPadRect(),
+          xn = axis_x / rect.width,
+          yn = 1 - axis_y / rect.height;
 
       drawable.fPos.fHoriz.fArr = [ xn ];
       drawable.fPos.fVert.fArr = [ yn ];
@@ -1516,12 +1515,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    RFramePainter.prototype.UpdateAttributes = function(force) {
       if ((this.fX1NDC === undefined) || (force && !this.modified_NDC)) {
 
-         let padw = this.pad_width(), padh = this.pad_height();
-
-         this.fX1NDC = this.v7EvalLength("margin_left", padw, JSROOT.settings.FrameNDC.fX1NDC)/padw;
-         this.fY1NDC = this.v7EvalLength("margin_bottom", padh, JSROOT.settings.FrameNDC.fY1NDC)/padh;
-         this.fX2NDC = 1 - this.v7EvalLength("margin_right", padw, 1-JSROOT.settings.FrameNDC.fX2NDC)/padw;
-         this.fY2NDC = 1 - this.v7EvalLength("margin_top", padh, 1-JSROOT.settings.FrameNDC.fY2NDC)/padh;
+         let rect = this.getPadRect();
+         this.fX1NDC = this.v7EvalLength("margin_left", rect.width, JSROOT.settings.FrameNDC.fX1NDC) / rect.width;
+         this.fY1NDC = this.v7EvalLength("margin_bottom", rect.height, JSROOT.settings.FrameNDC.fY1NDC) / rect.height;
+         this.fX2NDC = 1 - this.v7EvalLength("margin_right", rect.width, 1-JSROOT.settings.FrameNDC.fX2NDC) / rect.width;
+         this.fY2NDC = 1 - this.v7EvalLength("margin_top", rect.height, 1-JSROOT.settings.FrameNDC.fY2NDC) / rect.height;
       }
 
       if (!this.fillatt)
@@ -1937,12 +1935,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       // first update all attributes from objects
       this.UpdateAttributes();
 
-      let width = this.pad_width(),
-          height = this.pad_height(),
-          lm = Math.round(width * this.fX1NDC),
-          w = Math.round(width * (this.fX2NDC - this.fX1NDC)),
-          tm = Math.round(height * (1 - this.fY2NDC)),
-          h = Math.round(height * (this.fY2NDC - this.fY1NDC)),
+      let rect = this.getPadRect(),
+          lm = Math.round(rect.width * this.fX1NDC),
+          w = Math.round(rect.width * (this.fX2NDC - this.fX1NDC)),
+          tm = Math.round(rect.height * (1 - this.fY2NDC)),
+          h = Math.round(rect.height * (this.fY2NDC - this.fY1NDC)),
           rotate = false, fixpos = false,
           trans = "translate(" + lm + "," + tm + ")";
 
@@ -3665,10 +3662,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       let norm = GetV(0, 0),
           pixel = GetV(1, 0),
-          user = ignore_user ? undefined : GetV(2);
-
-      let res = pixel;
-      if (norm) res += (vertical ? this.pad_height() : this.pad_width()) * norm;
+          user = ignore_user ? undefined : GetV(2),
+          res = pixel;
+          
+      if (norm) {
+         let rect = this.getPadRect();
+         res += (vertical ? rect.height : rect.width) * norm;  
+      }
 
       if (user !== undefined)
           console.log('Do implement user coordinates');
@@ -3683,7 +3683,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if (pos) {
          res.x = this.GetPadLength(false, pos.fHoriz);
-         res.y = this.pad_height() - this.GetPadLength(true, pos.fVert);
+         res.y = this.getPadRect().height - this.GetPadLength(true, pos.fVert);
       }
 
       return res;
@@ -4292,8 +4292,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    RPavePainter.prototype.DrawPave = function() {
 
-      let pw = this.pad_width(),
-          ph = this.pad_height(),
+      let rect = this.getPadRect(), 
           fx, fy, fw;
 
       if (this.frame_painter()) {
@@ -4303,17 +4302,17 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          // fh = this.frame_height();
       } else {
          let st = JSROOT.gStyle;
-         fx = Math.round(st.fPadLeftMargin*pw);
-         fy = Math.round(st.fPadTopMargin*ph);
-         fw = Math.round((1-st.fPadLeftMargin-st.fPadRightMargin)*pw);
-         // fh = Math.round((1-st.fPadTopMargin-st.fPadBottomMargin)*ph);
+         fx = Math.round(st.fPadLeftMargin * rect.width);
+         fy = Math.round(st.fPadTopMargin * rect.height);
+         fw = Math.round((1-st.fPadLeftMargin-st.fPadRightMargin) * rect.width);
+         // fh = Math.round((1-st.fPadTopMargin-st.fPadBottomMargin) * rect.height);
       }
 
       let visible      = this.v7EvalAttr("visible", true),
-          pave_cornerx = this.v7EvalLength("cornerx", pw, 0.02),
-          pave_cornery = this.v7EvalLength("cornery", ph, -0.02),
-          pave_width   = this.v7EvalLength("width", pw, 0.3),
-          pave_height  = this.v7EvalLength("height", ph, 0.3),
+          pave_cornerx = this.v7EvalLength("cornerx", rect.width, 0.02),
+          pave_cornery = this.v7EvalLength("cornery", rect.height, -0.02),
+          pave_width   = this.v7EvalLength("width", rect.width, 0.3),
+          pave_height  = this.v7EvalLength("height", rect.height, 0.3),
           line_width   = this.v7EvalAttr("border_width", 1),
           line_style   = this.v7EvalAttr("border_style", 1),
           line_color   = this.v7EvalColor("border_color", "black"),
@@ -4374,8 +4373,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       let pave_x = parseInt(this.draw_g.attr("x")),
           pave_y = parseInt(this.draw_g.attr("y")),
-          pw     = this.pad_width(),
-          ph     = this.pad_height(),
+          rect = this.getPadRect(),
           fx, fy, fw;
 
       if (this.frame_painter()) {
@@ -4385,17 +4383,17 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          // fh = this.frame_height();
       } else {
          let st = JSROOT.gStyle;
-         fx = Math.round(st.fPadLeftMargin*pw);
-         fy = Math.round(st.fPadTopMargin*ph);
-         fw = Math.round((1-st.fPadLeftMargin-st.fPadRightMargin)*pw);
-         // fh = Math.round((1-st.fPadTopMargin-st.fPadBottomMargin)*ph);
+         fx = Math.round(st.fPadLeftMargin * rect.width);
+         fy = Math.round(st.fPadTopMargin * rect.height);
+         fw = Math.round((1-st.fPadLeftMargin-st.fPadRightMargin) * rect.width);
+         // fh = Math.round((1-st.fPadTopMargin-st.fPadBottomMargin) * rect.height);
       }
 
       let changes = {};
-      this.v7AttrChange(changes, "cornerx", (pave_x + this.pave_width - fx - fw) / pw);
-      this.v7AttrChange(changes, "cornery", (pave_y - fy) / ph);
-      this.v7AttrChange(changes, "width", this.pave_width / pw);
-      this.v7AttrChange(changes, "height", this.pave_height / ph);
+      this.v7AttrChange(changes, "cornerx", (pave_x + this.pave_width - fx - fw) / rect.width);
+      this.v7AttrChange(changes, "cornery", (pave_y - fy) / rect.height);
+      this.v7AttrChange(changes, "width", this.pave_width / rect.width);
+      this.v7AttrChange(changes, "height", this.pave_height / rect.height);
       this.v7SendAttrChanges(changes, false); // do not invoke canvas update on the server
 
       this.draw_g.select("rect")
@@ -4430,7 +4428,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           fy           = this.frame_y(),
           fw           = this.frame_width(),
           // fh           = this.frame_height(),
-          ph           = this.pad_height(),
+          ph           = this.getPadRect().height,
           title        = this.getObject(),
           title_margin = this.v7EvalLength("margin", ph, 0.02),
           title_width  = fw,
@@ -4640,7 +4638,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           fy           = this.frame_y(),
           fw           = this.frame_width(),
           fh           = this.frame_height(),
-          pw           = this.pad_width(),
+          pw           = this.getPadRect().width,
           visible      = this.v7EvalAttr("visible", true),
           palette_width, palette_height;
 

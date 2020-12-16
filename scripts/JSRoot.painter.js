@@ -1996,7 +1996,8 @@ JSROOT.define(['d3'], (d3) => {
          }
       } else if (!use_frame) {
          if (!isndc) func.pad = this.root_pad(); // need for NDC conversion
-         func.padw = this.pad_width();
+         let rect = this.getPadRect();
+         func.padw = rect.width;
          func.x = function(value) {
             if (this.pad) {
                if (this.pad.fLogx)
@@ -2006,7 +2007,7 @@ JSROOT.define(['d3'], (d3) => {
             value *= this.padw;
             return this.nornd ? value : Math.round(value);
          }
-         func.padh = this.pad_height();
+         func.padh = rect.height;
          func.y = function(value) {
             if (this.pad) {
                if (this.pad.fLogy)
@@ -2050,8 +2051,9 @@ JSROOT.define(['d3'], (d3) => {
          return main ? main.RevertAxis(axis, coord) : 0;
       }
 
-      let value = (axis == "y") ? (1 - coord / this.pad_height()) : coord / this.pad_width();
-      let pad = ndc ? null : this.root_pad();
+      let rect = this.getPadRect(),
+          value = (axis == "y") ? (1 - coord / rect.height) : coord / rect.width,
+          pad = ndc ? null : this.root_pad();
 
       if (pad) {
          if (axis == "y") {

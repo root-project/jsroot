@@ -45,7 +45,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          let hints = [], nhints = 0, maxlen = 0, lastcolor1 = 0, usecolor1 = false,
             textheight = 11, hmargin = 3, wmargin = 3, hstep = 1.2,
             frame_rect = this.GetFrameRect(),
-            pad_width = this.pad_width(),
+            pad_width = this.getPadRect().width,
             pp = this.pad_painter(),
             font = new JSROOT.FontHandler(160, textheight),
             disable_tootlips = !this.isTooltipAllowed() || !this.tooltip_enabled;
@@ -180,7 +180,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             gapy = 10,  // y coordinate, taking into account all gaps
             gapminx = -1111, gapmaxx = -1111,
             minhinty = -frame_shift.y,
-            maxhinty = this.canv_painter().pad_height() - frame_rect.y - frame_shift.y;
+            maxhinty = this.canv_painter().getPadRect().height - frame_rect.y - frame_shift.y;
 
          function FindPosInGap(y) {
             for (let n = 0; (n < hints.length) && (y < maxhinty); ++n) {
@@ -419,10 +419,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
                if (change_size || change_pos) {
                   if ('obj' in callback) {
-                     callback.obj.fX1NDC = newx / pthis.pad_width();
-                     callback.obj.fX2NDC = (newx + newwidth) / pthis.pad_width();
-                     callback.obj.fY1NDC = 1 - (newy + newheight) / pthis.pad_height();
-                     callback.obj.fY2NDC = 1 - newy / pthis.pad_height();
+                     let rect = pthis.getPadRect();
+                     callback.obj.fX1NDC = newx / rect.width;
+                     callback.obj.fX2NDC = (newx + newwidth) / rect.width;
+                     callback.obj.fY1NDC = 1 - (newy + newheight) / rect.height;
+                     callback.obj.fY2NDC = 1 - newy / rect.height;
                      callback.obj.modified_NDC = true; // indicate that NDC was interactively changed, block in updated
                   }
                   if ('redraw' in callback) callback.redraw();
@@ -445,12 +446,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
                evnt.sourceEvent.preventDefault();
                evnt.sourceEvent.stopPropagation();
+               
+               let pad_rect = pthis.getPadRect();
 
                let handle = {
                   acc_x1: Number(pthis.draw_g.attr("x")),
                   acc_y1: Number(pthis.draw_g.attr("y")),
-                  pad_w: pthis.pad_width() - rect_width(),
-                  pad_h: pthis.pad_height() - rect_height(),
+                  pad_w: pad_rect.width - rect_width(),
+                  pad_h: pad_rect.height - rect_height(),
                   drag_tm: new Date(),
                   path: "v" + rect_height() + "h" + rect_width() + "v" + (-rect_height()) + "z"
                };
@@ -515,11 +518,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
                setPainterTooltipEnabled(pthis, false); // disable tooltip
 
+               let pad_rect = pthis.getPadRect();
+               
                let handle = {
                   acc_x1: Number(pthis.draw_g.attr("x")),
                   acc_y1: Number(pthis.draw_g.attr("y")),
-                  pad_w: pthis.pad_width(),
-                  pad_h: pthis.pad_height()
+                  pad_w: pad_rect.width,
+                  pad_h: pad_rect.height
                };
 
                handle.acc_x2 = handle.acc_x1 + rect_width();
@@ -1594,8 +1599,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          }
 
          group.property("nextx", x);
+         
+         let rect = this.getPadRect();
 
-         this.AlignBtns(group, this.pad_width(), this.pad_height());
+         this.AlignBtns(group, rect.width, rect.height);
 
          if (group.property('vertical'))
             ctrl.attr("y", x);
