@@ -2065,25 +2065,6 @@ JSROOT.define(['d3'], (d3) => {
       return pp ? pp.frame_painter() : null;
    }
 
-   /** @summary Returns property of the frame painter
-    * @private */
-   function _frame_property(painter, name) {
-      let fp = painter.frame_painter();
-      return fp && fp[name] ? fp[name] : 0;
-   }
-
-   /** @summary Returns frame X coordinate relative to pad */
-   ObjectPainter.prototype.frame_x = function() { return _frame_property(this, "_frame_x"); }
-
-   /** @summary Returns frame Y coordinate relative to pad */
-   ObjectPainter.prototype.frame_y = function() { return _frame_property(this, "_frame_y"); }
-
-   /** @summary Returns frame width */
-   ObjectPainter.prototype.frame_width = function() { return _frame_property(this, "_frame_width"); }
-
-   /** @summary Returns frame height */
-   ObjectPainter.prototype.frame_height = function() { return _frame_property(this, "_frame_height"); }
-
    /** @summary Returns main object painter on the pad.
      * @desc Typically it is first histogram drawn on the pad and which draws frame axes
      * But it also can be special usecase as TASImage or TGraphPolargram
