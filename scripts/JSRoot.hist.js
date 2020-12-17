@@ -291,7 +291,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          }
       }
 
-      let pad_rect = this.getPadRect(), 
+      let pad_rect = this.getPadPainter().getPadRect(),
           pos_x = Math.round(pt.fX1NDC * pad_rect.width),
           pos_y = Math.round((1.0 - pt.fY2NDC) * pad_rect.height),
           width = Math.round((pt.fX2NDC - pt.fX1NDC) * pad_rect.width),
@@ -528,8 +528,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       let pt = this.getObject(),
           tcolor = this.getColor(pt.fTextColor),
           nlines = 0, lines = [],
-          rect = this.getPadRect(),
           pp = this.pad_painter(),
+          pad_height = pp.getPadHeight(),
           individual_positioning = false,
           draw_header = (pt.fLabel.length > 0),
           promises = [];
@@ -571,7 +571,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
                   let sub_g = text_g.append("svg:g");
 
-                  this.startTextDrawing(pt.fTextFont, (entry.fTextSize || pt.fTextSize) * rect.height, sub_g);
+                  this.startTextDrawing(pt.fTextFont, (entry.fTextSize || pt.fTextSize) * pad_height, sub_g);
 
                   this.drawText({ align: entry.fTextAlign || pt.fTextAlign, x: lx, y: ly, text: entry.fTitle, color: jcolor,
                                   latex: (entry._typename == "TText") ? 0 : 1,  draw_g: sub_g, fast: fast_draw });
@@ -617,7 +617,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          // for single line (typically title) limit font size
          if ((nlines == 1) && (pt.fTextSize > 0)) {
-            max_font_size = Math.round(pt.fTextSize*rect.height);
+            max_font_size = Math.round(pt.fTextSize * pad_height);
             if (max_font_size < 3) max_font_size = 3;
          }
 
@@ -631,7 +631,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             } else {
                arg = { x: margin_x, y: j*stepy, width: width-2*margin_x, height: stepy };
                if (lj.fTextColor) arg.color = this.getColor(lj.fTextColor);
-               if (lj.fTextSize) arg.font_size = Math.round(lj.fTextSize*rect.height);
+               if (lj.fTextSize) arg.font_size = Math.round(lj.fTextSize * pad_height);
             }
 
             arg.align = pt.fTextAlign;
@@ -717,7 +717,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           step_y = (h - 2*padding_y)/nrows,
           font_size = 0.9*step_y,
           max_font_size = 0, // not limited in the beggining
-          ph = this.getPadRect().height,
+          ph = this.getPadPainter().getPadHeight(),
           any_opt = false, i = -1;
 
       if (legend.fTextSize && (ph*legend.fTextSize > 2) && (ph*legend.fTextSize < font_size))
@@ -837,7 +837,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           nbr1 = axis.fNdiv % 100,
           pos_x = parseInt(this.draw_g.attr("x")), // pave position
           pos_y = parseInt(this.draw_g.attr("y")),
-          width = this.getPadRect().width,
+          width = this.getPadPainter().getPadWidth(),
           main = this.getMainPainter(),
           framep = this.frame_painter(),
           zmin = 0, zmax = 100,

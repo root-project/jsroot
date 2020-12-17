@@ -1473,7 +1473,7 @@ JSROOT.define(['d3'], (d3) => {
       }
 
       let rect = jsrp.getElementRect(main),
-         old_h = main.property('draw_height'), 
+         old_h = main.property('draw_height'),
          old_w = main.property('draw_width');
 
       rect.changed = false;
@@ -1933,6 +1933,18 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /** @summary returns pad painter for specified pad */
+   ObjectPainter.prototype.getPadPainter = function(pad_name) {
+      let elem = this.svg_pad(typeof pad_name == "string" ? pad_name : undefined);
+      return elem.empty() ? null : elem.property('pad_painter');
+   }
+
+   /** @summary returns canvas painter */
+   ObjectPainter.prototype.getCanvPainter = function() {
+      let elem = this.svg_canvas();
+      return elem.empty() ? null : elem.property('pad_painter');
+   }
+
+   /** @summary returns pad painter for specified pad */
    ObjectPainter.prototype.pad_painter = function(pad_name) {
       let elem = this.svg_pad(typeof pad_name == "string" ? pad_name : undefined);
       return elem.empty() ? null : elem.property('pad_painter');
@@ -1950,19 +1962,6 @@ JSROOT.define(['d3'], (d3) => {
       let pp = this.pad_painter();
       return pp ? pp.pad : null;
    }
-
-   /** @summary Returns object with width and height properties
-     * @returns {object} res with res.width and res.height */
-   ObjectPainter.prototype.getPadRect = function() {
-      let res = { x:0, y: 0, width: 0, height: 0 },
-          svg = this.svg_pad();
-      if (!svg.empty()) {
-         res.width = svg.property("draw_width") || 0;
-         res.height = svg.property("draw_height") || 0; 
-      }
-      return res;
-   }
-
 
    /** @summary Return functor, which can convert x and y coordinates into pixels, used for drawing
      * @desc X and Y coordinates can be converted by calling func.x(x) and func.y(y)
@@ -1982,9 +1981,9 @@ JSROOT.define(['d3'], (d3) => {
             func.y = function(y) { return Math.round(this.main.gry(y)); }
          }
       } else if (!use_frame) {
+         let pp = this.getPadPainter();
          if (!isndc) func.pad = this.root_pad(); // need for NDC conversion
-         let rect = this.getPadRect();
-         func.padw = rect.width;
+         func.padw = pp ? pp.getPadWidth() : 10;
          func.x = function(value) {
             if (this.pad) {
                if (this.pad.fLogx)
@@ -1994,7 +1993,7 @@ JSROOT.define(['d3'], (d3) => {
             value *= this.padw;
             return this.nornd ? value : Math.round(value);
          }
-         func.padh = rect.height;
+         func.padh = pp ? pp.getPadHeight() : 10;
          func.y = function(value) {
             if (this.pad) {
                if (this.pad.fLogy)
@@ -2038,8 +2037,8 @@ JSROOT.define(['d3'], (d3) => {
          return main ? main.RevertAxis(axis, coord) : 0;
       }
 
-      let rect = this.getPadRect(),
-          value = (axis == "y") ? (1 - coord / rect.height) : coord / rect.width,
+      let pp = this.getPadPainter(),
+          value = (axis == "y") ? (1 - coord / pp.getPadHeight()) : coord / pp.getPadWidth(),
           pad = ndc ? null : this.root_pad();
 
       if (pad) {
@@ -2364,13 +2363,13 @@ JSROOT.define(['d3'], (d3) => {
 
    /** @summary shows objects status
      * @desc Either used canvas painter method or globaly assigned
-     * When no parameters are specified, just basic object properties are shown 
+     * When no parameters are specified, just basic object properties are shown
      * @private */
    ObjectPainter.prototype.showObjectStatus = function(name, title, info, info2) {
       let cp = this.canv_painter();
 
       if (cp && (typeof cp.ShowCanvasStatus !== 'function')) cp = null;
-      
+
       if (!cp && (typeof jsrp.ShowStatus !== 'function')) return false;
 
       if (this.enlargeMain('state') === 'on') return false;
@@ -2382,8 +2381,8 @@ JSROOT.define(['d3'], (d3) => {
          title = obj.fTitle || obj._typename;
          info = obj._typename;
       }
-      
-      if (cp) 
+
+      if (cp)
          cp.ShowCanvasStatus(name, title, info, info2);
       else
          jsrp.ShowStatus(name, title, info, info2);

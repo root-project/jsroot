@@ -8,8 +8,9 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
    function drawText() {
       let text = this.getObject(),
-          rect = this.getPadRect(),
-          w = rect.width, h = rect.height,
+          pp = this.getPadPainter(),
+          w = pp.getPadWidth(),
+          h = pp.getPadHeight(),
           pos_x = text.fX, pos_y = text.fY,
           tcolor = this.getColor(text.fTextColor),
           use_frame = false,
@@ -360,8 +361,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    // ======================================================================================
 
    function drawArrow() {
-      let arrow = this.getObject(), kLineNDC = JSROOT.BIT(14), 
-          oo = arrow.fOption, rect = this.getPadRect();
+      let arrow = this.getObject(), kLineNDC = JSROOT.BIT(14),
+          oo = arrow.fOption, rect = this.getPadPainter().getPadRect();
 
       this.wsize = Math.max(3, Math.round(Math.max(rect.width, rect.height) * arrow.fArrowSize*0.8));
       this.isndc = arrow.TestBit(kLineNDC);
@@ -1059,8 +1060,10 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       let pmain = this.frame_painter();
 
       if (pmain && pmain.grx && pmain.gry) return pmain;
-      
-      let rect = this.getPadRect();
+
+      // FIXME: check if needed, can be removed easily
+      let pp = this.getPadPainter(),
+          rect = pp ? pp.getPadRect() : { width: 800, height: 600 };
 
       pmain = {
           pad_layer: true,
@@ -1093,7 +1096,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       let pmain = this.get_main();
       if (!pmain) return;
-      
+
       let w = pmain.getFrameWidth(),
           h = pmain.getFrameHeight(),
           graph = this.getObject(),
@@ -1983,7 +1986,6 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          promise = JSROOT.draw(divid, histo, painter.options.HOptions).then(hist_painter => {
             if (hist_painter) {
                painter.axes_draw = true;
-               painter.my_debug = 777;
                if (!painter._own_histogram) painter.$primary = true;
                hist_painter.$secondary = true;
             }
@@ -2065,9 +2067,9 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    /** @summary Returns coordinate of frame - without using frame itself */
    TGraphPolargramPainter.prototype.getFrameRect = function() {
       let pad = this.root_pad(),
-          prect = this.getPadRect(),
-          w = prect.width,
-          h = prect.height,
+          pp = this.getPadPainter(),
+          w = pp.getPadWidth(),
+          h = pp.getPadHeight(),
           rect = {};
 
       rect.szx = Math.round(Math.max(0.1, 0.5 - Math.max(pad.fLeftMargin, pad.fRightMargin))*w);
@@ -3488,7 +3490,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
                      check_attributes();
 
-                     let height = (attr.fTextSize > 1) ? attr.fTextSize : this.getPadRect().height * attr.fTextSize;
+                     let height = (attr.fTextSize > 1) ? attr.fTextSize : this.getPadPainter().getPadHeight() * attr.fTextSize;
 
                      let group = this.draw_g.append("svg:g");
 
@@ -3587,10 +3589,10 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    }
 
    TASImagePainter.prototype.drawImage = function() {
-      let obj = this.getObject(), 
-          is_buf = false, 
+      let obj = this.getObject(),
+          is_buf = false,
           fp = this.frame_painter(),
-          rect = fp ? fp.getFrameRect() : this.getPadRect();
+          rect = fp ? fp.getFrameRect() : this.getPadPainter().getPadRect();
 
       if (obj._blob) {
          // try to process blob data due to custom streamer

@@ -153,7 +153,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
        if (typeof text_size == "string") text_size = parseFloat(text_size);
        if (isNaN(text_size) || (text_size <= 0)) text_size = 12;
-       if (!fontScale) fontScale = this.getPadRect().height || 10;
+       if (!fontScale) fontScale = this.getPadPainter().getPadHeight() || 10;
 
        let handler = new JSROOT.FontHandler(null, text_size, fontScale, font_family, font_style, font_weight);
 
@@ -1075,7 +1075,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           opposite = (title_position == "left"),
           title_shift_x = 0, title_shift_y = 0, title_basepos = 0;
 
-      this.titleFont = this.v7EvalFont("title", { size: 0.03 }, this.getPadRect().height);
+      this.titleFont = this.v7EvalFont("title", { size: 0.03 }, this.getPadPainter().getPadHeight());
       this.titleFont.roundAngle(180, this.vertical ? 270 : 0);
 
       this.titleOffset = this.v7EvalLength("title_offset", this.scaling_size, 0);
@@ -1132,7 +1132,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Performs axis drawing
      * @returns {Promise} which resolved when drawing is completed */
    RAxisPainter.prototype.drawAxis = function(layer, transform, side) {
-      let axis_g = layer, rect = this.getPadRect();
+      let axis_g = layer, rect = this.getPadPainter().getPadRect();
 
       if (side === undefined) side = 1;
 
@@ -1324,7 +1324,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       let axis_x = parseInt(this.draw_g.attr("x")),
           axis_y = parseInt(this.draw_g.attr("y")),
           drawable = this.getObject(),
-          rect = this.getPadRect(),
+          rect = this.getPadPainter().getPadRect(),
           xn = axis_x / rect.width,
           yn = 1 - axis_y / rect.height;
 
@@ -1515,7 +1515,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    RFramePainter.prototype.UpdateAttributes = function(force) {
       if ((this.fX1NDC === undefined) || (force && !this.modified_NDC)) {
 
-         let rect = this.getPadRect();
+         let rect = this.getPadPainter().getPadRect();
          this.fX1NDC = this.v7EvalLength("margin_left", rect.width, JSROOT.settings.FrameNDC.fX1NDC) / rect.width;
          this.fY1NDC = this.v7EvalLength("margin_bottom", rect.height, JSROOT.settings.FrameNDC.fY1NDC) / rect.height;
          this.fX2NDC = 1 - this.v7EvalLength("margin_right", rect.width, 1-JSROOT.settings.FrameNDC.fX2NDC) / rect.width;
@@ -1935,7 +1935,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       // first update all attributes from objects
       this.UpdateAttributes();
 
-      let rect = this.getPadRect(),
+      let rect = pp ? pp.getPadRect() : { width: 10, height: 10},
           lm = Math.round(rect.width * this.fX1NDC),
           w = Math.round(rect.width * (this.fX2NDC - this.fX1NDC)),
           tm = Math.round(rect.height * (1 - this.fY2NDC)),
@@ -3723,7 +3723,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if (pos) {
          res.x = this.GetPadLength(false, pos.fHoriz);
-         res.y = this.getPadRect().height - this.GetPadLength(true, pos.fVert);
+         res.y = this.getPadHeight() - this.GetPadLength(true, pos.fVert);
       }
 
       return res;
@@ -4332,7 +4332,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    RPavePainter.prototype.DrawPave = function() {
 
-      let rect = this.getPadRect(),
+      let rect = this.getPadPainter().getPadRect(),
           fp = this.frame_painter(),
           fx, fy, fw;
 
@@ -4415,7 +4415,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       let pave_x = parseInt(this.draw_g.attr("x")),
           pave_y = parseInt(this.draw_g.attr("y")),
-          rect = this.getPadRect(),
+          rect = this.getPadPainter().getPadRect(),
           fp = this.frame_painter(),
           fx, fy, fw;
 
@@ -4473,7 +4473,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           fy           = rect.y,
           fw           = rect.width,
           // fh           = rect.height,
-          ph           = this.getPadRect().height,
+          ph           = this.getPadPainter().getPadHeight(),
           title        = this.getObject(),
           title_margin = this.v7EvalLength("margin", ph, 0.02),
           title_width  = fw,
@@ -4684,7 +4684,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           fy           = rect.y,
           fw           = rect.width,
           fh           = rect.height,
-          pw           = this.getPadRect().width,
+          pw           = this.getPadPainter().getPadWidth(),
           visible      = this.v7EvalAttr("visible", true),
           palette_width, palette_height;
 

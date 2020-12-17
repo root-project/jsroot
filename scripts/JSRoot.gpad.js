@@ -640,9 +640,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           is_gaxis = (axis && axis._typename === 'TGaxis'),
           axis_g = layer, tickSize = 0.03,
           scaling_size = 100, draw_lines = true,
-          pad_rect = this.getPadRect(),
-          pad_w = pad_rect.width || 10,
-          pad_h = pad_rect.height || 10,
+          pp = this.getPadPainter(),
+          pad_w = pp ? pp.getPadWidth() : 10,
+          pad_h = pp ? pp.getPadHeight() : 10,
           vertical = this.vertical,
           swap_side = this.swap_side || false;
 
@@ -761,7 +761,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          title_g = axis_g.append("svg:g").attr("class", "axis_title");
          title_fontsize = (axis.fTitleSize >= 1) ? axis.fTitleSize : Math.round(axis.fTitleSize * text_scaling_size);
 
-         let title_offest_k = 1.6*(axis.fTitleSize<1 ? axis.fTitleSize : axis.fTitleSize/(this.canv_painter().getPadRect().height || 10)),
+         let title_offest_k = 1.6*(axis.fTitleSize<1 ? axis.fTitleSize : axis.fTitleSize/(this.getCanvPainter().getPadHeight() || 10)),
              center = axis.TestBit(JSROOT.EAxisBits.kCenterTitle),
              opposite = axis.TestBit(JSROOT.EAxisBits.kOppositeTitle),
              rotate = axis.TestBit(JSROOT.EAxisBits.kRotateTitle) ? -1 : 1,
@@ -1518,13 +1518,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    /** @summary Redraw frame */
    TFramePainter.prototype.Redraw = function(/* reason */) {
-      let pp = this.pad_painter();
+      let pp = this.getPadPainter();
       if (pp) pp.frame_painter_ref = this; // keep direct reference to the frame painter
 
       // first update all attributes from objects
       this.UpdateAttributes();
 
-      let rect = this.getPadRect(),
+      let rect = pp ? pp.getPadRect() : { width: 10, height: 10},
           lm = Math.round(rect.width * this.fX1NDC),
           w = Math.round(rect.width * (this.fX2NDC - this.fX1NDC)),
           tm = Math.round(rect.height * (1 - this.fY2NDC)),

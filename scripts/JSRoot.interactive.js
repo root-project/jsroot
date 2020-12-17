@@ -45,8 +45,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          let hints = [], nhints = 0, maxlen = 0, lastcolor1 = 0, usecolor1 = false,
             textheight = 11, hmargin = 3, wmargin = 3, hstep = 1.2,
             frame_rect = this.getFrameRect(),
-            pp = this.pad_painter(),
-            pad_width = this.getPadRect().width,
+            pp = this.getPadPainter(),
+            pad_width = pp.getPadWidth(),
             font = new JSROOT.FontHandler(160, textheight),
             disable_tootlips = !this.isTooltipAllowed() || !this.tooltip_enabled;
 
@@ -180,7 +180,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             gapy = 10,  // y coordinate, taking into account all gaps
             gapminx = -1111, gapmaxx = -1111,
             minhinty = -frame_shift.y,
-            maxhinty = this.canv_painter().getPadRect().height - frame_rect.y - frame_shift.y;
+            maxhinty = this.getCanvPainter().getPadHeight() - frame_rect.y - frame_shift.y;
 
          function FindPosInGap(y) {
             for (let n = 0; (n < hints.length) && (y < maxhinty); ++n) {
@@ -419,7 +419,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
                if (change_size || change_pos) {
                   if ('obj' in callback) {
-                     let rect = pthis.getPadRect();
+                     let rect = pp.getPadRect();
                      callback.obj.fX1NDC = newx / rect.width;
                      callback.obj.fX2NDC = (newx + newwidth) / rect.width;
                      callback.obj.fY1NDC = 1 - (newy + newheight) / rect.height;
@@ -446,8 +446,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
                evnt.sourceEvent.preventDefault();
                evnt.sourceEvent.stopPropagation();
-               
-               let pad_rect = pthis.getPadRect();
+
+               let pad_rect = pp.getPadRect();
 
                let handle = {
                   acc_x1: Number(pthis.draw_g.attr("x")),
@@ -518,8 +518,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
                setPainterTooltipEnabled(pthis, false); // disable tooltip
 
-               let pad_rect = pthis.getPadRect();
-               
+               let pad_rect = pp.getPadRect();
+
                let handle = {
                   acc_x1: Number(pthis.draw_g.attr("x")),
                   acc_y1: Number(pthis.draw_g.attr("y")),
@@ -1600,10 +1600,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          }
 
          group.property("nextx", x);
-         
-         let rect = this.getPadRect();
 
-         this.AlignBtns(group, rect.width, rect.height);
+         this.AlignBtns(group, this.getPadWidth(), this.getPadHeight());
 
          if (group.property('vertical'))
             ctrl.attr("y", x);

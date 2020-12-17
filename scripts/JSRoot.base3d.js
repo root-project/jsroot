@@ -92,7 +92,8 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
          size.height = Math.round(size.height * (1 - JSROOT.gStyle.fPadTopMargin - JSROOT.gStyle.fPadBottomMargin));
       }
 
-      let rect = this.getPadRect(),
+      let pp = this.getPadPainter(),
+          rect = pp ? pp.getPadRect() : { width: 100, height: 100 },
           x2 = rect.width - size.x - size.width,
           y2 = rect.height - size.y - size.height;
 
