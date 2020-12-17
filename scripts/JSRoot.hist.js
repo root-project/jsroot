@@ -3683,9 +3683,11 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       this.CheckHistDrawAttributes();
 
-      let width = this.frame_width(), height = this.frame_height();
+      let pmain = this.frame_painter(),
+          rect = pmain.getFrameRect(),
+          width = rect.width, height = rect.height;
 
-      if (!this.draw_content || (width<=0) || (height<=0))
+      if (!this.draw_content || (width <= 0) || (height <= 0))
           return this.removeG();
 
       if (this.options.Bar)
@@ -3696,7 +3698,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       let left = this.GetSelectIndex("x", "left", -1),
           right = this.GetSelectIndex("x", "right", 2),
-          pmain = this.frame_painter(),
           histo = this.GetHisto(),
           xaxis = histo.fXaxis,
           res = "", lastbin = false,
@@ -4025,9 +4026,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          return null;
       }
 
-      let width = this.frame_width(),
-          height = this.frame_height(),
-          pmain = this.frame_painter(),
+      let pmain = this.frame_painter(),
+          rect = pmain.getFrameRect(),
+          width = rect.width,
+          height = rect.height,
           histo = this.GetHisto(),
           findbin = null, show_rect = true,
           grx1, midx, grx2, gry1, midy, gry2, gapx = 2,
@@ -5134,11 +5136,12 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    /** @summary Draw histogram bins as contour */
    TH2Painter.prototype.DrawBinsContour = function() {
       let handle = this.PrepareColorDraw({ rounding: false, extra: 100, original: this.options.Proj != 0 }),
-          frame_w = this.frame_width(),
-          frame_h = this.frame_height(),
+          main = this.frame_painter(),
+          rect = main.getFrameRect(),
+          frame_w = rect.width,
+          frame_h = rect.height,
           levels = this.GetContourLevels(),
           palette = this.getHistPalette(),
-          main = this.frame_painter(),
           func = main.GetProjectionFunc();
 
       function BuildPath(xp,yp,iminus,iplus,do_close) {
@@ -5692,7 +5695,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       let histo = this.GetHisto(),
           handle = this.PrepareColorDraw(),
           pmain = this.frame_painter(), // used for axis values conversions
-          w = this.frame_width(),
+          w = pmain.getFrameRect().width,
           i, j, y, sum1, cont, center, counter, integral, pnt,
           bars = "", markers = "", posy;
 
@@ -6277,7 +6280,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          let binid = i*10000 + j;
 
          if (this.is_projection == "X") {
-            x1 = 0; x2 = this.frame_width();
+            x1 = 0; x2 = this.frame_painter().getFrameRect().width;
             if (this.projection_width > 1) {
                let dd = (this.projection_width-1)/2;
                if (j2+dd >= h.j2) { j2 = Math.min(Math.round(j2+dd), h.j2); j1 = Math.max(j2 - this.projection_width, h.j1); }
@@ -6286,7 +6289,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             y1 = h.gry[j2]; y2 = h.gry[j1];
             binid = j1*777 + j2*333;
          } else if (this.is_projection == "Y") {
-            y1 = 0; y2 = this.frame_height();
+            y1 = 0; y2 = this.frame_painter().getFrameRect().height;
             if (this.projection_width > 1) {
                let dd = (this.projection_width-1)/2;
                if (i2+dd >= h.i2) { i2 = Math.min(Math.round(i2+dd), h.i2); i1 = Math.max(i2 - this.projection_width, h.i1); }

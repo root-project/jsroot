@@ -1588,8 +1588,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       layer.selectAll(".xgrid").remove();
       layer.selectAll(".ygrid").remove();
 
-      let h = this.frame_height(),
-          w = this.frame_width(),
+      let h = this._frame_height,
+          w = this._frame_width,
           gridx = this.v7EvalAttr("gridx", false),
           gridy = this.v7EvalAttr("gridy", false),
           grid_style = JSROOT.gStyle.fGridStyle,
@@ -1741,7 +1741,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (this.v7EvalAttr("swapx", false)) sidex = -1;
       if (this.v7EvalAttr("swapy", false)) sidey = -1;
 
-      let w = this.frame_width(), h = this.frame_height();
+      let w = this._frame_width, h = this._frame_height;
 
       this.scale_xmin = this.xmin;
       this.scale_xmax = this.xmax;
@@ -3495,7 +3495,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
 
       let width = elem.property('draw_width'), height = elem.property('draw_height');
-      if (use_frame) { width = this.frame_width(); height = this.frame_height(); }
+      if (use_frame) {
+         let rect = this.frame_painter().getFrameRect();
+         width = rect.width; 
+         height = rect.height; 
+      }
 
       let svg = '<svg width="' + width + '" height="' + height + '" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
                  elem.node().innerHTML +
@@ -4293,13 +4297,15 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    RPavePainter.prototype.DrawPave = function() {
 
       let rect = this.getPadRect(), 
+          fp = this.frame_painter(),
           fx, fy, fw;
 
-      if (this.frame_painter()) {
-         fx = this.frame_x();
-         fy = this.frame_y();
-         fw = this.frame_width();
-         // fh = this.frame_height();
+      if (fp) {
+         let frame_rect = fp.getFrameRect();
+         fx = frame_rect.x;
+         fy = frame_rect.y;
+         fw = frame_rect.width;
+         // fh = frame_rect.height;
       } else {
          let st = JSROOT.gStyle;
          fx = Math.round(st.fPadLeftMargin * rect.width);
@@ -4374,13 +4380,15 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       let pave_x = parseInt(this.draw_g.attr("x")),
           pave_y = parseInt(this.draw_g.attr("y")),
           rect = this.getPadRect(),
+          fp = this.frame_painter(),
           fx, fy, fw;
 
-      if (this.frame_painter()) {
-         fx = this.frame_x();
-         fy = this.frame_y();
-         fw = this.frame_width();
-         // fh = this.frame_height();
+      if (fp) {
+         let frame_rect = fp.getFrameRect();
+         fx = frame_rect.x;
+         fy = frame_rect.y;
+         fw = frame_rect.width;
+         // fh = frame_rect.height;
       } else {
          let st = JSROOT.gStyle;
          fx = Math.round(st.fPadLeftMargin * rect.width);
@@ -4424,10 +4432,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (!fp)
          return console.log('no frame painter - no title');
 
-      let fx           = this.frame_x(),
-          fy           = this.frame_y(),
-          fw           = this.frame_width(),
-          // fh           = this.frame_height(),
+      let rect         = fp.getFrameRect(),
+          fx           = rect.x,
+          fy           = rect.y,
+          fw           = rect.width,
+          // fh           = rect.height,
           ph           = this.getPadRect().height,
           title        = this.getObject(),
           title_margin = this.v7EvalLength("margin", ph, 0.02),
@@ -4634,10 +4643,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       let zmin         = contour[0],
           zmax         = contour[contour.length-1],
-          fx           = this.frame_x(),
-          fy           = this.frame_y(),
-          fw           = this.frame_width(),
-          fh           = this.frame_height(),
+          rect         = framep.getFrameRect(),
+          fx           = rect.x,
+          fy           = rect.y,
+          fw           = rect.width,
+          fh           = rect.height,
           pw           = this.getPadRect().width,
           visible      = this.v7EvalAttr("visible", true),
           palette_width, palette_height;

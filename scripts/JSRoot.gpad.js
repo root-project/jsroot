@@ -1105,7 +1105,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       this.logx = this.logy = 0;
 
-      let w = this.frame_width(), h = this.frame_height(), pad = this.root_pad();
+      let w = this._frame_width, h = this._frame_height, pad = this.root_pad();
 
       this.scale_xmin = this.xmin;
       this.scale_xmax = this.xmax;
@@ -1228,8 +1228,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       layer.selectAll(".ygrid").remove();
 
       let pad = this.root_pad(),
-          h = this.frame_height(),
-          w = this.frame_width(),
+          h = this._frame_height,
+          w = this._frame_width,
           grid_style = JSROOT.gStyle.fGridStyle;
 
       if ((grid_style < 0) || (grid_style >= jsrp.root_line_styles.length)) grid_style = 11;
@@ -1298,8 +1298,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (AxisPos === undefined) AxisPos = 0;
 
       let layer = this.svg_frame().select(".axis_layer"),
-          w = this.frame_width(),
-          h = this.frame_height(),
+          w = this._frame_width,
+          h = this._frame_height,
           pad = this.root_pad();
 
       this.x_handle.invert_side = (AxisPos >= 10);
@@ -1329,7 +1329,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          let promise2 = draw_vertical.DrawAxis(layer, w, h,
                                                draw_vertical.invert_side ? "translate(" + w + ",0)" : undefined,
                                                pad.fTicky ? w : 0, disable_axis_draw,
-                                               draw_vertical.invert_side ? 0 : this.frame_x(), can_adjust_frame);
+                                               draw_vertical.invert_side ? 0 : this._frame_x, can_adjust_frame);
 
          return Promise.all([promise1, promise2]).then(() => {
 
@@ -3353,7 +3353,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
 
       let width = elem.property('draw_width'), height = elem.property('draw_height');
-      if (use_frame) { width = this.frame_width(); height = this.frame_height(); }
+      if (use_frame) {
+         let rect = this.frame_painter().getFrameRect();
+         width = rect.width; 
+         height = rect.height; 
+      }
 
       let svg = '<svg width="' + width + '" height="' + height + '" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
                  elem.node().innerHTML +

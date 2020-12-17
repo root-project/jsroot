@@ -21,8 +21,9 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          this.isndc = true;
       } else if (main && !main.mode3d) {
          // frame coordiantes
-         w = this.frame_width();
-         h = this.frame_height();
+         let rect = main.getFrameRect();
+         w = rect.width;
+         h = rect.height;
          use_frame = "upper_layer";
       } else if (this.root_pad() !== null) {
          // force pad coordiantes
@@ -1053,6 +1054,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       return lines;
    }
 
+   /** @summary Provide frame painter for graph
+     * @desc If not exists, emulate its behaviour */
    TGraphPainter.prototype.get_main = function() {
       let pmain = this.frame_painter();
 
@@ -1065,6 +1068,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
           pad: this.root_pad(),
           pw: rect.width,
           ph: rect.height,
+          getFrameRect: function() { return {x: 0, y: 0, width: this.pw, height: this.ph}; },
           grx: function(value) {
              if (this.pad.fLogx)
                 value = (value>0) ? Math.log10(value) : this.pad.fUxmin;
@@ -1087,13 +1091,14 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    /** @summary draw TGraph as SVG */
    TGraphPainter.prototype.DrawGraph = function() {
 
-      let pmain = this.get_main(),
-          w = this.frame_width(),
-          h = this.frame_height(),
+      let pmain = this.get_main();
+      if (!pmain) return;
+      
+      let rect = pmain.getFrameRect(),
+          w = rect.width,
+          h = rect.height,
           graph = this.getObject(),
           excl_width = 0;
-
-      if (!pmain) return;
 
       this.createG(!pmain.pad_layer);
 
@@ -2724,10 +2729,11 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
    TSplinePainter.prototype.Redraw = function() {
 
-      let w = this.frame_width(),
-          h = this.frame_height(),
-          spline = this.getObject(),
-          pmain = this.frame_painter();
+      let spline = this.getObject(),
+          pmain = this.frame_painter(),
+          rect = pmain.getFrameRect(),
+          w = rect.width,
+          h = rect.height;
 
       this.createG(true);
 
@@ -3583,7 +3589,10 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    }
 
    TASImagePainter.prototype.drawImage = function() {
-      let obj = this.getObject(), is_buf = false, fp = this.frame_painter();
+      let obj = this.getObject(), 
+          is_buf = false, 
+          fp = this.frame_painter(),
+          rect = fp ? fp.getFrameRect() : this.getPadRect();
 
       if (obj._blob) {
          // try to process blob data due to custom streamer
@@ -3740,15 +3749,14 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          this.createG(true)
              .append("image")
              .attr("href", url)
-             .attr("width", this.frame_width())
-             .attr("height", this.frame_height())
+             .attr("width", rect.width)
+             .attr("height", rect.height)
              .attr("preserveAspectRatio", constRatio ? null : "none");
 
       if (url && this.isMainPainter() && is_buf && fp)
          return this.drawColorPalette(this.options.Zscale, true).then(() => {
             fp.SetAxesRanges(JSROOT.create("TAxis"), 0, 1, JSROOT.create("TAxis"), 0, 1, null, 0, 0);
-            fp.CreateXY({ ndim: 2,
-                          check_pad_range: false });
+            fp.CreateXY({ ndim: 2, check_pad_range: false });
             fp.AddInteractive();
             return this;
          });
@@ -3839,11 +3847,12 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    }
 
    TASImagePainter.prototype.Redraw = function(reason) {
-      let img = this.draw_g ? this.draw_g.select("image") : null;
+      let img = this.draw_g ? this.draw_g.select("image") : null,
+          fp = this.frame_painter();
 
-      if (img && !img.empty() && (reason !== "zoom")) {
-         let fw = this.frame_width(), fh = this.frame_height();
-         img.attr("width", fw).attr("height", fh);
+      if (img && !img.empty() && (reason !== "zoom") && fp) {
+         let rect = fp.getFrameRect();
+         img.attr("width", rect.width).attr("height", rect.height);
       } else {
          this.drawImage();
       }

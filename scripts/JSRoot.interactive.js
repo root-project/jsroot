@@ -1022,7 +1022,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (this.Unzoom(kind)) return;
 
          let pp = this.pad_painter();
-         if (pp) pp.SelectObjectPainter(pp, { x: m[0]+this.frame_x(), y: m[1]+this.frame_y(), dbl: true });
+         let rect = this.getFrameRect();
+         if (pp) pp.SelectObjectPainter(pp, { x: m[0] + rect.x, y: m[1] + rect.y, dbl: true });
       },
 
       startTouchZoom: function(evnt) {
