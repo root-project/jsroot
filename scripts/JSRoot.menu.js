@@ -338,13 +338,13 @@ JSROOT.define(['d3', 'jquery', 'painter', 'jquery-ui'], (d3, $, jsrp) => {
          if (painter.fillatt && painter.fillatt.used) {
             this.add("sub:" + preffix + "Fill att");
             this.AddColorMenu("color", painter.fillatt.colorindx,
-               arg => { painter.fillatt.Change(arg, undefined, painter.svg_canvas()); painter.interactiveRedraw(true, getColorExec(arg, "SetFillColor")); }, painter.fillatt.kind);
+               arg => { painter.fillatt.Change(arg, undefined, painter.getCanvSvg()); painter.interactiveRedraw(true, getColorExec(arg, "SetFillColor")); }, painter.fillatt.kind);
             this.add("sub:style", function() {
                let id = prompt("Enter fill style id (1001-solid, 3000..3010)", this.fillatt.pattern);
                if (id === null) return;
                id = parseInt(id);
                if (isNaN(id)) return;
-               this.fillatt.Change(undefined, id, this.svg_canvas());
+               this.fillatt.Change(undefined, id, this.getCanvSvg());
                this.interactiveRedraw(true, "exec:SetFillStyle(" + id + ")");
             }.bind(painter));
 
@@ -354,7 +354,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'jquery-ui'], (d3, $, jsrp) => {
                let sample = painter.createAttFill({ std: false, pattern: supported[n], color: painter.fillatt.colorindx || 1 }),
                    svg = "<svg width='100' height='18'><text x='1' y='12' style='font-size:12px'>" + supported[n].toString() + "</text><rect x='40' y='0' width='60' height='18' stroke='none' fill='" + sample.fillcolor() + "'></rect></svg>";
                this.addchk(painter.fillatt.pattern == supported[n], svg, supported[n], function(arg) {
-                  this.fillatt.Change(undefined, parseInt(arg), this.svg_canvas());
+                  this.fillatt.Change(undefined, parseInt(arg), this.getCanvSvg());
                   this.interactiveRedraw(true, "exec:SetFillStyle(" + arg + ")");
                }.bind(painter));
             }

@@ -735,7 +735,7 @@ JSROOT.define(['d3'], (d3) => {
       if (typeof this.pattern == 'string') this.pattern = parseInt(this.pattern);
       if (isNaN(this.pattern)) this.pattern = 0;
 
-      this.Change(this.color, this.pattern, painter ? painter.svg_canvas() : null, true, painter);
+      this.Change(this.color, this.pattern, painter ? painter.getCanvSvg() : null, true, painter);
    }
 
    /** @summary Method to change fill attributes.
@@ -1691,7 +1691,7 @@ JSROOT.define(['d3'], (d3) => {
    ObjectPainter.prototype.setItemName = function(name, opt, hpainter) {
       BasePainter.prototype.setItemName.call(this,name, opt, hpainter);
       if (this.no_default_title || (name == "")) return;
-      let can = this.svg_canvas();
+      let can = this.getCanvSvg();
       if (!can.empty()) can.select("title").text(name);
                    else this.selectDom().attr("title", name);
    }
@@ -1878,15 +1878,15 @@ JSROOT.define(['d3'], (d3) => {
 
    /** @summary This is main graphical SVG element, where all drawings are performed
     * @private */
-   ObjectPainter.prototype.svg_canvas = function() { return this.selectDom().select(".root_canvas"); }
+   ObjectPainter.prototype.getCanvSvg = function() { return this.selectDom().select(".root_canvas"); }
 
    /** @summary This is SVG element, correspondent to current pad
     * @private */
-   ObjectPainter.prototype.svg_pad = function(pad_name) {
+   ObjectPainter.prototype.getPadSvg = function(pad_name) {
       if (pad_name === undefined)
          pad_name = this.pad_name;
 
-      let c = this.svg_canvas();
+      let c = this.getCanvSvg();
       if (!pad_name || c.empty()) return c;
 
       let cp = c.property('pad_painter');
@@ -1906,7 +1906,7 @@ JSROOT.define(['d3'], (d3) => {
      * @param {string} [pad_name] - select pad name, use configured this.pad_name by default
      * @private */
    ObjectPainter.prototype.svg_layer = function(name, pad_name) {
-      let svg = this.svg_pad(pad_name);
+      let svg = this.getPadSvg(pad_name);
       if (svg.empty()) return svg;
 
       if (name.indexOf("prim#") == 0) {
@@ -1929,7 +1929,7 @@ JSROOT.define(['d3'], (d3) => {
      * @returns {string} previous selected pad or actual pad when new_name not specified
      * @private */
    ObjectPainter.prototype.selectCurrentPad = function(new_name) {
-      let svg = this.svg_canvas();
+      let svg = this.getCanvSvg();
       if (svg.empty()) return "";
       let curr = svg.property('current_pad');
       if (new_name !== undefined) svg.property('current_pad', new_name);
@@ -1938,13 +1938,13 @@ JSROOT.define(['d3'], (d3) => {
 
    /** @summary returns pad painter for specified pad */
    ObjectPainter.prototype.getPadPainter = function(pad_name) {
-      let elem = this.svg_pad(typeof pad_name == "string" ? pad_name : undefined);
+      let elem = this.getPadSvg(typeof pad_name == "string" ? pad_name : undefined);
       return elem.empty() ? null : elem.property('pad_painter');
    }
 
    /** @summary returns canvas painter */
    ObjectPainter.prototype.getCanvPainter = function() {
-      let elem = this.svg_canvas();
+      let elem = this.getCanvSvg();
       return elem.empty() ? null : elem.property('pad_painter');
    }
 
@@ -2186,7 +2186,7 @@ JSROOT.define(['d3'], (d3) => {
 
       let handler = args.std ? this.fillatt : null;
 
-      if (!args.svg) args.svg = this.svg_canvas();
+      if (!args.svg) args.svg = this.getCanvSvg();
       if (args.painter === undefined) args.painter = this;
 
       if (!handler)

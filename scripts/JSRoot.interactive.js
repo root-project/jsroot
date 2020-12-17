@@ -137,7 +137,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          let frame_shift = { x: 0, y: 0 }, trans = frame_rect.transform || "";
          if (!pp.iscan) {
-            frame_shift = jsrp.getAbsPosInCanvas(this.svg_pad(), frame_shift);
+            frame_shift = jsrp.getAbsPosInCanvas(this.getPadSvg(), frame_shift);
             trans = "translate(" + frame_shift.x + "," + frame_shift.y + ") " + trans;
          }
 

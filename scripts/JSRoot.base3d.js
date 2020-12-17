@@ -27,7 +27,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
     * @returns current value
     * @private*/
    Handling3DDrawings.access_3d_kind = function(new_value) {
-      let svg = this.svg_pad();
+      let svg = this.getPadSvg();
       if (svg.empty()) return -1;
 
       // returns kind of currently created 3d canvas
@@ -55,7 +55,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
             can3d = JSROOT.constants.Embed3D.Overlay;
       }
 
-      let pad = this.svg_pad(),
+      let pad = this.getPadSvg(),
           clname = "draw3d_" + (this.getPadName() || 'canvas');
 
       if (pad.empty()) {
@@ -72,7 +72,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
       }
 
       let elem = pad, fp = this.frame_painter();
-      if (can3d === 0) elem = this.svg_canvas();
+      if (can3d === 0) elem = this.getCanvSvg();
 
       let size = { x: 0, y: 0, width: 100, height: 100, clname: clname, can3d: can3d };
 
@@ -106,7 +106,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
       }
 
       if (can3d === 1)
-         size = jsrp.getAbsPosInCanvas(this.svg_pad(), size);
+         size = jsrp.getAbsPosInCanvas(this.getPadSvg(), size);
 
       return size;
    }
@@ -129,10 +129,10 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
       let size = this.size_for_3d(can3d);
 
       if (size.can3d === 0) {
-         d3.select(this.svg_canvas().node().nextSibling).remove(); // remove html5 canvas
-         this.svg_canvas().style('display', null); // show SVG canvas
+         d3.select(this.getCanvSvg().node().nextSibling).remove(); // remove html5 canvas
+         this.getCanvSvg().style('display', null); // show SVG canvas
       } else {
-         if (this.svg_pad().empty()) return;
+         if (this.getPadSvg().empty()) return;
 
          this.apply_3d_size(size).remove();
 
@@ -166,11 +166,11 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
       this.access_3d_kind(size.can3d);
 
       if (size.can3d === 0) {
-         this.svg_canvas().style('display', 'none'); // hide SVG canvas
+         this.getCanvSvg().style('display', 'none'); // hide SVG canvas
 
-         this.svg_canvas().node().parentNode.appendChild(canv); // add directly
+         this.getCanvSvg().node().parentNode.appendChild(canv); // add directly
       } else {
-         if (this.svg_pad().empty()) return;
+         if (this.getPadSvg().empty()) return;
 
          // first hide normal frame
          this.svg_frame().style('display', 'none');
@@ -196,7 +196,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
          // elem = layer.select("." + size.clname);
          if (onlyget) return elem;
 
-         let svg = this.svg_pad();
+         let svg = this.getPadSvg();
 
          if (size.can3d === JSROOT.constants.Embed3D.EmbedSVG) {
             // this is SVG mode or image mode - just create group to hold element
@@ -220,13 +220,13 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
          }
 
       } else {
-         let prnt = this.svg_canvas().node().parentNode;
+         let prnt = this.getCanvSvg().node().parentNode;
 
          elem = d3.select(prnt).select("." + size.clname);
          if (onlyget) return elem;
 
          // force redraw by resize
-         this.svg_canvas().property('redraw_by_resize', true);
+         this.getCanvSvg().property('redraw_by_resize', true);
 
          if (elem.empty())
             elem = d3.select(prnt).append('div').attr("class", size.clname + " jsroot_noselect");

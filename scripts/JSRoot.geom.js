@@ -546,7 +546,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
       // when drawing geometry without TCanvas, yup = true by default
       if (res._yup === undefined)
-         res._yup = this.svg_canvas().empty();
+         res._yup = this.getCanvSvg().empty();
 
       return res;
    }

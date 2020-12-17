@@ -2412,7 +2412,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
   /** @summary Returns SVG element for the pad itself
     * @private */
    RPadPainter.prototype.svg_this_pad = function() {
-      return this.svg_pad(this.this_pad_name);
+      return this.getPadSvg(this.this_pad_name);
    }
 
    RPadPainter.prototype.getMainPainter = function() {
@@ -2581,7 +2581,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          if (this._fixed_size) return (check_resize > 1); // flag used to force re-drawing of all subpads
 
-         svg = this.svg_canvas();
+         svg = this.getCanvSvg();
 
          if (svg.empty()) return false;
 
@@ -2707,7 +2707,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          evnt.stopPropagation();
       }
 
-      let svg_can = this.svg_canvas(),
+      let svg_can = this.getCanvSvg(),
           pad_enlarged = svg_can.property("pad_enlarged");
 
       if (this.iscan || !this.has_canvas || (!pad_enlarged && !this.HasObjectsToDraw() && !this.painters)) {
@@ -2741,8 +2741,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return true;
       }
 
-      let svg_parent = this.svg_pad(this.pad_name), // this.pad_name MUST be here to select parent pad
-          svg_can = this.svg_canvas(),
+      let svg_parent = this.getPadSvg(this.pad_name), // this.pad_name MUST be here to select parent pad
+          svg_can = this.getCanvSvg(),
           width = svg_parent.property("draw_width"),
           height = svg_parent.property("draw_height"),
           pad_enlarged = svg_can.property("pad_enlarged"),
@@ -3442,7 +3442,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       let use_frame = (full_canvas === "frame");
 
-      let elem = use_frame ? this.svg_frame() : (full_canvas ? this.svg_canvas() : this.svg_this_pad());
+      let elem = use_frame ? this.svg_frame() : (full_canvas ? this.getCanvSvg() : this.svg_this_pad());
 
       if (elem.empty()) return Promise.resolve("");
 
@@ -3764,7 +3764,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       let painter = new RPadPainter(divid, pad, false);
       painter.DecodeOptions(opt);
 
-      if (painter.svg_canvas().empty()) {
+      if (painter.getCanvSvg().empty()) {
          painter.has_canvas = false;
          painter.this_pad_name = "";
          painter.setTopPainter();
@@ -4289,7 +4289,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (!painter) return Promise.reject('Painter not provided in ensureRCanvas');
 
       // simple check - if canvas there, can use painter
-      let svg_c = painter.svg_canvas();
+      let svg_c = painter.getCanvSvg();
       let noframe = (frame_kind === false) || (frame_kind == "3d") ? "noframe" : "";
 
       let promise = !svg_c.empty() ? Promise.resolve(true) : drawRCanvas(painter.getDom(), null, noframe);
