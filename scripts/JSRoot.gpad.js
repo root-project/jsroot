@@ -1414,7 +1414,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    TFramePainter.prototype.SizeChanged = function() {
 
       let pp = this.getPadPainter(),
-          pad = pp ? pp.getRootPad(true) : null,
+          pad = pp ? pp.getRootPad(true) : null;
 
       if (pad) {
          pad.fLeftMargin = this.fX1NDC;
@@ -1615,7 +1615,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
      * @param {number} value - 0 (linear), 1 (log) or 2 (log2) */
    TFramePainter.prototype.ChangeLog = function(axis, value) {
       let pp = this.getPadPainter(),
-          pad = pp ? pp.getRootPad(true) : null,
+          pad = pp ? pp.getRootPad(true) : null;
       if (!pad) return;
 
       let name = "fLog" + axis;

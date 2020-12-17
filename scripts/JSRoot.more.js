@@ -25,7 +25,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          w = main.getFrameWidth();
          h = main.getFrameHeight();
          use_frame = "upper_layer";
-      } else if (this.root_pad() !== null) {
+      } else if (pp.getRootPad(true)) {
          // force pad coordiantes
       } else {
          // place in the middle
@@ -870,7 +870,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          // check if axis should be drawn
          // either graph drawn directly or
          // graph is first object in list of primitives
-         let pad = this.root_pad();
+         let pad = this.getPadPainter().getRootPad(true);
          if (!pad || (pad.fPrimitives && (pad.fPrimitives.arr[0] === graph))) res.Axis = "AXIS";
       } else if (res.Axis.indexOf("A")<0) {
          res.Axis = "AXIS," + res.Axis;
@@ -1067,7 +1067,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       pmain = {
           pad_layer: true,
-          pad: this.root_pad(),
+          pad: pp.getRootPad(true),
           pw: rect.width,
           ph: rect.height,
           getFrameWidth: function() { return this.pw; },
@@ -2066,14 +2066,19 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
    /** @summary Returns coordinate of frame - without using frame itself */
    TGraphPolargramPainter.prototype.getFrameRect = function() {
-      let pad = this.root_pad(),
-          pp = this.getPadPainter(),
+      let pp = this.getPadPainter(),
+          pad = pp.getRootPad(true),
           w = pp.getPadWidth(),
           h = pp.getPadHeight(),
           rect = {};
 
-      rect.szx = Math.round(Math.max(0.1, 0.5 - Math.max(pad.fLeftMargin, pad.fRightMargin))*w);
-      rect.szy = Math.round(Math.max(0.1, 0.5 - Math.max(pad.fBottomMargin, pad.fTopMargin))*h);
+      if (pad) {
+         rect.szx = Math.round(Math.max(0.1, 0.5 - Math.max(pad.fLeftMargin, pad.fRightMargin))*w);
+         rect.szy = Math.round(Math.max(0.1, 0.5 - Math.max(pad.fBottomMargin, pad.fTopMargin))*h);
+      } else {
+         rect.szx = Math.round(0.5*w);
+         rect.szy = Math.round(0.5*h);
+      }
 
       rect.width = 2*rect.szx;
       rect.height = 2*rect.szy;
@@ -3297,7 +3302,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    TMultiGraphPainter.prototype.drawAxis = function() {
 
       let mgraph = this.getObject(),
-          histo = this.ScanGraphsRange(mgraph.fGraphs, mgraph.fHistogram, this.root_pad());
+          histo = this.ScanGraphsRange(mgraph.fGraphs, mgraph.fHistogram, this.getPadPainter().getRootPad(true));
 
       // histogram painter will be first in the pad, will define axis and
       // interactive actions

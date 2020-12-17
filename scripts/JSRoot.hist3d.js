@@ -129,7 +129,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       this.camera.up = new THREE.Vector3(0,0,1);
       this.scene.add( this.camera );
 
-      this.SetCameraPosition(true, this.root_pad());
+      this.SetCameraPosition(true, this.getPadPainter().getRootPad(true));
 
       this.renderer = jsrp.createRender3D(this.scene_width, this.scene_height, render3d);
 
@@ -471,7 +471,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
           grminy = -this.size_xy3d, grmaxy = this.size_xy3d,
           grminz = 0, grmaxz = 2*this.size_z3d,
           textsize = Math.round(this.size_z3d * 0.05),
-          pad = this.root_pad(),
+          pad = this.getPadPainter().getRootPad(true),
           xmin = this.xmin, xmax = this.xmax,
           ymin = this.ymin, ymax = this.ymax,
           zmin = this.zmin, zmax = this.zmax,
@@ -1498,15 +1498,15 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
       } else {
 
-         let pad = this.root_pad(), zmult = 1.1;
+         let pad = this.getPadPainter().getRootPad(true), zmult = 1.1;
 
-         this.zmin = pad.fLogz ? this.gminposbin * 0.3 : this.gminbin;
+         this.zmin = pad && pad.fLogz ? this.gminposbin * 0.3 : this.gminbin;
          this.zmax = this.gmaxbin;
 
          if (this.options.minimum !== -1111) this.zmin = this.options.minimum;
          if (this.options.maximum !== -1111) { this.zmax = this.options.maximum; zmult = 1; }
 
-         if (pad.fLogz && (this.zmin<=0)) this.zmin = this.zmax * 1e-5;
+         if (pad && pad.fLogz && (this.zmin<=0)) this.zmin = this.zmax * 1e-5;
 
          this.DeleteAtt();
 

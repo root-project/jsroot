@@ -246,7 +246,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (pt.fInit===0) {
          this.stored = JSROOT.extend({}, pt); // store coordinates to use them when updating
          pt.fInit = 1;
-         let pad = this.root_pad();
+         let pad = this.getPadPainter().getRootPad(true);
 
          if ((pt._typename == "TPaletteAxis") && !pt.fX1 && !pt.fX2 && !pt.fY1 && !pt.fY2) {
             let fp = this.frame_painter();
@@ -838,6 +838,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           pos_x = parseInt(this.draw_g.attr("x")), // pave position
           pos_y = parseInt(this.draw_g.attr("y")),
           width = this.getPadPainter().getPadWidth(),
+          pad = this.getPadPainter().getRootPad(true),
           main = this.getMainPainter(),
           framep = this.frame_painter(),
           zmin = 0, zmax = 100,
@@ -861,7 +862,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       this.draw_g.selectAll("rect").style("fill", 'white');
 
-      this.z_handle.ConfigureAxis("zaxis", zmin, zmax, zmin, zmax, true, [0,s_height], { log: this.root_pad().fLogz });
+      this.z_handle.ConfigureAxis("zaxis", zmin, zmax, zmin, zmax, true, [0,s_height], { log: pad ? pad.fLogz : 0 });
 
       if (!contour || !draw_palette || postpone_draw)
          // we need such rect to correctly calculate size
@@ -1355,7 +1356,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (!main_painter) return;
 
       let pp = main_painter.pad_painter(),
-          pad = main_painter.root_pad();
+          pad = pp.getRootPad(true);
       if (!pp || !pad) return;
 
       let leg = JSROOT.create("TLegend");
@@ -1941,7 +1942,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    THistPainter.prototype.DecodeOptions = function(opt) {
       let histo = this.GetHisto(),
           hdim = this.Dimension(),
-          pad = this.root_pad();
+          pad = this.getPadPainter().getRootPad(true);
 
       if (!this.options)
          this.options = new THistDrawOptions;
@@ -1995,7 +1996,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    /** @summary Generates automatic color for some objects painters */
    THistPainter.prototype.createAutoColor = function(numprimitives) {
       if (!numprimitives) {
-         let pad = this.root_pad();
+         let pad = this.getPadPainter().getRootPad(true);
          numprimitives = pad && pad.fPrimitves ? pad.fPrimitves.arr.length : 5;
       }
 
@@ -2885,7 +2886,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          cntr.CreateCustom(custom_levels);
       } else {
          if (nlevels < 2) nlevels = JSROOT.gStyle.fNumberContours;
-         cntr.CreateNormal(nlevels, this.root_pad().fLogz, zminpositive);
+         let pad = this.getPadPainter().getRootPad(true);
+         cntr.CreateNormal(nlevels, pad ? pad.fLogz : 0, zminpositive);
          cntr.ConfigIndicies(this.options.Zero ? -1 : 0, (cntr.colzmin != 0) || !this.options.Zero || this.IsTH2Poly() ? 0 : -1);
       }
 
@@ -5593,9 +5595,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           absmin = Math.max(0, main.minbin),
           i, j, binz, absz, res = "", cross = "", btn1 = "", btn2 = "",
           zdiff, dgrx, dgry, xx, yy, ww, hh,
-          xyfactor = 1, uselogz = false, logmin = 0, logmax = 1;
+          xyfactor = 1, uselogz = false, logmin = 0, logmax = 1,
+          pad = this.getPadPainter().getRootPad(true);
 
-      if (this.root_pad().fLogz && (absmax>0)) {
+      if (pad && pad.fLogz && (absmax > 0)) {
          uselogz = true;
          logmax = Math.log(absmax);
          if (absmin>0) logmin = Math.log(absmin); else
@@ -6806,7 +6809,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          this.firstpainter.updateObject(src);
 
-         let mm = this.GetMinMax(this.options.errors || this.options.draw_errors, this.root_pad());
+         let mm = this.GetMinMax(this.options.errors || this.options.draw_errors, this.getPadPainter().getRootPad(true));
 
          this.firstpainter.options.minimum = mm.min;
          this.firstpainter.options.maximum = mm.max;
@@ -6870,7 +6873,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          if (!stack.fHistogram)
              stack.fHistogram = painter.createHistogram(stack);
 
-         let mm = painter.GetMinMax(painter.options.errors || painter.options.draw_errors,  painter.root_pad());
+         let mm = painter.GetMinMax(painter.options.errors || painter.options.draw_errors,  painter.getPadPainter().getRootPad(true));
 
          let hopt = painter.options.hopt + " axis";
          // if (mm && (!this.options.nostack || (hist.fMinimum==-1111 && hist.fMaximum==-1111))) hopt += ";minimum:" + mm.min + ";maximum:" + mm.max;

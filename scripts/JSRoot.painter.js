@@ -1956,13 +1956,6 @@ JSROOT.define(['d3'], (d3) => {
       return elem.empty() ? null : elem.property('pad_painter');
    }
 
-   /** @summary Returns ROOT TPad object
-    * @private */
-   ObjectPainter.prototype.root_pad = function() {
-      let pp = this.pad_painter();
-      return pp ? pp.pad : null;
-   }
-
    /** @summary Return functor, which can convert x and y coordinates into pixels, used for drawing
      * @desc X and Y coordinates can be converted by calling func.x(x) and func.y(y)
      * @param {boolean} isndc - if NDC coordinates will be used
