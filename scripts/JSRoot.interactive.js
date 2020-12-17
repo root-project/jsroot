@@ -45,8 +45,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          let hints = [], nhints = 0, maxlen = 0, lastcolor1 = 0, usecolor1 = false,
             textheight = 11, hmargin = 3, wmargin = 3, hstep = 1.2,
             frame_rect = this.getFrameRect(),
-            pad_width = this.getPadRect().width,
             pp = this.pad_painter(),
+            pad_width = this.getPadRect().width,
             font = new JSROOT.FontHandler(160, textheight),
             disable_tootlips = !this.isTooltipAllowed() || !this.tooltip_enabled;
 

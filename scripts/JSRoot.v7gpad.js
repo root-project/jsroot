@@ -2028,10 +2028,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Returns frame width */
-   RFramePainter.prototype.getFrameWidth = function() { return this._frame_width || 0; } 
+   RFramePainter.prototype.getFrameWidth = function() { return this._frame_width || 0; }
 
    /** @summary Returns frame height */
-   RFramePainter.prototype.getFrameHeight = function() { return this._frame_height || 0; } 
+   RFramePainter.prototype.getFrameHeight = function() { return this._frame_height || 0; }
 
    /** @summary Returns frame rectangle plus extra info for hint display */
    RFramePainter.prototype.getFrameRect = function() {
@@ -2443,6 +2443,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       delete this.main_painter_ref;
       delete this.frame_painter_ref;
       delete this.pads_cache;
+      delete this._pad_x;
+      delete this._pad_y;
+      delete this._pad_width;
+      delete this._pad_height;
       this.painters = [];
       this.pad = null;
       this.draw_object = null;
@@ -2459,6 +2463,22 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
     * @private */
    RPadPainter.prototype.frame_painter = function() {
       return this.frame_painter_ref;
+   }
+
+   /** @summary get pad width */
+   RPadPainter.prototype.getPadWidth = function() { return this._pad_width || 0; }
+
+   /** @summary get pad height */
+   RPadPainter.prototype.getPadHeight = function() { return this._pad_height || 0; }
+
+   /** @summary get pad rect */
+   RPadPainter.prototype.getPadRect = function() {
+      return {
+         x: this._pad_x || 0,
+         y: this._pad_y || 0,
+         width: this.getPadWidth(),
+         height: this.getPadHeight()
+      }
    }
 
    /** @summary Cleanup primitives from pad - selector lets define which painters to remove
@@ -2660,6 +2680,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          .property('draw_width', rect.width)
          .property('draw_height', rect.height);
 
+      this._pad_x = 0;
+      this._pad_y = 0;
+      this._pad_width = rect.width;
+      this._pad_height = rect.height;
+
       svg.select(".canvas_fillrect")
          .attr("width", rect.width)
          .attr("height", rect.height)
@@ -2786,6 +2811,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
              .property('draw_y', y)
              .property('draw_width', w)
              .property('draw_height', h);
+
+      this._pad_x = x;
+      this._pad_y = y;
+      this._pad_width = w;
+      this._pad_height = h;
 
       svg_rect.attr("x", 0)
               .attr("y", 0)
@@ -3503,8 +3533,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       let width = elem.property('draw_width'), height = elem.property('draw_height');
       if (use_frame) {
          let fp = this.frame_painter();
-         width = fp.getFrameWidth(); 
-         height = fp.getFrameHeight(); 
+         width = fp.getFrameWidth();
+         height = fp.getFrameHeight();
       }
 
       let svg = '<svg width="' + width + '" height="' + height + '" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
@@ -3674,10 +3704,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           pixel = GetV(1, 0),
           user = ignore_user ? undefined : GetV(2),
           res = pixel;
-          
+
       if (norm) {
          let rect = this.getPadRect();
-         res += (vertical ? rect.height : rect.width) * norm;  
+         res += (vertical ? rect.height : rect.width) * norm;
       }
 
       if (user !== undefined)
@@ -4302,7 +4332,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    RPavePainter.prototype.DrawPave = function() {
 
-      let rect = this.getPadRect(), 
+      let rect = this.getPadRect(),
           fp = this.frame_painter(),
           fx, fy, fw;
 

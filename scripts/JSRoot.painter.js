@@ -1473,7 +1473,8 @@ JSROOT.define(['d3'], (d3) => {
       }
 
       let rect = jsrp.getElementRect(main),
-         old_h = main.property('draw_height'), old_w = main.property('draw_width');
+         old_h = main.property('draw_height'), 
+         old_w = main.property('draw_width');
 
       rect.changed = false;
 
