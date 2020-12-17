@@ -1105,7 +1105,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       this.logx = this.logy = 0;
 
-      let w = this._frame_width, h = this._frame_height, pad = this.root_pad();
+      let w = this.getFrameWidth(), h = this.getFrameHeight(), pad = this.root_pad();
 
       this.scale_xmin = this.xmin;
       this.scale_xmax = this.xmax;
@@ -1228,8 +1228,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       layer.selectAll(".ygrid").remove();
 
       let pad = this.root_pad(),
-          h = this._frame_height,
-          w = this._frame_width,
+          h = this.getFrameHeight(),
+          w = this.getFrameWidth(),
           grid_style = JSROOT.gStyle.fGridStyle;
 
       if ((grid_style < 0) || (grid_style >= jsrp.root_line_styles.length)) grid_style = 11;
@@ -1298,8 +1298,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (AxisPos === undefined) AxisPos = 0;
 
       let layer = this.svg_frame().select(".axis_layer"),
-          w = this._frame_width,
-          h = this._frame_height,
+          w = this.getFrameWidth(),
+          h = this.getFrameHeight(),
           pad = this.root_pad();
 
       this.x_handle.invert_side = (AxisPos >= 10);
@@ -1715,8 +1715,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return {
          x: this._frame_x || 0,
          y: this._frame_y || 0,
-         width: this._frame_width || 0,
-         height: this._frame_height || 0,
+         width: this.getFrameWidth(),
+         height: this.getFrameHeight(),
          transform: this.draw_g ? this.draw_g.attr("transform") : "",
          hint_delta_x: 0,
          hint_delta_y: 0

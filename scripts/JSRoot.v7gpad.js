@@ -1588,8 +1588,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       layer.selectAll(".xgrid").remove();
       layer.selectAll(".ygrid").remove();
 
-      let h = this._frame_height,
-          w = this._frame_width,
+      let h = this.getFrameHeight(),
+          w = this.getFrameWidth(),
           gridx = this.v7EvalAttr("gridx", false),
           gridy = this.v7EvalAttr("gridy", false),
           grid_style = JSROOT.gStyle.fGridStyle,
@@ -1741,7 +1741,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (this.v7EvalAttr("swapx", false)) sidex = -1;
       if (this.v7EvalAttr("swapy", false)) sidey = -1;
 
-      let w = this._frame_width, h = this._frame_height;
+      let w = this.getFrameWidth(), h = this.getFrameHeight();
 
       this.scale_xmin = this.xmin;
       this.scale_xmax = this.xmax;
@@ -2038,8 +2038,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return {
          x: this._frame_x || 0,
          y: this._frame_y || 0,
-         width: this._frame_width || 0,
-         height: this._frame_height || 0,
+         width: this.getFrameWidth(),
+         height: this.getFrameHeight(),
          transform: this.draw_g ? this.draw_g.attr("transform") : "",
          hint_delta_x: 0,
          hint_delta_y: 0

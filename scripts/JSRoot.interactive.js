@@ -638,8 +638,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          this.draw_g.attr("x", this._frame_x)
                     .attr("y", this._frame_y)
-                    .attr("width", this._frame_width)
-                    .attr("height", this._frame_height);
+                    .attr("width", this.getFrameWidth())
+                    .attr("height", this.getFrameHeight());
 
          if (!this._frame_rotate && !this._frame_fixpos)
             DragMoveHandler.AddDrag(this, { obj: this, only_resize: true,
@@ -674,8 +674,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          main_svg.attr("x", 0)
                  .attr("y", 0)
-                 .attr("width", this._frame_width)
-                 .attr("height", this._frame_height);
+                 .attr("width", this.getFrameWidth())
+                 .attr("height", this.getFrameHeight());
 
          let hintsg = this.hints_layer().select(".objects_hints");
          // if tooltips were visible before, try to reconstruct them after short timeout
@@ -846,7 +846,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          this.clearInteractiveElements();
 
-         let w = this._frame_width, h = this._frame_height;
+         let w = this.getFrameWidth(), h = this.getFrameHeight();
 
          this.zoom_lastpos = pos;
          this.zoom_curr = [ Math.max(0, Math.min(w, pos[0])),
@@ -909,8 +909,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.zoom_lastpos[0] = m[0];
          this.zoom_lastpos[1] = m[1];
 
-         m[0] = Math.max(0, Math.min(this._frame_width, m[0]));
-         m[1] = Math.max(0, Math.min(this._frame_height, m[1]));
+         m[0] = Math.max(0, Math.min(this.getFrameWidth(), m[0]));
+         m[1] = Math.max(0, Math.min(this.getFrameHeight(), m[1]));
 
          switch (this.zoom_kind) {
             case 1: this.zoom_curr[0] = m[0]; this.zoom_curr[1] = m[1]; break;
@@ -950,8 +950,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             this.zoom_labels.processLabelsMove('stop', m);
          } else {
             let changed = [true, true];
-            m[0] = Math.max(0, Math.min(this._frame_width, m[0]));
-            m[1] = Math.max(0, Math.min(this._frame_height, m[1]));
+            m[0] = Math.max(0, Math.min(this.getFrameWidth(), m[0]));
+            m[1] = Math.max(0, Math.min(this.getFrameHeight(), m[1]));
 
             switch (this.zoom_kind) {
                case 1: this.zoom_curr[0] = m[0]; this.zoom_curr[1] = m[1]; break;
@@ -1010,8 +1010,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          let m = d3.pointer(evnt, this.svg_frame().node());
          this.clearInteractiveElements();
 
-         let valid_x = (m[0] >= 0) && (m[0] <= this._frame_width),
-             valid_y = (m[1] >= 0) && (m[1] <= this._frame_height);
+         let valid_x = (m[0] >= 0) && (m[0] <= this.getFrameWidth()),
+             valid_y = (m[1] >= 0) && (m[1] <= this.getFrameHeight());
 
          if (valid_x && valid_y && this._dblclick_handler)
             if (this.ProcessFrameClick({ x: m[0], y: m[1] }, true)) return;
@@ -1078,7 +1078,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.svg_frame().on("touchcancel", null)
                          .on("touchend", null);
 
-         let pnt1 = arr[0], pnt2 = arr[1], w = this._frame_width, h = this._frame_height;
+         let pnt1 = arr[0], pnt2 = arr[1], w = this.getFrameWidth(), h = this.getFrameHeight();
 
          this.zoom_curr = [ Math.min(pnt1[0], pnt2[0]), Math.min(pnt1[1], pnt2[1]) ];
          this.zoom_origin = [ Math.max(pnt1[0], pnt2[0]), Math.max(pnt1[1], pnt2[1]) ];
@@ -1234,7 +1234,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          let itemx = { name: "x", reverse: this.reverse_x, ignore: false },
              itemy = { name: "y", reverse: this.reverse_y, ignore: !this.AllowDefaultYZooming() },
              cur = d3.pointer(evnt, this.svg_frame().node()),
-             w = this._frame_width, h = this._frame_height;
+             w = this.getFrameWidth(), h = this.getFrameHeight();
 
          this.AnalyzeMouseWheelEvent(evnt, this.swap_xy ? itemy : itemx, cur[0] / w, (cur[1] >=0) && (cur[1] <= h));
 
