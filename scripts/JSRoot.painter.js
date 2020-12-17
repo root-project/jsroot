@@ -1950,20 +1950,6 @@ JSROOT.define(['d3'], (d3) => {
       return pp ? pp.pad : null;
    }
 
-   /** @summary Returns pad width */
-   ObjectPainter.prototype.pad_width = function() {
-      let res = this.svg_pad();
-      res = res.empty() ? 0 : res.property("draw_width");
-      return isNaN(res) ? 0 : res;
-   }
-
-   /** @summary Returns pad height */
-   ObjectPainter.prototype.pad_height = function() {
-      let res = this.svg_pad();
-      res = res.empty() ? 0 : res.property("draw_height");
-      return isNaN(res) ? 0 : res;
-   }
-
    /** @summary Returns object with width and height properties
      * @returns {object} res with res.width and res.height */
    ObjectPainter.prototype.getPadRect = function() {
