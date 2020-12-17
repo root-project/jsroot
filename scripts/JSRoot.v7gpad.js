@@ -2027,6 +2027,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       });
    }
 
+   /** @summary Returns frame width */
+   RFramePainter.prototype.getFrameWidth = function() { return this._frame_width || 0; } 
+
+   /** @summary Returns frame height */
+   RFramePainter.prototype.getFrameHeight = function() { return this._frame_height || 0; } 
+
    /** @summary Returns frame rectangle plus extra info for hint display */
    RFramePainter.prototype.getFrameRect = function() {
       return {
@@ -3496,9 +3502,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       let width = elem.property('draw_width'), height = elem.property('draw_height');
       if (use_frame) {
-         let rect = this.frame_painter().getFrameRect();
-         width = rect.width; 
-         height = rect.height; 
+         let fp = this.frame_painter();
+         width = fp.getFrameWidth(); 
+         height = fp.getFrameHeight(); 
       }
 
       let svg = '<svg width="' + width + '" height="' + height + '" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +

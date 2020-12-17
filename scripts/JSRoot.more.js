@@ -21,9 +21,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          this.isndc = true;
       } else if (main && !main.mode3d) {
          // frame coordiantes
-         let rect = main.getFrameRect();
-         w = rect.width;
-         h = rect.height;
+         w = main.getFrameWidth();
+         h = main.getFrameHeight();
          use_frame = "upper_layer";
       } else if (this.root_pad() !== null) {
          // force pad coordiantes
@@ -675,9 +674,9 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
    TF1Painter.prototype.Redraw = function() {
 
-      let h = this.frame_height(),
-          tf1 = this.getObject(),
+      let tf1 = this.getObject(),
           fp = this.frame_painter(),
+          h = fp.getFrameHeight(),
           pmain = this.getMainPainter();
 
       this.createG(true);
@@ -1068,7 +1067,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
           pad: this.root_pad(),
           pw: rect.width,
           ph: rect.height,
-          getFrameRect: function() { return {x: 0, y: 0, width: this.pw, height: this.ph}; },
+          getFrameWidth: function() { return this.pw; },
+          getFrameHeight: function() { return this.ph; },
           grx: function(value) {
              if (this.pad.fLogx)
                 value = (value>0) ? Math.log10(value) : this.pad.fUxmin;
@@ -1094,9 +1094,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       let pmain = this.get_main();
       if (!pmain) return;
       
-      let rect = pmain.getFrameRect(),
-          w = rect.width,
-          h = rect.height,
+      let w = pmain.getFrameWidth(),
+          h = pmain.getFrameHeight(),
           graph = this.getObject(),
           excl_width = 0;
 
@@ -1416,8 +1415,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       if (this.draw_kind!="nodes") return null;
 
-      let height = this.frame_height(),
-          pmain = this.frame_painter(),
+      let pmain = this.frame_painter(),
+          height = pmain.getFrameHeight(),
           esz = this.error_size,
           isbar1 = (this.options.Bar===1),
           findbin = null, best_dist2 = 1e10, best = null,
@@ -2731,9 +2730,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       let spline = this.getObject(),
           pmain = this.frame_painter(),
-          rect = pmain.getFrameRect(),
-          w = rect.width,
-          h = rect.height;
+          w = pmain.getFrameWidth(),
+          h = pmain.getFrameHeight();
 
       this.createG(true);
 
@@ -3851,8 +3849,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
           fp = this.frame_painter();
 
       if (img && !img.empty() && (reason !== "zoom") && fp) {
-         let rect = fp.getFrameRect();
-         img.attr("width", rect.width).attr("height", rect.height);
+         img.attr("width", fp.getFrameWidth()).attr("height", fp.getFrameHeight());
       } else {
          this.drawImage();
       }

@@ -3684,8 +3684,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       this.CheckHistDrawAttributes();
 
       let pmain = this.frame_painter(),
-          rect = pmain.getFrameRect(),
-          width = rect.width, height = rect.height;
+          width = pmain.getFrameWidth(), height = pmain.getFrameHeight();
 
       if (!this.draw_content || (width <= 0) || (height <= 0))
           return this.removeG();
@@ -4027,9 +4026,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       }
 
       let pmain = this.frame_painter(),
-          rect = pmain.getFrameRect(),
-          width = rect.width,
-          height = rect.height,
+          width = pmain.getFrameWidth(),
+          height = pmain.getFrameHeight(),
           histo = this.GetHisto(),
           findbin = null, show_rect = true,
           grx1, midx, grx2, gry1, midy, gry2, gapx = 2,
@@ -5137,9 +5135,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    TH2Painter.prototype.DrawBinsContour = function() {
       let handle = this.PrepareColorDraw({ rounding: false, extra: 100, original: this.options.Proj != 0 }),
           main = this.frame_painter(),
-          rect = main.getFrameRect(),
-          frame_w = rect.width,
-          frame_h = rect.height,
+          frame_w = main.getFrameWidth(),
+          frame_h = main.getFrameHeight(),
           levels = this.GetContourLevels(),
           palette = this.getHistPalette(),
           func = main.GetProjectionFunc();
@@ -5363,7 +5360,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    TH2Painter.prototype.DrawPolyBinsColor = function() {
       let histo = this.getObject(),
           pmain = this.frame_painter(),
-          h = this.frame_height(),
+          h = pmain.getFrameHeight(),
           colPaths = [], textbins = [],
           colindx, cmd, bin, item,
           i, len = histo.fBins.arr.length;
@@ -5446,7 +5443,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    TH2Painter.prototype.DrawBinsText = function(handle) {
       let histo = this.getObject(),
-          h = this.frame_height(),
           i,j,binz,errz,binw,binh,lbl,lble,posx,posy,sizex,sizey,
           text_col = this.getColor(histo.fMarkerColor),
           text_angle = -1*this.options.TextAngle,
@@ -5459,7 +5455,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (handle===null) handle = this.PrepareColorDraw({ rounding: false });
 
       if ((histo.fMarkerSize!==1) && text_angle)
-         text_size = Math.round(0.02*h*histo.fMarkerSize);
+         text_size = Math.round(0.02*histo.fMarkerSize*this.frame_painter().getFrameHeight());
 
       if (histo.fBarOffset!==0) text_offset = histo.fBarOffset*1e-3;
 
@@ -5695,7 +5691,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       let histo = this.GetHisto(),
           handle = this.PrepareColorDraw(),
           pmain = this.frame_painter(), // used for axis values conversions
-          w = pmain.getFrameRect().width,
+          w = pmain.getFrameWidth(),
           i, j, y, sum1, cont, center, counter, integral, pnt,
           bars = "", markers = "", posy;
 
@@ -6280,7 +6276,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          let binid = i*10000 + j;
 
          if (this.is_projection == "X") {
-            x1 = 0; x2 = this.frame_painter().getFrameRect().width;
+            x1 = 0; x2 = this.frame_painter().getFrameWidth();
             if (this.projection_width > 1) {
                let dd = (this.projection_width-1)/2;
                if (j2+dd >= h.j2) { j2 = Math.min(Math.round(j2+dd), h.j2); j1 = Math.max(j2 - this.projection_width, h.j1); }
@@ -6289,7 +6285,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             y1 = h.gry[j2]; y2 = h.gry[j1];
             binid = j1*777 + j2*333;
          } else if (this.is_projection == "Y") {
-            y1 = 0; y2 = this.frame_painter().getFrameRect().height;
+            y1 = 0; y2 = this.frame_painter().getFrameHeight();
             if (this.projection_width > 1) {
                let dd = (this.projection_width-1)/2;
                if (i2+dd >= h.i2) { i2 = Math.min(Math.round(i2+dd), h.i2); i1 = Math.max(i2 - this.projection_width, h.i1); }
