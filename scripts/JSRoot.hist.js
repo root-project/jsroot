@@ -1942,7 +1942,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    THistPainter.prototype.DecodeOptions = function(opt) {
       let histo = this.GetHisto(),
           hdim = this.Dimension(),
-          pad = this.getPadPainter().getRootPad(true);
+          pp = this.getPadPainter(),
+          pad = pp ? pp.getRootPad(true) : null;
 
       if (!this.options)
          this.options = new THistDrawOptions;
