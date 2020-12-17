@@ -925,7 +925,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    TFramePainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
 
    /** @summary Returns frame painter - object itself */
-   TFramePainter.prototype.frame_painter = function() { return this; }
+   TFramePainter.prototype.getFramePainter = function() { return this; }
 
    /** @summary Returns frame or sub-objects, used in GED editor */
    TFramePainter.prototype.getObject = function(place) {
@@ -1224,7 +1224,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary grid can only be drawn by first painter */
    TFramePainter.prototype.DrawGrids = function() {
 
-      let layer = this.svg_frame().select(".grid_layer");
+      let layer = this.getFrameSvg().select(".grid_layer");
 
       layer.selectAll(".xgrid").remove();
       layer.selectAll(".ygrid").remove();
@@ -1300,7 +1300,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if (AxisPos === undefined) AxisPos = 0;
 
-      let layer = this.svg_frame().select(".axis_layer"),
+      let layer = this.getFrameSvg().select(".axis_layer"),
           w = this.getFrameWidth(),
           h = this.getFrameHeight(),
           pp = this.getPadPainter(),
@@ -1558,13 +1558,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (this.mode3d) return; // no need to create any elements in 3d mode
 
       // this is svg:g object - container for every other items belonging to frame
-      this.draw_g = this.svg_layer("primitives_layer").select(".root_frame");
+      this.draw_g = this.getLayerSvg("primitives_layer").select(".root_frame");
 
       let top_rect, main_svg;
 
       if (this.draw_g.empty()) {
 
-         let layer = this.svg_layer("primitives_layer");
+         let layer = this.getLayerSvg("primitives_layer");
 
          this.draw_g = layer.append("svg:g").attr("class", "root_frame");
 
@@ -1908,7 +1908,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    * @private */
    TFramePainter.prototype.ShowAxisStatus = function(axis_name, evnt) {
       let taxis = this.GetAxis(axis_name), hint_name = axis_name, hint_title = "TAxis",
-          m = d3.pointer(evnt, this.svg_frame().node()), id = (axis_name=="x") ? 0 : 1;
+          m = d3.pointer(evnt, this.getFrameSvg().node()), id = (axis_name=="x") ? 0 : 1;
 
       if (taxis) { hint_name = taxis.fName; hint_title = taxis.fTitle || ("TAxis object for " + axis_name); }
       if (this.swap_xy) id = 1-id;
@@ -2031,9 +2031,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    /** @summary Returns frame painter inside the pad
      * @private */
-   TPadPainter.prototype.frame_painter = function() {
-      return this.frame_painter_ref;
-   }
+   TPadPainter.prototype.getFramePainter = function() { return this.frame_painter_ref; }
 
    /** @summary get pad width */
    TPadPainter.prototype.getPadWidth = function() { return this._pad_width || 0; }
@@ -2132,7 +2130,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Called by framework when pad is supposed to be active and get focus
     * @private */
    TPadPainter.prototype.SetActive = function(on) {
-      let fp = this.frame_painter();
+      let fp = this.getFramePainter();
       if (fp && (typeof fp.SetActive == 'function')) fp.SetActive(on);
    }
 
@@ -2177,7 +2175,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (!rect.changed) return false;
 
          if (!JSROOT.BatchMode)
-            btns = this.svg_layer("btns_layer", this.this_pad_name);
+            btns = this.getLayerSvg("btns_layer", this.this_pad_name);
 
       } else {
 
@@ -2350,7 +2348,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          svg_pad = this.svg_this_pad();
          svg_rect = svg_pad.select(".root_pad_border");
          if (!JSROOT.BatchMode)
-            btns = this.svg_layer("btns_layer", this.this_pad_name);
+            btns = this.getLayerSvg("btns_layer", this.this_pad_name);
       } else {
          svg_pad = svg_can.select(".primitives_layer")
              .append("svg:svg") // here was g before, svg used to blend all drawin outside
@@ -2674,7 +2672,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          evnt.stopPropagation(); // disable main context menu
          evnt.preventDefault();  // disable browser context menu
 
-         let fp = this.frame_painter();
+         let fp = this.getFramePainter();
          if (fp) fp.SetLastEventPos();
       }
 
@@ -2803,7 +2801,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if (this.iscan) this.checkSpecialsInPrimitives(obj);
 
-      let fp = this.frame_painter();
+      let fp = this.getFramePainter();
       if (fp) fp.UpdateAttributes(!fp.modified_NDC);
 
       if (!obj.fPrimitives) return false;
@@ -3108,7 +3106,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
 
       if (!isanyfound) {
-         let fp = this.frame_painter();
+         let fp = this.getFramePainter();
          for (let k=0;k<this.painters.length;++k)
             if (fp !== this.painters[k])
                this.painters[k].cleanup();
@@ -3199,7 +3197,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if (!r) return false;
 
-      let main = this.frame_painter(),
+      let main = this.getFramePainter(),
           p = this.svg_this_pad();
 
       r.ranges = main && main.ranges_set ? true : false; // indicate that ranges are assigned
@@ -3270,11 +3268,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           case "xaxis":
           case "yaxis":
           case "zaxis":
-             selp = this.frame_painter();
+             selp = this.getFramePainter();
              selkind = name[0];
              break;
           case "frame":
-             selp = this.frame_painter();
+             selp = this.getFramePainter();
              break;
           default: {
              let indx = parseInt(name);
@@ -3312,7 +3310,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       let use_frame = (full_canvas === "frame");
 
-      let elem = use_frame ? this.svg_frame() : (full_canvas ? this.getCanvSvg() : this.svg_this_pad());
+      let elem = use_frame ? this.getFrameSvg() : (full_canvas ? this.getCanvSvg() : this.svg_this_pad());
 
       if (elem.empty()) return Promise.resolve("");
 
@@ -3327,7 +3325,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          items.push(item);
 
          // remove buttons from each subpad
-         let btns = pp.svg_layer("btns_layer", this.this_pad_name);
+         let btns = pp.getLayerSvg("btns_layer", this.this_pad_name);
          item.btns_node = btns.node();
          if (item.btns_node) {
             item.btns_prnt = item.btns_node.parentNode;
@@ -3335,7 +3333,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             btns.remove();
          }
 
-         let main = pp.frame_painter();
+         let main = pp.getFramePainter();
          if (!main || (typeof main.Render3D !== 'function') || (typeof main.access_3d_kind !== 'function')) return;
 
          let can3d = main.access_3d_kind();
@@ -3354,7 +3352,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             item.foreign.remove();
          }
 
-         let svg_frame = main.svg_frame();
+         let svg_frame = main.getFrameSvg();
          item.frame_node = svg_frame.node();
          if (item.frame_node) {
             item.frame_next = item.frame_node.nextSibling;
@@ -3402,7 +3400,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       let width = elem.property('draw_width'), height = elem.property('draw_height');
       if (use_frame) {
-         let fp = this.frame_painter();
+         let fp = this.getFramePainter();
          width = fp.getFrameWidth();
          height = fp.getFrameHeight();
       }
@@ -3472,7 +3470,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             else
                menu.add("Pad", "pad", this.ItemContextMenu);
 
-            if (this.frame_painter())
+            if (this.getFramePainter())
                menu.add("Frame", "frame", this.ItemContextMenu);
 
             let main = this.getMainPainter(); // here pad painter method
@@ -3787,7 +3785,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          let canv = JSROOT.create("TCanvas"),
              pad = this.pad,
-             main = this.frame_painter(), drawopt;
+             main = this.getFramePainter(), drawopt;
 
          if (kind == "X") {
             canv.fLeftMargin = pad.fLeftMargin;
@@ -4293,7 +4291,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return promise.then(() => {
          if (frame_kind === false) return;
 
-         if (painter.svg_frame().select(".main_layer").empty() && !painter.frame_painter())
+         if (painter.getFrameSvg().select(".main_layer").empty() && !painter.getFramePainter())
             return drawFrame(painter.getDom(), null, (typeof frame_kind === "string") ? frame_kind : "");
       }).then(() => {
          painter.addToPadPrimitives();

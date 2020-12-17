@@ -1847,14 +1847,14 @@ JSROOT.define(['d3'], (d3) => {
          // d3.selectAll(this.draw_g.node().childNodes).remove();
          this.draw_g.selectAll('*').remove();
       } else if (frame_layer) {
-         let frame = this.svg_frame();
+         let frame = this.getFrameSvg();
          if (frame.empty()) return frame;
          if (typeof frame_layer != 'string') frame_layer = "main_layer";
          let layer = frame.select("." + frame_layer);
          if (layer.empty()) layer = frame.select(".main_layer");
          this.draw_g = layer.append("svg:g");
       } else {
-         let layer = this.svg_layer("primitives_layer");
+         let layer = this.getLayerSvg("primitives_layer");
          this.draw_g = layer.append("svg:g");
 
          // layer.selectAll(".most_upper_primitives").raise();
@@ -1905,7 +1905,7 @@ JSROOT.define(['d3'], (d3) => {
      * @param {string} name - layer name
      * @param {string} [pad_name] - select pad name, use configured this.pad_name by default
      * @private */
-   ObjectPainter.prototype.svg_layer = function(name, pad_name) {
+   ObjectPainter.prototype.getLayerSvg = function(name, pad_name) {
       let svg = this.getPadSvg(pad_name);
       if (svg.empty()) return svg;
 
@@ -1956,7 +1956,7 @@ JSROOT.define(['d3'], (d3) => {
    ObjectPainter.prototype.getAxisToSvgFunc = function(isndc, nornd) {
       let func = { isndc: isndc, nornd: nornd },
           use_frame = this.draw_g && this.draw_g.property('in_frame');
-      if (use_frame) func.main = this.frame_painter();
+      if (use_frame) func.main = this.getFramePainter();
       if (func.main && func.main.grx && func.main.gry) {
          if (nornd) {
             func.x = function(x) { return this.main.grx(x); }
@@ -2018,7 +2018,7 @@ JSROOT.define(['d3'], (d3) => {
       let use_frame = this.draw_g && this.draw_g.property('in_frame');
 
       if (use_frame) {
-         let main = this.frame_painter();
+         let main = this.getFramePainter();
          return main ? main.RevertAxis(axis, coord) : 0;
       }
 
@@ -2040,14 +2040,14 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /** @summary Returns svg element for the frame in current pad */
-   ObjectPainter.prototype.svg_frame = function() { return this.svg_layer("primitives_layer").select(".root_frame"); }
+   ObjectPainter.prototype.getFrameSvg = function() { return this.getLayerSvg("primitives_layer").select(".root_frame"); }
 
    /** @summary Returns frame painter in current pad
      * @desc Pad has direct reference on frame if any
      * @private */
-   ObjectPainter.prototype.frame_painter = function() {
+   ObjectPainter.prototype.getFramePainter = function() {
       let pp = this.getPadPainter();
-      return pp ? pp.frame_painter() : null;
+      return pp ? pp.getFramePainter() : null;
    }
 
    /** @summary Returns main object painter on the pad.
@@ -2832,7 +2832,7 @@ JSROOT.define(['d3'], (d3) => {
      * If handler function returns true, default handling of click will be disabled
      * @param {function} handler - function called when mouse click is done */
    ObjectPainter.prototype.configureUserClickHandler = function(handler) {
-      let fp = this.frame_painter();
+      let fp = this.getFramePainter();
       if (fp && fp.configureUserClickHandler)
          fp.configureUserClickHandler(handler);
    }
@@ -2843,7 +2843,7 @@ JSROOT.define(['d3'], (d3) => {
      * If handler function returns true, default handling of dblclick (unzoom) will be disabled
      * @param {function} handler - function called when mouse double click is done */
    ObjectPainter.prototype.configureUserDblclickHandler = function(handler) {
-      let fp = this.frame_painter();
+      let fp = this.getFramePainter();
       if (fp && fp.configureUserDblclickHandler)
          fp.configureUserDblclickHandler(handler);
    }

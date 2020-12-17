@@ -71,13 +71,13 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
          return rect;
       }
 
-      let elem = pad, fp = this.frame_painter();
+      let elem = pad, fp = this.getFramePainter();
       if (can3d === 0) elem = this.getCanvSvg();
 
       let size = { x: 0, y: 0, width: 100, height: 100, clname: clname, can3d: can3d };
 
       if (fp && !fp.mode3d) {
-         elem = this.svg_frame();
+         elem = this.getFrameSvg();
          size.x = elem.property("draw_x");
          size.y = elem.property("draw_y");
       }
@@ -136,7 +136,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
 
          this.apply_3d_size(size).remove();
 
-         this.svg_frame().style('display', null);  // clear display property
+         this.getFrameSvg().style('display', null);  // clear display property
       }
       return can3d;
    }
@@ -173,7 +173,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
          if (this.getPadSvg().empty()) return;
 
          // first hide normal frame
-         this.svg_frame().style('display', 'none');
+         this.getFrameSvg().style('display', 'none');
 
          let elem = this.apply_3d_size(size);
 
@@ -191,7 +191,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
 
       if (size.can3d > 1) {
 
-         elem = this.svg_layer(size.clname);
+         elem = this.getLayerSvg(size.clname);
 
          // elem = layer.select("." + size.clname);
          if (onlyget) return elem;
@@ -1323,7 +1323,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
      * @memberof JSROOT.Painter */
    function drawPolyLine3D() {
       let line = this.getObject(),
-          main = this.frame_painter();
+          main = this.getFramePainter();
 
       if (!main || !main.mode3d || !main.toplevel || !line)
          return null;

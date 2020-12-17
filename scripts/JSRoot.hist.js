@@ -249,7 +249,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          let pad = this.getPadPainter().getRootPad(true);
 
          if ((pt._typename == "TPaletteAxis") && !pt.fX1 && !pt.fX2 && !pt.fY1 && !pt.fY2) {
-            let fp = this.frame_painter();
+            let fp = this.getFramePainter();
             if (fp) {
                pt.fX1NDC = fp.fX2NDC + 0.01;
                pt.fX2NDC = Math.min(0.96, fp.fX2NDC + 0.06);
@@ -841,7 +841,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           width = this.getPadPainter().getPadWidth(),
           pad = this.getPadPainter().getRootPad(true),
           main = this.getMainPainter(),
-          framep = this.frame_painter(),
+          framep = this.getFramePainter(),
           zmin = 0, zmax = 100,
           contour = main.fContour,
           levels = contour ? contour.getLevels() : null,
@@ -896,7 +896,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                }).append("svg:title").text(levels[i].toFixed(2) + " - " + levels[i+1].toFixed(2));
 
             if (JSROOT.settings.Zooming)
-               r.on("dblclick", () => this.frame_painter().Unzoom("z"));
+               r.on("dblclick", () => this.getFramePainter().Unzoom("z"));
          }
 
 
@@ -950,7 +950,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          let z = this.z_handle.gr, z1 = z.invert(sel1), z2 = z.invert(sel2);
 
-         this.frame_painter().Zoom("z", Math.min(z1, z2), Math.max(z1, z2));
+         this.getFramePainter().Zoom("z", Math.min(z1, z2), Math.max(z1, z2));
       }
 
       let startRectSel = evnt => {
@@ -981,7 +981,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (JSROOT.settings.Zooming)
          this.draw_g.selectAll(".axis_zoom")
                     .on("mousedown", startRectSel)
-                    .on("dblclick", () => this.frame_painter().Unzoom("z"));
+                    .on("dblclick", () => this.getFramePainter().Unzoom("z"));
 
       if (JSROOT.settings.ZoomWheel)
             this.draw_g.on("wheel", evnt => {
@@ -990,7 +990,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
                let item = this.z_handle.analyzeWheelEvent(evnt, coord);
                if (item.changed)
-                  this.frame_painter().Zoom("z", item.min, item.max);
+                  this.getFramePainter().Zoom("z", item.min, item.max);
             });
    }
 
@@ -1104,7 +1104,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    TPavePainter.prototype.PaveContextMenu = function(evnt) {
       if (this.z_handle) {
-         let fp = this.frame_painter();
+         let fp = this.getFramePainter();
          if (fp && fp.ShowContextMenu)
              fp.ShowContextMenu("z", evnt);
          return;
@@ -1290,7 +1290,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                tpainter.removeFromPadPrimitives();
                tpainter.cleanup();
             } else if ((opt == "postitle") || painter.IsDummyPos(pave)) {
-               let st = JSROOT.gStyle, fp = painter.frame_painter();
+               let st = JSROOT.gStyle, fp = painter.getFramePainter();
                if (st && fp) {
                   let midx = st.fTitleX, y2 = st.fTitleY, w = st.fTitleW, h = st.fTitleH;
                   if (!h && fp) h = (y2-fp.fY2NDC)*0.7;
@@ -1910,7 +1910,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    }
 
    THistPainter.prototype.Clear3DScene = function() {
-      let fp = this.frame_painter();
+      let fp = this.getFramePainter();
       if (fp && typeof fp.create3DScene === 'function')
          fp.create3DScene(-1);
       this.mode3d = false;
@@ -2048,7 +2048,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    THistPainter.prototype.updateObject = function(obj, opt) {
 
       let histo = this.GetHisto(),
-          fp = this.frame_painter(),
+          fp = this.getFramePainter(),
           pp = this.getPadPainter();
 
       if (obj !== histo) {
@@ -2286,7 +2286,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (!this.isMainPainter())
          return Promise.resolve(false);
 
-      let fp = this.frame_painter();
+      let fp = this.getFramePainter();
       if (!fp) return Promise.resolve(false);
 
       let histo = this.GetHisto();
@@ -2443,7 +2443,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    THistPainter.prototype.GetSelectIndex = function(axis, side, add) {
       // be aware - here indexes starts from 0
       let indx = 0,
-          main = this.frame_painter(),
+          main = this.getFramePainter(),
           nbin = this['nbins'+axis] || 0,
           taxis = this.GetAxis(axis),
           min = main ? main['zoom_' + axis + 'min'] : 0,
@@ -2667,7 +2667,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    THistPainter.prototype.AddInteractive = function() {
 
       if (this.isMainPainter()) {
-         let fp = this.frame_painter();
+         let fp = this.getFramePainter();
          if (fp) return fp.AddInteractive();
       }
 
@@ -2725,7 +2725,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    THistPainter.prototype.FillContextMenu = function(menu) {
 
       let histo = this.GetHisto(),
-          fp = this.frame_painter();
+          fp = this.getFramePainter();
       if (!histo) return;
 
       menu.add("header:"+ histo._typename + "::" + histo.fName);
@@ -2810,7 +2810,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    THistPainter.prototype.ButtonClick = function(funcname) {
       // TODO: move to frame painter
 
-      let fp = this.frame_painter();
+      let fp = this.getFramePainter();
 
       if (!this.isMainPainter() || !fp) return false;
 
@@ -2893,7 +2893,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          cntr.ConfigIndicies(this.options.Zero ? -1 : 0, (cntr.colzmin != 0) || !this.options.Zero || this.IsTH2Poly() ? 0 : -1);
       }
 
-      let fp = this.frame_painter();
+      let fp = this.getFramePainter();
       if ((this.Dimension() < 3) && fp) {
          fp.zmin = cntr.colzmin;
          fp.zmax = cntr.colzmax;
@@ -2908,7 +2908,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          return this.fContour;
 
       let main = this.getMainPainter(),
-          fp = this.frame_painter();
+          fp = this.getFramePainter();
 
       if (main && (main !== this) && main.fContour) {
          this.fContour = main.fContour;
@@ -3043,7 +3043,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          can_move = true;
       }
 
-      let frame_painter = this.frame_painter();
+      let frame_painter = this.getFramePainter();
 
       // keep palette width
       if (can_move && frame_painter) {
@@ -3135,7 +3135,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       let histo = this.GetHisto(),
           xaxis = histo.fXaxis, yaxis = histo.fYaxis,
-          pmain = this.frame_painter(),
+          pmain = this.getFramePainter(),
           hdim = this.Dimension(),
           i, j, x, y, binz, binarea,
           res = {
@@ -3250,7 +3250,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    /** @summary Get tip text for axis bin */
    THistPainter.prototype.GetAxisBinTip = function(name, axis, bin) {
-      let pmain = this.frame_painter(),
+      let pmain = this.getFramePainter(),
           handle = pmain[name+"_handle"],
           x1 = axis.GetBinLowEdge(bin+1);
 
@@ -3428,7 +3428,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           right = this.GetSelectIndex("x", "right"),
           stat_sumw = 0, stat_sumwx = 0, stat_sumwx2 = 0, stat_sumwy = 0, stat_sumwy2 = 0,
           i, xx = 0, w = 0, xmax = null, wmax = null,
-          fp = this.frame_painter(),
+          fp = this.getFramePainter(),
           res = { name: histo.fName, meanx: 0, meany: 0, rmsx: 0, rmsy: 0, integral: 0, entries: this.stat_entries, xmax:0, wmax:0 };
 
       for (i = left; i < right; ++i) {
@@ -3555,7 +3555,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       let left = this.GetSelectIndex("x", "left", -1),
           right = this.GetSelectIndex("x", "right", 1),
-          pmain = this.frame_painter(),
+          pmain = this.getFramePainter(),
           histo = this.GetHisto(), xaxis = histo.fXaxis,
           show_text = this.options.Text, text_col, text_angle, text_size,
           i, x1, x2, grx1, grx2, y, gry1, gry2, w,
@@ -3651,7 +3651,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       let left = this.GetSelectIndex("x", "left", -1),
           right = this.GetSelectIndex("x", "right", 1),
-          pmain = this.frame_painter(),
+          pmain = this.getFramePainter(),
           histo = this.GetHisto(), xaxis = histo.fXaxis,
           i, x, grx, y, yerr, gry1, gry2,
           bins1 = [], bins2 = [];
@@ -3687,7 +3687,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       this.CheckHistDrawAttributes();
 
-      let pmain = this.frame_painter(),
+      let pmain = this.getFramePainter(),
           width = pmain.getFrameWidth(), height = pmain.getFrameHeight();
 
       if (!this.draw_content || (width <= 0) || (height <= 0))
@@ -3991,7 +3991,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    TH1Painter.prototype.GetBinTips = function(bin) {
       let tips = [],
           name = this.getObjectHint(),
-          pmain = this.frame_painter(),
+          pmain = this.getFramePainter(),
           histo = this.GetHisto(),
           x1 = histo.fXaxis.GetBinLowEdge(bin+1),
           x2 = histo.fXaxis.GetBinLowEdge(bin+2),
@@ -4029,7 +4029,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          return null;
       }
 
-      let pmain = this.frame_painter(),
+      let pmain = this.getFramePainter(),
           width = pmain.getFrameWidth(),
           height = pmain.getFrameHeight(),
           histo = this.GetHisto(),
@@ -4295,7 +4295,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       }
 
       if ((right - left < dist) && (left < right))
-         this.frame_painter().Zoom(histo.fXaxis.GetBinLowEdge(left+1), histo.fXaxis.GetBinLowEdge(right+1));
+         this.getFramePainter().Zoom(histo.fXaxis.GetBinLowEdge(left+1), histo.fXaxis.GetBinLowEdge(right+1));
    }
 
    /** @summary Checks if it makes sense to zoom inside specified axis range */
@@ -4313,7 +4313,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    TH1Painter.prototype.callDrawFunc = function(reason) {
 
       let main = this.getMainPainter(),
-          fp = this.frame_painter();
+          fp = this.getFramePainter();
 
      if ((main !== this) && fp && (fp.mode3d !== this.options.Mode3D))
         this.CopyOptionsFrom(main);
@@ -4624,7 +4624,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       }
 
       if (isany)
-         this.frame_painter().Zoom(xmin, xmax, ymin, ymax);
+         this.getFramePainter().Zoom(xmin, xmax, ymin, ymax);
    }
 
    TH2Painter.prototype.ScanContent = function(when_axis_changed) {
@@ -4686,13 +4686,13 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           stat_sum0 = 0, stat_sumx1 = 0, stat_sumy1 = 0,
           stat_sumx2 = 0, stat_sumy2 = 0,
           xside, yside, xx, yy, zz,
-          fp = this.frame_painter(),
+          fp = this.getFramePainter(),
           res = { name: histo.fName, entries: 0, integral: 0, meanx: 0, meany: 0, rmsx: 0, rmsy: 0, matrix: [0,0,0,0,0,0,0,0,0], xmax: 0, ymax:0, wmax: null };
 
       if (this.IsTH2Poly()) {
 
          let len = histo.fBins.arr.length, i, bin, n, gr, ngr, numgraphs, numpoints,
-             pmain = this.frame_painter();
+             pmain = this.getFramePainter();
 
          for (i=0;i<len;++i) {
             bin = histo.fBins.arr[i];
@@ -5138,7 +5138,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    /** @summary Draw histogram bins as contour */
    TH2Painter.prototype.DrawBinsContour = function() {
       let handle = this.PrepareColorDraw({ rounding: false, extra: 100, original: this.options.Proj != 0 }),
-          main = this.frame_painter(),
+          main = this.getFramePainter(),
           frame_w = main.getFrameWidth(),
           frame_h = main.getFrameHeight(),
           levels = this.GetContourLevels(),
@@ -5363,7 +5363,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    TH2Painter.prototype.DrawPolyBinsColor = function() {
       let histo = this.getObject(),
-          pmain = this.frame_painter(),
+          pmain = this.getFramePainter(),
           h = pmain.getFrameHeight(),
           colPaths = [], textbins = [],
           colindx, cmd, bin, item,
@@ -5459,7 +5459,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (handle===null) handle = this.PrepareColorDraw({ rounding: false });
 
       if ((histo.fMarkerSize!==1) && text_angle)
-         text_size = Math.round(0.02*histo.fMarkerSize*this.frame_painter().getFrameHeight());
+         text_size = Math.round(0.02*histo.fMarkerSize*this.getFramePainter().getFrameHeight());
 
       if (histo.fBarOffset!==0) text_offset = histo.fBarOffset*1e-3;
 
@@ -5695,7 +5695,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    TH2Painter.prototype.DrawCandle = function() {
       let histo = this.GetHisto(),
           handle = this.PrepareColorDraw(),
-          pmain = this.frame_painter(), // used for axis values conversions
+          pmain = this.getFramePainter(), // used for axis values conversions
           w = pmain.getFrameWidth(),
           i, j, y, sum1, cont, center, counter, integral, pnt,
           bars = "", markers = "", posy;
@@ -5884,7 +5884,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          }
       }
 
-      let layer = this.svg_frame().select('.main_layer'),
+      let layer = this.getFrameSvg().select('.main_layer'),
           defs = layer.select("defs");
       if (defs.empty() && (colPaths.length>0))
          defs = layer.insert("svg:defs",":first-child");
@@ -5982,7 +5982,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    /** @summary Return text information about histogram bin */
    TH2Painter.prototype.GetBinTips = function (i, j) {
-      let lines = [], pmain = this.frame_painter(),
+      let lines = [], pmain = this.getFramePainter(),
           histo = this.GetHisto(),
           binz = histo.getBinContent(i+1,j+1)
 
@@ -6006,7 +6006,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    }
 
    TH2Painter.prototype.GetCandleTips = function(p) {
-      let lines = [], main = this.frame_painter(), histo = this.GetHisto();
+      let lines = [], main = this.getFramePainter(), histo = this.GetHisto();
 
       lines.push(this.getObjectHint());
 
@@ -6023,7 +6023,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       let histo = this.GetHisto(),
           bin = histo.fBins.arr[binindx],
-          pmain = this.frame_painter(),
+          pmain = this.getFramePainter(),
           binname = bin.fPoly.fName,
           lines = [], numpoints = 0;
 
@@ -6077,7 +6077,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (h.poly) {
          // process tooltips from TH2Poly
 
-         let pmain = this.frame_painter(), foundindx = -1, bin;
+         let pmain = this.getFramePainter(), foundindx = -1, bin;
          const realx = (pmain.grx === pmain.x) ? pmain.x.invert(pnt.x) : undefined,
                realy = (pmain.gry === pmain.y) ? pmain.y.invert(pnt.y) : undefined;
 
@@ -6197,7 +6197,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       let i, j, binz = 0, colindx = null,
           i1, i2, j1, j2, x1, x2, y1, y2,
-          pmain = this.frame_painter();
+          pmain = this.getFramePainter();
 
       // search bins position
       if (pmain.reverse_x) {
@@ -6281,7 +6281,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          let binid = i*10000 + j;
 
          if (this.is_projection == "X") {
-            x1 = 0; x2 = this.frame_painter().getFrameWidth();
+            x1 = 0; x2 = this.getFramePainter().getFrameWidth();
             if (this.projection_width > 1) {
                let dd = (this.projection_width-1)/2;
                if (j2+dd >= h.j2) { j2 = Math.min(Math.round(j2+dd), h.j2); j1 = Math.max(j2 - this.projection_width, h.j1); }
@@ -6290,7 +6290,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             y1 = h.gry[j2]; y2 = h.gry[j1];
             binid = j1*777 + j2*333;
          } else if (this.is_projection == "Y") {
-            y1 = 0; y2 = this.frame_painter().getFrameHeight();
+            y1 = 0; y2 = this.getFramePainter().getFrameHeight();
             if (this.projection_width > 1) {
                let dd = (this.projection_width-1)/2;
                if (i2+dd >= h.i2) { i2 = Math.min(Math.round(i2+dd), h.i2); i1 = Math.max(i2 - this.projection_width, h.i1); }
@@ -6366,7 +6366,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    TH2Painter.prototype.callDrawFunc = function(reason) {
 
       let main = this.getMainPainter(),
-          fp = this.frame_painter();
+          fp = this.getFramePainter();
 
      if ((main !== this) && fp && (fp.mode3d !== this.options.Mode3D))
         this.CopyOptionsFrom(main);

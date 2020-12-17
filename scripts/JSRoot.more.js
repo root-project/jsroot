@@ -15,7 +15,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
           tcolor = this.getColor(text.fTextColor),
           use_frame = false,
           fact = 1., textsize = text.fTextSize || 0.05,
-          main = this.frame_painter();
+          main = this.getFramePainter();
 
       if (text.TestBit(JSROOT.BIT(14))) {
          // NDC coordinates
@@ -514,7 +514,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    }
 
    TF1Painter.prototype.CreateBins = function(ignore_zoom) {
-      let main = this.frame_painter(),
+      let main = this.getFramePainter(),
           gxmin = 0, gxmax = 0, tf1 = this.getObject();
 
       if (main && !ignore_zoom)  {
@@ -666,7 +666,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       let name = this.getObjectHint();
       if (name.length > 0) res.lines.push(name);
 
-      let pmain = this.frame_painter();
+      let pmain = this.getFramePainter();
       if (pmain)
          res.lines.push("x = " + pmain.AxisAsText("x",bin.x) + " y = " + pmain.AxisAsText("y",bin.y));
 
@@ -676,7 +676,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    TF1Painter.prototype.Redraw = function() {
 
       let tf1 = this.getObject(),
-          fp = this.frame_painter(),
+          fp = this.getFramePainter(),
           h = fp.getFrameHeight(),
           pmain = this.getMainPainter();
 
@@ -1038,7 +1038,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    }
 
    TGraphPainter.prototype.TooltipText = function(d) {
-      let pmain = this.frame_painter(), lines = [];
+      let pmain = this.getFramePainter(), lines = [];
 
       lines.push(this.getObjectHint());
 
@@ -1058,7 +1058,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    /** @summary Provide frame painter for graph
      * @desc If not exists, emulate its behaviour */
    TGraphPainter.prototype.get_main = function() {
-      let pmain = this.frame_painter();
+      let pmain = this.getFramePainter();
 
       if (pmain && pmain.grx && pmain.gry) return pmain;
 
@@ -1419,7 +1419,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       if (this.draw_kind!="nodes") return null;
 
-      let pmain = this.frame_painter(),
+      let pmain = this.getFramePainter(),
           height = pmain.getFrameHeight(),
           esz = this.error_size,
           isbar1 = (this.options.Bar===1),
@@ -1525,7 +1525,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
           bestindx = -1,
           bestbin = null,
           bestdist = 1e10,
-          pmain = this.frame_painter(),
+          pmain = this.getFramePainter(),
           dist, grx, gry, n, bin;
 
       for (n=0;n<this.bins.length;++n) {
@@ -1625,7 +1625,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       let islines = (this.draw_kind=="lines"),
           ismark = (this.draw_kind=="mark"),
-          pmain = this.frame_painter(),
+          pmain = this.getFramePainter(),
           gr = this.getObject(),
           res = { name: gr.fName, title: gr.fTitle,
                   x: best.bin ? pmain.grx(best.bin.x) : best.linex,
@@ -1729,7 +1729,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       if (hint && hint.exact && (hint.binindx !== undefined)) {
          this.move_binindx = hint.binindx;
          this.move_bin = hint.bin;
-         let main = this.frame_painter();
+         let main = this.getFramePainter();
          this.move_x0 = main ? main.grx(this.move_bin.x) : x;
          this.move_y0 = main ? main.gry(this.move_bin.y) : y;
       } else {
@@ -1745,7 +1745,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       if (this.move_binindx === undefined) {
          this.draw_g.attr("transform", "translate(" + this.pos_dx + "," + this.pos_dy + ")");
       } else {
-         let main = this.frame_painter();
+         let main = this.getFramePainter();
          if (main && this.move_bin) {
             this.move_bin.x = main.RevertAxis("x", this.move_x0 + this.pos_dx);
             this.move_bin.y = main.RevertAxis("y", this.move_y0 + this.pos_dy);
@@ -1762,7 +1762,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
          this.draw_g.attr("transform", null);
 
-         let main = this.frame_painter();
+         let main = this.getFramePainter();
          if (main && this.bins && !not_changed) {
             for (let k=0;k<this.bins.length;++k) {
                let bin = this.bins[k];
@@ -1797,7 +1797,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    TGraphPainter.prototype.ExecuteMenuCommand = function(method, args) {
       if (JSROOT.ObjectPainter.prototype.ExecuteMenuCommand.call(this,method,args)) return true;
 
-      let canp = this.getCanvPainter(), fp = this.frame_painter();
+      let canp = this.getCanvPainter(), fp = this.getFramePainter();
 
       if ((method.fName == 'RemovePoint') || (method.fName == 'InsertPoint')) {
          let pnt = fp ? fp.GetLastEventPos() : null;
@@ -1807,7 +1807,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          let hint = this.ExtractTooltip(pnt);
 
          if (method.fName == 'InsertPoint') {
-            let main = this.frame_painter(),
+            let main = this.getFramePainter(),
                 userx = main ? main.RevertAxis("x", pnt.x) : 0,
                 usery = main ? main.RevertAxis("y", pnt.y) : 0;
             canp.ShowMessage('InsertPoint(' + userx.toFixed(3) + ',' + usery.toFixed(3) + ') not yet implemented');
@@ -1865,7 +1865,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       if (funcname !== "ToggleZoom") return false;
 
-      let main = this.frame_painter();
+      let main = this.getFramePainter();
       if (!main) return false;
 
       if ((this.xmin===this.xmax) && (this.ymin===this.ymax)) return false;
@@ -2098,7 +2098,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
    /** @summary Process mouse event */
    TGraphPolargramPainter.prototype.MouseEvent = function(kind, evnt) {
-      let layer = this.svg_layer("primitives_layer"),
+      let layer = this.getLayerSvg("primitives_layer"),
           interactive = layer.select(".interactive_ellipse");
       if (interactive.empty()) return;
 
@@ -2276,7 +2276,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       JSROOT.require(['interactive']).then(inter => {
          inter.TooltipHandler.assign(this);
 
-         let layer = this.svg_layer("primitives_layer"),
+         let layer = this.getLayerSvg("primitives_layer"),
              interactive = layer.select(".interactive_ellipse");
 
          if (interactive.empty())
@@ -2661,7 +2661,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       let cleanup = false,
           spline = this.getObject(),
-          main = this.frame_painter(),
+          main = this.getFramePainter(),
           xx, yy, knot = null, indx = 0;
 
       if ((pnt === null) || !spline || !main) {
@@ -2737,7 +2737,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    TSplinePainter.prototype.Redraw = function() {
 
       let spline = this.getObject(),
-          pmain = this.frame_painter(),
+          pmain = this.getFramePainter(),
           w = pmain.getFrameWidth(),
           h = pmain.getFrameHeight();
 
@@ -3598,7 +3598,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    TASImagePainter.prototype.drawImage = function() {
       let obj = this.getObject(),
           is_buf = false,
-          fp = this.frame_painter(),
+          fp = this.getFramePainter(),
           rect = fp ? fp.getFrameRect() : this.getPadPainter().getPadRect();
 
       if (obj._blob) {
@@ -3813,7 +3813,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          return Promise.resolve(null);
       }
 
-      let frame_painter = this.frame_painter();
+      let frame_painter = this.getFramePainter();
 
       // keep palette width
       if (can_move && frame_painter) {
@@ -3855,7 +3855,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
    TASImagePainter.prototype.Redraw = function(reason) {
       let img = this.draw_g ? this.draw_g.select("image") : null,
-          fp = this.frame_painter();
+          fp = this.getFramePainter();
 
       if (img && !img.empty() && (reason !== "zoom") && fp) {
          img.attr("width", fp.getFrameWidth()).attr("height", fp.getFrameHeight());
