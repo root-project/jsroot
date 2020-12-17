@@ -10,7 +10,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       /** @desc only canvas info_layer can be used while other pads can overlay
         * @returns layer where frame tooltips are shown */
       hints_layer: function() {
-         let pp = this.canv_painter();
+         let pp = this.getCanvPainter();
          return pp ? pp.svg_layer("info_layer") : d3.select(null);
       },
 

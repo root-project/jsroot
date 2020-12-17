@@ -1797,7 +1797,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    TGraphPainter.prototype.ExecuteMenuCommand = function(method, args) {
       if (JSROOT.ObjectPainter.prototype.ExecuteMenuCommand.call(this,method,args)) return true;
 
-      let canp = this.canv_painter(), fp = this.frame_painter();
+      let canp = this.getCanvPainter(), fp = this.frame_painter();
 
       if ((method.fName == 'RemovePoint') || (method.fName == 'InsertPoint')) {
          let pnt = fp ? fp.GetLastEventPos() : null;
@@ -1904,7 +1904,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       if (stats) return stats;
 
       // do not create stats box when drawing canvas
-      let pp = this.canv_painter();
+      let pp = this.getCanvPainter();
       if (pp && pp.normal_canvas) return null;
 
       if (this.options.PadStats) return null;

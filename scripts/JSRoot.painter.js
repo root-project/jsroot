@@ -1774,7 +1774,7 @@ JSROOT.define(['d3'], (d3) => {
       let jsarr = this.root_colors;
 
       if (!jsarr) {
-         let pp = this.canv_painter();
+         let pp = this.getCanvPainter();
          jsarr = this.root_colors = (pp && pp.root_colors) ? pp.root_colors : jsrp.root_colors;
       }
 
@@ -1786,7 +1786,7 @@ JSROOT.define(['d3'], (d3) => {
    ObjectPainter.prototype.addColor = function(color) {
       let jsarr = this.root_colors;
       if (!jsarr) {
-         let pp = this.canv_painter();
+         let pp = this.getCanvPainter();
          jsarr = this.root_colors = (pp && pp.root_colors) ? pp.root_colors : jsrp.root_colors;
       }
       let indx = jsarr.indexOf(color);
@@ -1799,7 +1799,7 @@ JSROOT.define(['d3'], (d3) => {
      * @desc If available, checks in canvas painter
      * @private */
    ObjectPainter.prototype.isTooltipAllowed = function() {
-      let src = this.canv_painter() || this;
+      let src = this.getCanvPainter() || this;
       return src.tooltip_allowed ? true : false;
    }
 
@@ -1808,7 +1808,7 @@ JSROOT.define(['d3'], (d3) => {
      * @private */
    ObjectPainter.prototype.setTooltipAllowed = function(on) {
       if (on === undefined) on = true;
-      let src = this.canv_painter() || this;
+      let src = this.getCanvPainter() || this;
       src.tooltip_allowed = (on == "toggle") ? !src.tooltip_allowed : on;
    }
 
@@ -1816,7 +1816,7 @@ JSROOT.define(['d3'], (d3) => {
     * @desc Redirects to {@link JSROOT.TPadPainter.checkCanvasResize}
     * @private */
    ObjectPainter.prototype.checkResize = function(arg) {
-      let p = this.canv_painter();
+      let p = this.getCanvPainter();
       if (!p) return false;
 
       // only canvas should be checked
@@ -1944,12 +1944,6 @@ JSROOT.define(['d3'], (d3) => {
 
    /** @summary returns canvas painter */
    ObjectPainter.prototype.getCanvPainter = function() {
-      let elem = this.svg_canvas();
-      return elem.empty() ? null : elem.property('pad_painter');
-   }
-
-   /** @summary returns canvas painter */
-   ObjectPainter.prototype.canv_painter = function() {
       let elem = this.svg_canvas();
       return elem.empty() ? null : elem.property('pad_painter');
    }
@@ -2234,7 +2228,7 @@ JSROOT.define(['d3'], (d3) => {
          this.Redraw(reason);
 
       // inform GED that something changes
-      let canp = this.canv_painter();
+      let canp = this.getCanvPainter();
 
       if (canp && (typeof canp.producePadEvent == 'function'))
          canp.producePadEvent("redraw", this.getPadPainter(), this, null, subelem);
@@ -2272,7 +2266,7 @@ JSROOT.define(['d3'], (d3) => {
    ObjectPainter.prototype.WebCanvasExec = function(exec, snapid) {
       if (!exec || (typeof exec != 'string')) return;
 
-      let canp = this.canv_painter();
+      let canp = this.getCanvPainter();
       if (canp && (typeof canp.SubmitExec == "function"))
          canp.SubmitExec(this, exec, snapid);
    }
@@ -2357,7 +2351,7 @@ JSROOT.define(['d3'], (d3) => {
      * When no parameters are specified, just basic object properties are shown
      * @private */
    ObjectPainter.prototype.showObjectStatus = function(name, title, info, info2) {
-      let cp = this.canv_painter();
+      let cp = this.getCanvPainter();
 
       if (cp && (typeof cp.ShowCanvasStatus !== 'function')) cp = null;
 
@@ -2722,14 +2716,14 @@ JSROOT.define(['d3'], (d3) => {
       if (this._userContextMenuFunc)
          return this._userContextMenuFunc(menu, kind);
 
-      let canvp = this.canv_painter();
+      let canvp = this.getCanvPainter();
 
       if (!this.snapid || !canvp || canvp._readonly || !canvp._websocket)
          return Promise.resolve(menu);
 
       function DoExecMenu(arg) {
          let execp = this.exec_painter || this,
-            cp = execp.canv_painter(),
+            cp = execp.getCanvPainter(),
             item = execp.args_menu_items[parseInt(arg)];
 
          if (!item || !item.fName) return;
@@ -3684,7 +3678,7 @@ JSROOT.define(['d3'], (d3) => {
          return callback ? callback(null) : Promise.reject(Error('not an object in JSROOT.redraw'));
 
       let dummy = new ObjectPainter(divid);
-      let can_painter = dummy.canv_painter(), handle, res_painter = null, redraw_res;
+      let can_painter = dummy.getCanvPainter(), handle, res_painter = null, redraw_res;
       if (obj._typename)
          handle = getDrawHandle("ROOT." + obj._typename);
       if (handle && handle.draw_field && obj[handle.draw_field])
@@ -3733,7 +3727,7 @@ JSROOT.define(['d3'], (d3) => {
      * @returns {string} produced JSON string */
    JSROOT.drawingJSON = function(divid) {
       let dummy = new ObjectPainter(divid);
-      let canp = dummy.canv_painter();
+      let canp = dummy.getCanvPainter();
       return canp ? canp.ProduceJSON() : "";
    }
 

@@ -2073,7 +2073,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (this.custom_palette)
          return this.custom_palette;
 
-      let cp = this.canv_painter();
+      let cp = this.getCanvPainter();
       return cp ? cp.custom_palette : null;
    }
 
@@ -2117,7 +2117,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary method redirect call to pad events receiver */
    TPadPainter.prototype.SelectObjectPainter = function(_painter, pos, _place) {
       let istoppad = (this.iscan || !this.has_canvas),
-          canp = istoppad ? this : this.canv_painter();
+          canp = istoppad ? this : this.getCanvPainter();
 
       if (_painter === undefined) _painter = this;
 
@@ -2711,7 +2711,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
 
       if (jsrp.getActivePad() === this) {
-         let canp = this.canv_painter();
+         let canp = this.getCanvPainter();
          if (canp) canp.producePadEvent("padredraw", this );
       }
    }
@@ -3127,7 +3127,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return this.DrawNextSnap(snap.fPrimitives).then(() => {
          this.selectCurrentPad(prev_name);
          if (jsrp.getActivePad() === this) {
-            let canp = this.canv_painter();
+            let canp = this.getCanvPainter();
             if (canp) canp.producePadEvent("padredraw", this);
          }
          return this;
@@ -3316,7 +3316,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if (elem.empty()) return Promise.resolve("");
 
-      let painter = (full_canvas && !use_frame) ? this.canv_painter() : this;
+      let painter = (full_canvas && !use_frame) ? this.getCanvPainter() : this;
 
       let items = []; // keep list of replaced elements, which should be moved back at the end
 
@@ -3533,7 +3533,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       let iscan = this.iscan || !this.has_canvas;
       if (!iscan && (_funcname.indexOf("Pad")!=0) && (_funcname !== "EnlargePad")) {
-         let cp = this.canv_painter();
+         let cp = this.getCanvPainter();
          if (cp && (cp!==this)) cp.AddButton(_btn, _tooltip, _funcname);
       }
    }

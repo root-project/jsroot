@@ -4432,7 +4432,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       this.is_projection = ""; // disable projection redraw until callback
       this.projection_width = width;
 
-      this.canv_painter().ToggleProjection(new_proj).then(() => this.RedrawProjection("toggling", new_proj));
+      this.getCanvPainter().ToggleProjection(new_proj).then(() => this.RedrawProjection("toggling", new_proj));
    }
 
    TH2Painter.prototype.RedrawProjection = function(ii1, ii2, jj1, jj2) {
@@ -4448,7 +4448,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          jj1 = Math.round((this.tt_handle.j1 + this.tt_handle.j2)/2); jj2 = jj1+1;
       }
 
-      let canp = this.canv_painter(), histo = this.GetHisto();
+      let canp = this.getCanvPainter(), histo = this.GetHisto();
 
       if (canp && !canp._readonly && (this.snapid !== undefined)) {
          // this is when projection should be created on the server side

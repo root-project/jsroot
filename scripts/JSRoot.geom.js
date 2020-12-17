@@ -3904,7 +3904,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
    /** @summary Check if HTML element was resized and drawing need to be adjusted */
    TGeoPainter.prototype.checkResize = function(arg) {
-      let cp = this.canv_painter();
+      let cp = this.getCanvPainter();
 
       // firefox is the only browser which correctly supports resize of embedded canvas,
       // for others we should force canvas redrawing at every step
