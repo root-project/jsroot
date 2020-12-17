@@ -1317,7 +1317,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           draw_vertical = this.swap_xy ? this.x_handle : this.y_handle;
 
       if (!disable_axis_draw) {
-         let pp = this.pad_painter();
+         let pp = this.getPadPainter();
          if (pp && pp._fast_drawing) disable_axis_draw = true;
       }
 
@@ -1398,7 +1398,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             this.createAttFill({ pattern: 1001, color: 0 });
 
          // force white color for the canvas frame
-         if (!tframe && this.fillatt.empty() && this.pad_painter() && this.pad_painter().iscan)
+         if (!tframe && this.fillatt.empty() && pp && pp.iscan)
             this.fillatt.SetSolidColor('white');
       }
 
@@ -1704,8 +1704,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       });
       menu.AddAttributesMenu(this, alone ? "" : "Frame ");
       menu.add("separator");
-      menu.add("Save as frame.png", function() { this.pad_painter().SaveAs("png", 'frame', 'frame.png'); });
-      menu.add("Save as frame.svg", function() { this.pad_painter().SaveAs("svg", 'frame', 'frame.svg'); });
+      menu.add("Save as frame.png", () => pp.SaveAs("png", 'frame', 'frame.png'));
+      menu.add("Save as frame.svg", () => pp.SaveAs("svg", 'frame', 'frame.svg'));
 
       return true;
    }
@@ -1835,7 +1835,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       // than try to unzoom all overlapped objects
          if (!changed) {
-            let pp = this.pad_painter();
+            let pp = this.getPadPainter();
             if (pp && pp.painters)
                pp.painters.forEach(painter => {
                   if (painter && (typeof painter.UnzoomUserRange == 'function'))
@@ -3957,7 +3957,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          console.log('GET EDIT ' + msg.substr(5) +  ' found ' + !!obj_painter);
          if (obj_painter)
             this.ShowSection("Editor", true)
-                .then(() => this.producePadEvent("select", obj_painter.pad_painter(), obj_painter));
+                .then(() => this.producePadEvent("select", obj_painter.getPadPainter(), obj_painter));
 
       } else {
          console.log("unrecognized msg " + msg);
@@ -4021,7 +4021,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if ((mode === "toggle") || (mode === false)) {
             this.RemoveGed();
          } else {
-            let pp = objpainter ? objpainter.pad_painter() : null;
+            let pp = objpainter ? objpainter.getPadPainter() : null;
             if (pp) pp.SelectObjectPainter(objpainter);
          }
 
@@ -4073,7 +4073,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                   // TODO: should be moved into Ged controller - it must be able to detect canvas painter itself
                   this.registerForPadEvents(oGed.getController().padEventsReceiver.bind(oGed.getController()));
 
-                  let pp = objpainter ? objpainter.pad_painter() : null;
+                  let pp = objpainter ? objpainter.getPadPainter() : null;
                   if (pp) pp.SelectObjectPainter(objpainter);
 
                   this.ProcessChanges("sbits", this);
@@ -4134,7 +4134,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          case "frame": // when moving frame
          case "zoom":  // when changing zoom inside frame
             if (!painter.GetWebPadOptions)
-               painter = painter.pad_painter();
+               painter = painter.getPadPainter();
             if (typeof painter.GetWebPadOptions == "function")
                msg = "OPTIONS6:" + painter.GetWebPadOptions("only_this");
             break;

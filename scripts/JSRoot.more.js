@@ -2940,7 +2940,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          delete this.wait_animation_frame;
 
          // clear pad
-         let pp = this.pad_painter();
+         let pp = this.getPadPainter();
          if (!pp) {
             // most probably, pad is cleared
             delete this.step;
@@ -3159,7 +3159,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       let mgraph = this.getObject(),
           graphs = obj.fGraphs,
-          pp = this.pad_painter();
+          pp = this.getPadPainter();
 
       mgraph.fTitle = obj.fTitle;
 
@@ -3803,7 +3803,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          this.fPalette = true; // to emulate behaviour of hist painter
       }
 
-      let pal_painter = this.pad_painter().findPainterFor(this.draw_palette);
+      let pal_painter = this.getPadPainter().findPainterFor(this.draw_palette);
 
       if (!enabled) {
          if (pal_painter) {
@@ -3876,7 +3876,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    }
 
    TASImagePainter.prototype.FillToolbar = function() {
-      let pp = this.pad_painter(), obj = this.getObject();
+      let pp = this.getPadPainter(), obj = this.getObject();
       if (pp && obj && obj.fPalette) {
          pp.AddButton("th2colorz", "Toggle color palette", "ToggleColorZ");
          pp.ShowButtons();

@@ -2872,7 +2872,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
    }
 
    RH3Painter.prototype.FillToolbar = function() {
-      let pp = this.pad_painter();
+      let pp = this.getPadPainter();
       if (!pp) return;
 
       pp.AddButton("auto_zoom", 'Unzoom all axes', 'ToggleZoom', "Ctrl *");

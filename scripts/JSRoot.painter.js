@@ -1640,7 +1640,7 @@ JSROOT.define(['d3'], (d3) => {
       let keep_origin = true;
 
       if (this.isMainPainter()) {
-         let pp = this.pad_painter();
+         let pp = this.getPadPainter();
          if (!pp || pp.normal_canvas === false) keep_origin = false;
       }
 
@@ -1948,12 +1948,6 @@ JSROOT.define(['d3'], (d3) => {
       return elem.empty() ? null : elem.property('pad_painter');
    }
 
-   /** @summary returns pad painter for specified pad */
-   ObjectPainter.prototype.pad_painter = function(pad_name) {
-      let elem = this.svg_pad(typeof pad_name == "string" ? pad_name : undefined);
-      return elem.empty() ? null : elem.property('pad_painter');
-   }
-
    /** @summary returns canvas painter */
    ObjectPainter.prototype.canv_painter = function() {
       let elem = this.svg_canvas();
@@ -2058,7 +2052,7 @@ JSROOT.define(['d3'], (d3) => {
      * @desc Pad has direct reference on frame if any
      * @private */
    ObjectPainter.prototype.frame_painter = function() {
-      let pp = this.pad_painter();
+      let pp = this.getPadPainter();
       return pp ? pp.frame_painter() : null;
    }
 
@@ -2069,7 +2063,7 @@ JSROOT.define(['d3'], (d3) => {
    ObjectPainter.prototype.getMainPainter = function(not_store) {
       let res = this._main_painter;
       if (!res) {
-         let pp = this.pad_painter();
+         let pp = this.getPadPainter();
          if (!pp)
             res = this.getTopPainter();
          else
@@ -2087,7 +2081,7 @@ JSROOT.define(['d3'], (d3) => {
      * @desc Main painter typically responsible for axes drawing
      * Should not be used by pad/canvas painters, but rather by objects which are drawing axis */
    ObjectPainter.prototype.setAsMainPainter = function(force) {
-      let pp = this.pad_painter();
+      let pp = this.getPadPainter();
       if (!pp)
          this.setTopPainter(); //fallback on BasePainter method
        else
@@ -2098,7 +2092,7 @@ JSROOT.define(['d3'], (d3) => {
      * @param {string} [pad_name] - optional pad name where painter should be add */
    ObjectPainter.prototype.addToPadPrimitives = function(pad_name) {
       if (pad_name !== undefined) this.setPadName(pad_name);
-      let pp = this.pad_painter(pad_name); // important - pad_name must be here, otherwise PadPainter class confuses itself
+      let pp = this.getPadPainter(pad_name); // important - pad_name must be here, otherwise PadPainter class confuses itself
 
       if (!pp || (pp === this)) return false;
 
@@ -2113,7 +2107,7 @@ JSROOT.define(['d3'], (d3) => {
 
    /** @summary Remove painter from pad list of painters */
    ObjectPainter.prototype.removeFromPadPrimitives = function() {
-      let pp = this.pad_painter();
+      let pp = this.getPadPainter();
 
       if (!pp || (pp === this)) return false;
 
@@ -2218,7 +2212,7 @@ JSROOT.define(['d3'], (d3) => {
     * @private */
    ObjectPainter.prototype.forEachPainter = function(userfunc, kind) {
       // iterate over all painters from pad list
-      let pp = this.pad_painter();
+      let pp = this.getPadPainter();
       if (pp) {
          pp.forEachPainterInPad(userfunc, kind);
       } else {
@@ -2243,7 +2237,7 @@ JSROOT.define(['d3'], (d3) => {
       let canp = this.canv_painter();
 
       if (canp && (typeof canp.producePadEvent == 'function'))
-         canp.producePadEvent("redraw", this.pad_painter(), this, null, subelem);
+         canp.producePadEvent("redraw", this.getPadPainter(), this, null, subelem);
 
       // inform server that drawopt changes
       if (canp && (typeof canp.ProcessChanges == 'function'))
@@ -2252,7 +2246,7 @@ JSROOT.define(['d3'], (d3) => {
 
    /** @summary Redraw all objects in correspondent pad */
    ObjectPainter.prototype.redrawPad = function(reason) {
-      let pp = this.pad_painter();
+      let pp = this.getPadPainter();
       if (pp) pp.Redraw(reason);
    }
 
@@ -2400,7 +2394,7 @@ JSROOT.define(['d3'], (d3) => {
 
       let font = (font_size === 'font') ? font_face : new FontHandler(font_face, font_size);
 
-      let pp = this.pad_painter();
+      let pp = this.getPadPainter();
 
       draw_g.call(font.func);
 

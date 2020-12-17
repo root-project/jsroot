@@ -528,7 +528,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       let pt = this.getObject(),
           tcolor = this.getColor(pt.fTextColor),
           nlines = 0, lines = [],
-          pp = this.pad_painter(),
+          pp = this.getPadPainter(),
           pad_height = pp.getPadHeight(),
           individual_positioning = false,
           draw_header = (pt.fLabel.length > 0),
@@ -717,7 +717,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           step_y = (h - 2*padding_y)/nrows,
           font_size = 0.9*step_y,
           max_font_size = 0, // not limited in the beggining
-          ph = this.getPadPainter().getPadHeight(),
+          pp = this.getPadPainter(),
+          ph = pp.getPadHeight(),
           any_opt = false, i = -1;
 
       if (legend.fTextSize && (ph*legend.fTextSize > 2) && (ph*legend.fTextSize < font_size))
@@ -748,7 +749,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             if ('fFillColor' in mo) o_fill = mo;
             if ('fMarkerColor' in mo) o_marker = mo;
 
-            painter = this.pad_painter().findPainterFor(mo);
+            painter = pp.findPainterFor(mo);
          }
 
          // Draw fill pattern (in a box)
@@ -1163,7 +1164,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    TPavePainter.prototype.FillStatistic = function() {
 
-      let pp = this.pad_painter();
+      let pp = this.getPadPainter();
       if (pp && pp._fast_drawing) return false;
 
       let pave = this.getObject(),
@@ -1284,7 +1285,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return jsrp.ensureTCanvas(painter, false).then(() => {
 
          if ((pave.fName === "title") && (pave._typename === "TPaveText")) {
-            let tpainter = painter.pad_painter().findPainterFor(null, "title");
+            let tpainter = painter.getPadPainter().findPainterFor(null, "title");
             if (tpainter && (tpainter !== painter)) {
                tpainter.removeFromPadPrimitives();
                tpainter.cleanup();
@@ -1355,7 +1356,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       let main_painter = JSROOT.getMainPainter(divid);
       if (!main_painter) return;
 
-      let pp = main_painter.pad_painter(),
+      let pp = main_painter.getPadPainter(),
           pad = pp.getRootPad(true);
       if (!pp || !pad) return;
 
@@ -2048,7 +2049,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       let histo = this.GetHisto(),
           fp = this.frame_painter(),
-          pp = this.pad_painter();
+          pp = this.getPadPainter();
 
       if (obj !== histo) {
 
@@ -2330,7 +2331,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          return Promise.resolve(true);
 
       let histo = this.GetHisto(), st = JSROOT.gStyle,
-          pp = this.pad_painter(),
+          pp = this.getPadPainter(),
           tpainter = pp ? pp.findPainterFor(null, "title") : null,
           pt = tpainter ? tpainter.getObject() : null;
 
@@ -2371,7 +2372,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    THistPainter.prototype.processTitleChange = function(arg) {
 
       let histo = this.GetHisto(),
-          pp = this.pad_painter(),
+          pp = this.getPadPainter(),
           tpainter = pp ? pp.findPainterFor(null, "title") : null;
 
       if (!histo || !tpainter) return null;
@@ -2392,7 +2393,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (!this.snapid) return;
 
       let stat = this.FindStat(),
-          pp = this.pad_painter(),
+          pp = this.getPadPainter(),
           statpainter = pp ? pp.findPainterFor(stat) : null;
 
       if (statpainter && !statpainter.snapid) statpainter.Redraw();
@@ -2400,7 +2401,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    THistPainter.prototype.ToggleStat = function(arg) {
 
-      let stat = this.FindStat(), pp = this.pad_painter(), statpainter = null;
+      let stat = this.FindStat(), pp = this.getPadPainter(), statpainter = null;
 
       if (!arg) arg = "";
 
@@ -2494,7 +2495,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
      * @desc either in list of functions or as object of correspondent painter */
    THistPainter.prototype.FindStat = function() {
       if (this.options.PadStats) {
-         let pp = this.pad_painter(),
+         let pp = this.getPadPainter(),
              p = pp ? pp.findPainterFor(null,"stats", "TPaveStats") : null;
          return p ? p.getObject() : null;
       }
@@ -2606,7 +2607,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       let func = histo.fFunctions.arr[indx],
           opt = histo.fFunctions.opt[indx],
-          pp = this.pad_painter(),
+          pp = this.getPadPainter(),
           do_draw = false,
           func_painter = pp ? pp.findPainterFor(func) : null;
 
@@ -2834,7 +2835,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    }
 
    THistPainter.prototype.FillToolbar = function(not_shown) {
-      let pp = this.pad_painter();
+      let pp = this.getPadPainter();
       if (!pp) return;
 
       pp.AddButton("auto_zoom", 'Toggle between unzoom and autozoom-in', 'ToggleZoom', "Ctrl *");
@@ -2947,7 +2948,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    THistPainter.prototype.getHistPalette = function(force) {
       if (force) this.fPalette = null;
       if (!this.fPalette && !this.options.Palette) {
-         let pp = this.pad_painter();
+         let pp = this.getPadPainter();
          if (pp) this.fPalette = pp.getCustomPalette();
       }
       if (!this.fPalette)
@@ -2997,7 +2998,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          return Promise.resolve(null);
 
       let pal = this.FindFunction('TPaletteAxis'),
-          pp = this.pad_painter(),
+          pp = this.getPadPainter(),
           pal_painter = pp ? pp.findPainterFor(pal) : null;
 
       if (this._can_move_colz) { can_move = true; delete this._can_move_colz; }
@@ -4550,7 +4551,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    TH2Painter.prototype.FillToolbar = function() {
       THistPainter.prototype.FillToolbar.call(this, true);
 
-      let pp = this.pad_painter();
+      let pp = this.getPadPainter();
       if (!pp) return;
 
       if (!this.IsTH2Poly())
@@ -6553,7 +6554,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    THStackPainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
 
    THStackPainter.prototype.cleanup = function() {
-      let pp = this.pad_painter();
+      let pp = this.getPadPainter();
       if (pp) pp.CleanPrimitives(objp => { return (objp === this.firstpainter) || (this.painters.indexOf(objp) >= 0); });
       delete this.firstpainter;
       delete this.painters;
@@ -6826,7 +6827,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           nhists = (hlst && hlst.arr) ? hlst.arr.length : 0;
 
       if (nhists !== this.painters.length) {
-         let pp = this.pad_painter();
+         let pp = this.getPadPainter();
          if (pp) pp.CleanPrimitives(objp => { return this.painters.indexOf(objp) >= 0; });
          this.painters = [];
          this.did_update = true;

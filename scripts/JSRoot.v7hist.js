@@ -452,7 +452,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
    }
 
    RHistPainter.prototype.FillToolbar = function(not_shown) {
-      let pp = this.pad_painter();
+      let pp = this.getPadPainter();
       if (!pp) return;
 
       pp.AddButton("auto_zoom", 'Toggle between unzoom and autozoom-in', 'ToggleZoom', "Ctrl *");
@@ -625,7 +625,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
    /** @summary Update palette drawing */
    RHistPainter.prototype.UpdatePaletteDraw = function() {
       if (this.isMainPainter()) {
-         let pp = this.pad_painter().findPainterFor(undefined, undefined, "ROOT::Experimental::RPaletteDrawable");
+         let pp = this.getPadPainter().findPainterFor(undefined, undefined, "ROOT::Experimental::RPaletteDrawable");
          if (pp) pp.DrawPalette();
       }
    }
@@ -1979,7 +1979,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
    RH2Painter.prototype.FillToolbar = function() {
       RHistPainter.prototype.FillToolbar.call(this, true);
 
-      let pp = this.pad_painter();
+      let pp = this.getPadPainter();
       if (!pp) return;
 
       if (!this.IsTH2Poly())
@@ -3688,7 +3688,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
    }
 
    RHistStatsPainter.prototype.FillStatistic = function() {
-      let pp = this.pad_painter();
+      let pp = this.getPadPainter();
       if (pp && pp._fast_drawing) return false;
 
       let obj = this.getObject();

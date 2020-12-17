@@ -343,7 +343,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       AddDrag: function(painter, callback) {
          if (!JSROOT.settings.MoveResize || JSROOT.BatchMode) return;
 
-         let pthis = painter, drag_rect = null, pp = pthis.pad_painter();
+         let pthis = painter, drag_rect = null, pp = pthis.getPadPainter();
          if (pp && pp._fast_drawing) return;
 
          function detectRightButton(event) {
@@ -503,7 +503,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                      let rrr = resize_se.node().getBoundingClientRect();
                      pthis.ShowContextMenu('main', { clientX: rrr.left, clientY: rrr.top });
                   } else if (callback.canselect && (spent <= 600)) {
-                     let pp = pthis.pad_painter();
+                     let pp = pthis.getPadPainter();
                      if (pp) pp.SelectObjectPainter(pthis);
                   }
                }
@@ -618,7 +618,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                evnt.sourceEvent.stopPropagation();
                if (this.moveEnd)
                   this.moveEnd(not_changed);
-               let pp = this.pad_painter();
+               let pp = this.getPadPainter();
                if (pp) pp.SelectObjectPainter(this);
             }.bind(painter));
 
@@ -650,7 +650,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          main_svg.style("pointer-events","visibleFill")
                  .property('handlers_set', 0);
 
-         let pp = this.pad_painter(),
+         let pp = this.getPadPainter(),
              handlers_set = (pp && pp._fast_drawing) ? 0 : 1;
 
          if (main_svg.property('handlers_set') != handlers_set) {
@@ -685,7 +685,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       AddInteractive: function() {
 
-         let pp = this.pad_painter(),
+         let pp = this.getPadPainter(),
              svg = this.svg_frame();
          if ((pp && pp._fast_drawing) || svg.empty())
             return Promise.resolve(this);
@@ -759,7 +759,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             default: return false;
          }
 
-         let pp = this.pad_painter();
+         let pp = this.getPadPainter();
          if (jsrp.getActivePad() !== pp) return;
 
          if (evnt.shiftKey) key = "Shift " + key;
@@ -804,7 +804,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
         * @desc such event can be used to select */
       ProcessFrameClick: function(pnt, dblckick) {
 
-         let pp = this.pad_painter();
+         let pp = this.getPadPainter();
          if (!pp) return;
 
          pnt.painters = true; // provide painters reference in the hints
@@ -992,12 +992,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                this.ProcessFrameClick(pnt);
                break;
             case 2: {
-               let pp = this.pad_painter();
+               let pp = this.getPadPainter();
                if (pp) pp.SelectObjectPainter(this, null, "xaxis");
                break;
             }
             case 3: {
-               let pp = this.pad_painter();
+               let pp = this.getPadPainter();
                if (pp) pp.SelectObjectPainter(this, null, "yaxis");
                break;
             }
@@ -1021,7 +1021,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (!valid_y) kind = this.swap_xy ? "y" : "x";
          if (this.Unzoom(kind)) return;
 
-         let pp = this.pad_painter();
+         let pp = this.getPadPainter();
          let rect = this.getFrameRect();
          if (pp) pp.SelectObjectPainter(pp, { x: m[0] + rect.x, y: m[1] + rect.y, dbl: true });
       },
@@ -1214,7 +1214,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          * when histogram not draw, defined by other painters */
       AllowDefaultYZooming: function() {
 
-         let pad_painter = this.pad_painter();
+         let pad_painter = this.getPadPainter();
          if (pad_painter && pad_painter.painters)
             for (let k = 0; k < pad_painter.painters.length; ++k) {
                let subpainter = pad_painter.painters[k];
@@ -1270,7 +1270,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             } else if (!kind) {
                let ms = d3.pointer(evnt, this.svg_frame().node()),
                    tch = d3.pointers(evnt, this.svg_frame().node()),
-                   pp = this.pad_painter(),
+                   pp = this.getPadPainter(),
                    pnt = null, sel = null;
 
                fp = this;

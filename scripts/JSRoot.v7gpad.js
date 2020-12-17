@@ -1249,7 +1249,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    RAxisPainter.prototype.Redraw = function() {
 
       let drawable = this.getObject(),
-          pp   = this.pad_painter(),
+          pp   = this.getPadPainter(),
           pos  = pp.GetCoordinate(drawable.fPos),
           len  = pp.GetPadLength(drawable.fVertical, drawable.fLength),
           reverse = this.v7EvalAttr("reverse", false),
@@ -1791,7 +1791,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           disable_axis_draw = false;
 
       if (!disable_axis_draw) {
-         let pp = this.pad_painter();
+         let pp = this.getPadPainter();
          if (pp && pp._fast_drawing) disable_axis_draw = true;
       }
 
@@ -1929,7 +1929,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
      * @private */
    RFramePainter.prototype.Redraw = function() {
 
-      let pp = this.pad_painter();
+      let pp = this.getPadPainter();
       if (pp) pp.frame_painter_ref = this;
 
       // first update all attributes from objects
@@ -2048,7 +2048,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    /** @summary Returns palette associated with frame. Either from existing palette painter or just default palette */
    RFramePainter.prototype.getHistPalette = function() {
-      let pp = this.pad_painter().findPainterFor(undefined, undefined, "ROOT::Experimental::RPaletteDrawable");
+      let pp = this.getPadPainter().findPainterFor(undefined, undefined, "ROOT::Experimental::RPaletteDrawable");
 
       if (pp) return pp.getHistPalette();
 
@@ -2302,8 +2302,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       });
       menu.AddAttributesMenu(this, alone ? "" : "Frame ");
       menu.add("separator");
-      menu.add("Save as frame.png", function() { this.pad_painter().SaveAs("png", 'frame', 'frame.png'); });
-      menu.add("Save as frame.svg", function() { this.pad_painter().SaveAs("svg", 'frame', 'frame.svg'); });
+      menu.add("Save as frame.png", () => this.getPadPainter().SaveAs("png", 'frame', 'frame.png'));
+      menu.add("Save as frame.svg", () => this.getPadPainter().SaveAs("svg", 'frame', 'frame.svg'));
 
       return true;
    }
