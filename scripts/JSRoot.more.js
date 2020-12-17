@@ -2059,7 +2059,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    }
 
    /** @summary Returns coordinate of frame - without using frame itself */
-   TGraphPolargramPainter.prototype.GetFrameRect = function() {
+   TGraphPolargramPainter.prototype.getFrameRect = function() {
       let pad = this.root_pad(),
           prect = this.getPadRect(),
           w = prect.width,
@@ -2135,7 +2135,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       if (!this.isMainPainter()) return;
 
       let polar = this.getObject(),
-          rect = this.GetFrameRect();
+          rect = this.getFrameRect();
 
       this.createG();
 

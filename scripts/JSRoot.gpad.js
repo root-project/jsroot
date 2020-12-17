@@ -1704,14 +1704,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return res;
    }
 
-   TFramePainter.prototype.GetFrameRect = function() {
-      // returns frame rectangle plus extra info for hint display
-
+   /** @summary Returns frame rectangle plus extra info for hint display */
+   TFramePainter.prototype.getFrameRect = function() {
       return {
-         x: this.frame_x(),
-         y: this.frame_y(),
-         width: this.frame_width(),
-         height: this.frame_height(),
+         x: this._frame_x || 0,
+         y: this._frame_y || 0,
+         width: this._frame_width || 0,
+         height: this._frame_height || 0,
          transform: this.draw_g ? this.draw_g.attr("transform") : "",
          hint_delta_x: 0,
          hint_delta_y: 0
