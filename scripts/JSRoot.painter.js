@@ -1833,6 +1833,10 @@ JSROOT.define(['d3'], (d3) => {
       }
    }
 
+   /** @summary Returns created <g> element used for object drawing
+     * @desc Element should be created by {@link ObjectPainter.createG} function before */
+   ObjectPainter.prototype.getG = function() { return this.draw_g; }
+
    /** @summary (re)creates svg:g element for object drawings
      * @desc either one attach svg:g to pad list of primitives (default)
      * or svg:g element created in specified frame layer (default main_layer)

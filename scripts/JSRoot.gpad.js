@@ -854,7 +854,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       this.createG();
 
-      return this.DrawAxis(this.draw_g, Math.abs(w), Math.abs(h), "translate(" + x1 + "," + y2 +")");
+      return this.DrawAxis(this.getG(), Math.abs(w), Math.abs(h), "translate(" + x1 + "," + y2 +")");
    }
 
    let drawGaxis = (divid, obj /*, opt*/) => {
@@ -1449,15 +1449,16 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
    }
 
+   /** @summary remove all axes drawings */
    TFramePainter.prototype.CleanAxesDrawings = function() {
-      // remove all axes drawings
       if (this.x_handle) this.x_handle.removeG();
       if (this.y_handle) this.y_handle.removeG();
       if (this.z_handle) this.z_handle.removeG();
 
-      if (this.draw_g) {
-         this.draw_g.select(".grid_layer").selectAll("*").remove();
-         this.draw_g.select(".axis_layer").selectAll("*").remove();
+      let g = this.getG();
+      if (g) {
+         g.select(".grid_layer").selectAll("*").remove();
+         g.select(".axis_layer").selectAll("*").remove();
       }
       this.axes_drawn = false;
    }
