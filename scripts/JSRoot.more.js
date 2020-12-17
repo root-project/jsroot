@@ -3302,7 +3302,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    TMultiGraphPainter.prototype.drawAxis = function() {
 
       let mgraph = this.getObject(),
-          histo = this.ScanGraphsRange(mgraph.fGraphs, mgraph.fHistogram, this.getPadPainter().getRootPad(true));
+          pp = this.getPadPainter(),
+          histo = this.ScanGraphsRange(mgraph.fGraphs, mgraph.fHistogram, pp ? pp.getRootPad(true) : null);
 
       // histogram painter will be first in the pad, will define axis and
       // interactive actions
