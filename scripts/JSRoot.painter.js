@@ -1982,7 +1982,7 @@ JSROOT.define(['d3'], (d3) => {
          }
       } else if (!use_frame) {
          let pp = this.getPadPainter();
-         if (!isndc) func.pad = this.root_pad(); // need for NDC conversion
+         if (!isndc && pp) func.pad = pp.getRootPad(true); // need for NDC conversion
          func.padw = pp ? pp.getPadWidth() : 10;
          func.x = function(value) {
             if (this.pad) {
@@ -2039,7 +2039,7 @@ JSROOT.define(['d3'], (d3) => {
 
       let pp = this.getPadPainter(),
           value = (axis == "y") ? (1 - coord / pp.getPadHeight()) : coord / pp.getPadWidth(),
-          pad = ndc ? null : this.root_pad();
+          pad = (ndc || !pp) ? null : pp.getRootPad(true);
 
       if (pad) {
          if (axis == "y") {

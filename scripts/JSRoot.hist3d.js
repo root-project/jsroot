@@ -94,7 +94,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
          this.Resize3D(); // set actual sizes
 
-         this.SetCameraPosition(false, this.root_pad());
+         this.SetCameraPosition(false, this.getPadPainter().getRootPad(true));
 
          return;
       }

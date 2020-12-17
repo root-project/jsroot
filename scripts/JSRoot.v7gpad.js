@@ -2405,6 +2405,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    RPadPainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
 
+   /** @summary Indicates that is not Root6 pad painter
+    * @private */
+   RPadPainter.prototype.isRoot6 = function() { return false; }
+
    /** @summary Returns SVG element for the specified pad (or itself)
     * @private */
    RPadPainter.prototype.svg_pad = function(pad_name) {
@@ -2479,6 +2483,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          width: this.getPadWidth(),
          height: this.getPadHeight()
       }
+   }
+
+   /** @summary return RPad object */
+   RPadPainter.prototype.getRootPad = function(is_root6) {
+      return (is_root6 === undefined) || !is_root6 ? this.pad : null;
    }
 
    /** @summary Cleanup primitives from pad - selector lets define which painters to remove

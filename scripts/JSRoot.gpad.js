@@ -1105,7 +1105,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       this.logx = this.logy = 0;
 
-      let w = this.getFrameWidth(), h = this.getFrameHeight(), pad = this.root_pad();
+      let w = this.getFrameWidth(), h = this.getFrameHeight(),
+          pp = this.getPadPainter(),
+          pad = pp.getRootPad();
 
       this.scale_xmin = this.xmin;
       this.scale_xmax = this.xmax;
@@ -1133,7 +1135,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (opts.ndim && (opts.ndim > 2)) this.CheckAxisZoom('z');
 
          if (opts.check_pad_range === "pad_range") {
-            let canp = this.canv_painter();
+            let canp = this.getCanvPainter();
             // ignore range set in the online canvas
             if (!canp || !canp.online_canvas) {
                this.CheckPadUserRange(pad, 'x');
@@ -1227,7 +1229,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       layer.selectAll(".xgrid").remove();
       layer.selectAll(".ygrid").remove();
 
-      let pad = this.root_pad(),
+      let pp = this.getPadPainter(),
+          pad = pp ? pp.getRootPad(true) : null,
           h = this.getFrameHeight(),
           w = this.getFrameWidth(),
           grid_style = JSROOT.gStyle.fGridStyle;
@@ -1300,14 +1303,15 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       let layer = this.svg_frame().select(".axis_layer"),
           w = this.getFrameWidth(),
           h = this.getFrameHeight(),
-          pad = this.root_pad();
+          pp = this.getPadPainter(),
+          pad = pp.getRootPad(true);
 
       this.x_handle.invert_side = (AxisPos >= 10);
-      this.x_handle.lbls_both_sides = !this.x_handle.invert_side && (pad.fTickx > 1); // labels on both sides
+      this.x_handle.lbls_both_sides = !this.x_handle.invert_side && pad && (pad.fTickx > 1); // labels on both sides
       this.x_handle.has_obstacle = has_x_obstacle;
 
       this.y_handle.invert_side = ((AxisPos % 10) === 1);
-      this.y_handle.lbls_both_sides = !this.y_handle.invert_side && (pad.fTicky > 1); // labels on both sides
+      this.y_handle.lbls_both_sides = !this.y_handle.invert_side && pad && (pad.fTicky > 1); // labels on both sides
 
       let draw_horiz = this.swap_xy ? this.y_handle : this.x_handle,
           draw_vertical = this.swap_xy ? this.x_handle : this.y_handle;
@@ -1323,12 +1327,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          let promise1 = draw_horiz.DrawAxis(layer, w, h,
                                             draw_horiz.invert_side ? undefined : "translate(0," + h + ")",
-                                            pad.fTickx ? -h : 0, disable_axis_draw,
+                                            pad && pad.fTickx ? -h : 0, disable_axis_draw,
                                             undefined, false);
 
          let promise2 = draw_vertical.DrawAxis(layer, w, h,
                                                draw_vertical.invert_side ? "translate(" + w + ",0)" : undefined,
-                                               pad.fTicky ? w : 0, disable_axis_draw,
+                                               pad && pad.fTicky ? w : 0, disable_axis_draw,
                                                draw_vertical.invert_side ? 0 : this._frame_x, can_adjust_frame);
 
          return Promise.all([promise1, promise2]).then(() => {
@@ -1366,11 +1370,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Update frame attributes
      * @private */
    TFramePainter.prototype.UpdateAttributes = function(force) {
-      let pad = this.root_pad(),
+      let pp = this.getPadPainter(),
+          pad = pp ? pp.getRootPad(true) : null,
           tframe = this.getObject();
 
       if ((this.fX1NDC === undefined) || (force && !this.modified_NDC)) {
-         if (!pad || (pad.fLeftMargin===undefined)) {
+         if (!pad) {
             JSROOT.extend(this, JSROOT.settings.FrameNDC);
          } else {
             JSROOT.extend(this, {
@@ -1408,7 +1413,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
      * @private */
    TFramePainter.prototype.SizeChanged = function() {
 
-      let pad = this.root_pad();
+      let pp = this.getPadPainter(),
+          pad = pp ? pp.getRootPad(true) : null,
 
       if (pad) {
          pad.fLeftMargin = this.fX1NDC;
@@ -1608,7 +1614,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Change log state of specified axis
      * @param {number} value - 0 (linear), 1 (log) or 2 (log2) */
    TFramePainter.prototype.ChangeLog = function(axis, value) {
-      let pad = this.root_pad();
+      let pp = this.getPadPainter(),
+          pad = pp ? pp.getRootPad(true) : null,
       if (!pad) return;
 
       let name = "fLog" + axis;
@@ -1639,17 +1646,21 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
      * @desc It could be appended to the histogram menus */
    TFramePainter.prototype.FillContextMenu = function(menu, kind, obj) {
 
-      let main = this.getMainPainter(), pad = this.root_pad();
+      let main = this.getMainPainter(),
+          pp = this.getPadPainter(),
+          pad = pp ? pp.getRootPad(true) : null;
 
       if ((kind=="x") || (kind=="y") || (kind=="z")) {
          let faxis = obj || this[kind+'axis'];
          menu.add("header: " + kind.toUpperCase() + " axis");
          menu.add("Unzoom", this.Unzoom.bind(this, kind));
-         menu.add("sub:SetLog "+kind);
-         menu.addchk(pad["fLog" + kind] == 0, "linear", "0", arg => this.ChangeLog(kind, parseInt(arg)));
-         menu.addchk(pad["fLog" + kind] == 1, "log", "1", arg => this.ChangeLog(kind, parseInt(arg)));
-         menu.addchk(pad["fLog" + kind] == 2, "log2", "2", arg => this.ChangeLog(kind, parseInt(arg)));
-         menu.add("endsub:");
+         if (pad) {
+            menu.add("sub:SetLog "+kind);
+            menu.addchk(pad["fLog" + kind] == 0, "linear", "0", arg => this.ChangeLog(kind, parseInt(arg)));
+            menu.addchk(pad["fLog" + kind] == 1, "log", "1", arg => this.ChangeLog(kind, parseInt(arg)));
+            menu.addchk(pad["fLog" + kind] == 2, "log2", "2", arg => this.ChangeLog(kind, parseInt(arg)));
+            menu.add("endsub:");
+         }
          menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kMoreLogLabels), "More log",
                () => { faxis.InvertBit(JSROOT.EAxisBits.kMoreLogLabels); this.redrawPad(); });
          menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kNoExponent), "No exponent",
@@ -1967,6 +1978,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    TPadPainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
 
+   /** @summary Indicates that is is Root6 pad painter
+    * @private */
+   TPadPainter.prototype.isRoot6 = function() { return true; }
+
    /** @summary Returns SVG element for the specified pad (or itself)
     * @private */
    TPadPainter.prototype.svg_pad = function(pad_name) {
@@ -2041,6 +2056,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          width: this.getPadWidth(),
          height: this.getPadHeight()
       }
+   }
+
+   /** @summary return RPad object */
+   TPadPainter.prototype.getRootPad = function(is_root6) {
+      return (is_root6 === undefined) || is_root6 ? this.pad : null;
    }
 
    /** @summary Cleanup primitives from pad - selector lets define which painters to remove */
