@@ -1983,14 +1983,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
     * @private */
    TPadPainter.prototype.isRoot6 = function() { return true; }
 
-   /** @summary Returns SVG element for the specified pad (or itself)
-    * @private */
-   TPadPainter.prototype.svg_pad = function(pad_name) {
-      if (pad_name === undefined)
-         pad_name = this.this_pad_name;
-      return JSROOT.ObjectPainter.prototype.svg_pad.call(this, pad_name);
-   }
-
    /** @summary Returns SVG element for the pad itself
     * @private */
    TPadPainter.prototype.svg_this_pad = function() {
