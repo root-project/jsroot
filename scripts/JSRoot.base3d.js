@@ -298,7 +298,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
          }
       } else if (JSROOT.nodejs) {
          // try to use WebGL inside node.js - need to create headless context
-         let gl = require('gl')(1, 1, { preserveDrawingBuffer: true });
+         let gl = require('gl')(width, height, { preserveDrawingBuffer: true });
 
          const { createCanvas } = require('canvas');
 
