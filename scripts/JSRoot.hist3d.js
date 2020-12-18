@@ -3159,7 +3159,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       let markeratt = new JSROOT.TAttMarkerHandler(graph),
           palette = null,
           levels = [fp.scale_zmin, fp.scale_zmax],
-          scale = fp.size_xy3d / 100 * markeratt.GetFullSize();
+          scale = fp.size_xy3d / 100 * markeratt.getFullSize();
 
       if (this.options.Circles) scale = 0.06*fp.size_xy3d;
 

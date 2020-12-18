@@ -1225,7 +1225,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
          if (this.markeratt.size > 0) {
             // simply use relative move from point, can optimize in the future
             path_marker = "";
-            this.markeratt.reset_pos();
+            this.markeratt.resetPos();
          } else {
             show_markers = false;
          }
@@ -1598,7 +1598,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
          show_rect = true;
 
          let msize = 3;
-         if (this.markeratt) msize = Math.max(msize, this.markeratt.GetFullSize());
+         if (this.markeratt) msize = Math.max(msize, this.markeratt.getFullSize());
 
          if (this.options.Error) {
             let cont = histo.getBinContent(findbin+1),
@@ -1744,7 +1744,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
          this.DecodeOptions(arg); // obsolete, should be implemented differently
 
          if (this.options.need_fillcol && this.fillatt && this.fillatt.empty())
-            this.fillatt.Change(5,1001);
+            this.fillatt.change(5,1001);
 
          // redraw all objects
          this.interactiveRedraw("pad", "drawopt");
@@ -2965,7 +2965,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       this.createv7AttMarker();
 
       // reset absolution position for markers
-      this.markeratt.reset_pos();
+      this.markeratt.resetPos();
 
       handle.candle = []; // array of drawn points
 
@@ -3078,7 +3078,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
          this.createv7AttMarker();
 
-         this.markeratt.reset_pos();
+         this.markeratt.resetPos();
 
          let path = "", k, npix;
          for (i = handle.i1; i < handle.i2; i += di) {
@@ -3179,7 +3179,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
            // arrx.sort();
 
-           this.markeratt.reset_pos();
+           this.markeratt.resetPos();
 
            let path = "";
 

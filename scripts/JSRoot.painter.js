@@ -347,7 +347,7 @@ JSROOT.define(['d3'], (d3) => {
      *
      * @class
      * @memberof JSROOT
-     * @param {object} args - different attributes, see {@link JSROOT.TAttMarkerHandler.SetArgs} for details
+     * @param {object} args - different attributes, see {@link JSROOT.TAttMarkerHandler.setArgs} for details
      * @private
      */
 
@@ -364,9 +364,9 @@ JSROOT.define(['d3'], (d3) => {
       this.used = true;
       this.changed = false;
 
-      this.func = this.Apply.bind(this);
+      this.func = this.apply.bind(this);
 
-      this.SetArgs(args);
+      this.setArgs(args);
 
       this.changed = false;
    }
@@ -377,7 +377,7 @@ JSROOT.define(['d3'], (d3) => {
      * @param {string} args.color - color in HTML form like grb(1,4,5) or 'green'
      * @param {number} args.style - marker style
      * @param {number} args.size - marker size */
-   TAttMarkerHandler.prototype.SetArgs = function(args) {
+   TAttMarkerHandler.prototype.setArgs = function(args) {
       if ((typeof args == 'object') && (typeof args.fMarkerStyle == 'number')) args = { attr: args };
 
       if (args.attr) {
@@ -387,12 +387,12 @@ JSROOT.define(['d3'], (d3) => {
          if (!args.size) args.size = args.attr.fMarkerSize;
       }
 
-      this.Change(args.color, args.style, args.size);
+      this.change(args.color, args.style, args.size);
    }
 
    /** @summary Reset position, used for optimization of drawing of multiple markers
     * @private */
-   TAttMarkerHandler.prototype.reset_pos = function() { this.lastx = this.lasty = null; }
+   TAttMarkerHandler.prototype.resetPos = function() { this.lastx = this.lasty = null; }
 
    /** @summary Create marker path for given position.
      * @desc When drawing many elementary points, created path may depend from previously produced markers.
@@ -411,16 +411,16 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /** @summary Returns full size of marker */
-   TAttMarkerHandler.prototype.GetFullSize = function() { return this.scale * this.size; }
+   TAttMarkerHandler.prototype.getFullSize = function() { return this.scale * this.size; }
 
    /** @summary Returns approximate length of produced marker string */
-   TAttMarkerHandler.prototype.MarkerLength = function() { return this.marker ? this.marker.length : 10; }
+   TAttMarkerHandler.prototype.getMarkerLength = function() { return this.marker ? this.marker.length : 10; }
 
    /** @summary Change marker attributes.
     *  @param {string} color - marker color
     *  @param {number} style - marker style
     *  @param {number} size - marker size */
-   TAttMarkerHandler.prototype.Change = function(color, style, size) {
+   TAttMarkerHandler.prototype.change = function(color, style, size) {
       this.changed = true;
 
       if (color !== undefined) this.color = color;
@@ -434,7 +434,7 @@ JSROOT.define(['d3'], (d3) => {
          this.marker = "h1";
          this.size = 1;
          this.optimized = true;
-         this.reset_pos();
+         this.resetPos();
          return true;
       }
 
@@ -453,7 +453,7 @@ JSROOT.define(['d3'], (d3) => {
          default: this.size = size; this.scale = 8;
       }
 
-      size = this.GetFullSize();
+      size = this.getFullSize();
 
       this.ndig = (size > 7) ? 0 : ((size > 2) ? 1 : 2);
       if (shape == 6) this.ndig++;
@@ -523,7 +523,7 @@ JSROOT.define(['d3'], (d3) => {
    TAttMarkerHandler.prototype.getFillColor = function() { return this.fill ? this.color : "none"; }
 
    /** @summary Apply marker styles to created element */
-   TAttMarkerHandler.prototype.Apply = function(selection) {
+   TAttMarkerHandler.prototype.apply = function(selection) {
       selection.style('stroke', this.stroke ? this.color : "none");
       selection.style('fill', this.fill ? this.color : "none");
    }
@@ -531,7 +531,7 @@ JSROOT.define(['d3'], (d3) => {
    /** @summary Method used when color or pattern were changed with OpenUi5 widgets.
     * @private */
    TAttMarkerHandler.prototype.verifyDirectChange = function(/* painter */) {
-      this.Change(this.color, parseInt(this.style), parseFloat(this.size));
+      this.change(this.color, parseInt(this.style), parseFloat(this.size));
    }
 
    /** @summary Create sample with marker in given SVG element
@@ -540,7 +540,7 @@ JSROOT.define(['d3'], (d3) => {
     * @param {number} height - height of sample SVG
     * @private */
    TAttMarkerHandler.prototype.CreateSample = function(svg, width, height) {
-      this.reset_pos();
+      this.resetPos();
 
       svg.append("path")
          .attr("d", this.create(width / 2, height / 2))
@@ -559,11 +559,11 @@ JSROOT.define(['d3'], (d3) => {
      */
 
    function TAttLineHandler(args) {
-      this.func = this.Apply.bind(this);
+      this.func = this.apply.bind(this);
       this.used = true;
       if (args._typename && (args.fLineStyle !== undefined)) args = { attr: args };
 
-      this.SetArgs(args);
+      this.setArgs(args);
    }
 
    /** @summary Set line attributes.
@@ -572,7 +572,7 @@ JSROOT.define(['d3'], (d3) => {
      * @param {string} args.color - color in html like rgb(10,0,0) or "red"
      * @param {number} args.style - line style number
      * @param {number} args.width - line width */
-   TAttLineHandler.prototype.SetArgs = function(args) {
+   TAttLineHandler.prototype.setArgs = function(args) {
       if (args.attr) {
          args.color = args.color0 || (args.painter ? args.painter.getColor(args.attr.fLineColor) : jsrp.getColor(args.attr.fLineColor));
          if (args.width === undefined) args.width = args.attr.fLineWidth;
@@ -620,7 +620,7 @@ JSROOT.define(['d3'], (d3) => {
 
    /** @summary Applies line attribute to selection.
      * @param {object} selection - d3.js selection */
-   TAttLineHandler.prototype.Apply = function(selection) {
+   TAttLineHandler.prototype.apply = function(selection) {
       this.used = true;
       if (this.empty())
          selection.style('stroke', null)
@@ -633,7 +633,7 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /** @summary Change line attributes */
-   TAttLineHandler.prototype.Change = function(color, width, style) {
+   TAttLineHandler.prototype.change = function(color, width, style) {
       if (color !== undefined) this.color = color;
       if (width !== undefined) this.width = width;
       if (style !== undefined) this.style = style;
@@ -654,7 +654,7 @@ JSROOT.define(['d3'], (d3) => {
      *
      * @class
      * @memberof JSROOT
-     * @param {object} args - different arguments to set fill attributes, see {@link JSROOT.TAttFillHandler.SetArgs} for more info
+     * @param {object} args - different arguments to set fill attributes, see {@link JSROOT.TAttFillHandler.setArgs} for more info
      * @param {number} [args.kind = 2] - 1 means object drawing where combination fillcolor==0 and fillstyle==1001 means no filling,  2 means all other objects where such combination is white-color filling
      * @private
      */
@@ -666,8 +666,8 @@ JSROOT.define(['d3'], (d3) => {
       this.used = true;
       this.kind = args.kind || 2;
       this.changed = false;
-      this.func = this.Apply.bind(this);
-      this.SetArgs(args);
+      this.func = this.apply.bind(this);
+      this.setArgs(args);
       this.changed = false; // unset change property that
    }
 
@@ -678,16 +678,16 @@ JSROOT.define(['d3'], (d3) => {
      * @param {number} [args.pattern] - filll pattern id
      * @param {object} [args.svg] - SVG element to store newly created patterns
      * @param {string} [args.color_as_svg] - color in SVG format */
-   TAttFillHandler.prototype.SetArgs = function(args) {
+   TAttFillHandler.prototype.setArgs = function(args) {
       if (args.attr && (typeof args.attr == 'object')) {
          if ((args.pattern === undefined) && (args.attr.fFillStyle !== undefined)) args.pattern = args.attr.fFillStyle;
          if ((args.color === undefined) && (args.attr.fFillColor !== undefined)) args.color = args.attr.fFillColor;
       }
-      this.Change(args.color, args.pattern, args.svg, args.color_as_svg, args.painter);
+      this.change(args.color, args.pattern, args.svg, args.color_as_svg, args.painter);
    }
 
    /** @summary Apply fill style to selection */
-   TAttFillHandler.prototype.Apply = function(selection) {
+   TAttFillHandler.prototype.apply = function(selection) {
       this.used = true;
 
       selection.style('fill', this.fillcolor());
@@ -735,7 +735,7 @@ JSROOT.define(['d3'], (d3) => {
       if (typeof this.pattern == 'string') this.pattern = parseInt(this.pattern);
       if (isNaN(this.pattern)) this.pattern = 0;
 
-      this.Change(this.color, this.pattern, painter ? painter.getCanvSvg() : null, true, painter);
+      this.change(this.color, this.pattern, painter ? painter.getCanvSvg() : null, true, painter);
    }
 
    /** @summary Method to change fill attributes.
@@ -744,7 +744,7 @@ JSROOT.define(['d3'], (d3) => {
      * @param {selection} svg - top canvas element for pattern storages
      * @param {string} [color_as_svg] - when color is string, interpret as normal SVG color
      * @param {object} [painter] - when specified, used to extract color by index */
-   TAttFillHandler.prototype.Change = function(color, pattern, svg, color_as_svg, painter) {
+   TAttFillHandler.prototype.change = function(color, pattern, svg, color_as_svg, painter) {
       delete this.pattern_url;
       this.changed = true;
 
@@ -2129,7 +2129,7 @@ JSROOT.define(['d3'], (d3) => {
       if (!handler)
          handler = new TAttMarkerHandler(args);
       else if (!handler.changed || args.force)
-         handler.SetArgs(args);
+         handler.setArgs(args);
 
       if (args.std) this.markeratt = handler;
 
@@ -2156,7 +2156,7 @@ JSROOT.define(['d3'], (d3) => {
       if (!handler)
          handler = new TAttLineHandler(args);
       else if (!handler.changed || args.force)
-         handler.SetArgs(args);
+         handler.setArgs(args);
 
       if (args.std) this.lineatt = handler;
 
@@ -2191,7 +2191,7 @@ JSROOT.define(['d3'], (d3) => {
       if (!handler)
          handler = new TAttFillHandler(args);
       else if (!handler.changed || args.force)
-         handler.SetArgs(args);
+         handler.setArgs(args);
 
       if (args.std) this.fillatt = handler;
 

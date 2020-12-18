@@ -1379,12 +1379,12 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
          this.createAttMarker({ attr: graph, style: this.options.Mark - 100 });
 
-         this.marker_size = this.markeratt.GetFullSize();
+         this.marker_size = this.markeratt.getFullSize();
 
-         this.markeratt.reset_pos();
+         this.markeratt.resetPos();
 
          // let produce SVG at maximum 1MB
-         let maxnummarker = 1000000 / (this.markeratt.MarkerLength() + 7), step = 1;
+         let maxnummarker = 1000000 / (this.markeratt.getMarkerLength() + 7), step = 1;
 
          if (!drawbins) drawbins = this.OptimizeBins(maxnummarker); else
             if (this.CanOptimize() && (drawbins.length > 1.5*maxnummarker))
@@ -2467,7 +2467,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       }
 
       let match_distance = 5;
-      if (this.markeratt && this.markeratt.used) match_distance = this.markeratt.GetFullSize();
+      if (this.markeratt && this.markeratt.used) match_distance = this.markeratt.getFullSize();
 
       if (Math.sqrt(best_dist2) > match_distance) return null;
 
@@ -2794,9 +2794,9 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
          this.createAttMarker({ attr: spline })
 
-         this.markeratt.reset_pos();
+         this.markeratt.resetPos();
 
-         this.knot_size = this.markeratt.GetFullSize();
+         this.knot_size = this.markeratt.getFullSize();
 
          for (let n=0; n<spline.fPoly.length; n++) {
             let knot = spline.fPoly[n],
@@ -3484,7 +3484,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
                   npoints = parseInt(arr[k].substr(1));
 
-                  this.markeratt.reset_pos();
+                  this.markeratt.resetPos();
                   for (n=0;n<npoints;++n)
                      d += this.markeratt.create(func.x(obj.fBuf[indx++]), func.y(obj.fBuf[indx++]));
 
