@@ -995,7 +995,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    }
 
    /** @summary Fill context menu for the TPave object */
-   TPavePainter.prototype.FillContextMenu = function(menu) {
+   TPavePainter.prototype.fillContextMenu = function(menu) {
       let pave = this.getObject();
 
       menu.add("header: " + pave._typename + "::" + pave.fName);
@@ -1105,8 +1105,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    TPavePainter.prototype.PaveContextMenu = function(evnt) {
       if (this.z_handle) {
          let fp = this.getFramePainter();
-         if (fp && fp.ShowContextMenu)
-             fp.ShowContextMenu("z", evnt);
+         if (fp && fp.showContextMenu)
+             fp.showContextMenu("z", evnt);
          return;
       }
 
@@ -1114,7 +1114,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       evnt.preventDefault();  // disable browser context menu
 
       jsrp.createMenu(this, evnt).then(menu => {
-         this.FillContextMenu(menu);
+         this.fillContextMenu(menu);
          return this.fillObjectExecMenu(menu, "title");
        }).then(menu => menu.show());
    }
@@ -2722,7 +2722,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
        this.redrawPad();
    }
 
-   THistPainter.prototype.FillContextMenu = function(menu) {
+   THistPainter.prototype.fillContextMenu = function(menu) {
 
       let histo = this.GetHisto(),
           fp = this.getFramePainter();
@@ -4492,8 +4492,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return canp.DrawProjection(this.is_projection, this.proj_hist);
    }
 
-   TH2Painter.prototype.ExecuteMenuCommand = function(method, args) {
-      if (THistPainter.prototype.ExecuteMenuCommand.call(this,method, args)) return true;
+   TH2Painter.prototype.executeMenuCommand = function(method, args) {
+      if (THistPainter.prototype.executeMenuCommand.call(this,method, args)) return true;
 
       if ((method.fName == 'SetShowProjectionX') || (method.fName == 'SetShowProjectionY')) {
          this.ToggleProjection(method.fName[17], args && parseInt(args) ? parseInt(args) : 1);

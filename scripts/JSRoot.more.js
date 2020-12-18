@@ -1785,8 +1785,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          this.submitCanvExec(exec);
    }
 
-   TGraphPainter.prototype.FillContextMenu = function(menu) {
-      JSROOT.ObjectPainter.prototype.FillContextMenu.call(this, menu);
+   TGraphPainter.prototype.fillContextMenu = function(menu) {
+      JSROOT.ObjectPainter.prototype.fillContextMenu.call(this, menu);
 
       if (!this.snapid)
          menu.addchk(this.TestEditable(), "Editable", () => this.TestEditable(true));
@@ -1794,8 +1794,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       return menu.size() > 0;
    }
 
-   TGraphPainter.prototype.ExecuteMenuCommand = function(method, args) {
-      if (JSROOT.ObjectPainter.prototype.ExecuteMenuCommand.call(this,method,args)) return true;
+   TGraphPainter.prototype.executeMenuCommand = function(method, args) {
+      if (JSROOT.ObjectPainter.prototype.executeMenuCommand.call(this,method,args)) return true;
 
       let canp = this.getCanvPainter(), fp = this.getFramePainter();
 

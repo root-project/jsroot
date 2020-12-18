@@ -212,7 +212,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
             if (jsrp.closeMenu && jsrp.closeMenu()) return;
 
             jsrp.createMenu(this, evnt).then(menu => {
-                menu.painter.FillContextMenu(menu);
+                menu.painter.fillContextMenu(menu);
                 menu.show();
             });
          }
@@ -623,7 +623,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
    }
 
    /** @summary Fills context menu */
-   TGeoPainter.prototype.FillContextMenu = function(menu) {
+   TGeoPainter.prototype.fillContextMenu = function(menu) {
       menu.add("header: Draw options");
 
       menu.addchk(this.ctrl.update_browser, "Browser update", () => {
@@ -982,7 +982,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
             }
 
          if (numnodes + numitems === 0) {
-            this.FillContextMenu(menu);
+            this.fillContextMenu(menu);
          } else {
             let many = (numnodes + numitems) > 1;
 

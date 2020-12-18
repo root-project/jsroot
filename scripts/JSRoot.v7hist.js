@@ -548,7 +548,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
    /** @summary Fill histogram context menu
      * @private */
-   RHistPainter.prototype.FillContextMenu = function(menu) {
+   RHistPainter.prototype.fillContextMenu = function(menu) {
 
       menu.add("header:v7histo::anyname");
 
@@ -1925,8 +1925,8 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       if (!this.is_projection) return;
    }
 
-   RH2Painter.prototype.ExecuteMenuCommand = function(method, args) {
-      if (RHistPainter.prototype.ExecuteMenuCommand.call(this,method, args)) return true;
+   RH2Painter.prototype.executeMenuCommand = function(method, args) {
+      if (RHistPainter.prototype.executeMenuCommand.call(this,method, args)) return true;
 
       if ((method.fName == 'SetShowProjectionX') || (method.fName == 'SetShowProjectionY')) {
          this.ToggleProjection(method.fName[17], args && parseInt(args) ? parseInt(args) : 1);

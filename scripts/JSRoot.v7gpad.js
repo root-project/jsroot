@@ -2262,7 +2262,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Fill context menu */
-   RFramePainter.prototype.FillContextMenu = function(menu, kind, /* obj */) {
+   RFramePainter.prototype.fillContextMenu = function(menu, kind, /* obj */) {
 
       // when fill and show context menu, remove all zooming
 
@@ -2930,7 +2930,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return hints;
    }
 
-   RPadPainter.prototype.FillContextMenu = function(menu) {
+   RPadPainter.prototype.fillContextMenu = function(menu) {
 
       if (this.pad)
          menu.add("header: " + this.pad._typename + "::" + this.pad.fName);
@@ -3005,7 +3005,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
 
       jsrp.createMenu(this, evnt).then(menu => {
-         this.FillContextMenu(menu);
+         this.fillContextMenu(menu);
          return this.fillObjectExecMenu(menu);
       }).then(menu => menu.show());
    }
@@ -3408,10 +3408,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
        console.log('Start fill here', selkind)
 
-       if (!selp || (typeof selp.FillContextMenu !== 'function')) return;
+       if (!selp || (typeof selp.fillContextMenu !== 'function')) return;
 
        jsrp.createMenu(selp, evnt).then(menu => {
-          if (selp.FillContextMenu(menu, selkind))
+          if (selp.fillContextMenu(menu, selkind))
              setTimeout(() => menu.show(), 50);
        });
    }

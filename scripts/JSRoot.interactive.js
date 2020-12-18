@@ -499,9 +499,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
                if (complete_drag() === false) {
                   let spent = (new Date()).getTime() - handle.drag_tm.getTime();
-                  if (callback.ctxmenu && (spent > 600) && pthis.ShowContextMenu) {
+                  if (callback.ctxmenu && (spent > 600) && pthis.showContextMenu) {
                      let rrr = resize_se.node().getBoundingClientRect();
-                     pthis.ShowContextMenu('main', { clientX: rrr.left, clientY: rrr.top });
+                     pthis.showContextMenu('main', { clientX: rrr.left, clientY: rrr.top });
                   } else if (callback.canselect && (spent <= 600)) {
                      let pp = pthis.getPadPainter();
                      if (pp) pp.SelectObjectPainter(pthis);
@@ -721,9 +721,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                svg_x.on("touchstart", this.startTouchMenu.bind(this,"x"));
                svg_y.on("touchstart", this.startTouchMenu.bind(this,"y"));
             }
-            svg.on("contextmenu", this.ShowContextMenu.bind(this,""));
-            svg_x.on("contextmenu", this.ShowContextMenu.bind(this,"x"));
-            svg_y.on("contextmenu", this.ShowContextMenu.bind(this,"y"));
+            svg.on("contextmenu", this.showContextMenu.bind(this,""));
+            svg_x.on("contextmenu", this.showContextMenu.bind(this,"x"));
+            svg_y.on("contextmenu", this.showContextMenu.bind(this,"y"));
          }
 
          svg_x.on("mousemove", this.ShowAxisStatus.bind(this,"x"));
@@ -1158,7 +1158,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             let diff = now.getTime() - this.last_touch.getTime();
 
             if ((diff > 500) && (diff < 2000) && !this.IsTooltipShown()) {
-               this.ShowContextMenu('main', { clientX: this.zoom_curr[0], clientY: this.zoom_curr[1] });
+               this.showContextMenu('main', { clientX: this.zoom_curr[0], clientY: this.zoom_curr[1] });
                this.last_touch = new Date(0);
             } else {
                this.clearInteractiveElements();
@@ -1304,16 +1304,16 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          if (!exec_painter) exec_painter = menu_painter;
 
-         if (!menu_painter || !menu_painter.FillContextMenu) return;
+         if (!menu_painter || !menu_painter.fillContextMenu) return;
 
          this.clearInteractiveElements();
 
          jsrp.createMenu(menu_painter, evnt).then(menu => {
-            let domenu = menu.painter.FillContextMenu(menu, kind, obj);
+            let domenu = menu.painter.fillContextMenu(menu, kind, obj);
 
             // fill frame menu by default - or append frame elements when activated in the frame corner
             if (fp && (!domenu || (frame_corner && (kind!=="frame"))))
-               domenu = fp.FillContextMenu(menu);
+               domenu = fp.fillContextMenu(menu);
 
             if (domenu)
                exec_painter.fillObjectExecMenu(menu, kind).then(menu => {
@@ -1363,7 +1363,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          if (diff > 500) {
             let rect = this.getFrameSvg().node().getBoundingClientRect();
-            this.ShowContextMenu(kind, { clientX: rect.left + this[fld].pos[0],
+            this.showContextMenu(kind, { clientX: rect.left + this[fld].pos[0],
                                          clientY: rect.top + this[fld].pos[1] } );
          }
 
@@ -1404,7 +1404,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          painter.AnalyzeMouseWheelEvent = this.AnalyzeMouseWheelEvent;
          painter.AllowDefaultYZooming = this.AllowDefaultYZooming;
          painter.mouseWheel = this.mouseWheel;
-         painter.ShowContextMenu = this.ShowContextMenu;
+         painter.showContextMenu = this.showContextMenu;
          painter.startTouchMenu = this.startTouchMenu;
          painter.endTouchMenu = this.endTouchMenu;
          painter.clearInteractiveElements = this.clearInteractiveElements;

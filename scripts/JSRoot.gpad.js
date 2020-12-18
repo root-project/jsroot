@@ -1645,7 +1645,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    /** @summary Fill context menu for the frame
      * @desc It could be appended to the histogram menus */
-   TFramePainter.prototype.FillContextMenu = function(menu, kind, obj) {
+   TFramePainter.prototype.fillContextMenu = function(menu, kind, obj) {
 
       let main = this.getMainPainter(),
           pp = this.getPadPainter(),
@@ -2611,7 +2611,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return hints;
    }
 
-   TPadPainter.prototype.FillContextMenu = function(menu) {
+   TPadPainter.prototype.fillContextMenu = function(menu) {
 
       if (this.pad)
          menu.add("header: " + this.pad._typename + "::" + this.pad.fName);
@@ -2677,7 +2677,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
 
       jsrp.createMenu(this, evnt).then(menu => {
-         this.FillContextMenu(menu);
+         this.fillContextMenu(menu);
          return this.fillObjectExecMenu(menu, "");
       }).then(menu => menu.show());
    }
@@ -3280,10 +3280,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           }
        }
 
-       if (!selp || (typeof selp.FillContextMenu !== 'function')) return;
+       if (!selp || (typeof selp.fillContextMenu !== 'function')) return;
 
        jsrp.createMenu(selp, evnt).then(menu => {
-          if (selp.FillContextMenu(menu, selkind))
+          if (selp.fillContextMenu(menu, selkind))
              setTimeout(() => menu.show(), 50);
        });
    }

@@ -2246,7 +2246,7 @@ JSROOT.define(['d3'], (d3) => {
 
    /** @summary execute selected menu command, either locally or remotely
     * @private */
-   ObjectPainter.prototype.ExecuteMenuCommand = function(method) {
+   ObjectPainter.prototype.executeMenuCommand = function(method) {
 
       if (method.fName == "Inspect") {
          // primitve inspector, keep it here
@@ -2304,7 +2304,7 @@ JSROOT.define(['d3'], (d3) => {
 
    /** @summary Fill context menu for the object
     * @private */
-   ObjectPainter.prototype.FillContextMenu = function(menu) {
+   ObjectPainter.prototype.fillContextMenu = function(menu) {
       let title = this.getObjectHint();
       if (this.getObject() && ('_typename' in this.getObject()))
          title = this.getObject()._typename + "::" + title;
@@ -2708,7 +2708,7 @@ JSROOT.define(['d3'], (d3) => {
          if (cp && (typeof cp.executeObjectMethod == 'function'))
             if (cp.executeObjectMethod(execp, item, execp.args_menu_id)) return;
 
-         if (execp.ExecuteMenuCommand(item)) return;
+         if (execp.executeMenuCommand(item)) return;
 
          if (execp.args_menu_id)
             execp.submitCanvExec(item.fExec, execp.args_menu_id);

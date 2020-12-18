@@ -177,14 +177,14 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
             for (let n=0;n<intersects.length;++n) {
                let mesh = intersects[n].object;
                if (mesh.zoom) { kind = mesh.zoom; p = null; break; }
-               if (mesh.painter && typeof mesh.painter.FillContextMenu === 'function') {
+               if (mesh.painter && typeof mesh.painter.fillContextMenu === 'function') {
                   p = mesh.painter; break;
                }
             }
 
          let fp = obj_painter.getFramePainter();
-         if (fp && fp.ShowContextMenu)
-            fp.ShowContextMenu(kind, pos, p);
+         if (fp && fp.showContextMenu)
+            fp.showContextMenu(kind, pos, p);
       }
    }
 
