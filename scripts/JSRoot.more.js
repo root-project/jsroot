@@ -72,7 +72,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
                   let text = this.getObject();
                   text.fX = this.svgToAxis("x", this.pos_x + this.pos_dx, this.isndc),
                   text.fY = this.svgToAxis("y", this.pos_y + this.pos_dy, this.isndc);
-                  this.WebCanvasExec("SetX(" + text.fX + ");;SetY(" + text.fY + ");;");
+                  this.submitCanvExec("SetX(" + text.fX + ");;SetY(" + text.fY + ");;");
                }
 
             inter.DragMoveHandler.AddMove(this);
@@ -467,7 +467,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
                   arrow.fY2 = this.svgToAxis("y", this.y2, this.isndc);
                   if (this.side != 1) exec += "SetX1(" + arrow.fX1 + ");;SetY1(" + arrow.fY1 + ");;";
                   if (this.side != -1) exec += "SetX2(" + arrow.fX2 + ");;SetY2(" + arrow.fY2 + ");;";
-                  this.WebCanvasExec(exec + "Notify();;");
+                  this.submitCanvExec(exec + "Notify();;");
                }
 
             inter.DragMoveHandler.AddMove(this);
@@ -1782,7 +1782,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       }
 
       if (exec && !not_changed)
-         this.WebCanvasExec(exec);
+         this.submitCanvExec(exec);
    }
 
    TGraphPainter.prototype.FillContextMenu = function(menu) {
@@ -1812,7 +1812,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
                 usery = main ? main.RevertAxis("y", pnt.y) : 0;
             canp.ShowMessage('InsertPoint(' + userx.toFixed(3) + ',' + usery.toFixed(3) + ') not yet implemented');
          } else if (this.args_menu_id && hint && (hint.binindx !== undefined)) {
-            this.WebCanvasExec("RemovePoint(" + hint.binindx + ")", this.args_menu_id);
+            this.submitCanvExec("RemovePoint(" + hint.binindx + ")", this.args_menu_id);
          }
 
          return true; // call is processed

@@ -1331,7 +1331,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       drawable.fPos.fHoriz.fArr = [ xn ];
       drawable.fPos.fVert.fArr = [ yn ];
 
-      this.WebCanvasExec("SetPos({" + xn.toFixed(4) + "," + yn.toFixed(4) + "})");
+      this.submitCanvExec("SetPos({" + xn.toFixed(4) + "," + yn.toFixed(4) + "})");
    }
 
    /** @summary Change axis attribute, submit changes to server and redraw axis when specified
@@ -4128,7 +4128,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Submit executable command for given painter */
-   RCanvasPainter.prototype.SubmitExec = function(painter, exec, subelem) {
+   RCanvasPainter.prototype.submitExec = function(painter, exec, subelem) {
       console.log('SubmitExec', exec, painter.snapid, subelem);
 
       // snapid is intentionally ignored - only painter.snapid has to be used
@@ -4232,7 +4232,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             break;
          default:
             if ((kind.substr(0,5) == "exec:") && painter && painter.snapid) {
-               this.SubmitExec(painter, kind.substr(5), subelem);
+               this.submitExec(painter, kind.substr(5), subelem);
             } else {
                console.log("UNPROCESSED CHANGES", kind);
             }

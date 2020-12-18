@@ -2263,12 +2263,12 @@ JSROOT.define(['d3'], (d3) => {
     * Execution string can look like "Print()".
     * Many methods call can be chained with "Print();;Update();;Clear()"
     * @private */
-   ObjectPainter.prototype.WebCanvasExec = function(exec, snapid) {
+   ObjectPainter.prototype.submitCanvExec = function(exec, snapid) {
       if (!exec || (typeof exec != 'string')) return;
 
       let canp = this.getCanvPainter();
-      if (canp && (typeof canp.SubmitExec == "function"))
-         canp.SubmitExec(this, exec, snapid);
+      if (canp && (typeof canp.submitExec == "function"))
+         canp.submitExec(this, exec, snapid);
    }
 
    /** @summary remove all created draw attributes
@@ -2711,7 +2711,7 @@ JSROOT.define(['d3'], (d3) => {
          if (execp.ExecuteMenuCommand(item)) return;
 
          if (execp.args_menu_id)
-            execp.WebCanvasExec(item.fExec, execp.args_menu_id);
+            execp.submitCanvExec(item.fExec, execp.args_menu_id);
       }
 
       let DoFillMenu = (_menu, _reqid, _resolveFunc, reply) => {

@@ -3847,7 +3847,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       });
    }
 
-   TCanvasPainter.prototype.SubmitExec = function(painter, exec, snapid) {
+   TCanvasPainter.prototype.submitExec = function(painter, exec, snapid) {
       if (this._readonly || !painter) return;
 
       if (!snapid) snapid = painter.snapid;

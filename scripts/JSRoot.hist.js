@@ -2386,7 +2386,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       tpainter.Redraw();
 
-      this.WebCanvasExec('SetTitle("' + histo.fTitle + '")');
+      this.submitCanvExec('SetTitle("' + histo.fTitle + '")');
    }
 
    THistPainter.prototype.UpdateStatWebCanvas = function() {
