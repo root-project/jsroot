@@ -2542,6 +2542,29 @@ JSROOT.define(['d3'], (d3) => {
       return 0;
    }
 
+   /** @summary After normal SVG text is generated, check and recalculate some properties
+     * @private */
+   function _postprocessText(painter, txt_node, arg) {
+      // complete rectangle with very rougth size estimations
+      arg.box = !JSROOT.nodejs && !JSROOT.settings.ApproxTextSize && !arg.fast ? jsrp.getElementRect(txt_node, 'bbox') :
+               (arg.text_rect || { height: arg.font_size * 1.2, width: arg.font.approxTextWidth(arg.text) });
+
+      txt_node.attr('visibility', 'hidden'); // hide elements until text drawing is finished
+
+      if (arg.box.width > arg.draw_g.property('max_text_width')) arg.draw_g.property('max_text_width', arg.box.width);
+      if (arg.scale) painter.scaleTextDrawing(1.05 * arg.box.width / arg.width, arg.draw_g);
+      if (arg.scale) painter.scaleTextDrawing(1. * arg.box.height / arg.height, arg.draw_g);
+
+      arg.result_width = arg.box.width;
+      arg.result_height = arg.box.height;
+
+      // in some cases
+      if (typeof arg.post_process == 'function')
+         arg.post_process(painter);
+
+      return arg.box.width;
+   }
+
    /** @summary Draw text
     *  @param {object} arg - different text draw options
     *  @param {string} arg.text - text to draw
@@ -2643,7 +2666,7 @@ JSROOT.define(['d3'], (d3) => {
                else
                   ltx.produceLatex(this, arg.txt_node, arg);
                arg.ready = true;
-               this.postprocessText(arg.txt_node, arg);
+               _postprocessText(this, arg.txt_node, arg);
 
                if (arg.draw_g.property('draw_text_completed'))
                   this._checkAllTextDrawing(arg.draw_g); // check if all other elements are completed
@@ -2655,7 +2678,7 @@ JSROOT.define(['d3'], (d3) => {
          arg.txt_node.text(arg.text);
          arg.ready = true;
 
-         return this.postprocessText(arg.txt_node, arg);
+         return _postprocessText(this, arg.txt_node, arg);
       }
 
       arg.mj_node = arg.draw_g.append("svg:g")
@@ -2670,30 +2693,6 @@ JSROOT.define(['d3'], (d3) => {
             });
 
       return 0;
-   }
-
-   /** @summary After normal SVG text is generated, check and recalculate some properties
-     * @private */
-   ObjectPainter.prototype.postprocessText = function(txt_node, arg) {
-      // complete rectangle with very rougth size estimations
-
-      arg.box = !JSROOT.nodejs && !JSROOT.settings.ApproxTextSize && !arg.fast ? jsrp.getElementRect(txt_node, 'bbox') :
-               (arg.text_rect || { height: arg.font_size * 1.2, width: arg.font.approxTextWidth(arg.text) });
-
-      txt_node.attr('visibility', 'hidden'); // hide elements until text drawing is finished
-
-      if (arg.box.width > arg.draw_g.property('max_text_width')) arg.draw_g.property('max_text_width', arg.box.width);
-      if (arg.scale) this.scaleTextDrawing(1.05 * arg.box.width / arg.width, arg.draw_g);
-      if (arg.scale) this.scaleTextDrawing(1. * arg.box.height / arg.height, arg.draw_g);
-
-      arg.result_width = arg.box.width;
-      arg.result_height = arg.box.height;
-
-      // in some cases
-      if (typeof arg.post_process == 'function')
-         arg.post_process(this);
-
-      return arg.box.width;
    }
 
    /** @summary Configure user-defined context menu for the object
@@ -2891,7 +2890,7 @@ JSROOT.define(['d3'], (d3) => {
      *
      * @class
      * @memberof JSROOT
-    * @param {object|string} dom - DOM element for drawing or element id
+     * @param {object|string} dom - DOM element for drawing or element id
      * @param {object} obj - axis object if any
      * @private
      */
