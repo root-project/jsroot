@@ -673,7 +673,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       return res;
    }
 
-   TF1Painter.prototype.Redraw = function() {
+   TF1Painter.prototype.redraw = function() {
 
       let tf1 = this.getObject(),
           fp = this.getFramePainter(),
@@ -755,7 +755,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
             return JSROOT.draw(divid, painter.CreateDummyHisto(), "AXIS");
       }).then(() => {
          painter.addToPadPrimitives();
-         painter.Redraw();
+         painter.redraw();
          return painter;
       });
     }
@@ -787,7 +787,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
    TGraphPainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
 
-   TGraphPainter.prototype.Redraw = function() {
+   TGraphPainter.prototype.redraw = function() {
       this.DrawGraph();
    }
 
@@ -2143,7 +2143,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    }
 
    /** @summary Redraw polargram */
-   TGraphPolargramPainter.prototype.Redraw = function() {
+   TGraphPolargramPainter.prototype.redraw = function() {
       if (!this.isMainPainter()) return;
 
       let polar = this.getObject(),
@@ -2312,7 +2312,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       let painter = new TGraphPolargramPainter(divid, polargram);
       return jsrp.ensureTCanvas(painter, false).then(() => {
          painter.setAsMainPainter();
-         painter.Redraw();
+         painter.redraw();
          return painter;
       });
    }
@@ -2336,7 +2336,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
    TGraphPolarPainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
 
-   TGraphPolarPainter.prototype.Redraw = function() {
+   TGraphPolarPainter.prototype.redraw = function() {
       this.drawGraphPolar();
    }
 
@@ -2734,7 +2734,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       return res;
    }
 
-   TSplinePainter.prototype.Redraw = function() {
+   TSplinePainter.prototype.redraw = function() {
 
       let spline = this.getObject(),
           pmain = this.getFramePainter(),
@@ -2859,7 +2859,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       return promise.then(() => {
          painter.addToPadPrimitives();
-         painter.Redraw();
+         painter.redraw();
          return painter;
       });
    }
@@ -2883,7 +2883,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
    TGraphTimePainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
 
-   TGraphTimePainter.prototype.Redraw = function() {
+   TGraphTimePainter.prototype.redraw = function() {
       if (this.step === undefined) this.startDrawing();
    }
 
@@ -3398,7 +3398,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          return obj;
       }
 
-      painter.Redraw = function() {
+      painter.redraw = function() {
 
          let obj = this.getObject(), func = this.getAxisToSvgFunc();
 
@@ -3539,7 +3539,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       painter.addToPadPrimitives();
 
-      painter.Redraw();
+      painter.redraw();
 
       return Promise.resolve(painter);
    }
@@ -3833,7 +3833,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
             pp.$secondary = true;
 
             // make dummy redraw, palette will be updated only from histogram painter
-            pp.Redraw = function() {};
+            pp.redraw = function() {};
 
             return this;
          });
@@ -3853,7 +3853,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       }
    }
 
-   TASImagePainter.prototype.Redraw = function(reason) {
+   TASImagePainter.prototype.redraw = function(reason) {
       let img = this.draw_g ? this.draw_g.select("image") : null,
           fp = this.getFramePainter();
 

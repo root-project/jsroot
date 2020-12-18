@@ -2845,7 +2845,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
          this.UpdatePaletteDraw();
    }
 
-   RH3Painter.prototype.Redraw = function(reason) {
+   RH3Painter.prototype.redraw = function(reason) {
 
       let main = this.getFramePainter(); // who makes axis and 3D drawing
 
@@ -2986,7 +2986,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
          }
 
          painter.ScanContent();
-         painter.Redraw();
+         painter.redraw();
          return painter;
       });
    }

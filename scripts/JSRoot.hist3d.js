@@ -2847,7 +2847,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       }
    }
 
-   TH3Painter.prototype.Redraw = function(reason) {
+   TH3Painter.prototype.redraw = function(reason) {
 
       let main = this.getFramePainter(), // who makes axis and 3D drawing
           histo = this.GetHisto();
@@ -2972,7 +2972,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          painter.DecodeOptions(opt);
          painter.CheckPadRange();
          painter.ScanContent();
-         return painter.Redraw();
+         return painter.redraw();
       }).then(() => {
          let stats = painter.CreateStat(); // only when required
          if (stats) return JSROOT.draw(divid, stats, "");
@@ -3124,7 +3124,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       }
    }
 
-   TGraph2DPainter.prototype.Redraw = function() {
+   TGraph2DPainter.prototype.redraw = function() {
 
       let main = this.getMainPainter(),
           fp = this.getFramePainter(),
@@ -3322,7 +3322,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
       return promise.then(() => {
          painter.addToPadPrimitives();
-         painter.Redraw();
+         painter.redraw();
          return painter;
       });
    }

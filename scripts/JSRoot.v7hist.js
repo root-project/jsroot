@@ -639,7 +639,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
       function change(arg) {
          hpainter.options.Palette = parseInt(arg);
-         hpainter.Redraw(); // redraw histogram
+         hpainter.redraw(); // redraw histogram
       };
 
       function add(id, name, more) {
@@ -1819,7 +1819,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       return JSROOT.require('v7hist3d').then(() => this.Draw3D(reason));
    }
 
-   RH1Painter.prototype.Redraw = function(reason) {
+   RH1Painter.prototype.redraw = function(reason) {
       this.callDrawFunc(reason);
    }
 
@@ -2000,7 +2000,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
       this._can_move_colz = true; // indicate that next redraw can move Z scale
 
-      this.Redraw();
+      this.redraw();
    }
 
    RH2Painter.prototype.AutoZoom = function() {
@@ -3592,7 +3592,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       return this[funcname](reason);
    }
 
-   RH2Painter.prototype.Redraw = function(reason) {
+   RH2Painter.prototype.redraw = function(reason) {
       this.callDrawFunc(reason);
    }
 
@@ -3851,7 +3851,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       return this.finishTextDrawing(text_g);
    }
 
-   RHistStatsPainter.prototype.Redraw = function(reason) {
+   RHistStatsPainter.prototype.redraw = function(reason) {
       if (reason && (typeof reason == "string") && (reason.indexOf("zoom") == 0) &&
           (this.v7CommMode() == JSROOT.v7.CommMode.kNormal)) {
          let req = {

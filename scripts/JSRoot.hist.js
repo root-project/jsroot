@@ -1266,7 +1266,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return false;
    }
 
-   TPavePainter.prototype.Redraw = function() {
+   TPavePainter.prototype.redraw = function() {
       this.DrawPave();
    }
 
@@ -2347,7 +2347,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (pt) {
          pt.Clear();
          if (draw_title) pt.AddText(histo.fTitle);
-         if (tpainter) tpainter.Redraw();
+         if (tpainter) tpainter.redraw();
       } else if (draw_title && !tpainter && histo.fTitle && !this.options.PadTitle) {
          pt = JSROOT.create("TPaveText");
          pt.fName = "title";
@@ -2384,7 +2384,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       pt.Clear();
       pt.AddText(histo.fTitle);
 
-      tpainter.Redraw();
+      tpainter.redraw();
 
       this.submitCanvExec('SetTitle("' + histo.fTitle + '")');
    }
@@ -2396,7 +2396,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           pp = this.getPadPainter(),
           statpainter = pp ? pp.findPainterFor(stat) : null;
 
-      if (statpainter && !statpainter.snapid) statpainter.Redraw();
+      if (statpainter && !statpainter.snapid) statpainter.redraw();
    }
 
    THistPainter.prototype.ToggleStat = function(arg) {
@@ -2420,7 +2420,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (arg=='fitpar-toggle') {
          if (!stat) return false;
          stat.fOptFit = stat.fOptFit ? 0 : 1111; // for websocket command should be send to server
-         if (statpainter) statpainter.Redraw();
+         if (statpainter) statpainter.redraw();
          return true;
       }
 
@@ -2428,7 +2428,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          statpainter.Enabled = !statpainter.Enabled;
          // when stat box is drawn, it always can be drawn individually while it
          // should be last for colz redrawPad is used
-         statpainter.Redraw();
+         statpainter.redraw();
          return statpainter.Enabled;
       }
 
@@ -2697,7 +2697,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (newflag != taxis.TestBit(JSROOT.EAxisBits.kAxisRange))
          taxis.InvertBit(JSROOT.EAxisBits.kAxisRange);
 
-      this.Redraw();
+      this.redraw();
    }
 
    /** @summary Start dialog to modify range of axis where histogram values are displayed
@@ -2963,7 +2963,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       let add = (id, name, more) => menu.addchk((id===curr) || more, '<nobr>' + name + '</nobr>', id, arg => {
          this.options.Palette = parseInt(arg);
          this.getHistPalette(true);
-         this.Redraw(); // redraw histogram
+         this.redraw(); // redraw histogram
       });
 
       menu.add("sub:Palette");
@@ -3076,7 +3076,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          pp.$secondary = true;
 
          // make dummy redraw, palette will be updated only from histogram painter
-         pp.Redraw = function() {};
+         pp.redraw = function() {};
 
          // special code to adjust frame position to actual position of palette
          if (can_move && frame_painter && (pal.fX1NDC - 0.005 < frame_painter.fX2NDC) && !this.do_redraw_palette) {
@@ -3084,9 +3084,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             this.do_redraw_palette = true;
 
             frame_painter.fX2NDC = pal.fX1NDC - 0.01;
-            frame_painter.Redraw();
+            frame_painter.redraw();
             // here we should redraw main object
-            if (!postpone_draw) this.Redraw();
+            if (!postpone_draw) this.redraw();
 
             delete this.do_redraw_palette;
          }
@@ -4348,7 +4348,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return JSROOT.require('hist3d').then(() => this.Draw3D(reason));
    }
 
-   TH1Painter.prototype.Redraw = function(reason) {
+   TH1Painter.prototype.redraw = function(reason) {
       return this.callDrawFunc(reason);
    }
 
@@ -6375,7 +6375,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return this[funcname](reason);
    }
 
-   TH2Painter.prototype.Redraw = function(reason) {
+   TH2Painter.prototype.redraw = function(reason) {
       return this.callDrawFunc(reason);
    }
 
@@ -6844,7 +6844,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    /** @summary Redraw THStack,
      * @desc Do something if previous update had changed number of histograms */
-   THStackPainter.prototype.Redraw = function() {
+   THStackPainter.prototype.redraw = function() {
       if (this.did_update) {
          delete this.did_update;
          return this.drawNextHisto(0);

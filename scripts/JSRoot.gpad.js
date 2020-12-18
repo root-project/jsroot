@@ -826,7 +826,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    }
 
-   TAxisPainter.prototype.Redraw = function() {
+   TAxisPainter.prototype.redraw = function() {
 
       let gaxis = this.getObject(),
           x1 = this.axisToSvg("x", gaxis.fX1),
@@ -862,7 +862,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       painter.disable_zooming = true;
 
       return jsrp.ensureTCanvas(painter, false)
-             .then(() => painter.Redraw()).then(() => painter);
+             .then(() => painter.redraw()).then(() => painter);
    }
 
    // ===============================================
@@ -1353,7 +1353,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
                if (shrink != 0) {
                   this.Shrink(shrink, 0);
-                  this.Redraw();
+                  this.redraw();
                   return this.DrawAxes(true);
                }
 
@@ -1523,8 +1523,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       JSROOT.ObjectPainter.prototype.cleanup.call(this);
    }
 
-   /** @summary Redraw frame */
-   TFramePainter.prototype.Redraw = function(/* reason */) {
+   /** @summary Redraw TFrame */
+   TFramePainter.prototype.redraw = function(/* reason */) {
       let pp = this.getPadPainter();
       if (pp) pp.frame_painter_ref = this; // keep direct reference to the frame painter
 
@@ -1944,7 +1944,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       let p = new TFramePainter(divid, obj);
       return jsrp.ensureTCanvas(p, false).then(() => {
          if (opt == "3d") p.mode3d = true;
-         p.Redraw();
+         p.redraw();
          return p;
       })
    }
@@ -2684,11 +2684,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    /** @summary Redraw pad means redraw ourself */
    TPadPainter.prototype.redrawPad = function(reason) {
-      this.Redraw(reason);
+      this.redraw(reason);
    }
 
    /** @summary redraw pad */
-   TPadPainter.prototype.Redraw = function(reason) {
+   TPadPainter.prototype.redraw = function(reason) {
 
       // prevent redrawing
       if (this._doing_pad_draw)
@@ -2705,7 +2705,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       // even sub-pad is not visible, we should redraw sub-sub-pads to hide them as well
       for (let i = 0; i < this.painters.length; ++i) {
          let sub = this.painters[i];
-         if (showsubitems || sub.this_pad_name) sub.Redraw(reason);
+         if (showsubitems || sub.this_pad_name) sub.redraw(reason);
       }
 
       if (jsrp.getActivePad() === this) {
@@ -2755,7 +2755,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       // If redrawing was forced for canvas, same applied for sub-elements
       if (changed)
          for (let i = 0; i < this.painters.length; ++i)
-            this.painters[i].Redraw(force ? "redraw" : "resize");
+            this.painters[i].redraw(force ? "redraw" : "resize");
 
       return changed;
    }
@@ -2875,9 +2875,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             return objpainter.RedrawPadSnap(snap).then(() => this.DrawNextSnap(lst, indx));
 
          if (snap.fKind === webSnapIds.kObject) { // object itself
-            if (objpainter.updateObject(snap.fSnapshot, snap.fOption)) objpainter.Redraw();
+            if (objpainter.updateObject(snap.fSnapshot, snap.fOption)) objpainter.redraw();
          } else if (snap.fKind === webSnapIds.kSVG) { // update SVG
-            if (objpainter.updateObject(snap.fSnapshot)) objpainter.Redraw();
+            if (objpainter.updateObject(snap.fSnapshot)) objpainter.redraw();
          }
 
          return this.DrawNextSnap(lst, indx); // call next

@@ -721,9 +721,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                svg_x.on("touchstart", this.startTouchMenu.bind(this,"x"));
                svg_y.on("touchstart", this.startTouchMenu.bind(this,"y"));
             }
-            svg.on("contextmenu", this.showContextMenu.bind(this,""));
-            svg_x.on("contextmenu", this.showContextMenu.bind(this,"x"));
-            svg_y.on("contextmenu", this.showContextMenu.bind(this,"y"));
+            svg.on("contextmenu", evnt => this.showContextMenu("", evnt));
+            svg_x.on("contextmenu", evnt => this.showContextMenu("x", evnt));
+            svg_y.on("contextmenu", evnt => this.showContextMenu("y", evnt));
          }
 
          svg_x.on("mousemove", this.ShowAxisStatus.bind(this,"x"));
@@ -1246,7 +1246,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (itemy.changed) this.zoomChangedInteractive('y', true);
       },
 
-      ShowContextMenu: function(kind, evnt, obj) {
+      showContextMenu: function(kind, evnt, obj) {
 
          // ignore context menu when touches zooming is ongoing
          if (('zoom_kind' in this) && (this.zoom_kind > 100)) return;

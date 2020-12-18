@@ -2137,7 +2137,6 @@ JSROOT.define(['d3'], (d3) => {
       return handler;
    }
 
-
    /** @summary Creates line attributes object.
      * @desc Can be used to produce lines in painter.
      * See {@link JSROOT.TAttLineHandler} for more info.
@@ -2225,7 +2224,7 @@ JSROOT.define(['d3'], (d3) => {
       if (arg == "pad")
          this.redrawPad(reason);
       else if (arg !== false)
-         this.Redraw(reason);
+         this.redraw(reason);
 
       // inform GED that something changes
       let canp = this.getCanvPainter();
@@ -2241,7 +2240,7 @@ JSROOT.define(['d3'], (d3) => {
    /** @summary Redraw all objects in correspondent pad */
    ObjectPainter.prototype.redrawPad = function(reason) {
       let pp = this.getPadPainter();
-      if (pp) pp.Redraw(reason);
+      if (pp) pp.redraw(reason);
    }
 
    /** @summary execute selected menu command, either locally or remotely
@@ -2350,7 +2349,7 @@ JSROOT.define(['d3'], (d3) => {
      * @desc Basic method, should be reimplemented in all derived objects
      * for the case when drawing should be repeated
      * @abstract */
-   ObjectPainter.prototype.Redraw = function(/* reason */) {}
+   ObjectPainter.prototype.redraw = function(/* reason */) {}
 
    /** @summary Start text drawing
      * @desc required before any text can be drawn
@@ -3558,15 +3557,15 @@ JSROOT.define(['d3'], (d3) => {
             let painter = new ObjectPainter(divid, obj, opt);
             painter.csstype = handle.csstype;
             promise = jsrp.ensureRCanvas(painter, handle.frame || false).then(() => {
-               painter.Redraw = handle.func;
-               painter.Redraw();
+               painter.redraw = handle.func;
+               painter.redraw();
                return painter;
             })
          } else if (handle.direct) {
             let painter = new ObjectPainter(divid, obj, opt);
             promise = jsrp.ensureTCanvas(painter, handle.frame || false).then(() => {
-               painter.Redraw = handle.func;
-               painter.Redraw();
+               painter.redraw = handle.func;
+               painter.redraw();
                return painter;
             });
          } else {
