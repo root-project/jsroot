@@ -135,26 +135,6 @@ JSROOT.define(['rawinflate'], () => {
          return -1;
       },
 
-      /** @summary Let directly assign methods when doing I/O */
-      AddClassMethods: function(clname, streamer) {
-         // create additional entries in the streamer, which sets all methods of the class
-
-         if (streamer === null) return streamer;
-
-         let methods = JSROOT.getMethods(clname);
-
-         if (methods !== null)
-            for (let key in methods)
-               if ((typeof methods[key] === 'function') || (key.indexOf("_") == 0))
-                  streamer.push({
-                     name: key,
-                     method: methods[key],
-                     func: function(buf, obj) { obj[this.name] = this.method; }
-                  });
-
-         return streamer;
-      },
-
       /** @summary Analyze and returns arrays kind
         * @desc 0 if TString (or equivalent), positive value - some basic type, -1 - any other kind */
       GetArrayKind: function(type_name) {
@@ -177,8 +157,27 @@ JSROOT.define(['rawinflate'], () => {
 
    }
 
-   /** @summary Add custom streamer
+   /** @summary Let directly assign methods when doing I/O
      * @private */
+   function addClassMethods(clname, streamer) {
+      if (streamer === null) return streamer;
+
+      let methods = JSROOT.getMethods(clname);
+
+      if (methods !== null)
+         for (let key in methods)
+            if ((typeof methods[key] === 'function') || (key.indexOf("_") == 0))
+               streamer.push({
+                  name: key,
+                  method: methods[key],
+                  func: function(buf, obj) { obj[this.name] = this.method; }
+               });
+
+      return streamer;
+   }
+
+   /** @summary Add custom streamer
+     * @public */
    jsrio.addUserStreamer = function(type, user_streamer) {
       jsrio.CustomStreamers[type] = user_streamer;
    }
@@ -803,13 +802,18 @@ JSROOT.define(['rawinflate'], () => {
       return only_direct ? null : Promise.reject(Error("Key not found " + keyname));
    }
 
-   /** @summary Read object from the directory */
+   /** @summary Read object from the directory
+     * @desc Only temporary here, will be deleted in v 6.2
+     * @deprecated */
    TDirectory.prototype.ReadObject = function(obj_name, cycle) {
       JSROOT.warnOnce("Using obolsete TDirectory.ReadObject function, change to TDirectory.readObject");
       return this.fFile.readObject(this.dir_name + "/" + obj_name, cycle);
    }
 
-   /** @summary Read object from the directory */
+   /** @summary Read object from the directory
+     * @param {string} name - object name
+     * @param {number} [cycle] - cycle number
+     * @return {Promise} with read object */
    TDirectory.prototype.readObject = function(obj_name, cycle) {
       return this.fFile.readObject(this.dir_name + "/" + obj_name, cycle);
    }
@@ -1226,23 +1230,22 @@ JSROOT.define(['rawinflate'], () => {
    }
 
    /** @summary Read object from the file
-     * @summary Only temporary here, will be deleted in v 6.2 */
+     * @desc Only temporary here, will be deleted in v 6.2
+     * @deprecated*/
    TFile.prototype.ReadObject = function(obj_name, cycle, only_dir) {
       JSROOT.warnOnce("Using obolsete TFile.ReadObject function, change to TFile.readObject");
       return this.readObject(obj_name, cycle, only_dir);
    }
 
    /** @summary Read any object from a root file
-    * @desc One could specify cycle number in the object name or as separate argument
-    * @param {string} obj_name - name of object, may include cycle number like "hpxpy;1"
-    * @param {number} [cycle=undefined] - cycle number, also can be included in obj_name
-    * @returns {Promise} promise with object read
-    * @example
-    *   JSROOT.openFile("https://root.cern/js/files/hsimple.root")
-    *         .then(f => f.readObject("hpxpy;1"))
-    *         .then(obj => console.log(`Read object of type ${obj._typename}`))
-    * });
-    */
+     * @desc One could specify cycle number in the object name or as separate argument
+     * @param {string} obj_name - name of object, may include cycle number like "hpxpy;1"
+     * @param {number} [cycle] - cycle number, also can be included in obj_name
+     * @returns {Promise} promise with object read
+     * @example
+     *   JSROOT.openFile("https://root.cern/js/files/hsimple.root")
+     *         .then(f => f.readObject("hpxpy;1"))
+     *         .then(obj => console.log(`Read object of type ${obj._typename}`)); */
    TFile.prototype.readObject = function(obj_name, cycle, only_dir) {
 
       let pos = obj_name.lastIndexOf(";");
@@ -1556,7 +1559,7 @@ JSROOT.define(['rawinflate'], () => {
       // streamer is just separate function
       if (typeof custom === 'function') {
          streamer = [{ typename: clname, func: custom }];
-         return jsrio.AddClassMethods(clname, streamer);
+         return addClassMethods(clname, streamer);
       }
 
       streamer = [];
@@ -1584,7 +1587,7 @@ JSROOT.define(['rawinflate'], () => {
 
       this.fStreamers[fullname] = streamer;
 
-      return jsrio.AddClassMethods(clname, streamer);
+      return addClassMethods(clname, streamer);
    }
 
    /** @summary Here we produce list of members, resolving all base classes
@@ -2487,7 +2490,9 @@ JSROOT.define(['rawinflate'], () => {
       });
    }
 
-   jsrio.ProduceCustomStreamers = function() {
+   /** @summary Add custom streamers for basic ROOT classes
+     * @private */
+   function produceCustomStreamers() {
       let cs = jsrio.CustomStreamers;
 
       cs['TObject'] = cs['TMethodCall'] = function(buf, obj) {
@@ -2506,7 +2511,7 @@ JSROOT.define(['rawinflate'], () => {
          { name: 'fName', func: function(buf, obj) { obj.fName = buf.readTString(); } },
          { name: 'fTitle', func: function(buf, obj) { obj.fTitle = buf.readTString(); } }
       ];
-      jsrio.AddClassMethods('TNamed', cs['TNamed']);
+      addClassMethods('TNamed', cs['TNamed']);
 
       cs['TObjString'] = [
          {
@@ -2518,7 +2523,7 @@ JSROOT.define(['rawinflate'], () => {
          { name: 'fString', func: function(buf, obj) { obj.fString = buf.readTString(); } }
       ];
 
-      jsrio.AddClassMethods('TObjString', cs['TObjString']);
+      addClassMethods('TObjString', cs['TObjString']);
 
       cs['TList'] = cs['THashList'] = function(buf, obj) {
          // stream all objects in the list from the I/O buffer
@@ -3126,7 +3131,7 @@ JSROOT.define(['rawinflate'], () => {
       return file._open();
    }
 
-   jsrio.ProduceCustomStreamers();
+   produceCustomStreamers();
 
    JSROOT.TBuffer = TBuffer;
    JSROOT.TDirectory = TDirectory;
