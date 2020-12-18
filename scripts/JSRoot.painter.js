@@ -2273,7 +2273,7 @@ JSROOT.define(['d3'], (d3) => {
 
    /** @summary remove all created draw attributes
     * @private */
-   ObjectPainter.prototype.DeleteAtt = function() {
+   ObjectPainter.prototype.deleteAttr = function() {
       delete this.lineatt;
       delete this.fillatt;
       delete this.markeratt;

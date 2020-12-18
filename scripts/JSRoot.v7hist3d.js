@@ -1368,7 +1368,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
          return Promise.resolve(this);
       }
 
-      this.DeleteAtt();
+      this.deleteAttr();
 
       this.ScanContent(true); // may be required for axis drawings
 
@@ -1419,7 +1419,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       if (this.options.maximum !== -1111) { this.zmax = this.options.maximum; zmult = 1; }
       if (main.logz && (this.zmin<=0)) this.zmin = this.zmax * 1e-5;
 
-      this.DeleteAtt();
+      this.deleteAttr();
 
       if (is_main) {
          main.create3DScene(this.options.Render3D);

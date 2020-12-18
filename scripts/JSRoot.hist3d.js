@@ -1453,7 +1453,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
       } else {
 
-         this.DeleteAtt();
+         this.deleteAttr();
 
          this.ScanContent(true); // may be required for axis drawings
 
@@ -1508,7 +1508,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
          if (pad && pad.fLogz && (this.zmin<=0)) this.zmin = this.zmax * 1e-5;
 
-         this.DeleteAtt();
+         this.deleteAttr();
 
          if (is_main) {
             main.create3DScene(this.options.Render3D);
