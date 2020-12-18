@@ -2551,14 +2551,14 @@ JSROOT.define(['d3'], (d3) => {
 
       txt_node.attr('visibility', 'hidden'); // hide elements until text drawing is finished
 
-      if (arg.box.width > arg.draw_g.property('max_text_width')) arg.draw_g.property('max_text_width', arg.box.width);
-      if (arg.scale) painter.scaleTextDrawing(1.05 * arg.box.width / arg.width, arg.draw_g);
-      if (arg.scale) painter.scaleTextDrawing(1. * arg.box.height / arg.height, arg.draw_g);
+      if (arg.box.width > arg.draw_g.property('max_text_width'))
+         arg.draw_g.property('max_text_width', arg.box.width);
+      if (arg.scale)
+         painter.scaleTextDrawing(Math.max(1.05 * arg.box.width / arg.width, 1. * arg.box.height / arg.height), arg.draw_g);
 
       arg.result_width = arg.box.width;
       arg.result_height = arg.box.height;
 
-      // in some cases
       if (typeof arg.post_process == 'function')
          arg.post_process(painter);
 
