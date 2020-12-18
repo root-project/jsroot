@@ -154,7 +154,6 @@ JSROOT.define(['rawinflate'], () => {
 
          return type_name == "TArrayL64" ? jsrio.kLong64 : -1;
       }
-
    }
 
    /** @summary Let directly assign methods when doing I/O
@@ -1141,6 +1140,9 @@ JSROOT.define(['rawinflate'], () => {
       return promise;
    }
 
+   /** @summary Returns file name */
+   TFile.prototype.getFileName = function() { return this.fFileName; }
+
    /** @summary Get directory with given name and cycle
     * @desc Function only can be used for already read directories, which are preserved in the memory
     * @private */
@@ -1477,11 +1479,11 @@ JSROOT.define(['rawinflate'], () => {
    }
 
    /** @summary Read the directory content from  a root file
-    * @desc If directory was already read - return previously read object
-    * Same functionality as {@link JSROOT.TFile.readObject}
-    * @param {string} dir_name - directory name
-    * @param {number} [cycle=undefined] - directory cycle
-    * @returns {Promise} - promise with read directory */
+     * @desc If directory was already read - return previously read object
+     * Same functionality as {@link JSROOT.TFile.readObject}
+     * @param {string} dir_name - directory name
+     * @param {number} [cycle] - directory cycle
+     * @returns {Promise} - promise with read directory */
    TFile.prototype.readDirectory = function(dir_name, cycle) {
       return this.readObject(dir_name, cycle, true);
    }
@@ -1583,7 +1585,7 @@ JSROOT.define(['rawinflate'], () => {
 
       if (s_i.fElements)
          for (let j = 0; j < s_i.fElements.arr.length; ++j)
-            streamer.push(jsrio.CreateMember(s_i.fElements.arr[j], this));
+            streamer.push(jsrio.createMember(s_i.fElements.arr[j], this));
 
       this.fStreamers[fullname] = streamer;
 
@@ -1660,17 +1662,15 @@ JSROOT.define(['rawinflate'], () => {
      * @returns {object} - created JavaScript object
      * @example
      * JSROOT.httpRequest("http://localhost:8080/Files/job1.root/hpx/root.bin", "buf")
-     *       .then(obj_data => JSROOT.httpRequest("http://localhost:8080/StreamerInfo/root.bin", "buf"))
-     *       .then(si_data => JSROOT.reconstructObject("TH1F", obj_data, si_data))
+     *       .then(obj_data => JSROOT.httpRequest("http://localhost:8080/StreamerInfo/root.bin", "buf")
+     *          .then(si_data => JSROOT.reconstructObject("TH1F", obj_data, si_data)))
      *       .then(histo => console.log(`Get histogram with title = ${histo.fTitle}`))
-     *       .catch(err => console.error(err.message));
+     *       .catch(err => console.error(err));
      *
      * // same data via root.json request
      * JSROOT.httpRequest("http://localhost:8080/Files/job1.root/hpx/root.json", "object")
      *       .then(histo => console.log(`Get histogram with title = ${histo.fTitle}`))
-     *       .catch(err => console.error(err.message));
-     */
-
+     *       .catch(err => console.error(err.message)); */
    JSROOT.reconstructObject = function(class_name, obj_rawdata, sinfo_rawdata) {
 
       let file = new TFile;
@@ -1771,8 +1771,8 @@ JSROOT.define(['rawinflate'], () => {
                return res.trim();
             }
             si = { _typename: 'TStreamerInfo', fVersion: 1, fName: typname, fElements: JSROOT.create("TList") };
-            si.fElements.Add(jsrio.CreateStreamerElement("first", GetNextName(), file));
-            si.fElements.Add(jsrio.CreateStreamerElement("second", GetNextName(), file));
+            si.fElements.Add(jsrio.createStreamerElement("first", GetNextName(), file));
+            si.fElements.Add(jsrio.createStreamerElement("second", GetNextName(), file));
          }
       }
 
@@ -1845,7 +1845,7 @@ JSROOT.define(['rawinflate'], () => {
    /** @summary create member entry for streamer element
      * @desc used for reading of data
      * @private */
-   jsrio.CreateMember = function(element, file) {
+   jsrio.createMember = function(element, file) {
       let member = {
          name: element.fName, type: element.fType,
          fArrayLength: element.fArrayLength,
@@ -2243,11 +2243,11 @@ JSROOT.define(['rawinflate'], () => {
 
                      if (!member.isptr && (member.arrkind < 0)) {
 
-                        let subelem = jsrio.CreateStreamerElement("temp", member.conttype);
+                        let subelem = jsrio.createStreamerElement("temp", member.conttype);
 
                         if (subelem.fType === jsrio.kStreamer) {
                            subelem.$fictional = true;
-                           member.submember = jsrio.CreateMember(subelem, file);
+                           member.submember = jsrio.createMember(subelem, file);
                         }
                      }
                   }
@@ -2385,11 +2385,13 @@ JSROOT.define(['rawinflate'], () => {
 
    TLocalFile.prototype = Object.create(TFile.prototype)
 
-   /** @summary Open file
-    * @returns {Promise} after file keys are read
-    * @private */
+   /** @summary Open local file
+     * @returns {Promise} after file keys are read
+     * @private */
    TLocalFile.prototype._open = function() { return this.readKeys(); }
 
+   /** @summary read buffer from local file
+     * @private */
    TLocalFile.prototype.readBuffer = function(place, filename /*, progress_callback */) {
       let file = this.fLocalFile;
 
@@ -2437,9 +2439,9 @@ JSROOT.define(['rawinflate'], () => {
 
    TNodejsFile.prototype = Object.create(TFile.prototype)
 
-   /** @summary Open file
-    * @returns {Promise} after file keys are read
-    * @private */
+   /** @summary Open file in node.js
+     * @returns {Promise} after file keys are read
+     * @private */
    TNodejsFile.prototype._open = function() {
       this.fs = require('fs');
 
@@ -2461,10 +2463,9 @@ JSROOT.define(['rawinflate'], () => {
       );
    }
 
-   /** @summary Read buffer from local file
-    * @returns {Promise} with required blocks
-    * @private */
-
+   /** @summary Read buffer from node.js file
+     * @returns {Promise} with required blocks
+     * @private */
    TNodejsFile.prototype.readBuffer = function(place, filename /*, progress_callback */) {
       return new Promise((resolve, reject) => {
          if (filename)
@@ -2544,7 +2545,7 @@ JSROOT.define(['rawinflate'], () => {
             obj.arr = [];
             obj.opt = [];
          }
-      };
+      }
 
       cs['TClonesArray'] = function(buf, list) {
          if (!list._typename) list._typename = "TClonesArray";
@@ -2583,7 +2584,7 @@ JSROOT.define(['rawinflate'], () => {
                for (let n = 0; n < nobjects; ++n)
                   streamer[k].func(buf, list.arr[n]);
          }
-      };
+      }
 
       cs['TMap'] = function(buf, map) {
          if (!map._typename) map._typename = "TMap";
@@ -2601,7 +2602,7 @@ JSROOT.define(['rawinflate'], () => {
             obj.second = buf.readObjectAny();
             if (obj.first) map.arr.push(obj);
          }
-      };
+      }
 
       cs['TTreeIndex'] = function(buf, obj) {
          const ver = buf.last_read_version;
@@ -2613,7 +2614,7 @@ JSROOT.define(['rawinflate'], () => {
          obj.fIndexValues = buf.readFastArray(obj.fN, jsrio.kLong64);
          if (ver > 1) obj.fIndexValuesMinor = buf.readFastArray(obj.fN, jsrio.kLong64);
          obj.fIndex = buf.readFastArray(obj.fN, jsrio.kLong64);
-      };
+      }
 
       cs['TRefArray'] = function(buf, obj) {
          obj._typename = "TRefArray";
@@ -2624,7 +2625,7 @@ JSROOT.define(['rawinflate'], () => {
          obj.fLowerBound = buf.ntoi4();
          /*const pidf = */ buf.ntou2();
          obj.fUIDs = buf.readFastArray(nobj, jsrio.kUInt);
-      };
+      }
 
       cs['TCanvas'] = function(buf, obj) {
          obj._typename = "TCanvas";
@@ -2650,7 +2651,7 @@ JSROOT.define(['rawinflate'], () => {
          buf.ntou1();   // ignore b << TestBit(kShowEventStatus);
          buf.ntou1();   // ignore b << TestBit(kAutoExec);
          buf.ntou1();   // ignore b << TestBit(kMenuBar);
-      };
+      }
 
       cs['TObjArray'] = function(buf, list) {
          if (!list._typename) list._typename = "TObjArray";
@@ -2668,7 +2669,7 @@ JSROOT.define(['rawinflate'], () => {
          list.fLowerBound = buf.ntou4();
          while (i < nobjects)
             list.arr[i++] = buf.readObjectAny();
-      };
+      }
 
       cs['TPolyMarker3D'] = function(buf, marker) {
          const ver = buf.last_read_version;
@@ -2678,7 +2679,7 @@ JSROOT.define(['rawinflate'], () => {
          marker.fP = buf.readFastArray(marker.fN * 3, jsrio.kFloat);
          marker.fOption = buf.readTString();
          marker.fName = (ver > 1) ? buf.readTString() : "TPolyMarker3D";
-      };
+      }
 
       cs['TPolyLine3D'] = function(buf, obj) {
          buf.classStreamer(obj, "TObject");
@@ -2686,7 +2687,7 @@ JSROOT.define(['rawinflate'], () => {
          obj.fN = buf.ntoi4();
          obj.fP = buf.readFastArray(obj.fN * 3, jsrio.kFloat);
          obj.fOption = buf.readTString();
-      };
+      }
 
       cs['TStreamerInfo'] = function(buf, obj) {
          // stream an object of class TStreamerInfo from the I/O buffer
@@ -2694,7 +2695,7 @@ JSROOT.define(['rawinflate'], () => {
          obj.fCheckSum = buf.ntou4();
          obj.fClassVersion = buf.ntou4();
          obj.fElements = buf.readObjectAny();
-      };
+      }
 
       cs['TStreamerElement'] = function(buf, element) {
          // stream an object of class TStreamerElement
@@ -2755,13 +2756,13 @@ JSROOT.define(['rawinflate'], () => {
                else if (nbits < 15) element.fXmin = nbits;
             }
          }
-      };
+      }
 
       cs['TStreamerBase'] = function(buf, elem) {
          const ver = buf.last_read_version;
          buf.classStreamer(elem, "TStreamerElement");
          if (ver > 2) elem.fBaseVersion = buf.ntou4();
-      };
+      }
 
       cs['TStreamerBasicPointer'] = cs['TStreamerLoop'] = function(buf, elem) {
          if (buf.last_read_version > 1) {
@@ -2770,7 +2771,7 @@ JSROOT.define(['rawinflate'], () => {
             elem.fCountName = buf.readTString();
             elem.fCountClass = buf.readTString();
          }
-      };
+      }
 
       cs['TStreamerSTL'] = function(buf, elem) {
          buf.classStreamer(elem, "TStreamerElement");
@@ -2784,12 +2785,12 @@ JSROOT.define(['rawinflate'], () => {
          if ((elem.fSTLtype === jsrio.kSTLset) &&
             ((elem.fTypeName.indexOf("std::multimap") === 0) ||
                (elem.fTypeName.indexOf("multimap") === 0))) elem.fSTLtype = jsrio.kSTLmultimap;
-      };
+      }
 
       cs['TStreamerSTLstring'] = function(buf, elem) {
          if (buf.last_read_version > 0)
             buf.classStreamer(elem, "TStreamerSTL");
-      };
+      }
 
       cs['TStreamerObject'] = cs['TStreamerBasicType'] = cs['TStreamerObjectAny'] =
          cs['TStreamerString'] = cs['TStreamerObjectPointer'] = function(buf, elem) {
@@ -3036,9 +3037,9 @@ JSROOT.define(['rawinflate'], () => {
 
    }
 
-   jsrio.CreateStreamerElement = function(name, typename, file) {
-      // return function, which could be used for element of the map
-
+   /** @summary create element of the streamer
+     * @private  */
+   jsrio.createStreamerElement = function(name, typename, file) {
       let elem = {
          _typename: 'TStreamerElement', fName: name, fTypeName: typename,
          fType: 0, fSize: 0, fArrayLength: 0, fArrayDim: 0, fMaxIndex: [0, 0, 0, 0, 0],
@@ -3091,20 +3092,17 @@ JSROOT.define(['rawinflate'], () => {
       return elem;
    }
 
-   /**
-    * @summary Open ROOT file for reading
-    *
-    * @desc Generic method to open ROOT file for reading
-    * Following kind of arguments can be provided:
-    *  - string with file URL (see example). In node.js environment local file like "file://hsimple.root" can be specified
-    *  - [File]{@link https://developer.mozilla.org/en-US/docs/Web/API/File} instance which let read local files from browser
-    *  - [ArrayBuffer]{@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer} instance with complete file content
-    * @param {string|object} arg - argument for file open like url, see details
-    * @returns {object} - Promise with TFile instance when file is opened
-    * @example
-    * JSROOT.openFile("https://root.cern/js/files/hsimple.root")
-    *        .then(f => console.log(`Open file ${f.fFileName}`));
-    */
+   /** @summary Open ROOT file for reading
+     * @desc Generic method to open ROOT file for reading
+     * Following kind of arguments can be provided:
+     *  - string with file URL (see example). In node.js environment local file like "file://hsimple.root" can be specified
+     *  - [File]{@link https://developer.mozilla.org/en-US/docs/Web/API/File} instance which let read local files from browser
+     *  - [ArrayBuffer]{@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer} instance with complete file content
+     * @param {string|object} arg - argument for file open like url, see details
+     * @returns {object} - Promise with TFile instance when file is opened
+     * @example
+     * JSROOT.openFile("https://root.cern/js/files/hsimple.root")
+     *        .then(f => console.log(`Open file ${f.getFileName()}`)); */
 
    JSROOT.openFile = function(arg) {
 
