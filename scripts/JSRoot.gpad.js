@@ -74,7 +74,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
 
       if (this.kind == 'time') {
-         this.func = d3.scaleTime().domain([this.ConvertDate(smin), this.ConvertDate(smax)]);
+         this.func = d3.scaleTime().domain([this.convertDate(smin), this.convertDate(smax)]);
       } else if (this.log) {
          this.logbase = this.log === 2 ? 2 : 10;
          if (smax <= 0) smax = 1;
@@ -106,7 +106,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.scale_max = smax;
 
       if (this.kind == 'time')
-         this.gr = val => this.func(this.ConvertDate(val));
+         this.gr = val => this.func(this.convertDate(val));
       else if (this.log)
          this.gr = val => (val < this.scale_min) ? (this.vertical ? this.func.range()[0]+5 : -5) : this.func(val);
       else
@@ -205,7 +205,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       let handle = { nminor: 0, nmiddle: 0, nmajor: 0, func: this.func };
 
-      handle.minor = handle.middle = handle.major = this.ProduceTicks(this.nticks);
+      handle.minor = handle.middle = handle.major = this.produceTicks(this.nticks);
 
       if (only_major_as_array) {
          let res = handle.major, delta = (this.scale_max - this.scale_min)*1e-5;
@@ -224,7 +224,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
 
       if ((this.nticks2 > 1) && (!this.log || (this.logbase === 10))) {
-         handle.minor = handle.middle = this.ProduceTicks(handle.major.length, this.nticks2);
+         handle.minor = handle.middle = this.produceTicks(handle.major.length, this.nticks2);
 
          let gr_range = Math.abs(this.func.range()[1] - this.func.range()[0]);
 
@@ -232,7 +232,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if ((handle.middle.length <= handle.major.length) || (handle.middle.length > gr_range/3.5)) {
             handle.minor = handle.middle = handle.major;
          } else if ((this.nticks3 > 1) && !this.log)  {
-            handle.minor = this.ProduceTicks(handle.middle.length, this.nticks3);
+            handle.minor = this.produceTicks(handle.middle.length, this.nticks3);
             if ((handle.minor.length <= handle.middle.length) || (handle.minor.length > gr_range/1.7)) handle.minor = handle.middle;
          }
       }
@@ -1171,7 +1171,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                                         logcheckmin: this.swap_xy,
                                         logminfactor: 0.0001 });
 
-      this.x_handle.AssignFrameMembers(this,"x");
+      this.x_handle.assignFrameMembers(this,"x");
 
       this.y_handle = new TAxisPainter(this.getDom(), this.yaxis, true);
       this.y_handle.setPadName(this.getPadName());
@@ -1183,7 +1183,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                                         log_min_nz: opts.ymin_nz && (opts.ymin_nz < 0.01*this.ymax) ? 0.3 * opts.ymin_nz : 0,
                                         logminfactor: 3e-4 });
 
-      this.y_handle.AssignFrameMembers(this,"y");
+      this.y_handle.assignFrameMembers(this,"y");
 
       this.SetRootPadRange(pad);
    }
@@ -1281,11 +1281,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Converts "raw" axis value into text */
-   TFramePainter.prototype.AxisAsText = function(axis, value) {
+   TFramePainter.prototype.axisAsText = function(axis, value) {
       let handle = this[axis+"_handle"];
 
       if (handle)
-         return handle.AxisAsText(value, JSROOT.settings[axis.toUpperCase() + "ValuesFormat"]);
+         return handle.axisAsText(value, JSROOT.settings[axis.toUpperCase() + "ValuesFormat"]);
 
       return value.toPrecision(4);
    }
@@ -1900,7 +1900,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Convert graphical coordinate into axis value */
    TFramePainter.prototype.RevertAxis = function(axis, pnt) {
       let handle = this[axis+"_handle"];
-      return handle ? handle.RevertPoint(pnt) : 0;
+      return handle ? handle.revertPoint(pnt) : 0;
    }
 
    /** @summary Show axis status message
@@ -1915,7 +1915,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       let axis_value = this.RevertAxis(axis_name, m[id]);
 
-      this.showObjectStatus(hint_name, hint_title, axis_name + " : " + this.AxisAsText(axis_name, axis_value), m[0]+","+m[1]);
+      this.showObjectStatus(hint_name, hint_title, axis_name + " : " + this.axisAsText(axis_name, axis_value), m[0]+","+m[1]);
    }
 
    /** @summary Add interactive keys handlers

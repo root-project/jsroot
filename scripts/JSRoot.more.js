@@ -668,7 +668,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       let pmain = this.getFramePainter();
       if (pmain)
-         res.lines.push("x = " + pmain.AxisAsText("x",bin.x) + " y = " + pmain.AxisAsText("y",bin.y));
+         res.lines.push("x = " + pmain.axisAsText("x",bin.x) + " y = " + pmain.axisAsText("y",bin.y));
 
       return res;
    }
@@ -1043,14 +1043,14 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       lines.push(this.getObjectHint());
 
       if (d && pmain) {
-         lines.push("x = " + pmain.AxisAsText("x", d.x));
-         lines.push("y = " + pmain.AxisAsText("y", d.y));
+         lines.push("x = " + pmain.axisAsText("x", d.x));
+         lines.push("y = " + pmain.axisAsText("y", d.y));
 
          if (this.options.Errors && (pmain.x_handle.kind=='normal') && ('exlow' in d) && ((d.exlow!=0) || (d.exhigh!=0)))
-            lines.push("error x = -" + pmain.AxisAsText("x", d.exlow) + "/+" + pmain.AxisAsText("x", d.exhigh));
+            lines.push("error x = -" + pmain.axisAsText("x", d.exlow) + "/+" + pmain.axisAsText("x", d.exhigh));
 
          if ((this.options.Errors || (this.options.EF > 0)) && (pmain.y_handle.kind=='normal') && ('eylow' in d) && ((d.eylow!=0) || (d.eyhigh!=0)))
-            lines.push("error y = -" + pmain.AxisAsText("y", d.eylow) + "/+" + pmain.AxisAsText("y", d.eyhigh));
+            lines.push("error y = -" + pmain.axisAsText("y", d.eylow) + "/+" + pmain.axisAsText("y", d.eyhigh));
       }
       return lines;
    }
@@ -2053,7 +2053,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    }
 
    /** @summary Convert axis values to text */
-   TGraphPolargramPainter.prototype.AxisAsText = function(axis, value) {
+   TGraphPolargramPainter.prototype.axisAsText = function(axis, value) {
 
       if (axis == "r") {
          if (value === Math.round(value)) return value.toString();
@@ -2481,14 +2481,14 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
                   radius: match_distance
                 };
 
-      res.lines.push("r = " + main.AxisAsText("r", graph.fY[bestindx]));
-      res.lines.push("phi = " + main.AxisAsText("phi",graph.fX[bestindx]));
+      res.lines.push("r = " + main.axisAsText("r", graph.fY[bestindx]));
+      res.lines.push("phi = " + main.axisAsText("phi",graph.fX[bestindx]));
 
       if (graph.fEY && graph.fEY[bestindx])
-         res.lines.push("error r = " + main.AxisAsText("r", graph.fEY[bestindx]));
+         res.lines.push("error r = " + main.axisAsText("r", graph.fEY[bestindx]));
 
       if (graph.fEX && graph.fEX[bestindx])
-         res.lines.push("error phi = " + main.AxisAsText("phi", graph.fEX[bestindx]));
+         res.lines.push("error phi = " + main.axisAsText("phi", graph.fEX[bestindx]));
 
       return res;
    }
@@ -2718,8 +2718,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       let name = this.getObjectHint();
       if (name.length > 0) res.lines.push(name);
-      res.lines.push("x = " + main.AxisAsText("x", xx))
-      res.lines.push("y = " + main.AxisAsText("y", yy));
+      res.lines.push("x = " + main.axisAsText("x", xx))
+      res.lines.push("y = " + main.axisAsText("y", yy));
       if (knot !== null) {
          res.lines.push("knot = " + indx);
          res.lines.push("B = " + jsrp.floatToString(knot.fB, JSROOT.gStyle.fStatFormat));

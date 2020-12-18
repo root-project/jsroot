@@ -3255,14 +3255,14 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           x1 = axis.GetBinLowEdge(bin+1);
 
       if (handle.kind === 'labels')
-         return pmain.AxisAsText(name, x1);
+         return pmain.axisAsText(name, x1);
 
       let x2 = axis.GetBinLowEdge(bin+2);
 
       if (handle.kind === 'time')
-         return pmain.AxisAsText(name, (x1+x2)/2);
+         return pmain.axisAsText(name, (x1+x2)/2);
 
-      return "[" + pmain.AxisAsText(name, x1) + ", " + pmain.AxisAsText(name, x2) + ")";
+      return "[" + pmain.axisAsText(name, x1) + ", " + pmain.axisAsText(name, x2) + ")";
    }
 
    // ========================================================================
@@ -4002,7 +4002,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       if (this.options.Error || this.options.Mark) {
          tips.push("x = " + xlbl);
-         tips.push("y = " + pmain.AxisAsText("y", cont));
+         tips.push("y = " + pmain.axisAsText("y", cont));
          if (this.options.Error) {
             if (xlbl[0] == "[") tips.push("error x = " + ((x2 - x1) / 2).toPrecision(4));
             tips.push("error y = " + histo.getBinError(bin + 1).toPrecision(4));
@@ -6010,7 +6010,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       lines.push(this.getObjectHint());
 
-      lines.push("x = " + main.AxisAsText("x", histo.fXaxis.GetBinLowEdge(p.bin+1)));
+      lines.push("x = " + main.axisAsText("x", histo.fXaxis.GetBinLowEdge(p.bin+1)));
 
       lines.push('mean y = ' + jsrp.floatToString(p.meany, JSROOT.gStyle.fStatFormat))
       lines.push('m25 = ' + jsrp.floatToString(p.m25y, JSROOT.gStyle.fStatFormat))
@@ -6052,8 +6052,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       }
 
       lines.push(this.getObjectHint());
-      lines.push("x = " + pmain.AxisAsText("x", realx));
-      lines.push("y = " + pmain.AxisAsText("y", realy));
+      lines.push("x = " + pmain.axisAsText("x", realx));
+      lines.push("y = " + pmain.axisAsText("y", realy));
       if (numpoints > 0) lines.push("npnts = " + numpoints);
       lines.push("bin = " + binname);
       if (bin.fContent === Math.round(bin.fContent))

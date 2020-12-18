@@ -184,7 +184,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
             if (taxis) { hint.name = taxis.fName; hint.title = taxis.fTitle || "histogram TAxis object"; }
 
-            hint.line = axis_name + " : " + axis_painter.AxisAsText(axis_name, axis_value);
+            hint.line = axis_name + " : " + axis_painter.axisAsText(axis_name, axis_value);
 
             return hint;
          }
@@ -513,17 +513,17 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       this.x_handle = new JSROOT.TAxisPainter(null, this.xaxis);
       this.x_handle.ConfigureAxis("xaxis", this.xmin, this.xmax, xmin, xmax, false, [grminx, grmaxx],
                                        { log: pad ? pad.fLogx : 0 });
-      this.x_handle.AssignFrameMembers(this,"x");
+      this.x_handle.assignFrameMembers(this,"x");
 
       this.y_handle = new JSROOT.TAxisPainter(null, this.yaxis);
       this.y_handle.ConfigureAxis("yaxis", this.ymin, this.ymax, ymin, ymax, false, [grminy, grmaxy],
                                       { log: pad && !opts.use_y_for_z ? pad.fLogx : 0 });
-      this.y_handle.AssignFrameMembers(this,"y");
+      this.y_handle.assignFrameMembers(this,"y");
 
       this.z_handle = new JSROOT.TAxisPainter(null, this.zaxis);
       this.z_handle.ConfigureAxis("zaxis", this.zmin, this.zmax, zmin, zmax, false, [grminz, grmaxz],
                                        { log: pad ? pad.fLogz : 0 });
-      this.z_handle.AssignFrameMembers(this,"z");
+      this.z_handle.assignFrameMembers(this,"z");
 
       this.SetRootPadRange(pad, true); // set some coordinates typical for 3D projections in ROOT
 
@@ -3117,9 +3117,9 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          color: this.tip_color,
          lines: [ this.tip_name,
                   "pnt: " + indx,
-                  "x: " + p.AxisAsText("x", this.graph.fX[indx]),
-                  "y: " + p.AxisAsText("y", this.graph.fY[indx]),
-                  "z: " + p.AxisAsText("z", this.graph.fZ[indx])
+                  "x: " + p.axisAsText("x", this.graph.fX[indx]),
+                  "y: " + p.axisAsText("y", this.graph.fY[indx]),
+                  "z: " + p.axisAsText("z", this.graph.fZ[indx])
                 ]
       }
    }
@@ -3408,9 +3408,9 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
             color: this.tip_color,
             lines: [ this.tip_name,
                      "pnt: " + indx/3,
-                     "x: " + p.AxisAsText("x", this.poly.fP[indx]),
-                     "y: " + p.AxisAsText("y", this.poly.fP[indx+1]),
-                     "z: " + p.AxisAsText("z", this.poly.fP[indx+2])
+                     "x: " + p.axisAsText("x", this.poly.fP[indx]),
+                     "y: " + p.axisAsText("y", this.poly.fP[indx+1]),
+                     "z: " + p.axisAsText("z", this.poly.fP[indx+2])
                    ]
          }
       }

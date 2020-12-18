@@ -2900,7 +2900,7 @@ JSROOT.define(['d3'], (d3) => {
 
    /** @summary Assign often used members of frame painter
      * @private */
-   AxisBasePainter.prototype.AssignFrameMembers = function(fp, axis) {
+   AxisBasePainter.prototype.assignFrameMembers = function(fp, axis) {
       fp["gr"+axis] = this.gr;                    // fp.grx
       fp["log"+axis] = this.log;                  // fp.logx
       fp["scale_"+axis+"min"] = this.scale_min;   // fp.scale_xmin
@@ -2908,12 +2908,12 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /** @summary Convert axis value into the Date object */
-   AxisBasePainter.prototype.ConvertDate = function(v) {
+   AxisBasePainter.prototype.convertDate = function(v) {
       return new Date(this.timeoffset + v*1000);
    }
 
    /** @summary Convert graphical point back into axis value */
-   AxisBasePainter.prototype.RevertPoint = function(pnt) {
+   AxisBasePainter.prototype.revertPoint = function(pnt) {
       let value = this.func.invert(pnt);
       return (this.kind == "time") ?  (value - this.timeoffset) / 1000 : value;
    }
@@ -2977,9 +2977,9 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /** @summary Convert "raw" axis value into text */
-   AxisBasePainter.prototype.AxisAsText = function(value, fmt) {
+   AxisBasePainter.prototype.axisAsText = function(value, fmt) {
       if (this.kind == 'time')
-         value = this.ConvertDate(value);
+         value = this.convertDate(value);
       if (this.format)
          return this.format(value, false, fmt);
       return value.toPrecision(4);
@@ -2987,7 +2987,7 @@ JSROOT.define(['d3'], (d3) => {
 
    /** @summary Produce ticks for d3.scaleLog
      * @desc Fixing following problem, described [here]{@link https://stackoverflow.com/questions/64649793} */
-   AxisBasePainter.prototype.PoduceLogTicks = function(func, number) {
+   AxisBasePainter.prototype.poduceLogTicks = function(func, number) {
       function linearArray(arr) {
          let sum1 = 0, sum2 = 0;
          for (let k=1;k<arr.length;++k) {
@@ -3024,10 +3024,10 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /** @summary Produce axis ticks */
-   AxisBasePainter.prototype.ProduceTicks = function(ndiv, ndiv2) {
+   AxisBasePainter.prototype.produceTicks = function(ndiv, ndiv2) {
       if (!this.noticksopt) {
          let total = ndiv * (ndiv2 || 1);
-         return this.log ? this.PoduceLogTicks(this.func, total) : this.func.ticks(total);
+         return this.log ? this.poduceLogTicks(this.func, total) : this.func.ticks(total);
       }
 
       let dom = this.func.domain(), ticks = [];

@@ -159,7 +159,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
                          line: "any info",
                          only_status: true };
 
-            hint.line = axis_name + " : " + axis_painter.AxisAsText(axis_name, axis_value);
+            hint.line = axis_name + " : " + axis_painter.axisAsText(axis_name, axis_value);
 
             return hint;
          }
@@ -483,13 +483,13 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       this.x_handle.setPadName(this.getPadName());
       this.x_handle.snapid = this.snapid;
       this.x_handle.ConfigureAxis("xaxis", this.xmin, this.xmax, xmin, xmax, false, [grminx, grmaxx]);
-      this.x_handle.AssignFrameMembers(this,"x");
+      this.x_handle.assignFrameMembers(this,"x");
 
       this.y_handle = new JSROOT.v7.RAxisPainter(this.getDom(), this, this.yaxis, "y_");
       this.y_handle.setPadName(this.getPadName());
       this.y_handle.snapid = this.snapid;
       this.y_handle.ConfigureAxis("yaxis", this.ymin, this.ymax, ymin, ymax, false, [grminy, grmaxy]);
-      this.y_handle.AssignFrameMembers(this,"y");
+      this.y_handle.assignFrameMembers(this,"y");
 
       // this.SetRootPadRange(pad, true); // set some coordinates typical for 3D projections in ROOT
 
@@ -497,7 +497,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       this.z_handle.setPadName(this.getPadName());
       this.z_handle.snapid = this.snapid;
       this.z_handle.ConfigureAxis("zaxis", this.zmin, this.zmax, zmin, zmax, false, [grminz, grmaxz]);
-      this.z_handle.AssignFrameMembers(this,"z");
+      this.z_handle.assignFrameMembers(this,"z");
 
       let textMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 }),
           lineMaterial = new THREE.LineBasicMaterial({ color: 0x000000 }),
