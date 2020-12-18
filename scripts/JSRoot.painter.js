@@ -2415,23 +2415,9 @@ JSROOT.define(['d3'], (d3) => {
          draw_g.property('text_factor', factor);
    }
 
-   /** @summary Finish text drawing
-     * @desc Should be called to complete all text drawing operations
-     * @param {function} [draw_g] - <g> element for text drawing, this.draw_g used when not specified
-     * @returns {Promise} when text drawing completed
-     * @protected */
-   ObjectPainter.prototype.finishTextDrawing = function(draw_g) {
-      if (!draw_g) draw_g = this.draw_g;
-      draw_g.property('draw_text_completed', true); // mark that text drawing is completed
-
-      return new Promise(resolveFunc => {
-         this._checkAllTextDrawing(draw_g, resolveFunc);
-      });
-   }
-
    /** @summary Analyze if all text draw operations completed
     * @private */
-   ObjectPainter.prototype._checkAllTextDrawing = function(draw_g, resolveFunc) {
+   function _checkAllTextDrawing(painter, draw_g, resolveFunc) {
 
       let all_args = draw_g.property('all_args'), missing = 0;
       if (!all_args) {
@@ -2444,7 +2430,7 @@ JSROOT.define(['d3'], (d3) => {
       if (missing > 0) {
          if (typeof resolveFunc == 'function')
             draw_g.node().textResolveFunc = resolveFunc;
-         return 0;
+         return;
       }
 
       draw_g.property('all_args', null); // clear all_args property
@@ -2469,7 +2455,7 @@ JSROOT.define(['d3'], (d3) => {
       all_args.forEach(arg => {
          if (arg.mj_node && arg.applyAttributesToMathJax) {
             let svg = arg.mj_node.select("svg"); // MathJax svg
-            arg.applyAttributesToMathJax(this, arg.mj_node, svg, arg, font_size, f);
+            arg.applyAttributesToMathJax(painter, arg.mj_node, svg, arg, font_size, f);
             delete arg.mj_node; // remove reference
          }
       });
@@ -2481,7 +2467,6 @@ JSROOT.define(['d3'], (d3) => {
          let txt = arg.txt_node;
          delete arg.txt_node;
          txt.attr('visibility', null);
-
 
          if (JSROOT.nodejs) {
             if (arg.scale && (f > 0)) { arg.box.width = arg.box.width / f; arg.box.height = arg.box.height / f; }
@@ -2538,8 +2523,7 @@ JSROOT.define(['d3'], (d3) => {
       draw_g.node().textResolveFunc = null;
 
       // if specified, call ready function
-      if (resolveFunc) resolveFunc(this); // IMPORTANT - return painter, may use in draw methods
-      return 0;
+      if (resolveFunc) resolveFunc(painter); // IMPORTANT - return painter, may use in draw methods
    }
 
    /** @summary After normal SVG text is generated, check and recalculate some properties
@@ -2669,7 +2653,7 @@ JSROOT.define(['d3'], (d3) => {
                _postprocessText(this, arg.txt_node, arg);
 
                if (arg.draw_g.property('draw_text_completed'))
-                  this._checkAllTextDrawing(arg.draw_g); // check if all other elements are completed
+                  _checkAllTextDrawing(this, arg.draw_g); // check if all other elements are completed
             });
             return 0;
          }
@@ -2689,10 +2673,24 @@ JSROOT.define(['d3'], (d3) => {
             .then(() => {
                arg.ready = true;
                if (arg.draw_g.property('draw_text_completed'))
-                  this._checkAllTextDrawing(arg.draw_g);
+                  _checkAllTextDrawing(this, arg.draw_g);
             });
 
       return 0;
+   }
+
+   /** @summary Finish text drawing
+     * @desc Should be called to complete all text drawing operations
+     * @param {function} [draw_g] - <g> element for text drawing, this.draw_g used when not specified
+     * @returns {Promise} when text drawing completed
+     * @protected */
+   ObjectPainter.prototype.finishTextDrawing = function(draw_g) {
+      if (!draw_g) draw_g = this.draw_g;
+      draw_g.property('draw_text_completed', true); // mark that text drawing is completed
+
+      return new Promise(resolveFunc => {
+         _checkAllTextDrawing(this, draw_g, resolveFunc);
+      });
    }
 
    /** @summary Configure user-defined context menu for the object
