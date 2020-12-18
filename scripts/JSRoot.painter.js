@@ -2319,33 +2319,6 @@ JSROOT.define(['d3'], (d3) => {
       return menu.size() > 0;
    }
 
-   /** @summary Produce exec string for WebCanas to set color value
-    * @desc Color can be id or string, but should belong to list of known colors
-    * For higher color numbers TColor::GetColor(r,g,b) will be invoked to ensure color is exists
-    * @private */
-   ObjectPainter.prototype.GetColorExec = function(col, method) {
-      let id = -1, arr = jsrp.root_colors;
-      if (typeof col == "string") {
-         if (!col || (col == "none")) id = 0; else
-            for (let k = 1; k < arr.length; ++k)
-               if (arr[k] == col) { id = k; break; }
-         if ((id < 0) && (col.indexOf("rgb") == 0)) id = 9999;
-      } else if (!isNaN(col) && arr[col]) {
-         id = col;
-         col = arr[id];
-      }
-
-      if (id < 0) return "";
-
-      if (id >= 50) {
-         // for higher color numbers ensure that such color exists
-         let c = d3.color(col);
-         id = "TColor::GetColor(" + c.r + "," + c.g + "," + c.b + ")";
-      }
-
-      return "exec:" + method + "(" + id + ")";
-   }
-
    /** @summary shows objects status
      * @desc Either used canvas painter method or globaly assigned
      * When no parameters are specified, just basic object properties are shown
