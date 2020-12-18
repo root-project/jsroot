@@ -323,13 +323,13 @@ JSROOT.define(['d3', 'jquery', 'painter', 'jquery-ui'], (d3, $, jsrp) => {
                this.add("sub:side");
                for (let side = -1; side <= 1; ++side)
                   this.addchk((painter.lineatt.excl_side == side), side, side, function(arg) {
-                     this.lineatt.ChangeExcl(parseInt(arg));
+                     this.lineatt.changeExcl(parseInt(arg));
                      this.interactiveRedraw();
                   }.bind(painter));
                this.add("endsub:");
 
                this.SizeMenu("width", 10, 100, 10, painter.lineatt.excl_width,
-                  arg => { painter.lineatt.ChangeExcl(undefined, arg); painter.interactiveRedraw(); });
+                  arg => { painter.lineatt.changeExcl(undefined, arg); painter.interactiveRedraw(); });
 
                this.add("endsub:");
             }
@@ -352,7 +352,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'jquery-ui'], (d3, $, jsrp) => {
 
             for (let n = 0; n < supported.length; ++n) {
                let sample = painter.createAttFill({ std: false, pattern: supported[n], color: painter.fillatt.colorindx || 1 }),
-                   svg = "<svg width='100' height='18'><text x='1' y='12' style='font-size:12px'>" + supported[n].toString() + "</text><rect x='40' y='0' width='60' height='18' stroke='none' fill='" + sample.fillcolor() + "'></rect></svg>";
+                   svg = "<svg width='100' height='18'><text x='1' y='12' style='font-size:12px'>" + supported[n].toString() + "</text><rect x='40' y='0' width='60' height='18' stroke='none' fill='" + sample.getFillColor() + "'></rect></svg>";
                this.addchk(painter.fillatt.pattern == supported[n], svg, supported[n], function(arg) {
                   this.fillatt.change(undefined, parseInt(arg), this.getCanvSvg());
                   this.interactiveRedraw(true, "exec:SetFillStyle(" + arg + ")");

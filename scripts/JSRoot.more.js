@@ -120,7 +120,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       for (let n=0;n<=polyline.fLastPoint;++n)
          cmd += ((n>0) ? "L" : "M") + func.x(polyline.fX[n]) + "," + func.y(polyline.fY[n]);
 
-      if (polyline._typename != "TPolyLine") fillatt.SetSolidColor("none");
+      if (polyline._typename != "TPolyLine") fillatt.setSolidColor("none");
 
       if (!fillatt.empty()) cmd+="Z";
 
@@ -650,7 +650,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
                   x: bin.grx,
                   y: bin.gry,
                   color1: this.lineatt.color,
-                  color2: this.fillatt.fillcolor(),
+                  color2: this.fillatt.getFillColor(),
                   lines: [],
                   exact: (Math.abs(bin.grx - pnt.x) < radius) && (Math.abs(bin.gry - pnt.y) < radius) };
 
@@ -1472,7 +1472,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
                   lines: this.TooltipText(d),
                   rect: best, d3bin: findbin  };
 
-      if (this.fillatt && this.fillatt.used && !this.fillatt.empty()) res.color2 = this.fillatt.fillcolor();
+      if (this.fillatt && this.fillatt.used && !this.fillatt.empty()) res.color2 = this.fillatt.getFillColor();
 
       if (best.exact) res.exact = true;
       res.menu = res.exact; // activate menu only when exactly locate bin
@@ -1659,7 +1659,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          res.menu_dist = Math.sqrt((pnt.x-res.x)*(pnt.x-res.x) + Math.pow(Math.min(Math.abs(pnt.y-res.gry1),Math.abs(pnt.y-res.gry2)),2));
       }
 
-      if (this.fillatt && this.fillatt.used && !this.fillatt.empty()) res.color2 = this.fillatt.fillcolor();
+      if (this.fillatt && this.fillatt.used && !this.fillatt.empty()) res.color2 = this.fillatt.getFillColor();
 
       if (!islines) {
          res.color1 = this.getColor(gr.fMarkerColor);

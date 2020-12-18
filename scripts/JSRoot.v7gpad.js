@@ -174,7 +174,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       this.createAttFill({ pattern: fill_style, color: 0 });
 
-      this.fillatt.SetSolidColor(fill_color || "none");
+      this.fillatt.setSolidColor(fill_color || "none");
    }
 
    /** @summary Create this.lineatt object based on v7 line attributes

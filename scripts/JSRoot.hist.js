@@ -4189,7 +4189,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       let res = { name: histo.fName, title: histo.fTitle,
                   x: midx, y: midy, exact: true,
                   color1: this.lineatt ? this.lineatt.color : 'green',
-                  color2: this.fillatt ? this.fillatt.fillcoloralt('blue') : 'blue',
+                  color2: this.fillatt ? this.fillatt.getFillColorAlt('blue') : 'blue',
                   lines: this.GetBinTips(findbin) };
 
       if (pnt.disabled) {
@@ -6115,7 +6115,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          let res = { name: histo.fName, title: histo.fTitle,
                      x: pnt.x, y: pnt.y,
                      color1: this.lineatt ? this.lineatt.color : 'green',
-                     color2: this.fillatt ? this.fillatt.fillcoloralt('blue') : "blue",
+                     color2: this.fillatt ? this.fillatt.getFillColorAlt('blue') : "blue",
                      exact: true, menu: true,
                      lines: this.ProvidePolyBinHints(foundindx, realx, realy) };
 
@@ -6163,7 +6163,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          let res = { name: histo.fName, title: histo.fTitle,
                      x: pnt.x, y: pnt.y,
                      color1: this.lineatt ? this.lineatt.color : 'green',
-                     color2: this.fillatt ? this.fillatt.fillcoloralt('blue') : "blue",
+                     color2: this.fillatt ? this.fillatt.getFillColorAlt('blue') : "blue",
                      lines: this.GetCandleTips(p), exact: true, menu: true };
 
          if (pnt.disabled) {
@@ -6264,7 +6264,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       let res = { name: histo.fName, title: histo.fTitle,
                   x: pnt.x, y: pnt.y,
                   color1: this.lineatt ? this.lineatt.color : 'green',
-                  color2: this.fillatt ? this.fillatt.fillcoloralt('blue') : "blue",
+                  color2: this.fillatt ? this.fillatt.getFillColorAlt('blue') : "blue",
                   lines: this.GetBinTips(i, j), exact: true, menu: true };
 
       if (this.options.Color) res.color2 = this.getHistPalette().getColor(colindx);

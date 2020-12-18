@@ -1399,7 +1399,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          // force white color for the canvas frame
          if (!tframe && this.fillatt.empty() && pp && pp.iscan)
-            this.fillatt.SetSolidColor('white');
+            this.fillatt.setSolidColor('white');
       }
 
       if (!tframe && pad && (pad.fFrameLineColor!==undefined))

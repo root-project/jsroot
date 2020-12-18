@@ -535,11 +535,11 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /** @summary Create sample with marker in given SVG element
-    * @param {selection} svg - SVG element
-    * @param {number} width - width of sample SVG
-    * @param {number} height - height of sample SVG
-    * @private */
-   TAttMarkerHandler.prototype.CreateSample = function(svg, width, height) {
+     * @param {selection} svg - SVG element
+     * @param {number} width - width of sample SVG
+     * @param {number} height - height of sample SVG
+     * @private */
+   TAttMarkerHandler.prototype.createSample = function(svg, width, height) {
       this.resetPos();
 
       svg.append("path")
@@ -606,8 +606,9 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /** @summary Change exclusion attributes */
-   TAttLineHandler.prototype.ChangeExcl = function(side, width) {
-      if (width !== undefined) this.excl_width = width;
+   TAttLineHandler.prototype.changeExcl = function(side, width) {
+      if (width !== undefined)
+         this.excl_width = width;
       if (side !== undefined) {
          this.excl_side = side;
          if ((this.excl_width === 0) && (this.excl_side !== 0)) this.excl_width = 20;
@@ -641,7 +642,7 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /**@summary Create sample element inside primitive SVG - used in context menu */
-   TAttLineHandler.prototype.CreateSample = function(svg, width, height) {
+   TAttLineHandler.prototype.createSample = function(svg, width, height) {
       svg.append("path")
          .attr("d", "M0," + height / 2 + "h" + width)
          .call(this.func);
@@ -690,7 +691,7 @@ JSROOT.define(['d3'], (d3) => {
    TAttFillHandler.prototype.apply = function(selection) {
       this.used = true;
 
-      selection.style('fill', this.fillcolor());
+      selection.style('fill', this.getFillColor());
 
       if ('opacity' in this)
          selection.style('opacity', this.opacity);
@@ -700,23 +701,23 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /** @summary Returns fill color (or pattern url) */
-   TAttFillHandler.prototype.fillcolor = function() { return this.pattern_url || this.color; }
+   TAttFillHandler.prototype.getFillColor = function() { return this.pattern_url || this.color; }
 
    /** @summary Returns fill color without pattern url.
     * @desc If empty, alternative color will be provided
     * @param {string} [altern] - alternative color which returned when fill color not exists
     * @private */
-   TAttFillHandler.prototype.fillcoloralt = function(altern) { return this.color && (this.color != "none") ? this.color : altern; }
+   TAttFillHandler.prototype.getFillColorAlt = function(altern) { return this.color && (this.color != "none") ? this.color : altern; }
 
    /** @summary Returns true if color not specified or fill style not specified */
    TAttFillHandler.prototype.empty = function() {
-      let fill = this.fillcolor();
+      let fill = this.getFillColor();
       return !fill || (fill == 'none');
    }
 
    /** @summary Set solid fill color as fill pattern
      * @param {string} col - solid color */
-   TAttFillHandler.prototype.SetSolidColor = function(col) {
+   TAttFillHandler.prototype.setSolidColor = function(col) {
       delete this.pattern_url;
       this.color = col;
       this.pattern = 1001;
@@ -933,7 +934,7 @@ JSROOT.define(['d3'], (d3) => {
 
    /** @summary Create sample of fill pattern inside SVG
     * @private */
-   TAttFillHandler.prototype.CreateSample = function(sample_svg, width, height) {
+   TAttFillHandler.prototype.createSample = function(sample_svg, width, height) {
 
       // we need to create extra handle to change
       let sample = new TAttFillHandler({ svg: sample_svg, pattern: this.pattern, color: this.color, color_as_svg: true });
@@ -1131,7 +1132,7 @@ JSROOT.define(['d3'], (d3) => {
 
    /** @summary Function used to provide svg:path for the smoothed curves.
      * @desc reuse code from d3.js. Used in TH1, TF1 and TGraph painters
-     * kind should contain "bezier" or "line".
+     * @param {string} kind  should contain "bezier" or "line".
      * If first symbol "L", then it used to continue drawing
      * @private */
    jsrp.buildSvgPath = function(kind, bins, height, ndig) {
