@@ -3154,13 +3154,13 @@ JSROOT.define(['d3'], (d3) => {
      * @private */
    jsrp.selectActivePad = function(args) {
       if (args.active) {
-         if (this.$active_pp && (typeof this.$active_pp.SetActive == 'function'))
-            this.$active_pp.SetActive(false);
+         let fp = this.$active_pp ? this.$active_pp.getFramePainter() : null;
+         if (fp) fp.setFrameActive(false);
 
          this.$active_pp = args.pp;
 
-         if (this.$active_pp && (typeof this.$active_pp.SetActive == 'function'))
-            this.$active_pp.SetActive(true);
+         fp = this.$active_pp ? this.$active_pp.getFramePainter() : null;
+         if (fp) fp.setFrameActive(true);
       } else if (this.$active_pp === args.pp) {
          delete this.$active_pp;
       }

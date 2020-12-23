@@ -188,13 +188,6 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       }
    }
 
-   /** @summary Set frame activity flag
-    * @private */
-   JSROOT.v7.RFramePainter.prototype.SetActive = function(on) {
-      if (this.control)
-         this.control.enableKeys = on && JSROOT.key_handling;
-   }
-
    /** @summary call 3D rendering of the histogram drawing
      * @desc tmout specified delay, after which actual rendering will be invoked
      * Timeout used to avoid multiple rendering of the picture when several 3D drawings

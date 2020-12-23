@@ -942,8 +942,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    /** @summary Set active flag for frame - can block some events
     * @private */
-   TFramePainter.prototype.SetActive = function(/* on */) {
-      // do nothing here - key handler is handled differently
+   TFramePainter.prototype.setFrameActive = function(on) {
+      // used only in 3D mode where control is used
+      if (this.control)
+         this.control.enableKeys = on && JSROOT.key_handling;
    }
 
    TFramePainter.prototype.Shrink = function(shrink_left, shrink_right) {
@@ -2131,13 +2133,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       jsrp.selectActivePad({ pp: this, active: true });
 
       if (canp) canp.producePadEvent("select", this, _painter, pos, _place);
-   }
-
-   /** @summary Called by framework when pad is supposed to be active and get focus
-    * @private */
-   TPadPainter.prototype.SetActive = function(on) {
-      let fp = this.getFramePainter();
-      if (fp && (typeof fp.SetActive == 'function')) fp.SetActive(on);
    }
 
    /** @summary Draw pad active border

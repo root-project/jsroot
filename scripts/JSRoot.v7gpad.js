@@ -1491,8 +1491,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    /** @summary Set active flag for frame - can block some events
     * @private */
-   RFramePainter.prototype.SetActive = function(/*on*/) {
-      // do nothing here - key handler is handled differently
+   RFramePainter.prototype.setFrameActive = function(on) {
+      // used only in 3D mode
+      if (this.control)
+         this.control.enableKeys = on && JSROOT.key_handling;
    }
 
    RFramePainter.prototype.Shrink = function(shrink_left, shrink_right) {
@@ -2559,13 +2561,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       jsrp.selectActivePad({ pp: this, active: true });
 
       canp.producePadEvent("select", this, _painter, pos, _place);
-   }
-
-   /** @summary Called by framework when pad is supposed to be active and get focus
-    * @private */
-   RPadPainter.prototype.SetActive = function(on) {
-      let fp = this.getFramePainter();
-      if (fp && (typeof fp.SetActive == 'function')) fp.SetActive(on);
    }
 
    /** @summary Create SVG element for the canvas */
