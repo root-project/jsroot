@@ -1886,7 +1886,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    /** @summary Returns histogram axis
      * @prviate */
-   THistPainter.prototype.GetAxis = function(name) {
+   THistPainter.prototype.getAxis = function(name) {
       let histo = this.getObject();
       if (histo)
          switch(name) {
@@ -2294,7 +2294,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       // artifically add y range to display axes
       if (this.ymin === this.ymax) this.ymax += 1;
 
-      fp.SetAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, 0, 0);
+      fp.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, 0, 0);
       fp.CreateXY({ ndim: this.Dimension(),
                     check_pad_range: this.check_pad_range,
                     zoom_ymin: this.zoom_ymin,
@@ -2445,7 +2445,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       let indx = 0,
           main = this.getFramePainter(),
           nbin = this['nbins'+axis] || 0,
-          taxis = this.GetAxis(axis),
+          taxis = this.getAxis(axis),
           min = main ? main['zoom_' + axis + 'min'] : 0,
           max = main ? main['zoom_' + axis + 'max'] : 0;
 
@@ -5143,7 +5143,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           frame_h = main.getFrameHeight(),
           levels = this.GetContourLevels(),
           palette = this.getHistPalette(),
-          func = main.GetProjectionFunc();
+          func = main.getProjectionFunc();
 
       function BuildPath(xp,yp,iminus,iplus,do_close) {
          let cmd = "", last, pnt, first, isany, matched;

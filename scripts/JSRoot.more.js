@@ -1800,9 +1800,9 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       let canp = this.getCanvPainter(), fp = this.getFramePainter();
 
       if ((method.fName == 'RemovePoint') || (method.fName == 'InsertPoint')) {
-         let pnt = fp ? fp.GetLastEventPos() : null;
+         let pnt = fp ? fp.getLastEventPos() : null;
 
-         if (!canp || canp._readonly || !fp || !pnt) return true; // ignore function
+         if (!canp || canp._readonly || !pnt) return true; // ignore function
 
          let hint = this.ExtractTooltip(pnt);
 
@@ -3762,7 +3762,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       if (url && this.isMainPainter() && is_buf && fp)
          return this.drawColorPalette(this.options.Zscale, true).then(() => {
-            fp.SetAxesRanges(JSROOT.create("TAxis"), 0, 1, JSROOT.create("TAxis"), 0, 1, null, 0, 0);
+            fp.setAxesRanges(JSROOT.create("TAxis"), 0, 1, JSROOT.create("TAxis"), 0, 1, null, 0, 0);
             fp.CreateXY({ ndim: 2, check_pad_range: false });
             fp.AddInteractive();
             return this;

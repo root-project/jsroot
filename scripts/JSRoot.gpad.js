@@ -949,21 +949,24 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.control.enableKeys = this.enabledKeys;
    }
 
-   TFramePainter.prototype.Shrink = function(shrink_left, shrink_right) {
+   /** @summary Shrink frame size
+     * @private */
+   TFramePainter.prototype.shrinkFrame = function(shrink_left, shrink_right) {
       this.fX1NDC += shrink_left;
       this.fX2NDC -= shrink_right;
    }
 
    /** @summary Set position of last context menu event */
-   TFramePainter.prototype.SetLastEventPos = function(pnt) {
+   TFramePainter.prototype.setLastEventPos = function(pnt) {
       this.fLastEventPnt = pnt;
    }
 
-   /** @summary Return position of last event */
-   TFramePainter.prototype.GetLastEventPos = function() { return this.fLastEventPnt; }
+   /** @summary Return position of last event
+     * @private */
+   TFramePainter.prototype.getLastEventPos = function() { return this.fLastEventPnt; }
 
-   /** @summary  Returns coordinates transformation func */
-   TFramePainter.prototype.GetProjectionFunc = function() {
+   /** @summary Returns coordinates transformation func */
+   TFramePainter.prototype.getProjectionFunc = function() {
       switch (this.projection) {
          case 1: return ProjectAitoff2xy;
          case 2: return ProjectMercator2xy;
@@ -973,7 +976,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Rcalculate frame ranges using specified projection functions */
-   TFramePainter.prototype.RecalculateRange = function(Proj) {
+   TFramePainter.prototype.recalculateRange = function(Proj) {
       this.projection = Proj || 0;
 
       if ((this.projection == 2) && ((this.scale_ymin <= -90 || this.scale_ymax >=90))) {
@@ -981,7 +984,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.projection = 0;
       }
 
-      let func = this.GetProjectionFunc();
+      let func = this.getProjectionFunc();
       if (!func) return;
 
       let pnts = [ func(this.scale_xmin, this.scale_ymin),
@@ -1013,8 +1016,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
    }
 
-   /** @summary Configure axes ranges */
-   TFramePainter.prototype.SetAxesRanges = function(xaxis, xmin, xmax, yaxis, ymin, ymax, zaxis, zmin, zmax) {
+   /** @summary Configure frame axes ranges */
+   TFramePainter.prototype.setAxesRanges = function(xaxis, xmin, xmax, yaxis, ymin, ymax, zaxis, zmin, zmax) {
       this.ranges_set = true;
 
       this.xaxis = xaxis;
@@ -1031,7 +1034,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Retuns axis object */
-   TFramePainter.prototype.GetAxis = function(name) {
+   TFramePainter.prototype.getAxis = function(name) {
       switch(name) {
          case "x": return this.xaxis;
          case "y": return this.yaxis;
@@ -1041,7 +1044,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    TFramePainter.prototype.CheckAxisZoom = function(name) {
-      let axis = this.GetAxis(name);
+      let axis = this.getAxis(name);
       if (axis && axis.TestBit(JSROOT.EAxisBits.kAxisRange)) {
          if ((axis.fFirst !== axis.fLast) && ((axis.fFirst > 1) || (axis.fLast < axis.fNbins))) {
             this['zoom_' + name + 'min'] = axis.fFirst > 1 ? axis.GetBinLowEdge(axis.fFirst) : axis.fXmin;
@@ -1169,7 +1172,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
 
       // projection should be assigned
-      this.RecalculateRange(opts.Proj);
+      this.recalculateRange(opts.Proj);
 
       this.x_handle = new TAxisPainter(this.getDom(), this.xaxis, true);
       this.x_handle.setPadName(this.getPadName());
@@ -1255,7 +1258,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             else
                gridx += "M"+this.x_handle.ticks[n]+",0v"+h;
 
-         let colid = (JSROOT.gStyle.fGridColor > 0) ? JSROOT.gStyle.fGridColor : (this.GetAxis("x") ? this.GetAxis("x").fAxisColor : 1),
+         let colid = (JSROOT.gStyle.fGridColor > 0) ? JSROOT.gStyle.fGridColor : (this.getAxis("x") ? this.getAxis("x").fAxisColor : 1),
              grid_color = this.getColor(colid) || "black";
 
          if (gridx.length > 0)
@@ -1276,7 +1279,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             else
                gridy += "M0,"+this.y_handle.ticks[n]+"h"+w;
 
-         let colid = (JSROOT.gStyle.fGridColor > 0) ? JSROOT.gStyle.fGridColor : (this.GetAxis("y") ? this.GetAxis("y").fAxisColor : 1),
+         let colid = (JSROOT.gStyle.fGridColor > 0) ? JSROOT.gStyle.fGridColor : (this.getAxis("y") ? this.getAxis("y").fAxisColor : 1),
              grid_color = this.getColor(colid) || "black";
 
          if (gridy.length > 0)
@@ -1361,7 +1364,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                }
 
                if (shrink != 0) {
-                  this.Shrink(shrink, 0);
+                  this.shrinkFrame(shrink, 0);
                   this.redraw();
                   return this.DrawAxes(true);
                }
@@ -1917,7 +1920,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    * @desc method called normally when mouse enter main object element
    * @private */
    TFramePainter.prototype.ShowAxisStatus = function(axis_name, evnt) {
-      let taxis = this.GetAxis(axis_name), hint_name = axis_name, hint_title = "TAxis",
+      let taxis = this.getAxis(axis_name), hint_name = axis_name, hint_title = "TAxis",
           m = d3.pointer(evnt, this.getFrameSvg().node()), id = (axis_name=="x") ? 0 : 1;
 
       if (taxis) { hint_name = taxis.fName; hint_title = taxis.fTitle || ("TAxis object for " + axis_name); }
@@ -2676,7 +2679,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          evnt.preventDefault();  // disable browser context menu
 
          let fp = this.getFramePainter();
-         if (fp) fp.SetLastEventPos();
+         if (fp) fp.setLastEventPos();
       }
 
       jsrp.createMenu(this, evnt).then(menu => {

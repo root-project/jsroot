@@ -1498,17 +1498,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.control.enableKeys = this.enabledKeys;
    }
 
-   RFramePainter.prototype.Shrink = function(shrink_left, shrink_right) {
-      this.fX1NDC += shrink_left;
-      this.fX2NDC -= shrink_right;
-   }
-
-   RFramePainter.prototype.SetLastEventPos = function(pnt) {
+   RFramePainter.prototype.setLastEventPos = function(pnt) {
       // set position of last context menu event, can be
       this.fLastEventPnt = pnt;
    }
 
-   RFramePainter.prototype.GetLastEventPos = function() {
+   RFramePainter.prototype.getLastEventPos = function() {
       // return position of last event
       return this.fLastEventPnt;
    }
@@ -1530,7 +1525,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Returns coordinates transformation func */
-   RFramePainter.prototype.GetProjectionFunc = function() {
+   RFramePainter.prototype.getProjectionFunc = function() {
       switch (this.projection) {
          case 1: return ProjectAitoff2xy;
          case 2: return ProjectMercator2xy;
@@ -1541,7 +1536,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    /** @summary Rcalculate frame ranges using specified projection functions
      * @desc Not yet used in v7 */
-   RFramePainter.prototype.RecalculateRange = function(Proj) {
+   RFramePainter.prototype.recalculateRange = function(Proj) {
       this.projection = Proj || 0;
 
       if ((this.projection == 2) && ((this.scale_ymin <= -90 || this.scale_ymax >=90))) {
@@ -1549,7 +1544,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.projection = 0;
       }
 
-      let func = this.GetProjectionFunc();
+      let func = this.getProjectionFunc();
       if (!func) return;
 
       let pnts = [ func(this.scale_xmin, this.scale_ymin),
@@ -1644,7 +1639,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Set axes ranges for drawing, check configured attributes if range already specified */
-   RFramePainter.prototype.SetAxesRanges = function(xaxis, xmin, xmax, yaxis, ymin, ymax, zaxis, zmin, zmax) {
+   RFramePainter.prototype.setAxesRanges = function(xaxis, xmin, xmax, yaxis, ymin, ymax, zaxis, zmin, zmax) {
       if (this.axes_drawn) return;
 
       this.xaxis = xaxis;
@@ -1760,7 +1755,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.scale_ymax = this.zoom_ymax;
       }
 
-      this.RecalculateRange(0);
+      this.recalculateRange(0);
 
       this.x_handle = new RAxisPainter(this.getDom(), this, this.xaxis, "x_");
       this.x_handle.setPadName(this.getPadName());
@@ -2998,7 +2993,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          evnt.preventDefault();  // disable browser context menu
 
          let fp = this.getFramePainter();
-         if (fp) fp.SetLastEventPos();
+         if (fp) fp.setLastEventPos();
       }
 
       jsrp.createMenu(this, evnt).then(menu => {

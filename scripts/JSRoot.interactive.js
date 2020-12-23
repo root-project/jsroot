@@ -1292,7 +1292,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
                if (pnt) frame_corner = (pnt.x>0) && (pnt.x<20) && (pnt.y>0) && (pnt.y<20);
 
-               fp.SetLastEventPos(pnt);
+               fp.setLastEventPos(pnt);
             } else if (!this.v7_frame && ((kind=="x") || (kind=="y") || (kind=="z"))) {
                exec_painter = this.getMainPainter(); // histogram painter delivers items for axis menu
             }

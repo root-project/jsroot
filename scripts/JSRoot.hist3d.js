@@ -175,7 +175,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
             if ((axis_name==="z") && zoom_mesh.use_y_for_z) axis_name = "y";
 
-            let taxis = axis_painter.GetAxis(axis_name);
+            let taxis = axis_painter.getAxis(axis_name);
 
             let hint = { name: axis_name,
                          title: "TAxis",
@@ -1452,7 +1452,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
          if (is_main) {
             main.create3DScene(this.options.Render3D);
-            main.SetAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, 0, 0);
+            main.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, 0, 0);
             main.Set3DOptions(this.options);
             main.DrawXYZ(main.toplevel, { use_y_for_z: true, zmult: 1.1, zoom: JSROOT.settings.Zooming, ndim: 1 });
          }
@@ -1505,7 +1505,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
          if (is_main) {
             main.create3DScene(this.options.Render3D);
-            main.SetAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, this.zmin, this.zmax);
+            main.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, this.zmin, this.zmax);
             main.Set3DOptions(this.options);
             main.DrawXYZ(main.toplevel, { zmult: zmult, zoom: JSROOT.settings.Zooming, ndim: 2 });
          }
@@ -2852,7 +2852,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       } else {
 
          main.create3DScene(this.options.Render3D);
-         main.SetAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, this.zmin, this.zmax);
+         main.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, this.zmin, this.zmax);
          main.Set3DOptions(this.options);
          main.DrawXYZ(main.toplevel, { zoom: JSROOT.settings.Zooming, ndim: 3 });
          this.Draw3DBins();

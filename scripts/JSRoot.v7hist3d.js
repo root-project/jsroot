@@ -1367,7 +1367,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
 
       if (is_main) {
          main.create3DScene(this.options.Render3D);
-         main.SetAxesRanges(this.GetAxis("x"), this.xmin, this.xmax, null, this.ymin, this.ymax, null, 0, 0);
+         main.setAxesRanges(this.getAxis("x"), this.xmin, this.xmax, null, this.ymin, this.ymax, null, 0, 0);
          main.Set3DOptions(this.options);
          main.DrawXYZ(main.toplevel, { use_y_for_z: true, zmult: 1.1, zoom: JSROOT.settings.Zooming, ndim: 1 });
       }
@@ -1416,7 +1416,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
 
       if (is_main) {
          main.create3DScene(this.options.Render3D);
-         main.SetAxesRanges(this.GetAxis("x"), this.xmin, this.xmax, this.GetAxis("y"), this.ymin, this.ymax, null, this.zmin, this.zmax);
+         main.setAxesRanges(this.getAxis("x"), this.xmin, this.xmax, this.getAxis("y"), this.ymin, this.ymax, null, this.zmin, this.zmax);
          main.Set3DOptions(this.options);
          main.DrawXYZ(main.toplevel, { zmult: zmult, zoom: JSROOT.settings.Zooming, ndim: 2 });
       }
@@ -2281,9 +2281,9 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
 
    RH3Painter.prototype.CountStat = function() {
       let histo = this.GetHisto(),
-          xaxis = this.GetAxis("x"),
-          yaxis = this.GetAxis("y"),
-          zaxis = this.GetAxis("z"),
+          xaxis = this.getAxis("x"),
+          yaxis = this.getAxis("y"),
+          zaxis = this.getAxis("z"),
           stat_sum0 = 0, stat_sumx1 = 0, stat_sumy1 = 0,
           stat_sumz1 = 0, stat_sumx2 = 0, stat_sumy2 = 0, stat_sumz2 = 0,
           i1 = this.GetSelectIndex("x", "left"),
@@ -2400,7 +2400,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
 
    RH3Painter.prototype.GetBinTips = function (ix, iy, iz) {
       let lines = [], pmain = this.getFramePainter(), histo = this.GetHisto(),
-          xaxis = this.GetAxis("x"), yaxis = this.GetAxis("y"), zaxis = this.GetAxis("z"),
+          xaxis = this.getAxis("x"), yaxis = this.getAxis("y"), zaxis = this.getAxis("z"),
           dx = 1, dy = 1, dz = 1;
 
       if (this.IsDisplayItem()) {
@@ -2460,7 +2460,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
 
       let pnts = new jsrp.PointsCreator(numpixels, main.webgl, main.size_xy3d/200),
           bins = new Int32Array(numpixels), nbin = 0,
-          xaxis = this.GetAxis("x"), yaxis = this.GetAxis("y"), zaxis = this.GetAxis("z");
+          xaxis = this.getAxis("x"), yaxis = this.getAxis("y"), zaxis = this.getAxis("z");
 
       for (i = i1; i < i2; i += di) {
          for (j = j1; j < j2; j += dj) {
@@ -2504,12 +2504,12 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
              main = p.getFramePainter(),
              tip = p.Get3DToolTip(this.bins[indx]);
 
-         tip.x1 = main.grx(p.GetAxis("x").GetBinLowEdge(tip.ix));
-         tip.x2 = main.grx(p.GetAxis("x").GetBinLowEdge(tip.ix+di));
-         tip.y1 = main.gry(p.GetAxis("y").GetBinLowEdge(tip.iy));
-         tip.y2 = main.gry(p.GetAxis("y").GetBinLowEdge(tip.iy+dj));
-         tip.z1 = main.grz(p.GetAxis("z").GetBinLowEdge(tip.iz));
-         tip.z2 = main.grz(p.GetAxis("z").GetBinLowEdge(tip.iz+dk));
+         tip.x1 = main.grx(p.getAxis("x").GetBinLowEdge(tip.ix));
+         tip.x2 = main.grx(p.getAxis("x").GetBinLowEdge(tip.ix+di));
+         tip.y1 = main.gry(p.getAxis("y").GetBinLowEdge(tip.iy));
+         tip.y2 = main.gry(p.getAxis("y").GetBinLowEdge(tip.iy+dj));
+         tip.z1 = main.grz(p.getAxis("z").GetBinLowEdge(tip.iz));
+         tip.z2 = main.grz(p.getAxis("z").GetBinLowEdge(tip.iz+dk));
          tip.color = this.tip_color;
          tip.opacity = 0.3;
 
@@ -2618,7 +2618,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
 
       if ((i2<=i1) || (j2<=j1) || (k2<=k1)) return;
 
-      let xaxis = this.GetAxis("x"), yaxis = this.GetAxis("y"), zaxis = this.GetAxis("z"),
+      let xaxis = this.getAxis("x"), yaxis = this.getAxis("y"), zaxis = this.getAxis("z"),
           scalex = (main.grx(xaxis.GetBinCoord(i2)) - main.grx(xaxis.GetBinCoord(i1))) / (i2 - i1) * di,
           scaley = (main.gry(yaxis.GetBinCoord(j2)) - main.gry(yaxis.GetBinCoord(j1))) / (j2 - j1) * dj,
           scalez = (main.grz(zaxis.GetBinCoord(k2)) - main.grz(zaxis.GetBinCoord(k1))) / (k2 - k1) * dk;
@@ -2692,9 +2692,9 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       }
 
       let binx, grx, biny, gry, binz, grz;
-      xaxis = this.GetAxis("x"),
-      yaxis = this.GetAxis("y"),
-      zaxis = this.GetAxis("z");
+      xaxis = this.getAxis("x"),
+      yaxis = this.getAxis("y"),
+      zaxis = this.getAxis("z");
 
       for (i = i1; i < i2; i += di) {
          binx = xaxis.GetBinCenter(i+1); grx = main.grx(binx);
@@ -2802,9 +2802,9 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
             let p = this.painter,
                 main = p.getFramePainter(),
                 tip = p.Get3DToolTip(this.bins[indx]),
-                grx = main.grx(p.GetAxis("x").GetBinCoord(tip.ix-0.5)),
-                gry = main.gry(p.GetAxis("y").GetBinCoord(tip.iy-0.5)),
-                grz = main.grz(p.GetAxis("z").GetBinCoord(tip.iz-0.5)),
+                grx = main.grx(p.getAxis("x").GetBinCoord(tip.ix-0.5)),
+                gry = main.gry(p.getAxis("y").GetBinCoord(tip.iy-0.5)),
+                grz = main.grz(p.getAxis("z").GetBinCoord(tip.iz-0.5)),
                 wei = this.use_scale ? Math.pow(Math.abs(tip.value*this.use_scale), 0.3333) : 1;
 
             tip.x1 = grx - this.scalex*wei; tip.x2 = grx + this.scalex*wei;
@@ -2848,7 +2848,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       }
 
       main.create3DScene(this.options.Render3D);
-      main.SetAxesRanges(this.GetAxis("x"), this.xmin, this.xmax, this.GetAxis("y"), this.ymin, this.ymax, this.GetAxis("z"), this.zmin, this.zmax);
+      main.setAxesRanges(this.getAxis("x"), this.xmin, this.xmax, this.getAxis("y"), this.ymin, this.ymax, this.getAxis("z"), this.zmin, this.zmax);
       main.Set3DOptions(this.options);
       main.DrawXYZ(main.toplevel, { zoom: JSROOT.settings.Zooming, ndim: 3 });
 
@@ -2922,20 +2922,20 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       if ((kleft === kright-1) && (kleft > k1+1) && (kright < k2-1)) { kleft--; kright++; }
 
       if ((ileft > i1 || iright < i2) && (ileft < iright - 1)) {
-         xmin = this.GetAxis("x").GetBinLowEdge(ileft+1);
-         xmax = this.GetAxis("x").GetBinLowEdge(iright+1);
+         xmin = this.getAxis("x").GetBinLowEdge(ileft+1);
+         xmax = this.getAxis("x").GetBinLowEdge(iright+1);
          isany = true;
       }
 
       if ((jleft > j1 || jright < j2) && (jleft < jright - 1)) {
-         ymin = this.GetAxis("y").GetBinLowEdge(jleft+1);
-         ymax = this.GetAxis("y").GetBinLowEdge(jright+1);
+         ymin = this.getAxis("y").GetBinLowEdge(jleft+1);
+         ymax = this.getAxis("y").GetBinLowEdge(jright+1);
          isany = true;
       }
 
       if ((kleft > k1 || kright < k2) && (kleft < kright - 1)) {
-         zmin = this.GetAxis("z").GetBinLowEdge(kleft+1);
-         zmax = this.GetAxis("z").GetBinLowEdge(kright+1);
+         zmin = this.getAxis("z").GetBinLowEdge(kleft+1);
+         zmax = this.getAxis("z").GetBinLowEdge(kright+1);
          isany = true;
       }
 

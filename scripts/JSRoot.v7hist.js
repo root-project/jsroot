@@ -213,7 +213,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       main.xmin = main.xmax = 0;
       main.ymin = main.ymax = 0;
       main.zmin = main.zmax = 0;
-      main.SetAxesRanges(this.GetAxis("x"), this.xmin, this.xmax, this.GetAxis("y"), this.ymin, this.ymax, this.GetAxis("z"), this.zmin, this.zmax);
+      main.setAxesRanges(this.getAxis("x"), this.xmin, this.xmax, this.getAxis("y"), this.ymin, this.ymax, this.getAxis("z"), this.zmin, this.zmax);
       return main.DrawAxes();
    }
 
@@ -271,7 +271,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       return true;
    }
 
-   RHistPainter.prototype.GetAxis = function(name) {
+   RHistPainter.prototype.getAxis = function(name) {
       let histo = this.GetHisto(), obj = this.getObject(), axis = null;
 
       if (obj && obj.fAxes) {
@@ -305,19 +305,19 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
       this.nbinsx = this.nbinsy = this.nbinsz = 0;
 
-      let axis = this.GetAxis("x");
+      let axis = this.getAxis("x");
       this.nbinsx = axis.GetNumBins();
       this.xmin = axis.min;
       this.xmax = axis.max;
 
       if (ndim < 2) return;
-      axis = this.GetAxis("y");
+      axis = this.getAxis("y");
       this.nbinsy = axis.GetNumBins();
       this.ymin = axis.min;
       this.ymax = axis.max;
 
       if (ndim < 3) return;
-      axis = this.GetAxis("z");
+      axis = this.getAxis("z");
       this.nbinsz = axis.GetNumBins();
       this.zmin = axis.min;
       this.zmax = axis.max;
@@ -399,7 +399,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       // be aware - here indexes starts from 0
       let indx = 0,
           main = this.getFramePainter(),
-          taxis = this.GetAxis(axis),
+          taxis = this.getAxis(axis),
           nbins = this['nbins'+axis] || 0,
           min = main ? main['zoom_' + axis + 'min'] : 0,
           max = main ? main['zoom_' + axis + 'max'] : 0;
@@ -712,7 +712,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       if (args.right_extra === undefined) args.right_extra = args.extra;
       if (args.middle === undefined) args.middle = 0;
 
-      let histo = this.GetHisto(), xaxis = this.GetAxis("x"), yaxis = this.GetAxis("y"),
+      let histo = this.GetHisto(), xaxis = this.getAxis("x"), yaxis = this.getAxis("y"),
           pmain = this.getFramePainter(),
           hdim = this.Dimension(),
           i, j, x, y, binz, binarea,
@@ -937,7 +937,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
    RH1Painter.prototype.CountStat = function(cond) {
       let profile = this.IsRProfile(),
-          histo = this.GetHisto(), xaxis = this.GetAxis("x"),
+          histo = this.GetHisto(), xaxis = this.getAxis("x"),
           left = this.GetSelectIndex("x", "left"),
           right = this.GetSelectIndex("x", "right"),
           stat_sumw = 0, stat_sumwx = 0, stat_sumwx2 = 0, stat_sumwy = 0, stat_sumwy2 = 0,
@@ -1064,7 +1064,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
       let left = handle.i1, right = handle.i2, di = handle.stepi,
           pmain = this.getFramePainter(),
-          histo = this.GetHisto(), xaxis = this.GetAxis("x"),
+          histo = this.GetHisto(), xaxis = this.getAxis("x"),
           i, x1, x2, grx1, grx2, y, gry1, gry2, w,
           bars = "", barsl = "", barsr = "";
 
@@ -1133,7 +1133,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
       let left = handle.i1, right = handle.i2, di = handle.stepi,
           pmain = this.getFramePainter(),
-          histo = this.GetHisto(), xaxis = this.GetAxis("x"),
+          histo = this.GetHisto(), xaxis = this.getAxis("x"),
           i, x, grx, y, yerr, gry1, gry2,
           bins1 = [], bins2 = [];
 
@@ -1194,7 +1194,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
           right = handle.i2,
           di = handle.stepi,
           pmain = this.getFramePainter(),
-          histo = this.GetHisto(), xaxis = this.GetAxis("x"),
+          histo = this.GetHisto(), xaxis = this.getAxis("x"),
           res = "", lastbin = false,
           startx, currx, curry, x, grx, y, gry, curry_min, curry_max, prevy, prevx, i, bestimin, bestimax,
           exclude_zero = !options.Zero,
@@ -1446,7 +1446,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
    RHistPainter.prototype.GetAxisBinTip = function(name, bin, step) {
       let pmain = this.getFramePainter(),
           handle = pmain[name+"_handle"],
-          axis = this.GetAxis(name),
+          axis = this.getAxis(name),
           x1 = axis.GetBinCoord(bin);
 
 
@@ -1467,7 +1467,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
           name = this.getObjectHint(),
           pmain = this.getFramePainter(),
           histo = this.GetHisto(),
-          xaxis = this.GetAxis("x"),
+          xaxis = this.getAxis("x"),
           di = this.IsDisplayItem() ? histo.stepx : 1,
           x1 = xaxis.GetBinCoord(bin),
           x2 = xaxis.GetBinCoord(bin+di),
@@ -1507,7 +1507,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       let pmain = this.getFramePainter(),
           width = pmain.getFrameWidth(),
           height = pmain.getFrameHeight(),
-          histo = this.GetHisto(), xaxis = this.GetAxis("x"),
+          histo = this.GetHisto(), xaxis = this.getAxis("x"),
           findbin = null, show_rect = true,
           grx1, midx, grx2, gry1, midy, gry2, gapx = 2,
           left = this.GetSelectIndex("x", "left", -1),
@@ -1754,7 +1754,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
    RH1Painter.prototype.AutoZoom = function() {
       let left = this.GetSelectIndex("x", "left", -1),
           right = this.GetSelectIndex("x", "right", 1),
-          dist = right - left, histo = this.GetHisto(), xaxis = this.GetAxis("x");
+          dist = right - left, histo = this.GetHisto(), xaxis = this.getAxis("x");
 
       if (dist == 0) return;
 
@@ -1778,7 +1778,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
    /** @summary Checks if it makes sense to zoom inside specified axis range */
    RH1Painter.prototype.canZoomInside = function(axis,min,max) {
-      let xaxis = this.GetAxis("x");
+      let xaxis = this.getAxis("x");
 
       if ((axis=="x") && (xaxis.FindBin(max,0.5) - xaxis.FindBin(min,0) > 1)) return true;
 
@@ -2010,7 +2010,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
           i2 = this.GetSelectIndex("x", "right", 1),
           j1 = this.GetSelectIndex("y", "left", -1),
           j2 = this.GetSelectIndex("y", "right", 1),
-          i,j, histo = this.GetHisto(), xaxis = this.GetAxis("x"), yaxis = this.GetAxis("y");
+          i,j, histo = this.GetHisto(), xaxis = this.getAxis("x"), yaxis = this.getAxis("y");
 
       if ((i1 == i2) || (j1 == j2)) return;
 
@@ -2124,7 +2124,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
           xright = this.GetSelectIndex("x", "right"),
           yleft = this.GetSelectIndex("y", "left"),
           yright = this.GetSelectIndex("y", "right"),
-          xi, yi, xaxis = this.GetAxis("x"), yaxis = this.GetAxis("y");
+          xi, yi, xaxis = this.getAxis("x"), yaxis = this.getAxis("y");
 
       // TODO: account underflow/overflow bins, now stored in different array and only by histogram itself
       for (xi = 1; xi <= this.nbinsx; ++xi) {
@@ -2497,7 +2497,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
           main = this.getFramePainter(),
           palette = main.getHistPalette(),
           levels = palette.GetContour(),
-          func = main.GetProjectionFunc();
+          func = main.getProjectionFunc();
 
       let BuildPath = (xp,yp,iminus,iplus,do_close) => {
          let cmd = "", last, pnt, first, isany;
@@ -2955,7 +2955,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
    }
 
    RH2Painter.prototype.DrawCandle = function(w) {
-      let histo = this.GetHisto(), yaxis = this.GetAxis("y"),
+      let histo = this.GetHisto(), yaxis = this.getAxis("y"),
           handle = this.PrepareDraw(),
           pmain = this.getFramePainter(), // used for axis values conversions
           i, j, y, sum1, cont, center, counter, integral, pnt,
@@ -3272,7 +3272,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
    }
 
    RH2Painter.prototype.GetCandleTips = function(p) {
-      let lines = [], main = this.getFramePainter(), xaxis = this.GetAxis("y");
+      let lines = [], main = this.getFramePainter(), xaxis = this.getAxis("y");
 
       lines.push(this.getObjectHint() || "histo");
 
@@ -3557,7 +3557,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
    /** @summary Checks if it makes sense to zoom inside specified axis range */
    RH2Painter.prototype.canZoomInside = function(axis,min,max) {
       if (axis=="z") return true;
-      let obj = this.GetAxis(axis);
+      let obj = this.getAxis(axis);
       return (obj.FindBin(max,0.5) - obj.FindBin(min,0) > 1);
    }
 
