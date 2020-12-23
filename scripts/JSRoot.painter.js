@@ -3379,7 +3379,7 @@ JSROOT.define(['d3'], (d3) => {
      * @param {string} [args.opt] - list of supported draw options (separated with semicolon) like "col;scat;"
      * @param {string} [args.icon] - icon name shown for the class in hierarchy browser
      * @param {string} [args.draw_field] - draw only data member from object, like fHistogram
-     * @private */
+     * @protected */
    jsrp.addDrawFunc = function(args) {
       drawFuncs.lst.push(args);
       return args;
@@ -3440,8 +3440,8 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /** @summary Scan streamer infos for derived classes
-    * @desc Assign draw functions for such derived classes
-    * @private */
+     * @desc Assign draw functions for such derived classes
+     * @private */
    jsrp.addStreamerInfos = function(lst) {
       if (!lst) return;
 
@@ -3531,14 +3531,9 @@ JSROOT.define(['d3'], (d3) => {
       return res;
    }
 
-   /** @summary Returns array with supported draw options for the specified kind
-    * @private */
-   jsrp.getDrawOptions = function(kind /*, selector*/) {
-      return getDrawSettings(kind).opts;
-   }
-
    /** @summary Returns true if provided object class can be drawn
-    * @private */
+     * @param {string} classname - name of class to be tested
+     * @private */
    jsrp.canDraw = function(classname) {
       return getDrawSettings("ROOT." + classname).opts !== null;
    }
@@ -3574,11 +3569,9 @@ JSROOT.define(['d3'], (d3) => {
          return JSROOT.draw(divid, obj[handle.draw_field], opt);
 
       if (!handle.func && !handle.direct) {
-         console.log('Draw object with opt', opt, type_info)
          if (opt && (opt.indexOf("same") >= 0)) {
 
-            let main_painter = JSROOT.getMainPainter(divid);
-            console.log('main_painter', !!main_painter)
+            let main_painter = jsrp.getElementMainPainter(divid);
 
             if (main_painter && (typeof main_painter.performDrop === 'function'))
                return main_painter.performDrop(obj, "", null, opt);
@@ -3732,10 +3725,10 @@ JSROOT.define(['d3'], (d3) => {
 
    /** @summary Save object, drawn in specified element, as JSON.
      * @desc Normally it is TCanvas object with list of primitives
-     * @param {string|object} divid - id of top div element or directly DOMElement
+     * @param {string|object} dom - id of top div element or directly DOMElement
      * @returns {string} produced JSON string */
-   JSROOT.drawingJSON = function(divid) {
-      let dummy = new ObjectPainter(divid);
+   JSROOT.drawingJSON = function(dom) {
+      let dummy = new ObjectPainter(dom);
       let canp = dummy.getCanvPainter();
       return canp ? canp.ProduceJSON() : "";
    }
@@ -3763,14 +3756,14 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /** @summary Create SVG image for provided object.
-    * @desc Function especially useful in Node.js environment to generate images for
-    * supported ROOT classes
-    * @param {object} args - contains different settings
-    * @param {object} args.object - object for the drawing
-    * @param {string} [args.option] - draw options
-    * @param {number} [args.width = 1200] - image width
-    * @param {number} [args.height = 800] - image height
-    * @returns {Promise} with svg code */
+     * @desc Function especially useful in Node.js environment to generate images for
+     * supported ROOT classes
+     * @param {object} args - contains different settings
+     * @param {object} args.object - object for the drawing
+     * @param {string} [args.option] - draw options
+     * @param {number} [args.width = 1200] - image width
+     * @param {number} [args.height = 800] - image height
+     * @returns {Promise} with svg code */
    JSROOT.makeSVG = function(args) {
 
       if (!args) args = {};
@@ -3829,7 +3822,7 @@ JSROOT.define(['d3'], (d3) => {
      * @param {boolean|object} arg - options on how to resize
      * @desc As first argument divid one should use same argument as for the drawing
      * As second argument, one could specify "true" value to force redrawing of
-     * the element even after minimal resize of the element
+     * the element even after minimal resize
      * Or one just supply object with exact sizes like { width:300, height:200, force:true };
      * @example
      * JSROOT.resize("drawing", { width: 500, height: 200 } );
@@ -3848,7 +3841,7 @@ JSROOT.define(['d3'], (d3) => {
    /** @summary Returns main painter object for specified HTML element - typically histogram painter
      * @param {string|object} divid - id or DOM element
      * @private */
-   JSROOT.getMainPainter = function(divid) {
+   jsrp.getElementMainPainter = function(divid) {
       let dummy = new JSROOT.ObjectPainter(divid);
       return dummy.getMainPainter(true);
    }

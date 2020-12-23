@@ -1301,7 +1301,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          if (!res.obj) return null;
 
-         let main_painter = JSROOT.getMainPainter(divid);
+         let main_painter = jsrp.getElementMainPainter(divid);
 
          if (main_painter && (typeof main_painter.performDrop === 'function'))
             return main_painter.performDrop(res.obj, itemname, res.item, opt).then(p => drop_complete(p));

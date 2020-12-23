@@ -2303,7 +2303,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
    function drawGraphPolargram(divid, polargram /*, opt*/) {
 
-      let main = JSROOT.getMainPainter(divid);
+      let main = jsrp.getElementMainPainter(divid);
       if (main) {
          if (main.getObject() === polargram) return main;
          return Promise.reject(Error("Cannot superimpose TGraphPolargram with any other drawings"));

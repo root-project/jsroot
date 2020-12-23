@@ -1353,7 +1353,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
      * @memberof JSROOT.Painter
      * @private */
    let produceLegend = (divid, opt) => {
-      let main_painter = JSROOT.getMainPainter(divid);
+      let main_painter = jsrp.getElementMainPainter(divid);
       if (!main_painter) return;
 
       let pp = main_painter.getPadPainter(),
