@@ -182,8 +182,8 @@ JSROOT.define([], () => {
    FileDumpSocket.prototype.get_file = function(res) {
       this.wait_for_file = false;
       if (!res) return;
-      if (this.receiver.ProvideData)
-         this.receiver.ProvideData(1, res, 0);
+      if (this.receiver.provideData)
+         this.receiver.provideData(1, res, 0);
       setTimeout(this.next_operation.bind(this), 10);
    }
 
@@ -210,61 +210,60 @@ JSROOT.define([], () => {
      * @desc Can be any valid JSON expression. Undefined by default.
      * @param {string} [field] - if specified and user args is object, returns correspondent object member
      * @returns user arguments object */
-   WebWindowHandle.prototype.GetUserArgs = function(field) {
-      if (field && (typeof field == 'string')) {
+   WebWindowHandle.prototype.getUserArgs = function(field) {
+      if (field && (typeof field == 'string'))
          return (this.user_args && (typeof this.user_args == 'object')) ? this.user_args[field] : undefined;
-      }
 
       return this.user_args;
    }
 
    /** @summary Set callbacks receiver.
-     * @param {object} obj - object wiith receiver functions
+     * @param {object} obj - object with receiver functions
      * @param {function} obj.OnWebsocketMsg - called when new data receieved from RWebWindow
      * @param {function} obj.OnWebsocketOpened - called when connection established
      * @param {function} obj.OnWebsocketClosed - called when connection closed */
-   WebWindowHandle.prototype.SetReceiver = function(obj) {
+   WebWindowHandle.prototype.setReceiver = function(obj) {
       this.receiver = obj;
    }
 
    /** @summary Cleanup and close connection. */
    WebWindowHandle.prototype.cleanup = function() {
       delete this.receiver;
-      this.Close(true);
+      this.close(true);
    }
 
    /** @summary Invoke method in the receiver.
     * @private */
-   WebWindowHandle.prototype.InvokeReceiver = function(brdcst, method, arg, arg2) {
+   WebWindowHandle.prototype.invokeReceiver = function(brdcst, method, arg, arg2) {
       if (this.receiver && (typeof this.receiver[method] == 'function'))
          this.receiver[method](this, arg, arg2);
 
       if (brdcst && this.channels) {
          let ks = Object.keys(this.channels);
          for (let n = 0; n < ks.length; ++n)
-            this.channels[ks[n]].InvokeReceiver(false, method, arg, arg2);
+            this.channels[ks[n]].invokeReceiver(false, method, arg, arg2);
       }
    }
 
    /** @summary Provide data for receiver. When no queue - do it directly.
     * @private */
-   WebWindowHandle.prototype.ProvideData = function(chid, _msg, _len) {
+   WebWindowHandle.prototype.provideData = function(chid, _msg, _len) {
       if (this.wait_first_recv) {
          console.log("FIRST MESSAGE", chid, _msg);
          delete this.wait_first_recv;
-         return this.InvokeReceiver(false, "OnWebsocketOpened");
+         return this.invokeReceiver(false, "OnWebsocketOpened");
       }
 
       if ((chid > 1) && this.channels) {
          let channel = this.channels[chid];
          if (channel)
-            return channel.ProvideData(1, _msg, _len);
+            return channel.provideData(1, _msg, _len);
       }
 
       let force_queue = _len && (_len < 0);
 
       if (!force_queue && (!this.msgqueue || !this.msgqueue.length))
-         return this.InvokeReceiver(false, "OnWebsocketMsg", _msg, _len);
+         return this.invokeReceiver(false, "OnWebsocketMsg", _msg, _len);
 
       if (!this.msgqueue) this.msgqueue = [];
       if (force_queue) _len = undefined;
@@ -274,38 +273,38 @@ JSROOT.define([], () => {
 
    /** @summary Reserve entry in queue for data, which is not yet decoded.
     * @private */
-   WebWindowHandle.prototype.ReserveQueueItem = function() {
+   WebWindowHandle.prototype.reserveQueueItem = function() {
       if (!this.msgqueue) this.msgqueue = [];
       let item = { ready: false, msg: null, len: 0 };
       this.msgqueue.push(item);
       return item;
    }
 
-   /** @summary Reserver entry in queue for data, which is not yet decoded.
+   /** @summary Provide data for item which was reserved before.
     * @private */
-   WebWindowHandle.prototype.DoneItem = function(item, _msg, _len) {
+   WebWindowHandle.prototype.markQueueItemDone = function(item, _msg, _len) {
       item.ready = true;
       item.msg = _msg;
       item.len = _len;
-      this.ProcessQueue();
+      this.processQueue();
    }
 
    /** @summary Process completed messages in the queue
      * @private */
-   WebWindowHandle.prototype.ProcessQueue = function() {
+   WebWindowHandle.prototype.processQueue = function() {
       if (this._loop_msgqueue || !this.msgqueue) return;
       this._loop_msgqueue = true;
       while ((this.msgqueue.length > 0) && this.msgqueue[0].ready) {
          let front = this.msgqueue.shift();
-         this.InvokeReceiver(false, "OnWebsocketMsg", front.msg, front.len);
+         this.invokeReceiver(false, "OnWebsocketMsg", front.msg, front.len);
       }
       if (this.msgqueue.length == 0)
          delete this.msgqueue;
       delete this._loop_msgqueue;
    }
 
-   /** @summary Close connection. */
-   WebWindowHandle.prototype.Close = function(force) {
+   /** @summary Close connection */
+   WebWindowHandle.prototype.close = function(force) {
       if (this.master) {
          this.master.Send("CLOSECH=" + this.channelid, 0);
          delete this.master.channels[this.channelid];
@@ -329,11 +328,11 @@ JSROOT.define([], () => {
    /** @summary Checks number of credits for send operation
      * @param {number} [numsend = 1] - number of required send operations
      * @returns true if one allow to send specified number of text message to server */
-   WebWindowHandle.prototype.CanSend = function(numsend) {
+   WebWindowHandle.prototype.canSend = function(numsend) {
       return (this.cansend >= (numsend || 1));
    }
 
-   /** @summary Returns number of possible send operations relative to number of credits*/
+   /** @summary Returns number of possible send operations relative to number of credits */
    WebWindowHandle.prototype.getRelCanSend = function() {
       return !this.credits ? 1 : this.cansend / this.credits;
    }
@@ -374,10 +373,10 @@ JSROOT.define([], () => {
 
       if (Array.isArray(msg)) {
          for (let k = 0; k < msg.length; ++k)
-            this.ProvideData(chid, (typeof msg[k] == "string") ? msg[k] : JSON.stringify(msg[k]), -1);
-         this.ProcessQueue();
+            this.provideData(chid, (typeof msg[k] == "string") ? msg[k] : JSON.stringify(msg[k]), -1);
+         this.processQueue();
       } else if (msg) {
-         this.ProvideData(chid, typeof msg == "string" ? msg : JSON.stringify(msg));
+         this.provideData(chid, typeof msg == "string" ? msg : JSON.stringify(msg));
       }
    }
 
@@ -430,7 +429,7 @@ JSROOT.define([], () => {
      * @private */
    WebWindowHandle.prototype.Connect = function(href) {
 
-      this.Close();
+      this.close();
 
       let pthis = this, ntry = 0, args = (this.key ? ("key=" + this.key) : "");
 
@@ -484,7 +483,7 @@ JSROOT.define([], () => {
             let key = pthis.key || "";
 
             pthis.Send("READY=" + key, 0); // need to confirm connection
-            pthis.InvokeReceiver(false, "OnWebsocketOpened");
+            pthis.invokeReceiver(false, "OnWebsocketOpened");
          }
 
          conn.onmessage = function(e) {
@@ -498,16 +497,16 @@ JSROOT.define([], () => {
                if (msg instanceof Blob) {
                   // this is case of websocket
                   // console.log('Get Blob object - convert to buffer array');
-                  let reader = new FileReader, qitem = pthis.ReserveQueueItem();
+                  let reader = new FileReader, qitem = pthis.reserveQueueItem();
                   reader.onload = function(event) {
                      // The file's text will be printed here
-                     pthis.DoneItem(qitem, event.target.result, 0);
+                     pthis.markQueueItemDone(qitem, event.target.result, 0);
                   }
                   reader.readAsArrayBuffer(msg, e.offset || 0);
                } else {
                   // console.log('got array ' + (typeof msg) + ' len = ' + msg.byteLength);
                   // this is from CEF or LongPoll handler
-                  pthis.ProvideData(binchid, msg, e.offset || 0);
+                  pthis.provideData(binchid, msg, e.offset || 0);
                }
 
                return;
@@ -530,15 +529,15 @@ JSROOT.define([], () => {
             if (chid == 0) {
                console.log('GET chid=0 message', msg);
                if (msg == "CLOSE") {
-                  pthis.Close(true); // force closing of socket
-                  pthis.InvokeReceiver(true, "OnWebsocketClosed");
+                  pthis.close(true); // force closing of socket
+                  pthis.invokeReceiver(true, "OnWebsocketClosed");
                }
             } else if (msg == "$$binary$$") {
                pthis.next_binary = chid;
             } else if (msg == "$$nullbinary$$") {
-               pthis.ProvideData(chid, new ArrayBuffer(0), 0);
+               pthis.provideData(chid, new ArrayBuffer(0), 0);
             } else {
-               pthis.ProvideData(chid, msg);
+               pthis.provideData(chid, msg);
             }
 
             if (pthis.ackn > 7)
@@ -550,14 +549,14 @@ JSROOT.define([], () => {
             if (pthis.state > 0) {
                console.log('websocket closed');
                pthis.state = 0;
-               pthis.InvokeReceiver(true, "OnWebsocketClosed");
+               pthis.invokeReceiver(true, "OnWebsocketClosed");
             }
          }
 
          conn.onerror = function(err) {
             console.log("websocket error " + err);
             if (pthis.state > 0) {
-               pthis.InvokeReceiver(true, "OnWebsocketError", err);
+               pthis.invokeReceiver(true, "OnWebsocketError", err);
                pthis.state = 0;
             }
          }
@@ -645,7 +644,7 @@ JSROOT.define([], () => {
          handle.user_args = arg.user_args;
 
          if (window) {
-            window.onbeforeunload = handle.Close.bind(handle, true);
+            window.onbeforeunload = () => handle.close(true);
             if (JSROOT.browser.qt5) window.onqt5unload = window.onbeforeunload;
          }
 
@@ -657,7 +656,7 @@ JSROOT.define([], () => {
 
                OnWebsocketMsg: (handle, msg) => {
                   if (msg.indexOf(arg.first_recv) != 0)
-                     return handle.Close();
+                     return handle.close();
                   handle.first_msg = msg.substr(arg.first_recv.length);
 
                   if (!arg.prereq2) resolveFunc(handle);
@@ -671,7 +670,7 @@ JSROOT.define([], () => {
             return resolveFunc(handle);
 
          // when receiver is exists, it handles itself callbacks
-         handle.SetReceiver(arg.receiver);
+         handle.setReceiver(arg.receiver);
          handle.Connect();
 
          if (arg.prereq2) {

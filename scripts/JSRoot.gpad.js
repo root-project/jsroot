@@ -3888,15 +3888,16 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    TCanvasPainter.prototype.SendWebsocket = function(msg) {
       if (!this._websocket) return;
-      if (this._websocket.CanSend())
+      if (this._websocket.canSend())
          this._websocket.Send(msg);
       else
          console.warn("DROP SEND: " + msg);
    }
 
+   /** @summary Close websocket connecttion to canvas */
    TCanvasPainter.prototype.CloseWebsocket = function(force) {
       if (this._websocket) {
-         this._websocket.Close(force);
+         this._websocket.close(force);
          this._websocket.cleanup();
          delete this._websocket;
       }
@@ -3909,7 +3910,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.CloseWebsocket();
 
       this._websocket = new JSROOT.WebWindowHandle(socket_kind);
-      this._websocket.SetReceiver(this);
+      this._websocket.setReceiver(this);
       this._websocket.Connect();
    }
 
@@ -3917,7 +3918,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.CloseWebsocket();
 
       this._websocket = handle;
-      this._websocket.SetReceiver(this);
+      this._websocket.setReceiver(this);
       this._websocket.Connect(href);
    }
 
@@ -4146,7 +4147,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
      * @private */
    TCanvasPainter.prototype.ProcessChanges = function(kind, painter, subelem) {
       // check if we could send at least one message more - for some meaningful actions
-      if (!this._websocket || this._readonly || !this._websocket.CanSend(2) || (typeof kind !== "string")) return;
+      if (!this._websocket || this._readonly || !this._websocket.canSend(2) || (typeof kind !== "string")) return;
 
       let msg = "";
       if (!painter) painter = this;
