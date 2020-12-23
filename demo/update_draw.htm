@@ -52,7 +52,7 @@
             // redraw histogram at specified frame
             JSROOT.redraw(frame, histo, drawopt).then(() => {
                // let adjust drawing when browser will be resized
-               if (!request_count) JSROOT.registerForResize('drawing');
+               if (!request_count) JSROOT.Painter.registerForResize('drawing');
             });
          });
       }

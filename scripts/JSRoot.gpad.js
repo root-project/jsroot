@@ -3016,7 +3016,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                this.brlayout.Create(mainid, true);
                // this.brlayout.toggleBrowserKind("float");
                this.setDom(this.brlayout.drawing_divid()); // need to create canvas
-               JSROOT.registerForResize(this.brlayout);
+               jsrp.registerForResize(this.brlayout);
             }
          }
 

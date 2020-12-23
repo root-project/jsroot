@@ -371,7 +371,7 @@
             }
 
             // all painter assigned to viewer element will be automatically informed about resize
-            JSROOT.require(["gpad", "hierarchy"]).then(() => JSROOT.registerForResize('viewer'));
+            JSROOT.require(["painter"]).then(jsrp => jsrp.registerForResize('viewer'));
 
             let d = JSROOT.decodeUrl();
 

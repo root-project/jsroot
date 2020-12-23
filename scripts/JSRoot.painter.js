@@ -3222,10 +3222,10 @@ JSROOT.define(['d3'], (d3) => {
      * @desc function used to react on browser window resize event
      * While many resize events could come in short time,
      * resize will be handled with delay after last resize event
-     * handle can be function or object with checkResize function
-     * one could specify delay after which resize event will be handled
-     * @private */
-   JSROOT.registerForResize = function(handle, delay) {
+     * @param {object|string} handle can be function or object with checkResize function or dom where painting was done
+     * @param {number} [delay] - one could specify delay after which resize event will be handled
+     * @protected */
+   jsrp.registerForResize = function(handle, delay) {
 
       if (!handle || JSROOT.BatchMode || (typeof window == 'undefined')) return;
 

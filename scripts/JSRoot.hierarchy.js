@@ -1181,7 +1181,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       function complete(respainter, err) {
          if (err) console.log('When display ', itemname, err);
-         
+
          if (updating && item) delete item._doing_update;
          if (!updating) JSROOT.progress();
          if (respainter && (typeof respainter === 'object') && (typeof respainter.setItemName === 'function')) {
@@ -2197,7 +2197,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if (!this.register_resize) {
          this.register_resize = true;
-         JSROOT.registerForResize(this);
+         jsrp.registerForResize(this);
       }
    }
 
