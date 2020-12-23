@@ -781,9 +781,9 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
    TDrawSelector.prototype.ShowProgress = function(value) {
       // this function should be defined not here
 
-      if (typeof document == 'undefined' || !JSROOT.progress) return;
+      if (typeof document == 'undefined' || !JSROOT.Painter) return;
 
-      if ((value === undefined) || isNaN(value)) return JSROOT.progress();
+      if ((value === undefined) || isNaN(value)) return JSROOT.Painter.showProgress();
 
       if (this.last_progress !== value) {
          let diff = value - this.last_progress;
@@ -810,10 +810,10 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
             return text_node.nodeValue = "Breaking ... ";
          }
          selector.Abort();
-         JSROOT.progress();
+         JSROOT.Painter.showProgress();
       }
 
-      JSROOT.progress(main_box);
+      JSROOT.Painter.showProgress(main_box);
       this.last_progress = value;
    }
 
@@ -2637,7 +2637,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
             args.nbr++;
 
             if (args.nbr >= args.branches.length) {
-               JSROOT.progress();
+               if (JSROOT.Painter) JSROOT.Painter.showProgress();
                return args.resolveFunc(args.names);
             }
 
@@ -2651,7 +2651,8 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
                TestNextBranch();
          }
 
-         JSROOT.progress("br " + args.nbr + "/" + args.branches.length + " " + args.names[args.nbr]);
+         if (JSROOT.Painter)
+            JSROOT.Painter.showProgress("br " + args.nbr + "/" + args.branches.length + " " + args.names[args.nbr]);
 
          let br = args.branches[args.nbr],
             object_class = getBranchObjectClass(br, this),

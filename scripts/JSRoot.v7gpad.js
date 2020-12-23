@@ -3917,7 +3917,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    RCanvasPainter.prototype.ShowMessage = function(msg) {
-      JSROOT.progress(msg, 7000);
+      jsrp.showProgress(msg, 7000);
    }
 
    /** @summary Function called when canvas menu item Save is called */

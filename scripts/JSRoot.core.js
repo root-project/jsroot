@@ -2127,11 +2127,6 @@
              (typename === 'TObjArray') || (typename === 'TClonesArray');
    }
 
-   // Dummy function, will be redefined when JSRoot.painter is loaded
-   JSROOT.progress = (msg /*, tmout */) => {
-      if ((msg !== undefined) && (typeof msg=="string")) console.log(msg);
-   }
-
    // Connects web window
    JSROOT.connectWebWindow = function(arg) {
       if (typeof arg == 'function') arg = { callback: arg };

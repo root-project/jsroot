@@ -3825,7 +3825,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    TCanvasPainter.prototype.ShowMessage = function(msg) {
       if (this.testUI5()) return;
-      JSROOT.progress(msg, 7000);
+      jsrp.showProgress(msg, 7000);
    }
 
    /** @summary Function called when canvas menu item Save is called */

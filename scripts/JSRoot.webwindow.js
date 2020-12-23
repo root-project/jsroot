@@ -454,7 +454,7 @@ JSROOT.define([], () => {
 
          if (first_time) console.log('Opening web socket at ' + href);
 
-         if (ntry > 2) JSROOT.progress("Trying to connect " + href);
+         if ((ntry > 2) && JSROOT.Painter) JSROOT.Painter.showProgress("Trying to connect " + href);
 
          let path = href;
 
@@ -478,7 +478,7 @@ JSROOT.define([], () => {
          pthis._websocket = conn;
 
          conn.onopen = function() {
-            if (ntry > 2) JSROOT.progress();
+            if ((ntry > 2) && JSROOT.Painter) JSROOT.Painter.showProgress();
             pthis.state = 1;
 
             let key = pthis.key || "";

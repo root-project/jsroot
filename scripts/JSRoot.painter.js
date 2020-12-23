@@ -3846,7 +3846,7 @@ JSROOT.define(['d3'], (d3) => {
       return dummy.getMainPainter(true);
    }
 
-   /** @summary Safely remove all JSROOT objects from specified element
+   /** @summary Safely remove all JSROOT drawings from specified element
      * @param {string|object} divid - id or DOM element
      * @example
      * JSROOT.cleanup("drawing");
@@ -3860,12 +3860,12 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /** @summary Display progress message in the left bottom corner.
-    *  @desc Previous message will be overwritten
-    * if no argument specified, any shown messages will be removed
-    * @param {string} msg - message to display
-    * @param {number} tmout - optional timeout in milliseconds, after message will disappear
-    * @private */
-   JSROOT.progress = function(msg, tmout) {
+     * @desc Previous message will be overwritten
+     * if no argument specified, any shown messages will be removed
+     * @param {string} msg - message to display
+     * @param {number} tmout - optional timeout in milliseconds, after message will disappear
+     * @private */
+   jsrp.showProgress = function(msg, tmout) {
       if (JSROOT.BatchMode || (typeof document === 'undefined')) return;
       let id = "jsroot_progressbox",
           box = d3.select("#" + id);
@@ -3893,7 +3893,7 @@ JSROOT.define(['d3'], (d3) => {
 
       if (!isNaN(tmout) && (tmout > 0)) {
          box.property("with_timeout", true);
-         setTimeout(() => JSROOT.progress('', -1), tmout);
+         setTimeout(() => jsrp.showProgress('', -1), tmout);
       }
    }
 
