@@ -744,7 +744,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       ProcessKeyPress: function(evnt) {
          let main = this.selectDom();
-         if (!JSROOT.key_handling || main.empty()) return;
+         if (!JSROOT.key_handling || main.empty() || (this.enabledKeys === false)) return;
 
          let key = "";
          switch (evnt.keyCode) {

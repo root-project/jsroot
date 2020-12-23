@@ -1492,9 +1492,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Set active flag for frame - can block some events
     * @private */
    RFramePainter.prototype.setFrameActive = function(on) {
+      this.enabledKeys = on && JSROOT.key_handling ? true : false;
       // used only in 3D mode
       if (this.control)
-         this.control.enableKeys = on && JSROOT.key_handling;
+         this.control.enableKeys = this.enabledKeys;
    }
 
    RFramePainter.prototype.Shrink = function(shrink_left, shrink_right) {
@@ -1912,6 +1913,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          window.removeEventListener('keydown', this.keys_handler, false);
          this.keys_handler = null;
       }
+      delete this.enabledKeys;
 
       delete this.xaxis;
       delete this.yaxis;

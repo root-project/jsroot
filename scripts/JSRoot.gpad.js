@@ -943,9 +943,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Set active flag for frame - can block some events
     * @private */
    TFramePainter.prototype.setFrameActive = function(on) {
+      this.enabledKeys = on && JSROOT.key_handling ? true : false;
       // used only in 3D mode where control is used
       if (this.control)
-         this.control.enableKeys = on && JSROOT.key_handling;
+         this.control.enableKeys = this.enabledKeys;
    }
 
    TFramePainter.prototype.Shrink = function(shrink_left, shrink_right) {
@@ -1527,6 +1528,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.CleanFrameDrawings();
       delete this._click_handler;
       delete this._dblclick_handler;
+      delete this.enabledKeys;
 
       JSROOT.ObjectPainter.prototype.cleanup.call(this);
    }
