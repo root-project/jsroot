@@ -359,10 +359,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    RAxisPainter.prototype = Object.create(JSROOT.AxisBasePainter.prototype);
 
    /** @summary Use in GED to identify kind of axis */
-   RAxisPainter.prototype.GetAxisType = function() { return "RAttrAxis"; }
+   RAxisPainter.prototype.getAxisType = function() { return "RAttrAxis"; }
 
    /** @summary Configure only base parameters, later same handle will be used for drawing  */
-   RAxisPainter.prototype.ConfigureZAxis = function(name, fp) {
+   RAxisPainter.prototype.configureZAxis = function(name, fp) {
       this.name = name;
       this.kind = "normal";
       this.log = false;
@@ -382,7 +382,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
      * @desc Axis can be drawn inside frame <g> group with offset to 0 point for the frame
      * Therefore one should distinguish when caclulated coordinates used for axis drawing itself or for calculation of frame coordinates
      * @private */
-   RAxisPainter.prototype.ConfigureAxis = function(name, min, max, smin, smax, vertical, frame_range, axis_range, opts) {
+   RAxisPainter.prototype.configureAxis = function(name, min, max, smin, smax, vertical, frame_range, axis_range, opts) {
       if (!opts) opts = {};
       this.name = name;
       this.full_min = min;
@@ -521,7 +521,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Creates array with minor/middle/major ticks */
-   RAxisPainter.prototype.CreateTicks = function(only_major_as_array, optionNoexp, optionNoopt, optionInt) {
+   RAxisPainter.prototype.createTicks = function(only_major_as_array, optionNoexp, optionNoopt, optionInt) {
 
       if (optionNoopt && this.nticks && (this.kind == "normal")) this.noticksopt = true;
 
@@ -652,7 +652,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Is labels should be centered */
-   RAxisPainter.prototype.IsCenterLabels = function() {
+   RAxisPainter.prototype.isCenteredLabels = function() {
       if (this.kind === 'labels') return true;
       if (this.kind === 'log') return false;
       return this.v7EvalAttr("labels_center", false);
@@ -704,7 +704,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             label_g.property('fix_offset', offset);
             let side = label_g.property('side') || 1;
             this.labelsOffset = offset / (this.vertical ? -side : side);
-            this.ChangeAxisAttr(1, "labels_offset", this.labelsOffset/this.scaling_size);
+            this.changeAxisAttr(1, "labels_offset", this.labelsOffset/this.scaling_size);
          }
       }
 
@@ -739,7 +739,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             // let d = ((this.gr_range > 0) && this.vertical) ? title_length : 0;
             alt_pos = [0, this.gr_range/2, this.gr_range]; // possible positions
             let off = this.vertical ? -title_length : title_length,
-                swap = this.IsReverseAxis() ? 2 : 0;
+                swap = this.isReverseAxis() ? 2 : 0;
             if (this.title_align == "middle") {
                alt_pos[swap] += off/2;
                alt_pos[2-swap] -= off/2;
@@ -809,7 +809,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                   this.titlePos = "right";
                }
 
-               this.ChangeAxisAttr(0, "title_position", this.titlePos, "title_offset", this.titleOffset/this.scaling_size);
+               this.changeAxisAttr(0, "title_position", this.titlePos, "title_offset", this.titleOffset/this.scaling_size);
 
                drag_rect.remove();
                drag_rect = null;
@@ -819,7 +819,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary checks if value inside graphical range, taking into account delta */
-   RAxisPainter.prototype.IsInsideGrRange = function(pos, delta1, delta2) {
+   RAxisPainter.prototype.isInsideGrRange = function(pos, delta1, delta2) {
       if (!delta1) delta1 = 0;
       if (delta2 === undefined) delta2 = delta1;
       if (this.gr_range < 0)
@@ -828,7 +828,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary returns graphical range */
-   RAxisPainter.prototype.GrRange = function(delta) {
+   RAxisPainter.prototype.getGrRange = function(delta) {
       if (!delta) delta = 0;
       if (this.gr_range < 0)
          return this.gr_range - delta;
@@ -836,13 +836,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary If axis direction is negative coordinates direction */
-   RAxisPainter.prototype.IsReverseAxis = function() {
-      return !this.vertical !== (this.GrRange() > 0);
+   RAxisPainter.prototype.isReverseAxis = function() {
+      return !this.vertical !== (this.getGrRange() > 0);
    }
 
    /** @summary Draw axis ticks
      * @private */
-   RAxisPainter.prototype.DrawMainLine = function(axis_g) {
+   RAxisPainter.prototype.drawMainLine = function(axis_g) {
       let ending = "";
 
       if (this.endingSize && this.endingStyle) {
@@ -888,7 +888,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          let grpos = this.handle.grpos - this.axis_shift;
 
-         if ((this.startingSize || this.endingSize) && !this.IsInsideGrRange(grpos, -Math.abs(this.startingSize), -Math.abs(this.endingSize))) continue;
+         if ((this.startingSize || this.endingSize) && !this.isInsideGrRange(grpos, -Math.abs(this.startingSize), -Math.abs(this.endingSize))) continue;
 
          if (this.handle.kind == 1) {
             // if not showing labels, not show large tick
@@ -925,7 +925,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Performs labels drawing
      * @returns {Promise} wwith gaps in both direction */
    RAxisPainter.prototype.drawLabels = function(axis_g, side, gaps) {
-      let center_lbls = this.IsCenterLabels(),
+      let center_lbls = this.isCenteredLabels(),
           rotate_lbls = false,
           textscale = 1, maxtextlen = 0, lbls_tilt = false,
           label_g = axis_g.append("svg:g").attr("class","axis_labels").property('side', side),
@@ -985,14 +985,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (center_lbls) {
             let gap = arg.gap_after || arg.gap_before;
             pos = Math.round(pos - (this.vertical ? 0.5*gap : -0.5*gap));
-            if (!this.IsInsideGrRange(pos, 5)) continue;
+            if (!this.isInsideGrRange(pos, 5)) continue;
          }
 
          maxtextlen = Math.max(maxtextlen, lbl.length);
 
          pos -= this.axis_shift;
 
-         if ((this.startingSize || this.endingSize) && !this.IsInsideGrRange(pos, -Math.abs(this.startingSize), -Math.abs(this.endingSize))) continue;
+         if ((this.startingSize || this.endingSize) && !this.isInsideGrRange(pos, -Math.abs(this.startingSize), -Math.abs(this.endingSize))) continue;
 
          if (this.vertical) {
             arg.x = fix_coord;
@@ -1017,8 +1017,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
 
       if (this.order)
-         this.drawText({ x: this.vertical ? side*5 : this.GrRange(5),
-                         y: this.has_obstacle ? fix_coord : (this.vertical ? this.GrRange(3) : -3*side),
+         this.drawText({ x: this.vertical ? side*5 : this.getGrRange(5),
+                         y: this.has_obstacle ? fix_coord : (this.vertical ? this.getGrRange(3) : -3*side),
                          align: this.vertical ? ((side<0) ? 30 : 10) : ((this.has_obstacle ^ (side < 0)) ? 13 : 10),
                          latex: 1,
                          text: '#times' + this.formatExp(10, this.order),
@@ -1085,7 +1085,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       this.startTextDrawing(this.titleFont, 'font', title_g);
 
-      this.title_align = center ? "middle" : (opposite ^ (this.IsReverseAxis() || rotated) ? "begin" : "end");
+      this.title_align = center ? "middle" : (opposite ^ (this.isReverseAxis() || rotated) ? "begin" : "end");
 
       if (this.vertical) {
          title_basepos = Math.round(-side*(lgaps[side]));
@@ -1154,14 +1154,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (this.ticksSide == "invert") side = -side;
 
       if (this.standalone)
-         this.DrawMainLine(axis_g);
+         this.drawMainLine(axis_g);
 
       let optionUnlab = false,  // no labels
           optionNoopt = false,  // no ticks position optimization
           optionInt = false,    // integer labels
           optionNoexp = false;  // do not create exp
 
-      this.handle = this.CreateTicks(false, optionNoexp, optionNoopt, optionInt);
+      this.handle = this.createTicks(false, optionNoexp, optionNoopt, optionInt);
 
       // first draw ticks
       let tgaps = this.drawTicks(axis_g, side, true);
@@ -1198,7 +1198,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (this.ticksSide == "invert") side = -side;
 
       if (this.standalone)
-         this.DrawMainLine(this.axis_g);
+         this.drawMainLine(this.axis_g);
 
       // first draw ticks
       let tgaps = this.drawTicks(this.axis_g, side, false);
@@ -1241,8 +1241,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Change zooming in standalone mode */
-   RAxisPainter.prototype.ZoomStandalone = function(min,max) {
-      this.ChangeAxisAttr(1, "zoommin", min, "zoommax", max);
+   RAxisPainter.prototype.zoomStandalone = function(min,max) {
+      this.changeAxisAttr(1, "zoommin", min, "zoommax", max);
    }
 
    /** @summary Redraw axis, used in standalone mode for RAxisDrawable */
@@ -1272,7 +1272,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          smin = min; smax = max;
       }
 
-      this.ConfigureAxis("axis", min, max, smin, smax, drawable.fVertical, undefined, len, { reverse: reverse, labels: !!drawable.fLabels });
+      this.configureAxis("axis", min, max, smin, smax, drawable.fVertical, undefined, len, { reverse: reverse, labels: !!drawable.fLabels });
 
       this.createG();
 
@@ -1289,8 +1289,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                evnt.preventDefault();  // disable browser context menu
                jsrp.createMenu(this, evnt).then(menu => {
                  menu.add("header:RAxisDrawable");
-                 menu.add("Unzoom", () => this.ZoomStandalone());
-                 this.FillAxisContextMenu(menu, "");
+                 menu.add("Unzoom", () => this.zoomStandalone());
+                 this.fillAxisContextMenu(menu, "");
                  menu.show();
                });
             });
@@ -1300,9 +1300,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                     .attr("width", this.vertical ? 10 : len)
                     .attr("height", this.vertical ? len : 10);
 
-         inter.DragMoveHandler.AddDrag(this, { only_move: true, redraw: this.PositionChanged.bind(this) });
+         inter.DragMoveHandler.AddDrag(this, { only_move: true, redraw: this.positionChanged.bind(this) });
 
-         this.draw_g.on("dblclick", () => this.ZoomStandalone());
+         this.draw_g.on("dblclick", () => this.zoomStandalone());
 
          if (JSROOT.settings.ZoomWheel)
             this.draw_g.on("wheel", evnt => {
@@ -1313,14 +1313,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                    coord = this.vertical ? (1 - pos[1] / len) : pos[0] / len,
                    item = this.analyzeWheelEvent(evnt, coord);
 
-               if (item.changed) this.ZoomStandalone(item.min, item.max);
+               if (item.changed) this.zoomStandalone(item.min, item.max);
             });
 
       });
    }
 
    /** @summary Process interactive moving of the axis drawing */
-   RAxisPainter.prototype.PositionChanged = function() {
+   RAxisPainter.prototype.positionChanged = function() {
       let axis_x = parseInt(this.draw_g.attr("x")),
           axis_y = parseInt(this.draw_g.attr("y")),
           drawable = this.getObject(),
@@ -1336,7 +1336,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    /** @summary Change axis attribute, submit changes to server and redraw axis when specified
      * @desc Arguments as redraw_mode, name1, value1, name2, value2, ... */
-   RAxisPainter.prototype.ChangeAxisAttr = function(redraw_mode) {
+   RAxisPainter.prototype.changeAxisAttr = function(redraw_mode) {
       let changes = {}, indx = 1;
       while (indx < arguments.length - 1) {
          this.v7AttrChange(changes, arguments[indx], arguments[indx+1]);
@@ -1354,67 +1354,67 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Change axis log scale kind */
-   RAxisPainter.prototype.ChangeLog = function(arg) {
+   RAxisPainter.prototype.changeLog = function(arg) {
       if ((this.kind == "labels") || (this.kind == 'time')) return;
       if (arg === 'toggle') arg = this.log ? 0 : 10;
 
       arg = parseFloat(arg);
-      if (!isNaN(arg)) this.ChangeAxisAttr(2, "log", arg);
+      if (!isNaN(arg)) this.changeAxisAttr(2, "log", arg);
    }
 
    /** @summary Provide context menu for axis */
-   RAxisPainter.prototype.FillAxisContextMenu = function(menu, kind) {
+   RAxisPainter.prototype.fillAxisContextMenu = function(menu, kind) {
 
       if (kind) menu.add("Unzoom", () => this.getFramePainter().Unzoom(kind));
 
-      menu.add("sub:Log scale", () => this.ChangeLog('toggle'));
-      menu.addchk(!this.log, "linear", 0, arg => this.ChangeLog(arg));
-      menu.addchk(this.log && (this.logbase==10), "log10", 10, arg => this.ChangeLog(arg));
-      menu.addchk(this.log && (this.logbase==2), "log2", 2, arg => this.ChangeLog(arg));
-      menu.addchk(this.log && Math.abs(this.logbase - Math.exp(1)) < 0.1, "ln", Math.exp(1), arg => this.ChangeLog(arg));
+      menu.add("sub:Log scale", () => this.changeLog('toggle'));
+      menu.addchk(!this.log, "linear", 0, arg => this.changeLog(arg));
+      menu.addchk(this.log && (this.logbase==10), "log10", 10, arg => this.changeLog(arg));
+      menu.addchk(this.log && (this.logbase==2), "log2", 2, arg => this.changeLog(arg));
+      menu.addchk(this.log && Math.abs(this.logbase - Math.exp(1)) < 0.1, "ln", Math.exp(1), arg => this.changeLog(arg));
       menu.add("endsub:");
 
       menu.add("sub:Ticks");
-      menu.RColorMenu("color", this.ticksColor, col => this.ChangeAxisAttr(1, "ticks_color_name", col));
-      menu.SizeMenu("size", 0, 0.05, 0.01, this.ticksSize/this.scaling_size, sz => this.ChangeAxisAttr(1, "ticks_size", sz));
-      menu.SelectMenu("side", ["normal", "invert", "both"], this.ticksSide, side => this.ChangeAxisAttr(1, "ticks_side", side));
+      menu.RColorMenu("color", this.ticksColor, col => this.changeAxisAttr(1, "ticks_color_name", col));
+      menu.SizeMenu("size", 0, 0.05, 0.01, this.ticksSize/this.scaling_size, sz => this.changeAxisAttr(1, "ticks_size", sz));
+      menu.SelectMenu("side", ["normal", "invert", "both"], this.ticksSide, side => this.changeAxisAttr(1, "ticks_side", side));
 
       menu.add("endsub:");
 
       if (!this.optionUnlab && this.labelsFont) {
          menu.add("sub:Labels");
          menu.SizeMenu("offset", -0.05, 0.05, 0.01, this.labelsOffset/this.scaling_size, offset => {
-            this.ChangeAxisAttr(1, "labels_offset", offset);
+            this.changeAxisAttr(1, "labels_offset", offset);
          });
          menu.RAttrTextItems(this.labelsFont, { noangle: 1, noalign: 1 }, change => {
-            this.ChangeAxisAttr(1, "labels_" + change.name, change.value);
+            this.changeAxisAttr(1, "labels_" + change.name, change.value);
          });
          menu.addchk(this.labelsFont.angle, "rotate", res => {
-            this.ChangeAxisAttr(1, "labels_angle", res ? 180 : 0);
+            this.changeAxisAttr(1, "labels_angle", res ? 180 : 0);
          })
          menu.add("endsub:");
       }
 
       menu.add("sub:Title", () => {
          let t = prompt("Enter axis title", this.fTitle);
-         if (t!==null) this.ChangeAxisAttr(1, "title", t);
+         if (t!==null) this.changeAxisAttr(1, "title", t);
       });
 
       if (this.fTitle) {
          menu.SizeMenu("offset", -0.05, 0.05, 0.01, this.titleOffset/this.scaling_size, offset => {
-            this.ChangeAxisAttr(1, "title_offset", offset);
+            this.changeAxisAttr(1, "title_offset", offset);
          });
 
          menu.SelectMenu("position", ["left", "center", "right"], this.titlePos, pos => {
-            this.ChangeAxisAttr(1, "title_position", pos);
+            this.changeAxisAttr(1, "title_position", pos);
          });
 
          menu.addchk(this.isTitleRotated(), "rotate", flag => {
-            this.ChangeAxisAttr(1, "title_angle", flag ? 180 : 0);
+            this.changeAxisAttr(1, "title_angle", flag ? 180 : 0);
          });
 
          menu.RAttrTextItems(this.titleFont, { noangle: 1, noalign: 1 }, change => {
-            this.ChangeAxisAttr(1, "title_" + change.name, change.value);
+            this.changeAxisAttr(1, "title_" + change.name, change.value);
          });
       }
 
@@ -1771,14 +1771,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.z_handle.setPadName(this.getPadName());
       this.z_handle.snapid = this.snapid;
 
-      this.x_handle.ConfigureAxis("xaxis", this.xmin, this.xmax, this.scale_xmin, this.scale_xmax, false, [0,w], w, { reverse: false });
+      this.x_handle.configureAxis("xaxis", this.xmin, this.xmax, this.scale_xmin, this.scale_xmax, false, [0,w], w, { reverse: false });
       this.x_handle.assignFrameMembers(this,"x");
 
-      this.y_handle.ConfigureAxis("yaxis", this.ymin, this.ymax, this.scale_ymin, this.scale_ymax, true, [h,0], -h, { reverse: false });
+      this.y_handle.configureAxis("yaxis", this.ymin, this.ymax, this.scale_ymin, this.scale_ymax, true, [h,0], -h, { reverse: false });
       this.y_handle.assignFrameMembers(this,"y");
 
       // only get basic properties like log scale
-      this.z_handle.ConfigureZAxis("zaxis", this);
+      this.z_handle.configureZAxis("zaxis", this);
 
       let layer = this.getFrameSvg().select(".axis_layer");
 
@@ -2270,7 +2270,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          let handle = this[kind+"_handle"];
          if (!handle) return false;
          menu.add("header: " + kind.toUpperCase() + " axis");
-         return handle.FillAxisContextMenu(menu, kind);
+         return handle.fillAxisContextMenu(menu, kind);
       }
 
       let alone = menu.size()==0;
@@ -2359,7 +2359,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Toggle log scale on the specified axes */
    RFramePainter.prototype.ToggleLog = function(axis) {
       let handle = this[axis+"_handle"];
-      if (handle) handle.ChangeLog('toggle');
+      if (handle) handle.changeLog('toggle');
    }
 
    function drawRFrame(divid, obj, opt) {
@@ -4725,7 +4725,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           .style("stroke", "black")
           .attr("fill", "none");
 
-      framep.z_handle.ConfigureAxis("zaxis", zmin, zmax, zmin, zmax, true, [palette_height, 0], -palette_height, { reverse: false });
+      framep.z_handle.configureAxis("zaxis", zmin, zmax, zmin, zmax, true, [palette_height, 0], -palette_height, { reverse: false });
 
       for (let i=0;i<contour.length-1;++i) {
          let z0 = framep.z_handle.gr(contour[i]),
@@ -4767,7 +4767,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                evnt.preventDefault();  // disable browser context menu
                jsrp.createMenu(this, evnt).then(menu => {
                  menu.add("header:Palette");
-                 framep.z_handle.FillAxisContextMenu(menu, "z");
+                 framep.z_handle.fillAxisContextMenu(menu, "z");
                  menu.show();
                });
             });

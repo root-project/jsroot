@@ -52,9 +52,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    TAxisPainter.prototype = Object.create(JSROOT.AxisBasePainter.prototype);
 
    /** @summary Use in GED to identify kind of axis */
-   TAxisPainter.prototype.GetAxisType = function() { return "TAxis"; }
+   TAxisPainter.prototype.getAxisType = function() { return "TAxis"; }
 
-   TAxisPainter.prototype.ConfigureAxis = function(name, min, max, smin, smax, vertical, range, opts) {
+   /** @summary Configure axis painter
+     * @desc Axis can be drawn inside frame <g> group with offset to 0 point for the frame
+     * Therefore one should distinguish when caclulated coordinates used for axis drawing itself or for calculation of frame coordinates
+     * @private */
+   TAxisPainter.prototype.configureAxis = function(name, min, max, smin, smax, vertical, range, opts) {
       this.name = name;
       this.full_min = min;
       this.full_max = max;
@@ -199,7 +203,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Creates array with minor/middle/major ticks */
-   TAxisPainter.prototype.CreateTicks = function(only_major_as_array, optionNoexp, optionNoopt, optionInt) {
+   TAxisPainter.prototype.createTicks = function(only_major_as_array, optionNoexp, optionNoopt, optionInt) {
 
       if (optionNoopt && this.nticks && (this.kind == "normal")) this.noticksopt = true;
 
@@ -338,7 +342,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return handle;
    }
 
-   TAxisPainter.prototype.IsCenterLabels = function() {
+   /** @summary Is labels should be centered */
+   TAxisPainter.prototype.isCenteredLabels = function() {
       if (this.kind === 'labels') return true;
       if (this.log) return false;
       let axis = this.getObject();
@@ -510,7 +515,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Draw axis labels */
    TAxisPainter.prototype.drawLabels = function(axis_g, axis, w, h, handle, side, labelSize, labeloffset, tickSize, ticksPlusMinus, max_text_width) {
       let label_color = this.getColor(axis.fLabelColor),
-          center_lbls = this.IsCenterLabels(),
+          center_lbls = this.isCenteredLabels(),
           rotate_lbls = axis.TestBit(JSROOT.EAxisBits.kLabelsVert),
           textscale = 1, maxtextlen = 0, applied_scale = 0,
           label_g = [ axis_g.append("svg:g").attr("class","axis_labels") ],
@@ -632,9 +637,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       });
    }
 
-   /** @summary function draws  TAxis or TGaxis object
-     * @returns Promise*/
-   TAxisPainter.prototype.DrawAxis = function(layer, w, h, transform, secondShift, disable_axis_drawing, max_text_width, calculate_position) {
+   /** @summary function draws TAxis or TGaxis object
+     * @returns {Promise} for drawing ready */
+   TAxisPainter.prototype.drawAxis = function(layer, w, h, transform, secondShift, disable_axis_drawing, max_text_width, calculate_position) {
 
       let axis = this.getObject(), chOpt = "",
           is_gaxis = (axis && axis._typename === 'TGaxis'),
@@ -708,7 +713,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       // first draw ticks
 
-      let handle = this.CreateTicks(false, optionNoexp, optionNoopt, optionInt);
+      let handle = this.createTicks(false, optionNoexp, optionNoopt, optionInt);
 
       this.drawTicks(axis_g, handle, side, tickSize, ticksPlusMinus, secondShift, draw_lines && !disable_axis_drawing);
 
@@ -826,6 +831,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    }
 
+   /** @summary Redraw axis, used in standalone mode for TGaxis */
    TAxisPainter.prototype.redraw = function() {
 
       let gaxis = this.getObject(),
@@ -845,7 +851,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (vertical) y2 = y1; else x1 = x2;
       }
 
-      this.ConfigureAxis(vertical ? "yaxis" : "xaxis", min, max, min, max, vertical, [0, sz], {
+      this.configureAxis(vertical ? "yaxis" : "xaxis", min, max, min, max, vertical, [0, sz], {
          time_scale: gaxis.fChopt.indexOf("t") >= 0,
          log: (gaxis.fChopt.indexOf("G") >= 0) ? 1 : 0,
          reverse: reverse,
@@ -854,7 +860,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       this.createG();
 
-      return this.DrawAxis(this.getG(), Math.abs(w), Math.abs(h), "translate(" + x1 + "," + y2 +")");
+      return this.drawAxis(this.getG(), Math.abs(w), Math.abs(h), "translate(" + x1 + "," + y2 +")");
    }
 
    let drawGaxis = (divid, obj /*, opt*/) => {
@@ -1165,7 +1171,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.x_handle = new TAxisPainter(this.getDom(), this.xaxis, true);
       this.x_handle.setPadName(this.getPadName());
 
-      this.x_handle.ConfigureAxis("xaxis", this.xmin, this.xmax, this.scale_xmin, this.scale_xmax, this.swap_xy, this.swap_xy ? [0,h] : [0,w],
+      this.x_handle.configureAxis("xaxis", this.xmin, this.xmax, this.scale_xmin, this.scale_xmax, this.swap_xy, this.swap_xy ? [0,h] : [0,w],
                                       { reverse: this.reverse_x,
                                         log: this.swap_xy ? pad.fLogy : pad.fLogx,
                                         logcheckmin: this.swap_xy,
@@ -1176,7 +1182,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.y_handle = new TAxisPainter(this.getDom(), this.yaxis, true);
       this.y_handle.setPadName(this.getPadName());
 
-      this.y_handle.ConfigureAxis("yaxis", this.ymin, this.ymax, this.scale_ymin, this.scale_ymax, !this.swap_xy, this.swap_xy ? [0,w] : [0,h],
+      this.y_handle.configureAxis("yaxis", this.ymin, this.ymax, this.scale_ymin, this.scale_ymax, !this.swap_xy, this.swap_xy ? [0,w] : [0,h],
                                       { reverse: this.reverse_y,
                                         log: this.swap_xy ? pad.fLogx : pad.fLogy,
                                         logcheckmin: (opts.ndim < 2) || this.swap_xy,
@@ -1325,12 +1331,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          let can_adjust_frame = !shrink_forbidden && JSROOT.settings.CanAdjustFrame;
 
-         let promise1 = draw_horiz.DrawAxis(layer, w, h,
+         let promise1 = draw_horiz.drawAxis(layer, w, h,
                                             draw_horiz.invert_side ? undefined : "translate(0," + h + ")",
                                             pad && pad.fTickx ? -h : 0, disable_axis_draw,
                                             undefined, false);
 
-         let promise2 = draw_vertical.DrawAxis(layer, w, h,
+         let promise2 = draw_vertical.drawAxis(layer, w, h,
                                                draw_vertical.invert_side ? "translate(" + w + ",0)" : undefined,
                                                pad && pad.fTicky ? w : 0, disable_axis_draw,
                                                draw_vertical.invert_side ? 0 : this._frame_x, can_adjust_frame);
@@ -1614,7 +1620,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    /** @summary Change log state of specified axis
      * @param {number} value - 0 (linear), 1 (log) or 2 (log2) */
-   TFramePainter.prototype.ChangeLog = function(axis, value) {
+   TFramePainter.prototype.changeLog = function(axis, value) {
       let pp = this.getPadPainter(),
           pad = pp ? pp.getRootPad(true) : null;
       if (!pad) return;
@@ -1640,7 +1646,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    /** @summary Toggle log state on the specified axis */
    TFramePainter.prototype.ToggleLog = function(axis) {
-      this.ChangeLog(axis, "toggle");
+      this.changeLog(axis, "toggle");
    }
 
    /** @summary Fill context menu for the frame
@@ -1657,9 +1663,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          menu.add("Unzoom", this.Unzoom.bind(this, kind));
          if (pad) {
             menu.add("sub:SetLog "+kind);
-            menu.addchk(pad["fLog" + kind] == 0, "linear", "0", arg => this.ChangeLog(kind, parseInt(arg)));
-            menu.addchk(pad["fLog" + kind] == 1, "log", "1", arg => this.ChangeLog(kind, parseInt(arg)));
-            menu.addchk(pad["fLog" + kind] == 2, "log2", "2", arg => this.ChangeLog(kind, parseInt(arg)));
+            menu.addchk(pad["fLog" + kind] == 0, "linear", "0", arg => this.changeLog(kind, parseInt(arg)));
+            menu.addchk(pad["fLog" + kind] == 1, "log", "1", arg => this.changeLog(kind, parseInt(arg)));
+            menu.addchk(pad["fLog" + kind] == 2, "log2", "2", arg => this.changeLog(kind, parseInt(arg)));
             menu.add("endsub:");
          }
          menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kMoreLogLabels), "More log",

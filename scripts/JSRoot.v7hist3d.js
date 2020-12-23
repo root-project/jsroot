@@ -482,13 +482,13 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       this.x_handle = new JSROOT.v7.RAxisPainter(this.getDom(), this, this.xaxis, "x_");
       this.x_handle.setPadName(this.getPadName());
       this.x_handle.snapid = this.snapid;
-      this.x_handle.ConfigureAxis("xaxis", this.xmin, this.xmax, xmin, xmax, false, [grminx, grmaxx]);
+      this.x_handle.configureAxis("xaxis", this.xmin, this.xmax, xmin, xmax, false, [grminx, grmaxx]);
       this.x_handle.assignFrameMembers(this,"x");
 
       this.y_handle = new JSROOT.v7.RAxisPainter(this.getDom(), this, this.yaxis, "y_");
       this.y_handle.setPadName(this.getPadName());
       this.y_handle.snapid = this.snapid;
-      this.y_handle.ConfigureAxis("yaxis", this.ymin, this.ymax, ymin, ymax, false, [grminy, grmaxy]);
+      this.y_handle.configureAxis("yaxis", this.ymin, this.ymax, ymin, ymax, false, [grminy, grmaxy]);
       this.y_handle.assignFrameMembers(this,"y");
 
       // this.SetRootPadRange(pad, true); // set some coordinates typical for 3D projections in ROOT
@@ -496,15 +496,15 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       this.z_handle = new JSROOT.v7.RAxisPainter(this.getDom(), this, this.zaxis, "z_");
       this.z_handle.setPadName(this.getPadName());
       this.z_handle.snapid = this.snapid;
-      this.z_handle.ConfigureAxis("zaxis", this.zmin, this.zmax, zmin, zmax, false, [grminz, grmaxz]);
+      this.z_handle.configureAxis("zaxis", this.zmin, this.zmax, zmin, zmax, false, [grminz, grmaxz]);
       this.z_handle.assignFrameMembers(this,"z");
 
       let textMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 }),
           lineMaterial = new THREE.LineBasicMaterial({ color: 0x000000 }),
           ticklen = textsize*0.5, lbls = [], text_scale = 1,
-          xticks = this.x_handle.CreateTicks(false, true),
-          yticks = this.y_handle.CreateTicks(false, true),
-          zticks = this.z_handle.CreateTicks(false, true);
+          xticks = this.x_handle.createTicks(false, true),
+          yticks = this.y_handle.createTicks(false, true),
+          zticks = this.z_handle.createTicks(false, true);
 
       // main element, where all axis elements are placed
       let top = new THREE.Object3D();
@@ -542,7 +542,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
                let space = (xticks.next_major_grpos() - grx);
                if (draw_width > 0)
                   text_scale = Math.min(text_scale, 0.9*space/draw_width)
-               if (this.x_handle.IsCenterLabels()) text3d.grx += space/2;
+               if (this.x_handle.isCenteredLabels()) text3d.grx += space/2;
             }
          }
 
@@ -751,7 +751,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
                let space = (yticks.next_major_grpos() - gry);
                if (draw_width > 0)
                   text_scale = Math.min(text_scale, 0.9*space/draw_width)
-               if (this.y_handle.IsCenterLabels()) text3d.gry += space/2;
+               if (this.y_handle.isCenteredLabels()) text3d.gry += space/2;
             }
          }
          ticks.push(0,gry,0, (is_major ? -ticklen : -ticklen*0.6), gry, 0);
@@ -1555,7 +1555,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
          case 17: need_palette = 2; dolines = false; break;
          case 14: dolines = false; donormals = true; break;
          case 16: need_palette = 1; dogrid = true; dolines = false; break;
-         default: ilevels = main.z_handle.CreateTicks(true); dogrid = true; break;
+         default: ilevels = main.z_handle.createTicks(true); dogrid = true; break;
       }
 
       if (need_palette > 0) {

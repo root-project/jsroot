@@ -511,17 +511,17 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       // this.TestAxisVisibility = HPainter_TestAxisVisibility;
 
       this.x_handle = new JSROOT.TAxisPainter(null, this.xaxis);
-      this.x_handle.ConfigureAxis("xaxis", this.xmin, this.xmax, xmin, xmax, false, [grminx, grmaxx],
+      this.x_handle.configureAxis("xaxis", this.xmin, this.xmax, xmin, xmax, false, [grminx, grmaxx],
                                        { log: pad ? pad.fLogx : 0 });
       this.x_handle.assignFrameMembers(this,"x");
 
       this.y_handle = new JSROOT.TAxisPainter(null, this.yaxis);
-      this.y_handle.ConfigureAxis("yaxis", this.ymin, this.ymax, ymin, ymax, false, [grminy, grmaxy],
+      this.y_handle.configureAxis("yaxis", this.ymin, this.ymax, ymin, ymax, false, [grminy, grmaxy],
                                       { log: pad && !opts.use_y_for_z ? pad.fLogx : 0 });
       this.y_handle.assignFrameMembers(this,"y");
 
       this.z_handle = new JSROOT.TAxisPainter(null, this.zaxis);
-      this.z_handle.ConfigureAxis("zaxis", this.zmin, this.zmax, zmin, zmax, false, [grminz, grmaxz],
+      this.z_handle.configureAxis("zaxis", this.zmin, this.zmax, zmin, zmax, false, [grminz, grmaxz],
                                        { log: pad ? pad.fLogz : 0 });
       this.z_handle.assignFrameMembers(this,"z");
 
@@ -532,9 +532,9 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       let textMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 }),
           lineMaterial = new THREE.LineBasicMaterial({ color: 0x000000 }),
           ticklen = textsize*0.5, lbls = [], text_scale = 1,
-          xticks = this.x_handle.CreateTicks(false, true),
-          yticks = this.y_handle.CreateTicks(false, true),
-          zticks = this.z_handle.CreateTicks(false, true);
+          xticks = this.x_handle.createTicks(false, true),
+          yticks = this.y_handle.createTicks(false, true),
+          zticks = this.z_handle.createTicks(false, true);
 
       // main element, where all axis elements are placed
       let top = new THREE.Object3D();
@@ -572,7 +572,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
                let space = (xticks.next_major_grpos() - grx);
                if (draw_width > 0)
                   text_scale = Math.min(text_scale, 0.9*space/draw_width)
-               if (this.x_handle.IsCenterLabels()) text3d.grx += space/2;
+               if (this.x_handle.isCenteredLabels()) text3d.grx += space/2;
             }
          }
 
@@ -781,7 +781,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
                let space = (yticks.next_major_grpos() - gry);
                if (draw_width > 0)
                   text_scale = Math.min(text_scale, 0.9*space/draw_width)
-               if (this.y_handle.IsCenterLabels()) text3d.gry += space/2;
+               if (this.y_handle.isCenteredLabels()) text3d.gry += space/2;
             }
          }
          ticks.push(0,gry,0, (is_major ? -ticklen : -ticklen*0.6), gry, 0);
@@ -1588,7 +1588,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          case 17: ilevels = this.GetContourLevels(); palette = this.getHistPalette(); dolines = false; break;
          case 14: dolines = false; donormals = true; break;
          case 16: ilevels = this.GetContourLevels(); dogrid = true; dolines = false; break;
-         default: ilevels = main.z_handle.CreateTicks(true); dogrid = true; break;
+         default: ilevels = main.z_handle.createTicks(true); dogrid = true; break;
       }
 
       if (ilevels) {
