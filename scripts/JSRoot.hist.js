@@ -397,7 +397,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       });
    }
 
-   TPavePainter.prototype.FillWebObjectOptions = function(res) {
+   /** @summary Fill option object used in TWebCanvas
+     * @private */
+   TPavePainter.prototype.fillWebObjectOptions = function(res) {
       if (!res) {
          if (!this.snapid) return null;
          res = { _typename: "TWebObjectOptions", snapid: this.snapid.toString(), opt: this.getDrawOpt(), fcust: "", fopt: [] };
@@ -2295,7 +2297,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (this.ymin === this.ymax) this.ymax += 1;
 
       fp.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, 0, 0);
-      fp.CreateXY({ ndim: this.Dimension(),
+      fp.createXY({ ndim: this.Dimension(),
                     check_pad_range: this.check_pad_range,
                     zoom_ymin: this.zoom_ymin,
                     zoom_ymax: this.zoom_ymax,
@@ -2664,11 +2666,11 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
     * Most of interactivity now handled by frame
     * @private
     */
-   THistPainter.prototype.AddInteractive = function() {
+   THistPainter.prototype.addInteractivity = function() {
 
       if (this.isMainPainter()) {
          let fp = this.getFramePainter();
-         if (fp) return fp.AddInteractive();
+         if (fp) return fp.addInteractivity();
       }
 
       return Promise.resolve(false);
@@ -2826,9 +2828,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                return true;
             }
             break;
-         case "ToggleLogX": fp.ToggleLog("x"); break;
-         case "ToggleLogY": fp.ToggleLog("y"); break;
-         case "ToggleLogZ": fp.ToggleLog("z"); break;
+         case "ToggleLogX": fp.toggleAxisLog("x"); break;
+         case "ToggleLogY": fp.toggleAxisLog("y"); break;
+         case "ToggleLogZ": fp.toggleAxisLog("z"); break;
          case "ToggleStatBox": this.ToggleStat(); return true;
       }
       return false;
@@ -3452,7 +3454,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       }
 
       // when no range selection done, use original statistic from histogram
-      if (!fp.IsAxisZoomed("x") && (histo.fTsumw>0)) {
+      if (!fp.isAxisZoomed("x") && (histo.fTsumw>0)) {
          stat_sumw = histo.fTsumw;
          stat_sumwx = histo.fTsumwx;
          stat_sumwx2 = histo.fTsumwx2;
@@ -4339,7 +4341,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          return this.drawHistTitle();
       }).then(() => {
          this.UpdateStatWebCanvas();
-         return this.AddInteractive();
+         return this.addInteractivity();
       });
    }
 
@@ -4778,7 +4780,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          }
       }
 
-      if (!fp.IsAxisZoomed("x") && !fp.IsAxisZoomed("y") && (histo.fTsumw > 0)) {
+      if (!fp.isAxisZoomed("x") && !fp.isAxisZoomed("y") && (histo.fTsumw > 0)) {
          stat_sum0 = histo.fTsumw;
          stat_sumx1 = histo.fTsumwx;
          stat_sumx2 = histo.fTsumwx2;
@@ -6354,7 +6356,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          this.UpdateStatWebCanvas();
 
-         return this.AddInteractive();
+         return this.addInteractivity();
       });
    }
 

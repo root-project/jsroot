@@ -324,14 +324,14 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
    }
 
    /** @summary Add interactive features, only main painter does it */
-   RHistPainter.prototype.AddInteractive = function() {
+   RHistPainter.prototype.addInteractivity = function() {
       // only first painter in list allowed to add interactive functionality to the frame
 
       if (JSROOT.BatchMode || !this.isMainPainter())
          return true;
 
       let fp = this.getFramePainter();
-      return fp ? fp.AddInteractive() : false;
+      return fp ? fp.addInteractivity() : false;
    }
 
    RHistPainter.prototype.ProcessItemReply = function(reply, req) {
@@ -443,9 +443,9 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
                return true;
             }
             break;
-         case "ToggleLogX": this.getFramePainter().ToggleLog("x"); break;
-         case "ToggleLogY": this.getFramePainter().ToggleLog("y"); break;
-         case "ToggleLogZ": this.getFramePainter().ToggleLog("z"); break;
+         case "ToggleLogX": this.getFramePainter().toggleAxisLog("x"); break;
+         case "ToggleLogY": this.getFramePainter().toggleAxisLog("y"); break;
+         case "ToggleLogZ": this.getFramePainter().toggleAxisLog("z"); break;
          case "ToggleStatBox": this.ToggleStat(); return true;
       }
       return false;
@@ -535,7 +535,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
    RHistPainter.prototype.ChangeValuesRange = function(arg) {
       let pmain = this.getFramePainter();
       if (!pmain) return;
-      let prefix = pmain.IsAxisZoomed(arg) ? "zoom_" + arg : arg;
+      let prefix = pmain.isAxisZoomed(arg) ? "zoom_" + arg : arg;
       let curr = "[" + pmain[prefix+'min'] + "," + pmain[prefix+'max'] + "]";
       let res = prompt("Enter values range for axis " + arg + " like [0,100] or empty string to unzoom", curr);
       res = res ? JSON.parse(res) : [];
@@ -966,7 +966,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       }
 
       // when no range selection done, use original statistic from histogram
-      if (!fp.IsAxisZoomed("x") && histo.fTsumw) {
+      if (!fp.isAxisZoomed("x") && histo.fTsumw) {
          stat_sumw = histo.fTsumw;
          stat_sumwx = histo.fTsumwx;
          stat_sumwx2 = histo.fTsumwx2;
@@ -1810,7 +1810,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
                      // called when bins received from server, must be reentrant
                      this.Draw1DBins();
                      this.UpdateStatWebCanvas();
-                     return this.AddInteractive();
+                     return this.addInteractivity();
                  }).then(res3 => res3 ? this : null);
    }
 
@@ -3572,7 +3572,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
                     if (!res2) return false;
                     this.Draw2DBins();
                     this.UpdateStatWebCanvas();
-                    return this.AddInteractive();
+                    return this.addInteractivity();
                  }).then(res3 => res3 ? this : null);;
    }
 

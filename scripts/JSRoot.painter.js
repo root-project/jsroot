@@ -2042,7 +2042,7 @@ JSROOT.define(['d3'], (d3) => {
 
       if (use_frame) {
          let main = this.getFramePainter();
-         return main ? main.RevertAxis(axis, coord) : 0;
+         return main ? main.revertAxis(axis, coord) : 0;
       }
 
       let pp = this.getPadPainter(),

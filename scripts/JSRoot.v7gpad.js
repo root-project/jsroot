@@ -1354,7 +1354,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Change axis log scale kind */
-   RAxisPainter.prototype.changeLog = function(arg) {
+   RAxisPainter.prototype.changeAxisLog = function(arg) {
       if ((this.kind == "labels") || (this.kind == 'time')) return;
       if (arg === 'toggle') arg = this.log ? 0 : 10;
 
@@ -1367,11 +1367,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if (kind) menu.add("Unzoom", () => this.getFramePainter().Unzoom(kind));
 
-      menu.add("sub:Log scale", () => this.changeLog('toggle'));
-      menu.addchk(!this.log, "linear", 0, arg => this.changeLog(arg));
-      menu.addchk(this.log && (this.logbase==10), "log10", 10, arg => this.changeLog(arg));
-      menu.addchk(this.log && (this.logbase==2), "log2", 2, arg => this.changeLog(arg));
-      menu.addchk(this.log && Math.abs(this.logbase - Math.exp(1)) < 0.1, "ln", Math.exp(1), arg => this.changeLog(arg));
+      menu.add("sub:Log scale", () => this.changeAxisLog('toggle'));
+      menu.addchk(!this.log, "linear", 0, arg => this.changeAxisLog(arg));
+      menu.addchk(this.log && (this.logbase==10), "log10", () => this.changeAxisLog(10));
+      menu.addchk(this.log && (this.logbase==2), "log2", () => this.changeAxisLog(2));
+      menu.addchk(this.log && Math.abs(this.logbase - Math.exp(1)) < 0.1, "ln", () => this.changeAxisLog(Math.exp(1)));
       menu.add("endsub:");
 
       menu.add("sub:Ticks");
@@ -2200,7 +2200,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return changed;
    }
 
-   RFramePainter.prototype.IsAxisZoomed = function(axis) {
+   /** @summary Checks if specified axis zoomed */
+   RFramePainter.prototype.isAxisZoomed = function(axis) {
       return this['zoom_'+axis+'min'] !== this['zoom_'+axis+'max'];
    }
 
@@ -2255,7 +2256,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       menu.add("Unzoom", this.Unzoom.bind(this, kind));
 
       //if (this[kind+"_kind"] == "normal")
-      //   menu.addchk(this["log"+kind], "SetLog"+kind, this.ToggleLog.bind(this, kind));
+      //   menu.addchk(this["log"+kind], "SetLog"+kind, this.toggleAxisLog.bind(this, kind));
 
       // here should be all axes attributes in offline
    }
@@ -2287,10 +2288,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          menu.add("Unzoom Z", this.Unzoom.bind(this,"z"));
       menu.add("Unzoom all", this.Unzoom.bind(this,"xyz"));
 
-      // menu.addchk(this.logx, "SetLogx", this.ToggleLog.bind(this,"x"));
-      // menu.addchk(this.logy, "SetLogy", this.ToggleLog.bind(this,"y"));
+      // menu.addchk(this.logx, "SetLogx", this.toggleAxisLog.bind(this,"x"));
+      // menu.addchk(this.logy, "SetLogy", this.toggleAxisLog.bind(this,"y"));
       // if (this.Dimension() == 2)
-      //   menu.addchk(pad.fLogz, "SetLogz", this.ToggleLog.bind(main,"z"));
+      //   menu.addchk(pad.fLogz, "SetLogz", this.toggleAxisLog.bind(main,"z"));
       menu.add("separator");
 
 
@@ -2306,7 +2307,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Convert graphical coordinate into axis value */
-   RFramePainter.prototype.RevertAxis = function(axis, pnt) {
+   RFramePainter.prototype.revertAxis = function(axis, pnt) {
       let handle = this[axis+"_handle"];
       return handle ? handle.revertPoint(pnt) : 0;
    }
@@ -2322,31 +2323,31 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if (this.swap_xy) id = 1-id;
 
-      let axis_value = this.RevertAxis(axis_name, m[id]);
+      let axis_value = this.revertAxis(axis_name, m[id]);
 
       this.showObjectStatus(hint_name, hint_title, axis_name + " : " + this.axisAsText(axis_name, axis_value), m[0]+","+m[1]);
    }
 
    /** @summary Add interactive keys handlers
     * @private */
-   RFramePainter.prototype.AddKeysHandler = function() {
+   RFramePainter.prototype.addKeysHandler = function() {
       if (JSROOT.BatchMode) return;
       JSROOT.require(['interactive']).then(inter => {
          inter.FrameInteractive.assign(this);
-         this.AddKeysHandler();
+         this.addKeysHandler();
       });
    }
 
    /** @summary Add interactive functionality to the frame
     * @private */
-   RFramePainter.prototype.AddInteractive = function() {
+   RFramePainter.prototype.addInteractivity = function() {
 
       if (JSROOT.BatchMode || (!JSROOT.settings.Zooming && !JSROOT.settings.ContextMenu))
          return Promise.resolve(true);
 
       return JSROOT.require(['interactive']).then(inter => {
          inter.FrameInteractive.assign(this);
-         return this.AddInteractive();
+         return this.addInteractivity();
       });
    }
 
@@ -2356,9 +2357,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Toggle log scale on the specified axes */
-   RFramePainter.prototype.ToggleLog = function(axis) {
+   RFramePainter.prototype.toggleAxisLog = function(axis) {
       let handle = this[axis+"_handle"];
-      if (handle) handle.changeLog('toggle');
+      if (handle) handle.changeAxisLog('toggle');
    }
 
    function drawRFrame(divid, obj, opt) {

@@ -1747,8 +1747,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       } else {
          let main = this.getFramePainter();
          if (main && this.move_bin) {
-            this.move_bin.x = main.RevertAxis("x", this.move_x0 + this.pos_dx);
-            this.move_bin.y = main.RevertAxis("y", this.move_y0 + this.pos_dy);
+            this.move_bin.x = main.revertAxis("x", this.move_x0 + this.pos_dx);
+            this.move_bin.y = main.revertAxis("y", this.move_y0 + this.pos_dy);
             this.DrawGraph();
          }
       }
@@ -1766,8 +1766,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          if (main && this.bins && !not_changed) {
             for (let k=0;k<this.bins.length;++k) {
                let bin = this.bins[k];
-               bin.x = main.RevertAxis("x", main.grx(bin.x) + this.pos_dx);
-               bin.y = main.RevertAxis("y", main.gry(bin.y) + this.pos_dy);
+               bin.x = main.revertAxis("x", main.grx(bin.x) + this.pos_dx);
+               bin.y = main.revertAxis("y", main.gry(bin.y) + this.pos_dy);
                exec += "SetPoint(" + bin.indx + "," + bin.x + "," + bin.y + ");;";
                if ((bin.indx == 0) && this.matchObjectType('TCutG'))
                   exec += "SetPoint(" + (this.getObject().fNpoints-1) + "," + bin.x + "," + bin.y + ");;";
@@ -1808,8 +1808,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
          if (method.fName == 'InsertPoint') {
             let main = this.getFramePainter(),
-                userx = main ? main.RevertAxis("x", pnt.x) : 0,
-                usery = main ? main.RevertAxis("y", pnt.y) : 0;
+                userx = main ? main.revertAxis("x", pnt.x) : 0,
+                usery = main ? main.revertAxis("y", pnt.y) : 0;
             canp.ShowMessage('InsertPoint(' + userx.toFixed(3) + ',' + usery.toFixed(3) + ') not yet implemented');
          } else if (this.args_menu_id && hint && (hint.binindx !== undefined)) {
             this.submitCanvExec("RemovePoint(" + hint.binindx + ")", this.args_menu_id);
@@ -2667,7 +2667,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       if ((pnt === null) || !spline || !main) {
          cleanup = true;
       } else {
-         xx = main.RevertAxis("x", pnt.x);
+         xx = main.revertAxis("x", pnt.x);
          indx = this.FindX(xx);
          knot = spline.fPoly[indx];
          yy = this.Eval(knot, xx);
@@ -3763,8 +3763,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       if (url && this.isMainPainter() && is_buf && fp)
          return this.drawColorPalette(this.options.Zscale, true).then(() => {
             fp.setAxesRanges(JSROOT.create("TAxis"), 0, 1, JSROOT.create("TAxis"), 0, 1, null, 0, 0);
-            fp.CreateXY({ ndim: 2, check_pad_range: false });
-            fp.AddInteractive();
+            fp.createXY({ ndim: 2, check_pad_range: false });
+            fp.addInteractivity();
             return this;
          });
 

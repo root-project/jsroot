@@ -1043,7 +1043,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return null;
    }
 
-   TFramePainter.prototype.CheckAxisZoom = function(name) {
+   /** @summary Apply axis zooming to frame painter
+     * @private */
+   TFramePainter.prototype.applyAxisZoom = function(name) {
       let axis = this.getAxis(name);
       if (axis && axis.TestBit(JSROOT.EAxisBits.kAxisRange)) {
          if ((axis.fFirst !== axis.fLast) && ((axis.fFirst > 1) || (axis.fLast < axis.fNbins))) {
@@ -1056,7 +1058,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
    }
 
-   TFramePainter.prototype.CheckPadUserRange = function(pad, name) {
+   /** @summary Apply axis zooming from pad user range
+     * @private */
+   TFramePainter.prototype.applyPadUserRange = function(pad, name) {
       if (!pad) return;
 
       // seems to be, not allways user range calculated
@@ -1078,7 +1082,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          }
       }
 
-      if ((umin>=umax) || (Math.abs(umin)<eps && Math.abs(umax-1)<eps)) return;
+      if ((umin >= umax) || (Math.abs(umin) < eps && Math.abs(umax-1) < eps)) return;
 
       if (pad['fLog' + name] > 0) {
          umin = Math.exp(umin * Math.log(10));
@@ -1105,7 +1109,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
      *    this.[x,y]  these are d3.scale objects
      *    this.gr[x,y]  converts root scale into graphical value
      * @private */
-   TFramePainter.prototype.CreateXY = function(opts) {
+   TFramePainter.prototype.createXY = function(opts) {
 
       this.CleanXY(); // remove all previous configurations
 
@@ -1142,16 +1146,16 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.zoom_ymin = this.zoom_ymax = 0;
          this.zoom_zmin = this.zoom_zmax = 0;
 
-         this.CheckAxisZoom('x');
-         if (opts.ndim && (opts.ndim > 1)) this.CheckAxisZoom('y');
-         if (opts.ndim && (opts.ndim > 2)) this.CheckAxisZoom('z');
+         this.applyAxisZoom('x');
+         if (opts.ndim && (opts.ndim > 1)) this.applyAxisZoom('y');
+         if (opts.ndim && (opts.ndim > 2)) this.applyAxisZoom('z');
 
          if (opts.check_pad_range === "pad_range") {
             let canp = this.getCanvPainter();
             // ignore range set in the online canvas
             if (!canp || !canp.online_canvas) {
-               this.CheckPadUserRange(pad, 'x');
-               this.CheckPadUserRange(pad, 'y');
+               this.applyPadUserRange(pad, 'x');
+               this.applyPadUserRange(pad, 'y');
             }
          }
       }
@@ -1627,7 +1631,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    /** @summary Change log state of specified axis
      * @param {number} value - 0 (linear), 1 (log) or 2 (log2) */
-   TFramePainter.prototype.changeLog = function(axis, value) {
+   TFramePainter.prototype.changeAxisLog = function(axis, value) {
       let pp = this.getPadPainter(),
           pad = pp ? pp.getRootPad(true) : null;
       if (!pad) return;
@@ -1652,8 +1656,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Toggle log state on the specified axis */
-   TFramePainter.prototype.ToggleLog = function(axis) {
-      this.changeLog(axis, "toggle");
+   TFramePainter.prototype.toggleAxisLog = function(axis) {
+      this.changeAxisLog(axis, "toggle");
    }
 
    /** @summary Fill context menu for the frame
@@ -1670,9 +1674,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          menu.add("Unzoom", this.Unzoom.bind(this, kind));
          if (pad) {
             menu.add("sub:SetLog "+kind);
-            menu.addchk(pad["fLog" + kind] == 0, "linear", "0", arg => this.changeLog(kind, parseInt(arg)));
-            menu.addchk(pad["fLog" + kind] == 1, "log", "1", arg => this.changeLog(kind, parseInt(arg)));
-            menu.addchk(pad["fLog" + kind] == 2, "log2", "2", arg => this.changeLog(kind, parseInt(arg)));
+            menu.addchk(pad["fLog" + kind] == 0, "linear", () => this.changeAxisLog(kind, 0));
+            menu.addchk(pad["fLog" + kind] == 1, "log", () => this.changeAxisLog(kind, 1));
+            menu.addchk(pad["fLog" + kind] == 2, "log2", () => this.changeAxisLog(kind, 2));
             menu.add("endsub:");
          }
          menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kMoreLogLabels), "More log",
@@ -1704,11 +1708,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       menu.add("Unzoom all", () => this.Unzoom("xyz"));
 
       if (pad) {
-         menu.addchk(pad.fLogx, "SetLogx", () => this.ToggleLog("x"));
-         menu.addchk(pad.fLogy, "SetLogy", () => this.ToggleLog("y"));
+         menu.addchk(pad.fLogx, "SetLogx", () => this.toggleAxisLog("x"));
+         menu.addchk(pad.fLogy, "SetLogy", () => this.toggleAxisLog("y"));
 
          if (main && (typeof main.Dimension === 'function') && (main.Dimension() > 1))
-            menu.addchk(pad.fLogz, "SetLogz", () => this.ToggleLog("z"));
+            menu.addchk(pad.fLogz, "SetLogz", () => this.toggleAxisLog("z"));
          menu.add("separator");
       }
 
@@ -1723,7 +1727,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return true;
    }
 
-   TFramePainter.prototype.FillWebObjectOptions = function(res) {
+   /** @summary Fill option object used in TWebCanvas
+     * @private */
+   TFramePainter.prototype.fillWebObjectOptions = function(res) {
+      if (!res) {
+         if (!this.snapid) return null;
+         res = { _typename: "TWebObjectOptions", snapid: this.snapid.toString(), opt: this.getDrawOpt(), fcust: "", fopt: [] };
+       }
+
       res.fcust = "frame";
       res.fopt = [this.scale_xmin || 0, this.scale_ymin || 0, this.scale_xmax || 0, this.scale_ymax || 0];
       return res;
@@ -1765,7 +1776,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
     /** @summary Function can be used for zooming into specified range
-      * @desc if both limits for each axis 0 (like xmin==xmax==0), axis will be unzoomed */
+      * @desc if both limits for each axis 0 (like xmin==xmax==0), axis will be unzoomed
+      * @param {number} xmin
+      * @param {number} xmax
+      * @param {number} [ymin]
+      * @param {number} [ymax]
+      * @param {number} [zmin]
+      * @param {number} [zmax]
+      * @returns {boolean} if zoom operation was performed */
    TFramePainter.prototype.Zoom = function(xmin, xmax, ymin, ymax, zmin, zmax) {
 
       // disable zooming when axis conversion is enabled
@@ -1863,9 +1881,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return changed;
    }
 
-   /** @summary Checks if specified axes zoom */
-   TFramePainter.prototype.IsAxisZoomed = function(axis) { return this['zoom_'+axis+'min'] !== this['zoom_'+axis+'max']; }
-
+   /** @summary Checks if specified axis zoomed */
+   TFramePainter.prototype.isAxisZoomed = function(axis) {
+      return this['zoom_'+axis+'min'] !== this['zoom_'+axis+'max'];
+   }
 
    /** @summary Unzoom speicied axes */
    TFramePainter.prototype.Unzoom = function(dox, doy, doz) {
@@ -1911,14 +1930,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Convert graphical coordinate into axis value */
-   TFramePainter.prototype.RevertAxis = function(axis, pnt) {
+   TFramePainter.prototype.revertAxis = function(axis, pnt) {
       let handle = this[axis+"_handle"];
       return handle ? handle.revertPoint(pnt) : 0;
    }
 
    /** @summary Show axis status message
-   * @desc method called normally when mouse enter main object element
-   * @private */
+    * @desc method called normally when mouse enter main object element
+    * @private */
    TFramePainter.prototype.ShowAxisStatus = function(axis_name, evnt) {
       let taxis = this.getAxis(axis_name), hint_name = axis_name, hint_title = "TAxis",
           m = d3.pointer(evnt, this.getFrameSvg().node()), id = (axis_name=="x") ? 0 : 1;
@@ -1926,30 +1945,30 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (taxis) { hint_name = taxis.fName; hint_title = taxis.fTitle || ("TAxis object for " + axis_name); }
       if (this.swap_xy) id = 1-id;
 
-      let axis_value = this.RevertAxis(axis_name, m[id]);
+      let axis_value = this.revertAxis(axis_name, m[id]);
 
       this.showObjectStatus(hint_name, hint_title, axis_name + " : " + this.axisAsText(axis_name, axis_value), m[0]+","+m[1]);
    }
 
    /** @summary Add interactive keys handlers
     * @private */
-   TFramePainter.prototype.AddKeysHandler = function() {
+   TFramePainter.prototype.addKeysHandler = function() {
       if (JSROOT.BatchMode) return;
       JSROOT.require(['interactive']).then(inter => {
          inter.FrameInteractive.assign(this);
-         this.AddKeysHandler();
+         this.addKeysHandler();
       });
    }
 
    /** @summary Add interactive functionality to the frame
     * @private */
-   TFramePainter.prototype.AddInteractive = function() {
+   TFramePainter.prototype.addInteractivity = function() {
       if (JSROOT.BatchMode || (!JSROOT.settings.Zooming && !JSROOT.settings.ContextMenu))
          return Promise.resolve(false);
 
       return JSROOT.require(['interactive']).then(inter => {
          inter.FrameInteractive.assign(this);
-         return this.AddInteractive();
+         return this.addInteractivity();
       });
    }
 
@@ -3188,8 +3207,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if (scan_subpads) sub.GetWebPadOptions(arg);
          } else if (sub.snapid) {
             let opt = { _typename: "TWebObjectOptions", snapid: sub.snapid.toString(), opt: sub.getDrawOpt(), fcust: "", fopt: [] };
-            if (typeof sub.FillWebObjectOptions == "function")
-               opt = sub.FillWebObjectOptions(opt);
+            if (typeof sub.fillWebObjectOptions == "function")
+               opt = sub.fillWebObjectOptions(opt);
             elem.primitives.push(opt);
          }
       }
@@ -4143,8 +4162,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                msg = "OPTIONS6:" + painter.GetWebPadOptions("only_this");
             break;
          case "pave_moved":
-            if (painter.FillWebObjectOptions) {
-               let info = painter.FillWebObjectOptions();
+            if (painter.fillWebObjectOptions) {
+               let info = painter.fillWebObjectOptions();
                if (info) msg = "PRIMIT6:" + JSROOT.toJSON(info);
             }
             break;

@@ -1383,7 +1383,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
          this.UpdatePaletteDraw();
          main.Render3D();
          this.UpdateStatWebCanvas();
-         main.AddKeysHandler();
+         main.addKeysHandler();
          return this;
       });
 
@@ -1431,7 +1431,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
          this.Draw3DBins();
          main.Render3D();
          this.UpdateStatWebCanvas();
-         main.AddKeysHandler();
+         main.addKeysHandler();
          return this;
       });
    }
@@ -2327,7 +2327,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
          }
       }
 
-      if ((histo.fTsumw > 0) && !fp.IsAxisZoomed("x") && !fp.IsAxisZoomed("y") && !fp.IsAxisZoomed("z")) {
+      if ((histo.fTsumw > 0) && !fp.isAxisZoomed("x") && !fp.isAxisZoomed("y") && !fp.isAxisZoomed("z")) {
          stat_sum0  = histo.fTsumw;
          stat_sumx1 = histo.fTsumwx;
          stat_sumx2 = histo.fTsumwx2;
@@ -2860,7 +2860,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
          this.Draw3DBins();
          main.Render3D();
          this.UpdateStatWebCanvas();
-         main.AddKeysHandler();
+         main.addKeysHandler();
       });
    }
 
