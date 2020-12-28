@@ -3926,7 +3926,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    RCanvasPainter.prototype.SendWebsocket = function(msg, chid) {
       if (this._websocket)
-         this._websocket.Send(msg, chid);
+         this._websocket.send(msg, chid);
    }
 
    /** @summary Close websocket connecttion to canvas */
@@ -3983,7 +3983,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
              snapid = msg.substr(0,p1),
              snap = JSROOT.parse(msg.substr(p1+1));
          this.RedrawPadSnap(snap).then(() => {
-            handle.Send("SNAPDONE:" + snapid); // send ready message back when drawing completed
+            handle.send("SNAPDONE:" + snapid); // send ready message back when drawing completed
          });
       } else if (msg.substr(0,4)=='JSON') {
          let obj = JSROOT.parse(msg.substr(4));
@@ -3999,11 +3999,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
              reply = "REPLY:" + cmdid + ":";
          if ((cmd == "SVG") || (cmd == "PNG") || (cmd == "JPEG")) {
             this.CreateImage(cmd.toLowerCase())
-                .then(res => handle.Send(reply + res));
+                .then(res => handle.send(reply + res));
          } else if (cmd.indexOf("ADDPANEL:") == 0) {
             let relative_path = cmd.substr(9);
             if (!this.ShowUI5Panel) {
-               handle.Send(reply + "false");
+               handle.send(reply + "false");
             } else {
 
                let conn = new JSROOT.WebWindowHandle(handle.kind);
@@ -4018,17 +4018,17 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                   OnWebsocketMsg: function(panel_handle, msg) {
                      let panel_name = (msg.indexOf("SHOWPANEL:")==0) ? msg.substr(10) : "";
                      this.cpainter.ShowUI5Panel(panel_name, panel_handle)
-                                  .then(res => handle.Send(reply + (res ? "true" : "false")));
+                                  .then(res => handle.send(reply + (res ? "true" : "false")));
                   },
 
                   OnWebsocketClosed: function() {
                      // if connection failed,
-                     handle.Send(reply + "false");
+                     handle.send(reply + "false");
                   },
 
                   OnWebsocketError: function() {
                      // if connection failed,
-                     handle.Send(reply + "false");
+                     handle.send(reply + "false");
                   }
 
                });
@@ -4045,7 +4045,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             }
          } else {
             console.log('Unrecognized command ' + cmd);
-            handle.Send(reply);
+            handle.send(reply);
          }
       } else if ((msg.substr(0,7)=='DXPROJ:') || (msg.substr(0,7)=='DYPROJ:')) {
          let kind = msg[1],

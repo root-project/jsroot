@@ -306,7 +306,7 @@ JSROOT.define([], () => {
    /** @summary Close connection */
    WebWindowHandle.prototype.close = function(force) {
       if (this.master) {
-         this.master.Send("CLOSECH=" + this.channelid, 0);
+         this.master.send("CLOSECH=" + this.channelid, 0);
          delete this.master.channels[this.channelid];
          delete this.master;
          return;
@@ -338,10 +338,11 @@ JSROOT.define([], () => {
    }
 
    /** @summary Send text message via the connection.
-     * @param {string} msg - text message to send */
-   WebWindowHandle.prototype.Send = function(msg, chid) {
+     * @param {string} msg - text message to send
+     * @param {number} [chid] - channel id, 1 by default, 0 used only for internal communication */
+   WebWindowHandle.prototype.send = function(msg, chid) {
       if (this.master)
-         return this.master.Send(msg, this.channelid);
+         return this.master.send(msg, this.channelid);
 
       if (!this._websocket || (this.state <= 0)) return false;
 
@@ -356,7 +357,7 @@ JSROOT.define([], () => {
       this._websocket.send(prefix + msg);
       if (this.kind === "websocket") {
          if (this.timerid) clearTimeout(this.timerid);
-         this.timerid = setTimeout(this.KeepAlive.bind(this), 10000);
+         this.timerid = setTimeout(() => this.keepAlive(), 10000);
       }
 
       return true;
@@ -364,10 +365,10 @@ JSROOT.define([], () => {
 
    /** @summary Inject message(s) into input queue, for debug purposes only
      * @private */
-   WebWindowHandle.prototype.Inject = function(msg, chid, immediate) {
+   WebWindowHandle.prototype.inject = function(msg, chid, immediate) {
       // use timeout to avoid too deep call stack
       if (!immediate)
-         return setTimeout(this.Inject.bind(this, msg, chid, true), 0);
+         return setTimeout(this.inject.bind(this, msg, chid, true), 0);
 
       if (chid === undefined) chid = 1;
 
@@ -380,15 +381,16 @@ JSROOT.define([], () => {
       }
    }
 
-   /** @summary Send keepalive message.
-    * @private */
-   WebWindowHandle.prototype.KeepAlive = function() {
+   /** @summary Send keep-alive message.
+     * @desc Only for internal use, only when used with websockets
+     * @private */
+   WebWindowHandle.prototype.keepAlive = function() {
       delete this.timerid;
-      this.Send("KEEPALIVE", 0);
+      this.send("KEEPALIVE", 0);
    }
 
    /** @summary Method open channel, which will share same connection, but can be used independently from main
-    * @private */
+     * @private */
    WebWindowHandle.prototype.CreateChannel = function() {
       if (this.master)
          return master.CreateChannel();
@@ -482,7 +484,7 @@ JSROOT.define([], () => {
 
             let key = pthis.key || "";
 
-            pthis.Send("READY=" + key, 0); // need to confirm connection
+            pthis.send("READY=" + key, 0); // need to confirm connection
             pthis.invokeReceiver(false, "OnWebsocketOpened");
          }
 
@@ -541,7 +543,7 @@ JSROOT.define([], () => {
             }
 
             if (pthis.ackn > 7)
-               pthis.Send('READY', 0); // send dummy message to server
+               pthis.send('READY', 0); // send dummy message to server
          }
 
          conn.onclose = function() {

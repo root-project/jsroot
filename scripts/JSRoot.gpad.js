@@ -3889,7 +3889,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    TCanvasPainter.prototype.SendWebsocket = function(msg) {
       if (!this._websocket) return;
       if (this._websocket.canSend())
-         this._websocket.Send(msg);
+         this._websocket.send(msg);
       else
          console.warn("DROP SEND: " + msg);
    }
@@ -3946,7 +3946,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             this.CompleteCanvasSnapDrawing();
             let ranges = this.GetWebPadOptions(); // all data, including subpads
             if (ranges) ranges = ":" + ranges;
-            handle.Send("READY6:" + snap.fVersion + ranges); // send ready message back when drawing completed
+            handle.send("READY6:" + snap.fVersion + ranges); // send ready message back when drawing completed
          });
       } else if (msg.substr(0,5)=='MENU:') {
          // this is menu with exact identifier for object
@@ -3963,10 +3963,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
              reply = "REPLY:" + cmdid + ":";
          if ((cmd == "SVG") || (cmd == "PNG") || (cmd == "JPEG")) {
             this.CreateImage(cmd.toLowerCase())
-                .then(res => handle.Send(reply + res));
+                .then(res => handle.send(reply + res));
          } else {
             console.log('Unrecognized command ' + cmd);
-            handle.Send(reply);
+            handle.send(reply);
          }
       } else if ((msg.substr(0,7)=='DXPROJ:') || (msg.substr(0,7)=='DYPROJ:')) {
          let kind = msg[1],
@@ -4184,7 +4184,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if (msg) {
          console.log("Sending " + msg.length + "  " + msg.substr(0,40));
-         this._websocket.Send(msg);
+         this._websocket.send(msg);
       }
    }
 
