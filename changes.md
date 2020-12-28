@@ -839,7 +839,7 @@
 3. Prompt for input of command arguments
 4. After command execution one could automatically reload hierarchy (_hreload property) or
    update view of displayed object (_update_item property)
-5. Use HiearchyPainter for implementing draw.htm. This let us handle
+5. Use HierarchyPainter for implementing draw.htm. This let us handle
    all different kinds of extra attributes in central place
 6. Fix problem in tabs layout - new tab should be add to direct child
 7. When drawing several tabs, activate frame before drawing - only then

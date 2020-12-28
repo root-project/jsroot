@@ -1339,6 +1339,7 @@ JSROOT.define(['d3'], (d3) => {
 
    /** @summary Assign painter to specified DOM element
      * @param {string|object} elem - element ID or DOM Element
+     * @desc Normally DOM element should be already assigned in constructor
      * @protected */
    BasePainter.prototype.setDom = function(elem) {
       if (elem !== undefined) {
@@ -1399,7 +1400,7 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /** @summary Set painter, stored in first child element
-     * @desc Can only be done when first drawing is completed
+     * @desc Only make sense after first drawing is completed and any child element add to configured DOM
      * @protected */
    BasePainter.prototype.setTopPainter = function() {
       _accessTopPainter(this, true);
@@ -1436,6 +1437,7 @@ JSROOT.define(['d3'], (d3) => {
 
    /** @summary Checks if draw elements were resized and drawing should be updated
      * @returns {boolean} true if resize was detected
+     * @protected
      * @abstract */
    BasePainter.prototype.checkResize = function(/* arg */) {}
 
@@ -1496,11 +1498,11 @@ JSROOT.define(['d3'], (d3) => {
 
    /** @summary Try enlarge main drawing element to full HTML page.
      * @param {string|boolean} action  - defines that should be done
-     * @desc Possible values for parameter:
+     * @desc Possible values for action parameter:
      *    - true - try to enlarge
-     *    - false - cancel enlarge state
+     *    - false - revert enlarge state
      *    - 'toggle' - toggle enlarge state
-     *    - 'state' - return current state
+     *    - 'state' - only returns current enlarge state
      *    - 'verify' - check if element can be enlarged
      * if action not specified, just return possibility to enlarge main div
      * @protected */
@@ -1563,7 +1565,7 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /** @summary Set item name, associated with the painter
-     * @desc Used by {@link JSROOT.HiearchyPainter}
+     * @desc Used by {@link JSROOT.HierarchyPainter}
      * @private */
    BasePainter.prototype.setItemName = function(name, opt, hpainter) {
       if (typeof name === 'string')
@@ -1577,11 +1579,11 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /** @summary Returns assigned item name
-     * @desc Used with {@link JSROOT.HiearchyPainter} to identify drawn item name */
+     * @desc Used with {@link JSROOT.HierarchyPainter} to identify drawn item name */
    BasePainter.prototype.getItemName = function() { return ('_hitemname' in this) ? this._hitemname : null; }
 
    /** @summary Returns assigned item draw option
-     * @desc Used with {@link JSROOT.HiearchyPainter} to identify drawn item option */
+     * @desc Used with {@link JSROOT.HierarchyPainter} to identify drawn item option */
    BasePainter.prototype.getItemDrawOpt = function() { return this._hdrawopt || ""; }
 
    // ==============================================================================
@@ -1596,7 +1598,6 @@ JSROOT.define(['d3'], (d3) => {
     * @param {object|string} dom - identifier of dom element
     * @param {object} obj - object to draw
     * @param {string} [opt] - object draw options
-    * @private
     */
 
    function ObjectPainter(divid, obj, opt) {
