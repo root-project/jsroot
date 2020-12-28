@@ -7,7 +7,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    JSROOT.v7 = {}; // placeholder for v7-relevant code
 
-   /** @summary Evaluate attributes using fAttr storage and configured RStyle */
+   /** @summary Evaluate v7 attributes using fAttr storage and configured RStyle
+     * @private */
    JSROOT.ObjectPainter.prototype.v7EvalAttr = function(name, dflt) {
       let obj = this.getObject();
       if (!obj) return dflt;
@@ -51,7 +52,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return dflt;
    }
 
-   /** @summary Set attributes value */
+   /** @summary Set v7 attributes value
+     * @private */
    JSROOT.ObjectPainter.prototype.v7SetAttr = function(name, value) {
       let obj = this.getObject();
       if (this.cssprefix) name = this.cssprefix + name;
@@ -60,7 +62,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          obj.fAttr.m[name] = { v: value };
    }
 
-   /** @summary Decode pad length from string, return pixel value */
+   /** @summary Decode pad length from string, return pixel value
+     * @private */
    JSROOT.ObjectPainter.prototype.v7EvalLength = function(name, sizepx, dflt) {
       if (sizepx <= 0) sizepx = 1;
 
@@ -189,7 +192,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.createAttLine({ color: line_color, width: line_width, style: line_style });
    }
 
-    /** @summary Create this.markeratt object based on v7 attributes */
+    /** @summary Create this.markeratt object based on v7 attributes
+      * @private */
    JSROOT.ObjectPainter.prototype.createv7AttMarker = function(prefix) {
       if (!prefix || (typeof prefix != "string")) prefix = "marker_";
 
@@ -200,7 +204,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.createAttMarker({ color: marker_color, size: marker_size, style: marker_style });
    }
 
-   /** @summary Create RChangeAttr, which can be applied on the server side */
+   /** @summary Create RChangeAttr, which can be applied on the server side
+     * @private */
    JSROOT.ObjectPainter.prototype.v7AttrChange = function(req, name, value, kind) {
       if (!this.snapid)
          return false;
@@ -285,10 +290,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    JSROOT.v7.CommMode = { kNormal: 1, kLessTraffic: 2, kOffline: 3 }
 
-   /** Return communication mode with the server
+   /** @summary Return communication mode with the server
+    * @desc Using constants from {@link JSROOT.v7.CommMode} object
     * kOffline means no server there,
     * kLessTraffic advise not to send commands if offline functionality available
-    * kNormal is standard functionality with RCanvas on server side*/
+    * kNormal is standard functionality with RCanvas on server side
+    * @private */
    JSROOT.ObjectPainter.prototype.v7CommMode = function() {
       let canp = this.getCanvPainter();
       if (!canp || !canp.SubmitDrawableRequest || !canp._websocket)
@@ -298,48 +305,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    // ================================================================================
-
-   /** @summary assign methods for the RAxis objects
-     * @private */
-   JSROOT.v7.AssignRAxisMethods = function(axis) {
-      if ((axis._typename == "ROOT::Experimental::RAxisEquidistant") || (axis._typename == "ROOT::Experimental::RAxisLabels")) {
-         if (axis.fInvBinWidth === 0) {
-            axis.$dummy = true;
-            axis.fInvBinWidth = 1;
-            axis.fNBinsNoOver = 0;
-            axis.fLow = 0;
-         }
-
-         axis.min = axis.fLow;
-         axis.max = axis.fLow + axis.fNBinsNoOver/axis.fInvBinWidth;
-         axis.GetNumBins = function() { return this.fNBinsNoOver; }
-         axis.GetBinCoord = function(bin) { return this.fLow + bin/this.fInvBinWidth; }
-         axis.FindBin = function(x,add) { return Math.floor((x - this.fLow)*this.fInvBinWidth + add); }
-      } else if (axis._typename == "ROOT::Experimental::RAxisIrregular") {
-         axis.min = axis.fBinBorders[0];
-         axis.max = axis.fBinBorders[axis.fBinBorders.length - 1];
-         axis.GetNumBins = function() { return this.fBinBorders.length; }
-         axis.GetBinCoord = function(bin) {
-            let indx = Math.round(bin);
-            if (indx <= 0) return this.fBinBorders[0];
-            if (indx >= this.fBinBorders.length) return this.fBinBorders[this.fBinBorders.length - 1];
-            if (indx==bin) return this.fBinBorders[indx];
-            let indx2 = (bin < indx) ? indx - 1 : indx + 1;
-            return this.fBinBorders[indx] * Math.abs(bin-indx2) + this.fBinBorders[indx2] * Math.abs(bin-indx);
-         }
-         axis.FindBin = function(x,add) {
-            for (let k = 1; k < this.fBinBorders.length; ++k)
-               if (x < this.fBinBorders[k]) return Math.floor(k-1+add);
-            return this.fBinBorders.length - 1;
-         }
-      }
-
-      // to support some code from ROOT6 drawing
-
-      axis.GetBinCenter = function(bin) { return this.GetBinCoord(bin-0.5); }
-      axis.GetBinLowEdge = function(bin) { return this.GetBinCoord(bin-1); }
-   }
-
 
    function RAxisPainter(divid, arg1, axis, cssprefix) {
       let drawable = cssprefix ? arg1.getObject() : arg1;

@@ -65,8 +65,7 @@ JSROOT.define(['d3'], (d3) => {
 
    /** @namespace
      * @summary Collection of Painter-related methods and classes
-     * @alias JSROOT.Painter
-     * @private */
+     * @alias JSROOT.Painter */
    let jsrp = {
       Coord: {
          kCARTESIAN: 1,
@@ -1853,7 +1852,7 @@ JSROOT.define(['d3'], (d3) => {
    /** @summary (re)creates svg:g element for object drawings
      * @desc either one attach svg:g to pad list of primitives (default)
      * or svg:g element created in specified frame layer (default main_layer)
-     * @param {string} [frame_layer] - when specified, <g> element will be created inside frame layer, otherwise on the pad
+     * @param {boolean} [frame_layer] - when specified, <g> element will be created inside frame, otherwise in the pad
      * @protected */
    ObjectPainter.prototype.createG = function(frame_layer) {
       if (this.draw_g) {
@@ -2112,6 +2111,7 @@ JSROOT.define(['d3'], (d3) => {
 
    /** @summary Add painter to pad list of painters
      * @param {string} [pad_name] - optional pad name where painter should be add
+     * @desc Normally one should use {@link JSROOT.Painter.ensureTCanvas} to add painter to pad list of primitives
      * @protected */
    ObjectPainter.prototype.addToPadPrimitives = function(pad_name) {
       if (pad_name !== undefined) this.setPadName(pad_name);

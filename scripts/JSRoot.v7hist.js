@@ -5,7 +5,48 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
    "use strict";
 
-   /** @summary Base painter ]class for RHist objects
+   /** @summary assign methods for the RAxis objects
+     * @private */
+   function assignRAxisMethods(axis) {
+      if ((axis._typename == "ROOT::Experimental::RAxisEquidistant") || (axis._typename == "ROOT::Experimental::RAxisLabels")) {
+         if (axis.fInvBinWidth === 0) {
+            axis.$dummy = true;
+            axis.fInvBinWidth = 1;
+            axis.fNBinsNoOver = 0;
+            axis.fLow = 0;
+         }
+
+         axis.min = axis.fLow;
+         axis.max = axis.fLow + axis.fNBinsNoOver/axis.fInvBinWidth;
+         axis.GetNumBins = function() { return this.fNBinsNoOver; }
+         axis.GetBinCoord = function(bin) { return this.fLow + bin/this.fInvBinWidth; }
+         axis.FindBin = function(x,add) { return Math.floor((x - this.fLow)*this.fInvBinWidth + add); }
+      } else if (axis._typename == "ROOT::Experimental::RAxisIrregular") {
+         axis.min = axis.fBinBorders[0];
+         axis.max = axis.fBinBorders[axis.fBinBorders.length - 1];
+         axis.GetNumBins = function() { return this.fBinBorders.length; }
+         axis.GetBinCoord = function(bin) {
+            let indx = Math.round(bin);
+            if (indx <= 0) return this.fBinBorders[0];
+            if (indx >= this.fBinBorders.length) return this.fBinBorders[this.fBinBorders.length - 1];
+            if (indx==bin) return this.fBinBorders[indx];
+            let indx2 = (bin < indx) ? indx - 1 : indx + 1;
+            return this.fBinBorders[indx] * Math.abs(bin-indx2) + this.fBinBorders[indx2] * Math.abs(bin-indx);
+         }
+         axis.FindBin = function(x,add) {
+            for (let k = 1; k < this.fBinBorders.length; ++k)
+               if (x < this.fBinBorders[k]) return Math.floor(k-1+add);
+            return this.fBinBorders.length - 1;
+         }
+      }
+
+      // to support some code from ROOT6 drawing
+
+      axis.GetBinCenter = function(bin) { return this.GetBinCoord(bin-0.5); }
+      axis.GetBinLowEdge = function(bin) { return this.GetBinCoord(bin-1); }
+   }
+
+   /** @summary Base painter class for RHist objects
     *
     * @class
     * @memberof JSROOT
@@ -47,9 +88,9 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
       if (histo && (!histo.getBinContent || force)) {
          if (histo.fAxes._2) {
-            JSROOT.v7.AssignRAxisMethods(histo.fAxes._0);
-            JSROOT.v7.AssignRAxisMethods(histo.fAxes._1);
-            JSROOT.v7.AssignRAxisMethods(histo.fAxes._2);
+            assignRAxisMethods(histo.fAxes._0);
+            assignRAxisMethods(histo.fAxes._1);
+            assignRAxisMethods(histo.fAxes._2);
             histo.getBin = function(x, y, z) { return (x-1) + this.fAxes._0.GetNumBins()*(y-1) + this.fAxes._0.GetNumBins()*this.fAxes._1.GetNumBins()*(z-1); }
             // FIXME: all normal ROOT methods uses indx+1 logic, but RHist has no underflow/overflow bins now
             histo.getBinContent = function(x, y, z) { return this.fStatistics.fBinContent[this.getBin(x, y, z)]; }
@@ -60,8 +101,8 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
                return Math.sqrt(Math.abs(this.fStatistics.fBinContent[bin]));
             }
          } else if (histo.fAxes._1) {
-            JSROOT.v7.AssignRAxisMethods(histo.fAxes._0);
-            JSROOT.v7.AssignRAxisMethods(histo.fAxes._1);
+            assignRAxisMethods(histo.fAxes._0);
+            assignRAxisMethods(histo.fAxes._1);
             histo.getBin = function(x, y) { return (x-1) + this.fAxes._0.GetNumBins()*(y-1); }
             // FIXME: all normal ROOT methods uses indx+1 logic, but RHist has no underflow/overflow bins now
             histo.getBinContent = function(x, y) { return this.fStatistics.fBinContent[this.getBin(x, y)]; }
@@ -72,7 +113,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
                return Math.sqrt(Math.abs(this.fStatistics.fBinContent[bin]));
             }
          } else {
-            JSROOT.v7.AssignRAxisMethods(histo.fAxes._0);
+            assignRAxisMethods(histo.fAxes._0);
             histo.getBin = function(x) { return x-1; }
             // FIXME: all normal ROOT methods uses indx+1 logic, but RHist has no underflow/overflow bins now
             histo.getBinContent = function(x) { return this.fStatistics.fBinContent[x-1]; }
@@ -89,9 +130,9 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
          if (!histo.getBinContent || force) {
             if (histo.fAxes.length == 3) {
-               JSROOT.v7.AssignRAxisMethods(histo.fAxes[0]);
-               JSROOT.v7.AssignRAxisMethods(histo.fAxes[1]);
-               JSROOT.v7.AssignRAxisMethods(histo.fAxes[2]);
+               assignRAxisMethods(histo.fAxes[0]);
+               assignRAxisMethods(histo.fAxes[1]);
+               assignRAxisMethods(histo.fAxes[2]);
 
                histo.nx = histo.fIndicies[1] - histo.fIndicies[0];
                histo.dx = histo.fIndicies[0] + 1;
@@ -119,8 +160,8 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
 
             } else if (histo.fAxes.length == 2) {
-               JSROOT.v7.AssignRAxisMethods(histo.fAxes[0]);
-               JSROOT.v7.AssignRAxisMethods(histo.fAxes[1]);
+               assignRAxisMethods(histo.fAxes[0]);
+               assignRAxisMethods(histo.fAxes[1]);
 
                histo.nx = histo.fIndicies[1] - histo.fIndicies[0];
                histo.dx = histo.fIndicies[0] + 1;
@@ -142,7 +183,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
                histo.getBinContent = function(x, y) { return this.fBinContent[this.getBin0(x, y)]; }
                histo.getBinError = function(x, y) { return Math.sqrt(Math.abs(this.getBinContent(x, y))); }
             } else {
-               JSROOT.v7.AssignRAxisMethods(histo.fAxes[0]);
+               assignRAxisMethods(histo.fAxes[0]);
                histo.nx = histo.fIndicies[1] - histo.fIndicies[0];
                histo.dx = histo.fIndicies[0] + 1;
                histo.stepx = histo.fIndicies[2];
@@ -291,7 +332,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       }
 
       if (axis && !axis.GetBinCoord)
-         JSROOT.v7.AssignRAxisMethods(axis);
+         assignRAxisMethods(axis);
 
       return axis;
    }

@@ -4304,7 +4304,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
   /** @summary Ensure TCanvas and TFrame for the painter object
     * @param {Object} painter  - painter object to process
     * @param {string|boolean} frame_kind  - false for no frame or "3d" for special 3D mode
-    * @desc Assign divid, creates TCanvas if necessary, add to list of pad painters and */
+    * @desc Assign divid, creates TCanvas if necessary, add to list of pad painters
+    * @memberof JSROOT.Painter */
    let ensureTCanvas = function(painter, frame_kind) {
       if (!painter) return Promise.reject('Painter not provided in ensureTCanvas');
 
