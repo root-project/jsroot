@@ -1640,7 +1640,8 @@ JSROOT.define(['d3'], (d3) => {
    ObjectPainter.prototype.assignSnapId = function(id) { this.snapid = id; }
 
    /** @summary Generic method to cleanup painter.
-     * @desc Remove object drawing and (in case of main painter) also main HTML components */
+     * @desc Remove object drawing and (in case of main painter) also main HTML components
+     * @protected */
    ObjectPainter.prototype.cleanup = function() {
 
       this.removeG();
@@ -1739,10 +1740,11 @@ JSROOT.define(['d3'], (d3) => {
      * @param {object} obj - new version of object, values will be updated in original object
      * @param {string} [opt] - when specified, new draw options
      * @returns {boolean|Promise} for object redraw
-     * @desc Two actions typically done by redraw - update object content via {@link ObjectPainter.prototype.updateObject} and
-      * then redraw correspondent pad via {@link ObjectPainter.prototype.redrawPad}. If possible one should redefine
+     * @desc Two actions typically done by redraw - update object content via {@link JSROOT.ObjectPainter.updateObject} and
+      * then redraw correspondent pad via {@link JSROOT.ObjectPainter.redrawPad}. If possible one should redefine
       * only updateObject function and keep this function unchanged. But for some special painters this function is the
-      * only way to control how object can be update while requested from the server */
+      * only way to control how object can be update while requested from the server
+      * @protected */
    ObjectPainter.prototype.redrawObject = function(obj, opt) {
       if (!this.updateObject(obj,opt)) return false;
       let current = document.body.style.cursor;
@@ -1755,16 +1757,17 @@ JSROOT.define(['d3'], (d3) => {
    /** @summary Generic method to update object content.
      * @desc Default implementation just copies first-level members to current object
      * @param {object} obj - object with new data
-     * @param {string} [opt] - option which will be used for redrawing */
+     * @param {string} [opt] - option which will be used for redrawing
+     * @protected */
    ObjectPainter.prototype.updateObject = function(obj /*, opt */) {
       if (!this.matchObjectType(obj)) return false;
       JSROOT.extend(this.getObject(), obj);
       return true;
    }
 
-   /** @summary Returns string which object hint
+   /** @summary Returns string with object hint
      * @desc It is either item name or object name or class name.
-     * Such string can be used as tooltip.
+     * Such string typically used as object tooltip.
      * If result string larger than 20 symbols, it will be cutted. */
    ObjectPainter.prototype.getObjectHint = function() {
       let res = this.getItemName(), obj = this.getObject();
@@ -1846,7 +1849,8 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /** @summary Returns created <g> element used for object drawing
-     * @desc Element should be created by {@link ObjectPainter.createG} function before */
+     * @desc Element should be created by {@link JSROOT.ObjectPainter.createG}
+     * @protected */
    ObjectPainter.prototype.getG = function() { return this.draw_g; }
 
    /** @summary (re)creates svg:g element for object drawings
@@ -1919,7 +1923,7 @@ JSROOT.define(['d3'], (d3) => {
 
    /** @summary Method selects immediate layer under canvas/pad main element
      * @param {string} name - layer name, exits "primitives_layer", "btns_layer", "info_layer"
-     * @param {string} [pad_name] - pad name or used current pad name  by default
+     * @param {string} [pad_name] - pad name; current pad name  used by default
      * @protected */
    ObjectPainter.prototype.getLayerSvg = function(name, pad_name) {
       let svg = this.getPadSvg(pad_name);
@@ -2031,7 +2035,7 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /** @summary Converts pad SVG x or y coordinates into axis values.
-     * @desc Reverse transformation for {@link ObjectPainter.axisToSvg}
+     * @desc Reverse transformation for {@link JSROOT.ObjectPainter.axisToSvg}
      * @param {string} axis - name like "x" or "y"
      * @param {number} coord - graphics coordiante.
      * @param {boolean} ndc - kind of return value
@@ -2384,7 +2388,8 @@ JSROOT.define(['d3'], (d3) => {
    /** @summary Redraw object
      * @desc Basic method, should be reimplemented in all derived objects
      * for the case when drawing should be repeated
-     * @abstract */
+     * @abstract
+     * @protected */
    ObjectPainter.prototype.redraw = function(/* reason */) {}
 
    /** @summary Start text drawing
