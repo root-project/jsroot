@@ -3911,7 +3911,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       this._websocket = new JSROOT.WebWindowHandle(socket_kind);
       this._websocket.setReceiver(this);
-      this._websocket.Connect();
+      this._websocket.connect();
    }
 
    TCanvasPainter.prototype.UseWebsocket = function(handle, href) {
@@ -3919,23 +3919,23 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       this._websocket = handle;
       this._websocket.setReceiver(this);
-      this._websocket.Connect(href);
+      this._websocket.connect(href);
    }
 
-   TCanvasPainter.prototype.OnWebsocketOpened = function(/*handle*/) {
+   TCanvasPainter.prototype.onWebsocketOpened = function(/*handle*/) {
       // indicate that we are ready to recieve any following commands
    }
 
-   TCanvasPainter.prototype.OnWebsocketClosed = function(/*handle*/) {
+   TCanvasPainter.prototype.onWebsocketClosed = function(/*handle*/) {
       jsrp.closeCurrentWindow();
    }
 
    /** @summary Handle websocket messages */
-   TCanvasPainter.prototype.OnWebsocketMsg = function(handle, msg) {
+   TCanvasPainter.prototype.onWebsocketMsg = function(handle, msg) {
       console.log("GET MSG len:" + msg.length + " " + msg.substr(0,60));
 
       if (msg == "CLOSE") {
-         this.OnWebsocketClosed();
+         this.onWebsocketClosed();
          this.CloseWebsocket(true);
       } else if (msg.substr(0,6)=='SNAP6:') {
          // This is snapshot, produced with ROOT6

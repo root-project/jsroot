@@ -3946,7 +3946,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       this._websocket = new JSROOT.WebWindowHandle(socket_kind);
       this._websocket.setReceiver(this);
-      this._websocket.Connect();
+      this._websocket.connect();
    }
 
    RCanvasPainter.prototype.UseWebsocket = function(handle, href) {
@@ -3955,7 +3955,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this._websocket = handle;
       console.log('Use websocket', this._websocket.key);
       this._websocket.setReceiver(this);
-      this._websocket.Connect(href);
+      this._websocket.connect(href);
    }
 
    RCanvasPainter.prototype.WindowBeforeUnloadHanlder = function() {
@@ -3963,19 +3963,19 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.CloseWebsocket(true);
    }
 
-   RCanvasPainter.prototype.OnWebsocketOpened = function(/*handle*/) {
+   RCanvasPainter.prototype.onWebsocketOpened = function(/*handle*/) {
       // indicate that we are ready to recieve any following commands
    }
 
-   RCanvasPainter.prototype.OnWebsocketClosed = function(/*handle*/) {
+   RCanvasPainter.prototype.onWebsocketClosed = function(/*handle*/) {
       jsrp.closeCurrentWindow();
    }
 
-   RCanvasPainter.prototype.OnWebsocketMsg = function(handle, msg) {
+   RCanvasPainter.prototype.onWebsocketMsg = function(handle, msg) {
       console.log("GET MSG " + msg.substr(0,30));
 
       if (msg == "CLOSE") {
-         this.OnWebsocketClosed();
+         this.onWebsocketClosed();
          this.CloseWebsocket(true);
       } else if (msg.substr(0,5)=='SNAP:') {
          msg = msg.substr(5);
@@ -4012,21 +4012,21 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                conn.setReceiver({
                   cpainter: this,
 
-                  OnWebsocketOpened: function() {
+                  onWebsocketOpened: function() {
                   },
 
-                  OnWebsocketMsg: function(panel_handle, msg) {
+                  onWebsocketMsg: function(panel_handle, msg) {
                      let panel_name = (msg.indexOf("SHOWPANEL:")==0) ? msg.substr(10) : "";
                      this.cpainter.ShowUI5Panel(panel_name, panel_handle)
                                   .then(res => handle.send(reply + (res ? "true" : "false")));
                   },
 
-                  OnWebsocketClosed: function() {
+                  onWebsocketClosed: function() {
                      // if connection failed,
                      handle.send(reply + "false");
                   },
 
-                  OnWebsocketError: function() {
+                  onWebsocketError: function() {
                      // if connection failed,
                      handle.send(reply + "false");
                   }
@@ -4041,7 +4041,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                   addr += relative_path;
                }
                // only when connection established, panel will be activated
-               conn.Connect(addr);
+               conn.connect(addr);
             }
          } else {
             console.log('Unrecognized command ' + cmd);

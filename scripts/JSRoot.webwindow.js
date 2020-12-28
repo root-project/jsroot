@@ -5,7 +5,13 @@ JSROOT.define([], () => {
 
    "use strict";
 
-   /** emulate websocket via long-poll http requests */
+   /**
+    * @summary Class emulating web socket with long-poll http requests
+    *
+    * @class
+    * @memberof JSROOT
+    * @private
+    */
 
    function LongPollSocket(addr, _raw, _args) {
       this.path = addr;
@@ -14,10 +20,10 @@ JSROOT.define([], () => {
       this.raw = _raw;
       this.args = _args;
 
-      this.nextrequest("", "connect");
+      this.nextRequest("", "connect");
    }
 
-   LongPollSocket.prototype.nextrequest = function(data, kind) {
+   LongPollSocket.prototype.nextRequest = function(data, kind) {
       let url = this.path, reqmode = "buf", post = null;
       if (kind === "connect") {
          url += this.raw ? "?raw_connect" : "?txt_connect";
@@ -55,7 +61,7 @@ JSROOT.define([], () => {
             this.handle.req = null; // get response for existing dummy request
 
          if (res === null)
-            return this.handle.processreq(null);
+            return this.handle.processRequest(null);
 
          if (this.handle.raw) {
             // raw mode - all kind of reply data packed into binary buffer
@@ -66,7 +72,7 @@ JSROOT.define([], () => {
             let str = "", i = 0, u8Arr = new Uint8Array(res), offset = u8Arr.length;
             if (offset < 4) {
                if (!JSROOT.browser.qt5) console.error('longpoll got short message in raw mode ' + offset);
-               return this.handle.processreq(null);
+               return this.handle.processRequest(null);
             }
 
             while (i < 4) str += String.fromCharCode(u8Arr[i++]);
@@ -82,15 +88,15 @@ JSROOT.define([], () => {
 
             if (str) {
                if (str == "<<nope>>") str = "";
-               this.handle.processreq(str);
+               this.handle.processRequest(str);
             }
             if (offset < u8Arr.length)
-               this.handle.processreq(res, offset);
+               this.handle.processRequest(res, offset);
          } else if (this.getResponseHeader("Content-Type") == "application/x-binary") {
             // binary reply with optional header
             let extra_hdr = this.getResponseHeader("LongpollHeader");
-            if (extra_hdr) this.handle.processreq(extra_hdr);
-            this.handle.processreq(res, 0);
+            if (extra_hdr) this.handle.processRequest(extra_hdr);
+            this.handle.processRequest(res, 0);
          } else {
             // text reply
             if (res && typeof res !== "string") {
@@ -100,7 +106,7 @@ JSROOT.define([], () => {
                res = str;
             }
             if (res == "<<nope>>") res = "";
-            this.handle.processreq(res);
+            this.handle.processRequest(res);
          }
       });
 
@@ -109,7 +115,7 @@ JSROOT.define([], () => {
       req.send(post);
    }
 
-   LongPollSocket.prototype.processreq = function(res, _offset) {
+   LongPollSocket.prototype.processRequest = function(res, _offset) {
       if (res === null) {
          if (typeof this.onerror === 'function') this.onerror("receive data with connid " + (this.connid || "---"));
          // if (typeof this.onclose === 'function') this.onclose();
@@ -135,39 +141,47 @@ JSROOT.define([], () => {
             this.onmessage({ data: res, offset: _offset });
       }
 
-      if (!this.req) this.nextrequest("", "dummy"); // send new poll request when necessary
+      if (!this.req) this.nextRequest("", "dummy"); // send new poll request when necessary
    }
 
-   LongPollSocket.prototype.send = function(str) { this.nextrequest(str); }
+   LongPollSocket.prototype.send = function(str) { this.nextRequest(str); }
 
-   LongPollSocket.prototype.close = function() { this.nextrequest("", "close"); }
+   LongPollSocket.prototype.close = function() { this.nextRequest("", "close"); }
 
    // ========================================================================================
+
+   /**
+    * @summary Class re-playing socket data from stored protocol
+    *
+    * @class
+    * @memberof JSROOT
+    * @private
+    */
 
    function FileDumpSocket(receiver) {
       this.receiver = receiver;
       this.protocol = [];
       this.cnt = 0;
-      JSROOT.httpRequest("protocol.json", "text").then(res => this.get_protocol(res));
+      JSROOT.httpRequest("protocol.json", "text").then(res => this.getProtocol(res));
    }
 
-   FileDumpSocket.prototype.get_protocol = function(res) {
+   FileDumpSocket.prototype.getProtocol = function(res) {
       if (!res) return;
       this.protocol = JSON.parse(res);
       if (typeof this.onopen == 'function') this.onopen();
-      this.next_operation();
+      this.nextOperation();
    }
 
    FileDumpSocket.prototype.send = function(/* str */) {
       if (this.protocol[this.cnt] == "send") {
          this.cnt++;
-         setTimeout(this.next_operation.bind(this), 10);
+         setTimeout(() => this.nextOperation(), 10);
       }
    }
 
    FileDumpSocket.prototype.close = function() {}
 
-   FileDumpSocket.prototype.next_operation = function() {
+   FileDumpSocket.prototype.nextOperation = function() {
       // when file request running - just ignore
       if (this.wait_for_file) return;
       let fname = this.protocol[this.cnt];
@@ -176,19 +190,16 @@ JSROOT.define([], () => {
       // console.log("getting file", fname, "wait", this.wait_for_file);
       this.wait_for_file = true;
       this.cnt++;
-      JSROOT.httpRequest(fname, (fname.indexOf(".bin") > 0 ? "buf" : "text")).then(this.get_file.bind(this));
-   }
-
-   FileDumpSocket.prototype.get_file = function(res) {
-      this.wait_for_file = false;
-      if (!res) return;
-      if (this.receiver.provideData)
-         this.receiver.provideData(1, res, 0);
-      setTimeout(this.next_operation.bind(this), 10);
+      JSROOT.httpRequest(fname, (fname.indexOf(".bin") > 0 ? "buf" : "text")).then(res => {
+         this.wait_for_file = false;
+         if (!res) return;
+         if (this.receiver.provideData)
+            this.receiver.provideData(1, res, 0);
+         setTimeout(() => this.nextOperation(), 10);
+      });
    }
 
    // ========================================================================================
-
 
    /**
     * @summary Client communication handle for RWebWindow.
@@ -219,9 +230,10 @@ JSROOT.define([], () => {
 
    /** @summary Set callbacks receiver.
      * @param {object} obj - object with receiver functions
-     * @param {function} obj.OnWebsocketMsg - called when new data receieved from RWebWindow
-     * @param {function} obj.OnWebsocketOpened - called when connection established
-     * @param {function} obj.OnWebsocketClosed - called when connection closed */
+     * @param {function} obj.onWebsocketMsg - called when new data receieved from RWebWindow
+     * @param {function} obj.onWebsocketOpened - called when connection established
+     * @param {function} obj.onWebsocketClosed - called when connection closed
+     * @param {function} obj.onWebsocketError - called when get error via the connection */
    WebWindowHandle.prototype.setReceiver = function(obj) {
       this.receiver = obj;
    }
@@ -251,7 +263,7 @@ JSROOT.define([], () => {
       if (this.wait_first_recv) {
          console.log("FIRST MESSAGE", chid, _msg);
          delete this.wait_first_recv;
-         return this.invokeReceiver(false, "OnWebsocketOpened");
+         return this.invokeReceiver(false, "onWebsocketOpened");
       }
 
       if ((chid > 1) && this.channels) {
@@ -263,7 +275,7 @@ JSROOT.define([], () => {
       let force_queue = _len && (_len < 0);
 
       if (!force_queue && (!this.msgqueue || !this.msgqueue.length))
-         return this.invokeReceiver(false, "OnWebsocketMsg", _msg, _len);
+         return this.invokeReceiver(false, "onWebsocketMsg", _msg, _len);
 
       if (!this.msgqueue) this.msgqueue = [];
       if (force_queue) _len = undefined;
@@ -296,7 +308,7 @@ JSROOT.define([], () => {
       this._loop_msgqueue = true;
       while ((this.msgqueue.length > 0) && this.msgqueue[0].ready) {
          let front = this.msgqueue.shift();
-         this.invokeReceiver(false, "OnWebsocketMsg", front.msg, front.len);
+         this.invokeReceiver(false, "onWebsocketMsg", front.msg, front.len);
       }
       if (this.msgqueue.length == 0)
          delete this.msgqueue;
@@ -391,9 +403,9 @@ JSROOT.define([], () => {
 
    /** @summary Method open channel, which will share same connection, but can be used independently from main
      * @private */
-   WebWindowHandle.prototype.CreateChannel = function() {
+   WebWindowHandle.prototype.createChannel = function() {
       if (this.master)
-         return master.CreateChannel();
+         return master.createChannel();
 
       let channel = new WebWindowHandle("channel", this.credits);
       channel.wait_first_recv = true; // first received message via the channel is confirmation of established connection
@@ -418,18 +430,18 @@ JSROOT.define([], () => {
 
    /** @summary Method opens relative path with the same kind of socket.
     * @private */
-   WebWindowHandle.prototype.CreateRelative = function(relative) {
+   WebWindowHandle.prototype.createRelative = function(relative) {
       if (!relative || !this.kind || !this.href) return null;
 
       let handle = new WebWindowHandle(this.kind, this.credits);
       console.log('Try to connect ', this.href + relative);
-      handle.Connect(this.href + relative);
+      handle.connect(this.href + relative);
       return handle;
    }
 
    /** @summary Create configured socket for current object.
      * @private */
-   WebWindowHandle.prototype.Connect = function(href) {
+   WebWindowHandle.prototype.connect = function(href) {
 
       this.close();
 
@@ -485,7 +497,7 @@ JSROOT.define([], () => {
             let key = pthis.key || "";
 
             pthis.send("READY=" + key, 0); // need to confirm connection
-            pthis.invokeReceiver(false, "OnWebsocketOpened");
+            pthis.invokeReceiver(false, "onWebsocketOpened");
          }
 
          conn.onmessage = function(e) {
@@ -532,7 +544,7 @@ JSROOT.define([], () => {
                console.log('GET chid=0 message', msg);
                if (msg == "CLOSE") {
                   pthis.close(true); // force closing of socket
-                  pthis.invokeReceiver(true, "OnWebsocketClosed");
+                  pthis.invokeReceiver(true, "onWebsocketClosed");
                }
             } else if (msg == "$$binary$$") {
                pthis.next_binary = chid;
@@ -551,14 +563,14 @@ JSROOT.define([], () => {
             if (pthis.state > 0) {
                console.log('websocket closed');
                pthis.state = 0;
-               pthis.invokeReceiver(true, "OnWebsocketClosed");
+               pthis.invokeReceiver(true, "onWebsocketClosed");
             }
          }
 
          conn.onerror = function(err) {
             console.log("websocket error " + err);
             if (pthis.state > 0) {
-               pthis.invokeReceiver(true, "OnWebsocketError", err);
+               pthis.invokeReceiver(true, "onWebsocketError", err);
                pthis.state = 0;
             }
          }
@@ -641,7 +653,7 @@ JSROOT.define([], () => {
       // only for debug purposes
       // arg.socket_kind = "longpoll";
 
-      let promise = new Promise((resolveFunc) => {
+      return new Promise(resolveFunc => {
          let handle = new WebWindowHandle(arg.socket_kind, arg.credits);
          handle.user_args = arg.user_args;
 
@@ -654,9 +666,9 @@ JSROOT.define([], () => {
 
          if (arg.first_recv) {
             arg.receiver = {
-               OnWebsocketOpened: () => { }, // dummy function when websocket connected
+               onWebsocketOpened: () => {}, // dummy function when websocket connected
 
-               OnWebsocketMsg: (handle, msg) => {
+               onWebsocketMsg: (handle, msg) => {
                   if (msg.indexOf(arg.first_recv) != 0)
                      return handle.close();
                   handle.first_msg = msg.substr(arg.first_recv.length);
@@ -664,7 +676,7 @@ JSROOT.define([], () => {
                   if (!arg.prereq2) resolveFunc(handle);
                },
 
-               OnWebsocketClosed: () => jsrp.closeCurrentWindow() // // when connection closed, close panel as well
+               onWebsocketClosed: () => jsrp.closeCurrentWindow() // when connection closed, close panel as well
             };
          }
 
@@ -673,7 +685,7 @@ JSROOT.define([], () => {
 
          // when receiver is exists, it handles itself callbacks
          handle.setReceiver(arg.receiver);
-         handle.Connect();
+         handle.connect();
 
          if (arg.prereq2) {
             JSROOT.require(arg.prereq2).then(() => {
@@ -684,8 +696,6 @@ JSROOT.define([], () => {
             resolveFunc(handle);
          }
       });
-
-      return promise;
    }
 
    JSROOT.WebWindowHandle = WebWindowHandle;
