@@ -726,8 +726,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             svg_y.on("contextmenu", evnt => this.showContextMenu("y", evnt));
          }
 
-         svg_x.on("mousemove", this.ShowAxisStatus.bind(this,"x"));
-         svg_y.on("mousemove", this.ShowAxisStatus.bind(this,"y"));
+         svg_x.on("mousemove", evnt => this.showAxisStatus("x", evnt));
+         svg_y.on("mousemove", evnt => this.showAxisStatus("y", evnt));
 
          svg.property('interactive_set', true);
 
@@ -784,7 +784,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             // in 3dmode with orbit control ignore simple arrows
             if (this.mode3d && (key.indexOf("Ctrl")!==0)) return false;
             this.AnalyzeMouseWheelEvent(null, zoom, 0.5);
-            this.Zoom(zoom.name, zoom.min, zoom.max);
+            this.zoom(zoom.name, zoom.min, zoom.max);
             if (zoom.changed) this.zoomChangedInteractive(zoom.name, true);
             evnt.stopPropagation();
             evnt.preventDefault();
@@ -977,7 +977,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if (isany) {
                this.zoomChangedInteractive("x", true);
                this.zoomChangedInteractive("y", true);
-               this.Zoom(xmin, xmax, ymin, ymax);
+               this.zoom(xmin, xmax, ymin, ymax);
                kind = 0;
             }
          }
@@ -1019,7 +1019,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          let kind = "xyz";
          if (!valid_x) kind = this.swap_xy ? "x" : "y"; else
          if (!valid_y) kind = this.swap_xy ? "y" : "x";
-         if (this.Unzoom(kind)) return;
+         if (this.unzoom(kind)) return;
 
          let pp = this.getPadPainter();
          let rect = this.getFrameRect();
@@ -1053,7 +1053,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                evnt.stopPropagation();
 
                this.clearInteractiveElements();
-               this.Unzoom("xyz");
+               this.unzoom("xyz");
 
                this.last_touch = new Date(0);
 
@@ -1196,7 +1196,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (isany) {
             this.zoomChangedInteractive('x', true);
             this.zoomChangedInteractive('y', true);
-            this.Zoom(xmin, xmax, ymin, ymax);
+            this.zoom(xmin, xmax, ymin, ymax);
          }
 
          evnt.stopPropagation();
@@ -1240,7 +1240,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          this.AnalyzeMouseWheelEvent(evnt, this.swap_xy ? itemx : itemy, 1 - cur[1] / h, (cur[0] >= 0) && (cur[0] <= w));
 
-         this.Zoom(itemx.min, itemx.max, itemy.min, itemy.max);
+         this.zoom(itemx.min, itemx.max, itemy.min, itemy.max);
 
          if (itemx.changed) this.zoomChangedInteractive('x', true);
          if (itemy.changed) this.zoomChangedInteractive('y', true);

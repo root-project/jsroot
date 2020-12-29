@@ -1331,9 +1331,9 @@ JSROOT.define(['d3'], (d3) => {
     * @param {object|string} [dom] - dom element or id of dom element
     */
 
-   function BasePainter(divid) {
+   function BasePainter(dom) {
       this.divid = null; // either id of DOM element or element itself
-      if (divid) this.setDom(divid);
+      if (dom) this.setDom(dom);
    }
 
    /** @summary Assign painter to specified DOM element
@@ -1599,12 +1599,12 @@ JSROOT.define(['d3'], (d3) => {
     * @param {string} [opt] - object draw options
     */
 
-   function ObjectPainter(divid, obj, opt) {
-      BasePainter.call(this, divid);
+   function ObjectPainter(dom, obj, opt) {
+      BasePainter.call(this, dom);
       // this.draw_g = undefined; // container for all drawn objects
       // this._main_painter = undefined;  // main painter in the correspondent pad
       if (obj !== undefined) {
-         this.pad_name = divid ? this.selectCurrentPad() : ""; // name of pad where object is drawn
+         this.pad_name = dom ? this.selectCurrentPad() : ""; // name of pad where object is drawn
          this.assignObject(obj);
          if (typeof opt == "string") this.options = { original: opt };
       }
@@ -2911,8 +2911,8 @@ JSROOT.define(['d3'], (d3) => {
      * @private
      */
 
-   function AxisBasePainter(divid, obj) {
-      ObjectPainter.call(this, divid, obj);
+   function AxisBasePainter(dom, obj) {
+      ObjectPainter.call(this, dom, obj);
 
       this.name = "yaxis";
       this.kind = "normal";
@@ -3183,9 +3183,9 @@ JSROOT.define(['d3'], (d3) => {
 
    /** @summary Generic text drawing
      * @private */
-   jsrp.drawRawText = function(divid, txt /*, opt*/) {
+   jsrp.drawRawText = function(dom, txt /*, opt*/) {
 
-      let painter = new BasePainter(divid);
+      let painter = new BasePainter(dom);
       painter.txt = txt;
 
       painter.redrawObject = function(obj) {

@@ -32,11 +32,11 @@
                 // zooming handled in frame painter now
                 let fp = painter.getFramePainter();
                 // keep old function to be able invoke it again
-                fp.OldZoom = fp.Zoom;
+                fp.oldZoom = fp.zoom;
                 // redefine zoom function of TH2 painter to make synchronous zooming of TH1 object
-                fp.Zoom = function(xmin,xmax,ymin,ymax,zmin,zmax) {
-                   if (h1painter) h1painter.getFramePainter().Zoom(xmin, xmax);
-                   this.OldZoom(xmin,xmax,ymin,ymax,zmin,zmax);
+                fp.zoom = function(xmin,xmax,ymin,ymax,zmin,zmax) {
+                   if (h1painter) h1painter.getFramePainter().zoom(xmin, xmax);
+                   this.oldZoom(xmin,xmax,ymin,ymax,zmin,zmax);
                 }
              });
       });

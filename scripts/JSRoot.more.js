@@ -1870,7 +1870,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       if ((this.xmin===this.xmax) && (this.ymin===this.ymax)) return false;
 
-      main.Zoom(this.xmin, this.xmax, this.ymin, this.ymax);
+      main.zoom(this.xmin, this.xmax, this.ymin, this.ymax);
 
       return true;
    }

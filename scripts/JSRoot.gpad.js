@@ -35,14 +35,15 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
     *
     * @class
     * @memberof JSROOT
-    * @extends JSROOT.ObjectPainter
+    * @extends JSROOT.AxisBasePainter
+    * @param {object|string} dom - identifier or dom element
     * @param {object} axis - object to draw
     * @param {boolean} embedded - if true, painter used in other objects painters
     * @private
     */
 
-   function TAxisPainter(divid, axis, embedded) {
-      JSROOT.AxisBasePainter.call(this, divid, axis);
+   function TAxisPainter(dom, axis, embedded) {
+      JSROOT.AxisBasePainter.call(this, dom, axis);
 
       this.embedded = embedded; // indicate that painter embedded into the histo painter
       this.invert_side = false;
@@ -915,8 +916,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
     * @private
     */
 
-   function TFramePainter(divid, tframe) {
-      JSROOT.ObjectPainter.call(this, divid, (tframe && tframe.$dummy) ? null : tframe);
+   function TFramePainter(dom, tframe) {
+      JSROOT.ObjectPainter.call(this, dom, (tframe && tframe.$dummy) ? null : tframe);
       this.zoom_kind = 0;
       this.mode3d = false;
       this.shrink_frame_left = 0.;
@@ -941,7 +942,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Set active flag for frame - can block some events
-    * @private */
+     * @private */
    TFramePainter.prototype.setFrameActive = function(on) {
       this.enabledKeys = on && JSROOT.key_handling ? true : false;
       // used only in 3D mode where control is used
@@ -1033,7 +1034,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.zmax = zmax;
    }
 
-   /** @summary Retuns axis object */
+   /** @summary Retuns associated axis object */
    TFramePainter.prototype.getAxis = function(name) {
       switch(name) {
          case "x": return this.xaxis;
@@ -1201,11 +1202,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       this.y_handle.assignFrameMembers(this,"y");
 
-      this.SetRootPadRange(pad);
+      this.setRootPadRange(pad);
    }
 
-   /** @summary Set selected range back to TPad object */
-   TFramePainter.prototype.SetRootPadRange = function(pad, is3d) {
+   /** @summary Set selected range back to TPad object
+     * @private */
+   TFramePainter.prototype.setRootPadRange = function(pad, is3d) {
       if (!pad || !this.ranges_set) return;
 
       if (is3d) {
@@ -1238,7 +1240,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
 
    /** @summary grid can only be drawn by first painter */
-   TFramePainter.prototype.DrawGrids = function() {
+   TFramePainter.prototype.drawGrids = function() {
 
       let layer = this.getFrameSvg().select(".grid_layer");
 
@@ -1353,7 +1355,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          return Promise.all([promise1, promise2]).then(() => {
 
-            this.DrawGrids();
+            this.drawGrids();
 
             if (can_adjust_frame) {
 
@@ -1437,7 +1439,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          pad.fRightMargin = 1 - this.fX2NDC;
          pad.fBottomMargin = this.fY1NDC;
          pad.fTopMargin = 1 - this.fY2NDC;
-         this.SetRootPadRange(pad);
+         this.setRootPadRange(pad);
       }
 
       this.interactiveRedraw("pad", "frame");
@@ -1671,7 +1673,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if ((kind=="x") || (kind=="y") || (kind=="z")) {
          let faxis = obj || this[kind+'axis'];
          menu.add("header: " + kind.toUpperCase() + " axis");
-         menu.add("Unzoom", this.Unzoom.bind(this, kind));
+         menu.add("Unzoom", () => this.unzoom(kind));
          if (pad) {
             menu.add("sub:SetLog "+kind);
             menu.addchk(pad["fLog" + kind] == 0, "linear", () => this.changeAxisLog(kind, 0));
@@ -1700,12 +1702,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          menu.add("separator");
 
       if (this.zoom_xmin !== this.zoom_xmax)
-         menu.add("Unzoom X", () => this.Unzoom("x"));
+         menu.add("Unzoom X", () => this.unzoom("x"));
       if (this.zoom_ymin !== this.zoom_ymax)
-         menu.add("Unzoom Y", () => this.Unzoom("y"));
+         menu.add("Unzoom Y", () => this.unzoom("y"));
       if (this.zoom_zmin !== this.zoom_zmax)
-         menu.add("Unzoom Z", () => this.Unzoom("z"));
-      menu.add("Unzoom all", () => this.Unzoom("xyz"));
+         menu.add("Unzoom Z", () => this.unzoom("z"));
+      menu.add("Unzoom all", () => this.unzoom("xyz"));
 
       if (pad) {
          menu.addchk(pad.fLogx, "SetLogx", () => this.toggleAxisLog("x"));
@@ -1784,7 +1786,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       * @param {number} [zmin]
       * @param {number} [zmax]
       * @returns {boolean} if zoom operation was performed */
-   TFramePainter.prototype.Zoom = function(xmin, xmax, ymin, ymax, zmin, zmax) {
+   TFramePainter.prototype.zoom = function(xmin, xmax, ymin, ymax, zmin, zmax) {
 
       // disable zooming when axis conversion is enabled
       if (this.projection) return false;
@@ -1887,11 +1889,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Unzoom speicied axes */
-   TFramePainter.prototype.Unzoom = function(dox, doy, doz) {
-      if (typeof dox === 'undefined') { dox = true; doy = true; doz = true; } else
-      if (typeof dox === 'string') { doz = dox.indexOf("z")>=0; doy = dox.indexOf("y")>=0; dox = dox.indexOf("x")>=0; }
+   TFramePainter.prototype.unzoom = function(dox, doy, doz) {
+      if (typeof dox === 'undefined') { dox = doy = doz = true; } else
+      if (typeof dox === 'string') { doz = dox.indexOf("z") >= 0; doy = dox.indexOf("y") >= 0; dox = dox.indexOf("x") >= 0; }
 
-      let changed = this.Zoom(dox ? 0 : undefined, dox ? 0 : undefined,
+      let changed = this.zoom(dox ? 0 : undefined, dox ? 0 : undefined,
                               doy ? 0 : undefined, doy ? 0 : undefined,
                               doz ? 0 : undefined, doz ? 0 : undefined);
 
@@ -1938,7 +1940,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Show axis status message
     * @desc method called normally when mouse enter main object element
     * @private */
-   TFramePainter.prototype.ShowAxisStatus = function(axis_name, evnt) {
+   TFramePainter.prototype.showAxisStatus = function(axis_name, evnt) {
       let taxis = this.getAxis(axis_name), hint_name = axis_name, hint_title = "TAxis",
           m = d3.pointer(evnt, this.getFrameSvg().node()), id = (axis_name=="x") ? 0 : 1;
 
@@ -2240,7 +2242,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                       .property('vertical', JSROOT.settings.ToolBarVert);
 
          if (JSROOT.settings.ContextMenu && !JSROOT.BatchMode)
-            svg.select(".canvas_fillrect").on("contextmenu", this.PadContextMenu.bind(this));
+            svg.select(".canvas_fillrect").on("contextmenu", evnt => this.padContextMenu(evnt));
 
          factor = 0.66;
          if (this.pad && this.pad.fCw && this.pad.fCh && (this.pad.fCw > 0)) {
@@ -2390,7 +2392,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                           .property('vertical', JSROOT.settings.ToolBarVert);
 
          if (JSROOT.settings.ContextMenu)
-            svg_rect.on("contextmenu", this.PadContextMenu.bind(this));
+            svg_rect.on("contextmenu", evnt => this.padContextMenu(evnt));
 
          if (!JSROOT.BatchMode)
             svg_rect.attr("pointer-events", "visibleFill") // get events also for not visible rect
@@ -2636,6 +2638,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return hints;
    }
 
+   /** @summary Fill pad context menu
+     * @private */
    TPadPainter.prototype.fillContextMenu = function(menu) {
 
       if (this.pad)
@@ -2685,7 +2689,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return true;
    }
 
-   TPadPainter.prototype.PadContextMenu = function(evnt) {
+   /** @summary Show pad context menu
+     * @private */
+   TPadPainter.prototype.padContextMenu = function(evnt) {
 
       if (evnt.stopPropagation) { // this is normal event processing and not emulated jsroot event
 
@@ -3285,7 +3291,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
        // use timeout to avoid conflict with mouse click and automatic menu close
        if (name=="pad")
-          return setTimeout(this.PadContextMenu.bind(this, evnt), 50);
+          return setTimeout(() => this.padContextMenu(evnt), 50);
 
        let selp = null, selkind;
 

@@ -475,7 +475,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       switch(funcname) {
          case "ToggleZoom":
             if ((this.zoom_xmin !== this.zoom_xmax) || (this.zoom_ymin !== this.zoom_ymax) || (this.zoom_zmin !== this.zoom_zmax)) {
-               this.Unzoom();
+               this.unzoom();
                this.getFramePainter().zoomChangedInteractive('reset');
                return true;
             }
@@ -582,9 +582,9 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       res = res ? JSON.parse(res) : [];
 
       if (!res || (typeof res != "object") || (res.length!=2) || isNaN(res[0]) || isNaN(res[1]))
-         pmain.Unzoom(arg);
+         pmain.unzoom(arg);
       else
-         pmain.Zoom(arg, res[0], res[1]);
+         pmain.zoom(arg, res[0], res[1]);
    }
 
    /** @summary Fill histogram context menu
@@ -1814,7 +1814,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       }
 
       if ((right - left < dist) && (left < right))
-         this.getFramePainter().Zoom(xaxis.GetBinCoord(left), xaxis.GetBinCoord(right));
+         this.getFramePainter().zoom(xaxis.GetBinCoord(left), xaxis.GetBinCoord(right));
    }
 
    /** @summary Checks if it makes sense to zoom inside specified axis range */
@@ -2090,7 +2090,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
          isany = true;
       }
 
-      if (isany) this.getFramePainter().Zoom(xmin, xmax, ymin, ymax);
+      if (isany) this.getFramePainter().zoom(xmin, xmax, ymin, ymax);
    }
 
    /** @summary Scan content of 2-dim histogram */

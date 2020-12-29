@@ -898,7 +898,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                }).append("svg:title").text(levels[i].toFixed(2) + " - " + levels[i+1].toFixed(2));
 
             if (JSROOT.settings.Zooming)
-               r.on("dblclick", () => this.getFramePainter().Unzoom("z"));
+               r.on("dblclick", () => this.getFramePainter().unzoom("z"));
          }
 
 
@@ -952,7 +952,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          let z = this.z_handle.gr, z1 = z.invert(sel1), z2 = z.invert(sel2);
 
-         this.getFramePainter().Zoom("z", Math.min(z1, z2), Math.max(z1, z2));
+         this.getFramePainter().zoom("z", Math.min(z1, z2), Math.max(z1, z2));
       }
 
       let startRectSel = evnt => {
@@ -983,7 +983,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (JSROOT.settings.Zooming)
          this.draw_g.selectAll(".axis_zoom")
                     .on("mousedown", startRectSel)
-                    .on("dblclick", () => this.getFramePainter().Unzoom("z"));
+                    .on("dblclick", () => this.getFramePainter().unzoom("z"));
 
       if (JSROOT.settings.ZoomWheel)
             this.draw_g.on("wheel", evnt => {
@@ -992,7 +992,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
                let item = this.z_handle.analyzeWheelEvent(evnt, coord);
                if (item.changed)
-                  this.getFramePainter().Zoom("z", item.min, item.max);
+                  this.getFramePainter().zoom("z", item.min, item.max);
             });
    }
 
@@ -2819,7 +2819,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       switch(funcname) {
          case "ToggleZoom":
             if ((fp.zoom_xmin !== fp.zoom_xmax) || (fp.zoom_ymin !== fp.zoom_ymax) || (fp.zoom_zmin !== fp.zoom_zmax)) {
-               fp.Unzoom();
+               fp.unzoom();
                fp.zoomChangedInteractive('reset');
                return true;
             }
@@ -4297,7 +4297,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       }
 
       if ((right - left < dist) && (left < right))
-         this.getFramePainter().Zoom(histo.fXaxis.GetBinLowEdge(left+1), histo.fXaxis.GetBinLowEdge(right+1));
+         this.getFramePainter().zoom(histo.fXaxis.GetBinLowEdge(left+1), histo.fXaxis.GetBinLowEdge(right+1));
    }
 
    /** @summary Checks if it makes sense to zoom inside specified axis range */
@@ -4626,7 +4626,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       }
 
       if (isany)
-         this.getFramePainter().Zoom(xmin, xmax, ymin, ymax);
+         this.getFramePainter().zoom(xmin, xmax, ymin, ymax);
    }
 
    TH2Painter.prototype.ScanContent = function(when_axis_changed) {

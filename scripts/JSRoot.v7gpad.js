@@ -306,10 +306,20 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    // ================================================================================
 
-   function RAxisPainter(divid, arg1, axis, cssprefix) {
+   /**
+    * @summary Axis painter for v7
+    *
+    * @class
+    * @memberof JSROOT
+    * @extends JSROOT.AxisBasePainter
+    * @param {object|string} dom - identifier or dom element
+    * @private
+    */
+
+   function RAxisPainter(dom, arg1, axis, cssprefix) {
       let drawable = cssprefix ? arg1.getObject() : arg1;
       this.axis = axis;
-      JSROOT.AxisBasePainter.call(this, divid, drawable);
+      JSROOT.AxisBasePainter.call(this, dom, drawable);
       if (cssprefix) { // drawing from the frame
          this.embedded = true; // indicate that painter embedded into the histo painter
          this.csstype = arg1.csstype; // for the moment only via frame one can set axis attributes
@@ -1330,7 +1340,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Provide context menu for axis */
    RAxisPainter.prototype.fillAxisContextMenu = function(menu, kind) {
 
-      if (kind) menu.add("Unzoom", () => this.getFramePainter().Unzoom(kind));
+      if (kind) menu.add("Unzoom", () => this.getFramePainter().unzoom(kind));
 
       menu.add("sub:Log scale", () => this.changeAxisLog('toggle'));
       menu.addchk(!this.log, "linear", 0, arg => this.changeAxisLog(arg));
@@ -1438,8 +1448,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
     * @private
     */
 
-   function RFramePainter(divid, tframe) {
-      JSROOT.ObjectPainter.call(this, divid, tframe);
+   function RFramePainter(dom, tframe) {
+      JSROOT.ObjectPainter.call(this, dom, tframe);
       this.csstype = "frame";
       this.mode3d = false;
       this.xmin = this.xmax = 0; // no scale specified, wait for objects drawing
@@ -1543,7 +1553,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    /** @summary Draw frame grids
      * @desc grid can only be drawn by first painter */
-   RFramePainter.prototype.DrawGrids = function() {
+   RFramePainter.prototype.drawGrids = function() {
       let layer = this.getFrameSvg().select(".grid_layer");
 
       layer.selectAll(".xgrid").remove();
@@ -1772,7 +1782,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
              return Promise.all(again);
          }).then(() => {
-             this.DrawGrids();
+             this.drawGrids();
              this.axes_drawn = true;
              return true;
          });
@@ -2045,7 +2055,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    /** @summary function can be used for zooming into specified range
      * @desc if both limits for each axis 0 (like xmin==xmax==0), axis will be unzoomed */
-   RFramePainter.prototype.Zoom = function(xmin, xmax, ymin, ymax, zmin, zmax) {
+   RFramePainter.prototype.zoom = function(xmin, xmax, ymin, ymax, zmin, zmax) {
 
       // disable zooming when axis conversion is enabled
       if (this.projection) return false;
@@ -2171,11 +2181,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Unzoom specified axes */
-   RFramePainter.prototype.Unzoom = function(dox, doy, doz) {
-      if (typeof dox === 'undefined') { dox = true; doy = true; doz = true; } else
-      if (typeof dox === 'string') { doz = dox.indexOf("z")>=0; doy = dox.indexOf("y")>=0; dox = dox.indexOf("x")>=0; }
+   RFramePainter.prototype.unzoom = function(dox, doy, doz) {
+      if (typeof dox === 'undefined') { dox = doy = doz = true; } else
+      if (typeof dox === 'string') { doz = dox.indexOf("z") >= 0; doy = dox.indexOf("y") >= 0; dox = dox.indexOf("x") >= 0; }
 
-      let changed = this.Zoom(dox ? 0 : undefined, dox ? 0 : undefined,
+      let changed = this.zoom(dox ? 0 : undefined, dox ? 0 : undefined,
                               doy ? 0 : undefined, doy ? 0 : undefined,
                               doz ? 0 : undefined, doz ? 0 : undefined);
 
@@ -2218,7 +2228,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    RFramePainter.prototype.FillObjectOfflineMenu = function(menu, kind) {
       if ((kind!="x") && (kind!="y")) return;
 
-      menu.add("Unzoom", this.Unzoom.bind(this, kind));
+      menu.add("Unzoom", () => this.unzoom(kind));
 
       //if (this[kind+"_kind"] == "normal")
       //   menu.addchk(this["log"+kind], "SetLog"+kind, this.toggleAxisLog.bind(this, kind));
@@ -2246,12 +2256,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          menu.add("separator");
 
       if (this.zoom_xmin !== this.zoom_xmax)
-         menu.add("Unzoom X", this.Unzoom.bind(this,"x"));
+         menu.add("Unzoom X", () => this.unzoom("x"));
       if (this.zoom_ymin !== this.zoom_ymax)
-         menu.add("Unzoom Y", this.Unzoom.bind(this,"y"));
+         menu.add("Unzoom Y", () => this.unzoom("y"));
       if (this.zoom_zmin !== this.zoom_zmax)
-         menu.add("Unzoom Z", this.Unzoom.bind(this,"z"));
-      menu.add("Unzoom all", this.Unzoom.bind(this,"xyz"));
+         menu.add("Unzoom Z", () => this.unzoom("z"));
+      menu.add("Unzoom all", () => this.unzoom("xyz"));
 
       // menu.addchk(this.logx, "SetLogx", this.toggleAxisLog.bind(this,"x"));
       // menu.addchk(this.logy, "SetLogy", this.toggleAxisLog.bind(this,"y"));
@@ -2278,8 +2288,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Show axis status message
-    * @desc method called normally when mouse enter main object element */
-   RFramePainter.prototype.ShowAxisStatus = function(axis_name, evnt) {
+     * @desc method called normally when mouse enter main object element
+     * @private */
+   RFramePainter.prototype.showAxisStatus = function(axis_name, evnt) {
 
       let taxis = null, hint_name = axis_name, hint_title = "TAxis",
           m = d3.pointer(evnt, this.getFrameSvg().node()), id = (axis_name=="x") ? 0 : 1;
@@ -2316,8 +2327,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       });
    }
 
-   /** @summary Set selected range back to pad object - to be implemented */
-   RFramePainter.prototype.SetRootPadRange = function(/* pad, is3d */) {
+   /** @summary Set selected range back to pad object - to be implemented
+     * @private */
+   RFramePainter.prototype.setRootPadRange = function(/* pad, is3d */) {
       // TODO: change of pad range and send back to root application
    }
 
@@ -2581,7 +2593,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                       .property('vertical', JSROOT.settings.ToolBarVert);
 
          if (JSROOT.settings.ContextMenu && !JSROOT.BatchMode)
-            svg.select(".canvas_fillrect").on("contextmenu", this.PadContextMenu.bind(this));
+            svg.select(".canvas_fillrect").on("contextmenu", evnt => this.padContextMenu(evnt));
 
          factor = 0.66;
          if (this.pad && this.pad.fWinSize[0] && this.pad.fWinSize[1]) {
@@ -2742,7 +2754,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                           .property('vertical', JSROOT.settings.ToolBarVert);
 
          if (JSROOT.settings.ContextMenu)
-            svg_rect.on("contextmenu", this.PadContextMenu.bind(this));
+            svg_rect.on("contextmenu", evnt => this.padContextMenu(evnt));
 
          if (!JSROOT.BatchMode)
             svg_rect.attr("pointer-events", "visibleFill") // get events also for not visible rect
@@ -2888,6 +2900,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return hints;
    }
 
+   /** @summary Fill pad context menu
+     * @private */
    RPadPainter.prototype.fillContextMenu = function(menu) {
 
       if (this.pad)
@@ -2902,7 +2916,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          function ToggleGridField(arg) {
             this.pad[arg] = this.pad[arg] ? 0 : 1;
             let main = this.getMainPainter();
-            if (main && (typeof main.DrawGrids == 'function')) main.DrawGrids();
+            if (main && (typeof main.drawGrids == 'function')) main.drawGrids();
          }
 
          function SetTickField(arg) {
@@ -2947,7 +2961,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return true;
    }
 
-   RPadPainter.prototype.PadContextMenu = function(evnt) {
+   /** @summary Show pad context menu
+     * @private */
+   RPadPainter.prototype.padContextMenu = function(evnt) {
       if (evnt.stopPropagation) {
          // this is normal event processing and not emulated jsroot event
          // for debug purposes keep original context menu for small region in top-left corner
@@ -3344,7 +3360,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
        // use timeout to avoid conflict with mouse click and automatic menu close
        if (name=="pad")
-          return setTimeout(this.PadContextMenu.bind(this, evnt), 50);
+          return setTimeout(() => this.padContextMenu(evnt), 50);
 
        let selp = null, selkind;
 
@@ -4709,7 +4725,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             }).append("svg:title").text(contour[i].toFixed(2) + " - " + contour[i+1].toFixed(2));
 
          if (JSROOT.settings.Zooming)
-            r.on("dblclick", () => framep.Unzoom("z"));
+            r.on("dblclick", () => framep.unzoom("z"));
       }
 
       framep.z_handle.max_tick_size = Math.round(palette_width*0.3);
@@ -4775,7 +4791,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                framep.z_handle.processLabelsMove('stop', last_pos);
             } else {
                let z = framep.z_handle.func, z1 = z.invert(sel1), z2 = z.invert(sel2);
-               this.getFramePainter().Zoom("z", Math.min(z1, z2), Math.max(z1, z2));
+               this.getFramePainter().zoom("z", Math.min(z1, z2), Math.max(z1, z2));
             }
          }
 
@@ -4814,7 +4830,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          let assignHandlers = () => {
             this.draw_g.selectAll(".axis_zoom, .axis_labels")
                        .on("mousedown", startRectSel)
-                       .on("dblclick", () => framep.Unzoom("z"));
+                       .on("dblclick", () => framep.unzoom("z"));
 
             if (JSROOT.settings.ZoomWheel)
                this.draw_g.on("wheel", evnt => {
@@ -4826,7 +4842,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
                   let item = framep.z_handle.analyzeWheelEvent(evnt, coord);
                   if (item.changed)
-                     framep.Zoom("z", item.min, item.max);
+                     framep.zoom("z", item.min, item.max);
                });
          }
 
