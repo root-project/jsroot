@@ -3685,8 +3685,7 @@ JSROOT.define(['d3'], (d3) => {
       if (!obj || (typeof obj !== 'object'))
          return callback ? callback(null) : Promise.reject(Error('not an object in JSROOT.redraw'));
 
-      let dummy = new ObjectPainter(divid);
-      let can_painter = dummy.getCanvPainter(), handle, res_painter = null, redraw_res;
+      let can_painter = jsrp.getElementCanvPainter(divid), handle, res_painter = null, redraw_res;
       if (obj._typename)
          handle = getDrawHandle("ROOT." + obj._typename);
       if (handle && handle.draw_field && obj[handle.draw_field])
@@ -3709,7 +3708,8 @@ JSROOT.define(['d3'], (d3) => {
             }
          }
       } else {
-         let top = dummy.getTopPainter();
+         let dummy = new ObjectPainter(divid),
+             top = dummy.getTopPainter();
          // base painter do not have this method, if it there use it
          // it can be object painter here or can be specially introduce method to handling redraw!
          if (top && typeof top.redrawObject == 'function') {
@@ -3734,8 +3734,7 @@ JSROOT.define(['d3'], (d3) => {
      * @param {string|object} dom - id of top div element or directly DOMElement
      * @returns {string} produced JSON string */
    JSROOT.drawingJSON = function(dom) {
-      let dummy = new ObjectPainter(dom);
-      let canp = dummy.getCanvPainter();
+      let canp = jsrp.getElementCanvPainter(dom);
       return canp ? canp.ProduceJSON() : "";
    }
 
@@ -3844,11 +3843,19 @@ JSROOT.define(['d3'], (d3) => {
       return done;
    }
 
-   /** @summary Returns main painter object for specified HTML element - typically histogram painter
-     * @param {string|object} divid - id or DOM element
+   /** @summary Returns canvas painter (if any) for specified HTML element
+     * @param {string|object} dom - id or DOM element
      * @private */
-   jsrp.getElementMainPainter = function(divid) {
-      let dummy = new JSROOT.ObjectPainter(divid);
+   jsrp.getElementCanvPainter = function(dom) {
+      let dummy = new ObjectPainter(dom);
+      return dummy.getCanvPainter();
+   }
+
+   /** @summary Returns main painter (if any) for specified HTML element - typically histogram painter
+     * @param {string|object} dom - id or DOM element
+     * @private */
+   jsrp.getElementMainPainter = function(dom) {
+      let dummy = new ObjectPainter(dom);
       return dummy.getMainPainter(true);
    }
 

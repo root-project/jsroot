@@ -1570,8 +1570,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
             if (div.prop('state') == "minimal") return;
 
             div = div.find(".flex_draw").get(0);
-            let dummy = new JSROOT.ObjectPainter(div);
-            jsrp.selectActivePad({ pp: dummy.getCanvPainter(), active: true });
+            jsrp.selectActivePad({ pp: jsrp.getElementCanvPainter(div), active: true });
 
             JSROOT.resize(div);
          }
