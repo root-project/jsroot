@@ -504,7 +504,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                      pthis.showContextMenu('main', { clientX: rrr.left, clientY: rrr.top });
                   } else if (callback.canselect && (spent <= 600)) {
                      let pp = pthis.getPadPainter();
-                     if (pp) pp.SelectObjectPainter(pthis);
+                     if (pp) pp.selectObjectPainter(pthis);
                   }
                }
             });
@@ -619,7 +619,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                if (this.moveEnd)
                   this.moveEnd(not_changed);
                let pp = this.getPadPainter();
-               if (pp) pp.SelectObjectPainter(this);
+               if (pp) pp.selectObjectPainter(this);
             }.bind(painter));
 
          painter.draw_g
@@ -825,7 +825,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          }
 
          if (!dblckick)
-            pp.SelectObjectPainter(exact ? exact.painter : this,
+            pp.selectObjectPainter(exact ? exact.painter : this,
                   { x: pnt.x + (this._frame_x || 0),  y: pnt.y + (this._frame_y || 0) });
 
          return res;
@@ -993,12 +993,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                break;
             case 2: {
                let pp = this.getPadPainter();
-               if (pp) pp.SelectObjectPainter(this, null, "xaxis");
+               if (pp) pp.selectObjectPainter(this, null, "xaxis");
                break;
             }
             case 3: {
                let pp = this.getPadPainter();
-               if (pp) pp.SelectObjectPainter(this, null, "yaxis");
+               if (pp) pp.selectObjectPainter(this, null, "yaxis");
                break;
             }
          }
@@ -1023,7 +1023,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          let pp = this.getPadPainter();
          let rect = this.getFrameRect();
-         if (pp) pp.SelectObjectPainter(pp, { x: m[0] + rect.x, y: m[1] + rect.y, dbl: true });
+         if (pp) pp.selectObjectPainter(pp, { x: m[0] + rect.x, y: m[1] + rect.y, dbl: true });
       },
 
       startTouchZoom: function(evnt) {
@@ -1480,7 +1480,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return Math.round((fact || 1) * (this.iscan || !this.has_canvas ? 16 : 12));
       },
 
-      AlignBtns:  function(btns, width, height) {
+      alignButtons:  function(btns, width, height) {
          let sz0 = this.ButtonSize(1.25), nextx = (btns.property('nextx') || 0) + sz0, btns_x, btns_y;
 
          if (btns.property('vertical')) {
@@ -1559,9 +1559,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
              x = group.property('leftside') ? this.ButtonSize(1.25) : 0, y = 0;
 
          if (this._fast_drawing) {
-            ctrl = ToolbarIcons.CreateSVG(group, ToolbarIcons.circle, this.ButtonSize(), "EnlargePad");
+            ctrl = ToolbarIcons.CreateSVG(group, ToolbarIcons.circle, this.ButtonSize(), "enlargePad");
             ctrl.attr("name", "Enlarge").attr("x", 0).attr("y", 0)
-                .on("click", this.PadButtonClick.bind(this, "EnlargePad"));
+                .on("click", () => this.PadButtonClick("enlargePad"));
          } else {
             ctrl = ToolbarIcons.CreateSVG(group, ToolbarIcons.rect, this.ButtonSize(), "Toggle tool buttons");
 
@@ -1601,7 +1601,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          group.property("nextx", x);
 
-         this.AlignBtns(group, this.getPadWidth(), this.getPadHeight());
+         this.alignButtons(group, this.getPadWidth(), this.getPadHeight());
 
          if (group.property('vertical'))
             ctrl.attr("y", x);
@@ -1611,7 +1611,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       assign: function(painter) {
          painter.ButtonSize = this.ButtonSize;
-         painter.AlignBtns = this.AlignBtns;
+         painter.alignButtons = this.alignButtons;
          painter.ToggleButtonsVisibility = this.ToggleButtonsVisibility;
          painter.FindButton = this.FindButton;
          painter.RemoveButtons = this.RemoveButtons;

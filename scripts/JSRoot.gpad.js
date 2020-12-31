@@ -2089,7 +2089,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Cleanup primitives from pad - selector lets define which painters to remove */
-   TPadPainter.prototype.CleanPrimitives = function(selector) {
+   TPadPainter.prototype.cleanPrimitives = function(selector) {
       if (!selector || (typeof selector !== 'function')) return;
 
       for (let k = this.painters.length-1; k >= 0; --k)
@@ -2147,7 +2147,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary method redirect call to pad events receiver */
-   TPadPainter.prototype.SelectObjectPainter = function(_painter, pos, _place) {
+   TPadPainter.prototype.selectObjectPainter = function(_painter, pos, _place) {
       let istoppad = (this.iscan || !this.has_canvas),
           canp = istoppad ? this : this.getCanvPainter();
 
@@ -2163,7 +2163,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    /** @summary Draw pad active border
     * @private */
-   TPadPainter.prototype.DrawActiveBorder = function(svg_rect, is_active) {
+   TPadPainter.prototype.drawActiveBorder = function(svg_rect, is_active) {
       if (is_active !== undefined) {
          if (this.is_active_pad === is_active) return;
          this.is_active_pad = is_active;
@@ -2229,8 +2229,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                                .attr("x",0).attr("y",0);
          if (!JSROOT.BatchMode)
             frect.style("pointer-events", "visibleFill")
-                 .on("dblclick", this.EnlargePad.bind(this))
-                 .on("click", () => this.SelectObjectPainter())
+                 .on("dblclick", evnt => this.enlargePad(evnt))
+                 .on("click", () => this.selectObjectPainter())
                  .on("mouseenter", () => this.showObjectStatus());
 
          svg.append("svg:g").attr("class","primitives_layer");
@@ -2308,16 +2308,16 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       this._fast_drawing = JSROOT.settings.SmallPad && ((rect.width < JSROOT.settings.SmallPad.width) || (rect.height < JSROOT.settings.SmallPad.height));
 
-      this.DrawActiveBorder(fill_rect);
+      this.drawActiveBorder(fill_rect);
 
-      if (this.AlignBtns && btns)
-         this.AlignBtns(btns, rect.width, rect.height);
+      if (this.alignButtons && btns)
+         this.alignButtons(btns, rect.width, rect.height);
 
       return true;
    }
 
    /** @summary Enlarge pad draw element when possible */
-   TPadPainter.prototype.EnlargePad = function(evnt) {
+   TPadPainter.prototype.enlargePad = function(evnt) {
 
       if (evnt) {
          evnt.preventDefault();
@@ -2396,8 +2396,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          if (!JSROOT.BatchMode)
             svg_rect.attr("pointer-events", "visibleFill") // get events also for not visible rect
-                    .on("dblclick", this.EnlargePad.bind(this))
-                    .on("click", () => this.SelectObjectPainter())
+                    .on("dblclick", evnt => this.enlargePad(evnt))
+                    .on("click", () => this.selectObjectPainter())
                     .on("mouseenter", () => this.showObjectStatus());
       }
 
@@ -2428,7 +2428,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
               .call(this.fillatt.func)
               .call(this.lineatt.func);
 
-      this.DrawActiveBorder(svg_rect);
+      this.drawActiveBorder(svg_rect);
 
       this._fast_drawing = JSROOT.settings.SmallPad && ((w < JSROOT.settings.SmallPad.width) || (h < JSROOT.settings.SmallPad.height));
 
@@ -2437,8 +2437,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           this.selectDom().select(".draw3d_" + this.this_pad_name)
               .style('display', pad_visible ? '' : 'none');
 
-      if (this.AlignBtns && btns)
-         this.AlignBtns(btns, w, h);
+      if (this.alignButtons && btns)
+         this.alignButtons(btns, w, h);
 
       return pad_visible;
    }
@@ -2678,7 +2678,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          menu.addchk(this.HasEventStatus(), "Event status", this.ActivateStatusBar.bind(this, 'toggle'));
 
       if (this.enlargeMain() || (this.has_canvas && this.HasObjectsToDraw()))
-         menu.addchk((this.enlargeMain('state')=='on'), "Enlarge " + (this.iscan ? "canvas" : "pad"), this.EnlargePad.bind(this, null));
+         menu.addchk((this.enlargeMain('state')=='on'), "Enlarge " + (this.iscan ? "canvas" : "pad"), () => this.enlargePad());
 
       let fname = this.this_pad_name;
       if (fname.length===0) fname = this.iscan ? "canvas" : "pad";
@@ -3480,7 +3480,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if (funcname == "CanvasSnapShot") return this.SaveAs("png", true);
 
-      if (funcname == "EnlargePad") return this.EnlargePad(null);
+      if (funcname == "enlargePad") return this.enlargePad();
 
       if (funcname == "PadSnapShot") return this.SaveAs("png", false);
 
@@ -3561,7 +3561,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this._buttons.push({ btn: _btn, tooltip: _tooltip, funcname: _funcname, keyname: _keyname });
 
       let iscan = this.iscan || !this.has_canvas;
-      if (!iscan && (_funcname.indexOf("Pad")!=0) && (_funcname !== "EnlargePad")) {
+      if (!iscan && (_funcname.indexOf("Pad")!=0) && (_funcname !== "enlargePad")) {
          let cp = this.getCanvPainter();
          if (cp && (cp!==this)) cp.AddButton(_btn, _tooltip, _funcname);
       }
@@ -3588,7 +3588,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       let add_enlarge = !this.iscan && this.has_canvas && this.HasObjectsToDraw()
 
       if (add_enlarge || this.enlargeMain('verify'))
-         this.AddButton("circle", "Enlarge canvas", "EnlargePad");
+         this.AddButton("circle", "Enlarge canvas", "enlargePad");
 
       if (is_online && this.brlayout) {
          this.AddButton("diamand", "Toggle Ged", "ToggleGed");
@@ -4052,7 +4052,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             this.RemoveGed();
          } else {
             let pp = objpainter ? objpainter.getPadPainter() : null;
-            if (pp) pp.SelectObjectPainter(objpainter);
+            if (pp) pp.selectObjectPainter(objpainter);
          }
 
          return Promise.resolve(true);
@@ -4104,7 +4104,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                   this.registerForPadEvents(oGed.getController().padEventsReceiver.bind(oGed.getController()));
 
                   let pp = objpainter ? objpainter.getPadPainter() : null;
-                  if (pp) pp.SelectObjectPainter(objpainter);
+                  if (pp) pp.selectObjectPainter(objpainter);
 
                   this.ProcessChanges("sbits", this);
 
@@ -4205,7 +4205,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if (!pad_painter.is_active_pad) {
          ischanged = true;
-         this.forEachPainterInPad(pp => pp.DrawActiveBorder(null, pp === pad_painter), "pads");
+         this.forEachPainterInPad(pp => pp.drawActiveBorder(null, pp === pad_painter), "pads");
       }
 
       if (obj_painter && (obj_painter.snapid!==undefined) && arg) {

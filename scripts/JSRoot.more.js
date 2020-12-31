@@ -2948,7 +2948,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          }
 
          // clear primitives produced by the TGraphTime
-         pp.CleanPrimitives(p => (p.$grtimeid === this.selfid));
+         pp.cleanPrimitives(p => (p.$grtimeid === this.selfid));
 
          // draw ptrimitives again
          this.DrawPrimitives().then(() => this.continueDrawing());

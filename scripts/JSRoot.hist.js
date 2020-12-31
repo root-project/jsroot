@@ -2196,7 +2196,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
             // remove all function which are not found in new list of primitives
             if (pp && (painters.length > 0))
-               pp.CleanPrimitives(p => painters.indexOf(p) >= 0);
+               pp.cleanPrimitives(p => painters.indexOf(p) >= 0);
 
             // plot new objects on the same pad - will works only for simple drawings already loaded
             if (pp && (newfuncs.length > 0)) {
@@ -6557,7 +6557,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    THStackPainter.prototype.cleanup = function() {
       let pp = this.getPadPainter();
-      if (pp) pp.CleanPrimitives(objp => { return (objp === this.firstpainter) || (this.painters.indexOf(objp) >= 0); });
+      if (pp) pp.cleanPrimitives(objp => { return (objp === this.firstpainter) || (this.painters.indexOf(objp) >= 0); });
       delete this.firstpainter;
       delete this.painters;
       JSROOT.ObjectPainter.prototype.cleanup.call(this);
@@ -6830,7 +6830,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       if (nhists !== this.painters.length) {
          let pp = this.getPadPainter();
-         if (pp) pp.CleanPrimitives(objp => { return this.painters.indexOf(objp) >= 0; });
+         if (pp) pp.cleanPrimitives(objp => { return this.painters.indexOf(objp) >= 0; });
          this.painters = [];
          this.did_update = true;
       } else {
