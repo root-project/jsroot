@@ -791,7 +791,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          } else {
             let func = pp && pp.FindButton ? pp.FindButton(key) : "";
             if (func) {
-               pp.PadButtonClick(func);
+               pp.clickPadButton(func);
                evnt.stopPropagation();
                evnt.preventDefault();
             }
@@ -1561,7 +1561,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (this._fast_drawing) {
             ctrl = ToolbarIcons.CreateSVG(group, ToolbarIcons.circle, this.ButtonSize(), "enlargePad");
             ctrl.attr("name", "Enlarge").attr("x", 0).attr("y", 0)
-                .on("click", () => this.PadButtonClick("enlargePad"));
+                .on("click", evnt => this.clickPadButton("enlargePad", evnt));
          } else {
             ctrl = ToolbarIcons.CreateSVG(group, ToolbarIcons.rect, this.ButtonSize(), "Toggle tool buttons");
 
@@ -1593,7 +1593,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
                if (item.keyname) svg.attr("key", item.keyname);
 
-               svg.on("click", this.PadButtonClick.bind(this, item.funcname));
+               svg.on("click", evnt => this.clickPadButton(item.funcname, evnt));
 
                x += this.ButtonSize(1.25);
             }

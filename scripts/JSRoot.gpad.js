@@ -1723,8 +1723,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       });
       menu.AddAttributesMenu(this, alone ? "" : "Frame ");
       menu.add("separator");
-      menu.add("Save as frame.png", () => pp.SaveAs("png", 'frame', 'frame.png'));
-      menu.add("Save as frame.svg", () => pp.SaveAs("svg", 'frame', 'frame.svg'));
+      menu.add("Save as frame.png", () => pp.saveAs("png", 'frame', 'frame.png'));
+      menu.add("Save as frame.svg", () => pp.saveAs("svg", 'frame', 'frame.svg'));
 
       return true;
    }
@@ -2683,8 +2683,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       let fname = this.this_pad_name;
       if (fname.length===0) fname = this.iscan ? "canvas" : "pad";
 
-      menu.add("Save as "+ fname+".png", fname+".png", this.SaveAs.bind(this, "png", false));
-      menu.add("Save as "+ fname+".svg", fname+".svg", this.SaveAs.bind(this, "svg", false));
+      menu.add("Save as "+ fname+".png", fname+".png", () => this.saveAs("png", false));
+      menu.add("Save as "+ fname+".svg", fname+".svg", () => this.saveAs("svg", false));
 
       return true;
    }
@@ -3171,7 +3171,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return Promise.resolve(btoa("dummy PDF file"));
 
       if ((format=="png") || (format=="jpeg") || (format=="svg"))
-         return this.ProduceImage(true, format).then(res => {
+         return this.produceImage(true, format).then(res => {
             if (!res || (format=="svg")) return res;
             let separ = res.indexOf("base64,");
             return (separ>0) ? res.substr(separ+7) : "";
@@ -3319,13 +3319,15 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
        });
    }
 
-   TPadPainter.prototype.SaveAs = function(kind, full_canvas, filename) {
+   /** @summary Save pad in specified format
+     * @desc Used from context menu */
+   TPadPainter.prototype.saveAs = function(kind, full_canvas, filename) {
       if (!filename) {
          filename = this.this_pad_name;
          if (filename.length === 0) filename = this.iscan ? "canvas" : "pad";
          filename += "." + kind;
       }
-      this.ProduceImage(full_canvas, kind).then(imgdata => {
+      this.produceImage(full_canvas, kind).then(imgdata => {
          let a = document.createElement('a');
          a.download = filename;
          a.href = (kind != "svg") ? imgdata : "data:image/svg+xml;charset=utf-8,"+encodeURIComponent(imgdata);
@@ -3337,7 +3339,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    /** @summary Prodce image for the pad
      * @returns {Promise} with created image */
-   TPadPainter.prototype.ProduceImage = function(full_canvas, file_format) {
+   TPadPainter.prototype.produceImage = function(full_canvas, file_format) {
 
       let use_frame = (full_canvas === "frame");
 
@@ -3476,13 +3478,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       });
    }
 
-   TPadPainter.prototype.PadButtonClick = function(funcname, evnt) {
+   /** @summary Process pad button click */
+   TPadPainter.prototype.clickPadButton = function(funcname, evnt) {
 
-      if (funcname == "CanvasSnapShot") return this.SaveAs("png", true);
+      if (funcname == "CanvasSnapShot") return this.saveAs("png", true);
 
       if (funcname == "enlargePad") return this.enlargePad();
 
-      if (funcname == "PadSnapShot") return this.SaveAs("png", false);
+      if (funcname == "PadSnapShot") return this.saveAs("png", false);
 
       if (funcname == "PadContextMenus") {
 
@@ -3541,8 +3544,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       for (let i = 0; i < this.painters.length; ++i) {
          let pp = this.painters[i];
 
-         if (typeof pp.PadButtonClick == 'function')
-            pp.PadButtonClick(funcname);
+         if (typeof pp.clickPadButton == 'function')
+            pp.clickPadButton(funcname);
 
          if (!done && (typeof pp.ButtonClick == 'function'))
             done = pp.ButtonClick(funcname);
@@ -3994,10 +3997,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
    }
 
-   TCanvasPainter.prototype.PadButtonClick = function(funcname, evnt) {
+   TCanvasPainter.prototype.clickPadButton = function(funcname, evnt) {
       if (funcname == "ToggleGed") return this.ActivateGed(this, null, "toggle");
       if (funcname == "ToggleStatus") return this.ActivateStatusBar("toggle");
-      TPadPainter.prototype.PadButtonClick.call(this, funcname, evnt);
+      TPadPainter.prototype.clickPadButton.call(this, funcname, evnt);
    }
 
    TCanvasPainter.prototype.testUI5 = function() {
