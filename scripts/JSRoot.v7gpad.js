@@ -1483,7 +1483,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return this.fLastEventPnt;
    }
 
-   RFramePainter.prototype.UpdateAttributes = function(force) {
+   RFramePainter.prototype.updateAttributes = function(force) {
       if ((this.fX1NDC === undefined) || (force && !this.modified_NDC)) {
 
          let rect = this.getPadPainter().getPadRect();
@@ -1695,7 +1695,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    /** @summary Draw configured axes on the frame
      * @desc axes can be drawn only for main histogram  */
-   RFramePainter.prototype.DrawAxes = function() {
+   RFramePainter.prototype.drawAxes = function() {
 
       if (this.axes_drawn || (this.xmin==this.xmax) || (this.ymin==this.ymax))
          return Promise.resolve(this.axes_drawn);
@@ -1796,7 +1796,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary function called at the end of resize of frame
      * @desc Used to update attributes on the server
      * @private */
-   RFramePainter.prototype.SizeChanged = function() {
+   RFramePainter.prototype.sizeChanged = function() {
 
       let changes = {};
       this.v7AttrChange(changes, "margin_left", this.fX1NDC);
@@ -1839,7 +1839,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    /** @summary Removes all drawn elements of the frame
      * @private */
-   RFramePainter.prototype.CleanFrameDrawings = function() {
+   RFramePainter.prototype.cleanFrameDrawings = function() {
       // cleanup all 3D drawings if any
       if (typeof this.create3DScene === 'function')
          this.create3DScene(-1);
@@ -1868,7 +1868,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
      * @private */
    RFramePainter.prototype.cleanup = function() {
 
-      this.CleanFrameDrawings();
+      this.cleanFrameDrawings();
 
       if (this.draw_g) {
          this.draw_g.selectAll("*").remove();
@@ -1905,7 +1905,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (pp) pp.frame_painter_ref = this;
 
       // first update all attributes from objects
-      this.UpdateAttributes();
+      this.updateAttributes();
 
       let rect = pp ? pp.getPadRect() : { width: 10, height: 10},
           lm = Math.round(rect.width * this.fX1NDC),
@@ -2225,7 +2225,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
 
    /** @summary Fill menu for frame when server is not there */
-   RFramePainter.prototype.FillObjectOfflineMenu = function(menu, kind) {
+   RFramePainter.prototype.fillObjectOfflineMenu = function(menu, kind) {
       if ((kind!="x") && (kind!="y")) return;
 
       menu.add("Unzoom", () => this.unzoom(kind));
@@ -2923,7 +2923,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             this.pad[arg.substr(1)] = parseInt(arg[0]);
 
             let main = this.getMainPainter();
-            if (main && (typeof main.DrawAxes == 'function')) main.DrawAxes();
+            if (main && (typeof main.drawAxes == 'function')) main.drawAxes();
          }
 
          menu.addchk(this.pad.fGridx, 'Grid x', 'fGridx', ToggleGridField);
@@ -3316,7 +3316,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          delete this.main_painter_ref;
          if (fp) {
             this.painters.push(fp);
-            fp.CleanFrameDrawings();
+            fp.cleanFrameDrawings();
          }
          if (this.RemoveButtons) this.RemoveButtons();
          this.AddPadButtons(true);
@@ -4373,7 +4373,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if (JSROOT.settings.ContextMenu && this.PaveContextMenu)
                this.draw_g.on("contextmenu", this.PaveContextMenu.bind(this));
 
-            inter.DragMoveHandler.AddDrag(this, { minwidth: 20, minheight: 20, redraw: this.SizeChanged.bind(this) });
+            inter.DragMoveHandler.AddDrag(this, { minwidth: 20, minheight: 20, redraw: this.sizeChanged.bind(this) });
 
             return this;
          });
@@ -4381,7 +4381,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Process interactive moving of the stats box */
-   RPavePainter.prototype.SizeChanged = function() {
+   RPavePainter.prototype.sizeChanged = function() {
       this.pave_width = parseInt(this.draw_g.attr("width"));
       this.pave_height = parseInt(this.draw_g.attr("height"));
 

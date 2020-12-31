@@ -255,7 +255,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       main.ymin = main.ymax = 0;
       main.zmin = main.zmax = 0;
       main.setAxesRanges(this.getAxis("x"), this.xmin, this.xmax, this.getAxis("y"), this.ymin, this.ymax, this.getAxis("z"), this.zmin, this.zmax);
-      return main.DrawAxes();
+      return main.drawAxes();
    }
 
    RHistPainter.prototype.CheckHistDrawAttributes = function() {

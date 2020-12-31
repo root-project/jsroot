@@ -1112,7 +1112,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
      * @private */
    TFramePainter.prototype.createXY = function(opts) {
 
-      this.CleanXY(); // remove all previous configurations
+      this.cleanXY(); // remove all previous configurations
 
       if (!opts) opts = {};
 
@@ -1309,9 +1309,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary draw axes, return Promise which ready when drawing is completed  */
-   TFramePainter.prototype.DrawAxes = function(shrink_forbidden, disable_axis_draw, AxisPos, has_x_obstacle) {
+   TFramePainter.prototype.drawAxes = function(shrink_forbidden, disable_axis_draw, AxisPos, has_x_obstacle) {
 
-      this.CleanAxesDrawings();
+      this.cleanAxesDrawings();
 
       if ((this.xmin==this.xmax) || (this.ymin==this.ymax))
          return Promise.resolve(false);
@@ -1372,7 +1372,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                if (shrink != 0) {
                   this.shrinkFrame(shrink, 0);
                   this.redraw();
-                  return this.DrawAxes(true);
+                  return this.drawAxes(true);
                }
 
                this.axes_drawn = true;
@@ -1387,7 +1387,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    /** @summary Update frame attributes
      * @private */
-   TFramePainter.prototype.UpdateAttributes = function(force) {
+   TFramePainter.prototype.updateAttributes = function(force) {
       let pp = this.getPadPainter(),
           pad = pp ? pp.getRootPad(true) : null,
           tframe = this.getObject();
@@ -1429,7 +1429,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Function called at the end of resize of frame
      * @desc One should apply changes to the pad
      * @private */
-   TFramePainter.prototype.SizeChanged = function() {
+   TFramePainter.prototype.sizeChanged = function() {
 
       let pp = this.getPadPainter(),
           pad = pp ? pp.getRootPad(true) : null;
@@ -1446,7 +1446,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
     /** @summary Remove all kinds of X/Y function for axes transformation */
-   TFramePainter.prototype.CleanXY = function() {
+   TFramePainter.prototype.cleanXY = function() {
       delete this.grx;
       delete this.gry;
       delete this.grz;
@@ -1468,7 +1468,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary remove all axes drawings */
-   TFramePainter.prototype.CleanAxesDrawings = function() {
+   TFramePainter.prototype.cleanAxesDrawings = function() {
       if (this.x_handle) this.x_handle.removeG();
       if (this.y_handle) this.y_handle.removeG();
       if (this.z_handle) this.z_handle.removeG();
@@ -1482,14 +1482,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Returns frame rectangle plus extra info for hint display */
-   TFramePainter.prototype.CleanFrameDrawings = function() {
+   TFramePainter.prototype.cleanFrameDrawings = function() {
 
       // cleanup all 3D drawings if any
       if (typeof this.create3DScene === 'function')
          this.create3DScene(-1);
 
-      this.CleanAxesDrawings();
-      this.CleanXY();
+      this.cleanAxesDrawings();
+      this.cleanXY();
 
       this.ranges_set = false;
 
@@ -1534,7 +1534,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    /** @summary Cleanup frame */
    TFramePainter.prototype.cleanup = function() {
-      this.CleanFrameDrawings();
+      this.cleanFrameDrawings();
       delete this._click_handler;
       delete this._dblclick_handler;
       delete this.enabledKeys;
@@ -1548,7 +1548,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (pp) pp.frame_painter_ref = this; // keep direct reference to the frame painter
 
       // first update all attributes from objects
-      this.UpdateAttributes();
+      this.updateAttributes();
 
       let rect = pp ? pp.getPadRect() : { width: 10, height: 10},
           lm = Math.round(rect.width * this.fX1NDC),
@@ -2833,7 +2833,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (this.iscan) this.checkSpecialsInPrimitives(obj);
 
       let fp = this.getFramePainter();
-      if (fp) fp.UpdateAttributes(!fp.modified_NDC);
+      if (fp) fp.updateAttributes(!fp.modified_NDC);
 
       if (!obj.fPrimitives) return false;
 
@@ -3145,7 +3145,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.painters = [];
          if (fp) {
             this.painters.push(fp);
-            fp.CleanFrameDrawings();
+            fp.cleanFrameDrawings();
          }
          if (this.RemoveButtons) this.RemoveButtons();
          this.AddPadButtons(true);

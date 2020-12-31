@@ -643,7 +643,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          if (!this._frame_rotate && !this._frame_fixpos)
             DragMoveHandler.AddDrag(this, { obj: this, only_resize: true,
-                                    minwidth: 20, minheight: 20, redraw: this.SizeChanged.bind(this) });
+                                    minwidth: 20, minheight: 20, redraw: this.sizeChanged.bind(this) });
 
          let main_svg = this.draw_g.select(".main_layer");
 

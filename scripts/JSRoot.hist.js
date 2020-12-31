@@ -2284,7 +2284,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
     /** @summary Draw axes for histogram
       * @desc axes can be drawn only for main histogram */
-   THistPainter.prototype.DrawAxes = function() {
+   THistPainter.prototype.drawAxes = function() {
       if (!this.isMainPainter())
          return Promise.resolve(false);
 
@@ -2311,7 +2311,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       if (this.options.Same) return Promise.resolve(false);
 
-      return fp.DrawAxes(false, this.options.Axis < 0, this.options.AxisPos, this.options.Zscale);
+      return fp.drawAxes(false, this.options.Axis < 0, this.options.AxisPos, this.options.Zscale);
    }
 
    THistPainter.prototype.ToggleTitle = function(arg) {
@@ -4336,7 +4336,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (typeof this.drawColorPalette === 'function')
          this.drawColorPalette(false);
 
-      return this.DrawAxes().then(() => {
+      return this.drawAxes().then(() => {
          this.Draw1DBins();
          return this.drawHistTitle();
       }).then(() => {
@@ -6343,7 +6343,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       // draw new palette, resize frame if required
       return this.drawColorPalette(need_palette, true).then(pp => {
 
-         return this.DrawAxes().then(() => {
+         return this.drawAxes().then(() => {
 
             this.Draw2DBins();
 
