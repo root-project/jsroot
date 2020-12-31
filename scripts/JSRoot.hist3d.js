@@ -2868,10 +2868,10 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       let pp = this.getPadPainter();
       if (!pp) return;
 
-      pp.AddButton("auto_zoom", 'Unzoom all axes', 'ToggleZoom', "Ctrl *");
+      pp.addPadButton("auto_zoom", 'Unzoom all axes', 'ToggleZoom', "Ctrl *");
       if (this.draw_content)
-         pp.AddButton("statbox", 'Toggle stat box', "ToggleStatBox");
-      pp.ShowButtons();
+         pp.addPadButton("statbox", 'Toggle stat box', "ToggleStatBox");
+      pp.showPadButtons();
    }
 
    /** @summary Checks if it makes sense to zoom inside specified axis range */

@@ -2695,7 +2695,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.checkResize(true);
 
       if (this._fast_drawing != was_fast)
-         this.ShowButtons();
+         this.showPadButtons();
    }
 
    /** @summary Create SVG element for the pad
@@ -3155,7 +3155,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          padpainter.createPadSvg();
 
          if (snap.fPrimitives && snap.fPrimitives.length > 0)
-            padpainter.AddPadButtons();
+            padpainter.addPadButtons();
 
          // we select current pad, where all drawing is performed
          let prev_name = padpainter.selectCurrentPad(padpainter.this_pad_name);
@@ -3270,7 +3270,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
              this._fixed_size = true;
 
          this.createCanvasSvg(0);
-         this.AddPadButtons(true);
+         this.addPadButtons(true);
 
          return this.DrawNextSnap(snap.fPrimitives);
       }
@@ -3318,8 +3318,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             this.painters.push(fp);
             fp.cleanFrameDrawings();
          }
-         if (this.RemoveButtons) this.RemoveButtons();
-         this.AddPadButtons(true);
+         if (this.removePadButtons) this.removePadButtons();
+         this.addPadButtons(true);
       }
 
       let prev_name = this.selectCurrentPad(this.this_pad_name);
@@ -3338,15 +3338,17 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Create image for the pad
-     * @returns {Promise} with image data, coded with btoa() function */
-   RPadPainter.prototype.CreateImage = function(format) {
+     * @desc Used with web-based canvas to create images for server side
+     * @returns {Promise} with image data, coded with btoa() function
+     * @private */
+   RPadPainter.prototype.createImage = function(format) {
       // use https://github.com/MrRio/jsPDF in the future here
-      if (format=="pdf")
+      if (format == "pdf")
          return Promise.resolve(btoa("dummy PDF file"));
 
-      if ((format=="png") || (format=="jpeg") || (format=="svg"))
+      if ((format == "png") || (format == "jpeg") || (format == "svg"))
          return this.produceImage(true, format).then(res => {
-            if (!res || (format=="svg")) return res;
+            if (!res || (format == "svg")) return res;
             let separ = res.indexOf("base64,");
             return (separ>0) ? res.substr(separ+7) : "";
          });
@@ -3354,12 +3356,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return Promise.resolve("");
    }
 
-   RPadPainter.prototype.ItemContextMenu = function(name) {
-       let rrr = this.svg_this_pad().node().getBoundingClientRect();
-       let evnt = { clientX: rrr.left+10, clientY: rrr.top + 10 };
+   /** @summary Show context menu for specified item
+     * @private */
+   RPadPainter.prototype.itemContextMenu = function(name) {
+       let rrr = this.svg_this_pad().node().getBoundingClientRect(),
+           evnt = { clientX: rrr.left+10, clientY: rrr.top + 10 };
 
        // use timeout to avoid conflict with mouse click and automatic menu close
-       if (name=="pad")
+       if (name == "pad")
           return setTimeout(() => this.padContextMenu(evnt), 50);
 
        let selp = null, selkind;
@@ -3379,8 +3383,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
              if (!isNaN(indx)) selp = this.painters[indx];
           }
        }
-
-       console.log('Start fill here', selkind)
 
        if (!selp || (typeof selp.fillContextMenu !== 'function')) return;
 
@@ -3573,20 +3575,20 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             menu.add("header:Menus");
 
             if (this.iscan)
-               menu.add("Canvas", "pad", this.ItemContextMenu);
+               menu.add("Canvas", "pad", this.itemContextMenu);
             else
-               menu.add("Pad", "pad", this.ItemContextMenu);
+               menu.add("Pad", "pad", this.itemContextMenu);
 
             if (this.getFramePainter())
-               menu.add("Frame", "frame", this.ItemContextMenu);
+               menu.add("Frame", "frame", this.itemContextMenu);
 
             let main = this.getMainPainter(); // here pad painter method
 
             if (main) {
-               menu.add("X axis", "xaxis", this.ItemContextMenu);
-               menu.add("Y axis", "yaxis", this.ItemContextMenu);
+               menu.add("X axis", "xaxis", this.itemContextMenu);
+               menu.add("Y axis", "yaxis", this.itemContextMenu);
                if ((typeof main.Dimension === 'function') && (main.Dimension() > 1))
-                  menu.add("Z axis", "zaxis", this.ItemContextMenu);
+                  menu.add("Z axis", "zaxis", this.itemContextMenu);
             }
 
             if (this.painters && (this.painters.length>0)) {
@@ -3600,7 +3602,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                   let name = ('_typename' in obj) ? (obj._typename + "::") : "";
                   if ('fName' in obj) name += obj.fName;
                   if (name.length==0) name = "item" + n;
-                  menu.add(name, n, this.ItemContextMenu);
+                  menu.add(name, n, this.itemContextMenu);
                }
             }
 
@@ -3620,12 +3622,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (typeof pp.clickPadButton == 'function')
             pp.clickPadButton(funcname);
 
-         if (!done && (typeof pp.ButtonClick == 'function'))
-            done = pp.ButtonClick(funcname);
+         if (!done && (typeof pp.clickButton == 'function'))
+            done = pp.clickButton(funcname);
       }
    }
 
-   RPadPainter.prototype.AddButton = function(_btn, _tooltip, _funcname, _keyname) {
+   /** @summary Add button to the pad
+     * @private */
+   RPadPainter.prototype.addPadButton = function(_btn, _tooltip, _funcname, _keyname) {
       if (!JSROOT.settings.ToolBar || JSROOT.BatchMode || this.batch_mode) return;
 
       if (!this._buttons) this._buttons = [];
@@ -3639,30 +3643,33 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       let iscan = this.iscan || !this.has_canvas;
       if (!iscan && (_funcname.indexOf("Pad")!=0) && (_funcname !== "enlargePad")) {
          let cp = this.getCanvPainter();
-         if (cp && (cp!==this)) cp.AddButton(_btn, _tooltip, _funcname);
+         if (cp && (cp!==this)) cp.addPadButton(_btn, _tooltip, _funcname);
       }
    }
 
-   RPadPainter.prototype.AddPadButtons = function(/* is_online */) {
+   /** @summary Add buttons for pad or canvas
+     * @private */
+   RPadPainter.prototype.addPadButtons = function(/* is_online */) {
 
-      this.AddButton("camera", "Create PNG", this.iscan ? "CanvasSnapShot" : "PadSnapShot", "Ctrl PrintScreen");
+      this.addPadButton("camera", "Create PNG", this.iscan ? "CanvasSnapShot" : "PadSnapShot", "Ctrl PrintScreen");
 
       if (JSROOT.settings.ContextMenu)
-         this.AddButton("question", "Access context menus", "PadContextMenus");
+         this.addPadButton("question", "Access context menus", "PadContextMenus");
 
       let add_enlarge = !this.iscan && this.has_canvas && this.HasObjectsToDraw()
 
       if (add_enlarge || this.enlargeMain('verify'))
-         this.AddButton("circle", "Enlarge canvas", "enlargePad");
+         this.addPadButton("circle", "Enlarge canvas", "enlargePad");
    }
 
-
-   RPadPainter.prototype.ShowButtons = function() {
+   /** @summary Show pad buttons
+     * @private */
+   RPadPainter.prototype.showPadButtons = function() {
       if (!this._buttons) return;
 
       JSROOT.require(['interactive']).then(inter => {
          inter.PadButtonsHandler.assign(this);
-         this.ShowButtons();
+         this.showPadButtons();
       });
    }
 
@@ -3747,7 +3754,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       painter.createPadSvg();
 
       if (painter.matchObjectType("TPad") && (!painter.has_canvas || painter.HasObjectsToDraw())) {
-         painter.AddPadButtons();
+         painter.addPadButtons();
       }
 
       // we select current pad, where all drawing is performed
@@ -3757,7 +3764,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       // flag used to prevent immediate pad redraw during first draw
       return painter.DrawPrimitives().then(() => {
-         painter.ShowButtons();
+         painter.showPadButtons();
          // we restore previous pad name
          painter.selectCurrentPad(prev_name);
          return painter;
@@ -3899,7 +3906,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Function called when canvas menu item Save is called */
    RCanvasPainter.prototype.SaveCanvasAsFile = function(fname) {
       let pnt = fname.indexOf(".");
-      this.CreateImage(fname.substr(pnt+1))
+      this.createImage(fname.substr(pnt+1))
           .then(res => this.SendWebsocket("SAVE:" + fname + ":" + res));
    }
 
@@ -3981,7 +3988,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
              cmd = msg.substr(p1+1),
              reply = "REPLY:" + cmdid + ":";
          if ((cmd == "SVG") || (cmd == "PNG") || (cmd == "JPEG")) {
-            this.CreateImage(cmd.toLowerCase())
+            this.createImage(cmd.toLowerCase())
                 .then(res => handle.send(reply + res));
          } else if (cmd.indexOf("ADDPANEL:") == 0) {
             let relative_path = cmd.substr(9);
@@ -4237,8 +4244,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       jsrp.selectActivePad({ pp: painter, active: false });
 
       return painter.DrawPrimitives().then(() => {
-         painter.AddPadButtons();
-         painter.ShowButtons();
+         painter.addPadButtons();
+         painter.showPadButtons();
          return painter;
       });
    }
@@ -4248,7 +4255,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       painter.normal_canvas = false;
       painter.batch_mode = true;
       return painter.RedrawPadSnap(snap).then(() => {
-         painter.ShowButtons();
+         painter.showPadButtons();
          return painter;
       });
    }

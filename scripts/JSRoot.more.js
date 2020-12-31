@@ -1861,7 +1861,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       return false;
    }
 
-   TGraphPainter.prototype.ButtonClick = function(funcname) {
+   TGraphPainter.prototype.clickButton = function(funcname) {
 
       if (funcname !== "ToggleZoom") return false;
 
@@ -3864,7 +3864,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       }
    }
 
-   TASImagePainter.prototype.ButtonClick = function(funcname) {
+   TASImagePainter.prototype.clickButton = function(funcname) {
       if (!this.isMainPainter()) return false;
 
       switch(funcname) {
@@ -3878,8 +3878,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    TASImagePainter.prototype.FillToolbar = function() {
       let pp = this.getPadPainter(), obj = this.getObject();
       if (pp && obj && obj.fPalette) {
-         pp.AddButton("th2colorz", "Toggle color palette", "ToggleColorZ");
-         pp.ShowButtons();
+         pp.addPadButton("th2colorz", "Toggle color palette", "ToggleColorZ");
+         pp.showPadButtons();
       }
    }
 

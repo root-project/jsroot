@@ -789,7 +789,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             evnt.stopPropagation();
             evnt.preventDefault();
          } else {
-            let func = pp && pp.FindButton ? pp.FindButton(key) : "";
+            let func = pp && pp.findPadButton ? pp.findPadButton(key) : "";
             if (func) {
                pp.clickPadButton(func);
                evnt.stopPropagation();
@@ -1476,12 +1476,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    let PadButtonsHandler = {
 
-      ButtonSize: function(fact) {
+      getButtonSize: function(fact) {
          return Math.round((fact || 1) * (this.iscan || !this.has_canvas ? 16 : 12));
       },
 
       alignButtons:  function(btns, width, height) {
-         let sz0 = this.ButtonSize(1.25), nextx = (btns.property('nextx') || 0) + sz0, btns_x, btns_y;
+         let sz0 = this.getButtonSize(1.25), nextx = (btns.property('nextx') || 0) + sz0, btns_x, btns_y;
 
          if (btns.property('vertical')) {
             btns_x = btns.property('leftside') ? 2 : (width - sz0);
@@ -1494,7 +1494,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          btns.attr("transform","translate("+btns_x+","+btns_y+")");
       },
 
-      ToggleButtonsVisibility: function(action) {
+      toggleButtonsVisibility: function(action) {
          let group = this.getLayerSvg("btns_layer"),
              btn = group.select("[name='Toggle']");
 
@@ -1519,7 +1519,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                break;
             case 'disable':
             case 'leavebtn':
-               if (!state) btn.property('timout_handler', setTimeout(this.ToggleButtonsVisibility.bind(this,'timeout'), 500));
+               if (!state) btn.property('timout_handler', setTimeout(() => this.toggleButtonsVisibility('timeout'), 500));
                return;
          }
 
@@ -1529,7 +1529,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          });
       },
 
-      FindButton: function(keyname) {
+      findPadButton: function(keyname) {
          let group = this.getLayerSvg("btns_layer"), found_func = "";
          if (!group.empty())
             group.selectAll("svg").each(function() {
@@ -1540,7 +1540,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return found_func;
       },
 
-      RemoveButtons: function() {
+      removePadButtons: function() {
          let group = this.getLayerSvg("btns_layer");
          if (!group.empty()) {
             group.selectAll("*").remove();
@@ -1548,7 +1548,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          }
       },
 
-      ShowButtons: function() {
+      showPadButtons: function() {
          let group = this.getLayerSvg("btns_layer");
          if (group.empty()) return;
 
@@ -1556,20 +1556,20 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          group.selectAll("*").remove();
 
          let iscan = this.iscan || !this.has_canvas, ctrl,
-             x = group.property('leftside') ? this.ButtonSize(1.25) : 0, y = 0;
+             x = group.property('leftside') ? this.getButtonSize(1.25) : 0, y = 0;
 
          if (this._fast_drawing) {
-            ctrl = ToolbarIcons.CreateSVG(group, ToolbarIcons.circle, this.ButtonSize(), "enlargePad");
+            ctrl = ToolbarIcons.CreateSVG(group, ToolbarIcons.circle, this.getButtonSize(), "enlargePad");
             ctrl.attr("name", "Enlarge").attr("x", 0).attr("y", 0)
                 .on("click", evnt => this.clickPadButton("enlargePad", evnt));
          } else {
-            ctrl = ToolbarIcons.CreateSVG(group, ToolbarIcons.rect, this.ButtonSize(), "Toggle tool buttons");
+            ctrl = ToolbarIcons.CreateSVG(group, ToolbarIcons.rect, this.getButtonSize(), "Toggle tool buttons");
 
             ctrl.attr("name", "Toggle").attr("x", 0).attr("y", 0)
                 .property("buttons_state", (JSROOT.settings.ToolBar!=='popup'))
-                .on("click", this.ToggleButtonsVisibility.bind(this, 'toggle'))
-                .on("mouseenter", this.ToggleButtonsVisibility.bind(this, 'enable'))
-                .on("mouseleave", this.ToggleButtonsVisibility.bind(this, 'disable'));
+                .on("click", () => this.toggleButtonsVisibility('toggle'))
+                .on("mouseenter", () => this.toggleButtonsVisibility('enable'))
+                .on("mouseleave", () => this.toggleButtonsVisibility('disable'));
 
             for (let k=0;k<this._buttons.length;++k) {
                let item = this._buttons[k];
@@ -1578,7 +1578,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                if (typeof btn == 'string') btn = ToolbarIcons[btn];
                if (!btn) btn = ToolbarIcons.circle;
 
-               let svg = ToolbarIcons.CreateSVG(group, btn, this.ButtonSize(),
+               let svg = ToolbarIcons.CreateSVG(group, btn, this.getButtonSize(),
                            item.tooltip + (iscan ? "" : (" on pad " + this.this_pad_name)) + (item.keyname ? " (keyshortcut " + item.keyname + ")" : ""));
 
                if (group.property('vertical'))
@@ -1588,14 +1588,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
                svg.attr("name", item.funcname)
                   .style('display', (ctrl.property("buttons_state") ? '' : 'none'))
-                  .on("mouseenter", this.ToggleButtonsVisibility.bind(this, 'enterbtn'))
-                  .on("mouseleave", this.ToggleButtonsVisibility.bind(this, 'leavebtn'));
+                  .on("mouseenter", () => this.toggleButtonsVisibility('enterbtn'))
+                  .on("mouseleave", () => this.toggleButtonsVisibility('leavebtn'));
 
                if (item.keyname) svg.attr("key", item.keyname);
 
                svg.on("click", evnt => this.clickPadButton(item.funcname, evnt));
 
-               x += this.ButtonSize(1.25);
+               x += this.getButtonSize(1.25);
             }
          }
 
@@ -1610,12 +1610,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       },
 
       assign: function(painter) {
-         painter.ButtonSize = this.ButtonSize;
+         painter.getButtonSize = this.getButtonSize;
          painter.alignButtons = this.alignButtons;
-         painter.ToggleButtonsVisibility = this.ToggleButtonsVisibility;
-         painter.FindButton = this.FindButton;
-         painter.RemoveButtons = this.RemoveButtons;
-         painter.ShowButtons = this.ShowButtons;
+         painter.toggleButtonsVisibility = this.toggleButtonsVisibility;
+         painter.findPadButton = this.findPadButton;
+         painter.removePadButtons = this.removePadButtons;
+         painter.showPadButtons = this.showPadButtons;
 
       }
    } // PadButtonsHandler

@@ -470,7 +470,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       return null;
    }
 
-   RHistPainter.prototype.ButtonClick = function(funcname) {
+   RHistPainter.prototype.clickButton = function(funcname) {
       // TODO: move to frame painter
       switch(funcname) {
          case "ToggleZoom":
@@ -496,14 +496,14 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       let pp = this.getPadPainter();
       if (!pp) return;
 
-      pp.AddButton("auto_zoom", 'Toggle between unzoom and autozoom-in', 'ToggleZoom', "Ctrl *");
-      pp.AddButton("arrow_right", "Toggle log x", "ToggleLogX", "PageDown");
-      pp.AddButton("arrow_up", "Toggle log y", "ToggleLogY", "PageUp");
+      pp.addPadButton("auto_zoom", 'Toggle between unzoom and autozoom-in', 'ToggleZoom', "Ctrl *");
+      pp.addPadButton("arrow_right", "Toggle log x", "ToggleLogX", "PageDown");
+      pp.addPadButton("arrow_up", "Toggle log y", "ToggleLogY", "PageUp");
       if (this.Dimension() > 1)
-         pp.AddButton("arrow_diag", "Toggle log z", "ToggleLogZ");
+         pp.addPadButton("arrow_diag", "Toggle log z", "ToggleLogZ");
       if (this.draw_content)
-         pp.AddButton("statbox", 'Toggle stat box', "ToggleStatBox");
-      if (!not_shown) pp.ShowButtons();
+         pp.addPadButton("statbox", 'Toggle stat box', "ToggleStatBox");
+      if (!not_shown) pp.showPadButtons();
    }
 
    RHistPainter.prototype.Get3DToolTip = function(indx) {
@@ -2003,8 +2003,8 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
          this.FillPaletteMenu(menu);
    }
 
-   RH2Painter.prototype.ButtonClick = function(funcname) {
-      if (RHistPainter.prototype.ButtonClick.call(this, funcname)) return true;
+   RH2Painter.prototype.clickButton = function(funcname) {
+      if (RHistPainter.prototype.clickButton.call(this, funcname)) return true;
 
       switch(funcname) {
          case "ToggleColor": this.ToggleColor(); break;
@@ -2024,10 +2024,10 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       if (!pp) return;
 
       if (!this.IsTH2Poly())
-         pp.AddButton("th2color", "Toggle color", "ToggleColor");
-      pp.AddButton("th2colorz", "Toggle color palette", "ToggleColorZ");
-      pp.AddButton("th2draw3d", "Toggle 3D mode", "Toggle3D");
-      pp.ShowButtons();
+         pp.addPadButton("th2color", "Toggle color", "ToggleColor");
+      pp.addPadButton("th2colorz", "Toggle color palette", "ToggleColorZ");
+      pp.addPadButton("th2draw3d", "Toggle 3D mode", "Toggle3D");
+      pp.showPadButtons();
    }
 
    RH2Painter.prototype.ToggleColor = function() {
