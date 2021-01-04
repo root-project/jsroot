@@ -2591,7 +2591,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       });
    }
 
-   TPadPainter.prototype.GetTooltips = function(pnt) {
+   /** @summary Process tooltip event in the pad
+     * @private */
+   TPadPainter.prototype.processPadTooltipEvent = function(pnt) {
       let painters = [], hints = [];
 
       // first count - how many processors are there
@@ -2731,7 +2733,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       return false;
    }
-
 
    /** @summary Check resize of canvas */
    TPadPainter.prototype.checkCanvasResize = function(size, force) {
@@ -2927,7 +2928,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          subpad.fPrimitives = null; // clear primitives, they just because of I/O
 
          let padpainter = new TPadPainter(this.getDom(), subpad, false);
-         padpainter.DecodeOptions(snap.fOption);
+         padpainter.decodeOptions(snap.fOption);
          padpainter.addToPadPrimitives(this.this_pad_name);
          padpainter.snapid = snap.fObjectID;
 
@@ -3150,8 +3151,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return Promise.resolve("");
    }
 
-   /** @summary Collects pad information for TWebCanvas, need to update different states */
-   TPadPainter.prototype.GetWebPadOptions = function(arg) {
+   /** @summary Collects pad information for TWebCanvas
+     * @desc need to update different states
+     * @private */
+   TPadPainter.prototype.getWebPadOptions = function(arg) {
       let is_top = (arg === undefined), elem = null, scan_subpads = true;
       // no any options need to be collected in readonly mode
       if (is_top && this._readonly) return "";
@@ -3171,7 +3174,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          if (this.iscan) elem.bits = this.GetStatusBits();
 
-         if (this.GetPadRanges(elem))
+         if (this.getPadRanges(elem))
             arg.push(elem);
          else
             console.log('fail to get ranges for pad ' +  this.pad.fName);
@@ -3179,8 +3182,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       for (let k=0; k<this.painters.length; ++k) {
          let sub = this.painters[k];
-         if (typeof sub.GetWebPadOptions == "function") {
-            if (scan_subpads) sub.GetWebPadOptions(arg);
+         if (typeof sub.getWebPadOptions == "function") {
+            if (scan_subpads) sub.getWebPadOptions(arg);
          } else if (sub.snapid) {
             let opt = { _typename: "TWebObjectOptions", snapid: sub.snapid.toString(), opt: sub.getDrawOpt(), fcust: "", fopt: [] };
             if (typeof sub.fillWebObjectOptions == "function")
@@ -3194,7 +3197,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    /** @summary returns actual ranges in the pad, which can be applied to the server
      * @private */
-   TPadPainter.prototype.GetPadRanges = function(r) {
+   TPadPainter.prototype.getPadRanges = function(r) {
 
       if (!r) return false;
 
@@ -3575,7 +3578,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
    }
 
-   TPadPainter.prototype.DecodeOptions = function(opt) {
+   /** @summary Decode pad draw options
+     * @private */
+   TPadPainter.prototype.decodeOptions = function(opt) {
       let pad = this.getObject();
       if (!pad) return;
 
@@ -3621,7 +3626,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    let drawPad = (divid, pad, opt) => {
       let painter = new TPadPainter(divid, pad, false);
-      painter.DecodeOptions(opt);
+      painter.decodeOptions(opt);
 
       if (painter.getCanvSvg().empty()) {
          // one can draw pad without canvas
@@ -3929,7 +3934,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          this.redrawPadSnap(snap).then(() => {
             this.CompleteCanvasSnapDrawing();
-            let ranges = this.GetWebPadOptions(); // all data, including subpads
+            let ranges = this.getWebPadOptions(); // all data, including subpads
             if (ranges) ranges = ":" + ranges;
             handle.send("READY6:" + snap.fVersion + ranges); // send ready message back when drawing completed
          });
@@ -4142,10 +4147,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             break;
          case "frame": // when moving frame
          case "zoom":  // when changing zoom inside frame
-            if (!painter.GetWebPadOptions)
+            if (!painter.getWebPadOptions)
                painter = painter.getPadPainter();
-            if (typeof painter.GetWebPadOptions == "function")
-               msg = "OPTIONS6:" + painter.GetWebPadOptions("only_this");
+            if (typeof painter.getWebPadOptions == "function")
+               msg = "OPTIONS6:" + painter.getWebPadOptions("only_this");
             break;
          case "pave_moved":
             if (painter.fillWebObjectOptions) {
@@ -4268,7 +4273,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       let direct = painter.directGeoDraw();
       if (direct) return direct;
 
-      painter.DecodeOptions(opt);
+      painter.decodeOptions(opt);
       painter.normal_canvas = !nocanvas;
       painter.createCanvasSvg(0);
 

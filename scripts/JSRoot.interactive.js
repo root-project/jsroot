@@ -54,7 +54,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (pnt) pnt.painters = true; // get also painter
 
          // collect tooltips from pad painter - it has list of all drawn objects
-         if (pp) hints = pp.GetTooltips(pnt);
+         if (pp) hints = pp.processPadTooltipEvent(pnt);
 
          if (pnt && pnt.touch) textheight = 15;
 
@@ -811,7 +811,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          pnt.disabled = true; // do not invoke graphics
 
          // collect tooltips from pad painter - it has list of all drawn objects
-         let hints = pp.GetTooltips(pnt), exact = null;
+         let hints = pp.processPadTooltipEvent(pnt), exact = null;
          for (let k=0; (k<hints.length) && !exact; ++k)
             if (hints[k] && hints[k].exact) exact = hints[k];
          //if (exact) console.log('Click exact', pnt, exact.painter.getObjectHint());
@@ -1280,7 +1280,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
                if ((pnt !== null) && (pp !== null)) {
                   pnt.painters = true; // assign painter for every tooltip
-                  let hints = pp.GetTooltips(pnt), bestdist = 1000;
+                  let hints = pp.processPadTooltipEvent(pnt), bestdist = 1000;
                   for (let n=0;n<hints.length;++n)
                      if (hints[n] && hints[n].menu) {
                         let dist = ('menu_dist' in hints[n]) ? hints[n].menu_dist : 7;

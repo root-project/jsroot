@@ -1225,8 +1225,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       let drawable = this.getObject(),
           pp   = this.getPadPainter(),
-          pos  = pp.GetCoordinate(drawable.fPos),
-          len  = pp.GetPadLength(drawable.fVertical, drawable.fLength),
+          pos  = pp.getCoordinate(drawable.fPos),
+          len  = pp.getPadLength(drawable.fVertical, drawable.fLength),
           reverse = this.v7EvalAttr("reverse", false),
           min = 0, max = 1;
 
@@ -2854,7 +2854,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       });
    }
 
-   RPadPainter.prototype.GetTooltips = function(pnt) {
+   /** @summary Process tooltip event in the pad
+     * @private */
+   RPadPainter.prototype.processPadTooltipEvent = function(pnt) {
       let painters = [], hints = [];
 
       // first count - how many processors are there
@@ -3114,7 +3116,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          let subpad = snap; // not subpad, but just attributes
 
          let padpainter = new RPadPainter(this.getDom(), subpad, false);
-         padpainter.DecodeOptions("");
+         padpainter.decodeOptions("");
          padpainter.addToPadPrimitives(this.this_pad_name); // only set parent pad name
          padpainter.assignSnapId(snap.fObjectID);
          padpainter.rstyle = snap.fStyle;
@@ -3642,7 +3644,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Calculates RPadLength value */
-   RPadPainter.prototype.GetPadLength = function(vertical, len, ignore_user) {
+   RPadPainter.prototype.getPadLength = function(vertical, len, ignore_user) {
       if (!len) return 0;
       function GetV(indx, dflt) {
          return (len.fArr && (indx < len.fArr.length)) ? len.fArr[indx] : dflt;
@@ -3665,19 +3667,21 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
 
    /** @summary Calculates pad position for RPadPos values
-    * @param {object} pos - instance of RPadPos */
-   RPadPainter.prototype.GetCoordinate = function(pos) {
+     * @param {object} pos - instance of RPadPos */
+   RPadPainter.prototype.getCoordinate = function(pos) {
       let res = { x: 0, y: 0 };
 
       if (pos) {
-         res.x = this.GetPadLength(false, pos.fHoriz);
-         res.y = this.getPadHeight() - this.GetPadLength(true, pos.fVert);
+         res.x = this.getPadLength(false, pos.fHoriz);
+         res.y = this.getPadHeight() - this.getPadLength(true, pos.fVert);
       }
 
       return res;
    }
 
-   RPadPainter.prototype.DecodeOptions = function(opt) {
+   /** @summary Decode pad draw options
+     * @private */
+   RPadPainter.prototype.decodeOptions = function(opt) {
       let pad = this.getObject();
       if (!pad) return;
 
@@ -3709,7 +3713,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    let drawPad = (divid, pad, opt) => {
       let painter = new RPadPainter(divid, pad, false);
-      painter.DecodeOptions(opt);
+      painter.decodeOptions(opt);
 
       if (painter.getCanvSvg().empty()) {
          painter.has_canvas = false;
