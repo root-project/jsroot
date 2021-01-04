@@ -2623,7 +2623,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       else
          menu.add("header: Canvas");
 
-      menu.addchk(this.isTooltipAllowed(), "Show tooltips", this.setTooltipAllowed.bind(this, "toggle"));
+      menu.addchk(this.isTooltipAllowed(), "Show tooltips", () => this.setTooltipAllowed("toggle"));
 
       if (!this._websocket) {
 

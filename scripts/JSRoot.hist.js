@@ -388,7 +388,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                         ctxmenu: JSROOT.browser.touches && JSROOT.settings.ContextMenu && this.UseContextMenu });
 
          if (this.UseContextMenu && JSROOT.settings.ContextMenu)
-             this.draw_g.on("contextmenu", this.PaveContextMenu.bind(this));
+             this.draw_g.on("contextmenu", evnt => this.paveContextMenu(evnt));
 
          if (pt._typename == "TPaletteAxis")
             this.InteractivePaletteAxis(width, height);
@@ -1104,7 +1104,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return menu.size() > 0;
    }
 
-   TPavePainter.prototype.PaveContextMenu = function(evnt) {
+   TPavePainter.prototype.paveContextMenu = function(evnt) {
       if (this.z_handle) {
          let fp = this.getFramePainter();
          if (fp && fp.showContextMenu)

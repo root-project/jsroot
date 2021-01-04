@@ -2886,7 +2886,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       else
          menu.add("header: Canvas");
 
-      menu.addchk(this.isTooltipAllowed(), "Show tooltips", this.setTooltipAllowed.bind(this, "toggle"));
+      menu.addchk(this.isTooltipAllowed(), "Show tooltips", () => this.setTooltipAllowed("toggle"));
 
       if (!this._websocket) {
 
@@ -2924,8 +2924,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       menu.add("separator");
 
-      if (this.ToggleEventStatus)
-         menu.addchk(this.hasEventStatus(), "Event status", () => this.ToggleEventStatus());
+      if (this.activateStatusBar)
+         menu.addchk(this.hasEventStatus(), "Event status", () => this.activateStatusBar('toggle'));
 
       if (this.enlargeMain() || (this.has_canvas && this.hasObjectsToDraw()))
          menu.addchk((this.enlargeMain('state')=='on'), "Enlarge " + (this.iscan ? "canvas" : "pad"), () => this.enlargePad());
@@ -4358,8 +4358,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          return JSROOT.require(['interactive']).then(inter => {
             // TODO: provide pave context menu as in v6
-            if (JSROOT.settings.ContextMenu && this.PaveContextMenu)
-               this.draw_g.on("contextmenu", this.PaveContextMenu.bind(this));
+            if (JSROOT.settings.ContextMenu && this.paveContextMenu)
+               this.draw_g.on("contextmenu", evnt => this.paveContextMenu(evnt));
 
             inter.DragMoveHandler.AddDrag(this, { minwidth: 20, minheight: 20, redraw: this.sizeChanged.bind(this) });
 
