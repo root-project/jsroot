@@ -2270,8 +2270,8 @@ JSROOT.define(['d3'], (d3) => {
          canp.producePadEvent("redraw", this.getPadPainter(), this, null, subelem);
 
       // inform server that drawopt changes
-      if (canp && (typeof canp.ProcessChanges == 'function'))
-         canp.ProcessChanges(info, this, subelem);
+      if (canp && (typeof canp.processChanges == 'function'))
+         canp.processChanges(info, this, subelem);
    }
 
    /** @summary Redraw all objects in the current pad
@@ -2365,9 +2365,9 @@ JSROOT.define(['d3'], (d3) => {
    ObjectPainter.prototype.showObjectStatus = function(name, title, info, info2) {
       let cp = this.getCanvPainter();
 
-      if (cp && (typeof cp.ShowCanvasStatus !== 'function')) cp = null;
+      if (cp && (typeof cp.showCanvasStatus !== 'function')) cp = null;
 
-      if (!cp && (typeof jsrp.ShowStatus !== 'function')) return false;
+      if (!cp && (typeof jsrp.showStatus !== 'function')) return false;
 
       if (this.enlargeMain('state') === 'on') return false;
 
@@ -2380,9 +2380,9 @@ JSROOT.define(['d3'], (d3) => {
       }
 
       if (cp)
-         cp.ShowCanvasStatus(name, title, info, info2);
+         cp.showCanvasStatus(name, title, info, info2);
       else
-         jsrp.ShowStatus(name, title, info, info2);
+         jsrp.showStatus(name, title, info, info2);
    }
 
    /** @summary Redraw object
@@ -2747,8 +2747,8 @@ JSROOT.define(['d3'], (d3) => {
 
          // this is special entry, produced by TWebMenuItem, which recognizes editor entries itself
          if (item.fExec == "Show:Editor") {
-            if (cp && (typeof cp.ActivateGed == 'function'))
-               cp.ActivateGed(execp);
+            if (cp && (typeof cp.activateGed == 'function'))
+               cp.activateGed(execp);
             return;
          }
 
@@ -3735,7 +3735,7 @@ JSROOT.define(['d3'], (d3) => {
      * @returns {string} produced JSON string */
    JSROOT.drawingJSON = function(dom) {
       let canp = jsrp.getElementCanvPainter(dom);
-      return canp ? canp.ProduceJSON() : "";
+      return canp ? canp.produceJSON() : "";
    }
 
    /** @summary Compress SVG code, produced from JSROOT drawing

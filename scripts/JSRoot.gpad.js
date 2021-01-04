@@ -2650,8 +2650,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       menu.add("separator");
 
-      if (this.ActivateStatusBar)
-         menu.addchk(this.HasEventStatus(), "Event status", this.ActivateStatusBar.bind(this, 'toggle'));
+      if (this.activateStatusBar)
+         menu.addchk(this.hasEventStatus(), "Event status", () => this.activateStatusBar('toggle'));
 
       if (this.enlargeMain() || (this.has_canvas && this.hasObjectsToDraw()))
          menu.addchk((this.enlargeMain('state')=='on'), "Enlarge " + (this.iscan ? "canvas" : "pad"), () => this.enlargePad());
@@ -3172,7 +3172,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                   mtop: this.pad.fTopMargin, mbottom: this.pad.fBottomMargin,
                   zx1:0, zx2:0, zy1:0, zy2:0, zz1:0, zz2:0 };
 
-         if (this.iscan) elem.bits = this.GetStatusBits();
+         if (this.iscan) elem.bits = this.getStatusBits();
 
          if (this.getPadRanges(elem))
             arg.push(elem);
@@ -3782,8 +3782,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if (kind) this.proj_painter = 1; // just indicator that drawing can be preformed
 
-      if (this.ShowUI5ProjectionArea)
-         return this.ShowUI5ProjectionArea(kind);
+      if (this.showUI5ProjectionArea)
+         return this.showUI5ProjectionArea(kind);
 
       let layout = 'simple';
 
@@ -3823,8 +3823,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          canv.fPrimitives.Add(hist, "hist");
 
-         let promise = this.DrawInUI5ProjectionArea
-                       ? this.DrawInUI5ProjectionArea(canv, drawopt)
+         let promise = this.drawInUI5ProjectionArea
+                       ? this.drawInUI5ProjectionArea(canv, drawopt)
                        : this.drawInSidePanel(canv, drawopt);
 
          promise.then(painter => { this.proj_painter = painter; })
@@ -3884,6 +3884,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       });
    }
 
+   /** @summary Submit object exec request
+     * @private */
    TCanvasPainter.prototype.submitExec = function(painter, exec, snapid) {
       if (this._readonly || !painter) return;
 
@@ -3960,7 +3962,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          let snap = JSROOT.parse(msg.substr(6));
 
          this.redrawPadSnap(snap).then(() => {
-            this.CompleteCanvasSnapDrawing();
+            this.completeCanvasSnapDrawing();
             let ranges = this.getWebPadOptions(); // all data, including subpads
             if (ranges) ranges = ":" + ranges;
             handle.send("READY6:" + snap.fVersion + ranges); // send ready message back when drawing completed
@@ -3992,12 +3994,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       } else if (msg.substr(0,5)=='SHOW:') {
          let that = msg.substr(5),
              on = (that[that.length-1] == '1');
-         this.ShowSection(that.substr(0,that.length-2), on);
+         this.showSection(that.substr(0,that.length-2), on);
       } else if (msg.substr(0,5) == "EDIT:") {
          let obj_painter = this.findSnap(msg.substr(5));
          console.log('GET EDIT ' + msg.substr(5) +  ' found ' + !!obj_painter);
          if (obj_painter)
-            this.ShowSection("Editor", true)
+            this.showSection("Editor", true)
                 .then(() => this.producePadEvent("select", obj_painter.getPadPainter(), obj_painter));
 
       } else {
@@ -4005,32 +4007,38 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
    }
 
+   /** @summary Handle pad button click event
+     * @private */
    TCanvasPainter.prototype.clickPadButton = function(funcname, evnt) {
-      if (funcname == "ToggleGed") return this.ActivateGed(this, null, "toggle");
-      if (funcname == "ToggleStatus") return this.ActivateStatusBar("toggle");
+      if (funcname == "ToggleGed") return this.activateGed(this, null, "toggle");
+      if (funcname == "ToggleStatus") return this.activateStatusBar("toggle");
       TPadPainter.prototype.clickPadButton.call(this, funcname, evnt);
    }
 
-   TCanvasPainter.prototype.HasEventStatus = function() {
+   /** @summary Returns true if event status shown in the canvas */
+   TCanvasPainter.prototype.hasEventStatus = function() {
       if (this.testUI5()) return false;
       return this.brlayout ? this.brlayout.hasStatus() : false;
    }
 
-   TCanvasPainter.prototype.ActivateStatusBar = function(state) {
+   /** @summary Show/toggle event status bar
+     * @private */
+   TCanvasPainter.prototype.activateStatusBar = function(state) {
       if (this.testUI5()) return;
       if (this.brlayout)
          this.brlayout.createStatusLine(23, state);
-      this.ProcessChanges("sbits", this);
+      this.processChanges("sbits", this);
    }
 
-   /** Returns true if GED is present on the canvas */
-   TCanvasPainter.prototype.HasGed = function() {
+   /** @summary Returns true if GED is present on the canvas */
+   TCanvasPainter.prototype.hasGed = function() {
       if (this.testUI5()) return false;
       return this.brlayout ? this.brlayout.HasContent() : false;
    }
 
-   /** Function used to de-activate GED */
-   TCanvasPainter.prototype.RemoveGed = function() {
+   /** @summary Function used to de-activate GED
+     * @private */
+   TCanvasPainter.prototype.removeGed = function() {
       if (this.testUI5()) return;
 
       this.registerForPadEvents(null);
@@ -4043,18 +4051,19 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (this.brlayout)
          this.brlayout.DeleteContent();
 
-      this.ProcessChanges("sbits", this);
+      this.processChanges("sbits", this);
    }
 
    /** @summary Function used to activate GED
-     * @returns {Promise} when GED is there */
-   TCanvasPainter.prototype.ActivateGed = function(objpainter, kind, mode) {
+     * @returns {Promise} when GED is there
+     * @private */
+   TCanvasPainter.prototype.activateGed = function(objpainter, kind, mode) {
       if (this.testUI5() || !this.brlayout)
          return Promise.resolve(false);
 
       if (this.brlayout.HasContent()) {
          if ((mode === "toggle") || (mode === false)) {
-            this.RemoveGed();
+            this.removeGed();
          } else {
             let pp = objpainter ? objpainter.getPadPainter() : null;
             if (pp) pp.selectObjectPainter(objpainter);
@@ -4077,7 +4086,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                             .style("margin","3px").on("click", () => this.brlayout.Toggle('float'));
 
          inter.ToolbarIcons.CreateSVG(btns, inter.ToolbarIcons.cross, 15, "delete GED")
-                            .style("margin","3px").on("click", () => this.RemoveGed());
+                            .style("margin","3px").on("click", () => this.removeGed());
       });
 
       // be aware, that jsroot_browser_hierarchy required for flexible layout that element use full browser area
@@ -4111,7 +4120,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                   let pp = objpainter ? objpainter.getPadPainter() : null;
                   if (pp) pp.selectObjectPainter(objpainter);
 
-                  this.ProcessChanges("sbits", this);
+                  this.processChanges("sbits", this);
 
                   resolveFunc(true);
                });
@@ -4121,7 +4130,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Show section of canvas  like menu or editor */
-   TCanvasPainter.prototype.ShowSection = function(that, on) {
+   TCanvasPainter.prototype.showSection = function(that, on) {
       if (this.testUI5())
          return Promise.resolve(false);
 
@@ -4129,8 +4138,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       switch(that) {
          case "Menu": break;
-         case "StatusBar": this.ActivateStatusBar(on); break;
-         case "Editor": return this.ActivateGed(this, null, !!on);
+         case "StatusBar": this.activateStatusBar(on); break;
+         case "Editor": return this.activateGed(this, null, !!on);
          case "ToolBar": break;
          case "ToolTips": this.setTooltipAllowed(on); break;
 
@@ -4138,25 +4147,26 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return Promise.resolve(true);
    }
 
-   /** @summary Handle websocket messages */
-   TCanvasPainter.prototype.CompleteCanvasSnapDrawing = function() {
+   /** @summary Complete handling of online canvas drawing
+     * @private */
+   TCanvasPainter.prototype.completeCanvasSnapDrawing = function() {
       if (!this.pad) return;
 
       if (document) document.title = this.pad.fTitle;
 
       if (this._all_sections_showed) return;
       this._all_sections_showed = true;
-      this.ShowSection("Menu", this.pad.TestBit(TCanvasStatusBits.kMenuBar));
-      this.ShowSection("StatusBar", this.pad.TestBit(TCanvasStatusBits.kShowEventStatus));
-      this.ShowSection("ToolBar", this.pad.TestBit(TCanvasStatusBits.kShowToolBar));
-      this.ShowSection("Editor", this.pad.TestBit(TCanvasStatusBits.kShowEditor));
-      this.ShowSection("ToolTips", this.pad.TestBit(TCanvasStatusBits.kShowToolTips));
+      this.showSection("Menu", this.pad.TestBit(TCanvasStatusBits.kMenuBar));
+      this.showSection("StatusBar", this.pad.TestBit(TCanvasStatusBits.kShowEventStatus));
+      this.showSection("ToolBar", this.pad.TestBit(TCanvasStatusBits.kShowToolBar));
+      this.showSection("Editor", this.pad.TestBit(TCanvasStatusBits.kShowEditor));
+      this.showSection("ToolTips", this.pad.TestBit(TCanvasStatusBits.kShowToolTips));
    }
 
    /** @summary Method informs that something was changed in the canvas
      * @desc used to update information on the server (when used with web6gui)
      * @private */
-   TCanvasPainter.prototype.ProcessChanges = function(kind, painter, subelem) {
+   TCanvasPainter.prototype.processChanges = function(kind, painter, subelem) {
       // check if we could send at least one message more - for some meaningful actions
       if (!this._websocket || this._readonly || !this._websocket.canSend(2) || (typeof kind !== "string")) return;
 
@@ -4164,7 +4174,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (!painter) painter = this;
       switch (kind) {
          case "sbits":
-            msg = "STATUSBITS:" + this.GetStatusBits();
+            msg = "STATUSBITS:" + this.getStatusBits();
             break;
          case "frame": // when moving frame
          case "zoom":  // when changing zoom inside frame
@@ -4229,17 +4239,18 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.sendWebsocket("PADCLICKED:" + JSROOT.toJSON(arg));
    }
 
-   TCanvasPainter.prototype.GetStatusBits = function() {
+   /** @summary Return actual TCanvas status bits  */
+   TCanvasPainter.prototype.getStatusBits = function() {
       let bits = 0;
-      if (this.HasEventStatus()) bits |= TCanvasStatusBits.kShowEventStatus;
-      if (this.HasGed()) bits |= TCanvasStatusBits.kShowEditor;
+      if (this.hasEventStatus()) bits |= TCanvasStatusBits.kShowEventStatus;
+      if (this.hasGed()) bits |= TCanvasStatusBits.kShowEditor;
       if (this.isTooltipAllowed()) bits |= TCanvasStatusBits.kShowToolTips;
       if (this.use_openui) bits |= TCanvasStatusBits.kMenuBar;
       return bits;
    }
 
-   /**  @summary produce JSON for TCanvas, which can be used to display canvas once again */
-   TCanvasPainter.prototype.ProduceJSON = function() {
+   /** @summary produce JSON for TCanvas, which can be used to display canvas once again */
+   TCanvasPainter.prototype.produceJSON = function() {
 
       let canv = this.getObject(),
           fill0 = (canv.fFillStyle == 0);

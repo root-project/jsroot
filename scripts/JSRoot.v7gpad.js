@@ -2925,7 +2925,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       menu.add("separator");
 
       if (this.ToggleEventStatus)
-         menu.addchk(this.HasEventStatus(), "Event status", this.ToggleEventStatus.bind(this));
+         menu.addchk(this.hasEventStatus(), "Event status", () => this.ToggleEventStatus());
 
       if (this.enlargeMain() || (this.has_canvas && this.hasObjectsToDraw()))
          menu.addchk((this.enlargeMain('state')=='on'), "Enlarge " + (this.iscan ? "canvas" : "pad"), () => this.enlargePad());
@@ -3851,8 +3851,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if (kind) this.proj_painter = 1; // just indicator that drawing can be preformed
 
-      if (this.ShowUI5ProjectionArea)
-         return this.ShowUI5ProjectionArea(kind);
+      if (this.showUI5ProjectionArea)
+         return this.showUI5ProjectionArea(kind);
 
       let layout = 'simple';
 
@@ -3907,6 +3907,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.sendWebsocket("PRODUCE:" + fname);
    }
 
+   /** @summary Send message via web socket
+     * @private */
    RCanvasPainter.prototype.sendWebsocket = function(msg, chid) {
       if (this._websocket)
          this._websocket.send(msg, chid);
@@ -3987,7 +3989,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                 .then(res => handle.send(reply + res));
          } else if (cmd.indexOf("ADDPANEL:") == 0) {
             let relative_path = cmd.substr(9);
-            if (!this.ShowUI5Panel) {
+            if (!this.showUI5Panel) {
                handle.send(reply + "false");
             } else {
 
@@ -4002,7 +4004,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
                   onWebsocketMsg: function(panel_handle, msg) {
                      let panel_name = (msg.indexOf("SHOWPANEL:")==0) ? msg.substr(10) : "";
-                     this.cpainter.ShowUI5Panel(panel_name, panel_handle)
+                     this.cpainter.showUI5Panel(panel_name, panel_handle)
                                   .then(res => handle.send(reply + (res ? "true" : "false")));
                   },
 
@@ -4039,7 +4041,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       } else if (msg.substr(0,5)=='SHOW:') {
          let that = msg.substr(5),
              on = that[that.length-1] == '1';
-         this.ShowSection(that.substr(0,that.length-2), on);
+         this.showSection(that.substr(0,that.length-2), on);
       } else {
          console.log("unrecognized msg len:" + msg.length + " msg:" + msg.substr(0,20));
       }
@@ -4152,7 +4154,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.submitDrawableRequest(req._kind, req._nextreq, req._painter, req._method);
    }
 
-   RCanvasPainter.prototype.ShowSection = function(that, on) {
+   RCanvasPainter.prototype.showSection = function(that, on) {
       switch(that) {
          case "Menu": break;
          case "StatusBar": break;
@@ -4163,37 +4165,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return Promise.resolve(true);
    }
 
-   RCanvasPainter.prototype.CompleteCanvasSnapDrawing = function() {
-      if (!this.pad) return;
-
-      // FIXME: to be remove, has nothing to do with RCanvas
-      let TCanvasStatusBits = {
-         kShowEventStatus  : JSROOT.BIT(15),
-         kAutoExec         : JSROOT.BIT(16),
-         kMenuBar          : JSROOT.BIT(17),
-         kShowToolBar      : JSROOT.BIT(18),
-         kShowEditor       : JSROOT.BIT(19),
-         kMoveOpaque       : JSROOT.BIT(20),
-         kResizeOpaque     : JSROOT.BIT(21),
-         kIsGrayscale      : JSROOT.BIT(22),
-         kShowToolTips     : JSROOT.BIT(23)
-      };
-
-      if (document) document.title = this.pad.fTitle;
-
-      if (this._all_sections_showed) return;
-      this._all_sections_showed = true;
-      this.ShowSection("Menu", this.pad.TestBit(TCanvasStatusBits.kMenuBar));
-      this.ShowSection("StatusBar", this.pad.TestBit(TCanvasStatusBits.kShowEventStatus));
-      this.ShowSection("ToolBar", this.pad.TestBit(TCanvasStatusBits.kShowToolBar));
-      this.ShowSection("Editor", this.pad.TestBit(TCanvasStatusBits.kShowEditor));
-      this.ShowSection("ToolTips", this.pad.TestBit(TCanvasStatusBits.kShowToolTips));
-   }
-
    /** @summary Method informs that something was changed in the canvas
      * @desc used to update information on the server (when used with web6gui)
      * @private */
-   RCanvasPainter.prototype.ProcessChanges = function(kind, painter, subelem) {
+   RCanvasPainter.prototype.processChanges = function(kind, painter, subelem) {
       // check if we could send at least one message more - for some meaningful actions
       if (!this._websocket || !this._websocket.canSend(2) || (typeof kind !== "string")) return;
 
@@ -4202,7 +4177,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       switch (kind) {
          case "sbits":
             console.log("Status bits in RCanvas are changed - that to do?");
-            // msg = "STATUSBITS:" + this.GetStatusBits();
             break;
          case "frame": // when moving frame
          case "zoom":  // when changing zoom inside frame
@@ -4220,14 +4194,22 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
 
       if (msg) {
-         console.log("RCanvas::ProcessChanges want ro send  " + msg.length + "  " + msg.substr(0,40));
+         console.log("RCanvas::processChanges want to send  " + msg.length + "  " + msg.substr(0,40));
       }
    }
 
    /** @summary returns true when event status area exist for the canvas */
-   RCanvasPainter.prototype.HasEventStatus = function() {
+   RCanvasPainter.prototype.hasEventStatus = function() {
       return this.has_event_status;
    }
+
+   /** @summary produce JSON for RCanvas, which can be used to display canvas once again
+     * @private */
+   RCanvasPainter.prototype.produceJSON = function() {
+      console.error('RCanvasPainter.produceJSON not yet implemented');
+      return "";
+   }
+
 
    function drawRCanvas(divid, can /*, opt */) {
       let nocanvas = !can;
