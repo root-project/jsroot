@@ -2791,7 +2791,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          menu.addchk(fp.enable_highlight, 'Highlight bins', function() {
             fp.enable_highlight = !fp.enable_highlight;
-            if (!fp.enable_highlight && fp.BinHighlight3D && fp.mode3d) fp.BinHighlight3D(null);
+            if (!fp.enable_highlight && fp.highlightBin3D && fp.mode3d) fp.highlightBin3D(null);
          });
 
          if (fp && fp.render3D) {

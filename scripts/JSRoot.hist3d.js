@@ -222,7 +222,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
             tip.z1 -= delta_z; tip.z2 += delta_z;
          }
 
-         axis_painter.BinHighlight3D(tip, mesh);
+         axis_painter.highlightBin3D(tip, mesh);
 
          if (!tip && zoom_mesh && axis_painter.Get3DZoomCoord) {
             let pnt = zoom_mesh.GlobalIntersect(this.raycaster),
@@ -249,7 +249,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       }
 
       this.control.ProcessMouseLeave = function() {
-         axis_painter.BinHighlight3D(null);
+         axis_painter.highlightBin3D(null);
       }
 
       this.control.ContextMenu = function(pos, intersects) {
@@ -333,7 +333,8 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       }
    }
 
-   /** @summary Check is 3D drawing need to be resized */
+   /** @summary Check is 3D drawing need to be resized
+     * @private */
    JSROOT.TFramePainter.prototype.resize3D = function() {
 
       let sz = this.size_for_3d(this.access_3d_kind());
@@ -362,7 +363,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
    /** @summary Hilight bin in 3D drawing
      * @private */
-   JSROOT.TFramePainter.prototype.BinHighlight3D = function(tip, selfmesh) {
+   JSROOT.TFramePainter.prototype.highlightBin3D = function(tip, selfmesh) {
 
       let changed = false, tooltip_mesh = null, changed_self = true,
           want_remove = !tip || (tip.x1===undefined) || !this.enable_highlight,
@@ -453,11 +454,15 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
                                     grx: (tip.x1+tip.x2)/2, gry: (tip.y1+tip.y2)/2, grz: (tip.z1+tip.z2)/2 });
    }
 
-   JSROOT.TFramePainter.prototype.Set3DOptions = function(hopt) {
+   /** @summary Set options used for 3D drawings
+     * @private */
+   JSROOT.TFramePainter.prototype.set3DOptions = function(hopt) {
       this.opt3d = hopt;
    }
 
-   JSROOT.TFramePainter.prototype.DrawXYZ = function(toplevel, opts) {
+   /** @summary Draw axes in 3D mode
+     * @private */
+   JSROOT.TFramePainter.prototype.drawXYZ = function(toplevel, opts) {
       if (!opts) opts = {};
 
       let grminx = -this.size_xy3d, grmaxx = this.size_xy3d,
@@ -1011,21 +1016,21 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
    /** @summary Draw histograms in 3D mode
      * @private */
-   JSROOT.THistPainter.prototype.Draw3DBins = function() {
+   JSROOT.THistPainter.prototype.draw3DBins = function() {
 
       if (!this.draw_content) return;
 
-      if (this.isTH2Poly() && this.DrawPolyLego)
-         return this.DrawPolyLego();
+      if (this.isTH2Poly() && this.drawPolyLego)
+         return this.drawPolyLego();
 
-      if ((this.getDimension()==2) && this.options.Contour && this.DrawContour3D)
-         return this.DrawContour3D(true);
+      if ((this.getDimension()==2) && this.options.Contour && this.drawContour3D)
+         return this.drawContour3D(true);
 
-      if ((this.getDimension()==2) && this.options.Surf && this.DrawSurf)
-         return this.DrawSurf();
+      if ((this.getDimension()==2) && this.options.Surf && this.drawSurf)
+         return this.drawSurf();
 
-      if ((this.getDimension()==2) && this.options.Error && this.DrawError)
-         return this.DrawError();
+      if ((this.getDimension()==2) && this.options.Error && this.drawError)
+         return this.drawError();
 
       // Perform TH1/TH2 lego plot with BufferGeometry
 
@@ -1412,9 +1417,9 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          // use min/max values directly as graphical coordinates
          this.size_xy3d = this.size_z3d = 0;
 
-         this.DrawXYZ = JSROOT.TFramePainter.prototype.DrawXYZ; // just reuse axis drawing from frame painter
+         this.drawXYZ = JSROOT.TFramePainter.prototype.drawXYZ; // just reuse axis drawing from frame painter
 
-         this.DrawXYZ(main._toplevel);
+         this.drawXYZ(main._toplevel);
 
          main.adjustCameraPosition();
 
@@ -1451,12 +1456,12 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          if (is_main) {
             main.create3DScene(this.options.Render3D);
             main.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, 0, 0);
-            main.Set3DOptions(this.options);
-            main.DrawXYZ(main.toplevel, { use_y_for_z: true, zmult: 1.1, zoom: JSROOT.settings.Zooming, ndim: 1 });
+            main.set3DOptions(this.options);
+            main.drawXYZ(main.toplevel, { use_y_for_z: true, zmult: 1.1, zoom: JSROOT.settings.Zooming, ndim: 1 });
          }
 
          if (main.mode3d) {
-            this.Draw3DBins();
+            this.draw3DBins();
             main.render3D();
             this.updateStatWebCanvas();
             main.addKeysHandler();
@@ -1504,12 +1509,12 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          if (is_main) {
             main.create3DScene(this.options.Render3D);
             main.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, this.zmin, this.zmax);
-            main.Set3DOptions(this.options);
-            main.DrawXYZ(main.toplevel, { zmult: zmult, zoom: JSROOT.settings.Zooming, ndim: 2 });
+            main.set3DOptions(this.options);
+            main.drawXYZ(main.toplevel, { zmult: zmult, zoom: JSROOT.settings.Zooming, ndim: 2 });
          }
 
          if (main.mode3d) {
-            this.Draw3DBins();
+            this.draw3DBins();
             main.render3D();
             this.updateStatWebCanvas();
             main.addKeysHandler();
@@ -1525,7 +1530,9 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       return Promise.resolve(this);
    }
 
-   JSROOT.TH2Painter.prototype.DrawContour3D = function(realz) {
+   /** @summary Draw TH2 as 3D contour plot
+     * @private */
+   JSROOT.TH2Painter.prototype.drawContour3D = function(realz) {
       // for contour plots one requires handle with full range
       let main = this.getFramePainter(),
           handle = this.prepareColorDraw({rounding: false, use3d: true, extra: 100, middle: 0.0 }),
@@ -1555,7 +1562,9 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       main.toplevel.add(lines);
    }
 
-   JSROOT.TH2Painter.prototype.DrawSurf = function() {
+   /** @summary Draw TH2 histograms in surf mode
+     * @private */
+   JSROOT.TH2Painter.prototype.drawSurf = function() {
       let histo = this.getHisto(),
           main = this.getFramePainter(),
           handle = this.prepareColorDraw({rounding: false, use3d: true, extra: 1, middle: 0.5 }),
@@ -1887,7 +1896,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       }
 
       if (this.options.Surf === 17)
-         this.DrawContour3D();
+         this.drawContour3D();
 
       if (this.options.Surf === 13) {
 
@@ -1956,7 +1965,9 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       }
    }
 
-   JSROOT.TH2Painter.prototype.DrawError = function() {
+   /** @summary Draw TH2 histogram in error mode
+     * @private */
+   JSROOT.TH2Painter.prototype.drawError = function() {
       let main = this.getFramePainter(),
           histo = this.getHisto(),
           handle = this.prepareColorDraw({ rounding: false, use3d: true, extra: 1 }),
@@ -2059,7 +2070,9 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
        main.toplevel.add(line);
    }
 
-   JSROOT.TH2Painter.prototype.DrawPolyLego = function() {
+   /** @summary Draw TH2Poly histogram as lego
+     * @private */
+   JSROOT.TH2Painter.prototype.drawPolyLego = function() {
       let histo = this.getHisto(),
           pmain = this.getFramePainter(),
           axis_zmin = pmain.z_handle.gr.domain()[0],
@@ -2527,7 +2540,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
    }
 
    /** @summary Actual draw of 3D histogram  */
-   TH3Painter.prototype.Draw3DBins = function() {
+   TH3Painter.prototype.draw3DBins = function() {
 
       if (!this.draw_content) return;
 
@@ -2853,9 +2866,9 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
          main.create3DScene(this.options.Render3D);
          main.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, this.zmin, this.zmax);
-         main.Set3DOptions(this.options);
-         main.DrawXYZ(main.toplevel, { zoom: JSROOT.settings.Zooming, ndim: 3 });
-         this.Draw3DBins();
+         main.set3DOptions(this.options);
+         main.drawXYZ(main.toplevel, { zoom: JSROOT.settings.Zooming, ndim: 3 });
+         this.draw3DBins();
          main.render3D();
          this.updateStatWebCanvas();
          main.addKeysHandler();
