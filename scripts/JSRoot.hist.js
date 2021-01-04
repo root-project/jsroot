@@ -2434,7 +2434,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          return p ? p.getObject() : null;
       }
 
-      return this.FindFunction('TPaveStats', 'stats');
+      return this.findFunction('TPaveStats', 'stats');
    }
 
    /** @summary Toggle stat box drawing
@@ -2547,14 +2547,14 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       stats.AddText(histo.fName);
 
-      this.AddFunction(stats);
+      this.addFunction(stats);
 
       return stats;
    }
 
    /** @summary Find function in histogram list of functions */
-   THistPainter.prototype.FindFunction = function(type_name, obj_name) {
-      let histo = this.getObject(),
+   THistPainter.prototype.findFunction = function(type_name, obj_name) {
+      let histo = this.getHisto(),
           funcs = histo && histo.fFunctions ? histo.fFunctions.arr : null;
 
       if (!funcs) return null;
@@ -2567,10 +2567,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return null;
    }
 
-
    /** @summary Add function to histogram list of functions */
-   THistPainter.prototype.AddFunction = function(obj, asfirst) {
-      let histo = this.getObject();
+   THistPainter.prototype.addFunction = function(obj, asfirst) {
+      let histo = this.getHisto();
       if (!histo || !obj) return;
 
       if (!histo.fFunctions)
@@ -2624,7 +2623,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    /** @summary Returns selected index for specified axis
      * @desc be aware - here indexes starts from 0
      * @private */
-   THistPainter.prototype.GetSelectIndex = function(axis, side, add) {
+   THistPainter.prototype.getSelectIndex = function(axis, side, add) {
       let indx = 0,
           main = this.getFramePainter(),
           nbin = this['nbins'+axis] || 0,
@@ -2637,7 +2636,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             indx = taxis.FindBin(min, add || 0);
          else
             indx = taxis.FindBin(max, (add || 0) + 0.5);
-         if (indx<0) indx = 0; else if (indx>nbin) indx = nbin;
+         if (indx < 0) indx = 0; else if (indx > nbin) indx = nbin;
       } else {
          indx = (side == "left") ? 0 : nbin;
       }
@@ -2650,7 +2649,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       if (side == "left") {
          if (indx < 0) indx = 0;
-         if (taxis && (taxis.fFirst>1) && (indx<taxis.fFirst)) indx = taxis.fFirst-1;
+         if (taxis && (taxis.fFirst > 1) && (indx < taxis.fFirst)) indx = taxis.fFirst-1;
       } else {
          if (indx > nbin) indx = nbin;
          if (taxis && (taxis.fLast <= nbin) && (indx>taxis.fLast)) indx = taxis.fLast;
@@ -2660,7 +2659,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    }
 
    /** @summary Unzoom user range if any */
-   THistPainter.prototype.UnzoomUserRange = function(dox, doy, doz) {
+   THistPainter.prototype.unzoomUserRange = function(dox, doy, doz) {
 
       let res = false, histo = this.getHisto();
 
@@ -2692,24 +2691,18 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    }
 
    /** @summary Add different interactive handlers
-    *
-    * @desc only first (main) painter in list allowed to add interactive functionality
-    * Most of interactivity now handled by frame
-    * @private
-    */
+     * @desc only first (main) painter in list allowed to add interactive functionality
+     * Most of interactivity now handled by frame
+     * @returns {Promise} for ready
+     * @private */
    THistPainter.prototype.addInteractivity = function() {
-
-      if (this.isMainPainter()) {
-         let fp = this.getFramePainter();
-         if (fp) return fp.addInteractivity();
-      }
-
-      return Promise.resolve(false);
+      let fp = this.isMainPainter() ? this.getFramePainter() : null;
+      return fp ? fp.addInteractivity() : Promise.resolve(false);
    }
 
    /** @summary Invoke dialog to enter and modify user range
      * @private */
-   THistPainter.prototype.ChangeUserRange = function(arg) {
+   THistPainter.prototype.changeUserRange = function(arg) {
       let histo = this.getHisto(),
           taxis = histo ? histo['f'+arg+"axis"] : null;
       if (!taxis) return;
@@ -2735,7 +2728,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    /** @summary Start dialog to modify range of axis where histogram values are displayed
      * @private */
-   THistPainter.prototype.ChangeValuesRange = function() {
+   THistPainter.prototype.changeValuesRange = function() {
       let curr;
       if ((this.options.minimum != -1111) && (this.options.maximum != -1111))
          curr = "[" + this.options.minimum + "," + this.options.maximum + "]";
@@ -2755,6 +2748,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
        this.redrawPad();
    }
 
+   /** @summary Fill histogram context menu
+     * @private */
    THistPainter.prototype.fillContextMenu = function(menu) {
 
       let histo = this.getHisto(),
@@ -2766,15 +2761,15 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (this.draw_content) {
          menu.addchk(this.toggleStat('only-check'), "Show statbox", () => this.toggleStat());
          if (this.getDimension() == 1) {
-            menu.add("User range X", "X", this.ChangeUserRange);
+            menu.add("User range X", () => this.changeUserRange("X"));
          } else {
             menu.add("sub:User ranges");
-            menu.add("X", "X", this.ChangeUserRange);
-            menu.add("Y", "Y", this.ChangeUserRange);
+            menu.add("X", () => this.changeUserRange("X"));
+            menu.add("Y", () => this.changeUserRange("Y"));
             if (this.getDimension() > 2)
-               menu.add("Z", "Z", this.ChangeUserRange);
+               menu.add("Z", () => this.changeUserRange("Z"));
             else
-               menu.add("Values", this.ChangeValuesRange);
+               menu.add("Values", () => this.changeValuesRange());
             menu.add("endsub:")
          }
 
@@ -2817,10 +2812,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             });
 
             if ((this.options.Lego==12) || (this.options.Lego==14)) {
-               menu.addchk(this.options.Zscale, "Z scale", function() {
-                  this.ToggleColz();
-               });
-               if (this.FillPaletteMenu) this.FillPaletteMenu(menu);
+               menu.addchk(this.options.Zscale, "Z scale", () => this.toggleColz());
+               if (this.fillPaletteMenu) this.fillPaletteMenu(menu);
             }
          }
 
@@ -2867,7 +2860,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return false;
    }
 
-   THistPainter.prototype.FillToolbar = function(not_shown) {
+   /** @summary Fill pad toolbar with histogram-related functions
+     * @private */
+   THistPainter.prototype.fillToolbar = function(not_shown) {
       let pp = this.getPadPainter();
       if (!pp) return;
 
@@ -2883,7 +2878,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    /** @summary Returns tooltip information for 3D drawings
      * @private */
-   THistPainter.prototype.Get3DToolTip = function(indx) {
+   THistPainter.prototype.get3DToolTip = function(indx) {
       let histo = this.getHisto(),
           tip = { bin: indx, name: histo.fName, title: histo.fTitle };
       switch (this.getDimension()) {
@@ -2913,7 +2908,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return tip;
    }
 
-   THistPainter.prototype.CreateContour = function(nlevels, zmin, zmax, zminpositive, custom_levels) {
+   /** @summary Create contour object for histogram
+     * @private */
+   THistPainter.prototype.createContour = function(nlevels, zmin, zmax, zminpositive, custom_levels) {
 
       let cntr = new HistContour(zmin, zmax);
 
@@ -2969,7 +2966,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          else
             nlevels = histo.fContour.length;
 
-      return this.CreateContour(nlevels, zmin, zmax, zminpos, custom_levels);
+      return this.createContour(nlevels, zmin, zmax, zminpos, custom_levels);
    }
 
    THistPainter.prototype.GetContourLevels = function() {
@@ -2989,7 +2986,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return this.fPalette;
    }
 
-   THistPainter.prototype.FillPaletteMenu = function(menu) {
+   /** @summary Fill menu entries for palette
+     * @private */
+   THistPainter.prototype.fillPaletteMenu = function(menu) {
 
       let curr = this.options.Palette || JSROOT.settings.Palette;
 
@@ -3030,7 +3029,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (!this.isMainPainter())
          return Promise.resolve(null);
 
-      let pal = this.FindFunction('TPaletteAxis'),
+      let pal = this.findFunction('TPaletteAxis'),
           pp = this.getPadPainter(),
           pal_painter = pp ? pp.findPainterFor(pal) : null;
 
@@ -3041,7 +3040,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          if (pal_painter) {
             pal = pal_painter.getObject();
             // add to list of functions
-            this.AddFunction(pal, true);
+            this.addFunction(pal, true);
          }
       }
 
@@ -3071,7 +3070,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                                     fTextColor: zaxis.fLabelColor, fTextFont: zaxis.fLabelFont });
 
          // place colz in the beginning, that stat box is always drawn on the top
-         this.AddFunction(pal, true);
+         this.addFunction(pal, true);
 
          can_move = true;
       }
@@ -3129,7 +3128,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    }
 
    /** @summary Toggle color z palette drawing */
-   THistPainter.prototype.ToggleColz = function() {
+   THistPainter.prototype.toggleColz = function() {
       let can_toggle = this.options.Mode3D ? (this.options.Lego === 12 || this.options.Lego === 14 || this.options.Surf === 11 || this.options.Surf === 12) :
                        this.options.Color || this.options.Contour;
 
@@ -3139,7 +3138,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       }
    }
 
-   THistPainter.prototype.ToggleMode3D = function() {
+   /** @summary Toggle 3D drawing mode */
+   THistPainter.prototype.toggleMode3D = function() {
       this.options.Mode3D = !this.options.Mode3D;
 
       if (this.options.Mode3D) {
@@ -3172,10 +3172,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           hdim = this.getDimension(),
           i, j, x, y, binz, binarea,
           res = {
-             i1: this.GetSelectIndex("x", "left", 0 - args.extra),
-             i2: this.GetSelectIndex("x", "right", 1 + args.extra),
-             j1: (hdim===1) ? 0 : this.GetSelectIndex("y", "left", 0 - args.extra),
-             j2: (hdim===1) ? 1 : this.GetSelectIndex("y", "right", 1 + args.extra),
+             i1: this.getSelectIndex("x", "left", 0 - args.extra),
+             i2: this.getSelectIndex("x", "right", 1 + args.extra),
+             j1: (hdim===1) ? 0 : this.getSelectIndex("y", "left", 0 - args.extra),
+             j2: (hdim===1) ? 1 : this.getSelectIndex("y", "right", 1 + args.extra),
              min: 0, max: 0, sumz: 0, xbar1: 0, xbar2: 1, ybar1: 0, ybar2: 1
           };
 
@@ -3344,8 +3344,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (!when_axis_changed)
          this.extractAxesProperties(1);
 
-      let left = this.GetSelectIndex("x", "left"),
-          right = this.GetSelectIndex("x", "right");
+      let left = this.getSelectIndex("x", "left"),
+          right = this.getSelectIndex("x", "right");
 
       if (when_axis_changed) {
          if ((left === this.scan_xleft) && (right === this.scan_xright)) return;
@@ -3457,8 +3457,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    TH1Painter.prototype.CountStat = function(cond) {
       let profile = this.isTProfile(),
           histo = this.getHisto(), xaxis = histo.fXaxis,
-          left = this.GetSelectIndex("x", "left"),
-          right = this.GetSelectIndex("x", "right"),
+          left = this.getSelectIndex("x", "left"),
+          right = this.getSelectIndex("x", "right"),
           stat_sumw = 0, stat_sumwx = 0, stat_sumwx2 = 0, stat_sumwy = 0, stat_sumwy2 = 0,
           i, xx = 0, w = 0, xmax = null, wmax = null,
           fp = this.getFramePainter(),
@@ -3575,7 +3575,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             stat.AddText("Kurt = <not avail>");
       }
 
-      if (dofit) stat.FillFunctionStat(this.FindFunction('TF1'), dofit);
+      if (dofit) stat.FillFunctionStat(this.findFunction('TF1'), dofit);
 
       return true;
    }
@@ -3586,8 +3586,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       this.createG(true);
 
-      let left = this.GetSelectIndex("x", "left", -1),
-          right = this.GetSelectIndex("x", "right", 1),
+      let left = this.getSelectIndex("x", "left", -1),
+          right = this.getSelectIndex("x", "right", 1),
           pmain = this.getFramePainter(),
           histo = this.getHisto(), xaxis = histo.fXaxis,
           show_text = this.options.Text, text_col, text_angle, text_size,
@@ -3682,8 +3682,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    TH1Painter.prototype.DrawFilledErrors = function() {
       this.createG(true);
 
-      let left = this.GetSelectIndex("x", "left", -1),
-          right = this.GetSelectIndex("x", "right", 1),
+      let left = this.getSelectIndex("x", "left", -1),
+          right = this.getSelectIndex("x", "right", 1),
           pmain = this.getFramePainter(),
           histo = this.getHisto(), xaxis = histo.fXaxis,
           i, x, grx, y, yerr, gry1, gry2,
@@ -3732,8 +3732,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if ((this.options.ErrorKind === 3) || (this.options.ErrorKind === 4))
          return this.DrawFilledErrors();
 
-      let left = this.GetSelectIndex("x", "left", -1),
-          right = this.GetSelectIndex("x", "right", 2),
+      let left = this.getSelectIndex("x", "left", -1),
+          right = this.getSelectIndex("x", "right", 2),
           histo = this.getHisto(),
           xaxis = histo.fXaxis,
           res = "", lastbin = false,
@@ -4068,8 +4068,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           histo = this.getHisto(),
           findbin = null, show_rect = true,
           grx1, midx, grx2, gry1, midy, gry2, gapx = 2,
-          left = this.GetSelectIndex("x", "left", -1),
-          right = this.GetSelectIndex("x", "right", 2),
+          left = this.getSelectIndex("x", "left", -1),
+          right = this.getSelectIndex("x", "right", 2),
           l = left, r = right, pnt_x = pnt.x, pnt_y = pnt.y;
 
       function GetBinGrX(i) {
@@ -4307,8 +4307,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    }
 
    TH1Painter.prototype.AutoZoom = function() {
-      let left = this.GetSelectIndex("x", "left", -1),
-          right = this.GetSelectIndex("x", "right", 1),
+      let left = this.getSelectIndex("x", "left", -1),
+          right = this.getSelectIndex("x", "right", 1),
           dist = right - left, histo = this.getHisto();
 
       if ((dist == 0) || !histo) return;
@@ -4406,7 +4406,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
           if (!painter.options.Mode3D && painter.options.AutoZoom)
              painter.AutoZoom();
-          painter.FillToolbar();
+          painter.fillToolbar();
 
           return painter;
       });
@@ -4563,7 +4563,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       });
 
       if (this.options.Color)
-         this.FillPaletteMenu(menu);
+         this.fillPaletteMenu(menu);
    }
 
    TH2Painter.prototype.clickButton = function(funcname) {
@@ -4572,9 +4572,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (this !== this.getMainPainter()) return false;
 
       switch(funcname) {
-         case "ToggleColor": this.ToggleColor(); break;
-         case "ToggleColorZ": this.ToggleColz(); break;
-         case "Toggle3D": this.ToggleMode3D(); break;
+         case "ToggleColor": this.toggleColor(); break;
+         case "ToggleColorZ": this.toggleColz(); break;
+         case "Toggle3D": this.toggleMode3D(); break;
          default: return false;
       }
 
@@ -4582,8 +4582,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return true;
    }
 
-   TH2Painter.prototype.FillToolbar = function() {
-      THistPainter.prototype.FillToolbar.call(this, true);
+   /** @summary Fill pad toolbar with histogram-related functions
+     * @private */
+   TH2Painter.prototype.fillToolbar = function() {
+      THistPainter.prototype.fillToolbar.call(this, true);
 
       let pp = this.getPadPainter();
       if (!pp) return;
@@ -4595,7 +4597,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       pp.showPadButtons();
    }
 
-   TH2Painter.prototype.ToggleColor = function() {
+   /** @summary Toggle color drawing mode */
+   TH2Painter.prototype.toggleColor = function() {
 
       if (this.options.Mode3D) {
          this.options.Mode3D = false;
@@ -4614,10 +4617,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    TH2Painter.prototype.AutoZoom = function() {
       if (this.isTH2Poly()) return; // not implemented
 
-      let i1 = this.GetSelectIndex("x", "left", -1),
-          i2 = this.GetSelectIndex("x", "right", 1),
-          j1 = this.GetSelectIndex("y", "left", -1),
-          j2 = this.GetSelectIndex("y", "right", 1),
+      let i1 = this.getSelectIndex("x", "left", -1),
+          i2 = this.getSelectIndex("x", "right", 1),
+          j1 = this.getSelectIndex("y", "left", -1),
+          j2 = this.getSelectIndex("y", "right", 1),
           i,j, histo = this.getObject();
 
       if ((i1 == i2) || (j1 == j2)) return;
@@ -4776,10 +4779,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             stat_sumy2 += yy * yy * zz;
          }
       } else {
-         let xleft = this.GetSelectIndex("x", "left"),
-             xright = this.GetSelectIndex("x", "right"),
-             yleft = this.GetSelectIndex("y", "left"),
-             yright = this.GetSelectIndex("y", "right"),
+         let xleft = this.getSelectIndex("x", "left"),
+             xright = this.getSelectIndex("x", "right"),
+             yleft = this.getSelectIndex("y", "left"),
+             yright = this.getSelectIndex("y", "right"),
              xi, yi;
 
          for (xi = 0; xi <= this.nbinsx + 1; ++xi) {
@@ -4889,7 +4892,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          stat.AddText("" + m[0].toFixed(0) + " | " + m[1].toFixed(0) + " | "  + m[2].toFixed(0));
       }
 
-      if (dofit) stat.FillFunctionStat(this.FindFunction('TF1'), dofit);
+      if (dofit) stat.FillFunctionStat(this.findFunction('TF1'), dofit);
 
       return true;
    }
@@ -5884,7 +5887,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (this.maxbin > 0.7) factor = 0.7/this.maxbin;
 
       let nlevels = Math.round(handle.max - handle.min);
-      let cntr = this.CreateContour((nlevels > 50) ? 50 : nlevels, this.minposbin, this.maxbin, this.minposbin);
+      let cntr = this.createContour((nlevels > 50) ? 50 : nlevels, this.minposbin, this.maxbin, this.minposbin);
 
       // now start build
       for (i = handle.i1; i < handle.i2; ++i) {
@@ -6450,7 +6453,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          if (!painter.Mode3D && painter.options.AutoZoom)
             painter.AutoZoom();
 
-         painter.FillToolbar();
+         painter.fillToolbar();
          if (painter.options.Project && !painter.mode3d)
               painter.toggleProjection(painter.options.Project);
 

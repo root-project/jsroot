@@ -1687,7 +1687,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                () => { faxis.InvertBit(JSROOT.EAxisBits.kNoExponent); this.redrawPad(); });
 
          if ((kind === "z") && main && main.options && main.options.Zscale)
-            if (typeof main.FillPaletteMenu == 'function') main.FillPaletteMenu(menu);
+            if (typeof main.fillPaletteMenu == 'function') main.fillPaletteMenu(menu);
 
          if (faxis)
             menu.AddTAxisMenu(main || this, faxis, kind);
@@ -1871,8 +1871,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             let pp = this.getPadPainter();
             if (pp && pp.painters)
                pp.painters.forEach(painter => {
-                  if (painter && (typeof painter.UnzoomUserRange == 'function'))
-                     if (painter.UnzoomUserRange(unzoom_x, unzoom_y, unzoom_z)) changed = true;
+                  if (painter && (typeof painter.unzoomUserRange == 'function'))
+                     if (painter.unzoomUserRange(unzoom_x, unzoom_y, unzoom_z)) changed = true;
             });
          }
       }

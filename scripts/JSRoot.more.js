@@ -987,8 +987,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    }
 
    /** @summary Check if user range can be unzommed
-    * @desc Used when graph points covers larger range than provided histogram */
-   TGraphPainter.prototype.UnzoomUserRange = function(dox, doy /*, doz*/) {
+     * @desc Used when graph points covers larger range than provided histogram */
+   TGraphPainter.prototype.unzoomUserRange = function(dox, doy /*, doz*/) {
       let graph = this.getObject();
       if (this._own_histogram || !graph) return false;
 
@@ -3851,7 +3851,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       }
    }
 
-   TASImagePainter.prototype.ToggleColz = function() {
+   TASImagePainter.prototype.toggleColz = function() {
       let obj = this.getObject(),
           can_toggle = obj && obj.fPalette;
 
@@ -3876,14 +3876,16 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       if (!this.isMainPainter()) return false;
 
       switch(funcname) {
-         case "ToggleColorZ": this.ToggleColz(); break;
+         case "ToggleColorZ": this.toggleColz(); break;
          default: return false;
       }
 
       return true;
    }
 
-   TASImagePainter.prototype.FillToolbar = function() {
+   /** @summary Fill pad toolbar for TASImage
+     * @private */
+   TASImagePainter.prototype.fillToolbar = function() {
       let pp = this.getPadPainter(), obj = this.getObject();
       if (pp && obj && obj.fPalette) {
          pp.addPadButton("th2colorz", "Toggle color palette", "ToggleColorZ");
@@ -3897,7 +3899,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       return jsrp.ensureTCanvas(painter)
                  .then(() => painter.drawImage())
                  .then(() => {
-                     painter.FillToolbar();
+                     painter.fillToolbar();
                      return painter;
                  });
    }

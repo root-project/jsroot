@@ -4555,7 +4555,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return arr;
       },
 
-      CreateContour: function(logz, nlevels, zmin, zmax, zminpositive) {
+      createContour: function(logz, nlevels, zmin, zmax, zminpositive) {
          this.fContour = [];
          delete this.fCustomContour;
          this.colzmin = zmin;

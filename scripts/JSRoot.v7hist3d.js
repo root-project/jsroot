@@ -1047,7 +1047,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
          // drawing colors levels, axis can not exceed palette
 
          palette = main.getHistPalette();
-         this.CreateContour(main, palette, { full_z_range: true });
+         this.createContour(main, palette, { full_z_range: true });
          levels = palette.GetContour();
          axis_zmin = levels[0];
          axis_zmax = levels[levels.length-1];
@@ -1202,7 +1202,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
                 handle = this.handle,
                 main = p.getFramePainter(),
                 histo = p.getHisto(),
-                tip = p.Get3DToolTip( this.face_to_bins_index[intersect.faceIndex] ),
+                tip = p.get3DToolTip( this.face_to_bins_index[intersect.faceIndex] ),
                 i1 = tip.ix - 1, i2 = i1 + handle.stepi,
                 j1 = tip.iy - 1, j2 = j1 + handle.stepj;
 
@@ -1338,7 +1338,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       line.intersect_index = intersect_index;
       line.tooltip = function(intersect) {
          if ((intersect.index<0) || (intersect.index >= this.intersect_index.length)) return null;
-         return this.painter.Get3DToolTip(this.intersect_index[intersect.index]);
+         return this.painter.get3DToolTip(this.intersect_index[intersect.index]);
       }
       */
 
@@ -1486,7 +1486,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
           palette = main.getHistPalette(),
           layerz = 2*main.size_z3d, pnts = [];
 
-      this.CreateContour(main, palette, { full_z_range: true });
+      this.createContour(main, palette, { full_z_range: true });
 
       let levels = palette.GetContour();
 
@@ -1552,7 +1552,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       if (need_palette > 0) {
          palette = main.getHistPalette();
          if (need_palette == 2)
-            this.CreateContour(main, palette, { full_z_range: true });
+            this.createContour(main, palette, { full_z_range: true });
          ilevels = palette.GetContour();
       }
 
@@ -2018,7 +2018,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
           if ((pos<0) || (pos >= this.intersect_index.length)) return null;
           let p = this.painter,
               main = p.getFramePainter(),
-              tip = p.Get3DToolTip(this.intersect_index[pos]),
+              tip = p.get3DToolTip(this.intersect_index[pos]),
               handle = this.handle,
               i1 = tip.ix - 1, i2 = i1 + handle.stepi,
               j1 = tip.iy - 1, j2 = j1 + handle.stepj;
@@ -2284,12 +2284,12 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
           zaxis = this.getAxis("z"),
           stat_sum0 = 0, stat_sumx1 = 0, stat_sumy1 = 0,
           stat_sumz1 = 0, stat_sumx2 = 0, stat_sumy2 = 0, stat_sumz2 = 0,
-          i1 = this.GetSelectIndex("x", "left"),
-          i2 = this.GetSelectIndex("x", "right"),
-          j1 = this.GetSelectIndex("y", "left"),
-          j2 = this.GetSelectIndex("y", "right"),
-          k1 = this.GetSelectIndex("z", "left"),
-          k2 = this.GetSelectIndex("z", "right"),
+          i1 = this.getSelectIndex("x", "left"),
+          i2 = this.getSelectIndex("x", "right"),
+          j1 = this.getSelectIndex("y", "left"),
+          j2 = this.getSelectIndex("y", "right"),
+          k1 = this.getSelectIndex("z", "left"),
+          k2 = this.getSelectIndex("z", "right"),
           fp = this.getFramePainter(),
           res = { name: histo.fName, entries: 0, integral: 0, meanx: 0, meany: 0, meanz: 0, rmsx: 0, rmsy: 0, rmsz: 0 },
           xi, yi, zi, xx, xside, yy, yside, zz, zside, cont;
@@ -2387,8 +2387,6 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       if (print_integral > 0) {
          stat.AddText("Integral = " + stat.Format(data.integral,"entries"));
       }
-
-      if (dofit) stat.FillFunctionStat(this.FindFunction('TF1'), dofit);
 
       return true;
    }
@@ -2497,7 +2495,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
 
          let p = this.painter,
              main = p.getFramePainter(),
-             tip = p.Get3DToolTip(this.bins[indx]);
+             tip = p.get3DToolTip(this.bins[indx]);
 
          tip.x1 = main.grx(p.getAxis("x").GetBinLowEdge(tip.ix));
          tip.x2 = main.grx(p.getAxis("x").GetBinLowEdge(tip.ix+di));
@@ -2608,7 +2606,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
 
       if (use_colors) {
          palette = main.getHistPalette();
-         this.CreateContour(main, palette);
+         this.createContour(main, palette);
       }
 
       if ((i2<=i1) || (j2<=j1) || (k2<=k1)) return;
@@ -2796,7 +2794,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
 
             let p = this.painter,
                 main = p.getFramePainter(),
-                tip = p.Get3DToolTip(this.bins[indx]),
+                tip = p.get3DToolTip(this.bins[indx]),
                 grx = main.grx(p.getAxis("x").GetBinCoord(tip.ix-0.5)),
                 gry = main.gry(p.getAxis("y").GetBinCoord(tip.iy-0.5)),
                 grz = main.grz(p.getAxis("z").GetBinCoord(tip.iz-0.5)),
@@ -2858,7 +2856,9 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       });
    }
 
-   RH3Painter.prototype.FillToolbar = function() {
+   /** @summary Fill pad toolbar with RH3-related functions
+     * @private */
+   RH3Painter.prototype.fillToolbar = function() {
       let pp = this.getPadPainter();
       if (!pp) return;
 
@@ -2876,12 +2876,12 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
    }
 
    RH3Painter.prototype.AutoZoom = function() {
-      let i1 = this.GetSelectIndex("x", "left"),
-          i2 = this.GetSelectIndex("x", "right"),
-          j1 = this.GetSelectIndex("y", "left"),
-          j2 = this.GetSelectIndex("y", "right"),
-          k1 = this.GetSelectIndex("z", "left"),
-          k2 = this.GetSelectIndex("z", "right"),
+      let i1 = this.getSelectIndex("x", "left"),
+          i2 = this.getSelectIndex("x", "right"),
+          j1 = this.getSelectIndex("y", "left"),
+          j2 = this.getSelectIndex("y", "right"),
+          k1 = this.getSelectIndex("z", "left"),
+          k2 = this.getSelectIndex("z", "right"),
           i,j,k, histo = this.getHisto();
 
       if ((i1 === i2) || (j1 === j2) || (k1 === k2)) return;

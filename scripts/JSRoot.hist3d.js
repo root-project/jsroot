@@ -1086,7 +1086,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
       if ((this.options.Lego === 12) || (this.options.Lego === 14)) {
          // drawing colors levels, axis can not exceed palette
-         let cntr = this.CreateContour(histo.fContour ? histo.fContour.length : 20, main.lego_zmin, main.lego_zmax);
+         let cntr = this.createContour(histo.fContour ? histo.fContour.length : 20, main.lego_zmin, main.lego_zmax);
          levels = cntr.arr;
          palette = this.getHistPalette();
          //axis_zmin = levels[0];
@@ -1245,7 +1245,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
                 handle = this.handle,
                 main = p.getFramePainter(),
                 histo = p.getHisto(),
-                tip = p.Get3DToolTip( this.face_to_bins_index[intersect.faceIndex] );
+                tip = p.get3DToolTip( this.face_to_bins_index[intersect.faceIndex] );
 
             tip.x1 = Math.max(-main.size_xy3d,  handle.grx[tip.ix-1] + handle.xbar1*(handle.grx[tip.ix]-handle.grx[tip.ix-1]));
             tip.x2 = Math.min(main.size_xy3d, handle.grx[tip.ix-1] + handle.xbar2*(handle.grx[tip.ix]-handle.grx[tip.ix-1]));
@@ -1382,7 +1382,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       line.intersect_index = intersect_index;
       line.tooltip = function(intersect) {
          if ((intersect.index<0) || (intersect.index >= this.intersect_index.length)) return null;
-         return this.painter.Get3DToolTip(this.intersect_index[intersect.index]);
+         return this.painter.get3DToolTip(this.intersect_index[intersect.index]);
       }
       */
 
@@ -2043,7 +2043,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
           let p = this.painter,
               histo = p.getHisto(),
               main = p.getFramePainter(),
-              tip = p.Get3DToolTip(this.intersect_index[pos]);
+              tip = p.get3DToolTip(this.intersect_index[pos]);
 
           tip.x1 = Math.max(-main.size_xy3d, main.grx(histo.fXaxis.GetBinLowEdge(tip.ix)));
           tip.x2 = Math.min(main.size_xy3d, main.grx(histo.fXaxis.GetBinLowEdge(tip.ix+1)));
@@ -2301,12 +2301,12 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       let histo = this.getHisto(), xaxis = histo.fXaxis, yaxis = histo.fYaxis, zaxis = histo.fZaxis,
           stat_sum0 = 0, stat_sumx1 = 0, stat_sumy1 = 0,
           stat_sumz1 = 0, stat_sumx2 = 0, stat_sumy2 = 0, stat_sumz2 = 0,
-          i1 = this.GetSelectIndex("x", "left"),
-          i2 = this.GetSelectIndex("x", "right"),
-          j1 = this.GetSelectIndex("y", "left"),
-          j2 = this.GetSelectIndex("y", "right"),
-          k1 = this.GetSelectIndex("z", "left"),
-          k2 = this.GetSelectIndex("z", "right"),
+          i1 = this.getSelectIndex("x", "left"),
+          i2 = this.getSelectIndex("x", "right"),
+          j1 = this.getSelectIndex("y", "left"),
+          j2 = this.getSelectIndex("y", "right"),
+          k1 = this.getSelectIndex("z", "left"),
+          k2 = this.getSelectIndex("z", "right"),
           fp = this.getFramePainter(),
           res = { name: histo.fName, entries: 0, integral: 0, meanx: 0, meany: 0, meanz: 0, rmsx: 0, rmsy: 0, rmsz: 0 },
           xi, yi, zi, xx, xside, yy, yside, zz, zside, cont;
@@ -2408,7 +2408,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          stat.AddText("Integral = " + stat.Format(data.integral,"entries"));
       }
 
-      if (dofit) stat.FillFunctionStat(this.FindFunction('TF1'), dofit);
+      if (dofit) stat.FillFunctionStat(this.findFunction('TF1'), dofit);
 
       return true;
    }
@@ -2437,12 +2437,12 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
       let histo = this.getObject(),
           main = this.getFramePainter(),
-          i1 = this.GetSelectIndex("x", "left", 0.5),
-          i2 = this.GetSelectIndex("x", "right", 0),
-          j1 = this.GetSelectIndex("y", "left", 0.5),
-          j2 = this.GetSelectIndex("y", "right", 0),
-          k1 = this.GetSelectIndex("z", "left", 0.5),
-          k2 = this.GetSelectIndex("z", "right", 0),
+          i1 = this.getSelectIndex("x", "left", 0.5),
+          i2 = this.getSelectIndex("x", "right", 0),
+          j1 = this.getSelectIndex("y", "left", 0.5),
+          j2 = this.getSelectIndex("y", "right", 0),
+          k1 = this.getSelectIndex("z", "left", 0.5),
+          k2 = this.getSelectIndex("z", "right", 0),
           i, j, k, bin_content;
 
       if ((i2<=i1) || (j2<=j1) || (k2<=k1)) return true;
@@ -2509,7 +2509,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
          let p = this.painter, histo = p.getHisto(),
              main = p.getFramePainter(),
-             tip = p.Get3DToolTip(this.bins[indx]);
+             tip = p.get3DToolTip(this.bins[indx]);
 
          tip.x1 = main.grx(histo.fXaxis.GetBinLowEdge(tip.ix));
          tip.x2 = main.grx(histo.fXaxis.GetBinLowEdge(tip.ix+1));
@@ -2615,12 +2615,12 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          use_scale = (this.gminbin || this.gmaxbin) ? 1 / Math.max(Math.abs(this.gminbin), Math.abs(this.gmaxbin)) : 1;
 
       let histo = this.getHisto(),
-          i1 = this.GetSelectIndex("x", "left", 0.5),
-          i2 = this.GetSelectIndex("x", "right", 0),
-          j1 = this.GetSelectIndex("y", "left", 0.5),
-          j2 = this.GetSelectIndex("y", "right", 0),
-          k1 = this.GetSelectIndex("z", "left", 0.5),
-          k2 = this.GetSelectIndex("z", "right", 0);
+          i1 = this.getSelectIndex("x", "left", 0.5),
+          i2 = this.getSelectIndex("x", "right", 0),
+          j1 = this.getSelectIndex("y", "left", 0.5),
+          j2 = this.getSelectIndex("y", "right", 0),
+          k1 = this.getSelectIndex("z", "left", 0.5),
+          k2 = this.getSelectIndex("z", "right", 0);
 
       if ((i2<=i1) || (j2<=j1) || (k2<=k1)) return;
 
@@ -2806,7 +2806,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
             let p = this.painter,
                 histo = p.getHisto(),
                 main = p.getFramePainter(),
-                tip = p.Get3DToolTip(this.bins[indx]),
+                tip = p.get3DToolTip(this.bins[indx]),
                 grx = main.grx(histo.fXaxis.GetBinCoord(tip.ix-0.5)),
                 gry = main.gry(histo.fYaxis.GetBinCoord(tip.iy-0.5)),
                 grz = main.grz(histo.fZaxis.GetBinCoord(tip.iz-0.5)),
@@ -2864,7 +2864,9 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       return this.drawHistTitle();
    }
 
-   TH3Painter.prototype.FillToolbar = function() {
+   /** @summary Fill pad toolbar with TH3-related functions
+     * @private */
+   TH3Painter.prototype.fillToolbar = function() {
       let pp = this.getPadPainter();
       if (!pp) return;
 
@@ -2883,12 +2885,12 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
    }
 
    TH3Painter.prototype.AutoZoom = function() {
-      let i1 = this.GetSelectIndex("x", "left"),
-          i2 = this.GetSelectIndex("x", "right"),
-          j1 = this.GetSelectIndex("y", "left"),
-          j2 = this.GetSelectIndex("y", "right"),
-          k1 = this.GetSelectIndex("z", "left"),
-          k2 = this.GetSelectIndex("z", "right"),
+      let i1 = this.getSelectIndex("x", "left"),
+          i2 = this.getSelectIndex("x", "right"),
+          j1 = this.getSelectIndex("y", "left"),
+          j2 = this.getSelectIndex("y", "right"),
+          k1 = this.getSelectIndex("z", "left"),
+          k2 = this.getSelectIndex("z", "right"),
           i,j,k, histo = this.getObject();
 
       if ((i1 === i2) || (j1 === j2) || (k1 === k2)) return;
@@ -2970,7 +2972,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          let stats = painter.createStat(); // only when required
          if (stats) return JSROOT.draw(divid, stats, "");
       }).then(() => {
-         painter.FillToolbar();
+         painter.fillToolbar();
          return painter;
       });
    }
