@@ -4290,7 +4290,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return Promise.resolve(this);
    }
 
-   RPavePainter.prototype.DrawPave = function() {
+   RPavePainter.prototype.drawPave = function() {
 
       let rect = this.getPadPainter().getPadRect(),
           fp = this.getFramePainter(),
@@ -4408,13 +4408,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    RPavePainter.prototype.redraw = function(/*reason*/) {
-      this.DrawPave();
+      this.drawPave();
    }
 
    let drawPave = (divid, pave, opt) => {
       let painter = new RPavePainter(divid, pave, opt);
 
-      return jsrp.ensureRCanvas(painter, false).then(() => painter.DrawPave());
+      return jsrp.ensureRCanvas(painter, false).then(() => painter.drawPave());
    }
 
    // =======================================================================================

@@ -230,7 +230,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    TPavePainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
 
    /** @summary Draw pave and content */
-   TPavePainter.prototype.DrawPave = function(arg) {
+   TPavePainter.prototype.drawPave = function(arg) {
 
       this.UseTextColor = false;
 
@@ -331,7 +331,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          let text_g = this.draw_g.append("svg:g")
                                  .attr("transform", "translate(" + Math.round(width/4) + "," + Math.round(height/4) + ")");
 
-         return this.DrawPaveText(w2, h2, arg, text_g);
+         return this.drawPaveText(w2, h2, arg, text_g);
       }
 
       // add shadow decoration before main rect
@@ -365,8 +365,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                      .call(this.fillatt.func)
                      .call(this.lineatt.func);
 
-      if (typeof this.PaveDrawFunc == 'function')
-         promise = this.PaveDrawFunc(width, height, arg);
+      if (typeof this.paveDrawFunc == 'function')
+         promise = this.paveDrawFunc(width, height, arg);
 
       if (JSROOT.BatchMode || (pt._typename=="TPave"))
          return promise;
@@ -384,7 +384,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                     .attr("height", height);
 
          inter.DragMoveHandler.AddDrag(this, { obj: pt, minwidth: 10, minheight: 20, canselect: true,
-                        redraw: () => { this.interactiveRedraw(false, "pave_moved"); this.DrawPave(); },
+                        redraw: () => { this.interactiveRedraw(false, "pave_moved"); this.drawPave(); },
                         ctxmenu: JSROOT.browser.touches && JSROOT.settings.ContextMenu && this.UseContextMenu });
 
          if (this.UseContextMenu && JSROOT.settings.ContextMenu)
@@ -416,7 +416,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    }
 
    /** @summary draw TPaveLabel object */
-   TPavePainter.prototype.DrawPaveLabel = function(_width, _height) {
+   TPavePainter.prototype.drawPaveLabel = function(_width, _height) {
       this.UseTextColor = true;
 
       let pave = this.getObject();
@@ -429,7 +429,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    }
 
    /** @summary draw TPaveStats object */
-   TPavePainter.prototype.DrawPaveStats = function(width, height) {
+   TPavePainter.prototype.drawPaveStats = function(width, height) {
 
       if (this.IsStats()) this.FillStatistic();
 
@@ -525,7 +525,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    }
 
    /** @summary draw TPaveText object */
-   TPavePainter.prototype.DrawPaveText = function(width, height, dummy_arg, text_g) {
+   TPavePainter.prototype.drawPaveText = function(width, height, dummy_arg, text_g) {
 
       let pt = this.getObject(),
           tcolor = this.getColor(pt.fTextColor),
@@ -692,7 +692,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return res[0];
    }
 
-   TPavePainter.prototype.DrawPaveLegend = function(w, h) {
+   /** @summary Draw TLegend object */
+   TPavePainter.prototype.drawPaveLegend = function(w, h) {
 
       let legend = this.getObject(),
           nlines = legend.fPrimitives.arr.length,
@@ -831,7 +832,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    }
 
    /** @summary draw color palette with axis */
-   TPavePainter.prototype.DrawPaletteAxis = function(s_width, s_height, arg) {
+   TPavePainter.prototype.drawPaletteAxis = function(s_width, s_height, arg) {
 
       let palette = this.getObject(),
           axis = palette.fAxis,
@@ -1269,7 +1270,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    }
 
    TPavePainter.prototype.redraw = function() {
-      this.DrawPave();
+      this.drawPave();
    }
 
    TPavePainter.prototype.cleanup = function() {
@@ -1325,26 +1326,26 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          switch (pave._typename) {
             case "TPaveLabel":
-               painter.PaveDrawFunc = painter.DrawPaveLabel;
+               painter.paveDrawFunc = painter.drawPaveLabel;
                break;
             case "TPaveStats":
-               painter.PaveDrawFunc = painter.DrawPaveStats;
+               painter.paveDrawFunc = painter.drawPaveStats;
                painter.$secondary = true; // indicates that painter created from others
                break;
             case "TPaveText":
             case "TPavesText":
             case "TDiamond":
-               painter.PaveDrawFunc = painter.DrawPaveText;
+               painter.paveDrawFunc = painter.drawPaveText;
                break;
             case "TLegend":
-               painter.PaveDrawFunc = painter.DrawPaveLegend;
+               painter.paveDrawFunc = painter.drawPaveLegend;
                break;
             case "TPaletteAxis":
-               painter.PaveDrawFunc = painter.DrawPaletteAxis;
+               painter.paveDrawFunc = painter.drawPaletteAxis;
                break;
          }
 
-         return painter.DrawPave(opt);
+         return painter.drawPave(opt);
       });
    }
 
@@ -1410,10 +1411,11 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
     */
 
    function THistDrawOptions() {
-      this.Reset();
+      this.reset();
    }
 
-   THistDrawOptions.prototype.Reset = function() {
+   /** @summary Reset hist draw options */
+   THistDrawOptions.prototype.reset = function() {
       JSROOT.extend(this,
             { Axis: 0, RevX: false, RevY: false, Bar: false, BarStyle: 0, Curve: false,
               Hist: true, Line: false, Fill: false,
@@ -1436,7 +1438,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    }
 
    /** @summary Decode histogram draw options */
-   THistDrawOptions.prototype.Decode = function(opt, hdim, histo, pad, painter) {
+   THistDrawOptions.prototype.decode = function(opt, hdim, histo, pad, painter) {
       this.orginal = opt; // will be overwritten by storeDrawOpt call
 
       let d = new JSROOT.DrawOptions(opt), check3dbox = "";
@@ -1691,7 +1693,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       //      this.Surf = 13;
    }
 
-   // function should approx reconstruct draw options
+   /** @summary Tries to reconstruct string with hist draw options */
    THistDrawOptions.prototype.asString = function() {
       let res = "";
       if (this.Mode3D) {
@@ -1762,9 +1764,11 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       this.exact_min_indx = 0;
    }
 
+   /** @summary Returns contour levels */
    HistContour.prototype.getLevels = function() { return this.arr; }
 
-   HistContour.prototype.CreateNormal = function(nlevels, log_scale, zminpositive) {
+   /** @summary Create normal contour levels */
+   HistContour.prototype.createNormal = function(nlevels, log_scale, zminpositive) {
       if (log_scale) {
          if (this.colzmax <= 0)
             this.colzmax = 1.;
@@ -1794,7 +1798,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       }
    }
 
-   HistContour.prototype.CreateCustom = function(levels) {
+   /** @summary Create custom contour levels */
+   HistContour.prototype.createCustom = function(levels) {
       this.custom = true;
       for (let n = 0; n < levels.length; ++n)
          this.arr.push(levels[n]);
@@ -1803,11 +1808,13 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          this.arr.push(this.colzmax);
    }
 
-   HistContour.prototype.ConfigIndicies = function(below_min, exact_min) {
+   /** @summary Configure indicies */
+   HistContour.prototype.configIndicies = function(below_min, exact_min) {
       this.below_min_indx = below_min;
       this.exact_min_indx = exact_min;
    }
 
+   /** @summary Get index based on z value */
    HistContour.prototype.getContourIndex = function(zc) {
       if (this.custom) {
          let l = 0, r = this.arr.length-1;
@@ -1829,6 +1836,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return Math.floor(0.01+(zc-this.colzmin)*(this.arr.length-1)/(this.colzmax-this.colzmin));
    }
 
+   /** @summary Get palette color */
    HistContour.prototype.getPaletteColor = function(palette, zc) {
       let zindx = this.getContourIndex(zc);
       if (zindx < 0) return null;
@@ -1838,6 +1846,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return palette.getColor(pindx);
    }
 
+   /** @summary Get palette index */
    HistContour.prototype.getPaletteIndex = function(palette, zc) {
       let zindx = this.getContourIndex(zc);
 
@@ -1951,9 +1960,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (!this.options)
          this.options = new THistDrawOptions;
       else
-         this.options.Reset();
+         this.options.reset();
 
-      this.options.Decode(opt || histo.fOption, hdim, histo, pad, this);
+      this.options.decode(opt || histo.fOption, hdim, histo, pad, this);
 
       this.storeDrawOpt(opt); // opt will be return as default draw option, used in webcanvas
    }
@@ -2887,12 +2896,12 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       let cntr = new HistContour(zmin, zmax);
 
       if (custom_levels) {
-         cntr.CreateCustom(custom_levels);
+         cntr.createCustom(custom_levels);
       } else {
          if (nlevels < 2) nlevels = JSROOT.gStyle.fNumberContours;
          let pad = this.getPadPainter().getRootPad(true);
-         cntr.CreateNormal(nlevels, pad ? pad.fLogz : 0, zminpositive);
-         cntr.ConfigIndicies(this.options.Zero ? -1 : 0, (cntr.colzmin != 0) || !this.options.Zero || this.IsTH2Poly() ? 0 : -1);
+         cntr.createNormal(nlevels, pad ? pad.fLogz : 0, zminpositive);
+         cntr.configIndicies(this.options.Zero ? -1 : 0, (cntr.colzmin != 0) || !this.options.Zero || this.IsTH2Poly() ? 0 : -1);
       }
 
       let fp = this.getFramePainter();
@@ -3070,7 +3079,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          });
       } else {
          pal_painter.Enabled = true;
-         promise = pal_painter.DrawPave(arg);
+         promise = pal_painter.drawPave(arg);
       }
 
       return promise.then(pp => {
@@ -6352,7 +6361,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             this.Draw2DBins();
 
             // redraw palette till the end when contours are available
-            return pp ? pp.DrawPave() : true;
+            return pp ? pp.drawPave() : true;
          });
       }).then(() => {
          return this.drawHistTitle();

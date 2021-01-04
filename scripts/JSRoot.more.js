@@ -3847,7 +3847,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          });
       } else {
          pal_painter.Enabled = true;
-         return pal_painter.DrawPave("");
+         return pal_painter.drawPave("");
       }
    }
 

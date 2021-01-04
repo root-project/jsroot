@@ -3908,13 +3908,13 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
          this.v7SubmitRequest("stat", req, this.UpdateStatistic.bind(this));
       }
 
-      this.DrawPave();
+      this.drawPave();
    }
 
    function drawHistStats(divid, stats, opt) {
       let painter = new RHistStatsPainter(divid, stats, opt);
 
-      return jsrp.ensureRCanvas(painter, false).then(() => painter.DrawPave());
+      return jsrp.ensureRCanvas(painter, false).then(() => painter.drawPave());
    }
 
    JSROOT.v7.RHistPainter = RHistPainter;
