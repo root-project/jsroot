@@ -2087,7 +2087,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if (zoom_z) {
          let cnt = 0;
-         // if (this.logz && this.ymin_nz && this.Dimension()===2) main_zmin = 0.3*this.ymin_nz;
+         // if (this.logz && this.ymin_nz && this.getDimension()===2) main_zmin = 0.3*this.ymin_nz;
          if (zmin <= this.zmin) { zmin = this.zmin; cnt++; }
          if (zmax >= this.zmax) { zmax = this.zmax; cnt++; }
          if (cnt === 2) { zoom_z = false; unzoom_z = true; }
@@ -2265,7 +2265,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       // menu.addchk(this.logx, "SetLogx", this.toggleAxisLog.bind(this,"x"));
       // menu.addchk(this.logy, "SetLogy", this.toggleAxisLog.bind(this,"y"));
-      // if (this.Dimension() == 2)
+      // if (this.getDimension() == 2)
       //   menu.addchk(pad.fLogz, "SetLogz", this.toggleAxisLog.bind(main,"z"));
       menu.add("separator");
 
@@ -3557,7 +3557,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if (main) {
                menu.add("X axis", "xaxis", this.itemContextMenu);
                menu.add("Y axis", "yaxis", this.itemContextMenu);
-               if ((typeof main.Dimension === 'function') && (main.Dimension() > 1))
+               if ((typeof main.getDimension === 'function') && (main.getDimension() > 1))
                   menu.add("Z axis", "zaxis", this.itemContextMenu);
             }
 

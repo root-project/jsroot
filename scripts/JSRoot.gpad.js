@@ -1713,7 +1713,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          menu.addchk(pad.fLogx, "SetLogx", () => this.toggleAxisLog("x"));
          menu.addchk(pad.fLogy, "SetLogy", () => this.toggleAxisLog("y"));
 
-         if (main && (typeof main.Dimension === 'function') && (main.Dimension() > 1))
+         if (main && (typeof main.getDimension === 'function') && (main.getDimension() > 1))
             menu.addchk(pad.fLogz, "SetLogz", () => this.toggleAxisLog("z"));
          menu.add("separator");
       }
@@ -3487,7 +3487,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if (main) {
                menu.add("X axis", "xaxis", this.itemContextMenu);
                menu.add("Y axis", "yaxis", this.itemContextMenu);
-               if ((typeof main.Dimension === 'function') && (main.Dimension() > 1))
+               if ((typeof main.getDimension === 'function') && (main.getDimension() > 1))
                   menu.add("Z axis", "zaxis", this.itemContextMenu);
             }
 

@@ -1005,7 +1005,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
           handle = this.PrepareDraw({ rounding: false, use3d: true, extra: 1 }),
           i1 = handle.i1, i2 = handle.i2, j1 = handle.j1, j2 = handle.j2, di = handle.stepi, dj = handle.stepj,
           i, j, k, vert, x1, x2, y1, y2, binz1, binz2, reduced, nobottom, notop,
-          histo = this.GetHisto(),
+          histo = this.getHisto(),
           basehisto = histo ? histo.$baseh : null,
           split_faces = (this.options.Lego === 11) || (this.options.Lego === 13); // split each layer on two parts
 
@@ -1201,7 +1201,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
             let p = this.painter,
                 handle = this.handle,
                 main = p.getFramePainter(),
-                histo = p.GetHisto(),
+                histo = p.getHisto(),
                 tip = p.Get3DToolTip( this.face_to_bins_index[intersect.faceIndex] ),
                 i1 = tip.ix - 1, i2 = i1 + handle.stepi,
                 j1 = tip.iy - 1, j2 = j1 + handle.stepj;
@@ -1221,7 +1221,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
 
             tip.color = this.tip_color;
 
-            if (p.is_projection && (p.Dimension()==2)) tip.$painter = p; // used only for projections
+            if (p.is_projection && (p.getDimension()==2)) tip.$painter = p; // used only for projections
 
             return tip;
          }
@@ -1363,7 +1363,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
 
       this.deleteAttr();
 
-      this.ScanContent(true); // may be required for axis drawings
+      this.scanContent(true); // may be required for axis drawings
 
       if (is_main) {
          main.create3DScene(this.options.Render3D);
@@ -1382,7 +1382,6 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
          this.DrawLego();
          this.UpdatePaletteDraw();
          main.Render3D();
-         this.UpdateStatWebCanvas();
          main.addKeysHandler();
          return this;
       });
@@ -1430,7 +1429,6 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
 
          this.Draw3DBins();
          main.Render3D();
-         this.UpdateStatWebCanvas();
          main.addKeysHandler();
          return this;
       });
@@ -1442,7 +1440,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
 
       if (!this.draw_content) return;
 
-      if (this.IsTH2Poly())
+      if (this.isRH2Poly())
          return this.DrawPolyLego();
 
       if (this.options.Surf)
@@ -1514,7 +1512,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
    }
 
    JSROOT.v7.RH2Painter.prototype.DrawSurf = function() {
-      let histo = this.GetHisto(),
+      let histo = this.getHisto(),
           main = this.getFramePainter(),
           handle = this.PrepareDraw({rounding: false, use3d: true, extra: 1, middle: 0.5 }),
           i, j, x1, y1, x2, y2, z11, z12, z21, z22,
@@ -1937,7 +1935,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
 
    JSROOT.v7.RH2Painter.prototype.DrawError = function() {
       let main = this.getFramePainter(),
-          histo = this.GetHisto(),
+          histo = this.getHisto(),
           handle = this.PrepareDraw({ rounding: false, use3d: true, extra: 1 }),
           zmin = main.z_handle.gr.domain()[0],
           zmax = main.z_handle.gr.domain()[1],
@@ -2043,7 +2041,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
    }
 
    JSROOT.v7.RH2Painter.prototype.DrawPolyLego = function() {
-      let histo = this.GetHisto(),
+      let histo = this.getHisto(),
           palette = this.getHistPalette(),
           pmain = this.getFramePainter(),
           axis_zmin = pmain.z_handle.gr.domain()[0],
@@ -2243,19 +2241,19 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
 
    RH3Painter.prototype = Object.create(JSROOT.v7.RHistPainter.prototype);
 
-   RH3Painter.prototype.Dimension = function() {
+   RH3Painter.prototype.getDimension = function() {
       return 3;
    }
 
-   RH3Painter.prototype.ScanContent = function(when_axis_changed) {
+   RH3Painter.prototype.scanContent = function(when_axis_changed) {
 
       // no need to rescan histogram while result does not depend from axis selection
       if (when_axis_changed && this.nbinsx && this.nbinsy && this.nbinsz) return;
 
-      let histo = this.GetHisto();
+      let histo = this.getHisto();
       if (!histo) return;
 
-      this.ExtractAxesProperties(3);
+      this.extractAxesProperties(3);
 
       // global min/max, used at the moment in 3D drawing
 
@@ -2280,7 +2278,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
    }
 
    RH3Painter.prototype.CountStat = function() {
-      let histo = this.GetHisto(),
+      let histo = this.getHisto(),
           xaxis = this.getAxis("x"),
           yaxis = this.getAxis("y"),
           zaxis = this.getAxis("z"),
@@ -2355,9 +2353,6 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
 
    RH3Painter.prototype.FillStatistic = function(stat, dostat, dofit) {
 
-      // no need to refill statistic if histogram is dummy
-      if (this.IgnoreStatsFill()) return false;
-
       let data = this.CountStat(),
           print_name = dostat % 10,
           print_entries = Math.floor(dostat / 10) % 10,
@@ -2399,7 +2394,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
    }
 
    RH3Painter.prototype.GetBinTips = function (ix, iy, iz) {
-      let lines = [], pmain = this.getFramePainter(), histo = this.GetHisto(),
+      let lines = [], pmain = this.getFramePainter(), histo = this.getHisto(),
           xaxis = this.getAxis("x"), yaxis = this.getAxis("y"), zaxis = this.getAxis("z"),
           dx = 1, dy = 1, dz = 1;
 
@@ -2429,7 +2424,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
      * @desc if too many points, box will be displayed */
    RH3Painter.prototype.Draw3DScatter = function(handle) {
 
-      let histo = this.GetHisto(),
+      let histo = this.getHisto(),
           main = this.getFramePainter(),
           i1 = handle.i1, i2 = handle.i2, di = handle.stepi,
           j1 = handle.j1, j2 = handle.j2, dj = handle.stepj,
@@ -2605,7 +2600,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       if (use_scale)
          use_scale = (this.gminbin || this.gmaxbin) ? 1 / Math.max(Math.abs(this.gminbin), Math.abs(this.gmaxbin)) : 1;
 
-      let histo = this.GetHisto(),
+      let histo = this.getHisto(),
           i1 = handle.i1, i2 = handle.i2, di = handle.stepi,
           j1 = handle.j1, j2 = handle.j2, dj = handle.stepj,
           k1 = handle.k1, k2 = handle.k2, dk = handle.stepk,
@@ -2859,7 +2854,6 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
 
          this.Draw3DBins();
          main.Render3D();
-         this.UpdateStatWebCanvas();
          main.addKeysHandler();
       });
    }
@@ -2876,7 +2870,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
 
    /** @summary Checks if it makes sense to zoom inside specified axis range */
    RH3Painter.prototype.canZoomInside = function(axis,min,max) {
-      let obj = this.GetHisto();
+      let obj = this.getHisto();
       if (obj) obj = obj["f"+axis.toUpperCase()+"axis"];
       return !obj || (obj.FindBin(max,0.5) - obj.FindBin(min,0) > 1);
    }
@@ -2888,7 +2882,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
           j2 = this.GetSelectIndex("y", "right"),
           k1 = this.GetSelectIndex("z", "left"),
           k2 = this.GetSelectIndex("z", "right"),
-          i,j,k, histo = this.GetHisto();
+          i,j,k, histo = this.getHisto();
 
       if ((i1 === i2) || (j1 === j2) || (k1 === k2)) return;
 
@@ -2950,7 +2944,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
          if (arg==='inspect')
             return this.showInspector();
 
-         this.DecodeOptions(arg);
+         this.decodeOptions(arg);
 
          this.interactiveRedraw(true, "drawopt");
       });
@@ -2978,7 +2972,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
             default: o.Box = 10;
          }
 
-         painter.ScanContent();
+         painter.scanContent();
          painter.redraw();
          return painter;
       });

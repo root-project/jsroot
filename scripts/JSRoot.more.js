@@ -798,7 +798,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       JSROOT.ObjectPainter.prototype.cleanup.call(this);
    }
 
-   TGraphPainter.prototype.DecodeOptions = function(opt) {
+   TGraphPainter.prototype.decodeOptions = function(opt) {
 
       if (!opt) opt = this.getMainPainter() ? "lp" : "alp";
 
@@ -1000,7 +1000,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       this.createHistogram(null, dox, doy);
       let hpainter = this.getMainPainter();
-      if (hpainter) hpainter.ExtractAxesProperties(1); // just to enforce ranges extraction
+      if (hpainter) hpainter.extractAxesProperties(1); // just to enforce ranges extraction
 
       return true;
    }
@@ -1829,7 +1829,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       if (!this.matchObjectType(obj)) return false;
 
       if ((opt !== undefined) && (opt != this.options.original))
-         this.DecodeOptions(opt);
+         this.decodeOptions(opt);
 
       let graph = this.getObject();
       // TODO: make real update of TGraph object content
@@ -1888,7 +1888,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       return null;
    }
 
-   TGraphPainter.prototype.FindStat = function() {
+   TGraphPainter.prototype.findStat = function() {
       let gr = this.getObject();
       if (gr && gr.fFunctions)
          for (let i = 0; i < gr.fFunctions.arr.length; ++i) {
@@ -1899,11 +1899,11 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       return null;
    }
 
-   TGraphPainter.prototype.CreateStat = function() {
+   TGraphPainter.prototype.createStat = function() {
       let func = this.FindFunc();
       if (!func) return null;
 
-      let stats = this.FindStat();
+      let stats = this.findStat();
       if (stats) return stats;
 
       // do not create stats box when drawing canvas
@@ -1979,9 +1979,9 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    function drawGraph(divid, graph, opt) {
 
       let painter = new TGraphPainter(divid, graph);
-      painter.DecodeOptions(opt);
+      painter.decodeOptions(opt);
       painter.CreateBins();
-      painter.CreateStat();
+      painter.createStat();
 
       let promise = Promise.resolve();
 
@@ -2343,7 +2343,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       this.drawGraphPolar();
    }
 
-   TGraphPolarPainter.prototype.DecodeOptions = function(opt) {
+   TGraphPolarPainter.prototype.decodeOptions = function(opt) {
 
       let d = new JSROOT.DrawOptions(opt || "L");
 
@@ -2534,7 +2534,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
    function drawGraphPolar(divid, graph, opt) {
       let painter = new TGraphPolarPainter(divid, graph);
-      painter.DecodeOptions(opt);
+      painter.decodeOptions(opt);
 
       let main = painter.getMainPainter();
       if (main && !main.$polargram) {
@@ -2584,7 +2584,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       if (spline !== obj) JSROOT.extend(spline, obj);
 
-      if (opt !== undefined) this.DecodeOptions(opt);
+      if (opt !== undefined) this.decodeOptions(opt);
 
       return true;
    }
@@ -2835,7 +2835,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       return true;
    }
 
-   TSplinePainter.prototype.DecodeOptions = function(opt) {
+   TSplinePainter.prototype.decodeOptions = function(opt) {
       let d = new JSROOT.DrawOptions(opt);
 
       if (!this.options) this.options = {};
@@ -2852,7 +2852,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
    jsrp.drawSpline = function(divid, spline, opt) {
       let painter = new TSplinePainter(divid, spline);
-      painter.DecodeOptions(opt);
+      painter.decodeOptions(opt);
 
       let promise = Promise.resolve();
       if (!painter.getMainPainter()) {
@@ -2894,7 +2894,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       if (this.step === undefined) this.startDrawing();
    }
 
-   TGraphTimePainter.prototype.DecodeOptions = function(opt) {
+   TGraphTimePainter.prototype.decodeOptions = function(opt) {
 
       let d = new JSROOT.DrawOptions(opt || "REPEAT");
 
@@ -3010,7 +3010,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          return null;
       }
 
-      painter.DecodeOptions(opt);
+      painter.decodeOptions(opt);
 
       if (!gr.fFrame.fTitle && gr.fTitle) gr.fFrame.fTitle = gr.fTitle;
 
