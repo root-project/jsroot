@@ -6536,7 +6536,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    // =================================================================================
 
 
-   let createTF2Histogram = (func, nosave, hist) => {
+   function createTF2Histogram(func, nosave, hist) {
       let nsave = 0, npx = 0, npy = 0;
       if (!nosave) {
          nsave = func.fSave.length;

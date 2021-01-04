@@ -5,13 +5,69 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
 
    "use strict";
 
-   JSROOT.v7.RFramePainter.prototype.SetCameraPosition = function(first_time) {
-      let max3d = Math.max(0.75*this.size_xy3d, this.size_z3d);
+   /** @summary Text 3d axis visibility
+     * @private */
+   function testAxisVisibility(camera, toplevel, fb, bb) {
+      let top;
+      if (toplevel && toplevel.children)
+         for (let n=0;n<toplevel.children.length;++n) {
+            top = toplevel.children[n];
+            if (top.axis_draw) break;
+            top = undefined;
+         }
 
-      if (first_time) {
-         this.camera.position.set(-1.6*max3d, -3.5*max3d, 1.4*this.size_z3d);
-         this.camera.lookAt(this.lookat);
+      if (!top) return;
+
+      if (!camera) {
+         // this is case when axis drawing want to be removed
+         toplevel.remove(top);
+         return;
       }
+
+      fb = fb ? true : false;
+      bb = bb ? true : false;
+
+      let qudrant = 1, pos = camera.position;
+      if ((pos.x < 0) && (pos.y >= 0)) qudrant = 2;
+      if ((pos.x >= 0) && (pos.y >= 0)) qudrant = 3;
+      if ((pos.x >= 0) && (pos.y < 0)) qudrant = 4;
+
+      function testvisible(id, range) {
+         if (id <= qudrant) id+=4;
+         return (id > qudrant) && (id < qudrant+range);
+      }
+
+      for (let n=0;n<top.children.length;++n) {
+         let chld = top.children[n];
+         if (chld.grid) chld.visible = bb && testvisible(chld.grid, 3); else
+         if (chld.zid) chld.visible = testvisible(chld.zid, 2); else
+         if (chld.xyid) chld.visible = testvisible(chld.xyid, 3); else
+         if (chld.xyboxid) {
+            let range = 5, shift = 0;
+            if (bb && !fb) { range = 3; shift = -2; } else
+            if (fb && !bb) range = 3; else
+            if (!fb && !bb) range = (chld.bottom ? 3 : 0);
+            chld.visible = testvisible(chld.xyboxid + shift, range);
+            if (!chld.visible && chld.bottom && bb)
+               chld.visible = testvisible(chld.xyboxid, 3);
+         } else
+         if (chld.zboxid) {
+            let range = 2, shift = 0;
+            if (fb && bb) range = 5; else
+            if (bb && !fb) range = 4; else
+            if (!bb && fb) { shift = -2; range = 4; }
+            chld.visible = testvisible(chld.zboxid + shift, range);
+         }
+      }
+   }
+
+   /** @summary Set default camera position
+     * @private */
+   function setCameraPosition(fp) {
+      let max3d = Math.max(0.75*fp.size_xy3d, fp.size_z3d);
+
+      fp.camera.position.set(-1.6*max3d, -3.5*max3d, 1.4*fp.size_z3d);
+      fp.camera.lookAt(fp.lookat);
    }
 
    /** @summary Create all necessary components for 3D drawings
@@ -27,8 +83,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
             return;
          }
 
-         //if (typeof this.TestAxisVisibility === 'function')
-         this.TestAxisVisibility(null, this.toplevel);
+         testAxisVisibility(null, this.toplevel);
 
          this.clear_3d_canvas();
 
@@ -74,9 +129,6 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
          this.toplevel = newtop;
 
          this.Resize3D(); // set actual sizes
-
-         this.SetCameraPosition(false);
-
          return;
       }
 
@@ -109,7 +161,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       this.camera.up = new THREE.Vector3(0,0,1);
       this.scene.add( this.camera );
 
-      this.SetCameraPosition(true);
+      setCameraPosition(this);
 
       this.renderer = jsrp.createRender3D(this.scene_width, this.scene_height, render3d);
 
@@ -235,8 +287,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
 
       if (!this.opt3d) this.opt3d = { FrontBox: true, BackBox: true };
 
-      //if (typeof this.TestAxisVisibility === 'function')
-      this.TestAxisVisibility(this.camera, this.toplevel, this.opt3d.FrontBox, this.opt3d.BackBox);
+      testAxisVisibility(this.camera, this.toplevel, this.opt3d.FrontBox, this.opt3d.BackBox);
 
       // do rendering, most consuming time
       this.renderer.render(this.scene, this.camera);
@@ -369,61 +420,6 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
                                     grx: (tip.x1+tip.x2)/2, gry: (tip.y1+tip.y2)/2, grz: (tip.z1+tip.z2)/2 });
    }
 
-   JSROOT.v7.RFramePainter.prototype.TestAxisVisibility = function(camera, toplevel, fb, bb) {
-      let top;
-      if (toplevel && toplevel.children)
-         for (let n=0;n<toplevel.children.length;++n) {
-            top = toplevel.children[n];
-            if (top.axis_draw) break;
-            top = undefined;
-         }
-
-      if (!top) return;
-
-      if (!camera) {
-         // this is case when axis drawing want to be removed
-         toplevel.remove(top);
-         // delete this.TestAxisVisibility;
-         return;
-      }
-
-      fb = fb ? true : false;
-      bb = bb ? true : false;
-
-      let qudrant = 1, pos = camera.position;
-      if ((pos.x < 0) && (pos.y >= 0)) qudrant = 2;
-      if ((pos.x >= 0) && (pos.y >= 0)) qudrant = 3;
-      if ((pos.x >= 0) && (pos.y < 0)) qudrant = 4;
-
-      function testvisible(id, range) {
-         if (id <= qudrant) id+=4;
-         return (id > qudrant) && (id < qudrant+range);
-      }
-
-      for (let n=0;n<top.children.length;++n) {
-         let chld = top.children[n];
-         if (chld.grid) chld.visible = bb && testvisible(chld.grid, 3); else
-         if (chld.zid) chld.visible = testvisible(chld.zid, 2); else
-         if (chld.xyid) chld.visible = testvisible(chld.xyid, 3); else
-         if (chld.xyboxid) {
-            let range = 5, shift = 0;
-            if (bb && !fb) { range = 3; shift = -2; } else
-            if (fb && !bb) range = 3; else
-            if (!fb && !bb) range = (chld.bottom ? 3 : 0);
-            chld.visible = testvisible(chld.xyboxid + shift, range);
-            if (!chld.visible && chld.bottom && bb)
-               chld.visible = testvisible(chld.xyboxid, 3);
-         } else
-         if (chld.zboxid) {
-            let range = 2, shift = 0;
-            if (fb && bb) range = 5; else
-            if (bb && !fb) range = 4; else
-            if (!bb && fb) { shift = -2; range = 4; }
-            chld.visible = testvisible(chld.zboxid + shift, range);
-         }
-      }
-   }
-
    JSROOT.v7.RFramePainter.prototype.Set3DOptions = function(hopt) {
       this.opt3d = hopt;
    }
@@ -469,8 +465,6 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
 
       // factor 1.1 used in ROOT for lego plots
       if ((opts.zmult !== undefined) && !z_zoomed) zmax *= opts.zmult;
-
-      // this.TestAxisVisibility = HPainter_TestAxisVisibility;
 
       this.x_handle = new JSROOT.v7.RAxisPainter(this.getDom(), this, this.xaxis, "x_");
       this.x_handle.setPadName(this.getPadName());
