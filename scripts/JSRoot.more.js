@@ -1864,6 +1864,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       return false;
    }
 
+   /** @summary Process click on graph-defined buttons
+     * @private */
    TGraphPainter.prototype.clickButton = function(funcname) {
 
       if (funcname !== "ToggleZoom") return false;
@@ -1944,7 +1946,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       return stats;
    }
 
-   TGraphPainter.prototype.FillStatistic = function(stat, dostat, dofit) {
+   TGraphPainter.prototype.fillStatistic = function(stat, dostat, dofit) {
 
       // cannot fill stats without func
       let func = this.FindFunc();
@@ -3872,6 +3874,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       }
    }
 
+   /** @summary Process click on TASImage-defined buttons
+     * @private */
    TASImagePainter.prototype.clickButton = function(funcname) {
       if (!this.isMainPainter()) return false;
 

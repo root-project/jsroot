@@ -1048,7 +1048,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
 
          palette = main.getHistPalette();
          this.createContour(main, palette, { full_z_range: true });
-         levels = palette.GetContour();
+         levels = palette.getContour();
          axis_zmin = levels[0];
          axis_zmax = levels[levels.length-1];
       }
@@ -1349,7 +1349,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
 
    /** @summary Draw 1-D histogram in 3D mode
      * @private */
-   JSROOT.v7.RH1Painter.prototype.Draw3D = function(reason) {
+   JSROOT.v7.RH1Painter.prototype.draw3D = function(reason) {
 
       this.mode3d = true;
 
@@ -1390,7 +1390,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
 
    // ==========================================================================================
 
-   JSROOT.v7.RH2Painter.prototype.Draw3D = function(reason) {
+   JSROOT.v7.RH2Painter.prototype.draw3D = function(reason) {
 
       this.mode3d = true;
 
@@ -1488,7 +1488,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
 
       this.createContour(main, palette, { full_z_range: true });
 
-      let levels = palette.GetContour();
+      let levels = palette.getContour();
 
       this.BuildContour(handle, levels, palette,
          function(colindx,xp,yp,iminus,iplus,ilevel) {
@@ -1553,7 +1553,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
          palette = main.getHistPalette();
          if (need_palette == 2)
             this.createContour(main, palette, { full_z_range: true });
-         ilevels = palette.GetContour();
+         ilevels = palette.getContour();
       }
 
       if (ilevels) {
@@ -1869,7 +1869,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
          handle = this.PrepareDraw({rounding: false, use3d: true, extra: 100, middle: 0.0 });
 
          // get levels
-         let levels = this.GetContour(), // init contour
+         let levels = this.getContour(), // init contour
              palette = this.getHistPalette(),
              lastcolindx = -1, layerz = 2*main.size_z3d;
 
@@ -2277,7 +2277,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       this.draw_content = this.gmaxbin > 0;
    }
 
-   RH3Painter.prototype.CountStat = function() {
+   RH3Painter.prototype.countStat = function() {
       let histo = this.getHisto(),
           xaxis = this.getAxis("x"),
           yaxis = this.getAxis("y"),
@@ -2351,9 +2351,9 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       return res;
    }
 
-   RH3Painter.prototype.FillStatistic = function(stat, dostat, dofit) {
+   RH3Painter.prototype.fillStatistic = function(stat, dostat /*, dofit */) {
 
-      let data = this.CountStat(),
+      let data = this.countStat(),
           print_name = dostat % 10,
           print_entries = Math.floor(dostat / 10) % 10,
           print_mean = Math.floor(dostat / 100) % 10,
@@ -2391,9 +2391,10 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       return true;
    }
 
-   RH3Painter.prototype.GetBinTips = function (ix, iy, iz) {
-      let lines = [], pmain = this.getFramePainter(), histo = this.getHisto(),
-          xaxis = this.getAxis("x"), yaxis = this.getAxis("y"), zaxis = this.getAxis("z"),
+   /** @summary Provide text information (tooltips) for histogram bin
+     * @private */
+   RH3Painter.prototype.getBinTooltips = function (ix, iy, iz) {
+      let lines = [], histo = this.getHisto(),
           dx = 1, dy = 1, dz = 1;
 
       if (this.IsDisplayItem()) {
@@ -2404,9 +2405,9 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
 
       lines.push(this.getObjectHint());
 
-      lines.push("x = " + this.GetAxisBinTip("x", ix, dx) + "  xbin=" + ix);
-      lines.push("y = " + this.GetAxisBinTip("y", iy, dy) + "  ybin=" + iy);
-      lines.push("z = " + this.GetAxisBinTip("z", iz, dz) + "  zbin=" + iz);
+      lines.push("x = " + this.getAxisBinTip("x", ix, dx) + "  xbin=" + ix);
+      lines.push("y = " + this.getAxisBinTip("y", iy, dy) + "  ybin=" + iy);
+      lines.push("z = " + this.getAxisBinTip("z", iz, dz) + "  zbin=" + iz);
 
       let binz = histo.getBinContent(ix+1, iy+1, iz+1),
           lbl = "entries = "+ ((dx>1) || (dy>1) || (dz>1) ? "~" : "");
@@ -2875,14 +2876,16 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       return !obj || (obj.FindBin(max,0.5) - obj.FindBin(min,0) > 1);
    }
 
-   RH3Painter.prototype.AutoZoom = function() {
+   /** @summary Perform automatic zoom inside non-zero region of histogram
+     * @private */
+   RH3Painter.prototype.autoZoom = function() {
       let i1 = this.getSelectIndex("x", "left"),
           i2 = this.getSelectIndex("x", "right"),
           j1 = this.getSelectIndex("y", "left"),
           j2 = this.getSelectIndex("y", "right"),
           k1 = this.getSelectIndex("z", "left"),
           k2 = this.getSelectIndex("z", "right"),
-          i,j,k, histo = this.getHisto();
+          i, j, k, histo = this.getHisto();
 
       if ((i1 === i2) || (j1 === j2) || (k1 === k2)) return;
 
@@ -2936,11 +2939,13 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       if (isany) this.getFramePainter().zoom(xmin, xmax, ymin, ymax, zmin, zmax);
    }
 
-   RH3Painter.prototype.FillHistContextMenu = function(menu) {
+   /** @summary Fill histogram context menu
+     * @private */
+   RH3Painter.prototype.fillHistContextMenu = function(menu) {
 
       let sett = jsrp.getDrawSettings("ROOT." + this.getObject()._typename, 'nosame');
 
-      menu.addDrawMenu("Draw with", sett.opts, function(arg) {
+      menu.addDrawMenu("Draw with", sett.opts, arg => {
          if (arg==='inspect')
             return this.showInspector();
 

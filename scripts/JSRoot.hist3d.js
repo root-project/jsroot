@@ -1043,7 +1043,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
           axis_zmin = main.z_handle.gr.domain()[0],
           axis_zmax = main.z_handle.gr.domain()[1],
           zmin, zmax,
-          handle = this.PrepareColorDraw({ rounding: false, use3d: true, extra: 1 }),
+          handle = this.prepareColorDraw({ rounding: false, use3d: true, extra: 1 }),
           i1 = handle.i1, i2 = handle.i2, j1 = handle.j1, j2 = handle.j2,
           i, j, k, vert, x1, x2, y1, y2, binz1, binz2, reduced, nobottom, notop,
           histo = this.getHisto(),
@@ -1432,7 +1432,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
    /** @summary Draw 1-D histogram in 3D
      * @private */
-   JSROOT.TH1Painter.prototype.Draw3D = function(reason) {
+   JSROOT.TH1Painter.prototype.draw3D = function(reason) {
 
       this.mode3d = true;
 
@@ -1477,7 +1477,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
    /** @summary Draw 2-D histogram in 3D
      * @private */
-   JSROOT.TH2Painter.prototype.Draw3D = function(reason) {
+   JSROOT.TH2Painter.prototype.draw3D = function(reason) {
 
       this.mode3d = true;
 
@@ -1530,9 +1530,9 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
    JSROOT.TH2Painter.prototype.DrawContour3D = function(realz) {
       // for contour plots one requires handle with full range
       let main = this.getFramePainter(),
-          handle = this.PrepareColorDraw({rounding: false, use3d: true, extra: 100, middle: 0.0 }),
+          handle = this.prepareColorDraw({rounding: false, use3d: true, extra: 100, middle: 0.0 }),
           histo = this.getHisto(), // get levels
-          levels = this.GetContourLevels(), // init contour if not exists
+          levels = this.getContourLevels(), // init contour if not exists
           palette = this.getHistPalette(),
           layerz = 2*main.size_z3d, pnts = [];
 
@@ -1560,7 +1560,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
    JSROOT.TH2Painter.prototype.DrawSurf = function() {
       let histo = this.getHisto(),
           main = this.getFramePainter(),
-          handle = this.PrepareColorDraw({rounding: false, use3d: true, extra: 1, middle: 0.5 }),
+          handle = this.prepareColorDraw({rounding: false, use3d: true, extra: 1, middle: 0.5 }),
           i,j, x1, y1, x2, y2, z11, z12, z21, z22,
           axis_zmin = main.z_handle.gr.domain()[0];
           // axis_zmax = main.z_handle.gr.domain()[1];
@@ -1575,12 +1575,12 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
           donormals = false, palette = null;
 
       switch(this.options.Surf) {
-         case 11: ilevels = this.GetContourLevels(); palette = this.getHistPalette(); break;
+         case 11: ilevels = this.getContourLevels(); palette = this.getHistPalette(); break;
          case 12:
          case 15: // make surf5 same as surf2
-         case 17: ilevels = this.GetContourLevels(); palette = this.getHistPalette(); dolines = false; break;
+         case 17: ilevels = this.getContourLevels(); palette = this.getHistPalette(); dolines = false; break;
          case 14: dolines = false; donormals = true; break;
-         case 16: ilevels = this.GetContourLevels(); dogrid = true; dolines = false; break;
+         case 16: ilevels = this.getContourLevels(); dogrid = true; dolines = false; break;
          default: ilevels = main.z_handle.createTicks(true); dogrid = true; break;
       }
 
@@ -1893,10 +1893,10 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
       if (this.options.Surf === 13) {
 
-         handle = this.PrepareColorDraw({rounding: false, use3d: true, extra: 100, middle: 0.0 });
+         handle = this.prepareColorDraw({rounding: false, use3d: true, extra: 100, middle: 0.0 });
 
          // get levels
-         let levels = this.GetContourLevels(), // init contour
+         let levels = this.getContourLevels(), // init contour
              palette = this.getHistPalette(),
              lastcolindx = -1, layerz = 2*main.size_z3d;
 
@@ -1961,7 +1961,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
    JSROOT.TH2Painter.prototype.DrawError = function() {
       let main = this.getFramePainter(),
           histo = this.getHisto(),
-          handle = this.PrepareColorDraw({ rounding: false, use3d: true, extra: 1 }),
+          handle = this.prepareColorDraw({ rounding: false, use3d: true, extra: 1 }),
           zmin = main.z_handle.gr.domain()[0],
           zmax = main.z_handle.gr.domain()[1],
           i, j, bin, binz, binerr, x1, y1, x2, y2, z1, z2,
@@ -2074,7 +2074,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       this.minbin = this.gminbin;
       this.minposbin = this.gminposbin;
 
-      let cntr = this.GetContour(true), palette = this.getHistPalette();
+      let cntr = this.getContour(true), palette = this.getHistPalette();
 
       for (i = 0; i < len; ++ i) {
          bin = histo.fBins.arr[i];
@@ -2297,7 +2297,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       this.draw_content = this.gmaxbin > 0;
    }
 
-   TH3Painter.prototype.CountStat = function() {
+   TH3Painter.prototype.countStat = function() {
       let histo = this.getHisto(), xaxis = histo.fXaxis, yaxis = histo.fYaxis, zaxis = histo.fZaxis,
           stat_sum0 = 0, stat_sumx1 = 0, stat_sumy1 = 0,
           stat_sumz1 = 0, stat_sumx2 = 0, stat_sumy2 = 0, stat_sumz2 = 0,
@@ -2368,12 +2368,12 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       return res;
    }
 
-   TH3Painter.prototype.FillStatistic = function(stat, dostat, dofit) {
+   TH3Painter.prototype.fillStatistic = function(stat, dostat, dofit) {
 
       // no need to refill statistic if histogram is dummy
       if (this.isIgnoreStatsFill()) return false;
 
-      let data = this.CountStat(),
+      let data = this.countStat(),
           print_name = dostat % 10,
           print_entries = Math.floor(dostat / 10) % 10,
           print_mean = Math.floor(dostat / 100) % 10,
@@ -2413,14 +2413,16 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       return true;
    }
 
-   TH3Painter.prototype.GetBinTips = function (ix, iy, iz) {
-      let lines = [], pmain = this.getFramePainter(), histo = this.getHisto();
+   /** @summary Provide text information (tooltips) for histogram bin
+     * @private */
+   TH3Painter.prototype.getBinTooltips = function (ix, iy, iz) {
+      let lines = [], histo = this.getHisto();
 
       lines.push(this.getObjectHint());
 
-      lines.push("x = " + this.GetAxisBinTip("x", histo.fXaxis, ix) + "  xbin=" + (ix+1));
-      lines.push("y = " + this.GetAxisBinTip("y", histo.fYaxis, iy) + "  ybin=" + (iy+1));
-      lines.push("z = " + this.GetAxisBinTip("z", histo.fZaxis, iz) + "  zbin=" + (iz+1));
+      lines.push("x = " + this.getAxisBinTip("x", histo.fXaxis, ix) + "  xbin=" + (ix+1));
+      lines.push("y = " + this.getAxisBinTip("y", histo.fYaxis, iy) + "  ybin=" + (iy+1));
+      lines.push("z = " + this.getAxisBinTip("z", histo.fZaxis, iz) + "  zbin=" + (iz+1));
 
       let binz = histo.getBinContent(ix+1, iy+1, iz+1);
       if (binz === Math.round(binz))
@@ -2629,7 +2631,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
           scalez = (main.grz(histo.fZaxis.GetBinLowEdge(k2+1)) - main.grz(histo.fZaxis.GetBinLowEdge(k1+1))) / (k2-k1);
 
       let nbins = 0, i, j, k, wei, bin_content, cols_size = [], num_colors = 0, cols_sequence = [],
-          cntr = use_colors ? this.GetContour() : null,
+          cntr = use_colors ? this.getContour() : null,
           palette = use_colors ? this.getHistPalette() : null;
 
       for (i = i1; i < i2; ++i) {
@@ -2884,7 +2886,9 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       return !obj || (obj.FindBin(max,0.5) - obj.FindBin(min,0) > 1);
    }
 
-   TH3Painter.prototype.AutoZoom = function() {
+   /** @summary Perform automatic zoom inside non-zero region of histogram
+     * @private */
+   TH3Painter.prototype.autoZoom = function() {
       let i1 = this.getSelectIndex("x", "left"),
           i2 = this.getSelectIndex("x", "right"),
           j1 = this.getSelectIndex("y", "left"),
@@ -2945,11 +2949,13 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       if (isany) this.getFramePainter().zoom(xmin, xmax, ymin, ymax, zmin, zmax);
    }
 
-   TH3Painter.prototype.FillHistContextMenu = function(menu) {
+   /** @summary Fill histogram context menu
+     * @private */
+   TH3Painter.prototype.fillHistContextMenu = function(menu) {
 
       let sett = jsrp.getDrawSettings("ROOT." + this.getObject()._typename, 'nosame');
 
-      menu.addDrawMenu("Draw with", sett.opts, function(arg) {
+      menu.addDrawMenu("Draw with", sett.opts, arg => {
          if (arg==='inspect')
             return this.showInspector();
 
@@ -3161,7 +3167,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       if (fp.usesvg) scale *= 0.3;
 
       if (this.options.Color) {
-         levels = main.GetContourLevels();
+         levels = main.getContourLevels();
          palette = main.getHistPalette();
       }
 

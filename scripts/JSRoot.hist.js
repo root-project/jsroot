@@ -431,7 +431,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    /** @summary draw TPaveStats object */
    TPavePainter.prototype.drawPaveStats = function(width, height) {
 
-      if (this.IsStats()) this.FillStatistic();
+      if (this.IsStats()) this.fillStatistic();
 
       let pt = this.getObject(), lines = [],
           tcolor = this.getColor(pt.fTextColor),
@@ -1165,7 +1165,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return true;
    }
 
-   TPavePainter.prototype.FillStatistic = function() {
+   TPavePainter.prototype.fillStatistic = function() {
 
       let pp = this.getPadPainter();
       if (pp && pp._fast_drawing) return false;
@@ -1174,14 +1174,14 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           main = pave.$main_painter || this.getMainPainter();
 
       if (pave.fName !== "stats") return false;
-      if (!main || (typeof main.FillStatistic !== 'function')) return false;
+      if (!main || (typeof main.fillStatistic !== 'function')) return false;
 
       let dostat = parseInt(pave.fOptStat), dofit = parseInt(pave.fOptFit);
       if (isNaN(dostat)) dostat = JSROOT.gStyle.fOptStat;
       if (isNaN(dofit)) dofit = JSROOT.gStyle.fOptFit;
 
       // we take statistic from main painter
-      if (!main.FillStatistic(this, dostat, dofit)) return false;
+      if (!main.fillStatistic(this, dostat, dofit)) return false;
 
       // adjust the size of the stats box with the number of lines
       let nlines = pave.fLines.arr.length,
@@ -2773,8 +2773,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             menu.add("endsub:")
          }
 
-         if (typeof this.FillHistContextMenu == 'function')
-            this.FillHistContextMenu(menu);
+         if (typeof this.fillHistContextMenu == 'function')
+            this.fillHistContextMenu(menu);
       }
 
       if (this.options.Mode3D) {
@@ -2833,9 +2833,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return true;
    }
 
+   /** @summary Process click on histogram-defined buttons
+     * @private */
    THistPainter.prototype.clickButton = function(funcname) {
-      // TODO: move to frame painter
-
       let fp = this.getFramePainter();
 
       if (!this.isMainPainter() || !fp) return false;
@@ -2847,8 +2847,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                fp.zoomChangedInteractive('reset');
                return true;
             }
-            if (this.draw_content && (typeof this.AutoZoom === 'function')) {
-               this.AutoZoom();
+            if (this.draw_content && (typeof this.autoZoom === 'function')) {
+               this.autoZoom();
                return true;
             }
             break;
@@ -2886,14 +2886,14 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             tip.ix = indx; tip.iy = 1;
             tip.value = histo.getBinContent(tip.ix);
             tip.error = histo.getBinError(indx);
-            tip.lines = this.GetBinTips(indx-1);
+            tip.lines = this.getBinTooltips(indx-1);
             break;
          case 2:
             tip.ix = indx % (this.nbinsx + 2);
             tip.iy = (indx - tip.ix) / (this.nbinsx + 2);
             tip.value = histo.getBinContent(tip.ix, tip.iy);
             tip.error = histo.getBinError(indx);
-            tip.lines = this.GetBinTips(tip.ix-1, tip.iy-1);
+            tip.lines = this.getBinTooltips(tip.ix-1, tip.iy-1);
             break;
          case 3:
             tip.ix = indx % (this.nbinsx+2);
@@ -2901,7 +2901,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             tip.iz = (indx - tip.ix - tip.iy * (this.nbinsx+2)) / (this.nbinsx+2) / (this.nbinsy+2);
             tip.value = histo.getBinContent(tip.ix, tip.iy, tip.iz);
             tip.error = histo.getBinError(indx);
-            tip.lines = this.GetBinTips(tip.ix-1, tip.iy-1, tip.iz-1);
+            tip.lines = this.getBinTooltips(tip.ix-1, tip.iy-1, tip.iz-1);
             break;
       }
 
@@ -2933,7 +2933,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return cntr;
    }
 
-   THistPainter.prototype.GetContour = function(force_recreate) {
+   /** @summary Return contour object
+     * @private */
+   THistPainter.prototype.getContour = function(force_recreate) {
       if (this.fContour && !force_recreate)
          return this.fContour;
 
@@ -2969,12 +2971,15 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return this.createContour(nlevels, zmin, zmax, zminpos, custom_levels);
    }
 
-   THistPainter.prototype.GetContourLevels = function() {
-      return this.GetContour().getLevels();
+   /** @summary Return levels from contour object
+     * @private */
+   THistPainter.prototype.getContourLevels = function() {
+      return this.getContour().getLevels();
    }
 
    /** @summary Returns color palette associated with histogram
-     * @desc Create if required, checks pad and canvas for custom palette */
+     * @desc Create if required, checks pad and canvas for custom palette
+     * @private */
    THistPainter.prototype.getHistPalette = function(force) {
       if (force) this.fPalette = null;
       if (!this.fPalette && !this.options.Palette) {
@@ -3159,7 +3164,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    /** @summary Prepare handle for color draw
      * @private */
-   THistPainter.prototype.PrepareColorDraw = function(args) {
+   THistPainter.prototype.prepareColorDraw = function(args) {
 
       if (!args) args = { rounding: true, extra: 0, middle: 0 };
 
@@ -3281,8 +3286,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return res;
    }
 
-   /** @summary Get tip text for axis bin */
-   THistPainter.prototype.GetAxisBinTip = function(name, axis, bin) {
+   /** @summary Get tip text for axis bin
+     * @protected */
+   THistPainter.prototype.getAxisBinTip = function(name, axis, bin) {
       let pmain = this.getFramePainter(),
           handle = pmain[name+"_handle"],
           x1 = axis.GetBinLowEdge(bin+1);
@@ -3316,9 +3322,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    TH1Painter.prototype = Object.create(THistPainter.prototype);
 
+   /** @summary Convert TH1K into normal binned histogram
+     * @private */
    TH1Painter.prototype.convertTH1K = function() {
       let histo = this.getObject();
-
       if (histo.fReady) return;
 
       let arr = histo.fArray, entries = histo.fEntries; // array of values
@@ -3331,8 +3338,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    }
 
    /** @summary Scan content of 1-D histogram
-    * @desc Detect min/max values for x and y axis
-    * @param {boolean} when_axis_changed - true when zooming was changed, some checks may be skipped */
+     * @desc Detect min/max values for x and y axis
+     * @param {boolean} when_axis_changed - true when zooming was changed, some checks may be skipped
+     * @private */
    TH1Painter.prototype.scanContent = function(when_axis_changed) {
 
       if (when_axis_changed && !this.nbinsx) when_axis_changed = false;
@@ -3454,7 +3462,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    /** @summary Count histogram statistic
      * @private */
-   TH1Painter.prototype.CountStat = function(cond) {
+   TH1Painter.prototype.countStat = function(cond) {
       let profile = this.isTProfile(),
           histo = this.getHisto(), xaxis = histo.fXaxis,
           left = this.getSelectIndex("x", "left"),
@@ -3510,13 +3518,13 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    /** @summary Fill stat box
      * @private */
-   TH1Painter.prototype.FillStatistic = function(stat, dostat, dofit) {
+   TH1Painter.prototype.fillStatistic = function(stat, dostat, dofit) {
 
       // no need to refill statistic if histogram is dummy
       if (this.isIgnoreStatsFill()) return false;
 
       let histo = this.getHisto(),
-          data = this.CountStat(),
+          data = this.countStat(),
           print_name = dostat % 10,
           print_entries = Math.floor(dostat / 10) % 10,
           print_mean = Math.floor(dostat / 100) % 10,
@@ -3582,7 +3590,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    /** @summary Draw histogram as bars
      * @private */
-   TH1Painter.prototype.DrawBars = function(height) {
+   TH1Painter.prototype.drawBars = function(height) {
 
       this.createG(true);
 
@@ -3679,7 +3687,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          this.finishTextDrawing();
    }
 
-   TH1Painter.prototype.DrawFilledErrors = function() {
+   /** @summary Draw histogram as filled errors
+     * @private */
+   TH1Painter.prototype.drawFilledErrors = function() {
       this.createG(true);
 
       let left = this.getSelectIndex("x", "left", -1),
@@ -3715,8 +3725,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                  .call(this.fillatt.func);
    }
 
-   /** @summary Draw TH1 bins in SVG element */
-   TH1Painter.prototype.Draw1DBins = function() {
+   /** @summary Draw TH1 bins in SVG element
+     * @private */
+   TH1Painter.prototype.draw1DBins = function() {
 
       this.createHistDrawAttributes();
 
@@ -3727,10 +3738,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           return this.removeG();
 
       if (this.options.Bar)
-         return this.DrawBars(height);
+         return this.drawBars(height);
 
       if ((this.options.ErrorKind === 3) || (this.options.ErrorKind === 4))
-         return this.DrawFilledErrors();
+         return this.drawFilledErrors();
 
       let left = this.getSelectIndex("x", "left", -1),
           right = this.getSelectIndex("x", "right", 2),
@@ -4021,7 +4032,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    }
 
-   TH1Painter.prototype.GetBinTips = function(bin) {
+   /** @summary Provide text information (tooltips) for histogram bin
+     * @private */
+   TH1Painter.prototype.getBinTooltips = function(bin) {
       let tips = [],
           name = this.getObjectHint(),
           pmain = this.getFramePainter(),
@@ -4029,7 +4042,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           x1 = histo.fXaxis.GetBinLowEdge(bin+1),
           x2 = histo.fXaxis.GetBinLowEdge(bin+2),
           cont = histo.getBinContent(bin+1),
-          xlbl = this.GetAxisBinTip("x", histo.fXaxis, bin);
+          xlbl = this.getAxisBinTip("x", histo.fXaxis, bin);
 
       if (name.length > 0) tips.push(name);
 
@@ -4223,7 +4236,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                   x: midx, y: midy, exact: true,
                   color1: this.lineatt ? this.lineatt.color : 'green',
                   color2: this.fillatt ? this.fillatt.getFillColorAlt('blue') : 'blue',
-                  lines: this.GetBinTips(findbin) };
+                  lines: this.getBinTooltips(findbin) };
 
       if (pnt.disabled) {
          // case when tooltip should not highlight bin
@@ -4286,13 +4299,15 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return res;
    }
 
-   TH1Painter.prototype.FillHistContextMenu = function(menu) {
+   /** @summary Fill histogram context menu
+     * @private */
+   TH1Painter.prototype.fillHistContextMenu = function(menu) {
 
-      menu.add("Auto zoom-in", this.AutoZoom);
+      menu.add("Auto zoom-in", () => this.autoZoom());
 
       let sett = jsrp.getDrawSettings("ROOT." + this.getObject()._typename, 'nosame');
 
-      menu.addDrawMenu("Draw with", sett.opts, function(arg) {
+      menu.addDrawMenu("Draw with", sett.opts, arg => {
          if (arg==='inspect')
             return this.showInspector();
 
@@ -4306,7 +4321,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       });
    }
 
-   TH1Painter.prototype.AutoZoom = function() {
+   /** @summary Perform automatic zoom inside non-zero region of histogram
+     * @private */
+   TH1Painter.prototype.autoZoom = function() {
       let left = this.getSelectIndex("x", "left", -1),
           right = this.getSelectIndex("x", "right", 1),
           dist = right - left, histo = this.getHisto();
@@ -4343,6 +4360,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return false;
    }
 
+   /** @summary Call drawing function depending from 3D mode
+     * @private */
    TH1Painter.prototype.callDrawFunc = function(reason) {
 
       let main = this.getMainPainter(),
@@ -4351,14 +4370,15 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
      if ((main !== this) && fp && (fp.mode3d !== this.options.Mode3D))
         this.copyOptionsFrom(main);
 
-      let funcname = this.options.Mode3D ? "Draw3D" : "Draw2D";
+      let funcname = this.options.Mode3D ? "draw3D" : "draw2D";
 
       return this[funcname](reason);
    }
 
    /** @summary Performs 2D drawing of histogram
-     * @returns {Promise} when ready */
-   TH1Painter.prototype.Draw2D = function(/* reason */) {
+     * @returns {Promise} when ready
+     * @private */
+   TH1Painter.prototype.draw2D = function(/* reason */) {
       this.clear3DScene();
 
       this.scanContent(true);
@@ -4367,7 +4387,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          this.drawColorPalette(false);
 
       return this.drawAxes().then(() => {
-         this.Draw1DBins();
+         this.draw1DBins();
          return this.drawHistTitle();
       }).then(() => {
          this.updateStatWebCanvas();
@@ -4375,11 +4395,16 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       });
    }
 
-   TH1Painter.prototype.Draw3D = function(reason) {
+   /** @summary Performs 3D drawing of histogram
+     * @returns {Promise} when ready
+     * @private */
+   TH1Painter.prototype.draw3D = function(reason) {
       this.mode3d = true;
-      return JSROOT.require('hist3d').then(() => this.Draw3D(reason));
+      return JSROOT.require('hist3d').then(() => this.draw3D(reason));
    }
 
+   /** @summary Redraw histogram
+     * @private */
    TH1Painter.prototype.redraw = function(reason) {
       return this.callDrawFunc(reason);
    }
@@ -4405,7 +4430,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       }).then(() => painter.drawNextFunction(0)).then(() => {
 
           if (!painter.options.Mode3D && painter.options.AutoZoom)
-             painter.AutoZoom();
+             painter.autoZoom();
           painter.fillToolbar();
 
           return painter;
@@ -4537,25 +4562,25 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return false;
    }
 
-   TH2Painter.prototype.FillHistContextMenu = function(menu) {
-      // painter automatically bind to menu callbacks
-
+   /** @summary Fill histogram context menu
+     * @private */
+   TH2Painter.prototype.fillHistContextMenu = function(menu) {
       if (!this.isTH2Poly()) {
-         menu.add("sub:Projections", this.toggleProjection);
+         menu.add("sub:Projections", () => this.toggleProjection());
          let kind = this.is_projection || "";
          if (kind) kind += this.projection_width;
          let kinds = ["X1", "X2", "X3", "X5", "X10", "Y1", "Y2", "Y3", "Y5", "Y10"];
          if (this.is_projection) kinds.push("Off");
          for (let k = 0; k < kinds.length; ++k)
-            menu.addchk(kind==kinds[k], kinds[k], kinds[k], this.toggleProjection);
+            menu.addchk(kind==kinds[k], kinds[k], kinds[k], arg => this.toggleProjection(arg));
          menu.add("endsub:");
 
-         menu.add("Auto zoom-in", this.AutoZoom);
+         menu.add("Auto zoom-in", () => this.autoZoom());
       }
 
       let sett = jsrp.getDrawSettings("ROOT." + this.getObject()._typename, 'nosame');
 
-      menu.addDrawMenu("Draw with", sett.opts, function(arg) {
+      menu.addDrawMenu("Draw with", sett.opts, arg => {
          if (arg==='inspect')
             return this.showInspector();
          this.decodeOptions(arg);
@@ -4566,6 +4591,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          this.fillPaletteMenu(menu);
    }
 
+   /** @summary Process click on histogram-defined buttons
+     * @private */
    TH2Painter.prototype.clickButton = function(funcname) {
       if (THistPainter.prototype.clickButton.call(this, funcname)) return true;
 
@@ -4614,7 +4641,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       this.redrawPad();
    }
 
-   TH2Painter.prototype.AutoZoom = function() {
+   /** @summary Perform automatic zoom inside non-zero region of histogram
+     * @private */
+   TH2Painter.prototype.autoZoom = function() {
       if (this.isTH2Poly()) return; // not implemented
 
       let i1 = this.getSelectIndex("x", "left", -1),
@@ -4718,7 +4747,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       }
    }
 
-   TH2Painter.prototype.CountStat = function(cond) {
+   TH2Painter.prototype.countStat = function(cond) {
       let histo = this.getHisto(), xaxis = histo.fXaxis, yaxis = histo.fYaxis,
           stat_sum0 = 0, stat_sumx1 = 0, stat_sumy1 = 0,
           stat_sumx2 = 0, stat_sumy2 = 0,
@@ -4839,12 +4868,12 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return res;
    }
 
-   TH2Painter.prototype.FillStatistic = function(stat, dostat, dofit) {
+   TH2Painter.prototype.fillStatistic = function(stat, dostat, dofit) {
 
       // no need to refill statistic if histogram is dummy
       if (this.isIgnoreStatsFill()) return false;
 
-      let data = this.CountStat(),
+      let data = this.countStat(),
           print_name = Math.floor(dostat % 10),
           print_entries = Math.floor(dostat / 10) % 10,
           print_mean = Math.floor(dostat / 100) % 10,
@@ -4899,8 +4928,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    TH2Painter.prototype.DrawBinsColor = function() {
       let histo = this.getHisto(),
-          handle = this.PrepareColorDraw(),
-          cntr = this.GetContour(),
+          handle = this.prepareColorDraw(),
+          cntr = this.getContour(),
           palette = this.getHistPalette(),
           entries = [],
           skip_zero = !this.options.Zero,
@@ -5174,11 +5203,11 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    /** @summary Draw histogram bins as contour */
    TH2Painter.prototype.DrawBinsContour = function() {
-      let handle = this.PrepareColorDraw({ rounding: false, extra: 100, original: this.options.Proj != 0 }),
+      let handle = this.prepareColorDraw({ rounding: false, extra: 100, original: this.options.Proj != 0 }),
           main = this.getFramePainter(),
           frame_w = main.getFrameWidth(),
           frame_h = main.getFrameHeight(),
-          levels = this.GetContourLevels(),
+          levels = this.getContourLevels(),
           palette = this.getHistPalette(),
           func = main.getProjectionFunc();
 
@@ -5412,7 +5441,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       this.minbin = this.gminbin;
       this.minposbin = this.gminposbin;
 
-      let cntr = this.GetContour(true), palette = this.getHistPalette();
+      let cntr = this.getContour(true), palette = this.getHistPalette();
 
       for (i = 0; i < len; ++ i) {
          bin = histo.fBins.arr[i];
@@ -5493,7 +5522,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           show_err = (this.options.TextKind == "E"),
           use_latex = (show_err && !this.options.TextLine) ? 1 : 0;
 
-      if (handle===null) handle = this.PrepareColorDraw({ rounding: false });
+      if (handle===null) handle = this.prepareColorDraw({ rounding: false });
 
       if ((histo.fMarkerSize!==1) && text_angle)
          text_size = Math.round(0.02*histo.fMarkerSize*this.getFramePainter().getFrameHeight());
@@ -5552,7 +5581,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       let histo = this.getObject(), cmd = "",
           i,j, dn = 1e-30, dx, dy, xc,yc,
           dxn,dyn,x1,x2,y1,y2, anr,si,co,
-          handle = this.PrepareColorDraw({ rounding: false }),
+          handle = this.prepareColorDraw({ rounding: false }),
           scale_x = (handle.grx[handle.i2] - handle.grx[handle.i1])/(handle.i2 - handle.i1 + 1-0.03)/2,
           scale_y = (handle.gry[handle.j2] - handle.gry[handle.j1])/(handle.j2 - handle.j1 + 1-0.03)/2;
 
@@ -5617,7 +5646,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    TH2Painter.prototype.DrawBinsBox = function() {
 
       let histo = this.getObject(),
-          handle = this.PrepareColorDraw({ rounding: false }),
+          handle = this.prepareColorDraw({ rounding: false }),
           main = this.getMainPainter();
 
       if (main===this) {
@@ -5731,7 +5760,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    TH2Painter.prototype.DrawCandle = function() {
       let histo = this.getHisto(),
-          handle = this.PrepareColorDraw(),
+          handle = this.prepareColorDraw(),
           pmain = this.getFramePainter(), // used for axis values conversions
           w = pmain.getFrameWidth(),
           i, j, y, sum1, cont, center, counter, integral, pnt,
@@ -5844,7 +5873,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    TH2Painter.prototype.DrawBinsScatter = function() {
       let histo = this.getObject(),
-          handle = this.PrepareColorDraw({ rounding: true, pixel_density: true }),
+          handle = this.prepareColorDraw({ rounding: true, pixel_density: true }),
           colPaths = [], currx = [], curry = [], cell_w = [], cell_h = [],
           colindx, cmd1, cmd2, i, j, binz, cw, ch, factor = 1.,
           scale = this.options.ScatCoef * ((this.gmaxbin) > 2000 ? 2000. / this.gmaxbin : 1.);
@@ -6017,16 +6046,17 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       this.tt_handle = handle;
    }
 
-   /** @summary Return text information about histogram bin */
-   TH2Painter.prototype.GetBinTips = function (i, j) {
-      let lines = [], pmain = this.getFramePainter(),
+   /** @summary Provide text information (tooltips) for histogram bin
+     * @private */
+   TH2Painter.prototype.getBinTooltips = function (i, j) {
+      let lines = [],
           histo = this.getHisto(),
           binz = histo.getBinContent(i+1,j+1)
 
       lines.push(this.getObjectHint());
 
-      lines.push("x = " + this.GetAxisBinTip("x", histo.fXaxis, i));
-      lines.push("y = " + this.GetAxisBinTip("y", histo.fYaxis, j));
+      lines.push("x = " + this.getAxisBinTip("x", histo.fXaxis, i));
+      lines.push("y = " + this.getAxisBinTip("y", histo.fYaxis, j));
 
       lines.push("bin = " + i + ", " + j);
 
@@ -6290,7 +6320,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          } else if (h.hide_only_zeros) {
             colindx = (binz === 0) && !this._show_empty_bins ? null : 0;
          } else {
-            colindx = this.GetContour().getPaletteIndex(this.getHistPalette(), binz);
+            colindx = this.getContour().getPaletteIndex(this.getHistPalette(), binz);
             if ((colindx === null) && (binz === 0) && this._show_empty_bins) colindx = 0;
          }
       }
@@ -6304,7 +6334,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                   x: pnt.x, y: pnt.y,
                   color1: this.lineatt ? this.lineatt.color : 'green',
                   color2: this.fillatt ? this.fillatt.getFillColorAlt('blue') : "blue",
-                  lines: this.GetBinTips(i, j), exact: true, menu: true };
+                  lines: this.getBinTooltips(i, j), exact: true, menu: true };
 
       if (this.options.Color) res.color2 = this.getHistPalette().getColor(colindx);
 
@@ -6369,9 +6399,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return !obj || (obj.FindBin(max,0.5) - obj.FindBin(min,0) > 1);
    }
 
-   /** @summary Make 2D drawing for histogram
-     * @returns {Promise} */
-   TH2Painter.prototype.Draw2D = function(/* reason */) {
+   /** @summary Performs 2D drawing of histogram
+     * @returns {Promise} when ready
+     * @private */
+   TH2Painter.prototype.draw2D = function(/* reason */) {
 
       this.clear3DScene();
 
@@ -6396,11 +6427,16 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       });
    }
 
-   TH2Painter.prototype.Draw3D = function(reason) {
+   /** @summary Performs 3D drawing of histogram
+     * @returns {Promise} when ready
+     * @private */
+   TH2Painter.prototype.draw3D = function(reason) {
       this.mode3d = true;
-      return JSROOT.require('hist3d').then(() => this.Draw3D(reason));
+      return JSROOT.require('hist3d').then(() => this.draw3D(reason));
    }
 
+   /** @summary Call drawing function depending from 3D mode
+     * @private */
    TH2Painter.prototype.callDrawFunc = function(reason) {
 
       let main = this.getMainPainter(),
@@ -6409,10 +6445,12 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
      if ((main !== this) && fp && (fp.mode3d !== this.options.Mode3D))
         this.copyOptionsFrom(main);
 
-      let funcname = this.options.Mode3D ? "Draw3D" : "Draw2D";
+      let funcname = this.options.Mode3D ? "draw3D" : "draw2D";
       return this[funcname](reason);
    }
 
+   /** @summary Redraw histogram
+     * @private */
    TH2Painter.prototype.redraw = function(reason) {
       return this.callDrawFunc(reason);
    }
@@ -6451,7 +6489,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       }).then(() => painter.drawNextFunction(0)).then(()=> {
 
          if (!painter.Mode3D && painter.options.AutoZoom)
-            painter.AutoZoom();
+            painter.autoZoom();
 
          painter.fillToolbar();
          if (painter.options.Project && !painter.mode3d)

@@ -4512,7 +4512,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return (zindx < 0) ? "" : this.getColor(zindx);
       },
 
-      GetContour: function() {
+      getContour: function() {
          return this.fContour && (this.fContour.length > 1) ? this.fContour : null;
       },
 
@@ -4627,7 +4627,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    RPalettePainter.prototype.DrawPalette = function(after_resize) {
 
       let palette = this.getHistPalette(),
-          contour = palette.GetContour(),
+          contour = palette.getContour(),
           framep = this.getFramePainter();
 
       if (!contour)
