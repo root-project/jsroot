@@ -3044,7 +3044,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
    TEfficiencyPainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
 
-   TEfficiencyPainter.prototype.GetEfficiency = function(bin) {
+   /** @summary Caluclate efficiency */
+   TEfficiencyPainter.prototype.getEfficiency = function(bin) {
       let obj = this.getObject(),
           total = obj.fTotalHistogram.getBinContent(bin),
           passed = obj.fPassedHistogram.getBinContent(bin);
@@ -3063,13 +3064,15 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    }
 */
 
+   /** @summary Caluclate normal
+     * @private */
    TEfficiencyPainter.prototype.Normal = function(total,passed,level,bUpper) {
       if (total == 0) return bUpper ? 1 : 0;
 
       let alpha = (1.0 - level)/2,
           average = passed / total,
           sigma = Math.sqrt(average * (1 - average) / total),
-         delta = JSROOT.Math.normal_quantile(1 - alpha,sigma);
+          delta = JSROOT.Math.normal_quantile(1 - alpha,sigma);
 
       if(bUpper)
          return ((average + delta) > 1) ? 1.0 : (average + delta);
@@ -3077,44 +3080,44 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       return ((average - delta) < 0) ? 0.0 : (average - delta);
    }
 
-   TEfficiencyPainter.prototype.GetEfficiencyErrorLow = function(bin) {
+   /** @summary Caluclate efficiency error low
+     * @private */
+   TEfficiencyPainter.prototype.getEfficiencyErrorLow = function(bin) {
       let obj = this.getObject(),
           total = obj.fTotalHistogram.getBinContent(bin),
           passed = obj.fPassedHistogram.getBinContent(bin),
-          eff = this.GetEfficiency(bin);
+          eff = this.getEfficiency(bin);
 
       return eff - this[this.fBoundary](total,passed, obj.fConfLevel, false);
    }
 
-   TEfficiencyPainter.prototype.GetEfficiencyErrorUp = function(bin) {
+   /** @summary Caluclate efficiency error low up
+     * @private */
+   TEfficiencyPainter.prototype.getEfficiencyErrorUp = function(bin) {
       let obj = this.getObject(),
           total = obj.fTotalHistogram.getBinContent(bin),
           passed = obj.fPassedHistogram.getBinContent(bin),
-          eff = this.GetEfficiency(bin);
+          eff = this.getEfficiency(bin);
 
-      return this[this.fBoundary]( total, passed, obj.fConfLevel, true) - eff;
+      return this[this.fBoundary](total, passed, obj.fConfLevel, true) - eff;
    }
 
-   TEfficiencyPainter.prototype.CreateGraph = function() {
-      let gr = JSROOT.create('TGraphAsymmErrors');
-      gr.fName = "eff_graph";
-      return gr;
-   }
-
-   TEfficiencyPainter.prototype.FillGraph = function(gr, opt) {
+   /** @summary Fill graph with points from efficiency object
+     * @private */
+   TEfficiencyPainter.prototype.fillGraph = function(gr, opt) {
       let eff = this.getObject(),
           npoints = eff.fTotalHistogram.fXaxis.fNbins,
           option = opt.toLowerCase(),
           plot0Bins = false, j = 0;
-      if (option.indexOf("e0")>=0) plot0Bins = true;
+      if (option.indexOf("e0") >= 0) plot0Bins = true;
       for (let n=0;n<npoints;++n) {
          if (!plot0Bins && eff.fTotalHistogram.getBinContent(n+1) === 0) continue;
          gr.fX[j] = eff.fTotalHistogram.fXaxis.GetBinCenter(n+1);
-         gr.fY[j] = this.GetEfficiency(n+1);
+         gr.fY[j] = this.getEfficiency(n+1);
          gr.fEXlow[j] = eff.fTotalHistogram.fXaxis.GetBinCenter(n+1) - eff.fTotalHistogram.fXaxis.GetBinLowEdge(n+1);
          gr.fEXhigh[j] = eff.fTotalHistogram.fXaxis.GetBinLowEdge(n+2) - eff.fTotalHistogram.fXaxis.GetBinCenter(n+1);
-         gr.fEYlow[j] = this.GetEfficiencyErrorLow(n+1);
-         gr.fEYhigh[j] = this.GetEfficiencyErrorUp(n+1);
+         gr.fEYlow[j] = this.getEfficiencyErrorLow(n+1);
+         gr.fEYhigh[j] = this.getEfficiencyErrorUp(n+1);
          ++j;
       }
       gr.fNpoints = j;
@@ -3127,8 +3130,9 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       let painter = new TEfficiencyPainter(divid, eff);
       painter.options = opt;
 
-      let gr = painter.CreateGraph();
-      painter.FillGraph(gr, opt);
+      let gr = JSROOT.create('TGraphAsymmErrors');
+      gr.fName = "eff_graph";
+      painter.fillGraph(gr, opt);
 
       return JSROOT.draw(divid, gr, opt)
                    .then(() => {
@@ -3159,11 +3163,13 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
    TMultiGraphPainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
 
+   /** @summary Cleanup multigraph painter */
    TMultiGraphPainter.prototype.cleanup = function() {
       this.painters = [];
       JSROOT.ObjectPainter.prototype.cleanup.call(this);
    }
 
+   /** @summary Update multigraph object */
    TMultiGraphPainter.prototype.updateObject = function(obj) {
       if (!this.matchObjectType(obj)) return false;
 
@@ -3177,7 +3183,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       if (this.firstpainter) {
          let histo = obj.fHistogram;
          if (this.autorange && !histo)
-            histo = this.ScanGraphsRange(graphs);
+            histo = this.scanGraphsRange(graphs);
 
          if (this.firstpainter.updateObject(histo)) isany = true;
       }
@@ -3198,35 +3204,36 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       return isany;
    }
 
-   TMultiGraphPainter.prototype.ComputeGraphRange = function(res, gr) {
-      // Compute the x/y range of the points in this graph
-      if (gr.fNpoints == 0) return;
-      if (res.first) {
-         res.xmin = res.xmax = gr.fX[0];
-         res.ymin = res.ymax = gr.fY[0];
-         res.first = false;
-      }
-      for (let i=0; i < gr.fNpoints; ++i) {
-         res.xmin = Math.min(res.xmin, gr.fX[i]);
-         res.xmax = Math.max(res.xmax, gr.fX[i]);
-         res.ymin = Math.min(res.ymin, gr.fY[i]);
-         res.ymax = Math.max(res.ymax, gr.fY[i]);
-      }
-      return res;
-   }
-
-   TMultiGraphPainter.prototype.padtoX = function(pad, x) {
-      // Convert x from pad to X.
-      if (pad.fLogx && (x < 50))
-         return Math.exp(2.302585092994 * x);
-      return x;
-   }
-
-   TMultiGraphPainter.prototype.ScanGraphsRange = function(graphs, histo, pad) {
+   /** @summary Scan graphs range
+     * @returns {object} histogram for axes drawing
+     * @private */
+   TMultiGraphPainter.prototype.scanGraphsRange = function(graphs, histo, pad) {
       let mgraph = this.getObject(),
           maximum, minimum, dx, dy, uxmin = 0, uxmax = 0, logx = false, logy = false,
           time_display = false, time_format = "",
           rw = {  xmin: 0, xmax: 0, ymin: 0, ymax: 0, first: true };
+
+      function computeGraphRange(res, gr) {
+         if (gr.fNpoints == 0) return;
+         if (res.first) {
+            res.xmin = res.xmax = gr.fX[0];
+            res.ymin = res.ymax = gr.fY[0];
+            res.first = false;
+         }
+         for (let i=0; i < gr.fNpoints; ++i) {
+            res.xmin = Math.min(res.xmin, gr.fX[i]);
+            res.xmax = Math.max(res.xmax, gr.fX[i]);
+            res.ymin = Math.min(res.ymin, gr.fY[i]);
+            res.ymax = Math.max(res.ymax, gr.fY[i]);
+         }
+         return res;
+      }
+
+      function padtoX(x) {
+         if (pad.fLogx && (x < 50))
+            return Math.exp(2.302585092994 * x);
+         return x;
+      }
 
       if (pad) {
          logx = pad.fLogx;
@@ -3241,14 +3248,14 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          minimum = histo.fYaxis.fXmin;
          maximum = histo.fYaxis.fXmax;
          if (pad) {
-            uxmin = this.padtoX(pad, rw.xmin);
-            uxmax = this.padtoX(pad, rw.xmax);
+            uxmin = padtoX(rw.xmin);
+            uxmax = padtoX(rw.xmax);
          }
       } else {
          this.autorange = true;
 
          for (let i = 0; i < graphs.arr.length; ++i)
-            this.ComputeGraphRange(rw, graphs.arr[i]);
+            computeGraphRange(rw, graphs.arr[i]);
 
          if (graphs.arr[0] && graphs.arr[0].fHistogram && graphs.arr[0].fHistogram.fXaxis.fTimeDisplay) {
             time_display = true;
@@ -3314,7 +3321,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       let mgraph = this.getObject(),
           pp = this.getPadPainter(),
-          histo = this.ScanGraphsRange(mgraph.fGraphs, mgraph.fHistogram, pp ? pp.getRootPad(true) : null);
+          histo = this.scanGraphsRange(mgraph.fGraphs, mgraph.fHistogram, pp ? pp.getRootPad(true) : null);
 
       // histogram painter will be first in the pad, will define axis and
       // interactive actions
@@ -3576,13 +3583,16 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
    TASImagePainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
 
+   /** @summary Decode options string  */
    TASImagePainter.prototype.decodeOptions = function(opt) {
       this.options = { Zscale: false };
 
       if (opt && (opt.indexOf("z") >= 0)) this.options.Zscale = true;
    }
 
-   TASImagePainter.prototype.CreateRGBA = function(nlevels) {
+   /** @summary Create RGBA buffers
+     * @private */
+   TASImagePainter.prototype.createRGBA = function(nlevels) {
       let obj = this.getObject();
 
       if (!obj || !obj.fPalette) return null;
@@ -3605,6 +3615,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       return rgba;
    }
 
+   /** @summary Draw image
+     * @private */
    TASImagePainter.prototype.drawImage = function() {
       let obj = this.getObject(),
           is_buf = false,
@@ -3660,7 +3672,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          is_buf = true;
 
          let nlevels = 1000;
-         this.rgba = this.CreateRGBA(nlevels); // precaclucated colors
+         this.rgba = this.createRGBA(nlevels); // precaclucated colors
 
          let min = obj.fImgBuf[0], max = obj.fImgBuf[0];
          for (let k=1;k<obj.fImgBuf.length;++k) {
@@ -3795,7 +3807,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       return false;
    }
 
-   /** @summary Draw color palette */
+   /** @summary Draw color palette
+     * @private */
    TASImagePainter.prototype.drawColorPalette = function(enabled, can_move) {
 
       if (!this.isMainPainter())
@@ -3853,6 +3866,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       }
    }
 
+   /** @summary Toggle colz draw option
+     * @private */
    TASImagePainter.prototype.toggleColz = function() {
       let obj = this.getObject(),
           can_toggle = obj && obj.fPalette;
@@ -3863,6 +3878,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       }
    }
 
+   /** @summary Redraw image
+     * @private */
    TASImagePainter.prototype.redraw = function(reason) {
       let img = this.draw_g ? this.draw_g.select("image") : null,
           fp = this.getFramePainter();
