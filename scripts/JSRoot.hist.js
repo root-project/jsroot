@@ -6663,6 +6663,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    THStackPainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
 
+   /** @summary Cleanup THStack painter */
    THStackPainter.prototype.cleanup = function() {
       let pp = this.getPadPainter();
       if (pp) pp.cleanPrimitives(objp => { return (objp === this.firstpainter) || (this.painters.indexOf(objp) >= 0); });
@@ -6671,16 +6672,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       JSROOT.ObjectPainter.prototype.cleanup.call(this);
    }
 
-   THStackPainter.prototype.HasErrors = function(hist) {
-      if (hist.fSumw2 && (hist.fSumw2.length > 0))
-         for (let n=0;n<hist.fSumw2.length;++n)
-            if (hist.fSumw2[n] > 0) return true;
-      return false;
-   }
-
    /** @summary Build sum of all histograms
-     * @desc Build a separate list fStack containing the running sum of all histograms  */
-   THStackPainter.prototype.BuildStack = function(stack) {
+     * @desc Build a separate list fStack containing the running sum of all histograms
+     * @private */
+   THStackPainter.prototype.buildStack = function(stack) {
       if (!stack.fHists) return false;
       let nhists = stack.fHists.arr.length;
       if (nhists <= 0) return false;
@@ -6709,54 +6704,57 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return true;
    }
 
-   THStackPainter.prototype.GetHistMinMax = function(hist, witherr) {
-      let res = { min : 0, max : 0 },
-          domin = true, domax = true;
-      if (hist.fMinimum !== -1111) {
-         res.min = hist.fMinimum;
-         domin = false;
-      }
-      if (hist.fMaximum !== -1111) {
-         res.max = hist.fMaximum;
-         domax = false;
-      }
-
-      if (!domin && !domax) return res;
-
-      let i1 = 1, i2 = hist.fXaxis.fNbins, j1 = 1, j2 = 1, first = true;
-
-      if (hist.fXaxis.TestBit(JSROOT.EAxisBits.kAxisRange)) {
-         i1 = hist.fXaxis.fFirst;
-         i2 = hist.fXaxis.fLast;
-      }
-
-      if (hist._typename.indexOf("TH2")===0) {
-         j2 = hist.fYaxis.fNbins;
-         if (hist.fYaxis.TestBit(JSROOT.EAxisBits.kAxisRange)) {
-            j1 = hist.fYaxis.fFirst;
-            j2 = hist.fYaxis.fLast;
-         }
-      }
-      for (let j=j1; j<=j2;++j)
-         for (let i=i1; i<=i2;++i) {
-            let val = hist.getBinContent(i, j),
-                err = witherr ? hist.getBinError(hist.getBin(i,j)) : 0;
-            if (domin && (first || (val-err < res.min))) res.min = val-err;
-            if (domax && (first || (val+err > res.max))) res.max = val+err;
-            first = false;
-        }
-
-      return res;
-   }
-
-   THStackPainter.prototype.GetMinMax = function(iserr, pad) {
+   /** @summary Returns stack min/max values
+     * @private */
+   THStackPainter.prototype.getMinMax = function(iserr) {
       let res = { min: 0, max: 0 },
-          stack = this.getObject();
+          stack = this.getObject(),
+          pad = this.getPadPainter().getRootPad(true);
+
+      function getHistMinMax(hist, witherr) {
+         let res = { min: 0, max: 0 },
+             domin = true, domax = true;
+         if (hist.fMinimum !== -1111) {
+            res.min = hist.fMinimum;
+            domin = false;
+         }
+         if (hist.fMaximum !== -1111) {
+            res.max = hist.fMaximum;
+            domax = false;
+         }
+
+         if (!domin && !domax) return res;
+
+         let i1 = 1, i2 = hist.fXaxis.fNbins, j1 = 1, j2 = 1, first = true;
+
+         if (hist.fXaxis.TestBit(JSROOT.EAxisBits.kAxisRange)) {
+            i1 = hist.fXaxis.fFirst;
+            i2 = hist.fXaxis.fLast;
+         }
+
+         if (hist._typename.indexOf("TH2")===0) {
+            j2 = hist.fYaxis.fNbins;
+            if (hist.fYaxis.TestBit(JSROOT.EAxisBits.kAxisRange)) {
+               j1 = hist.fYaxis.fFirst;
+               j2 = hist.fYaxis.fLast;
+            }
+         }
+         for (let j=j1; j<=j2;++j)
+            for (let i=i1; i<=i2;++i) {
+               let val = hist.getBinContent(i, j),
+                   err = witherr ? hist.getBinError(hist.getBin(i,j)) : 0;
+               if (domin && (first || (val-err < res.min))) res.min = val-err;
+               if (domax && (first || (val+err > res.max))) res.max = val+err;
+               first = false;
+           }
+
+         return res;
+      }
 
       if (this.options.nostack) {
          for (let i = 0; i < stack.fHists.arr.length; ++i) {
-            let resh = this.GetHistMinMax(stack.fHists.arr[i], iserr);
-            if (i==0) {
+            let resh = getHistMinMax(stack.fHists.arr[i], iserr);
+            if (i == 0) {
                res = resh;
              } else {
                res.min = Math.min(res.min, resh.min);
@@ -6764,8 +6762,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             }
          }
       } else {
-         res.min = this.GetHistMinMax(stack.fStack.arr[0], iserr).min;
-         res.max = this.GetHistMinMax(stack.fStack.arr[stack.fStack.arr.length-1], iserr).max;
+         res.min = getHistMinMax(stack.fStack.arr[0], iserr).min;
+         res.max = getHistMinMax(stack.fStack.arr[stack.fStack.arr.length-1], iserr).max;
       }
 
       if (stack.fMaximum != -1111) res.max = stack.fMaximum;
@@ -6786,7 +6784,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return res;
    }
 
-   /** @summary Draw next stack histogram */
+   /** @summary Draw next stack histogram
+     * @private */
    THStackPainter.prototype.drawNextHisto = function(indx) {
 
       let stack = this.getObject(),
@@ -6826,6 +6825,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       });
    }
 
+   /** @summary Decode draw options of THStack painter
+     * @private */
    THStackPainter.prototype.decodeOptions = function(opt) {
       if (!this.options) this.options = {};
       JSROOT.extend(this.options, { ndim: 1, nostack: false, same: false, horder: true, has_errors: false, draw_errors: false, hopt: "" });
@@ -6833,14 +6834,20 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       let stack = this.getObject(),
           hist = stack.fHistogram || (stack.fHists ? stack.fHists.arr[0] : null) || (stack.fStack ? stack.fStack.arr[0] : null);
 
+      function HasErrors(hist) {
+         if (hist.fSumw2 && (hist.fSumw2.length > 0))
+            for (let n=0;n<hist.fSumw2.length;++n)
+               if (hist.fSumw2[n] > 0) return true;
+         return false;
+      }
+
       if (hist && (hist._typename.indexOf("TH2")==0)) this.options.ndim = 2;
 
       if ((this.options.ndim==2) && !opt) opt = "lego1";
 
-      if (stack.fHists && !this.options.nostack) {
+      if (stack.fHists && !this.options.nostack)
          for (let k = 0; k < stack.fHists.arr.length; ++k)
-            this.options.has_errors = this.options.has_errors || this.HasErrors(stack.fHists.arr[k]);
-      }
+            this.options.has_errors = this.options.has_errors || HasErrors(stack.fHists.arr[k]);
 
       let d = new JSROOT.DrawOptions(opt);
 
@@ -6864,6 +6871,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       this.options.horder = this.options.nostack || dolego;
    }
 
+   /** @summary Create main histogram for THStack axis drawing
+     * @private */
    THStackPainter.prototype.createHistogram = function(stack) {
       let histos = stack.fHists,
           numhistos = histos ? histos.arr.length : 0;
@@ -6912,7 +6921,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       stack.fTitle = obj.fTitle;
 
       if (!this.options.nostack)
-         this.options.nostack = !this.BuildStack(stack);
+         this.options.nostack = !this.buildStack(stack);
 
       if (this.firstpainter) {
          let src = obj.fHistogram;
@@ -6921,7 +6930,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          this.firstpainter.updateObject(src);
 
-         let mm = this.GetMinMax(this.options.errors || this.options.draw_errors, this.getPadPainter().getRootPad(true));
+         let mm = this.getMinMax(this.options.errors || this.options.draw_errors);
 
          this.firstpainter.options.minimum = mm.min;
          this.firstpainter.options.maximum = mm.max;
@@ -6978,14 +6987,14 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          painter.decodeOptions(opt);
 
          if (!painter.options.nostack)
-             painter.options.nostack = ! painter.BuildStack(stack);
+             painter.options.nostack = !painter.buildStack(stack);
 
          if (painter.options.same) return;
 
          if (!stack.fHistogram)
              stack.fHistogram = painter.createHistogram(stack);
 
-         let mm = painter.GetMinMax(painter.options.errors || painter.options.draw_errors,  painter.getPadPainter().getRootPad(true));
+         let mm = painter.getMinMax(painter.options.errors || painter.options.draw_errors);
 
          let hopt = painter.options.hopt + " axis";
          // if (mm && (!this.options.nostack || (hist.fMinimum==-1111 && hist.fMaximum==-1111))) hopt += ";minimum:" + mm.min + ";maximum:" + mm.max;
