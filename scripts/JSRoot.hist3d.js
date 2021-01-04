@@ -388,8 +388,8 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
       if (changed) this.Render3D();
 
-      if (changed && tip.$painter && (typeof tip.$painter.RedrawProjection == 'function'))
-         tip.$painter.RedrawProjection(tip.ix-1, tip.ix, tip.iy-1, tip.iy);
+      if (changed && tip.$painter && (typeof tip.$painter.redrawProjection == 'function'))
+         tip.$painter.redrawProjection(tip.ix-1, tip.ix, tip.iy-1, tip.iy);
 
       if (changed && mainp && mainp.getObject())
          mainp.provideUserTooltip({ obj: mainp.getObject(),  name: mainp.getObject().fName,
@@ -1536,7 +1536,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
           palette = this.getHistPalette(),
           layerz = 2*main.size_z3d, pnts = [];
 
-      this.BuildContour(handle, levels, palette,
+      this.buildContour(handle, levels, palette,
          function(colindx,xp,yp,iminus,iplus,ilevel) {
              // ignore less than three points
              if (iplus - iminus < 3) return;
@@ -1900,7 +1900,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
              palette = this.getHistPalette(),
              lastcolindx = -1, layerz = 2*main.size_z3d;
 
-         this.BuildContour(handle, levels, palette,
+         this.buildContour(handle, levels, palette,
             function(colindx,xp,yp,iminus,iplus) {
                 // no need for duplicated point
                 if ((xp[iplus] === xp[iminus]) && (yp[iplus] === yp[iminus])) iplus--;
@@ -2244,7 +2244,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
               bin: this.bins_index,
               value: bin.fContent,
               color: this.tip_color,
-              lines: p.ProvidePolyBinHints(this.bins_index)
+              lines: p.getPolyBinTooltips(this.bins_index)
             };
 
             return tip;
