@@ -133,7 +133,7 @@ JSROOT.define(['painter', 'v7gpad'], (jsrp) => {
          this.drawText({ latex: 1, width: 0.75*width - 3*margin_x, height: stepy, x: 2*margin_x + width*0.25, y: posy, text: entry.fLabel });
 
          if (entry.fDrawableId != "custom") {
-            objp = pp.FindSnap(entry.fDrawableId, true);
+            objp = pp.findSnap(entry.fDrawableId, true);
          } else if (entry.fDrawable.fIO) {
             objp = new JSROOT.ObjectPainter(this.getDom(), entry.fDrawable.fIO);
             if (entry.fLine) objp.createv7AttLine();

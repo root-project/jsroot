@@ -2676,7 +2676,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       let svg_can = this.getCanvSvg(),
           pad_enlarged = svg_can.property("pad_enlarged");
 
-      if (this.iscan || !this.has_canvas || (!pad_enlarged && !this.HasObjectsToDraw() && !this.painters)) {
+      if (this.iscan || !this.has_canvas || (!pad_enlarged && !this.hasObjectsToDraw() && !this.painters)) {
          if (this._fixed_size) return; // canvas cannot be enlarged in such mode
          if (!this.enlargeMain('toggle')) return;
          if (this.enlargeMain('state')=='off') svg_can.property("pad_enlarged", null);
@@ -2803,34 +2803,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return pad_visible;
    }
 
-   RPadPainter.prototype.RemovePrimitive = function(obj) {
-      if (!this.pad || !this.pad.fPrimitives) return;
-      let indx = this.pad.fPrimitives.arr.indexOf(obj);
-      if (indx>=0) this.pad.fPrimitives.RemoveAt(indx);
-   }
-
-   RPadPainter.prototype.FindPrimitive = function(exact_obj, classname, name) {
-      if (!this.pad || !this.pad.fPrimitives) return null;
-
-      for (let i=0; i < this.pad.fPrimitives.arr.length; i++) {
-         let obj = this.pad.fPrimitives.arr[i];
-
-         if ((exact_obj!==null) && (obj !== exact_obj)) continue;
-
-         if ((classname !== undefined) && (classname !== null))
-            if (obj._typename !== classname) continue;
-
-         if ((name !== undefined) && (name !== null))
-            if (obj.fName !== name) continue;
-
-         return obj;
-      }
-
-      return null;
-   }
-
    /** @summary returns true if any objects beside sub-pads exists in the pad */
-   RPadPainter.prototype.HasObjectsToDraw = function() {
+   RPadPainter.prototype.hasObjectsToDraw = function() {
 
       let arr = this.pad ? this.pad.fPrimitives : null;
 
@@ -2841,8 +2815,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return false;
    }
 
-   /** @summary Draw pad primitives */
-   RPadPainter.prototype.DrawPrimitives = function(indx) {
+   /** @summary Draw pad primitives
+     * @private */
+   RPadPainter.prototype.drawPrimitives = function(indx) {
 
       if (!indx) {
          indx = 0;
@@ -2875,7 +2850,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (ppainter && (typeof ppainter == 'object'))
             ppainter._primitive = true;
 
-         return this.DrawPrimitives(indx+1);
+         return this.drawPrimitives(indx+1);
       });
    }
 
@@ -2885,13 +2860,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       // first count - how many processors are there
       if (this.painters !== null)
          this.painters.forEach(obj => {
-            if ('ProcessTooltip' in obj) painters.push(obj);
+            if (typeof obj.processTooltipEvent == 'function') painters.push(obj);
          });
 
       if (pnt) pnt.nproc = painters.length;
 
       painters.forEach(obj => {
-         let hint = obj.ProcessTooltip(pnt);
+         let hint = obj.processTooltipEvent(pnt);
          if (!hint) hint = { user_info: null };
          hints.push(hint);
          if (hint && pnt && pnt.painters) hint.painter = obj;
@@ -2950,7 +2925,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (this.ToggleEventStatus)
          menu.addchk(this.HasEventStatus(), "Event status", this.ToggleEventStatus.bind(this));
 
-      if (this.enlargeMain() || (this.has_canvas && this.HasObjectsToDraw()))
+      if (this.enlargeMain() || (this.has_canvas && this.hasObjectsToDraw()))
          menu.addchk((this.enlargeMain('state')=='on'), "Enlarge " + (this.iscan ? "canvas" : "pad"), () => this.enlargePad());
 
       let fname = this.this_pad_name;
@@ -3014,29 +2989,20 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
    }
 
-   RPadPainter.prototype.NumDrawnSubpads = function() {
-      if (!this.painters) return 0;
-
-      let num = 0;
-
-      for (let i = 0; i < this.painters.length; ++i)
-         if (this.painters[i] instanceof RPadPainter)
-            num++;
-
-      return num;
-   }
-
-   RPadPainter.prototype.RedrawByResize = function() {
+   /** @summary Checks if pad should be redrawn by resize
+     * @private */
+   RPadPainter.prototype.needRedrawByResize = function() {
       let elem = this.svg_this_pad();
       if (!elem.empty() && elem.property('can3d') === JSROOT.constants.Embed3D.Overlay) return true;
 
       for (let i = 0; i < this.painters.length; ++i)
-         if (typeof this.painters[i].RedrawByResize === 'function')
-            if (this.painters[i].RedrawByResize()) return true;
+         if (typeof this.painters[i].needRedrawByResize === 'function')
+            if (this.painters[i].needRedrawByResize()) return true;
 
       return false;
    }
 
+   /** @summary Check resize of canvas */
    RPadPainter.prototype.checkCanvasResize = function(size, force) {
 
       if (!this.iscan && this.has_canvas) return false;
@@ -3045,7 +3011,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if (size && (typeof size === 'object') && size.force) force = true;
 
-      if (!force) force = this.RedrawByResize();
+      if (!force) force = this.needRedrawByResize();
 
       let changed = this.createCanvasSvg(force ? 2 : 1, size);
 
@@ -3076,8 +3042,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
 
-   /** @summary Add object painter to list of primitives */
-   RPadPainter.prototype.AddObjectPainter = function(objpainter, lst, indx) {
+   /** @summary Add object painter to list of primitives
+     * @private */
+   RPadPainter.prototype.addObjectPainter = function(objpainter, lst, indx) {
       if (objpainter && lst && lst[indx] && (objpainter.snapid === undefined)) {
          // keep snap id in painter, will be used for the
          if (this.painters.indexOf(objpainter) < 0)
@@ -3090,7 +3057,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Function called when drawing next snapshot from the list
      * @returns {Promise} with pad painter when ready
      * @private */
-   RPadPainter.prototype.DrawNextSnap = function(lst, indx) {
+   RPadPainter.prototype.drawNextSnap = function(lst, indx) {
 
       if (indx===undefined) {
          indx = -1;
@@ -3119,7 +3086,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this._snaps_map[snapid] = cnt; // check how many objects with same snapid drawn, use them again
 
       // empty object, no need to do something, take next
-      if (snap.fDummy) return this.DrawNextSnap(lst, indx);
+      if (snap.fDummy) return this.drawNextSnap(lst, indx);
 
       // first appropriate painter for the object
       // if same object drawn twice, two painters will exists
@@ -3131,15 +3098,15 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (objpainter) {
 
          if (snap._typename == "ROOT::Experimental::RPadDisplayItem")  // subpad
-            return objpainter.RedrawPadSnap(snap).then(ppainter => {
-               this.AddObjectPainter(ppainter, lst, indx);
-               return this.DrawNextSnap(lst, indx);
+            return objpainter.redrawPadSnap(snap).then(ppainter => {
+               this.addObjectPainter(ppainter, lst, indx);
+               return this.drawNextSnap(lst, indx);
             });
 
          if (objpainter.updateObject(snap.fDrawable || snap.fObject || snap, snap.fOption || ""))
             objpainter.redraw();
 
-         return this.DrawNextSnap(lst, indx); // call next
+         return this.drawNextSnap(lst, indx); // call next
       }
 
       if (snap._typename == "ROOT::Experimental::RPadDisplayItem") { // subpad
@@ -3160,9 +3127,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          // we select current pad, where all drawing is performed
          let prev_name = padpainter.selectCurrentPad(padpainter.this_pad_name);
 
-         return padpainter.DrawNextSnap(snap.fPrimitives).then(() => {
+         return padpainter.drawNextSnap(snap.fPrimitives).then(() => {
             padpainter.selectCurrentPad(prev_name);
-            return this.DrawNextSnap(lst, indx);
+            return this.drawNextSnap(lst, indx);
          });
       }
 
@@ -3176,7 +3143,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          if (snap.fKind == webSnapIds.kStyle) {
             JSROOT.extend(JSROOT.gStyle, snap.fObject);
-            return this.DrawNextSnap(lst, indx);
+            return this.drawNextSnap(lst, indx);
          }
 
          if (snap.fKind == webSnapIds.kColors) {
@@ -3190,7 +3157,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             this.root_colors = ListOfColors;
             // set global list of colors
             // jsrp.adoptRootColors(ListOfColors);
-            return this.DrawNextSnap(lst, indx);
+            return this.drawNextSnap(lst, indx);
          }
 
          if (snap.fKind == webSnapIds.kPalette) {
@@ -3198,23 +3165,24 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             for (let n = 0; n < arr.length; ++n)
                palette[n] =  arr[n].fString;
             this.custom_palette = new JSROOT.ColorPalette(palette);
-            return this.DrawNextSnap(lst, indx);
+            return this.drawNextSnap(lst, indx);
          }
 
          if (!this.getFramePainter())
             return JSROOT.draw(this.getDom(), { _typename: "TFrame", $dummy: true }, "")
-                         .then(() => this.DrawNextSnap(lst, indx-1)); // call same object again
+                         .then(() => this.drawNextSnap(lst, indx-1)); // call same object again
       }
 
       // TODO - fDrawable is v7, fObject from v6, maybe use same data member?
       return JSROOT.draw(this.getDom(), snap.fDrawable || snap.fObject || snap, snap.fOption || "").then(objpainter => {
-         this.AddObjectPainter(objpainter, lst, indx);
-         return this.DrawNextSnap(lst, indx);
+         this.addObjectPainter(objpainter, lst, indx);
+         return this.drawNextSnap(lst, indx);
       });
    }
 
-   /** @summary Search painter with specified snapid, also sub-pads are checked */
-   RPadPainter.prototype.FindSnap = function(snapid, onlyid) {
+   /** @summary Search painter with specified snapid, also sub-pads are checked
+     * @private */
+   RPadPainter.prototype.findSnap = function(snapid, onlyid) {
 
       function check(checkid) {
          if (!checkid || (typeof checkid != 'string')) return false;
@@ -3230,8 +3198,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       for (let k=0;k<this.painters.length;++k) {
          let sub = this.painters[k];
 
-         if (!onlyid && (typeof sub.FindSnap === 'function'))
-            sub = sub.FindSnap(snapid);
+         if (!onlyid && (typeof sub.findSnap === 'function'))
+            sub = sub.findSnap(snapid);
          else if (!check(sub.snapid))
             sub = null;
 
@@ -3244,7 +3212,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Redraw pad snap
      * @desc Online version of drawing pad primitives
      * @returns {Promise} with pad painter*/
-   RPadPainter.prototype.RedrawPadSnap = function(snap) {
+   RPadPainter.prototype.redrawPadSnap = function(snap) {
       // for the pad/canvas display item contains list of primitives plus pad attributes
 
       if (!snap || !snap.fPrimitives) return Promise.resolve(this);
@@ -3272,7 +3240,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.createCanvasSvg(0);
          this.addPadButtons(true);
 
-         return this.DrawNextSnap(snap.fPrimitives);
+         return this.drawNextSnap(snap.fPrimitives);
       }
 
       // update only pad/canvas attributes
@@ -3324,7 +3292,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       let prev_name = this.selectCurrentPad(this.this_pad_name);
 
-      return this.DrawNextSnap(snap.fPrimitives).then(() => {
+      return this.drawNextSnap(snap.fPrimitives).then(() => {
          this.selectCurrentPad(prev_name);
 
          if (jsrp.getActivePad() === this) {
@@ -3656,7 +3624,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (JSROOT.settings.ContextMenu)
          this.addPadButton("question", "Access context menus", "PadContextMenus");
 
-      let add_enlarge = !this.iscan && this.has_canvas && this.HasObjectsToDraw()
+      let add_enlarge = !this.iscan && this.has_canvas && this.hasObjectsToDraw()
 
       if (add_enlarge || this.enlargeMain('verify'))
          this.addPadButton("circle", "Enlarge canvas", "enlargePad");
@@ -3753,7 +3721,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       painter.createPadSvg();
 
-      if (painter.matchObjectType("TPad") && (!painter.has_canvas || painter.HasObjectsToDraw())) {
+      if (painter.matchObjectType("TPad") && (!painter.has_canvas || painter.hasObjectsToDraw())) {
          painter.addPadButtons();
       }
 
@@ -3763,7 +3731,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       jsrp.selectActivePad({ pp: painter, active: false });
 
       // flag used to prevent immediate pad redraw during first draw
-      return painter.DrawPrimitives().then(() => {
+      return painter.drawPrimitives().then(() => {
          painter.showPadButtons();
          // we restore previous pad name
          painter.selectCurrentPad(prev_name);
@@ -3972,7 +3940,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          let p1 = msg.indexOf(":"),
              snapid = msg.substr(0,p1),
              snap = JSROOT.parse(msg.substr(p1+1));
-         this.RedrawPadSnap(snap).then(() => {
+         this.redrawPadSnap(snap).then(() => {
             handle.send("SNAPDONE:" + snapid); // send ready message back when drawing completed
          });
       } else if (msg.substr(0,4)=='JSON') {
@@ -4243,7 +4211,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       jsrp.selectActivePad({ pp: painter, active: false });
 
-      return painter.DrawPrimitives().then(() => {
+      return painter.drawPrimitives().then(() => {
          painter.addPadButtons();
          painter.showPadButtons();
          return painter;
@@ -4254,7 +4222,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       let painter = new RCanvasPainter(divid, null);
       painter.normal_canvas = false;
       painter.batch_mode = true;
-      return painter.RedrawPadSnap(snap).then(() => {
+      return painter.redrawPadSnap(snap).then(() => {
          painter.showPadButtons();
          return painter;
       });

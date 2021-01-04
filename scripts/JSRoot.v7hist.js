@@ -1538,8 +1538,10 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       return tips;
    }
 
-   RH1Painter.prototype.ProcessTooltip = function(pnt) {
-      if ((pnt === null) || !this.draw_content || this.options.Mode3D || !this.draw_g) {
+   /** @summary Process tooltip event
+     * @private */
+   RH1Painter.prototype.processTooltipEvent = function(pnt) {
+      if (!pnt || !this.draw_content || this.options.Mode3D || !this.draw_g) {
          if (this.draw_g)
             this.draw_g.select(".tooltip_bin").remove();
          return null;
@@ -3370,7 +3372,9 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       return lines;
    }
 
-   RH2Painter.prototype.ProcessTooltip = function(pnt) {
+   /** @summary Process tooltip event
+     * @private */
+   RH2Painter.prototype.processTooltipEvent = function(pnt) {
       if (!pnt || !this.draw_content || !this.draw_g || !this.tt_handle || this.options.Proj) {
          if (this.draw_g)
             this.draw_g.select(".tooltip_bin").remove();

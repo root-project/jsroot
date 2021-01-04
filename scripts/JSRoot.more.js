@@ -608,13 +608,14 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       return histo;
    }
 
-   TF1Painter.prototype.ProcessTooltip = function(pnt) {
+   /** @summary Process tooltip event
+     * @private */
+   TF1Painter.prototype.processTooltipEvent = function(pnt) {
       let cleanup = false;
 
-      if ((pnt === null) || (this.bins === null)) {
+      if (!pnt || (this.bins === null)) {
          cleanup = true;
-      } else
-      if ((this.bins.length==0) || (pnt.x < this.bins[0].grx) || (pnt.x > this.bins[this.bins.length-1].grx)) {
+      } else if ((this.bins.length==0) || (pnt.x < this.bins[0].grx) || (pnt.x > this.bins[this.bins.length-1].grx)) {
          cleanup = true;
       }
 
@@ -1483,7 +1484,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       return res;
    }
 
-   TGraphPainter.prototype.ShowTooltip = function(hint) {
+   TGraphPainter.prototype.showTooltip = function(hint) {
 
       if (!hint) {
          if (this.draw_g) this.draw_g.select(".tooltip_bin").remove();
@@ -1512,9 +1513,11 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
                .property("current_bin", hint.d3bin);
    }
 
-   TGraphPainter.prototype.ProcessTooltip = function(pnt) {
+   /** @summary Process tooltip event
+     * @private */
+   TGraphPainter.prototype.processTooltipEvent = function(pnt) {
       let hint = this.ExtractTooltip(pnt);
-      if (!pnt || !pnt.disabled) this.ShowTooltip(hint);
+      if (!pnt || !pnt.disabled) this.showTooltip(hint);
       return hint;
    }
 
@@ -2493,7 +2496,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       return res;
    }
 
-   TGraphPolarPainter.prototype.ShowTooltip = function(hint) {
+   TGraphPolarPainter.prototype.showTooltip = function(hint) {
 
       if (!this.draw_g) return;
 
@@ -2521,9 +2524,11 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
                .property("current_bin", hint.binindx);
    }
 
-   TGraphPolarPainter.prototype.ProcessTooltip = function(pnt) {
+   /** @summary Process tooltip event
+     * @private */
+   TGraphPolarPainter.prototype.processTooltipEvent = function(pnt) {
       let hint = this.ExtractTooltip(pnt);
-      if (!pnt || !pnt.disabled) this.ShowTooltip(hint);
+      if (!pnt || !pnt.disabled) this.showTooltip(hint);
       return hint;
    }
 
@@ -2657,7 +2662,9 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       return histo;
    }
 
-   TSplinePainter.prototype.ProcessTooltip = function(pnt) {
+   /** @summary Process tooltip event
+     * @private */
+   TSplinePainter.prototype.processTooltipEvent = function(pnt) {
 
       let cleanup = false,
           spline = this.getObject(),
@@ -2902,8 +2909,9 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       this.storeDrawOpt(opt);
    }
 
-   /** @summary Return time painet primitives */
-   TGraphTimePainter.prototype.DrawPrimitives = function(indx) {
+   /** @summary Draw primitives
+     * @private */
+   TGraphTimePainter.prototype.drawPrimitives = function(indx) {
 
       if (!indx) {
          indx = 0;
@@ -2920,7 +2928,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       return JSROOT.draw(this.getDom(), lst.arr[indx], lst.opt[indx]).then(ppainter => {
 
          if (ppainter) ppainter.$grtimeid = this.selfid; // indicator that painter created by ourself
-         return this.DrawPrimitives(indx+1);
+         return this.drawPrimitives(indx+1);
 
       });
    }
@@ -2951,7 +2959,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          pp.cleanPrimitives(p => (p.$grtimeid === this.selfid));
 
          // draw ptrimitives again
-         this.DrawPrimitives().then(() => this.continueDrawing());
+         this.drawPrimitives().then(() => this.continueDrawing());
       } else if (this.running_timeout) {
          clearTimeout(this.running_timeout);
          delete this.running_timeout;
@@ -2982,7 +2990,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    TGraphTimePainter.prototype.startDrawing = function() {
       this.step = 0;
 
-      return this.DrawPrimitives().then(() => {
+      return this.drawPrimitives().then(() => {
          this.continueDrawing();
          return this; // used in drawGraphTime promise
       });
