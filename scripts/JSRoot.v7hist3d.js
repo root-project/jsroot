@@ -128,7 +128,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
          this.scene.add(newtop);
          this.toplevel = newtop;
 
-         this.Resize3D(); // set actual sizes
+         this.resize3D(); // set actual sizes
          return;
       }
 
@@ -247,7 +247,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
      * If tmeout <= 0, rendering performed immediately
      * If (tmout == -1111), immediate rendering with SVG renderer is performed
      * @private */
-   JSROOT.v7.RFramePainter.prototype.Render3D = function(tmout) {
+   JSROOT.v7.RFramePainter.prototype.render3D = function(tmout) {
 
       if (tmout === -1111) {
          // special handling for direct SVG renderer
@@ -270,7 +270,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
 
       if ((tmout > 0) && this.webgl && JSROOT.BatchMode) {
           if (!this.render_tmout)
-             this.render_tmout = setTimeout(() => this.Render3D(0), tmout);
+             this.render_tmout = setTimeout(() => this.render3D(0), tmout);
           return;
        }
 
@@ -303,7 +303,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       }
    }
 
-   JSROOT.v7.RFramePainter.prototype.Resize3D = function() {
+   JSROOT.v7.RFramePainter.prototype.resize3D = function() {
 
       let sz = this.size_for_3d(this.access_3d_kind());
 
@@ -352,7 +352,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       }
 
       if (want_remove) {
-         if (changed) this.Render3D();
+         if (changed) this.render3D();
          if (changed && mainp) mainp.provideUserTooltip(null);
          return;
       }
@@ -408,7 +408,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
          this.toplevel.add(tooltip_mesh);
       }
 
-      if (changed) this.Render3D();
+      if (changed) this.render3D();
 
       if (changed && tip.$painter && (typeof tip.$painter.redrawProjection == 'function'))
          tip.$painter.redrawProjection(tip.ix-1, tip.ix, tip.iy-1, tip.iy);
@@ -1351,7 +1351,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
           is_main = this.isMainPainter(); // is main histogram
 
       if (reason == "resize")  {
-         if (is_main && main.Resize3D()) main.Render3D();
+         if (is_main && main.resize3D()) main.render3D();
          return Promise.resolve(this);
       }
 
@@ -1375,7 +1375,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
 
          this.DrawLego();
          this.UpdatePaletteDraw();
-         main.Render3D();
+         main.render3D();
          main.addKeysHandler();
          return this;
       });
@@ -1392,7 +1392,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
           is_main = this.isMainPainter(); // is main histogram
 
       if (reason == "resize") {
-         if (is_main && main.Resize3D()) main.Render3D();
+         if (is_main && main.resize3D()) main.render3D();
 
          return Promise.resolve(this);
       }
@@ -1422,7 +1422,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
          let main = this.getFramePainter();
 
          this.Draw3DBins();
-         main.Render3D();
+         main.render3D();
          main.addKeysHandler();
          return this;
       });
@@ -2831,7 +2831,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       let main = this.getFramePainter(); // who makes axis and 3D drawing
 
       if (reason == "resize") {
-         if (main.Resize3D()) main.Render3D();
+         if (main.resize3D()) main.render3D();
          return;
       }
 
@@ -2846,7 +2846,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
          let main = this.getFramePainter();
 
          this.Draw3DBins();
-         main.Render3D();
+         main.render3D();
          main.addKeysHandler();
       });
    }

@@ -3342,7 +3342,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          }
 
          let main = pp.getFramePainter();
-         if (!main || (typeof main.Render3D !== 'function') || (typeof main.access_3d_kind !== 'function')) return;
+         if (!main || (typeof main.render3D !== 'function') || (typeof main.access_3d_kind !== 'function')) return;
 
          let can3d = main.access_3d_kind();
 
@@ -3351,7 +3351,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          let sz2 = main.size_for_3d(JSROOT.constants.Embed3D.Embed); // get size and position of DOM element as it will be embed
 
          let canvas = main.renderer.domElement;
-         main.Render3D(0); // WebGL clears buffers, therefore we should render scene and convert immediately
+         main.render3D(0); // WebGL clears buffers, therefore we should render scene and convert immediately
          let dataUrl = canvas.toDataURL("image/png");
 
          // remove 3D drawings

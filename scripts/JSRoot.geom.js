@@ -341,7 +341,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          this._renderer.vr.enabled = true;
          this._renderer.setAnimationLoop(() => {
             this.UpdateVRControllers();
-            this.Render3D(0);
+            this.render3D(0);
          });
       });
       this._renderer.vr.enabled = true;
@@ -674,7 +674,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
             node.material.transparent = node.material.opacity < 1;
          }
       });
-      if (!skip_render) this.Render3D(-1);
+      if (!skip_render) this.render3D(-1);
    }
 
    /** @summary Reset transformation */
@@ -754,7 +754,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
    TGeoPainter.prototype.changedBackground = function(val) {
       if (val !== undefined) this.ctrl.background = val;
       this._renderer.setClearColor(this.ctrl.background, 1);
-      this.Render3D(0);
+      this.render3D(0);
 
       if (this._toolbar) {
          let bkgr = new THREE.Color(this.ctrl.background);
@@ -1022,7 +1022,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
                      let mesh = intersects[indx].object;
                      mesh.visible = false; // just disable mesh
                      if (mesh.geo_object) mesh.geo_object.$hidden_via_menu = true; // and hide object for further redraw
-                     menu.painter.Render3D();
+                     menu.painter.render3D();
                   });
 
                   if (many) menu.add("endsub:");
@@ -1036,7 +1036,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
                   menu.addchk(wireframe, "Wireframe", n, function(indx) {
                      let m = intersects[indx].object.material;
                      m.wireframe = !m.wireframe;
-                     this.Render3D();
+                     this.render3D();
                   });
 
                if (++cnt>1)
@@ -1059,7 +1059,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
                      this._last_manifest.wireframe = !this._last_manifest.wireframe;
 
-                     this.Render3D();
+                     this.render3D();
                   });
 
 
@@ -1080,7 +1080,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
                      geo.updateBrowserIcons(resolve.obj, this._hpainter);
                   }
                   // intersects[arg].object.visible = false;
-                  // this.Render3D();
+                  // this.render3D();
 
                   this.testGeomChanges();// while many volumes may disappear, recheck all of them
                });
@@ -1246,7 +1246,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          for (let k=0;k<active_mesh.length;++k)
             get_ctrl(active_mesh[k]).setHighlight(color || 0xffaa33, geo_index);
 
-      this.Render3D(0);
+      this.render3D(0);
 
       return !!active_mesh;
    }
@@ -1265,7 +1265,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       ctrl.evnt = evnt;
 
       if (ctrl.setSelected("blue", click_indx))
-         this.Render3D();
+         this.render3D();
 
       ctrl.evnt = null;
    }
@@ -1364,7 +1364,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
                painter._last_hidden.forEach(obj => { obj.visible = true; });
             delete painter._last_hidden;
             delete painter._last_manifest;
-            painter.Render3D();
+            painter.render3D();
          } else {
             painter.adjustCameraPosition();
          }
@@ -1419,7 +1419,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          }
       });
 
-      this._tcontrols.addEventListener( 'change', () => this.Render3D(0));
+      this._tcontrols.addEventListener( 'change', () => this.render3D(0));
    }
 
    /** @summary Main function in geometry creation loop
@@ -1783,7 +1783,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       // remember additional nodes only if they include shape - otherwise one can ignore them
       if (real_nodes) this._more_nodes = real_nodes;
 
-      if (!from_drawing) this.Render3D();
+      if (!from_drawing) this.render3D();
    }
 
    /** @summary Returns hierarchy of 3D objects used to produce projection.
@@ -1916,7 +1916,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       // keep light power of all soources constant
       plights.forEach(ll => { ll.power = p*4*Math.PI/plights.length; })
 
-      if (need_render) this.Render3D();
+      if (need_render) this.render3D();
    }
 
    /** @summary Initial scene creation */
@@ -2085,7 +2085,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
    /** @summary Create png image with drawing snapshot. */
    TGeoPainter.prototype.createSnapshot = function(filename) {
       if (!this._renderer) return;
-      this.Render3D(0);
+      this.render3D(0);
       let dataUrl = this._renderer.domElement.toDataURL("image/png");
       if (filename==="asis") return dataUrl;
       dataUrl.replace("image/png", "image/octet-stream");
@@ -2357,7 +2357,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
                this.ctrl.clip[axis].value += this.ctrl.clip[axis].inc * smoothFactor;
             this.updateClipping();
          } else {
-            this.Render3D(0);
+            this.render3D(0);
          }
          let tm2 = new Date().getTime();
          if ((step==0) && (tm2-tm1 > 200)) frames = 20;
@@ -2389,7 +2389,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
             this._controls.update();
          }
          last = new Date();
-         this.Render3D(0);
+         this.render3D(0);
       }
 
       if (this._webgl) animate();
@@ -2516,7 +2516,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
             if (tracks) {
                this.drawExtras(tracks, "", false); // FIXME: probably tracks should be remembered??
                this.updateClipping(true);
-               this.Render3D(100);
+               this.render3D(100);
             }
             return this;
          });
@@ -2524,7 +2524,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
       if (this.drawExtras(obj, itemname)) {
          if (hitem) hitem._painter = this; // set for the browser item back pointer
-         this.Render3D(100);
+         this.render3D(100);
       }
 
       return Promise.resolve(this);
@@ -2548,7 +2548,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
    TGeoPainter.prototype.clearExtras = function() {
       this.getExtrasContainer("delete");
       delete this._extraObjects; // workaround, later will be normal function
-      this.Render3D();
+      this.render3D();
    }
 
    /** @summary Register extra objects like tracks or hits
@@ -2598,7 +2598,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
             this.updateClipping(true);
          }
 
-         if (mesh || res) this.Render3D();
+         if (mesh || res) this.render3D();
       }
 
       return res;
@@ -2647,7 +2647,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
       if (do_render && is_any) {
          this.updateClipping(true);
-         this.Render3D(100);
+         this.render3D(100);
       }
       return is_any;
    }
@@ -3124,7 +3124,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
             if (this._first_drawing && this._webgl && (this._num_meshes - this._last_render_meshes > 100) && (now - this._last_render_tm > 2.5*interval)) {
                this.adjustCameraPosition();
-               this.Render3D(-1);
+               this.render3D(-1);
                this._last_render_meshes = this.ctrl.info.num_meshes;
             }
             if (res !== 2) setTimeout(this.continueDraw.bind(this), (res === 1) ? 100 : 1);
@@ -3171,7 +3171,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
      * superimposed with each other. If tmeout<=0, rendering performed immediately
      * Several special values are used:
      *   -1    - force recheck of rendering order based on camera position */
-   TGeoPainter.prototype.Render3D = function(tmout, measure) {
+   TGeoPainter.prototype.render3D = function(tmout, measure) {
 
       if (!this._renderer) {
          console.warn('renderer object not exists - check code');
@@ -3183,7 +3183,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       if ((tmout > 0) && this._webgl && !JSROOT.BatchMode) {
          // do not shoot timeout many times
          if (!this.render_tmout)
-            this.render_tmout = setTimeout(() => this.Render3D(0,measure), tmout);
+            this.render_tmout = setTimeout(() => this.render3D(0,measure), tmout);
          return;
       }
 
@@ -3341,7 +3341,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       this.getExtrasContainer('delete', 'axis');
 
       if (!this.ctrl._axis)
-         return norender ? null : this.Render3D();
+         return norender ? null : this.render3D();
 
       let box = this.getGeomBoundingBox(this._toplevel);
 
@@ -3574,14 +3574,14 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          }
       });
 
-      this.Render3D(0);
+      this.render3D(0);
    }
 
    /** @summary Should be called when depth method is changed */
    TGeoPainter.prototype.changedDepthMethod = function(arg) {
       // force recalculatiion of render order
       delete this._last_camera_position;
-      if (arg !== "norender") this.Render3D();
+      if (arg !== "norender") this.render3D();
    }
 
    /** @summary Should be called when configuration of highlight is changed */
@@ -3642,7 +3642,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
       this.ctrl.bothSides = any_clipping;
 
-      if (!without_render) this.Render3D(0);
+      if (!without_render) this.render3D(0);
 
       return changed;
    }
@@ -3717,7 +3717,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
       this.updateClipping(true); // do not render
 
-      this.Render3D(0, true);
+      this.render3D(0, true);
 
       if (close_progress) jsrp.showProgress();
 
@@ -3778,7 +3778,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
       if (new_nodes.length < this._draw_nodes.length) {
          this._draw_nodes = new_nodes;
-         this.Render3D();
+         this.render3D();
       }
    }
 
@@ -3926,7 +3926,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          if (this._effectComposer)
             this._effectComposer.setSize( this._scene_width, this._scene_height );
 
-         if (!this.drawing_stage) this.Render3D();
+         if (!this.drawing_stage) this.render3D();
       }
 
       return true;
@@ -3967,7 +3967,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
       this._scene.traverse(obj => this.accessObjectWireFrame(obj, on));
 
-      this.Render3D();
+      this.render3D();
    }
 
    /** @summary Update object in geo painter */

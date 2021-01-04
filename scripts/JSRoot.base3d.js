@@ -761,12 +761,12 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
          } else {
             this.reset();
          }
-         // this.painter.Render3D();
+         // this.painter.render3D();
       }
 
       control.ChangeEvent = function() {
          this.mouse_ctxt.on = false; // disable context menu if any changes where done by orbit control
-         this.painter.Render3D(0);
+         this.painter.render3D(0);
          this.control_changed = true;
       }
 
@@ -818,7 +818,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
 
       control.RemoveZoomMesh = function() {
          if (this.mouse_zoom_mesh && this.mouse_zoom_mesh.object.ShowSelection())
-            this.painter.Render3D();
+            this.painter.render3D();
          this.mouse_zoom_mesh = null; // in any case clear mesh, enable orbit control again
       }
 
@@ -845,7 +845,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
 
             if (pnt2 && this.painter.enable_highlight)
                if (this.mouse_zoom_mesh.object.ShowSelection(this.mouse_zoom_mesh.point, pnt2))
-                  this.painter.Render3D(0);
+                  this.painter.render3D(0);
 
             this.tooltip.hide();
             return;

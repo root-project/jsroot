@@ -2794,14 +2794,14 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             if (!fp.enable_highlight && fp.BinHighlight3D && fp.mode3d) fp.BinHighlight3D(null);
          });
 
-         if (fp && fp.Render3D) {
+         if (fp && fp.render3D) {
             menu.addchk(main.options.FrontBox, 'Front box', function() {
                main.options.FrontBox = !main.options.FrontBox;
-               fp.Render3D();
+               fp.render3D();
             });
             menu.addchk(main.options.BackBox, 'Back box', function() {
                main.options.BackBox = !main.options.BackBox;
-               fp.Render3D();
+               fp.render3D();
             });
          }
 
