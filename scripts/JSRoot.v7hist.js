@@ -1927,7 +1927,8 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       return 2;
    }
 
-   RH2Painter.prototype.ToggleProjection = function(kind, width) {
+   /** @summary Toggle projection */
+   RH2Painter.prototype.toggleProjection = function(kind, width) {
 
       if (kind=="Projections") kind = "";
 
@@ -1954,7 +1955,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       this.projection_width = width;
 
       let canp = this.getCanvPainter();
-      if (canp) canp.ToggleProjection(this.is_projection).then(() => this.RedrawProjection("toggling", new_proj));
+      if (canp) canp.toggleProjection(this.is_projection).then(() => this.RedrawProjection("toggling", new_proj));
    }
 
    RH2Painter.prototype.RedrawProjection = function(ii1, ii2 /*, jj1, jj2*/) {
@@ -1972,7 +1973,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       if (RHistPainter.prototype.executeMenuCommand.call(this,method, args)) return true;
 
       if ((method.fName == 'SetShowProjectionX') || (method.fName == 'SetShowProjectionY')) {
-         this.ToggleProjection(method.fName[17], args && parseInt(args) ? parseInt(args) : 1);
+         this.toggleProjection(method.fName[17], args && parseInt(args) ? parseInt(args) : 1);
          return true;
       }
 
@@ -1982,12 +1983,12 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
    RH2Painter.prototype.FillHistContextMenu = function(menu) {
       // painter automatically bind to menu callbacks
 
-      menu.add("sub:Projections", this.ToggleProjection);
+      menu.add("sub:Projections", this.toggleProjection);
       let kind = this.is_projection || "";
       if (kind) kind += this.projection_width;
       let kinds = ["X1", "X2", "X3", "X5", "X10", "Y1", "Y2", "Y3", "Y5", "Y10"];
       for (let k=0;k<kinds.length;++k)
-         menu.addchk(kind==kinds[k], kinds[k], kinds[k], this.ToggleProjection);
+         menu.addchk(kind==kinds[k], kinds[k], kinds[k], this.toggleProjection);
       menu.add("endsub:");
 
       menu.add("Auto zoom-in", this.AutoZoom);

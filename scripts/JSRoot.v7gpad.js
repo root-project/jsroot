@@ -264,7 +264,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
     * @private */
    JSROOT.ObjectPainter.prototype.v7SubmitRequest = function(kind, req, method) {
       let canp = this.getCanvPainter();
-      if (!canp || !canp.SubmitDrawableRequest) return null;
+      if (!canp || !canp.submitDrawableRequest) return null;
 
       // special situation when snapid not yet assigned - just keep ref until snapid is there
       // maybe keep full list - for now not clear if really needed
@@ -273,7 +273,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return req;
       }
 
-      return canp.SubmitDrawableRequest(kind, req, this, method);
+      return canp.submitDrawableRequest(kind, req, this, method);
    }
 
    /** @summary Assign snapid to the painter
@@ -298,7 +298,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
     * @private */
    JSROOT.ObjectPainter.prototype.v7CommMode = function() {
       let canp = this.getCanvPainter();
-      if (!canp || !canp.SubmitDrawableRequest || !canp._websocket)
+      if (!canp || !canp.submitDrawableRequest || !canp._websocket)
          return JSROOT.v7.CommMode.kOffline;
 
       return JSROOT.v7.CommMode.kNormal;
@@ -3687,7 +3687,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       let d = new JSROOT.DrawOptions(opt);
 
-      if (d.check('WEBSOCKET')) this.OpenWebsocket();
+      if (d.check('WEBSOCKET') && this.openWebsocket) this.openWebsocket();
       if (!this.options) this.options = {};
 
       JSROOT.extend(this.options, { GlobalColors: true, LocalColors: false, IgnorePalette: false, RotateFrame: false, FixFrame: false });
@@ -3844,8 +3844,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Toggle projection
-     * @returns {Promise} indicating when ready */
-   RCanvasPainter.prototype.ToggleProjection = function(kind) {
+     * @returns {Promise} indicating when ready
+     * @private */
+   RCanvasPainter.prototype.toggleProjection = function(kind) {
       delete this.proj_painter;
 
       if (kind) this.proj_painter = 1; // just indicator that drawing can be preformed
@@ -3861,38 +3862,59 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return this.changeLayout(layout);
    }
 
-   RCanvasPainter.prototype.DrawProjection = function( /*kind,hist*/) {
+   /** @summary Draw projection for specified histogram
+     * @private */
+   RCanvasPainter.prototype.drawProjection = function( /*kind,hist*/) {
       // dummy for the moment
    }
 
-   RCanvasPainter.prototype.DrawInsidePanel = function(canv, opt) {
+   /** @summary Draw in side panel
+     * @private */
+   RCanvasPainter.prototype.drawInSidePanel = function(canv, opt) {
       let side = this.selectDom('origin').select(".side_panel");
       if (side.empty()) return Promise.resolve(null);
       return JSROOT.draw(side.node(), canv, opt);
    }
 
-   RCanvasPainter.prototype.ShowMessage = function(msg) {
-      jsrp.showProgress(msg, 7000);
+   /** @summary Checks if canvas shown inside ui5 widget
+     * @desc Function should be used only from the func which supposed to be replaced by ui5
+     * @private */
+   RCanvasPainter.prototype.testUI5 = function() {
+      if (!this.use_openui) return false;
+      console.warn("full ui5 should be used - not loaded yet? Please check!!");
+      return true;
+   }
+
+   /** @summary Show message
+     * @desc Used normally with web-based canvas and handled in ui5
+     * @private */
+   RCanvasPainter.prototype.showMessage = function(msg) {
+      if (!this.testUI5())
+         jsrp.showProgress(msg, 7000);
    }
 
    /** @summary Function called when canvas menu item Save is called */
-   RCanvasPainter.prototype.SaveCanvasAsFile = function(fname) {
+   RCanvasPainter.prototype.saveCanvasAsFile = function(fname) {
       let pnt = fname.indexOf(".");
       this.createImage(fname.substr(pnt+1))
-          .then(res => this.SendWebsocket("SAVE:" + fname + ":" + res));
+          .then(res => this.sendWebsocket("SAVE:" + fname + ":" + res));
    }
 
-   RCanvasPainter.prototype.SendSaveCommand = function(fname) {
-      this.SendWebsocket("PRODUCE:" + fname);
+   /** @summary Send command to server to save canvas with specified name
+     * @desc Should be only used in web-based canvas
+     * @private */
+   RCanvasPainter.prototype.sendSaveCommand = function(fname) {
+      this.sendWebsocket("PRODUCE:" + fname);
    }
 
-   RCanvasPainter.prototype.SendWebsocket = function(msg, chid) {
+   RCanvasPainter.prototype.sendWebsocket = function(msg, chid) {
       if (this._websocket)
          this._websocket.send(msg, chid);
    }
 
-   /** @summary Close websocket connecttion to canvas */
-   RCanvasPainter.prototype.CloseWebsocket = function(force) {
+   /** @summary Close websocket connection to canvas
+     * @private */
+   RCanvasPainter.prototype.closeWebsocket = function(force) {
       if (this._websocket) {
          this._websocket.close(force);
          this._websocket.cleanup();
@@ -3900,19 +3922,20 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
    }
 
-   RCanvasPainter.prototype.OpenWebsocket = function(socket_kind) {
-      // create websocket for current object (canvas)
-      // via websocket one recieved many extra information
-
-      this.CloseWebsocket();
+   /** @summary Create websocket for the canvas
+     * @private */
+   RCanvasPainter.prototype.openWebsocket = function(socket_kind) {
+      this.closeWebsocket();
 
       this._websocket = new JSROOT.WebWindowHandle(socket_kind);
       this._websocket.setReceiver(this);
       this._websocket.connect();
    }
 
-   RCanvasPainter.prototype.UseWebsocket = function(handle, href) {
-      this.CloseWebsocket();
+   /** @summary Use provided connection for the web canvas
+     * @private */
+   RCanvasPainter.prototype.useWebsocket = function(handle, href) {
+      this.closeWebsocket();
 
       this._websocket = handle;
       console.log('Use websocket', this._websocket.key);
@@ -3920,25 +3943,25 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this._websocket.connect(href);
    }
 
-   RCanvasPainter.prototype.WindowBeforeUnloadHanlder = function() {
-      // when window closed, close socket
-      this.CloseWebsocket(true);
-   }
-
+   /** @summary Hanler for websocket open event
+     * @private */
    RCanvasPainter.prototype.onWebsocketOpened = function(/*handle*/) {
-      // indicate that we are ready to recieve any following commands
    }
 
+   /** @summary Hanler for websocket close event
+     * @private */
    RCanvasPainter.prototype.onWebsocketClosed = function(/*handle*/) {
       jsrp.closeCurrentWindow();
    }
 
+   /** @summary Hanler for websocket message
+     * @private */
    RCanvasPainter.prototype.onWebsocketMsg = function(handle, msg) {
       console.log("GET MSG " + msg.substr(0,30));
 
       if (msg == "CLOSE") {
          this.onWebsocketClosed();
-         this.CloseWebsocket(true);
+         this.closeWebsocket(true);
       } else if (msg.substr(0,5)=='SNAP:') {
          msg = msg.substr(5);
          let p1 = msg.indexOf(":"),
@@ -4012,7 +4035,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       } else if ((msg.substr(0,7)=='DXPROJ:') || (msg.substr(0,7)=='DYPROJ:')) {
          let kind = msg[1],
              hist = JSROOT.parse(msg.substr(7));
-         this.DrawProjection(kind, hist);
+         this.drawProjection(kind, hist);
       } else if (msg.substr(0,5)=='SHOW:') {
          let that = msg.substr(5),
              on = that[that.length-1] == '1';
@@ -4022,8 +4045,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
    }
 
-   /** Submit request to RDrawable object on server side */
-   RCanvasPainter.prototype.SubmitDrawableRequest = function(kind, req, painter, method) {
+   /** @summary Submit request to RDrawable object on server side */
+   RCanvasPainter.prototype.submitDrawableRequest = function(kind, req, painter, method) {
 
       if (!this._websocket || !req || !req._typename ||
           !painter.snapid || (typeof painter.snapid != "string")) return null;
@@ -4069,13 +4092,15 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       // console.log('Sending request ', msg.substr(0,60));
 
-      this.SendWebsocket("REQ:" + msg);
+      this.sendWebsocket("REQ:" + msg);
       return req;
    }
 
+   /** @summary Submit menu request
+     * @private */
    RCanvasPainter.prototype.submitMenuRequest = function(painter, menukind, reqid) {
       return new Promise(resolveFunc => {
-         this.SubmitDrawableRequest("", {
+         this.submitDrawableRequest("", {
             _typename: "ROOT::Experimental::RDrawableMenuRequest",
             menukind: menukind || "",
             menureqid: reqid, // used to identify menu request
@@ -4097,7 +4122,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             return console.log(`not recoginzed subelem ${subelem} in SubmitExec`);
        }
 
-      this.SubmitDrawableRequest("", {
+      this.submitDrawableRequest("", {
          _typename: "ROOT::Experimental::RDrawableExecRequest",
          exec: exec
       }, painter);
@@ -4124,7 +4149,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       // resubmit last request of that kind
       if (req._nextreq && !req._painter._requests[req._kind])
-         this.SubmitDrawableRequest(req._kind, req._nextreq, req._painter, req._method);
+         this.submitDrawableRequest(req._kind, req._nextreq, req._painter, req._method);
    }
 
    RCanvasPainter.prototype.ShowSection = function(that, on) {

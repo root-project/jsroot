@@ -3586,7 +3586,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       let d = new JSROOT.DrawOptions(opt);
 
-      if (d.check('WEBSOCKET')) this.OpenWebsocket();
+      if (d.check('WEBSOCKET') && this.openWebsocket) this.openWebsocket();
       if (!this.options) this.options = {};
 
       JSROOT.extend(this.options, { GlobalColors: true, LocalColors: false, CreatePalette: 0, IgnorePalette: false, RotateFrame: false, FixFrame: false });
@@ -3775,8 +3775,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Toggle projection
-     * @returns {Promise} indicating when ready */
-   TCanvasPainter.prototype.ToggleProjection = function(kind) {
+     * @returns {Promise} indicating when ready
+     * @private */
+   TCanvasPainter.prototype.toggleProjection = function(kind) {
       delete this.proj_painter;
 
       if (kind) this.proj_painter = 1; // just indicator that drawing can be preformed
@@ -3792,7 +3793,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return this.changeLayout(layout);
    }
 
-   TCanvasPainter.prototype.DrawProjection = function(kind,hist) {
+   /** @summary Draw projection for specified histogram
+     * @private */
+   TCanvasPainter.prototype.drawProjection = function(kind,hist) {
 
       if (!this.proj_painter) return; // ignore drawing if projection not configured
 
@@ -3822,7 +3825,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          let promise = this.DrawInUI5ProjectionArea
                        ? this.DrawInUI5ProjectionArea(canv, drawopt)
-                       : this.DrawInsidePanel(canv, drawopt);
+                       : this.drawInSidePanel(canv, drawopt);
 
          promise.then(painter => { this.proj_painter = painter; })
       } else {
@@ -3832,33 +3835,52 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
    }
 
-   TCanvasPainter.prototype.DrawInsidePanel = function(canv, opt) {
+   /** @summary Checks if canvas shown inside ui5 widget
+     * @desc Function should be used only from the func which supposed to be replaced by ui5
+     * @private */
+   TCanvasPainter.prototype.testUI5 = function() {
+      if (!this.use_openui) return false;
+      console.warn("full ui5 should be used - not loaded yet? Please check!!");
+      return true;
+   }
+
+   /** @summary Draw in side panel
+     * @private */
+   TCanvasPainter.prototype.drawInSidePanel = function(canv, opt) {
       let side = this.selectDom('origin').select(".side_panel");
       if (side.empty()) return Promise.resolve(null);
       return JSROOT.draw(side.node(), canv, opt);
    }
 
-   TCanvasPainter.prototype.ShowMessage = function(msg) {
-      if (this.testUI5()) return;
-      jsrp.showProgress(msg, 7000);
+   /** @summary Show message
+     * @desc Used normally with web-based canvas and handled in ui5
+     * @private */
+   TCanvasPainter.prototype.showMessage = function(msg) {
+      if (!this.testUI5())
+         jsrp.showProgress(msg, 7000);
    }
 
    /** @summary Function called when canvas menu item Save is called */
-   TCanvasPainter.prototype.SaveCanvasAsFile = function(fname) {
+   TCanvasPainter.prototype.saveCanvasAsFile = function(fname) {
       let pnt = fname.indexOf(".");
       this.createImage(fname.substr(pnt+1))
-          .then(res => this.SendWebsocket("SAVE:" + fname + ":" + res));
+          .then(res => this.sendWebsocket("SAVE:" + fname + ":" + res));
    }
 
-   TCanvasPainter.prototype.SendSaveCommand = function(fname) {
-      this.SendWebsocket("PRODUCE:" + fname);
+   /** @summary Send command to server to save canvas with specified name
+     * @desc Should be only used in web-based canvas
+     * @private */
+   TCanvasPainter.prototype.sendSaveCommand = function(fname) {
+      this.sendWebsocket("PRODUCE:" + fname);
    }
 
+   /** @summary Submit menu request
+     * @private */
    TCanvasPainter.prototype.submitMenuRequest = function(painter, kind, reqid) {
       // only single request can be handled, no limit better in RCanvas
       return new Promise(resolveFunc => {
          this._getmenu_callback = resolveFunc;
-         this.SendWebsocket('GETMENU:' + reqid); // request menu items for given painter
+         this.sendWebsocket('GETMENU:' + reqid); // request menu items for given painter
       });
    }
 
@@ -3868,15 +3890,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (!snapid) snapid = painter.snapid;
       if (!snapid || (typeof snapid != 'string')) return;
 
-      this.SendWebsocket("OBJEXEC:" + snapid + ":" + exec);
+      this.sendWebsocket("OBJEXEC:" + snapid + ":" + exec);
    }
 
-   TCanvasPainter.prototype.WindowBeforeUnloadHanlder = function() {
-      // when window closed, close socket
-      this.CloseWebsocket(true);
-   }
-
-   TCanvasPainter.prototype.SendWebsocket = function(msg) {
+   /** @summary Send text message with web socket
+     * @desc used for communication with server-side of web canvas
+     * @private */
+   TCanvasPainter.prototype.sendWebsocket = function(msg) {
       if (!this._websocket) return;
       if (this._websocket.canSend())
          this._websocket.send(msg);
@@ -3884,8 +3904,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          console.warn("DROP SEND: " + msg);
    }
 
-   /** @summary Close websocket connecttion to canvas */
-   TCanvasPainter.prototype.CloseWebsocket = function(force) {
+   /** @summary Close websocket connection to canvas
+     * @private */
+   TCanvasPainter.prototype.closeWebsocket = function(force) {
       if (this._websocket) {
          this._websocket.close(force);
          this._websocket.cleanup();
@@ -3893,40 +3914,46 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
    }
 
-   TCanvasPainter.prototype.OpenWebsocket = function(socket_kind) {
-      // create websocket for current object (canvas)
-      // via websocket one recieved many extra information
-
-      this.CloseWebsocket();
+   /** @summary Create websocket for the canvas
+     * @private */
+   TCanvasPainter.prototype.openWebsocket = function(socket_kind) {
+      this.closeWebsocket();
 
       this._websocket = new JSROOT.WebWindowHandle(socket_kind);
       this._websocket.setReceiver(this);
       this._websocket.connect();
    }
 
-   TCanvasPainter.prototype.UseWebsocket = function(handle, href) {
-      this.CloseWebsocket();
+   /** @summary Use provided connection for the web canvas
+     * @private */
+   TCanvasPainter.prototype.useWebsocket = function(handle, href) {
+      this.closeWebsocket();
 
       this._websocket = handle;
       this._websocket.setReceiver(this);
       this._websocket.connect(href);
    }
 
+   /** @summary Hanler for websocket open event
+     * @private */
    TCanvasPainter.prototype.onWebsocketOpened = function(/*handle*/) {
       // indicate that we are ready to recieve any following commands
    }
 
+   /** @summary Hanler for websocket close event
+     * @private */
    TCanvasPainter.prototype.onWebsocketClosed = function(/*handle*/) {
       jsrp.closeCurrentWindow();
    }
 
-   /** @summary Handle websocket messages */
+   /** @summary Handle websocket messages
+     * @private */
    TCanvasPainter.prototype.onWebsocketMsg = function(handle, msg) {
       console.log("GET MSG len:" + msg.length + " " + msg.substr(0,60));
 
       if (msg == "CLOSE") {
          this.onWebsocketClosed();
-         this.CloseWebsocket(true);
+         this.closeWebsocket(true);
       } else if (msg.substr(0,6)=='SNAP6:') {
          // This is snapshot, produced with ROOT6
 
@@ -3961,7 +3988,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       } else if ((msg.substr(0,7)=='DXPROJ:') || (msg.substr(0,7)=='DYPROJ:')) {
          let kind = msg[1],
              hist = JSROOT.parse(msg.substr(7));
-         this.DrawProjection(kind, hist);
+         this.drawProjection(kind, hist);
       } else if (msg.substr(0,5)=='SHOW:') {
          let that = msg.substr(5),
              on = (that[that.length-1] == '1');
@@ -3982,12 +4009,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (funcname == "ToggleGed") return this.ActivateGed(this, null, "toggle");
       if (funcname == "ToggleStatus") return this.ActivateStatusBar("toggle");
       TPadPainter.prototype.clickPadButton.call(this, funcname, evnt);
-   }
-
-   TCanvasPainter.prototype.testUI5 = function() {
-      if (!this.use_openui) return false;
-      console.warn("full ui5 should be used - not loaded yet? Please check!!");
-      return true;
    }
 
    TCanvasPainter.prototype.HasEventStatus = function() {
@@ -4205,7 +4226,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
 
       if (arg && ischanged)
-         this.SendWebsocket("PADCLICKED:" + JSROOT.toJSON(arg));
+         this.sendWebsocket("PADCLICKED:" + JSROOT.toJSON(arg));
    }
 
    TCanvasPainter.prototype.GetStatusBits = function() {

@@ -4408,7 +4408,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       THistPainter.prototype.cleanup.call(this);
    }
 
-   TH2Painter.prototype.ToggleProjection = function(kind, width) {
+   /** @summary Toggle projection */
+   TH2Painter.prototype.toggleProjection = function(kind, width) {
 
       if ((kind=="Projections") || (kind=="Off")) kind = "";
 
@@ -4434,9 +4435,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       this.is_projection = ""; // disable projection redraw until callback
       this.projection_width = width;
 
-      this.getCanvPainter().ToggleProjection(new_proj).then(() => this.RedrawProjection("toggling", new_proj));
+      this.getCanvPainter().toggleProjection(new_proj).then(() => this.RedrawProjection("toggling", new_proj));
    }
 
+   /** @summary Redraw projection */
    TH2Painter.prototype.RedrawProjection = function(ii1, ii2, jj1, jj2) {
       if (ii1 === "toggling") {
          this.is_projection = ii2;
@@ -4459,7 +4461,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             exec += 'ProjectionX("_projx",' + (jj1+1) + ',' + jj2 + ',"")';
          else
             exec += 'ProjectionY("_projy",' + (ii1+1) + ',' + ii2 + ',"")';
-         canp.SendWebsocket(exec);
+         canp.sendWebsocket(exec);
          return;
       }
 
@@ -4491,14 +4493,14 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          }
       }
 
-      return canp.DrawProjection(this.is_projection, this.proj_hist);
+      return canp.drawProjection(this.is_projection, this.proj_hist);
    }
 
    TH2Painter.prototype.executeMenuCommand = function(method, args) {
       if (THistPainter.prototype.executeMenuCommand.call(this,method, args)) return true;
 
       if ((method.fName == 'SetShowProjectionX') || (method.fName == 'SetShowProjectionY')) {
-         this.ToggleProjection(method.fName[17], args && parseInt(args) ? parseInt(args) : 1);
+         this.toggleProjection(method.fName[17], args && parseInt(args) ? parseInt(args) : 1);
          return true;
       }
 
@@ -4509,13 +4511,13 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       // painter automatically bind to menu callbacks
 
       if (!this.IsTH2Poly()) {
-         menu.add("sub:Projections", this.ToggleProjection);
+         menu.add("sub:Projections", this.toggleProjection);
          let kind = this.is_projection || "";
          if (kind) kind += this.projection_width;
          let kinds = ["X1", "X2", "X3", "X5", "X10", "Y1", "Y2", "Y3", "Y5", "Y10"];
          if (this.is_projection) kinds.push("Off");
          for (let k = 0; k < kinds.length; ++k)
-            menu.addchk(kind==kinds[k], kinds[k], kinds[k], this.ToggleProjection);
+            menu.addchk(kind==kinds[k], kinds[k], kinds[k], this.toggleProjection);
          menu.add("endsub:");
 
          menu.add("Auto zoom-in", this.AutoZoom);
@@ -6421,7 +6423,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          painter.FillToolbar();
          if (painter.options.Project && !painter.mode3d)
-              painter.ToggleProjection(painter.options.Project);
+              painter.toggleProjection(painter.options.Project);
 
           return painter;
       });

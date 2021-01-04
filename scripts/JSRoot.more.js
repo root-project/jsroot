@@ -1813,7 +1813,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
             let main = this.getFramePainter(),
                 userx = main ? main.revertAxis("x", pnt.x) : 0,
                 usery = main ? main.revertAxis("y", pnt.y) : 0;
-            canp.ShowMessage('InsertPoint(' + userx.toFixed(3) + ',' + usery.toFixed(3) + ') not yet implemented');
+            canp.showMessage('InsertPoint(' + userx.toFixed(3) + ',' + usery.toFixed(3) + ') not yet implemented');
          } else if (this.args_menu_id && hint && (hint.binindx !== undefined)) {
             this.submitCanvExec("RemovePoint(" + hint.binindx + ")", this.args_menu_id);
          }
