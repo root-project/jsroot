@@ -986,7 +986,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
 
    /** @summary Draw 1D/2D histograms in Lego mode
      * @private */
-   JSROOT.v7.RHistPainter.prototype.DrawLego = function() {
+   JSROOT.v7.RHistPainter.prototype.drawLego = function() {
 
       if (!this.draw_content) return;
 
@@ -1381,8 +1381,8 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
          // called when bins received from server, must be reentrant
          let main = this.getFramePainter();
 
-         this.DrawLego();
-         this.UpdatePaletteDraw();
+         this.drawLego();
+         this.updatePaletteDraw();
          main.render3D();
          main.addKeysHandler();
          return this;
@@ -1454,8 +1454,8 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       if (this.options.Contour)
          return this.drawContour3D(true);
 
-      this.DrawLego();
-      this.UpdatePaletteDraw();
+      this.drawLego();
+      this.updatePaletteDraw();
    }
 
    // ==============================================================================
@@ -1936,7 +1936,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
          );
       }
 
-      this.UpdatePaletteDraw();
+      this.updatePaletteDraw();
    }
 
    /** @summary Draw RH2 histogram in error mode
@@ -2430,8 +2430,9 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
    }
 
    /** @summary Try to draw 3D histogram as scatter plot
-     * @desc if too many points, box will be displayed */
-   RH3Painter.prototype.Draw3DScatter = function(handle) {
+     * @desc If there are too many points, box will be displayed
+     * @private */
+   RH3Painter.prototype.draw3DScatter = function(handle) {
 
       let histo = this.getHisto(),
           main = this.getFramePainter(),
@@ -2523,6 +2524,8 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       return true;
    }
 
+   /** @summary Drawing of 3D histogram
+     * @private */
    RH3Painter.prototype.draw3DBins = function() {
 
       if (!this.draw_content) return;
@@ -2530,7 +2533,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       let handle = this.PrepareDraw({ only_indexes: true, extra: -0.5, right_extra: -1 });
 
       if (this.options.Scatter)
-         if (this.Draw3DScatter(handle)) return;
+         if (this.draw3DScatter(handle)) return;
 
       let fillcolor = this.v7EvalColor("fill_color", "red"),
           main = this.getFramePainter(),
@@ -2839,9 +2842,11 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       }
 
       if (use_colors)
-         this.UpdatePaletteDraw();
+         this.updatePaletteDraw();
    }
 
+   /** @summary Redraw of 3D histogram
+     * @private */
    RH3Painter.prototype.redraw = function(reason) {
 
       let main = this.getFramePainter(); // who makes axis and 3D drawing

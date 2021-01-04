@@ -658,7 +658,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
    }
 
    /** @summary Update palette drawing */
-   RHistPainter.prototype.UpdatePaletteDraw = function() {
+   RHistPainter.prototype.updatePaletteDraw = function() {
       if (this.isMainPainter()) {
          let pp = this.getPadPainter().findPainterFor(undefined, undefined, "ROOT::Experimental::RPaletteDrawable");
          if (pp) pp.DrawPalette();
@@ -2320,7 +2320,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
                .attr("fill", handle.palette.getColor(colindx))
                .attr("d", colPaths[colindx]);
 
-      this.UpdatePaletteDraw();
+      this.updatePaletteDraw();
 
       return handle;
    }

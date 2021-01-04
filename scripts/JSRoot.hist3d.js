@@ -2445,8 +2445,9 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
    }
 
    /** @summary try to draw 3D histogram as scatter plot
-     * @desc if too many points, box will be displayed */
-   TH3Painter.prototype.Draw3DScatter = function() {
+     * @desc If there are too many points, box will be displayed
+     * @private */
+   TH3Painter.prototype.draw3DScatter = function() {
 
       let histo = this.getObject(),
           main = this.getFramePainter(),
@@ -2539,13 +2540,14 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       return true;
    }
 
-   /** @summary Actual draw of 3D histogram  */
+   /** @summary Drawing of 3D histogram
+     * @private */
    TH3Painter.prototype.draw3DBins = function() {
 
       if (!this.draw_content) return;
 
       if (!this.options.Box && !this.options.GLBox && !this.options.GLColor && !this.options.Lego)
-         if (this.Draw3DScatter()) return;
+         if (this.draw3DScatter()) return;
 
       let rootcolor = this.getObject().fFillColor,
           fillcolor = this.getColor(rootcolor),
@@ -3013,6 +3015,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
    TGraph2DPainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
 
+   /** @summary Decode options string  */
    TGraph2DPainter.prototype.decodeOptions = function(opt) {
       let d = new JSROOT.DrawOptions(opt);
 
@@ -3033,6 +3036,8 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       this.storeDrawOpt(opt);
    }
 
+   /** @summary Create histogram for axes drawing
+     * @private */
    TGraph2DPainter.prototype.createHistogram = function() {
       let gr = this.getObject(),
           xmin = gr.fX[0], xmax = xmin,
@@ -3092,50 +3097,8 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       return histo;
    }
 
-   TGraph2DPainter.prototype.Graph2DTooltip = function(intersect) {
-      if (isNaN(intersect.index)) {
-         console.error('intersect.index not provided, check three.js version', THREE.REVISION, 'expected r102');
-         return null;
-      }
-
-      let indx = Math.floor(intersect.index / this.nvertex);
-      if ((indx<0) || (indx >= this.index.length)) return null;
-
-      indx = this.index[indx];
-
-      let p = this.painter,
-          grx = p.grx(this.graph.fX[indx]),
-          gry = p.gry(this.graph.fY[indx]),
-          grz = p.grz(this.graph.fZ[indx]);
-
-      if (this.check_next && indx+1<this.graph.fX.length) {
-         function sqr(v) { return v*v; }
-         let d = intersect.point,
-             grx1 = p.grx(this.graph.fX[indx+1]),
-             gry1 = p.gry(this.graph.fY[indx+1]),
-             grz1 = p.grz(this.graph.fZ[indx+1]);
-         if (sqr(d.x-grx1)+sqr(d.y-gry1)+sqr(d.z-grz1) < sqr(d.x-grx)+sqr(d.y-gry)+sqr(d.z-grz)) {
-            grx = grx1; gry = gry1; grz = grz1; indx++;
-         }
-      }
-
-      return {
-         x1: grx - this.scale0,
-         x2: grx + this.scale0,
-         y1: gry - this.scale0,
-         y2: gry + this.scale0,
-         z1: grz - this.scale0,
-         z2: grz + this.scale0,
-         color: this.tip_color,
-         lines: [ this.tip_name,
-                  "pnt: " + indx,
-                  "x: " + p.axisAsText("x", this.graph.fX[indx]),
-                  "y: " + p.axisAsText("y", this.graph.fY[indx]),
-                  "z: " + p.axisAsText("z", this.graph.fZ[indx])
-                ]
-      }
-   }
-
+   /** @summary Actual drawing of TGraph2D object
+     * @private */
    TGraph2DPainter.prototype.redraw = function() {
 
       let main = this.getMainPainter(),
@@ -3145,7 +3108,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
       if (!graph || !main || !fp || !fp.mode3d) return;
 
-      function CountSelected(zmin, zmax) {
+      function countSelected(zmin, zmax) {
          let cnt = 0;
          for (let i=0; i < graph.fNpoints; ++i) {
             if ((graph.fX[i] < fp.scale_xmin) || (graph.fX[i] > fp.scale_xmax) ||
@@ -3157,9 +3120,53 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          return cnt;
       }
 
+      function graph2DTooltip(intersect) {
+         if (isNaN(intersect.index)) {
+            console.error('intersect.index not provided, check three.js version', THREE.REVISION, 'expected r121');
+            return null;
+         }
+
+         let indx = Math.floor(intersect.index / this.nvertex);
+         if ((indx<0) || (indx >= this.index.length)) return null;
+
+         indx = this.index[indx];
+
+         let p = this.painter,
+             grx = p.grx(this.graph.fX[indx]),
+             gry = p.gry(this.graph.fY[indx]),
+             grz = p.grz(this.graph.fZ[indx]);
+
+         if (this.check_next && indx+1<this.graph.fX.length) {
+            function sqr(v) { return v*v; }
+            let d = intersect.point,
+                grx1 = p.grx(this.graph.fX[indx+1]),
+                gry1 = p.gry(this.graph.fY[indx+1]),
+                grz1 = p.grz(this.graph.fZ[indx+1]);
+            if (sqr(d.x-grx1)+sqr(d.y-gry1)+sqr(d.z-grz1) < sqr(d.x-grx)+sqr(d.y-gry)+sqr(d.z-grz)) {
+               grx = grx1; gry = gry1; grz = grz1; indx++;
+            }
+         }
+
+         return {
+            x1: grx - this.scale0,
+            x2: grx + this.scale0,
+            y1: gry - this.scale0,
+            y2: gry + this.scale0,
+            z1: grz - this.scale0,
+            z2: grz + this.scale0,
+            color: this.tip_color,
+            lines: [ this.tip_name,
+                     "pnt: " + indx,
+                     "x: " + p.axisAsText("x", this.graph.fX[indx]),
+                     "y: " + p.axisAsText("y", this.graph.fY[indx]),
+                     "z: " + p.axisAsText("z", this.graph.fZ[indx])
+                   ]
+         }
+      }
+
       // try to define scale-down factor
       if ((JSROOT.settings.OptimizeDraw > 0) && !fp.webgl) {
-         let numselected = CountSelected(fp.scale_zmin, fp.scale_zmax),
+         let numselected = countSelected(fp.scale_zmin, fp.scale_zmax),
              sizelimit = 50000;
 
          if (numselected > sizelimit) {
@@ -3189,7 +3196,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
          if (lvl_zmin >= lvl_zmax) continue;
 
-         let size = Math.floor(CountSelected(lvl_zmin, lvl_zmax) / step),
+         let size = Math.floor(countSelected(lvl_zmin, lvl_zmax) / step),
              pnts = null, select = 0,
              index = new Int32Array(size), icnt = 0,
              err = null, line = null, ierr = 0, iline = 0;
@@ -3274,7 +3281,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
             linemesh.nvertex = 2;
             linemesh.check_next = true;
 
-            linemesh.tooltip = this.Graph2DTooltip;
+            linemesh.tooltip = graph2DTooltip;
          }
 
          if (err) {
@@ -3291,7 +3298,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
             errmesh.tip_color = (graph.fMarkerColor === 3) ? 0xFF0000 : 0x00FF00;
             errmesh.nvertex = 6;
 
-            errmesh.tooltip = this.Graph2DTooltip;
+            errmesh.tooltip = graph2DTooltip;
          }
 
          if (pnts) {
@@ -3310,7 +3317,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
             mesh.index = index;
 
             mesh.tip_name = this.getObjectHint();
-            mesh.tooltip = this.Graph2DTooltip;
+            mesh.tooltip = graph2DTooltip;
 
             fp.toplevel.add(mesh);
          }
@@ -3431,7 +3438,6 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
       return Promise.resolve(this);
    }
-
 
    JSROOT.TH3Painter = TH3Painter;
    JSROOT.TGraph2DPainter = TGraph2DPainter;

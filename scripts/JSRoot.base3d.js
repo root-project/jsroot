@@ -1275,8 +1275,6 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
          // let need_replace = JSROOT.nodejs && !globalThis.document;
          // if (need_replace) globalThis.document = JSROOT._.get_document();
 
-         console.log('plain svg', plainSVG);
-
          let texture = new THREE.TextureLoader().load( 'data:image/svg+xml;utf8,' + plainSVG);
 
          // if (need_replace) globalThis.document = undefined;
