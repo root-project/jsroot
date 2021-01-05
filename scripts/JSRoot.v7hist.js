@@ -2645,7 +2645,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       if (text_pos)
          bin._sumx = bin._sumy = bin._suml = 0;
 
-      function AddPoint(x1,y1,x2,y2) {
+      function addPoint(x1,y1,x2,y2) {
          let len = Math.sqrt((x1-x2)*(x1-x2) + (y1-y2)*(y1-y2));
          bin._sumx += (x1+x2)*len/2;
          bin._sumy += (y1+y2)*len/2;
@@ -2668,16 +2668,19 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
          for (n=1;n<npnts;++n) {
             nextx = Math.round(pmain.grx(x[n]));
             nexty = Math.round(pmain.gry(y[n]));
-            if (text_pos) AddPoint(grx,gry, nextx, nexty);
+            if (text_pos) addPoint(grx,gry, nextx, nexty);
             if ((grx!==nextx) || (gry!==nexty)) {
-               if (grx===nextx) cmd += "v" + (nexty - gry); else
-                  if (gry===nexty) cmd += "h" + (nextx - grx); else
-                     cmd += "l" + (nextx - grx) + "," + (nexty - gry);
+               if (grx===nextx)
+                  cmd += "v" + (nexty - gry);
+               else if (gry===nexty)
+                  cmd += "h" + (nextx - grx);
+               else
+                  cmd += "l" + (nextx - grx) + "," + (nexty - gry);
             }
             grx = nextx; gry = nexty;
          }
 
-         if (text_pos) AddPoint(grx, gry, Math.round(pmain.grx(x[0])), Math.round(pmain.gry(y[0])));
+         if (text_pos) addPoint(grx, gry, Math.round(pmain.grx(x[0])), Math.round(pmain.gry(y[0])));
          cmd += "z";
       }
 

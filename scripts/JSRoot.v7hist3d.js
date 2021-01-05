@@ -2482,14 +2482,14 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
                   // remember bin index for tooltip
                   bins[nbin++] = histo.getBin(i+1, j+1, k+1);
 
-                  pnts.AddPoint(main.grx(binx), main.gry(biny), main.grz(binz));
+                  pnts.addPoint(main.grx(binx), main.gry(biny), main.grz(binz));
                }
             }
          }
       }
 
       let color = this.v7EvalColor("fill_color", "red");
-      let mesh = pnts.CreatePoints(color);
+      let mesh = pnts.createPoints(color);
       main.toplevel.add(mesh);
 
       mesh.bins = bins;

@@ -303,7 +303,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          let end = controller.localToWorld(this._raycasterEnd.set(0, 0, -1));
          let origin = controller.localToWorld(this._raycasterOrigin.set(0, 0, 0));
          end.sub(origin).normalize();
-         intersects = intersects.concat(this._controls.GetOriginDirectionIntersects(origin, end));
+         intersects = intersects.concat(this._controls.getOriginDirectionIntersects(origin, end));
       }
       // Remove duplicates.
       intersects = intersects.filter(function (item, pos) {return intersects.indexOf(item) === pos});
@@ -1374,7 +1374,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          this.ProcessMouseMove([]); // to disable highlight and reset browser
       }
 
-      this._controls.ProcessDblClick = function() {
+      this._controls.processDblClick = function() {
          // painter already cleaned up, ignore any incoming events
          if (!painter.ctrl || !painter._controls) return;
 
@@ -2820,11 +2820,11 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
           pnts = new jsrp.PointsCreator(size, this._webgl, hit_size);
 
       for (let i=0;i<size;i++)
-         pnts.AddPoint(projx ? projv : hit.fP[i*3],
+         pnts.addPoint(projx ? projv : hit.fP[i*3],
                        projy ? projv : hit.fP[i*3+1],
                        projz ? projv : hit.fP[i*3+2]);
 
-      let mesh = pnts.CreatePoints({ color: jsrp.getColor(hit.fMarkerColor) || "rgb(0,0,255)", style: hit_style });
+      let mesh = pnts.createPoints({ color: jsrp.getColor(hit.fMarkerColor) || "rgb(0,0,255)", style: hit_style });
       mesh.renderOrder = 1000000; // to bring points to the front
       mesh.highlightScale = 2;
       mesh.geo_name = itemname;

@@ -2499,13 +2499,13 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
                   // remember bin index for tooltip
                   bins[nbin++] = histo.getBin(i+1, j+1, k+1);
 
-                  pnts.AddPoint(main.grx(binx), main.gry(biny), main.grz(binz));
+                  pnts.addPoint(main.grx(binx), main.gry(biny), main.grz(binz));
                }
             }
          }
       }
 
-      let mesh = pnts.CreatePoints(this.getColor(histo.fMarkerColor));
+      let mesh = pnts.createPoints(this.getColor(histo.fMarkerColor));
       main.toplevel.add(mesh);
 
       mesh.bins = bins;
@@ -3226,7 +3226,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
                 y = fp.gry(graph.fY[i]),
                 z = fp.grz(graph.fZ[i]);
 
-            if (pnts) pnts.AddPoint(x,y,z);
+            if (pnts) pnts.addPoint(x,y,z);
 
             if (err) {
                err[ierr]   = fp.grx(graph.fX[i] - graph.fEX[i]);
@@ -3308,7 +3308,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
                fcolor = palette ? palette.calcColor(lvl, levels.length)
                                 : this.getColor(graph.fMarkerColor);
 
-            let mesh = pnts.CreatePoints({ color: fcolor, style: this.options.Circles ? 4 : graph.fMarkerStyle });
+            let mesh = pnts.createPoints({ color: fcolor, style: this.options.Circles ? 4 : graph.fMarkerStyle });
 
             mesh.graph = graph;
             mesh.painter = fp;
@@ -3387,10 +3387,10 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
          index[icnt++] = i;
 
-         pnts.AddPoint(fp.grx(poly.fP[i]), fp.gry(poly.fP[i+1]), fp.grz(poly.fP[i+2]));
+         pnts.addPoint(fp.grx(poly.fP[i]), fp.gry(poly.fP[i+1]), fp.grz(poly.fP[i+2]));
       }
 
-      let mesh = pnts.CreatePoints({ color: this.getColor(poly.fMarkerColor),
+      let mesh = pnts.createPoints({ color: this.getColor(poly.fMarkerColor),
                                      style: poly.fMarkerStyle });
 
       mesh.tip_color = (poly.fMarkerColor === 3) ? 0xFF0000 : 0x00FF00;

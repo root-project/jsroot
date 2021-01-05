@@ -582,7 +582,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
          if ((evnt.buttons!==undefined) && (evnt.buttons !== 1)) return;
 
          if (control.enable_zoom) {
-            control.mouse_zoom_mesh = control.DetectZoomMesh(evnt);
+            control.mouse_zoom_mesh = control.detectZoomMesh(evnt);
             if (control.mouse_zoom_mesh) {
                // just block orbit control
                evnt.stopImmediatePropagation();
@@ -592,7 +592,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
          }
 
          if (control.enable_select)
-            control.mouse_select_pnt = control.GetMousePos(evnt, {});
+            control.mouse_select_pnt = control.getMousePos(evnt, {});
       }
 
       function control_mouseup(evnt) {
@@ -617,7 +617,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
 
          // if selection was drawn, it should be removed and picture rendered again
          if (control.enable_zoom)
-            control.RemoveZoomMesh();
+            control.removeZoomMesh();
 
          // only left-button is considered
          //if ((evnt.button!==undefined) && (evnt.button !==0)) return;
@@ -625,13 +625,13 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
 
          if (control.enable_select && control.mouse_select_pnt) {
 
-            let pnt = control.GetMousePos(evnt, {});
+            let pnt = control.getMousePos(evnt, {});
 
             let same_pnt = (pnt.x == control.mouse_select_pnt.x) && (pnt.y == control.mouse_select_pnt.y);
             delete control.mouse_select_pnt;
 
             if (same_pnt) {
-               let intersects = control.GetMouseIntersects(pnt);
+               let intersects = control.getMouseIntersects(pnt);
                control.painter.processMouseClick(pnt, intersects, evnt);
             }
          }
@@ -705,7 +705,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
          this.tooltip.hide();
       }
 
-      control.GetMousePos = function(evnt, mouse) {
+      control.getMousePos = function(evnt, mouse) {
          mouse.x = ('offsetX' in evnt) ? evnt.offsetX : evnt.layerX;
          mouse.y = ('offsetY' in evnt) ? evnt.offsetY : evnt.layerY;
          mouse.clientX = evnt.clientX;
@@ -713,7 +713,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
          return mouse;
       }
 
-      control.GetOriginDirectionIntersects = function(origin, direction) {
+      control.getOriginDirectionIntersects = function(origin, direction) {
          this.raycaster.set(origin, direction);
          let intersects = this.raycaster.intersectObjects(this.scene.children, true);
          // painter may want to filter intersects
@@ -722,7 +722,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
          return intersects;
       }
 
-      control.GetMouseIntersects = function(mouse) {
+      control.getMouseIntersects = function(mouse) {
          // domElement gives correct coordinate with canvas render, but isn't always right for webgl renderer
          if (!this.renderer) return [];
 
@@ -744,9 +744,9 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
          return intersects;
       }
 
-      control.DetectZoomMesh = function(evnt) {
-         let mouse = this.GetMousePos(evnt, {}),
-             intersects = this.GetMouseIntersects(mouse);
+      control.detectZoomMesh = function(evnt) {
+         let mouse = this.getMousePos(evnt, {}),
+             intersects = this.getMouseIntersects(mouse);
          if (intersects)
             for (let n = 0; n < intersects.length; ++n)
                if (intersects[n].object.zoom)
@@ -755,8 +755,8 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
          return null;
       }
 
-      control.ProcessDblClick = function(evnt) {
-         let intersect = this.DetectZoomMesh(evnt);
+      control.processDblClick = function(evnt) {
+         let intersect = this.detectZoomMesh(evnt);
          if (intersect && this.painter) {
             this.painter.unzoom(intersect.object.use_y_for_z ? "y" : intersect.object.zoom);
          } else {
@@ -765,13 +765,13 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
          // this.painter.render3D();
       }
 
-      control.ChangeEvent = function() {
+      control.changeEvent = function() {
          this.mouse_ctxt.on = false; // disable context menu if any changes where done by orbit control
          this.painter.render3D(0);
          this.control_changed = true;
       }
 
-      control.StartEvent = function() {
+      control.startEvent = function() {
          this.control_active = true;
          this.block_ctxt = false;
          this.mouse_ctxt.on = false;
@@ -783,26 +783,26 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
          // control.control_changed = false;
       }
 
-      control.EndEvent = function() {
+      control.endEvent = function() {
          this.control_active = false;
          if (this.mouse_ctxt.on) {
             this.mouse_ctxt.on = false;
-            this.contextMenu(this.mouse_ctxt, this.GetMouseIntersects(this.mouse_ctxt));
+            this.contextMenu(this.mouse_ctxt, this.getMouseIntersects(this.mouse_ctxt));
          } /* else if (this.control_changed) {
             // react on camera change when required
          } */
          this.control_changed = false;
       }
 
-      control.MainProcessContextMenu = function(evnt) {
+      control.mainProcessContextMenu = function(evnt) {
          evnt.preventDefault();
-         this.GetMousePos(evnt, this.mouse_ctxt);
+         this.getMousePos(evnt, this.mouse_ctxt);
          if (this.control_active)
             this.mouse_ctxt.on = true;
          else if (this.block_ctxt)
             this.block_ctxt = false;
          else
-            this.contextMenu(this.mouse_ctxt, this.GetMouseIntersects(this.mouse_ctxt));
+            this.contextMenu(this.mouse_ctxt, this.getMouseIntersects(this.mouse_ctxt));
       }
 
       control.contextMenu = function(/* pos, intersects */) {
@@ -813,17 +813,17 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
          this.block_mousemove = !on;
          if (on === false) {
             this.tooltip.hide();
-            this.RemoveZoomMesh();
+            this.removeZoomMesh();
          }
       }
 
-      control.RemoveZoomMesh = function() {
+      control.removeZoomMesh = function() {
          if (this.mouse_zoom_mesh && this.mouse_zoom_mesh.object.ShowSelection())
             this.painter.render3D();
          this.mouse_zoom_mesh = null; // in any case clear mesh, enable orbit control again
       }
 
-      control.MainProcessMouseMove = function(evnt) {
+      control.mainProcessMouseMove = function(evnt) {
          if (!this.painter) return; // protect when cleanup
 
          if (this.control_active && evnt.buttons && (evnt.buttons & 2))
@@ -834,7 +834,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
          if (this.mouse_zoom_mesh) {
             // when working with zoom mesh, need special handling
 
-            let zoom2 = this.DetectZoomMesh(evnt), pnt2 = null;
+            let zoom2 = this.detectZoomMesh(evnt), pnt2 = null;
 
             if (zoom2 && (zoom2.object === this.mouse_zoom_mesh.object)) {
                pnt2 = zoom2.point;
@@ -855,7 +855,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
          evnt.preventDefault();
 
          // extract mouse position
-         this.tmout_mouse = this.GetMousePos(evnt, {});
+         this.tmout_mouse = this.getMousePos(evnt, {});
          this.tmout_ttpos =  this.tooltip ? this.tooltip.extract_pos(evnt) : null;
 
          if (this.tmout_handle) {
@@ -864,18 +864,18 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
          }
 
          if (!this.mouse_tmout)
-            this.DelayedProcessMouseMove();
+            this.delayedProcessMouseMove();
          else
-            this.tmout_handle = setTimeout(this.DelayedProcessMouseMove.bind(this), this.mouse_tmout);
+            this.tmout_handle = setTimeout(() => this.delayedProcessMouseMove(), this.mouse_tmout);
       }
 
-      control.DelayedProcessMouseMove = function() {
+      control.delayedProcessMouseMove = function() {
          // remove handle - allow to trigger new timeout
          delete this.tmout_handle;
          if (!this.painter) return; // protect when cleanup
 
          let mouse = this.tmout_mouse,
-             intersects = this.GetMouseIntersects(mouse),
+             intersects = this.getMouseIntersects(mouse),
              tip = this.ProcessMouseMove(intersects);
 
          if (tip) {
@@ -907,7 +907,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
          document.body.style.cursor = this.cursor_changed ? 'pointer' : 'auto';
       }
 
-      control.MainProcessMouseLeave = function() {
+      control.mainProcessMouseLeave = function() {
          if (!this.painter) return; // protect when cleanup
 
          // do not enter main event at all
@@ -939,7 +939,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
             return; // already fired redraw, do not react on the mouse wheel
          }
 
-         let intersect = control.DetectZoomMesh(evnt);
+         let intersect = control.detectZoomMesh(evnt);
          if (!intersect) return;
 
          evnt.preventDefault();
@@ -963,14 +963,14 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
          }
       }
 
-      control.MainProcessDblClick = function(evnt) {
-         this.ProcessDblClick(evnt);
+      control.mainProcessDblClick = function(evnt) {
+         this.processDblClick(evnt);
       }
 
       if (painter && painter.options && painter.options.mouse_click) {
-         control.ProcessClick = function(mouse) {
+         control.processClick = function(mouse) {
             if (typeof this.ProcessSingleClick == 'function') {
-               let intersects = this.GetMouseIntersects(mouse);
+               let intersects = this.getMouseIntersects(mouse);
                this.ProcessSingleClick(intersects);
             }
          }
@@ -983,18 +983,18 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
 
             // if normal event, set longer timeout waiting if double click not detected
             if (evnt.detail != 2)
-               this.single_click_tmout = setTimeout(this.ProcessClick.bind(this, this.GetMousePos(evnt, {})), 300);
+               this.single_click_tmout = setTimeout(this.ProcessClick.bind(this, this.getMousePos(evnt, {})), 300);
          }.bind(control);
       }
 
-      control.addEventListener('change', control.ChangeEvent.bind(control));
-      control.addEventListener('start', control.StartEvent.bind(control));
-      control.addEventListener('end', control.EndEvent.bind(control));
+      control.addEventListener('change', () => control.changeEvent());
+      control.addEventListener('start', () => control.startEvent());
+      control.addEventListener('end', () => control.endEvent());
 
-      control.lstn_contextmenu = control.MainProcessContextMenu.bind(control);
-      control.lstn_dblclick = control.MainProcessDblClick.bind(control);
-      control.lstn_mousemove = control.MainProcessMouseMove.bind(control);
-      control.lstn_mouseleave = control.MainProcessMouseLeave.bind(control);
+      control.lstn_contextmenu = evnt => control.mainProcessContextMenu(evnt);
+      control.lstn_dblclick = evnt => control.mainProcessDblClick(evnt);
+      control.lstn_mousemove = evnt => control.mainProcessMouseMove(evnt);
+      control.lstn_mouseleave = () => control.mainProcessMouseLeave();
 
       if (control.lstn_click)
          renderer.domElement.addEventListener('click', control.lstn_click);
@@ -1235,7 +1235,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
    }
 
    /** @summary Add point */
-   PointsCreator.prototype.AddPoint = function(x,y,z) {
+   PointsCreator.prototype.addPoint = function(x,y,z) {
       this.pos[this.indx]   = x;
       this.pos[this.indx+1] = y;
       this.pos[this.indx+2] = z;
@@ -1243,7 +1243,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
    }
 
    /** @summary Create points */
-   PointsCreator.prototype.CreatePoints = function(args) {
+   PointsCreator.prototype.createPoints = function(args) {
 
       if (typeof args !== 'object')
          args = { color: args };
