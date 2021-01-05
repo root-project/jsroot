@@ -10,7 +10,7 @@ function extract_geo_tracks(tree, opt) {
 
    var selector = new JSROOT.TSelector();
 
-   selector.AddBranch("ESDfriend.fTracks.fPoints","pnts");
+   selector.addBranch("ESDfriend.fTracks.fPoints","pnts");
 
    var lst = JSROOT.create("TList"), numentry = 0, numtracks = 0;
 

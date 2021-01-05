@@ -4,8 +4,8 @@ let jsroot = require("jsroot");
 function createSelector() {
   let selector = new jsroot.TSelector();
 
-  selector.AddBranch("px");
-  selector.AddBranch("py");
+  selector.addBranch("px");
+  selector.addBranch("py");
 
   let cnt = 0, sumpx = 0, sumpy = 0;
 
