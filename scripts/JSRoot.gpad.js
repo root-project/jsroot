@@ -3013,7 +3013,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             let mainid = this.selectDom().attr("id");
             if (mainid && (typeof mainid == "string")) {
                this.brlayout = new JSROOT.BrowserLayout(mainid, null, this);
-               this.brlayout.Create(mainid, true);
+               this.brlayout.create(mainid, true);
                // this.brlayout.toggleBrowserKind("float");
                this.setDom(this.brlayout.drawing_divid()); // need to create canvas
                jsrp.registerForResize(this.brlayout);
@@ -4033,7 +4033,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Returns true if GED is present on the canvas */
    TCanvasPainter.prototype.hasGed = function() {
       if (this.testUI5()) return false;
-      return this.brlayout ? this.brlayout.HasContent() : false;
+      return this.brlayout ? this.brlayout.hasContent() : false;
    }
 
    /** @summary Function used to de-activate GED
@@ -4049,7 +4049,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          delete this.ged_view;
       }
       if (this.brlayout)
-         this.brlayout.DeleteContent();
+         this.brlayout.deleteContent();
 
       this.processChanges("sbits", this);
    }
@@ -4061,7 +4061,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (this.testUI5() || !this.brlayout)
          return Promise.resolve(false);
 
-      if (this.brlayout.HasContent()) {
+      if (this.brlayout.hasContent()) {
          if ((mode === "toggle") || (mode === false)) {
             this.removeGed();
          } else {
@@ -4080,10 +4080,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       JSROOT.require('interactive').then(inter => {
 
          inter.ToolbarIcons.CreateSVG(btns, inter.ToolbarIcons.diamand, 15, "toggle fix-pos mode")
-                            .style("margin","3px").on("click", () => this.brlayout.Toggle('fix'));
+                            .style("margin","3px").on("click", () => this.brlayout.toggleKind('fix'));
 
          inter.ToolbarIcons.CreateSVG(btns, inter.ToolbarIcons.circle, 15, "toggle float mode")
-                            .style("margin","3px").on("click", () => this.brlayout.Toggle('float'));
+                            .style("margin","3px").on("click", () => this.brlayout.toggleKind('float'));
 
          inter.ToolbarIcons.CreateSVG(btns, inter.ToolbarIcons.cross, 15, "delete GED")
                             .style("margin","3px").on("click", () => this.removeGed());
