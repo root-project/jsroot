@@ -84,19 +84,36 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
     *        -1 - unsupported
     * @returns detected node kind
     * @private */
-   geo.NodeKind = function(obj) {
+   geo.getNodeKind = function(obj) {
       if ((obj === undefined) || (obj === null) || (typeof obj !== 'object')) return -1;
       return ('fShape' in obj) && ('fTrans' in obj) ? 1 : 0;
    }
 
    /** @summary Returns number of shapes
-    *  @desc Used to count total shapes number in composites
-    * @private */
-   geo.CountNumShapes = function(shape) {
+     * @desc Used to count total shapes number in composites
+     * @private */
+   geo.countNumShapes = function(shape) {
       if (!shape) return 0;
       // if (shape._typename=="TGeoHalfSpace") geo.HalfSpace = true;
-      if (shape._typename!=='TGeoCompositeShape') return 1;
-      return geo.CountNumShapes(shape.fNode.fLeft) + geo.CountNumShapes(shape.fNode.fRight);
+      if (shape._typename !== 'TGeoCompositeShape') return 1;
+      return geo.countNumShapes(shape.fNode.fLeft) + geo.countNumShapes(shape.fNode.fRight);
+   }
+
+   /** @summary Create normal to plane, defined with three points
+     * @private */
+   geo.produceNormal = function(x1,y1,z1,x2,y2,z2,x3,y3,z3) {
+
+      let pA = new THREE.Vector3(x1,y1,z1),
+          pB = new THREE.Vector3(x2,y2,z2),
+          pC = new THREE.Vector3(x3,y3,z3),
+          cb = new THREE.Vector3(),
+          ab = new THREE.Vector3();
+
+      cb.subVectors( pC, pB );
+      ab.subVectors( pA, pB );
+      cb.cross(ab );
+
+      return cb;
    }
 
    // ==========================================================================
@@ -118,7 +135,9 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
       return this;
    }
 
-   GeometryCreator.prototype.AddFace3 = function(x1,y1,z1,
+   /** @summary Add face with 3 vertices
+     * @private */
+   GeometryCreator.prototype.addFace3 = function(x1,y1,z1,
                                                  x2,y2,z2,
                                                  x3,y3,z3) {
       let indx = this.indx, pos = this.pos;
@@ -135,21 +154,22 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
       this.indx = indx + 9;
    }
 
-   GeometryCreator.prototype.StartPolygon = function() {}
-   GeometryCreator.prototype.StopPolygon = function() {}
+   GeometryCreator.prototype.startPolygon = function() {}
+   GeometryCreator.prototype.stopPolygon = function() {}
 
-   GeometryCreator.prototype.AddFace4 = function(x1,y1,z1,
+   /** @summary Add face with 4 vertices
+     * @desc From four vertices one normally creates two faces (1,2,3) and (1,3,4)
+     * if (reduce==1), first face is reduced
+     * if (reduce==2), second face is reduced
+     * @private */
+   GeometryCreator.prototype.addFace4 = function(x1,y1,z1,
                                                  x2,y2,z2,
                                                  x3,y3,z3,
                                                  x4,y4,z4,
                                                  reduce) {
-      // from four vertices one normally creates two faces (1,2,3) and (1,3,4)
-      // if (reduce==1), first face is reduced
-      // if (reduce==2), second face is reduced
-
       let indx = this.indx, pos = this.pos;
 
-      if (reduce!==1) {
+      if (reduce !== 1) {
          pos[indx] = x1;
          pos[indx+1] = y1;
          pos[indx+2] = z1;
@@ -162,7 +182,7 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
          indx+=9;
       }
 
-      if (reduce!==2) {
+      if (reduce !== 2) {
          pos[indx] = x1;
          pos[indx+1] = y1;
          pos[indx+2] = z1;
@@ -179,16 +199,17 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
       this.indx = indx;
    }
 
-   GeometryCreator.prototype.SetNormal4 = function(nx1,ny1,nz1,
-                                                              nx2,ny2,nz2,
-                                                              nx3,ny3,nz3,
-                                                              nx4,ny4,nz4,
-                                                              reduce) {
-     // same as AddFace4, assign normals for each individual vertex
-     // reduce has same meaning and should be the same
-
+   /** @summary Specify normal for face with 4 vertices
+     * @desc same as addFace4, assign normals for each individual vertex
+     * reduce has same meaning and should be the same
+     * @private */
+   GeometryCreator.prototype.setNormal4 = function(nx1,ny1,nz1,
+                                                   nx2,ny2,nz2,
+                                                   nx3,ny3,nz3,
+                                                   nx4,ny4,nz4,
+                                                   reduce) {
       if (this.last4 && reduce)
-         return console.error('missmatch between AddFace4 and SetNormal4 calls');
+         return console.error('missmatch between addFace4 and setNormal4 calls');
 
       let indx = this.indx - (this.last4 ? 18 : 9), norm = this.norm;
 
@@ -218,7 +239,9 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
       }
    }
 
-   GeometryCreator.prototype.RecalcZ = function(func) {
+   /** @summary Recalculate Z with provided func
+     * @private */
+   GeometryCreator.prototype.recalcZ = function(func) {
       let pos = this.pos,
           last = this.indx,
           indx = last - (this.last4 ? 18 : 9);
@@ -229,22 +252,9 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
       }
    }
 
-   geo.GetNormal = function(x1,y1,z1,x2,y2,z2,x3,y3,z3) {
-
-      let pA = new THREE.Vector3(x1,y1,z1),
-          pB = new THREE.Vector3(x2,y2,z2),
-          pC = new THREE.Vector3(x3,y3,z3),
-          cb = new THREE.Vector3(),
-          ab = new THREE.Vector3();
-
-      cb.subVectors( pC, pB );
-      ab.subVectors( pA, pB );
-      cb.cross(ab );
-
-      return cb;
-   }
-
-   GeometryCreator.prototype.CalcNormal = function() {
+   /** @summary Caclualte normal
+     * @private */
+   GeometryCreator.prototype.calcNormal = function() {
       if (!this.cb) {
          this.pA = new THREE.Vector3();
          this.pB = new THREE.Vector3();
@@ -261,10 +271,12 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
       this.ab.subVectors( this.pA, this.pB );
       this.cb.cross( this.ab );
 
-      this.SetNormal(this.cb.x, this.cb.y, this.cb.z);
+      this.setNormal(this.cb.x, this.cb.y, this.cb.z);
    }
 
-   GeometryCreator.prototype.SetNormal = function(nx,ny,nz) {
+   /** @summary Set normal
+     * @private */
+   GeometryCreator.prototype.setNormal = function(nx,ny,nz) {
       let indx = this.indx - 9, norm = this.norm;
 
       norm[indx]   = norm[indx+3] = norm[indx+6] = nx;
@@ -279,8 +291,10 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
       }
    }
 
-   GeometryCreator.prototype.SetNormal_12_34 = function(nx12,ny12,nz12,nx34,ny34,nz34,reduce) {
-      // special shortcut, when same normals can be applied for 1-2 point and 3-4 point
+   /** @summary Set normal
+     * @desc special shortcut, when same normals can be applied for 1-2 point and 3-4 point
+     * @private */
+   GeometryCreator.prototype.setNormal_12_34 = function(nx12,ny12,nz12,nx34,ny34,nz34,reduce) {
       if (reduce===undefined) reduce = 0;
 
       let indx = this.indx - ((reduce>0) ? 9 : 18), norm = this.norm;
@@ -312,7 +326,9 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
       }
    }
 
-   GeometryCreator.prototype.Create = function() {
+   /** @summary Create geometry
+     * @private */
+   GeometryCreator.prototype.create = function() {
       if (this.nfaces !== this.indx/9)
          console.error('Mismatch with created ' + this.nfaces + ' and filled ' + this.indx/9 + ' number of faces');
 
@@ -335,33 +351,40 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
       this.polygons = [];
    }
 
-   PolygonsCreator.prototype.StartPolygon = function(normal) {
+   /** @summary Start polygon
+     * @private */
+   PolygonsCreator.prototype.startPolygon = function(normal) {
       this.multi = 1;
       this.mnormal = normal;
    }
 
-   PolygonsCreator.prototype.StopPolygon = function() {
+   /** @summary Stop polygon
+     * @private */
+   PolygonsCreator.prototype.stopPolygon = function() {
       if (!this.multi) return;
       this.multi = 0;
       console.error('Polygon should be already closed at this moment');
    }
 
-   PolygonsCreator.prototype.AddFace3 = function(x1,y1,z1,
+   /** @summary Add face with 3 vertices
+     * @private */
+   PolygonsCreator.prototype.addFace3 = function(x1,y1,z1,
                                                  x2,y2,z2,
                                                  x3,y3,z3) {
-      this.AddFace4(x1,y1,z1,x2,y2,z2,x3,y3,z3,x3,y3,z3,2);
+      this.addFace4(x1,y1,z1,x2,y2,z2,x3,y3,z3,x3,y3,z3,2);
    }
 
 
-   PolygonsCreator.prototype.AddFace4 = function(x1,y1,z1,
+   /** @summary Add face with 4 vertices
+     * @desc From four vertices one normally creates two faces (1,2,3) and (1,3,4)
+     * if (reduce==1), first face is reduced
+     * if (reduce==2), second face is reduced
+     * @private */
+   PolygonsCreator.prototype.addFace4 = function(x1,y1,z1,
                                                  x2,y2,z2,
                                                  x3,y3,z3,
                                                  x4,y4,z4,
                                                  reduce) {
-      // from four vertices one normally creates two faces (1,2,3) and (1,3,4)
-      // if (reduce==1), first face is reduced
-      //  if (reduce==2), second face is reduced
-
       if (reduce === undefined) reduce = 0;
 
       this.v1 = new ThreeBSP.Vertex( x1, y1, z1, 0, 0, 0 );
@@ -420,7 +443,11 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
       this.polygons.push(polygon);
    }
 
-   PolygonsCreator.prototype.SetNormal4 = function(nx1,ny1,nz1,
+   /** @summary Specify normal for face with 4 vertices
+     * @desc same as addFace4, assign normals for each individual vertex
+     * reduce has same meaning and should be the same
+     * @private */
+   PolygonsCreator.prototype.setNormal4 = function(nx1,ny1,nz1,
                                                    nx2,ny2,nz2,
                                                    nx3,ny3,nz3,
                                                    nx4,ny4,nz4) {
@@ -430,15 +457,19 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
       if (this.v4) this.v4.setnormal(nx4,ny4,nz4);
    }
 
-   PolygonsCreator.prototype.SetNormal_12_34 = function(nx12,ny12,nz12,nx34,ny34,nz34) {
-      // special shortcut, when same normals can be applied for 1-2 point and 3-4 point
+   /** @summary Set normal
+     * @desc special shortcut, when same normals can be applied for 1-2 point and 3-4 point
+     * @private */
+   PolygonsCreator.prototype.setNormal_12_34 = function(nx12,ny12,nz12,nx34,ny34,nz34) {
       this.v1.setnormal(nx12,ny12,nz12);
       if (this.v2) this.v2.setnormal(nx12,ny12,nz12);
       this.v3.setnormal(nx34,ny34,nz34);
       if (this.v4) this.v4.setnormal(nx34,ny34,nz34);
    }
 
-   PolygonsCreator.prototype.CalcNormal = function() {
+   /** @summary Calculate normal
+     * @private */
+   PolygonsCreator.prototype.calcNormal = function() {
 
       if (!this.cb) {
          this.pA = new THREE.Vector3();
@@ -462,25 +493,30 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
       this.ab.subVectors( this.pA, this.pB );
       this.cb.cross( this.ab );
 
-      this.SetNormal(this.cb.x, this.cb.y, this.cb.z);
+      this.setNormal(this.cb.x, this.cb.y, this.cb.z);
    }
 
-
-   PolygonsCreator.prototype.SetNormal = function(nx,ny,nz) {
+   /** @summary Set normal
+     * @private */
+   PolygonsCreator.prototype.setNormal = function(nx,ny,nz) {
       this.v1.setnormal(nx,ny,nz);
       if (this.v2) this.v2.setnormal(nx,ny,nz);
       this.v3.setnormal(nx,ny,nz);
       if (this.v4) this.v4.setnormal(nx,ny,nz);
    }
 
-   PolygonsCreator.prototype.RecalcZ = function(func) {
+   /** @summary Recalculate Z with provided func
+     * @private */
+   PolygonsCreator.prototype.recalcZ = function(func) {
       this.v1.z = func(this.v1.x, this.v1.y, this.v1.z);
       if (this.v2) this.v2.z = func(this.v2.x, this.v2.y, this.v2.z);
       this.v3.z = func(this.v3.x, this.v3.y, this.v3.z);
       if (this.v4) this.v4.z = func(this.v4.x, this.v4.y, this.v4.z);
    }
 
-   PolygonsCreator.prototype.Create = function() {
+   /** @summary Create geometry
+     * @private */
+   PolygonsCreator.prototype.create = function() {
       return { polygons: this.polygons };
    }
 
@@ -497,19 +533,19 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
 
       let creator = faces_limit ? new PolygonsCreator : new GeometryCreator(12);
 
-      creator.AddFace4(dx,dy,dz, dx,-dy,dz, dx,-dy,-dz, dx,dy,-dz); creator.SetNormal(1,0,0);
+      creator.addFace4(dx,dy,dz, dx,-dy,dz, dx,-dy,-dz, dx,dy,-dz); creator.setNormal(1,0,0);
 
-      creator.AddFace4(-dx,dy,-dz, -dx,-dy,-dz, -dx,-dy,dz, -dx,dy,dz); creator.SetNormal(-1,0,0);
+      creator.addFace4(-dx,dy,-dz, -dx,-dy,-dz, -dx,-dy,dz, -dx,dy,dz); creator.setNormal(-1,0,0);
 
-      creator.AddFace4(-dx,dy,-dz, -dx,dy,dz, dx,dy,dz, dx,dy,-dz); creator.SetNormal(0,1,0);
+      creator.addFace4(-dx,dy,-dz, -dx,dy,dz, dx,dy,dz, dx,dy,-dz); creator.setNormal(0,1,0);
 
-      creator.AddFace4(-dx,-dy,dz, -dx,-dy,-dz, dx,-dy,-dz, dx,-dy,dz); creator.SetNormal(0,-1,0);
+      creator.addFace4(-dx,-dy,dz, -dx,-dy,-dz, dx,-dy,-dz, dx,-dy,dz); creator.setNormal(0,-1,0);
 
-      creator.AddFace4(-dx,dy,dz, -dx,-dy,dz, dx,-dy,dz, dx,dy,dz); creator.SetNormal(0,0,1);
+      creator.addFace4(-dx,dy,dz, -dx,-dy,dz, dx,-dy,dz, dx,dy,dz); creator.setNormal(0,0,1);
 
-      creator.AddFace4(dx,dy,-dz, dx,-dy,-dz, -dx,-dy,-dz, -dx,dy,-dz); creator.SetNormal(0,0,-1);
+      creator.addFace4(dx,dy,-dz, dx,-dy,-dz, -dx,-dy,-dz, -dx,dy,-dz); creator.setNormal(0,0,-1);
 
-      return creator.Create();
+      return creator.create();
    }
 
    /** @summary Creates 8 edges geometry
@@ -526,13 +562,17 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
              i2 = indicies[n+1]*3,
              i3 = indicies[n+2]*3,
              i4 = indicies[n+3]*3;
-         creator.AddFace4(v[i1], v[i1+1], v[i1+2], v[i2], v[i2+1], v[i2+2],
+         creator.addFace4(v[i1], v[i1+1], v[i1+2], v[i2], v[i2+1], v[i2+2],
                           v[i3], v[i3+1], v[i3+2], v[i4], v[i4+1], v[i4+2]);
-         if (n===0) creator.SetNormal(0,0,1); else
-         if (n===20) creator.SetNormal(0,0,-1); else creator.CalcNormal();
+         if (n===0)
+            creator.setNormal(0,0,1);
+         else if (n===20)
+            creator.setNormal(0,0,-1);
+         else
+            creator.calcNormal();
       }
 
-      return creator.Create();
+      return creator.create();
    }
 
    /** @summary Creates PARA geometrey
@@ -654,13 +694,13 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
             // try to identify two faces with same normal - very useful if one can create face4
             if (n===0) norm = new THREE.Vector3(0,0,1); else
             if (n===30) norm = new THREE.Vector3(0,0,-1); else {
-               let norm1 = geo.GetNormal(vertices[i1], vertices[i1+1], vertices[i1+2],
+               let norm1 = geo.produceNormal(vertices[i1], vertices[i1+1], vertices[i1+2],
                                                 vertices[i2], vertices[i2+1], vertices[i2+2],
                                                 vertices[i3], vertices[i3+1], vertices[i3+2]);
 
                norm1.normalize();
 
-               let norm2 = geo.GetNormal(vertices[i4], vertices[i4+1], vertices[i4+2],
+               let norm2 = geo.produceNormal(vertices[i4], vertices[i4+1], vertices[i4+2],
                                                 vertices[i5], vertices[i5+1], vertices[i5+2],
                                                 vertices[i6], vertices[i6+1], vertices[i6+2]);
 
@@ -671,28 +711,28 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
          }
 
          if (norm !== null) {
-            creator.AddFace4(vertices[i1], vertices[i1+1], vertices[i1+2],
+            creator.addFace4(vertices[i1], vertices[i1+1], vertices[i1+2],
                              vertices[i2], vertices[i2+1], vertices[i2+2],
                              vertices[i3], vertices[i3+1], vertices[i3+2],
                              vertices[i5], vertices[i5+1], vertices[i5+2]);
-            creator.SetNormal(norm.x, norm.y, norm.z);
+            creator.setNormal(norm.x, norm.y, norm.z);
          }  else {
             if (i1>=0) {
-               creator.AddFace3(vertices[i1], vertices[i1+1], vertices[i1+2],
+               creator.addFace3(vertices[i1], vertices[i1+1], vertices[i1+2],
                                 vertices[i2], vertices[i2+1], vertices[i2+2],
                                 vertices[i3], vertices[i3+1], vertices[i3+2]);
-               creator.CalcNormal();
+               creator.calcNormal();
             }
             if (i4>=0) {
-               creator.AddFace3(vertices[i4], vertices[i4+1], vertices[i4+2],
+               creator.addFace3(vertices[i4], vertices[i4+1], vertices[i4+2],
                                 vertices[i5], vertices[i5+1], vertices[i5+2],
                                 vertices[i6], vertices[i6+1], vertices[i6+2]);
-               creator.CalcNormal();
+               creator.calcNormal();
             }
          }
       }
 
-      return creator.Create();
+      return creator.create();
    }
 
    /** @summary Creates sphere geometrey
@@ -770,13 +810,13 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
             if (Math.abs(_sint[k2]) <= epsilon) skip = 2;
 
             for (let n=0;n<widthSegments;++n) {
-               creator.AddFace4(
+               creator.addFace4(
                      r*_sint[k1]*_cosp[n],   r*_sint[k1] *_sinp[n],   r*_cost[k1],
                      r*_sint[k1]*_cosp[n+1], r*_sint[k1] *_sinp[n+1], r*_cost[k1],
                      r*_sint[k2]*_cosp[n+1], r*_sint[k2] *_sinp[n+1], r*_cost[k2],
                      r*_sint[k2]*_cosp[n],   r*_sint[k2] *_sinp[n],   r*_cost[k2],
                      skip);
-               creator.SetNormal4(
+               creator.setNormal4(
                      s*_sint[k1]*_cosp[n],   s*_sint[k1] *_sinp[n],   s*_cost[k1],
                      s*_sint[k1]*_cosp[n+1], s*_sint[k1] *_sinp[n+1], s*_cost[k1],
                      s*_sint[k2]*_cosp[n+1], s*_sint[k2] *_sinp[n+1], s*_cost[k2],
@@ -792,13 +832,13 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
             let ss = _sint[side], cc = _cost[side],
                 d1 = (side===0) ? 0 : 1, d2 = 1 - d1;
             for (let n=0;n<widthSegments;++n) {
-               creator.AddFace4(
+               creator.addFace4(
                      radius[1] * ss * _cosp[n+d1], radius[1] * ss * _sinp[n+d1], radius[1] * cc,
                      radius[0] * ss * _cosp[n+d1], radius[0] * ss * _sinp[n+d1], radius[0] * cc,
                      radius[0] * ss * _cosp[n+d2], radius[0] * ss * _sinp[n+d2], radius[0] * cc,
                      radius[1] * ss * _cosp[n+d2], radius[1] * ss * _sinp[n+d2], radius[1] * cc,
                      noInside ? 2 : 0);
-               creator.CalcNormal();
+               creator.calcNormal();
             }
          }
 
@@ -809,18 +849,18 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
                 d1 = (side === 0) ? 1 : 0, d2 = 1 - d1;
 
             for (let k=0;k<heightSegments;++k) {
-               creator.AddFace4(
+               creator.addFace4(
                      radius[1] * _sint[k+d1] * cc, radius[1] * _sint[k+d1] * ss, radius[1] * _cost[k+d1],
                      radius[0] * _sint[k+d1] * cc, radius[0] * _sint[k+d1] * ss, radius[0] * _cost[k+d1],
                      radius[0] * _sint[k+d2] * cc, radius[0] * _sint[k+d2] * ss, radius[0] * _cost[k+d2],
                      radius[1] * _sint[k+d2] * cc, radius[1] * _sint[k+d2] * ss, radius[1] * _cost[k+d2],
                      noInside ? 2 : 0);
-               creator.CalcNormal();
+               creator.calcNormal();
             }
          }
       }
 
-      return creator.Create();
+      return creator.create();
    }
 
    /** @summary Creates tube geometrey
@@ -902,16 +942,16 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
          if (R[1] <= 0) reduce = 1;
 
          for (let seg=0;seg<radiusSegments;++seg) {
-            creator.AddFace4(
+            creator.addFace4(
                   R[0] * _cos[seg+d1], R[0] * _sin[seg+d1],  shape.fDZ,
                   R[1] * _cos[seg+d1], R[1] * _sin[seg+d1], -shape.fDZ,
                   R[1] * _cos[seg+d2], R[1] * _sin[seg+d2], -shape.fDZ,
                   R[0] * _cos[seg+d2], R[0] * _sin[seg+d2],  shape.fDZ,
                   reduce );
 
-            if (calcZ) creator.RecalcZ(calcZ);
+            if (calcZ) creator.recalcZ(calcZ);
 
-            creator.SetNormal_12_34(nxy*_cos[seg+d1], nxy*_sin[seg+d1], nz,
+            creator.setNormal_12_34(nxy*_cos[seg+d1], nxy*_sin[seg+d1], nz,
                                     nxy*_cos[seg+d2], nxy*_sin[seg+d2], nz,
                                     reduce);
          }
@@ -924,46 +964,46 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
          let d1 = side, d2 = 1- side,
              sign = (side == 0) ? 1 : -1,
              reduce = (innerR[side] <= 0) ? 2 : 0;
-         if ((reduce==2) && (thetaLength === 360) && !calcZ) creator.StartPolygon(side===0);
+         if ((reduce==2) && (thetaLength === 360) && !calcZ) creator.startPolygon(side===0);
          for (let seg=0;seg<radiusSegments;++seg) {
-            creator.AddFace4(
+            creator.addFace4(
                   innerR[side] * _cos[seg+d1], innerR[side] * _sin[seg+d1], sign*shape.fDZ,
                   outerR[side] * _cos[seg+d1], outerR[side] * _sin[seg+d1], sign*shape.fDZ,
                   outerR[side] * _cos[seg+d2], outerR[side] * _sin[seg+d2], sign*shape.fDZ,
                   innerR[side] * _cos[seg+d2], innerR[side] * _sin[seg+d2], sign*shape.fDZ,
                   reduce);
             if (calcZ) {
-               creator.RecalcZ(calcZ);
-               creator.CalcNormal();
+               creator.recalcZ(calcZ);
+               creator.calcNormal();
             } else {
-               creator.SetNormal(0,0,sign);
+               creator.setNormal(0,0,sign);
             }
          }
 
-         creator.StopPolygon();
+         creator.stopPolygon();
       }
 
       // create cut surfaces
       if (thetaLength < 360) {
-         creator.AddFace4(innerR[1] * _cos[0], innerR[1] * _sin[0], -shape.fDZ,
+         creator.addFace4(innerR[1] * _cos[0], innerR[1] * _sin[0], -shape.fDZ,
                           outerR[1] * _cos[0], outerR[1] * _sin[0], -shape.fDZ,
                           outerR[0] * _cos[0], outerR[0] * _sin[0],  shape.fDZ,
                           innerR[0] * _cos[0], innerR[0] * _sin[0],  shape.fDZ,
                           (outerR[0] === innerR[0]) ? 2 : ((innerR[1]===outerR[1]) ? 1 : 0) );
-         if (calcZ) creator.RecalcZ(calcZ);
-         creator.CalcNormal();
+         if (calcZ) creator.recalcZ(calcZ);
+         creator.calcNormal();
 
-         creator.AddFace4(innerR[0] * _cos[radiusSegments], innerR[0] * _sin[radiusSegments],  shape.fDZ,
+         creator.addFace4(innerR[0] * _cos[radiusSegments], innerR[0] * _sin[radiusSegments],  shape.fDZ,
                           outerR[0] * _cos[radiusSegments], outerR[0] * _sin[radiusSegments],  shape.fDZ,
                           outerR[1] * _cos[radiusSegments], outerR[1] * _sin[radiusSegments], -shape.fDZ,
                           innerR[1] * _cos[radiusSegments], innerR[1] * _sin[radiusSegments], -shape.fDZ,
                           (outerR[0] === innerR[0]) ? 1 : ((innerR[1]===outerR[1]) ? 2 : 0));
 
-         if (calcZ) creator.RecalcZ(calcZ);
-         creator.CalcNormal();
+         if (calcZ) creator.recalcZ(calcZ);
+         creator.calcNormal();
       }
 
-      return creator.Create();
+      return creator.create();
    }
 
    /** @summary Creates eltu geometrey
@@ -988,7 +1028,7 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
 
       // create tube faces
       for (let seg=0; seg<radiusSegments; ++seg) {
-         creator.AddFace4(x[seg],   y[seg],   +shape.fDZ,
+         creator.addFace4(x[seg],   y[seg],   +shape.fDZ,
                           x[seg],   y[seg],   -shape.fDZ,
                           x[seg+1], y[seg+1], -shape.fDZ,
                           x[seg+1], y[seg+1],  shape.fDZ);
@@ -1000,21 +1040,21 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
          let dist = Math.sqrt(nx2*nx2 + ny2*ny2);
          nx2 = nx2 / dist; ny2 = ny2/dist;
 
-         creator.SetNormal_12_34(nx1,ny1,0,nx2,ny2,0);
+         creator.setNormal_12_34(nx1,ny1,0,nx2,ny2,0);
       }
 
       // create top/bottom sides
       for (let side=0;side<2;++side) {
          let sign = (side===0) ? 1 : -1, d1 = side, d2 = 1 - side;
          for (let seg=0; seg<radiusSegments; ++seg) {
-            creator.AddFace3(0,          0,          sign*shape.fDZ,
+            creator.addFace3(0,          0,          sign*shape.fDZ,
                              x[seg+d1],  y[seg+d1],  sign*shape.fDZ,
                              x[seg+d2],  y[seg+d2],  sign*shape.fDZ);
-            creator.SetNormal(0, 0, sign);
+            creator.setNormal(0, 0, sign);
          }
       }
 
-      return creator.Create();
+      return creator.create();
    }
 
    /** @summary Creates torus geometrey
@@ -1074,7 +1114,7 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
                p3.x = (radius + tube * _cosr[n+1]) * _cost[t2]; p3.y = (radius + tube * _cosr[n+1]) * _sint[t2]; p3.z = tube*_sinr[n+1];
                p4.x = (radius + tube * _cosr[n])   * _cost[t2]; p4.y = (radius + tube * _cosr[n])   * _sint[t2]; p4.z = tube*_sinr[n];
 
-               creator.AddFace4(p1.x, p1.y, p1.z,
+               creator.addFace4(p1.x, p1.y, p1.z,
                                 p2.x, p2.y, p2.z,
                                 p3.x, p3.y, p3.z,
                                 p4.x, p4.y, p4.z);
@@ -1084,7 +1124,7 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
                n3.subVectors( p3, center2 ).normalize();
                n4.subVectors( p4, center2 ).normalize();
 
-               creator.SetNormal4(ns*n1.x, ns*n1.y, ns*n1.z,
+               creator.setNormal4(ns*n1.x, ns*n1.y, ns*n1.z,
                                   ns*n2.x, ns*n2.y, ns*n2.z,
                                   ns*n3.x, ns*n3.y, ns*n3.z,
                                   ns*n4.x, ns*n4.y, ns*n4.z);
@@ -1099,15 +1139,15 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
                 skip = (shape.fRmin) > 0 ?  0 : 1,
                 nsign = t>0 ? 1 : -1;
             for (let n=0;n<radialSegments;++n) {
-               creator.AddFace4((radius + tube1 * _cosr[n+d1]) * _cost[t], (radius + tube1 * _cosr[n+d1]) * _sint[t], tube1*_sinr[n+d1],
+               creator.addFace4((radius + tube1 * _cosr[n+d1]) * _cost[t], (radius + tube1 * _cosr[n+d1]) * _sint[t], tube1*_sinr[n+d1],
                                 (radius + tube2 * _cosr[n+d1]) * _cost[t], (radius + tube2 * _cosr[n+d1]) * _sint[t], tube2*_sinr[n+d1],
                                 (radius + tube2 * _cosr[n+d2]) * _cost[t], (radius + tube2 * _cosr[n+d2]) * _sint[t], tube2*_sinr[n+d2],
                                 (radius + tube1 * _cosr[n+d2]) * _cost[t], (radius + tube1 * _cosr[n+d2]) * _sint[t], tube1*_sinr[n+d2], skip);
-               creator.SetNormal(-nsign* _sint[t], nsign * _cost[t], 0);
+               creator.setNormal(-nsign* _sint[t], nsign * _cost[t], 0);
             }
          }
 
-      return creator.Create();
+      return creator.create();
    }
 
 
@@ -1232,11 +1272,11 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
             if (side>0) { nxy*=-1; nz*=-1; }
 
             for (let seg=0;seg < radiusSegments;++seg) {
-               creator.AddFace4(r1 * _cos[seg+d1], r1 * _sin[seg+d1], z1,
+               creator.addFace4(r1 * _cos[seg+d1], r1 * _sin[seg+d1], z1,
                                 r2 * _cos[seg+d1], r2 * _sin[seg+d1], z2,
                                 r2 * _cos[seg+d2], r2 * _sin[seg+d2], z2,
                                 r1 * _cos[seg+d2], r1 * _sin[seg+d2], z1);
-               creator.SetNormal_12_34(nxy*_cos[seg+d1], nxy*_sin[seg+d1], nz, nxy*_cos[seg+d2], nxy*_sin[seg+d2], nz);
+               creator.setNormal_12_34(nxy*_cos[seg+d1], nxy*_sin[seg+d1], nz, nxy*_cos[seg+d2], nxy*_sin[seg+d2], nz);
             }
 
             z1 = z2; r1 = r2;
@@ -1254,18 +1294,18 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
              d1 = (layer===0) ? 1 : 0, d2 = 1 - d1,
              normalz = (layer===0) ? -1: 1;
 
-         if (!hasrmin && !cut_faces) creator.StartPolygon(layer>0);
+         if (!hasrmin && !cut_faces) creator.startPolygon(layer>0);
 
          for (let seg=0;seg < radiusSegments;++seg) {
-            creator.AddFace4(rmin * _cos[seg+d1], rmin * _sin[seg+d1], layerz,
+            creator.addFace4(rmin * _cos[seg+d1], rmin * _sin[seg+d1], layerz,
                              rmax * _cos[seg+d1], rmax * _sin[seg+d1], layerz,
                              rmax * _cos[seg+d2], rmax * _sin[seg+d2], layerz,
                              rmin * _cos[seg+d2], rmin * _sin[seg+d2], layerz,
                              hasrmin ? 0 : 2);
-            creator.SetNormal(0, 0, normalz);
+            creator.setNormal(0, 0, normalz);
          }
 
-         creator.StopPolygon();
+         creator.stopPolygon();
       }
 
       if (cut_faces)
@@ -1276,15 +1316,15 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
                    b = pnts[cut_faces[n][d1]],
                    c = pnts[cut_faces[n][d2]];
 
-               creator.AddFace3(a.x * _cos[seg], a.x * _sin[seg], a.y,
+               creator.addFace3(a.x * _cos[seg], a.x * _sin[seg], a.y,
                                 b.x * _cos[seg], b.x * _sin[seg], b.y,
                                 c.x * _cos[seg], c.x * _sin[seg], c.y);
 
-               creator.CalcNormal();
+               creator.calcNormal();
             }
          }
 
-      return creator.Create();
+      return creator.create();
    }
 
    /** @summary Creates xtru geometrey
@@ -1319,11 +1359,11 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
 
          for (let vert1 = 0; vert1 < shape.fNvert; ++vert1) {
             let vert2 = (vert1+1) % shape.fNvert;
-            creator.AddFace4(scale1 * shape.fX[vert1] + x01, scale1 * shape.fY[vert1] + y01, z1,
+            creator.addFace4(scale1 * shape.fX[vert1] + x01, scale1 * shape.fY[vert1] + y01, z1,
                              scale2 * shape.fX[vert1] + x02, scale2 * shape.fY[vert1] + y02, z2,
                              scale2 * shape.fX[vert2] + x02, scale2 * shape.fY[vert2] + y02, z2,
                              scale1 * shape.fX[vert2] + x01, scale1 * shape.fY[vert2] + y01, z1);
-            creator.CalcNormal();
+            creator.calcNormal();
          }
       }
 
@@ -1337,14 +1377,14 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
                 pnt2 = pnts[face[(layer===0) ? 2 : 1]],
                 pnt3 = pnts[face[(layer===0) ? 1 : 2]];
 
-            creator.AddFace3(scale * pnt1.x + x0, scale * pnt1.y + y0, z,
+            creator.addFace3(scale * pnt1.x + x0, scale * pnt1.y + y0, z,
                              scale * pnt2.x + x0, scale * pnt2.y + y0, z,
                              scale * pnt3.x + x0, scale * pnt3.y + y0, z);
-            creator.SetNormal(0,0,layer===0 ? -1 : 1);
+            creator.setNormal(0,0,layer===0 ? -1 : 1);
          }
       }
 
-      return creator.Create();
+      return creator.create();
    }
 
    /** @summary Creates para geometrey
@@ -1421,7 +1461,7 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
          if (radius === 0) skip = 2;
 
          for (let seg=0; seg<radiusSegments; ++seg) {
-            creator.AddFace4(radius*_cos[seg],   radius*_sin[seg], layerz,
+            creator.addFace4(radius*_cos[seg],   radius*_sin[seg], layerz,
                              lastr*_cos[seg],    lastr*_sin[seg], lastz,
                              lastr*_cos[seg+1],  lastr*_sin[seg+1], lastz,
                              radius*_cos[seg+1], radius*_sin[seg+1], layerz, skip);
@@ -1429,19 +1469,19 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
             // use analytic normal values when open/closing paraboloid around 0
             // cut faces (top or bottom) set with simple normal
             if ((skip===0) || ((layer===1) && (rmin===0)) || ((layer===heightSegments+1) && (rmax===0)))
-               creator.SetNormal4(nxy*_cos[seg],       nxy*_sin[seg],       nz,
+               creator.setNormal4(nxy*_cos[seg],       nxy*_sin[seg],       nz,
                                   lastnxy*_cos[seg],   lastnxy*_sin[seg],   lastnz,
                                   lastnxy*_cos[seg+1], lastnxy*_sin[seg+1], lastnz,
                                   nxy*_cos[seg+1],     nxy*_sin[seg+1],     nz, skip);
             else
-               creator.SetNormal(0, 0, (layer < heightSegments) ? -1 : 1);
+               creator.setNormal(0, 0, (layer < heightSegments) ? -1 : 1);
          }
 
          lastz = layerz; lastr = radius;
          lastnxy = nxy; lastnz = nz;
       }
 
-      return creator.Create();
+      return creator.create();
    }
 
    /** @summary Creates hype geometrey
@@ -1490,11 +1530,11 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
                 r2 = Math.sqrt(r0*r0+tsq*z2*z2);
 
             for (let seg=0; seg<radiusSegments; ++seg) {
-               creator.AddFace4(r1 * _cos[seg+d1], r1 * _sin[seg+d1], z1,
+               creator.addFace4(r1 * _cos[seg+d1], r1 * _sin[seg+d1], z1,
                                 r2 * _cos[seg+d1], r2 * _sin[seg+d1], z2,
                                 r2 * _cos[seg+d2], r2 * _sin[seg+d2], z2,
                                 r1 * _cos[seg+d2], r1 * _sin[seg+d2], z1);
-               creator.CalcNormal();
+               creator.calcNormal();
             }
          }
       }
@@ -1507,16 +1547,16 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
              skip = (shape.fRmin > 0) ? 0 : 1,
              d1 = 1 - layer, d2 = 1 - d1;
           for (let seg=0; seg<radiusSegments; ++seg) {
-             creator.AddFace4(r1 * _cos[seg+d1], r1 * _sin[seg+d1], z,
+             creator.addFace4(r1 * _cos[seg+d1], r1 * _sin[seg+d1], z,
                               r2 * _cos[seg+d1], r2 * _sin[seg+d1], z,
                               r2 * _cos[seg+d2], r2 * _sin[seg+d2], z,
                               r1 * _cos[seg+d2], r1 * _sin[seg+d2], z, skip);
-             creator.SetNormal(0,0, (layer===0) ? 1 : -1)
+             creator.setNormal(0,0, (layer===0) ? 1 : -1)
           }
 
       }
 
-      return creator.Create();
+      return creator.create();
    }
 
    /** @summary Creates tessalated geometrey
@@ -1543,15 +1583,15 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
 
          if (f.fNvert == 4) {
             let v3 = shape.fVertices[f.fIvert[3]].fVec;
-            creator.AddFace4(v0[0], v0[1], v0[2], v1[0], v1[1], v1[2], v2[0], v2[1], v2[2], v3[0], v3[1], v3[2]);
-            creator.CalcNormal();
+            creator.addFace4(v0[0], v0[1], v0[2], v1[0], v1[1], v1[2], v2[0], v2[1], v2[2], v3[0], v3[1], v3[2]);
+            creator.calcNormal();
          } else {
-            creator.AddFace3(v0[0], v0[1], v0[2], v1[0], v1[1], v1[2], v2[0], v2[1], v2[2]);
-            creator.CalcNormal();
+            creator.addFace3(v0[0], v0[1], v0[2], v1[0], v1[1], v1[2], v2[0], v2[1], v2[2]);
+            creator.calcNormal();
          }
       }
 
-      return creator.Create();
+      return creator.create();
    }
 
    /** @summary Creates THREE.Matrix4 from TGeoMatrix
@@ -2291,7 +2331,7 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
 
           this.origin = [];
           sublevel = 1;
-          kind = geo.NodeKind(obj);
+          kind = geo.getNodeKind(obj);
        }
 
        if ((kind < 0) || !obj || ('_refid' in obj)) return;

@@ -373,7 +373,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
    }
 
    TGeoPainter.prototype.ModifyVisisbility = function(name, sign) {
-      if (geo.NodeKind(this.GetGeometry()) !== 0) return;
+      if (geo.getNodeKind(this.GetGeometry()) !== 0) return;
 
       if (name == "")
          return geo.SetBit(this.GetGeometry().fVolume, geo.BITS.kVisThis, (sign === "+"));
@@ -2440,7 +2440,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
             else
                this.cnt[this.last]++;
 
-            nshapes += geo.CountNumShapes(this.clones.GetNodeShape(node.id));
+            nshapes += geo.countNumShapes(this.clones.GetNodeShape(node.id));
 
             // for debugging - search if there some TGeoHalfSpace
             //if (geo.HalfSpace) {
@@ -2830,7 +2830,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
       if (!prnt) {
          prnt = this.GetGeometry();
-         if (!prnt && (geo.NodeKind(prnt)!==0)) return null;
+         if (!prnt && (geo.getNodeKind(prnt)!==0)) return null;
          itemname = this.geo_manager ? prnt.fName : "";
          first_level = true;
          volumes = [];
@@ -2871,7 +2871,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
       // let result = { obj: draw_obj, prefix: name_prefix };
 
-      if (!script_name || (script_name.length < 3) || (geo.NodeKind(result.obj)!==0))
+      if (!script_name || (script_name.length < 3) || (geo.getNodeKind(result.obj)!==0))
          return Promise.resolve(result);
 
       let painter = this;
