@@ -1095,9 +1095,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          });
 
       if (this.UseTextColor)
-         menu.AddTextAttributesMenu(this);
+         menu.addTextAttributesMenu(this);
 
-      menu.AddAttributesMenu(this);
+      menu.addAttributesMenu(this);
 
       if (menu.size() > 0)
          menu.add('Inspect', this.showInspector);
@@ -2823,7 +2823,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             });
       }
 
-      menu.AddAttributesMenu(this);
+      menu.addAttributesMenu(this);
 
       if (this.histogram_updated && fp.zoomChangedInteractive())
          menu.add('Let update zoom', function() {

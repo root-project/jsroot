@@ -1690,7 +1690,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if (typeof main.fillPaletteMenu == 'function') main.fillPaletteMenu(menu);
 
          if (faxis)
-            menu.AddTAxisMenu(main || this, faxis, kind);
+            menu.addTAxisMenu(main || this, faxis, kind);
          return true;
       }
 
@@ -1721,7 +1721,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       menu.addchk(this.isTooltipAllowed(), "Show tooltips", function() {
          this.setTooltipAllowed("toggle");
       });
-      menu.AddAttributesMenu(this, alone ? "" : "Frame ");
+      menu.addAttributesMenu(this, alone ? "" : "Frame ");
       menu.add("separator");
       menu.add("Save as frame.png", () => pp.saveAs("png", 'frame', 'frame.png'));
       menu.add("Save as frame.svg", () => pp.saveAs("svg", 'frame', 'frame.svg'));
@@ -2645,7 +2645,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          menu.addchk(this.pad.fTicky == 2, "labels on both sides", "2fTicky", SetPadField);
          menu.add("endsub:");
 
-         menu.AddAttributesMenu(this);
+         menu.addAttributesMenu(this);
       }
 
       menu.add("separator");

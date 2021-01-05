@@ -1350,18 +1350,18 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       menu.add("endsub:");
 
       menu.add("sub:Ticks");
-      menu.RColorMenu("color", this.ticksColor, col => this.changeAxisAttr(1, "ticks_color_name", col));
-      menu.SizeMenu("size", 0, 0.05, 0.01, this.ticksSize/this.scaling_size, sz => this.changeAxisAttr(1, "ticks_size", sz));
-      menu.SelectMenu("side", ["normal", "invert", "both"], this.ticksSide, side => this.changeAxisAttr(1, "ticks_side", side));
+      menu.addRColorMenu("color", this.ticksColor, col => this.changeAxisAttr(1, "ticks_color_name", col));
+      menu.addSizeMenu("size", 0, 0.05, 0.01, this.ticksSize/this.scaling_size, sz => this.changeAxisAttr(1, "ticks_size", sz));
+      menu.addSelectMenu("side", ["normal", "invert", "both"], this.ticksSide, side => this.changeAxisAttr(1, "ticks_side", side));
 
       menu.add("endsub:");
 
       if (!this.optionUnlab && this.labelsFont) {
          menu.add("sub:Labels");
-         menu.SizeMenu("offset", -0.05, 0.05, 0.01, this.labelsOffset/this.scaling_size, offset => {
+         menu.addSizeMenu("offset", -0.05, 0.05, 0.01, this.labelsOffset/this.scaling_size, offset => {
             this.changeAxisAttr(1, "labels_offset", offset);
          });
-         menu.RAttrTextItems(this.labelsFont, { noangle: 1, noalign: 1 }, change => {
+         menu.addRAttrTextItems(this.labelsFont, { noangle: 1, noalign: 1 }, change => {
             this.changeAxisAttr(1, "labels_" + change.name, change.value);
          });
          menu.addchk(this.labelsFont.angle, "rotate", res => {
@@ -1376,11 +1376,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       });
 
       if (this.fTitle) {
-         menu.SizeMenu("offset", -0.05, 0.05, 0.01, this.titleOffset/this.scaling_size, offset => {
+         menu.addSizeMenu("offset", -0.05, 0.05, 0.01, this.titleOffset/this.scaling_size, offset => {
             this.changeAxisAttr(1, "title_offset", offset);
          });
 
-         menu.SelectMenu("position", ["left", "center", "right"], this.titlePos, pos => {
+         menu.addSelectMenu("position", ["left", "center", "right"], this.titlePos, pos => {
             this.changeAxisAttr(1, "title_position", pos);
          });
 
@@ -1388,7 +1388,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             this.changeAxisAttr(1, "title_angle", flag ? 180 : 0);
          });
 
-         menu.RAttrTextItems(this.titleFont, { noangle: 1, noalign: 1 }, change => {
+         menu.addRAttrTextItems(this.titleFont, { noangle: 1, noalign: 1 }, change => {
             this.changeAxisAttr(1, "title_" + change.name, change.value);
          });
       }
@@ -2273,7 +2273,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       menu.addchk(this.isTooltipAllowed(), "Show tooltips", function() {
          this.setTooltipAllowed("toggle");
       });
-      menu.AddAttributesMenu(this, alone ? "" : "Frame ");
+      menu.addAttributesMenu(this, alone ? "" : "Frame ");
       menu.add("separator");
       menu.add("Save as frame.png", () => this.getPadPainter().saveAs("png", 'frame', 'frame.png'));
       menu.add("Save as frame.svg", () => this.getPadPainter().saveAs("svg", 'frame', 'frame.svg'));
@@ -2919,7 +2919,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          //menu.addchk(this.pad.fTickx, 'Tick x', 'fTickx', ToggleField);
          //menu.addchk(this.pad.fTicky, 'Tick y', 'fTicky', ToggleField);
 
-         menu.AddAttributesMenu(this);
+         menu.addAttributesMenu(this);
       }
 
       menu.add("separator");

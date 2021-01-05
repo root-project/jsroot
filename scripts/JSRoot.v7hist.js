@@ -649,7 +649,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
             menu.add('Reset camera', () => main.control.reset());
       }
 
-      menu.AddAttributesMenu(this);
+      menu.addAttributesMenu(this);
 
       if (this.histogram_updated && fp.zoomChangedInteractive())
          menu.add('Let update zoom', () => fp.zoomChangedInteractive('reset'));

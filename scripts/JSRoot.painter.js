@@ -2350,7 +2350,7 @@ JSROOT.define(['d3'], (d3) => {
 
       menu.add("header:" + title);
 
-      menu.AddAttributesMenu(this);
+      menu.addAttributesMenu(this);
 
       if (menu.size() > 0)
          menu.add('Inspect', this.showInspector);
