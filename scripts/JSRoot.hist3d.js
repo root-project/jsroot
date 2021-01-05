@@ -252,7 +252,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          axis_painter.highlightBin3D(null);
       }
 
-      this.control.ContextMenu = function(pos, intersects) {
+      this.control.contextMenu = function(pos, intersects) {
          let kind = "painter", p = obj_painter;
          if (intersects)
             for (let n=0;n<intersects.length;++n) {

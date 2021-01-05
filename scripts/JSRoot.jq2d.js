@@ -874,8 +874,8 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          prnt = prnt._parent;
       }
 
-      if (painter && typeof painter.MouseOverHierarchy === 'function')
-         painter.MouseOverHierarchy(on, itemname, hitem);
+      if (painter && typeof painter.mouseOverHierarchy === 'function')
+         painter.mouseOverHierarchy(on, itemname, hitem);
    }
 
    /** @summary alternative context menu, used in the object inspector

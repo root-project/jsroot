@@ -564,7 +564,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
          renderer.domElement.addEventListener( 'wheel', control_mousewheel);
 
       let enable_zoom = JSROOT.settings.Zooming && JSROOT.settings.ZoomMouse,
-          enable_select = (typeof painter.ProcessMouseClick == "function"),
+          enable_select = (typeof painter.processMouseClick == "function"),
           control = null;
 
       function control_mousedown(evnt) {
@@ -631,7 +631,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
 
             if (same_pnt) {
                let intersects = control.GetMouseIntersects(pnt);
-               control.painter.ProcessMouseClick(pnt, intersects, evnt);
+               control.painter.processMouseClick(pnt, intersects, evnt);
             }
          }
       }
@@ -716,8 +716,8 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
          this.raycaster.set(origin, direction);
          let intersects = this.raycaster.intersectObjects(this.scene.children, true);
          // painter may want to filter intersects
-         if (typeof this.painter.FilterIntersects == 'function')
-            intersects = this.painter.FilterIntersects(intersects);
+         if (typeof this.painter.filterIntersects == 'function')
+            intersects = this.painter.filterIntersects(intersects);
          return intersects;
       }
 
@@ -737,8 +737,8 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
          let intersects = this.raycaster.intersectObjects(this.scene.children, true);
 
          // painter may want to filter intersects
-         if (typeof this.painter.FilterIntersects == 'function')
-            intersects = this.painter.FilterIntersects(intersects);
+         if (typeof this.painter.filterIntersects == 'function')
+            intersects = this.painter.filterIntersects(intersects);
 
          return intersects;
       }
@@ -786,7 +786,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
          this.control_active = false;
          if (this.mouse_ctxt.on) {
             this.mouse_ctxt.on = false;
-            this.ContextMenu(this.mouse_ctxt, this.GetMouseIntersects(this.mouse_ctxt));
+            this.contextMenu(this.mouse_ctxt, this.GetMouseIntersects(this.mouse_ctxt));
          } /* else if (this.control_changed) {
             // react on camera change when required
          } */
@@ -801,10 +801,10 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
          else if (this.block_ctxt)
             this.block_ctxt = false;
          else
-            this.ContextMenu(this.mouse_ctxt, this.GetMouseIntersects(this.mouse_ctxt));
+            this.contextMenu(this.mouse_ctxt, this.GetMouseIntersects(this.mouse_ctxt));
       }
 
-      control.ContextMenu = function(/* pos, intersects */) {
+      control.contextMenu = function(/* pos, intersects */) {
          // do nothing, function called when context menu want to be activated
       }
 

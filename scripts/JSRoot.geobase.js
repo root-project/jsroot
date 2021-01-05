@@ -55,15 +55,15 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
 
    /** @summary Implementation of TGeoVolume::InvisibleAll
      * @private */
-   geo.InvisibleAll = function(flag) {
+   geo.setInvisibleAll = function(volume, flag) {
       if (flag===undefined) flag = true;
 
-      geo.SetBit(this, geo.BITS.kVisThis, !flag);
+      geo.SetBit(volume, geo.BITS.kVisThis, !flag);
       // geo.SetBit(this, geo.BITS.kVisDaughters, !flag);
 
-      if (this.fNodes)
-         for (let n=0;n<this.fNodes.arr.length;++n) {
-            let sub = this.fNodes.arr[n].fVolume;
+      if (volume.fNodes)
+         for (let n = 0; n < volume.fNodes.arr.length; ++n) {
+            let sub = volume.fNodes.arr[n].fVolume;
             geo.SetBit(sub, geo.BITS.kVisThis, !flag);
             // geo.SetBit(sub, geo.BITS.kVisDaughters, !flag);
          }
@@ -154,7 +154,12 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
       this.indx = indx + 9;
    }
 
+   /** @summary Start polygon
+     * @private */
    GeometryCreator.prototype.startPolygon = function() {}
+
+   /** @summary Stop polygon
+     * @private */
    GeometryCreator.prototype.stopPolygon = function() {}
 
    /** @summary Add face with 4 vertices
