@@ -2137,7 +2137,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    }
 
    /** @summary Process mouse event */
-   TGraphPolargramPainter.prototype.MouseEvent = function(kind, evnt) {
+   TGraphPolargramPainter.prototype.mouseEvent = function(kind, evnt) {
       let layer = this.getLayerSvg("primitives_layer"),
           interactive = layer.select(".interactive_ellipse");
       if (interactive.empty()) return;
@@ -2153,7 +2153,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    }
 
    /** @summary Process mouse wheel event */
-   TGraphPolargramPainter.prototype.MouseWheel = function(evnt) {
+   TGraphPolargramPainter.prototype.mouseWheel = function(evnt) {
       evnt.stopPropagation();
       evnt.preventDefault();
 
@@ -2328,16 +2328,16 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
                                .attr("cy",0)
                                .style("fill", "none")
                                .style("pointer-events","visibleFill")
-                               .on('mouseenter', evnt => this.MouseEvent('enter', evnt))
-                               .on('mousemove', evnt => this.MouseEvent('move', evnt))
-                               .on('mouseleave', evnt => this.MouseEvent('leave', evnt));
+                               .on('mouseenter', evnt => this.mouseEvent('enter', evnt))
+                               .on('mousemove', evnt => this.mouseEvent('move', evnt))
+                               .on('mouseleave', evnt => this.mouseEvent('leave', evnt));
 
          interactive.attr("rx", this.szx).attr("ry", this.szy);
 
          d3.select(interactive.node().parentNode).attr("transform", this.draw_g.attr("transform"));
 
          if (JSROOT.settings.Zooming && JSROOT.settings.ZoomWheel)
-            interactive.on("wheel", evnt => this.MouseWheel(evnt));
+            interactive.on("wheel", evnt => this.mouseWheel(evnt));
       });
    }
 
@@ -2476,7 +2476,9 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
    }
 
-   TGraphPolarPainter.prototype.CreatePolargram = function() {
+   /** @summary Create polargram object
+     * @private */
+   TGraphPolarPainter.prototype.createPolargram = function() {
       let polargram = JSROOT.create("TGraphPolargram"),
           gr = this.getObject();
 
@@ -2585,7 +2587,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       if (!main) {
          if (!graph.fPolargram)
-            graph.fPolargram = painter.CreatePolargram();
+            graph.fPolargram = painter.createPolargram();
          ppromise = JSROOT.draw(divid, graph.fPolargram, "");
       }
 
