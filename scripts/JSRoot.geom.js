@@ -581,7 +581,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
                let entry = this.CopyStack();
 
-               let mesh = this._clones.CreateObject3D(entry.stack, this._toplevel, 'mesh');
+               let mesh = this._clones.createObject3D(entry.stack, this._toplevel, 'mesh');
 
                if (!mesh) return true;
 
@@ -604,7 +604,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
                if (max < 1e-4) return true;
 
-               console.log(this._clones.ResolveStack(entry.stack).name, 'maxdiff', max, 'determ', m1.determinant(), m2.determinant());
+               console.log(this._clones.resolveStack(entry.stack).name, 'maxdiff', max, 'determ', m1.determinant(), m2.determinant());
 
                errcnt++;
 
@@ -615,7 +615,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
       let tm1 = new Date().getTime();
 
-      /* let cnt = */ this._clones.ScanVisible(arg);
+      /* let cnt = */ this._clones.scanVisible(arg);
 
       let tm2 = new Date().getTime();
 
@@ -1000,7 +1000,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
                   if (!name) name = itemname;
                   hdr = name;
                } else if (obj.stack) {
-                  name = this._clones.ResolveStack(obj.stack).name;
+                  name = this._clones.resolveStack(obj.stack).name;
                   itemname = this.GetStackFullName(obj.stack);
                   hdr = this.getItemName();
                   if (name.indexOf("Nodes/") === 0) hdr = name.substr(6); else
@@ -1069,7 +1069,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
                if (!this._geom_viewer)
                menu.add("Hide", n, function(indx) {
-                  let resolve = menu.painter._clones.ResolveStack(intersects[indx].object.stack);
+                  let resolve = menu.painter._clones.resolveStack(intersects[indx].object.stack);
 
                   if (resolve.obj && (resolve.node.kind === 0) && resolve.obj.fVolume) {
                      geo.SetBit(resolve.obj.fVolume, geo.BITS.kVisThis, false);
@@ -1156,13 +1156,13 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          this.startDrawGeometry();
    }
 
-   TGeoPainter.prototype.ResolveStack = function(stack) {
-      return this._clones && stack ? this._clones.ResolveStack(stack) : null;
+   TGeoPainter.prototype.resolveStack = function(stack) {
+      return this._clones && stack ? this._clones.resolveStack(stack) : null;
    }
 
    TGeoPainter.prototype.GetStackFullName = function(stack) {
       let mainitemname = this.getItemName(),
-          sub = this.ResolveStack(stack);
+          sub = this.resolveStack(stack);
       if (!sub || !sub.name) return mainitemname;
       return mainitemname ? (mainitemname + "/" + sub.name) : sub.name;
    }
@@ -1188,7 +1188,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       } else if (geo_stack && this._toplevel) {
          active_mesh = [];
          this._toplevel.traverse(mesh => {
-            if ((mesh instanceof THREE.Mesh) && geo.IsSameStack(mesh.stack, geo_stack)) active_mesh.push(mesh);
+            if ((mesh instanceof THREE.Mesh) && geo.isSameStack(mesh.stack, geo_stack)) active_mesh.push(mesh);
          });
       } else {
          active_mesh = active_mesh ? [ active_mesh ] : [];
@@ -1331,7 +1331,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
                   geo_index = obj.get_ctrl().extractIndex(intersects[k]);
                   if ((geo_index !== undefined) && (typeof tooltip == "string")) tooltip += " indx:" + JSON.stringify(geo_index);
                }
-               if (active_mesh.stack) resolve = painter.ResolveStack(active_mesh.stack);
+               if (active_mesh.stack) resolve = painter.resolveStack(active_mesh.stack);
             }
          }
 
@@ -1447,7 +1447,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          }
 
          // first copy visibility flags and check how many unique visible nodes exists
-         let numvis = this._clones.CountVisibles() || this._clones.MarkVisibles(),
+         let numvis = this._clones.countVisibles() || this._clones.markVisibles(),
              matrix = null, frustum = null;
 
          if (this.ctrl.select_in_view && !this._first_drawing) {
@@ -1469,7 +1469,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
          // here we decide if we need worker for the drawings
          // main reason - too large geometry and large time to scan all camera positions
-         let need_worker = !JSROOT.BatchMode && ((numvis > 10000) || (matrix && (this._clones.ScanVisible() > 1e5)));
+         let need_worker = !JSROOT.BatchMode && ((numvis > 10000) || (matrix && (this._clones.scanVisible() > 1e5)));
 
          // worker does not work when starting from file system
          if (need_worker && JSROOT.source_dir.indexOf("file://")==0) {
@@ -1482,7 +1482,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
          if (!need_worker || !this._worker_ready) {
             // let tm1 = new Date().getTime();
-            let res = this._clones.CollectVisibles(this._current_face_limit, frustum);
+            let res = this._clones.collectVisibles(this._current_face_limit, frustum);
             this._new_draw_nodes = res.lst;
             this._draw_all_nodes = res.complete;
             // let tm2 = new Date().getTime();
@@ -1493,7 +1493,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
          let job = {
             collect: this._current_face_limit,   // indicator for the command
-            flags: this._clones.GetVisibleFlags(),
+            flags: this._clones.getVisibleFlags(),
             matrix: matrix ? matrix.elements : null
          };
 
@@ -1532,11 +1532,11 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
             if (this._geom_viewer)
                del = this._draw_nodes;
             else
-               del = this._clones.MergeVisibles(this._new_draw_nodes, this._draw_nodes);
+               del = this._clones.mergeVisibles(this._new_draw_nodes, this._draw_nodes);
 
             // remove should be fast, do it here
             for (let n=0;n<del.length;++n)
-               this._clones.CreateObject3D(del[n].stack, this._toplevel, 'delete_mesh');
+               this._clones.createObject3D(del[n].stack, this._toplevel, 'delete_mesh');
 
             if (del.length > 0)
                this.drawing_log = "Delete " + del.length + " nodes";
@@ -1553,10 +1553,10 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          this.drawing_log = "Collect shapes";
 
          // collect shapes
-         let shapes = this._clones.CollectShapes(this._draw_nodes);
+         let shapes = this._clones.collectShapes(this._draw_nodes);
 
          // merge old and new list with produced shapes
-         this._build_shapes = this._clones.MergeShapesLists(this._build_shapes, shapes);
+         this._build_shapes = this._clones.mergeShapesLists(this._build_shapes, shapes);
 
          this.drawing_stage = 5;
          return true;
@@ -1604,7 +1604,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
          if (this.drawing_stage === 7) {
             // building shapes
-            let res = this._clones.BuildShapes(this._build_shapes, this._current_face_limit, 500);
+            let res = this._clones.buildShapes(this._build_shapes, this._current_face_limit, 500);
             if (res.done) {
                this.ctrl.info.num_shapes = this._build_shapes.length;
                this.drawing_stage = 8;
@@ -1691,7 +1691,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
       if (!shape.geom || (shape.nfaces === 0)) {
          // node is visible, but shape does not created
-         this._clones.CreateObject3D(entry.stack, toplevel, 'delete_mesh');
+         this._clones.createObject3D(entry.stack, toplevel, 'delete_mesh');
          return false;
       }
 
@@ -1703,7 +1703,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
       let mesh,
           prop = this._clones.getDrawEntryProperties(entry),
-          obj3d = this._clones.CreateObject3D(entry.stack, toplevel, this.ctrl);
+          obj3d = this._clones.createObject3D(entry.stack, toplevel, this.ctrl);
 
       prop.material.wireframe = this.ctrl.wireframe;
 
@@ -1756,7 +1756,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       if (this._more_nodes)
          for (let n=0;n<this._more_nodes.length;++n) {
             let entry = this._more_nodes[n];
-            let obj3d = this._clones.CreateObject3D(entry.stack, this._toplevel, 'delete_mesh');
+            let obj3d = this._clones.createObject3D(entry.stack, this._toplevel, 'delete_mesh');
             jsrp.disposeThreejsObject(obj3d);
             geo.cleanupShape(entry.server_shape);
             delete entry.server_shape;
@@ -2015,7 +2015,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       }
 
       if (this._clones_owner && this._clones)
-         this._clones.SetDefaultColors(this.ctrl.dflt_colors);
+         this._clones.setDefaultColors(this.ctrl.dflt_colors);
 
       this._startm = new Date().getTime();
       this._last_render_tm = this._startm;
@@ -2265,11 +2265,11 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
       if (!itemname || !this._clones) return;
 
-      let stack = this._clones.FindStackByName(itemname);
+      let stack = this._clones.findStackByName(itemname);
 
       if (!stack) return;
 
-      let info = this._clones.ResolveStack(stack, true);
+      let info = this._clones.resolveStack(stack, true);
 
       this.focusCamera( info, false );
    }
@@ -2427,7 +2427,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
                   'Time to clone: ' + makeTime(clonetm) ];
 
       // need to fill cached value line numvischld
-      this._clones.ScanVisible();
+      this._clones.scanVisible();
 
       let nshapes = 0;
 
@@ -2440,12 +2440,12 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
             else
                this.cnt[this.last]++;
 
-            nshapes += geo.countNumShapes(this.clones.GetNodeShape(node.id));
+            nshapes += geo.countNumShapes(this.clones.getNodeShape(node.id));
 
             // for debugging - search if there some TGeoHalfSpace
             //if (geo.HalfSpace) {
             //    let entry = this.CopyStack();
-            //    let res = painter._clones.ResolveStack(entry.stack);
+            //    let res = painter._clones.resolveStack(entry.stack);
             //    console.log('SAW HALF SPACE', res.name);
             //    geo.HalfSpace = false;
             //}
@@ -2454,7 +2454,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       };
 
       let tm1 = new Date().getTime();
-      let numvis = this._clones.ScanVisible(arg);
+      let numvis = this._clones.scanVisible(arg);
       let tm2 = new Date().getTime();
 
       res.push('Total visible nodes: ' + numvis, 'Total shapes: ' + nshapes);
@@ -2477,7 +2477,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          setTimeout(() => {
             arg.domatrix = true;
             tm1 = new Date().getTime();
-            numvis = this._clones.ScanVisible(arg);
+            numvis = this._clones.scanVisible(arg);
             tm2 = new Date().getTime();
 
             let last_str = "Time to scan with matrix: " + makeTime(tm2-tm1);
@@ -3011,21 +3011,21 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
                maxnodes = this.geo_manager.fMaxVisNodes;
          }
 
-         this._clones.SetVisLevel(lvl);
-         this._clones.SetMaxVisNodes(maxnodes);
+         this._clones.setVisLevel(lvl);
+         this._clones.setMaxVisNodes(maxnodes);
 
          this._clones.name_prefix = name_prefix;
 
          let hide_top_volume = !!this.geo_manager && !this.ctrl.showtop;
 
-         let uniquevis = this.ctrl.no_screen ? 0 : this._clones.MarkVisibles(true, false, hide_top_volume);
+         let uniquevis = this.ctrl.no_screen ? 0 : this._clones.markVisibles(true, false, hide_top_volume);
 
          if (uniquevis <= 0)
-            uniquevis = this._clones.MarkVisibles(false, false, hide_top_volume);
+            uniquevis = this._clones.markVisibles(false, false, hide_top_volume);
          else
-            uniquevis = this._clones.MarkVisibles(true, true, hide_top_volume); // copy bits once and use normal visibility bits
+            uniquevis = this._clones.markVisibles(true, true, hide_top_volume); // copy bits once and use normal visibility bits
 
-         this._clones.ProduceIdShits();
+         this._clones.produceIdShifts();
 
          let spent = new Date().getTime() - this._start_drawing_time;
 
@@ -3255,8 +3255,8 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          init: true,   // indicate init command for worker
          browser: JSROOT.browser,
          tm0: new Date().getTime(),
-         vislevel: this._clones.GetVisLevel(),
-         maxvisnodes: this._clones.GetMaxVisNodes(),
+         vislevel: this._clones.getVisLevel(),
+         maxvisnodes: this._clones.getMaxVisNodes(),
          clones: this._clones.nodes,
          sortmap: this._clones.sortmap
       });
@@ -3295,7 +3295,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
             let item = job.shapes[n],
                 origin = this._build_shapes[n];
 
-            // let shape = this._clones.GetNodeShape(item.nodeid);
+            // let shape = this._clones.getNodeShape(item.nodeid);
 
             if (item.buf_pos && item.buf_norm) {
                if (item.buf_pos.length === 0) {
@@ -3769,8 +3769,8 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
       for (let n = 0; n < this._draw_nodes.length; ++n) {
          let entry = this._draw_nodes[n];
-         if ((entry.nodeid === nodeid) || this._clones.IsNodeInStack(nodeid, entry.stack)) {
-            this._clones.CreateObject3D(entry.stack, this._toplevel, 'delete_mesh');
+         if ((entry.nodeid === nodeid) || this._clones.isIdInStack(nodeid, entry.stack)) {
+            this._clones.createObject3D(entry.stack, this._toplevel, 'delete_mesh');
          } else {
             new_nodes.push(entry);
          }
@@ -4203,7 +4203,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
    geo.createItem = function(node, obj, name) {
       let sub = {
          _kind: "ROOT." + obj._typename,
-         _name: name ? name : geo.ObjectName(obj),
+         _name: name ? name : geo.getObjectName(obj),
          _title: obj.fTitle,
          _parent: node,
          _geoobj: obj,
@@ -4319,7 +4319,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
          node._childs = [];
 
-         geo.CheckDuplicates(null, lst.arr);
+         geo.checkDuplicates(null, lst.arr);
 
          for (let n in lst.arr)
             geo.createItem(node, lst.arr[n]);
@@ -4571,9 +4571,9 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
       if (!subnodes) return false;
 
-      geo.CheckDuplicates(obj, subnodes);
+      geo.checkDuplicates(obj, subnodes);
 
-      for (let i=0;i<subnodes.length;++i)
+      for (let i = 0; i < subnodes.length; ++i)
          geo.createItem(parent, subnodes[i]);
 
       return true;
