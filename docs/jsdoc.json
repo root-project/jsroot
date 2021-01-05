@@ -11,6 +11,7 @@
                      "scripts/JSRoot.tree.js",
                      "scripts/JSRoot.webwindow.js",
                      "scripts/JSRoot.painter.js",
+                     "scripts/JSRoot.latex.js",
                      "scripts/JSRoot.gpad.js",
                      "scripts/JSRoot.interactive.js",
                      "scripts/JSRoot.hist.js",
