@@ -98,14 +98,14 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
          if (!this.mode3d) return;
 
-         if (!this.clear_3d_canvas) {
+         if (!this.clear3dCanvas) {
             console.error('Strange, why mode3d is configured!!!!', this.mode3d);
             return;
          }
 
          testAxisVisibility(null, this.toplevel);
 
-         this.clear_3d_canvas();
+         this.clear3dCanvas();
 
          jsrp.disposeThreejsObject(this.scene);
          if (this.control) this.control.cleanup();
@@ -159,7 +159,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
       jsrp.assign3DHandler(this);
 
-      let sz = this.size_for_3d(undefined, render3d);
+      let sz = this.getSizeFor3d(undefined, render3d);
 
       this.size_z3d = 100;
       this.size_xy3d = (sz.height > 10) && (sz.width > 10) ? Math.round(sz.width/sz.height*this.size_z3d) : this.size_z3d;
@@ -190,7 +190,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       this.renderer = jsrp.createRender3D(this.scene_width, this.scene_height, render3d);
 
       this.webgl = (render3d === JSROOT.constants.Render3D.WebGL);
-      this.add_3d_canvas(sz, this.renderer.jsroot_dom, this.webgl);
+      this.add3dCanvas(sz, this.renderer.jsroot_dom, this.webgl);
 
       this.first_render_tm = 0;
       this.enable_highlight = false;
@@ -337,9 +337,9 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
      * @private */
    JSROOT.TFramePainter.prototype.resize3D = function() {
 
-      let sz = this.size_for_3d(this.access_3d_kind());
+      let sz = this.getSizeFor3d(this.access3dKind());
 
-      this.apply_3d_size(sz);
+      this.apply3dSize(sz);
 
       if ((this.scene_width === sz.width) && (this.scene_height === sz.height)) return false;
 

@@ -23,10 +23,10 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
    let Handling3DDrawings = {};
 
    /** @summary Access current 3d mode
-    * @param {string} [new_value] - when specified, set new 3d mode
-    * @returns current value
-    * @private*/
-   Handling3DDrawings.access_3d_kind = function(new_value) {
+     * @param {string} [new_value] - when specified, set new 3d mode
+     * @returns current value
+     * @private*/
+   Handling3DDrawings.access3dKind = function(new_value) {
       let svg = this.getPadSvg();
       if (svg.empty()) return -1;
 
@@ -37,9 +37,9 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
    }
 
    /** @summary Returns size which availble for 3D drawing.
-    * @desc One uses frame sizes for the 3D drawing - like TH2/TH3 objects
-    * @private */
-   Handling3DDrawings.size_for_3d = function(can3d, render3d) {
+     * @desc One uses frame sizes for the 3D drawing - like TH2/TH3 objects
+     * @private */
+   Handling3DDrawings.getSizeFor3d = function(can3d, render3d) {
 
       if (can3d === undefined) {
          // analyze which render/embed mode can be used
@@ -112,10 +112,10 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
    }
 
    /** @summary Clear all 3D drawings
-    * @returns can3d value - how webgl canvas was placed
-    * @private */
-   Handling3DDrawings.clear_3d_canvas = function() {
-      let can3d = this.access_3d_kind(null);
+     * @returns can3d value - how webgl canvas was placed
+     * @private */
+   Handling3DDrawings.clear3dCanvas = function() {
+      let can3d = this.access3dKind(null);
       if (can3d < 0) {
          // remove first child from main element - if it is canvas
          let main = this.selectDom().node();
@@ -126,7 +126,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
          return can3d;
       }
 
-      let size = this.size_for_3d(can3d);
+      let size = this.getSizeFor3d(can3d);
 
       if (size.can3d === 0) {
          d3.select(this.getCanvSvg().node().nextSibling).remove(); // remove html5 canvas
@@ -134,7 +134,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
       } else {
          if (this.getPadSvg().empty()) return;
 
-         this.apply_3d_size(size).remove();
+         this.apply3dSize(size).remove();
 
          this.getFrameSvg().style('display', null);  // clear display property
       }
@@ -143,7 +143,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
 
    /** @summary Add 3D canvas
     * @private */
-   Handling3DDrawings.add_3d_canvas = function(size, canv, webgl) {
+   Handling3DDrawings.add3dCanvas = function(size, canv, webgl) {
 
       if (!canv || (size.can3d < -1)) return;
 
@@ -163,7 +163,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
       if ((size.can3d > 0) && !webgl)
          size.can3d = JSROOT.constants.Embed3D.EmbedSVG;
 
-      this.access_3d_kind(size.can3d);
+      this.access3dKind(size.can3d);
 
       if (size.can3d === 0) {
          this.getCanvSvg().style('display', 'none'); // hide SVG canvas
@@ -175,7 +175,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
          // first hide normal frame
          this.getFrameSvg().style('display', 'none');
 
-         let elem = this.apply_3d_size(size);
+         let elem = this.apply3dSize(size);
 
          elem.attr('title', '').node().appendChild(canv);
       }
@@ -183,7 +183,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
 
    /** @summary Apply size to 3D elements
     * @private */
-   Handling3DDrawings.apply_3d_size = function(size, onlyget) {
+   Handling3DDrawings.apply3dSize = function(size, onlyget) {
 
       if (size.can3d < 0) return d3.select(null);
 
@@ -427,6 +427,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
       return svg;
    }
 
+   // ========================================================================================================
 
    /**
     * @summary Tooltip handler for 3D drawings

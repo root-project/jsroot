@@ -3071,13 +3071,13 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
          jsrp.assign3DHandler(this);
 
-         let size = this.size_for_3d(this._webgl ? undefined : 3);
+         let size = this.getSizeFor3d(this._webgl ? undefined : 3);
 
          this._fit_main_area = (size.can3d === -1);
 
          let dom = this.createScene(size.width, size.height);
 
-         this.add_3d_canvas(size, dom, this._webgl);
+         this.add3dCanvas(size, dom, this._webgl);
 
          // set top painter only when first child exists
          this.setAsMainPainter();
@@ -3814,7 +3814,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
          this.clearTopPainter(); // remove as pointer
 
-         let can3d = this.clear_3d_canvas(); // remove 3d canvas from main HTML element
+         let can3d = this.clear3dCanvas(); // remove 3d canvas from main HTML element
 
          if (this._toolbar) this._toolbar.cleanup(); // remove toolbar
 
@@ -3933,7 +3933,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       // for others we should force canvas redrawing at every step
       if (cp && !cp.checkCanvasResize(arg)) return false;
 
-      let sz = this.size_for_3d();
+      let sz = this.getSizeFor3d();
 
       if ((this._scene_width === sz.width) && (this._scene_height === sz.height)) return false;
       if ((sz.width<10) || (sz.height<10)) return false;
