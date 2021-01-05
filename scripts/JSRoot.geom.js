@@ -196,7 +196,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
             icon: "vrgoggles",
             click: () => this.toggleVRMode()
          });
-         this.InitVRMode();
+         this.initVRMode();
       }
 
       if (JSROOT.settings.ContextMenu)
@@ -226,7 +226,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
    }
 
    /** @summary Initialize VR mode */
-   TGeoPainter.prototype.InitVRMode = function() {
+   TGeoPainter.prototype.initVRMode = function() {
       // Dolly contains camera and controllers in VR Mode
       // Allows moving the user in the scene
       this._dolly = new THREE.Group();
@@ -245,12 +245,13 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          if (vrDisplay.stageParameters) {
             this._standingMatrix.fromArray(vrDisplay.stageParameters.sittingToStandingTransform);
          }
-         this.InitVRControllersGeometry();
+         this.initVRControllersGeometry();
       });
    }
 
-   TGeoPainter.prototype.InitVRControllersGeometry = function() {
-
+   /** @summary Init VR controllers geometry
+     * @private */
+   TGeoPainter.prototype.initVRControllersGeometry = function() {
       let geometry = new THREE.SphereGeometry(0.025, 18, 36);
       let material = new THREE.MeshBasicMaterial({color: 'grey'});
       let rayMaterial = new THREE.MeshBasicMaterial({color: 'fuchsia'});
@@ -274,7 +275,9 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       sphere2.visible = false;
    }
 
-   TGeoPainter.prototype.UpdateVRControllersList = function() {
+   /** @summary Update VR controllers list
+     * @private */
+   TGeoPainter.prototype.updateVRControllersList = function() {
       let gamepads = navigator.getGamepads && navigator.getGamepads();
       // Has controller list changed?
       if (this.vrControllers && (gamepads.length === this.vrControllers.length)) { return; }
@@ -291,7 +294,9 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       }
    }
 
-   TGeoPainter.prototype.ProcessVRControllerIntersections = function() {
+   /** @summary Process VR controller intersection
+     * @private */
+   TGeoPainter.prototype.processVRControllerIntersections = function() {
       let intersects = []
       for (let i = 0; i < this._vrControllers.length; ++i) {
          let controller = this._vrControllers[i].mesh;
@@ -305,8 +310,10 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       this._controls.ProcessMouseMove(intersects);
    }
 
-   TGeoPainter.prototype.UpdateVRControllers = function() {
-      this.UpdateVRControllersList();
+   /** @summary Update VR controllers
+     * @private */
+   TGeoPainter.prototype.updateVRControllers = function() {
+      this.updateVRControllersList();
       // Update pose.
       for (let i = 0; i < this._vrControllers.length; ++i) {
          let controller = this._vrControllers[i];
@@ -319,14 +326,16 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          controllerMesh.applyMatrix4(this._standingMatrix);
          controllerMesh.matrixWorldNeedsUpdate = true;
       }
-      this.ProcessVRControllerIntersections();
+      this.processVRControllerIntersections();
    }
 
+   /** @summary Toggle VR mode
+     * @private */
    TGeoPainter.prototype.toggleVRMode = function() {
       if (!this._vrDisplay) return;
       // Toggle VR mode off
       if (this._vrDisplay.isPresenting) {
-         this.ExitVRMode();
+         this.exitVRMode();
          return;
       }
       this._previousCameraPosition = this._camera.position.clone();
@@ -340,7 +349,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          this._camera.updateProjectionMatrix();
          this._renderer.vr.enabled = true;
          this._renderer.setAnimationLoop(() => {
-            this.UpdateVRControllers();
+            this.updateVRControllers();
             this.render3D(0);
          });
       });
@@ -348,11 +357,13 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
       window.addEventListener( 'keydown', event => {
          // Esc Key turns VR mode off
-         if (event.keyCode === 27) this.ExitVRMode();
+         if (event.keyCode === 27) this.exitVRMode();
       });
    }
 
-   TGeoPainter.prototype.ExitVRMode = function() {
+   /** @summary Exit VR mode
+     * @private */
+   TGeoPainter.prototype.exitVRMode = function() {
       if (!this._vrDisplay.isPresenting) return;
       this._renderer.vr.enabled = false;
       this._dolly.remove(this._camera);
@@ -368,16 +379,16 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
    }
 
    /** @summary Returns main geometry object */
-   TGeoPainter.prototype.GetGeometry = function() {
+   TGeoPainter.prototype.getGeometry = function() {
       return this.getObject();
    }
 
    /** @summary Modify visibility of provided node by name */
-   TGeoPainter.prototype.ModifyVisisbility = function(name, sign) {
-      if (geo.getNodeKind(this.GetGeometry()) !== 0) return;
+   TGeoPainter.prototype.modifyVisisbility = function(name, sign) {
+      if (geo.getNodeKind(this.getGeometry()) !== 0) return;
 
       if (name == "")
-         return geo.SetBit(this.GetGeometry().fVolume, geo.BITS.kVisThis, (sign === "+"));
+         return geo.SetBit(this.getGeometry().fVolume, geo.BITS.kVisThis, (sign === "+"));
 
       let regexp, exact = false;
 
@@ -442,7 +453,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          opt = opt.substr(0,p1) + opt.substr(p2);
          // console.log("Modify visibility", sign,':',name);
 
-         this.ModifyVisisbility(name, sign);
+         this.modifyVisisbility(name, sign);
       }
 
       let d = new JSROOT.DrawOptions(opt);
@@ -806,7 +817,8 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
                .then(dat => this.buildDatGui(dat));
    }
 
-   /** @summary build dat.gui elements  */
+   /** @summary build dat.gui elements
+     * @private */
    TGeoPainter.prototype.buildDatGui = function(dat) {
       // can happen when dat gui loaded after drawing is already cleaned
       if (!this._renderer) return;
@@ -2840,7 +2852,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       let first_level = false, res = null;
 
       if (!prnt) {
-         prnt = this.GetGeometry();
+         prnt = this.getGeometry();
          if (!prnt && (geo.getNodeKind(prnt)!==0)) return null;
          itemname = this.geo_manager ? prnt.fName : "";
          first_level = true;
@@ -2876,7 +2888,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
    /** @summary Process script option - load and execute some gGeoManager-related calls */
    TGeoPainter.prototype.loadMacro = function(script_name) {
 
-      let result = { obj: this.GetGeometry(), prefix: "" };
+      let result = { obj: this.getGeometry(), prefix: "" };
 
       if (this.geo_manager) result.prefix = result.obj.fName;
 
@@ -3828,7 +3840,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
          delete this._animating;
 
-         let obj = this.GetGeometry();
+         let obj = this.getGeometry();
          if (obj && this.ctrl.is_main) {
             if (obj.$geo_painter===this) delete obj.$geo_painter; else
             if (obj.fVolume && obj.fVolume.$geo_painter===this) delete obj.fVolume.$geo_painter;
@@ -4024,7 +4036,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
       this.clearDrawings();
 
-      let draw_obj = this.GetGeometry(), name_prefix = "";
+      let draw_obj = this.getGeometry(), name_prefix = "";
       if (this.geo_manager) name_prefix = draw_obj.fName;
 
       this.prepareObjectDraw(draw_obj, name_prefix);
