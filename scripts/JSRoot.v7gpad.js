@@ -1995,7 +1995,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       JSROOT.require(['interactive']).then(inter => {
          top_rect.attr("pointer-events", "visibleFill");  // let process mouse events inside frame
          inter.FrameInteractive.assign(this);
-         this.BasicInteractive();
+         this.addBasicInteractivity();
       });
    }
 

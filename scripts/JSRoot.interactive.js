@@ -631,7 +631,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    let FrameInteractive = {
 
-      BasicInteractive: function() {
+      addBasicInteractivity: function() {
 
          TooltipHandler.assign(this);
 
@@ -736,12 +736,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       addKeysHandler: function() {
          if (this.keys_handler || (typeof window == 'undefined')) return;
 
-         this.keys_handler = this.ProcessKeyPress.bind(this);
+         this.keys_handler = evnt => this.processKeyPress(evnt);
 
          window.addEventListener('keydown', this.keys_handler, false);
       },
 
-      ProcessKeyPress: function(evnt) {
+      processKeyPress: function(evnt) {
          let main = this.selectDom();
          if (!JSROOT.key_handling || main.empty() || (this.enabledKeys === false)) return;
 
@@ -782,7 +782,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if (!JSROOT.settings.Zooming) return false;
             // in 3dmode with orbit control ignore simple arrows
             if (this.mode3d && (key.indexOf("Ctrl")!==0)) return false;
-            this.AnalyzeMouseWheelEvent(null, zoom, 0.5);
+            this.analyzeMouseWheelEvent(null, zoom, 0.5);
             this.zoom(zoom.name, zoom.min, zoom.max);
             if (zoom.changed) this.zoomChangedInteractive(zoom.name, true);
             evnt.stopPropagation();
@@ -801,7 +801,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       /** @summary Function called when frame is clicked and object selection can be performed
         * @desc such event can be used to select */
-      ProcessFrameClick: function(pnt, dblckick) {
+      processFrameClick: function(pnt, dblckick) {
 
          let pp = this.getPadPainter();
          if (!pp) return;
@@ -988,7 +988,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          // if no zooming was done, select active object instead
          switch (kind) {
             case 1:
-               this.ProcessFrameClick(pnt);
+               this.processFrameClick(pnt);
                break;
             case 2: {
                let pp = this.getPadPainter();
@@ -1013,7 +1013,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
              valid_y = (m[1] >= 0) && (m[1] <= this.getFrameHeight());
 
          if (valid_x && valid_y && this._dblclick_handler)
-            if (this.ProcessFrameClick({ x: m[0], y: m[1] }, true)) return;
+            if (this.processFrameClick({ x: m[0], y: m[1] }, true)) return;
 
          let kind = "xyz";
          if (!valid_x) kind = this.swap_xy ? "x" : "y"; else
@@ -1202,7 +1202,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       },
 
        /** @summary Analyze zooming with mouse wheel */
-      AnalyzeMouseWheelEvent: function(event, item, dmin, test_ignore) {
+      analyzeMouseWheelEvent: function(event, item, dmin, test_ignore) {
          let handle = this[item.name + "_handle"];
          if (handle) return handle.analyzeWheelEvent(event, dmin, item, test_ignore);
          console.error('Fail to analyze zooming event for ', item.name);
@@ -1211,7 +1211,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
        /** @summary return true if default Y zooming should be enabled
          * @desc it is typically for 2-Dim histograms or
          * when histogram not draw, defined by other painters */
-      AllowDefaultYZooming: function() {
+      isAllowedDefaultYZooming: function() {
 
          let pad_painter = this.getPadPainter();
          if (pad_painter && pad_painter.painters)
@@ -1231,13 +1231,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.clearInteractiveElements();
 
          let itemx = { name: "x", reverse: this.reverse_x, ignore: false },
-             itemy = { name: "y", reverse: this.reverse_y, ignore: !this.AllowDefaultYZooming() },
+             itemy = { name: "y", reverse: this.reverse_y, ignore: !this.isAllowedDefaultYZooming() },
              cur = d3.pointer(evnt, this.getFrameSvg().node()),
              w = this.getFrameWidth(), h = this.getFrameHeight();
 
-         this.AnalyzeMouseWheelEvent(evnt, this.swap_xy ? itemy : itemx, cur[0] / w, (cur[1] >=0) && (cur[1] <= h));
+         this.analyzeMouseWheelEvent(evnt, this.swap_xy ? itemy : itemx, cur[0] / w, (cur[1] >=0) && (cur[1] <= h));
 
-         this.AnalyzeMouseWheelEvent(evnt, this.swap_xy ? itemx : itemy, 1 - cur[1] / h, (cur[0] >= 0) && (cur[0] <= w));
+         this.analyzeMouseWheelEvent(evnt, this.swap_xy ? itemx : itemy, 1 - cur[1] / h, (cur[0] >= 0) && (cur[0] <= w));
 
          this.zoom(itemx.min, itemx.max, itemy.min, itemy.max);
 
@@ -1388,11 +1388,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          JSROOT.extend(painter, this);
 
          /*
-         painter.BasicInteractive = this.BasicInteractive;
+         painter.addBasicInteractivity = this.addBasicInteractivity;
          painter.addInteractivity = this.addInteractivity;
          painter.addKeysHandler = this.addKeysHandler;
-         painter.ProcessKeyPress = this.ProcessKeyPress;
-         painter.ProcessFrameClick = this.ProcessFrameClick;
+         painter.processKeyPress = this.processKeyPress;
+         painter.processFrameClick = this.processFrameClick;
          painter.startRectSel = this.startRectSel;
          painter.moveRectSel = this.moveRectSel;
          painter.endRectSel = this.endRectSel;
@@ -1400,8 +1400,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          painter.startTouchZoom = this.startTouchZoom;
          painter.moveTouchSel = this.moveTouchSel;
          painter.endTouchSel = this.endTouchSel;
-         painter.AnalyzeMouseWheelEvent = this.AnalyzeMouseWheelEvent;
-         painter.AllowDefaultYZooming = this.AllowDefaultYZooming;
+         painter.analyzeMouseWheelEvent = this.analyzeMouseWheelEvent;
+         painter.isAllowedDefaultYZooming = this.isAllowedDefaultYZooming;
          painter.mouseWheel = this.mouseWheel;
          painter.showContextMenu = this.showContextMenu;
          painter.startTouchMenu = this.startTouchMenu;
@@ -1443,7 +1443,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                "M460.293,256.149H339.237c-28.521,0-51.721,23.199-51.721,51.726v89.915c0,28.504,23.2,51.715,51.721,51.715h121.045   c28.521,0,51.721-23.199,51.721-51.715v-89.915C512.002,279.354,488.802,256.149,460.293,256.149z M465.03,397.784   c0,2.615-2.122,4.736-4.748,4.736H339.237c-2.614,0-4.747-2.121-4.747-4.736v-89.909c0-2.626,2.121-4.753,4.747-4.753h121.045 c2.615,0,4.748,2.116,4.748,4.753V397.784z"
       },
 
-      CreateSVG: function(group, btn, size, title) {
+      createSVG: function(group, btn, size, title) {
          let svg = group.append("svg:svg")
                         .attr("class", "svg_toolbar_btn")
                         .attr("width", size + "px")
@@ -1558,11 +1558,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
              x = group.property('leftside') ? getButtonSize(this, 1.25) : 0, y = 0;
 
          if (this._fast_drawing) {
-            ctrl = ToolbarIcons.CreateSVG(group, ToolbarIcons.circle, getButtonSize(this), "enlargePad");
+            ctrl = ToolbarIcons.createSVG(group, ToolbarIcons.circle, getButtonSize(this), "enlargePad");
             ctrl.attr("name", "Enlarge").attr("x", 0).attr("y", 0)
                 .on("click", evnt => this.clickPadButton("enlargePad", evnt));
          } else {
-            ctrl = ToolbarIcons.CreateSVG(group, ToolbarIcons.rect, getButtonSize(this), "Toggle tool buttons");
+            ctrl = ToolbarIcons.createSVG(group, ToolbarIcons.rect, getButtonSize(this), "Toggle tool buttons");
 
             ctrl.attr("name", "Toggle").attr("x", 0).attr("y", 0)
                 .property("buttons_state", (JSROOT.settings.ToolBar!=='popup'))
@@ -1577,7 +1577,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                if (typeof btn == 'string') btn = ToolbarIcons[btn];
                if (!btn) btn = ToolbarIcons.circle;
 
-               let svg = ToolbarIcons.CreateSVG(group, btn, getButtonSize(this),
+               let svg = ToolbarIcons.createSVG(group, btn, getButtonSize(this),
                            item.tooltip + (iscan ? "" : (" on pad " + this.this_pad_name)) + (item.keyname ? " (keyshortcut " + item.keyname + ")" : ""));
 
                if (group.property('vertical'))

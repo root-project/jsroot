@@ -3456,7 +3456,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          }
       }
 
-      // used in FramePainter.AllowDefaultYZooming
+      // used in FramePainter.isAllowedDefaultYZooming
       this.wheel_zoomy = (this.getDimension() > 1) || !this.draw_content;
    }
 

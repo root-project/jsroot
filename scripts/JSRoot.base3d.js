@@ -946,7 +946,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
          evnt.stopPropagation();
          evnt.stopImmediatePropagation();
 
-         if (control.painter && (typeof control.painter.AnalyzeMouseWheelEvent == 'function')) {
+         if (control.painter && (typeof control.painter.analyzeMouseWheelEvent == 'function')) {
             let kind = intersect.object.zoom,
                 position = intersect.point[kind],
                 item = { name: kind, ignore: false };
@@ -955,7 +955,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
             if (kind!=="z") position = (position + control.painter.size_xy3d)/2/control.painter.size_xy3d;
                        else position = position/2/control.painter.size_z3d;
 
-            control.painter.AnalyzeMouseWheelEvent(evnt, item, position, false);
+            control.painter.analyzeMouseWheelEvent(evnt, item, position, false);
 
             if ((kind==="z") && intersect.object.use_y_for_z) kind = "y";
 

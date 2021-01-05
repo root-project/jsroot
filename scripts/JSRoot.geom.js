@@ -40,7 +40,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
                               .attr('data-title', title)
                               .on('click', buttonConfig.click);
 
-            inter.ToolbarIcons.CreateSVG(button, inter.ToolbarIcons[buttonConfig.icon], 16, title);
+            inter.ToolbarIcons.createSVG(button, inter.ToolbarIcons[buttonConfig.icon], 16, title);
          });
 
       });

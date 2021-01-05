@@ -2589,15 +2589,15 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          let btns = this.brlayout.createBrowserBtns();
 
          JSROOT.require(['interactive']).then(inter => {
-            inter.ToolbarIcons.CreateSVG(btns, inter.ToolbarIcons.diamand, 15, "toggle fix-pos browser")
+            inter.ToolbarIcons.createSVG(btns, inter.ToolbarIcons.diamand, 15, "toggle fix-pos browser")
                                .style("margin","3px").on("click", () => this.createBrowser("fix", true));
 
             if (!this.float_browser_disabled)
-               inter.ToolbarIcons.CreateSVG(btns, inter.ToolbarIcons.circle, 15, "toggle float browser")
+               inter.ToolbarIcons.createSVG(btns, inter.ToolbarIcons.circle, 15, "toggle float browser")
                                   .style("margin","3px").on("click", () => this.createBrowser("float", true));
 
             if (!this.status_disabled)
-               inter.ToolbarIcons.CreateSVG(btns, inter.ToolbarIcons.three_circles, 15, "toggle status line")
+               inter.ToolbarIcons.createSVG(btns, inter.ToolbarIcons.three_circles, 15, "toggle status line")
                                   .style("margin","3px").on("click", () => this.createStatusLine(0, "toggle"));
           });
       }
