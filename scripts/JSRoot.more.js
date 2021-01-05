@@ -75,7 +75,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
                   this.submitCanvExec("SetX(" + text.fX + ");;SetY(" + text.fY + ");;");
                }
 
-            inter.DragMoveHandler.AddMove(this);
+            inter.addMoveHandler(this);
 
             return this;
          });
@@ -470,7 +470,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
                   this.submitCanvExec(exec + "Notify();;");
                }
 
-            inter.DragMoveHandler.AddMove(this);
+            inter.addMoveHandler(this);
          });
    }
 
@@ -2039,7 +2039,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          // wait until interactive elements assigned
          if (painter.testEditable() && !JSROOT.BatchMode)
             return JSROOT.require(['interactive'])
-                         .then(inter => inter.DragMoveHandler.AddMove(painter));
+                         .then(inter => inter.addMoveHandler(painter));
       }).then(() => painter.drawNextFunction(0));
    }
 
@@ -2149,7 +2149,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          pnt = { x: pos[0], y: pos[1], touch: false };
       }
 
-      this.ProcessTooltipEvent(pnt);
+      this.processFrameTooltipEvent(pnt);
    }
 
    /** @summary Process mouse wheel event */
@@ -2157,7 +2157,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       evnt.stopPropagation();
       evnt.preventDefault();
 
-      this.ProcessTooltipEvent(null); // remove all tooltips
+      this.processFrameTooltipEvent(null); // remove all tooltips
 
       let polar = this.getObject();
 

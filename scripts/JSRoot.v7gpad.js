@@ -1275,7 +1275,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                     .attr("width", this.vertical ? 10 : len)
                     .attr("height", this.vertical ? len : 10);
 
-         inter.DragMoveHandler.AddDrag(this, { only_move: true, redraw: this.positionChanged.bind(this) });
+         inter.addDragHandler(this, { only_move: true, redraw: this.positionChanged.bind(this) });
 
          this.draw_g.on("dblclick", () => this.zoomStandalone());
 
@@ -4361,7 +4361,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if (JSROOT.settings.ContextMenu && this.paveContextMenu)
                this.draw_g.on("contextmenu", evnt => this.paveContextMenu(evnt));
 
-            inter.DragMoveHandler.AddDrag(this, { minwidth: 20, minheight: 20, redraw: this.sizeChanged.bind(this) });
+            inter.addDragHandler(this, { minwidth: 20, minheight: 20, redraw: this.sizeChanged.bind(this) });
 
             return this;
          });
@@ -4465,7 +4465,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if (!JSROOT.BatchMode)
          JSROOT.require(['interactive'])
-               .then(inter => inter.DragMoveHandler.AddDrag(this, { minwidth: 20, minheight: 20, no_change_x: true, redraw: this.redraw.bind(this,'drag') }));
+               .then(inter => inter.addDragHandler(this, { minwidth: 20, minheight: 20, no_change_x: true, redraw: this.redraw.bind(this,'drag') }));
    }
 
    ////////////////////////////////////////////////////////////////////////////////////////////
@@ -4736,7 +4736,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             });
 
          if (!after_resize)
-            inter.DragMoveHandler.AddDrag(this, { minwidth: 20, minheight: 20, no_change_y: true, redraw: this.DrawPalette.bind(this, true) });
+            inter.addDragHandler(this, { minwidth: 20, minheight: 20, no_change_y: true, redraw: this.DrawPalette.bind(this, true) });
 
          if (!JSROOT.settings.Zooming) return;
 
