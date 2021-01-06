@@ -100,29 +100,28 @@
 
    /** @summary JSROOT version id
      * @desc For the JSROOT release the string in format "major.minor.patch" like "6.0.0"
-     *       For the ROOT release string is "ROOT major.minor.patch" like "ROOT 6.24.00" */
+     * For the ROOT release string is "ROOT major.minor.patch" like "ROOT 6.24.00" */
    JSROOT.version_id = "pre6";
 
    /** @summary JSROOT version date
-     * @desc Release date in format day/month/year */
+     * @desc Release date in format day/month/year like "6/01/2021"*/
    JSROOT.version_date = "6/01/2021";
 
    /** @summary JSROOT version id and date
-     * @desc Produced by concatenation of {@link JSROOT.version_id} and {@link JSROOT.version_date} */
+     * @desc Produced by concatenation of {@link JSROOT.version_id} and {@link JSROOT.version_date}
+     * Like "6.0.0 21/01/2021" */
    JSROOT.version = JSROOT.version_id + " " + JSROOT.version_date;
 
    /** @summary Location of JSROOT scripts
-     * @desc Used to load other JSROOT scripts when required */
+     * @desc Automatically detected and used to load other JSROOT scripts when required */
    JSROOT.source_dir = "";
 
    if (JSROOT.batch_mode === undefined)
-      /** @summary Indicates if JSROOT runs in batch mode
-        * @default false */
+      /** @summary Indicates if JSROOT runs in batch mode */
       JSROOT.batch_mode = false;
 
    if (JSROOT.nodejs === undefined)
-      /** @summary Indicates if JSROOT runs inside Node.js
-        * @default false */
+      /** @summary Indicates if JSROOT runs inside Node.js */
       JSROOT.nodejs = false;
 
    //openuicfg // DO NOT DELETE, used to configure openui5 usage like JSROOT.openui5src = "nojsroot";

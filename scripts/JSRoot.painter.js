@@ -3654,38 +3654,40 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /** @summary Draw object in specified HTML element with given draw options.
-     * @param {string|object} divid - id of div element to draw or directly DOMElement
+     * @param {string|object} dom - id of div element to draw or directly DOMElement
      * @param {object} obj - object to draw, object type should be registered before in JSROOT
      * @param {string} opt - draw options separated by space, comma or semicolon
      * @param {function} [callback] - deprecated, function called when drawing is completed, first argument is object painter instance
      * @returns {Promise} with painter object only if callback parameter is not specified
+     * @requires painter
      * @desc An extensive list of support draw options can be found on [JSROOT examples page]{@link https://root.cern/js/latest/examples.htm}
      * Parameter ```callback``` kept only for backward compatibility and will be removed in JSROOT v6.2
      * @example
      * JSROOT.openFile("https://root.cern/js/files/hsimple.root")
      *       .then(file => file.readObject("hpxpy;1"))
      *       .then(obj => JSROOT.draw("drawing", obj, "colz;logx;gridx;gridy")); */
-   JSROOT.draw = function(divid, obj, opt, callback) {
-      let res = jsroot_draw(divid, obj, opt);
+   JSROOT.draw = function(dom, obj, opt, callback) {
+      let res = jsroot_draw(dom, obj, opt);
       if (!callback || (typeof callback != 'function')) return res;
       res.then(callback).catch(() => callback(null));
    }
 
    /** @summary Redraw object in specified HTML element with given draw options.
-     * @param {string|object} divid - id of div element to draw or directly DOMElement
+     * @param {string|object} dom - id of div element to draw or directly DOMElement
      * @param {object} obj - object to draw, object type should be registered before in JSROOT
      * @param {string} opt - draw options
      * @param {function} [callback] - function called when redrawing is completed, first argument will be object painter instance
      * @returns {Promise} with painter used only when callback parameter is not specified
+     * @requires painter
      * @desc If drawing was not done before, it will be performed with {@link JSROOT.draw}.
      * Otherwise drawing content will be updated
      * Parameter ```callback``` kept only for backward compatibility and will be removed in JSROOT v6.2 */
-   JSROOT.redraw = function(divid, obj, opt, callback) {
+   JSROOT.redraw = function(dom, obj, opt, callback) {
 
       if (!obj || (typeof obj !== 'object'))
          return callback ? callback(null) : Promise.reject(Error('not an object in JSROOT.redraw'));
 
-      let can_painter = jsrp.getElementCanvPainter(divid), handle, res_painter = null, redraw_res;
+      let can_painter = jsrp.getElementCanvPainter(dom), handle, res_painter = null, redraw_res;
       if (obj._typename)
          handle = getDrawHandle("ROOT." + obj._typename);
       if (handle && handle.draw_field && obj[handle.draw_field])
@@ -3708,7 +3710,7 @@ JSROOT.define(['d3'], (d3) => {
             }
          }
       } else {
-         let dummy = new ObjectPainter(divid),
+         let dummy = new ObjectPainter(dom),
              top = dummy.getTopPainter();
          // base painter do not have this method, if it there use it
          // it can be object painter here or can be specially introduce method to handling redraw!
@@ -3724,9 +3726,9 @@ JSROOT.define(['d3'], (d3) => {
          return redraw_res.then(() => { if (callback) callback(res_painter); return res_painter; });
       }
 
-      JSROOT.cleanup(divid);
+      JSROOT.cleanup(dom);
 
-      return JSROOT.draw(divid, obj, opt, callback);
+      return JSROOT.draw(dom, obj, opt, callback);
    }
 
    /** @summary Save object, drawn in specified element, as JSON.
@@ -3860,7 +3862,8 @@ JSROOT.define(['d3'], (d3) => {
    }
 
    /** @summary Safely remove all JSROOT drawings from specified element
-     * @param {string|object} divid - id or DOM element
+     * @param {string|object} dom - id or DOM element
+     * @requires painter
      * @example
      * JSROOT.cleanup("drawing");
      * JSROOT.cleanup(document.querySelector("#drawing")); */
