@@ -111,6 +111,12 @@ JSROOT.define(['d3'], (d3) => {
       });
    }
 
+   jsrp.closeMenu = function(menuname) {
+      JSROOT.require(['menu']).then(() => {
+         jsrp.closeMenu(menuname);
+      });
+   }
+
    /** @summary Read style and settings from URL
      * @private */
    jsrp.readStyleFromURL = function(url) {
