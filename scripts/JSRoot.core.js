@@ -115,12 +115,6 @@
      * @desc Used to load other JSROOT scripts when required */
    JSROOT.source_dir = "";
 
-   /** @summary Let tweak browser caching
-     * @desc When specified, extra URL parameter like ```?stamp=unique_value``` append to each JSROOT script loaded
-     *       In such case browser will be forced to load JSROOT functionality disregards of cache settings
-     * @default false */
-   JSROOT.nocache = false;
-
    if (JSROOT.BatchMode === undefined)
       /** @summary Indicates if JSROOT runs in batch mode
         * @default false */
@@ -192,7 +186,7 @@
       if (_.amd) return dir + entry.src + ext;
       let res = dir + entry.src + ext + ".js";
 
-      if (fullyQualified && JSROOT.nocache) res += "?stamp=" + JSROOT.nocache;
+      if (fullyQualified && JSROOT.settings.NoCache) res += "?stamp=" + JSROOT.settings.NoCache;
       return res;
    }
 
@@ -348,7 +342,12 @@
       /** @summary Configures keybord key press handling
         * @desc Can be disabled to prevent keys heandling in complex HTML layouts
         * @default true */
-      HandleKeys: true
+      HandleKeys: true,
+     /** @summary Let tweak browser caching
+       * @desc When specified, extra URL parameter like ```?stamp=unique_value``` append to each JSROOT script loaded
+       * In such case browser will be forced to load JSROOT functionality disregards of server cache settings
+       * @default false */
+      NoCache: false
    };
 
    /** @namespace
@@ -2160,7 +2159,7 @@
 
       let d = JSROOT.decodeUrl(source_fullpath);
 
-      if (d.has('nocache')) JSROOT.nocache = (new Date).getTime(); // use timestamp to overcome cache limitation
+      if (d.has('nocache')) JSROOT.settings.NoCache = (new Date).getTime(); // use timestamp to overcome cache limitation
       if (d.has('wrong_http_response') || JSROOT.decodeUrl().has('wrong_http_response'))
          JSROOT.settings.HandleWrongHttpResponse = true; // server may send wrong content length by partial requests, use other method to control this
       if (d.has('nosap')) _.sap = undefined; // let ignore sap loader even with openui5 loaded

@@ -103,7 +103,7 @@ if ((typeof document === "undefined") || (typeof window === "undefined")) {
       let d = JSROOT.decodeUrl(source_fullpath);
 
       // use timestamp to overcome cache limitation
-      if (d.has('nocache')) JSROOT.nocache = (new Date).getTime();
+      if (d.has('nocache')) JSROOT.settings.NoCache = (new Date).getTime();
       // server may send wrong content length by partial requests, use other method to control this
       if (d.has('wrong_http_response') || JSROOT.decodeUrl().has('wrong_http_response'))
          JSROOT.settings.HandleWrongHttpResponse = true;
