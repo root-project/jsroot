@@ -1594,7 +1594,7 @@ JSROOT.define(['d3'], (d3) => {
     * @class
     * @memberof JSROOT
     * @extends ObjectPainter
-    * @param {object|string} dom - identifier of dom element
+    * @param {object|string} dom - dom element or identifier
     * @param {object} obj - object to draw
     * @param {string} [opt] - object draw options
     */

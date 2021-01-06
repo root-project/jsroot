@@ -802,14 +802,6 @@ JSROOT.define(['rawinflate'], () => {
    }
 
    /** @summary Read object from the directory
-     * @desc Only temporary here, will be deleted in v 6.2
-     * @deprecated */
-   TDirectory.prototype.ReadObject = function(obj_name, cycle) {
-      JSROOT.warnOnce("Using obolsete TDirectory.ReadObject function, change to TDirectory.readObject");
-      return this.fFile.readObject(this.dir_name + "/" + obj_name, cycle);
-   }
-
-   /** @summary Read object from the directory
      * @param {string} name - object name
      * @param {number} [cycle] - cycle number
      * @return {Promise} with read object */
@@ -1229,14 +1221,6 @@ JSROOT.define(['rawinflate'], () => {
       if (this.readTrees === undefined) this.readTrees = [];
 
       if (this.readTrees.indexOf(obj) < 0) this.readTrees.push(obj);
-   }
-
-   /** @summary Read object from the file
-     * @desc Only temporary here, will be deleted in v 6.2
-     * @deprecated*/
-   TFile.prototype.ReadObject = function(obj_name, cycle, only_dir) {
-      JSROOT.warnOnce("Using obolsete TFile.ReadObject function, change to TFile.readObject");
-      return this.readObject(obj_name, cycle, only_dir);
    }
 
    /** @summary Read any object from a root file

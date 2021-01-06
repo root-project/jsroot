@@ -1809,13 +1809,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          }
    }
 
-   /** @summary Open ROOT file
-     * @deprecated */
-   HierarchyPainter.prototype.OpenRootFile = function(filepath, cb) {
-      JSROOT.warnOnce("HierarchyPainter.OpenRootFile is obsolete, use openRootFile instead");
-      return this.openRootFile(filepath).then(cb);
-   }
-
    /** @summary Open ROOT file */
    HierarchyPainter.prototype.openRootFile = function(filepath) {
       // first check that file with such URL already opened
@@ -2182,13 +2175,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Returns true when monitoring is enabled */
    HierarchyPainter.prototype.isMonitoring = function() {
       return this._monitoring_on;
-   }
-
-   /** @summary Assign MDI object (old style)
-     * @deprecated */
-   HierarchyPainter.prototype.SetDisplay = function(layout, frameid) {
-      JSROOT.warnOnce("HierarchyPainter.SetDisplay is obsolete, use setDisplay instead");
-      return this.setDisplay(layout, frameid);
    }
 
    /** @summary Assign MDI object */

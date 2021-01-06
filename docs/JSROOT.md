@@ -677,19 +677,19 @@ One should always remember that all I/O operations are asynchronous in JSROOT.
 Therefore, callback functions are used to react when the I/O operation completed.
 For example, reading an object from a file and displaying it will look like:
 
-    var filename = "https://root.cern/js/files/hsimple.root";
-    JSROOT.openFile(filename).then(file => {
-       file.ReadObject("hpxpy;1").then(obj => {
-          JSROOT.draw("drawing", obj, "colz");
-       });
-    });
+    let filename = "https://root.cern/js/files/hsimple.root";
+    JSROOT.openFile(filename)
+          .then(file => file.readObject("hpxpy;1"))
+          .then(obj => JSROOT.draw("drawing", obj, "colz"))
+          .then(() => console.log("drawing completed"));
 
 Using async function, one can write following:
 
       async function read_and_draw_async() {
          let file = await JSROOT.openFile(filename);
-         let obj = await file.ReadObject("hpxpy;1");
+         let obj = await file.readObject("hpxpy;1");
          await JSROOT.draw("drawing", obj, "colz");
+         console.log("drawing completed");
       }
 
       read_and_draw_async();
@@ -703,13 +703,13 @@ Here is [running example](https://root.cern/js/latest/api.htm#custom_html_read_r
 Simple TTree::Draw operation can be performed with following code:
 
     JSROOT.openFile("https://root.cern/js/files/hsimple.root")
-          .then(file => file.ReadObject("ntuple;1"))
+          .then(file => file.readObject("ntuple;1"))
           .then(tree => JSROOT.draw("drawing", tree, "px:py::pz>5"));
 
 To get access to selected branches, one should use TSelector class:
 
     JSROOT.openFile("https://root.cern/js/files/hsimple.root")
-          .then(file => file.ReadObject("ntuple;1"))
+          .then(file => file.readObject("ntuple;1"))
           .then(tree => {
 
              let selector = new JSROOT.TSelector();
@@ -797,8 +797,8 @@ create SVG output. For example, to create SVG image with lego plot, one should d
     let jsroot = require("jsroot");
     let fs = require("fs");
 
-    jsroot.OpenFile("https://root.cern/js/files/hsimple.root")
-          .then(file => file.ReadObject("hpx;1")
+    jsroot.openFile("https://root.cern/js/files/hsimple.root")
+          .then(file => file.readObject("hpx;1")
           .then(obj => jsroot.makeSVG({ object: obj, option: "lego2", width: 1200, height: 800 }))
           .then(svg => fs.writeFileSync("lego2.svg", svg));
 
@@ -807,8 +807,8 @@ It is also possible to convert any JavaScript object into ROOT JSON string, usin
     let jsroot = require("jsroot");
     let fs = require("fs");
 
-    jsroot.OpenFile("https://root.cern/js/files/hsimple.root")
-          .then(file => file.ReadObject("hpxpy;1"))
+    jsroot.openFile("https://root.cern/js/files/hsimple.root")
+          .then(file => file.readObject("hpxpy;1"))
           .then(obj => jsroot.toJSON(obj))
           .then(json => fs.writrFileSync("hpxpy.json", json));
 
