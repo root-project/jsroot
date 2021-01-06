@@ -1467,7 +1467,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Set active flag for frame - can block some events
     * @private */
    RFramePainter.prototype.setFrameActive = function(on) {
-      this.enabledKeys = on && JSROOT.key_handling ? true : false;
+      this.enabledKeys = on && JSROOT.settings.HandleKeys ? true : false;
       // used only in 3D mode
       if (this.control)
          this.control.enableKeys = this.enabledKeys;

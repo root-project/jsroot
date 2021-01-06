@@ -647,7 +647,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
       control.enableDamping = false;
       control.dampingFactor = 1.0;
       control.enableZoom = true;
-      control.enableKeys = JSROOT.key_handling;
+      control.enableKeys = JSROOT.settings.HandleKeys;
 
       if (lookat) {
          control.target.copy(lookat);

@@ -126,11 +126,6 @@
         * @default false */
       JSROOT.BatchMode = false;
 
-   /** @summary Configures keybord key handling
-     * @desc Can be disabled to prevent keys heandling in complex HTML layouts
-     * @default true */
-   JSROOT.key_handling = true;  // enable/disable key press handling in JSROOT
-
    //openuicfg // DO NOT DELETE, used to configure openui5 usage like JSROOT.openui5src = "nojsroot";
 
    /** @summary internal data
@@ -349,7 +344,11 @@
         * @desc See [jsroot#189]{@link https://github.com/root-project/jsroot/issues/189} for more info
         * Can be enabled by adding "wrong_http_response" parameter to URL when using JSROOT UI
         * @default false */
-      HandleWrongHttpResponse: false
+      HandleWrongHttpResponse: false,
+      /** @summary Configures keybord key press handling
+        * @desc Can be disabled to prevent keys heandling in complex HTML layouts
+        * @default true */
+      HandleKeys: true
    };
 
    /** @namespace
