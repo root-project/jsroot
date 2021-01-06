@@ -735,14 +735,16 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    // ==============================================================
 
-   JSROOT.hpainter = null; // global pointer
+   /** @summary Current hierarchy painter
+     * @desc Instance of {@link JSROOT.HierarchyPainter} object
+     * @private */
+   JSROOT.hpainter = null;
 
    /**
      * @summary Painter of hierarchical structures
      *
      * @class
      * @memberof JSROOT
-     * @extends JSROOT.BasePainter
      * @param {string} name - symbolic name
      * @param {string} frameid - element id where hierarchy is drawn
      * @param {string} [backgr] - background color
@@ -1007,7 +1009,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return res;
    }
 
-    /** @summary Eexecutes item marked as 'Command'
+    /** @summary Executes item marked as 'Command'
       * @desc If command requires additional arguments, they could be specified as extra arguments arg1, arg2, ...
       * @param {String} itemname - name of command item
       * @param {Object} [elem] - HTML element for command execution
@@ -1065,7 +1067,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
      * @param {string} arg.name - item name
      * @param {Object} arg.item - or item itself
      * @param {string} options - supposed draw options
-     * @returns {Promise} with object like { item, obj, itemname } */
+     * @returns {Promise} with object like { item, obj, itemname }
+     * @private */
    HierarchyPainter.prototype.getObject = function(arg, options) {
 
       let itemname, item, result = { item: null, obj: null };
@@ -1132,6 +1135,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Starts player for specified item
+     * @desc Same as "Player" context menu
+     * @param {string} itemname - item name for which player should be started
+     * @param {string} [option] - extra options for the player
      * @returns {Promise} when ready*/
    HierarchyPainter.prototype.player = function(itemname, option) {
       let item = this.findItem(itemname);
