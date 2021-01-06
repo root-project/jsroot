@@ -726,14 +726,15 @@
      * Following components can be specified
      *    - 'io'     TFile functionality
      *    - 'tree'   TTree support
+     *    - 'painter' d3.js plus basic painting functions
      *    - 'gpad'   basic 2d graphic (TCanvas/TPad/TFrame)
      *    - 'hist'   histograms 2d drawing (SVG)
      *    - 'hist3d' histograms 3d drawing (WebGL)
      *    - 'more'   extra 2d graphic (TGraph, TF1)
-     *    - 'geom'    TGeo support
-     *    - 'v7gpad' ROOT RPad/RCanvas/RFrame
+     *    - 'geom'   TGeo support
+     *    - 'v7gpad' ROOT v7 RPad/RCanvas/RFrame
      *    - 'v7hist' ROOT v7 histograms 2d drawing (SVG)
-     *    - 'v7hist3d' v7 histograms 3d drawing (WebGL)
+     *    - 'v7hist3d' ROOT v7 histograms 3d drawing (WebGL)
      *    - 'v7more' ROOT v7 special classes
      *    - 'math'   some methods from TMath class
      *    - 'hierarchy' hierarchy browser
@@ -755,9 +756,9 @@
    }
 
    /** @summary Generate mask for given bit
-    * @param {number} n bit number
-    * @returns {Number} produced mask
-    * @private */
+     * @param {number} n bit number
+     * @returns {Number} produced mask
+     * @private */
    JSROOT.BIT = function(n) { return 1 << n; }
 
    /** @summary Seed simple random generator
@@ -784,7 +785,7 @@
       return result + 0.5;
    }
 
-   /** @summary Just copies (not clone) all fields from source to the target object
+   /** @summary Just copy (not clone) all fields from source to the target object
      * @desc Simple replacement of jQuery.extend method
      * @memberof JSROOT
      * @private */
@@ -810,8 +811,8 @@
 
    /** @summary Should be used to parse JSON string produced with TBufferJSON class
      * @desc Replace all references inside object like { "$ref": "1" }
-    * @param {object|string} json  object where references will be replaced
-    * @returns {object} parsed object */
+     * @param {object|string} json  object where references will be replaced
+     * @returns {object} parsed object */
    JSROOT.parse = function(json) {
 
       if (!json) return null;
@@ -1350,7 +1351,7 @@
    }
 
    // Dummy, when painter is not yet loaded, should happens nothing
-   JSROOT.cleanup = () => { return; }
+   JSROOT.cleanup = () => {}
 
    // Create SVG, defined in JSRoot.painter.js
    JSROOT.makeSVG = args => {
