@@ -105,15 +105,14 @@
 
    /** @summary JSROOT version date
      * @desc Release date in format day/month/year */
-   JSROOT.version_date = "5/01/2021";
+   JSROOT.version_date = "6/01/2021";
 
    /** @summary JSROOT version id and date
      * @desc Produced by concatenation of {@link JSROOT.version_id} and {@link JSROOT.version_date} */
    JSROOT.version = JSROOT.version_id + " " + JSROOT.version_date;
 
    /** @summary Location of JSROOT scripts
-     * @desc Used to load other JSROOT scripts when required
-     */
+     * @desc Used to load other JSROOT scripts when required */
    JSROOT.source_dir = "";
 
    /** @summary Let tweak browser caching
@@ -121,12 +120,6 @@
      *       In such case browser will be forced to load JSROOT functionality disregards of cache settings
      * @default false */
    JSROOT.nocache = false;
-
-   /** @summary Let detect and solve problem when browser returns wrong content-length parameter
-     * @desc See [jsroot#189]{@link https://github.com/root-project/jsroot/issues/189} for more info
-     * Can be enabled by adding "wrong_http_response" parameter to URL when using JSROOT UI
-     * @default false */
-   JSROOT.wrong_http_response_handling = false;
 
    if (JSROOT.BatchMode === undefined)
       /** @summary Indicates if JSROOT runs in batch mode
@@ -337,7 +330,7 @@
       /** @summary Default color palette id  */
       Palette: 57,
       /** @summary Configures Latex usage, see {@link JSROOT.constants.Latex} for possible values */
-      Latex: 2,
+      Latex: JSROOT.constants.Latex.Normal,
       /** @summary Grads per segment in TGeo spherical shapes like tube */
       GeoGradPerSegm: 6,
       /** @summary Enables faces compression after creation of composite shape  */
@@ -352,6 +345,11 @@
       YValuesFormat : undefined,
       /** @summary custom format for all Z values, when not specified {@link JSROOT.gStyle.fStatFormat} is used */
       ZValuesFormat : undefined,
+      /** @summary Let detect and solve problem when browser returns wrong content-length parameter
+        * @desc See [jsroot#189]{@link https://github.com/root-project/jsroot/issues/189} for more info
+        * Can be enabled by adding "wrong_http_response" parameter to URL when using JSROOT UI
+        * @default false */
+      HandleWrongHttpResponse: false
    };
 
    /** @namespace
@@ -1115,19 +1113,19 @@
    }
 
    /** @summary Find function with given name.
-    * @desc Function name may include several namespaces like 'JSROOT.Painter.drawFrame'
-    * If function starts with ., it should belong to JSROOT.Painter
-    * @private  */
+     * @desc Function name may include several namespaces like 'JSROOT.Painter.drawFrame'
+     * If function starts with ., it should belong to JSROOT.Painter
+     * @private */
    JSROOT.findFunction = function(name) {
       if (typeof name === 'function') return name;
       if (typeof name !== 'string') return null;
       let names, elem;
       if (name[0] == ".") { // special shortcut for JSROOT.Painter.
-         names = [ name.substr(1) ];
+         names = name.substr(1).split('.');
          elem = JSROOT.Painter;
       } else {
          names = name.split('.');
-         if (names[0]==='JSROOT') {
+         if (names[0] === 'JSROOT') {
             elem = JSROOT;
             names.shift();
          } else {
@@ -1135,7 +1133,7 @@
          }
       }
 
-      for (let n = 0;elem && (n < names.length); ++n)
+      for (let n = 0; elem && (n < names.length); ++n)
          elem = elem[names[n]];
 
       return (typeof elem == 'function') ? elem : null;
@@ -1153,13 +1151,13 @@
       if (!kind) kind = "buf";
 
       let method = "GET", async = true, p = kind.indexOf(";sync");
-      if (p>0) { kind = kind.substr(0,p); async = false; }
+      if (p > 0) { kind = kind.substr(0,p); async = false; }
       if (kind === "head") method = "HEAD"; else
       if ((kind === "post") || (kind === "multi") || (kind === "posttext")) method = "POST";
 
       xhr.kind = kind;
 
-      if (JSROOT.wrong_http_response_handling && (method == "GET") && (typeof xhr.addEventListener === 'function'))
+      if (JSROOT.settings.HandleWrongHttpResponse && (method == "GET") && (typeof xhr.addEventListener === 'function'))
          xhr.addEventListener("progress", function(oEvent) {
             if (oEvent.lengthComputable && this.expected_size && (oEvent.loaded > this.expected_size)) {
                this.did_abort = true;
@@ -1174,7 +1172,7 @@
 
          if ((this.readyState === 2) && this.expected_size) {
             let len = parseInt(this.getResponseHeader("Content-Length"));
-            if (!isNaN(len) && (len>this.expected_size) && !JSROOT.wrong_http_response_handling) {
+            if (!isNaN(len) && (len > this.expected_size) && !JSROOT.settings.HandleWrongHttpResponse) {
                this.did_abort = true;
                this.abort();
                return this.error_callback(Error('Server response size ' + len + ' larger than expected ' + this.expected_size + '. Abort I/O operation'));
@@ -2165,7 +2163,7 @@
 
       if (d.has('nocache')) JSROOT.nocache = (new Date).getTime(); // use timestamp to overcome cache limitation
       if (d.has('wrong_http_response') || JSROOT.decodeUrl().has('wrong_http_response'))
-         JSROOT.wrong_http_response_handling = true; // server may send wrong content length by partial requests, use other method to control this
+         JSROOT.settings.HandleWrongHttpResponse = true; // server may send wrong content length by partial requests, use other method to control this
       if (d.has('nosap')) _.sap = undefined; // let ignore sap loader even with openui5 loaded
 
       return this;

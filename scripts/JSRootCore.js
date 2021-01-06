@@ -102,10 +102,13 @@ if ((typeof document === "undefined") || (typeof window === "undefined")) {
 
       let d = JSROOT.decodeUrl(source_fullpath);
 
-      if (d.has('nocache')) JSROOT.nocache = (new Date).getTime(); // use timestamp to overcome cache limitation
+      // use timestamp to overcome cache limitation
+      if (d.has('nocache')) JSROOT.nocache = (new Date).getTime();
+      // server may send wrong content length by partial requests, use other method to control this
       if (d.has('wrong_http_response') || JSROOT.decodeUrl().has('wrong_http_response'))
-         JSROOT.wrong_http_response_handling = true; // server may send wrong content length by partial requests, use other method to control this
-      if (d.has('nosap')) JSROOT._.sap = undefined; // let ignore sap loader even with openui5 loaded
+         JSROOT.settings.HandleWrongHttpResponse = true;
+      // let ignore sap loader even with openui5 loaded
+      if (d.has('nosap')) JSROOT._.sap = undefined;
 
       if (d.has('gui') || JSROOT._.amd) {
          return window_on_load(JSROOT._.amd, () => {
