@@ -2171,14 +2171,6 @@
       return this;
    }
 
-   let _warned = {};
-   JSROOT.warnOnce = function(msg) {
-      if (!_warned[msg]) {
-         console.warn(msg);
-         _warned[msg] = true;
-      }
-   }
-
    JSROOT._ = _;
    JSROOT.browser = browser;
    JSROOT.gStyle = gStyle;

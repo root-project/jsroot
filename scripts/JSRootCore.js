@@ -35,35 +35,43 @@ if ((typeof document === "undefined") || (typeof window === "undefined")) {
       if (!JSROOT)
          throw Error("Fail to load JSRoot.core.js script from " + path0);
 
+      let _warned = {};
+      warnOnce = function(msg) {
+         if (!_warned[msg]) {
+            console.warn(msg);
+            _warned[msg] = true;
+         }
+      }
+
       JSROOT.GetUrlOption = function(opt, url, dflt) {
-         JSROOT.warnOnce('Using obsolete JSROOT.GetUrlOption, change to JSROOT.decodeUrl');
+         warnOnce('Using obsolete JSROOT.GetUrlOption, change to JSROOT.decodeUrl');
          return JSROOT.decodeUrl(url).get(opt, dflt === undefined ? null : dflt);
       }
 
       JSROOT.AssertPrerequisites = function(req, callback) {
-         JSROOT.warnOnce('Using obsolete JSROOT.AssertPrerequisites, change to JSROOT.require');
+         warnOnce('Using obsolete JSROOT.AssertPrerequisites, change to JSROOT.require');
          req = req.replace(/2d;v7;/g, "v7gpad;").replace(/2d;v6;/g, "gpad;").replace(/more2d;/g, 'more;').replace(/2d;/g, 'gpad;').replace(/;v6;v7/g, ";gpad;v7gpad");
          JSROOT.require(req).then(callback);
       }
 
       JSROOT.OpenFile = function(filename, callback) {
-         JSROOT.warnOnce('Using obsolete JSROOT.OpenFile function, change to JSROOT.openFile');
+         warnOnce('Using obsolete JSROOT.OpenFile function, change to JSROOT.openFile');
          let res = JSROOT.openFile(filename);
          return !callback ? res : res.then(callback);
       }
 
       JSROOT.JSONR_unref = function(arg) {
-         JSROOT.warnOnce('Using obsolete JSROOT.JSONR_unref function, change to JSROOT.parse');
+         warnOnce('Using obsolete JSROOT.JSONR_unref function, change to JSROOT.parse');
          return JSROOT.parse(arg);
       }
 
       JSROOT.MakeSVG = function(args) {
-         JSROOT.warnOnce('Using obsolete JSROOT.MakeSVG function, change to JSROOT.makeSVG');
+         warnOnce('Using obsolete JSROOT.MakeSVG function, change to JSROOT.makeSVG');
          return JSROOT.makeSVG(args);
       }
 
       JSROOT.CallBack = function(func, arg1, arg2) {
-         JSROOT.warnOnce('Using obsolete JSROOT.CallBack function');
+         warnOnce('Using obsolete JSROOT.CallBack function');
 
          if (typeof func == 'string') func = JSROOT.findFunction(func);
 
@@ -79,7 +87,6 @@ if ((typeof document === "undefined") || (typeof window === "undefined")) {
                 return func.obj[func.func](arg1, arg2);
          }
       }
-
 
       function window_on_load(tmout, func) {
          if (document.attachEvent ? document.readyState === 'complete' : document.readyState !== 'loading')

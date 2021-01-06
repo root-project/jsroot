@@ -875,7 +875,7 @@ Painter classes were renamed and made public:
    - `JSROOT.TBasePainter` -> `JSROOT.BasePainter`
    - `JSROOT.TObjectPainter` -> `JSROOT.ObjectPainter`
 
-Internal `ObjectPainter.DrawingReady` api was deprecated. Draw function has to return `Promise` if object drawing has to be postponded.
+Internal `ObjectPainter.DrawingReady` api was deprecated. Draw function has to return `Promise` if object drawing postponded.
 As argument of returned promise object painter has to be used.
 
 Many function names where adjusted to naming conventions. Like:
