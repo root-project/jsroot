@@ -391,7 +391,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
              this.draw_g.on("contextmenu", evnt => this.paveContextMenu(evnt));
 
          if (pt._typename == "TPaletteAxis")
-            this.InteractivePaletteAxis(width, height);
+            this.interactivePaletteAxis(width, height);
 
          return this;
       });
@@ -431,7 +431,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    /** @summary draw TPaveStats object */
    TPavePainter.prototype.drawPaveStats = function(width, height) {
 
-      if (this.IsStats()) this.fillStatistic();
+      if (this.isStats()) this.fillStatistic();
 
       let pt = this.getObject(), lines = [],
           tcolor = this.getColor(pt.fTextColor),
@@ -672,8 +672,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    }
 
    /** @summary Method used to convert value to string according specified format
-     * @desc format can be like 5.4g or 4.2e or 6.4f */
-   TPavePainter.prototype.Format = function(value, fmt) {
+     * @desc format can be like 5.4g or 4.2e or 6.4f or "stat" or "fit" or "entries"
+     * @strig n*/
+   TPavePainter.prototype.format = function(value, fmt) {
       if (!fmt) fmt = "stat";
 
       let pave = this.getObject();
@@ -924,8 +925,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       });
    }
 
-   /** @summary Add interactive methods for palette drawoing */
-   TPavePainter.prototype.InteractivePaletteAxis = function(s_width, s_height) {
+   /** @summary Add interactive methods for palette drawing */
+   TPavePainter.prototype.interactivePaletteAxis = function(s_width, s_height) {
       let doing_zoom = false, sel1 = 0, sel2 = 0, zoom_rect = null;
 
       let moveRectSel = evnt => {
@@ -1002,7 +1003,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       let pave = this.getObject();
 
       menu.add("header: " + pave._typename + "::" + pave.fName);
-      if (this.IsStats()) {
+      if (this.isStats()) {
          menu.add("Default position", function() {
             pave.fX2NDC = JSROOT.gStyle.fStatX;
             pave.fX1NDC = pave.fX2NDC - JSROOT.gStyle.fStatW;
@@ -1105,6 +1106,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return menu.size() > 0;
    }
 
+   /** @summary Show pave context menu */
    TPavePainter.prototype.paveContextMenu = function(evnt) {
       if (this.z_handle) {
          let fp = this.getFramePainter();
@@ -1122,10 +1124,12 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
        }).then(menu => menu.show());
    }
 
-   TPavePainter.prototype.IsStats = function() {
+   /** @summary Returns true when stat box is drawn */
+   TPavePainter.prototype.isStats = function() {
       return this.matchObjectType('TPaveStats');
    }
 
+   /** @summary Clear text in the pave */
    TPavePainter.prototype.clearPave = function() {
       this.getObject().Clear();
    }
@@ -1135,7 +1139,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       this.getObject().AddText(txt);
    }
 
-   TPavePainter.prototype.FillFunctionStat = function(f1, dofit) {
+   /** @summary Fill function parameters */
+   TPavePainter.prototype.fillFunctionStat = function(f1, dofit) {
       if (!dofit || !f1) return false;
 
       let print_fval    = dofit % 10,
@@ -1144,17 +1149,17 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           print_fprob   = Math.floor(dofit/1000) % 10;
 
       if (print_fchi2 > 0)
-         this.addText("#chi^2 / ndf = " + this.Format(f1.fChisquare,"fit") + " / " + f1.fNDF);
+         this.addText("#chi^2 / ndf = " + this.format(f1.fChisquare,"fit") + " / " + f1.fNDF);
       if (print_fprob > 0)
-         this.addText("Prob = "  + (('Math' in JSROOT) ? this.Format(JSROOT.Math.Prob(f1.fChisquare, f1.fNDF)) : "<not avail>"));
+         this.addText("Prob = "  + (('Math' in JSROOT) ? this.format(JSROOT.Math.Prob(f1.fChisquare, f1.fNDF)) : "<not avail>"));
       if (print_fval > 0)
          for(let n=0;n<f1.GetNumPars();++n) {
             let parname = f1.GetParName(n), parvalue = f1.GetParValue(n), parerr = f1.GetParError(n);
 
-            parvalue = (parvalue===undefined) ? "<not avail>" : this.Format(Number(parvalue),"fit");
+            parvalue = (parvalue===undefined) ? "<not avail>" : this.format(Number(parvalue),"fit");
             if (parerr !== undefined) {
-               parerr = this.Format(parerr,"last");
-               if ((Number(parerr)===0) && (f1.GetParError(n) != 0)) parerr = this.Format(f1.GetParError(n),"4.2g");
+               parerr = this.format(parerr,"last");
+               if ((Number(parerr)===0) && (f1.GetParError(n) != 0)) parerr = this.format(f1.GetParError(n),"4.2g");
             }
 
             if ((print_ferrors > 0) && parerr)
@@ -1166,6 +1171,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return true;
    }
 
+   /** @summary Fill statistic */
    TPavePainter.prototype.fillStatistic = function() {
 
       let pp = this.getPadPainter();
@@ -1195,18 +1201,21 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return true;
    }
 
-   TPavePainter.prototype.IsDummyPos = function(p) {
+   /** @summary Is dummy pos of the pave painter
+     * @private */
+   TPavePainter.prototype.isDummyPos = function(p) {
       if (!p) return true;
 
       return !p.fInit && !p.fX1 && !p.fX2 && !p.fY1 && !p.fY2 && !p.fX1NDC && !p.fX2NDC && !p.fY1NDC && !p.fY2NDC;
    }
 
+   /** @summary Update TPave object  */
    TPavePainter.prototype.updateObject = function(obj) {
       if (!this.matchObjectType(obj)) return false;
 
       let pave = this.getObject();
 
-      if (!pave.modified_NDC && !this.IsDummyPos(obj)) {
+      if (!pave.modified_NDC && !this.isDummyPos(obj)) {
          // if position was not modified interactively, update from source object
 
          if (this.stored && !obj.fInit && (this.stored.fX1 == obj.fX1)
@@ -1293,7 +1302,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             if (tpainter && (tpainter !== painter)) {
                tpainter.removeFromPadPrimitives();
                tpainter.cleanup();
-            } else if ((opt == "postitle") || painter.IsDummyPos(pave)) {
+            } else if ((opt == "postitle") || painter.isDummyPos(pave)) {
                let st = JSROOT.gStyle, fp = painter.getFramePainter();
                if (st && fp) {
                   let midx = st.fTitleX, y2 = st.fTitleY, w = st.fTitleW, h = st.fTitleH;
@@ -3544,37 +3553,37 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (this.isTProfile()) {
 
          if (print_entries > 0)
-            stat.addText("Entries = " + stat.Format(data.entries,"entries"));
+            stat.addText("Entries = " + stat.format(data.entries,"entries"));
 
          if (print_mean > 0) {
-            stat.addText("Mean = " + stat.Format(data.meanx));
-            stat.addText("Mean y = " + stat.Format(data.meany));
+            stat.addText("Mean = " + stat.format(data.meanx));
+            stat.addText("Mean y = " + stat.format(data.meany));
          }
 
          if (print_rms > 0) {
-            stat.addText("Std Dev = " + stat.Format(data.rmsx));
-            stat.addText("Std Dev y = " + stat.Format(data.rmsy));
+            stat.addText("Std Dev = " + stat.format(data.rmsx));
+            stat.addText("Std Dev y = " + stat.format(data.rmsy));
          }
 
       } else {
 
          if (print_entries > 0)
-            stat.addText("Entries = " + stat.Format(data.entries, "entries"));
+            stat.addText("Entries = " + stat.format(data.entries, "entries"));
 
          if (print_mean > 0)
-            stat.addText("Mean = " + stat.Format(data.meanx));
+            stat.addText("Mean = " + stat.format(data.meanx));
 
          if (print_rms > 0)
-            stat.addText("Std Dev = " + stat.Format(data.rmsx));
+            stat.addText("Std Dev = " + stat.format(data.rmsx));
 
          if (print_under > 0)
-            stat.addText("Underflow = " + stat.Format((histo.fArray.length > 0) ? histo.fArray[0] : 0, "entries"));
+            stat.addText("Underflow = " + stat.format((histo.fArray.length > 0) ? histo.fArray[0] : 0, "entries"));
 
          if (print_over > 0)
-            stat.addText("Overflow = " + stat.Format((histo.fArray.length > 0) ? histo.fArray[histo.fArray.length - 1] : 0, "entries"));
+            stat.addText("Overflow = " + stat.format((histo.fArray.length > 0) ? histo.fArray[histo.fArray.length - 1] : 0, "entries"));
 
          if (print_integral > 0)
-            stat.addText("Integral = " + stat.Format(data.integral, "entries"));
+            stat.addText("Integral = " + stat.format(data.integral, "entries"));
 
          if (print_skew > 0)
             stat.addText("Skew = <not avail>");
@@ -3583,7 +3592,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             stat.addText("Kurt = <not avail>");
       }
 
-      if (dofit) stat.FillFunctionStat(this.findFunction('TF1'), dofit);
+      if (dofit) stat.fillFunctionStat(this.findFunction('TF1'), dofit);
 
       return true;
    }
@@ -4903,20 +4912,20 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          stat.addText(data.name);
 
       if (print_entries > 0)
-         stat.addText("Entries = " + stat.Format(data.entries,"entries"));
+         stat.addText("Entries = " + stat.format(data.entries,"entries"));
 
       if (print_mean > 0) {
-         stat.addText("Mean x = " + stat.Format(data.meanx));
-         stat.addText("Mean y = " + stat.Format(data.meany));
+         stat.addText("Mean x = " + stat.format(data.meanx));
+         stat.addText("Mean y = " + stat.format(data.meany));
       }
 
       if (print_rms > 0) {
-         stat.addText("Std Dev x = " + stat.Format(data.rmsx));
-         stat.addText("Std Dev y = " + stat.Format(data.rmsy));
+         stat.addText("Std Dev x = " + stat.format(data.rmsx));
+         stat.addText("Std Dev y = " + stat.format(data.rmsy));
       }
 
       if (print_integral > 0)
-         stat.addText("Integral = " + stat.Format(data.matrix[4],"entries"));
+         stat.addText("Integral = " + stat.format(data.matrix[4],"entries"));
 
       if (print_skew > 0) {
          stat.addText("Skewness x = <undef>");
@@ -4934,7 +4943,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          stat.addText("" + m[0].toFixed(0) + " | " + m[1].toFixed(0) + " | "  + m[2].toFixed(0));
       }
 
-      if (dofit) stat.FillFunctionStat(this.findFunction('TF1'), dofit);
+      if (dofit) stat.fillFunctionStat(this.findFunction('TF2'), dofit);
 
       return true;
    }

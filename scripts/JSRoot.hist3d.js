@@ -2308,6 +2308,8 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       this.draw_content = this.gmaxbin > 0;
    }
 
+   /** @summary Count TH3 statistic
+     * @private */
    TH3Painter.prototype.countStat = function() {
       let histo = this.getHisto(), xaxis = histo.fXaxis, yaxis = histo.fYaxis, zaxis = histo.fZaxis,
           stat_sum0 = 0, stat_sumx1 = 0, stat_sumy1 = 0,
@@ -2379,6 +2381,8 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       return res;
    }
 
+   /** @summary Fill TH3 statistic in stat box
+     * @private */
    TH3Painter.prototype.fillStatistic = function(stat, dostat, dofit) {
 
       // no need to refill statistic if histogram is dummy
@@ -2401,25 +2405,25 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          stat.addText(data.name);
 
       if (print_entries > 0)
-         stat.addText("Entries = " + stat.Format(data.entries,"entries"));
+         stat.addText("Entries = " + stat.format(data.entries,"entries"));
 
       if (print_mean > 0) {
-         stat.addText("Mean x = " + stat.Format(data.meanx));
-         stat.addText("Mean y = " + stat.Format(data.meany));
-         stat.addText("Mean z = " + stat.Format(data.meanz));
+         stat.addText("Mean x = " + stat.format(data.meanx));
+         stat.addText("Mean y = " + stat.format(data.meany));
+         stat.addText("Mean z = " + stat.format(data.meanz));
       }
 
       if (print_rms > 0) {
-         stat.addText("Std Dev x = " + stat.Format(data.rmsx));
-         stat.addText("Std Dev y = " + stat.Format(data.rmsy));
-         stat.addText("Std Dev z = " + stat.Format(data.rmsz));
+         stat.addText("Std Dev x = " + stat.format(data.rmsx));
+         stat.addText("Std Dev y = " + stat.format(data.rmsy));
+         stat.addText("Std Dev z = " + stat.format(data.rmsz));
       }
 
       if (print_integral > 0) {
-         stat.addText("Integral = " + stat.Format(data.integral,"entries"));
+         stat.addText("Integral = " + stat.format(data.integral,"entries"));
       }
 
-      if (dofit) stat.FillFunctionStat(this.findFunction('TF1'), dofit);
+      if (dofit) stat.fillFunctionStat(this.findFunction('TF3'), dofit);
 
       return true;
    }

@@ -2380,22 +2380,22 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
          stat.addText(data.name);
 
       if (print_entries > 0)
-         stat.addText("Entries = " + stat.Format(data.entries,"entries"));
+         stat.addText("Entries = " + stat.format(data.entries,"entries"));
 
       if (print_mean > 0) {
-         stat.addText("Mean x = " + stat.Format(data.meanx));
-         stat.addText("Mean y = " + stat.Format(data.meany));
-         stat.addText("Mean z = " + stat.Format(data.meanz));
+         stat.addText("Mean x = " + stat.format(data.meanx));
+         stat.addText("Mean y = " + stat.format(data.meany));
+         stat.addText("Mean z = " + stat.format(data.meanz));
       }
 
       if (print_rms > 0) {
-         stat.addText("Std Dev x = " + stat.Format(data.rmsx));
-         stat.addText("Std Dev y = " + stat.Format(data.rmsy));
-         stat.addText("Std Dev z = " + stat.Format(data.rmsz));
+         stat.addText("Std Dev x = " + stat.format(data.rmsx));
+         stat.addText("Std Dev y = " + stat.format(data.rmsy));
+         stat.addText("Std Dev z = " + stat.format(data.rmsz));
       }
 
       if (print_integral > 0) {
-         stat.addText("Integral = " + stat.Format(data.integral,"entries"));
+         stat.addText("Integral = " + stat.format(data.integral,"entries"));
       }
 
       return true;

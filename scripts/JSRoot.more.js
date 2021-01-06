@@ -1990,7 +1990,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       stat.clearPave();
 
-      stat.FillFunctionStat(func, dofit);
+      stat.fillFunctionStat(func, dofit);
 
       return true;
    }
