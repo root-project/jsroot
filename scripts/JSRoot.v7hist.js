@@ -49,7 +49,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
    /** @summary Base painter class for RHist objects
     *
     * @class
-    * @memberof JSROOT
+    * @memberof JSROOT.v7
     * @extends JSROOT.ObjectPainter
     * @param {object|string} dom - DOM element for drawing or element id
     * @param {object} histo - RHist object
@@ -201,7 +201,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       return histo;
    }
 
-   RHistPainter.prototype.IsRProfile = function() {
+   RHistPainter.prototype.isRProfile = function() {
       return false;
    }
 
@@ -885,8 +885,19 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
    // ======= RH1 painter================================================
 
-   function RH1Painter(divid, histo) {
-      RHistPainter.call(this, divid, histo);
+   /**
+    * @summary Painter for RH1 classes
+    *
+    * @class
+    * @memberof JSROOT.v7
+    * @extends JSROOT.v7.RHistPainter
+    * @param {object|string} dom - DOM element or id
+    * @param {object} histo - histogram object
+    * @private
+    */
+
+   function RH1Painter(dom, histo) {
+      RHistPainter.call(this, dom, histo);
       this.wheel_zoomy = false;
    }
 
@@ -973,7 +984,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
    }
 
    RH1Painter.prototype.countStat = function(cond) {
-      let profile = this.IsRProfile(),
+      let profile = this.isRProfile(),
           histo = this.getHisto(), xaxis = this.getAxis("x"),
           left = this.getSelectIndex("x", "left"),
           right = this.getSelectIndex("x", "right"),
@@ -1045,7 +1056,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       if (print_name > 0)
          stat.addText(data.name);
 
-      if (this.IsRProfile()) {
+      if (this.isRProfile()) {
 
          if (print_entries > 0)
             stat.addText("Entries = " + stat.format(data.entries,"entries"));
@@ -1240,7 +1251,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
           show_markers = options.Mark,
           show_line = options.Line,
           show_text = options.Text,
-          text_profile = show_text && (this.options.TextKind == "E") && this.IsRProfile(),
+          text_profile = show_text && (this.options.TextKind == "E") && this.isRProfile(),
           path_fill = null, path_err = null, path_marker = null, path_line = null,
           endx = "", endy = "", dend = 0, my, yerr1, yerr2, bincont, binerr, mx1, mx2, midx,
           text_font;
@@ -1650,7 +1661,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
             gry1 = Math.round(pmain.gry(cont + binerr)); // up
             gry2 = Math.round(pmain.gry(cont - binerr)); // down
 
-            if ((cont==0) && this.IsRProfile()) findbin = null;
+            if ((cont==0) && this.isRProfile()) findbin = null;
 
             let dx = (grx2-grx1)*this.options.errorX;
             grx1 = Math.round(midx - dx);
@@ -1911,8 +1922,19 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
    // ==================== painter for TH2 histograms ==============================
 
-   function RH2Painter(divid, histo) {
-      RHistPainter.call(this, divid, histo);
+   /**
+    * @summary Painter for RH2 classes
+    *
+    * @class
+    * @memberof JSROOT.v7
+    * @extends JSROOT.v7.RHistPainter
+    * @param {object|string} dom - DOM element or id
+    * @param {object} histo - histogram object
+    * @private
+    */
+
+   function RH2Painter(dom, histo) {
+      RHistPainter.call(this, dom, histo);
       this.wheel_zoomy = true;
    }
 
@@ -3754,19 +3776,23 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
    RHistStatsPainter.prototype = Object.create(JSROOT.v7.RPavePainter.prototype);
 
+   /** @summary clear entries from stat box */
    RHistStatsPainter.prototype.clearStat = function() {
       this.stats_lines = [];
    }
 
+   /** @summary add text entry to stat box */
    RHistStatsPainter.prototype.addText = function(line) {
       this.stats_lines.push(line);
    }
 
+   /** @summary update statistic from the server */
    RHistStatsPainter.prototype.UpdateStatistic = function(reply) {
       this.stats_lines = reply.lines;
       this.DrawStatistic(this.stats_lines);
    }
 
+   /** @summary fill statistic */
    RHistStatsPainter.prototype.fillStatistic = function() {
       let pp = this.getPadPainter();
       if (pp && pp._fast_drawing) return false;
@@ -3808,6 +3834,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       return res[0];
    }
 
+   /** @summary Draw content */
    RHistStatsPainter.prototype.DrawContent = function() {
       if (this.fillStatistic())
          return this.DrawStatistic(this.stats_lines);
@@ -3815,6 +3842,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       return Promise.resolve(this);
    }
 
+   /** @summary Change mask */
    RHistStatsPainter.prototype.ChangeMask = function(nbit) {
       let obj = this.getObject(), mask = (1<<nbit);
       if (obj.fShowMask & mask)
@@ -3843,6 +3871,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
      }).then(menu => menu.show());
    }
 
+   /** @summary Draw statistic */
    RHistStatsPainter.prototype.DrawStatistic = function(lines) {
 
       let textFont = this.v7EvalFont("stats_text", { size: 12, color: "black", align: 22 }),
@@ -3933,6 +3962,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       return this.finishTextDrawing(text_g);
    }
 
+   /** @summary Redraw stats box */
    RHistStatsPainter.prototype.redraw = function(reason) {
       if (reason && (typeof reason == "string") && (reason.indexOf("zoom") == 0) &&
           (this.v7CommMode() == JSROOT.v7.CommMode.kNormal)) {

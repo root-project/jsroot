@@ -2242,9 +2242,19 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
 
    // ==============================================================================
 
+   /**
+    * @summary Painter for RH3 classes
+    *
+    * @class
+    * @memberof JSROOT.v7
+    * @extends JSROOT.v7.RHistPainter
+    * @param {object|string} dom - DOM element or id
+    * @param {object} histo - histogram object
+    * @private
+    */
 
-   function RH3Painter(divid, histo) {
-      JSROOT.v7.RHistPainter.call(this, divid, histo);
+   function RH3Painter(dom, histo) {
+      JSROOT.v7.RHistPainter.call(this, dom, histo);
 
       this.mode3d = true;
    }

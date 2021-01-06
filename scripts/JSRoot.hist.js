@@ -3321,12 +3321,13 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
     * @class
     * @memberof JSROOT
     * @extends JSROOT.THistPainter
+    * @param {object|string} dom - DOM element or id
     * @param {object} histo - histogram object
     * @private
     */
 
-   function TH1Painter(divid, histo) {
-      THistPainter.call(this, divid, histo);
+   function TH1Painter(dom, histo) {
+      THistPainter.call(this, dom, histo);
    }
 
    TH1Painter.prototype = Object.create(THistPainter.prototype);
