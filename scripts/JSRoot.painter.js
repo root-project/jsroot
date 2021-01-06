@@ -98,16 +98,16 @@ JSROOT.define(['d3'], (d3) => {
          0.587, 0.514, 0.896, 0.587, 0.55]
    };
 
-   jsrp.createMenu = function(painter, evt) {
+   jsrp.createMenu = function(evnt, handler, menuname) {
       document.body.style.cursor = 'wait';
       let show_evnt;
       // copy event values, otherwise they will gone after scripts loading
-      if (evt && (typeof evt == "object"))
-         if ((evt.clientX !== undefined) && (evt.clientY !== undefined))
-            show_evnt = { clientX: evt.clientX, clientY: evt.clientY };
+      if (evnt && (typeof evnt == "object"))
+         if ((evnt.clientX !== undefined) && (evnt.clientY !== undefined))
+            show_evnt = { clientX: evnt.clientX, clientY: evnt.clientY };
       return JSROOT.require(['menu']).then(() => {
          document.body.style.cursor = 'auto';
-         return jsrp.createMenu(painter, show_evnt);
+         return jsrp.createMenu(show_evnt, handler, menuname);
       });
    }
 

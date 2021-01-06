@@ -211,7 +211,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
             if (jsrp.closeMenu && jsrp.closeMenu()) return;
 
-            jsrp.createMenu(this, evnt).then(menu => {
+            jsrp.createMenu(evnt, this).then(menu => {
                 menu.painter.fillContextMenu(menu);
                 menu.show();
             });
@@ -988,7 +988,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
      * @private */
    TGeoPainter.prototype.orbitContext = function(evnt, intersects) {
 
-      jsrp.createMenu(this, evnt).then(menu => {
+      jsrp.createMenu(evnt, this).then(menu => {
          let numitems = 0, numnodes = 0, cnt = 0;
          if (intersects)
             for (let n=0;n<intersects.length;++n) {

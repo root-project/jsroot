@@ -1116,7 +1116,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       evnt.stopPropagation(); // disable main context menu
       evnt.preventDefault();  // disable browser context menu
 
-      jsrp.createMenu(this, evnt).then(menu => {
+      jsrp.createMenu(evnt, this).then(menu => {
          this.fillContextMenu(menu);
          return this.fillObjectExecMenu(menu, "title");
        }).then(menu => menu.show());

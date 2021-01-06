@@ -3828,7 +3828,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       evnt.preventDefault();
       evnt.stopPropagation(); // disable main context menu
 
-      jsrp.createMenu(this, evnt).then(menu => {
+      jsrp.createMenu(evnt, this).then(menu => {
          let obj = this.getObject(),
              action = this.ChangeMask.bind(this);
 

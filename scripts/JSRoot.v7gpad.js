@@ -1262,7 +1262,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             this.draw_g.on("contextmenu", evnt => {
                evnt.stopPropagation(); // disable main context menu
                evnt.preventDefault();  // disable browser context menu
-               jsrp.createMenu(this, evnt).then(menu => {
+               jsrp.createMenu(evnt, this).then(menu => {
                  menu.add("header:RAxisDrawable");
                  menu.add("Unzoom", () => this.zoomStandalone());
                  this.fillAxisContextMenu(menu, "");
@@ -2955,7 +2955,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (fp) fp.setLastEventPos();
       }
 
-      jsrp.createMenu(this, evnt).then(menu => {
+      jsrp.createMenu(evnt, this).then(menu => {
          this.fillContextMenu(menu);
          return this.fillObjectExecMenu(menu);
       }).then(menu => menu.show());
@@ -3356,7 +3356,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
        if (!selp || (typeof selp.fillContextMenu !== 'function')) return;
 
-       jsrp.createMenu(selp, evnt).then(menu => {
+       jsrp.createMenu(evnt, selp).then(menu => {
           if (selp.fillContextMenu(menu, selkind))
              setTimeout(() => menu.show(), 50);
        });
@@ -3541,7 +3541,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          if (jsrp.closeMenu && jsrp.closeMenu()) return;
 
-         jsrp.createMenu(this, evnt).then(menu => {
+         jsrp.createMenu(evnt, this).then(menu => {
             menu.add("header:Menus");
 
             if (this.iscan)
@@ -4728,7 +4728,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             this.draw_g.on("contextmenu", evnt => {
                evnt.stopPropagation(); // disable main context menu
                evnt.preventDefault();  // disable browser context menu
-               jsrp.createMenu(this, evnt).then(menu => {
+               jsrp.createMenu(evnt, this).then(menu => {
                  menu.add("header:Palette");
                  framep.z_handle.fillAxisContextMenu(menu, "z");
                  menu.show();

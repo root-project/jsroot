@@ -517,26 +517,27 @@ JSROOT.define(['d3', 'jquery', 'painter', 'jquery-ui'], (d3, $, jsrp) => {
    /** @summary Create JSROOT menu
      * @desc See {@link JSROOT.Painter.jQueryMenu} class for detailed list of methods
      * @memberof JSROOT.Painter
-     * @param {object} painter - painter object
-     * @param {object} evnt - event object like mouse context menu event
+     * @param {object} [evnt] - event object like mouse context menu event
+     * @param {object} [handler] - object with handling function, in this case one not need to bind function
+     * @param {string} [menuname] - optional menu name
      * @example
-     * JSROOT.require(painter)
-     *       .then(jsrp => jsrp.createMenu(painter, evnt))
+     * JSROOT.require("painter")
+     *       .then(jsrp => jsrp.createMenu())
      *       .then(menu => {
      *          menu.add("First", () => console.log("Click first"));
      *          let flag = true;
      *          menu.addchk(flag, "Checked", arg => console.log(`Now flag is ${arg}`));
      *          menu.show();
      *        }); */
-   let createMenu = (painter, show_event) => {
-      let menu = new JQueryMenu(painter, 'root_ctx_menu', show_event);
+   function createMenu(evnt, handler, menuname) {
+      let menu = new JQueryMenu(handler, menuname || 'root_ctx_menu', evnt);
 
       return Promise.resolve(menu);
    }
 
    /** @summary Close previousely created and shown JSROOT menu
      * @memberof JSROOT.Painter */
-   let closeMenu = menuname => {
+   function closeMenu(menuname) {
       let x = document.getElementById(menuname || 'root_ctx_menu');
       if (x) { x.parentNode.removeChild(x); return true; }
       return false;

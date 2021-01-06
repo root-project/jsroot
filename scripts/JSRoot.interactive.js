@@ -1307,7 +1307,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          this.clearInteractiveElements();
 
-         jsrp.createMenu(menu_painter, evnt).then(menu => {
+         jsrp.createMenu(evnt, menu_painter).then(menu => {
             let domenu = menu.painter.fillContextMenu(menu, kind, obj);
 
             // fill frame menu by default - or append frame elements when activated in the frame corner
