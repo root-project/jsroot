@@ -1988,7 +1988,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       if (!func || !dofit || !this.create_stats) return false;
 
-      stat.ClearPave();
+      stat.clearPave();
 
       stat.FillFunctionStat(func, dofit);
 

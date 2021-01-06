@@ -1040,51 +1040,51 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
           print_kurt = Math.floor(dostat / 100000000) % 10;
 
       // make empty at the beginning
-      stat.ClearStat();
+      stat.clearStat();
 
       if (print_name > 0)
-         stat.AddText(data.name);
+         stat.addText(data.name);
 
       if (this.IsRProfile()) {
 
          if (print_entries > 0)
-            stat.AddText("Entries = " + stat.Format(data.entries,"entries"));
+            stat.addText("Entries = " + stat.Format(data.entries,"entries"));
 
          if (print_mean > 0) {
-            stat.AddText("Mean = " + stat.Format(data.meanx));
-            stat.AddText("Mean y = " + stat.Format(data.meany));
+            stat.addText("Mean = " + stat.Format(data.meanx));
+            stat.addText("Mean y = " + stat.Format(data.meany));
          }
 
          if (print_rms > 0) {
-            stat.AddText("Std Dev = " + stat.Format(data.rmsx));
-            stat.AddText("Std Dev y = " + stat.Format(data.rmsy));
+            stat.addText("Std Dev = " + stat.Format(data.rmsx));
+            stat.addText("Std Dev y = " + stat.Format(data.rmsy));
          }
 
       } else {
 
          if (print_entries > 0)
-            stat.AddText("Entries = " + stat.Format(data.entries,"entries"));
+            stat.addText("Entries = " + stat.Format(data.entries,"entries"));
 
          if (print_mean > 0)
-            stat.AddText("Mean = " + stat.Format(data.meanx));
+            stat.addText("Mean = " + stat.Format(data.meanx));
 
          if (print_rms > 0)
-            stat.AddText("Std Dev = " + stat.Format(data.rmsx));
+            stat.addText("Std Dev = " + stat.Format(data.rmsx));
 
          if (print_under > 0)
-            stat.AddText("Underflow = " + stat.Format(histo.getBinContent(0), "entries"));
+            stat.addText("Underflow = " + stat.Format(histo.getBinContent(0), "entries"));
 
          if (print_over > 0)
-            stat.AddText("Overflow = " + stat.Format(histo.getBinContent(this.nbinsx+1), "entries"));
+            stat.addText("Overflow = " + stat.Format(histo.getBinContent(this.nbinsx+1), "entries"));
 
          if (print_integral > 0)
-            stat.AddText("Integral = " + stat.Format(data.integral,"entries"));
+            stat.addText("Integral = " + stat.Format(data.integral,"entries"));
 
          if (print_skew > 0)
-            stat.AddText("Skew = <not avail>");
+            stat.addText("Skew = <not avail>");
 
          if (print_kurt > 0)
-            stat.AddText("Kurt = <not avail>");
+            stat.addText("Kurt = <not avail>");
       }
 
       return true;
@@ -2235,41 +2235,41 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
           print_skew = Math.floor(dostat / 10000000) % 10,
           print_kurt = Math.floor(dostat / 100000000) % 10;
 
-      stat.ClearStat();
+      stat.clearStat();
 
       if (print_name > 0)
-         stat.AddText(data.name);
+         stat.addText(data.name);
 
       if (print_entries > 0)
-         stat.AddText("Entries = " + stat.Format(data.entries,"entries"));
+         stat.addText("Entries = " + stat.Format(data.entries,"entries"));
 
       if (print_mean > 0) {
-         stat.AddText("Mean x = " + stat.Format(data.meanx));
-         stat.AddText("Mean y = " + stat.Format(data.meany));
+         stat.addText("Mean x = " + stat.Format(data.meanx));
+         stat.addText("Mean y = " + stat.Format(data.meany));
       }
 
       if (print_rms > 0) {
-         stat.AddText("Std Dev x = " + stat.Format(data.rmsx));
-         stat.AddText("Std Dev y = " + stat.Format(data.rmsy));
+         stat.addText("Std Dev x = " + stat.Format(data.rmsx));
+         stat.addText("Std Dev y = " + stat.Format(data.rmsy));
       }
 
       if (print_integral > 0)
-         stat.AddText("Integral = " + stat.Format(data.matrix[4],"entries"));
+         stat.addText("Integral = " + stat.Format(data.matrix[4],"entries"));
 
       if (print_skew > 0) {
-         stat.AddText("Skewness x = <undef>");
-         stat.AddText("Skewness y = <undef>");
+         stat.addText("Skewness x = <undef>");
+         stat.addText("Skewness y = <undef>");
       }
 
       if (print_kurt > 0)
-         stat.AddText("Kurt = <undef>");
+         stat.addText("Kurt = <undef>");
 
       if ((print_under > 0) || (print_over > 0)) {
          let m = data.matrix;
 
-         stat.AddText("" + m[6].toFixed(0) + " | " + m[7].toFixed(0) + " | "  + m[7].toFixed(0));
-         stat.AddText("" + m[3].toFixed(0) + " | " + m[4].toFixed(0) + " | "  + m[5].toFixed(0));
-         stat.AddText("" + m[0].toFixed(0) + " | " + m[1].toFixed(0) + " | "  + m[2].toFixed(0));
+         stat.addText("" + m[6].toFixed(0) + " | " + m[7].toFixed(0) + " | "  + m[7].toFixed(0));
+         stat.addText("" + m[3].toFixed(0) + " | " + m[4].toFixed(0) + " | "  + m[5].toFixed(0));
+         stat.addText("" + m[0].toFixed(0) + " | " + m[1].toFixed(0) + " | "  + m[2].toFixed(0));
       }
 
       return true;
@@ -3754,11 +3754,11 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
    RHistStatsPainter.prototype = Object.create(JSROOT.v7.RPavePainter.prototype);
 
-   RHistStatsPainter.prototype.ClearStat = function() {
+   RHistStatsPainter.prototype.clearStat = function() {
       this.stats_lines = [];
    }
 
-   RHistStatsPainter.prototype.AddText = function(line) {
+   RHistStatsPainter.prototype.addText = function(line) {
       this.stats_lines.push(line);
    }
 

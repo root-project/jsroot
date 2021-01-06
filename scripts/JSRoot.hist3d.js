@@ -2395,28 +2395,28 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       //var print_skew = Math.floor(dostat / 10000000) % 10;
       //var print_kurt = Math.floor(dostat / 100000000) % 10;
 
-      stat.ClearPave();
+      stat.clearPave();
 
       if (print_name > 0)
-         stat.AddText(data.name);
+         stat.addText(data.name);
 
       if (print_entries > 0)
-         stat.AddText("Entries = " + stat.Format(data.entries,"entries"));
+         stat.addText("Entries = " + stat.Format(data.entries,"entries"));
 
       if (print_mean > 0) {
-         stat.AddText("Mean x = " + stat.Format(data.meanx));
-         stat.AddText("Mean y = " + stat.Format(data.meany));
-         stat.AddText("Mean z = " + stat.Format(data.meanz));
+         stat.addText("Mean x = " + stat.Format(data.meanx));
+         stat.addText("Mean y = " + stat.Format(data.meany));
+         stat.addText("Mean z = " + stat.Format(data.meanz));
       }
 
       if (print_rms > 0) {
-         stat.AddText("Std Dev x = " + stat.Format(data.rmsx));
-         stat.AddText("Std Dev y = " + stat.Format(data.rmsy));
-         stat.AddText("Std Dev z = " + stat.Format(data.rmsz));
+         stat.addText("Std Dev x = " + stat.Format(data.rmsx));
+         stat.addText("Std Dev y = " + stat.Format(data.rmsy));
+         stat.addText("Std Dev z = " + stat.Format(data.rmsz));
       }
 
       if (print_integral > 0) {
-         stat.AddText("Integral = " + stat.Format(data.integral,"entries"));
+         stat.addText("Integral = " + stat.Format(data.integral,"entries"));
       }
 
       if (dofit) stat.FillFunctionStat(this.findFunction('TF1'), dofit);

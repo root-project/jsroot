@@ -1126,11 +1126,12 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return this.matchObjectType('TPaveStats');
    }
 
-   TPavePainter.prototype.ClearPave = function() {
+   TPavePainter.prototype.clearPave = function() {
       this.getObject().Clear();
    }
 
-   TPavePainter.prototype.AddText = function(txt) {
+   /** @summary Add text to pave */
+   TPavePainter.prototype.addText = function(txt) {
       this.getObject().AddText(txt);
    }
 
@@ -1143,9 +1144,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           print_fprob   = Math.floor(dofit/1000) % 10;
 
       if (print_fchi2 > 0)
-         this.AddText("#chi^2 / ndf = " + this.Format(f1.fChisquare,"fit") + " / " + f1.fNDF);
+         this.addText("#chi^2 / ndf = " + this.Format(f1.fChisquare,"fit") + " / " + f1.fNDF);
       if (print_fprob > 0)
-         this.AddText("Prob = "  + (('Math' in JSROOT) ? this.Format(JSROOT.Math.Prob(f1.fChisquare, f1.fNDF)) : "<not avail>"));
+         this.addText("Prob = "  + (('Math' in JSROOT) ? this.Format(JSROOT.Math.Prob(f1.fChisquare, f1.fNDF)) : "<not avail>"));
       if (print_fval > 0)
          for(let n=0;n<f1.GetNumPars();++n) {
             let parname = f1.GetParName(n), parvalue = f1.GetParValue(n), parerr = f1.GetParError(n);
@@ -1157,9 +1158,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             }
 
             if ((print_ferrors > 0) && parerr)
-               this.AddText(parname + " = " + parvalue + " #pm " + parerr);
+               this.addText(parname + " = " + parvalue + " #pm " + parerr);
             else
-               this.AddText(parname + " = " + parvalue);
+               this.addText(parname + " = " + parvalue);
          }
 
       return true;
@@ -2404,9 +2405,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (arg==="check")
          return (!this.isMainPainter() || this.options.Same) ? null : histo;
 
-      let pt = tpainter.getObject();
-      pt.Clear();
-      pt.AddText(histo.fTitle);
+      tpainter.clearPave();
+      tpainter.addText(histo.fTitle);
 
       tpainter.redraw();
 
@@ -3536,51 +3536,51 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           print_kurt = Math.floor(dostat / 100000000) % 10;
 
       // make empty at the beginning
-      stat.ClearPave();
+      stat.clearPave();
 
       if (print_name > 0)
-         stat.AddText(data.name);
+         stat.addText(data.name);
 
       if (this.isTProfile()) {
 
          if (print_entries > 0)
-            stat.AddText("Entries = " + stat.Format(data.entries,"entries"));
+            stat.addText("Entries = " + stat.Format(data.entries,"entries"));
 
          if (print_mean > 0) {
-            stat.AddText("Mean = " + stat.Format(data.meanx));
-            stat.AddText("Mean y = " + stat.Format(data.meany));
+            stat.addText("Mean = " + stat.Format(data.meanx));
+            stat.addText("Mean y = " + stat.Format(data.meany));
          }
 
          if (print_rms > 0) {
-            stat.AddText("Std Dev = " + stat.Format(data.rmsx));
-            stat.AddText("Std Dev y = " + stat.Format(data.rmsy));
+            stat.addText("Std Dev = " + stat.Format(data.rmsx));
+            stat.addText("Std Dev y = " + stat.Format(data.rmsy));
          }
 
       } else {
 
          if (print_entries > 0)
-            stat.AddText("Entries = " + stat.Format(data.entries, "entries"));
+            stat.addText("Entries = " + stat.Format(data.entries, "entries"));
 
          if (print_mean > 0)
-            stat.AddText("Mean = " + stat.Format(data.meanx));
+            stat.addText("Mean = " + stat.Format(data.meanx));
 
          if (print_rms > 0)
-            stat.AddText("Std Dev = " + stat.Format(data.rmsx));
+            stat.addText("Std Dev = " + stat.Format(data.rmsx));
 
          if (print_under > 0)
-            stat.AddText("Underflow = " + stat.Format((histo.fArray.length > 0) ? histo.fArray[0] : 0, "entries"));
+            stat.addText("Underflow = " + stat.Format((histo.fArray.length > 0) ? histo.fArray[0] : 0, "entries"));
 
          if (print_over > 0)
-            stat.AddText("Overflow = " + stat.Format((histo.fArray.length > 0) ? histo.fArray[histo.fArray.length - 1] : 0, "entries"));
+            stat.addText("Overflow = " + stat.Format((histo.fArray.length > 0) ? histo.fArray[histo.fArray.length - 1] : 0, "entries"));
 
          if (print_integral > 0)
-            stat.AddText("Integral = " + stat.Format(data.integral, "entries"));
+            stat.addText("Integral = " + stat.Format(data.integral, "entries"));
 
          if (print_skew > 0)
-            stat.AddText("Skew = <not avail>");
+            stat.addText("Skew = <not avail>");
 
          if (print_kurt > 0)
-            stat.AddText("Kurt = <not avail>");
+            stat.addText("Kurt = <not avail>");
       }
 
       if (dofit) stat.FillFunctionStat(this.findFunction('TF1'), dofit);
@@ -4897,41 +4897,41 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           print_skew = Math.floor(dostat / 10000000) % 10,
           print_kurt = Math.floor(dostat / 100000000) % 10;
 
-      stat.ClearPave();
+      stat.clearPave();
 
       if (print_name > 0)
-         stat.AddText(data.name);
+         stat.addText(data.name);
 
       if (print_entries > 0)
-         stat.AddText("Entries = " + stat.Format(data.entries,"entries"));
+         stat.addText("Entries = " + stat.Format(data.entries,"entries"));
 
       if (print_mean > 0) {
-         stat.AddText("Mean x = " + stat.Format(data.meanx));
-         stat.AddText("Mean y = " + stat.Format(data.meany));
+         stat.addText("Mean x = " + stat.Format(data.meanx));
+         stat.addText("Mean y = " + stat.Format(data.meany));
       }
 
       if (print_rms > 0) {
-         stat.AddText("Std Dev x = " + stat.Format(data.rmsx));
-         stat.AddText("Std Dev y = " + stat.Format(data.rmsy));
+         stat.addText("Std Dev x = " + stat.Format(data.rmsx));
+         stat.addText("Std Dev y = " + stat.Format(data.rmsy));
       }
 
       if (print_integral > 0)
-         stat.AddText("Integral = " + stat.Format(data.matrix[4],"entries"));
+         stat.addText("Integral = " + stat.Format(data.matrix[4],"entries"));
 
       if (print_skew > 0) {
-         stat.AddText("Skewness x = <undef>");
-         stat.AddText("Skewness y = <undef>");
+         stat.addText("Skewness x = <undef>");
+         stat.addText("Skewness y = <undef>");
       }
 
       if (print_kurt > 0)
-         stat.AddText("Kurt = <undef>");
+         stat.addText("Kurt = <undef>");
 
       if ((print_under > 0) || (print_over > 0)) {
          let m = data.matrix;
 
-         stat.AddText("" + m[6].toFixed(0) + " | " + m[7].toFixed(0) + " | "  + m[7].toFixed(0));
-         stat.AddText("" + m[3].toFixed(0) + " | " + m[4].toFixed(0) + " | "  + m[5].toFixed(0));
-         stat.AddText("" + m[0].toFixed(0) + " | " + m[1].toFixed(0) + " | "  + m[2].toFixed(0));
+         stat.addText("" + m[6].toFixed(0) + " | " + m[7].toFixed(0) + " | "  + m[7].toFixed(0));
+         stat.addText("" + m[3].toFixed(0) + " | " + m[4].toFixed(0) + " | "  + m[5].toFixed(0));
+         stat.addText("" + m[0].toFixed(0) + " | " + m[1].toFixed(0) + " | "  + m[2].toFixed(0));
       }
 
       if (dofit) stat.FillFunctionStat(this.findFunction('TF1'), dofit);
