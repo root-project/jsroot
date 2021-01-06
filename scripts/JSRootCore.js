@@ -36,7 +36,7 @@ if ((typeof document === "undefined") || (typeof window === "undefined")) {
          throw Error("Fail to load JSRoot.core.js script from " + path0);
 
       let _warned = {};
-      warnOnce = function(msg) {
+      function warnOnce(msg) {
          if (!_warned[msg]) {
             console.warn(msg);
             _warned[msg] = true;
