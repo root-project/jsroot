@@ -3977,7 +3977,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          // console.log("get JSON ", msg.length-4, obj._typename);
          this.redrawObject(obj);
       } else if (msg.substr(0,9)=="REPL_REQ:") {
-         this.ProcessDrawableReply(msg.substr(9));
+         this.processDrawableReply(msg.substr(9));
       } else if (msg.substr(0,4)=='CMD:') {
          msg = msg.substr(4);
          let p1 = msg.indexOf(":"),
@@ -4131,7 +4131,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Process reply from request to RDrawable */
-   RCanvasPainter.prototype.ProcessDrawableReply = function(msg) {
+   RCanvasPainter.prototype.processDrawableReply = function(msg) {
       let reply = JSROOT.parse(msg);
       if (!reply || !reply.reqid || !this._submreq) return false;
 
@@ -4624,7 +4624,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Draw palette */
-   RPalettePainter.prototype.DrawPalette = function(after_resize) {
+   RPalettePainter.prototype.drawPalette = function(after_resize) {
 
       let palette = this.getHistPalette(),
           contour = palette.getContour(),
@@ -4736,7 +4736,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             });
 
          if (!after_resize)
-            inter.addDragHandler(this, { minwidth: 20, minheight: 20, no_change_y: true, redraw: this.DrawPalette.bind(this, true) });
+            inter.addDragHandler(this, { minwidth: 20, minheight: 20, no_change_y: true, redraw: this.drawPalette.bind(this, true) });
 
          if (!JSROOT.settings.Zooming) return;
 

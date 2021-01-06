@@ -46,6 +46,14 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       axis.GetBinLowEdge = function(bin) { return this.GetBinCoord(bin-1); }
    }
 
+   /** @summary Returns real histogram impl
+     * @private */
+   function getHImpl(obj) {
+      return (obj && obj.fHistImpl) ? obj.fHistImpl.fIO : null;
+   }
+
+
+
    /** @summary Base painter class for RHist objects
     *
     * @class
@@ -71,20 +79,14 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
    RHistPainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
 
-   RHistPainter.prototype.GetHImpl = function(obj) {
-      if (obj && obj.fHistImpl)
-         return obj.fHistImpl.fIO;
-      return null;
-   }
-
    /** @summary Returns true if RHistDisplayItem is used */
-   RHistPainter.prototype.IsDisplayItem = function() {
+   RHistPainter.prototype.isDisplayItem = function() {
       let obj = this.getObject();
       return obj && obj.fAxes ? true : false;
    }
 
    RHistPainter.prototype.getHisto = function(force) {
-      let obj = this.getObject(), histo = this.GetHImpl(obj);
+      let obj = this.getObject(), histo = getHImpl(obj);
 
       if (histo && (!histo.getBinContent || force)) {
          if (histo.fAxes._2) {
@@ -280,7 +282,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       this.createv7AttLine();
    }
 
-   RHistPainter.prototype.UpdateDisplayItem = function(obj, src) {
+   RHistPainter.prototype.updateDisplayItem = function(obj, src) {
       if (!obj || !src) return false;
 
       obj.fAxes = src.fAxes;
@@ -304,14 +306,14 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
          if (!this.matchObjectType(obj)) return false;
 
-         if (this.IsDisplayItem()) {
+         if (this.isDisplayItem()) {
 
-            this.UpdateDisplayItem(origin, obj);
+            this.updateDisplayItem(origin, obj);
 
          } else {
 
-            let horigin = this.GetHImpl(origin),
-                hobj = this.GetHImpl(obj);
+            let horigin = getHImpl(origin),
+                hobj = getHImpl(obj);
 
             if (!horigin || !hobj) return false;
 
@@ -329,6 +331,8 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       return true;
    }
 
+   /** @summary Get axis object
+     * @protected */
    RHistPainter.prototype.getAxis = function(name) {
       let histo = this.getHisto(), obj = this.getObject(), axis = null;
 
@@ -352,6 +356,25 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
          assignRAxisMethods(axis);
 
       return axis;
+   }
+
+   /** @summary Get tip text for axis bin
+     * @protected */
+   RHistPainter.prototype.getAxisBinTip = function(name, bin, step) {
+      let pmain = this.getFramePainter(),
+          handle = pmain[name+"_handle"],
+          axis = this.getAxis(name),
+          x1 = axis.GetBinCoord(bin);
+
+      if (handle.kind === 'labels')
+         return pmain.axisAsText(name, x1);
+
+      let x2 = axis.GetBinCoord(bin+(step || 1));
+
+      if (handle.kind === 'time')
+         return pmain.axisAsText(name, (x1+x2)/2);
+
+      return "[" + pmain.axisAsText(name, x1) + ", " + pmain.axisAsText(name, x2) + ")";
    }
 
    /** @summary Extract axes ranges and bins numbers
@@ -392,14 +415,15 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       return fp ? fp.addInteractivity() : false;
    }
 
-   RHistPainter.prototype.ProcessItemReply = function(reply, req) {
-      if (!this.IsDisplayItem())
+   /** @summary Process item reply */
+   RHistPainter.prototype.processItemReply = function(reply, req) {
+      if (!this.isDisplayItem())
          return console.error('Get item when display normal histogram');
 
       if (req.reqid === this.current_item_reqid) {
 
          if (reply !== null) {
-            this.UpdateDisplayItem(this.getObject(), reply.item);
+            this.updateDisplayItem(this.getObject(), reply.item);
          }
 
          req.resolveFunc(true);
@@ -407,8 +431,9 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
    }
 
    /** @summary Special method to request bins from server if existing data insufficient
+     * @returns {Promise} when ready
      * @private */
-   RHistPainter.prototype.DrawingBins = function(reason) {
+   RHistPainter.prototype.drawingBins = function(reason) {
 
       let is_axes_zoomed = false;
       if (reason && (typeof reason == "string") && (reason.indexOf("zoom") == 0)) {
@@ -417,20 +442,20 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
          if ((this.getDimension() > 2) && (reason.indexOf("2") > 0)) is_axes_zoomed = true;
       }
 
-      if (this.IsDisplayItem() && is_axes_zoomed && (this.v7CommMode() == JSROOT.v7.CommMode.kNormal)) {
+      if (this.isDisplayItem() && is_axes_zoomed && (this.v7CommMode() == JSROOT.v7.CommMode.kNormal)) {
 
-         let handle = this.PrepareDraw({ only_indexes: true });
+         let handle = this.prepareDraw({ only_indexes: true });
 
          // submit request if histogram data not enough for display
          if (handle.incomplete)
             return new Promise(resolveFunc => {
                // use empty kind to always submit request
                let req = this.v7SubmitRequest("", { _typename: "ROOT::Experimental::RHistDrawableBase::RRequest" },
-                                                  this.ProcessItemReply.bind(this));
+                                                  this.processItemReply.bind(this));
                if (req) {
                   this.current_item_reqid = req.reqid; // ignore all previous requests, only this one will be processed
                   req.resolveFunc = resolveFunc;
-                  setTimeout(this.ProcessItemReply.bind(this, null, req), 1000); // after 1 s draw something that we can
+                  setTimeout(this.processItemReply.bind(this, null, req), 1000); // after 1 s draw something that we can
                } else {
                   resolveFunc(true);
                }
@@ -661,7 +686,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
    RHistPainter.prototype.updatePaletteDraw = function() {
       if (this.isMainPainter()) {
          let pp = this.getPadPainter().findPainterFor(undefined, undefined, "ROOT::Experimental::RPaletteDrawable");
-         if (pp) pp.DrawPalette();
+         if (pp) pp.drawPalette();
       }
    }
 
@@ -741,7 +766,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
    }
 
    /** @summary Calculate histogram inidicies and axes values for each visible bin */
-   RHistPainter.prototype.PrepareDraw = function(args) {
+   RHistPainter.prototype.prepareDraw = function(args) {
 
       if (!args) args = { rounding: true, extra: 0, middle: 0 };
 
@@ -764,7 +789,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
              min: 0, max: 0, sumz: 0, xbar1: 0, xbar2: 1, ybar1: 0, ybar2: 1
           };
 
-      if (this.IsDisplayItem() && histo.fIndicies) {
+      if (this.isDisplayItem() && histo.fIndicies) {
          if (res.i1 < histo.fIndicies[0]) { res.i1 = histo.fIndicies[0]; res.incomplete = true; }
          if (res.i2 > histo.fIndicies[1]) { res.i2 = histo.fIndicies[1]; res.incomplete = true; }
          res.stepi = histo.fIndicies[2];
@@ -916,7 +941,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
       let hmin = 0, hmin_nz = 0, hmax = 0, hsum = 0;
 
-      if (this.IsDisplayItem()) {
+      if (this.isDisplayItem()) {
          // take min/max values from the display item
          hmin = histo.fContMin;
          hmin_nz = histo.fContMinPos;
@@ -1222,7 +1247,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
       this.createHistDrawAttributes();
 
-      let handle = this.PrepareDraw({ extra: 1, only_indexes: true });
+      let handle = this.prepareDraw({ extra: 1, only_indexes: true });
 
       if (this.options.Bar)
          return this.drawBars(handle, rect.width, rect.height);
@@ -1491,27 +1516,6 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
          this.finishTextDrawing();
    }
 
-   /** @summary Get tip text for axis bin
-     * @protected */
-   RHistPainter.prototype.getAxisBinTip = function(name, bin, step) {
-      let pmain = this.getFramePainter(),
-          handle = pmain[name+"_handle"],
-          axis = this.getAxis(name),
-          x1 = axis.GetBinCoord(bin);
-
-
-      if (handle.kind === 'labels')
-         return pmain.axisAsText(name, x1);
-
-      let x2 = axis.GetBinCoord(bin+(step || 1));
-
-      if (handle.kind === 'time')
-         return pmain.axisAsText(name, (x1+x2)/2);
-
-      return "[" + pmain.axisAsText(name, x1) + ", " + pmain.axisAsText(name, x2) + ")";
-   }
-
-
    /** @summary Provide text information (tooltips) for histogram bin
      * @private */
    RH1Painter.prototype.getBinTooltips = function(bin) {
@@ -1520,7 +1524,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
           pmain = this.getFramePainter(),
           histo = this.getHisto(),
           xaxis = this.getAxis("x"),
-          di = this.IsDisplayItem() ? histo.stepx : 1,
+          di = this.isDisplayItem() ? histo.stepx : 1,
           x1 = xaxis.GetBinCoord(bin),
           x2 = xaxis.GetBinCoord(bin+di),
           cont = histo.getBinContent(bin+1),
@@ -1860,7 +1864,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       this.clear3DScene();
 
       return this.drawFrameAxes()
-                 .then(res1 => res1 ? this.DrawingBins(reason) : false)
+                 .then(res1 => res1 ? this.drawingBins(reason) : false)
                  .then(res2 => {
                      if (!res2) return false;
                      // called when bins received from server, must be reentrant
@@ -2150,7 +2154,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
             if (bin_content > 0)
                if ((this.gminposbin===null) || (this.gminposbin > bin_content)) this.gminposbin = bin_content;
          }
-      } else if (this.IsDisplayItem()) {
+      } else if (this.isDisplayItem()) {
          // take min/max values from the display item
          this.gminbin = histo.fContMin;
          this.gminposbin = histo.fContMinPos > 0 ? histo.fContMinPos : null;
@@ -2301,7 +2305,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
      * @private */
    RH2Painter.prototype.drawBinsColor = function() {
       let histo = this.getHisto(),
-          handle = this.PrepareDraw(),
+          handle = this.prepareDraw(),
           colPaths = [], currx = [], curry = [],
           colindx, cmd1, cmd2, i, j, binz, di = handle.stepi, dj = handle.stepj, dx, dy;
 
@@ -2567,7 +2571,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
    /** @summary Draw histogram bins as contour
      * @private */
    RH2Painter.prototype.drawBinsContour = function(frame_w,frame_h) {
-      let handle = this.PrepareDraw({ rounding: false, extra: 100, original: this.options.Proj != 0 }),
+      let handle = this.prepareDraw({ rounding: false, extra: 100, original: this.options.Proj != 0 }),
           main = this.getFramePainter(),
           palette = main.getHistPalette(),
           levels = palette.getContour(),
@@ -2804,7 +2808,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       let histo = this.getHisto(),
           i,j,binz,binw,binh,lbl,posx,posy,sizex,sizey;
 
-      if (handle===null) handle = this.PrepareDraw({ rounding: false });
+      if (handle===null) handle = this.prepareDraw({ rounding: false });
 
       let textFont  = this.v7EvalFont("text", { size: 20, color: "black", align: 22 }),
           text_offset = 0,
@@ -2859,7 +2863,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       let histo = this.getHisto(), cmd = "",
           i,j, dn = 1e-30, dx, dy, xc,yc,
           dxn,dyn,x1,x2,y1,y2, anr,si,co,
-          handle = this.PrepareDraw({ rounding: false }),
+          handle = this.prepareDraw({ rounding: false }),
           scale_x = (handle.grx[handle.i2] - handle.grx[handle.i1])/(handle.i2 - handle.i1 + 1-0.03)/2,
           scale_y = (handle.gry[handle.j2] - handle.gry[handle.j1])/(handle.j2 - handle.j1 + 1-0.03)/2,
           di = handle.stepi, dj = handle.stepj;
@@ -2926,7 +2930,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
    RH2Painter.prototype.drawBinsBox = function() {
 
       let histo = this.getHisto(),
-          handle = this.PrepareDraw({ rounding: false }),
+          handle = this.prepareDraw({ rounding: false }),
           main = this.getFramePainter();
 
       if (main.maxbin === main.minbin) {
@@ -3040,7 +3044,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
      * @private */
    RH2Painter.prototype.drawBinsCandle = function(w) {
       let histo = this.getHisto(), yaxis = this.getAxis("y"),
-          handle = this.PrepareDraw(),
+          handle = this.prepareDraw(),
           pmain = this.getFramePainter(), // used for axis values conversions
           i, j, y, sum1, cont, center, counter, integral, pnt,
           bars = "", markers = "", posy;
@@ -3151,7 +3155,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
      * @private */
    RH2Painter.prototype.drawBinsScatter = function() {
       let histo = this.getHisto(),
-          handle = this.PrepareDraw({ rounding: true, pixel_density: true, scatter_plot: true }),
+          handle = this.prepareDraw({ rounding: true, pixel_density: true, scatter_plot: true }),
           colPaths = [], currx = [], curry = [], cell_w = [], cell_h = [],
           colindx, cmd1, cmd2, i, j, binz, cw, ch, factor = 1.,
           scale = this.options.ScatCoef * ((this.gmaxbin) > 2000 ? 2000. / this.gmaxbin : 1.),
@@ -3336,7 +3340,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
            binz = histo.getBinContent(i+1,j+1),
            di = 1, dj = 1;
 
-      if (this.IsDisplayItem()) {
+      if (this.isDisplayItem()) {
          di = histo.stepx || 1;
          dj = histo.stepy || 1;
       }
@@ -3662,7 +3666,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       this.clear3DScene();
 
       return this.drawFrameAxes()
-                 .then(res => res ? this.DrawingBins(reason) : false)
+                 .then(res => res ? this.drawingBins(reason) : false)
                  .then(res2 => {
                     // called when bins received from server, must be reentrant
                     if (!res2) return false;

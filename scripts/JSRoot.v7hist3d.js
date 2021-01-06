@@ -1004,7 +1004,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
           axis_zmin = main.z_handle.gr.domain()[0],
           axis_zmax = main.z_handle.gr.domain()[1],
           zmin, zmax,
-          handle = this.PrepareDraw({ rounding: false, use3d: true, extra: 1 }),
+          handle = this.prepareDraw({ rounding: false, use3d: true, extra: 1 }),
           i1 = handle.i1, i2 = handle.i2, j1 = handle.j1, j2 = handle.j2, di = handle.stepi, dj = handle.stepj,
           i, j, k, vert, x1, x2, y1, y2, binz1, binz2, reduced, nobottom, notop,
           histo = this.getHisto(),
@@ -1377,7 +1377,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       if (!main.mode3d)
          return Promise.resolve(this);
 
-      return this.DrawingBins(reason).then(() => {
+      return this.drawingBins(reason).then(() => {
          // called when bins received from server, must be reentrant
          let main = this.getFramePainter();
 
@@ -1425,7 +1425,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       if (!main.mode3d)
          return Promise.resolve(this);
 
-      return this.DrawingBins(reason).then(() => {
+      return this.drawingBins(reason).then(() => {
          // called when bins received from server, must be reentrant
          let main = this.getFramePainter();
 
@@ -1486,7 +1486,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
    JSROOT.v7.RH2Painter.prototype.drawContour3D = function(realz) {
       // for contour plots one requires handle with full range
       let main = this.getFramePainter(),
-          handle = this.PrepareDraw({rounding: false, use3d: true, extra: 100, middle: 0.0 }),
+          handle = this.prepareDraw({rounding: false, use3d: true, extra: 100, middle: 0.0 }),
           palette = main.getHistPalette(),
           layerz = 2*main.size_z3d, pnts = [];
 
@@ -1520,7 +1520,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
    JSROOT.v7.RH2Painter.prototype.drawSurf = function() {
       let histo = this.getHisto(),
           main = this.getFramePainter(),
-          handle = this.PrepareDraw({rounding: false, use3d: true, extra: 1, middle: 0.5 }),
+          handle = this.prepareDraw({rounding: false, use3d: true, extra: 1, middle: 0.5 }),
           i, j, x1, y1, x2, y2, z11, z12, z21, z22,
           di = handle.stepi, dj = handle.stepj,
           numstepi = handle.i2 - handle.i1, numstepj = handle.j2 - handle.j1,
@@ -1872,7 +1872,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
 
       if (this.options.Surf === 13) {
 
-         handle = this.PrepareDraw({rounding: false, use3d: true, extra: 100, middle: 0.0 });
+         handle = this.prepareDraw({rounding: false, use3d: true, extra: 100, middle: 0.0 });
 
          // get levels
          let levels = this.getContour(), // init contour
@@ -1944,7 +1944,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
    JSROOT.v7.RH2Painter.prototype.drawError = function() {
       let main = this.getFramePainter(),
           histo = this.getHisto(),
-          handle = this.PrepareDraw({ rounding: false, use3d: true, extra: 1 }),
+          handle = this.prepareDraw({ rounding: false, use3d: true, extra: 1 }),
           zmin = main.z_handle.gr.domain()[0],
           zmax = main.z_handle.gr.domain()[1],
           i, j, binz, binerr, x1, y1, x2, y2, z1, z2,
@@ -2277,7 +2277,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
 
       // global min/max, used at the moment in 3D drawing
 
-      if (this.IsDisplayItem()) {
+      if (this.isDisplayItem()) {
          // take min/max values from the display item
          this.gminbin = histo.fContMin;
          this.gminposbin = histo.fContMinPos > 0 ? histo.fContMinPos : null;
@@ -2417,7 +2417,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       let lines = [], histo = this.getHisto(),
           dx = 1, dy = 1, dz = 1;
 
-      if (this.IsDisplayItem()) {
+      if (this.isDisplayItem()) {
          dx = histo.stepx || 1;
          dy = histo.stepy || 1;
          dz = histo.stepz || 1;
@@ -2540,7 +2540,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
 
       if (!this.draw_content) return;
 
-      let handle = this.PrepareDraw({ only_indexes: true, extra: -0.5, right_extra: -1 });
+      let handle = this.prepareDraw({ only_indexes: true, extra: -0.5, right_extra: -1 });
 
       if (this.options.Scatter)
          if (this.draw3DScatter(handle)) return;
@@ -2871,7 +2871,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       main.set3DOptions(this.options);
       main.drawXYZ(main.toplevel, { zoom: JSROOT.settings.Zooming, ndim: 3 });
 
-      this.DrawingBins(reason).then(() => {
+      this.drawingBins(reason).then(() => {
          // called when bins received from server, must be reentrant
 
          let main = this.getFramePainter();
