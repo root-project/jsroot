@@ -385,7 +385,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
    RHistPainter.prototype.addInteractivity = function() {
       // only first painter in list allowed to add interactive functionality to the frame
 
-      if (JSROOT.BatchMode || !this.isMainPainter())
+      if (JSROOT.batch_mode || !this.isMainPainter())
          return true;
 
       let fp = this.getFramePainter();
@@ -1428,7 +1428,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       }
 
       let close_path = "";
-      let fill_for_interactive = !JSROOT.BatchMode && this.fillatt.empty() && options.Hist && JSROOT.settings.Tooltip && !draw_markers && !show_line;
+      let fill_for_interactive = !JSROOT.batch_mode && this.fillatt.empty() && options.Hist && JSROOT.settings.Tooltip && !draw_markers && !show_line;
       if (!this.fillatt.empty() || fill_for_interactive) {
          let h0 = height + 3;
          if (fill_for_interactive) {

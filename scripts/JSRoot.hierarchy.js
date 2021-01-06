@@ -1057,7 +1057,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Refresh HTML for hierachy painter
      * @returns {Promise} when completed */
    HierarchyPainter.prototype.refreshHtml = function() {
-      if (!this.getDom() || JSROOT.BatchMode)
+      if (!this.getDom() || JSROOT.batch_mode)
          return Promise.resolve(this);
       return JSROOT.require('jq2d').then(() => this.refreshHtml());
    }
@@ -2492,7 +2492,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if (this.start_without_browser) browser_kind = "";
 
-      if ((status || browser_kind) && !JSROOT.BatchMode) prereq += "jq2d;";
+      if ((status || browser_kind) && !JSROOT.batch_mode) prereq += "jq2d;";
 
       this._topname = GetOption("topname");
 
@@ -2725,7 +2725,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       let painter = new HierarchyPainter('inspector', divid, 'white');
 
       // in batch mode HTML drawing is not possible, just keep object reference for a minute
-      if (JSROOT.BatchMode) {
+      if (JSROOT.batch_mode) {
          painter.selectDom().property("_json_object_", obj);
          return Promise.resolve(painter);
       }

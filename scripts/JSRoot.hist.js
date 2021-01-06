@@ -368,7 +368,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (typeof this.paveDrawFunc == 'function')
          promise = this.paveDrawFunc(width, height, arg);
 
-      if (JSROOT.BatchMode || (pt._typename=="TPave"))
+      if (JSROOT.batch_mode || (pt._typename=="TPave"))
          return promise;
 
       return promise.then(() => JSROOT.require(['interactive'])).then(inter => {
@@ -3979,7 +3979,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          }
       }
 
-      let fill_for_interactive = !JSROOT.BatchMode && this.fillatt.empty() && draw_hist && JSROOT.settings.Tooltip && !draw_markers && !show_line,
+      let fill_for_interactive = !JSROOT.batch_mode && this.fillatt.empty() && draw_hist && JSROOT.settings.Tooltip && !draw_markers && !show_line,
           h0 = height + 3;
       if (!fill_for_interactive) {
          let gry0 = Math.round(pmain.gry(0));

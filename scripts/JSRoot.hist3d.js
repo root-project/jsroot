@@ -195,7 +195,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       this.first_render_tm = 0;
       this.enable_highlight = false;
 
-      if (JSROOT.BatchMode || !this.webgl) return;
+      if (JSROOT.batch_mode || !this.webgl) return;
 
       this.control = jsrp.createOrbitControl(this, this.camera, this.scene, this.renderer, this.lookat);
 
@@ -298,7 +298,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
       if (tmout === undefined) tmout = 5; // by default, rendering happens with timeout
 
-      if ((tmout > 0) && !this.usesvg && !JSROOT.BatchMode) {
+      if ((tmout > 0) && !this.usesvg && !JSROOT.batch_mode) {
          if (!this.render_tmout)
             this.render_tmout = setTimeout(() => this.render3D(0), tmout);
          return;

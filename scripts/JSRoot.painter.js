@@ -3233,7 +3233,7 @@ JSROOT.define(['d3'], (d3) => {
      * @protected */
    jsrp.registerForResize = function(handle, delay) {
 
-      if (!handle || JSROOT.BatchMode || (typeof window == 'undefined')) return;
+      if (!handle || JSROOT.batch_mode || (typeof window == 'undefined')) return;
 
       let myInterval = null, myDelay = delay ? delay : 300;
 
@@ -3879,7 +3879,7 @@ JSROOT.define(['d3'], (d3) => {
      * @param {number} tmout - optional timeout in milliseconds, after message will disappear
      * @private */
    jsrp.showProgress = function(msg, tmout) {
-      if (JSROOT.BatchMode || (typeof document === 'undefined')) return;
+      if (JSROOT.batch_mode || (typeof document === 'undefined')) return;
       let id = "jsroot_progressbox",
           box = d3.select("#" + id);
 

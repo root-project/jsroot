@@ -1376,7 +1376,7 @@ JSROOT.define(['rawinflate'], () => {
 
             if (typname && typ && (this.fBasicTypes[typname] !== typ)) {
                this.fBasicTypes[typname] = typ;
-               if (!JSROOT.BatchMode) console.log('Extract basic data type', typ, typname);
+               if (!JSROOT.batch_mode) console.log('Extract basic data type', typ, typname);
             }
          }
       }

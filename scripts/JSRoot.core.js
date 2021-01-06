@@ -55,7 +55,7 @@
       // processing with Node.js
 
       //  mark JSROOT as used with Node.js
-      exports.BatchMode = exports.nodejs = (typeof global==='object') && global.process && (Object.prototype.toString.call(global.process) === '[object process]');
+      exports.batch_mode = exports.nodejs = (typeof global==='object') && global.process && (Object.prototype.toString.call(global.process) === '[object process]');
 
       factory(exports);
 
@@ -115,10 +115,15 @@
      * @desc Used to load other JSROOT scripts when required */
    JSROOT.source_dir = "";
 
-   if (JSROOT.BatchMode === undefined)
+   if (JSROOT.batch_mode === undefined)
       /** @summary Indicates if JSROOT runs in batch mode
         * @default false */
-      JSROOT.BatchMode = false;
+      JSROOT.batch_mode = false;
+
+   if (JSROOT.nodejs === undefined)
+      /** @summary Indicates if JSROOT runs inside Node.js
+        * @default false */
+      JSROOT.nodejs = false;
 
    //openuicfg // DO NOT DELETE, used to configure openui5 usage like JSROOT.openui5src = "nojsroot";
 
