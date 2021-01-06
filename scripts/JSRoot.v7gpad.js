@@ -4286,7 +4286,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    RPavePainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
 
-   RPavePainter.prototype.DrawContent = function() {
+   /** @summary Draw pave content
+     * @desc assigned depending on pave class */
+   RPavePainter.prototype.drawContent = function() {
       return Promise.resolve(this);
    }
 
@@ -4352,7 +4354,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       // here should be fill and draw of text
 
-      return this.DrawContent().then(() => {
+      return this.drawContent().then(() => {
 
          if (JSROOT.batch_mode) return this;
 
@@ -4404,7 +4406,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                  .attr("width", this.pave_width)
                  .attr("height", this.pave_height);
 
-      this.DrawContent();
+      this.drawContent();
    }
 
    RPavePainter.prototype.redraw = function(/*reason*/) {

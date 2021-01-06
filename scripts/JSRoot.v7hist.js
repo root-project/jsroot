@@ -3791,9 +3791,9 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
    }
 
    /** @summary update statistic from the server */
-   RHistStatsPainter.prototype.UpdateStatistic = function(reply) {
+   RHistStatsPainter.prototype.updateStatistic = function(reply) {
       this.stats_lines = reply.lines;
-      this.DrawStatistic(this.stats_lines);
+      this.drawStatistic(this.stats_lines);
    }
 
    /** @summary fill statistic */
@@ -3839,15 +3839,15 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
    }
 
    /** @summary Draw content */
-   RHistStatsPainter.prototype.DrawContent = function() {
+   RHistStatsPainter.prototype.drawContent = function() {
       if (this.fillStatistic())
-         return this.DrawStatistic(this.stats_lines);
+         return this.drawStatistic(this.stats_lines);
 
       return Promise.resolve(this);
    }
 
    /** @summary Change mask */
-   RHistStatsPainter.prototype.ChangeMask = function(nbit) {
+   RHistStatsPainter.prototype.changeMask = function(nbit) {
       let obj = this.getObject(), mask = (1<<nbit);
       if (obj.fShowMask & mask)
          obj.fShowMask = obj.fShowMask & ~mask;
@@ -3855,16 +3855,17 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
          obj.fShowMask = obj.fShowMask | mask;
 
       if (this.fillStatistic())
-         this.DrawStatistic(this.stats_lines);
+         this.drawStatistic(this.stats_lines);
    }
 
-   RHistStatsPainter.prototype.StatsContextMenu = function(evnt) {
+   /** @summary Context menu */
+   RHistStatsPainter.prototype.statsContextMenu = function(evnt) {
       evnt.preventDefault();
       evnt.stopPropagation(); // disable main context menu
 
       jsrp.createMenu(evnt, this).then(menu => {
          let obj = this.getObject(),
-             action = this.ChangeMask.bind(this);
+             action = this.changeMask.bind(this);
 
          menu.add("header: StatBox");
 
@@ -3876,7 +3877,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
    }
 
    /** @summary Draw statistic */
-   RHistStatsPainter.prototype.DrawStatistic = function(lines) {
+   RHistStatsPainter.prototype.drawStatistic = function(lines) {
 
       let textFont = this.v7EvalFont("stats_text", { size: 12, color: "black", align: 22 }),
           first_stat = 0, num_cols = 0, maxlen = 0,
@@ -3975,7 +3976,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
             mask: this.getObject().fShowMask // lines to show in stat box
          };
 
-         this.v7SubmitRequest("stat", req, this.UpdateStatistic.bind(this));
+         this.v7SubmitRequest("stat", req, reply => this.updateStatistic(reply));
       }
 
       this.drawPave();
