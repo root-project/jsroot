@@ -1,6 +1,6 @@
 # JSROOT changelog
 
-## Changes in 5.9.x
+## Changes in 5.9.1
 1. Fix zooming in color palette
 2. Fix interactive update of TGraph painting on time scale
 3. Fix I/O error in reading std::map (#204)
