@@ -2993,7 +2993,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (force) this.fPalette = null;
       if (!this.fPalette && !this.options.Palette) {
          let pp = this.getPadPainter();
-         if (pp) this.fPalette = pp.getCustomPalette();
+         if (pp && pp.getCustomPalette)
+            this.fPalette = pp.getCustomPalette();
       }
       if (!this.fPalette)
          this.fPalette = getColorPalette(this.options.Palette);
