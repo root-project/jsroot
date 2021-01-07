@@ -17,7 +17,7 @@
 7. Upgrade three.js to r121:
    - SoftwareRenderer was deprecated
    - WebGL used both for browser and node.js (via headless-gl)
-   - Keep use of SVGRendered as backup solution
+   - Keep support of SVGRendered as backup solution
    - support r3d_gl, r3d_img, r3d_svg rendering options for TGeo and histos
 8. Deprecate bower package manager
 9. Upgrade MathJax.js to version 3.1.1, reliably works in browser and node.js!

@@ -425,7 +425,8 @@ In principle, one could open any ROOT file placed in the web, providing the full
 
 - <https://jsroot.gsi.de/latest/?file=https://root.cern/js/files/hsimple.root&item=hpx>
 
-But one should be aware of [Same-origin policy](https://en.wikipedia.org/wiki/Same-origin_policy), when the browser blocks requests to files from domains other than current web page.
+But one should be aware of [Same-origin policy](https://en.wikipedia.org/wiki/Same-origin_policy),
+when the browser blocks requests to files from domains other than current web page.
 To enable CORS on Apache web server, hosting ROOT files, one should add following lines to `.htaccess` file:
 
     <IfModule mod_headers.c>
@@ -474,7 +475,7 @@ For debuging purposes one can install JSROOT on local file system and let read R
 
    - <file:///home/user/jsroot/index.htm?file=hsimple.root&item=hpx>
 
-But this works only with Firefox.
+But this worked only with earlier Firefox versions.
 
 
 
@@ -587,7 +588,7 @@ to change stat format using to display value in stats box:
     JSROOT.gStyle.fStatFormat = "7.5g"
 
 There is also `JSROOT.settings` object which contains all other JSROOT settings. For instance,
-one can configure custom values format for different axes:
+one can configure custom format for different axes:
 
     JSROOT.settings.XValuesFormat = "4.2g"
     JSROOT.settings.YValuesFormat = "6.1f"
@@ -606,8 +607,8 @@ Such JSON representation generated using the [TBufferJSON](https://root.cern/doc
     obj->SaveAs("file.json");
     ...
 
-To access data from a remote web server, it is recommended to use the [XMLHttpRequest](http://en.wikipedia.org/wiki/XMLHttpRequest) class. JSROOT provides a special method to create such object and properly handle it in different browsers.
-For receiving JSON from a server one could use following code:
+To access data from a remote web server, it is recommended to use the `JSROOT.httpRequest` method.
+For instance to recieve object from a THttpServer server one could do:
 
     JSROOT.httpRequest("http://your_root_server:8080/Canvases/c1/root.json", "object").then(obj => {
        console.log('Read object of type ', obj._typename);
@@ -637,10 +638,9 @@ The first argument is the id of the HTML div element, where drawing will be perf
 
 Here is complete [running example](https://root.cern/js/latest/api.htm#custom_html_read_json) ans [source code](https://github.com/root-project/jsroot/blob/master/demo/read_json.htm):
 
-    var filename = "https://root.cern/js/files/th2ul.json.gz";
-    JSROOT.httpRequest(filename, 'object').then(obj => {
-       JSROOT.draw("drawing", obj, "lego");
-    });
+    let filename = "https://root.cern/js/files/th2ul.json.gz";
+    JSROOT.httpRequest(filename, 'object')
+          .then(obj => JSROOT.draw("drawing", obj, "lego"));
 
 In very seldom cases one need to access painter object, created in JSROOT.draw() function. This can be done via
 handling Promise results like:
@@ -748,7 +748,7 @@ will be called.
 
 As second parameter of tree.Process() function one could provide object with arguments
 
-    var args = { numentries: 1000, firstentry: 500 };
+    let args = { numentries: 1000, firstentry: 500 };
     tree.Process(selector, args);
 
 
@@ -759,8 +759,8 @@ Any supported TGeo object can be drawn with normal JSROOR.draw() function.
 If necessary, one can create three.js model for supported object directly and use such model
 separately. This can be done with the function:
 
-    var opt = { numfaces: 100000 };
-    var obj3d = JSROOT.GEO.build(obj, opt);
+    let opt = { numfaces: 100000 };
+    let obj3d = JSROOT.GEO.build(obj, opt);
     scene.add( obj3d );
 
 Following options can be specified:
@@ -819,14 +819,9 @@ Such JSON string could be parsed by any other JSROOT-based application.
 
 [OpenUI5](http://openui5.org/) is a web toolkit for developers to ease and speed up the development of full-blown HTML5 web applications. Since version 5.3.0 JSROOT provides possibility to use OpenUI5 functionality together with JSROOT.
 
-First problem is bootstraping of OpenUI5. Most easy solution - specify openui5 URL parameter when loading JSROOT:
-
-
-      <script type="text/javascript"
-              src="https://root.cern/js/latest/scripts/JSRoot.core.min.js">
-      </script>
-
-JSROOT uses https://openui5.hana.ondemand.com to load latest stable version of OpenUI5. After loading is completed, one can use `sap` to access openui5 functionality. Like:
+First problem is bootstraping of OpenUI5. Most easy solution - use `JSROOT.require('openui5')`.
+JSROOT uses https://openui5.hana.ondemand.com to load latest stable version of OpenUI5.
+After loading is completed, one can use `sap` to access openui5 functionality like:
 
       <script type="text/javascript">
          JSROOT.require('openui5').then(() => {
@@ -842,7 +837,7 @@ JSROOT uses https://openui5.hana.ondemand.com to load latest stable version of O
                 })
               ]
             }).placeAt("content");
-         }
+         });
       </script>
 
 There are small details when using OpenUI5 with THttpServer. First of all, location of JSROOT scripts should be specified
@@ -856,7 +851,7 @@ JSROOT provides [example](https://root.cern/js/latest/demo/openui5/) showing usa
 
 ### Migration v5 -> v6
 
-In JSROOT v6 release some many incompatible changes where done.
+In JSROOT v6 release some many incompatible changes were done.
 
 Main script was renamed to `JSRoot.core.js`. Old `JSRootCore.js` script left to provide partial compatibility
 with old applications, but will be removed in future JSROOT v6.2. All URL parameters for main script will be
@@ -875,7 +870,7 @@ Painter classes were renamed and made public:
    - `JSROOT.TBasePainter` -> `JSROOT.BasePainter`
    - `JSROOT.TObjectPainter` -> `JSROOT.ObjectPainter`
 
-Internal `ObjectPainter.DrawingReady` api was deprecated. Draw function has to return `Promise` if object drawing postponded.
+Internal `ObjectPainter.DrawingReady` api was deprecated. Draw function has to return `Promise` if object drawing postponed.
 As argument of returned promise object painter has to be used.
 
 Many function names where adjusted to naming conventions. Like:
