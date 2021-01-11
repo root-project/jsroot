@@ -3955,7 +3955,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Hanler for websocket close event
      * @private */
    TCanvasPainter.prototype.onWebsocketClosed = function(/*handle*/) {
-      jsrp.closeCurrentWindow();
+      if (!this.embed_canvas)
+         jsrp.closeCurrentWindow();
    }
 
    /** @summary Handle websocket messages
