@@ -3248,6 +3248,16 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (this.batch_mode && this.iscan)
              this._fixed_size = true;
 
+         if (JSROOT.BrowserLayout && !this.batch_mode && !this.use_openui && !this.brlayout) {
+            let mainid = this.selectDom().attr("id");
+            if (mainid && (typeof mainid == "string")) {
+               this.brlayout = new JSROOT.BrowserLayout(mainid, null, this);
+               this.brlayout.create(mainid, true);
+               this.setDom(this.brlayout.drawing_divid()); // need to create canvas
+               jsrp.registerForResize(this.brlayout);
+            }
+         }
+
          this.createCanvasSvg(0);
          this.addPadButtons(true);
 
