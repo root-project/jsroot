@@ -21,7 +21,7 @@
    - by default uses plain script loading emulating require.js behavior
    - can use require.js when available
    - uses require() method when running inside node.js
-   - supports openui5 sap.ui.require loader if available before JSRoor.core.js
+   - supports openui5 sap.ui.require loader if available before JSRoot.core.js
    - deprecates old JSROOT.AssertPrerequisites() function
 8. Upgrade d3.js to v6.1.1, skip support of older versions
 9. Upgrade three.js to r121:
