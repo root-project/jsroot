@@ -104,12 +104,12 @@
    JSROOT.version_id = "6.0.0";
 
    /** @summary JSROOT version date
-     * @desc Release date in format day/month/year like "6/01/2021"*/
+     * @desc Release date in format day/month/year like "14/01/2021"*/
    JSROOT.version_date = "14/01/2021";
 
    /** @summary JSROOT version id and date
      * @desc Produced by concatenation of {@link JSROOT.version_id} and {@link JSROOT.version_date}
-     * Like "6.0.0 21/01/2021" */
+     * Like "6.0.0 14/01/2021" */
    JSROOT.version = JSROOT.version_id + " " + JSROOT.version_date;
 
    /** @summary Location of JSROOT scripts
