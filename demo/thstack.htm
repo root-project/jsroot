@@ -17,16 +17,16 @@
 
   <h3>Text After</h3>
 
-   <script type='text/javascript'>
+  <script type='text/javascript'>
 
      function CreateStack(loop) {
 
-        let histos = [];
+       let histos = [];
 
        for (var n=0;n<5;n++) {
            // time to time exclude one histogram to see how THStack update is working
            if ((loop % 5 == 3) && (n == 1)) continue;
-           var hist = JSROOT.createHistogram("TH1I", 11);
+           let hist = JSROOT.createHistogram("TH1I", 11);
            hist.fName ="hist"+n;
            hist.Fill(n*2+1,10);
            if (loop%5 === n) hist.Fill(n*2+1,2);
@@ -34,7 +34,7 @@
            histos.push(hist);
         }
 
-        var stack = JSROOT.createTHStack(...histos);
+        let stack = JSROOT.createTHStack(...histos);
         stack.fTitle = "Testing THStack update " + loop;
         return stack;
      }
@@ -44,7 +44,7 @@
      var cnt = 0;
      setInterval(() => JSROOT.redraw("object_draw", CreateStack(++cnt), "nostack"), 2000);
 
-   </script>
+  </script>
 
 </body>
 </html>
