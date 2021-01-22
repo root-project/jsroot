@@ -452,6 +452,7 @@ JSROOT.define([], () => {
    WebWindowHandle.prototype.connect = function(href) {
 
       this.close();
+      if (!href && this.href) href = this.href;
 
       let pthis = this, ntry = 0, args = (this.key ? ("key=" + this.key) : "");
 
@@ -603,6 +604,7 @@ JSROOT.define([], () => {
      * @param {object} arg.receiver - instance of receiver for websocket events, allows to initiate connection immediately
      * @param {string} arg.first_recv - required prefix in the first message from TWebWindow, remain part of message will be returned in handle.first_msg
      * @param {string} [arg.prereq2] - second part of prerequcities, which is loaded parallel to connecting with WebWindow
+     * @param {string} [arg.href] - URL to RWebWindow, using window.location.href by default
      * @returns {Promise} ready-to-use WebWindowHandle instance  */
    JSROOT.connectWebWindow = function(arg) {
 
@@ -661,6 +663,7 @@ JSROOT.define([], () => {
       return new Promise(resolveFunc => {
          let handle = new WebWindowHandle(arg.socket_kind, arg.credits);
          handle.user_args = arg.user_args;
+         if (arg.href) handle.href = arg.href; // apply href now  while connect can be called from other place
 
          if (window) {
             window.onbeforeunload = () => handle.close(true);
