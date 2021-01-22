@@ -436,15 +436,28 @@ JSROOT.define([], () => {
    /** @summary Returns used channel ID, 1 by default */
    WebWindowHandle.prototype.getChannelId = function() { return this.channelid && this.master ? this.channelid : 1; }
 
-   /** @summary Method opens relative path with the same kind of socket.
-    * @private */
-   WebWindowHandle.prototype.createRelative = function(relative) {
-      if (!relative || !this.kind || !this.href) return null;
+   /** @summary Assign href parameter
+     * @param {string} [path] - absolute path, when not specified window.location.url will be used
+     * @private */
+    WebWindowHandle.prototype.setHRef = function(path) {
+      this.href = path;
+   }
 
-      let handle = new WebWindowHandle(this.kind, this.credits);
-      console.log('Try to connect ', this.href + relative);
-      handle.connect(this.href + relative);
-      return handle;
+   /** @summary Return href part
+     * @param {string} [relative_path] - relative path to the handle
+     * @private */
+   WebWindowHandle.prototype.getHRef = function(relative_path) {
+      if (!relative_path || !this.kind || !this.href) return this.href;
+
+      let addr = this.href;
+      if (relative_path.indexOf("../")==0) {
+         let ddd = addr.lastIndexOf("/",addr.length-2);
+         addr = addr.substr(0,ddd) + relative_path.substr(2);
+      } else {
+         addr += relative_path;
+      }
+
+      return addr;
    }
 
    /** @summary Create configured socket for current object.
@@ -663,7 +676,7 @@ JSROOT.define([], () => {
       return new Promise(resolveFunc => {
          let handle = new WebWindowHandle(arg.socket_kind, arg.credits);
          handle.user_args = arg.user_args;
-         if (arg.href) handle.href = arg.href; // apply href now  while connect can be called from other place
+         if (arg.href) handle.setHRef(arg.href); // apply href now  while connect can be called from other place
 
          if (window) {
             window.onbeforeunload = () => handle.close(true);
