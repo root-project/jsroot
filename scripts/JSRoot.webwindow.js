@@ -236,6 +236,12 @@ JSROOT.define([], () => {
       return this.user_args;
    }
 
+   /** @summary Set user args
+     * @desc Normally set via RWebWindow::SetUserArgs() method */
+   WebWindowHandle.prototype.setUserArgs = function(args) {
+      this.user_args = args;
+   }
+
    /** @summary Set callbacks receiver.
      * @param {object} obj - object with receiver functions
      * @param {function} obj.onWebsocketMsg - called when new data receieved from RWebWindow
@@ -675,7 +681,7 @@ JSROOT.define([], () => {
 
       return new Promise(resolveFunc => {
          let handle = new WebWindowHandle(arg.socket_kind, arg.credits);
-         handle.user_args = arg.user_args;
+         handle.setUserArgs(arg.user_args);
          if (arg.href) handle.setHRef(arg.href); // apply href now  while connect can be called from other place
 
          if (window) {
