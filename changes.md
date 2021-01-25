@@ -1,5 +1,10 @@
 # JSROOT changelog
 
+## Changes in 6.0.x
+
+1. Fix problem with matrix calculations in Eve classes (#206)
+
+
 ## Changes in 6.0.0
 
 1. Major release with:
