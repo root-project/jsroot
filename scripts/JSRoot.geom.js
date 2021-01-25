@@ -1085,17 +1085,14 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
                if (!this._geom_viewer)
                menu.add("Hide", n, function(indx) {
                   let resolve = menu.painter._clones.resolveStack(intersects[indx].object.stack);
-
-                  if (resolve.obj && (resolve.node.kind === 0) && resolve.obj.fVolume) {
+                  const kindGeo = 0, kindEve = 1;
+                  if (resolve.obj && (resolve.node.kind === kindGeo) && resolve.obj.fVolume) {
                      geo.SetBit(resolve.obj.fVolume, geo.BITS.kVisThis, false);
                      geo.updateBrowserIcons(resolve.obj.fVolume, this._hpainter);
-                  } else
-                  if (resolve.obj && (resolve.node.kind === 1)) {
+                  } else if (resolve.obj && (resolve.node.kind === kindEve)) {
                      resolve.obj.fRnrSelf = false;
                      geo.updateBrowserIcons(resolve.obj, this._hpainter);
                   }
-                  // intersects[arg].object.visible = false;
-                  // this.render3D();
 
                   this.testGeomChanges();// while many volumes may disappear, recheck all of them
                });

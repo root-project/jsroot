@@ -15,7 +15,9 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
       CompLimit: 20        // maximal number of components in composite shape
    };
 
-   const kindEve = 1;   // TEveShape / TEveGeoShapeExtract
+   const kindGeo = 0,    // TGeoNode / TGeoShape
+         kindEve = 1,    // TEveShape / TEveGeoShapeExtract
+         kindShape = 2;  // special kind for single shape handling
 
    /** @summary TGeo-related bits
      * @private */
@@ -2289,7 +2291,7 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
       if (!this.origin || !this.nodes) return null;
       let obj = this.origin[indx], clone = this.nodes[indx];
       if (!obj || !clone) return null;
-      if (clone.kind === 0) {
+      if (clone.kind === kindGeo) {
          if (obj.fVolume) return obj.fVolume.fShape;
       } else {
          return obj.fShape;
@@ -2348,7 +2350,7 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
        if (sublevel>this.maxdepth) this.maxdepth = sublevel;
 
        let chlds = null;
-       if (kind===0)
+       if (kind === kindGeo)
           chlds = (obj.fVolume && obj.fVolume.fNodes) ? obj.fVolume.fNodes.arr : null;
        else
           chlds = obj.fElements ? obj.fElements.arr : null;
@@ -2379,7 +2381,7 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
 
           let chlds = null, shape = null;
 
-          if (kind===1) {
+          if (kind === kindEve) {
              shape = obj.fShape;
              if (obj.fElements) chlds = obj.fElements.arr;
           } else if (obj.fVolume) {
@@ -2442,7 +2444,7 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
       this.plain_shape = obj;
 
       let node = {
-            id: 0, sortid: 0, kind: 2,
+            id: 0, sortid: 0, kind: kindShape,
             name: "Shape",
             nfaces: obj.nfaces,
             fDX: 1, fDY: 1, fDZ: 1, vol: 1,
@@ -2477,7 +2479,7 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
          clone.vis = 0; // 1 - only with last level
          delete clone.nochlds;
 
-         if (clone.kind === 0) {
+         if (clone.kind === kindGeo) {
             if (obj.fVolume) {
                if (on_screen) {
                   // on screen bits used always, childs always checked
@@ -2816,7 +2818,7 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
       let clone = this.nodes[entry.nodeid];
       let visible = true;
 
-      if (clone.kind === 2) {
+      if (clone.kind === kindShape) {
          let prop = { name: clone.name, nname: clone.name, shape: null, material: null, chlds: null };
          let _opacity = entry.opacity || 1;
          prop.fillcolor = new THREE.Color( entry.color ? "rgb(" + entry.color + ")" : "blue" );
@@ -2836,7 +2838,7 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
 
       let node = this.origin[entry.nodeid];
 
-      if (clone.kind === 1) {
+      if (clone.kind === kindEve) {
          // special handling for EVE nodes
 
          let prop = { name: geo.getObjectName(node), nname: geo.getObjectName(node), shape: node.fShape, material: null, chlds: null };
