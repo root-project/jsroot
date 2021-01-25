@@ -2921,7 +2921,7 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
          let obj3d = undefined;
 
          if (three_prnt.children)
-            for (let i=0;i<three_prnt.children.length;++i) {
+            for (let i = 0; i < three_prnt.children.length; ++i) {
                if (three_prnt.children[i].nchld === nchld) {
                   obj3d = three_prnt.children[i];
                   break;
@@ -2939,7 +2939,6 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
          obj3d = new THREE.Object3D();
 
          if (node.matrix) {
-            // console.log(stack.toString(), lvl, 'matrix ', node.matrix.toString());
             obj3d.matrix.fromArray(node.matrix);
             obj3d.matrix.decompose( obj3d.position, obj3d.quaternion, obj3d.scale );
          }
@@ -2952,7 +2951,7 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
 
          // this is only for debugging - test inversion of whole geometry
          if ((lvl==0) && (typeof options == 'object') && options.scale) {
-            if ((options.scale.x<0) || (options.scale.y<0) || (options.scale.z<0)) {
+            if ((options.scale.x < 0) || (options.scale.y < 0) || (options.scale.z < 0)) {
                obj3d.scale.copy(options.scale);
                obj3d.updateMatrix();
             }

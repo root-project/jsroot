@@ -1721,8 +1721,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          if (entry.stack[0]===1) entry.custom_color = "blue";
       }
 
-      let mesh,
-          prop = this._clones.getDrawEntryProperties(entry),
+      let mesh, prop = this._clones.getDrawEntryProperties(entry),
           obj3d = this._clones.createObject3D(entry.stack, toplevel, this.ctrl);
 
       prop.material.wireframe = this.ctrl.wireframe;
