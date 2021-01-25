@@ -1854,6 +1854,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
    }
 
 
+   /** @summary Create geometry projection */
    TGeoPainter.prototype.doProjection = function() {
       let toplevel = this.getProjectionSource();
 
@@ -1877,7 +1878,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       toplevel.traverse(mesh => {
          if (!(mesh instanceof THREE.Mesh) || !mesh.stack) return;
 
-         let geom2 = geo.projectGeometry(mesh.geometry, mesh.parent.matrixWorld, this.ctrl.project, this.ctrl.projectPos, mesh._flippedMesh);
+         let geom2 = geo.projectGeometry(mesh.geometry, mesh.parent.absMatrix || mesh.parent.matrixWorld, this.ctrl.project, this.ctrl.projectPos, mesh._flippedMesh);
 
          if (!geom2) return;
 
