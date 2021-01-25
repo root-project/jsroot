@@ -1,5 +1,9 @@
 # JSROOT changelog
 
+## Changes in dev
+1. Fix problem with matrixes in eve geometries (#206)
+
+
 ## Changes in 6.0.0
 
 1. Major release with:

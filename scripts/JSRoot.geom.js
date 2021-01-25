@@ -601,7 +601,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
                let m1 = mesh.matrixWorld, flip;
 
-               if (m1.equals(m2)) return true
+               if (m1.equals(m2)) return true;
                if ((m1.determinant()>0) && (m2.determinant()<-0.9)) {
                   flip = THREE.Vector3(1,1,-1);
                   m2 = m2.clone().scale(flip);
@@ -1728,13 +1728,21 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
       prop.material.side = this.ctrl.bothSides ? THREE.DoubleSide : THREE.FrontSide;
 
-      if (obj3d.matrixWorld.determinant() > -0.9) {
+      let matrix = obj3d.absMatrix || obj3d.matrixWorld;
+
+      if (matrix.determinant() > -0.9) {
          mesh = new THREE.Mesh( shape.geom, prop.material );
       } else {
          mesh = geo.createFlippedMesh(shape, prop.material);
       }
 
       obj3d.add(mesh);
+
+      if (obj3d.absMatrix) {
+         mesh.matrix.copy(obj3d.absMatrix);
+         mesh.matrix.decompose( mesh.position, mesh.quaternion, mesh.scale );
+         mesh.updateMatrixWorld();
+      }
 
       // keep full stack of nodes
       mesh.stack = entry.stack;

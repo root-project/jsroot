@@ -10,10 +10,12 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
      * @alias JSROOT.GEO
      */
    let geo = {
-      GradPerSegm: 6,     // grad per segment in cylinder/spherical symmetry shapes
+      GradPerSegm: 6,      // grad per segment in cylinder/spherical symmetry shapes
       CompressComp: true,  // use faces compression in composite shapes
       CompLimit: 20        // maximal number of components in composite shape
    };
+
+   const kindEve = 1;   // TEveShape / TEveGeoShapeExtract
 
    /** @summary TGeo-related bits
      * @private */
@@ -1655,7 +1657,7 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
 
       let matrix = null;
 
-      if (kind === 1) {
+      if (kind === kindEve) {
          // special handling for EVE nodes
 
          matrix = new THREE.Matrix4();
@@ -2390,10 +2392,11 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
              clone.matrix = matrix.elements; // take only matrix elements, matrix will be constructed in worker
              if (clone.matrix[0] === 1) {
                 let issimple = true;
-                for (let k=1;(k<clone.matrix.length) && issimple;++k)
+                for (let k = 1; (k < clone.matrix.length) && issimple; ++k)
                    issimple = (clone.matrix[k] === ((k===5) || (k===10) || (k===15) ? 1 : 0));
                 if (issimple) delete clone.matrix;
              }
+             if (clone.matrix && (kind == kindEve)) clone.abs_matrix = true;
           }
           if (shape) {
              clone.fDX = shape.fDX;
@@ -2938,7 +2941,10 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
 
          obj3d = new THREE.Object3D();
 
-         if (node.matrix) {
+         if (node.abs_matrix) {
+            obj3d.absMatrix = new THREE.Matrix4();
+            obj3d.absMatrix.fromArray(node.matrix);
+         } else if (node.matrix) {
             obj3d.matrix.fromArray(node.matrix);
             obj3d.matrix.decompose( obj3d.position, obj3d.quaternion, obj3d.scale );
          }
@@ -3775,15 +3781,22 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
 
          prop.material.side = opt.doubleside ? THREE.DoubleSide : THREE.FrontSide;
 
-         let mesh = null;
+         let mesh = null, matrix = obj3d.absMatrix || obj3d.matrixWorld;
 
-         if (obj3d.matrixWorld.determinant() > -0.9) {
+         if (matrix.determinant() > -0.9) {
             mesh = new THREE.Mesh(shape.geom, prop.material);
          } else {
             mesh = createFlippedMesh(shape, prop.material);
          }
 
          obj3d.add(mesh);
+
+         if (obj3d.absMatrix) {
+            mesh.matrix.copy(obj3d.absMatrix);
+            mesh.matrix.decompose( obj3d.position, obj3d.quaternion, obj3d.scale );
+            mesh.updateMatrixWorld();
+         }
+
          // specify rendering order, required for transparency handling
          //if (obj3d.$jsroot_depth !== undefined)
          //   mesh.renderOrder = clones.maxdepth - obj3d.$jsroot_depth;
