@@ -50,7 +50,7 @@ JSROOT.define([], () => {
             url += "&post=" + btoa(data);
          } else {
             // send data with post request - most efficient way
-            reqmode = "post";
+            reqmode = "postbuf";
             post = data;
          }
       }
