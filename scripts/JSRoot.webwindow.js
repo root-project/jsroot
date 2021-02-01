@@ -400,7 +400,8 @@ JSROOT.define([], () => {
       this.cansend--; // decrease number of allowed send packets
 
       this._websocket.send(prefix + msg);
-      if (this.kind === "websocket") {
+
+      if ((this.kind === "websocket") || (this.kind === "longpoll")) {
          if (this.timerid) clearTimeout(this.timerid);
          this.timerid = setTimeout(() => this.keepAlive(), 10000);
       }
