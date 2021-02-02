@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <title>Reading geometry and STL file</title>
+   <script src="../scripts/JSRoot.core.js" type="text/javascript"></script>
+</head>
+
+<body>
+
+  <div id="drawing" style="width:800px; height:600px"></div>
+
+   <script type='text/javascript'>
+     const geom_file = "../../files/geom/evegeoshape.json.gz",
+           stl_file = 'https://threejs.org/examples/models/stl/ascii/slotted_disk.stl';
+
+     async function draw_geometry_and_stl() {
+        // get geometry object
+        let obj = await JSROOT.httpRequest(geom_file, "object");
+
+        // draw object, also load three.js functionality
+        let geo_painter = await JSROOT.draw("drawing", obj);
+
+        // load extra three.js sources
+        await JSROOT.require("https://threejs.org/examples/js/loaders/STLLoader.js");
+
+        const loader = new THREE.STLLoader();
+        loader.load(stl_file, function ( geometry ) {
+
+           const material = new THREE.MeshPhongMaterial( { color: 0xff5533, specular: 0x111111, shininess: 200 } );
+           const mesh = new THREE.Mesh( geometry, material );
+
+           mesh.position.set( 600, 0, 0 );
+           mesh.rotation.set( 0, - Math.PI / 2, 0 );
+           mesh.scale.set( 500, 500, 500 );
+
+           mesh.castShadow = true;
+           mesh.receiveShadow = true;
+
+           // this is for JSROOT to mark as THREE.Mesh object
+           mesh._typename = "THREE.Mesh";
+
+           geo_painter.drawExtras(mesh, "stl");
+
+        });
+     }
+
+     draw_geometry_and_stl();
+
+   </script>
+
+</body>
+
+</html>
+
