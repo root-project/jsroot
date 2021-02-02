@@ -114,8 +114,8 @@ JSROOT.define([], () => {
                this.handle.processRequest(res);
          }
       }, function(err,status) {
-         console.log('Get request error', err)
-         console.log('Get request status', status)
+         // console.log('Get request error', err)
+         // console.log('Get request status', status)
          this.handle.processRequest(null, "error");
       });
 
