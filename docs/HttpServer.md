@@ -179,6 +179,12 @@ One could specify a debug parameter to be able to adjust the FastCGI configurati
 
     serv->CreateEngine("fastcgi:9000?debug=1");
 
+By default 10 threads are used to process FastCGI requests. This number can be changed with "thrds" url parameter:
+
+    serv->CreateEngine("fastcgi:9000?thrds=20");
+
+If "thrds=0" specified, the only thread will be use to received and process all requests.
+
 All user access will be ruled by the main web server. Authorized account names could be used to configure access restriction in THttpServer.
 
 
