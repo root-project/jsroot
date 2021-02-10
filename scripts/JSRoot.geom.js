@@ -994,9 +994,26 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
    }
 
    TGeoPainter.prototype.createBloom = function() {
+      if (this._bloomPass) return;
+
+      this._camera.layers.enable( _BLOOM_SCENE );
+      this._bloomComposer = new THREE.EffectComposer( this._renderer );
+      this._bloomComposer.addPass( new THREE.RenderPass( this._scene, this._camera ) );
+      this._bloomPass = new THREE.UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight ), 1.5, 0.4, 0.85 );
+      this._bloomPass.threshold = 0;
+      this._bloomPass.strength = this.ctrl.bloom.strength;
+      this._bloomPass.radius = 0;
+      this._bloomPass.renderToScreen = true;
+      this._bloomComposer.addPass( this._bloomPass );
+      this._renderer.autoClear = false;
    }
 
    TGeoPainter.prototype.removeBloom = function() {
+      if (!this._bloomPass) return;
+      delete this._bloomPass;
+      delete this._bloomComposer;
+      this._renderer.autoClear = true;
+      this._camera.layers.disable( _BLOOM_SCENE );
    }
 
    TGeoPainter.prototype.removeSSAO = function() {
@@ -2060,16 +2077,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       }
 
       if (this._webgl && this.ctrl.bloom.enabled) {
-         this._camera.layers.enable( _BLOOM_SCENE );
-         this._bloomComposer = new THREE.EffectComposer( this._renderer );
-         this._bloomComposer.addPass( new THREE.RenderPass( this._scene, this._camera ) );
-         this._bloomPass = new THREE.UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight ), 1.5, 0.4, 0.85 );
-         this._bloomPass.threshold = 0;
-         this._bloomPass.strength = this.ctrl.bloom.strength;
-         this._bloomPass.radius = 0;
-         this._bloomPass.renderToScreen = true;
-         this._bloomComposer.addPass( this._bloomPass );
-         this._renderer.autoClear = false;
+         this.createBloom();
       }
 
       if (this._fit_main_area && !this._webgl) {
