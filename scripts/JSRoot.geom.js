@@ -142,6 +142,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          clipIntersect: true,
          clip: [{ name:"x", enabled: false, value: 0, min: -100, max: 100}, { name:"y", enabled: false, value: 0, min: -100, max: 100}, { name:"z", enabled: false, value: 0, min: -100, max: 100}],
          ssao: { enabled: false, output: THREE.SSAOPass.OUTPUT.Default, kernelRadius: 0, minDistance: 0.001, maxDistance: 0.1 },
+         bloom: { enabled: true, strength: 1.5 },
          info: { num_meshes: 0, num_faces: 0, num_shapes: 0 },
          highlight: false,
          highlight_scene: false,
@@ -150,8 +151,8 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          select_in_view: false,
          update_browser: true,
          light: { kind: "points", top: false, bottom: false, left: false, right: false, front: false, specular: true, power: 1 },
-         trans_radial: 0, trans_z: 0,
-         bloomStrength: 1.5
+         trans_radial: 0,
+         trans_z: 0
       };
 
       this.ctrl.depthMethodItems = [
@@ -966,13 +967,28 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
                 .listen().onChange(ssao_handler);
 
       let blooming = this._datgui.addFolder('Unreal Bloom');
+      let bloom_handler = this.changedBloomSettings.bind(this);
 
-      blooming.add( this.ctrl, 'bloomStrength', 0.0, 3.0 ).name("Strength")
-            .listen().onChange(this.changedBloomStrength.bind(this));
+      blooming.add(this.ctrl.bloom, 'enabled').name('Enable Blooming')
+                .listen().onChange(bloom_handler);
+
+      blooming.add( this.ctrl.bloom, 'strength', 0.0, 3.0).name("Strength")
+            .listen().onChange(bloom_handler);
    }
 
-   TGeoPainter.prototype.changedBloomStrength = function(arg) {
-      this._bloomPass.strength = Number(arg);
+   TGeoPainter.prototype.changedBloomSettings = function() {
+      if (this.ctrl.bloom.enabled) {
+         this.createBloom();
+         this._bloomPass.strength = this.ctrl.bloom.strength;
+      } else {
+         this.removeBloom();
+      }
+   }
+
+   TGeoPainter.prototype.createBloom = function() {
+   }
+
+   TGeoPainter.prototype.removeBloom = function() {
    }
 
    TGeoPainter.prototype.removeSSAO = function() {
@@ -2041,7 +2057,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          }
       }
 
-      if (this._webgl) {
+      if (this._webgl && this.ctrl.bloom.enabled) {
          this._ENTIRE_SCENE = 0;
          this._BLOOM_SCENE = 1;
          this._camera.layers.enable( this._BLOOM_SCENE );
@@ -2049,7 +2065,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          this._bloomComposer.addPass( new THREE.RenderPass( this._scene, this._camera ) );
          this._bloomPass = new THREE.UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight ), 1.5, 0.4, 0.85 );
          this._bloomPass.threshold = 0;
-         this._bloomPass.strength = this.ctrl.bloomStrength;
+         this._bloomPass.strength = this.ctrl.bloom.strength;
          this._bloomPass.radius = 0;
          this._bloomPass.renderToScreen = true;
          this._bloomComposer.addPass( this._bloomPass );
