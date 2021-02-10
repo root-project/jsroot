@@ -81,12 +81,14 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          if (!c.origin)
             c.origin = {
               color: c.material.color,
+              emissive: c.material.emissive,
               opacity: c.material.opacity,
               width: c.material.linewidth,
               size: c.material.size
            };
          c.material.color = new THREE.Color( col );
-         c.material.opacity = 1.;
+         //c.material.opacity = 1.;
+         c.material.emissive = new THREE.Color(0x00ff00);
          if (c.hightlightWidthScale && !JSROOT.browser.isWin)
             c.material.linewidth = c.origin.width * c.hightlightWidthScale;
          if (c.highlightScale)
@@ -94,7 +96,12 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          return true;
       } else if (c.origin) {
          c.material.color = c.origin.color;
-         c.material.opacity = c.origin.opacity;
+         //c.material.opacity = c.origin.opacity;
+         if (c.material.emissive)
+            if (c.origin.emissive)
+               c.material.emissive = c.origin.emissive;
+            else
+               c.material.emissive.setHex(0x000000);
          if (c.hightlightWidthScale)
             c.material.linewidth = c.origin.width;
          if (c.highlightScale)
@@ -143,7 +150,8 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          select_in_view: false,
          update_browser: true,
          light: { kind: "points", top: false, bottom: false, left: false, right: false, front: false, specular: true, power: 1 },
-         trans_radial: 0, trans_z: 0
+         trans_radial: 0, trans_z: 0,
+         bloomStrength: 1.5
       };
 
       this.ctrl.depthMethodItems = [
@@ -956,6 +964,15 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
       ssaofolder.add( this.ctrl.ssao, 'maxDistance', 0.01, 0.3)
                 .listen().onChange(ssao_handler);
+
+      let blooming = this._datgui.addFolder('Unreal Bloom');
+
+      blooming.add( this.ctrl, 'bloomStrength', 0.0, 3.0 ).name("Strength")
+            .listen().onChange(this.changedBloomStrength.bind(this));
+   }
+
+   TGeoPainter.prototype.changedBloomStrength = function(arg) {
+      this._bloomPass.strength = Number(arg);
    }
 
    TGeoPainter.prototype.removeSSAO = function() {
@@ -1253,15 +1270,21 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       }
       if (same) return !!curr_mesh;
 
-      if (curr_mesh)
-         for (let k=0;k<curr_mesh.length;++k)
+      if (curr_mesh) {
+         for (let k=0;k<curr_mesh.length;++k) {
             get_ctrl(curr_mesh[k]).setHighlight();
+            curr_mesh[k].layers.enable(this._ENTIRE_SCENE);
+         }
+      }
 
       this._selected_mesh = active_mesh;
 
-      if (active_mesh)
-         for (let k=0;k<active_mesh.length;++k)
-            get_ctrl(active_mesh[k]).setHighlight(color || 0xffaa33, geo_index);
+      if (active_mesh) {
+         for (let k=0;k<active_mesh.length;++k) {
+            get_ctrl(active_mesh[k]).setHighlight(color || 0x00ff00, geo_index);
+            active_mesh[k].layers.enable(this._BLOOM_SCENE);
+         }
+      }
 
       this.render3D(0);
 
@@ -2016,6 +2039,21 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          } else if (this.ctrl.ssao.enabled) {
             this.createSSAO();
          }
+      }
+
+      if (this._webgl) {
+         this._ENTIRE_SCENE = 0;
+         this._BLOOM_SCENE = 1;
+         this._camera.layers.enable( this._BLOOM_SCENE );
+         this._bloomComposer = new THREE.EffectComposer( this._renderer );
+         this._bloomComposer.addPass( new THREE.RenderPass( this._scene, this._camera ) );
+         this._bloomPass = new THREE.UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight ), 1.5, 0.4, 0.85 );
+         this._bloomPass.threshold = 0;
+         this._bloomPass.strength = this.ctrl.bloomStrength;
+         this._bloomPass.radius = 0;
+         this._bloomPass.renderToScreen = true;
+         this._bloomComposer.addPass( this._bloomPass );
+         this._renderer.autoClear = false;
       }
 
       if (this._fit_main_area && !this._webgl) {
@@ -3228,6 +3266,13 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       // its needed for outlinePass - do rendering, most consuming time
       if (this._webgl && this._effectComposer && (this._effectComposer.passes.length > 0)) {
          this._effectComposer.render();
+      } else if (this._webgl && this._bloomComposer && (this._bloomComposer.passes.length > 0)) {
+         this._renderer.clear();
+         this._camera.layers.set( this._BLOOM_SCENE );
+         this._bloomComposer.render();
+         this._renderer.clearDepth();
+         this._camera.layers.set( this._ENTIRE_SCENE );
+         this._renderer.render(this._scene, this._camera);
       } else {
     //     this._renderer.logarithmicDepthBuffer = true;
          this._renderer.render(this._scene, this._camera);
@@ -3953,6 +3998,8 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          this._renderer.setSize( this._scene_width, this._scene_height, !this._fit_main_area );
          if (this._effectComposer)
             this._effectComposer.setSize( this._scene_width, this._scene_height );
+         if (this._bloomComposer)
+            this._bloomComposer.setSize( this._scene_width, this._scene_height );
 
          if (!this.drawing_stage) this.render3D();
       }
