@@ -62,9 +62,10 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
    //////////////////////
 
-   function GeoDrawingControl(mesh) {
+   function GeoDrawingControl(mesh, bloom) {
       jsrp.InteractiveControl.call(this);
       this.mesh = (mesh && mesh.material) ? mesh : null;
+      this.bloom = bloom;
    }
 
    GeoDrawingControl.prototype = Object.create(jsrp.InteractiveControl.prototype);
@@ -86,22 +87,25 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
               width: c.material.linewidth,
               size: c.material.size
            };
-         c.material.color = new THREE.Color( col );
-         //c.material.opacity = 1.;
-         c.material.emissive = new THREE.Color(0x00ff00);
+         if (this.bloom) {
+            c.material.emissive = new THREE.Color(0x00ff00);
+         } else {
+            c.material.color = new THREE.Color( col );
+            c.material.opacity = 1.;
+         }
+
          if (c.hightlightWidthScale && !JSROOT.browser.isWin)
             c.material.linewidth = c.origin.width * c.hightlightWidthScale;
          if (c.highlightScale)
             c.material.size = c.origin.size * c.highlightScale;
          return true;
       } else if (c.origin) {
-         c.material.color = c.origin.color;
-         //c.material.opacity = c.origin.opacity;
-         if (c.material.emissive)
-            if (c.origin.emissive)
-               c.material.emissive = c.origin.emissive;
-            else
-               c.material.emissive.setHex(0x000000);
+         if (this.bloom) {
+            c.material.emissive = c.origin.emissive;
+         } else {
+            c.material.color = c.origin.color;
+            c.material.opacity = c.origin.opacity;
+         }
          if (c.hightlightWidthScale)
             c.material.linewidth = c.origin.width;
          if (c.highlightScale)
@@ -1266,13 +1270,13 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          let lst = this._highlight_handlers || (!this._main_painter ? this._slave_painters : this._main_painter._slave_painters.concat([this._main_painter]));
 
          for (let k=0;k<lst.length;++k)
-            if (lst[k]!==this) lst[k].highlightMesh(null, color, geo_object, geo_index, geo_stack, true);
+            if (lst[k] !== this) lst[k].highlightMesh(null, color, geo_object, geo_index, geo_stack, true);
       }
 
       let curr_mesh = this._selected_mesh;
 
-      function get_ctrl(mesh) {
-         return mesh.get_ctrl ? mesh.get_ctrl() : new GeoDrawingControl(mesh);
+      let get_ctrl = mesh => {
+         return mesh.get_ctrl ? mesh.get_ctrl() : new GeoDrawingControl(mesh, this.ctrl.bloom.enabled);
       }
 
       // check if selections are the same
@@ -1286,21 +1290,21 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       }
       if (same) return !!curr_mesh;
 
-      if (curr_mesh) {
-         for (let k=0;k<curr_mesh.length;++k) {
+      if (curr_mesh)
+         for (let k = 0; k < curr_mesh.length; ++k) {
             get_ctrl(curr_mesh[k]).setHighlight();
-            curr_mesh[k].layers.enable(this._ENTIRE_SCENE);
+            if (this.ctrl.bloom.enabled)
+               curr_mesh[k].layers.enable(this._ENTIRE_SCENE);
          }
-      }
 
       this._selected_mesh = active_mesh;
 
-      if (active_mesh) {
-         for (let k=0;k<active_mesh.length;++k) {
+      if (active_mesh)
+         for (let k = 0; k < active_mesh.length; ++k) {
             get_ctrl(active_mesh[k]).setHighlight(color || 0x00ff00, geo_index);
-            active_mesh[k].layers.enable(this._BLOOM_SCENE);
+            if (this.ctrl.bloom.enabled)
+               active_mesh[k].layers.enable(this._BLOOM_SCENE);
          }
-      }
 
       this.render3D(0);
 
