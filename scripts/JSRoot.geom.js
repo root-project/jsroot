@@ -7,6 +7,8 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
    JSROOT.loadScript('$$$style/JSRoot.geom');
 
+   const _ENTIRE_SCENE = 0, _BLOOM_SCENE = 1;
+
    // ============================================================================================
 
    function Toolbar(container, bright) {
@@ -88,6 +90,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
               size: c.material.size
            };
          if (this.bloom) {
+            c.layers.enable(_BLOOM_SCENE);
             c.material.emissive = new THREE.Color(0x00ff00);
          } else {
             c.material.color = new THREE.Color( col );
@@ -102,6 +105,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       } else if (c.origin) {
          if (this.bloom) {
             c.material.emissive = c.origin.emissive;
+            c.layers.enable(_ENTIRE_SCENE);
          } else {
             c.material.color = c.origin.color;
             c.material.opacity = c.origin.opacity;
@@ -1291,20 +1295,14 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       if (same) return !!curr_mesh;
 
       if (curr_mesh)
-         for (let k = 0; k < curr_mesh.length; ++k) {
+         for (let k = 0; k < curr_mesh.length; ++k)
             get_ctrl(curr_mesh[k]).setHighlight();
-            if (this.ctrl.bloom.enabled)
-               curr_mesh[k].layers.enable(this._ENTIRE_SCENE);
-         }
 
       this._selected_mesh = active_mesh;
 
       if (active_mesh)
-         for (let k = 0; k < active_mesh.length; ++k) {
+         for (let k = 0; k < active_mesh.length; ++k)
             get_ctrl(active_mesh[k]).setHighlight(color || 0x00ff00, geo_index);
-            if (this.ctrl.bloom.enabled)
-               active_mesh[k].layers.enable(this._BLOOM_SCENE);
-         }
 
       this.render3D(0);
 
@@ -2062,9 +2060,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       }
 
       if (this._webgl && this.ctrl.bloom.enabled) {
-         this._ENTIRE_SCENE = 0;
-         this._BLOOM_SCENE = 1;
-         this._camera.layers.enable( this._BLOOM_SCENE );
+         this._camera.layers.enable( _BLOOM_SCENE );
          this._bloomComposer = new THREE.EffectComposer( this._renderer );
          this._bloomComposer.addPass( new THREE.RenderPass( this._scene, this._camera ) );
          this._bloomPass = new THREE.UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight ), 1.5, 0.4, 0.85 );
@@ -3288,10 +3284,10 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          this._effectComposer.render();
       } else if (this._webgl && this._bloomComposer && (this._bloomComposer.passes.length > 0)) {
          this._renderer.clear();
-         this._camera.layers.set( this._BLOOM_SCENE );
+         this._camera.layers.set( _BLOOM_SCENE );
          this._bloomComposer.render();
          this._renderer.clearDepth();
-         this._camera.layers.set( this._ENTIRE_SCENE );
+         this._camera.layers.set( _ENTIRE_SCENE );
          this._renderer.render(this._scene, this._camera);
       } else {
     //     this._renderer.logarithmicDepthBuffer = true;
