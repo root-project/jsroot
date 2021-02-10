@@ -437,7 +437,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
                    use_worker: false, show_controls: false,
                    highlight: false, highlight_scene: false, no_screen: false,
                    project: '', is_main: false, tracks: false, showtop: false, can_rotate: true, ortho_camera: false,
-                   clipx: false, clipy: false, clipz: false, usessao: false, outline: false,
+                   clipx: false, clipy: false, clipz: false, usessao: false, usebloom: true, outline: false,
                    script_name: "", transparency: 0, rotate: false, background: '#FFFFFF',
                    depthMethod: "dflt", mouse_tmout: 50, trans_radial: 0, trans_z: 0 };
 
@@ -532,6 +532,8 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
       if (d.check("DFLT_COLORS") || d.check("DFLT")) res.dflt_colors = true;
       if (d.check("SSAO")) res.usessao = true;
+      if (d.check("NOBLOOM")) res.usebloom = false;
+      if (d.check("BLOOM")) res.usebloom = true;
       if (d.check("OUTLINE")) res.outline = true;
 
       if (d.check("NOWORKER")) res.use_worker = -1;
@@ -4141,6 +4143,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       JSROOT.extend(painter.ctrl, painter.options);
 
       painter.ctrl.ssao.enabled = painter.options.usessao;
+      painter.ctrl.bloom.enabled = painter.options.usebloom;
 
       // special handling for array of clips
       painter.ctrl.clip[0].enabled = painter.options.clipx;
