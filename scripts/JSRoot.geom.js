@@ -793,7 +793,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       }
    }
 
-   /** @summary Method should be called when SSAO configuration changed */
+   /** @summary Method called when SSAO configuration changed via GUI */
    TGeoPainter.prototype.changedSSAO = function() {
       if (!this.ctrl.ssao.enabled) {
          this.removeSSAO();
@@ -807,6 +807,12 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       }
 
       this.updateClipping();
+
+      if (this._slave_painters)
+         this._slave_painters.forEach(p => {
+            JSROOT.extend(p.ctrl.ssao, this.ctrl.ssao);
+            p.changedSSAO();
+         });
    }
 
    /** @summary Display control GUI */
@@ -986,6 +992,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
             .listen().onChange(bloom_handler);
    }
 
+   /** @summary Method called when bloom configuration changed via GUI */
    TGeoPainter.prototype.changedBloomSettings = function() {
       if (this.ctrl.bloom.enabled) {
          this.createBloom();
@@ -993,6 +1000,12 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       } else {
          this.removeBloom();
       }
+
+      if (this._slave_painters)
+         this._slave_painters.forEach(p => {
+            JSROOT.extend(p.ctrl.bloom, this.ctrl.bloom);
+            p.changedBloomSettings();
+         });
    }
 
    TGeoPainter.prototype.createBloom = function() {
