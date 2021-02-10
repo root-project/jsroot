@@ -72,6 +72,14 @@ echo "// Content of examples/js/math/SimplexNoise.js" >> $tgt
 tail -n+2 $src/examples/js/math/SimplexNoise.js >> $tgt
 echo "" >> $tgt
 
+echo "// Content of examples/js/shaders/LuminosityHighPassShader.js" >> $tgt
+tail -n+2 $src/examples/js/shaders/LuminosityHighPassShader.js >> $tgt
+echo "" >> $tgt
+
+echo "// Content of examples/js/postprocessing/UnrealBloomPass.js" >> $tgt
+tail -n+2 $src/examples/js/postprocessing/UnrealBloomPass.js >> $tgt
+echo "" >> $tgt
+
 echo "if (JSROOT.nodejs) module.exports = THREE;" >> $tgt
 echo "return THREE;" >> $tgt
 echo "" >> $tgt

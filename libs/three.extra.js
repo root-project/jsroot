@@ -6348,6 +6348,7 @@ THREE.SimplexNoise.prototype.noise4d = function ( x, y, z, w ) {
 
 };
 
+// Content of examples/js/shaders/LuminosityHighPassShader.js
 /**
  * Luminosity
  * http://en.wikipedia.org/wiki/Luminosity
@@ -6410,6 +6411,8 @@ THREE.LuminosityHighPassShader = {
 	].join( "\n" )
 
 };
+
+// Content of examples/js/postprocessing/UnrealBloomPass.js
 
 /**
  * UnrealBloomPass is inspired by the bloom pass of Unreal Engine. It creates a
