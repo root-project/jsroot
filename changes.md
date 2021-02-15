@@ -3,6 +3,7 @@
 ## Changes in 6.0.x
 
 1. Fix problem with matrix calculations in Eve classes (#206)
+2. Fix errors in TNodejsFile (#208)
 
 
 ## Changes in 6.0.0
