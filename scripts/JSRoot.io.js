@@ -2470,10 +2470,10 @@ JSROOT.define(['rawinflate'], () => {
             blobs.push(res);
             cnt += 2;
             if (cnt >= place.length) return resolve(blobs);
-            this.fs.read(this.fd, new Buffer(place[cnt + 1]), 0, place[cnt + 1], place[cnt], readfunc);
+            this.fs.read(this.fd, Buffer.alloc(place[cnt + 1]), 0, place[cnt + 1], place[cnt], readfunc);
          }
 
-         this.fs.read(this.fd, new Buffer(place[1]), 0, place[1], place[0], readfunc);
+         this.fs.read(this.fd, Buffer.alloc(place[1]), 0, place[1], place[0], readfunc);
       });
    }
 
