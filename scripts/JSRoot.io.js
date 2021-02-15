@@ -2433,7 +2433,7 @@ JSROOT.define(['rawinflate'], () => {
 
       return new Promise((resolve,reject) =>
 
-         this.fs.open(filename, 'r', (status, fd) => {
+         this.fs.open(this.fFileName, 'r', (status, fd) => {
             if (status) {
                console.log(status.message);
                return reject(Error(`Not possible to open ${filename} inside node.js`));
@@ -2462,7 +2462,7 @@ JSROOT.define(['rawinflate'], () => {
 
          let cnt = 0, blobs = [];
 
-         function readfunc(err, bytesRead, buf) {
+         let readfunc = (err, bytesRead, buf) => {
 
             let res = new DataView(buf.buffer, buf.byteOffset, place[cnt + 1]);
             if (place.length === 2) return resolve(res);
