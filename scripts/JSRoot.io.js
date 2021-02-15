@@ -2436,7 +2436,7 @@ JSROOT.define(['rawinflate'], () => {
          this.fs.open(this.fFileName, 'r', (status, fd) => {
             if (status) {
                console.log(status.message);
-               return reject(Error(`Not possible to open ${filename} inside node.js`));
+               return reject(Error(`Not possible to open ${this.fFileName} inside node.js`));
             }
             let stats = this.fs.fstatSync(fd);
 
