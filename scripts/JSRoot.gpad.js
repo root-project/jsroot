@@ -702,6 +702,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           optionInt = (chOpt.indexOf("I")>=0),    // integer labels
           optionNoexp = axis.TestBit(JSROOT.EAxisBits.kNoExponent);
 
+      if (text_scaling_size <= 0) text_scaling_size = 0.0001;
+
       if (is_gaxis && axis.TestBit(JSROOT.EAxisBits.kTickPlus)) optionPlus = true;
       if (is_gaxis && axis.TestBit(JSROOT.EAxisBits.kTickMinus)) optionMinus = true;
 
@@ -767,7 +769,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          title_g = axis_g.append("svg:g").attr("class", "axis_title");
          title_fontsize = (axis.fTitleSize >= 1) ? axis.fTitleSize : Math.round(axis.fTitleSize * text_scaling_size);
 
-         let title_offest_k = 1.6*((axis.fTitleSize < 1) ? axis.fTitleSize : axis.fTitleSize/(this.getCanvPainter().getPadHeight() || 10)),
+         let title_offest_k = 1.6*((axis.fTitleSize < 1) ? axis.fTitleSize : axis.fTitleSize/(text_scaling_size || 10)),
              center = axis.TestBit(JSROOT.EAxisBits.kCenterTitle),
              opposite = axis.TestBit(JSROOT.EAxisBits.kOppositeTitle),
              rotate = axis.TestBit(JSROOT.EAxisBits.kRotateTitle) ? -1 : 1,
