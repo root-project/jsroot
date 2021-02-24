@@ -188,6 +188,9 @@ JSROOT.define(['d3'], (d3) => {
          s.ToolBar = val || ((toolbar.indexOf("0") < 0) && (toolbar.indexOf("false") < 0) && (toolbar.indexOf("off") < 0));
       }
 
+      if (d.has("skipsi") || d.has("skipstreamerinfos"))
+         s.SkipStreamerInfos = true;
+
       if (d.has("palette")) {
          let palette = parseInt(d.get("palette"));
          if (!isNaN(palette) && (palette > 0) && (palette < 113)) s.Palette = palette;

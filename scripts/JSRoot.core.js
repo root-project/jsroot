@@ -351,7 +351,9 @@
        * @desc When specified, extra URL parameter like ```?stamp=unique_value``` append to each JSROOT script loaded
        * In such case browser will be forced to load JSROOT functionality disregards of server cache settings
        * @default false */
-      NoCache: false
+      NoCache: false,
+      /** @summary Skip streamer infos from the GUI */
+      SkipStreamerInfos: false
    };
 
    /** @namespace
