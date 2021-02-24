@@ -7099,6 +7099,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          h.fXaxis.fLabelSize = lbl_size;
          h.fXaxis.fTitleSize = lbl_size;
          h.fYaxis.fLabelSize = lbl_size;
+         h.fYaxis.fTitleSize = lbl_size;
          low_p.getRootPad().fTicky = 1;
 
          low_fp.zoom(up_fp.scale_xmin,  up_fp.scale_xmax);
