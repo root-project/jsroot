@@ -4,6 +4,7 @@
 1. Fix problem with matrixes in eve geometries (#206)
 2. Fix problem with TF1 drawing from histogram list of primitives
 3. Let disable showing of StreamerInfo in the GUI by adding &skipsi to URL
+4. Support drawing produced by TRatioPlot, including interactive zooming
 
 
 ## Changes in 6.0.0

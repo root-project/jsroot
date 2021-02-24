@@ -7081,6 +7081,14 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             this.o_zoom(xmin,xmax,ymin,ymax,zmin,zmax);
             this._ratio_low_fp.o_zoom(xmin,xmax);
          }
+
+         up_fp.o_sizeChanged = up_fp.sizeChanged;
+         up_fp.sizeChanged = function() {
+            this.o_sizeChanged();
+            this._ratio_low_fp.fX1NDC = this.fX1NDC;
+            this._ratio_low_fp.fX2NDC = this.fX2NDC;
+            this._ratio_low_fp.o_sizeChanged();
+         }
       }
 
       if (low_p && low_main && low_fp && up_fp && !low_p._ratio_configured) {
@@ -7101,6 +7109,14 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          low_fp.zoom = function(xmin,xmax,ymin,ymax,zmin,zmax) {
             this.o_zoom(xmin,xmax,ymin,ymax,zmin,zmax);
             this._ratio_up_fp.o_zoom(xmin,xmax);
+         }
+
+         low_fp.o_sizeChanged = low_fp.sizeChanged;
+         low_fp.sizeChanged = function() {
+            this.o_sizeChanged();
+            this._ratio_up_fp.fX1NDC = this.fX1NDC;
+            this._ratio_up_fp.fX2NDC = this.fX2NDC;
+            this._ratio_up_fp.o_sizeChanged();
          }
       }
    }
