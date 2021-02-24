@@ -129,6 +129,14 @@ examples_main = {
      { name: "log2", file: "tutorials_graphs.root", item: "exclusiongraph2", opt: "log2", title: "log2 for both x and y axes" },
      { name: "axes", file: "tutorials_graphs.root", item: "exclusiongraph2", opt: "ctx_oty_log2x", title: "Moving axes title ctx - center title x, oty - opposite title y, plus log2x option" }
    ],
+   TRatioPlot : [
+      { name:"r1", file: "ratioplot.root", item: "ratioplot1;1", title: "Output of tutorial hist/ratioplot1.C" },
+      { name:"r2", item: "ratioplot2;1", title: "Output of tutorial hist/ratioplot2.C" },
+      { name:"r3", item: "ratioplot3;1", title: "Output of tutorial hist/ratioplot3.C" },
+      { name:"r4", item: "ratioplot4;1", title: "Output of tutorial hist/ratioplot4.C" },
+      { name:"r5", item: "ratioplot5;1", title: "Output of tutorial hist/ratioplot5.C" },
+      { name:"r6", item: "ratioplot6;1", title: "Output of tutorial hist/ratioplot6.C" }
+   ],
    TGeo : [
      { name: "logo", asurl: true, file: "geom/rootgeom.root", item: "simple1;1", title:"Geometry from rootgeom.C example" },
      { name: "camera", asurl: true, file: "geom/rootgeom.root", item: "simple1;1", opt:"roty88,rotz357,zoom149", title:"Change camera position and zoom via URL parameters" },
