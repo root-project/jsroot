@@ -2409,8 +2409,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                     .on("mouseenter", () => this.showObjectStatus());
       }
 
-      console.log(this.this_pad_name, 'visible', pad_visible);
-
       this.createAttFill({ attr: this.pad });
       this.createAttLine({ attr: this.pad, color0: this.pad.fBorderMode == 0 ? 'none' : '' });
 

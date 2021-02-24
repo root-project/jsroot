@@ -7049,6 +7049,25 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       let top_p = pp.findPainterFor(ratio.fTopPad, "top_pad", "TPad");
       if (top_p) top_p.disablePadDrawing();
+
+      let up_p = pp.findPainterFor(ratio.fUpperPad, "upper_pad", "TPad");
+      if (up_p && !up_p._ratio_configured) {
+         up_p._ratio_configured = true;
+         //let up_fp = up_p.getFramePainter();
+         let up_main = up_p.getMainPainter();
+         up_main.options.Axis = 0;
+         up_p.redraw();
+      }
+
+      let low_p = pp.findPainterFor(ratio.fLowerPad, "lower_pad", "TPad");
+      if (low_p && !low_p._ratio_configured) {
+         low_p._ratio_configured = true;
+         //let up_fp = up_p.getFramePainter();
+         let low_main = low_p.getMainPainter();
+         low_main.options.Axis = 0;
+         low_p.redraw();
+      }
+
    }
 
    let drawRatioPlot = (divid, ratio, opt) => {
