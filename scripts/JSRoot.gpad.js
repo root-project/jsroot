@@ -1313,7 +1313,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary draw axes, return Promise which ready when drawing is completed  */
-   TFramePainter.prototype.drawAxes = function(shrink_forbidden, disable_axis_draw, AxisPos, has_x_obstacle) {
+   TFramePainter.prototype.drawAxes = function(shrink_forbidden,
+                                               disable_x_draw, disable_y_draw,
+                                               AxisPos, has_x_obstacle) {
 
       this.cleanAxesDrawings();
 
@@ -1338,23 +1340,23 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       let draw_horiz = this.swap_xy ? this.y_handle : this.x_handle,
           draw_vertical = this.swap_xy ? this.x_handle : this.y_handle;
 
-      if (!disable_axis_draw) {
+      if (!disable_x_draw || !disable_y_draw) {
          let pp = this.getPadPainter();
-         if (pp && pp._fast_drawing) disable_axis_draw = true;
+         if (pp && pp._fast_drawing) disable_x_draw = disable_y_draw = true;
       }
 
-      if (!disable_axis_draw) {
+      if (!disable_x_draw || !disable_y_draw) {
 
          let can_adjust_frame = !shrink_forbidden && JSROOT.settings.CanAdjustFrame;
 
          let promise1 = draw_horiz.drawAxis(layer, w, h,
                                             draw_horiz.invert_side ? undefined : "translate(0," + h + ")",
-                                            pad && pad.fTickx ? -h : 0, disable_axis_draw,
+                                            pad && pad.fTickx ? -h : 0, disable_x_draw,
                                             undefined, false);
 
          let promise2 = draw_vertical.drawAxis(layer, w, h,
                                                draw_vertical.invert_side ? "translate(" + w + ",0)" : undefined,
-                                               pad && pad.fTicky ? w : 0, disable_axis_draw,
+                                               pad && pad.fTicky ? w : 0, disable_y_draw,
                                                draw_vertical.invert_side ? 0 : this._frame_x, can_adjust_frame);
 
          return Promise.all([promise1, promise2]).then(() => {
