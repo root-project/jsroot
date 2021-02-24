@@ -513,14 +513,15 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          axis_g.append("svg:path").attr("d", res2).call(this.lineatt.func);
    }
 
-   /** @summary Draw axis labels */
+   /** @summary Draw axis labels
+     * @returns {Promise} with array label size and max width */
    TAxisPainter.prototype.drawLabels = function(axis_g, axis, w, h, handle, side, labelSize, labeloffset, tickSize, ticksPlusMinus, max_text_width) {
       let label_color = this.getColor(axis.fLabelColor),
           center_lbls = this.isCenteredLabels(),
           rotate_lbls = axis.TestBit(JSROOT.EAxisBits.kLabelsVert),
           textscale = 1, maxtextlen = 0, applied_scale = 0,
           label_g = [ axis_g.append("svg:g").attr("class","axis_labels") ],
-          lbl_pos = handle.lbl_pos || handle.major, lbl_tilt = false;
+          lbl_pos = handle.lbl_pos || handle.major, lbl_tilt = false, max_textwidth = 0;
 
       if (this.lbls_both_sides)
          label_g.push(axis_g.append("svg:g").attr("class","axis_labels").attr("transform", this.vertical ? "translate(" + w + ",0)" : "translate(0," + (-h) + ")"));
@@ -528,6 +529,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       // function called when text is drawn to analyze width, required to correctly scale all labels
       function process_drawtext_ready(painter) {
          let textwidth = this.result_width;
+         max_textwidth = Math.max(max_textwidth, textwidth);
 
          if (textwidth && ((!painter.vertical && !rotate_lbls) || (painter.vertical && rotate_lbls)) && !painter.log) {
             let maxwidth = this.gap_before*0.45 + this.gap_after*0.45;
@@ -634,7 +636,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          if (labelfont) labelSize = labelfont.size; // use real font size
 
-         return labelSize;
+         return [ labelSize, max_textwidth ];
       });
    }
 
@@ -725,23 +727,26 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if ((labelSize0 <= 0) || (Math.abs(axis.fLabelOffset) > 1.1)) optionUnlab = true; // disable labels when size not specified
 
-      let labelsPromise, title_shift_x = 0, title_shift_y = 0, title_g = null, axis_rect = null, title_fontsize = 0;
+      let labelsPromise, title_shift_x = 0, title_shift_y = 0, title_g = null, axis_rect = null,
+          title_fontsize = 0, labelMaxWidth = 0;
 
       // draw labels (sometime on both sides)
       if (!disable_axis_drawing && !optionUnlab)
          labelsPromise = this.drawLabels(axis_g, axis, w, h, handle, side, labelSize0, labeloffset, tickSize, ticksPlusMinus, max_text_width);
       else
-         labelsPromise = Promise.resolve(labelSize0);
+         labelsPromise = Promise.resolve([labelSize0, 0]);
 
-      return labelsPromise.then(labelSize => {
+      return labelsPromise.then(arr => {
+         labelMaxWidth = arr[1];
          if (JSROOT.settings.Zooming && !this.disable_zooming && !JSROOT.batch_mode) {
-            let r = axis_g.append("svg:rect")
+            let labelSize = arr[0],
+                r = axis_g.append("svg:rect")
                           .attr("class", "axis_zoom")
                           .style("opacity", "0")
                           .style("cursor", "crosshair");
 
             if (vertical)
-               r.attr("x", (side>0) ? (-2*labelSize - 3) : 3)
+               r.attr("x", (side > 0) ? (-2*labelSize - 3) : 3)
                 .attr("y", 0)
                 .attr("width", 2*labelSize + 3)
                 .attr("height", h)
@@ -818,10 +823,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          if (!title_g) return true;
 
+         // fine-tuning of title position when possible
          if (axis_rect) {
             let title_rect = title_g.node().getBoundingClientRect();
-            title_shift_x = (side > 0) ? Math.round(axis_rect.left - title_rect.right - title_fontsize*0.3) :
-                                         Math.round(axis_rect.right - title_rect.left + title_fontsize*0.3);
+            if ((axis_rect.left != axis_rect.right) && (title_rect.left != title_rect.right))
+               title_shift_x = (side > 0) ? Math.round(axis_rect.left - title_rect.right - title_fontsize*0.3) :
+                                            Math.round(axis_rect.right - title_rect.left + title_fontsize*0.3);
+            else
+               title_shift_x = -1 * Math.round(((side > 0) ? (labeloffset + labelMaxWidth) : 0) + title_fontsize*0.7);
          }
 
          title_g.attr('transform', 'translate(' + title_shift_x + ',' + title_shift_y + ')')
