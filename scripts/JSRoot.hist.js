@@ -2338,8 +2338,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       if (this.options.Same) return Promise.resolve(false);
 
-      return fp.drawAxes(false,
-                         this.options.Axis < 0, (this.options.Axis < 0) && (this.options.Axis != -11),
+      return fp.drawAxes(false, this.options.Axis < 0, (this.options.Axis < 0),
                          this.options.AxisPos, this.options.Zscale);
    }
 
@@ -7057,11 +7056,23 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           up_fp = up_p ? up_p.getFramePainter() : null,
           low_p = pp.findPainterFor(ratio.fLowerPad, "lower_pad", "TPad"),
           low_main = low_p ? low_p.getMainPainter() : null,
-           low_fp = low_p ? low_p.getFramePainter() : null;
+          low_fp = low_p ? low_p.getFramePainter() : null,
+          lbl_size = 20;
 
       if (up_p && up_main && up_fp && low_fp && !up_p._ratio_configured) {
          up_p._ratio_configured = true;
-         up_main.options.Axis = -11; // disable only X
+         up_main.options.Axis = 0; // draw both axes
+
+         lbl_size = up_main.getHisto().fYaxis.fLabelSize;
+         if (lbl_size < 1) lbl_size = Math.round(lbl_size*Math.min(up_p.getPadWidth(), up_p.getPadHeight()));
+
+         let h = up_main.getHisto();
+         h.fXaxis.fLabelSize = 0; // do not draw X axis labels
+         h.fXaxis.fTitle = ""; // do not draw X axis labels
+         h.fYaxis.fLabelSize = lbl_size;
+         h.fYaxis.fTitleSize = lbl_size;
+
+         up_p.getRootPad().fTicky = 1;
          up_p.redraw();
 
          up_fp.o_zoom = up_fp.zoom;
@@ -7075,6 +7086,12 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (low_p && low_main && low_fp && up_fp && !low_p._ratio_configured) {
          low_p._ratio_configured = true;
          low_main.options.Axis = 0; // draw both axes
+         let h = low_main.getHisto();
+         h.fXaxis.fTitle = "x"; // do not draw X axis labels
+         h.fXaxis.fLabelSize = lbl_size;
+         h.fXaxis.fTitleSize = lbl_size;
+         h.fYaxis.fLabelSize = lbl_size;
+         low_p.getRootPad().fTicky = 1;
 
          low_fp.zoom(up_fp.scale_xmin,  up_fp.scale_xmax);
 
