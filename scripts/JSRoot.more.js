@@ -533,10 +533,11 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
              xmin = tf1.fSave[np],
              xmax = tf1.fSave[np+1],
              dx = (xmax - xmin) / (np-1),
+             bin = tf1.$histo ? tf1.$histo.fXaxis.FindBin(xmin, 0) : 0,
              res = [];
 
          for (let n = 0; n < np; ++n) {
-            let xx = xmin + dx*n;
+            let xx = tf1.$histo ? tf1.$histo.fXaxis.GetBinCenter(bin+n+1) : xmin + dx*n;
             // check if points need to be displayed at all, keep at least 4-5 points for Bezier curves
             if ((gxmin !== gxmax) && ((xx + 2*dx < gxmin) || (xx - 2*dx > gxmax))) continue;
             let yy = tf1.fSave[n];
