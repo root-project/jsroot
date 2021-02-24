@@ -105,7 +105,7 @@
 
    /** @summary JSROOT version date
      * @desc Release date in format day/month/year like "14/01/2021"*/
-   JSROOT.version_date = "15/02/2021";
+   JSROOT.version_date = "24/02/2021";
 
    /** @summary JSROOT version id and date
      * @desc Produced by concatenation of {@link JSROOT.version_id} and {@link JSROOT.version_date}
@@ -1048,7 +1048,8 @@
 
          for (let k = 0; k < len; ++k) {
             let name = ks[k];
-            tgt[name] = copy_value(value[name]);
+            if (name && (name[0] != '$'))
+               tgt[name] = copy_value(value[name]);
          }
 
          return tgt;
