@@ -528,13 +528,14 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       if ((tf1.fSave.length > 0) && !this.nosave) {
          // in the case where the points have been saved, useful for example
          // if we don't have the user's function
-         let np = tf1.fSave.length - 2,
+
+         let np = tf1.$histo ? tf1.fSave.length - 3 : tf1.fSave.length - 2,
              xmin = tf1.fSave[np],
              xmax = tf1.fSave[np+1],
              dx = (xmax - xmin) / (np-1),
              res = [];
 
-         for (let n=0; n < np; ++n) {
+         for (let n = 0; n < np; ++n) {
             let xx = xmin + dx*n;
             // check if points need to be displayed at all, keep at least 4-5 points for Bezier curves
             if ((gxmin !== gxmax) && ((xx + 2*dx < gxmin) || (xx - 2*dx > gxmax))) continue;

@@ -2616,11 +2616,13 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       // no need to do something if painter for object was already done
       // object will be redraw automatically
-      if (func_painter === null)
+      if ((func_painter === null) && func)
          do_draw = this.needDrawFunc(histo, func);
 
       if (!do_draw)
          return this.drawNextFunction(indx+1);
+
+      func.$histo = histo; // required to draw TF1 correctly
 
       return JSROOT.draw(this.getDom(), func, opt).then(painter => {
          if (painter && (typeof painter == "object"))
