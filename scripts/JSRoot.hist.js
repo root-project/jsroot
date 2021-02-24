@@ -7043,12 +7043,21 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    TRatioPlotPainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
 
    /** @summary Redraw TRatioPlot */
-   TRatioPlotPainter.prototype.redraw = function() {}
+   TRatioPlotPainter.prototype.redraw = function() {
+      let ratio = this.getObject(),
+          pp = this.getPadPainter();
+
+      let top_p = pp.findPainterFor(ratio.fTopPad, "top_pad", "TPad");
+      if (top_p) top_p.disablePadDrawing();
+   }
 
    let drawRatioPlot = (divid, ratio, opt) => {
       let painter = new TRatioPlotPainter(divid, ratio, opt);
 
       return jsrp.ensureTCanvas(painter, false).then(() => {
+
+         painter.redraw();
+
          return painter;
       });
 

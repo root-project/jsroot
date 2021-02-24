@@ -2370,7 +2370,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           width = svg_can.property("draw_width"),
           height = svg_can.property("draw_height"),
           pad_enlarged = svg_can.property("pad_enlarged"),
-          pad_visible = !pad_enlarged || (pad_enlarged === this.pad),
+          pad_visible = !this.pad_draw_disabled && (!pad_enlarged || (pad_enlarged === this.pad)),
           w = Math.round(this.pad.fAbsWNDC * width),
           h = Math.round(this.pad.fAbsHNDC * height),
           x = Math.round(this.pad.fAbsXlowNDC * width),
@@ -2409,6 +2409,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                     .on("mouseenter", () => this.showObjectStatus());
       }
 
+      console.log(this.this_pad_name, 'visible', pad_visible);
+
       this.createAttFill({ attr: this.pad });
       this.createAttLine({ attr: this.pad, color0: this.pad.fBorderMode == 0 ? 'none' : '' });
 
@@ -2440,7 +2442,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       this._fast_drawing = JSROOT.settings.SmallPad && ((w < JSROOT.settings.SmallPad.width) || (h < JSROOT.settings.SmallPad.height));
 
-       // special case of 3D canvas overlay
+      // special case of 3D canvas overlay
       if (svg_pad.property('can3d') === JSROOT.constants.Embed3D.Overlay)
           this.selectDom().select(".draw3d_" + this.this_pad_name)
               .style('display', pad_visible ? '' : 'none');
@@ -2449,6 +2451,15 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.alignButtons(btns, w, h);
 
       return pad_visible;
+   }
+
+   /** @summary Disable pad drawing
+     * @desc Complete SVG element will be hidden */
+   TPadPainter.prototype.disablePadDrawing = function() {
+      if (!this.pad_draw_disabled && this.has_canvas && !this.iscan) {
+         this.pad_draw_disabled = true;
+         this.createPadSvg(true);
+      }
    }
 
    /** @summary Check if it is special object, which should be handled separately
