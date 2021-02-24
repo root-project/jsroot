@@ -7024,6 +7024,38 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    // =================================================================================
 
+   /**
+    * @summary Painter class for TRatioPlot
+    *
+    * @class
+    * @memberof JSROOT
+    * @extends JSROOT.ObjectPainter
+    * @param {object|string} dom - DOM element for drawing or element id
+    * @param {object} ratio - TRatioPlot object
+    * @param {string} [opt] - draw options
+    * @private
+    */
+
+   function TRatioPlotPainter(dom, ratio, opt) {
+      JSROOT.ObjectPainter.call(this, dom, ratio, opt);
+   }
+
+   TRatioPlotPainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
+
+   /** @summary Redraw TRatioPlot */
+   TRatioPlotPainter.prototype.redraw = function() {}
+
+   let drawRatioPlot = (divid, ratio, opt) => {
+      let painter = new TRatioPlotPainter(divid, ratio, opt);
+
+      return jsrp.ensureTCanvas(painter, false).then(() => {
+         return painter;
+      });
+
+   }
+
+   // =================================================================================
+
    jsrp.getColorPalette = getColorPalette;
    jsrp.drawPave = drawPave;
    jsrp.produceLegend = produceLegend;
@@ -7031,12 +7063,14 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    jsrp.drawHistogram2D = drawHistogram2D;
    jsrp.drawTF2 = drawTF2;
    jsrp.drawHStack = drawHStack;
+   jsrp.drawRatioPlot = drawRatioPlot;
 
    JSROOT.TPavePainter = TPavePainter;
    JSROOT.THistPainter = THistPainter;
    JSROOT.TH1Painter = TH1Painter;
    JSROOT.TH2Painter = TH2Painter;
    JSROOT.THStackPainter = THStackPainter;
+   JSROOT.TRatioPlotPainter = TRatioPlotPainter;
 
    return JSROOT;
 
