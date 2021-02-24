@@ -7052,24 +7052,40 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       let top_p = pp.findPainterFor(ratio.fTopPad, "top_pad", "TPad");
       if (top_p) top_p.disablePadDrawing();
 
-      let up_p = pp.findPainterFor(ratio.fUpperPad, "upper_pad", "TPad");
-      let up_main = up_p ? up_p.getMainPainter() : null;
-      if (up_p && !up_p._ratio_configured) {
+      let up_p = pp.findPainterFor(ratio.fUpperPad, "upper_pad", "TPad"),
+          up_main = up_p ? up_p.getMainPainter() : null,
+          up_fp = up_p ? up_p.getFramePainter() : null,
+          low_p = pp.findPainterFor(ratio.fLowerPad, "lower_pad", "TPad"),
+          low_main = low_p ? low_p.getMainPainter() : null,
+           low_fp = low_p ? low_p.getFramePainter() : null;
+
+      if (up_p && up_main && up_fp && low_fp && !up_p._ratio_configured) {
          up_p._ratio_configured = true;
-         //let up_fp = up_p.getFramePainter();
          up_main.options.Axis = -11; // disable only X
          up_p.redraw();
+
+         up_fp.o_zoom = up_fp.zoom;
+         up_fp._ratio_low_fp = low_fp;
+         up_fp.zoom = function(xmin,xmax,ymin,ymax,zmin,zmax) {
+            this.o_zoom(xmin,xmax,ymin,ymax,zmin,zmax);
+            this._ratio_low_fp.o_zoom(xmin,xmax);
+         }
       }
 
-      let low_p = pp.findPainterFor(ratio.fLowerPad, "lower_pad", "TPad");
-      let low_main = low_p ? low_p.getMainPainter() : null;
-      if (low_p && !low_p._ratio_configured) {
+      if (low_p && low_main && low_fp && up_fp && !low_p._ratio_configured) {
          low_p._ratio_configured = true;
-         //let up_fp = up_p.getFramePainter();
          low_main.options.Axis = 0; // draw both axes
-         low_p.redraw();
-      }
 
+         low_fp.zoom(up_fp.scale_xmin,  up_fp.scale_xmax);
+
+         low_fp.o_zoom = low_fp.zoom;
+         low_fp._ratio_up_fp = up_fp;
+
+         low_fp.zoom = function(xmin,xmax,ymin,ymax,zmin,zmax) {
+            this.o_zoom(xmin,xmax,ymin,ymax,zmin,zmax);
+            this._ratio_up_fp.o_zoom(xmin,xmax);
+         }
+      }
    }
 
    let drawRatioPlot = (divid, ratio, opt) => {
