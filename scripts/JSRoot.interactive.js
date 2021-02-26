@@ -1496,7 +1496,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    function toggleButtonsVisibility(handler, action) {
-      let group = handler.getLayerSvg("btns_layer"),
+      let group = handler.getLayerSvg("btns_layer", handler.this_pad_name),
           btn = group.select("[name='Toggle']");
 
       if (btn.empty()) return;
@@ -1547,7 +1547,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       },
 
       findPadButton: function(keyname) {
-         let group = this.getLayerSvg("btns_layer"), found_func = "";
+         let group = this.getLayerSvg("btns_layer", this.this_pad_name), found_func = "";
          if (!group.empty())
             group.selectAll("svg").each(function() {
                if (d3.select(this).attr("key") === keyname)
@@ -1558,7 +1558,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       },
 
       removePadButtons: function() {
-         let group = this.getLayerSvg("btns_layer");
+         let group = this.getLayerSvg("btns_layer", this.this_pad_name);
          if (!group.empty()) {
             group.selectAll("*").remove();
             group.property("nextx", null);
@@ -1566,11 +1566,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       },
 
       showPadButtons: function() {
-         let group = this.getLayerSvg("btns_layer");
+         let group = this.getLayerSvg("btns_layer", this.this_pad_name);
          if (group.empty()) return;
 
          // clean all previous buttons
          group.selectAll("*").remove();
+         if (!this._buttons) return;
 
          let iscan = this.iscan || !this.has_canvas, ctrl,
              x = group.property('leftside') ? getButtonSize(this, 1.25) : 0, y = 0;
@@ -1588,7 +1589,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                 .on("mouseenter", () => toggleButtonsVisibility(this, 'enable'))
                 .on("mouseleave", () => toggleButtonsVisibility(this, 'disable'));
 
-            for (let k=0;k<this._buttons.length;++k) {
+            for (let k = 0; k < this._buttons.length; ++k) {
                let item = this._buttons[k];
 
                let btn = item.btn;

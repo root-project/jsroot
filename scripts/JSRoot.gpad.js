@@ -2964,8 +2964,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          padpainter.createPadSvg();
 
-         if (padpainter.matchObjectType("TPad") && snap.fPrimitives.length > 0)
-            padpainter.addPadButtons();
+         if (padpainter.matchObjectType("TPad") && (snap.fPrimitives.length > 0))
+            padpainter.addPadButtons(true);
 
          // we select current pad, where all drawing is performed
          let prev_name = padpainter.selectCurrentPad(padpainter.this_pad_name);
@@ -3365,7 +3365,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          items.push(item);
 
          // remove buttons from each subpad
-         let btns = pp.getLayerSvg("btns_layer", this.this_pad_name);
+         let btns = pp.getLayerSvg("btns_layer", pp.this_pad_name);
          item.btns_node = btns.node();
          if (item.btns_node) {
             item.btns_prnt = item.btns_node.parentNode;
