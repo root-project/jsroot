@@ -1838,7 +1838,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       JSROOT.ObjectPainter.prototype.fillContextMenu.call(this, menu);
 
       if (!this.snapid)
-         menu.addchk(this.testEditable(), "Editable", () => this.testEditable("toggle"));
+         menu.addchk(this.testEditable(), "Editable", () => { this.testEditable("toggle"); this.drawGraph(); });
 
       return menu.size() > 0;
    }
