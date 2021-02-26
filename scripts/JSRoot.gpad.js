@@ -3526,14 +3526,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if (this.painters && (this.painters.length > 0)) {
                menu.add("separator");
                let shown = [];
-               for (let n=0;n<this.painters.length;++n) {
+               for (let n = 0; n < this.painters.length; ++n) {
                   let pp = this.painters[n];
                   let obj = pp ? pp.getObject() : null;
-                  if (!obj || (shown.indexOf(obj)>=0)) continue;
-
+                  if (!obj || (shown.indexOf(obj) >= 0)) continue;
                   let name = ('_typename' in obj) ? (obj._typename + "::") : "";
                   if ('fName' in obj) name += obj.fName;
-                  if (name.length==0) name = "item" + n;
+                  if (!name.length) name = "item" + n;
                   menu.add(name, n, this.itemContextMenu);
                }
             }

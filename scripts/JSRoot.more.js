@@ -1441,10 +1441,10 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    TGraphPainter.prototype.extractTooltip = function(pnt) {
       if (!pnt) return null;
 
-      if ((this.draw_kind=="lines") || (this.draw_kind=="path") || (this.draw_kind=="mark"))
+      if ((this.draw_kind == "lines") || (this.draw_kind == "path") || (this.draw_kind == "mark"))
          return this.extractTooltipForPath(pnt);
 
-      if (this.draw_kind!="nodes") return null;
+      if (this.draw_kind != "nodes") return null;
 
       let pmain = this.getFramePainter(),
           height = pmain.getFrameHeight(),
