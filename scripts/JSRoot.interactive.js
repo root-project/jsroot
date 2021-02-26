@@ -588,8 +588,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if (!JSROOT.settings.MoveResize || JSROOT.batch_mode || !painter.draw_g) return;
 
-      if (painter.draw_g.property("assigned_move")) {
-         if (!enabled) {
+      if (!enabled) {
+         if (painter.draw_g.property("assigned_move")) {
             let drag_move = d3.drag().subject(Object);
             drag_move.on("start", null).on("drag", null).on("end", null);
             painter.draw_g
@@ -599,6 +599,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          }
          return;
       }
+
+      if (painter.draw_g.property("assigned_move")) return;
 
       function detectRightButton(event) {
          if ('buttons' in event) return event.buttons === 2;
