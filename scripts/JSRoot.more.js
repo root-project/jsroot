@@ -1453,7 +1453,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
           findbin = null, best_dist2 = 1e10, best = null,
           msize = this.marker_size ? Math.round(this.marker_size/2 + 1.5) : 0;
 
-      this.draw_g.selectAll('.grpoint').each(() => {
+      this.draw_g.selectAll('.grpoint').each(function() {
          let d = d3.select(this).datum();
          if (d===undefined) return;
          let dist2 = Math.pow(pnt.x - d.grx1, 2);
