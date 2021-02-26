@@ -3771,7 +3771,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           show_text = this.options.Text,
           text_profile = show_text && (this.options.TextKind == "E") && this.isTProfile() && histo.fBinEntries,
           path_fill = null, path_err = null, path_marker = null, path_line = null,
-          hints_err = null,
+          hints_err = null, hints_marker = null,
           do_marker = false, do_err = false,
           endx = "", endy = "", dend = 0, my, yerr1, yerr2, bincont, binerr, mx1, mx2, midx, mmx1, mmx2,
           text_col, text_angle, text_size;
@@ -3798,6 +3798,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             path_marker = "";
             do_marker = true;
             this.markeratt.resetPos();
+            if ((hints_err === null) && want_tooltip) hints_marker = "";
          } else {
             show_markers = false;
          }
@@ -3897,8 +3898,12 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                   if (path_fill !== null)
                      path_fill += "M" + mx1 +","+(my-yerr1) +
                                   "h" + (mx2-mx1) + "v" + (yerr1+yerr2+1) + "h-" + (mx2-mx1) + "z";
-                  if ((path_marker !== null) && do_marker)
+                  if ((path_marker !== null) && do_marker) {
                      path_marker += this.markeratt.create(midx, my);
+                     if (hints_marker !== null)
+                        hints_marker += "M" + (midx-5)+","+(my-5) + "h10v10h-10z";
+                  }
+
                   if ((path_err !== null) && do_err)
                      draw_errbin();
                }
@@ -3913,6 +3918,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                if (extract_bin(i)) {
                   if (path_marker !== null)
                      path_marker += this.markeratt.create(midx, my);
+                  if (hints_marker !== null)
+                     hints_marker += "M" + (midx-5)+","+(my-5) + "h10v10h-10z";
                   if (path_err !== null)
                      draw_errbin();
                }
@@ -4043,6 +4050,13 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             this.draw_g.append("svg:path")
                 .attr("d", path_marker)
                 .call(this.markeratt.func);
+
+         if ((hints_marker !== null) && (hints_marker.length > 0))
+            this.draw_g.append("svg:path")
+                .attr("d", hints_marker)
+                .attr("stroke", "none")
+                .attr("fill", "none")
+                .attr("pointer-events", "visibleFill");
       }
 
       if ((res.length > 0) && draw_hist) {
@@ -4143,18 +4157,18 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       grx1 = GetBinGrX(findbin);
 
       if (pmain.swap_xy) {
-         while ((l>left) && (GetBinGrX(l-1) < grx1 + 2)) --l;
-         while ((r<right) && (GetBinGrX(r+1) > grx1 - 2)) ++r;
+         while ((l > left) && (GetBinGrX(l-1) < grx1 + 2)) --l;
+         while ((r < right) && (GetBinGrX(r+1) > grx1 - 2)) ++r;
       } else {
-         while ((l>left) && (GetBinGrX(l-1) > grx1 - 2)) --l;
-         while ((r<right) && (GetBinGrX(r+1) < grx1 + 2)) ++r;
+         while ((l > left) && (GetBinGrX(l-1) > grx1 - 2)) --l;
+         while ((r < right) && (GetBinGrX(r+1) < grx1 + 2)) ++r;
       }
 
       if (l < r) {
          // many points can be assigned with the same cursor position
          // first try point around mouse y
          let best = height;
-         for (let m=l;m<=r;m++) {
+         for (let m = l; m <= r; m++) {
             let dist = Math.abs(GetBinGrY(m) - pnt_y);
             if (dist < best) { best = dist; findbin = m; }
          }
@@ -4271,8 +4285,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          ttrect.remove();
          res.changed = true;
-      } else
-      if (show_rect) {
+      } else if (show_rect) {
 
          if (ttrect.empty())
             ttrect = this.draw_g.append("svg:rect")

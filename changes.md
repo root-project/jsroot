@@ -5,7 +5,7 @@
 2. Fix problem with TF1 drawing from histogram list of primitives
 3. Let disable showing of StreamerInfo in the GUI by adding &skipsi to URL
 4. Support drawing produced by TRatioPlot, including interactive zooming
-5. Fix problem with TH1 tooltips show when "E" draw option is used
+5. Provide tooltips when TH1 drawn with "E" or "P" option
 
 
 ## Changes in 6.0.0
