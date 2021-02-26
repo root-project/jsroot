@@ -1639,13 +1639,15 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       return res;
    }
 
-   /** @summary Check editable flag for TGraph */
-   TGraphPainter.prototype.testEditable = function(toggle) {
+   /** @summary Check editable flag for TGraph
+     * @desc if arg specified changes or toggles editable flag */
+   TGraphPainter.prototype.testEditable = function(arg) {
       let obj = this.getObject(),
           kNotEditable = JSROOT.BIT(18);   // bit set if graph is non editable
 
       if (!obj) return false;
-      if (toggle) obj.InvertBit(kNotEditable);
+      if ((arg == "toggle") || ((arg!==undefined) && (!arg != obj.TestBit(kNotEditable))))
+         obj.InvertBit(kNotEditable);
       return !obj.TestBit(kNotEditable);
    }
 
@@ -1836,7 +1838,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       JSROOT.ObjectPainter.prototype.fillContextMenu.call(this, menu);
 
       if (!this.snapid)
-         menu.addchk(this.testEditable(), "Editable", () => this.testEditable(true));
+         menu.addchk(this.testEditable(), "Editable", () => this.testEditable("toggle"));
 
       return menu.size() > 0;
    }
@@ -4087,7 +4089,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
          low_p.forEachPainterInPad(objp => {
             if (typeof objp.testEditable == 'function')
-               if (objp.testEditable()) objp.testEditable(true);
+               objp.testEditable(false);
          });
 
          low_fp.zoom(up_fp.scale_xmin,  up_fp.scale_xmax);
