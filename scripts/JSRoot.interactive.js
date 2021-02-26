@@ -608,11 +608,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
 
       let drag_move = d3.drag().subject(Object),
-         not_changed = true;
+         not_changed = true, move_disabled = false;
 
       drag_move
          .on("start", function(evnt) {
-            if (this.moveEnabled && !this.moveEnabled()) return;
+            move_disabled = this.moveEnabled ? !this.moveEnabled() : false;
+            if (move_disabled) return;
             if (detectRightButton(evnt.sourceEvent)) return;
             evnt.sourceEvent.preventDefault();
             evnt.sourceEvent.stopPropagation();
@@ -621,12 +622,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if (this.moveStart)
                this.moveStart(pos[0], pos[1]);
          }.bind(painter)).on("drag", function(evnt) {
+            if (move_disabled) return;
             evnt.sourceEvent.preventDefault();
             evnt.sourceEvent.stopPropagation();
             not_changed = false;
             if (this.moveDrag)
                this.moveDrag(evnt.dx, evnt.dy);
          }.bind(painter)).on("end", function(evnt) {
+            if (move_disabled) return;
             evnt.sourceEvent.preventDefault();
             evnt.sourceEvent.stopPropagation();
             if (this.moveEnd)
