@@ -3760,6 +3760,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       let left = this.getSelectIndex("x", "left", -1),
           right = this.getSelectIndex("x", "right", 2),
           histo = this.getHisto(),
+          want_tooltip = !JSROOT.batch_mode && JSROOT.settings.Tooltip,
           xaxis = histo.fXaxis,
           res = "", lastbin = false,
           startx, currx, curry, x, grx, y, gry, curry_min, curry_max, prevy, prevx, i, bestimin, bestimax,
@@ -3770,6 +3771,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           show_text = this.options.Text,
           text_profile = show_text && (this.options.TextKind == "E") && this.isTProfile() && histo.fBinEntries,
           path_fill = null, path_err = null, path_marker = null, path_line = null,
+          hints_err = null,
           do_marker = false, do_err = false,
           endx = "", endy = "", dend = 0, my, yerr1, yerr2, bincont, binerr, mx1, mx2, midx, mmx1, mmx2,
           text_col, text_angle, text_size;
@@ -3782,6 +3784,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                               else path_fill = "";
       } else if (this.options.Error) {
          path_err = "";
+         hints_err = want_tooltip ? "" : null;
          do_err = true;
       }
 
@@ -3859,12 +3862,16 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       }
 
       let draw_errbin = () => {
+         let edx = 5;
          if (this.options.errorX > 0) {
-            mmx1 = Math.round(midx - (mx2-mx1)*this.options.errorX);
-            mmx2 = Math.round(midx + (mx2-mx1)*this.options.errorX);
+            edx = Math.round((mx2-mx1)*this.options.errorX);
+            mmx1 = midx - edx;
+            mmx2 = midx + edx;
             path_err += "M" + (mmx1+dend) +","+ my + endx + "h" + (mmx2-mmx1-2*dend) + endx;
          }
-         path_err += "M" + midx +"," + (my-yerr1+dend) + endy + "v" + (yerr1+yerr2-2*dend) + endy;
+         path_err += "M" + midx + "," + (my-yerr1+dend) + endy + "v" + (yerr1+yerr2-2*dend) + endy;
+         if (hints_err !== null)
+         hints_err += "M" + (midx-edx) + "," + (my-yerr1) + "h" + (2*edx) + "v" + (yerr1+yerr2) + "h" + (-2*edx) + "z";
       }
 
       let draw_bin = bin => {
@@ -3993,7 +4000,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          }
       }
 
-      let fill_for_interactive = !JSROOT.batch_mode && this.fillatt.empty() && draw_hist && JSROOT.settings.Tooltip && !draw_markers && !show_line,
+      let fill_for_interactive = want_tooltip && this.fillatt.empty() && draw_hist && !draw_markers && !show_line,
           h0 = height + 3;
       if (!fill_for_interactive) {
          let gry0 = Math.round(pmain.gry(0));
@@ -4011,6 +4018,13 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                this.draw_g.append("svg:path")
                    .attr("d", path_err)
                    .call(this.lineatt.func);
+
+          if ((hints_err !== null) && (hints_err.length > 0))
+               this.draw_g.append("svg:path")
+                   .attr("d", hints_err)
+                   .attr("stroke", "none")
+                   .attr("fill", "none")
+                   .attr("pointer-events", "visibleFill");
 
          if ((path_line !== null) && (path_line.length > 0)) {
             if (!this.fillatt.empty())

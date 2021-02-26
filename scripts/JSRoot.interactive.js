@@ -25,9 +25,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (enabled !== undefined) this.tooltip_enabled = enabled;
       },
 
+      /** @summary central function which let show selected hints for the object */
       processFrameTooltipEvent: function(pnt, evnt) {
-         // make central function which let show selected hints for the object
-
          if (pnt && pnt.handler) {
             // special use of interactive handler in the frame painter
             let rect = this.draw_g ? this.draw_g.select(".main_layer") : null;
