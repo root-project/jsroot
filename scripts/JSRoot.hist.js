@@ -7025,117 +7025,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    // =================================================================================
 
-   /**
-    * @summary Painter class for TRatioPlot
-    *
-    * @class
-    * @memberof JSROOT
-    * @extends JSROOT.ObjectPainter
-    * @param {object|string} dom - DOM element for drawing or element id
-    * @param {object} ratio - TRatioPlot object
-    * @param {string} [opt] - draw options
-    * @private
-    */
-
-   function TRatioPlotPainter(dom, ratio, opt) {
-      JSROOT.ObjectPainter.call(this, dom, ratio, opt);
-   }
-
-   TRatioPlotPainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
-
-   /** @summary Redraw TRatioPlot */
-   TRatioPlotPainter.prototype.redraw = function() {
-      let ratio = this.getObject(),
-          pp = this.getPadPainter();
-
-      let top_p = pp.findPainterFor(ratio.fTopPad, "top_pad", "TPad");
-      if (top_p) top_p.disablePadDrawing();
-
-      let up_p = pp.findPainterFor(ratio.fUpperPad, "upper_pad", "TPad"),
-          up_main = up_p ? up_p.getMainPainter() : null,
-          up_fp = up_p ? up_p.getFramePainter() : null,
-          low_p = pp.findPainterFor(ratio.fLowerPad, "lower_pad", "TPad"),
-          low_main = low_p ? low_p.getMainPainter() : null,
-          low_fp = low_p ? low_p.getFramePainter() : null,
-          lbl_size = 20;
-
-      if (up_p && up_main && up_fp && low_fp && !up_p._ratio_configured) {
-         up_p._ratio_configured = true;
-         up_main.options.Axis = 0; // draw both axes
-
-         lbl_size = up_main.getHisto().fYaxis.fLabelSize;
-         if (lbl_size < 1) lbl_size = Math.round(lbl_size*Math.min(up_p.getPadWidth(), up_p.getPadHeight()));
-
-         let h = up_main.getHisto();
-         h.fXaxis.fLabelSize = 0; // do not draw X axis labels
-         h.fXaxis.fTitle = ""; // do not draw X axis labels
-         h.fYaxis.fLabelSize = lbl_size;
-         h.fYaxis.fTitleSize = lbl_size;
-
-         up_p.getRootPad().fTicky = 1;
-         up_p.redraw();
-
-         up_fp.o_zoom = up_fp.zoom;
-         up_fp._ratio_low_fp = low_fp;
-         up_fp.zoom = function(xmin,xmax,ymin,ymax,zmin,zmax) {
-            this.o_zoom(xmin,xmax,ymin,ymax,zmin,zmax);
-            this._ratio_low_fp.o_zoom(xmin,xmax);
-         }
-
-         up_fp.o_sizeChanged = up_fp.sizeChanged;
-         up_fp.sizeChanged = function() {
-            this.o_sizeChanged();
-            this._ratio_low_fp.fX1NDC = this.fX1NDC;
-            this._ratio_low_fp.fX2NDC = this.fX2NDC;
-            this._ratio_low_fp.o_sizeChanged();
-         }
-      }
-
-      if (low_p && low_main && low_fp && up_fp && !low_p._ratio_configured) {
-         low_p._ratio_configured = true;
-         low_main.options.Axis = 0; // draw both axes
-         let h = low_main.getHisto();
-         h.fXaxis.fTitle = "x"; // do not draw X axis labels
-         h.fXaxis.fLabelSize = lbl_size;
-         h.fXaxis.fTitleSize = lbl_size;
-         h.fYaxis.fLabelSize = lbl_size;
-         h.fYaxis.fTitleSize = lbl_size;
-         low_p.getRootPad().fTicky = 1;
-
-         low_fp.zoom(up_fp.scale_xmin,  up_fp.scale_xmax);
-
-         low_fp.o_zoom = low_fp.zoom;
-         low_fp._ratio_up_fp = up_fp;
-
-         low_fp.zoom = function(xmin,xmax,ymin,ymax,zmin,zmax) {
-            this.o_zoom(xmin,xmax,ymin,ymax,zmin,zmax);
-            this._ratio_up_fp.o_zoom(xmin,xmax);
-         }
-
-         low_fp.o_sizeChanged = low_fp.sizeChanged;
-         low_fp.sizeChanged = function() {
-            this.o_sizeChanged();
-            this._ratio_up_fp.fX1NDC = this.fX1NDC;
-            this._ratio_up_fp.fX2NDC = this.fX2NDC;
-            this._ratio_up_fp.o_sizeChanged();
-         }
-      }
-   }
-
-   let drawRatioPlot = (divid, ratio, opt) => {
-      let painter = new TRatioPlotPainter(divid, ratio, opt);
-
-      return jsrp.ensureTCanvas(painter, false).then(() => {
-
-         painter.redraw();
-
-         return painter;
-      });
-
-   }
-
-   // =================================================================================
-
    jsrp.getColorPalette = getColorPalette;
    jsrp.drawPave = drawPave;
    jsrp.produceLegend = produceLegend;
@@ -7143,14 +7032,12 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    jsrp.drawHistogram2D = drawHistogram2D;
    jsrp.drawTF2 = drawTF2;
    jsrp.drawHStack = drawHStack;
-   jsrp.drawRatioPlot = drawRatioPlot;
 
    JSROOT.TPavePainter = TPavePainter;
    JSROOT.THistPainter = THistPainter;
    JSROOT.TH1Painter = TH1Painter;
    JSROOT.TH2Painter = TH2Painter;
    JSROOT.THStackPainter = THStackPainter;
-   JSROOT.TRatioPlotPainter = TRatioPlotPainter;
 
    return JSROOT;
 
