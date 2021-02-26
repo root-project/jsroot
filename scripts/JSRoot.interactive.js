@@ -582,10 +582,23 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    /** @summary Add move handlers for drawn element
      * @private */
-   function addMoveHandler(painter) {
+   function addMoveHandler(painter, enabled) {
 
-      if (!JSROOT.settings.MoveResize || JSROOT.batch_mode ||
-         !painter.draw_g || painter.draw_g.property("assigned_move")) return;
+      if (enabled === undefined) enabled = true;
+
+      if (!JSROOT.settings.MoveResize || JSROOT.batch_mode || !painter.draw_g) return;
+
+      if (painter.draw_g.property("assigned_move")) {
+         if (!enabled) {
+            let drag_move = d3.drag().subject(Object);
+            drag_move.on("start", null).on("drag", null).on("end", null);
+            painter.draw_g
+                  .style("cursor", null)
+                  .property("assigned_move", null)
+                  .call(drag_move);
+         }
+         return;
+      }
 
       function detectRightButton(event) {
          if ('buttons' in event) return event.buttons === 2;
@@ -599,6 +612,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       drag_move
          .on("start", function(evnt) {
+            if (this.moveEnabled && !this.moveEnabled()) return;
             if (detectRightButton(evnt.sourceEvent)) return;
             evnt.sourceEvent.preventDefault();
             evnt.sourceEvent.stopPropagation();

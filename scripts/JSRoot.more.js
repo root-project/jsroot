@@ -1429,6 +1429,11 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
          }
       }
+
+      if (JSROOT.batch_mode) return;
+
+      return JSROOT.require(['interactive'])
+                   .then(inter => inter.addMoveHandler(this, this.testEditable()));
    }
 
    /** @summary Provide tooltip at specified point
@@ -1755,6 +1760,12 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       }
    }
 
+   /** @summary Check if graph moving is enabled
+     * @private */
+   TGraphPainter.prototype.moveEnabled = function() {
+      return this.testEditable();
+   }
+
    /** @summary Start moving of TGraph
      * @private */
    TGraphPainter.prototype.moveStart = function(x,y) {
@@ -2043,11 +2054,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       return promise.then(() => {
          painter.addToPadPrimitives();
-         painter.drawGraph();
+         return painter.drawGraph();
          // wait until interactive elements assigned
-         if (painter.testEditable() && !JSROOT.batch_mode)
-            return JSROOT.require(['interactive'])
-                         .then(inter => inter.addMoveHandler(painter));
       }).then(() => painter.drawNextFunction(0));
    }
 
@@ -4076,6 +4084,11 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          h.fYaxis.fLabelSize = lbl_size;
          h.fYaxis.fTitleSize = lbl_size;
          low_p.getRootPad().fTicky = 1;
+
+         low_p.forEachPainterInPad(objp => {
+            if (typeof objp.testEditable == 'function')
+               if (objp.testEditable()) objp.testEditable(true);
+         });
 
          low_fp.zoom(up_fp.scale_xmin,  up_fp.scale_xmax);
 
