@@ -621,9 +621,9 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    TF1Painter.prototype.processTooltipEvent = function(pnt) {
       let cleanup = false;
 
-      if (!pnt || (this.bins === null)) {
+      if (!pnt || (this.bins === null) || pnt.disabled) {
          cleanup = true;
-      } else if ((this.bins.length==0) || (pnt.x < this.bins[0].grx) || (pnt.x > this.bins[this.bins.length-1].grx)) {
+      } else if (!this.bins.length || (pnt.x < this.bins[0].grx) || (pnt.x > this.bins[this.bins.length-1].grx)) {
          cleanup = true;
       }
 
