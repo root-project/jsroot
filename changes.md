@@ -4,6 +4,7 @@
 
 1. Fix problem with matrix calculations in Eve classes (#206)
 2. Fix errors in TNodejsFile (#208)
+3. Fit TGraph tooltip handling
 
 
 ## Changes in 6.0.0
