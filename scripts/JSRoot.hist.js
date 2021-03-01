@@ -6194,8 +6194,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          // process tooltips from TH2Poly
 
          let pmain = this.getFramePainter(), foundindx = -1, bin;
-         const realx = (pmain.grx === pmain.x) ? pmain.x.invert(pnt.x) : undefined,
-               realy = (pmain.gry === pmain.y) ? pmain.y.invert(pnt.y) : undefined;
+         const realx = pmain.revertAxis("x", pnt.x),
+               realy = pmain.revertAxis("y", pnt.y);
 
          if ((realx!==undefined) && (realy!==undefined)) {
             const len = histo.fBins.arr.length;
