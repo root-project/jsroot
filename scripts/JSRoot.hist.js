@@ -1279,8 +1279,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return false;
    }
 
+   /** @summary redraw pave object */
    TPavePainter.prototype.redraw = function() {
-      this.drawPave();
+      return this.drawPave();
    }
 
    TPavePainter.prototype.cleanup = function() {
