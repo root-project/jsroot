@@ -1,10 +1,11 @@
 # JSROOT changelog
 
-## Changes in 6.0.x
+## Changes in 6.0.1
 
 1. Fix problem with matrix calculations in Eve classes (#206)
 2. Fix errors in TNodejsFile (#208)
-3. Fit TGraph tooltip handling
+3. Fit TGraph tooltips handling
+4. Fit TH2Poly tooltips handling
 
 
 ## Changes in 6.0.0
