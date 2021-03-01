@@ -1,7 +1,6 @@
 # JSROOT changelog
 
 ## Changes in dev
-1. Fix problem with matrixes in eve geometries (#206)
 2. Fix problem with TF1 drawing from histogram list of primitives
 3. Let disable showing of StreamerInfo in the GUI by adding &skipsi to URL
 4. Support drawing produced by TRatioPlot, including interactive zooming
@@ -10,8 +9,14 @@
 7. API change -> PadPainter.zoom function returns Promise now
 
 
-## Changes in 6.0.0
+## Changes in 6.0.1
+1. Fix problem with matrix calculations in Eve classes (#206)
+2. Fix errors in TNodejsFile (#208)
+3. Fix TGraph tooltips handling
+4. Fix TH2Poly tooltips handling
 
+
+## Changes in 6.0.0
 1. Major release with:
    - incompatible changes in API
    - heavy use of Promise class
@@ -55,7 +60,6 @@
 
 
 ## Changes in 5.9.1
-
 1. Fix zooming in color palette
 2. Fix interactive update of TGraph painting on time scale
 3. Fix I/O error in reading std::map (#204)
