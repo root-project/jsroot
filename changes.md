@@ -6,6 +6,8 @@
 3. Let disable showing of StreamerInfo in the GUI by adding &skipsi to URL
 4. Support drawing produced by TRatioPlot, including interactive zooming
 5. Provide tooltips when TH1 drawn with "E" or "P" option
+6. Fix problem with zooming of many overlayed histograms
+7. API change -> PadPainter.zoom function returns Promise now
 
 
 ## Changes in 6.0.0

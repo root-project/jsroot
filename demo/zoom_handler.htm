@@ -36,7 +36,7 @@
                 // redefine zoom function of TH2 painter to make synchronous zooming of TH1 object
                 fp.zoom = function(xmin,xmax,ymin,ymax,zmin,zmax) {
                    if (h1painter) h1painter.getFramePainter().zoom(xmin, xmax);
-                   this.oldZoom(xmin,xmax,ymin,ymax,zmin,zmax);
+                   return this.oldZoom(xmin,xmax,ymin,ymax,zmin,zmax);
                 }
              });
       });

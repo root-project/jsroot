@@ -4063,8 +4063,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
             up_fp.o_zoom = up_fp.zoom;
             up_fp._ratio_low_fp = low_fp;
             up_fp.zoom = function(xmin,xmax,ymin,ymax,zmin,zmax) {
-               this.o_zoom(xmin,xmax,ymin,ymax,zmin,zmax);
                this._ratio_low_fp.o_zoom(xmin,xmax);
+               return this.o_zoom(xmin,xmax,ymin,ymax,zmin,zmax);
             }
 
             up_fp.o_sizeChanged = up_fp.sizeChanged;
@@ -4102,8 +4102,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
             low_fp._ratio_up_fp = up_fp;
 
             low_fp.zoom = function(xmin,xmax,ymin,ymax,zmin,zmax) {
-               this.o_zoom(xmin,xmax,ymin,ymax,zmin,zmax);
                this._ratio_up_fp.o_zoom(xmin,xmax);
+               return this.o_zoom(xmin,xmax,ymin,ymax,zmin,zmax);
             }
 
             low_fp.o_sizeChanged = low_fp.sizeChanged;

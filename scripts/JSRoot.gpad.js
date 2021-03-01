@@ -1806,11 +1806,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       * @param {number} [ymax]
       * @param {number} [zmin]
       * @param {number} [zmax]
-      * @returns {boolean} if zoom operation was performed */
+      * @returns {Promise} with boolean flag if zoom operation was performed */
    TFramePainter.prototype.zoom = function(xmin, xmax, ymin, ymax, zmin, zmax) {
 
       // disable zooming when axis conversion is enabled
-      if (this.projection) return false;
+      if (this.projection) return Promise.resolve(false);
 
       if (xmin==="x") { xmin = xmax; xmax = ymin; ymin = undefined; } else
       if (xmin==="y") { ymax = ymin; ymin = xmax; xmin = xmax = undefined; } else
@@ -1898,10 +1898,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          }
       }
 
-      if (changed)
-         this.interactiveRedraw("pad", "zoom");
+      if (!changed) return Promise.resolve(false);
 
-      return changed;
+      return this.interactiveRedraw("pad", "zoom").then(() => true);
    }
 
    /** @summary Checks if specified axis zoomed */
@@ -1909,20 +1908,22 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return this['zoom_'+axis+'min'] !== this['zoom_'+axis+'max'];
    }
 
-   /** @summary Unzoom speicied axes */
+   /** @summary Unzoom speicied axes
+     * @returns {Promise} with boolean flag if zooming changed */
    TFramePainter.prototype.unzoom = function(dox, doy, doz) {
       if (typeof dox === 'undefined') { dox = doy = doz = true; } else
       if (typeof dox === 'string') { doz = dox.indexOf("z") >= 0; doy = dox.indexOf("y") >= 0; dox = dox.indexOf("x") >= 0; }
 
-      let changed = this.zoom(dox ? 0 : undefined, dox ? 0 : undefined,
-                              doy ? 0 : undefined, doy ? 0 : undefined,
-                              doz ? 0 : undefined, doz ? 0 : undefined);
+      return this.zoom(dox ? 0 : undefined, dox ? 0 : undefined,
+                       doy ? 0 : undefined, doy ? 0 : undefined,
+                       doz ? 0 : undefined, doz ? 0 : undefined).then(changed => {
 
-      if (changed && dox) this.zoomChangedInteractive("x", "unzoom");
-      if (changed && doy) this.zoomChangedInteractive("y", "unzoom");
-      if (changed && doz) this.zoomChangedInteractive("z", "unzoom");
+         if (changed && dox) this.zoomChangedInteractive("x", "unzoom");
+         if (changed && doy) this.zoomChangedInteractive("y", "unzoom");
+         if (changed && doz) this.zoomChangedInteractive("z", "unzoom");
 
-      return changed;
+         return changed;
+      });
    }
 
    /** @summary Mark/check if zoom for specific axis was changed interactively
