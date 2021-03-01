@@ -2726,10 +2726,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    /** @summary redraw pad */
    TPadPainter.prototype.redraw = function(reason) {
-
-      // prevent redrawing
-      if (this._doing_pad_draw)
-         return console.log('Prevent redrawing', this.pad.fName);
+      if (this._doing_pad_draw) {
+         console.log('Prevent redrawing', this.pad.fName);
+         return false;
+      }
 
       let showsubitems = true;
 
@@ -2739,16 +2739,25 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          showsubitems = this.createPadSvg(true);
       }
 
-      // even sub-pad is not visible, we should redraw sub-sub-pads to hide them as well
-      for (let i = 0; i < this.painters.length; ++i) {
-         let sub = this.painters[i];
-         if (showsubitems || sub.this_pad_name) sub.redraw(reason);
-      }
+      let redrawNext = indx => {
+         while (indx < this.painters.length) {
+            let sub = this.painters[indx++], res = 0;
+            if (showsubitems || sub.this_pad_name)
+               res = sub.redraw(reason);
 
-      if (jsrp.getActivePad() === this) {
-         let canp = this.getCanvPainter();
-         if (canp) canp.producePadEvent("padredraw", this );
-      }
+            if (res && (typeof res == 'object') && (typeof res.then == 'function'))
+               return res.then(() => redrawNext(indx));
+         }
+         return Promise.resolve(true);
+      };
+
+      // intentially do not return Promise to let re-draw sub-pads in parallel
+      redrawNext(0).then(() => {
+         if (jsrp.getActivePad() === this) {
+            let canp = this.getCanvPainter();
+            if (canp) canp.producePadEvent("padredraw", this);
+         }
+      });
    }
 
    /** @summary Checks if pad should be redrawn by resize
