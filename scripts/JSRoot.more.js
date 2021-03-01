@@ -4053,7 +4053,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
          let h = up_main.getHisto();
          h.fXaxis.fLabelSize = 0; // do not draw X axis labels
-         h.fXaxis.fTitle = ""; // do not draw X axis labels
+         h.fXaxis.fTitle = ""; // do not draw X axis title
          h.fYaxis.fLabelSize = lbl_size;
          h.fYaxis.fTitleSize = lbl_size;
 
@@ -4084,7 +4084,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
             low_p._ratio_configured = true;
             low_main.options.Axis = 0; // draw both axes
             let h = low_main.getHisto();
-            h.fXaxis.fTitle = "x"; // do not draw X axis labels
+            h.fXaxis.fTitle = "x";
             h.fXaxis.fLabelSize = lbl_size;
             h.fXaxis.fTitleSize = lbl_size;
             h.fYaxis.fLabelSize = lbl_size;
@@ -4096,23 +4096,26 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
                   objp.testEditable(false);
             });
 
-            low_fp.zoom(up_fp.scale_xmin,  up_fp.scale_xmax);
+            return low_fp.zoom(up_fp.scale_xmin,  up_fp.scale_xmax).then(() => {
 
-            low_fp.o_zoom = low_fp.zoom;
-            low_fp._ratio_up_fp = up_fp;
+               low_fp.o_zoom = low_fp.zoom;
+               low_fp._ratio_up_fp = up_fp;
 
-            low_fp.zoom = function(xmin,xmax,ymin,ymax,zmin,zmax) {
-               this._ratio_up_fp.o_zoom(xmin,xmax);
-               return this.o_zoom(xmin,xmax,ymin,ymax,zmin,zmax);
-            }
+               low_fp.zoom = function(xmin,xmax,ymin,ymax,zmin,zmax) {
+                  this._ratio_up_fp.o_zoom(xmin,xmax);
+                  return this.o_zoom(xmin,xmax,ymin,ymax,zmin,zmax);
+               }
 
-            low_fp.o_sizeChanged = low_fp.sizeChanged;
-            low_fp.sizeChanged = function() {
-               this.o_sizeChanged();
-               this._ratio_up_fp.fX1NDC = this.fX1NDC;
-               this._ratio_up_fp.fX2NDC = this.fX2NDC;
-               this._ratio_up_fp.o_sizeChanged();
-            }
+               low_fp.o_sizeChanged = low_fp.sizeChanged;
+               low_fp.sizeChanged = function() {
+                  this.o_sizeChanged();
+                  this._ratio_up_fp.fX1NDC = this.fX1NDC;
+                  this._ratio_up_fp.fX2NDC = this.fX2NDC;
+                  this._ratio_up_fp.o_sizeChanged();
+               }
+
+               return this;
+            });
          }
 
          return this;
