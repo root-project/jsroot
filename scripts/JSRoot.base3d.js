@@ -983,7 +983,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
 
             // if normal event, set longer timeout waiting if double click not detected
             if (evnt.detail != 2)
-               this.single_click_tmout = setTimeout(this.ProcessClick.bind(this, this.getMousePos(evnt, {})), 300);
+               this.single_click_tmout = setTimeout(this.processClick.bind(this, this.getMousePos(evnt, {})), 300);
          }.bind(control);
       }
 
