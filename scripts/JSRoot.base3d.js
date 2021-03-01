@@ -638,8 +638,8 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
       }
 
       if (enable_zoom || enable_select) {
-         renderer.domElement.addEventListener( 'pointerdown', control_mousedown);
-         renderer.domElement.addEventListener( 'pointerup', control_mouseup);
+         renderer.domElement.addEventListener('pointerdown', control_mousedown);
+         renderer.domElement.addEventListener('pointerup', control_mouseup);
       }
 
       control = new THREE.OrbitControls(camera, renderer.domElement);
@@ -676,10 +676,10 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
 
       control.cleanup = function() {
          if (JSROOT.settings.Zooming && JSROOT.settings.ZoomWheel)
-            this.domElement.removeEventListener( 'wheel', control_mousewheel);
+            this.domElement.removeEventListener('wheel', control_mousewheel);
          if (this.enable_zoom || this.enable_select) {
-            this.domElement.removeEventListener( 'mousedown', control_mousedown);
-            this.domElement.removeEventListener( 'mouseup', control_mouseup);
+            this.domElement.removeEventListener('pointerdown', control_mousedown);
+            this.domElement.removeEventListener('pointerup', control_mouseup);
          }
 
          if (this.lstn_click)
