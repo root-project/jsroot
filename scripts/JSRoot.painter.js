@@ -2285,10 +2285,11 @@ JSROOT.define(['d3'], (d3) => {
 
    /** @summary Redraw all objects in the current pad
      * @param {string} [reason] - like 'resize' or 'zoom'
+     * @returns {Promise} when pad redraw completed
      * @protected */
    ObjectPainter.prototype.redrawPad = function(reason) {
       let pp = this.getPadPainter();
-      if (pp) pp.redraw(reason);
+      return pp ? pp.redrawPad(reason) : Promise.resolve(false);
    }
 
    /** @summary execute selected menu command, either locally or remotely
