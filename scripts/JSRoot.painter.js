@@ -2278,7 +2278,7 @@ JSROOT.define(['d3'], (d3) => {
       else if (arg !== false)
          res = this.redraw(reason);
 
-      if (!isPromise(res)) res = Promise.resove(false);
+      if (!isPromise(res)) res = Promise.resolve(false);
 
       return res.then(() => {
          // inform GED that something changes
