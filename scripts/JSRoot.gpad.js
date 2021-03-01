@@ -2719,16 +2719,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }).then(menu => menu.show());
    }
 
-   /** @summary Redraw pad means redraw ourself */
+   /** @summary Redraw pad means redraw ourself
+     * @returns {Promise} when redrawing ready */
    TPadPainter.prototype.redrawPad = function(reason) {
-      this.redraw(reason);
-   }
-
-   /** @summary redraw pad */
-   TPadPainter.prototype.redraw = function(reason) {
       if (this._doing_pad_draw) {
          console.log('Prevent redrawing', this.pad.fName);
-         return false;
+         return Promise.resolve(false);
       }
 
       let showsubitems = true;
@@ -2751,13 +2747,19 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return Promise.resolve(true);
       };
 
-      // intentially do not return Promise to let re-draw sub-pads in parallel
-      redrawNext(0).then(() => {
+      return redrawNext(0).then(() => {
          if (jsrp.getActivePad() === this) {
             let canp = this.getCanvPainter();
             if (canp) canp.producePadEvent("padredraw", this);
          }
+         return true;
       });
+   }
+
+   /** @summary redraw pad */
+   TPadPainter.prototype.redraw = function(reason) {
+      // intentially do not return Promise to let re-draw sub-pads in parallel
+      this.redrawPad(reason);
    }
 
    /** @summary Checks if pad should be redrawn by resize
