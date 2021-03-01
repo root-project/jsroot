@@ -118,10 +118,15 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
       let can3d = this.access3dKind(null);
       if (can3d < 0) {
          // remove first child from main element - if it is canvas
-         let main = this.selectDom().node();
-         if (main && main.firstChild && main.firstChild.$jsroot) {
-            delete main.firstChild.painter;
-            main.removeChild(main.firstChild);
+         let main = this.selectDom().node(),
+             chld = main ? main.firstChild : null;
+
+         if (chld && !chld.$jsroot)
+            chld = chld.nextSibling;
+
+         if (chld && chld.$jsroot) {
+            delete chld.painter;
+            main.removeChild(chld);
          }
          return can3d;
       }
