@@ -5491,7 +5491,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return cmd;
    }
 
-   TH2Painter.prototype.DrawPolyBinsColor = function() {
+   /** @summary draw TH2Poly as color
+     * @private */
+   TH2Painter.prototype.drawPolyBinsColor = function() {
       let histo = this.getObject(),
           pmain = this.getFramePainter(),
           h = pmain.getFrameHeight(),
@@ -6095,7 +6097,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       let handle = null;
 
       if (this.isTH2Poly()) {
-         handle = this.DrawPolyBinsColor();
+         handle = this.drawPolyBinsColor();
       } else {
          if (this.options.Scat)
             handle = this.drawBinsScatter();
