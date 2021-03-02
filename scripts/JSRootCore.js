@@ -191,4 +191,6 @@ if ((typeof document === "undefined") || (typeof window === "undefined")) {
    // until real JSROOT is loaded, provide minimal functions
    globalThis.JSROOT = tmpJSROOT;
 
+   console.warn("Do not use JSRootCore.js, please replace with JSRoot.core.js")
+
 })();
