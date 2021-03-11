@@ -839,8 +839,8 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
 
          if (can_draw && can_expand && !drawopt) {
             // if default action specified as expand, disable drawing
-            if (dflt_expand || (handle && (handle.dflt === 'expand'))) can_draw = false; else
-            if (this.isItemDisplayed(itemname)) can_draw = false; // if already displayed, try to expand
+            // if already displayed, try to expand
+            if (dflt_expand || (handle && (handle.dflt === 'expand')) || this.isItemDisplayed(itemname)) can_draw = false;
          }
 
          if (can_draw)
