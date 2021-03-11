@@ -105,7 +105,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'jquery-ui'], (d3, $, jsrp) => {
          let handler = func;
          if (typeof arg == 'function') {
             func = arg;
-            handler = res => func(arg=="1");
+            handler = res => func(res=="1");
             arg = flag ? "0" : "1";
          }
          this.add((flag ? "chk:" : "unk:") + name, arg, handler);
