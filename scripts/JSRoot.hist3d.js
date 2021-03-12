@@ -71,7 +71,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          fp.camera.position.set(-1.6*max3d, -3.5*max3d, 1.4*fp.size_z3d);
 
       if (pad && (first_time || !fp.zoomChangedInteractive()))
-         if (!isNaN(pad.fTheta) && !isNaN(pad.fPhi) && ((pad.fTheta !== fp.camera_Theta) || (pad.fPhi !== fp.camera_Phi))) {
+         if (!Number.isNaN(pad.fTheta) && !Number.isNaN(pad.fPhi) && ((pad.fTheta !== fp.camera_Theta) || (pad.fPhi !== fp.camera_Phi))) {
             max3d = 3*Math.max(fp.size_xy3d, fp.size_z3d);
             let phi = (-pad.fPhi-90)/180*Math.PI, theta = pad.fTheta/180*Math.PI;
 
@@ -1237,7 +1237,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          mesh.handle = handle;
 
          mesh.tooltip = function(intersect) {
-            if (isNaN(intersect.faceIndex)) {
+            if (Number.isNaN(intersect.faceIndex)) {
                console.error('faceIndex not provided, check three.js version', THREE.REVISION, 'expected r102');
                return null;
             }
@@ -2042,7 +2042,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
        line.tip_color = (this.getObject().fLineColor===3) ? 0xFF0000 : 0x00FF00;
 
        line.tooltip = function(intersect) {
-          if (isNaN(intersect.index)) {
+          if (Number.isNaN(intersect.index)) {
              console.error('segment index not provided, check three.js version', THREE.REVISION, 'expected r102');
              return null;
           }
@@ -2517,7 +2517,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       mesh.tip_color = (histo.fMarkerColor===3) ? 0xFF0000 : 0x00FF00;
 
       mesh.tooltip = function(intersect) {
-         if (isNaN(intersect.index)) {
+         if (Number.isNaN(intersect.index)) {
             console.error('intersect.index not provided, check three.js version', THREE.REVISION, 'expected r102');
             return null;
          }
@@ -2815,7 +2815,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          combined_bins.use_scale = use_scale;
 
          combined_bins.tooltip = function(intersect) {
-            if (isNaN(intersect.faceIndex)) {
+            if (Number.isNaN(intersect.faceIndex)) {
                console.error('intersect.faceIndex not provided, check three.js version', THREE.REVISION, 'expected r102');
                return null;
             }
@@ -3127,7 +3127,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       function sqr(v) { return v*v; }
 
       function graph2DTooltip(intersect) {
-         if (isNaN(intersect.index)) {
+         if (Number.isNaN(intersect.index)) {
             console.error('intersect.index not provided, check three.js version', THREE.REVISION, 'expected r121');
             return null;
          }
@@ -3408,7 +3408,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       fp.toplevel.add(mesh);
 
       mesh.tooltip = function(intersect) {
-         if (isNaN(intersect.index)) {
+         if (Number.isNaN(intersect.index)) {
             console.error('intersect.index not provided, check three.js version', THREE.REVISION, 'expected r102');
             return null;
          }

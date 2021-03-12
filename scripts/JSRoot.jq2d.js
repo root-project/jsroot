@@ -1906,10 +1906,10 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
             if (!args.drawopt) delete args.drawopt;
 
             args.numentries = parseInt(frame.find('.treedraw_number').val());
-            if (isNaN(args.numentries)) delete args.numentries;
+            if (Number.isNaN(args.numentries)) delete args.numentries;
 
             args.firstentry = parseInt(frame.find('.treedraw_first').val());
-            if (isNaN(args.firstentry)) delete args.firstentry;
+            if (Number.isNaN(args.firstentry)) delete args.firstentry;
          }
 
          if (args.drawopt) JSROOT.cleanup(this.drawid);
