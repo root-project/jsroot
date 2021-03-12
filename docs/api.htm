@@ -118,7 +118,7 @@
       <div id="srcviewer"></div>
 
       <script>
-         var jsroot_path = "./", filepath = "../files/";
+         let jsroot_path = "./", filepath = "../files/";
 
          document.getElementById( 'version' ).title = JSROOT.version + ", " + JSROOT.source_dir;
 
@@ -138,7 +138,7 @@
              return "master/";
           }
 
-         var examples = {
+         let examples = {
             'URL syntax': [
               { name: "Open file", url: "?file=" + filepath + "hsimple.root", title: "Open ROOT file with the JSROOT" },
               { name: "Display item", url: "?file=" + filepath + "hsimple.root&item=hpxpy;1&opt=colz", title: "Open ROOT file and display item" },
@@ -235,11 +235,11 @@
             ]
          };
 
-         var content = document.getElementById('content');
+         let content = document.getElementById('content');
 
          function ProcessClick(durl) {
-            var viewer = document.getElementById( 'viewer' );
-            var srcviewer = document.getElementById( 'srcviewer' );
+            let viewer = document.getElementById( 'viewer' );
+            let srcviewer = document.getElementById( 'srcviewer' );
             viewer.style.display = '';
             srcviewer.style.display = 'none';
 
@@ -259,20 +259,20 @@
          }
 
          function ProcessSourceClick(entry) {
-            var srcload = entry.srcload || entry.src;
+            let srcload = entry.srcload || entry.src;
             if (srcload === "github")
                srcload = "https://raw.githubusercontent.com/root-project/jsroot/" + GetGithubBrunch() + entry.src;
 
             JSROOT.httpRequest(srcload, "text").then(function(res) {
-               var viewer = document.getElementById( 'viewer' );
-               var srcviewer = document.getElementById( 'srcviewer' );
+               let viewer = document.getElementById( 'viewer' );
+               let srcviewer = document.getElementById( 'srcviewer' );
                viewer.style.display = 'none';
                srcviewer.style.display = 'block';
                srcviewer.innerHTML = "";
 
-               var lines = res.split("\n");
-               for (var k=0;k<lines.length;++k) {
-                  var pre = document.createElement('pre');
+               let lines = res.split("\n");
+               for (let k=0;k<lines.length;++k) {
+                  let pre = document.createElement('pre');
                   pre.textContent = lines[k] || " ";
                   srcviewer.appendChild(pre);
                }
@@ -296,13 +296,13 @@
                    name2.toLowerCase().replace(/ (2)/g,"_2").replace(/ (1)/g,"_1").replace(/[\(\))]/g,"").replace(/[. ]/,"_");
          }
 
-         for (var key in examples) {
+         for (let key in examples) {
 
-            var opts = examples[key];
+            let opts = examples[key];
 
-            var div = document.createElement( 'h2' );
+            let div = document.createElement( 'h2' );
             if ('link' in opts[0]) {
-               var ll = document.createElement( 'a' );
+               let ll = document.createElement( 'a' );
                ll.textContent = key;
                ll.href = opts[0].link;
                ll.style.color = 'green';
@@ -313,17 +313,17 @@
 
             content.appendChild( div );
 
-            for (var n=0; n<opts.length;++n) {
-               var entry = opts[n];
+            for (let n=0; n<opts.length;++n) {
+               let entry = opts[n];
 
                if (!('name' in entry)) continue;
 
-               var shortname = MakeShortName(key, entry.name);
+               let shortname = MakeShortName(key, entry.name);
 
-               var url = entry.url;
+               let url = entry.url;
 
                if (url) {
-                  var aaa = document.createElement( 'a' );
+                  let aaa = document.createElement( 'a' );
                   aaa.textContent = entry.name;
                   aaa.href = jsroot_path + url;
                   if ('title' in entry) aaa.title = entry.title;
@@ -333,7 +333,7 @@
 
                if (entry.src) {
 
-                  var srcurl = "", github = "https://github.com/root-project/jsroot/blob/" + GetGithubBrunch();
+                  let srcurl = "", github = "https://github.com/root-project/jsroot/blob/" + GetGithubBrunch();
                   if (entry.src===true) {
                      srcurl = github + url;
                      entry.src = JSROOT.source_dir + url;
@@ -342,7 +342,7 @@
                   else
                      srcurl = github + entry.src;
 
-                  var saaa = document.createElement( 'a' );
+                  let saaa = document.createElement( 'a' );
 
                   if (url) {
                      saaa.textContent = " (src)";
