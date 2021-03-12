@@ -118,18 +118,18 @@ JSROOT.define(['rawinflate'], () => {
       /** @summary Get bytes size of the type */
       GetTypeSize: function(typname) {
          switch (typname) {
-            case jsrio.kBool: return 1;
-            case jsrio.kChar: return 1;
-            case jsrio.kShort: return 2;
-            case jsrio.kInt: return 4;
-            case jsrio.kLong: return 8;
-            case jsrio.kFloat: return 4;
-            case jsrio.kDouble: return 8;
+            case jsrio.kBool:
+            case jsrio.kChar:
             case jsrio.kUChar: return 1;
+            case jsrio.kShort:
             case jsrio.kUShort: return 2;
+            case jsrio.kInt:
+            case jsrio.kFloat:
             case jsrio.kUInt: return 4;
-            case jsrio.kULong: return 8;
-            case jsrio.kLong64: return 8;
+            case jsrio.kLong:
+            case jsrio.kDouble:
+            case jsrio.kULong:
+            case jsrio.kLong64:
             case jsrio.kULong64: return 8;
          }
          return -1;
