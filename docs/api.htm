@@ -320,10 +320,10 @@
 
                let shortname = MakeShortName(key, entry.name);
 
-               let url = entry.url;
+               let url = entry.url, aaa = null;
 
                if (url) {
-                  let aaa = document.createElement( 'a' );
+                  aaa = document.createElement( 'a' );
                   aaa.textContent = entry.name;
                   aaa.href = jsroot_path + url;
                   if ('title' in entry) aaa.title = entry.title;
@@ -364,10 +364,10 @@
 
                content.appendChild(document.createElement('br'));
 
-              if ((window.location.hash == "#" + shortname) || (entry.syn && window.location.hash == "#" + entry.syn)) {
-                 aaa.focus();
-                 ProcessClick(url);
-              }
+               if ((window.location.hash == "#" + shortname) || (entry.syn && window.location.hash == "#" + entry.syn)) {
+                  if (aaa) aaa.focus();
+                  ProcessClick(url);
+               }
             }
          }
 
