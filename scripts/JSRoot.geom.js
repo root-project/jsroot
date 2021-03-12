@@ -2171,7 +2171,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          let box = this.getGeomBoundingBox(this._toplevel);
 
          // if detect of coordinates fails - ignore
-         if (Number.isNaN(box.min.x)) return 1000;
+         if (isNaN(box.min.x)) return 1000;
 
          let sizex = box.max.x - box.min.x,
              sizey = box.max.y - box.min.y,
@@ -2252,7 +2252,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       let box = this.getGeomBoundingBox(this._toplevel);
 
       // if detect of coordinates fails - ignore
-      if (Number.isNaN(box.min.x)) return;
+      if (isNaN(box.min.x)) return;
 
       let sizex = box.max.x - box.min.x,
           sizey = box.max.y - box.min.y,
@@ -2354,7 +2354,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       this.ctrl.rotatey = rotatey || 0;
       this.ctrl.rotatez = rotatez || 0;
       let preserve_zoom = false;
-      if (zoom && !Number.isNaN(zoom)) {
+      if (zoom && !isNaN(zoom)) {
          this.ctrl.zoom = zoom;
       } else {
          preserve_zoom = true;
@@ -2362,7 +2362,6 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       this.adjustCameraPosition(false, preserve_zoom);
    }
 
-   /** @summary Focus on specified item */
    TGeoPainter.prototype.focusOnItem = function(itemname) {
 
       if (!itemname || !this._clones) return;

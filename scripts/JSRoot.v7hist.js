@@ -608,7 +608,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       let res = prompt("Enter values range for axis " + arg + " like [0,100] or empty string to unzoom", curr);
       res = res ? JSON.parse(res) : [];
 
-      if (!res || (typeof res != "object") || (res.length!=2) || Number.isNaN(res[0]) || Number.isNaN(res[1]))
+      if (!res || (typeof res != "object") || (res.length!=2) || isNaN(res[0]) || isNaN(res[1]))
          pmain.unzoom(arg);
       else
          pmain.zoom(arg, res[0], res[1]);
@@ -880,7 +880,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       for (i = res.i1; i < res.i2; i += res.stepi) {
          for (j = res.j1; j < res.j2; j += res.stepj) {
             binz = histo.getBinContent(i + 1, j + 1);
-            if (Number.isNaN(binz)) continue;
+            if (isNaN(binz)) continue;
             res.sumz += binz;
             if (args.pixel_density) {
                binarea = (res.grx[i+res.stepi]-res.grx[i])*(res.gry[j]-res.gry[j+res.stepj]);
@@ -1139,7 +1139,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
           bars = "", barsl = "", barsr = "";
 
       gry2 = pmain.swap_xy ? 0 : height;
-      if ((this.options.BaseLine !== false) && !Number.isNaN(this.options.BaseLine))
+      if ((this.options.BaseLine !== false) && !isNaN(this.options.BaseLine))
          if (this.options.BaseLine >= pmain.scale_ymin)
             gry2 = Math.round(pmain.gry(this.options.BaseLine));
 

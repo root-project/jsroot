@@ -1033,7 +1033,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             let fmt = prompt("Enter OptStat", pave.fOptStat);
             if (fmt) {
                fmt = parseInt(fmt);
-               if (!Number.isNaN(fmt) && (fmt >= 0)) {
+               if (!isNaN(fmt) && (fmt>=0)) {
                   pave.fOptStat = parseInt(fmt);
                   this.interactiveRedraw(true, "exec:SetOptStat("+fmt+")");
                }
@@ -1072,7 +1072,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             let fmt = prompt("Enter OptStat", pave.fOptFit);
             if (fmt) {
                fmt = parseInt(fmt);
-               if (!Number.isNaN(fmt) && (fmt >= 0)) {
+               if (!isNaN(fmt) && (fmt>=0)) {
                   pave.fOptFit = fmt;
                   this.interactiveRedraw(true, "exec:SetOptFit("+fmt+")");
                }
@@ -1184,8 +1184,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (!main || (typeof main.fillStatistic !== 'function')) return false;
 
       let dostat = parseInt(pave.fOptStat), dofit = parseInt(pave.fOptFit);
-      if (Number.isNaN(dostat)) dostat = JSROOT.gStyle.fOptStat;
-      if (Number.isNaN(dofit)) dofit = JSROOT.gStyle.fOptFit;
+      if (isNaN(dostat)) dostat = JSROOT.gStyle.fOptStat;
+      if (isNaN(dofit)) dofit = JSROOT.gStyle.fOptFit;
 
       // we take statistic from main painter
       if (!main.fillStatistic(this, dostat, dofit)) return false;
@@ -1309,8 +1309,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                   let midx = st.fTitleX, y2 = st.fTitleY, w = st.fTitleW, h = st.fTitleH;
                   if (!h && fp) h = (y2-fp.fY2NDC)*0.7;
                   if (!w && fp) w = fp.fX2NDC - fp.fX1NDC;
-                  if (!h || Number.isNaN(h) || (h<0)) h = 0.06;
-                  if (!w || Number.isNaN(w) || (w<0)) w = 0.44;
+                  if (!h || isNaN(h) || (h<0)) h = 0.06;
+                  if (!w || isNaN(w) || (w<0)) w = 0.44;
                   pave.fX1NDC = midx - w/2;
                   pave.fY1NDC = y2 - h;
                   pave.fX2NDC = midx + w/2;
@@ -1607,7 +1607,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (d.check('SCAT=', true)) {
          this.Scat = true;
          this.ScatCoef = parseFloat(d.part);
-         if (Number.isNaN(this.ScatCoef) || (this.ScatCoef<=0)) this.ScatCoef = 1.;
+         if (isNaN(this.ScatCoef) || (this.ScatCoef<=0)) this.ScatCoef = 1.;
       }
 
       if (d.check('SCAT')) this.Scat = true;
@@ -1685,7 +1685,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          if (hdim == 1) {
             this.Zero = false; // do not draw empty bins with errors
             this.Hist = false;
-            if (!Number.isNaN(parseInt(d.part[0]))) this.ErrorKind = parseInt(d.part[0]);
+            if (!isNaN(parseInt(d.part[0]))) this.ErrorKind = parseInt(d.part[0]);
             if ((this.ErrorKind === 3) || (this.ErrorKind === 4)) this.need_fillcol = true;
             if (this.ErrorKind === 0) this.Zero = true; // enable drawing of empty bins
             if (d.part.indexOf('X0')>=0) this.errorX = 0;
@@ -2728,7 +2728,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (!res) return;
       res = JSON.parse(res);
 
-      if (!res || (res.length!=2) || Number.isNaN(res[0]) || Number.isNaN(res[1])) return;
+      if (!res || (res.length!=2) || isNaN(res[0]) || isNaN(res[1])) return;
       taxis.fFirst = parseInt(res[0]);
       taxis.fLast = parseInt(res[1]);
 
@@ -3620,7 +3620,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       if (side>4) side = 4;
       gry2 = pmain.swap_xy ? 0 : height;
-      if ((this.options.BaseLine !== false) && !Number.isNaN(this.options.BaseLine))
+      if ((this.options.BaseLine !== false) && !isNaN(this.options.BaseLine))
          if (this.options.BaseLine >= pmain.scale_ymin)
             gry2 = Math.round(pmain.gry(this.options.BaseLine));
 

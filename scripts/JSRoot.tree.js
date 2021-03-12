@@ -168,7 +168,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
             if (obj._typename !== undefined) {
                if (JSROOT.isRootCollection(obj)) { obj = obj.arr; typ = "array"; }
                else typ = "any";
-            } else if (!Number.isNaN(obj.length) && (checkArrayPrototype(obj) > 0)) {
+            } else if (!isNaN(obj.length) && (checkArrayPrototype(obj) > 0)) {
                typ = "array";
             } else {
                typ = "any";
@@ -200,7 +200,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
                   this.cnt = cnt;
                   return true;
                default:
-                  if (!Number.isNaN(this.select[cnt])) {
+                  if (!isNaN(this.select[cnt])) {
                      this.indx[cnt] = this.select[cnt];
                      if (this.indx[cnt] < 0) this.indx[cnt] = obj.length - 1;
                   } else {
@@ -388,7 +388,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
                case "$size$": arriter.push("$size$"); break;
                case "$first$": arriter.push(0); break;
                default:
-                  if (!Number.isNaN(parseInt(sub))) {
+                  if (!isNaN(parseInt(sub))) {
                      arriter.push(parseInt(sub));
                   } else {
                      // try to compile code as draw variable
@@ -575,7 +575,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
          if (separ > 0) { parvalue = parname.substr(separ + 1); parname = parname.substr(0, separ); }
 
          let intvalue = parseInt(parvalue);
-         if (!parvalue || Number.isNaN(intvalue)) intvalue = undefined;
+         if (!parvalue || isNaN(intvalue)) intvalue = undefined;
 
          switch (parname) {
             case "num":
@@ -614,7 +614,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
                break;
             case "hbins":
                this.hist_nbins = parseInt(parvalue);
-               if (Number.isNaN(this.hist_nbins) || (this.hist_nbins <= 3)) delete this.hist_nbins;
+               if (isNaN(this.hist_nbins) || (this.hist_nbins <= 3)) delete this.hist_nbins;
                break;
             case "drawopt":
                args.drawopt = parvalue;
@@ -645,7 +645,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
             let isok = true;
             for (let n = 0; n < harg.length; ++n) {
                harg[n] = (n % 3 === 0) ? parseInt(harg[n]) : parseFloat(harg[n]);
-               if (Number.isNaN(harg[n])) isok = false;
+               if (isNaN(harg[n])) isok = false;
             }
             if (isok) this.hist_args = harg;
          }
@@ -790,8 +790,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
    TDrawSelector.prototype.ShowProgress = function(value) {
       if (typeof document == 'undefined' || !JSROOT.Painter) return;
 
-      if ((value === undefined) || Number.isNaN(value))
-         return JSROOT.Painter.showProgress();
+      if ((value === undefined) || isNaN(value)) return JSROOT.Painter.showProgress();
 
       if (this.last_progress !== value) {
          let diff = value - this.last_progress;
@@ -2067,12 +2066,12 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
 
       let resolveFunc, rejectFunc; // Promise methods
 
-      if (!Number.isNaN(args.firstentry) && (args.firstentry > handle.firstentry) && (args.firstentry < handle.lastentry))
+      if (!isNaN(args.firstentry) && (args.firstentry > handle.firstentry) && (args.firstentry < handle.lastentry))
          handle.process_min = args.firstentry;
 
       handle.current_entry = handle.staged_now = handle.process_min;
 
-      if (!Number.isNaN(args.numentries) && (args.numentries > 0)) {
+      if (!isNaN(args.numentries) && (args.numentries > 0)) {
          let max = handle.process_min + args.numentries;
          if (max < handle.process_max) handle.process_max = max;
       }
@@ -2546,7 +2545,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
      * @desc All sub-branches checked as well
      * @returns {Object} branch */
    TTreeMethods.GetBranch = function(id) {
-      if ((id === undefined) || Number.isNaN(id)) return;
+      if ((id === undefined) || isNaN(id)) return;
       let res, seq = 0;
       function Scan(obj) {
          if (obj && obj.fBranches)

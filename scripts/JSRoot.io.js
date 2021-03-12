@@ -1028,7 +1028,7 @@ JSROOT.define(['rawinflate'], () => {
                if (parts.length === 3) {
                   segm_start = parseInt(parts[0]);
                   segm_last = parseInt(parts[1]);
-                  if (Number.isNaN(segm_start) || Number.isNaN(segm_last) || (segm_start > segm_last)) {
+                  if (isNaN(segm_start) || isNaN(segm_last) || (segm_start > segm_last)) {
                      segm_start = 0; segm_last = -1;
                   }
                }
@@ -1084,7 +1084,7 @@ JSROOT.define(['rawinflate'], () => {
                      if (parts.length === 3) {
                         segm_start = parseInt(parts[0]);
                         segm_last = parseInt(parts[1]);
-                        if (Number.isNaN(segm_start) || Number.isNaN(segm_last) || (segm_start > segm_last)) {
+                        if (isNaN(segm_start) || isNaN(segm_last) || (segm_start > segm_last)) {
                            segm_start = 0; segm_last = -1;
                         }
                      } else {
@@ -2712,7 +2712,7 @@ JSROOT.define(['rawinflate'], () => {
                   throw new Error(`Problem to decode range setting from streamer element title ${element.fTitle}`);
 
                if (arr.length === 3) nbits = parseInt(arr[2]);
-               if (Number.isNaN(nbits) || (nbits < 2) || (nbits > 32)) nbits = 32;
+               if (isNaN(nbits) || (nbits < 2) || (nbits > 32)) nbits = 32;
 
                function parse_range(val) {
                   if (!val) return 0;
