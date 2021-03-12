@@ -1727,7 +1727,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             return Promise.resolve();
          }
 
-         if (hitem._obj) promise = DoExpandItem(hitem, hitem._obj, itemname);
+         if (hitem._obj) promise = DoExpandItem(hitem, hitem._obj);
       }
 
       return promise.then(res => {
