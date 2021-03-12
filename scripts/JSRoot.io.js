@@ -493,12 +493,6 @@ JSROOT.define(['rawinflate'], () => {
             for (; i < n; ++i, o += 4)
                array[i] = view.getInt32(o);
             break;
-         case jsrio.kBits:
-         case jsrio.kUInt:
-            array = new Uint32Array(n);
-            for (; i < n; ++i, o += 4)
-               array[i] = view.getUint32(o);
-            break;
          case jsrio.kShort:
             array = new Int16Array(n);
             for (; i < n; ++i, o += 2)
@@ -529,6 +523,8 @@ JSROOT.define(['rawinflate'], () => {
             throw new Error('kDouble32 should not be used in readFastArray');
          case jsrio.kFloat16:
             throw new Error('kFloat16 should not be used in readFastArray');
+         // case jsrio.kBits:
+         // case jsrio.kUInt:
          default:
             array = new Uint32Array(n);
             for (; i < n; ++i, o += 4)
