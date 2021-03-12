@@ -1717,7 +1717,7 @@
             case "S": histo.fArray = new Int16Array(histo.fNcells); break;
             case "I": histo.fArray = new Int32Array(histo.fNcells); break;
             case "F": histo.fArray = new Float32Array(histo.fNcells); break;
-            case "L": histo.fArray = new Float64Array(histo.fNcells); break;
+            case "L":
             case "D": histo.fArray = new Float64Array(histo.fNcells); break;
             default: histo.fArray = new Array(histo.fNcells); break;
          }
