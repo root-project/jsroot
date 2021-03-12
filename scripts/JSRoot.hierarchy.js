@@ -428,7 +428,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
                   switch(fld._typename) {
                      case 'TColor': item._value = jsrp.getRGBfromTColor(fld); break;
-                     case 'TText': item._value = fld.fTitle; break;
+                     case 'TText':
                      case 'TLatex': item._value = fld.fTitle; break;
                      case 'TObjString': item._value = fld.fString; break;
                      default:
