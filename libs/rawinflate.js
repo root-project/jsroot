@@ -43,33 +43,33 @@ let zip_slide = null,
     zip_inflate_pos;
 
 /* constant tables (inflate) */
-const zip_MASK_BITS = new Array(
+const zip_MASK_BITS = [
    0x0000,
    0x0001, 0x0003, 0x0007, 0x000f, 0x001f, 0x003f, 0x007f, 0x00ff,
-   0x01ff, 0x03ff, 0x07ff, 0x0fff, 0x1fff, 0x3fff, 0x7fff, 0xffff),
+   0x01ff, 0x03ff, 0x07ff, 0x0fff, 0x1fff, 0x3fff, 0x7fff, 0xffff],
 
 // Tables for deflate from PKZIP's appnote.txt.
-   zip_cplens = new Array( // Copy lengths for literal codes 257..285
+   zip_cplens = [ // Copy lengths for literal codes 257..285
    3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 17, 19, 23, 27, 31,
-   35, 43, 51, 59, 67, 83, 99, 115, 131, 163, 195, 227, 258, 0, 0),
+   35, 43, 51, 59, 67, 83, 99, 115, 131, 163, 195, 227, 258, 0, 0],
 
 /* note: see note #13 above about the 258 in this list. */
-   zip_cplext = new Array( // Extra bits for literal codes 257..285
+   zip_cplext = [ // Extra bits for literal codes 257..285
    0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2,
-   3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 0, 99, 99), // 99==invalid
+   3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 0, 99, 99], // 99==invalid
 
-   zip_cpdist = new Array( // Copy offsets for distance codes 0..29
+   zip_cpdist = [ // Copy offsets for distance codes 0..29
    1, 2, 3, 4, 5, 7, 9, 13, 17, 25, 33, 49, 65, 97, 129, 193,
    257, 385, 513, 769, 1025, 1537, 2049, 3073, 4097, 6145,
-   8193, 12289, 16385, 24577),
+   8193, 12289, 16385, 24577],
 
-   zip_cpdext = new Array( // Extra bits for distance codes
+   zip_cpdext = [ // Extra bits for distance codes
    0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6,
    7, 7, 8, 8, 9, 9, 10, 10, 11, 11,
-   12, 12, 13, 13),
+   12, 12, 13, 13],
 
-   zip_border = new Array(  // Order of the bit length code lengths
-   16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15);
+   zip_border = [  // Order of the bit length code lengths
+   16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15];
 /* objects (inflate) */
 
 function zip_HuftList() {
