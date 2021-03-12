@@ -1116,8 +1116,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
             +'<div style="display:flex;flex-direction:row;padding-top:5px">'
             +'<select class="gui_selectFileName" style="flex:1;padding:2px;" title="select file name"'
             +'<option value="" selected="selected"></option>';
-         for (let i in arrFiles)
-            guiCode += '<option value = "' + path + arrFiles[i] + '">' + arrFiles[i] + '</option>';
+         arrFiles.forEach(fname => { guiCode += '<option value = "' + path + fname + '">' + fname + '</option>'; });
          guiCode += '</select>'
             +'<input type="file" class="gui_localFile" accept=".root" style="display:none"/><output id="list" style="display:none"></output>'
             +'<input type="button" value="..." class="gui_fileBtn" style="min-width:3em;padding:3px;margin-left:5px;margin-right:5px;" title="select local file for reading"/><br/>'
