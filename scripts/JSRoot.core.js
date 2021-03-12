@@ -105,7 +105,7 @@
 
    /** @summary JSROOT version date
      * @desc Release date in format day/month/year like "14/01/2021"*/
-   JSROOT.version_date = "11/03/2021";
+   JSROOT.version_date = "12/03/2021";
 
    /** @summary JSROOT version id and date
      * @desc Produced by concatenation of {@link JSROOT.version_id} and {@link JSROOT.version_date}
@@ -161,16 +161,16 @@
    }
 
    _.sources = {
-         'd3'                   : { src: 'd3', libs: true, extract: "d3", node: "d3" },
-         'jquery'               : { src: 'jquery', libs: true,  extract: "$" },
+         'd3'                   : { src: 'd3', libs: true, extract: "d3", node: "d3", use_asis: true },
+         'jquery'               : { src: 'jquery', libs: true,  extract: "$", use_asis: true },
          'jquery-ui'            : { src: 'jquery-ui', libs: true, extract: "$", dep: 'jquery' },
          'jqueryui-mousewheel'  : { src: 'jquery.mousewheel', onlymin: true, extract: "$", dep: 'jquery-ui' },
          'jqueryui-touch-punch' : { src: 'touch-punch', onlymin: true, extract: "$", dep: 'jquery-ui' },
          'rawinflate'           : { src: 'rawinflate', libs: true },
          'zstd-codec'           : { src: '../../zstd/zstd-codec.min', extract: "ZstdCodec", node: "zstd-codec" },
-         'mathjax'              : { src: 'https://cdn.jsdelivr.net/npm/mathjax@3.1.2/es5/tex-svg', extract: "MathJax", node: "mathjax" },
-         'dat.gui'              : { src: 'dat.gui', libs: true, extract: "dat" },
-         'three'                : { src: 'three', libs: true, extract: "THREE", node: "three" },
+         'mathjax'              : { src: 'https://cdn.jsdelivr.net/npm/mathjax@3.1.2/es5/tex-svg', extract: "MathJax", node: "mathjax", use_asis: true },
+         'dat.gui'              : { src: 'dat.gui', libs: true, extract: "dat", use_asis: true },
+         'three'                : { src: 'three', libs: true, extract: "THREE", node: "three", use_asis: true },
          'threejs_jsroot'       : { src: 'three.extra', libs: true }
     };
 
@@ -628,6 +628,11 @@
       }
 
       function load_module(req, m) {
+         if (m.extract && m.use_asis && globalThis[m.extract])
+            return finish_loading(m, globalThis[m.extract])
+
+         console.log('loading module', m.use_asis, m.src, m.extract, typeof d3, typeof globalThis.d3);
+
          let element = document.createElement("script");
          element.setAttribute('type', "text/javascript");
          element.setAttribute('src', m.src);
@@ -678,6 +683,7 @@
                   m.jsroot = true;
                   m.src = _.get_module_src(jsmodule, true);
                   m.extract = jsmodule.extract;
+                  m.use_asis = jsmodule.use_asis;
                   m.dep = jsmodule.dep; // copy dependence
               } else {
                   m.src = need[k];
