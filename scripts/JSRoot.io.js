@@ -1944,7 +1944,7 @@ JSROOT.define(['rawinflate'], () => {
                if (buf.ntou1() === 1)
                   obj[this.name] = buf.readFastArray(obj[this.cntname], this.type - jsrio.kOffsetP);
                else
-                  obj[this.name] = new Array();
+                  obj[this.name] = [];
             };
             break;
          case jsrio.kOffsetP + jsrio.kChar:
@@ -2575,7 +2575,7 @@ JSROOT.define(['rawinflate'], () => {
       cs['TMap'] = function(buf, map) {
          if (!map._typename) map._typename = "TMap";
          map.name = "";
-         map.arr = new Array();
+         map.arr = [];
          const ver = buf.last_read_version;
          if (ver > 2) buf.classStreamer(map, "TObject");
          if (ver > 1) map.name = buf.readTString();
