@@ -292,8 +292,8 @@
          }
 
          function MakeShortName(name1, name2) {
-            return name1.toLowerCase().replace(" ","_").replace(".","_") + "_" +
-                   name2.toLowerCase().replace(" (2)","_2").replace(" (1)","_1").replace("(","").replace(")","").replace(".","_").replace(" ","_").replace(" ","_");
+            return name1.toLowerCase().replace(/[ .]/g,"_") + "_" +
+                   name2.toLowerCase().replace(/ (2)/g,"_2").replace(/ (1)/g,"_1").replace(/[\(\))]/g,"").replace(/[. ]/,"_");
          }
 
          for (var key in examples) {
