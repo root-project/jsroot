@@ -198,10 +198,10 @@ JSROOT.define(['d3', 'jquery', 'painter', 'jquery-ui'], (d3, $, jsrp) => {
             let entry = value.toFixed(4);
             if (step >= 0.1) entry = value.toFixed(2);
             if (step >= 1) entry = value.toFixed(0);
-            let val = prompt("Enter value of " + name, entry);
-            if (!val) return;
-            val = parseFloat(val);
-            if (!isNaN(val)) set_func((step >= 1) ? Math.round(val) : val);
+            let sz = prompt("Enter value of " + name, entry);
+            if (!sz) return;
+            sz = parseFloat(sz);
+            if (!isNaN(sz)) set_func((step >= 1) ? Math.round(sz) : sz);
          });
          for (let val = min; val <= max; val += step) {
             let entry = val.toFixed(2);
