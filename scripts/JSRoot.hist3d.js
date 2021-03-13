@@ -1603,7 +1603,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       let loop, nfaces = [], pos = [], indx = [],    // buffers for faces
           nsegments = 0, lpos = null, lindx = 0,     // buffer for lines
           ngridsegments = 0, grid = null, gindx = 0, // buffer for grid lines segments
-          normindx = null;                           // buffer to remember place of vertex for each bin
+          normindx = [];                             // buffer to remember place of vertex for each bin
 
       function CheckSide(z,level1, level2) {
          if (z<level1) return -1;
