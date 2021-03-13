@@ -1561,23 +1561,24 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
 
          top.append(entry);
 
-         function PopupWindow(div) {
-            if (div === 'first') {
-               div = null;
+         function PopupWindow(arg) {
+            let sel;
+            if (arg === 'first') {
                $('#' + topid + ' .flex_frame').each(function() {
-                  if (!$(this).is(":hidden") && ($(this).prop('state') != "minimal")) div = $(this);
+                  if (!$(this).is(":hidden") && ($(this).prop('state') != "minimal")) sel = $(this);
                });
-               if (!div) return;
+            } else if (typeof arg == 'object') {
+               sel = arg;
             }
+            if (!sel) return;
 
-            div.appendTo(div.parent());
+            sel.appendTo(sel.parent());
 
-            if (div.prop('state') == "minimal") return;
+            if (sel.prop('state') == "minimal") return;
 
-            div = div.find(".flex_draw").get(0);
-            jsrp.selectActivePad({ pp: jsrp.getElementCanvPainter(div), active: true });
-
-            JSROOT.resize(div);
+            let frame = sel.find(".flex_draw").get(0);
+            jsrp.selectActivePad({ pp: jsrp.getElementCanvPainter(frame), active: true });
+            JSROOT.resize(frame);
          }
 
          function ChangeWindowState(main, state) {
