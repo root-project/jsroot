@@ -1647,16 +1647,14 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
              })
              .draggable({
                containment: "parent",
-               start: function(event, ui) {
+               start: function(event /*, ui*/) {
                   // bring element to front when start dragging
                   PopupWindow($(this));
-
-                  let ddd = $(this).find(".flex_draw");
-
                   // block dragging when mouse below header
-                  let elementMouseIsOver = document.elementFromPoint(event.clientX, event.clientY);
-                  let isparent = false;
-                  $(elementMouseIsOver).parents().map(function() { if ($(this).get(0) === ddd.get(0)) isparent = true; });
+                  let draw_area = $(this).find(".flex_draw"),
+                      elementMouseIsOver = document.elementFromPoint(event.clientX, event.clientY),
+                      isparent = false;
+                  $(elementMouseIsOver).parents().each(function() { if ($(this).get(0) === draw_area.get(0)) isparent = true; });
                   if (isparent) return false;
                }
             })
