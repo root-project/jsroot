@@ -2714,7 +2714,7 @@ JSROOT.define(['rawinflate'], () => {
                if (arr.length === 3) nbits = parseInt(arr[2]);
                if (isNaN(nbits) || (nbits < 2) || (nbits > 32)) nbits = 32;
 
-               function parse_range(val) {
+               let parse_range = val => {
                   if (!val) return 0;
                   if (val.indexOf("pi") < 0) return parseFloat(val);
                   val = val.trim();
@@ -2733,9 +2733,13 @@ JSROOT.define(['rawinflate'], () => {
                element.fXmin = parse_range(arr[0]);
                element.fXmax = parse_range(arr[1]);
 
-               const bigint = (nbits < 32) ? (1 << nbits) : 0xffffffff;
-               if (element.fXmin < element.fXmax) element.fFactor = bigint / (element.fXmax - element.fXmin);
-               else if (nbits < 15) element.fXmin = nbits;
+               let bigint = 0xffffffff;
+               if ((nbits >= 0) && (nbits < 32))
+                  bigint = (1 << nbits);
+               if (element.fXmin < element.fXmax)
+                  element.fFactor = bigint / (element.fXmax - element.fXmin);
+               else if (nbits < 15)
+                  element.fXmin = nbits;
             }
          }
       }
