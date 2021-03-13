@@ -2806,7 +2806,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       /** @summary method dedicated to iterate over existing panels
         * @param {function} userfunc is called with arguments (frame)
         * @param {boolean} only_visible let select only visible frames */
-      forEachFrame(/* userfunc, only_visible */) { console.warn("forEachFrame not implemented in MDIDisplay"); }
+      forEachFrame(userfunc, only_visible) {
+         console.warn(`forEachFrame not implemented in MDIDisplay ${typeof userfunc} ${only_visible}`);
+      }
 
       /** @summary method dedicated to iterate over existing panles
         * @param {function} userfunc is called with arguments (painter, frame)
