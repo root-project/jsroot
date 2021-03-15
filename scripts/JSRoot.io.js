@@ -660,7 +660,7 @@ JSROOT.define(['rawinflate'], () => {
 
       if (!(bcnt & jsrio.kByteCountMask) || (bcnt == jsrio.kNewClassTag)) {
          tag = bcnt;
-         bcnt = 0;
+         // bcnt = 0;
       } else {
          tag = this.ntou4();
       }

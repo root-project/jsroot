@@ -2781,7 +2781,6 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       for(let ncol=0;ncol<cols_size.length;++ncol) {
          if (!cols_size[ncol]) continue; // ignore dummy colors
 
-         nbins = cols_size[ncol]; // how many bins with specified color
          let nseq = cols_sequence[ncol];
 
          // BufferGeometries that store geometry of all bins

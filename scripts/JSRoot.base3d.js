@@ -524,7 +524,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
    TooltipFor3D.prototype.show = function(v /*, mouse_pos, status_func*/) {
       if (!v || (v==="")) return this.hide();
 
-      if (v && (typeof v =='object') && (v.lines || v.line)) {
+      if ((typeof v =='object') && (v.lines || v.line)) {
          if (v.only_status) return this.hide();
 
          if (v.line) {
@@ -1218,7 +1218,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
          m.add(m.js_special);
       }
 
-      if (color) m.js_special.material.color = new THREE.Color(color);
+      m.js_special.material.color = new THREE.Color(color);
       if (index !== undefined) m.js_special.geometry.setDrawRange(index, 1);
    }
 

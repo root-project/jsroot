@@ -284,10 +284,11 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
 
       let left_pos = d3.select("#" + this.gui_div + "_drawing").style('left');
 
-      line = main.insert("div",".jsroot_browser_area").attr("id",id)
-                 .classed("jsroot_status_area", true)
-                 .style('position',"absolute").style('left',left_pos).style('height',"20px").style('bottom',0).style('right',0)
-                 .style('margin',0).style('border',0);
+      main.insert("div",".jsroot_browser_area")
+          .attr("id",id)
+          .classed("jsroot_status_area", true)
+          .style('position',"absolute").style('left',left_pos).style('height',"20px").style('bottom',0).style('right',0)
+          .style('margin',0).style('border',0);
 
       let hsepar = main.insert("div",".jsroot_browser_area")
                        .classed("jsroot_separator", true).classed("jsroot_h_separator", true)
@@ -1641,7 +1642,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
                   PopupWindow($(this));
                },
                stop: function(event, ui) {
-                  let rect = { width : ui.size.width-1, height : ui.size.height - $(this).find(".flex_header").height()-1 };
+                  let rect = { width:  ui.size.width - 1, height: ui.size.height - $(this).find(".flex_header").height() - 1 };
                   JSROOT.resize($(this).find(".flex_draw").get(0), rect);
                }
              })
