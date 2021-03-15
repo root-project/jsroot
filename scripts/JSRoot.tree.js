@@ -168,7 +168,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
             if (obj._typename !== undefined) {
                if (JSROOT.isRootCollection(obj)) { obj = obj.arr; typ = "array"; }
                else typ = "any";
-            } else if (Number.isFinite(obj.length) && (checkArrayPrototype(obj) > 0)) {
+            } else if (Number.isInteger(obj.length) && (checkArrayPrototype(obj) > 0)) {
                typ = "array";
             } else {
                typ = "any";
@@ -200,7 +200,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
                   this.cnt = cnt;
                   return true;
                default:
-                  if (Number.isFinite(this.select[cnt])) {
+                  if (Number.isInteger(this.select[cnt])) {
                      this.indx[cnt] = this.select[cnt];
                      if (this.indx[cnt] < 0) this.indx[cnt] = obj.length - 1;
                   } else {
@@ -388,7 +388,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
                case "$size$": arriter.push("$size$"); break;
                case "$first$": arriter.push(0); break;
                default:
-                  if (Number.isFinite(parseInt(sub))) {
+                  if (Number.isInteger(parseInt(sub))) {
                      arriter.push(parseInt(sub));
                   } else {
                      // try to compile code as draw variable
@@ -575,7 +575,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
          if (separ > 0) { parvalue = parname.substr(separ + 1); parname = parname.substr(0, separ); }
 
          let intvalue = parseInt(parvalue);
-         if (!parvalue || !Number.isFinite(intvalue)) intvalue = undefined;
+         if (!parvalue || !Number.isInteger(intvalue)) intvalue = undefined;
 
          switch (parname) {
             case "num":
@@ -614,7 +614,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
                break;
             case "hbins":
                this.hist_nbins = parseInt(parvalue);
-               if (!Number.isFinite(this.hist_nbins) || (this.hist_nbins <= 3)) delete this.hist_nbins;
+               if (!Number.isInteger(this.hist_nbins) || (this.hist_nbins <= 3)) delete this.hist_nbins;
                break;
             case "drawopt":
                args.drawopt = parvalue;
@@ -2066,12 +2066,12 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
 
       let resolveFunc, rejectFunc; // Promise methods
 
-      if (Number.isFinite(args.firstentry) && (args.firstentry > handle.firstentry) && (args.firstentry < handle.lastentry))
+      if (Number.isInteger(args.firstentry) && (args.firstentry > handle.firstentry) && (args.firstentry < handle.lastentry))
          handle.process_min = args.firstentry;
 
       handle.current_entry = handle.staged_now = handle.process_min;
 
-      if (Number.isFinite(args.numentries) && (args.numentries > 0)) {
+      if (Number.isInteger(args.numentries) && (args.numentries > 0)) {
          let max = handle.process_min + args.numentries;
          if (max < handle.process_max) handle.process_max = max;
       }
@@ -2545,7 +2545,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
      * @desc All sub-branches checked as well
      * @returns {Object} branch */
    TTreeMethods.GetBranch = function(id) {
-      if (!Number.isFinite(id)) return;
+      if (!Number.isInteger(id)) return;
       let res, seq = 0;
       function Scan(obj) {
          if (obj && obj.fBranches)

@@ -1027,7 +1027,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             let fmt = prompt("Enter OptStat", pave.fOptStat);
             if (fmt) {
                fmt = parseInt(fmt);
-               if (Number.isFinite(fmt) && (fmt>=0)) {
+               if (Number.isInteger(fmt) && (fmt>=0)) {
                   pave.fOptStat = fmt;
                   this.interactiveRedraw(true, "exec:SetOptStat("+fmt+")");
                }
@@ -1066,7 +1066,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             let fmt = prompt("Enter OptStat", pave.fOptFit);
             if (fmt) {
                fmt = parseInt(fmt);
-               if (Number.isFinite(fmt) && (fmt>=0)) {
+               if (Number.isInteger(fmt) && (fmt>=0)) {
                   pave.fOptFit = fmt;
                   this.interactiveRedraw(true, "exec:SetOptFit("+fmt+")");
                }
@@ -1178,8 +1178,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (!main || (typeof main.fillStatistic !== 'function')) return false;
 
       let dostat = parseInt(pave.fOptStat), dofit = parseInt(pave.fOptFit);
-      if (!Number.isFinite(dostat)) dostat = JSROOT.gStyle.fOptStat;
-      if (!Number.isFinite(dofit)) dofit = JSROOT.gStyle.fOptFit;
+      if (!Number.isInteger(dostat)) dostat = JSROOT.gStyle.fOptStat;
+      if (!Number.isInteger(dofit)) dofit = JSROOT.gStyle.fOptFit;
 
       // we take statistic from main painter
       if (!main.fillStatistic(this, dostat, dofit)) return false;
@@ -1679,7 +1679,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          if (hdim == 1) {
             this.Zero = false; // do not draw empty bins with errors
             this.Hist = false;
-            if (Number.isFinite(parseInt(d.part[0]))) this.ErrorKind = parseInt(d.part[0]);
+            if (Number.isInteger(parseInt(d.part[0]))) this.ErrorKind = parseInt(d.part[0]);
             if ((this.ErrorKind === 3) || (this.ErrorKind === 4)) this.need_fillcol = true;
             if (this.ErrorKind === 0) this.Zero = true; // enable drawing of empty bins
             if (d.part.indexOf('X0')>=0) this.errorX = 0;
@@ -2720,10 +2720,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (!res) return;
       res = JSON.parse(res);
       if (!res || (res.length != 2)) return;
-
       let first = parseInt(res[0]), last = parseInt(res[1]);
-
-      if (!Number.isFinite(first) || !Number.isFinite(last)) return;
+      if (!Number.isInteger(first) || !Number.isInteger(last)) return;
       taxis.fFirst = first;
       taxis.fLast = last;
 

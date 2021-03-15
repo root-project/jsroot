@@ -1237,7 +1237,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          mesh.handle = handle;
 
          mesh.tooltip = function(intersect) {
-            if (!Number.isFinite(intersect.faceIndex)) {
+            if (!Number.isInteger(intersect.faceIndex)) {
                console.error('faceIndex not provided, check three.js version', THREE.REVISION, 'expected r121');
                return null;
             }
@@ -2042,7 +2042,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
        line.tip_color = (this.getObject().fLineColor===3) ? 0xFF0000 : 0x00FF00;
 
        line.tooltip = function(intersect) {
-          if (!Number.isFinite(intersect.index)) {
+          if (!Number.isInteger(intersect.index)) {
              console.error('segment index not provided, check three.js version', THREE.REVISION, 'expected r121');
              return null;
           }
@@ -2517,7 +2517,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       mesh.tip_color = (histo.fMarkerColor===3) ? 0xFF0000 : 0x00FF00;
 
       mesh.tooltip = function(intersect) {
-         if (!Number.isFinite(intersect.index)) {
+         if (!Number.isInteger(intersect.index)) {
             console.error('intersect.index not provided, check three.js version', THREE.REVISION, 'expected r121');
             return null;
          }
@@ -2814,7 +2814,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          combined_bins.use_scale = use_scale;
 
          combined_bins.tooltip = function(intersect) {
-            if (!Number.isFinite(intersect.faceIndex)) {
+            if (!Number.isInteger(intersect.faceIndex)) {
                console.error('intersect.faceIndex not provided, check three.js version', THREE.REVISION, 'expected r121');
                return null;
             }
@@ -3126,7 +3126,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       function sqr(v) { return v*v; }
 
       function graph2DTooltip(intersect) {
-         if (!Number.isFinite(intersect.index)) {
+         if (!Number.isInteger(intersect.index)) {
             console.error('intersect.index not provided, check three.js version', THREE.REVISION, 'expected r121');
             return null;
          }
@@ -3407,7 +3407,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       fp.toplevel.add(mesh);
 
       mesh.tooltip = function(intersect) {
-         if (!Number.isFinite(intersect.index)) {
+         if (!Number.isInteger(intersect.index)) {
             console.error('intersect.index not provided, check three.js version', THREE.REVISION, 'expected r102');
             return null;
          }

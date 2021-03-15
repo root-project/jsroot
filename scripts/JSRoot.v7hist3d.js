@@ -1193,7 +1193,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
          mesh.handle = handle;
 
          mesh.tooltip = function(intersect) {
-            if (!Number.isFinite(intersect.faceIndex)) {
+            if (!Number.isInteger(intersect.faceIndex)) {
                console.error('faceIndex not provided, check three.js version', THREE.REVISION, 'expected r121');
                return null;
             }
@@ -2017,7 +2017,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
        line.handle = handle;
 
        line.tooltip = function(intersect) {
-          if (!Number.isFinite(intersect.index)) {
+          if (!Number.isInteger(intersect.index)) {
              console.error('segment index not provided, check three.js version', THREE.REVISION, 'expected r121');
              return null;
           }
@@ -2507,7 +2507,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       mesh.tip_color = 0x00FF00;
 
       mesh.tooltip = function(intersect) {
-         if (!Number.isFinite(intersect.index)) {
+         if (!Number.isInteger(intersect.index)) {
             console.error('intersect.index not provided, check three.js version', THREE.REVISION, 'expected r121');
             return null;
          }
@@ -2808,7 +2808,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
          combined_bins.use_scale = use_scale;
 
          combined_bins.tooltip = function(intersect) {
-            if (!Number.isFinite(intersect.faceIndex)) {
+            if (!Number.isInteger(intersect.faceIndex)) {
                console.error('intersect.faceIndex not provided, check three.js version', THREE.REVISION, 'expected r121');
                return null;
             }
