@@ -1021,7 +1021,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           height = transform(svg.attr("height")),
           valign = svg.attr("style");
 
-      if (valign && valign.indexOf("vertical-align:") == 0 && valign.indexOf("ex;") == valign.length - 3) {
+      if (valign && (valign.length > 18) && valign.indexOf("vertical-align:") == 0 && valign.indexOf("ex;") == valign.length - 3) {
          valign = transform(valign.substr(16, valign.length - 17));
       } else {
          valign = null;

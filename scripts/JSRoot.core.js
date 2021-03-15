@@ -972,7 +972,7 @@
       }
 
       // process typed array
-      if ((proto.indexOf('[object ') == 0) && (proto.indexOf('Array]') == proto.length-6)) {
+      if ((proto.length > 14) && (proto.indexOf('[object ') == 0) && (proto.indexOf('Array]') == proto.length-6)) {
          let tgt = [];
          map.obj.push(src);
          map.clones.push(tgt);
@@ -1028,7 +1028,7 @@
          let proto = Object.prototype.toString.apply(value);
 
          // typed array need to be converted into normal array, otherwise looks strange
-         if ((proto.indexOf('[object ') == 0) && (proto.indexOf('Array]') == proto.length-6)) {
+         if ((proto.length > 14) && (proto.indexOf('[object ') == 0) && (proto.indexOf('Array]') == proto.length-6)) {
             let arr = new Array(value.length)
             for (let i = 0; i < value.length; ++i)
                arr[i] = copy_value(value[i]);
