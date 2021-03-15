@@ -56,14 +56,14 @@ JSROOT.define(['d3'], (d3) => {
    DrawOptions.prototype.partAsInt = function(offset, dflt) {
       let val = this.part.replace(/^\D+/g, '');
       val = val ? parseInt(val, 10) : Number.NaN;
-      return Number.isInteger(val) ? (dflt || 0) : val + (offset || 0);
+      return !Number.isInteger(val) ? (dflt || 0) : val + (offset || 0);
    }
 
    /** @summary Returns remaining part of found option as float. */
    DrawOptions.prototype.partAsFloat = function(offset, dflt) {
       let val = this.part.replace(/^\D+/g, '');
       val = val ? parseFloat(val) : Number.NaN;
-      return Number.isFinite(val) ? (dflt || 0) : val + (offset || 0);
+      return !Number.isFinite(val) ? (dflt || 0) : val + (offset || 0);
    }
 
    // ============================================================================================
