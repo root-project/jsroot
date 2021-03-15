@@ -479,7 +479,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       let h = { _name : "StreamerInfo", _childs : [] };
 
       for (let i = 0; i < lst.arr.length; ++i) {
-         let entry = lst.arr[i]
+         let entry = lst.arr[i];
 
          if (entry._typename == "TList") continue;
 
@@ -1396,7 +1396,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if ((options.length == 1) && (options[0] == "iotest")) {
          this.clearHierarchy();
-         d3.select("#" + this.disp_frameid).html("<h2>Start I/O test</h2>")
+         d3.select("#" + this.disp_frameid).html("<h2>Start I/O test</h2>");
 
          let tm0 = new Date();
          return this.getObject(items[0]).then(() => {

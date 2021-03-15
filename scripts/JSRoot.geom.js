@@ -2013,7 +2013,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       }
 
       // keep light power of all soources constant
-      plights.forEach(ll => { ll.power = p*4*Math.PI/plights.length; })
+      plights.forEach(ll => { ll.power = p*4*Math.PI/plights.length; });
 
       if (need_render) this.render3D();
    }

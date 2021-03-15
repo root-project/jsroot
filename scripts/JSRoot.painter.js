@@ -3127,7 +3127,7 @@ JSROOT.define(['d3'], (d3) => {
       if (!delta || (test_ignore && item.ignore)) return;
 
       delta = (delta < 0) ? -0.2 : 0.2;
-      delta_left *= delta
+      delta_left *= delta;
       delta_right *= delta;
 
       let lmin = item.min = this.scale_min,

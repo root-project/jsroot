@@ -1607,7 +1607,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
             if (IsInside(pnt.x, grx0, grx)) {
                // if inside interval, check Y distance
-               gry0 = pmain.gry(bin0.y)
+               gry0 = pmain.gry(bin0.y);
                gry = pmain.gry(bin.y);
 
                if (Math.abs(grx - grx0) < 1) {
@@ -1738,7 +1738,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
                  .attr("width", 2*hint.radius)
                  .attr("height", 2*hint.radius);
          } else {
-            ttbin.append("svg:circle").attr("cy", Math.round(hint.gry1))
+            ttbin.append("svg:circle").attr("cy", Math.round(hint.gry1));
             if (Math.abs(hint.gry1-hint.gry2) > 1)
                ttbin.append("svg:circle").attr("cy", Math.round(hint.gry2));
 
@@ -2788,7 +2788,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       let name = this.getObjectHint();
       if (name.length > 0) res.lines.push(name);
-      res.lines.push("x = " + main.axisAsText("x", xx))
+      res.lines.push("x = " + main.axisAsText("x", xx));
       res.lines.push("y = " + main.axisAsText("y", yy));
       if (knot !== null) {
          res.lines.push("knot = " + indx);
@@ -2862,7 +2862,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          // for tooltips use markers only if nodes where not created
          let path = "";
 
-         this.createAttMarker({ attr: spline })
+         this.createAttMarker({ attr: spline });
 
          this.markeratt.resetPos();
 
@@ -3451,7 +3451,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       return promise.then(() => {
          painter.addToPadPrimitives();
          return painter.drawNextGraph(0, d.remain());
-      })
+      });
    }
 
    // =========================================================================================
@@ -3518,7 +3518,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
                   check_attributes();
                   continue;
                case "x":
-                  this.createAttMarker({ attr: this.ReadAttr(arr[k], ["fMarkerColor", "fMarkerStyle", "fMarkerSize"]), force: true })
+                  this.createAttMarker({ attr: this.ReadAttr(arr[k], ["fMarkerColor", "fMarkerStyle", "fMarkerSize"]), force: true });
                   check_attributes();
                   continue;
                case "o":

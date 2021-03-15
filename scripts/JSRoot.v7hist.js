@@ -578,7 +578,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
          zmin = this.minposbin;
       }
 
-      if (zmin === zmax) { zmin = this.gminbin; zmax = this.gmaxbin; zminpos = this.gminposbin }
+      if (zmin === zmax) { zmin = this.gminbin; zmax = this.gmaxbin; zminpos = this.gminposbin; }
 
       if (this.getDimension() < 3) {
          if (main.zoom_zmin !== main.zoom_zmax) {
@@ -3908,7 +3908,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       else
          text_g.selectAll("*").remove();
 
-      textFont.setSize(height/(nlines * 1.2))
+      textFont.setSize(height/(nlines * 1.2));
       this.startTextDrawing(textFont, 'font' , text_g);
 
       if (nlines == 1) {
