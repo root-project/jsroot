@@ -1358,7 +1358,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          });
          menu.addchk(this.labelsFont.angle, "rotate", res => {
             this.changeAxisAttr(1, "labels_angle", res ? 180 : 0);
-         })
+         });
          menu.add("endsub:");
       }
 
@@ -4203,7 +4203,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             console.log("Frame moved or zoom is changed - that to do?");
             break;
          case "pave_moved":
-            console.log('TPave is moved inside RCanvas - that to do?')
+            console.log('TPave is moved inside RCanvas - that to do?');
             break;
          default:
             if ((kind.substr(0,5) == "exec:") && painter && painter.snapid) {
@@ -4841,7 +4841,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                      .style("fill", col)
                      .style("stroke", col)
                      .property("fill0", col)
-                     .property("fill1", d3.rgb(col).darker(0.5).toString())
+                     .property("fill1", d3.rgb(col).darker(0.5).toString());
 
          if (this.isTooltipAllowed())
             r.on('mouseover', function() {
@@ -4950,7 +4950,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             setTimeout(() => {
                if (!zoom_rect_visible && doing_zoom)
                   moving_labels = framep.z_handle.processLabelsMove('start', last_pos);
-            }, 500)
+            }, 500);
          }
 
          let assignHandlers = () => {

@@ -748,7 +748,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                r.attr("x", (side > 0) ? (-2*labelSize - 3) : 3)
                 .attr("y", 0)
                 .attr("width", 2*labelSize + 3)
-                .attr("height", h)
+                .attr("height", h);
             else
                r.attr("x", 0).attr("y", (side>0) ? 0 : -labelSize - 3)
                 .attr("width", w).attr("height", labelSize + 3);
@@ -2824,7 +2824,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       this.pad.fLeftMargin   = obj.fLeftMargin;
       this.pad.fRightMargin  = obj.fRightMargin;
-      this.pad.fBottomMargin = obj.fBottomMargin
+      this.pad.fBottomMargin = obj.fBottomMargin;
       this.pad.fTopMargin    = obj.fTopMargin;
 
       this.pad.fFillColor = obj.fFillColor;
@@ -3869,7 +3869,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                        ? this.drawInUI5ProjectionArea(canv, drawopt)
                        : this.drawInSidePanel(canv, drawopt);
 
-         promise.then(painter => { this.proj_painter = painter; })
+         promise.then(painter => { this.proj_painter = painter; });
       } else {
          let hp = this.proj_painter.getMainPainter();
          if (hp) hp.updateObject(hist, "hist");

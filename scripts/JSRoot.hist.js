@@ -340,7 +340,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                spath = "M0,"+height+"v-"+(height-brd)+"h-"+brd+"v"+height+"h"+width+"v-"+brd;
          } else {
             // when main is filled, one also can use fill for shadow to avoid complexity
-            spath = "M"+(dx*brd)+","+(dy*brd) + "v"+height + "h"+width + "v-"+height
+            spath = "M"+(dx*brd)+","+(dy*brd) + "v"+height + "h"+width + "v-"+height;
          }
          this.draw_g.append("svg:path")
                     .attr("d", spath + "z")
@@ -884,7 +884,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                        .style("fill", col)
                        .style("stroke", col)
                        .property("fill0", col)
-                       .property("fill1", d3.rgb(col).darker(0.5).toString())
+                       .property("fill1", d3.rgb(col).darker(0.5).toString());
 
             if (this.isTooltipAllowed())
                r.on('mouseover', function() {
@@ -1651,7 +1651,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          if (flag && histo)
              if (!histo[axis].TestBit(bit))
                 histo[axis].InvertBit(bit);
-      }
+      };
       check_axis_bit("OTX", "fXaxis", JSROOT.EAxisBits.kOppositeTitle);
       check_axis_bit("OTY", "fYaxis", JSROOT.EAxisBits.kOppositeTitle);
       check_axis_bit("CTX", "fXaxis", JSROOT.EAxisBits.kCenterTitle);
@@ -2775,7 +2775,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                menu.add("Z", () => this.changeUserRange("Z"));
             else
                menu.add("Values", () => this.changeValuesRange());
-            menu.add("endsub:")
+            menu.add("endsub:");
          }
 
          if (typeof this.fillHistContextMenu == 'function')
@@ -6117,7 +6117,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    TH2Painter.prototype.getBinTooltips = function (i, j) {
       let lines = [],
           histo = this.getHisto(),
-          binz = histo.getBinContent(i+1,j+1)
+          binz = histo.getBinContent(i+1,j+1);
 
       lines.push(this.getObjectHint());
 
