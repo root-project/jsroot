@@ -971,7 +971,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       let graph = this.getObject();
 
       if (graph.fMinimum != -1111) minimum = ymin = graph.fMinimum;
-      if (graph.fMaximum != -1111) maximum = ymax = graph.fMaximum;
+      if (graph.fMaximum != -1111) maximum = graph.fMaximum;
       if ((minimum < 0) && (ymin >=0)) minimum = 0.9*ymin;
 
       histo = graph.fHistogram;
@@ -1485,7 +1485,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
              best_dist2 = dist2;
              findbin = this;
              best = rect;
-             best.exact = matchx && matchy;
+             best.exact = /* matchx && */ matchy;
           }
        });
 

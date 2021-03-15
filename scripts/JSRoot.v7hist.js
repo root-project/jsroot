@@ -573,7 +573,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       let nlevels = JSROOT.gStyle.fNumberContours,
           zmin = this.minbin, zmax = this.maxbin, zminpos = this.minposbin;
 
-      if (args && args.scatter_plot) {
+      if (args.scatter_plot) {
          if (nlevels > 50) nlevels = 50;
          zmin = this.minposbin;
       }
@@ -874,7 +874,6 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
          res.gry[j++] = res.gry[res.j2];
 
       //  find min/max values in selected range
-      binz = histo.getBinContent(res.i1 + 1, res.j1 + 1);
       this.maxbin = this.minbin = this.minposbin = null;
 
       for (i = res.i1; i < res.i2; i += res.stepi) {
@@ -1566,7 +1565,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
           width = pmain.getFrameWidth(),
           height = pmain.getFrameHeight(),
           histo = this.getHisto(), xaxis = this.getAxis("x"),
-          findbin = null, show_rect = true,
+          findbin = null, show_rect,
           grx1, midx, grx2, gry1, midy, gry2, gapx = 2,
           left = this.getSelectIndex("x", "left", -1),
           right = this.getSelectIndex("x", "right", 2),
@@ -2947,12 +2946,12 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
           absmin = Math.max(0, main.minbin),
           i, j, binz, absz, res = "", cross = "", btn1 = "", btn2 = "",
           zdiff, dgrx, dgry, xx, yy, ww, hh,
-          xyfactor = 1, uselogz = false, logmin = 0, logmax = 1,
+          xyfactor, uselogz = false, logmin = 0,
           di = handle.stepi, dj = handle.stepj;
 
       if (main.logz && (absmax>0)) {
          uselogz = true;
-         logmax = Math.log(absmax);
+         let logmax = Math.log(absmax);
          if (absmin>0) logmin = Math.log(absmin); else
          if ((main.minposbin>=1) && (main.minposbin<100)) logmin = Math.log(0.7); else
             logmin = (main.minposbin > 0) ? Math.log(0.7*main.minposbin) : logmax - 10;
