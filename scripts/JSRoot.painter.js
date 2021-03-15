@@ -1161,7 +1161,8 @@ JSROOT.define(['d3'], (d3) => {
       function jsroot_d3_svg_lineFiniteDifferences(points) {
          let i = 0, j = points.length - 1, m = [], p0 = points[0], p1 = points[1], d = m[0] = jsroot_d3_svg_lineSlope(p0, p1);
          while (++i < j) {
-            m[i] = (d + (d = jsroot_d3_svg_lineSlope(p0 = p1, p1 = points[i + 1]))) / 2;
+            p0 = p1; p1 = points[i + 1];
+            m[i] = (d + (d = jsroot_d3_svg_lineSlope(p0, p1))) / 2;
          }
          m[i] = d;
          return m;
@@ -1268,7 +1269,6 @@ JSROOT.define(['d3'], (d3) => {
             if (cminy != curry) res.path += "v" + (cminy - curry);
             res.path += "v" + (cmaxy - cminy);
             if (cmaxy != prevy) res.path += "v" + (prevy - cmaxy);
-            curry = prevy;
          }
 
       }

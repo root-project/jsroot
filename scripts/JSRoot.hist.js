@@ -1731,8 +1731,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             res = (this.BaseLine === false) ? "B" : "B1";
          } else if (this.Mark) {
             res = this.Zero ? "P0" : "P"; // here invert logic with 0
-         } else if (this.Scat) {
-            res = "SCAT";
          } else if (this.Error) {
             res = "E";
             if (this.ErrorKind>=0) res += this.ErrorKind;
