@@ -414,8 +414,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                acc_x += evnt.dx;
                acc_y += evnt.dy;
 
-               let set_x = title_g.property('shift_x'),
-                   set_y = title_g.property('shift_y'),
+               let set_x, set_y,
                    p = vertical ? acc_y : acc_x, besti = 0;
 
                for (let i=1; i<3; ++i)
@@ -647,7 +646,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       let axis = this.getObject(), chOpt = "",
           is_gaxis = (axis && axis._typename === 'TGaxis'),
           axis_g = layer, tickSize = 0.03,
-          scaling_size = 100, draw_lines = true,
+          scaling_size, draw_lines = true,
           pp = this.getPadPainter(),
           pad_w = pp ? pp.getPadWidth() : 10,
           pad_h = pp ? pp.getPadHeight() : 10,
@@ -663,12 +662,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          draw_lines = axis.fLineColor != 0;
          chOpt = axis.fChopt;
          tickSize = axis.fTickSize;
-         scaling_size = (vertical ? 1.7*h : 0.6*w);
+         scaling_size = vertical ? 1.7*h : 0.6*w;
       } else {
          this.createAttLine({ color: axis.fAxisColor, width: 1, style: 1 });
          chOpt = (vertical ^ this.invert_side) ? "-S" : "+S";
          tickSize = axis.fTickLength;
-         scaling_size = (vertical ? pad_w : pad_h);
+         scaling_size = vertical ? pad_w : pad_h;
       }
 
       // indicate that attributes created not for TAttLine, therefore cannot be updated as TAttLine in GED

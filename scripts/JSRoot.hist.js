@@ -835,7 +835,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           axis = palette.fAxis,
           can_move = (typeof arg == "string") && (arg.indexOf('can_move') > 0),
           postpone_draw = (typeof arg == "string") && (arg.indexOf('postpone') > 0),
-          nbr1 = axis.fNdiv % 100,
           pos_x = parseInt(this.draw_g.attr("x")), // pave position
           pos_y = parseInt(this.draw_g.attr("y")),
           width = this.getPadPainter().getPadWidth(),
@@ -847,7 +846,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           levels = contour ? contour.getLevels() : null,
           draw_palette = main.fPalette;
 
-      if (nbr1 <= 0) nbr1 = 8;
       axis.fTickSize = 0.6 * s_width / width; // adjust axis ticks size
 
       if (contour && framep) {
@@ -1303,8 +1301,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                let st = JSROOT.gStyle, fp = painter.getFramePainter();
                if (st && fp) {
                   let midx = st.fTitleX, y2 = st.fTitleY, w = st.fTitleW, h = st.fTitleH;
-                  if (!h && fp) h = (y2-fp.fY2NDC)*0.7;
-                  if (!w && fp) w = fp.fX2NDC - fp.fX1NDC;
+                  if (!h) h = (y2-fp.fY2NDC)*0.7;
+                  if (!w) w = fp.fX2NDC - fp.fX1NDC;
                   if (!h || isNaN(h) || (h<0)) h = 0.06;
                   if (!w || isNaN(w) || (w<0)) w = 0.44;
                   pave.fX1NDC = midx - w/2;
