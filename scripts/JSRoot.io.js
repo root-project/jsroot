@@ -2733,9 +2733,8 @@ JSROOT.define(['rawinflate'], () => {
                element.fXmin = parse_range(arr[0]);
                element.fXmax = parse_range(arr[1]);
 
-               let bigint = 0xffffffff;
-               if ((nbits >= 0) && (nbits < 32))
-                  bigint = (1 << nbits);
+               // avoid usage of 1 << nbits, while only works up to 32 bits
+               let bigint = ((nbits >= 0) && (nbits < 32)) ? Math.pow(2, nbits) : 0xffffffff;
                if (element.fXmin < element.fXmax)
                   element.fFactor = bigint / (element.fXmax - element.fXmin);
                else if (nbits < 15)
