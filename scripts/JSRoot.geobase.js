@@ -2270,7 +2270,7 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
 
    /** @summary Set maximal number of visible nodes */
    ClonedNodes.prototype.setMaxVisNodes = function(v) {
-      this.maxnodes = Number.isNumber(v) ? v : 10000;
+      this.maxnodes = Number.isFinite(v) ? v : 10000;
    }
 
    /** @summary Returns configured maximal number of visible nodes */
