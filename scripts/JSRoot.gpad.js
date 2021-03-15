@@ -3325,7 +3325,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
              break;
           default: {
              let indx = parseInt(name);
-             if (!isNaN(indx)) selp = this.painters[indx];
+             if (Number.isInteger(indx)) selp = this.painters[indx];
           }
        }
 

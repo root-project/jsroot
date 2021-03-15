@@ -408,10 +408,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             foundarg = label.substr(0, pos);
             if (found.arg == 'int') {
                foundarg = parseInt(foundarg);
-               if (isNaN(foundarg)) { console.log('wrong int argument', label.substr(0, pos)); return false; }
+               if (!Number.isInteger(foundarg)) { console.log('wrong int argument', label.substr(0, pos)); return false; }
             } else if (found.arg == 'float') {
                foundarg = parseFloat(foundarg);
-               if (isNaN(foundarg)) { console.log('wrong float argument', label.substr(0, pos)); return false; }
+               if (!Number.isFinite(foundarg)) { console.log('wrong float argument', label.substr(0, pos)); return false; }
             }
             label = label.substr(pos + 2);
          }
@@ -977,7 +977,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             p = str.indexOf("]{");
             if (p <= 0) break;
             let colindx = parseInt(str.substr(0, p));
-            if (isNaN(colindx)) break;
+            if (!Number.isInteger(colindx)) break;
             let col = painter.getColor(colindx), cnt = 1;
             str = str.substr(p + 2);
             p = -1;
@@ -1014,7 +1014,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (!value || (typeof value !== "string") || (value.length < 3)) return null;
          if (value.indexOf("ex") !== value.length - 2) return null;
          value = parseFloat(value.substr(0, value.length - 2));
-         return isNaN(value) ? null : value * arg.font.size * 0.5;
+         return !Number.isFinite(value) ? null : value * arg.font.size * 0.5;
       }
 
       let width = transform(svg.attr("width")),
@@ -1049,7 +1049,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       let mw = parseInt(svg.attr("width")),
           mh = parseInt(svg.attr("height"));
 
-      if (!isNaN(mh) && !isNaN(mw)) {
+      if (Number.isInteger(mh) && Number.isInteger(mw)) {
          if (svg_factor > 0.) {
             mw = mw / svg_factor;
             mh = mh / svg_factor;

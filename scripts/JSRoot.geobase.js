@@ -2260,7 +2260,7 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
 
    /** @summary Set maximal depth for nodes visibility */
    ClonedNodes.prototype.setVisLevel = function(lvl) {
-      this.vislevel = lvl && !isNaN(lvl) ? lvl : 4;
+      this.vislevel = lvl && Number.isInteger(lvl) ? lvl : 4;
    }
 
    /** @summary Returns maximal depth for nodes visibility */
@@ -2270,7 +2270,7 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
 
    /** @summary Set maximal number of visible nodes */
    ClonedNodes.prototype.setMaxVisNodes = function(v) {
-      this.maxnodes = !isNaN(v) ? v : 10000;
+      this.maxnodes = Number.isNumber(v) ? v : 10000;
    }
 
    /** @summary Returns configured maximal number of visible nodes */
@@ -2280,7 +2280,7 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
 
    /** @summary Insert node into existing array */
    ClonedNodes.prototype.updateNode = function(node) {
-      if (node && !isNaN(node.id) && (node.id < this.nodes.length))
+      if (node && Number.isInteger(node.id) && (node.id < this.nodes.length))
          this.nodes[node.id] = node;
    }
 

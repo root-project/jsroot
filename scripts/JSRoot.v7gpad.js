@@ -103,7 +103,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          while ((pos < val.length) && (((val[pos]>='0') && (val[pos]<='9')) || (val[pos]=='.'))) pos++;
 
          let v = parseFloat(val.substr(0, pos));
-         if (isNaN(v)) {
+         if (!Number.isFinite(v)) {
             console.log("Fail to parse RPadLength " + value);
             return Math.round(dflt*sizepx);
          }
@@ -155,7 +155,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           font_weight = this.v7EvalAttr( name + "_font_weight", "");
 
        if (typeof text_size == "string") text_size = parseFloat(text_size);
-       if (isNaN(text_size) || (text_size <= 0)) text_size = 12;
+       if (!Number.isFinite(text_size) || (text_size <= 0)) text_size = 12;
        if (!fontScale) fontScale = this.getPadPainter().getPadHeight() || 10;
 
        let handler = new JSROOT.FontHandler(null, text_size, fontScale, font_family, font_style, font_weight);
@@ -374,7 +374,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          let toffset = this.v7EvalAttr("time_offset");
          if (toffset !== undefined) {
             toffset = parseFloat(toffset);
-            if (!isNaN(toffset)) this.timeoffset = toffset*1000;
+            if (Number.isFinite(toffset)) this.timeoffset = toffset*1000;
          }
       } else if (this.axis && this.axis.fLabelsIndex) {
          this.kind = 'labels';
@@ -1326,7 +1326,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (arg === 'toggle') arg = this.log ? 0 : 10;
 
       arg = parseFloat(arg);
-      if (!isNaN(arg)) this.changeAxisAttr(2, "log", arg);
+      if (Number.isFinite(arg)) this.changeAxisAttr(2, "log", arg);
    }
 
    /** @summary Provide context menu for axis */
@@ -3364,7 +3364,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
              break;
           default: {
              let indx = parseInt(name);
-             if (!isNaN(indx)) selp = this.painters[indx];
+             if (Number.isInteger(indx)) selp = this.painters[indx];
           }
        }
 

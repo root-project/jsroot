@@ -155,8 +155,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
            if (do_context && jsrp.canDraw(obj._typename)) item._direct_context = true;
 
            // if name is integer value, it should match array index
-           if (!item._name || (!isNaN(parseInt(item._name)) && (parseInt(item._name)!==i))
-               || (lst.arr.indexOf(obj)<i)) {
+           if (!item._name || (Number.isInteger(parseInt(item._name)) && (parseInt(item._name)!==i))
+               || (lst.arr.indexOf(obj) < i)) {
               item._name = i.toString();
            } else {
               // if there are several such names, add cycle number to the item name
@@ -946,7 +946,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                // when search for the elements it could be allowed to check index
                if (allow_index && /^\d+$/.test(localname)) {
                   let indx = parseInt(localname);
-                  if (!isNaN(indx) && (indx >= 0) && (indx < top._childs.length))
+                  if (Number.isInteger(indx) && (indx >= 0) && (indx < top._childs.length))
                      return process_child(top._childs[indx]);
                }
             }
@@ -2130,7 +2130,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if (interval) {
          interval = parseInt(interval);
-         if (!isNaN(interval) && (interval > 0)) {
+         if (Number.isInteger(interval) && (interval > 0)) {
             this._monitoring_interval = Math.max(100,interval);
             monitor_on = true;
          } else {
@@ -2484,7 +2484,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          status = true;
       else if (status!==null) {
          statush = parseInt(status);
-         if (isNaN(statush) || (statush < 5)) statush = 0;
+         if (!Number.isInteger(statush) || (statush < 5)) statush = 0;
          status = true;
       }
       if (this.no_select === "") this.no_select = true;
@@ -2996,8 +2996,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                sizex = sizey = parseInt(kind);
             }
 
-            if (isNaN(sizex)) sizex = 3;
-            if (isNaN(sizey)) sizey = 3;
+            if (!Number.isInteger(sizex)) sizex = 3;
+            if (!Number.isInteger(sizey)) sizey = 3;
 
             if (sizey > 1) {
                this.vertical = true;
@@ -3020,7 +3020,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          if (kind && kind.indexOf("_")>0) {
             let arg = parseInt(kind.substr(kind.indexOf("_")+1), 10);
-            if (!isNaN(arg) && (arg>10)) {
+            if (Number.isInteger(arg) && (arg > 10)) {
                kind = kind.substr(0, kind.indexOf("_"));
                sizes = [];
                while (arg>0) {

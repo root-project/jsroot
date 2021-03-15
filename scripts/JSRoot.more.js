@@ -548,7 +548,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
             if ((gxmin !== gxmax) && ((xx + 2*dx < gxmin) || (xx - 2*dx > gxmax))) continue;
             let yy = tf1.fSave[n];
 
-            if (!isNaN(yy)) res.push({ x : xx, y : yy });
+            if (Number.isFinite(yy)) res.push({ x : xx, y : yy });
          }
          return res;
       }
@@ -574,7 +574,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          let xx = xmin + n*dx;
          if (logx) xx = Math.exp(xx);
          let yy = tf1.evalPar(xx);
-         if (!isNaN(yy)) res.push({ x: xx, y: yy });
+         if (Number.isFinite(yy)) res.push({ x: xx, y: yy });
       }
       return res;
    }
