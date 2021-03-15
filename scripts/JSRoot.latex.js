@@ -182,7 +182,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          symbolsRegexCache = new RegExp('(' + Object.keys(symbols_map).join('|').replace(/\{/g, '\{').replace(/\\}/g, '\\}') + ')', 'g');
       }
 
-      str = str.replace(symbolsRegexCache, function(ch) { return symbols_map[ch]; });
+      str = str.replace(symbolsRegexCache, ch => symbols_map[ch]);
 
       str = str.replace(/\{\}/g, "");
 
@@ -1011,7 +1011,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
      * @private */
    function repairMathJaxSvgSize(painter, mj_node, svg, arg) {
       let transform = value => {
-         if (!value || (typeof value !== "string")) return null;
+         if (!value || (typeof value !== "string") || (value.length < 3)) return null;
          if (value.indexOf("ex") !== value.length - 2) return null;
          value = parseFloat(value.substr(0, value.length - 2));
          return isNaN(value) ? null : value * arg.font.size * 0.5;

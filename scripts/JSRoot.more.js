@@ -376,7 +376,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       if (oo.indexOf("-<-")>=0) this.mid = 2; else
       if (oo.indexOf("-<|-")>=0) this.mid = 12;
       if (oo.lastIndexOf(">") == oo.length-1)
-         this.end = ((oo.lastIndexOf("|>") == oo.length-2) && (oo.length>1)) ? 11 : 1;
+         this.end = ((oo.length > 1) && (oo.lastIndexOf("|>") == oo.length-2)) ? 11 : 1;
 
       this.createAttLine({ attr: arrow });
 

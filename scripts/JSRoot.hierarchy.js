@@ -281,7 +281,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          prnt = prnt._parent;
       }
 
-      let isarray = (proto.lastIndexOf('Array]') == proto.length-6) && (proto.indexOf('[object')==0) && !isNaN(obj.length),
+      let isarray = (proto.length > 10) &&  (proto.lastIndexOf('Array]') == proto.length-6) && (proto.indexOf('[object')==0) && !isNaN(obj.length),
           compress = isarray && (obj.length > JSROOT.settings.HierarchyLimit),  arrcompress = false;
 
       if (isarray && (top._name==="Object") && !top._parent) top._name = "Array";
@@ -377,7 +377,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             proto = Object.prototype.toString.apply(fld);
 
-            if ((proto.lastIndexOf('Array]') == proto.length-6) && (proto.indexOf('[object')==0)) {
+            if ((proto.length > 10) && (proto.lastIndexOf('Array]') == proto.length-6) && (proto.indexOf('[object')==0)) {
                item._title = "array len=" + fld.length;
                simple = (proto != '[object Array]');
                if (fld.length === 0) {
