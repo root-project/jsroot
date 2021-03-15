@@ -342,7 +342,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       if (mainp && (!mainp.provideUserTooltip || !mainp.hasUserTooltip())) mainp = null;
 
       if (this.tooltip_selfmesh) {
-         changed_self = (this.tooltip_selfmesh !== selfmesh)
+         changed_self = (this.tooltip_selfmesh !== selfmesh);
          this.tooltip_selfmesh.material.color = this.tooltip_selfmesh.save_color;
          delete this.tooltip_selfmesh;
          changed = true;
@@ -536,7 +536,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
             if (!xticks.last_major()) {
                let space = (xticks.next_major_grpos() - grx);
                if (draw_width > 0)
-                  text_scale = Math.min(text_scale, 0.9*space/draw_width)
+                  text_scale = Math.min(text_scale, 0.9*space/draw_width);
                if (this.x_handle.isCenteredLabels()) text3d.grx += space/2;
             }
          }
@@ -630,7 +630,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
             let tgtmesh = this.children ? this.children[0] : null, gg, kind = this.zoom;
             if (!pnt1 || !pnt2) {
                if (tgtmesh) {
-                  this.remove(tgtmesh)
+                  this.remove(tgtmesh);
                   jsrp.disposeThreejsObject(tgtmesh);
                }
                return tgtmesh;
@@ -666,7 +666,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
       }
 
       let xcont = new THREE.Object3D();
-      xcont.position.set(0, grminy, grminz)
+      xcont.position.set(0, grminy, grminz);
       xcont.rotation.x = 1/4*Math.PI;
       xcont.xyid = 2;
       let xtickslines = jsrp.createLineSegments( ticks, lineMaterial );
@@ -745,7 +745,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
             if (!yticks.last_major()) {
                let space = (yticks.next_major_grpos() - gry);
                if (draw_width > 0)
-                  text_scale = Math.min(text_scale, 0.9*space/draw_width)
+                  text_scale = Math.min(text_scale, 0.9*space/draw_width);
                if (this.y_handle.isCenteredLabels()) text3d.gry += space/2;
             }
          }
@@ -1538,7 +1538,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
 
       // first adjust ranges
 
-      let main_grz = !main.logz ? main.grz : function(value) { return value < axis_zmin ? -0.1 : main.grz(value); }
+      let main_grz = !main.logz ? main.grz : value => (value < axis_zmin) ? -0.1 : main.grz(value);
 
       if ((handle.i2 - handle.i1 < 2) || (handle.j2 - handle.j1 < 2)) return;
 

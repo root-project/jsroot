@@ -1027,7 +1027,7 @@
 
          // typed array need to be converted into normal array, otherwise looks strange
          if ((proto.length >= 14) && (proto.indexOf('[object ') == 0) && (proto.indexOf('Array]') == proto.length-6)) {
-            let arr = new Array(value.length)
+            let arr = new Array(value.length);
             for (let i = 0; i < value.length; ++i)
                arr[i] = copy_value(value[i]);
             return arr;

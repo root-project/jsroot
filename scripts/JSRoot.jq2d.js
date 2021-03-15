@@ -1128,7 +1128,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
             +'<input style="padding:3px;margin-right:5px;"'
             +'       class="gui_ReadFileBtn" type="button" title="Read the Selected File" value="Load"/>'
             +'<input style="padding:3px;margin-right:5px;"'
-            +'       class="gui_ResetUIBtn" type="button" title="Close all opened files and clear drawings" value="Reset"/>'
+            +'       class="gui_ResetUIBtn" type="button" title="Close all opened files and clear drawings" value="Reset"/>';
       } else if (this.no_select == "file") {
          guiCode += '<div style="display:flex;flex-direction:row">';
       }

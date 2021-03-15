@@ -1560,7 +1560,7 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
                               r2 * _cos[seg+d1], r2 * _sin[seg+d1], z,
                               r2 * _cos[seg+d2], r2 * _sin[seg+d2], z,
                               r1 * _cos[seg+d2], r1 * _sin[seg+d2], z, skip);
-             creator.setNormal(0,0, (layer===0) ? 1 : -1)
+             creator.setNormal(0,0, (layer===0) ? 1 : -1);
           }
 
       }
@@ -3192,7 +3192,7 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
       }
 
       // now sort shapes in volume decrease order
-      shapes.sort(function(a,b) { return b.vol*b.factor - a.vol*a.factor; })
+      shapes.sort((a,b) => b.vol*b.factor - a.vol*a.factor);
 
       // now set new shape ids according to the sorted order and delete temporary field
       for (let n=0;n<shapes.length;++n) {
