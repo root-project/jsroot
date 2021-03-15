@@ -2987,7 +2987,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                kind = kind.substr(1);
             }
 
-            let separ = kind.indexOf("x"), sizex = 3, sizey = 3;
+            let separ = kind.indexOf("x"), sizex, sizey;
 
             if (separ > 0) {
                sizey = parseInt(kind.substr(separ + 1));

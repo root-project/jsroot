@@ -3263,7 +3263,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       //  find min/max values in selected range
 
-      binz = histo.getBinContent(res.i1 + 1, res.j1 + 1);
       this.maxbin = this.minbin = this.minposbin = null;
 
       for (i = res.i1; i < res.i2; ++i) {
@@ -4116,7 +4115,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           width = pmain.getFrameWidth(),
           height = pmain.getFrameHeight(),
           histo = this.getHisto(),
-          findbin = null, show_rect = true,
+          findbin = null, show_rect,
           grx1, midx, grx2, gry1, midy, gry2, gapx = 2,
           left = this.getSelectIndex("x", "left", -1),
           right = this.getSelectIndex("x", "right", 2),
@@ -5727,8 +5726,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       let absmax = Math.max(Math.abs(main.maxbin), Math.abs(main.minbin)),
           absmin = Math.max(0, main.minbin),
           i, j, binz, absz, res = "", cross = "", btn1 = "", btn2 = "",
-          zdiff, dgrx, dgry, xx, yy, ww, hh,
-          xyfactor = 1, uselogz = false, logmin = 0, logmax = 1,
+          zdiff, dgrx, dgry, xx, yy, ww, hh, xyfactor,
+          uselogz = false, logmin = 0, logmax = 1,
           pad = this.getPadPainter().getRootPad(true);
 
       if (pad && pad.fLogz && (absmax > 0)) {

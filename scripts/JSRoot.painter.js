@@ -1108,10 +1108,10 @@ JSROOT.define(['d3'], (d3) => {
       // decode time from ROOT string
       function next(separ, min, max) {
          let pos = sof.indexOf(separ);
-         if (pos < 0) { pos = ""; return min; }
+         if (pos < 0) return min;
          let val = parseInt(sof.substr(0, pos));
          sof = sof.substr(pos + 1);
-         if (isNaN(val) || (val < min) || (val > max)) { pos = ""; return min; }
+         if (isNaN(val) || (val < min) || (val > max)) return min;
          return val;
       }
 
