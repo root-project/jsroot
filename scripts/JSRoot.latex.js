@@ -634,7 +634,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if (subpos.square_root) {
                // creating cap for square root
                // while overline symbol does not match with square root, use empty text with overline
-               let len = 2, sqrt_dy = 0, yscale = 1,
+               let sqrt_dy = 0, yscale = 1,
                    bs = get_boundary(subpos.square_root, subpos.sqrt_rect),
                    be = get_boundary(subnode1, subpos.rect);
 
@@ -646,7 +646,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                }
 
                // we taking into account only element width
-               len = be.width / subpos.fsize / yscale;
+               let len = be.width / subpos.fsize / yscale;
 
                let a = "", nn = Math.round(Math.max(len * 3, 2));
                while (nn--) a += '\u203E'; // unicode overline
