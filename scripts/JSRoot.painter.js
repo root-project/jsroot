@@ -2820,7 +2820,7 @@ JSROOT.define(['d3'], (d3) => {
                   let p = lastclname.lastIndexOf("::"),
                       shortname = (p > 0) ? lastclname.substr(p+2) : lastclname;
 
-                  _menu.add("sub:" + shortname.replace("<","_").replace(">","_"));
+                  _menu.add("sub:" + shortname.replace(/[<>]/g,"_"));
                }
 
                if ((item.fChecked === undefined) || (item.fChecked < 0))

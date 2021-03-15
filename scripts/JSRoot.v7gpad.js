@@ -745,8 +745,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                acc_x += evnt.dx;
                acc_y += evnt.dy;
 
-               let set_x = title_g.property('shift_x'),
-                   set_y = title_g.property('shift_y'),
+               let set_x, set_y,
                    p = this.vertical ? acc_y : acc_x, besti = 0;
 
                for (let i=1; i<3; ++i)
@@ -1228,18 +1227,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           pos  = pp.getCoordinate(drawable.fPos),
           len  = pp.getPadLength(drawable.fVertical, drawable.fLength),
           reverse = this.v7EvalAttr("reverse", false),
-          min = 0, max = 1;
+          min = drawable.fLabels ? 0 : drawable.fMin,
+          max = drawable.fLabels ? drawable.fLabels.length : drawable.fMax;
 
       // in vertical direction axis drawn in negative direction
       if (drawable.fVertical) len = -len;
-
-      if (drawable.fLabels) {
-         min = 0;
-         max = drawable.fLabels.length;
-      } else {
-         min = drawable.fMin;
-         max = drawable.fMax;
-      }
 
       let smin = this.v7EvalAttr("zoommin"),
           smax = this.v7EvalAttr("zoommax");
@@ -4397,9 +4389,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       // simple check - if canvas there, can use painter
       let svg_c = painter.getCanvSvg();
-      let noframe = (frame_kind === false) || (frame_kind == "3d") ? "noframe" : "";
+      // let noframe = (frame_kind === false) || (frame_kind == "3d") ? "noframe" : "";
 
-      let promise = !svg_c.empty() ? Promise.resolve(true) : drawRCanvas(painter.getDom(), null, noframe);
+      let promise = !svg_c.empty() ? Promise.resolve(true) : drawRCanvas(painter.getDom(), null /* , noframe */);
 
       return promise.then(() => {
          if (frame_kind === false) return;
