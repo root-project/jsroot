@@ -1032,7 +1032,7 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
       }
 
       let creator = faces_limit ? new PolygonsCreator : new GeometryCreator(radiusSegments*4),
-          nx1 = 1, ny1 = 0, nx2 = 1, ny2 = 0;
+          nx1, ny1, nx2 = 1, ny2 = 0;
 
       // create tube faces
       for (let seg=0; seg<radiusSegments; ++seg) {
@@ -1165,13 +1165,14 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
    function createPolygonBuffer( shape, faces_limit ) {
       let thetaStart = shape.fPhi1,
           thetaLength = shape.fDphi,
-          radiusSegments = 60, factor = 1;
+          radiusSegments, factor;
 
       if (shape._typename == "TGeoPgon") {
          radiusSegments = shape.fNedges;
          factor = 1. / Math.cos(Math.PI/180 * thetaLength / radiusSegments / 2);
       } else {
          radiusSegments = Math.max(5, Math.round(thetaLength/geo.GradPerSegm));
+         factor = 1;
       }
 
       let usage = new Int16Array(2*shape.fNz), numusedlayers = 0, hasrmin = false;
@@ -1919,12 +1920,9 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
       }
 
       if ((n1 + n2 >= faces_limit) || !geom2) {
-         if (geom1.polygons) {
+         if (geom1.polygons)
             geom1 = ThreeBSP.CreateBufferGeometry(geom1.polygons);
-            n1 = countGeometryFaces(geom1);
-         }
          if (matrix1) geom1.applyMatrix4(matrix1);
-         // if (!geom1._exceed_limit) console.log('reach faces limit', faces_limit, 'got', n1, n2);
          geom1._exceed_limit = true;
          return geom1;
       }
@@ -3736,9 +3734,9 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
 
       let uniquevis = opt.no_screen ? 0 : clones.markVisibles(true);
       if (uniquevis <= 0)
-         uniquevis = clones.markVisibles(false, false, hide_top);
+         clones.markVisibles(false, false, hide_top);
       else
-         uniquevis = clones.markVisibles(true, true, hide_top); // copy bits once and use normal visibility bits
+         clones.markVisibles(true, true, hide_top); // copy bits once and use normal visibility bits
 
       clones.produceIdShifts();
 
