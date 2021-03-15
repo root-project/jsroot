@@ -2902,7 +2902,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.frames[divid] += (itemname + ";");
       }
 
-      forEachFrame(userfunc /* ,  only_visible */) {
+      forEachFrame(userfunc) {
          let ks = Object.keys(this.frames);
          for (let k = 0; k < ks.length; ++k) {
             let node = d3.select("#"+ks[k]);
@@ -3100,7 +3100,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                this.createSeparator(handle, main, handle.groups[cnt]);
       }
 
-      forEachFrame(userfunc /*, only_visible */) {
+      /** @summary Call function for each frame */
+      forEachFrame(userfunc) {
          if (this.simple_layout)
             userfunc(this.getGridFrame());
          else
@@ -3116,7 +3117,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          let found = super.getActiveFrame();
          if (found) return found;
 
-         this.forEachFrame(frame => { if (!found) found = frame; }, true);
+         this.forEachFrame(frame => { if (!found) found = frame; });
 
          return found;
       }
