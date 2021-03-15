@@ -5831,8 +5831,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       let histo = this.getHisto(),
           handle = this.prepareColorDraw(),
           pmain = this.getFramePainter(), // used for axis values conversions
-          w = pmain.getFrameWidth(),
-          i, j, y, sum1, cont, center, counter, integral, pnt,
+          w, i, j, y, sum1, cont, center, counter, integral, pnt,
           bars = "", markers = "", posy;
 
       if (histo.fMarkerColor === 1) histo.fMarkerColor = histo.fLineColor;

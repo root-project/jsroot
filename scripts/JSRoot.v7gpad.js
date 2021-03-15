@@ -1756,12 +1756,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       let draw_horiz = this.swap_xy ? this.y_handle : this.x_handle,
           draw_vertical = this.swap_xy ? this.x_handle : this.y_handle,
-          disable_axis_draw = false;
-
-      if (!disable_axis_draw) {
-         let pp = this.getPadPainter();
-         if (pp && pp._fast_drawing) disable_axis_draw = true;
-      }
+          pp = this.getPadPainter(),
+          disable_axis_draw = (pp && pp._fast_drawing) ? true : false;
 
       if (!disable_axis_draw) {
          let promise1 = draw_horiz.drawAxis(layer, (sidex > 0) ? `translate(0,${h})` : "", sidex);
@@ -2873,7 +2869,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          let hint = obj.processTooltipEvent(pnt);
          if (!hint) hint = { user_info: null };
          hints.push(hint);
-         if (hint && pnt && pnt.painters) hint.painter = obj;
+         if (pnt && pnt.painters) hint.painter = obj;
       });
 
       return hints;
@@ -4982,8 +4978,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       });
    }
 
-   let drawPalette = (divid, palette, opt) => {
-      let painter = new RPalettePainter(divid, palette, opt);
+   let drawPalette = (divid, palette /*, opt */) => {
+      let painter = new RPalettePainter(divid, palette);
 
       return jsrp.ensureRCanvas(painter, false).then(() => {
          painter.createG(); // just create container, real drawing will be done by histogram

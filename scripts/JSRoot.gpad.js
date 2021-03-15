@@ -2639,7 +2639,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          let hint = obj.processTooltipEvent(pnt);
          if (!hint) hint = { user_info: null };
          hints.push(hint);
-         if (hint && pnt && pnt.painters) hint.painter = obj;
+         if (pnt && pnt.painters) hint.painter = obj;
       });
 
       return hints;

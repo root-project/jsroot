@@ -662,10 +662,8 @@
                      failed: function(msg) { this.processed = true; if (this.reject) this.reject(Error(msg || "JSROOT.require failed")); } };
 
          if (req.factoryFunc && req.thisModule) {
-
-            let m = _.modules[req.thisModule];
-            if (!m)
-               m = _.modules[req.thisModule] = { jsroot: true, src: thisSrc, loading: true };
+            if (!(_.modules[req.thisModule]))
+               _.modules[req.thisModule] = { jsroot: true, src: thisSrc, loading: true };
          }
 
          for (let k = 0; k < need.length; ++k) {
