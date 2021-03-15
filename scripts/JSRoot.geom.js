@@ -1878,7 +1878,8 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       }
 
       // remember additional nodes only if they include shape - otherwise one can ignore them
-      if (real_nodes) this._more_nodes = real_nodes;
+      if (real_nodes.length > 0)
+         this._more_nodes = real_nodes;
 
       if (!from_drawing) this.render3D();
    }
