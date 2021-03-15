@@ -103,7 +103,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
    function checkArrayPrototype(arr, check_content) {
       if (typeof arr !== 'object') return 0;
       let proto = Object.prototype.toString.apply(arr);
-      if (proto.indexOf('[object') !== 0) return 0;
+      if (proto.indexOf('[object ') !== 0) return 0;
       const pos = proto.indexOf('Array]');
       if (pos < 0) return 0;
       if (pos > 8) return 2; // this is typed array like Int32Array
