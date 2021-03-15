@@ -391,7 +391,7 @@ JSROOT.define([], () => {
 
       if (!this._websocket || (this.state <= 0)) return false;
 
-      if (isNaN(chid) || (chid === undefined)) chid = 1; // when not configured, channel 1 is used - main widget
+      if (!Number.isInteger(chid)) chid = 1; // when not configured, channel 1 is used - main widget
 
       if (this.cansend <= 0) console.error('should be queued before sending cansend: ' + this.cansend);
 

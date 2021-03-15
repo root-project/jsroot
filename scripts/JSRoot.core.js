@@ -266,7 +266,7 @@
                case "alwaysmathjax": return this.AlwaysMathJax;
             }
             let code = parseInt(s);
-            return (!isNaN(code) && (code >= this.Off) && (code <= this.AlwaysMathJax)) ? code : this.Normal;
+            return (Number.isInteger(code) && (code >= this.Off) && (code <= this.AlwaysMathJax)) ? code : this.Normal;
          }
       }
    };
@@ -829,7 +829,7 @@
          if (typeof value === 'string') {
             if (newfmt || (value.length < 6) || (value.indexOf("$ref:") !== 0)) return;
             let ref = parseInt(value.substr(5));
-            if (isNaN(ref) || (ref < 0) || (ref >= map.length)) return;
+            if (!Number.isInteger(ref) || (ref < 0) || (ref >= map.length)) return;
             newfmt = false;
             return map[ref];
          }
@@ -851,7 +851,7 @@
 
          if ((newfmt!==false) && (len===1) && (ks[0]==='$ref')) {
             const ref = parseInt(value['$ref']);
-            if (isNaN(ref) || (ref < 0) || (ref >= map.length)) return;
+            if (!Number.isInteger(ref) || (ref < 0) || (ref >= map.length)) return;
             newfmt = true;
             return map[ref];
          }
@@ -1184,7 +1184,7 @@
 
          if ((this.readyState === 2) && this.expected_size) {
             let len = parseInt(this.getResponseHeader("Content-Length"));
-            if (!isNaN(len) && (len > this.expected_size) && !JSROOT.settings.HandleWrongHttpResponse) {
+            if (Number.isInteger(len) && (len > this.expected_size) && !JSROOT.settings.HandleWrongHttpResponse) {
                this.did_abort = true;
                this.abort();
                return this.error_callback(Error('Server response size ' + len + ' larger than expected ' + this.expected_size + '. Abort I/O operation'), 599);
