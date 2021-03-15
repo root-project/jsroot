@@ -247,7 +247,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (dy1 > 0) { rect.y -= dy1; rect.height += dy1; }
          if (dy2 > 0) rect.height += dy2;
 
-         if (pos.parent) return extend_pos(pos.parent, rect)
+         if (pos.parent) return extend_pos(pos.parent, rect);
 
          // calculate dimensions for the
          arg.text_rect = rect;
