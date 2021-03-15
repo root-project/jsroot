@@ -47,28 +47,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return new JSROOT.ColorPalette(palette);
    }
 
-   let createGradientColorTable = (Stops, Red, Green, Blue, NColors/*, alpha*/) => {
-      // skip all checks
-       let palette = [];
-
-       for (let g = 1; g < Stops.length; g++) {
-          // create the colors...
-          let nColorsGradient = parseInt(Math.floor(NColors*Stops[g]) - Math.floor(NColors*Stops[g-1]));
-          for (let c = 0; c < nColorsGradient; c++) {
-             let col = Math.round(Red[g-1] + c * (Red[g] - Red[g-1])/nColorsGradient) + "," +
-                       Math.round(Green[g-1] + c * (Green[g] - Green[g-1])/ nColorsGradient) + "," +
-                       Math.round(Blue[g-1] + c * (Blue[g] - Blue[g-1])/ nColorsGradient);
-             palette.push("rgb("+col+")");
-          }
-       }
-
-       return new JSROOT.ColorPalette(palette);
-   }
-
    /** @summary Create color palette
      * @memberof JSROOT.Painter
      * @private */
-   function getColorPalette(id,alfa) {
+   function getColorPalette(id) {
       id = id || JSROOT.settings.Palette;
       if ((id > 0) && (id < 10)) return createGrayPalette();
       if (id < 51) return createDefaultPalette();
@@ -204,7 +186,21 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          default: return createDefaultPalette();
       }
 
-      return createGradientColorTable(stops, rgb[0], rgb[1], rgb[2], 255, alfa);
+      const NColors = 255, Red = rgb[0], Green = rgb[1], Blue = rgb[2];
+      let palette = [];
+
+      for (let g = 1; g < stops.length; g++) {
+          // create the colors...
+          let nColorsGradient = Math.round(Math.floor(NColors*stops[g]) - Math.floor(NColors*stops[g-1]));
+          for (let c = 0; c < nColorsGradient; c++) {
+             let col = Math.round(Red[g-1] + c * (Red[g] - Red[g-1]) / nColorsGradient) + "," +
+                       Math.round(Green[g-1] + c * (Green[g] - Green[g-1]) / nColorsGradient) + "," +
+                       Math.round(Blue[g-1] + c * (Blue[g] - Blue[g-1]) / nColorsGradient);
+             palette.push("rgb("+col+")");
+          }
+       }
+
+       return new JSROOT.ColorPalette(palette);
    }
 
    // ============================================================
