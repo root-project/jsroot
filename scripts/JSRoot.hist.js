@@ -1027,8 +1027,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             let fmt = prompt("Enter OptStat", pave.fOptStat);
             if (fmt) {
                fmt = parseInt(fmt);
-               if (!isNaN(fmt) && (fmt>=0)) {
-                  pave.fOptStat = parseInt(fmt);
+               if (Number.isFinite(fmt) && (fmt>=0)) {
+                  pave.fOptStat = fmt;
                   this.interactiveRedraw(true, "exec:SetOptStat("+fmt+")");
                }
             }
@@ -1066,7 +1066,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             let fmt = prompt("Enter OptStat", pave.fOptFit);
             if (fmt) {
                fmt = parseInt(fmt);
-               if (!isNaN(fmt) && (fmt>=0)) {
+               if (Number.isFinite(fmt) && (fmt>=0)) {
                   pave.fOptFit = fmt;
                   this.interactiveRedraw(true, "exec:SetOptFit("+fmt+")");
                }
@@ -1178,8 +1178,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (!main || (typeof main.fillStatistic !== 'function')) return false;
 
       let dostat = parseInt(pave.fOptStat), dofit = parseInt(pave.fOptFit);
-      if (isNaN(dostat)) dostat = JSROOT.gStyle.fOptStat;
-      if (isNaN(dofit)) dofit = JSROOT.gStyle.fOptFit;
+      if (!Number.isFinite(dostat)) dostat = JSROOT.gStyle.fOptStat;
+      if (!Number.isFinite(dofit)) dofit = JSROOT.gStyle.fOptFit;
 
       // we take statistic from main painter
       if (!main.fillStatistic(this, dostat, dofit)) return false;
@@ -1303,8 +1303,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                   let midx = st.fTitleX, y2 = st.fTitleY, w = st.fTitleW, h = st.fTitleH;
                   if (!h) h = (y2-fp.fY2NDC)*0.7;
                   if (!w) w = fp.fX2NDC - fp.fX1NDC;
-                  if (!h || isNaN(h) || (h<0)) h = 0.06;
-                  if (!w || isNaN(w) || (w<0)) w = 0.44;
+                  if (!Number.isFinite(h) || (h <= 0)) h = 0.06;
+                  if (!Number.isFinite(w) || (w <= 0)) w = 0.44;
                   pave.fX1NDC = midx - w/2;
                   pave.fY1NDC = y2 - h;
                   pave.fX2NDC = midx + w/2;
@@ -1601,7 +1601,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (d.check('SCAT=', true)) {
          this.Scat = true;
          this.ScatCoef = parseFloat(d.part);
-         if (isNaN(this.ScatCoef) || (this.ScatCoef<=0)) this.ScatCoef = 1.;
+         if (!Number.isFinite(this.ScatCoef) || (this.ScatCoef<=0)) this.ScatCoef = 1.;
       }
 
       if (d.check('SCAT')) this.Scat = true;
@@ -1679,7 +1679,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          if (hdim == 1) {
             this.Zero = false; // do not draw empty bins with errors
             this.Hist = false;
-            if (!isNaN(parseInt(d.part[0]))) this.ErrorKind = parseInt(d.part[0]);
+            if (Number.isFinite(parseInt(d.part[0]))) this.ErrorKind = parseInt(d.part[0]);
             if ((this.ErrorKind === 3) || (this.ErrorKind === 4)) this.need_fillcol = true;
             if (this.ErrorKind === 0) this.Zero = true; // enable drawing of empty bins
             if (d.part.indexOf('X0')>=0) this.errorX = 0;
@@ -2719,12 +2719,15 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       let res = prompt("Enter user range for axis " + arg + " like [1," + taxis.fNbins + "]", curr);
       if (!res) return;
       res = JSON.parse(res);
+      if (!res || (res.length != 2)) return;
 
-      if (!res || (res.length!=2) || isNaN(res[0]) || isNaN(res[1])) return;
-      taxis.fFirst = parseInt(res[0]);
-      taxis.fLast = parseInt(res[1]);
+      let first = parseInt(res[0]), last = parseInt(res[1]);
 
-      let newflag = (taxis.fFirst < taxis.fLast) && (taxis.fFirst >= 1) && (taxis.fLast<=taxis.fNbins);
+      if (!Number.isFinite(first) || !Number.isFinite(last)) return;
+      taxis.fFirst = first;
+      taxis.fLast = last;
+
+      let newflag = (taxis.fFirst < taxis.fLast) && (taxis.fFirst >= 1) && (taxis.fLast <= taxis.fNbins);
       if (newflag != taxis.TestBit(JSROOT.EAxisBits.kAxisRange))
          taxis.InvertBit(JSROOT.EAxisBits.kAxisRange);
 
@@ -2743,7 +2746,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       let res = prompt("Enter min/max hist values or empty string to reset", curr);
       res = res ? JSON.parse(res) : [];
 
-      if (!res || (typeof res != "object") || (res.length!=2) || isNaN(res[0]) || isNaN(res[1])) {
+      if (!res || (typeof res != "object") || (res.length!=2) || !Number.isFinite(res[0]) || !Number.isFinite(res[1])) {
          this.options.minimum = this.options.maximum = -1111;
       } else {
          this.options.minimum = res[0];
@@ -3611,7 +3614,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       if (side>4) side = 4;
       gry2 = pmain.swap_xy ? 0 : height;
-      if ((this.options.BaseLine !== false) && !isNaN(this.options.BaseLine))
+      if (Number.isFinite(this.options.BaseLine))
          if (this.options.BaseLine >= pmain.scale_ymin)
             gry2 = Math.round(pmain.gry(this.options.BaseLine));
 
