@@ -1257,7 +1257,7 @@ JSROOT.define(['rawinflate'], () => {
          }
 
          if (!isdir && only_dir)
-            return Promise.reject(Error("Key ${obj_name} is not directory}"));
+            return Promise.reject(Error(`Key ${obj_name} is not directory}`));
 
          read_key = key;
 

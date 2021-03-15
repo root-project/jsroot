@@ -2031,7 +2031,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
 
          if (!item) {
             selector.Terminate(false);
-            return Promise.reject(Error("Fail to add branch ${selector.branches[nn]}"));
+            return Promise.reject(Error(`Fail to add branch ${selector.branches[nn]}`));
          }
       }
 
