@@ -1824,7 +1824,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
 
             if (snames.length === 1) {
                // no point in the name - just plain array of objects
-               member.get = function(arr, n) { return arr[n]; }
+               member.get = (arr, n) => arr[n];
             } else if (read_mode === "$child$") {
                console.error('target name contains point, but suppose to be direct child', target_name);
                return null;
@@ -1837,7 +1837,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
                   let obj1 = arr[n][this.name1];
                   if (!obj1) obj1 = arr[n][this.name1] = this.methods1.Create();
                   return obj1;
-               }
+               };
             } else {
                // very complex task - we need to reconstruct several embedded members with their types
                // try our best - but not all data types can be reconstructed correctly
