@@ -1923,7 +1923,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
                         type: elem.fType,
                         func: function(buf, obj) {
                            obj[this.name] = buf.readFastArray(obj[this.stl_size], this.type);
-                        };
+                        }
                      };
 
                      if (branch.fBranchCount2) {
