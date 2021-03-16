@@ -297,14 +297,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if (!('_obj' in top))
          top._obj = obj;
-      else
-      if (top._obj !== obj) alert('object missmatch');
+      else if (top._obj !== obj)
+         alert('object missmatch');
 
       if (!top._title) {
          if (obj._typename)
             top._title = "ROOT." + obj._typename;
-         else
-         if (isarray) top._title = "Array len: " + obj.length;
+         else if (isarray)
+            top._title = "Array len: " + obj.length;
       }
 
       if (arrcompress) {
@@ -321,8 +321,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                   if (nextk===obj.length) break;
                   prevk = nextk;
                   nextk = Math.min(nextk+10,obj.length);
-               } else
-               if (prevk !== k) {
+               } else if (prevk !== k) {
                   // last block with similar
                   nextk = prevk;
                   allsame = true;
@@ -358,7 +357,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          if (compress && lastitem) {
             if (lastfield===fld) { ++cnt; lastkey = key; continue; }
-            if (cnt>0) lastitem._name += ".." + lastkey;
+            if (cnt > 0) lastitem._name += ".." + lastkey;
          }
 
          let item = { _parent: top, _name: key };
