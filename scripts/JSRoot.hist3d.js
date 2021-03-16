@@ -246,11 +246,11 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          }
 
          return (tip && tip.lines) ? tip : "";
-      }
+      };
 
       this.control.ProcessMouseLeave = function() {
          axis_painter.highlightBin3D(null);
-      }
+      };
 
       this.control.contextMenu = function(pos, intersects) {
          let kind = "painter", p = obj_painter;
@@ -266,7 +266,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          let fp = obj_painter.getFramePainter();
          if (fp && fp.showContextMenu)
             fp.showContextMenu(kind, pos, p);
-      }
+      };
 
    }
 
@@ -597,7 +597,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
             pos = min + pos*(max-min);
          }
          return pos;
-      }
+      };
 
       function CreateZoomMesh(kind, size_3d, use_y_for_z) {
          let geom = new THREE.Geometry();
@@ -1079,7 +1079,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          if (this.options.Zero || (axis_zmin>0)) return true;
 
          return this._show_empty_bins;
-      }
+      };
 
       // if bin ID fit into 16 bit, use smaller arrays for intersect indexes
       let use16indx = (histo.getBin(i2, j2) < 0xFFFF),
@@ -1268,7 +1268,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
             if (p.is_projection && (p.getDimension()==2)) tip.$painter = p; // used only for projections
 
             return tip;
-         }
+         };
 
          main.toplevel.add(mesh);
 
@@ -1980,7 +1980,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
           // return true if minimal histogram value should be skipped
           if (this.options.Zero || (zmin > 0)) return false;
           return !this._show_empty_bins;
-       }
+       };
 
        // loop over the points - first loop counts points, second fill arrays
        for (let loop=0;loop<2;++loop) {
@@ -2065,7 +2065,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
           tip.color = this.tip_color;
 
           return tip;
-       }
+       };
 
        main.toplevel.add(line);
    }
@@ -2539,7 +2539,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          tip.opacity = 0.3;
 
          return tip;
-      }
+      };
 
       return true;
    }
@@ -2837,7 +2837,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
             tip.color = this.tip_color;
 
             return tip;
-         }
+         };
 
          main.toplevel.add(combined_bins);
 
@@ -3165,7 +3165,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
                      "y: " + p.axisAsText("y", this.graph.fY[indx]),
                      "z: " + p.axisAsText("z", this.graph.fZ[indx])
                    ]
-         }
+         };
       }
 
       // try to define scale-down factor
@@ -3435,8 +3435,8 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
                      "y: " + p.axisAsText("y", this.poly.fP[indx+1]),
                      "z: " + p.axisAsText("z", this.poly.fP[indx+2])
                    ]
-         }
-      }
+         };
+      };
 
       fp.render3D(100); // set timeout to be able draw other points
 

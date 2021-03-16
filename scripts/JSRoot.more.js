@@ -3706,7 +3706,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
                 fColorGreen: obj._blob[9],
                 fColorBlue: obj._blob[10],
                 fColorAlpha: obj._blob[11]
-            }
+            };
 
             obj.fWidth = obj._blob[12];
             obj.fHeight = obj._blob[13];
@@ -3761,7 +3761,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
                if (!this.arr || !this.rgba) return "white";
                let indx = Math.round((zval - this.arr[0]) / (this.arr[this.arr.length-1] - this.arr[0]) * (this.rgba.length-4)/4) * 4;
                return "rgba(" + this.rgba[indx] + "," + this.rgba[indx+1] + "," + this.rgba[indx+2] + "," + this.rgba[indx+3] + ")";
-            }
+            };
          }
          for (let k=0;k<200;k++)
             this.fContour.arr[k] = min + (max-min)/(200-1)*k;

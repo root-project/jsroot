@@ -1313,7 +1313,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
       let get_ctrl = mesh => {
          return mesh.get_ctrl ? mesh.get_ctrl() : new GeoDrawingControl(mesh, this.ctrl.bloom.enabled);
-      }
+      };
 
       // check if selections are the same
       if (!curr_mesh && !active_mesh) return false;
@@ -2465,7 +2465,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          if ((step==0) && (tm2-tm1 > 200)) frames = 20;
          step++;
          this._animating = step < frames;
-      }
+      };
 
       animate();
 
@@ -4372,7 +4372,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
                geo.createItem(node, node._shape.fNode.fLeft, 'Left');
                geo.createItem(node, node._shape.fNode.fRight, 'Right');
                return true;
-            }
+            };
          }
 
          if (!sub._title && (obj._typename != "TGeoVolume")) sub._title = obj._typename;

@@ -1381,7 +1381,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
                }
             }
          }
-      }
+      };
 
       for (i = left; i <= right; i += di) {
 
@@ -2602,7 +2602,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
          }
          if (do_close) cmd += "z";
          return cmd;
-      }
+      };
 
       if (this.options.Contour===14) {
          let dd = "M0,0h"+frame_w+"v"+frame_h+"h-"+frame_w+"z";
