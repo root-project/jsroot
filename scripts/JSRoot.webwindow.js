@@ -566,7 +566,7 @@ JSROOT.define([], () => {
                   reader.onload = function(event) {
                      // The file's text will be printed here
                      pthis.markQueueItemDone(qitem, event.target.result, 0);
-                  }
+                  };
                   reader.readAsArrayBuffer(msg, e.offset || 0);
                } else {
                   // console.log('got array ' + (typeof msg) + ' len = ' + msg.byteLength);

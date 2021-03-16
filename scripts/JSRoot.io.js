@@ -1772,7 +1772,7 @@ JSROOT.define(['rawinflate'], () => {
             streamer[nn].pair_name = (nn == 0) ? "first" : "second";
             streamer[nn].func = function(buf, obj) {
                obj[this.pair_name] = this.readelem(buf);
-            }
+            };
          }
 
       return streamer;
@@ -2728,7 +2728,7 @@ JSROOT.define(['rawinflate'], () => {
                      case "pi/4": return sign * Math.PI / 4;
                   }
                   return sign * Math.PI;
-               }
+               };
 
                element.fXmin = parse_range(arr[0]);
                element.fXmax = parse_range(arr[1]);

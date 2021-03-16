@@ -1151,11 +1151,11 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
             let filename = main.select(".gui_urlToLoad").property('value').trim();
             if (!filename) return;
 
-            if ((filename.toLowerCase().lastIndexOf(".json") == filename.length-5))
+            if (filename.toLowerCase().lastIndexOf(".json") == filename.length-5)
                this.openJsonFile(filename);
             else
                this.openRootFile(filename);
-         }
+         };
 
          jmain.find(".gui_selectFileName").val("")
               .change(function() { jmain.find(".gui_urlToLoad").val($(this).val()); });
@@ -1187,7 +1187,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
                localfile_read_callback = resolveFunc;
                $("#" + this.gui_div + " .jsroot_browser").find(".gui_localFile").click();
             });
-         }
+         };
       }
 
       let jlayout = jmain.find(".gui_layout");
@@ -1962,7 +1962,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
                JSROOT.cleanup(this.drawid);
                JSROOT.draw(this.drawid, res, option);
             });
-         }
+         };
 
          if (this.askey) {
             // first let read tree from the file

@@ -1087,7 +1087,7 @@
          opts: {},
          has: function(opt) { return this.opts[opt] !== undefined; },
          get: function(opt,dflt) { let v = this.opts[opt]; return v!==undefined ? v : dflt; }
-      }
+      };
 
       if (!url || (typeof url !== 'string')) {
          if (JSROOT.settings.IgnoreUrlOptions || (typeof document === 'undefined')) return res;
@@ -1239,7 +1239,7 @@
          }
 
          this.http_callback(this.response);
-      }
+      };
 
       xhr.open(method, url, async);
 
@@ -1290,7 +1290,7 @@
          let scripts = url, loadNext = () => {
             if (!scripts.length) return Promise.resolve(true);
             return JSROOT.loadScript(scripts.shift()).then(loadNext, loadNext);
-         }
+         };
          return loadNext();
       }
 
