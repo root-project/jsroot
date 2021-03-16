@@ -5726,14 +5726,16 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           absmin = Math.max(0, main.minbin),
           i, j, binz, absz, res = "", cross = "", btn1 = "", btn2 = "",
           zdiff, dgrx, dgry, xx, yy, ww, hh, xyfactor,
-          uselogz = false, logmin = 0, logmax = 1,
+          uselogz = false, logmin = 0,
           pad = this.getPadPainter().getRootPad(true);
 
       if (pad && pad.fLogz && (absmax > 0)) {
          uselogz = true;
-         logmax = Math.log(absmax);
+         let logmax = Math.log(absmax);
          if (absmin>0) logmin = Math.log(absmin); else
-         if ((main.minposbin>=1) && (main.minposbin<100)) logmin = Math.log(0.7); else
+         if ((main.minposbin>=1) && (main.minposbin<100))
+            logmin = Math.log(0.7);
+         else
             logmin = (main.minposbin > 0) ? Math.log(0.7*main.minposbin) : logmax - 10;
          if (logmin >= logmax) logmin = logmax - 10;
          xyfactor = 1. / (logmax - logmin);
