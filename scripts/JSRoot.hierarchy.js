@@ -135,7 +135,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                _title: "NULL",
                _value: "null",
                _obj: null
-            }
+            };
          } else {
            item = {
              _name: obj.fName || obj.name,
@@ -209,7 +209,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                item._expand = function(node, obj) {
                   // one can get expand call from child objects - ignore them
                   return keysHierarchy(node, obj.fKeys);
-               }
+               };
             } else {
                // remove cycle number - we have already directory
                item._name = key.fName;
@@ -1711,7 +1711,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          }
 
          return Promise.resolve(-1);
-      }
+      };
 
       let promise = Promise.resolve(-1);
 
@@ -2008,7 +2008,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          this.h._get = (item, itemname, option) => {
             return this.getOnlineItem(item, itemname, option);
-         }
+         };
 
          this.h._expand = onlineHierarchy;
 
@@ -2358,14 +2358,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       let d = JSROOT.decodeUrl(url);
 
-      function GetOption(opt) {
+      let GetOption = opt => {
          let res = d.get(opt, null);
          if ((res===null) && gui_div && !gui_div.empty() && gui_div.node().hasAttribute(opt))
             res = gui_div.attr(opt);
          return res;
-      }
+      };
 
-      function GetUrlOptionAsArray(opt) {
+      let GetUrlOptionAsArray = opt => {
 
          let res = [];
 
@@ -2386,9 +2386,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                res.push(val);
          }
          return res;
-      }
+      };
 
-      let GetOptionAsArray = (opt) => {
+      let GetOptionAsArray = opt => {
          let res = GetUrlOptionAsArray(opt);
          if (res.length>0 || !gui_div || gui_div.empty()) return res;
          while (opt.length>0) {
@@ -2408,7 +2408,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             else if (val!==null) res.push(val);
          }
          return res;
-      }
+      };
 
       let prereq = GetOption('prereq') || "",
           filesdir = d.get("path") || "", // path used in normal gui
@@ -2535,7 +2535,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                    });
 
          return promise.then(openAllFiles);
-      }
+      };
 
       let h0 = null;
       if (this.is_online) {

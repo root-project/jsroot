@@ -3853,7 +3853,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             yerr2 = Math.round(pmain.gry(bincont - binerr) - my); // down
          }
          return true;
-      }
+      };
 
       let draw_errbin = () => {
          let edx = 5;
@@ -3866,7 +3866,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          path_err += "M" + midx + "," + (my-yerr1+dend) + endy + "v" + (yerr1+yerr2-2*dend) + endy;
          if (hints_err !== null)
          hints_err += "M" + (midx-edx) + "," + (my-yerr1) + "h" + (2*edx) + "v" + (yerr1+yerr2) + "h" + (-2*edx) + "z";
-      }
+      };
 
       let draw_bin = bin => {
          if (extract_bin(bin)) {
@@ -3902,7 +3902,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                }
             }
          }
-      }
+      };
 
       // check if we should draw markers or error marks directly, skipping optimization
       if (do_marker || do_err)

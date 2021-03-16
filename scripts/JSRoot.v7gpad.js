@@ -527,7 +527,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       handle.reset = function() {
          this.nminor = this.nmiddle = this.nmajor = 0;
-      }
+      };
 
       handle.next = function(doround) {
          if (this.nminor >= this.minor.length) return false;
@@ -547,16 +547,16 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             this.kind = 1;
          }
          return true;
-      }
+      };
 
       handle.last_major = function() {
          return (this.kind !== 1) ? false : this.nmajor == this.major.length;
-      }
+      };
 
       handle.next_major_grpos = function() {
          if (this.nmajor >= this.major.length) return null;
          return this.func(this.major[this.nmajor]);
-      }
+      };
 
       this.order = 0;
       this.ndig = 0;
