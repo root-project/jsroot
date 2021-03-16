@@ -48,7 +48,6 @@ JSROOT.define([], () =>  {
          p = Math.floor(q);
          if ( p==q )//_unur_FP_same(p,q)
             return Number.POSITIVE_INFINITY;
-         i = Math.round(p);
          z = q - p;
          if ( z > 0.5 ) {
             p += 1.0;
