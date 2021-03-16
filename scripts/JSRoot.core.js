@@ -194,6 +194,15 @@
       return res;
    }
 
+   /** @summary Check if prototype string match to array (typed on untyped) */
+   function is_array_proto(proto) {
+       if ((proto.length < 14) || (proto.indexOf('[object ') != 0)) return false;
+       let p = proto.indexOf('Array]');
+       return (p > 0) && (p == proto.length-6);
+   }
+
+   _.is_array_proto = is_array_proto;
+
    /** @summary Specialized JSROOT constants, used in {@link JSROOT.settings}
      * @namespace
      * @private */
@@ -839,7 +848,7 @@
          let proto = Object.prototype.toString.apply(value);
 
          // scan array - it can contain other objects
-         if ((proto.length >= 14) && (proto.indexOf('[object ') == 0) && (proto.indexOf('Array]')== proto.length-6)) {
+         if (is_array_proto(proto)) {
              for (let i = 0; i < value.length; ++i) {
                 let res = unref_value(value[i]);
                 if (res!==undefined) value[i] = res;
@@ -970,7 +979,7 @@
       }
 
       // process typed array
-      if ((proto.length >= 14) && (proto.indexOf('[object ') == 0) && (proto.indexOf('Array]') == proto.length-6)) {
+      if (is_array_proto(proto)) {
          let tgt = [];
          map.obj.push(src);
          map.clones.push(tgt);
