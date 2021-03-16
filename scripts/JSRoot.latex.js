@@ -1011,17 +1011,19 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    function repairMathJaxSvgSize(painter, mj_node, svg, arg) {
       let transform = value => {
          if (!value || (typeof value !== "string") || (value.length < 3)) return null;
-         if (value.indexOf("ex") !== value.length - 2) return null;
-         value = parseFloat(value.substr(0, value.length - 2));
-         return !Number.isFinite(value) ? null : value * arg.font.size * 0.5;
+         let p = value.indexOf("ex");
+         if ((p < 0) || (p !== value.length - 2)) return null;
+         value = parseFloat(value.substr(0, p));
+         return Number.isFinite(value) ? value * arg.font.size * 0.5 : null;
       }
 
       let width = transform(svg.attr("width")),
           height = transform(svg.attr("height")),
           valign = svg.attr("style");
 
-      if (valign && (valign.length > 18) && valign.indexOf("vertical-align:") == 0 && valign.indexOf("ex;") == valign.length - 3) {
-         valign = transform(valign.substr(16, valign.length - 17));
+      if (valign && (valign.length > 18) && valign.indexOf("vertical-align:") == 0) {
+         let p = valign.indexOf("ex;");
+         valign = ((p > 0) && (p == valign.length - 3)) ? transform(valign.substr(16, valign.length - 17)) : null;
       } else {
          valign = null;
       }
