@@ -177,10 +177,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       while ((str.length > 2) && (str[0] == '{') && (str[str.length - 1] == '}'))
          str = str.substr(1, str.length - 2);
 
-      if (!symbolsRegexCache) {
-         // Create a single regex to detect any symbol to replace
-         symbolsRegexCache = new RegExp('(' + Object.keys(symbols_map).join('|').replace(/\{/g, '\{').replace(/\\}/g, '\\}') + ')', 'g');
-      }
+      // Create a single regex to detect any symbol to replace
+      if (!symbolsRegexCache)
+         symbolsRegexCache = new RegExp('(' + Object.keys(symbols_map).join('|').replace(/\{/g, '{').replace(/\}/g, '}') + ')', 'g');
 
       str = str.replace(symbolsRegexCache, ch => symbols_map[ch]);
 
