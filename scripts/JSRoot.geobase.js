@@ -3463,10 +3463,10 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
    geo.cleanupShape = function(shape) {
       if (!shape) return;
 
-      if (shape.geom && (typeof shape.geom.dispose == 'funciton'))
+      if (shape.geom && (typeof shape.geom.dispose == 'function'))
          shape.geom.dispose();
 
-      if (shape.geomZ && (typeof shape.geomZ.dispose == 'funciton'))
+      if (shape.geomZ && (typeof shape.geomZ.dispose == 'function'))
          shape.geomZ.dispose();
 
       delete shape.geom;
