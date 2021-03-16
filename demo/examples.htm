@@ -135,17 +135,14 @@
                 use_zstd = false;
          }
 
-         if ((window.location.protocol == "file:") || (window.location.host.indexOf('rawgit.com') >= 0)) {
+         if (window.location.protocol == "file:") {
             scripts = "../scripts/";
             jsroot_path = "../index.htm";
             demo_path = "../demo/",
-            filepath = "https://root.cern/js/files/";
+            filepath = "https://jsroot.gsi.de/files/";
             use_requirejs = false;
             icon.setAttribute('src', "../img/RootIcon.ico");
          }
-
-         if (window.location.protocol == "file:")
-            filepath = "https://jsroot.gsi.de/files/";
 
          document.getElementsByTagName("head")[0].appendChild(icon);
 
