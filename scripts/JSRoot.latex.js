@@ -1015,7 +1015,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if ((p < 0) || (p !== value.length - 2)) return null;
          value = parseFloat(value.substr(0, p));
          return Number.isFinite(value) ? value * arg.font.size * 0.5 : null;
-      }
+      };
 
       let width = transform(svg.attr("width")),
           height = transform(svg.attr("height")),

@@ -928,7 +928,7 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
          calcZ = function(x,y,z) {
             let arr = (z<0) ? shape.fNlow : shape.fNhigh;
             return ((z<0) ? -shape.fDz : shape.fDz) - (x*arr[0] + y*arr[1]) / arr[2];
-         }
+         };
 
       // create outer/inner tube
       for (let side = 0; side<2; ++side) {
@@ -2591,12 +2591,12 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
             if (factor) entry.factor = factor; // factor used to indicate importance of entry, will be build as first
             for (let n=0;n<this.last;++n) entry.stack[n] = this.stack[n+1]; // copy stack
             return entry;
-         }
+         };
 
          if (arg.domatrix) {
             arg.matrices = [];
             arg.mpool = [ new THREE.Matrix4() ]; // pool of Matrix objects to avoid permanent creation
-            arg.getmatrix = function() { return this.matrices[this.last]; }
+            arg.getmatrix = function() { return this.matrices[this.last]; };
          }
       }
 
@@ -3099,7 +3099,7 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
                    }
 
                 return true;
-             }
+             };
 
              for (let n=0;n<arg.viscnt.length;++n) arg.viscnt[n] = 0;
 
@@ -3126,7 +3126,7 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
                this.items.push(this.CopyStack(camFact));
          }
          return true;
-      }
+      };
 
       this.scanVisible(arg);
 

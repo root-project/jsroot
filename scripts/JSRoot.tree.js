@@ -818,7 +818,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
          }
          selector.Abort();
          JSROOT.Painter.showProgress();
-      }
+      };
 
       JSROOT.Painter.showProgress(main_box);
       this.last_progress = value;
@@ -935,7 +935,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
       res.GetBin = function(value) {
          const bin = this.lbls ? this.lbls.indexOf(value) : Math.floor((value - this.min) * this.k);
          return (bin < 0) ? 0 : ((bin > this.nbins) ? this.nbins + 1 : bin + 1);
-      }
+      };
 
       return res;
    }
@@ -1705,7 +1705,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
 
                         while (n < size) arr[n++] = this.methods.Create(); // create new objects
                      }
-                  }
+                  };
 
                   if ((typeof read_mode === "string") && (read_mode[0] === ".")) {
                      member.conttype = detectBranchMemberClass(branch.fBranches, branch.fName + read_mode);
@@ -1796,7 +1796,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
                            while (l < this.leaves.length)
                               this.leaves[l++].func(buf, tgt);
                         }
-                     }
+                     };
                }
 
          if (!elem && !member) {
@@ -1868,7 +1868,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
                      obj1 = obj2;
                   }
                   return obj1;
-               }
+               };
             }
 
             // case when target is sub-object and need to be created before
@@ -1884,7 +1884,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
                   let arr = obj[this.name0], n = 0; // objects array where reading is done
                   while (n < arr.length)
                      this.func0(buf, this.get(arr, n++)); // read all individual object with standard functions
-               }
+               };
             }
 
          } else if (item_cnt) {
@@ -1897,7 +1897,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
                member.stl_size = item_cnt.name;
                member.func = function(buf, obj) {
                   obj[this.name] = this.readarr(buf, obj[this.stl_size]);
-               }
+               };
 
             } else
                if (((elem.fType === jsrio.kOffsetP + jsrio.kDouble32) || (elem.fType === jsrio.kOffsetP + jsrio.kFloat16)) && branch.fBranchCount2) {
@@ -1910,7 +1910,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
                      for (let n = 0; n < sz0; ++n)
                         arr[n] = (buf.ntou1() === 1) ? this.readarr(buf, sz1[n]) : [];
                      obj[this.name] = arr;
-                  }
+                  };
 
                } else
                   // special handling of simple arrays
@@ -1923,7 +1923,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
                         type: elem.fType,
                         func: function(buf, obj) {
                            obj[this.name] = buf.readFastArray(obj[this.stl_size], this.type);
-                        }
+                        };
                      };
 
                      if (branch.fBranchCount2) {
@@ -1934,7 +1934,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
                            for (let n = 0; n < sz0; ++n)
                               arr[n] = (buf.ntou1() === 1) ? buf.readFastArray(sz1[n], this.type) : [];
                            obj[this.name] = arr;
-                        }
+                        };
                      }
 
                   } else
@@ -2703,7 +2703,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
 
             this.Process(selector, drawargs);
          }
-      }
+      };
 
       return new Promise(resolve => {
          args.resolveFunc = resolve;
@@ -2914,7 +2914,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
                return objpainter; // return painter for histogram
             });
          });
-      }
+      };
 
       args.progress = obj => process_result(obj, true);
 
