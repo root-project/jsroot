@@ -1819,12 +1819,12 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
             geometry.computeVertexNormals();
             if (donormals && (lvl===1)) RecalculateNormals(geometry.getAttribute('normal').array);
 
-            let fcolor, material, fFillColor = 5;
+            let fcolor, material;
             if (palette) {
                fcolor = palette.getColor(lvl-1);
             } else {
-               fcolor = fFillColor > 1 ? this.getColor(fFillColor) : 'white';
-               if ((this.options.Surf === 14) && (fFillColor<2)) fcolor = this.getColor(48);
+               fcolor = this.getColor(5);
+               // if (this.options.Surf === 14) fcolor = this.getColor(48);
             }
 
             if (this.options.Surf === 14)
