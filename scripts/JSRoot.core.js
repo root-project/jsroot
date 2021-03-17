@@ -965,10 +965,10 @@
          if (i >= 0) return map.clones[i];
       }
 
-      let proto = Object.prototype.toString.apply(src);
+      let arr_kind = is_array_proto(Object.prototype.toString.apply(src));
 
       // process normal array
-      if (proto === '[object Array]') {
+      if (arr_kind == 1) {
          let tgt = [];
          map.obj.push(src);
          map.clones.push(tgt);
@@ -982,7 +982,7 @@
       }
 
       // process typed array
-      if (is_array_proto(proto) == 2) {
+      if (arr_kind == 2) {
          let tgt = [];
          map.obj.push(src);
          map.clones.push(tgt);
@@ -1035,10 +1035,8 @@
 
          if ((value===undefined) || (value===null) || (typeof value !== 'object')) return value;
 
-         let proto = Object.prototype.toString.apply(value);
-
          // typed array need to be converted into normal array, otherwise looks strange
-         if (is_array_proto(proto) == 2) {
+         if (is_array_proto(Object.prototype.toString.apply(value)) > 0) {
             let arr = new Array(value.length);
             for (let i = 0; i < value.length; ++i)
                arr[i] = copy_value(value[i]);
