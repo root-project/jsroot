@@ -376,7 +376,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             proto = Object.prototype.toString.apply(fld);
 
-            if (JSROOT._.is_array_proto(proto)) {
+            if (JSROOT._.is_array_proto(proto) > 0) {
                item._title = "array len=" + fld.length;
                simple = (proto != '[object Array]');
                if (fld.length === 0) {
