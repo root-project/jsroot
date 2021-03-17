@@ -1749,7 +1749,8 @@ THREE.SVGRenderer = function () {
 
    return rndr;
 
-}
+};
+
 // Content of examples/js/controls/OrbitControls.js
 
 // This set of controls performs orbiting, dollying (zooming), and panning.
