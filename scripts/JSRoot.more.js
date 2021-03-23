@@ -837,7 +837,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       // check pad options first
       res.PadStats = d.check("USE_PAD_STATS");
-      let hopt = "", checkhopt = ["USE_PAD_TITLE", "LOGX", "LOGY", "LOGZ", "GRIDXY", "GRIDX", "GRIDY", "TICKXY", "TICKX", "TICKY"];
+      let hopt = "", checkhopt = ["USE_PAD_TITLE", "LOGXY", "LOGX", "LOGY", "LOGZ", "GRIDXY", "GRIDX", "GRIDY", "TICKXY", "TICKX", "TICKY"];
       checkhopt.forEach(name => { if (d.check(name)) hopt += ";" + name; });
 
       if (d.empty()) {
@@ -3452,7 +3452,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       painter._plc = d.check("PLC");
       painter._pmc = d.check("PMC");
 
-      let hopt = "", checkhopt = ["USE_PAD_TITLE", "LOGX", "LOGY", "LOGZ", "GRIDXY", "GRIDX", "GRIDY", "TICKXY", "TICKX", "TICKY"];
+      let hopt = "", checkhopt = ["USE_PAD_TITLE", "LOGXY", "LOGX", "LOGY", "LOGZ", "GRIDXY", "GRIDX", "GRIDY", "TICKXY", "TICKX", "TICKY"];
       checkhopt.forEach(name => { if (d.check(name)) hopt += ";" + name; });
 
       let promise = Promise.resolve(painter);
