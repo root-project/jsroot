@@ -3850,7 +3850,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       }
 
       if (url)
-         this.createG(true)
+         this.createG(fp ? true : false)
              .append("image")
              .attr("href", url)
              .attr("width", rect.width)
@@ -3992,7 +3992,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    function drawASImage(divid, obj, opt) {
       let painter = new TASImagePainter(divid, obj, opt);
       painter.decodeOptions(opt);
-      return jsrp.ensureTCanvas(painter)
+      return jsrp.ensureTCanvas(painter, false)
                  .then(() => painter.drawImage())
                  .then(() => {
                      painter.fillToolbar();
