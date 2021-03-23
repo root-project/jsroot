@@ -3389,7 +3389,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
    /** @summary draw speical histogram for axis
      * @returns {Promise} when ready */
-   TMultiGraphPainter.prototype.drawAxis = function() {
+   TMultiGraphPainter.prototype.drawAxis = function(hopt) {
 
       let mgraph = this.getObject(),
           pp = this.getPadPainter(),
@@ -3397,7 +3397,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       // histogram painter will be first in the pad, will define axis and
       // interactive actions
-      return JSROOT.draw(this.getDom(), histo, "AXIS");
+      return JSROOT.draw(this.getDom(), histo, "AXIS" + hopt);
    }
 
    /** @summary method draws next function from the functions list  */
@@ -3452,9 +3452,12 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       painter._plc = d.check("PLC");
       painter._pmc = d.check("PMC");
 
+      let hopt = "", checkhopt = ["USE_PAD_TITLE", "LOGX", "LOGY", "LOGZ", "GRIDXY", "GRIDX", "GRIDY", "TICKXY", "TICKX", "TICKY"];
+      checkhopt.forEach(name => { if (d.check(name)) hopt += ";" + name; });
+
       let promise = Promise.resolve(painter);
       if (d.check("A") || !painter.getMainPainter())
-         promise = painter.drawAxis().then(fp => {
+         promise = painter.drawAxis(hopt).then(fp => {
             painter.firstpainter = fp;
             return painter;
          });
