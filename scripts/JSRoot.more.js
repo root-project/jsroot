@@ -820,8 +820,6 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    /** @summary Decode options  */
    TGraphPainter.prototype.decodeOptions = function(opt) {
 
-      if (!opt) opt = this.getMainPainter() ? "lp" : "alp";
-
       if ((typeof opt == "string") && (opt.indexOf("same ")==0))
          opt = opt.substr(5);
 
@@ -832,13 +830,20 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       JSROOT.extend(this.options, {
          Line: 0, Curve: 0, Rect: 0, Mark: 0, Bar: 0, OutRange: 0,  EF:0, Fill: 0, NoOpt: 0,
-         MainError: 1, Ends: 1, Axis: "", PadStats: false, PadTitle: false, original: opt
+         MainError: 1, Ends: 1, Axis: "", PadStats: false, original: opt
        });
 
       let res = this.options;
 
+      // check pad options first
       res.PadStats = d.check("USE_PAD_STATS");
-      res.PadTitle = d.check("USE_PAD_TITLE");
+      let hopt = "", checkhopt = ["USE_PAD_TITLE", "LOGX", "LOGY", "LOGZ", "GRIDXY", "GRIDX", "GRIDY", "TICKXY", "TICKX", "TICKY"];
+      checkhopt.forEach(name => { if (d.check(name)) hopt += ";" + name; });
+
+      if (d.empty()) {
+         res.original = this.getMainPainter() ? "lp" : "alp";
+         d = new JSROOT.DrawOptions(res.original);
+      }
 
       res._pfc = d.check("PFC");
       res._plc = d.check("PLC");
@@ -894,11 +899,11 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          let pp = this.getPadPainter();
          let pad = pp ? pp.getRootPad(true) : null;
          if (!pad || (pad.fPrimitives && (pad.fPrimitives.arr[0] === graph))) res.Axis = "AXIS";
-      } else if (res.Axis.indexOf("A")<0) {
+      } else if (res.Axis.indexOf("A") < 0) {
          res.Axis = "AXIS," + res.Axis;
       }
 
-      if (res.PadTitle) res.Axis += ";USE_PAD_TITLE";
+      res.Axis += hopt;
 
       res.HOptions = res.Axis;
    }
