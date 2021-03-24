@@ -1,4 +1,4 @@
-/// @file JSRoot.gpad.js
+// @file JSRoot.gpad.js
 /// JSROOT TPad/TCanvas/TFrame support
 
 JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
@@ -2680,7 +2680,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       menu.add("separator");
 
-      if (this.activateStatusBar)
+      if (typeof this.hasMenuBar == 'function' && typeof this.actiavteMenuBar == 'function')
+         menu.addchk(this.hasMenuBar(), "Menu bar", flag => this.actiavteMenuBar(flag));
+
+      if (typeof this.hasEventStatus == 'function' && typeof this.activateStatusBar == 'function')
          menu.addchk(this.hasEventStatus(), "Event status", () => this.activateStatusBar('toggle'));
 
       if (this.enlargeMain() || (this.has_canvas && this.hasObjectsToDraw()))
