@@ -4195,7 +4195,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    TCanvasPainter.prototype.completeCanvasSnapDrawing = function() {
       if (!this.pad) return;
 
-      if (document) document.title = this.pad.fTitle;
+      if (document && !this.embed_canvas)
+         document.title = this.pad.fTitle;
 
       if (this._all_sections_showed) return;
       this._all_sections_showed = true;
