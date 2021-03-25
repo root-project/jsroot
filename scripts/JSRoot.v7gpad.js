@@ -3773,6 +3773,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       RPadPainter.call(this, divid, canvas, true);
       this._websocket = null;
       this.tooltip_allowed = JSROOT.settings.Tooltip;
+      this.v7canvas = true;
    }
 
    RCanvasPainter.prototype = Object.create(RPadPainter.prototype);
@@ -3920,7 +3921,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    RCanvasPainter.prototype.saveCanvasAsFile = function(fname) {
       let pnt = fname.indexOf(".");
       this.createImage(fname.substr(pnt+1))
-          .then(res => this.sendWebsocket("SAVE:" + fname + ":" + res));
+          .then(res => { console.log('save', fname, res.length); this.sendWebsocket("SAVE:" + fname + ":" + res); });
    }
 
    /** @summary Send command to server to save canvas with specified name
