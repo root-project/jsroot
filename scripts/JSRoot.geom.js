@@ -4423,11 +4423,11 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
           _more: true,
           _geoobj: lst,
           _parent: parent,
-      }
+      };
 
       item._get = function(item /*, itemname */) {
          return Promise.resolve(item._geoobj || null);
-      }
+      };
 
       item._expand = function(node, lst) {
          // only childs
@@ -4445,7 +4445,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
             geo.createItem(node, lst.arr[n]);
 
          return true;
-      }
+      };
 
       if (!parent._childs) parent._childs = [];
       parent._childs.push(item);

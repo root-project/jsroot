@@ -3379,7 +3379,7 @@ JSROOT.define(['d3'], (d3) => {
       { name: "ROOT::Experimental::REveGeoShapeExtract", icon: 'img_histo3d', prereq: "geom", func: ".drawGeoObject", expand: "JSROOT.GEO.expandObject", opt: ";more;all;count;projx;projz;wire;dflt", ctrl: "dflt" },
       { name: "TGeoOverlap", icon: 'img_histo3d', prereq: "geom", expand: "JSROOT.GEO.expandObject", func: ".drawGeoObject", opt: ";more;all;count;projx;projz;wire;dflt", dflt: "dflt", ctrl: "expand" },
       { name: "TGeoManager", icon: 'img_histo3d', prereq: "geom", expand: "JSROOT.GEO.expandObject", func: ".drawGeoObject", opt: ";more;all;count;projx;projz;wire;tracks;dflt", dflt: "expand", ctrl: "dflt" },
-      { name: /^TGeo/, icon: 'img_histo3d', prereq: "geom", func: ".drawGeoObject", opt: ";more;all;axis;compa;count;projx;projz;wire;dflt", ctrl: "dflt" },
+      { name: /^TGeo/, icon: 'img_histo3d', prereq: "geom", func: ".drawGeoObject", expand: "JSROOT.GEO.expandObject", opt: ";more;all;axis;compa;count;projx;projz;wire;dflt", dflt: "dflt", ctrl: "expand" },
       // these are not draw functions, but provide extra info about correspondent classes
       { name: "kind:Command", icon: "img_execute", execute: true },
       { name: "TFolder", icon: "img_folder", icon2: "img_folderopen", noinspect: true, prereq: "hierarchy", expand: ".folderHierarchy" },
