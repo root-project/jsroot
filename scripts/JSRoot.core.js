@@ -934,6 +934,9 @@
             return; // pair object is not counted in the objects map
          }
 
+        // prevent endless loop
+        if (map.indexOf(value) >= 0) return;
+
          // add object to object map
          map.push(value);
 
