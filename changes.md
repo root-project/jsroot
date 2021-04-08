@@ -2,8 +2,8 @@
 
 ## Changes in 6.0.2
 
-1. Prevent endless loop in JSROOT.parse() function
-2. Fix ZSTD size limitation, use streaming API (#214)
+1. Fix ZSTD size limitation, use streaming API (#214)
+2. Prevent endless recursion in JSROOT.parse() function
 
 
 ## Changes in 6.0.1
