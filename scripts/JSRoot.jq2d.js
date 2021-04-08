@@ -1888,6 +1888,8 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          }
 
          this.checkResize();
+
+         jsrp.registerForResize(this);
       }
 
       player.PerformLocalDraw = function() {
