@@ -10,6 +10,11 @@
 8. Support gridx/y, tickx/y, logx/y options for (multi) graphs painter
 
 
+## Changes in 6.0.2
+1. Fix ZSTD size limitation, use streaming API (#214)
+2. Prevent endless recursion in JSROOT.parse() function
+
+
 ## Changes in 6.0.1
 1. Fix problem with matrix calculations in Eve classes (#206)
 2. Fix errors in TNodejsFile (#208)
