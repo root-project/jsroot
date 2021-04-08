@@ -1,5 +1,11 @@
 # JSROOT changelog
 
+## Changes in 6.0.2
+
+1. Prevent endless loop in JSROOT.parse() function
+2. Fix ZSTD size limitation, use streaming API (#214)
+
+
 ## Changes in 6.0.1
 
 1. Fix problem with matrix calculations in Eve classes (#206)
