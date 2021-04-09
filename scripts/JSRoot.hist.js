@@ -4362,7 +4362,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          menu.addRebinMenu(sz => this.rebinHist(sz));
    }
 
-   /** @summary Rebin histogram
+   /** @summary Rebin 1 dim histogram, used via context menu
      * @private */
    TH1Painter.prototype.rebinHist = function(sz) {
       let histo = this.getHisto(),
@@ -4370,30 +4370,42 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           nbins = Math.floor(xaxis.fNbins/ sz);
       if (nbins < 2) return;
 
-      let arr = new Array(nbins+2);
+      let arr = new Array(nbins+2), xbins = null;
+
+      if (xaxis.fXbins.length > 0)
+         xbins = new Array(nbins);
 
       arr[0] = histo.fArray[0];
       let indx = 1;
 
       for (let i = 1; i <= nbins; ++i) {
+         if (xbins) xbins[i-1] = xaxis.fXbins[indx-1];
          let sum = 0;
          for (let k = 0; k < sz; ++k)
            sum += histo.fArray[indx++];
          arr[i] = sum;
+
       }
+
+      if (xbins) {
+         if (indx <= xaxis.fXbins.length)
+            xaxis.fXmax = xaxis.fXbins[indx-1];
+         xaxis.fXbins = xbins;
+      } else {
+         xaxis.fXmax = xaxis.fXmin + (xaxis.fXmax - xaxis.fXmin) / xaxis.fNbins * nbins * sz;
+      }
+
+      xaxis.fNbins = nbins;
 
       let overflow = 0;
       while (indx < histo.fArray.length)
          overflow += histo.fArray[indx++];
       arr[nbins+1] = overflow;
 
-      xaxis.fXmax = xaxis.fXmin + (xaxis.fXmax - xaxis.fXmin) / xaxis.fNbins * nbins * sz;
-      xaxis.fNbins = nbins;
       histo.fArray = arr;
       histo.fSumw2 = [];
 
       this.scanContent();
-      // this.histogram_updated = true; // indicate that object updated
 
       this.interactiveRedraw("pad");
    }
