@@ -1872,11 +1872,22 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          let p = this;
 
          if (this.local_tree)
-            main.find('.treedraw_buttons').attr('title', "Tree draw player for: " + this.local_tree.fName);
-         main.find('.treedraw_exe').button().click(() => p.PerformDraw());
+            main.find('.treedraw_buttons')
+                .prop("title", "Tree draw player for: " + this.local_tree.fName);
+         main.find('.treedraw_exe')
+             .button().click(() => p.PerformDraw());
          main.find('.treedraw_varexp')
               .val(args && args.parse_expr ? args.parse_expr : (this.dflt_expr || "px:py"))
-              .keyup(this.keyup);
+              .keyup(this.keyup)
+              .prop("title","Example of valid draw expressions:\n" +
+                            "  px  - 1-dim draw\n" +
+                            "  px:py  - 2-dim draw\n" +
+                            "  px:py:pz  - 3-dim draw\n" +
+                            "  px+py:px-py - use any expressions\n" +
+                            "  px:py>>Graph - create and draw TGraph\n" +
+                            "  px:py>>dump - dump extracted variables\n" +
+                            "  px:py>>h(50,-5,5,50,-5,5) - custom histogram\n" +
+                            "  px:py;hbins:100 - custom number of bins\n");
 
          if (show_extra) {
             this.ShowExtraButtons(args);
