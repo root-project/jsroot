@@ -4357,6 +4357,45 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          // redraw all objects in pad, inform dependent objects
          this.interactiveRedraw("pad", "drawopt");
       });
+
+      if (!this.snapid && !this.isTProfile())
+         menu.addRebinMenu(sz => this.rebinHist(sz));
+   }
+
+   /** @summary Rebin histogram
+     * @private */
+   TH1Painter.prototype.rebinHist = function(sz) {
+      let histo = this.getHisto(),
+          xaxis = histo.fXaxis,
+          nbins = Math.floor(xaxis.fNbins/ sz);
+      if (nbins < 2) return;
+
+      let arr = new Array(nbins+2);
+
+      arr[0] = histo.fArray[0];
+      let indx = 1;
+
+      for (let i = 1; i <= nbins; ++i) {
+         let sum = 0;
+         for (let k = 0; k < sz; ++k)
+           sum += histo.fArray[indx++];
+         arr[i] = sum;
+      }
+
+      let overflow = 0;
+      while (indx < histo.fArray.length)
+         overflow += histo.fArray[indx++];
+      arr[nbins+1] = overflow;
+
+      xaxis.fXmax = xaxis.fXmin + (xaxis.fXmax - xaxis.fXmin) / xaxis.fNbins * nbins * sz;
+      xaxis.fNbins = nbins;
+      histo.fArray = arr;
+      histo.fSumw2 = [];
+
+      this.scanContent();
+      // this.histogram_updated = true; // indicate that object updated
+
+      this.interactiveRedraw("pad");
    }
 
    /** @summary Perform automatic zoom inside non-zero region of histogram
