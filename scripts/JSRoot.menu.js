@@ -160,28 +160,62 @@ JSROOT.define(['d3', 'jquery', 'painter', 'jquery-ui'], (d3, $, jsrp) => {
       }
 
       /** @summary Input value
+        * @returns {Promise} with input value
         * @protected */
       inputValue(title, value) {
-         return prompt(title, value);
+
+         let dlg_id = this.menuname + "_dialog";
+
+         let old_dlg = document.getElementById(dlg_id);
+         if (old_dlg) old_dlg.parentNode.removeChild(old_dlg);
+
+         let code = `<div id="${dlg_id}" title="${title}">
+                       <input type="text" name="name" id="${dlg_id}_inp" value="${value}" style="width:95%;" class="ui-widget-content ui-corner-all">
+                     </div>`;
+
+         $(document.body).append(code);
+
+         return new Promise(resolveFunc => {
+            let dialog = $( "#" + dlg_id).dialog({
+               autoOpen: false,
+               height: 150,
+               width: 400,
+               modal: true,
+               buttons: {
+                  "Ok": () => {
+                     let val = $("#" + dlg_id + "_inp").val();
+                     dialog.dialog( "close" );
+                     if (val) resolveFunc(val);
+                  },
+                  "Cancel": () => {
+                     dialog.dialog( "close" );
+                   }
+               },
+               close: function() {
+                  dialog.remove();
+               }
+             });
+
+             dialog.dialog( "open" );
+          });
       }
 
       /** @summary Add color selection menu entries
         * @protected */
       addColorMenu(name, value, set_func, fill_kind) {
          if (value === undefined) return;
-         this.add("sub:" + name, () => {
-            let useid = (typeof value !== 'string');
-            let col = this.inputValue("Enter color " + (useid ? "(only id number)" : "(name or id)"), value);
-            if (col === null) return;
-            let id = parseInt(col);
-            if (Number.isInteger(id) && jsrp.getColor(id)) {
-               col = jsrp.getColor(id);
-            } else {
-               if (useid) return;
-            }
-            set_func(useid ? id : col);
-         });
          let useid = (typeof value !== 'string');
+         this.add("sub:" + name, () => {
+            this.inputValue("Enter color " + (useid ? "(only id number)" : "(name or id)"), value).then(col => {
+               let id = parseInt(col);
+               if (Number.isInteger(id) && jsrp.getColor(id)) {
+                  col = jsrp.getColor(id);
+               } else {
+                  if (useid) return;
+               }
+               set_func(useid ? id : col);
+            });
+         });
          for (let n = -1; n < 11; ++n) {
             if ((n < 0) && useid) continue;
             if ((n == 10) && (fill_kind !== 1)) continue;
@@ -202,10 +236,10 @@ JSROOT.define(['d3', 'jquery', 'painter', 'jquery-ui'], (d3, $, jsrp) => {
             let entry = size_value.toFixed(4);
             if (step >= 0.1) entry = size_value.toFixed(2);
             if (step >= 1) entry = size_value.toFixed(0);
-            let sz = this.inputValue("Enter value of " + name, entry);
-            if (!sz) return;
-            sz = parseFloat(sz);
-            if (Number.isFinite(sz)) set_func((step >= 1) ? Math.round(sz) : sz);
+            this.inputValue("Enter value of " + name, entry).then(sz => {
+               sz = parseFloat(sz);
+               if (Number.isFinite(sz)) set_func((step >= 1) ? Math.round(sz) : sz);
+            });
          });
          for (let sz = min; sz <= max; sz += step) {
             let entry = sz.toFixed(2);
@@ -219,10 +253,10 @@ JSROOT.define(['d3', 'jquery', 'painter', 'jquery-ui'], (d3, $, jsrp) => {
 
       addRebinMenu(rebin_func) {
         this.add("sub:Rebin", () => {
-            let sz = this.inputValue("Enter rebin value", 2);
-            if (!sz) return;
-            sz = parseInt(sz);
-            if (Number.isInteger(sz) && (sz > 1)) rebin_func(sz);
+            this.inputValue("Enter rebin value", 2).then(sz => {
+               sz = parseInt(sz);
+               if (Number.isInteger(sz) && (sz > 1)) rebin_func(sz);
+            });
          });
          for (let sz = 2; sz <= 7; sz++) {
             this.add(sz.toString(), sz, res => rebin_func(parseInt(res)));
@@ -246,8 +280,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'jquery-ui'], (d3, $, jsrp) => {
          let colors = ['black', 'white', 'red', 'green', 'blue', 'yellow', 'magenta', 'cyan'];
 
          this.add("sub:" + name, () => {
-            let col = this.inputValue("Enter color name - empty string will reset color", value);
-            set_func(col);
+            this.inputValue("Enter color name - empty string will reset color", value).then(set_func);
          });
          let col = null, fillcol = 'black', coltxt = 'default', bkgr = '';
          for (let n = -1; n < colors.length; ++n) {
@@ -333,12 +366,12 @@ JSROOT.define(['d3', 'jquery', 'painter', 'jquery-ui'], (d3, $, jsrp) => {
             this.addColorMenu("color", painter.lineatt.color,
                arg => { painter.lineatt.change(arg); painter.interactiveRedraw(true, getColorExec(arg, "SetLineColor")); });
             this.add("sub:style", () => {
-               let id = this.inputValue("Enter line style id (1-solid)", 1);
-               if (id === null) return;
-               id = parseInt(id);
-               if (!Number.isInteger(id) || !jsrp.root_line_styles[id]) return;
-               painter.lineatt.change(undefined, undefined, id);
-               painter.interactiveRedraw(true, "exec:SetLineStyle(" + id + ")");
+               this.inputValue("Enter line style id (1-solid)", 1).then(id => {
+                  id = parseInt(id);
+                  if (!Number.isInteger(id) || !jsrp.root_line_styles[id]) return;
+                  painter.lineatt.change(undefined, undefined, id);
+                  painter.interactiveRedraw(true, "exec:SetLineStyle(" + id + ")");
+               });
             });
             for (let n = 1; n < 11; ++n) {
                let dash = jsrp.root_line_styles[n],
@@ -371,12 +404,12 @@ JSROOT.define(['d3', 'jquery', 'painter', 'jquery-ui'], (d3, $, jsrp) => {
             this.addColorMenu("color", painter.fillatt.colorindx,
                arg => { painter.fillatt.change(arg, undefined, painter.getCanvSvg()); painter.interactiveRedraw(true, getColorExec(arg, "SetFillColor")); }, painter.fillatt.kind);
             this.add("sub:style", () => {
-               let id = this.inputValue("Enter fill style id (1001-solid, 3000..3010)", this.fillatt.pattern);
-               if (id === null) return;
-               id = parseInt(id);
-               if (!Number.isInteger(id)) return;
-               painter.fillatt.change(undefined, id, this.getCanvSvg());
-               painter.interactiveRedraw(true, "exec:SetFillStyle(" + id + ")");
+               this.inputValue("Enter fill style id (1001-solid, 3000..3010)", this.fillatt.pattern).then(id => {
+                  id = parseInt(id);
+                  if (!Number.isInteger(id)) return;
+                  painter.fillatt.change(undefined, id, this.getCanvSvg());
+                  painter.interactiveRedraw(true, "exec:SetFillStyle(" + id + ")");
+               });
             });
 
             let supported = [1, 1001, 3001, 3002, 3003, 3004, 3005, 3006, 3007, 3010, 3021, 3022];
@@ -433,8 +466,10 @@ JSROOT.define(['d3', 'jquery', 'painter', 'jquery-ui'], (d3, $, jsrp) => {
          this.add("endsub:");
          this.add("sub:Title");
          this.add("SetTitle", () => {
-            let t = this.inputValue("Enter axis title", faxis.fTitle);
-            if (t!==null) { faxis.fTitle = t; painter.interactiveRedraw("pad", `exec:SetTitle("${t}")`, kind); }
+            this.inputValue("Enter axis title", faxis.fTitle).then(t => {
+               faxis.fTitle = t;
+               painter.interactiveRedraw("pad", `exec:SetTitle("${t}")`, kind);
+            });
          });
          this.addchk(faxis.TestBit(JSROOT.EAxisBits.kCenterTitle), "Center",
                arg => { faxis.InvertBit(JSROOT.EAxisBits.kCenterTitle); painter.interactiveRedraw("pad", `exec:CenterTitle(${arg})`, kind); });
