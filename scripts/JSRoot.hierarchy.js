@@ -1034,19 +1034,19 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if (hitem && hitem._title) d3node.attr('title', "Executing " + hitem._title);
          }
 
-         return JSROOT.httpRequest(url + urlargs, 'text');
-      }).then(res => {
-         if (!d3node.empty()) {
-            let col = ((res != null) && (res != 'false')) ? 'green' : 'red';
-            if (hitem && hitem._title) d3node.attr('title', hitem._title + " lastres=" + res);
-            d3node.style('background', col);
-            setTimeout(() => d3node.style('background', ''), 2000);
-            if ((col == 'green') && ('_hreload' in hitem))
-               this.reload();
-            if ((col == 'green') && ('_update_item' in hitem))
-               this.updateItems(hitem._update_item.split(";"));
-         }
-         return res;
+         return JSROOT.httpRequest(url + urlargs, 'text').then(res => {
+            if (!d3node.empty()) {
+               let col = ((res != null) && (res != 'false')) ? 'green' : 'red';
+               if (hitem && hitem._title) d3node.attr('title', hitem._title + " lastres=" + res);
+               d3node.style('background', col);
+               setTimeout(() => d3node.style('background', ''), 2000);
+               if ((col == 'green') && ('_hreload' in hitem))
+                  this.reload();
+               if ((col == 'green') && ('_update_item' in hitem))
+                  this.updateItems(hitem._update_item.split(";"));
+            }
+            return res;
+         });
       });
    }
 
