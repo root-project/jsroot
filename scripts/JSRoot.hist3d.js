@@ -3114,16 +3114,16 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
       indx = this.index[indx];
 
-      let p = this.painter,
-          grx = p.grx(this.graph.fX[indx]),
-          gry = p.gry(this.graph.fY[indx]),
-          grz = p.grz(this.graph.fZ[indx]);
+      let p = this.painter, gr = this.graph,
+          grx = p.grx(gr.fX[indx]),
+          gry = p.gry(gr.fY[indx]),
+          grz = p.grz(gr.fZ[indx]);
 
-      if (this.check_next && indx+1<this.graph.fX.length) {
+      if (this.check_next && indx+1<gr.fX.length) {
          let d = intersect.point,
-             grx1 = p.grx(this.graph.fX[indx+1]),
-             gry1 = p.gry(this.graph.fY[indx+1]),
-             grz1 = p.grz(this.graph.fZ[indx+1]);
+             grx1 = p.grx(gr.fX[indx+1]),
+             gry1 = p.gry(gr.fY[indx+1]),
+             grz1 = p.grz(gr.fZ[indx+1]);
          if (sqr(d.x-grx1)+sqr(d.y-gry1)+sqr(d.z-grz1) < sqr(d.x-grx)+sqr(d.y-gry)+sqr(d.z-grz)) {
             grx = grx1; gry = gry1; grz = grz1; indx++;
          }
@@ -3139,9 +3139,9 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          color: this.tip_color,
          lines: [ this.tip_name,
                   "pnt: " + indx,
-                  "x: " + p.axisAsText("x", this.graph.fX[indx]),
-                  "y: " + p.axisAsText("y", this.graph.fY[indx]),
-                  "z: " + p.axisAsText("z", this.graph.fZ[indx])
+                  "x: " + p.axisAsText("x", gr.fX[indx]),
+                  "y: " + p.axisAsText("y", gr.fY[indx]),
+                  "z: " + p.axisAsText("z", gr.fZ[indx])
                 ]
       };
    }
@@ -3157,9 +3157,9 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
       if (!graph || !main || !fp || !fp.mode3d) return;
 
-      function countSelected(zmin, zmax) {
+      let countSelected = (zmin, zmax) => {
          let cnt = 0;
-         for (let i=0; i < graph.fNpoints; ++i) {
+         for (let i = 0; i < graph.fNpoints; ++i) {
             if ((graph.fX[i] < fp.scale_xmin) || (graph.fX[i] > fp.scale_xmax) ||
                 (graph.fY[i] < fp.scale_ymin) || (graph.fY[i] > fp.scale_ymax) ||
                 (graph.fZ[i] < zmin) || (graph.fZ[i] >= zmax)) continue;
