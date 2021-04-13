@@ -159,14 +159,19 @@ JSROOT.define(['d3', 'jquery', 'painter', 'jquery-ui'], (d3, $, jsrp) => {
          if (!without_sub) this.add("endsub:");
       }
 
+      /** @summary Input value
+        * @protected */
+      inputValue(title, value) {
+         return prompt(title, value);
+      }
+
       /** @summary Add color selection menu entries
         * @protected */
       addColorMenu(name, value, set_func, fill_kind) {
          if (value === undefined) return;
-         this.add("sub:" + name, function() {
-            // todo - use jqury dialog here
+         this.add("sub:" + name, () => {
             let useid = (typeof value !== 'string');
-            let col = prompt("Enter color " + (useid ? "(only id number)" : "(name or id)"), value);
+            let col = this.inputValue("Enter color " + (useid ? "(only id number)" : "(name or id)"), value);
             if (col === null) return;
             let id = parseInt(col);
             if (Number.isInteger(id) && jsrp.getColor(id)) {
@@ -193,12 +198,11 @@ JSROOT.define(['d3', 'jquery', 'painter', 'jquery-ui'], (d3, $, jsrp) => {
       addSizeMenu(name, min, max, step, size_value, set_func) {
          if (size_value === undefined) return;
 
-         this.add("sub:" + name, function() {
-            // todo - use jqury dialog here
+         this.add("sub:" + name, () => {
             let entry = size_value.toFixed(4);
             if (step >= 0.1) entry = size_value.toFixed(2);
             if (step >= 1) entry = size_value.toFixed(0);
-            let sz = prompt("Enter value of " + name, entry);
+            let sz = this.inputValue("Enter value of " + name, entry);
             if (!sz) return;
             sz = parseFloat(sz);
             if (Number.isFinite(sz)) set_func((step >= 1) ? Math.round(sz) : sz);
@@ -214,8 +218,8 @@ JSROOT.define(['d3', 'jquery', 'painter', 'jquery-ui'], (d3, $, jsrp) => {
       }
 
       addRebinMenu(rebin_func) {
-        this.add("sub:Rebin", function() {
-            let sz = prompt("Enter rebin value", 2);
+        this.add("sub:Rebin", () => {
+            let sz = this.inputValue("Enter rebin value", 2);
             if (!sz) return;
             sz = parseInt(sz);
             if (Number.isInteger(sz) && (sz > 1)) rebin_func(sz);
@@ -242,8 +246,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'jquery-ui'], (d3, $, jsrp) => {
          let colors = ['black', 'white', 'red', 'green', 'blue', 'yellow', 'magenta', 'cyan'];
 
          this.add("sub:" + name, () => {
-            // todo - use jqury dialog here
-            let col = prompt("Enter color name - empty string will reset color", value);
+            let col = this.inputValue("Enter color name - empty string will reset color", value);
             set_func(col);
          });
          let col = null, fillcol = 'black', coltxt = 'default', bkgr = '';
@@ -329,14 +332,14 @@ JSROOT.define(['d3', 'jquery', 'painter', 'jquery-ui'], (d3, $, jsrp) => {
                arg => { painter.lineatt.change(undefined, arg); painter.interactiveRedraw(true, "exec:SetLineWidth(" + arg + ")"); });
             this.addColorMenu("color", painter.lineatt.color,
                arg => { painter.lineatt.change(arg); painter.interactiveRedraw(true, getColorExec(arg, "SetLineColor")); });
-            this.add("sub:style", function() {
-               let id = prompt("Enter line style id (1-solid)", 1);
+            this.add("sub:style", () => {
+               let id = this.inputValue("Enter line style id (1-solid)", 1);
                if (id === null) return;
                id = parseInt(id);
                if (!Number.isInteger(id) || !jsrp.root_line_styles[id]) return;
-               this.lineatt.change(undefined, undefined, id);
-               this.interactiveRedraw(true, "exec:SetLineStyle(" + id + ")");
-            }.bind(painter));
+               painter.lineatt.change(undefined, undefined, id);
+               painter.interactiveRedraw(true, "exec:SetLineStyle(" + id + ")");
+            });
             for (let n = 1; n < 11; ++n) {
                let dash = jsrp.root_line_styles[n],
                    svg = "<svg width='100' height='18'><text x='1' y='12' style='font-size:12px'>" + n + "</text><line x1='30' y1='8' x2='100' y2='8' stroke='black' stroke-width='3' stroke-dasharray='" + dash + "'></line></svg>";
@@ -367,14 +370,14 @@ JSROOT.define(['d3', 'jquery', 'painter', 'jquery-ui'], (d3, $, jsrp) => {
             this.add("sub:" + preffix + "Fill att");
             this.addColorMenu("color", painter.fillatt.colorindx,
                arg => { painter.fillatt.change(arg, undefined, painter.getCanvSvg()); painter.interactiveRedraw(true, getColorExec(arg, "SetFillColor")); }, painter.fillatt.kind);
-            this.add("sub:style", function() {
-               let id = prompt("Enter fill style id (1001-solid, 3000..3010)", this.fillatt.pattern);
+            this.add("sub:style", () => {
+               let id = this.inputValue("Enter fill style id (1001-solid, 3000..3010)", this.fillatt.pattern);
                if (id === null) return;
                id = parseInt(id);
                if (!Number.isInteger(id)) return;
-               this.fillatt.change(undefined, id, this.getCanvSvg());
-               this.interactiveRedraw(true, "exec:SetFillStyle(" + id + ")");
-            }.bind(painter));
+               painter.fillatt.change(undefined, id, this.getCanvSvg());
+               painter.interactiveRedraw(true, "exec:SetFillStyle(" + id + ")");
+            });
 
             let supported = [1, 1001, 3001, 3002, 3003, 3004, 3005, 3006, 3007, 3010, 3021, 3022];
 
@@ -430,7 +433,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'jquery-ui'], (d3, $, jsrp) => {
          this.add("endsub:");
          this.add("sub:Title");
          this.add("SetTitle", () => {
-            let t = prompt("Enter axis title", faxis.fTitle);
+            let t = this.inputValue("Enter axis title", faxis.fTitle);
             if (t!==null) { faxis.fTitle = t; painter.interactiveRedraw("pad", `exec:SetTitle("${t}")`, kind); }
          });
          this.addchk(faxis.TestBit(JSROOT.EAxisBits.kCenterTitle), "Center",
