@@ -9,6 +9,7 @@
 6. API change -> PadPainter.zoom function returns Promise now
 7. Support gridx/y, tickx/y, logx/y options for (multi) graphs painter
 8. Provide simple Rebin functionality for TH1 (#210)
+9. Use jQuery dialog to input values, avoid prompt which not always supported (#216)
 
 
 ## Changes in 6.0.2

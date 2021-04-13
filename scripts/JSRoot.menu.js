@@ -162,21 +162,23 @@ JSROOT.define(['d3', 'jquery', 'painter', 'jquery-ui'], (d3, $, jsrp) => {
       /** @summary Input value
         * @returns {Promise} with input value
         * @protected */
-      inputValue(title, value) {
+      inputValue(title, value, kind) {
 
          let dlg_id = this.menuname + "_dialog";
 
          let old_dlg = document.getElementById(dlg_id);
          if (old_dlg) old_dlg.parentNode.removeChild(old_dlg);
+         if (!kind) kind = "text";
+         let inp_type = (kind == "int") ? "number" : "text";
 
          let code = `<div id="${dlg_id}" title="${title}">
-                       <input type="text" name="name" id="${dlg_id}_inp" value="${value}" style="width:95%;" class="ui-widget-content ui-corner-all">
+                       <input type="${inp_type}" name="name" id="${dlg_id}_inp" value="${value}" style="width:95%;" class="ui-widget-content ui-corner-all">
                      </div>`;
 
          $(document.body).append(code);
 
          return new Promise(resolveFunc => {
-            let dialog = $( "#" + dlg_id).dialog({
+            let dialog = $("#" + dlg_id).dialog({
                autoOpen: false,
                height: 150,
                width: 400,
@@ -184,8 +186,18 @@ JSROOT.define(['d3', 'jquery', 'painter', 'jquery-ui'], (d3, $, jsrp) => {
                buttons: {
                   "Ok": () => {
                      let val = $("#" + dlg_id + "_inp").val();
-                     dialog.dialog( "close" );
-                     if (val) resolveFunc(val);
+                     dialog.dialog("close");
+                     if (kind == "float") {
+                        val = parseFloat(val);
+                        if (Number.isFinite(val))
+                           resolveFunc(val);
+                     } else if (kind == "int") {
+                        val = parseInt(val);
+                        if (Number.isInteger(val))
+                           resolveFunc(val);
+                     } else {
+                        resolveFunc(val);
+                    }
                   },
                   "Cancel": () => {
                      dialog.dialog( "close" );
@@ -206,7 +218,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'jquery-ui'], (d3, $, jsrp) => {
          if (value === undefined) return;
          let useid = (typeof value !== 'string');
          this.add("sub:" + name, () => {
-            this.inputValue("Enter color " + (useid ? "(only id number)" : "(name or id)"), value).then(col => {
+            this.inputValue("Enter color " + (useid ? "(only id number)" : "(name or id)"), value, useid ? "int" : "text").then(col => {
                let id = parseInt(col);
                if (Number.isInteger(id) && jsrp.getColor(id)) {
                   col = jsrp.getColor(id);
@@ -236,10 +248,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'jquery-ui'], (d3, $, jsrp) => {
             let entry = size_value.toFixed(4);
             if (step >= 0.1) entry = size_value.toFixed(2);
             if (step >= 1) entry = size_value.toFixed(0);
-            this.inputValue("Enter value of " + name, entry).then(sz => {
-               sz = parseFloat(sz);
-               if (Number.isFinite(sz)) set_func((step >= 1) ? Math.round(sz) : sz);
-            });
+            this.inputValue("Enter value of " + name, entry, (step >= 1) ? "int" : "float").then(set_func);
          });
          for (let sz = min; sz <= max; sz += step) {
             let entry = sz.toFixed(2);
@@ -253,10 +262,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'jquery-ui'], (d3, $, jsrp) => {
 
       addRebinMenu(rebin_func) {
         this.add("sub:Rebin", () => {
-            this.inputValue("Enter rebin value", 2).then(sz => {
-               sz = parseInt(sz);
-               if (Number.isInteger(sz) && (sz > 1)) rebin_func(sz);
-            });
+            this.inputValue("Enter rebin value", 2, "int").then(rebin_func);
          });
          for (let sz = 2; sz <= 7; sz++) {
             this.add(sz.toString(), sz, res => rebin_func(parseInt(res)));
@@ -362,22 +368,21 @@ JSROOT.define(['d3', 'jquery', 'painter', 'jquery-ui'], (d3, $, jsrp) => {
          if (painter.lineatt && painter.lineatt.used) {
             this.add("sub:" + preffix + "Line att");
             this.addSizeMenu("width", 1, 10, 1, painter.lineatt.width,
-               arg => { painter.lineatt.change(undefined, arg); painter.interactiveRedraw(true, "exec:SetLineWidth(" + arg + ")"); });
+               arg => { painter.lineatt.change(undefined, arg); painter.interactiveRedraw(true, `exec:SetLineWidth(${arg})`); });
             this.addColorMenu("color", painter.lineatt.color,
                arg => { painter.lineatt.change(arg); painter.interactiveRedraw(true, getColorExec(arg, "SetLineColor")); });
             this.add("sub:style", () => {
-               this.inputValue("Enter line style id (1-solid)", 1).then(id => {
-                  id = parseInt(id);
-                  if (!Number.isInteger(id) || !jsrp.root_line_styles[id]) return;
+               this.inputValue("Enter line style id (1-solid)", painter.lineatt.style, "int").then(id => {
+                  if (!jsrp.root_line_styles[id]) return;
                   painter.lineatt.change(undefined, undefined, id);
-                  painter.interactiveRedraw(true, "exec:SetLineStyle(" + id + ")");
+                  painter.interactiveRedraw(true, `exec:SetLineStyle(${id})`);
                });
             });
             for (let n = 1; n < 11; ++n) {
                let dash = jsrp.root_line_styles[n],
                    svg = "<svg width='100' height='18'><text x='1' y='12' style='font-size:12px'>" + n + "</text><line x1='30' y1='8' x2='100' y2='8' stroke='black' stroke-width='3' stroke-dasharray='" + dash + "'></line></svg>";
 
-               this.addchk((painter.lineatt.style == n), svg, n, function(arg) { this.lineatt.change(undefined, undefined, parseInt(arg)); this.interactiveRedraw(true, "exec:SetLineStyle(" + arg + ")"); }.bind(painter));
+               this.addchk((painter.lineatt.style == n), svg, n, arg => { painter.lineatt.change(undefined, undefined, parseInt(arg)); painter.interactiveRedraw(true, `exec:SetLineStyle(${arg})`); });
             }
             this.add("endsub:");
             this.add("endsub:");
@@ -404,10 +409,9 @@ JSROOT.define(['d3', 'jquery', 'painter', 'jquery-ui'], (d3, $, jsrp) => {
             this.addColorMenu("color", painter.fillatt.colorindx,
                arg => { painter.fillatt.change(arg, undefined, painter.getCanvSvg()); painter.interactiveRedraw(true, getColorExec(arg, "SetFillColor")); }, painter.fillatt.kind);
             this.add("sub:style", () => {
-               this.inputValue("Enter fill style id (1001-solid, 3000..3010)", this.fillatt.pattern).then(id => {
-                  id = parseInt(id);
-                  if (!Number.isInteger(id)) return;
-                  painter.fillatt.change(undefined, id, this.getCanvSvg());
+               this.inputValue("Enter fill style id (1001-solid, 3000..3010)", painter.fillatt.pattern, "int").then(id => {
+                  if ((id < 0) || (id > 4000)) return;
+                  painter.fillatt.change(undefined, id, painter.getCanvSvg());
                   painter.interactiveRedraw(true, "exec:SetFillStyle(" + id + ")");
                });
             });
@@ -417,10 +421,10 @@ JSROOT.define(['d3', 'jquery', 'painter', 'jquery-ui'], (d3, $, jsrp) => {
             for (let n = 0; n < supported.length; ++n) {
                let sample = painter.createAttFill({ std: false, pattern: supported[n], color: painter.fillatt.colorindx || 1 }),
                    svg = "<svg width='100' height='18'><text x='1' y='12' style='font-size:12px'>" + supported[n].toString() + "</text><rect x='40' y='0' width='60' height='18' stroke='none' fill='" + sample.getFillColor() + "'></rect></svg>";
-               this.addchk(painter.fillatt.pattern == supported[n], svg, supported[n], function(arg) {
-                  this.fillatt.change(undefined, parseInt(arg), this.getCanvSvg());
-                  this.interactiveRedraw(true, "exec:SetFillStyle(" + arg + ")");
-               }.bind(painter));
+               this.addchk(painter.fillatt.pattern == supported[n], svg, supported[n], arg => {
+                  painter.fillatt.change(undefined, parseInt(arg), painter.getCanvSvg());
+                  painter.interactiveRedraw(true, `exec:SetFillStyle(${arg})`);
+               });
             }
             this.add("endsub:");
             this.add("endsub:");
@@ -431,7 +435,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'jquery-ui'], (d3, $, jsrp) => {
             this.addColorMenu("color", painter.markeratt.color,
                arg => { painter.markeratt.change(arg); painter.interactiveRedraw(true, getColorExec(arg, "SetMarkerColor"));});
             this.addSizeMenu("size", 0.5, 6, 0.5, painter.markeratt.size,
-               arg => { painter.markeratt.change(undefined, undefined, arg); painter.interactiveRedraw(true, "exec:SetMarkerSize(" + parseInt(arg) + ")"); });
+               arg => { painter.markeratt.change(undefined, undefined, arg); painter.interactiveRedraw(true, `exec:SetMarkerSize(${arg})`); });
 
             this.add("sub:style");
             let supported = [1, 2, 3, 4, 5, 6, 7, 8, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34];
