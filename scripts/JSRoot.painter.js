@@ -2793,16 +2793,15 @@ JSROOT.define(['d3'], (d3) => {
           if (!item.fArgs)
              return execp.submitCanvExec(item.fExec, execp.args_menu_id);
 
-          menu.showMethodArgsDialog(execp, item, execp.args_menu_id).then(args => {
+         item.fClassName = execp.getClassName();
+         if ((execp.args_menu_id.indexOf("#x")>0) || (execp.args_menu_id.indexOf("#y")>0) || (execp.args_menu_id.indexOf("#z")>0)) item.fClassName = "TAxis";
+
+          menu.showMethodArgsDialog(item).then(args => {
              if (!args) return;
              if (execp.executeMenuCommand(item, args)) return;
              let exec = item.fExec;
              if (args) exec = exec.substr(0,exec.length-1) + args + ')';
-             // invoked only when user press Ok button
-             console.log('execute method for object ' + execp.args_menu_id + ' exec= ' + exec);
-
-             if (cp)
-                cp.sendWebsocket('OBJEXEC:' + execp.args_menu_id + ":" + exec);
+             if (cp) cp.sendWebsocket('OBJEXEC:' + execp.args_menu_id + ":" + exec);
          });
       }
 

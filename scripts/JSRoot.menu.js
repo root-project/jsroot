@@ -219,15 +219,12 @@ JSROOT.define(['d3', 'jquery', 'painter', 'jquery-ui'], (d3, $, jsrp) => {
 
       /** @summary Let input arguments from the command
         * @returns {Promise} with command argument */
-      showMethodArgsDialog(painter, method, menu_obj_id) {
+      showMethodArgsDialog(method) {
          let dlg_id = this.menuname + "_dialog";
          let old_dlg = document.getElementById(dlg_id);
          if (old_dlg) old_dlg.parentNode.removeChild(old_dlg);
 
          let inputs = "";
-
-         method.fClassName = painter.getClassName();
-         if ((menu_obj_id.indexOf("#x")>0) || (menu_obj_id.indexOf("#y")>0) || (menu_obj_id.indexOf("#z")>0)) method.fClassName = "TAxis";
 
          for (let n = 0; n < method.fArgs.length; ++n) {
             let arg = method.fArgs[n];
