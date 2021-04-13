@@ -165,24 +165,23 @@ JSROOT.define(['d3', 'jquery', 'painter', 'jquery-ui'], (d3, $, jsrp) => {
       inputValue(title, value, kind) {
 
          let dlg_id = this.menuname + "_dialog";
-
          let old_dlg = document.getElementById(dlg_id);
          if (old_dlg) old_dlg.parentNode.removeChild(old_dlg);
          if (!kind) kind = "text";
          let inp_type = (kind == "int") ? "number" : "text";
 
-         let code = `<div id="${dlg_id}" title="${title}">
-                       <input type="${inp_type}" name="name" id="${dlg_id}_inp" value="${value}" style="width:95%;" class="ui-widget-content ui-corner-all">
-                     </div>`;
-
-         $(document.body).append(code);
+         $(document.body).append(
+            `<div id="${dlg_id}">
+               <input type="${inp_type}" name="name" id="${dlg_id}_inp" value="${value}" style="width:100%;" class="ui-widget-content ui-corner-all">
+             </div>`);
 
          return new Promise(resolveFunc => {
             let dialog = $("#" + dlg_id).dialog({
-               autoOpen: false,
                height: 150,
                width: 400,
                modal: true,
+               resizable: false,
+               title: title,
                buttons: {
                   "Ok": () => {
                      let val = $("#" + dlg_id + "_inp").val();
@@ -207,8 +206,6 @@ JSROOT.define(['d3', 'jquery', 'painter', 'jquery-ui'], (d3, $, jsrp) => {
                   dialog.remove();
                }
              });
-
-             dialog.dialog( "open" );
           });
       }
 
