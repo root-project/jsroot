@@ -172,39 +172,47 @@ JSROOT.define(['d3', 'jquery', 'painter', 'jquery-ui'], (d3, $, jsrp) => {
 
          $(document.body).append(
             `<div id="${dlg_id}">
-               <input type="${inp_type}" name="name" id="${dlg_id}_inp" value="${value}" style="width:100%;" class="ui-widget-content ui-corner-all">
-             </div>`);
+              <form>
+                <fieldset style="padding:0; border:0">
+                   <input type="${inp_type}" tabindex="0" name="${dlg_id}_inp" id="${dlg_id}_inp" value="${value}" style="width:100%;display:block" class="text ui-widget-content ui-corner-all"/>
+                   <input type="submit" tabindex="-1" style="position:absolute; top:-1000px; display:block"/>
+               </fieldset>
+              </form>
+            </div>`);
 
          return new Promise(resolveFunc => {
-            let dialog = $("#" + dlg_id).dialog({
+            let dialog, pressEnter = () => {
+               let val = $("#" + dlg_id + "_inp").val();
+               dialog.dialog("close");
+               if (kind == "float") {
+                  val = parseFloat(val);
+                  if (Number.isFinite(val))
+                     resolveFunc(val);
+               } else if (kind == "int") {
+                  val = parseInt(val);
+                  if (Number.isInteger(val))
+                     resolveFunc(val);
+               } else {
+                  resolveFunc(val);
+              }
+            }
+
+            dialog = $("#" + dlg_id).dialog({
                height: 150,
                width: 400,
                modal: true,
                resizable: false,
                title: title,
                buttons: {
-                  "Ok": () => {
-                     let val = $("#" + dlg_id + "_inp").val();
-                     dialog.dialog("close");
-                     if (kind == "float") {
-                        val = parseFloat(val);
-                        if (Number.isFinite(val))
-                           resolveFunc(val);
-                     } else if (kind == "int") {
-                        val = parseInt(val);
-                        if (Number.isInteger(val))
-                           resolveFunc(val);
-                     } else {
-                        resolveFunc(val);
-                    }
-                  },
-                  "Cancel": () => {
-                     dialog.dialog( "close" );
-                   }
+                  "Ok": pressEnter,
+                  "Cancel": () => dialog.dialog( "close" )
                },
-               close: function() {
-                  dialog.remove();
-               }
+               close: () => dialog.remove()
+             });
+
+             dialog.find( "form" ).on( "submit", event => {
+                event.preventDefault();
+                pressEnter();
              });
           });
       }
