@@ -268,7 +268,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'jquery-ui'], (d3, $, jsrp) => {
             }
 
             dialog = $("#" + dlg_id).dialog({
-               height: 90 + method.fArgs.length*60,
+               height: 100 + method.fArgs.length*60,
                width: 400,
                modal: true,
                resizable: true,
@@ -286,7 +286,6 @@ JSROOT.define(['d3', 'jquery', 'painter', 'jquery-ui'], (d3, $, jsrp) => {
              });
           });
       }
-
 
       /** @summary Add color selection menu entries
         * @protected */
