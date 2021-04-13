@@ -217,6 +217,80 @@ JSROOT.define(['d3', 'jquery', 'painter', 'jquery-ui'], (d3, $, jsrp) => {
           });
       }
 
+      /** @summary Let input arguments from the command
+        * @returns {Promise} with command argument */
+      showMethodArgsDialog(painter, method, menu_obj_id) {
+         let dlg_id = this.menuname + "_dialog";
+         let old_dlg = document.getElementById(dlg_id);
+         if (old_dlg) old_dlg.parentNode.removeChild(old_dlg);
+
+         let inputs = "";
+
+         method.fClassName = painter.getClassName();
+         if ((menu_obj_id.indexOf("#x")>0) || (menu_obj_id.indexOf("#y")>0) || (menu_obj_id.indexOf("#z")>0)) method.fClassName = "TAxis";
+
+         for (let n = 0; n < method.fArgs.length; ++n) {
+            let arg = method.fArgs[n];
+            arg.fValue = arg.fDefault;
+            if (arg.fValue == '\"\"') arg.fValue = "";
+            inputs += `<label for="${dlg_id}_inp${n}">${arg.fName}</label>
+                       <input type="text" tabindex="0" name="${dlg_id}_inp${n}" id="${dlg_id}_inp${n}" value="${arg.fValue}" style="width:100%;display:block" class="text ui-widget-content ui-corner-all"/>`;
+         }
+
+         $(document.body).append(
+            `<div id="${dlg_id}">
+              <form>
+                <fieldset style="padding:0; border:0">
+                   ${inputs}
+                   <input type="submit" tabindex="-1" style="position:absolute; top:-1000px; display:block"/>
+               </fieldset>
+              </form>
+            </div>`);
+
+         return new Promise(resolveFunc => {
+            let dialog, pressEnter = () => {
+               let args = "";
+
+               for (let k = 0; k < method.fArgs.length; ++k) {
+                  let arg = method.fArgs[k];
+                  let value = $("#" + dlg_id + "_inp" + k).val();
+                  if (value==="") value = arg.fDefault;
+                  if ((arg.fTitle=="Option_t*") || (arg.fTitle=="const char*")) {
+                     // check quotes,
+                     // TODO: need to make more precise checking of escape characters
+                     if (!value) value = '""';
+                     if (value[0]!='"') value = '"' + value;
+                     if (value[value.length-1] != '"') value += '"';
+                  }
+
+                  args += (k>0 ? "," : "") + value;
+               }
+
+               dialog.dialog("close");
+               resolveFunc(args);
+            }
+
+            dialog = $("#" + dlg_id).dialog({
+               height: 90 + method.fArgs.length*60,
+               width: 400,
+               modal: true,
+               resizable: true,
+               title: method.fClassName + '::' + method.fName,
+               buttons: {
+                  "Ok": pressEnter,
+                  "Cancel": () => dialog.dialog( "close" )
+               },
+               close: () => dialog.remove()
+             });
+
+             dialog.find( "form" ).on( "submit", event => {
+                event.preventDefault();
+                pressEnter();
+             });
+          });
+      }
+
+
       /** @summary Add color selection menu entries
         * @protected */
       addColorMenu(name, value, set_func, fill_kind) {

@@ -2788,8 +2788,22 @@ JSROOT.define(['d3'], (d3) => {
 
          if (execp.executeMenuCommand(item)) return;
 
-         if (execp.args_menu_id)
-            execp.submitCanvExec(item.fExec, execp.args_menu_id);
+         if (!execp.args_menu_id) return;
+
+          if (!item.fArgs)
+             return execp.submitCanvExec(item.fExec, execp.args_menu_id);
+
+          menu.showMethodArgsDialog(execp, item, execp.args_menu_id).then(args => {
+             if (!args) return;
+             if (execp.executeMenuCommand(item, args)) return;
+             let exec = item.fExec;
+             if (args) exec = exec.substr(0,exec.length-1) + args + ')';
+             // invoked only when user press Ok button
+             console.log('execute method for object ' + execp.args_menu_id + ' exec= ' + exec);
+
+             if (cp)
+                cp.sendWebsocket('OBJEXEC:' + execp.args_menu_id + ":" + exec);
+         });
       }
 
       let DoFillMenu = (_menu, _reqid, _resolveFunc, reply) => {
