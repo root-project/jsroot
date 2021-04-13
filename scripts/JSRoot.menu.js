@@ -159,11 +159,30 @@ JSROOT.define(['d3', 'jquery', 'painter', 'jquery-ui'], (d3, $, jsrp) => {
          if (!without_sub) this.add("endsub:");
       }
 
+      /** @summary Show modal info dialog
+        * @protected */
+      info(title, message) {
+         let dlg_id = this.menuname + "_dialog";
+         let old_dlg = document.getElementById(dlg_id);
+         if (old_dlg) old_dlg.parentNode.removeChild(old_dlg);
+         $(document.body).append(
+            `<div id="${dlg_id}">
+            <p tabindex="0">${message}</p>
+            </div>`);
+         let dialog = $("#" + dlg_id).dialog({
+            height: 120,
+            width: 400,
+            modal: true,
+            resizable: true,
+            title: title,
+            close: () => dialog.remove()
+          });
+      }
+
       /** @summary Input value
         * @returns {Promise} with input value
         * @protected */
       input(title, value, kind) {
-
          let dlg_id = this.menuname + "_dialog";
          let old_dlg = document.getElementById(dlg_id);
          if (old_dlg) old_dlg.parentNode.removeChild(old_dlg);
