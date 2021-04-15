@@ -814,6 +814,12 @@ It is also possible to convert any JavaScript object into ROOT JSON string, usin
 
 Such JSON string could be parsed by any other JSROOT-based application.
 
+When WebGL rendering is used (lego plots or TGeo drawing), on the Linux one need to have `DISPLAY` correctly set
+to make it working. To run JSROOT on headless machine, one have to use `xvfb-run` utility like
+(see also [here](https://github.com/stackgl/headless-gl#how-can-headless-gl-be-used-on-a-headless-linux-machine)):
+
+    xvfb-run -s "-ac -screen 0 1280x1024x24" node geomsvg.js
+
 
 ### Use with OpenUI5
 
