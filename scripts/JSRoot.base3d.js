@@ -594,11 +594,11 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
       function control_mouseup(evnt) {
          if (!control) return;
 
-         if (control.mouse_zoom_mesh && control.mouse_zoom_mesh.point2 && control.painter.Get3DZoomCoord) {
+         if (control.mouse_zoom_mesh && control.mouse_zoom_mesh.point2 && control.painter.get3dZoomCoord) {
 
             let kind = control.mouse_zoom_mesh.object.zoom,
-                pos1 = control.painter.Get3DZoomCoord(control.mouse_zoom_mesh.point, kind),
-                pos2 = control.painter.Get3DZoomCoord(control.mouse_zoom_mesh.point2, kind);
+                pos1 = control.painter.get3dZoomCoord(control.mouse_zoom_mesh.point, kind),
+                pos2 = control.painter.get3dZoomCoord(control.mouse_zoom_mesh.point2, kind);
 
             if (pos1>pos2) { let v = pos1; pos1 = pos2; pos2 = v; }
 
@@ -861,7 +861,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
       }
 
       control.removeZoomMesh = function() {
-         if (this.mouse_zoom_mesh && this.mouse_zoom_mesh.object.ShowSelection())
+         if (this.mouse_zoom_mesh && this.mouse_zoom_mesh.object.showSelection())
             this.painter.render3D();
          this.mouse_zoom_mesh = null; // in any case clear mesh, enable orbit control again
       }
@@ -882,13 +882,13 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
             if (zoom2 && (zoom2.object === this.mouse_zoom_mesh.object)) {
                pnt2 = zoom2.point;
             } else {
-               pnt2 = this.mouse_zoom_mesh.object.GlobalIntersect(this.raycaster);
+               pnt2 = this.mouse_zoom_mesh.object.globalIntersect(this.raycaster);
             }
 
             if (pnt2) this.mouse_zoom_mesh.point2 = pnt2;
 
             if (pnt2 && this.painter.enable_highlight)
-               if (this.mouse_zoom_mesh.object.ShowSelection(this.mouse_zoom_mesh.point, pnt2))
+               if (this.mouse_zoom_mesh.object.showSelection(this.mouse_zoom_mesh.point, pnt2))
                   this.painter.render3D(0);
 
             this.tooltip.hide();
