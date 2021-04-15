@@ -5,13 +5,12 @@
 
 tgt=three.extra.js
 
-src=~/d/three.js-r121
+src=~/d/three.js-r127
 
 rm -rf $tgt
 touch $tgt
 
 echo Producing $tgt from $src
-echo !! Using tail -n+2 __src__ to exclude useless warnings !!
 
 cat ./three.extra_head.js >> $tgt
 cat $src/examples/fonts/helvetiker_regular.typeface.json >> $tgt
@@ -20,7 +19,7 @@ echo "   );" >> $tgt
 echo "" >> $tgt
 
 echo "// Content of examples/js/renderers/Projector.js" >> $tgt
-tail -n+2  $src/examples/js/renderers/Projector.js >> $tgt
+cat  $src/examples/js/renderers/Projector.js >> $tgt
 echo "" >> $tgt
 
 # echo "// Content of examples/js/renderers/SoftwareRenderer.js" >> $tgt
@@ -28,56 +27,56 @@ echo "" >> $tgt
 # echo "" >> $tgt
 
 cat ./three.svg_renderer_header.js >> $tgt
-tail -n+2 $src/examples/js/renderers/SVGRenderer.js >> $tgt
+cat $src/examples/js/renderers/SVGRenderer.js >> $tgt
 cat ./three.svg_renderer_footer.js >> $tgt
 echo "" >> $tgt
 
 echo "// Content of examples/js/controls/OrbitControls.js" >> $tgt
-tail -n+2  $src/examples/js/controls/OrbitControls.js >> $tgt
+cat  $src/examples/js/controls/OrbitControls.js >> $tgt
 echo "" >> $tgt
 
 echo "// Content of examples/js/controls/TransformControls.js" >> $tgt
-tail -n+2 $src/examples/js/controls/TransformControls.js >> $tgt
+cat $src/examples/js/controls/TransformControls.js >> $tgt
 echo "" >> $tgt
 
 echo "// Content of examples/js/shaders/CopyShader.js" >> $tgt
-tail -n+2 $src/examples/js/shaders/CopyShader.js >> $tgt
+cat $src/examples/js/shaders/CopyShader.js >> $tgt
 echo "" >> $tgt
 
 echo "// Content of examples/js/postprocessing/EffectComposer.js" >> $tgt
-tail -n+2 $src/examples/js/postprocessing/EffectComposer.js >> $tgt
+cat $src/examples/js/postprocessing/EffectComposer.js >> $tgt
 echo "" >> $tgt
 
 echo "// Content of examples/js/postprocessing/MaskPass.js" >> $tgt
-tail -n+2 $src/examples/js/postprocessing/MaskPass.js >> $tgt
+cat $src/examples/js/postprocessing/MaskPass.js >> $tgt
 echo "" >> $tgt
 
 echo "// Content of examples/js/postprocessing/RenderPass.js" >> $tgt
-tail -n+2 $src/examples/js/postprocessing/RenderPass.js >> $tgt
+cat $src/examples/js/postprocessing/RenderPass.js >> $tgt
 echo "" >> $tgt
 
 echo "// Content of examples/js/postprocessing/ShaderPass.js" >> $tgt
-tail -n+2 $src/examples/js/postprocessing/ShaderPass.js >> $tgt
+cat $src/examples/js/postprocessing/ShaderPass.js >> $tgt
 echo "" >> $tgt
 
 echo "// Content of examples/js/shaders/SSAOShader.js" >> $tgt
-tail -n+2 $src/examples/js/shaders/SSAOShader.js >> $tgt
+cat $src/examples/js/shaders/SSAOShader.js >> $tgt
 echo "" >> $tgt
 
 echo "// Content of examples/js/postprocessing/SSAOPass.js" >> $tgt
-tail -n+2 $src/examples/js/postprocessing/SSAOPass.js >> $tgt
+cat $src/examples/js/postprocessing/SSAOPass.js >> $tgt
 echo "" >> $tgt
 
 echo "// Content of examples/js/math/SimplexNoise.js" >> $tgt
-tail -n+2 $src/examples/js/math/SimplexNoise.js >> $tgt
+cat $src/examples/js/math/SimplexNoise.js >> $tgt
 echo "" >> $tgt
 
 echo "// Content of examples/js/shaders/LuminosityHighPassShader.js" >> $tgt
-tail -n+2 $src/examples/js/shaders/LuminosityHighPassShader.js >> $tgt
+cat $src/examples/js/shaders/LuminosityHighPassShader.js >> $tgt
 echo "" >> $tgt
 
 echo "// Content of examples/js/postprocessing/UnrealBloomPass.js" >> $tgt
-tail -n+2 $src/examples/js/postprocessing/UnrealBloomPass.js >> $tgt
+cat $src/examples/js/postprocessing/UnrealBloomPass.js >> $tgt
 echo "" >> $tgt
 
 echo "if (JSROOT.nodejs) module.exports = THREE;" >> $tgt

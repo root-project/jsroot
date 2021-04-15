@@ -14,7 +14,6 @@ JSROOT.define(['three'], function(THREE) {
    );
 
 // Content of examples/js/renderers/Projector.js
-
 THREE.RenderableObject = function () {
 
 	this.id = 0;
@@ -130,12 +129,7 @@ THREE.Projector = function () {
 		_modelMatrix,
 		_modelViewProjectionMatrix = new THREE.Matrix4(),
 
-		_normalMatrix = new THREE.Matrix3(),
-
-		_frustum = new THREE.Frustum(),
-
-		_clippedVertex1PositionScreen = new THREE.Vector4(),
-		_clippedVertex2PositionScreen = new THREE.Vector4();
+		_frustum = new THREE.Frustum();
 
 	//
 
@@ -364,18 +358,18 @@ THREE.Projector = function () {
 
 		if ( object.visible === false ) return;
 
-		if ( object instanceof THREE.Light ) {
+		if ( object.isLight ) {
 
 			_renderData.lights.push( object );
 
-		} else if ( object instanceof THREE.Mesh || object instanceof THREE.Line || object instanceof THREE.Points ) {
+		} else if ( object.isMesh || object.isLine || object.isPoints ) {
 
 			if ( object.material.visible === false ) return;
 			if ( object.frustumCulled === true && _frustum.intersectsObject( object ) === false ) return;
 
 			addObject( object );
 
-		} else if ( object instanceof THREE.Sprite ) {
+		} else if ( object.isSprite ) {
 
 			if ( object.material.visible === false ) return;
 			if ( object.frustumCulled === true && _frustum.intersectsSprite( object ) === false ) return;
@@ -455,9 +449,9 @@ THREE.Projector = function () {
 
 			_vertexCount = 0;
 
-			if ( object instanceof THREE.Mesh ) {
+			if ( object.isMesh ) {
 
-				if ( geometry instanceof THREE.BufferGeometry ) {
+				if ( geometry.isBufferGeometry ) {
 
 					var material = object.material;
 
@@ -616,142 +610,18 @@ THREE.Projector = function () {
 
 					}
 
-				} else if ( geometry instanceof THREE.Geometry ) {
+				} else if ( geometry.isGeometry ) {
 
-					var vertices = geometry.vertices;
-					var faces = geometry.faces;
-					var faceVertexUvs = geometry.faceVertexUvs[ 0 ];
-
-					_normalMatrix.getNormalMatrix( _modelMatrix );
-
-					var material = object.material;
-
-					var isMultiMaterial = Array.isArray( material );
-
-					for ( var v = 0, vl = vertices.length; v < vl; v ++ ) {
-
-						var vertex = vertices[ v ];
-
-						_vector3.copy( vertex );
-
-						if ( material.morphTargets === true ) {
-
-							var morphTargets = geometry.morphTargets;
-							var morphInfluences = object.morphTargetInfluences;
-
-							for ( var t = 0, tl = morphTargets.length; t < tl; t ++ ) {
-
-								var influence = morphInfluences[ t ];
-
-								if ( influence === 0 ) continue;
-
-								var target = morphTargets[ t ];
-								var targetVertex = target.vertices[ v ];
-
-								_vector3.x += ( targetVertex.x - vertex.x ) * influence;
-								_vector3.y += ( targetVertex.y - vertex.y ) * influence;
-								_vector3.z += ( targetVertex.z - vertex.z ) * influence;
-
-							}
-
-						}
-
-						renderList.pushVertex( _vector3.x, _vector3.y, _vector3.z );
-
-					}
-
-					for ( var f = 0, fl = faces.length; f < fl; f ++ ) {
-
-						var face = faces[ f ];
-
-						material = isMultiMaterial === true
-							 ? object.material[ face.materialIndex ]
-							 : object.material;
-
-						if ( material === undefined ) continue;
-
-						var side = material.side;
-
-						var v1 = _vertexPool[ face.a ];
-						var v2 = _vertexPool[ face.b ];
-						var v3 = _vertexPool[ face.c ];
-
-						if ( renderList.checkTriangleVisibility( v1, v2, v3 ) === false ) continue;
-
-						var visible = renderList.checkBackfaceCulling( v1, v2, v3 );
-
-						if ( side !== THREE.DoubleSide ) {
-
-							if ( side === THREE.FrontSide && visible === false ) continue;
-							if ( side === THREE.BackSide && visible === true ) continue;
-
-						}
-
-						_face = getNextFaceInPool();
-
-						_face.id = object.id;
-						_face.v1.copy( v1 );
-						_face.v2.copy( v2 );
-						_face.v3.copy( v3 );
-
-						_face.normalModel.copy( face.normal );
-
-						if ( visible === false && ( side === THREE.BackSide || side === THREE.DoubleSide ) ) {
-
-							_face.normalModel.negate();
-
-						}
-
-						_face.normalModel.applyMatrix3( _normalMatrix ).normalize();
-
-						var faceVertexNormals = face.vertexNormals;
-
-						for ( var n = 0, nl = Math.min( faceVertexNormals.length, 3 ); n < nl; n ++ ) {
-
-							var normalModel = _face.vertexNormalsModel[ n ];
-							normalModel.copy( faceVertexNormals[ n ] );
-
-							if ( visible === false && ( side === THREE.BackSide || side === THREE.DoubleSide ) ) {
-
-								normalModel.negate();
-
-							}
-
-							normalModel.applyMatrix3( _normalMatrix ).normalize();
-
-						}
-
-						_face.vertexNormalsLength = faceVertexNormals.length;
-
-						var vertexUvs = faceVertexUvs[ f ];
-
-						if ( vertexUvs !== undefined ) {
-
-							for ( var u = 0; u < 3; u ++ ) {
-
-								_face.uvs[ u ].copy( vertexUvs[ u ] );
-
-							}
-
-						}
-
-						_face.color = face.color;
-						_face.material = material;
-
-						_face.z = ( v1.positionScreen.z + v2.positionScreen.z + v3.positionScreen.z ) / 3;
-						_face.renderOrder = object.renderOrder;
-
-						_renderData.elements.push( _face );
-
-					}
+					console.error( 'THREE.Projector no longer supports THREE.Geometry. Use THREE.BufferGeometry instead.' );
+					return;
 
 				}
 
-			} else if ( object instanceof THREE.Line ) {
+			} else if ( object.isLine ) {
 
 				_modelViewProjectionMatrix.multiplyMatrices( _viewProjectionMatrix, _modelMatrix );
 
-				if ( geometry instanceof THREE.BufferGeometry ) {
+				if ( geometry.isBufferGeometry ) {
 
 					var attributes = geometry.attributes;
 
@@ -789,7 +659,7 @@ THREE.Projector = function () {
 
 						} else {
 
-							var step = object instanceof THREE.LineSegments ? 2 : 1;
+							var step = object.isLineSegments ? 2 : 1;
 
 							for ( var i = 0, l = ( positions.length / 3 ) - 1; i < l; i += step ) {
 
@@ -801,81 +671,23 @@ THREE.Projector = function () {
 
 					}
 
-				} else if ( geometry instanceof THREE.Geometry ) {
+				} else if ( geometry.isGeometry ) {
 
-					var vertices = object.geometry.vertices;
-
-					if ( vertices.length === 0 ) continue;
-
-					v1 = getNextVertexInPool();
-					v1.positionScreen.copy( vertices[ 0 ] ).applyMatrix4( _modelViewProjectionMatrix );
-
-					var step = object instanceof THREE.LineSegments ? 2 : 1;
-
-					for ( var v = 1, vl = vertices.length; v < vl; v ++ ) {
-
-						v1 = getNextVertexInPool();
-						v1.positionScreen.copy( vertices[ v ] ).applyMatrix4( _modelViewProjectionMatrix );
-
-						if ( ( v + 1 ) % step > 0 ) continue;
-
-						v2 = _vertexPool[ _vertexCount - 2 ];
-
-						_clippedVertex1PositionScreen.copy( v1.positionScreen );
-						_clippedVertex2PositionScreen.copy( v2.positionScreen );
-
-						if ( clipLine( _clippedVertex1PositionScreen, _clippedVertex2PositionScreen ) === true ) {
-
-							// Perform the perspective divide
-							_clippedVertex1PositionScreen.multiplyScalar( 1 / _clippedVertex1PositionScreen.w );
-							_clippedVertex2PositionScreen.multiplyScalar( 1 / _clippedVertex2PositionScreen.w );
-
-							_line = getNextLineInPool();
-
-							_line.id = object.id;
-							_line.v1.positionScreen.copy( _clippedVertex1PositionScreen );
-							_line.v2.positionScreen.copy( _clippedVertex2PositionScreen );
-
-							_line.z = Math.max( _clippedVertex1PositionScreen.z, _clippedVertex2PositionScreen.z );
-							_line.renderOrder = object.renderOrder;
-
-							_line.material = object.material;
-
-							if ( object.material.vertexColors ) {
-
-								_line.vertexColors[ 0 ].copy( object.geometry.colors[ v ] );
-								_line.vertexColors[ 1 ].copy( object.geometry.colors[ v - 1 ] );
-
-							}
-
-							_renderData.elements.push( _line );
-
-						}
-
-					}
+					console.error( 'THREE.Projector no longer supports THREE.Geometry. Use THREE.BufferGeometry instead.' );
+					return;
 
 				}
 
-			} else if ( object instanceof THREE.Points ) {
+			} else if ( object.isPoints ) {
 
 				_modelViewProjectionMatrix.multiplyMatrices( _viewProjectionMatrix, _modelMatrix );
 
-				if ( geometry instanceof THREE.Geometry ) {
+				if ( geometry.isGeometry ) {
 
-					var vertices = object.geometry.vertices;
+					console.error( 'THREE.Projector no longer supports THREE.Geometry. Use THREE.BufferGeometry instead.' );
+					return;
 
-					for ( var v = 0, vl = vertices.length; v < vl; v ++ ) {
-
-						var vertex = vertices[ v ];
-
-						_vector4.set( vertex.x, vertex.y, vertex.z, 1 );
-						_vector4.applyMatrix4( _modelViewProjectionMatrix );
-
-						pushPoint( _vector4, object, camera );
-
-					}
-
-				} else if ( geometry instanceof THREE.BufferGeometry ) {
+				} else if ( geometry.isBufferGeometry ) {
 
 					var attributes = geometry.attributes;
 
@@ -896,7 +708,7 @@ THREE.Projector = function () {
 
 				}
 
-			} else if ( object instanceof THREE.Sprite ) {
+			} else if ( object.isSprite ) {
 
 				object.modelViewMatrix.multiplyMatrices( camera.matrixWorldInverse, object.matrixWorld );
 				_vector4.set( _modelMatrix.elements[ 12 ], _modelMatrix.elements[ 13 ], _modelMatrix.elements[ 14 ], 1 );
@@ -1135,7 +947,6 @@ THREE.CreateSVGRenderer = function(as_is, precision, doc) {
 
 // now include original THREE.SVGRenderer
 //
-
 THREE.SVGObject = function ( node ) {
 
 	THREE.Object3D.call( this );
@@ -1205,8 +1016,8 @@ THREE.SVGRenderer = function () {
 
 		switch ( quality ) {
 
-			case "high": _quality = 1; break;
-			case "low": _quality = 0; break;
+			case 'high': _quality = 1; break;
+			case 'low': _quality = 0; break;
 
 		}
 
@@ -1500,7 +1311,7 @@ THREE.SVGRenderer = function () {
 		}
 
 		var path = 'M' + convert( v1.x - scaleX * 0.5 ) + ',' + convert( v1.y - scaleY * 0.5 ) + 'h' + convert( scaleX ) + 'v' + convert( scaleY ) + 'h' + convert( - scaleX ) + 'z';
-		var style = "";
+		var style = '';
 
 		if ( material.isSpriteMaterial || material.isPointsMaterial ) {
 
@@ -1522,7 +1333,7 @@ THREE.SVGRenderer = function () {
 
 			if ( material.isLineDashedMaterial ) {
 
-				style = style + ';stroke-dasharray:' + material.dashSize + "," + material.gapSize;
+				style = style + ';stroke-dasharray:' + material.dashSize + ',' + material.gapSize;
 
 			}
 
@@ -1752,7 +1563,6 @@ THREE.SVGRenderer = function () {
 };
 
 // Content of examples/js/controls/OrbitControls.js
-
 // This set of controls performs orbiting, dollying (zooming), and panning.
 // Unlike TrackballControls, it maintains the "up" direction object.up (+Y by default).
 //
@@ -1815,13 +1625,10 @@ THREE.OrbitControls = function ( object, domElement ) {
 	// Set to true to automatically rotate around the target
 	// If auto-rotate is enabled, you must call controls.update() in your animation loop
 	this.autoRotate = false;
-	this.autoRotateSpeed = 2.0; // 30 seconds per round when fps is 60
-
-	// Set to false to disable use of the keys
-	this.enableKeys = true;
+	this.autoRotateSpeed = 2.0; // 30 seconds per orbit when fps is 60
 
 	// The four arrow keys
-	this.keys = { LEFT: 37, UP: 38, RIGHT: 39, BOTTOM: 40 };
+	this.keys = { LEFT: 'ArrowLeft', UP: 'ArrowUp', RIGHT: 'ArrowRight', BOTTOM: 'ArrowDown' };
 
 	// Mouse buttons
 	this.mouseButtons = { LEFT: THREE.MOUSE.ROTATE, MIDDLE: THREE.MOUSE.DOLLY, RIGHT: THREE.MOUSE.PAN };
@@ -1833,6 +1640,9 @@ THREE.OrbitControls = function ( object, domElement ) {
 	this.target0 = this.target.clone();
 	this.position0 = this.object.position.clone();
 	this.zoom0 = this.object.zoom;
+
+	// the target DOM element for key events
+	this._domElementKeyEvents = null;
 
 	//
 	// public methods
@@ -1847,6 +1657,13 @@ THREE.OrbitControls = function ( object, domElement ) {
 	this.getAzimuthalAngle = function () {
 
 		return spherical.theta;
+
+	};
+
+	this.listenToKeyEvents = function ( domElement ) {
+
+		domElement.addEventListener( 'keydown', onKeyDown );
+		this._domElementKeyEvents = domElement;
 
 	};
 
@@ -1880,7 +1697,7 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 		// so camera.up is the orbit axis
 		var quat = new THREE.Quaternion().setFromUnitVectors( object.up, new THREE.Vector3( 0, 1, 0 ) );
-		var quatInverse = quat.clone().inverse();
+		var quatInverse = quat.clone().invert();
 
 		var lastPosition = new THREE.Vector3();
 		var lastQuaternion = new THREE.Quaternion();
@@ -1928,7 +1745,7 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 				if ( max < - Math.PI ) max += twoPI; else if ( max > Math.PI ) max -= twoPI;
 
-				if ( min < max ) {
+				if ( min <= max ) {
 
 					spherical.theta = Math.max( min, Math.min( max, spherical.theta ) );
 
@@ -2017,19 +1834,24 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 	this.dispose = function () {
 
-		scope.domElement.removeEventListener( 'contextmenu', onContextMenu, false );
+		scope.domElement.removeEventListener( 'contextmenu', onContextMenu );
 
-		scope.domElement.removeEventListener( 'pointerdown', onPointerDown, false );
-		scope.domElement.removeEventListener( 'wheel', onMouseWheel, false );
+		scope.domElement.removeEventListener( 'pointerdown', onPointerDown );
+		scope.domElement.removeEventListener( 'wheel', onMouseWheel );
 
-		scope.domElement.removeEventListener( 'touchstart', onTouchStart, false );
-		scope.domElement.removeEventListener( 'touchend', onTouchEnd, false );
-		scope.domElement.removeEventListener( 'touchmove', onTouchMove, false );
+		scope.domElement.removeEventListener( 'touchstart', onTouchStart );
+		scope.domElement.removeEventListener( 'touchend', onTouchEnd );
+		scope.domElement.removeEventListener( 'touchmove', onTouchMove );
 
-		scope.domElement.ownerDocument.removeEventListener( 'pointermove', onPointerMove, false );
-		scope.domElement.ownerDocument.removeEventListener( 'pointerup', onPointerUp, false );
+		scope.domElement.ownerDocument.removeEventListener( 'pointermove', onPointerMove );
+		scope.domElement.ownerDocument.removeEventListener( 'pointerup', onPointerUp );
 
-		scope.domElement.removeEventListener( 'keydown', onKeyDown, false );
+
+		if ( scope._domElementKeyEvents !== null ) {
+
+			scope._domElementKeyEvents.removeEventListener( 'keydown', onKeyDown );
+
+		}
 
 		//scope.dispatchEvent( { type: 'dispose' } ); // should this be added here?
 
@@ -2329,7 +2151,7 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 		var needsUpdate = false;
 
-		switch ( event.keyCode ) {
+		switch ( event.code ) {
 
 			case scope.keys.UP:
 				pan( 0, scope.keyPanSpeed );
@@ -2555,8 +2377,6 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 	function onPointerUp( event ) {
 
-		if ( scope.enabled === false ) return;
-
 		switch ( event.pointerType ) {
 
 			case 'mouse':
@@ -2669,8 +2489,8 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 		if ( state !== STATE.NONE ) {
 
-			scope.domElement.ownerDocument.addEventListener( 'pointermove', onPointerMove, false );
-			scope.domElement.ownerDocument.addEventListener( 'pointerup', onPointerUp, false );
+			scope.domElement.ownerDocument.addEventListener( 'pointermove', onPointerMove );
+			scope.domElement.ownerDocument.addEventListener( 'pointerup', onPointerUp );
 
 			scope.dispatchEvent( startEvent );
 
@@ -2716,12 +2536,12 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 	function onMouseUp( event ) {
 
+		scope.domElement.ownerDocument.removeEventListener( 'pointermove', onPointerMove );
+		scope.domElement.ownerDocument.removeEventListener( 'pointerup', onPointerUp );
+
 		if ( scope.enabled === false ) return;
 
 		handleMouseUp( event );
-
-		scope.domElement.ownerDocument.removeEventListener( 'pointermove', onPointerMove, false );
-		scope.domElement.ownerDocument.removeEventListener( 'pointerup', onPointerUp, false );
 
 		scope.dispatchEvent( endEvent );
 
@@ -2734,7 +2554,6 @@ THREE.OrbitControls = function ( object, domElement ) {
 		if ( scope.enabled === false || scope.enableZoom === false || ( state !== STATE.NONE && state !== STATE.ROTATE ) ) return;
 
 		event.preventDefault();
-		event.stopPropagation();
 
 		scope.dispatchEvent( startEvent );
 
@@ -2746,7 +2565,7 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 	function onKeyDown( event ) {
 
-		if ( scope.enabled === false || scope.enableKeys === false || scope.enablePan === false ) return;
+		if ( scope.enabled === false || scope.enablePan === false ) return;
 
 		handleKeyDown( event );
 
@@ -2843,7 +2662,6 @@ THREE.OrbitControls = function ( object, domElement ) {
 		if ( scope.enabled === false ) return;
 
 		event.preventDefault(); // prevent scrolling
-		event.stopPropagation();
 
 		switch ( state ) {
 
@@ -2917,24 +2735,14 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 	//
 
-	scope.domElement.addEventListener( 'contextmenu', onContextMenu, false );
+	scope.domElement.addEventListener( 'contextmenu', onContextMenu );
 
-	scope.domElement.addEventListener( 'pointerdown', onPointerDown, false );
-	scope.domElement.addEventListener( 'wheel', onMouseWheel, false );
+	scope.domElement.addEventListener( 'pointerdown', onPointerDown );
+	scope.domElement.addEventListener( 'wheel', onMouseWheel );
 
-	scope.domElement.addEventListener( 'touchstart', onTouchStart, false );
-	scope.domElement.addEventListener( 'touchend', onTouchEnd, false );
-	scope.domElement.addEventListener( 'touchmove', onTouchMove, false );
-
-	scope.domElement.addEventListener( 'keydown', onKeyDown, false );
-
-	// make sure element can receive keys.
-
-	if ( scope.domElement.tabIndex === - 1 ) {
-
-		scope.domElement.tabIndex = 0;
-
-	}
+	scope.domElement.addEventListener( 'touchstart', onTouchStart );
+	scope.domElement.addEventListener( 'touchend', onTouchEnd );
+	scope.domElement.addEventListener( 'touchmove', onTouchMove );
 
 	// force an update at start
 
@@ -2972,7 +2780,6 @@ THREE.MapControls.prototype = Object.create( THREE.EventDispatcher.prototype );
 THREE.MapControls.prototype.constructor = THREE.MapControls;
 
 // Content of examples/js/controls/TransformControls.js
-
 THREE.TransformControls = function ( camera, domElement ) {
 
 	if ( domElement === undefined ) {
@@ -2999,25 +2806,25 @@ THREE.TransformControls = function ( camera, domElement ) {
 	// Setting the defined property will automatically trigger change event
 	// Defined properties are passed down to gizmo and plane
 
-	defineProperty( "camera", camera );
-	defineProperty( "object", undefined );
-	defineProperty( "enabled", true );
-	defineProperty( "axis", null );
-	defineProperty( "mode", "translate" );
-	defineProperty( "translationSnap", null );
-	defineProperty( "rotationSnap", null );
-	defineProperty( "scaleSnap", null );
-	defineProperty( "space", "world" );
-	defineProperty( "size", 1 );
-	defineProperty( "dragging", false );
-	defineProperty( "showX", true );
-	defineProperty( "showY", true );
-	defineProperty( "showZ", true );
+	defineProperty( 'camera', camera );
+	defineProperty( 'object', undefined );
+	defineProperty( 'enabled', true );
+	defineProperty( 'axis', null );
+	defineProperty( 'mode', 'translate' );
+	defineProperty( 'translationSnap', null );
+	defineProperty( 'rotationSnap', null );
+	defineProperty( 'scaleSnap', null );
+	defineProperty( 'space', 'world' );
+	defineProperty( 'size', 1 );
+	defineProperty( 'dragging', false );
+	defineProperty( 'showX', true );
+	defineProperty( 'showY', true );
+	defineProperty( 'showZ', true );
 
-	var changeEvent = { type: "change" };
-	var mouseDownEvent = { type: "mouseDown" };
-	var mouseUpEvent = { type: "mouseUp", mode: scope.mode };
-	var objectChangeEvent = { type: "objectChange" };
+	var changeEvent = { type: 'change' };
+	var mouseDownEvent = { type: 'mouseDown' };
+	var mouseUpEvent = { type: 'mouseUp', mode: scope.mode };
+	var objectChangeEvent = { type: 'objectChange' };
 
 	// Reusable utility variables
 
@@ -3084,32 +2891,32 @@ THREE.TransformControls = function ( camera, domElement ) {
 
 	// TODO: remove properties unused in plane and gizmo
 
-	defineProperty( "worldPosition", worldPosition );
-	defineProperty( "worldPositionStart", worldPositionStart );
-	defineProperty( "worldQuaternion", worldQuaternion );
-	defineProperty( "worldQuaternionStart", worldQuaternionStart );
-	defineProperty( "cameraPosition", cameraPosition );
-	defineProperty( "cameraQuaternion", cameraQuaternion );
-	defineProperty( "pointStart", pointStart );
-	defineProperty( "pointEnd", pointEnd );
-	defineProperty( "rotationAxis", rotationAxis );
-	defineProperty( "rotationAngle", rotationAngle );
-	defineProperty( "eye", eye );
+	defineProperty( 'worldPosition', worldPosition );
+	defineProperty( 'worldPositionStart', worldPositionStart );
+	defineProperty( 'worldQuaternion', worldQuaternion );
+	defineProperty( 'worldQuaternionStart', worldQuaternionStart );
+	defineProperty( 'cameraPosition', cameraPosition );
+	defineProperty( 'cameraQuaternion', cameraQuaternion );
+	defineProperty( 'pointStart', pointStart );
+	defineProperty( 'pointEnd', pointEnd );
+	defineProperty( 'rotationAxis', rotationAxis );
+	defineProperty( 'rotationAngle', rotationAngle );
+	defineProperty( 'eye', eye );
 
 	{
 
-		domElement.addEventListener( "pointerdown", onPointerDown, false );
-		domElement.addEventListener( "pointermove", onPointerHover, false );
-		scope.domElement.ownerDocument.addEventListener( "pointerup", onPointerUp, false );
+		domElement.addEventListener( 'pointerdown', onPointerDown );
+		domElement.addEventListener( 'pointermove', onPointerHover );
+		scope.domElement.ownerDocument.addEventListener( 'pointerup', onPointerUp );
 
 	}
 
 	this.dispose = function () {
 
-		domElement.removeEventListener( "pointerdown", onPointerDown );
-		domElement.removeEventListener( "pointermove", onPointerHover );
-		scope.domElement.ownerDocument.removeEventListener( "pointermove", onPointerMove );
-		scope.domElement.ownerDocument.removeEventListener( "pointerup", onPointerUp );
+		domElement.removeEventListener( 'pointerdown', onPointerDown );
+		domElement.removeEventListener( 'pointermove', onPointerHover );
+		scope.domElement.ownerDocument.removeEventListener( 'pointermove', onPointerMove );
+		scope.domElement.ownerDocument.removeEventListener( 'pointerup', onPointerUp );
 
 		this.traverse( function ( child ) {
 
@@ -3162,7 +2969,7 @@ THREE.TransformControls = function ( camera, domElement ) {
 					_plane[ propName ] = value;
 					_gizmo[ propName ] = value;
 
-					scope.dispatchEvent( { type: propName + "-changed", value: value } );
+					scope.dispatchEvent( { type: propName + '-changed', value: value } );
 					scope.dispatchEvent( changeEvent );
 
 				}
@@ -3196,8 +3003,8 @@ THREE.TransformControls = function ( camera, domElement ) {
 
 			this.object.matrixWorld.decompose( worldPosition, worldQuaternion, worldScale );
 
-			parentQuaternionInv.copy( parentQuaternion ).inverse();
-			worldQuaternionInv.copy( worldQuaternion ).inverse();
+			parentQuaternionInv.copy( parentQuaternion ).invert();
+			worldQuaternionInv.copy( worldQuaternion ).invert();
 
 		}
 
@@ -3346,7 +3153,7 @@ THREE.TransformControls = function ( camera, domElement ) {
 
 				if ( space === 'local' ) {
 
-					object.position.applyQuaternion( _tempQuaternion.copy( quaternionStart ).inverse() );
+					object.position.applyQuaternion( _tempQuaternion.copy( quaternionStart ).invert() );
 
 					if ( axis.search( 'X' ) !== - 1 ) {
 
@@ -3602,7 +3409,7 @@ THREE.TransformControls = function ( camera, domElement ) {
 		if ( ! scope.enabled ) return;
 
 		scope.domElement.style.touchAction = 'none'; // disable touch scroll
-		scope.domElement.ownerDocument.addEventListener( "pointermove", onPointerMove, false );
+		scope.domElement.ownerDocument.addEventListener( 'pointermove', onPointerMove );
 
 		scope.pointerHover( getPointer( event ) );
 		scope.pointerDown( getPointer( event ) );
@@ -3622,7 +3429,7 @@ THREE.TransformControls = function ( camera, domElement ) {
 		if ( ! scope.enabled ) return;
 
 		scope.domElement.style.touchAction = '';
-		scope.domElement.ownerDocument.removeEventListener( "pointermove", onPointerMove, false );
+		scope.domElement.ownerDocument.removeEventListener( 'pointermove', onPointerMove );
 
 		scope.pointerUp( getPointer( event ) );
 
@@ -3775,9 +3582,9 @@ THREE.TransformControlsGizmo = function () {
 
 	// reusable geometry
 
-	var arrowGeometry = new THREE.CylinderBufferGeometry( 0, 0.05, 0.2, 12, 1, false );
+	var arrowGeometry = new THREE.CylinderGeometry( 0, 0.05, 0.2, 12, 1, false );
 
-	var scaleHandleGeometry = new THREE.BoxBufferGeometry( 0.125, 0.125, 0.125 );
+	var scaleHandleGeometry = new THREE.BoxGeometry( 0.125, 0.125, 0.125 );
 
 	var lineGeometry = new THREE.BufferGeometry();
 	lineGeometry.setAttribute( 'position', new THREE.Float32BufferAttribute( [ 0, 0, 0,	1, 0, 0 ], 3 ) );
@@ -3830,20 +3637,20 @@ THREE.TransformControlsGizmo = function () {
 			[ new THREE.Line( lineGeometry, matLineBlue ), null, [ 0, - Math.PI / 2, 0 ]]
 		],
 		XYZ: [
-			[ new THREE.Mesh( new THREE.OctahedronBufferGeometry( 0.1, 0 ), matWhiteTransparent.clone() ), [ 0, 0, 0 ], [ 0, 0, 0 ]]
+			[ new THREE.Mesh( new THREE.OctahedronGeometry( 0.1, 0 ), matWhiteTransparent.clone() ), [ 0, 0, 0 ], [ 0, 0, 0 ]]
 		],
 		XY: [
-			[ new THREE.Mesh( new THREE.PlaneBufferGeometry( 0.295, 0.295 ), matYellowTransparent.clone() ), [ 0.15, 0.15, 0 ]],
+			[ new THREE.Mesh( new THREE.PlaneGeometry( 0.295, 0.295 ), matYellowTransparent.clone() ), [ 0.15, 0.15, 0 ]],
 			[ new THREE.Line( lineGeometry, matLineYellow ), [ 0.18, 0.3, 0 ], null, [ 0.125, 1, 1 ]],
 			[ new THREE.Line( lineGeometry, matLineYellow ), [ 0.3, 0.18, 0 ], [ 0, 0, Math.PI / 2 ], [ 0.125, 1, 1 ]]
 		],
 		YZ: [
-			[ new THREE.Mesh( new THREE.PlaneBufferGeometry( 0.295, 0.295 ), matCyanTransparent.clone() ), [ 0, 0.15, 0.15 ], [ 0, Math.PI / 2, 0 ]],
+			[ new THREE.Mesh( new THREE.PlaneGeometry( 0.295, 0.295 ), matCyanTransparent.clone() ), [ 0, 0.15, 0.15 ], [ 0, Math.PI / 2, 0 ]],
 			[ new THREE.Line( lineGeometry, matLineCyan ), [ 0, 0.18, 0.3 ], [ 0, 0, Math.PI / 2 ], [ 0.125, 1, 1 ]],
 			[ new THREE.Line( lineGeometry, matLineCyan ), [ 0, 0.3, 0.18 ], [ 0, - Math.PI / 2, 0 ], [ 0.125, 1, 1 ]]
 		],
 		XZ: [
-			[ new THREE.Mesh( new THREE.PlaneBufferGeometry( 0.295, 0.295 ), matMagentaTransparent.clone() ), [ 0.15, 0, 0.15 ], [ - Math.PI / 2, 0, 0 ]],
+			[ new THREE.Mesh( new THREE.PlaneGeometry( 0.295, 0.295 ), matMagentaTransparent.clone() ), [ 0.15, 0, 0.15 ], [ - Math.PI / 2, 0, 0 ]],
 			[ new THREE.Line( lineGeometry, matLineMagenta ), [ 0.18, 0, 0.3 ], null, [ 0.125, 1, 1 ]],
 			[ new THREE.Line( lineGeometry, matLineMagenta ), [ 0.3, 0, 0.18 ], [ 0, - Math.PI / 2, 0 ], [ 0.125, 1, 1 ]]
 		]
@@ -3851,34 +3658,34 @@ THREE.TransformControlsGizmo = function () {
 
 	var pickerTranslate = {
 		X: [
-			[ new THREE.Mesh( new THREE.CylinderBufferGeometry( 0.2, 0, 1, 4, 1, false ), matInvisible ), [ 0.6, 0, 0 ], [ 0, 0, - Math.PI / 2 ]]
+			[ new THREE.Mesh( new THREE.CylinderGeometry( 0.2, 0, 1, 4, 1, false ), matInvisible ), [ 0.6, 0, 0 ], [ 0, 0, - Math.PI / 2 ]]
 		],
 		Y: [
-			[ new THREE.Mesh( new THREE.CylinderBufferGeometry( 0.2, 0, 1, 4, 1, false ), matInvisible ), [ 0, 0.6, 0 ]]
+			[ new THREE.Mesh( new THREE.CylinderGeometry( 0.2, 0, 1, 4, 1, false ), matInvisible ), [ 0, 0.6, 0 ]]
 		],
 		Z: [
-			[ new THREE.Mesh( new THREE.CylinderBufferGeometry( 0.2, 0, 1, 4, 1, false ), matInvisible ), [ 0, 0, 0.6 ], [ Math.PI / 2, 0, 0 ]]
+			[ new THREE.Mesh( new THREE.CylinderGeometry( 0.2, 0, 1, 4, 1, false ), matInvisible ), [ 0, 0, 0.6 ], [ Math.PI / 2, 0, 0 ]]
 		],
 		XYZ: [
-			[ new THREE.Mesh( new THREE.OctahedronBufferGeometry( 0.2, 0 ), matInvisible ) ]
+			[ new THREE.Mesh( new THREE.OctahedronGeometry( 0.2, 0 ), matInvisible ) ]
 		],
 		XY: [
-			[ new THREE.Mesh( new THREE.PlaneBufferGeometry( 0.4, 0.4 ), matInvisible ), [ 0.2, 0.2, 0 ]]
+			[ new THREE.Mesh( new THREE.PlaneGeometry( 0.4, 0.4 ), matInvisible ), [ 0.2, 0.2, 0 ]]
 		],
 		YZ: [
-			[ new THREE.Mesh( new THREE.PlaneBufferGeometry( 0.4, 0.4 ), matInvisible ), [ 0, 0.2, 0.2 ], [ 0, Math.PI / 2, 0 ]]
+			[ new THREE.Mesh( new THREE.PlaneGeometry( 0.4, 0.4 ), matInvisible ), [ 0, 0.2, 0.2 ], [ 0, Math.PI / 2, 0 ]]
 		],
 		XZ: [
-			[ new THREE.Mesh( new THREE.PlaneBufferGeometry( 0.4, 0.4 ), matInvisible ), [ 0.2, 0, 0.2 ], [ - Math.PI / 2, 0, 0 ]]
+			[ new THREE.Mesh( new THREE.PlaneGeometry( 0.4, 0.4 ), matInvisible ), [ 0.2, 0, 0.2 ], [ - Math.PI / 2, 0, 0 ]]
 		]
 	};
 
 	var helperTranslate = {
 		START: [
-			[ new THREE.Mesh( new THREE.OctahedronBufferGeometry( 0.01, 2 ), matHelper ), null, null, null, 'helper' ]
+			[ new THREE.Mesh( new THREE.OctahedronGeometry( 0.01, 2 ), matHelper ), null, null, null, 'helper' ]
 		],
 		END: [
-			[ new THREE.Mesh( new THREE.OctahedronBufferGeometry( 0.01, 2 ), matHelper ), null, null, null, 'helper' ]
+			[ new THREE.Mesh( new THREE.OctahedronGeometry( 0.01, 2 ), matHelper ), null, null, null, 'helper' ]
 		],
 		DELTA: [
 			[ new THREE.Line( TranslateHelperGeometry(), matHelper ), null, null, null, 'helper' ]
@@ -3897,22 +3704,22 @@ THREE.TransformControlsGizmo = function () {
 	var gizmoRotate = {
 		X: [
 			[ new THREE.Line( CircleGeometry( 1, 0.5 ), matLineRed ) ],
-			[ new THREE.Mesh( new THREE.OctahedronBufferGeometry( 0.04, 0 ), matRed ), [ 0, 0, 0.99 ], null, [ 1, 3, 1 ]],
+			[ new THREE.Mesh( new THREE.OctahedronGeometry( 0.04, 0 ), matRed ), [ 0, 0, 0.99 ], null, [ 1, 3, 1 ]],
 		],
 		Y: [
 			[ new THREE.Line( CircleGeometry( 1, 0.5 ), matLineGreen ), null, [ 0, 0, - Math.PI / 2 ]],
-			[ new THREE.Mesh( new THREE.OctahedronBufferGeometry( 0.04, 0 ), matGreen ), [ 0, 0, 0.99 ], null, [ 3, 1, 1 ]],
+			[ new THREE.Mesh( new THREE.OctahedronGeometry( 0.04, 0 ), matGreen ), [ 0, 0, 0.99 ], null, [ 3, 1, 1 ]],
 		],
 		Z: [
 			[ new THREE.Line( CircleGeometry( 1, 0.5 ), matLineBlue ), null, [ 0, Math.PI / 2, 0 ]],
-			[ new THREE.Mesh( new THREE.OctahedronBufferGeometry( 0.04, 0 ), matBlue ), [ 0.99, 0, 0 ], null, [ 1, 3, 1 ]],
+			[ new THREE.Mesh( new THREE.OctahedronGeometry( 0.04, 0 ), matBlue ), [ 0.99, 0, 0 ], null, [ 1, 3, 1 ]],
 		],
 		E: [
 			[ new THREE.Line( CircleGeometry( 1.25, 1 ), matLineYellowTransparent ), null, [ 0, Math.PI / 2, 0 ]],
-			[ new THREE.Mesh( new THREE.CylinderBufferGeometry( 0.03, 0, 0.15, 4, 1, false ), matLineYellowTransparent ), [ 1.17, 0, 0 ], [ 0, 0, - Math.PI / 2 ], [ 1, 1, 0.001 ]],
-			[ new THREE.Mesh( new THREE.CylinderBufferGeometry( 0.03, 0, 0.15, 4, 1, false ), matLineYellowTransparent ), [ - 1.17, 0, 0 ], [ 0, 0, Math.PI / 2 ], [ 1, 1, 0.001 ]],
-			[ new THREE.Mesh( new THREE.CylinderBufferGeometry( 0.03, 0, 0.15, 4, 1, false ), matLineYellowTransparent ), [ 0, - 1.17, 0 ], [ Math.PI, 0, 0 ], [ 1, 1, 0.001 ]],
-			[ new THREE.Mesh( new THREE.CylinderBufferGeometry( 0.03, 0, 0.15, 4, 1, false ), matLineYellowTransparent ), [ 0, 1.17, 0 ], [ 0, 0, 0 ], [ 1, 1, 0.001 ]],
+			[ new THREE.Mesh( new THREE.CylinderGeometry( 0.03, 0, 0.15, 4, 1, false ), matLineYellowTransparent ), [ 1.17, 0, 0 ], [ 0, 0, - Math.PI / 2 ], [ 1, 1, 0.001 ]],
+			[ new THREE.Mesh( new THREE.CylinderGeometry( 0.03, 0, 0.15, 4, 1, false ), matLineYellowTransparent ), [ - 1.17, 0, 0 ], [ 0, 0, Math.PI / 2 ], [ 1, 1, 0.001 ]],
+			[ new THREE.Mesh( new THREE.CylinderGeometry( 0.03, 0, 0.15, 4, 1, false ), matLineYellowTransparent ), [ 0, - 1.17, 0 ], [ Math.PI, 0, 0 ], [ 1, 1, 0.001 ]],
+			[ new THREE.Mesh( new THREE.CylinderGeometry( 0.03, 0, 0.15, 4, 1, false ), matLineYellowTransparent ), [ 0, 1.17, 0 ], [ 0, 0, 0 ], [ 1, 1, 0.001 ]],
 		],
 		XYZE: [
 			[ new THREE.Line( CircleGeometry( 1, 1 ), matLineGray ), null, [ 0, Math.PI / 2, 0 ]]
@@ -3927,19 +3734,19 @@ THREE.TransformControlsGizmo = function () {
 
 	var pickerRotate = {
 		X: [
-			[ new THREE.Mesh( new THREE.TorusBufferGeometry( 1, 0.1, 4, 24 ), matInvisible ), [ 0, 0, 0 ], [ 0, - Math.PI / 2, - Math.PI / 2 ]],
+			[ new THREE.Mesh( new THREE.TorusGeometry( 1, 0.1, 4, 24 ), matInvisible ), [ 0, 0, 0 ], [ 0, - Math.PI / 2, - Math.PI / 2 ]],
 		],
 		Y: [
-			[ new THREE.Mesh( new THREE.TorusBufferGeometry( 1, 0.1, 4, 24 ), matInvisible ), [ 0, 0, 0 ], [ Math.PI / 2, 0, 0 ]],
+			[ new THREE.Mesh( new THREE.TorusGeometry( 1, 0.1, 4, 24 ), matInvisible ), [ 0, 0, 0 ], [ Math.PI / 2, 0, 0 ]],
 		],
 		Z: [
-			[ new THREE.Mesh( new THREE.TorusBufferGeometry( 1, 0.1, 4, 24 ), matInvisible ), [ 0, 0, 0 ], [ 0, 0, - Math.PI / 2 ]],
+			[ new THREE.Mesh( new THREE.TorusGeometry( 1, 0.1, 4, 24 ), matInvisible ), [ 0, 0, 0 ], [ 0, 0, - Math.PI / 2 ]],
 		],
 		E: [
-			[ new THREE.Mesh( new THREE.TorusBufferGeometry( 1.25, 0.1, 2, 24 ), matInvisible ) ]
+			[ new THREE.Mesh( new THREE.TorusGeometry( 1.25, 0.1, 2, 24 ), matInvisible ) ]
 		],
 		XYZE: [
-			[ new THREE.Mesh( new THREE.SphereBufferGeometry( 0.7, 10, 8 ), matInvisible ) ]
+			[ new THREE.Mesh( new THREE.SphereGeometry( 0.7, 10, 8 ), matInvisible ) ]
 		]
 	};
 
@@ -3972,25 +3779,25 @@ THREE.TransformControlsGizmo = function () {
 			[ new THREE.Line( lineGeometry, matLineMagenta ), [ 0.98, 0, 0.855 ], [ 0, - Math.PI / 2, 0 ], [ 0.125, 1, 1 ]]
 		],
 		XYZX: [
-			[ new THREE.Mesh( new THREE.BoxBufferGeometry( 0.125, 0.125, 0.125 ), matWhiteTransparent.clone() ), [ 1.1, 0, 0 ]],
+			[ new THREE.Mesh( new THREE.BoxGeometry( 0.125, 0.125, 0.125 ), matWhiteTransparent.clone() ), [ 1.1, 0, 0 ]],
 		],
 		XYZY: [
-			[ new THREE.Mesh( new THREE.BoxBufferGeometry( 0.125, 0.125, 0.125 ), matWhiteTransparent.clone() ), [ 0, 1.1, 0 ]],
+			[ new THREE.Mesh( new THREE.BoxGeometry( 0.125, 0.125, 0.125 ), matWhiteTransparent.clone() ), [ 0, 1.1, 0 ]],
 		],
 		XYZZ: [
-			[ new THREE.Mesh( new THREE.BoxBufferGeometry( 0.125, 0.125, 0.125 ), matWhiteTransparent.clone() ), [ 0, 0, 1.1 ]],
+			[ new THREE.Mesh( new THREE.BoxGeometry( 0.125, 0.125, 0.125 ), matWhiteTransparent.clone() ), [ 0, 0, 1.1 ]],
 		]
 	};
 
 	var pickerScale = {
 		X: [
-			[ new THREE.Mesh( new THREE.CylinderBufferGeometry( 0.2, 0, 0.8, 4, 1, false ), matInvisible ), [ 0.5, 0, 0 ], [ 0, 0, - Math.PI / 2 ]]
+			[ new THREE.Mesh( new THREE.CylinderGeometry( 0.2, 0, 0.8, 4, 1, false ), matInvisible ), [ 0.5, 0, 0 ], [ 0, 0, - Math.PI / 2 ]]
 		],
 		Y: [
-			[ new THREE.Mesh( new THREE.CylinderBufferGeometry( 0.2, 0, 0.8, 4, 1, false ), matInvisible ), [ 0, 0.5, 0 ]]
+			[ new THREE.Mesh( new THREE.CylinderGeometry( 0.2, 0, 0.8, 4, 1, false ), matInvisible ), [ 0, 0.5, 0 ]]
 		],
 		Z: [
-			[ new THREE.Mesh( new THREE.CylinderBufferGeometry( 0.2, 0, 0.8, 4, 1, false ), matInvisible ), [ 0, 0, 0.5 ], [ Math.PI / 2, 0, 0 ]]
+			[ new THREE.Mesh( new THREE.CylinderGeometry( 0.2, 0, 0.8, 4, 1, false ), matInvisible ), [ 0, 0, 0.5 ], [ Math.PI / 2, 0, 0 ]]
 		],
 		XY: [
 			[ new THREE.Mesh( scaleHandleGeometry, matInvisible ), [ 0.85, 0.85, 0 ], null, [ 3, 3, 0.2 ]],
@@ -4002,13 +3809,13 @@ THREE.TransformControlsGizmo = function () {
 			[ new THREE.Mesh( scaleHandleGeometry, matInvisible ), [ 0.85, 0, 0.85 ], null, [ 3, 0.2, 3 ]],
 		],
 		XYZX: [
-			[ new THREE.Mesh( new THREE.BoxBufferGeometry( 0.2, 0.2, 0.2 ), matInvisible ), [ 1.1, 0, 0 ]],
+			[ new THREE.Mesh( new THREE.BoxGeometry( 0.2, 0.2, 0.2 ), matInvisible ), [ 1.1, 0, 0 ]],
 		],
 		XYZY: [
-			[ new THREE.Mesh( new THREE.BoxBufferGeometry( 0.2, 0.2, 0.2 ), matInvisible ), [ 0, 1.1, 0 ]],
+			[ new THREE.Mesh( new THREE.BoxGeometry( 0.2, 0.2, 0.2 ), matInvisible ), [ 0, 1.1, 0 ]],
 		],
 		XYZZ: [
-			[ new THREE.Mesh( new THREE.BoxBufferGeometry( 0.2, 0.2, 0.2 ), matInvisible ), [ 0, 0, 1.1 ]],
+			[ new THREE.Mesh( new THREE.BoxGeometry( 0.2, 0.2, 0.2 ), matInvisible ), [ 0, 0, 1.1 ]],
 		]
 	};
 
@@ -4104,21 +3911,21 @@ THREE.TransformControlsGizmo = function () {
 	this.picker = {};
 	this.helper = {};
 
-	this.add( this.gizmo[ "translate" ] = setupGizmo( gizmoTranslate ) );
-	this.add( this.gizmo[ "rotate" ] = setupGizmo( gizmoRotate ) );
-	this.add( this.gizmo[ "scale" ] = setupGizmo( gizmoScale ) );
-	this.add( this.picker[ "translate" ] = setupGizmo( pickerTranslate ) );
-	this.add( this.picker[ "rotate" ] = setupGizmo( pickerRotate ) );
-	this.add( this.picker[ "scale" ] = setupGizmo( pickerScale ) );
-	this.add( this.helper[ "translate" ] = setupGizmo( helperTranslate ) );
-	this.add( this.helper[ "rotate" ] = setupGizmo( helperRotate ) );
-	this.add( this.helper[ "scale" ] = setupGizmo( helperScale ) );
+	this.add( this.gizmo[ 'translate' ] = setupGizmo( gizmoTranslate ) );
+	this.add( this.gizmo[ 'rotate' ] = setupGizmo( gizmoRotate ) );
+	this.add( this.gizmo[ 'scale' ] = setupGizmo( gizmoScale ) );
+	this.add( this.picker[ 'translate' ] = setupGizmo( pickerTranslate ) );
+	this.add( this.picker[ 'rotate' ] = setupGizmo( pickerRotate ) );
+	this.add( this.picker[ 'scale' ] = setupGizmo( pickerScale ) );
+	this.add( this.helper[ 'translate' ] = setupGizmo( helperTranslate ) );
+	this.add( this.helper[ 'rotate' ] = setupGizmo( helperRotate ) );
+	this.add( this.helper[ 'scale' ] = setupGizmo( helperScale ) );
 
 	// Pickers should be hidden always
 
-	this.picker[ "translate" ].visible = false;
-	this.picker[ "rotate" ].visible = false;
-	this.picker[ "scale" ].visible = false;
+	this.picker[ 'translate' ].visible = false;
+	this.picker[ 'rotate' ].visible = false;
+	this.picker[ 'scale' ].visible = false;
 
 	// updateMatrixWorld will update transformations and appearance of individual handles
 
@@ -4128,17 +3935,17 @@ THREE.TransformControlsGizmo = function () {
 
 		if ( this.mode === 'scale' ) space = 'local'; // scale always oriented to local rotation
 
-		var quaternion = space === "local" ? this.worldQuaternion : identityQuaternion;
+		var quaternion = space === 'local' ? this.worldQuaternion : identityQuaternion;
 
 		// Show only gizmos for current transform mode
 
-		this.gizmo[ "translate" ].visible = this.mode === "translate";
-		this.gizmo[ "rotate" ].visible = this.mode === "rotate";
-		this.gizmo[ "scale" ].visible = this.mode === "scale";
+		this.gizmo[ 'translate' ].visible = this.mode === 'translate';
+		this.gizmo[ 'rotate' ].visible = this.mode === 'rotate';
+		this.gizmo[ 'scale' ].visible = this.mode === 'scale';
 
-		this.helper[ "translate" ].visible = this.mode === "translate";
-		this.helper[ "rotate" ].visible = this.mode === "rotate";
-		this.helper[ "scale" ].visible = this.mode === "scale";
+		this.helper[ 'translate' ].visible = this.mode === 'translate';
+		this.helper[ 'rotate' ].visible = this.mode === 'rotate';
+		this.helper[ 'scale' ].visible = this.mode === 'scale';
 
 
 		var handles = [];
@@ -4252,7 +4059,7 @@ THREE.TransformControlsGizmo = function () {
 					handle.position.copy( this.worldPositionStart );
 					handle.quaternion.copy( this.worldQuaternionStart );
 					tempVector.set( 1e-10, 1e-10, 1e-10 ).add( this.worldPositionStart ).sub( this.worldPosition ).multiplyScalar( - 1 );
-					tempVector.applyQuaternion( this.worldQuaternionStart.clone().inverse() );
+					tempVector.applyQuaternion( this.worldQuaternionStart.clone().invert() );
 					handle.scale.copy( tempVector );
 					handle.visible = this.dragging;
 
@@ -4435,9 +4242,9 @@ THREE.TransformControlsGizmo = function () {
 				// Align handles to current local or world rotation
 
 				tempQuaternion2.copy( quaternion );
-				alignVector.copy( this.eye ).applyQuaternion( tempQuaternion.copy( quaternion ).inverse() );
+				alignVector.copy( this.eye ).applyQuaternion( tempQuaternion.copy( quaternion ).invert() );
 
-				if ( handle.name.search( "E" ) !== - 1 ) {
+				if ( handle.name.search( 'E' ) !== - 1 ) {
 
 					handle.quaternion.setFromRotationMatrix( lookAtMatrix.lookAt( this.eye, zeroVector, unitY ) );
 
@@ -4470,10 +4277,10 @@ THREE.TransformControlsGizmo = function () {
 			}
 
 			// Hide disabled axes
-			handle.visible = handle.visible && ( handle.name.indexOf( "X" ) === - 1 || this.showX );
-			handle.visible = handle.visible && ( handle.name.indexOf( "Y" ) === - 1 || this.showY );
-			handle.visible = handle.visible && ( handle.name.indexOf( "Z" ) === - 1 || this.showZ );
-			handle.visible = handle.visible && ( handle.name.indexOf( "E" ) === - 1 || ( this.showX && this.showY && this.showZ ) );
+			handle.visible = handle.visible && ( handle.name.indexOf( 'X' ) === - 1 || this.showX );
+			handle.visible = handle.visible && ( handle.name.indexOf( 'Y' ) === - 1 || this.showY );
+			handle.visible = handle.visible && ( handle.name.indexOf( 'Z' ) === - 1 || this.showZ );
+			handle.visible = handle.visible && ( handle.name.indexOf( 'E' ) === - 1 || ( this.showX && this.showY && this.showZ ) );
 
 			// highlight selected axis
 
@@ -4535,7 +4342,7 @@ THREE.TransformControlsPlane = function () {
 	'use strict';
 
 	THREE.Mesh.call( this,
-		new THREE.PlaneBufferGeometry( 100000, 100000, 2, 2 ),
+		new THREE.PlaneGeometry( 100000, 100000, 2, 2 ),
 		new THREE.MeshBasicMaterial( { visible: false, wireframe: true, side: THREE.DoubleSide, transparent: true, opacity: 0.1, toneMapped: false } )
 	);
 
@@ -4559,9 +4366,9 @@ THREE.TransformControlsPlane = function () {
 
 		if ( this.mode === 'scale' ) space = 'local'; // scale always oriented to local rotation
 
-		unitX.set( 1, 0, 0 ).applyQuaternion( space === "local" ? this.worldQuaternion : identityQuaternion );
-		unitY.set( 0, 1, 0 ).applyQuaternion( space === "local" ? this.worldQuaternion : identityQuaternion );
-		unitZ.set( 0, 0, 1 ).applyQuaternion( space === "local" ? this.worldQuaternion : identityQuaternion );
+		unitX.set( 1, 0, 0 ).applyQuaternion( space === 'local' ? this.worldQuaternion : identityQuaternion );
+		unitY.set( 0, 1, 0 ).applyQuaternion( space === 'local' ? this.worldQuaternion : identityQuaternion );
+		unitZ.set( 0, 0, 1 ).applyQuaternion( space === 'local' ? this.worldQuaternion : identityQuaternion );
 
 		// Align the plane for current transform mode, axis and space.
 
@@ -4646,45 +4453,44 @@ THREE.CopyShader = {
 
 	uniforms: {
 
-		"tDiffuse": { value: null },
-		"opacity": { value: 1.0 }
+		'tDiffuse': { value: null },
+		'opacity': { value: 1.0 }
 
 	},
 
 	vertexShader: [
 
-		"varying vec2 vUv;",
+		'varying vec2 vUv;',
 
-		"void main() {",
+		'void main() {',
 
-		"	vUv = uv;",
-		"	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
+		'	vUv = uv;',
+		'	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );',
 
-		"}"
+		'}'
 
-	].join( "\n" ),
+	].join( '\n' ),
 
 	fragmentShader: [
 
-		"uniform float opacity;",
+		'uniform float opacity;',
 
-		"uniform sampler2D tDiffuse;",
+		'uniform sampler2D tDiffuse;',
 
-		"varying vec2 vUv;",
+		'varying vec2 vUv;',
 
-		"void main() {",
+		'void main() {',
 
-		"	vec4 texel = texture2D( tDiffuse, vUv );",
-		"	gl_FragColor = opacity * texel;",
+		'	vec4 texel = texture2D( tDiffuse, vUv );',
+		'	gl_FragColor = opacity * texel;',
 
-		"}"
+		'}'
 
-	].join( "\n" )
+	].join( '\n' )
 
 };
 
 // Content of examples/js/postprocessing/EffectComposer.js
-
 THREE.EffectComposer = function ( renderer, renderTarget ) {
 
 	this.renderer = renderer;
@@ -4765,6 +4571,18 @@ Object.assign( THREE.EffectComposer.prototype, {
 
 		this.passes.splice( index, 0, pass );
 		pass.setSize( this._width * this._pixelRatio, this._height * this._pixelRatio );
+
+	},
+
+	removePass: function ( pass ) {
+
+		const index = this.passes.indexOf( pass );
+
+		if ( index !== - 1 ) {
+
+			this.passes.splice( index, 1 );
+
+		}
 
 	},
 
@@ -4936,7 +4754,12 @@ Object.assign( THREE.Pass.prototype, {
 THREE.Pass.FullScreenQuad = ( function () {
 
 	var camera = new THREE.OrthographicCamera( - 1, 1, 1, - 1, 0, 1 );
-	var geometry = new THREE.PlaneBufferGeometry( 2, 2 );
+
+	// https://github.com/mrdoob/three.js/pull/21358
+
+	var geometry = new THREE.BufferGeometry();
+	geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( [ - 1, 3, 0, - 1, - 1, 0, 3, - 1, 0 ], 3 ) );
+	geometry.setAttribute( 'uv', new THREE.Float32BufferAttribute( [ 0, 2, 0, 0, 2, 0 ], 2 ) );
 
 	var FullScreenQuad = function ( material ) {
 
@@ -4981,7 +4804,6 @@ THREE.Pass.FullScreenQuad = ( function () {
 } )();
 
 // Content of examples/js/postprocessing/MaskPass.js
-
 THREE.MaskPass = function ( scene, camera ) {
 
 	THREE.Pass.call( this );
@@ -5086,7 +4908,6 @@ Object.assign( THREE.ClearMaskPass.prototype, {
 } );
 
 // Content of examples/js/postprocessing/RenderPass.js
-
 THREE.RenderPass = function ( scene, camera, overrideMaterial, clearColor, clearAlpha ) {
 
 	THREE.Pass.call( this );
@@ -5102,6 +4923,7 @@ THREE.RenderPass = function ( scene, camera, overrideMaterial, clearColor, clear
 	this.clear = true;
 	this.clearDepth = false;
 	this.needsSwap = false;
+	this._oldClearColor = new THREE.Color();
 
 };
 
@@ -5114,7 +4936,7 @@ THREE.RenderPass.prototype = Object.assign( Object.create( THREE.Pass.prototype 
 		var oldAutoClear = renderer.autoClear;
 		renderer.autoClear = false;
 
-		var oldClearColor, oldClearAlpha, oldOverrideMaterial;
+		var oldClearAlpha, oldOverrideMaterial;
 
 		if ( this.overrideMaterial !== undefined ) {
 
@@ -5126,7 +4948,7 @@ THREE.RenderPass.prototype = Object.assign( Object.create( THREE.Pass.prototype 
 
 		if ( this.clearColor ) {
 
-			oldClearColor = renderer.getClearColor().getHex();
+			renderer.getClearColor( this._oldClearColor );
 			oldClearAlpha = renderer.getClearAlpha();
 
 			renderer.setClearColor( this.clearColor, this.clearAlpha );
@@ -5147,7 +4969,7 @@ THREE.RenderPass.prototype = Object.assign( Object.create( THREE.Pass.prototype 
 
 		if ( this.clearColor ) {
 
-			renderer.setClearColor( oldClearColor, oldClearAlpha );
+			renderer.setClearColor( this._oldClearColor, oldClearAlpha );
 
 		}
 
@@ -5164,12 +4986,11 @@ THREE.RenderPass.prototype = Object.assign( Object.create( THREE.Pass.prototype 
 } );
 
 // Content of examples/js/postprocessing/ShaderPass.js
-
 THREE.ShaderPass = function ( shader, textureID ) {
 
 	THREE.Pass.call( this );
 
-	this.textureID = ( textureID !== undefined ) ? textureID : "tDiffuse";
+	this.textureID = ( textureID !== undefined ) ? textureID : 'tDiffuse';
 
 	if ( shader instanceof THREE.ShaderMaterial ) {
 
@@ -5239,233 +5060,233 @@ THREE.ShaderPass.prototype = Object.assign( Object.create( THREE.Pass.prototype 
 THREE.SSAOShader = {
 
 	defines: {
-		"PERSPECTIVE_CAMERA": 1,
-		"KERNEL_SIZE": 32
+		'PERSPECTIVE_CAMERA': 1,
+		'KERNEL_SIZE': 32
 	},
 
 	uniforms: {
 
-		"tDiffuse": { value: null },
-		"tNormal": { value: null },
-		"tDepth": { value: null },
-		"tNoise": { value: null },
-		"kernel": { value: null },
-		"cameraNear": { value: null },
-		"cameraFar": { value: null },
-		"resolution": { value: new THREE.Vector2() },
-		"cameraProjectionMatrix": { value: new THREE.Matrix4() },
-		"cameraInverseProjectionMatrix": { value: new THREE.Matrix4() },
-		"kernelRadius": { value: 8 },
-		"minDistance": { value: 0.005 },
-		"maxDistance": { value: 0.05 },
+		'tDiffuse': { value: null },
+		'tNormal': { value: null },
+		'tDepth': { value: null },
+		'tNoise': { value: null },
+		'kernel': { value: null },
+		'cameraNear': { value: null },
+		'cameraFar': { value: null },
+		'resolution': { value: new THREE.Vector2() },
+		'cameraProjectionMatrix': { value: new THREE.Matrix4() },
+		'cameraInverseProjectionMatrix': { value: new THREE.Matrix4() },
+		'kernelRadius': { value: 8 },
+		'minDistance': { value: 0.005 },
+		'maxDistance': { value: 0.05 },
 
 	},
 
 	vertexShader: [
 
-		"varying vec2 vUv;",
+		'varying vec2 vUv;',
 
-		"void main() {",
+		'void main() {',
 
-		"	vUv = uv;",
+		'	vUv = uv;',
 
-		"	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
+		'	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );',
 
-		"}"
+		'}'
 
-	].join( "\n" ),
+	].join( '\n' ),
 
 	fragmentShader: [
 
-		"uniform sampler2D tDiffuse;",
-		"uniform sampler2D tNormal;",
-		"uniform sampler2D tDepth;",
-		"uniform sampler2D tNoise;",
+		'uniform sampler2D tDiffuse;',
+		'uniform sampler2D tNormal;',
+		'uniform sampler2D tDepth;',
+		'uniform sampler2D tNoise;',
 
-		"uniform vec3 kernel[ KERNEL_SIZE ];",
+		'uniform vec3 kernel[ KERNEL_SIZE ];',
 
-		"uniform vec2 resolution;",
+		'uniform vec2 resolution;',
 
-		"uniform float cameraNear;",
-		"uniform float cameraFar;",
-		"uniform mat4 cameraProjectionMatrix;",
-		"uniform mat4 cameraInverseProjectionMatrix;",
+		'uniform float cameraNear;',
+		'uniform float cameraFar;',
+		'uniform mat4 cameraProjectionMatrix;',
+		'uniform mat4 cameraInverseProjectionMatrix;',
 
-		"uniform float kernelRadius;",
-		"uniform float minDistance;", // avoid artifacts caused by neighbour fragments with minimal depth difference
-		"uniform float maxDistance;", // avoid the influence of fragments which are too far away
+		'uniform float kernelRadius;',
+		'uniform float minDistance;', // avoid artifacts caused by neighbour fragments with minimal depth difference
+		'uniform float maxDistance;', // avoid the influence of fragments which are too far away
 
-		"varying vec2 vUv;",
+		'varying vec2 vUv;',
 
-		"#include <packing>",
+		'#include <packing>',
 
-		"float getDepth( const in vec2 screenPosition ) {",
+		'float getDepth( const in vec2 screenPosition ) {',
 
-		"	return texture2D( tDepth, screenPosition ).x;",
+		'	return texture2D( tDepth, screenPosition ).x;',
 
-		"}",
+		'}',
 
-		"float getLinearDepth( const in vec2 screenPosition ) {",
+		'float getLinearDepth( const in vec2 screenPosition ) {',
 
-		"	#if PERSPECTIVE_CAMERA == 1",
+		'	#if PERSPECTIVE_CAMERA == 1',
 
-		"		float fragCoordZ = texture2D( tDepth, screenPosition ).x;",
-		"		float viewZ = perspectiveDepthToViewZ( fragCoordZ, cameraNear, cameraFar );",
-		"		return viewZToOrthographicDepth( viewZ, cameraNear, cameraFar );",
+		'		float fragCoordZ = texture2D( tDepth, screenPosition ).x;',
+		'		float viewZ = perspectiveDepthToViewZ( fragCoordZ, cameraNear, cameraFar );',
+		'		return viewZToOrthographicDepth( viewZ, cameraNear, cameraFar );',
 
-		"	#else",
+		'	#else',
 
-		"		return texture2D( depthSampler, coord ).x;",
+		'		return texture2D( tDepth, screenPosition ).x;',
 
-		"	#endif",
+		'	#endif',
 
-		"}",
+		'}',
 
-		"float getViewZ( const in float depth ) {",
+		'float getViewZ( const in float depth ) {',
 
-		"	#if PERSPECTIVE_CAMERA == 1",
+		'	#if PERSPECTIVE_CAMERA == 1',
 
-		"		return perspectiveDepthToViewZ( depth, cameraNear, cameraFar );",
+		'		return perspectiveDepthToViewZ( depth, cameraNear, cameraFar );',
 
-		"	#else",
+		'	#else',
 
-		"		return orthographicDepthToViewZ( depth, cameraNear, cameraFar );",
+		'		return orthographicDepthToViewZ( depth, cameraNear, cameraFar );',
 
-		"	#endif",
+		'	#endif',
 
-		"}",
+		'}',
 
-		"vec3 getViewPosition( const in vec2 screenPosition, const in float depth, const in float viewZ ) {",
+		'vec3 getViewPosition( const in vec2 screenPosition, const in float depth, const in float viewZ ) {',
 
-		"	float clipW = cameraProjectionMatrix[2][3] * viewZ + cameraProjectionMatrix[3][3];",
+		'	float clipW = cameraProjectionMatrix[2][3] * viewZ + cameraProjectionMatrix[3][3];',
 
-		"	vec4 clipPosition = vec4( ( vec3( screenPosition, depth ) - 0.5 ) * 2.0, 1.0 );",
+		'	vec4 clipPosition = vec4( ( vec3( screenPosition, depth ) - 0.5 ) * 2.0, 1.0 );',
 
-		"	clipPosition *= clipW; // unprojection.",
+		'	clipPosition *= clipW; // unprojection.',
 
-		"	return ( cameraInverseProjectionMatrix * clipPosition ).xyz;",
+		'	return ( cameraInverseProjectionMatrix * clipPosition ).xyz;',
 
-		"}",
+		'}',
 
-		"vec3 getViewNormal( const in vec2 screenPosition ) {",
+		'vec3 getViewNormal( const in vec2 screenPosition ) {',
 
-		"	return unpackRGBToNormal( texture2D( tNormal, screenPosition ).xyz );",
+		'	return unpackRGBToNormal( texture2D( tNormal, screenPosition ).xyz );',
 
-		"}",
+		'}',
 
-		"void main() {",
+		'void main() {',
 
-		"	float depth = getDepth( vUv );",
-		"	float viewZ = getViewZ( depth );",
+		'	float depth = getDepth( vUv );',
+		'	float viewZ = getViewZ( depth );',
 
-		"	vec3 viewPosition = getViewPosition( vUv, depth, viewZ );",
-		"	vec3 viewNormal = getViewNormal( vUv );",
+		'	vec3 viewPosition = getViewPosition( vUv, depth, viewZ );',
+		'	vec3 viewNormal = getViewNormal( vUv );',
 
-		" vec2 noiseScale = vec2( resolution.x / 4.0, resolution.y / 4.0 );",
-		"	vec3 random = texture2D( tNoise, vUv * noiseScale ).xyz;",
+		' vec2 noiseScale = vec2( resolution.x / 4.0, resolution.y / 4.0 );',
+		'	vec3 random = texture2D( tNoise, vUv * noiseScale ).xyz;',
 
 		// compute matrix used to reorient a kernel vector
 
-		"	vec3 tangent = normalize( random - viewNormal * dot( random, viewNormal ) );",
-		"	vec3 bitangent = cross( viewNormal, tangent );",
-		"	mat3 kernelMatrix = mat3( tangent, bitangent, viewNormal );",
+		'	vec3 tangent = normalize( random - viewNormal * dot( random, viewNormal ) );',
+		'	vec3 bitangent = cross( viewNormal, tangent );',
+		'	mat3 kernelMatrix = mat3( tangent, bitangent, viewNormal );',
 
-		" float occlusion = 0.0;",
+		' float occlusion = 0.0;',
 
-		" for ( int i = 0; i < KERNEL_SIZE; i ++ ) {",
+		' for ( int i = 0; i < KERNEL_SIZE; i ++ ) {',
 
-		"		vec3 sampleVector = kernelMatrix * kernel[ i ];", // reorient sample vector in view space
-		"		vec3 samplePoint = viewPosition + ( sampleVector * kernelRadius );", // calculate sample point
+		'		vec3 sampleVector = kernelMatrix * kernel[ i ];', // reorient sample vector in view space
+		'		vec3 samplePoint = viewPosition + ( sampleVector * kernelRadius );', // calculate sample point
 
-		"		vec4 samplePointNDC = cameraProjectionMatrix * vec4( samplePoint, 1.0 );", // project point and calculate NDC
-		"		samplePointNDC /= samplePointNDC.w;",
+		'		vec4 samplePointNDC = cameraProjectionMatrix * vec4( samplePoint, 1.0 );', // project point and calculate NDC
+		'		samplePointNDC /= samplePointNDC.w;',
 
-		"		vec2 samplePointUv = samplePointNDC.xy * 0.5 + 0.5;", // compute uv coordinates
+		'		vec2 samplePointUv = samplePointNDC.xy * 0.5 + 0.5;', // compute uv coordinates
 
-		"		float realDepth = getLinearDepth( samplePointUv );", // get linear depth from depth texture
-		"		float sampleDepth = viewZToOrthographicDepth( samplePoint.z, cameraNear, cameraFar );", // compute linear depth of the sample view Z value
-		"		float delta = sampleDepth - realDepth;",
+		'		float realDepth = getLinearDepth( samplePointUv );', // get linear depth from depth texture
+		'		float sampleDepth = viewZToOrthographicDepth( samplePoint.z, cameraNear, cameraFar );', // compute linear depth of the sample view Z value
+		'		float delta = sampleDepth - realDepth;',
 
-		"		if ( delta > minDistance && delta < maxDistance ) {", // if fragment is before sample point, increase occlusion
+		'		if ( delta > minDistance && delta < maxDistance ) {', // if fragment is before sample point, increase occlusion
 
-		"			occlusion += 1.0;",
+		'			occlusion += 1.0;',
 
-		"		}",
+		'		}',
 
-		"	}",
+		'	}',
 
-		"	occlusion = clamp( occlusion / float( KERNEL_SIZE ), 0.0, 1.0 );",
+		'	occlusion = clamp( occlusion / float( KERNEL_SIZE ), 0.0, 1.0 );',
 
-		"	gl_FragColor = vec4( vec3( 1.0 - occlusion ), 1.0 );",
+		'	gl_FragColor = vec4( vec3( 1.0 - occlusion ), 1.0 );',
 
-		"}"
+		'}'
 
-	].join( "\n" )
+	].join( '\n' )
 
 };
 
 THREE.SSAODepthShader = {
 
 	defines: {
-		"PERSPECTIVE_CAMERA": 1
+		'PERSPECTIVE_CAMERA': 1
 	},
 
 	uniforms: {
 
-		"tDepth": { value: null },
-		"cameraNear": { value: null },
-		"cameraFar": { value: null },
+		'tDepth': { value: null },
+		'cameraNear': { value: null },
+		'cameraFar': { value: null },
 
 	},
 
 	vertexShader: [
 
-		"varying vec2 vUv;",
+		'varying vec2 vUv;',
 
-		"void main() {",
+		'void main() {',
 
-		"	vUv = uv;",
-		"	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
+		'	vUv = uv;',
+		'	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );',
 
-		"}"
+		'}'
 
-	].join( "\n" ),
+	].join( '\n' ),
 
 	fragmentShader: [
 
-		"uniform sampler2D tDepth;",
+		'uniform sampler2D tDepth;',
 
-		"uniform float cameraNear;",
-		"uniform float cameraFar;",
+		'uniform float cameraNear;',
+		'uniform float cameraFar;',
 
-		"varying vec2 vUv;",
+		'varying vec2 vUv;',
 
-		"#include <packing>",
+		'#include <packing>',
 
-		"float getLinearDepth( const in vec2 screenPosition ) {",
+		'float getLinearDepth( const in vec2 screenPosition ) {',
 
-		"	#if PERSPECTIVE_CAMERA == 1",
+		'	#if PERSPECTIVE_CAMERA == 1',
 
-		"		float fragCoordZ = texture2D( tDepth, screenPosition ).x;",
-		"		float viewZ = perspectiveDepthToViewZ( fragCoordZ, cameraNear, cameraFar );",
-		"		return viewZToOrthographicDepth( viewZ, cameraNear, cameraFar );",
+		'		float fragCoordZ = texture2D( tDepth, screenPosition ).x;',
+		'		float viewZ = perspectiveDepthToViewZ( fragCoordZ, cameraNear, cameraFar );',
+		'		return viewZToOrthographicDepth( viewZ, cameraNear, cameraFar );',
 
-		"	#else",
+		'	#else',
 
-		"		return texture2D( depthSampler, coord ).x;",
+		'		return texture2D( tDepth, screenPosition ).x;',
 
-		"	#endif",
+		'	#endif',
 
-		"}",
+		'}',
 
-		"void main() {",
+		'void main() {',
 
-		"	float depth = getLinearDepth( vUv );",
-		"	gl_FragColor = vec4( vec3( 1.0 - depth ), 1.0 );",
+		'	float depth = getLinearDepth( vUv );',
+		'	gl_FragColor = vec4( vec3( 1.0 - depth ), 1.0 );',
 
-		"}"
+		'}'
 
-	].join( "\n" )
+	].join( '\n' )
 
 };
 
@@ -5473,58 +5294,57 @@ THREE.SSAOBlurShader = {
 
 	uniforms: {
 
-		"tDiffuse": { value: null },
-		"resolution": { value: new THREE.Vector2() }
+		'tDiffuse': { value: null },
+		'resolution': { value: new THREE.Vector2() }
 
 	},
 
 	vertexShader: [
 
-		"varying vec2 vUv;",
+		'varying vec2 vUv;',
 
-		"void main() {",
+		'void main() {',
 
-		"	vUv = uv;",
-		"	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
+		'	vUv = uv;',
+		'	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );',
 
-		"}"
+		'}'
 
-	].join( "\n" ),
+	].join( '\n' ),
 
 	fragmentShader: [
 
-		"uniform sampler2D tDiffuse;",
+		'uniform sampler2D tDiffuse;',
 
-		"uniform vec2 resolution;",
+		'uniform vec2 resolution;',
 
-		"varying vec2 vUv;",
+		'varying vec2 vUv;',
 
-		"void main() {",
+		'void main() {',
 
-		"	vec2 texelSize = ( 1.0 / resolution );",
-		"	float result = 0.0;",
+		'	vec2 texelSize = ( 1.0 / resolution );',
+		'	float result = 0.0;',
 
-		"	for ( int i = - 2; i <= 2; i ++ ) {",
+		'	for ( int i = - 2; i <= 2; i ++ ) {',
 
-		"		for ( int j = - 2; j <= 2; j ++ ) {",
+		'		for ( int j = - 2; j <= 2; j ++ ) {',
 
-		"			vec2 offset = ( vec2( float( i ), float( j ) ) ) * texelSize;",
-		"			result += texture2D( tDiffuse, vUv + offset ).r;",
+		'			vec2 offset = ( vec2( float( i ), float( j ) ) ) * texelSize;',
+		'			result += texture2D( tDiffuse, vUv + offset ).r;',
 
-		"		}",
+		'		}',
 
-		"	}",
+		'	}',
 
-		"	gl_FragColor = vec4( vec3( result / ( 5.0 * 5.0 ) ), 1.0 );",
+		'	gl_FragColor = vec4( vec3( result / ( 5.0 * 5.0 ) ), 1.0 );',
 
-		"}"
+		'}'
 
-	].join( "\n" )
+	].join( '\n' )
 
 };
 
 // Content of examples/js/postprocessing/SSAOPass.js
-
 THREE.SSAOPass = function ( scene, camera, width, height ) {
 
 	THREE.Pass.call( this );
@@ -5546,32 +5366,31 @@ THREE.SSAOPass = function ( scene, camera, width, height ) {
 	this.minDistance = 0.005;
 	this.maxDistance = 0.1;
 
+	this._visibilityCache = new Map();
+
 	//
 
 	this.generateSampleKernel();
 	this.generateRandomKernelRotations();
 
-	// beauty render target with depth buffer
+	// beauty render target
 
 	var depthTexture = new THREE.DepthTexture();
 	depthTexture.type = THREE.UnsignedShortType;
-	depthTexture.minFilter = THREE.NearestFilter;
-	depthTexture.maxFilter = THREE.NearestFilter;
 
 	this.beautyRenderTarget = new THREE.WebGLRenderTarget( this.width, this.height, {
 		minFilter: THREE.LinearFilter,
 		magFilter: THREE.LinearFilter,
-		format: THREE.RGBAFormat,
-		depthTexture: depthTexture,
-		depthBuffer: true
+		format: THREE.RGBAFormat
 	} );
 
-	// normal render target
+	// normal render target with depth buffer
 
 	this.normalRenderTarget = new THREE.WebGLRenderTarget( this.width, this.height, {
 		minFilter: THREE.NearestFilter,
 		magFilter: THREE.NearestFilter,
-		format: THREE.RGBAFormat
+		format: THREE.RGBAFormat,
+		depthTexture: depthTexture
 	} );
 
 	// ssao render target
@@ -5602,14 +5421,14 @@ THREE.SSAOPass = function ( scene, camera, width, height ) {
 
 	this.ssaoMaterial.uniforms[ 'tDiffuse' ].value = this.beautyRenderTarget.texture;
 	this.ssaoMaterial.uniforms[ 'tNormal' ].value = this.normalRenderTarget.texture;
-	this.ssaoMaterial.uniforms[ 'tDepth' ].value = this.beautyRenderTarget.depthTexture;
+	this.ssaoMaterial.uniforms[ 'tDepth' ].value = this.normalRenderTarget.depthTexture;
 	this.ssaoMaterial.uniforms[ 'tNoise' ].value = this.noiseTexture;
 	this.ssaoMaterial.uniforms[ 'kernel' ].value = this.kernel;
 	this.ssaoMaterial.uniforms[ 'cameraNear' ].value = this.camera.near;
 	this.ssaoMaterial.uniforms[ 'cameraFar' ].value = this.camera.far;
 	this.ssaoMaterial.uniforms[ 'resolution' ].value.set( this.width, this.height );
 	this.ssaoMaterial.uniforms[ 'cameraProjectionMatrix' ].value.copy( this.camera.projectionMatrix );
-	this.ssaoMaterial.uniforms[ 'cameraInverseProjectionMatrix' ].value.getInverse( this.camera.projectionMatrix );
+	this.ssaoMaterial.uniforms[ 'cameraInverseProjectionMatrix' ].value.copy( this.camera.projectionMatrixInverse );
 
 	// normal material
 
@@ -5636,7 +5455,7 @@ THREE.SSAOPass = function ( scene, camera, width, height ) {
 		fragmentShader: THREE.SSAODepthShader.fragmentShader,
 		blending: THREE.NoBlending
 	} );
-	this.depthRenderMaterial.uniforms[ 'tDepth' ].value = this.beautyRenderTarget.depthTexture;
+	this.depthRenderMaterial.uniforms[ 'tDepth' ].value = this.normalRenderTarget.depthTexture;
 	this.depthRenderMaterial.uniforms[ 'cameraNear' ].value = this.camera.near;
 	this.depthRenderMaterial.uniforms[ 'cameraFar' ].value = this.camera.far;
 
@@ -5691,15 +5510,17 @@ THREE.SSAOPass.prototype = Object.assign( Object.create( THREE.Pass.prototype ),
 
 	render: function ( renderer, writeBuffer /*, readBuffer, deltaTime, maskActive */ ) {
 
-		// render beauty and depth
+		// render beauty
 
 		renderer.setRenderTarget( this.beautyRenderTarget );
 		renderer.clear();
 		renderer.render( this.scene, this.camera );
 
-		// render normals
+		// render normals and depth (honor only meshes, points and lines do not contribute to SSAO)
 
+		this.overrideVisibility();
 		this.renderOverride( renderer, this.normalMaterial, this.normalRenderTarget, 0x7777ff, 1.0 );
+		this.restoreVisibility();
 
 		// render SSAO
 
@@ -5776,7 +5597,7 @@ THREE.SSAOPass.prototype = Object.assign( Object.create( THREE.Pass.prototype ),
 	renderPass: function ( renderer, passMaterial, renderTarget, clearColor, clearAlpha ) {
 
 		// save original state
-		this.originalClearColor.copy( renderer.getClearColor() );
+		renderer.getClearColor( this.originalClearColor );
 		var originalClearAlpha = renderer.getClearAlpha();
 		var originalAutoClear = renderer.autoClear;
 
@@ -5804,7 +5625,7 @@ THREE.SSAOPass.prototype = Object.assign( Object.create( THREE.Pass.prototype ),
 
 	renderOverride: function ( renderer, overrideMaterial, renderTarget, clearColor, clearAlpha ) {
 
-		this.originalClearColor.copy( renderer.getClearColor() );
+		renderer.getClearColor( this.originalClearColor );
 		var originalClearAlpha = renderer.getClearAlpha();
 		var originalAutoClear = renderer.autoClear;
 
@@ -5846,7 +5667,7 @@ THREE.SSAOPass.prototype = Object.assign( Object.create( THREE.Pass.prototype ),
 
 		this.ssaoMaterial.uniforms[ 'resolution' ].value.set( width, height );
 		this.ssaoMaterial.uniforms[ 'cameraProjectionMatrix' ].value.copy( this.camera.projectionMatrix );
-		this.ssaoMaterial.uniforms[ 'cameraInverseProjectionMatrix' ].value.getInverse( this.camera.projectionMatrix );
+		this.ssaoMaterial.uniforms[ 'cameraInverseProjectionMatrix' ].value.copy( this.camera.projectionMatrixInverse );
 
 		this.blurMaterial.uniforms[ 'resolution' ].value.set( width, height );
 
@@ -5911,6 +5732,37 @@ THREE.SSAOPass.prototype = Object.assign( Object.create( THREE.Pass.prototype ),
 		this.noiseTexture = new THREE.DataTexture( data, width, height, THREE.RGBAFormat, THREE.FloatType );
 		this.noiseTexture.wrapS = THREE.RepeatWrapping;
 		this.noiseTexture.wrapT = THREE.RepeatWrapping;
+
+	},
+
+	overrideVisibility: function () {
+
+		var scene = this.scene;
+		var cache = this._visibilityCache;
+
+		scene.traverse( function ( object ) {
+
+			cache.set( object, object.visible );
+
+			if ( object.isPoints || object.isLine ) object.visible = false;
+
+		} );
+
+	},
+
+	restoreVisibility: function () {
+
+		var scene = this.scene;
+		var cache = this._visibilityCache;
+
+		scene.traverse( function ( object ) {
+
+			var visible = cache.get( object );
+			object.visible = visible;
+
+		} );
+
+		cache.clear();
 
 	}
 
@@ -6357,64 +6209,63 @@ THREE.SimplexNoise.prototype.noise4d = function ( x, y, z, w ) {
 
 THREE.LuminosityHighPassShader = {
 
-	shaderID: "luminosityHighPass",
+	shaderID: 'luminosityHighPass',
 
 	uniforms: {
 
-		"tDiffuse": { value: null },
-		"luminosityThreshold": { value: 1.0 },
-		"smoothWidth": { value: 1.0 },
-		"defaultColor": { value: new THREE.Color( 0x000000 ) },
-		"defaultOpacity": { value: 0.0 }
+		'tDiffuse': { value: null },
+		'luminosityThreshold': { value: 1.0 },
+		'smoothWidth': { value: 1.0 },
+		'defaultColor': { value: new THREE.Color( 0x000000 ) },
+		'defaultOpacity': { value: 0.0 }
 
 	},
 
 	vertexShader: [
 
-		"varying vec2 vUv;",
+		'varying vec2 vUv;',
 
-		"void main() {",
+		'void main() {',
 
-		"	vUv = uv;",
+		'	vUv = uv;',
 
-		"	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
+		'	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );',
 
-		"}"
+		'}'
 
-	].join( "\n" ),
+	].join( '\n' ),
 
 	fragmentShader: [
 
-		"uniform sampler2D tDiffuse;",
-		"uniform vec3 defaultColor;",
-		"uniform float defaultOpacity;",
-		"uniform float luminosityThreshold;",
-		"uniform float smoothWidth;",
+		'uniform sampler2D tDiffuse;',
+		'uniform vec3 defaultColor;',
+		'uniform float defaultOpacity;',
+		'uniform float luminosityThreshold;',
+		'uniform float smoothWidth;',
 
-		"varying vec2 vUv;",
+		'varying vec2 vUv;',
 
-		"void main() {",
+		'void main() {',
 
-		"	vec4 texel = texture2D( tDiffuse, vUv );",
+		'	vec4 texel = texture2D( tDiffuse, vUv );',
 
-		"	vec3 luma = vec3( 0.299, 0.587, 0.114 );",
+		'	vec3 luma = vec3( 0.299, 0.587, 0.114 );',
 
-		"	float v = dot( texel.xyz, luma );",
+		'	float v = dot( texel.xyz, luma );',
 
-		"	vec4 outputColor = vec4( defaultColor.rgb, defaultOpacity );",
+		'	vec4 outputColor = vec4( defaultColor.rgb, defaultOpacity );',
 
-		"	float alpha = smoothstep( luminosityThreshold, luminosityThreshold + smoothWidth, v );",
+		'	float alpha = smoothstep( luminosityThreshold, luminosityThreshold + smoothWidth, v );',
 
-		"	gl_FragColor = mix( outputColor, texel, alpha );",
+		'	gl_FragColor = mix( outputColor, texel, alpha );',
 
-		"}"
+		'}'
 
-	].join( "\n" )
+	].join( '\n' )
 
 };
 
 // Content of examples/js/postprocessing/UnrealBloomPass.js
-
 /**
  * UnrealBloomPass is inspired by the bloom pass of Unreal Engine. It creates a
  * mip map chain of bloom textures and blurs them with different radii. Because
@@ -6445,21 +6296,21 @@ THREE.UnrealBloomPass = function ( resolution, strength, radius, threshold ) {
 	var resy = Math.round( this.resolution.y / 2 );
 
 	this.renderTargetBright = new THREE.WebGLRenderTarget( resx, resy, pars );
-	this.renderTargetBright.texture.name = "UnrealBloomPass.bright";
+	this.renderTargetBright.texture.name = 'UnrealBloomPass.bright';
 	this.renderTargetBright.texture.generateMipmaps = false;
 
 	for ( var i = 0; i < this.nMips; i ++ ) {
 
 		var renderTargetHorizonal = new THREE.WebGLRenderTarget( resx, resy, pars );
 
-		renderTargetHorizonal.texture.name = "UnrealBloomPass.h" + i;
+		renderTargetHorizonal.texture.name = 'UnrealBloomPass.h' + i;
 		renderTargetHorizonal.texture.generateMipmaps = false;
 
 		this.renderTargetsHorizontal.push( renderTargetHorizonal );
 
 		var renderTargetVertical = new THREE.WebGLRenderTarget( resx, resy, pars );
 
-		renderTargetVertical.texture.name = "UnrealBloomPass.v" + i;
+		renderTargetVertical.texture.name = 'UnrealBloomPass.v' + i;
 		renderTargetVertical.texture.generateMipmaps = false;
 
 		this.renderTargetsVertical.push( renderTargetVertical );
@@ -6473,13 +6324,13 @@ THREE.UnrealBloomPass = function ( resolution, strength, radius, threshold ) {
 	// luminosity high pass material
 
 	if ( THREE.LuminosityHighPassShader === undefined )
-		console.error( "THREE.UnrealBloomPass relies on THREE.LuminosityHighPassShader" );
+		console.error( 'THREE.UnrealBloomPass relies on THREE.LuminosityHighPassShader' );
 
 	var highPassShader = THREE.LuminosityHighPassShader;
 	this.highPassUniforms = THREE.UniformsUtils.clone( highPassShader.uniforms );
 
-	this.highPassUniforms[ "luminosityThreshold" ].value = threshold;
-	this.highPassUniforms[ "smoothWidth" ].value = 0.01;
+	this.highPassUniforms[ 'luminosityThreshold' ].value = threshold;
+	this.highPassUniforms[ 'smoothWidth' ].value = 0.01;
 
 	this.materialHighPassFilter = new THREE.ShaderMaterial( {
 		uniforms: this.highPassUniforms,
@@ -6498,7 +6349,7 @@ THREE.UnrealBloomPass = function ( resolution, strength, radius, threshold ) {
 
 		this.separableBlurMaterials.push( this.getSeperableBlurMaterial( kernelSizeArray[ i ] ) );
 
-		this.separableBlurMaterials[ i ].uniforms[ "texSize" ].value = new THREE.Vector2( resx, resy );
+		this.separableBlurMaterials[ i ].uniforms[ 'texSize' ].value = new THREE.Vector2( resx, resy );
 
 		resx = Math.round( resx / 2 );
 
@@ -6508,32 +6359,32 @@ THREE.UnrealBloomPass = function ( resolution, strength, radius, threshold ) {
 
 	// Composite material
 	this.compositeMaterial = this.getCompositeMaterial( this.nMips );
-	this.compositeMaterial.uniforms[ "blurTexture1" ].value = this.renderTargetsVertical[ 0 ].texture;
-	this.compositeMaterial.uniforms[ "blurTexture2" ].value = this.renderTargetsVertical[ 1 ].texture;
-	this.compositeMaterial.uniforms[ "blurTexture3" ].value = this.renderTargetsVertical[ 2 ].texture;
-	this.compositeMaterial.uniforms[ "blurTexture4" ].value = this.renderTargetsVertical[ 3 ].texture;
-	this.compositeMaterial.uniforms[ "blurTexture5" ].value = this.renderTargetsVertical[ 4 ].texture;
-	this.compositeMaterial.uniforms[ "bloomStrength" ].value = strength;
-	this.compositeMaterial.uniforms[ "bloomRadius" ].value = 0.1;
+	this.compositeMaterial.uniforms[ 'blurTexture1' ].value = this.renderTargetsVertical[ 0 ].texture;
+	this.compositeMaterial.uniforms[ 'blurTexture2' ].value = this.renderTargetsVertical[ 1 ].texture;
+	this.compositeMaterial.uniforms[ 'blurTexture3' ].value = this.renderTargetsVertical[ 2 ].texture;
+	this.compositeMaterial.uniforms[ 'blurTexture4' ].value = this.renderTargetsVertical[ 3 ].texture;
+	this.compositeMaterial.uniforms[ 'blurTexture5' ].value = this.renderTargetsVertical[ 4 ].texture;
+	this.compositeMaterial.uniforms[ 'bloomStrength' ].value = strength;
+	this.compositeMaterial.uniforms[ 'bloomRadius' ].value = 0.1;
 	this.compositeMaterial.needsUpdate = true;
 
 	var bloomFactors = [ 1.0, 0.8, 0.6, 0.4, 0.2 ];
-	this.compositeMaterial.uniforms[ "bloomFactors" ].value = bloomFactors;
+	this.compositeMaterial.uniforms[ 'bloomFactors' ].value = bloomFactors;
 	this.bloomTintColors = [ new THREE.Vector3( 1, 1, 1 ), new THREE.Vector3( 1, 1, 1 ), new THREE.Vector3( 1, 1, 1 ),
 							 new THREE.Vector3( 1, 1, 1 ), new THREE.Vector3( 1, 1, 1 ) ];
-	this.compositeMaterial.uniforms[ "bloomTintColors" ].value = this.bloomTintColors;
+	this.compositeMaterial.uniforms[ 'bloomTintColors' ].value = this.bloomTintColors;
 
 	// copy material
 	if ( THREE.CopyShader === undefined ) {
 
-		console.error( "THREE.UnrealBloomPass relies on THREE.CopyShader" );
+		console.error( 'THREE.UnrealBloomPass relies on THREE.CopyShader' );
 
 	}
 
 	var copyShader = THREE.CopyShader;
 
 	this.copyUniforms = THREE.UniformsUtils.clone( copyShader.uniforms );
-	this.copyUniforms[ "opacity" ].value = 1.0;
+	this.copyUniforms[ 'opacity' ].value = 1.0;
 
 	this.materialCopy = new THREE.ShaderMaterial( {
 		uniforms: this.copyUniforms,
@@ -6548,7 +6399,7 @@ THREE.UnrealBloomPass = function ( resolution, strength, radius, threshold ) {
 	this.enabled = true;
 	this.needsSwap = false;
 
-	this.oldClearColor = new THREE.Color();
+	this._oldClearColor = new THREE.Color();
 	this.oldClearAlpha = 1;
 
 	this.basic = new THREE.MeshBasicMaterial();
@@ -6591,7 +6442,7 @@ THREE.UnrealBloomPass.prototype = Object.assign( Object.create( THREE.Pass.proto
 			this.renderTargetsHorizontal[ i ].setSize( resx, resy );
 			this.renderTargetsVertical[ i ].setSize( resx, resy );
 
-			this.separableBlurMaterials[ i ].uniforms[ "texSize" ].value = new THREE.Vector2( resx, resy );
+			this.separableBlurMaterials[ i ].uniforms[ 'texSize' ].value = new THREE.Vector2( resx, resy );
 
 			resx = Math.round( resx / 2 );
 			resy = Math.round( resy / 2 );
@@ -6602,7 +6453,7 @@ THREE.UnrealBloomPass.prototype = Object.assign( Object.create( THREE.Pass.proto
 
 	render: function ( renderer, writeBuffer, readBuffer, deltaTime, maskActive ) {
 
-		this.oldClearColor.copy( renderer.getClearColor() );
+		renderer.getClearColor( this._oldClearColor );
 		this.oldClearAlpha = renderer.getClearAlpha();
 		var oldAutoClear = renderer.autoClear;
 		renderer.autoClear = false;
@@ -6626,8 +6477,8 @@ THREE.UnrealBloomPass.prototype = Object.assign( Object.create( THREE.Pass.proto
 
 		// 1. Extract Bright Areas
 
-		this.highPassUniforms[ "tDiffuse" ].value = readBuffer.texture;
-		this.highPassUniforms[ "luminosityThreshold" ].value = this.threshold;
+		this.highPassUniforms[ 'tDiffuse' ].value = readBuffer.texture;
+		this.highPassUniforms[ 'luminosityThreshold' ].value = this.threshold;
 		this.fsQuad.material = this.materialHighPassFilter;
 
 		renderer.setRenderTarget( this.renderTargetBright );
@@ -6642,14 +6493,14 @@ THREE.UnrealBloomPass.prototype = Object.assign( Object.create( THREE.Pass.proto
 
 			this.fsQuad.material = this.separableBlurMaterials[ i ];
 
-			this.separableBlurMaterials[ i ].uniforms[ "colorTexture" ].value = inputRenderTarget.texture;
-			this.separableBlurMaterials[ i ].uniforms[ "direction" ].value = THREE.UnrealBloomPass.BlurDirectionX;
+			this.separableBlurMaterials[ i ].uniforms[ 'colorTexture' ].value = inputRenderTarget.texture;
+			this.separableBlurMaterials[ i ].uniforms[ 'direction' ].value = THREE.UnrealBloomPass.BlurDirectionX;
 			renderer.setRenderTarget( this.renderTargetsHorizontal[ i ] );
 			renderer.clear();
 			this.fsQuad.render( renderer );
 
-			this.separableBlurMaterials[ i ].uniforms[ "colorTexture" ].value = this.renderTargetsHorizontal[ i ].texture;
-			this.separableBlurMaterials[ i ].uniforms[ "direction" ].value = THREE.UnrealBloomPass.BlurDirectionY;
+			this.separableBlurMaterials[ i ].uniforms[ 'colorTexture' ].value = this.renderTargetsHorizontal[ i ].texture;
+			this.separableBlurMaterials[ i ].uniforms[ 'direction' ].value = THREE.UnrealBloomPass.BlurDirectionY;
 			renderer.setRenderTarget( this.renderTargetsVertical[ i ] );
 			renderer.clear();
 			this.fsQuad.render( renderer );
@@ -6661,9 +6512,9 @@ THREE.UnrealBloomPass.prototype = Object.assign( Object.create( THREE.Pass.proto
 		// Composite All the mips
 
 		this.fsQuad.material = this.compositeMaterial;
-		this.compositeMaterial.uniforms[ "bloomStrength" ].value = this.strength;
-		this.compositeMaterial.uniforms[ "bloomRadius" ].value = this.radius;
-		this.compositeMaterial.uniforms[ "bloomTintColors" ].value = this.bloomTintColors;
+		this.compositeMaterial.uniforms[ 'bloomStrength' ].value = this.strength;
+		this.compositeMaterial.uniforms[ 'bloomRadius' ].value = this.radius;
+		this.compositeMaterial.uniforms[ 'bloomTintColors' ].value = this.bloomTintColors;
 
 		renderer.setRenderTarget( this.renderTargetsHorizontal[ 0 ] );
 		renderer.clear();
@@ -6672,7 +6523,7 @@ THREE.UnrealBloomPass.prototype = Object.assign( Object.create( THREE.Pass.proto
 		// Blend it additively over the input texture
 
 		this.fsQuad.material = this.materialCopy;
-		this.copyUniforms[ "tDiffuse" ].value = this.renderTargetsHorizontal[ 0 ].texture;
+		this.copyUniforms[ 'tDiffuse' ].value = this.renderTargetsHorizontal[ 0 ].texture;
 
 		if ( maskActive ) renderer.state.buffers.stencil.setTest( true );
 
@@ -6690,7 +6541,7 @@ THREE.UnrealBloomPass.prototype = Object.assign( Object.create( THREE.Pass.proto
 
 		// Restore renderer settings
 
-		renderer.setClearColor( this.oldClearColor, this.oldClearAlpha );
+		renderer.setClearColor( this._oldClearColor, this.oldClearAlpha );
 		renderer.autoClear = oldAutoClear;
 
 	},
@@ -6700,25 +6551,25 @@ THREE.UnrealBloomPass.prototype = Object.assign( Object.create( THREE.Pass.proto
 		return new THREE.ShaderMaterial( {
 
 			defines: {
-				"KERNEL_RADIUS": kernelRadius,
-				"SIGMA": kernelRadius
+				'KERNEL_RADIUS': kernelRadius,
+				'SIGMA': kernelRadius
 			},
 
 			uniforms: {
-				"colorTexture": { value: null },
-				"texSize": { value: new THREE.Vector2( 0.5, 0.5 ) },
-				"direction": { value: new THREE.Vector2( 0.5, 0.5 ) }
+				'colorTexture': { value: null },
+				'texSize': { value: new THREE.Vector2( 0.5, 0.5 ) },
+				'direction': { value: new THREE.Vector2( 0.5, 0.5 ) }
 			},
 
 			vertexShader:
-				"varying vec2 vUv;\n\
+				'varying vec2 vUv;\n\
 				void main() {\n\
 					vUv = uv;\n\
 					gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );\n\
-				}",
+				}',
 
 			fragmentShader:
-				"#include <common>\
+				'#include <common>\
 				varying vec2 vUv;\n\
 				uniform sampler2D colorTexture;\n\
 				uniform vec2 texSize;\
@@ -6742,7 +6593,7 @@ THREE.UnrealBloomPass.prototype = Object.assign( Object.create( THREE.Pass.proto
 						weightSum += 2.0 * w;\
 					}\
 					gl_FragColor = vec4(diffuseSum/weightSum, 1.0);\n\
-				}"
+				}'
 		} );
 
 	},
@@ -6752,31 +6603,31 @@ THREE.UnrealBloomPass.prototype = Object.assign( Object.create( THREE.Pass.proto
 		return new THREE.ShaderMaterial( {
 
 			defines: {
-				"NUM_MIPS": nMips
+				'NUM_MIPS': nMips
 			},
 
 			uniforms: {
-				"blurTexture1": { value: null },
-				"blurTexture2": { value: null },
-				"blurTexture3": { value: null },
-				"blurTexture4": { value: null },
-				"blurTexture5": { value: null },
-				"dirtTexture": { value: null },
-				"bloomStrength": { value: 1.0 },
-				"bloomFactors": { value: null },
-				"bloomTintColors": { value: null },
-				"bloomRadius": { value: 0.0 }
+				'blurTexture1': { value: null },
+				'blurTexture2': { value: null },
+				'blurTexture3': { value: null },
+				'blurTexture4': { value: null },
+				'blurTexture5': { value: null },
+				'dirtTexture': { value: null },
+				'bloomStrength': { value: 1.0 },
+				'bloomFactors': { value: null },
+				'bloomTintColors': { value: null },
+				'bloomRadius': { value: 0.0 }
 			},
 
 			vertexShader:
-				"varying vec2 vUv;\n\
+				'varying vec2 vUv;\n\
 				void main() {\n\
 					vUv = uv;\n\
 					gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );\n\
-				}",
+				}',
 
 			fragmentShader:
-				"varying vec2 vUv;\
+				'varying vec2 vUv;\
 				uniform sampler2D blurTexture1;\
 				uniform sampler2D blurTexture2;\
 				uniform sampler2D blurTexture3;\
@@ -6799,7 +6650,7 @@ THREE.UnrealBloomPass.prototype = Object.assign( Object.create( THREE.Pass.proto
 													 lerpBloomFactor(bloomFactors[2]) * vec4(bloomTintColors[2], 1.0) * texture2D(blurTexture3, vUv) + \
 													 lerpBloomFactor(bloomFactors[3]) * vec4(bloomTintColors[3], 1.0) * texture2D(blurTexture4, vUv) + \
 													 lerpBloomFactor(bloomFactors[4]) * vec4(bloomTintColors[4], 1.0) * texture2D(blurTexture5, vUv) );\
-				}"
+				}'
 		} );
 
 	}
