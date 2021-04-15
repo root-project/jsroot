@@ -315,20 +315,11 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
 
          gl.canvas = args.canvas;
 
-         // in node.js too many similar warnings makes it difficult to debug
-         //let warn = console.warn;
-         //console.warn = function(msg) {
-         //   if (msg && msg.indexOf("OES_texture_half_float") < 0 && msg.indexOf("EXT_texture_filter_anisotropic") < 0 &&
-         //              msg.indexOf("WEBGL_depth_texture") < 0 && msg.indexOf("OES_vertex_array_object") < 0)
-         //     console.log("NEW: " + msg);
-         //};
          renderer = new THREE.WebGLRenderer(args);
 
          renderer.jsroot_output = new THREE.WebGLRenderTarget(width, height);
 
          renderer.setRenderTarget(renderer.jsroot_output);
-
-         //console.warn = warn;
 
          need_workaround = true;
       } else {
