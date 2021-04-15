@@ -5,8 +5,7 @@
     ],
     "recurseDepth": 10,
     "source": {
-        "include": [ "scripts/JSRootCore.js",
-                     "scripts/JSRoot.core.js",
+        "include": [ "scripts/JSRoot.core.js",
                      "scripts/JSRoot.io.js",
                      "scripts/JSRoot.tree.js",
                      "scripts/JSRoot.webwindow.js",
