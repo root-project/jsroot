@@ -2138,7 +2138,8 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
       let cameraProjectionMatrix = new THREE.Matrix4();
 
       camera.updateMatrixWorld();
-      camera.matrixWorldInverse.getInverse( camera.matrixWorld );
+
+      camera.matrixWorldInverse.copy(camera.matrixWorld).invert();
       cameraProjectionMatrix.multiplyMatrices( camera.projectionMatrix, camera.matrixWorldInverse);
 
       return cameraProjectionMatrix;
