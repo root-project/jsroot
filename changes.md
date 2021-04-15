@@ -1,5 +1,9 @@
 # JSROOT changelog
 
+## Changes in dev
+1. Fully deprecate old JSRootCore.js script, one have to use  JSRoot.core.js
+
+
 ## Changes in 6.1.0
 1. Support drawing produced by TRatioPlot, including interactive zooming
 2. Fix problem with TF1 drawing from histogram list of primitives
