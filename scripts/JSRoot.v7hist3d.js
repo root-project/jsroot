@@ -578,7 +578,6 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
          geom.setAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
          geom.computeVertexNormals();
 
-
          let material = new THREE.MeshBasicMaterial({ transparent: true,
                                    vertexColors: THREE.NoColors, //   THREE.FaceColors,
                                    side: THREE.DoubleSide,
@@ -589,14 +588,15 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
          mesh.size_3d = size_3d;
          mesh.use_y_for_z = use_y_for_z;
          if (kind=="y") mesh.rotateZ(Math.PI/2).rotateX(Math.PI);
+         mesh.v1 = new THREE.Vector3(positions[0], positions[1], positions[2]);
+         mesh.v2 = new THREE.Vector3(positions[3], positions[4], positions[5]);
+         mesh.v3 = new THREE.Vector3(positions[6], positions[7], positions[8]);
 
          mesh.GlobalIntersect = function(raycaster) {
-            let plane = new THREE.Plane(),
-                geom = this.geometry;
+            if (!this.v1 || !this.v2 || !this.v3) return undefined;
 
-            if (!geom || !geom.vertices) return undefined;
-
-            plane.setFromCoplanarPoints(geom.vertices[0], geom.vertices[1], geom.vertices[2]);
+            let plane = new THREE.Plane();
+            plane.setFromCoplanarPoints(this.v1, this.v2, this.v3);
             plane.applyMatrix4(this.matrixWorld);
 
             let v1 = raycaster.ray.origin.clone(),
