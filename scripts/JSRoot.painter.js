@@ -2799,8 +2799,7 @@ JSROOT.define(['d3'], (d3) => {
           menu.showMethodArgsDialog(item).then(args => {
              if (!args) return;
              if (execp.executeMenuCommand(item, args)) return;
-             let exec = item.fExec;
-             if (args) exec = exec.substr(0,exec.length-1) + args + ')';
+             let exec = item.fExec.substr(0, item.fExec.length-1) + args + ')';
              if (cp) cp.sendWebsocket('OBJEXEC:' + execp.args_menu_id + ":" + exec);
          });
       }

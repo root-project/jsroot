@@ -1025,7 +1025,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          menu.add("sub:SetOptStat", () => {
             menu.input("Enter OptStat", pave.fOptStat, "int").then(fmt => {
                pave.fOptStat = fmt;
-               this.interactiveRedraw(true, "exec:SetOptStat(${fmt}");
+               this.interactiveRedraw(true, `exec:SetOptStat(${fmt}`);
             });
          });
          function AddStatOpt(pos, name) {
@@ -1037,10 +1037,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                newopt -= (oldopt>0 ? oldopt : -1) * parseInt(Math.pow(10, arg % 10));
                if (arg % 100 < 10) {
                   pave.fOptStat = newopt;
-                  this.interactiveRedraw(true, "exec:SetOptStat("+newopt+")");
+                  this.interactiveRedraw(true, `exec:SetOptStat(${newopt})`);
                } else {
                   pave.fOptFit = newopt;
-                  this.interactiveRedraw(true, "exec:SetOptFit("+newopt+")");
+                  this.interactiveRedraw(true, `exec:SetOptFit(${newopt})`);
                }
             });
          }
