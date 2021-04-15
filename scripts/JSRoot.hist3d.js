@@ -2563,35 +2563,11 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
          let geom = main.webgl ? new THREE.SphereGeometry(0.5, 16, 12) : new THREE.SphereGeometry(0.5, 8, 6);
          geom.applyMatrix4( new THREE.Matrix4().makeRotationX( Math.PI / 2 ) );
+         geom.computeVertexNormals();
 
-         buffer_size = geom.faces.length*9;
-         single_bin_verts = new Float32Array(buffer_size);
-         single_bin_norms = new Float32Array(buffer_size);
-
-         // Fill a typed array with cube geometry that will be shared by all
-         // (This technically could be put into an InstancedBufferGeometry but
-         // performance gain is likely not huge )
-         for (let face = 0; face < geom.faces.length; ++face) {
-            single_bin_verts[9*face  ] = geom.vertices[geom.faces[face].a].x;
-            single_bin_verts[9*face+1] = geom.vertices[geom.faces[face].a].y;
-            single_bin_verts[9*face+2] = geom.vertices[geom.faces[face].a].z;
-            single_bin_verts[9*face+3] = geom.vertices[geom.faces[face].b].x;
-            single_bin_verts[9*face+4] = geom.vertices[geom.faces[face].b].y;
-            single_bin_verts[9*face+5] = geom.vertices[geom.faces[face].b].z;
-            single_bin_verts[9*face+6] = geom.vertices[geom.faces[face].c].x;
-            single_bin_verts[9*face+7] = geom.vertices[geom.faces[face].c].y;
-            single_bin_verts[9*face+8] = geom.vertices[geom.faces[face].c].z;
-
-            single_bin_norms[9*face  ] = geom.faces[face].vertexNormals[0].x;
-            single_bin_norms[9*face+1] = geom.faces[face].vertexNormals[0].y;
-            single_bin_norms[9*face+2] = geom.faces[face].vertexNormals[0].z;
-            single_bin_norms[9*face+3] = geom.faces[face].vertexNormals[1].x;
-            single_bin_norms[9*face+4] = geom.faces[face].vertexNormals[1].y;
-            single_bin_norms[9*face+5] = geom.faces[face].vertexNormals[1].z;
-            single_bin_norms[9*face+6] = geom.faces[face].vertexNormals[2].x;
-            single_bin_norms[9*face+7] = geom.faces[face].vertexNormals[2].y;
-            single_bin_norms[9*face+8] = geom.faces[face].vertexNormals[2].z;
-         }
+         single_bin_verts = geom.getAttribute('position').array;
+         single_bin_norms = geom.getAttribute('normal').array;
+         buffer_size = single_bin_verts.length;
 
       } else {
 
