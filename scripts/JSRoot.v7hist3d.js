@@ -2554,9 +2554,23 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
          geom.applyMatrix4( new THREE.Matrix4().makeRotationX( Math.PI / 2 ) );
          geom.computeVertexNormals();
 
-         single_bin_verts = geom.getAttribute('position').array;
-         single_bin_norms = geom.getAttribute('normal').array;
-         buffer_size = single_bin_verts.length;
+         let indx = geom.getIndex().array,
+             pos = geom.getAttribute('position').array,
+             norm = geom.getAttribute('normal').array;
+
+         buffer_size = indx.length*3;
+         single_bin_verts = new Float32Array(buffer_size);
+         single_bin_norms = new Float32Array(buffer_size);
+
+         for (let k=0;k<indx.length;++k) {
+            let iii = indx[k]*3;
+            single_bin_verts[k*3] = pos[iii];
+            single_bin_verts[k*3+1] = pos[iii+1];
+            single_bin_verts[k*3+2] = pos[iii+2];
+            single_bin_norms[k*3] = norm[iii];
+            single_bin_norms[k*3+1] = norm[iii+1];
+            single_bin_norms[k*3+2] = norm[iii+2];
+         }
 
       } else {
 
