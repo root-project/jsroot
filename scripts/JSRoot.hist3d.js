@@ -1229,7 +1229,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
          mesh.tooltip = function(intersect) {
             if (!Number.isInteger(intersect.faceIndex)) {
-               console.error('faceIndex not provided, check three.js version', THREE.REVISION, 'expected r121');
+               console.error('faceIndex not provided, check three.js version', THREE.REVISION, 'expected r127');
                return null;
             }
 
@@ -2034,7 +2034,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
        line.tooltip = function(intersect) {
           if (!Number.isInteger(intersect.index)) {
-             console.error('segment index not provided, check three.js version', THREE.REVISION, 'expected r121');
+             console.error('segment index not provided, check three.js version', THREE.REVISION, 'expected r127');
              return null;
           }
 
@@ -2509,7 +2509,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
       mesh.tooltip = function(intersect) {
          if (!Number.isInteger(intersect.index)) {
-            console.error('intersect.index not provided, check three.js version', THREE.REVISION, 'expected r121');
+            console.error('intersect.index not provided, check three.js version', THREE.REVISION, 'expected r127');
             return null;
          }
 
@@ -2806,7 +2806,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
          combined_bins.tooltip = function(intersect) {
             if (!Number.isInteger(intersect.faceIndex)) {
-               console.error('intersect.faceIndex not provided, check three.js version', THREE.REVISION, 'expected r121');
+               console.error('intersect.faceIndex not provided, check three.js version', THREE.REVISION, 'expected r127');
                return null;
             }
             let indx = Math.floor(intersect.faceIndex / this.bins_faces);
@@ -3095,7 +3095,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
      * @private */
    TGraph2DPainter.prototype.graph2DTooltip = function(intersect) {
       if (!Number.isInteger(intersect.index)) {
-         console.error('intersect.index not provided, check three.js version', THREE.REVISION, 'expected r121');
+         console.error('intersect.index not provided, check three.js version', THREE.REVISION, 'expected r127');
          return null;
       }
 

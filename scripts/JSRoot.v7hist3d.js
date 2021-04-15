@@ -1185,7 +1185,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
 
          mesh.tooltip = function(intersect) {
             if (!Number.isInteger(intersect.faceIndex)) {
-               console.error('faceIndex not provided, check three.js version', THREE.REVISION, 'expected r121');
+               console.error('faceIndex not provided, check three.js version', THREE.REVISION, 'expected r127');
                return null;
             }
 
@@ -2009,7 +2009,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
 
        line.tooltip = function(intersect) {
           if (!Number.isInteger(intersect.index)) {
-             console.error('segment index not provided, check three.js version', THREE.REVISION, 'expected r121');
+             console.error('segment index not provided, check three.js version', THREE.REVISION, 'expected r127');
              return null;
           }
 
@@ -2499,7 +2499,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
 
       mesh.tooltip = function(intersect) {
          if (!Number.isInteger(intersect.index)) {
-            console.error('intersect.index not provided, check three.js version', THREE.REVISION, 'expected r121');
+            console.error('intersect.index not provided, check three.js version', THREE.REVISION, 'expected r127');
             return null;
          }
 
@@ -2800,7 +2800,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'v7hist'], (d3, THREE, jsrp) => {
 
          combined_bins.tooltip = function(intersect) {
             if (!Number.isInteger(intersect.faceIndex)) {
-               console.error('intersect.faceIndex not provided, check three.js version', THREE.REVISION, 'expected r121');
+               console.error('intersect.faceIndex not provided, check three.js version', THREE.REVISION, 'expected r127');
                return null;
             }
             let indx = Math.floor(intersect.faceIndex / this.bins_faces);
