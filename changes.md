@@ -1,6 +1,6 @@
 # JSROOT changelog
 
-## Changes in dev
+## Changes in 6.1.0
 1. Support drawing produced by TRatioPlot, including interactive zooming
 2. Fix problem with TF1 drawing from histogram list of primitives
 3. Let disable showing of StreamerInfo in the GUI by adding &skipsi to URL
@@ -9,7 +9,7 @@
 6. API change -> PadPainter.zoom function returns Promise now
 7. Support gridx/y, tickx/y, logx/y options for (multi) graphs painter
 8. Provide simple Rebin functionality for TH1 (#210)
-9. Use jQuery dialog to input values, avoid prompt which not always supported (#216)
+9. Use jQuery dialog to input values, avoid prompt() which not always supported (#216)
 
 
 ## Changes in 6.0.2
