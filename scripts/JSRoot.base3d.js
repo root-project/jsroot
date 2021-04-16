@@ -306,6 +306,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
          const { createCanvas } = require('canvas');
          args.canvas = createCanvas(width, height);
          args.canvas.addEventListener = function() { }; // dummy
+         args.canvas.removeEventListener = function() { }; // dummy
          args.canvas.style = {};
 
          let gl = require('gl')(width, height, { preserveDrawingBuffer: true });
@@ -361,8 +362,18 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
      * @private */
    jsrp.cleanupRender3D = function(renderer) {
       if (!renderer) return;
-      if (renderer.dispose) renderer.dispose();
-      if (renderer.forceContextLoss) renderer.forceContextLoss();
+
+      if (JSROOT.nodejs) {
+         let ctxt = renderer.getContext();
+         let ext = ctxt ? ctxt.getExtension('STACKGL_destroy_context') : null;
+         if (ext) ext.destroy();
+      } else {
+         if (typeof renderer.forceContextLoss == "function")
+            renderer.forceContextLoss();
+
+         if (typeof renderer.dispose == "function")
+            renderer.dispose();
+      }
    }
 
    /** @summary Cleanup previous renderings before doing next one
