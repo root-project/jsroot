@@ -3697,8 +3697,7 @@ JSROOT.define(['d3'], (d3) => {
      * @param {string|object} dom - id of div element to draw or directly DOMElement
      * @param {object} obj - object to draw, object type should be registered before in JSROOT
      * @param {string} opt - draw options separated by space, comma or semicolon
-     * @param {function} [callback] - deprecated, will be removed in 6.2.0, called with painter object
-     * @returns {Promise} with painter object only if callback parameter is not specified
+     * @returns {Promise} with painter object
      * @requires painter
      * @desc An extensive list of support draw options can be found on [JSROOT examples page]{@link https://root.cern/js/latest/examples.htm}
      * Parameter ```callback``` kept only for backward compatibility and will be removed in JSROOT v6.2
@@ -3706,26 +3705,23 @@ JSROOT.define(['d3'], (d3) => {
      * JSROOT.openFile("https://root.cern/js/files/hsimple.root")
      *       .then(file => file.readObject("hpxpy;1"))
      *       .then(obj => JSROOT.draw("drawing", obj, "colz;logx;gridx;gridy")); */
-   JSROOT.draw = function(dom, obj, opt, callback) {
-      let res = jsroot_draw(dom, obj, opt);
-      if (!callback || (typeof callback != 'function')) return res;
-      res.then(callback).catch(() => callback(null));
+   JSROOT.draw = function(dom, obj, opt) {
+      return jsroot_draw(dom, obj, opt);
    }
 
    /** @summary Redraw object in specified HTML element with given draw options.
      * @param {string|object} dom - id of div element to draw or directly DOMElement
      * @param {object} obj - object to draw, object type should be registered before in JSROOT
      * @param {string} opt - draw options
-     * @param {function} [callback] - deprecated, will be removed in 6.2.0, called with painter object
-     * @returns {Promise} with painter used only when callback parameter is not specified
+     * @returns {Promise} with painter object
      * @requires painter
      * @desc If drawing was not done before, it will be performed with {@link JSROOT.draw}.
      * Otherwise drawing content will be updated
      * Parameter ```callback``` kept only for backward compatibility and will be removed in JSROOT v6.2 */
-   JSROOT.redraw = function(dom, obj, opt, callback) {
+   JSROOT.redraw = function(dom, obj, opt) {
 
       if (!obj || (typeof obj !== 'object'))
-         return callback ? callback(null) : Promise.reject(Error('not an object in JSROOT.redraw'));
+         return Promise.reject(Error('not an object in JSROOT.redraw'));
 
       let can_painter = jsrp.getElementCanvPainter(dom), handle, res_painter = null, redraw_res;
       if (obj._typename)
@@ -3763,12 +3759,12 @@ JSROOT.define(['d3'], (d3) => {
       if (res_painter) {
          if (!redraw_res || (typeof redraw_res != 'object') || !redraw_res.then)
             redraw_res = Promise.resolve(true);
-         return redraw_res.then(() => { if (callback) callback(res_painter); return res_painter; });
+         return redraw_res.then(() => res_painter);
       }
 
       JSROOT.cleanup(dom);
 
-      return JSROOT.draw(dom, obj, opt, callback);
+      return JSROOT.draw(dom, obj, opt);
    }
 
    /** @summary Save object, drawn in specified element, as JSON.
