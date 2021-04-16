@@ -364,7 +364,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
       if (!renderer) return;
 
       if (JSROOT.nodejs) {
-         let ctxt = renderer.getContext();
+         let ctxt = (typeof renderer.getContext == 'function') ? renderer.getContext() : null;
          let ext = ctxt ? ctxt.getExtension('STACKGL_destroy_context') : null;
          if (ext) ext.destroy();
       } else {
