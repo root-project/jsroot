@@ -59,8 +59,7 @@
 
       factory(exports);
 
-      globalThis.JSROOT = exports;
-
+      global.JSROOT = exports;
    } else {
 
       if ((typeof JSROOT != 'undefined') && !JSROOT._workaround)
