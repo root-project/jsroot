@@ -303,17 +303,19 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
          }
       } else if (JSROOT.nodejs) {
          // try to use WebGL inside node.js - need to create headless context
-         let gl = require('gl')(width, height, { preserveDrawingBuffer: true });
-
          const { createCanvas } = require('canvas');
-
          args.canvas = createCanvas(width, height);
          args.canvas.addEventListener = function() { }; // dummy
          args.canvas.style = {};
 
-         args.context = gl;
+         let gl = require('gl')(width, height, { preserveDrawingBuffer: true });
 
-         gl.canvas = args.canvas;
+         if (!gl) {
+            console.error("Fail to create headless-gl");
+         } else {
+            args.context = gl;
+            gl.canvas = args.canvas;
+         }
 
          renderer = new THREE.WebGLRenderer(args);
 
