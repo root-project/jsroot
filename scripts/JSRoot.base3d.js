@@ -368,8 +368,8 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
          let ext = ctxt ? ctxt.getExtension('STACKGL_destroy_context') : null;
          if (ext) ext.destroy();
       } else {
-         if (typeof renderer.forceContextLoss == "function")
-            renderer.forceContextLoss();
+         //if (typeof renderer.forceContextLoss == "function")
+         //   renderer.forceContextLoss();
 
          if (typeof renderer.dispose == "function")
             renderer.dispose();
