@@ -105,7 +105,7 @@
 
    /** @summary JSROOT version date
      * @desc Release date in format day/month/year like "14/01/2021"*/
-   JSROOT.version_date = "15/04/2021";
+   JSROOT.version_date = "16/04/2021";
 
    /** @summary JSROOT version id and date
      * @desc Produced by concatenation of {@link JSROOT.version_id} and {@link JSROOT.version_date}
@@ -1358,8 +1358,8 @@
    }
 
    // Open ROOT file, defined in JSRoot.io.js
-   JSROOT.openFile = (filename, callback) => {
-      return jsroot_require("io").then(() => JSROOT.openFile(filename, callback));
+   JSROOT.openFile = filename => {
+      return jsroot_require("io").then(() => JSROOT.openFile(filename));
    }
 
    // Draw object, defined in JSRoot.painter.js
