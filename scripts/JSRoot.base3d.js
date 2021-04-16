@@ -357,11 +357,18 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
       return renderer;
    }
 
+   /** @summary Cleanup created renderer object
+     * @private */
+   jsrp.cleanupRender3D = function(renderer) {
+      if (!renderer) return;
+      if (renderer.dispose) renderer.dispose();
+      if (renderer.forceContextLoss) renderer.forceContextLoss();
+   }
+
    /** @summary Cleanup previous renderings before doing next one
      * @desc used together with SVG
      * @private */
    jsrp.beforeRender3D = function(renderer) {
-      // cleanup previous rendering, from SVG renderer
       if (renderer.clearHTML) renderer.clearHTML();
    }
 
