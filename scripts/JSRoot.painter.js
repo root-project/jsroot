@@ -3831,6 +3831,8 @@ JSROOT.define(['d3'], (d3) => {
 
             svg = jsrp.compressSVG(svg);
 
+            JSROOT.cleanup(main.node());
+
             main.remove();
 
             return svg;
