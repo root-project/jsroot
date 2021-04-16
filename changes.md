@@ -3,6 +3,7 @@
 ## Changes in dev
 1. Fully deprecate old JSRootCore.js script, one have to use  JSRoot.core.js
 2. Upgrade three.js to r127
+3. Upgrade d3.js to 6.7.0
 
 
 ## Changes in 6.1.0
