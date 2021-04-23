@@ -1131,7 +1131,8 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
       });
    }
 
-   /** @summary Create browser elements */
+   /** @summary Create browser elements
+     * @returns {Promise} when completed */
    HierarchyPainter.prototype.createBrowser = function(browser_kind, update_html) {
 
       if (!this.gui_div || this.exclude_browser || !this.brlayout)

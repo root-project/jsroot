@@ -2591,7 +2591,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
      * @private */
    HierarchyPainter.prototype.prepareGuiDiv = function(myDiv, layout) {
 
-      this.gui_div = myDiv.attr('id');
+      this.gui_div = (typeof myDiv == "string") ? myDiv : myDiv.attr('id');
 
       this.brlayout = new BrowserLayout(this.gui_div, this);
 
