@@ -1199,7 +1199,10 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
 
       this.brlayout.setBrowserContent(guiCode);
 
-      this.brlayout.setBrowserTitle(this.is_online ? 'ROOT online server' : 'Read a ROOT file');
+      if (this.is_online)
+          this.brlayout.setBrowserTitle('ROOT online server');
+       else
+          this.brlayout.setBrowserTitle('Read a ROOT file');
 
       let localfile_read_callback = null;
 

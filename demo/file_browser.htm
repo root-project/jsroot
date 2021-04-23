@@ -4,7 +4,7 @@
 
    <meta charset="UTF-8">
 
-   <title>Use of JSROOT hierarchy painter</title>
+   <title>Example of hierarchy painter</title>
 
    <script src="../scripts/JSRoot.core.js" type="text/javascript"></script>
 
@@ -20,20 +20,18 @@
       JSROOT.require('hierarchy').then(() => {
          let h = new JSROOT.HierarchyPainter("example");
 
+         // suppress selection elements
          h.no_select = true;
 
-         // configure 'simple' in provided <div> element
+         // configure 'simple' layout for drawings
          // one also can specify "grid2x2" or "flex" or "tabs"
-         // h.setDisplay("simple", "myMainDiv");
-
          h.prepareGuiDiv("simpleGUI", "simple");
 
          // open file and display element
          h.createBrowser("fix")
-          .then(() => h.openRootFile("https://jsroot.gsi.de/files/hsimple.root"))
+          .then(() => h.openRootFile("../../files/hsimple.root"))
           .then(() => h.display("hpxpy;1","colz"));
-         // h.openRootFile("../../files/hsimple.root").then(() => h.display("hpxpy;1","colz"));
-      })
+      });
 
    </script>
 

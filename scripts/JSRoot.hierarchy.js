@@ -2576,13 +2576,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                document.title = this.h._toptitle;
 
             if (gui_div)
-               this.prepareGuiDiv(gui_div, this.disp_kind);
+               this.prepareGuiDiv(gui_div.attr('id'), this.disp_kind);
 
             return openAllFiles();
          });
 
       if (gui_div)
-         this.prepareGuiDiv(gui_div, this.disp_kind);
+         this.prepareGuiDiv(gui_div.attr('id'), this.disp_kind);
 
       return openAllFiles();
    }
