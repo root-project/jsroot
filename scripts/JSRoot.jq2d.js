@@ -625,7 +625,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          return Promise.resolve(this);
 
       d3elem.html("")
-            .style('overflow','hidden') // clear html - most simple way
+            .style('overflow',this.show_overflow ? 'auto' : 'hidden') // clear html - most simple way
             .style('display','flex')
             .style('flex-direction','column');
 
@@ -1195,9 +1195,9 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          guiCode += '<select style="padding:2px;margin-right:5px;" title="layout kind" class="gui_layout"></select>'
                   + '</div>';
 
-      guiCode += '<div id="' + this.gui_div+'_browser_hierarchy" class="jsroot_browser_hierarchy"></div>';
+      guiCode += `<div id="${this.gui_div}_browser_hierarchy" class="jsroot_browser_hierarchy"></div>`;
 
-      this.brlayout.setBrowserContent(guiCode);
+      this.brlayout.setBrowserContent(guiCode, this.show_overflow);
 
       if (this.is_online)
           this.brlayout.setBrowserTitle('ROOT online server');

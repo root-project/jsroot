@@ -667,12 +667,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Set browser content */
-   BrowserLayout.prototype.setBrowserContent = function(guiCode) {
+   BrowserLayout.prototype.setBrowserContent = function(guiCode, show_overflow) {
       let main = d3.select("#" + this.gui_div + " .jsroot_browser");
       if (main.empty()) return;
 
       main.insert('div', ".jsroot_browser_btns").classed('jsroot_browser_area', true)
           .style('position',"absolute").style('left',0).style('top',0).style('bottom',0).style('width','250px')
+          .style('overflow', show_overflow ? 'auto' : 'hidden')
           .style('padding-left','5px')
           .style('display','flex').style('flex-direction', 'column')   /* use the flex model */
           .html("<p class='jsroot_browser_title'>title</p>" +  guiCode);
