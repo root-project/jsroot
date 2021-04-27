@@ -565,6 +565,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
 
       if (has_childs && (isroot || hitem._isopen)) {
          let d3chlds = d3cont.append("div").attr("class", "h_childs");
+         if (this.show_overflow) d3chlds.style("overflow", "initial");
          for (let i = 0; i < hitem._childs.length; ++i) {
             let chld = hitem._childs[i];
             chld._parent = hitem;
@@ -624,8 +625,8 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
       if (d3elem.empty())
          return Promise.resolve(this);
 
-      d3elem.html("")
-            .style('overflow',this.show_overflow ? 'auto' : 'hidden') // clear html - most simple way
+      d3elem.html("")   // clear html - most simple way
+            .style('overflow',this.show_overflow ? 'auto' : 'hidden')
             .style('display','flex')
             .style('flex-direction','column');
 
@@ -683,8 +684,10 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          d3elem.append("div")
                .attr("class", "jsroot")
                .style('font-size', this.with_icons ? "12px" : "15px")
-               .style("overflow","auto")
                .style("flex","1");
+
+      if (!this.show_overflow)
+         maindiv.style("overflow","auto");
 
       if (this.background) // case of object inspector and streamer infos display
          maindiv.style("background-color", this.background)
@@ -1156,7 +1159,8 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          return Promise.resolve(true);
       }
 
-      let guiCode = "<p class='jsroot_browser_version'><a href='https://root.cern/js/'>JSROOT</a> version <span style='color:green'><b>" + JSROOT.version + "</b></span></p>";
+      let extra_style = this.show_overflow ? " style='overflow:hidden'" : "";
+      let guiCode = `<p class='jsroot_browser_version'${extra_style}><a href='https://root.cern/js/'>JSROOT</a> version <span style='color:green'><b>${JSROOT.version}</b></span></p>`;
 
       if (this.is_online) {
          guiCode +='<p> Hierarchy in <a href="h.json">json</a> and <a href="h.xml">xml</a> format</p>'
