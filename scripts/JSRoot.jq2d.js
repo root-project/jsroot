@@ -1159,8 +1159,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          return Promise.resolve(true);
       }
 
-      let extra_style = this.show_overflow ? " style='overflow:hidden'" : "";
-      let guiCode = `<p class='jsroot_browser_version'${extra_style}><a href='https://root.cern/js/'>JSROOT</a> version <span style='color:green'><b>${JSROOT.version}</b></span></p>`;
+      let guiCode = `<p class='jsroot_browser_version'><a href='https://root.cern/js/'>JSROOT</a> version <span style='color:green'><b>${JSROOT.version}</b></span></p>`;
 
       if (this.is_online) {
          guiCode +='<p> Hierarchy in <a href="h.json">json</a> and <a href="h.xml">xml</a> format</p>'
@@ -1201,7 +1200,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
 
       guiCode += `<div id="${this.gui_div}_browser_hierarchy" class="jsroot_browser_hierarchy"></div>`;
 
-      this.brlayout.setBrowserContent(guiCode, this.show_overflow);
+      this.brlayout.setBrowserContent(guiCode);
 
       if (this.is_online)
           this.brlayout.setBrowserTitle('ROOT online server');

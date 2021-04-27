@@ -24,7 +24,7 @@
          h.no_select = true;
 
          // let enable scrollbars for hierarchy content, otherwise only HTML resize can be use to see elements
-         h.show_overflow = true;
+         h.show_overflow = false;
 
          // configure 'simple' layout for drawings
          // one also can specify "grid2x2" or "flex" or "tabs"
@@ -32,8 +32,8 @@
 
          // open file and display element
          h.createBrowser("fix")
-          .then(() => h.openRootFile("../../files/hsimple.root"))
-          .then(() => h.display("hpxpy;1","colz"));
+          .then(() => h.openRootFile("https://root.cern/files/lhcb2.root"))
+          .then(() => h.display("E;1//Event/Gen/Header/m_evtNumber",""));
       });
 
    </script>
