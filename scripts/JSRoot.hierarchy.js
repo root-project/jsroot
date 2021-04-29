@@ -1107,7 +1107,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if ((arg.rest == d.rest) || (arg.rest.length <= d.rest.length))
                return Promise.resolve(result);
 
-         return this.expandItem(parentname, null, true).then(res => {
+         return this.expandItem(parentname, undefined, options != "hierarchy_expand_verbose").then(res => {
             if (!res) return result;
             let newparentname = this.itemFullName(d.last);
             if (newparentname.length > 0) newparentname += "/";
@@ -1737,7 +1737,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          jsrp.showProgress("Loading " + itemname);
 
-         return this.getObject(itemname, "hierarchy_expand").then(res => {
+         return this.getObject(itemname, silent ? "hierarchy_expand" : "hierarchy_expand_verbose").then(res => {
 
             jsrp.showProgress();
 
@@ -1928,7 +1928,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       let url = itemname, h_get = false, req = "", req_kind = "object", draw_handle = null;
 
-      if (option === 'hierarchy_expand') { h_get = true; option = undefined; }
+      if ((typeof option == "string") && (option.indexOf('hierarchy_expand')==0)) {
+         h_get = true;
+         option = undefined;
+      }
 
       if (item) {
          url = this.getOnlineItemUrl(item);
