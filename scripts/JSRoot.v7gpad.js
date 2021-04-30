@@ -134,7 +134,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (val == "auto") {
          let pp = this.getPadPainter();
          if (pp && pp._auto_color_cnt !== undefined) {
-            val = (pp._auto_color_cnt++ == 0) ? "red" : "blue";
+
+            let pal = pp.getHistPalette();
+            let cnt = pp._auto_color_cnt++;
+
+            val = (cnt == 0) ? "red" : "blue";
             if (!this._auto_colors) this._auto_colors = {};
             this._auto_colors[name] = val;
          } else if (this._auto_colors && this._auto_colors[name]) {
@@ -2022,31 +2026,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
    }
 
-   /** @summary Returns palette associated with frame. Either from existing palette painter or just default palette */
+   /** @summary Returns palette associated with frame */
    RFramePainter.prototype.getHistPalette = function() {
-      let pp = this.getPadPainter().findPainterFor(undefined, undefined, "ROOT::Experimental::RPaletteDrawable");
-
-      if (pp) return pp.getHistPalette();
-
-      if (!this.fDfltPalette) {
-         this.fDfltPalette = {
-            _typename : "ROOT::Experimental::RPalette",
-            fColors : [{ fOrdinal : 0,     fColor : { fRGBA : [53, 42, 135] } },
-                       { fOrdinal : 0.125, fColor : { fRGBA : [15, 92, 221] } },
-                       { fOrdinal : 0.25,  fColor : { fRGBA : [20, 129, 214] } },
-                       { fOrdinal : 0.375, fColor : { fRGBA : [6, 164, 202] } },
-                       { fOrdinal : 0.5,   fColor : { fRGBA : [46, 183, 164] } },
-                       { fOrdinal : 0.625, fColor : { fRGBA : [135, 191, 119] } },
-                       { fOrdinal : 0.75,  fColor : { fRGBA : [209, 187, 89] } },
-                       { fOrdinal : 0.875, fColor : { fRGBA : [254, 200, 50] } },
-                       { fOrdinal : 1,     fColor : { fRGBA : [249, 251, 14] } }],
-             fInterpolate : true,
-             fNormalized : true
-         };
-         JSROOT.addMethods(this.fDfltPalette, "ROOT::Experimental::RPalette");
-      }
-
-      return this.fDfltPalette;
+      return this.getPadPainter().getHistPalette();
    }
 
    RFramePainter.prototype.configureUserClickHandler = function(handler) {
@@ -2491,6 +2473,33 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return null;
    }
 
+   /** @summary Returns palette associated with pad.
+     * @desc Either from existing palette painter or just default palette */
+   RPadPainter.prototype.getHistPalette = function() {
+      let pp = this.findPainterFor(undefined, undefined, "ROOT::Experimental::RPaletteDrawable");
+
+      if (pp) return pp.getHistPalette();
+
+      if (!this.fDfltPalette) {
+         this.fDfltPalette = {
+            _typename : "ROOT::Experimental::RPalette",
+            fColors : [{ fOrdinal : 0,     fColor : { fRGBA : [53, 42, 135] } },
+                       { fOrdinal : 0.125, fColor : { fRGBA : [15, 92, 221] } },
+                       { fOrdinal : 0.25,  fColor : { fRGBA : [20, 129, 214] } },
+                       { fOrdinal : 0.375, fColor : { fRGBA : [6, 164, 202] } },
+                       { fOrdinal : 0.5,   fColor : { fRGBA : [46, 183, 164] } },
+                       { fOrdinal : 0.625, fColor : { fRGBA : [135, 191, 119] } },
+                       { fOrdinal : 0.75,  fColor : { fRGBA : [209, 187, 89] } },
+                       { fOrdinal : 0.875, fColor : { fRGBA : [254, 200, 50] } },
+                       { fOrdinal : 1,     fColor : { fRGBA : [249, 251, 14] } }],
+             fInterpolate : true,
+             fNormalized : true
+         };
+         JSROOT.addMethods(this.fDfltPalette, "ROOT::Experimental::RPalette");
+      }
+
+      return this.fDfltPalette;
+   }
 
    /** @summary Call function for each painter in pad
      * @param {function} userfunc - function to call
@@ -4622,17 +4631,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    ////////////////////////////////////////////////////////////////////////////////////////////
 
-   JSROOT.v7.ExtractRColor = function(rcolor) {
-      if (rcolor.fName)
-         return rcolor.fName;
-
-      if (rcolor.fRGBA.length == 3)
-         return "rgb(" + rcolor.fRGBA[0] + "," + rcolor.fRGBA[1] + "," + rcolor.fRGBA[2] + ")";
-
-      if (rcolor.fRGBA.length == 4)
-         return "rgba(" + rcolor.fRGBA[0] + "," + rcolor.fRGBA[1] + "," + rcolor.fRGBA[2] + "," + rcolor.fRGBA[3] + ")";
-
-      return "black";
+   JSROOT.v7.extractRColor = function(rcolor) {
+      return rcolor.fColor || "black";
    }
 
    JSROOT.registerMethods("ROOT::Experimental::RPalette", {
@@ -4681,7 +4681,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             let entry = this.fColors[indx];
 
             if ((Math.abs(entry.fOrdinal - value)<0.0001) || (indx == this.fColors.length-1)) {
-               arr.push(JSROOT.v7.ExtractRColor(entry.fColor));
+               arr.push(JSROOT.v7.extractRColor(entry.fColor));
                continue;
             }
 
@@ -4696,8 +4696,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                 r2 = (value - entry.fOrdinal) / dist;
 
             // interpolate
-            let col1 = d3.rgb(JSROOT.v7.ExtractRColor(entry.fColor));
-            let col2 = d3.rgb(JSROOT.v7.ExtractRColor(next.fColor));
+            let col1 = d3.rgb(JSROOT.v7.extractRColor(entry.fColor));
+            let col2 = d3.rgb(JSROOT.v7.extractRColor(next.fColor));
 
             let color = d3.rgb(Math.round(col1.r*r1 + col2.r*r2), Math.round(col1.g*r1 + col2.g*r2), Math.round(col1.b*r1 + col2.b*r2));
 
