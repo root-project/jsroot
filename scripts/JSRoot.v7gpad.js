@@ -131,6 +131,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
      * @private */
    JSROOT.ObjectPainter.prototype.v7EvalColor = function(name, dflt) {
       let val = this.v7EvalAttr(name, "");
+      if (!val || (typeof val != "string")) return dflt;
+
       if (val == "auto") {
          let pp = this.getPadPainter();
          if (pp && pp._auto_color_cnt !== undefined) {
@@ -146,8 +148,16 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             console.error(`Autocolor ${name} not defined yet - please check code`);
             val = "";
          }
+      } else if (val[0]=="[") {
+         let ordinal = parseFloat(val.substr(1, val.length-2));
+         val = "black";
+         if (Number.isFinite(ordinal)) {
+             let pp = this.getPadPainter(),
+                 pal = pp ? pp.getHistPalette() : null;
+             if (pal) val = pal.getColorOrdinal(ordinal);
+         }
       }
-      return val || dflt;
+      return val;
    }
 
    /** @summary Evaluate RAttrText properties
@@ -4673,14 +4683,18 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       calcColor: function(value, entry1, entry2) {
          let dist = entry2.fOrdinal - entry1.fOrdinal,
-             r1 = (entry2.fOrdinal - value) / dist,
-             r2 = (value - entry1.fOrdinal) / dist;
+             r1 = entry2.fOrdinal - value,
+             r2 = value - entry1.fOrdinal;
+
+         if (!this.fInterpolate || (dist <= 0))
+            return (r1 < r2) ? entry2.fColor : entry1.fColor;
 
          // interpolate
-         let col1 = d3.rgb(JSROOT.v7.extractRColor(entry1.fColor));
-         let col2 = d3.rgb(JSROOT.v7.extractRColor(entry2.fColor));
-
-         let color = d3.rgb(Math.round(col1.r*r1 + col2.r*r2), Math.round(col1.g*r1 + col2.g*r2), Math.round(col1.b*r1 + col2.b*r2));
+         let col1 = d3.rgb(JSROOT.v7.extractRColor(entry1.fColor)),
+             col2 = d3.rgb(JSROOT.v7.extractRColor(entry2.fColor)),
+             color = d3.rgb(Math.round((col1.r*r1 + col2.r*r2)/dist),
+                            Math.round((col1.g*r1 + col2.g*r2)/dist),
+                            Math.round((col1.b*r1 + col2.b*r2)/dist));
 
          return color.toString();
       },
