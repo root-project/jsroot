@@ -131,7 +131,19 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
      * @private */
    JSROOT.ObjectPainter.prototype.v7EvalColor = function(name, dflt) {
       let val = this.v7EvalAttr(name, "");
-      if (val == "auto") val = "";
+      if (val == "auto") {
+         let pp = this.getPadPainter();
+         if (pp && pp._auto_color_cnt !== undefined) {
+            val = (pp._auto_color_cnt++ == 0) ? "red" : "blue";
+            if (!this._auto_colors) this._auto_colors = {};
+            this._auto_colors[name] = val;
+         } else if (this._auto_colors && this._auto_colors[name]) {
+            val = this._auto_colors[name];
+         } else {
+            console.error(`Autocolor ${name} not defined yet - please check code`);
+            val = "";
+         }
+      }
       return val || dflt;
    }
 
@@ -3064,6 +3076,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this._doing_pad_draw = true;
          this._snaps_map = {}; // to control how much snaps are drawn
          this._num_primitives = lst ? lst.length : 0;
+         this._auto_color_cnt = 0;
       }
 
       delete this.next_rstyle;
@@ -3073,6 +3086,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (!lst || indx >= lst.length) {
          delete this._doing_pad_draw;
          delete this._snaps_map;
+         delete this._auto_color_cnt;
          return Promise.resolve(this);
       }
 
