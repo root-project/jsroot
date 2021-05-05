@@ -2761,8 +2761,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       menu.add("header:"+ histo._typename + "::" + histo.fName);
 
-      if (this.draw_content) {
+      if (this.options.Axis <= 0)
          menu.addchk(this.toggleStat('only-check'), "Show statbox", () => this.toggleStat());
+
+      if (this.draw_content) {
          if (this.getDimension() == 1) {
             menu.add("User range X", () => this.changeUserRange(menu, "X"));
          } else {
@@ -2874,7 +2876,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       pp.addPadButton("arrow_up", "Toggle log y", "ToggleLogY", "PageUp");
       if (this.getDimension() > 1)
          pp.addPadButton("arrow_diag", "Toggle log z", "ToggleLogZ");
-      if (this.draw_content)
+      if (this.options.Axis <= 0)
          pp.addPadButton("statbox", 'Toggle stat box', "ToggleStatBox");
       if (!not_shown) pp.showPadButtons();
    }
