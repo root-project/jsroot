@@ -2269,10 +2269,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       //   menu.addchk(pad.fLogz, "SetLogz", this.toggleAxisLog.bind(main,"z"));
       menu.add("separator");
 
-
-      menu.addchk(this.isTooltipAllowed(), "Show tooltips", function() {
-         this.setTooltipAllowed("toggle");
-      });
+      menu.addchk(this.isTooltipAllowed(), "Show tooltips", () => this.setTooltipAllowed("toggle"));
       menu.addAttributesMenu(this, alone ? "" : "Frame ");
       menu.add("separator");
       menu.add("Save as frame.png", () => this.getPadPainter().saveAs("png", 'frame', 'frame.png'));
