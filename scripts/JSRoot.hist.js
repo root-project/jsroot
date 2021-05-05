@@ -2480,7 +2480,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    /** @summary Returns true if stats box fill can be ingored
      * @private */
    THistPainter.prototype.isIgnoreStatsFill = function() {
-      return !this.getObject() || (!this.draw_content && !this.create_stats) || (this.options.Axis > 0);
+      return !this.getObject() || (!this.draw_content && !this.create_stats && !this.snapid) || (this.options.Axis > 0);
    }
 
    /** @summary Create stat box for histogram if required */
