@@ -1504,6 +1504,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return this.fLastEventPnt;
    }
 
+   /** @summary Update graphical attributes */
    RFramePainter.prototype.updateAttributes = function(force) {
       if ((this.fX1NDC === undefined) || (force && !this.modified_NDC)) {
 
@@ -1642,11 +1643,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.yaxis = yaxis;
       this.zaxis = zaxis;
 
-      let min, max;
-
       if (this.xmin == this.xmax) {
-         min = this.v7EvalAttr("x_min");
-         max = this.v7EvalAttr("x_max");
+         let min = this.v7EvalAttr("x_min"),
+             max = this.v7EvalAttr("x_max");
 
          if (min !== undefined) xmin = min;
          if (max !== undefined) xmax = max;
@@ -1668,8 +1667,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
 
       if (this.ymin == this.ymax) {
-         min = this.v7EvalAttr("y_min");
-         max = this.v7EvalAttr("y_max");
+         let min = this.v7EvalAttr("y_min"),
+             max = this.v7EvalAttr("y_max");
 
          if (min !== undefined) ymin = min;
          if (max !== undefined) ymax = max;
@@ -1691,8 +1690,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
 
       if (this.zmin == this.zmax) {
-         min = this.v7EvalAttr("z_min");
-         max = this.v7EvalAttr("z_max");
+         let min = this.v7EvalAttr("z_min"),
+             max = this.v7EvalAttr("z_max");
 
          if (min !== undefined) zmin = min;
          if (max !== undefined) zmax = max;
@@ -2010,9 +2009,16 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
               .attr("height", h)
               .attr("viewBox", "0 0 " + w + " " + h);
 
-      if (JSROOT.batch_mode) return;
+      let promise = Promise.resolve(true);
 
-      JSROOT.require(['interactive']).then(inter => {
+      if (this.v7EvalAttr("drawaxes")) {
+         this.setAxesRanges();
+         promise = this.drawAxes();
+      }
+
+      if (JSROOT.batch_mode) return promise;
+
+      return promise.then(() => JSROOT.require(['interactive'])).then(inter => {
          top_rect.attr("pointer-events", "visibleFill");  // let process mouse events inside frame
          inter.FrameInteractive.assign(this);
          this.addBasicInteractivity();
