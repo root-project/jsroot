@@ -4405,7 +4405,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    function drawPadSnapshot(divid, snap /*, opt*/) {
       let painter = new RCanvasPainter(divid, null);
       painter.normal_canvas = false;
-      painter.batch_mode = true;
+      painter.batch_mode = JSROOT.batch_mode;
       return painter.redrawPadSnap(snap).then(() => {
          painter.showPadButtons();
          return painter;
