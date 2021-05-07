@@ -914,7 +914,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (res)
          axis_g.append("svg:path")
                .attr("d", res)
-               .style('stroke', this.ticksColor || this.lineatt.color);
+               .style('stroke', this.ticksColor || this.lineatt.color)
+               .style('stroke-width', !this.ticksWidth || (this.ticksWidth == 1) ? null : this.ticksWidth);
 
        let gap0 = Math.round(0.25*this.ticksSize), gap = Math.round(1.25*this.ticksSize);
        return { "-1": (side > 0) || ticks_plusminus ? gap : gap0,
@@ -1121,6 +1122,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.ticksSize = this.v7EvalLength("ticks_size", this.scaling_size, 0.02);
       this.ticksSide = this.v7EvalAttr("ticks_side", "normal");
       this.ticksColor = this.v7EvalColor("ticks_color", "");
+      this.ticksWidth = this.v7EvalAttr("ticks_width", 1);
       this.labelsOffset = this.v7EvalLength("labels_offset", this.scaling_size, 0);
 
       this.fTitle = this.v7EvalAttr("title", "");
