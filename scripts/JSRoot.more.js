@@ -766,10 +766,15 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       let painter = new TF1Painter(divid, tf1);
       let d = new JSROOT.DrawOptions(opt);
       painter.nosave = d.check('NOSAVE');
+      let aopt = "AXIS";
+      if (d.check('X+')) aopt += "X+";
+      if (d.check('Y+')) aopt += "Y+";
+      if (d.check('RX')) aopt += "RX";
+      if (d.check('RY')) aopt += "RY";
 
       return JSROOT.require("math").then(() => {
          if (!painter.getMainPainter())
-            return JSROOT.draw(divid, painter.createDummyHisto(), "AXIS");
+            return JSROOT.draw(divid, painter.createDummyHisto(), aopt);
       }).then(() => {
          painter.addToPadPrimitives();
          painter.redraw();
