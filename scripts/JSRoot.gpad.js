@@ -2048,7 +2048,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             this.zoom_zmin = this.zoom_zmax = 0;
          }
 
-      // than try to unzoom all overlapped objects
+         // than try to unzoom all overlapped objects
          if (!changed) {
             let pp = this.getPadPainter();
             if (pp && pp.painters)
@@ -2057,6 +2057,48 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                      if (painter.unzoomUserRange(unzoom_x, unzoom_y, unzoom_z)) changed = true;
             });
          }
+      }
+
+      if (!changed) return Promise.resolve(false);
+
+      return this.interactiveRedraw("pad", "zoom").then(() => true);
+   }
+
+   /** @summary Provide zooming of single axis
+     * @desc One can specify names like x/y/z but also second axis x2 or y2 */
+   TFramePainter.prototype.zoomSingle = function(name, vmin, vmax) {
+      // disable zooming when axis conversion is enabled
+      if (this.projection || !this[name+"_handle"]) return Promise.resolve(false);
+
+      let zoom_v = (vmin !== vmax), unzoom_v = false;
+
+      if (zoom_v) {
+         let cnt = 0;
+         if (vmin <= this[name+"min"]) { vmin = this[name+"min"]; cnt++; }
+         if (vmax >= this[name+"max"]) { vmax = this[name+"max"]; cnt++; }
+         if (cnt === 2) { zoom_v = false; unzoom_v = true; }
+      } else {
+         unzoom_v = (vmin === vmax) && (vmin === 0);
+      }
+
+      let changed = false;
+
+      // first process zooming
+      if (zoom_v)
+         this.forEachPainter(obj => {
+            if (typeof obj.canZoomInside != 'function') return;
+            if (zoom_v && obj.canZoomInside(name[0], vmin, vmax)) {
+               this["zoom_" + name + "min"] = vmin;
+               this["zoom_" + name + "max"] = vmax;
+               changed = true;
+               zoom_v = false;
+            }
+         });
+
+      // and process unzoom, if any
+      if (unzoom_v) {
+         if (this["zoom_" + name + "min"] !== this["zoom_" + name + "max"]) changed = true;
+         this["zoom_" + name + "min"] = this["zoom_" + name + "max"] = 0;
       }
 
       if (!changed) return Promise.resolve(false);

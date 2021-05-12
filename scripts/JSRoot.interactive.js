@@ -1220,7 +1220,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       },
 
        /** @summary Analyze zooming with mouse wheel */
-      analyzeMouseWheelEvent: function(event, item, dmin, test_ignore) {
+      analyzeMouseWheelEvent: function(event, item, dmin, test_ignore, second_side) {
+         // if there is second handle, use it
+         let handle2 = second_side ? this[item.name + "2_handle"] : null;
+         if (handle2) {
+            item.second = JSROOT.extend({}, item);
+            return handle2.analyzeWheelEvent(event, dmin, item.second, test_ignore);
+         }
          let handle = this[item.name + "_handle"];
          if (handle) return handle.analyzeWheelEvent(event, dmin, item, test_ignore);
          console.error('Fail to analyze zooming event for ', item.name);
@@ -1257,12 +1263,22 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          this.analyzeMouseWheelEvent(evnt, this.swap_xy ? itemy : itemx, cur[0] / w, (cur[1] >=0) && (cur[1] <= h));
 
-         this.analyzeMouseWheelEvent(evnt, this.swap_xy ? itemx : itemy, 1 - cur[1] / h, (cur[0] >= 0) && (cur[0] <= w));
+         this.analyzeMouseWheelEvent(evnt, this.swap_xy ? itemx : itemy, 1 - cur[1] / h, (cur[0] >= 0) && (cur[0] <= w), cur[0] > w);
 
          this.zoom(itemx.min, itemx.max, itemy.min, itemy.max);
 
          if (itemx.changed) this.zoomChangedInteractive('x', true);
          if (itemy.changed) this.zoomChangedInteractive('y', true);
+
+         if (itemx.second) {
+            this.zoomSingle("x2", itemx.second.min, itemx.second.max);
+            if (itemx.second.changed) this.zoomChangedInteractive('x2', true);
+         }
+         if (itemy.second) {
+            this.zoomSingle("y2", itemy.second.min, itemy.second.max);
+            if (itemy.second.changed) this.zoomChangedInteractive('y2', true);
+         }
+
       },
 
       showContextMenu: function(kind, evnt, obj) {
