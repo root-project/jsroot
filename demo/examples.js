@@ -117,6 +117,7 @@ examples_main = {
      { name: "func", file: "fillrandom.root", item: "sqroot;1", title: "default drawing of TF1" },
      { name: "X+Y+", file: "fillrandom.root", item: "sqroot;1", opt: "X+Y+", title: "draw axes on other sides" },
      { name: "hist+func", opt: "", url: "?nobrowser&file=$$$fillrandom.root&item=h1f;1+sqroot;1" },
+     { name: "hist+func+Y+", opt: "", url: "?nobrowser&file=$$$fillrandom.root&item=[h1f;1,sqroot;1]&opt=[hist,y+]", title: "demo for second fully interactive Y axis" },
      { name: "canv", opt: "", file: "danilo6.root", item: "canvas;1" },
      { name: "sum", opt: "", file: "tf1new.root", item: "c1;1", title: "newest version of ROOT with new coding rules for the functions parameters" },
      { name: "ff2", file: "ff2.root", item: "c1Dia;1" },
