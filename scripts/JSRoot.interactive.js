@@ -870,13 +870,16 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                             Math.max(0, Math.min(h, pos[1])) ];
 
          this.zoom_origin = [0,0];
+         this.zoom_second = false;
 
          if ((pos[0] < 0) || (pos[0] > w)) {
+            this.zoom_second = (pos[0] > w) && this.y2_handle;
             this.zoom_kind = 3; // only y
             this.zoom_origin[1] = this.zoom_curr[1];
             this.zoom_curr[0] = w;
             this.zoom_curr[1] += 1;
          } else if ((pos[1] < 0) || (pos[1] > h)) {
+            this.zoom_second = (pos[1] < 0) && this.x2_handle;
             this.zoom_kind = 2; // only x
             this.zoom_origin[0] = this.zoom_curr[0];
             this.zoom_curr[0] += 1;
@@ -977,21 +980,32 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             }
 
             let xmin, xmax, ymin, ymax, isany = false,
-                idx = this.swap_xy ? 1 : 0, idy = 1 - idx;
+                idx = this.swap_xy ? 1 : 0, idy = 1 - idx,
+                namex = "x", namey = "y";
 
             if (changed[idx] && (Math.abs(this.zoom_curr[idx] - this.zoom_origin[idx]) > 10)) {
-               xmin = Math.min(this.revertAxis("x", this.zoom_origin[idx]), this.revertAxis("x", this.zoom_curr[idx]));
-               xmax = Math.max(this.revertAxis("x", this.zoom_origin[idx]), this.revertAxis("x", this.zoom_curr[idx]));
+               if (this.zoom_second && (this.zoom_kind == 2)) namex = "x2";
+               xmin = Math.min(this.revertAxis(namex, this.zoom_origin[idx]), this.revertAxis(namex, this.zoom_curr[idx]));
+               xmax = Math.max(this.revertAxis(namex, this.zoom_origin[idx]), this.revertAxis(namex, this.zoom_curr[idx]));
                isany = true;
             }
 
             if (changed[idy] && (Math.abs(this.zoom_curr[idy] - this.zoom_origin[idy]) > 10)) {
-               ymin = Math.min(this.revertAxis("y", this.zoom_origin[idy]), this.revertAxis("y", this.zoom_curr[idy]));
-               ymax = Math.max(this.revertAxis("y", this.zoom_origin[idy]), this.revertAxis("y", this.zoom_curr[idy]));
+               if (this.zoom_second && (this.zoom_kind == 3)) namey = "y2";
+               ymin = Math.min(this.revertAxis(namey, this.zoom_origin[idy]), this.revertAxis(namey, this.zoom_curr[idy]));
+               ymax = Math.max(this.revertAxis(namey, this.zoom_origin[idy]), this.revertAxis(namey, this.zoom_curr[idy]));
                isany = true;
             }
 
-            if (isany) {
+            if (namex == "x2") {
+               this.zoomChangedInteractive(namex, true);
+               this.zoomSingle(namex, xmin, xmax);
+               kind = 0;
+            } else if (namey == "y2") {
+               this.zoomChangedInteractive(namey, true);
+               this.zoomSingle(namey, ymin, ymax);
+               kind = 0;
+            } else if (isany) {
                this.zoomChangedInteractive("x", true);
                this.zoomChangedInteractive("y", true);
                this.zoom(xmin, xmax, ymin, ymax);
