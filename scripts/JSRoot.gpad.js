@@ -2111,9 +2111,31 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return this['zoom_'+axis+'min'] !== this['zoom_'+axis+'max'];
    }
 
-   /** @summary Unzoom speicied axes
+   /** @summary Unzoom speicified axes
      * @returns {Promise} with boolean flag if zooming changed */
    TFramePainter.prototype.unzoom = function(dox, doy, doz) {
+      if (dox == "x2") {
+         if (!this.x2_handle || (this.zoom_x2min === this.zoom_x2max))
+            return Promise.resolve(false);
+
+         this.zoom_x2min = this.zoom_x2max = 0;
+         return this.interactiveRedraw("pad", "zoom").then(() => {
+            this.zoomChangedInteractive("x2", "unzoom");
+            return true;
+         });
+      }
+
+      if (dox == "y2") {
+         if (!this.y2_handle || (this.zoom_y2min === this.zoom_y2max))
+            return Promise.resolve(false);
+
+         this.zoom_y2min = this.zoom_y2max = 0;
+         return this.interactiveRedraw("pad", "zoom").then(() => {
+            this.zoomChangedInteractive("y2", "unzoom");
+            return true;
+         });
+      }
+
       if (typeof dox === 'undefined') { dox = doy = doz = true; } else
       if (typeof dox === 'string') { doz = dox.indexOf("z") >= 0; doy = dox.indexOf("y") >= 0; dox = dox.indexOf("x") >= 0; }
 

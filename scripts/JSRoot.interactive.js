@@ -1024,18 +1024,24 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       mouseDoubleClick: function(evnt) {
          evnt.preventDefault();
-         let m = d3.pointer(evnt, this.getFrameSvg().node());
+         let m = d3.pointer(evnt, this.getFrameSvg().node()),
+             fw = this.getFrameWidth(), fh = this.getFrameHeight();
          this.clearInteractiveElements();
 
-         let valid_x = (m[0] >= 0) && (m[0] <= this.getFrameWidth()),
-             valid_y = (m[1] >= 0) && (m[1] <= this.getFrameHeight());
+         let valid_x = (m[0] >= 0) && (m[0] <= fw),
+             valid_y = (m[1] >= 0) && (m[1] <= fh);
 
          if (valid_x && valid_y && this._dblclick_handler)
             if (this.processFrameClick({ x: m[0], y: m[1] }, true)) return;
 
          let kind = "xyz";
-         if (!valid_x) kind = this.swap_xy ? "x" : "y"; else
-         if (!valid_y) kind = this.swap_xy ? "y" : "x";
+         if (!valid_x) {
+            kind = this.swap_xy ? "x" : "y";
+            if ((m[0] > fw) && this[kind+"2_handle"]) kind += "2"; // let unzoom second axis
+         } else if (!valid_y) {
+            kind = this.swap_xy ? "y" : "x";
+            if ((m[1] < 0) && this[kind+"2_handle"]) kind += "2"; // let unzoom second axis
+         }
          this.unzoom(kind).then(changed => {
             if (changed) return;
             let pp = this.getPadPainter(), rect = this.getFrameRect();
