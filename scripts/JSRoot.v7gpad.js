@@ -1637,53 +1637,54 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return value.toPrecision(4);
    }
 
+   /** @summary Set axix range */
+   RFramePainter.prototype._setAxisRange = function(prefix, vmin, vmax) {
+      let nmin = prefix + "min", nmax = prefix + "max";
+      if (this[nmin] != this[nmax]) return;
+      let min = this.v7EvalAttr(prefix + "_min"),
+          max = this.v7EvalAttr(prefix + "_max");
+
+      if (min !== undefined) vmin = min;
+      if (max !== undefined) vmax = max;
+
+      if (vmin < vmax) {
+         this[nmin] = vmin;
+         this[nmax] = vmax;
+      }
+
+      let nzmin = "zoom_" + prefix + "min", nzmax = "zoom_" + prefix + "max";
+
+      if ((this[nzmin] == this[nzmax]) && !this.zoomChangedInteractive(prefix)) {
+         min = this.v7EvalAttr(prefix + "_zoommin");
+         max = this.v7EvalAttr(prefix + "_zoommax");
+
+         if ((min !== undefined) || (max !== undefined)) {
+            this[nzmin] = (min === undefined) ? this[nmin] : min;
+            this[nzmax] = (max === undefined) ? this[nmax] : max;
+         }
+      }
+   }
+
    /** @summary Set axes ranges for drawing, check configured attributes if range already specified */
-   RFramePainter.prototype.setAxesRanges = function(xaxis, xmin, xmax, yaxis, ymin, ymax, zaxis, zmin, zmax, second_x, second_y) {
+   RFramePainter.prototype.setAxesRanges = function(xaxis, xmin, xmax, yaxis, ymin, ymax, zaxis, zmin, zmax) {
+      if (this.axes_drawn) return;
+      this.xaxis = xaxis;
+      this._setAxisRange("x", xmin, xmax);
+      this.yaxis = yaxis;
+      this._setAxisRange("y", ymin, ymax);
+      this.zaxis = zaxis;
+      this._setAxisRange("z", zmin, zmax);
+   }
 
-      let checkAxis = (prefix, vmin, vmax) => {
-         let nmin = prefix + "min", nmax = prefix + "max";
-         if (this[nmin] != this[nmax]) return;
-         let min = this.v7EvalAttr(prefix + "_min"),
-             max = this.v7EvalAttr(prefix + "_max");
-
-         if (min !== undefined) vmin = min;
-         if (max !== undefined) vmax = max;
-
-         if (vmin < vmax) {
-            this[nmin] = vmin;
-            this[nmax] = vmax;
-         }
-
-         let nzmin = "zoom_" + prefix + "min", nzmax = "zoom_" + prefix + "max";
-
-         if ((this[nzmin] == this[nzmax]) && !this.zoomChangedInteractive(prefix)) {
-            min = this.v7EvalAttr(prefix + "_zoommin");
-            max = this.v7EvalAttr(prefix + "_zoommax");
-
-            if ((min !== undefined) || (max !== undefined)) {
-               this[nzmin] = (min === undefined) ? this[nmin] : min;
-               this[nzmax] = (max === undefined) ? this[nmax] : max;
-            }
-         }
-      };
-
-      if (second_x || second_y) {
-         if (second_x) {
-            this.xaxis2 = xaxis;
-            checkAxis("x2", xmin, xmax);
-         }
-         if (second_y) {
-            this.yaxis2 = yaxis;
-            checkAxis("y2", ymin, ymax);
-         }
-      } else {
-         if (this.axes_drawn) return;
-         this.xaxis = xaxis;
-         checkAxis("x", xmin, xmax);
-         this.yaxis = yaxis;
-         checkAxis("y", ymin, ymax);
-         this.zaxis = zaxis;
-         checkAxis("z", zmin, zmax);
+   /** @summary Set second axes ranges */
+   RFramePainter.prototype.setAxes2Ranges = function(second_x, xaxis, xmin, xmax, second_y, yaxis, ymin, ymax) {
+      if (second_x) {
+         this.xaxis2 = xaxis;
+         this._setAxisRange("x2", xmin, xmax);
+      }
+      if (second_y) {
+         this.yaxis2 = yaxis;
+         this._setAxisRange("y2", ymin, ymax);
       }
    }
 

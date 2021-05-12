@@ -2299,44 +2299,48 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
     /** @summary Draw axes for histogram
       * @desc axes can be drawn only for main histogram */
    THistPainter.prototype.drawAxes = function() {
-      console.log('drawing axes', this.options.AxisPos);
-
-      let fp = this.getFramePainter(), second_x = false, second_y = false;
+      let fp = this.getFramePainter();
       if (!fp) return Promise.resolve(false);
-
-      if (!this.isMainPainter()) {
-         second_x = (this.options.Axis > 0) && ((this.options.Axis % 10) == 1);
-         second_y = (this.options.Axis >= 10);
-         if (fp.hasDrawnAxes(second_x, second_y))
-            return Promise.resolve(false);
-      }
 
       let histo = this.getHisto();
 
       // artificially add y range to display axes
       if (this.ymin === this.ymax) this.ymax += 1;
 
-      fp.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, 0, 0, second_x, second_y);
+      if (!this.isMainPainter()) {
+         let opts = {
+            second_x: (this.options.Axis >= 10),
+            second_y: (this.options.Axis > 0) && ((this.options.Axis % 10) == 1)
+         };
 
-      if (!this.isMainPainter())
-         return Promise.resolve(false);
+         if ((!opts.second_x && !opts.second_y) || fp.hasDrawnAxes(opts.second_x, opts.second_y))
+            return Promise.resolve(false);
 
-      fp.createXY({ ndim: this.getDimension(),
-                    check_pad_range: this.check_pad_range,
-                    zoom_ymin: this.zoom_ymin,
-                    zoom_ymax: this.zoom_ymax,
-                    ymin_nz: this.ymin_nz,
-                    swap_xy: (this.options.BarStyle >= 20),
-                    reverse_x: this.options.RevX,
-                    reverse_y: this.options.RevY,
-                    Proj: this.options.Proj,
-                    extra_y_space: this.options.Text && (this.options.BarStyle > 0) });
-      delete this.check_pad_range;
+         fp.setAxes2Ranges(opts.second_x, histo.fXaxis, this.xmin, this.xmax, opts.second_y, histo.fYaxis, this.ymin, this.ymax);
 
-      if (this.options.Same) return Promise.resolve(false);
+         fp.createXY2(opts);
 
-      return fp.drawAxes(false, this.options.Axis < 0, (this.options.Axis < 0),
-                         this.options.AxisPos, this.options.Zscale);
+         return fp.drawAxes2();
+      } else {
+         fp.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, 0, 0);
+
+         fp.createXY({ ndim: this.getDimension(),
+                       check_pad_range: this.check_pad_range,
+                       zoom_ymin: this.zoom_ymin,
+                       zoom_ymax: this.zoom_ymax,
+                       ymin_nz: this.ymin_nz,
+                       swap_xy: (this.options.BarStyle >= 20),
+                       reverse_x: this.options.RevX,
+                       reverse_y: this.options.RevY,
+                       Proj: this.options.Proj,
+                       extra_y_space: this.options.Text && (this.options.BarStyle > 0) });
+         delete this.check_pad_range;
+
+         if (this.options.Same) return Promise.resolve(false);
+
+         return fp.drawAxes(false, this.options.Axis < 0, (this.options.Axis < 0),
+                            this.options.AxisPos, this.options.Zscale);
+      }
    }
 
    /** @summary Toggle histogram title drawing

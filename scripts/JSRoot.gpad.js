@@ -1032,21 +1032,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Configure frame axes ranges */
-   TFramePainter.prototype.setAxesRanges = function(xaxis, xmin, xmax, yaxis, ymin, ymax, zaxis, zmin, zmax, second_x, second_y) {
-      if (second_x || second_y) {
-         if (second_x) {
-            this.x2axis = xaxis;
-            this.x2min = xmin;
-            this.x2max = xmax;
-         }
-         if (second_y) {
-            this.y2axis = yaxis;
-            this.y2min = ymin;
-            this.y2max = ymax;
-         }
-         return;
-      }
-
+   TFramePainter.prototype.setAxesRanges = function(xaxis, xmin, xmax, yaxis, ymin, ymax, zaxis, zmin, zmax) {
       this.ranges_set = true;
 
       this.xaxis = xaxis;
@@ -1062,12 +1048,28 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.zmax = zmax;
    }
 
+   /** @summary Configure frame axes ranges */
+   TFramePainter.prototype.setAxes2Ranges = function(second_x, xaxis, xmin, xmax, second_y, yaxis, ymin, ymax) {
+      if (second_x) {
+         this.x2axis = xaxis;
+         this.x2min = xmin;
+         this.x2max = xmax;
+      }
+      if (second_y) {
+         this.y2axis = yaxis;
+         this.y2min = ymin;
+         this.y2max = ymax;
+      }
+   }
+
    /** @summary Retuns associated axis object */
    TFramePainter.prototype.getAxis = function(name) {
       switch(name) {
          case "x": return this.xaxis;
          case "y": return this.yaxis;
          case "z": return this.zaxis;
+         case "x2": return this.x2axis;
+         case "y2": return this.y2axis;
       }
       return null;
    }
@@ -1231,6 +1233,76 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.y_handle.assignFrameMembers(this,"y");
 
       this.setRootPadRange(pad);
+   }
+
+   /** @summary Create x,y objects for drawing of second axes
+     * @private */
+   TFramePainter.prototype.createXY2 = function(opts) {
+
+      if (!opts) opts = {};
+
+      this.reverse_x2 = opts.reverse_x || false;
+      this.reverse_y2 = opts.reverse_y || false;
+
+      this.logx2 = this.logy2 = 0;
+
+      let w = this.getFrameWidth(), h = this.getFrameHeight(),
+          pp = this.getPadPainter(),
+          pad = pp.getRootPad();
+
+      if (opts.second_x) {
+         this.scale_x2min = this.x2min;
+         this.scale_x2max = this.x2max;
+      }
+
+      if (opts.second_y) {
+         this.scale_y2min = this.y2min;
+         this.scale_y2max = this.y2max;
+      }
+
+      if (opts.extra_y_space && opts.second_y) {
+         let log_scale = this.swap_xy ? pad.fLogx : pad.fLogy;
+         if (log_scale && (this.scale_y2max > 0))
+            this.scale_y2max = Math.exp(Math.log(this.scale_y2max)*1.1);
+         else
+            this.scale_y2max += (this.scale_y2max - this.scale_y2min)*0.1;
+      }
+
+      if ((this.zoom_x2min != this.zoom_x2max) && opts.second_x) {
+         this.scale_x2min = this.zoom_x2min;
+         this.scale_x2max = this.zoom_x2max;
+      }
+
+      if ((this.zoom_y2min != this.zoom_y2max) && opts.second_y) {
+         this.scale_y2min = this.zoom_y2min;
+         this.scale_y2max = this.zoom_y2max;
+      }
+
+      if (opts.second_x) {
+         this.x2_handle = new TAxisPainter(this.getDom(), this.x2axis, true);
+         this.x2_handle.setPadName(this.getPadName());
+
+         this.x2_handle.configureAxis("x2axis", this.x2min, this.x2max, this.scale_x2min, this.scale_x2max, this.swap_xy, this.swap_xy ? [0,h] : [0,w],
+                                         { reverse: this.reverse_x2,
+                                           log: this.swap_xy ? pad.fLogy : pad.fLogx,
+                                           logcheckmin: this.swap_xy,
+                                           logminfactor: 0.0001 });
+         this.x2_handle.assignFrameMembers(this,"x2");
+      }
+
+      if (opts.second_y) {
+         this.y2_handle = new TAxisPainter(this.getDom(), this.y2axis, true);
+         this.y2_handle.setPadName(this.getPadName());
+
+         this.y2_handle.configureAxis("y2axis", this.y2min, this.y2max, this.scale_y2min, this.scale_y2max, !this.swap_xy, this.swap_xy ? [0,w] : [0,h],
+                                         { reverse: this.reverse_y2,
+                                           log: this.swap_xy ? pad.fLogx : pad.fLogy,
+                                           logcheckmin: (opts.ndim < 2) || this.swap_xy,
+                                           log_min_nz: opts.ymin_nz && (opts.ymin_nz < 0.01*this.y2max) ? 0.3 * opts.ymin_nz : 0,
+                                           logminfactor: 3e-4 });
+
+         this.y2_handle.assignFrameMembers(this,"y2");
+      }
    }
 
    /** @summary Set selected range back to TPad object
@@ -1421,6 +1493,52 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return Promise.resolve(true);
    }
 
+   /** @summary draw second axes (if any)  */
+   TFramePainter.prototype.drawAxes2 = function() {
+
+      let layer = this.getFrameSvg().select(".axis_layer"),
+          w = this.getFrameWidth(),
+          h = this.getFrameHeight(),
+          pp = this.getPadPainter(),
+          pad = pp.getRootPad(true);
+
+      if (this.x2_handle) {
+         this.x2_handle.invert_side = true;
+         this.x2_handle.lbls_both_sides = false;
+         this.x2_handle.has_obstacle = false;
+      }
+
+      if (this.y2_handle) {
+         this.y2_handle.invert_side = true;
+         this.y2_handle.lbls_both_sides = false;
+      }
+
+      let draw_horiz = this.swap_xy ? this.y2_handle : this.x2_handle,
+          draw_vertical = this.swap_xy ? this.x2_handle : this.y2_handle;
+
+      if (draw_horiz || draw_vertical) {
+         let pp = this.getPadPainter();
+         if (pp && pp._fast_drawing) draw_horiz = draw_vertical = null;
+      }
+
+      let promise1 = Promise.resolve(true), promise2 = Promise.resolve(true);
+
+      if (draw_horiz)
+         promise1 = draw_horiz.drawAxis(layer, w, h,
+                                        draw_horiz.invert_side ? undefined : "translate(0," + h + ")",
+                                        pad && pad.fTickx ? -h : 0, false,
+                                        undefined, false);
+
+      if (draw_vertical)
+         promise2 = draw_vertical.drawAxis(layer, w, h,
+                                            draw_vertical.invert_side ? "translate(" + w + ",0)" : undefined,
+                                            pad && pad.fTicky ? w : 0, false,
+                                            draw_vertical.invert_side ? 0 : this._frame_x, false);
+
+      return Promise.all([promise1, promise2]);
+   }
+
+
    /** @summary Update frame attributes
      * @private */
    TFramePainter.prototype.updateAttributes = function(force) {
@@ -1501,6 +1619,21 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.z_handle.cleanup();
          delete this.z_handle;
       }
+
+      // these are drawing of second axes
+      delete this.grx2;
+      delete this.gry2;
+
+      if (this.x2_handle) {
+         this.x2_handle.cleanup();
+         delete this.x2_handle;
+      }
+
+      if (this.y2_handle) {
+         this.y2_handle.cleanup();
+         delete this.y2_handle;
+      }
+
    }
 
    /** @summary remove all axes drawings */
@@ -1508,6 +1641,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (this.x_handle) this.x_handle.removeG();
       if (this.y_handle) this.y_handle.removeG();
       if (this.z_handle) this.z_handle.removeG();
+      if (this.x2_handle) this.x2_handle.removeG();
+      if (this.y2_handle) this.y2_handle.removeG();
 
       let g = this.getG();
       if (g) {
