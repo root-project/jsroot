@@ -763,17 +763,20 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    }
 
    function drawFunction(divid, tf1, opt) {
-      let painter = new TF1Painter(divid, tf1);
-      let d = new JSROOT.DrawOptions(opt);
+      let painter = new TF1Painter(divid, tf1),
+          d = new JSROOT.DrawOptions(opt),
+          aopt = "AXIS";
+      d.check('SAME'); // just ignore same
       painter.nosave = d.check('NOSAVE');
-      let aopt = "AXIS";
-      if (d.check('X+')) aopt += "X+";
-      if (d.check('Y+')) aopt += "Y+";
+      if (d.check('X+')) { aopt += "X+"; painter.second_x = true; }
+      if (d.check('Y+')) { aopt += "Y+"; painter.second_y = true; }
       if (d.check('RX')) aopt += "RX";
       if (d.check('RY')) aopt += "RY";
 
+      console.log('draw opt', opt);
+
       return JSROOT.require("math").then(() => {
-         if (!painter.getMainPainter())
+         if (!painter.getMainPainter() || painter.second_x || painter.second_y)
             return JSROOT.draw(divid, painter.createDummyHisto(), aopt);
       }).then(() => {
          painter.addToPadPrimitives();

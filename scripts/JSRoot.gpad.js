@@ -1032,7 +1032,21 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Configure frame axes ranges */
-   TFramePainter.prototype.setAxesRanges = function(xaxis, xmin, xmax, yaxis, ymin, ymax, zaxis, zmin, zmax) {
+   TFramePainter.prototype.setAxesRanges = function(xaxis, xmin, xmax, yaxis, ymin, ymax, zaxis, zmin, zmax, second_x, second_y) {
+      if (second_x || second_y) {
+         if (second_x) {
+            this.x2axis = xaxis;
+            this.x2min = xmin;
+            this.x2max = xmax;
+         }
+         if (second_y) {
+            this.y2axis = yaxis;
+            this.y2min = ymin;
+            this.y2max = ymax;
+         }
+         return;
+      }
+
       this.ranges_set = true;
 
       this.xaxis = xaxis;
@@ -1322,6 +1336,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return value.toPrecision(4);
    }
 
+   /** @summary Identify if requested axes are drawn
+     * @desc Checks if x/y axes are drawn. Also if second side is already there */
+   TFramePainter.prototype.hasDrawnAxes = function(second_x, second_y) {
+      return !second_x && !second_y ? this.axes_drawn : false;
+   }
+
    /** @summary draw axes, return Promise which ready when drawing is completed  */
    TFramePainter.prototype.drawAxes = function(shrink_forbidden,
                                                disable_x_draw, disable_y_draw,
@@ -1329,7 +1349,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       this.cleanAxesDrawings();
 
-      if ((this.xmin==this.xmax) || (this.ymin==this.ymax))
+      if ((this.xmin == this.xmax) || (this.ymin == this.ymax))
          return Promise.resolve(false);
 
       if (AxisPos === undefined) AxisPos = 0;

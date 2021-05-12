@@ -1,7 +1,7 @@
 # JSROOT changelog
 
 ## Changes in dev
-1. Fully deprecate old JSRootCore.js script, one have to use  JSRoot.core.js
+1. Fully deprecate old JSRootCore.js script, one have to use JSRoot.core.js
 2. Upgrade three.js to r127
 3. Upgrade d3.js to 6.7.0
 4. Support X+, Y+, RX, RY draw options for TF1

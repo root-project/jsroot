@@ -2299,18 +2299,28 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
     /** @summary Draw axes for histogram
       * @desc axes can be drawn only for main histogram */
    THistPainter.prototype.drawAxes = function() {
-      if (!this.isMainPainter())
-         return Promise.resolve(false);
+      console.log('drawing axes', this.options.AxisPos);
 
-      let fp = this.getFramePainter();
+      let fp = this.getFramePainter(), second_x = false, second_y = false;
       if (!fp) return Promise.resolve(false);
+
+      if (!this.isMainPainter()) {
+         second_x = (this.options.Axis > 0) && ((this.options.Axis % 10) == 1);
+         second_y = (this.options.Axis >= 10);
+         if (fp.hasDrawnAxes(second_x, second_y))
+            return Promise.resolve(false);
+      }
 
       let histo = this.getHisto();
 
-      // artifically add y range to display axes
+      // artificially add y range to display axes
       if (this.ymin === this.ymax) this.ymax += 1;
 
-      fp.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, 0, 0);
+      fp.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, 0, 0, second_x, second_y);
+
+      if (!this.isMainPainter())
+         return Promise.resolve(false);
+
       fp.createXY({ ndim: this.getDimension(),
                     check_pad_range: this.check_pad_range,
                     zoom_ymin: this.zoom_ymin,
