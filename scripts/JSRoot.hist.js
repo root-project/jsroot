@@ -2309,8 +2309,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       if (!this.isMainPainter()) {
          let opts = {
-            second_x: (this.options.Axis >= 10),
-            second_y: (this.options.Axis > 0) && ((this.options.Axis % 10) == 1)
+            second_x: (this.options.AxisPos >= 10),
+            second_y: (this.options.AxisPos % 10) == 1
          };
 
          if ((!opts.second_x && !opts.second_y) || fp.hasDrawnAxes(opts.second_x, opts.second_y))
