@@ -641,7 +641,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       let min = 100000, best = -1, bin;
 
-      for(let n=0; n<this.bins.length; ++n) {
+      for(let n = 0; n < this.bins.length; ++n) {
          bin = this.bins[n];
          let dist = Math.abs(bin.grx - pnt.x);
          if (dist < min) { min = dist; best = n; }
@@ -708,11 +708,13 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       this.createAttFill({ attr: tf1, kind: 1 });
       this.fillatt.used = false;
 
+      let funcs = fp.getGrFuncs(this.second_x, this.second_y);
+
       // first calculate graphical coordinates
-      for(let n=0; n<this.bins.length; ++n) {
+      for(let n = 0; n < this.bins.length; ++n) {
          let bin = this.bins[n];
-         bin.grx = fp.grx(bin.x);
-         bin.gry = fp.gry(bin.y);
+         bin.grx = funcs.grx(bin.x);
+         bin.gry = funcs.gry(bin.y);
       }
 
       if (this.bins.length > 2) {
@@ -772,8 +774,6 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       if (d.check('Y+')) { aopt += "Y+"; painter.second_y = true; }
       if (d.check('RX')) aopt += "RX";
       if (d.check('RY')) aopt += "RY";
-
-      console.log('draw opt', opt);
 
       return JSROOT.require("math").then(() => {
          if (!painter.getMainPainter() || painter.second_x || painter.second_y)

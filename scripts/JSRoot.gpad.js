@@ -1305,6 +1305,15 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
    }
 
+   /** @summary Return functions to create x/y points based on coordinates
+     * @private */
+   TFramePainter.prototype.getGrFuncs = function(second_x, second_y) {
+      return {
+         grx: second_x && this.grx2 ? this.grx2 : this.grx,
+         gry: second_y && this.gry2 ? this.gry2 : this.gry
+      };
+   }
+
    /** @summary Set selected range back to TPad object
      * @private */
    TFramePainter.prototype.setRootPadRange = function(pad, is3d) {
