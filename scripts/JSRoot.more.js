@@ -522,12 +522,12 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
           gxmin = 0, gxmax = 0, tf1 = this.getObject();
 
       if (main && !ignore_zoom)  {
-         if (main.zoom_xmin !== main.zoom_xmax) {
-            gxmin = main.zoom_xmin;
-            gxmax = main.zoom_xmax;
+         if (this.second_x && main.scale_x2min !== main.scale_x2max) {
+            gxmin = main.scale_x2min;
+            gxmax = main.scale_x2max;
          } else {
-            gxmin = main.xmin;
-            gxmax = main.xmax;
+            gxmin = main.scale_xmin;
+            gxmax = main.scale_xmax;
          }
       }
 
