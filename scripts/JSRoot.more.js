@@ -2420,10 +2420,12 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
    TGraphPolarPainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
 
+   /** @summary Redraw TGraphPolar */
    TGraphPolarPainter.prototype.redraw = function() {
       this.drawGraphPolar();
    }
 
+   /** @summary Decode options for drawing TGraphPolar */
    TGraphPolarPainter.prototype.decodeOptions = function(opt) {
 
       let d = new JSROOT.DrawOptions(opt || "L");
@@ -2441,6 +2443,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       this.storeDrawOpt(opt);
    }
 
+   /** @summary Drawing TGraphPolar */
    TGraphPolarPainter.prototype.drawGraphPolar = function() {
       let graph = this.getObject(),
           main = this.getMainPainter();
@@ -2517,7 +2520,6 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          this.draw_g.append("svg:path")
                .attr("d",mpath)
                .call(this.markeratt.func);
-
    }
 
    /** @summary Create polargram object
@@ -2760,19 +2762,20 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       let cleanup = false,
           spline = this.getObject(),
           main = this.getFramePainter(),
+          funcs = main ? main.getGrFuncs(this.options.second_x, this.options.second_y) : null,
           xx, yy, knot = null, indx = 0;
 
-      if ((pnt === null) || !spline || !main) {
+      if ((pnt === null) || !spline || !funcs) {
          cleanup = true;
       } else {
-         xx = main.revertAxis("x", pnt.x);
+         xx = funcs.revertAxis("x", pnt.x);
          indx = this.findX(xx);
          knot = spline.fPoly[indx];
          yy = this.eval(knot, xx);
 
          if ((indx < spline.fN-1) && (Math.abs(spline.fPoly[indx+1].fX-xx) < Math.abs(xx-knot.fX))) knot = spline.fPoly[++indx];
 
-         if (Math.abs(main.grx(knot.fX) - pnt.x) < 0.5*this.knot_size) {
+         if (Math.abs(funcs.grx(knot.fX) - pnt.x) < 0.5*this.knot_size) {
             xx = knot.fX; yy = knot.fY;
          } else {
             knot = null;
@@ -2799,11 +2802,11 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       let res = { name: this.getObject().fName,
                   title: this.getObject().fTitle,
-                  x: main.grx(xx),
-                  y: main.gry(yy),
+                  x: funcs.grx(xx),
+                  y: funcs.gry(yy),
                   color1: this.lineatt.color,
                   lines: [],
-                  exact: (knot !== null) || (Math.abs(main.gry(yy) - pnt.y) < radius) };
+                  exact: (knot !== null) || (Math.abs(funcs.gry(yy) - pnt.y) < radius) };
 
       res.changed = gbin.property("current_xx") !== xx;
       res.menu = res.exact;
@@ -2816,8 +2819,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       let name = this.getObjectHint();
       if (name.length > 0) res.lines.push(name);
-      res.lines.push("x = " + main.axisAsText("x", xx));
-      res.lines.push("y = " + main.axisAsText("y", yy));
+      res.lines.push("x = " + funcs.axisAsText("x", xx));
+      res.lines.push("y = " + funcs.axisAsText("y", yy));
       if (knot !== null) {
          res.lines.push("knot = " + indx);
          res.lines.push("B = " + jsrp.floatToString(knot.fB, JSROOT.gStyle.fStatFormat));
@@ -2832,10 +2835,13 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       return res;
    }
 
+   /** @summary Redraw object
+     * @private */
    TSplinePainter.prototype.redraw = function() {
 
       let spline = this.getObject(),
           pmain = this.getFramePainter(),
+          funcs = pmain ? pmain.getGrFuncs(this.options.second_x, this.options.second_y) : null,
           w = pmain.getFrameWidth(),
           h = pmain.getFrameHeight();
 
@@ -2867,12 +2873,12 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
             let yy = this.eval(spline.fPoly[indx], xx);
 
-            bins.push({ x: xx, y: yy, grx: pmain.grx(xx), gry: pmain.gry(yy) });
+            bins.push({ x: xx, y: yy, grx: funcs.grx(xx), gry: funcs.gry(yy) });
          }
 
          let h0 = h;  // use maximal frame height for filling
-         if ((pmain.hmin!==undefined) && (pmain.hmin>=0)) {
-            h0 = Math.round(pmain.gry(0));
+         if ((pmain.hmin!==undefined) && (pmain.hmin >= 0)) {
+            h0 = Math.round(funcs.gry(0));
             if ((h0 > h) || (h0 < 0)) h0 = h;
          }
 
@@ -2898,9 +2904,9 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
          for (let n=0; n<spline.fPoly.length; n++) {
             let knot = spline.fPoly[n],
-                grx = pmain.grx(knot.fX);
+                grx = funcs.grx(knot.fX);
             if ((grx > -this.knot_size) && (grx < w + this.knot_size)) {
-               let gry = pmain.gry(knot.fY);
+               let gry = funcs.gry(knot.fY);
                if ((gry > -this.knot_size) && (gry < h + this.knot_size)) {
                   path += this.markeratt.create(grx, gry);
                }
@@ -2912,7 +2918,6 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
                        .attr("d", path)
                        .call(this.markeratt.func);
       }
-
    }
 
    /** @summary Checks if it makes sense to zoom inside specified axis range */
@@ -2926,17 +2931,29 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       return true;
    }
 
+   /** @summary Decode options for TSpline drawing */
    TSplinePainter.prototype.decodeOptions = function(opt) {
       let d = new JSROOT.DrawOptions(opt);
 
       if (!this.options) this.options = {};
 
+      let has_main = !!this.getMainPainter();
+
       JSROOT.extend(this.options, {
          Same: d.check('SAME'),
          Line: d.check('L'),
          Curve: d.check('C'),
-         Mark: d.check('P')
+         Mark: d.check('P'),
+         Hopt: "AXIS",
+         second_x: false,
+         second_y: false
       });
+
+      if (!this.options.Line && !this.options.Curve && !this.options.Mark)
+         this.options.Curve = true;
+
+      if (d.check("X+")) { this.options.Hopt += "X+"; this.options.second_x = has_main; }
+      if (d.check("Y+")) { this.options.Hopt += "Y+"; this.options.second_y = has_main; }
 
       this.storeDrawOpt(opt);
    }
@@ -2945,14 +2962,14 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       let painter = new TSplinePainter(divid, spline);
       painter.decodeOptions(opt);
 
-      let promise = Promise.resolve();
-      if (!painter.getMainPainter()) {
-         if (painter.options.Same) {
+      let promise = Promise.resolve(), no_main = !painter.getMainPainter();
+      if (no_main || painter.options.second_x || painter.options.second_y) {
+         if (painter.options.Same && no_main) {
             console.warn('TSpline painter requires histogram to be drawn');
             return null;
          }
          let histo = painter.createDummyHisto();
-         promise = JSROOT.draw(divid, histo, "AXIS");
+         promise = JSROOT.draw(divid, histo, painter.options.Hopt);
       }
 
       return promise.then(() => {

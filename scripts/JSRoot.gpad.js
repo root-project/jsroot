@@ -1326,6 +1326,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if ((name == "x") && this.use_x2) name = "x2";
             if ((name == "y") && this.use_y2) name = "y2";
             return this.fp.revertAxis(name, v);
+         },
+         axisAsText: function(name, v) {
+            if ((name == "x") && this.use_x2) name = "x2";
+            if ((name == "y") && this.use_y2) name = "y2";
+            return this.fp.axisAsText(name, v);
          }
       };
    }
