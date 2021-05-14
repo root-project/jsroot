@@ -1306,7 +1306,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Return functions to create x/y points based on coordinates
-     * @desc
+     * @desc In default case returns frame painter itself
      * @private */
    TFramePainter.prototype.getGrFuncs = function(second_x, second_y) {
       let use_x2 = second_x && this.grx2,

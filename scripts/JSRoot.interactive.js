@@ -1265,7 +1265,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          evnt.stopPropagation();
       },
 
-       /** @summary Analyze zooming with mouse wheel */
+      /** @summary Analyze zooming with mouse wheel */
       analyzeMouseWheelEvent: function(event, item, dmin, test_ignore, second_side) {
          // if there is second handle, use it
          let handle2 = second_side ? this[item.name + "2_handle"] : null;
@@ -1296,6 +1296,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return false;
       },
 
+      /** @summary Handles mouse wheel event */
       mouseWheel: function(evnt) {
          evnt.stopPropagation();
 
@@ -1328,8 +1329,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       },
 
       showContextMenu: function(kind, evnt, obj) {
-
-         console.log('kind', kind)
 
          // ignore context menu when touches zooming is ongoing
          if (('zoom_kind' in this) && (this.zoom_kind > 100)) return;

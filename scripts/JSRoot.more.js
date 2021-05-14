@@ -837,8 +837,9 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       JSROOT.extend(this.options, {
          Line: 0, Curve: 0, Rect: 0, Mark: 0, Bar: 0, OutRange: 0,  EF:0, Fill: 0, NoOpt: 0,
-         MainError: 1, Ends: 1, Axis: "", PadStats: false, original: opt, second_x: false, second_y: false
-       });
+         MainError: 1, Ends: 1, Axis: "", PadStats: false, original: opt,
+         second_x: false, second_y: false
+      });
 
       let res = this.options;
 
@@ -846,6 +847,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       res.PadStats = d.check("USE_PAD_STATS");
       let hopt = "", checkhopt = ["USE_PAD_TITLE", "LOGXY", "LOGX", "LOGY", "LOGZ", "GRIDXY", "GRIDX", "GRIDY", "TICKXY", "TICKX", "TICKY"];
       checkhopt.forEach(name => { if (d.check(name)) hopt += ";" + name; });
+      if (d.check('XAXIS_', true)) hopt += ";XAXIS_" + d.part;
+      if (d.check('YAXIS_', true)) hopt += ";YAXIS_" + d.part;
 
       if (d.empty()) {
          res.original = has_main ? "lp" : "alp";
