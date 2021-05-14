@@ -5573,7 +5573,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    TH2Painter.prototype.drawPolyBinsColor = function() {
       let histo = this.getObject(),
           pmain = this.getFramePainter(),
-          funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y)
+          funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
           h = pmain.getFrameHeight(),
           colPaths = [], textbins = [],
           colindx, cmd, bin, item,
