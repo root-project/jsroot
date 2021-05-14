@@ -2709,8 +2709,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
      * @returns {Promise} for ready
      * @private */
    THistPainter.prototype.addInteractivity = function() {
-      let fp = this.isMainPainter() ? this.getFramePainter() : null;
-      return fp ? fp.addInteractivity() : Promise.resolve(false);
+      let ismain = this.isMainPainter(), second_axis = (this.options.AxisPos > 0);
+      let fp = ismain || second_axis ? this.getFramePainter() : null;
+      return fp ? fp.addInteractivity(!ismain && second_axis) : Promise.resolve(false);
    }
 
    /** @summary Invoke dialog to enter and modify user range

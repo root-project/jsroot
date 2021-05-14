@@ -700,12 +700,26 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             setTimeout(this.processFrameTooltipEvent.bind(this, hintsg.property('last_point'), null), 10);
       },
 
-      addInteractivity: function() {
+      addInteractivity: function(for_second_axes) {
 
          let pp = this.getPadPainter(),
              svg = this.getFrameSvg();
          if ((pp && pp._fast_drawing) || svg.empty())
             return Promise.resolve(this);
+
+         if (for_second_axes) {
+
+            // add extra handlers for second axes
+            let svg_x2 = svg.selectAll(".x2axis_container"),
+                svg_y2 = svg.selectAll(".y2axis_container");
+            if (JSROOT.settings.ContextMenu) {
+               svg_x2.on("contextmenu", evnt => this.showContextMenu("x2", evnt));
+               svg_y2.on("contextmenu", evnt => this.showContextMenu("y2", evnt));
+            }
+            svg_x2.on("mousemove", evnt => this.showAxisStatus("x2", evnt));
+            svg_y2.on("mousemove", evnt => this.showAxisStatus("y2", evnt));
+            return Promise.resolve(this);
+         }
 
          let svg_x = svg.selectAll(".xaxis_container"),
              svg_y = svg.selectAll(".yaxis_container");
@@ -1314,6 +1328,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       },
 
       showContextMenu: function(kind, evnt, obj) {
+
+         console.log('kind', kind)
 
          // ignore context menu when touches zooming is ongoing
          if (('zoom_kind' in this) && (this.zoom_kind > 100)) return;
