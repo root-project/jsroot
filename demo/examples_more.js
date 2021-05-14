@@ -145,6 +145,7 @@ examples_more = {
       { name: "rose_json", json: "rose.json.gz", title: "TASImage with PNG and binary data, see tutorials/image/rose_image.C macro" }
    ],
    Misc : [
+     { name: "spline_axes", url: "?nobrowser&file=$$$tutorials_graphs.root&item=[splines_test/[1],splines_test/[9]]&opt=[,x+y+]", title: "Draw TF1 and TSpline, last uses second axes" },
      { name: "io", url: "?file=$$$iotest.root&layout=grid4x3&items=[ex1,ex2,ex3,ex4,ex5,ex6,ex7,ex8,ex9,ex10,clones,map]&opts=[inspect,inspect,inspect,inspect,inspect,inspect,inspect,inspect,inspect,inspect,inspect,inspect]", title: "Different I/O test classes" },
      { name: "io56", file: "fitLinear56.root", item: "fitLinear6", title: "file with two version from ROOT 5/6 of same object" },
      { name: "userio", url: "?file=$$$amore.root&item=moH1F_0;1&load=$$$amore.js", title : "Example of custom streamer and custom draw function (AMORE)" },
