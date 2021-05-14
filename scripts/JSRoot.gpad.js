@@ -1315,10 +1315,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return {
          use_x2: use_x2,
          grx: use_x2 ? this.grx2 : this.grx,
+         x_handle: use_x2 ? this.x2_handle : this.x_handle,
          scale_xmin: use_x2 ? this.scale_x2min : this.scale_xmin,
          scale_xmax: use_x2 ? this.scale_x2max : this.scale_xmax,
          use_y2: use_y2,
          gry: use_y2 ? this.gry2 : this.gry,
+         y_handle: use_y2 ? this.y2_handle : this.y_handle,
          scale_ymin: use_y2 ? this.scale_y2min : this.scale_ymin,
          scale_ymax: use_y2 ? this.scale_y2max : this.scale_ymax,
          fp: this,

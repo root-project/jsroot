@@ -677,9 +677,10 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       let name = this.getObjectHint();
       if (name.length > 0) res.lines.push(name);
 
-      let pmain = this.getFramePainter();
-      if (pmain)
-         res.lines.push("x = " + pmain.axisAsText("x",bin.x) + " y = " + pmain.axisAsText("y",bin.y));
+      let pmain = this.getFramePainter(),
+          funcs = pmain ? pmain.getGrFuncs(this.second_x, this.second_y) : null;
+      if (funcs)
+         res.lines.push("x = " + funcs.axisAsText("x",bin.x) + " y = " + funcs.axisAsText("y",bin.y));
 
       return res;
    }
@@ -1075,19 +1076,20 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    /** @summary Returns tooltip for specified bin
      * @private */
    TGraphPainter.prototype.getTooltips = function(d) {
-      let pmain = this.getFramePainter(), lines = [];
+      let pmain = this.getFramePainter(), lines = [],
+          funcs = pmain ? pmain.getGrFuncs(this.options.second_x, this.options.second_y) : null;
 
       lines.push(this.getObjectHint());
 
-      if (d && pmain) {
-         lines.push("x = " + pmain.axisAsText("x", d.x));
-         lines.push("y = " + pmain.axisAsText("y", d.y));
+      if (d && funcs) {
+         lines.push("x = " + funcs.axisAsText("x", d.x));
+         lines.push("y = " + funcs.axisAsText("y", d.y));
 
-         if (this.options.Errors && (pmain.x_handle.kind=='normal') && ('exlow' in d) && ((d.exlow!=0) || (d.exhigh!=0)))
-            lines.push("error x = -" + pmain.axisAsText("x", d.exlow) + "/+" + pmain.axisAsText("x", d.exhigh));
+         if (this.options.Errors && (funcs.x_handle.kind=='normal') && ('exlow' in d) && ((d.exlow!=0) || (d.exhigh!=0)))
+            lines.push("error x = -" + funcs.axisAsText("x", d.exlow) + "/+" + funcs.axisAsText("x", d.exhigh));
 
-         if ((this.options.Errors || (this.options.EF > 0)) && (pmain.y_handle.kind=='normal') && ('eylow' in d) && ((d.eylow!=0) || (d.eyhigh!=0)))
-            lines.push("error y = -" + pmain.axisAsText("y", d.eylow) + "/+" + pmain.axisAsText("y", d.eyhigh));
+         if ((this.options.Errors || (this.options.EF > 0)) && (funcs.y_handle.kind=='normal') && ('eylow' in d) && ((d.eylow!=0) || (d.eyhigh!=0)))
+            lines.push("error y = -" + funcs.axisAsText("y", d.eylow) + "/+" + funcs.axisAsText("y", d.eyhigh));
       }
       return lines;
    }
