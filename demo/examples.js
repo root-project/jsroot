@@ -67,7 +67,8 @@ examples_main = {
      { name: "box", json: "hbox.json.gz", opt: "box", title: "boxes, area proportional to bin content" },
      { name: "box1", json: "hbox.json.gz", opt: "box1", title: "boxes, area proportional to bin content" },
      { name: "ctx_cty", opt: "col_ctx_cty", file: "QAresults.root", item: "PIDqa/PIDqa1/ITS/hNsigmaP_ITS_helium-3;1", title: "center title x (ctx) and center title y (cty)" },
-     { name: "otx_oty", opt: "col_otx_oty", file: "QAresults.root", item: "PIDqa/PIDqa1/ITS/hNsigmaP_ITS_triton;1", title: "opposite title x (otx) and opposite title y (oty)" }
+     { name: "otx_oty", opt: "col_otx_oty", file: "QAresults.root", item: "PIDqa/PIDqa1/ITS/hNsigmaP_ITS_triton;1", title: "opposite title x (otx) and opposite title y (oty)" },
+     { name: "twoscales", url: "?nobrowser&file=$$$histpainter6.root&item=[draw_boxsame/[1],draw_boxsame/[2]]&opt=[box,box;x+y+;xaxis_red;yaxis_red]", title: "interactive second X and Y scale for second histogram" }
    ],
    TH2Poly : [
       { name: "honeycomb", file: "th2poly.root", item: "honeycomb;1", opt: "l,col" },

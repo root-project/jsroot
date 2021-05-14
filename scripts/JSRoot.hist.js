@@ -2649,9 +2649,12 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
      * @private */
    THistPainter.prototype.getSelectIndex = function(axis, side, add) {
       let indx = 0,
-          main = this.getFramePainter(),
           nbin = this['nbins'+axis] || 0,
-          taxis = this.getAxis(axis),
+          taxis = this.getAxis(axis);
+
+      if (this.options.second_x && axis == "x") axis = "x2";
+      if (this.options.second_y && axis == "y") axis = "y2";
+      let main = this.getFramePainter(),
           min = main ? main['zoom_' + axis + 'min'] : 0,
           max = main ? main['zoom_' + axis + 'max'] : 0;
 
@@ -5833,7 +5836,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             absz = Math.abs(binz);
             if ((absz === 0) || (absz < absmin)) continue;
 
-            zdiff = uselogz ? ((absz>0) ? Math.log(absz) - logmin : 0) : (absz - absmin);
+            zdiff = uselogz ? ((absz > 0) ? Math.log(absz) - logmin : 0) : (absz - absmin);
             // area of the box should be proportional to absolute bin content
             zdiff = 0.5 * ((zdiff < 0) ? 1 : (1 - Math.sqrt(zdiff * xyfactor)));
             // avoid oversized bins
@@ -5853,7 +5856,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
             res += "M"+xx+","+yy + "v"+hh + "h"+ww + "v-"+hh + "z";
 
-            if ((binz<0) && (this.options.BoxStyle === 10))
+            if ((binz < 0) && (this.options.BoxStyle === 10))
                cross += "M"+xx+","+yy + "l"+ww+","+hh + "M"+(xx+ww)+","+yy + "l-"+ww+","+hh;
 
             if ((this.options.BoxStyle === 11) && (ww>5) && (hh>5)) {
