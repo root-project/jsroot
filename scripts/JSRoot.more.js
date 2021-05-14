@@ -522,13 +522,9 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
           gxmin = 0, gxmax = 0, tf1 = this.getObject();
 
       if (main && !ignore_zoom)  {
-         if (this.second_x && main.scale_x2min !== main.scale_x2max) {
-            gxmin = main.scale_x2min;
-            gxmax = main.scale_x2max;
-         } else {
-            gxmin = main.scale_xmin;
-            gxmax = main.scale_xmax;
-         }
+         let gr = main.getGrFuncs(this.second_x, this.second_y);
+         gxmin = gr.scale_xmin;
+         gxmax = gr.scale_xmax;
       }
 
       if ((tf1.fSave.length > 0) && !this.nosave) {

@@ -1310,7 +1310,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    TFramePainter.prototype.getGrFuncs = function(second_x, second_y) {
       return {
          grx: second_x && this.grx2 ? this.grx2 : this.grx,
-         gry: second_y && this.gry2 ? this.gry2 : this.gry
+         scale_xmin: second_x && this.grx2 ? this.scale_x2min : this.scale_xmin,
+         scale_xmax: second_x && this.grx2 ? this.scale_x2max : this.scale_xmax,
+         gry: second_y && this.gry2 ? this.gry2 : this.gry,
+         scale_ymin: second_y && this.gry2 ? this.scale_y2min : this.scale_ymin,
+         scale_ymax: second_y && this.gry2 ? this.scale_y2max : this.scale_ymax
       };
    }
 
