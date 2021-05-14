@@ -2331,7 +2331,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          fp.createXY2(opts);
 
-         return fp.drawAxes2();
+         return fp.drawAxes2(opts.second_x, opts.second_y);
       } else {
          fp.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, 0, 0);
 
