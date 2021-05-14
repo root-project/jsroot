@@ -1308,13 +1308,25 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Return functions to create x/y points based on coordinates
      * @private */
    TFramePainter.prototype.getGrFuncs = function(second_x, second_y) {
+      let use_x2 = second_x && this.grx2,
+          use_y2 = second_y && this.gry2;
+      if (!use_x2 && !use_y2) return this;
+
       return {
-         grx: second_x && this.grx2 ? this.grx2 : this.grx,
-         scale_xmin: second_x && this.grx2 ? this.scale_x2min : this.scale_xmin,
-         scale_xmax: second_x && this.grx2 ? this.scale_x2max : this.scale_xmax,
-         gry: second_y && this.gry2 ? this.gry2 : this.gry,
-         scale_ymin: second_y && this.gry2 ? this.scale_y2min : this.scale_ymin,
-         scale_ymax: second_y && this.gry2 ? this.scale_y2max : this.scale_ymax
+         use_x2: use_x2,
+         grx: use_x2 ? this.grx2 : this.grx,
+         scale_xmin: use_x2 ? this.scale_x2min : this.scale_xmin,
+         scale_xmax: use_x2 ? this.scale_x2max : this.scale_xmax,
+         use_y2: use_y2,
+         gry: use_y2 ? this.gry2 : this.gry,
+         scale_ymin: use_y2 ? this.scale_y2min : this.scale_ymin,
+         scale_ymax: use_y2 ? this.scale_y2max : this.scale_ymax,
+         fp: this,
+         revertAxis: function(name, v) {
+            if ((name == "x") && this.use_x2) name = "x2";
+            if ((name == "y") && this.use_y2) name = "y2";
+            return this.fp.revertAxis(name, v);
+         }
       };
    }
 

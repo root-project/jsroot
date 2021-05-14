@@ -186,7 +186,8 @@ examples_main = {
      { name: "docu", file: "graph.root", layout: "vert333", items: ['c1','c47','c4','c48','c41','c42','c43','c44','c45'], title: "several canvas from TGraph documentation page" },
      { name: "excl", file: "tutorials_graphs.root", item: "exclusiongraph2", title: "Exclusion draw example, output of tutorials/graphs/exclusiongraph2.C" },
      { name: "plc", file: "tutorials_graphs.root", item: "graphpalettecolor", title: "Automatic set of graph colors, output of tutorials/graphs/graphpalettecolor.C" },
-     { name: "shade", file: "tutorials_graphs.root", item: "graphShade", title: "output of tutorials/graphs/graphShade.C" }
+     { name: "shade", file: "tutorials_graphs.root", item: "graphShade", title: "output of tutorials/graphs/graphShade.C" },
+     { name: "second_axis", url: "?nobrowser&file=$$$graph_twopad.root&item=[c1/pad1/[0],c1/pad2/[0]]&opt=[alp,ly+]", title: "two overlayed graphs with second Y axis" },
    ],
    TGraphErrors : [
      { opt:"", file: "graph.root", item: "GraphErrors;1" },
