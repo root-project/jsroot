@@ -1485,23 +1485,33 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (d.check('TICKX') && pad) pad.fTickx = 1;
       if (d.check('TICKY') && pad) pad.fTicky = 1;
 
-      if (d.check('FILL_', true)) {
-         if (d.partAsInt(1) > 0) {
-            this.histoFillColor = d.partAsInt();
-         } else {
-            for (let col=0;col<8;++col)
-               if (jsrp.getColor(col).toUpperCase() === d.part)
-                  this.histoFillColor = col;
-         }
+      let getColor = () => {
+         if (d.partAsInt(1) > 0)
+            return d.partAsInt();
+         for (let col = 0; col < 8; ++col)
+            if (jsrp.getColor(col).toUpperCase() === d.part)
+               return col;
+         return -1;
       }
+
+      if (d.check('FILL_', true)) {
+         let col = getColor();
+         if (col >= 0) this.histoFillColor = col;
+      }
+
       if (d.check('LINE_', true)) {
-         if (d.partAsInt(1) > 0) {
-            this.histoLineColor = jsrp.root_colors[d.partAsInt()];
-         } else {
-            for (let col = 0; col < 8; ++col)
-               if (jsrp.getColor(col).toUpperCase() === d.part)
-                  this.histoLineColor = d.part;
-         }
+         let col = getColor();
+         if (col >= 0) this.histoLineColor = jsrp.root_colors[col];
+      }
+
+      if (d.check('XAXIS_', true)) {
+         let col = getColor();
+         if (col >= 0) histo.fXaxis.fAxisColor = histo.fXaxis.fLabelColor = histo.fXaxis.fTitleColor = col;
+      }
+
+      if (d.check('YAXIS_', true)) {
+         let col = getColor();
+         if (col >= 0) histo.fYaxis.fAxisColor = histo.fYaxis.fLabelColor = histo.fYaxis.fTitleColor = col;
       }
 
       let has_main = painter ? !!painter.getMainPainter() : false;

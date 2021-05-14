@@ -28,7 +28,8 @@ examples_main = {
      { opt: "tickxy", title: "draw X and Y ticks also on opposite frame sides" },
      { opt: "inspect", asurl: true, file: "hsimple.root", item: "hpx;1", title: "universal object inspector, can be used for any class" },
      { name: "docu", file: "histpainter6.root", layout: "vert32", items: ["two_axis","draw_e1","draw_bar","draw_e34","draw_text"], title:"several TH1 examples from THistPainter documentation" },
-     { name: "twoscales", url: "?nobrowser&file=$$$tutorials_hist.root&item=[twoscales/[1],twoscales/[3]]&opt=[hist,Y+]", title: "using second Y scale to draw axis for second histogram" }
+     { name: "twoscales", url: "?nobrowser&file=$$$tutorials_hist.root&item=[twoscales/[1],twoscales/[3]]&opt=[hist,yaxis_red;line_red;y+]", title: "interactive second Y scale to draw axis for second histogram" },
+     { name: "twoscales2", url: "?nobrowser&file=$$$tutorials_hist.root&item=[transpad/pad1/[1],transpad/pad2/[0]]&opt=[hist,Y+;yaxis_red]", title: "interactive second Y scale to draw axis for second histogram" }
    ],
    TH2 : [
      { opt: "", file: "hsimple.root", item: "hpxpy;1" },
