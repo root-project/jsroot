@@ -2307,6 +2307,28 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Unzoom specified axes
      * @returns {Promise} with boolean flag if zoom is changed */
    RFramePainter.prototype.unzoom = function(dox, doy, doz) {
+      if (dox == "x2") {
+         if (!this.x2_handle || (this.zoom_x2min === this.zoom_x2max))
+            return Promise.resolve(false);
+
+         this.zoom_x2min = this.zoom_x2max = 0;
+         return this.interactiveRedraw("pad", "zoom").then(() => {
+            this.zoomChangedInteractive("x2", "unzoom");
+            return true;
+         });
+      }
+
+      if (dox == "y2") {
+         if (!this.y2_handle || (this.zoom_y2min === this.zoom_y2max))
+            return Promise.resolve(false);
+
+         this.zoom_y2min = this.zoom_y2max = 0;
+         return this.interactiveRedraw("pad", "zoom").then(() => {
+            this.zoomChangedInteractive("y2", "unzoom");
+            return true;
+         });
+      }
+
       if (typeof dox === 'undefined') { dox = doy = doz = true; } else
       if (typeof dox === 'string') { doz = dox.indexOf("z") >= 0; doy = dox.indexOf("y") >= 0; dox = dox.indexOf("x") >= 0; }
 
@@ -2367,7 +2389,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       // when fill and show context menu, remove all zooming
 
-      if ((kind=="x") || (kind=="y")) {
+      if ((kind=="x") || (kind=="y") || (kind=="x2") || (kind=="y2")) {
          let handle = this[kind+"_handle"];
          if (!handle) return false;
          menu.add("header: " + kind.toUpperCase() + " axis");
@@ -2439,14 +2461,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    /** @summary Add interactive functionality to the frame
     * @private */
-   RFramePainter.prototype.addInteractivity = function() {
+   RFramePainter.prototype.addInteractivity = function(for_second_axes) {
 
       if (JSROOT.batch_mode || (!JSROOT.settings.Zooming && !JSROOT.settings.ContextMenu))
          return Promise.resolve(true);
 
       return JSROOT.require(['interactive']).then(inter => {
          inter.FrameInteractive.assign(this);
-         return this.addInteractivity();
+         return this.addInteractivity(for_second_axes);
       });
    }
 
