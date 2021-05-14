@@ -266,8 +266,16 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       let main = this.getFramePainter();
       if (!main) return Promise.resolve(false);
 
-      if (!this.isMainPainter() || !this.draw_content)
-        return Promise.resolve(true);
+      if (!this.draw_content)
+         return Promise.resolve(true);
+
+      if (!this.isMainPainter()) {
+         if (!this.options.second_x && !this.options.second_y)
+            return Promise.resolve(true);
+
+         main.setAxes2Ranges(this.options.second_x, this.getAxis("x"), this.xmin, this.xmax, this.options.second_y, this.getAxis("y"), this.ymin, this.ymax);
+         return main.drawAxes2(this.options.second_x, this.options.second_y);
+      }
 
       main.cleanupAxes();
       main.xmin = main.xmax = 0;
@@ -344,6 +352,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
             default: axis = obj.fAxes[0]; break;
          }
       } else if (histo && histo.fAxes) {
+         // console.log('histo fAxes', histo.fAxes, histo.fAxes._0)
          switch(name) {
             case "x": axis = histo.fAxes._0; break;
             case "y": axis = histo.fAxes._1; break;
@@ -1902,11 +1911,14 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
          let kind = painter.v7EvalAttr("kind", "hist"),
              sub = painter.v7EvalAttr("sub", 0),
+             has_main = !!painter.getMainPainter(),
              o = painter.options;
 
          o.Text = painter.v7EvalAttr("text", false);
          o.BarOffset = painter.v7EvalAttr("bar_offset", 0.);
          o.BarWidth = painter.v7EvalAttr("bar_width", 1.);
+         o.second_x = has_main && painter.v7EvalAttr("secondx", false);
+         o.second_y = has_main && painter.v7EvalAttr("secondy", false);
 
          switch(kind) {
             case "bar": o.Bar = true; o.BarStyle = sub; break;

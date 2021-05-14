@@ -46,6 +46,7 @@ examples_more = {
    v7 : [
       { name: "axes", opt: "", json: "v7/axes.json.gz", title: "RAxes drawings" },
       { name: "rh1", opt: "", json: "v7/rh1.json.gz", title: "draw_rh1.cxx macro output" },
+      { name: "rh1_twoaxes", opt: "", json: "v7/rh1_twoaxes.json.gz", title: "draw_rh1_twoaxes.cxx macro output" },
       { name: "rh2", opt: "", json: "v7/rh2.json.gz", title: "draw_rh2.cxx macro output" },
       { name: "rh2_colz", opt: "", json: "v7/rh2_colz.json.gz", title: "draw_rh2_colz.cxx macro output" },
       { name: "rh3", opt: "", json: "v7/rh3.json.gz", title: "draw_rh3.cxx macro output" },

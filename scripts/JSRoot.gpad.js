@@ -1048,7 +1048,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.zmax = zmax;
    }
 
-   /** @summary Configure frame axes ranges */
+   /** @summary Configure secondary frame axes ranges */
    TFramePainter.prototype.setAxes2Ranges = function(second_x, xaxis, xmin, xmax, second_y, yaxis, ymin, ymax) {
       if (second_x) {
          this.x2axis = xaxis;
