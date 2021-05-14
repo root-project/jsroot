@@ -3115,7 +3115,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
          }
 
          // exclude points with negative y when log scale is specified
-         if (pmain.logy && (pnt.whiskerm<=0)) continue;
+         if (funcs.logy && (pnt.whiskerm<=0)) continue;
 
          w = handle.grx[i+1] - handle.grx[i];
          w *= 0.66;
