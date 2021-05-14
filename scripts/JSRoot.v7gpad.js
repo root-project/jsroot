@@ -1832,6 +1832,42 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return Promise.all([promise1, promise2]);
    }
 
+   /** @summary Return functions to create x/y points based on coordinates
+     * @desc In default case returns frame painter itself
+     * @private */
+   RFramePainter.prototype.getGrFuncs = function(second_x, second_y) {
+      let use_x2 = second_x && this.grx2,
+          use_y2 = second_y && this.gry2;
+      if (!use_x2 && !use_y2) return this;
+
+      return {
+         use_x2: use_x2,
+         grx: use_x2 ? this.grx2 : this.grx,
+         logx: use_x2 ? this.logx2 : this.logx,
+         x_handle: use_x2 ? this.x2_handle : this.x_handle,
+         scale_xmin: use_x2 ? this.scale_x2min : this.scale_xmin,
+         scale_xmax: use_x2 ? this.scale_x2max : this.scale_xmax,
+         use_y2: use_y2,
+         gry: use_y2 ? this.gry2 : this.gry,
+         logy: use_y2 ? this.logy2 : this.logy,
+         y_handle: use_y2 ? this.y2_handle : this.y_handle,
+         scale_ymin: use_y2 ? this.scale_y2min : this.scale_ymin,
+         scale_ymax: use_y2 ? this.scale_y2max : this.scale_ymax,
+         swap_xy: this.swap_xy,
+         fp: this,
+         revertAxis: function(name, v) {
+            if ((name == "x") && this.use_x2) name = "x2";
+            if ((name == "y") && this.use_y2) name = "y2";
+            return this.fp.revertAxis(name, v);
+         },
+         axisAsText: function(name, v) {
+            if ((name == "x") && this.use_x2) name = "x2";
+            if ((name == "y") && this.use_y2) name = "y2";
+            return this.fp.axisAsText(name, v);
+         }
+      };
+   }
+
    /** @summary function called at the end of resize of frame
      * @desc Used to update attributes on the server
      * @private */
