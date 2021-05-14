@@ -2158,14 +2158,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          unzoom_z = (zmin === zmax) && (zmin === 0);
       }
 
-      let changed = false, changes = {},
+      let changed = false,
           r_x = "", r_y = "", r_z = "", is_any_check = false,
          req = {
-         _typename: "ROOT::Experimental::RFrame::RUserRanges",
-         values: [0, 0, 0, 0, 0, 0],
-         flags: [false, false, false, false, false, false]
-      };
-
+            _typename: "ROOT::Experimental::RFrame::RUserRanges",
+            values: [0, 0, 0, 0, 0, 0],
+            flags: [false, false, false, false, false, false]
+         };
 
       let checkZooming = (painter, force) => {
          if (!force && (typeof painter.canZoomInside != 'function')) return;
@@ -2177,8 +2176,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             this.zoom_xmax = xmax;
             changed = true; r_x = "0";
             zoom_x = false;
-            this.v7AttrChange(changes, "x_zoommin", xmin);
-            this.v7AttrChange(changes, "x_zoommax", xmax);
             req.values[0] = xmin; req.values[1] = xmax;
             req.flags[0] = req.flags[1] = true;
          }
@@ -2187,8 +2184,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             this.zoom_ymax = ymax;
             changed = true; r_y = "1";
             zoom_y = false;
-            this.v7AttrChange(changes, "y_zoommin", ymin);
-            this.v7AttrChange(changes, "y_zoommax", ymax);
             req.values[2] = ymin; req.values[3] = ymax;
             req.flags[2] = req.flags[3] = true;
          }
@@ -2197,8 +2192,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             this.zoom_zmax = zmax;
             changed = true; r_z = "2";
             zoom_z = false;
-            this.v7AttrChange(changes, "z_zoommin", zmin);
-            this.v7AttrChange(changes, "z_zoommax", zmax);
             req.values[4] = zmin; req.values[5] = zmax;
             req.flags[4] = req.flags[5] = true;
          }
@@ -2217,34 +2210,93 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (unzoom_x) {
             if (this.zoom_xmin !== this.zoom_xmax) { changed = true; r_x = "0"; }
             this.zoom_xmin = this.zoom_xmax = 0;
-            this.v7AttrChange(changes, "x_zoommin", null);
-            this.v7AttrChange(changes, "x_zoommax", null);
             req.values[0] = req.values[1] = -1;
          }
          if (unzoom_y) {
             if (this.zoom_ymin !== this.zoom_ymax) { changed = true; r_y = "1"; }
             this.zoom_ymin = this.zoom_ymax = 0;
-            this.v7AttrChange(changes, "y_zoommin", null);
-            this.v7AttrChange(changes, "y_zoommax", null);
             req.values[2] = req.values[3] = -1;
          }
          if (unzoom_z) {
             if (this.zoom_zmin !== this.zoom_zmax) { changed = true; r_z = "2"; }
             this.zoom_zmin = this.zoom_zmax = 0;
-            this.v7AttrChange(changes, "z_zoommin", null);
-            this.v7AttrChange(changes, "z_zoommax", null);
             req.values[4] = req.values[5] = -1;
          }
       }
+
+      if (!changed) return Promise.resolve(false);
 
       if (this.v7CommMode() == JSROOT.v7.CommMode.kNormal)
          this.v7SubmitRequest("zoom", { _typename: "ROOT::Experimental::RFrame::RZoomRequest", ranges: req });
 
       // this.v7SendAttrChanges(changes);
 
+      return this.interactiveRedraw("pad", "zoom" + r_x + r_y + r_z).then(() => true);
+   }
+
+   /** @summary Provide zooming of single axis
+     * @desc One can specify names like x/y/z but also second axis x2 or y2 */
+   RFramePainter.prototype.zoomSingle = function(name, vmin, vmax) {
+
+      let names = ["x","y","z","x2","y2"], indx = names.indexOf(name);
+
+      // disable zooming when axis conversion is enabled
+      if (this.projection || !this[name+"_handle"] || (indx < 0))
+         return Promise.resolve(false);
+
+      let zoom_v = (vmin !== vmax), unzoom_v = false;
+
+      if (zoom_v) {
+         let cnt = 0;
+         if (vmin <= this[name+"min"]) { vmin = this[name+"min"]; cnt++; }
+         if (vmax >= this[name+"max"]) { vmax = this[name+"max"]; cnt++; }
+         if (cnt === 2) { zoom_v = false; unzoom_v = true; }
+      } else {
+         unzoom_v = (vmin === vmax) && (vmin === 0);
+      }
+
+      let changed = false, is_any_check = false,
+          req = {
+             _typename: "ROOT::Experimental::RFrame::RUserRanges",
+             values: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+             flags: [false, false, false, false, false, false, false, false, false, false]
+          };
+
+      let checkZooming = (painter, force) => {
+         if (!force && (typeof painter.canZoomInside != 'function')) return;
+
+         is_any_check = true;
+
+         if (zoom_v && (force || painter.canZoomInside(name[0], vmin, vmax))) {
+            this["zoom_" + name + "min"] = vmin;
+            this["zoom_" + name + "max"] = vmax;
+            changed = true;
+            zoom_v = false;
+            req.values[indx*2] = vmin; req.values[indx*2+1] = vmax;
+            req.flags[indx*2] = req.flags[indx*2+1] = true;
+         }
+      }
+
+      // first process zooming (if any)
+      if (zoom_v)
+         this.forEachPainter(painter => checkZooming(painter));
+
+      // force zooming when no any other painter can verify zoom range
+      if (!is_any_check && this.self_drawaxes)
+         checkZooming(null, true);
+
+      if (unzoom_v) {
+         if (this["zoom_" + name + "min"] !== this["zoom_" + name + "max"]) changed = true;
+         this["zoom_" + name + "min"] = this["zoom_" + name + "max"] = 0;
+         req.values[indx*2] = req.values[indx*2+1] = -1;
+      }
+
       if (!changed) return Promise.resolve(false);
 
-      return this.interactiveRedraw("pad", "zoom" + r_x + r_y + r_z).then(() => true);
+      if (this.v7CommMode() == JSROOT.v7.CommMode.kNormal)
+         this.v7SubmitRequest("zoom", { _typename: "ROOT::Experimental::RFrame::RZoomRequest", ranges: req });
+
+      return this.interactiveRedraw("pad", "zoom" + indx).then(() => true);
    }
 
    /** @summary Checks if specified axis zoomed */
