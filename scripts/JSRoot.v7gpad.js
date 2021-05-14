@@ -1679,11 +1679,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Set second axes ranges */
    RFramePainter.prototype.setAxes2Ranges = function(second_x, xaxis, xmin, xmax, second_y, yaxis, ymin, ymax) {
       if (second_x) {
-         this.xaxis2 = xaxis;
+         this.x2axis = xaxis;
          this._setAxisRange("x2", xmin, xmax);
       }
       if (second_y) {
-         this.yaxis2 = yaxis;
+         this.y2axis = yaxis;
          this._setAxisRange("y2", ymin, ymax);
       }
    }
@@ -1760,15 +1760,16 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       let draw_horiz = this.swap_xy ? this.y_handle : this.x_handle,
           draw_vertical = this.swap_xy ? this.x_handle : this.y_handle,
-          pp = this.getPadPainter(),
-          disable_axis_draw = (pp && pp._fast_drawing) ? true : false;
+          pp = this.getPadPainter(), draw_promise;
 
-      if (!disable_axis_draw) {
+      if (pp && pp._fast_drawing) {
+         draw_promise = Promise.resolve(true)
+      } else {
          let promise1 = draw_horiz.drawAxis(layer, (sidex > 0) ? `translate(0,${h})` : "", sidex);
 
          let promise2 = draw_vertical.drawAxis(layer, (sidey > 0) ? `translate(0,${h})` : `translate(${w},${h})`, sidey);
 
-         return Promise.all([promise1, promise2]).then(() => {
+         draw_promise = Promise.all([promise1, promise2]).then(() => {
 
             let again = [];
             if (ticksx > 1)
@@ -1778,16 +1779,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                again.push(draw_vertical.drawAxisOtherPlace(layer, (sidey < 0) ? `translate(0,${h})` : `translate(${w},${h})`, -sidey, ticksy == 2));
 
              return Promise.all(again);
-         }).then(() => {
-             this.drawGrids();
-             this.axes_drawn = true;
-             return true;
-         });
+         }).then(() => this.drawGrids());
       }
 
-      this.axes_drawn = true;
-
-      return Promise.resolve(true);
+      return draw_promise.then(() => {
+         this.axes_drawn = true;
+         return true;
+      });
    }
 
    /** @summary function called at the end of resize of frame

@@ -1306,6 +1306,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Return functions to create x/y points based on coordinates
+     * @desc
      * @private */
    TFramePainter.prototype.getGrFuncs = function(second_x, second_y) {
       let use_x2 = second_x && this.grx2,
@@ -1475,14 +1476,17 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.y_handle.lbls_both_sides = !this.y_handle.invert_side && pad && (pad.fTicky > 1); // labels on both sides
 
       let draw_horiz = this.swap_xy ? this.y_handle : this.x_handle,
-          draw_vertical = this.swap_xy ? this.x_handle : this.y_handle;
+          draw_vertical = this.swap_xy ? this.x_handle : this.y_handle,
+          draw_promise;
 
       if (!disable_x_draw || !disable_y_draw) {
          let pp = this.getPadPainter();
          if (pp && pp._fast_drawing) disable_x_draw = disable_y_draw = true;
       }
 
-      if (!disable_x_draw || !disable_y_draw) {
+      if (disable_x_draw && disable_y_draw) {
+         draw_promise = Promise.resolve(true);
+      } else {
 
          let can_adjust_frame = !shrink_forbidden && JSROOT.settings.CanAdjustFrame;
 
@@ -1496,12 +1500,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                                                pad && pad.fTicky ? w : 0, disable_y_draw,
                                                draw_vertical.invert_side ? 0 : this._frame_x, can_adjust_frame);
 
-         return Promise.all([promise1, promise2]).then(() => {
+         draw_promise = Promise.all([promise1, promise2]).then(() => {
 
             this.drawGrids();
 
             if (can_adjust_frame) {
-
                let shrink = 0., ypos = draw_vertical.position;
 
                if ((-0.2*w < ypos) && (ypos < 0)) {
@@ -1517,15 +1520,15 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                   this.redraw();
                   return this.drawAxes(true);
                }
-
-               this.axes_drawn = true;
-               return true; // finished
             }
          });
       }
 
-      this.axes_drawn = true;
-      return Promise.resolve(true);
+      return draw_promise.then(() => {
+         if (!shrink_forbidden)
+            this.axes_drawn = true;
+         return true;
+      });
    }
 
    /** @summary draw second axes (if any)  */
