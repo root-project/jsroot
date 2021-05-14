@@ -420,7 +420,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       let ismain =  this.isMainPainter(),
           second_axis = this.options.second_x || this.options.second_y,
           fp = ismain || second_axis ? this.getFramePainter() : null;
-      return fp ? fp.addInteractivity(!ismain && second_axis) : Promise.resolve(false);
+      return fp ? fp.addInteractivity(!ismain && second_axis) : Promise.resolve(true);
    }
 
    /** @summary Process item reply */
