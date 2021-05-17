@@ -1920,7 +1920,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          menu.add("Unzoom Y", () => this.unzoom("y"));
       if (this.zoom_zmin !== this.zoom_zmax)
          menu.add("Unzoom Z", () => this.unzoom("z"));
-      menu.add("Unzoom all", () => this.unzoom("xyz"));
+      menu.add("Unzoom all", () => this.unzoom("all"));
 
       if (pad) {
          menu.addchk(pad.fLogx, "SetLogx", () => this.toggleAxisLog("x"));
@@ -2143,8 +2143,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Unzoom speicified axes
      * @returns {Promise} with boolean flag if zooming changed */
    TFramePainter.prototype.unzoom = function(dox, doy, doz) {
+      if (dox == "all")
+         return this.unzoom("x2").then(() => this.unzoom("y2")).then(() => this.unzoom("xyz"));
+
       if ((dox == "x2") || (dox == "y2"))
-         return this.zoomSingle(dox, 0, 0);
+         return this.zoomSingle(dox, 0, 0).then(changed => {
+            if (changed) this.zoomChangedInteractive(dox, "unzoom");
+            return changed;
+         });
 
       if (typeof dox === 'undefined') { dox = doy = doz = true; } else
       if (typeof dox === 'string') { doz = dox.indexOf("z") >= 0; doy = dox.indexOf("y") >= 0; dox = dox.indexOf("x") >= 0; }
