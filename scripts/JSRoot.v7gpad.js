@@ -2393,12 +2393,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          menu.add("Unzoom Y", () => this.unzoom("y"));
       if (this.zoom_zmin !== this.zoom_zmax)
          menu.add("Unzoom Z", () => this.unzoom("z"));
+      if (this.zoom_x2min !== this.zoom_x2max)
+         menu.add("Unzoom X2", () => this.unzoom("x2"));
+      if (this.zoom_y2min !== this.zoom_y2max)
+         menu.add("Unzoom Y2", () => this.unzoom("y2"));
       menu.add("Unzoom all", () => this.unzoom("all"));
 
-      // menu.addchk(this.logx, "SetLogx", this.toggleAxisLog.bind(this,"x"));
-      // menu.addchk(this.logy, "SetLogy", this.toggleAxisLog.bind(this,"y"));
-      // if (this.getDimension() == 2)
-      //   menu.addchk(pad.fLogz, "SetLogz", this.toggleAxisLog.bind(main,"z"));
       menu.add("separator");
 
       menu.addchk(this.isTooltipAllowed(), "Show tooltips", () => this.setTooltipAllowed("toggle"));
