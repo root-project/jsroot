@@ -138,7 +138,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if (val == "auto") {
          let pp = this.getPadPainter();
-         if (pp && pp._auto_color_cnt !== undefined) {
+         if (pp && (pp._auto_color_cnt !== undefined)) {
             let pal = pp.getHistPalette();
             let cnt = pp._auto_color_cnt++, num = pp._num_primitives - 1;
             if (num < 2) num = 2;
@@ -2116,7 +2116,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    /** @summary function can be used for zooming into specified range
      * @desc if both limits for each axis 0 (like xmin==xmax==0), axis will be unzoomed
-    * @returns {Promise} with boolean flag if zoom operation was performed */
+     * @returns {Promise} with boolean flag if zoom operation was performed */
    RFramePainter.prototype.zoom = function(xmin, xmax, ymin, ymax, zmin, zmax) {
 
       // disable zooming when axis conversion is enabled
@@ -2228,8 +2228,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (this.v7CommMode() == JSROOT.v7.CommMode.kNormal)
          this.v7SubmitRequest("zoom", { _typename: "ROOT::Experimental::RFrame::RZoomRequest", ranges: req });
 
-      // this.v7SendAttrChanges(changes);
-
       return this.interactiveRedraw("pad", "zoom" + r_x + r_y + r_z).then(() => true);
    }
 
@@ -2306,27 +2304,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Unzoom specified axes
      * @returns {Promise} with boolean flag if zoom is changed */
    RFramePainter.prototype.unzoom = function(dox, doy, doz) {
-      if (dox == "x2") {
-         if (!this.x2_handle || (this.zoom_x2min === this.zoom_x2max))
-            return Promise.resolve(false);
-
-         this.zoom_x2min = this.zoom_x2max = 0;
-         return this.interactiveRedraw("pad", "zoom").then(() => {
-            this.zoomChangedInteractive("x2", "unzoom");
-            return true;
-         });
-      }
-
-      if (dox == "y2") {
-         if (!this.y2_handle || (this.zoom_y2min === this.zoom_y2max))
-            return Promise.resolve(false);
-
-         this.zoom_y2min = this.zoom_y2max = 0;
-         return this.interactiveRedraw("pad", "zoom").then(() => {
-            this.zoomChangedInteractive("y2", "unzoom");
-            return true;
-         });
-      }
+      if ((dox == "x2") || (dox == "y2"))
+         return this.zoomSingle(dox, 0, 0);
 
       if (typeof dox === 'undefined') { dox = doy = doz = true; } else
       if (typeof dox === 'string') { doz = dox.indexOf("z") >= 0; doy = dox.indexOf("y") >= 0; dox = dox.indexOf("x") >= 0; }
