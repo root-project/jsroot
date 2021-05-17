@@ -399,7 +399,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'jquery-ui'], (d3, $, jsrp) => {
         * @protected */
       addRAttrTextItems(fontHandler, opts, set_func) {
          if (!opts) opts = {};
-         this.addRColorMenu("color", fontHandler.color, sel => set_func({ name: "color_name", value: sel }));
+         this.addRColorMenu("color", fontHandler.color, sel => set_func({ name: "color", value: sel }));
          if (fontHandler.scaled)
             this.addSizeMenu("size", 0.01, 0.10, 0.01, fontHandler.size /fontHandler.scale, sz => set_func({ name: "size", value: sz }));
          else
