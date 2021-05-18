@@ -2049,15 +2049,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       } else {
          top_rect = this.draw_g.select("rect");
          main_svg = this.draw_g.select(".main_layer");
-
-         if (this.axes_drawn) {
-            let xmin = this.v7EvalAttr("x_zoommin"),
-                xmax = this.v7EvalAttr("x_zoommax"),
-                ymin = this.v7EvalAttr("y_zoommin"),
-                ymax = this.v7EvalAttr("y_zoommax");
-
-            console.log('TODO: RFrame zooming update', xmin, xmax, ymin, ymax);
-         }
       }
 
       this.axes_drawn = false;
