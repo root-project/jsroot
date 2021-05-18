@@ -1375,7 +1375,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
 
-   /** @summary grid can only be drawn by first painter */
+   /** @summary Draw axes grids
+     * @desc Called immediately after axes drawing */
    TFramePainter.prototype.drawGrids = function() {
 
       let layer = this.getFrameSvg().select(".grid_layer");
