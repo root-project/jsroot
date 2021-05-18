@@ -1740,11 +1740,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.x_handle.setPadName(this.getPadName());
       this.x_handle.snapid = this.snapid;
       this.x_handle.draw_swapside = (sidex < 0);
+      this.x_handle.draw_ticks = ticksx;
 
       this.y_handle = new RAxisPainter(this.getDom(), this, this.yaxis, "y_");
       this.y_handle.setPadName(this.getPadName());
       this.y_handle.snapid = this.snapid;
       this.y_handle.draw_swapside = (sidey < 0);
+      this.y_handle.draw_ticks = ticksy;
 
       this.z_handle = new RAxisPainter(this.getDom(), this, this.zaxis, "z_");
       this.z_handle.setPadName(this.getPadName());
@@ -1770,9 +1772,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (pp && pp._fast_drawing) {
          draw_promise = Promise.resolve(true)
       } else {
-         let promise1 = draw_horiz.drawAxis(layer, (sidex > 0) ? `translate(0,${h})` : "", sidex);
+         let promise1 = (ticksx > 0) ? draw_horiz.drawAxis(layer, (sidex > 0) ? `translate(0,${h})` : "", sidex) : true;
 
-         let promise2 = draw_vertical.drawAxis(layer, (sidey > 0) ? `translate(0,${h})` : `translate(${w},${h})`, sidey);
+         let promise2 = (ticksy > 0) ? draw_vertical.drawAxis(layer, (sidey > 0) ? `translate(0,${h})` : `translate(${w},${h})`, sidey) : true;
 
          draw_promise = Promise.all([promise1, promise2]).then(() => {
 
@@ -2427,6 +2429,22 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          menu.addchk(this.x_handle.draw_swapside, "Swap x", flag => this.changeFrameAttr("swapx", flag));
       if (this.y_handle && !this.y2_handle)
          menu.addchk(this.y_handle.draw_swapside, "Swap y", flag => this.changeFrameAttr("swapy", flag));
+      if (this.x_handle && !this.x2_handle) {
+         menu.add("sub:Ticks x");
+         menu.addchk(this.x_handle.draw_ticks == 0, "off", () => this.changeFrameAttr("ticksx", 0));
+         menu.addchk(this.x_handle.draw_ticks == 1, "normal", () => this.changeFrameAttr("ticksx", 1));
+         menu.addchk(this.x_handle.draw_ticks == 2, "ticks on both sides", () => this.changeFrameAttr("ticksx", 2));
+         menu.addchk(this.x_handle.draw_ticks == 3, "labels on both sides", () => this.changeFrameAttr("ticksx", 3));
+         menu.add("endsub:");
+       }
+      if (this.y_handle && !this.y2_handle) {
+         menu.add("sub:Ticks y");
+         menu.addchk(this.y_handle.draw_ticks == 0, "off", () => this.changeFrameAttr("ticksy", 0));
+         menu.addchk(this.y_handle.draw_ticks == 1, "normal", () => this.changeFrameAttr("ticksy", 1));
+         menu.addchk(this.y_handle.draw_ticks == 2, "ticks on both sides", () => this.changeFrameAttr("ticksy", 2));
+         menu.addchk(this.y_handle.draw_ticks == 3, "labels on both sides", () => this.changeFrameAttr("ticksy", 3));
+         menu.add("endsub:");
+       }
 
       menu.addAttributesMenu(this, alone ? "" : "Frame ");
       menu.add("separator");
