@@ -2465,16 +2465,16 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
      * @private */
    RFramePainter.prototype.showAxisStatus = function(axis_name, evnt) {
 
-      let taxis = null, hint_name = axis_name, hint_title = "TAxis",
+      let taxis = null, hint_name = axis_name, hint_title = "axis",
           m = d3.pointer(evnt, this.getFrameSvg().node()), id = (axis_name=="x") ? 0 : 1;
 
-      if (taxis) { hint_name = taxis.fName; hint_title = taxis.fTitle || "histogram TAxis object"; }
+      if (taxis) { hint_name = taxis.fName; hint_title = taxis.fTitle || "axis object"; }
 
       if (this.swap_xy) id = 1-id;
 
       let axis_value = this.revertAxis(axis_name, m[id]);
 
-      this.showObjectStatus(hint_name, hint_title, axis_name + " : " + this.axisAsText(axis_name, axis_value), m[0]+","+m[1]);
+      this.showObjectStatus(hint_name, hint_title, axis_name + " : " + this.axisAsText(axis_name, axis_value), Math.round(m[0])+","+Math.round(m[1]));
    }
 
    /** @summary Add interactive keys handlers
