@@ -1739,10 +1739,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.x_handle = new RAxisPainter(this.getDom(), this, this.xaxis, "x_");
       this.x_handle.setPadName(this.getPadName());
       this.x_handle.snapid = this.snapid;
+      this.x_handle.draw_swapside = (sidex < 0);
 
       this.y_handle = new RAxisPainter(this.getDom(), this, this.yaxis, "y_");
       this.y_handle.setPadName(this.getPadName());
       this.y_handle.snapid = this.snapid;
+      this.y_handle.draw_swapside = (sidey < 0);
 
       this.z_handle = new RAxisPainter(this.getDom(), this, this.zaxis, "z_");
       this.z_handle.setPadName(this.getPadName());
@@ -2421,6 +2423,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          menu.addchk(this.x_handle.draw_grid, "Grid x", flag => this.changeFrameAttr("gridx", flag));
       if (this.y_handle)
          menu.addchk(this.y_handle.draw_grid, "Grid y", flag => this.changeFrameAttr("gridy", flag));
+      if (this.x_handle && !this.x2_handle)
+         menu.addchk(this.x_handle.draw_swapside, "Swap x", flag => this.changeFrameAttr("swapx", flag));
+      if (this.y_handle && !this.y2_handle)
+         menu.addchk(this.y_handle.draw_swapside, "Swap y", flag => this.changeFrameAttr("swapy", flag));
 
       menu.addAttributesMenu(this, alone ? "" : "Frame ");
       menu.add("separator");
