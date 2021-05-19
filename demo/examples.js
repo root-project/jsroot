@@ -140,7 +140,8 @@ examples_main = {
      { name:"2d+3d", file: "mix2d3d.root", item: "Canvas;1", title: "Mixture of 2D and 3D drawings on the same canvas (work properly in Firefox and Chrome)" },
      { name: "big", file: "bigcanvas.root", item: "big", title: "100 histograms in subpads, for performance testing" },
      { name: "log2", file: "tutorials_graphs.root", item: "exclusiongraph2", opt: "log2", title: "log2 for both x and y axes" },
-     { name: "axes", file: "tutorials_graphs.root", item: "exclusiongraph2", opt: "ctx_oty_log2x", title: "Moving axes title ctx - center title x, oty - opposite title y, plus log2x option" }
+     { name: "axes", file: "tutorials_graphs.root", item: "exclusiongraph2", opt: "ctx_oty_log2x", title: "Moving axes title ctx - center title x, oty - opposite title y, plus log2x option" },
+     { name: "df104", file: "df104_HiggsToTwoPhotons.root", item: "c", opt: "", title: "Output produced by tutorials/dataframe/df104_HiggsToTwoPhotons.py macro" }
    ],
    TRatioPlot : [
       { name:"r1", file: "ratioplot.root", item: "ratioplot1;1", title: "Output of tutorial hist/ratioplot1.C" },
