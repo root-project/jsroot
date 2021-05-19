@@ -697,13 +697,17 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           ncols = legend.fNColumns,
           nrows = nlines;
 
-      if (ncols<2) ncols = 1; else { while ((nrows-1)*ncols >= nlines) nrows--; }
+      if (ncols < 2) {
+         ncols = 1;
+      } else {
+         while ((nrows-1)*ncols >= nlines) nrows--;
+      }
 
       function isEmpty(entry) {
          return !entry.fObject && !entry.fOption && (!entry.fLabel || (entry.fLabel == " "));
       }
 
-      if (ncols==1) {
+      if (ncols == 1) {
          for (let ii=0;ii<nlines;++ii)
             if (isEmpty(legend.fPrimitives.arr[ii])) nrows--;
       }
@@ -821,7 +825,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                        else if (!any_opt) pos_x = x0 + padding_x;
 
          if (leg.fLabel)
-            this.drawText({ align: "start", x: pos_x, y: pos_y, width: x0+column_width-pos_x-padding_x, height: step_y, text: leg.fLabel, color: tcolor });
+            this.drawText({ align: legend.fTextAlign, x: pos_x, y: pos_y, width: x0+column_width-pos_x-padding_x, height: step_y, text: leg.fLabel, color: tcolor });
       }
 
       // rescale after all entries are shown
@@ -1246,7 +1250,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             if (oldprim && oldprim.arr && pave.fPrimitives && pave.fPrimitives.arr && (oldprim.arr.length == pave.fPrimitives.arr.length)) {
                // try to sync object reference, new object does not displayed automatically
                // in ideal case one should use snapids in the entries
-               for (let k=0;k<oldprim.arr.length;++k) {
+               for (let k = 0; k < oldprim.arr.length; ++k) {
                   let oldobj = oldprim.arr[k].fObject, newobj = pave.fPrimitives.arr[k].fObject;
 
                   if (oldobj && newobj && oldobj._typename == newobj._typename && oldobj.fName == newobj.fName)
