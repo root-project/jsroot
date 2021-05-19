@@ -141,7 +141,8 @@ examples_main = {
      { name: "big", file: "bigcanvas.root", item: "big", title: "100 histograms in subpads, for performance testing" },
      { name: "log2", file: "tutorials_graphs.root", item: "exclusiongraph2", opt: "log2", title: "log2 for both x and y axes" },
      { name: "axes", file: "tutorials_graphs.root", item: "exclusiongraph2", opt: "ctx_oty_log2x", title: "Moving axes title ctx - center title x, oty - opposite title y, plus log2x option" },
-     { name: "df104", file: "df104_HiggsToTwoPhotons.root", item: "c", opt: "", title: "Output produced by tutorials/dataframe/df104_HiggsToTwoPhotons.py macro" }
+     { name: "df104", file: "df104_HiggsToTwoPhotons.root", item: "c", opt: "", title: "Output produced by tutorials/dataframe/df104_HiggsToTwoPhotons.py macro" },
+     { name: "df105", file: "df105_WBosonAnalysis.root", item: "c", opt: "", title: "Output produced by tutorials/dataframe/df105_WBosonAnalysis.py macro" }
    ],
    TRatioPlot : [
       { name:"r1", file: "ratioplot.root", item: "ratioplot1;1", title: "Output of tutorial hist/ratioplot1.C" },
