@@ -364,7 +364,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (typeof this.paveDrawFunc == 'function')
          promise = this.paveDrawFunc(width, height, arg);
 
-      if (JSROOT.batch_mode || (pt._typename=="TPave"))
+      if (JSROOT.batch_mode || (pt._typename == "TPave"))
          return promise;
 
       return promise.then(() => JSROOT.require(['interactive'])).then(inter => {
@@ -2072,6 +2072,21 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       this.createAttLine({ attr: histo, color0: this.options.histoLineColor });
    }
 
+   /** @summary Assign snapid for histo painter
+     * @desc Used to assign snapid also for functions painters
+     * @private */
+   THistPainter.prototype.setSnapId = function(snapid) {
+      this.snapid = snapid;
+
+      this.getPadPainter().forEachPainterInPad(objp => {
+         if (objp.child_painter_id === this.hist_painter_id) {
+            let obj = objp.getObject();
+            if (obj && obj.fName)
+               objp.snapid = snapid + "#func_" + obj.fName;
+         }
+       }, "objects");
+   }
+
    /** @summary Update histogram object
      * @param obj - new histogram instance
      * @param opt - new drawing option (optional)
@@ -2642,8 +2657,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       func.$histo = histo; // required to draw TF1 correctly
 
       return JSROOT.draw(this.getDom(), func, opt).then(painter => {
-         if (painter && (typeof painter == "object"))
+         if (painter && (typeof painter == "object")) {
             painter.child_painter_id = this.hist_painter_id;
+         }
+
          return this.drawNextFunction(indx+1);
       });
    }
