@@ -3169,13 +3169,19 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (snap.fKind === webSnapIds.kSubPad) // subpad
             return objpainter.redrawPadSnap(snap).then(() => this.drawNextSnap(lst, indx));
 
+         let promise;
+
          if (snap.fKind === webSnapIds.kObject) { // object itself
-            if (objpainter.updateObject(snap.fSnapshot, snap.fOption)) objpainter.redraw();
+            if (objpainter.updateObject(snap.fSnapshot, snap.fOption))
+               promise = objpainter.redraw();
          } else if (snap.fKind === webSnapIds.kSVG) { // update SVG
-            if (objpainter.updateObject(snap.fSnapshot)) objpainter.redraw();
+            if (objpainter.updateObject(snap.fSnapshot))
+               promise = objpainter.redraw();
          }
 
-         return this.drawNextSnap(lst, indx); // call next
+         if (!jsrp.isPromise(promise)) promise = Promise.resolve(true);
+
+         return promise.then(() => this.drawNextSnap(lst, indx)); // call next
       }
 
       // gStyle object

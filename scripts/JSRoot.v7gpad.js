@@ -3270,10 +3270,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                return this.drawNextSnap(lst, indx);
             });
 
-         if (objpainter.updateObject(snap.fDrawable || snap.fObject || snap, snap.fOption || ""))
-            objpainter.redraw();
+         let promise;
 
-         return this.drawNextSnap(lst, indx); // call next
+         if (objpainter.updateObject(snap.fDrawable || snap.fObject || snap, snap.fOption || ""))
+            promise = objpainter.redraw();
+
+         if (!jsrp.isPromise(promise)) promise = Promise.resolve(true);
+
+         return promise.then(() => this.drawNextSnap(lst, indx)); // call next
       }
 
       if (snap._typename == "ROOT::Experimental::RPadDisplayItem") { // subpad
