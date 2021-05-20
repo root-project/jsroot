@@ -2993,7 +2993,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if (showsubitems || sub.this_pad_name)
                res = sub.redraw(reason);
 
-            if (res && (typeof res == 'object') && (typeof res.then == 'function'))
+            if (jsrp.isPromise(res))
                return res.then(() => redrawNext(indx));
          }
          return Promise.resolve(true);

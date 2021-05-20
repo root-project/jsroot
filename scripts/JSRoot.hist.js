@@ -4545,6 +4545,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    /** @summary Redraw histogram
      * @private */
    TH1Painter.prototype.redraw = function(reason) {
+      console.log('Calling histogram redraw');
       return this.callDrawFunc(reason);
    }
 
