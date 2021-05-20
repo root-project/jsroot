@@ -3500,7 +3500,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          if (jsrp.getActivePad() === this) {
             let canp = this.getCanvPainter();
-
             if (canp) canp.producePadEvent("padredraw", this);
          }
 

@@ -3362,7 +3362,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       function MatchPrimitive(painters, primitives, class_name, obj_name) {
          let painter, primitive;
-         for (let k=0;k<painters.length;++k) {
+         for (let k = 0; k < painters.length; ++k) {
             if (painters[k].snapid === undefined) continue;
             if (!painters[k].matchObjectType(class_name)) continue;
             if (obj_name && (!painters[k].getObject() || (painters[k].getObject().fName !== obj_name))) continue;
@@ -3370,7 +3370,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             break;
          }
          if (!painter) return;
-         for (let k=0;k<primitives.length;++k) {
+         for (let k = 0;k < primitives.length; ++k) {
             if ((primitives[k].fKind !== 1) || !primitives[k].fSnapshot || (primitives[k].fSnapshot._typename !== class_name)) continue;
             if (obj_name && (primitives[k].fSnapshot.fName !== obj_name)) continue;
             primitive = primitives[k];
@@ -3388,7 +3388,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       MatchPrimitive(this.painters, snap.fPrimitives, "TPaveText", "title");
 
       // find and remove painters which no longer exists in the list
-      for (let k=0;k<this.painters.length;++k) {
+      for (let k = 0; k < this.painters.length; ++k) {
          let sub = this.painters[k];
          if ((sub.snapid===undefined) || sub.$secondary) continue; // look only for painters with snapid
 
@@ -3411,7 +3411,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (!isanyfound) {
          // TODO: maybe just remove frame painter?
          let fp = this.getFramePainter();
-         for (let k=0;k<this.painters.length;++k)
+         for (let k = 0;k < this.painters.length; ++k)
             if (fp !== this.painters[k])
                this.painters[k].cleanup();
          delete this.main_painter_ref;
@@ -3428,6 +3428,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       let prev_name = this.selectCurrentPad(this.this_pad_name);
 
       return this.drawNextSnap(snap.fPrimitives).then(() => {
+         // redraw secondaries like stat box
+         for (let k = 0; k < this.painters.length; ++k) {
+            let sub = this.painters[k];
+            if ((sub.snapid===undefined) || sub.$secondary)
+               sub.redraw();
+         }
+
          this.selectCurrentPad(prev_name);
          if (jsrp.getActivePad() === this) {
             let canp = this.getCanvPainter();
