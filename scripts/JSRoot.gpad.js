@@ -99,7 +99,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          this.func = d3.scaleLog().base((this.log == 2) ? 2 : 10).domain([smin,smax]);
       } else if (this.symlog) {
-         this.func = d3.scaleSymlog().constant(1e-4*Math.max(Math.abs(smin), Math.abs(smax))).domain([smin,smax]);
+         let v = Math.max(Math.abs(smin), Math.abs(smax));
+         if (Number.isInteger(this.symlog) && (this.symlog > 0))
+            v *= Math.pow(10,-1*this.symlog);
+         else
+            v *= 0.01;
+         this.func = d3.scaleSymlog().constant(v).domain([smin,smax]);
       } else {
          this.func = d3.scaleLinear().domain([smin,smax]);
       }

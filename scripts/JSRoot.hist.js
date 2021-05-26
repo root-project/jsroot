@@ -1416,7 +1416,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    /** @summary Reset hist draw options */
    THistDrawOptions.prototype.reset = function() {
       JSROOT.extend(this,
-            { Axis: 0, RevX: false, RevY: false, SymlogX: false, SymlogY: false,
+            { Axis: 0, RevX: false, RevY: false, SymlogX: 0, SymlogY: 0,
               Bar: false, BarStyle: 0, Curve: false,
               Hist: true, Line: false, Fill: false,
               Error: false, ErrorKind: -1, errorX: JSROOT.gStyle.fErrorX,
@@ -1476,8 +1476,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (d.check('NOTOOLTIP') && painter) painter.setTooltipAllowed(false);
       if (d.check('TOOLTIP') && painter) painter.setTooltipAllowed(true);
 
-      if (d.check("SYMLOGX")) this.SymlogX = true;
-      if (d.check("SYMLOGY")) this.SymlogY = true;
+      if (d.check("SYMLOGX", true)) this.SymlogX = d.partAsInt(0, 3);
+      if (d.check("SYMLOGY", true)) this.SymlogY = d.partAsInt(0, 3);
 
       let lx = false, ly = false;
       if (d.check('LOGXY')) lx = ly = true;
