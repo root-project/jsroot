@@ -390,7 +390,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.kind = "normal";
       this.vertical = vertical;
       this.log = false;
-      let _log = this.v7EvalAttr("log", 0);
+      let _log = this.v7EvalAttr("log", 0),
+          _symlog = this.v7EvalAttr("symlog", 0);
       this.reverse = opts.reverse || false;
 
       if (this.v7EvalAttr("time")) {
@@ -412,6 +413,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if (this.kind == 'time') {
          this.func = d3.scaleTime().domain([this.convertDate(smin), this.convertDate(smax)]);
+      } else if (_symlog && (_symlog > 0)) {
+         this.symlog = true;
+         this.func = d3.scaleSymlog().constant(_symlog).domain([smin,smax]);
       } else if (_log) {
          if (smax <= 0) smax = 1;
          if ((smin <= 0) || (smin >= smax))
