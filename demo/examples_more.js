@@ -28,7 +28,10 @@ examples_more = {
      { name: "lego_tf2", file: "https://root.cern/files/StressIOPluginsTestFiles/stress_5.root", item:"h2form", opt:"lego", title: "Combination of th2 an tf2 in 3D" },
      { name: "tut1", file: "tutorials_hist.root", layout: "grid2x2", items: ['thstack2palettecolor', 'reverseaxis', 'hlabels2', 'labels3'], opts: ['0lego1_pfc'], title: "Macro outputs from $ROOTSYS/tutorials/hist" },
      { name: "earth", file: "tutorials_graphics.root", item: 'earth',  title: "Earth projections, tutorials/graphics/earth.C" },
-     { name: "hard_cont", file: "hard_contour.root", item: 'hard_contour',  title: "Complex contour plot without closed lines, trying to fix it", opt:"cont" }
+     { name: "hard_cont", file: "hard_contour.root", item: 'hard_contour',  title: "Complex contour plot without closed lines, trying to fix it", opt:"cont" },
+     { name: "symlog", opt: "col,symlogx,symlogy", file: "hsimple.root", item: "hpxpy;1", title: "symlog scale with default 1e-3 factor for constant" },
+     { name: "symlog1", opt: "col,symlogx1,symlogy1", file: "hsimple.root", item: "hpxpy;1", title: "symlog scale with 1e-1 factor for constant" },
+     { name: "symlog5", opt: "col,symlogx5,symlogy5", file: "hsimple.root", item: "hpxpy;1", title: "symlog scale with 1e-5 factor for constant" }
    ],
    TH2Poly : [
       { name: "germany", url: "?nobrowser&file=$$$th2poly.root&item=europe;1/[13]", title: "Draw single TH2PolyBin from europe map" },
