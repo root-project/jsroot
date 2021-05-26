@@ -4473,7 +4473,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    TCanvasPainter.prototype.completeCanvasSnapDrawing = function() {
       if (!this.pad) return;
 
-      if (document && !this.embed_canvas)
+      if (document && !this.embed_canvas && this._websocket)
          document.title = this.pad.fTitle;
 
       if (this._all_sections_showed) return;
