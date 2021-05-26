@@ -1890,7 +1890,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Fill context menu for the frame
      * @desc It could be appended to the histogram menus */
    TFramePainter.prototype.fillContextMenu = function(menu, kind, obj) {
-
       let main = this.getMainPainter(),
           pp = this.getPadPainter(),
           pad = pp ? pp.getRootPad(true) : null;
@@ -1912,7 +1911,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                () => { faxis.InvertBit(JSROOT.EAxisBits.kNoExponent); this.redrawPad(); });
 
          if ((kind === "z") && main && main.options && main.options.Zscale)
-            if (typeof main.fillPaletteMenu == 'function') main.fillPaletteMenu(menu);
+            if (typeof main.fillPaletteMenu == 'function')
+               main.fillPaletteMenu(menu);
 
          if (faxis)
             menu.addTAxisMenu(main || this, faxis, kind);
