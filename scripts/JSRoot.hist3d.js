@@ -596,7 +596,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          return pos;
       };
 
-      let CreateZoomMesh = (kind, size_3d, use_y_for_z) => {
+      let createZoomMesh = (kind, size_3d, use_y_for_z) => {
 
          let positions, geom = new THREE.BufferGeometry();
          if (kind === "z")
@@ -720,7 +720,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          xcont.add(mesh);
       });
 
-      if (opts.zoom) xcont.add(CreateZoomMesh("x", this.size_xy3d));
+      if (opts.zoom) xcont.add(createZoomMesh("x", this.size_xy3d));
       top.add(xcont);
 
       xcont = new THREE.Object3D();
@@ -744,7 +744,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
       //xcont.add(new THREE.Mesh(ggg2, textMaterial));
       xcont.xyid = 4;
-      if (opts.zoom) xcont.add(CreateZoomMesh("x", this.size_xy3d));
+      if (opts.zoom) xcont.add(createZoomMesh("x", this.size_xy3d));
       top.add(xcont);
 
       lbls = []; text_scale = 1; maxtextheight = 0; ticks = [];
@@ -819,7 +819,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          });
 
          ycont.xyid = 3;
-         if (opts.zoom) ycont.add(CreateZoomMesh("y", this.size_xy3d));
+         if (opts.zoom) ycont.add(createZoomMesh("y", this.size_xy3d));
          top.add(ycont);
 
          ycont = new THREE.Object3D();
@@ -841,7 +841,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
             ycont.add(mesh);
          });
          ycont.xyid = 1;
-         if (opts.zoom) ycont.add(CreateZoomMesh("y", this.size_xy3d));
+         if (opts.zoom) ycont.add(createZoomMesh("y", this.size_xy3d));
          top.add(ycont);
       }
 
@@ -959,7 +959,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          }
 
          zcont[n].add(n==0 ? zticksline : new THREE.LineSegments(zticksline.geometry, lineMaterial));
-         if (opts.zoom) zcont[n].add(CreateZoomMesh("z", this.size_z3d, opts.use_y_for_z));
+         if (opts.zoom) zcont[n].add(createZoomMesh("z", this.size_z3d, opts.use_y_for_z));
 
          zcont[n].zid = n + 2;
          top.add(zcont[n]);
@@ -982,7 +982,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       if (this.size_z3d === 0) return;
 
       let linex_geom = jsrp.createLineSegments([grminx,0,0, grmaxx,0,0], lineMaterial, null, true);
-      for(let n=0;n<2;++n) {
+      for(let n = 0; n < 2; ++n) {
          let line = new THREE.LineSegments(linex_geom, lineMaterial);
          line.position.set(0, grminy, (n===0) ? grminz : grmaxz);
          line.xyboxid = 2; line.bottom = (n == 0);
@@ -995,7 +995,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       }
 
       let liney_geom = jsrp.createLineSegments([0,grminy,0, 0,grmaxy,0], lineMaterial, null, true);
-      for(let n=0;n<2;++n) {
+      for(let n = 0; n < 2; ++n) {
          let line = new THREE.LineSegments(liney_geom, lineMaterial);
          line.position.set(grminx, 0, (n===0) ? grminz : grmaxz);
          line.xyboxid = 3; line.bottom = (n == 0);
@@ -1057,7 +1057,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
       if ((i1 >= i2) || (j1 >= j2)) return;
 
-      let GetBinContent = (ii,jj, level) => {
+      let getBinContent = (ii,jj,level) => {
          // return bin content in binz1, binz2, reduced flags
          // return true if bin should be displayed
 
@@ -1114,7 +1114,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          for (i=i1;i<i2;++i)
             for (j=j1;j<j2;++j) {
 
-               if (!GetBinContent(i,j,nlevel)) continue;
+               if (!getBinContent(i,j,nlevel)) continue;
 
                nobottom = !reduced && (nlevel>0);
                notop = !reduced && (binz2 > zmax) && (nlevel < levels.length-2);
@@ -1146,7 +1146,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
             x2 = handle.grx[i] + handle.xbar2*(handle.grx[i+1]-handle.grx[i]);
             for (j=j1;j<j2;++j) {
 
-               if (!GetBinContent(i,j,nlevel)) continue;
+               if (!getBinContent(i,j,nlevel)) continue;
 
                nobottom = !reduced && (nlevel>0);
                notop = !reduced && (binz2 > zmax) && (nlevel < levels.length-2);
@@ -1312,7 +1312,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
 
       for (i=i1;i<i2;++i)
          for (j=j1;j<j2;++j) {
-            if (!GetBinContent(i,j,0)) continue;
+            if (!getBinContent(i,j,0)) continue;
 
             // calculate required buffer size for line segments
             numlinevertices += (reduced ? rvertices.length : vertices.length);
@@ -1337,7 +1337,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          x2 = handle.grx[i] + handle.xbar2*(handle.grx[i+1]-handle.grx[i]);
          for (j=j1;j<j2;++j) {
 
-            if (!GetBinContent(i,j,0)) continue;
+            if (!getBinContent(i,j,0)) continue;
 
             y1 = handle.gry[j] + handle.ybar1*(handle.gry[j+1] - handle.gry[j]);
             y2 = handle.gry[j] + handle.ybar2*(handle.gry[j+1] - handle.gry[j]);
