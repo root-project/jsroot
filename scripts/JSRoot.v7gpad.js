@@ -4844,7 +4844,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return this.fContour && (this.fContour.length > 1) ? this.fContour : null;
       },
 
-      DeleteContour: function() {
+      deleteContour: function() {
          delete this.fContour;
       },
 
@@ -4866,7 +4866,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return color.toString();
       },
 
-      CreatePaletteColors: function(len) {
+      createPaletteColors: function(len) {
          let arr = [], indx = 0;
 
          while (arr.length < len) {
@@ -4915,6 +4915,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return JSROOT.v7.extractRColor(next.fColor);
       },
 
+      /** @summary set full z scale range, used in zooming */
       setFullRange: function(min, max) {
           this.full_min = min;
           this.full_max = max;
@@ -4954,7 +4955,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          }
 
          if (!this.palette || (this.palette.length != nlevels))
-            this.palette = this.CreatePaletteColors(nlevels);
+            this.palette = this.createPaletteColors(nlevels);
       }
 
    });
