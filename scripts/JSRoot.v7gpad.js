@@ -4915,7 +4915,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return JSROOT.v7.extractRColor(next.fColor);
       },
 
-
+      setFullRange: function(min, max) {
+          this.full_min = min;
+          this.full_max = max;
+      },
 
       createContour: function(logz, nlevels, zmin, zmax, zminpositive) {
          this.fContour = [];
@@ -4999,7 +5002,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (!framep)
          return console.log('no frame painter - no palette');
 
-      let zmin         = contour[0],
+      let gmin         = palette.full_min,
+          gmax         = palette.full_max,
+          zmin         = contour[0],
           zmax         = contour[contour.length-1],
           rect         = framep.getFrameRect(),
           fx           = rect.x,
@@ -5050,7 +5055,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           .style("stroke", "black")
           .attr("fill", "none");
 
-      framep.z_handle.configureAxis("zaxis", zmin, zmax, zmin, zmax, true, [palette_height, 0], -palette_height, { reverse: false });
+      if ((gmin === undefined) || (gmax === undefined)) { gmin = zmin; gmax = zmax; }
+
+      framep.z_handle.configureAxis("zaxis", gmin, gmax, zmin, zmax, true, [palette_height, 0], -palette_height, { reverse: false });
 
       for (let i=0;i<contour.length-1;++i) {
          let z0 = framep.z_handle.gr(contour[i]),
