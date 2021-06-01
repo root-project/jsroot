@@ -4180,7 +4180,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
             ratio.fGridlinePositions.forEach(gridy => {
                let found = false;
                ratio.fGridlines.forEach(line => {
-                  if ((line.fY1 == line.fY2) && (line.fY1 == gridy)) found = true;
+                  if ((line.fY1 == line.fY2) && (Math.abs(line.fY1 - gridy) < 1e-6)) found = true;
                });
                if (!found) {
                   let line = JSROOT.create("TLine");
