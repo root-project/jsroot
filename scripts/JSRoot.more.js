@@ -4084,6 +4084,23 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
    TRatioPlotPainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
 
+   TRatioPlotPainter.prototype.setGridsRange = function(xmin, xmax) {
+      let ratio = this.getObject(),
+          pp = this.getPadPainter();
+      if (xmin === xmax) {
+         let low_p = pp.findPainterFor(ratio.fLowerPad, "lower_pad", "TPad"),
+             low_fp = low_p ? low_p.getFramePainter() : null;
+         if (!low_fp || !low_fp.x_handle) return;
+         xmin = low_fp.x_handle.full_min;
+         xmax = low_fp.x_handle.full_max;
+      }
+
+      ratio.fGridlines.forEach(line => {
+         line.fX1 = xmin;
+         line.fX2 = xmax;
+      });
+   }
+
    /** @summary Redraw TRatioPlot */
    TRatioPlotPainter.prototype.redraw = function() {
       let ratio = this.getObject(),
@@ -4118,7 +4135,10 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          promise_up = up_p.redrawPad().then(() => {
             up_fp.o_zoom = up_fp.zoom;
             up_fp._ratio_low_fp = low_fp;
+            up_fp._ratio_painter = this;
+
             up_fp.zoom = function(xmin,xmax,ymin,ymax,zmin,zmax) {
+               this._ratio_painter.setGridsRange(xmin, xmax);
                this._ratio_low_fp.o_zoom(xmin,xmax);
                return this.o_zoom(xmin,xmax,ymin,ymax,zmin,zmax);
             }
@@ -4179,8 +4199,10 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
             low_fp.o_zoom = low_fp.zoom;
             low_fp._ratio_up_fp = up_fp;
+            low_fp._ratio_painter = this;
 
             low_fp.zoom = function(xmin,xmax,ymin,ymax,zmin,zmax) {
+               this._ratio_painter.setGridsRange(xmin, xmax);
                this._ratio_up_fp.o_zoom(xmin,xmax);
                return this.o_zoom(xmin,xmax,ymin,ymax,zmin,zmax);
             }
