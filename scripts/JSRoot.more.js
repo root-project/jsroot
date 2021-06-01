@@ -4136,45 +4136,65 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       return promise_up.then(() => {
 
-         if (low_p && low_main && low_fp && up_fp && !low_p._ratio_configured) {
-            low_p._ratio_configured = true;
-            low_main.options.Axis = 0; // draw both axes
-            let h = low_main.getHisto();
-            h.fXaxis.fTitle = "x";
-            h.fXaxis.fLabelSize = lbl_size;
-            h.fXaxis.fTitleSize = lbl_size;
-            h.fYaxis.fLabelSize = lbl_size;
-            h.fYaxis.fTitleSize = lbl_size;
-            low_p.getRootPad().fTicky = 1;
+         if (!low_p || !low_main || !low_fp || !up_fp || low_p._ratio_configured)
+            return this;
 
-            low_p.forEachPainterInPad(objp => {
-               if (typeof objp.testEditable == 'function')
-                  objp.testEditable(false);
-            });
+         low_p._ratio_configured = true;
+         low_main.options.Axis = 0; // draw both axes
+         let h = low_main.getHisto();
+         h.fXaxis.fTitle = "x";
+         h.fXaxis.fLabelSize = lbl_size;
+         h.fXaxis.fTitleSize = lbl_size;
+         h.fYaxis.fLabelSize = lbl_size;
+         h.fYaxis.fTitleSize = lbl_size;
+         low_p.getRootPad().fTicky = 1;
 
-            return low_fp.zoom(up_fp.scale_xmin,  up_fp.scale_xmax).then(() => {
+         low_p.forEachPainterInPad(objp => {
+            if (typeof objp.testEditable == 'function')
+               objp.testEditable(false);
+         });
 
-               low_fp.o_zoom = low_fp.zoom;
-               low_fp._ratio_up_fp = up_fp;
+         let arr = [], currpad;
 
-               low_fp.zoom = function(xmin,xmax,ymin,ymax,zmin,zmax) {
-                  this._ratio_up_fp.o_zoom(xmin,xmax);
-                  return this.o_zoom(xmin,xmax,ymin,ymax,zmin,zmax);
+         if ((ratio.fGridlinePositions.length > 0) && (ratio.fGridlines.length < ratio.fGridlinePositions.length)) {
+            ratio.fGridlinePositions.forEach(gridy => {
+               let found = false;
+               ratio.fGridlines.forEach(line => {
+                  if ((line.fY1 == line.fY2) && (line.fY1 == gridy)) found = true;
+               });
+               if (!found) {
+                  let line = JSROOT.create("TLine");
+                  line.fX1 = up_fp.scale_xmin;
+                  line.fX2 = up_fp.scale_xmax;
+                  line.fY1 = line.fY2 = gridy;
+                  line.fLineStyle = 2;
+                  ratio.fGridlines.push(line);
+                  if (currpad === undefined) currpad = this.selectCurrentPad(ratio.fLowerPad.fName);
+                  arr.push(JSROOT.draw(this.getDom(), line));
                }
-
-               low_fp.o_sizeChanged = low_fp.sizeChanged;
-               low_fp.sizeChanged = function() {
-                  this.o_sizeChanged();
-                  this._ratio_up_fp.fX1NDC = this.fX1NDC;
-                  this._ratio_up_fp.fX2NDC = this.fX2NDC;
-                  this._ratio_up_fp.o_sizeChanged();
-               }
-
-               return this;
             });
          }
 
-         return this;
+         return Promise.all(arr).then(() => low_fp.zoom(up_fp.scale_xmin,  up_fp.scale_xmax)).then(() => {
+
+            low_fp.o_zoom = low_fp.zoom;
+            low_fp._ratio_up_fp = up_fp;
+
+            low_fp.zoom = function(xmin,xmax,ymin,ymax,zmin,zmax) {
+               this._ratio_up_fp.o_zoom(xmin,xmax);
+               return this.o_zoom(xmin,xmax,ymin,ymax,zmin,zmax);
+            }
+
+            low_fp.o_sizeChanged = low_fp.sizeChanged;
+            low_fp.sizeChanged = function() {
+               this.o_sizeChanged();
+               this._ratio_up_fp.fX1NDC = this.fX1NDC;
+               this._ratio_up_fp.fX2NDC = this.fX2NDC;
+               this._ratio_up_fp.o_sizeChanged();
+            }
+
+            return this;
+         });
       });
    }
 
@@ -4182,7 +4202,6 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       let painter = new TRatioPlotPainter(divid, ratio, opt);
 
       return jsrp.ensureTCanvas(painter, false).then(() => painter.redraw());
-
    }
 
    // ==================================================================================================
