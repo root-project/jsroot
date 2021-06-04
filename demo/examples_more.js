@@ -60,6 +60,7 @@ examples_more = {
       { name: "text", json: "v7/text.json.gz", title: "draw_text.cxx macro output" },
       { name: "v6", json: "v7/v6.json.gz", title: "draw_v6.cxx macro output" },
       { name: "line", json: "v7/line.json.gz", title: "line.cxx macro output" },
+      { name: "box", json: "v7/box.json.gz", title: "box.cxx macro output" },
       { name: "lineRStyle", json: "v7/lineRStyle.json.gz", title: "lineRStyle.cxx macro output" },
       { name: "lineStyle", json: "v7/lineStyle.json.gz", title: "lineStyle.cxx macro output" },
       { name: "lineWidth", json: "v7/lineWidth.json.gz", title: "lineWidth.cxx macro output" },
