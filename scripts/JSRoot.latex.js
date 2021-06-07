@@ -639,20 +639,19 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
                // we can compare y coordinates while both nodes (root and element) on the same level
                if ((be.height > bs.height) && (bs.height > 0)) {
-                  yscale = be.height / bs.height * 1.2;
+                  yscale = be.height / bs.height * 1.4;
                   sqrt_dy = ((be.y + be.height) - (bs.y + bs.height)) / curr.fsize / yscale;
                   subpos.square_root.style('font-size', Math.round(100 * yscale) + '%').attr('dy', makeem(sqrt_dy));
                }
 
                // we taking into account only element width
-               let len = be.width / subpos.fsize / yscale;
-
-               let a = "", nn = Math.round(Math.max(len * 3, 2));
+               let len = be.width / subpos.fsize / yscale,
+                   a = "", nn = Math.round(Math.max(len * 3, 2));
                while (nn--) a += '\u203E'; // unicode overline
 
-               subpos.square_root.append('svg:tspan').attr("dy", makeem(-0.25)).text(a);
+               subpos.square_root.append('svg:tspan').attr("dy", makeem(0)).text(a);
 
-               subpos.square_root.append('svg:tspan').attr("dy", makeem(0.25 - sqrt_dy)).attr("dx", makeem(-a.length / 3 - 0.2)).text('\u2009'); // unicode tiny space
+               subpos.square_root.append('svg:tspan').attr("dy", makeem(-sqrt_dy)).attr("dx", makeem(-a.length / 3 - 0.2)).text('\u2009'); // unicode tiny space
 
                break;
             }
