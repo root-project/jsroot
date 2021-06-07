@@ -639,7 +639,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
                // we can compare y coordinates while both nodes (root and element) on the same level
                if ((be.height > bs.height) && (bs.height > 0)) {
-                  yscale = be.height / bs.height * 1.4;
+                  yscale = be.height / bs.height * 1.3;
                   sqrt_dy = ((be.y + be.height) - (bs.y + bs.height)) / curr.fsize / yscale;
                   subpos.square_root.style('font-size', Math.round(100 * yscale) + '%').attr('dy', makeem(sqrt_dy));
                }
