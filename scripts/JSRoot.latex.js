@@ -215,7 +215,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          arg.mainnode = node;
       }
 
-      function extend_pos(pos, value) {
+      let extend_pos = (pos, value) => {
 
          let dx1, dx2, dy1, dy2;
 
@@ -257,9 +257,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             arg.mid_shift = -mid / h || 0.001;        // relative shift to get latex middle at given point
             arg.top_shift = -rect.y / h || 0.001; // relative shift to get latex top at given point
          }
-      }
+      };
 
-      function makeem(value) {
+      let makeem = value => {
          if (Math.abs(value) < 1e-2) return null; // very small values not needed, attribute will be removed
          if (value == Math.round(value)) return Math.round(value) + "em";
          let res = value.toFixed(2);
@@ -267,9 +267,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if (res.indexOf("-0.") == 0) res = "-." + res.substr(3);
          if (res[res.length - 1] == '0') res = res.substr(0, res.length - 1);
          return res + "em";
-      }
+      };
 
-      function get_boundary(element, approx_rect) {
+      let get_boundary = (element, approx_rect) => {
          // actually, it is workaround for getBBox() or getElementBounday,
          // which is not implemented for tspan element in Firefox
 
@@ -297,7 +297,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          tspans.each(function() { if (important.indexOf(this) < 0) d3.select(this).attr('display', null); });
 
          return box;
-      }
+      };
 
       let features = [
          { name: "#it{" }, // italic
