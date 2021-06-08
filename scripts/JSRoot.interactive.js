@@ -1077,11 +1077,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (valid_x && valid_y && this._dblclick_handler)
             if (this.processFrameClick({ x: m[0], y: m[1] }, true)) return;
 
-         let kind = "xyz";
+         let kind = (this.can_zoom_x ? "x" : "") + (this.can_zoom_y ? "y" : "") + "z";
          if (!valid_x) {
+            if (!this.can_zoom_y) return;
             kind = this.swap_xy ? "x" : "y";
             if ((m[0] > fw) && this[kind+"2_handle"]) kind += "2"; // let unzoom second axis
          } else if (!valid_y) {
+            if (!this.can_zoom_x) return;
             kind = this.swap_xy ? "y" : "x";
             if ((m[1] < 0) && this[kind+"2_handle"]) kind += "2"; // let unzoom second axis
          }
@@ -1321,8 +1323,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          evnt.preventDefault();
          this.clearInteractiveElements();
 
-         let itemx = { name: "x", reverse: this.reverse_x, ignore: false },
-             itemy = { name: "y", reverse: this.reverse_y, ignore: !this.isAllowedDefaultYZooming() },
+         let itemx = { name: "x", reverse: this.reverse_x, ignore: !this.can_zoom_x },
+             itemy = { name: "y", reverse: this.reverse_y, ignore: !this.can_zoom_y ||  !this.isAllowedDefaultYZooming() },
              cur = d3.pointer(evnt, this.getFrameSvg().node()),
              w = this.getFrameWidth(), h = this.getFrameHeight();
 
