@@ -186,14 +186,44 @@ List of supported classes and draw options:
 - TLatex : [example](https://root.cern/js/latest/examples.htm#tlatex_latex)
 - TMathText : [example](https://root.cern/js/latest/examples.htm#tlatex_math)
 - TCanvas : [example](https://root.cern/js/latest/examples.htm#tcanvas_roofit)
+- TPad : [example](https://root.cern/js/latest/examples.htm#tcanvas_subpad)
+- TRatioPlot : [example](https://root.cern/js/latest/examples.htm#tratioplot_r6)
 - TLegend : [example](https://root.cern/js/latest/examples.htm#tcanvas_legend)
 - TTree : [single-branch draw](https://root.cern/js/latest/examples.htm#ttree_draw)
 - TPolyLine : [dflt](https://root.cern/js/latest/examples.htm#misc_polyline)
+- TGaxis : [dflt](https://root.cern/js/latest/examples.htm#misc_axis)
 - TEllipse : [dflt](https://root.cern/js/latest/examples.htm#misc_ellipse)
 - TArrow : [dflt](https://root.cern/js/latest/examples.htm#misc_arrow)
 - TPolyMarker3D: [dflt](https://root.cern/js/latest/examples.htm#misc_3dmark)
 
 More examples of supported classes can be found on: <https://root.cern/js/latest/examples.htm>
+
+There are specific options which only can be used with JSROOT for TPad and TCanvas objects:
+
+- logx - enable log10 scale for X axis
+- logy - enable log10 scale for Y axis
+- logz - enable log10 scale for Z axis
+- log - enable log10 scale for X,Y,Z axes
+- log2x - enable log2 scale for X axis
+- log2y - enable log2 scale for Y axis
+- log2z - enable log2 scale for Z axis
+- log2 - enable log2 scale for X,Y,Z axes
+- gridx - enable grid for X axis
+- gridy - enable grid for X axis
+- grid - enable grid for X and Y axes
+- tickx - enable ticks for X axis
+- ticky - enable ticks for X axis
+- tick - enable ticks for X and Y axes
+- rx - reverse X axis
+- ry - reverse Y axis
+- rotate - rotate frame
+- fixframe - disable interactive moving of the frame
+- nozoomx - disbale zooming on X axis
+- nozoomy - disbale zooming on Y axis
+- cpXY - create palette XY for the canvas like cp50
+- nopalette - ignore paletter stored with TCanvas
+- nocolors - ignore colors list stored with TCanvas
+- lcolors - use only locally colors list stored with TCanvas
 
 
 ## Superimposing draw objects

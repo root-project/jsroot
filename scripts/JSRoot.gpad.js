@@ -3264,7 +3264,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          // set palette
          if (snap.fSnapshot.fBuf && (!this.options || !this.options.IgnorePalette)) {
             let palette = [];
-            for (let n=0;n<snap.fSnapshot.fBuf.length;++n)
+            for (let n = 0; n < snap.fSnapshot.fBuf.length; ++n)
                palette[n] = ListOfColors[Math.round(snap.fSnapshot.fBuf[n])];
 
             this.custom_palette = new JSROOT.ColorPalette(palette);
@@ -4019,7 +4019,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          painter.selectCurrentPad(prev_name);
          return painter;
       });
-   }
+   };
 
    // ==========================================================================================
 
@@ -4033,7 +4033,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       kResizeOpaque: JSROOT.BIT(21),
       kIsGrayscale: JSROOT.BIT(22),
       kShowToolTips: JSROOT.BIT(23)
-   }
+   };
 
    /**
      * @summary Painter for TCanvas object
