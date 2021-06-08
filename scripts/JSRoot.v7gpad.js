@@ -215,6 +215,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           line_style = this.v7EvalAttr(prefix + "style", 1);
 
       this.createAttLine({ color: line_color, width: line_width, style: line_style });
+
+      if (prefix == "border_") {
+         this.lineatt.rx = this.v7EvalAttr(prefix + "rx", 0);
+         this.lineatt.ry = this.v7EvalAttr(prefix + "ry", 0);
+      }
    }
 
     /** @summary Create this.markeratt object based on v7 attributes
@@ -2000,7 +2005,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       // first update all attributes from objects
       this.updateAttributes();
 
-      let rect = pp ? pp.getPadRect() : { width: 10, height: 10},
+      let rect = pp ? pp.getPadRect() : { width: 10, height: 10 },
           lm = Math.round(rect.width * this.fX1NDC),
           w = Math.round(rect.width * (this.fX2NDC - this.fX1NDC)),
           tm = Math.round(rect.height * (1 - this.fY2NDC)),
@@ -2066,6 +2071,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
               .attr("y", 0)
               .attr("width", w)
               .attr("height", h)
+              .attr("rx", this.lineatt.rx || null)
+              .attr("ry", this.lineatt.ry || null)
               .call(this.fillatt.func)
               .call(this.lineatt.func);
 
@@ -4655,6 +4662,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           line_width   = this.v7EvalAttr("border_width", 1),
           line_style   = this.v7EvalAttr("border_style", 1),
           line_color   = this.v7EvalColor("border_color", "black"),
+          border_rx    = this.v7EvalAttr("border_rx", 0),
+          border_ry    = this.v7EvalAttr("border_ry", 0),
           fill_color   = this.v7EvalColor("fill_color", "white"),
           fill_style   = this.v7EvalAttr("fill_style", 1);
 
@@ -4679,6 +4688,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                  .attr("width", pave_width)
                  .attr("y", 0)
                  .attr("height", pave_height)
+                 .attr("rx", border_rx || null)
+                 .attr("ry", border_ry || null)
                  .style("stroke", line_color)
                  .attr("stroke-width", line_width)
                  .style("stroke-dasharray", jsrp.root_line_styles[line_style])

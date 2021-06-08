@@ -65,8 +65,8 @@ JSROOT.define(['painter', 'v7gpad'], (jsrp) => {
            line_color   = this.v7EvalColor("border_color", "black"),
            fill_color   = this.v7EvalColor("fill_color", "white"),
            fill_style   = this.v7EvalAttr("fill_style", 1),
-           round_width  = this.v7EvalAttr("round_width", 0), // not yet exists
-           round_height = this.v7EvalAttr("round_height", 0); // not yet exists
+           border_rx    = this.v7EvalAttr("border_rx", 0),
+           border_ry    = this.v7EvalAttr("border_ry", 0);
 
     this.createG(clipping ? "main_layer" : (onframe ? "upper_layer" : false));
 
@@ -78,8 +78,8 @@ JSROOT.define(['painter', 'v7gpad'], (jsrp) => {
         .attr("width", p2.x-p1.x)
         .attr("y", p2.y)
         .attr("height", p1.y-p2.y)
-        .attr("rx", round_width)
-        .attr("ry", round_height)
+        .attr("rx", border_rx || null)
+        .attr("ry", border_ry || null)
         .style("stroke", line_color)
         .attr("stroke-width", line_width)
         .attr("fill", fill_color)
