@@ -846,19 +846,34 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                 .property('shift_y', title_shift_y);
 
          return true;
-
       });
+   }
 
+   /** @summary Convert TGaxis position into NDC to fix it when frame zoomed */
+   TAxisPainter.prototype.convertToNDC = function() {
+      let gaxis = this.getObject(),
+          x1 = this.axisToSvg("x", gaxis.fX1),
+          y1 = this.axisToSvg("y", gaxis.fY1),
+          x2 = this.axisToSvg("x", gaxis.fX2),
+          y2 = this.axisToSvg("y", gaxis.fY2),
+          pw = this.getPadPainter().getPadWidth(),
+          ph = this.getPadPainter().getPadHeight();
+
+      gaxis.fX1 = x1 / pw;
+      gaxis.fX2 = x2 / pw;
+      gaxis.fY1 = (ph - y1) / ph;
+      gaxis.fY2 = (ph - y2)/ ph;
+      this.use_ndc = true;
    }
 
    /** @summary Redraw axis, used in standalone mode for TGaxis */
    TAxisPainter.prototype.redraw = function() {
 
       let gaxis = this.getObject(),
-          x1 = this.axisToSvg("x", gaxis.fX1),
-          y1 = this.axisToSvg("y", gaxis.fY1),
-          x2 = this.axisToSvg("x", gaxis.fX2),
-          y2 = this.axisToSvg("y", gaxis.fY2),
+          x1 = this.axisToSvg("x", gaxis.fX1, this.use_ndc),
+          y1 = this.axisToSvg("y", gaxis.fY1, this.use_ndc),
+          x2 = this.axisToSvg("x", gaxis.fX2, this.use_ndc),
+          y2 = this.axisToSvg("y", gaxis.fY2, this.use_ndc),
           w = x2 - x1, h = y1 - y2,
           vertical = Math.abs(w) < Math.abs(h),
           sz = vertical ? h : w,
@@ -883,12 +898,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return this.drawAxis(this.getG(), Math.abs(w), Math.abs(h), "translate(" + x1 + "," + y2 +")");
    }
 
-   let drawGaxis = (divid, obj /*, opt*/) => {
+   let drawGaxis = (divid, obj, opt) => {
       let painter = new TAxisPainter(divid, obj, false);
       painter.disable_zooming = true;
 
       return jsrp.ensureTCanvas(painter, false)
-             .then(() => painter.redraw()).then(() => painter);
+             .then(() => { if (opt == "ndc") painter.convertToNDC(); return painter.redraw(); }).then(() => painter);
    }
 
    // ===============================================
