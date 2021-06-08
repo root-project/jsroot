@@ -118,7 +118,8 @@ examples_more = {
      { name: "wtmass", file: "WtMass.root", item: "WtMass;1", title: "Histogram with absolute axis font size" },
      { name: "multi", file: "general.root", item: "canvas_0;1", title: "many superimposed histograms and graphs" },
      { name: "greyscale", json: "greyscale.json.gz", title: "produced from tutorials/hist/greyscale.C macro" },
-     { name: "atlas", file: "AtlasExample.root", item: "c1", style: "style", title: "ATLAS style example, https://root-forum.cern.ch/t/27751" }
+     { name: "atlas", file: "AtlasExample.root", item: "c1", style: "style", title: "ATLAS style example, https://root-forum.cern.ch/t/27751" },
+     { name: "swan", file: "swan.root", item: "c", title: "Mix of TH2 and TH1 on same pad with TGaxis and disabled y zoom" }
    ],
    TGeo : [
      { name: "atlas_cryo", asurl: true, file: "https://root.cern/files/atlas.root", item: "atlas;1", opt: "macro:https://root.cern/files/atlas_cryo.C" },
