@@ -850,31 +850,50 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Convert TGaxis position into NDC to fix it when frame zoomed */
-   TAxisPainter.prototype.convertToNDC = function() {
+   TAxisPainter.prototype.convertTo = function(opt) {
       let gaxis = this.getObject(),
           x1 = this.axisToSvg("x", gaxis.fX1),
           y1 = this.axisToSvg("y", gaxis.fY1),
           x2 = this.axisToSvg("x", gaxis.fX2),
-          y2 = this.axisToSvg("y", gaxis.fY2),
-          pw = this.getPadPainter().getPadWidth(),
-          ph = this.getPadPainter().getPadHeight();
+          y2 = this.axisToSvg("y", gaxis.fY2);
 
-      gaxis.fX1 = x1 / pw;
-      gaxis.fX2 = x2 / pw;
-      gaxis.fY1 = (ph - y1) / ph;
-      gaxis.fY2 = (ph - y2)/ ph;
-      this.use_ndc = true;
+      if (opt == "ndc") {
+          let pw = this.getPadPainter().getPadWidth(),
+              ph = this.getPadPainter().getPadHeight();
+
+          gaxis.fX1 = x1 / pw;
+          gaxis.fX2 = x2 / pw;
+          gaxis.fY1 = (ph - y1) / ph;
+          gaxis.fY2 = (ph - y2)/ ph;
+          this.use_ndc = true;
+      } else if (opt == "frame") {
+         let rect = this.getFramePainter().getFrameRect();
+         gaxis.fX1 = (x1 - rect.x) / rect.width;
+         gaxis.fX2 = (x2 - rect.x) / rect.width;
+         gaxis.fY1 = (y1 - rect.y) / rect.height;
+         gaxis.fY2 = (y2 - rect.y) / rect.height;
+         this.bind_frame = true;
+      }
    }
 
    /** @summary Redraw axis, used in standalone mode for TGaxis */
    TAxisPainter.prototype.redraw = function() {
 
-      let gaxis = this.getObject(),
-          x1 = this.axisToSvg("x", gaxis.fX1, this.use_ndc),
-          y1 = this.axisToSvg("y", gaxis.fY1, this.use_ndc),
-          x2 = this.axisToSvg("x", gaxis.fX2, this.use_ndc),
-          y2 = this.axisToSvg("y", gaxis.fY2, this.use_ndc),
-          w = x2 - x1, h = y1 - y2,
+      let gaxis = this.getObject(), x1, y1, x2, y2;
+
+      if (this.bind_frame) {
+         let rect = this.getFramePainter().getFrameRect();
+         x1 = Math.round(rect.x + gaxis.fX1 * rect.width);
+         x2 = Math.round(rect.x + gaxis.fX2 * rect.width);
+         y1 = Math.round(rect.y + gaxis.fY1 * rect.height);
+         y2 = Math.round(rect.y + gaxis.fY2 * rect.height);
+      } else {
+          x1 = this.axisToSvg("x", gaxis.fX1, this.use_ndc);
+          y1 = this.axisToSvg("y", gaxis.fY1, this.use_ndc);
+          x2 = this.axisToSvg("x", gaxis.fX2, this.use_ndc);
+          y2 = this.axisToSvg("y", gaxis.fY2, this.use_ndc);
+      }
+      let w = x2 - x1, h = y1 - y2,
           vertical = Math.abs(w) < Math.abs(h),
           sz = vertical ? h : w,
           reverse = false,
@@ -903,7 +922,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       painter.disable_zooming = true;
 
       return jsrp.ensureTCanvas(painter, false)
-             .then(() => { if (opt == "ndc") painter.convertToNDC(); return painter.redraw(); }).then(() => painter);
+             .then(() => { if (opt) painter.convertTo(opt); return painter.redraw(); }).then(() => painter);
    }
 
    // ===============================================
