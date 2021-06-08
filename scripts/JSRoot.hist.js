@@ -835,7 +835,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           pos_y = parseInt(this.draw_g.attr("y")),
           width = this.getPadPainter().getPadWidth(),
           pad = this.getPadPainter().getRootPad(true),
-          main = this.getMainPainter(),
+          main = palette.$main_painter || this.getMainPainter(),
           framep = this.getFramePainter(),
           zmin = 0, zmax = 100,
           contour = main.fContour,
@@ -3085,9 +3085,11 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
      * @returns {Promise} when done */
    THistPainter.prototype.drawColorPalette = function(enabled, postpone_draw, can_move) {
       // only when create new palette, one could change frame size
-
-      if (!this.isMainPainter())
-         return Promise.resolve(null);
+      let mp = this.getMainPainter();
+      if (mp !== this) {
+         if (mp && (mp.draw_content !== false))
+            return Promise.resolve(null);
+      }
 
       let pal = this.findFunction('TPaletteAxis'),
           pp = this.getPadPainter(),
@@ -3144,6 +3146,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          pal.fY1NDC = frame_painter.fY1NDC;
          pal.fY2NDC = frame_painter.fY2NDC;
       }
+
+      //  required for z scale setting
+      // TODO: use weak reference (via pad list of painters and any kind of string)
+      pal.$main_painter = this;
 
       let arg = "";
       if (postpone_draw) arg+=";postpone";
@@ -4520,7 +4526,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       this.scanContent(true);
 
-      if (typeof this.drawColorPalette === 'function')
+      if ((typeof this.drawColorPalette === 'function') && this.isMainPainter())
          this.drawColorPalette(false);
 
       return this.drawAxes().then(() => {
@@ -6600,8 +6606,12 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
             this.draw2DBins();
 
+            if (!pp) return true;
+
+            pp.$main_painter = this;
+
             // redraw palette till the end when contours are available
-            return pp ? pp.drawPave() : true;
+            return pp.drawPave();
          });
       }).then(() => {
          return this.drawHistTitle();
