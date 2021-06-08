@@ -1517,10 +1517,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if ((this.fX1NDC === undefined) || (force && !this.modified_NDC)) {
 
          let rect = this.getPadPainter().getPadRect();
-         this.fX1NDC = this.v7EvalLength("margin_left", rect.width, JSROOT.settings.FrameNDC.fX1NDC, "margin_all") / rect.width;
-         this.fY1NDC = this.v7EvalLength("margin_bottom", rect.height, JSROOT.settings.FrameNDC.fY1NDC, "margin_all") / rect.height;
-         this.fX2NDC = 1 - this.v7EvalLength("margin_right", rect.width, 1-JSROOT.settings.FrameNDC.fX2NDC, "margin_all") / rect.width;
-         this.fY2NDC = 1 - this.v7EvalLength("margin_top", rect.height, 1-JSROOT.settings.FrameNDC.fY2NDC, "margin_all") / rect.height;
+         this.fX1NDC = this.v7EvalLength("margins_left", rect.width, JSROOT.settings.FrameNDC.fX1NDC, "margins_all") / rect.width;
+         this.fY1NDC = this.v7EvalLength("margins_bottom", rect.height, JSROOT.settings.FrameNDC.fY1NDC, "margins_all") / rect.height;
+         this.fX2NDC = 1 - this.v7EvalLength("margins_right", rect.width, 1-JSROOT.settings.FrameNDC.fX2NDC, "margins_all") / rect.width;
+         this.fY2NDC = 1 - this.v7EvalLength("margins_top", rect.height, 1-JSROOT.settings.FrameNDC.fY2NDC, "margins_all") / rect.height;
       }
 
       if (!this.fillatt)
@@ -1890,10 +1890,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    RFramePainter.prototype.sizeChanged = function() {
 
       let changes = {};
-      this.v7AttrChange(changes, "margin_left", this.fX1NDC);
-      this.v7AttrChange(changes, "margin_bottom", this.fY1NDC);
-      this.v7AttrChange(changes, "margin_right", 1 - this.fX2NDC);
-      this.v7AttrChange(changes, "margin_top", 1 - this.fY2NDC);
+      this.v7AttrChange(changes, "margins_left", this.fX1NDC);
+      this.v7AttrChange(changes, "margins_bottom", this.fY1NDC);
+      this.v7AttrChange(changes, "margins_right", 1 - this.fX2NDC);
+      this.v7AttrChange(changes, "margins_top", 1 - this.fY2NDC);
       this.v7SendAttrChanges(changes, false); // do not invoke canvas update on the server
 
       this.redrawPad();
