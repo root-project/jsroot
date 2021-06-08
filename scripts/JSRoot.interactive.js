@@ -725,6 +725,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          let svg_x = svg.selectAll(".xaxis_container"),
              svg_y = svg.selectAll(".yaxis_container");
 
+         this.can_zoom_x = this.can_zoom_y = JSROOT.settings.Zooming;
+
+         if (pp && pp.options) {
+            if (pp.options.NoZoomX) this.can_zoom_x = false;
+            if (pp.options.NoZoomY) this.can_zoom_y = false;
+         }
+
          if (!svg.property('interactive_set')) {
             this.addKeysHandler();
 
@@ -990,7 +997,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (this.zoom_labels) {
             this.zoom_labels.processLabelsMove('stop', m);
          } else {
-            let changed = [true, true];
+            let changed = [this.can_zoom_x, this.can_zoom_y];
             m[0] = Math.max(0, Math.min(this.getFrameWidth(), m[0]));
             m[1] = Math.max(0, Math.min(this.getFrameHeight(), m[1]));
 

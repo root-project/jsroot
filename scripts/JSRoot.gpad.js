@@ -3959,6 +3959,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if (d.check("CP",true)) this.options.CreatePalette = d.partAsInt(0,0);
 
+      if (d.check("NOZOOMX")) this.options.NoZoomX = true;
+      if (d.check("NOZOOMY")) this.options.NoZoomY = true;
+
       if (d.check('WHITE')) pad.fFillColor = 0;
       if (d.check('LOG2X')) { pad.fLogx = 2; pad.fUxmin = 0; pad.fUxmax = 1; pad.fX1 = 0; pad.fX2 = 1; }
       if (d.check('LOGX')) { pad.fLogx = 1; pad.fUxmin = 0; pad.fUxmax = 1; pad.fX1 = 0; pad.fX2 = 1; }
