@@ -1319,18 +1319,19 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       /** @summary Handles mouse wheel event */
       mouseWheel: function(evnt) {
          evnt.stopPropagation();
-
          evnt.preventDefault();
          this.clearInteractiveElements();
 
-         let itemx = { name: "x", reverse: this.reverse_x, ignore: !this.can_zoom_x },
-             itemy = { name: "y", reverse: this.reverse_y, ignore: !this.can_zoom_y ||  !this.isAllowedDefaultYZooming() },
+         let itemx = { name: "x", reverse: this.reverse_x },
+             itemy = { name: "y", reverse: this.reverse_y, ignore: !this.isAllowedDefaultYZooming() },
              cur = d3.pointer(evnt, this.getFrameSvg().node()),
              w = this.getFrameWidth(), h = this.getFrameHeight();
 
-         this.analyzeMouseWheelEvent(evnt, this.swap_xy ? itemy : itemx, cur[0] / w, (cur[1] >=0) && (cur[1] <= h), cur[1] < 0);
+         if (this.can_zoom_x)
+            this.analyzeMouseWheelEvent(evnt, this.swap_xy ? itemy : itemx, cur[0] / w, (cur[1] >=0) && (cur[1] <= h), cur[1] < 0);
 
-         this.analyzeMouseWheelEvent(evnt, this.swap_xy ? itemx : itemy, 1 - cur[1] / h, (cur[0] >= 0) && (cur[0] <= w), cur[0] > w);
+         if (this.can_zoom_y)
+            this.analyzeMouseWheelEvent(evnt, this.swap_xy ? itemx : itemy, 1 - cur[1] / h, (cur[0] >= 0) && (cur[0] <= w), cur[0] > w);
 
          this.zoom(itemx.min, itemx.max, itemy.min, itemy.max);
 
@@ -1345,7 +1346,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             this.zoomSingle("y2", itemy.second.min, itemy.second.max);
             if (itemy.second.changed) this.zoomChangedInteractive('y2', true);
          }
-
       },
 
       /** @summary Show frame context menu */
