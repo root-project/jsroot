@@ -4012,8 +4012,8 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
    // =============================================================
 
-   function drawTH1Drawable(dom, obj, opt) {
-      return JSROOT.draw(dom, obj.fHist.fIO, opt);
+   function drawTH1Drawable(dom, obj /*, opt */) {
+      return JSROOT.draw(dom, obj.fObj.fIO, obj.fOpt);
    }
 
 
