@@ -4010,13 +4010,6 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       return jsrp.ensureRCanvas(painter, false).then(() => painter.drawPave());
    }
 
-   // =============================================================
-
-   function drawTH1Drawable(dom, obj /*, opt */) {
-      return JSROOT.draw(dom, obj.fObj.fIO, obj.fOpt);
-   }
-
-
    JSROOT.v7.RHistPainter = RHistPainter;
    JSROOT.v7.RH1Painter = RH1Painter;
    JSROOT.v7.RH2Painter = RH2Painter;
@@ -4026,7 +4019,6 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
    JSROOT.v7.drawHistDisplayItem = drawHistDisplayItem;
    JSROOT.v7.drawHistStats = drawHistStats;
-   JSROOT.v7.drawTH1Drawable = drawTH1Drawable;
 
    return JSROOT;
 
