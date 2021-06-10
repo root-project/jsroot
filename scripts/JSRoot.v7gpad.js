@@ -3251,47 +3251,48 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    /** @summary Extract properties from TObjectDisplayItem */
    RPadPainter.prototype.extractTObjectProp = function(snap) {
-      if (snap.fColIndex && snap.fColValue)
+      if (snap.fColIndex && snap.fColValue) {
+         let colors = this.root_colors || jsrp.root_colors;
          for (let k = 0; k < snap.fColIndex.length; ++k)
-            jsrp.root_colors[snap.fColIndex[k]] = snap.fColValue[k];
+            colors[snap.fColIndex[k]] = snap.fColValue[k];
+       }
 
       // painter used only for evaluation of attributes
-      let pattr = new JSROOT.ObjectPainter();
+      let pattr = new JSROOT.ObjectPainter(), obj = snap.fObject;
       pattr.assignObject(snap);
       pattr.csstype = snap.fCssType;
       pattr.rstyle = snap.fStyle;
 
       snap.fOption = pattr.v7EvalAttr("opt", "");
 
-      let obj = snap.fObject;
+      let extract_color = (member_name, attr_name) => {
+         let col = pattr.v7EvalColor(attr_name, "");
+         if (col) obj[member_name] = jsrp.addColor(col, this.root_colors);
+      }
 
       // handle TAttLine
       if ((obj.fLineColor !== undefined) && (obj.fLineWidth !== undefined) && (obj.fLineStyle !== undefined)) {
-         let line_color = pattr.v7EvalColor("line_color", "");
-         if (line_color) obj.fLineColor = jsrp.addColor(line_color);
+         extract_color("fLineColor", "line_color");
          obj.fLineWidth = pattr.v7EvalAttr("line_width", obj.fLineWidth);
          obj.fLineStyle = pattr.v7EvalAttr("line_style", obj.fLineStyle);
       }
 
       // handle TAttFill
       if ((obj.fFillColor !== undefined) && (obj.fFillStyle !== undefined)) {
-         let fill_color = pattr.v7EvalColor("fill_color", "");
-         if (fill_color) obj.fFillColor = jsrp.addColor(fill_color);
+         extract_color("fFillColor", "fill_color");
          obj.fFillStyle = pattr.v7EvalAttr("fill_style", obj.fFillStyle);
       }
 
       // handle TAttMarker
       if ((obj.fMarkerColor !== undefined) && (obj.fMarkerStyle !== undefined) && (obj.fMarkerSize !== undefined)) {
-         let marker_color = pattr.v7EvalColor("marker_color", "");
-         if (marker_color) obj.fMarkerColor = jsrp.addColor(marker_color);
+         extract_color("fMarkerColor", "marker_color");
          obj.fMarkerStyle = pattr.v7EvalAttr("marker_style", obj.fMarkerStyle);
          obj.fMarkerSize = pattr.v7EvalAttr("marker_size", obj.fMarkerSize);
       }
 
       // handle TAttText
       if ((obj.fTextColor !== undefined) && (obj.fTextAlign !== undefined) && (obj.fTextAngle !== undefined) && (obj.fTextSize !== undefined)) {
-         let text_color = pattr.v7EvalColor("text_color", "");
-         if (text_color) obj.fTextColor = jsrp.addColor(text_color);
+         extract_color("fTextColor", "text_color");
          obj.fTextAlign = pattr.v7EvalAttr("text_align", obj.fTextAlign);
          obj.fTextAngle = pattr.v7EvalAttr("text_angle", obj.fTextAngle);
          obj.fTextSize = pattr.v7EvalAttr("text_size", obj.fTextSize);
