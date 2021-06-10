@@ -3272,6 +3272,31 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          obj.fLineWidth = pattr.v7EvalAttr("line_width", obj.fLineWidth);
          obj.fLineStyle = pattr.v7EvalAttr("line_style", obj.fLineStyle);
       }
+
+      // handle TAttFill
+      if ((obj.fFillColor !== undefined) && (obj.fFillStyle !== undefined)) {
+         let fill_color = pattr.v7EvalColor("fill_color", "");
+         if (fill_color) obj.fFillColor = jsrp.addColor(fill_color);
+         obj.fFillStyle = pattr.v7EvalAttr("fill_style", obj.fFillStyle);
+      }
+
+      // handle TAttMarker
+      if ((obj.fMarkerColor !== undefined) && (obj.fMarkerStyle !== undefined) && (obj.fMarkerSize !== undefined)) {
+         let marker_color = pattr.v7EvalColor("marker_color", "");
+         if (marker_color) obj.fMarkerColor = jsrp.addColor(marker_color);
+         obj.fMarkerStyle = pattr.v7EvalAttr("marker_style", obj.fMarkerStyle);
+         obj.fMarkerSize = pattr.v7EvalAttr("marker_size", obj.fMarkerSize);
+      }
+
+      // handle TAttText
+      if ((obj.fTextColor !== undefined) && (obj.fTextAlign !== undefined) && (obj.fTextAngle !== undefined) && (obj.fTextSize !== undefined)) {
+         let text_color = pattr.v7EvalColor("text_color", "");
+         if (text_color) obj.fTextColor = jsrp.addColor(text_color);
+         obj.fTextAlign = pattr.v7EvalAttr("text_align", obj.fTextAlign);
+         obj.fTextAngle = pattr.v7EvalAttr("text_angle", obj.fTextAngle);
+         obj.fTextSize = pattr.v7EvalAttr("text_size", obj.fTextSize);
+         // TODO: v7 font handling differs much from v6, ignore for the moment
+      }
    }
 
    /** @summary Function called when drawing next snapshot from the list
