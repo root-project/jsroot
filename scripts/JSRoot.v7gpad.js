@@ -3249,6 +3249,31 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
    }
 
+   /** @summary Extract properties from TObjectDisplayItem */
+   RPadPainter.prototype.extractTObjectProp = function(snap) {
+      if (snap.fColIndex && snap.fColValue)
+         for (let k = 0; k < snap.fColIndex.length; ++k)
+            jsrp.root_colors[snap.fColIndex[k]] = snap.fColValue[k];
+
+      // painter used only for evaluation of attributes
+      let pattr = new JSROOT.ObjectPainter();
+      pattr.assignObject(snap);
+      pattr.csstype = snap.fCssType;
+      pattr.rstyle = snap.fStyle;
+
+      snap.fOption = pattr.v7EvalAttr("opt", "");
+
+      let obj = snap.fObject;
+
+      // handle TAttLine
+      if ((obj.fLineColor !== undefined) && (obj.fLineWidth !== undefined) && (obj.fLineStyle !== undefined)) {
+         let line_color = pattr.v7EvalColor("line_color", "");
+         if (line_color) obj.fLineColor = jsrp.addColor(line_color);
+         obj.fLineWidth = pattr.v7EvalAttr("line_width", obj.fLineWidth);
+         obj.fLineStyle = pattr.v7EvalAttr("line_style", obj.fLineStyle);
+      }
+   }
+
    /** @summary Function called when drawing next snapshot from the list
      * @returns {Promise} with pad painter when ready
      * @private */
@@ -3300,6 +3325,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                return this.drawNextSnap(lst, indx);
             });
 
+         if (snap._typename === "ROOT::Experimental::TObjectDisplayItem")
+            this.extractTObjectProp(snap);
+
          let promise;
 
          if (objpainter.updateObject(snap.fDrawable || snap.fObject || snap, snap.fOption || ""))
@@ -3340,7 +3368,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (snap._typename === "ROOT::Experimental::TObjectDisplayItem") {
 
          // identifier used in RObjectDrawable
-         let webSnapIds = { kNone: 0,  kObject: 1, kColors: 4, kStyle: 5, kPalette: 6 };
+         const webSnapIds = { kNone: 0,  kObject: 1, kColors: 4, kStyle: 5, kPalette: 6 };
 
          if (snap.fKind == webSnapIds.kStyle) {
             JSROOT.extend(JSROOT.gStyle, snap.fObject);
@@ -3372,6 +3400,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (!this.getFramePainter())
             return JSROOT.draw(this.getDom(), { _typename: "TFrame", $dummy: true }, "")
                          .then(() => this.drawNextSnap(lst, indx-1)); // call same object again
+
+         this.extractTObjectProp(snap);
       }
 
       // TODO - fDrawable is v7, fObject from v6, maybe use same data member?
