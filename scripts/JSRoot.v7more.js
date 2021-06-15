@@ -164,6 +164,15 @@ JSROOT.define(['painter', 'v7gpad'], (jsrp) => {
               .attr("y2", Math.round(posy + stepy/2))
               .call(objp.lineatt.func);
 
+         if (objp && entry.fError && objp.lineatt)
+            this.draw_g
+              .append("svg:line")
+              .attr("x1", Math.round(margin_x + width/8))
+              .attr("y1", Math.round(posy + stepy*0.2))
+              .attr("x2", Math.round(margin_x + width/8))
+              .attr("y2", Math.round(posy + stepy*0.8))
+              .call(objp.lineatt.func);
+
          if (objp && entry.fMarker && objp.markeratt)
             this.draw_g.append("svg:path")
                 .attr("d", objp.markeratt.create(margin_x + width/8, posy + stepy/2))
