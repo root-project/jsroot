@@ -171,13 +171,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (!dflts) dflts = {}; else
       if (typeof dflts == "number") dflts = { size: dflts };
 
-      let text_size   = this.v7EvalAttr( name + "_size", dflts.size || 12),
-          text_angle  = this.v7EvalAttr( name + "_angle", 0),
-          text_align  = this.v7EvalAttr( name + "_align", dflts.align || "none"),
-          text_color  = this.v7EvalColor( name + "_color", dflts.color || "none"),
-          font_family = this.v7EvalAttr( name + "_font_family", "Arial"),
-          font_style  = this.v7EvalAttr( name + "_font_style", ""),
-          font_weight = this.v7EvalAttr( name + "_font_weight", "");
+      let text_size   = this.v7EvalAttr(name + "_size", dflts.size || 12),
+          text_angle  = this.v7EvalAttr(name + "_angle", 0),
+          text_align  = this.v7EvalAttr(name + "_align", dflts.align || "none"),
+          text_color  = this.v7EvalColor(name + "_color", dflts.color || "none"),
+          font_family = this.v7EvalAttr(name + "_font_family", "Arial"),
+          font_style  = this.v7EvalAttr(name + "_font_style", ""),
+          font_weight = this.v7EvalAttr(name + "_font_weight", "");
 
        if (typeof text_size == "string") text_size = parseFloat(text_size);
        if (!Number.isFinite(text_size) || (text_size <= 0)) text_size = 12;
