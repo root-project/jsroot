@@ -1133,6 +1133,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.ticksColor = this.v7EvalColor("ticks_color", "");
       this.ticksWidth = this.v7EvalAttr("ticks_width", 1);
       this.labelsOffset = this.v7EvalLength("labels_offset", this.scaling_size, 0);
+      this.optionUnlab = this.v7EvalAttr("nolabels", false);
 
       this.fTitle = this.v7EvalAttr("title", "");
 
@@ -1166,8 +1167,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (this.standalone)
          this.drawMainLine(axis_g);
 
-      let optionUnlab = false,  // no labels
-          optionNoopt = false,  // no ticks position optimization
+      let optionNoopt = false,  // no ticks position optimization
           optionInt = false,    // integer labels
           optionNoexp = false;  // do not create exp
 
@@ -1176,10 +1176,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       // first draw ticks
       let tgaps = this.drawTicks(axis_g, side, true);
 
-      this.optionUnlab = optionUnlab;
-
       // draw labels
-      let labelsPromise = optionUnlab ? Promise.resolve(tgaps) : this.drawLabels(axis_g, side, tgaps);
+      let labelsPromise = this.optionUnlab ? Promise.resolve(tgaps) : this.drawLabels(axis_g, side, tgaps);
 
       return labelsPromise.then(lgaps => {
          // when drawing axis on frame, zoom rect should be always outside
