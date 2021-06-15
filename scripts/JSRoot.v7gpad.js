@@ -1757,6 +1757,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       this.x_handle = new JSROOT.TAxisPainter(this.getDom(), this.xaxis, true);
       this.x_handle.setPadName(this.getPadName());
+      this.x_handle.optionUnlab = this.v7EvalAttr("x_nolabels", false);
 
       this.x_handle.configureAxis("xaxis", this.xmin, this.xmax, this.scale_xmin, this.scale_xmax, this.swap_xy, this.swap_xy ? [0,h] : [0,w],
                                       { reverse: this.reverse_x,
@@ -1769,6 +1770,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       this.y_handle = new JSROOT.TAxisPainter(this.getDom(), this.yaxis, true);
       this.y_handle.setPadName(this.getPadName());
+      this.y_handle.optionUnlab = this.v7EvalAttr("y_nolabels", false);
 
       this.y_handle.configureAxis("yaxis", this.ymin, this.ymax, this.scale_ymin, this.scale_ymax, !this.swap_xy, this.swap_xy ? [0,w] : [0,h],
                                       { reverse: this.reverse_y,
@@ -1866,16 +1868,22 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          draw_promise = Promise.resolve(true)
       } else if (this.v6axes) {
 
+         // in v7 ticksx/y values shifted by 1 relative to v6
+         // In v7 ticksx==0 means no ticks, ticksx==1 equivalent to ==0 in v6
+
          let can_adjust_frame = false, disable_x_draw = false, disable_y_draw = false;
+
+         draw_horiz.disable_ticks = (ticksx <= 0);
+         draw_vertical.disable_ticks = (ticksy <= 0);
 
          let promise1 = draw_horiz.drawAxis(layer, w, h,
                                             draw_horiz.invert_side ? undefined : `translate(0,${h})`,
-                                            ticksx ? -h : 0, disable_x_draw,
+                                            (ticksx > 1) ? -h : 0, disable_x_draw,
                                             undefined, false);
 
          let promise2 = draw_vertical.drawAxis(layer, w, h,
                                                draw_vertical.invert_side ? `translate(${w},0)` : undefined,
-                                               ticksy ? w : 0, disable_y_draw,
+                                               (ticksy > 1) ? w : 0, disable_y_draw,
                                                draw_vertical.invert_side ? 0 : this._frame_x, can_adjust_frame);
          draw_promise = Promise.all([promise1, promise2]).then(() => this.drawGrids());
 
