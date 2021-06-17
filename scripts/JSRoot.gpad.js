@@ -3677,18 +3677,23 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
      * @returns {Promise} with created image */
    TPadPainter.prototype.produceImage = function(full_canvas, file_format) {
 
-      let use_frame = (full_canvas === "frame");
-
-      let elem = use_frame ? this.getFrameSvg() : (full_canvas ? this.getCanvSvg() : this.svg_this_pad());
+      let use_frame = (full_canvas === "frame"),
+          elem = use_frame ? this.getFrameSvg() : (full_canvas ? this.getCanvSvg() : this.svg_this_pad());
 
       if (elem.empty()) return Promise.resolve("");
 
-      let painter = (full_canvas && !use_frame) ? this.getCanvPainter() : this;
+      let painter = (full_canvas && !use_frame) ? this.getCanvPainter() : this,
+          items = [], // keep list of replaced elements, which should be moved back at the end
+          active_pp = null;
 
-      let items = []; // keep list of replaced elements, which should be moved back at the end
-
-      if (!use_frame) // do not make transformations for the frame
       painter.forEachPainterInPad(pp => {
+
+          if (pp.is_active_pad && !active_pp) {
+             active_pp = pp;
+             active_pp.drawActiveBorder(null, false);
+          }
+
+         if (use_frame) return; // do not make transformations for the frame
 
          let item = { prnt: pp.svg_this_pad() };
          items.push(item);
@@ -3738,17 +3743,21 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       }, "pads");
 
-      function reEncode(data) {
+      let reEncode = data => {
          data = encodeURIComponent(data);
          data = data.replace(/%([0-9A-F]{2})/g, (match, p1) => {
            let c = String.fromCharCode('0x'+p1);
            return c === '%' ? '%25' : c;
          });
          return decodeURIComponent(data);
-      }
+      };
 
-      function reconstruct() {
-         for (let k=0;k<items.length;++k) {
+      let reconstruct = () => {
+         // reactivate border
+         if (active_pp)
+            active_pp.drawActiveBorder(null, true);
+
+         for (let k = 0; k < items.length; ++k) {
             let item = items[k];
 
             if (item.img)
