@@ -31,7 +31,8 @@ examples_more = {
      { name: "hard_cont", file: "hard_contour.root", item: 'hard_contour',  title: "Complex contour plot without closed lines, trying to fix it", opt:"cont" },
      { name: "symlog", opt: "col,symlogx,symlogy", file: "hsimple.root", item: "hpxpy;1", title: "symlog scale with default 1e-3 factor for constant" },
      { name: "symlog1", opt: "col,symlogx1,symlogy1", file: "hsimple.root", item: "hpxpy;1", title: "symlog scale with 1e-1 factor for constant" },
-     { name: "symlog5", opt: "col,symlogx5,symlogy5", file: "hsimple.root", item: "hpxpy;1", title: "symlog scale with 1e-5 factor for constant" }
+     { name: "symlog5", opt: "col,symlogx5,symlogy5", file: "hsimple.root", item: "hpxpy;1", title: "symlog scale with 1e-5 factor for constant" },
+     { name: "greek", opt: "lego2;xtitle:x=%23alpha%23pm%23sigma;ytitle:y=%23beta%23pm%23sigma;ztitle:z=%23gamma%23pm%23sigma", file: "hsimple.root", item: "hpxpy;1", title: "Greek letters on lego plot" }
    ],
    TH2Poly : [
       { name: "germany", url: "?nobrowser&file=$$$th2poly.root&item=europe;1/[13]", title: "Draw single TH2PolyBin from europe map" },
