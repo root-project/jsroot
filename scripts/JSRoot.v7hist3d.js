@@ -32,10 +32,10 @@ JSROOT.define(['d3', 'base3d', 'painter', 'latex', 'v7hist'], (d3, THREE, jsrp, 
       if ((pos.x >= 0) && (pos.y >= 0)) qudrant = 3;
       if ((pos.x >= 0) && (pos.y < 0)) qudrant = 4;
 
-      function testvisible(id, range) {
+      let testvisible = (id, range) => {
          if (id <= qudrant) id+=4;
          return (id > qudrant) && (id < qudrant+range);
-      }
+      };
 
       for (let n=0;n<top.children.length;++n) {
          let chld = top.children[n];
@@ -50,8 +50,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'latex', 'v7hist'], (d3, THREE, jsrp, 
             chld.visible = testvisible(chld.xyboxid + shift, range);
             if (!chld.visible && chld.bottom && bb)
                chld.visible = testvisible(chld.xyboxid, 3);
-         } else
-         if (chld.zboxid) {
+         } else if (chld.zboxid) {
             let range = 2, shift = 0;
             if (fb && bb) range = 5; else
             if (bb && !fb) range = 4; else

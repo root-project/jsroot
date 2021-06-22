@@ -32,12 +32,12 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
       if ((pos.x >= 0) && (pos.y >= 0)) qudrant = 3;
       if ((pos.x >= 0) && (pos.y < 0)) qudrant = 4;
 
-      function testvisible(id, range) {
+      let testvisible = (id, range) => {
          if (id <= qudrant) id+=4;
          return (id > qudrant) && (id < qudrant+range);
-      }
+      };
 
-      for (let n=0;n<top.children.length;++n) {
+      for (let n = 0; n < top.children.length; ++n) {
          let chld = top.children[n];
          if (chld.grid) chld.visible = bb && testvisible(chld.grid, 3); else
          if (chld.zid) chld.visible = testvisible(chld.zid, 2); else
@@ -50,8 +50,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
             chld.visible = testvisible(chld.xyboxid + shift, range);
             if (!chld.visible && chld.bottom && bb)
                chld.visible = testvisible(chld.xyboxid, 3);
-         } else
-         if (chld.zboxid) {
+         } else if (chld.zboxid) {
             let range = 2, shift = 0;
             if (fb && bb) range = 5; else
             if (bb && !fb) range = 4; else
@@ -422,7 +421,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
          if (tip.y1 === tip.y2) console.warn('same tip Y', tip.y1, tip.y2);
          if (tip.z1 === tip.z2) { tip.z2 = tip.z1 + 0.0001; } // avoid zero faces
 
-         for (let k=0,nn=-3;k<indicies.length;++k) {
+         for (let k = 0,nn = -3; k < indicies.length; ++k) {
             let vert = vertices[indicies[k]];
             pos[k*3]   = tip.x1 + vert.x * (tip.x2 - tip.x1);
             pos[k*3+1] = tip.y1 + vert.y * (tip.y2 - tip.y1);
@@ -1008,7 +1007,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
       }
 
       let linez_geom = jsrp.createLineSegments([0,0,grminz, 0,0,grmaxz], lineMaterial, null, true);
-      for(let n=0;n<4;++n) {
+      for(let n = 0; n < 4; ++n) {
          let line = new THREE.LineSegments(linez_geom, lineMaterial);
          line.zboxid = zcont[n].zid;
          line.position.copy(zcont[n].position);
