@@ -9,6 +9,7 @@
 6. Implement "nozoomx" and "nozoomy" draw options for TPad
 7. Implement "frame" draw option for TGaxis - fix position of axis relative to the frame
 8. Preserve position of TPaletteAxis, if provided with histogram. Make default position like in ROOT.
+9. Support basic TLatex symbols in lego plos axis title
 
 
 ## Changes in 6.1.0

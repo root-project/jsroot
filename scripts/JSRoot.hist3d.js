@@ -1,7 +1,7 @@
 /// @file JSRoot.hist3d.js
 /// histograms 3D graphics
 
-JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
+JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, ltx) => {
 
    "use strict";
 
@@ -547,7 +547,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
             is_major = false; lbl = "";
          }
 
-         if (is_major && lbl && (lbl.length>0)) {
+         if (is_major && lbl && (lbl.length > 0)) {
             let text3d = new THREE.TextGeometry(lbl, { font: JSROOT.threejs_font_helvetiker_regular, size: textsize, height: 0, curveSegments: 5 });
             text3d.computeBoundingBox();
             let draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
@@ -573,7 +573,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       }
 
       if (xaxis && xaxis.fTitle) {
-         let text3d = new THREE.TextGeometry(xaxis.fTitle, { font: JSROOT.threejs_font_helvetiker_regular, size: textsize, height: 0, curveSegments: 5 });
+         let text3d = new THREE.TextGeometry(ltx.translateLaTeX(xaxis.fTitle), { font: JSROOT.threejs_font_helvetiker_regular, size: textsize, height: 0, curveSegments: 5 });
          text3d.computeBoundingBox();
          text3d.center = xaxis.TestBit(JSROOT.EAxisBits.kCenterTitle);
          text3d.gry = 2; // factor 2 shift
@@ -786,7 +786,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
       }
 
       if (yaxis && yaxis.fTitle) {
-         let text3d = new THREE.TextGeometry(yaxis.fTitle, { font: JSROOT.threejs_font_helvetiker_regular, size: textsize, height: 0, curveSegments: 5 });
+         let text3d = new THREE.TextGeometry(ltx.translateLaTeX(yaxis.fTitle), { font: JSROOT.threejs_font_helvetiker_regular, size: textsize, height: 0, curveSegments: 5 });
          text3d.computeBoundingBox();
          text3d.center = yaxis.TestBit(JSROOT.EAxisBits.kCenterTitle);
          text3d.grx = 2; // factor 2 shift
@@ -941,7 +941,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'hist'], (d3, jsrp, THREE) => {
          });
 
          if (zaxis && zaxis.fTitle) {
-            let text3d = new THREE.TextGeometry(zaxis.fTitle, { font: JSROOT.threejs_font_helvetiker_regular, size: textsize, height: 0, curveSegments: 5 });
+            let text3d = new THREE.TextGeometry(ltx.translateLaTeX(zaxis.fTitle), { font: JSROOT.threejs_font_helvetiker_regular, size: textsize, height: 0, curveSegments: 5 });
             text3d.computeBoundingBox();
             let draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
                 // draw_height = text3d.boundingBox.max.y - text3d.boundingBox.min.y,
