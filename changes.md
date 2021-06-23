@@ -1,5 +1,9 @@
 # JSROOT changelog
 
+## Changes in 6.1.1
+1. Fix bug in frame drawing, some interactive features was not properly working
+
+
 ## Changes in 6.1.0
 1. Support drawing produced by TRatioPlot, including interactive zooming
 2. Fix problem with TF1 drawing from histogram list of primitives
