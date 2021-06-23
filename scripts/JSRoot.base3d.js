@@ -71,7 +71,8 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
          return rect;
       }
 
-      let elem = pad, fp = this.getFramePainter();
+      let elem = pad, fp = this.getFramePainter(), pp = this.getPadPainter();
+
       if (can3d === 0) elem = this.getCanvSvg();
 
       let size = { x: 0, y: 0, width: 100, height: 100, clname: clname, can3d: can3d };
@@ -86,14 +87,15 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
       size.height = elem.property("draw_height");
 
       if ((!fp || fp.mode3d) && (can3d > 0)) {
-         size.x = Math.round(size.x + size.width * JSROOT.gStyle.fPadLeftMargin);
-         size.y = Math.round(size.y + size.height * JSROOT.gStyle.fPadTopMargin);
-         size.width = Math.round(size.width * (1 - JSROOT.gStyle.fPadLeftMargin - JSROOT.gStyle.fPadRightMargin));
-         size.height = Math.round(size.height * (1 - JSROOT.gStyle.fPadTopMargin - JSROOT.gStyle.fPadBottomMargin));
+         let rpad = pp ? pp.getRootPad() : null;
+         if (!rpad) rpad = JSROOT.create("TPad"); // gStyle will be applied
+         size.x = Math.round(size.x + size.width * rpad.fLeftMargin);
+         size.y = Math.round(size.y + size.height * rpad.fTopMargin);
+         size.width = Math.round(size.width * (1 - rpad.fLeftMargin - rpad.fRightMargin));
+         size.height = Math.round(size.height * (1 - rpad.fTopMargin - rpad.fBottomMargin));
       }
 
-      let pp = this.getPadPainter(),
-          rect = pp ? pp.getPadRect() : { width: 100, height: 100 },
+      let rect = pp ? pp.getPadRect() : { width: 100, height: 100 },
           x2 = rect.width - size.x - size.width,
           y2 = rect.height - size.y - size.height;
 
