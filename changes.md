@@ -10,6 +10,7 @@
 7. Implement "frame" draw option for TGaxis - fix position of axis relative to the frame
 8. Preserve position of TPaletteAxis, if provided with histogram. Make default position like in ROOT.
 9. Support basic TLatex symbols in lego plos axis title
+10. Use frame margins when create 3D lego drawings
 
 
 ## Changes in 6.1.0
