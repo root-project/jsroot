@@ -224,6 +224,7 @@ There are specific options which only can be used with JSROOT for TPad and TCanv
 - nopalette - ignore paletter stored with TCanvas
 - nocolors - ignore colors list stored with TCanvas
 - lcolors - use only locally colors list stored with TCanvas
+- nomargins - clear frame margins
 
 
 ## Superimposing draw objects

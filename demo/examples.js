@@ -252,7 +252,7 @@ examples_main = {
      { name: "axis", file: "gaxis.root", item: "c1;1", title: "TGaxis class" },
      { name: "arrow", file: "arrow.root", item: "c1;1", title: "TArrow class" },
      { name: "sinfo", url: "?nobrowser&file=$$$hsimple.root&item=StreamerInfo", title: "List of streamer infos" },
-     { name: "3dmark", url: "?nobrowser&file=$$$mix2d3d.root&item=Canvas;1/pad4&opt=white", title: "TPloyMarker3D class" },
+     { name: "3dmark", url: "?nobrowser&file=$$$mix2d3d.root&item=Canvas;1/pad4&opt=white;nomargins", title: "TPloyMarker3D class, reset pad margins" },
      { name: "profile2d", file: "profile2d.root", item: "c1;1", title: "TProfile2D class" },
      { name: "spline", file: "tutorials_graphs.root", item: 'splines_test',  title: "TSpline3 and TSpline5 classes, tutorials/graphs/splines_test.C" },
      { name: "polyline", file: "polyline.root", item: "can;1", title: "TPolyLine class (produced with graphics/triangles.C)" },
