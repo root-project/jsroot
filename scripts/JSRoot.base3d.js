@@ -1007,11 +1007,19 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
       }
 
       control.mainProcessDblClick = function(evnt) {
+         // suppress simple click handler if double click detected
+         if (this.single_click_tm) {
+            clearTimeout(this.single_click_tm);
+            delete this.single_click_tm;
+         }
          this.processDblClick(evnt);
       }
 
       if (painter && painter.options && painter.options.mouse_click) {
          control.processClick = function(mouse) {
+            delete this.single_click_tm;
+
+            // method assigned in the Eve7 and used for object selection
             if (typeof this.ProcessSingleClick == 'function') {
                let intersects = this.getMouseIntersects(mouse);
                this.ProcessSingleClick(intersects);
@@ -1026,7 +1034,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
 
             // if normal event, set longer timeout waiting if double click not detected
             if (evnt.detail != 2)
-               this.single_click_tmout = setTimeout(this.processClick.bind(this, this.getMousePos(evnt, {})), 300);
+               this.single_click_tm = setTimeout(this.processClick.bind(this, this.getMousePos(evnt, {})), 300);
          }.bind(control);
       }
 
