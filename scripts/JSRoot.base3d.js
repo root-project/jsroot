@@ -813,13 +813,38 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
       }
 
       control.processDblClick = function(evnt) {
-         let intersect = this.detectZoomMesh(evnt);
-         if (intersect && this.painter) {
-            this.painter.unzoom(intersect.object.use_y_for_z ? "y" : intersect.object.zoom);
-         } else {
-            this.reset();
+
+         // first check if zoom mesh clicked
+         let zoom_intersect = this.detectZoomMesh(evnt);
+         if (zoom_intersect && this.painter) {
+            this.painter.unzoom(zoom_intersect.object.use_y_for_z ? "y" : zoom_intersect.object.zoom);
+            return;
          }
-         // this.painter.render3D();
+
+         // then check if double-click handler assigned
+         let fp = this.painter ? this.painter.getFramePainter() : null;
+         if (fp && typeof fp._dblclick_handler == 'function') {
+            let mouse_pos = this.getMousePos(evnt, {}),
+                intersects = this.getMouseIntersects(mouse_pos),
+                tip = null, painter = null;
+
+            for (let i = 0; i < intersects.length; ++i)
+               if (intersects[i].object.tooltip) {
+                  tip = intersects[i].object.tooltip(intersects[i]);
+                  painter = intersects[i].object.painter;
+                  break;
+               }
+
+            if (tip && painter) {
+               fp._dblclick_handler({ obj: painter.getObject(),  name: painter.getObject().fName,
+                                      bin: tip.bin, cont: tip.value,
+                                      binx: tip.ix, biny: tip.iy, binz: tip.iz,
+                                      grx: (tip.x1+tip.x2)/2, gry: (tip.y1+tip.y2)/2, grz: (tip.z1+tip.z2)/2 });
+               return;
+            }
+          }
+
+          this.reset();
       }
 
       control.changeEvent = function() {
