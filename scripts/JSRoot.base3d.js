@@ -811,8 +811,25 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
          return null;
       }
 
-      control.processDblClick = function(evnt) {
+      control.getInfoAtMousePosition = function(mouse_pos) {
+         let intersects = this.getMouseIntersects(mouse_pos),
+             tip = null, painter = null;
 
+         for (let i = 0; i < intersects.length; ++i)
+            if (intersects[i].object.tooltip) {
+               tip = intersects[i].object.tooltip(intersects[i]);
+               painter = intersects[i].object.painter;
+               break;
+         }
+
+         if (tip && painter)
+            return { obj: painter.getObject(),  name: painter.getObject().fName,
+                     bin: tip.bin, cont: tip.value,
+                     binx: tip.ix, biny: tip.iy, binz: tip.iz,
+                     grx: (tip.x1+tip.x2)/2, gry: (tip.y1+tip.y2)/2, grz: (tip.z1+tip.z2)/2 };
+      }
+
+      control.processDblClick = function(evnt) {
          // first check if zoom mesh clicked
          let zoom_intersect = this.detectZoomMesh(evnt);
          if (zoom_intersect && this.painter) {
@@ -823,22 +840,9 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
          // then check if double-click handler assigned
          let fp = this.painter ? this.painter.getFramePainter() : null;
          if (fp && typeof fp._dblclick_handler == 'function') {
-            let mouse_pos = this.getMousePos(evnt, {}),
-                intersects = this.getMouseIntersects(mouse_pos),
-                tip = null, painter = null;
-
-            for (let i = 0; i < intersects.length; ++i)
-               if (intersects[i].object.tooltip) {
-                  tip = intersects[i].object.tooltip(intersects[i]);
-                  painter = intersects[i].object.painter;
-                  break;
-               }
-
-            if (tip && painter) {
-               fp._dblclick_handler({ obj: painter.getObject(),  name: painter.getObject().fName,
-                                      bin: tip.bin, cont: tip.value,
-                                      binx: tip.ix, biny: tip.iy, binz: tip.iz,
-                                      grx: (tip.x1+tip.x2)/2, gry: (tip.y1+tip.y2)/2, grz: (tip.z1+tip.z2)/2 });
+            let info = this.getInfoAtMousePosition(this.getMousePos(evnt, {}));
+            if (info) {
+               fp._dblclick_handler(info);
                return;
             }
           }
@@ -1014,12 +1018,23 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
          this.processDblClick(evnt);
       }
 
-      control.processClick = function(mouse, kind) {
+      control.processClick = function(mouse_pos, kind) {
          delete this.single_click_tm;
+
+         if (kind == 1) {
+            let fp = this.painter ? this.painter.getFramePainter() : null;
+            if (fp && (typeof fp._click_handler == 'function')) {
+               let info = this.getInfoAtMousePosition(mouse_pos);
+               if (info) {
+                  fp._click_handler(info);
+                  return;
+               }
+            }
+         }
 
          // method assigned in the Eve7 and used for object selection
          if ((kind == 2) && (typeof this.ProcessSingleClick == 'function')) {
-            let intersects = this.getMouseIntersects(mouse);
+            let intersects = this.getMouseIntersects(mouse_pos);
             this.ProcessSingleClick(intersects);
          }
       };
@@ -1033,9 +1048,11 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
             delete this.single_click_tm;
          }
 
-         let kind = 0;
-         if (this.ProcessSingleClick && this.painter && this.painter.options && this.painter.options.mouse_click)
-            kind = 2;
+         let kind = 0, fp = this.painter ? this.painter.getFramePainter() : null;
+         if (fp && typeof fp._click_handler == 'function')
+            kind = 1; // user click handler
+         else if (this.ProcessSingleClick && this.painter && this.painter.options && this.painter.options.mouse_click)
+            kind = 2;  // eve7 click handler
 
          // if normal event, set longer timeout waiting if double click not detected
          if (kind)
