@@ -651,7 +651,7 @@
 
          if (!m.jsroot || m.extract)
             element.onload = () => finish_loading(m, m.extract ? globalThis[m.extract] : 1); // mark script loaded
-         element.onerror = () => { m.failure = true; req.failed(); }
+         element.onerror = () => { element.remove(); m.failure = true; req.failed(); }
       }
 
       function after_depend_load(req,d,m) {
