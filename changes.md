@@ -1,7 +1,7 @@
 # JSROOT changelog
 
 ## Changes in 6.1.1
-1. Fix bug in frame drawing, some interactive features was not properly working
+1. Fix bug in TFrame drawing, some interactive features was not properly working
 
 
 ## Changes in 6.1.0
