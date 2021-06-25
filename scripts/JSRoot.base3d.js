@@ -739,8 +739,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
             this.domElement.removeEventListener('pointerup', control_mouseup);
          }
 
-         if (this.lstn_click)
-            this.domElement.removeEventListener('click', this.lstn_click);
+         this.domElement.removeEventListener('click', this.lstn_click);
          this.domElement.removeEventListener('dblclick', this.lstn_dblclick);
          this.domElement.removeEventListener('contextmenu', this.lstn_contextmenu);
          this.domElement.removeEventListener('mousemove', this.lstn_mousemove);
@@ -1015,28 +1014,33 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
          this.processDblClick(evnt);
       }
 
-      if (painter && painter.options && painter.options.mouse_click) {
-         control.processClick = function(mouse) {
-            delete this.single_click_tm;
+      control.processClick = function(mouse, kind) {
+         delete this.single_click_tm;
 
-            // method assigned in the Eve7 and used for object selection
-            if (typeof this.ProcessSingleClick == 'function') {
-               let intersects = this.getMouseIntersects(mouse);
-               this.ProcessSingleClick(intersects);
-            }
+         // method assigned in the Eve7 and used for object selection
+         if ((kind == 2) && (typeof this.ProcessSingleClick == 'function')) {
+            let intersects = this.getMouseIntersects(mouse);
+            this.ProcessSingleClick(intersects);
+         }
+      };
+
+      control.lstn_click = function(evnt) {
+         // ignore right-mouse click
+         if (evnt.detail == 2) return;
+
+         if (this.single_click_tm) {
+            clearTimeout(this.single_click_tm);
+            delete this.single_click_tm;
          }
 
-         control.lstn_click = function(evnt) {
-            if (this.single_click_tm) {
-               clearTimeout(this.single_click_tm);
-               delete this.single_click_tm;
-            }
+         let kind = 0;
+         if (this.ProcessSingleClick && this.painter && this.painter.options && this.painter.options.mouse_click)
+            kind = 2;
 
-            // if normal event, set longer timeout waiting if double click not detected
-            if (evnt.detail != 2)
-               this.single_click_tm = setTimeout(this.processClick.bind(this, this.getMousePos(evnt, {})), 300);
-         }.bind(control);
-      }
+         // if normal event, set longer timeout waiting if double click not detected
+         if (kind)
+            this.single_click_tm = setTimeout(this.processClick.bind(this, this.getMousePos(evnt, {}), kind), 300);
+      }.bind(control);
 
       control.addEventListener('change', () => control.changeEvent());
       control.addEventListener('start', () => control.startEvent());
@@ -1047,8 +1051,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
       control.lstn_mousemove = evnt => control.mainProcessMouseMove(evnt);
       control.lstn_mouseleave = () => control.mainProcessMouseLeave();
 
-      if (control.lstn_click)
-         renderer.domElement.addEventListener('click', control.lstn_click);
+      renderer.domElement.addEventListener('click', control.lstn_click);
       renderer.domElement.addEventListener('dblclick', control.lstn_dblclick);
       renderer.domElement.addEventListener('contextmenu', control.lstn_contextmenu);
       renderer.domElement.addEventListener('mousemove', control.lstn_mousemove);

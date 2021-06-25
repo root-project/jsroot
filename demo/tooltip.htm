@@ -45,7 +45,7 @@
          for (let n=0;n<20;n++)
             h1.setBinContent(n+1, info.obj.getBinContent(n+1, info.biny));
          h1.fName = "tooltip";
-         h1.fTitle = "Projection of biny=" + info.biny;
+         h1.fTitle = "Projection of biny=" + (info.biny-1);
          JSROOT.redraw("tooltip_draw", h1);
          return true; // means event is handled and can be ignored
       }
