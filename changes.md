@@ -14,6 +14,9 @@
 11. Implement "nomargins" draw option for pad/canvas
 12. Support custom mouse click/dblcklick handlers for lego plots
 
+## Changes in 6.1.1
+1. Fix bug in TFrame drawing, some interactive features was not properly working
+
 
 ## Changes in 6.1.0
 1. Support drawing produced by TRatioPlot, including interactive zooming
