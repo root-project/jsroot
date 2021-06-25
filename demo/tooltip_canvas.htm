@@ -18,6 +18,7 @@
       <input type="radio" name="kind" id="btn1" value="Tooltip" checked/> Tooltip
       <input type="radio" name="kind" id="btn2" value="Click"/> Click
       <input type="radio" name="kind" id="btn3" value="Dblclick"/> Doubleclk
+      <input type="radio" name="kind" id="btn4" value="All"/> All
    </form>
 
    <div id="object_draw" style="width:800px; height:600px"></div>
@@ -28,17 +29,17 @@
 
       let cnt = 0, kind = "", toggle_flag = true, last_hbin = -1;
 
-      function UserHandler(info) {
+      function UserHandler(kind, info) {
          if (!info)  {
-            d3.select("#user_tooltip").html("No tooltip");
+            d3.select("#user_tooltip").html("No info");
             last_hbin = -1;
             return false;
          }
 
          last_hbin = info.bin;
 
-         // set tooltip info
-         d3.select("#user_tooltip").html("name: " + info.name + "  bin: " + info.bin + "  cont: " + info.cont);
+         // show info
+         d3.select("#user_tooltip").html(`Handler: ${kind} Name: ${info.name} Bin: ${info.bin} Content: ${info.cont}`);
 
          let h1 = JSROOT.createHistogram("TH1I", 20);
          // copy content from TH2 to TH1
@@ -112,20 +113,19 @@
             // one can find painter for any object if name and/or type name is known
             let painter = canvas_painter.findPainterFor(null, histo.fName, histo._typename);
 
-            // if there is one histogram - it is main painter
+            // if there is at least one histogram - it should be also main painter
             // let painter = canvas_painter.getMainPainter();
 
-            let chkd = document.getElementById("btn1").checked;
+            let chkd1 = document.getElementById("btn1").checked,
+                chkd2 = document.getElementById("btn2").checked,
+                chkd3 = document.getElementById("btn3").checked,
+                all = document.getElementById("btn4").checked;
 
-            painter.configureUserTooltipHandler(chkd ? UserHandler : null);
+            painter.configureUserTooltipHandler(chkd1 || all ? info => UserHandler("tooltip", info) : null);
 
-            chkd = document.getElementById("btn2").checked;
+            painter.configureUserClickHandler(chkd2 || all ? info => UserHandler("click", info) : null);
 
-            painter.configureUserClickHandler(chkd ? UserHandler : null);
-
-            chkd = document.getElementById("btn3").checked;
-
-            painter.configureUserDblclickHandler(chkd ? UserHandler : null);
+            painter.configureUserDblclickHandler(chkd3 || all ? info => UserHandler("dblclick", info) : null);
 
             painter.configureUserContextMenu(CustomContextMenu);
          });
