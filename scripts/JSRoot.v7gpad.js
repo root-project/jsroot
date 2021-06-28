@@ -523,7 +523,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          }
       } else {
          let labels = this.getObject().fLabels;
-         if (labels && (indx>=0) && (indx < labels.length))
+         if (labels && (indx >= 0) && (indx < labels.length))
             return labels[indx];
       }
       return null;
@@ -1261,8 +1261,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           pos  = pp.getCoordinate(drawable.fPos),
           len  = pp.getPadLength(drawable.fVertical, drawable.fLength),
           reverse = this.v7EvalAttr("reverse", false),
-          min = drawable.fLabels ? 0 : drawable.fMin,
-          max = drawable.fLabels ? drawable.fLabels.length : drawable.fMax;
+          labels_len = drawable.fLabels.length,
+          min = (labels_len > 0) ? 0 : this.v7EvalAttr("min", 0),
+          max = (labels_len > 0) ? labels_len : this.v7EvalAttr("max", 100);
 
       // in vertical direction axis drawn in negative direction
       if (drawable.fVertical) len -= pp.getPadHeight();
@@ -1273,7 +1274,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          smin = min; smax = max;
       }
 
-      this.configureAxis("axis", min, max, smin, smax, drawable.fVertical, undefined, len, { reverse: reverse, labels: !!drawable.fLabels });
+      this.configureAxis("axis", min, max, smin, smax, drawable.fVertical, undefined, len, { reverse: reverse, labels: labels_len > 0 });
 
       this.createG();
 
@@ -5423,7 +5424,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    jsrp.addDrawFunc({ name: "ROOT::Experimental::RPaveText", icon: "img_pavetext", prereq: "v7more", func: "JSROOT.v7.drawPaveText", opt: "" });
    jsrp.addDrawFunc({ name: "ROOT::Experimental::RFrame", icon: "img_frame", func: drawRFrame, opt: "" });
    jsrp.addDrawFunc({ name: "ROOT::Experimental::RAxisDrawable", icon: "img_frame", func: drawRAxis, opt: "" });
-   jsrp.addDrawFunc({ name: "ROOT::Experimental::RAxisLabelsDrawable", icon: "img_frame", func: drawRAxis, opt: "" });
 
    JSROOT.v7.RAxisPainter = RAxisPainter;
    JSROOT.v7.RFramePainter = RFramePainter;
