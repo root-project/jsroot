@@ -5213,7 +5213,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
               palette_x = Math.round(fx + fw + palette_margin),
               palette_y = fy;
 
-          palette_width = this.v7EvalLength("size", pw, 0.05);
+          palette_width = this.v7EvalLength("width", pw, 0.05);
           palette_height = fh;
 
           // x,y,width,height attributes used for drag functionality
