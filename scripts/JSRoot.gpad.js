@@ -3067,7 +3067,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
 
       let showsubitems = true;
-
       let redrawNext = indx => {
          while (indx < this.painters.length) {
             let sub = this.painters[indx++], res = 0;

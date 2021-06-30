@@ -3291,21 +3291,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
      * @returns {Promise} when redrawing ready */
    RPadPainter.prototype.redrawPad = function(reason) {
 
-      // prevent redrawing
-      if (this._doing_pad_draw) {
+      let sync_promise = this.syncDraw(reason);
+      if (sync_promise === false) {
          console.log('Prevent RPad redrawing');
          return Promise.resolve(false);
       }
 
       let showsubitems = true;
-
-      if (this.iscan) {
-         this.createCanvasSvg(2);
-      } else {
-         showsubitems = this.createPadSvg(true);
-      }
-
-      // even sub-pad is not visible, we should redraw sub-sub-pads to hide them as well
       let redrawNext = indx => {
          while (indx < this.painters.length) {
             let sub = this.painters[indx++], res = 0;
@@ -3318,11 +3310,19 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return Promise.resolve(true);
       };
 
-      return redrawNext(0).then(() => {
+      return sync_promise.then(() => {
+         if (this.iscan) {
+            this.createCanvasSvg(2);
+         } else {
+            showsubitems = this.createPadSvg(true);
+         }
+         return redrawNext(0);
+      }).then(() => {
          if (jsrp.getActivePad() === this) {
             let canp = this.getCanvPainter();
             if (canp) canp.producePadEvent("padredraw", this);
          }
+         this.confirmRedraw();
          return true;
       });
    }
@@ -3473,7 +3473,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (indx===undefined) {
          indx = -1;
          // flag used to prevent immediate pad redraw during first draw
-         this._doing_pad_draw = true;
          this._snaps_map = {}; // to control how much snaps are drawn
          this._num_primitives = lst ? lst.length : 0;
          this._auto_color_cnt = 0;
@@ -3484,7 +3483,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       ++indx; // change to the next snap
 
       if (!lst || indx >= lst.length) {
-         delete this._doing_pad_draw;
          delete this._snaps_map;
          delete this._auto_color_cnt;
          return Promise.resolve(this);
