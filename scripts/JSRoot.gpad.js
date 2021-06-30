@@ -2895,8 +2895,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
       if (!kind) kind = "redraw";
       // if operation registered, ignore next calls
-      if ((kind !== true) && (this._doing_draw.indexOf(kind) >= 0))
-         return false;
+      if ((kind !== true) && (this._doing_draw.indexOf(kind) >= 0)) return false;
       this._doing_draw.push(kind);
       return new Promise(resolveFunc => {
          this._doing_drawf.push(resolveFunc);
@@ -2916,9 +2915,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          let func = this._doing_drawf.shift();
          func(); // activate next action
       }
-
    }
-
 
    /** @summary Draw pad primitives
      * @returns {Promise} when drawing completed
