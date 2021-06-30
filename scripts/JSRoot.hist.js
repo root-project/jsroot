@@ -361,12 +361,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       return promise.then(() => JSROOT.require(['interactive'])).then(inter => {
 
-         if (!this.draw_g) {
-            // FIXME: just workaround to prevent glitch because next canvas update triggered before previous is finished
-            console.error('Fix me - canvas update glitch');
-            return this;
-         }
-
          // here all kind of interactive settings
          rect.style("pointer-events", "visibleFill")
              .on("mouseenter", () => this.showObjectStatus());
