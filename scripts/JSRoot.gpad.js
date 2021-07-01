@@ -2876,13 +2876,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    /** @summary Return true if any objects beside sub-pads exists in the pad */
    TPadPainter.prototype.hasObjectsToDraw = function() {
-
-      if (!this.pad || !this.pad.fPrimitives) return false;
-
-      for (let n=0;n<this.pad.fPrimitives.arr.length;++n)
-         if (this.pad.fPrimitives.arr[n] && this.pad.fPrimitives.arr[n]._typename != "TPad") return true;
-
-      return false;
+      let arr = this.pad && this.pad.fPrimitives ? this.pad.fPrimitives.arr : null;
+      return arr && arr.find(obj => obj._typename != "TPad") ? true : false;
    }
 
    /** @summary sync drawing/redrawing/resize of the pad
@@ -2909,11 +2904,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    TPadPainter.prototype.confirmDraw = function() {
       if (this._doing_draw === undefined)
          return console.warn("failure, should not happen");
-      let entry = this._doing_draw.shift();
-      if (this._doing_draw.length == 0)
+      this._doing_draw.shift();
+      if (this._doing_draw.length == 0) {
          delete this._doing_draw;
-      if(entry.func)
-         entry.func(); // activate next action
+      } else {
+         let entry = this._doing_draw[0];
+         if(entry.func) { entry.func(); delete entry.func; }
+      }
    }
 
    /** @summary Draw pad primitives
@@ -3357,7 +3354,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return this.drawNextSnap(lst, indx);
    }
 
-
    /** @summary Return painter with specified id
      * @private */
    TPadPainter.prototype.findSnap = function(snapid) {
@@ -3366,7 +3362,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if (!this.painters) return null;
 
-      for (let k=0;k<this.painters.length;++k) {
+      for (let k = 0; k < this.painters.length; ++k) {
          let sub = this.painters[k];
 
          if (typeof sub.findSnap === 'function')
@@ -3455,36 +3451,32 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.createPadSvg(true);
       }
 
-      let isanyfound = false, isanyremove = false;
-
-      // check if frame or title was recreated, we could reassign handlers for them directly
-
-      function MatchPrimitive(painters, primitives, class_name, obj_name) {
-         let painter, primitive;
-         for (let k = 0; k < painters.length; ++k) {
-            if (painters[k].snapid === undefined) continue;
-            if (!painters[k].matchObjectType(class_name)) continue;
-            if (obj_name && (!painters[k].getObject() || (painters[k].getObject().fName !== obj_name))) continue;
-            painter = painters[k];
-            break;
-         }
+      let MatchPrimitive = (painters, primitives, class_name, obj_name) => {
+         let painter = painters.find(p => {
+            if (p.snapid === undefined) return;
+            if (!p.matchObjectType(class_name)) return;
+            if (obj_name && (!p.getObject() || (p.getObject().fName !== obj_name))) return;
+            return true;
+         });
          if (!painter) return;
-         for (let k = 0;k < primitives.length; ++k) {
-            if ((primitives[k].fKind !== 1) || !primitives[k].fSnapshot || (primitives[k].fSnapshot._typename !== class_name)) continue;
-            if (obj_name && (primitives[k].fSnapshot.fName !== obj_name)) continue;
-            primitive = primitives[k];
-            break;
-         }
+         let primitive = primitives.find(pr => {
+            if ((pr.fKind !== 1) || !pr.fSnapshot || (pr.fSnapshot._typename !== class_name)) return;
+            if (obj_name && (pr.fSnapshot.fName !== obj_name)) return;
+            return true;
+         });
          if (!primitive) return;
 
          // force painter to use new object id
          if (painter.snapid !== primitive.fObjectID)
             painter.snapid = primitive.fObjectID;
-      }
+      };
 
+      // check if frame or title was recreated, we could reassign handlers for them directly
       // while this is temporary objects, which can be recreated very often, try to catch such situation ourselfs
       MatchPrimitive(this.painters, snap.fPrimitives, "TFrame");
       MatchPrimitive(this.painters, snap.fPrimitives, "TPaveText", "title");
+
+      let isanyfound = false, isanyremove = false;
 
       // find and remove painters which no longer exists in the list
       for (let k = 0; k < this.painters.length; ++k) {

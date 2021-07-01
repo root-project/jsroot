@@ -3134,14 +3134,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    /** @summary returns true if any objects beside sub-pads exists in the pad */
    RPadPainter.prototype.hasObjectsToDraw = function() {
-
       let arr = this.pad ? this.pad.fPrimitives : null;
-
-      if (arr)
-         for (let n=0;n<arr.length;++n)
-            if (arr[n] && arr[n]._typename != "ROOT::Experimental::RPadDisplayItem") return true;
-
-      return false;
+      return arr && arr.find(obj => obj._typename != "ROOT::Experimental::RPadDisplayItem") ? true : false;
    }
 
    /** @summary sync drawing/redrawing/resize of the pad
@@ -3168,11 +3162,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    RPadPainter.prototype.confirmDraw = function() {
       if (this._doing_draw === undefined)
          return console.warn("failure, should not happen");
-      let entry = this._doing_draw.shift();
-      if (this._doing_draw.length == 0)
+      this._doing_draw.shift();
+      if (this._doing_draw.length == 0) {
          delete this._doing_draw;
-      if(entry.func)
-         entry.func(); // activate next action
+      } else {
+         let entry = this._doing_draw[0];
+         if(entry.func) { entry.func(); delete entry.func; }
+      }
    }
 
    /** @summary Draw pad primitives
