@@ -2885,20 +2885,21 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary sync drawing/redrawing/resize of the pad
-     * @returns {Promise} when pad is ready to toperation or false if operation already queued
+     * @param {string} kind - kind of draw operation, if true - always queued
+     * @returns {Promise} when pad is ready for draw operation or false if operation already queued
      * @private */
    TPadPainter.prototype.syncDraw = function(kind) {
+      let entry = { kind : kind || "redraw" };
       if (this._doing_draw === undefined) {
-         this._doing_draw = [];
-         this._doing_drawf = [];
+         this._doing_draw = [ entry ];
          return Promise.resolve(true);
       }
-      if (!kind) kind = "redraw";
-      // if operation registered, ignore next calls
-      if ((kind !== true) && (this._doing_draw.indexOf(kind) >= 0)) return false;
-      this._doing_draw.push(kind);
+      // if queued operation registered, ignore next calls, indx == 0 is running operation
+      if ((entry.kind !== true) && (this._doing_draw.findIndex((e,i) => (i > 0) && (e.kind == entry.kind)) > 0))
+         return false;
+      this._doing_draw.push(entry);
       return new Promise(resolveFunc => {
-         this._doing_drawf.push(resolveFunc);
+         entry.func = resolveFunc;
       });
    }
 
@@ -2907,14 +2908,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    TPadPainter.prototype.confirmDraw = function() {
       if (this._doing_draw === undefined)
          return console.warn("failure, should not happen");
-      if (this._doing_draw.length == 0) {
+      let entry = this._doing_draw.shift();
+      if (this._doing_draw.length == 0)
          delete this._doing_draw;
-         delete this._doing_drawf;
-      } else {
-         this._doing_draw.shift();
-         let func = this._doing_drawf.shift();
-         func(); // activate next action
-      }
+      if(entry.func)
+         entry.func(); // activate next action
    }
 
    /** @summary Draw pad primitives
@@ -2930,7 +2928,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this._num_primitives = this.pad && this.pad.fPrimitives ? this.pad.fPrimitives.arr.length : 0;
 
          // sync to prevent immediate pad redraw during normal drawing sequence
-         return this.syncDraw("draw").then(() => this.drawPrimitives(0));
+         return this.syncDraw(true).then(() => this.drawPrimitives(0));
       }
 
       if (indx >= this._num_primitives) {

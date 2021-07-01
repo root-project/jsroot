@@ -3181,7 +3181,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          // set number of primitves
          this._num_primitives = this.pad && this.pad.fPrimitives ? this.pad.fPrimitives.length : 0;
 
-         return this.syncDraw("draw").then(() => this.drawPrimitives(0));
+         return this.syncDraw(true).then(() => this.drawPrimitives(0));
       }
 
       if (!this.pad || (indx >= this._num_primitives)) {
