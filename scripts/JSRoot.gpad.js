@@ -3098,11 +3098,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       let elem = this.svg_this_pad();
       if (!elem.empty() && elem.property('can3d') === JSROOT.constants.Embed3D.Overlay) return true;
 
-      for (let i = 0; i < this.painters.length; ++i)
-         if (typeof this.painters[i].needRedrawByResize === 'function')
-            if (this.painters[i].needRedrawByResize()) return true;
-
-      return false;
+      return this.painters.findIndex(objp => {
+         if (typeof objp.needRedrawByResize === 'function')
+            return objp.needRedrawByResize();
+      }) >= 0;
    }
 
    /** @summary Check resize of canvas
@@ -3496,9 +3495,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (!isanyfound) {
          // TODO: maybe just remove frame painter?
          let fp = this.getFramePainter();
-         for (let k = 0; k < this.painters.length; ++k)
-            if (fp !== this.painters[k])
-               this.painters[k].cleanup();
+         this.painters.forEach(objp => {
+            if (fp !== objp) objp.cleanup();
+         });
          delete this.main_painter_ref;
          this.painters = [];
          if (fp) {
@@ -3514,12 +3513,15 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       return this.drawNextSnap(snap.fPrimitives).then(() => {
          // redraw secondaries like stat box
-         for (let k = 0; k < this.painters.length; ++k) {
-            let sub = this.painters[k];
-            if ((sub.snapid===undefined) || sub.$secondary)
-               sub.redraw();
-         }
-
+         let promises = [];
+         this.painters.forEach(sub => {
+            if ((sub.snapid===undefined) || sub.$secondary) {
+               let res = sub.redraw();
+               if (jsrp.isPromise(res)) promises.push(res);
+            }
+         });
+         return Promise.all(promises);
+      }).then(() => {
          this.selectCurrentPad(prev_name);
          if (jsrp.getActivePad() === this) {
             let canp = this.getCanvPainter();
@@ -3577,8 +3579,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             console.log('fail to get ranges for pad ' +  this.pad.fName);
       }
 
-      for (let k=0; k<this.painters.length; ++k) {
-         let sub = this.painters[k];
+      this.painters.forEach(sub => {
          if (typeof sub.getWebPadOptions == "function") {
             if (scan_subpads) sub.getWebPadOptions(arg);
          } else if (sub.snapid) {
@@ -3587,7 +3588,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                opt = sub.fillWebObjectOptions(opt);
             elem.primitives.push(opt);
          }
-      }
+      });
 
       if (is_top) return JSROOT.toJSON(arg);
    }
@@ -3900,15 +3901,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if (this.painters && (this.painters.length > 0)) {
                menu.add("separator");
                let shown = [];
-               for (let n = 0; n < this.painters.length; ++n) {
-                  let pp = this.painters[n];
+               this.painters.forEach(pp => {
                   let obj = pp ? pp.getObject() : null;
-                  if (!obj || (shown.indexOf(obj) >= 0)) continue;
+                  if (!obj || (shown.indexOf(obj) >= 0)) return;
                   let name = ('_typename' in obj) ? (obj._typename + "::") : "";
                   if ('fName' in obj) name += obj.fName;
                   if (!name.length) name = "item" + n;
                   menu.add(name, n, this.itemContextMenu);
-               }
+               });
             }
 
             menu.show();
@@ -3921,15 +3921,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       // if any painter indicates that processing completed, it returns true
       let done = false;
 
-      for (let i = 0; i < this.painters.length; ++i) {
-         let pp = this.painters[i];
-
+      this.painters.forEach(pp => {
          if (typeof pp.clickPadButton == 'function')
             pp.clickPadButton(funcname);
 
          if (!done && (typeof pp.clickButton == 'function'))
             done = pp.clickButton(funcname);
-      }
+      });
    }
 
    /** @summary Add button to the pad
