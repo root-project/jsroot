@@ -1,4 +1,4 @@
-p/// @file JSRoot.v7gpad.js
+/// @file JSRoot.v7gpad.js
 /// JavaScript ROOT graphics for ROOT v7 classes
 
 JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
