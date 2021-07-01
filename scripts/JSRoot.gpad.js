@@ -2841,16 +2841,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary try to find object by name in list of pad primitives
      * @desc used to find title drawing
      * @private */
-   TPadPainter.prototype.findInPrimitives = function(objname) {
+   TPadPainter.prototype.findInPrimitives = function(objname, objtype) {
       let arr = this.pad && this.pad.fPrimitives ? this.pad.fPrimitives.arr : null;
 
-      if (arr && arr.length && objname)
-         for (let n = 0; n < arr.length; ++n) {
-            let prim = arr[n];
-            if (prim.fName === objname) return prim;
-         }
-
-      return null;
+      return arr ? arr.find(obj => (obj.fName == objname) && (objtype ? (obj.typename == objtype) : true)) : null;
    }
 
    /** @summary Try to find painter for specified object
@@ -3502,7 +3496,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (!isanyfound) {
          // TODO: maybe just remove frame painter?
          let fp = this.getFramePainter();
-         for (let k = 0;k < this.painters.length; ++k)
+         for (let k = 0; k < this.painters.length; ++k)
             if (fp !== this.painters[k])
                this.painters[k].cleanup();
          delete this.main_painter_ref;
