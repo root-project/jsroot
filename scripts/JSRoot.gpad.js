@@ -2862,17 +2862,16 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
      * @returns {object} - painter for specified object (if any)
      * @private */
    TPadPainter.prototype.findPainterFor = function(selobj, selname, seltype) {
-      for (let n = 0; n < this.painters.length; ++n) {
-         let pobj = this.painters[n].getObject();
-         if (!pobj) continue;
+      return this.painters.find(p => {
+         let pobj = p.getObject();
+         if (!pobj) return;
 
-         if (selobj && (pobj === selobj)) return this.painters[n];
-         if (!selname && !seltype) continue;
-         if (selname && (pobj.fName !== selname)) continue;
-         if (seltype && (pobj._typename !== seltype)) continue;
-         return this.painters[n];
-      }
-      return null;
+         if (selobj && (pobj === selobj)) return true;
+         if (!selname && !seltype) return;
+         if (selname && (pobj.fName !== selname)) return;
+         if (seltype && (pobj._typename !== seltype)) return;
+         return true;
+      }) || null;
    }
 
    /** @summary Return true if any objects beside sub-pads exists in the pad */
