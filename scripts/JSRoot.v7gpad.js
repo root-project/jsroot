@@ -2685,20 +2685,26 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return this.getPadSvg(this.this_pad_name);
    }
 
+   /** @summary Returns main painter on the pad
+     * @desc Typically main painter is TH1/TH2 object which is drawing axes
+    * @private */
    RPadPainter.prototype.getMainPainter = function() {
       return this.main_painter_ref || null;
    }
 
+   /** @summary Assign main painter on the pad
+    * @private */
    RPadPainter.prototype.setMainPainter = function(painter, force) {
       if (!this.main_painter_ref || force)
          this.main_painter_ref = painter;
    }
 
-   /** @summary cleanup only pad itself, all child elements will be collected and cleanup separately */
+   /** @summary cleanup pad and all primitives inside */
    RPadPainter.prototype.cleanup = function() {
+      if (this._doing_draw)
+         console.error('pad drawing is not completed when cleanup is called');
 
-      for (let k = 0; k < this.painters.length; ++k)
-         this.painters[k].cleanup();
+      this.painters.forEach(p => p.cleanup());
 
       let svg_p = this.svg_this_pad();
       if (!svg_p.empty()) {
@@ -2713,6 +2719,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       delete this._pad_y;
       delete this._pad_width;
       delete this._pad_height;
+      delete this._doing_draw;
+
       this.painters = [];
       this.pad = null;
       this.draw_object = null;
@@ -3137,21 +3145,22 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return false;
    }
 
-      /** @summary sync drawing/redrawing/resize of the pad
-     * @returns {Promise} when pad is ready to toperation or false if operation already queued
+   /** @summary sync drawing/redrawing/resize of the pad
+     * @param {string} kind - kind of draw operation, if true - always queued
+     * @returns {Promise} when pad is ready for draw operation or false if operation already queued
      * @private */
    RPadPainter.prototype.syncDraw = function(kind) {
+      let entry = { kind : kind || "redraw" };
       if (this._doing_draw === undefined) {
-         this._doing_draw = [];
-         this._doing_drawf = [];
+         this._doing_draw = [ entry ];
          return Promise.resolve(true);
       }
-      if (!kind) kind = "redraw";
-      // if operation registered, ignore next calls
-      if ((kind !== true) && (this._doing_draw.indexOf(kind) >= 0)) return false;
-      this._doing_draw.push(kind);
+      // if queued operation registered, ignore next calls, indx == 0 is running operation
+      if ((entry.kind !== true) && (this._doing_draw.findIndex((e,i) => (i > 0) && (e.kind == entry.kind)) > 0))
+         return false;
+      this._doing_draw.push(entry);
       return new Promise(resolveFunc => {
-         this._doing_drawf.push(resolveFunc);
+         entry.func = resolveFunc;
       });
    }
 
@@ -3160,14 +3169,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    RPadPainter.prototype.confirmDraw = function() {
       if (this._doing_draw === undefined)
          return console.warn("failure, should not happen");
-      if (this._doing_draw.length == 0) {
+      let entry = this._doing_draw.shift();
+      if (this._doing_draw.length == 0)
          delete this._doing_draw;
-         delete this._doing_drawf;
-      } else {
-         this._doing_draw.shift();
-         let func = this._doing_drawf.shift();
-         func(); // activate next action
-      }
+      if(entry.func)
+         entry.func(); // activate next action
    }
 
    /** @summary Draw pad primitives

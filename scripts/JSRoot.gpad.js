@@ -2353,9 +2353,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    /** @summary cleanup pad and all primitives inside */
    TPadPainter.prototype.cleanup = function() {
+      if (this._doing_draw)
+         console.error('pad drawing is not completed when cleanup is called');
 
-      for (let k = 0; k < this.painters.length; ++k)
-         this.painters[k].cleanup();
+      this.painters.forEach(p => p.cleanup());
 
       let svg_p = this.svg_this_pad();
       if (!svg_p.empty()) {
@@ -2371,6 +2372,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       delete this._pad_y;
       delete this._pad_width;
       delete this._pad_height;
+      delete this._doing_draw;
 
       this.painters = [];
       this.pad = null;
