@@ -2871,7 +2871,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (selname && (pobj.fName !== selname)) return;
          if (seltype && (pobj._typename !== seltype)) return;
          return true;
-      }) || null;
+      });
    }
 
    /** @summary Return true if any objects beside sub-pads exists in the pad */
