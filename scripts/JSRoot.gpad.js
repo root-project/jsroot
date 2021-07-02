@@ -829,23 +829,23 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       }).then(() => {
 
-         if (!title_g) return true;
+         if (title_g) {
+            // fine-tuning of title position when possible
+            if (axis_rect) {
+               let title_rect = title_g.node().getBoundingClientRect();
+               if ((axis_rect.left != axis_rect.right) && (title_rect.left != title_rect.right))
+                  title_shift_x = (side > 0) ? Math.round(axis_rect.left - title_rect.right - title_fontsize*0.3) :
+                                               Math.round(axis_rect.right - title_rect.left + title_fontsize*0.3);
+               else
+                  title_shift_x = -1 * Math.round(((side > 0) ? (labeloffset + labelMaxWidth) : 0) + title_fontsize*0.7);
+            }
 
-         // fine-tuning of title position when possible
-         if (axis_rect) {
-            let title_rect = title_g.node().getBoundingClientRect();
-            if ((axis_rect.left != axis_rect.right) && (title_rect.left != title_rect.right))
-               title_shift_x = (side > 0) ? Math.round(axis_rect.left - title_rect.right - title_fontsize*0.3) :
-                                            Math.round(axis_rect.right - title_rect.left + title_fontsize*0.3);
-            else
-               title_shift_x = -1 * Math.round(((side > 0) ? (labeloffset + labelMaxWidth) : 0) + title_fontsize*0.7);
+            title_g.attr('transform', 'translate(' + title_shift_x + ',' + title_shift_y + ')')
+                   .property('shift_x', title_shift_x)
+                   .property('shift_y', title_shift_y);
          }
 
-         title_g.attr('transform', 'translate(' + title_shift_x + ',' + title_shift_y + ')')
-                .property('shift_x', title_shift_x)
-                .property('shift_y', title_shift_y);
-
-         return true;
+         return this;
       });
    }
 
@@ -922,7 +922,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       painter.disable_zooming = true;
 
       return jsrp.ensureTCanvas(painter, false)
-             .then(() => { if (opt) painter.convertTo(opt); return painter.redraw(); }).then(() => painter);
+             .then(() => { if (opt) painter.convertTo(opt); return painter.redraw(); });
    }
 
    // ===============================================
