@@ -1755,7 +1755,7 @@
    JSROOT.createTGraph = (npoints, xpts, ypts) => {
       let graph = extend(create("TGraph"), { fBits: 0x408, fName: "graph", fTitle: "title" });
 
-      if (npoints>0) {
+      if (npoints > 0) {
          graph.fMaxSize = graph.fNpoints = npoints;
 
          const usex = (typeof xpts == 'object') && (xpts.length === npoints);
@@ -1780,7 +1780,7 @@
      * let stack = JSROOT.createTHStack(h1, h2, h3); */
    JSROOT.createTHStack = function() {
       let stack = create("THStack");
-      for(let i=0; i<arguments.length; ++i)
+      for (let i = 0; i < arguments.length; ++i)
          stack.fHists.Add(arguments[i], "");
       return stack;
    }
@@ -1794,7 +1794,7 @@
      * let mgr = JSROOT.createTMultiGraph(gr1, gr2, gr3); */
    JSROOT.createTMultiGraph = function() {
       let mgraph = create("TMultiGraph");
-      for(let i=0; i<arguments.length; ++i)
+      for (let i = 0; i < arguments.length; ++i)
           mgraph.fGraphs.Add(arguments[i], "");
       return mgraph;
    }
