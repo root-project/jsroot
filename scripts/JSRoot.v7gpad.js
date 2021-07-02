@@ -1592,8 +1592,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       let h = this.getFrameHeight(),
           w = this.getFrameWidth(),
-          gridx = this.v7EvalAttr("gridx", false),
-          gridy = this.v7EvalAttr("gridy", false),
+          gridx = this.v7EvalAttr("gridX", false),
+          gridy = this.v7EvalAttr("gridY", false),
           grid_style = JSROOT.gStyle.fGridStyle,
           grid_color = (JSROOT.gStyle.fGridColor > 0) ? this.getColor(JSROOT.gStyle.fGridColor) : "black";
 
@@ -1800,12 +1800,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (this.axes_drawn || (this.xmin == this.xmax) || (this.ymin == this.ymax))
          return Promise.resolve(this.axes_drawn);
 
-      let ticksx = this.v7EvalAttr("ticksx", 1),
-          ticksy = this.v7EvalAttr("ticksy", 1),
+      let ticksx = this.v7EvalAttr("ticksX", 1),
+          ticksy = this.v7EvalAttr("ticksY", 1),
           sidex = 1, sidey = 1;
 
-      if (this.v7EvalAttr("swapx", false)) sidex = -1;
-      if (this.v7EvalAttr("swapy", false)) sidey = -1;
+      if (this.v7EvalAttr("swapX", false)) sidex = -1;
+      if (this.v7EvalAttr("swapY", false)) sidey = -1;
 
       let w = this.getFrameWidth(), h = this.getFrameHeight();
 
@@ -2199,7 +2199,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       let promise = Promise.resolve(true);
 
-      if (this.v7EvalAttr("drawaxes")) {
+      if (this.v7EvalAttr("drawAxes")) {
          this.self_drawaxes = true;
          this.setAxesRanges();
          promise = this.drawAxes().then(() => this.addInteractivity());
@@ -2544,27 +2544,27 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       menu.addchk(this.isTooltipAllowed(), "Show tooltips", () => this.setTooltipAllowed("toggle"));
 
       if (this.x_handle)
-         menu.addchk(this.x_handle.draw_grid, "Grid x", flag => this.changeFrameAttr("gridx", flag));
+         menu.addchk(this.x_handle.draw_grid, "Grid x", flag => this.changeFrameAttr("gridX", flag));
       if (this.y_handle)
-         menu.addchk(this.y_handle.draw_grid, "Grid y", flag => this.changeFrameAttr("gridy", flag));
+         menu.addchk(this.y_handle.draw_grid, "Grid y", flag => this.changeFrameAttr("gridY", flag));
       if (this.x_handle && !this.x2_handle)
-         menu.addchk(this.x_handle.draw_swapside, "Swap x", flag => this.changeFrameAttr("swapx", flag));
+         menu.addchk(this.x_handle.draw_swapside, "Swap x", flag => this.changeFrameAttr("swapX", flag));
       if (this.y_handle && !this.y2_handle)
-         menu.addchk(this.y_handle.draw_swapside, "Swap y", flag => this.changeFrameAttr("swapy", flag));
+         menu.addchk(this.y_handle.draw_swapside, "Swap y", flag => this.changeFrameAttr("swapY", flag));
       if (this.x_handle && !this.x2_handle) {
          menu.add("sub:Ticks x");
-         menu.addchk(this.x_handle.draw_ticks == 0, "off", () => this.changeFrameAttr("ticksx", 0));
-         menu.addchk(this.x_handle.draw_ticks == 1, "normal", () => this.changeFrameAttr("ticksx", 1));
-         menu.addchk(this.x_handle.draw_ticks == 2, "ticks on both sides", () => this.changeFrameAttr("ticksx", 2));
-         menu.addchk(this.x_handle.draw_ticks == 3, "labels on both sides", () => this.changeFrameAttr("ticksx", 3));
+         menu.addchk(this.x_handle.draw_ticks == 0, "off", () => this.changeFrameAttr("ticksX", 0));
+         menu.addchk(this.x_handle.draw_ticks == 1, "normal", () => this.changeFrameAttr("ticksX", 1));
+         menu.addchk(this.x_handle.draw_ticks == 2, "ticks on both sides", () => this.changeFrameAttr("ticksX", 2));
+         menu.addchk(this.x_handle.draw_ticks == 3, "labels on both sides", () => this.changeFrameAttr("ticksX", 3));
          menu.add("endsub:");
        }
       if (this.y_handle && !this.y2_handle) {
          menu.add("sub:Ticks y");
-         menu.addchk(this.y_handle.draw_ticks == 0, "off", () => this.changeFrameAttr("ticksy", 0));
-         menu.addchk(this.y_handle.draw_ticks == 1, "normal", () => this.changeFrameAttr("ticksy", 1));
-         menu.addchk(this.y_handle.draw_ticks == 2, "ticks on both sides", () => this.changeFrameAttr("ticksy", 2));
-         menu.addchk(this.y_handle.draw_ticks == 3, "labels on both sides", () => this.changeFrameAttr("ticksy", 3));
+         menu.addchk(this.y_handle.draw_ticks == 0, "off", () => this.changeFrameAttr("ticksY", 0));
+         menu.addchk(this.y_handle.draw_ticks == 1, "normal", () => this.changeFrameAttr("ticksY", 1));
+         menu.addchk(this.y_handle.draw_ticks == 2, "ticks on both sides", () => this.changeFrameAttr("ticksY", 2));
+         menu.addchk(this.y_handle.draw_ticks == 3, "labels on both sides", () => this.changeFrameAttr("ticksY", 3));
          menu.add("endsub:");
        }
 
@@ -3428,7 +3428,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       pattr.csstype = snap.fCssType;
       pattr.rstyle = snap.fStyle;
 
-      snap.fOption = pattr.v7EvalAttr("drawopt", "");
+      snap.fOption = pattr.v7EvalAttr("options", "");
 
       let extract_color = (member_name, attr_name) => {
          let col = pattr.v7EvalColor(attr_name, "");
@@ -4878,8 +4878,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
 
       let visible      = this.v7EvalAttr("visible", true),
-          pave_cornerx = this.v7EvalLength("cornerx", rect.width, 0.02),
-          pave_cornery = this.v7EvalLength("cornery", rect.height, -0.02),
+          pave_cornerx = this.v7EvalLength("cornerX", rect.width, 0.02),
+          pave_cornery = this.v7EvalLength("cornerY", rect.height, -0.02),
           pave_width   = this.v7EvalLength("width", rect.width, 0.3),
           pave_height  = this.v7EvalLength("height", rect.height, 0.3),
           line_width   = this.v7EvalAttr("border_width", 1),
@@ -4965,8 +4965,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
 
       let changes = {};
-      this.v7AttrChange(changes, "cornerx", (pave_x + this.pave_width - fx - fw) / rect.width);
-      this.v7AttrChange(changes, "cornery", (pave_y - fy) / rect.height);
+      this.v7AttrChange(changes, "cornerX", (pave_x + this.pave_width - fx - fw) / rect.width);
+      this.v7AttrChange(changes, "cornerY", (pave_y - fy) / rect.height);
       this.v7AttrChange(changes, "width", this.pave_width / rect.width);
       this.v7AttrChange(changes, "height", this.pave_height / rect.height);
       this.v7SendAttrChanges(changes, false); // do not invoke canvas update on the server
