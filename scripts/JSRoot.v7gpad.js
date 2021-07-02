@@ -3193,7 +3193,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             let spenttm = new Date().getTime() - this._start_tm;
             if (spenttm > 3000) console.log("Canvas drawing took " + (spenttm*1e-3).toFixed(2) + "s");
             delete this._start_tm;
-            delete this._lasttm_tm;
          }
 
          return Promise.resolve();

@@ -2288,11 +2288,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    let drawFrame = (divid, obj, opt) => {
-      let p = new TFramePainter(divid, obj);
-      return jsrp.ensureTCanvas(p, false).then(() => {
-         if (opt == "3d") p.mode3d = true;
-         p.redraw();
-         return p;
+      let fp = new TFramePainter(divid, obj);
+      return jsrp.ensureTCanvas(fp, false).then(() => {
+         if (opt == "3d") fp.mode3d = true;
+         fp.redraw();
+         return fp;
       })
    }
 
@@ -2914,7 +2914,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if (indx === undefined) {
          if (this.iscan)
-            this._start_tm = this._lasttm_tm = new Date().getTime();
+            this._start_tm = new Date().getTime();
 
          // set number of primitves
          this._num_primitives = this.pad && this.pad.fPrimitives ? this.pad.fPrimitives.arr.length : 0;
@@ -2928,7 +2928,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             let spenttm = new Date().getTime() - this._start_tm;
             if (spenttm > 1000) console.log("Canvas drawing took " + (spenttm*1e-3).toFixed(2) + "s");
             delete this._start_tm;
-            delete this._lasttm_tm;
          }
 
          this.confirmDraw();
@@ -2936,12 +2935,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
 
       // use of Promise should avoid large call-stack depth when many primitives are drawn
-      return JSROOT.draw(this.getDom(), this.pad.fPrimitives.arr[indx], this.pad.fPrimitives.opt[indx]).then(ppainter=> {
-         if (ppainter && (typeof ppainter == 'object'))
-            ppainter._primitive = true; // mark painter as belonging to primitives
+      return JSROOT.draw(this.getDom(), this.pad.fPrimitives.arr[indx], this.pad.fPrimitives.opt[indx]).then(op => {
+         if (op && (typeof op == 'object'))
+            op._primitive = true; // mark painter as belonging to primitives
 
          return this.drawPrimitives(indx+1);
-
       });
    }
 
@@ -3248,7 +3246,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       // first appropriate painter for the object
       // if same object drawn twice, two painters will exists
-      for (let k=0; k<this.painters.length; ++k) {
+      for (let k = 0;  k < this.painters.length; ++k) {
          if (this.painters[k].snapid === snapid)
             if (--cnt === 0) { objpainter = this.painters[k]; break; }
       }
