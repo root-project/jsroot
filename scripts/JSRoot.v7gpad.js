@@ -1736,9 +1736,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             this.scale_ymax += (this.scale_ymax - this.scale_ymin)*0.1;
       }
 
-      if (opts.check_pad_range) {
+      // if (opts.check_pad_range) {
          // take zooming out of pad or axis attributes - skip!
-      }
+      // }
 
       if ((this.zoom_ymin == this.zoom_ymax) && (opts.zoom_ymin != opts.zoom_ymax) && !this.zoomChangedInteractive("y")) {
          this.zoom_ymin = opts.zoom_ymin;
