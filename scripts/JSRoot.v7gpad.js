@@ -3322,7 +3322,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             let canp = this.getCanvPainter();
             if (canp) canp.producePadEvent("padredraw", this);
          }
-         this.confirmRedraw();
+         this.confirmDraw();
          return true;
       });
    }
