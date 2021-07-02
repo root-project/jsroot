@@ -43,7 +43,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                         (obj.fCssClass && (block.selector == ("." + obj.fCssClass)));
 
             if (match && block.map && block.map.m) {
-               let value = block.map.m[name];
+               let value = block.map.m[name.toLowerCase()];
                if (value) return type_check(value.v);
             }
          }
