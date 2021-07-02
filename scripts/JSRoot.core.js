@@ -883,7 +883,7 @@
                case "Float64": arr = new Float64Array(value.len); break;
                default: arr = new Array(value.len); break;
             }
-            for (let k=0;k<value.len;++k) arr[k] = dflt;
+            for (let k = 0; k < value.len; ++k) arr[k] = dflt;
 
             if (value.b !== undefined) {
                // base64 coding
@@ -895,7 +895,7 @@
                if (arr.buffer) {
                   let dv = new DataView(arr.buffer, value.o || 0),
                       len = Math.min(buf.length, dv.byteLength);
-                  for (let k=0; k<len; ++k)
+                  for (let k = 0; k < len; ++k)
                      dv.setUint8(k, buf.charCodeAt(k));
                } else {
                   throw new Error('base64 coding supported only for native arrays with binary data');
@@ -1016,7 +1016,7 @@
       if (!json) return null;
       let arr = JSON.parse(json);
       if (arr && arr.length)
-         for (let i=0;i<arr.length;++i)
+         for (let i = 0; i < arr.length; ++i)
             arr[i] = JSROOT.parse(arr[i]);
       return arr;
    }

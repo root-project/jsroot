@@ -3474,11 +3474,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          let sub = this.painters[k];
          if ((sub.snapid===undefined) || sub.$secondary) continue; // look only for painters with snapid
 
-         for (let i=0;i<snap.fPrimitives.length;++i)
+         for (let i = 0; i < snap.fPrimitives.length; ++i)
             if (snap.fPrimitives[i].fObjectID === sub.snapid) { sub = null; isanyfound = true; break; }
 
          if (sub) {
-            console.log('Remove painter' + k + ' from ' + this.painters.length + ' ' + sub.getObject()._typename);
+            console.log(`Remove painter ${k} from ${this.painters.length} class ${sub.getClassName()}`);
             // remove painter which does not found in the list of snaps
             this.painters.splice(k--,1);
             sub.cleanup(); // cleanup such painter
