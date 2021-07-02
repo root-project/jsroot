@@ -399,7 +399,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (this.v7EvalAttr("time")) {
          this.kind = 'time';
          this.timeoffset = 0;
-         let toffset = this.v7EvalAttr("time_offset");
+         let toffset = this.v7EvalAttr("timeOffset");
          if (toffset !== undefined) {
             toffset = parseFloat(toffset);
             if (Number.isFinite(toffset)) this.timeoffset = toffset*1000;
@@ -470,7 +470,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (this.nticks > 8) this.nticks = 8;
 
          let scale_range = this.scale_max - this.scale_min,
-             tf1 = this.v7EvalAttr("time_format", ""),
+             tf1 = this.v7EvalAttr("timeFormat", ""),
              tf2 = jsrp.chooseTimeFormat(scale_range / gr_range, false);
 
          if (!tf1 || (scale_range < 0.1 * (this.full_max - this.full_min)))
@@ -1247,7 +1247,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    /** @summary Change zooming in standalone mode */
    RAxisPainter.prototype.zoomStandalone = function(min,max) {
-      this.changeAxisAttr(1, "zoommin", min, "zoommax", max);
+      this.changeAxisAttr(1, "zoomMin", min, "zoomMax", max);
    }
 
    /** @summary Redraw axis, used in standalone mode for RAxisDrawable */
@@ -1265,8 +1265,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       // in vertical direction axis drawn in negative direction
       if (drawable.fVertical) len -= pp.getPadHeight();
 
-      let smin = this.v7EvalAttr("zoommin"),
-          smax = this.v7EvalAttr("zoommax");
+      let smin = this.v7EvalAttr("zoomMin"),
+          smax = this.v7EvalAttr("zoomMax");
       if (smin === smax) {
          smin = min; smax = max;
       }
@@ -1668,8 +1668,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       let nzmin = "zoom_" + prefix + "min", nzmax = "zoom_" + prefix + "max";
 
       if ((this[nzmin] == this[nzmax]) && !this.zoomChangedInteractive(prefix)) {
-         min = this.v7EvalAttr(prefix + "_zoommin");
-         max = this.v7EvalAttr(prefix + "_zoommax");
+         min = this.v7EvalAttr(prefix + "_zoomMin");
+         max = this.v7EvalAttr(prefix + "_zoomMax");
 
          if ((min !== undefined) || (max !== undefined)) {
             this[nzmin] = (min === undefined) ? this[nmin] : min;
