@@ -1351,7 +1351,7 @@
 
       return new Promise((resolve, reject) => {
          element.onload = () => resolve(true);
-         element.onerror = () => reject(Error(`Fail to load ${url}`));
+         element.onerror = () => { element.remove(); reject(Error(`Fail to load ${url}`)); };
          document.getElementsByTagName("head")[0].appendChild(element);
       });
    }
