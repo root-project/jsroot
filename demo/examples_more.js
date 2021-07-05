@@ -70,6 +70,7 @@ examples_more = {
       { name: "rtext", json: "rcanvas/rtext.json.gz", title: "rtext.cxx macro output" },
       { name: "subpads", json: "rcanvas/subpads.json.gz", title: "subpads.cxx macro output" },
       { name: "symlog", json: "rcanvas/symlog.json.gz", title: "symlog.cxx macro output" },
+      { name: "th1_twoscales", json: "rcanvas/th1_twoscales.json.gz", title: "th1_twoscales.cxx macro output" },
       { name: "tobject", json: "rcanvas/tobject.json.gz", title: "tobject.cxx macro output" }
    ],
    THStack : [
