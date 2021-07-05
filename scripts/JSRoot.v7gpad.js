@@ -5457,16 +5457,16 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       let font      = this.getObject(),
           svg       = this.getCanvSvg(),
           defs      = svg.select('.canvas_defs'),
-          data      = this.v7EvalAttr("fontData", "");
+          clname = "custom_font_" + font.fFamily+font.fWeight+font.fStyle;
 
       if (defs.empty())
          defs = svg.insert("svg:defs", ":first-child").attr("class", "canvas_defs");
 
-      let entry = defs.select(".custom_font_"+font.fName);
+      let entry = defs.select("." + clname);
       if (entry.empty())
-         entry = defs.append("style").attr("type","text/css").attr("class", "custom_font_"+font.fName);
-      if (!data) data = font.fUrl;
-      entry.text(`@font-face { font-family: "${font.fName}"; font-weight: normal; font-style: normal; src: url("${data}") format(woff2); }`);
+         entry = defs.append("style").attr("type", "text/css").attr("class", clname);
+
+      entry.text(`@font-face { font-family: "${font.fFamily}"; font-weight: ${font.fWeight ? font.fWeight : "normal"}; font-style: ${font.fStyle ? font.fStyle : "normal"}; src: ${font.fSrc}; }`);
 
       return true;
    }
