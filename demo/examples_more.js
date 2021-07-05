@@ -53,7 +53,7 @@ examples_more = {
       { name: "rframe", json: "rcanvas/rframe.json.gz", title: "rframe.cxx macro output" },
       { name: "rh1", json: "rcanvas/rh1.json.gz", title: "rh1.cxx macro output" },
       { name: "rh1_large", json: "rcanvas/rh1_large.json.gz", title: "rh1_large.cxx macro output" },
-      { name: "rh1_twoaxes", json: "rcanvas/rh1_twoaxes.json.gz", title: "rh1_twoaxes.cxx macro output" },
+      { name: "rh1_twoscales", json: "rcanvas/rh1_twoscales.json.gz", title: "rh1_twoscales.cxx macro output" },
       { name: "rh2", json: "rcanvas/rh2.json.gz", title: "rh2.cxx macro output" },
       { name: "rh2_colz", json: "rcanvas/rh2_colz.json.gz", title: "rh2_colz.cxx macro output" },
       { name: "rh2_large", json: "rcanvas/rh2_large.json.gz", title: "rh2_large.cxx macro output" },
