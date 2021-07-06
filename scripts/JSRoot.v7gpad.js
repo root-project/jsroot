@@ -4867,7 +4867,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       let rect = this.getPadPainter().getPadRect(),
           fp = this.getFramePainter();
 
-      this.withFrame = fp && this.v7EvalAttr("withFrame", true);
+      this.onFrame = fp && this.v7EvalAttr("onFrame", true);
       this.corner = this.v7EvalAttr("corner", ECorner.kTopRight);
 
       let visible      = this.v7EvalAttr("visible", true),
@@ -4892,7 +4892,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (fill_style == 0) fill_color = "none";
 
       let pave_x = 0, pave_y = 0,
-          fr = this.withFrame ? fp.getFrameRect() : rect;
+          fr = this.onFrame ? fp.getFrameRect() : rect;
       switch (this.corner) {
          case ECorner.kTopLeft:
             pave_x = fr.x + offsetx;
@@ -4958,7 +4958,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       let pave_x = parseInt(this.draw_g.attr("x")),
           pave_y = parseInt(this.draw_g.attr("y")),
           rect = this.getPadPainter().getPadRect(),
-          fr = this.withFrame ? this.getFramePainter().getFrameRect() : rect,
+          fr = this.onFrame ? this.getFramePainter().getFrameRect() : rect,
           offsetx = 0, offsety = 0, changes = {};
 
       switch (this.corner) {
