@@ -168,17 +168,19 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (!dflts) dflts = {}; else
       if (typeof dflts == "number") dflts = { size: dflts };
 
-      let text_size   = this.v7EvalAttr(name + "_size", dflts.size || 12),
+      let pp = this.getPadPainter(),
+          rfont = pp._dfltRFont || { fFamily: "Arial", fStyle: "", fWeight: "" },
+          text_size   = this.v7EvalAttr(name + "_size", dflts.size || 12),
           text_angle  = this.v7EvalAttr(name + "_angle", 0),
           text_align  = this.v7EvalAttr(name + "_align", dflts.align || "none"),
           text_color  = this.v7EvalColor(name + "_color", dflts.color || "none"),
-          font_family = this.v7EvalAttr(name + "_font_family", "Arial"),
-          font_style  = this.v7EvalAttr(name + "_font_style", ""),
-          font_weight = this.v7EvalAttr(name + "_font_weight", "");
+          font_family = this.v7EvalAttr(name + "_font_family", rfont.fFamily || "Arial"),
+          font_style  = this.v7EvalAttr(name + "_font_style", rfont.fStyle || ""),
+          font_weight = this.v7EvalAttr(name + "_font_weight", rfont.fWeight || "");
 
        if (typeof text_size == "string") text_size = parseFloat(text_size);
        if (!Number.isFinite(text_size) || (text_size <= 0)) text_size = 12;
-       if (!fontScale) fontScale = this.getPadPainter().getPadHeight() || 10;
+       if (!fontScale) fontScale = pp.getPadHeight() || 10;
 
        let handler = new JSROOT.FontHandler(null, text_size, fontScale, font_family, font_style, font_weight);
 
@@ -2720,6 +2722,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       delete this._pad_width;
       delete this._pad_height;
       delete this._doing_draw;
+      delete this._dfltRFont;
 
       this.painters = [];
       this.pad = null;
@@ -4857,29 +4860,24 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return Promise.resolve(this);
    }
 
+   const ECorner = { kTopLeft: 1, kTopRight: 2, kBottomLeft: 3, kBottomRight: 4 };
+
    RPavePainter.prototype.drawPave = function() {
 
       let rect = this.getPadPainter().getPadRect(),
           fp = this.getFramePainter(),
-          fx, fy, fw;
+          withFrame = this.v7EvalAttr("withFrame", true),
+          fr = rect; // used to position pave
 
-      if (fp) {
-         let frame_rect = fp.getFrameRect();
-         fx = frame_rect.x;
-         fy = frame_rect.y;
-         fw = frame_rect.width;
-         // fh = frame_rect.height;
-      } else {
-         let st = JSROOT.gStyle;
-         fx = Math.round(st.fPadLeftMargin * rect.width);
-         fy = Math.round(st.fPadTopMargin * rect.height);
-         fw = Math.round((1-st.fPadLeftMargin-st.fPadRightMargin) * rect.width);
-         // fh = Math.round((1-st.fPadTopMargin-st.fPadBottomMargin) * rect.height);
-      }
+      if (fp && withFrame)
+         fr = fp.getFrameRect();
+
+
 
       let visible      = this.v7EvalAttr("visible", true),
-          pave_cornerx = this.v7EvalLength("cornerX", rect.width, 0.02),
-          pave_cornery = this.v7EvalLength("cornerY", rect.height, -0.02),
+          corner       = this.v7EvalAttr("corner", ECorner.kTopRight),
+          offsetx      = this.v7EvalLength("offsetX", rect.width, 0.02),
+          offsety      = this.v7EvalLength("offsetY", rect.height, 0.02),
           pave_width   = this.v7EvalLength("width", rect.width, 0.3),
           pave_height  = this.v7EvalLength("height", rect.height, 0.3),
           line_width   = this.v7EvalAttr("border_width", 1),
@@ -4898,8 +4896,25 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if (fill_style == 0) fill_color = "none";
 
-      let pave_x = Math.round(fx + fw + pave_cornerx - pave_width),
-          pave_y = Math.round(fy + pave_cornery);
+      let pave_x = 0, pave_y = 0;
+      switch (corner) {
+         case ECorner.kTopLeft:
+            pave_x = fr.x + offsetx;
+            pave_y = fr.y + offsety;
+            break;
+         case ECorner.kBottomLeft:
+            pave_x = fr.x + offsetx;
+            pave_y = fr.y + fr.height - offsety - pave_height;
+            break;
+         case ECorner.kBottomRight:
+            pave_x = fr.x + fr.width - offsetx - pave_width;
+            pave_y = fr.y + fr.height - offsety - pave_height;
+            break;
+         case ECorner.kTopRight:
+         default:
+            pave_x = fr.x + fr.width - offsetx - pave_width;
+            pave_y = fr.y + offsety;
+      }
 
       // x,y,width,height attributes used for drag functionality
       this.draw_g.attr("transform", "translate(" + pave_x + "," + pave_y + ")")
@@ -5454,9 +5469,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    function drawRFont() {
-      let font      = this.getObject(),
-          svg       = this.getCanvSvg(),
-          defs      = svg.select('.canvas_defs'),
+      let font   = this.getObject(),
+          svg    = this.getCanvSvg(),
+          defs   = svg.select('.canvas_defs'),
           clname = "custom_font_" + font.fFamily+font.fWeight+font.fStyle;
 
       if (defs.empty())
@@ -5467,6 +5482,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          entry = defs.append("style").attr("type", "text/css").attr("class", clname);
 
       entry.text(`@font-face { font-family: "${font.fFamily}"; font-weight: ${font.fWeight ? font.fWeight : "normal"}; font-style: ${font.fStyle ? font.fStyle : "normal"}; src: ${font.fSrc}; }`);
+
+      if (font.fDefault)
+         this.getPadPainter()._dfltRFont = font;
 
       return true;
    }
