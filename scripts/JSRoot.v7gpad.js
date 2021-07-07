@@ -4872,9 +4872,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           offsetx      = this.v7EvalLength("offsetX", rect.width, 0.02),
           offsety      = this.v7EvalLength("offsetY", rect.height, 0.02),
           pave_width   = this.v7EvalLength("width", rect.width, 0.3),
-          pave_height  = this.v7EvalLength("height", rect.height, 0.3),
-          border_rx    = this.v7EvalAttr("border_rx", 0),
-          border_ry    = this.v7EvalAttr("border_ry", 0);
+          pave_height  = this.v7EvalLength("height", rect.height, 0.3);
 
       this.createG();
 
@@ -4917,8 +4915,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                  .attr("width", pave_width)
                  .attr("y", 0)
                  .attr("height", pave_height)
-                 .attr("rx", border_rx || null)
-                 .attr("ry", border_ry || null)
                  .call(this.lineatt.func)
                  .call(this.fillatt.func);
 

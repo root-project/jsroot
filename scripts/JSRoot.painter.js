@@ -644,12 +644,17 @@ JSROOT.define(['d3'], (d3) => {
       this.used = true;
       if (this.empty())
          selection.style('stroke', null)
-            .style('stroke-width', null)
-            .style('stroke-dasharray', null);
+                  .style('stroke-width', null)
+                  .style('stroke-dasharray', null);
       else
          selection.style('stroke', this.color)
-            .style('stroke-width', this.width)
-            .style('stroke-dasharray', jsrp.root_line_styles[this.style] || null);
+                  .style('stroke-width', this.width)
+                  .style('stroke-dasharray', jsrp.root_line_styles[this.style] || null);
+      if (this.rx !== undefined)
+         if (this.empty())
+            selection.attr("rx", null).attr("ry", null);
+         else
+            selection.attr("rx", this.rx || null).attr("ry", this.ry || null);
    }
 
    /** @summary Change line attributes */
