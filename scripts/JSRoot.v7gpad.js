@@ -4884,8 +4884,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       this.createv7AttLine("border_");
 
-      console.log('drawing Pave');
-
       this.createv7AttFill();
 
       let pave_x = 0, pave_y = 0,
