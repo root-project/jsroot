@@ -799,7 +799,7 @@ JSROOT.define(['d3'], (d3) => {
 
       if (color_as_svg) {
          this.color = color;
-         indx = 10000 + JSROOT._.id_counter++; // use fictional unique index far away from existing color indexes
+         indx = d3.color(color).hex().substr(1); // fictional index produced from color code
       } else {
          this.color = painter ? painter.getColor(indx) : jsrp.getColor(indx);
       }
@@ -825,10 +825,8 @@ JSROOT.define(['d3'], (d3) => {
       this.pattern_url = "url(#" + id + ")";
       this.antialias = false;
 
-      if (!defs.select("." + id).empty()) {
-         if (color_as_svg) console.log('find id in def', id);
+      if (!defs.select("." + id).empty())
          return true;
-      }
 
       let lines = "", lfill = null, fills = "", fills2 = "", w = 2, h = 2;
 
