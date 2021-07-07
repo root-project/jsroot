@@ -872,29 +872,37 @@ JSROOT.define(['d3'], (d3) => {
             }
 
             let code = this.pattern % 1000,
-               k = code % 10, j = ((code - k) % 100) / 10, i = (code - j * 10 - k) / 100;
+               k = code % 10,
+               j = ((code - k) % 100) / 10,
+               i = (code - j * 10 - k) / 100;
             if (!i) break;
 
-            let sz = i * 12;  // axis distance between lines
+            let sz = i * 12, pos, step, x1, x2, y1, y2, max;  // axis distance between lines
 
             w = h = 6 * sz; // we use at least 6 steps
 
-            function produce(dy, swap) {
-               let pos = [], step = sz, y1 = 0, y2, max = h;
+            let produce = (dy, swap) => {
+               pos = []; step = sz; y1 = 0; max = h;
 
                // reduce step for smaller angles to keep normal distance approx same
                if (Math.abs(dy) < 3) step = Math.round(sz / 12 * 9);
-               if (dy == 0) { step = Math.round(sz / 12 * 8); y1 = step / 2; }
-               else if (dy > 0) max -= step; else y1 = step;
+               if (dy == 0) {
+                  step = Math.round(sz / 12 * 8);
+                  y1 = step / 2;
+               } else if (dy > 0) {
+                  max -= step;
+               } else {
+                  y1 = step;
+               }
 
                while (y1 <= max) {
                   y2 = y1 + dy * step;
                   if (y2 < 0) {
-                     let x2 = Math.round(y1 / (y1 - y2) * w);
+                     x2 = Math.round(y1 / (y1 - y2) * w);
                      pos.push(0, y1, x2, 0);
                      pos.push(w, h - y1, w - x2, h);
                   } else if (y2 > h) {
-                     let x2 = Math.round((h - y1) / (y2 - y1) * w);
+                     x2 = Math.round((h - y1) / (y2 - y1) * w);
                      pos.push(0, y1, x2, h);
                      pos.push(w, h - y1, w - x2, 0);
                   } else {
@@ -902,10 +910,18 @@ JSROOT.define(['d3'], (d3) => {
                   }
                   y1 += step;
                }
-               for (let k = 0; k < pos.length; k += 4)
-                  if (swap) lines += "M" + pos[k + 1] + "," + pos[k] + "L" + pos[k + 3] + "," + pos[k + 2];
-                  else lines += "M" + pos[k] + "," + pos[k + 1] + "L" + pos[k + 2] + "," + pos[k + 3];
-            }
+               for (let k = 0; k < pos.length; k += 4) {
+                  if (swap) { x1 = pos[k+1]; y1 = pos[k]; x2 = pos[k+3]; y2 = pos[k+2]; }
+                       else { x1 = pos[k]; y1 = pos[k+1]; x2 = pos[k+2]; y2 = pos[k+3]; }
+                   lines += "M"+x1+","+y1;
+                   if (y2 == y1)
+                      lines += "h"+(x2-x1);
+                   else if (x2 == x1)
+                      lines += "v"+(y2-y1);
+                   else
+                      lines += "L"+x2+","+y2;
+               }
+            };
 
             switch (j) {
                case 0: produce(0); break;
