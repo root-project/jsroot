@@ -941,6 +941,9 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
              .name("Rendering order")
              .onChange(this.changedDepthMethod.bind(this));
 
+         advanced.add(this.ctrl, 'ortho_camera').name("Orhographic camera")
+                 .listen().onChange(() => this.changeCamera());
+
         advanced.add(this, 'resetAdvanced').name('Reset');
       }
 
@@ -1008,6 +1011,26 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          });
    }
 
+   /** @@summary Handle change of camera kind */
+   TGeoPainter.prototype.changeCamera = function() {
+      // force control recreation
+      if (this._controls) {
+          this._controls.cleanup();
+          delete this._controls;
+       }
+
+       this.removeBloom();
+       this.removeSSAO();
+
+      // recreate camera
+      this.createCamera();
+
+      this.createSpecialEffects();
+
+       this._first_drawing = true;
+      this.startDrawGeometry(true);
+   }
+
    TGeoPainter.prototype.createBloom = function() {
       if (this._bloomPass) return;
 
@@ -1023,6 +1046,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       this._renderer.autoClear = false;
    }
 
+   /** @summary Remove bloom highlight */
    TGeoPainter.prototype.removeBloom = function() {
       if (!this._bloomPass) return;
       delete this._bloomPass;
@@ -1031,6 +1055,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       this._camera.layers.disable( _BLOOM_SCENE );
    }
 
+   /** @summary Remove composer */
    TGeoPainter.prototype.removeSSAO = function() {
       // we cannot remove pass from composer - just disable it
       delete this._ssaoPass;
@@ -2018,6 +2043,44 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       if (need_render) this.render3D();
    }
 
+   /** @summary Create configured camera */
+   TGeoPainter.prototype.createCamera = function() {
+      if (this.ctrl.ortho_camera) {
+         this._camera =  new THREE.OrthographicCamera(-600, 600, -600, 600, 1, 10000);
+      } else {
+         this._camera = new THREE.PerspectiveCamera(25, this._scene_width / this._scene_height, 1, 10000);
+         this._camera.up = this.ctrl._yup ? new THREE.Vector3(0,1,0) : new THREE.Vector3(0,0,1);
+      }
+
+      // Light - add default point light, adjust later
+      let light = new THREE.PointLight(0xefefef, 1);
+      light.position.set(10, 10, 10);
+      this._camera.add( light );
+
+      this._scene.add(this._camera);
+   }
+
+   /** @summary Create special effects */
+   TGeoPainter.prototype.createSpecialEffects = function() {
+      // Smooth Lighting Shader (Screen Space Ambient Occlusion)
+      // http://threejs.org/examples/webgl_postprocessing_ssao.html
+
+      if (this._webgl && (this.ctrl.ssao.enabled || this.ctrl.outline)) {
+
+         if (this.ctrl.outline && (typeof this.createOutline == "function")) {
+            this._effectComposer = new THREE.EffectComposer( this._renderer );
+            this._effectComposer.addPass( new THREE.RenderPass( this._scene, this._camera ) );
+            this.createOutline(w, h);
+         } else if (this.ctrl.ssao.enabled) {
+            this.createSSAO();
+         }
+      }
+
+      if (this._webgl && this.ctrl.bloom.enabled)
+         this.createBloom();
+   }
+
+
    /** @summary Initial scene creation */
    TGeoPainter.prototype.createScene = function(w, h) {
       // three.js 3D drawing
@@ -2028,14 +2091,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       this._scene_width = w;
       this._scene_height = h;
 
-      if (this.ctrl.ortho_camera) {
-         this._camera =  new THREE.OrthographicCamera(-600, 600, -600, 600, 1, 10000);
-      } else {
-         this._camera = new THREE.PerspectiveCamera(25, w / h, 1, 10000);
-         this._camera.up = this.ctrl._yup ? new THREE.Vector3(0,1,0) : new THREE.Vector3(0,0,1);
-      }
-
-      this._scene.add( this._camera );
+      this.createCamera();
 
       this._selected_mesh = null;
 
@@ -2072,29 +2128,8 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
                            new THREE.Plane(new THREE.Vector3(0, this.ctrl._yup ? -1 : 1, 0), 0),
                            new THREE.Plane(new THREE.Vector3(0, 0, this.ctrl._yup ? 1 : -1), 0) ];
 
-      // Light - add default point light, adjust later
 
-      let light = new THREE.PointLight(0xefefef, 1);
-      light.position.set(10, 10, 10);
-      this._camera.add( light );
-
-      // Smooth Lighting Shader (Screen Space Ambient Occlusion)
-      // http://threejs.org/examples/webgl_postprocessing_ssao.html
-
-      if (this._webgl && (this.ctrl.ssao.enabled || this.ctrl.outline)) {
-
-         if (this.ctrl.outline && (typeof this.createOutline == "function")) {
-            this._effectComposer = new THREE.EffectComposer( this._renderer );
-            this._effectComposer.addPass( new THREE.RenderPass( this._scene, this._camera ) );
-            this.createOutline(w, h);
-         } else if (this.ctrl.ssao.enabled) {
-            this.createSSAO();
-         }
-      }
-
-      if (this._webgl && this.ctrl.bloom.enabled) {
-         this.createBloom();
-      }
+      this.createSpecialEffects();
 
       if (this._fit_main_area && !this._webgl) {
          // create top-most SVG for geomtery drawings
@@ -2270,7 +2305,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       this._scene.fog.far = this._overall_size * 12;
 
       if (first_time)
-         for (let naxis=0;naxis<3;++naxis) {
+         for (let naxis = 0; naxis < 3; ++naxis) {
             let cc = this.ctrl.clip[naxis];
             cc.min = box.min[cc.name];
             cc.max = box.max[cc.name];
@@ -3941,7 +3976,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
             if (pos>=0) this._main_painter._slave_painters.splice(pos,1);
          }
 
-         for (let k=0;k<this._slave_painters.length;++k) {
+         for (let k = 0; k < this._slave_painters.length;++k) {
             let slave = this._slave_painters[k];
             if (slave && (slave._main_painter===this)) slave._main_painter = null;
          }
