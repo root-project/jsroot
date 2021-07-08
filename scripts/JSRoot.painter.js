@@ -82,13 +82,13 @@ JSROOT.define(['d3'], (d3) => {
          "3,4,1,4", "5,3,1,3", "5,3,1,3,1,3,1,3", "5,5",
          "5,3,1,3,1,3", "20,5", "20,10,1,10", "1,3"],
       root_markers: [
-         0, 100, 8, 7, 0,         //  0..4
-         9, 100, 100, 100, 100,   //  5..9
-         100, 100, 100, 100, 100, // 10..14
-         100, 100, 100, 100, 100, // 15..19
-         100, 103, 126, 132, 0,   // 20..24
-         3, 26, 2, 28, 106,       // 25..29
-         6, 7, 32, 102, 128,      // 30..34
+         0, 1, 2, 3, 4,           //  0..4
+         5, 106, 107, 104, 1,     //  5..9
+         1, 1, 1, 1, 1,           // 10..14
+         1, 1, 1, 1, 1,           // 15..19
+         104, 125, 126, 132, 4,   // 20..24
+         25, 26, 27, 28, 130,     // 25..29
+         30, 3, 32, 127, 128,     // 30..34
          35, 36, 37, 38, 137,     // 35..39
          40, 140, 42, 142, 44,    // 40..44
          144, 46, 146, 148, 149], // 45..49
@@ -491,51 +491,62 @@ JSROOT.define(['d3'], (d3) => {
           s38 = (size*3/8).toFixed(this.ndig);
 
       switch (shape) {
-         case 0: // circle
+         case 1: // dot
+            this.marker = "h1";
+            break;
+         case 2: // plus
+            this.y0 = -size / 2;
+            this.marker = `v${s1}m-${s2},-${s2}h${s1}`;
+            break;
+         case 3: // asterisk
+            this.x0 = this.y0 = -size / 2;
+            this.marker = "l" + s1 + "," + s1 +
+               "m0,-" + s1 + "l-" + s1 + "," + s1 +
+               "m0,-" + s2 + "h" + s1 + "m-" + s2 + ",-" + s2 + "v" + s1;
+            break;
+         case 4: // circle
             this.x0 = -parseFloat(s2);
             s1 = (parseFloat(s2) * 2).toFixed(this.ndig);
-            this.marker = "a" + s2 + "," + s2 + ",0,1,0," + s1 + ",0a" + s2 + "," + s2 + ",0,1,0,-" + s1 + ",0z";
+            this.marker = `a${s2},${s2},0,1,0,${s1},0a${s2},${s2},0,1,0,-${s1},0z`;
             break;
-         case 2: // diamand
-            this.y0 = -size / 2;
-            this.marker = `l${s3},${s2}l-${s3},${s2}l-${s3},-${s2}z`;
-            break;
-         case 3: // square
+         case 5: // mult
             this.x0 = this.y0 = -size / 2;
-            this.marker = "v" + s1 + "h" + s1 + "v-" + s1 + "z";
+            this.marker = `l${s1},${s1}m0,-${s1}l-${s1},${s1}`;
+            break;
+         case 6: // small dot
+            this.x0 = -1;
+            this.marker = "a1,1,0,1,0,2,0a1,1,0,1,0,-2,0z";
+            break;
+         case 7: // medium dot
+            this.x0 = -1.5;
+            this.marker = "a1.5,1.5,0,1,0,3,0a1.5,1.5,0,1,0,-3,0z";
+            break;
+         case 25: // square
+            this.x0 = this.y0 = -size / 2;
+            this.marker = `v${s1}h${s1}v-${s1}z`;
             break;
          case 26: // triangle-up
             this.y0 = -size / 2;
             this.marker = `l-${s2},${s1}h${s1}z`;
             break;
-         case 32: // triangle-down
-            this.y0 = size / 2;
-            this.marker = `l-${s2},-${s1}h${s1}z`;
+         case 27: // diamand
+            this.y0 = -size / 2;
+            this.marker = `l${s3},${s2}l-${s3},${s2}l-${s3},-${s2}z`;
             break;
-         case 6: // star
+         case 28: // cross
+            this.x0 = this.y0 = size / 6;
+            this.marker = `h${s3}v-${s3}h-${s3}v-${s3}h-${s3}v${s3}h-${s3}v${s3}h${s3}v${s3}h${s3}z`;
+            break;
+         case 30: // star
             this.y0 = -size / 2;
             this.marker = "l" + (size / 3).toFixed(this.ndig) + "," + s1 +
                "l-" + (5/6*size).toFixed(this.ndig) + ",-" + (5/8*size).toFixed(this.ndig) +
                "h" + s1 +
                "l-" + (5/6*size).toFixed(this.ndig) + "," + (5/8*size).toFixed(this.ndig) + "z";
             break;
-         case 7: // asterisk
-            this.x0 = this.y0 = -size / 2;
-            this.marker = "l" + s1 + "," + s1 +
-               "m0,-" + s1 + "l-" + s1 + "," + s1 +
-               "m0,-" + s2 + "h" + s1 + "m-" + s2 + ",-" + s2 + "v" + s1;
-            break;
-         case 8: // plus
-            this.y0 = -size / 2;
-            this.marker = "v" + s1 + "m-" + s2 + ",-" + s2 + "h" + s1;
-            break;
-         case 9: // mult
-            this.x0 = this.y0 = -size / 2;
-            this.marker = "l" + s1 + "," + s1 + "m0,-" + s1 + "l-" + s1 + "," + s1;
-            break;
-         case 28: // cross
-            this.x0 = this.y0 = size / 6;
-            this.marker = `h${s3}v-${s3}h-${s3}v-${s3}h-${s3}v${s3}h-${s3}v${s3}h${s3}v${s3}h${s3}z`;
+         case 32: // triangle-down
+            this.y0 = size / 2;
+            this.marker = `l-${s2},-${s1}h${s1}z`;
             break;
          case 35:
             this.x0 = -size / 2;
