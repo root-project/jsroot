@@ -399,7 +399,8 @@ JSROOT.define(['d3'], (d3) => {
      * @param {object} args.attr - instance of TAttrMarker (or derived class) or
      * @param {string} args.color - color in HTML form like grb(1,4,5) or 'green'
      * @param {number} args.style - marker style
-     * @param {number} args.size - marker size */
+     * @param {number} args.size - marker size
+     * @param {number} args.refsize - when specified and marker size < 1, marker size will be calculated relative to that size */
    TAttMarkerHandler.prototype.setArgs = function(args) {
       if ((typeof args == 'object') && (typeof args.fMarkerStyle == 'number')) args = { attr: args };
 
@@ -448,8 +449,8 @@ JSROOT.define(['d3'], (d3) => {
 
       if (color !== undefined) this.color = color;
       if ((style !== undefined) && (style >= 0)) this.style = style;
-      if (size !== undefined) this.size = size; else size = this.size;
-      if (refsize !== undefined) this.refsize = refsize; else refsize = this.refsize;
+      if (size !== undefined) this.size = size;
+      if (refsize !== undefined) this.refsize = refsize;
 
       this.x0 = this.y0 = 0;
 
@@ -465,24 +466,17 @@ JSROOT.define(['d3'], (d3) => {
       this.optimized = false;
 
       let marker_kind = jsrp.root_markers[this.style];
-      if (marker_kind === undefined) marker_kind = 100;
+      if (marker_kind === undefined) marker_kind = 104;
       let shape = marker_kind % 100;
 
       this.fill = (marker_kind >= 100);
 
-      switch (this.style) {
-         case 1: this.size = 1; this.scale = 1; break;
-         case 6: this.size = 2; this.scale = 1; break;
-         case 7: this.size = 3; this.scale = 1; break;
-         default:
-            this.size = size;
-            this.scale = this.refsize || 8; // v7 defines refsize as 1 or pad height
-      }
+      this.scale = this.refsize || 8; // v7 defines refsize as 1 or pad height
 
       size = this.getFullSize();
 
       this.ndig = (size > 7) ? 0 : ((size > 2) ? 1 : 2);
-      if (shape == 6) this.ndig++;
+      if (shape == 4) this.ndig++; // increase precision for circle
       let s1 = size.toFixed(this.ndig),
           s2 = (size/2).toFixed(this.ndig),
           s3 = (size/3).toFixed(this.ndig),
