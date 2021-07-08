@@ -230,7 +230,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (marker_size < 1) {
          let pp = this.getPadPainter();
          marker_refsize = pp ? pp.getPadHeight() : 100;
-         console.log('Marker refsize', marker_refsize);
       }
 
       this.createAttMarker({ color: marker_color, size: marker_size, style: marker_style, refsize: marker_refsize });

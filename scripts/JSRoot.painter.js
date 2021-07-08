@@ -400,7 +400,7 @@ JSROOT.define(['d3'], (d3) => {
      * @param {string} args.color - color in HTML form like grb(1,4,5) or 'green'
      * @param {number} args.style - marker style
      * @param {number} args.size - marker size
-     * @param {number} args.refsize - when specified and marker size < 1, marker size will be calculated relative to that size */
+     * @param {number} [args.refsize] - when specified and marker size < 1, marker size will be calculated relative to that size */
    TAttMarkerHandler.prototype.setArgs = function(args) {
       if ((typeof args == 'object') && (typeof args.fMarkerStyle == 'number')) args = { attr: args };
 
@@ -411,7 +411,12 @@ JSROOT.define(['d3'], (d3) => {
          if (!args.size) args.size = args.attr.fMarkerSize;
       }
 
-      this.change(args.color, args.style, args.size, args.refsize);
+      this.color = args.color;
+      this.style = args.style;
+      this.size = args.size;
+      this.refsize = args.refsize;
+
+      this._configure();
    }
 
    /** @summary Reset position, used for optimization of drawing of multiple markers
@@ -444,13 +449,19 @@ JSROOT.define(['d3'], (d3) => {
     *  @param {string} color - marker color
     *  @param {number} style - marker style
     *  @param {number} size - marker size */
-   TAttMarkerHandler.prototype.change = function(color, style, size, refsize) {
+   TAttMarkerHandler.prototype.change = function(color, style, size) {
       this.changed = true;
 
       if (color !== undefined) this.color = color;
       if ((style !== undefined) && (style >= 0)) this.style = style;
       if (size !== undefined) this.size = size;
-      if (refsize !== undefined) this.refsize = refsize;
+
+      this._configure();
+   }
+
+   /** @summary Prepare object to create marker
+     * @private */
+    TAttMarkerHandler.prototype._configure = function() {
 
       this.x0 = this.y0 = 0;
 
@@ -473,10 +484,10 @@ JSROOT.define(['d3'], (d3) => {
 
       this.scale = this.refsize || 8; // v7 defines refsize as 1 or pad height
 
-      size = this.getFullSize();
+      let size = this.getFullSize();
 
       this.ndig = (size > 7) ? 0 : ((size > 2) ? 1 : 2);
-      if (shape == 4) this.ndig++; // increase precision for circle
+      if (shape == 30) this.ndig++; // increase precision for star
       let s1 = size.toFixed(this.ndig),
           s2 = (size/2).toFixed(this.ndig),
           s3 = (size/3).toFixed(this.ndig),
@@ -786,7 +797,10 @@ JSROOT.define(['d3'], (d3) => {
          if ((args.pattern === undefined) && (args.attr.fFillStyle !== undefined)) args.pattern = args.attr.fFillStyle;
          if ((args.color === undefined) && (args.attr.fFillColor !== undefined)) args.color = args.attr.fFillColor;
       }
+
+      let was_changed = this.changed; // preserve changed state
       this.change(args.color, args.pattern, args.svg, args.color_as_svg, args.painter);
+      this.changed = was_changed;
    }
 
    /** @summary Apply fill style to selection */
