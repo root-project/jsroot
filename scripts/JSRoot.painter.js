@@ -406,7 +406,7 @@ JSROOT.define(['d3'], (d3) => {
          if (!args.size) args.size = args.attr.fMarkerSize;
       }
 
-      this.change(args.color, args.style, args.size);
+      this.change(args.color, args.style, args.size, args.refsize);
    }
 
    /** @summary Reset position, used for optimization of drawing of multiple markers
@@ -424,7 +424,7 @@ JSROOT.define(['d3'], (d3) => {
 
       // use optimized handling with relative position
       let xx = Math.round(x), yy = Math.round(y), m1 = "M" + xx + "," + yy + "h1",
-         m2 = (this.lastx === null) ? m1 : ("m" + (xx - this.lastx) + "," + (yy - this.lasty) + "h1");
+          m2 = (this.lastx === null) ? m1 : ("m" + (xx - this.lastx) + "," + (yy - this.lasty) + "h1");
       this.lastx = xx + 1; this.lasty = yy;
       return (m2.length < m1.length) ? m2 : m1;
    }
@@ -439,12 +439,13 @@ JSROOT.define(['d3'], (d3) => {
     *  @param {string} color - marker color
     *  @param {number} style - marker style
     *  @param {number} size - marker size */
-   TAttMarkerHandler.prototype.change = function(color, style, size) {
+   TAttMarkerHandler.prototype.change = function(color, style, size, refsize) {
       this.changed = true;
 
       if (color !== undefined) this.color = color;
       if ((style !== undefined) && (style >= 0)) this.style = style;
       if (size !== undefined) this.size = size; else size = this.size;
+      if (refsize !== undefined) this.refsize = refsize; else refsize = this.refsize;
 
       this.x0 = this.y0 = 0;
 
@@ -469,7 +470,9 @@ JSROOT.define(['d3'], (d3) => {
          case 1: this.size = 1; this.scale = 1; break;
          case 6: this.size = 2; this.scale = 1; break;
          case 7: this.size = 3; this.scale = 1; break;
-         default: this.size = size; this.scale = 8;
+         default:
+            this.size = size;
+            this.scale = this.refsize || 8; // v7 defines refsize as 1 or pad height
       }
 
       size = this.getFullSize();
