@@ -81,13 +81,16 @@ JSROOT.define(['d3'], (d3) => {
       root_line_styles: ["", "", "3,3", "1,2",
          "3,4,1,4", "5,3,1,3", "5,3,1,3,1,3,1,3", "5,5",
          "5,3,1,3,1,3", "20,5", "20,10,1,10", "1,3"],
-      root_markers: [0, 100, 8, 7, 0,  //  0..4
-         9, 100, 100, 100, 100,  //  5..9
-         100, 100, 100, 100, 100,  // 10..14
-         100, 100, 100, 100, 100,  // 15..19
-         100, 103, 105, 104, 0,  // 20..24
-         3, 4, 2, 1, 106,  // 25..29
-         6, 7, 5, 102, 101], // 30..34
+      root_markers: [
+         0, 100, 8, 7, 0,         //  0..4
+         9, 100, 100, 100, 100,   //  5..9
+         100, 100, 100, 100, 100, // 10..14
+         100, 100, 100, 100, 100, // 15..19
+         100, 103, 105, 104, 0,   // 20..24
+         3, 4, 2, 1, 106,         // 25..29
+         6, 7, 5, 102, 101,       // 30..34
+         35, 36, 37, 38, 137      // 35..39
+         ],
       root_fonts: ['Arial', 'iTimes New Roman',
          'bTimes New Roman', 'biTimes New Roman', 'Arial',
          'oArial', 'bArial', 'boArial', 'Courier New',
@@ -479,59 +482,77 @@ JSROOT.define(['d3'], (d3) => {
 
       this.ndig = (size > 7) ? 0 : ((size > 2) ? 1 : 2);
       if (shape == 6) this.ndig++;
-      let half = (size / 2).toFixed(this.ndig), full = size.toFixed(this.ndig);
+      let s1 = size.toFixed(this.ndig),
+          s2 = (size/2).toFixed(this.ndig),
+          s3 = (size/3).toFixed(this.ndig),
+          s4 = (size/4).toFixed(this.ndig);
 
       switch (shape) {
          case 0: // circle
-            this.x0 = -parseFloat(half);
-            full = (parseFloat(half) * 2).toFixed(this.ndig);
-            this.marker = "a" + half + "," + half + ",0,1,0," + full + ",0a" + half + "," + half + ",0,1,0,-" + full + ",0z";
+            this.x0 = -parseFloat(s2);
+            s1 = (parseFloat(s2) * 2).toFixed(this.ndig);
+            this.marker = "a" + s2 + "," + s2 + ",0,1,0," + s1 + ",0a" + s2 + "," + s2 + ",0,1,0,-" + s1 + ",0z";
             break;
          case 1: // cross
-            let d = (size / 3).toFixed(this.ndig);
             this.x0 = this.y0 = size / 6;
-            this.marker = "h" + d + "v-" + d + "h-" + d + "v-" + d + "h-" + d + "v" + d + "h-" + d + "v" + d + "h" + d + "v" + d + "h" + d + "z";
+            this.marker = "h" + s3 + "v-" + s3 + "h-" + s3 + "v-" + s3 + "h-" + s3 + "v" + s3 + "h-" + s3 + "v" + s3 + "h" + s3 + "v" + s3 + "h" + s3 + "z";
             break;
-         case 2: // diamond
+         case 2: // diamand
             this.x0 = -size / 2;
-            this.marker = "l" + half + ",-" + half + "l" + half + "," + half + "l-" + half + "," + half + "z";
+            this.marker = "l" + s2 + ",-" + s2 + "l" + s2 + "," + s2 + "l-" + s2 + "," + s2 + "z";
             break;
          case 3: // square
             this.x0 = this.y0 = -size / 2;
-            this.marker = "v" + full + "h" + full + "v-" + full + "z";
+            this.marker = "v" + s1 + "h" + s1 + "v-" + s1 + "z";
             break;
          case 4: // triangle-up
             this.y0 = size / 2;
-            this.marker = "l-" + half + ",-" + full + "h" + full + "z";
+            this.marker = "l-" + s2 + ",-" + s1 + "h" + s1 + "z";
             break;
          case 5: // triangle-down
             this.y0 = -size / 2;
-            this.marker = "l-" + half + "," + full + "h" + full + "z";
+            this.marker = "l-" + s2 + "," + s1 + "h" + s1 + "z";
             break;
          case 6: // star
             this.y0 = -size / 2;
-            this.marker = "l" + (size / 3).toFixed(this.ndig) + "," + full +
+            this.marker = "l" + (size / 3).toFixed(this.ndig) + "," + s1 +
                "l-" + (5 / 6 * size).toFixed(this.ndig) + ",-" + (5 / 8 * size).toFixed(this.ndig) +
-               "h" + full +
+               "h" + s1 +
                "l-" + (5 / 6 * size).toFixed(this.ndig) + "," + (5 / 8 * size).toFixed(this.ndig) + "z";
             break;
          case 7: // asterisk
             this.x0 = this.y0 = -size / 2;
-            this.marker = "l" + full + "," + full +
-               "m0,-" + full + "l-" + full + "," + full +
-               "m0,-" + half + "h" + full + "m-" + half + ",-" + half + "v" + full;
+            this.marker = "l" + s1 + "," + s1 +
+               "m0,-" + s1 + "l-" + s1 + "," + s1 +
+               "m0,-" + s2 + "h" + s1 + "m-" + s2 + ",-" + s2 + "v" + s1;
             break;
          case 8: // plus
             this.y0 = -size / 2;
-            this.marker = "v" + full + "m-" + half + ",-" + half + "h" + full;
+            this.marker = "v" + s1 + "m-" + s2 + ",-" + s2 + "h" + s1;
             break;
          case 9: // mult
             this.x0 = this.y0 = -size / 2;
-            this.marker = "l" + full + "," + full + "m0,-" + full + "l-" + full + "," + full;
+            this.marker = "l" + s1 + "," + s1 + "m0,-" + s1 + "l-" + s1 + "," + s1;
+            break;
+         case 35: // marker 35
+            this.x0 = -size / 2;
+            this.marker = `l${s2},${s2}l${s2},-${s2}l-${s2},-${s2}zh${s1}m-${s2},-${s2}v${s1}`;
+            break;
+         case 36: // marker 36
+            this.x0 = this.y0 = -size / 2;
+            this.marker = `h${s1}v${s1}h-${s1}zl${s1},${s1}m0,-${s1}l-${s1},${s1}`;
+            break;
+         case 37: // marker 37
+            this.x0 = -size/2;
+            this.marker = `h${s1}l-${s4},-${s2}l-${s2},${s1}h${s2}l-${s2},-${s1}z`;
+            break;
+         case 38: // marker 38
+            this.x0 = -size/4; this.y0 = -size/2;
+            this.marker = `h${s2}l${s4},${s4}v${s2}l-${s4},${s4}h-${s2}l-${s4},-${s4}v-${s2}zm${s4},0v${s1}m-${s2},-${s2}h${s1}`;
             break;
          default: // diamand
             this.x0 = -size / 2;
-            this.marker = "l" + half + ",-" + half + "l" + half + "," + half + "l-" + half + "," + half + "z";
+            this.marker = "l" + s2 + ",-" + s2 + "l" + s2 + "," + s2 + "l-" + s2 + "," + s2 + "z";
             break;
       }
 
@@ -3202,7 +3223,7 @@ JSROOT.define(['d3'], (d3) => {
       let lmin = item.min = this.scale_min,
           lmax = item.max = this.scale_max,
           gmin = this.full_min,
-          gmax = this.full_max;
+          gmax = this.s1_max;
 
       if ((item.min === item.max) && (delta < 0)) {
          item.min = gmin;
