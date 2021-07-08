@@ -2012,12 +2012,12 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
             case "ambient" : this._camera.add(new THREE.AmbientLight(0xefefef, p)); break;
             case "hemisphere" : this._camera.add(new THREE.HemisphereLight(0xffffbb, 0x080820, p)); break;
             default: // 6 point lights
-               for (let n=0;n<6;++n)
+               for (let n = 0; n < 6; ++n)
                   this._camera.add( new THREE.PointLight(0xefefef, p) );
          }
       }
 
-      for (let k=0;k<this._camera.children.length;++k) {
+      for (let k = 0; k < this._camera.children.length; ++k) {
          let light = this._camera.children[k], enabled = false;
          if (light.isAmbientLight || light.isHemisphereLight) {
             light.intensity = p;
@@ -2045,6 +2045,14 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
    /** @summary Create configured camera */
    TGeoPainter.prototype.createCamera = function() {
+
+      if (this._camera) {
+          this._scene.remove(this._camera)
+          jsrp.disposeThreejsObject(this._camera);
+          delete this._camera;
+       }
+
+
       if (this.ctrl.ortho_camera) {
          this._camera =  new THREE.OrthographicCamera(-this._scene_width/2, this._scene_width/2, this._scene_height/2, -this._scene_height/2, 1, 10000);
       } else {
