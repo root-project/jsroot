@@ -209,9 +209,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       let line_color = this.v7EvalColor(prefix + "color", "black"),
           line_width = this.v7EvalAttr(prefix + "width", 1),
-          line_style = this.v7EvalAttr(prefix + "style", 1);
+          line_style = this.v7EvalAttr(prefix + "style", 1),
+          line_pattern = this.v7EvalAttr(prefix + "pattern");
 
-      this.createAttLine({ color: line_color, width: line_width, style: line_style });
+      this.createAttLine({ color: line_color, width: line_width, style: line_style, pattern: line_pattern });
 
       if (prefix == "border_")
          this.lineatt.setBorder(this.v7EvalAttr(prefix + "rx", 0), this.v7EvalAttr(prefix + "ry", 0));

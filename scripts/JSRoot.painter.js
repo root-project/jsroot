@@ -608,6 +608,7 @@ JSROOT.define(['d3'], (d3) => {
       this.color = (args.width === 0) ? 'none' : args.color;
       this.width = args.width;
       this.style = args.style;
+      this.pattern = args.pattern || jsrp.root_line_styles[this.style] || null;
 
       if (args.can_excl) {
          this.excl_side = this.excl_width = 0;
@@ -656,7 +657,7 @@ JSROOT.define(['d3'], (d3) => {
       else
          selection.style('stroke', this.color)
                   .style('stroke-width', this.width)
-                  .style('stroke-dasharray', jsrp.root_line_styles[this.style] || null);
+                  .style('stroke-dasharray', this.pattern);
    }
 
    /** @summary Applies line and border attribute to selection.
@@ -671,7 +672,7 @@ JSROOT.define(['d3'], (d3) => {
       else
          selection.style('stroke', this.color)
                   .style('stroke-width', this.width)
-                  .style('stroke-dasharray', jsrp.root_line_styles[this.style] || null)
+                  .style('stroke-dasharray', this.pattern)
                   .attr("rx", this.rx || null).attr("ry", this.ry || null);
    }
 
@@ -679,7 +680,10 @@ JSROOT.define(['d3'], (d3) => {
    TAttLineHandler.prototype.change = function(color, width, style) {
       if (color !== undefined) this.color = color;
       if (width !== undefined) this.width = width;
-      if (style !== undefined) this.style = style;
+      if (style !== undefined) {
+         this.style = style;
+         this.pattern = jsrp.root_line_styles[this.style] || null;
+      }
       this.changed = true;
    }
 
