@@ -364,6 +364,8 @@ Following draw options could be specified (separated by semicolon or ';'):
    - rotate - enable automatic rotation of the geometry
    - trzVALUE - set transformation along Z axis (like trz50)
    - trrVALUE - set radial transformation (like trr100)
+   - ortho_camera - use THREE.OrthographicCamera without possibility to rotate it
+   - ortho_camera_rotate - use THREE.OrthographicCamera and enable it rotation
    - ctrl - show control UI from the beginning
    - tracks - show tracks from TGeoManager
    - showtop - show top-level volume of TGeoManager (default off)
