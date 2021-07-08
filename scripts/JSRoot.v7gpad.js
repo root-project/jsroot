@@ -213,10 +213,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       this.createAttLine({ color: line_color, width: line_width, style: line_style });
 
-      if (prefix == "border_") {
-         this.lineatt.rx = this.v7EvalAttr(prefix + "rx", 0);
-         this.lineatt.ry = this.v7EvalAttr(prefix + "ry", 0);
-      }
+      if (prefix == "border_")
+         this.lineatt.setBorder(this.v7EvalAttr(prefix + "rx", 0), this.v7EvalAttr(prefix + "ry", 0));
    }
 
     /** @summary Create this.markeratt object based on v7 attributes
