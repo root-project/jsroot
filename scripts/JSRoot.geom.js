@@ -1027,7 +1027,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
       this.createSpecialEffects();
 
-       this._first_drawing = true;
+      this._first_drawing = true;
       this.startDrawGeometry(true);
    }
 
@@ -2046,7 +2046,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
    /** @summary Create configured camera */
    TGeoPainter.prototype.createCamera = function() {
       if (this.ctrl.ortho_camera) {
-         this._camera =  new THREE.OrthographicCamera(-600, 600, -600, 600, 1, 10000);
+         this._camera =  new THREE.OrthographicCamera(-this._scene_width/2, this._scene_width/2, this._scene_height/2, -this._scene_height/2, 1, 10000);
       } else {
          this._camera = new THREE.PerspectiveCamera(25, this._scene_width / this._scene_height, 1, 10000);
          this._camera.up = this.ctrl._yup ? new THREE.Vector3(0,1,0) : new THREE.Vector3(0,0,1);
