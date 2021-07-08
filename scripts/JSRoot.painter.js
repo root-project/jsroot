@@ -3265,7 +3265,7 @@ JSROOT.define(['d3'], (d3) => {
       let lmin = item.min = this.scale_min,
           lmax = item.max = this.scale_max,
           gmin = this.full_min,
-          gmax = this.s1_max;
+          gmax = this.full_max;
 
       if ((item.min === item.max) && (delta < 0)) {
          item.min = gmin;
