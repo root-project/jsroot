@@ -13,6 +13,8 @@
 10. Use frame margins when create 3D lego drawings
 11. Implement "nomargins" draw option for pad/canvas
 12. Support custom mouse click/dblcklick handlers for lego plots
+13. Implement marker styles 35 - 49
+
 
 ## Changes in 6.1.1
 1. Fix bug in TFrame drawing, some interactive features was not properly working

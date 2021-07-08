@@ -89,8 +89,9 @@ JSROOT.define(['d3'], (d3) => {
          100, 103, 105, 104, 0,   // 20..24
          3, 4, 2, 1, 106,         // 25..29
          6, 7, 5, 102, 101,       // 30..34
-         35, 36, 37, 38, 137      // 35..39
-         ],
+         35, 36, 37, 38, 137,     // 35..39
+         40, 140, 42, 142, 44,    // 40..44
+         144, 46, 146, 148, 149], // 45..49
       root_fonts: ['Arial', 'iTimes New Roman',
          'bTimes New Roman', 'biTimes New Roman', 'Arial',
          'oArial', 'bArial', 'boArial', 'Courier New',
@@ -485,7 +486,9 @@ JSROOT.define(['d3'], (d3) => {
       let s1 = size.toFixed(this.ndig),
           s2 = (size/2).toFixed(this.ndig),
           s3 = (size/3).toFixed(this.ndig),
-          s4 = (size/4).toFixed(this.ndig);
+          s4 = (size/4).toFixed(this.ndig),
+          s8 = (size/8).toFixed(this.ndig),
+          s38 = (size*3/8).toFixed(this.ndig);
 
       switch (shape) {
          case 0: // circle
@@ -549,6 +552,30 @@ JSROOT.define(['d3'], (d3) => {
          case 38: // marker 38
             this.x0 = -size/4; this.y0 = -size/2;
             this.marker = `h${s2}l${s4},${s4}v${s2}l-${s4},${s4}h-${s2}l-${s4},-${s4}v-${s2}zm${s4},0v${s1}m-${s2},-${s2}h${s1}`;
+            break;
+         case 40: // marker 40
+            this.x0 = -size/4; this.y0 = -size/2;
+            this.marker = `l${s2},${s1}l${s4},-${s4}l-${s1},-${s2}zm${s2},0l-${s2},${s1}l-${s4},-${s4}l${s1},-${s2}z`;
+            break;
+         case 42: // marker 42
+            this.y0 = -size/2;
+            this.marker = `l${s8},${s38}l${s38},${s8}l-${s38},${s8}l-${s8},${s38}l-${s8},-${s38}l-${s38},-${s8}l${s38},-${s8}z`;
+            break;
+         case 44: // marker 44
+            this.x0 = -size/4; this.y0 = -size/2;
+            this.marker = `h${s2}l-${s8},${s38}l${s38},-${s8}v${s2}l-${s38},-${s8}l${s8},${s38}h-${s2}l${s8},-${s38}l-${s38},${s8}v-${s2}l${s38},${s8}z`;
+            break;
+         case 46: // marker 46
+            this.x0 = -size/4; this.y0 = -size/2;
+            this.marker = `l${s4},${s4}l${s4},-${s4}l${s4},${s4}l-${s4},${s4}l${s4},${s4}l-${s4},${s4}l-${s4},-${s4}l-${s4},${s4}l-${s4},-${s4}l${s4},-${s4}l-${s4},-${s4}z`;
+            break;
+         case 48: // marker 48
+            this.x0 = -size/4; this.y0 = -size/2;
+            this.marker = `l${s4},${s4}l-${s4},${s4}l-${s4},-${s4}zm${s2},0l${s4},${s4}l-${s4},${s4}l-${s4},-${s4}zm0,${s2}l${s4},${s4}l-${s4},${s4}l-${s4},-${s4}zm-${s2},0l${s4},${s4}l-${s4},${s4}l-${s4},-${s4}z`;
+            break;
+         case 49: // marker 49
+            this.x0 = -size/6; this.y0 = -size/2;
+            this.marker = `h${s3}v${s3}h-${s3}zm${s3},${s3}h${s3}v${s3}h-${s3}zm-${s3},${s3}h${s3}v${s3}h-${s3}zm-${s3},-${s3}h${s3}v${s3}h-${s3}z`;
             break;
          default: // diamand
             this.x0 = -size / 2;
