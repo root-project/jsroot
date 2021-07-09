@@ -1326,30 +1326,28 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
       // special dots
       if (!args.style) k = 1.1; else
       if (args.style === 1) k = 0.3; else
-      if (args.style === 2) args.style = 3; else // just avoid plot of "+" sign, issue #205
       if (args.style === 6) k = 0.5; else
       if (args.style === 7) k = 0.7;
 
       let material;
 
-      if (!args.style || (k !== 1) || JSROOT.nodejs) {
+      if ((k !== 1) || JSROOT.nodejs) {
          // this is plain creation of points, no texture loading, which does not work in node.js
          material = new THREE.PointsMaterial({ size: (this.webgl ? 3 : 1) * this.scale * k, color: args.color });
 
       } else {
 
-         let handler = new JSROOT.TAttMarkerHandler({ style: args.style, color: args.color, size: 8 });
-
-         let plainSVG = '<svg width="70" height="70" xmlns="http://www.w3.org/2000/svg">' +
-                        '<path d="' + handler.create(35,35) + '" stroke="' + handler.getStrokeColor() + '" stroke-width="4" fill="' + handler.getFillColor() + '"/>' +
-                        '</svg>';
-
-         let url = 'data:image/svg+xml;utf8,' + plainSVG;
-         let loader = new THREE.TextureLoader();
+         let handler = new JSROOT.TAttMarkerHandler({ style: args.style, color: args.color, size: 8 }),
+             w = handler.fill ? 1 : 7,
+             dataUrl = 'data:image/svg+xml;utf8,' +
+                       '<svg width="70" height="70" xmlns="http://www.w3.org/2000/svg">' +
+                       `<path d="${handler.create(35,35)}" stroke="${handler.getStrokeColor()}" stroke-width="${w}" fill="${handler.getFillColor()}"/>` +
+                       '</svg>',
+             loader = new THREE.TextureLoader();
 
          if (args.promise)
             return new Promise(resolveFunc => {
-               loader.load(url, texture => {
+               loader.load(dataUrl, texture => {
                   material = new THREE.PointsMaterial({ size: (this.webgl ? 3 : 1) * this.scale, map: texture, transparent: true });
                   let pnts = new THREE.Points(this.geom, material);
                   pnts.nvertex = 1;
@@ -1358,7 +1356,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
             });
 
 
-         let texture = loader.load(url);
+         let texture = loader.load(dataUrl);
 
          material = new THREE.PointsMaterial({ size: (this.webgl ? 3 : 1) * this.scale, map: texture, transparent: true });
       }
