@@ -2966,16 +2966,17 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
                        projy ? projv : hit.fP[i*3+1],
                        projz ? projv : hit.fP[i*3+2]);
 
-      let mesh = pnts.createPoints({ color: jsrp.getColor(hit.fMarkerColor) || "rgb(0,0,255)", style: hit_style });
-      mesh.renderOrder = 1000000; // to bring points to the front
-      mesh.highlightScale = 2;
-      mesh.geo_name = itemname;
-      mesh.geo_object = hit;
-      this.addToExtrasContainer(mesh);
-
-      return true; // indicate that rendering should be done
+      return pnts.createPoints({ color: jsrp.getColor(hit.fMarkerColor) || "rgb(0,0,255)", style: hit_style, promise:true }).then(mesh => {
+         mesh.renderOrder = 1000000; // to bring points to the front
+         mesh.highlightScale = 2;
+         mesh.geo_name = itemname;
+         mesh.geo_object = hit;
+         this.addToExtrasContainer(mesh);
+         return true; // indicate that rendering should be done
+      });
    }
 
+   /** @summary Draw extra shape on the geometry */
    TGeoPainter.prototype.drawExtraShape = function(obj, itemname) {
       let toplevel = geo.build(obj);
       if (!toplevel) return false;
