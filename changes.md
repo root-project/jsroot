@@ -14,6 +14,7 @@
 11. Implement "nomargins" draw option for pad/canvas
 12. Support custom mouse click/dblcklick handlers for lego plots
 13. Implement marker styles 35 - 49
+14. Let switch orthographic camera in geometry via control gui (#217)
 
 
 ## Changes in 6.1.1
