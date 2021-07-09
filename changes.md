@@ -15,7 +15,7 @@
 12. Support custom mouse click/dblcklick handlers for lego plots
 13. Implement marker styles 35 - 49
 14. Let switch orthographic camera in geometry via control gui (#217)
-15. Fix drawing of custom markers on 3D (#205)
+15. Fix drawing of custom markers on 3D, also in node.js (#205)
 
 
 ## Changes in 6.1.1
