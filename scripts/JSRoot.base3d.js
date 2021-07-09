@@ -1334,7 +1334,7 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
 
       if (!args.style || (k !== 1) || JSROOT.nodejs) {
          // this is plain creation of points, no texture loading, which does not work in node.js
-         material = new THREE.PointsMaterial( { size: (this.webgl ? 3 : 1) * this.scale * k, color: args.color } );
+         material = new THREE.PointsMaterial({ size: (this.webgl ? 3 : 1) * this.scale * k, color: args.color });
 
       } else {
 
@@ -1344,20 +1344,28 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
                         '<path d="' + handler.create(35,35) + '" stroke="' + handler.getStrokeColor() + '" stroke-width="4" fill="' + handler.getFillColor() + '"/>' +
                         '</svg>';
 
-         // let need_replace = JSROOT.nodejs && !globalThis.document;
-         // if (need_replace) globalThis.document = JSROOT._.get_document();
+         let url = 'data:image/svg+xml;utf8,' + plainSVG;
+         let loader = new THREE.TextureLoader();
 
-         let texture = new THREE.TextureLoader().load( 'data:image/svg+xml;utf8,' + plainSVG);
+         if (args.promise)
+            return new Promise(resolveFunc => {
+               loader.load(url, texture => {
+                  material = new THREE.PointsMaterial({ size: (this.webgl ? 3 : 1) * this.scale, map: texture, transparent: true });
+                  let pnts = new THREE.Points(this.geom, material);
+                  pnts.nvertex = 1;
+                  resolveFunc(pnts);
+               });
+            });
 
-         // if (need_replace) globalThis.document = undefined;
 
-         material = new THREE.PointsMaterial( { size: (this.webgl ? 3 : 1) * this.scale, map: texture, transparent: true } );
+         let texture = loader.load(url);
+
+         material = new THREE.PointsMaterial({ size: (this.webgl ? 3 : 1) * this.scale, map: texture, transparent: true });
       }
 
       let pnts = new THREE.Points(this.geom, material);
       pnts.nvertex = 1;
-
-      return pnts;
+      return args.promise ? Promise.resolve(pnts) : pnts;
    }
 
 

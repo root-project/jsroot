@@ -3138,6 +3138,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
    }
 
    /** @summary Actual drawing of TGraph2D object
+     * @returns {Promise} for drawing ready
      * @private */
    TGraph2DPainter.prototype.redraw = function() {
 
@@ -3146,7 +3147,8 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
           graph = this.getObject(),
           step = 1;
 
-      if (!graph || !main || !fp || !fp.mode3d) return;
+      if (!graph || !main || !fp || !fp.mode3d)
+         return Promise.resolve(this);
 
       let countSelected = (zmin, zmax) => {
          let cnt = 0;
@@ -3174,7 +3176,8 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
       let markeratt = new JSROOT.TAttMarkerHandler(graph),
           palette = null,
           levels = [fp.scale_zmin, fp.scale_zmax],
-          scale = fp.size_xy3d / 100 * markeratt.getFullSize();
+          scale = fp.size_xy3d / 100 * markeratt.getFullSize(),
+          promises = [];
 
       if (this.options.Circles) scale = 0.06*fp.size_xy3d;
 
@@ -3206,7 +3209,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
          if (this.options.Line)
             line = new Float32Array((size-1)*6);
 
-         for (let i=0; i < graph.fNpoints; ++i) {
+         for (let i = 0; i < graph.fNpoints; ++i) {
             if ((graph.fX[i] < fp.scale_xmin) || (graph.fX[i] > fp.scale_xmax) ||
                 (graph.fY[i] < fp.scale_ymin) || (graph.fY[i] > fp.scale_ymax) ||
                 (graph.fZ[i] < lvl_zmin) || (graph.fZ[i] >= lvl_zmax)) continue;
@@ -3304,22 +3307,27 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
                fcolor = palette ? palette.calcColor(lvl, levels.length)
                                 : this.getColor(graph.fMarkerColor);
 
-            let mesh = pnts.createPoints({ color: fcolor, style: this.options.Circles ? 4 : graph.fMarkerStyle });
+            let pr = pnts.createPoints({ color: fcolor, style: this.options.Circles ? 4 : graph.fMarkerStyle, promise: true }).then(mesh => {
+               mesh.graph = graph;
+               mesh.painter = fp;
+               mesh.tip_color = (graph.fMarkerColor === 3) ? 0xFF0000 : 0x00FF00;
+               mesh.scale0 = 0.3*scale;
+               mesh.index = index;
 
-            mesh.graph = graph;
-            mesh.painter = fp;
-            mesh.tip_color = (graph.fMarkerColor === 3) ? 0xFF0000 : 0x00FF00;
-            mesh.scale0 = 0.3*scale;
-            mesh.index = index;
+               mesh.tip_name = this.getObjectHint();
+               mesh.tooltip = this.graph2DTooltip;
+               fp.toplevel.add(mesh);
+            });
 
-            mesh.tip_name = this.getObjectHint();
-            mesh.tooltip = this.graph2DTooltip;
+            promises.push(pr);
 
-            fp.toplevel.add(mesh);
          }
       }
 
-      fp.render3D(100);
+      return Promise.all(promises).then(() => {
+         fp.render3D(100);
+         return this;
+      });
    }
 
    jsrp.drawGraph2D = function(divid, gr, opt) {
@@ -3337,8 +3345,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
 
       return promise.then(() => {
          painter.addToPadPrimitives();
-         painter.redraw();
-         return painter;
+         return painter.redraw();
       });
    }
 
