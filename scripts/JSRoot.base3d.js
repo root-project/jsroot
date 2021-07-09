@@ -1331,30 +1331,47 @@ JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
 
       let material;
 
-      if ((k !== 1) || JSROOT.nodejs) {
+      if ((k !== 1) || (JSROOT.nodejs && !args.promise)) {
          // this is plain creation of points, no texture loading, which does not work in node.js
          material = new THREE.PointsMaterial({ size: (this.webgl ? 3 : 1) * this.scale * k, color: args.color });
 
       } else {
 
-         let handler = new JSROOT.TAttMarkerHandler({ style: args.style, color: args.color, size: 8 }),
+         let handler = new JSROOT.TAttMarkerHandler({ style: args.style, color: args.color, size: 7 }),
              w = handler.fill ? 1 : 7,
              dataUrl = 'data:image/svg+xml;utf8,' +
-                       '<svg width="70" height="70" xmlns="http://www.w3.org/2000/svg">' +
-                       `<path d="${handler.create(35,35)}" stroke="${handler.getStrokeColor()}" stroke-width="${w}" fill="${handler.getFillColor()}"/>` +
+                       '<svg width="64" height="64" xmlns="http://www.w3.org/2000/svg">' +
+                       `<path d="${handler.create(32,32)}" stroke="${handler.getStrokeColor()}" stroke-width="${w}" fill="${handler.getFillColor()}"/>` +
                        '</svg>',
              loader = new THREE.TextureLoader();
 
-         if (args.promise)
+         if (args.promise && !JSROOT.nodejs)
             return new Promise(resolveFunc => {
                loader.load(dataUrl, texture => {
-                  material = new THREE.PointsMaterial({ size: (this.webgl ? 3 : 1) * this.scale, map: texture, transparent: true });
+                  material = new THREE.PointsMaterial({ size: 3*this.scale, map: texture, transparent: true });
                   let pnts = new THREE.Points(this.geom, material);
                   pnts.nvertex = 1;
                   resolveFunc(pnts);
                });
             });
 
+        if (args.promise && JSROOT.nodejs) {
+            const { createCanvas, loadImage } = require('canvas');
+
+            return new Promise(resolveFunc => {
+               loadImage(dataUrl).then(img => {
+                  const canvas = createCanvas(64, 64);
+                  const ctx = canvas.getContext('2d');
+                  ctx.drawImage(img, 0, 0, 64, 64);
+                   let  texture = new THREE.CanvasTexture(canvas);
+                   texture.needsUpdate = true;
+                   material = new THREE.PointsMaterial({ size: 3*this.scale, map: texture, transparent: true });
+                   let pnts = new THREE.Points(this.geom, material);
+                   pnts.nvertex = 1;
+                   resolveFunc(pnts);
+               });
+            });
+         }
 
          let texture = loader.load(dataUrl);
 
