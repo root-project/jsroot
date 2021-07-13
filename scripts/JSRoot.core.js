@@ -100,11 +100,11 @@
    /** @summary JSROOT version id
      * @desc For the JSROOT release the string in format "major.minor.patch" like "6.0.0"
      * For the ROOT release string is "ROOT major.minor.patch" like "ROOT 6.24.00" */
-   JSROOT.version_id = "dev";
+   JSROOT.version_id = "6.2.0";
 
    /** @summary JSROOT version date
      * @desc Release date in format day/month/year like "14/01/2021"*/
-   JSROOT.version_date = "9/07/2021";
+   JSROOT.version_date = "13/07/2021";
 
    /** @summary JSROOT version id and date
      * @desc Produced by concatenation of {@link JSROOT.version_id} and {@link JSROOT.version_date}
@@ -173,7 +173,7 @@
          'threejs_jsroot'       : { src: 'three.extra', libs: true }
     };
 
-    ['core', 'base3d','csg','geobase','geom','geoworker','gpad','hierarchy','hist','hist3d','interactive','io','menu','jq2d','latex',
+    ['core','base3d','csg','geobase','geom','geoworker','gpad','hierarchy','hist','hist3d','interactive','io','menu','jq2d','latex',
       'math','more','openui5','painter','tree','v7gpad','v7hist','v7hist3d','v7more','webwindow']
          .forEach(item => _.sources[item] = { src: "JSRoot." + item });
 
