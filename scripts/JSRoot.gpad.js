@@ -3375,7 +3375,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
      * @returns {Promise} with pad painter when drawing completed
      * @private */
    TPadPainter.prototype.redrawPadSnap = function(snap) {
-      if (!snap || !snap.fPrimitives) return;
+      if (!snap || !snap.fPrimitives)
+         return Promise.resolve(this);
 
       this.is_active_pad = !!snap.fActive; // enforce boolean flag
       this._readonly = (snap.fReadOnly === undefined) ? true : snap.fReadOnly; // readonly flag
