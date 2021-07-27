@@ -176,6 +176,7 @@ examples_main = {
    TGraph : [
      { opt: "", file: "graph.root", item: "Graph;1" },
      { opt: "L" },
+     { opt: "C" },
      { opt: "P" },
      { name: "star", opt:"*" },
      { opt: "LP" },
