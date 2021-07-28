@@ -870,6 +870,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       if (d.check('Y+')) { res.Axis += "Y+"; res.second_y = has_main; }
       if (d.check('RX')) res.Axis += "RX";
       if (d.check('RY')) res.Axis += "RY";
+      if (d.check('CC')) res.Curve = 2; // draw all points without reduction
       if (d.check('C')) res.Curve = 1;
       if (d.check('*')) res.Mark = 103;
       if (d.check('P0')) res.Mark = 104;
@@ -1273,8 +1274,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       if (this.options.Curve) {
          let curvebins = drawbins;
-         if ((this.draw_kind != "lines") || !curvebins || (curvebins.length > 20000)) {
-            curvebins = this.optimizeBins(20000);
+         if ((this.draw_kind != "lines") || !curvebins || ((this.options.Curve == 1) && (curvebins.length > 20000))) {
+            curvebins = this.optimizeBins((this.options.Curve == 1) ? 20000 : 0);
             for (let n = 0; n < curvebins.length; ++n) {
                let bin = curvebins[n];
                bin.grx = funcs.grx(bin.x);
