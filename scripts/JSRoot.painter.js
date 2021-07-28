@@ -1329,12 +1329,12 @@ JSROOT.define(['d3'], (d3) => {
 
       if (smooth) {
          // build smoothed curve
-         res.path += "c" + conv(bin.dgrx) + "," + conv(bin.dgry) + ",";
+         res.path += "C" + conv(bin.grx+bin.dgrx) + "," + conv(bin.gry+bin.dgry) + ",";
          for (let n = 1; n < npnts; ++n) {
             let prev = bin;
             bin = bins[n];
-            if (n > 1) res.path += "s";
-            res.path += conv(bin.grx - bin.dgrx - prev.grx) + "," + conv(bin.gry - bin.dgry - prev.gry) + "," + conv(bin.grx - prev.grx) + "," + conv(bin.gry - prev.gry);
+            if (n > 1) res.path += "S";
+            res.path += conv(bin.grx - bin.dgrx) + "," + conv(bin.gry - bin.dgry) + "," + conv(bin.grx) + "," + conv(bin.gry);
             maxy = Math.max(maxy, prev.gry);
          }
       } else if (npnts < 10000) {
@@ -1343,9 +1343,12 @@ JSROOT.define(['d3'], (d3) => {
             bin = bins[n];
             dx = Math.round(bin.grx) - currx;
             dy = Math.round(bin.gry) - curry;
-            if (dx && dy) res.path += "l" + dx + "," + dy;
-            else if (!dx && dy) res.path += "v" + dy;
-            else if (dx && !dy) res.path += "h" + dx;
+            if (dx && dy)
+               res.path += "l" + dx + "," + dy;
+            else if (!dx && dy)
+               res.path += "v" + dy;
+            else if (dx && !dy)
+               res.path += "h" + dx;
             currx += dx; curry += dy;
             maxy = Math.max(maxy, curry);
          }
@@ -1373,8 +1376,10 @@ JSROOT.define(['d3'], (d3) => {
                curry = prevy;
             }
             dy = lasty - curry;
-            if (dy) res.path += "l" + dx + "," + dy;
-            else res.path += "h" + dx;
+            if (dy)
+               res.path += "l" + dx + "," + dy;
+            else
+               res.path += "h" + dx;
             currx = lastx; curry = lasty;
             prevy = cminy = cmaxy = lasty;
          }
@@ -1384,12 +1389,10 @@ JSROOT.define(['d3'], (d3) => {
             res.path += "v" + (cmaxy - cminy);
             if (cmaxy != prevy) res.path += "v" + (prevy - cmaxy);
          }
-
       }
 
       if (height > 0)
-         res.close = "L" + conv(bin.grx) + "," + conv(maxy) +
-            "h" + conv(bins[0].grx - bin.grx) + "Z";
+         res.close = "L" + conv(bin.grx) + "," + conv(maxy) + "h" + conv(bins[0].grx - bin.grx) + "Z";
 
       return res;
    }
