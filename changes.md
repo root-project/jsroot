@@ -1,5 +1,9 @@
 # JSROOT changelog
 
+## Changes in dev
+1. Fix problem with curved TGraph drawings (#218)
+
+
 ## Changes in 6.2.0
 1. Support fully interactive second X/Y axis for histograms, graphs, functions and spline
 2. Support X+, Y+, RX, RY draw options for TF1
