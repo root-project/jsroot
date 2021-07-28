@@ -1205,7 +1205,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          drawbins = this.optimizeBins((this.options.EF > 1) ? 5000 : 0);
 
          // build lower part
-         for (let n=0;n<drawbins.length;++n) {
+         for (let n = 0; n < drawbins.length; ++n) {
             let bin = drawbins[n];
             bin.grx = funcs.grx(bin.x);
             bin.gry = funcs.gry(bin.y - bin.eylow);
@@ -1240,7 +1240,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
             excl_width = 0;
          }
 
-         if (!drawbins) drawbins = this.optimizeBins(this.options.Curve ? 5000 : 0);
+         if (!drawbins) drawbins = this.optimizeBins(0);
 
          for (let n = 0; n < drawbins.length; ++n) {
             let bin = drawbins[n];
@@ -1261,21 +1261,19 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          if (this.options.Line)
             elem.call(this.lineatt.func);
          else
-            elem.style('stroke','none');
+            elem.style('stroke', 'none');
 
          if (this.options.Fill)
             elem.call(this.fillatt.func);
          else
-            elem.style('fill','none');
+            elem.style('fill', 'none');
 
          this.draw_kind = "lines";
       }
 
       if (this.options.Curve) {
          let curvebins = drawbins;
-         if ((this.draw_kind == "lines") && drawbins && drawbins.length < 5000) {
-            curvebins = drawbins;
-         } else {
+         if ((this.draw_kind != "lines") || !curvebins || (curvebins.length > 5000)) {
             curvebins = this.optimizeBins(5000);
             for (let n = 0; n < curvebins.length; ++n) {
                let bin = curvebins[n];
