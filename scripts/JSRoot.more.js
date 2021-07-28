@@ -1202,7 +1202,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       if (this.options.EF) {
 
-         drawbins = this.optimizeBins((this.options.EF > 1) ? 5000 : 0);
+         drawbins = this.optimizeBins((this.options.EF > 1) ? 20000 : 0);
 
          // build lower part
          for (let n = 0; n < drawbins.length; ++n) {
@@ -1273,8 +1273,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       if (this.options.Curve) {
          let curvebins = drawbins;
-         if ((this.draw_kind != "lines") || !curvebins || (curvebins.length > 5000)) {
-            curvebins = this.optimizeBins(5000);
+         if ((this.draw_kind != "lines") || !curvebins || (curvebins.length > 20000)) {
+            curvebins = this.optimizeBins(20000);
             for (let n = 0; n < curvebins.length; ++n) {
                let bin = curvebins[n];
                bin.grx = funcs.grx(bin.x);
