@@ -1269,10 +1269,8 @@ JSROOT.define(['d3'], (d3) => {
       if (ndig === undefined) ndig = smooth ? 2 : 0;
       if (height === undefined) height = 0;
 
-      function jsroot_d3_svg_lineSlope(p0, p1) {
-         return (p1.gry - p0.gry) / (p1.grx - p0.grx);
-      }
-      function jsroot_d3_svg_lineFiniteDifferences(points) {
+      let jsroot_d3_svg_lineSlope = (p0, p1) => (p1.gry - p0.gry) / (p1.grx - p0.grx);
+      let jsroot_d3_svg_lineFiniteDifferences = points => {
          let i = 0, j = points.length - 1, m = [], p0 = points[0], p1 = points[1], d = m[0] = jsroot_d3_svg_lineSlope(p0, p1);
          while (++i < j) {
             p0 = p1; p1 = points[i + 1];
@@ -1280,8 +1278,8 @@ JSROOT.define(['d3'], (d3) => {
          }
          m[i] = d;
          return m;
-      }
-      function jsroot_d3_svg_lineMonotoneTangents(points) {
+      };
+      let jsroot_d3_svg_lineMonotoneTangents = points => {
          let d, a, b, s, m = jsroot_d3_svg_lineFiniteDifferences(points), i = -1, j = points.length - 1;
          while (++i < j) {
             d = jsroot_d3_svg_lineSlope(points[i], points[i + 1]);
@@ -1304,12 +1302,12 @@ JSROOT.define(['d3'], (d3) => {
             points[i].dgrx = s || 0;
             points[i].dgry = m[i] * s || 0;
          }
-      }
+      };
 
       let res = { path: "", close: "" }, bin = bins[0], maxy = Math.max(bin.gry, height + 5),
          currx = Math.round(bin.grx), curry = Math.round(bin.gry), dx, dy, npnts = bins.length;
 
-      function conv(val) {
+      let conv = val => {
          let vvv = Math.round(val);
          if ((ndig == 0) || (vvv === val)) return vvv.toString();
          let str = val.toFixed(ndig);
@@ -1319,7 +1317,7 @@ JSROOT.define(['d3'], (d3) => {
             str = str.substr(0, str.length - 1);
          if (str == "-0") str = "0";
          return str;
-      }
+      };
 
       res.path = ((kind[0] == "L") ? "L" : "M") + conv(bin.grx) + "," + conv(bin.gry);
 
