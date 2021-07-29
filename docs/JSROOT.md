@@ -890,22 +890,21 @@ JSROOT provides [example](https://root.cern/js/latest/demo/openui5/) showing usa
 
 ### Migration v5 -> v6
 
-In JSROOT v6 release some many incompatible changes were done.
+In JSROOT v6 release many incompatible changes were done.
 
-Main script was renamed to `JSRoot.core.js`. Old `JSRootCore.js` script left to provide partial compatibility
-with old applications, but will be removed in future JSROOT v6.2. All URL parameters for main script will be
-ignored, to load JSROOT functionality one should use `JSROOT.require` function. To create standard GUI,
-`JSROOT.buildGUI` function has to be used.
+Main script was renamed to `JSRoot.core.js`. Old `JSRootCore.js` was deprecated and removed in v6.2.
+All URL parameters for main script ignored now, to load JSROOT functionality one should use `JSROOT.require` function.
+To create standard GUI, `JSROOT.buildGUI` function has to be used.
 
 Instead of `JSROOT.JSONR_unref` one can use `JSROOT.parse`. If object is provided to `JSROOT.parse` it just replaces all
 references which were introduced by `TBufferJSON::ToJSON()` method.
 
 Instead of `JSROOT.console` one should use `console.log`. Instead of `JSROOT.alert` one should use `console.error`.
 
-Many settings where moved from `JSROOT.gStyle` to `JSROOT.settings` object. It was done to keep only TStyle-related members
+Many settings were moved from `JSROOT.gStyle` to `JSROOT.settings` object. It was done to keep only TStyle-related members
 in `JSROOT.gStyle`.
 
-Painter classes were renamed and made public:
+Basic painter classes were renamed and made public:
    - `JSROOT.TBasePainter` -> `JSROOT.BasePainter`
    - `JSROOT.TObjectPainter` -> `JSROOT.ObjectPainter`
 
