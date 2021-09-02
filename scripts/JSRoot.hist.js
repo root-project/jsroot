@@ -1761,6 +1761,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          if (pad.fLogx) res += "_LOGX";
          if (pad.fLogy) res += "_LOGY";
          if (pad.fLogz) res += "_LOGZ";
+         if (pad.fGridx) res += "_GRIDX";
+         if (pad.fGridy) res += "_GRIDY";
+         if (pad.fTickx) res += "_TICKX";
+         if (pad.fTicky) res += "_TICKY";
       }
 
       return res;
