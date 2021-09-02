@@ -2,6 +2,7 @@
 
 ## Changes in dev
 1. Fix problem with curved TGraph drawings (#218)
+2. Fix problem with logy/logz drawing in lego plots
 
 
 ## Changes in 6.2.0
