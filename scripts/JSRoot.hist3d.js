@@ -1044,8 +1044,8 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
           // reduced vertices
           rvertices = [ new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 1, 0), new THREE.Vector3(1, 1, 0), new THREE.Vector3(1, 0, 0) ],
           main = this.getFramePainter(),
-          axis_zmin = main.z_handle.gr.domain()[0],
-          axis_zmax = main.z_handle.gr.domain()[1],
+          axis_zmin = main.z_handle.getScaleMin(),
+          axis_zmax = main.z_handle.getScaleMax(),
           zmin, zmax,
           handle = this.prepareColorDraw({ rounding: false, use3d: true, extra: 1 }),
           i1 = handle.i1, i2 = handle.i2, j1 = handle.j1, j2 = handle.j2,
@@ -1570,8 +1570,8 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
           main = this.getFramePainter(),
           handle = this.prepareColorDraw({rounding: false, use3d: true, extra: 1, middle: 0.5 }),
           i,j, x1, y1, x2, y2, z11, z12, z21, z22,
-          axis_zmin = main.z_handle.gr.domain()[0];
-          // axis_zmax = main.z_handle.gr.domain()[1];
+          axis_zmin = main.z_handle.getScaleMin();
+          // axis_zmax = main.z_handle.getScaleMax();
 
       // first adjust ranges
 
@@ -1972,8 +1972,8 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
       let main = this.getFramePainter(),
           histo = this.getHisto(),
           handle = this.prepareColorDraw({ rounding: false, use3d: true, extra: 1 }),
-          zmin = main.z_handle.gr.domain()[0],
-          zmax = main.z_handle.gr.domain()[1],
+          zmin = main.z_handle.getScaleMin(),
+          zmax = main.z_handle.getScaleMax(),
           i, j, bin, binz, binerr, x1, y1, x2, y2, z1, z2,
           nsegments = 0, lpos = null, binindx = null, lindx = 0;
 
@@ -2076,8 +2076,8 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
    JSROOT.TH2Painter.prototype.drawPolyLego = function() {
       let histo = this.getHisto(),
           pmain = this.getFramePainter(),
-          axis_zmin = pmain.z_handle.gr.domain()[0],
-          axis_zmax = pmain.z_handle.gr.domain()[1],
+          axis_zmin = pmain.z_handle.getScaleMin(),
+          axis_zmax = pmain.z_handle.getScaleMax(),
           colindx, bin, i, len = histo.fBins.arr.length,
           z0 = pmain.grz(axis_zmin), z1;
 
