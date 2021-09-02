@@ -1850,17 +1850,19 @@ JSROOT.define(['d3'], (d3) => {
      * @desc if options are not modified - returns original string which was specified for object draw */
    ObjectPainter.prototype.getDrawOpt = function() {
       if (!this.options) return "";
-      let changed = false;
-      if (!this.options_store) {
-         changed  = true;
-      } else {
-         for (let k in this.options)
-            if (this.options[k] !== this.options_store[k])
-               changed = true;
-      }
 
-      if (changed && typeof this.options.asString == "function")
-         return this.options.asString();
+      if (typeof this.options.asString == "function") {
+         let changed = false, pp = this.getPadPainter();
+         if (!this.options_store || (pp && pp._interactively_changed)) {
+            changed  = true;
+         } else {
+            for (let k in this.options)
+               if (this.options[k] !== this.options_store[k])
+                  changed = true;
+         }
+         if (changed)
+            return this.options.asString(this.isMainPainter(), pp ? pp.getRootPad() : null);
+      }
 
       return this.options.original || ""; // nothing better, return original draw option
    }

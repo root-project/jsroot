@@ -1710,7 +1710,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    }
 
    /** @summary Tries to reconstruct string with hist draw options */
-   THistDrawOptions.prototype.asString = function() {
+   THistDrawOptions.prototype.asString = function(is_main_hist, pad) {
       let res = "";
       if (this.Mode3D) {
 
@@ -1755,8 +1755,14 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             if (this.TextAngle) res += this.TextAngle;
             res += this.TextKind;
          }
-
       }
+
+      if (is_main_hist && pad && res) {
+         if (pad.fLogx) res += "_LOGX";
+         if (pad.fLogy) res += "_LOGY";
+         if (pad.fLogz) res += "_LOGZ";
+      }
+
       return res;
    }
 

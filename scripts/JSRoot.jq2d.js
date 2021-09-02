@@ -957,7 +957,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
                   let item = p.getItemName();
                   if (item) {
                      items.push(item);
-                     opts.push(p.getItemDrawOpt());
+                     opts.push(p.getDrawOpt() || p.getItemDrawOpt());
                   }
                });
 
