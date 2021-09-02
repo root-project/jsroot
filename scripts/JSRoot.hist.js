@@ -1757,6 +1757,14 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          }
       }
 
+      if (is_main_hist && res) {
+
+         if (this.ForceStat || (this.StatEnabled === true))
+            res += "_STAT";
+         else if (this.NoStat || (this.StatEnabled === false))
+            res += "_NOSTAT";
+      }
+
       if (is_main_hist && pad && res) {
          if (pad.fLogx) res += "_LOGX";
          if (pad.fLogy) res += "_LOGY";
@@ -2519,6 +2527,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       if (statpainter) {
          statpainter.Enabled = !statpainter.Enabled;
+         this.options.StatEnabled = statpainter.Enabled; // used only for interactive
          // when stat box is drawn, it always can be drawn individually while it
          // should be last for colz redrawPad is used
          statpainter.redraw();
