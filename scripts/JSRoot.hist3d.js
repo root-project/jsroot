@@ -509,7 +509,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
 
       this.y_handle = new JSROOT.TAxisPainter(null, this.yaxis);
       this.y_handle.configureAxis("yaxis", this.ymin, this.ymax, ymin, ymax, false, [grminy, grmaxy],
-                                      { log: pad && !opts.use_y_for_z ? pad.fLogx : 0 });
+                                      { log: pad && !opts.use_y_for_z ? pad.fLogy : 0 });
       this.y_handle.assignFrameMembers(this,"y");
 
       this.z_handle = new JSROOT.TAxisPainter(null, this.zaxis);
