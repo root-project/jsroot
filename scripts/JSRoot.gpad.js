@@ -196,6 +196,16 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
    }
 
+   /** @summary Return scale min */
+   TAxisPainter.prototype.getScaleMin = function() {
+      return this.func ? this.func.domain()[0] : 0;
+   }
+
+   /** @summary Return scale max */
+   TAxisPainter.prototype.getScaleMax = function() {
+      return this.func ? this.func.domain()[1] : 0;
+   }
+
    /** @summary Provide label for axis value */
    TAxisPainter.prototype.formatLabels = function(d) {
       let indx = parseFloat(d), a = this.getObject();
