@@ -1904,6 +1904,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           pad = pp ? pp.getRootPad(true) : null;
       if (!pad) return;
 
+      pp._interactively_changed = true;
+
       let name = "fLog" + axis;
 
       // do not allow log scale for labels
@@ -2380,6 +2382,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       delete this._pad_width;
       delete this._pad_height;
       delete this._doing_draw;
+      delete this._interactively_changed;
 
       this.painters = [];
       this.pad = null;
