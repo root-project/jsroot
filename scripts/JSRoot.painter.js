@@ -3707,6 +3707,13 @@ JSROOT.define(['d3'], (d3) => {
       return getDrawSettings("ROOT." + classname).opts !== null;
    }
 
+   /** @summary Set default draw option for provided class */
+   jsrp.setDefaultDrawOpt = function(classname, opt) {
+      let handle = getDrawHandle("ROOT." + classname, 0);
+      if (handle)
+         handle.dflt = opt;
+   }
+
    /** @summary Draw object in specified HTML element with given draw options.
      * @param {string|object} dom - id of div element to draw or directly DOMElement
      * @param {object} obj - object to draw, object type should be registered before in JSROOT

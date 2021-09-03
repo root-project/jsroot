@@ -847,6 +847,9 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
             if (dflt_expand || (handle && (handle.dflt === 'expand')) || this.isItemDisplayed(itemname)) can_draw = false;
          }
 
+         if (can_draw && !drawopt && handle && handle.dflt && (handle.dflt !== 'expand'))
+            drawopt = handle.dflt;
+
          if (can_draw)
             return this.display(itemname, drawopt);
 
@@ -854,7 +857,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
             return this.expandItem(itemname, d3cont);
 
          // cannot draw, but can inspect ROOT objects
-         if ((typeof hitem._kind === "string") && (hitem._kind.indexOf("ROOT.")===0) && sett.inspect && (can_draw!==false))
+         if ((typeof hitem._kind === "string") && (hitem._kind.indexOf("ROOT.")===0) && sett.inspect && (can_draw !== false))
             return this.display(itemname, "inspect");
 
          if (!hitem._childs || (hitem === this.h)) return;

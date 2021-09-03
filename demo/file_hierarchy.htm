@@ -14,9 +14,9 @@
 
   <div style="top: 0; bottom:0; left: 0; right: 0; position: absolute;">
 
-    <div id="myTreeDiv" style="width: 250px; height: 100%; float:left"></div>
+    <div id="myTreeDiv" style="width: 250px; height: 100%; float: left;"></div>
 
-    <div id="myMainDiv" style="width: calc(100% - 250px); height: calc(100%); float:right"></div>
+    <div id="myMainDiv" style="width: calc(100% - 250px); height: calc(100%); float:right;"></div>
 
   </div>
 
@@ -25,12 +25,16 @@
       JSROOT.require('hierarchy').then(() => {
          let h = new JSROOT.HierarchyPainter("example", "myTreeDiv");
 
+         // change default draw option for supported ROOT class,
+         // used when object clicked in the hierarchy
+         JSROOT.Painter.setDefaultDrawOpt('TH1', 'text');
+
          // configure 'simple' in provided <div> element
          // one also can specify "grid2x2" or "flex" or "tabs"
          h.setDisplay("simple", "myMainDiv");
 
          // open file and display element
-         h.openRootFile("../../files/hsimple.root").then(() => h.display("hpxpy;1","colz"));
+         h.openRootFile("../../files/hsimple.root").then(() => h.display("hpxpy;1", "colz"));
       })
 
    </script>
