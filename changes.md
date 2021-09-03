@@ -3,6 +3,7 @@
 ## Changes in dev
 1. Fix problem with curved TGraph drawings (#218)
 2. Fix problem with logy/logz drawing in lego plots
+3. Provide x3dscNNN and y3dscNNN draw option for histogram to resize x/y axis
 
 
 ## Changes in 6.2.0

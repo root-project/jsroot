@@ -32,7 +32,8 @@ examples_more = {
      { name: "symlog", opt: "col,symlogx,symlogy", file: "hsimple.root", item: "hpxpy;1", title: "symlog scale with default 1e-3 factor for constant" },
      { name: "symlog1", opt: "col,symlogx1,symlogy1", file: "hsimple.root", item: "hpxpy;1", title: "symlog scale with 1e-1 factor for constant" },
      { name: "symlog5", opt: "col,symlogx5,symlogy5", file: "hsimple.root", item: "hpxpy;1", title: "symlog scale with 1e-5 factor for constant" },
-     { name: "greek", opt: "lego2;xtitle:x=%23alpha%23pm%23sigma;ytitle:y=%23beta%23pm%23sigma;ztitle:z=%23gamma%23pm%23sigma", file: "hsimple.root", item: "hpxpy;1", title: "Greek letters on lego plot" }
+     { name: "greek", opt: "lego2;xtitle:x=%23alpha%23pm%23sigma;ytitle:y=%23beta%23pm%23sigma;ztitle:z=%23gamma%23pm%23sigma", file: "hsimple.root", item: "hpxpy;1", title: "Greek letters on lego plot" },
+     { name: "3dscale", opt: "lego2_x3dsc50_y3dsc200", file: "hsimple.root", item: "hpxpy;1", title: "change x/y/z axis scale ratio in lego plots" }
    ],
    TH2Poly : [
       { name: "germany", url: "?nobrowser&file=$$$th2poly.root&item=europe;1/[13]", title: "Draw single TH2PolyBin from europe map" },
