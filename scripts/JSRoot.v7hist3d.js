@@ -63,9 +63,16 @@ JSROOT.define(['d3', 'base3d', 'painter', 'latex', 'v7hist'], (d3, THREE, jsrp, 
    /** @summary Set default camera position
      * @private */
    function setCameraPosition(fp) {
-      let max3d = Math.max(0.75*fp.size_x3d, 0.75*fp.size_y3d, fp.size_z3d);
+      let max3dx = Math.max(0.75*fp.size_x3d, fp.size_z3d),
+          max3dy = Math.max(0.75*fp.size_y3d, fp.size_z3d);
 
-      fp.camera.position.set(-1.6*max3d, -3.5*max3d, 1.4*fp.size_z3d);
+      if (max3dx === max3dy)
+         fp.camera.position.set(-1.6*max3dx, -3.5*max3dy, 1.4*fp.size_z3d);
+      else if (max3dx > max3dy)
+         fp.camera.position.set(-2*max3dx, -3.5*max3dy, 1.4*fp.size_z3d);
+      else
+         fp.camera.position.set(-3.5*max3dx, -2*max3dy, 1.4*fp.size_z3d);
+
       fp.camera.lookAt(fp.lookat);
    }
 
