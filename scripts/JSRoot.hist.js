@@ -1422,7 +1422,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
               AutoColor: false, NoStat: false, ForceStat: false, PadStats: false, PadTitle: false, AutoZoom: false,
               HighRes: 0, Zero: true, Palette: 0, BaseLine: false,
               Optimize: JSROOT.settings.OptimizeDraw,
-              Mode3D: false,
+              Mode3D: false, x3dscale: 1, y3dscale: 1,
               Render3D: JSROOT.constants.Render3D.Default,
               FrontBox: true, BackBox: true,
               _pmc: false, _plc: false, _pfc: false, need_fillcol: false,
@@ -1476,6 +1476,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       if (d.check("SYMLOGX", true)) this.SymlogX = d.partAsInt(0, 3);
       if (d.check("SYMLOGY", true)) this.SymlogY = d.partAsInt(0, 3);
+
+      if (d.check('X3DSC', true)) this.x3dscale = d.partAsInt(0, 100) / 100;
+      if (d.check('Y3DSC', true)) this.y3dscale = d.partAsInt(0, 100) / 100;
 
       let lx = false, ly = false;
       if (d.check('LOGXY')) lx = ly = true;
@@ -1725,6 +1728,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          }
          if (!this.FrontBox) res+="FB";
          if (!this.BackBox) res+="BB";
+
+         if (this.x3dscale !== 1) res += "_X3DSC" + Math.round(this.x3dscale * 100);
+         if (this.y3dscale !== 1) res += "_Y3DSC" + Math.round(this.y3dscale * 100);
 
       } else {
          if (this.Scat) {

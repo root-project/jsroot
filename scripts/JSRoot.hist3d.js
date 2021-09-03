@@ -89,9 +89,8 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
    }
 
    /** @summary Create all necessary components for 3D drawings
-     * @returns {Promise} whem loading of some components required
      * @private */
-   JSROOT.TFramePainter.prototype.create3DScene = function(render3d) {
+   JSROOT.TFramePainter.prototype.create3DScene = function(render3d, x3dscale, y3dscale) {
 
       if (render3d === -1) {
 
@@ -162,6 +161,8 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
       this.size_z3d = 100;
       this.size_xy3d = (sz.height > 10) && (sz.width > 10) ? Math.round(sz.width/sz.height*this.size_z3d) : this.size_z3d;
       this.size_x3d = this.size_y3d = this.size_xy3d;
+      if (x3dscale) this.size_x3d *= x3dscale;
+      if (y3dscale) this.size_y3d *= y3dscale;
 
       // three.js 3D drawing
       this.scene = new THREE.Scene();
@@ -1462,7 +1463,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
          this.scanContent(true); // may be required for axis drawings
 
          if (is_main) {
-            main.create3DScene(this.options.Render3D);
+            main.create3DScene(this.options.Render3D, this.options.x3dscale, this.options.y3dscale);
             main.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, 0, 0);
             main.set3DOptions(this.options);
             main.drawXYZ(main.toplevel, { use_y_for_z: true, zmult: 1.1, zoom: JSROOT.settings.Zooming, ndim: 1 });
@@ -1515,7 +1516,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
          this.deleteAttr();
 
          if (is_main) {
-            main.create3DScene(this.options.Render3D);
+            main.create3DScene(this.options.Render3D, this.options.x3dscale, this.options.y3dscale);
             main.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, this.zmin, this.zmax);
             main.set3DOptions(this.options);
             main.drawXYZ(main.toplevel, { zmult: zmult, zoom: JSROOT.settings.Zooming, ndim: 2 });
@@ -2878,7 +2879,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
 
       } else {
 
-         main.create3DScene(this.options.Render3D);
+         main.create3DScene(this.options.Render3D, this.options.x3dscale, this.options.y3dscale);
          main.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, this.zmin, this.zmax);
          main.set3DOptions(this.options);
          main.drawXYZ(main.toplevel, { zoom: JSROOT.settings.Zooming, ndim: 3 });
