@@ -91,7 +91,6 @@ JSROOT.define(['d3', 'base3d', 'painter', 'latex', 'v7hist'], (d3, THREE, jsrp, 
 
          jsrp.cleanupRender3D(this.renderer);
 
-         delete this.size_xy3d;
          delete this.size_x3d;
          delete this.size_y3d;
          delete this.size_z3d;
@@ -136,8 +135,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'latex', 'v7hist'], (d3, THREE, jsrp, 
       let sz = this.getSizeFor3d(undefined, render3d);
 
       this.size_z3d = 100;
-      this.size_xy3d = (sz.height > 10) && (sz.width > 10) ? Math.round(sz.width/sz.height*this.size_z3d) : this.size_z3d;
-      this.size_x3d = this.size_y3d = this.size_xy3d;
+      this.size_x3d = this.size_y3d = (sz.height > 10) && (sz.width > 10) ? Math.round(sz.width/sz.height*this.size_z3d) : this.size_z3d;
 
       // three.js 3D drawing
       this.scene = new THREE.Scene();
@@ -315,9 +313,6 @@ JSROOT.define(['d3', 'base3d', 'painter', 'latex', 'v7hist'], (d3, THREE, jsrp, 
       if ((this.scene_width === sz.width) && (this.scene_height === sz.height)) return false;
 
       if ((sz.width<10) || (sz.height<10)) return false;
-
-      // TODO: change xy/z ratio after canvas resize
-      // this.size_xy3d = Math.round(sz.width/sz.height*this.size_z3d);
 
       this.scene_width = sz.width;
       this.scene_height = sz.height;
