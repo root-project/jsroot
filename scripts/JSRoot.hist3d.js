@@ -64,14 +64,14 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
      * @private */
    function setCameraPosition(fp, first_time) {
       let pad = fp.getPadPainter().getRootPad(true),
-          max3d = Math.max(0.75*fp.size_xy3d, fp.size_z3d);
+          max3d = Math.max(0.75*fp.size_x3d, 0.75*fp.size_y3d, fp.size_z3d);
 
       if (first_time)
          fp.camera.position.set(-1.6*max3d, -3.5*max3d, 1.4*fp.size_z3d);
 
       if (pad && (first_time || !fp.zoomChangedInteractive()))
          if (Number.isFinite(pad.fTheta) && Number.isFinite(pad.fPhi) && ((pad.fTheta !== fp.camera_Theta) || (pad.fPhi !== fp.camera_Phi))) {
-            max3d = 3*Math.max(fp.size_xy3d, fp.size_z3d);
+            max3d = 3*Math.max(fp.size_x3d, fp.size_y3d, fp.size_z3d);
             let phi = (-pad.fPhi-90)/180*Math.PI, theta = pad.fTheta/180*Math.PI;
 
             fp.camera_Phi = pad.fPhi;
@@ -112,6 +112,8 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
          jsrp.cleanupRender3D(this.renderer);
 
          delete this.size_xy3d;
+         delete this.size_x3d;
+         delete this.size_y3d;
          delete this.size_z3d;
          delete this.tooltip_mesh;
          delete this.scene;
@@ -159,6 +161,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
 
       this.size_z3d = 100;
       this.size_xy3d = (sz.height > 10) && (sz.width > 10) ? Math.round(sz.width/sz.height*this.size_z3d) : this.size_z3d;
+      this.size_x3d = this.size_y3d = this.size_xy3d;
 
       // three.js 3D drawing
       this.scene = new THREE.Scene();
@@ -176,7 +179,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
 
       this.pointLight = new THREE.PointLight(0xffffff,1);
       this.camera.add(this.pointLight);
-      this.pointLight.position.set(this.size_xy3d/2, this.size_xy3d/2, this.size_z3d/2);
+      this.pointLight.position.set(this.size_x3d/2, this.size_y3d/2, this.size_z3d/2);
       this.lookat = new THREE.Vector3(0,0,0.8*this.size_z3d);
       this.camera.up = new THREE.Vector3(0,0,1);
       this.scene.add( this.camera );
@@ -211,10 +214,12 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
          }
 
          if (tip && !tip.use_itself) {
-            let delta_xy = 1e-4*axis_painter.size_xy3d, delta_z = 1e-4*axis_painter.size_z3d;
+            let delta_x = 1e-4*axis_painter.size_x3d,
+                delta_y = 1e-4*axis_painter.size_y3d,
+                delta_z = 1e-4*axis_painter.size_z3d;
             if ((tip.x1 > tip.x2) || (tip.y1 > tip.y2) || (tip.z1 > tip.z2)) console.warn('check 3D hints coordinates');
-            tip.x1 -= delta_xy; tip.x2 += delta_xy;
-            tip.y1 -= delta_xy; tip.y2 += delta_xy;
+            tip.x1 -= delta_x; tip.x2 += delta_x;
+            tip.y1 -= delta_y; tip.y2 += delta_y;
             tip.z1 -= delta_z; tip.z2 += delta_z;
          }
 
@@ -339,7 +344,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
 
       if ((this.scene_width === sz.width) && (this.scene_height === sz.height)) return false;
 
-      if ((sz.width<10) || (sz.height<10)) return false;
+      if ((sz.width < 10) || (sz.height < 10)) return false;
 
       // TODO: change xy/z ratio after canvas resize
       // this.size_xy3d = Math.round(sz.width/sz.height*this.size_z3d);
@@ -461,8 +466,8 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
    JSROOT.TFramePainter.prototype.drawXYZ = function(toplevel, opts) {
       if (!opts) opts = {};
 
-      let grminx = -this.size_xy3d, grmaxx = this.size_xy3d,
-          grminy = -this.size_xy3d, grmaxy = this.size_xy3d,
+      let grminx = -this.size_x3d, grmaxx = this.size_x3d,
+          grminy = -this.size_y3d, grmaxy = this.size_y3d,
           grminz = 0, grmaxz = 2*this.size_z3d,
           textsize = Math.round(this.size_z3d * 0.05),
           pad = this.getPadPainter().getRootPad(true),
@@ -584,9 +589,11 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
          // return axis coordinate from intersection point with axis geometry
          let pos = point[kind], min = this['scale_'+kind+'min'], max = this['scale_'+kind+'max'];
 
-         if (kind==="z") pos = pos/2/this.size_z3d;
-                   else  pos = (pos+this.size_xy3d)/2/this.size_xy3d;
-
+         switch(kind) {
+            case "x": pos = (pos+this.size_x3d)/2/this.size_x3d; break;
+            case "y": pos = (pos+this.size_y3d)/2/this.size_y3d; break;
+            case "z": pos = pos/2/this.size_z3d; break;
+         }
          if (this["log"+kind]) {
             pos = Math.exp(Math.log(min) + pos*(Math.log(max)-Math.log(min)));
          } else {
@@ -719,7 +726,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
          xcont.add(mesh);
       });
 
-      if (opts.zoom) xcont.add(createZoomMesh("x", this.size_xy3d));
+      if (opts.zoom) xcont.add(createZoomMesh("x", this.size_x3d));
       top.add(xcont);
 
       xcont = new THREE.Object3D();
@@ -743,7 +750,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
 
       //xcont.add(new THREE.Mesh(ggg2, textMaterial));
       xcont.xyid = 4;
-      if (opts.zoom) xcont.add(createZoomMesh("x", this.size_xy3d));
+      if (opts.zoom) xcont.add(createZoomMesh("x", this.size_x3d));
       top.add(xcont);
 
       lbls = []; text_scale = 1; maxtextheight = 0; ticks = [];
@@ -818,7 +825,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
          });
 
          ycont.xyid = 3;
-         if (opts.zoom) ycont.add(createZoomMesh("y", this.size_xy3d));
+         if (opts.zoom) ycont.add(createZoomMesh("y", this.size_y3d));
          top.add(ycont);
 
          ycont = new THREE.Object3D();
@@ -840,7 +847,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
             ycont.add(mesh);
          });
          ycont.xyid = 1;
-         if (opts.zoom) ycont.add(createZoomMesh("y", this.size_xy3d));
+         if (opts.zoom) ycont.add(createZoomMesh("y", this.size_y3d));
          top.add(ycont);
       }
 
@@ -1251,11 +1258,11 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
                 histo = p.getHisto(),
                 tip = p.get3DToolTip( this.face_to_bins_index[intersect.faceIndex] );
 
-            tip.x1 = Math.max(-main.size_xy3d,  handle.grx[tip.ix-1] + handle.xbar1*(handle.grx[tip.ix]-handle.grx[tip.ix-1]));
-            tip.x2 = Math.min(main.size_xy3d, handle.grx[tip.ix-1] + handle.xbar2*(handle.grx[tip.ix]-handle.grx[tip.ix-1]));
+            tip.x1 = Math.max(-main.size_x3d,  handle.grx[tip.ix-1] + handle.xbar1*(handle.grx[tip.ix]-handle.grx[tip.ix-1]));
+            tip.x2 = Math.min(main.size_x3d, handle.grx[tip.ix-1] + handle.xbar2*(handle.grx[tip.ix]-handle.grx[tip.ix-1]));
 
-            tip.y1 = Math.max(-main.size_xy3d, handle.gry[tip.iy-1] + handle.ybar1*(handle.gry[tip.iy] - handle.gry[tip.iy-1]));
-            tip.y2 = Math.min(main.size_xy3d, handle.gry[tip.iy-1] + handle.ybar2*(handle.gry[tip.iy] - handle.gry[tip.iy-1]));
+            tip.y1 = Math.max(-main.size_y3d, handle.gry[tip.iy-1] + handle.ybar1*(handle.gry[tip.iy] - handle.gry[tip.iy-1]));
+            tip.y2 = Math.min(main.size_y3d, handle.gry[tip.iy-1] + handle.ybar2*(handle.gry[tip.iy] - handle.gry[tip.iy-1]));
 
             let binz1 = this.baseline, binz2 = tip.value;
             if (histo['$baseh']) binz1 = histo['$baseh'].getBinContent(tip.ix, tip.iy);
@@ -1416,7 +1423,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
          this.zmin = box.min.z; this.zmax = box.max.z;
 
          // use min/max values directly as graphical coordinates
-         this.size_xy3d = this.size_z3d = 0;
+         this.size_x3d = this.size_y3d = this.size_z3d = 0;
 
          this.drawXYZ = JSROOT.TFramePainter.prototype.drawXYZ; // just reuse axis drawing from frame painter
 
@@ -2055,10 +2062,10 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
               main = p.getFramePainter(),
               tip = p.get3DToolTip(this.intersect_index[pos]);
 
-          tip.x1 = Math.max(-main.size_xy3d, main.grx(histo.fXaxis.GetBinLowEdge(tip.ix)));
-          tip.x2 = Math.min(main.size_xy3d, main.grx(histo.fXaxis.GetBinLowEdge(tip.ix+1)));
-          tip.y1 = Math.max(-main.size_xy3d, main.gry(histo.fYaxis.GetBinLowEdge(tip.iy)));
-          tip.y2 = Math.min(main.size_xy3d, main.gry(histo.fYaxis.GetBinLowEdge(tip.iy+1)));
+          tip.x1 = Math.max(-main.size_x3d, main.grx(histo.fXaxis.GetBinLowEdge(tip.ix)));
+          tip.x2 = Math.min(main.size_x3d, main.grx(histo.fXaxis.GetBinLowEdge(tip.ix+1)));
+          tip.y1 = Math.max(-main.size_y3d, main.gry(histo.fYaxis.GetBinLowEdge(tip.iy)));
+          tip.y2 = Math.min(main.size_y3d, main.gry(histo.fYaxis.GetBinLowEdge(tip.iy+1)));
 
           tip.z1 = main.grz(tip.value-tip.error < this.zmin ? this.zmin : tip.value-tip.error);
           tip.z2 = main.grz(tip.value+tip.error > this.zmax ? this.zmax : tip.value+tip.error);
@@ -2121,7 +2128,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
                // run two loops - on the first try to compress data, on second - run as is (removing duplication)
 
                let lastx, lasty, currx, curry,
-                   dist2 = pmain.size_xy3d*pmain.size_z3d,
+                   dist2 = pmain.size_x3d*pmain.size_z3d,
                    dist2limit = (ntry>0) ? 0 : dist2/1e6;
 
                pnts = []; faces = null;
@@ -2488,7 +2495,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
 
       JSROOT.seed(sumz);
 
-      let pnts = new jsrp.PointsCreator(numpixels, main.webgl, main.size_xy3d/200),
+      let pnts = new jsrp.PointsCreator(numpixels, main.webgl, main.size_x3d/200),
           bins = new Int32Array(numpixels), nbin = 0;
 
       for (i = i1; i < i2; ++i) {
@@ -3188,10 +3195,10 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
       let markeratt = new JSROOT.TAttMarkerHandler(graph),
           palette = null,
           levels = [fp.scale_zmin, fp.scale_zmax],
-          scale = fp.size_xy3d / 100 * markeratt.getFullSize(),
+          scale = fp.size_x3d / 100 * markeratt.getFullSize(),
           promises = [];
 
-      if (this.options.Circles) scale = 0.06*fp.size_xy3d;
+      if (this.options.Circles) scale = 0.06*fp.size_x3d;
 
       if (fp.usesvg) scale *= 0.3;
 
@@ -3384,7 +3391,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
       }
 
       let size = Math.floor(numselect/step),
-          pnts = new jsrp.PointsCreator(size, fp.webgl, fp.size_xy3d/100),
+          pnts = new jsrp.PointsCreator(size, fp.webgl, fp.size_x3d/100),
           index = new Int32Array(size),
           select = 0, icnt = 0;
 
