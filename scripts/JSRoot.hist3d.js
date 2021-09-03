@@ -64,21 +64,29 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
      * @private */
    function setCameraPosition(fp, first_time) {
       let pad = fp.getPadPainter().getRootPad(true),
-          max3d = Math.max(0.75*fp.size_x3d, 0.75*fp.size_y3d, fp.size_z3d);
+          max3dx = Math.max(0.75*fp.size_x3d, fp.size_z3d),
+          max3dy = Math.max(0.75*fp.size_y3d, fp.size_z3d);
 
-      if (first_time)
-         fp.camera.position.set(-1.6*max3d, -3.5*max3d, 1.4*fp.size_z3d);
+      if (first_time) {
+         if (max3dx === max3dy)
+            fp.camera.position.set(-1.6*max3dx, -3.5*max3dy, 1.4*fp.size_z3d);
+         else if (max3dx > max3dy)
+            fp.camera.position.set(-2*max3dx, -3.5*max3dy, 1.4*fp.size_z3d);
+         else
+            fp.camera.position.set(-3.5*max3dx, -2*max3dy, 1.4*fp.size_z3d);
+      }
 
       if (pad && (first_time || !fp.zoomChangedInteractive()))
          if (Number.isFinite(pad.fTheta) && Number.isFinite(pad.fPhi) && ((pad.fTheta !== fp.camera_Theta) || (pad.fPhi !== fp.camera_Phi))) {
-            max3d = 3*Math.max(fp.size_x3d, fp.size_y3d, fp.size_z3d);
+            max3dx = 3*Math.max(fp.size_x3d, fp.size_z3d);
+            max3dy = 3*Math.max(fp.size_y3d, fp.size_z3d);
             let phi = (-pad.fPhi-90)/180*Math.PI, theta = pad.fTheta/180*Math.PI;
 
             fp.camera_Phi = pad.fPhi;
             fp.camera_Theta = pad.fTheta;
 
-            fp.camera.position.set(max3d*Math.cos(phi)*Math.cos(theta),
-                                   max3d*Math.sin(phi)*Math.cos(theta),
+            fp.camera.position.set(max3dx*Math.cos(phi)*Math.cos(theta),
+                                   max3dy*Math.sin(phi)*Math.cos(theta),
                                    fp.size_z3d + max3d*Math.sin(theta));
 
             first_time = true;
