@@ -1504,6 +1504,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       if (this.draw_kind != "nodes") return null;
 
       let pmain = this.getFramePainter(),
+          pthis = this,
           height = pmain.getFrameHeight(),
           esz = this.error_size,
           isbar1 = (this.options.Bar===1),
@@ -1528,7 +1529,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
              rect = { x1: -d.width/2, x2: d.width/2, y1: 0, y2: height - d.gry1 };
 
              if (isbar1) {
-                let funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
+                let funcs = pmain.getGrFuncs(pthis.options.second_x, pthis.options.second_y),
                     yy0 = funcs.gry(0);
                 rect.y1 = (d.gry1 > yy0) ? yy0-d.gry1 : 0;
                 rect.y2 = (d.gry1 > yy0) ? 0 : yy0-d.gry1;
