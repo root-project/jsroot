@@ -1447,8 +1447,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       if (d.check('PAL', true)) this.Palette = d.partAsInt();
       // this is zooming of histo content
-      if (d.check('MINIMUM:', true)) this.minimum = parseFloat(d.part); else this.minimum = histo.fMinimum;
-      if (d.check('MAXIMUM:', true)) this.maximum = parseFloat(d.part); else this.maximum = histo.fMaximum;
+      if (d.check('MINIMUM:', true)) { this.ominimum = true; this.minimum = parseFloat(d.part); }
+                                else this.minimum = histo.fMinimum;
+      if (d.check('MAXIMUM:', true)) { this.omaximum = true; this.maximum = parseFloat(d.part); }
+                                else this.maximum = histo.fMaximum;
       // this is actual range of data - used by graph drawing
       if (d.check('YMIN:', true)) this.ymin = parseFloat(d.part);
       if (d.check('YMAX:', true)) this.ymax = parseFloat(d.part);
@@ -2287,6 +2289,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          if (((opt !== undefined) && (this.options.original !== opt)) || changed_opt)
             this.decodeOptions(opt || histo.fOption);
       }
+
+      if (!this.options.ominimum) this.options.minimum = histo.fMinimum;
+      if (!this.options.omaximum) this.options.maximum = histo.fMaximum;
 
       if (this.snapid || !fp || !fp.zoomChangedInteractive())
          this.checkPadRange();
