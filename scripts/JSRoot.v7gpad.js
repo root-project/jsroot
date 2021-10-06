@@ -3485,7 +3485,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
      * @private */
    RPadPainter.prototype.drawNextSnap = function(lst, indx) {
 
-      if (indx===undefined) {
+      if (indx === undefined) {
          indx = -1;
          // flag used to prevent immediate pad redraw during first draw
          this._snaps_map = {}; // to control how much snaps are drawn
@@ -3516,7 +3516,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       // first appropriate painter for the object
       // if same object drawn twice, two painters will exists
-      for (let k=0; k<this.painters.length; ++k) {
+      for (let k = 0; k<this.painters.length; ++k) {
          if (this.painters[k].snapid === snapid)
             if (--cnt === 0) { objpainter = this.painters[k]; break;  }
       }
@@ -3584,7 +3584,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             for (let n = 0; n < arr.length; ++n) {
                let name = arr[n].fString, p = name.indexOf("=");
                if (p > 0)
-                  ListOfColors[parseInt(name.substr(0,p))] =name.substr(p+1);
+                  ListOfColors[parseInt(name.substr(0,p))] = name.substr(p+1);
             }
 
             this.root_colors = ListOfColors;
@@ -3701,7 +3701,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       let isanyfound = false, isanyremove = false;
 
       // find and remove painters which no longer exists in the list
-      for (let k=0;k<this.painters.length;++k) {
+      for (let k = 0;k < this.painters.length; ++k) {
          let sub = this.painters[k];
          if (sub.snapid===undefined) continue; // look only for painters with snapid
 
