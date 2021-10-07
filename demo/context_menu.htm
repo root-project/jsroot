@@ -15,11 +15,11 @@
       <script type="text/javascript">
          // build standard GUI, open ROOT file and display histogram
 
-         let hp = null;
+         let hh = null;
 
          JSROOT.buildGUI("guiDiv")
-               .then(hpainter => { hp = hpainter; return hp.openRootFile("../../files/hsimple.root"); })
-               .then(() => hp.display("hpxpy;1", "colz"));
+               .then(hpainter => { hh = hpainter; return hh.openRootFile("../../files/hsimple.root"); })
+               .then(() => hh.display("hpxpy;1", "colz"));
 
          // assign new context menu handler for TH2 drawing
          JSROOT.require('hist').then(() => {
@@ -33,9 +33,9 @@
                   console.log('Hist context menu for', this.getItemName(), tip);
 
                   menu.add("sub:Custom", () => menu.painter.provideSpecialDrawArea());
+                  menu.add("Show hpx", () => menu.painter.provideSpecialDrawArea("bottom").then(() => hh.getObject("hpx")).then(res => menu.painter.drawInSpecialArea(res.obj, "*H")));
+                  menu.add("Show hprof", () => menu.painter.provideSpecialDrawArea("left").then(() => hh.getObject("hprof")).then(res => menu.painter.drawInSpecialArea(res.obj, "E")));
                   menu.add("Close extra area", () => menu.painter.provideSpecialDrawArea());
-                  menu.add("Show hpx", () => menu.painter.provideSpecialDrawArea("X").then(() => hp.getObject("hpx")).then(res => menu.painter.drawInSpecialArea(res.obj)));
-                  menu.add("Show hprof", () => menu.painter.provideSpecialDrawArea("Y").then(() => hp.getObject("hprof")).then(res => menu.painter.drawInSpecialArea(res.obj)));
                   menu.add("endsub:");
                }
                return this.oldFillHistContextMenu(menu);
