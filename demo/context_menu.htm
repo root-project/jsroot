@@ -28,10 +28,10 @@
             JSROOT.TH2Painter.prototype.fillHistContextMenu = function(menu) {
                let itemname = this.getItemName();
                if ((typeof itemname == "string") && itemname.indexOf("hpxpy") >= 0) {
-                  menu.add("sub:Custom", () => menu.painter.provideProjectionArea());
-                  menu.add("Close extra area", () => menu.painter.provideProjectionArea());
-                  menu.add("Show hpx", () => menu.painter.provideProjectionArea("X"));
-                  menu.add("Show hprof", () => menu.painter.provideProjectionArea("Y"));
+                  menu.add("sub:Custom", () => menu.painter.provideSpecialDrawArea());
+                  menu.add("Close extra area", () => menu.painter.provideSpecialDrawArea());
+                  menu.add("Show hpx", () => menu.painter.provideSpecialDrawArea("X"));
+                  menu.add("Show hprof", () => menu.painter.provideSpecialDrawArea("Y"));
                   menu.add("endsub:");
                }
                console.log('Hist context menu for', this.getItemName());

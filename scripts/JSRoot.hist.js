@@ -4641,22 +4641,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       THistPainter.prototype.cleanup.call(this);
    }
 
-   /** @summary Provide projection areas
-     * @param kind - "x", "y" or ""
-     * @private */
-   TH2Painter.prototype.provideProjectionArea = function(kind) {
-      if (!kind) kind = "";
-      if (kind == this.is_projection)
-         return Promise.resolve(true);
-
-      this.is_projection = ""; // disable projection redraw until callback
-
-      return this.getCanvPainter().toggleProjection(kind).then(() => {
-         this.is_projection = kind;
-         return true;
-      });
-   }
-
    /** @summary Toggle projection
      * @private */
    TH2Painter.prototype.toggleProjection = function(kind, width) {
@@ -4683,8 +4667,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       let new_proj = (this.is_projection === kind) ? "" : kind;
       this.projection_width = width;
+      this.is_projection = ""; // avoid projection handling until area is created
 
-      this.provideProjectionArea(new_proj).then(() => this.redrawProjection());
+      this.provideSpecialDrawArea(new_proj).then(() => { this.is_projection = new_proj; return this.redrawProjection(); });
    }
 
    /** @summary Redraw projection
