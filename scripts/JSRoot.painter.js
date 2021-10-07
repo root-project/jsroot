@@ -3083,6 +3083,33 @@ JSROOT.define(['d3'], (d3) => {
       return canp.drawProjection(this._special_draw_area, obj, opt);
    }
 
+   /** @summary Get tooltip for painter and specified event position
+     * @param {Object} evnt - object wiith clientX and clientY positions
+     * @private */
+   ObjectPainter.prototype.getToolTip = function(evnt) {
+      if (!evnt || (evnt.clientX === undefined) || (evnt.clientY === undefined)) return null;
+
+      let frame = this.getFrameSvg();
+      if (frame.empty()) return null;
+      let layer = frame.select(".main_layer");
+      if (layer.empty()) return null;
+
+      let pos = d3.pointer(evnt, layer.node());
+      let pnt = { touch: false, x: pos[0], y: pos[1] };
+
+      if (typeof this.extractToolTip == 'function')
+         return this.extractToolTip(pnt);
+
+      pnt.disabled = true;
+
+      let res = null;
+
+      if (typeof this.processTooltipEvent == 'function')
+         res = this.processTooltipEvent(pnt);
+
+      return res && res.user_info ? res.user_info : res;
+   }
+
    // ===========================================================
 
 

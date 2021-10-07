@@ -4342,7 +4342,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          }
       }
 
-      if (findbin!==null) {
+      if (findbin !== null) {
          // if bin on boundary found, check that x position is ok
          if ((findbin === left) && (grx1 > pnt_x + gapx))  findbin = null; else
          if ((findbin === right-1) && (grx2 < pnt_x - gapx)) findbin = null; else
