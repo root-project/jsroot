@@ -3583,7 +3583,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             w = histo.getBinContent(i + 1);
          }
 
-         if ((xmax===null) || (w>wmax)) { xmax = xx; wmax = w; }
+         if ((xmax === null) || (w > wmax)) { xmax = xx; wmax = w; }
 
          stat_sumw += w;
          stat_sumwx += w * xx;
@@ -3591,7 +3591,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       }
 
       // when no range selection done, use original statistic from histogram
-      if (!fp.isAxisZoomed("x") && (histo.fTsumw>0)) {
+      if (!fp.isAxisZoomed("x") && (histo.fTsumw > 0)) {
          stat_sumw = histo.fTsumw;
          stat_sumwx = histo.fTsumwx;
          stat_sumwx2 = histo.fTsumwx2;
