@@ -4698,6 +4698,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          }
       }
 
+      // reset statistic before display
+      this.proj_hist.fEntries = 0;
+      this.proj_hist.fTsumw = 0;
+
       return canp.drawProjection(this.is_projection, this.proj_hist);
    }
 
