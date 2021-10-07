@@ -4641,11 +4641,27 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       THistPainter.prototype.cleanup.call(this);
    }
 
+   /** @summary Provide projection areas
+     * @param kind - "x", "y" or ""
+     * @private */
+   TH2Painter.prototype.provideProjectionArea = function(kind) {
+      if (!kind) kind = "";
+      if (kind == this.is_projection)
+         return Promise.resolve(true);
+
+      this.is_projection = ""; // disable projection redraw until callback
+
+      return this.getCanvPainter().toggleProjection(kind).then(() => {
+         this.is_projection = kind;
+         return true;
+      });
+   }
+
    /** @summary Toggle projection
      * @private */
    TH2Painter.prototype.toggleProjection = function(kind, width) {
 
-      if ((kind=="Projections") || (kind=="Off")) kind = "";
+      if ((kind == "Projections") || (kind == "Off")) kind = "";
 
       if ((typeof kind == 'string') && (kind.length>1)) {
           width = parseInt(kind.substr(1));
@@ -4654,7 +4670,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       if (!width) width = 1;
 
-      if (kind && (this.is_projection==kind)) {
+      if (kind && (this.is_projection == kind)) {
          if (this.projection_width === width) {
             kind = "";
          } else {
@@ -4666,22 +4682,17 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       delete this.proj_hist;
 
       let new_proj = (this.is_projection === kind) ? "" : kind;
-      this.is_projection = ""; // disable projection redraw until callback
       this.projection_width = width;
 
-      this.getCanvPainter().toggleProjection(new_proj).then(() => this.redrawProjection("toggling", new_proj));
+      this.provideProjectionArea(new_proj).then(() => this.redrawProjection());
    }
 
    /** @summary Redraw projection
      * @private */
    TH2Painter.prototype.redrawProjection = function(ii1, ii2, jj1, jj2) {
-      if (ii1 === "toggling") {
-         this.is_projection = ii2;
-         ii1 = ii2 = undefined;
-      }
       if (!this.is_projection) return;
 
-      if (jj2 == undefined) {
+      if (jj2 === undefined) {
          if (!this.tt_handle) return;
          ii1 = Math.round((this.tt_handle.i1 + this.tt_handle.i2)/2); ii2 = ii1+1;
          jj1 = Math.round((this.tt_handle.j1 + this.tt_handle.j2)/2); jj2 = jj1+1;
@@ -4715,13 +4726,13 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       }
 
       if (this.is_projection == "X") {
-         for (let i=0;i<this.nbinsx;++i) {
-            let sum=0;
-            for (let j=jj1;j<jj2;++j) sum += histo.getBinContent(i+1,j+1);
+         for (let i = 0; i < this.nbinsx; ++i) {
+            let sum = 0;
+            for (let j = jj1; j < jj2; ++j) sum += histo.getBinContent(i+1,j+1);
             this.proj_hist.setBinContent(i+1, sum);
          }
       } else {
-         for (let j=0;j<this.nbinsy;++j) {
+         for (let j = 0; j < this.nbinsy; ++j) {
             let sum = 0;
             for (let i=ii1;i<ii2;++i) sum += histo.getBinContent(i+1,j+1);
             this.proj_hist.setBinContent(j+1, sum);
