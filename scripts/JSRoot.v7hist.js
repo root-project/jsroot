@@ -1999,17 +1999,11 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       this.is_projection = ""; // disable projection redraw until callback
       this.projection_width = width;
 
-      let canp = this.getCanvPainter();
-      if (canp) canp.toggleProjection(this.is_projection).then(() => this.redrawProjection("toggling", new_proj));
+      this.provideSpecialDrawArea(new_proj).then(() => { this.is_projection = new_proj; return this.redrawProjection(); });
    }
 
-   RH2Painter.prototype.redrawProjection = function(ii1, ii2 /*, jj1, jj2*/) {
+   RH2Painter.prototype.redrawProjection = function(/* ii1, ii2 , jj1, jj2*/) {
       // do nothing for the moment
-
-      if (ii1 === "toggling") {
-         this.is_projection = ii2;
-         ii1 = ii2 = undefined;
-      }
 
       if (!this.is_projection) return;
    }

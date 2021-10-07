@@ -3072,6 +3072,16 @@ JSROOT.define(['d3'], (d3) => {
       });
    }
 
+   /** @summary Provide projection areas
+     * @param kind - "X", "Y" or ""
+     * @private */
+   ObjectPainter.prototype.drawInSpecialArea = function(obj, opt) {
+      let canp = this.getCanvPainter();
+      if (!this._special_draw_area || !canp || typeof canp.drawProjection !== "function")
+         return Promise.resolve(false);
+
+      return canp.drawProjection(this._special_draw_area, obj, opt);
+   }
 
    // ===========================================================
 

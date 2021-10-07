@@ -4724,7 +4724,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          }
       }
 
-      return canp.drawProjection(this.is_projection, this.proj_hist);
+      return this.drawInSpecialArea(this.proj_hist);
    }
 
    /** @summary Execute TH2 menu command
