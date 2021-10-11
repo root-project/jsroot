@@ -999,7 +999,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       // this is draw options with maximal axis range which could be unzoomed
       this.options.HOptions = this.options.Axis + ";ymin:" + minimum + ";ymax:" + maximum;
 
-      if (histo) return histo;
+      // all axis changes should alos be set to the histogram
+      // if (histo) return histo;
 
       if ((uxmin<0) && (xmin>=0)) uxmin = xmin*0.9;
       if ((uxmax>0) && (xmax<=0)) uxmax = 0;
@@ -1017,11 +1018,12 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       if (!histo) {
          histo = graph.fHistogram = JSROOT.createHistogram("TH1F", 100);
          histo.fName = graph.fName + "_h";
-         histo.fTitle = graph.fTitle;
          let kNoStats = JSROOT.BIT(9);
          histo.fBits = histo.fBits | kNoStats;
          this._own_histogram = true;
       }
+
+      histo.fTitle = graph.fTitle;
 
       if (set_x) {
          histo.fXaxis.fXmin = uxmin;
