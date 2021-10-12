@@ -3183,7 +3183,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
             ++cnt;
          }
          return cnt;
-      }
+      };
 
       // try to define scale-down factor
       if ((JSROOT.settings.OptimizeDraw > 0) && !fp.webgl) {

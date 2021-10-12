@@ -1503,7 +1503,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             if (jsrp.getColor(col).toUpperCase() === d.part)
                return col;
          return -1;
-      }
+      };
 
       if (d.check('FILL_', true)) {
          let col = getColor();
