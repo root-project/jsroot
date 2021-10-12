@@ -2745,27 +2745,26 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       if (!histo) return false;
 
-      let UnzoomTAxis = obj => {
-         if (!obj) return false;
-         if (!obj.TestBit(JSROOT.EAxisBits.kAxisRange)) return false;
+      let unzoomTAxis = obj => {
+         if (!obj || !obj.TestBit(JSROOT.EAxisBits.kAxisRange)) return false;
          if (obj.fFirst === obj.fLast) return false;
          if ((obj.fFirst <= 1) && (obj.fLast >= obj.fNbins)) return false;
          obj.InvertBit(JSROOT.EAxisBits.kAxisRange);
          return true;
-      }
+      };
 
-      let UzoomMinMax = ndim => {
-         if (this.getDimension()!==ndim) return false;
+      let uzoomMinMax = ndim => {
+         if (this.getDimension() !== ndim) return false;
          if ((this.options.minimum===-1111) && (this.options.maximum===-1111)) return false;
          if (!this.draw_content) return false; // if not drawing content, not change min/max
          this.options.minimum = this.options.maximum = -1111;
          this.scanContent(true); // to reset ymin/ymax
          return true;
-      }
+      };
 
-      if (dox && UnzoomTAxis(histo.fXaxis)) res = true;
-      if (doy && (UnzoomTAxis(histo.fYaxis) || UzoomMinMax(1))) res = true;
-      if (doz && (UnzoomTAxis(histo.fZaxis) || UzoomMinMax(2))) res = true;
+      if (dox && unzoomTAxis(histo.fXaxis)) res = true;
+      if (doy && (unzoomTAxis(histo.fYaxis) || uzoomMinMax(1))) res = true;
+      if (doz && (unzoomTAxis(histo.fZaxis) || uzoomMinMax(2))) res = true;
 
       return res;
    }
