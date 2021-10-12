@@ -3820,7 +3820,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if (item.btns_node) // reinsert buttons
                item.btns_prnt.insertBefore(item.btns_node, item.btns_next);
          }
-      }
+      };
 
       let width = elem.property('draw_width'), height = elem.property('draw_height');
       if (use_frame) {

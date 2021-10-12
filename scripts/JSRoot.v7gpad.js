@@ -1883,7 +1883,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           pp = this.getPadPainter(), draw_promise;
 
       if (pp && pp._fast_drawing) {
-         draw_promise = Promise.resolve(true)
+         draw_promise = Promise.resolve(true);
       } else if (this.v6axes) {
 
          // in v7 ticksx/y values shifted by 1 relative to v6
@@ -2418,7 +2418,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             req.values[indx*2] = vmin; req.values[indx*2+1] = vmax;
             req.flags[indx*2] = req.flags[indx*2+1] = true;
          }
-      }
+      };
 
       // first process zooming (if any)
       if (zoom_v)
