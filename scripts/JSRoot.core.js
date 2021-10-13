@@ -181,8 +181,9 @@
       if (entry.src.indexOf('http') == 0)
          return _.amd ? entry.src : entry.src + ".js";
 
+      // WARNING, with sap mathjax and zstd-codec loaded directly from alternative location
       if (_.sap)
-         return "jsroot/scripts/" + entry.src + ((_.source_min || entry.libs || entry.onlymin) && !entry.nomin ? ".min" : "");
+         return entry.alt || "jsroot/scripts/" + entry.src + ((_.source_min || entry.libs || entry.onlymin) && !entry.nomin ? ".min" : "");
 
       let dir = (entry.libs && _.use_full_libs && !_.source_min) ? JSROOT.source_dir + "libs/" : JSROOT.source_dir + "scripts/",
           ext = (_.source_min || (entry.libs && !_.use_full_libs) || entry.onlymin) && !entry.nomin ? ".min" : "";
@@ -533,8 +534,8 @@
          return Promise.resolve(arr.length == 1 ? arr[0] : arr);
       }
 
-      // loading with sap.ui.require - but not mathjax
-      if (_.sap && (need[0] != "mathjax")) {
+      // loading with sap.ui.require - but not mathjax or zstd
+      if (_.sap && (need[0] != "mathjax") && (need[0] != "zstd-codec")) {
          let req = [], reqindx = [], res = [];
          for (let k = 0; k < need.length; ++k) {
             let m = _.modules[need[k]];
