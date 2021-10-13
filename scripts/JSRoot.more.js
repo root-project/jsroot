@@ -929,8 +929,6 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       }
 
       res.Axis += hopt;
-
-      res.HOptions = res.Axis;
    }
 
    /** @summary Create bins for TF1 drawing
@@ -996,13 +994,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
           uxmin = xmin - dx, uxmax = xmax + dx,
           minimum = ymin - dy, maximum = ymax + dy;
 
-      this.options.HOptions = this.options.Axis;
-
-      // all axis changes should alos be set to the histogram
-      // if (histo) return histo;
-
-      if ((uxmin<0) && (xmin>=0)) uxmin = xmin*0.9;
-      if ((uxmax>0) && (xmax<=0)) uxmax = 0;
+      if ((uxmin < 0) && (xmin >= 0)) uxmin = xmin*0.9;
+      if ((uxmax > 0) && (xmax <= 0)) uxmax = 0;
 
       let graph = this.getObject();
 
@@ -1975,7 +1968,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
          let hist_painter = this.getMainPainter();
          if (hist_painter && hist_painter.$secondary) {
-            hist_painter.updateObject(histo, this.options.HOptions);
+            hist_painter.updateObject(histo, this.options.Axis);
             this.$redraw_hist = true;
          }
       }
@@ -2126,9 +2119,9 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       let promise = Promise.resolve();
 
-      if ((!painter.getMainPainter() || painter.options.second_x || painter.options.second_y) && painter.options.HOptions) {
+      if ((!painter.getMainPainter() || painter.options.second_x || painter.options.second_y) && painter.options.Axis) {
          let histo = painter.createHistogram();
-         promise = JSROOT.draw(divid, histo, painter.options.HOptions).then(hist_painter => {
+         promise = JSROOT.draw(divid, histo, painter.options.Axis).then(hist_painter => {
             if (hist_painter) {
                painter.axes_draw = true;
                if (!painter._own_histogram) painter.$primary = true;
