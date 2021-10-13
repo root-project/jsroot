@@ -166,7 +166,7 @@
          'jqueryui-mousewheel'  : { src: 'jquery.mousewheel', onlymin: true, extract: "$", dep: 'jquery-ui' },
          'jqueryui-touch-punch' : { src: 'touch-punch', onlymin: true, extract: "$", dep: 'jquery-ui' },
          'rawinflate'           : { src: 'rawinflate', libs: true },
-         'zstd-codec'           : { src: '../../zstd/zstd-codec', onlymin: true, extract: "ZstdCodec", node: "zstd-codec" },
+         'zstd-codec'           : { src: '../../zstd/zstd-codec', onlymin: true, alt: "https://root.cern/js/zstd/zstd-codec.min.js", extract: "ZstdCodec", node: "zstd-codec" },
          'mathjax'              : { src: 'https://cdn.jsdelivr.net/npm/mathjax@3.1.2/es5/tex-svg', extract: "MathJax", node: "mathjax" },
          'dat.gui'              : { src: 'dat.gui', libs: true, extract: "dat" },
          'three'                : { src: 'three', libs: true, extract: "THREE", node: "three" },
@@ -651,7 +651,11 @@
 
          if (!m.jsroot || m.extract)
             element.onload = () => finish_loading(m, m.extract ? globalThis[m.extract] : 1); // mark script loaded
-         element.onerror = () => { element.remove(); m.failure = true; req.failed(); }
+         element.onerror = () => {
+            element.remove();
+            if (m.alt) { m.src = m.alt; delete m.alt; load_module(req, m); }
+                  else { m.failure = true; req.failed(); }
+         }
       }
 
       function after_depend_load(req,d,m) {
@@ -691,13 +695,14 @@
                   m.src = _.get_module_src(jsmodule, true);
                   m.extract = jsmodule.extract;
                   m.dep = jsmodule.dep; // copy dependence
+                  m.alt = jsmodule.alt; // alternative location
               } else {
                   m.src = need[k];
                }
             }
 
             if (m.failure)
-               // module loading failed, no nee to continue
+               // module loading failed, no need to continue
                return req.failed(`Loading of module ${need[k]} failed`);
 
             if (m.dep) {
@@ -730,9 +735,7 @@
       if (factoryFunc)
          analyze();
       else
-         return new Promise(function(resolve,reject) {
-            analyze(resolve,reject);
-         });
+         return new Promise((resolve,reject) => analyze(resolve,reject));
    }
 
    /** @summary Central method to load JSROOT functionality

@@ -6,6 +6,7 @@
 3. Provide JSROOT.Painter.setDefaultDrawOpt to change default draw option
 4. Provide example of custom entries in context menu
 5. Fix problems with TGraph drawing updates
+6. Provide alternative location for zstd-codec
 
 
 ## Changes in 6.2.1
