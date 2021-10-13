@@ -167,7 +167,7 @@
          'jqueryui-touch-punch' : { src: 'touch-punch', onlymin: true, extract: "$", dep: 'jquery-ui' },
          'rawinflate'           : { src: 'rawinflate', libs: true },
          'zstd-codec'           : { src: '../../zstd/zstd-codec', onlymin: true, alt: "https://root.cern/js/zstd/zstd-codec.min.js", extract: "ZstdCodec", node: "zstd-codec" },
-         'mathjax'              : { src: 'https://cdn.jsdelivr.net/npm/mathjax@3.1.2/es5/tex-svg', extract: "MathJax", node: "mathjax" },
+         'mathjax'              : { src: 'https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-svg', extract: "MathJax", node: "mathjax" },
          'dat.gui'              : { src: 'dat.gui', libs: true, extract: "dat" },
          'three'                : { src: 'three', libs: true, extract: "THREE", node: "three" },
          'threejs_jsroot'       : { src: 'three.extra', libs: true }
