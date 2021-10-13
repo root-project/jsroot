@@ -1,5 +1,11 @@
 # JSROOT changelog
 
+## Changes in 6.2.1
+1. Fix logy and logz handling on lego plots
+2. Fix error in statistic calculations for projections
+3. Fix zstd-codec loading with minified jsroot scripts
+
+
 ## Changes in 6.2.0
 1. Support fully interactive second X/Y axis for histograms, graphs, functions and spline
 2. Support X+, Y+, RX, RY draw options for TF1
