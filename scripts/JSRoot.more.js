@@ -996,8 +996,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
           uxmin = xmin - dx, uxmax = xmax + dx,
           minimum = ymin - dy, maximum = ymax + dy;
 
-      // this is draw options with maximal axis range which could be unzoomed
-      this.options.HOptions = this.options.Axis + ";ymin:" + minimum + ";ymax:" + maximum;
+      this.options.HOptions = this.options.Axis;
 
       // all axis changes should alos be set to the histogram
       // if (histo) return histo;
@@ -1963,6 +1962,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       graph.fX = obj.fX;
       graph.fY = obj.fY;
       graph.fNpoints = obj.fNpoints;
+      graph.fMinimum = obj.fMinimum;
+      graph.fMaximum = obj.fMaximum;
       this.createBins();
 
       delete this.$redraw_hist;
