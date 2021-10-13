@@ -7,6 +7,7 @@
 4. Provide JSROOT.Painter.setDefaultDrawOpt to change default draw option
 5. Provide example of custom entries in context menu
 6. Fix error with projection statistic calculations
+7. Fix problems with TGraph drawing updates
 
 
 ## Changes in 6.2.0
