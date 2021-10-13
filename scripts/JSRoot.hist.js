@@ -1448,12 +1448,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (d.check('PAL', true)) this.Palette = d.partAsInt();
       // this is zooming of histo content
       if (d.check('MINIMUM:', true)) { this.ominimum = true; this.minimum = parseFloat(d.part); }
-                                else this.minimum = histo.fMinimum;
+                                else { this.ominimum = false; this.minimum = histo.fMinimum; }
       if (d.check('MAXIMUM:', true)) { this.omaximum = true; this.maximum = parseFloat(d.part); }
-                                else this.maximum = histo.fMaximum;
-      // this is actual range of data - used by graph drawing
-      if (d.check('YMIN:', true)) this.ymin = parseFloat(d.part);
-      if (d.check('YMAX:', true)) this.ymax = parseFloat(d.part);
+                                else { this.omaximum = false; this.maximum = histo.fMaximum; }
 
       // let configure histogram titles - only for debug purposes
       if (d.check('HTITLE:', true)) histo.fTitle = decodeURIComponent(d.part.toLowerCase());
@@ -3501,7 +3498,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if ((this.nbinsx == 0) || ((Math.abs(hmin) < 1e-300) && (Math.abs(hmax) < 1e-300)))
          this.draw_content = false;
 
-      let set_zoom = false, set_zoom2 = false;
+      let set_zoom = false;
 
       if (this.draw_content) {
          if (hmin >= hmax) {
@@ -3514,10 +3511,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             if ((this.ymin < 0) && (hmin >= 0)) this.ymin = 0;
             this.ymax = hmax + dy;
          }
-      } else if (this.options.ymin !== this.options.ymax) {
-         this.ymin = this.options.ymin;
-         this.ymax = this.options.ymax;
-         set_zoom2 = true;
       }
 
       hmin = this.options.minimum;
@@ -3531,7 +3524,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          }
       }
 
-      if ((hmin != -1111) && (hmax != -1111) && !this.draw_content && !set_zoom2) {
+      if ((hmin != -1111) && (hmax != -1111) && !this.draw_content) {
          this.ymin = hmin;
          this.ymax = hmax;
       } else {
