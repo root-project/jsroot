@@ -167,7 +167,7 @@
          'jqueryui-touch-punch' : { src: 'touch-punch', onlymin: true, extract: "$", dep: 'jquery-ui' },
          'rawinflate'           : { src: 'rawinflate', libs: true },
          'zstd-codec'           : { src: '../../zstd/zstd-codec', onlymin: true, alt: "https://root.cern/js/zstd/zstd-codec.min.js", extract: "ZstdCodec", node: "zstd-codec" },
-         'mathjax'              : { src: 'https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-svg', extract: "MathJax", node: "mathjax" },
+         'mathjax'              : { src: '../../mathjax/3.2.0/es5/tex-svg', nomin: true,  alt: 'https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-svg.js', extract: "MathJax", node: "mathjax" },
          'dat.gui'              : { src: 'dat.gui', libs: true, extract: "dat" },
          'three'                : { src: 'three', libs: true, extract: "THREE", node: "three" },
          'threejs_jsroot'       : { src: 'three.extra', libs: true }
@@ -182,10 +182,10 @@
          return _.amd ? entry.src : entry.src + ".js";
 
       if (_.sap)
-         return "jsroot/scripts/" + entry.src + ((_.source_min || entry.libs || entry.onlymin) ? ".min" : "");
+         return "jsroot/scripts/" + entry.src + ((_.source_min || entry.libs || entry.onlymin) && !entry.nomin ? ".min" : "");
 
       let dir = (entry.libs && _.use_full_libs && !_.source_min) ? JSROOT.source_dir + "libs/" : JSROOT.source_dir + "scripts/",
-          ext = (_.source_min || (entry.libs && !_.use_full_libs) || entry.onlymin) ? ".min" : "";
+          ext = (_.source_min || (entry.libs && !_.use_full_libs) || entry.onlymin) && !entry.nomin ? ".min" : "";
       if (_.amd) return dir + entry.src + ext;
       let res = dir + entry.src + ext + ".js";
 
