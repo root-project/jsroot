@@ -838,14 +838,14 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    }
 
    /** @summary Decode options  */
-   TGraphPainter.prototype.decodeOptions = function(opt) {
+   TGraphPainter.prototype.decodeOptions = function(opt, first_time) {
 
       if ((typeof opt == "string") && (opt.indexOf("same ") == 0))
          opt = opt.substr(5);
 
       let graph = this.getObject(),
           d = new JSROOT.DrawOptions(opt),
-          has_main = !!this.getMainPainter();
+          has_main = first_time ? !!this.getMainPainter() : !this.axes_draw;
 
       if (!this.options) this.options = {};
 
@@ -921,8 +921,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          // check if axis should be drawn
          // either graph drawn directly or
          // graph is first object in list of primitives
-         let pp = this.getPadPainter();
-         let pad = pp ? pp.getRootPad(true) : null;
+         let pp = this.getPadPainter(),
+             pad = pp ? pp.getRootPad(true) : null;
          if (!pad || (pad.fPrimitives && (pad.fPrimitives.arr[0] === graph))) res.Axis = "AXIS";
       } else if (res.Axis.indexOf("A") < 0) {
          res.Axis = "AXIS," + res.Axis;
@@ -1953,7 +1953,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    TGraphPainter.prototype.updateObject = function(obj, opt) {
       if (!this.matchObjectType(obj)) return false;
 
-      if ((opt !== undefined) && (opt != this.options.original))
+      if (opt && (opt != this.options.original))
          this.decodeOptions(opt);
 
       let graph = this.getObject();
@@ -2119,7 +2119,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    function drawGraph(divid, graph, opt) {
 
       let painter = new TGraphPainter(divid, graph);
-      painter.decodeOptions(opt);
+      painter.decodeOptions(opt, true);
       painter.createBins();
       painter.createStat();
 
