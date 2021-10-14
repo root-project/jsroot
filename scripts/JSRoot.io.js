@@ -465,7 +465,8 @@ JSROOT.define(['rawinflate'], () => {
 
    /** @summary Reads array of n values from the I/O buffer */
    TBuffer.prototype.readFastArray = function(n, array_type) {
-      let array, i = 0, o = this.o, view = this.arr;
+      let array, i = 0, o = this.o;
+      const view = this.arr;
       switch (array_type) {
          case jsrio.kDouble:
             array = new Float64Array(n);
@@ -657,8 +658,8 @@ JSROOT.define(['rawinflate'], () => {
 
    /** @summary read class definition from I/O buffer */
    TBuffer.prototype.readClass = function() {
-      let classInfo = { name: -1 }, tag = 0, bcnt = this.ntou4();
-      const startpos = this.o;
+      const classInfo = { name: -1 }, bcnt = this.ntou4(), startpos = this.o;
+      let tag;
 
       if (!(bcnt & jsrio.kByteCountMask) || (bcnt == jsrio.kNewClassTag)) {
          tag = bcnt;
@@ -723,7 +724,7 @@ JSROOT.define(['rawinflate'], () => {
 
       if (obj._typename === undefined) obj._typename = classname;
 
-      let direct = jsrio.DirectStreamers[classname];
+      const direct = jsrio.DirectStreamers[classname];
       if (direct) {
          direct(this, obj);
          return obj;
@@ -731,7 +732,7 @@ JSROOT.define(['rawinflate'], () => {
 
       const ver = this.readVersion();
 
-      let streamer = this.fFile.getStreamer(classname, ver);
+      const streamer = this.fFile.getStreamer(classname, ver);
 
       if (streamer !== null) {
 
@@ -774,7 +775,7 @@ JSROOT.define(['rawinflate'], () => {
       if (typeof cycle != 'number') cycle = -1;
       let bestkey = null;
       for (let i = 0; i < this.fKeys.length; ++i) {
-         let key = this.fKeys[i];
+         const key = this.fKeys[i];
          if (!key || (key.fName!==keyname)) continue;
          if (key.fCycle == cycle) { bestkey = key; break; }
          if ((cycle < 0) && (!bestkey || (key.fCycle > bestkey.fCycle))) bestkey = key;
@@ -818,9 +819,9 @@ JSROOT.define(['rawinflate'], () => {
       let file = this.fFile;
 
       return file.readBuffer([this.fSeekKeys, this.fNbytesKeys]).then(blob => {
-         //*-* -------------Read keys of the top directory
+         // Read keys of the top directory
 
-         let buf = new TBuffer(blob, 0, file);
+         const buf = new TBuffer(blob, 0, file);
 
          buf.readTKey();
          const nkeys = buf.ntoi4();
@@ -1144,7 +1145,7 @@ JSROOT.define(['rawinflate'], () => {
       }
 
       for (let j = 0; j < this.fDirectories.length; ++j) {
-         let dir = this.fDirectories[j];
+         const dir = this.fDirectories[j];
          if (dir.dir_name != dirname) continue;
          if ((cycle !== undefined) && (dir.dir_cycle !== cycle)) continue;
          return dir;
@@ -1160,7 +1161,7 @@ JSROOT.define(['rawinflate'], () => {
       if (typeof cycle != 'number') cycle = -1;
       let bestkey = null;
       for (let i = 0; i < this.fKeys.length; ++i) {
-         let key = this.fKeys[i];
+         const key = this.fKeys[i];
          if (!key || (key.fName !== keyname)) continue;
          if (key.fCycle == cycle) { bestkey = key; break; }
          if ((cycle < 0) && (!bestkey || (key.fCycle > bestkey.fCycle))) bestkey = key;
@@ -1438,15 +1439,15 @@ JSROOT.define(['rawinflate'], () => {
          return file.readBuffer([file.fSeekKeys, file.fNbytesKeys, file.fSeekInfo, file.fNbytesInfo]);
       }).then(blobs => {
 
-         let buf4 = new TBuffer(blobs[0], 0, file);
+         const buf4 = new TBuffer(blobs[0], 0, file);
 
          buf4.readTKey(); //
          const nkeys = buf4.ntoi4();
          for (let i = 0; i < nkeys; ++i)
             file.fKeys.push(buf4.readTKey());
 
-         let buf5 = new TBuffer(blobs[1], 0, file),
-            si_key = buf5.readTKey();
+         const buf5 = new TBuffer(blobs[1], 0, file),
+               si_key = buf5.readTKey();
          if (!si_key)
             return Promise.reject(Error(`Fail to read StreamerInfo data in ${file.fURL}`));
 
@@ -1471,22 +1472,18 @@ JSROOT.define(['rawinflate'], () => {
    /** @summary Search for class streamer info
     * @private */
    TFile.prototype.findStreamerInfo = function(clname, clversion, clchecksum) {
-      if (this.fStreamerInfos)
-         for (let i = 0; i < this.fStreamerInfos.arr.length; ++i) {
-            let si = this.fStreamerInfos.arr[i];
+      let arr = this.fStreamerInfos ? this.fStreamerInfos.arr : [], len = arr.length;
+      for (let i = 0; i < len; ++i) {
+         let si = arr[i];
 
-            // checksum is enough to identify class
-            if ((clchecksum !== undefined) && (si.fCheckSum === clchecksum)) return si;
-
-            if (si.fName !== clname) continue;
-
-            // checksum should match
-            if (clchecksum !== undefined) continue;
-
-            if ((clversion !== undefined) && (si.fClassVersion !== clversion)) continue;
-
-            return si;
+         // checksum is enough to identify class, but it should match if specified
+         if (clchecksum !== undefined) {
+            if (si.fCheckSum === clchecksum) return si;
+                                        else continue;
          }
+
+         if ((si.fName === clname) && ((si.fClassVersion === clversion) || (clversion === undefined))) return si;
+      }
 
       return null;
    }
@@ -1498,7 +1495,7 @@ JSROOT.define(['rawinflate'], () => {
       if (!this.fStreamerInfos) return null;
 
       let cache = this.fStreamerInfos.cache,
-         arr = this.fStreamerInfos.arr;
+          arr = this.fStreamerInfos.arr;
       if (!cache) cache = this.fStreamerInfos.cache = {};
 
       let si = cache[checksum];
