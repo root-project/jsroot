@@ -2328,46 +2328,54 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
    /** @summary Draw histogram bins as color
      * @private */
    RH2Painter.prototype.drawBinsColor = function() {
-      let histo = this.getHisto(),
-          handle = this.prepareDraw(),
-          colPaths = [], currx = [], curry = [],
-          colindx, cmd1, cmd2, i, j, binz, di = handle.stepi, dj = handle.stepj, dx, dy;
+      const histo = this.getHisto(),
+            handle = this.prepareDraw(),
+            di = handle.stepi, dj = handle.stepj,
+            entries = [];
+      let colindx, cmd1, cmd2, i, j, binz, dx, dy;
 
       // now start build
       for (i = handle.i1; i < handle.i2; i += di) {
+         dx = (handle.grx[i+di] - handle.grx[i]) || 1;
+
          for (j = handle.j1; j < handle.j2; j += dj) {
-            binz = histo.getBinContent(i + 1, j + 1);
+            binz = histo.getBinContent(i+1, j+1);
             colindx = handle.palette.getContourIndex(binz);
-            if (binz===0) {
-               if (!this.options.Zero) continue;
-               if ((colindx === null) && this._show_empty_bins) colindx = 0;
+            if (binz === 0) {
+               if (!this.options.Zero)
+                  colindx = null;
+               else if ((colindx === null) && this._show_empty_bins)
+                  colindx = 0;
             }
             if (colindx === null) continue;
 
-            cmd1 = "M"+handle.grx[i]+","+handle.gry[j+dj];
-            if (colPaths[colindx] === undefined) {
-               colPaths[colindx] = cmd1;
+            cmd1 = "M"+handle.grx[i]+","+handle.gry[j];
+
+            let entry = entries[colindx];
+
+            if (entry === undefined) {
+               entry = entries[colindx] = { path: cmd1 };
             } else{
-               cmd2 = "m" + (handle.grx[i]-currx[colindx]) + "," + (handle.gry[j+dj]-curry[colindx]);
-               colPaths[colindx] += (cmd2.length < cmd1.length) ? cmd2 : cmd1;
+               cmd2 = "m" + (handle.grx[i]-entry.x) + "," + (handle.gry[j]-entry.y);
+               entry.path += (cmd2.length < cmd1.length) ? cmd2 : cmd1;
             }
 
-            currx[colindx] = handle.grx[i];
-            curry[colindx] = handle.gry[j+dj];
+            entry.x = handle.grx[i];
+            entry.y = handle.gry[j];
 
-            dx = (handle.grx[i+di] - handle.grx[i]) || 1;
-            dy = (handle.gry[j] - handle.gry[j+dj]) || 1;
+            dy = (handle.gry[j+dj] - handle.gry[j]) || 1;
 
-            colPaths[colindx] += "v"+dy + "h"+dx + "v"+(-dy) + "z";
+            entry.path += "h"+dx + "v"+dy + "h"+(-dx) + "z";
          }
       }
 
-      for (colindx=0;colindx<colPaths.length;++colindx)
-        if (colPaths[colindx] !== undefined)
+      entries.forEach((entry,colindx) => {
+        if (entry)
            this.draw_g
                .append("svg:path")
                .attr("fill", handle.palette.getColor(colindx))
-               .attr("d", colPaths[colindx]);
+               .attr("d", entry.path);
+      });
 
       this.updatePaletteDraw();
 
