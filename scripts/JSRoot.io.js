@@ -349,7 +349,7 @@ JSROOT.define(['rawinflate'], () => {
 
       if ((ver.val <= 0) && ver.bytecnt && (ver.bytecnt >= 4)) {
          ver.checksum = this.ntou4();
-         if (!this.fFile.findSinfoCheckum(ver.checksum)) {
+         if (!this.fFile.findStreamerInfo(undefined, undefined, ver.checksum)) {
             // console.error(`Fail to find streamer info with check sum ${ver.checksum} version ${ver.val}`);
             this.o -= 4; // not found checksum in the list
             delete ver.checksum; // remove checksum
@@ -1469,47 +1469,35 @@ JSROOT.define(['rawinflate'], () => {
       return this.readObject(dir_name, cycle, true);
    }
 
-   /** @summary Search for class streamer info
-    * @private */
-   TFile.prototype.findStreamerInfo = function(clname, clversion, clchecksum) {
-      let arr = this.fStreamerInfos ? this.fStreamerInfos.arr : [], len = arr.length;
-      for (let i = 0; i < len; ++i) {
-         let si = arr[i];
-
-         // checksum is enough to identify class, but it should match if specified
-         if (clchecksum !== undefined) {
-            if (si.fCheckSum === clchecksum) return si;
-                                        else continue;
-         }
-
-         if ((si.fName === clname) && ((si.fClassVersion === clversion) || (clversion === undefined))) return si;
-      }
-
-      return null;
-   }
-
-   /** @summary Search streamer info with provided checksum
-     * @param {number} checksum
-    * @private */
-   TFile.prototype.findSinfoCheckum = function(checksum) {
+   /** @summary Search streamer info
+     * @param {string} clanme - class name
+     * @param {number} [clversion] - class version
+     * @param {number} [checksum] - streamer info checksum, have to match when specified
+     * @private */
+   TFile.prototype.findStreamerInfo = function(clname, clversion, checksum) {
       if (!this.fStreamerInfos) return null;
 
-      let cache = this.fStreamerInfos.cache,
-          arr = this.fStreamerInfos.arr;
-      if (!cache) cache = this.fStreamerInfos.cache = {};
+      const arr = this.fStreamerInfos.arr, len = arr.length;
 
-      let si = cache[checksum];
-      if (si !== undefined) return si;
+      if (checksum !== undefined) {
+         let cache = this.fStreamerInfos.cache;
+         if (!cache) cache = this.fStreamerInfos.cache = {};
+         let si = cache[checksum];
+         if (si !== undefined) return si;
 
-      for (let i = 0; i < arr.length; ++i) {
-         si = arr[i];
-         if (si.fCheckSum === checksum) {
-            cache[checksum] = si;
-            return si;
+         for (let i = 0; i < len; ++i) {
+            si = arr[i];
+            if (si.fCheckSum === checksum)
+               return cache[checksum] = si;
+         }
+         cache[checksum] = null; // checksum didnot found, do not try again
+      } else {
+         for (let i = 0; i < len; ++i) {
+            let si = arr[i];
+            if ((si.fName === clname) && ((si.fClassVersion === clversion) || (clversion === undefined))) return si;
          }
       }
 
-      cache[checksum] = null; // checksum didnot found, do not try again
       return null;
    }
 
