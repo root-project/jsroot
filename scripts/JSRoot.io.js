@@ -186,12 +186,13 @@ JSROOT.define(['rawinflate'], () => {
      * @private */
    jsrio.R__unzip = function(arr, tgtsize, noalert, src_shift) {
 
-      const HDRSIZE = 9, totallen = arr.byteLength;
-      let curr = src_shift || 0, fullres = 0, tgtbuf = null,
-          getChar = o => String.fromCharCode(arr.getUint8(o)),
-          getCode = o => arr.getUint8(o);
+      const HDRSIZE = 9, totallen = arr.byteLength,
+           getChar = o => String.fromCharCode(arr.getUint8(o)),
+           getCode = o => arr.getUint8(o);
 
-      function NextPortion() {
+      let curr = src_shift || 0, fullres = 0, tgtbuf = null;
+
+      const nextPortion = () => {
 
          while (fullres < tgtsize) {
 
@@ -216,10 +217,10 @@ JSROOT.define(['rawinflate'], () => {
 
             const srcsize = HDRSIZE + ((getCode(curr + 3) & 0xff) | ((getCode(curr + 4) & 0xff) << 8) | ((getCode(curr + 5) & 0xff) << 16));
 
-            let uint8arr = new Uint8Array(arr.buffer, arr.byteOffset + curr + HDRSIZE + off + CHKSUM, Math.min(arr.byteLength - curr - HDRSIZE - off - CHKSUM, srcsize - HDRSIZE - CHKSUM));
+            const uint8arr = new Uint8Array(arr.buffer, arr.byteOffset + curr + HDRSIZE + off + CHKSUM, Math.min(arr.byteLength - curr - HDRSIZE - off - CHKSUM, srcsize - HDRSIZE - CHKSUM));
 
             if (fmt === "ZSTD")  {
-               function HandleZsdt(ZstdCodec) {
+               const handleZsdt = ZstdCodec => {
 
                   return new Promise((resolveFunc, rejectFunc) => {
 
@@ -245,7 +246,7 @@ JSROOT.define(['rawinflate'], () => {
                         if (!tgtbuf) tgtbuf = new ArrayBuffer(tgtsize);
                         let tgt8arr = new Uint8Array(tgtbuf, fullres);
 
-                        for(let i=0;i<reslen;++i)
+                        for(let i = 0; i < reslen; ++i)
                            tgt8arr[i] = data2[i];
 
                         fullres += reslen;
@@ -253,11 +254,11 @@ JSROOT.define(['rawinflate'], () => {
                         resolveFunc(true);
                      });
                   });
-               }
+               };
 
-               let promise = JSROOT.nodejs ? HandleZsdt(require('zstd-codec').ZstdCodec)
-                                           : JSROOT.require('zstd-codec').then(codec => HandleZsdt(codec));
-               return promise.then(() => NextPortion());
+               let promise = JSROOT.nodejs ? handleZsdt(require('zstd-codec').ZstdCodec)
+                                           : JSROOT.require('zstd-codec').then(codec => handleZsdt(codec));
+               return promise.then(() => nextPortion());
             }
 
             //  place for unpacking
@@ -278,9 +279,9 @@ JSROOT.define(['rawinflate'], () => {
          }
 
          return Promise.resolve(new DataView(tgtbuf));
-      }
+      };
 
-      return NextPortion();
+      return nextPortion();
    }
 
    // =================================================================================
