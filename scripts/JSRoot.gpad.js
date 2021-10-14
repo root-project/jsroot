@@ -1962,7 +1962,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return true;
       }
 
-      let alone = menu.size() == 0;
+      const alone = menu.size() == 0;
 
       if (alone)
          menu.add("header:Frame");

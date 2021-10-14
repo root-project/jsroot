@@ -5011,7 +5011,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
                if ((xside != 1) || (yside != 1)) continue;
 
-               if ((cond!=null) && !cond(xx,yy)) continue;
+               if (cond && !cond(xx,yy)) continue;
 
                if ((res.wmax===null) || (zz>res.wmax)) { res.wmax = zz; res.xmax = xx; res.ymax = yy; }
 
@@ -5568,8 +5568,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (text_pos)
          bin._sumx = bin._sumy = bin._suml = 0;
 
-      function addPoint(x1,y1,x2,y2) {
-         let len = Math.sqrt((x1-x2)*(x1-x2) + (y1-y2)*(y1-y2));
+      const addPoint = (x1,y1,x2,y2) => {
+         const len = Math.sqrt((x1-x2)*(x1-x2) + (y1-y2)*(y1-y2));
          bin._sumx += (x1+x2)*len/2;
          bin._sumy += (y1+y2)*len/2;
          bin._suml += len;
@@ -5578,32 +5578,45 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       for (ngr = 0; ngr < ngraphs; ++ ngr) {
          if (!gr || (ngr>0)) gr = bin.fPoly.fGraphs.arr[ngr];
 
-         let npnts = gr.fNpoints, n,
-             x = gr.fX, y = gr.fY,
+         const x = gr.fX, y = gr.fY;
+         let n, nextx, nexty, npnts = gr.fNpoints,
              grx = Math.round(funcs.grx(x[0])),
              gry = Math.round(funcs.gry(y[0])),
-             nextx, nexty;
+             dx, dy, acc_x = 0, acc_y = 0;
+
+         const flush = () => {
+            if (acc_x) { cmd += "h" + acc_x; acc_x = 0; }
+            if (acc_y) { cmd += "v" + acc_y; acc_y = 0; }
+         }
 
          if ((npnts>2) && (x[0]==x[npnts-1]) && (y[0]==y[npnts-1])) npnts--;
 
          cmd += "M"+grx+","+gry;
 
-         for (n=1;n<npnts;++n) {
+         for (n = 1; n < npnts; ++n) {
             nextx = Math.round(funcs.grx(x[n]));
             nexty = Math.round(funcs.gry(y[n]));
             if (text_pos) addPoint(grx,gry, nextx, nexty);
-            if ((grx!==nextx) || (gry!==nexty)) {
-               if (grx === nextx)
-                  cmd += "v" + (nexty - gry);
-               else if (gry === nexty)
-                  cmd += "h" + (nextx - grx);
-               else
-                  cmd += "l" + (nextx - grx) + "," + (nexty - gry);
+            dx = nextx - grx;
+            dy = nexty - gry;
+            if (dx || dy) {
+               if (dx === 0) {
+                  if ((acc_y == 0) || ((dy < 0) !== (acc_y < 0))) flush();
+                  acc_y += dy;
+               } else if (dy === 0) {
+                  if ((acc_x == 0) || ((dx < 0) !== (acc_x < 0))) flush();
+                  acc_x += dx;
+               } else {
+                  flush();
+                  cmd += "l" + dx + "," + dy;
+               }
+
+               grx = nextx; gry = nexty;
             }
-            grx = nextx; gry = nexty;
          }
 
          if (text_pos) addPoint(grx, gry, Math.round(funcs.grx(x[0])), Math.round(funcs.gry(y[0])));
+         flush();
          cmd += "z";
       }
 
