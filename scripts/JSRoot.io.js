@@ -736,7 +736,9 @@ JSROOT.define(['rawinflate'], () => {
 
       if (streamer !== null) {
 
-         for (let n = 0; n < streamer.length; ++n)
+         const len = streamer.length;
+
+         for (let n = 0; n < len; ++n)
             streamer[n].func(this, obj);
 
       } else {
