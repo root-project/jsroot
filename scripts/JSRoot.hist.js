@@ -5558,7 +5558,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    /** @summary Create poly bin
      * @private */
    TH2Painter.prototype.createPolyBin = function(pmain, funcs, bin, text_pos) {
-      let cmd = "", ngr, ngraphs = 1, gr = null;
+      let cmd = "", acc_x = 0, acc_y = 0, ngr, ngraphs = 1, gr = null;
 
       if (bin.fPoly._typename == 'TMultiGraph')
          ngraphs = bin.fPoly.fGraphs.arr.length;
@@ -5575,21 +5575,20 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          bin._suml += len;
       }
 
+      const flush = () => {
+         if (acc_x) { cmd += "h" + acc_x; acc_x = 0; }
+         if (acc_y) { cmd += "v" + acc_y; acc_y = 0; }
+      }
+
       for (ngr = 0; ngr < ngraphs; ++ ngr) {
          if (!gr || (ngr>0)) gr = bin.fPoly.fGraphs.arr[ngr];
 
          const x = gr.fX, y = gr.fY;
-         let n, nextx, nexty, npnts = gr.fNpoints,
+         let n, nextx, nexty, npnts = gr.fNpoints, dx, dy,
              grx = Math.round(funcs.grx(x[0])),
-             gry = Math.round(funcs.gry(y[0])),
-             dx, dy, acc_x = 0, acc_y = 0;
+             gry = Math.round(funcs.gry(y[0]));
 
-         const flush = () => {
-            if (acc_x) { cmd += "h" + acc_x; acc_x = 0; }
-            if (acc_y) { cmd += "v" + acc_y; acc_y = 0; }
-         }
-
-         if ((npnts>2) && (x[0]==x[npnts-1]) && (y[0]==y[npnts-1])) npnts--;
+         if ((npnts > 2) && (x[0] === x[npnts-1]) && (y[0] === y[npnts-1])) npnts--;
 
          cmd += "M"+grx+","+gry;
 
@@ -5601,10 +5600,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             dy = nexty - gry;
             if (dx || dy) {
                if (dx === 0) {
-                  if ((acc_y == 0) || ((dy < 0) !== (acc_y < 0))) flush();
+                  if ((acc_y === 0) || ((dy < 0) !== (acc_y < 0))) flush();
                   acc_y += dy;
                } else if (dy === 0) {
-                  if ((acc_x == 0) || ((dx < 0) !== (acc_x < 0))) flush();
+                  if ((acc_x === 0) || ((dx < 0) !== (acc_x < 0))) flush();
                   acc_x += dx;
                } else {
                   flush();
