@@ -5112,57 +5112,77 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    /** @summary Draw TH2 bins as colors
      * @private */
    TH2Painter.prototype.drawBinsColor = function() {
-      let histo = this.getHisto(),
-          handle = this.prepareColorDraw(),
-          cntr = this.getContour(),
-          palette = this.getHistPalette(),
-          entries = [],
-          skip_zero = !this.options.Zero,
-          show_empty = this._show_empty_bins;
+      const histo = this.getHisto(),
+            handle = this.prepareColorDraw(),
+            cntr = this.getContour(),
+            palette = this.getHistPalette(),
+            entries = [],
+            skip_zero = !this.options.Zero,
+            show_empty = this._show_empty_bins,
+            can_merge = (handle.ybar2 === 1) && (handle.ybar1 === 0);
+
+      let dx, dy, x1, y1, binz, is_zero, colindx, last_entry = null;
+
+      const flush_last_entry = () => {
+         last_entry.path += "h"+dx + "v"+last_entry.dy + "h"+(-dx) + "z";
+         last_entry.dy = 0;
+         last_entry = null;
+      };
 
       // now start build
       for (let i = handle.i1; i < handle.i2; ++i) {
 
-         let dx = handle.grx[i+1] - handle.grx[i],
-             x1 = Math.round(handle.grx[i] + dx*handle.xbar1);
-         dx = Math.round(dx*(handle.xbar2-handle.xbar1)) || 1;
+         dx = handle.grx[i+1] - handle.grx[i];
+         x1 = Math.round(handle.grx[i] + dx*handle.xbar1);
+         dx = Math.round(dx*(handle.xbar2 - handle.xbar1)) || 1;
 
          for (let j = handle.j1; j < handle.j2; ++j) {
-            let binz = histo.getBinContent(i + 1, j + 1),
-                is_zero = (binz === 0);
-            if (is_zero && skip_zero) continue;
+            binz = histo.getBinContent(i + 1, j + 1);
+            is_zero = (binz === 0);
 
-            let colindx = cntr.getPaletteIndex(palette, binz);
-            if (colindx === null) {
-               if (is_zero && show_empty)
-                  colindx = 0;
-                else
-                   continue;
+            if (is_zero && skip_zero) {
+               if (last_entry) flush_last_entry();
+               continue;
             }
 
-            let dy = handle.gry[j] - handle.gry[j+1],
-                y2 = Math.round(handle.gry[j+1] + dy*handle.ybar1);
-            dy = Math.round(dy*(handle.ybar2-handle.ybar1)) || 1;
+            colindx = cntr.getPaletteIndex(palette, binz);
+            if (colindx === null) {
+               if (is_zero && show_empty) {
+                  colindx = 0;
+                } else {
+                   if (last_entry) flush_last_entry();
+                   continue;
+                }
+            }
 
-            let cmd1 = "M"+x1+","+y2,
+            dy = handle.gry[j+1] - handle.gry[j];
+            y1 = Math.round(handle.gry[j] + dy*handle.ybar1);
+            dy = Math.round(dy*(handle.ybar2 - handle.ybar1)) || 1;
+
+            let cmd1 = "M"+x1+","+y1,
                 entry = entries[colindx];
             if (!entry) {
                entry = entries[colindx] = { path: cmd1 };
+            } else if (can_merge && (entry === last_entry)) {
+               entry.dy += dy;
+               continue;
             } else {
-               let cmd2 = "m" + (x1-entry.x) + "," + (y2-entry.y);
+               let cmd2 = "m" + (x1-entry.x) + "," + (y1-entry.y);
                entry.path += (cmd2.length < cmd1.length) ? cmd2 : cmd1;
             }
+            if (last_entry) flush_last_entry();
             entry.x = x1;
-            entry.y = y2;
-            entry.path += "v"+dy + "h"+dx + "v"+(-dy) + "z";
+            entry.y = y1;
+            entry.dy = dy;
+            last_entry = entry;
          }
+         if (last_entry) flush_last_entry();
       }
 
       entries.forEach((entry,colindx) => {
         if (entry)
            this.draw_g
                .append("svg:path")
-               .attr("palette-index", colindx)
                .attr("fill", palette.getColor(colindx))
                .attr("d", entry.path);
       });
@@ -5674,11 +5694,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          if (this.options.Text && bin.fContent) textbins.push(bin);
       }
 
-      for (colindx=0;colindx<colPaths.length;++colindx)
+      for (colindx = 0; colindx < colPaths.length; ++colindx)
          if (colPaths[colindx]) {
             item = this.draw_g
                      .append("svg:path")
-                     .attr("palette-index", colindx)
                      .attr("fill", colindx ? this.fPalette.getColor(colindx) : 'none')
                      .attr("d", colPaths[colindx]);
             if (this.options.Line)

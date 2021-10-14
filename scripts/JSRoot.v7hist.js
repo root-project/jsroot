@@ -2366,7 +2366,6 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
         if (colPaths[colindx] !== undefined)
            this.draw_g
                .append("svg:path")
-               .attr("palette-index", colindx)
                .attr("fill", handle.palette.getColor(colindx))
                .attr("d", colPaths[colindx]);
 
@@ -2789,11 +2788,10 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
          if (this.options.Text) textbins.push(bin);
       }
 
-      for (colindx=0;colindx<colPaths.length;++colindx)
+      for (colindx = 0; colindx < colPaths.length; ++colindx)
          if (colPaths[colindx]) {
             item = this.draw_g
                      .append("svg:path")
-                     .attr("palette-index", colindx)
                      .attr("fill", colindx ? palette.getColor(colindx) : "none")
                      .attr("d", colPaths[colindx]);
             if (this.options.Line)
