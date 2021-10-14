@@ -1035,18 +1035,18 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
       if (this.isTH2Poly() && this.drawPolyLego)
          return this.drawPolyLego();
 
-      if ((this.getDimension()==2) && this.options.Contour && this.drawContour3D)
+      if ((this.getDimension() == 2) && this.options.Contour && this.drawContour3D)
          return this.drawContour3D(true);
 
-      if ((this.getDimension()==2) && this.options.Surf && this.drawSurf)
+      if ((this.getDimension() == 2) && this.options.Surf && this.drawSurf)
          return this.drawSurf();
 
-      if ((this.getDimension()==2) && this.options.Error && this.drawError)
+      if ((this.getDimension() == 2) && this.options.Error && this.drawError)
          return this.drawError();
 
       // Perform TH1/TH2 lego plot with BufferGeometry
 
-      let vertices = jsrp.Box3D.Vertices,
+      const vertices = jsrp.Box3D.Vertices,
           indicies = jsrp.Box3D.Indexes,
           vnormals = jsrp.Box3D.Normals,
           segments = jsrp.Box3D.Segments,
@@ -1057,17 +1057,17 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
           main = this.getFramePainter(),
           axis_zmin = main.z_handle.getScaleMin(),
           axis_zmax = main.z_handle.getScaleMax(),
-          zmin, zmax,
           handle = this.prepareColorDraw({ rounding: false, use3d: true, extra: 1 }),
           i1 = handle.i1, i2 = handle.i2, j1 = handle.j1, j2 = handle.j2,
-          i, j, k, vert, x1, x2, y1, y2, binz1, binz2, reduced, nobottom, notop,
           histo = this.getHisto(),
           basehisto = histo ? histo.$baseh : null,
           split_faces = (this.options.Lego === 11) || (this.options.Lego === 13); // split each layer on two parts
 
       if ((i1 >= i2) || (j1 >= j2)) return;
 
-      let getBinContent = (ii,jj,level) => {
+      let zmin, zmax, i, j, k, vert, x1, x2, y1, y2, binz1, binz2, reduced, nobottom, notop;
+
+      const getBinContent = (ii,jj,level) => {
          // return bin content in binz1, binz2, reduced flags
          // return true if bin should be displayed
 
@@ -1086,7 +1086,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
 
          if (!reduced || (level>0)) return true;
 
-         if (histo['$baseh']) return false; // do not draw empty bins on top of other bins
+         if (basehisto) return false; // do not draw empty bins on top of other bins
 
          if (this.options.Zero || (axis_zmin>0)) return true;
 
@@ -1256,11 +1256,11 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
 
             if ((intersect.faceIndex < 0) || (intersect.faceIndex >= this.face_to_bins_index.length)) return null;
 
-            let p = this.painter,
-                handle = this.handle,
-                main = p.getFramePainter(),
-                histo = p.getHisto(),
-                tip = p.get3DToolTip( this.face_to_bins_index[intersect.faceIndex] );
+            const p = this.painter,
+                  handle = this.handle,
+                  main = p.getFramePainter(),
+                  histo = p.getHisto();
+            let tip = p.get3DToolTip( this.face_to_bins_index[intersect.faceIndex] );
 
             tip.x1 = Math.max(-main.size_x3d,  handle.grx[tip.ix-1] + handle.xbar1*(handle.grx[tip.ix]-handle.grx[tip.ix-1]));
             tip.x2 = Math.min(main.size_x3d, handle.grx[tip.ix-1] + handle.xbar2*(handle.grx[tip.ix]-handle.grx[tip.ix-1]));
@@ -1269,7 +1269,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
             tip.y2 = Math.min(main.size_y3d, handle.gry[tip.iy-1] + handle.ybar2*(handle.gry[tip.iy] - handle.gry[tip.iy-1]));
 
             let binz1 = this.baseline, binz2 = tip.value;
-            if (histo['$baseh']) binz1 = histo['$baseh'].getBinContent(tip.ix, tip.iy);
+            if (histo.$baseh) binz1 = histo.$baseh.getBinContent(tip.ix, tip.iy);
             if (binz2<binz1) { let v = binz1; binz1 = binz2; binz2 = v; }
 
             tip.z1 = main.grz(Math.max(this.zmin,binz1));
