@@ -1337,19 +1337,34 @@ JSROOT.define(['d3'], (d3) => {
          }
       } else if (npnts < 10000) {
          // build simple curve
+
+         let acc_x = 0, acc_y = 0;
+
+         const flush = () => {
+            if (acc_x) { res.path += "h" + acc_x; acc_x = 0; }
+            if (acc_y) { res.path += "v" + acc_y; acc_y = 0; }
+         }
+
          for (let n = 1; n < npnts; ++n) {
             bin = bins[n];
             dx = Math.round(bin.grx) - currx;
             dy = Math.round(bin.gry) - curry;
-            if (dx && dy)
+            if (dx && dy) {
+               flush();
                res.path += "l" + dx + "," + dy;
-            else if (!dx && dy)
-               res.path += "v" + dy;
-            else if (dx && !dy)
-               res.path += "h" + dx;
+            } else if (!dx && dy) {
+               if ((acc_y === 0) || ((dy < 0) !== (acc_y < 0))) flush();
+               acc_y += dy;
+            } else if (dx && !dy) {
+               if ((acc_x === 0) || ((dx < 0) !== (acc_x < 0))) flush();
+               acc_x += dx;
+            }
             currx += dx; curry += dy;
             maxy = Math.max(maxy, curry);
          }
+
+         flush();
+
       } else {
          // build line with trying optimize many vertical moves
          let lastx, lasty, cminy = curry, cmaxy = curry, prevy = curry;
