@@ -5171,10 +5171,16 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                entry.path += (cmd2.length < cmd1.length) ? cmd2 : cmd1;
             }
             if (last_entry) flush_last_entry();
+
             entry.x = x1;
             entry.y = y1;
-            entry.dy = dy;
-            last_entry = entry;
+
+            if (can_merge) {
+               entry.dy = dy;
+               last_entry = entry;
+            } else {
+               entry.path += "h"+dx + "v"+dy + "h"+(-dx) + "z";
+            }
          }
          if (last_entry) flush_last_entry();
       }
