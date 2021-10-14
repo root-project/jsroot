@@ -2331,8 +2331,15 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       const histo = this.getHisto(),
             handle = this.prepareDraw(),
             di = handle.stepi, dj = handle.stepj,
-            entries = [];
-      let colindx, cmd1, cmd2, i, j, binz, dx, dy;
+            entries = [],
+            can_merge = true;
+      let colindx, cmd1, cmd2, i, j, binz, dx, dy, entry, last_entry;
+
+      const flush_last_entry = () => {
+         last_entry.path += "h"+dx + "v"+last_entry.dy + "h"+(-dx) + "z";
+         last_entry.dy = 0;
+         last_entry = null;
+      };
 
       // now start build
       for (i = handle.i1; i < handle.i2; i += di) {
@@ -2347,26 +2354,37 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
                else if ((colindx === null) && this._show_empty_bins)
                   colindx = 0;
             }
-            if (colindx === null) continue;
+            if (colindx === null) {
+               if (last_entry) flush_last_entry();
+               continue;
+            }
 
             cmd1 = "M"+handle.grx[i]+","+handle.gry[j];
 
-            let entry = entries[colindx];
+            dy = (handle.gry[j+dj] - handle.gry[j]) || 1;
+
+            entry = entries[colindx];
 
             if (entry === undefined) {
                entry = entries[colindx] = { path: cmd1 };
-            } else{
+            } else if (can_merge && (entry === last_entry)) {
+               entry.dy += dy;
+               continue;
+            } else {
                cmd2 = "m" + (handle.grx[i]-entry.x) + "," + (handle.gry[j]-entry.y);
                entry.path += (cmd2.length < cmd1.length) ? cmd2 : cmd1;
             }
-
+            if (last_entry) flush_last_entry();
             entry.x = handle.grx[i];
             entry.y = handle.gry[j];
-
-            dy = (handle.gry[j+dj] - handle.gry[j]) || 1;
-
-            entry.path += "h"+dx + "v"+dy + "h"+(-dx) + "z";
+            if (can_merge) {
+               entry.dy = dy;
+               last_entry = entry;
+            } else {
+               entry.path += "h"+dx + "v"+dy + "h"+(-dx) + "z";
+            }
          }
+         if (last_entry) flush_last_entry();
       }
 
       entries.forEach((entry,colindx) => {
