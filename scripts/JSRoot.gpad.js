@@ -461,9 +461,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
                let axis = this.getObject(), abits = JSROOT.EAxisBits;
 
-               function set_bit(bit, on) {
-                  if (axis.TestBit(bit) != on) axis.InvertBit(bit);
-               }
+               const set_bit = (bit, on) => { if (axis.TestBit(bit) != on) axis.InvertBit(bit); };
 
                axis.fTitleOffset = (vertical ? new_x : new_y) / offset_k;
                if (curr_indx == 1) {
@@ -3126,7 +3124,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
              let res = this.painters[indx].redraw(force ? "redraw" : "resize");
              if (!jsrp.isPromise(res)) res = Promise.resolve();
-              return res.then(() => redrawNext(indx+1));
+             return res.then(() => redrawNext(indx+1));
           };
 
       return sync_promise.then(() => {
@@ -3443,7 +3441,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.createPadSvg(true);
       }
 
-      let MatchPrimitive = (painters, primitives, class_name, obj_name) => {
+      const MatchPrimitive = (painters, primitives, class_name, obj_name) => {
          let painter = painters.find(p => {
             if (p.snapid === undefined) return;
             if (!p.matchObjectType(class_name)) return;
@@ -3625,22 +3623,18 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (!r.ranges || p.empty()) return true;
 
       // calculate user range for full pad
-      let same = x => x,
-          direct_funcs = [same, Math.log10, x => Math.log10(x)/Math.log10(2) ],
-          revert_funcs = [same, x => Math.pow(10, x), x => Math.pow(2, x)],
-          func = direct_funcs[main.logx],
-          func2 = revert_funcs[main.logx],
-          k = (func(main.scale_xmax) - func(main.scale_xmin))/p.property("draw_width"),
+      const same = x => x,
+            direct_funcs = [same, Math.log10, x => Math.log10(x)/Math.log10(2)],
+            revert_funcs = [same, x => Math.pow(10, x), x => Math.pow(2, x)],
+            func = direct_funcs[main.logx],
+            func2 = revert_funcs[main.logx],
+            match = (v1, v0, range) => (Math.abs(v0-v1) < Math.abs(range)*1e-10) ? v0 : v1;
+      let k = (func(main.scale_xmax) - func(main.scale_xmin))/p.property("draw_width"),
           x1 = func(main.scale_xmin) - k*p.property("draw_x"),
           x2 = x1 + k*p.property("draw_width");
 
-       // method checks if new value v1 close to the old value v0
-       function match(v1, v0, range) {
-          return (Math.abs(v0-v1)<Math.abs(range)*1e-10) ? v0 : v1;
-       }
-
-      r.ux1 = match( func2(x1), r.ux1, r.px2-r.px1);
-      r.ux2 = match( func2(x2), r.ux2, r.px2-r.px1);
+      r.ux1 = match(func2(x1), r.ux1, r.px2-r.px1);
+      r.ux2 = match(func2(x2), r.ux2, r.px2-r.px1);
 
       func = direct_funcs[main.logy];
       func2 = revert_funcs[main.logy];
@@ -3649,8 +3643,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       let y2 = func(main.scale_ymax) + k*p.property("draw_y"),
           y1 = y2 - k*p.property("draw_height");
 
-      r.uy1 = match( func2(y1), r.uy1, r.py2-r.py1);
-      r.uy2 = match( func2(y2), r.uy2, r.py2-r.py1);
+      r.uy1 = match(func2(y1), r.uy1, r.py2-r.py1);
+      r.uy2 = match(func2(y2), r.uy2, r.py2-r.py1);
 
       return true;
    }

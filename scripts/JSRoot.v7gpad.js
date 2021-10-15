@@ -2221,8 +2221,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if (JSROOT.batch_mode) return promise;
 
+      top_rect.attr("pointer-events", "visibleFill");  // let process mouse events inside frame
+
       return promise.then(() => JSROOT.require(['interactive'])).then(inter => {
-         top_rect.attr("pointer-events", "visibleFill");  // let process mouse events inside frame
          inter.FrameInteractive.assign(this);
          this.addBasicInteractivity();
       });
@@ -2252,10 +2253,18 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return this.getPadPainter().getHistPalette();
    }
 
+   /** @summary Configure user-defined click handler
+     * @desc Function will be called every time when frame click was perfromed
+     * As argument, tooltip object with selected bins will be provided
+     * If handler function returns true, default handling of click will be disabled */
    RFramePainter.prototype.configureUserClickHandler = function(handler) {
       this._click_handler = handler && (typeof handler == 'function') ? handler : null;
    }
 
+   /** @summary Configure user-defined dblclick handler
+     * @desc Function will be called every time when double click was called
+     * As argument, tooltip object with selected bins will be provided
+     * If handler function returns true, default handling of dblclick (unzoom) will be disabled */
    RFramePainter.prototype.configureUserDblclickHandler = function(handler) {
       this._dblclick_handler = handler && (typeof handler == 'function') ? handler : null;
    }
@@ -2311,7 +2320,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             flags: [false, false, false, false, false, false]
          };
 
-      let checkZooming = (painter, force) => {
+      const checkZooming = (painter, force) => {
          if (!force && (typeof painter.canZoomInside != 'function')) return;
 
          is_any_check = true;
