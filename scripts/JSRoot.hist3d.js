@@ -404,21 +404,22 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
       } else {
          changed = true;
 
-         let indicies = jsrp.Box3D.Indexes,
-             normals = jsrp.Box3D.Normals,
-             vertices = jsrp.Box3D.Vertices,
-             pos, norm,
-             color = new THREE.Color(tip.color ? tip.color : 0xFF0000),
-             opacity = tip.opacity || 1;
+         const indicies = jsrp.Box3D.Indexes,
+               normals = jsrp.Box3D.Normals,
+               vertices = jsrp.Box3D.Vertices,
+               color = new THREE.Color(tip.color ? tip.color : 0xFF0000),
+               opacity = tip.opacity || 1;
+
+         let pos, norm;
 
          if (!tooltip_mesh) {
             pos = new Float32Array(indicies.length*3);
             norm = new Float32Array(indicies.length*3);
-            let geom = new THREE.BufferGeometry();
+            const geom = new THREE.BufferGeometry();
             geom.setAttribute( 'position', new THREE.BufferAttribute( pos, 3 ) );
             geom.setAttribute( 'normal', new THREE.BufferAttribute( norm, 3 ) );
-            let mater = new THREE.MeshBasicMaterial({ color: color, opacity: opacity });
-            tooltip_mesh = new THREE.Mesh(geom, mater);
+            const material = new THREE.MeshBasicMaterial({ color: color, opacity: opacity });
+            tooltip_mesh = new THREE.Mesh(geom, material);
          } else {
             pos = tooltip_mesh.geometry.attributes.position.array;
             tooltip_mesh.geometry.attributes.position.needsUpdate = true;
@@ -437,7 +438,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
             pos[k*3+2] = tip.z1 + vert.z * (tip.z2 - tip.z1);
 
             if (norm) {
-               if (k%6===0) nn+=3;
+               if (k % 6 === 0) nn += 3;
                norm[k*3] = normals[nn];
                norm[k*3+1] = normals[nn+1];
                norm[k*3+2] = normals[nn+2];
@@ -581,7 +582,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
       }
 
       if (xaxis && xaxis.fTitle) {
-         let text3d = new THREE.TextGeometry(ltx.translateLaTeX(xaxis.fTitle), { font: JSROOT.threejs_font_helvetiker_regular, size: textsize, height: 0, curveSegments: 5 });
+         const text3d = new THREE.TextGeometry(ltx.translateLaTeX(xaxis.fTitle), { font: JSROOT.threejs_font_helvetiker_regular, size: textsize, height: 0, curveSegments: 5 });
          text3d.computeBoundingBox();
          text3d.center = xaxis.TestBit(JSROOT.EAxisBits.kCenterTitle);
          text3d.gry = 2; // factor 2 shift
@@ -606,7 +607,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
          return pos;
       };
 
-      let createZoomMesh = (kind, size_3d, use_y_for_z) => {
+      const createZoomMesh = (kind, size_3d, use_y_for_z) => {
 
          let positions, geom = new THREE.BufferGeometry();
          if (kind === "z")
@@ -773,7 +774,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
          }
 
          if (is_major) {
-            let text3d = new THREE.TextGeometry(lbl, { font: JSROOT.threejs_font_helvetiker_regular, size: textsize, height: 0, curveSegments: 5 });
+            const text3d = new THREE.TextGeometry(lbl, { font: JSROOT.threejs_font_helvetiker_regular, size: textsize, height: 0, curveSegments: 5 });
             text3d.computeBoundingBox();
             let draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
                 draw_height = text3d.boundingBox.max.y - text3d.boundingBox.min.y;
@@ -796,7 +797,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
       }
 
       if (yaxis && yaxis.fTitle) {
-         let text3d = new THREE.TextGeometry(ltx.translateLaTeX(yaxis.fTitle), { font: JSROOT.threejs_font_helvetiker_regular, size: textsize, height: 0, curveSegments: 5 });
+         const text3d = new THREE.TextGeometry(ltx.translateLaTeX(yaxis.fTitle), { font: JSROOT.threejs_font_helvetiker_regular, size: textsize, height: 0, curveSegments: 5 });
          text3d.computeBoundingBox();
          text3d.center = yaxis.TestBit(JSROOT.EAxisBits.kCenterTitle);
          text3d.grx = 2; // factor 2 shift
@@ -869,8 +870,8 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
 
       while (zticks.next()) {
          let grz = zticks.grpos,
-            is_major = (zticks.kind == 1),
-            lbl = this.z_handle.format(zticks.tick, 2);
+             is_major = (zticks.kind == 1),
+             lbl = this.z_handle.format(zticks.tick, 2);
 
          if (lbl === null) { is_major = false; lbl = ""; }
 
@@ -903,15 +904,15 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
 
       if (zgridx && (zgridx.length > 0)) {
 
-         let material = new THREE.LineDashedMaterial({ color: 0x0, dashSize: 2, gapSize: 2 });
+         const material = new THREE.LineDashedMaterial({ color: 0x0, dashSize: 2, gapSize: 2 }),
+               lines1 = jsrp.createLineSegments(zgridx, material);
 
-         let lines1 = jsrp.createLineSegments(zgridx, material);
          lines1.position.set(0,grmaxy,0);
          lines1.grid = 2; // mark as grid
          lines1.visible = false;
          top.add(lines1);
 
-         let lines2 = new THREE.LineSegments(lines1.geometry, material);
+         const lines2 = new THREE.LineSegments(lines1.geometry, material);
          lines2.position.set(0,grminy,0);
          lines2.grid = 4; // mark as grid
          lines2.visible = false;
@@ -920,15 +921,15 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
 
       if (zgridy && (zgridy.length > 0)) {
 
-         let material = new THREE.LineDashedMaterial({ color: 0x0, dashSize: 2, gapSize: 2 });
+         const material = new THREE.LineDashedMaterial({ color: 0x0, dashSize: 2, gapSize: 2 }),
+               lines1 = jsrp.createLineSegments(zgridy, material);
 
-         let lines1 = jsrp.createLineSegments(zgridy, material);
          lines1.position.set(grmaxx,0, 0);
          lines1.grid = 3; // mark as grid
          lines1.visible = false;
          top.add(lines1);
 
-         let lines2 = new THREE.LineSegments(lines1.geometry, material);
+         const lines2 = new THREE.LineSegments(lines1.geometry, material);
          lines2.position.set(grminx, 0, 0);
          lines2.grid = 1; // mark as grid
          lines2.visible = false;
@@ -1047,21 +1048,22 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
       // Perform TH1/TH2 lego plot with BufferGeometry
 
       const vertices = jsrp.Box3D.Vertices,
-          indicies = jsrp.Box3D.Indexes,
-          vnormals = jsrp.Box3D.Normals,
-          segments = jsrp.Box3D.Segments,
-          // reduced line segments
-          rsegments = [0, 1, 1, 2, 2, 3, 3, 0],
-          // reduced vertices
-          rvertices = [ new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 1, 0), new THREE.Vector3(1, 1, 0), new THREE.Vector3(1, 0, 0) ],
-          main = this.getFramePainter(),
-          axis_zmin = main.z_handle.getScaleMin(),
-          axis_zmax = main.z_handle.getScaleMax(),
-          handle = this.prepareColorDraw({ rounding: false, use3d: true, extra: 1 }),
-          i1 = handle.i1, i2 = handle.i2, j1 = handle.j1, j2 = handle.j2,
-          histo = this.getHisto(),
-          basehisto = histo ? histo.$baseh : null,
-          split_faces = (this.options.Lego === 11) || (this.options.Lego === 13); // split each layer on two parts
+            indicies = jsrp.Box3D.Indexes,
+            vnormals = jsrp.Box3D.Normals,
+            segments = jsrp.Box3D.Segments,
+            // reduced line segments
+            rsegments = [0, 1, 1, 2, 2, 3, 3, 0],
+            // reduced vertices
+            rvertices = [ new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 1, 0), new THREE.Vector3(1, 1, 0), new THREE.Vector3(1, 0, 0) ],
+            main = this.getFramePainter(),
+            axis_zmin = main.z_handle.getScaleMin(),
+            axis_zmax = main.z_handle.getScaleMax(),
+            handle = this.prepareColorDraw({ rounding: false, use3d: true, extra: 1 }),
+            i1 = handle.i1, i2 = handle.i2, j1 = handle.j1, j2 = handle.j2,
+            histo = this.getHisto(),
+            basehisto = histo ? histo.$baseh : null,
+            split_faces = (this.options.Lego === 11) || (this.options.Lego === 13), // split each layer on two parts
+            use16indx = (histo.getBin(i2, j2) < 0xFFFF); // if bin ID fit into 16 bit, use smaller arrays for intersect indexes
 
       if ((i1 >= i2) || (j1 >= j2)) return;
 
@@ -1093,9 +1095,8 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
          return this._show_empty_bins;
       };
 
-      // if bin ID fit into 16 bit, use smaller arrays for intersect indexes
-      let use16indx = (histo.getBin(i2, j2) < 0xFFFF),
-          levels = [ axis_zmin, axis_zmax ], palette = null;
+
+      let levels = [ axis_zmin, axis_zmax ], palette = null;
 
       // DRAW ALL CUBES
 
@@ -1121,12 +1122,12 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
 
          // now calculate size of buffer geometry for boxes
 
-         for (i=i1;i<i2;++i)
-            for (j=j1;j<j2;++j) {
+         for (i = i1; i < i2; ++i)
+            for (j = j1; j < j2; ++j) {
 
                if (!getBinContent(i,j,nlevel)) continue;
 
-               nobottom = !reduced && (nlevel>0);
+               nobottom = !reduced && (nlevel > 0);
                notop = !reduced && (binz2 > zmax) && (nlevel < levels.length-2);
 
                numvertices += (reduced ? 12 : indicies.length);
@@ -1139,22 +1140,19 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
                }
             }
 
-         let positions = new Float32Array(numvertices*3),
-             normals = new Float32Array(numvertices*3),
-             face_to_bins_index = use16indx ? new Uint16Array(numvertices/3) : new Uint32Array(numvertices/3),
-             pos2 = null, norm2 = null, face_to_bins_indx2 = null,
-             v = 0, v2 = 0, vert, k, nn;
+         const positions = new Float32Array(numvertices*3),
+               normals = new Float32Array(numvertices*3),
+               face_to_bins_index = use16indx ? new Uint16Array(numvertices/3) : new Uint32Array(numvertices/3),
+               pos2 = (num2vertices === 0) ? null : new Float32Array(num2vertices*3),
+               norm2 = (num2vertices === 0) ? null : new Float32Array(num2vertices*3),
+               face_to_bins_indx2 = (num2vertices === 0) ? null : (use16indx ? new Uint16Array(num2vertices/3) : new Uint32Array(num2vertices/3));
 
-         if (num2vertices > 0) {
-            pos2 = new Float32Array(num2vertices*3);
-            norm2 = new Float32Array(num2vertices*3);
-            face_to_bins_indx2 = use16indx ? new Uint16Array(num2vertices/3) : new Uint32Array(num2vertices/3);
-         }
+         let v = 0, v2 = 0, vert, k, nn;
 
-         for (i=i1;i<i2;++i) {
-            x1 = handle.grx[i] + handle.xbar1*(handle.grx[i+1]-handle.grx[i]);
-            x2 = handle.grx[i] + handle.xbar2*(handle.grx[i+1]-handle.grx[i]);
-            for (j=j1;j<j2;++j) {
+         for (i = i1; i < i2; ++i) {
+            x1 = handle.grx[i] + handle.xbar1*(handle.grx[i+1] - handle.grx[i]);
+            x2 = handle.grx[i] + handle.xbar2*(handle.grx[i+1] - handle.grx[i]);
+            for (j = j1; j < j2; ++j) {
 
                if (!getBinContent(i,j,nlevel)) continue;
 
@@ -1192,8 +1190,8 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
                      norm2[v2] = vnormals[nn];
                      norm2[v2+1] = vnormals[nn+1];
                      norm2[v2+2] = vnormals[nn+2];
-                     if (v2%9===0) face_to_bins_indx2[v2/9] = bin_index; // remember which bin corresponds to the face
-                     v2+=3;
+                     if (v2 % 9 === 0) face_to_bins_indx2[v2/9] = bin_index; // remember which bin corresponds to the face
+                     v2 += 3;
                   } else {
                      positions[v]   = x1 + vert.x * (x2 - x1);
                      positions[v+1] = y1 + vert.y * (y2 - y1);
@@ -1202,16 +1200,16 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
                      normals[v] = vnormals[nn];
                      normals[v+1] = vnormals[nn+1];
                      normals[v+2] = vnormals[nn+2];
-                     if (v%9===0) face_to_bins_index[v/9] = bin_index; // remember which bin corresponds to the face
-                     v+=3;
+                     if (v % 9 === 0) face_to_bins_index[v/9] = bin_index; // remember which bin corresponds to the face
+                     v += 3;
                   }
 
                   ++k;
 
-                  if (k%6 === 0) {
-                     nn+=3;
+                  if (k % 6 === 0) {
+                     nn += 3;
                      if (notop && (k === indicies.length - 12)) {
-                        k+=6; nn+=3; // jump over notop indexes
+                        k += 6; nn += 3; // jump over notop indexes
                      }
                   }
                }
@@ -1320,8 +1318,8 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
 
       zmax = axis_zmax; zmin = axis_zmin;
 
-      for (i=i1;i<i2;++i)
-         for (j=j1;j<j2;++j) {
+      for (i = i1; i < i2; ++i)
+         for (j = j1; j < j2; ++j) {
             if (!getBinContent(i,j,0)) continue;
 
             // calculate required buffer size for line segments
@@ -1342,10 +1340,10 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
           grzmax = main.grz(axis_zmax),
           z1 = 0, z2 = 0, ll = 0, ii = 0;
 
-      for (i=i1;i<i2;++i) {
+      for (i = i1; i < i2; ++i) {
          x1 = handle.grx[i] + handle.xbar1*(handle.grx[i+1]-handle.grx[i]);
          x2 = handle.grx[i] + handle.xbar2*(handle.grx[i+1]-handle.grx[i]);
-         for (j=j1;j<j2;++j) {
+         for (j = j1; j < j2; ++j) {
 
             if (!getBinContent(i,j,0)) continue;
 
@@ -1360,27 +1358,27 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
 
             if (uselineindx) {
                // array of indicies for the lines, to avoid duplication of points
-               for (k=0; k < seg.length; ++k) {
+               for (k = 0; k < seg.length; ++k) {
 //                  intersect_index[ii] = bin_index;
                   lindicies[ii++] = ll/3 + seg[k];
                }
 
-               for (k=0; k < vvv.length; ++k) {
+               for (k = 0; k < vvv.length; ++k) {
                   vert = vvv[k];
                   lpositions[ll]   = x1 + vert.x * (x2 - x1);
                   lpositions[ll+1] = y1 + vert.y * (y2 - y1);
                   lpositions[ll+2] = z1 + vert.z * (z2 - z1);
-                  ll+=3;
+                  ll += 3;
                }
             } else {
                // copy only vertex positions
-               for (k=0; k < seg.length; ++k) {
+               for (k = 0; k < seg.length; ++k) {
                   vert = vvv[seg[k]];
                   lpositions[ll]   = x1 + vert.x * (x2 - x1);
                   lpositions[ll+1] = y1 + vert.y * (y2 - y1);
                   lpositions[ll+2] = z1 + vert.z * (z2 - z1);
 //                  intersect_index[ll/3] = bin_index;
-                  ll+=3;
+                  ll += 3;
                }
             }
          }
