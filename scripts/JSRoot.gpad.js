@@ -1852,7 +1852,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          this.draw_g.append("svg:title").text("");
 
-         top_rect = this.draw_g.append("svg:rect");
+         top_rect = this.draw_g.append("svg:path");
 
          // append for the moment three layers - for drawing and axis
          this.draw_g.append('svg:g').attr('class','grid_layer');
@@ -1863,10 +1863,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                            .attr("y", 0)
                            .attr('overflow', 'hidden');
 
-         this.draw_g.append('svg:g').attr('class','axis_layer');
-         this.draw_g.append('svg:g').attr('class','upper_layer');
+         this.draw_g.append('svg:g').attr('class', 'axis_layer');
+         this.draw_g.append('svg:g').attr('class', 'upper_layer');
       } else {
-         top_rect = this.draw_g.select("rect");
+         top_rect = this.draw_g.select("path");
          main_svg = this.draw_g.select(".main_layer");
       }
 
@@ -1874,10 +1874,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       this.draw_g.attr("transform", trans);
 
-      top_rect.attr("x", 0)
-              .attr("y", 0)
-              .attr("width", w)
-              .attr("height", h)
+      top_rect.attr("d", `M0,0h${w}v${h}h${-w}z`)
               .call(this.fillatt.func)
               .call(this.lineatt.func);
 
@@ -1887,8 +1884,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if (JSROOT.batch_mode) return;
 
+      top_rect.attr("pointer-events", "visibleFill"); // let process mouse events inside frame
+
       JSROOT.require(['interactive']).then(inter => {
-         top_rect.attr("pointer-events", "visibleFill"); // let process mouse events inside frame
          inter.FrameInteractive.assign(this);
          this.addBasicInteractivity();
       });
