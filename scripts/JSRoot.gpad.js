@@ -3626,10 +3626,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       const same = x => x,
             direct_funcs = [same, Math.log10, x => Math.log10(x)/Math.log10(2)],
             revert_funcs = [same, x => Math.pow(10, x), x => Math.pow(2, x)],
-            func = direct_funcs[main.logx],
-            func2 = revert_funcs[main.logx],
             match = (v1, v0, range) => (Math.abs(v0-v1) < Math.abs(range)*1e-10) ? v0 : v1;
-      let k = (func(main.scale_xmax) - func(main.scale_xmin))/p.property("draw_width"),
+
+      let func = direct_funcs[main.logx],
+          func2 = revert_funcs[main.logx],
+          k = (func(main.scale_xmax) - func(main.scale_xmin))/p.property("draw_width"),
           x1 = func(main.scale_xmin) - k*p.property("draw_x"),
           x2 = x1 + k*p.property("draw_width");
 
