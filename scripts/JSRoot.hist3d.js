@@ -1257,8 +1257,8 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
             const p = this.painter,
                   handle = this.handle,
                   main = p.getFramePainter(),
-                  histo = p.getHisto();
-            let tip = p.get3DToolTip( this.face_to_bins_index[intersect.faceIndex] );
+                  histo = p.getHisto(),
+                  tip = p.get3DToolTip( this.face_to_bins_index[intersect.faceIndex] );
 
             tip.x1 = Math.max(-main.size_x3d,  handle.grx[tip.ix-1] + handle.xbar1*(handle.grx[tip.ix]-handle.grx[tip.ix-1]));
             tip.x2 = Math.min(main.size_x3d, handle.grx[tip.ix-1] + handle.xbar2*(handle.grx[tip.ix]-handle.grx[tip.ix-1]));
@@ -1283,19 +1283,19 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
          main.toplevel.add(mesh);
 
          if (num2vertices > 0) {
-            let geom2 = new THREE.BufferGeometry();
+            const geom2 = new THREE.BufferGeometry();
             geom2.setAttribute( 'position', new THREE.BufferAttribute( pos2, 3 ) );
             geom2.setAttribute( 'normal', new THREE.BufferAttribute( norm2, 3 ) );
             //geom2.computeVertexNormals();
 
             //var material2 = new THREE.MeshLambertMaterial( { color: 0xFF0000 } );
 
-            let color2 = (rootcolor<2) ? new THREE.Color(0xFF0000) :
+            const color2 = (rootcolor < 2) ? new THREE.Color(0xFF0000) :
                             new THREE.Color(d3.rgb(fcolor).darker(0.5).toString());
 
-            let material2 = new THREE.MeshBasicMaterial({ color: color2 });
+            const material2 = new THREE.MeshBasicMaterial({ color: color2 });
 
-            let mesh2 = new THREE.Mesh(geom2, material2);
+            const mesh2 = new THREE.Mesh(geom2, material2);
             mesh2.face_to_bins_index = face_to_bins_indx2;
             mesh2.painter = this;
             mesh2.handle = mesh.handle;
@@ -1314,7 +1314,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
 
       // DRAW LINE BOXES
 
-      let numlinevertices = 0, numsegments = 0, uselineindx = true;
+      let numlinevertices = 0, numsegments = 0;
 
       zmax = axis_zmax; zmin = axis_zmin;
 
@@ -1330,19 +1330,19 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
       // On some platforms vertex index required to be Uint16 array
       // While we cannot use index for large vertex list
       // skip index usage at all. It happens for relatively large histograms (100x100 bins)
-      if (numlinevertices > 0xFFF0) uselineindx = false;
+      const uselineindx = (numlinevertices <= 0xFFF0);
 
       if (!uselineindx) numlinevertices = numsegments*3;
 
-      let lpositions = new Float32Array( numlinevertices * 3 ),
-          lindicies = uselineindx ? new Uint16Array( numsegments ) : null,
-          grzmin = main.grz(axis_zmin),
-          grzmax = main.grz(axis_zmax),
-          z1 = 0, z2 = 0, ll = 0, ii = 0;
+      const lpositions = new Float32Array(numlinevertices * 3),
+            lindicies = uselineindx ? new Uint16Array(numsegments) : null,
+            grzmin = main.grz(axis_zmin),
+            grzmax = main.grz(axis_zmax);
+      let z1 = 0, z2 = 0, ll = 0, ii = 0;
 
       for (i = i1; i < i2; ++i) {
-         x1 = handle.grx[i] + handle.xbar1*(handle.grx[i+1]-handle.grx[i]);
-         x2 = handle.grx[i] + handle.xbar2*(handle.grx[i+1]-handle.grx[i]);
+         x1 = handle.grx[i] + handle.xbar1*(handle.grx[i+1] - handle.grx[i]);
+         x2 = handle.grx[i] + handle.xbar2*(handle.grx[i+1] - handle.grx[i]);
          for (j = j1; j < j2; ++j) {
 
             if (!getBinContent(i,j,0)) continue;
@@ -1353,8 +1353,8 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
             z1 = (binz1 <= axis_zmin) ? grzmin : main.grz(binz1);
             z2 = (binz2 > axis_zmax) ? grzmax : main.grz(binz2);
 
-            let seg = reduced ? rsegments : segments,
-                vvv = reduced ? rvertices : vertices;
+            const seg = reduced ? rsegments : segments,
+                  vvv = reduced ? rvertices : vertices;
 
             if (uselineindx) {
                // array of indicies for the lines, to avoid duplication of points
@@ -1385,10 +1385,9 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
       }
 
       // create boxes
-      let lcolor = this.getColor(histo.fLineColor);
-      let material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor), linewidth: histo.fLineWidth });
-
-      let line = jsrp.createLineSegments(lpositions, material, uselineindx ? lindicies : null );
+      const lcolor = this.getColor(histo.fLineColor),
+            material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor), linewidth: histo.fLineWidth }),
+            line = jsrp.createLineSegments(lpositions, material, uselineindx ? lindicies : null );
 
       /*
       line.painter = this;
