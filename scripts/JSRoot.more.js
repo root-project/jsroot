@@ -286,10 +286,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       if (!fillatt.empty() && !draw_line) lineatt.color = "none";
 
       this.draw_g
-          .append("svg:rect")
-          .attr("x", xx).attr("y", yy)
-          .attr("width", ww)
-          .attr("height", hh)
+          .append("svg:path")
+          .attr("d", `M${xx},${yy}h${ww}v${hh}h${-ww}z`)
           .call(lineatt.func)
           .call(fillatt.func);
 
@@ -1348,7 +1346,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
                      .enter()
                      .append("svg:g")
                      .attr("class", "grpoint")
-                     .attr("transform", function(d) { return "translate(" + d.grx1 + "," + d.gry1 + ")"; });
+                     .attr("transform", d => "translate(" + d.grx1 + "," + d.gry1 + ")");
       }
 
       if (this.options.Bar) {
@@ -1368,30 +1366,27 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
          let yy0 = Math.round(funcs.gry(0));
 
-         nodes.append("svg:rect")
-            .attr("x", d => Math.round(-d.width/2))
-            .attr("y", d => {
-                d.bar = true; // element drawn as bar
-                if (this.options.Bar!==1) return 0;
-                return (d.gry1 > yy0) ? yy0-d.gry1 : 0;
-             })
-            .attr("width", d => Math.round(d.width))
-            .attr("height", d => {
-                if (this.options.Bar!==1) return h > d.gry1 ? h - d.gry1 : 0;
-                return Math.abs(yy0 - d.gry1);
-             })
+         nodes.append("svg:path")
+              .attr("d", d => {
+                 d.bar = true; // element drawn as bar
+                 let dx = Math.round(-d.width/2),
+                     dw = Math.round(d.width),
+                     dy = (this.options.Bar!==1) ? 0 : ((d.gry1 > yy0) ? yy0-d.gry1 : 0),
+                     dh = (this.options.Bar!==1) ? (h > d.gry1 ? h - d.gry1 : 0) : Math.abs(yy0 - d.gry1);
+                 return `M${dx},${dy}h${dw}v${dh}h${-dw}z`;
+              })
             .call(this.fillatt.func);
       }
 
       if (this.options.Rect) {
-         nodes.filter(function(d) { return (d.exlow > 0) && (d.exhigh > 0) && (d.eylow > 0) && (d.eyhigh > 0); })
-           .append("svg:rect")
-           .attr("x", function(d) { d.rect = true; return d.grx0; })
-           .attr("y", function(d) { return d.gry2; })
-           .attr("width", function(d) { return d.grx2 - d.grx0; })
-           .attr("height", function(d) { return d.gry0 - d.gry2; })
+         nodes.filter(d => (d.exlow > 0) && (d.exhigh > 0) && (d.eylow > 0) && (d.eyhigh > 0))
+           .append("svg:path")
+           .attr("d", d => {
+               d.rect = true;
+               return `M${d.grx0},${d.gry0}H${d.grx2}V${d.gry2}H${d.grx0}Z`;
+            })
            .call(this.fillatt.func)
-           .call(this.options.Rect === 2 ? this.lineatt.func : function() {});
+           .call(this.options.Rect === 2 ? this.lineatt.func : () => {});
       }
 
       this.error_size = 0;
@@ -1434,18 +1429,18 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
          lw = Math.floor((this.lineatt.width-1)/2); // one should take into account half of end-cup line width
 
-         let visible = nodes.filter(function(d) { return (d.exlow > 0) || (d.exhigh > 0) || (d.eylow > 0) || (d.eyhigh > 0); });
+         let visible = nodes.filter(d => (d.exlow > 0) || (d.exhigh > 0) || (d.eylow > 0) || (d.eyhigh > 0));
          if (!JSROOT.batch_mode && JSROOT.settings.Tooltip)
             visible.append("svg:path")
                    .style("stroke", "none")
                    .style("fill", "none")
                    .style("pointer-events", "visibleFill")
-                   .attr("d", function(d) { return "M"+d.grx0+","+d.gry0+"h"+(d.grx2-d.grx0)+"v"+(d.gry2-d.gry0)+"h"+(d.grx0-d.grx2)+"z"; });
+                   .attr("d", d => "M"+d.grx0+","+d.gry0+"h"+(d.grx2-d.grx0)+"v"+(d.gry2-d.gry0)+"h"+(d.grx0-d.grx2)+"z");
 
          visible.append("svg:path")
              .call(this.lineatt.func)
              .style("fill", "none")
-             .attr("d", function(d) {
+             .attr("d", d => {
                 d.error = true;
                 return ((d.exlow > 0)  ? mm + (d.grx0+lw) + "," + d.grdx0 + vleft : "") +
                        ((d.exhigh > 0) ? mm + (d.grx2-lw) + "," + d.grdx2 + vright : "") +
