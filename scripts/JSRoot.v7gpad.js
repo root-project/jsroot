@@ -2920,8 +2920,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.setTopPainter(); //assign canvas as top painter of that element
 
          svg.append("svg:title").text("ROOT canvas");
-         let frect = svg.append("svg:rect").attr("class","canvas_fillrect")
-                               .attr("x",0).attr("y",0);
+         let frect = svg.append("svg:path").attr("class","canvas_fillrect");
          if (!JSROOT.batch_mode)
             frect.style("pointer-events", "visibleFill")
                  .on("dblclick", evnt => this.enlargePad(evnt))
@@ -2997,8 +2996,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this._pad_height = rect.height;
 
       svg.select(".canvas_fillrect")
-         .attr("width", rect.width)
-         .attr("height", rect.height)
+         .attr("d", `M0,0h${rect.width}v${rect.height}h${-rect.width}z`)
          .call(this.fillatt.func);
 
       this._fast_drawing = JSROOT.settings.SmallPad && ((rect.width < JSROOT.settings.SmallPad.width) || (rect.height < JSROOT.settings.SmallPad.height));
