@@ -579,22 +579,17 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                lx2 = lx2 ? Math.round(lx2*width) : width;
                ly1 = ly1 ? Math.round((1-ly1)*height) : ytext;
                ly2 = ly2 ? Math.round((1-ly2)*height) : ytext;
+
                if (entry._typename == "TLine") {
                   let lineatt = new JSROOT.TAttLineHandler(entry);
-                  text_g.append("svg:line")
-                        .attr("x1", lx1)
-                        .attr("y1", ly1)
-                        .attr("x2", lx2)
-                        .attr("y2", ly2)
+                  text_g.append("svg:path")
+                        .attr("d", `M${lx1},${ly1}L${lx2},${ly2}`)
                         .call(lineatt.func);
                } else {
                   let fillatt = this.createAttFill(entry);
 
-                  text_g.append("svg:rect")
-                      .attr("x", lx1)
-                      .attr("y", ly2)
-                      .attr("width", lx2-lx1)
-                      .attr("height", ly1-ly2)
+                  text_g.append("svg:path")
+                      .attr("d", `M${lx1},${ly1}H${lx2}V${ly2}H${lx1}Z`)
                       .call(fillatt.func);
                }
                break;
