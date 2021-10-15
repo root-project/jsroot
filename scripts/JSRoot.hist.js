@@ -690,16 +690,13 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          while ((nrows-1)*ncols >= nlines) nrows--;
       }
 
-      function isEmpty(entry) {
-         return !entry.fObject && !entry.fOption && (!entry.fLabel || (entry.fLabel == " "));
-      }
+      const isEmpty = entry => !entry.fObject && !entry.fOption && (!entry.fLabel || (entry.fLabel == " "));
 
-      if (ncols == 1) {
-         for (let ii=0;ii<nlines;++ii)
+      if (ncols == 1)
+         for (let ii = 0; ii < nlines; ++ii)
             if (isEmpty(legend.fPrimitives.arr[ii])) nrows--;
-      }
 
-      if (nrows<1) nrows = 1;
+      if (nrows < 1) nrows = 1;
 
       let tcolor = this.getColor(legend.fTextColor),
           column_width = Math.round(w/ncols),
@@ -735,6 +732,11 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
              mo = leg.fObject,
              painter = null, isany = false;
 
+         const draw_fill = lopt.indexOf('f') != -1,
+               draw_line = lopt.indexOf('l') != -1,
+               draw_error = lopt.indexOf('e') != -1,
+               draw_marker = lopt.indexOf('p') != -1;
+
          if ((mo !== null) && (typeof mo == 'object')) {
             if ('fLineColor' in mo) o_line = mo;
             if ('fFillColor' in mo) o_fill = mo;
@@ -744,7 +746,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          }
 
          // Draw fill pattern (in a box)
-         if (lopt.indexOf('f') != -1) {
+         if (draw_fill) {
             let fillatt = (painter && painter.fillatt) ? painter.fillatt : this.createAttFill(o_fill);
 
             // box total height is yspace*0.7
@@ -763,32 +765,23 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             }
          }
 
-         // Draw line (also when error specified)
-         if (lopt.indexOf('l') != -1 || lopt.indexOf('e') != -1) {
+         // Draw line and error (when specified)
+         if (draw_line || draw_error) {
             let lineatt = (painter && painter.lineatt) ? painter.lineatt : new JSROOT.TAttLineHandler(o_line);
-            this.draw_g.append("svg:line")
-               .attr("x1", x0 + padding_x)
-               .attr("y1", mid_y)
-               .attr("x2", tpos_x - padding_x)
-               .attr("y2", mid_y)
+            this.draw_g.append("svg:path")
+               .attr("d", `M${x0 + padding_x},${mid_y}H${tpos_x - padding_x}`)
                .call(lineatt.func);
-            if (lineatt.color !== 'none') isany = true;
-         }
 
-         // Draw error
-         if (lopt.indexOf('e') != -1) {
-            let lineatt = (painter && painter.lineatt) ? painter.lineatt : new JSROOT.TAttLineHandler(o_line);
-            this.draw_g.append("svg:line")
-                .attr("x1", mid_x)
-                .attr("y1", Math.round(pos_y+step_y*0.1))
-                .attr("x2", mid_x)
-                .attr("y2", Math.round(pos_y+step_y*0.9))
-                .call(lineatt.func);
+            if (draw_error)
+               this.draw_g.append("svg:path")
+                   .attr("d", `M${mid_x},${Math.round(pos_y+step_y*0.1)}V${Math.round(pos_y+step_y*0.9)}`)
+                   .call(lineatt.func);
+
             if (lineatt.color !== 'none') isany = true;
          }
 
          // Draw Polymarker
-         if (lopt.indexOf('p') != -1) {
+         if (draw_marker) {
             let marker = (painter && painter.markeratt) ? painter.markeratt : new JSROOT.TAttMarkerHandler(o_marker);
             this.draw_g
                 .append("svg:path")
@@ -808,8 +801,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                        .call(painter.lineatt.func);
 
          let pos_x = tpos_x;
-         if (lopt.length>0) any_opt = true;
-                       else if (!any_opt) pos_x = x0 + padding_x;
+         if (lopt.length > 0)
+            any_opt = true;
+         else if (!any_opt)
+            pos_x = x0 + padding_x;
 
          if (leg.fLabel)
             this.drawText({ align: legend.fTextAlign, x: pos_x, y: pos_y, width: x0+column_width-pos_x-padding_x, height: step_y, text: leg.fLabel, color: tcolor });
