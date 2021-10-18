@@ -5,8 +5,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    "use strict";
 
-   let createDefaultPalette = () => {
-      let hue2rgb = (p, q, t) => {
+   const createDefaultPalette = () => {
+      const hue2rgb = (p, q, t) => {
          if (t < 0) t += 1;
          if (t > 1) t -= 1;
          if (t < 1 / 6) return p + (q - p) * 6 * t;
@@ -14,35 +14,36 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          if (t < 2 / 3) return p + (q - p) * (2/3 - t) * 6;
          return p;
       };
-      let HLStoRGB = (h, l, s) => {
-         let q = (l < 0.5) ? l * (1 + s) : l + s - l * s,
-             p = 2 * l - q,
-             r = hue2rgb(p, q, h + 1/3),
-             g = hue2rgb(p, q, h),
-             b = hue2rgb(p, q, h - 1/3);
+      const HLStoRGB = (h, l, s) => {
+         const q = (l < 0.5) ? l * (1 + s) : l + s - l * s,
+               p = 2 * l - q,
+               r = hue2rgb(p, q, h + 1/3),
+               g = hue2rgb(p, q, h),
+               b = hue2rgb(p, q, h - 1/3);
          return 'rgb(' + Math.round(r*255) + ',' + Math.round(g*255) + ',' + Math.round(b*255) + ')';
       };
-      let palette = [], minHue = 0, maxHue = 280, maxPretty = 50;
+      const minHue = 0, maxHue = 280, maxPretty = 50;
+      let palette = [];
       for (let i = 0; i < maxPretty; ++i) {
-         let hue = (maxHue - (i + 1) * ((maxHue - minHue) / maxPretty)) / 360;
+         const hue = (maxHue - (i + 1) * ((maxHue - minHue) / maxPretty)) / 360;
          palette.push(HLStoRGB(hue, 0.5, 1));
       }
       return new JSROOT.ColorPalette(palette);
-   }
+   };
 
-   let createGrayPalette = () => {
+   const createGrayPalette = () => {
       let palette = [];
       for (let i = 0; i < 50; ++i) {
-         let code = Math.round((i+2)/60*255);
+         const code = Math.round((i+2)/60*255);
          palette.push('rgb('+code+','+code+','+code+')');
       }
       return new JSROOT.ColorPalette(palette);
-   }
+   };
 
    /** @summary Create color palette
      * @memberof JSROOT.Painter
      * @private */
-   function getColorPalette(id) {
+   const getColorPalette = id => {
       id = id || JSROOT.settings.Palette;
       if ((id > 0) && (id < 10)) return createGrayPalette();
       if (id < 51) return createDefaultPalette();
@@ -183,9 +184,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       for (let g = 1; g < stops.length; g++) {
           // create the colors...
-          let nColorsGradient = Math.round(Math.floor(NColors*stops[g]) - Math.floor(NColors*stops[g-1]));
+          const nColorsGradient = Math.round(Math.floor(NColors*stops[g]) - Math.floor(NColors*stops[g-1]));
           for (let c = 0; c < nColorsGradient; c++) {
-             let col = Math.round(Red[g-1] + c * (Red[g] - Red[g-1]) / nColorsGradient) + "," +
+             const col = Math.round(Red[g-1] + c * (Red[g] - Red[g-1]) / nColorsGradient) + "," +
                        Math.round(Green[g-1] + c * (Green[g] - Green[g-1]) / nColorsGradient) + "," +
                        Math.round(Blue[g-1] + c * (Blue[g] - Blue[g-1]) / nColorsGradient);
              palette.push("rgb("+col+")");
@@ -193,7 +194,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
        }
 
        return new JSROOT.ColorPalette(palette);
-   }
+   };
 
    // ============================================================
 
