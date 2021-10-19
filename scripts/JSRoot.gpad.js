@@ -590,13 +590,17 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if (lbl === null) continue;
 
             let mod = this.findLabelModifier(axis, nmajor);
-            if (mod && (mod.fTextSize <= 0)) continue;
+            if (mod && (mod.fTextSize == 0)) continue;
+
+            if (mod && mod.fLabText) lbl = mod.fLabText;
 
             let arg = { text: lbl, color: label_color, latex: 1, draw_g: label_g[lcnt], normal_side: (lcnt == 0) };
 
             let pos = Math.round(this.func(lbl_pos[nmajor]));
 
-            arg.gap_before = (nmajor>0) ? Math.abs(Math.round(pos - this.func(lbl_pos[nmajor-1]))) : 0;
+            if (mod && mod.fTextColor > 0) arg.color = this.getColor(mod.fTextColor);
+
+            arg.gap_before = (nmajor > 0) ? Math.abs(Math.round(pos - this.func(lbl_pos[nmajor-1]))) : 0;
 
             arg.gap_after = (nmajor < lbl_pos.length-1) ? Math.abs(Math.round(this.func(lbl_pos[nmajor+1])-pos)) : 0;
 
@@ -618,7 +622,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                arg.align = rotate_lbls ? ((side<0) ? 12 : 32) : ((side<0) ? 20 : 23);
             }
 
-            if (rotate_lbls) arg.rotate = 270;
+            if (rotate_lbls)
+               arg.rotate = 270;
 
             // only for major text drawing scale factor need to be checked
             if (lcnt == 0) arg.post_process = process_drawtext_ready;
