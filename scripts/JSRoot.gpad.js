@@ -526,12 +526,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          axis_g.append("svg:path").attr("d", res2).call(this.lineatt.func);
    }
 
-   /** @summary Returns label modifier for axis */
-   TAxisPainter.prototype.findLabelModifier = function(axis, nlabel) {
+   /** @summary Returns modifier for axis label */
+   TAxisPainter.prototype.findLabelModifier = function(axis, nlabel, num_labels) {
       if (!axis.fModLabs) return null;
       for (let n = 0; n < axis.fModLabs.arr.length; ++n) {
          let mod = axis.fModLabs.arr[n];
          if (mod.fLabNum === nlabel + 1) return mod;
+         if ((mod.fLabNum < 0) && (nlabel === num_labels + mod.fLabNum)) return mod;
       }
       return null;
    }
@@ -589,7 +590,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             let lbl = this.format(lbl_pos[nmajor], true);
             if (lbl === null) continue;
 
-            let mod = this.findLabelModifier(axis, nmajor);
+            let mod = this.findLabelModifier(axis, nmajor, lbl_pos.length);
             if (mod && (mod.fTextSize == 0)) continue;
 
             if (mod && mod.fLabText) lbl = mod.fLabText;
