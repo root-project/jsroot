@@ -2421,6 +2421,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           localfile = GetOption("localfile"),
           jsonarr = GetOptionAsArray("#json;jsons"),
           expanditems = GetOptionAsArray("expand"),
+          focusitem = GetOption("focus"),
           itemsarr = GetOptionAsArray("#item;items"),
           optionsarr = GetOptionAsArray("#opt;opts"),
           monitor = GetOption("monitoring"),
@@ -2534,6 +2535,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          else
             return this.refreshHtml()
                    .then(() => this.displayItems(itemsarr, optionsarr))
+                   .then(() => focusitem ? this.focusOnItem(focusitem) : this)
                    .then(() => {
                       this.setMonitoring(monitor);
                       return itemsarr ? this.refreshHtml() : this; // this is final return

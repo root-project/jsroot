@@ -34,8 +34,10 @@ To automate files loading and objects drawing, one can provide number of URL par
 - json - name of JSON file with stored ROOT object like histogram or canvas
 - item - item name to be displayed
 - opt - drawing option for the item
-- items - array of items name
+- items - array of items name to be displayed
 - opts - array of drawing options for the items
+- expand - item name(s) to be expanded in the hierarchy browser
+- focus - item name to be focused on in the hierarchy browser
 - title - set browser title
 - layout - can be 'simple', 'flex', 'collapsible', 'tabs', 'gridNxM', 'horizNMK', 'vertNMK'
 - browser - layout of the browser 'fix' (default), 'float', 'no' (hidden), 'off' (fully disabled)
