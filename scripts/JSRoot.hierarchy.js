@@ -2017,25 +2017,27 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          this.h._expand = onlineHierarchy;
 
-         let scripts = [], modules = [];
+         let styles = [], scripts = [], modules = [];
          this.forEachItem(item => {
             if ('_childs' in item) item._expand = onlineHierarchy;
 
             if ('_autoload' in item) {
                let arr = item._autoload.split(";");
-               for (let n = 0; n < arr.length; ++n)
-                  if ((arr[n].length>3) &&
-                      ((arr[n].lastIndexOf(".js")==arr[n].length-3) ||
-                      (arr[n].lastIndexOf(".css")==arr[n].length-4))) {
-                     if (!scripts.find(elem => elem == arr[n])) scripts.push(arr[n]);
-                  } else {
-                     if (arr[n] && !modules.find(elem => elem ==arr[n])) modules.push(arr[n]);
+               arr.forEach(name => {
+                  if ((name.length > 3) && (name.lastIndexOf(".js") == name.length-3)) {
+                     if (!scripts.find(elem => elem == name)) scripts.push(name);
+                  } else if ((name.length > 4) && (name.lastIndexOf(".css") == name.length-4)) {
+                     if (!styles.find(elem => elem == name)) styles.push(name);
+                  } else if (name && !modules.find(elem => elem == name)) {
+                     modules.push(name);
                   }
+               });
             }
          });
 
          return JSROOT.require(modules)
-               .then(() => JSROOT.loadScript(scripts))
+               .then(() => JSROOT.require(scripts))
+               .then(() => JSROOT.loadScript(styles))
                .then(() => {
                   this.forEachItem(item => {
                      if (!('_drawfunc' in item) || !('_kind' in item)) return;
