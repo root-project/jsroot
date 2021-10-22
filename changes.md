@@ -7,6 +7,7 @@
 4. Provide example of custom entries in context menu
 5. Fix problems with TGraph drawing updates
 6. Provide alternative location for zstd-codec
+7. Allows to use JSROOT.define() in external scripts
 
 
 ## Changes in 6.2.1
