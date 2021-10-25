@@ -892,7 +892,7 @@ JSROOT.define(['d3'], (d3) => {
 
       if (color_as_svg) {
          this.color = color;
-         indx = d3.color(color).hex().substr(1); // fictional index produced from color code
+         if (color != "none") indx = d3.color(color).hex().substr(1); // fictional index produced from color code
       } else {
          this.color = painter ? painter.getColor(indx) : jsrp.getColor(indx);
       }
@@ -907,7 +907,7 @@ JSROOT.define(['d3'], (d3) => {
          return true;
       }
 
-      if (!svg || svg.empty() || (this.pattern < 3000)) return false;
+      if (!svg || svg.empty() || (this.pattern < 3000) || (this.color == "none")) return false;
 
       let id = "pat_" + this.pattern + "_" + indx,
          defs = svg.select('.canvas_defs');
