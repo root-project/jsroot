@@ -1848,8 +1848,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return this.refreshHtml();
       }).catch(() => {
          // make CORS warning
-         if (!d3.select("#gui_fileCORS").style("background","red").empty())
-             setTimeout(function() { d3.select("#gui_fileCORS").style("background",''); }, 5000);
+         if (JSROOT.batch_mode)
+            console.error(`Fail to open ${filepath} - check CORS headers`);
+         else if (!d3.select("#gui_fileCORS").style("background","red").empty())
+            setTimeout(() => d3.select("#gui_fileCORS").style("background",''), 5000);
          return false;
       }).finally(() => jsrp.showProgress());
    }
