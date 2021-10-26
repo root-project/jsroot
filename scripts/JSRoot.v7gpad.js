@@ -1385,9 +1385,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       menu.addchk(this.log && !this.symlog && (this.logbase==10), "log10", () => this.changeAxisLog(10));
       menu.addchk(this.log && !this.symlog && (this.logbase==2), "log2", () => this.changeAxisLog(2));
       menu.addchk(this.log && !this.symlog && Math.abs(this.logbase - Math.exp(1)) < 0.1, "ln", () => this.changeAxisLog(Math.exp(1)));
-      menu.addchk(!this.log && this.symlog, "symlog", 0, () => {
-         menu.input("set symlog constant", this.symlog || 10, "float").then(v => this.changeAxisAttr(2,"symlog", v));
-      });
+      menu.addchk(!this.log && this.symlog, "symlog", 0, () =>
+         menu.input("set symlog constant", this.symlog || 10, "float").then(v => this.changeAxisAttr(2,"symlog", v)));
       menu.add("endsub:");
 
       menu.add("Divisions", () => menu.input("Set axis devisions", this.v7EvalAttr("ndiv", 508), "int").then(val => this.changeAxisAttr(1, "ndiv", val)));
@@ -1400,38 +1399,26 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if (!this.optionUnlab && this.labelsFont) {
          menu.add("sub:Labels");
-         menu.addSizeMenu("offset", -0.05, 0.05, 0.01, this.labelsOffset/this.scaling_size, offset => {
-            this.changeAxisAttr(1, "labels_offset", offset);
-         });
-         menu.addRAttrTextItems(this.labelsFont, { noangle: 1, noalign: 1 }, change => {
-            this.changeAxisAttr(1, "labels_" + change.name, change.value);
-         });
-         menu.addchk(this.labelsFont.angle, "rotate", res => {
-            this.changeAxisAttr(1, "labels_angle", res ? 180 : 0);
-         });
+         menu.addSizeMenu("offset", -0.05, 0.05, 0.01, this.labelsOffset/this.scaling_size,
+                         offset => this.changeAxisAttr(1, "labels_offset", offset));
+         menu.addRAttrTextItems(this.labelsFont, { noangle: 1, noalign: 1 },
+               change => this.changeAxisAttr(1, "labels_" + change.name, change.value));
+         menu.addchk(this.labelsFont.angle, "rotate", res => this.changeAxisAttr(1, "labels_angle", res ? 180 : 0));
          menu.add("endsub:");
       }
 
-      menu.add("sub:Title", () => {
-         menu.input("Enter axis title", this.fTitle).then(t => this.changeAxisAttr(1, "title", t));
-      });
+      menu.add("sub:Title", () => menu.input("Enter axis title", this.fTitle).then(t => this.changeAxisAttr(1, "title_value", t)));
 
       if (this.fTitle) {
-         menu.addSizeMenu("offset", -0.05, 0.05, 0.01, this.titleOffset/this.scaling_size, offset => {
-            this.changeAxisAttr(1, "title_offset", offset);
-         });
+         menu.addSizeMenu("offset", -0.05, 0.05, 0.01, this.titleOffset/this.scaling_size,
+                           offset => this.changeAxisAttr(1, "title_offset", offset));
 
-         menu.addSelectMenu("position", ["left", "center", "right"], this.titlePos, pos => {
-            this.changeAxisAttr(1, "title_position", pos);
-         });
+         menu.addSelectMenu("position", ["left", "center", "right"], this.titlePos,
+                            pos => this.changeAxisAttr(1, "title_position", pos));
 
-         menu.addchk(this.isTitleRotated(), "rotate", flag => {
-            this.changeAxisAttr(1, "title_angle", flag ? 180 : 0);
-         });
+         menu.addchk(this.isTitleRotated(), "rotate", flag => this.changeAxisAttr(1, "title_angle", flag ? 180 : 0));
 
-         menu.addRAttrTextItems(this.titleFont, { noangle: 1, noalign: 1 }, change => {
-            this.changeAxisAttr(1, "title_" + change.name, change.value);
-         });
+         menu.addRAttrTextItems(this.titleFont, { noangle: 1, noalign: 1 }, change => this.changeAxisAttr(1, "title_" + change.name, change.value));
       }
 
       menu.add("endsub:");
