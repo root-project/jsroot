@@ -2715,7 +2715,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             btns = this.getLayerSvg("btns_layer", this.this_pad_name);
       } else {
          svg_pad = svg_can.select(".primitives_layer")
-             .append("svg:svg") // here was g before, svg used to blend all drawin outside
+             .append("svg:g")
              .classed("__root_pad_" + this.this_pad_name, true)
              .attr("pad", this.this_pad_name) // set extra attribute  to mark pad name
              .property('pad_painter', this); // this is custom property
@@ -2742,12 +2742,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.createAttLine({ attr: this.pad, color0: this.pad.fBorderMode == 0 ? 'none' : '' });
 
       svg_pad.attr("display", pad_visible ? null : "none")
-             .attr("viewBox", "0 0 " + w + " " + h) // due to svg
-             .attr("preserveAspectRatio", "none")   // due to svg, we do not preserve relative ratio
-             .attr("x", x)        // due to svg
-             .attr("y", y)        // due to svg
-             .attr("width", w)    // due to svg
-             .attr("height", h)   // due to svg
+             .attr("transform", `translate(${x},${y})`)
+             .attr("clip-path", `path('M0,0H${w}V${h}H0Z')`)
              .property('draw_x', x) // this is to make similar with canvas
              .property('draw_y', y)
              .property('draw_width', w)
