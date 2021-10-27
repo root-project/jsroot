@@ -1834,7 +1834,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           w = Math.round(rect.width * (this.fX2NDC - this.fX1NDC)),
           tm = Math.round(rect.height * (1 - this.fY2NDC)),
           h = Math.round(rect.height * (this.fY2NDC - this.fY1NDC)),
-          rotate = false, fixpos = false, trans = `translate(${lm},${tm})`;
+          rotate = false, fixpos = false, trans;
 
       if (pp && pp.options) {
          if (pp.options.RotateFrame) rotate = true;
@@ -1842,8 +1842,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
 
       if (rotate) {
-         trans += ` rotate(-90) translate(${-h},0)`;
+         trans = `rotate(-90,${lm},${tm}) translate(${lm-h},${tm})`;
          let d = w; w = h; h = d;
+      } else {
+         trans = `translate(${lm},${tm})`;
       }
 
       this._frame_x = lm;
