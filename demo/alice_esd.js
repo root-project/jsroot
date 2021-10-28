@@ -27,12 +27,12 @@ function extract_geo_tracks(tree, opt) {
          var arr = pnts[p];
          if (!arr.fNPoints) continue;
          var track = JSROOT.create("TGeoTrack");
-         track.fNpoints = arr.fNPoints;
-         track.fPoints = new Float32Array(track.fNpoints*3);
-         for (var k=0;k<track.fNpoints;++k) {
-            track.fPoints[k*3] = arr.fX[k];
-            track.fPoints[k*3+1] = arr.fY[k];
-            track.fPoints[k*3+2] = arr.fZ[k];
+         track.fNpoints = arr.fNPoints*4;
+         track.fPoints = new Float32Array(track.fNpoints*4);
+         for (var k=0;k<arr.fNPoints;++k) {
+            track.fPoints[k*4] = arr.fX[k];
+            track.fPoints[k*4+1] = arr.fY[k];
+            track.fPoints[k*4+2] = arr.fZ[k];
          }
          track.fLineWidth = 2;
          track.fLineColor = 3;
