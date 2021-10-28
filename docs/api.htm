@@ -313,25 +313,29 @@
 
          function MakeShortName(name1, name2) {
             return name1.toLowerCase().replace(/[ .]/g,"_") + "_" +
-                   name2.toLowerCase().replace(/ (2)/g,"_2").replace(/ (1)/g,"_1").replace(/[\(\))]/g,"").replace(/[. ]/,"_");
+                   name2.toLowerCase().replace(/ (3)/g,"_3").replace(/ (2)/g,"_2").replace(/ (1)/g,"_1")
+                                      .replace(/[\(\))]/g,"").replace(/[. ]/,"_");
          }
 
          for (let key in examples) {
 
             let opts = examples[key];
 
-            let div = document.createElement( 'h2' );
+            let header = document.createElement( 'h2' );
             if ('link' in opts[0]) {
                let ll = document.createElement( 'a' );
                ll.textContent = key;
                ll.href = opts[0].link;
                ll.style.color = 'green';
-               div.appendChild(ll);
+               header.appendChild(ll);
             } else {
-               div.textContent = key;
+            	header.textContent = key;
             }
 
-            content.appendChild( div );
+            content.appendChild( header );
+
+            if (window.location.hash == "#" + key.toLowerCase())
+                header.scrollIntoView();
 
             for (let n=0; n<opts.length;++n) {
                let entry = opts[n];
