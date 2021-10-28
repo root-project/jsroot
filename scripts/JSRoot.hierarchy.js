@@ -2770,9 +2770,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (sett.opts)
             menu.addDrawMenu("nosub:Draw", sett.opts, function(arg) {
                if (!hitem || !hitem._obj) return;
-               let obj = hitem._obj, dom = this.selectDom();
+               let obj = hitem._obj, dom = this.selectDom().node();
                if (this.removeInspector) {
-                  dom = dom.node().parentNode;
+                  dom = dom.parentNode;
                   this.removeInspector();
                   if (arg == "inspect")
                      return this.showInspector(obj);
