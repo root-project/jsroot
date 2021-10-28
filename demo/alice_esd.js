@@ -8,28 +8,28 @@ function extract_geo_tracks(tree, opt) {
 
    console.log('CALL extract_geo_tracks');
 
-   var selector = new JSROOT.TSelector();
+   const selector = new JSROOT.TSelector();
 
    selector.addBranch("ESDfriend.fTracks.fPoints","pnts");
 
-   var lst = JSROOT.create("TList"), numentry = 0, numtracks = 0;
+   let lst = JSROOT.create("TList"), numentry = 0, numtracks = 0;
 
    selector.Process = function() {
       // function called for every entry
 
-      var pnts = this.tgtobj.pnts;
+      const pnts = this.tgtobj.pnts;
 
       numentry++;
 
       // now converts AliTrackPointArray into TGeoTrack
-      for (var p=0;p<pnts.length;++p) {
+      for (let p = 0; p < pnts.length; ++p) {
          numtracks++;
-         var arr = pnts[p];
+         const arr = pnts[p];
          if (!arr.fNPoints) continue;
-         var track = JSROOT.create("TGeoTrack");
+         const track = JSROOT.create("TGeoTrack");
          track.fNpoints = arr.fNPoints*4;
          track.fPoints = new Float32Array(track.fNpoints*4);
-         for (var k=0;k<arr.fNPoints;++k) {
+         for (let k = 0; k < arr.fNPoints; ++k) {
             track.fPoints[k*4] = arr.fX[k];
             track.fPoints[k*4+1] = arr.fY[k];
             track.fPoints[k*4+2] = arr.fZ[k];
