@@ -12,6 +12,7 @@
 9. Fix error in objects drawing from the inspector
 10. Optmize TH2 col drawings to produce smaller SVG
 11. For sub-pads containers use svg:g with clip-path instead of svg:svg
+12. Let skip HEAD requests when reading files (#223)
 
 
 ## Changes in 6.2.1
