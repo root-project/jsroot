@@ -1181,7 +1181,7 @@ JSROOT.define(['d3'], (d3) => {
 
    /** @summary required for reasonable scaling of text in node.js
      * @returns approximate width of given label */
-   FontHandler.prototype.approxTextWidth = function(label) { return label.length * this.size * this.aver_width; }
+   FontHandler.prototype.approxTextWidth = function(label, custom_size) { return label.length * (custom_size || this.size) * this.aver_width; }
 
   // ===========================================================================
 
@@ -2693,6 +2693,22 @@ JSROOT.define(['d3'], (d3) => {
          if (trans) txt.attr("transform", trans);
       });
 
+      // finally process experimental drawings
+      all_args.forEach(arg => {
+         if (!arg.txt_g) return;
+
+         let txt_g = arg.txt_g;
+         delete arg.txt_g;
+
+         txt_g.attr('visibility', null);
+
+         let trans = (arg.x || arg.y) ? "translate(" + Math.round(arg.x) + "," + Math.round(arg.y) + ")" : "";
+         if (arg.rotate) trans += " rotate(" + Math.round(arg.rotate) + ")";
+         if (arg.dx || arg.dy) trans += " translate(" + Math.round(arg.dx) + "," + Math.round(arg.dy) + ")";
+         if (trans) txt_g.attr("transform", trans);
+      });
+
+
       // when no any normal text drawn - remove font attributes
       if (!any_text)
          font.clearFont(draw_g);
@@ -2709,7 +2725,7 @@ JSROOT.define(['d3'], (d3) => {
    function _postprocessText(painter, txt_node, arg) {
       // complete rectangle with very rougth size estimations
       arg.box = !JSROOT.nodejs && !JSROOT.settings.ApproxTextSize && !arg.fast ? jsrp.getElementRect(txt_node, 'bbox') :
-               (arg.text_rect || { height: arg.font_size * 1.2, width: arg.font.approxTextWidth(arg.text) });
+               (arg.text_rect || { height: arg.font_size * 1.2, width: arg.text.length * arg.font_size * arg.font.aver_width });
 
       txt_node.attr('visibility', 'hidden'); // hide elements until text drawing is finished
 
@@ -2812,6 +2828,28 @@ JSROOT.define(['d3'], (d3) => {
                        ((JSROOT.settings.Latex == JSROOT.constants.Latex.MathJax) && arg.text.match(/[#{\\]/g));
 
       if (!use_mathjax || arg.nomathjax) {
+
+         if (JSROOT.settings.Latex == JSROOT.constants.Latex.Experimental) {
+            JSROOT.require(['latex']).then(ltx => {
+               arg.text = "Simple text #hat{abcde}";
+               if (arg.text == ltx.translateLaTeX(arg.text)) {
+                  arg.txt_node = arg.draw_g.append("svg:text");
+                  if (arg.color) arg.txt_node.attr("fill", arg.color);
+                  if (arg.font_size) arg.txt_node.attr("font-size", arg.font_size);
+                                else arg.font_size = font.size;
+                  ltx.produceLatex(this, arg.txt_node, arg);
+               } else {
+                  if (!arg.font_size) arg.font_size = font.size;
+                  arg.txt_g = arg.draw_g.append("svg:g");
+                  ltx.produceExperimentalLatex(this, arg.txt_g, arg);
+               }
+               arg.ready = true;
+               _postprocessText(this, arg.txt_node || arg.txt_g, arg);
+               if (arg.draw_g.property('draw_text_completed'))
+                  _checkAllTextDrawing(this, arg.draw_g); // check if all other elements are completed
+            });
+            return 0;
+         }
 
          arg.txt_node = arg.draw_g.append("svg:text");
 
