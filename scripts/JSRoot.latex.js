@@ -907,8 +907,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          { name: "#vec{", accent: "\u02ED" }, // "\u0350" arrowhead
          { name: "#frac{", twolines: 'line' },
          { name: "#splitline{", twolines: true },
-         { name: "#sqrt[", arg: 'int' }, // root with arbitrary power (now only 3 or 4)
-         { name: "#sqrt{" },
+         { name: "#sqrt[", arg: 'int', sqrt: true }, // root with arbitrary power
+         { name: "#sqrt{", sqrt: true },             // square root
          { name: "#sum", special: '\u2211', w: 0.8, h: 0.9 },
          { name: "#int", special: '\u222B', w: 0.3, h: 1.0 },
          { name: "#left[", right: "#right]", braces: "[]" },
@@ -1024,7 +1024,61 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if (path) path.attr("d", `M${curr.x},${dy}h${w - curr.fsize*0.1}`);
 
             curr.x += w;
+
+            delete curr.twolines;
+
+            continue;
          }
+
+        if (found.arg) {
+            pos = label.indexOf("]{");
+            if (pos < 0) { console.log('missing argument for ', found.name); return false; }
+            foundarg = label.substr(0, pos);
+            if (found.arg == 'int') {
+               foundarg = parseInt(foundarg);
+               if (!Number.isInteger(foundarg)) { console.log('wrong int argument', label.substr(0, pos)); return false; }
+            } else if (found.arg == 'float') {
+               foundarg = parseFloat(foundarg);
+               if (!Number.isFinite(foundarg)) { console.log('wrong float argument', label.substr(0, pos)); return false; }
+            }
+            label = label.substr(pos + 2);
+        }
+
+        if (found.sqrt) {
+            let sublabel = extractSubLabel();
+            if (sublabel === -1) return false;
+
+            if (!curr.g) curr.g = node.append("svg:g");
+            let gg = curr.g.append("svg:g"), subpos0;
+
+
+            if (found.arg) {
+               subpos0 = { lvl: curr.lvl + 1, x: 0, y: 0, fsize: subpos.fsize*0.7, dx: 0, dy: 0, parent: curr };
+               ltx.produceExperimentalLatex(painter, gg, arg, foundarg.toString(), subpos0);
+            }
+
+            // placeholder for the sqrt sign
+            let path = gg.append("svg:path").style("stroke", arg.color)
+                         .style("stroke-width", curr.fsize*0.1).style("fill", "none");
+
+            ltx.produceExperimentalLatex(painter, gg, arg, sublabel, subpos);
+
+            let r = subpos.rect, h = r.height, w = r.width, midy = (r.y1 + r.y2)/2;
+
+            if (subpos0)
+               positionGNode(subpos0, 0, midy - subpos0.fsize*0.3);
+
+            path.attr("d", `M0,${midy}h${h*0.2}l${h*0.1},${r.y2+h*0.1-midy}l${h*0.2},${-h*1.2}h${h*0.4+w}v${h*0.2}`);
+
+            positionGNode(subpos, h*0.7, 0);
+
+            gg.attr('transform',`translate(${curr.x},${curr.y})`)
+
+            curr.x += w + h*0.9;
+
+            continue;
+        }
+
 
 
 /*
