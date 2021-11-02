@@ -882,7 +882,16 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return sublabel;
       };
 
-      let features = [
+      const createPath = gg => {
+         return gg.append("svg:path").style("stroke", arg.color)
+                  .style("stroke-width", Math.max(1, Math.round(curr.fsize*0.1))).style("fill", "none");
+      };
+
+      const createSubPos = fscale => {
+         return { lvl: curr.lvl + 1, x: 0, y: 0, fsize: curr.fsize*(fscale || 1), parent: curr };
+      };
+
+      const features = [
          { name: "#it{" }, // italic
          { name: "#bf{" }, // bold
          { name: "#underline{", deco: "underline" }, // underline
@@ -921,14 +930,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          { name: "#||{", braces: "||" }
       ];
 
-      let isany = false, best, found, foundarg, pos, n, subnode, subnode1, subpos = null, prevsubpos = null;
+      let isany = false, best, found, foundarg;
 
       while (label) {
 
          best = label.length; found = null; foundarg = null;
 
-         for (n = 0; n < features.length; ++n) {
-            pos = label.indexOf(features[n].name);
+         for (let n = 0; n < features.length; ++n) {
+            let pos = label.indexOf(features[n].name);
             if ((pos >= 0) && (pos < best)) { best = pos; found = features[n]; }
          }
 
@@ -950,9 +959,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                let rect = getTextBoundary(elem);
                positionTextNode(elem, rect, 0, 0, true);
             }
-            //subpos = null; // indicate that last element is plain
-            //delete curr.special; // and any special handling is also over
-            //delete curr.next_super_dy; // remove potential shift
          }
 
          if (!found) return true;
@@ -960,24 +966,20 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          // remove preceeding block and tag itself
          label = label.substr(best + found.name.length);
 
-         subpos = { lvl: curr.lvl + 1, x: 0, y: 0, fsize: curr.fsize, dx: 0, dy: 0, parent: curr };
-
          isany = true;
 
          if (found.accent) {
             let sublabel = extractSubLabel();
             if (sublabel === -1) return false;
 
+            let subpos = createSubPos();
+
             if (!curr.g) curr.g = node.append("svg:g");
             ltx.produceExperimentalLatex(painter, curr.g, arg, sublabel, subpos);
 
             let w = subpos.rect.width, h = subpos.rect.height;
 
-            subpos.g.append("svg:path")
-               .style("stroke", arg.color)
-               .style("stroke-width", curr.fsize*0.1)
-               .style("fill", "none")
-               .attr("d",`M${w*0.2},${-0.9*h}L${w*0.5},${-1.1*h}L${w*0.8},${-0.9*h}`)
+            createPath(subpos.g).attr("d",`M${w*0.2},${-0.9*h}L${w*0.5},${-1.1*h}L${w*0.8},${-0.9*h}`);
 
             positionGNode(subpos, curr.x, curr.y);
 
@@ -995,33 +997,32 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             let line1 = extractSubLabel(), line2 = extractSubLabel(true);
 
-            // if we already in sub-element - decrease size
-            if (curr.parent && curr.parent.twolines) subpos.fsize *= 0.7;
+            let fscale = (curr.parent && curr.parent.twolines) ? 0.7 : 1;
 
-            ltx.produceExperimentalLatex(painter, gg, arg, line1, subpos);
+            let subpos1 = createSubPos(fscale);
+
+            ltx.produceExperimentalLatex(painter, gg, arg, line1, subpos1);
 
             let path;
 
             if (found.twolines == 'line')
-               path = gg.append("svg:path").style("stroke", arg.color)
-                        .style("stroke-width", curr.fsize*0.1).style("fill", "none");
+               path = createPath(gg);
 
-            let subpos2 = { lvl: curr.lvl + 1, x: 0, y: 0, fsize: subpos.fsize, dx: 0, dy: 0, parent: curr };
+            let subpos2 = createSubPos(fscale);
 
             ltx.produceExperimentalLatex(painter, gg, arg, line2, subpos2);
 
-            let w = Math.max(subpos.rect.width, subpos2.rect.width),
-                dw = subpos.rect.width - subpos2.rect.width,
+            let w = Math.max(subpos1.rect.width, subpos2.rect.width),
+                dw = subpos1.rect.width - subpos2.rect.width,
                 dy = -curr.fsize*0.35; // approximate position of middle line
 
-            // console.log('subpos y2 values', subpos.rect.height, subpos.rect.y2)
-            // console.log('subpos2 y1 values', subpos2.rect.height, subpos2.rect.y1)
+            positionGNode(subpos1, (dw < 0 ? -dw/2 : 0), dy - subpos1.rect.y2);
 
-            positionGNode(subpos, curr.x - (dw < 0 ? dw/2 : 0), curr.y + dy - subpos.rect.y2);
+            positionGNode(subpos2, (dw > 0 ? dw/2 : 0), dy - subpos2.rect.y1);
 
-            positionGNode(subpos2, curr.x + (dw > 0 ? dw/2 : 0), curr.y + dy - subpos2.rect.y1);
+            if (path) path.attr("d", `M0,${dy}h${w - curr.fsize*0.1}`);
 
-            if (path) path.attr("d", `M${curr.x},${dy}h${w - curr.fsize*0.1}`);
+            gg.attr('transform',`translate(${curr.x},${curr.y})`)
 
             curr.x += w;
 
@@ -1030,8 +1031,61 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             continue;
          }
 
-        if (found.arg) {
-            pos = label.indexOf("]{");
+         if (found.special) {
+            // this is sum and integral, now make fix height, later can adjust to right-content size
+
+            let low_limit, upper_limit;
+            while (true) {
+               if (label.charAt(0) == '_') {
+                  label = label.substr(1);
+                  low_limit = !low_limit ? extractSubLabel(true) : -1;
+                  if (low_limit === -1) {
+                     console.log(`error with ${found.name} low limit`);
+                     return false;
+                  }
+               } else if (label.charAt(0) == '^') {
+                  label = label.substr(1);
+                  upper_limit = !upper_limit ? extractSubLabel(true) : -1;
+                  if (upper_limit === -1) {
+                     console.log(`error with ${found.name} upper limit`);
+                     return false;
+                  }
+               } else break;
+            }
+
+            if (!curr.g) curr.g = node.append("svg:g");
+            let gg = curr.g.append("svg:g");
+
+            let path = createPath(gg), h = curr.fsize*2, w = curr.fsize, r = Math.round(h*0.1);
+
+            if (found.name == "#sum")
+               path.attr("d",`M${w},${h*-0.75}h${-w}l${w*0.4},${h*0.3}l${w*-0.4},${h*0.7}h${w}`);
+            else
+               path.attr("d",`M0,${h*0.25-r}a${r},${r},0,0,0,${2*r},0v${2*r-h}a${r},${r},0,1,1,${2*r},0`);
+
+            if (low_limit) {
+               let subpos1 = createSubPos(0.6);
+               ltx.produceExperimentalLatex(painter, gg, arg, low_limit, subpos1);
+               positionGNode(subpos1, 0, h*0.25 - subpos1.rect.y1);
+            }
+
+            if (upper_limit) {
+               let subpos2 = createSubPos(0.6);
+               ltx.produceExperimentalLatex(painter, gg, arg, upper_limit, subpos2);
+               positionGNode(subpos2, 0, -0.75*h - subpos2.rect.y2);
+            }
+
+            gg.attr('transform',`translate(${curr.x},${curr.y})`);
+
+            curr.x += w;
+
+            continue;
+         }
+
+
+
+         if (found.arg) {
+            let pos = label.indexOf("]{");
             if (pos < 0) { console.log('missing argument for ', found.name); return false; }
             foundarg = label.substr(0, pos);
             if (found.arg == 'int') {
@@ -1049,17 +1103,15 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if (sublabel === -1) return false;
 
             if (!curr.g) curr.g = node.append("svg:g");
-            let gg = curr.g.append("svg:g"), subpos0;
-
+            let gg = curr.g.append("svg:g"), subpos0, subpos = createSubPos();
 
             if (found.arg) {
-               subpos0 = { lvl: curr.lvl + 1, x: 0, y: 0, fsize: subpos.fsize*0.7, dx: 0, dy: 0, parent: curr };
+               subpos0 = createSubPos(0.7);
                ltx.produceExperimentalLatex(painter, gg, arg, foundarg.toString(), subpos0);
             }
 
             // placeholder for the sqrt sign
-            let path = gg.append("svg:path").style("stroke", arg.color)
-                         .style("stroke-width", curr.fsize*0.1).style("fill", "none");
+            let path = createPath(gg);
 
             ltx.produceExperimentalLatex(painter, gg, arg, sublabel, subpos);
 
@@ -1074,11 +1126,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             gg.attr('transform',`translate(${curr.x},${curr.y})`)
 
-            curr.x += w + h*0.9;
+            curr.x += w + h*0.6;
 
             continue;
         }
-
 
 
 /*
