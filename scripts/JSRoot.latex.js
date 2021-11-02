@@ -170,25 +170,18 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       '{}': ''
    };
 
-   let symbolsRegexCache;
+   /** @summary Create a single regex to detect any symbol to replace
+     * @private */
+   const symbolsRegexCache = new RegExp('(' + Object.keys(symbols_map).join('|').replace(/\\\{/g, '{').replace(/\\\}/g, '}') + ')', 'g');
 
    /** @summary Simple replacement of latex letters
      * @private */
-   let translateLaTeX = str => {
-
+   const translateLaTeX = str => {
       while ((str.length > 2) && (str[0] == '{') && (str[str.length - 1] == '}'))
          str = str.substr(1, str.length - 2);
 
-      // Create a single regex to detect any symbol to replace
-      if (!symbolsRegexCache)
-         symbolsRegexCache = new RegExp('(' + Object.keys(symbols_map).join('|').replace(/\\\{/g, '{').replace(/\\\}/g, '}') + ')', 'g');
-
-      str = str.replace(symbolsRegexCache, ch => symbols_map[ch]);
-
-      str = str.replace(/\{\}/g, "");
-
-      return str;
-   }
+      return str.replace(symbolsRegexCache, ch => symbols_map[ch]).replace(/\{\}/g, "");
+   };
 
    /** @summary handle for latex processing
      * @alias Latex
@@ -219,7 +212,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          arg.mainnode = node;
       }
 
-      let extend_pos = (pos, value) => {
+      const extend_pos = (pos, value) => {
 
          let dx1, dx2, dy1, dy2;
 
@@ -263,7 +256,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          }
       };
 
-      let makeem = value => {
+      const makeem = value => {
          if (Math.abs(value) < 1e-2) return null; // very small values not needed, attribute will be removed
          if (value == Math.round(value)) return Math.round(value) + "em";
          let res = value.toFixed(2);
@@ -273,7 +266,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return res + "em";
       };
 
-      let get_boundary = (element, approx_rect) => {
+      const get_boundary = (element, approx_rect) => {
          // actually, it is workaround for getBBox() or getElementBounday,
          // which is not implemented for tspan element in Firefox
 
@@ -881,7 +874,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return promise;
    }
 
-   let math_symbols_map = {
+   const math_symbols_map = {
          '#LT': "\\langle",
          '#GT': "\\rangle",
          '#club': "\\clubsuit",
@@ -953,7 +946,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    /** @summary Function translates ROOT TLatex into MathJax format
      * @private */
-   let translateMath = (str, kind, color, painter) => {
+   const translateMath = (str, kind, color, painter) => {
 
       if (kind != 2) {
          for (let x in math_symbols_map)
@@ -1007,7 +1000,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       //                .replace(/\(/g, '{')
       //                .replace(/\)/g, '}');
       return "\\color{" + color + '}{' + str + "}";
-   }
+   };
 
    /** @summary Workaround to fix size attributes in MathJax SVG
      * @private */
