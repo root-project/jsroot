@@ -814,7 +814,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       };
 
       const getTextBoundary = (elem, approx_rect) => {
-         return !JSROOT.nodejs && !JSROOT.settings.ApproxTextSize && !arg.fast ? jsrp.getElementRect(elem, 'bbox') :
+         return !JSROOT.nodejs && !JSROOT.settings.ApproxTextSize && !arg.fast ? jsrp.getElementRect(elem, 'any') :
                    (approx_rect || { height: arg.font_size * 1.2, width: elem.text().length * arg.font_size * arg.font.aver_width });
       };
 
@@ -843,8 +843,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (x) elem.attr("x", x);
          if (y) elem.attr("y", y);
 
+         // values used for superscript
+         curr.last_y1 = y - rect.height*0.75;
+         curr.last_y2 = y + rect.height*0.25;
+
          // by the text drawing baseline is approx 0.75
-         extendPosition(curr, x, y - rect.height*0.75, x + rect.width, y + rect.height*0.25);
+         extendPosition(curr, x, curr.last_y1, x + rect.width, curr.last_y2);
+
+         // console.log('text drawing', elem.text(), 'x', curr.x, 'width', rect.width, 'font-size', curr.fsize, 'rect', rect);
 
          if (shift_x) curr.x += rect.width;
       };
@@ -902,8 +908,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          { name: "scale[", arg: 'float' },  // font scale
          { name: "#color[", arg: 'int' },
          { name: "#font[", arg: 'int' },
-         { name: "_{" },  // subscript
-         { name: "^{" },   // superscript
+         { name: "_{", low_up: "low" },  // subscript
+         { name: "^{", low_up: "up" },   // superscript
          { name: "#bar{", deco: "overline" /* accent: "\u02C9" */ }, // "\u0305"
          { name: "#hat{", accent: "\u02C6" }, // "\u0302"
          { name: "#check{", accent: "\u02C7" }, // "\u030C"
@@ -947,7 +953,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             let elem = addTextNode(s, true);
             let rect = getTextBoundary(elem);
 
-            // console.log('label', label, 'rect', rect)
             positionTextNode(elem, rect);
             return true;
          }
@@ -1031,27 +1036,77 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             continue;
          }
 
-         if (found.special) {
-            // this is sum and integral, now make fix height, later can adjust to right-content size
-
-            let low_limit, upper_limit;
-            while (true) {
+         const extractLowUp = name => {
+            let res = {};
+            if (name) {
+               res[name] = extractSubLabel();
+               if (res[name] === -1) return false;
+            }
+            while (label.length > 0) {
                if (label.charAt(0) == '_') {
                   label = label.substr(1);
-                  low_limit = !low_limit ? extractSubLabel(true) : -1;
-                  if (low_limit === -1) {
+                  res.low = !res.low ? extractSubLabel(true) : -1;
+                  if (res.low === -1) {
                      console.log(`error with ${found.name} low limit`);
                      return false;
                   }
                } else if (label.charAt(0) == '^') {
                   label = label.substr(1);
-                  upper_limit = !upper_limit ? extractSubLabel(true) : -1;
-                  if (upper_limit === -1) {
+                  res.up = !res.up ? extractSubLabel(true) : -1;
+                  if (res.up === -1) {
                      console.log(`error with ${found.name} upper limit`);
                      return false;
                   }
                } else break;
             }
+            return res;
+         };
+
+         if (found.low_up) {
+            let subs = extractLowUp(found.low_up);
+            if (!subs) return false;
+
+            if (!curr.g) curr.g = node.append("svg:g");
+
+            let pos_up, pos_low;
+
+            let x = curr.x, y1 = -0.75*curr.fsize, y2 = 0.25*curr.fsize, w1 = 0, w2 = 0;
+
+            if (subs.up) {
+               pos_up = createSubPos(0.6);
+               ltx.produceExperimentalLatex(painter, curr.g, arg, subs.up, pos_up);
+            }
+
+            if (subs.low) {
+               pos_low = createSubPos(0.6);
+               ltx.produceExperimentalLatex(painter, curr.g, arg, subs.low, pos_low);
+            }
+
+            if ((curr.last_y1 !== undefined) && (curr.last_y2 !== undefined)) {
+               y1 = curr.last_y1; y2 = curr.last_y2;
+            }
+
+            if (pos_up) {
+               positionGNode(pos_up, x, y1 - pos_up.rect.y1 - curr.fsize*0.1);
+               w1 = pos_up.rect.width;
+            }
+
+            if (pos_low) {
+               positionGNode(pos_low, x, y2 - pos_low.rect.y2 + curr.fsize*0.1);
+               w2 = pos_low.rect.width;
+            }
+
+            curr.x += Math.max(w1,w2);
+
+            continue;
+
+         }
+
+         if (found.special) {
+            // this is sum and integral, now make fix height, later can adjust to right-content size
+
+            let subs = extractLowUp(found.low_up);
+            if (!subs) return false;
 
             if (!curr.g) curr.g = node.append("svg:g");
             let gg = curr.g.append("svg:g");
@@ -1063,15 +1118,15 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             else
                path.attr("d",`M0,${h*0.25-r}a${r},${r},0,0,0,${2*r},0v${2*r-h}a${r},${r},0,1,1,${2*r},0`);
 
-            if (low_limit) {
+            if (subs.low) {
                let subpos1 = createSubPos(0.6);
-               ltx.produceExperimentalLatex(painter, gg, arg, low_limit, subpos1);
+               ltx.produceExperimentalLatex(painter, gg, arg, subs.low, subpos1);
                positionGNode(subpos1, 0, h*0.25 - subpos1.rect.y1);
             }
 
-            if (upper_limit) {
+            if (subs.up) {
                let subpos2 = createSubPos(0.6);
-               ltx.produceExperimentalLatex(painter, gg, arg, upper_limit, subpos2);
+               ltx.produceExperimentalLatex(painter, gg, arg, subs.up, subpos2);
                positionGNode(subpos2, 0, -0.75*h - subpos2.rect.y2);
             }
 
