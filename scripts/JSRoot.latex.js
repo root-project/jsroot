@@ -834,7 +834,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (!pos.parent)
             arg.text_rect = pos.rect;
          else if (with_parent)
-            extendPosition(pos.parent, x1, y1, x2, y2);
+            extendPosition(pos.parent, x1, y1, x2, y2, with_parent);
       }
 
       const positionTextNode = (elem, rect, dx, dy, shift_x) => {
@@ -843,7 +843,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (x) elem.attr("x", x);
          if (y) elem.attr("y", y);
 
-         extendPosition(curr, x, y, x + rect.width, y + rect.height);
+         // by the text drawing baseline is approx 0.75
+         extendPosition(curr, x, y - rect.height*0.75, x + rect.width, y + rect.height*0.25);
 
          if (shift_x) curr.x += rect.width;
       };
@@ -936,6 +937,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             let elem = addTextNode(s, true);
             let rect = getTextBoundary(elem);
+
+            // console.log('label', label, 'rect', rect)
             positionTextNode(elem, rect);
             return true;
          }
@@ -985,32 +988,40 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          if (found.twolines) {
 
+            curr.twolines = true;
+
             if (!curr.g) curr.g = node.append("svg:g");
             let gg = curr.g.append("svg:g");
 
             let line1 = extractSubLabel(), line2 = extractSubLabel(true);
 
+            // if we already in sub-element - decrease size
+            if (curr.parent && curr.parent.twolines) subpos.fsize *= 0.7;
+
             ltx.produceExperimentalLatex(painter, gg, arg, line1, subpos);
 
             let path;
 
-             if (found.twolines == 'line')
+            if (found.twolines == 'line')
                path = gg.append("svg:path").style("stroke", arg.color)
                         .style("stroke-width", curr.fsize*0.1).style("fill", "none");
 
-            let subpos2 = { lvl: curr.lvl + 1, x: 0, y: 0, fsize: curr.fsize, dx: 0, dy: 0, parent: curr };
+            let subpos2 = { lvl: curr.lvl + 1, x: 0, y: 0, fsize: subpos.fsize, dx: 0, dy: 0, parent: curr };
 
             ltx.produceExperimentalLatex(painter, gg, arg, line2, subpos2);
 
             let w = Math.max(subpos.rect.width, subpos2.rect.width),
                 dw = subpos.rect.width - subpos2.rect.width,
-                dy = curr.fsize*0.4;
+                dy = -curr.fsize*0.35; // approximate position of middle line
 
-            positionGNode(subpos, curr.x - (dw < 0 ? dw/2 : 0), curr.y - dy - subpos.rect.height + curr.fsize*0.8);
+            // console.log('subpos y2 values', subpos.rect.height, subpos.rect.y2)
+            // console.log('subpos2 y1 values', subpos2.rect.height, subpos2.rect.y1)
 
-            positionGNode(subpos2, curr.x + (dw > 0 ? dw/2 : 0), curr.y - dy + subpos2.rect.height);
+            positionGNode(subpos, curr.x - (dw < 0 ? dw/2 : 0), curr.y + dy - subpos.rect.y2);
 
-            if (path) path.attr("d", `M${curr.x},${-dy}h${w - curr.fsize*0.1}`);
+            positionGNode(subpos2, curr.x + (dw > 0 ? dw/2 : 0), curr.y + dy - subpos2.rect.y1);
+
+            if (path) path.attr("d", `M${curr.x},${dy}h${w - curr.fsize*0.1}`);
 
             curr.x += w;
          }

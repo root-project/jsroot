@@ -2827,11 +2827,16 @@ JSROOT.define(['d3'], (d3) => {
          use_mathjax = (JSROOT.settings.Latex == JSROOT.constants.Latex.AlwaysMathJax) ||
                        ((JSROOT.settings.Latex == JSROOT.constants.Latex.MathJax) && arg.text.match(/[#{\\]/g));
 
+       // arg.text = "Simple text #hat{aAa} #frac{y + b}{l - j}  #frac{#frac{a + b}{c}}{d - f}";
+
       if (!use_mathjax || arg.nomathjax) {
 
          if (JSROOT.settings.Latex == JSROOT.constants.Latex.Experimental) {
             JSROOT.require(['latex']).then(ltx => {
-               arg.text = "Simple text #hat{aAa} #frac{#frac{a + b}{c}}{d - f}";
+
+                arg.text = "Simple text #hat{aAa} #frac{y + b}{a - c}  #frac{#frac{a + b}{c}}{d - f}";
+
+
                if (arg.text == ltx.translateLaTeX(arg.text)) {
                   arg.txt_node = arg.draw_g.append("svg:text");
                   if (arg.color) arg.txt_node.attr("fill", arg.color);
