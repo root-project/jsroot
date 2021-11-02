@@ -794,16 +794,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if (!curr) {
          // initial dy = -0.1 is to move complete from very bottom line like with normal text drawing
-         curr = { lvl: 0, x: 0, y: 0, dx: 0, dy: -0.1, fsize: arg.font_size, parent: null };
+         curr = { lvl: 0, g: node, x: 0, y: 0, dx: 0, dy: -0.1, fsize: arg.font_size, parent: null };
          label = arg.text;
          arg.mainnode = node;
       }
 
       const addTextNode = txt => {
-         if (!curr.g) {
-             curr.g = node.append("svg:g");
-             if (!curr.lvl) arg.txt_g = curr.g;
-         }
+         if (!curr.g) curr.g = node.append("svg:g");
 
          let elem = curr.g.append("svg:text");
 
@@ -861,15 +858,18 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          extendPosition(pos, pos.rect.x1, pos.rect.y1, pos.rect.x2, pos.rect.y2, true);
       }
 
-      const extractSubLabel = (lbrace, rbrace) => {
-         let pos = -1, n = 1;
-         if (!lbrace || !rbrace) { lbrace = "{"; rbrace = "}"; }
+      const extractSubLabel = (check_first) => {
+         let pos = -1, n = 1, err = false;
+         let lbrace = "{", rbrace = "}";
+         if (check_first) {
+             if(label.charAt(0) != lbrace) err = true; else label = label.substr(1);
+         }
 
-         while ((n != 0) && (++pos < label.length)) {
+         while (!err && (n != 0) && (++pos < label.length)) {
             if (label.charAt(pos) == lbrace) n++; else
             if (label.charAt(pos) == rbrace) n--;
          }
-         if (n != 0) {
+         if ((n != 0) || err) {
             console.log(`mismatch with open ${lbrace} and closing ${rbrace} in ${label}`);
             return -1;
          }
@@ -904,8 +904,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          { name: "#tilde{", accent: "\u02DC" }, // "\u0303"
          { name: "#slash{", accent: "\u2215" }, // "\u0337"
          { name: "#vec{", accent: "\u02ED" }, // "\u0350" arrowhead
-         { name: "#frac{" },
-         { name: "#splitline{" },
+         { name: "#frac{", twolines: 'line' },
+         { name: "#splitline{", twolines: true },
          { name: "#sqrt[", arg: 'int' }, // root with arbitrary power (now only 3 or 4)
          { name: "#sqrt{" },
          { name: "#sum", special: '\u2211', w: 0.8, h: 0.9 },
@@ -965,10 +965,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             let sublabel = extractSubLabel();
             if (sublabel === -1) return false;
 
-            console.log('sublabel', sublabel, 'remains', label);
-
+            if (!curr.g) curr.g = node.append("svg:g");
             ltx.produceExperimentalLatex(painter, curr.g, arg, sublabel, subpos);
-
 
             let w = subpos.rect.width, h = subpos.rect.height;
 
@@ -978,11 +976,43 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                .style("fill", "none")
                .attr("d",`M${w*0.2},${-0.9*h}L${w*0.5},${-1.1*h}L${w*0.8},${-0.9*h}`)
 
-
-
             positionGNode(subpos, curr.x, curr.y);
 
+            curr.x += subpos.rect.width;
+
             continue;
+         }
+
+         if (found.twolines) {
+
+            if (!curr.g) curr.g = node.append("svg:g");
+            let gg = curr.g.append("svg:g");
+
+            let line1 = extractSubLabel(), line2 = extractSubLabel(true);
+
+            ltx.produceExperimentalLatex(painter, gg, arg, line1, subpos);
+
+            let path;
+
+             if (found.twolines == 'line')
+               path = gg.append("svg:path").style("stroke", arg.color)
+                        .style("stroke-width", curr.fsize*0.1).style("fill", "none");
+
+            let subpos2 = { lvl: curr.lvl + 1, x: 0, y: 0, fsize: curr.fsize, dx: 0, dy: 0, parent: curr };
+
+            ltx.produceExperimentalLatex(painter, gg, arg, line2, subpos2);
+
+            let w = Math.max(subpos.rect.width, subpos2.rect.width),
+                dw = subpos.rect.width - subpos2.rect.width,
+                dy = curr.fsize*0.4;
+
+            positionGNode(subpos, curr.x - (dw < 0 ? dw/2 : 0), curr.y - dy - subpos.rect.height + curr.fsize*0.8);
+
+            positionGNode(subpos2, curr.x + (dw > 0 ? dw/2 : 0), curr.y - dy + subpos2.rect.height);
+
+            if (path) path.attr("d", `M${curr.x},${-dy}h${w - curr.fsize*0.1}`);
+
+            curr.x += w;
          }
 
 

@@ -2831,7 +2831,7 @@ JSROOT.define(['d3'], (d3) => {
 
          if (JSROOT.settings.Latex == JSROOT.constants.Latex.Experimental) {
             JSROOT.require(['latex']).then(ltx => {
-               arg.text = "Simple text #hat{abcde}";
+               arg.text = "Simple text #hat{aAa} #frac{#frac{a + b}{c}}{d - f}";
                if (arg.text == ltx.translateLaTeX(arg.text)) {
                   arg.txt_node = arg.draw_g.append("svg:text");
                   if (arg.color) arg.txt_node.attr("fill", arg.color);
