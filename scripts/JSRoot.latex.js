@@ -1068,9 +1068,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if (subpos0)
                positionGNode(subpos0, 0, midy - subpos0.fsize*0.3);
 
-            path.attr("d", `M0,${midy}h${h*0.2}l${h*0.1},${r.y2+h*0.1-midy}l${h*0.2},${-h*1.2}h${h*0.4+w}v${h*0.2}`);
+            path.attr("d", `M0,${midy}h${h*0.1}l${h*0.1},${r.y2-midy}l${h*0.1},${-h-curr.fsize*0.1}h${h*0.2+w}v${h*0.1}`);
 
-            positionGNode(subpos, h*0.7, 0);
+            positionGNode(subpos, h*0.4, 0);
 
             gg.attr('transform',`translate(${curr.x},${curr.y})`)
 
