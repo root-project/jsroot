@@ -1225,11 +1225,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             positionGNode(subpos, 2*w, 0);
 
-            extendPosition(subpos, 0, r.y1, 4*w + r.width, r.y2, true);
+            extendPosition(curr, curr.x, curr.y + r.y1, curr.x + 4*w + r.width, curr.y + r.y2, true);
 
             gg.attr('transform',`translate(${curr.x},${curr.y})`);
 
-            curr.x += r.width;
+            curr.x += 4*w + r.width;
 
             // values used for superscript
             curr.last_y1 = r.y1;

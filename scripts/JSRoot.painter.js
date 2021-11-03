@@ -2720,7 +2720,9 @@ JSROOT.define(['d3'], (d3) => {
 
          arg.dx = arg.dy = 0;
 
-         arg.dx = ((arg.align[0] == "middle") ? -0.5 : ((arg.align[0] == "end") ? -1 : 0)) * arg.box.width;
+         let scale = (f > 0) && (Math.abs(1-f)>0.01) ? 1/f : 1;
+
+         arg.dx = ((arg.align[0] == "middle") ? -0.5 : ((arg.align[0] == "end") ? -1 : 0)) * arg.box.width * scale;
 
          if (arg.height) {
             if (arg.align[1].indexOf('bottom') === 0) arg.y += arg.height; else
@@ -2738,6 +2740,7 @@ JSROOT.define(['d3'], (d3) => {
 
          let trans = (arg.x || arg.y) ? "translate(" + Math.round(arg.x) + "," + Math.round(arg.y) + ")" : "";
          if (arg.rotate) trans += " rotate(" + Math.round(arg.rotate) + ")";
+         if (scale !== 1) trans += ` scale(${scale},${scale})`;
          if (arg.dx || arg.dy) trans += " translate(" + Math.round(arg.dx) + "," + Math.round(arg.dy) + ")";
          if (trans) txt_g.attr("transform", trans);
       });
