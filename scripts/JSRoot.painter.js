@@ -2697,11 +2697,44 @@ JSROOT.define(['d3'], (d3) => {
       all_args.forEach(arg => {
          if (!arg.txt_g) return;
          any_text = true;
-
          let txt_g = arg.txt_g;
          delete arg.txt_g;
-
          txt_g.attr('visibility', null);
+
+         arg.box = arg.text_rect;
+
+         //if (JSROOT.nodejs) {
+         //   if (arg.scale && (f > 0)) { arg.box.width = arg.box.width / f; arg.box.height = arg.box.height / f; }
+         //} else if (!arg.box) {
+         //   // exact box dimension only required when complex text was build
+         //   arg.box = jsrp.getElementRect(txt_g, 'bbox');
+         // }
+
+         // if (arg.text.length>20) console.log(arg.box, arg.align, arg.x, arg.y, 'plain', arg.plain, 'inside', arg.width, arg.height);
+
+         if (arg.width) {
+            // adjust x position when scale into specified rectangle
+            if (arg.align[0] == "middle") arg.x += arg.width / 2; else
+               if (arg.align[0] == "end") arg.x += arg.width;
+         }
+
+         arg.dx = arg.dy = 0;
+
+         arg.dx = ((arg.align[0] == "middle") ? -0.5 : ((arg.align[0] == "end") ? -1 : 0)) * arg.box.width;
+
+         if (arg.height) {
+            if (arg.align[1].indexOf('bottom') === 0) arg.y += arg.height; else
+               if (arg.align[1] == 'middle') arg.y += arg.height / 2;
+         }
+
+         if (arg.align[1] == 'top')
+            arg.dy = -arg.box.y1;
+         else if (arg.align[1] == 'bottom')
+            arg.dy = -arg.box.y2;
+         else if (arg.align[1] == 'middle')
+            arg.dy = -0.5*(arg.box.y1 + arg.box.y2);
+
+         if (!arg.rotate) { arg.x += arg.dx; arg.y += arg.dy; arg.dx = arg.dy = 0; }
 
          let trans = (arg.x || arg.y) ? "translate(" + Math.round(arg.x) + "," + Math.round(arg.y) + ")" : "";
          if (arg.rotate) trans += " rotate(" + Math.round(arg.rotate) + ")";
@@ -2793,7 +2826,7 @@ JSROOT.define(['d3'], (d3) => {
             align[1] = 'bottom-base';
          else if ((arg.align % 10) == 3)
             align[1] = 'top';
-      } else if (arg.align && (typeof arg.align == 'object') && arg.align.length == 2) {
+      } else if (arg.align && (typeof arg.align == 'object') && (arg.align.length == 2)) {
          align = arg.align;
       }
 
@@ -2850,20 +2883,21 @@ JSROOT.define(['d3'], (d3) => {
                */
 
                if (ltx.isPlainText(arg.text)) {
+                  arg.simple_latex = true;
                   arg.txt_node = arg.draw_g.append("svg:text");
                   if (arg.color) arg.txt_node.attr("fill", arg.color);
                   if (arg.font_size) arg.txt_node.attr("font-size", arg.font_size);
                                 else arg.font_size = font.size;
-                  ltx.produceLatex(this, arg.txt_node, arg);
+                  ltx.producePlainText(this, arg.txt_node, arg);
+                  arg.ready = true;
                   _postprocessText(this, arg.txt_node, arg);
-
                } else {
                   if (!arg.font_size) arg.font_size = font.size;
                   arg.txt_g = arg.draw_g.append("svg:g");
                   ltx.produceExperimentalLatex(this, arg.txt_g, arg);
+                  arg.ready = true;
                   _postprocessText(this, arg.txt_g, arg);
                }
-               arg.ready = true;
 
                if (arg.draw_g.property('draw_text_completed'))
                   _checkAllTextDrawing(this, arg.draw_g); // check if all other elements are completed
