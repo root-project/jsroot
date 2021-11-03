@@ -200,6 +200,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       txt_node.text(arg.text);
    }
 
+   /** @summary Check if plain text
+     * @private */
+   ltx.isPlainText = function(txt) {
+      return !txt || ((txt.indexOf("#") < 0) && (txt.indexOf("{") < 0));
+   }
+
    /** @ummary draw TLatex inside element
      * @desc attempt to implement subset of TLatex with plain SVG text and tspan elements
      * @private */
@@ -820,11 +826,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             elem.attr('font-style', curr.italic ? 'italic' : 'normal');
 
          elem.text(txt);
+
          return elem;
       };
 
       const getTextBoundary = (elem, approx_rect) => {
-         return !JSROOT.nodejs && !JSROOT.settings.ApproxTextSize && !arg.fast ? jsrp.getElementRect(elem, 'any') :
+         return !JSROOT.nodejs && !JSROOT.settings.ApproxTextSize && !arg.fast ? jsrp.getElementRect(elem, 'nopadding') :
                    (approx_rect || { height: arg.font_size * 1.2, width: elem.text().length * arg.font_size * arg.font.aver_width });
       };
 
@@ -1132,9 +1139,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                y1 = curr.last_y1; y2 = curr.last_y2;
             }
 
-            if (subs.up == "40")
-               console.log('drawing ', subs.up, subs.low, y1, y2, 'fsize', curr.fsize)
-
             if (pos_up) {
                positionGNode(pos_up, x, y1 - pos_up.rect.y1 - curr.fsize*0.1);
                w1 = pos_up.rect.width;
@@ -1225,7 +1229,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             gg.attr('transform',`translate(${curr.x},${curr.y})`);
 
-            curr.x += 4*w + r.width;
+            curr.x += r.width;
 
             // values used for superscript
             curr.last_y1 = r.y1;
