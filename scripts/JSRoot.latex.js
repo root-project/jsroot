@@ -1263,7 +1263,26 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                if (!Number.isFinite(foundarg)) { console.log('wrong float argument', label.substr(0, pos)); return false; }
             }
             label = label.substr(pos + 2);
-        }
+         }
+
+         if ((found.name == "kern[") || (found.name == "lower[")) {
+            let sublabel = extractSubLabel();
+            if (sublabel === -1) return false;
+
+            if (!curr.g) curr.g = node.append("svg:g");
+            let subpos = createSubPos();
+
+            ltx.produceExperimentalLatex(painter, curr.g, arg, sublabel, subpos);
+
+            let shiftx = 0, shifty = 0;
+            if (found.name == "kern[") shiftx = foundarg; else shifty = foundarg;
+
+            positionGNode(subpos, curr.x + shiftx * subpos.rect.width, curr.y + shifty * subpos.rect.height);
+
+            curr.x += subpos.rect.width * (shiftx > 0 ? 1 + foundarg : 1);
+
+            continue;
+         }
 
         if (found.sqrt) {
             let sublabel = extractSubLabel();
