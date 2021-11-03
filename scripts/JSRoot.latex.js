@@ -1155,12 +1155,21 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             let path2 = createPath(gg);
 
-            let w = curr.fsize*0.2, r = subpos.rect, dy = r.y2 - r.y1;
+            let w = Math.max(2, Math.round(curr.fsize*0.2)), w2 = Math.round(w/2), r = subpos.rect, dy = r.y2 - r.y1;
 
             switch (found.braces) {
                case "||":
                   path1.attr("d",`M${w},${r.y1}v${dy}`);
                   path2.attr("d",`M${3*w+r.width},${r.y1}v${dy}`);
+                  break;
+               case "[]":
+                  path1.attr("d",`M${2*w},${r.y1}h${-w}v${dy}h${w}`);
+                  path2.attr("d",`M${2*w+r.width},${r.y1}h${w}v${dy}h${-w}`);
+                  break;
+               case "{}":
+                  path1.attr("d",`M${2*w},${r.y1} a${w},${w},0,0,0,${-w},${w} v${dy/2-2*w} a${w},${w},0,0,1,${-w},${w} a${w},${w},0,0,1,${w},${w} v${dy/2-2*w} a${w},${w},0,0,0,${w},${w}`);
+                  path2.attr("d",`M${2*w+r.width},${r.y1} a${w},${w},0,0,1,${w},${w} v${dy/2-2*w} a${w},${w},0,0,0,${w},${w} a${w},${w},0,0,0,${-w},${w} v${dy/2-2*w} a${w},${w},0,0,1,${-w},${w}`);
+                  break;
                default: // ()
                   path1.attr("d",`M${w},${r.y1}a${4*dy},${4*dy},0,0,0,0,${dy}`);
                   path2.attr("d",`M${3*w+r.width},${r.y1}a${4*dy},${4*dy},0,0,1,0,${dy}`);
