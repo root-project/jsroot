@@ -865,25 +865,29 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          extendPosition(pos, pos.rect.x1, pos.rect.y1, pos.rect.x2, pos.rect.y2, true);
       }
 
-      const extractSubLabel = (check_first) => {
-         let pos = -1, n = 1, err = false;
-         let lbrace = "{", rbrace = "}";
+      const extractSubLabel = (check_first, lbrace, rbrace) => {
+         let pos = 0, n = 1, err = false;
+         if (!lbrace) lbrace = "{";
+         if (!rbrace) rbrace = "}";
+
+         const match = br => (pos + br.length <= label.length) && (label.substr(pos, br.length) == br);
+
          if (check_first) {
-             if(label.charAt(0) != lbrace) err = true; else label = label.substr(1);
+            if(!match(lbrace)) err = true; else label = label.substr(lbrace.length);
          }
 
-         while (!err && (n != 0) && (++pos < label.length)) {
-            if (label.charAt(pos) == lbrace) n++; else
-            if (label.charAt(pos) == rbrace) n--;
+         while (!err && (n != 0) && (pos < label.length)) {
+            if (match(lbrace)) { n++; pos += lbrace.length; } else
+            if (match(rbrace)) { n--; pos += rbrace.length; } else pos++;
          }
          if ((n != 0) || err) {
             console.log(`mismatch with open ${lbrace} and closing ${rbrace} in ${label}`);
             return -1;
          }
 
-         let sublabel = label.substr(0, pos);
+         let sublabel = label.substr(0, pos - rbrace.length);
 
-         label = label.substr(pos + rbrace.length);
+         label = label.substr(pos);
 
          return sublabel;
       };
@@ -1137,7 +1141,44 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             continue;
          }
 
+         if (found.braces) {
+            let rbrace = found.right, lbrace = rbrace ? found.name : "{";
 
+            let sublabel = extractSubLabel(false, lbrace, rbrace);
+
+            if (!curr.g) curr.g = node.append("svg:g");
+            let gg = curr.g.append("svg:g"), subpos = createSubPos();
+
+            let path1 = createPath(gg);
+
+            ltx.produceExperimentalLatex(painter, gg, arg, sublabel, subpos);
+
+            let path2 = createPath(gg);
+
+            let w = curr.fsize*0.2, r = subpos.rect, dy = r.y2 - r.y1;
+
+            switch (found.braces) {
+               case "||":
+                  path1.attr("d",`M${w},${r.y1}v${dy}`);
+                  path2.attr("d",`M${3*w+r.width},${r.y1}v${dy}`);
+               default: // ()
+                  path1.attr("d",`M${w},${r.y1}a${4*dy},${4*dy},0,0,0,0,${dy}`);
+                  path2.attr("d",`M${3*w+r.width},${r.y1}a${4*dy},${4*dy},0,0,1,0,${dy}`);
+            }
+
+            positionGNode(subpos, 2*w, 0);
+
+            gg.attr('transform',`translate(${curr.x},${curr.y})`)
+
+            curr.x += 4*w + r.width;
+
+            // values used for superscript
+            curr.last_y1 = r.y1;
+            curr.last_y2 = r.y2;
+
+            continue;
+
+         }
 
          if (found.arg) {
             let pos = label.indexOf("]{");
