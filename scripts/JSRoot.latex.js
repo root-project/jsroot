@@ -807,8 +807,18 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          //if (is_simple && !curr.g && !curr.lvl)
          //   arg.txt_node = elem;
 
-         if (arg.color) elem.attr("fill", arg.color);
+         if (curr.font)
+            curr.font.setFont(elem, 'without-size');
+
+         if (curr.color || arg.color) elem.attr("fill", curr.color || arg.color);
          if (curr.fsize) elem.attr("font-size", curr.fsize);
+
+         if (curr.bold !== undefined)
+            elem.attr('font-weight', curr.bold ? 'bold' : 'normal');
+
+         if (curr.italic !== undefined)
+            elem.attr('font-style', curr.italic ? 'italic' : 'normal');
+
          elem.text(txt);
          return elem;
       };
@@ -850,8 +860,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          // by the text drawing baseline is approx 0.75
          extendPosition(curr, x, curr.last_y1, x + rect.width, curr.last_y2);
 
-         // console.log('text drawing', elem.text(), 'x', curr.x, 'width', rect.width, 'font-size', curr.fsize, 'rect', rect);
-
          if (shift_x) curr.x += rect.width;
       };
 
@@ -870,7 +878,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          extendPosition(curr, curr.x + pos.rect.x1, curr.y + pos.rect.y1, curr.x + pos.rect.x2, curr.u + pos.rect.y2, true);
       }
-
 
       const extractSubLabel = (check_first, lbrace, rbrace) => {
          let pos = 0, n = 1, err = false;
@@ -901,13 +908,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       const createPath = (gg, dofill) => {
          return gg.append("svg:path")
-                  .style("stroke", dofill ? "none" : arg.color)
+                  .style("stroke", dofill ? "none" : (curr.color || arg.color))
                   .style("stroke-width", dofill ? null : Math.max(1, Math.round(curr.fsize*0.1)))
-                  .style("fill", dofill ? arg.color : "none");
+                  .style("fill", dofill ? (curr.color || arg.color) : "none");
       };
 
       const createSubPos = fscale => {
-         return { lvl: curr.lvl + 1, x: 0, y: 0, fsize: curr.fsize*(fscale || 1), parent: curr };
+         return { lvl: curr.lvl + 1, x: 0, y: 0, fsize: curr.fsize*(fscale || 1), bold: curr.bold, italic: curr.italic, color: curr.color, font: curr.font, parent: curr };
       };
 
       const features = [
@@ -916,11 +923,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          { name: "#underline{", deco: "underline" }, // underline
          { name: "#overline{", deco: "overline" }, // overline
          { name: "#strike{", deco: "line-through" }, // line through
-         { name: "kern[", arg: 'float' }, // horizontal shift
-         { name: "lower[", arg: 'float' },  // vertical shift
-         { name: "scale[", arg: 'float' },  // font scale
-         { name: "#color[", arg: 'int' },
-         { name: "#font[", arg: 'int' },
+         { name: "#kern[", arg: 'float' }, // horizontal shift
+         { name: "#lower[", arg: 'float' },  // vertical shift
+         { name: "#scale[", arg: 'float' },  // font scale
+         { name: "#color[", arg: 'int' },   // font color
+         { name: "#font[", arg: 'int' },    // font face
          { name: "_{", low_up: "low" },  // subscript
          { name: "^{", low_up: "up" },   // superscript
          { name: "#bar{", deco: "overline" /* accent: "\u02C9" */ }, // "\u0305"
@@ -1017,8 +1024,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                case "#check{": createPath(gg).attr("d",`M${w*0.2},${y1-dy}L${w*0.5},${y1}L${w*0.8},${y1-dy}`); break;
                case "#acute{": createPath(gg).attr("d",`M${w*0.5},${y1}l${dy},${-dy}`); break;
                case "#grave{": createPath(gg).attr("d",`M${w*0.5},${y1}l${-dy},${-dy}`); break;
-               case "#dot{": createPath(gg, true).attr("d",`M${w*0.5-dy2},${y1}${dot}`).style("fill",arg.color); break;
-               case "#ddot{": createPath(gg, true).attr("d",`M${w*0.5-3*dy2},${y1}${dot} M${w*0.5+dy2},${y1}${dot}`).style("fill",arg.color); break;
+               case "#dot{": createPath(gg, true).attr("d",`M${w*0.5-dy2},${y1}${dot}`); break;
+               case "#ddot{": createPath(gg, true).attr("d",`M${w*0.5-3*dy2},${y1}${dot} M${w*0.5+dy2},${y1}${dot}`); break;
                case "#tilde{": createPath(gg).attr("d",`M${w*0.2},${y1} a${w*0.3},${dy},0,0,1,${w*0.3},0 a${w*0.3},${dy},0,0,0,${w*0.3},0`); break;
                case "#slash{": createPath(gg).attr("d",`M${w},${y1}L0,${subpos.rect.y2}`); break;
                case "#vec{": createPath(gg).attr("d",`M${w*0.2},${y1}H${w*0.8}l${-dy},${-dy}m${dy},${dy}l${-dy},${dy}`); break;
@@ -1109,7 +1116,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             let pos_up, pos_low;
 
-            let x = curr.x, y1 = -0.75*curr.fsize, y2 = 0.25*curr.fsize, w1 = 0, w2 = 0;
+            let x = curr.x, y1 = -curr.fsize, y2 = 0.25*curr.fsize, w1 = 0, w2 = 0;
 
             if (subs.up) {
                pos_up = createSubPos(0.6);
@@ -1124,6 +1131,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if ((curr.last_y1 !== undefined) && (curr.last_y2 !== undefined)) {
                y1 = curr.last_y1; y2 = curr.last_y2;
             }
+
+            if (subs.up == "40")
+               console.log('drawing ', subs.up, subs.low, y1, y2, 'fsize', curr.fsize)
 
             if (pos_up) {
                positionGNode(pos_up, x, y1 - pos_up.rect.y1 - curr.fsize*0.1);
@@ -1251,6 +1261,27 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             continue;
          }
 
+         if (found.name == "#bf{" || found.name == "#it{") {
+            let sublabel = extractSubLabel();
+            if (sublabel === -1) return false;
+
+            if (!curr.g) curr.g = node.append("svg:g");
+            let subpos = createSubPos();
+
+            if (found.name == "#bf{")
+               subpos.bold = !subpos.bold;
+            else
+               subpos.italic = !subpos.italic;
+
+            ltx.produceExperimentalLatex(painter, curr.g, arg, sublabel, subpos);
+
+            positionGNode(subpos, curr.x, curr.y);
+
+            curr.x += subpos.rect.width;
+
+            continue;
+         }
+
          if (found.arg) {
             let pos = label.indexOf("]{");
             if (pos < 0) { console.log('missing argument for ', found.name); return false; }
@@ -1265,7 +1296,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             label = label.substr(pos + 2);
          }
 
-         if ((found.name == "kern[") || (found.name == "lower[")) {
+         if ((found.name == "#kern[") || (found.name == "#lower[")) {
             let sublabel = extractSubLabel();
             if (sublabel === -1) return false;
 
@@ -1280,6 +1311,30 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             positionGNode(subpos, curr.x + shiftx * subpos.rect.width, curr.y + shifty * subpos.rect.height);
 
             curr.x += subpos.rect.width * (shiftx > 0 ? 1 + foundarg : 1);
+
+            continue;
+         }
+
+         if ((found.name == "#color[") || (found.name == "#scale[") || (found.name == "#font[")) {
+
+            let sublabel = extractSubLabel();
+            if (sublabel === -1) return false;
+
+            if (!curr.g) curr.g = node.append("svg:g");
+            let subpos = createSubPos();
+
+            if (found.name == "#color[")
+               subpos.color = painter.getColor(foundarg);
+            else if (found.name == "#font[")
+               subpos.font = new JSROOT.FontHandler(foundarg);
+            else
+               subpos.fsize *= foundarg;
+
+            ltx.produceExperimentalLatex(painter, curr.g, arg, sublabel, subpos);
+
+            positionGNode(subpos, curr.x, curr.y);
+
+            curr.x += subpos.rect.width;
 
             continue;
          }
