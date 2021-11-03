@@ -883,7 +883,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       const positionGGNode = (pos, gg) => {
          gg.attr('transform',`translate(${curr.x},${curr.y})`);
 
-         extendPosition(curr, curr.x + pos.rect.x1, curr.y + pos.rect.y1, curr.x + pos.rect.x2, curr.u + pos.rect.y2, true);
+         extendPosition(curr, curr.x + pos.rect.x1, curr.y + pos.rect.y1, curr.x + pos.rect.x2, curr.y + pos.rect.y2, true);
       }
 
       const extractSubLabel = (check_first, lbrace, rbrace) => {
