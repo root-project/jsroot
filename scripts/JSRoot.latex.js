@@ -865,6 +865,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          extendPosition(pos, pos.rect.x1, pos.rect.y1, pos.rect.x2, pos.rect.y2, true);
       }
 
+      const positionGGNode = (pos, gg) => {
+         gg.attr('transform',`translate(${curr.x},${curr.y})`);
+
+         extendPosition(curr, curr.x + pos.rect.x1, curr.y + pos.rect.y1, curr.x + pos.rect.x2, curr.u + pos.rect.y2, true);
+      }
+
+
       const extractSubLabel = (check_first, lbrace, rbrace) => {
          let pos = 0, n = 1, err = false;
          if (!lbrace) lbrace = "{";
@@ -892,9 +899,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return sublabel;
       };
 
-      const createPath = gg => {
-         return gg.append("svg:path").style("stroke", arg.color)
-                  .style("stroke-width", Math.max(1, Math.round(curr.fsize*0.1))).style("fill", "none");
+      const createPath = (gg, dofill) => {
+         return gg.append("svg:path")
+                  .style("stroke", dofill ? "none" : arg.color)
+                  .style("stroke-width", dofill ? null : Math.max(1, Math.round(curr.fsize*0.1)))
+                  .style("fill", dofill ? arg.color : "none");
       };
 
       const createSubPos = fscale => {
@@ -915,15 +924,15 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          { name: "_{", low_up: "low" },  // subscript
          { name: "^{", low_up: "up" },   // superscript
          { name: "#bar{", deco: "overline" /* accent: "\u02C9" */ }, // "\u0305"
-         { name: "#hat{", accent: "\u02C6" }, // "\u0302"
-         { name: "#check{", accent: "\u02C7" }, // "\u030C"
+         { name: "#hat{", accent: "\u02C6", hasw: true }, // "\u0302"
+         { name: "#check{", accent: "\u02C7", hasw: true }, // "\u030C"
          { name: "#acute{", accent: "\u02CA" }, // "\u0301"
          { name: "#grave{", accent: "\u02CB" }, // "\u0300"
          { name: "#dot{", accent: "\u02D9" }, // "\u0307"
-         { name: "#ddot{", accent: "\u02BA" }, // "\u0308"
-         { name: "#tilde{", accent: "\u02DC" }, // "\u0303"
+         { name: "#ddot{", accent: "\u02BA", hasw: true }, // "\u0308"
+         { name: "#tilde{", accent: "\u02DC", hasw: true }, // "\u0303"
          { name: "#slash{", accent: "\u2215" }, // "\u0337"
-         { name: "#vec{", accent: "\u02ED" }, // "\u0350" arrowhead
+         { name: "#vec{", accent: "\u02ED", hasw: true }, // "\u0350" arrowhead
          { name: "#frac{", twolines: 'line' },
          { name: "#splitline{", twolines: true },
          { name: "#sqrt[", arg: 'int', sqrt: true }, // root with arbitrary power
@@ -990,13 +999,33 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             let subpos = createSubPos();
 
             if (!curr.g) curr.g = node.append("svg:g");
-            ltx.produceExperimentalLatex(painter, curr.g, arg, sublabel, subpos);
+            let gg = curr.g.append("svg:g");
 
-            let w = subpos.rect.width, h = subpos.rect.height;
+            ltx.produceExperimentalLatex(painter, gg, arg, sublabel, subpos);
 
-            createPath(subpos.g).attr("d",`M${w*0.2},${-0.9*h}L${w*0.5},${-1.1*h}L${w*0.8},${-0.9*h}`);
+            let minw = curr.fsize*0.6,
+                w = subpos.rect.width, y1 = subpos.rect.y1,
+                dy = curr.fsize*0.2, dy2 = curr.fsize*0.1, dot = `a${dy2},${dy2},0,0,1,${dy},0 a${dy2},${dy2},0,0,1,${-dy},0 z`;
 
-            positionGNode(subpos, curr.x, curr.y);
+            // shift symbol when it is too small
+            if (found.hasw && (w < minw)) {
+               positionGNode(subpos, (minw - subpos.rect.width) / 2, 0);
+               w = minw;
+            }
+
+            switch(found.name) {
+               case "#check{": createPath(gg).attr("d",`M${w*0.2},${y1-dy}L${w*0.5},${y1}L${w*0.8},${y1-dy}`); break;
+               case "#acute{": createPath(gg).attr("d",`M${w*0.5},${y1}l${dy},${-dy}`); break;
+               case "#grave{": createPath(gg).attr("d",`M${w*0.5},${y1}l${-dy},${-dy}`); break;
+               case "#dot{": createPath(gg, true).attr("d",`M${w*0.5-dy2},${y1}${dot}`).style("fill",arg.color); break;
+               case "#ddot{": createPath(gg, true).attr("d",`M${w*0.5-3*dy2},${y1}${dot} M${w*0.5+dy2},${y1}${dot}`).style("fill",arg.color); break;
+               case "#tilde{": createPath(gg).attr("d",`M${w*0.2},${y1} a${w*0.3},${dy},0,0,1,${w*0.3},0 a${w*0.3},${dy},0,0,0,${w*0.3},0`); break;
+               case "#slash{": createPath(gg).attr("d",`M${w},${y1}L0,${subpos.rect.y2}`); break;
+               case "#vec{": createPath(gg).attr("d",`M${w*0.2},${y1}H${w*0.8}l${-dy},${-dy}m${dy},${dy}l${-dy},${dy}`); break;
+               default: createPath(gg).attr("d",`M${w*0.2},${y1}L${w*0.5},${y1-dy}L${w*0.8},${y1}`); // #hat{
+            }
+
+            positionGGNode(subpos, gg);
 
             curr.x += subpos.rect.width;
 
