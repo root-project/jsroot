@@ -852,6 +852,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return elem;
       };
 
+      const shift_position = (dx) => { curr.x += Math.round(dx); };
+
       const getTextBoundary = (elem, s, _debug_batch) => {
 
 /*     // this is code to use canvas module in node.js, not precise at all
@@ -893,21 +895,24 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
 
       const positionTextNode = (elem, rect) => {
-         let x = Math.round(curr.x), y = Math.round(curr.y);
-         elem.attr("x", x || null);
-         elem.attr("y", y || null);
+         elem.attr("x", curr.x || null);
+         elem.attr("y", curr.y || null);
 
          // values used for superscript
-         curr.last_y1 = y - rect.height*0.75;
-         curr.last_y2 = y + rect.height*0.25;
+         curr.last_y1 = curr.y - rect.height*0.75;
+         curr.last_y2 = curr.y + rect.height*0.25;
 
-         extendPosition(x, curr.last_y1, x + rect.width, curr.last_y2);
+         extendPosition(curr.x, curr.last_y1, curr.x + rect.width, curr.last_y2);
       };
 
       /** Position pos.g node which directly attached to curr.g and uses curr.g coordinates */
       const positionGNode = (pos, x, y, inside_gg) => {
-         if (x || y)
+         x = Math.round(x);
+         y = Math.round(y);
+         if (y)
             pos.g.attr('transform',`translate(${x},${y})`);
+         else if (x)
+            pos.g.attr('transform',`translate(${x})`);
 
          pos.rect.x1 += x;
          pos.rect.x2 += x;
@@ -923,8 +928,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       /** Create special sub-container for elements like sqrt or braces  */
       const createGG = () => {
          let gg = curr_g().append("svg:g");
-         if (curr.x || curr.y)
+
+         if (curr.y)
             gg.attr('transform',`translate(${curr.x},${curr.y})`);
+         else if (curr.x)
+            gg.attr('transform',`translate(${curr.x})`);
          return gg;
       }
 
@@ -999,7 +1007,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                let elem = addTextNode(s);
                let rect = getTextBoundary(elem, s);
                positionTextNode(elem, rect);
-               curr.x += rect.width;
+               shift_position(rect.width);
             }
          }
 
@@ -1044,7 +1052,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                default: createPath(gg).attr("d",`M${w*0.2},${y1}L${w*0.5},${y1-dy}L${w*0.8},${y1}`); // #hat{
             }
 
-            curr.x += subpos.rect.width;
+            shift_position(subpos.rect.width);
 
             continue;
          }
@@ -1082,7 +1090,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             if (path) path.attr("d", `M0,${dy}h${w - curr.fsize*0.1}`);
 
-            curr.x += w;
+            shift_position(w);
 
             delete curr.twolines;
 
@@ -1147,7 +1155,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                w2 = pos_low.rect.width;
             }
 
-            curr.x += Math.max(w1,w2);
+            shift_position(Math.max(w1,w2));
 
             continue;
          }
@@ -1179,7 +1187,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                positionGNode(subpos2, 0, -0.75*h - subpos2.rect.y2, true);
             }
 
-            curr.x += w;
+            shift_position(w);
 
             continue;
          }
@@ -1221,7 +1229,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             extendPosition(curr.x, curr.y + r.y1, curr.x + 4*w + r.width, curr.y + r.y2);
 
-            curr.x += 4*w + r.width;
+            shift_position(4*w + r.width);
 
             // values used for superscript
             curr.last_y1 = r.y1;
@@ -1250,7 +1258,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             positionGNode(subpos, 0, 0, true);
 
-            curr.x += r.width;
+            shift_position(r.width);
 
             continue;
          }
@@ -1270,7 +1278,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             positionGNode(subpos, curr.x, curr.y);
 
-            curr.x += subpos.rect.width;
+            shift_position(subpos.rect.width);
 
             continue;
          }
@@ -1302,7 +1310,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             positionGNode(subpos, curr.x + shiftx * subpos.rect.width, curr.y + shifty * subpos.rect.height);
 
-            curr.x += subpos.rect.width * (shiftx > 0 ? 1 + foundarg : 1);
+            shift_position(subpos.rect.width * (shiftx > 0 ? 1 + foundarg : 1));
 
             continue;
          }
@@ -1325,7 +1333,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             positionGNode(subpos, curr.x, curr.y);
 
-            curr.x += subpos.rect.width;
+            shift_position(subpos.rect.width);
 
             continue;
          }
@@ -1357,7 +1365,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             extendPosition(curr.x, curr.y + r.y1-curr.fsize*0.1, curr.x + w + h*0.6, curr.y + r.y2);
 
-            curr.x += w + h*0.6;
+            shift_position(w + h*0.6);
 
             continue;
         }
