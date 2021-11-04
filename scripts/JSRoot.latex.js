@@ -926,9 +926,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       }
 
-      /** Position gg node at current coordiantes  */
-      const positionGGNode = (gg) => {
-         gg.attr('transform',`translate(${curr.x},${curr.y})`);
+      /** Create special sub-container for elements like sqrt or braces  */
+      const createGG = () => {
+         if (!curr.g) curr.g = node.append("svg:g");
+         let gg = curr.g.append("svg:g");
+         if (curr.x || curr.y)
+            gg.attr('transform',`translate(${curr.x},${curr.y})`);
+         return gg;
       }
 
       const extractSubLabel = (check_first, lbrace, rbrace) => {
@@ -1060,10 +1064,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             let sublabel = extractSubLabel();
             if (sublabel === -1) return false;
 
-            let subpos = createSubPos();
+            let gg = createGG();
 
-            if (!curr.g) curr.g = node.append("svg:g");
-            let gg = curr.g.append("svg:g");
+            let subpos = createSubPos();
 
             ltx.produceExperimentalLatex(painter, gg, arg, sublabel, subpos);
 
@@ -1091,8 +1094,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                default: createPath(gg).attr("d",`M${w*0.2},${y1}L${w*0.5},${y1-dy}L${w*0.8},${y1}`); // #hat{
             }
 
-            positionGGNode(gg);
-
             curr.x += subpos.rect.width;
 
             continue;
@@ -1102,8 +1103,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             curr.twolines = true;
 
-            if (!curr.g) curr.g = node.append("svg:g");
-            let gg = curr.g.append("svg:g");
+            let gg = createGG();
 
             let line1 = extractSubLabel(), line2 = extractSubLabel(true);
 
@@ -1131,8 +1131,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             positionGNode(subpos2, (dw > 0 ? dw/2 : 0), dy - subpos2.rect.y1, true);
 
             if (path) path.attr("d", `M0,${dy}h${w - curr.fsize*0.1}`);
-
-            positionGGNode(gg);
 
             curr.x += w;
 
@@ -1212,8 +1210,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             let subs = extractLowUp(found.low_up);
             if (!subs) return false;
 
-            if (!curr.g) curr.g = node.append("svg:g");
-            let gg = curr.g.append("svg:g");
+            let gg = createGG();
 
             let path = createPath(gg), h = curr.fsize*2, w = curr.fsize, r = Math.round(h*0.1);
 
@@ -1234,8 +1231,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                positionGNode(subpos2, 0, -0.75*h - subpos2.rect.y2, true);
             }
 
-            positionGGNode(gg);
-
             curr.x += w;
 
             continue;
@@ -1246,8 +1241,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             let sublabel = extractSubLabel(false, lbrace, rbrace);
 
-            if (!curr.g) curr.g = node.append("svg:g");
-            let gg = curr.g.append("svg:g"), subpos = createSubPos();
+            let gg = createGG(), subpos = createSubPos();
 
             let path1 = createPath(gg);
 
@@ -1279,8 +1273,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             extendPosition(curr, curr.x, curr.y + r.y1, curr.x + 4*w + r.width, curr.y + r.y2);
 
-            positionGGNode(gg);
-
             curr.x += 4*w + r.width;
 
             // values used for superscript
@@ -1291,9 +1283,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          }
 
          if (found.deco) {
-            if (!curr.g) curr.g = node.append("svg:g");
-
-            let gg = curr.g.append("svg:g"), sublabel = extractSubLabel(), subpos = createSubPos();
+            let gg = createGG(), sublabel = extractSubLabel(), subpos = createSubPos();
 
             subpos.deco = found.deco;
 
@@ -1311,8 +1301,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             }
 
             positionGNode(subpos, 0, 0, true);
-
-            positionGGNode(gg);
 
             curr.x += r.width;
 
@@ -1401,8 +1389,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             let sublabel = extractSubLabel();
             if (sublabel === -1) return false;
 
-            if (!curr.g) curr.g = node.append("svg:g");
-            let gg = curr.g.append("svg:g"), subpos0, subpos = createSubPos();
+            let gg = createGG(), subpos0, subpos = createSubPos();
 
             if (found.arg) {
                subpos0 = createSubPos(0.7);
@@ -1424,8 +1411,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             positionGNode(subpos, h*0.4, 0, true);
 
             extendPosition(curr, curr.x, curr.y + r.y1-curr.fsize*0.1, curr.x + w + h*0.6, curr.y + r.y2);
-
-            positionGGNode(gg);
 
             curr.x += w + h*0.6;
 
