@@ -828,19 +828,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    ltx.produceExperimentalLatex = function(painter, node, arg, label, curr) {
 
       if (!curr) {
-         // initial dy = -0.1 is to move complete from very bottom line like with normal text drawing
          curr = { lvl: 0, g: node, x: 0, y: 0, dx: 0, dy: -0.1, fsize: arg.font_size, font: arg.font, parent: null };
          label = arg.text;
-         arg.mainnode = node;
       }
 
       const addTextNode = txt => {
          if (!curr.g) curr.g = node.append("svg:g");
 
          let elem = curr.g.append("svg:text");
-
-         //if (is_simple && !curr.g && !curr.lvl)
-         //   arg.txt_node = elem;
 
          if (curr.font)
             curr.font.setFont(elem, 'without-size');
@@ -882,7 +877,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                    { height: curr.fsize * 1.2, width: ltx.approximateLabelWidth(s, curr.font, curr.fsize) };
       };
 
-      const extendPosition = (pos, x1, y1, x2, y2, with_parent) => {
+      const extendPosition = (pos, x1, y1, x2, y2) => {
          if (!pos.rect) {
             pos.rect = { x1: x1, y1: y1, x2: x2, y2: y2 };
          } else {
@@ -897,8 +892,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          if (!pos.parent)
             arg.text_rect = pos.rect;
-         else if (with_parent)
-            extendPosition(pos.parent, x1, y1, x2, y2, with_parent);
       }
 
       const positionTextNode = (elem, rect, dx, dy, shift_x) => {
@@ -911,27 +904,31 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          curr.last_y1 = y - rect.height*0.75;
          curr.last_y2 = y + rect.height*0.25;
 
-         // by the text drawing baseline is approx 0.75
          extendPosition(curr, x, curr.last_y1, x + rect.width, curr.last_y2);
-         if (curr.parent) extendPosition(curr.parent, curr.parent.x + x, curr.parent.y + curr.last_y1, curr.parent.x + x + rect.width, curr.parent.y + curr.last_y2, true);
 
          if (shift_x) curr.x += rect.width;
       };
 
-      const positionGNode = (pos, x, y) => {
-         pos.g.attr('transform',`translate(${x},${y})`);
+      /** Position pos.g node which directly attached to curr.g and uses curr.g coordinates */
+      const positionGNode = (pos, x, y, inside_gg) => {
+         if (x || y)
+            pos.g.attr('transform',`translate(${x},${y})`);
+
          pos.rect.x1 += x;
          pos.rect.x2 += x;
          pos.rect.y1 += y;
          pos.rect.y2 += y;
 
-         extendPosition(pos, pos.rect.x1, pos.rect.y1, pos.rect.x2, pos.rect.y2, true);
+         if (inside_gg)
+            extendPosition(curr, curr.x + pos.rect.x1, curr.y + pos.rect.y1, curr.x + pos.rect.x2, curr.y + pos.rect.y2);
+         else
+            extendPosition(curr, pos.rect.x1, pos.rect.y1, pos.rect.x2, pos.rect.y2);
+
       }
 
-      const positionGGNode = (pos, gg) => {
+      /** Position gg node at current coordiantes  */
+      const positionGGNode = (gg) => {
          gg.attr('transform',`translate(${curr.x},${curr.y})`);
-
-         extendPosition(curr, curr.x + pos.rect.x1, curr.y + pos.rect.y1, curr.x + pos.rect.x2, curr.y + pos.rect.y2, true);
       }
 
       const extractSubLabel = (check_first, lbrace, rbrace) => {
@@ -1070,15 +1067,17 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             ltx.produceExperimentalLatex(painter, gg, arg, sublabel, subpos);
 
-            let minw = curr.fsize*0.6,
+            let minw = curr.fsize*0.6, xpos = 0,
                 w = subpos.rect.width, y1 = subpos.rect.y1,
                 dy = curr.fsize*0.2, dy2 = curr.fsize*0.1, dot = `a${dy2},${dy2},0,0,1,${dy},0 a${dy2},${dy2},0,0,1,${-dy},0 z`;
 
             // shift symbol when it is too small
             if (found.hasw && (w < minw)) {
-               positionGNode(subpos, (minw - subpos.rect.width) / 2, 0);
                w = minw;
+               xpos = (minw - subpos.rect.width) / 2;
             }
+
+            positionGNode(subpos, xpos, 0, true);
 
             switch(found.name) {
                case "#check{": createPath(gg).attr("d",`M${w*0.2},${y1-dy}L${w*0.5},${y1}L${w*0.8},${y1-dy}`); break;
@@ -1092,7 +1091,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                default: createPath(gg).attr("d",`M${w*0.2},${y1}L${w*0.5},${y1-dy}L${w*0.8},${y1}`); // #hat{
             }
 
-            positionGGNode(subpos, gg);
+            positionGGNode(gg);
 
             curr.x += subpos.rect.width;
 
@@ -1127,13 +1126,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                 dw = subpos1.rect.width - subpos2.rect.width,
                 dy = -curr.fsize*0.35; // approximate position of middle line
 
-            positionGNode(subpos1, (dw < 0 ? -dw/2 : 0), dy - subpos1.rect.y2);
+            positionGNode(subpos1, (dw < 0 ? -dw/2 : 0), dy - subpos1.rect.y2, true);
 
-            positionGNode(subpos2, (dw > 0 ? dw/2 : 0), dy - subpos2.rect.y1);
+            positionGNode(subpos2, (dw > 0 ? dw/2 : 0), dy - subpos2.rect.y1, true);
 
             if (path) path.attr("d", `M0,${dy}h${w - curr.fsize*0.1}`);
 
-            gg.attr('transform',`translate(${curr.x},${curr.y})`)
+            positionGGNode(gg);
 
             curr.x += w;
 
@@ -1226,16 +1225,16 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if (subs.low) {
                let subpos1 = createSubPos(0.6);
                ltx.produceExperimentalLatex(painter, gg, arg, subs.low, subpos1);
-               positionGNode(subpos1, 0, h*0.25 - subpos1.rect.y1);
+               positionGNode(subpos1, 0, h*0.25 - subpos1.rect.y1, true);
             }
 
             if (subs.up) {
                let subpos2 = createSubPos(0.6);
                ltx.produceExperimentalLatex(painter, gg, arg, subs.up, subpos2);
-               positionGNode(subpos2, 0, -0.75*h - subpos2.rect.y2);
+               positionGNode(subpos2, 0, -0.75*h - subpos2.rect.y2, true);
             }
 
-            gg.attr('transform',`translate(${curr.x},${curr.y})`);
+            positionGGNode(gg);
 
             curr.x += w;
 
@@ -1276,11 +1275,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                   path2.attr("d",`M${3*w+r.width},${r.y1}a${4*dy},${4*dy},0,0,1,0,${dy}`);
             }
 
-            positionGNode(subpos, 2*w, 0);
+            positionGNode(subpos, 2*w, 0, true);
 
-            extendPosition(curr, curr.x, curr.y + r.y1, curr.x + 4*w + r.width, curr.y + r.y2, true);
+            extendPosition(curr, curr.x, curr.y + r.y1, curr.x + 4*w + r.width, curr.y + r.y2);
 
-            gg.attr('transform',`translate(${curr.x},${curr.y})`);
+            positionGGNode(gg);
 
             curr.x += 4*w + r.width;
 
@@ -1311,7 +1310,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                }
             }
 
-            gg.attr('transform',`translate(${curr.x},${curr.y})`);
+            positionGNode(subpos, 0, 0, true);
+
+            positionGGNode(gg);
 
             curr.x += r.width;
 
@@ -1416,15 +1417,15 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             let r = subpos.rect, h = r.height, w = r.width, midy = (r.y1 + r.y2)/2;
 
             if (subpos0)
-               positionGNode(subpos0, 0, midy - subpos0.fsize*0.3);
+               positionGNode(subpos0, 0, midy - subpos0.fsize*0.3, true);
 
             path.attr("d", `M0,${midy}h${h*0.1}l${h*0.1},${r.y2-midy-curr.fsize*0.2}l${h*0.1},${-h+curr.fsize*0.2}h${h*0.2+w}v${h*0.1}`);
 
-            positionGNode(subpos, h*0.4, 0);
+            positionGNode(subpos, h*0.4, 0, true);
 
-            extendPosition(subpos, 0, r.y1-curr.fsize*0.1, w + h*0.6, r.y2, true);
+            extendPosition(curr, curr.x, curr.y + r.y1-curr.fsize*0.1, curr.x + w + h*0.6, curr.y + r.y2);
 
-            gg.attr('transform',`translate(${curr.x},${curr.y})`);
+            positionGGNode(gg);
 
             curr.x += w + h*0.6;
 
