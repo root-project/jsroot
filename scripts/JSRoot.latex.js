@@ -279,8 +279,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    /** @ummary draw TLatex inside element
      * @desc attempt to implement subset of TLatex with plain SVG text and tspan elements
+     * @deprecated
      * @private */
-   ltx.produceLatex = function(painter, node, arg, label, curr) {
+   ltx.produceOldLatex = function(painter, node, arg, label, curr) {
 
       if (!curr) {
          // initial dy = -0.1 is to move complete from very bottom line like with normal text drawing
@@ -638,7 +639,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             // if (subpos.square_root) sublabel = "#frac{a}{bc}";
 
-            if (!ltx.produceLatex(painter, subnode1, arg, sublabel, subpos)) return false;
+            if (!ltx.produceOldLatex(painter, subnode1, arg, sublabel, subpos)) return false;
 
             // takeover current possition and deltas
             curr.x = subpos.x;
@@ -827,12 +828,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @ummary translate TLatex and draw inside provided g element
      * @desc use <text> together with normal <path> elements
      * @private */
-   ltx.produceExperimentalLatex = function(painter, node, arg, label, curr) {
-
-      if (!curr) {
-         curr = { lvl: 0, g: node, x: 0, y: 0, dx: 0, dy: -0.1, fsize: arg.font_size, font: arg.font, parent: null };
-         label = arg.text;
-      }
+   const parseLatex = (painter, node, arg, label, curr) => {
 
       const curr_g = () => { if (!curr.g) curr.g = node.append("svg:g"); return curr.g; }
 
@@ -1022,7 +1018,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             let subpos = createSubPos();
 
-            ltx.produceExperimentalLatex(painter, gg, arg, sublabel, subpos);
+            parseLatex(painter, gg, arg, sublabel, subpos);
 
             let minw = curr.fsize*0.6, xpos = 0,
                 w = subpos.rect.width, y1 = subpos.rect.y1,
@@ -1065,7 +1061,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             let subpos1 = createSubPos(fscale);
 
-            ltx.produceExperimentalLatex(painter, gg, arg, line1, subpos1);
+            parseLatex(painter, gg, arg, line1, subpos1);
 
             let path;
 
@@ -1074,7 +1070,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             let subpos2 = createSubPos(fscale);
 
-            ltx.produceExperimentalLatex(painter, gg, arg, line2, subpos2);
+            parseLatex(painter, gg, arg, line2, subpos2);
 
             let w = Math.max(subpos1.rect.width, subpos2.rect.width),
                 dw = subpos1.rect.width - subpos2.rect.width,
@@ -1129,12 +1125,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             if (subs.up) {
                pos_up = createSubPos(0.6);
-               ltx.produceExperimentalLatex(painter, curr_g(), arg, subs.up, pos_up);
+               parseLatex(painter, curr_g(), arg, subs.up, pos_up);
             }
 
             if (subs.low) {
                pos_low = createSubPos(0.6);
-               ltx.produceExperimentalLatex(painter, curr_g(), arg, subs.low, pos_low);
+               parseLatex(painter, curr_g(), arg, subs.low, pos_low);
             }
 
             if ((curr.last_y1 !== undefined) && (curr.last_y2 !== undefined)) {
@@ -1173,13 +1169,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             if (subs.low) {
                let subpos1 = createSubPos(0.6);
-               ltx.produceExperimentalLatex(painter, gg, arg, subs.low, subpos1);
+               parseLatex(painter, gg, arg, subs.low, subpos1);
                positionGNode(subpos1, 0, h*0.25 - subpos1.rect.y1, true);
             }
 
             if (subs.up) {
                let subpos2 = createSubPos(0.6);
-               ltx.produceExperimentalLatex(painter, gg, arg, subs.up, subpos2);
+               parseLatex(painter, gg, arg, subs.up, subpos2);
                positionGNode(subpos2, 0, -0.75*h - subpos2.rect.y2, true);
             }
 
@@ -1197,7 +1193,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             let path1 = createPath(gg);
 
-            ltx.produceExperimentalLatex(painter, gg, arg, sublabel, subpos);
+            parseLatex(painter, gg, arg, sublabel, subpos);
 
             let path2 = createPath(gg);
 
@@ -1239,7 +1235,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             subpos.deco = found.deco;
 
-            ltx.produceExperimentalLatex(painter, gg, arg, sublabel, subpos);
+            parseLatex(painter, gg, arg, sublabel, subpos);
 
             let r = subpos.rect;
 
@@ -1270,7 +1266,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             else
                subpos.italic = !subpos.italic;
 
-            ltx.produceExperimentalLatex(painter, curr_g(), arg, sublabel, subpos);
+            parseLatex(painter, curr_g(), arg, sublabel, subpos);
 
             positionGNode(subpos, curr.x, curr.y);
 
@@ -1299,7 +1295,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             let subpos = createSubPos();
 
-            ltx.produceExperimentalLatex(painter, curr_g(), arg, sublabel, subpos);
+            parseLatex(painter, curr_g(), arg, sublabel, subpos);
 
             let shiftx = 0, shifty = 0;
             if (found.name == "kern[") shiftx = foundarg; else shifty = foundarg;
@@ -1325,7 +1321,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             else
                subpos.fsize *= foundarg;
 
-            ltx.produceExperimentalLatex(painter, curr_g(), arg, sublabel, subpos);
+            parseLatex(painter, curr_g(), arg, sublabel, subpos);
 
             positionGNode(subpos, curr.x, curr.y);
 
@@ -1342,13 +1338,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             if (found.arg) {
                subpos0 = createSubPos(0.7);
-               ltx.produceExperimentalLatex(painter, gg, arg, foundarg.toString(), subpos0);
+               parseLatex(painter, gg, arg, foundarg.toString(), subpos0);
             }
 
             // placeholder for the sqrt sign
             let path = createPath(gg);
 
-            ltx.produceExperimentalLatex(painter, gg, arg, sublabel, subpos);
+            parseLatex(painter, gg, arg, sublabel, subpos);
 
             let r = subpos.rect, h = r.height, w = r.width, midy = (r.y1 + r.y2)/2;
 
@@ -1370,6 +1366,17 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       return true;
    }
+
+   /** @ummary translate TLatex and draw inside provided g element
+     * @desc use <text> together with normal <path> elements
+     * @private */
+   ltx.produceLatex = function(painter, node, arg) {
+
+      let pos = { lvl: 0, g: node, x: 0, y: 0, dx: 0, dy: -0.1, fsize: arg.font_size, font: arg.font, parent: null };
+
+      return parseLatex(painter, node, arg, arg.text, pos);
+   }
+
 
    /** @summary Load MathJax functionality,
      * @desc one need not only to load script but wait for initialization

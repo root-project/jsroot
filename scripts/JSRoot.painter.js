@@ -2896,12 +2896,12 @@ JSROOT.define(['d3'], (d3) => {
                   arg.simple_latex = true;
                   ltx.producePlainText(this, arg.txt_node, arg);
                } else if (JSROOT.settings.Latex === JSROOT.constants.Latex.Old) {
-                  ltx.produceLatex(this, arg.txt_node, arg);
+                  ltx.produceOldLatex(this, arg.txt_node, arg);
                } else {
                   arg.txt_node.remove(); // just remove text node,
                   delete arg.txt_node;
                   arg.txt_g = arg.draw_g.append("svg:g");
-                  ltx.produceExperimentalLatex(this, arg.txt_g, arg);
+                  ltx.produceLatex(this, arg.txt_g, arg);
                }
                arg.ready = true;
                _postprocessText(this, arg.txt_g || arg.txt_node, arg);
