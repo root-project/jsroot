@@ -230,7 +230,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (typeof value == 'string') {
             if (!pos.rect) pos.rect = { x: pos.x, y: pos.y, height: 0, width: 0 };
             dx1 = -pos.x;
-            pos.x += value.length * arg.font.aver_width * pos.fsize;
+            pos.x += ltx.approximateLabelWidth(value, arg.font, pos.fsize); // value.length * arg.font.aver_width * pos.fsize;
             dx2 = pos.x;
             dy1 = -(pos.y - pos.fsize * 1.1);
             dy2 = pos.y + pos.fsize * 0.1;

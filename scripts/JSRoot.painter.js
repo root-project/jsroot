@@ -1098,7 +1098,7 @@ JSROOT.define(['d3'], (d3) => {
       if (fontIndex !== null) {
 
          let indx = Math.floor(fontIndex / 10),
-             fontName = jsrp.root_fonts[indx] || "";
+             fontName = jsrp.root_fonts[indx] || "Arial";
 
          while (fontName.length > 0) {
             if (fontName[0] === 'b')
@@ -1121,7 +1121,7 @@ JSROOT.define(['d3'], (d3) => {
          this.name = name;
          this.style = style || null;
          this.weight = weight || null;
-         this.aver_width = 0.55;
+         this.aver_width = this.weight ? 0.58 : 0.55;
       }
 
       this.func = this.setFont.bind(this);
