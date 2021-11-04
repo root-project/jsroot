@@ -2753,7 +2753,7 @@ JSROOT.define(['d3'], (d3) => {
 
          let trans = (arg.x || arg.y) ? "translate(" + Math.round(arg.x) + "," + Math.round(arg.y) + ")" : "";
          if (arg.rotate) trans += " rotate(" + Math.round(arg.rotate) + ")";
-         if (scale !== 1) trans += ` scale(${scale.toFixed(3)},${scale.toFixed(3)})`;
+         if (scale !== 1) trans += ` scale(${scale.toFixed(3)})`;
          if (arg.dx || arg.dy) trans += " translate(" + Math.round(arg.dx) + "," + Math.round(arg.dy) + ")";
          if (trans) txt_g.attr("transform", trans);
       });
