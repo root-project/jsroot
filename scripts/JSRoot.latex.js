@@ -176,7 +176,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    /** @summary Simple replacement of latex letters
      * @private */
-   const translateLaTeX = str => {
+   const translateLaTeX = (str, more) => {
       while ((str.length > 2) && (str[0] == '{') && (str[str.length - 1] == '}'))
          str = str.substr(1, str.length - 2);
 
@@ -913,6 +913,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          // by the text drawing baseline is approx 0.75
          extendPosition(curr, x, curr.last_y1, x + rect.width, curr.last_y2);
+         if (curr.parent) extendPosition(curr.parent, curr.parent.x + x, curr.parent.y + curr.last_y1, curr.parent.x + x + rect.width, curr.parent.y + curr.last_y2, true);
 
          if (shift_x) curr.x += rect.width;
       };
@@ -963,7 +964,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       const createPath = (gg, dofill) => {
          return gg.append("svg:path")
                   .style("stroke", dofill ? "none" : (curr.color || arg.color))
-                  .style("stroke-width", dofill ? null : Math.max(1, Math.round(curr.fsize*0.1)))
+                  .style("stroke-width", dofill ? null : Math.max(1, Math.round(curr.fsize*(curr.font.weight ? 0.1 : 0.07))))
                   .style("fill", dofill ? (curr.color || arg.color) : "none");
       };
 
@@ -1023,7 +1024,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          if (!found && !isany) {
             let s = translateLaTeX(label);
-
             let elem = addTextNode(s, true);
             let rect = getTextBoundary(elem, s);
 
@@ -1418,7 +1418,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if (subpos0)
                positionGNode(subpos0, 0, midy - subpos0.fsize*0.3);
 
-            path.attr("d", `M0,${midy}h${h*0.1}l${h*0.1},${r.y2-midy}l${h*0.1},${-h-curr.fsize*0.1}h${h*0.2+w}v${h*0.1}`);
+            path.attr("d", `M0,${midy}h${h*0.1}l${h*0.1},${r.y2-midy-curr.fsize*0.2}l${h*0.1},${-h+curr.fsize*0.2}h${h*0.2+w}v${h*0.1}`);
 
             positionGNode(subpos, h*0.4, 0);
 
