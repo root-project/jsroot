@@ -2879,48 +2879,6 @@ JSROOT.define(['d3'], (d3) => {
 
       if (!use_mathjax || arg.nomathjax) {
 
-         if (JSROOT.settings.Latex == JSROOT.constants.Latex.Experimental) {
-            JSROOT.require(['latex']).then(ltx => {
-
-                /*
-               if (!JSROOT.mydebug) JSROOT.mydebug = 1; else JSROOT.mydebug++;
-
-               switch (JSROOT.mydebug) {
-                  case 1: arg.text = "#bar{a} #hat{b} #check{c} #acute{d} #grave{e} #dot{f} #ddot{g} #lower[-0.5]{upper} #kern[0.5]{shift} #tilde{i} #slash{k} #vec{m} "; break;
-
-                  case 2: arg.text = "{}^{40}_{20}Ca  Zn^{40}_{20}  #bf{bold-text} #it{italic-text} #color[2]{Red} #scale[1.5]{Larger} #font[12]{Times Italic} #font[22]{Times Bold}"; break;
-
-                  case 3: arg.text = "Z^{40}_{20}"; break;
-
-                  default: arg.text = "#underline{a^{i}_{jk}} Simple text #hat{aAa} #left{#frac{y + b}{a - c}#right}^{2} #frac{#frac{a + b}{c}}{d - f}  #sqrt{#frac{a + b}{c}} #sum_{a=0}^{a<10}a*a #int_{x=0}^{x<10}x*x dx a^{i}_{jk} #strike{underline} #strike{#sqrt{a*b}}"; break;
-               }
-
-               // if (JSROOT.mydebug != 3) arg.text = "";
-               */
-
-               if (ltx.isPlainText(arg.text)) {
-                  arg.simple_latex = true;
-                  arg.txt_node = arg.draw_g.append("svg:text");
-                  if (arg.color) arg.txt_node.attr("fill", arg.color);
-                  if (arg.font_size) arg.txt_node.attr("font-size", arg.font_size);
-                                else arg.font_size = font.size;
-                  ltx.producePlainText(this, arg.txt_node, arg);
-                  arg.ready = true;
-                  _postprocessText(this, arg.txt_node, arg);
-               } else {
-                  if (!arg.font_size) arg.font_size = font.size;
-                  arg.txt_g = arg.draw_g.append("svg:g");
-                  ltx.produceExperimentalLatex(this, arg.txt_g, arg);
-                  arg.ready = true;
-                  _postprocessText(this, arg.txt_g, arg);
-               }
-
-               if (arg.draw_g.property('draw_text_completed'))
-                  _checkAllTextDrawing(this, arg.draw_g); // check if all other elements are completed
-            });
-            return 0;
-         }
-
          arg.txt_node = arg.draw_g.append("svg:text");
 
          if (arg.color) arg.txt_node.attr("fill", arg.color);
@@ -2934,12 +2892,19 @@ JSROOT.define(['d3'], (d3) => {
 
          if (!arg.plain || arg.simple_latex) {
             JSROOT.require(['latex']).then(ltx => {
-               if (arg.simple_latex)
+               if (arg.simple_latex || ltx.isPlainText(arg.text)) {
+                  arg.simple_latex = true;
                   ltx.producePlainText(this, arg.txt_node, arg);
-               else
+               } else if (JSROOT.settings.Latex === JSROOT.constants.Latex.Old) {
                   ltx.produceLatex(this, arg.txt_node, arg);
+               } else {
+                  arg.txt_node.remove(); // just remove text node,
+                  delete arg.txt_node;
+                  arg.txt_g = arg.draw_g.append("svg:g");
+                  ltx.produceExperimentalLatex(this, arg.txt_g, arg);
+               }
                arg.ready = true;
-               _postprocessText(this, arg.txt_node, arg);
+               _postprocessText(this, arg.txt_g || arg.txt_node, arg);
 
                if (arg.draw_g.property('draw_text_completed'))
                   _checkAllTextDrawing(this, arg.draw_g); // check if all other elements are completed

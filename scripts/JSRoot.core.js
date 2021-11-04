@@ -258,22 +258,23 @@
          Off: 0, ///
          /** @summary convert only known latex symbols */
          Symbols: 1,
-         /** @summary normal latex processing */
+         /** @summary normal latex processing with svg */
          Normal: 2,
-         /** @summary experimental latex processing */
-         Experimental: 5,
          /** @summary use MathJax for complex cases, otherwise simple SVG text */
          MathJax: 3,
          /** @summary always use MathJax for text rendering */
          AlwaysMathJax: 4,
+         /** @summary old latex processing with tspan */
+         Old: 5,
          fromString: function(s) {
             if (!s || (typeof s !== 'string'))
                return this.Normal;
             switch(s){
                case "off": return this.Off;
                case "symbols": return this.Symbols;
+               case "old": return this.Old;
                case "exp":
-               case "experimental": return this.Experimental;
+               case "experimental": return this.Normal;
                case "MathJax":
                case "mathjax":
                case "math": return this.MathJax;
@@ -282,7 +283,7 @@
                case "alwaysmathjax": return this.AlwaysMathJax;
             }
             let code = parseInt(s);
-            return (Number.isInteger(code) && (code >= this.Off) && (code <= this.Experimental)) ? code : this.Normal;
+            return (Number.isInteger(code) && (code >= this.Off) && (code <= this.Old)) ? code : this.Normal;
          }
       }
    };
