@@ -800,7 +800,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if (!curr) {
          // initial dy = -0.1 is to move complete from very bottom line like with normal text drawing
-         curr = { lvl: 0, g: node, x: 0, y: 0, dx: 0, dy: -0.1, fsize: arg.font_size, parent: null };
+         curr = { lvl: 0, g: node, x: 0, y: 0, dx: 0, dy: -0.1, fsize: arg.font_size, font: arg.font, parent: null };
          label = arg.text;
          arg.mainnode = node;
       }
@@ -830,9 +830,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return elem;
       };
 
-      const getTextBoundary = (elem, approx_rect) => {
-         return !JSROOT.nodejs && !JSROOT.settings.ApproxTextSize && !arg.fast ? jsrp.getElementRect(elem, 'nopadding') :
-                   (approx_rect || { height: arg.font_size * 1.2, width: elem.text().length * arg.font_size * arg.font.aver_width });
+      const getTextBoundary = (elem, s, _debug_batch) => {
+         // _debug_batch = true;
+         return !_debug_batch && !JSROOT.nodejs && !JSROOT.settings.ApproxTextSize && !arg.fast ? jsrp.getElementRect(elem, 'nopadding') :
+                   { height: curr.fsize * 1.2, width: curr.font.approxTextWidth(s, curr.fsize) };
       };
 
       const extendPosition = (pos, x1, y1, x2, y2, with_parent) => {
@@ -978,7 +979,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             let s = translateLaTeX(label);
 
             let elem = addTextNode(s, true);
-            let rect = getTextBoundary(elem);
+            let rect = getTextBoundary(elem, s);
 
             positionTextNode(elem, rect);
 
@@ -994,7 +995,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             let s = translateLaTeX(label.substr(0, best));
             if (s.length > 0) {
                let elem = addTextNode(s);
-               let rect = getTextBoundary(elem);
+               let rect = getTextBoundary(elem, s);
                positionTextNode(elem, rect, 0, 0, true);
             }
          }

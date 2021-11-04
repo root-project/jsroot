@@ -1179,9 +1179,31 @@ JSROOT.define(['d3'], (d3) => {
                .attr("font-style", null);
    }
 
+   /** @summary Is font is monospace, detected once based on name */
+   FontHandler.prototype.isMonospace = function() {
+      if (this.monospace === undefined)
+         this.monospace = (this.name == "Symbol") || (this.name.indexOf("Courier") == 0);
+      return this.monospace;
+   }
+
    /** @summary required for reasonable scaling of text in node.js
      * @returns approximate width of given label */
-   FontHandler.prototype.approxTextWidth = function(label, custom_size) { return label.length * (custom_size || this.size) * this.aver_width; }
+   FontHandler.prototype.approxTextWidth = function(label, custom_size) {
+      let len = label.length,
+          symbol_width = (custom_size || this.size) * this.aver_width;
+
+      // console.log(`text "${label}" len ${label.length} font ${this.name}`)
+      if (this.isMonospace())
+         return len * this.aver_width;
+      let nspaces = 0, nsymb = 0;
+      for (let i = 0; i < len; ++i) {
+         switch(label[i]) {
+            case " ": nspaces++; break;
+            case "|": case "(": case ")": case "{": case "}": nsymb++; break;
+         }
+      }
+      return (len - nspaces/2.2 - nsymb/3.1) * symbol_width; // suppose that space takes half of space of normal symbol
+   }
 
   // ===========================================================================
 
