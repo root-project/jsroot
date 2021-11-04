@@ -877,36 +877,33 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                    { height: curr.fsize * 1.2, width: ltx.approximateLabelWidth(s, curr.font, curr.fsize) };
       };
 
-      const extendPosition = (pos, x1, y1, x2, y2) => {
-         if (!pos.rect) {
-            pos.rect = { x1: x1, y1: y1, x2: x2, y2: y2 };
+      const extendPosition = (x1, y1, x2, y2) => {
+         if (!curr.rect) {
+            curr.rect = { x1: x1, y1: y1, x2: x2, y2: y2 };
          } else {
-            pos.rect.x1 = Math.min(pos.rect.x1, x1);
-            pos.rect.y1 = Math.min(pos.rect.y1, y1);
-            pos.rect.x2 = Math.max(pos.rect.x2, x2);
-            pos.rect.y2 = Math.max(pos.rect.y2, y2);
+            curr.rect.x1 = Math.min(curr.rect.x1, x1);
+            curr.rect.y1 = Math.min(curr.rect.y1, y1);
+            curr.rect.x2 = Math.max(curr.rect.x2, x2);
+            curr.rect.y2 = Math.max(curr.rect.y2, y2);
          }
 
-         pos.rect.width = pos.rect.x2 - pos.rect.x1;
-         pos.rect.height = pos.rect.y2 - pos.rect.y1;
+         curr.rect.width = curr.rect.x2 - curr.rect.x1;
+         curr.rect.height = curr.rect.y2 - curr.rect.y1;
 
-         if (!pos.parent)
-            arg.text_rect = pos.rect;
+         if (!curr.parent)
+            arg.text_rect = curr.rect;
       }
 
-      const positionTextNode = (elem, rect, dx, dy, shift_x) => {
-         let x = Math.round(curr.x + (dx || 0)),
-             y = Math.round(curr.y + (dy || 0));
-         if (x) elem.attr("x", x);
-         if (y) elem.attr("y", y);
+      const positionTextNode = (elem, rect) => {
+         let x = Math.round(curr.x), y = Math.round(curr.y);
+         elem.attr("x", x || null);
+         elem.attr("y", y || null);
 
          // values used for superscript
          curr.last_y1 = y - rect.height*0.75;
          curr.last_y2 = y + rect.height*0.25;
 
-         extendPosition(curr, x, curr.last_y1, x + rect.width, curr.last_y2);
-
-         if (shift_x) curr.x += rect.width;
+         extendPosition(x, curr.last_y1, x + rect.width, curr.last_y2);
       };
 
       /** Position pos.g node which directly attached to curr.g and uses curr.g coordinates */
@@ -920,9 +917,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          pos.rect.y2 += y;
 
          if (inside_gg)
-            extendPosition(curr, curr.x + pos.rect.x1, curr.y + pos.rect.y1, curr.x + pos.rect.x2, curr.y + pos.rect.y2);
+            extendPosition(curr.x + pos.rect.x1, curr.y + pos.rect.y1, curr.x + pos.rect.x2, curr.y + pos.rect.y2);
          else
-            extendPosition(curr, pos.rect.x1, pos.rect.y1, pos.rect.x2, pos.rect.y2);
+            extendPosition(pos.rect.x1, pos.rect.y1, pos.rect.x2, pos.rect.y2);
 
       }
 
@@ -1049,7 +1046,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
                // console.log(`text "${s}"`, 'font', Math.round(curr.fsize) + "pt " + curr.font.name + " " + (curr.font.weight || ""), 'width', rect.width, 'approx', Math.round(ltx.approximateLabelWidth(s, curr.font, curr.fsize)));
 
-               positionTextNode(elem, rect, 0, 0, true);
+               positionTextNode(elem, rect);
+
+               curr.x += rect.width;
             }
          }
 
@@ -1271,7 +1270,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             positionGNode(subpos, 2*w, 0, true);
 
-            extendPosition(curr, curr.x, curr.y + r.y1, curr.x + 4*w + r.width, curr.y + r.y2);
+            extendPosition(curr.x, curr.y + r.y1, curr.x + 4*w + r.width, curr.y + r.y2);
 
             curr.x += 4*w + r.width;
 
@@ -1410,7 +1409,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             positionGNode(subpos, h*0.4, 0, true);
 
-            extendPosition(curr, curr.x, curr.y + r.y1-curr.fsize*0.1, curr.x + w + h*0.6, curr.y + r.y2);
+            extendPosition(curr.x, curr.y + r.y1-curr.fsize*0.1, curr.x + w + h*0.6, curr.y + r.y2);
 
             curr.x += w + h*0.6;
 
@@ -1421,8 +1420,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       return true;
    }
-
-
 
    /** @summary Load MathJax functionality,
      * @desc one need not only to load script but wait for initialization
