@@ -98,13 +98,13 @@ JSROOT.define(['d3'], (d3) => {
          'oCourier New', 'bCourier New', 'boCourier New',
          'Symbol', 'Times New Roman', 'Wingdings', 'iSymbol',
          'Verdana', 'iVerdana', 'bVerdana', 'biVerdana'],
-      // taken from https://www.math.utah.edu/~beebe/fonts/afm-widths.html
-      root_fonts_aver_width: [0.537, 0.510,
-         0.535, 0.520, 0.537,
-         0.54, 0.556, 0.56, 0.6,
-         0.6, 0.6, 0.6,
-         0.587, 0.514, 0.896, 0.587,
-         0.55, 0.55, 0.55, 0.55 ]
+      // taken from symbols.html, counted only for letters and digits
+    root_fonts_aver_width: [0.5778,0.5314,
+         0.5809, 0.5540, 0.5778,
+         0.5783,0.6034,0.6030,0.6003,
+         0.6004,0.6003,0.6005,
+         0.5564,0.5521,0.5664,0.5564,
+         0.5664,0.5495,0.5748,0.5578]
    };
 
    jsrp.createMenu = function(evnt, handler, menuname) {
@@ -1179,31 +1179,22 @@ JSROOT.define(['d3'], (d3) => {
                .attr("font-style", null);
    }
 
-   /** @summary Is font is monospace, detected once based on name */
+   /** @summary Returns true in case of monospace font
+     * @private */
    FontHandler.prototype.isMonospace = function() {
-      if (this.monospace === undefined)
-         this.monospace = (this.name == "Symbol") || (this.name.indexOf("Courier") == 0);
-      return this.monospace;
+      let n = this.name.toLowerCase();
+      return (n.indexOf("courier") == 0) || (n == "monospace") || (n == "monaco");
    }
 
-   /** @summary required for reasonable scaling of text in node.js
-     * @returns approximate width of given label */
-   FontHandler.prototype.approxTextWidth = function(label, custom_size) {
-      let len = label.length,
-          symbol_width = (custom_size || this.size) * this.aver_width;
-
-      // console.log(`text "${label}" len ${label.length} font ${this.name}`)
-      if (this.isMonospace())
-         return len * this.aver_width;
-      let nspaces = 0, nsymb = 0;
-      for (let i = 0; i < len; ++i) {
-         switch(label[i]) {
-            case " ": nspaces++; break;
-            case "|": case "(": case ")": case "{": case "}": nsymb++; break;
-         }
-      }
-      return (len - nspaces/2.2 - nsymb/3.1) * symbol_width; // suppose that space takes half of space of normal symbol
+   /** @summary Return full font declaration which can be set as font property like "12pt Arial bold"
+     * @private */
+   FontHandler.prototype.getFontHtml = function() {
+      let res = Math.round(this.size) + "pt " + this.name;
+      if (this.weight) res += " " + this.weight;
+      if (this.style) res += " " + this.style;
+      return res;
    }
+
 
   // ===========================================================================
 

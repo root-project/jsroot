@@ -154,7 +154,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       '#dot': '\u22C5',
       '#hat': '\xB7',
       '#ddot': '',
-      '#acute': '\acute',
+      '#acute': '',
       '#grave': '',
       '#check': '\u2713',
       '#tilde': '\u02DC',
@@ -188,6 +188,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
      * @memberof JSROOT
      * @private */
    let ltx = {};
+
+
+   // required only for symbols.html to generate list of scale for symbols
+   ltx.symbols_map = symbols_map;
+
 
    ltx.translateLaTeX = translateLaTeX;
 
@@ -792,6 +797,30 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return true;
    }
 
+   // array with relative width of base symbols from range 32..126
+   const base_symbols_width = [453,535,661,973,955,1448,1242,324,593,596,778,1011,431,570,468,492,947,885,947,947,947,947,947,947,947,947,511,495,980,1010,987,893,1624,1185,1147,1193,1216,1080,1028,1270,1274,531,910,1177,1004,1521,1252,1276,1111,1276,1164,1056,1073,1215,1159,1596,1150,1124,1065,540,591,540,837,874,572,929,972,879,973,901,569,967,973,453,458,903,453,1477,973,970,972,976,638,846,548,973,870,1285,884,864,835,656,430,656,1069];
+
+   const extra_symbols_width = {945:1002,946:996,967:917,948:953,949:834,966:1149,947:847,951:989,953:516,954:951,955:913,956:1003,957:862,959:967,960:1070,952:954,961:973,963:1017,964:797,965:944,982:1354,969:1359,958:803,968:1232,950:825,913:1194,914:1153,935:1162,916:1178,917:1086,934:1358,915:1016,919:1275,921:539,977:995,922:1189,923:1170,924:1523,925:1253,927:1281,928:1281,920:1285,929:1102,931:1041,932:1069,933:1135,962:848,937:1279,926:1092,936:1334,918:1067,978:1154,8730:986,8804:940,8260:476,8734:1453,402:811,9827:1170,9830:931,9829:1067,9824:965,8596:1768,8592:1761,8593:895,8594:1761,8595:895,710:695,177:955,8243:680,8805:947,215:995,8733:1124,8706:916,8226:626,247:977,8800:969,8801:1031,8776:976,8230:1552,175:883,8629:1454,8501:1095,8465:1002,8476:1490,8472:1493,8855:1417,8853:1417,8709:1205,8745:1276,8746:1404,8839:1426,8835:1426,8836:1426,8838:1426,8834:1426,8747:480,8712:1426,8713:1426,8736:1608,8711:1551,174:1339,169:1339,8482:1469,8719:1364,729:522,172:1033,8743:1383,8744:1383,8660:1768,8656:1496,8657:1447,8658:1496,8659:1447,8721:1182,9115:882,9144:1000,9117:882,8970:749,9127:1322,9128:1322,8491:1150,229:929,8704:1397,8707:1170,8901:524,183:519,10003:1477,732:692,295:984,9725:1780,9744:1581,8741:737,8869:1390,8857:1421};
+
+   /** @ummary Calculate approximate labels width
+     * @private */
+   ltx.approximateLabelWidth = function(label, font, fsize) {
+      let len = label.length,
+          symbol_width = (fsize || font.size) * font.aver_width;
+      if (font.isMonospace())
+         return len * symbol_width;
+
+      let sum = 0;
+      for (let i = 0; i < len; ++i) {
+         let code = label.charCodeAt(i);
+         if ((code >= 32) && (code<127))
+            sum += base_symbols_width[code-32];
+         else
+            sum += extra_symbols_width[code] || 1000;
+      }
+
+      return sum/1000*symbol_width;
+   }
 
    /** @ummary translate TLatex and draw inside provided g element
      * @desc use <text> together with normal <path> elements
@@ -831,9 +860,26 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       };
 
       const getTextBoundary = (elem, s, _debug_batch) => {
+
+/*     // this is code to use canvas module in node.js, not precise at all
+       if (JSROOT.nodejs) {
+            const { createCanvas } = require('canvas');
+            let canvas = createCanvas(1000, 10000);
+            let context = canvas.getContext("2d");
+
+            let name = Math.round(curr.fsize) + "pt " + curr.font.name;
+            if (curr.font.weight) name += " " + curr.font.weight;
+            if (curr.font.style) name += " " + curr.font.style;
+            context.font = name;
+            let metrics = context.measureText(s);
+            return { height: curr.fsize * 1.2, width: metrics.width };
+         }
+*/
+
          // _debug_batch = true;
+
          return !_debug_batch && !JSROOT.nodejs && !JSROOT.settings.ApproxTextSize && !arg.fast ? jsrp.getElementRect(elem, 'nopadding') :
-                   { height: curr.fsize * 1.2, width: curr.font.approxTextWidth(s, curr.fsize) };
+                   { height: curr.fsize * 1.2, width: ltx.approximateLabelWidth(s, curr.font, curr.fsize) };
       };
 
       const extendPosition = (pos, x1, y1, x2, y2, with_parent) => {
@@ -981,6 +1027,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             let elem = addTextNode(s, true);
             let rect = getTextBoundary(elem, s);
 
+            // console.log(`text "${s}"`, 'font', Math.round(curr.fsize) + "pt " + curr.font.name + " " + (curr.font.weight || ""), 'width', rect.width, 'approx', Math.round(ltx.approximateLabelWidth(s, curr.font, curr.fsize)));
+
             positionTextNode(elem, rect);
 
             if (curr.deco) {
@@ -992,10 +1040,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          }
 
          if (best > 0) {
+
             let s = translateLaTeX(label.substr(0, best));
             if (s.length > 0) {
                let elem = addTextNode(s);
                let rect = getTextBoundary(elem, s);
+
+               // console.log(`text "${s}"`, 'font', Math.round(curr.fsize) + "pt " + curr.font.name + " " + (curr.font.weight || ""), 'width', rect.width, 'approx', Math.round(ltx.approximateLabelWidth(s, curr.font, curr.fsize)));
+
                positionTextNode(elem, rect, 0, 0, true);
             }
          }
