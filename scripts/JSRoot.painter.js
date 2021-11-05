@@ -2739,18 +2739,18 @@ JSROOT.define(['d3'], (d3) => {
 
          // use translate and then rotate to avoid complex sign calculations
          let trans = "";
-         if (arg.y || arg.x)
+         if (arg.y)
             trans = "translate(" + Math.round(arg.x) + "," + Math.round(arg.y) + ")";
-         //else if (arg.x)
-         //   trans = "translate(" + Math.round(arg.x) + ")";
+         else if (arg.x)
+            trans = "translate(" + Math.round(arg.x) + ")";
          if (arg.rotate)
             trans += " rotate(" + Math.round(arg.rotate) + ")";
          if (scale !== 1)
             trans += " scale(" + scale.toFixed(3) + ")";
-         if (arg.dy || arg.dx)
+         if (arg.dy)
             trans += " translate(" + Math.round(arg.dx) + "," + Math.round(arg.dy) + ")";
-         //else if (arg.dx)
-         //   trans += " translate(" + Math.round(arg.dx) + ")";
+         else if (arg.dx)
+            trans += " translate(" + Math.round(arg.dx) + ")";
          if (trans) txt.attr("transform", trans);
       });
 
