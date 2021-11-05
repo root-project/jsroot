@@ -2657,111 +2657,101 @@ JSROOT.define(['d3'], (d3) => {
          }
       });
 
-      // now hidden text after rescaling can be shown
+      // now process text and latex drawings
       all_args.forEach(arg => {
-         if (!arg.txt_node) return; // only normal text is processed
-         any_text = true;
-         let txt = arg.txt_node;
-         delete arg.txt_node;
-         txt.attr('visibility', null);
-
-         if (JSROOT.nodejs) {
-            if (arg.scale && (f > 0)) { arg.box.width = arg.box.width / f; arg.box.height = arg.box.height / f; }
-         } else if (!arg.plain && !arg.fast) {
-            // exact box dimension only required when complex text was build
-            arg.box = jsrp.getElementRect(txt, 'bbox');
+         let txt, is_txt, scale = 1;
+         if (arg.txt_node) {
+            txt = arg.txt_node;
+            delete arg.txt_node;
+            is_txt = true;
+         } else if (arg.txt_g) {
+            txt = arg.txt_g;
+            delete arg.txt_g;
+            is_txt = false;
+         } else {
+            return;
          }
 
-         // if (arg.text.length>20) console.log(arg.box, arg.align, arg.x, arg.y, 'plain', arg.plain, 'inside', arg.width, arg.height);
+         txt.attr('visibility', null);
+
+         any_text = true;
 
          if (arg.width) {
             // adjust x position when scale into specified rectangle
-            if (arg.align[0] == "middle") arg.x += arg.width / 2; else
-               if (arg.align[0] == "end") arg.x += arg.width;
+            if (arg.align[0] == "middle")
+               arg.x += arg.width / 2;
+             else if (arg.align[0] == "end")
+                arg.x += arg.width;
+         }
+
+         if (arg.height) {
+            if (arg.align[1].indexOf('bottom') === 0)
+               arg.y += arg.height;
+            else if (arg.align[1] == 'middle')
+               arg.y += arg.height / 2;
          }
 
          arg.dx = arg.dy = 0;
 
-         if (arg.plain) {
-            txt.attr("text-anchor", arg.align[0]);
-         } else {
-            txt.attr("text-anchor", "start");
-            arg.dx = ((arg.align[0] == "middle") ? -0.5 : ((arg.align[0] == "end") ? -1 : 0)) * arg.box.width;
-         }
+         if (is_txt) {
 
-         if (arg.height) {
-            if (arg.align[1].indexOf('bottom') === 0) arg.y += arg.height; else
-               if (arg.align[1] == 'middle') arg.y += arg.height / 2;
-         }
+            // handle simple text drawing
 
-         if (arg.plain) {
-            if (arg.align[1] == 'top') txt.attr("dy", ".8em"); else
-               if (arg.align[1] == 'middle') {
+            if (JSROOT.nodejs) {
+               if (arg.scale && (f > 0)) { arg.box.width *= 1/f; arg.box.height *= 1/f; }
+            } else if (!arg.plain && !arg.fast) {
+               // exact box dimension only required when complex text was build
+               arg.box = jsrp.getElementRect(txt, 'bbox');
+            }
+
+            if (arg.plain) {
+               txt.attr("text-anchor", arg.align[0]);
+               if (arg.align[1] == 'top')
+                  txt.attr("dy", ".8em");
+               else if (arg.align[1] == 'middle') {
                   if (JSROOT.nodejs) txt.attr("dy", ".4em"); else txt.attr("dominant-baseline", "middle");
                }
+            } else {
+               txt.attr("text-anchor", "start");
+               arg.dx = ((arg.align[0] == "middle") ? -0.5 : ((arg.align[0] == "end") ? -1 : 0)) * arg.box.width;
+               arg.dy = ((arg.align[1] == 'top') ? (arg.top_shift || 1) : (arg.align[1] == 'middle') ? (arg.mid_shift || 0.5) : 0) * arg.box.height;
+            }
+
          } else {
-            arg.dy = ((arg.align[1] == 'top') ? (arg.top_shift || 1) : (arg.align[1] == 'middle') ? (arg.mid_shift || 0.5) : 0) * arg.box.height;
+
+            // handle latext drawing
+            let box = arg.text_rect;
+
+            scale = (f > 0) && (Math.abs(1-f)>0.01) ? 1/f : 1;
+
+            arg.dx = ((arg.align[0] == "middle") ? -0.5 : ((arg.align[0] == "end") ? -1 : 0)) * box.width * scale;
+
+            if (arg.align[1] == 'top')
+               arg.dy = -box.y1*scale;
+            else if (arg.align[1] == 'bottom')
+               arg.dy = -box.y2*scale;
+            else if (arg.align[1] == 'middle')
+               arg.dy = -0.5*(box.y1 + box.y2)*scale;
+
          }
 
          if (!arg.rotate) { arg.x += arg.dx; arg.y += arg.dy; arg.dx = arg.dy = 0; }
 
          // use translate and then rotate to avoid complex sign calculations
-         let trans = (arg.x || arg.y) ? "translate(" + Math.round(arg.x) + "," + Math.round(arg.y) + ")" : "";
-         if (arg.rotate) trans += " rotate(" + Math.round(arg.rotate) + ")";
-         if (arg.dx || arg.dy) trans += " translate(" + Math.round(arg.dx) + "," + Math.round(arg.dy) + ")";
-         if (trans) txt.attr("transform", trans);
-      });
-
-      // finally process TLatex drawings
-      all_args.forEach(arg => {
-         if (!arg.txt_g) return;
-         any_text = true;
-         let txt_g = arg.txt_g;
-         delete arg.txt_g;
-         txt_g.attr('visibility', null);
-
-         let box = arg.text_rect;
-
-         if (arg.width) {
-            // adjust x position when scale into specified rectangle
-            if (arg.align[0] == "middle") arg.x += arg.width / 2; else
-               if (arg.align[0] == "end") arg.x += arg.width;
-         }
-
-         arg.dx = arg.dy = 0;
-
-         let scale = (f > 0) && (Math.abs(1-f)>0.01) ? 1/f : 1;
-
-         arg.dx = ((arg.align[0] == "middle") ? -0.5 : ((arg.align[0] == "end") ? -1 : 0)) * box.width * scale;
-
-         if (arg.height) {
-            if (arg.align[1].indexOf('bottom') === 0) arg.y += arg.height; else
-               if (arg.align[1] == 'middle') arg.y += arg.height / 2;
-         }
-
-         if (arg.align[1] == 'top')
-            arg.dy = -box.y1*scale;
-         else if (arg.align[1] == 'bottom')
-            arg.dy = -box.y2*scale;
-         else if (arg.align[1] == 'middle')
-            arg.dy = -0.5*(box.y1 + box.y2)*scale;
-
-         if (!arg.rotate) { arg.x += arg.dx; arg.y += arg.dy; arg.dx = arg.dy = 0; }
-
          let trans = "";
-         if (arg.y)
+         if (arg.y || arg.x)
             trans = "translate(" + Math.round(arg.x) + "," + Math.round(arg.y) + ")";
-         else if (arg.x)
-            trans = "translate(" + Math.round(arg.x) + ")";
+         //else if (arg.x)
+         //   trans = "translate(" + Math.round(arg.x) + ")";
          if (arg.rotate)
             trans += " rotate(" + Math.round(arg.rotate) + ")";
          if (scale !== 1)
             trans += " scale(" + scale.toFixed(3) + ")";
-         if (arg.dy)
+         if (arg.dy || arg.dx)
             trans += " translate(" + Math.round(arg.dx) + "," + Math.round(arg.dy) + ")";
-         else if (arg.dx)
-            trans += " translate(" + Math.round(arg.dx) + ")";
-         if (trans) txt_g.attr("transform", trans);
+         //else if (arg.dx)
+         //   trans += " translate(" + Math.round(arg.dx) + ")";
+         if (trans) txt.attr("transform", trans);
       });
 
 
