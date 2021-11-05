@@ -996,8 +996,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             parseLatex(painter, gg, arg, sublabel, subpos);
 
             let minw = curr.fsize*0.6, xpos = 0,
-                w = subpos.rect.width, y1 = subpos.rect.y1,
-                dy = curr.fsize*0.2, dy2 = curr.fsize*0.1, dot = `a${dy2},${dy2},0,0,1,${dy},0 a${dy2},${dy2},0,0,1,${-dy},0 z`;
+                w = subpos.rect.width,
+                y1 = Math.round(subpos.rect.y1),
+                dy2 = Math.round(curr.fsize*0.1), dy = dy2*2,
+                dot = `a${dy2},${dy2},0,0,1,${dy},0a${dy2},${dy2},0,0,1,${-dy},0z`;
 
             // shift symbol when it is too small
             if (found.hasw && (w < minw)) {
@@ -1005,18 +1007,21 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                xpos = (minw - subpos.rect.width) / 2;
             }
 
+            let w5 = Math.round(w*0.5), w3 = Math.round(w*0.3), w2 = w5-w3, w8 = w5+w3;
+            w = w5*2;
+
             positionGNode(subpos, xpos, 0, true);
 
             switch(found.name) {
-               case "#check{": createPath(gg).attr("d",`M${w*0.2},${y1-dy}L${w*0.5},${y1}L${w*0.8},${y1-dy}`); break;
-               case "#acute{": createPath(gg).attr("d",`M${w*0.5},${y1}l${dy},${-dy}`); break;
-               case "#grave{": createPath(gg).attr("d",`M${w*0.5},${y1}l${-dy},${-dy}`); break;
-               case "#dot{": createPath(gg, true).attr("d",`M${w*0.5-dy2},${y1}${dot}`); break;
-               case "#ddot{": createPath(gg, true).attr("d",`M${w*0.5-3*dy2},${y1}${dot} M${w*0.5+dy2},${y1}${dot}`); break;
-               case "#tilde{": createPath(gg).attr("d",`M${w*0.2},${y1} a${w*0.3},${dy},0,0,1,${w*0.3},0 a${w*0.3},${dy},0,0,0,${w*0.3},0`); break;
-               case "#slash{": createPath(gg).attr("d",`M${w},${y1}L0,${subpos.rect.y2}`); break;
-               case "#vec{": createPath(gg).attr("d",`M${w*0.2},${y1}H${w*0.8}l${-dy},${-dy}m${dy},${dy}l${-dy},${dy}`); break;
-               default: createPath(gg).attr("d",`M${w*0.2},${y1}L${w*0.5},${y1-dy}L${w*0.8},${y1}`); // #hat{
+               case "#check{": createPath(gg).attr("d",`M${w2},${y1-dy}L${w5},${y1}L${w8},${y1-dy}`); break;
+               case "#acute{": createPath(gg).attr("d",`M${w5},${y1}l${dy},${-dy}`); break;
+               case "#grave{": createPath(gg).attr("d",`M${w5},${y1}l${-dy},${-dy}`); break;
+               case "#dot{": createPath(gg, true).attr("d",`M${w5-dy2},${y1}${dot}`); break;
+               case "#ddot{": createPath(gg, true).attr("d",`M${w5-3*dy2},${y1}${dot} M${w5+dy2},${y1}${dot}`); break;
+               case "#tilde{": createPath(gg).attr("d",`M${w2},${y1} a${w3},${dy},0,0,1,${w3},0 a${w3},${dy},0,0,0,${w3},0`); break;
+               case "#slash{": createPath(gg).attr("d",`M${w},${y1}L0,${Math.round(subpos.rect.y2)}`); break;
+               case "#vec{": createPath(gg).attr("d",`M${w2},${y1}H${w8}M${w8-dy},${y1-dy}l${dy},${dy}l${-dy},${dy}`); break;
+               default: createPath(gg).attr("d",`M${w2},${y1}L${w5},${y1-dy}L${w8},${y1}`); // #hat{
             }
 
             shift_position(subpos.rect.width);
@@ -1055,7 +1060,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             positionGNode(subpos2, (dw > 0 ? dw/2 : 0), dy - subpos2.rect.y1, true);
 
-            if (path) path.attr("d", `M0,${dy}h${w - curr.fsize*0.1}`);
+            if (path) path.attr("d", `M0,${Math.round(dy)}h${Math.round(w - curr.fsize*0.1)}`);
 
             shift_position(w);
 
@@ -1139,10 +1144,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             if (found.name == "#sum") {
                x_up = x_low = w/2;
-               path.attr("d",`M${w},${-0.75*h}h${-w}l${0.4*w},${0.3*h}l${-0.4*w},${0.7*h}h${w}`);
+               path.attr("d",`M${w},${Math.round(-0.75*h)}h${-w}l${Math.round(0.4*w)},${Math.round(0.3*h)}l${Math.round(-0.4*w)},${Math.round(0.7*h)}h${w}`);
             } else {
                x_up = 3*r; x_low = r;
-               path.attr("d",`M0,${0.25*h-r}a${r},${r},0,0,0,${2*r},0v${2*r-h}a${r},${r},0,1,1,${2*r},0`);
+               path.attr("d",`M0,${Math.round(0.25*h-r)}a${r},${r},0,0,0,${2*r},0v${2*r-h}a${r},${r},0,1,1,${2*r},0`);
             }
 
             if (subs.low) {
