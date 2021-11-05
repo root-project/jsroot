@@ -255,7 +255,7 @@
         * @private */
       Latex: {
          /** @summary do not use Latex at all for text drawing */
-         Off: 0, ///
+         Off: 0,
          /** @summary convert only known latex symbols */
          Symbols: 1,
          /** @summary normal latex processing with svg */
@@ -264,7 +264,7 @@
          MathJax: 3,
          /** @summary always use MathJax for text rendering */
          AlwaysMathJax: 4,
-         /** @summary old latex processing with tspan */
+         /** @summary old latex processing with tspan, deprecated, will be removed after release 6.4 */
          Old: 5,
          fromString: function(s) {
             if (!s || (typeof s !== 'string'))
