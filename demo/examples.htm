@@ -113,8 +113,9 @@
              filepath = "../files/",
              use_requirejs = false,
              use_openui5 = false,
-             extra_opts = "", // extra options like webgl=no
+             extra_opts = "", // extra options like webgl=no or interactive=0
              select_key = null, // select the only key like ?select=TH2
+             no_interactive = false, // disable interactivity
              use_zstd = true;
 
          let icon = document.createElement("link");
@@ -135,6 +136,11 @@
 
          if (window.location.search.indexOf("nowebgl") > 0)
             extra_opts = "&webgl=0";
+
+         if (window.location.search.indexOf("noint") > 0) {
+            no_interactive = true;
+            extra_opts += "&interactive=0";
+         }
 
          if ((window.location.host.indexOf('jsroot.gsi.de') < 0) &&
              (window.location.host.indexOf('root.cern') < 0)) {
@@ -198,6 +204,14 @@
 
             if (typeof JSROOT.cleanup === 'function')
                JSROOT.cleanup('viewer');
+
+            if (no_interactive && JSROOT.settings) {
+               JSROOT.settings.Tooltip = 0;
+               JSROOT.settings.ContextMenu = false;
+               JSROOT.settings.Zooming = false;
+               JSROOT.settings.MoveResize = false;
+               JSROOT.settings.DragAndDrop = false;
+            }
 
             if (durl.length > 0) {
                let viewer = document.getElementById( 'viewer_frame' );
@@ -323,6 +337,8 @@
             JSROOT.cleanup("viewer");
 
             if (url.length > 0) {
+               if (interactive) url += "&interactive="+interactive;
+
                testfile = testobj = null;
                // if (keyid == 'TGeo') return RunBigTest(0);  // ignore TGeo URLs - too complex
 
@@ -428,8 +444,9 @@
                         url = ""; filename = entry.file;
                         if ((filename.indexOf("http:")<0) && (filename.indexOf("https:")<0)) filename = filepath + filename;
                      }
-                     if ('item' in entry) { url = ""; itemname = entry.item; style = entry.style; } else
-                     if ('items' in entry) {
+                     if ('item' in entry) {
+                        url = ""; itemname = entry.item; style = entry.style;
+                     } else if ('items' in entry) {
                         url = "?nobrowser&file=" + filename;
                         if (entry.layout) url += "&layout=" + entry.layout;
                         url += "&items=[" + entry.items.join(",") + "]";
@@ -445,13 +462,13 @@
 
                   if ('name' in entry)
                      aaa.textContent = entry.name;
-                  else
-                  if (opt != "")
+                  else if (opt != "")
                      aaa.textContent = opt;
                   else
                      aaa.textContent = "<dflt>";
 
-                  if (aaa.textContent != "<dflt>") shortname += "_" + aaa.textContent.toLowerCase().replace(" ","_");
+                  if (aaa.textContent != "<dflt>")
+                     shortname += "_" + aaa.textContent.toLowerCase().replace(" ","_");
 
                   let prefix = (entry.asurl === "browser") ? "?" : "?nobrowser&";
 
@@ -462,7 +479,7 @@
                         url = prefix + "file=" + filename + "&item=" + itemname;
                      if (entry.style) url += "&style=" + entry.style;
                      if (entry.mathjax) url += "&mathjax";
-                     if (entry.latex) url += "&latex="+entry.latex;
+                     if (entry.latex) url += "&latex=" + entry.latex;
                   }
 
                   if (url)
