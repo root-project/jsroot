@@ -3907,13 +3907,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if (this.painters && (this.painters.length > 0)) {
                menu.add("separator");
                let shown = [];
-               this.painters.forEach(pp => {
+               this.painters.forEach((pp,indx) => {
                   let obj = pp ? pp.getObject() : null;
                   if (!obj || (shown.indexOf(obj) >= 0)) return;
                   let name = ('_typename' in obj) ? (obj._typename + "::") : "";
                   if ('fName' in obj) name += obj.fName;
-                  if (!name.length) name = "item" + n;
-                  menu.add(name, n, this.itemContextMenu);
+                  if (!name.length) name = "item" + indx;
+                  menu.add(name, indx, this.itemContextMenu);
                });
             }
 
