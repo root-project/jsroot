@@ -154,7 +154,7 @@ examples_more = {
    TLatex : [
       { name: "symbols", file: "latex.root", layout: "grid2x2", latex: "symbols", items: ['lva','ex1','ex2','ex3'], title: "Replace only known TLatex symbols" },
       { name: "plain", file: "latex.root", layout: "grid2x2", latex: "off", items: ['lva','ex1','ex2','ex3'], title: "Disable TLatex processor completely" },
-      { name: "exp", file: "latex.root", layout: "grid2x2", latex: "exp", items: ['lva','ex1','ex2','ex3'], title: "Experimental TLatex parser" }
+      { name: "old", file: "latex.root", layout: "grid2x2", latex: "old", items: ['lva','ex1','ex2','ex3'], title: "Deprecated TLatex parser, will be removed after JSROOT 6.4" }
    ],
    TASImage : [
       { name: "n4254_json", json: "image.json.gz", title: "TASImage with binary data, see tutorials/image/galaxy_image.C macro" },
