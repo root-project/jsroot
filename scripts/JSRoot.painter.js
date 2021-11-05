@@ -2706,7 +2706,7 @@ JSROOT.define(['d3'], (d3) => {
          if (trans) txt.attr("transform", trans);
       });
 
-      // finally process experimental drawings
+      // finally process TLatex drawings
       all_args.forEach(arg => {
          if (!arg.txt_g) return;
          any_text = true;
@@ -2714,16 +2714,7 @@ JSROOT.define(['d3'], (d3) => {
          delete arg.txt_g;
          txt_g.attr('visibility', null);
 
-         arg.box = arg.text_rect;
-
-         //if (JSROOT.nodejs) {
-         //   if (arg.scale && (f > 0)) { arg.box.width = arg.box.width / f; arg.box.height = arg.box.height / f; }
-         //} else if (!arg.box) {
-         //   // exact box dimension only required when complex text was build
-         //   arg.box = jsrp.getElementRect(txt_g, 'bbox');
-         // }
-
-         // if (arg.text.length>20) console.log(arg.box, arg.align, arg.x, arg.y, 'plain', arg.plain, 'inside', arg.width, arg.height);
+         let box = arg.text_rect;
 
          if (arg.width) {
             // adjust x position when scale into specified rectangle
@@ -2735,7 +2726,7 @@ JSROOT.define(['d3'], (d3) => {
 
          let scale = (f > 0) && (Math.abs(1-f)>0.01) ? 1/f : 1;
 
-         arg.dx = ((arg.align[0] == "middle") ? -0.5 : ((arg.align[0] == "end") ? -1 : 0)) * arg.box.width * scale;
+         arg.dx = ((arg.align[0] == "middle") ? -0.5 : ((arg.align[0] == "end") ? -1 : 0)) * box.width * scale;
 
          if (arg.height) {
             if (arg.align[1].indexOf('bottom') === 0) arg.y += arg.height; else
@@ -2743,11 +2734,11 @@ JSROOT.define(['d3'], (d3) => {
          }
 
          if (arg.align[1] == 'top')
-            arg.dy = -arg.box.y1;
+            arg.dy = -box.y1*scale;
          else if (arg.align[1] == 'bottom')
-            arg.dy = -arg.box.y2;
+            arg.dy = -box.y2*scale;
          else if (arg.align[1] == 'middle')
-            arg.dy = -0.5*(arg.box.y1 + arg.box.y2);
+            arg.dy = -0.5*(box.y1 + box.y2)*scale;
 
          if (!arg.rotate) { arg.x += arg.dx; arg.y += arg.dy; arg.dx = arg.dy = 0; }
 
