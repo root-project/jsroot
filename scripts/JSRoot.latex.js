@@ -1135,23 +1135,26 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             let gg = createGG();
 
-            let path = createPath(gg), h = curr.fsize*2, w = curr.fsize, r = Math.round(h*0.1);
+            let path = createPath(gg), h = Math.round(curr.fsize*2), w = Math.round(curr.fsize), r = Math.round(h*0.1), x_up, x_low;
 
-            if (found.name == "#sum")
-               path.attr("d",`M${w},${h*-0.75}h${-w}l${w*0.4},${h*0.3}l${w*-0.4},${h*0.7}h${w}`);
-            else
-               path.attr("d",`M0,${h*0.25-r}a${r},${r},0,0,0,${2*r},0v${2*r-h}a${r},${r},0,1,1,${2*r},0`);
+            if (found.name == "#sum") {
+               x_up = x_low = w/2;
+               path.attr("d",`M${w},${-0.75*h}h${-w}l${0.4*w},${0.3*h}l${-0.4*w},${0.7*h}h${w}`);
+            } else {
+               x_up = 3*r; x_low = r;
+               path.attr("d",`M0,${0.25*h-r}a${r},${r},0,0,0,${2*r},0v${2*r-h}a${r},${r},0,1,1,${2*r},0`);
+            }
 
             if (subs.low) {
                let subpos1 = createSubPos(0.6);
                parseLatex(painter, gg, arg, subs.low, subpos1);
-               positionGNode(subpos1, 0, h*0.25 - subpos1.rect.y1, true);
+               positionGNode(subpos1, (x_low - subpos1.rect.width/2), 0.25*h - subpos1.rect.y1, true);
             }
 
             if (subs.up) {
                let subpos2 = createSubPos(0.6);
                parseLatex(painter, gg, arg, subs.up, subpos2);
-               positionGNode(subpos2, 0, -0.75*h - subpos2.rect.y2, true);
+               positionGNode(subpos2, (x_up - subpos2.rect.width/2), -0.75*h - subpos2.rect.y2, true);
             }
 
             shift_position(w);
@@ -1172,24 +1175,26 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             let path2 = createPath(gg);
 
-            let w = Math.max(2, Math.round(curr.fsize*0.2)), r = subpos.rect, dy = r.y2 - r.y1;
+            let w = Math.max(2, Math.round(curr.fsize*0.2)),
+               r = subpos.rect, dy = Math.round(r.y2 - r.y1),
+               r_y1 = Math.round(r.y1), r_width = Math.round(r.width);
 
             switch (found.braces) {
                case "||":
-                  path1.attr("d",`M${w},${r.y1}v${dy}`);
-                  path2.attr("d",`M${3*w+r.width},${r.y1}v${dy}`);
+                  path1.attr("d",`M${w},${r_y1}v${dy}`);
+                  path2.attr("d",`M${3*w+r_width},${r_y1}v${dy}`);
                   break;
                case "[]":
-                  path1.attr("d",`M${2*w},${r.y1}h${-w}v${dy}h${w}`);
-                  path2.attr("d",`M${2*w+r.width},${r.y1}h${w}v${dy}h${-w}`);
+                  path1.attr("d",`M${2*w},${r_y1}h${-w}v${dy}h${w}`);
+                  path2.attr("d",`M${2*w+r_width},${r_y1}h${w}v${dy}h${-w}`);
                   break;
                case "{}":
-                  path1.attr("d",`M${2*w},${r.y1} a${w},${w},0,0,0,${-w},${w} v${dy/2-2*w} a${w},${w},0,0,1,${-w},${w} a${w},${w},0,0,1,${w},${w} v${dy/2-2*w} a${w},${w},0,0,0,${w},${w}`);
-                  path2.attr("d",`M${2*w+r.width},${r.y1} a${w},${w},0,0,1,${w},${w} v${dy/2-2*w} a${w},${w},0,0,0,${w},${w} a${w},${w},0,0,0,${-w},${w} v${dy/2-2*w} a${w},${w},0,0,1,${-w},${w}`);
+                  path1.attr("d",`M${2*w},${r_y1} a${w},${w},0,0,0,${-w},${w} v${dy/2-2*w} a${w},${w},0,0,1,${-w},${w} a${w},${w},0,0,1,${w},${w} v${dy/2-2*w} a${w},${w},0,0,0,${w},${w}`);
+                  path2.attr("d",`M${2*w+r_width},${r_y1} a${w},${w},0,0,1,${w},${w} v${dy/2-2*w} a${w},${w},0,0,0,${w},${w} a${w},${w},0,0,0,${-w},${w} v${dy/2-2*w} a${w},${w},0,0,1,${-w},${w}`);
                   break;
                default: // ()
-                  path1.attr("d",`M${w},${r.y1}a${4*dy},${4*dy},0,0,0,0,${dy}`);
-                  path2.attr("d",`M${3*w+r.width},${r.y1}a${4*dy},${4*dy},0,0,1,0,${dy}`);
+                  path1.attr("d",`M${w},${r_y1}a${4*dy},${4*dy},0,0,0,0,${dy}`);
+                  path2.attr("d",`M${3*w+r_width},${r_y1}a${4*dy},${4*dy},0,0,1,0,${dy}`);
             }
 
             positionGNode(subpos, 2*w, 0, true);
@@ -1215,11 +1220,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             let r = subpos.rect;
 
             if (subpos.deco) {
-               let path = createPath(gg);
+               let path = createPath(gg), r_width = Math.round(r.width);
                switch(subpos.deco) {
-                  case "underline": path.attr("d",`M0,${r.y2}h${r.width}`); break;
-                  case "overline": path.attr("d",`M0,${r.y1}h${r.width}`); break;
-                  case "line-through": path.attr("d",`M0,${0.45*r.y1+0.55*r.y2}h${r.width}`); break;
+                  case "underline": path.attr("d",`M0,${Math.round(r.y2)}h${r_width}`); break;
+                  case "overline": path.attr("d",`M0,${Math.round(r.y1)}h${r_width}`); break;
+                  case "line-through": path.attr("d",`M0,${Math.round(0.45*r.y1+0.55*r.y2)}h${r_width}`); break;
                }
             }
 
@@ -1323,12 +1328,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             parseLatex(painter, gg, arg, sublabel, subpos);
 
-            let r = subpos.rect, h = r.height, w = r.width, midy = (r.y1 + r.y2)/2;
+            let r = subpos.rect, h = Math.round(r.height), w = Math.round(r.width), midy = Math.round((r.y1 + r.y2)/2),
+                f2 = Math.round(curr.fsize*0.2), r_y2 = Math.round(r.y2);
 
             if (subpos0)
                positionGNode(subpos0, 0, midy - subpos0.fsize*0.3, true);
 
-            path.attr("d", `M0,${midy}h${h*0.1}l${h*0.1},${r.y2-midy-curr.fsize*0.2}l${h*0.1},${-h+curr.fsize*0.2}h${h*0.2+w}v${h*0.1}`);
+            path.attr("d", `M0,${midy}h${h*0.1}l${h*0.1},${r_y2-midy-f2}l${h*0.1},${-h+f2}h${h*0.2+w}v${h*0.1}`);
 
             positionGNode(subpos, h*0.4, 0, true);
 
