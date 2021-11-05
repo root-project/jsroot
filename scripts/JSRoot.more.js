@@ -1310,7 +1310,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
             let grx = funcs.grx(pnt.x);
 
             // when drawing bars, take all points
-            if (!this.options.Bar && ((grx<0) || (grx>w))) return true;
+            if (!this.options.Bar && ((grx < 0) || (grx > w))) return true;
 
             let gry = funcs.gry(pnt.y);
 
@@ -1346,7 +1346,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
                      .enter()
                      .append("svg:g")
                      .attr("class", "grpoint")
-                     .attr("transform", d => "translate(" + d.grx1 + "," + d.gry1 + ")");
+                     .attr("transform", d => `translate(${d.grx1},${d.gry1})`);
       }
 
       if (this.options.Bar) {
@@ -1396,8 +1396,14 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          let lw = this.lineatt.width + JSROOT.gStyle.fEndErrorSize, bb = 0,
              vv = this.options.Ends ? "m0," + lw + "v-" + 2*lw : "",
              hh = this.options.Ends ? "m" + lw + ",0h-" + 2*lw : "",
-             vleft = vv, vright = vv, htop = hh, hbottom = hh,
-             mm = this.options.MainError ? "M0,0L" : "M"; // command to draw main errors
+             vleft = vv, vright = vv, htop = hh, hbottom = hh;
+
+         const mainLine = (dx,dy) => {
+            if (!this.options.MainError) return `M${dx},${dy}`;
+            let res = "M0,0";
+            if (dx) return res + (dy ? `L${dx},${dy}` : `H${dx}`);
+            return dy ? res + `V${dy}` : res;
+         };
 
          switch (this.options.Ends) {
             case 2:  // option []
@@ -1435,17 +1441,17 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
                    .style("stroke", "none")
                    .style("fill", "none")
                    .style("pointer-events", "visibleFill")
-                   .attr("d", d => "M"+d.grx0+","+d.gry0+"h"+(d.grx2-d.grx0)+"v"+(d.gry2-d.gry0)+"h"+(d.grx0-d.grx2)+"z");
+                   .attr("d", d => `M${d.grx0},${d.gry0}h${d.grx2-d.grx0}v${d.gry2-d.gry0}h${d.grx0-d.grx2}z`);
 
          visible.append("svg:path")
              .call(this.lineatt.func)
              .style("fill", "none")
              .attr("d", d => {
                 d.error = true;
-                return ((d.exlow > 0)  ? mm + (d.grx0+lw) + "," + d.grdx0 + vleft : "") +
-                       ((d.exhigh > 0) ? mm + (d.grx2-lw) + "," + d.grdx2 + vright : "") +
-                       ((d.eylow > 0)  ? mm + d.grdy0 + "," + (d.gry0-lw) + hbottom : "") +
-                       ((d.eyhigh > 0) ? mm + d.grdy2 + "," + (d.gry2+lw) + htop : "");
+                return ((d.exlow > 0)  ? mainLine(d.grx0+lw, d.grdx0) + vleft : "") +
+                       ((d.exhigh > 0) ? mainLine(d.grx2-lw, d.grdx2) + vright : "") +
+                       ((d.eylow > 0)  ? mainLine(d.grdy0, d.gry0-lw) + hbottom : "") +
+                       ((d.eyhigh > 0) ? mainLine(d.grdy2, d.gry2+lw) + htop : "");
               });
       }
 
