@@ -433,10 +433,17 @@ JSROOT.define(['d3'], (d3) => {
          return "M" + (x + this.x0).toFixed(this.ndig) + "," + (y + this.y0).toFixed(this.ndig) + this.marker;
 
       // use optimized handling with relative position
-      let xx = Math.round(x), yy = Math.round(y), m1 = "M" + xx + "," + yy + "h1",
-          m2 = (this.lastx === null) ? m1 : ("m" + (xx - this.lastx) + "," + (yy - this.lasty) + "h1");
+      let xx = Math.round(x), yy = Math.round(y), mv = "M" + xx + "," + yy;
+      if (this.lastx !== null) {
+         if ((xx == this.lastx) && (yy == this.lasty)) {
+            mv = ""; // pathological case, but let exclude it
+         } else {
+            let m2 = "m" + (xx - this.lastx) + "," + (yy - this.lasty);
+            if (m2.length < mv.length) mv = m2;
+         }
+      }
       this.lastx = xx + 1; this.lasty = yy;
-      return (m2.length < m1.length) ? m2 : m1;
+      return mv + "h1";
    }
 
    /** @summary Returns full size of marker */
