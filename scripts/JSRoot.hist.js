@@ -5830,7 +5830,13 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           scale_x = (handle.grx[handle.i2] - handle.grx[handle.i1])/(handle.i2 - handle.i1 + 1-0.03)/2,
           scale_y = (handle.gry[handle.j2] - handle.gry[handle.j1])/(handle.j2 - handle.j1 + 1-0.03)/2;
 
-      for (let loop=0;loop<2;++loop)
+      const makeLine = (dx, dy) => {
+         if (dx)
+            return dy ? `l${dx},${dy}` : `h${dx}`;
+         return dy ? `v${dy}` : "";
+      }
+
+      for (let loop = 0;loop < 2; ++loop)
          for (i = handle.i1; i < handle.i2; ++i)
             for (j = handle.j1; j < handle.j2; ++j) {
 
@@ -5849,7 +5855,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                   dy = 0.5*(histo.getBinContent(i+1, j+2) - histo.getBinContent(i+1, j));
                }
 
-               if (loop===0) {
+               if (loop === 0) {
                   dn = Math.max(dn, Math.abs(dx), Math.abs(dy));
                } else {
                   xc = (handle.grx[i] + handle.grx[i+1])/2;
@@ -5863,15 +5869,15 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                   dx = Math.round(x2-x1);
                   dy = Math.round(y2-y1);
 
-                  if ((dx!==0) || (dy!==0)) {
-                     cmd += "M"+Math.round(x1)+","+Math.round(y1)+"l"+dx+","+dy;
+                  if (dx || dy) {
+                     cmd += "M"+Math.round(x1)+","+Math.round(y1) + makeLine(dx,dy);
 
                      if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
                         anr = Math.sqrt(2/(dx*dx + dy*dy));
                         si  = Math.round(anr*(dx + dy));
                         co  = Math.round(anr*(dx - dy));
-                        if ((si!==0) && (co!==0))
-                           cmd+="l"+(-si)+","+co + "m"+si+","+(-co) + "l"+(-co)+","+(-si);
+                        if (si || co)
+                           cmd += `m${-si},${co}` + makeLine(si,-co) + makeLine(-co,-si);
                      }
                   }
                }
@@ -5879,7 +5885,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       this.draw_g
          .append("svg:path")
-         .attr("class","th2_arrows")
          .attr("d", cmd)
          .style("fill", "none")
          .call(this.lineatt.func);
