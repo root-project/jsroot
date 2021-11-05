@@ -852,7 +852,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return elem;
       };
 
-      const shift_position = (dx) => { curr.x += Math.round(dx); };
+      const shift_position = dx => { curr.x += Math.round(dx); };
 
       const getTextBoundary = (elem, s, _debug_batch) => {
 
@@ -974,40 +974,32 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return { lvl: curr.lvl + 1, x: 0, y: 0, fsize: curr.fsize*(fscale || 1), bold: curr.bold, italic: curr.italic, color: curr.color, font: curr.font, parent: curr };
       };
 
-      let isany = false, best, found, foundarg;
+      let isany = false;
 
       while (label) {
 
-         best = label.length; found = null; foundarg = null;
+         let best = label.length, found = null;
 
          for (let n = 0; n < latex_features.length; ++n) {
             let pos = label.indexOf(latex_features[n].name);
             if ((pos >= 0) && (pos < best)) { best = pos; found = latex_features[n]; }
          }
 
-         if (!found && !isany) {
-            let s = translateLaTeX(label);
-            let elem = addTextNode(s, true);
-            let rect = getTextBoundary(elem, s);
-
-            positionTextNode(elem, rect);
-
-            if (curr.deco) {
-               elem.attr('text-decoration', curr.deco);
-               delete curr.deco; // inform that decoration was applied
-            }
-
-            return true;
-         }
-
          if (best > 0) {
 
+            let alone = (best == label.length) && !isany && !found;
+
             let s = translateLaTeX(label.substr(0, best));
-            if (s.length > 0) {
-               let elem = addTextNode(s);
+            if ((s.length > 0) || alone) {
+               let elem = addTextNode(s, alone);
                let rect = getTextBoundary(elem, s);
                positionTextNode(elem, rect);
-               shift_position(rect.width);
+               if (!alone) {
+                  shift_position(rect.width);
+               } else if (curr.deco) {
+                  elem.attr('text-decoration', curr.deco);
+                  delete curr.deco; // inform that decoration was applied
+               }
             }
          }
 
@@ -1282,6 +1274,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             continue;
          }
+
+         let foundarg = 0;
 
          if (found.arg) {
             let pos = label.indexOf("]{");
