@@ -4702,13 +4702,16 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             for (let j = jj1; j < jj2; ++j) sum += histo.getBinContent(i+1,j+1);
             this.proj_hist.setBinContent(i+1, sum);
          }
+         this.proj_hist.fTitle = "X projection " + (jj1+1 == jj2 ? `bin ${jj2}` : `bins [${jj1+1} .. ${jj2}]`);
          if (this.tt_handle) { first = this.tt_handle.i1+1; last = this.tt_handle.i2; }
+
       } else {
          for (let j = 0; j < this.nbinsy; ++j) {
             let sum = 0;
             for (let i = ii1; i < ii2; ++i) sum += histo.getBinContent(i+1,j+1);
             this.proj_hist.setBinContent(j+1, sum);
          }
+         this.proj_hist.fTitle = "Y projection " + (ii1+1 == ii2 ? `bin ${ii2}` : `bins [${ii1+1} .. ${ii2}]`);
          if (this.tt_handle) { first = this.tt_handle.j1+1; last = this.tt_handle.j2; }
       }
 
