@@ -1333,13 +1333,16 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             parseLatex(painter, gg, arg, sublabel, subpos);
 
-            let r = subpos.rect, h = Math.round(r.height), w = Math.round(r.width), midy = Math.round((r.y1 + r.y2)/2),
+            let r = subpos.rect,
+                h = Math.round(r.height),
+                h1 = Math.round(r.height*0.1),
+                w = Math.round(r.width), midy = Math.round((r.y1 + r.y2)/2),
                 f2 = Math.round(curr.fsize*0.2), r_y2 = Math.round(r.y2);
 
             if (subpos0)
                positionGNode(subpos0, 0, midy - subpos0.fsize*0.3, true);
 
-            path.attr("d", `M0,${midy}h${h*0.1}l${h*0.1},${r_y2-midy-f2}l${h*0.1},${-h+f2}h${h*0.2+w}v${h*0.1}`);
+            path.attr("d", `M0,${midy}h${h1}l${h1},${r_y2-midy-f2}l${h1},${-h+f2}h${Math.round(h*0.2+w)}v${h1}`);
 
             positionGNode(subpos, h*0.4, 0, true);
 
