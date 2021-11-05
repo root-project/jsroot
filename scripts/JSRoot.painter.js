@@ -3606,7 +3606,7 @@ JSROOT.define(['d3'], (d3) => {
       { name: "TProfile", icon: "img_profile", prereq: "hist", func: ".drawHistogram1D", opt: ";E0;E1;E2;p;AH;hist" },
       { name: "TH2Poly", icon: "img_histo2d", prereq: "hist", func: ".drawHistogram2D", opt: ";COL;COL0;COLZ;LCOL;LCOL0;LCOLZ;LEGO;TEXT;same", expand_item: "fBins", theonly: true },
       { name: "TProfile2Poly", sameas: "TH2Poly" },
-      { name: "TH2PolyBin", icon: "img_histo2d", draw_field: "fPoly" },
+      { name: "TH2PolyBin", icon: "img_histo2d", draw_field: "fPoly", draw_field_opt: "L" },
       { name: /^TH2/, icon: "img_histo2d", prereq: "hist", func: ".drawHistogram2D", opt: ";COL;COLZ;COL0;COL1;COL0Z;COL1Z;COLA;BOX;BOX1;PROJ;PROJX1;PROJX2;PROJX3;PROJY1;PROJY2;PROJY3;SCAT;TEXT;TEXTE;TEXTE0;CONT;CONT1;CONT2;CONT3;CONT4;ARR;SURF;SURF1;SURF2;SURF4;SURF6;E;A;LEGO;LEGO0;LEGO1;LEGO2;LEGO3;LEGO4;same", ctrl: "colz" },
       { name: "TProfile2D", sameas: "TH2" },
       { name: /^TH3/, icon: 'img_histo3d', prereq: "hist3d", func: ".drawHistogram3D", opt: ";SCAT;BOX;BOX2;BOX3;GLBOX1;GLBOX2;GLCOL" },
@@ -3905,7 +3905,7 @@ JSROOT.define(['d3'], (d3) => {
          return Promise.resolve(null);
 
       if (handle.draw_field && obj[handle.draw_field])
-         return JSROOT.draw(dom, obj[handle.draw_field], opt);
+         return JSROOT.draw(dom, obj[handle.draw_field], opt || handle.draw_field_opt);
 
       if (!handle.func && !handle.direct) {
          if (opt && (opt.indexOf("same") >= 0)) {
