@@ -832,50 +832,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       const curr_g = () => { if (!curr.g) curr.g = node.append("svg:g"); return curr.g; }
 
-      const addTextNode = txt => {
-         let elem = curr_g().append("svg:text");
-
-         if (curr.font)
-            curr.font.setFont(elem, 'without-size');
-
-         if (curr.color || arg.color) elem.attr("fill", curr.color || arg.color);
-         if (curr.fsize) elem.attr("font-size", curr.fsize);
-
-         if (curr.bold !== undefined)
-            elem.attr('font-weight', curr.bold ? 'bold' : 'normal');
-
-         if (curr.italic !== undefined)
-            elem.attr('font-style', curr.italic ? 'italic' : 'normal');
-
-         elem.text(txt);
-
-         return elem;
-      };
-
       const shift_position = dx => { curr.x += Math.round(dx); };
-
-      const getTextBoundary = (elem, s, _debug_batch) => {
-
-/*     // this is code to use canvas module in node.js, not precise at all
-       if (JSROOT.nodejs) {
-            const { createCanvas } = require('canvas');
-            let canvas = createCanvas(1000, 10000);
-            let context = canvas.getContext("2d");
-
-            let name = Math.round(curr.fsize) + "pt " + curr.font.name;
-            if (curr.font.weight) name += " " + curr.font.weight;
-            if (curr.font.style) name += " " + curr.font.style;
-            context.font = name;
-            let metrics = context.measureText(s);
-            return { height: curr.fsize * 1.2, width: metrics.width };
-         }
-*/
-
-         // _debug_batch = true;
-
-         return !_debug_batch && !JSROOT.nodejs && !JSROOT.settings.ApproxTextSize && !arg.fast ? jsrp.getElementRect(elem, 'nopadding') :
-                   { height: curr.fsize * 1.2, width: approximateLabelWidth(s, curr.font, curr.fsize) };
-      };
 
       const extendPosition = (x1, y1, x2, y2) => {
          if (!curr.rect) {
@@ -893,17 +850,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (!curr.parent)
             arg.text_rect = curr.rect;
       }
-
-      const positionTextNode = (elem, rect) => {
-         elem.attr("x", curr.x || null);
-         elem.attr("y", curr.y || null);
-
-         // values used for superscript
-         curr.last_y1 = curr.y - rect.height*0.75;
-         curr.last_y2 = curr.y + rect.height*0.25;
-
-         extendPosition(curr.x, curr.last_y1, curr.x + rect.width, curr.last_y2);
-      };
 
       /** Position pos.g node which directly attached to curr.g and uses curr.g coordinates */
       const positionGNode = (pos, x, y, inside_gg) => {
@@ -991,9 +937,38 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             let s = translateLaTeX(label.substr(0, best));
             if ((s.length > 0) || alone) {
-               let elem = addTextNode(s, alone);
-               let rect = getTextBoundary(elem, s);
-               positionTextNode(elem, rect);
+               // if single text element created, place it directly in the node
+               let g = curr.g || (alone ? node : curr_g()),
+                   elem = g.append("svg:text");
+
+               if (alone && !curr.g) curr.g = elem;
+
+               if (curr.font)
+                  curr.font.setFont(elem, 'without-size');
+
+               if (curr.color || arg.color) elem.attr("fill", curr.color || arg.color);
+               if (curr.fsize) elem.attr("font-size", Math.round(curr.fsize));
+
+               if (curr.bold !== undefined)
+                  elem.attr('font-weight', curr.bold ? 'bold' : 'normal');
+
+               if (curr.italic !== undefined)
+                  elem.attr('font-style', curr.italic ? 'italic' : 'normal');
+
+               elem.text(s);
+
+               let rect = !JSROOT.nodejs && !JSROOT.settings.ApproxTextSize && !arg.fast ? jsrp.getElementRect(elem, 'nopadding') :
+                             { height: curr.fsize * 1.2, width: approximateLabelWidth(s, curr.font, curr.fsize) }
+
+               if (curr.x) elem.attr("x", curr.x);
+               if (curr.y) elem.attr("y", curr.y);
+
+               // values used for superscript
+               curr.last_y1 = curr.y - rect.height*0.8;
+               curr.last_y2 = curr.y + rect.height*0.2;
+
+               extendPosition(curr.x, curr.last_y1, curr.x + rect.width, curr.last_y2);
+
                if (!alone) {
                   shift_position(rect.width);
                } else if (curr.deco) {
