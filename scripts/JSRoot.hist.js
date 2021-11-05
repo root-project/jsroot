@@ -5164,7 +5164,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             y1 = Math.round(handle.gry[j] + dy*handle.ybar1);
             dy = Math.round(dy*(handle.ybar2 - handle.ybar1)) || 1;
 
-            let cmd1 = "M"+x1+","+y1,
+            let cmd1 = `M${x1},${y1}`,
                 entry = entries[colindx];
             if (!entry) {
                entry = entries[colindx] = { path: cmd1 };
@@ -5172,8 +5172,11 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                entry.dy += dy;
                continue;
             } else {
-               let cmd2 = "m" + (x1-entry.x) + "," + (y1-entry.y);
-               entry.path += (cmd2.length < cmd1.length) ? cmd2 : cmd1;
+               let ddx = x1 - entry.x, ddy = y1 - entry.y;
+               if (ddx || ddy) {
+                  let cmd2 = `m${ddx},${ddy}`;
+                  entry.path += (cmd2.length < cmd1.length) ? cmd2 : cmd1;
+               }
             }
             if (last_entry) flush_last_entry();
 
@@ -5184,7 +5187,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                entry.dy = dy;
                last_entry = entry;
             } else {
-               entry.path += "h"+dx + "v"+dy + "h"+(-dx) + "z";
+               entry.path += `h${dx}v${dy}h${-dx}z`;
             }
          }
          if (last_entry) flush_last_entry();
