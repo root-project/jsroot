@@ -926,7 +926,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       };
 
       const createSubPos = fscale => {
-         return { lvl: curr.lvl + 1, x: 0, y: 0, fsize: curr.fsize*(fscale || 1), bold: curr.bold, italic: curr.italic, color: curr.color, font: curr.font, parent: curr, painter: curr.painter };
+         return { lvl: curr.lvl + 1, x: 0, y: 0, fsize: curr.fsize*(fscale || 1), color: curr.color, font: curr.font, parent: curr, painter: curr.painter };
       };
 
       while (label) {
@@ -952,17 +952,22 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
                if (alone && !curr.g) curr.g = elem;
 
-               if (curr.font)
-                  curr.font.setFont(elem, 'without-size');
-
-               if (curr.color || arg.color) elem.attr("fill", curr.color || arg.color);
-               if (curr.fsize) elem.attr("font-size", Math.round(curr.fsize));
+               // apply font attributes only once, inherited by all other elements
+               if (curr.ufont)
+                  curr.font.setFont(curr.g /*, 'without-size' */);
 
                if (curr.bold !== undefined)
-                  elem.attr('font-weight', curr.bold ? 'bold' : 'normal');
+                  curr.g.attr('font-weight', curr.bold ? 'bold' : 'normal');
 
                if (curr.italic !== undefined)
-                  elem.attr('font-style', curr.italic ? 'italic' : 'normal');
+                  curr.g.attr('font-style', curr.italic ? 'italic' : 'normal');
+
+               // set fill color directly to element
+               elem.attr("fill", curr.color || arg.color || null);
+
+               // set font size directly to element to avoid complex control
+               if (curr.fisze !== curr.font.size)
+                  elem.attr("font-size", Math.round(curr.fsize));
 
                elem.text(s);
 
@@ -1304,9 +1309,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             if (found.name == "#color[")
                subpos.color = curr.painter.getColor(foundarg);
-            else if (found.name == "#font[")
+            else if (found.name == "#font[") {
                subpos.font = new JSROOT.FontHandler(foundarg);
-            else
+               subpos.ufont = true; // mark that custom font is applied
+            } else
                subpos.fsize *= foundarg;
 
             parseLatex(currG(), arg, sublabel, subpos);
