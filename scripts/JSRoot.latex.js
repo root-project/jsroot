@@ -830,6 +830,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
      * @private */
    const parseLatex = (painter, node, arg, label, curr) => {
 
+      let nelements = 0;
+
       const curr_g = () => { if (!curr.g) curr.g = node.append("svg:g"); return curr.g; }
 
       const shift_position = dx => { curr.x += Math.round(dx); };
@@ -869,18 +871,25 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             extendPosition(curr.x + pos.rect.x1, curr.y + pos.rect.y1, curr.x + pos.rect.x2, curr.y + pos.rect.y2);
          else
             extendPosition(pos.rect.x1, pos.rect.y1, pos.rect.x2, pos.rect.y2);
-      }
+      };
 
       /** Create special sub-container for elements like sqrt or braces  */
       const createGG = () => {
-         let gg = curr_g().append("svg:g");
+         let gg = curr_g();
+
+         // this is indicator that gg element will be the only one, one can use directly main container
+         if ((nelements == 1) && !label && !curr.x && !curr.y) {
+            return gg;
+         }
+
+         gg = gg.append("svg:g");
 
          if (curr.y)
             gg.attr('transform',`translate(${curr.x},${curr.y})`);
          else if (curr.x)
             gg.attr('transform',`translate(${curr.x})`);
          return gg;
-      }
+      };
 
       const extractSubLabel = (check_first, lbrace, rbrace) => {
          let pos = 0, n = 1, err = false;
@@ -920,8 +929,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return { lvl: curr.lvl + 1, x: 0, y: 0, fsize: curr.fsize*(fscale || 1), bold: curr.bold, italic: curr.italic, color: curr.color, font: curr.font, parent: curr };
       };
 
-      let isany = false;
-
       while (label) {
 
          let best = label.length, found = null;
@@ -933,7 +940,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          if (best > 0) {
 
-            let alone = (best == label.length) && !isany && !found;
+            let alone = (best == label.length) && (nelements == 0) && !found;
+
+            nelements++;
 
             let s = translateLaTeX(label.substr(0, best));
             if ((s.length > 0) || alone) {
@@ -983,7 +992,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          // remove preceeding block and tag itself
          label = label.substr(best + found.name.length);
 
-         isany = true;
+         nelements++;
 
          if (found.accent) {
             let sublabel = extractSubLabel();
@@ -1033,22 +1042,17 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             curr.twolines = true;
 
-            let gg = createGG();
-
             let line1 = extractSubLabel(), line2 = extractSubLabel(true);
+            if ((line1 === -1) || (line2 === -1)) return false;
 
-            let fscale = (curr.parent && curr.parent.twolines) ? 0.7 : 1;
-
-            let subpos1 = createSubPos(fscale);
+            let gg = createGG(),
+                fscale = (curr.parent && curr.parent.twolines) ? 0.7 : 1,
+                subpos1 = createSubPos(fscale);
 
             parseLatex(painter, gg, arg, line1, subpos1);
 
-            let path;
-
-            if (found.twolines == 'line')
-               path = createPath(gg);
-
-            let subpos2 = createSubPos(fscale);
+            let path = (found.twolines == 'line') ? createPath(gg) : null,
+                subpos2 = createSubPos(fscale);
 
             parseLatex(painter, gg, arg, line2, subpos2);
 
@@ -1216,7 +1220,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          }
 
          if (found.deco) {
-            let gg = createGG(), sublabel = extractSubLabel(), subpos = createSubPos();
+            let sublabel = extractSubLabel(),
+                gg = createGG(),
+                subpos = createSubPos();
 
             subpos.deco = found.deco;
 
