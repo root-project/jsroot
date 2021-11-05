@@ -1155,6 +1155,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             } else {
                x_up = 3*r; x_low = r;
                path.attr("d",`M0,${Math.round(0.25*h-r)}a${r},${r},0,0,0,${2*r},0v${2*r-h}a${r},${r},0,1,1,${2*r},0`);
+               // path.attr('transform','skewX(-3)'); could use skewX for italic-like style
             }
 
             if (subs.low) {

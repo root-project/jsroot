@@ -773,7 +773,6 @@ JSROOT.define(['d3'], (d3) => {
      * @memberof JSROOT
      * @param {object} args - different arguments to set fill attributes, see {@link JSROOT.TAttFillHandler.setArgs} for more info
      * @param {number} [args.kind = 2] - 1 means object drawing where combination fillcolor==0 and fillstyle==1001 means no filling,  2 means all other objects where such combination is white-color filling
-     * @private
      */
 
    function TAttFillHandler(args) {
@@ -2749,10 +2748,19 @@ JSROOT.define(['d3'], (d3) => {
 
          if (!arg.rotate) { arg.x += arg.dx; arg.y += arg.dy; arg.dx = arg.dy = 0; }
 
-         let trans = (arg.x || arg.y) ? "translate(" + Math.round(arg.x) + "," + Math.round(arg.y) + ")" : "";
-         if (arg.rotate) trans += " rotate(" + Math.round(arg.rotate) + ")";
-         if (scale !== 1) trans += ` scale(${scale.toFixed(3)})`;
-         if (arg.dx || arg.dy) trans += " translate(" + Math.round(arg.dx) + "," + Math.round(arg.dy) + ")";
+         let trans = "";
+         if (arg.y)
+            trans = "translate(" + Math.round(arg.x) + "," + Math.round(arg.y) + ")";
+         else if (arg.x)
+            trans = "translate(" + Math.round(arg.x) + ")";
+         if (arg.rotate)
+            trans += " rotate(" + Math.round(arg.rotate) + ")";
+         if (scale !== 1)
+            trans += " scale(" + scale.toFixed(3) + ")";
+         if (arg.dy)
+            trans += " translate(" + Math.round(arg.dx) + "," + Math.round(arg.dy) + ")";
+         else if (arg.dx)
+            trans += " translate(" + Math.round(arg.dx) + ")";
          if (trans) txt_g.attr("transform", trans);
       });
 
