@@ -192,6 +192,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'jquery-ui'], (d3, $, jsrp) => {
          if (old_dlg) old_dlg.parentNode.removeChild(old_dlg);
          if (!kind) kind = "text";
          let inp_type = (kind == "int") ? "number" : "text";
+         if ((value === undefined) || (value === null)) value = "";
 
          $(document.body).append(
             `<div id="${dlg_id}">
