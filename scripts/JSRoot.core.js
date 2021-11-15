@@ -1348,11 +1348,11 @@
          return Promise.resolve(res);
       }
 
-      function match_url(src) {
+      const match_url = src => {
          if (src == url) return true;
          let indx = src.indexOf(url);
          return (indx > 0) && (indx + url.length == src.length) && (src[indx-1] == "/");
-      }
+      };
 
       if (isstyle) {
          let styles = document.getElementsByTagName('link');
