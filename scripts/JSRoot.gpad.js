@@ -139,7 +139,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.nticks2 = (ndiv % 10000 - this.nticks) / 100;
       this.nticks3 = Math.floor(ndiv/10000);
 
-      if (axis && !is_gaxis && (this.nticks > 7)) this.nticks = 7;
+      if (axis && !is_gaxis && (this.nticks > 20)) this.nticks = 20;
 
       let gr_range = Math.abs(this.func.range()[1] - this.func.range()[0]);
       if (gr_range<=0) gr_range = 100;
@@ -747,7 +747,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       // first draw ticks
 
-      let handle = this.createTicks(false, optionNoexp, optionNoopt, optionInt);
+      const handle = this.createTicks(false, optionNoexp, optionNoopt, optionInt);
 
       this.drawTicks(axis_g, handle, side, tickSize, ticksPlusMinus, secondShift, draw_lines && !disable_axis_drawing && !this.disable_ticks);
 

@@ -3370,7 +3370,22 @@ JSROOT.define(['d3'], (d3) => {
    AxisBasePainter.prototype.produceTicks = function(ndiv, ndiv2) {
       if (!this.noticksopt) {
          let total = ndiv * (ndiv2 || 1);
-         return this.log ? this.poduceLogTicks(this.func, total) : this.func.ticks(total);
+
+         if (this.log) return this.poduceLogTicks(this.func, total);
+
+         let dom = this.func.domain();
+
+         const check = ticks => {
+            if (ticks.length <= total) return true;
+            if (ticks.length > total + 1) return false;
+            return (ticks[0] === dom[0]) || (ticks[total] === dom[1]); // special case of N+1 ticks, but match any range
+         }
+
+         let res1 = this.func.ticks(total);
+         if (ndiv2 || check(res1)) return res1;
+
+         let res2 = this.func.ticks(Math.round(total * 0.7));
+         return (res2.length > 2) && check(res2) ? res2 : res1;
       }
 
       let dom = this.func.domain(), ticks = [];
