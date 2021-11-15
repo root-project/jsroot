@@ -3360,7 +3360,10 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
    TGeoPainter.prototype.render3D = function(tmout, measure) {
 
       if (!this._renderer) {
-         console.warn('renderer object not exists - check code');
+         if (!this.did_cleanup)
+            console.warn('renderer object not exists - check code');
+         else
+            console.warn('try to render after cleanup');
          return;
       }
 
