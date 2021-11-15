@@ -1283,7 +1283,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                                         logcheckmin: this.swap_xy,
                                         logminfactor: 0.0001 });
 
-      this.x_handle.assignFrameMembers(this,"x");
+      this.x_handle.assignFrameMembers(this, "x");
 
       this.y_handle = new TAxisPainter(this.getDom(), this.yaxis, true);
       this.y_handle.setPadName(this.getPadName());
@@ -1296,7 +1296,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                                         log_min_nz: opts.ymin_nz && (opts.ymin_nz < 0.01*this.ymax) ? 0.3 * opts.ymin_nz : 0,
                                         logminfactor: 3e-4 });
 
-      this.y_handle.assignFrameMembers(this,"y");
+      this.y_handle.assignFrameMembers(this, "y");
 
       this.setRootPadRange(pad);
    }
@@ -1966,8 +1966,21 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if (typeof main.fillPaletteMenu == 'function')
                main.fillPaletteMenu(menu);
 
-         if (faxis)
+         if (faxis) {
+            let handle = this[kind+"_handle"];
+
+            if (handle && (handle.kind == "labels") && (faxis.fNbins > 20))
+               menu.add("Find label", () => menu.input("Label id").then(id => {
+                  if (!id) return;
+                  for (let bin = 0; bin < faxis.fNbins; ++bin) {
+                     let lbl = handle.formatLabels(bin);
+                     if (lbl == id)
+                        return this.zoom(kind, Math.max(0, bin - 4), Math.min(faxis.fNbins, bin+5));
+                   }
+               }));
+
             menu.addTAxisMenu(main || this, faxis, kind);
+         }
          return true;
       }
 

@@ -3224,6 +3224,8 @@ JSROOT.define(['d3'], (d3) => {
 
    AxisBasePainter.prototype = Object.create(ObjectPainter.prototype);
 
+   /** @summary Cleanup axis painter
+     * @private */
    AxisBasePainter.prototype.cleanup = function() {
       this.ticks = [];
       delete this.format;
@@ -3331,7 +3333,7 @@ JSROOT.define(['d3'], (d3) => {
    AxisBasePainter.prototype.poduceLogTicks = function(func, number) {
       function linearArray(arr) {
          let sum1 = 0, sum2 = 0;
-         for (let k=1;k<arr.length;++k) {
+         for (let k = 1; k < arr.length; ++k) {
             let diff = (arr[k] - arr[k-1]);
             sum1 += diff;
             sum2 += diff*diff;
@@ -3373,7 +3375,7 @@ JSROOT.define(['d3'], (d3) => {
 
       let dom = this.func.domain(), ticks = [];
       if (ndiv2) ndiv = (ndiv-1) * ndiv2;
-      for (let n=0;n<=ndiv;++n)
+      for (let n = 0; n <= ndiv; ++n)
          ticks.push((dom[0]*(ndiv-n) + dom[1]*n)/ndiv);
       return ticks;
    }
