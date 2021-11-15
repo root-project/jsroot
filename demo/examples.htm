@@ -337,7 +337,7 @@
             JSROOT.cleanup("viewer");
 
             if (url.length > 0) {
-               if (interactive) url += "&interactive="+interactive;
+               if (no_interactive) url += "&interactive=0";
 
                testfile = testobj = null;
                // if (keyid == 'TGeo') return RunBigTest(0);  // ignore TGeo URLs - too complex
