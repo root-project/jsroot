@@ -3370,13 +3370,14 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
       if (tmout === undefined) tmout = 5; // by default, rendering happens with timeout
 
-      if ((tmout > 0) && this._webgl && !JSROOT.batch_mode) {
+      if ((tmout > 0) && this._webgl /* && !JSROOT.batch_mode */) {
+         if (JSROOT.batch_mode) tmout = 1; // use minimal timeout in batch mode
          if (ret_promise)
             return new Promise(resolveFunc => {
                if (!this._render_resolveFuncs) this._render_resolveFuncs = [];
                this._render_resolveFuncs.push(resolveFunc);
                if (!this.render_tmout)
-                  this.render_tmout = setTimeout(() => this.render3D(0), tmout);
+                  this.render_tmout = setTimeout(() => this.render3D(0, measure), tmout);
             });
 
          if (!this.render_tmout)
