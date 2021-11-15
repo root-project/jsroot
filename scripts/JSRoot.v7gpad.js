@@ -466,7 +466,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.nticks2 = (ndiv % 10000 - this.nticks) / 100;
       this.nticks3 = Math.floor(ndiv/10000);
 
-      if (this.nticks > 7) this.nticks = 7;
+      if (this.nticks > 20) this.nticks = 20;
 
       let gr_range = Math.abs(this.gr_range) || 100;
 
@@ -1389,7 +1389,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          menu.input("set symlog constant", this.symlog || 10, "float").then(v => this.changeAxisAttr(2,"symlog", v)));
       menu.add("endsub:");
 
-      menu.add("Divisions", () => menu.input("Set axis devisions", this.v7EvalAttr("ndiv", 508), "int").then(val => this.changeAxisAttr(1, "ndiv", val)));
+      menu.add("Divisions", () => menu.input("Set axis devisions", this.v7EvalAttr("ndiv", 508), "int").then(val => this.changeAxisAttr(2, "ndiv", val)));
 
       menu.add("sub:Ticks");
       menu.addRColorMenu("color", this.ticksColor, col => this.changeAxisAttr(1, "ticks_color", col));
