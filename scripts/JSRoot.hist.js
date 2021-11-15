@@ -439,7 +439,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       // adjust font size
       for (let j = 0; j < nlines; ++j) {
          let line = lines[j];
-         if (j>0) maxlen = Math.max(maxlen, line.length);
+         if (j > 0) maxlen = Math.max(maxlen, line.length);
          if ((j == 0) || (line.indexOf('|') < 0)) continue;
          if (first_stat === 0) first_stat = j;
          let parts = line.split("|");
@@ -469,8 +469,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          } else if (lines[j].indexOf('=') < 0) {
             if (j==0) {
                has_head = true;
-               if (lines[j].length > maxlen + 5)
-                  lines[j] = lines[j].substr(0,maxlen+2) + "...";
+               let max_hlen = Math.max(maxlen, Math.round((width-2*margin_x)/stepy/0.65));
+               if (lines[j].length > max_hlen + 5)
+                  lines[j] = lines[j].substr(0,max_hlen+2) + "...";
             }
             this.drawText({ align: (j == 0) ? "middle" : "start", x: margin_x, y: posy,
                             width: width-2*margin_x, height: stepy, text: lines[j], color: tcolor });
