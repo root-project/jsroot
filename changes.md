@@ -13,6 +13,7 @@
 10. Let skip HEAD requests when reading files (#223)
 11. Fully rewrite TLatex parsing, use many svg elements instead of plain text/tspan
 12. Make TLatex reliably working in node.js, does not depend from availability of canvas component
+13. Show long histogram names in stats box when possible
 
 
 ## Changes in 6.2.2
