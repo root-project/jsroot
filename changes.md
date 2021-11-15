@@ -15,6 +15,7 @@
 12. Make TLatex reliably working in node.js, does not depend from availability of canvas component
 13. Show long histogram names in stats box when possible
 14. Provide "Find label" command in TAxis context menu to zoom into bin region
+15. Fix logic how "ndiv" parameter of TAxis is handled, showing really the configured number of ticks
 
 
 ## Changes in 6.2.2
