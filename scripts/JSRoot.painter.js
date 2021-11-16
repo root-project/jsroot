@@ -611,6 +611,11 @@ JSROOT.define(['d3'], (d3) => {
    /** @summary get fill color */
    TAttMarkerHandler.prototype.getFillColor = function() { return this.fill ? this.color : "none"; }
 
+   /** @summary returns true if marker attributes will produce empty (invisible) output */
+   TAttMarkerHandler.prototype.empty = function() {
+      return (this.color === 'none') || (!this.fill && !this.stroke);
+   }
+
    /** @summary Apply marker styles to created element */
    TAttMarkerHandler.prototype.apply = function(selection) {
       selection.style('stroke', this.stroke ? this.color : "none");
