@@ -2958,7 +2958,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (indx >= this._num_primitives) {
          if (this._start_tm) {
             let spenttm = new Date().getTime() - this._start_tm;
-            if (spenttm > 1000) console.log("Canvas drawing took " + (spenttm*1e-3).toFixed(2) + "s");
+            if (spenttm > 1000) console.log(`Canvas ${this.pad ? this.pad.fName : "---"} drawing took ${(spenttm*1e-3).toFixed(2)}s`);
             delete this._start_tm;
          }
 

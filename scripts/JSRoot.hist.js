@@ -5551,19 +5551,19 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          // TODO: now side is always same direction, could be that side should be checked more precise
          let indx = pnt2.indx, step = side*0.5;
 
-         dd += "L" + pnt2.x + "," + pnt2.y;
+         dd += `L${pnt2.x},${pnt2.y}`;
 
          while (Math.abs(indx - pnt1.indx) > 0.1) {
             indx = Math.round(indx + step) % 4;
-            dd += "L" + points[indx].x + "," + points[indx].y;
+            dd += `L${points[indx].x},${points[indx].y}`;
             indx += step;
          }
 
-         return dd + "L" + pnt1.x + "," + pnt1.y + "z";
+         return dd + `L${pnt1.x},${pnt1.y}z`;
       }
 
       if (this.options.Contour === 14) {
-         let dd = "M0,0h"+frame_w+"v"+frame_h+"h-"+frame_w+"z";
+         let dd = `M0,0h${frame_w}v${frame_h}h${-frame_w}z`;
          if (this.options.Proj) {
             let sz = handle.j2 - handle.j1, xd = new Float32Array(sz*2), yd = new Float32Array(sz*2);
             for (let i=0;i<sz;++i) {
