@@ -4266,7 +4266,6 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
                this._ratio_up_fp.fX2NDC = this.fX2NDC;
                this._ratio_up_fp.o_sizeChanged();
             }
-Redraw TRatioPlot
             return this;
          });
       });
