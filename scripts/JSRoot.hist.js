@@ -5987,10 +5987,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             ww = Math.max(Math.round(ww - 2*dgrx), 1);
             hh = Math.max(Math.round(hh - 2*dgry), 1);
 
-            res += "M"+xx+","+yy + "v"+hh + "h"+ww + "v-"+hh + "z";
+            res += `M${xx},${yy}v${hh}h${ww}v${-hh}z`;
 
             if ((binz < 0) && (this.options.BoxStyle === 10))
-               cross += "M"+xx+","+yy + "l"+ww+","+hh + "M"+(xx+ww)+","+yy + "l-"+ww+","+hh;
+               cross += `M${xx},${yy}l${ww},${hh}m0,${-hh}l${-ww},${hh}`;
 
             if ((this.options.BoxStyle === 11) && (ww>5) && (hh>5)) {
                let pww = Math.round(ww*0.1),
