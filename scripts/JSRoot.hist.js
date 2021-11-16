@@ -5214,23 +5214,38 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    /** @summary Build histogram contour lines
      * @private */
    TH2Painter.prototype.buildContour = function(handle, levels, palette, contour_func) {
-      let histo = this.getObject(),
-          kMAXCONTOUR = 2004,
-          kMAXCOUNT = 2000,
-          // arguments used in the PaintContourLine
-          xarr = new Float32Array(2*kMAXCONTOUR),
-          yarr = new Float32Array(2*kMAXCONTOUR),
-          itarr = new Int32Array(2*kMAXCONTOUR),
-          lj = 0, ipoly, poly, polys = [], np, npmax = 0,
+
+      const histo = this.getObject(),
+            kMAXCONTOUR = 2004,
+            kMAXCOUNT = 2000,
+            // arguments used in the PaintContourLine
+            xarr = new Float32Array(2*kMAXCONTOUR),
+            yarr = new Float32Array(2*kMAXCONTOUR),
+            itarr = new Int32Array(2*kMAXCONTOUR),
+            nlevels = levels.length;
+      let lj = 0, ipoly, poly, polys = [], np, npmax = 0,
           x = [0.,0.,0.,0.], y = [0.,0.,0.,0.], zc = [0.,0.,0.,0.], ir = [0,0,0,0],
           i, j, k, n, m, ljfill, count,
           xsave, ysave, itars, ix, jx;
 
-      function BinarySearch(zc) {
-         for (let kk=0;kk<levels.length;++kk)
-            if (zc<levels[kk]) return kk-1;
-         return levels.length-1;
+      const BinarySearch = zc => {
+         for (let kk = 0; kk < nlevels; ++kk)
+            if (zc < levels[kk])
+               return kk-1;
+         return nlevels-1;
       }
+
+//      // not used while slower for <100 levels
+//      const RealBinarySearch = zc => {
+//         let l = 0, r = nlevels-1;
+//         if (zc < levels[0]) return -1;
+//         if (zc >= levels[r]) return r;
+//         while (r - l > 1) {
+//            let m = Math.round((r+l)/2);
+//            if (zc < levels[m]) r = m; else l = m;
+//         }
+//         return r-1;
+//      }
 
       function PaintContourLine(elev1, icont1, x1, y1,  elev2, icont2, x2, y2) {
          /* Double_t *xarr, Double_t *yarr, Int_t *itarr, Double_t *levels */
@@ -5441,28 +5456,33 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           func = main.getProjectionFunc();
 
       function BuildPath(xp,yp,iminus,iplus,do_close) {
-         let cmd = "", last, pnt, first, isany, matched;
+         let cmd = "", lastx, lasty, x0, y0, isany = false, matched, x, y;
          for (let i = iminus; i <= iplus; ++i) {
             if (func) {
-               pnt = func(xp[i], yp[i]);
-               pnt.x = Math.round(funcs.grx(pnt.x));
-               pnt.y = Math.round(funcs.gry(pnt.y));
+               let pnt = func(xp[i], yp[i]);
+               x = Math.round(funcs.grx(pnt.x));
+               y = Math.round(funcs.gry(pnt.y));
             } else {
-               pnt = { x: Math.round(xp[i]), y: Math.round(yp[i]) };
+               x = Math.round(xp[i]);
+               y = Math.round(yp[i]);
             }
             if (!cmd) {
-               cmd = "M" + pnt.x + "," + pnt.y; first = pnt;
-            } else if ((i == iplus) && first && (pnt.x == first.x) && (pnt.y == first.y)) {
+               cmd = `M${x},${y}`; x0 = x; y0 = y;
+            } else if ((i == iplus) && (iminus !== iplus) && (x == x0) && (y == y0)) {
                if (!isany) return ""; // all same points
                cmd += "z"; do_close = false; matched = true;
-            } else if ((pnt.x != last.x) && (pnt.y != last.y)) {
-               cmd +=  "l" + (pnt.x - last.x) + "," + (pnt.y - last.y); isany = true;
-            } else if (pnt.x != last.x) {
-               cmd +=  "h" + (pnt.x - last.x); isany = true;
-            } else if (pnt.y != last.y) {
-               cmd +=  "v" + (pnt.y - last.y); isany = true;
+            } else {
+               let dx = x - lastx, dy = y - lasty;
+               if (dx) {
+                  isany = true;
+                  cmd += dy ? `l${dx},${dy}` : `h${dx}`;
+               } else if (dy) {
+                  isany = true;
+                  cmd += `v${dy}`;
+               }
             }
-            last = pnt;
+
+            lastx = x; lasty = y;
          }
 
          if (do_close && !matched && !func)
