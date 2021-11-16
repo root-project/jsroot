@@ -750,56 +750,59 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          // Draw fill pattern (in a box)
          if (draw_fill) {
-            let fillatt = (painter && painter.fillatt) ? painter.fillatt : this.createAttFill(o_fill);
-
-            // box total height is yspace*0.7
-            // define x,y as the center of the symbol for this entry
-            let rect = this.draw_g.append("svg:rect")
-                           .attr("x", x0 + padding_x)
-                           .attr("y", Math.round(pos_y+step_y*0.1))
-                           .attr("width", tpos_x - 2*padding_x - x0)
-                           .attr("height", Math.round(step_y*0.8))
-                           .call(fillatt.func);
-            if (!fillatt.empty()) isany = true;
+            let lineatt, fillatt = (painter && painter.fillatt) ? painter.fillatt : this.createAttFill(o_fill);
             if ((lopt.indexOf('l') < 0 && lopt.indexOf('e') < 0) && (lopt.indexOf('p') < 0)) {
-               let lineatt = (painter && painter.lineatt) ? painter.lineatt : new JSROOT.TAttLineHandler(o_line);
-               rect.call(lineatt.func);
-               if (lineatt.color !== 'none') isany = true;
+               lineatt = (painter && painter.lineatt) ? painter.lineatt : new JSROOT.TAttLineHandler(o_line);
+               if (lineatt.empty()) lineatt = null;
+            }
+
+            if (!fillatt.empty() || lineatt) {
+                isany = true;
+
+               // box total height is yspace*0.7
+               // define x,y as the center of the symbol for this entry
+               let rect = this.draw_g.append("svg:path")
+                              .attr("d", `M${x0 + padding_x},${Math.round(pos_y+step_y*0.1)}v${Math.round(step_y*0.8)}h${tpos_x-2*padding_x-x0}v${-Math.round(step_y*0.8)}z`)
+                              .call(fillatt.func);
+                if (lineatt)
+                   rect.call(lineatt.func);
             }
          }
 
          // Draw line and error (when specified)
          if (draw_line || draw_error) {
             let lineatt = (painter && painter.lineatt) ? painter.lineatt : new JSROOT.TAttLineHandler(o_line);
-            this.draw_g.append("svg:path")
-               .attr("d", `M${x0 + padding_x},${mid_y}H${tpos_x - padding_x}`)
-               .call(lineatt.func);
+            if (!lineatt.empty()) {
 
-            if (draw_error)
+               isany = true;
+
                this.draw_g.append("svg:path")
-                   .attr("d", `M${mid_x},${Math.round(pos_y+step_y*0.1)}V${Math.round(pos_y+step_y*0.9)}`)
-                   .call(lineatt.func);
+                  .attr("d", `M${x0 + padding_x},${mid_y}H${tpos_x - padding_x}`)
+                  .call(lineatt.func);
 
-            if (lineatt.color !== 'none') isany = true;
+               if (draw_error)
+                  this.draw_g.append("svg:path")
+                      .attr("d", `M${mid_x},${Math.round(pos_y+step_y*0.1)}V${Math.round(pos_y+step_y*0.9)}`)
+                      .call(lineatt.func);
+            }
          }
 
          // Draw Polymarker
          if (draw_marker) {
             let marker = (painter && painter.markeratt) ? painter.markeratt : new JSROOT.TAttMarkerHandler(o_marker);
-            this.draw_g
-                .append("svg:path")
-                .attr("d", marker.create((x0 + tpos_x)/2, mid_y))
-                .call(marker.func);
-            if (marker.color !== 'none') isany = true;
+            if (!marker.empty()) {
+               isany = true;
+               this.draw_g
+                   .append("svg:path")
+                   .attr("d", marker.create((x0 + tpos_x)/2, mid_y))
+                   .call(marker.func);
+            }
          }
 
          // special case - nothing draw, try to show rect with line attributes
-         if (!isany && painter && painter.lineatt && (painter.lineatt.color !== 'none'))
-            this.draw_g.append("svg:rect")
-                       .attr("x", x0 + padding_x)
-                       .attr("y", Math.round(pos_y+step_y*0.1))
-                       .attr("width", tpos_x - 2*padding_x - x0)
-                       .attr("height", Math.round(step_y*0.8))
+         if (!isany && painter && painter.lineatt && !painter.lineatt.empty())
+            this.draw_g.append("svg:path")
+                       .attr("d", `M${x0 + padding_x},${Math.round(pos_y+step_y*0.1)}v${Math.round(step_y*0.8)}h${tpos_x-2*padding_x-x0}v${-Math.round(step_y*0.8)}z`)
                        .attr("fill", "none")
                        .call(painter.lineatt.func);
 
@@ -6006,7 +6009,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          let elem = this.draw_g.append("svg:path")
                                .attr("d", cross)
                                .style("fill", "none");
-         if (this.lineatt.color !== 'none')
+         if (!this.lineatt.empty())
             elem.call(this.lineatt.func);
          else
             elem.style('stroke','black');
