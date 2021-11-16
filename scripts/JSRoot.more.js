@@ -291,14 +291,14 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
           .call(lineatt.func)
           .call(fillatt.func);
 
-      if (box.fBorderMode && box.fBorderSize && (fillatt.color!=='none')) {
+      if (box.fBorderMode && box.fBorderSize && fillatt.hasColor()) {
          let pww = box.fBorderSize, phh = box.fBorderSize,
              side1 = "M"+xx+","+yy + "h"+ww + "l"+(-pww)+","+phh + "h"+(2*pww-ww) +
                      "v"+(hh-2*phh)+ "l"+(-pww)+","+phh + "z",
              side2 = "M"+(xx+ww)+","+(yy+hh) + "v"+(-hh) + "l"+(-pww)+","+phh + "v"+(hh-2*phh)+
                      "h"+(2*pww-ww) + "l"+(-pww)+","+phh + "z";
 
-         if (box.fBorderMode<0) { let s = side1; side1 = side2; side2 = s; }
+         if (box.fBorderMode < 0) { let s = side1; side1 = side2; side2 = s; }
 
          this.draw_g.append("svg:path")
                     .attr("d", side1)

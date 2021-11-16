@@ -838,6 +838,11 @@ JSROOT.define(['d3'], (d3) => {
       return !fill || (fill == 'none');
    }
 
+   /** @summary Returns true if fill attributes has real color */
+   TAttFillHandler.prototype.hasColor = function() {
+      return this.color && (this.color != 'none');
+   }
+
    /** @summary Set solid fill color as fill pattern
      * @param {string} col - solid color */
    TAttFillHandler.prototype.setSolidColor = function(col) {
@@ -850,7 +855,7 @@ JSROOT.define(['d3'], (d3) => {
      * @param {string} [solid_color] - when specified, checks if fill color matches */
    TAttFillHandler.prototype.isSolid = function(solid_color) {
       if (this.pattern !== 1001) return false;
-      return !solid_color || solid_color == this.color;
+      return !solid_color || (solid_color == this.color);
    }
 
    /** @summary Method used when color or pattern were changed with OpenUi5 widgets
