@@ -2157,7 +2157,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       // this is svg:g object - container for every other items belonging to frame
       this.draw_g = this.getLayerSvg("primitives_layer").select(".root_frame");
 
-      let top_rect, main_g;
+      let top_rect, main_svg;
 
       if (this.draw_g.empty()) {
 
@@ -2172,13 +2172,17 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          // append for the moment three layers - for drawing and axis
          this.draw_g.append('svg:g').attr('class','grid_layer');
 
-         main_g = this.draw_g.append('svg:g').attr('class','main_layer');
+         main_svg = this.draw_g.append('svg:svg')
+                           .attr('class','main_layer')
+                           .attr("x", 0)
+                           .attr("y", 0)
+                           .attr('overflow', 'hidden');
 
          this.draw_g.append('svg:g').attr('class','axis_layer');
          this.draw_g.append('svg:g').attr('class','upper_layer');
       } else {
          top_rect = this.draw_g.select("rect");
-         main_g = this.draw_g.select(".main_layer");
+         main_svg = this.draw_g.select(".main_layer");
       }
 
       this.axes_drawn = false;
@@ -2194,7 +2198,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
               .call(this.fillatt.func)
               .call(this.lineatt.func);
 
-      main_g.attr("clip-path", `path('M0,0H${w}V${h}H0Z')`);
+      main_svg.attr("width", w)
+              .attr("height", h)
+              .attr("viewBox", "0 0 " + w + " " + h);
 
       let promise = Promise.resolve(true);
 
