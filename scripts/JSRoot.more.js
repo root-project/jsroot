@@ -2341,11 +2341,11 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
          if ((n < ticks.length-1) || !exclude_last)
             this.drawText({ align: 23, x: Math.round(rx), y: Math.round(polar.fRadialTextSize * this.szy * 0.5),
-                            text: this.format(ticks[n]), color: this.getColor[polar.fRadialLabelColor], latex: 0 });
+                            text: this.format(ticks[n]), color: this.getColor(polar.fRadialLabelColor), latex: 0 });
 
          if ((nminor>1) && ((n < ticks.length-1) || !exclude_last)) {
             let dr = (ticks[1] - ticks[0]) / nminor;
-            for (let nn=1;nn<nminor;++nn) {
+            for (let nn = 1; nn < nminor; ++nn) {
                let gridr = ticks[n] + dr*nn;
                if (gridr > this.scale_rmax) break;
                rx = this.r(gridr); ry = rx/this.szx*this.szy;
@@ -2386,7 +2386,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
                          x: Math.round((this.szx+fontsize)*Math.cos(angle)),
                          y: Math.round((this.szy + fontsize/this.szx*this.szy)*(Math.sin(angle))),
                          text: lbls[n],
-                         color: this.getColor[polar.fPolarLabelColor], latex: 1 });
+                         color: this.getColor(polar.fPolarLabelColor), latex: 1 });
       }
 
       this.finishTextDrawing();
