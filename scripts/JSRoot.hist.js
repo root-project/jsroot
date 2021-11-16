@@ -5599,7 +5599,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    /** @summary Create poly bin
      * @private */
    TH2Painter.prototype.createPolyBin = function(pmain, funcs, bin, text_pos) {
-      let cmd = "", acc_x = 0, acc_y = 0, ngr, ngraphs = 1, gr = null;
+      let cmd = "", grcmd = "", acc_x = 0, acc_y = 0, ngr, ngraphs = 1, gr = null;
 
       if (bin.fPoly._typename == 'TMultiGraph')
          ngraphs = bin.fPoly.fGraphs.arr.length;
@@ -5617,8 +5617,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       }
 
       const flush = () => {
-         if (acc_x) { cmd += "h" + acc_x; acc_x = 0; }
-         if (acc_y) { cmd += "v" + acc_y; acc_y = 0; }
+         if (acc_x) { grcmd += "h" + acc_x; acc_x = 0; }
+         if (acc_y) { grcmd += "v" + acc_y; acc_y = 0; }
       }
 
       for (ngr = 0; ngr < ngraphs; ++ ngr) {
@@ -5631,7 +5631,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          if ((npnts > 2) && (x[0] === x[npnts-1]) && (y[0] === y[npnts-1])) npnts--;
 
-         cmd += "M"+grx+","+gry;
+         let poscmd = "M"+grx+","+gry;
+
+         grcmd = "";
 
          for (n = 1; n < npnts; ++n) {
             nextx = Math.round(funcs.grx(x[n]));
@@ -5648,7 +5650,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                   acc_x += dx;
                } else {
                   flush();
-                  cmd += "l" + dx + "," + dy;
+                  grcmd += "l" + dx + "," + dy;
                }
 
                grx = nextx; gry = nexty;
@@ -5657,7 +5659,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          if (text_pos) addPoint(grx, gry, Math.round(funcs.grx(x[0])), Math.round(funcs.gry(y[0])));
          flush();
-         cmd += "z";
+
+         if (grcmd)
+            cmd += poscmd + grcmd + "z";
       }
 
       if (text_pos) {
