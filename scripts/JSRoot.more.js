@@ -725,7 +725,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
          let path = jsrp.buildSvgPath("bezier", this.bins, h0, 2);
 
-         if (this.lineatt.color != "none")
+         if (!this.lineatt.empty())
             this.draw_g.append("svg:path")
                .attr("class", "line")
                .attr("d", path.path)

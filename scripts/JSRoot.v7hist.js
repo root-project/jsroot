@@ -3087,7 +3087,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
          let elem = this.draw_g.append("svg:path")
                                .attr("d", cross)
                                .style("fill", "none");
-         if (this.lineatt.color !== 'none')
+         if (!this.lineatt.empty())
             elem.call(this.lineatt.func);
          else
             elem.style('stroke','black');
@@ -3362,7 +3362,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
           funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
           handle = null;
 
-      // if (this.lineatt.color == 'none') this.lineatt.color = 'cyan';
+      // if (this.lineatt.empty()) this.lineatt.color = 'cyan';
 
       if (this.isRH2Poly()) {
          handle = this.drawPolyBinsColor();
