@@ -5136,8 +5136,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       let dx, dy, x1, y1, binz, is_zero, colindx, last_entry = null;
 
       const flush_last_entry = () => {
-         last_entry.path += "h"+dx + "v"+last_entry.dy + "h"+(-dx) + "z";
-         last_entry.dy = 0;
+         last_entry.path += `h${dx}v${last_entry.y2-last_entry.y}h${-dx}z`;
          last_entry = null;
       };
 
@@ -5176,7 +5175,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             if (!entry) {
                entry = entries[colindx] = { path: cmd1 };
             } else if (can_merge && (entry === last_entry)) {
-               entry.dy += dy;
+               entry.y2 = y1 + dy;
                continue;
             } else {
                let ddx = x1 - entry.x, ddy = y1 - entry.y;
@@ -5184,6 +5183,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                   let cmd2 = `m${ddx},${ddy}`;
                   entry.path += (cmd2.length < cmd1.length) ? cmd2 : cmd1;
                }
+
             }
             if (last_entry) flush_last_entry();
 
@@ -5191,7 +5191,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             entry.y = y1;
 
             if (can_merge) {
-               entry.dy = dy;
+               entry.y2 = y1 + dy;
                last_entry = entry;
             } else {
                entry.path += `h${dx}v${dy}h${-dx}z`;
