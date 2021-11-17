@@ -3844,7 +3844,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           path_fill = null, path_err = null, path_marker = null, path_line = null,
           hints_err = null, hints_marker = null,
           do_marker = false, do_err = false,
-          endx = "", endy = "", dend = 0, my, yerr1, yerr2, bincont, binerr, mx1, mx2, midx, mmx1, mmx2,
+          dend = 0, dlw = 0, my, yerr1, yerr2, bincont, binerr, mx1, mx2, midx, mmx1, mmx2,
           text_col, text_angle, text_size;
 
       if (show_errors && !show_markers && (histo.fMarkerStyle > 1))
@@ -3860,6 +3860,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       }
 
       if (show_line) path_line = "";
+      
+      dlw = this.lineatt.width + JSROOT.gStyle.fEndErrorSize;
+      if (this.options.ErrorKind === 1)
+         dend = Math.floor((this.lineatt.width-1)/2);
 
       if (show_markers) {
          // draw markers also when e2 option was specified
@@ -3907,13 +3911,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       // instead define min and max value and made min-max drawing
       let use_minmax = ((right-left) > 3*width);
 
-      if (this.options.ErrorKind === 1) {
-         let lw = this.lineatt.width + JSROOT.gStyle.fEndErrorSize;
-         endx = "m0," + lw + "v-" + 2*lw + "m0," + lw;
-         endy = "m" + lw + ",0h-" + 2*lw + "m" + lw + ",0";
-         dend = Math.floor((this.lineatt.width-1)/2);
-      }
-
       if (draw_any_but_hist) use_minmax = true;
 
       // just to get correct values for the specified bin
@@ -3939,11 +3936,17 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             edx = Math.round((mx2-mx1)*this.options.errorX);
             mmx1 = midx - edx;
             mmx2 = midx + edx;
-            path_err += "M" + (mmx1+dend) +","+ my + endx + "h" + (mmx2-mmx1-2*dend) + endx;
+            if (this.options.ErrorKind === 1)
+               path_err += `M${mmx1+dend},${my-dlw}v${2*dlw}m0,-${dlw}h${mmx2-mmx1-2*dend}m0,-${dlw}v${2*dlw}`;
+            else
+               path_err += `M${mmx1+dend},${my}h${mmx2-mmx1-2*dend}`;
          }
-         path_err += "M" + midx + "," + (my-yerr1+dend) + endy + "v" + (yerr1+yerr2-2*dend) + endy;
+         if (this.options.ErrorKind === 1)
+            path_err += `M${midx-dlw},${my-yerr1+dend}h${2*dlw}m${-dlw},0v${yerr1+yerr2-2*dend}m${-dlw},0h${2*dlw}`;
+         else
+            path_err += `M${midx},${my-yerr1+dend}v${yerr1+yerr2-2*dend}`;
          if (hints_err !== null)
-            hints_err += "M" + (midx-edx) + "," + (my-yerr1) + "h" + (2*edx) + "v" + (yerr1+yerr2) + "h" + (-2*edx) + "z";
+            hints_err += `M${midx-edx},${my-yerr1}h${2*edx}v${yerr1+yerr2}h${-2*edx}z`;
       };
 
       let draw_bin = bin => {
