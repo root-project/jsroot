@@ -1,20 +1,20 @@
 # JSROOT changelog
 
 ## Changes in dev
-1. Fix problem with curved TGraph drawings (#218)
-2. Provide x3dscNNN and y3dscNNN draw option for histogram to resize x/y axis
-3. Provide JSROOT.Painter.setDefaultDrawOpt to change default draw option
-4. Provide example of custom entries in context menu
-5. Fix problems with TGraph drawing updates
-6. Provide alternative location for zstd-codec
-7. Allows to use JSROOT.define() in external scripts
-8. Optmize TH2 col drawings to produce smaller SVG
-9. Let skip HEAD requests when reading files (#223)
-10. Fully rewrite TLatex parsing, use many svg elements instead of plain text/tspan
-11. Make TLatex reliably working in node.js, does not depend from availability of canvas component
-12. Show long histogram names in stats box when possible
-13. Provide "Find label" command in TAxis context menu to zoom into bin region
-14. Fix logic how "ndiv" parameter of TAxis is handled, showing really the configured number of ticks
+1. Fully rewrite TLatex parsing, use svg elements instead of plain text/tspan
+2. Make TLatex reliably working in node.js, does not depend from availability of canvas component
+3. Many optimizations to produce smaller (and faster) SVG output
+4. Provide x3dscNNN and y3dscNNN draw option for histogram to resize x/y axis in 3D plots
+5. Provide "Find label" command in TAxis context menu to zoom into bin region
+6. Allows to use JSROOT.define() in external scripts
+7. Provide JSROOT.Painter.setDefaultDrawOpt to change class default draw option
+8. Provide example of custom entries in context menu
+9. Provide alternative external location for zstd-codec, let use zstd even when not found locally
+10. Let skip HEAD requests when reading files, adding "^" symbol to file name (#223)
+11. Show long histogram names in stats box when possible
+12. Fix logic how "ndiv" parameter of TAxis is handled, showing really the configured number of ticks
+13. Fix problem with curved TGraph drawings (#218)
+14. Fix problems with TGraph drawing updates
 
 
 ## Changes in 6.2.2
