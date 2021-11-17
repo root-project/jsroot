@@ -5526,20 +5526,19 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       // try to build path which fills area to outside borders
       function BuildPathOutside(xp,yp,iminus,iplus,side) {
 
-         let points = [{ x:0, y:0 }, {x:frame_w, y:0}, {x:frame_w, y:frame_h}, {x:0, y:frame_h} ];
+         const points = [{ x:0, y:0 }, {x:frame_w, y:0}, {x:frame_w, y:frame_h}, {x:0, y:frame_h} ];
 
-         function get_intersect(i,di) {
+         const get_intersect = (i,di) => {
             let segm = { x1: xp[i], y1: yp[i], x2: 2*xp[i] - xp[i+di], y2: 2*yp[i] - yp[i+di] };
             for (let i=0;i<4;++i) {
                let res = get_segm_intersection(segm, { x1: points[i].x, y1: points[i].y, x2: points[(i+1)%4].x, y2: points[(i+1)%4].y});
                if (res) {
-
                   res.indx = i + 0.5;
                   return res;
                }
             }
             return null;
-         }
+         };
 
          let pnt1, pnt2;
          iminus--;
@@ -5621,7 +5620,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    /** @summary Create poly bin
      * @private */
-   TH2Painter.prototype.createPolyBin = function(pmain, funcs, bin, text_pos) {
+   TH2Painter.prototype.createPolyBin = function(funcs, bin, text_pos) {
       let cmd = "", grcmd = "", acc_x = 0, acc_y = 0, ngr, ngraphs = 1, gr = null;
 
       if (bin.fPoly._typename == 'TMultiGraph')
@@ -5637,12 +5636,12 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          bin._sumx += (x1+x2)*len/2;
          bin._sumy += (y1+y2)*len/2;
          bin._suml += len;
-      }
+      };
 
       const flush = () => {
          if (acc_x) { grcmd += "h" + acc_x; acc_x = 0; }
          if (acc_y) { grcmd += "v" + acc_y; acc_y = 0; }
-      }
+      };
 
       for (ngr = 0; ngr < ngraphs; ++ ngr) {
          if (!gr || (ngr>0)) gr = bin.fPoly.fGraphs.arr[ngr];
@@ -5654,7 +5653,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          if ((npnts > 2) && (x[0] === x[npnts-1]) && (y[0] === y[npnts-1])) npnts--;
 
-         let poscmd = "M"+grx+","+gry;
+         let poscmd = `M${grx},${gry}`;
 
          grcmd = "";
 
@@ -5732,7 +5731,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          if ((bin.fXmin > funcs.scale_xmax) || (bin.fXmax < funcs.scale_xmin) ||
              (bin.fYmin > funcs.scale_ymax) || (bin.fYmax < funcs.scale_ymin)) continue;
 
-         cmd = this.createPolyBin(pmain, funcs, bin, this.options.Text && bin.fContent);
+         cmd = this.createPolyBin(funcs, bin, this.options.Text && bin.fContent);
 
          if (colPaths[colindx] === undefined)
             colPaths[colindx] = cmd;
@@ -5996,14 +5995,12 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                cross += `M${xx},${yy}l${ww},${hh}m0,${-hh}l${-ww},${hh}`;
 
             if ((this.options.BoxStyle === 11) && (ww>5) && (hh>5)) {
-               let pww = Math.round(ww*0.1),
-                   phh = Math.round(hh*0.1),
-                   side1 = "M"+xx+","+yy + "h"+ww + "l"+(-pww)+","+phh + "h"+(2*pww-ww) +
-                           "v"+(hh-2*phh)+ "l"+(-pww)+","+phh + "z",
-                   side2 = "M"+(xx+ww)+","+(yy+hh) + "v"+(-hh) + "l"+(-pww)+","+phh + "v"+(hh-2*phh)+
-                           "h"+(2*pww-ww) + "l"+(-pww)+","+phh + "z";
-               if (binz<0) { btn2+=side1; btn1+=side2; }
-                      else { btn1+=side1; btn2+=side2; }
+               const pww = Math.round(ww*0.1),
+                     phh = Math.round(hh*0.1),
+                     side1 = `M${xx},${yy}h${ww}l${-pww},${phh}h${2*pww-ww}v${hh-2*phh}l${-pww},${phh}z`,
+                     side2 = `M${xx+ww},${yy+hh}v${-hh}l${-pww},${phh}v${hh-2*phh}h${2*pww-ww}l${-pww},${phh}z`;
+               if (binz < 0) { btn2 += side1; btn1 += side2; }
+                        else { btn1 += side1; btn2 += side2; }
             }
          }
       }
@@ -6222,13 +6219,13 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             colindx = cntr.getContourIndex(binz/cw/ch);
             if (colindx < 0) continue;
 
-            cmd1 = "M"+handle.grx[i]+","+handle.gry[j+1];
+            cmd1 = `M${handle.grx[i]},${handle.gry[j+1]}`;
             if (colPaths[colindx] === undefined) {
                colPaths[colindx] = cmd1;
                cell_w[colindx] = cw;
                cell_h[colindx] = ch;
             } else{
-               cmd2 = "m" + (handle.grx[i]-currx[colindx]) + "," + (handle.gry[j+1] - curry[colindx]);
+               cmd2 = `m${handle.grx[i]-currx[colindx]},${handle.gry[j+1] - curry[colindx]}`;
                colPaths[colindx] += (cmd2.length < cmd1.length) ? cmd2 : cmd1;
                cell_w[colindx] = Math.max(cell_w[colindx], cw);
                cell_h[colindx] = Math.max(cell_h[colindx], ch);
@@ -6237,7 +6234,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             currx[colindx] = handle.grx[i];
             curry[colindx] = handle.gry[j+1];
 
-            colPaths[colindx] += "v"+ch+"h"+cw+"v-"+ch+"z";
+            colPaths[colindx] += `v${ch}h${cw}v${-ch}z`;
          }
       }
 
@@ -6261,7 +6258,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
               pattern.selectAll("*").remove();
 
            let npix = Math.round(factor*cntr.arr[colindx]*cell_w[colindx]*cell_h[colindx]);
-           if (npix<1) npix = 1;
+           if (npix < 1) npix = 1;
 
            let arrx = new Float32Array(npix), arry = new Float32Array(npix);
 
@@ -6280,7 +6277,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
            let path = "";
 
-           for (let n=0;n<npix;++n)
+           for (let n = 0;n < npix; ++n)
               path += this.markeratt.create(arrx[n] * cell_w[colindx], arry[n] * cell_h[colindx]);
 
            pattern.attr("width", cell_w[colindx])
@@ -6502,7 +6499,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             res.changed = ttrect.property("current_bin") !== foundindx;
 
             if (res.changed)
-                  ttrect.attr("d", this.createPolyBin(pmain, funcs, bin))
+                  ttrect.attr("d", this.createPolyBin(funcs, bin))
                         .style("opacity", "0.7")
                         .property("current_bin", foundindx);
          }
