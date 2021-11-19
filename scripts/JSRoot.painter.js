@@ -172,6 +172,9 @@ JSROOT.define(['d3'], (d3) => {
          s.Tooltip = false;
       else if (d.has("tooltip"))
          s.Tooltip = true;
+         
+      if (d.has("bootstrap"))
+         s.Bootstrap = true;
 
       let mathjax = d.get("mathjax", null), latex = d.get("latex", null);
 

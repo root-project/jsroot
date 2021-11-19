@@ -1,7 +1,7 @@
 /// @file JSRoot.menu.js
 /// JSROOT menu implementation
 
-JSROOT.define(['d3', 'jquery', 'painter', 'jquery-ui'], (d3, $, jsrp) => {
+JSROOT.define(['d3', 'painter', 'jquery', 'jquery-ui'], (d3, jsrp, $) => {
 
    "use strict";
 
@@ -35,7 +35,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'jquery-ui'], (d3, $, jsrp) => {
    }
 
    /**
-    * @summary Class for creating context menu
+    * @summary Abstract class for creating context menu
     *
     * @class
     * @memberof JSROOT.Painter
@@ -43,60 +43,48 @@ JSROOT.define(['d3', 'jquery', 'painter', 'jquery-ui'], (d3, $, jsrp) => {
     * @private
     */
 
-   class JQueryMenu {
+
+   class JSRootMenu {
       constructor(painter, menuname, show_event) {
          this.painter = painter;
          this.menuname = menuname;
-         this.element = null;
-         this.code = "";
-         this.cnt = 1;
-         this.funcs = {};
-         this.separ = false;
          if (show_event && (typeof show_event == "object"))
             if ((show_event.clientX !== undefined) && (show_event.clientY !== undefined))
                this.show_evnt = { clientX: show_event.clientX, clientY: show_event.clientY };
 
-         this.remove_bind = this.remove.bind(this);
+         this.remove_handler = () => this.remove();
+         
       }
-
+      
       /** @summary Returns object with mouse event position when context menu was actiavted
-        * @desc Return object will have members "clientX" and "clientY" */
+       * @desc Return object will have members "clientX" and "clientY" */
       getEventPosition() { return this.show_evnt; }
 
-      /** @summary Add menu item
-        * @param {string} name - item name
-        * @param {function} func - func called when item is selected */
-      add(name, arg, func, title) {
-         if (name == "separator") { this.code += "<li>-</li>"; this.separ = true; return; }
+      add(/*name, arg, func, title*/) {
+         throw Error("add() method has to be implemented in the menu");
+      }
 
-         if (name.indexOf("header:")==0) {
-            this.code += "<li class='ui-widget-header' style='padding:3px; padding-left:5px;'>"+name.substr(7)+"</li>";
-            return;
-         }
+      /** @summary Returns menu size */
+      size() { return 0; }
+      
+      info(/*title, message*/) {
+         throw Error("info() method has to be implemented in the menu class");
+      }
 
-         if (name=="endsub:") { this.code += "</ul></li>"; return; }
+      input(/*title, value, kind*/) {
+         throw Error("input() method has to be implemented in the menu class");
+      }
+      
+      showMethodArgsDialog(/*method*/) {
+         throw Error("showMethodArgsDialog() method has to be implemented in the menu class");
+      }
 
-         let item = "", close_tag = "</li>";
-         title = title ? " title='" + title + "'" : "";
-         if (name.indexOf("sub:")==0) { name = name.substr(4); close_tag = "<ul>"; }
+      remove() { 
+         throw Error("remove() method has to be implemented in the menu class");
+      }
 
-         if (typeof arg == 'function') { func = arg; arg = name; }
-
-         if (name.indexOf("chk:")==0) { item = "<span class='ui-icon ui-icon-check' style='margin:1px'></span>"; name = name.substr(4); } else
-         if (name.indexOf("unk:")==0) { item = "<span class='ui-icon ui-icon-blank' style='margin:1px'></span>"; name = name.substr(4); }
-
-         // special handling of first versions with menu support
-         if (($.ui.version.indexOf("1.10")==0) || ($.ui.version.indexOf("1.9")==0))
-            item = '<a href="#">' + item + name + '</a>';
-         else if ($.ui.version.indexOf("1.11")==0)
-            item += name;
-         else
-            item = "<div" + title + ">" + item + name + "</div>";
-
-         this.code += "<li cnt='" + this.cnt + ((arg !== undefined) ? "' arg='" + arg : "") + "'>" + item + close_tag;
-         if (typeof func == 'function') this.funcs[this.cnt] = func; // keep call-back function
-
-         this.cnt++;
+      show(/*event*/) {
+         throw Error("show() method has to be implemented in the menu class");
       }
 
       /** @summary Add checked menu item
@@ -112,9 +100,6 @@ JSROOT.define(['d3', 'jquery', 'painter', 'jquery-ui'], (d3, $, jsrp) => {
          }
          this.add((flag ? "chk:" : "unk:") + name, arg, handler);
       }
-
-      /** @summary Returns menu size */
-      size() { return this.cnt-1; }
 
       /** @summary Add draw sub-menu with draw options
         * @protected */
@@ -161,153 +146,6 @@ JSROOT.define(['d3', 'jquery', 'painter', 'jquery-ui'], (d3, $, jsrp) => {
          if (!without_sub) this.add("endsub:");
       }
 
-      /** @summary Show modal info dialog
-        * @protected */
-      info(title, message) {
-         let dlg_id = this.menuname + "_dialog";
-         let old_dlg = document.getElementById(dlg_id);
-         if (old_dlg) old_dlg.parentNode.removeChild(old_dlg);
-         $(document.body).append(
-            `<div id="${dlg_id}">
-            <p tabindex="0">${message}</p>
-            </div>`);
-         let dialog = $("#" + dlg_id).dialog({
-            height: 120,
-            width: 400,
-            modal: true,
-            resizable: true,
-            title: title,
-            close: () => dialog.remove()
-          });
-      }
-
-      /** @summary Input value
-        * @returns {Promise} with input value
-        * @protected */
-      input(title, value, kind) {
-         let dlg_id = this.menuname + "_dialog";
-         let old_dlg = document.getElementById(dlg_id);
-         if (old_dlg) old_dlg.parentNode.removeChild(old_dlg);
-         if (!kind) kind = "text";
-         let inp_type = (kind == "int") ? "number" : "text";
-         if ((value === undefined) || (value === null)) value = "";
-
-         $(document.body).append(
-            `<div id="${dlg_id}">
-              <form>
-                <fieldset style="padding:0; border:0">
-                   <input type="${inp_type}" tabindex="0" name="${dlg_id}_inp" id="${dlg_id}_inp" value="${value}" style="width:100%;display:block" class="text ui-widget-content ui-corner-all"/>
-                   <input type="submit" tabindex="-1" style="position:absolute; top:-1000px; display:block"/>
-               </fieldset>
-              </form>
-            </div>`);
-
-         return new Promise(resolveFunc => {
-            let dialog, pressEnter = () => {
-               let val = $("#" + dlg_id + "_inp").val();
-               dialog.dialog("close");
-               if (kind == "float") {
-                  val = parseFloat(val);
-                  if (Number.isFinite(val))
-                     resolveFunc(val);
-               } else if (kind == "int") {
-                  val = parseInt(val);
-                  if (Number.isInteger(val))
-                     resolveFunc(val);
-               } else {
-                  resolveFunc(val);
-              }
-            }
-
-            dialog = $("#" + dlg_id).dialog({
-               height: 150,
-               width: 400,
-               modal: true,
-               resizable: false,
-               title: title,
-               buttons: {
-                  "Ok": pressEnter,
-                  "Cancel": () => dialog.dialog( "close" )
-               },
-               close: () => dialog.remove()
-             });
-
-             dialog.find( "form" ).on( "submit", event => {
-                event.preventDefault();
-                pressEnter();
-             });
-          });
-      }
-
-      /** @summary Let input arguments from the command
-        * @returns {Promise} with command argument */
-      showMethodArgsDialog(method) {
-         let dlg_id = this.menuname + "_dialog";
-         let old_dlg = document.getElementById(dlg_id);
-         if (old_dlg) old_dlg.parentNode.removeChild(old_dlg);
-
-         let inputs = "";
-
-         for (let n = 0; n < method.fArgs.length; ++n) {
-            let arg = method.fArgs[n];
-            arg.fValue = arg.fDefault;
-            if (arg.fValue == '\"\"') arg.fValue = "";
-            inputs += `<label for="${dlg_id}_inp${n}">${arg.fName}</label>
-                       <input type="text" tabindex="0" name="${dlg_id}_inp${n}" id="${dlg_id}_inp${n}" value="${arg.fValue}" style="width:100%;display:block" class="text ui-widget-content ui-corner-all"/>`;
-         }
-
-         $(document.body).append(
-            `<div id="${dlg_id}">
-              <form>
-                <fieldset style="padding:0; border:0">
-                   ${inputs}
-                   <input type="submit" tabindex="-1" style="position:absolute; top:-1000px; display:block"/>
-               </fieldset>
-              </form>
-            </div>`);
-
-         return new Promise(resolveFunc => {
-            let dialog, pressEnter = () => {
-               let args = "";
-
-               for (let k = 0; k < method.fArgs.length; ++k) {
-                  let arg = method.fArgs[k];
-                  let value = $("#" + dlg_id + "_inp" + k).val();
-                  if (value==="") value = arg.fDefault;
-                  if ((arg.fTitle=="Option_t*") || (arg.fTitle=="const char*")) {
-                     // check quotes,
-                     // TODO: need to make more precise checking of escape characters
-                     if (!value) value = '""';
-                     if (value[0]!='"') value = '"' + value;
-                     if (value[value.length-1] != '"') value += '"';
-                  }
-
-                  args += (k>0 ? "," : "") + value;
-               }
-
-               dialog.dialog("close");
-               resolveFunc(args);
-            }
-
-            dialog = $("#" + dlg_id).dialog({
-               height: 100 + method.fArgs.length*60,
-               width: 400,
-               modal: true,
-               resizable: true,
-               title: method.fClassName + '::' + method.fName,
-               buttons: {
-                  "Ok": pressEnter,
-                  "Cancel": () => dialog.dialog( "close" )
-               },
-               close: () => dialog.remove()
-             });
-
-             dialog.find( "form" ).on( "submit", event => {
-                event.preventDefault();
-                pressEnter();
-             });
-          });
-      }
 
       /** @summary Add color selection menu entries
         * @protected */
@@ -357,6 +195,8 @@ JSROOT.define(['d3', 'jquery', 'painter', 'jquery-ui'], (d3, $, jsrp) => {
          this.add("endsub:");
       }
 
+      /** @summary Add rebin menu entries
+        * @protected */
       addRebinMenu(rebin_func) {
         this.add("sub:Rebin", () => {
             this.input("Enter rebin value", 2, "int").then(rebin_func);
@@ -610,6 +450,215 @@ JSROOT.define(['d3', 'jquery', 'painter', 'jquery-ui'], (d3, $, jsrp) => {
          this.add("endsub:");
       }
 
+   } // class JSRootMenu
+
+   /**
+    * @summary Context menu class using jQuery-ui
+    *
+    * @class
+    * @memberof JSROOT.Painter
+    * @desc Use {@link JSROOT.Painter.createMenu} to create instance of the menu
+    * @private
+    */
+
+   class JQueryMenu extends JSRootMenu {
+      
+      constructor(painter, menuname, show_event) {
+         super(painter, menuname, show_event);
+         
+         this.element = null;
+         this.code = "";
+         this.cnt = 1;
+         this.funcs = {};
+      }
+
+      /** @summary Add menu item
+        * @param {string} name - item name
+        * @param {function} func - func called when item is selected */
+      add(name, arg, func, title) {
+         if (name == "separator") { this.code += "<li>-</li>"; return; }
+
+         if (name.indexOf("header:")==0) {
+            this.code += "<li class='ui-widget-header' style='padding:3px; padding-left:5px;'>"+name.substr(7)+"</li>";
+            return;
+         }
+
+         if (name=="endsub:") { this.code += "</ul></li>"; return; }
+
+         let item = "", close_tag = "</li>";
+         title = title ? " title='" + title + "'" : "";
+         if (name.indexOf("sub:")==0) { name = name.substr(4); close_tag = "<ul>"; }
+
+         if (typeof arg == 'function') { func = arg; arg = name; }
+
+         if (name.indexOf("chk:")==0) { item = "<span class='ui-icon ui-icon-check' style='margin:1px'></span>"; name = name.substr(4); } else
+         if (name.indexOf("unk:")==0) { item = "<span class='ui-icon ui-icon-blank' style='margin:1px'></span>"; name = name.substr(4); }
+
+         // special handling of first versions with menu support
+         if (($.ui.version.indexOf("1.10")==0) || ($.ui.version.indexOf("1.9")==0))
+            item = '<a href="#">' + item + name + '</a>';
+         else if ($.ui.version.indexOf("1.11")==0)
+            item += name;
+         else
+            item = "<div" + title + ">" + item + name + "</div>";
+
+         this.code += "<li cnt='" + this.cnt + ((arg !== undefined) ? "' arg='" + arg : "") + "'>" + item + close_tag;
+         if (typeof func == 'function') this.funcs[this.cnt] = func; // keep call-back function
+
+         this.cnt++;
+      }
+
+      /** @summary Returns menu size */
+      size() { return this.cnt-1; }
+
+      /** @summary Show modal info dialog
+        * @protected */
+      info(title, message) {
+         let dlg_id = this.menuname + "_dialog";
+         let old_dlg = document.getElementById(dlg_id);
+         if (old_dlg) old_dlg.parentNode.removeChild(old_dlg);
+         $(document.body).append(
+            `<div id="${dlg_id}">
+            <p tabindex="0">${message}</p>
+            </div>`);
+         let dialog = $("#" + dlg_id).dialog({
+            height: 120,
+            width: 400,
+            modal: true,
+            resizable: true,
+            title: title,
+            close: () => dialog.remove()
+          });
+      }
+
+      /** @summary Input value
+        * @returns {Promise} with input value
+        * @protected */
+      input(title, value, kind) {
+         let dlg_id = this.menuname + "_dialog";
+         let old_dlg = document.getElementById(dlg_id);
+         if (old_dlg) old_dlg.parentNode.removeChild(old_dlg);
+         if (!kind) kind = "text";
+         let inp_type = (kind == "int") ? "number" : "text";
+         if ((value === undefined) || (value === null)) value = "";
+
+         $(document.body).append(
+            `<div id="${dlg_id}">
+              <form>
+                <fieldset style="padding:0; border:0">
+                   <input type="${inp_type}" tabindex="0" name="${dlg_id}_inp" id="${dlg_id}_inp" value="${value}" style="width:100%;display:block" class="text ui-widget-content ui-corner-all"/>
+                   <input type="submit" tabindex="-1" style="position:absolute; top:-1000px; display:block"/>
+               </fieldset>
+              </form>
+            </div>`);
+
+         return new Promise(resolveFunc => {
+            let dialog, pressEnter = () => {
+               let val = $("#" + dlg_id + "_inp").val();
+               dialog.dialog("close");
+               if (kind == "float") {
+                  val = parseFloat(val);
+                  if (Number.isFinite(val))
+                     resolveFunc(val);
+               } else if (kind == "int") {
+                  val = parseInt(val);
+                  if (Number.isInteger(val))
+                     resolveFunc(val);
+               } else {
+                  resolveFunc(val);
+              }
+            }
+
+            dialog = $("#" + dlg_id).dialog({
+               height: 150,
+               width: 400,
+               modal: true,
+               resizable: false,
+               title: title,
+               buttons: {
+                  "Ok": pressEnter,
+                  "Cancel": () => dialog.dialog( "close" )
+               },
+               close: () => dialog.remove()
+             });
+
+             dialog.find( "form" ).on( "submit", event => {
+                event.preventDefault();
+                pressEnter();
+             });
+          });
+      }
+
+      /** @summary Let input arguments from the command
+        * @returns {Promise} with command argument */
+      showMethodArgsDialog(method) {
+         let dlg_id = this.menuname + "_dialog";
+         let old_dlg = document.getElementById(dlg_id);
+         if (old_dlg) old_dlg.parentNode.removeChild(old_dlg);
+
+         let inputs = "";
+
+         for (let n = 0; n < method.fArgs.length; ++n) {
+            let arg = method.fArgs[n];
+            arg.fValue = arg.fDefault;
+            if (arg.fValue == '\"\"') arg.fValue = "";
+            inputs += `<label for="${dlg_id}_inp${n}">${arg.fName}</label>
+                       <input type="text" tabindex="0" name="${dlg_id}_inp${n}" id="${dlg_id}_inp${n}" value="${arg.fValue}" style="width:100%;display:block" class="text ui-widget-content ui-corner-all"/>`;
+         }
+
+         $(document.body).append(
+            `<div id="${dlg_id}">
+              <form>
+                <fieldset style="padding:0; border:0">
+                   ${inputs}
+                   <input type="submit" tabindex="-1" style="position:absolute; top:-1000px; display:block"/>
+               </fieldset>
+              </form>
+            </div>`);
+
+         return new Promise(resolveFunc => {
+            let dialog, pressEnter = () => {
+               let args = "";
+
+               for (let k = 0; k < method.fArgs.length; ++k) {
+                  let arg = method.fArgs[k];
+                  let value = $("#" + dlg_id + "_inp" + k).val();
+                  if (value==="") value = arg.fDefault;
+                  if ((arg.fTitle=="Option_t*") || (arg.fTitle=="const char*")) {
+                     // check quotes,
+                     // TODO: need to make more precise checking of escape characters
+                     if (!value) value = '""';
+                     if (value[0]!='"') value = '"' + value;
+                     if (value[value.length-1] != '"') value += '"';
+                  }
+
+                  args += (k>0 ? "," : "") + value;
+               }
+
+               dialog.dialog("close");
+               resolveFunc(args);
+            }
+
+            dialog = $("#" + dlg_id).dialog({
+               height: 100 + method.fArgs.length*60,
+               width: 400,
+               modal: true,
+               resizable: true,
+               title: method.fClassName + '::' + method.fName,
+               buttons: {
+                  "Ok": pressEnter,
+                  "Cancel": () => dialog.dialog( "close" )
+               },
+               close: () => dialog.remove()
+             });
+
+             dialog.find( "form" ).on( "submit", event => {
+                event.preventDefault();
+                pressEnter();
+             });
+          });
+      }
+
       /** @summary Close and remove menu */
       remove() {
          if (this.element!==null) {
@@ -618,7 +667,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'jquery-ui'], (d3, $, jsrp) => {
                this.resolveFunc();
                delete this.resolveFunc;
             }
-            document.body.removeEventListener('click', this.remove_bind);
+            document.body.removeEventListener('click', this.remove_handler);
          }
          this.element = null;
       }
@@ -629,14 +678,14 @@ JSROOT.define(['d3', 'jquery', 'painter', 'jquery-ui'], (d3, $, jsrp) => {
 
          if (!event && this.show_evnt) event = this.show_evnt;
 
-         document.body.addEventListener('click', this.remove_bind);
+         document.body.addEventListener('click', this.remove_handler);
 
          let oldmenu = document.getElementById(this.menuname);
          if (oldmenu) oldmenu.parentNode.removeChild(oldmenu);
 
-         $(document.body).append('<ul class="jsroot_ctxmenu">' + this.code + '</ul>');
+         $(document.body).append(`<ul id="${this.menuname}" class="jsroot_ctxmenu">${this.code}</ul>`);
 
-         this.element = $('.jsroot_ctxmenu');
+         this.element = $('#' + this.menuname);
 
          let menu = this;
 
@@ -680,6 +729,123 @@ JSROOT.define(['d3', 'jquery', 'painter', 'jquery-ui'], (d3, $, jsrp) => {
 
    } // class JQueryMenu
 
+   /**
+    * @summary Context menu class using Bootstrap
+    *
+    * @class
+    * @memberof JSROOT.Painter
+    * @desc Use {@link JSROOT.Painter.createMenu} to create instance of the menu
+    * @private
+    */
+   
+   class BootstrapMenu extends JSRootMenu {
+      
+      constructor(painter, menuname, show_event) {
+         super(painter, menuname, show_event);
+         
+         this.element = null;
+         this.code = "";
+         this.cnt = 1;
+         this.funcs = {};
+      }
+
+      /** @summary Add menu item
+        * @param {string} name - item name
+        * @param {function} func - func called when item is selected */
+      add(name, arg, func, title) {
+         if (name == "separator") { 
+            this.code += '<hr class="dropdown-divider">'; 
+            return; 
+         }
+
+         if (name.indexOf("header:")==0) {
+            this.code += `<h6 class="dropdown-header">${name.substr(7)}</h6>`;
+            return;
+         }
+
+         // if (name=="endsub:") { this.code += "</ul></li>"; return; }
+
+         title = title ? ` title="${title}"` : "";
+         
+         // if (name.indexOf("sub:")==0) { name = name.substr(4); close_tag = "<ul>"; }
+
+         if (typeof arg == 'function') { func = arg; arg = name; }
+
+         // if (name.indexOf("chk:")==0) { item = "<span class='ui-icon ui-icon-check' style='margin:1px'></span>"; name = name.substr(4); } else
+         // if (name.indexOf("unk:")==0) { item = "<span class='ui-icon ui-icon-blank' style='margin:1px'></span>"; name = name.substr(4); }
+
+         this.code += `<a href="#" class="dropdown-item">${name}</a>`;
+         
+         if (typeof func == 'function') this.funcs[this.cnt] = func; // keep call-back function
+
+         this.cnt++;
+      }
+
+      /** @summary Returns menu size */
+      size() { return this.cnt-1; }
+      
+      /** @summary Close and remove menu */
+      remove() {
+         if (this.element!==null) {
+            this.element.remove();
+            if (this.resolveFunc) {
+               this.resolveFunc();
+               delete this.resolveFunc;
+            }
+            document.body.removeEventListener('click', this.remove_handler);
+         }
+         this.element = null;
+      }
+
+      /** @summary Show menu */
+      show(event) {
+         this.remove();
+
+         if (!event && this.show_evnt) event = this.show_evnt;
+
+         document.body.addEventListener('click', this.remove_handler);
+
+         let oldmenu = document.getElementById(this.menuname);
+         if (oldmenu) oldmenu.parentNode.removeChild(oldmenu);
+
+         // this.code = '<a class="dropdown-item" href="#">Action</a>' + 
+         //            '<a class="dropdown-item" href="#">Something else here</a>';
+
+         $(document.body).append(`<div id="${this.menuname}" class="dropdown">${this.code}</div>`);
+
+         this.element = $('#' + this.menuname);
+
+         this.element
+            .css('left', event.clientX + window.pageXOffset)
+            .css('top', event.clientY + window.pageYOffset)
+            .css('position', 'absolute') // this overrides ui-menu-items class property
+            .css('background','white')
+
+         return JSROOT.loadScript([JSROOT.source_dir + 'scripts/bootstrap.bundle.min.js', JSROOT.source_dir + 'style/bootstrap.min.css']).then(() => {
+
+            let newx = null, newy = null;
+
+            if (event.clientX + this.element.width() > $(window).width()) newx = $(window).width() - this.element.width() - 20;
+            if (event.clientY + this.element.height() > $(window).height()) newy = $(window).height() - this.element.height() - 20;
+
+            if (newx!==null) this.element.css('left', (newx>0 ? newx : 0) + window.pageXOffset);
+            if (newy!==null) this.element.css('top', (newy>0 ? newy : 0) + window.pageYOffset);
+            
+            // bootstrap.Dropdown(this.element.get(0));
+
+            // this.element.dropdown();
+            
+            // this.element.dropdown('toggle');
+
+            return new Promise(resolve => {
+               this.resolveFunc = resolve;
+            });
+         });
+      }
+
+   }
+
+
    /** @summary Create JSROOT menu
      * @desc See {@link JSROOT.Painter.jQueryMenu} class for detailed list of methods
      * @memberof JSROOT.Painter
@@ -696,7 +862,10 @@ JSROOT.define(['d3', 'jquery', 'painter', 'jquery-ui'], (d3, $, jsrp) => {
      *          menu.show();
      *        }); */
    function createMenu(evnt, handler, menuname) {
-      let menu = new JQueryMenu(handler, menuname || 'root_ctx_menu', evnt);
+      let menu = JSROOT.settings.Bootstrap 
+                 ? new BootstrapMenu(handler, menuname || 'root_ctx_menu', evnt)
+                 : new JQueryMenu(handler, menuname || 'root_ctx_menu', evnt);  
+         
       return Promise.resolve(menu);
    }
 
