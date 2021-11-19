@@ -1340,7 +1340,6 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
          this.draw_kind = "nodes";
 
-         // here are up to five elements are collected, try to group them
          nodes = this.draw_g.selectAll(".grpoint")
                      .data(drawbins)
                      .enter()
@@ -1456,7 +1455,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       }
 
       if (this.options.Mark) {
-         // for tooltips use markers only if nodes where not created
+         // for tooltips use markers only if nodes were not created
          let path = "", pnt, grx, gry;
 
          this.createAttMarker({ attr: graph, style: this.options.Mark - 100 });
@@ -1487,8 +1486,8 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
             this.draw_g.append("svg:path")
                        .attr("d", path)
                        .call(this.markeratt.func);
-            if ((nodes===null) && (this.draw_kind=="none"))
-               this.draw_kind = (this.options.Mark==101) ? "path" : "mark";
+            if ((nodes===null) && (this.draw_kind == "none"))
+               this.draw_kind = (this.options.Mark == 101) ? "path" : "mark";
 
          }
       }
@@ -1618,7 +1617,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
    TGraphPainter.prototype.findBestBin = function(pnt) {
       if (!this.bins) return null;
 
-      let islines = (this.draw_kind=="lines"),
+      let islines = (this.draw_kind == "lines"),
           bestindx = -1,
           bestbin = null,
           bestdist = 1e10,
@@ -1659,11 +1658,9 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
       if (!bestbin && islines) {
 
-         bestdist = 10000;
+         bestdist = 1e10;
 
-         function IsInside(x, x1, x2) {
-            return ((x1>=x) && (x>=x2)) || ((x1<=x) && (x<=x2));
-         }
+         const IsInside = (x, x1, x2) => ((x1>=x) && (x>=x2)) || ((x1<=x) && (x<=x2));
 
          let bin0 = this.bins[0], grx0 = funcs.grx(bin0.x), gry0, posy = 0;
          for (n = 1; n < this.bins.length; ++n) {
