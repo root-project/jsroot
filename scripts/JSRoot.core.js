@@ -100,7 +100,7 @@
    /** @summary JSROOT version id
      * @desc For the JSROOT release the string in format "major.minor.patch" like "6.3.0"
      * For the ROOT release string is "ROOT major.minor.patch" like "ROOT 6.26.00" */
-   JSROOT.version_id = "6.3.0";
+   JSROOT.version_id = "dev";
 
    /** @summary JSROOT version date
      * @desc Release date in format day/month/year like "19/11/2021"*/
