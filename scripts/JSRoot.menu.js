@@ -764,7 +764,7 @@ JSROOT.define(['d3', 'painter', 'jquery', 'jquery-ui'], (d3, jsrp, $) => {
             return;
          }
          
-         let newlevel = false, extras = "", cl = "dropdown-item btn-sm";
+         let newlevel = false, extras = "", cl = "dropdown-item btn-sm", checked = "";
 
          if (name=="endsub:") { 
             this.lvl--;
@@ -776,15 +776,18 @@ JSROOT.define(['d3', 'painter', 'jquery', 'jquery-ui'], (d3, jsrp, $) => {
 
          if (typeof arg == 'function') { func = arg; arg = name; }
 
-         if (name.indexOf("chk:")==0) { name = `<span style="width:1em;display:inline-block;">\u2713</span>` + name.substr(4); } else
-         if (name.indexOf("unk:")==0) { name = `<span style="width:1em;display:inline-block;"></span>` + name.substr(4); } else 
-            name = `<span style="width:1em;display:inline-block"></span>` + name;
+         if (name.indexOf("chk:")==0) { 
+            checked = '\u2713'; 
+            name  = name.substr(4); 
+         } else if (name.indexOf("unk:")==0) {
+            name = name.substr(4);
+         } 
 
          if (title) extras += ` title="${title}"`; 
          if (arg !== undefined) extras += ` arg="${arg}"`;
          if (newlevel) { extras += ` data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"`; cl += " dropdown-toggle"; }
 
-         let item = `<button id="${this.menuname}${this.cnt}" ${extras} class="${cl}" type="button">${name}</button>`;
+         let item = `<button id="${this.menuname}${this.cnt}" ${extras} class="${cl}" type="button"><span style="width:1em;display:inline-block">${checked}</span>${name}</button>`;
          
          if (newlevel) item = '<li class="dropdown dropend">' + item;
                   else item = "<li>" + item + "</li>";  
@@ -792,7 +795,7 @@ JSROOT.define(['d3', 'painter', 'jquery', 'jquery-ui'], (d3, jsrp, $) => {
          this.code += item;
          
          if (newlevel) {
-            this.code += `<ul class="dropdown-menu submenu" aria-labelledby="${this.menuname}${this.cnt}">`;
+            this.code += `<ul class="dropdown-menu dropdown-submenu" aria-labelledby="${this.menuname}${this.cnt}">`;
             this.lvl++; 
          }  
          
@@ -865,12 +868,6 @@ JSROOT.define(['d3', 'painter', 'jquery', 'jquery-ui'], (d3, jsrp, $) => {
 
             if (newx!==null) this.element.css('left', (newx>0 ? newx : 0) + window.pageXOffset);
             if (newy!==null) this.element.css('top', (newy>0 ? newy : 0) + window.pageYOffset);
-            
-            // bootstrap.Dropdown(this.element.get(0));
-
-            // this.element.dropdown();
-            
-            // this.element.dropdown('toggle');
 
             return new Promise(resolve => {
                this.resolveFunc = resolve;
