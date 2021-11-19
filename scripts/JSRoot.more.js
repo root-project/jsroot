@@ -1459,10 +1459,13 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          let path = "", pnt, grx, gry;
 
          this.createAttMarker({ attr: graph, style: this.options.Mark - 100 });
-
+         
          this.marker_size = this.markeratt.getFullSize();
 
          this.markeratt.resetPos();
+         
+         let want_tooltip = !JSROOT.batch_mode && JSROOT.settings.Tooltip && !this.markeratt.fill && !nodes,
+             hints_marker = "", hsz = Math.max(5, Math.round(this.marker_size*0.7));
 
          // let produce SVG at maximum 1MB
          let maxnummarker = 1000000 / (this.markeratt.getMarkerLength() + 7), step = 1;
@@ -1477,8 +1480,10 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
             grx = funcs.grx(pnt.x);
             if ((grx > -this.marker_size) && (grx < w + this.marker_size)) {
                gry = funcs.gry(pnt.y);
-               if ((gry > -this.marker_size) && (gry < h + this.marker_size))
+               if ((gry > -this.marker_size) && (gry < h + this.marker_size)) {
                   path += this.markeratt.create(grx, gry);
+                  if (want_tooltip) hints_marker += `M${grx-hsz},${gry-hsz}h${2*hsz}v${2*hsz}h${-2*hsz}z`;
+               }
             }
          }
 
@@ -1488,8 +1493,13 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
                        .call(this.markeratt.func);
             if ((nodes===null) && (this.draw_kind == "none"))
                this.draw_kind = (this.options.Mark == 101) ? "path" : "mark";
-
          }
+         if (want_tooltip && hints_marker) 
+            this.draw_g.append("svg:path")
+                .attr("d", hints_marker)
+                .attr("stroke", "none")
+                .attr("fill", "none")
+                .attr("pointer-events", "visibleFill");
       }
 
       if (!JSROOT.batch_mode)
@@ -1813,7 +1823,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
             if (!hint.islines) {
                elem.style('stroke', hint.color1 == 'black' ? 'green' : 'black').style('fill','none');
             } else {
-               if (this.options.Line)
+               if (this.options.Line || this.options.Curve)
                   elem.call(this.lineatt.func);
                else
                   elem.style('stroke','black');
