@@ -747,6 +747,7 @@ JSROOT.define(['d3', 'painter', 'jquery', 'jquery-ui'], (d3, jsrp, $) => {
          this.code = "";
          this.cnt = 1;
          this.funcs = {};
+         this.lvl = 0;
       }
 
       /** @summary Add menu item
@@ -762,19 +763,36 @@ JSROOT.define(['d3', 'painter', 'jquery', 'jquery-ui'], (d3, jsrp, $) => {
             this.code += `<h6 class="dropdown-header">${name.substr(7)}</h6>`;
             return;
          }
-
-         // if (name=="endsub:") { this.code += "</ul></li>"; return; }
-
-         title = title ? ` title="${title}"` : "";
          
-         // if (name.indexOf("sub:")==0) { name = name.substr(4); close_tag = "<ul>"; }
+         let newlevel = false, extras = "", cl = "dropdown-item btn-sm";
+
+         if (name=="endsub:") { 
+            this.lvl--;
+            this.code += "</li>";  
+            this.code += "</ul>"; 
+            return; 
+         }
+         if (name.indexOf("sub:")==0) { name = name.substr(4); newlevel = true; }
 
          if (typeof arg == 'function') { func = arg; arg = name; }
 
          // if (name.indexOf("chk:")==0) { item = "<span class='ui-icon ui-icon-check' style='margin:1px'></span>"; name = name.substr(4); } else
          // if (name.indexOf("unk:")==0) { item = "<span class='ui-icon ui-icon-blank' style='margin:1px'></span>"; name = name.substr(4); }
 
-         this.code += `<a href="#" class="dropdown-item">${name}</a>`;
+         if (title) extras += ` title="${title}"`; 
+         if (arg !== undefined) extras += ` arg="${arg}"`;
+         if (newlevel) { extras += ` data-bs-toggle="dropdown"`; cl += " dropdown-toggle"; }
+
+         let item = `<button id="${this.menuname}${this.cnt}" ${extras} class="${cl}" type="button">${name}</button>`;
+         if (newlevel) item = '<li class="dropdown dropend">' + item;
+                  else item = "<li>" + item + "</li>";  
+
+         this.code += item;
+         
+         if (newlevel) {
+            this.code += `<ul class="dropdown-menu" aria-labelledby="${this.menuname}${this.cnt}">`;
+            this.lvl++; 
+         }  
          
          if (typeof func == 'function') this.funcs[this.cnt] = func; // keep call-back function
 
@@ -811,22 +829,48 @@ JSROOT.define(['d3', 'painter', 'jquery', 'jquery-ui'], (d3, jsrp, $) => {
          // this.code = '<a class="dropdown-item" href="#">Action</a>' + 
          //            '<a class="dropdown-item" href="#">Something else here</a>';
 
-         $(document.body).append(`<div id="${this.menuname}" class="dropdown">${this.code}</div>`);
+         $(document.body).append(`<div id="${this.menuname}"><ul class="dropdown-menu dropend" style="display:block">${this.code}</ul></div>`);
 
          this.element = $('#' + this.menuname);
+         
+         let menu = this;
 
          this.element
             .css('left', event.clientX + window.pageXOffset)
             .css('top', event.clientY + window.pageYOffset)
             .css('position', 'absolute') // this overrides ui-menu-items class property
             .css('background','white')
+            .find(".dropdown-item").on("click", function() {
+               let item = $(this),
+                   arg = item.attr('arg'),
+                   cnt = item.attr('id').substr(menu.menuname.length),
+                   func = cnt ? menu.funcs[cnt] : null;
+               menu.remove();
+               if (typeof func == 'function') {
+                  if (menu.painter)
+                     func.bind(menu.painter)(arg); // if 'painter' field set, returned as this to callback
+                  else
+                     func(arg);
+               }
+            });
+            
+         this.element.find(".dropdown-toggle").each( function() {
+            this.addEventListener('mouseover', function () {
+               let el = this.nextElementSibling;
+               if (el) el.style.display = el.style.display==='block'? null : 'block';
+            });
+            this.addEventListener('mouseout', function () {
+               let el = this.nextElementSibling;
+               if (el) el.style.display = el.style.display==='block' ? 'block' : null;
+            })
+         });
 
          return JSROOT.loadScript([JSROOT.source_dir + 'scripts/bootstrap.bundle.min.js', JSROOT.source_dir + 'style/bootstrap.min.css']).then(() => {
 
-            let newx = null, newy = null;
-
-            if (event.clientX + this.element.width() > $(window).width()) newx = $(window).width() - this.element.width() - 20;
-            if (event.clientY + this.element.height() > $(window).height()) newy = $(window).height() - this.element.height() - 20;
+            let newx = null, newy = null, vis = this.element.find(">:first-child");
+            
+            if (event.clientX + vis.width() > $(window).width()) newx = $(window).width() - vis.width() - 20;
+            if (event.clientY + vis.height() > $(window).height()) newy = $(window).height() - vis.height() - 20;
 
             if (newx!==null) this.element.css('left', (newx>0 ? newx : 0) + window.pageXOffset);
             if (newy!==null) this.element.css('top', (newy>0 ? newy : 0) + window.pageYOffset);
