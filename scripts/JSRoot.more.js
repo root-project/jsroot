@@ -1464,18 +1464,16 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
 
          this.markeratt.resetPos();
          
-         let want_tooltip = !JSROOT.batch_mode && JSROOT.settings.Tooltip && !this.markeratt.fill && !nodes,
-             hints_marker = "", hsz = Math.max(5, Math.round(this.marker_size*0.7));
-
-         // let produce SVG at maximum 1MB
-         let maxnummarker = 1000000 / (this.markeratt.getMarkerLength() + 7), step = 1;
+         let want_tooltip = !JSROOT.batch_mode && JSROOT.settings.Tooltip && (!this.markeratt.fill || (this.marker_size < 7)) && !nodes,
+             hints_marker = "", hsz = Math.max(5, Math.round(this.marker_size*0.7)),
+             maxnummarker = 1000000 / (this.markeratt.getMarkerLength() + 7), step = 1; // let produce SVG at maximum 1MB
 
          if (!drawbins)
             drawbins = this.optimizeBins(maxnummarker);
          else if (this.canOptimize() && (drawbins.length > 1.5*maxnummarker))
             step = Math.min(2, Math.round(drawbins.length/maxnummarker));
 
-         for (let n = 0; n < drawbins.length; n+=step) {
+         for (let n = 0; n < drawbins.length; n += step) {
             pnt = drawbins[n];
             grx = funcs.grx(pnt.x);
             if ((grx > -this.marker_size) && (grx < w + this.marker_size)) {

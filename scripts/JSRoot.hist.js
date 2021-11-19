@@ -3842,7 +3842,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           show_text = this.options.Text,
           text_profile = show_text && (this.options.TextKind == "E") && this.isTProfile() && histo.fBinEntries,
           path_fill = null, path_err = null, path_marker = null, path_line = null,
-          hints_err = null, hints_marker = null,
+          hints_err = null, hints_marker = null, hsz = 5,
           do_marker = false, do_err = false,
           dend = 0, dlw = 0, my, yerr1, yerr2, bincont, binerr, mx1, mx2, midx, mmx1, mmx2,
           text_col, text_angle, text_size;
@@ -3873,7 +3873,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             path_marker = "";
             do_marker = true;
             this.markeratt.resetPos();
-            if ((hints_err === null) && want_tooltip) hints_marker = "";
+            if ((hints_err === null) && want_tooltip && (!this.markeratt.fill || (this.markeratt.getFullSize() < 7))) {
+               hints_marker = ""; hsz = Math.max(5, Math.round(this.markeratt.getFullSize()*0.7))
+             }
          } else {
             show_markers = false;
          }
@@ -3975,7 +3977,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                   if ((path_marker !== null) && do_marker) {
                      path_marker += this.markeratt.create(midx, my);
                      if (hints_marker !== null)
-                        hints_marker += "M" + (midx-5)+","+(my-5) + "h10v10h-10z";
+                        hints_marker += `M${midx-hsz},${my-hsz}h${2*hsz}v${2*hsz}h${-2*hsz}z`;
                   }
 
                   if ((path_err !== null) && do_err)
@@ -3993,7 +3995,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                   if (path_marker !== null)
                      path_marker += this.markeratt.create(midx, my);
                   if (hints_marker !== null)
-                     hints_marker += "M" + (midx-5)+","+(my-5) + "h10v10h-10z";
+                     hints_marker += `M${midx-hsz},${my-hsz}h${2*hsz}v${2*hsz}h${-2*hsz}z`;
                   if (path_err !== null)
                      draw_errbin();
                }
