@@ -601,6 +601,7 @@
    font-size: 12px;
    font-family: Verdana;
    pointer-events: all;
+   box-sizing: initial;
 }
 
 .jsroot_browser_btns {
