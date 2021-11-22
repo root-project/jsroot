@@ -535,7 +535,7 @@ JSROOT.define(['d3', 'painter', 'jquery', 'jquery-ui'], (d3, jsrp, $) => {
         * @returns {Promise} with input value
         * @param {string} title - input dialog title
         * @param value - initial value
-        * @param {string} [kind] - either "number" or "text", if not specified, number is supposed
+        * @param {string} [kind] - use "text" (default), "number", "float" or "int"
         * @protected */
       input(title, value, kind) {
          let dlg_id = this.menuname + "_dialog";
@@ -820,7 +820,7 @@ JSROOT.define(['d3', 'painter', 'jquery', 'jquery-ui'], (d3, jsrp, $) => {
       
       /** @summary Close and remove menu */
       remove() {
-         if (this.element!==null) {
+         if (this.element) {
             this.element.remove();
             if (this.resolveFunc) {
                this.resolveFunc();
@@ -848,7 +848,7 @@ JSROOT.define(['d3', 'painter', 'jquery', 'jquery-ui'], (d3, jsrp, $) => {
 
             this.element = document.createElement('div');
             this.element.id = this.menuname;
-            this.element.class = "dropdown";
+            this.element.setAttribute('class', "dropdown");
             this.element.innerHTML = `<ul class="dropdown-menu dropend" style="display:block">${this.code}</ul>`;
             
             document.body.appendChild(this.element);
@@ -924,48 +924,55 @@ JSROOT.define(['d3', 'painter', 'jquery', 'jquery-ui'], (d3, jsrp, $) => {
       input(title, value, kind) {
          let dlg_id = this.menuname + "_dialog";
          let old_dlg = document.getElementById(dlg_id);
-         if (old_dlg) old_dlg.parentNode.removeChild(old_dlg);
+         if (old_dlg) old_dlg.remove();
          if (!kind) kind = "text";
          let inp_type = (kind == "int") ? "number" : "text";
          if ((value === undefined) || (value === null)) value = "";
          
-         let content = 
-         
-        `<div class="modal fade" id="${dlg_id}" data-bs-backdrop="static" data-bs-keyboard="true" tabindex="-1" aria-hidden="true">
-          <div class="modal-dialog">
-           <div class="modal-content">
-            <div class="modal-header">
-             <h5 class="modal-title" id="staticBackdropLabel">${title}</h5>
-             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-               <input type="${inp_type}" class="form-control" id="${dlg_id}_inp" value="${value}"/>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-              <button type="button" class="btn btn-primary" data-bs-dismiss="modal" id="${dlg_id}_btn">Ok</button>
-            </div>
-           </div>
-          </div>
-         </div>`;
-
          return this.loadBS(true).then(() => {
-
-            $(document.body).append(content);
             
-            let myModalEl = document.getElementById(dlg_id), 
-                myModal = new bootstrap.Modal(myModalEl, { keyboard: true, backdrop: 'static' });
+            let myModalEl = document.createElement('div');
+            myModalEl.setAttribute('id', dlg_id);
+            myModalEl.setAttribute('class', 'modal fade');
+            myModalEl.setAttribute('role', "dialog");
+            myModalEl.setAttribute('tabindex', "-1");
+            myModalEl.setAttribute('aria-hidden', "true");
+            myModalEl.setAttribute('data-bs-backdrop', "static");
+            myModalEl.setAttribute('data-bs-keyboard', "false");
+            
+            myModalEl.innerHTML = 
+               `<div class="modal-dialog">
+                 <div class="modal-content">
+                  <div class="modal-header">
+                   <h5 class="modal-title">${title}</h5>
+                   <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body">
+                     <input type="${inp_type}" class="form-control jsroot_dlginp" value="${value}"/>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary jsroot_okbtn" data-bs-dismiss="modal">Ok</button>
+                  </div>
+                 </div>
+                </div>`;
+            
+            document.body.appendChild(myModalEl);
+            
+            let myModal = new bootstrap.Modal(myModalEl, { keyboard: true, backdrop: 'static' });
             myModal.show();
             
-            let btn = document.getElementById(dlg_id + "_btn"), pressOk = false; 
-            
             return new Promise(resolveFunc => {
-               btn.addEventListener('click', () => { pressOk = true; });
+               let pressOk = false; 
+
+               myModalEl.querySelector(`.jsroot_okbtn`).addEventListener('click', () => { pressOk = true; });
                
                myModalEl.addEventListener('hidden.bs.modal', () => {
+                  let val = myModalEl.querySelector(`.jsroot_dlginp`).value;
+                  myModalEl.remove();
+                  
                   if (!pressOk) return;
                   
-                  let val = document.getElementById(dlg_id + "_inp").value;
                   if (kind == "float") {
                      val = parseFloat(val);
                      if (Number.isFinite(val))
