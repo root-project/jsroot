@@ -53,7 +53,8 @@ JSROOT.define(['d3', 'painter', 'jquery', 'jquery-ui'], (d3, jsrp, $) => {
                this.show_evnt = { clientX: show_event.clientX, clientY: show_event.clientY };
 
          this.remove_handler = () => this.remove();
-         
+         this.element = null;
+         this.cnt = 0;
       }
       
       /** @summary Returns object with mouse event position when context menu was actiavted
@@ -65,10 +66,19 @@ JSROOT.define(['d3', 'painter', 'jquery', 'jquery-ui'], (d3, jsrp, $) => {
       }
 
       /** @summary Returns menu size */
-      size() { return 0; }
+      size() { return this.cnt-1; }
       
-      remove() { 
-         throw Error("remove() method has to be implemented in the menu class");
+      /** @summary Close and remove menu */
+      remove() {
+         if (this.element!==null) {
+            this.element.remove();
+            if (this.resolveFunc) {
+               this.resolveFunc();
+               delete this.resolveFunc;
+            }
+            document.body.removeEventListener('click', this.remove_handler);
+         }
+         this.element = null;
       }
 
       show(/*event*/) {
@@ -441,7 +451,7 @@ JSROOT.define(['d3', 'painter', 'jquery', 'jquery-ui'], (d3, jsrp, $) => {
       /** @summary Run modal dialog
         * @private */
       runModal() {
-         console.error('runModal() must be reimplemented');
+         throw Error('runModal() must be reimplemented');
       }
       
       /** @summary Show modal info dialog
@@ -553,9 +563,7 @@ JSROOT.define(['d3', 'painter', 'jquery', 'jquery-ui'], (d3, jsrp, $) => {
       constructor(painter, menuname, show_event) {
          super(painter, menuname, show_event);
          
-         this.element = null;
          this.code = "";
-         this.cnt = 1;
          this.funcs = {};
       }
 
@@ -595,22 +603,6 @@ JSROOT.define(['d3', 'painter', 'jquery', 'jquery-ui'], (d3, jsrp, $) => {
          this.cnt++;
       }
 
-      /** @summary Returns menu size */
-      size() { return this.cnt-1; }
-
-      /** @summary Close and remove menu */
-      remove() {
-         if (this.element!==null) {
-            this.element.remove();
-            if (this.resolveFunc) {
-               this.resolveFunc();
-               delete this.resolveFunc;
-            }
-            document.body.removeEventListener('click', this.remove_handler);
-         }
-         this.element = null;
-      }
-
       /** @summary Show menu */
       show(event) {
          this.remove();
@@ -620,19 +612,20 @@ JSROOT.define(['d3', 'painter', 'jquery', 'jquery-ui'], (d3, jsrp, $) => {
          document.body.addEventListener('click', this.remove_handler);
 
          let oldmenu = document.getElementById(this.menuname);
-         if (oldmenu) oldmenu.parentNode.removeChild(oldmenu);
+         if (oldmenu) oldmenu.remove();
+         
+         this.element = document.createElement('ul');
+         this.element.setAttribute('id', this.menuname);
+         this.element.setAttribute('class', 'jsroot_ctxmenu');
+         this.element.innerHTML = this.code;
 
-         $(document.body).append(`<ul id="${this.menuname}" class="jsroot_ctxmenu">${this.code}</ul>`);
+         document.body.appendChild(this.element);
 
-         this.element = $('#' + this.menuname);
+         let menu = this, jqelement = $(this.element);
 
-         let menu = this;
-
-         this.element
-            .attr('id', this.menuname)
+         jqelement
             .css('left', event.clientX + window.pageXOffset)
             .css('top', event.clientY + window.pageYOffset)
-//            .css('font-size', '80%')
             .css('position', 'absolute') // this overrides ui-menu-items class property
             .menu({
                items: "> :not(.ui-widget-header)",
@@ -654,11 +647,11 @@ JSROOT.define(['d3', 'painter', 'jquery', 'jquery-ui'], (d3, jsrp, $) => {
 
             let newx = null, newy = null;
 
-            if (event.clientX + this.element.width() > $(window).width()) newx = $(window).width() - this.element.width() - 20;
-            if (event.clientY + this.element.height() > $(window).height()) newy = $(window).height() - this.element.height() - 20;
+            if (event.clientX + jqelement.width() > $(window).width()) newx = $(window).width() - jqelement.width() - 20;
+            if (event.clientY + jqelement.height() > $(window).height()) newy = $(window).height() - jqelement.height() - 20;
 
-            if (newx!==null) this.element.css('left', (newx>0 ? newx : 0) + window.pageXOffset);
-            if (newy!==null) this.element.css('top', (newy>0 ? newy : 0) + window.pageYOffset);
+            if (newx!==null) jqelement.css('left', (newx>0 ? newx : 0) + window.pageXOffset);
+            if (newy!==null) jqelement.css('top', (newy>0 ? newy : 0) + window.pageYOffset);
 
             return new Promise(resolve => {
                this.resolveFunc = resolve;
@@ -722,9 +715,7 @@ JSROOT.define(['d3', 'painter', 'jquery', 'jquery-ui'], (d3, jsrp, $) => {
       constructor(painter, menuname, show_event) {
          super(painter, menuname, show_event);
          
-         this.element = null;
          this.code = "";
-         this.cnt = 1;
          this.funcs = {};
          this.lvl = 0;
       }
@@ -791,22 +782,6 @@ JSROOT.define(['d3', 'painter', 'jquery', 'jquery-ui'], (d3, jsrp, $) => {
          this.cnt++;
       }
 
-      /** @summary Returns menu size */
-      size() { return this.cnt-1; }
-      
-      /** @summary Close and remove menu */
-      remove() {
-         if (this.element) {
-            this.element.remove();
-            if (this.resolveFunc) {
-               this.resolveFunc();
-               delete this.resolveFunc;
-            }
-            document.body.removeEventListener('click', this.remove_handler);
-         }
-         this.element = null;
-      }
-
       /** @summary Show menu */
       show(event) {
          this.remove();
@@ -854,7 +829,7 @@ JSROOT.define(['d3', 'painter', 'jquery', 'jquery-ui'], (d3, jsrp, $) => {
                });
                
             let myDropdown = this.element.getElementsByClassName('dropdown-toggle');
-            for (let i=0; i<myDropdown.length; i++) {
+            for (let i=0; i < myDropdown.length; i++) {
                myDropdown[i].addEventListener('mouseenter', function() {
                   let el = this.nextElementSibling;
                   el.style.display = (el.style.display == 'block') ? 'none' : 'block';
@@ -871,7 +846,7 @@ JSROOT.define(['d3', 'painter', 'jquery', 'jquery-ui'], (d3, jsrp, $) => {
             }    
            
             let myMenus = this.element.getElementsByClassName('dropdown-menu');
-            for (let i=0; i<myMenus.length; i++)
+            for (let i = 0; i < myMenus.length; i++)
                myMenus[i].addEventListener('mouseenter', function() {               
                   this.was_entered = true; 
                });
