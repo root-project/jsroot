@@ -831,68 +831,72 @@ JSROOT.define(['d3', 'painter', 'jquery', 'jquery-ui'], (d3, jsrp, $) => {
          let oldmenu = document.getElementById(this.menuname);
          if (oldmenu) oldmenu.parentNode.removeChild(oldmenu);
 
-         // this.code = '<a class="dropdown-item" href="#">Action</a>' + 
-         //            '<a class="dropdown-item" href="#">Something else here</a>';
-
-         $(document.body).append(`<div id="${this.menuname}" class="dropdown dropend"><ul class="dropdown-menu dropend" style="display:block">${this.code}</ul></div>`);
-
-         this.element = $('#' + this.menuname);
-         
-         let menu = this;
-
-         this.element
-            .css('left', event.clientX + window.pageXOffset)
-            .css('top', event.clientY + window.pageYOffset)
-            .css('position', 'absolute') // this overrides ui-menu-items class property
-            .css('background','white')
-            .find(".dropdown-item").on("click", function() {
-               let item = $(this),
-                   arg = item.attr('arg'),
-                   cnt = item.attr('id').substr(menu.menuname.length),
-                   func = cnt ? menu.funcs[cnt] : null;
-               menu.remove();
-               if (typeof func == 'function') {
-                  if (menu.painter)
-                     func.bind(menu.painter)(arg); // if 'painter' field set, returned as this to callback
-                  else
-                     func(arg);
-               }
-            });
-            
-         let myDropdown = this.element.get(0).getElementsByClassName('dropdown-toggle');
-         for (let i=0; i<myDropdown.length; i++) {
-            myDropdown[i].addEventListener('mouseenter', function() {
-               let el = this.nextElementSibling;
-               el.style.display = (el.style.display == 'block') ? 'none' : 'block';
-               el.style.left = this.scrollWidth + 'px';
-               let rect = el.getBoundingClientRect();
-               if (rect.bottom > window.innerHeight) el.style.top = (window.innerHeight - rect.bottom - 5) + 'px';
-               if (rect.right > window.innerWidth) el.style.left = (-rect.width) + 'px';
-            });
-            myDropdown[i].addEventListener('mouseleave', function() {
-               let el = this.nextElementSibling;
-               el.was_entered = false;
-               setTimeout(function() {
-                  if (!el.was_entered) el.style.display = 'none';
-               }, 10);
-            });
-         }    
-        
-         let myMenus = this.element.get(0).getElementsByClassName('dropdown-menu');
-         for (let i=0; i<myMenus.length; i++)
-            myMenus[i].addEventListener('mouseenter', function() {               
-               this.was_entered = true; 
-            });
-
          return JSROOT.loadScript(JSROOT.source_dir + 'style/bootstrap.min.css').then(() => {
 
-            let newx = null, newy = null, vis = this.element.find(">:first-child");
-            
-            if (event.clientX + vis.width() > $(window).width()) newx = $(window).width() - vis.width() - 20;
-            if (event.clientY + vis.height() > $(window).height()) newy = $(window).height() - vis.height() - 20;
+            let ww = window.innerWidth, wh = window.innerHeight; 
 
-            if (newx!==null) this.element.css('left', (newx>0 ? newx : 0) + window.pageXOffset);
-            if (newy!==null) this.element.css('top', (newy>0 ? newy : 0) + window.pageYOffset);
+            this.element = document.createElement('div');
+            this.element.id = this.menuname;
+            this.element.class = "dropdown";
+            this.element.innerHTML = `<ul class="dropdown-menu dropend" style="display:block">${this.code}</ul>`;
+            
+            document.body.appendChild(this.element);
+            
+            this.element.style.position = 'absolute';
+            this.element.style.background = 'white';
+            this.element.style.display = 'block';
+            this.element.style.left = (event.clientX + window.pageXOffset) + 'px';
+            this.element.style.top = (event.clientY + window.pageYOffset) + 'px';
+            
+            let menu = this;
+            
+            let myItems = this.element.getElementsByClassName('dropdown-item');
+            
+            for (let i=0; i<myItems.length; i++) 
+               myItems[i].addEventListener('click', function() {
+                  let arg = this.getAttribute('arg'),
+                      cnt = this.getAttribute('id').substr(menu.menuname.length),
+                      func = cnt ? menu.funcs[cnt] : null;
+                  menu.remove();
+                  if (typeof func == 'function') {
+                     if (menu.painter)
+                        func.bind(menu.painter)(arg); // if 'painter' field set, returned as this to callback
+                     else
+                        func(arg);
+                  }
+               });
+               
+            let myDropdown = this.element.getElementsByClassName('dropdown-toggle');
+            for (let i=0; i<myDropdown.length; i++) {
+               myDropdown[i].addEventListener('mouseenter', function() {
+                  let el = this.nextElementSibling;
+                  el.style.display = (el.style.display == 'block') ? 'none' : 'block';
+                  el.style.left = this.scrollWidth + 'px';
+                  let rect = el.getBoundingClientRect();
+                  if (rect.bottom > wh) el.style.top = (wh - rect.bottom - 5) + 'px';
+                  if (rect.right > ww) el.style.left = (-rect.width) + 'px';
+               });
+               myDropdown[i].addEventListener('mouseleave', function() {
+                  let el = this.nextElementSibling;
+                  el.was_entered = false;
+                  setTimeout(function() { if (!el.was_entered) el.style.display = 'none'; }, 200);
+               });
+            }    
+           
+            let myMenus = this.element.getElementsByClassName('dropdown-menu');
+            for (let i=0; i<myMenus.length; i++)
+               myMenus[i].addEventListener('mouseenter', function() {               
+                  this.was_entered = true; 
+               });
+
+
+            let newx = null, newy = null, rect = this.element.firstChild.getBoundingClientRect();
+            
+            if (event.clientX + rect.width > ww) newx = ww - rect.width - 10;
+            if (event.clientY + rect.height > wh) newy = wh - rect.height - 10;
+
+            if (newx!==null) this.element.style.left = ((newx>0 ? newx : 0) + window.pageXOffset) + 'px';
+            if (newy!==null) this.element.style.top = ((newy>0 ? newy : 0) + window.pageYOffset) + 'px';
 
             return new Promise(resolve => {
                this.resolveFunc = resolve;
