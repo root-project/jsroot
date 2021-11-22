@@ -3932,6 +3932,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                this.painters.forEach((pp,indx) => {
                   let obj = pp ? pp.getObject() : null;
                   if (!obj || (shown.indexOf(obj) >= 0)) return;
+                  if (pp.$secondary) return;
                   let name = ('_typename' in obj) ? (obj._typename + "::") : "";
                   if ('fName' in obj) name += obj.fName;
                   if (!name.length) name = "item" + indx;

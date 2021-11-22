@@ -3557,6 +3557,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       if (d.check("A") || !painter.getMainPainter())
          promise = painter.drawAxis(hopt).then(fp => {
             painter.firstpainter = fp;
+            fp.$secondary = true; // mark histogram painter as secondary
             return painter;
          });
 
