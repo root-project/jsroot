@@ -533,6 +533,9 @@ JSROOT.define(['d3', 'painter', 'jquery', 'jquery-ui'], (d3, jsrp, $) => {
 
       /** @summary Input value
         * @returns {Promise} with input value
+        * @param {string} title - input dialog title
+        * @param value - initial value
+        * @param {string} [kind] - either "number" or "text", if not specified, number is supposed
         * @protected */
       input(title, value, kind) {
          let dlg_id = this.menuname + "_dialog";
@@ -750,6 +753,14 @@ JSROOT.define(['d3', 'painter', 'jquery', 'jquery-ui'], (d3, jsrp, $) => {
          this.lvl = 0;
       }
 
+      /** @summary Load bootstrap functionality, required for menu
+        * @private */      
+      loadBS(with_js) {
+         let req = [ JSROOT.source_dir + 'style/bootstrap.min.css' ];
+         if (with_js) req.push( JSROOT.source_dir + 'scripts/bootstrap.bundle.min.js' );
+         return JSROOT.loadScript(req); 
+      }
+
       /** @summary Add menu item
         * @param {string} name - item name
         * @param {function} func - func called when item is selected */
@@ -831,7 +842,7 @@ JSROOT.define(['d3', 'painter', 'jquery', 'jquery-ui'], (d3, jsrp, $) => {
          let oldmenu = document.getElementById(this.menuname);
          if (oldmenu) oldmenu.parentNode.removeChild(oldmenu);
 
-         return JSROOT.loadScript(JSROOT.source_dir + 'style/bootstrap.min.css').then(() => {
+         return this.loadBS().then(() => {
 
             let ww = window.innerWidth, wh = window.innerHeight; 
 
@@ -903,6 +914,78 @@ JSROOT.define(['d3', 'painter', 'jquery', 'jquery-ui'], (d3, jsrp, $) => {
             });
          });
       }
+      
+      /** @summary Input value
+        * @returns {Promise} with input value
+        * @param {string} title - input dialog title
+        * @param value - initial value
+        * @param {string} [kind] - use "text" (default), "number", "float" or "int"
+        * @protected */
+      input(title, value, kind) {
+         let dlg_id = this.menuname + "_dialog";
+         let old_dlg = document.getElementById(dlg_id);
+         if (old_dlg) old_dlg.parentNode.removeChild(old_dlg);
+         if (!kind) kind = "text";
+         let inp_type = (kind == "int") ? "number" : "text";
+         if ((value === undefined) || (value === null)) value = "";
+         
+         let content = 
+         
+        `<div class="modal fade" id="${dlg_id}" data-bs-backdrop="static" data-bs-keyboard="true" tabindex="-1" aria-hidden="true">
+          <div class="modal-dialog">
+           <div class="modal-content">
+            <div class="modal-header">
+             <h5 class="modal-title" id="staticBackdropLabel">${title}</h5>
+             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+               <input type="${inp_type}" class="form-control" id="${dlg_id}_inp" value="${value}"/>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              <button type="button" class="btn btn-primary" data-bs-dismiss="modal" id="${dlg_id}_btn">Ok</button>
+            </div>
+           </div>
+          </div>
+         </div>`;
+
+         return this.loadBS(true).then(() => {
+
+            $(document.body).append(content);
+            
+            let myModalEl = document.getElementById(dlg_id), 
+                myModal = new bootstrap.Modal(myModalEl, { keyboard: true, backdrop: 'static' });
+            myModal.show();
+            
+            let btn = document.getElementById(dlg_id + "_btn"), pressOk = false; 
+            
+            return new Promise(resolveFunc => {
+               btn.addEventListener('click', () => { pressOk = true; });
+               
+               myModalEl.addEventListener('hidden.bs.modal', () => {
+                  if (!pressOk) return;
+                  
+                  let val = document.getElementById(dlg_id + "_inp").value;
+                  if (kind == "float") {
+                     val = parseFloat(val);
+                     if (Number.isFinite(val))
+                        resolveFunc(val);
+                  } else if (kind == "int") {
+                     val = parseInt(val);
+                     if (Number.isInteger(val))
+                        resolveFunc(val);
+                  } else {
+                     resolveFunc(val);
+                 }
+               });
+               
+            });
+            
+        });
+
+            
+      }
+
 
    }
 
