@@ -19,6 +19,7 @@
 }
 
 .jsroot .h_tree a {
+    color: inherit;
     white-space: nowrap;
     text-decoration: none;
     vertical-align: top;
@@ -440,20 +441,6 @@
     max-width: 100%;
     max-height: 100%;
 }
-
-/*--------------------------------------------------
-  Bootstrap dropdown menus
-  -------------------------------------------------*/
-  
-.dropdown-menu li{ position: relative; }
-.dropdown-submenu {
-   display: none;
-   position: absolute;
-   left:100%; top:-7px;
-}
-
-.dropdown-menu > li:hover{ background-color: #f1f1f1 }
-.dropdown-menu > li:hover > .dropdown-submenu{ display: block; }
 
 /*--------------------------------------------------
   Flexible MDI display

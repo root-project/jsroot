@@ -789,13 +789,13 @@ JSROOT.define(['d3', 'painter', 'jquery', 'jquery-ui'], (d3, jsrp, $) => {
 
          let item = `<button id="${this.menuname}${this.cnt}" ${extras} class="${cl}" type="button"><span style="width:1em;display:inline-block">${checked}</span>${name}</button>`;
          
-         if (newlevel) item = '<li class="dropdown dropend">' + item;
+         if (newlevel) item = '<li class="dropend">' + item;
                   else item = "<li>" + item + "</li>";  
 
          this.code += item;
          
          if (newlevel) {
-            this.code += `<ul class="dropdown-menu dropdown-submenu" aria-labelledby="${this.menuname}${this.cnt}">`;
+            this.code += `<ul class="dropdown-menu" aria-labelledby="${this.menuname}${this.cnt}">`;
             this.lvl++; 
          }  
          
@@ -858,8 +858,33 @@ JSROOT.define(['d3', 'painter', 'jquery', 'jquery-ui'], (d3, jsrp, $) => {
                      func(arg);
                }
             });
+            
+         let myDropdown = this.element.get(0).getElementsByClassName('dropdown-toggle');
+         for (let i=0; i<myDropdown.length; i++) {
+            myDropdown[i].addEventListener('mouseenter', function() {
+               let el = this.nextElementSibling;
+               el.style.display = (el.style.display == 'block') ? 'none' : 'block';
+               el.style.left = this.scrollWidth + 'px';
+               let rect = el.getBoundingClientRect();
+               if (rect.bottom > window.innerHeight) el.style.top = (window.innerHeight - rect.bottom - 5) + 'px';
+               if (rect.right > window.innerWidth) el.style.left = (-rect.width) + 'px';
+            });
+            myDropdown[i].addEventListener('mouseleave', function() {
+               let el = this.nextElementSibling;
+               el.was_entered = false;
+               setTimeout(function() {
+                  if (!el.was_entered) el.style.display = 'none';
+               }, 10);
+            });
+         }    
+        
+         let myMenus = this.element.get(0).getElementsByClassName('dropdown-menu');
+         for (let i=0; i<myMenus.length; i++)
+            myMenus[i].addEventListener('mouseenter', function() {               
+               this.was_entered = true; 
+            });
 
-         return JSROOT.loadScript([JSROOT.source_dir + 'scripts/bootstrap.bundle.min.js', JSROOT.source_dir + 'style/bootstrap.min.css']).then(() => {
+         return JSROOT.loadScript(JSROOT.source_dir + 'style/bootstrap.min.css').then(() => {
 
             let newx = null, newy = null, vis = this.element.find(">:first-child");
             
