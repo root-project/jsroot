@@ -512,6 +512,8 @@ JSROOT.define(['d3', 'painter', 'jquery', 'jquery-ui'], (d3, jsrp, $) => {
       size() { return this.cnt-1; }
 
       /** @summary Show modal info dialog
+        * @param {String} title - title
+        * @param {String} message - message
         * @protected */
       info(title, message) {
          let dlg_id = this.menuname + "_dialog";
@@ -915,6 +917,14 @@ JSROOT.define(['d3', 'painter', 'jquery', 'jquery-ui'], (d3, jsrp, $) => {
          });
       }
       
+      /** @summary Create modal element
+        * @desc used as base for different components
+        * @private */ 
+      createModal(content, addCancel) {
+         return this.loadBS(true).then(() => {
+         }); 
+      }
+      
       /** @summary Input value
         * @returns {Promise} with input value
         * @param {string} title - input dialog title
@@ -937,8 +947,6 @@ JSROOT.define(['d3', 'painter', 'jquery', 'jquery-ui'], (d3, jsrp, $) => {
             myModalEl.setAttribute('role', "dialog");
             myModalEl.setAttribute('tabindex', "-1");
             myModalEl.setAttribute('aria-hidden', "true");
-            myModalEl.setAttribute('data-bs-backdrop', "static");
-            myModalEl.setAttribute('data-bs-keyboard', "false");
             
             myModalEl.innerHTML = 
                `<div class="modal-dialog">
@@ -990,8 +998,56 @@ JSROOT.define(['d3', 'painter', 'jquery', 'jquery-ui'], (d3, jsrp, $) => {
             
         });
 
-            
       }
+      
+      /** @summary Show modal info dialog
+        * @param {String} title - title
+        * @param {String} message - message
+        * @protected */
+      info(title, message) {
+         let dlg_id = this.menuname + "_dialog";
+         let old_dlg = document.getElementById(dlg_id);
+         if (old_dlg) old_dlg.remove();
+
+         return this.loadBS(true).then(() => {
+            let myModalEl = document.createElement('div');
+            myModalEl.setAttribute('id', dlg_id);
+            myModalEl.setAttribute('class', 'modal fade');
+            myModalEl.setAttribute('role', "dialog");
+            myModalEl.setAttribute('tabindex', "-1");
+            myModalEl.setAttribute('aria-hidden', "true");
+            
+            myModalEl.innerHTML = 
+               `<div class="modal-dialog">
+                 <div class="modal-content">
+                  <div class="modal-header">
+                   <h5 class="modal-title">${title}</h5>
+                   <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body">
+                     <p tabindex="0">${message}</p>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-primary jsroot_okbtn" data-bs-dismiss="modal">Ok</button>
+                  </div>
+                 </div>
+                </div>`;
+            
+            document.body.appendChild(myModalEl);
+            
+            let myModal = new bootstrap.Modal(myModalEl, { keyboard: true, backdrop: 'static' });
+            myModal.show();
+
+            return new Promise(resolveFunc => {
+               myModalEl.addEventListener('hidden.bs.modal', () => {
+                  myModalEl.remove();
+                  resolveFunc();
+               });
+            });
+            
+         });
+      }
+
 
 
    }
