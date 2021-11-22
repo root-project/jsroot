@@ -511,26 +511,52 @@ JSROOT.define(['d3', 'painter', 'jquery', 'jquery-ui'], (d3, jsrp, $) => {
       /** @summary Returns menu size */
       size() { return this.cnt-1; }
 
+      /** @summary Run modal element with jquery-ui */
+      runModal(title, main_content, args) {
+         if (!args) args = {};
+         let dlg_id = this.menuname + "_dialog";
+         let old_dlg = document.getElementById(dlg_id);
+         if (old_dlg) old_dlg.remove();
+         
+         let element = document.createElement('div');
+         element.setAttribute('id', dlg_id);
+         element.innerHTML = main_content;
+         document.body.appendChild(element);  
+
+         return new Promise(resolveFunc => {
+            let dialog, pressEnter = () => {
+               resolveFunc(element);
+               dialog.dialog("close");
+               element.remove();
+            }
+
+            dialog = $(element).dialog({
+               height: args.height || 150,
+               width: args.width || 400,
+               modal: true,
+               resizable: args.resizable || false,
+               title: title,
+               buttons: args.btns ? {
+                  "Ok": pressEnter,
+                  "Cancel": () => dialog.dialog( "close" )
+               } : undefined,
+               close: () => dialog.remove()
+             });
+
+             if (args.btns)
+                dialog.find("form").on("submit", event => {
+                   event.preventDefault();
+                   pressEnter();
+                });
+          });
+      }
+
       /** @summary Show modal info dialog
         * @param {String} title - title
         * @param {String} message - message
         * @protected */
       info(title, message) {
-         let dlg_id = this.menuname + "_dialog";
-         let old_dlg = document.getElementById(dlg_id);
-         if (old_dlg) old_dlg.parentNode.removeChild(old_dlg);
-         $(document.body).append(
-            `<div id="${dlg_id}">
-            <p tabindex="0">${message}</p>
-            </div>`);
-         let dialog = $("#" + dlg_id).dialog({
-            height: 120,
-            width: 400,
-            modal: true,
-            resizable: true,
-            title: title,
-            close: () => dialog.remove()
-          });
+         return this.runModal(title,`<p tabindex="0">${message}</p>`, { height: 120, width: 400, resizable: true }); 
       }
 
       /** @summary Input value
@@ -540,27 +566,23 @@ JSROOT.define(['d3', 'painter', 'jquery', 'jquery-ui'], (d3, jsrp, $) => {
         * @param {string} [kind] - use "text" (default), "number", "float" or "int"
         * @protected */
       input(title, value, kind) {
-         let dlg_id = this.menuname + "_dialog";
-         let old_dlg = document.getElementById(dlg_id);
-         if (old_dlg) old_dlg.parentNode.removeChild(old_dlg);
+         
          if (!kind) kind = "text";
          let inp_type = (kind == "int") ? "number" : "text";
          if ((value === undefined) || (value === null)) value = "";
 
-         $(document.body).append(
-            `<div id="${dlg_id}">
-              <form>
+         let main_content = 
+            `<form>
                 <fieldset style="padding:0; border:0">
-                   <input type="${inp_type}" tabindex="0" name="${dlg_id}_inp" id="${dlg_id}_inp" value="${value}" style="width:100%;display:block" class="text ui-widget-content ui-corner-all"/>
-                   <input type="submit" tabindex="-1" style="position:absolute; top:-1000px; display:block"/>
+                   <input type="${inp_type}" tabindex="0" value="${value}" style="width:100%;display:block" class="jsroot_dlginp"/>
                </fieldset>
-              </form>
-            </div>`);
+             </form>`;
 
          return new Promise(resolveFunc => {
-            let dialog, pressEnter = () => {
-               let val = $("#" + dlg_id + "_inp").val();
-               dialog.dialog("close");
+            
+            this.runModal(title, main_content, {btns: true, height: 150, width: 400}).then(element => {
+               if (!element) return;
+               let val = element.querySelector(`.jsroot_dlginp`).value;
                if (kind == "float") {
                   val = parseFloat(val);
                   if (Number.isFinite(val))
@@ -572,63 +594,38 @@ JSROOT.define(['d3', 'painter', 'jquery', 'jquery-ui'], (d3, jsrp, $) => {
                } else {
                   resolveFunc(val);
               }
-            }
-
-            dialog = $("#" + dlg_id).dialog({
-               height: 150,
-               width: 400,
-               modal: true,
-               resizable: false,
-               title: title,
-               buttons: {
-                  "Ok": pressEnter,
-                  "Cancel": () => dialog.dialog( "close" )
-               },
-               close: () => dialog.remove()
-             });
-
-             dialog.find( "form" ).on( "submit", event => {
-                event.preventDefault();
-                pressEnter();
-             });
-          });
+            }); 
+            
+         });
       }
 
       /** @summary Let input arguments from the command
         * @returns {Promise} with command argument */
       showMethodArgsDialog(method) {
-         let dlg_id = this.menuname + "_dialog";
-         let old_dlg = document.getElementById(dlg_id);
-         if (old_dlg) old_dlg.parentNode.removeChild(old_dlg);
-
-         let inputs = "";
+         let dlg_id = this.menuname + "_dialog",
+             main_content = '<form> <fieldset style="padding:0; border:0">';
+         
 
          for (let n = 0; n < method.fArgs.length; ++n) {
             let arg = method.fArgs[n];
             arg.fValue = arg.fDefault;
             if (arg.fValue == '\"\"') arg.fValue = "";
-            inputs += `<label for="${dlg_id}_inp${n}">${arg.fName}</label>
-                       <input type="text" tabindex="0" name="${dlg_id}_inp${n}" id="${dlg_id}_inp${n}" value="${arg.fValue}" style="width:100%;display:block" class="text ui-widget-content ui-corner-all"/>`;
+            main_content += `<label for="${dlg_id}_inp${n}">${arg.fName}</label>
+                             <input type="text" tabindex="0" id="${dlg_id}_inp${n}" value="${arg.fValue}" style="width:100%;display:block"/>`;
          }
-
-         $(document.body).append(
-            `<div id="${dlg_id}">
-              <form>
-                <fieldset style="padding:0; border:0">
-                   ${inputs}
-                   <input type="submit" tabindex="-1" style="position:absolute; top:-1000px; display:block"/>
-               </fieldset>
-              </form>
-            </div>`);
-
+         
+         main_content += '</fieldset></form>';
+            
          return new Promise(resolveFunc => {
-            let dialog, pressEnter = () => {
+            
+            this.runModal(method.fClassName + '::' + method.fName, main_content, { btns: true, height: 100 + method.fArgs.length*60, width: 400, resizable: true}).then(element => {
+               if (!element) return;
                let args = "";
 
                for (let k = 0; k < method.fArgs.length; ++k) {
                   let arg = method.fArgs[k];
-                  let value = $("#" + dlg_id + "_inp" + k).val();
-                  if (value==="") value = arg.fDefault;
+                  let value = element.querySelector(`#${dlg_id}_inp${k}`).value;
+                  if (value === "") value = arg.fDefault;
                   if ((arg.fTitle=="Option_t*") || (arg.fTitle=="const char*")) {
                      // check quotes,
                      // TODO: need to make more precise checking of escape characters
@@ -637,31 +634,13 @@ JSROOT.define(['d3', 'painter', 'jquery', 'jquery-ui'], (d3, jsrp, $) => {
                      if (value[value.length-1] != '"') value += '"';
                   }
 
-                  args += (k>0 ? "," : "") + value;
+                  args += (k > 0 ? "," : "") + value;
                }
 
-               dialog.dialog("close");
                resolveFunc(args);
-            }
+            });
+         });
 
-            dialog = $("#" + dlg_id).dialog({
-               height: 100 + method.fArgs.length*60,
-               width: 400,
-               modal: true,
-               resizable: true,
-               title: method.fClassName + '::' + method.fName,
-               buttons: {
-                  "Ok": pressEnter,
-                  "Cancel": () => dialog.dialog( "close" )
-               },
-               close: () => dialog.remove()
-             });
-
-             dialog.find( "form" ).on( "submit", event => {
-                event.preventDefault();
-                pressEnter();
-             });
-          });
       }
 
       /** @summary Close and remove menu */
@@ -920,7 +899,9 @@ JSROOT.define(['d3', 'painter', 'jquery', 'jquery-ui'], (d3, jsrp, $) => {
       /** @summary Create modal element
         * @desc used as base for different components
         * @private */ 
-      runModal(title, main_content, close_btn) {
+      runModal(title, main_content, args) {
+         if (!args) args = {};
+         
          let dlg_id = this.menuname + "_dialog";
          let old_dlg = document.getElementById(dlg_id);
          if (old_dlg) old_dlg.remove();
@@ -933,8 +914,7 @@ JSROOT.define(['d3', 'painter', 'jquery', 'jquery-ui'], (d3, jsrp, $) => {
             myModalEl.setAttribute('role', "dialog");
             myModalEl.setAttribute('tabindex', "-1");
             myModalEl.setAttribute('aria-hidden', "true");
-            if (close_btn) close_btn = '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>';
-                      else close_btn = "";  
+            let close_btn = args.btns ? '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>' : '';
             
             myModalEl.innerHTML = 
                `<div class="modal-dialog">
@@ -985,7 +965,7 @@ JSROOT.define(['d3', 'painter', 'jquery', 'jquery-ui'], (d3, jsrp, $) => {
          
          // use extra promise to be able reject some values
          return new Promise(resolveFunc => {
-            this.runModal(title, `<input type="${inp_type}" class="form-control jsroot_dlginp" value="${value}"/>`, true).then(element => {
+            this.runModal(title, `<input type="${inp_type}" class="form-control jsroot_dlginp" value="${value}"/>`, { btns: true }).then(element => {
                if (!element) return;
                let val = element.querySelector(`.jsroot_dlginp`).value;
                
