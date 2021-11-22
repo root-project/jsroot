@@ -1,11 +1,9 @@
 /// @file JSRoot.menu.js
 /// JSROOT menu implementation
 
-JSROOT.define(['d3', 'painter', 'jquery', 'jquery-ui'], (d3, jsrp, $) => {
+JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    "use strict";
-
-   if (typeof jQuery === 'undefined') globalThis.jQuery = $;
 
   /** @summary Produce exec string for WebCanas to set color value
     * @desc Color can be id or string, but should belong to list of known colors
@@ -43,7 +41,6 @@ JSROOT.define(['d3', 'painter', 'jquery', 'jquery-ui'], (d3, jsrp, $) => {
     * @private
     */
 
-
    class JSRootMenu {
       constructor(painter, menuname, show_event) {
          this.painter = painter;
@@ -56,6 +53,8 @@ JSROOT.define(['d3', 'painter', 'jquery', 'jquery-ui'], (d3, jsrp, $) => {
          this.element = null;
          this.cnt = 0;
       }
+      
+      load() { return Promise.resolve(this); }
       
       /** @summary Returns object with mouse event position when context menu was actiavted
        * @desc Return object will have members "clientX" and "clientY" */
@@ -143,7 +142,6 @@ JSROOT.define(['d3', 'painter', 'jquery', 'jquery-ui'], (d3, jsrp, $) => {
          }
          if (!without_sub) this.add("endsub:");
       }
-
 
       /** @summary Add color selection menu entries
         * @protected */
@@ -564,8 +562,23 @@ JSROOT.define(['d3', 'painter', 'jquery', 'jquery-ui'], (d3, jsrp, $) => {
          super(painter, menuname, show_event);
          
          this.code = "";
+         
          this.funcs = {};
+         
+         this.ui_version = "1.12";
       }
+
+      /** @summary Load jQuery code 
+        * @private */      
+      loadJQ() {
+         return JSROOT.require(['jquery', 'jquery-ui']).then(arr => {
+            if (typeof jQuery === 'undefined') globalThis.jQuery = arr[0];
+            return JSROOT.loadScript('$$$style/jquery-ui');
+         }).then(() => globalThis.jQuery);
+      }
+      
+     load() { return this.loadJQ().then($ => { this.ui_version = $.ui.version; return this; }); }
+
 
       /** @summary Add menu item
         * @param {string} name - item name
@@ -590,9 +603,9 @@ JSROOT.define(['d3', 'painter', 'jquery', 'jquery-ui'], (d3, jsrp, $) => {
          if (name.indexOf("unk:")==0) { item = "<span class='ui-icon ui-icon-blank' style='margin:1px'></span>"; name = name.substr(4); }
 
          // special handling of first versions with menu support
-         if (($.ui.version.indexOf("1.10")==0) || ($.ui.version.indexOf("1.9")==0))
+         if ((this.ui_version.indexOf("1.10")==0) || (this.ui_version.indexOf("1.9")==0))
             item = '<a href="#">' + item + name + '</a>';
-         else if ($.ui.version.indexOf("1.11")==0)
+         else if (this.ui_version.indexOf("1.11")==0)
             item += name;
          else
             item = "<div" + title + ">" + item + name + "</div>";
@@ -614,36 +627,36 @@ JSROOT.define(['d3', 'painter', 'jquery', 'jquery-ui'], (d3, jsrp, $) => {
          let oldmenu = document.getElementById(this.menuname);
          if (oldmenu) oldmenu.remove();
          
-         this.element = document.createElement('ul');
-         this.element.setAttribute('id', this.menuname);
-         this.element.setAttribute('class', 'jsroot_ctxmenu');
-         this.element.innerHTML = this.code;
+         return this.loadJQ().then($ => {
 
-         document.body.appendChild(this.element);
+            this.element = document.createElement('ul');
+            this.element.setAttribute('id', this.menuname);
+            this.element.setAttribute('class', 'jsroot_ctxmenu');
+            this.element.innerHTML = this.code;
+   
+            document.body.appendChild(this.element);
 
-         let menu = this, jqelement = $(this.element);
-
-         jqelement
-            .css('left', event.clientX + window.pageXOffset)
-            .css('top', event.clientY + window.pageYOffset)
-            .css('position', 'absolute') // this overrides ui-menu-items class property
-            .menu({
-               items: "> :not(.ui-widget-header)",
-               select: function( event, ui ) {
-                  let arg = ui.item.attr('arg'),
-                      cnt = ui.item.attr('cnt'),
-                      func = cnt ? menu.funcs[cnt] : null;
-                  menu.remove();
-                  if (typeof func == 'function') {
-                     if (menu.painter)
-                        func.bind(menu.painter)(arg); // if 'painter' field set, returned as this to callback
-                     else
-                        func(arg);
-                  }
-              }
-            });
-
-         return JSROOT.loadScript('$$$style/jquery-ui').then(() => {
+            let menu = this, jqelement = $(this.element);
+   
+            jqelement
+               .css('left', event.clientX + window.pageXOffset)
+               .css('top', event.clientY + window.pageYOffset)
+               .css('position', 'absolute') // this overrides ui-menu-items class property
+               .menu({
+                  items: "> :not(.ui-widget-header)",
+                  select: function( event, ui ) {
+                     let arg = ui.item.attr('arg'),
+                         cnt = ui.item.attr('cnt'),
+                         func = cnt ? menu.funcs[cnt] : null;
+                     menu.remove();
+                     if (typeof func == 'function') {
+                        if (menu.painter)
+                           func.bind(menu.painter)(arg); // if 'painter' field set, returned as this to callback
+                        else
+                           func(arg);
+                     }
+                 }
+               });
 
             let newx = null, newy = null;
 
@@ -672,30 +685,34 @@ JSROOT.define(['d3', 'painter', 'jquery', 'jquery-ui'], (d3, jsrp, $) => {
          document.body.appendChild(element);  
 
          return new Promise(resolveFunc => {
-            let dialog, pressEnter = () => {
-               resolveFunc(element);
-               dialog.dialog("close");
-               element.remove();
-            }
+            this.loadJQ().then($ => {
 
-            dialog = $(element).dialog({
-               height: args.height || 150,
-               width: args.width || 400,
-               modal: true,
-               resizable: args.resizable || false,
-               title: title,
-               buttons: args.btns ? {
-                  "Ok": pressEnter,
-                  "Cancel": () => dialog.dialog( "close" )
-               } : undefined,
-               close: () => dialog.remove()
-             });
-
-             if (args.btns)
-                dialog.find("form").on("submit", event => {
-                   event.preventDefault();
-                   pressEnter();
+               let dialog, pressEnter = () => {
+                  resolveFunc(element);
+                  dialog.dialog("close");
+                  element.remove();
+               }
+            
+               dialog = $(element).dialog({
+                  height: args.height || 150,
+                  width: args.width || 400,
+                  modal: true,
+                  resizable: args.resizable || false,
+                  title: title,
+                  buttons: args.btns ? {
+                     "Ok": pressEnter,
+                     "Cancel": () => dialog.dialog( "close" )
+                  } : undefined,
+                  close: () => dialog.remove()
                 });
+   
+                if (args.btns)
+                   dialog.find("form").on("submit", event => {
+                      event.preventDefault();
+                      pressEnter();
+                   });
+                
+             });
           });
       }
 
@@ -727,6 +744,8 @@ JSROOT.define(['d3', 'painter', 'jquery', 'jquery-ui'], (d3, jsrp, $) => {
          if (with_js) req.push( JSROOT.source_dir + 'scripts/bootstrap.bundle.min.js' );
          return JSROOT.loadScript(req); 
       }
+      
+      load() { return this.loadBS().then(() => this); }
 
       /** @summary Add menu item
         * @param {string} name - item name
@@ -944,7 +963,7 @@ JSROOT.define(['d3', 'painter', 'jquery', 'jquery-ui'], (d3, jsrp, $) => {
                  ? new BootstrapMenu(handler, menuname || 'root_ctx_menu', evnt)
                  : new JQueryMenu(handler, menuname || 'root_ctx_menu', evnt);  
          
-      return Promise.resolve(menu);
+      return menu.load();
    }
 
    /** @summary Close previousely created and shown JSROOT menu
