@@ -920,24 +920,10 @@ JSROOT.define(['d3', 'painter', 'jquery', 'jquery-ui'], (d3, jsrp, $) => {
       /** @summary Create modal element
         * @desc used as base for different components
         * @private */ 
-      createModal(content, addCancel) {
-         return this.loadBS(true).then(() => {
-         }); 
-      }
-      
-      /** @summary Input value
-        * @returns {Promise} with input value
-        * @param {string} title - input dialog title
-        * @param value - initial value
-        * @param {string} [kind] - use "text" (default), "number", "float" or "int"
-        * @protected */
-      input(title, value, kind) {
+      runModal(title, main_content, close_btn) {
          let dlg_id = this.menuname + "_dialog";
          let old_dlg = document.getElementById(dlg_id);
          if (old_dlg) old_dlg.remove();
-         if (!kind) kind = "text";
-         let inp_type = (kind == "int") ? "number" : "text";
-         if ((value === undefined) || (value === null)) value = "";
          
          return this.loadBS(true).then(() => {
             
@@ -947,6 +933,8 @@ JSROOT.define(['d3', 'painter', 'jquery', 'jquery-ui'], (d3, jsrp, $) => {
             myModalEl.setAttribute('role', "dialog");
             myModalEl.setAttribute('tabindex', "-1");
             myModalEl.setAttribute('aria-hidden', "true");
+            if (close_btn) close_btn = '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>';
+                      else close_btn = "";  
             
             myModalEl.innerHTML = 
                `<div class="modal-dialog">
@@ -956,11 +944,11 @@ JSROOT.define(['d3', 'painter', 'jquery', 'jquery-ui'], (d3, jsrp, $) => {
                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                   </div>
                   <div class="modal-body">
-                     <input type="${inp_type}" class="form-control jsroot_dlginp" value="${value}"/>
+                     ${main_content}
                   </div>
                   <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary jsroot_okbtn" data-bs-dismiss="modal">Ok</button>
+                     ${close_btn}        
+                     <button type="button" class="btn btn-primary jsroot_okbtn" data-bs-dismiss="modal">Ok</button>
                   </div>
                  </div>
                 </div>`;
@@ -972,32 +960,48 @@ JSROOT.define(['d3', 'painter', 'jquery', 'jquery-ui'], (d3, jsrp, $) => {
             
             return new Promise(resolveFunc => {
                let pressOk = false; 
-
                myModalEl.querySelector(`.jsroot_okbtn`).addEventListener('click', () => { pressOk = true; });
                
                myModalEl.addEventListener('hidden.bs.modal', () => {
-                  let val = myModalEl.querySelector(`.jsroot_dlginp`).value;
+                  if (pressOk) resolveFunc(myModalEl);
                   myModalEl.remove();
-                  
-                  if (!pressOk) return;
-                  
-                  if (kind == "float") {
-                     val = parseFloat(val);
-                     if (Number.isFinite(val))
-                        resolveFunc(val);
-                  } else if (kind == "int") {
-                     val = parseInt(val);
-                     if (Number.isInteger(val))
-                        resolveFunc(val);
-                  } else {
-                     resolveFunc(val);
-                 }
                });
-               
             });
             
         });
+      }
+      
+      /** @summary Input value
+        * @returns {Promise} with input value
+        * @param {string} title - input dialog title
+        * @param value - initial value
+        * @param {string} [kind] - use "text" (default), "number", "float" or "int"
+        * @protected */
+      input(title, value, kind) {
 
+         if (!kind) kind = "text";
+         let inp_type = (kind == "int") ? "number" : "text";
+         if ((value === undefined) || (value === null)) value = "";
+         
+         // use extra promise to be able reject some values
+         return new Promise(resolveFunc => {
+            this.runModal(title, `<input type="${inp_type}" class="form-control jsroot_dlginp" value="${value}"/>`, true).then(element => {
+               if (!element) return;
+               let val = element.querySelector(`.jsroot_dlginp`).value;
+               
+               if (kind == "float") {
+                  val = parseFloat(val);
+                  if (Number.isFinite(val))
+                     resolveFunc(val);
+               } else if (kind == "int") {
+                  val = parseInt(val);
+                  if (Number.isInteger(val))
+                     resolveFunc(val);
+               } else {
+                  resolveFunc(val);
+              }
+            });
+         }); 
       }
       
       /** @summary Show modal info dialog
@@ -1005,50 +1009,8 @@ JSROOT.define(['d3', 'painter', 'jquery', 'jquery-ui'], (d3, jsrp, $) => {
         * @param {String} message - message
         * @protected */
       info(title, message) {
-         let dlg_id = this.menuname + "_dialog";
-         let old_dlg = document.getElementById(dlg_id);
-         if (old_dlg) old_dlg.remove();
-
-         return this.loadBS(true).then(() => {
-            let myModalEl = document.createElement('div');
-            myModalEl.setAttribute('id', dlg_id);
-            myModalEl.setAttribute('class', 'modal fade');
-            myModalEl.setAttribute('role', "dialog");
-            myModalEl.setAttribute('tabindex', "-1");
-            myModalEl.setAttribute('aria-hidden', "true");
-            
-            myModalEl.innerHTML = 
-               `<div class="modal-dialog">
-                 <div class="modal-content">
-                  <div class="modal-header">
-                   <h5 class="modal-title">${title}</h5>
-                   <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                  </div>
-                  <div class="modal-body">
-                     <p tabindex="0">${message}</p>
-                  </div>
-                  <div class="modal-footer">
-                    <button type="button" class="btn btn-primary jsroot_okbtn" data-bs-dismiss="modal">Ok</button>
-                  </div>
-                 </div>
-                </div>`;
-            
-            document.body.appendChild(myModalEl);
-            
-            let myModal = new bootstrap.Modal(myModalEl, { keyboard: true, backdrop: 'static' });
-            myModal.show();
-
-            return new Promise(resolveFunc => {
-               myModalEl.addEventListener('hidden.bs.modal', () => {
-                  myModalEl.remove();
-                  resolveFunc();
-               });
-            });
-            
-         });
+         return this.runModal(title, `<p tabindex="0">${message}</p>`);
       }
-
-
 
    }
 
