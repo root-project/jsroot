@@ -5173,7 +5173,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
             dy = handle.gry[j+1] - handle.gry[j];
             y1 = Math.round(handle.gry[j] + dy*handle.ybar1);
-            dy = Math.round(dy*(handle.ybar2 - handle.ybar1)) || 1;
+            dy = Math.round(dy*(handle.ybar2 - handle.ybar1)) || -1;
 
             let cmd1 = `M${x1},${y1}`,
                 entry = entries[colindx];
