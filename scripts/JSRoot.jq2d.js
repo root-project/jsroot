@@ -11,21 +11,15 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
 
    let BrowserLayout = JSROOT.BrowserLayout;
 
-   /** @summary Set browser title text
-     * @desc Title also used for dragging of the float browser */
-   BrowserLayout.prototype.setBrowserTitle = function(title) {
-      let main = d3.select("#" + this.gui_div + " .jsroot_browser");
-      if (!main.empty())
-         main.select(".jsroot_browser_title").text(title);
-   }
-
    /** @summary Toggle browser kind */
    BrowserLayout.prototype.toggleBrowserKind = function(kind) {
 
-      if (!this.gui_div) return;
+      if (!this.gui_div) 
+         return Promise.resolve(null);
 
       if (!kind) {
-         if (!this.browser_kind) return;
+         if (!this.browser_kind) 
+            return Promise.resolve(null);
          kind = (this.browser_kind === "float") ? "fix" : "float";
       }
 
@@ -64,7 +58,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
               },
               stop: function( event, ui ) {
                  let bottom = $(this).parent().innerHeight() - ui.position.top - ui.size.height;
-                 if (bottom<7) $(this).css('height', "").css('bottom', 0);
+                 if (bottom < 7) $(this).css('height', "").css('bottom', 0);
               }
          })
          .draggable({
@@ -78,7 +72,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
              },
              stop: function(/* event, ui */) {
                 let bottom = $(this).parent().innerHeight() - $(this).offset().top - $(this).outerHeight();
-                if (bottom<7) $(this).css('height', "").css('bottom', 0);
+                if (bottom < 7) $(this).css('height', "").css('bottom', 0);
              }
           });
          this.adjustBrowserSize();
@@ -109,6 +103,8 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
      }
 
       this.setButtonsPosition();
+      
+      return Promise.resolve(this);
    }
 
    /** @summary Set buttons position */

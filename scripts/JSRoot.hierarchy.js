@@ -711,6 +711,20 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (!this.gui_div) return Promise.resolve('');
       return JSROOT.require('jq2d').then(() => this.createStatusLine(height, mode));
    }
+   
+   /** @summary Set browser title text
+     * @desc Title also used for dragging of the float browser */
+   BrowserLayout.prototype.setBrowserTitle = function(title) {
+      let main = d3.select("#" + this.gui_div + " .jsroot_browser");
+      if (!main.empty())
+         main.select(".jsroot_browser_title").text(title);
+   }
+   
+    /** @summary Toggle browser kind */
+   BrowserLayout.prototype.toggleBrowserKind = function(kind) {
+      if (!this.gui_div) return Promise.resolve(null);
+      return JSROOT.require('jq2d').then(() => this.toggleBrowserKind(kind));
+   }
 
    // ==============================================================================
 
@@ -3187,8 +3201,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if (this.start_without_browser) browser_kind = "";
 
-      if ((status || browser_kind) && !JSROOT.batch_mode) prereq += "jq2d;";
-
       this._topname = GetOption("topname");
 
       let openAllFiles = () => {
@@ -3200,7 +3212,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             promise = JSROOT.loadScript(load.split(";")); load = "";
          } else if (browser_kind) {
             promise = this.createBrowser(browser_kind); browser_kind = "";
-         } else if (status!==null) {
+         } else if (status !== null) {
             promise = this.createStatusLine(statush, status); status = null;
          } else if (jsonarr.length > 0)
             promise = this.openJsonFile(jsonarr.shift());
@@ -3469,9 +3481,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.initializeBrowser();
       }
 
-      this.brlayout.toggleBrowserKind(browser_kind || "fix");
-
-      return Promise.resolve(true);
+      return this.brlayout.toggleBrowserKind(browser_kind || "fix");
    }
 
    /** @summary Initialize browser elements */
