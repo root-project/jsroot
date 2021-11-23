@@ -2968,20 +2968,24 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       // check that we can found frame where drawing should be done
       if (!document.getElementById(this.disp_frameid))
          return Promise.resolve(null);
+         
+      let promise;
 
       if ((this.disp_kind == "simple") ||
           ((this.disp_kind.indexOf("grid") == 0) && (this.disp_kind.indexOf("gridi") < 0)))
-           this.disp = new GridDisplay(this.disp_frameid, this.disp_kind);
+           promise = Promise.resolve(new GridDisplay(this.disp_frameid, this.disp_kind));
       else
-         return JSROOT.require('jq2d').then(() => this.createDisplay());
+         promise = JSROOT.require('jq2d').then(() => JSROOT.create_jq_mdi(this.disp_frameid, this.disp_kind));
 
-      if (this.disp) {
-         this.disp.cleanupFrame = this.cleanupFrame.bind(this);
-         if (JSROOT.settings.DragAndDrop)
-            this.disp.setInitFrame(this.enableDrop.bind(this));
-      }
-
-      return Promise.resolve(this.disp);
+      return promise.then(disp => {
+         this.disp = disp;
+         if (this.disp) {
+            this.disp.cleanupFrame = this.cleanupFrame.bind(this);
+            if (JSROOT.settings.DragAndDrop)
+               this.disp.setInitFrame(this.enableDrop.bind(this));
+         }
+         return this.disp;
+      });
    }
 
    /** @summary If possible, creates custom JSROOT.MDIDisplay for given item
@@ -4020,7 +4024,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          }
 
          if (this.use_separarators && this.createSeparator)
-            for (let cnt=1;cnt<num;++cnt)
+            for (let cnt= 1; cnt < num; ++cnt)
                this.createSeparator(handle, main, handle.groups[cnt]);
       }
 

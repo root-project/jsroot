@@ -393,44 +393,6 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
       }
    }
 
-   // =================================================================================================
-
-   let HierarchyPainter = JSROOT.HierarchyPainter;
-
-
-   /** @summary Creates configured JSROOT.MDIDisplay object
-     * @returns {Promise} with created mdi object */
-   HierarchyPainter.prototype.createDisplay = function() {
-
-      if ('disp' in this) {
-         if (this.disp.numDraw() > 0)
-            return Promise.resolve(this.disp);
-         this.disp.cleanup();
-         delete this.disp;
-      }
-
-      // check that we can found frame where drawing should be done
-      if (!document.getElementById(this.disp_frameid))
-         return Promise.resolve(null);
-
-      if (this.disp_kind == "tabs")
-         this.disp = new TabsDisplay(this.disp_frameid);
-      else if (this.disp_kind.indexOf("flex")==0)
-         this.disp = new FlexibleDisplay(this.disp_frameid);
-      else if (this.disp_kind.indexOf("coll")==0)
-         this.disp = new CollapsibleDisplay(this.disp_frameid);
-      else
-         this.disp = new JSROOT.GridDisplay(this.disp_frameid, this.disp_kind);
-
-      if (this.disp) {
-         this.disp.cleanupFrame = this.cleanupFrame.bind(this);
-         if (JSROOT.settings.DragAndDrop)
-            this.disp.setInitFrame(this.enableDrop.bind(this));
-      }
-
-      return Promise.resolve(this.disp);
-   }
-
    // ==================================================
 
    class CollapsibleDisplay extends JSROOT.MDIDisplay {
@@ -937,6 +899,24 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          }
       });
    }
+   
+   // ===================================================
+
+   /** @summary Create MDI display
+     * @private */
+   JSROOT.create_jq_mdi = function(frameid, kind) {
+      if (kind == "tabs")
+         return new TabsDisplay(frameid);
+         
+      if (kind.indexOf("flex") == 0)
+         return new FlexibleDisplay(frameid);
+      
+      if (kind.indexOf("coll") == 0)
+         return new CollapsibleDisplay(frameid);
+      
+      return new JSROOT.GridDisplay(frameid, kind);
+   }
+
 
    /** @summary Create painter to perform tree drawing on server side
      * @private */
