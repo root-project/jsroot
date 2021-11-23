@@ -1239,7 +1239,6 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
 
       let main = d3.select("#" + this.gui_div + " .jsroot_browser");
       if (main.empty() || !this.brlayout) return;
-      let jmain = $(main.node());
 
       if (this.brlayout) this.brlayout.adjustBrowserSize();
 
@@ -1266,17 +1265,16 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
       if (this.is_online) {
          if (this.h && this.h._toptitle)
             this.brlayout.setBrowserTitle(this.h._toptitle);
-         let painter = this;
-         jmain.find(".gui_monitoring")
-           .prop('checked', this.isMonitoring())
-           .click(function() {
-               painter.enableMonitoring(this.checked);
-               painter.updateItems();
+         main.select(".gui_monitoring")
+           .property('checked', this.isMonitoring())
+           .on("click", evnt => {
+               this.enableMonitoring(evnt.target.checked);
+               this.updateItems();
             });
       } else if (!this.no_select) {
          let fname = "";
          this.forEachRootFile(item => { if (!fname) fname = item._fullurl; });
-         jmain.find(".gui_urlToLoad").val(fname);
+         main.select(".gui_urlToLoad").property("value", fname);
       }
    }
 
