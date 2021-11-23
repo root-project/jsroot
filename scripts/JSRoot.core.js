@@ -1438,8 +1438,6 @@
          gui_kind = "gui";
       }
 
-      if (!nobrowser) requirements.push("jq2d");
-
       let user_scripts = d.get("autoload") || d.get("load");
 
       if (user_scripts) requirements.push("painter");

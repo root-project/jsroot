@@ -1051,15 +1051,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       });
    }
 
-   /** @summary Refresh HTML for hierachy painter
-     * @returns {Promise} when completed
-     * @private */
-   HierarchyPainter.prototype.refreshHtml = function() {
-      if (!this.getDom() || JSROOT.batch_mode)
-         return Promise.resolve(this);
-      return JSROOT.require('jq2d').then(() => this.refreshHtml());
-   }
-
    /** @summary Get object item with specified name
      * @desc depending from provided option, same item can generate different object types
      * @param {Object} arg - item name or config object
@@ -1131,6 +1122,658 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
 
       return Promise.resolve(result);
+   }
+   
+      /** @summary returns true if item is last in parent childs list
+     * @private */
+   HierarchyPainter.prototype.isLastSibling = function(hitem) {
+      if (!hitem || !hitem._parent || !hitem._parent._childs) return false;
+      let chlds = hitem._parent._childs, indx = chlds.indexOf(hitem);
+      if (indx < 0) return false;
+      while (++indx < chlds.length)
+         if (!('_hidden' in chlds[indx])) return false;
+      return true;
+   }
+
+   /** @summary Create item html code
+     * @private */
+   HierarchyPainter.prototype.addItemHtml = function(hitem, d3prnt, arg) {
+      if (!hitem || ('_hidden' in hitem)) return true;
+
+      let isroot = (hitem === this.h),
+          has_childs = ('_childs' in hitem),
+          handle = jsrp.getDrawHandle(hitem._kind),
+          img1 = "", img2 = "", can_click = false, break_list = false,
+          d3cont, itemname = this.itemFullName(hitem);
+
+      if (handle !== null) {
+         if ('icon' in handle) img1 = handle.icon;
+         if ('icon2' in handle) img2 = handle.icon2;
+         if ((img1.length==0) && (typeof handle.icon_get == 'function'))
+            img1 = handle.icon_get(hitem, this);
+         if (('func' in handle) || ('execute' in handle) || ('aslink' in handle) ||
+             (('expand' in handle) && (hitem._more !== false))) can_click = true;
+      }
+
+      if ('_icon' in hitem) img1 = hitem._icon;
+      if ('_icon2' in hitem) img2 = hitem._icon2;
+      if ((img1.length == 0) && ('_online' in hitem))
+         hitem._icon = img1 = "img_globe";
+      if ((img1.length == 0) && isroot)
+         hitem._icon = img1 = "img_base";
+
+      if (hitem._more || hitem._expand || hitem._player || hitem._can_draw)
+         can_click = true;
+
+      let can_menu = can_click;
+      if (!can_menu && (typeof hitem._kind == 'string') && (hitem._kind.indexOf("ROOT.")==0))
+         can_menu = can_click = true;
+
+      if (img2.length == 0) img2 = img1;
+      if (img1.length == 0) img1 = (has_childs || hitem._more) ? "img_folder" : "img_page";
+      if (img2.length == 0) img2 = (has_childs || hitem._more) ? "img_folderopen" : "img_page";
+
+      if (arg === "update") {
+         d3prnt.selectAll("*").remove();
+         d3cont = d3prnt;
+      } else {
+         d3cont = d3prnt.append("div");
+         if (arg && (arg >= (hitem._parent._show_limit || JSROOT.settings.HierarchyLimit))) break_list = true;
+      }
+
+      hitem._d3cont = d3cont.node(); // set for direct referencing
+      d3cont.attr("item", itemname);
+
+      // line with all html elements for this item (excluding childs)
+      let d3line = d3cont.append("div").attr('class','h_line');
+
+      // build indent
+      let prnt = isroot ? null : hitem._parent;
+      while (prnt && (prnt !== this.h)) {
+         d3line.insert("div",":first-child")
+               .attr("class", this.isLastSibling(prnt) ? "img_empty" : "img_line");
+         prnt = prnt._parent;
+      }
+
+      let icon_class = "", plusminus = false;
+
+      if (isroot) {
+         // for root node no extra code
+      } else if (has_childs && !break_list) {
+         icon_class = hitem._isopen ? "img_minus" : "img_plus";
+         plusminus = true;
+      } else /*if (hitem._more) {
+         icon_class = "img_plus"; // should be special plus ???
+         plusminus = true;
+      } else */ {
+         icon_class = "img_join";
+      }
+
+      let h = this;
+
+      if (icon_class.length > 0) {
+         if (break_list || this.isLastSibling(hitem)) icon_class += "bottom";
+         let d3icon = d3line.append("div").attr('class', icon_class);
+         if (plusminus) d3icon.style('cursor','pointer')
+                              .on("click", function(evnt) { h.tree_click(evnt, this, "plusminus"); });
+      }
+
+      // make node icons
+
+      if (this.with_icons && !break_list) {
+         let icon_name = hitem._isopen ? img2 : img1, d3img;
+
+         if (icon_name.indexOf("img_")==0)
+            d3img = d3line.append("div")
+                          .attr("class", icon_name)
+                          .attr("title", hitem._kind);
+         else
+            d3img = d3line.append("img")
+                          .attr("src", icon_name)
+                          .attr("alt","")
+                          .attr("title", hitem._kind)
+                          .style('vertical-align','top').style('width','18px').style('height','18px');
+
+         if (('_icon_click' in hitem) || (handle && ('icon_click' in handle)))
+            d3img.on("click", function(evnt) { h.tree_click(evnt, this, "icon"); });
+      }
+
+      let d3a = d3line.append("a");
+      if (can_click || has_childs || break_list)
+         d3a.attr("class","h_item")
+            .on("click", function(evnt) { h.tree_click(evnt, this); });
+
+      if (break_list) {
+         hitem._break_point = true; // indicate that list was broken here
+         d3a.attr('title', 'there are ' + (hitem._parent._childs.length-arg) + ' more items')
+            .text("...more...");
+         return false;
+      }
+
+      if ('disp_kind' in h) {
+         if (JSROOT.settings.DragAndDrop && can_click)
+           this.enableDrag(d3a, itemname);
+           
+         if (JSROOT.settings.ContextMenu && can_menu)
+            d3a.on('contextmenu', function(evnt) { h.tree_contextmenu(evnt, this); });
+
+         d3a.on("mouseover", function() { h.tree_mouseover(true, this); })
+            .on("mouseleave", function() { h.tree_mouseover(false, this); });
+      } else if (hitem._direct_context && JSROOT.settings.ContextMenu)
+         d3a.on('contextmenu', function(evnt) { h.direct_contextmenu(evnt, this); });
+
+      let element_name = hitem._name, element_title = "";
+
+      if ('_realname' in hitem)
+         element_name = hitem._realname;
+
+      if ('_title' in hitem)
+         element_title = hitem._title;
+
+      if ('_fullname' in hitem)
+         element_title += "  fullname: " + hitem._fullname;
+
+      if (!element_title)
+         element_title = element_name;
+
+      d3a.attr('title', element_title)
+         .text(element_name + ('_value' in hitem ? ":" : ""))
+         .style('background', hitem._background ? hitem._background : null);
+
+      if ('_value' in hitem) {
+         let d3p = d3line.append("p");
+         if ('_vclass' in hitem) d3p.attr('class', hitem._vclass);
+         if (!hitem._isopen) d3p.html(hitem._value);
+      }
+
+      if (has_childs && (isroot || hitem._isopen)) {
+         let d3chlds = d3cont.append("div").attr("class", "h_childs");
+         if (this.show_overflow) d3chlds.style("overflow", "initial");
+         for (let i = 0; i < hitem._childs.length; ++i) {
+            let chld = hitem._childs[i];
+            chld._parent = hitem;
+            if (!this.addItemHtml(chld, d3chlds, i)) break; // if too many items, skip rest
+         }
+      }
+
+      return true;
+   }
+
+   /** @summary Toggle open state of the item
+     * @desc Used with "open all" / "close all" buttons in normal GUI
+     * @param {boolean} isopen - if items should be expand or closed
+     * @returns {boolean} true when any item was changed */
+   HierarchyPainter.prototype.toggleOpenState = function(isopen, h) {
+      let hitem = h || this.h;
+
+      if (hitem._childs === undefined) {
+         if (!isopen) return false;
+
+         if (this.with_icons) {
+            // in normal hierarchy check precisely if item can be expand
+            if (!hitem._more && !hitem._expand && !this.canExpandItem(hitem)) return false;
+         }
+
+         this.expandItem(this.itemFullName(hitem));
+         if (hitem._childs !== undefined) hitem._isopen = true;
+         return hitem._isopen;
+      }
+
+      if ((hitem !== this.h) && isopen && !hitem._isopen) {
+         // when there are childs and they are not see, simply show them
+         hitem._isopen = true;
+         return true;
+      }
+
+      let change_child = false;
+      for (let i = 0; i < hitem._childs.length; ++i)
+         if (this.toggleOpenState(isopen, hitem._childs[i]))
+            change_child = true;
+
+      if ((hitem !== this.h) && !isopen && hitem._isopen && !change_child) {
+         // if none of the childs can be closed, than just close that item
+         delete hitem._isopen;
+         return true;
+       }
+
+      if (!h) this.refreshHtml();
+      return false;
+   }
+
+   /** @summary Refresh HTML code of hierarchy painter
+     * @returns {Promise} when done */
+   HierarchyPainter.prototype.refreshHtml = function() {
+
+      let d3elem = this.selectDom();
+      if (d3elem.empty())
+         return Promise.resolve(this);
+
+      d3elem.html("")   // clear html - most simple way
+            .style('overflow',this.show_overflow ? 'auto' : 'hidden')
+            .style('display','flex')
+            .style('flex-direction','column');
+
+      let h = this, factcmds = [], status_item = null;
+      this.forEachItem(item => {
+         delete item._d3cont; // remove html container
+         if (('_fastcmd' in item) && (item._kind == 'Command')) factcmds.push(item);
+         if (('_status' in item) && !status_item) status_item = item;
+      });
+
+      if (!this.h || d3elem.empty())
+         return Promise.resolve(this);
+
+      if (factcmds.length) {
+         let fastbtns = d3elem.append("div").attr("class","jsroot");
+         for (let n = 0; n < factcmds.length; ++n) {
+            let btn = fastbtns.append("button")
+                       .text("")
+                       .attr("class",'fast_command')
+                       .attr("item", this.itemFullName(factcmds[n]))
+                       .attr("title", factcmds[n]._title)
+                       .on("click", function() { h.executeCommand(d3.select(this).attr("item"), this); } );
+
+            if ('_icon' in factcmds[n])
+               btn.append('img').attr("src", factcmds[n]._icon);
+         }
+      }
+
+      let d3btns = d3elem.append("p").attr("class", "jsroot").style("margin-bottom","3px").style("margin-top",0);
+      d3btns.append("a").attr("class", "h_button").text("open all")
+            .attr("title","open all items in the browser").on("click", () => this.toggleOpenState(true));
+      d3btns.append("text").text(" | ");
+      d3btns.append("a").attr("class", "h_button").text("close all")
+            .attr("title","close all items in the browser").on("click", () => this.toggleOpenState(false));
+
+      if (typeof this.removeInspector == 'function') {
+         d3btns.append("text").text(" | ");
+         d3btns.append("a").attr("class", "h_button").text("remove")
+               .attr("title","remove inspector").on("click", () => this.removeInspector());
+      }
+
+      if ('_online' in this.h) {
+         d3btns.append("text").text(" | ");
+         d3btns.append("a").attr("class", "h_button").text("reload")
+               .attr("title","reload object list from the server").on("click", () => this.reload());
+      }
+
+      if ('disp_kind' in this) {
+         d3btns.append("text").text(" | ");
+         d3btns.append("a").attr("class", "h_button").text("clear")
+               .attr("title","clear all drawn objects").on("click", () => this.clearHierarchy(false));
+      }
+
+      let maindiv =
+         d3elem.append("div")
+               .attr("class", "jsroot")
+               .style('font-size', this.with_icons ? "12px" : "15px")
+               .style("flex","1");
+
+      if (!this.show_overflow)
+         maindiv.style("overflow","auto");
+
+      if (this.background) // case of object inspector and streamer infos display
+         maindiv.style("background-color", this.background)
+                .style('margin', '2px').style('padding', '2px');
+
+      this.addItemHtml(this.h, maindiv.append("div").attr("class","h_tree"));
+
+      this.setTopPainter(); //assign hpainter as top painter
+
+      if (status_item && !this.status_disabled && !JSROOT.decodeUrl().has('nostatus')) {
+         let func = JSROOT.findFunction(status_item._status);
+         if (typeof func == 'function')
+            return this.createStatusLine().then(sdiv => {
+               if (sdiv) func(sdiv, this.itemFullName(status_item));
+            });
+      }
+
+      return Promise.resolve(this);
+   }
+
+   /** @summary Update item node
+     * @private */
+   HierarchyPainter.prototype.updateTreeNode = function(hitem, d3cont) {
+      if ((d3cont === undefined) || d3cont.empty())  {
+         d3cont = d3.select(hitem._d3cont ? hitem._d3cont : null);
+         let name = this.itemFullName(hitem);
+         if (d3cont.empty())
+            d3cont = this.selectDom().select("[item='" + name + "']");
+         if (d3cont.empty() && ('_cycle' in hitem))
+            d3cont = this.selectDom().select("[item='" + name + ";" + hitem._cycle + "']");
+         if (d3cont.empty()) return;
+      }
+
+      this.addItemHtml(hitem, d3cont, "update");
+
+      if (this.brlayout) this.brlayout.adjustBrowserSize(true);
+   }
+   
+   /** @summary Update item background
+     * @private */
+   HierarchyPainter.prototype.updateBackground = function(hitem, scroll_into_view) {
+      if (!hitem || !hitem._d3cont) return;
+
+      let d3cont = d3.select(hitem._d3cont);
+
+      if (d3cont.empty()) return;
+
+      let d3a = d3cont.select(".h_item");
+
+      d3a.style('background', hitem._background ? hitem._background : null);
+
+      if (scroll_into_view && hitem._background)
+         d3a.node().scrollIntoView(false);
+   }
+
+   /** @summary Focus on hierarchy item
+     * @param {Object|string} hitem - item to open or its name
+     * @desc all parents to the otem will be opened first
+     * @returns {Promise} when done
+     * @private */
+   HierarchyPainter.prototype.focusOnItem = function(hitem) {
+      if (typeof hitem == "string")
+         hitem = this.findItem(hitem);
+
+      let name = hitem ? this.itemFullName(hitem) : "";
+      if (!name) return Promise.resolve(false)
+
+      let itm = hitem, need_refresh = false;
+
+      while (itm) {
+         if ((itm._childs !== undefined) && !itm._isopen) {
+            itm._isopen = true;
+            need_refresh = true;
+         }
+         itm = itm._parent;
+      }
+
+      let promise = need_refresh ? this.refreshHtml() : Promise.resolve(true);
+
+      return promise.then(() => {
+         let d3cont = this.selectDom().select("[item='" + name + "']");
+         if (d3cont.empty()) return false;
+         d3cont.node().scrollIntoView();
+         return true;
+      });
+   }
+
+   /** @summary Handler for click event of item in the hierarchy
+     * @private */
+   HierarchyPainter.prototype.tree_click = function(evnt, node, place) {
+      if (!node) return;
+
+      let d3cont = d3.select(node.parentNode.parentNode),
+          itemname = d3cont.attr('item'),
+          hitem = itemname ? this.findItem(itemname) : null;
+      if (!hitem) return;
+
+      if (hitem._break_point) {
+         // special case of more item
+
+         delete hitem._break_point;
+
+         // update item itself
+         this.addItemHtml(hitem, d3cont, "update");
+
+         let prnt = hitem._parent, indx = prnt._childs.indexOf(hitem),
+             d3chlds = d3.select(d3cont.node().parentNode);
+
+         if (indx < 0) return console.error('internal error');
+
+         prnt._show_limit = (prnt._show_limit || JSROOT.settings.HierarchyLimit) * 2;
+
+         for (let n = indx+1; n < prnt._childs.length; ++n) {
+            let chld = prnt._childs[n];
+            chld._parent = prnt;
+            if (!this.addItemHtml(chld, d3chlds, n)) break; // if too many items, skip rest
+         }
+
+         return;
+      }
+
+      let prnt = hitem, dflt = undefined;
+      while (prnt) {
+         if ((dflt = prnt._click_action) !== undefined) break;
+         prnt = prnt._parent;
+      }
+
+      if (!place || (place=="")) place = "item";
+
+      let sett = jsrp.getDrawSettings(hitem._kind), handle = sett.handle;
+
+      if (place == "icon") {
+         let func = null;
+         if (typeof hitem._icon_click == 'function') 
+            func = hitem._icon_click; 
+         else if (handle && typeof handle.icon_click == 'function') 
+            func = handle.icon_click;
+         if (func && func(hitem,this))
+            this.updateTreeNode(hitem, d3cont);
+         return;
+      }
+
+      // special feature - all items with '_expand' function are not drawn by click
+      if ((place=="item") && ('_expand' in hitem) && !evnt.ctrlKey && !evnt.shiftKey) place = "plusminus";
+
+      // special case - one should expand item
+      if (((place == "plusminus") && !('_childs' in hitem) && hitem._more) ||
+          ((place == "item") && (dflt === "expand"))) {
+         return this.expandItem(itemname, d3cont);
+      }
+
+      if (place == "item") {
+
+         if ('_player' in hitem)
+            return this.player(itemname);
+
+         if (handle && handle.aslink)
+            return window.open(itemname + "/");
+
+         if (handle && handle.execute)
+            return this.executeCommand(itemname, node.parentNode);
+
+         if (handle && handle.ignore_online && this.isOnlineItem(hitem)) return;
+
+         let can_draw = hitem._can_draw,
+             can_expand = hitem._more,
+             dflt_expand = (this.default_by_click === "expand"),
+             drawopt = "";
+
+         if (evnt.shiftKey) {
+            drawopt = (handle && handle.shift) ? handle.shift : "inspect";
+            if ((drawopt==="inspect") && handle && handle.noinspect) drawopt = "";
+         }
+         if (handle && handle.ctrl && evnt.ctrlKey) 
+            drawopt = handle.ctrl;
+
+         if (!drawopt) {
+            for (let pitem = hitem._parent; !!pitem; pitem = pitem._parent) {
+               if (pitem._painter) { can_draw = false; if (can_expand===undefined) can_expand = false; break; }
+            }
+         }
+
+         if (hitem._childs) can_expand = false;
+
+         if (can_draw === undefined) can_draw = sett.draw;
+         if (can_expand === undefined) can_expand = sett.expand;
+
+         if (can_draw && can_expand && !drawopt) {
+            // if default action specified as expand, disable drawing
+            // if already displayed, try to expand
+            if (dflt_expand || (handle && (handle.dflt === 'expand')) || this.isItemDisplayed(itemname)) can_draw = false;
+         }
+
+         if (can_draw && !drawopt && handle && handle.dflt && (handle.dflt !== 'expand'))
+            drawopt = handle.dflt;
+
+         if (can_draw)
+            return this.display(itemname, drawopt);
+
+         if (can_expand || dflt_expand)
+            return this.expandItem(itemname, d3cont);
+
+         // cannot draw, but can inspect ROOT objects
+         if ((typeof hitem._kind === "string") && (hitem._kind.indexOf("ROOT.")===0) && sett.inspect && (can_draw !== false))
+            return this.display(itemname, "inspect");
+
+         if (!hitem._childs || (hitem === this.h)) return;
+      }
+
+      if (hitem._isopen)
+         delete hitem._isopen;
+      else
+         hitem._isopen = true;
+
+      this.updateTreeNode(hitem, d3cont);
+   }
+
+   /** @summary Handler for mouse-over event
+     * @private */
+   HierarchyPainter.prototype.tree_mouseover = function(on, elem) {
+      let itemname = d3.select(elem.parentNode.parentNode).attr('item'),
+           hitem = this.findItem(itemname);
+           
+      if (!hitem) return;
+
+      let painter, prnt = hitem;
+      while (prnt && !painter) {
+         painter = prnt._painter;
+         prnt = prnt._parent;
+      }
+
+      if (painter && typeof painter.mouseOverHierarchy === 'function')
+         painter.mouseOverHierarchy(on, itemname, hitem);
+   }
+
+   /** @summary alternative context menu, used in the object inspector
+     * @private */
+   HierarchyPainter.prototype.direct_contextmenu = function(evnt, elem) {
+      evnt.preventDefault();
+      let itemname = d3.select(elem.parentNode.parentNode).attr('item'),
+           hitem = this.findItem(itemname);
+      if (!hitem) return;
+
+      if (typeof this.fill_context == 'function')
+         jsrp.createMenu(evnt, this).then(menu => {
+            this.fill_context(menu, hitem);
+            if (menu.size() > 0) {
+               menu.tree_node = elem.parentNode;
+               menu.show();
+            }
+         });
+   }
+
+   /** @summary Handle context menu in the hieararchy
+     * @private */
+   HierarchyPainter.prototype.tree_contextmenu = function(evnt, elem) {
+      evnt.preventDefault();
+      let itemname = d3.select(elem.parentNode.parentNode).attr('item'),
+           hitem = this.findItem(itemname);
+      if (!hitem) return;
+
+      let onlineprop = this.getOnlineProp(itemname),
+          fileprop = this.getFileProp(itemname);
+
+      function qualifyURL(url) {
+         function escapeHTML(s) {
+            return s.split('&').join('&amp;').split('<').join('&lt;').split('"').join('&quot;');
+         }
+         let el = document.createElement('div');
+         el.innerHTML = '<a href="' + escapeHTML(url) + '">x</a>';
+         return el.firstChild.href;
+      }
+
+      jsrp.createMenu(evnt, this).then(menu => {
+
+         if (((itemname == "") || !hitem._parent) && !('_jsonfile' in hitem)) {
+            let files = [], addr = "", cnt = 0,
+                separ = () => (cnt++ > 0) ? "&" : "?";
+
+            this.forEachRootFile(item => files.push(item._file.fFullURL));
+
+            if (!this.getTopOnlineItem())
+               addr = JSROOT.source_dir + "index.htm";
+
+            if (this.isMonitoring())
+               addr += separ() + "monitoring=" + this.getMonitoringInterval();
+
+            if (files.length == 1)
+               addr += separ() + "file=" + files[0];
+            else if (files.length > 1)
+               addr += separ() + "files=" + JSON.stringify(files);
+
+            if (this.disp_kind)
+               addr += separ() + "layout=" + this.disp_kind.replace(/ /g, "");
+
+            let items = [], opts = [];
+
+            if (this.disp)
+               this.disp.forEachPainter(p => {
+                  let item = p.getItemName();
+                  if (item) {
+                     items.push(item);
+                     opts.push(p.getDrawOpt() || p.getItemDrawOpt());
+                  }
+               });
+
+            if (items.length == 1) {
+               addr += separ() + "item=" + items[0] + separ() + "opt=" + opts[0];
+            } else if (items.length > 1) {
+               addr += separ() + "items=" + JSON.stringify(items) + separ() + "opt=" + JSON.stringify(opts);
+            }
+
+            menu.add("Direct link", () => window.open(addr));
+            menu.add("Only items", () => window.open(addr + "&nobrowser"));
+         } else if (onlineprop) {
+            this.fillOnlineMenu(menu, onlineprop, itemname);
+         } else {
+            let sett = jsrp.getDrawSettings(hitem._kind, 'nosame');
+
+            // allow to draw item even if draw function is not defined
+            if (hitem._can_draw) {
+               if (!sett.opts) sett.opts = [""];
+               if (sett.opts.indexOf("") < 0) sett.opts.unshift("");
+            }
+
+            if (sett.opts)
+               menu.addDrawMenu("Draw", sett.opts, arg => this.display(itemname, arg));
+
+            if (fileprop && sett.opts && !fileprop.localfile) {
+               let filepath = qualifyURL(fileprop.fileurl);
+               if (filepath.indexOf(JSROOT.source_dir) == 0)
+                  filepath = filepath.slice(JSROOT.source_dir.length);
+               filepath = fileprop.kind + "=" + filepath;
+               if (fileprop.itemname.length > 0) {
+                  let name = fileprop.itemname;
+                  if (name.search(/\+| |\,/)>=0) name = "\'" + name + "\'";
+                  filepath += "&item=" + name;
+               }
+
+               menu.addDrawMenu("Draw in new tab", sett.opts,
+                                arg => window.open(JSROOT.source_dir + "index.htm?nobrowser&"+filepath +"&opt="+arg));
+            }
+
+            if (sett.expand && !('_childs' in hitem) && (hitem._more || !('_more' in hitem)))
+               menu.add("Expand", () => this.expandItem(itemname));
+
+            if (hitem._kind === "ROOT.TStyle")
+               menu.add("Apply", () => this.applyStyle(itemname));
+         }
+
+         if (typeof hitem._menu == 'function')
+            hitem._menu(menu, hitem, this);
+
+         if (menu.size() > 0) {
+            menu.tree_node = elem.parentNode;
+            if (menu.separ) menu.add("separator"); // add separator at the end
+            menu.add("Close");
+            menu.show();
+         }
+
+      }); // end menu creation
+
+      return false;
    }
 
    /** @summary Starts player for specified item
@@ -1584,10 +2227,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return Promise.resolve(false);
    }
 
-   HierarchyPainter.prototype.updateTreeNode = function() {
-      // dummy function, will be redefined when jquery part loaded
-   }
-
    /** @summary activate (select) specified item
      * @param {Array} items - array of items names
      * @param {boolean} [force] - if specified, all required sub-levels will be opened
@@ -1601,12 +2240,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.forEachItem(item => { if (item._background) { active.push(item); delete item._background; } });
 
       let mark_active = () => {
-         if (typeof this.updateBackground !== 'function') return;
 
-         for (let n=update.length-1;n>=0;--n)
+         for (let n = update.length-1; n >= 0; --n)
             this.updateTreeNode(update[n]);
 
-         for (let n=0;n<active.length;++n)
+         for (let n = 0; n < active.length; ++n)
             this.updateBackground(active[n], force);
       }
 
@@ -2670,15 +3308,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return this.brlayout.createStatusLine(height, mode);
    }
 
-   /** @summary Create browser layout
-     * @private */
-   HierarchyPainter.prototype.createBrowser = function(browser_kind, update_html) {
-      if (!this.gui_div)
-         return Promise.resolve(false);
-
-      return JSROOT.require('jq2d').then(() => this.createBrowser(browser_kind, update_html));
-   }
-
    /** @summary Redraw hierarchy
      * @desc works only when inspector or streamer info is displayed
      * @private */
@@ -2690,7 +3319,210 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.h = createInspectorContent(obj);
       return this.refreshHtml().then(() => { this.setTopPainter(); });
    }
+   
+      /** @summary Create browser elements
+     * @returns {Promise} when completed */
+   HierarchyPainter.prototype.createBrowser = function(browser_kind, update_html) {
 
+      if (!this.gui_div || this.exclude_browser || !this.brlayout)
+         return Promise.resolve(false);
+
+      let main = d3.select("#" + this.gui_div + " .jsroot_browser");
+
+      // one requires top-level container
+      if (main.empty())
+         return Promise.resolve(false);
+
+      if ((browser_kind==="float") && this.float_browser_disabled) browser_kind = "fix";
+
+      if (!main.select('.jsroot_browser_area').empty()) {
+         // this is case when browser created,
+         // if update_html specified, hidden state will be toggled
+
+         if (update_html) this.brlayout.toggleKind(browser_kind);
+
+         return Promise.resolve(true);
+      }
+
+      let guiCode = `<p class='jsroot_browser_version'><a href='https://root.cern/js/'>JSROOT</a> version <span style='color:green'><b>${JSROOT.version}</b></span></p>`;
+
+      if (this.is_online) {
+         guiCode +='<p> Hierarchy in <a href="h.json">json</a> and <a href="h.xml">xml</a> format</p>'
+                 + '<div style="display:inline-block;">'
+                 + '<label style="margin-right:5px; vertical-align:middle;">'
+                 + '<input style="vertical-align:middle;" type="checkbox" name="monitoring" class="gui_monitoring"/>'
+                 + 'Monitoring</label>';
+      } else if (!this.no_select) {
+         let myDiv = d3.select("#"+this.gui_div),
+             files = myDiv.attr("files") || "../files/hsimple.root",
+             path = JSROOT.decodeUrl().get("path") || myDiv.attr("path") || "",
+             arrFiles = files.split(';');
+
+         guiCode +=
+            '<input type="text" value="" style="width:95%; margin:5px;border:2px;" class="gui_urlToLoad" title="input file name"/>'
+            +'<div style="display:flex;flex-direction:row;padding-top:5px">'
+            +'<select class="gui_selectFileName" style="flex:1;padding:2px;" title="select file name"'
+            +'<option value="" selected="selected"></option>';
+         arrFiles.forEach(fname => { guiCode += '<option value = "' + path + fname + '">' + fname + '</option>'; });
+         guiCode += '</select>'
+            +'<input type="file" class="gui_localFile" accept=".root" style="display:none"/><output id="list" style="display:none"></output>'
+            +'<input type="button" value="..." class="gui_fileBtn" style="min-width:3em;padding:3px;margin-left:5px;margin-right:5px;" title="select local file for reading"/><br/>'
+            +'</div>'
+            +'<p id="gui_fileCORS"><small><a href="https://github.com/root-project/jsroot/blob/master/docs/JSROOT.md#reading-root-files-from-other-servers">Read docu</a>'
+            +' how to open files from other servers.</small></p>'
+            +'<div style="display:flex;flex-direction:row">'
+            +'<input style="padding:3px;margin-right:5px;"'
+            +'       class="gui_ReadFileBtn" type="button" title="Read the Selected File" value="Load"/>'
+            +'<input style="padding:3px;margin-right:5px;"'
+            +'       class="gui_ResetUIBtn" type="button" title="Close all opened files and clear drawings" value="Reset"/>';
+      } else if (this.no_select == "file") {
+         guiCode += '<div style="display:flex;flex-direction:row">';
+      }
+
+      if (this.is_online || !this.no_select || this.no_select=="file")
+         guiCode += '<select style="padding:2px;margin-right:5px;" title="layout kind" class="gui_layout"></select>'
+                  + '</div>';
+
+      guiCode += `<div id="${this.gui_div}_browser_hierarchy" class="jsroot_browser_hierarchy"></div>`;
+
+      this.brlayout.setBrowserContent(guiCode);
+
+      if (this.is_online)
+          this.brlayout.setBrowserTitle('ROOT online server');
+       else
+          this.brlayout.setBrowserTitle('Read a ROOT file');
+
+      let localfile_read_callback = null;
+
+      if (!this.is_online && !this.no_select) {
+
+         this.readSelectedFile = function() {
+            let filename = main.select(".gui_urlToLoad").property('value').trim();
+            if (!filename) return;
+
+            if (filename.toLowerCase().lastIndexOf(".json") == filename.length-5)
+               this.openJsonFile(filename);
+            else
+               this.openRootFile(filename);
+         };
+
+         main.select(".gui_selectFileName").property("value", "")
+              .on("change", evnt => main.select(".gui_urlToLoad").property("value", evnt.target.value));
+         main.select(".gui_fileBtn").on("click", () => main.select(".gui_localFile").node().click());
+
+         main.select(".gui_ReadFileBtn").on("click", () => this.readSelectedFile());
+
+         main.select(".gui_ResetUIBtn").on("click", () => this.clearHierarchy(true));
+
+         main.select(".gui_urlToLoad").on("keyup", evnt => {
+            if (evnt.keyCode == 13) this.readSelectedFile();
+         });
+
+         main.select(".gui_localFile").on('change', evnt => {
+            let files = evnt.target.files, promises = [];
+
+            for (let n = 0; n < files.length; ++n) {
+               let f = files[n];
+               main.select(".gui_urlToLoad").property('value', f.name);
+               promises.push(this.openRootFile(f));
+            }
+
+            Promise.all(promises).then(() => {
+               if (localfile_read_callback) {
+                  localfile_read_callback();
+                  localfile_read_callback = null;
+               }
+            });
+         });
+
+         this.selectLocalFile = function() {
+            return new Promise(resolveFunc => {
+               localfile_read_callback = resolveFunc;
+               main.select(".gui_localFile").node().click();
+            });
+         };
+      }
+
+      let layout = main.select(".gui_layout");
+      if (!layout.empty()) {
+         let lst = ['simple', 'vert2', 'vert3', 'vert231', 'horiz2', 'horiz32', 'flex',
+                     'grid 2x2', 'grid 1x3', 'grid 2x3', 'grid 3x3', 'grid 4x4', 'collapsible',  'tabs'];
+
+         for (let k = 0; k < lst.length; ++k){
+            let opt = document.createElement('option');
+            opt.value = lst[k];
+            opt.innerHTML = lst[k];
+            layout.node().appendChild(opt);
+         }
+
+         layout.on('change', ev => this.setDisplay(ev.target.value || 'collapsible', this.gui_div + "_drawing")); 
+      }
+
+      this.setDom(this.gui_div + '_browser_hierarchy');
+
+      if (update_html) {
+         this.refreshHtml();
+         this.initializeBrowser();
+      }
+
+      this.brlayout.toggleBrowserKind(browser_kind || "fix");
+
+      return Promise.resolve(true);
+   }
+
+   /** @summary Initialize browser elements */
+   HierarchyPainter.prototype.initializeBrowser = function() {
+
+      let main = d3.select("#" + this.gui_div + " .jsroot_browser");
+      if (main.empty() || !this.brlayout) return;
+
+      if (this.brlayout) this.brlayout.adjustBrowserSize();
+
+      let selects = main.select(".gui_layout").node();
+
+      if (selects) {
+         let found = false;
+         for (let i in selects.options) {
+            let s = selects.options[i].text;
+            if (typeof s !== 'string') continue;
+            if ((s == this.getLayout()) || (s.replace(/ /g,"") == this.getLayout())) {
+               selects.selectedIndex = i; found = true;
+               break;
+            }
+         }
+         if (!found) {
+            let opt = document.createElement('option');
+            opt.innerHTML = opt.value = this.getLayout();
+            selects.appendChild(opt);
+            selects.selectedIndex = selects.options.length-1;
+         }
+      }
+
+      if (this.is_online) {
+         if (this.h && this.h._toptitle)
+            this.brlayout.setBrowserTitle(this.h._toptitle);
+         main.select(".gui_monitoring")
+           .property('checked', this.isMonitoring())
+           .on("click", evnt => {
+               this.enableMonitoring(evnt.target.checked);
+               this.updateItems();
+            });
+      } else if (!this.no_select) {
+         let fname = "";
+         this.forEachRootFile(item => { if (!fname) fname = item._fullurl; });
+         main.select(".gui_urlToLoad").property("value", fname);
+      }
+   }
+
+   /** @summary Enable monitoring mode */
+   HierarchyPainter.prototype.enableMonitoring = function(on) {
+      this.setMonitoring(undefined, on);
+
+      let chkbox = d3.select("#" + this.gui_div + " .jsroot_browser .gui_monitoring");
+      if (!chkbox.empty() && (chkbox.property('checked') !== on))
+         chkbox.property('checked', on);
+   }
+   
    // ======================================================================================
 
    /** @summary tag item in hierarchy painter as streamer info
@@ -2758,6 +3590,35 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return hpainter.display("", opt).then(() => hpainter);
       });
    }
+
+   /** @summary Build main JSROOT GUI
+     * @returns {Promise} when completed
+     * @private  */
+   JSROOT.buildGUI = function(gui_element, gui_kind) {
+      let myDiv = (typeof gui_element == 'string') ? d3.select('#' + gui_element) : d3.select(gui_element);
+      if (myDiv.empty()) return alert('no div for gui found');
+
+      let online = false;
+      if (gui_kind == "online") online = true;
+
+      if (myDiv.attr("ignoreurl") === "true")
+         JSROOT.settings.IgnoreUrlOptions = true;
+
+      if (JSROOT.decodeUrl().has("nobrowser") || (myDiv.attr("nobrowser") && myDiv.attr("nobrowser")!=="false") || (gui_kind == "draw") || (gui_kind == "nobrowser"))
+         return JSROOT.buildNobrowserGUI(gui_element, gui_kind);
+
+      jsrp.readStyleFromURL();
+
+      let hpainter = new JSROOT.HierarchyPainter('root', null);
+
+      hpainter.is_online = online;
+
+      return hpainter.startGUI(myDiv).then(() => {
+         hpainter.initializeBrowser();
+         return hpainter;
+      });
+   }
+
 
    /** @summary Display streamer info
      * @private */
