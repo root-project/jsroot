@@ -1285,12 +1285,33 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       });
    }
 
-   HierarchyPainter.prototype.enableDrag = function(/*element, itemname*/) {
-      // here is not defined - implemented with jquery
+   /** @summary Enable drag of the element
+     * @private  */
+   HierarchyPainter.prototype.enableDrag = function(d3elem /*, itemname*/) {
+      d3elem.attr("draggable", "true").on("dragstart", function(ev) {
+         let itemname = this.parentNode.parentNode.getAttribute('item');
+         ev.dataTransfer.setData("item", itemname); 
+      });
    }
 
-   HierarchyPainter.prototype.enableDrop = function(/*frame, itemname*/) {
-      // here is not defined - implemented with jquery
+   /** @summary Enable drop on the frame
+     * @private  */
+   HierarchyPainter.prototype.enableDrop = function(frame /*, itemname*/) {
+      let h = this;
+      d3.select(frame).on("dragover", function(ev) {
+         let itemname = ev.dataTransfer.getData("item"),
+              ditem = h.findItem(itemname);
+         if (ditem && (typeof ditem._kind == 'string') && (ditem._kind.indexOf("ROOT.")==0))
+            ev.preventDefault(); // let accept drop, otherwise it will be refuced
+      }).on("dragenter", function() {
+         d3.select(this).classed('jsroot_drag_area', true);
+      }).on("dragleave", function() {
+         d3.select(this).classed('jsroot_drag_area', false);
+      }).on("drop", function(ev) {
+         d3.select(this).classed('jsroot_drag_area', false);
+         let itemname = ev.dataTransfer.getData("item");
+         if (itemname) h.dropItem(itemname, this.getAttribute("id"));
+      });
    }
 
   /** @summary Drop item on specified element for drawing

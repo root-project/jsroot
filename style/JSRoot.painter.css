@@ -650,6 +650,10 @@
    border: 0;
 }
 
+.jsroot_drag_area {
+   background-color: #007fff;
+}
+
 .jsroot_inspector {
     border: 1px solid black;
     box-shadow: 1px 1px 2px 2px #aaa;

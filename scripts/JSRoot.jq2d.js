@@ -525,7 +525,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
 
       if ('disp_kind' in h) {
          if (JSROOT.settings.DragAndDrop && can_click)
-           this.enableDrag(d3a.node(), itemname);
+           this.enableDrag(d3a, itemname);
            
          if (JSROOT.settings.ContextMenu && can_menu)
             d3a.on('contextmenu', function(evnt) { h.tree_contextmenu(evnt, this); });
@@ -1082,13 +1082,13 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
 
    /** @summary Enable drag on the element
      * @private  */
-   HierarchyPainter.prototype.enableDrag = function(element /*, itemname*/) {
-      $(element).draggable({ revert: "invalid", appendTo: "body", helper: "clone" });
-   }
+///   HierarchyPainter.prototype.enableDrag = function(d3elem /*, itemname*/) {
+//      $(d3elem.node()).draggable({ revert: "invalid", appendTo: "body", helper: "clone" });
+//   }
 
-   /** @summary Enable drop on the element
+   /** @summary Enable drop on the frame
      * @private  */
-   HierarchyPainter.prototype.enableDrop = function(frame, itemname) {
+/*   HierarchyPainter.prototype.enableDrop = function(frame, itemname) {
       let h = this;
       $(frame).droppable({
          hoverClass : "ui-state-active",
@@ -1107,6 +1107,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          }
       });
    }
+*/
 
    /** @summary Create browser elements
      * @returns {Promise} when completed */
