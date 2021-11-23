@@ -1083,34 +1083,6 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
       return Promise.resolve(this.disp);
    }
 
-   /** @summary Enable drag on the element
-     * @private  */
-///   HierarchyPainter.prototype.enableDrag = function(d3elem /*, itemname*/) {
-//      $(d3elem.node()).draggable({ revert: "invalid", appendTo: "body", helper: "clone" });
-//   }
-
-   /** @summary Enable drop on the frame
-     * @private  */
-/*   HierarchyPainter.prototype.enableDrop = function(frame) {
-      let h = this;
-      $(frame).droppable({
-         hoverClass : "ui-state-active",
-         accept: function(ui) {
-            let dropname = ui.parent().parent().attr('item');
-            if ((dropname == itemname) || !dropname) return false;
-
-            let ditem = h.findItem(dropname);
-            if (!ditem || (!('_kind' in ditem))) return false;
-
-            return ditem._kind.indexOf("ROOT.")==0;
-         },
-         drop: function(event, ui) {
-            let dropname = ui.draggable.parent().parent().attr('item');
-            if (dropname) h.dropItem(dropname, $(this).attr("id"));
-         }
-      });
-   }
-*/
 
    /** @summary Create browser elements
      * @returns {Promise} when completed */
@@ -1189,7 +1161,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
 
       if (!this.is_online && !this.no_select) {
 
-         this.ReadSelectedFile = function() {
+         this.readSelectedFile = function() {
             let filename = main.select(".gui_urlToLoad").property('value').trim();
             if (!filename) return;
 
@@ -1204,50 +1176,52 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          jmain.find(".gui_fileBtn").button()
               .click(() => jmain.find(".gui_localFile").click());
 
-         jmain.find(".gui_ReadFileBtn").button().click(() => this.ReadSelectedFile());
+         jmain.find(".gui_ReadFileBtn").button().click(() => this.readSelectedFile());
 
          jmain.find(".gui_ResetUIBtn").button().click(() => this.clearHierarchy(true));
 
-         jmain.find(".gui_urlToLoad").keyup(e => {
-            if (e.keyCode == 13) this.ReadSelectedFile();
+         main.select(".gui_urlToLoad").on("keyup", evnt => {
+            if (evnt.keyCode == 13) this.readSelectedFile();
          });
 
-         jmain.find(".gui_localFile").change(evnt => {
-            let files = evnt.target.files;
+         main.select(".gui_localFile").on('change', evnt => {
+            let files = evnt.target.files, promises = [];
 
             for (let n = 0; n < files.length; ++n) {
                let f = files[n];
                main.select(".gui_urlToLoad").property('value', f.name);
-               this.openRootFile(f).then(localfile_read_callback);
+               promises.push(this.openRootFile(f));
             }
 
-            localfile_read_callback = null;
+            Promise.all(promises).then(() => {
+               if (localfile_read_callback) {
+                  localfile_read_callback();
+                  localfile_read_callback = null;
+               }
+            });
          });
 
          this.selectLocalFile = function() {
             return new Promise(resolveFunc => {
                localfile_read_callback = resolveFunc;
-               $("#" + this.gui_div + " .jsroot_browser").find(".gui_localFile").click();
+               main.select(".gui_localFile").node().click();
             });
          };
       }
 
-      let jlayout = jmain.find(".gui_layout");
-      if (jlayout.length) {
+      let layout = main.select(".gui_layout");
+      if (!layout.empty()) {
          let lst = ['simple', 'vert2', 'vert3', 'vert231', 'horiz2', 'horiz32', 'flex',
                      'grid 2x2', 'grid 1x3', 'grid 2x3', 'grid 3x3', 'grid 4x4', 'collapsible',  'tabs'];
 
-         for (let k=0;k<lst.length;++k){
+         for (let k = 0; k < lst.length; ++k){
             let opt = document.createElement('option');
             opt.value = lst[k];
             opt.innerHTML = lst[k];
-            jlayout.get(0).appendChild(opt);
+            layout.node().appendChild(opt);
          }
 
-         let painter = this;
-         jlayout.change(function() {
-            painter.setDisplay($(this).val() || 'collapsible', painter.gui_div + "_drawing");
-         });
+         layout.on('change', ev => this.setDisplay(ev.target.value || 'collapsible', this.gui_div + "_drawing")); 
       }
 
       this.setDom(this.gui_div + '_browser_hierarchy');
