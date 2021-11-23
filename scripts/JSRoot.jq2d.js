@@ -1212,7 +1212,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          jmain.find(".gui_localFile").change(evnt => {
             let files = evnt.target.files;
 
-            for (let n=0;n<files.length;++n) {
+            for (let n = 0; n < files.length; ++n) {
                let f = files[n];
                main.select(".gui_urlToLoad").property('value', f.name);
                this.openRootFile(f).then(localfile_read_callback);

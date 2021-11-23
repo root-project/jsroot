@@ -1313,6 +1313,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (itemname) h.dropItem(itemname, this.getAttribute("id"));
       });
    }
+   
+   /** @summary Remove all drop handlers on the frame
+     * @private  */
+   HierarchyPainter.prototype.clearDrop = function(frame) {
+      d3.select(frame).on("dragover", null).on("dragenter", null).on("dragleave", null).on("drop", null);
+   }
 
   /** @summary Drop item on specified element for drawing
     * @returns {Promise} when completed
@@ -2295,9 +2301,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary method called when MDI element is cleaned up
      * @desc hook to perform extra actions when frame is cleaned
      * @private */
-   HierarchyPainter.prototype.cleanupFrame = function(divid) {
+   HierarchyPainter.prototype.cleanupFrame = function(frame) {
+      
+      d3.select(frame).attr("frame_title", null);
+      
+      this.clearDrop(frame);
 
-      let lst = JSROOT.cleanup(divid);
+      let lst = JSROOT.cleanup(frame);
 
       // we remove all painters references from items
       if (lst && (lst.length > 0))
