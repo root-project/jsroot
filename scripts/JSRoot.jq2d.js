@@ -1091,8 +1091,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
       if (!this.gui_div || this.exclude_browser || !this.brlayout)
          return Promise.resolve(false);
 
-      let main = d3.select("#" + this.gui_div + " .jsroot_browser"),
-          jmain = $(main.node());
+      let main = d3.select("#" + this.gui_div + " .jsroot_browser");
 
       // one requires top-level container
       if (main.empty())
@@ -1171,14 +1170,13 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
                this.openRootFile(filename);
          };
 
-         jmain.find(".gui_selectFileName").val("")
-              .change(function() { jmain.find(".gui_urlToLoad").val($(this).val()); });
-         jmain.find(".gui_fileBtn").button()
-              .click(() => jmain.find(".gui_localFile").click());
+         main.select(".gui_selectFileName").property("value", "")
+              .on("change", evnt => main.select(".gui_urlToLoad").property("value", evnt.target.value));
+         main.select(".gui_fileBtn").on("click", () => main.select(".gui_localFile").node().click());
 
-         jmain.find(".gui_ReadFileBtn").button().click(() => this.readSelectedFile());
+         main.select(".gui_ReadFileBtn").on("click", () => this.readSelectedFile());
 
-         jmain.find(".gui_ResetUIBtn").button().click(() => this.clearHierarchy(true));
+         main.select(".gui_ResetUIBtn").on("click", () => this.clearHierarchy(true));
 
          main.select(".gui_urlToLoad").on("keyup", evnt => {
             if (evnt.keyCode == 13) this.readSelectedFile();
