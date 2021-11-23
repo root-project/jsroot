@@ -1024,7 +1024,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          let cmdargs = [];
          for (let n = 0; n < hitem._numargs; ++n)
             cmdargs.push((n+2 < arguments.length) ? arguments[n+2] : "");
-         promise = JSROOT.require("jq2d").then(() => this.commandArgsDialog(hitem._name, cmdargs));
+         promise = jsrp.createMenu().then(menu => menu.showCommandArgsDialog(hitem._name, cmdargs));
       }
 
       return promise.then(urlargs => {
