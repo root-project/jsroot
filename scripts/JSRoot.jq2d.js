@@ -1074,8 +1074,11 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
       else
          this.disp = new JSROOT.GridDisplay(this.disp_frameid, this.disp_kind);
 
-      if (this.disp)
+      if (this.disp) {
          this.disp.cleanupFrame = this.cleanupFrame.bind(this);
+         if (JSROOT.settings.DragAndDrop)
+            this.disp.setInitFrame(this.enableDrop.bind(this));
+      }
 
       return Promise.resolve(this.disp);
    }
@@ -1088,7 +1091,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
 
    /** @summary Enable drop on the frame
      * @private  */
-/*   HierarchyPainter.prototype.enableDrop = function(frame, itemname) {
+/*   HierarchyPainter.prototype.enableDrop = function(frame) {
       let h = this;
       $(frame).droppable({
          hoverClass : "ui-state-active",
@@ -1436,10 +1439,12 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
                .find("> .ui-icon").toggleClass("ui-icon-triangle-1-e ui-icon-triangle-1-s").end().next()
                .toggleClass("ui-accordion-content-active").slideToggle(0);
 
-         return $("#" + hid).attr('frame_title', title).css('overflow','hidden')
-                            .attr('can_resize','height') // inform JSROOT that it can resize height of the
-                            .css('position','relative') // this required for correct positioning of 3D canvas in WebKit
-                            .get(0);
+         let frame = $("#" + hid).attr('frame_title', title).css('overflow','hidden')
+                                 .attr('can_resize','height') // inform JSROOT that it can resize height of the
+                                 .css('position','relative') // this required for correct positioning of 3D canvas in WebKit
+                                 .get(0);
+                                 
+         return this.afterCreateFrame(frame);
        }
 
     } // class CollapsibleDisplay
@@ -1531,7 +1536,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
             .css('overflow', 'hidden')
             .attr('frame_title', title);
 
-         return $('#' + hid).get(0);
+         return this.afterCreateFrame($('#' + hid).get(0));
       }
 
       checkMDIResize(frame_id, size) {
@@ -1745,7 +1750,9 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
 
          this.cnt++;
 
-         return $("#" + subid + "_cont").attr('frame_title', title).get(0);
+         let frame = $("#" + subid + "_cont").attr('frame_title', title).get(0);
+         
+         return this.afterCreateFrame(frame);
       }
 
    } // class FlexibleDisplay

@@ -1275,11 +1275,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             d3.select(frame).html("");
             mdi.activateFrame(frame);
 
-            return JSROOT.draw(frame, obj, drawopt).then(p => {
-               if (JSROOT.settings.DragAndDrop)
-                  h.enableDrop(frame, display_itemname);
-               return complete(p);
-            }).catch(err => complete(null, err));
+            return JSROOT.draw(frame, obj, drawopt)
+                         .then(p => complete(p))
+                         .catch(err => complete(null, err));
 
          });
       });
@@ -1296,7 +1294,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    /** @summary Enable drop on the frame
      * @private  */
-   HierarchyPainter.prototype.enableDrop = function(frame /*, itemname*/) {
+   HierarchyPainter.prototype.enableDrop = function(frame) {
       let h = this;
       d3.select(frame).on("dragover", function(ev) {
          let itemname = ev.dataTransfer.getData("item"),
@@ -2339,8 +2337,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       else
          return JSROOT.require('jq2d').then(() => this.createDisplay());
 
-      if (this.disp)
+      if (this.disp) {
          this.disp.cleanupFrame = this.cleanupFrame.bind(this);
+         if (JSROOT.settings.DragAndDrop)
+            this.disp.setInitFrame(this.enableDrop.bind(this));
+      }
 
       return Promise.resolve(this.disp);
    }
@@ -2845,9 +2846,23 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.cleanupFrame = JSROOT.cleanup; // use standard cleanup function by default
          this.active_frame_title = ""; // keep title of active frame
       }
+      
+      /** @summary Assign func which called for each newly created frame */
+      setInitFrame(func) {
+         this.initFrame = func;
+         this.forEachFrame(frame => func(frame));
+      }
 
       /** @summary method called before new frame is created */
       beforeCreateFrame(title) { this.active_frame_title = title; }
+      
+      /** @summary method called after new frame is created 
+        * @private */
+      afterCreateFrame(frame) {
+         if (typeof this.initFrame == 'function') 
+            this.initFrame(frame);
+         return frame;
+      }
 
       /** @summary method dedicated to iterate over existing panels
         * @param {function} userfunc is called with arguments (frame)
@@ -3098,6 +3113,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             this.createGroup(this, this.selectDom(), num, arr, sizes);
       }
 
+      /** @summary Create frames group
+        * @private */
       createGroup(handle, main, num, childs, sizes) {
 
          if (!sizes) sizes = new Array(num);
@@ -3158,7 +3175,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       /** @summary Returns active frame */
       getActiveFrame() {
-         if (this.simple_layout) return this.getGridFrame();
+         if (this.simple_layout) 
+            return this.getGridFrame();
 
          let found = super.getActiveFrame();
          if (found) return found;
@@ -3201,7 +3219,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             d3.select(frame).attr('frame_title', title);
          }
 
-         return frame;
+         return this.afterCreateFrame(frame);
       }
 
    } // class GridDisplay
@@ -3238,7 +3256,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          } else {
             if (!JSROOT._.nodejs_document) {
              // use eval while old minifier is not able to parse newest Node.js syntax
-               const { JSDOM } = require("jsdom");
+              const { JSDOM } = require("jsdom");
               JSROOT._.nodejs_window = (new JSDOM("<!DOCTYPE html>hello")).window;
               JSROOT._.nodejs_document = JSROOT._.nodejs_window.document; // used with three.js
               JSROOT._.nodejs_window.d3 = d3.select(JSROOT._.nodejs_document); //get d3 into the dom
@@ -3255,7 +3273,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          frame.attr('frame_title', title);
          this.frames.push(frame.node());
 
-         return frame.node();
+         return this.afterCreateFrame(frame.node());
       }
 
       /** @summary Returns number of created frames */
