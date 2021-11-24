@@ -996,8 +996,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if (this.browser_visible) {
          let area = main.select(".jsroot_browser_area");
-             // off0 = jmain.offset(), off1 = area.offset();
-         top = area.node().offsetTop - main.node().offsetTop + 7;
+
+         top = area.node().offsetTop + 7;
 
          left = area.node().offsetLeft - main.node().offsetLeft + area.node().clientWidth - 27;
       }
@@ -1060,6 +1060,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
            area.style('left', Math.min(Math.max(0, this._float_left), this._max_left) + "px")
                .style('top', Math.min(Math.max(0, this._float_top), this._max_top) + "px");
+
+           this.setButtonsPosition();
         });
 
         let drag_resize = d3.drag().on("start", () => {
@@ -1075,6 +1077,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
            area.style('width', Math.min(Math.max(100, this._float_width), this._max_width) + "px")
                .style('height', Math.min(Math.max(100, this._float_height), this._max_height) + "px");
+
+           this.setButtonsPosition();
         });
 
         main.call(drag_move);

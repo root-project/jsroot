@@ -1,7 +1,7 @@
 # JSROOT changelog
 
 ## Changes in dev
-1. Full avoid jQuery on starting GUI, load only for menu or special displays
+1. Fully avoid jQuery on starting GUI, load only for menu or special displays
 2. Provide bootstrap-based menu - optionally
 
 
