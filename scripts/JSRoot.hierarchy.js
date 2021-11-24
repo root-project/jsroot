@@ -686,14 +686,22 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return !main.select(".jsroot_browser_area").empty();
    }
 
-   /** @summary Delete browser content */
+   /** @summary Delete content */
    BrowserLayout.prototype.deleteContent = function() {
       let main = d3.select("#" + this.gui_div + " .jsroot_browser");
       if (main.empty()) return;
 
+      this.createStatusLine(0, "delete");
+
+      this.toggleBrowserVisisbility(true);
+
       main.selectAll("*").remove();
       delete this.browser_visible;
+      delete this.browser_kind;
+
+      this.checkResize();
    }
+
 
    /** @summary Returns true when status line exists */
    BrowserLayout.prototype.hasStatus = function() {
@@ -718,6 +726,15 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       let main = d3.select("#" + this.gui_div + " .jsroot_browser");
       if (!main.empty())
          main.select(".jsroot_browser_title").text(title);
+   }
+
+   /** @summary Toggle browser kind
+     * @desc used together with browser buttons */
+   BrowserLayout.prototype.toggleKind = function(browser_kind) {
+      if (this.browser_visible!=='changing') {
+         if (browser_kind === this.browser_kind) this.toggleBrowserVisisbility();
+                                            else this.toggleBrowserKind(browser_kind);
+      }
    }
 
     /** @summary Toggle browser kind */
@@ -885,6 +902,88 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
    }
 
+   /** @summary Toggle browser visibility */
+   BrowserLayout.prototype.toggleBrowserVisisbility = function(fast_close) {
+      if (!this.gui_div || (typeof this.browser_visible==='string')) return;
+
+      let main = d3.select("#" + this.gui_div + " .jsroot_browser"),
+          area = main.select('.jsroot_browser_area');
+
+      if (area.empty()) return;
+
+      let vsepar = main.select(".jsroot_v_separator"),
+          drawing = d3.select("#" + this.gui_div + "_drawing"),
+          tgt = area.property('last_left'),
+          tgt_separ = area.property('last_vsepar'),
+          tgt_drawing = area.property('last_drawing');
+
+      if (!this.browser_visible) {
+         if (fast_close) return;
+         area.property('last_left', null).property('last_vsepar',null).property('last_drawing', null);
+      } else {
+         area.property('last_left', area.style('left'));
+         if (!vsepar.empty()) {
+            area.property('last_vsepar', vsepar.style('left'));
+            area.property('last_drawing', drawing.style('left'));
+         }
+
+         tgt = (-area.node().clientWidth - 10) + "px";
+         let mainw = main.node().clientWidth;
+
+         if (vsepar.empty() && (area.node().offsetLeft > mainw/2))
+            tgt = (mainw+10) + "px";
+
+         tgt_separ = "-10px";
+         tgt_drawing = "0px";
+      }
+
+      let visible_at_the_end  = !this.browser_visible, _duration = fast_close ? 0 : 700;
+
+      this.browser_visible = 'changing';
+
+      area.transition().style('left', tgt).duration(_duration).on("end", () => {
+         if (fast_close) return;
+         this.browser_visible = visible_at_the_end;
+         if (visible_at_the_end) this.setButtonsPosition();
+      });
+
+      if (!visible_at_the_end)
+         main.select(".jsroot_browser_btns").transition().style('left', '7px').style('top', '7px').duration(_duration);
+
+      if (!vsepar.empty()) {
+         vsepar.transition().style('left', tgt_separ).duration(_duration);
+         drawing.transition().style('left', tgt_drawing).duration(_duration).on("end", this.checkResize.bind(this));
+      }
+
+      if (this.status_layout && (this.browser_kind == 'fix')) {
+         main.select(".jsroot_h_separator").transition().style('left', tgt_drawing).duration(_duration);
+         main.select(".jsroot_status_area").transition().style('left', tgt_drawing).duration(_duration);
+      }
+   }
+
+   /** @summary Adjust browser size */
+   BrowserLayout.prototype.adjustBrowserSize = function(onlycheckmax) {
+      if (!this.gui_div || (this.browser_kind !== "float")) return;
+
+      let main = d3.select("#" + this.gui_div + " .jsroot_browser");
+      if (main.empty()) return;
+
+      let area = main.select(".jsroot_browser_area"),
+          cont = main.select(".jsroot_browser_hierarchy"),
+          chld = d3.select(cont.node().firstChild);
+
+      if (onlycheckmax) {
+         if (area.node().parentNode.clientHeight - 10 < area.node().clientHeight)
+            area.style('bottom', '0px').style('top','0px');
+         return;
+      }
+
+      if (chld.empty()) return;
+      let h1 = cont.node().clientHeight,
+          h2 = chld.node().clientHeight;
+
+      if ((h2!==undefined) && (h2 < h1*0.7)) area.style('bottom', '');
+   }
 
 
    // ==============================================================================
