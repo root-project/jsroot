@@ -41,7 +41,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          d3.select("#"+this.gui_div+"_drawing").style('left','0px'); // reset size
          main.select(".jsroot_h_separator").style('left','0px');
          d3.select("#"+this.gui_div+"_status").style('left','0px'); // reset left
-         pthis.checkResize();
+         this.checkResize();
       }
 
       this.browser_kind = kind;
@@ -86,55 +86,24 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
                .classed("jsroot_separator", true).classed('jsroot_v_separator', true)
                .style('position', 'absolute').style('top',0).style('bottom',0);
 
-        let drag_move = d3.drag().subject(Object), lpos = 0;
-
-        drag_move.on("start", function(evnt) {
-            vsepar.style('background-color','grey');
-            let s = vsepar.style('left');
-            lpos = parseInt(s.substr(0,s.length-2));
-        }).on("drag", function(evnt) {
-            lpos += evnt.dx;
-            pthis.setButtonsPosition();
-            pthis.adjustSeparators(Math.round(lpos), null);
-        }).on("end", function(evnt) {
+        let drag_move = d3.drag().on("start", () => {
+            this._vsepar_move = this._vsepar_position;
+            vsepar.style('background-color', 'grey');
+        }).on("drag", evnt => {
+            this._vsepar_move += evnt.dx;
+            this.setButtonsPosition();
+            this.adjustSeparators(Math.round(this._vsepar_move), null);
+        }).on("end", () => {
+            delete this._vsepar_move;
             vsepar.style('background-color', null);
-            pthis.checkResize();
+            this.checkResize();
         });
 
         vsepar.call(drag_move);
-        
-        // need to get touches events handling in drag 
+
+        // need to get touches events handling in drag
         if (JSROOT.browser.touches)
-           main.on("touchmove", function() { }); 
-
-/*
-       vsepar.node().addEventListener("touchmove", function(evnt) {
-            d3.select(".jsroot_draw_area").append("p").text(`touchmove ${JSON.stringify(evt.changedTouches)}`);
-        }, false);
-
-       vsepar.node().addEventListener("touchstart", function(evnt) {
-            d3.select(".jsroot_draw_area").append("p").text(`touchstart 10:14`);
-        }, false);
-
-       vsepar.node().addEventListener("touchend", function(evnt) {
-            d3.select(".jsroot_draw_area").append("p").text(`touchend`);
-        }, false);
-*/
-/*
-        // creation of vertical separator
-        $(vsepar.node()).draggable({
-           axis: "x" , cursor: "ew-resize",
-           containment: "parent",
-           helper : function() { return $(this).clone().css('background-color','grey'); },
-           drag: function(event,ui) {
-              pthis.setButtonsPosition();
-              pthis.adjustSeparators(ui.position.left, null);
-           },
-           stop: function() {
-              pthis.checkResize();
-           }
-        });
-*/
+           main.on("touchmove", function() { });
 
         this.adjustSeparators(250, null, true, true);
      }
@@ -295,8 +264,6 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
 
          let hsepar = main.select(".jsroot_h_separator");
 
-         $(hsepar.node()).draggable("destroy");
-
          hsepar.remove();
          line.remove();
 
@@ -327,18 +294,23 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
                        .classed("jsroot_separator", true).classed("jsroot_h_separator", true)
                       .style('position','absolute').style('left',left_pos).style('right',0).style('bottom','20px').style('height','5px');
 
-      let pthis = this;
-
-      $(hsepar.node()).draggable({
-         axis: "y" , cursor: "ns-resize", containment: "parent",
-         helper: function() { return $(this).clone().css('background-color','grey'); },
-         drag: function(event,ui) {
-            pthis.adjustSeparators(null, -ui.position.top);
-         },
-         stop: function(/*event,ui*/) {
-            pthis.checkResize();
-         }
+      let drag_move = d3.drag().on("start", () => {
+          this._hsepar_move = this._hsepar_position;
+          hsepar.style('background-color', 'grey');
+      }).on("drag", evnt => {
+          this._hsepar_move -= evnt.dy; // hsepar is position from bottom
+          this.adjustSeparators(null, Math.max(5, Math.round(this._hsepar_move)));
+      }).on("end", () => {
+          delete this._hsepar_move;
+          hsepar.style('background-color', null);
+          this.checkResize();
       });
+
+      hsepar.call(drag_move);
+
+      // need to get touches events handling in drag
+      if (JSROOT.browser.touches)
+         main.on("touchmove", function() { });
 
       if (!height || (typeof height === 'string')) height = this.last_hsepar_height || 20;
 
@@ -350,7 +322,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
       this.status_layout = new JSROOT.GridDisplay(id, 'horizx4_1213');
 
       let frame_titles = ['object name','object title','mouse coordinates','object info'];
-      for (let k=0;k<4;++k)
+      for (let k = 0; k < 4; ++k)
          d3.select(this.status_layout.getGridFrame(k)).attr('title', frame_titles[k]).style('overflow','hidden')
            .append("label").attr("class","jsroot_status_label");
 
@@ -382,13 +354,17 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          let elem = main.select(".jsroot_h_separator"), hlimit = 0;
 
          if (!elem.empty()) {
-            if (hsepar < 0) hsepar += ($(main.node()).outerHeight(true) - w);
+            let maxh = main.node().clientHeight - w;
+            if (hsepar < 0) hsepar += maxh;
             if (hsepar < 5) hsepar = 5;
+            if (hsepar > maxh) hsepar = maxh;
             this.last_hsepar_height = hsepar;
             elem.style('bottom', hsepar+'px').style('height', w+'px');
             d3.select("#" + this.gui_div + "_status").style('height', hsepar+'px');
             hlimit = (hsepar+w) + 'px';
          }
+
+         this._hsepar_position = hsepar;
 
          d3.select("#" + this.gui_div + "_drawing").style('bottom',hlimit);
       }
@@ -396,6 +372,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
       if (vsepar!==null) {
          vsepar = parseInt(vsepar);
          if (vsepar < 50) vsepar = 50;
+         this._vsepar_position = vsepar;
          main.select(".jsroot_browser_area").style('width',(vsepar-5)+'px');
          d3.select("#" + this.gui_div + "_drawing").style('left',(vsepar+w)+'px');
          main.select(".jsroot_h_separator").style('left', (vsepar+w)+'px');
@@ -419,7 +396,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
       if (!this.status_layout.first_check) {
          this.status_layout.first_check = true;
          let maxh = 0;
-         for (let n=0;n<4;++n)
+         for (let n = 0; n < 4; ++n)
             maxh = Math.max(maxh, $(this.status_layout.getGridFrame(n)).children('label').outerHeight());
          if ((maxh>5) && ((maxh>this.last_hsepar_height) || (maxh<this.last_hsepar_height+5)))
             this.adjustSeparators(null, maxh, true);
