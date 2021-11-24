@@ -639,6 +639,16 @@
    font-size: 20px;
 }
 
+.jsroot_browser_resize {
+   position: absolute;
+   right: 3px;
+   bottom: 3px;
+   margin-bottom: 0px;
+   margin-right: 0px;
+   opacity: 0.5;
+   cursor: se-resize;
+}
+
 .jsroot_float_browser {
 	border: solid 3px white;
 }

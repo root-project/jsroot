@@ -676,7 +676,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           .style('overflow', 'hidden')
           .style('padding-left','5px')
           .style('display','flex').style('flex-direction', 'column')   /* use the flex model */
-          .html("<p class='jsroot_browser_title'>title</p>" +  guiCode);
+          .html("<p class='jsroot_browser_title'>title</p><div class='jsroot_browser_resize' style='display:none'>&#9727</div>" + guiCode);
    }
 
    /** @summary Check if there is browser content */
@@ -725,7 +725,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    BrowserLayout.prototype.setBrowserTitle = function(title) {
       let main = d3.select("#" + this.gui_div + " .jsroot_browser");
       if (!main.empty())
-         main.select(".jsroot_browser_title").text(title);
+         main.select(".jsroot_browser_title").text(title).style('cursor',this.browser_kind == 'flex' ? "move" : null);
    }
 
    /** @summary Toggle browser kind
@@ -985,6 +985,26 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if ((h2!==undefined) && (h2 < h1*0.7)) area.style('bottom', '');
    }
 
+   /** @summary Set buttons position */
+   BrowserLayout.prototype.setButtonsPosition = function() {
+      if (!this.gui_div) return;
+
+      let main = d3.select("#"+this.gui_div+" .jsroot_browser"),
+          btns = main.select(".jsroot_browser_btns"),
+          top = 7, left = 7;
+
+      if (btns.empty()) return;
+
+      if (this.browser_visible) {
+         let area = main.select(".jsroot_browser_area");
+             // off0 = jmain.offset(), off1 = area.offset();
+         top = area.node().offsetTop - main.node().offsetTop + 7;
+
+         left = area.node().offsetLeft - main.node().offsetLeft + area.node().clientWidth - 27;
+      }
+
+      btns.style('left', left+'px').style('top', top+'px');
+   }
 
    // ==============================================================================
 

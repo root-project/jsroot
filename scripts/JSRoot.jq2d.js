@@ -24,20 +24,19 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
       }
 
       let main = d3.select("#"+this.gui_div+" .jsroot_browser"),
-          jmain = $(main.node()),
-          area = jmain.find(".jsroot_browser_area"),
-          pthis = this;
+          area = main.select(".jsroot_browser_area");
 
       if (this.browser_kind === "float") {
-          area.css('bottom', '0px')
-              .css('top', '0px')
-              .css('width','').css('height','')
-              .toggleClass('jsroot_float_browser', false)
-              .resizable("destroy")
-              .draggable("destroy");
+          area.style('bottom', '0px')
+              .style('top', '0px')
+              .style('width','').style('height','')
+              .classed('jsroot_float_browser', false);
+
+           //jarea.resizable("destroy")
+           //     .draggable("destroy");
       } else if (this.browser_kind === "fix") {
          main.select(".jsroot_v_separator").remove();
-         area.css('left', '0px');
+         area.style('left', '0px');
          d3.select("#"+this.gui_div+"_drawing").style('left','0px'); // reset size
          main.select(".jsroot_h_separator").style('left','0px');
          d3.select("#"+this.gui_div+"_status").style('left','0px'); // reset left
@@ -47,39 +46,54 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
       this.browser_kind = kind;
       this.browser_visible = true;
 
-      if (kind==="float") {
-         area.css('bottom', '40px')
-           .toggleClass('jsroot_float_browser', true)
-           .resizable({
-              containment: "parent",
-              minWidth: 100,
-              resize: function(/* event, ui */) {
-                 pthis.setButtonsPosition();
-              },
-              stop: function( event, ui ) {
-                 let bottom = $(this).parent().innerHeight() - ui.position.top - ui.size.height;
-                 if (bottom < 7) $(this).css('height', "").css('bottom', 0);
-              }
-         })
-         .draggable({
-             containment: "parent",
-             handle : $("#"+this.gui_div).find(".jsroot_browser_title"),
-             snap: true,
-             snapMode: "inner",
-             snapTolerance: 10,
-             drag: function(/* event, ui */) {
-                pthis.setButtonsPosition();
-             },
-             stop: function(/* event, ui */) {
-                let bottom = $(this).parent().innerHeight() - $(this).offset().top - $(this).outerHeight();
-                if (bottom < 7) $(this).css('height', "").css('bottom', 0);
-             }
-          });
-         this.adjustBrowserSize();
+      main.select(".jsroot_browser_resize").style("display", (kind === "float") ? null : "none");
+      main.select(".jsroot_browser_title").style("cursor", (kind === "float") ? "move" : null);
+
+      if (kind === "float") {
+         area.style('bottom', '40px').classed('jsroot_float_browser', true);
+        let drag_move = d3.drag().on("start", () => {
+           let sl = area.style('left'), st = area.style('top');
+           this._float_left = parseInt(sl.substr(0,sl.length-2));
+           this._float_top = parseInt(st.substr(0,st.length-2));
+           this._max_left = main.node().clientWidth - area.node().offsetWidth - 1;
+           this._max_top = main.node().clientHeight - area.node().offsetHeight - 1;
+
+        }).filter(evnt => {
+            return main.select(".jsroot_browser_title").node() === evnt.target;
+        }).on("drag", evnt => {
+           this._float_left += evnt.dx;
+           this._float_top += evnt.dy;
+
+           area.style('left', Math.min(Math.max(0, this._float_left), this._max_left) + "px")
+               .style('top', Math.min(Math.max(0, this._float_top), this._max_top) + "px");
+        }).on("end", () => {
+        });
+
+        let drag_resize = d3.drag().on("start", () => {
+           let sw = area.style('width');
+           this._float_width = parseInt(sw.substr(0,sw.length-2));
+           this._float_height = area.node().clientHeight;
+           this._max_width = 1000;
+           this._max_height = 1000;
+
+        }).on("drag", evnt => {
+           this._float_width += evnt.dx;
+           this._float_height += evnt.dy;
+
+           area.style('width', Math.min(Math.max(0, this._float_width), this._max_width) + "px")
+               .style('height', Math.min(Math.max(0, this._float_height), this._max_height) + "px");
+        }).on("end", () => {
+        });
+
+
+        main.call(drag_move);
+        main.select(".jsroot_browser_resize").call(drag_resize);
+
+        this.adjustBrowserSize();
 
      } else {
 
-        area.css('left',0).css('top',0).css('bottom',0).css('height','');
+        area.style('left',0).style('top',0).style('bottom',0).style('height','');
 
         let vsepar =
            main.append('div')
@@ -111,26 +125,6 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
       this.setButtonsPosition();
 
       return Promise.resolve(this);
-   }
-
-   /** @summary Set buttons position */
-   BrowserLayout.prototype.setButtonsPosition = function() {
-      if (!this.gui_div) return;
-
-      let jmain = $("#"+this.gui_div+" .jsroot_browser"),
-          btns = jmain.find(".jsroot_browser_btns"),
-          top = 7, left = 7;
-
-      if (!btns.length) return;
-
-      if (this.browser_visible) {
-         let area = jmain.find(".jsroot_browser_area"),
-             off0 = jmain.offset(), off1 = area.offset();
-         top = off1.top - off0.top + 7;
-         left = off1.left - off0.left + area.innerWidth() - 27;
-      }
-
-      btns.css('left', left+'px').css('top', top+'px');
    }
 
    // ==================================================
