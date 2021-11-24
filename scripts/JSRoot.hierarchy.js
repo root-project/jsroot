@@ -737,12 +737,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
    }
 
-    /** @summary Toggle browser kind */
-   BrowserLayout.prototype.toggleBrowserKind = function(kind) {
-      if (!this.gui_div) return Promise.resolve(null);
-      return JSROOT.require('jq2d').then(() => this.toggleBrowserKind(kind));
-   }
-
    /** @summary Creates status line */
    BrowserLayout.prototype.createStatusLine = function(height, mode) {
 
@@ -823,7 +817,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       let frame_titles = ['object name','object title','mouse coordinates','object info'];
       for (let k = 0; k < 4; ++k)
-         d3.select(this.status_layout.getGridFrame(k)).attr('title', frame_titles[k]).style('overflow','hidden')
+         d3.select(this.status_layout.getGridFrame(k))
+           .attr('title', frame_titles[k]).style('overflow','hidden')
            .append("label").attr("class","jsroot_status_label");
 
       this.status_handler = this.showStatus.bind(this);
@@ -854,10 +849,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          let elem = main.select(".jsroot_h_separator"), hlimit = 0;
 
          if (!elem.empty()) {
-            let maxh = main.node().clientHeight - w;
-            if (hsepar < 0) hsepar += maxh;
             if (hsepar < 5) hsepar = 5;
-            if (hsepar > maxh) hsepar = maxh;
+
+            let maxh = main.node().clientHeight - w;
+            if (maxh > 0) {
+               if (hsepar < 0) hsepar += maxh;
+               if (hsepar > maxh) hsepar = maxh;
+            }
+
             this.last_hsepar_height = hsepar;
             elem.style('bottom', hsepar+'px').style('height', w+'px');
             d3.select("#" + this.gui_div + "_status").style('height', hsepar+'px');
@@ -1004,6 +1003,119 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
 
       btns.style('left', left+'px').style('top', top+'px');
+   }
+
+      /** @summary Toggle browser kind */
+   BrowserLayout.prototype.toggleBrowserKind = function(kind) {
+
+      if (!this.gui_div)
+         return Promise.resolve(null);
+
+      if (!kind) {
+         if (!this.browser_kind)
+            return Promise.resolve(null);
+         kind = (this.browser_kind === "float") ? "fix" : "float";
+      }
+
+      let main = d3.select("#"+this.gui_div+" .jsroot_browser"),
+          area = main.select(".jsroot_browser_area");
+
+      if (this.browser_kind === "float") {
+          area.style('bottom', '0px')
+              .style('top', '0px')
+              .style('width','').style('height','')
+              .classed('jsroot_float_browser', false);
+
+           //jarea.resizable("destroy")
+           //     .draggable("destroy");
+      } else if (this.browser_kind === "fix") {
+         main.select(".jsroot_v_separator").remove();
+         area.style('left', '0px');
+         d3.select("#"+this.gui_div+"_drawing").style('left','0px'); // reset size
+         main.select(".jsroot_h_separator").style('left','0px');
+         d3.select("#"+this.gui_div+"_status").style('left','0px'); // reset left
+         this.checkResize();
+      }
+
+      this.browser_kind = kind;
+      this.browser_visible = true;
+
+      main.select(".jsroot_browser_resize").style("display", (kind === "float") ? null : "none");
+      main.select(".jsroot_browser_title").style("cursor", (kind === "float") ? "move" : null);
+
+      if (kind === "float") {
+         area.style('bottom', '40px').classed('jsroot_float_browser', true);
+        let drag_move = d3.drag().on("start", () => {
+           let sl = area.style('left'), st = area.style('top');
+           this._float_left = parseInt(sl.substr(0,sl.length-2));
+           this._float_top = parseInt(st.substr(0,st.length-2));
+           this._max_left = main.node().clientWidth - area.node().offsetWidth - 1;
+           this._max_top = main.node().clientHeight - area.node().offsetHeight - 1;
+
+        }).filter(evnt => {
+            return main.select(".jsroot_browser_title").node() === evnt.target;
+        }).on("drag", evnt => {
+           this._float_left += evnt.dx;
+           this._float_top += evnt.dy;
+
+           area.style('left', Math.min(Math.max(0, this._float_left), this._max_left) + "px")
+               .style('top', Math.min(Math.max(0, this._float_top), this._max_top) + "px");
+        });
+
+        let drag_resize = d3.drag().on("start", () => {
+           let sw = area.style('width');
+           this._float_width = parseInt(sw.substr(0,sw.length-2));
+           this._float_height = area.node().clientHeight;
+           this._max_width = main.node().clientWidth - area.node().offsetLeft - 1;
+           this._max_height = main.node().clientHeight - area.node().offsetTop - 1;
+
+        }).on("drag", evnt => {
+           this._float_width += evnt.dx;
+           this._float_height += evnt.dy;
+
+           area.style('width', Math.min(Math.max(100, this._float_width), this._max_width) + "px")
+               .style('height', Math.min(Math.max(100, this._float_height), this._max_height) + "px");
+        });
+
+        main.call(drag_move);
+        main.select(".jsroot_browser_resize").call(drag_resize);
+
+        this.adjustBrowserSize();
+
+     } else {
+
+        area.style('left', 0).style('top', 0).style('bottom', 0).style('height', null);
+
+        let vsepar =
+           main.append('div')
+               .classed("jsroot_separator", true).classed('jsroot_v_separator', true)
+               .style('position', 'absolute').style('top',0).style('bottom',0);
+
+        let drag_move = d3.drag().on("start", () => {
+            this._vsepar_move = this._vsepar_position;
+            vsepar.style('background-color', 'grey');
+        }).on("drag", evnt => {
+            this._vsepar_move += evnt.dx;
+            this.setButtonsPosition();
+            this.adjustSeparators(Math.round(this._vsepar_move), null);
+        }).on("end", () => {
+            delete this._vsepar_move;
+            vsepar.style('background-color', null);
+            this.checkResize();
+        });
+
+        vsepar.call(drag_move);
+
+        // need to get touches events handling in drag
+        if (JSROOT.browser.touches)
+           main.on("touchmove", function() { });
+
+        this.adjustSeparators(250, null, true, true);
+     }
+
+      this.setButtonsPosition();
+
+      return Promise.resolve(this);
    }
 
    // ==============================================================================

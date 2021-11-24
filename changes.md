@@ -1,5 +1,10 @@
 # JSROOT changelog
 
+## Changes in dev
+1. Full avoid jQuery on starting GUI, load only for menu or special displays
+2. Provide bootstrap-based menu - optionally
+
+
 ## Changes in 6.3.0
 1. Fully rewrite TLatex parsing, use svg elements instead of plain text/tspan
 2. Make TLatex reliably working in node.js, does not depend from availability of canvas component
