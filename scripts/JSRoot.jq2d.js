@@ -95,14 +95,31 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
         }).on("drag", function(evnt) {
             lpos += evnt.dx;
             pthis.setButtonsPosition();
-            pthis.adjustSeparators(lpos, null);
+            pthis.adjustSeparators(Math.round(lpos), null);
         }).on("end", function(evnt) {
             vsepar.style('background-color', null);
             pthis.checkResize();
         });
 
         vsepar.call(drag_move);
+        
+        // need to get touches events handling in drag 
+        if (JSROOT.browser.touches)
+           main.on("touchmove", function() { }); 
 
+/*
+       vsepar.node().addEventListener("touchmove", function(evnt) {
+            d3.select(".jsroot_draw_area").append("p").text(`touchmove ${JSON.stringify(evt.changedTouches)}`);
+        }, false);
+
+       vsepar.node().addEventListener("touchstart", function(evnt) {
+            d3.select(".jsroot_draw_area").append("p").text(`touchstart 10:14`);
+        }, false);
+
+       vsepar.node().addEventListener("touchend", function(evnt) {
+            d3.select(".jsroot_draw_area").append("p").text(`touchend`);
+        }, false);
+*/
 /*
         // creation of vertical separator
         $(vsepar.node()).draggable({
