@@ -14,11 +14,11 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
    /** @summary Toggle browser kind */
    BrowserLayout.prototype.toggleBrowserKind = function(kind) {
 
-      if (!this.gui_div) 
+      if (!this.gui_div)
          return Promise.resolve(null);
 
       if (!kind) {
-         if (!this.browser_kind) 
+         if (!this.browser_kind)
             return Promise.resolve(null);
          kind = (this.browser_kind === "float") ? "fix" : "float";
       }
@@ -85,6 +85,25 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
            main.append('div')
                .classed("jsroot_separator", true).classed('jsroot_v_separator', true)
                .style('position', 'absolute').style('top',0).style('bottom',0);
+
+        let drag_move = d3.drag().subject(Object), lpos = 0;
+
+        drag_move.on("start", function(evnt) {
+            vsepar.style('background-color','grey');
+            let s = vsepar.style('left');
+            lpos = parseInt(s.substr(0,s.length-2));
+        }).on("drag", function(evnt) {
+            lpos += evnt.dx;
+            pthis.setButtonsPosition();
+            pthis.adjustSeparators(lpos, null);
+        }).on("end", function(evnt) {
+            vsepar.style('background-color', null);
+            pthis.checkResize();
+        });
+
+        vsepar.call(drag_move);
+
+/*
         // creation of vertical separator
         $(vsepar.node()).draggable({
            axis: "x" , cursor: "ew-resize",
@@ -94,16 +113,17 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
               pthis.setButtonsPosition();
               pthis.adjustSeparators(ui.position.left, null);
            },
-           stop: function(/* event,ui */) {
+           stop: function() {
               pthis.checkResize();
            }
         });
+*/
 
         this.adjustSeparators(250, null, true, true);
      }
 
       this.setButtonsPosition();
-      
+
       return Promise.resolve(this);
    }
 
@@ -487,7 +507,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
                                  .attr('can_resize','height') // inform JSROOT that it can resize height of the
                                  .css('position','relative') // this required for correct positioning of 3D canvas in WebKit
                                  .get(0);
-                                 
+
          return this.afterCreateFrame(frame);
        }
 
@@ -795,7 +815,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          this.cnt++;
 
          let frame = $("#" + subid + "_cont").attr('frame_title', title).get(0);
-         
+
          return this.afterCreateFrame(frame);
       }
 
@@ -895,7 +915,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          }
       });
    }
-   
+
    // ===================================================
 
    /** @summary Create MDI display
@@ -903,13 +923,13 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
    JSROOT.create_jq_mdi = function(frameid, kind) {
       if (kind == "tabs")
          return new TabsDisplay(frameid);
-         
+
       if (kind.indexOf("flex") == 0)
          return new FlexibleDisplay(frameid);
-      
+
       if (kind.indexOf("coll") == 0)
          return new CollapsibleDisplay(frameid);
-      
+
       return new JSROOT.GridDisplay(frameid, kind);
    }
 
