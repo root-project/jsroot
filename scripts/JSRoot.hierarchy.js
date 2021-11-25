@@ -802,7 +802,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       hsepar.call(drag_move);
 
       // need to get touches events handling in drag
-      if (JSROOT.browser.touches)
+      if (JSROOT.browser.touches && !main.on("touchmove"))
          main.on("touchmove", function() { });
 
       if (!height || (typeof height === 'string')) height = this.last_hsepar_height || 20;
@@ -1110,7 +1110,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
         vsepar.call(drag_move);
 
         // need to get touches events handling in drag
-        if (JSROOT.browser.touches)
+        if (JSROOT.browser.touches && !main.on("touchmove"))
            main.on("touchmove", function() { });
 
         this.adjustSeparators(250, null, true, true);
@@ -4438,73 +4438,71 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                this.createSeparator(handle, main, handle.groups[cnt]);
       }
 
-      /** @summary Resize groupid
-        * @private */
-      resizeGroup(topelem, grid) {
-         let sel = d3.select(topelem).select("[groupid='"+grid+"']");
-         if (!sel.classed('jsroot_newgrid')) sel = sel.select(".jsroot_newgrid");
-         sel.each(function() { JSROOT.resize(this); });
-      }
-
-      /** @summary Handle separarot movment
+      /** @summary Handle interactive sepearator movement
         * @private */
       handleSeparator(elem, action) {
          let separ = d3.select(elem),
+             parent = elem.parentNode,
              handle = separ.property('handle'),
-             id = parseInt(separ.attr('separator-id'));
+             id = separ.property('separator_id'),
+             group = handle.groups[id];
+
+          const setGroupSize = grid => {
+             let name = handle.vertical ? 'height' : 'width',
+                size = handle.groups[grid].size+'%';
+             d3.select(parent).select("[groupid='"+grid+"']").style(name, size)
+                              .select(".jsroot_separator").style(name, size);
+          }, resizeGroup = grid => {
+             let sel = d3.select(parent).select("[groupid='"+grid+"']");
+             if (!sel.classed('jsroot_newgrid')) sel = sel.select(".jsroot_newgrid");
+             sel.each(function() { JSROOT.resize(this); });
+          }
 
          if (action == "start") {
-            handle.groups[id].startpos = handle.groups[id].position;
-            handle.groups[id].ddd = 0;
+            group.startpos = group.position;
+            group.acc_drag = 0;
             return;
          }
 
          if (action == "end") {
-            if (Math.abs(handle.groups[id].startpos - handle.groups[id].position) >= 0.5) {
-               this.resizeGroup(elem.parentNode, id-1);
-               this.resizeGroup(elem.parentNode, id);
+            if (Math.abs(group.startpos - group.position) >= 0.5) {
+               resizeGroup(id-1);
+               resizeGroup(id);
              }
              return;
          }
 
-         let pos = handle.groups[id].position;
+         let pos = group.position;
 
          if (action == "restore") {
-             pos = handle.groups[id].position0;
+             pos = group.position0;
          } else if (handle.vertical) {
-             handle.groups[id].ddd += action.dy;
-             pos = handle.groups[id].startpos + ((handle.groups[id].ddd + 2) / elem.parentNode.clientHeight) * 100;
+             group.acc_drag += action.dy;
+             pos = group.startpos + ((group.acc_drag + 2) / parent.clientHeight) * 100;
          } else {
-             handle.groups[id].ddd += action.dx;
-             pos = handle.groups[id].startpos + ((handle.groups[id].ddd + 2) / elem.parentNode.clientWidth) * 100;
+             group.acc_drag += action.dx;
+             pos = group.startpos + ((group.acc_drag + 2) / parent.clientWidth) * 100;
          }
 
-         let diff = handle.groups[id].position - pos;
+         let diff = group.position - pos;
 
          if (Math.abs(diff) < 0.3) return; // if no significant change, do nothing
 
          // do not change if size too small
-         if (Math.min(handle.groups[id-1].size-diff, handle.groups[id].size+diff) < 5) return;
+         if (Math.min(handle.groups[id-1].size-diff, group.size+diff) < 3) return;
 
          handle.groups[id-1].size -= diff;
-         handle.groups[id].size += diff;
-         handle.groups[id].position = pos;
+         group.size += diff;
+         group.position = pos;
 
          separ.style(handle.vertical ? 'top' : 'left', `calc(${pos}% - 2px)`);
 
-         function setGroupSize(prnt, grid) {
-            let name = handle.vertical ? 'height' : 'width',
-                size = handle.groups[grid].size+'%';
-            d3.select(prnt).select("[groupid='"+grid+"']").style(name, size)
-                           .select(".jsroot_separator").style(name, size);
-         }
-
-         setGroupSize(elem.parentNode, id-1);
-         setGroupSize(elem.parentNode, id);
+         setGroupSize(id-1);
+         setGroupSize(id);
 
          if (action == "restore") {
-             this.resizeGroup(elem.parentNode, id-1);
-             this.resizeGroup(elem.parentNode, id);
+             resizeGroup(id-1);
+             resizeGroup(id);
          }
 
       }
@@ -4517,32 +4515,22 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          separ.classed('jsroot_separator', true)
               .classed(handle.vertical ? 'jsroot_hline' : 'jsroot_vline', true)
               .property('handle', handle)
-              .property('group', group)
-              .attr('separator-id', group.id)
+              .property('separator_id', group.id)
               .style('position', 'absolute')
               .style(handle.vertical ? 'top' : 'left', `calc(${group.position}% - 2px)`)
               .style(handle.vertical ? 'width' : 'height', (handle.size || 100)+"%")
               .style(handle.vertical ? 'height' : 'width', '5px')
               .style('cursor', handle.vertical ? "ns-resize" : "ew-resize");
 
-         let pthis = this;
+         let pthis = this, drag_move =
+           d3.drag().on("start", function() { pthis.handleSeparator(this, "start"); })
+                    .on("drag", function(evnt) { pthis.handleSeparator(this, evnt); })
+                    .on("end", function() { pthis.handleSeparator(this, "end"); });
 
-         let drag_move = d3.drag().on("start", function() {
-            pthis.handleSeparator(this, "start");
-         }).on("drag", function(evnt) {
-            pthis.handleSeparator(this, evnt);
-         }).on("end", function() {
-            pthis.handleSeparator(this, "end");
-         });
-
-         separ.call(drag_move);
-
-         separ.on("dblclick", function() {
-            pthis.handleSeparator(this, "restore");
-         });
+         separ.call(drag_move).on("dblclick", function() { pthis.handleSeparator(this, "restore"); });
 
          // need to get touches events handling in drag
-         if (JSROOT.browser.touches)
+         if (JSROOT.browser.touches && !main.on("touchmove"))
             main.on("touchmove", function() { });
       }
 
