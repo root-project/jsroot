@@ -770,10 +770,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       /** @summary Load bootstrap functionality, required for menu
         * @private */
       loadBS(with_js) {
-         let promise = with_js ? JSROOT.require('bootstrap') : Promise.resolve(true);
+         let ext = 'https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.0.2/';
 
-         return promise.then(() => JSROOT.loadScript(JSROOT.source_dir + 'style/bootstrap.min.css'))
-                       .catch(() => JSROOT.loadScript('https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.0.2/css/bootstrap.min.css'))
+         let promise = JSROOT._.bs_path ? Promise.resolve(true) :
+                         JSROOT.loadScript(JSROOT.source_dir + 'style/bootstrap.min.css')
+                               .then(() => { JSROOT._.bs_path = JSROOT.source_dir + 'scripts/'; })
+                               .catch(() => { JSROOT._.bs_path = ext + "js/"; return JSROOT.loadScript(ext + 'css/bootstrap.min.css'); });
+         return promise.then(() => (!with_js || (typeof bootstrap != 'undefined')) ? true : JSROOT.loadScript(JSROOT._.bs_path + 'bootstrap.bundle.min.js'));
       }
 
       load() { return this.loadBS().then(() => this); }
