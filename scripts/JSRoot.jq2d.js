@@ -427,13 +427,10 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
       if (kind == "tabs")
          return new TabsDisplay(frameid);
 
-      if (kind.indexOf("flex") == 0)
-         return new FlexibleDisplay(frameid);
-
       if (kind.indexOf("coll") == 0)
          return new CollapsibleDisplay(frameid);
 
-      return new JSROOT.GridDisplay(frameid, kind);
+      return new FlexibleDisplay(frameid);
    }
 
 
