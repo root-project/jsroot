@@ -53,9 +53,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.element = null;
          this.cnt = 0;
       }
-      
+
       load() { return Promise.resolve(this); }
-      
+
       /** @summary Returns object with mouse event position when context menu was actiavted
        * @desc Return object will have members "clientX" and "clientY" */
       getEventPosition() { return this.show_evnt; }
@@ -66,7 +66,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       /** @summary Returns menu size */
       size() { return this.cnt-1; }
-      
+
       /** @summary Close and remove menu */
       remove() {
          if (this.element!==null) {
@@ -445,19 +445,19 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          }
          this.add("endsub:");
       }
-      
+
       /** @summary Run modal dialog
         * @private */
       runModal() {
          throw Error('runModal() must be reimplemented');
       }
-      
+
       /** @summary Show modal info dialog
         * @param {String} title - title
         * @param {String} message - message
         * @protected */
       info(title, message) {
-         return this.runModal(title,`<p tabindex="0">${message}</p>`, { height: 120, width: 400, resizable: true }); 
+         return this.runModal(title,`<p tabindex="0">${message}</p>`, { height: 120, width: 400, resizable: true });
       }
 
       /** @summary Input value
@@ -467,12 +467,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
         * @param {string} [kind] - use "text" (default), "number", "float" or "int"
         * @protected */
       input(title, value, kind) {
-         
+
          if (!kind) kind = "text";
          let inp_type = (kind == "int") ? "number" : "text";
          if ((value === undefined) || (value === null)) value = "";
 
-         let main_content = 
+         let main_content =
             `<form>
                 <fieldset style="padding:0; border:0">
                    <input type="${inp_type}" tabindex="0" value="${value}" style="width:100%;display:block" class="jsroot_dlginp"/>
@@ -480,7 +480,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
              </form>`;
 
          return new Promise(resolveFunc => {
-            
+
             this.runModal(title, main_content, { btns: true, height: 150, width: 400 }).then(element => {
                if (!element) return;
                let val = element.querySelector(`.jsroot_dlginp`).value;
@@ -495,8 +495,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                } else {
                   resolveFunc(val);
               }
-            }); 
-            
+            });
+
          });
       }
 
@@ -513,11 +513,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             main_content += `<label for="${dlg_id}_inp${n}">${arg.fName}</label>
                              <input type="text" tabindex="0" id="${dlg_id}_inp${n}" value="${arg.fValue}" style="width:100%;display:block"/>`;
          }
-         
+
          main_content += '</fieldset></form>';
-            
+
          return new Promise(resolveFunc => {
-            
+
             this.runModal(method.fClassName + '::' + method.fName, main_content, { btns: true, height: 100 + method.fArgs.length*60, width: 400, resizable: true}).then(element => {
                if (!element) return;
                let args = "";
@@ -542,7 +542,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          });
 
       }
-      
+
       /** @summary Let input arguments from the Command
         * @returns {Promise} with command argument */
       showCommandArgsDialog(cmdname, args) {
@@ -553,15 +553,15 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             main_content += `<label for="${dlg_id}_inp${n}">arg${n+1}</label>
                              <input type="text" tabindex="0" id="${dlg_id}_inp${n}" value="${args[n]}" style="width:100%;display:block"/>`;
          }
-         
+
          main_content += '</fieldset></form>';
-            
+
          return new Promise(resolveFunc => {
-            
+
             this.runModal("Arguments for command " + cmdname, main_content, { btns: true, height: 110 + args.length*60, width: 400, resizable: true}).then(element => {
-               if (!element) 
+               if (!element)
                   return resolveFunc(null);
-               
+
                let urlargs = "";
                for (let k = 0; k < args.length; ++k) {
                   let value = element.querySelector(`#${dlg_id}_inp${k}`).value;
@@ -587,26 +587,26 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
     */
 
    class JQueryMenu extends JSRootMenu {
-      
+
       constructor(painter, menuname, show_event) {
          super(painter, menuname, show_event);
-         
+
          this.code = "";
-         
+
          this.funcs = {};
-         
+
          this.ui_version = "1.12";
       }
 
-      /** @summary Load jQuery code 
-        * @private */      
+      /** @summary Load jQuery code
+        * @private */
       loadJQ() {
          return JSROOT.require(['jquery', 'jquery-ui']).then(arr => {
             if (typeof jQuery === 'undefined') globalThis.jQuery = arr[0];
             return JSROOT.loadScript('$$$style/jquery-ui');
          }).then(() => globalThis.jQuery);
       }
-      
+
      load() { return this.loadJQ().then($ => { this.ui_version = $.ui.version; return this; }); }
 
 
@@ -656,18 +656,18 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          let oldmenu = document.getElementById(this.menuname);
          if (oldmenu) oldmenu.remove();
-         
+
          return this.loadJQ().then($ => {
 
             this.element = document.createElement('ul');
             this.element.setAttribute('id', this.menuname);
             this.element.setAttribute('class', 'jsroot_ctxmenu');
             this.element.innerHTML = this.code;
-   
+
             document.body.appendChild(this.element);
 
             let menu = this, jqelement = $(this.element);
-   
+
             jqelement
                .css('left', event.clientX + window.pageXOffset)
                .css('top', event.clientY + window.pageYOffset)
@@ -701,18 +701,18 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             });
          });
       }
-      
+
       /** @summary Run modal element with jquery-ui */
       runModal(title, main_content, args) {
          if (!args) args = {};
          let dlg_id = this.menuname + "_dialog";
          let old_dlg = document.getElementById(dlg_id);
          if (old_dlg) old_dlg.remove();
-         
+
          let element = document.createElement('div');
          element.setAttribute('id', dlg_id);
          element.innerHTML = main_content;
-         document.body.appendChild(element);  
+         document.body.appendChild(element);
 
          return new Promise(resolveFunc => {
             this.loadJQ().then($ => {
@@ -722,7 +722,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                   dialog.dialog("close");
                   element.remove();
                }
-            
+
                dialog = $(element).dialog({
                   height: args.height || 150,
                   width: args.width || 400,
@@ -735,13 +735,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                   } : undefined,
                   close: () => dialog.remove()
                 });
-   
+
                 if (args.btns)
                    dialog.find("form").on("submit", event => {
                       event.preventDefault();
                       pressEnter();
                    });
-                
+
              });
           });
       }
@@ -756,76 +756,77 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
     * @desc Use {@link JSROOT.Painter.createMenu} to create instance of the menu
     * @private
     */
-   
+
    class BootstrapMenu extends JSRootMenu {
-      
+
       constructor(painter, menuname, show_event) {
          super(painter, menuname, show_event);
-         
+
          this.code = "";
          this.funcs = {};
          this.lvl = 0;
       }
 
       /** @summary Load bootstrap functionality, required for menu
-        * @private */      
+        * @private */
       loadBS(with_js) {
-         let req = [ JSROOT.source_dir + 'style/bootstrap.min.css' ];
-         if (with_js) req.push( JSROOT.source_dir + 'scripts/bootstrap.bundle.min.js' );
-         return JSROOT.loadScript(req); 
+         let promise = with_js ? JSROOT.require('bootstrap') : Promise.resolve(true);
+
+         return promise.then(() => JSROOT.loadScript(JSROOT.source_dir + 'style/bootstrap.min.css'))
+                       .catch(() => JSROOT.loadScript('https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.0.2/css/bootstrap.min.css'))
       }
-      
+
       load() { return this.loadBS().then(() => this); }
 
       /** @summary Add menu item
         * @param {string} name - item name
         * @param {function} func - func called when item is selected */
       add(name, arg, func, title) {
-         if (name == "separator") { 
-            this.code += '<hr class="dropdown-divider">'; 
-            return; 
+         if (name == "separator") {
+            this.code += '<hr class="dropdown-divider">';
+            return;
          }
 
          if (name.indexOf("header:")==0) {
             this.code += `<h6 class="dropdown-header">${name.substr(7)}</h6>`;
             return;
          }
-         
+
          let newlevel = false, extras = "", cl = "dropdown-item btn-sm", checked = "";
 
-         if (name=="endsub:") { 
+         if (name=="endsub:") {
             this.lvl--;
-            this.code += "</li>";  
-            this.code += "</ul>"; 
-            return; 
+            this.code += "</li>";
+            this.code += "</ul>";
+            return;
          }
          if (name.indexOf("sub:")==0) { name = name.substr(4); newlevel = true; }
 
          if (typeof arg == 'function') { func = arg; arg = name; }
 
-         if (name.indexOf("chk:")==0) { 
-            checked = '\u2713'; 
-            name  = name.substr(4); 
+         if (name.indexOf("chk:")==0) {
+            checked = '\u2713';
+            name  = name.substr(4);
          } else if (name.indexOf("unk:")==0) {
             name = name.substr(4);
-         } 
+         }
 
-         if (title) extras += ` title="${title}"`; 
+         if (title) extras += ` title="${title}"`;
          if (arg !== undefined) extras += ` arg="${arg}"`;
          if (newlevel) { extras += ` data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"`; cl += " dropdown-toggle"; }
 
          let item = `<button id="${this.menuname}${this.cnt}" ${extras} class="${cl}" type="button"><span style="width:1em;display:inline-block">${checked}</span>${name}</button>`;
-         
+
          if (newlevel) item = '<li class="dropend">' + item;
-                  else item = "<li>" + item + "</li>";  
+                  else item = "<li>" + item + "</li>";
 
          this.code += item;
-         
+
          if (newlevel) {
             this.code += `<ul class="dropdown-menu" aria-labelledby="${this.menuname}${this.cnt}">`;
-            this.lvl++; 
-         }  
-         
+            this.lvl++;
+         }
+
          if (typeof func == 'function') this.funcs[this.cnt] = func; // keep call-back function
 
          this.cnt++;
@@ -844,26 +845,26 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          return this.loadBS().then(() => {
 
-            let ww = window.innerWidth, wh = window.innerHeight; 
+            let ww = window.innerWidth, wh = window.innerHeight;
 
             this.element = document.createElement('div');
             this.element.id = this.menuname;
             this.element.setAttribute('class', "dropdown");
             this.element.innerHTML = `<ul class="dropdown-menu dropend" style="display:block">${this.code}</ul>`;
-            
+
             document.body.appendChild(this.element);
-            
+
             this.element.style.position = 'absolute';
             this.element.style.background = 'white';
             this.element.style.display = 'block';
             this.element.style.left = (event.clientX + window.pageXOffset) + 'px';
             this.element.style.top = (event.clientY + window.pageYOffset) + 'px';
-            
+
             let menu = this;
-            
+
             let myItems = this.element.getElementsByClassName('dropdown-item');
-            
-            for (let i=0; i<myItems.length; i++) 
+
+            for (let i=0; i<myItems.length; i++)
                myItems[i].addEventListener('click', function() {
                   let arg = this.getAttribute('arg'),
                       cnt = this.getAttribute('id').substr(menu.menuname.length),
@@ -876,7 +877,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                         func(arg);
                   }
                });
-               
+
             let myDropdown = this.element.getElementsByClassName('dropdown-toggle');
             for (let i=0; i < myDropdown.length; i++) {
                myDropdown[i].addEventListener('mouseenter', function() {
@@ -892,17 +893,17 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                   el.was_entered = false;
                   setTimeout(function() { if (!el.was_entered) el.style.display = 'none'; }, 200);
                });
-            }    
-           
+            }
+
             let myMenus = this.element.getElementsByClassName('dropdown-menu');
             for (let i = 0; i < myMenus.length; i++)
-               myMenus[i].addEventListener('mouseenter', function() {               
-                  this.was_entered = true; 
+               myMenus[i].addEventListener('mouseenter', function() {
+                  this.was_entered = true;
                });
 
 
             let newx = null, newy = null, rect = this.element.firstChild.getBoundingClientRect();
-            
+
             if (event.clientX + rect.width > ww) newx = ww - rect.width - 10;
             if (event.clientY + rect.height > wh) newy = wh - rect.height - 10;
 
@@ -914,19 +915,19 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             });
          });
       }
-      
+
       /** @summary Create modal element
         * @desc used as base for different components
-        * @private */ 
+        * @private */
       runModal(title, main_content, args) {
          if (!args) args = {};
-         
+
          let dlg_id = this.menuname + "_dialog";
          let old_dlg = document.getElementById(dlg_id);
          if (old_dlg) old_dlg.remove();
-         
+
          return this.loadBS(true).then(() => {
-            
+
             let myModalEl = document.createElement('div');
             myModalEl.setAttribute('id', dlg_id);
             myModalEl.setAttribute('class', 'modal fade');
@@ -934,8 +935,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             myModalEl.setAttribute('tabindex', "-1");
             myModalEl.setAttribute('aria-hidden', "true");
             let close_btn = args.btns ? '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>' : '';
-            
-            myModalEl.innerHTML = 
+
+            myModalEl.innerHTML =
                `<div class="modal-dialog">
                  <div class="modal-content">
                   <div class="modal-header">
@@ -946,27 +947,27 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                      ${main_content}
                   </div>
                   <div class="modal-footer">
-                     ${close_btn}        
+                     ${close_btn}
                      <button type="button" class="btn btn-primary jsroot_okbtn" data-bs-dismiss="modal">Ok</button>
                   </div>
                  </div>
                 </div>`;
-            
+
             document.body.appendChild(myModalEl);
-            
+
             let myModal = new bootstrap.Modal(myModalEl, { keyboard: true, backdrop: 'static' });
             myModal.show();
-            
+
             return new Promise(resolveFunc => {
-               let pressOk = false; 
+               let pressOk = false;
                myModalEl.querySelector(`.jsroot_okbtn`).addEventListener('click', () => { pressOk = true; });
-               
+
                myModalEl.addEventListener('hidden.bs.modal', () => {
                   if (pressOk) resolveFunc(myModalEl);
                   myModalEl.remove();
                });
             });
-            
+
         });
       }
 
@@ -989,10 +990,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
      *          menu.show();
      *        }); */
    function createMenu(evnt, handler, menuname) {
-      let menu = JSROOT.settings.Bootstrap 
+      let menu = JSROOT.settings.Bootstrap
                  ? new BootstrapMenu(handler, menuname || 'root_ctx_menu', evnt)
-                 : new JQueryMenu(handler, menuname || 'root_ctx_menu', evnt);  
-         
+                 : new JQueryMenu(handler, menuname || 'root_ctx_menu', evnt);
+
       return menu.load();
    }
 
