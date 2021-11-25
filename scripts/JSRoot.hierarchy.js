@@ -4032,8 +4032,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    /** @summary Display streamer info
      * @private */
-   jsrp.drawStreamerInfo = function(divid, lst) {
-      let painter = new HierarchyPainter('sinfo', divid, 'white');
+   jsrp.drawStreamerInfo = function(dom, lst) {
+      let painter = new HierarchyPainter('sinfo', dom, 'white');
+
+      // in batch mode HTML drawing is not possible, just keep object reference for a minute
+      if (JSROOT.batch_mode) {
+         painter.selectDom().property("_json_object_", lst);
+         return Promise.resolve(painter);
+      }
 
       painter._streamer_info = true;
       painter.h = createStreamerInfoContent(lst);
