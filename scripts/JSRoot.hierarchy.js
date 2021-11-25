@@ -3380,11 +3380,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       let promise;
 
-      if ((this.disp_kind == "simple") ||
-          ((this.disp_kind.indexOf("grid") == 0) && (this.disp_kind.indexOf("gridi") < 0)))
-           promise = Promise.resolve(new GridDisplay(this.disp_frameid, this.disp_kind));
-      else
+      if ((this.disp_kind == "tabs") || (this.disp_kind.indexOf("flex") == 0) || (this.disp_kind.indexOf("coll") == 0))
          promise = JSROOT.require('jq2d').then(() => JSROOT.create_jq_mdi(this.disp_frameid, this.disp_kind));
+      else
+         promise = Promise.resolve(new GridDisplay(this.disp_frameid, this.disp_kind));
 
       return promise.then(disp => {
          this.disp = disp;
@@ -4277,7 +4276,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
     * @private
     */
 
-
    class GridDisplay extends MDIDisplay {
 
     /** @summary Create GridDisplay instance
@@ -4439,6 +4437,110 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             for (let cnt = 1; cnt < num; ++cnt)
                this.createSeparator(handle, main, handle.groups[cnt]);
       }
+
+      /** @summary Create group separator
+        * @private */
+      createSeparator(handle, main, group) {
+         let separ = main.append("div");
+
+         separ.classed('jsroot_separator', true)
+              .classed(handle.vertical ? 'jsroot_hline' : 'jsroot_vline', true)
+              .property('handle', handle)
+              .property('group', group)
+              .attr('separator-id', group.id)
+              .style('position', 'absolute')
+              .style(handle.vertical ? 'top' : 'left', `calc(${group.position}% - 2px)`)
+              .style(handle.vertical ? 'width' : 'height', (handle.size || 100)+"%")
+              .style(handle.vertical ? 'height' : 'width', '5px')
+              .style('cursor', handle.vertical ? "ns-resize" : "ew-resize");
+
+         function resizeGroup(s, grid) {
+            let sel = d3.select(s.node().parentNode).select("[groupid='"+grid+"']");
+            if (!sel.classed('jsroot_newgrid')) sel = sel.select(".jsroot_newgrid");
+            sel.each(function() { JSROOT.resize(this); });
+         }
+
+         function changePosition(s, handle, id, arg) {
+            let pos = handle.groups[id].position;
+
+            if (arg == "restore") {
+               pos = handle.groups[id].position0;
+            } else if (handle.vertical) {
+               pos = handle.groups[id].startpos + ((arg + 2) / s.node().parentNode.clientHeight) * 100;
+            } else {
+               pos = handle.groups[id].startpos + ((arg + 2) / s.node().parentNode.clientWidth) * 100;
+            }
+
+            let diff = handle.groups[id].position - pos;
+
+            if (Math.abs(diff) < 0.3) return; // if no significant change, do nothing
+
+            // do not change if size too small
+            if (Math.min(handle.groups[id-1].size-diff, handle.groups[id].size+diff) < 5) return;
+
+            handle.groups[id-1].size -= diff;
+            handle.groups[id].size += diff;
+            handle.groups[id].position = pos;
+
+            s.style(handle.vertical ? 'top' : 'left', `calc(${pos}% - 2px)`);
+
+            function SetGroupSize(prnt, grid) {
+               let name = handle.vertical ? 'height' : 'width',
+                   size = handle.groups[grid].size+'%';
+               d3.select(prnt).select("[groupid='"+grid+"']").style(name, size)
+                              .select(".jsroot_separator").style(name, size);
+            }
+
+            SetGroupSize(s.node().parentNode, id-1);
+            SetGroupSize(s.node().parentNode, id);
+
+            if (arg == "restore") {
+               resizeGroup(s, id-1);
+               resizeGroup(s, id);
+            }
+         }
+
+         let drag_move = d3.drag().on("start", function() {
+            let s = d3.select(this),
+                handle = s.property('handle'),
+                id = parseInt(s.attr('separator-id'));
+            handle.groups[id].startpos = handle.groups[id].position;
+            handle.groups[id].ddd = 0;
+         }).on("drag", function(evnt) {
+            let s = d3.select(this),
+                handle = s.property('handle'),
+                id = parseInt(s.attr('separator-id'));
+
+            handle.groups[id].ddd += handle.vertical ? evnt.dy : evnt.dx;
+
+            changePosition(s, handle, id, handle.groups[id].ddd);
+
+            // this._hsepar_move -= evnt.dy; // hsepar is position from bottom
+            // this.adjustSeparators(null, Math.max(5, Math.round(this._hsepar_move)));
+         }).on("end", function() {
+            let s = d3.select(this),
+                handle = s.property('handle'),
+                id = parseInt(s.attr('separator-id'));
+            if (Math.abs(handle.groups[id].startpos - handle.groups[id].position) < 0.5) return;
+            resizeGroup(s, id-1);
+            resizeGroup(s, id);
+         });
+
+         separ.call(drag_move);
+
+         separ.on("dblclick", function() {
+            let s = d3.select(this),
+                handle = s.property('handle'),
+                id = parseInt(s.attr('separator-id'));
+
+            changePosition(s, handle, id, "restore");
+         });
+
+         // need to get touches events handling in drag
+         if (JSROOT.browser.touches)
+            main.on("touchmove", function() { });
+      }
+
 
       /** @summary Call function for each frame */
       forEachFrame(userfunc) {
