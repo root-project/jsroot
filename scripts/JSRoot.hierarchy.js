@@ -4396,14 +4396,15 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          if (!sizes) sizes = new Array(num);
          let sum1 = 0, sum2 = 0;
-         for (let n=0;n<num;++n) sum1 += (sizes[n] || 1);
-         for (let n=0;n<num;++n) {
+         for (let n = 0; n < num; ++n)
+            sum1 += (sizes[n] || 1);
+         for (let n = 0; n < num; ++n) {
             sizes[n] = Math.round(100 * (sizes[n] || 1) / sum1);
             sum2 += sizes[n];
             if (n==num-1) sizes[n] += (100-sum2); // make 100%
          }
 
-         for (let cnt = 0; cnt<num; ++cnt) {
+         for (let cnt = 0; cnt < num; ++cnt) {
             let group = { id: cnt, drawid: -1, position: 0, size: sizes[cnt] };
             if (cnt>0) group.position = handle.groups[cnt-1].position + handle.groups[cnt-1].size;
             group.position0 = group.position;
@@ -4436,7 +4437,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          }
 
          if (this.use_separarators && this.createSeparator)
-            for (let cnt= 1; cnt < num; ++cnt)
+            for (let cnt = 1; cnt < num; ++cnt)
                this.createSeparator(handle, main, handle.groups[cnt]);
       }
 
@@ -4446,7 +4447,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             userfunc(this.getGridFrame());
          else
             this.selectDom().selectAll('.jsroot_newgrid').each(function() {
-               userfunc(d3.select(this).node());
+               userfunc(this);
             });
       }
 
