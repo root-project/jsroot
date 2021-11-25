@@ -3,6 +3,7 @@
 ## Changes in dev
 1. Fully avoid jQuery on starting GUI, load only for menu or special displays
 2. Provide bootstrap-based menu - optionally
+3. Make "col" default draw option for TH2 in default JSROOT GUI
 
 
 ## Changes in 6.3.0
