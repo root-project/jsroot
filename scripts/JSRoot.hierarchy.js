@@ -4447,13 +4447,22 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
              id = separ.property('separator_id'),
              group = handle.groups[id];
 
-          const setGroupSize = grid => {
+          const findGroup = grid => {
+            let chld = parent.firstChild;
+            while (chld) {
+               if (chld.getAttribute("groupid") == grid)
+                  return d3.select(chld);
+               chld = chld.nextSibling;
+            }
+            // should never happen, but keep it here like
+            return d3.select(parent).select(`[groupid='${grid}']`);
+          }, setGroupSize = grid => {
              let name = handle.vertical ? 'height' : 'width',
-                size = handle.groups[grid].size+'%';
-             d3.select(parent).select("[groupid='"+grid+"']").style(name, size)
-                              .select(".jsroot_separator").style(name, size);
+                 size = handle.groups[grid].size+'%';
+             findGroup(grid).style(name, size)
+                            .selectAll(".jsroot_separator").style(name, size);
           }, resizeGroup = grid => {
-             let sel = d3.select(parent).select("[groupid='"+grid+"']");
+             let sel = findGroup(grid);
              if (!sel.classed('jsroot_newgrid')) sel = sel.select(".jsroot_newgrid");
              sel.each(function() { JSROOT.resize(this); });
           }
