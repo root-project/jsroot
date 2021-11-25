@@ -702,7 +702,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.checkResize();
    }
 
-
    /** @summary Returns true when status line exists */
    BrowserLayout.prototype.hasStatus = function() {
       let main = d3.select("#"+this.gui_div+" .jsroot_browser");
