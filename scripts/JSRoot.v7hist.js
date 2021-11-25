@@ -2336,7 +2336,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       let colindx, cmd1, cmd2, i, j, binz, dx, dy, entry, last_entry;
 
       const flush_last_entry = () => {
-         last_entry.path += "h"+dx + "v"+last_entry.dy + "h"+(-dx) + "z";
+         last_entry.path += `h${dx}v${last_entry.y2-last_entry.y}h${-dx}z`;
          last_entry.dy = 0;
          last_entry = null;
       };
@@ -2361,14 +2361,14 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
             cmd1 = "M"+handle.grx[i]+","+handle.gry[j];
 
-            dy = (handle.gry[j+dj] - handle.gry[j]) || 1;
+            dy = (handle.gry[j+dj] - handle.gry[j]) || -1;
 
             entry = entries[colindx];
 
             if (entry === undefined) {
                entry = entries[colindx] = { path: cmd1 };
             } else if (can_merge && (entry === last_entry)) {
-               entry.dy += dy;
+               entry.y2 = handle.gry[j] + dy;
                continue;
             } else {
                cmd2 = "m" + (handle.grx[i]-entry.x) + "," + (handle.gry[j]-entry.y);
@@ -2378,7 +2378,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
             entry.x = handle.grx[i];
             entry.y = handle.gry[j];
             if (can_merge) {
-               entry.dy = dy;
+               entry.y2 = handle.gry[j] + dy;
                last_entry = entry;
             } else {
                entry.path += "h"+dx + "v"+dy + "h"+(-dx) + "z";
