@@ -3640,7 +3640,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
                container.add(mesh);
            }
 
-         let text3d = new THREE.TextGeometry(lbl, { font: JSROOT.threejs_font_helvetiker_regular, size: text_size, height: 0, curveSegments: 5 });
+         let text3d = new THREE.TextGeometry(lbl, { font: JSROOT.HelveticerRegularFont, size: text_size, height: 0, curveSegments: 5 });
          mesh = new THREE.Mesh(text3d, textMaterial);
          let textbox = new THREE.Box3().setFromObject(mesh);
 
@@ -3681,7 +3681,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
          container.add(mesh);
 
-         text3d = new THREE.TextGeometry(Convert(box.min[name]), { font: JSROOT.threejs_font_helvetiker_regular, size: text_size, height: 0, curveSegments: 5 });
+         text3d = new THREE.TextGeometry(Convert(box.min[name]), { font: JSROOT.HelveticerRegularFont, size: text_size, height: 0, curveSegments: 5 });
 
          mesh = new THREE.Mesh(text3d, textMaterial);
          textbox = new THREE.Box3().setFromObject(mesh);

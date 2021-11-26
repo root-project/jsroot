@@ -169,8 +169,7 @@
          'zstd-codec'           : { src: '../../zstd/zstd-codec', onlymin: true, alt: "https://root.cern/js/zstd/zstd-codec.min.js", extract: "ZstdCodec", node: "zstd-codec" },
          'mathjax'              : { src: '../../mathjax/3.2.0/es5/tex-svg', nomin: true,  alt: 'https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-svg.js', extract: "MathJax", node: "mathjax" },
          'dat.gui'              : { src: 'dat.gui', libs: true, extract: "dat" },
-         'three'                : { src: 'three', libs: true, extract: "THREE" },
-         'threejs_jsroot'       : { src: 'three.extra', libs: true }
+         'three'                : { src: 'three', libs: true, extract: "THREE" }
     };
 
     ['core','base3d','csg','geobase','geom','geoworker','gpad','hierarchy','hist','hist3d','interactive','io','menu','jq2d','latex',

@@ -1,9 +1,11 @@
 /// @file JSRoot.base3d.js
 /// JavaScript ROOT 3D graphics
 
-JSROOT.define(['d3', 'threejs_jsroot', 'painter'], (d3, THREE, jsrp) => {
+JSROOT.define(['d3', 'three', 'painter'], (d3, THREE, jsrp) => {
 
    "use strict";
+
+   JSROOT.HelveticerRegularFont = new THREE.Font ( THREE.HelveticerRegularJson );
 
    /** @ummary Define rendering kind which will be used for rendering of 3D elements
     * @memberOf JSROOT.Painter
