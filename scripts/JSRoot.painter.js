@@ -9,10 +9,10 @@ JSROOT.define(['d3'], (d3) => {
 
    if ((typeof d3 !== 'object') || !d3.version)
       console.error('Fail to detect d3.js');
-   else if (d3.version[0] !== "6")
-      console.error(`Unsupported d3.js version ${d3.version}, expected 6.7.0`);
-   else if (d3.version !== '6.7.0')
-      console.log(`Reuse existing d3.js version ${d3.version}, expected 6.7.0`);
+   else if (d3.version[0] !== "7")
+      console.error(`Unsupported d3.js version ${d3.version}, expected 7.1.1`);
+   else if (d3.version !== '7.1.1')
+      console.log(`Reuse existing d3.js version ${d3.version}, expected 7.1.1`);
 
    // ==========================================================================================
 
