@@ -160,7 +160,7 @@
    }
 
    _.sources = {
-         'd3'                   : { src: 'd3', libs: true, extract: "d3", node: "d3" },
+         'd3'                   : { src: 'd3', libs: true, extract: "d3" },
          'jquery'               : { src: 'jquery', libs: true,  extract: "$" },
          'jquery-ui'            : { src: 'jquery-ui', libs: true, extract: "$", dep: 'jquery' },
          'jqueryui-mousewheel'  : { src: 'jquery.mousewheel', onlymin: true, extract: "$", dep: 'jquery-ui' },
@@ -468,7 +468,7 @@
       return udefined;
    }
 
-   function jsroot_require(need, factoryFunc) {
+   async function jsroot_require(need, factoryFunc) {
 
       if (!need && !factoryFunc)
          return Promise.resolve(null);
