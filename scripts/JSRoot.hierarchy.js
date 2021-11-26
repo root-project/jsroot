@@ -2276,11 +2276,16 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          if (item && !h.canDisplay(item, drawopt)) return complete();
 
-         let divid = "";
+         let divid = "", use_dflt_opt = false;
          if ((typeof drawopt == 'string') && (drawopt.indexOf("divid:") >= 0)) {
             let pos = drawopt.indexOf("divid:");
             divid = drawopt.slice(pos+6);
             drawopt = drawopt.slice(0, pos);
+         }
+
+         if (drawopt == "__default_draw_option__") {
+            use_dflt_opt = true;
+            drawopt = "";
          }
 
          if (!updating) jsrp.showProgress("Loading " + display_itemname);
@@ -2303,8 +2308,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                handle = obj._typename ? jsrp.getDrawHandle("ROOT." + obj._typename) : null;
             }
 
-            if (drawopt == "__default_draw_option__")
-               drawopt = (handle && handle.dflt) ? handle.dflt : "";
+            if (use_dflt_opt && handle && handle.dflt && !drawopt)
+               drawopt = handle.dflt;
 
             if (divid.length > 0) {
                let func = updating ? JSROOT.redraw : JSROOT.draw;
