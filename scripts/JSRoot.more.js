@@ -911,7 +911,10 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       }
 
       if (graph._typename == 'TGraphErrors') {
-         if (Math.max(...graph.fEX) < 1.0e-300 && Math.max(...graph.fEY) < 1.0e-300)
+         let len = graph.fEX.length, m = 0;
+         for (let k = 0; k < len; ++k)
+            m = Math.max(m, graph.fEX[k], graph.fEY[k]);
+         if (m < 1e-100)
             res.Errors = 0;
       }
 
