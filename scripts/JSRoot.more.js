@@ -903,7 +903,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          res.Errors = this.has_errors ? 1 : 0;
 
       // special case - one could use svg:path to draw many pixels (
-      if ((res.Mark == 1) && (graph.fMarkerStyle==1)) res.Mark = 101;
+      if ((res.Mark == 1) && (graph.fMarkerStyle == 1)) res.Mark = 101;
 
       // if no drawing option is selected and if opt=='' nothing is done.
       if (res.Line + res.Fill + res.Curve + res.Mark + res.Bar + res.EF + res.Rect + res.Errors == 0) {
@@ -911,7 +911,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       }
 
       if (graph._typename == 'TGraphErrors') {
-         if (d3.max(graph.fEX) < 1.0e-300 && d3.max(graph.fEY) < 1.0e-300)
+         if (Math.max(...graph.fEX) < 1.0e-300 && Math.max(...graph.fEY) < 1.0e-300)
             res.Errors = 0;
       }
 
@@ -1459,11 +1459,11 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
          let path = "", pnt, grx, gry;
 
          this.createAttMarker({ attr: graph, style: this.options.Mark - 100 });
-         
+
          this.marker_size = this.markeratt.getFullSize();
 
          this.markeratt.resetPos();
-         
+
          let want_tooltip = !JSROOT.batch_mode && JSROOT.settings.Tooltip && (!this.markeratt.fill || (this.marker_size < 7)) && !nodes,
              hints_marker = "", hsz = Math.max(5, Math.round(this.marker_size*0.7)),
              maxnummarker = 1000000 / (this.markeratt.getMarkerLength() + 7), step = 1; // let produce SVG at maximum 1MB
@@ -1492,7 +1492,7 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
             if ((nodes===null) && (this.draw_kind == "none"))
                this.draw_kind = (this.options.Mark == 101) ? "path" : "mark";
          }
-         if (want_tooltip && hints_marker) 
+         if (want_tooltip && hints_marker)
             this.draw_g.append("svg:path")
                 .attr("d", hints_marker)
                 .attr("stroke", "none")
