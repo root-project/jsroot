@@ -2215,6 +2215,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       }
    }
 
+   /** @summary Count statistic */
    RH2Painter.prototype.countStat = function(cond) {
       let histo = this.getHisto(),
           stat_sum0 = 0, stat_sumx1 = 0, stat_sumy1 = 0,
@@ -2272,6 +2273,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       return res;
    }
 
+   /** @summary Fill statistic into statbox */
    RH2Painter.prototype.fillStatistic = function(stat, dostat /*, dofit*/) {
 
       let data = this.countStat(),
@@ -2359,7 +2361,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
                continue;
             }
 
-            cmd1 = "M"+handle.grx[i]+","+handle.gry[j];
+            cmd1 = `M${handle.grx[i]},${handle.gry[j]}`;
 
             dy = (handle.gry[j+dj] - handle.gry[j]) || -1;
 
@@ -2371,7 +2373,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
                entry.y2 = handle.gry[j] + dy;
                continue;
             } else {
-               cmd2 = "m" + (handle.grx[i]-entry.x) + "," + (handle.gry[j]-entry.y);
+               cmd2 = `m${handle.grx[i]-entry.x},${handle.gry[j]-entry.y}`;
                entry.path += (cmd2.length < cmd1.length) ? cmd2 : cmd1;
             }
             if (last_entry) flush_last_entry();
@@ -2381,7 +2383,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
                entry.y2 = handle.gry[j] + dy;
                last_entry = entry;
             } else {
-               entry.path += "h"+dx + "v"+dy + "h"+(-dx) + "z";
+               entry.path += `h${dx}v${dy}h${-dx}z`;
             }
          }
          if (last_entry) flush_last_entry();
@@ -2709,6 +2711,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       return handle;
    }
 
+   /** @summary Create polybin */
    RH2Painter.prototype.createPolyBin = function(pmain, bin, text_pos) {
       let cmd = "", ngr, ngraphs = 1, gr = null,
           funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y);
