@@ -2239,7 +2239,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           marker = "::_display_on_frame_::",
           p = drawopt ? drawopt.indexOf(marker) : -1;
 
-      if (p>=0) {
+      if (p >= 0) {
          frame_name = drawopt.substr(p + marker.length);
          drawopt = drawopt.substr(0, p);
       }
@@ -2295,6 +2295,17 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             if (!updating) jsrp.showProgress("Drawing " + display_itemname);
 
+            let handle = obj._typename ? jsrp.getDrawHandle("ROOT." + obj._typename) : null;
+
+            if (handle && handle.draw_field && obj[handle.draw_field]) {
+               obj = obj[handle.draw_field];
+               if (!drawopt) drawopt = handle.draw_field_opt || "";
+               handle = obj._typename ? jsrp.getDrawHandle("ROOT." + obj._typename) : null;
+            }
+
+            if (drawopt == "__default_draw_option__")
+               drawopt = (handle && handle.dflt) ? handle.dflt : "";
+
             if (divid.length > 0) {
                let func = updating ? JSROOT.redraw : JSROOT.draw;
                return func(divid, obj, drawopt).then(p => complete(p)).catch(err => complete(null, err));
@@ -2305,13 +2316,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                // verify that object was drawn with same option as specified now (if any)
                if (!updating && drawopt && (p.getItemDrawOpt() != drawopt)) return;
                mdi.activateFrame(frame);
-
-               let handle = null;
-               if (obj._typename) handle = jsrp.getDrawHandle("ROOT." + obj._typename);
-               if (handle && handle.draw_field && obj[handle.draw_field]) {
-                  obj = obj[handle.draw_field];
-                  if (!drawopt) drawopt = handle.draw_field_opt || "";
-               }
 
                if ((typeof p.redrawObject == 'function') && p.redrawObject(obj, drawopt)) painter = p;
             });
@@ -2473,7 +2477,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if (!options) options = [];
       while (options.length < items.length)
-         options.push("");
+         options.push("__default_draw_option__");
 
       if ((options.length == 1) && (options[0] == "iotest")) {
          this.clearHierarchy();
@@ -2508,8 +2512,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (can_split && (items[i][0]=='[') && (items[i][items[i].length-1]==']')) {
             dropitems[i] = parseAsArray(items[i]);
             items[i] = dropitems[i].shift();
-         } else
-         if (can_split && (items[i].indexOf("+") > 0)) {
+         } else if (can_split && (items[i].indexOf("+") > 0)) {
             dropitems[i] = items[i].split("+");
             items[i] = dropitems[i].shift();
          }
@@ -2518,7 +2521,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             // allow to specify _same_ item in different file
             for (let j = 0; j < dropitems[i].length; ++j) {
                let pos = dropitems[i][j].indexOf("_same_");
-               if ((pos>0) && (h.findItem(dropitems[i][j])===null))
+               if ((pos > 0) && (h.findItem(dropitems[i][j]) === null))
                   dropitems[i][j] = dropitems[i][j].substr(0,pos) + items[i].substr(pos);
 
                elem = h.findItem({ name: dropitems[i][j], check_keys: true });
@@ -2528,8 +2531,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if ((options[i][0] == "[") && (options[i][options[i].length-1] == "]")) {
                dropopts[i] = parseAsArray(options[i]);
                options[i] = dropopts[i].shift();
-            } else
-            if (options[i].indexOf("+") > 0) {
+            } else if (options[i].indexOf("+") > 0) {
                dropopts[i] = options[i].split("+");
                options[i] = dropopts[i].shift();
             } else {
@@ -2541,7 +2543,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          // also check if subsequent items has _same_, than use name from first item
          let pos = items[i].indexOf("_same_");
-         if ((pos>0) && !h.findItem(items[i]) && (i>0))
+         if ((pos > 0) && !h.findItem(items[i]) && (i > 0))
             items[i] = items[i].substr(0,pos) + items[0].substr(pos);
 
          elem = h.findItem({ name: items[i], check_keys: true });
@@ -2549,7 +2551,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
 
       // now check that items can be displayed
-      for (let n = items.length-1; n>=0; --n) {
+      for (let n = items.length - 1; n >= 0; --n) {
          if (images[n]) continue;
          let hitem = h.findItem(items[n]);
          if (!hitem || h.canDisplay(hitem, options[n])) continue;
@@ -2564,12 +2566,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return Promise.resolve(true);
 
       let frame_names = new Array(items.length), items_wait = new Array(items.length);
-      for (let n=0; n < items.length;++n) {
+      for (let n = 0; n < items.length; ++n) {
          items_wait[n] = 0;
          let fname = items[n], k = 0;
          if (items.indexOf(fname) < n) items_wait[n] = true; // if same item specified, one should wait first drawing before start next
          let p = options[n].indexOf("frameid:");
-         if (p>=0) {
+         if (p >= 0) {
             fname = options[n].substr(p+8);
             options[n] = options[n].substr(0,p);
          } else {
@@ -2581,12 +2583,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       // now check if several same items present - select only one for the drawing
       // if draw option includes 'main', such item will be drawn first
-      for (let n=0; n<items.length;++n) {
+      for (let n = 0; n < items.length; ++n) {
          if (items_wait[n] !== 0) continue;
          let found_main = n;
-         for (let k=0; k<items.length;++k)
+         for (let k = 0; k < items.length; ++k)
             if ((items[n]===items[k]) && (options[k].indexOf('main')>=0)) found_main = k;
-         for (let k=0; k<items.length;++k)
+         for (let k = 0; k < items.length; ++k)
             if (items[n]===items[k]) items_wait[k] = (found_main != k);
       }
 
