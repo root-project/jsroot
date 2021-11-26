@@ -4741,8 +4741,10 @@ function formatUnixTimestampSeconds(d) {
 }
 
 var locale;
-var timeFormat;
-var utcFormat;
+exports.timeFormat = void 0;
+exports.timeParse = void 0;
+exports.utcFormat = void 0;
+exports.utcParse = void 0;
 
 defaultLocale({
   dateTime: "%x, %X",
@@ -4757,10 +4759,35 @@ defaultLocale({
 
 function defaultLocale(definition) {
   locale = formatLocale(definition);
-  timeFormat = locale.format;
-  utcFormat = locale.utcFormat;
+  exports.timeFormat = locale.format;
+  exports.timeParse = locale.parse;
+  exports.utcFormat = locale.utcFormat;
+  exports.utcParse = locale.utcParse;
   return locale;
 }
+
+var isoSpecifier = "%Y-%m-%dT%H:%M:%S.%LZ";
+
+function formatIsoNative(date) {
+  return date.toISOString();
+}
+
+var formatIso = Date.prototype.toISOString
+    ? formatIsoNative
+    : exports.utcFormat(isoSpecifier);
+
+var formatIso$1 = formatIso;
+
+function parseIsoNative(string) {
+  var date = new Date(string);
+  return isNaN(date) ? null : date;
+}
+
+var parseIso = +new Date("2000-01-01T00:00:00.000Z")
+    ? parseIsoNative
+    : exports.utcParse(isoSpecifier);
+
+var parseIso$1 = parseIso;
 
 function date(t) {
   return new Date(t);
@@ -4825,11 +4852,11 @@ function calendar(ticks, tickInterval, year, month, week, day, hour, minute, sec
 }
 
 function time() {
-  return initRange.apply(calendar(timeTicks, timeTickInterval, timeYear, timeMonth, sunday, timeDay, timeHour, timeMinute, utcSecond, timeFormat).domain([new Date(2000, 0, 1), new Date(2000, 0, 2)]), arguments);
+  return initRange.apply(calendar(timeTicks, timeTickInterval, timeYear, timeMonth, sunday, timeDay, timeHour, timeMinute, utcSecond, exports.timeFormat).domain([new Date(2000, 0, 1), new Date(2000, 0, 2)]), arguments);
 }
 
 function utcTime() {
-  return initRange.apply(calendar(utcTicks, utcTickInterval, utcYear$1, utcMonth$1, utcSunday, utcDay$1, utcHour$1, utcMinute$1, utcSecond, utcFormat).domain([Date.UTC(2000, 0, 1), Date.UTC(2000, 0, 2)]), arguments);
+  return initRange.apply(calendar(utcTicks, utcTickInterval, utcYear$1, utcMonth$1, utcSunday, utcDay$1, utcHour$1, utcMinute$1, utcSecond, exports.utcFormat).domain([Date.UTC(2000, 0, 1), Date.UTC(2000, 0, 2)]), arguments);
 }
 
 function transformer$1() {
@@ -6086,6 +6113,8 @@ exports.gray = gray;
 exports.hcl = hcl;
 exports.hsl = hsl;
 exports.interrupt = interrupt;
+exports.isoFormat = formatIso$1;
+exports.isoParse = parseIso$1;
 exports.lab = lab;
 exports.lch = lch;
 exports.local = local;
@@ -6129,6 +6158,8 @@ exports.selector = selector;
 exports.selectorAll = selectorAll;
 exports.style = styleValue;
 exports.tickFormat = tickFormat;
+exports.timeFormatDefaultLocale = defaultLocale;
+exports.timeFormatLocale = formatLocale;
 exports.transition = transition;
 exports.version = version;
 exports.window = defaultView;
