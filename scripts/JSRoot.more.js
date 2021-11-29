@@ -188,33 +188,41 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          }
       }
 
-      if ((ellipse.fPhimin == 0) && (ellipse.fPhimax == 360) && (ellipse.fTheta == 0)) {
-            // this is simple case, which could be drawn with svg:ellipse
-         this.draw_g.append("svg:ellipse")
-                    .attr("cx", x).attr("cy", y)
-                    .attr("rx", rx).attr("ry", ry)
-                    .call(this.lineatt.func).call(this.fillatt.func);
-         return;
+      let path = "";
+
+      if (ellipse.fTheta == 0) {
+         if ((ellipse.fPhimin == 0) && (ellipse.fPhimax == 360)) {
+            path = `M${-rx},0A${rx},${ry},0,1,0,${rx},0A${rx},${ry},0,1,0,${-rx},0Z`;
+         } else {
+            let x1 = Math.round(rx * Math.cos(ellipse.fPhimin*Math.PI/180)),
+                y1 = Math.round(ry * Math.sin(ellipse.fPhimin*Math.PI/180)),
+                x2 = Math.round(rx * Math.cos(ellipse.fPhimax*Math.PI/180)),
+                y2 = Math.round(ry * Math.sin(ellipse.fPhimax*Math.PI/180));
+            path = `M0,0L${x1},${y1}A${rx},${ry},0,1,1,${x2},${y2}Z`;
+         }
+      } else {
+        let ct = Math.cos(ellipse.fTheta*Math.PI/180),
+            st = Math.sin(ellipse.fTheta*Math.PI/180),
+            phi1 = ellipse.fPhimin*Math.PI/180,
+            phi2 = ellipse.fPhimax*Math.PI/180,
+            np = 200,
+            dphi = (phi2-phi1) / (np-1);
+        path = "M0,0";
+        for (let n = 0; n < np; ++n) {
+            let angle = phi1 + n*dphi,
+                dx = ellipse.fR1 * Math.cos(angle),
+                dy = ellipse.fR2 * Math.sin(angle),
+                px =  this.axisToSvg("x", ellipse.fX1 + dx*ct - dy*st) - x,
+                py  = this.axisToSvg("y", ellipse.fY1 + dx*st + dy*ct) - y;
+            path += `L${px},${py}`;
+        }
+        path += "Z";
       }
 
-      // here svg:path is used to draw more complex figure
-
-      let ct = Math.cos(ellipse.fTheta*Math.PI/180),
-          st = Math.sin(ellipse.fTheta*Math.PI/180),
-          dx1 = rx * Math.cos(ellipse.fPhimin*Math.PI/180),
-          dy1 = ry * Math.sin(ellipse.fPhimin*Math.PI/180),
-          x1 =  dx1*ct - dy1*st,
-          y1 = -dx1*st - dy1*ct,
-          dx2 = rx * Math.cos(ellipse.fPhimax*Math.PI/180),
-          dy2 = ry * Math.sin(ellipse.fPhimax*Math.PI/180),
-          x2 =  dx2*ct - dy2*st,
-          y2 = -dx2*st - dy2*ct;
-
       this.draw_g
-         .attr("transform",`translate(${x},${y})`)
          .append("svg:path")
-         .attr("d", `M0,0L${Math.round(x1)},${Math.round(y1)}
-                     A${rx},${ry},${Math.round(-ellipse.fTheta)},1,0,${Math.round(x2)},${Math.round(y2)}Z`)
+         .attr("transform",`translate(${x},${y})`)
+         .attr("d", path)
          .call(this.lineatt.func).call(this.fillatt.func);
    }
 
