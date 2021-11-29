@@ -143,55 +143,38 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       // create svg:g container for ellipse drawing
       this.createG();
 
-      let x = this.axisToSvg("x", ellipse.fX1),
-          y = this.axisToSvg("y", ellipse.fY1),
-          rx = this.axisToSvg("x", ellipse.fX1 + ellipse.fR1) - x,
-          ry = y - this.axisToSvg("y", ellipse.fY1 + ellipse.fR2);
+      let funcs = this.getAxisToSvgFunc(),
+          x = funcs.x(ellipse.fX1),
+          y = funcs.y(ellipse.fY1),
+          rx = funcs.x(ellipse.fX1 + ellipse.fR1) - x,
+          ry = y - funcs.y(ellipse.fY1 + ellipse.fR2),
+          path = "", closed_ellipse = (ellipse.fPhimin == 0) && (ellipse.fPhimax == 360);
 
-      if (ellipse._typename == "TCrown") {
-         if (ellipse.fR1 <= 0) {
-            // handle same as ellipse with equal radius
-            rx = this.axisToSvg("x", ellipse.fX1 + ellipse.fR2) - x;
+      // handle same as ellipse with equal radius
+      if ((ellipse._typename == "TCrown") && (ellipse.fR1 <= 0))
+         rx = funcs.x(ellipse.fX1 + ellipse.fR2) - x;
+
+      if ((ellipse._typename == "TCrown") && (ellipse.fR1 > 0)) {
+         let rx1 = rx, ry2 = ry,
+             ry1 = y - funcs.y(ellipse.fY1 + ellipse.fR1),
+             rx2 = funcs.x(ellipse.fX1 + ellipse.fR2) - x;
+
+         if (closed_ellipse) {
+            path = `M${-rx1},0A${rx1},${ry1},0,1,0,${rx1},0A${rx1},${ry1},0,1,0,${-rx1},0` +
+                   `M${-rx2},0A${rx2},${ry2},0,1,0,${rx2},0A${rx2},${ry2},0,1,0,${-rx2},0`;
          } else {
-            let rx1 = rx, ry2 = ry,
-                ry1 = y - this.axisToSvg("y", ellipse.fY1 + ellipse.fR1),
-                rx2 = this.axisToSvg("x", ellipse.fX1 + ellipse.fR2) - x,
-                elem = this.draw_g
-                          .attr("transform",`translate(${x},${y})`)
-                          .append("svg:path")
-                          .call(this.lineatt.func)
-                          .call(this.fillatt.func);
+            let large_arc = (ellipse.fPhimax-ellipse.fPhimin>=180) ? 1 : 0,
+                a1 = ellipse.fPhimin*Math.PI/180, a2 = ellipse.fPhimax*Math.PI/180,
+                dx1 = Math.round(rx1*Math.cos(a1)), dy1 = Math.round(ry1*Math.sin(a1)),
+                dx2 = Math.round(rx1*Math.cos(a2)), dy2 = Math.round(ry1*Math.sin(a2)),
+                dx3 = Math.round(rx2*Math.cos(a1)), dy3 = Math.round(ry2*Math.sin(a1)),
+                dx4 = Math.round(rx2*Math.cos(a2)), dy4 = Math.round(ry2*Math.sin(a2));
 
-            if ((ellipse.fPhimin == 0) && (ellipse.fPhimax == 360)) {
-               elem.attr("d", `M${-rx1},0
-                               A${rx1},${ry1},0,1,0,${rx1},0
-                               A${rx1},${ry1},0,1,0,${-rx1},0
-                               M${-rx2},0
-                               A${rx2},${ry2},0,1,0,${rx2},0
-                               A${rx2},${ry2},0,1,0,${-rx2},0`);
-
-            } else {
-               let large_arc = (ellipse.fPhimax-ellipse.fPhimin>=180) ? 1 : 0,
-                   a1 = ellipse.fPhimin*Math.PI/180, a2 = ellipse.fPhimax*Math.PI/180,
-                   dx1 = Math.round(rx1*Math.cos(a1)), dy1 = Math.round(ry1*Math.sin(a1)),
-                   dx2 = Math.round(rx1*Math.cos(a2)), dy2 = Math.round(ry1*Math.sin(a2)),
-                   dx3 = Math.round(rx2*Math.cos(a1)), dy3 = Math.round(ry2*Math.sin(a1)),
-                   dx4 = Math.round(rx2*Math.cos(a2)), dy4 = Math.round(ry2*Math.sin(a2));
-
-               elem.attr("d", `M${dx2},${dy2}
-                               A${rx1},${ry1},0,${large_arc},0,${dx1},${dy1}
-                               L${dx3},${dy3}
-                               A${rx2},${ry2},0,${large_arc},1,${dx4},${dy4}Z`);
-            }
-
-            return;
+            path = `M${dx2},${dy2}A${rx1},${ry1},0,${large_arc},0,${dx1},${dy1}` +
+                   `L${dx3},${dy3}A${rx2},${ry2},0,${large_arc},1,${dx4},${dy4}Z`;
          }
-      }
-
-      let path = "";
-
-      if (ellipse.fTheta == 0) {
-         if ((ellipse.fPhimin == 0) && (ellipse.fPhimax == 360)) {
+      } else if (ellipse.fTheta == 0) {
+         if (closed_ellipse) {
             path = `M${-rx},0A${rx},${ry},0,1,0,${rx},0A${rx},${ry},0,1,0,${-rx},0Z`;
          } else {
             let x1 = Math.round(rx * Math.cos(ellipse.fPhimin*Math.PI/180)),
@@ -206,15 +189,24 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             phi1 = ellipse.fPhimin*Math.PI/180,
             phi2 = ellipse.fPhimax*Math.PI/180,
             np = 200,
-            dphi = (phi2-phi1) / (np-1);
-        path = "M0,0";
+            dphi = (phi2-phi1) / (np - (closed_ellipse ? 0 : 1)),
+            lastx = 0, lasty = 0;
+        if (!closed_ellipse) path = "M0,0";
         for (let n = 0; n < np; ++n) {
             let angle = phi1 + n*dphi,
                 dx = ellipse.fR1 * Math.cos(angle),
                 dy = ellipse.fR2 * Math.sin(angle),
-                px =  this.axisToSvg("x", ellipse.fX1 + dx*ct - dy*st) - x,
-                py  = this.axisToSvg("y", ellipse.fY1 + dx*st + dy*ct) - y;
-            path += `L${px},${py}`;
+                px = funcs.x(ellipse.fX1 + dx*ct - dy*st) - x,
+                py = funcs.y(ellipse.fY1 + dx*st + dy*ct) - y;
+            if (!path)
+               path = `M${px},${py}`;
+            else if (lastx == px)
+               path += `v${py-lasty}`;
+            else if (lasty == py)
+               path += `h${px-lastx}`;
+            else
+               path += `l${px-lastx},${py-lasty}`;
+            lastx = px; lasty = py;
         }
         path += "Z";
       }

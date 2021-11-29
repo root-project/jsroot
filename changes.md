@@ -6,6 +6,7 @@
 3. Make "col" default draw option for TH2 in default JSROOT GUI
 4. Upgrade d3.js to 7.1.1, take only used components: "d3-selection", "d3-drag", "d3-scale"
 5. Upgrade three.js to r135, reduce number of components used in jsroot
+6. Implement proper drawin of TEllipse
 
 
 ## Changes in 6.3.0
