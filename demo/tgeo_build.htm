@@ -136,7 +136,7 @@
              // ------------------- end of reading geometry object --------------------------
 
              // dummy object, seen in the beginning
-             let material = new THREE.MeshLambertMaterial( { side: THREE.DoubleSide } );
+             let material = new THREE.MeshLambertMaterial({ side: THREE.DoubleSide, color: 'red', vertexColors: false });
              dummy = new THREE.Mesh( new THREE.TetrahedronGeometry( 75, 0 ), material );
              // object.position.set( 200, 0, 200 );
              scene.add( dummy );

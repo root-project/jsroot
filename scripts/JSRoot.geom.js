@@ -291,8 +291,8 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
      * @private */
    TGeoPainter.prototype.initVRControllersGeometry = function() {
       let geometry = new THREE.SphereGeometry(0.025, 18, 36);
-      let material = new THREE.MeshBasicMaterial({color: 'grey'});
-      let rayMaterial = new THREE.MeshBasicMaterial({color: 'fuchsia'});
+      let material = new THREE.MeshBasicMaterial({ color: 'grey', vertexColors: false });
+      let rayMaterial = new THREE.MeshBasicMaterial({ color: 'fuchsia', vertexColors: false });
       let rayGeometry = new THREE.BoxBufferGeometry(0.001, 0.001, 2);
       let ray1Mesh = new THREE.Mesh(rayGeometry, rayMaterial);
       let ray2Mesh = new THREE.Mesh(rayGeometry, rayMaterial);
@@ -2114,7 +2114,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       // three.js 3D drawing
       this._scene = new THREE.Scene();
       this._scene.fog = new THREE.Fog(0xffffff, 1, 10000);
-      this._scene.overrideMaterial = new THREE.MeshLambertMaterial( { color: 0x7000ff, transparent: true, opacity: 0.2, depthTest: false } );
+      this._scene.overrideMaterial = new THREE.MeshLambertMaterial({ color: 0x7000ff, vertexColors: false, transparent: true, opacity: 0.2, depthTest: false });
 
       this._scene_width = w;
       this._scene_height = h;
@@ -3627,7 +3627,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
          container.add(mesh);
 
-         let textMaterial = new THREE.MeshBasicMaterial({ color: axiscol });
+         let textMaterial = new THREE.MeshBasicMaterial({ color: axiscol, vertexColors: false });
 
          if ((center[naxis]===0) && (center[naxis]>=box.min[name]) && (center[naxis]<=box.max[name]))
            if ((this.ctrl._axis != 2) || (naxis===0)) {

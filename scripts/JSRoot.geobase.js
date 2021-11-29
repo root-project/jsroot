@@ -2817,7 +2817,7 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
          prop.fillcolor = new THREE.Color( entry.color ? "rgb(" + entry.color + ")" : "blue" );
          prop.material = new THREE.MeshLambertMaterial( { transparent: _opacity < 1,
                           opacity: _opacity, wireframe: false, color: prop.fillcolor,
-                          side: THREE.FrontSide /* THREE.DoubleSide*/, vertexColors: THREE.NoColors /*THREE.VertexColors */,
+                          side: THREE.FrontSide, vertexColors: false,
                           depthWrite: _opacity == 1 } );
          prop.material.inherentOpacity = _opacity;
 
@@ -2843,7 +2843,7 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
             prop.fillcolor = new THREE.Color( node.fRGBA[0], node.fRGBA[1], node.fRGBA[2] );
             prop.material = new THREE.MeshLambertMaterial( { transparent: _opacity < 1,
                              opacity: _opacity, wireframe: false, color: prop.fillcolor,
-                             side: THREE.FrontSide /* THREE.DoubleSide*/, vertexColors: THREE.NoColors /*THREE.VertexColors */,
+                             side: THREE.FrontSide, vertexColors: false,
                              depthWrite: _opacity == 1 } );
             prop.material.inherentOpacity = _opacity;
          }
@@ -2894,7 +2894,7 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
 
          prop.material = new THREE.MeshLambertMaterial( { transparent: _opacity < 1,
                               opacity: _opacity, wireframe: false, color: prop.fillcolor,
-                              side: THREE.FrontSide /* THREE.DoubleSide */, vertexColors: THREE.NoColors /*THREE.VertexColors*/,
+                              side: THREE.FrontSide, vertexColors: false,
                               depthWrite: _opacity == 1 } );
          prop.material.inherentOpacity = _opacity;
 
