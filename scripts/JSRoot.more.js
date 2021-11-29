@@ -2,7 +2,7 @@
 /// Part of JavaScript ROOT graphics with more classes like TEllipse, TLine, ...
 /// Such classes are rarely used and therefore loaded only on demand
 
-JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
+JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    "use strict";
 
