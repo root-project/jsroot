@@ -2308,7 +2308,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                handle = obj._typename ? jsrp.getDrawHandle("ROOT." + obj._typename) : null;
             }
 
-            if (use_dflt_opt && handle && handle.dflt && !drawopt)
+            if (use_dflt_opt && handle && handle.dflt && !drawopt && (handle.dflt != 'expand'))
                drawopt = handle.dflt;
 
             if (divid.length > 0) {
