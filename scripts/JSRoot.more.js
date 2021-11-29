@@ -3316,7 +3316,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       gr.fName = "eff_graph";
       painter.fillGraph(gr, opt);
 
-      return JSROOT.draw(dom, gr, opt)
+      return JSROOT.require('math')
+                   .then(() => JSROOT.draw(dom, gr, opt))
                    .then(() => {
                        painter.addToPadPrimitives();
                        return painter;
