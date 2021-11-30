@@ -263,15 +263,14 @@
          MathJax: 3,
          /** @summary always use MathJax for text rendering */
          AlwaysMathJax: 4,
-         /** @summary old latex processing with tspan, deprecated, will be removed after release 6.4 */
-         Old: 5,
          fromString: function(s) {
             if (!s || (typeof s !== 'string'))
                return this.Normal;
             switch(s){
                case "off": return this.Off;
                case "symbols": return this.Symbols;
-               case "old": return this.Old;
+               case "normal":
+               case "latex":
                case "exp":
                case "experimental": return this.Normal;
                case "MathJax":
@@ -282,7 +281,7 @@
                case "alwaysmathjax": return this.AlwaysMathJax;
             }
             let code = parseInt(s);
-            return (Number.isInteger(code) && (code >= this.Off) && (code <= this.Old)) ? code : this.Normal;
+            return (Number.isInteger(code) && (code >= this.Off) && (code <= this.AlwaysMathJax)) ? code : this.Normal;
          }
       }
    };

@@ -2906,8 +2906,6 @@ JSROOT.define(['d3'], (d3) => {
                if (arg.simple_latex || ltx.isPlainText(arg.text)) {
                   arg.simple_latex = true;
                   ltx.producePlainText(this, arg.txt_node, arg);
-               } else if (JSROOT.settings.Latex === JSROOT.constants.Latex.Old) {
-                  ltx.produceOldLatex(this, arg.txt_node, arg);
                } else {
                   arg.txt_node.remove(); // just remove text node,
                   delete arg.txt_node;
