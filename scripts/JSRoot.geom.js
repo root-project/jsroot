@@ -2883,7 +2883,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       if (!track || !track.fNpoints) return false;
 
       let track_width = track.fLineWidth || 1,
-          track_color = jsrp.getColor(track.fLineColor) || "rgb(255,0,255)";
+          track_color = jsrp.getColor(track.fLineColor) || "#ff00ff";
 
       if (JSROOT.browser.isWin) track_width = 1; // not supported on windows
 
@@ -2925,7 +2925,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       if (!track || (track.fN <= 0)) return false;
 
       let track_width = track.fLineWidth || 1,
-          track_color = jsrp.getColor(track.fLineColor) || "rgb(255,0,255)";
+          track_color = jsrp.getColor(track.fLineColor) || "#ff00ff";
 
       if (JSROOT.browser.isWin) track_width = 1; // not supported on windows
 
@@ -2983,7 +2983,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
                        projy ? projv : hit.fP[i*3+1],
                        projz ? projv : hit.fP[i*3+2]);
 
-      return pnts.createPoints({ color: jsrp.getColor(hit.fMarkerColor) || "rgb(0,0,255)", style: hit_style, promise:true }).then(mesh => {
+      return pnts.createPoints({ color: jsrp.getColor(hit.fMarkerColor) || "#0000ff", style: hit_style, promise:true }).then(mesh => {
          mesh.renderOrder = 1000000; // to bring points to the front
          mesh.highlightScale = 2;
          mesh.geo_name = itemname;

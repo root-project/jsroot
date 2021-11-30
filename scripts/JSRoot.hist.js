@@ -20,7 +20,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                r = hue2rgb(p, q, h + 1/3),
                g = hue2rgb(p, q, h),
                b = hue2rgb(p, q, h - 1/3);
-         return 'rgb(' + Math.round(r*255) + ',' + Math.round(g*255) + ',' + Math.round(b*255) + ')';
+         return '#' + jsrp.toHex(r) + jsrp.toHex(g) + jsrp.toHex(b);
       };
       const minHue = 0, maxHue = 280, maxPretty = 50;
       let palette = [];
@@ -34,8 +34,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    const createGrayPalette = () => {
       let palette = [];
       for (let i = 0; i < 50; ++i) {
-         const code = Math.round((i+2)/60*255);
-         palette.push('rgb('+code+','+code+','+code+')');
+         const code = jsrp.toHex((i+2)/60);
+         palette.push('#'+code+code+code);
       }
       return new JSROOT.ColorPalette(palette);
    };
@@ -186,10 +186,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           // create the colors...
           const nColorsGradient = Math.round(Math.floor(NColors*stops[g]) - Math.floor(NColors*stops[g-1]));
           for (let c = 0; c < nColorsGradient; c++) {
-             const col = Math.round(Red[g-1] + c * (Red[g] - Red[g-1]) / nColorsGradient) + "," +
-                       Math.round(Green[g-1] + c * (Green[g] - Green[g-1]) / nColorsGradient) + "," +
-                       Math.round(Blue[g-1] + c * (Blue[g] - Blue[g-1]) / nColorsGradient);
-             palette.push("rgb("+col+")");
+             const col = '#' + jsrp.toHex(Red[g-1] + c * (Red[g] - Red[g-1]) / nColorsGradient, 1)
+                             + jsrp.toHex(Green[g-1] + c * (Green[g] - Green[g-1]) / nColorsGradient, 1)
+                             + jsrp.toHex(Blue[g-1] + c * (Blue[g] - Blue[g-1]) / nColorsGradient, 1);
+             palette.push(col);
           }
        }
 
@@ -876,7 +876,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                        .style("fill", col)
                        .style("stroke", col)
                        .property("fill0", col)
-                       .property("fill1", d3.rgb(col).darker(0.5).toString());
+                       .property("fill1", d3.rgb(col).darker(0.5).formatHex());
 
             if (this.isTooltipAllowed())
                r.on('mouseover', function() {
@@ -3760,13 +3760,13 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          this.draw_g.append("svg:path")
                .attr("d", barsl)
                .call(this.fillatt.func)
-               .style("fill", d3.rgb(this.fillatt.color).brighter(0.5).toString());
+               .style("fill", d3.rgb(this.fillatt.color).brighter(0.5).formatHex());
 
       if (barsr)
          this.draw_g.append("svg:path")
                .attr("d", barsr)
                .call(this.fillatt.func)
-               .style("fill", d3.rgb(this.fillatt.color).darker(0.5).toString());
+               .style("fill", d3.rgb(this.fillatt.color).darker(0.5).formatHex());
 
       if (show_text)
          this.finishTextDrawing();
@@ -6026,14 +6026,14 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                     .attr("d", btn1)
                     .style("stroke","none")
                     .call(this.fillatt.func)
-                    .style("fill", d3.rgb(this.fillatt.color).brighter(0.5).toString());
+                    .style("fill", d3.rgb(this.fillatt.color).brighter(0.5).formatHex());
 
       if (btn2.length > 0)
          this.draw_g.append("svg:path")
                     .attr("d", btn2)
                     .style("stroke","none")
                     .call(this.fillatt.func)
-                    .style("fill", !this.fillatt.hasColor() ? 'red' : d3.rgb(this.fillatt.color).darker(0.5).toString());
+                    .style("fill", !this.fillatt.hasColor() ? 'red' : d3.rgb(this.fillatt.color).darker(0.5).formatHex());
 
       if (cross.length > 0) {
          let elem = this.draw_g.append("svg:path")

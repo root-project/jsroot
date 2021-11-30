@@ -233,10 +233,10 @@ JSROOT.define(['d3'], (d3) => {
    /** @summary Generates all root colors, used also in jstests to reset colors
      * @private */
    jsrp.createRootColors = function() {
-      let colorMap = ['white', 'black', 'red', 'green', 'blue', 'yellow', 'magenta', 'cyan', 'rgb(89,212,84)', 'rgb(89,84,217)', 'white'];
+      let colorMap = ['white', 'black', 'red', 'green', 'blue', 'yellow', 'magenta', 'cyan', '#59d454', '#5954d9', 'white'];
       colorMap[110] = 'white';
 
-      let moreCol = [
+      const moreCol = [
          { n: 11, s: 'c1b7ad4d4d4d6666668080809a9a9ab3b3b3cdcdcde6e6e6f3f3f3cdc8accdc8acc3c0a9bbb6a4b3a697b8a49cae9a8d9c8f83886657b1cfc885c3a48aa9a1839f8daebdc87b8f9a768a926983976e7b857d9ad280809caca6c0d4cf88dfbb88bd9f83c89a7dc08378cf5f61ac8f94a6787b946971d45a549300ff7b00ff6300ff4b00ff3300ff1b00ff0300ff0014ff002cff0044ff005cff0074ff008cff00a4ff00bcff00d4ff00ecff00fffd00ffe500ffcd00ffb500ff9d00ff8500ff6d00ff5500ff3d00ff2600ff0e0aff0022ff003aff0052ff006aff0082ff009aff00b1ff00c9ff00e1ff00f9ff00ffef00ffd700ffbf00ffa700ff8f00ff7700ff6000ff4800ff3000ff1800ff0000' },
          { n: 201, s: '5c5c5c7b7b7bb8b8b8d7d7d78a0f0fb81414ec4848f176760f8a0f14b81448ec4876f1760f0f8a1414b84848ec7676f18a8a0fb8b814ecec48f1f1768a0f8ab814b8ec48ecf176f10f8a8a14b8b848ecec76f1f1' },
          { n: 390, s: 'ffffcdffff9acdcd9affff66cdcd669a9a66ffff33cdcd339a9a33666633ffff00cdcd009a9a00666600333300' },
@@ -252,32 +252,38 @@ JSROOT.define(['d3'], (d3) => {
          let s = entry.s;
          for (let n = 0; n < s.length; n += 6) {
             let num = entry.n + n / 6;
-            colorMap[num] = 'rgb(' + parseInt("0x" + s.substr(n, 2)) + "," + parseInt("0x" + s.substr(n + 2, 2)) + "," + parseInt("0x" + s.substr(n + 4, 2)) + ")";
+            colorMap[num] = '#' + s.substr(n,6);
          }
       });
 
       jsrp.root_colors = colorMap;
    }
 
+   /** @summary Covert value between 0 and 1 into hex, used for colors coding
+     * @private */
+   jsrp.toHex = function(num,scale) {
+      let s = Math.round(num*(scale || 255)).toString(16);
+      return s.length == 1 ? '0'+s : s;
+   }
+
    /** @summary Produces rgb code for TColor object
      * @private */
    jsrp.getRGBfromTColor = function(col) {
       if (!col || (col._typename != 'TColor')) return null;
-      let rgb = Math.round(col.fRed * 255) + "," + Math.round(col.fGreen * 255) + "," + Math.round(col.fBlue * 255);
-      if ((col.fAlpha === undefined) || (col.fAlpha == 1.))
-         rgb = "rgb(" + rgb + ")";
-      else
-         rgb = "rgba(" + rgb + "," + col.fAlpha.toFixed(3) + ")";
+
+      let rgb = '#' + jsrp.toHex(col.fRed) + jsrp.toHex(col.fGreen) + jsrp.toHex(col.fBlue);
+      if ((col.fAlpha !==undefined) && (col.fAlpha !== 1.))
+         rgb += jsrp.toHex(col.fAlpha);
 
       switch (rgb) {
-         case 'rgb(255,255,255)': return 'white';
-         case 'rgb(0,0,0)': return 'black';
-         case 'rgb(255,0,0)': return 'red';
-         case 'rgb(0,255,0)': return 'green';
-         case 'rgb(0,0,255)': return 'blue';
-         case 'rgb(255,255,0)': return 'yellow';
-         case 'rgb(255,0,255)': return 'magenta';
-         case 'rgb(0,255,255)': return 'cyan';
+         case '#ffffff': return 'white';
+         case '#000000': return 'black';
+         case '#ff0000': return 'red';
+         case '#00ff00': return 'green';
+         case '#0000ff': return 'blue';
+         case '#ffff00': return 'yellow';
+         case '#ff00ff': return 'magenta';
+         case '#00ffff': return 'cyan';
       }
       return rgb;
    }
@@ -668,7 +674,7 @@ JSROOT.define(['d3'], (d3) => {
    /** @summary Set line attributes.
      * @param {object} args - specify attributes by different ways
      * @param {object} args.attr - TAttLine object with appropriate data members or
-     * @param {string} args.color - color in html like rgb(10,0,0) or "red"
+     * @param {string} args.color - color in html like rgb(255,0,0) or "red" or "#ff0000"
      * @param {number} args.style - line style number
      * @param {number} args.width - line width */
    TAttLineHandler.prototype.setArgs = function(args) {

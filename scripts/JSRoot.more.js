@@ -300,13 +300,13 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                     .attr("d", side1)
                     .style("stroke","none")
                     .call(fillatt.func)
-                    .style("fill", d3.rgb(fillatt.color).brighter(0.5).toString());
+                    .style("fill", d3.rgb(fillatt.color).brighter(0.5).formatHex());
 
          this.draw_g.append("svg:path")
              .attr("d", side2)
              .style("stroke","none")
              .call(fillatt.func)
-             .style("fill", d3.rgb(fillatt.color).darker(0.5).toString());
+             .style("fill", d3.rgb(fillatt.color).darker(0.5).formatHex());
       }
    }
 

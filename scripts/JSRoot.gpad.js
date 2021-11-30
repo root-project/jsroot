@@ -3316,10 +3316,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          for (let n = 0; n < arr.length; ++n) {
             let name = arr[n], p = name.indexOf(":");
             if (p > 0) {
-               ListOfColors[parseInt(name.substr(0,p))] = "rgb(" + name.substr(p+1) + ")";
+               ListOfColors[parseInt(name.substr(0,p))] = d3.color("rgb(" + name.substr(p+1) + ")").formatHex();
             } else {
                p = name.indexOf("=");
-               ListOfColors[parseInt(name.substr(0,p))] = "rgba(" + name.substr(p+1) + ")";
+               ListOfColors[parseInt(name.substr(0,p))] = d3.color("rgba(" + name.substr(p+1) + ")").formatHex();
             }
          }
 
