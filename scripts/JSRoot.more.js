@@ -3583,26 +3583,16 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          return true;
       }
 
-      painter.ReadAttr = function(str, names) {
-         let lastp = 0, obj = { _typename: "any" };
-         for (let k=0;k<names.length;++k) {
-            let p = str.indexOf(":", lastp+1);
-            obj[names[k]] = parseInt(str.substr(lastp+1, (p>lastp) ? p-lastp-1 : undefined));
-            lastp = p;
-         }
-         return obj;
-      }
-
       painter.redraw = function() {
 
-         let obj = this.getObject(), func = this.getAxisToSvgFunc();
+         const obj = this.getObject(), func = this.getAxisToSvgFunc();
 
          if (!obj || !obj.fOper || !func) return;
 
          let indx = 0, attr = {}, lastpath = null, lastkind = "none", d = "",
              oper, k, npoints, n, arr = obj.fOper.split(";");
 
-         function check_attributes(painter, kind) {
+         const check_attributes = kind => {
             if (kind == lastkind) return;
 
             if (lastpath) {
@@ -3613,40 +3603,50 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             if (!kind) return;
 
             lastkind = kind;
-            lastpath = painter.draw_g.append("svg:path");
+            lastpath = this.draw_g.append("svg:path");
             switch (kind) {
-               case "f": lastpath.call(painter.fillatt.func).attr('stroke', 'none'); break;
-               case "l": lastpath.call(painter.lineatt.func).attr('fill', 'none'); break;
-               case "m": lastpath.call(painter.markeratt.func); break;
+               case "f": lastpath.call(this.fillatt.func).attr('stroke', 'none'); break;
+               case "l": lastpath.call(this.lineatt.func).attr('fill', 'none'); break;
+               case "m": lastpath.call(this.markeratt.func); break;
             }
-         }
+         };
+
+         const read_attr = (str, names) => {
+            let lastp = 0, obj = { _typename: "any" };
+            for (let k = 0; k < names.length; ++k) {
+               let p = str.indexOf(":", lastp+1);
+               obj[names[k]] = parseInt(str.substr(lastp+1, (p>lastp) ? p-lastp-1 : undefined));
+               lastp = p;
+            }
+            return obj;
+         };
 
          this.createG();
 
-         for (k =0; k < arr.length; ++k) {
+         for (k = 0; k < arr.length; ++k) {
             oper = arr[k][0];
             switch (oper) {
                case "z":
-                  this.createAttLine({ attr: this.ReadAttr(arr[k], ["fLineColor", "fLineStyle", "fLineWidth"]), force: true });
+                  this.createAttLine({ attr: read_attr(arr[k], ["fLineColor", "fLineStyle", "fLineWidth"]), force: true });
                   check_attributes();
                   continue;
                case "y":
-                  this.createAttFill({ attr: this.ReadAttr(arr[k], ["fFillColor", "fFillStyle"]), force: true });
+                  this.createAttFill({ attr: read_attr(arr[k], ["fFillColor", "fFillStyle"]), force: true });
                   check_attributes();
                   continue;
                case "x":
-                  this.createAttMarker({ attr: this.ReadAttr(arr[k], ["fMarkerColor", "fMarkerStyle", "fMarkerSize"]), force: true });
+                  this.createAttMarker({ attr: read_attr(arr[k], ["fMarkerColor", "fMarkerStyle", "fMarkerSize"]), force: true });
                   check_attributes();
                   continue;
                case "o":
-                  attr = this.ReadAttr(arr[k], ["fTextColor", "fTextFont", "fTextSize", "fTextAlign", "fTextAngle"]);
+                  attr = read_attr(arr[k], ["fTextColor", "fTextFont", "fTextSize", "fTextAlign", "fTextAngle"]);
                   if (attr.fTextSize < 0) attr.fTextSize *= -0.001;
                   check_attributes();
                   continue;
                case "r":
                case "b": {
 
-                  check_attributes(this, (oper == "b") ? "f" : "l");
+                  check_attributes((oper == "b") ? "f" : "l");
 
                   let x1 = func.x(obj.fBuf[indx++]),
                       y1 = func.y(obj.fBuf[indx++]),
@@ -3660,7 +3660,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                case "l":
                case "f": {
 
-                  check_attributes(this, oper);
+                  check_attributes(oper);
 
                   npoints = parseInt(arr[k].substr(1));
 
@@ -3675,7 +3675,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
                case "m": {
 
-                  check_attributes(this, oper);
+                  check_attributes(oper);
 
                   npoints = parseInt(arr[k].substr(1));
 
@@ -3692,20 +3692,18 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
                      check_attributes();
 
-                     let height = (attr.fTextSize > 1) ? attr.fTextSize : this.getPadPainter().getPadHeight() * attr.fTextSize;
+                     let height = (attr.fTextSize > 1) ? attr.fTextSize : this.getPadPainter().getPadHeight() * attr.fTextSize,
+                         angle = attr.fTextAngle,
+                         txt = arr[k].substr(1),
+                         group = this.draw_g.append("svg:g");
 
-                     let group = this.draw_g.append("svg:g");
+                     if (angle >= 360) angle -= Math.floor(angle/360) * 360;
 
                      this.startTextDrawing(attr.fTextFont, height, group);
 
-                     let angle = attr.fTextAngle;
-                     if (angle >= 360) angle -= Math.floor(angle/360) * 360;
-
-                     let txt = arr[k].substr(1);
-
                      if (oper == "h") {
                         let res = "";
-                        for (n =0; n < txt.length; n += 2)
+                        for (n = 0; n < txt.length; n += 2)
                            res += String.fromCharCode(parseInt(txt.substr(n,2), 16));
                         txt = res;
                      }
@@ -3781,8 +3779,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          let l = 1.*lvl/nlevels;
          while ((pal.fPoints[indx] < l) && (indx < pal.fPoints.length-1)) indx++;
 
-         let r1 = (pal.fPoints[indx] - l) / (pal.fPoints[indx] - pal.fPoints[indx-1]);
-         let r2 = (l - pal.fPoints[indx-1]) / (pal.fPoints[indx] - pal.fPoints[indx-1]);
+         let r1 = (pal.fPoints[indx] - l) / (pal.fPoints[indx] - pal.fPoints[indx-1]),
+             r2 = (l - pal.fPoints[indx-1]) / (pal.fPoints[indx] - pal.fPoints[indx-1]);
 
          rgba[lvl*4]   = Math.min(255, Math.round((pal.fColorRed[indx-1] * r1 + pal.fColorRed[indx] * r2) / 256));
          rgba[lvl*4+1] = Math.min(255, Math.round((pal.fColorGreen[indx-1] * r1 + pal.fColorGreen[indx] * r2) / 256));
