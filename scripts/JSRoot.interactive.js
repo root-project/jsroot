@@ -349,10 +349,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
 
    /** @summary Add drag for interactive rectangular elements for painter */
-   function addDragHandler(painter, callback) {
+   function addDragHandler(_painter, callback) {
       if (!JSROOT.settings.MoveResize || JSROOT.batch_mode) return;
 
-      let pthis = painter, drag_rect = null, pp = this.getPadPainter();
+      let painter = _painter, drag_rect = null, pp = painter.getPadPainter();
       if (pp && pp._fast_drawing) return;
 
       const detectRightButton = event => {
@@ -362,8 +362,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return false;
       };
 
-      const rectWidth = () => Number(this.draw_g.attr("width"));
-      const rectHeight = () => Number(this.draw_g.attr("height"));
+      const rectWidth = () => Number(painter.draw_g.attr("width"));
+      const rectHeight = () => Number(painter.draw_g.attr("height"));
 
       const makeResizeElements = (group, width, height, handler) => {
          const addElement = (cursor, d) => {
@@ -392,14 +392,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       const complete_drag = () => {
          drag_rect.style("cursor", "auto");
 
-         if (!this.draw_g) {
+         if (!painter.draw_g) {
             drag_rect.remove();
             drag_rect = null;
             return false;
          }
 
-         let oldx = Number(this.draw_g.attr("x")),
-            oldy = Number(this.draw_g.attr("y")),
+         let oldx = Number(painter.draw_g.attr("x")),
+            oldy = Number(painter.draw_g.attr("y")),
             newx = Number(drag_rect.attr("x")),
             newy = Number(drag_rect.attr("y")),
             newwidth = Number(drag_rect.attr("width")),
@@ -411,16 +411,16 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          let change_size = (newwidth !== rectWidth()) || (newheight !== rectHeight()),
             change_pos = (newx !== oldx) || (newy !== oldy);
 
-         this.draw_g.attr('x', newx).attr('y', newy)
-             .attr("transform", "translate(" + newx + "," + newy + ")")
-             .attr('width', newwidth).attr('height', newheight);
+         painter.draw_g.attr('x', newx).attr('y', newy)
+                .attr("transform", "translate(" + newx + "," + newy + ")")
+                .attr('width', newwidth).attr('height', newheight);
 
          drag_rect.remove();
          drag_rect = null;
 
-         setPainterTooltipEnabled(this, true);
+         setPainterTooltipEnabled(painter, true);
 
-         makeResizeElements(this.draw_g, newwidth, newheight);
+         makeResizeElements(painter.draw_g, newwidth, newheight);
 
          if (change_size || change_pos) {
             if (change_size && ('resize' in callback)) callback.resize(newwidth, newheight);
@@ -451,7 +451,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             if (jsrp.closeMenu) jsrp.closeMenu(); // close menu
 
-            setPainterTooltipEnabled(pthis, false); // disable tooltip
+            setPainterTooltipEnabled(painter, false); // disable tooltip
 
             evnt.sourceEvent.preventDefault();
             evnt.sourceEvent.stopPropagation();
@@ -459,15 +459,15 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             let pad_rect = pp.getPadRect();
 
             let handle = {
-               acc_x1: Number(pthis.draw_g.attr("x")),
-               acc_y1: Number(pthis.draw_g.attr("y")),
+               acc_x1: Number(painter.draw_g.attr("x")),
+               acc_y1: Number(painter.draw_g.attr("y")),
                pad_w: pad_rect.width - rectWidth(),
                pad_h: pad_rect.height - rectHeight(),
                drag_tm: new Date(),
                path: "v" + rectHeight() + "h" + rectWidth() + "v" + (-rectHeight()) + "z"
             };
 
-            drag_rect = d3.select(pthis.draw_g.node().parentNode).append("path")
+            drag_rect = d3.select(painter.draw_g.node().parentNode).append("path")
                .classed("zoom", true)
                .attr("x", handle.acc_x1)
                .attr("y", handle.acc_y1)
@@ -508,12 +508,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             if (complete_drag() === false) {
                let spent = (new Date()).getTime() - handle.drag_tm.getTime();
-               if (callback.ctxmenu && (spent > 600) && pthis.showContextMenu) {
+               if (callback.ctxmenu && (spent > 600) && painter.showContextMenu) {
                   let rrr = resize_se.node().getBoundingClientRect();
-                  pthis.showContextMenu('main', { clientX: rrr.left, clientY: rrr.top });
+                  painter.showContextMenu('main', { clientX: rrr.left, clientY: rrr.top });
                } else if (callback.canselect && (spent <= 600)) {
-                  let pp = pthis.getPadPainter();
-                  if (pp) pp.selectObjectPainter(pthis);
+                  let pp = painter.getPadPainter();
+                  if (pp) pp.selectObjectPainter(painter);
                }
             }
          });
@@ -525,13 +525,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             evnt.sourceEvent.stopPropagation();
             evnt.sourceEvent.preventDefault();
 
-            setPainterTooltipEnabled(pthis, false); // disable tooltip
+            setPainterTooltipEnabled(painter, false); // disable tooltip
 
             let pad_rect = pp.getPadRect();
 
             let handle = {
-               acc_x1: Number(pthis.draw_g.attr("x")),
-               acc_y1: Number(pthis.draw_g.attr("y")),
+               acc_x1: Number(painter.draw_g.attr("x")),
+               acc_y1: Number(painter.draw_g.attr("y")),
                pad_w: pad_rect.width,
                pad_h: pad_rect.height
             };
@@ -539,7 +539,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             handle.acc_x2 = handle.acc_x1 + rectWidth();
             handle.acc_y2 = handle.acc_y1 + rectHeight();
 
-            drag_rect = d3.select(pthis.draw_g.node().parentNode)
+            drag_rect = d3.select(painter.draw_g.node().parentNode)
                .append("rect")
                .classed("zoom", true)
                .style("cursor", d3.select(this).style("cursor"))
@@ -584,10 +584,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          });
 
       if (!callback.only_resize)
-         this.draw_g.style("cursor", "move").call(drag_move);
+         painter.draw_g.style("cursor", "move").call(drag_move);
 
       if (!callback.only_move)
-         makeResizeElements(this.draw_g, rectWidth(), rectHeight(), drag_resize);
+         makeResizeElements(painter.draw_g, rectWidth(), rectHeight(), drag_resize);
    }
 
    /** @summary Add move handlers for drawn element
