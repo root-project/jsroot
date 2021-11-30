@@ -945,6 +945,25 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       this.bins = new Array(npoints);
 
+      const extractYError = (arr,i) => {
+         const kOnlyFirst = 0, kSquareSum = 1, kAbsSum = 2;
+         if (gr.fSumErrorsMode == kOnlyFirst)
+            return arr[0][i];
+         if (gr.fSumErrorsMode == kSquareSum) {
+            let sum = 0.;
+            for (let j = 0; j < gr.fNYErrors; j++)
+               sum += arr[j][i] * arr[j][i];
+            return Math.sqrt(sum);
+         }
+         if (gr.fSumErrorsMode == kAbsSum) {
+            let sum = 0.;
+            for (let j = 0; j < gr.fNYErrors; j++)
+               sum += arr[j][i];
+            return sum;
+         }
+         return -1.;
+      }
+
       for (let p = 0; p < npoints; ++p) {
          let bin = this.bins[p] = { x: gr.fX[p], y: gr.fY[p], indx: p };
          switch(kind) {
@@ -955,8 +974,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             case 2:
                bin.exlow  = gr.fExL[p];
                bin.exhigh = gr.fExH[p];
-               bin.eylow  = gr.fEyL[0][p];
-               bin.eyhigh = gr.fEyH[0][p];
+               bin.eylow  = extractYError(gr.fEyL, p);
+               bin.eyhigh = extractYError(gr.fEyH, p);
                break;
             case 3:
                bin.exlow  = gr.fEXlow[p];
