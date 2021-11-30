@@ -209,8 +209,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
     * @private
     */
 
-   function TPavePainter(divid, pave) {
-      JSROOT.ObjectPainter.call(this, divid, pave);
+   function TPavePainter(dom, pave) {
+      JSROOT.ObjectPainter.call(this, dom, pave);
       this.Enabled = true;
       this.UseContextMenu = true;
       this.UseTextColor = false; // indicates if text color used, enabled menu entry
@@ -1269,8 +1269,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       JSROOT.ObjectPainter.prototype.cleanup.call(this);
    }
 
-   let drawPave = (divid, pave, opt) => {
-      let painter = new JSROOT.TPavePainter(divid, pave);
+   function drawPave(dom, pave, opt) {
+      let painter = new JSROOT.TPavePainter(dom, pave);
 
       return jsrp.ensureTCanvas(painter, false).then(() => {
 
@@ -1305,7 +1305,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                if (!pave.fAxis.fLabelOffset) pave.fAxis.fLabelOffset = 0.005;
             }
 
-            painter.z_handle = new JSROOT.TAxisPainter(divid, pave.fAxis, true);
+            painter.z_handle = new JSROOT.TAxisPainter(dom, pave.fAxis, true);
             painter.z_handle.setPadName(painter.getPadName());
 
             painter.UseContextMenu = true;
@@ -1336,14 +1336,14 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       });
    }
 
-   /** @summary Produce and draw TLegend object for the specified divid
+   /** @summary Produce and draw TLegend object for the specified dom
      * @desc Should be called when all other objects are painted
      * Invoked when item "$legend" specified in JSROOT URL string
      * @returns {Object} Legend painter
      * @memberof JSROOT.Painter
      * @private */
-   let produceLegend = (divid, opt) => {
-      let main_painter = jsrp.getElementMainPainter(divid);
+   function produceLegend(dom, opt) {
+      let main_painter = jsrp.getElementMainPainter(dom);
       if (!main_painter) return;
 
       let pp = main_painter.getPadPainter(),
@@ -1352,7 +1352,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       let leg = JSROOT.create("TLegend");
 
-      for (let k=0;k<pp.painters.length;++k) {
+      for (let k = 0; k < pp.painters.length; ++k) {
          let painter = pp.painters[k],
              obj = painter.getObject();
 
@@ -1384,7 +1384,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       leg.fY2NDC = 0.99-pad.fTopMargin;
       leg.fFillStyle = 1001;
 
-      return drawPave(divid, leg);
+      return drawPave(dom, leg);
    }
 
    // ==============================================================================
@@ -1912,8 +1912,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
     * @private
     */
 
-   function THistPainter(divid, histo) {
-      JSROOT.ObjectPainter.call(this, divid, histo);
+   function THistPainter(dom, histo) {
+      JSROOT.ObjectPainter.call(this, dom, histo);
       this.draw_content = true;
       this.nbinsx = 0;
       this.nbinsy = 0;
@@ -4579,9 +4579,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return this.callDrawFunc(reason);
    }
 
-   let drawHistogram1D = (divid, histo, opt) => {
+   function drawHistogram1D(dom, histo, opt) {
       // create painter and add it to canvas
-      let painter = new TH1Painter(divid, histo);
+      let painter = new TH1Painter(dom, histo);
 
       return jsrp.ensureTCanvas(painter).then(() => {
          // tend to be main painter - if first
@@ -4619,8 +4619,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
     * @private
     */
 
-   function TH2Painter(divid, histo) {
-      THistPainter.call(this, divid, histo);
+   function TH2Painter(dom, histo) {
+      THistPainter.call(this, dom, histo);
       this.fPalette = null;
       this.wheel_zoomy = true;
    }
@@ -6762,9 +6762,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return this.callDrawFunc(reason);
    }
 
-   let drawHistogram2D = (divid, histo, opt) => {
+   function drawHistogram2D(dom, histo, opt) {
       // create painter and add it to canvas
-      let painter = new JSROOT.TH2Painter(divid, histo);
+      let painter = new JSROOT.TH2Painter(dom, histo);
 
       return jsrp.ensureTCanvas(painter).then(() => {
 
@@ -6805,7 +6805,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    }
 
    // =================================================================================
-
 
    function createTF2Histogram(func, nosave, hist) {
       let nsave = 0, npx = 0, npy = 0;
@@ -6883,7 +6882,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    // TF2 always drawn via temporary TH2 object,
    // therefore there is no special painter class
 
-   let drawTF2 = (divid, func, opt) => {
+   function drawTF2(dom, func, opt) {
 
       let d = new JSROOT.DrawOptions(opt);
 
@@ -6896,7 +6895,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       else
          opt = d.opt;
 
-      return drawHistogram2D(divid, hist, opt).then(hpainter => {
+      return drawHistogram2D(dom, hist, opt).then(hpainter => {
 
          hpainter.tf2_typename = func._typename;
          hpainter.tf2_nosave = d.check('NOSAVE');
@@ -6925,8 +6924,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
     * @private
     */
 
-   function THStackPainter(divid, stack, opt) {
-      JSROOT.ObjectPainter.call(this, divid, stack, opt);
+   function THStackPainter(dom, stack, opt) {
+      JSROOT.ObjectPainter.call(this, dom, stack, opt);
 
       this.firstpainter = null;
       this.painters = []; // keep painters to be able update objects
@@ -6952,7 +6951,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (nhists <= 0) return false;
       let lst = JSROOT.create("TList");
       lst.Add(JSROOT.clone(stack.fHists.arr[0]), stack.fHists.opt[0]);
-      for (let i=1;i<nhists;++i) {
+      for (let i = 1; i < nhists; ++i) {
          let hnext = JSROOT.clone(stack.fHists.arr[i]),
              hnextopt = stack.fHists.opt[i],
              hprev = lst.arr[i-1];
@@ -7248,11 +7247,11 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
      *   the first histogram is paint
      *  then the sum of the first and second, etc
      * @private */
-   let drawHStack = (divid, stack, opt) => {
+   function drawHStack(dom, stack, opt) {
       if (!stack.fHists || !stack.fHists.arr)
          return null; // drawing not needed
 
-      let painter = new THStackPainter(divid, stack, opt);
+      let painter = new THStackPainter(dom, stack, opt);
 
       return jsrp.ensureTCanvas(painter, false).then(() => {
 
@@ -7272,7 +7271,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          // if (mm && (!this.options.nostack || (hist.fMinimum==-1111 && hist.fMaximum==-1111))) hopt += ";minimum:" + mm.min + ";maximum:" + mm.max;
          if (mm) hopt += ";minimum:" + mm.min + ";maximum:" + mm.max;
 
-         return JSROOT.draw(divid, stack.fHistogram, hopt).then(subp => {
+         return JSROOT.draw(dom, stack.fHistogram, hopt).then(subp => {
             painter.firstpainter = subp;
          });
       }).then(() => painter.drawNextHisto(0));
