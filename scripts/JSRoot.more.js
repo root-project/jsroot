@@ -1163,7 +1163,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          if (gme) {
             for (let ny = 0; ny < gme.fNYErrors; ++ny)
-               lines.push(`error${ny} y = -${funcs.axisAsText("y", gme.fEyL[ny][d.indx])}/+${funcs.axisAsText("y", gme.fEyH[ny][d.indx])}`);
+               lines.push(`error y${ny} = -${funcs.axisAsText("y", gme.fEyL[ny][d.indx])}/+${funcs.axisAsText("y", gme.fEyH[ny][d.indx])}`);
          } else if ((this.options.Errors || (this.options.EF > 0)) && (funcs.y_handle.kind=='normal') && (d.eylow || d.eyhigh))
             lines.push("error y = -" + funcs.axisAsText("y", d.eylow) + "/+" + funcs.axisAsText("y", d.eyhigh));
 
@@ -1577,8 +1577,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       this.draw_kind = "none"; // indicate if special svg:g were created for each bin
       this.marker_size = 0; // indicate if markers are drawn
+      let draw_g = is_gme ? this.draw_g.append("svg:g") : this.draw_g;
 
-      this.drawBins(funcs, this.options, this.draw_g, w, h, this.lineatt, this.fillatt, true);
+      this.drawBins(funcs, this.options, draw_g, w, h, this.lineatt, this.fillatt, true);
 
       if (is_gme) {
          for (let k = 0; k < graph.fNYErrors; ++k) {
