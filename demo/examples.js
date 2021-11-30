@@ -221,8 +221,8 @@ examples_main = {
    ],
    TGraphMultiErrors : [
      { name: "canv", file: "graph.root", item: "c5", title: "Output of graph/gmultierrors.C macrot" },
-     { name: "X0" , file: "graph.root", item: "GraphMultiErrors;1", opt: "X0_0", title: "do not errors for points with X==0" },
-     { name: "Y0" , file: "graph.root", item: "GraphMultiErrors;1", opt: "Y0_5", title: "do not errors for points with Y==0" }
+     { name: "X0" , file: "graph.root", item: "GraphMultiErrors;1", opt: "SPX0_z_5", title: "do not errors for points with X==0" },
+     { name: "Y0" , file: "graph.root", item: "GraphMultiErrors;1", opt: "SPY0_>_[]", title: "do not errors for points with Y==0" }
    ],
    TGraphPolar : [
       { opt: "", file: "tutorials_graphs.root", item: "graphpolar", title: "Polar coordinates, output of tutorials/graphs/graphpolar.C" },

@@ -882,9 +882,14 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       JSROOT.extend(this.options, { Axis: "", NoOpt: 0, PadStats: false, original: opt, second_x: false, second_y: false, individual_styles: false });
 
-      if (is_gme && opt && (opt.indexOf(";") > 0)) {
-         blocks_gme = opt.split(";");
-         opt = blocks_gme.shift();
+      if (is_gme && opt) {
+         if (opt.indexOf(";") > 0) {
+            blocks_gme = opt.split(";");
+            opt = blocks_gme.shift();
+         } else if (opt.indexOf("_") > 0) {
+            blocks_gme = opt.split("_");
+            opt = blocks_gme.shift();
+         }
       }
 
       let res = this.options;
