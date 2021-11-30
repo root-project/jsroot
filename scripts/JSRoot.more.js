@@ -3019,7 +3019,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    /** @summary Draw function for TSpline
      * @private */
-   jsrp.drawSpline = function(dom, spline, opt) {
+   function drawSpline(dom, spline, opt) {
       let painter = new TSplinePainter(dom, spline);
       painter.decodeOptions(opt);
 
@@ -3174,7 +3174,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    /** @summary Draw function for TGraphTime object
      * @private */
 
-   const drawGraphTime = (dom, gr, opt) => {
+   function drawGraphTime(dom, gr, opt) {
 
       if (!gr.fFrame) {
          console.error('Frame histogram not exists');
@@ -3301,7 +3301,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    /** @summary Draw function for TEfficiency object
      * @private */
-   const drawEfficiency = (dom, eff, opt) => {
+   function drawEfficiency(dom, eff, opt) {
 
       if (!eff || !eff.fTotalHistogram || (eff.fTotalHistogram._typename.indexOf("TH1")!=0)) return null;
 
@@ -3539,7 +3539,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       });
    }
 
-   jsrp.drawMultiGraph = function(dom, mgraph, opt) {
+   /** @summary Draw TMultiGraph object
+     * @private */
+   function drawMultiGraph(dom, mgraph, opt) {
 
       let painter = new TMultiGraphPainter(dom, mgraph);
 
@@ -3569,6 +3571,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    // =========================================================================================
 
+   /** @summary Draw direct TVirtualX commands into SVG
+     * @private */
    function drawWebPainting(dom, obj, opt) {
 
       let painter = new JSROOT.ObjectPainter(dom, obj, opt);
@@ -3619,7 +3623,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          this.createG();
 
-         for (k=0;k<arr.length;++k) {
+         for (k =0; k < arr.length; ++k) {
             oper = arr[k][0];
             switch (oper) {
                case "z":
@@ -3635,7 +3639,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                   check_attributes();
                   continue;
                case "o":
-                  attr = this.ReadAttr(arr[k], ["fTextColor", "fTextFont", "fTextSize", "fTextAlign", "fTextAngle" ]);
+                  attr = this.ReadAttr(arr[k], ["fTextColor", "fTextFont", "fTextSize", "fTextAlign", "fTextAngle"]);
                   if (attr.fTextSize < 0) attr.fTextSize *= -0.001;
                   check_attributes();
                   continue;
@@ -3649,7 +3653,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                       x2 = func.x(obj.fBuf[indx++]),
                       y2 = func.y(obj.fBuf[indx++]);
 
-                  d += "M"+x1+","+y1+"h"+(x2-x1)+"v"+(y2-y1)+"h"+(x1-x2)+"z";
+                  d += `M${x1},${y1}h${x2-x1}v${y2-y1}h${x1-x2}z`;
 
                   continue;
                }
@@ -3701,7 +3705,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
                      if (oper == "h") {
                         let res = "";
-                        for (n=0;n<txt.length;n+=2)
+                        for (n =0; n < txt.length; n += 2)
                            res += String.fromCharCode(parseInt(txt.substr(n,2), 16));
                         txt = res;
                      }
@@ -4101,7 +4105,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    // ===================================================================================
 
-   jsrp.drawJSImage = function(dom, obj, opt) {
+   function drawJSImage(dom, obj, opt) {
       let painter = new JSROOT.BasePainter(dom);
 
       let main = painter.selectDom();
@@ -4297,9 +4301,12 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    jsrp.drawWebPainting = drawWebPainting;
    jsrp.drawRooPlot = drawRooPlot;
    jsrp.drawGraph = drawGraph;
+   jsrp.drawMultiGraph = drawMultiGraph;
+   jsrp.drawJSImage = drawJSImage;
    jsrp.drawFunction = drawFunction;
    jsrp.drawGraphTime = drawGraphTime;
    jsrp.drawGraphPolar = drawGraphPolar;
+   jsrp.drawSpline = drawSpline;
    jsrp.drawEfficiency = drawEfficiency;
    jsrp.drawGraphPolargram = drawGraphPolargram;
    jsrp.drawASImage = drawASImage;
