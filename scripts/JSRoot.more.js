@@ -917,9 +917,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       if (is_gme) {
          res.blocks = [];
-         res.SkipErrForX0 = res.SkipErrForY0 = false;
-         if (d.check('X0')) res.SkipErrForX0 = true;
-         if (d.check('Y0')) res.SkipErrForY0 = true;
+         res.skip_errors_x0 = res.skip_errors_y0 = false;
+         if (d.check('X0')) res.skip_errors_x0 = true;
+         if (d.check('Y0')) res.skip_errors_y0 = true;
       }
 
       decodeBlock(d, res);
@@ -965,6 +965,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       for (let bl = 0; bl < blocks_gme.length; ++bl) {
          let subd = new JSROOT.DrawOptions(blocks_gme[bl]), subres = {};
          decodeBlock(subd, subres);
+         subres.skip_errors_x0 = res.skip_errors_x0;
+         subres.skip_errors_y0 = res.skip_errors_y0;
          res.blocks.push(subres);
       }
    }
@@ -1474,6 +1476,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          lw = Math.floor((lineatt.width-1)/2); // one should take into account half of end-cup line width
 
          let visible = nodes.filter(d => (d.exlow > 0) || (d.exhigh > 0) || (d.eylow > 0) || (d.eyhigh > 0));
+         if (options.skip_errors_x0 || options.skip_errors_y0)
+            visible = visible.filter(d => ((d.x != 0) || !options.skip_errors_x0) && ((d.y != 0) || !options.skip_errors_y0));
+
          if (!JSROOT.batch_mode && JSROOT.settings.Tooltip && main_block)
             visible.append("svg:path")
                    .style("stroke", "none")
