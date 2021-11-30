@@ -832,6 +832,13 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       JSROOT.ObjectPainter.prototype.cleanup.call(this);
    }
 
+   /** @summary Returns object if this drawing TGraphMultiErrors object
+     * @private */
+   TGraphPainter.prototype.get_gme = function() {
+      let graph = this.getObject();
+      return graph._typename == "TGraphMultiErrors" ? graph : null;
+   }
+
    /** @summary Decode options  */
    TGraphPainter.prototype.decodeOptions = function(opt, first_time) {
 
@@ -839,7 +846,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          opt = opt.substr(5);
 
       let graph = this.getObject(),
-          is_gme = (graph._typename == "TGraphMultiErrors"),
+          is_gme = !!this.get_gme(),
           blocks_gme = [],
           has_main = first_time ? !!this.getMainPainter() : !this.axes_draw;
 
@@ -1138,7 +1145,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
      * @private */
    TGraphPainter.prototype.getTooltips = function(d) {
       let pmain = this.getFramePainter(), lines = [],
-          funcs = pmain ? pmain.getGrFuncs(this.options.second_x, this.options.second_y) : null;
+          funcs = pmain ? pmain.getGrFuncs(this.options.second_x, this.options.second_y) : null,
+          gme = this.get_gme();
 
       lines.push(this.getObjectHint());
 
@@ -1146,11 +1154,17 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          lines.push("x = " + funcs.axisAsText("x", d.x));
          lines.push("y = " + funcs.axisAsText("y", d.y));
 
-         if (this.options.Errors && (funcs.x_handle.kind=='normal') && ('exlow' in d) && ((d.exlow!=0) || (d.exhigh!=0)))
+         if (gme)
+            lines.push("error x = -" + funcs.axisAsText("x", gme.fExL[d.indx]) + "/+" + funcs.axisAsText("x", gme.fExH[d.indx]));
+         else if (this.options.Errors && (funcs.x_handle.kind=='normal') && (d.exlow || d.exhigh))
             lines.push("error x = -" + funcs.axisAsText("x", d.exlow) + "/+" + funcs.axisAsText("x", d.exhigh));
 
-         if ((this.options.Errors || (this.options.EF > 0)) && (funcs.y_handle.kind=='normal') && ('eylow' in d) && ((d.eylow!=0) || (d.eyhigh!=0)))
+         if (gme) {
+            for (let ny = 0; ny < gme.fNYErrors; ++ny)
+               lines.push(`error${ny} y = -${funcs.axisAsText("y", gme.fEyL[ny][d.indx])}/+${funcs.axisAsText("y", gme.fEyH[ny][d.indx])}`);
+         } else if ((this.options.Errors || (this.options.EF > 0)) && (funcs.y_handle.kind=='normal') && (d.eylow || d.eyhigh))
             lines.push("error y = -" + funcs.axisAsText("y", d.eylow) + "/+" + funcs.axisAsText("y", d.eyhigh));
+
       }
       return lines;
    }
@@ -1533,7 +1547,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (!pmain) return;
 
       let graph = this.getObject(),
-          is_gme = (graph._typename == "TGraphMultiErrors"),
+          is_gme = !!this.get_gme(),
           funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
           w = pmain.getFrameWidth(),
           h = pmain.getFrameHeight();
