@@ -1398,9 +1398,9 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
 
    // ===================================================================================
 
-   jsrp.drawAxis3D = function(divid, axis /*, opt*/) {
+   jsrp.drawAxis3D = function(dom, axis /*, opt*/) {
 
-      let painter = new JSROOT.ObjectPainter(divid, axis);
+      let painter = new JSROOT.ObjectPainter(dom, axis);
 
       if (!('_main' in axis)) {
          painter.addToPadPrimitives();
@@ -2280,8 +2280,8 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
     * @private
     */
 
-   function TH3Painter(divid, histo) {
-      JSROOT.THistPainter.call(this, divid, histo);
+   function TH3Painter(dom, histo) {
+      JSROOT.THistPainter.call(this, dom, histo);
 
       this.mode3d = true;
    }
@@ -2987,9 +2987,9 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
       });
    }
 
-   jsrp.drawHistogram3D = function(divid, histo, opt) {
+   jsrp.drawHistogram3D = function(dom, histo, opt) {
       // create painter and add it to canvas
-      let painter = new JSROOT.TH3Painter(divid, histo);
+      let painter = new JSROOT.TH3Painter(dom, histo);
       return jsrp.ensureTCanvas(painter, "3d").then(() => {
          painter.setAsMainPainter();
          painter.decodeOptions(opt);
@@ -2998,7 +2998,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
          return painter.redraw();
       }).then(() => {
          let stats = painter.createStat(); // only when required
-         if (stats) return JSROOT.draw(divid, stats, "");
+         if (stats) return JSROOT.draw(dom, stats, "");
       }).then(() => {
          painter.fillToolbar();
          return painter;
@@ -3018,8 +3018,8 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
     * @private
     */
 
-   function TGraph2DPainter(divid, graph) {
-      JSROOT.ObjectPainter.call(this, divid, graph);
+   function TGraph2DPainter(dom, graph) {
+      JSROOT.ObjectPainter.call(this, dom, graph);
    }
 
    TGraph2DPainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
@@ -3344,8 +3344,8 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
       });
    }
 
-   jsrp.drawGraph2D = function(divid, gr, opt) {
-      let painter = new JSROOT.TGraph2DPainter(divid, gr);
+   jsrp.drawGraph2D = function(dom, gr, opt) {
+      let painter = new JSROOT.TGraph2DPainter(dom, gr);
       painter.decodeOptions(opt);
 
       let promise = Promise.resolve(true);
@@ -3353,7 +3353,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
       if (!painter.getMainPainter()) {
          if (!gr.fHistogram)
             gr.fHistogram = painter.createHistogram();
-         promise = JSROOT.draw(divid, gr.fHistogram, "lego;axis");
+         promise = JSROOT.draw(dom, gr.fHistogram, "lego;axis");
          painter.ownhisto = true;
       }
 

@@ -64,8 +64,8 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
     * @private
     */
 
-   function RHistPainter(divid, histo) {
-      JSROOT.ObjectPainter.call(this, divid, histo);
+   function RHistPainter(dom, histo) {
+      JSROOT.ObjectPainter.call(this, dom, histo);
       this.csstype = "hist";
       this.draw_content = true;
       this.nbinsx = 0;
@@ -1911,9 +1911,9 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       this.callDrawFunc(reason);
    }
 
-   let drawHist1 = (divid, histo, opt) => {
+   function drawHist1(dom, histo, opt) {
       // create painter and add it to canvas
-      let painter = new RH1Painter(divid, histo);
+      let painter = new RH1Painter(dom, histo);
 
       return jsrp.ensureRCanvas(painter).then(() => {
 
@@ -3763,9 +3763,9 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       this.callDrawFunc(reason);
    }
 
-   let drawHist2 = (divid, obj, opt) => {
+   function drawHist2(dom, obj, opt) {
       // create painter and add it to canvas
-      let painter = new RH2Painter(divid, obj);
+      let painter = new RH2Painter(dom, obj);
 
       return jsrp.ensureRCanvas(painter).then(() => {
 
@@ -3814,26 +3814,26 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
    // =================================================================================
 
-   let drawHistDisplayItem = (divid, obj, opt) => {
+   function drawHistDisplayItem(dom, obj, opt) {
       if (!obj)
          return null;
 
       if (obj.fAxes.length == 1)
-         return drawHist1(divid, obj, opt);
+         return drawHist1(dom, obj, opt);
 
       if (obj.fAxes.length == 2)
-         return drawHist2(divid, obj, opt);
+         return drawHist2(dom, obj, opt);
 
       if (obj.fAxes.length == 3)
-         return JSROOT.require("v7hist3d").then(() => JSROOT.v7.drawHist3(divid, obj, opt));
+         return JSROOT.require("v7hist3d").then(() => JSROOT.v7.drawHist3(dom, obj, opt));
 
       return null;
    }
 
    // =============================================================
 
-   function RHistStatsPainter(divid, palette, opt) {
-      JSROOT.v7.RPavePainter.call(this, divid, palette, opt, "stats");
+   function RHistStatsPainter(dom, palette, opt) {
+      JSROOT.v7.RPavePainter.call(this, dom, palette, opt, "stats");
    }
 
    RHistStatsPainter.prototype = Object.create(JSROOT.v7.RPavePainter.prototype);
@@ -4041,8 +4041,8 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       this.drawPave();
    }
 
-   function drawHistStats(divid, stats, opt) {
-      let painter = new RHistStatsPainter(divid, stats, opt);
+   function drawHistStats(dom, stats, opt) {
+      let painter = new RHistStatsPainter(dom, stats, opt);
 
       return jsrp.ensureRCanvas(painter, false).then(() => painter.drawPave());
    }

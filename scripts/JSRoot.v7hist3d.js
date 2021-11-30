@@ -2979,9 +2979,9 @@ JSROOT.define(['d3', 'base3d', 'painter', 'latex', 'v7hist'], (d3, THREE, jsrp, 
       });
    }
 
-   let drawHist3 = (divid, histo /*, opt*/) => {
+   function drawHist3(dom, histo /*, opt*/) {
       // create painter and add it to canvas
-      let painter = new RH3Painter(divid, histo);
+      let painter = new RH3Painter(dom, histo);
 
       return jsrp.ensureRCanvas(painter, "3d").then(() => {
 

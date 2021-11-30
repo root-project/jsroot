@@ -4263,11 +4263,11 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
    /** @summary Create geo painter
      * @private */
-   jsrp.createGeoPainter = function(divid, obj, opt) {
+   jsrp.createGeoPainter = function(dom, obj, opt) {
       geo.GradPerSegm = JSROOT.settings.GeoGradPerSegm;
       geo.CompressComp = JSROOT.settings.GeoCompressComp;
 
-      let painter = new TGeoPainter(divid, obj);
+      let painter = new TGeoPainter(dom, obj);
 
       // one could use TGeoManager setting, but for some example JSROOT does not build composites
       // if (obj && obj._typename=='TGeoManager' && (obj.fNsegments > 3))
@@ -4291,7 +4291,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       return painter;
    }
 
-   let drawGeoObject = (divid, obj, opt) => {
+   function drawGeoObject(dom, obj, opt) {
       if (!obj) return null;
 
       let shape = null, extras = null, extras_path = "", is_eve = false;
@@ -4327,7 +4327,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
       if (!obj) return null;
 
-      let painter = jsrp.createGeoPainter(divid, obj, opt);
+      let painter = jsrp.createGeoPainter(dom, obj, opt);
 
       if (painter.ctrl.is_main && !obj.$geo_painter)
          obj.$geo_painter = painter;
