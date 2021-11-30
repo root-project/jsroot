@@ -63,7 +63,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                this.moveDrag = function(dx,dy) {
                   this.pos_dx += dx;
                   this.pos_dy += dy;
-                  this.draw_g.attr("transform", "translate(" + this.pos_dx + "," + this.pos_dy + ")");
+                  this.draw_g.attr("transform", `translate(${this.pos_dx},${this.pos_dy})`);
               }
 
             if (!this.moveEnd)
@@ -72,7 +72,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                   let text = this.getObject();
                   text.fX = this.svgToAxis("x", this.pos_x + this.pos_dx, this.isndc),
                   text.fY = this.svgToAxis("y", this.pos_y + this.pos_dy, this.isndc);
-                  this.submitCanvExec("SetX(" + text.fX + ");;SetY(" + text.fY + ");;");
+                  this.submitCanvExec(`SetX(${text.fX});;SetY(${text.fY});;`);
                }
 
             inter.addMoveHandler(this);
@@ -231,17 +231,17 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           rx = this.axisToSvg("x", pie.fX + pie.fRadius) - xc,
           ry = this.axisToSvg("y", pie.fY + pie.fRadius) - yc;
 
-      this.draw_g.attr("transform","translate("+xc+","+yc+")");
+      this.draw_g.attr("transform",`translate(${xc},${yc})`);
 
       // Draw the slices
       let nb = pie.fPieSlices.length, total = 0,
           af = (pie.fAngularOffset*Math.PI)/180,
           x1 = Math.round(rx*Math.cos(af)), y1 = Math.round(ry*Math.sin(af));
 
-      for (let n=0; n < nb; n++)
+      for (let n = 0; n < nb; n++)
          total += pie.fPieSlices[n].fValue;
 
-      for (let n=0; n<nb; n++) {
+      for (let n = 0; n < nb; n++) {
          let slice = pie.fPieSlices[n],
              lineatt = new JSROOT.TAttLineHandler({attr: slice}),
              fillatt = this.createAttFill(slice);
@@ -251,7 +251,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          this.draw_g
              .append("svg:path")
-             .attr("d", "M0,0L"+x1+","+y1+"A"+rx+","+ry+",0,0,0,"+x2+","+y2+"z")
+             .attr("d", `M0,0L${x1},${y1}A${rx},${ry},0,0,0,${x2},${y2}z`)
              .call(lineatt.func)
              .call(fillatt.func);
          x1 = x2; y1 = y2;
@@ -289,10 +289,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       if (box.fBorderMode && box.fBorderSize && fillatt.hasColor()) {
          let pww = box.fBorderSize, phh = box.fBorderSize,
-             side1 = "M"+xx+","+yy + "h"+ww + "l"+(-pww)+","+phh + "h"+(2*pww-ww) +
-                     "v"+(hh-2*phh)+ "l"+(-pww)+","+phh + "z",
-             side2 = "M"+(xx+ww)+","+(yy+hh) + "v"+(-hh) + "l"+(-pww)+","+phh + "v"+(hh-2*phh)+
-                     "h"+(2*pww-ww) + "l"+(-pww)+","+phh + "z";
+             side1 = `M${xx},${yy}h${ww}l${-pww},${phh}h${2*pww-ww}v${hh-2*phh}l${-pww},${phh}z`,
+             side2 = `M${xx+ww},${yy+hh}v${-hh}l${-pww},${phh}v${hh-2*phh}h${2*pww-ww}l${-pww},${phh}z`;
 
          if (box.fBorderMode < 0) { let s = side1; side1 = side2; side2 = s; }
 
