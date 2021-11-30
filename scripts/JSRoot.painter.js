@@ -1091,10 +1091,10 @@ JSROOT.define(['d3'], (d3) => {
    TAttFillHandler.prototype.createSample = function(sample_svg, width, height) {
 
       // we need to create extra handle to change
-      let sample = new TAttFillHandler({ svg: sample_svg, pattern: this.pattern, color: this.color, color_as_svg: true });
+      const sample = new TAttFillHandler({ svg: sample_svg, pattern: this.pattern, color: this.color, color_as_svg: true });
 
       sample_svg.append("path")
-         .attr("d", "M0,0h" + width + "v" + height + "h-" + width + "z")
+         .attr("d", `M0,0h${width}v${height}h${-width}z`)
          .call(sample.func);
    }
 

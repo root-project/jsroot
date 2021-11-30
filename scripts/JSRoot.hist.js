@@ -6982,7 +6982,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           stack = this.getObject(),
           pad = this.getPadPainter().getRootPad(true);
 
-      function getHistMinMax(hist, witherr) {
+      const getHistMinMax = (hist, witherr) => {
          let res = { min: 0, max: 0 },
              domin = true, domax = true;
          if (hist.fMinimum !== -1111) {
@@ -7010,8 +7010,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                j2 = hist.fYaxis.fLast;
             }
          }
-         for (let j=j1; j<=j2;++j)
-            for (let i=i1; i<=i2;++i) {
+         for (let j = j1; j <= j2; ++j)
+            for (let i = i1; i <= i2; ++i) {
                let val = hist.getBinContent(i, j),
                    err = witherr ? hist.getBinError(hist.getBin(i,j)) : 0;
                if (domin && (first || (val-err < res.min))) res.min = val-err;
@@ -7020,7 +7020,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
            }
 
          return res;
-      }
+      };
 
       if (this.options.nostack) {
          for (let i = 0; i < stack.fHists.arr.length; ++i) {
@@ -7066,9 +7066,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (indx >= nhists)
          return Promise.resolve(this);
 
-      let rindx = this.options.horder ? indx : nhists-indx-1;
-      let hist = hlst.arr[rindx];
-      let hopt = hlst.opt[rindx] || hist.fOption || this.options.hopt;
+      let rindx = this.options.horder ? indx : nhists-indx-1,
+          hist = hlst.arr[rindx],
+          hopt = hlst.opt[rindx] || hist.fOption || this.options.hopt;
+
       if (hopt.toUpperCase().indexOf(this.options.hopt) < 0)
          hopt += this.options.hopt;
       if (this.options.draw_errors && !hopt)
@@ -7105,12 +7106,12 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       let stack = this.getObject(),
           hist = stack.fHistogram || (stack.fHists ? stack.fHists.arr[0] : null) || (stack.fStack ? stack.fStack.arr[0] : null);
 
-      function HasErrors(hist) {
+      const HasErrors = hist => {
          if (hist.fSumw2 && (hist.fSumw2.length > 0))
             for (let n=0;n<hist.fSumw2.length;++n)
                if (hist.fSumw2[n] > 0) return true;
          return false;
-      }
+      };
 
       if (hist && (hist._typename.indexOf("TH2")==0)) this.options.ndim = 2;
 
