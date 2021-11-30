@@ -962,6 +962,17 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       }
    }
 
+   /** @summary Extract errors for TGraphMultiErrors
+     * @private */
+   TGraphPainter.prototype.extractGmeErrors = function(nblock) {
+      if (!this.bins) return;
+      let gr = this.getObject();
+      this.bins.forEach(bin => {
+         bin.eylow  = gr.fEyL[nblock][bin.indx];
+         bin.eyhigh = gr.fEyH[nblock][bin.indx];
+      });
+   }
+
    /** @summary Create bins for TF1 drawing
      * @private */
    TGraphPainter.prototype.createBins = function() {
@@ -978,25 +989,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       this.bins = new Array(npoints);
 
-      const extractYError = (arr,i) => {
-         const kOnlyFirst = 0, kSquareSum = 1, kAbsSum = 2;
-         if (gr.fSumErrorsMode == kOnlyFirst)
-            return arr[0][i];
-         if (gr.fSumErrorsMode == kSquareSum) {
-            let sum = 0.;
-            for (let j = 0; j < gr.fNYErrors; j++)
-               sum += arr[j][i] * arr[j][i];
-            return Math.sqrt(sum);
-         }
-         if (gr.fSumErrorsMode == kAbsSum) {
-            let sum = 0.;
-            for (let j = 0; j < gr.fNYErrors; j++)
-               sum += arr[j][i];
-            return sum;
-         }
-         return -1.;
-      }
-
       for (let p = 0; p < npoints; ++p) {
          let bin = this.bins[p] = { x: gr.fX[p], y: gr.fY[p], indx: p };
          switch(kind) {
@@ -1007,8 +999,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             case 2:
                bin.exlow  = gr.fExL[p];
                bin.exhigh = gr.fExH[p];
-               bin.eylow  = extractYError(gr.fEyL, p);
-               bin.eyhigh = extractYError(gr.fEyH, p);
+               bin.eylow  = gr.fEyL[0][p];
+               bin.eyhigh = gr.fEyH[0][p];
                break;
             case 3:
                bin.exlow  = gr.fEXlow[p];
@@ -1352,8 +1344,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             pnt.gry1 = Math.round(gry);
 
             if (this.has_errors) {
-               pnt.grx0 = Math.round(funcs.grx(pnt.x - pnt.exlow) - grx);
-               pnt.grx2 = Math.round(funcs.grx(pnt.x + pnt.exhigh) - grx);
+               pnt.grx0 = Math.round(funcs.grx(pnt.x - options.ScaleErrX*pnt.exlow) - grx);
+               pnt.grx2 = Math.round(funcs.grx(pnt.x + options.ScaleErrX*pnt.exhigh) - grx);
                pnt.gry0 = Math.round(funcs.gry(pnt.y - pnt.eylow) - gry);
                pnt.gry2 = Math.round(funcs.gry(pnt.y + pnt.eyhigh) - gry);
 
@@ -1541,6 +1533,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (!pmain) return;
 
       let graph = this.getObject(),
+          is_gme = (graph._typename == "TGraphMultiErrors"),
           funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
           w = pmain.getFrameWidth(),
           h = pmain.getFrameHeight();
@@ -1568,16 +1561,19 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       this.drawBins(funcs, this.options, this.draw_g, w, h, this.lineatt, this.fillatt, true);
 
-      if (this.options.blocks) {
-         for (let k = 0; k < this.options.blocks.length; ++k) {
+      if (is_gme) {
+         for (let k = 0; k < graph.fNYErrors; ++k) {
             let lineatt = this.lineatt, fillatt = this.fillatt;
             if (this.options.individual_styles) {
                lineatt = new JSROOT.TAttLineHandler({ attr: graph.fAttLine[k], std: false });
                fillatt = new JSROOT.TAttFillHandler({ attr: graph.fAttFill[k], std: false, svg: this.getCanvSvg() });
             }
             let sub_g = this.draw_g.append("svg:g");
-            this.drawBins(funcs, this.options.blocks[k], sub_g, w, h, lineatt, fillatt);
+            let options = k < this.options.blocks.length ? this.options.blocks[k] : this.options;
+            this.extractGmeErrors(k);
+            this.drawBins(funcs, options, sub_g, w, h, lineatt, fillatt);
          }
+         this.extractGmeErrors(0); // ensure that first block kept at the end
       }
 
       if (!JSROOT.batch_mode)
