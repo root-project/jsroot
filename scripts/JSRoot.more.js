@@ -847,7 +847,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       // decode main draw options for the graph
       const decodeBlock = (d, res) => {
-         JSROOT.extend(res, { Line: 0, Curve: 0, Rect: 0, Mark: 0, Bar: 0, OutRange: 0,  EF:0, Fill: 0, MainError: 1, Ends: 1, ScaleErrX: 1 });
+         JSROOT.extend(res, { Line: 0, Curve: 0, Rect: 0, Mark: 0, Bar: 0, OutRange: 0, EF:0, Fill: 0, MainError: 1, Ends: 1, ScaleErrX: 1 });
 
          if (is_gme && d.check("S=", true)) res.ScaleErrX = d.partAsFloat();
 
@@ -872,7 +872,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          if (d.check('5')) { res.Rect = 2; res.Errors = 0; }
          if (d.check('X')) res.Errors = 0;
       };
-
 
       JSROOT.extend(this.options, { Axis: "", NoOpt: 0, PadStats: false, original: opt, second_x: false, second_y: false, individual_styles: false });
 
@@ -925,7 +924,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       // if (d.check('E')) res.Errors = 1; // E option only defined for TGraphPolar
 
       if (res.Errors === undefined)
-         res.Errors = this.has_errors ? 1 : 0;
+         res.Errors = this.has_errors && (!is_gme || !blocks_gme.length) ? 1 : 0;
 
       // special case - one could use svg:path to draw many pixels (
       if ((res.Mark == 1) && (graph.fMarkerStyle == 1)) res.Mark = 101;
@@ -1227,9 +1226,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    /** @summary draw TGraph bins with specified options
      * @desc Can be called several times
      * @private */
-   TGraphPainter.prototype.drawBins = function(funcs, options, drawbins, draw_g, w, h, lineatt, fillatt, main_block) {
+   TGraphPainter.prototype.drawBins = function(funcs, options, draw_g, w, h, lineatt, fillatt, main_block) {
       let graph = this.getObject(),
-          excl_width = 0;
+          excl_width = 0, drawbins = null;
 
       if (main_block && (lineatt.excl_side != 0)) {
          excl_width = lineatt.excl_width;
@@ -1237,8 +1236,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       }
 
       if (options.EF) {
-         if (!drawbins)
-            drawbins = this.optimizeBins((options.EF > 1) ? 20000 : 0);
+         drawbins = this.optimizeBins((options.EF > 1) ? 20000 : 0);
 
          // build lower part
          for (let n = 0; n < drawbins.length; ++n) {
@@ -1534,8 +1532,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                 .attr("fill", "none")
                 .attr("pointer-events", "visibleFill");
       }
-
-      return drawbins;
    }
 
    /** @summary draw TGraph */
@@ -1562,30 +1558,25 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          }
       }
 
-      if (this.options.individual_styles) {
-         this.createAttLine({ attr: graph.fAttLine[0], can_excl: true });
-         this.createAttFill({ attr: graph.fAttFill[0], kind: 1 });
-      } else {
-         this.createAttLine({ attr: graph, can_excl: true });
-         this.createAttFill({ attr: graph, kind: 1 });
-      }
+      this.createAttLine({ attr: graph, can_excl: true });
+      this.createAttFill({ attr: graph, kind: 1 });
 
       this.fillatt.used = false; // mark used only when really used
 
       this.draw_kind = "none"; // indicate if special svg:g were created for each bin
       this.marker_size = 0; // indicate if markers are drawn
 
-      let drawbins = this.drawBins(funcs, this.options, null, this.draw_g, w, h, this.lineatt, this.fillatt, true);
+      this.drawBins(funcs, this.options, this.draw_g, w, h, this.lineatt, this.fillatt, true);
 
       if (this.options.blocks) {
          for (let k = 0; k < this.options.blocks.length; ++k) {
             let lineatt = this.lineatt, fillatt = this.fillatt;
             if (this.options.individual_styles) {
-               lineatt = new JSROOT.TAttLineHandler({ attr: graph.fAttLine[k+1], std: false });
-               fillatt = new JSROOT.TAttFillHandler({ attr: graph.fAttFill[k+1], std: false, svg: this.getCanvSvg() });
+               lineatt = new JSROOT.TAttLineHandler({ attr: graph.fAttLine[k], std: false });
+               fillatt = new JSROOT.TAttFillHandler({ attr: graph.fAttFill[k], std: false, svg: this.getCanvSvg() });
             }
             let sub_g = this.draw_g.append("svg:g");
-            this.drawBins(funcs, this.options.blocks[k], drawbins, sub_g, w, h, lineatt, fillatt);
+            this.drawBins(funcs, this.options.blocks[k], sub_g, w, h, lineatt, fillatt);
          }
       }
 
