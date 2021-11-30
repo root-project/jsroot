@@ -801,6 +801,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       this.wheel_zoomy = true;
       this.is_bent = (graph._typename == 'TGraphBentErrors');
       this.has_errors = (graph._typename == 'TGraphErrors') ||
+                        (graph._typename == 'TGraphMultiErrors') ||
                         (graph._typename == 'TGraphAsymmErrors') ||
                          this.is_bent || graph._typename.match(/^RooHist/);
    }
@@ -938,8 +939,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if ((gr._typename==="TCutG") && (npoints>3)) npoints--;
 
       if (gr._typename == 'TGraphErrors') kind = 1; else
+      if (gr._typename == 'TGraphMultiErrors') kind = 2; else
       if (gr._typename == 'TGraphAsymmErrors' || gr._typename == 'TGraphBentErrors'
-          || gr._typename.match(/^RooHist/)) kind = 2;
+          || gr._typename.match(/^RooHist/)) kind = 3;
 
       this.bins = new Array(npoints);
 
@@ -951,6 +953,12 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                bin.eylow = bin.eyhigh = gr.fEY[p];
                break;
             case 2:
+               bin.exlow  = gr.fExL[p];
+               bin.exhigh = gr.fExH[p];
+               bin.eylow  = gr.fEyL[0][p];
+               bin.eyhigh = gr.fEyH[0][p];
+               break;
+            case 3:
                bin.exlow  = gr.fEXlow[p];
                bin.exhigh = gr.fEXhigh[p];
                bin.eylow  = gr.fEYlow[p];
@@ -958,7 +966,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                break;
          }
 
-         if (p===0) {
+         if (p === 0) {
             this.xmin = this.xmax = bin.x;
             this.ymin = this.ymax = bin.y;
          }
