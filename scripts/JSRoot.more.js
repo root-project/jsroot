@@ -839,18 +839,51 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          opt = opt.substr(5);
 
       let graph = this.getObject(),
-          d = new JSROOT.DrawOptions(opt),
+          is_gme = (graph._typename == "TGraphMultiErrors"),
+          blocks_gme = [],
           has_main = first_time ? !!this.getMainPainter() : !this.axes_draw;
 
       if (!this.options) this.options = {};
 
-      JSROOT.extend(this.options, {
-         Line: 0, Curve: 0, Rect: 0, Mark: 0, Bar: 0, OutRange: 0,  EF:0, Fill: 0, NoOpt: 0,
-         MainError: 1, Ends: 1, Axis: "", PadStats: false, original: opt,
-         second_x: false, second_y: false
-      });
+      // decode main draw options for the graph
+      const decodeBlock = (d, res) => {
+         JSROOT.extend(res, { Line: 0, Curve: 0, Rect: 0, Mark: 0, Bar: 0, OutRange: 0,  EF:0, Fill: 0, MainError: 1, Ends: 1, ScaleErrX: 1 });
+
+         if (is_gme && d.check("S=", true)) res.ScaleErrX = d.partAsFloat();
+
+         if (d.check('L')) res.Line = 1;
+         if (d.check('F')) res.Fill = 1;
+         if (d.check('CC')) res.Curve = 2; // draw all points without reduction
+         if (d.check('C')) res.Curve = 1;
+         if (d.check('*')) res.Mark = 103;
+         if (d.check('P0')) res.Mark = 104;
+         if (d.check('P')) res.Mark = 1;
+         if (d.check('B')) { res.Bar = 1; res.Errors = 0; }
+         if (d.check('Z')) { res.Errors = 1; res.Ends = 0; }
+         if (d.check('||')) { res.Errors = 1; res.MainError = 0; res.Ends = 1; }
+         if (d.check('[]')) { res.Errors = 1; res.MainError = 0; res.Ends = 2; }
+         if (d.check('|>')) { res.Errors = 1; res.Ends = 3; }
+         if (d.check('>')) { res.Errors = 1; res.Ends = 4; }
+         if (d.check('0')) { res.Mark = 1; res.Errors = 1; res.OutRange = 1; }
+         if (d.check('1')) { if (res.Bar == 1) res.Bar = 2; }
+         if (d.check('2')) { res.Rect = 1; res.Errors = 0; }
+         if (d.check('3')) { res.EF = 1; res.Errors = 0;  }
+         if (d.check('4')) { res.EF = 2; res.Errors = 0; }
+         if (d.check('5')) { res.Rect = 2; res.Errors = 0; }
+         if (d.check('X')) res.Errors = 0;
+      };
+
+
+      JSROOT.extend(this.options, { Axis: "", NoOpt: 0, PadStats: false, original: opt, second_x: false, second_y: false, individual_styles: false });
+
+      if (is_gme && opt && (opt.indexOf(";") > 0)) {
+         blocks_gme = opt.split(";");
+         opt = blocks_gme.shift();
+      }
 
       let res = this.options;
+
+      let d = new JSROOT.DrawOptions(opt);
 
       // check pad options first
       res.PadStats = d.check("USE_PAD_STATS");
@@ -864,36 +897,31 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          d = new JSROOT.DrawOptions(res.original);
       }
 
+      if (d.check('NOOPT')) res.NoOpt = 1;
+
       res._pfc = d.check("PFC");
       res._plc = d.check("PLC");
       res._pmc = d.check("PMC");
 
-      if (d.check('NOOPT')) res.NoOpt = 1;
-      if (d.check('L')) res.Line = 1;
-      if (d.check('F')) res.Fill = 1;
       if (d.check('A')) res.Axis = d.check("I") ? "A" : "AXIS"; // I means invisible axis
       if (d.check('X+')) { res.Axis += "X+"; res.second_x = has_main; }
       if (d.check('Y+')) { res.Axis += "Y+"; res.second_y = has_main; }
       if (d.check('RX')) res.Axis += "RX";
       if (d.check('RY')) res.Axis += "RY";
-      if (d.check('CC')) res.Curve = 2; // draw all points without reduction
-      if (d.check('C')) res.Curve = 1;
-      if (d.check('*')) res.Mark = 103;
-      if (d.check('P0')) res.Mark = 104;
-      if (d.check('P')) res.Mark = 1;
-      if (d.check('B')) { res.Bar = 1; res.Errors = 0; }
-      if (d.check('Z')) { res.Errors = 1; res.Ends = 0; }
-      if (d.check('||')) { res.Errors = 1; res.MainError = 0; res.Ends = 1; }
-      if (d.check('[]')) { res.Errors = 1; res.MainError = 0; res.Ends = 2; }
-      if (d.check('|>')) { res.Errors = 1; res.Ends = 3; }
-      if (d.check('>')) { res.Errors = 1; res.Ends = 4; }
-      if (d.check('0')) { res.Mark = 1; res.Errors = 1; res.OutRange = 1; }
-      if (d.check('1')) { if (res.Bar == 1) res.Bar = 2; }
-      if (d.check('2')) { res.Rect = 1; res.Errors = 0; }
-      if (d.check('3')) { res.EF = 1; res.Errors = 0;  }
-      if (d.check('4')) { res.EF = 2; res.Errors = 0; }
-      if (d.check('5')) { res.Rect = 2; res.Errors = 0; }
-      if (d.check('X')) res.Errors = 0;
+
+      if (is_gme) {
+         res.blocks = [];
+         res.SkipErrForX0 = res.SkipErrForY0 = false;
+         if (d.check('X0')) res.SkipErrForX0 = true;
+         if (d.check('Y0')) res.SkipErrForY0 = true;
+      }
+
+      decodeBlock(d, res);
+
+      if (is_gme) {
+         if (d.check('S')) res.individual_styles = true;
+      }
+
       // if (d.check('E')) res.Errors = 1; // E option only defined for TGraphPolar
 
       if (res.Errors === undefined)
@@ -927,6 +955,12 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       }
 
       res.Axis += hopt;
+
+      for (let bl = 0; bl < blocks_gme.length; ++bl) {
+         let subd = new JSROOT.DrawOptions(blocks_gme[bl]), subres = {};
+         decodeBlock(subd, subres);
+         res.blocks.push(subres);
+      }
    }
 
    /** @summary Create bins for TF1 drawing
@@ -1190,49 +1224,21 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    }
 
-   /** @summary draw TGraph */
-   TGraphPainter.prototype.drawGraph = function() {
+   /** @summary draw TGraph bins with specified options
+     * @desc Can be called several times
+     * @private */
+   TGraphPainter.prototype.drawBins = function(funcs, options, drawbins, draw_g, w, h, lineatt, fillatt, main_block) {
+      let graph = this.getObject(),
+          excl_width = 0;
 
-      let pmain = this.get_main();
-      if (!pmain) return;
-
-      let w = pmain.getFrameWidth(),
-          h = pmain.getFrameHeight(),
-          graph = this.getObject(),
-          excl_width = 0,
-          funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y);
-
-      this.createG(!pmain.pad_layer);
-
-      if (this.options._pfc || this.options._plc || this.options._pmc) {
-         let mp = this.getMainPainter();
-         if (mp && mp.createAutoColor) {
-            let icolor = mp.createAutoColor();
-            if (this.options._pfc) { graph.fFillColor = icolor; delete this.fillatt; }
-            if (this.options._plc) { graph.fLineColor = icolor; delete this.lineatt; }
-            if (this.options._pmc) { graph.fMarkerColor = icolor; delete this.markeratt; }
-            this.options._pfc = this.options._plc = this.options._pmc = false;
-         }
+      if (main_block && (lineatt.excl_side != 0)) {
+         excl_width = lineatt.excl_width;
+         if ((lineatt.width > 0) && !options.Line && !options.Curve) options.Line = 1;
       }
 
-      this.createAttLine({ attr: graph, can_excl: true });
-
-      this.createAttFill({ attr: graph, kind: 1 });
-      this.fillatt.used = false; // mark used only when really used
-
-      this.draw_kind = "none"; // indicate if special svg:g were created for each bin
-      this.marker_size = 0; // indicate if markers are drawn
-
-      if (this.lineatt.excl_side != 0) {
-         excl_width = this.lineatt.excl_width;
-         if ((this.lineatt.width > 0) && !this.options.Line && !this.options.Curve) this.options.Line = 1;
-      }
-
-      let drawbins = null;
-
-      if (this.options.EF) {
-
-         drawbins = this.optimizeBins((this.options.EF > 1) ? 20000 : 0);
+      if (options.EF) {
+         if (!drawbins)
+            drawbins = this.optimizeBins((options.EF > 1) ? 20000 : 0);
 
          // build lower part
          for (let n = 0; n < drawbins.length; ++n) {
@@ -1241,7 +1247,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             bin.gry = funcs.gry(bin.y - bin.eylow);
          }
 
-         let path1 = jsrp.buildSvgPath((this.options.EF > 1) ? "bezier" : "line", drawbins),
+         let path1 = jsrp.buildSvgPath((options.EF > 1) ? "bezier" : "line", drawbins),
              bins2 = [];
 
          for (let n = drawbins.length-1; n >= 0; --n) {
@@ -1251,21 +1257,22 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          }
 
          // build upper part (in reverse direction)
-         let path2 = jsrp.buildSvgPath((this.options.EF > 1) ? "Lbezier" : "Lline", bins2);
+         let path2 = jsrp.buildSvgPath((options.EF > 1) ? "Lbezier" : "Lline", bins2);
 
-         this.draw_g.append("svg:path")
-                    .attr("d", path1.path + path2.path + "Z")
-                    .style("stroke", "none")
-                    .call(this.fillatt.func);
-         this.draw_kind = "lines";
+         draw_g.append("svg:path")
+               .attr("d", path1.path + path2.path + "Z")
+               .style("stroke", "none")
+               .call(fillatt.func);
+         if (main_block)
+            this.draw_kind = "lines";
       }
 
-      if (this.options.Line || this.options.Fill) {
+      if (options.Line || options.Fill) {
 
          let close_symbol = "";
-         if (graph._typename == "TCutG") this.options.Fill = 1;
+         if (graph._typename == "TCutG") options.Fill = 1;
 
-         if (this.options.Fill) {
+         if (options.Fill) {
             close_symbol = "Z"; // always close area if we want to fill it
             excl_width = 0;
          }
@@ -1286,25 +1293,25 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          if (excl_width)
              this.appendExclusion(false, path, drawbins, excl_width);
 
-         let elem = this.draw_g.append("svg:path")
-                        .attr("d", path.path + close_symbol);
-         if (this.options.Line)
-            elem.call(this.lineatt.func);
+         let elem = draw_g.append("svg:path").attr("d", path.path + close_symbol);
+         if (options.Line)
+            elem.call(lineatt.func);
          else
             elem.style('stroke', 'none');
 
-         if (this.options.Fill)
-            elem.call(this.fillatt.func);
+         if (options.Fill)
+            elem.call(fillatt.func);
          else
             elem.style('fill', 'none');
 
-         this.draw_kind = "lines";
+         if (main_block)
+            this.draw_kind = "lines";
       }
 
-      if (this.options.Curve) {
+      if (options.Curve) {
          let curvebins = drawbins;
-         if ((this.draw_kind != "lines") || !curvebins || ((this.options.Curve == 1) && (curvebins.length > 20000))) {
-            curvebins = this.optimizeBins((this.options.Curve == 1) ? 20000 : 0);
+         if ((this.draw_kind != "lines") || !curvebins || ((options.Curve == 1) && (curvebins.length > 20000))) {
+            curvebins = this.optimizeBins((options.Curve == 1) ? 20000 : 0);
             for (let n = 0; n < curvebins.length; ++n) {
                let bin = curvebins[n];
                bin.grx = funcs.grx(bin.x);
@@ -1320,27 +1327,28 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          if (excl_width)
              this.appendExclusion(true, path, curvebins, excl_width);
 
-         this.draw_g.append("svg:path")
-                    .attr("d", path.path)
-                    .call(this.lineatt.func)
-                    .style('fill','none');
-         this.draw_kind = "lines"; // handled same way as lines
+         draw_g.append("svg:path")
+               .attr("d", path.path)
+               .call(lineatt.func)
+               .style('fill', 'none');
+         if (main_block)
+            this.draw_kind = "lines"; // handled same way as lines
       }
 
       let nodes = null;
 
-      if (this.options.Errors || this.options.Rect || this.options.Bar) {
+      if (options.Errors || options.Rect || options.Bar) {
 
          drawbins = this.optimizeBins(5000, (pnt,i) => {
 
             let grx = funcs.grx(pnt.x);
 
             // when drawing bars, take all points
-            if (!this.options.Bar && ((grx < 0) || (grx > w))) return true;
+            if (!options.Bar && ((grx < 0) || (grx > w))) return true;
 
             let gry = funcs.gry(pnt.y);
 
-            if (!this.options.Bar && !this.options.OutRange && ((gry < 0) || (gry > h))) return true;
+            if (!options.Bar && !options.OutRange && ((gry < 0) || (gry > h))) return true;
 
             pnt.grx1 = Math.round(grx);
             pnt.gry1 = Math.round(gry);
@@ -1364,17 +1372,18 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             return false;
          });
 
-         this.draw_kind = "nodes";
+         if (main_block)
+            this.draw_kind = "nodes";
 
-         nodes = this.draw_g.selectAll(".grpoint")
-                     .data(drawbins)
-                     .enter()
-                     .append("svg:g")
-                     .attr("class", "grpoint")
-                     .attr("transform", d => `translate(${d.grx1},${d.gry1})`);
+         nodes = draw_g.selectAll(".grpoint")
+                       .data(drawbins)
+                       .enter()
+                       .append("svg:g")
+                       .attr("class", "grpoint")
+                       .attr("transform", d => `translate(${d.grx1},${d.gry1})`);
       }
 
-      if (this.options.Bar) {
+      if (options.Bar) {
          // calculate bar width
          for (let i = 1; i < drawbins.length-1; ++i)
             drawbins[i].width = Math.max(2, (drawbins[i+1].grx1 - drawbins[i-1].grx1) / 2 - 2);
@@ -1396,43 +1405,43 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                  d.bar = true; // element drawn as bar
                  let dx = Math.round(-d.width/2),
                      dw = Math.round(d.width),
-                     dy = (this.options.Bar!==1) ? 0 : ((d.gry1 > yy0) ? yy0-d.gry1 : 0),
-                     dh = (this.options.Bar!==1) ? (h > d.gry1 ? h - d.gry1 : 0) : Math.abs(yy0 - d.gry1);
+                     dy = (options.Bar!==1) ? 0 : ((d.gry1 > yy0) ? yy0-d.gry1 : 0),
+                     dh = (options.Bar!==1) ? (h > d.gry1 ? h - d.gry1 : 0) : Math.abs(yy0 - d.gry1);
                  return `M${dx},${dy}h${dw}v${dh}h${-dw}z`;
               })
-            .call(this.fillatt.func);
+            .call(fillatt.func);
       }
 
-      if (this.options.Rect) {
+      if (options.Rect) {
          nodes.filter(d => (d.exlow > 0) && (d.exhigh > 0) && (d.eylow > 0) && (d.eyhigh > 0))
            .append("svg:path")
            .attr("d", d => {
                d.rect = true;
                return `M${d.grx0},${d.gry0}H${d.grx2}V${d.gry2}H${d.grx0}Z`;
             })
-           .call(this.fillatt.func)
-           .call(this.options.Rect === 2 ? this.lineatt.func : () => {});
+           .call(fillatt.func)
+           .call(options.Rect === 2 ? lineatt.func : () => {});
       }
 
       this.error_size = 0;
 
-      if (this.options.Errors) {
+      if (options.Errors) {
          // to show end of error markers, use line width attribute
-         let lw = this.lineatt.width + JSROOT.gStyle.fEndErrorSize, bb = 0,
-             vv = this.options.Ends ? "m0," + lw + "v-" + 2*lw : "",
-             hh = this.options.Ends ? "m" + lw + ",0h-" + 2*lw : "",
+         let lw = lineatt.width + JSROOT.gStyle.fEndErrorSize, bb = 0,
+             vv = options.Ends ? "m0," + lw + "v-" + 2*lw : "",
+             hh = options.Ends ? "m" + lw + ",0h-" + 2*lw : "",
              vleft = vv, vright = vv, htop = hh, hbottom = hh;
 
          const mainLine = (dx,dy) => {
-            if (!this.options.MainError) return `M${dx},${dy}`;
+            if (!options.MainError) return `M${dx},${dy}`;
             let res = "M0,0";
             if (dx) return res + (dy ? `L${dx},${dy}` : `H${dx}`);
             return dy ? res + `V${dy}` : res;
          };
 
-         switch (this.options.Ends) {
+         switch (options.Ends) {
             case 2:  // option []
-               bb = Math.max(this.lineatt.width+1, Math.round(lw*0.66));
+               bb = Math.max(lineatt.width+1, Math.round(lw*0.66));
                vleft = "m"+bb+","+lw + "h-"+bb + "v-"+2*lw + "h"+bb;
                vright = "m-"+bb+","+lw + "h"+bb + "v-"+2*lw + "h-"+bb;
                htop = "m-"+lw+","+bb + "v-"+bb + "h"+2*lw + "v"+bb;
@@ -1440,7 +1449,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                break;
             case 3: // option |>
                lw = Math.max(lw, Math.round(graph.fMarkerSize*8*0.66));
-               bb = Math.max(this.lineatt.width+1, Math.round(lw*0.66));
+               bb = Math.max(lineatt.width+1, Math.round(lw*0.66));
                vleft = "l"+bb+","+lw + "v-"+2*lw + "l-"+bb+","+lw;
                vright = "l-"+bb+","+lw + "v-"+2*lw + "l"+bb+","+lw;
                htop = "l-"+lw+","+bb + "h"+2*lw + "l-"+lw+",-"+bb;
@@ -1448,7 +1457,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                break;
             case 4: // option >
                lw = Math.max(lw, Math.round(graph.fMarkerSize*8*0.66));
-               bb = Math.max(this.lineatt.width+1, Math.round(lw*0.66));
+               bb = Math.max(lineatt.width+1, Math.round(lw*0.66));
                vleft = "l"+bb+","+lw + "m0,-"+2*lw + "l-"+bb+","+lw;
                vright = "l-"+bb+","+lw + "m0,-"+2*lw + "l"+bb+","+lw;
                htop = "l-"+lw+","+bb + "m"+2*lw + ",0l-"+lw+",-"+bb;
@@ -1458,10 +1467,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          this.error_size = lw;
 
-         lw = Math.floor((this.lineatt.width-1)/2); // one should take into account half of end-cup line width
+         lw = Math.floor((lineatt.width-1)/2); // one should take into account half of end-cup line width
 
          let visible = nodes.filter(d => (d.exlow > 0) || (d.exhigh > 0) || (d.eylow > 0) || (d.eyhigh > 0));
-         if (!JSROOT.batch_mode && JSROOT.settings.Tooltip)
+         if (!JSROOT.batch_mode && JSROOT.settings.Tooltip && main_block)
             visible.append("svg:path")
                    .style("stroke", "none")
                    .style("fill", "none")
@@ -1469,7 +1478,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                    .attr("d", d => `M${d.grx0},${d.gry0}h${d.grx2-d.grx0}v${d.gry2-d.gry0}h${d.grx0-d.grx2}z`);
 
          visible.append("svg:path")
-             .call(this.lineatt.func)
+             .call(lineatt.func)
              .style("fill", "none")
              .attr("d", d => {
                 d.error = true;
@@ -1480,17 +1489,17 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
               });
       }
 
-      if (this.options.Mark) {
+      if (options.Mark) {
          // for tooltips use markers only if nodes were not created
          let path = "", pnt, grx, gry;
 
-         this.createAttMarker({ attr: graph, style: this.options.Mark - 100 });
+         this.createAttMarker({ attr: graph, style: options.Mark - 100 });
 
          this.marker_size = this.markeratt.getFullSize();
 
          this.markeratt.resetPos();
 
-         let want_tooltip = !JSROOT.batch_mode && JSROOT.settings.Tooltip && (!this.markeratt.fill || (this.marker_size < 7)) && !nodes,
+         let want_tooltip = !JSROOT.batch_mode && JSROOT.settings.Tooltip && (!this.markeratt.fill || (this.marker_size < 7)) && !nodes && main_block,
              hints_marker = "", hsz = Math.max(5, Math.round(this.marker_size*0.7)),
              maxnummarker = 1000000 / (this.markeratt.getMarkerLength() + 7), step = 1; // let produce SVG at maximum 1MB
 
@@ -1512,18 +1521,72 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          }
 
          if (path.length > 0) {
-            this.draw_g.append("svg:path")
-                       .attr("d", path)
-                       .call(this.markeratt.func);
-            if ((nodes===null) && (this.draw_kind == "none"))
-               this.draw_kind = (this.options.Mark == 101) ? "path" : "mark";
+            draw_g.append("svg:path")
+                  .attr("d", path)
+                  .call(this.markeratt.func);
+            if ((nodes===null) && (this.draw_kind == "none") && main_block)
+               this.draw_kind = (options.Mark == 101) ? "path" : "mark";
          }
          if (want_tooltip && hints_marker)
-            this.draw_g.append("svg:path")
+            draw_g.append("svg:path")
                 .attr("d", hints_marker)
                 .attr("stroke", "none")
                 .attr("fill", "none")
                 .attr("pointer-events", "visibleFill");
+      }
+
+      return drawbins;
+   }
+
+   /** @summary draw TGraph */
+   TGraphPainter.prototype.drawGraph = function() {
+
+      let pmain = this.get_main();
+      if (!pmain) return;
+
+      let graph = this.getObject(),
+          funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
+          w = pmain.getFrameWidth(),
+          h = pmain.getFrameHeight();
+
+      this.createG(!pmain.pad_layer);
+
+      if (this.options._pfc || this.options._plc || this.options._pmc) {
+         let mp = this.getMainPainter();
+         if (mp && mp.createAutoColor) {
+            let icolor = mp.createAutoColor();
+            if (this.options._pfc) { graph.fFillColor = icolor; delete this.fillatt; }
+            if (this.options._plc) { graph.fLineColor = icolor; delete this.lineatt; }
+            if (this.options._pmc) { graph.fMarkerColor = icolor; delete this.markeratt; }
+            this.options._pfc = this.options._plc = this.options._pmc = false;
+         }
+      }
+
+      if (this.options.individual_styles) {
+         this.createAttLine({ attr: graph.fAttLine[0], can_excl: true });
+         this.createAttFill({ attr: graph.fAttFill[0], kind: 1 });
+      } else {
+         this.createAttLine({ attr: graph, can_excl: true });
+         this.createAttFill({ attr: graph, kind: 1 });
+      }
+
+      this.fillatt.used = false; // mark used only when really used
+
+      this.draw_kind = "none"; // indicate if special svg:g were created for each bin
+      this.marker_size = 0; // indicate if markers are drawn
+
+      let drawbins = this.drawBins(funcs, this.options, null, this.draw_g, w, h, this.lineatt, this.fillatt, true);
+
+      if (this.options.blocks) {
+         for (let k = 0; k < this.options.blocks.length; ++k) {
+            let lineatt = this.lineatt, fillatt = this.fillatt;
+            if (this.options.individual_styles) {
+               lineatt = new JSROOT.TAttLineHandler({ attr: graph.fAttLine[k+1], std: false });
+               fillatt = new JSROOT.TAttFillHandler({ attr: graph.fAttFill[k+1], std: false, svg: this.getCanvSvg() });
+            }
+            let sub_g = this.draw_g.append("svg:g");
+            this.drawBins(funcs, this.options.blocks[k], drawbins, sub_g, w, h, lineatt, fillatt);
+         }
       }
 
       if (!JSROOT.batch_mode)
