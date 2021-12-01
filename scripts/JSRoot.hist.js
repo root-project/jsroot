@@ -6181,7 +6181,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           handle = this.prepareColorDraw(),
           pmain = this.getFramePainter(), // used for axis values conversions
           funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
-          bars = "", markers = "";
+          bars = "", lines = "", markers = "";
 
       if (histo.fMarkerColor === 1) histo.fMarkerColor = histo.fLineColor;
 
@@ -6259,25 +6259,30 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          center = Math.round(center);
 
          pnt.y0 = Math.round(funcs.gry(pnt.fMedian));
+
          // mean line
-         bars += `M${pnt.x1},${pnt.y0}h${pnt.x2-pnt.x1}`;
+
+         if (isOption(kMedianLine))
+            lines += `M${pnt.x1},${pnt.y0}h${pnt.x2-pnt.x1}`;
 
          pnt.y1 = Math.round(funcs.gry(pnt.fBoxDown));
          pnt.y2 = Math.round(funcs.gry(pnt.fBoxUp));
 
-         // rectangle
-         bars += `M${pnt.x1},${pnt.y1}v${pnt.y2-pnt.y1}h${pnt.x2-pnt.x1}v${pnt.y1-pnt.y2}z`;
+         if (isOption(kBox))
+            bars += `M${pnt.x1},${pnt.y1}v${pnt.y2-pnt.y1}h${pnt.x2-pnt.x1}v${pnt.y1-pnt.y2}z`;
 
          pnt.yy1 = Math.round(funcs.gry(pnt.fWhiskerDown));
          pnt.yy2 = Math.round(funcs.gry(pnt.fWhiskerUp));
 
-         // upper part
-         bars += `M${center},${pnt.y1}v${pnt.yy1-pnt.y1}`;
-         bars += `M${pnt.x1},${pnt.yy1}h${pnt.x2-pnt.x1}`;
+        if (isOption(kAnchor)) { // Draw the anchor line
+            lines += `M${pnt.x1},${pnt.yy1}h${pnt.x2-pnt.x1}`;
+            lines += `M${pnt.x1},${pnt.yy2}h${pnt.x2-pnt.x1}`;
+         }
 
-         // lower part
-         bars += `M${center},${pnt.y2}v${pnt.yy2-pnt.y2}`;
-         bars += `M${pnt.x1},${pnt.yy2}h${pnt.x2-pnt.x1}`;
+         if ((isOption(kWhiskerAll) && isOption(kHistoZeroIndicator)) || isOption(kWhisker15)) {
+            lines += `M${center},${pnt.y1}v${pnt.yy1-pnt.y1}`;
+            lines += `M${center},${pnt.y2}v${pnt.yy2-pnt.y2}`;
+         }
 
          //estimate outliers
          //for (j = 0; j < this.nbinsy; ++j) {
@@ -6295,6 +6300,12 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
              .attr("d", bars)
              .call(this.lineatt.func)
              .call(this.fillatt.func);
+
+      if (lines.length > 0)
+         this.draw_g.append("svg:path")
+             .attr("d", lines)
+             .call(this.lineatt.func)
+             .style('fill','none');
 
       if (markers.length > 0)
          this.draw_g.append("svg:path")
