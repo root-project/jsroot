@@ -510,7 +510,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       if (lpath) this.draw_g.append("svg:path").attr("d",lpath).call(this.lineatt.func);
 
-      this.draw_g.classed("most_upper_primitives", true); // this primitive will remain on top of list
+      // this.draw_g.classed("most_upper_primitives", true); // this primitive will remain on top of list
 
       return this.finishTextDrawing();
    }
@@ -680,7 +680,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    }
 
    /** @summary Draw TLegend object */
-   TPavePainter.prototype.drawPaveLegend = function(w, h) {
+   TPavePainter.prototype.drawLegend = function(w, h) {
 
       let legend = this.getObject(),
           nlines = legend.fPrimitives.arr.length,
@@ -1325,7 +1325,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                painter.paveDrawFunc = painter.drawPaveText;
                break;
             case "TLegend":
-               painter.paveDrawFunc = painter.drawPaveLegend;
+               painter.paveDrawFunc = painter.drawLegend;
                break;
             case "TPaletteAxis":
                painter.paveDrawFunc = painter.drawPaletteAxis;
