@@ -1412,7 +1412,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
               Arrow: false, Box: false, BoxStyle: 0,
               Text: false, TextAngle: 0, TextKind: "", Char: 0, Color: false, Contour: 0,
               Lego: 0, Surf: 0, Off: 0, Tri: 0, Proj: 0, AxisPos: 0,
-              Spec: false, Pie: false, List: false, Zscale: false, PadPalette: false, Candle: "",
+              Spec: false, Pie: false, List: false, Zscale: false, PadPalette: false,
+              Candle: "", Violin: "",
               GLBox: 0, GLColor: false, Project: "",
               System: jsrp.Coord.kCARTESIAN,
               AutoColor: false, NoStat: false, ForceStat: false, PadStats: false, PadTitle: false, AutoZoom: false,
@@ -1534,6 +1535,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (d.check('PIE')) this.Pie = true; // not used
 
       if (d.check('CANDLE', true)) this.Candle = d.part;
+      if (d.check('VIOLIN', true)) this.Violin = d.part;
 
       if (d.check('GLBOX',true)) this.GLBox = 10 + d.partAsInt();
       if (d.check('GLCOL')) this.GLColor = true;
@@ -6051,6 +6053,85 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    /** @summary Draw histogram bins as candle plot
      * @private */
    TH2Painter.prototype.drawBinsCandle = function() {
+
+      const kNoOption           = 0,
+            kBox                = 1,
+            kMedianLine         = 10,
+            kMedianNotched      = 20,
+            kMedianCircle       = 30,
+            kMeanLine           = 100,
+            kMeanCircle         = 300,
+            kWhiskerAll         = 1000,
+            kWhisker15          = 2000,
+            kAnchor             = 10000,
+            kPointsOutliers     = 100000,
+            kPointsAll          = 200000,
+            kPointsAllScat      = 300000,
+            kHistoLeft          = 1000000,
+            kHistoRight         = 2000000,
+            kHistoViolin        = 3000000,
+            kHistoZeroIndicator = 10000000,
+            kHorizontal         = 100000000,
+            fallbackCandle      = kBox + kMedianLine + kMeanCircle + kWhiskerAll + kAnchor,
+            fallbackViolin      = kMeanCircle + kWhiskerAll + kHistoViolin + kHistoZeroIndicator;
+
+      let fOption = kNoOption;
+
+      const getCandleOption = pos => {
+         let mult = 1;
+         while (pos-- > 0) mult *= 10;
+         return Math.floor(fOption/mult) % 10;
+      };
+
+      const isOption = opt => {
+         let mult = 1;
+         while (opt >= mult) mult *= 10;
+         mult /= 10;
+         return Math.floor(fOption/mult) % 10 === Math.floor(opt/mult);
+      }
+
+      const parseOption = (opt, is_candle) => {
+         let direction = '', preset = '',
+             res = kNoOption, c0 = opt[0], c1 = opt[1];
+
+         if (c0 >= 'A' && c0 <= 'Z') direction = c0;
+         if (c0 >= '1' && c0 <= '9') preset = c0;
+         if (c1 >= 'A' && c1 <= 'Z' && preset) direction = c1;
+         if (c1 >= '1' && c1 <= '9' && direction) preset = c1;
+
+         if (is_candle)
+            switch(preset) {
+               case '1': res += fallbackCandle; break;
+               case '2': res += kBox + kMeanLine + kMedianLine + kWhisker15 + kAnchor + kPointsOutliers; break;
+               case '3': res += kBox + kMeanCircle + kMedianLine + kWhisker15 + kAnchor + kPointsOutliers; break;
+               case '4': res += kBox + kMeanCircle + kMedianNotched + kWhisker15 + kAnchor + kPointsOutliers; break;
+               case '5': res += kBox + kMeanLine + kMedianLine + kWhisker15 + kAnchor + kPointsAll; break;
+               case '6': res += kBox + kMeanCircle + kMedianLine + kWhisker15 + kAnchor + kPointsAllScat; break;
+               default: if (preset) res += fallbackCandle;
+            }
+         else
+            switch(preset) {
+               case '1': res += fallbackViolin; break;
+               case '2': res += kMeanCircle + kWhisker15 + kHistoViolin + kHistoZeroIndicator + kPointsOutliers; break;
+               default: if (preset) res += fallbackViolin;
+            }
+
+         let l = opt.indexOf("("), r = opt.lastIndexOf(")");
+         if ((l >= 0) && (r > l+1))
+            res = parseInt(opt.substr(l+1, r-l-1));
+
+         fOption = res;
+
+         if ((direction == 'Y' || direction == 'H') && !isOption(kHorizontal))
+            fOption += kHorizontal;
+      };
+
+      if (this.options.Candle)
+         parseOption(this.options.Candle, true);
+      else if (this.options.Violin)
+         parseOption(this.options.Violin, false);
+
+
       let histo = this.getHisto(),
           handle = this.prepareColorDraw(),
           pmain = this.getFramePainter(), // used for axis values conversions
@@ -6327,7 +6408,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             handle = this.drawBinsArrow();
          else if (this.options.Contour)
             handle = this.drawBinsContour();
-         else if (this.options.Candle)
+         else if (this.options.Candle || this.options.Violin)
             handle = this.drawBinsCandle();
 
          if (this.options.Text)
