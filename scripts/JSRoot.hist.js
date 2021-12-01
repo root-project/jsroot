@@ -6075,8 +6075,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             fallbackCandle      = kBox + kMedianLine + kMeanCircle + kWhiskerAll + kAnchor,
             fallbackViolin      = kMeanCircle + kWhiskerAll + kHistoViolin + kHistoZeroIndicator;
 
-      const fWhiskerRange = 1.0, fBoxRange = 0.5; // for now constants, later can be made configurable?
-
       let fOption = kNoOption;
 
       const getCandleOption = pos => {
@@ -6147,7 +6145,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             nextv = sum / integral;
             while ((prob[cnt] >= v) && (prob[cnt] < nextv)) {
                res.indx[cnt] = j;
-               res.quantiles[cnt] = xx[j] + ((prob[cnt] - v)/(nextv-v) + 0.5)*(xx[j+1]-xx[j]);
+               res.quantiles[cnt] = xx[j] + ((prob[cnt] - v)/(nextv-v))*(xx[j+1]-xx[j]);
                if (cnt++ == prob.length) return res;
             }
          }
@@ -6160,15 +6158,19 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          return res;
       }
 
-      const findNonEmptyBinPos = (xx,yy, pos, indx, dir) => {
-         if (dir < 0) {
-            while ((xx[indx] > pos) && (indx > 0)) indx--;
-         } else {
-            while ((xx[indx] < pos) && (indx < yy.length-1)) indx++;
+      const make_path = (...a) => {
+         let l = a.length, i = 2;
+         let res = `M${a[0]},${a[1]}`;
+         while (i < l) {
+            if (a[i]=="Z") return res + "Z";
+            if ((a[i] == 'V') || (a[i] == 'H'))
+               res += a[i]+a[i+1];
+            else
+               res += `L${a[i]},${a[i+1]}`;
+            i += 2;
          }
-         while (!yy[indx]) indx -= dir;
-         return (xx[indx] + xx[indx+1])/2; // TODO: better position?
-      }
+         return res;
+      };
 
 
       if (this.options.Candle)
@@ -6181,36 +6183,24 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           handle = this.prepareColorDraw(),
           pmain = this.getFramePainter(), // used for axis values conversions
           funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
-          bars = "", lines = "", markers = "";
+          bars = "", lines = "", markers = "", cmarkers = "", attrcmarkers = null;
 
       if (histo.fMarkerColor === 1) histo.fMarkerColor = histo.fLineColor;
 
       // create attribute only when necessary
-      this.createAttMarker({ attr: histo, style: 5 });
-
-      // reset absolution position for markers
-      this.markeratt.resetPos();
+      // this.createAttMarker({ attr: histo, style: 5 });
+      // this.markeratt.resetPos();
 
       handle.candle = []; // array of drawn points
 
       // Determining the quantiles
+      const fWhiskerRange = 1.0, fBoxRange = 0.5; // for now constants, later can be made configurable
       let prob = new Array(5);
-      if (fWhiskerRange >= 1) {
-         prob[0] = 1e-15;
-         prob[4] = 1-1e-15;
-      } else {
-         prob[0] = 0.5 - fWhiskerRange/2.;
-         prob[4] = 0.5 + fWhiskerRange/2.;
-      }
-      if (fBoxRange >= 1) {
-         prob[1] = 1E-14;
-         prob[3] = 1-1E-14;
-      } else {
-         prob[1] = 0.5 - fBoxRange/2.;
-         prob[3] = 0.5 + fBoxRange/2.;
-      }
-
+      prob[0] = (fWhiskerRange >= 1) ? 1e-15 : 0.5 - fWhiskerRange/2.;
+      prob[1] = (fBoxRange >= 1) ? 1E-14 : 0.5 - fBoxRange/2.;
       prob[2] = 0.5;
+      prob[3] = (fBoxRange >= 1) ? 1-1E-14 : 0.5 + fBoxRange/2.;
+      prob[4] = (fWhiskerRange >= 1) ? 1-1e-15 : 0.5 + fWhiskerRange/2.;
 
       // all coordinates, including xmax
       let xx = new Array(this.nbinsy+1);
@@ -6230,8 +6220,14 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          let iqr = pnt.fBoxUp - pnt.fBoxDown;
 
          if (isOption(kWhisker15)) { // Improved whisker definition, with 1.5*iqr
-            pnt.fWhiskerDown = findNonEmptyBinPos(xx, yy, pnt.fBoxDown-1.5*iqr, res.indx[1], -1);
-            pnt.fWhiskerUp = findNonEmptyBinPos(xx, yy, pnt.fBoxUp+1.5*iqr, res.indx[3], 1);
+            let pos = pnt.fBoxDown-1.5*iqr, indx = res.indx[1];
+            while ((xx[indx] > pos) && (indx > 0)) indx--;
+            while (!yy[indx]) indx++;
+            pnt.fWhiskerDown = xx[indx]; // use lower edge here
+            pos = pnt.fBoxUp+1.5*iqr; indx = res.indx[3];
+            while ((xx[indx] < pos) && (indx < yy.length)) indx++;
+            while (!yy[indx]) indx--;
+            pnt.fWhiskerUp = xx[indx+1]; // use upper index edge here
          }
 
          pnt.fMean = res.mean;
@@ -6250,7 +6246,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          if ((histo.fBarWidth > 0) && (histo.fBarWidth !== 1000)) {
             candleWidth = histoWidth = w * histo.fBarWidth / 1000;
          } else {
-            candleWidth = w*0.66; // default wid
+            candleWidth = w*0.66;
             histoWidth = w*0.8;
          }
 
@@ -6258,30 +6254,45 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          pnt.x2 = Math.round(center + candleWidth/2);
          center = Math.round(center);
 
+         let x1d = Math.round(center - candleWidth/3),
+             x2d = Math.round(center + candleWidth/3);
+
+         pnt.yy1 = Math.round(funcs.gry(pnt.fWhiskerUp));
+         pnt.y1 = Math.round(funcs.gry(pnt.fBoxUp));
          pnt.y0 = Math.round(funcs.gry(pnt.fMedian));
+         pnt.y2 = Math.round(funcs.gry(pnt.fBoxDown));
+         pnt.yy2 = Math.round(funcs.gry(pnt.fWhiskerDown));
 
          // mean line
 
          if (isOption(kMedianLine))
-            lines += `M${pnt.x1},${pnt.y0}h${pnt.x2-pnt.x1}`;
+            lines += make_path(pnt.x1,pnt.y0,'H',pnt.x2);
+         else if (isOption(kMedianNotched))
+            lines += make_path(x12,pnt.y0,'H',x2d);
+         else if (isOption(kMedianCircle)) {
+            if (!attrcmarkers) {
+               attrcmarkers = new JSROOT.TAttMarkerHandler({attr: histo, style: 24});
+               attrcmarkers.resetPos();
+            }
+            cmarkers += attrcmarkers.create(center, pnt.y0);
+         }
 
-         pnt.y1 = Math.round(funcs.gry(pnt.fBoxDown));
-         pnt.y2 = Math.round(funcs.gry(pnt.fBoxUp));
 
          if (isOption(kBox))
-            bars += `M${pnt.x1},${pnt.y1}v${pnt.y2-pnt.y1}h${pnt.x2-pnt.x1}v${pnt.y1-pnt.y2}z`;
+            if (isOption(kMedianNotched))
+               bars += make_path(pnt.x1, pnt.y1, "V", pnt.y2, "H", pnt.x2, "V", pnt.y1, "Z");
+            else
+               bars += make_path(pnt.x1, pnt.y1, "V", pnt.y2, "H", pnt.x2, "V", pnt.y1, "Z");
 
-         pnt.yy1 = Math.round(funcs.gry(pnt.fWhiskerDown));
-         pnt.yy2 = Math.round(funcs.gry(pnt.fWhiskerUp));
 
         if (isOption(kAnchor)) { // Draw the anchor line
-            lines += `M${pnt.x1},${pnt.yy1}h${pnt.x2-pnt.x1}`;
-            lines += `M${pnt.x1},${pnt.yy2}h${pnt.x2-pnt.x1}`;
+            lines += make_path(pnt.x1, pnt.yy1, "H", pnt.x2);
+            lines += make_path(pnt.x1, pnt.yy2, "H", pnt.x2);;
          }
 
          if ((isOption(kWhiskerAll) && isOption(kHistoZeroIndicator)) || isOption(kWhisker15)) {
-            lines += `M${center},${pnt.y1}v${pnt.yy1-pnt.y1}`;
-            lines += `M${center},${pnt.y2}v${pnt.yy2-pnt.y2}`;
+            lines += make_path(center, pnt.y1, "V", pnt.yy1);
+            lines += make_path(center, pnt.y2, "V", pnt.yy2);
          }
 
          //estimate outliers
@@ -6306,6 +6317,11 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
              .attr("d", lines)
              .call(this.lineatt.func)
              .style('fill','none');
+
+      if (cmarkers.length > 0)
+         this.draw_g.append("svg:path")
+             .attr("d", cmarkers)
+             .call(attrcmarkers.func);
 
       if (markers.length > 0)
          this.draw_g.append("svg:path")
@@ -6530,9 +6546,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       lines.push("x = " + funcs.axisAsText("x", histo.fXaxis.GetBinLowEdge(p.bin+1)));
 
-      lines.push('median = ' + jsrp.floatToString(p.median, JSROOT.gStyle.fStatFormat))
-      lines.push('m25 = ' + jsrp.floatToString(p.m25y, JSROOT.gStyle.fStatFormat))
-      lines.push('p25 = ' + jsrp.floatToString(p.p25y, JSROOT.gStyle.fStatFormat))
+      lines.push('median = ' + jsrp.floatToString(p.fMedian, JSROOT.gStyle.fStatFormat))
+      lines.push('m25 = ' + jsrp.floatToString(p.fBoxDown, JSROOT.gStyle.fStatFormat))
+      lines.push('p25 = ' + jsrp.floatToString(p.fBoxUp, JSROOT.gStyle.fStatFormat))
 
       return lines;
    }
@@ -6673,7 +6689,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       } else if (h.candle) {
          // process tooltips for candle
 
-         let p, i;
+         let i, p;
 
          for (i = 0; i < h.candle.length; ++i) {
             p = h.candle[i];
@@ -6714,7 +6730,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          if (res.changed)
             res.user_info = { obj: histo,  name: histo.fName,
-                              bin: i+1, cont: p.median, binx: i+1, biny: 1,
+                              bin: i+1, cont: p.fMedian, binx: i+1, biny: 1,
                               grx: pnt.x, gry: pnt.y };
 
          return res;
