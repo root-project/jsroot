@@ -6075,6 +6075,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             fallbackCandle      = kBox + kMedianLine + kMeanCircle + kWhiskerAll + kAnchor,
             fallbackViolin      = kMeanCircle + kWhiskerAll + kHistoViolin + kHistoZeroIndicator;
 
+      const fWhiskerRange = 1.0, fBoxRange = 0.5; // for now constants, later can be made configurable?
+
       let fOption = kNoOption;
 
       const getCandleOption = pos => {
@@ -6126,6 +6128,49 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             fOption += kHorizontal;
       };
 
+      const extractQuantiles = (xx,yy,prob) => {
+
+         let integral = 0, cnt = 0, sum1 = 0;
+         for (let j = 0; j < yy.length; ++j) {
+            integral += yy[j];
+            sum1 += yy[j]*(xx[j]+xx[j+1])/2;
+         }
+         if (integral <= 0) return null;
+
+         let res = { entries: integral, mean: sum1/integral, quantiles: new Array(prob.length), indx: new Array(prob.length) };
+
+         let sum = 0, nextv = 0;
+         for (let j = 0; j < yy.length; ++j) {
+            let v = nextv;
+            sum += yy[j];
+
+            nextv = sum / integral;
+            while ((prob[cnt] >= v) && (prob[cnt] < nextv)) {
+               res.indx[cnt] = j;
+               res.quantiles[cnt] = xx[j] + ((prob[cnt] - v)/(nextv-v) + 0.5)*(xx[j+1]-xx[j]);
+               if (cnt++ == prob.length) return res;
+            }
+         }
+
+         while (cnt < prob.length) {
+            res.indx[cnt] = yy.length-1;
+            res.quantiles[cnt++] = xx[xx.length-1];
+         }
+
+         return res;
+      }
+
+      const findNonEmptyBinPos = (xx,yy, pos, indx, dir) => {
+         if (dir < 0) {
+            while ((xx[indx] > pos) && (indx > 0)) indx--;
+         } else {
+            while ((xx[indx] < pos) && (indx < yy.length-1)) indx++;
+         }
+         while (!yy[indx]) indx -= dir;
+         return (xx[indx] + xx[indx+1])/2; // TODO: better position?
+      }
+
+
       if (this.options.Candle)
          parseOption(this.options.Candle, true);
       else if (this.options.Violin)
@@ -6136,8 +6181,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           handle = this.prepareColorDraw(),
           pmain = this.getFramePainter(), // used for axis values conversions
           funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
-          w, i, j, y, sum1, cont, center, counter, integral, pnt,
-          bars = "", markers = "", posy;
+          bars = "", markers = "";
 
       if (histo.fMarkerColor === 1) histo.fMarkerColor = histo.fLineColor;
 
@@ -6149,66 +6193,83 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       handle.candle = []; // array of drawn points
 
-      // loop over visible x-bins
-      for (i = handle.i1; i < handle.i2; ++i) {
-         sum1 = 0;
-         //estimate integral
-         integral = 0;
-         counter = 0;
-         for (j = 0; j < this.nbinsy; ++j) {
-            integral += histo.getBinContent(i+1,j+1);
-         }
-         pnt = { bin:i, meany:0, m25y:0, p25y:0, median:0, iqr:0, whiskerp:0, whiskerm:0 };
-         //estimate quantiles... simple function... not so nice as GetQuantiles
-         for (j = 0; j < this.nbinsy; ++j) {
-            cont = histo.getBinContent(i+1,j+1);
-            posy = histo.fYaxis.GetBinCenter(j+1);
-            if (counter/integral < 0.001 && (counter + cont)/integral >=0.001) pnt.whiskerm = posy; // Lower whisker
-            if (counter/integral < 0.25 && (counter + cont)/integral >=0.25) pnt.m25y = posy; // Lower edge of box
-            if (counter/integral < 0.5 && (counter + cont)/integral >=0.5) pnt.median = posy; //Median
-            if (counter/integral < 0.75 && (counter + cont)/integral >=0.75) pnt.p25y = posy; //Upper edge of box
-            if (counter/integral < 0.999 && (counter + cont)/integral >=0.999) pnt.whiskerp = posy; // Upper whisker
-            counter += cont;
-            y = posy; // center of y bin coordinate
-            sum1 += cont*y;
-         }
-         if (counter > 0) {
-            pnt.meany = sum1/counter;
-         }
-         pnt.iqr = pnt.p25y-pnt.m25y;
+      // Determining the quantiles
+      let prob = new Array(5);
+      if (fWhiskerRange >= 1) {
+         prob[0] = 1e-15;
+         prob[4] = 1-1e-15;
+      } else {
+         prob[0] = 0.5 - fWhiskerRange/2.;
+         prob[4] = 0.5 + fWhiskerRange/2.;
+      }
+      if (fBoxRange >= 1) {
+         prob[1] = 1E-14;
+         prob[3] = 1-1E-14;
+      } else {
+         prob[1] = 0.5 - fBoxRange/2.;
+         prob[3] = 0.5 + fBoxRange/2.;
+      }
 
-         //Whiskers cannot exceed 1.5*iqr from box
-         if ((pnt.m25y-1.5*pnt.iqr) > pnt.whsikerm)  {
-            pnt.whiskerm = pnt.m25y-1.5*pnt.iqr;
+      prob[2] = 0.5;
+
+      // all coordinates, including xmax
+      let xx = new Array(this.nbinsy+1);
+      for (let j = 0; j < this.nbinsy+1; ++j)
+         xx[j] = histo.fYaxis.GetBinLowEdge(j+1);
+
+      // loop over visible x-bins
+      for (let i = handle.i1; i < handle.i2; ++i) {
+         let yy = new Array(this.nbinsy);
+         for (let j = 0; j < this.nbinsy; ++j)
+            yy[j] = histo.getBinContent(i+1,j+1);
+
+         let res = extractQuantiles(xx,yy,prob);
+         if (!res) continue;
+
+         let pnt = { bin: i, fWhiskerDown: res.quantiles[0], fBoxDown: res.quantiles[1], fMedian: res.quantiles[2], fBoxUp: res.quantiles[3], fWhiskerUp: res.quantiles[4] };
+         let iqr = pnt.fBoxUp - pnt.fBoxDown;
+
+         if (isOption(kWhisker15)) { // Improved whisker definition, with 1.5*iqr
+            pnt.fWhiskerDown = findNonEmptyBinPos(xx, yy, pnt.fBoxDown-1.5*iqr, res.indx[1], -1);
+            pnt.fWhiskerUp = findNonEmptyBinPos(xx, yy, pnt.fBoxUp+1.5*iqr, res.indx[3], 1);
          }
-         if ((pnt.p25y+1.5*pnt.iqr) < pnt.whiskerp) {
-            pnt.whiskerp = pnt.p25y+1.5*pnt.iqr;
-         }
+
+         pnt.fMean = res.mean;
+         pnt.fMedianErr = 1.57*iqr/Math.sqrt(res.entries);
+         pnt.fAxisMin = xx[0];
+         pnt.fAxisMax = xx[xx.length-1];
+
+         //estimate quantiles... simple function... not so nice as GetQuantiles
 
          // exclude points with negative y when log scale is specified
-         if (funcs.logy && (pnt.whiskerm <= 0)) continue;
+         if (funcs.logy && (pnt.fWhiskerDown <= 0)) continue;
 
-         w = handle.grx[i+1] - handle.grx[i];
-         w *= 0.66;
-         center = (handle.grx[i+1] + handle.grx[i]) / 2 + histo.fBarOffset/1000*w;
-         if (histo.fBarWidth > 0) w *= histo.fBarWidth / 1000;
+         let w = (handle.grx[i+1] - handle.grx[i]);
+         let center = (handle.grx[i+1] + handle.grx[i]) / 2 + histo.fBarOffset/1000*w;
+         let candleWidth = w, histoWidth = w;
+         if ((histo.fBarWidth > 0) && (histo.fBarWidth !== 1000)) {
+            candleWidth = histoWidth = w * histo.fBarWidth / 1000;
+         } else {
+            candleWidth = w*0.66; // default wid
+            histoWidth = w*0.8;
+         }
 
-         pnt.x1 = Math.round(center - w/2);
-         pnt.x2 = Math.round(center + w/2);
+         pnt.x1 = Math.round(center - candleWidth/2);
+         pnt.x2 = Math.round(center + candleWidth/2);
          center = Math.round(center);
 
-         pnt.y0 = Math.round(funcs.gry(pnt.median));
+         pnt.y0 = Math.round(funcs.gry(pnt.fMedian));
          // mean line
          bars += `M${pnt.x1},${pnt.y0}h${pnt.x2-pnt.x1}`;
 
-         pnt.y1 = Math.round(funcs.gry(pnt.p25y));
-         pnt.y2 = Math.round(funcs.gry(pnt.m25y));
+         pnt.y1 = Math.round(funcs.gry(pnt.fBoxDown));
+         pnt.y2 = Math.round(funcs.gry(pnt.fBoxUp));
 
          // rectangle
          bars += `M${pnt.x1},${pnt.y1}v${pnt.y2-pnt.y1}h${pnt.x2-pnt.x1}v${pnt.y1-pnt.y2}z`;
 
-         pnt.yy1 = Math.round(funcs.gry(pnt.whiskerp));
-         pnt.yy2 = Math.round(funcs.gry(pnt.whiskerm));
+         pnt.yy1 = Math.round(funcs.gry(pnt.fWhiskerDown));
+         pnt.yy2 = Math.round(funcs.gry(pnt.fWhiskerUp));
 
          // upper part
          bars += `M${center},${pnt.y1}v${pnt.yy1-pnt.y1}`;
@@ -6219,12 +6280,12 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          bars += `M${pnt.x1},${pnt.yy2}h${pnt.x2-pnt.x1}`;
 
          //estimate outliers
-         for (j = 0; j < this.nbinsy; ++j) {
-            cont = histo.getBinContent(i+1,j+1);
-            posy = histo.fYaxis.GetBinCenter(j+1);
-            if ((cont > 0) && ((posy < pnt.whiskerm) || (posy > pnt.whiskerp)))
-               markers += this.markeratt.create(center, funcs.gry(posy));
-         }
+         //for (j = 0; j < this.nbinsy; ++j) {
+         //   cont = histo.getBinContent(i+1,j+1);
+         //   posy = histo.fYaxis.GetBinCenter(j+1);
+         //   if ((cont > 0) && ((posy < pnt.whiskerm) || (posy > pnt.whiskerp)))
+         //      markers += this.markeratt.create(center, funcs.gry(posy));
+         //}
 
          handle.candle.push(pnt); // keep point for the tooltip
       }
@@ -6458,7 +6519,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       lines.push("x = " + funcs.axisAsText("x", histo.fXaxis.GetBinLowEdge(p.bin+1)));
 
-      lines.push('mean y = ' + jsrp.floatToString(p.meany, JSROOT.gStyle.fStatFormat))
+      lines.push('median = ' + jsrp.floatToString(p.median, JSROOT.gStyle.fStatFormat))
       lines.push('m25 = ' + jsrp.floatToString(p.m25y, JSROOT.gStyle.fStatFormat))
       lines.push('p25 = ' + jsrp.floatToString(p.p25y, JSROOT.gStyle.fStatFormat))
 
