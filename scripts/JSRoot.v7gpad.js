@@ -710,7 +710,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if (this.vertical) {
          offset += Math.round(pos[0] - this.drag_pos0);
-         label_g.attr('transform', `translate(${offset},0)`);
+         label_g.attr('transform', `translate(${offset})`);
       } else {
          offset += Math.round(pos[1] - this.drag_pos0);
          label_g.attr('transform', `translate(0,${offset})`);
@@ -984,7 +984,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           fix_coord = Math.round((this.vertical ? -side : side)*gaps[side]);
 
       if (fix_offset)
-         label_g.attr('transform', this.vertical ? `translate(${fix_offset},0)` : `translate(0,${fix_offset})`);
+         label_g.attr('transform', this.vertical ? `translate(${fix_offset})` : `translate(0,${fix_offset})`);
 
       label_g.property('fix_offset', fix_offset);
 
@@ -1889,7 +1889,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                                             undefined, false);
 
          let promise2 = draw_vertical.drawAxis(layer, w, h,
-                                               draw_vertical.invert_side ? `translate(${w},0)` : undefined,
+                                               draw_vertical.invert_side ? `translate(${w})` : undefined,
                                                (ticksy > 1) ? w : 0, disable_y_draw,
                                                draw_vertical.invert_side ? 0 : this._frame_x, can_adjust_frame);
          draw_promise = Promise.all([promise1, promise2]).then(() => this.drawGrids());

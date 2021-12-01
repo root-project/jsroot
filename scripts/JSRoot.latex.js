@@ -1120,8 +1120,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (arg.align[1] == 'bottom') arg[ny] += sign.y * (arg.height - mh); else
             if (arg.align[1] == 'bottom-base') arg[ny] += sign.y * (arg.height - mh - arg.valign);
 
-      let trans = "translate(" + arg.x + "," + arg.y + ")";
-      if (arg.rotate) trans += " rotate(" + arg.rotate + ")";
+      let trans = `translate(${arg.x},${arg.y})`;
+      if (arg.rotate) trans += ` rotate(${arg.rotate})`;
 
       mj_node.attr('transform', trans).attr('visibility', null);
    }

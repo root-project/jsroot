@@ -892,7 +892,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       this.z_handle.max_tick_size = Math.round(s_width*0.7);
 
-      return this.z_handle.drawAxis(this.draw_g, s_width, s_height, "translate(" + s_width + ", 0)").then(() => {
+      return this.z_handle.drawAxis(this.draw_g, s_width, s_height, `translate(${s_width})`).then(() => {
 
          if (can_move && ('getBoundingClientRect' in this.draw_g.node())) {
             let rect = this.draw_g.node().getBoundingClientRect();
@@ -901,7 +901,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
             if (shift > 0) {
                this.draw_g.attr("x", pos_x - shift).attr("y", pos_y)
-                          .attr("transform", "translate(" + (pos_x-shift) + ", " + pos_y + ")");
+                          .attr("transform", `translate(${pos_x-shift},${pos_y})`);
                palette.fX1NDC -= shift/width;
                palette.fX2NDC -= shift/width;
             }

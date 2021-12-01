@@ -548,7 +548,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           lbl_pos = handle.lbl_pos || handle.major, lbl_tilt = false, max_textwidth = 0;
 
       if (this.lbls_both_sides)
-         label_g.push(axis_g.append("svg:g").attr("class","axis_labels").attr("transform", this.vertical ? "translate(" + w + ",0)" : "translate(0," + (-h) + ")"));
+         label_g.push(axis_g.append("svg:g").attr("class","axis_labels").attr("transform", this.vertical ? `translate(${w})` : `translate(0,${-h})`));
 
       // function called when text is drawn to analyze width, required to correctly scale all labels
       function process_drawtext_ready(painter) {
@@ -1558,12 +1558,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          let can_adjust_frame = !shrink_forbidden && JSROOT.settings.CanAdjustFrame;
 
          let promise1 = draw_horiz.drawAxis(layer, w, h,
-                                            draw_horiz.invert_side ? undefined : "translate(0," + h + ")",
+                                            draw_horiz.invert_side ? undefined : `translate(0,${h})`,
                                             pad && pad.fTickx ? -h : 0, disable_x_draw,
                                             undefined, false);
 
          let promise2 = draw_vertical.drawAxis(layer, w, h,
-                                               draw_vertical.invert_side ? "translate(" + w + ",0)" : undefined,
+                                               draw_vertical.invert_side ? `translate(${w})` : undefined,
                                                pad && pad.fTicky ? w : 0, disable_y_draw,
                                                draw_vertical.invert_side ? 0 : this._frame_x, can_adjust_frame);
 
@@ -1630,13 +1630,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if (draw_horiz)
          promise1 = draw_horiz.drawAxis(layer, w, h,
-                                        draw_horiz.invert_side ? undefined : "translate(0," + h + ")",
+                                        draw_horiz.invert_side ? undefined : `translate(0,${h})`,
                                         pad && pad.fTickx ? -h : 0, false,
                                         undefined, false);
 
       if (draw_vertical)
          promise2 = draw_vertical.drawAxis(layer, w, h,
-                                            draw_vertical.invert_side ? "translate(" + w + ",0)" : undefined,
+                                            draw_vertical.invert_side ? `translate(${w})` : undefined,
                                             pad && pad.fTicky ? w : 0, false,
                                             draw_vertical.invert_side ? 0 : this._frame_x, false);
 
