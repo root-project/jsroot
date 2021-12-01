@@ -6110,7 +6110,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          w = handle.grx[i+1] - handle.grx[i];
          w *= 0.66;
          center = (handle.grx[i+1] + handle.grx[i]) / 2 + histo.fBarOffset/1000*w;
-         if (histo.fBarWidth>0) w = w * histo.fBarWidth / 1000;
+         if (histo.fBarWidth > 0) w *= histo.fBarWidth / 1000;
 
          pnt.x1 = Math.round(center - w/2);
          pnt.x2 = Math.round(center + w/2);
@@ -6118,32 +6118,31 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          pnt.y0 = Math.round(funcs.gry(pnt.median));
          // mean line
-         bars += "M" + pnt.x1 + "," + pnt.y0 + "h" + (pnt.x2-pnt.x1);
+         bars += `M${pnt.x1},${pnt.y0}h${pnt.x2-pnt.x1}`;
 
          pnt.y1 = Math.round(funcs.gry(pnt.p25y));
          pnt.y2 = Math.round(funcs.gry(pnt.m25y));
 
          // rectangle
-         bars += "M" + pnt.x1 + "," + pnt.y1 +
-         "v" + (pnt.y2-pnt.y1) + "h" + (pnt.x2-pnt.x1) + "v-" + (pnt.y2-pnt.y1) + "z";
+         bars += `M${pnt.x1},${pnt.y1}v${pnt.y2-pnt.y1}h${pnt.x2-pnt.x1}v${pnt.y1-pnt.y2}z`;
 
          pnt.yy1 = Math.round(funcs.gry(pnt.whiskerp));
          pnt.yy2 = Math.round(funcs.gry(pnt.whiskerm));
 
          // upper part
-         bars += "M" + center + "," + pnt.y1 + "v" + (pnt.yy1-pnt.y1);
-         bars += "M" + pnt.x1 + "," + pnt.yy1 + "h" + (pnt.x2-pnt.x1);
+         bars += `M${center},${pnt.y1}v${pnt.yy1-pnt.y1}`;
+         bars += `M${pnt.x1},${pnt.yy1}h${pnt.x2-pnt.x1}`;
 
          // lower part
-         bars += "M" + center + "," + pnt.y2 + "v" + (pnt.yy2-pnt.y2);
-         bars += "M" + pnt.x1 + "," + pnt.yy2 + "h" + (pnt.x2-pnt.x1);
+         bars += `M${center},${pnt.y2}v${pnt.yy2-pnt.y2}`;
+         bars += `M${pnt.x1},${pnt.yy2}h${pnt.x2-pnt.x1}`;
 
          //estimate outliers
          for (j = 0; j < this.nbinsy; ++j) {
             cont = histo.getBinContent(i+1,j+1);
             posy = histo.fYaxis.GetBinCenter(j+1);
-            if (cont > 0 && posy < pnt.whiskerm) markers += this.markeratt.create(center, posy);
-            if (cont > 0 && posy > pnt.whiskerp) markers += this.markeratt.create(center, posy);
+            if ((cont > 0) && ((posy < pnt.whiskerm) || (posy > pnt.whiskerp)))
+               markers += this.markeratt.create(center, funcs.gry(posy));
          }
 
          handle.candle.push(pnt); // keep point for the tooltip
