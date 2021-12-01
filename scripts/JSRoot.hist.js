@@ -292,7 +292,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       // container used to recalculate coordinates
       this.createG();
 
-      this.draw_g.attr("transform", "translate(" + pos_x + "," + pos_y + ")");
+      this.draw_g.attr("transform", `translate(${pos_x},${pos_y})`);
 
       //if (!this.lineatt)
       //   this.lineatt = new JSROOT.TAttLineHandler(pt, brd>0 ? 1 : 0);
@@ -303,7 +303,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       if (pt._typename == "TDiamond") {
          let h2 = Math.round(height/2), w2 = Math.round(width/2),
-             dpath = "l"+w2+",-"+h2 + "l"+w2+","+h2 + "l-"+w2+","+h2+"z";
+             dpath = `l${w2},${-h2}l${w2},${h2}l${-w2},${h2}z`;
 
          if ((brd > 1) && (pt.fShadowColor > 0) && (dx || dy) && !this.fillatt.empty())
             this.draw_g.append("svg:path")
@@ -318,7 +318,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
              .call(this.lineatt.func);
 
          let text_g = this.draw_g.append("svg:g")
-                                 .attr("transform", "translate(" + Math.round(width/4) + "," + Math.round(height/4) + ")");
+                                 .attr("transform", `translate(${Math.round(width/4)},${Math.round(height/4)})`);
 
          return this.drawPaveText(w2, h2, arg, text_g);
       }
@@ -328,12 +328,12 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          let spath = "", scol = this.getColor(pt.fShadowColor);
          if (this.fillatt.empty()) {
             if ((dx < 0) && (dy < 0))
-               spath = "M0,0v"+(height-brd)+"h-"+brd+"v-"+height+"h"+width+"v"+brd;
+               spath = `M0,0v${height-brd}h${-brd}v${-height}h${width}v${brd}`;
             else // ((dx<0) && (dy>0))
-               spath = "M0,"+height+"v-"+(height-brd)+"h-"+brd+"v"+height+"h"+width+"v-"+brd;
+               spath = `M0,${height}v${brd-height}h${-brd}v${height}h${width}v${-brd}`;
          } else {
             // when main is filled, one also can use fill for shadow to avoid complexity
-            spath = "M"+(dx*brd)+","+(dy*brd) + "v"+height + "h"+width + "v-"+height;
+            spath = `M${dx*brd},${dy*brd}v${height}h${width}v${-height}`;
          }
          this.draw_g.append("svg:path")
                     .attr("d", spath + "z")
@@ -345,13 +345,13 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (pt.fNpaves)
          for (let n = pt.fNpaves-1; n>0; --n)
             this.draw_g.append("svg:path")
-               .attr("d", "M" + (dx*4*n) + ","+ (dy*4*n) + "h"+width + "v"+height + "h-"+width + "z")
+               .attr("d", `M${dx*4*n},${dy*4*n}h${width}v${height}h${-width}z`)
                .call(this.fillatt.func)
                .call(this.lineatt.func);
 
       const rect = this.draw_g
                        .append("svg:path")
-                       .attr("d", "M0,0H"+width + "V"+height + "H0Z")
+                       .attr("d", `M0,0H${width}V${height}H0Z`)
                        .call(this.fillatt.func)
                        .call(this.lineatt.func);
 
@@ -3078,7 +3078,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       let curr = this.options.Palette || JSROOT.settings.Palette;
 
-      let add = (id, name, more) => menu.addchk((id===curr) || more, '<nobr>' + name + '</nobr>', id, arg => {
+      const add = (id, name, more) => menu.addchk((id===curr) || more, '<nobr>' + name + '</nobr>', id, arg => {
          this.options.Palette = parseInt(arg);
          this.getHistPalette(true);
          this.redraw(); // redraw histogram
@@ -3723,19 +3723,19 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          w = Math.round(histo.fBarWidth/1000*w);
 
          if (pmain.swap_xy)
-            bars += "M"+gry2+","+grx1 + "h"+(gry1-gry2) + "v"+w + "h"+(gry2-gry1) + "z";
+            bars += `M${gry2},${grx1}h${gry1-gry2}v${w}h${gry2-gry1}z`;
          else
-            bars += "M"+grx1+","+gry1 + "h"+w + "v"+(gry2-gry1) + "h"+(-w)+ "z";
+            bars += `M${grx1},${gry1}h${w}v${gry2-gry1}h${-w}z`;
 
          if (side > 0) {
             grx2 = grx1 + w;
             w = Math.round(w * side / 10);
             if (pmain.swap_xy) {
-               barsl += "M"+gry2+","+grx1 + "h"+(gry1-gry2) + "v" + w + "h"+(gry2-gry1) + "z";
-               barsr += "M"+gry2+","+grx2 + "h"+(gry1-gry2) + "v" + (-w) + "h"+(gry2-gry1) + "z";
+               barsl += `M${gry2},${grx1}h${gry1-gry2}v${w}h${gry2-gry1}z`;
+               barsr += `M${gry2},${grx2}h${gry1-gry2}v${-w}h${gry2-gry1}z`;
             } else {
-               barsl += "M"+grx1+","+gry1 + "h"+w + "v"+(gry2-gry1) + "h"+(-w)+ "z";
-               barsr += "M"+grx2+","+gry1 + "h"+(-w) + "v"+(gry2-gry1) + "h"+w + "z";
+               barsl += `M${grx1},${gry1}h${w}v${gry2-gry1}h${-w}z`;
+               barsr += `M${grx2},${gry1}h${-w}v${gry2-gry1}h${w}z`;
             }
          }
 
