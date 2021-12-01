@@ -2200,7 +2200,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       main_svg.attr("width", w)
               .attr("height", h)
-              .attr("viewBox", "0 0 " + w + " " + h);
+              .attr("viewBox", `0 0 ${w} ${h}`);
 
       let promise = Promise.resolve(true);
 
@@ -2982,7 +2982,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
            .style("bottom", 0);
       }
 
-      svg.attr("viewBox", "0 0 " + rect.width + " " + rect.height)
+      svg.attr("viewBox", `0 0 ${rect.width} ${rect.height}`)
          .attr("preserveAspectRatio", "none")  // we do not preserve relative ratio
          .property('height_factor', factor)
          .property('draw_x', 0)
@@ -3110,7 +3110,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.createAttLine({ attr: this.pad, color0: this.pad.fBorderMode == 0 ? 'none' : '' });
 
       svg_pad.attr("display", pad_visible ? null : "none")
-             .attr("viewBox", "0 0 " + w + " " + h) // due to svg
+             .attr("viewBox", `0 0 ${w} ${h}`) // due to svg
              .attr("preserveAspectRatio", "none")   // due to svg, we do not preserve relative ratio
              .attr("x", x)    // due to svg
              .attr("y", y)   // due to svg

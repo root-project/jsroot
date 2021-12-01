@@ -216,7 +216,7 @@ JSROOT.define(['d3', 'three', 'painter'], (d3, THREE, jsrp) => {
                .attr('y', size.y)
                .attr('width', size.width)
                .attr('height', size.height)
-               .attr('viewBox', "0 0 " + size.width + " " + size.height)
+               .attr('viewBox', `0 0 ${size.width} ${size.height}`)
                .attr('preserveAspectRatio', 'xMidYMid');
          }
 
