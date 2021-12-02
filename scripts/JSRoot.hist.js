@@ -6200,7 +6200,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       const make_marker = (x,y) => {
          if (!markers) {
-            this.createAttMarker({ attr: histo, style: 5 });
+            this.createAttMarker({ attr: histo, style: isOption(kPointsAllScat) ? 0 : 5 });
             this.markeratt.resetPos();
          }
          markers += swapXY ? this.markeratt.create(y,x) : this.markeratt.create(x,y);
@@ -6314,7 +6314,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             lines += make_path(pnt.x1, pnt.yy2, "H", pnt.x2);
          }
 
-         if ((isOption(kWhiskerAll) && isOption(kHistoZeroIndicator)) || isOption(kWhisker15)) {
+         if (isOption(kWhiskerAll) && !isOption(kHistoZeroIndicator)) { // Whiskers are dashed
+            dashed_lines += make_path(center, pnt.y1, "V", pnt.yy1);
+            dashed_lines += make_path(center, pnt.y2, "V", pnt.yy2);
+         } else if ((isOption(kWhiskerAll) && isOption(kHistoZeroIndicator)) || isOption(kWhisker15)) {
             lines += make_path(center, pnt.y1, "V", pnt.yy1);
             lines += make_path(center, pnt.y2, "V", pnt.yy2);
          }

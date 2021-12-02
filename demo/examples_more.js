@@ -35,7 +35,22 @@ examples_more = {
      { name: "3dscale", opt: "lego2_x3dsc50_y3dsc200", file: "hsimple.root", item: "hpxpy;1", title: "change x/y/z axis scale ratio in lego plots" }
    ],
    Candle : [
-     { name: "candle", file: "candleplot.root", item: "c1;1" }
+     { name: "c1", opt: "candle1", file: "hsimple.root", item: "hpxpy;1", title: "candle1 option for TH2 classes" },
+     { name: "c2", opt: "candle2", title: "candle2 option for TH2 classes" },
+     { name: "c3", opt: "candle3", title: "candle3 option for TH2 classes" },
+     { name: "c4", opt: "candle4", title: "candle4 option for TH2 classes" },
+     { name: "c5", opt: "candle5", title: "candle5 option for TH2 classes" },
+     { name: "c6", opt: "candle6", title: "candle6 option for TH2 classes" },
+     { name: "v1", opt: "violin1;fill_6", title: "violin1 option for TH2 classes" },
+     { name: "v2", opt: "violin2;fill_6", title: "violin2 option for TH2 classes" },
+     { name: "ch1", opt: "candleh1", title: "candleh1 option for TH2 classes" },
+     { name: "ch2", opt: "candleh2", title: "candleh2 option for TH2 classes" },
+     { name: "ch3", opt: "candleh3", title: "candleh3 option for TH2 classes" },
+     { name: "ch4", opt: "candleh4", title: "candleh4 option for TH2 classes" },
+     { name: "ch5", opt: "candleh5", title: "candleh5 option for TH2 classes" },
+     { name: "ch6", opt: "candleh6", title: "candleh6 option for TH2 classes" },
+     { name: "vh1", opt: "violinh1;fill_6", title: "violinh1 option for TH2 classes" },
+     { name: "vh2", opt: "violinh2;fill_6", title: "violinh2 option for TH2 classes" }
    ],
    TH2Poly : [
       { name: "germany", url: "?nobrowser&file=$$$th2poly.root&item=europe;1/[13]", title: "Draw single TH2PolyBin from europe map" },
