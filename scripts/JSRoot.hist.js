@@ -6171,14 +6171,15 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           xx, yy, swapXY = isOption(kHorizontal);
 
       const make_path = (...a) => {
-         let l = a.length, i = 2;
-         let res = `M${a[0]},${a[1]}`;
+         let l = a.length, i = 2, s1 = swapXY ? 1 : 0, s2 = swapXY ? 0 : 1;
+         let res = `M${a[s1]},${a[s2]}`;
          while (i < l) {
-            if (a[i]=="Z") return res + "Z";
-            if ((a[i] == 'V') || (a[i] == 'H'))
-               res += a[i]+a[i+1];
-            else
-               res += `L${a[i]},${a[i+1]}`;
+            switch(a[i]) {
+               case 'Z': return res + "Z";
+               case 'V': res += (swapXY ? 'H' : 'V') + a[i+1]; break;
+               case 'H': res += (swapXY ? 'V' : 'H') + a[i+1]; break;
+               default: res += `L${a[i+s1]},${a[i+s2]}`;
+            }
             i += 2;
          }
          return res;
@@ -6205,7 +6206,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          let res = extractQuantiles(xx,yy,prob);
          if (!res) return;
 
-         let pnt = { bin: bin_indx, fWhiskerDown: res.quantiles[0], fBoxDown: res.quantiles[1], fMedian: res.quantiles[2], fBoxUp: res.quantiles[3], fWhiskerUp: res.quantiles[4] };
+         let pnt = { bin: bin_indx, swapXY: swapXY,
+                     fWhiskerDown: res.quantiles[0], fBoxDown: res.quantiles[1], fMedian: res.quantiles[2], fBoxUp: res.quantiles[3], fWhiskerUp: res.quantiles[4] };
          let iqr = pnt.fBoxUp - pnt.fBoxDown;
 
          if (isOption(kWhisker15)) { // Improved whisker definition, with 1.5*iqr
@@ -6304,7 +6306,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          for (let j = handle.j1; j < handle.j2; ++j) {
             for (let i = 0; i < this.nbinsx; ++i)
-               yy[j] = histo.getBinContent(i+1,j+1);
+               yy[i] = histo.getBinContent(i+1,j+1);
 
             produceCandlePoint(j, handle.gry[j+1], handle.gry[j]);
          }
@@ -6564,7 +6566,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       lines.push(this.getObjectHint());
 
-      lines.push("x = " + funcs.axisAsText("x", histo.fXaxis.GetBinLowEdge(p.bin+1)));
+      if (p.swapXY)
+         lines.push("y = " + funcs.axisAsText("y", histo.fYaxis.GetBinLowEdge(p.bin+1)));
+      else
+         lines.push("x = " + funcs.axisAsText("x", histo.fXaxis.GetBinLowEdge(p.bin+1)));
 
       lines.push('median = ' + jsrp.floatToString(p.fMedian, JSROOT.gStyle.fStatFormat))
       lines.push('m25 = ' + jsrp.floatToString(p.fBoxDown, JSROOT.gStyle.fStatFormat))
@@ -6709,14 +6714,16 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       } else if (h.candle) {
          // process tooltips for candle
 
-         let i, p;
+         let i, p, match;
 
          for (i = 0; i < h.candle.length; ++i) {
             p = h.candle[i];
-            if ((p.x1 <= pnt.x) && (pnt.x <= p.x2) && (p.yy1 <= pnt.y) && (pnt.y <= p.yy2)) break;
+            match = p.swapXY ? ((p.x1 <= pnt.y) && (pnt.y <= p.x2) && (p.yy1 >= pnt.x) && (pnt.x >= p.yy2))
+                             : ((p.x1 <= pnt.x) && (pnt.x <= p.x2) && (p.yy1 <= pnt.y) && (pnt.y <= p.yy2));
+            if (match) break;
          }
 
-         if (i >= h.candle.length) {
+         if (!match) {
             ttrect.remove();
             return null;
          }
@@ -6733,18 +6740,15 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          } else {
 
             if (ttrect.empty())
-               ttrect = this.draw_g.append("svg:rect")
+               ttrect = this.draw_g.append("svg:path")
                                    .attr("class","tooltip_bin h1bin")
-                                   .style("pointer-events","none");
+                                   .style("pointer-events","none")
+                                   .style("opacity", "0.7");
 
             res.changed = ttrect.property("current_bin") !== i;
 
             if (res.changed)
-               ttrect.attr("x", p.x1)
-                     .attr("width", p.x2-p.x1)
-                     .attr("y", p.yy1)
-                     .attr("height", p.yy2-p.yy1)
-                     .style("opacity", "0.7")
+               ttrect.attr("d", p.swapXY ? `M${p.yy1},${p.x1}H${p.yy2}V${p.x2}H${p.yy1}Z` : `M${p.x1},${p.yy1}H${p.x2}V${p.yy2}H${p.x1}Z`)
                      .property("current_bin", i);
          }
 
