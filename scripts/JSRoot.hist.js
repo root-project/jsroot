@@ -6614,7 +6614,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       } else {
          if (this.options.Scat)
             handle = this.drawBinsScatter();
-         else if (this.options.Color)
+
+         if (this.options.Color)
             handle = this.drawBinsColor();
          else if (this.options.Box)
             handle = this.drawBinsBox();
