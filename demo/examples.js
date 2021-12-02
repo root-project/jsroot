@@ -77,16 +77,16 @@ examples_main = {
      { name: "c4", opt: "candle4", title: "candle4 option for TH2 classes" },
      { name: "c5", opt: "candle5", title: "candle5 option for TH2 classes" },
      { name: "c6", opt: "candle6", title: "candle6 option for TH2 classes" },
-     { name: "v1", opt: "violin1", title: "violin1 option for TH2 classes" },
-     { name: "v2", opt: "violin2", title: "violin2 option for TH2 classes" },
+     { name: "v1", opt: "violin1;fill_6", title: "violin1 option for TH2 classes" },
+     { name: "v2", opt: "violin2;fill_6", title: "violin2 option for TH2 classes" },
      { name: "ch1", opt: "candleh1", title: "candleh1 option for TH2 classes" },
      { name: "ch2", opt: "candleh2", title: "candleh2 option for TH2 classes" },
      { name: "ch3", opt: "candleh3", title: "candleh3 option for TH2 classes" },
      { name: "ch4", opt: "candleh4", title: "candleh4 option for TH2 classes" },
      { name: "ch5", opt: "candleh5", title: "candleh5 option for TH2 classes" },
      { name: "ch6", opt: "candleh6", title: "candleh6 option for TH2 classes" },
-     { name: "vh1", opt: "violinh1", title: "violinh1 option for TH2 classes" },
-     { name: "vh2", opt: "violinh2", title: "violinh2 option for TH2 classes" }
+     { name: "vh1", opt: "violinh1;fill_6", title: "violinh1 option for TH2 classes" },
+     { name: "vh2", opt: "violinh2;fill_6", title: "violinh2 option for TH2 classes" }
    ],
    TH2Poly : [
       { name: "honeycomb", file: "th2poly.root", item: "honeycomb;1", opt: "l,col" },

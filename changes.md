@@ -8,6 +8,7 @@
 5. Upgrade three.js to r135, reduce number of components used in jsroot
 6. Implement proper drawing of TEllipse
 7. Support new TGraphMultiErrors class
+8. Implement all variants of CANDLE and VIOLIN draw options (#194)
 
 
 ## Changes in 6.3.0

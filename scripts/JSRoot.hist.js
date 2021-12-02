@@ -6101,13 +6101,13 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                case '4': res += kBox + kMeanCircle + kMedianNotched + kWhisker15 + kAnchor + kPointsOutliers; break;
                case '5': res += kBox + kMeanLine + kMedianLine + kWhisker15 + kAnchor + kPointsAll; break;
                case '6': res += kBox + kMeanCircle + kMedianLine + kWhisker15 + kAnchor + kPointsAllScat; break;
-               default: if (preset) res += fallbackCandle;
+               default: res += fallbackCandle;
             }
          else
             switch(preset) {
                case '1': res += fallbackViolin; break;
                case '2': res += kMeanCircle + kWhisker15 + kHistoViolin + kHistoZeroIndicator + kPointsOutliers; break;
-               default: if (preset) res += fallbackViolin;
+               default: res += fallbackViolin;
             }
 
          let l = opt.indexOf("("), r = opt.lastIndexOf(")");
@@ -6213,6 +6213,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          }
          cmarkers += swapXY ? attrcmarkers.create(y,x) : attrcmarkers.create(x,y);
       }
+
+      //if ((histo.fFillStyle == 0) && (histo.fFillColor > 0) && (!this.fillatt || this.fillatt.empty()))
+      //     this.createAttFill({ color: this.getColor(histo.fFillColor), pattern: 1001 });
 
       if (histo.fMarkerColor === 1) histo.fMarkerColor = histo.fLineColor;
 
@@ -6345,6 +6348,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          if (((isOption(kHistoRight) || isOption(kHistoLeft) || isOption(kHistoViolin))) && (res.max > 0) && (res.first >= 0)) {
             let arr = [], scale = histoWidth/2/res.max;
+            if (swapXY) scale *= -1;
 
             xindx1 = Math.max(xindx1, res.first);
             xindx2 = Math.min(xindx2-1, res.last);
@@ -6363,9 +6367,11 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                   arr.push("H", Math.round(center - scale*proj[ii]), "V", Math.round(funcs[fname](xx[ii])));
             }
 
-            arr.push("H", center, "Z"); // complete histogram
+            arr.push("H", center); // complete histogram
 
             hists += make_path(...arr);
+
+            if (!this.fillatt.empty()) hists += "Z";
          }
 
          handle.candle.push(pnt); // keep point for the tooltip
@@ -6402,17 +6408,18 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          }
       }
 
-      if ((hlines.length > 0) && (this.fillatt.color != 'none'))
+      if ((hlines.length > 0) && (histo.fFillColor > 0))
          this.draw_g.append("svg:path")
              .attr("d", hlines)
-             .style("stroke", this.fillatt.color)
+             .style("stroke", this.getColor(histo.fFillColor))
 
-
-      if ((hists.length > 0) && !this.fillatt.empty())
+      let hline_color = (isOption(kHistoZeroIndicator) && (histo.fFillStyle != 0)) ? this.fillatt.color : this.lineatt.color;
+      if ((hists.length > 0) && (!this.fillatt.empty() || (hline_color != 'none')))
          this.draw_g.append("svg:path")
              .attr("d", hists)
-             .style("stroke", this.fillatt.color)
-             .call(this.fillatt.func);
+             .style("stroke", hline_color)
+             .call(this.fillatt.func)
+             .attr("pointer-events","visibleFill");
 
       if (bars.length > 0)
          this.draw_g.append("svg:path")
@@ -6665,9 +6672,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       else
          lines.push("x = " + funcs.axisAsText("x", histo.fXaxis.GetBinLowEdge(p.bin+1)));
 
+      lines.push('m-25%  = ' + jsrp.floatToString(p.fBoxDown, JSROOT.gStyle.fStatFormat))
       lines.push('median = ' + jsrp.floatToString(p.fMedian, JSROOT.gStyle.fStatFormat))
-      lines.push('m25 = ' + jsrp.floatToString(p.fBoxDown, JSROOT.gStyle.fStatFormat))
-      lines.push('p25 = ' + jsrp.floatToString(p.fBoxUp, JSROOT.gStyle.fStatFormat))
+      lines.push('m+25%  = ' + jsrp.floatToString(p.fBoxUp, JSROOT.gStyle.fStatFormat))
 
       return lines;
    }
