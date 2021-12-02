@@ -6122,14 +6122,24 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       const extractQuantiles = (xx,proj,prob) => {
 
-         let integral = 0, cnt = 0, sum1 = 0;
+         let integral = 0, cnt = 0, sum1 = 0,
+             res = { max: 0, first: -1, last: -1 };
+
          for (let j = 0; j < proj.length; ++j) {
+            if (proj[j] > 0) {
+               res.max = Math.max(res.max, proj[j]);
+               if (res.first < 0) res.first = j;
+               res.last = j;
+            }
             integral += proj[j];
             sum1 += proj[j]*(xx[j]+xx[j+1])/2;
          }
          if (integral <= 0) return null;
 
-         let res = { entries: integral, mean: sum1/integral, quantiles: new Array(prob.length), indx: new Array(prob.length) };
+         res.entries = integral;
+         res.mean = sum1/integral;
+         res.quantiles = new Array(prob.length);
+         res.indx = new Array(prob.length);
 
          let sum = 0, nextv = 0;
          for (let j = 0; j < proj.length; ++j) {
@@ -6168,7 +6178,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           handle = this.prepareColorDraw(),
           pmain = this.getFramePainter(), // used for axis values conversions
           funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
-          bars = "", lines = "", dashed_lines = "",
+          hists = "", bars = "", lines = "", dashed_lines = "",
           markers = "", cmarkers = "", attrcmarkers = null,
           xx, proj, swapXY = isOption(kHorizontal);
 
@@ -6333,6 +6343,28 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             }
          }
 
+         if (((isOption(kHistoRight) || isOption(kHistoLeft) || isOption(kHistoViolin))) && (res.max > 0) && (res.first >= 0)) {
+            let arr = [], scale = histoWidth/2/res.max, curry;
+
+            if (isOption(kHistoRight) || isOption(kHistoViolin)) {
+               arr.push(center, Math.round(funcs[fname](xx[res.first])));
+               for (let ii = res.first; ii <= res.last; ii++) {
+                  arr.push("H", Math.round(center + scale*proj[ii]), "V", Math.round(funcs[fname](xx[ii+1])));
+               }
+            }
+
+            if (isOption(kHistoLeft) || isOption(kHistoViolin)) {
+               if (arr.length == 0)
+                  arr.push(center, Math.round(funcs[fname](xx[res.last+1])));
+               for (let ii = res.last; ii >= res.first; ii--)
+                  arr.push("H", Math.round(center - scale*proj[ii]), "V", Math.round(funcs[fname](xx[ii])));
+            }
+
+            arr.push("H", center, "Z"); // complete histogram
+
+            hists += make_path(...arr);
+         }
+
          handle.candle.push(pnt); // keep point for the tooltip
 
       };
@@ -6366,6 +6398,14 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          }
       }
+
+      if (hists.length > 0)
+         this.draw_g.append("svg:path")
+             .attr("d", hists)
+             .style("stroke", 'yellow')
+             .style("fill", 'yellow');
+             //.style("stroke", this.fillatt.color)
+             //.call(this.fillatt.func);
 
       if (bars.length > 0)
          this.draw_g.append("svg:path")
