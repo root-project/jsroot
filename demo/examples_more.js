@@ -17,7 +17,6 @@ examples_more = {
      { name: "logx", opt: "colz", file: "QAresults.root", item: "PIDqa/PIDqa1/ITS/hNsigmaP_ITS_electron;1" },
      { name: "logz", url: "?nobrowser&file=$$$sparsehist.root&item=c;1&palette=7", title: "LogZ plus text on several canvas" },
      { name: "userz", json: "th2ul.json.gz", opt: "colz", title: "TH2 with set user min/max, drawn with COLZ" },
-     { name: "candle", file: "candleplot.root", item: "c1;1" },
      { name: "box_same", json: "hbox_same.json.gz", title: "several histograms, drawn with box same opitons" },
      { name: "col_same", json: "hcol_same.json.gz", title: "several histograms, drawn with col same opitons" },
      { name: "docu", file: "histpainter6.root", layout: "vert33", items: ['draw_th2e','draw_scat','draw_arr','draw_box','draw_box1','draw_boxsame'], title:"several TH2 examples from THistPainter documentation page" },
@@ -34,6 +33,9 @@ examples_more = {
      { name: "symlog5", opt: "col,symlogx5,symlogy5", file: "hsimple.root", item: "hpxpy;1", title: "symlog scale with 1e-5 factor for constant" },
      { name: "greek", opt: "lego2;xtitle:x=%23alpha%23pm%23sigma;ytitle:y=%23beta%23pm%23sigma;ztitle:z=%23gamma%23pm%23sigma", file: "hsimple.root", item: "hpxpy;1", title: "Greek letters on lego plot" },
      { name: "3dscale", opt: "lego2_x3dsc50_y3dsc200", file: "hsimple.root", item: "hpxpy;1", title: "change x/y/z axis scale ratio in lego plots" }
+   ],
+   Candle : [
+     { name: "candle", file: "candleplot.root", item: "c1;1" }
    ],
    TH2Poly : [
       { name: "germany", url: "?nobrowser&file=$$$th2poly.root&item=europe;1/[13]", title: "Draw single TH2PolyBin from europe map" },
