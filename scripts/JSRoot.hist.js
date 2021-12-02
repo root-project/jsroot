@@ -1535,7 +1535,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (d.check('PIE')) this.Pie = true; // not used
 
       if (d.check('CANDLE', true)) this.Candle = d.part;
-      if (d.check('VIOLIN', true)) this.Violin = d.part;
+      if (d.check('VIOLIN', true)) { this.Violin = d.part; delete this.Candle; }
 
       if (d.check('GLBOX',true)) this.GLBox = 10 + d.partAsInt();
       if (d.check('GLCOL')) this.GLColor = true;
@@ -7366,7 +7366,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           hopt = hlst.opt[rindx] || hist.fOption || this.options.hopt;
 
       if (hopt.toUpperCase().indexOf(this.options.hopt) < 0)
-         hopt += this.options.hopt;
+         hopt += ' ' + this.options.hopt;
       if (this.options.draw_errors && !hopt)
          hopt = "E";
       hopt += " same nostat";
