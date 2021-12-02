@@ -6174,7 +6174,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           handle = this.prepareColorDraw(),
           pmain = this.getFramePainter(), // used for axis values conversions
           funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
-          bars = "", lines = "", markers = "", cmarkers = "", attrcmarkers = null,
+          bars = "", lines = "", dashed_lines = "",
+          markers = "", cmarkers = "", attrcmarkers = null,
           xx, yy, swapXY = isOption(kHorizontal);
 
       const make_path = (...a) => {
@@ -6191,6 +6192,14 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          }
          return res;
       };
+
+      const make_cmarker = (x,y) => {
+         if (!attrcmarkers) {
+            attrcmarkers = new JSROOT.TAttMarkerHandler({attr: histo, style: 24});
+            attrcmarkers.resetPos();
+         }
+         cmarkers += swapXY ? attrcmarkers.create(y,x) : attrcmarkers.create(x,y);
+      }
 
       if (histo.fMarkerColor === 1) histo.fMarkerColor = histo.fLineColor;
 
@@ -6229,7 +6238,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          }
 
          pnt.fMean = res.mean;
-         pnt.fMedianErr = 1.57*iqr/Math.sqrt(res.entries);
+         let fMedianErr = 1.57*iqr/Math.sqrt(res.entries);
          pnt.fAxisMin = xx[0];
          pnt.fAxisMax = xx[xx.length-1];
 
@@ -6263,6 +6272,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          pnt.y2 = Math.round(funcs[fname](pnt.fBoxDown));
          pnt.yy2 = Math.round(funcs[fname](pnt.fWhiskerDown));
 
+         let y0m = Math.round(funcs[fname](pnt.fMean)),
+             y01 = Math.round(funcs[fname](Math.min(pnt.fMedian + fMedianErr, pnt.fBoxUp))),
+             y02 = Math.round(funcs[fname](Math.max(pnt.fMedian - fMedianErr, pnt.fBoxDown)));
+
          // mean line
 
          if (isOption(kMedianLine))
@@ -6270,16 +6283,18 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          else if (isOption(kMedianNotched))
             lines += make_path(x1d,pnt.y0,'H',x2d);
          else if (isOption(kMedianCircle)) {
-            if (!attrcmarkers) {
-               attrcmarkers = new JSROOT.TAttMarkerHandler({attr: histo, style: 24});
-               attrcmarkers.resetPos();
-            }
-            cmarkers += attrcmarkers.create(center, pnt.y0);
+            make_cmarker(center, pnt.y0);
+         }
+
+         if (isOption(kMeanCircle)) {
+            make_cmarker(center, y0m);
+         } else if (isOption(kMeanLine)) {
+            dashed_lines += make_path(pnt.x1,y0m,'H',pnt.x2);
          }
 
          if (isOption(kBox))
             if (isOption(kMedianNotched))
-               bars += make_path(pnt.x1, pnt.y1, "V", pnt.y2, "H", pnt.x2, "V", pnt.y1, "Z");
+               bars += make_path(pnt.x1, pnt.y1, "V", y01, x1d, pnt.y0, pnt.x1, y02, "V", pnt.y2, "H", pnt.x2, "V", y02, x2d, pnt.y0, pnt.x2, y01, "V", pnt.y1, "Z");
             else
                bars += make_path(pnt.x1, pnt.y1, "V", pnt.y2, "H", pnt.x2, "V", pnt.y1, "Z");
 
@@ -6346,6 +6361,14 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
              .attr("d", lines)
              .call(this.lineatt.func)
              .style('fill','none');
+
+      if (dashed_lines.length > 0) {
+         let dashed = new JSROOT.TAttLineHandler({ attr: histo, style: 2 });
+         this.draw_g.append("svg:path")
+             .attr("d", dashed_lines)
+             .call(dashed.func)
+             .style('fill','none');
+      }
 
       if (cmarkers.length > 0)
          this.draw_g.append("svg:path")

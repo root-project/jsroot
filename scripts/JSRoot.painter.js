@@ -681,7 +681,7 @@ JSROOT.define(['d3'], (d3) => {
       if (args.attr) {
          args.color = args.color0 || (args.painter ? args.painter.getColor(args.attr.fLineColor) : jsrp.getColor(args.attr.fLineColor));
          if (args.width === undefined) args.width = args.attr.fLineWidth;
-         args.style = args.attr.fLineStyle;
+         if (args.style === undefined) args.style = args.attr.fLineStyle;
       } else if (typeof args.color == 'string') {
          if ((args.color !== 'none') && !args.width) args.width = 1;
       } else if (typeof args.color == 'number') {
