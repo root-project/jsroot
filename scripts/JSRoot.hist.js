@@ -6178,7 +6178,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           handle = this.prepareColorDraw(),
           pmain = this.getFramePainter(), // used for axis values conversions
           funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
-          hists = "", bars = "", lines = "", dashed_lines = "",
+          bars = "", lines = "", dashed_lines = "",
+          hists = "", hlines = "",
           markers = "", cmarkers = "", attrcmarkers = null,
           xx, proj, swapXY = isOption(kHorizontal);
 
@@ -6226,7 +6227,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       prob[3] = (fBoxRange >= 1) ? 1-1E-14 : 0.5 + fBoxRange/2.;
       prob[4] = (fWhiskerRange >= 1) ? 1-1e-15 : 0.5 + fWhiskerRange/2.;
 
-      const produceCandlePoint = (bin_indx, grx_left, grx_right) => {
+      const produceCandlePoint = (bin_indx, grx_left, grx_right, xindx1, xindx2) => {
          let res = extractQuantiles(xx, proj, prob);
          if (!res) return;
 
@@ -6247,8 +6248,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          pnt.fMean = res.mean;
          let fMedianErr = 1.57*iqr/Math.sqrt(res.entries);
-         pnt.fAxisMin = xx[0];
-         pnt.fAxisMax = xx[xx.length-1];
 
          //estimate quantiles... simple function... not so nice as GetQuantiles
 
@@ -6284,7 +6283,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
              y01 = Math.round(funcs[fname](Math.min(pnt.fMedian + fMedianErr, pnt.fBoxUp))),
              y02 = Math.round(funcs[fname](Math.max(pnt.fMedian - fMedianErr, pnt.fBoxDown)));
 
-         // mean line
+         if (isOption(kHistoZeroIndicator))
+            hlines += make_path(center, Math.round(funcs[fname](xx[xindx1])),'V',Math.round(funcs[fname](xx[xindx2])))
 
          if (isOption(kMedianLine))
             lines += make_path(pnt.x1,pnt.y0,'H',pnt.x2);
@@ -6344,19 +6344,22 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          }
 
          if (((isOption(kHistoRight) || isOption(kHistoLeft) || isOption(kHistoViolin))) && (res.max > 0) && (res.first >= 0)) {
-            let arr = [], scale = histoWidth/2/res.max, curry;
+            let arr = [], scale = histoWidth/2/res.max;
+
+            xindx1 = Math.max(xindx1, res.first);
+            xindx2 = Math.min(xindx2-1, res.last);
 
             if (isOption(kHistoRight) || isOption(kHistoViolin)) {
-               arr.push(center, Math.round(funcs[fname](xx[res.first])));
-               for (let ii = res.first; ii <= res.last; ii++) {
+               arr.push(center, Math.round(funcs[fname](xx[xindx1])));
+               for (let ii = xindx1; ii <= xindx2; ii++) {
                   arr.push("H", Math.round(center + scale*proj[ii]), "V", Math.round(funcs[fname](xx[ii+1])));
                }
             }
 
             if (isOption(kHistoLeft) || isOption(kHistoViolin)) {
                if (arr.length == 0)
-                  arr.push(center, Math.round(funcs[fname](xx[res.last+1])));
-               for (let ii = res.last; ii >= res.first; ii--)
+                  arr.push(center, Math.round(funcs[fname](xx[xindx2+1])));
+               for (let ii = xindx2; ii >= xindx1; ii--)
                   arr.push("H", Math.round(center - scale*proj[ii]), "V", Math.round(funcs[fname](xx[ii])));
             }
 
@@ -6379,7 +6382,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             for (let i = 0; i < this.nbinsx; ++i)
                proj[i] = histo.getBinContent(i+1,j+1);
 
-            produceCandlePoint(j, handle.gry[j+1], handle.gry[j]);
+            produceCandlePoint(j, handle.gry[j+1], handle.gry[j], handle.i1, handle.i2);
          }
 
       } else {
@@ -6394,18 +6397,22 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             for (let j = 0; j < this.nbinsy; ++j)
                proj[j] = histo.getBinContent(i+1,j+1);
 
-            produceCandlePoint(i, handle.grx[i], handle.grx[i+1]);
+            produceCandlePoint(i, handle.grx[i], handle.grx[i+1], handle.j1, handle.j2);
 
          }
       }
 
-      if (hists.length > 0)
+      if ((hlines.length > 0) && (this.fillatt.color != 'none'))
+         this.draw_g.append("svg:path")
+             .attr("d", hlines)
+             .style("stroke", this.fillatt.color)
+
+
+      if ((hists.length > 0) && !this.fillatt.empty())
          this.draw_g.append("svg:path")
              .attr("d", hists)
-             .style("stroke", 'yellow')
-             .style("fill", 'yellow');
-             //.style("stroke", this.fillatt.color)
-             //.call(this.fillatt.func);
+             .style("stroke", this.fillatt.color)
+             .call(this.fillatt.func);
 
       if (bars.length > 0)
          this.draw_g.append("svg:path")
