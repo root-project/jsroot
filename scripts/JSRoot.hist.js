@@ -6077,12 +6077,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       let fOption = kNoOption;
 
-      const getCandleOption = pos => {
-         let mult = 1;
-         while (pos-- > 0) mult *= 10;
-         return Math.floor(fOption/mult) % 10;
-      };
-
       const isOption = opt => {
          let mult = 1;
          while (opt >= mult) mult *= 10;
@@ -6193,6 +6187,14 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          return res;
       };
 
+      const make_marker = (x,y) => {
+         if (!markers) {
+            this.createAttMarker({ attr: histo, style: 5 });
+            this.markeratt.resetPos();
+         }
+         markers += swapXY ? this.markeratt.create(y,x) : this.markeratt.create(x,y);
+      }
+
       const make_cmarker = (x,y) => {
          if (!attrcmarkers) {
             attrcmarkers = new JSROOT.TAttMarkerHandler({attr: histo, style: 24});
@@ -6202,10 +6204,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       }
 
       if (histo.fMarkerColor === 1) histo.fMarkerColor = histo.fLineColor;
-
-      // create attribute only when necessary
-      // this.createAttMarker({ attr: histo, style: 5 });
-      // this.markeratt.resetPos();
 
       handle.candle = []; // array of drawn points
 
@@ -6300,7 +6298,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
         if (isOption(kAnchor)) { // Draw the anchor line
             lines += make_path(pnt.x1, pnt.yy1, "H", pnt.x2);
-            lines += make_path(pnt.x1, pnt.yy2, "H", pnt.x2);;
+            lines += make_path(pnt.x1, pnt.yy2, "H", pnt.x2);
          }
 
          if ((isOption(kWhiskerAll) && isOption(kHistoZeroIndicator)) || isOption(kWhisker15)) {
@@ -6308,13 +6306,28 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             lines += make_path(center, pnt.y2, "V", pnt.yy2);
          }
 
-         //estimate outliers
-         //for (j = 0; j < this.nbinsy; ++j) {
-         //   cont = histo.getBinContent(i+1,j+1);
-         //   posy = histo.fYaxis.GetBinCenter(j+1);
-         //   if ((cont > 0) && ((posy < pnt.whiskerm) || (posy > pnt.whiskerp)))
-         //      markers += this.markeratt.create(center, funcs.gry(posy));
-         //}
+         if (isOption(kPointsOutliers) || isOption(kPointsAll) || isOption(kPointsAllScat)) {
+            let show_all = !isOption(kPointsOutliers), show_scat = isOption(kPointsAllScat);
+            for (let ii = 0; ii < yy.length; ++ii) {
+               let bin_content = yy[ii], binx = (xx[ii] + xx[ii+1])/2,
+                   marker_x = center, marker_y = 0;
+
+               if (!bin_content) continue;
+               if (!show_all && (binx >= pnt.fWhiskerDown) && (binx <= pnt.fWhiskerUp)) continue;
+
+               for (let k = 0; k < bin_content; k++) {
+                  if (show_scat)
+                     marker_x = center + Math.round(((JSROOT.random() - 0.5) * candleWidth));
+
+                  if ((bin_content == 1) && !show_scat)
+                     marker_y = Math.round(funcs[fname](binx));
+                  else
+                     marker_y = Math.round(funcs[fname](xx[ii] + JSROOT.random()*(xx[ii+1]-xx[ii])));
+
+                  make_marker(marker_x, marker_y);
+               }
+            }
+         }
 
          handle.candle.push(pnt); // keep point for the tooltip
 
