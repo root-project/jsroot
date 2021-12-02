@@ -6158,6 +6158,18 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          return res;
       }
 
+      if (this.options.Candle)
+         parseOption(this.options.Candle, true);
+      else if (this.options.Violin)
+         parseOption(this.options.Violin, false);
+
+      let histo = this.getHisto(),
+          handle = this.prepareColorDraw(),
+          pmain = this.getFramePainter(), // used for axis values conversions
+          funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
+          bars = "", lines = "", markers = "", cmarkers = "", attrcmarkers = null,
+          xx, yy, swapXY = isOption(kHorizontal);
+
       const make_path = (...a) => {
          let l = a.length, i = 2;
          let res = `M${a[0]},${a[1]}`;
@@ -6171,19 +6183,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          }
          return res;
       };
-
-
-      if (this.options.Candle)
-         parseOption(this.options.Candle, true);
-      else if (this.options.Violin)
-         parseOption(this.options.Violin, false);
-
-
-      let histo = this.getHisto(),
-          handle = this.prepareColorDraw(),
-          pmain = this.getFramePainter(), // used for axis values conversions
-          funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
-          bars = "", lines = "", markers = "", cmarkers = "", attrcmarkers = null;
 
       if (histo.fMarkerColor === 1) histo.fMarkerColor = histo.fLineColor;
 
@@ -6202,21 +6201,11 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       prob[3] = (fBoxRange >= 1) ? 1-1E-14 : 0.5 + fBoxRange/2.;
       prob[4] = (fWhiskerRange >= 1) ? 1-1e-15 : 0.5 + fWhiskerRange/2.;
 
-      // all coordinates, including xmax
-      let xx = new Array(this.nbinsy+1);
-      for (let j = 0; j < this.nbinsy+1; ++j)
-         xx[j] = histo.fYaxis.GetBinLowEdge(j+1);
-
-      // loop over visible x-bins
-      for (let i = handle.i1; i < handle.i2; ++i) {
-         let yy = new Array(this.nbinsy);
-         for (let j = 0; j < this.nbinsy; ++j)
-            yy[j] = histo.getBinContent(i+1,j+1);
-
+      const produceCandlePoint = (bin_indx, grx_left, grx_right) => {
          let res = extractQuantiles(xx,yy,prob);
-         if (!res) continue;
+         if (!res) return;
 
-         let pnt = { bin: i, fWhiskerDown: res.quantiles[0], fBoxDown: res.quantiles[1], fMedian: res.quantiles[2], fBoxUp: res.quantiles[3], fWhiskerUp: res.quantiles[4] };
+         let pnt = { bin: bin_indx, fWhiskerDown: res.quantiles[0], fBoxDown: res.quantiles[1], fMedian: res.quantiles[2], fBoxUp: res.quantiles[3], fWhiskerUp: res.quantiles[4] };
          let iqr = pnt.fBoxUp - pnt.fBoxDown;
 
          if (isOption(kWhisker15)) { // Improved whisker definition, with 1.5*iqr
@@ -6238,10 +6227,11 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          //estimate quantiles... simple function... not so nice as GetQuantiles
 
          // exclude points with negative y when log scale is specified
-         if (funcs.logy && (pnt.fWhiskerDown <= 0)) continue;
+         if (pnt.fWhiskerDown <= 0)
+           if ((swapXY && funcs.logx) || (!swapXY && funcs.logy)) return;
 
-         let w = (handle.grx[i+1] - handle.grx[i]);
-         let center = (handle.grx[i+1] + handle.grx[i]) / 2 + histo.fBarOffset/1000*w;
+         let w = (grx_right - grx_left);
+         let center = (grx_left + grx_right) / 2 + histo.fBarOffset/1000*w;
          let candleWidth = w, histoWidth = w;
          if ((histo.fBarWidth > 0) && (histo.fBarWidth !== 1000)) {
             candleWidth = histoWidth = w * histo.fBarWidth / 1000;
@@ -6255,13 +6245,14 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          center = Math.round(center);
 
          let x1d = Math.round(center - candleWidth/3),
-             x2d = Math.round(center + candleWidth/3);
+             x2d = Math.round(center + candleWidth/3),
+             fname = swapXY ? "grx" : "gry";
 
-         pnt.yy1 = Math.round(funcs.gry(pnt.fWhiskerUp));
-         pnt.y1 = Math.round(funcs.gry(pnt.fBoxUp));
-         pnt.y0 = Math.round(funcs.gry(pnt.fMedian));
-         pnt.y2 = Math.round(funcs.gry(pnt.fBoxDown));
-         pnt.yy2 = Math.round(funcs.gry(pnt.fWhiskerDown));
+         pnt.yy1 = Math.round(funcs[fname](pnt.fWhiskerUp));
+         pnt.y1 = Math.round(funcs[fname](pnt.fBoxUp));
+         pnt.y0 = Math.round(funcs[fname](pnt.fMedian));
+         pnt.y2 = Math.round(funcs[fname](pnt.fBoxDown));
+         pnt.yy2 = Math.round(funcs[fname](pnt.fWhiskerDown));
 
          // mean line
 
@@ -6277,13 +6268,11 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             cmarkers += attrcmarkers.create(center, pnt.y0);
          }
 
-
          if (isOption(kBox))
             if (isOption(kMedianNotched))
                bars += make_path(pnt.x1, pnt.y1, "V", pnt.y2, "H", pnt.x2, "V", pnt.y1, "Z");
             else
                bars += make_path(pnt.x1, pnt.y1, "V", pnt.y2, "H", pnt.x2, "V", pnt.y1, "Z");
-
 
         if (isOption(kAnchor)) { // Draw the anchor line
             lines += make_path(pnt.x1, pnt.yy1, "H", pnt.x2);
@@ -6304,6 +6293,37 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          //}
 
          handle.candle.push(pnt); // keep point for the tooltip
+
+      };
+
+      if (swapXY) {
+         xx = new Array(this.nbinsx+1);
+         yy = new Array(this.nbinsx);
+         for (let i = 0; i < this.nbinsx+1; ++i)
+            xx[i] = histo.fXaxis.GetBinLowEdge(i+1);
+
+         for (let j = handle.j1; j < handle.j2; ++j) {
+            for (let i = 0; i < this.nbinsx; ++i)
+               yy[j] = histo.getBinContent(i+1,j+1);
+
+            produceCandlePoint(j, handle.gry[j+1], handle.gry[j]);
+         }
+
+      } else {
+         xx = new Array(this.nbinsy+1);
+         yy = new Array(this.nbinsy);
+
+         for (let j = 0; j < this.nbinsy+1; ++j)
+            xx[j] = histo.fYaxis.GetBinLowEdge(j+1);
+
+         // loop over visible x-bins
+         for (let i = handle.i1; i < handle.i2; ++i) {
+            for (let j = 0; j < this.nbinsy; ++j)
+               yy[j] = histo.getBinContent(i+1,j+1);
+
+            produceCandlePoint(i, handle.grx[i], handle.grx[i+1]);
+
+         }
       }
 
       if (bars.length > 0)
