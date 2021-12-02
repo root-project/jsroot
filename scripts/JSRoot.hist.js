@@ -6268,7 +6268,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          if (isOption(kMedianLine))
             lines += make_path(pnt.x1,pnt.y0,'H',pnt.x2);
          else if (isOption(kMedianNotched))
-            lines += make_path(x12,pnt.y0,'H',x2d);
+            lines += make_path(x1d,pnt.y0,'H',x2d);
          else if (isOption(kMedianCircle)) {
             if (!attrcmarkers) {
                attrcmarkers = new JSROOT.TAttMarkerHandler({attr: histo, style: 24});
