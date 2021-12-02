@@ -6139,14 +6139,21 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          let sum = 0, nextv = 0;
          for (let j = 0; j < yy.length; ++j) {
-            let v = nextv;
-            sum += yy[j];
+            let v = nextv, x = xx[j];
 
+            // special case - flat integral with const value
+            if ((v === prob[cnt]) && (yy[j] === 0) && (v < 0.99)) {
+               while ((yy[j] === 0) && (j < yy.length)) j++;
+               x = (xx[j] + x) / 2; // this will be mid value
+            }
+
+            sum += yy[j];
             nextv = sum / integral;
             while ((prob[cnt] >= v) && (prob[cnt] < nextv)) {
                res.indx[cnt] = j;
-               res.quantiles[cnt] = xx[j] + ((prob[cnt] - v)/(nextv-v))*(xx[j+1]-xx[j]);
+               res.quantiles[cnt] = x + ((prob[cnt] - v)/(nextv-v))*(xx[j+1]-x);
                if (cnt++ == prob.length) return res;
+               x = xx[j];
             }
          }
 
