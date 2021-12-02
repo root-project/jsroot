@@ -1413,7 +1413,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
               Text: false, TextAngle: 0, TextKind: "", Char: 0, Color: false, Contour: 0,
               Lego: 0, Surf: 0, Off: 0, Tri: 0, Proj: 0, AxisPos: 0,
               Spec: false, Pie: false, List: false, Zscale: false, PadPalette: false,
-              Candle: "", Violin: "",
+              Candle: "", Violin: "", Scaled: null,
               GLBox: 0, GLColor: false, Project: "",
               System: jsrp.Coord.kCARTESIAN,
               AutoColor: false, NoStat: false, ForceStat: false, PadStats: false, PadTitle: false, AutoZoom: false,
@@ -1536,6 +1536,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       if (d.check('CANDLE', true)) this.Candle = d.part;
       if (d.check('VIOLIN', true)) { this.Violin = d.part; delete this.Candle; }
+      if (d.check('NOSCALED')) this.Scaled = false;
+      if (d.check('SCALED')) this.Scaled = true;
 
       if (d.check('GLBOX',true)) this.GLBox = 10 + d.partAsInt();
       if (d.check('GLCOL')) this.GLColor = true;
@@ -6123,7 +6125,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       const extractQuantiles = (xx,proj,prob) => {
 
          let integral = 0, cnt = 0, sum1 = 0,
-             res = { max: 0, first: -1, last: -1 };
+             res = { max: 0, first: -1, last: -1, entries: 0 };
 
          for (let j = 0; j < proj.length; ++j) {
             if (proj[j] > 0) {
@@ -6181,7 +6183,21 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           bars = "", lines = "", dashed_lines = "",
           hists = "", hlines = "",
           markers = "", cmarkers = "", attrcmarkers = null,
-          xx, proj, swapXY = isOption(kHorizontal);
+          xx, proj, swapXY = isOption(kHorizontal),
+          scaledViolin = true, scaledCandle = false,
+          maxContent = 0, maxIntegral = 0;
+
+      if (this.options.Scaled !== null)
+         scaledViolin = scaledCandle = this.options.Scaled;
+      else if (histo.fTitle.indexOf('unscaled') >= 0)
+         scaledViolin = scaledCandle = false;
+      else if (histo.fTitle.indexOf('scaled') >= 0)
+         scaledViolin = scaledCandle = true;
+
+      if (scaledViolin && (isOption(kHistoRight) || isOption(kHistoLeft) || isOption(kHistoViolin)))
+         for (let i = 0; i < this.nbinsx; ++i)
+            for (let j = 0; j < this.nbinsy; ++j)
+               maxContent = Math.max(maxContent, histo.getBinContent(i + 1, j + 1));
 
       const make_path = (...a) => {
          let l = a.length, i = 2, s1 = swapXY ? 1 : 0, s2 = swapXY ? 0 : 1;
@@ -6258,15 +6274,19 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          if (pnt.fWhiskerDown <= 0)
            if ((swapXY && funcs.logx) || (!swapXY && funcs.logy)) return;
 
-         let w = (grx_right - grx_left);
-         let center = (grx_left + grx_right) / 2 + histo.fBarOffset/1000*w;
-         let candleWidth = w, histoWidth = w;
+         let w = (grx_right - grx_left), candleWidth = w, histoWidth = w,
+             center = (grx_left + grx_right) / 2 + histo.fBarOffset/1000*w;
          if ((histo.fBarWidth > 0) && (histo.fBarWidth !== 1000)) {
             candleWidth = histoWidth = w * histo.fBarWidth / 1000;
          } else {
             candleWidth = w*0.66;
             histoWidth = w*0.8;
          }
+
+         if (scaledViolin && (maxContent > 0))
+            histoWidth *= res.max/maxContent;
+         if (scaledCandle && (maxIntegral > 0))
+            candleWidth *= res.entries/maxIntegral;
 
          pnt.x1 = Math.round(center - candleWidth/2);
          pnt.x2 = Math.round(center + candleWidth/2);
@@ -6349,7 +6369,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             }
          }
 
-         if (((isOption(kHistoRight) || isOption(kHistoLeft) || isOption(kHistoViolin))) && (res.max > 0) && (res.first >= 0)) {
+         if ((isOption(kHistoRight) || isOption(kHistoLeft) || isOption(kHistoViolin)) && (res.max > 0) && (res.first >= 0)) {
             let arr = [], scale = histoWidth/2/res.max;
             if (swapXY) scale *= -1;
 
@@ -6387,6 +6407,14 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          for (let i = 0; i < this.nbinsx+1; ++i)
             xx[i] = histo.fXaxis.GetBinLowEdge(i+1);
 
+         if(scaledCandle)
+            for (let j = 0; j < this.nbinsy; ++j) {
+               let sum = 0;
+               for (let i = 0; i < this.nbinsx; ++i)
+                  sum += histo.getBinContent(i+1,j+1);
+               maxIntegral = Math.max(maxIntegral, sum);
+            }
+
          for (let j = handle.j1; j < handle.j2; ++j) {
             for (let i = 0; i < this.nbinsx; ++i)
                proj[i] = histo.getBinContent(i+1,j+1);
@@ -6400,6 +6428,14 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          for (let j = 0; j < this.nbinsy+1; ++j)
             xx[j] = histo.fYaxis.GetBinLowEdge(j+1);
+
+         if(scaledCandle)
+            for (let i = 0; i < this.nbinsx; ++i) {
+               let sum = 0;
+               for (let j = 0; j < this.nbinsy; ++j)
+                  sum += histo.getBinContent(i+1,j+1);
+               maxIntegral = Math.max(maxIntegral, sum);
+            }
 
          // loop over visible x-bins
          for (let i = handle.i1; i < handle.i2; ++i) {
