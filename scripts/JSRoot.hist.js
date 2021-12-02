@@ -6120,28 +6120,28 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             fOption += kHorizontal;
       };
 
-      const extractQuantiles = (xx,yy,prob) => {
+      const extractQuantiles = (xx,proj,prob) => {
 
          let integral = 0, cnt = 0, sum1 = 0;
-         for (let j = 0; j < yy.length; ++j) {
-            integral += yy[j];
-            sum1 += yy[j]*(xx[j]+xx[j+1])/2;
+         for (let j = 0; j < proj.length; ++j) {
+            integral += proj[j];
+            sum1 += proj[j]*(xx[j]+xx[j+1])/2;
          }
          if (integral <= 0) return null;
 
          let res = { entries: integral, mean: sum1/integral, quantiles: new Array(prob.length), indx: new Array(prob.length) };
 
          let sum = 0, nextv = 0;
-         for (let j = 0; j < yy.length; ++j) {
+         for (let j = 0; j < proj.length; ++j) {
             let v = nextv, x = xx[j];
 
             // special case - flat integral with const value
-            if ((v === prob[cnt]) && (yy[j] === 0) && (v < 0.99)) {
-               while ((yy[j] === 0) && (j < yy.length)) j++;
+            if ((v === prob[cnt]) && (proj[j] === 0) && (v < 0.99)) {
+               while ((proj[j] === 0) && (j < proj.length)) j++;
                x = (xx[j] + x) / 2; // this will be mid value
             }
 
-            sum += yy[j];
+            sum += proj[j];
             nextv = sum / integral;
             while ((prob[cnt] >= v) && (prob[cnt] < nextv)) {
                res.indx[cnt] = j;
@@ -6152,7 +6152,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          }
 
          while (cnt < prob.length) {
-            res.indx[cnt] = yy.length-1;
+            res.indx[cnt] = proj.length-1;
             res.quantiles[cnt++] = xx[xx.length-1];
          }
 
@@ -6170,7 +6170,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
           bars = "", lines = "", dashed_lines = "",
           markers = "", cmarkers = "", attrcmarkers = null,
-          xx, yy, swapXY = isOption(kHorizontal);
+          xx, proj, swapXY = isOption(kHorizontal);
 
       const make_path = (...a) => {
          let l = a.length, i = 2, s1 = swapXY ? 1 : 0, s2 = swapXY ? 0 : 1;
@@ -6217,7 +6217,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       prob[4] = (fWhiskerRange >= 1) ? 1-1e-15 : 0.5 + fWhiskerRange/2.;
 
       const produceCandlePoint = (bin_indx, grx_left, grx_right) => {
-         let res = extractQuantiles(xx,yy,prob);
+         let res = extractQuantiles(xx, proj, prob);
          if (!res) return;
 
          let pnt = { bin: bin_indx, swapXY: swapXY,
@@ -6227,11 +6227,11 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          if (isOption(kWhisker15)) { // Improved whisker definition, with 1.5*iqr
             let pos = pnt.fBoxDown-1.5*iqr, indx = res.indx[1];
             while ((xx[indx] > pos) && (indx > 0)) indx--;
-            while (!yy[indx]) indx++;
+            while (!proj[indx]) indx++;
             pnt.fWhiskerDown = xx[indx]; // use lower edge here
             pos = pnt.fBoxUp+1.5*iqr; indx = res.indx[3];
-            while ((xx[indx] < pos) && (indx < yy.length)) indx++;
-            while (!yy[indx]) indx--;
+            while ((xx[indx] < pos) && (indx < proj.length)) indx++;
+            while (!proj[indx]) indx--;
             pnt.fWhiskerUp = xx[indx+1]; // use upper index edge here
          }
 
@@ -6307,9 +6307,13 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          }
 
          if (isOption(kPointsOutliers) || isOption(kPointsAll) || isOption(kPointsAllScat)) {
+
+            // reset seed for each projection to have always same pixels
+            JSROOT.seed(bin_indx*7521 + Math.round(res.integral));
+
             let show_all = !isOption(kPointsOutliers), show_scat = isOption(kPointsAllScat);
-            for (let ii = 0; ii < yy.length; ++ii) {
-               let bin_content = yy[ii], binx = (xx[ii] + xx[ii+1])/2,
+            for (let ii = 0; ii < proj.length; ++ii) {
+               let bin_content = proj[ii], binx = (xx[ii] + xx[ii+1])/2,
                    marker_x = center, marker_y = 0;
 
                if (!bin_content) continue;
@@ -6335,20 +6339,20 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       if (swapXY) {
          xx = new Array(this.nbinsx+1);
-         yy = new Array(this.nbinsx);
+         proj = new Array(this.nbinsx);
          for (let i = 0; i < this.nbinsx+1; ++i)
             xx[i] = histo.fXaxis.GetBinLowEdge(i+1);
 
          for (let j = handle.j1; j < handle.j2; ++j) {
             for (let i = 0; i < this.nbinsx; ++i)
-               yy[i] = histo.getBinContent(i+1,j+1);
+               proj[i] = histo.getBinContent(i+1,j+1);
 
             produceCandlePoint(j, handle.gry[j+1], handle.gry[j]);
          }
 
       } else {
          xx = new Array(this.nbinsy+1);
-         yy = new Array(this.nbinsy);
+         proj = new Array(this.nbinsy);
 
          for (let j = 0; j < this.nbinsy+1; ++j)
             xx[j] = histo.fYaxis.GetBinLowEdge(j+1);
@@ -6356,7 +6360,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          // loop over visible x-bins
          for (let i = handle.i1; i < handle.i2; ++i) {
             for (let j = 0; j < this.nbinsy; ++j)
-               yy[j] = histo.getBinContent(i+1,j+1);
+               proj[j] = histo.getBinContent(i+1,j+1);
 
             produceCandlePoint(i, handle.grx[i], handle.grx[i+1]);
 
