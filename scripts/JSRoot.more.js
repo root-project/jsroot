@@ -1542,9 +1542,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          if (want_tooltip && hints_marker)
             draw_g.append("svg:path")
                 .attr("d", hints_marker)
-                .attr("stroke", "none")
-                .attr("fill", "none")
-                .attr("pointer-events", "visibleFill");
+                .style("stroke", "none")
+                .style("fill", "none")
+                .style("pointer-events", "visibleFill");
       }
    }
 

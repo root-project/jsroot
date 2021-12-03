@@ -1492,8 +1492,8 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
             let gry0 = Math.round(funcs.gry(0));
             if (gry0 <= 0) h0 = -3; else if (gry0 < height) h0 = gry0;
          }
-         close_path = "L"+currx+","+h0 + "L"+startx+","+h0 + "Z";
-         if (res.length>0) res += close_path;
+         close_path = `L${currx},${h0}H{startx}Z`;
+         if (res.length > 0) res += close_path;
       }
 
       if (draw_markers || show_line) {
@@ -1510,20 +1510,20 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
          if ((hints_err !== null) && (hints_err.length > 0))
                this.draw_g.append("svg:path")
                    .attr("d", hints_err)
-                   .attr("stroke", "none")
-                   .attr("fill", "none")
-                   .attr("pointer-events", "visibleFill");
+                   .style("stroke", "none")
+                   .style("fill", "none")
+                   .style("pointer-events", JSROOT.batch_mode ? null : "visibleFill");
 
          if ((path_line !== null) && (path_line.length > 0)) {
             if (!this.fillatt.empty())
                this.draw_g.append("svg:path")
                      .attr("d", options.Fill ? (path_line + close_path) : res)
-                     .attr("stroke", "none")
+                     .style("stroke", "none")
                      .call(this.fillatt.func);
 
             this.draw_g.append("svg:path")
                    .attr("d", path_line)
-                   .attr("fill", "none")
+                   .style("fill", "none")
                    .call(this.lineatt.func);
          }
 

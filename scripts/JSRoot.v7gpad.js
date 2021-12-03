@@ -2212,7 +2212,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if (JSROOT.batch_mode) return promise;
 
-      top_rect.attr("pointer-events", "visibleFill");  // let process mouse events inside frame
+      top_rect.style("pointer-events", "visibleFill");  // let process mouse events inside frame
 
       return promise.then(() => JSROOT.require(['interactive'])).then(inter => {
          inter.FrameInteractive.assign(this);
@@ -3099,7 +3099,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             svg_rect.on("contextmenu", evnt => this.padContextMenu(evnt));
 
          if (!JSROOT.batch_mode)
-            svg_rect.attr("pointer-events", "visibleFill") // get events also for not visible rect
+            svg_rect.style("pointer-events", "visibleFill") // get events also for not visible rect
                     .on("dblclick", evnt => this.enlargePad(evnt))
                     .on("click", () => this.selectObjectPainter(this, null))
                     .on("mouseenter", () => this.showObjectStatus());

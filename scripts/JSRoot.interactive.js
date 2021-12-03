@@ -248,7 +248,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                .attr("y", 0)
                .attr("width", 60)
                .attr("height", hint.height)
-               .attr("fill", "lightgrey")
+               .style("fill", "lightgrey")
                .style("pointer-events", "none");
 
             if (nhints > 1) {
@@ -265,7 +265,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                      .attr("x", wmargin)
                      .attr("y", hmargin + l * textheight * hstep)
                      .attr("dy", ".8em")
-                     .attr("fill", "black")
+                     .style("fill", "black")
                      .style("pointer-events", "none")
                      .call(font.func)
                      .text(hint.lines[l]);
@@ -464,7 +464,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                pad_w: pad_rect.width - rectWidth(),
                pad_h: pad_rect.height - rectHeight(),
                drag_tm: new Date(),
-               path: "v" + rectHeight() + "h" + rectWidth() + "v" + (-rectHeight()) + "z"
+               path: `v${rectHeight()}h${rectWidth()}v${-rectHeight()}z`
             };
 
             drag_rect = d3.select(painter.draw_g.node().parentNode).append("path")
@@ -473,7 +473,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                .attr("y", handle.acc_y1)
                .attr("width", rectWidth())
                .attr("height", rectHeight())
-               .attr("d", "M" + handle.acc_x1 + "," + handle.acc_y1 + handle.path)
+               .attr("d", `M${handle.acc_x1},${handle.acc_y1}${handle.path}`)
                .style("cursor", "move")
                .style("pointer-events", "none") // let forward double click to underlying elements
                .property('drag_handle', handle);
@@ -497,7 +497,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             drag_rect.attr("x", x)
                      .attr("y", y)
-                     .attr("d", "M" + x + "," + y + handle.path);
+                     .attr("d", `M${x},${y}${handle.path}`);
 
          }).on("end", function(evnt) {
             if (!drag_rect) return;
@@ -985,7 +985,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             this.zoom_rect = this.getFrameSvg()
                                  .append("rect")
                                  .attr("class", "zoom")
-                                 .attr("pointer-events","none");
+                                 .style("pointer-events","none");
          }
 
          this.zoom_rect.attr("x", x).attr("y", y).attr("width", w).attr("height", h);
