@@ -4093,7 +4093,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          let gry0 = Math.round(funcs.gry(0));
          if (gry0 <= 0) h0 = -3; else if (gry0 < height) h0 = gry0;
       }
-      let close_path = "L"+currx+","+h0 + "L"+startx+","+h0 + "Z";
+      let close_path = `L${currx},${h0}H${startx}Z`;
 
       if (draw_markers || show_line) {
          if ((path_fill !== null) && (path_fill.length > 0))
@@ -4109,9 +4109,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           if ((hints_err !== null) && (hints_err.length > 0))
                this.draw_g.append("svg:path")
                    .attr("d", hints_err)
-                   .attr("stroke", "none")
-                   .attr("fill", "none")
-                   .attr("pointer-events", "visibleFill");
+                   .style("stroke", "none")
+                   .style("fill", "none")
+                   .style("pointer-events", JSROOT.batch_mode ? null : "visibleFill");
 
          if ((path_line !== null) && (path_line.length > 0)) {
             if (!this.fillatt.empty() && !draw_hist)
@@ -4134,20 +4134,17 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          if ((hints_marker !== null) && (hints_marker.length > 0))
             this.draw_g.append("svg:path")
                 .attr("d", hints_marker)
-                .attr("stroke", "none")
-                .attr("fill", "none")
-                .attr("pointer-events", "visibleFill");
+                .style("stroke", "none")
+                .style("fill", "none")
+                .style("pointer-events", JSROOT.batch_mode ? null : "visibleFill");
       }
 
-      if ((res.length > 0) && draw_hist) {
-         if (!this.fillatt.empty() || fill_for_interactive)
-            res += close_path;
+      if ((res.length > 0) && draw_hist)
          this.draw_g.append("svg:path")
-                    .attr("d", res)
+                    .attr("d", res + ((!this.fillatt.empty() || fill_for_interactive) ? close_path : ""))
                     .style("stroke-linejoin","miter")
                     .call(this.lineatt.func)
                     .call(this.fillatt.func);
-      }
 
       if (show_text)
          this.finishTextDrawing();
