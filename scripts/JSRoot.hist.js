@@ -512,7 +512,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       // this.draw_g.classed("most_upper_primitives", true); // this primitive will remain on top of list
 
-      return this.finishTextDrawing();
+      return this.finishTextDrawing(undefined, (nlines > 1));
    }
 
    /** @summary draw TPaveText object */
@@ -530,20 +530,18 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (!text_g) text_g = this.draw_g;
 
       // first check how many text lines in the list
-      for (let j=0;j<pt.fLines.arr.length;++j) {
-         let entry = pt.fLines.arr[j];
-         if ((entry._typename=="TText") || (entry._typename=="TLatex")) {
+      pt.fLines.arr.forEach(entry => {
+         if ((entry._typename == "TText") || (entry._typename == "TLatex")) {
             nlines++; // count lines
-            if ((entry.fX>0) || (entry.fY>0)) individual_positioning = true;
+            if ((entry.fX > 0) || (entry.fY > 0)) individual_positioning = true;
          }
-      }
+      });
 
       let fast_draw = (nlines==1) && pp && pp._fast_drawing, nline = 0;
 
       // now draw TLine and TBox objects
-      for (let j=0;j<pt.fLines.arr.length;++j) {
-         let entry = pt.fLines.arr[j],
-             ytext = (nlines>0) ? Math.round((1-(nline-0.5)/nlines)*height) : 0;
+      pt.fLines.arr.forEach(entry => {
+         let ytext = (nlines > 0) ? Math.round((1-(nline-0.5)/nlines)*height) : 0;
          switch (entry._typename) {
             case "TText":
             case "TLatex":
@@ -597,7 +595,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                }
                break;
          }
-      }
+      });
 
       if (!individual_positioning) {
          // for characters like 'p' or 'y' several more pixels required to stay in the box when drawn in last line
@@ -630,7 +628,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             if (!arg.color) { this.UseTextColor = true; arg.color = tcolor; }
             this.drawText(arg);
          }
-         promises.push(this.finishTextDrawing(text_g));
+         promises.push(this.finishTextDrawing(text_g, nlines > 1));
       }
 
       if (draw_header) {
