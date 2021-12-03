@@ -2635,7 +2635,7 @@ JSROOT.define(['d3'], (d3) => {
 
    /** @summary Analyze if all text draw operations are completed
      * @private */
-   function _checkAllTextDrawing(painter, draw_g, resolveFunc) {
+   function _checkAllTextDrawing(painter, draw_g, resolveFunc, try_optimize) {
 
       let all_args = draw_g.property('all_args'), missing = 0;
       if (!all_args) {
@@ -2646,8 +2646,10 @@ JSROOT.define(['d3'], (d3) => {
       all_args.forEach(arg => { if (!arg.ready) missing++; });
 
       if (missing > 0) {
-         if (typeof resolveFunc == 'function')
+         if (typeof resolveFunc == 'function') {
             draw_g.node().textResolveFunc = resolveFunc;
+            draw_g.node().try_optimize = try_optimize;
+         }
          return;
       }
 
@@ -2657,7 +2659,7 @@ JSROOT.define(['d3'], (d3) => {
       let f = draw_g.property('text_factor'),
           font = draw_g.property('text_font'),
           max_sz = draw_g.property('max_font_size'),
-          font_size = font.size, any_text = false;
+          font_size = font.size, any_text = false, only_text = true;
 
       if ((f > 0) && ((f < 0.9) || (f > 1)))
          font.size = Math.floor(font.size / f);
@@ -2675,8 +2677,20 @@ JSROOT.define(['d3'], (d3) => {
             let svg = arg.mj_node.select("svg"); // MathJax svg
             arg.applyAttributesToMathJax(painter, arg.mj_node, svg, arg, font_size, f);
             delete arg.mj_node; // remove reference
+            only_text = false;
+         } else if (arg.txt_g) {
+            only_text = false;
          }
       });
+
+      if (!resolveFunc) {
+         resolveFunc = draw_g.node().textResolveFunc;
+         try_optimize = draw_g.node().try_optimize;
+         delete draw_g.node().textResolveFunc;
+         delete draw_g.node().try_optimize;
+      }
+
+      let optimize_arr = (try_optimize && only_text) ? [] : null;
 
       // now process text and latex drawings
       all_args.forEach(arg => {
@@ -2685,6 +2699,7 @@ JSROOT.define(['d3'], (d3) => {
             txt = arg.txt_node;
             delete arg.txt_node;
             is_txt = true;
+            if (optimize_arr !== null) optimize_arr.push(txt);
          } else if (arg.txt_g) {
             txt = arg.txt_g;
             delete arg.txt_g;
@@ -2780,8 +2795,20 @@ JSROOT.define(['d3'], (d3) => {
       if (!any_text)
          font.clearFont(draw_g);
 
-      if (!resolveFunc) resolveFunc = draw_g.node().textResolveFunc;
-      draw_g.node().textResolveFunc = null;
+      if (optimize_arr !== null)
+         ["fill", "text-anchor"].forEach(name => {
+            let first, missed = false;
+            optimize_arr.forEach(txt_node => {
+               let value = txt_node.attr(name);
+               if (!value) missed = false; else
+               if (!first) first = value; else
+               if (first !== value) missed = true;
+            });
+            if (!missed && first) {
+               draw_g.attr(name, first);
+               optimize_arr.forEach(txt_node => { txt_node.attr(name, null); });
+            }
+         });
 
       // if specified, call ready function
       if (resolveFunc) resolveFunc(painter); // IMPORTANT - return painter, may use in draw methods
@@ -2953,7 +2980,7 @@ JSROOT.define(['d3'], (d3) => {
      * @param {function} [draw_g] - <g> element for text drawing, this.draw_g used when not specified
      * @returns {Promise} when text drawing completed
      * @protected */
-   ObjectPainter.prototype.finishTextDrawing = function(draw_g) {
+   ObjectPainter.prototype.finishTextDrawing = function(draw_g, try_optimize) {
       if (!draw_g) draw_g = this.draw_g;
       if (!draw_g || draw_g.empty())
          return Promise.resolve(false);
@@ -2961,7 +2988,7 @@ JSROOT.define(['d3'], (d3) => {
       draw_g.property('draw_text_completed', true); // mark that text drawing is completed
 
       return new Promise(resolveFunc => {
-         _checkAllTextDrawing(this, draw_g, resolveFunc);
+         _checkAllTextDrawing(this, draw_g, resolveFunc, try_optimize);
       });
    }
 

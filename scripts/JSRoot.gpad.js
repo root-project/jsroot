@@ -551,6 +551,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          label_g.push(axis_g.append("svg:g").attr("class","axis_labels").attr("transform", this.vertical ? `translate(${w})` : `translate(0,${-h})`));
 
       // function called when text is drawn to analyze width, required to correctly scale all labels
+      // must be function to correctly handle 'this' argument
       function process_drawtext_ready(painter) {
          let textwidth = this.result_width;
          max_textwidth = Math.max(max_textwidth, textwidth);
@@ -651,12 +652,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
 
       // first complete major labels drawing
-      return this.finishTextDrawing(label_g[0]).then(() => {
+      return this.finishTextDrawing(label_g[0], true).then(() => {
          if (label_g.length > 1) {
             // now complete drawing of second half with scaling if necessary
             if (applied_scale)
                this.scaleTextDrawing(applied_scale, label_g[1]);
-            return this.finishTextDrawing(label_g[1]);
+            return this.finishTextDrawing(label_g[1], true);
           }
           return true;
       }).then(() => {
