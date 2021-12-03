@@ -38,11 +38,8 @@ JSROOT.define(['painter', 'v7gpad'], (jsrp) => {
        this.createv7AttLine();
 
        this.draw_g
-           .append("svg:line")
-           .attr("x1", p1.x)
-           .attr("y1", p1.y)
-           .attr("x2", p2.x)
-           .attr("y2", p2.y)
+           .append("svg:path")
+           .attr("d",`M${p1.x},${p1.y}L${p2.x},${p2.y}`)
            .call(this.lineatt.func);
    }
 
@@ -64,11 +61,8 @@ JSROOT.define(['painter', 'v7gpad'], (jsrp) => {
     this.createv7AttFill();
 
     this.draw_g
-        .append("svg:rect")
-        .attr("x", p1.x)
-        .attr("width", p2.x-p1.x)
-        .attr("y", p2.y)
-        .attr("height", p1.y-p2.y)
+        .append("svg:path")
+        .attr("d",`M${p1.x},${p1.y}H${p2.x}V${p2.y}H${p1.x}Z`)
         .call(this.lineatt.func)
         .call(this.fillatt.func);
    }
@@ -118,10 +112,10 @@ JSROOT.define(['painter', 'v7gpad'], (jsrp) => {
          posy += stepy;
       }
 
-      for (let i = 0; i<legend.fEntries.length; ++i) {
-         let objp = null, entry = legend.fEntries[i];
+      for (let i = 0; i < legend.fEntries.length; ++i) {
+         let objp = null, entry = legend.fEntries[i], w4 = Math.round(width/4);
 
-         this.drawText({ latex: 1, width: 0.75*width - 3*margin_x, height: stepy, x: 2*margin_x + width*0.25, y: posy, text: entry.fLabel });
+         this.drawText({ latex: 1, width: 0.75*width - 3*margin_x, height: stepy, x: 2*margin_x + w4, y: posy, text: entry.fLabel });
 
          if (entry.fDrawableId != "custom") {
             objp = pp.findSnap(entry.fDrawableId, true);
@@ -134,29 +128,20 @@ JSROOT.define(['painter', 'v7gpad'], (jsrp) => {
 
          if (objp && entry.fFill && objp.fillatt)
             this.draw_g
-              .append("svg:rect")
-              .attr("x", Math.round(margin_x))
-              .attr("y", Math.round(posy + stepy*0.1))
-              .attr("width", Math.round(width/4))
-              .attr("height", Math.round(stepy*0.8))
+              .append("svg:path")
+              .attr("d", `M${Math.round(margin_x)},${Math.round(posy + stepy*0.1)}h${w4}v${Math.round(stepy*0.8)}h${-w4}z`)
               .call(objp.fillatt.func);
 
          if (objp && entry.fLine && objp.lineatt)
             this.draw_g
-              .append("svg:line")
-              .attr("x1", Math.round(margin_x))
-              .attr("y1", Math.round(posy + stepy/2))
-              .attr("x2", Math.round(margin_x + width/4))
-              .attr("y2", Math.round(posy + stepy/2))
+              .append("svg:path")
+              .attr("d", `M${Math.round(margin_x)},${Math.round(posy + stepy/2)}h${w4}`)
               .call(objp.lineatt.func);
 
          if (objp && entry.fError && objp.lineatt)
             this.draw_g
-              .append("svg:line")
-              .attr("x1", Math.round(margin_x + width/8))
-              .attr("y1", Math.round(posy + stepy*0.2))
-              .attr("x2", Math.round(margin_x + width/8))
-              .attr("y2", Math.round(posy + stepy*0.8))
+              .append("svg:path")
+              .attr("d", `M${Math.round(margin_x + width/8)},${Math.round(posy + stepy*0.2)}v${Math.round(stepy*0.6)}`)
               .call(objp.lineatt.func);
 
          if (objp && entry.fMarker && objp.markeratt)
@@ -202,7 +187,7 @@ JSROOT.define(['painter', 'v7gpad'], (jsrp) => {
          posy += stepy;
       }
 
-      return this.finishTextDrawing();
+      return this.finishTextDrawing(undefined, true);
    }
 
    function drawPaveText(divid, pave, opt) {
