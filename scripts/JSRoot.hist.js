@@ -6342,7 +6342,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          if (isOption(kPointsOutliers) || isOption(kPointsAll) || isOption(kPointsAllScat)) {
 
             // reset seed for each projection to have always same pixels
-            JSROOT.seed(bin_indx*7521 + Math.round(res.integral));
+            let rnd = new JSROOT.TRandom(bin_indx*7521 + Math.round(res.integral));
 
             let show_all = !isOption(kPointsOutliers), show_scat = isOption(kPointsAllScat);
             for (let ii = 0; ii < proj.length; ++ii) {
@@ -6354,12 +6354,12 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
                for (let k = 0; k < bin_content; k++) {
                   if (show_scat)
-                     marker_x = center + Math.round(((JSROOT.random() - 0.5) * candleWidth));
+                     marker_x = center + Math.round(((rnd.random() - 0.5) * candleWidth));
 
                   if ((bin_content == 1) && !show_scat)
                      marker_y = Math.round(funcs[fname](binx));
                   else
-                     marker_y = Math.round(funcs[fname](xx[ii] + JSROOT.random()*(xx[ii+1]-xx[ii])));
+                     marker_y = Math.round(funcs[fname](xx[ii] + rnd.random()*(xx[ii+1]-xx[ii])));
 
                   make_marker(marker_x, marker_y);
                }
@@ -6497,9 +6497,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           handle = this.prepareColorDraw({ rounding: true, pixel_density: true }),
           colPaths = [], currx = [], curry = [], cell_w = [], cell_h = [],
           colindx, cmd1, cmd2, i, j, binz, cw, ch, factor = 1.,
-          scale = this.options.ScatCoef * ((this.gmaxbin) > 2000 ? 2000. / this.gmaxbin : 1.);
-
-      JSROOT.seed(handle.sumz);
+          scale = this.options.ScatCoef * ((this.gmaxbin) > 2000 ? 2000. / this.gmaxbin : 1.),
+          rnd = new JSROOT.TRandom(handle.sumz);
 
       if (scale*handle.sumz < 1e5) {
          // one can use direct drawing of scatter plot without any patterns
@@ -6516,12 +6515,12 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                binz = histo.getBinContent(i + 1, j + 1);
 
                let npix = Math.round(scale*binz);
-               if (npix<=0) continue;
+               if (npix <= 0) continue;
 
                for (let k = 0; k < npix; ++k)
                   path += this.markeratt.create(
-                            Math.round(handle.grx[i] + cw * JSROOT.random()),
-                            Math.round(handle.gry[j+1] + ch * JSROOT.random()));
+                            Math.round(handle.grx[i] + cw * rnd.random()),
+                            Math.round(handle.gry[j+1] + ch * rnd.random()));
             }
          }
 
@@ -6573,12 +6572,12 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       let layer = this.getFrameSvg().select('.main_layer'),
           defs = layer.select("defs");
-      if (defs.empty() && (colPaths.length>0))
+      if (defs.empty() && (colPaths.length > 0))
          defs = layer.insert("svg:defs",":first-child");
 
       this.createAttMarker({ attr: histo });
 
-      for (colindx=0;colindx<colPaths.length;++colindx)
+      for (colindx = 0; colindx < colPaths.length; ++colindx)
         if ((colPaths[colindx] !== undefined) && (colindx < cntr.arr.length)) {
            let pattern_class = "scatter_" + colindx,
                pattern = defs.select('.' + pattern_class);
@@ -6595,12 +6594,12 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
            let arrx = new Float32Array(npix), arry = new Float32Array(npix);
 
-           if (npix===1) {
+           if (npix === 1) {
               arrx[0] = arry[0] = 0.5;
            } else {
-              for (let n=0;n<npix;++n) {
-                 arrx[n] = JSROOT.random();
-                 arry[n] = JSROOT.random();
+              for (let n = 0; n < npix; ++n) {
+                 arrx[n] = rnd.random();
+                 arry[n] = rnd.random();
               }
            }
 
