@@ -65,7 +65,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
 
       /** @summary Returns menu size */
-      size() { return this.cnt-1; }
+      size() { return this.cnt; }
 
       /** @summary Close and remove menu */
       remove() {
