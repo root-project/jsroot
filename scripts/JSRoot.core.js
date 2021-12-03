@@ -835,6 +835,7 @@
 
    /** @summary Seed simple random generator
      * @param {number} i seed value
+     * @deprecated Please use JSROOT.TRandom class
      * @private */
    JSROOT.seed = function(i) {
       this.gRandom = new TRandom(i);
@@ -843,6 +844,7 @@
    /** @summary Simple random generator
      * @desc Works like Math.random(), but with configurable seed - see {@link JSROOT.seed}
      * @returns {number} random value between 0 (inclusive) and 1.0 (exclusive)
+     * @deprecated Please use JSROOT.TRandom class
      * @private */
    JSROOT.random = function() {
       return this.gRandom ? this.gRandom.random() : Math.random();
