@@ -415,7 +415,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                   curr.g.attr('font-style', curr.italic ? 'italic' : 'normal');
 
                // set fill color directly to element
-               elem.style("fill", curr.color || arg.color || null);
+               elem.attr("fill", curr.color || arg.color || null);
 
                // set font size directly to element to avoid complex control
                if (curr.fisze !== curr.font.size)
