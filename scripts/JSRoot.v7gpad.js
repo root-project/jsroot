@@ -5306,7 +5306,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           .attr("y", 0)
           .attr("height", palette_height)
           .style("stroke", "black")
-          .attr("fill", "none");
+          .style("fill", "none");
 
       if ((gmin === undefined) || (gmax === undefined)) { gmin = zmin; gmax = zmax; }
 

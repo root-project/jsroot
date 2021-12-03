@@ -803,7 +803,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          if (!isany && painter && painter.lineatt && !painter.lineatt.empty())
             this.draw_g.append("svg:path")
                        .attr("d", `M${x0 + padding_x},${Math.round(pos_y+step_y*0.1)}v${Math.round(step_y*0.8)}h${tpos_x-2*padding_x-x0}v${-Math.round(step_y*0.8)}z`)
-                       .attr("fill", "none")
+                       .style("fill", "none")
                        .call(painter.lineatt.func);
 
          let pos_x = tpos_x;
@@ -4117,12 +4117,12 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             if (!this.fillatt.empty() && !draw_hist)
                this.draw_g.append("svg:path")
                      .attr("d", path_line + close_path)
-                     .attr("stroke", "none")
+                     .style("stroke", "none")
                      .call(this.fillatt.func);
 
             this.draw_g.append("svg:path")
                    .attr("d", path_line)
-                   .attr("fill", "none")
+                   .style("fill", "none")
                    .call(this.lineatt.func);
          }
 
@@ -5752,7 +5752,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          if (colPaths[colindx]) {
             item = this.draw_g
                      .append("svg:path")
-                     .attr("fill", colindx ? this.fPalette.getColor(colindx) : 'none')
+                     .style("fill", colindx ? this.fPalette.getColor(colindx) : 'none')
                      .attr("d", colPaths[colindx]);
             if (this.options.Line)
                item.call(this.lineatt.func);
@@ -6618,7 +6618,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
            this.draw_g
                .append("svg:path")
                .attr("scatter-index", colindx)
-               .attr("fill", 'url(#' + pattern.attr("id") + ')')
+               .style("fill", 'url(#' + pattern.attr("id") + ')')
                .attr("d", colPaths[colindx]);
         }
 

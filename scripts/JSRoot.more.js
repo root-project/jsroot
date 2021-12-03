@@ -3704,8 +3704,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             lastkind = kind;
             lastpath = this.draw_g.append("svg:path");
             switch (kind) {
-               case "f": lastpath.call(this.fillatt.func).attr('stroke', 'none'); break;
-               case "l": lastpath.call(this.lineatt.func).attr('fill', 'none'); break;
+               case "f": lastpath.call(this.fillatt.func).style('stroke', 'none'); break;
+               case "l": lastpath.call(this.lineatt.func).style('fill', 'none'); break;
                case "m": lastpath.call(this.markeratt.func); break;
             }
          };

@@ -254,7 +254,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if (nhints > 1) {
                let col = usecolor1 ? hint.color1 : hint.color2;
                if (col && (col !== 'none'))
-                  r.attr("stroke", col);
+                  r.style("stroke", col);
             }
             r.attr("stroke-width", hint.exact ? 3 : 1);
 
@@ -1547,7 +1547,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                JSROOT.extend(rec, btn.recs[n]);
                svg.append('rect').attr("x", rec.x).attr("y", rec.y)
                   .attr("width", rec.w).attr("height", rec.h)
-                  .attr("fill", rec.f);
+                  .style("fill", rec.f);
             }
          } else {
             svg.append('svg:path').attr('d', btn.path);

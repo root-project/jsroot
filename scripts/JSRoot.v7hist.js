@@ -2393,7 +2393,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
         if (entry)
            this.draw_g
                .append("svg:path")
-               .attr("fill", handle.palette.getColor(colindx))
+               .style("fill", handle.palette.getColor(colindx))
                .attr("d", entry.path);
       });
 
@@ -2821,7 +2821,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
          if (colPaths[colindx]) {
             item = this.draw_g
                      .append("svg:path")
-                     .attr("fill", colindx ? palette.getColor(colindx) : "none")
+                     .style("fill", colindx ? palette.getColor(colindx) : "none")
                      .attr("d", colPaths[colindx]);
             if (this.options.Line)
                item.call(this.lineatt.func);
@@ -3343,7 +3343,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
            this.draw_g
                .append("svg:path")
                .attr("scatter-index", colindx)
-               .attr("fill", 'url(#' + pattern.attr("id") + ')')
+               .style("fill", 'url(#' + pattern.attr("id") + ')')
                .attr("d", colPaths[colindx]);
         }
 
