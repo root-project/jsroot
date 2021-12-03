@@ -95,11 +95,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       this.createG();
 
       this.draw_g
-          .append("svg:line")
-          .attr("x1", this.axisToSvg("x", line.fX1, isndc))
-          .attr("y1", this.axisToSvg("y", line.fY1, isndc))
-          .attr("x2", this.axisToSvg("x", line.fX2, isndc))
-          .attr("y2", this.axisToSvg("y", line.fY2, isndc))
+          .append("svg:path")
+          .attr("d", `M${this.axisToSvg("x", line.fX1, isndc)},${this.axisToSvg("y", line.fY1, isndc)}L${this.axisToSvg("x", line.fX2, isndc)},$this.axisToSvg("y", line.fY2, isndc)}`)
           .call(lineatt.func);
    }
 
@@ -2328,7 +2325,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       rect.hint_delta_x = rect.szx;
       rect.hint_delta_y = rect.szy;
 
-      rect.transform = "translate(" + rect.x + "," + rect.y + ")";
+      rect.transform = `translate(${rect.x},${rect.y})`;
 
       return rect;
    }
@@ -2388,7 +2385,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       this.createG();
 
-      this.draw_g.attr("transform", "translate(" + rect.midx + "," + rect.midy + ")");
+      this.draw_g.attr("transform", `translate(${rect.midx},${rect.midy})`);
       this.szx = rect.szx;
       this.szy = rect.szy;
 
@@ -2476,11 +2473,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       for (let n=0;n<nmajor;++n) {
          let angle = -n*2*Math.PI/nmajor - this.angle;
-         this.draw_g.append("line")
-             .attr("x1",0)
-             .attr("y1",0)
-             .attr("x2", Math.round(this.szx*Math.cos(angle)))
-             .attr("y2", Math.round(this.szy*Math.sin(angle)))
+         this.draw_g.append("svg:path")
+             .attr("d",`M0,0L${Math.round(this.szx*Math.cos(angle))},${Math.round(this.szy*Math.sin(angle))}`)
              .call(this.lineatt.func);
 
          let aindx = Math.round(16 -angle/Math.PI*4) % 8; // index in align table, here absolute angle is important
@@ -2500,17 +2494,13 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          for (let n=0;n<nmajor*nminor;++n) {
             if (n % nminor === 0) continue;
             let angle = -n*2*Math.PI/nmajor/nminor - this.angle;
-            this.draw_g.append("line")
-                .attr("x1",0)
-                .attr("y1",0)
-                .attr("x2", Math.round(this.szx*Math.cos(angle)))
-                .attr("y2", Math.round(this.szy*Math.sin(angle)))
+            this.draw_g.append("svg:path")
+                .attr("d",`M0,0L${Math.round(this.szx*Math.cos(angle))},${Math.round(this.szy*Math.sin(angle))}`)
                 .call(this.gridatt.func);
          }
 
-      if (JSROOT.batch_mode) return;
-
-      JSROOT.require(['interactive']).then(inter => {
+      if (!JSROOT.batch_mode)
+      return JSROOT.require(['interactive']).then(inter => {
          inter.TooltipHandler.assign(this);
 
          let layer = this.getLayerSvg("primitives_layer"),

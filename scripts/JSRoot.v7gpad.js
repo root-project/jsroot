@@ -5300,11 +5300,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       else
          g_btns.selectAll().remove();
 
-      g_btns.append("svg:rect")
-          .attr("x", 0)
-          .attr("width", palette_width)
-          .attr("y", 0)
-          .attr("height", palette_height)
+      g_btns.append("svg:path")
+          .attr("d", `M0,0H${palette_width}V${palette_height}H0Z`)
           .style("stroke", "black")
           .style("fill", "none");
 
@@ -5312,16 +5309,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       framep.z_handle.configureAxis("zaxis", gmin, gmax, zmin, zmax, true, [palette_height, 0], -palette_height, { reverse: false });
 
-      for (let i=0;i<contour.length-1;++i) {
-         let z0 = framep.z_handle.gr(contour[i]),
-             z1 = framep.z_handle.gr(contour[i+1]),
+      for (let i = 0; i < contour.length-1; ++i) {
+         let z0 = Math.round(framep.z_handle.gr(contour[i])),
+             z1 = Math.round(framep.z_handle.gr(contour[i+1])),
              col = palette.getContourColor((contour[i]+contour[i+1])/2);
 
-         let r = g_btns.append("svg:rect")
-                     .attr("x", 0)
-                     .attr("y", Math.round(z1))
-                     .attr("width", palette_width)
-                     .attr("height", Math.round(z0) - Math.round(z1))
+         let r = g_btns.append("svg:path")
+                     .attr("d", `M0,${z1}H${palette_width}V${z0}H0Z`)
                      .style("fill", col)
                      .style("stroke", col)
                      .property("fill0", col)
