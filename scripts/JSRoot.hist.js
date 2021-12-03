@@ -6200,14 +6200,14 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                maxContent = Math.max(maxContent, histo.getBinContent(i + 1, j + 1));
 
       const make_path = (...a) => {
-         let l = a.length, i = 2, s1 = swapXY ? 1 : 0, s2 = swapXY ? 0 : 1;
-         let res = `M${a[s1]},${a[s2]}`;
+         let l = a.length, i = 2, xx = a[0], yy = a[1],
+             res = swapXY ? `M${yy},${xx}` : `M${xx},${yy}`;
          while (i < l) {
             switch(a[i]) {
-               case 'Z': return res + "Z";
-               case 'V': res += (swapXY ? 'H' : 'V') + a[i+1]; break;
-               case 'H': res += (swapXY ? 'V' : 'H') + a[i+1]; break;
-               default: res += `L${a[i+s1]},${a[i+s2]}`;
+               case 'Z': return res + "z";
+               case 'V': if (yy != a[i+1]) { res += (swapXY ? 'h' : 'v') + (a[i+1] - yy); yy = a[i+1]; } break;
+               case 'H': if (xx != a[i+1]) { res += (swapXY ? 'v' : 'h') + (a[i+1] - xx); xx = a[i+1]; }  break;
+               default: res += swapXY ? `l${a[i+1]-yy},${a[i]-xx}` : `l${a[i]-xx},${a[i+1]-yy}`; xx = a[i]; yy = a[i+1];
             }
             i += 2;
          }
@@ -6330,16 +6330,13 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                bars += make_path(pnt.x1, pnt.y1, "V", pnt.y2, "H", pnt.x2, "V", pnt.y1, "Z");
 
         if (isOption(kAnchor)) { // Draw the anchor line
-            lines += make_path(pnt.x1, pnt.yy1, "H", pnt.x2);
-            lines += make_path(pnt.x1, pnt.yy2, "H", pnt.x2);
+            lines += make_path(pnt.x1, pnt.yy1, "H", pnt.x2) + make_path(pnt.x1, pnt.yy2, "H", pnt.x2);
          }
 
          if (isOption(kWhiskerAll) && !isOption(kHistoZeroIndicator)) { // Whiskers are dashed
-            dashed_lines += make_path(center, pnt.y1, "V", pnt.yy1);
-            dashed_lines += make_path(center, pnt.y2, "V", pnt.yy2);
+            dashed_lines += make_path(center, pnt.y1, "V", pnt.yy1) + make_path(center, pnt.y2, "V", pnt.yy2);
          } else if ((isOption(kWhiskerAll) && isOption(kHistoZeroIndicator)) || isOption(kWhisker15)) {
-            lines += make_path(center, pnt.y1, "V", pnt.yy1);
-            lines += make_path(center, pnt.y2, "V", pnt.yy2);
+            lines += make_path(center, pnt.y1, "V", pnt.yy1) + make_path(center, pnt.y2, "V", pnt.yy2);
          }
 
          if (isOption(kPointsOutliers) || isOption(kPointsAll) || isOption(kPointsAllScat)) {
