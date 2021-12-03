@@ -855,22 +855,16 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       if (!contour || !draw_palette || postpone_draw)
          // we need such rect to correctly calculate size
-         this.draw_g.append("svg:rect")
-                    .attr("x", 0)
-                    .attr("y",  0)
-                    .attr("width", s_width)
-                    .attr("height", s_height)
+         this.draw_g.append("svg:path")
+                    .attr("d", `M0,0H${s_width}V${s_height}H0Z`)
                     .style("fill", 'white');
       else
-         for (let i=0;i<levels.length-1;++i) {
-            let z0 = this.z_handle.gr(levels[i]),
-                z1 = this.z_handle.gr(levels[i+1]),
+         for (let i = 0; i < levels.length-1; ++i) {
+            let z0 = Math.round(this.z_handle.gr(levels[i])),
+                z1 = Math.round(this.z_handle.gr(levels[i+1])),
                 col = contour.getPaletteColor(draw_palette, (levels[i]+levels[i+1])/2),
-                r = this.draw_g.append("svg:rect")
-                       .attr("x", 0)
-                       .attr("y",  Math.round(z1))
-                       .attr("width", s_width)
-                       .attr("height", Math.round(z0) - Math.round(z1))
+                r = this.draw_g.append("svg:path")
+                       .attr("d", `M0,${z1}H${s_width}V${z0}H0Z`)
                        .style("fill", col)
                        .style("stroke", col)
                        .property("fill0", col)
