@@ -2480,11 +2480,10 @@ JSROOT.define(['d3', 'base3d', 'painter', 'latex', 'v7hist'], (d3, THREE, jsrp, 
       // too many pixels - use box drawing
       if (numpixels > (main.webgl ? 100000 : 30000)) return false;
 
-      JSROOT.seed(sumz);
-
       let pnts = new jsrp.PointsCreator(numpixels, main.webgl, main.size_x3d/200),
           bins = new Int32Array(numpixels), nbin = 0,
-          xaxis = this.getAxis("x"), yaxis = this.getAxis("y"), zaxis = this.getAxis("z");
+          xaxis = this.getAxis("x"), yaxis = this.getAxis("y"), zaxis = this.getAxis("z"),
+          rnd = new JSROOT.TRandom(sumz);
 
       for (i = i1; i < i2; i += di) {
          for (j = j1; j < j2; j += dj) {
@@ -2494,9 +2493,9 @@ JSROOT.define(['d3', 'base3d', 'painter', 'latex', 'v7hist'], (d3, THREE, jsrp, 
                let num = Math.round(bin_content*coef);
 
                for (let n=0;n<num;++n) {
-                  let binx = xaxis.GetBinCoord(i+JSROOT.random()),
-                      biny = yaxis.GetBinCoord(j+JSROOT.random()),
-                      binz = zaxis.GetBinCoord(k+JSROOT.random());
+                  let binx = xaxis.GetBinCoord(i + rnd.random()),
+                      biny = yaxis.GetBinCoord(j + rnd.random()),
+                      binz = zaxis.GetBinCoord(k + rnd.random());
 
                   // remember bin index for tooltip
                   bins[nbin++] = histo.getBin(i+1, j+1, k+1);

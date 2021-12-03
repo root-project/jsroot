@@ -2489,10 +2489,9 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
       if (numpixels > (main.webgl ? 100000 : 30000))
          return false;
 
-      JSROOT.seed(sumz);
-
       let pnts = new jsrp.PointsCreator(numpixels, main.webgl, main.size_x3d/200),
-          bins = new Int32Array(numpixels), nbin = 0;
+          bins = new Int32Array(numpixels), nbin = 0,
+          rnd = new JSROOT.TRandom(sumz);
 
       for (i = i1; i < i2; ++i) {
          for (j = j1; j < j2; ++j) {
@@ -2502,9 +2501,9 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
                let num = Math.round(bin_content*coef);
 
                for (let n=0;n<num;++n) {
-                  let binx = histo.fXaxis.GetBinCoord(i+JSROOT.random()),
-                      biny = histo.fYaxis.GetBinCoord(j+JSROOT.random()),
-                      binz = histo.fZaxis.GetBinCoord(k+JSROOT.random());
+                  let binx = histo.fXaxis.GetBinCoord(i + rnd.random()),
+                      biny = histo.fYaxis.GetBinCoord(j + rnd.random()),
+                      binz = histo.fZaxis.GetBinCoord(k + rnd.random());
 
                   // remember bin index for tooltip
                   bins[nbin++] = histo.getBin(i+1, j+1, k+1);

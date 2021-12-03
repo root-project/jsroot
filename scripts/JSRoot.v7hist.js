@@ -3219,7 +3219,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
           scale = this.options.ScatCoef * ((this.gmaxbin) > 2000 ? 2000. / this.gmaxbin : 1.),
           di = handle.stepi, dj = handle.stepj;
 
-      JSROOT.seed(handle.sumz);
+      let rnd = new JSROOT.TRandom(handle.sumz);
 
       if (scale*handle.sumz < 1e5) {
          // one can use direct drawing of scatter plot without any patterns
@@ -3240,8 +3240,8 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
                for (k = 0; k < npix; ++k)
                   path += this.markeratt.create(
-                            Math.round(handle.grx[i] + cw * JSROOT.random()),
-                            Math.round(handle.gry[j+1] + ch * JSROOT.random()));
+                            Math.round(handle.grx[i] + cw * rnd.random()),
+                            Math.round(handle.gry[j+1] + ch * rnd.random()));
             }
          }
 
@@ -3312,16 +3312,16 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
               pattern.selectAll("*").remove();
 
            let npix = Math.round(factor*cntr[colindx]*cell_w[colindx]*cell_h[colindx]);
-           if (npix<1) npix = 1;
+           if (npix < 1) npix = 1;
 
            let arrx = new Float32Array(npix), arry = new Float32Array(npix);
 
-           if (npix===1) {
+           if (npix === 1) {
               arrx[0] = arry[0] = 0.5;
            } else {
-              for (let n=0;n<npix;++n) {
-                 arrx[n] = JSROOT.random();
-                 arry[n] = JSROOT.random();
+              for (let n = 0; n < npix; ++n) {
+                 arrx[n] = rnd.random();
+                 arry[n] = rnd.random();
               }
            }
 
@@ -3331,7 +3331,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
            let path = "";
 
-           for (let n=0;n<npix;++n)
+           for (let n = 0; n < npix; ++n)
               path += this.markeratt.create(arrx[n] * cell_w[colindx], arry[n] * cell_h[colindx]);
 
            pattern.attr("width", cell_w[colindx])
