@@ -6245,28 +6245,27 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          let res = extractQuantiles(xx, proj, prob);
          if (!res) return;
 
-         let pnt = { bin: bin_indx, swapXY: swapXY,
-                     fWhiskerDown: res.quantiles[0], fBoxDown: res.quantiles[1], fMedian: res.quantiles[2], fBoxUp: res.quantiles[3], fWhiskerUp: res.quantiles[4] };
-         let iqr = pnt.fBoxUp - pnt.fBoxDown;
+         let pnt = { bin: bin_indx, swapXY: swapXY, fBoxDown: res.quantiles[1], fMedian: res.quantiles[2], fBoxUp: res.quantiles[3] },
+             fWhiskerDown = res.quantiles[0], fWhiskerUp = res.quantiles[4], iqr = pnt.fBoxUp - pnt.fBoxDown;
 
          if (isOption(kWhisker15)) { // Improved whisker definition, with 1.5*iqr
             let pos = pnt.fBoxDown-1.5*iqr, indx = res.indx[1];
             while ((xx[indx] > pos) && (indx > 0)) indx--;
             while (!proj[indx]) indx++;
-            pnt.fWhiskerDown = xx[indx]; // use lower edge here
+            fWhiskerDown = xx[indx]; // use lower edge here
             pos = pnt.fBoxUp+1.5*iqr; indx = res.indx[3];
             while ((xx[indx] < pos) && (indx < proj.length)) indx++;
             while (!proj[indx]) indx--;
-            pnt.fWhiskerUp = xx[indx+1]; // use upper index edge here
+            fWhiskerUp = xx[indx+1]; // use upper index edge here
          }
 
-         pnt.fMean = res.mean;
-         let fMedianErr = 1.57*iqr/Math.sqrt(res.entries);
+         let fMean = res.mean,
+             fMedianErr = 1.57*iqr/Math.sqrt(res.entries);
 
          //estimate quantiles... simple function... not so nice as GetQuantiles
 
          // exclude points with negative y when log scale is specified
-         if (pnt.fWhiskerDown <= 0)
+         if (fWhiskerDown <= 0)
            if ((swapXY && funcs.logx) || (!swapXY && funcs.logy)) return;
 
          let w = (grx_right - grx_left), candleWidth = w, histoWidth = w,
@@ -6291,13 +6290,13 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
              x2d = Math.round(center + candleWidth/3),
              fname = swapXY ? "grx" : "gry";
 
-         pnt.yy1 = Math.round(funcs[fname](pnt.fWhiskerUp));
+         pnt.yy1 = Math.round(funcs[fname](fWhiskerUp));
          pnt.y1 = Math.round(funcs[fname](pnt.fBoxUp));
          pnt.y0 = Math.round(funcs[fname](pnt.fMedian));
          pnt.y2 = Math.round(funcs[fname](pnt.fBoxDown));
-         pnt.yy2 = Math.round(funcs[fname](pnt.fWhiskerDown));
+         pnt.yy2 = Math.round(funcs[fname](fWhiskerDown));
 
-         let y0m = Math.round(funcs[fname](pnt.fMean)),
+         let y0m = Math.round(funcs[fname](fMean)),
              y01 = Math.round(funcs[fname](Math.min(pnt.fMedian + fMedianErr, pnt.fBoxUp))),
              y02 = Math.round(funcs[fname](Math.max(pnt.fMedian - fMedianErr, pnt.fBoxDown)));
 
@@ -6345,7 +6344,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                    marker_x = center, marker_y = 0;
 
                if (!bin_content) continue;
-               if (!show_all && (binx >= pnt.fWhiskerDown) && (binx <= pnt.fWhiskerUp)) continue;
+               if (!show_all && (binx >= fWhiskerDown) && (binx <= fWhiskerUp)) continue;
 
                for (let k = 0; k < bin_content; k++) {
                   if (show_scat)
@@ -6362,17 +6361,15 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          }
 
          if ((isOption(kHistoRight) || isOption(kHistoLeft) || isOption(kHistoViolin)) && (res.max > 0) && (res.first >= 0)) {
-            let arr = [], scale = histoWidth/2/res.max;
-            if (swapXY) scale *= -1;
+            let arr = [], scale = (swapXY ? -0.5 : 0.5) *histoWidth/res.max;
 
             xindx1 = Math.max(xindx1, res.first);
             xindx2 = Math.min(xindx2-1, res.last);
 
             if (isOption(kHistoRight) || isOption(kHistoViolin)) {
                arr.push(center, Math.round(funcs[fname](xx[xindx1])));
-               for (let ii = xindx1; ii <= xindx2; ii++) {
+               for (let ii = xindx1; ii <= xindx2; ii++)
                   arr.push("H", Math.round(center + scale*proj[ii]), "V", Math.round(funcs[fname](xx[ii+1])));
-               }
             }
 
             if (isOption(kHistoLeft) || isOption(kHistoViolin)) {
