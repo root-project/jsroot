@@ -2795,16 +2795,14 @@ JSROOT.define(['d3'], (d3) => {
       if (!any_text)
          font.clearFont(draw_g);
 
-      if (optimize_arr !== null)
+      if ((optimize_arr !== null) && (optimize_arr.length > 1))
          ["fill", "text-anchor"].forEach(name => {
-            let first, missed = false;
+            let first = optimize_arr[0].attr(name);
             optimize_arr.forEach(txt_node => {
                let value = txt_node.attr(name);
-               if (!value) missed = false; else
-               if (!first) first = value; else
-               if (first !== value) missed = true;
+               if (!value || (value !== first)) first = undefined;
             });
-            if (!missed && first) {
+            if (first) {
                draw_g.attr(name, first);
                optimize_arr.forEach(txt_node => { txt_node.attr(name, null); });
             }
