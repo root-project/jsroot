@@ -2850,7 +2850,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
             this.drawText({ x: bin._midx, y: bin._midy, text: lbl, latex: 0, draw_g: text_g });
          }
 
-         this.finishTextDrawing(text_g);
+         this.finishTextDrawing(text_g, true);
       }
 
       return { poly: true };
@@ -2904,7 +2904,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
             this.drawText({ align: 22, x: posx, y: posy, width: sizex, height: sizey, text: lbl, latex: 0, draw_g: text_g });
          }
 
-      this.finishTextDrawing(text_g);
+      this.finishTextDrawing(text_g, true);
 
       handle.hide_only_zeros = true; // text drawing suppress only zeros
 
