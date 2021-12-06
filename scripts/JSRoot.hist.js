@@ -6291,8 +6291,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          pnt.yy2 = Math.round(funcs[fname](fWhiskerDown));
 
          let y0m = Math.round(funcs[fname](fMean)),
-             y01 = Math.round(funcs[fname](Math.min(pnt.fMedian + fMedianErr, pnt.fBoxUp))),
-             y02 = Math.round(funcs[fname](Math.max(pnt.fMedian - fMedianErr, pnt.fBoxDown)));
+             y01 = Math.round(funcs[fname](pnt.fMedian + fMedianErr)),
+             y02 = Math.round(funcs[fname](pnt.fMedian - fMedianErr));
 
          if (isOption(kHistoZeroIndicator))
             hlines += make_path(center, Math.round(funcs[fname](xx[xindx1])),'V',Math.round(funcs[fname](xx[xindx2])))
