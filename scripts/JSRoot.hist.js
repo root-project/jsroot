@@ -3907,23 +3907,22 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       // if there are too many points, exclude many vertical drawings at the same X position
       // instead define min and max value and made min-max drawing
-      let use_minmax = ((right-left) > 3*width);
-
-      if (draw_any_but_hist) use_minmax = true;
+      let use_minmax = draw_any_but_hist || ((right - left) > 3*width);
 
       // just to get correct values for the specified bin
-      let extract_bin = bin => {
+      const extract_bin = bin => {
          bincont = histo.getBinContent(bin+1);
          if (exclude_zero && (bincont===0)) return false;
          mx1 = Math.round(funcs.grx(xaxis.GetBinLowEdge(bin+1)));
          mx2 = Math.round(funcs.grx(xaxis.GetBinLowEdge(bin+2)));
          midx = Math.round((mx1+mx2)/2);
          my = Math.round(funcs.gry(bincont));
-         yerr1 = yerr2 = 20;
          if (show_errors) {
             binerr = histo.getBinError(bin+1);
             yerr1 = Math.round(my - funcs.gry(bincont + binerr)); // up
             yerr2 = Math.round(funcs.gry(bincont - binerr) - my); // down
+         } else {
+            yerr1 = yerr2 = 20;
          }
          return true;
       };
@@ -3947,7 +3946,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             hints_err += `M${midx-edx},${my-yerr1}h${2*edx}v${yerr1+yerr2}h${-2*edx}z`;
       };
 
-      let draw_bin = bin => {
+      const draw_bin = bin => {
          if (extract_bin(bin)) {
             if (show_text) {
                let cont = text_profile ? histo.fBinEntries[bin+1] : bincont;
@@ -4093,19 +4092,19 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                        .attr("d", path_fill)
                        .call(this.fillatt.func);
 
-         if ((path_err !== null) && (path_err.length > 0))
+         if (path_err)
                this.draw_g.append("svg:path")
                    .attr("d", path_err)
                    .call(this.lineatt.func);
 
-          if ((hints_err !== null) && (hints_err.length > 0))
+          if (hints_err)
                this.draw_g.append("svg:path")
                    .attr("d", hints_err)
                    .style("stroke", "none")
                    .style("fill", "none")
                    .style("pointer-events", JSROOT.batch_mode ? null : "visibleFill");
 
-         if ((path_line !== null) && (path_line.length > 0)) {
+         if (path_line) {
             if (!this.fillatt.empty() && !draw_hist)
                this.draw_g.append("svg:path")
                      .attr("d", path_line + close_path)
@@ -4118,12 +4117,12 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                    .call(this.lineatt.func);
          }
 
-         if ((path_marker !== null) && (path_marker.length > 0))
+         if (path_marker)
             this.draw_g.append("svg:path")
                 .attr("d", path_marker)
                 .call(this.markeratt.func);
 
-         if ((hints_marker !== null) && (hints_marker.length > 0))
+         if (hints_marker)
             this.draw_g.append("svg:path")
                 .attr("d", hints_marker)
                 .style("stroke", "none")
@@ -4131,7 +4130,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                 .style("pointer-events", JSROOT.batch_mode ? null : "visibleFill");
       }
 
-      if ((res.length > 0) && draw_hist)
+      if (res && draw_hist)
          this.draw_g.append("svg:path")
                     .attr("d", res + ((!this.fillatt.empty() || fill_for_interactive) ? close_path : ""))
                     .style("stroke-linejoin","miter")
@@ -4187,28 +4186,26 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          return null;
       }
 
-      let pmain = this.getFramePainter(),
-          width = pmain.getFrameWidth(),
+      const pmain = this.getFramePainter(),
+           funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
+           histo = this.getHisto(),
+           left = this.getSelectIndex("x", "left", -1),
+           right = this.getSelectIndex("x", "right", 2);
+      let width = pmain.getFrameWidth(),
           height = pmain.getFrameHeight(),
-          funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
-          histo = this.getHisto(),
           findbin = null, show_rect,
           grx1, midx, grx2, gry1, midy, gry2, gapx = 2,
-          left = this.getSelectIndex("x", "left", -1),
-          right = this.getSelectIndex("x", "right", 2),
           l = left, r = right, pnt_x = pnt.x, pnt_y = pnt.y;
 
-      function GetBinGrX(i) {
+      const GetBinGrX = i => {
          let xx = histo.fXaxis.GetBinLowEdge(i+1);
          return (funcs.logx && (xx<=0)) ? null : funcs.grx(xx);
-      }
-
-      function GetBinGrY(i) {
+      }, GetBinGrY = i => {
          let yy = histo.getBinContent(i + 1);
          if (funcs.logy && (yy < funcs.scale_ymin))
             return funcs.swap_xy ? -1000 : 10*height;
          return Math.round(funcs.gry(yy));
-      }
+      };
 
       if (funcs.swap_xy) {
          let d = pnt.x; pnt_x = pnt_y; pnt_y = d;
