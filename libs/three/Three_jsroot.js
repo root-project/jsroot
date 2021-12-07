@@ -170,6 +170,9 @@ export { OrbitControls} from "../examples/jsm/controls/OrbitControls.js";
 export { TransformControls } from "../examples/jsm/controls/TransformControls.js";
 export { CopyShader } from "../examples/jsm/shaders/CopyShader.js";
 export { EffectComposer } from "../examples/jsm/postprocessing/EffectComposer.js";
+// will be required by eve7, but need to be synchronized there
+// export { Pass } from "../examples/jsm/postprocessing/Pass.js";
+// export { OutlinePass } from "../examples/jsm/postprocessing/OutlinePass.js";
 export { MaskPass } from "../examples/jsm/postprocessing/MaskPass.js";
 export { RenderPass } from "../examples/jsm/postprocessing/RenderPass.js";
 export { ShaderPass } from "../examples/jsm/postprocessing/ShaderPass.js";
