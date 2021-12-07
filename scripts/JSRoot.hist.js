@@ -823,8 +823,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       let palette = this.getObject(),
           axis = palette.fAxis,
-          can_move = (typeof arg == "string") && (arg.indexOf('can_move') > 0),
-          postpone_draw = (typeof arg == "string") && (arg.indexOf('postpone') > 0),
+          can_move = (typeof arg == "string") && (arg.indexOf('can_move') >= 0),
+          postpone_draw = (typeof arg == "string") && (arg.indexOf('postpone') >= 0),
+          cjust = (typeof arg == "string") && (arg.indexOf('cjust') >= 0),
           pos_x = parseInt(this.draw_g.attr("x")), // pave position
           pos_y = parseInt(this.draw_g.attr("y")),
           width = this.getPadPainter().getPadWidth(),
@@ -851,7 +852,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       this.draw_g.selectAll("rect").style("fill", 'white');
 
-      this.z_handle.configureAxis("zaxis", zmin, zmax, zmin, zmax, true, [0,s_height], { log: pad ? pad.fLogz : 0 });
+      this.z_handle.configureAxis("zaxis", zmin, zmax, zmin, zmax, true, [0,s_height], { log: pad ? pad.fLogz : 0, fixed_ticks: cjust ? levels : null });
 
       if (!contour || !draw_palette || postpone_draw)
          // we need such rect to correctly calculate size
@@ -880,7 +881,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             if (JSROOT.settings.Zooming)
                r.on("dblclick", () => this.getFramePainter().unzoom("z"));
          }
-
 
       this.z_handle.max_tick_size = Math.round(s_width*0.7);
 
@@ -1402,7 +1402,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
               Error: false, ErrorKind: -1, errorX: JSROOT.gStyle.fErrorX,
               Mark: false, Same: false, Scat: false, ScatCoef: 1., Func: true,
               Arrow: false, Box: false, BoxStyle: 0,
-              Text: false, TextAngle: 0, TextKind: "", Char: 0, Color: false, Contour: 0,
+              Text: false, TextAngle: 0, TextKind: "", Char: 0, Color: false, Contour: 0, Cjust: false,
               Lego: 0, Surf: 0, Off: 0, Tri: 0, Proj: 0, AxisPos: 0,
               Spec: false, Pie: false, List: false, Zscale: false, PadPalette: false,
               Candle: "", Violin: "", Scaled: null,
@@ -1588,6 +1588,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       this.Box = this.BoxStyle > 0;
 
+      if (d.check('CJUST')) this.Cjust = true;
       if (d.check('COL')) this.Color = true;
       if (d.check('CHAR')) this.Char = 1;
       if (d.check('FUNC')) { this.Func = true; this.Hist = false; }
@@ -1598,9 +1599,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          this.Text = true;
          this.Hist = false;
          this.TextAngle = Math.min(d.partAsInt(), 90);
-         if (d.part.indexOf('N')>=0) this.TextKind = "N";
-         if (d.part.indexOf('E0')>=0) this.TextLine = true;
-         if (d.part.indexOf('E')>=0) this.TextKind = "E";
+         if (d.part.indexOf('N') >= 0) this.TextKind = "N";
+         if (d.part.indexOf('E0') >= 0) this.TextLine = true;
+         if (d.part.indexOf('E') >= 0) this.TextKind = "E";
       }
 
       if (d.check('SCAT=', true)) {
@@ -1746,6 +1747,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             res += "L";
             if (this.Fill) res += "F";
          }
+
+         if (this.Cjust) res += " CJUST";
 
          if (this.Text) {
             res += "TEXT";
@@ -3176,6 +3179,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       let arg = "";
       if (postpone_draw) arg+=";postpone";
       if (can_move && !this.do_redraw_palette) arg+=";can_move";
+      if (this.options.Cjust) arg+=";cjust";
 
       let promise;
 
@@ -7036,7 +7040,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             pp.$main_painter = this;
 
             // redraw palette till the end when contours are available
-            return pp.drawPave();
+            return pp.drawPave(this.options.Cjust ? "cjust" : "");
          });
       }).then(() => this.drawHistTitle()).then(() => {
 

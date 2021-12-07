@@ -69,6 +69,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.symlog = opts.symlog || false;
       this.reverse = opts.reverse || false;
       this.swap_side = opts.swap_side || false;
+      this.fixed_ticks = opts.fixed_ticks || null;
 
       let axis = this.getObject();
 
@@ -225,9 +226,18 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if (optionNoopt && this.nticks && (this.kind == "normal")) this.noticksopt = true;
 
-      let handle = { nminor: 0, nmiddle: 0, nmajor: 0, func: this.func };
+      let handle = { nminor: 0, nmiddle: 0, nmajor: 0, func: this.func }, ticks;
 
-      handle.minor = handle.middle = handle.major = this.produceTicks(this.nticks);
+      if (this.fixed_ticks) {
+         ticks = [];
+         this.fixed_ticks.forEach(v => {
+            if ((v >= this.scale_min) && (v <= this.scale_max)) ticks.push(v);
+         });
+      } else {
+         ticks = this.produceTicks(this.nticks);
+      }
+
+      handle.minor = handle.middle = handle.major = ticks;
 
       if (only_major_as_array) {
          let res = handle.major, delta = (this.scale_max - this.scale_min)*1e-5;
@@ -245,7 +255,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          }
       }
 
-      if ((this.nticks2 > 1) && (!this.log || (this.logbase === 10))) {
+      if ((this.nticks2 > 1) && (!this.log || (this.logbase === 10)) && !this.fixed_ticks) {
          handle.minor = handle.middle = this.produceTicks(handle.major.length, this.nticks2);
 
          let gr_range = Math.abs(this.func.range()[1] - this.func.range()[0]);
