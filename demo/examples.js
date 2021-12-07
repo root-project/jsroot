@@ -38,8 +38,7 @@ examples_main = {
      { opt: "colz", title: "color draw with palette" },
      { opt: "acol", title: "disable axes drawing with col option" },
      { opt: "col_rx_ry", title: "reverse x and y axis with col drawing" },
-     { name: "cjust", file: "cjust.root", item: "c1;1", title: "Demo for cjust draw option with fixed palette colors" },
-     { name: "projx1", file: "hsimple.root", item: "hpxpy;1", opt: "projx1,colz", title: "Draw X projection together with 2D plot", notest:true },
+     { name: "projx1", opt: "projx1,colz", title: "Draw X projection together with 2D plot", notest:true },
      { name: "projy3", opt: "projy3,colz", title: "Draw Y projection over 3 bins together with 2D plot", notest:true },
      { opt: "arr", title: "ARR draw option" },
      { opt: "cont", title: "Contour plot" },
@@ -69,7 +68,8 @@ examples_main = {
      { name: "box1", json: "hbox.json.gz", opt: "box1", title: "boxes, area proportional to bin content" },
      { name: "ctx_cty", opt: "col_ctx_cty", file: "QAresults.root", item: "PIDqa/PIDqa1/ITS/hNsigmaP_ITS_helium-3;1", title: "center title x (ctx) and center title y (cty)" },
      { name: "otx_oty", opt: "col_otx_oty", file: "QAresults.root", item: "PIDqa/PIDqa1/ITS/hNsigmaP_ITS_triton;1", title: "opposite title x (otx) and opposite title y (oty)" },
-     { name: "twoscales", url: "?nobrowser&file=$$$histpainter6.root&item=[draw_boxsame/[1],draw_boxsame/[2]]&opt=[box,box;x+y+;xaxis_red;yaxis_red]", title: "interactive second X and Y scale for second histogram" }
+     { name: "twoscales", url: "?nobrowser&file=$$$histpainter6.root&item=[draw_boxsame/[1],draw_boxsame/[2]]&opt=[box,box;x+y+;xaxis_red;yaxis_red]", title: "interactive second X and Y scale for second histogram" },
+     { name: "cjust", file: "cjust.root", item: "c1;1", title: "Demo for cjust draw option with fixed palette colors, see TPaletteAxis docu" }
    ],
    Candle : [
      { name: "plot", file: "candleplot.root", item: "candleplot;1", title: "output from candleplot.C macro" },
