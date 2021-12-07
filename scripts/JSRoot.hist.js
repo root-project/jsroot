@@ -3033,9 +3033,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           custom_levels;
       if (zmin === zmax) { zmin = this.gminbin; zmax = this.gmaxbin; zminpos = this.gminposbin; }
       if (this.options.minimum !== -1111) { zmin = this.options.minimum; apply_min = true; }
-      if (this.options.maximum !== -1111) zmax = this.options.maximum;
-      if (zmin >= zmax)
+      if (this.options.maximum !== -1111) { zmax = this.options.maximum; apply_min = false; }
+      if (zmin >= zmax) {
          if (apply_min) zmax = zmin + 1; else zmin = zmax - 1;
+      }
 
       if (fp && (fp.zoom_zmin != fp.zoom_zmax)) {
          zmin = fp.zoom_zmin;
