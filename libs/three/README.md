@@ -9,6 +9,6 @@ into `threejs` subdirectory
 
     npm install
     npm run-script build
-    npm uninstakk
+    npm uninstall
 
 ## Run tests and commit package
