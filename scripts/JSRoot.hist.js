@@ -428,7 +428,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           first_stat = 0, num_cols = 0, maxlen = 0;
 
       // now draw TLine and TBox objects
-      for (let j=0;j<pt.fLines.arr.length;++j) {
+      for (let j = 0; j < pt.fLines.arr.length; ++j) {
          let entry = pt.fLines.arr[j];
          if ((entry._typename=="TText") || (entry._typename=="TLatex"))
             lines.push(entry.fTitle);
@@ -499,13 +499,13 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       let lpath = "";
 
       if ((pt.fBorderSize > 0) && has_head)
-         lpath += "M0," + Math.round(stepy) + "h" + width;
+         lpath += `M0,${Math.round(stepy)}h${width}`;
 
       if ((first_stat > 0) && (num_cols > 1)) {
          for (let nrow = first_stat; nrow < nlines; ++nrow)
-            lpath += "M0," + Math.round(nrow * stepy) + "h" + width;
+            lpath += `M0,${Math.round(nrow * stepy)}h${width}`;
          for (let ncol = 0; ncol < num_cols - 1; ++ncol)
-            lpath += "M" + Math.round(width / num_cols * (ncol + 1)) + "," + Math.round(first_stat * stepy) + "V" + height;
+            lpath += `M${Math.round(width / num_cols * (ncol + 1))},${Math.round(first_stat * stepy)}V${height}`;
       }
 
       if (lpath) this.draw_g.append("svg:path").attr("d",lpath).call(this.lineatt.func);
@@ -639,7 +639,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
              lbl_g = text_g.append("svg:g");
 
          lbl_g.append("svg:path")
-               .attr("d", "M"+x+","+y + "h"+w + "v"+h + "h-"+w + "z")
+               .attr("d", `M${x},${y}h${w}v${h}h${-w}z`)
                .call(this.fillatt.func)
                .call(this.lineatt.func);
 
