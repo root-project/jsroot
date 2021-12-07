@@ -1848,24 +1848,23 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    /** @summary Get index based on z value */
    HistContour.prototype.getContourIndex = function(zc) {
-      if (this.custom) {
-         let l = 0, r = this.arr.length-1;
-         if (zc < this.arr[0]) return -1;
-         if (zc >= this.arr[r]) return r;
-         while (l < r-1) {
-            let mid = Math.round((l+r)/2);
-            if (this.arr[mid] > zc) r = mid; else l = mid;
-         }
-         return l;
-      }
-
       // bins less than zmin not drawn
       if (zc < this.colzmin) return this.below_min_indx;
 
       // if bin content exactly zmin, draw it when col0 specified or when content is positive
       if (zc === this.colzmin) return this.exact_min_indx;
 
-      return Math.floor(0.01+(zc-this.colzmin)*(this.arr.length-1)/(this.colzmax-this.colzmin));
+      if (!this.custom)
+         return Math.floor(0.01+(zc-this.colzmin)*(this.arr.length-1)/(this.colzmax-this.colzmin));
+
+      let l = 0, r = this.arr.length-1;
+      if (zc < this.arr[0]) return -1;
+      if (zc >= this.arr[r]) return r;
+      while (l < r-1) {
+         let mid = Math.round((l+r)/2);
+         if (this.arr[mid] > zc) r = mid; else l = mid;
+      }
+      return l;
    }
 
    /** @summary Get palette color */
