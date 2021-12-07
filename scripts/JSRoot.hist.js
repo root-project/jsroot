@@ -3028,14 +3028,15 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       // if not initialized, first create contour array
       // difference from ROOT - fContour includes also last element with maxbin, which makes easier to build logz
-      let histo = this.getObject(), nlevels = 0,
+      let histo = this.getObject(), nlevels = 0, apply_min,
           zmin = this.minbin, zmax = this.maxbin, zminpos = this.minposbin,
           custom_levels;
       if (zmin === zmax) { zmin = this.gminbin; zmax = this.gmaxbin; zminpos = this.gminposbin; }
-      if ((this.options.minimum !== -1111) && (this.options.maximum != -1111)) {
-         zmin = this.options.minimum;
-         zmax = this.options.maximum;
-      }
+      if (this.options.minimum !== -1111) { zmin = this.options.minimum; apply_min = true; }
+      if (this.options.maximum !== -1111) zmax = this.options.maximum;
+      if (zmin >= zmax)
+         if (apply_min) zmax = zmin + 1; else zmin = zmax - 1;
+
       if (fp && (fp.zoom_zmin != fp.zoom_zmax)) {
          zmin = fp.zoom_zmin;
          zmax = fp.zoom_zmax;
@@ -4894,7 +4895,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          this.gminposbin = null;
          this.gminbin = this.gmaxbin = 0;
 
-         for (let n=0, len=histo.fBins.arr.length; n<len; ++n) {
+         for (let n=0, len=histo.fBins.arr.length; n < len; ++n) {
             let bin_content = histo.fBins.arr[n].fContent;
             if (n===0) this.gminbin = this.gmaxbin = bin_content;
 
