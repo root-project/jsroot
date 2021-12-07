@@ -5131,16 +5131,19 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             cntr = this.getContour(),
             palette = this.getHistPalette(),
             entries = [],
-            skip_zero = !this.options.Zero,
             show_empty = this._show_empty_bins,
             can_merge = (handle.ybar2 === 1) && (handle.ybar1 === 0);
 
-      let dx, dy, x1, y2, binz, is_zero, colindx, last_entry = null;
+      let dx, dy, x1, y2, binz, is_zero, colindx, last_entry = null,
+          skip_zero = !this.options.Zero;
 
       const flush_last_entry = () => {
          last_entry.path += `h${dx}v${last_entry.y1-last_entry.y2}h${-dx}z`;
          last_entry = null;
       };
+
+      // check in the beginning if zero can be skipped
+      if (!skip_zero && !show_empty && (cntr.getPaletteIndex(palette, 0) === null)) skip_zero = true;
 
       // now start build
       for (let i = handle.i1; i < handle.i2; ++i) {
