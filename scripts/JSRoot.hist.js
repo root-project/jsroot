@@ -840,8 +840,15 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       axis.fTickSize = 0.6 * s_width / width; // adjust axis ticks size
 
       if (contour && framep) {
-         zmin = Math.min(levels[0], framep.zmin);
-         zmax = Math.max(levels[levels.length-1], framep.zmax);
+         if ((framep.zmin !== undefined) && (framep.zmax !== undefined) && (framep.zmin !== framep.zmax)) {
+            zmin = framep.zmin;
+            zmax = framep.zmax;
+         } else {
+            zmin = levels[0];
+            zmax = levels[levels.length-1];
+         }
+         //zmin = Math.min(levels[0], framep.zmin);
+         //zmax = Math.max(levels[levels.length-1], framep.zmax);
       } else if ((main.gmaxbin!==undefined) && (main.gminbin!==undefined)) {
          // this is case of TH2 (needs only for size adjustment)
          zmin = main.gminbin; zmax = main.gmaxbin;
@@ -849,6 +856,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          // this is case of TH1
          zmin = main.hmin; zmax = main.hmax;
       }
+
+      // console.log('zmin, zmax', zmin, zmax, framep.zmin, framep.zmax);
 
       this.draw_g.selectAll("rect").style("fill", 'white');
 
@@ -863,8 +872,23 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          for (let i = 0; i < levels.length-1; ++i) {
             let z0 = Math.round(this.z_handle.gr(levels[i])),
                 z1 = Math.round(this.z_handle.gr(levels[i+1])),
-                col = contour.getPaletteColor(draw_palette, (levels[i]+levels[i+1])/2),
-                r = this.draw_g.append("svg:path")
+                lvl = (levels[i]+levels[i+1])/2;
+
+            if ((z1 >= s_height) || (z0 < 0)) continue;
+
+            if (z0 > s_height) {
+               z0 = s_height;
+               lvl = levels[i]*0.001+levels[i+1]*0.999;
+            } else if (z1 < 0) {
+               z1 = 0;
+               lvl = levels[i]*0.999+levels[i+1]*0.001;
+            }
+
+
+            let col = contour.getPaletteColor(draw_palette, lvl);
+            if (!col) continue;
+
+            let r = this.draw_g.append("svg:path")
                        .attr("d", `M0,${z1}H${s_width}V${z0}H0Z`)
                        .style("fill", col)
                        .style("stroke", col)
