@@ -884,14 +884,13 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                lvl = levels[i]*0.999+levels[i+1]*0.001;
             }
 
-
             let col = contour.getPaletteColor(draw_palette, lvl);
             if (!col) continue;
 
             let r = this.draw_g.append("svg:path")
                        .attr("d", `M0,${z1}H${s_width}V${z0}H0Z`)
                        .style("fill", col)
-                       .style("stroke", col)
+                       .style("stroke", 'none')
                        .property("fill0", col)
                        .property("fill1", d3.rgb(col).darker(0.5).formatHex());
 
