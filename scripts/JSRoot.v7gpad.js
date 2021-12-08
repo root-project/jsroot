@@ -2165,7 +2165,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          this.draw_g = layer.append("svg:g").attr("class", "root_frame");
 
-         this.draw_g.append("svg:title").text("");
+         if (!JSROOT.batch_mode)
+            this.draw_g.append("svg:title").text("");
 
          top_rect = this.draw_g.append("svg:rect");
 
@@ -2919,7 +2920,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          this.setTopPainter(); //assign canvas as top painter of that element
 
-         svg.append("svg:title").text("ROOT canvas");
+         if (!JSROOT.batch_mode)
+            svg.append("svg:title").text("ROOT canvas");
+
          let frect = svg.append("svg:path").attr("class","canvas_fillrect");
          if (!JSROOT.batch_mode)
             frect.style("pointer-events", "visibleFill")
@@ -3086,6 +3089,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
              .classed("__root_pad_" + this.this_pad_name, true)
              .attr("pad", this.this_pad_name) // set extra attribute  to mark pad name
              .property('pad_painter', this); // this is custom property
+
+         if (!JSROOT.batch_mode)
+            this.draw_g.append("svg:title").text("subpad " + this.this_pad_name);
+
          svg_rect = svg_pad.append("svg:path").attr("class", "root_pad_border");
 
          svg_pad.append("svg:g").attr("class","primitives_layer");
