@@ -1875,12 +1875,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       let top_rect, main_svg;
 
       if (this.draw_g.empty()) {
-
          let layer = this.getLayerSvg("primitives_layer");
 
          this.draw_g = layer.append("svg:g").attr("class", "root_frame");
 
-         this.draw_g.append("svg:title").text("");
+         // empty title on the frame required to suppress title of the canvas
+         if (!JSROOT.batch_mode)
+            this.draw_g.append("svg:title").text("");
 
          top_rect = this.draw_g.append("svg:path");
 
@@ -2591,9 +2592,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (JSROOT.batch_mode) {
             svg.attr("xmlns", "http://www.w3.org/2000/svg");
             svg.attr("xmlns:xlink", "http://www.w3.org/1999/xlink");
+         } else {
+            svg.append("svg:title").text("ROOT canvas");
          }
 
-         svg.append("svg:title").text("ROOT canvas");
          let frect = svg.append("svg:path").attr("class","canvas_fillrect");
          if (!JSROOT.batch_mode)
             frect.style("pointer-events", "visibleFill")
@@ -2749,6 +2751,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
              .classed("__root_pad_" + this.this_pad_name, true)
              .attr("pad", this.this_pad_name) // set extra attribute  to mark pad name
              .property('pad_painter', this); // this is custom property
+
+         if (!JSROOT.batch_mode)
+            svg_pad.append("svg:title").text("subpad " + this.this_pad_name);
+
          svg_rect = svg_pad.append("svg:path").attr("class", "root_pad_border");
 
          svg_pad.append("svg:g").attr("class","primitives_layer");
