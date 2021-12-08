@@ -3115,7 +3115,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       this.createAttLine({ attr: this.pad, color0: this.pad.fBorderMode == 0 ? 'none' : '' });
 
-      svg_pad.attr("display", pad_visible ? null : "none")
+      svg_pad.style("display", pad_visible ? null : "none")
              .attr("viewBox", `0 0 ${w} ${h}`) // due to svg
              .attr("preserveAspectRatio", "none")   // due to svg, we do not preserve relative ratio
              .attr("x", x)    // due to svg
