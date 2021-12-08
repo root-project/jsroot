@@ -349,11 +349,12 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                .call(this.fillatt.func)
                .call(this.lineatt.func);
 
-      const rect = this.draw_g
-                       .append("svg:path")
-                       .attr("d", `M0,0H${width}V${height}H0Z`)
-                       .call(this.fillatt.func)
-                       .call(this.lineatt.func);
+      let rect;
+      if (!JSROOT.batch_mode || !this.fillatt.empty() || !this.lineatt.empty())
+           rect = this.draw_g.append("svg:path")
+                      .attr("d", `M0,0H${width}V${height}H0Z`)
+                      .call(this.fillatt.func)
+                      .call(this.lineatt.func);
 
       if (typeof this.paveDrawFunc == 'function')
          promise = this.paveDrawFunc(width, height, arg);
