@@ -6457,7 +6457,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if ((hists.length > 0) && (!this.fillatt.empty() || (hline_color != 'none')))
          this.draw_g.append("svg:path")
              .attr("d", hists)
-             .style("stroke", hline_color == 'nonde' ? hline_color : null)
+             .style("stroke", (hline_color != 'none') ? hline_color : null)
              .style("pointer-events",JSROOT.batch_mode ? null : "visibleFill")
              .call(this.fillatt.func);
 
