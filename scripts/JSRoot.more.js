@@ -725,7 +725,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             this.draw_g.append("svg:path")
                .attr("class", "area")
                .attr("d", path.path + path.close)
-               .style("stroke", "none")
                .call(this.fillatt.func);
       }
    }
@@ -739,10 +738,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (tf1.fSave.length > 0) {
          // in the case where the points have been saved, useful for example
          // if we don't have the user's function
-         let nb_points = tf1.fNpx;
-
-         let xmin = tf1.fSave[nb_points + 1];
-         let xmax = tf1.fSave[nb_points + 2];
+         let nb_points = tf1.fNpx,
+             xmin = tf1.fSave[nb_points + 1],
+             xmax = tf1.fSave[nb_points + 2];
 
          return Math.abs(xmin - xmax) / nb_points < Math.abs(min - max);
       }
@@ -3684,7 +3682,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             lastkind = kind;
             lastpath = this.draw_g.append("svg:path");
             switch (kind) {
-               case "f": lastpath.call(this.fillatt.func).style('stroke', 'none'); break;
+               case "f": lastpath.call(this.fillatt.func); break;
                case "l": lastpath.call(this.lineatt.func).style('fill', 'none'); break;
                case "m": lastpath.call(this.markeratt.func); break;
             }
@@ -3744,7 +3742,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                   npoints = parseInt(arr[k].substr(1));
 
                   for (n = 0; n < npoints; ++n)
-                     d += ((n>0) ? "L" : "M") +
+                     d += ((n > 0) ? "L" : "M") +
                            func.x(obj.fBuf[indx++]) + "," + func.y(obj.fBuf[indx++]);
 
                   if (oper == "f") d+="Z";

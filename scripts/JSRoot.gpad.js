@@ -1472,11 +1472,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       // add a grid on x axis, if the option is set
       if (pad && pad.fGridx && this.x_handle) {
          let gridx = "";
-         for (let n=0;n<this.x_handle.ticks.length;++n)
+         for (let n = 0; n < this.x_handle.ticks.length; ++n)
             if (this.swap_xy)
-               gridx += "M0,"+this.x_handle.ticks[n]+"h"+w;
+               gridx += `M0,${this.x_handle.ticks[n]}h${w}`;
             else
-               gridx += "M"+this.x_handle.ticks[n]+",0v"+h;
+               gridx += `M${this.x_handle.ticks[n]},0v${h}`;
 
          let colid = (JSROOT.gStyle.fGridColor > 0) ? JSROOT.gStyle.fGridColor : (this.getAxis("x") ? this.getAxis("x").fAxisColor : 1),
              grid_color = this.getColor(colid) || "black";
@@ -1485,7 +1485,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
            layer.append("svg:path")
                 .attr("class", "xgrid")
                 .attr("d", gridx)
-                .style('stroke', grid_color)
+                .style("stroke", grid_color)
                 .style("stroke-width", JSROOT.gStyle.fGridWidth)
                 .style("stroke-dasharray", jsrp.root_line_styles[grid_style]);
       }
@@ -1493,11 +1493,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       // add a grid on y axis, if the option is set
       if (pad && pad.fGridy && this.y_handle) {
          let gridy = "";
-         for (let n=0;n<this.y_handle.ticks.length;++n)
+         for (let n = 0; n < this.y_handle.ticks.length; ++n)
             if (this.swap_xy)
-               gridy += "M"+this.y_handle.ticks[n]+",0v"+h;
+               gridy += `M${this.y_handle.ticks[n]},0v${h}`;
             else
-               gridy += "M0,"+this.y_handle.ticks[n]+"h"+w;
+               gridy += `M0,${this.y_handle.ticks[n]}h${w}`;
 
          let colid = (JSROOT.gStyle.fGridColor > 0) ? JSROOT.gStyle.fGridColor : (this.getAxis("y") ? this.getAxis("y").fAxisColor : 1),
              grid_color = this.getColor(colid) || "black";
@@ -1506,7 +1506,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
            layer.append("svg:path")
                 .attr("class", "ygrid")
                 .attr("d", gridy)
-                .style('stroke',grid_color)
+                .style("stroke", grid_color)
                 .style("stroke-width",JSROOT.gStyle.fGridWidth)
                 .style("stroke-dasharray", jsrp.root_line_styles[grid_style]);
       }
