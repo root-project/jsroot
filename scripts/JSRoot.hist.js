@@ -3829,7 +3829,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       this.draw_g.append("svg:path")
                  .attr("d", path1.path + path2.path + "Z")
-                 .style("stroke", "none")
                  .call(this.fillatt.func);
    }
 
@@ -4128,7 +4127,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           if (hints_err)
                this.draw_g.append("svg:path")
                    .attr("d", hints_err)
-                   .style("stroke", "none")
                    .style("fill", "none")
                    .style("pointer-events", JSROOT.batch_mode ? null : "visibleFill");
 
@@ -4136,7 +4134,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             if (!this.fillatt.empty() && !draw_hist)
                this.draw_g.append("svg:path")
                      .attr("d", path_line + close_path)
-                     .style("stroke", "none")
                      .call(this.fillatt.func);
 
             this.draw_g.append("svg:path")
@@ -4153,7 +4150,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          if (hints_marker)
             this.draw_g.append("svg:path")
                 .attr("d", hints_marker)
-                .style("stroke", "none")
                 .style("fill", "none")
                 .style("pointer-events", JSROOT.batch_mode ? null : "visibleFill");
       }
@@ -5521,7 +5517,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          return cmd;
       }
 
-      function get_segm_intersection(segm1, segm2) {
+      const get_segm_intersection = (segm1, segm2) => {
           let s02_x, s02_y, s10_x, s10_y, s32_x, s32_y, s_numer, t_numer, denom, t;
           s10_x = segm1.x2 - segm1.x1;
           s10_y = segm1.y2 - segm1.y1;
@@ -5548,7 +5544,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           // Collision detected
           t = t_numer / denom;
           return { x: Math.round(segm1.x1 + (t * s10_x)), y: Math.round(segm1.y1 + (t * s10_y)) };
-      }
+      };
 
       // try to build path which fills area to outside borders
       function BuildPathOutside(xp,yp,iminus,iplus,side) {
@@ -5607,7 +5603,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          this.draw_g
              .append("svg:path")
              .attr("d", dd)
-             .style('stroke','none')
              .style("fill", palette.calcColor(0, levels.length));
       }
 
@@ -5636,8 +5631,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          if (lineatt)
             elem.call(lineatt.func);
-         else
-            elem.style('stroke','none');
       });
 
       handle.hide_only_zeros = true; // text drawing suppress only zeros
