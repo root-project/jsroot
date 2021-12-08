@@ -727,8 +727,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
 
       let axis_lines = "";
-      if (draw_lines)
-         axis_lines = "M0,0" + (vertical ? "v"+h : "h"+w);
+      if (draw_lines) {
+         axis_lines = "M0,0" + (vertical ? `v${h}` : `h${w}`);
+         if (secondShift !== 0)
+            axis_lines += vertical ? `M${secondShift},0v${h}` : `M0,${secondShift}h${w}`;
+      }
 
       axis_g.attr("transform", transform || null);
 
@@ -766,7 +769,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (!disable_axis_drawing && axis_lines && !this.lineatt.empty())
          axis_g.append("svg:path").attr("d", axis_lines)
                .call(this.lineatt.func);
-
 
       let labelSize0 = Math.round( (axis.fLabelSize < 1) ? axis.fLabelSize * text_scaling_size : axis.fLabelSize),
           labeloffset = Math.round(Math.abs(axis.fLabelOffset)*text_scaling_size);
