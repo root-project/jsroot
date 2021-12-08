@@ -293,13 +293,11 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          this.draw_g.append("svg:path")
                     .attr("d", side1)
-                    .style("stroke","none")
                     .call(fillatt.func)
                     .style("fill", d3.rgb(fillatt.color).brighter(0.5).formatHex());
 
          this.draw_g.append("svg:path")
              .attr("d", side2)
-             .style("stroke","none")
              .call(fillatt.func)
              .style("fill", d3.rgb(fillatt.color).darker(0.5).formatHex());
       }
@@ -1225,10 +1223,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       this.draw_g.append("svg:path")
                  .attr("d", path.path + path2.path + "Z")
-                 .style("stroke", "none")
                  .call(this.fillatt.func)
                  .style('opacity', 0.75);
-
    }
 
    /** @summary draw TGraph bins with specified options
@@ -2632,8 +2628,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       if (this.options.fill && lpath)
          this.draw_g.append("svg:path")
-             .attr("d",lpath + "Z")
-             .style("stroke","none")
+             .attr("d", lpath + "Z")
              .call(this.fillatt.func);
 
       if (this.options.line && lpath)
@@ -2650,13 +2645,13 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       if (epath)
          this.draw_g.append("svg:path")
-             .attr("d",epath)
+             .attr("d", epath)
              .style("fill","none")
              .call(this.lineatt.func);
 
       if (mpath)
          this.draw_g.append("svg:path")
-               .attr("d",mpath)
+               .attr("d", mpath)
                .call(this.markeratt.func);
    }
 
@@ -2667,7 +2662,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           gr = this.getObject();
 
       let rmin = gr.fY[0] || 0, rmax = rmin;
-      for (let n=0;n<gr.fNpoints;++n) {
+      for (let n = 0; n < gr.fNpoints; ++n) {
          rmin = Math.min(rmin, gr.fY[n] - gr.fEY[n]);
          rmax = Math.max(rmax, gr.fY[n] + gr.fEY[n]);
       }
