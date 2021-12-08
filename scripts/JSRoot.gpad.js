@@ -2606,7 +2606,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             svg.append("svg:title").text("ROOT canvas");
          }
 
-         frect = svg.append("svg:path").attr("class","canvas_fillrect");
+         if (!JSROOT.batch_mode || (this.pad.fFillStyle > 0))
+            frect = svg.append("svg:path").attr("class","canvas_fillrect");
+
          if (!JSROOT.batch_mode)
             frect.style("pointer-events", "visibleFill")
                  .on("dblclick", evnt => this.enlargePad(evnt))
@@ -2642,7 +2644,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if ((rect.width <= lmt) || (rect.height <= lmt)) {
          svg.style("display", "none");
-         console.warn("Hide canvas while geometry too small w=" + rect.width + " h=" + rect.height);
+         console.warn(`Hide canvas while geometry too small w=${rect.width} h=${rect.height}`);
          rect.width = 200; rect.height = 100; // just to complete drawing
       } else {
          svg.style("display", null);
@@ -2679,12 +2681,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this._pad_width = rect.width;
       this._pad_height = rect.height;
 
-      frect.attr("d", `M0,0H${rect.width}V${rect.height}H0Z`)
-           .call(this.fillatt.func);
+      if (frect) {
+         frect.attr("d", `M0,0H${rect.width}V${rect.height}H0Z`)
+              .call(this.fillatt.func);
+         this.drawActiveBorder(frect);
+      }
 
       this._fast_drawing = JSROOT.settings.SmallPad && ((rect.width < JSROOT.settings.SmallPad.width) || (rect.height < JSROOT.settings.SmallPad.height));
-
-      this.drawActiveBorder(frect);
 
       if (this.alignButtons && btns)
          this.alignButtons(btns, rect.width, rect.height);
@@ -2762,7 +2765,16 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (!JSROOT.batch_mode)
             svg_pad.append("svg:title").text("subpad " + this.this_pad_name);
 
-         svg_rect = svg_pad.append("svg:path").attr("class", "root_pad_border");
+         // need to check attributes directly while attributes objects will be created later
+         if (!JSROOT.batch_mode || (this.pad.fFillStyle > 0) || ((this.pad.fLineStyle > 0) && (this.pad.fLineColor > 0)))
+            svg_rect = svg_pad.append("svg:path").attr("class", "root_pad_border");
+
+         if (!JSROOT.batch_mode)
+            svg_rect.style("pointer-events", "visibleFill") // get events also for not visible rect
+                    .on("dblclick", evnt => this.enlargePad(evnt))
+                    .on("click", () => this.selectObjectPainter())
+                    .on("mouseenter", () => this.showObjectStatus())
+                    .on("contextmenu", JSROOT.settings.ContextMenu ? evnt => this.padContextMenu(evnt) : null);
 
          svg_pad.append("svg:g").attr("class","primitives_layer");
          if (!JSROOT.batch_mode)
@@ -2770,15 +2782,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                           .attr("class","btns_layer")
                           .property('leftside', JSROOT.settings.ToolBarSide != 'left')
                           .property('vertical', JSROOT.settings.ToolBarVert);
-
-         if (JSROOT.settings.ContextMenu)
-            svg_rect.on("contextmenu", evnt => this.padContextMenu(evnt));
-
-         if (!JSROOT.batch_mode)
-            svg_rect.style("pointer-events", "visibleFill") // get events also for not visible rect
-                    .on("dblclick", evnt => this.enlargePad(evnt))
-                    .on("click", () => this.selectObjectPainter())
-                    .on("mouseenter", () => this.showObjectStatus());
       }
 
       this.createAttFill({ attr: this.pad });
@@ -2801,11 +2804,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this._pad_width = w;
       this._pad_height = h;
 
-      svg_rect.attr("d", `M0,0H${w}V${h}H0Z`)
-              .call(this.fillatt.func)
-              .call(this.lineatt.func);
+      if (svg_rect) {
+         svg_rect.attr("d", `M0,0H${w}V${h}H0Z`)
+                 .call(this.fillatt.func)
+                 .call(this.lineatt.func);
 
-      this.drawActiveBorder(svg_rect);
+         this.drawActiveBorder(svg_rect);
+      }
 
       this._fast_drawing = JSROOT.settings.SmallPad && ((w < JSROOT.settings.SmallPad.width) || (h < JSROOT.settings.SmallPad.height));
 
