@@ -4166,8 +4166,8 @@ JSROOT.define(['d3'], (d3) => {
 
             // remove containers with display: none
             if (has_workarounds)
-               main.selectAll('g').each(function() {
-                  let elem = d3.select(this);
+               main.selectAll('g.root_frame').each(function() {
+                  const elem = d3.select(this);
                   if (elem.style('display')=="none") elem.remove();
                });
 
