@@ -2563,7 +2563,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Create SVG element for canvas */
    TPadPainter.prototype.createCanvasSvg = function(check_resize, new_size) {
 
-      let factor = null, svg = null, lmt = 5, rect = null, btns;
+      let factor = null, svg = null, lmt = 5, rect = null, btns, frect;
 
       if (check_resize > 0) {
 
@@ -2581,6 +2581,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          if (!JSROOT.batch_mode)
             btns = this.getLayerSvg("btns_layer", this.this_pad_name);
+
+         frect = svg.select(".canvas_fillrect");
 
       } else {
 
@@ -2604,12 +2606,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             svg.append("svg:title").text("ROOT canvas");
          }
 
-         let frect = svg.append("svg:path").attr("class","canvas_fillrect");
+         frect = svg.append("svg:path").attr("class","canvas_fillrect");
          if (!JSROOT.batch_mode)
             frect.style("pointer-events", "visibleFill")
                  .on("dblclick", evnt => this.enlargePad(evnt))
                  .on("click", () => this.selectObjectPainter())
-                 .on("mouseenter", () => this.showObjectStatus());
+                 .on("mouseenter", () => this.showObjectStatus())
+                 .on("contextmenu", JSROOT.settings.ContextMenu ? evnt => this.padContextMenu(evnt) : null);
 
          svg.append("svg:g").attr("class","primitives_layer");
          svg.append("svg:g").attr("class","info_layer");
@@ -2618,9 +2621,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                       .attr("class","btns_layer")
                       .property('leftside', JSROOT.settings.ToolBarSide == 'left')
                       .property('vertical', JSROOT.settings.ToolBarVert);
-
-         if (JSROOT.settings.ContextMenu && !JSROOT.batch_mode)
-            svg.select(".canvas_fillrect").on("contextmenu", evnt => this.padContextMenu(evnt));
 
          factor = 0.66;
          if (this.pad && this.pad.fCw && this.pad.fCh && (this.pad.fCw > 0)) {
@@ -2679,13 +2679,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this._pad_width = rect.width;
       this._pad_height = rect.height;
 
-      let fill_rect = svg.select(".canvas_fillrect")
-         .attr("d", `M0,0H${rect.width}V${rect.height}H0Z`)
-         .call(this.fillatt.func);
+      frect.attr("d", `M0,0H${rect.width}V${rect.height}H0Z`)
+           .call(this.fillatt.func);
 
       this._fast_drawing = JSROOT.settings.SmallPad && ((rect.width < JSROOT.settings.SmallPad.width) || (rect.height < JSROOT.settings.SmallPad.height));
 
-      this.drawActiveBorder(fill_rect);
+      this.drawActiveBorder(frect);
 
       if (this.alignButtons && btns)
          this.alignButtons(btns, rect.width, rect.height);
