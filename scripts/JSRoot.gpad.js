@@ -492,8 +492,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       title_g.style("cursor", "move").call(drag_move);
    }
 
-   /** @summary Draw axis ticks */
-   TAxisPainter.prototype.drawTicks = function(axis_g, handle, side, tickSize, ticksPlusMinus, secondShift, real_draw) {
+   /** @summary Produce svg path for axis ticks */
+   TAxisPainter.prototype.produceTicksPath = function(handle, side, tickSize, ticksPlusMinus, secondShift, real_draw) {
       let res = "", res2 = "", lastpos = 0, lasth = 0;
       this.ticks = [];
 
@@ -511,29 +511,30 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             this.ticks.push(handle.grpos); // keep graphical positions of major ticks
          }
 
-         if (ticksPlusMinus > 0) h2 = -h1; else
-         if (side < 0) { h2 = -h1; h1 = 0; } else { h2 = 0; }
-
-         if (res.length == 0) {
-            res = this.vertical ? ("M"+h1+","+handle.grpos) : ("M"+handle.grpos+","+(-h1));
-            res2 = this.vertical ? ("M"+(secondShift-h1)+","+handle.grpos) : ("M"+handle.grpos+","+(secondShift+h1));
-         } else {
-            res += this.vertical ? ("m"+(h1-lasth)+","+(handle.grpos-lastpos)) : ("m"+(handle.grpos-lastpos)+","+(lasth-h1));
-            res2 += this.vertical ? ("m"+(lasth-h1)+","+(handle.grpos-lastpos)) : ("m"+(handle.grpos-lastpos)+","+(h1-lasth));
+         if (ticksPlusMinus > 0) {
+            h2 = -h1;
+         } else if (side < 0) {
+            h2 = -h1; h1 = 0;
          }
 
-         res += this.vertical ? ("h"+ (h2-h1)) : ("v"+ (h1-h2));
-         res2 += this.vertical ? ("h"+ (h1-h2)) : ("v"+ (h2-h1));
+         if (res.length == 0) {
+            res = this.vertical ? `M${h1},${handle.grpos}` : `M${handle.grpos},${-h1}`;
+            res2 = this.vertical ? `M${secondShift-h1},${handle.grpos}` : `M${handle.grpos},${secondShift+h1}`;
+         } else {
+            res += this.vertical ? `m${h1-lasth},${handle.grpos-lastpos}` : `m${handle.grpos-lastpos},${lasth-h1}`;
+            res2 += this.vertical ? `m${lasth-h1},${handle.grpos-lastpos}` : `m${handle.grpos-lastpos},${h1-lasth}`;
+         }
+
+         res += this.vertical ? `h${h2-h1}` : `v${h1-h2}`;
+         res2 += this.vertical ? `h${h1-h2}` : `v${h2-h1}`;
 
          lastpos = handle.grpos;
          lasth = h2;
       }
 
-      if ((res.length > 0) && real_draw)
-         axis_g.append("svg:path").attr("d", res).call(this.lineatt.func);
+      if (secondShift !== 0) res += res2;
 
-      if ((secondShift !== 0) && (res2.length > 0) && real_draw)
-         axis_g.append("svg:path").attr("d", res2).call(this.lineatt.func);
+      return real_draw ? res  : "";
    }
 
    /** @summary Returns modifier for axis label */
@@ -725,9 +726,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             axis_g.selectAll("*").remove();
       }
 
-      if (!disable_axis_drawing && draw_lines)
-         axis_g.append("svg:path").attr("d", "M0,0" + (vertical ? "v"+h : "h"+w))
-               .call(this.lineatt.func);
+      let axis_lines = "";
+      if (draw_lines)
+         axis_lines = "M0,0" + (vertical ? "v"+h : "h"+w);
 
       axis_g.attr("transform", transform || null);
 
@@ -760,7 +761,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       const handle = this.createTicks(false, optionNoexp, optionNoopt, optionInt);
 
-      this.drawTicks(axis_g, handle, side, tickSize, ticksPlusMinus, secondShift, draw_lines && !disable_axis_drawing && !this.disable_ticks);
+      axis_lines += this.produceTicksPath(handle, side, tickSize, ticksPlusMinus, secondShift, draw_lines && !disable_axis_drawing && !this.disable_ticks);
+
+      if (!disable_axis_drawing && axis_lines && !this.lineatt.empty())
+         axis_g.append("svg:path").attr("d", axis_lines)
+               .call(this.lineatt.func);
+
 
       let labelSize0 = Math.round( (axis.fLabelSize < 1) ? axis.fLabelSize * text_scaling_size : axis.fLabelSize),
           labeloffset = Math.round(Math.abs(axis.fLabelOffset)*text_scaling_size);
