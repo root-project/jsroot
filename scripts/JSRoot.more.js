@@ -1267,7 +1267,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          draw_g.append("svg:path")
                .attr("d", path1.path + path2.path + "Z")
-               .style("stroke", "none")
                .call(fillatt.func);
          if (main_block)
             this.draw_kind = "lines";
@@ -1302,8 +1301,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          let elem = draw_g.append("svg:path").attr("d", path.path + close_symbol);
          if (options.Line)
             elem.call(lineatt.func);
-         else
-            elem.style('stroke', 'none');
 
          if (options.Fill)
             elem.call(fillatt.func);
@@ -1481,7 +1478,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          if (!JSROOT.batch_mode && JSROOT.settings.Tooltip && main_block)
             visible.append("svg:path")
-                   .style("stroke", "none")
                    .style("fill", "none")
                    .style("pointer-events", "visibleFill")
                    .attr("d", d => `M${d.grx0},${d.gry0}h${d.grx2-d.grx0}v${d.gry2-d.gry0}h${d.grx0-d.grx2}z`);
@@ -1539,7 +1535,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          if (want_tooltip && hints_marker)
             draw_g.append("svg:path")
                 .attr("d", hints_marker)
-                .style("stroke", "none")
                 .style("fill", "none")
                 .style("pointer-events", "visibleFill");
       }
