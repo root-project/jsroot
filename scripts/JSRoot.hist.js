@@ -890,7 +890,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             let r = this.draw_g.append("svg:path")
                        .attr("d", `M0,${z1}H${s_width}V${z0}H0Z`)
                        .style("fill", col)
-                       .style("stroke", 'none')
                        .property("fill0", col)
                        .property("fill1", d3.rgb(col).darker(0.5).formatHex());
 
@@ -6037,23 +6036,19 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          let elem = this.draw_g.append("svg:path")
                                .attr("d", res)
                                .call(this.fillatt.func);
-         if ((this.options.BoxStyle === 11) || !this.fillatt.empty())
-            elem.style('stroke','none');
-         else
+         if ((this.options.BoxStyle !== 11) && this.fillatt.empty())
             elem.call(this.lineatt.func);
       }
 
       if ((btn1.length > 0) && this.fillatt.hasColor())
          this.draw_g.append("svg:path")
                     .attr("d", btn1)
-                    .style("stroke","none")
                     .call(this.fillatt.func)
                     .style("fill", d3.rgb(this.fillatt.color).brighter(0.5).formatHex());
 
       if (btn2.length > 0)
          this.draw_g.append("svg:path")
                     .attr("d", btn2)
-                    .style("stroke","none")
                     .call(this.fillatt.func)
                     .style("fill", !this.fillatt.hasColor() ? 'red' : d3.rgb(this.fillatt.color).darker(0.5).formatHex());
 
