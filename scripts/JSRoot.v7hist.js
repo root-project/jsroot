@@ -1246,7 +1246,6 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
       this.draw_g.append("svg:path")
                  .attr("d", path1.path + path2.path + "Z")
-                 .style("stroke", "none")
                  .call(this.fillatt.func);
    }
 
@@ -1510,7 +1509,6 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
          if ((hints_err !== null) && (hints_err.length > 0))
                this.draw_g.append("svg:path")
                    .attr("d", hints_err)
-                   .style("stroke", "none")
                    .style("fill", "none")
                    .style("pointer-events", JSROOT.batch_mode ? null : "visibleFill");
 
@@ -1518,7 +1516,6 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
             if (!this.fillatt.empty())
                this.draw_g.append("svg:path")
                      .attr("d", options.Fill ? (path_line + close_path) : res)
-                     .style("stroke", "none")
                      .call(this.fillatt.func);
 
             this.draw_g.append("svg:path")
@@ -2673,7 +2670,6 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
          this.draw_g
              .append("svg:path")
              .attr("d", dd)
-             .style('stroke','none')
              .style("fill", palette.getColor(0));
       }
 
@@ -2701,8 +2697,6 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
             if (lineatt)
                elem.call(lineatt.func);
-            else
-               elem.style('stroke','none');
          }
       );
 
@@ -3066,23 +3060,19 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
          let elem = this.draw_g.append("svg:path")
                                .attr("d", res)
                                .call(this.fillatt.func);
-         if ((this.options.BoxStyle === 11) || !this.fillatt.empty())
-            elem.style('stroke','none');
-         else
+         if ((this.options.BoxStyle !== 11) && this.fillatt.empty())
             elem.call(this.lineatt.func);
       }
 
       if ((btn1.length > 0) && this.fillatt.hasColor())
          this.draw_g.append("svg:path")
                     .attr("d", btn1)
-                    .style("stroke","none")
                     .call(this.fillatt.func)
                     .style("fill", d3.rgb(this.fillatt.color).brighter(0.5).formatHex());
 
       if (btn2.length > 0)
          this.draw_g.append("svg:path")
                     .attr("d", btn2)
-                    .style("stroke","none")
                     .call(this.fillatt.func)
                     .style("fill", !this.fillatt.hasColor() ? 'red' : d3.rgb(this.fillatt.color).darker(0.5).formatHex());
 
@@ -3092,8 +3082,6 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
                                .style("fill", "none");
          if (!this.lineatt.empty())
             elem.call(this.lineatt.func);
-         else
-            elem.style('stroke','black');
       }
 
       return handle;
