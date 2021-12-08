@@ -3091,7 +3091,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
              .property('pad_painter', this); // this is custom property
 
          if (!JSROOT.batch_mode)
-            this.draw_g.append("svg:title").text("subpad " + this.this_pad_name);
+            svg_pad.append("svg:title").text("ROOT subpad");
 
          svg_rect = svg_pad.append("svg:path").attr("class", "root_pad_border");
 
