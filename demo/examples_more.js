@@ -165,7 +165,7 @@ examples_more = {
    TGraph : [
      { name: "twopad", file:"graph_twopad.root", item: "c1;1", title: "two overlays pads with different axes" },
      { name: "macro2", file:"macro2.root", item: "c1;1" },
-     { name: "split", file: "gr2.root", item: "c1equi;1", title: "split line in legend, ignored" },
+     { name: "split", file: "gr2.root", item: "c1equi;1", title: "TGraph class with split line in legend" },
      { name: "approx", file: "tutorials_graphs.root", item: "approx;1", title: "Output of tutorials/graphs/approx.C" }
    ],
    TLatex : [

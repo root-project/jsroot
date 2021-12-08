@@ -1431,8 +1431,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (options.Errors) {
          // to show end of error markers, use line width attribute
          let lw = lineatt.width + JSROOT.gStyle.fEndErrorSize, bb = 0,
-             vv = options.Ends ? "m0," + lw + "v-" + 2*lw : "",
-             hh = options.Ends ? "m" + lw + ",0h-" + 2*lw : "",
+             vv = options.Ends ? `m0,${lw}v${-2*lw}` : "",
+             hh = options.Ends ? `m${lw},0h${-2*lw}` : "",
              vleft = vv, vright = vv, htop = hh, hbottom = hh;
 
          const mainLine = (dx,dy) => {
@@ -1445,26 +1445,26 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          switch (options.Ends) {
             case 2:  // option []
                bb = Math.max(lineatt.width+1, Math.round(lw*0.66));
-               vleft = "m"+bb+","+lw + "h-"+bb + "v-"+2*lw + "h"+bb;
-               vright = "m-"+bb+","+lw + "h"+bb + "v-"+2*lw + "h-"+bb;
-               htop = "m-"+lw+","+bb + "v-"+bb + "h"+2*lw + "v"+bb;
-               hbottom = "m-"+lw+",-"+bb + "v"+bb + "h"+2*lw + "v-"+bb;
+               vleft = `m${bb},${lw}h${-bb}v${-2*lw}h${bb}`;
+               vright = `m${-bb},${lw}h${bb}v${-2*lw}h${-bb}`;
+               htop = `m${-lw},${bb}v${-bb}h${2*lw}v${bb}`;
+               hbottom = `m${-lw},${-bb}v${bb}h${2*lw}v${-bb}`;
                break;
             case 3: // option |>
                lw = Math.max(lw, Math.round(graph.fMarkerSize*8*0.66));
                bb = Math.max(lineatt.width+1, Math.round(lw*0.66));
-               vleft = "l"+bb+","+lw + "v-"+2*lw + "l-"+bb+","+lw;
-               vright = "l-"+bb+","+lw + "v-"+2*lw + "l"+bb+","+lw;
-               htop = "l-"+lw+","+bb + "h"+2*lw + "l-"+lw+",-"+bb;
-               hbottom = "l-"+lw+",-"+bb + "h"+2*lw + "l-"+lw+","+bb;
+               vleft = `l${bb},${lw}v${-2*lw}l${-bb},${lw}`;
+               vright = `l${-bb},${lw}v${-2*lw}l${bb},${lw}`;
+               htop = `l${-lw},${bb}h${2*lw}l${-lw},${-bb}`;
+               hbottom = `l${-lw},${-bb}h${2*lw}l${-lw},${bb}`;
                break;
             case 4: // option >
                lw = Math.max(lw, Math.round(graph.fMarkerSize*8*0.66));
                bb = Math.max(lineatt.width+1, Math.round(lw*0.66));
-               vleft = "l"+bb+","+lw + "m0,-"+2*lw + "l-"+bb+","+lw;
-               vright = "l-"+bb+","+lw + "m0,-"+2*lw + "l"+bb+","+lw;
-               htop = "l-"+lw+","+bb + "m"+2*lw + ",0l-"+lw+",-"+bb;
-               hbottom = "l-"+lw+",-"+bb + "m"+2*lw + ",0l-"+lw+","+bb;
+               vleft = `l${bb},${lw}m0,${-2*lw}l${-bb},${lw}`;
+               vright = `l${-bb},${lw}m0,${-2*lw}l${bb},${lw}`;
+               htop = `l${-lw},${bb}m${2*lw},0l${-lw},${-bb}`;
+               hbottom = `l${-lw},${-bb}m${2*lw},0l${-lw},${bb}`;
                break;
          }
 
