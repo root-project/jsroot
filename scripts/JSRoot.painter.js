@@ -4164,6 +4164,13 @@ JSROOT.define(['d3'], (d3) => {
                 .attr("height", args.height)
                 .attr("style", null).attr("class", null).attr("x", null).attr("y", null);
 
+            // remove containers with display: none
+            if (has_workarounds)
+               main.selectAll('g').each(function() {
+                  let elem = d3.select(this);
+                  if (elem.style('display')=="none") elem.remove();
+               });
+
             let svg = main.html();
 
             if (has_workarounds)
