@@ -32,10 +32,11 @@ examples_main = {
      { name: "twoscales2", url: "?nobrowser&file=$$$tutorials_hist.root&item=[transpad/pad1/[1],transpad/pad2/[0]]&opt=[hist,Y+;yaxis_red]", title: "interactive second Y scale to draw axis for second histogram" }
    ],
    TH2 : [
-     { opt: "", file: "hsimple.root", item: "hpxpy;1" },
-     { opt: "col" },
+     { opt: "", file: "hsimple.root", item: "hpxpy;1", title: "default draw mode for TH2" },
+     { opt: "col", title: "color draw" },
      { opt: "colpal77", title: "example how color palette 77 can be used for drawing" },
      { opt: "colz", title: "color draw with palette" },
+     { opt: "colhz", title: "color draw with horizontal palette" },
      { opt: "acol", title: "disable axes drawing with col option" },
      { opt: "col_rx_ry", title: "reverse x and y axis with col drawing" },
      { name: "projx1", opt: "projx1,colz", title: "Draw X projection together with 2D plot", notest:true },

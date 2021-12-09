@@ -10,6 +10,7 @@
 7. Support new TGraphMultiErrors class
 8. Implement all variants of CANDLE and VIOLIN draw options (#194)
 9. Implement "cjust" draw option when drawing color palette
+10. Implement "colhz" draw option to plot horizontal color palette
 
 
 ## Changes in 6.3.0
