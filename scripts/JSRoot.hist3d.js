@@ -3267,9 +3267,9 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
             }
          }
 
-         if (line && (iline>3) && (line.length == iline)) {
-            let lcolor = this.getColor(this.getObject().fLineColor),
-                material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor), linewidth: this.getObject().fLineWidth }),
+         if (line && (iline > 3) && (line.length == iline)) {
+            let lcolor = this.getColor(graph.fLineColor),
+                material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor), linewidth: graph.fLineWidth }),
                 linemesh = jsrp.createLineSegments(line, material);
             fp.toplevel.add(linemesh);
 
@@ -3286,8 +3286,8 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
          }
 
          if (err) {
-            let lcolor = this.getColor(this.getObject().fLineColor),
-                material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor), linewidth: this.getObject().fLineWidth }),
+            let lcolor = this.getColor(graph.fLineColor),
+                material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor), linewidth: graph.fLineWidth }),
                 errmesh = jsrp.createLineSegments(err, material);
             fp.toplevel.add(errmesh);
 
