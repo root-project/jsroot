@@ -1350,7 +1350,7 @@ JSROOT.define(['d3', 'three', 'painter'], (d3, THREE, jsrp) => {
           imgdata = `<svg width="64" height="64" xmlns="http://www.w3.org/2000/svg">` +
                     `<path d="${handler.create(32,32)}" style="stroke: ${handler.getStrokeColor()}; stroke-width: ${w}; fill: ${handler.getFillColor()}"></path>`+
                     `</svg>`,
-          dataUrl = 'data:image/svg+xml;charset=utf8,' + encodeURIComponent(imgdata),
+          dataUrl = 'data:image/svg+xml;charset=utf8,' + (JSROOT.nodejs ? imgdata : encodeURIComponent(imgdata)),
           loader = new THREE.TextureLoader();
 
       if (args.promise) {
