@@ -1539,7 +1539,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary draw axes, return Promise which ready when drawing is completed  */
    TFramePainter.prototype.drawAxes = function(shrink_forbidden,
                                                disable_x_draw, disable_y_draw,
-                                               AxisPos, has_x_obstacle) {
+                                               AxisPos, has_x_obstacle, has_y_obstacle) {
 
       this.cleanAxesDrawings();
 
@@ -1560,6 +1560,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       this.y_handle.invert_side = ((AxisPos % 10) === 1);
       this.y_handle.lbls_both_sides = !this.y_handle.invert_side && pad && (pad.fTicky > 1); // labels on both sides
+      this.y_handle.has_obstacle = has_y_obstacle;
 
       let draw_horiz = this.swap_xy ? this.y_handle : this.x_handle,
           draw_vertical = this.swap_xy ? this.x_handle : this.y_handle,

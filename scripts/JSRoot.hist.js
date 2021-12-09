@@ -824,6 +824,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       let palette = this.getObject(),
           axis = palette.fAxis,
+          vertical = (palette.fX2NDC - palette.fX1NDC) < (palette.fY2NDC - palette.fY1NDC),
           can_move = (typeof arg == "string") && (arg.indexOf('can_move') >= 0),
           postpone_draw = (typeof arg == "string") && (arg.indexOf('postpone') >= 0),
           cjust = (typeof arg == "string") && (arg.indexOf('cjust') >= 0),
@@ -862,7 +863,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       this.draw_g.selectAll("rect").style("fill", 'white');
 
-      this.z_handle.configureAxis("zaxis", zmin, zmax, zmin, zmax, true, [0,s_height], { log: pad ? pad.fLogz : 0, fixed_ticks: cjust ? levels : null });
+      if (vertical)
+         this.z_handle.configureAxis("zaxis", zmin, zmax, zmin, zmax, true, [0, s_height], { log: pad ? pad.fLogz : 0, fixed_ticks: cjust ? levels : null });
+      else
+         this.z_handle.configureAxis("zaxis", zmin, zmax, zmin, zmax, false, [0, s_width], { log: pad ? pad.fLogz : 0, fixed_ticks: cjust ? levels : null, swap_side: true });
 
       if (!contour || !draw_palette || postpone_draw)
          // we need such rect to correctly calculate size
@@ -873,23 +877,37 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          for (let i = 0; i < levels.length-1; ++i) {
             let z0 = Math.round(this.z_handle.gr(levels[i])),
                 z1 = Math.round(this.z_handle.gr(levels[i+1])),
-                lvl = (levels[i]+levels[i+1])/2;
+                lvl = (levels[i]+levels[i+1])/2, d;
 
-            if ((z1 >= s_height) || (z0 < 0)) continue;
+            if (vertical) {
+               if ((z1 >= s_height) || (z0 < 0)) continue;
 
-            if (z0 > s_height) {
-               z0 = s_height;
-               lvl = levels[i]*0.001+levels[i+1]*0.999;
-            } else if (z1 < 0) {
-               z1 = 0;
-               lvl = levels[i]*0.999+levels[i+1]*0.001;
+               if (z0 > s_height) {
+                  z0 = s_height;
+                  lvl = levels[i]*0.001+levels[i+1]*0.999;
+               } else if (z1 < 0) {
+                  z1 = 0;
+                  lvl = levels[i]*0.999+levels[i+1]*0.001;
+               }
+               d = `M0,${z1}H${s_width}V${z0}H0Z`;
+            } else {
+               if ((z0 >= s_width) || (z1 < 0)) continue;
+
+               if (z1 > s_width) {
+                  z1 = s_width;
+                  lvl = levels[i]*0.999+levels[i+1]*0.001;
+               } else if (z0 < 0) {
+                  z0 = 0;
+                  lvl = levels[i]*0.001+levels[i+1]*0.999;
+               }
+               d = `M${z0},0V${s_height}H${z1}V0Z`;
             }
 
             let col = contour.getPaletteColor(draw_palette, lvl);
             if (!col) continue;
 
             let r = this.draw_g.append("svg:path")
-                       .attr("d", `M0,${z1}H${s_width}V${z0}H0Z`)
+                       .attr("d", d)
                        .style("fill", col)
                        .property("fill0", col)
                        .property("fill1", d3.rgb(col).darker(0.5).formatHex());
@@ -907,18 +925,20 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       this.z_handle.max_tick_size = Math.round(s_width*0.7);
 
-      return this.z_handle.drawAxis(this.draw_g, s_width, s_height, `translate(${s_width})`).then(() => {
+      return this.z_handle.drawAxis(this.draw_g, s_width, s_height, vertical ? `translate(${s_width})` : "").then(() => {
 
          if (can_move && ('getBoundingClientRect' in this.draw_g.node())) {
             let rect = this.draw_g.node().getBoundingClientRect();
 
-            let shift = (pos_x + parseInt(rect.width)) - Math.round(0.995*width) + 3;
+            if (vertical) {
+               let shift = (pos_x + parseInt(rect.width)) - Math.round(0.995*width) + 3;
 
-            if (shift > 0) {
-               this.draw_g.attr("x", pos_x - shift).attr("y", pos_y)
-                          .attr("transform", `translate(${pos_x-shift},${pos_y})`);
-               palette.fX1NDC -= shift/width;
-               palette.fX2NDC -= shift/width;
+               if (shift > 0) {
+                  this.draw_g.attr("x", pos_x - shift).attr("y", pos_y)
+                             .attr("transform", `translate(${pos_x-shift},${pos_y})`);
+                  palette.fX1NDC -= shift/width;
+                  palette.fX2NDC -= shift/width;
+               }
             }
          }
 
@@ -1427,7 +1447,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
               Arrow: false, Box: false, BoxStyle: 0,
               Text: false, TextAngle: 0, TextKind: "", Char: 0, Color: false, Contour: 0, Cjust: false,
               Lego: 0, Surf: 0, Off: 0, Tri: 0, Proj: 0, AxisPos: 0,
-              Spec: false, Pie: false, List: false, Zscale: false, PadPalette: false,
+              Spec: false, Pie: false, List: false, Zscale: false, Zvert: true, PadPalette: false,
               Candle: "", Violin: "", Scaled: null,
               GLBox: 0, GLColor: false, Project: "",
               System: jsrp.Coord.kCARTESIAN,
@@ -1699,6 +1719,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       if (d.check('P0')) { this.Mark = true; this.Hist = false; this.Zero = true; }
       if (d.check('P')) { this.Mark = true; this.Hist = false; this.Zero = false; }
+      if (d.check('HZ')) { this.Zscale = true; this.Zvert = false; }
       if (d.check('Z')) this.Zscale = true;
       if (d.check('*')) { this.Mark = true; this.MarkStyle = 3; this.Hist = false; }
       if (d.check('H')) this.Hist = true;
@@ -1753,7 +1774,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          } else if (this.Color) {
             res = "COL";
             if (!this.Zero) res+="0";
-            if (this.Zscale) res+="Z";
+            if (this.Zscale) res += (!this.Zvert ? "HZ" : "Z");
             if (this.Axis < 0) res+="A";
          } else if (this.Contour) {
             res = "CONT";
@@ -2416,7 +2437,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          if (this.options.Same) return Promise.resolve(false);
 
          return fp.drawAxes(false, this.options.Axis < 0, (this.options.Axis < 0),
-                            this.options.AxisPos, this.options.Zscale);
+                            this.options.AxisPos, this.options.Zscale && this.options.Zvert, this.options.Zscale && !this.options.Zvert);
       }
    }
 
@@ -3174,6 +3195,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          JSROOT.extend(pal, { _typename: "TPaletteAxis", fName: "TPave", fH: null, fAxis: JSROOT.create('TGaxis'),
                                fX1NDC: 0.905, fX2NDC: 0.945, fY1NDC: 0.1, fY2NDC: 0.9, fInit: 1, $can_move: true } );
 
+         if (!this.options.Zvert)
+            JSROOT.extend(pal, {fX1NDC: 0.1, fX2NDC: 0.9, fY1NDC: 0.905, fY2NDC: 0.945});
+
          let zaxis = this.getHisto().fZaxis;
 
          JSROOT.extend(pal.fAxis, { fTitle: zaxis.fTitle, fTitleSize: zaxis.fTitleSize, fChopt: "+",
@@ -3191,10 +3215,17 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       // keep palette width
       if (can_move && frame_painter && pal.$can_move) {
-         pal.fX2NDC = frame_painter.fX2NDC + 0.005 + (pal.fX2NDC - pal.fX1NDC);
-         pal.fX1NDC = frame_painter.fX2NDC + 0.005;
-         pal.fY1NDC = frame_painter.fY1NDC;
-         pal.fY2NDC = frame_painter.fY2NDC;
+         if (this.options.Zvert) {
+            pal.fX2NDC = frame_painter.fX2NDC + 0.005 + (pal.fX2NDC - pal.fX1NDC);
+            pal.fX1NDC = frame_painter.fX2NDC + 0.005;
+            pal.fY1NDC = frame_painter.fY1NDC;
+            pal.fY2NDC = frame_painter.fY2NDC;
+         } else {
+            pal.fX1NDC = frame_painter.fX1NDC;
+            pal.fX2NDC = frame_painter.fX2NDC;
+            pal.fY2NDC = frame_painter.fY2NDC + 0.005 + (pal.fY2NDC - pal.fY1NDC);
+            pal.fY1NDC = frame_painter.fY2NDC + 0.005;
+         }
       }
 
       //  required for z scale setting
@@ -3228,11 +3259,16 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          pp.redraw = function() {};
 
          // special code to adjust frame position to actual position of palette
-         if (can_move && frame_painter && (pal.fX1NDC - 0.005 < frame_painter.fX2NDC) && !this.do_redraw_palette) {
+         if (can_move && frame_painter && !this.do_redraw_palette &&
+              (this.options.Zvert ? (pal.fX1NDC - 0.005 < frame_painter.fX2NDC) : (pal.fY1NDC - 0.005 < frame_painter.fY2NDC))) {
 
             this.do_redraw_palette = true;
 
-            frame_painter.fX2NDC = pal.fX1NDC - 0.01;
+            if (this.options.Zvert)
+               frame_painter.fX2NDC = pal.fX1NDC - 0.01;
+            else
+               frame_painter.fY2NDC = pal.fY1NDC - 0.01;
+
             frame_painter.redraw();
             // here we should redraw main object
             if (!postpone_draw) this.redraw();
