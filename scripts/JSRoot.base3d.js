@@ -1335,7 +1335,7 @@ JSROOT.define(['d3', 'three', 'painter'], (d3, THREE, jsrp) => {
       if (args.style === 6) k = 0.5; else
       if (args.style === 7) k = 0.7;
 
-      let makePoints = (material, skip_promise) => {
+      const makePoints = (material, skip_promise) => {
          let pnts = new THREE.Points(this.geom, material);
          pnts.nvertex = 1;
          return !args.promise || skip_promise ? pnts : Promise.resolve(pnts);
@@ -1347,10 +1347,10 @@ JSROOT.define(['d3', 'three', 'painter'], (d3, THREE, jsrp) => {
 
       let handler = new JSROOT.TAttMarkerHandler({ style: args.style, color: args.color, size: 7 }),
           w = handler.fill ? 1 : 7,
-          dataUrl = 'data:image/svg+xml;utf8,' +
-                    '<svg width="64" height="64" xmlns="http://www.w3.org/2000/svg">' +
-                    `<path d="${handler.create(32,32)}" stroke="${handler.getStrokeColor()}" stroke-width="${w}" fill="${handler.getFillColor()}"/>` +
-                    '</svg>',
+          imgdata = `<svg width="64" height="64" xmlns="http://www.w3.org/2000/svg">` +
+                    `<path d="${handler.create(32,32)}" style="stroke: ${handler.getStrokeColor()}; stroke-width: ${w}; fill: ${handler.getFillColor()}"></path>`+
+                    `</svg>`,
+          dataUrl = 'data:image/svg+xml;charset=utf8,' + encodeURIComponent(imgdata),
           loader = new THREE.TextureLoader();
 
       if (args.promise) {
@@ -1366,8 +1366,8 @@ JSROOT.define(['d3', 'three', 'painter'], (d3, THREE, jsrp) => {
              });
 
          } else {
-            texture_promise = new Promise(resolveFunc => {
-               loader.load(dataUrl, texture => resolveFunc(texture));
+            texture_promise = new Promise((resolveFunc, rejectFunc) => {
+               loader.load(dataUrl, texture => resolveFunc(texture), undefined, () => rejectFunc());
             });
          }
 
