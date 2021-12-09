@@ -281,10 +281,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       }
 
       let pad_rect = this.getPadPainter().getPadRect(),
-          pos_x = Math.round(pt.fX1NDC * pad_rect.width),
-          pos_y = Math.round((1.0 - pt.fY2NDC) * pad_rect.height),
-          width = Math.round((pt.fX2NDC - pt.fX1NDC) * pad_rect.width),
-          height = Math.round((pt.fY2NDC - pt.fY1NDC) * pad_rect.height),
           brd = pt.fBorderSize,
           dx = (opt.indexOf("L")>=0) ? -1 : ((opt.indexOf("R")>=0) ? 1 : 0),
           dy = (opt.indexOf("T")>=0) ? -1 : ((opt.indexOf("B")>=0) ? 1 : 0);
@@ -292,9 +288,12 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       // container used to recalculate coordinates
       this.createG();
 
-      // non standard attributes x and y used by palette drawing
-      this.draw_g.attr("transform", `translate(${pos_x},${pos_y})`)
-                 .attr("x", pos_x).attr("y", pos_y);
+      this._pave_x = Math.round(pt.fX1NDC * pad_rect.width);
+      this._pave_y = Math.round((1.0 - pt.fY2NDC) * pad_rect.height);
+      let width = Math.round((pt.fX2NDC - pt.fX1NDC) * pad_rect.width),
+          height = Math.round((pt.fY2NDC - pt.fY1NDC) * pad_rect.height);
+
+      this.draw_g.attr("transform", `translate(${this._pave_x},${this._pave_y})`);
 
       //if (!this.lineatt)
       //   this.lineatt = new JSROOT.TAttLineHandler(pt, brd>0 ? 1 : 0);
@@ -370,8 +369,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          rect.style("pointer-events", "visibleFill")
              .on("mouseenter", () => this.showObjectStatus());
 
-         // size required only for drag functions
-         this.draw_g.attr("width", width)
+         // size and pos attributes required only for drag functions
+         this.draw_g.attr("x", this._pave_x)
+                    .attr("y", this._pave_y)
+                    .attr("width", width)
                     .attr("height", height);
 
          inter.addDragHandler(this, { obj: pt, minwidth: 10, minheight: 20, canselect: true,
@@ -828,8 +829,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           can_move = (typeof arg == "string") && (arg.indexOf('can_move') >= 0),
           postpone_draw = (typeof arg == "string") && (arg.indexOf('postpone') >= 0),
           cjust = (typeof arg == "string") && (arg.indexOf('cjust') >= 0),
-          pos_x = parseInt(this.draw_g.attr("x")), // pave position
-          pos_y = parseInt(this.draw_g.attr("y")),
           width = this.getPadPainter().getPadWidth(),
           height = this.getPadPainter().getPadHeight(),
           pad = this.getPadPainter().getRootPad(true),
@@ -930,19 +929,19 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             let rect = this.draw_g.node().getBoundingClientRect();
 
             if (vertical) {
-               let shift = (pos_x + parseInt(rect.width)) - Math.round(0.995*width) + 3;
+               let shift = (this._pave_x + parseInt(rect.width)) - Math.round(0.995*width) + 3;
 
                if (shift > 0) {
-                  this.draw_g.attr("x", pos_x - shift).attr("y", pos_y)
-                             .attr("transform", `translate(${pos_x-shift},${pos_y})`);
+                  this._pave_x -= shift;
+                  this.draw_g.attr("transform", `translate(${this._pave_x},${this._pave_y})`);
                   palette.fX1NDC -= shift/width;
                   palette.fX2NDC -= shift/width;
                }
             } else {
                let shift = Math.round((1.05 - JSROOT.gStyle.fTitleY)*height) - rect.y;
                if (shift > 0) {
-                  this.draw_g.attr("x", pos_x).attr("y", pos_y+shift)
-                             .attr("transform", `translate(${pos_x},${pos_y+shift})`);
+                  this._pave_y += shift;
+                  this.draw_g.attr("transform", `translate(${this._pave_x},${this._pave_y})`);
                   palette.fY1NDC -= shift/height;
                   palette.fY2NDC -= shift/height;
                }
