@@ -292,7 +292,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       // container used to recalculate coordinates
       this.createG();
 
-      this.draw_g.attr("transform", `translate(${pos_x},${pos_y})`);
+      // non standard attributes x and y used by palette drawing
+      this.draw_g.attr("transform", `translate(${pos_x},${pos_y})`)
+                 .attr("x", pos_x).attr("y", pos_y);
 
       //if (!this.lineatt)
       //   this.lineatt = new JSROOT.TAttLineHandler(pt, brd>0 ? 1 : 0);
@@ -368,10 +370,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          rect.style("pointer-events", "visibleFill")
              .on("mouseenter", () => this.showObjectStatus());
 
-         // position and size required only for drag functions
-         this.draw_g.attr("x", pos_x)
-                    .attr("y", pos_y)
-                    .attr("width", width)
+         // size required only for drag functions
+         this.draw_g.attr("width", width)
                     .attr("height", height);
 
          inter.addDragHandler(this, { obj: pt, minwidth: 10, minheight: 20, canselect: true,
@@ -831,6 +831,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           pos_x = parseInt(this.draw_g.attr("x")), // pave position
           pos_y = parseInt(this.draw_g.attr("y")),
           width = this.getPadPainter().getPadWidth(),
+          height = this.getPadPainter().getPadHeight(),
           pad = this.getPadPainter().getRootPad(true),
           main = palette.$main_painter || this.getMainPainter(),
           framep = this.getFramePainter(),
@@ -858,8 +859,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          // this is case of TH1
          zmin = main.hmin; zmax = main.hmax;
       }
-
-      // console.log('zmin, zmax', zmin, zmax, framep.zmin, framep.zmax);
 
       this.draw_g.selectAll("rect").style("fill", 'white');
 
@@ -938,6 +937,14 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                              .attr("transform", `translate(${pos_x-shift},${pos_y})`);
                   palette.fX1NDC -= shift/width;
                   palette.fX2NDC -= shift/width;
+               }
+            } else {
+               let shift = Math.round((1.05 - JSROOT.gStyle.fTitleY)*height) - rect.y;
+               if (shift > 0) {
+                  this.draw_g.attr("x", pos_x).attr("y", pos_y+shift)
+                             .attr("transform", `translate(${pos_x},${pos_y+shift})`);
+                  palette.fY1NDC -= shift/height;
+                  palette.fY2NDC -= shift/height;
                }
             }
          }
@@ -3196,7 +3203,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                                fX1NDC: 0.905, fX2NDC: 0.945, fY1NDC: 0.1, fY2NDC: 0.9, fInit: 1, $can_move: true } );
 
          if (!this.options.Zvert)
-            JSROOT.extend(pal, {fX1NDC: 0.1, fX2NDC: 0.9, fY1NDC: 0.905, fY2NDC: 0.945});
+            JSROOT.extend(pal, { fX1NDC: 0.1, fX2NDC: 0.9, fY1NDC: 0.805, fY2NDC: 0.845 });
 
          let zaxis = this.getHisto().fZaxis;
 
