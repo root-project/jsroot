@@ -3228,20 +3228,20 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          can_move = true;
       }
 
-      let frame_painter = this.getFramePainter();
+      let fp = this.getFramePainter();
 
       // keep palette width
-      if (can_move && frame_painter && pal.$can_move) {
+      if (can_move && fp && pal.$can_move) {
          if (this.options.Zvert) {
-            pal.fX2NDC = frame_painter.fX2NDC + 0.005 + (pal.fX2NDC - pal.fX1NDC);
-            pal.fX1NDC = frame_painter.fX2NDC + 0.005;
-            pal.fY1NDC = frame_painter.fY1NDC;
-            pal.fY2NDC = frame_painter.fY2NDC;
+            pal.fX2NDC = fp.fX2NDC + 0.005 + (pal.fX2NDC - pal.fX1NDC);
+            pal.fX1NDC = fp.fX2NDC + 0.005;
+            pal.fY1NDC = fp.fY1NDC;
+            pal.fY2NDC = fp.fY2NDC;
          } else {
-            pal.fX1NDC = frame_painter.fX1NDC;
-            pal.fX2NDC = frame_painter.fX2NDC;
-            pal.fY2NDC = frame_painter.fY2NDC + 0.005 + (pal.fY2NDC - pal.fY1NDC);
-            pal.fY1NDC = frame_painter.fY2NDC + 0.005;
+            pal.fX1NDC = fp.fX1NDC;
+            pal.fX2NDC = fp.fX2NDC;
+            pal.fY2NDC = fp.fY2NDC + 0.005 + (pal.fY2NDC - pal.fY1NDC);
+            pal.fY1NDC = fp.fY2NDC + 0.005;
          }
       }
 
@@ -3276,17 +3276,31 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          pp.redraw = function() {};
 
          // special code to adjust frame position to actual position of palette
-         if (can_move && frame_painter && !this.do_redraw_palette &&
-              (this.options.Zvert ? (pal.fX1NDC - 0.005 < frame_painter.fX2NDC) : (pal.fY1NDC - 0.005 < frame_painter.fY2NDC))) {
+         if (can_move && fp && !this.do_redraw_palette &&
+              (this.options.Zvert ? (pal.fX1NDC - 0.005 < fp.fX2NDC) : (pal.fY1NDC - 0.005 < fp.fY2NDC))) {
 
             this.do_redraw_palette = true;
 
-            if (this.options.Zvert)
-               frame_painter.fX2NDC = pal.fX1NDC - 0.01;
-            else
-               frame_painter.fY2NDC = pal.fY1NDC - 0.01;
+            if (this.options.Zvert) {
+               if (pal.fX1NDC > 0.5) {
+                  fp.fX2NDC = pal.fX1NDC - 0.01;
+                  if (fp.fX1NDC > fp.fX2NDC-0.1) fp.fX1NDC = Math.max(0, fp.fX2NDC-0.1);
+                } else {
+                  fp.fX1NDC = pal.fX2NDC + 0.05;
+                  if (fp.fX2NDC < fp.fX1NDC + 0.1) fp.fX2NDC = Math.min(1., fp.fX1NDC + 0.1);
+                }
+            } else {
+               if (pal.fY1NDC > 0.5) {
+                  fp.fY2NDC = pal.fY1NDC - 0.01;
+                  if (fp.fY1NDC > fp.fY2NDC-0.1) fp.fY1NDC = Math.max(0, fp.fXYNDC-0.1);
+               } else {
+                  fp.fY1NDC = pal.fY2NDC + 0.05;
+                  if (fp.fXYNDC < fp.fY1NDC + 0.1) fp.fY2NDC = Math.min(1., fp.fY1NDC + 0.1);
 
-            frame_painter.redraw();
+               }
+            }
+
+            fp.redraw();
             // here we should redraw main object
             if (!postpone_draw) this.redraw();
 
@@ -7108,6 +7122,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             if (!pp) return true;
 
             pp.$main_painter = this;
+            this.options.Zvert = pp._palette_vertical;
 
             // redraw palette till the end when contours are available
             return pp.drawPave(this.options.Cjust ? "cjust" : "");
