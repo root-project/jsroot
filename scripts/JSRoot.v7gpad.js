@@ -1291,7 +1291,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       this.standalone = true;  // no need to clean axis container
 
-      let promise = this.drawAxis(this.draw_g, "translate(" + pos.x + "," + pos.y +")");
+      let promise = this.drawAxis(this.draw_g, `translate(${pos.x},${pos.y})`);
 
       if (JSROOT.batch_mode) return promise;
 
@@ -1309,7 +1309,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             });
 
          inter.addDragHandler(this, { x: pos.x, y: pos.y, width: this.vertical ? 10 : len, height: this.vertical ? len : 10,
-                                      only_move: true, redraw: this.positionChanged.bind(this) });
+                                      only_move: true, redraw: () => this.positionChanged() });
 
          this.draw_g.on("dblclick", () => this.zoomStandalone());
 
@@ -1330,17 +1330,16 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    /** @summary Process interactive moving of the axis drawing */
    RAxisPainter.prototype.positionChanged = function() {
-      let axis_x = parseInt(this.draw_g.attr("x")),
-          axis_y = parseInt(this.draw_g.attr("y")),
+      let drag = this.draw_g.property('drag'),
           drawable = this.getObject(),
           rect = this.getPadPainter().getPadRect(),
-          xn = axis_x / rect.width,
-          yn = 1 - axis_y / rect.height;
+          xn = drag.x / rect.width,
+          yn = 1 - drag.y / rect.height;
 
       drawable.fPos.fHoriz.fArr = [ xn ];
       drawable.fPos.fVert.fArr = [ yn ];
 
-      this.submitCanvExec("SetPos({" + xn.toFixed(4) + "," + yn.toFixed(4) + "})");
+      this.submitCanvExec(`SetPos({${xn.toFixed(4)},${yn.toFixed(4)}})`);
    }
 
    /** @summary Change axis attribute, submit changes to server and redraw axis when specified
@@ -5290,15 +5289,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           this.draw_g.attr("transform",`translate(${palette_x},${palette_y})`);
       }
 
-      this.draw_g.selectAll("rect").remove();
-
-      if (!visible) return;
-
       let g_btns = this.draw_g.select(".colbtns");
       if (g_btns.empty())
          g_btns = this.draw_g.append("svg:g").attr("class", "colbtns");
       else
-         g_btns.selectAll().remove();
+         g_btns.selectAll("*").remove();
+
+      if (!visible) return;
 
       g_btns.append("svg:path")
           .attr("d", `M0,0H${palette_width}V${palette_height}H0Z`)
@@ -5334,7 +5331,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       framep.z_handle.max_tick_size = Math.round(palette_width*0.3);
 
-      let promise = framep.z_handle.drawAxis(this.draw_g, "translate(" + palette_width + "," + palette_height + ")", -1);
+      let promise = framep.z_handle.drawAxis(this.draw_g, `translate(${palette_width},${palette_height})`, -1);
 
       if (JSROOT.batch_mode || (reason == 'drag'))
          return promise;

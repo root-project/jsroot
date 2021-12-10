@@ -362,7 +362,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return false;
       };
 
-      const makeResizeElements = (group, width, height, handler) => {
+      const makeResizeElements = (group, handler) => {
          const addElement = (cursor, d) => {
             let clname = "js_" + cursor.replace(/[-]/g, '_'),
                 elem = group.select('.' + clname);
@@ -372,17 +372,17 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          };
 
          addElement("nw-resize", "M2,2h15v-5h-20v20h5Z");
-         addElement("ne-resize", `M${width-2},2h-15v-5h20v20h-5 Z`);
-         addElement("sw-resize", `M2,${height-2}h15v5h-20v-20h5Z`);
-         addElement("se-resize", `M${width-2},${height-2}h-15v5h20v-20h-5Z`);
+         addElement("ne-resize", `M${arg.width-2},2h-15v-5h20v20h-5 Z`);
+         addElement("sw-resize", `M2,${arg.height-2}h15v5h-20v-20h5Z`);
+         addElement("se-resize", `M${arg.width-2},${arg.height-2}h-15v5h20v-20h-5Z`);
 
          if (!arg.no_change_x) {
-            addElement("w-resize", `M-3,18h5v${Math.max(0, height - 2 * 18)}h-5Z`);
-            addElement("e-resize", `M${width+3},18h-5v${Math.max(0, height - 2 * 18)}h5Z`);
+            addElement("w-resize", `M-3,18h5v${Math.max(0,arg.height-2*18)}h-5Z`);
+            addElement("e-resize", `M${arg.width+3},18h-5v${Math.max(0,arg.height-2*18)}h5Z`);
          }
          if (!arg.no_change_y) {
-            addElement("n-resize", `M18,-3v5h${Math.max(0, width - 2 * 18)}v-5Z`);
-            addElement("s-resize", `M18,${height+3}v-5h${Math.max(0, width - 2 * 18)}v5Z`);
+            addElement("n-resize", `M18,-3v5h${Math.max(0,arg.width-2*18)}v-5Z`);
+            addElement("s-resize", `M18,${arg.height+3}v-5h${Math.max(0,arg.width-2*18)}v5Z`);
          }
       };
 
@@ -412,7 +412,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          setPainterTooltipEnabled(painter, true);
 
-         makeResizeElements(painter.draw_g, newwidth, newheight);
+         makeResizeElements(painter.draw_g);
 
          if (change_size || change_pos) {
             if (change_size && ('resize' in arg)) arg.resize(newwidth, newheight);
@@ -434,8 +434,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return change_size || change_pos;
       }
 
-      let drag_move = d3.drag().subject(Object),
-          drag_resize = d3.drag().subject(Object);
+      let drag_move = d3.drag().subject(Object);
 
       drag_move
          .on("start", function(evnt) {
@@ -503,6 +502,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                }
             }
          });
+
+      let drag_resize = d3.drag().subject(Object);
 
       drag_resize
          .on("start", function(evnt) {
@@ -582,7 +583,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          painter.draw_g.style("cursor", "move").call(drag_move);
 
       if (!arg.only_move)
-         makeResizeElements(painter.draw_g, arg.width, arg.height, drag_resize);
+         makeResizeElements(painter.draw_g, drag_resize);
    }
 
    /** @summary Add move handlers for drawn element
