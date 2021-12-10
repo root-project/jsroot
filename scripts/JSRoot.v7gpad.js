@@ -4954,11 +4954,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    /** @summary Process interactive moving of the stats box */
    RPavePainter.prototype.sizeChanged = function() {
-      this.pave_width = parseInt(this.draw_g.attr("width"));
-      this.pave_height = parseInt(this.draw_g.attr("height"));
+      let drag = this.draw_g.property('drag');
 
-      let pave_x = parseInt(this.draw_g.attr("x")),
-          pave_y = parseInt(this.draw_g.attr("y")),
+      this.pave_width = drag.width;
+      this.pave_height = drag.height;
+
+      let pave_x = drag.x,
+          pave_y = drag.y,
           rect = this.getPadPainter().getPadRect(),
           fr = this.onFrame ? this.getFramePainter().getFrameRect() : rect,
           offsetx = 0, offsety = 0, changes = {};
@@ -4981,7 +4983,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             offsetx = fr.x + fr.width - pave_x - this.pave_width;
             offsety = pave_y - fr.y;
       }
-
 
       this.v7AttrChange(changes, "offsetX", offsetx / rect.width);
       this.v7AttrChange(changes, "offsetY", offsety / rect.height);
@@ -5266,7 +5267,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           fh           = rect.height,
           pw           = this.getPadPainter().getPadWidth(),
           visible      = this.v7EvalAttr("visible", true),
-          palette_width, palette_height;
+          palette_x, palette_y, palette_width, palette_height;
 
       if (reason == 'drag') {
          let drag = this.draw_g.property('drag');
@@ -5278,10 +5279,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.v7AttrChange(changes, "size", palette_width / pw);
          this.v7SendAttrChanges(changes, false); // do not invoke canvas update on the server
       } else {
-          let palette_margin = this.v7EvalLength("margin", pw, 0.02),
-              palette_x = Math.round(fx + fw + palette_margin),
-              palette_y = fy;
+          let palette_margin = this.v7EvalLength("margin", pw, 0.02);
 
+          palette_x = Math.round(fx + fw + palette_margin);
+          palette_y = fy;
           palette_width = this.v7EvalLength("width", pw, 0.05);
           palette_height = fh;
 
@@ -5335,9 +5336,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       let promise = framep.z_handle.drawAxis(this.draw_g, "translate(" + palette_width + "," + palette_height + ")", -1);
 
-      if (JSROOT.batch_mode) return;
+      if (JSROOT.batch_mode || (reason == 'drag'))
+         return promise;
 
-      promise.then(() => JSROOT.require(['interactive'])).then(inter => {
+      return promise.then(() => JSROOT.require(['interactive'])).then(inter => {
 
          if (JSROOT.settings.ContextMenu)
             this.draw_g.on("contextmenu", evnt => {
@@ -5350,9 +5352,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                });
             });
 
-         if (!after_resize)
-            inter.addDragHandler(this, { x: palette_x, y: palette_y, width: palette_width, height: palette_height,
-                                          minwidth: 20, minheight: 20, no_change_y: true, redraw: () => this.drawPalette('drag') });
+         inter.addDragHandler(this, { x: palette_x, y: palette_y, width: palette_width, height: palette_height,
+                                       minwidth: 20, minheight: 20, no_change_y: true, redraw: () => this.drawPalette('drag') });
 
          if (!JSROOT.settings.Zooming) return;
 

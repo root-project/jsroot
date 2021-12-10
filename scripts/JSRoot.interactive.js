@@ -451,7 +451,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             let pad_rect = pp.getPadRect();
 
             let handle = {
-               x: arg.x, y: arg.y,
+               x: arg.x, y: arg.y, width: arg.width, height: arg.height,
                acc_x1: arg.x, acc_y1: arg.y,
                pad_w: pad_rect.width - arg.width,
                pad_h: pad_rect.height - arg.height,
@@ -559,10 +559,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             let x1 = Math.max(0, handle.acc_x1), x2 = Math.min(handle.acc_x2, handle.pad_w),
                 y1 = Math.max(0, handle.acc_y1), y2 = Math.min(handle.acc_y2, handle.pad_h);
 
-            handle.x = x1;
-            handle.y = y1;
-            handle.width = Math.max(0, x2 - x1);
-            handle.height = Math.max(0, y2 - y1);
+            handle.x = Math.min(x1, x2);
+            handle.y = Math.min(y1, y2);
+            handle.width = Math.abs(x2 - x1);
+            handle.height = Math.abs(y2 - y1);
 
             drag_rect.attr("x", handle.x).attr("y", handle.y).attr("width", handle.width).attr("height", handle.height);
 
