@@ -3288,8 +3288,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          pp.redraw = function() {};
 
          // special code to adjust frame position to actual position of palette
-         if (can_move && fp && !this.do_redraw_palette &&
-              (this.options.Zvert ? (pal.fX1NDC - 0.005 < fp.fX2NDC) : (pal.fY1NDC - 0.005 < fp.fY2NDC))) {
+         if (can_move && fp && !this.do_redraw_palette) {
+
+            this.options.Zvert = pp._palette_vertical;
 
             this.do_redraw_palette = true;
 
