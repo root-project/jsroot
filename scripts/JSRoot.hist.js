@@ -863,9 +863,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       this.draw_g.selectAll("rect").style("fill", 'white');
 
       if (this._palette_vertical)
-         this.z_handle.configureAxis("zaxis", zmin, zmax, zmin, zmax, true, [0, s_height], { log: pad ? pad.fLogz : 0, fixed_ticks: cjust ? levels : null });
+         this.z_handle.configureAxis("zaxis", zmin, zmax, zmin, zmax, true, [0, s_height], { log: pad ? pad.fLogz : 0, fixed_ticks: cjust ? levels : null, max_tick_size: Math.round(s_width*0.7) });
       else
-         this.z_handle.configureAxis("zaxis", zmin, zmax, zmin, zmax, false, [0, s_width], { log: pad ? pad.fLogz : 0, fixed_ticks: cjust ? levels : null, swap_side: true });
+         this.z_handle.configureAxis("zaxis", zmin, zmax, zmin, zmax, false, [0, s_width], { log: pad ? pad.fLogz : 0, fixed_ticks: cjust ? levels : null, max_tick_size: Math.round(s_height*0.7), swap_side: true });
 
       if (!contour || !draw_palette || postpone_draw)
          // we need such rect to correctly calculate size
@@ -921,8 +921,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             if (JSROOT.settings.Zooming)
                r.on("dblclick", () => this.getFramePainter().unzoom("z"));
          }
-
-      this.z_handle.max_tick_size = Math.round(s_width*0.7);
 
       return this.z_handle.drawAxis(this.draw_g, s_width, s_height, this._palette_vertical ? `translate(${s_width})` : "").then(() => {
 

@@ -70,6 +70,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.reverse = opts.reverse || false;
       this.swap_side = opts.swap_side || false;
       this.fixed_ticks = opts.fixed_ticks || null;
+      this.max_tick_size = opts.max_tick_size || 0;
 
       let axis = this.getObject();
 
