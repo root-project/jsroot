@@ -232,7 +232,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       let pt = this.getObject(), opt = pt.fOption.toUpperCase(), fp = this.getFramePainter();
 
-      if (pt.fInit===0) {
+      if (pt.fInit === 0) {
          this.stored = JSROOT.extend({}, pt); // store coordinates to use them when updating
          pt.fInit = 1;
          let pad = this.getPadPainter().getRootPad(true);
@@ -252,6 +252,11 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          } else if (opt.indexOf("NDC") >= 0) {
             pt.fX1NDC = pt.fX1; pt.fX2NDC = pt.fX2;
             pt.fY1NDC = pt.fY1; pt.fY2NDC = pt.fY2;
+         } else if (pad && (pad.fX1 == 0) && (pad.fX2 == 1) && (pad.fY1 == 0) && (pad.fY2 == 1) && (typeof arg == "string") && (arg.indexOf('postpone') >= 0)) {
+            // special case when pad not yet initialized 
+            pt.fInit = 0; // do not init until axes drawn
+            pt.fX1NDC = pt.fY1NDC = 0.99;
+            pt.fX2NDC = pt.fY2NDC = 1;
          } else if (pad) {
             if (pad.fLogx) {
                if (pt.fX1 > 0) pt.fX1 = Math.log10(pt.fX1);
@@ -265,8 +270,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             pt.fY1NDC = (pt.fY1 - pad.fY1) / (pad.fY2 - pad.fY1);
             pt.fX2NDC = (pt.fX2 - pad.fX1) / (pad.fX2 - pad.fX1);
             pt.fY2NDC = (pt.fY2 - pad.fY1) / (pad.fY2 - pad.fY1);
-
-
 
          } else {
             pt.fX1NDC = pt.fY1NDC = 0.1;
