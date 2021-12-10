@@ -230,7 +230,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          return promise;
       }
 
-      let pt = this.getObject(), opt = pt.fOption.toUpperCase();
+      let pt = this.getObject(), opt = pt.fOption.toUpperCase(), fp = this.getFramePainter();
 
       if (pt.fInit===0) {
          this.stored = JSROOT.extend({}, pt); // store coordinates to use them when updating
@@ -238,7 +238,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          let pad = this.getPadPainter().getRootPad(true);
 
          if ((pt._typename == "TPaletteAxis") && !pt.fX1 && !pt.fX2 && !pt.fY1 && !pt.fY2) {
-            let fp = this.getFramePainter();
             if (fp) {
                pt.fX1NDC = fp.fX2NDC + 0.01;
                pt.fX2NDC = Math.min(0.96, fp.fX2NDC + 0.06);
@@ -250,7 +249,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                pt.fY1NDC = 0.1;
                pt.fY2NDC = 0.9;
             }
-         } else if (opt.indexOf("NDC")>=0) {
+         } else if (opt.indexOf("NDC") >= 0) {
             pt.fX1NDC = pt.fX1; pt.fX2NDC = pt.fX2;
             pt.fY1NDC = pt.fY1; pt.fY2NDC = pt.fY2;
          } else if (pad) {
@@ -266,6 +265,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             pt.fY1NDC = (pt.fY1 - pad.fY1) / (pad.fY2 - pad.fY1);
             pt.fX2NDC = (pt.fX2 - pad.fX1) / (pad.fX2 - pad.fX1);
             pt.fY2NDC = (pt.fY2 - pad.fY1) / (pad.fY2 - pad.fY1);
+
+
+
          } else {
             pt.fX1NDC = pt.fY1NDC = 0.1;
             pt.fX2NDC = pt.fY2NDC = 0.9;
@@ -836,7 +838,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           zmin = 0, zmax = 100,
           contour = main.fContour,
           levels = contour ? contour.getLevels() : null,
-          draw_palette = main.fPalette;
+          draw_palette = main.fPalette, axis_transform = "";
 
       this._palette_vertical = (palette.fX2NDC - palette.fX1NDC) < (palette.fY2NDC - palette.fY1NDC);
 
@@ -862,10 +864,15 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       this.draw_g.selectAll("rect").style("fill", 'white');
 
-      if (this._palette_vertical)
-         this.z_handle.configureAxis("zaxis", zmin, zmax, zmin, zmax, true, [0, s_height], { log: pad ? pad.fLogz : 0, fixed_ticks: cjust ? levels : null, max_tick_size: Math.round(s_width*0.7) });
-      else
-         this.z_handle.configureAxis("zaxis", zmin, zmax, zmin, zmax, false, [0, s_width], { log: pad ? pad.fLogz : 0, fixed_ticks: cjust ? levels : null, max_tick_size: Math.round(s_height*0.7), swap_side: true });
+      if (this._palette_vertical) {
+         this._swap_side = palette.fX2NDC < 0.5;
+         this.z_handle.configureAxis("zaxis", zmin, zmax, zmin, zmax, true, [0, s_height], { log: pad ? pad.fLogz : 0, fixed_ticks: cjust ? levels : null, max_tick_size: Math.round(s_width*0.7), swap_side: this._swap_side });
+         axis_transform = this._swap_side ? "" : `translate(${s_width})`;
+      } else {
+         this._swap_side = palette.fY1NDC > 0.5;
+         this.z_handle.configureAxis("zaxis", zmin, zmax, zmin, zmax, false, [0, s_width], { log: pad ? pad.fLogz : 0, fixed_ticks: cjust ? levels : null, max_tick_size: Math.round(s_height*0.7), swap_side: this._swap_side });
+         axis_transform = this._swap_side ? "" : `translate(0,${s_height})`;
+      }
 
       if (!contour || !draw_palette || postpone_draw)
          // we need such rect to correctly calculate size
@@ -922,7 +929,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                r.on("dblclick", () => this.getFramePainter().unzoom("z"));
          }
 
-      return this.z_handle.drawAxis(this.draw_g, s_width, s_height, this._palette_vertical ? `translate(${s_width})` : "").then(() => {
+      return this.z_handle.drawAxis(this.draw_g, s_width, s_height, axis_transform).then(() => {
 
          if (can_move && ('getBoundingClientRect' in this.draw_g.node())) {
             let rect = this.draw_g.node().getBoundingClientRect();
