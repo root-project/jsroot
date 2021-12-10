@@ -825,7 +825,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       let palette = this.getObject(),
           axis = palette.fAxis,
-          vertical = (palette.fX2NDC - palette.fX1NDC) < (palette.fY2NDC - palette.fY1NDC),
           can_move = (typeof arg == "string") && (arg.indexOf('can_move') >= 0),
           postpone_draw = (typeof arg == "string") && (arg.indexOf('postpone') >= 0),
           cjust = (typeof arg == "string") && (arg.indexOf('cjust') >= 0),
@@ -838,6 +837,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           contour = main.fContour,
           levels = contour ? contour.getLevels() : null,
           draw_palette = main.fPalette;
+
+      this._palette_vertical = (palette.fX2NDC - palette.fX1NDC) < (palette.fY2NDC - palette.fY1NDC);
 
       axis.fTickSize = 0.6 * s_width / width; // adjust axis ticks size
 
@@ -861,7 +862,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       this.draw_g.selectAll("rect").style("fill", 'white');
 
-      if (vertical)
+      if (this._palette_vertical)
          this.z_handle.configureAxis("zaxis", zmin, zmax, zmin, zmax, true, [0, s_height], { log: pad ? pad.fLogz : 0, fixed_ticks: cjust ? levels : null });
       else
          this.z_handle.configureAxis("zaxis", zmin, zmax, zmin, zmax, false, [0, s_width], { log: pad ? pad.fLogz : 0, fixed_ticks: cjust ? levels : null, swap_side: true });
@@ -877,7 +878,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                 z1 = Math.round(this.z_handle.gr(levels[i+1])),
                 lvl = (levels[i]+levels[i+1])/2, d;
 
-            if (vertical) {
+            if (this._palette_vertical) {
                if ((z1 >= s_height) || (z0 < 0)) continue;
 
                if (z0 > s_height) {
@@ -923,12 +924,12 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       this.z_handle.max_tick_size = Math.round(s_width*0.7);
 
-      return this.z_handle.drawAxis(this.draw_g, s_width, s_height, vertical ? `translate(${s_width})` : "").then(() => {
+      return this.z_handle.drawAxis(this.draw_g, s_width, s_height, this._palette_vertical ? `translate(${s_width})` : "").then(() => {
 
          if (can_move && ('getBoundingClientRect' in this.draw_g.node())) {
             let rect = this.draw_g.node().getBoundingClientRect();
 
-            if (vertical) {
+            if (this._palette_vertical) {
                let shift = (this._pave_x + parseInt(rect.width)) - Math.round(0.995*width) + 3;
 
                if (shift > 0) {
@@ -956,20 +957,22 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    TPavePainter.prototype.interactivePaletteAxis = function(s_width, s_height) {
       let doing_zoom = false, sel1 = 0, sel2 = 0, zoom_rect = null;
 
-      let moveRectSel = evnt => {
+      const moveRectSel = evnt => {
 
          if (!doing_zoom) return;
          evnt.preventDefault();
 
          let m = d3.pointer(evnt, this.draw_g.node());
-
-         sel2 = Math.min(Math.max(m[1], 0), s_height);
-
-         zoom_rect.attr("y", Math.min(sel1, sel2))
-                  .attr("height", Math.abs(sel2-sel1));
-      }
-
-      let endRectSel = evnt => {
+         if (this._palette_vertical) {
+            sel2 = Math.min(Math.max(m[1], 0), s_height);
+            zoom_rect.attr("y", Math.min(sel1, sel2))
+                     .attr("height", Math.abs(sel2-sel1));
+         } else {
+            sel2 = Math.min(Math.max(m[0], 0), s_width);
+            zoom_rect.attr("x", Math.min(sel1, sel2))
+                     .attr("width", Math.abs(sel2-sel1));
+         }
+      }, endRectSel = evnt => {
          if (!doing_zoom) return;
 
          evnt.preventDefault();
@@ -982,9 +985,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          let z = this.z_handle.gr, z1 = z.invert(sel1), z2 = z.invert(sel2);
 
          this.getFramePainter().zoom("z", Math.min(z1, z2), Math.max(z1, z2));
-      }
-
-      let startRectSel = evnt => {
+      }, startRectSel = evnt => {
          // ignore when touch selection is activated
          if (doing_zoom) return;
          doing_zoom = true;
@@ -994,20 +995,25 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          let origin = d3.pointer(evnt, this.draw_g.node());
 
-         sel1 = sel2 = origin[1];
+         zoom_rect = this.draw_g.append("svg:rect").attr("class", "zoom").attr("id", "colzoomRect");
 
-         zoom_rect = this.draw_g
-                .append("svg:rect")
-                .attr("class", "zoom")
-                .attr("id", "colzoomRect")
-                .attr("x", "0")
-                .attr("width", s_width)
-                .attr("y", sel1)
-                .attr("height", 1);
+         if (this._palette_vertical) {
+            sel1 = sel2 = origin[1];
+            zoom_rect.attr("x", "0")
+                     .attr("width", s_width)
+                     .attr("y", sel1)
+                     .attr("height", 1);
+         } else {
+            sel1 = sel2 = origin[0];
+            zoom_rect.attr("x", sel1)
+                     .attr("width", 1)
+                     .attr("y", 0)
+                     .attr("height", s_height);
+         }
 
          d3.select(window).on("mousemove.colzoomRect", moveRectSel)
                           .on("mouseup.colzoomRect", endRectSel, true);
-      }
+      };
 
       if (JSROOT.settings.Zooming)
          this.draw_g.selectAll(".axis_zoom")
@@ -1017,7 +1023,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (JSROOT.settings.ZoomWheel)
             this.draw_g.on("wheel", evnt => {
                let pos = d3.pointer(evnt, this.draw_g.node()),
-                   coord = 1 - pos[1] / s_height;
+                   coord = this._palette_vertical ? (1 - pos[1] / s_height) : pos[0] / s_width;
 
                let item = this.z_handle.analyzeWheelEvent(evnt, coord);
                if (item.changed)
