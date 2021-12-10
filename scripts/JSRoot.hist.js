@@ -3226,6 +3226,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          this.addFunction(pal, true);
 
          can_move = true;
+      } else {
+         this.options.Zvert = pp._palette_vertical;
       }
 
       let fp = this.getFramePainter();
@@ -3233,15 +3235,25 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       // keep palette width
       if (can_move && fp && pal.$can_move) {
          if (this.options.Zvert) {
-            pal.fX2NDC = fp.fX2NDC + 0.005 + (pal.fX2NDC - pal.fX1NDC);
-            pal.fX1NDC = fp.fX2NDC + 0.005;
+            if (pal.fX1NDC > 0.5) {
+               pal.fX2NDC = fp.fX2NDC + 0.005 + (pal.fX2NDC - pal.fX1NDC);
+               pal.fX1NDC = fp.fX2NDC + 0.005;
+            } else {
+               pal.fX1NDC = fp.fX1NDC - 0.05 - (pal.fX2NDC - pal.fX1NDC);
+               pal.fX2NDC = fp.fX1NDC - 0.05;
+            }
             pal.fY1NDC = fp.fY1NDC;
             pal.fY2NDC = fp.fY2NDC;
          } else {
             pal.fX1NDC = fp.fX1NDC;
             pal.fX2NDC = fp.fX2NDC;
-            pal.fY2NDC = fp.fY2NDC + 0.005 + (pal.fY2NDC - pal.fY1NDC);
-            pal.fY1NDC = fp.fY2NDC + 0.005;
+            if (pal.fY2NDC > 0.5) {
+               pal.fY2NDC = fp.fY2NDC + 0.005 + (pal.fY2NDC - pal.fY1NDC);
+               pal.fY1NDC = fp.fY2NDC + 0.005;
+            } else {
+               pal.fY1NDC = fp.fY1NDC - 0.05 - (pal.fY2NDC - pal.fY1NDC);
+               pal.fY2NDC = fp.fY1NDC - 0.05;
+            }
          }
       }
 
