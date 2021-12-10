@@ -1308,12 +1308,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                });
             });
 
-         // attributes required only for moving, has no effect for drawing
-         this.draw_g.attr("x", pos.x).attr("y", pos.y)
-                    .attr("width", this.vertical ? 10 : len)
-                    .attr("height", this.vertical ? len : 10);
-
-         inter.addDragHandler(this, { only_move: true, redraw: this.positionChanged.bind(this) });
+         inter.addDragHandler(this, { x: pos.x, y: pos.y, width: this.vertical ? 10 : len, height: this.vertical ? len : 10,
+                                      only_move: true, redraw: this.positionChanged.bind(this) });
 
          this.draw_g.on("dblclick", () => this.zoomStandalone());
 
@@ -4924,10 +4920,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             pave_y = fr.y + offsety;
       }
 
-      // x,y,width,height attributes used for drag functionality
-      this.draw_g.attr("transform", "translate(" + pave_x + "," + pave_y + ")")
-                 .attr("x", pave_x).attr("y", pave_y)
-                 .attr("width", pave_width).attr("height", pave_height);
+      this.draw_g.attr("transform", `translate(${pave_x},${pave_y})`);
 
       this.draw_g.append("svg:rect")
                  .attr("x", 0)
@@ -4951,7 +4944,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if (JSROOT.settings.ContextMenu && this.paveContextMenu)
                this.draw_g.on("contextmenu", evnt => this.paveContextMenu(evnt));
 
-            inter.addDragHandler(this, { minwidth: 20, minheight: 20, redraw: this.sizeChanged.bind(this) });
+            inter.addDragHandler(this, { x: pave_x, y: pave_y, width: pave_width, height: pave_height,
+                                         minwidth: 20, minheight: 20, redraw: () => this.sizeChanged() });
 
             return this;
          });
@@ -5038,16 +5032,15 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.createG();
 
       if (reason == 'drag') {
-         title_width = parseInt(this.draw_g.attr("width"));
-         title_height = parseInt(this.draw_g.attr("height"));
+         let drag = this.draw_g.property('drag');
+         title_width = drag.width;
+         title_height = drag.height;
          let changes = {};
-         this.v7AttrChange(changes, "margin", (fy - parseInt(this.draw_g.attr("y")) - title_height) / ph );
+         this.v7AttrChange(changes, "margin", (fy - drag.y - title_height) / ph );
          this.v7AttrChange(changes, "height", title_height / ph);
          this.v7SendAttrChanges(changes, false); // do not invoke canvas update on the server
       } else {
-         this.draw_g.attr("transform","translate(" + fx + "," + Math.round(fy-title_margin-title_height) + ")")
-                    .attr("x", fx).attr("y", Math.round(fy-title_margin-title_height))
-                    .attr("width",title_width).attr("height",title_height);
+         this.draw_g.attr("transform",`translate(${fx},${Math.round(fy-title_margin-title_height)})`);
       }
 
       let arg = { x: title_width/2, y: title_height/2, text: title.fText, latex: 1 };
@@ -5060,7 +5053,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if (!JSROOT.batch_mode)
          JSROOT.require(['interactive'])
-               .then(inter => inter.addDragHandler(this, { minwidth: 20, minheight: 20, no_change_x: true, redraw: this.redraw.bind(this,'drag') }));
+               .then(inter => inter.addDragHandler(this, { x: fx, y: Math.round(fy-title_margin-title_height), width: title_width, height: title_height,
+                                                           minwidth: 20, minheight: 20, no_change_x: true, redraw: () => this.redraw('drag') }));
    }
 
    ////////////////////////////////////////////////////////////////////////////////////////////
@@ -5248,7 +5242,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Draw palette */
-   RPalettePainter.prototype.drawPalette = function(after_resize) {
+   RPalettePainter.prototype.drawPalette = function(reason) {
 
       let palette = this.getHistPalette(),
           contour = palette.getContour(),
@@ -5274,12 +5268,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           visible      = this.v7EvalAttr("visible", true),
           palette_width, palette_height;
 
-      if (after_resize) {
-         palette_width = parseInt(this.draw_g.attr("width"));
-         palette_height = parseInt(this.draw_g.attr("height"));
+      if (reason == 'drag') {
+         let drag = this.draw_g.property('drag');
+         palette_width = drag.width;
+         palette_height = drag.height;
 
          let changes = {};
-         this.v7AttrChange(changes, "margin", (parseInt(this.draw_g.attr("x")) - fx - fw) / pw);
+         this.v7AttrChange(changes, "margin", (drag.x - fx - fw) / pw);
          this.v7AttrChange(changes, "size", palette_width / pw);
          this.v7SendAttrChanges(changes, false); // do not invoke canvas update on the server
       } else {
@@ -5291,9 +5286,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           palette_height = fh;
 
           // x,y,width,height attributes used for drag functionality
-          this.draw_g.attr("transform","translate(" + palette_x +  "," + palette_y + ")")
-                     .attr("x", palette_x).attr("y", palette_y)
-                     .attr("width", palette_width).attr("height", palette_height);
+          this.draw_g.attr("transform",`translate(${palette_x},${palette_y})`);
       }
 
       this.draw_g.selectAll("rect").remove();
@@ -5358,7 +5351,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             });
 
          if (!after_resize)
-            inter.addDragHandler(this, { minwidth: 20, minheight: 20, no_change_y: true, redraw: this.drawPalette.bind(this, true) });
+            inter.addDragHandler(this, { x: palette_x, y: palette_y, width: palette_width, height: palette_height,
+                                          minwidth: 20, minheight: 20, no_change_y: true, redraw: () => this.drawPalette('drag') });
 
          if (!JSROOT.settings.Zooming) return;
 

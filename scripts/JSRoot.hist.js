@@ -253,7 +253,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             pt.fX1NDC = pt.fX1; pt.fX2NDC = pt.fX2;
             pt.fY1NDC = pt.fY1; pt.fY2NDC = pt.fY2;
          } else if (pad && (pad.fX1 == 0) && (pad.fX2 == 1) && (pad.fY1 == 0) && (pad.fY2 == 1) && (typeof arg == "string") && (arg.indexOf('postpone') >= 0)) {
-            // special case when pad not yet initialized 
+            // special case when pad not yet initialized
             pt.fInit = 0; // do not init until axes drawn
             pt.fX1NDC = pt.fY1NDC = 0.99;
             pt.fX2NDC = pt.fY2NDC = 1;
@@ -374,13 +374,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          rect.style("pointer-events", "visibleFill")
              .on("mouseenter", () => this.showObjectStatus());
 
-         // size and pos attributes required only for drag functions
-         this.draw_g.attr("x", this._pave_x)
-                    .attr("y", this._pave_y)
-                    .attr("width", width)
-                    .attr("height", height);
-
-         inter.addDragHandler(this, { obj: pt, minwidth: 10, minheight: 20, canselect: true,
+         inter.addDragHandler(this, { obj: pt, x: this._pave_x, y: this._pave_y, width: width, height: height,
+                                      minwidth: 10, minheight: 20, canselect: true,
                         redraw: () => { this.interactiveRedraw(false, "pave_moved"); this.drawPave(); },
                         ctxmenu: JSROOT.browser.touches && JSROOT.settings.ContextMenu && this.UseContextMenu });
 

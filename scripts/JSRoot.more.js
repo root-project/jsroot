@@ -1947,7 +1947,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       this.pos_dy += dy;
 
       if (this.move_binindx === undefined) {
-         this.draw_g.attr("transform", "translate(" + this.pos_dx + "," + this.pos_dy + ")");
+         this.draw_g.attr("transform", `translate(${this.pos_dx},${this.pos_dy})`);
       } else {
          let pmain = this.getFramePainter(),
              funcs = pmain ? pmain.getGrFuncs(this.options.second_x, this.options.second_y) : null;
