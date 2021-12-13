@@ -5347,9 +5347,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                evnt.stopPropagation(); // disable main context menu
                evnt.preventDefault();  // disable browser context menu
                jsrp.createMenu(evnt, this).then(menu => {
-                 menu.add("header:Palette");
-                 framep.z_handle.fillAxisContextMenu(menu, "z");
-                 menu.show();
+                  menu.add("header:Palette");
+                  menu.addchk(vertical, "Vertical", flag => { this.v7SetAttr("vertical", flag); this.redrawPad(); });
+                  framep.z_handle.fillAxisContextMenu(menu, "z");
+                  menu.show();
                });
             });
 
@@ -5370,17 +5371,22 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if (moving_labels)
                return framep.z_handle.processLabelsMove('move', last_pos);
 
-            sel2 = Math.min(Math.max(last_pos[1], 0), palette_height);
+            if (vertical)
+               sel2 = Math.min(Math.max(last_pos[1], 0), palette_height);
+            else
+               sel2 = Math.min(Math.max(last_pos[0], 0), palette_width);
 
-            let h = Math.abs(sel2-sel1);
+            let sz = Math.abs(sel2-sel1);
 
-            if (!zoom_rect_visible && (h > 1)) {
+            if (!zoom_rect_visible && (sz > 1)) {
                zoom_rect.style('display', null);
                zoom_rect_visible = true;
             }
 
-            zoom_rect.attr("y", Math.min(sel1, sel2))
-                     .attr("height", h);
+            if (vertical)
+               zoom_rect.attr("y", Math.min(sel1, sel2)).attr("height", sz);
+            else
+               zoom_rect.attr("x", Math.min(sel1, sel2)).attr("width", sz);
          }, endRectSel = evnt => {
             if (!doing_zoom) return;
 
@@ -5406,19 +5412,18 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             evnt.stopPropagation();
 
             last_pos = d3.pointer(evnt, this.draw_g.node());
-
-            sel1 = sel2 = last_pos[1];
+            sel1 = sel2 = last_pos[vertical ? 1 : 0];
             zoom_rect_visible = false;
             moving_labels = false;
             zoom_rect = g_btns
                  .append("svg:rect")
                  .attr("class", "zoom")
                  .attr("id", "colzoomRect")
-                 .attr("x", "0")
-                 .attr("width", palette_width)
-                 .attr("y", sel1)
-                 .attr("height", 1)
                  .style('display', 'none');
+            if (vertical)
+               zoom_rect.attr("x", 0).attr("width", palette_width).attr("y", sel1).attr("height", 1);
+            else
+               zoom_rect.attr("x", sel1).attr("width", 1).attr("y", 0).attr("height", palette_height);
 
             d3.select(window).on("mousemove.colzoomRect", moveRectSel)
                              .on("mouseup.colzoomRect", endRectSel, true);
