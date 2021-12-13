@@ -848,6 +848,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             gzmax = framep.zmax;
             zmin = framep.zoom_zmin;
             zmax = framep.zoom_zmax;
+            if (zmin === zmax) { zmin = gzmin; zmax = gzmax; }
          } else {
             zmin = levels[0];
             zmax = levels[levels.length-1];

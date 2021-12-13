@@ -59,6 +59,7 @@ examples_main = {
      { opt: "lego0", title: "3D lego plot (without zeros)" },
      { opt: "lego1", title: "3D lego plot with red colors on x-sides", r3d: "svg" },
      { opt: "lego2", title: "3D lego plot with color levels" },
+     { opt: "lego2z", title: "3D lego plot with color levels and palette" },
      { opt: "lego3", title: "lego3 plot - lego1 without border lines" },
      { opt: "lego4", title: "lego4 plot - lego2 without border lines" },
      { opt: "text", title: "draw bins content as text, can be combined with col, box or scat options" },
