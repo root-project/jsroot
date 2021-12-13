@@ -503,10 +503,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          this.format = this.formatLabels;
       } else {
-
          this.order = 0;
          this.ndig = 0;
-
          this.format = this.formatNormal;
       }
    }
@@ -5254,12 +5252,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           zmin         = contour[0],
           zmax         = contour[contour.length-1],
           rect         = framep.getFrameRect(),
-          fx           = rect.x,
-          fy           = rect.y,
-          fw           = rect.width,
-          fh           = rect.height,
-          pw           = this.getPadPainter().getPadWidth(),
+          pad_width    = this.getPadPainter().getPadWidth(),
+          pad_height   = this.getPadPainter().getPadHeight(),
           visible      = this.v7EvalAttr("visible", true),
+          vertical     = this.v7EvalAttr("vertical", true),
           palette_x, palette_y, palette_width, palette_height;
 
       if (drag) {
@@ -5267,16 +5263,28 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          palette_height = drag.height;
 
          let changes = {};
-         this.v7AttrChange(changes, "margin", (drag.x - fx - fw) / pw);
-         this.v7AttrChange(changes, "size", palette_width / pw);
+         if (vertical) {
+            this.v7AttrChange(changes, "margin", (drag.x - rect.x - rect.width) / pad_width);
+            this.v7AttrChange(changes, "width", palette_width / pad_width);
+         } else {
+            this.v7AttrChange(changes, "margin", (drag.y - rect.y - rect.height) / pad_width);
+            this.v7AttrChange(changes, "width", palette_height / pad_height);
+         }
          this.v7SendAttrChanges(changes, false); // do not invoke canvas update on the server
       } else {
-          let palette_margin = this.v7EvalLength("margin", pw, 0.02);
-
-          palette_x = Math.round(fx + fw + palette_margin);
-          palette_y = fy;
-          palette_width = this.v7EvalLength("width", pw, 0.05);
-          palette_height = fh;
+          if (vertical) {
+            let margin = this.v7EvalLength("margin", pad_width, 0.02);
+            palette_x = Math.round(rect.x + rect.width + margin);
+            palette_width = this.v7EvalLength("width", pad_width, 0.05);
+            palette_y = rect.y;
+            palette_height = rect.height;
+          } else {
+            let margin = this.v7EvalLength("margin", pad_height, 0.02);
+            palette_x = rect.x;
+            palette_width = rect.width;
+            palette_y = Math.round(rect.y + rect.height + margin);
+            palette_height = this.v7EvalLength("width", pad_height, 0.05);
+          }
 
           // x,y,width,height attributes used for drag functionality
           this.draw_g.attr("transform",`translate(${palette_x},${palette_y})`);
@@ -5297,7 +5305,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if ((gmin === undefined) || (gmax === undefined)) { gmin = zmin; gmax = zmax; }
 
-      framep.z_handle.configureAxis("zaxis", gmin, gmax, zmin, zmax, true, [palette_height, 0], -palette_height, { reverse: false });
+      if (vertical)
+         framep.z_handle.configureAxis("zaxis", gmin, gmax, zmin, zmax, true, [palette_height, 0], -palette_height, { reverse: false });
+      else
+         framep.z_handle.configureAxis("zaxis", gmin, gmax, zmin, zmax, false, [0, palette_width], palette_width, { reverse: false });
 
       for (let i = 0; i < contour.length-1; ++i) {
          let z0 = Math.round(framep.z_handle.gr(contour[i])),
@@ -5305,7 +5316,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
              col = palette.getContourColor((contour[i]+contour[i+1])/2);
 
          let r = g_btns.append("svg:path")
-                     .attr("d", `M0,${z1}H${palette_width}V${z0}H0Z`)
+                     .attr("d", vertical ? `M0,${z1}H${palette_width}V${z0}H0Z` : `M${z0},0V${palette_height}H${z1}V0Z`)
                      .style("fill", col)
                      .style("stroke", col)
                      .property("fill0", col)
@@ -5324,7 +5335,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       framep.z_handle.max_tick_size = Math.round(palette_width*0.3);
 
-      let promise = framep.z_handle.drawAxis(this.draw_g, `translate(${palette_width},${palette_height})`, -1);
+      let promise = framep.z_handle.drawAxis(this.draw_g, vertical ? `translate(${palette_width},${palette_height})` : `translate(0,${palette_height})`, vertical ? -1 : 1);
 
       if (JSROOT.batch_mode || drag)
          return promise;
@@ -5343,13 +5354,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             });
 
          inter.addDragHandler(this, { x: palette_x, y: palette_y, width: palette_width, height: palette_height,
-                                       minwidth: 20, minheight: 20, no_change_y: true, redraw: d => this.drawPalette(d) });
+                                       minwidth: 20, minheight: 20, no_change_x: !vertical, no_change_y: vertical, redraw: d => this.drawPalette(d) });
 
          if (!JSROOT.settings.Zooming) return;
 
          let doing_zoom = false, sel1 = 0, sel2 = 0, zoom_rect, zoom_rect_visible, moving_labels, last_pos;
 
-         let moveRectSel = evnt => {
+         const moveRectSel = evnt => {
 
             if (!doing_zoom) return;
             evnt.preventDefault();
@@ -5370,9 +5381,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             zoom_rect.attr("y", Math.min(sel1, sel2))
                      .attr("height", h);
-         }
-
-         let endRectSel = evnt => {
+         }, endRectSel = evnt => {
             if (!doing_zoom) return;
 
             evnt.preventDefault();
@@ -5388,9 +5397,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                let z = framep.z_handle.func, z1 = z.invert(sel1), z2 = z.invert(sel2);
                this.getFramePainter().zoom("z", Math.min(z1, z2), Math.max(z1, z2));
             }
-         }
-
-         let startRectSel = evnt => {
+         }, startRectSel = evnt => {
             // ignore when touch selection is activated
             if (doing_zoom) return;
             doing_zoom = true;
@@ -5420,9 +5427,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                if (!zoom_rect_visible && doing_zoom)
                   moving_labels = framep.z_handle.processLabelsMove('start', last_pos);
             }, 500);
-         }
-
-         let assignHandlers = () => {
+         },  assignHandlers = () => {
             this.draw_g.selectAll(".axis_zoom, .axis_labels")
                        .on("mousedown", startRectSel)
                        .on("dblclick", () => framep.unzoom("z"));
@@ -5433,13 +5438,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                   evnt.preventDefault();
 
                   let pos = d3.pointer(evnt, this.draw_g.node()),
-                      coord = 1 - pos[1] / palette_height;
+                      coord = vertical ? (1 - pos[1] / palette_height) : pos[0] / palette_width;
 
                   let item = framep.z_handle.analyzeWheelEvent(evnt, coord);
                   if (item.changed)
                      framep.zoom("z", item.min, item.max);
                });
-         }
+         };
 
          framep.z_handle.setAfterDrawHandler(assignHandlers);
 
