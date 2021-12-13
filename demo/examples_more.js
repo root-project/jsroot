@@ -17,7 +17,7 @@ examples_more = {
      { name: "logx", opt: "colz", file: "QAresults.root", item: "PIDqa/PIDqa1/ITS/hNsigmaP_ITS_electron;1" },
      { name: "logz", url: "?nobrowser&file=$$$sparsehist.root&item=c;1&palette=7", title: "LogZ plus text on several canvas" },
      { name: "userz", json: "th2ul.json.gz", opt: "colz", title: "TH2 with set user min/max, drawn with COLZ" },
-     { name: "candle", file: "candleplot.root", item: "c1;1" },
+     { name: "candle", file: "candleplot.root", item: "candleplot;1" },
      { name: "box_same", json: "hbox_same.json.gz", title: "several histograms, drawn with box same opitons" },
      { name: "col_same", json: "hcol_same.json.gz", title: "several histograms, drawn with col same opitons" },
      { name: "docu", file: "histpainter6.root", layout: "vert33", items: ['draw_th2e','draw_scat','draw_arr','draw_box','draw_box1','draw_boxsame'], title:"several TH2 examples from THistPainter documentation page" },
