@@ -14,10 +14,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (!obj) return dflt;
       if (this.cssprefix) name = this.cssprefix + name;
 
-      function type_check(res) {
+      const type_check = res => {
          if (dflt === undefined) return res;
-         let typ1 = typeof dflt;
-         let typ2 = typeof res;
+         let typ1 = typeof dflt, typ2 = typeof res;
          if (typ1 == typ2) return res;
          if (typ1 == 'boolean') {
             if (typ2 == 'string') return (res != "") && (res != "0") && (res != "no") && (res != "off");
@@ -26,7 +25,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if ((typ1 == 'number') && (typ2 == 'string'))
             return parseFloat(res);
          return res;
-      }
+      };
 
       if (obj.fAttr && obj.fAttr.m) {
          let value = obj.fAttr.m[name];
@@ -36,9 +35,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (this.rstyle && this.rstyle.fBlocks) {
          let blks = this.rstyle.fBlocks;
          for (let k = 0; k < blks.length; ++k) {
-            let block = blks[k];
-
-            let match = (this.csstype && (block.selector == this.csstype)) ||
+            let block = blks[k],
+                match = (this.csstype && (block.selector == this.csstype)) ||
                         (obj.fId && (block.selector == ("#" + obj.fId))) ||
                         (obj.fCssClass && (block.selector == ("." + obj.fCssClass)));
 
@@ -148,7 +146,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             console.error(`Autocolor ${name} not defined yet - please check code`);
             val = "";
          }
-      } else if (val[0]=="[") {
+      } else if (val[0] == "[") {
          let ordinal = parseFloat(val.substr(1, val.length-2));
          val = "black";
          if (Number.isFinite(ordinal)) {
