@@ -833,7 +833,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           pad = this.getPadPainter().getRootPad(true),
           main = palette.$main_painter || this.getMainPainter(),
           framep = this.getFramePainter(),
-          zmin = 0, zmax = 100,
+          zmin = 0, zmax = 100, gzmin, gzmax,
           contour = main.fContour,
           levels = contour ? contour.getLevels() : null,
           draw_palette = main.fPalette, axis_transform = "";
@@ -844,8 +844,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       if (contour && framep) {
          if ((framep.zmin !== undefined) && (framep.zmax !== undefined) && (framep.zmin !== framep.zmax)) {
-            zmin = framep.zmin;
-            zmax = framep.zmax;
+            gzmin = framep.zmin;
+            gzmax = framep.zmax;
+            zmin = framep.zoom_zmin;
+            zmax = framep.zoom_zmax;
          } else {
             zmin = levels[0];
             zmax = levels[levels.length-1];
@@ -861,14 +863,18 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       }
 
       this.draw_g.selectAll("rect").style("fill", 'white');
+      
+      if ((gzmin === undefined) || (gzmax === undefined) || (gzmin == gzmax)) {
+         gzmin = zmin; gzmax = zmax;
+      } 
 
       if (this._palette_vertical) {
          this._swap_side = palette.fX2NDC < 0.5;
-         this.z_handle.configureAxis("zaxis", zmin, zmax, zmin, zmax, true, [0, s_height], { log: pad ? pad.fLogz : 0, fixed_ticks: cjust ? levels : null, max_tick_size: Math.round(s_width*0.7), swap_side: this._swap_side });
+         this.z_handle.configureAxis("zaxis", gzmin, gzmax, zmin, zmax, true, [0, s_height], { log: pad ? pad.fLogz : 0, fixed_ticks: cjust ? levels : null, max_tick_size: Math.round(s_width*0.7), swap_side: this._swap_side });
          axis_transform = this._swap_side ? "" : `translate(${s_width})`;
       } else {
          this._swap_side = palette.fY1NDC > 0.5;
-         this.z_handle.configureAxis("zaxis", zmin, zmax, zmin, zmax, false, [0, s_width], { log: pad ? pad.fLogz : 0, fixed_ticks: cjust ? levels : null, max_tick_size: Math.round(s_height*0.7), swap_side: this._swap_side });
+         this.z_handle.configureAxis("zaxis", gzmin, gzmax, zmin, zmax, false, [0, s_width], { log: pad ? pad.fLogz : 0, fixed_ticks: cjust ? levels : null, max_tick_size: Math.round(s_height*0.7), swap_side: this._swap_side });
          axis_transform = this._swap_side ? "" : `translate(0,${s_height})`;
       }
 
@@ -1029,7 +1035,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                    coord = this._palette_vertical ? (1 - pos[1] / s_height) : pos[0] / s_width;
 
                let item = this.z_handle.analyzeWheelEvent(evnt, coord);
-               if (item.changed)
+               if (item && item.changed)
                   this.getFramePainter().zoom("z", item.min, item.max);
             });
    }
@@ -3091,8 +3097,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           zmin = this.minbin, zmax = this.maxbin, zminpos = this.minposbin,
           custom_levels;
       if (zmin === zmax) { zmin = this.gminbin; zmax = this.gmaxbin; zminpos = this.gminposbin; }
-      if (this.options.minimum !== -1111) { zmin = this.options.minimum; apply_min = true; }
-      if (this.options.maximum !== -1111) { zmax = this.options.maximum; apply_min = false; }
+      let gzmin = zmin, gzmax = zmax;
+      if (this.options.minimum !== -1111) { zmin = this.options.minimum; gzmin = Math.min(gzmin,zmin); apply_min = true; }
+      if (this.options.maximum !== -1111) { zmax = this.options.maximum; gzmax = Math.max(gzmax, zmax); apply_min = false; }
       if (zmin >= zmax) {
          if (apply_min) zmax = zmin + 1; else zmin = zmax - 1;
       }
@@ -3108,7 +3115,18 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          else
             nlevels = histo.fContour.length;
 
-      return this.createContour(nlevels, zmin, zmax, zminpos, custom_levels);
+      let cntr = this.createContour(nlevels, zmin, zmax, zminpos, custom_levels);
+      
+      if ((this.getDimension() < 3) && fp) {
+         
+         fp.zmin = gzmin;
+         fp.zmax = gzmax;
+         
+         fp.zoom_zmin = cntr.colzmin;
+         fp.zoom_zmax = cntr.colzmax;
+      }
+      
+      return cntr;
    }
 
    /** @summary Return levels from contour object
@@ -5000,7 +5018,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          this.gminposbin = null;
          this.gminbin = this.gmaxbin = 0;
 
-         for (let n=0, len=histo.fBins.arr.length; n < len; ++n) {
+         for (let n = 0, len=histo.fBins.arr.length; n < len; ++n) {
             let bin_content = histo.fBins.arr[n].fContent;
             if (n===0) this.gminbin = this.gmaxbin = bin_content;
 
