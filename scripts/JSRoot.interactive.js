@@ -576,9 +576,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             complete_drag(handle.x, handle.y, handle.width, handle.height);
          });
 
-      // for using outside
-      painter.draw_g.property('drag', arg);
-
       if (!arg.only_resize)
          painter.draw_g.style("cursor", "move").call(drag_move);
 
