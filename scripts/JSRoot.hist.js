@@ -3194,6 +3194,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       if (!enabled) {
          if (pal_painter) {
+            this.options.Zvert = pal_painter._palette_vertical;
             pal_painter.Enabled = false;
             pal_painter.removeG(); // completely remove drawing without need to redraw complete pad
          }
@@ -3224,7 +3225,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          this.addFunction(pal, true);
 
          can_move = true;
-      } else {
+      } else if (pp && (pp._palette_vertical !== undefined)) {
          this.options.Zvert = pp._palette_vertical;
       }
 
@@ -3237,8 +3238,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                pal.fX2NDC = fp.fX2NDC + 0.005 + (pal.fX2NDC - pal.fX1NDC);
                pal.fX1NDC = fp.fX2NDC + 0.005;
             } else {
-               pal.fX1NDC = fp.fX1NDC - 0.05 - (pal.fX2NDC - pal.fX1NDC);
-               pal.fX2NDC = fp.fX1NDC - 0.05;
+               pal.fX1NDC = fp.fX1NDC - 0.03 - (pal.fX2NDC - pal.fX1NDC);
+               pal.fX2NDC = fp.fX1NDC - 0.03;
             }
             pal.fY1NDC = fp.fY1NDC;
             pal.fY2NDC = fp.fY2NDC;
