@@ -401,7 +401,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (arg.minheight && newheight < arg.minheight) newheight = arg.minheight;
 
          let change_size = (newwidth !== arg.width) || (newheight !== arg.height),
-            change_pos = (newx !== oldx) || (newy !== oldy);
+             change_pos = (newx !== oldx) || (newy !== oldy);
 
          arg.x = newx; arg.y = newy; arg.width = newwidth; arg.height = newheight;
 
@@ -427,7 +427,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                   arg.obj.fY2NDC = 1 - newy / rect.height;
                   arg.obj.modified_NDC = true; // indicate that NDC was interactively changed, block in updated
                }
-               if ('redraw' in arg) arg.redraw();
+               if ('redraw' in arg) arg.redraw(arg);
             }
          }
 

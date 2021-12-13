@@ -1309,7 +1309,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             });
 
          inter.addDragHandler(this, { x: pos.x, y: pos.y, width: this.vertical ? 10 : len, height: this.vertical ? len : 10,
-                                      only_move: true, redraw: () => this.positionChanged() });
+                                      only_move: true, redraw: d => this.positionChanged(d) });
 
          this.draw_g.on("dblclick", () => this.zoomStandalone());
 
@@ -1329,9 +1329,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Process interactive moving of the axis drawing */
-   RAxisPainter.prototype.positionChanged = function() {
-      let drag = this.draw_g.property('drag'),
-          drawable = this.getObject(),
+   RAxisPainter.prototype.positionChanged = function(drag) {
+      let drawable = this.getObject(),
           rect = this.getPadPainter().getPadRect(),
           xn = drag.x / rect.width,
           yn = 1 - drag.y / rect.height;
@@ -4944,7 +4943,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                this.draw_g.on("contextmenu", evnt => this.paveContextMenu(evnt));
 
             inter.addDragHandler(this, { x: pave_x, y: pave_y, width: pave_width, height: pave_height,
-                                         minwidth: 20, minheight: 20, redraw: () => this.sizeChanged() });
+                                         minwidth: 20, minheight: 20, redraw: d => this.sizeChanged(d) });
 
             return this;
          });
@@ -4952,9 +4951,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Process interactive moving of the stats box */
-   RPavePainter.prototype.sizeChanged = function() {
-      let drag = this.draw_g.property('drag');
-
+   RPavePainter.prototype.sizeChanged = function(drag) {
       this.pave_width = drag.width;
       this.pave_height = drag.height;
 
@@ -5012,7 +5009,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Function used for direct draw of RFrameTitle
      * @memberof JSROOT.Painter
      * @private */
-   function drawRFrameTitle(reason) {
+   function drawRFrameTitle(reason, drag) {
       let fp = this.getFramePainter();
       if (!fp)
          return console.log('no frame painter - no title');
@@ -5028,20 +5025,19 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           title_width  = fw,
           title_height = this.v7EvalLength("height", ph, 0.05),
           textFont     = this.v7EvalFont("text", { size: 0.07, color: "black", align: 22 });
+         
+      if (reason == 'drag') {
+         title_height = drag.height;
+         title_margin = fy - drag.y - drag.height;
+         let changes = {};
+         this.v7AttrChange(changes, "margin", title_margin / ph);
+         this.v7AttrChange(changes, "height", title_height / ph);
+         this.v7SendAttrChanges(changes, false); // do not invoke canvas update on the server
+      }
 
       this.createG();
 
-      if (reason == 'drag') {
-         let drag = this.draw_g.property('drag');
-         title_width = drag.width;
-         title_height = drag.height;
-         let changes = {};
-         this.v7AttrChange(changes, "margin", (fy - drag.y - title_height) / ph );
-         this.v7AttrChange(changes, "height", title_height / ph);
-         this.v7SendAttrChanges(changes, false); // do not invoke canvas update on the server
-      } else {
-         this.draw_g.attr("transform",`translate(${fx},${Math.round(fy-title_margin-title_height)})`);
-      }
+      this.draw_g.attr("transform",`translate(${fx},${Math.round(fy-title_margin-title_height)})`);
 
       let arg = { x: title_width/2, y: title_height/2, text: title.fText, latex: 1 };
 
@@ -5049,12 +5045,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       this.drawText(arg);
 
-      this.finishTextDrawing();
-
-      if (!JSROOT.batch_mode)
-         JSROOT.require(['interactive'])
+      return this.finishTextDrawing().then(() => { 
+         if (!JSROOT.batch_mode) 
+         return JSROOT.require(['interactive'])
                .then(inter => inter.addDragHandler(this, { x: fx, y: Math.round(fy-title_margin-title_height), width: title_width, height: title_height,
-                                                           minwidth: 20, minheight: 20, no_change_x: true, redraw: () => this.redraw('drag') }));
+                                                           minwidth: 20, minheight: 20, no_change_x: true, redraw: d => this.redraw('drag', d) }));
+      });
    }
 
    ////////////////////////////////////////////////////////////////////////////////////////////
@@ -5242,7 +5238,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Draw palette */
-   RPalettePainter.prototype.drawPalette = function(reason) {
+   RPalettePainter.prototype.drawPalette = function(drag) {
 
       let palette = this.getHistPalette(),
           contour = palette.getContour(),
@@ -5268,8 +5264,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           visible      = this.v7EvalAttr("visible", true),
           palette_x, palette_y, palette_width, palette_height;
 
-      if (reason == 'drag') {
-         let drag = this.draw_g.property('drag');
+      if (drag) {
          palette_width = drag.width;
          palette_height = drag.height;
 
@@ -5333,7 +5328,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       let promise = framep.z_handle.drawAxis(this.draw_g, `translate(${palette_width},${palette_height})`, -1);
 
-      if (JSROOT.batch_mode || (reason == 'drag'))
+      if (JSROOT.batch_mode || drag)
          return promise;
 
       return promise.then(() => JSROOT.require(['interactive'])).then(inter => {
@@ -5350,7 +5345,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             });
 
          inter.addDragHandler(this, { x: palette_x, y: palette_y, width: palette_width, height: palette_height,
-                                       minwidth: 20, minheight: 20, no_change_y: true, redraw: () => this.drawPalette('drag') });
+                                       minwidth: 20, minheight: 20, no_change_y: true, redraw: d => this.drawPalette(d) });
 
          if (!JSROOT.settings.Zooming) return;
 
