@@ -13,6 +13,14 @@
 10. Implement "colhz" draw option to plot horizontal color palette
 
 
+## Changes in 6.3.2
+1. Fix bug in TH1 drawing when minimum or/and maximum was configured for histogram
+
+
+## Changes in 6.3.1
+1. Fix bug with col draw option in TH2/RH2
+
+
 ## Changes in 6.3.0
 1. Fully rewrite TLatex parsing, use svg elements instead of plain text/tspan
 2. Make TLatex reliably working in node.js, does not depend from availability of canvas component
