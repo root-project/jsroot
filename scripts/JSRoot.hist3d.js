@@ -697,11 +697,6 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
 
             gg.getAttribute('position').needsUpdate = true;
 
-            gg.computeFaceNormals();
-
-            //gg.verticesNeedUpdate = true;
-            //gg.normalsNeedUpdate = true;
-
             return true;
          }
 

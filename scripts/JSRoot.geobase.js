@@ -3402,9 +3402,6 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
                face = geom.faces[n++];
                d = face.b; face.b = face.c; face.c = d;
             }
-
-            // normals are calculated with normal geometry and correctly scaled
-            // geom.computeFaceNormals();
          }
       }
 
