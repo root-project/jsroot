@@ -20575,6 +20575,16 @@
 
 	LineSegments.prototype.isLineSegments = true;
 
+	class LineLoop extends Line {
+		constructor(geometry, material) {
+			super(geometry, material);
+			this.type = 'LineLoop';
+		}
+
+	}
+
+	LineLoop.prototype.isLineLoop = true;
+
 	/**
 	 * parameters = {
 	 *	color: <hex>,
@@ -26749,16 +26759,6 @@
 		vertexPosition.applyMatrix4(_viewWorldMatrix);
 	}
 
-	class LineLoop extends Line {
-		constructor(geometry, material) {
-			super(geometry, material);
-			this.type = 'LineLoop';
-		}
-
-	}
-
-	LineLoop.prototype.isLineLoop = true;
-
 	const _v1$2 = /*@__PURE__*/new Vector3();
 
 	const _v2$2 = /*@__PURE__*/new Vector3();
@@ -32411,6 +32411,13 @@
 				scope.dispatchEvent(_changeEvent$1);
 				scope.update();
 				state = STATE.NONE;
+			};
+
+			this.resetOrthoPanZoom = function () {
+				panOffset.set(0, 0, 0);
+				scope.object.zoom = 1;
+				scope.object.updateProjectionMatrix();
+				zoomChanged = true;
 			}; // this method is exposed, but perhaps it would be better if we can make it private...
 
 
@@ -37377,6 +37384,7 @@
 	exports.LineCurve = LineCurve;
 	exports.LineCurve3 = LineCurve3;
 	exports.LineDashedMaterial = LineDashedMaterial;
+	exports.LineLoop = LineLoop;
 	exports.LineSegments = LineSegments;
 	exports.LinearEncoding = LinearEncoding;
 	exports.LinearFilter = LinearFilter;
@@ -37446,6 +37454,7 @@
 	exports.OrthographicCamera = OrthographicCamera;
 	exports.PCFShadowMap = PCFShadowMap;
 	exports.PCFSoftShadowMap = PCFSoftShadowMap;
+	exports.Pass = Pass;
 	exports.Path = Path;
 	exports.PerspectiveCamera = PerspectiveCamera;
 	exports.Plane = Plane;

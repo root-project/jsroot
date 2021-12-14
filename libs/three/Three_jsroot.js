@@ -21,7 +21,7 @@ export { Scene } from './scenes/Scene.js';
 export { Mesh } from './objects/Mesh.js';
 // export { InstancedMesh } from './objects/InstancedMesh.js';
 export { LineSegments } from './objects/LineSegments.js';
-// export { LineLoop } from './objects/LineLoop.js';
+export { LineLoop } from './objects/LineLoop.js';
 export { Line } from './objects/Line.js';
 export { Points } from './objects/Points.js';
 // export { Group } from './objects/Group.js';
