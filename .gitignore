@@ -9,5 +9,7 @@ jsdoc/
 demo/node/node_modules
 demo/node/*.svg
 node_modules/
+libs/three/node_modules/
+libs/d3/node_modules/
 openui5dist
 package-lock.json
