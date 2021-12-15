@@ -7578,6 +7578,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       this.options.nostack = d.check("NOSTACK");
       if (d.check("STACK")) this.options.nostack = false;
       this.options.same = d.check("SAME");
+      
+      d.check("NOCLEAR"); // ignore noclear option
 
       this.options._pfc = d.check("PFC");
       this.options._plc = d.check("PLC");
