@@ -4810,10 +4810,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (!painter) return Promise.reject('Painter not provided in ensureTCanvas');
 
       // simple check - if canvas there, can use painter
-      let svg_c = painter.getCanvSvg();
-      let noframe = (frame_kind === false) || (frame_kind == "3d") ? "noframe" : "";
-
-      let promise = !svg_c.empty() ? Promise.resolve(true) : drawCanvas(painter.getDom(), null, noframe);
+      let svg_c = painter.getCanvSvg(),
+          noframe = (frame_kind === false) || (frame_kind == "3d") ? "noframe" : "",
+          promise = !svg_c.empty() ? Promise.resolve(true) : drawCanvas(painter.getDom(), null, noframe);
 
       return promise.then(() => {
          if (frame_kind === false) return;
