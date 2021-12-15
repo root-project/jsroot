@@ -7494,7 +7494,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    /** @summary Draw next stack histogram
      * @private */
-   THStackPainter.prototype.drawNextHisto = function(indx) {
+   THStackPainter.prototype.drawNextHisto = function(indx, pad_painter) {
 
       let stack = this.getObject(),
           hlst = this.options.nostack ? stack.fHists : stack.fStack,
@@ -7511,7 +7511,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          hopt += ' ' + this.options.hopt;
       if (this.options.draw_errors && !hopt)
          hopt = "E";
-      hopt += " same nostat";
 
       if (this.options._pfc || this.options._plc || this.options._pmc) {
          let mp = this.getMainPainter();
@@ -7523,12 +7522,26 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          }
       }
 
+      // handling of "pads" draw option       
+      if (pad_painter) {
+         let subpad_painter = pad_painter.getSubPadPainter(indx+1);
+         if (!subpad_painter) 
+            return Promise.resolve(this);  
+         
+         let prev_name = subpad_painter.selectCurrentPad(subpad_painter.this_pad_name);
+         return JSROOT.draw(subpad_painter.getDom(), hist, hopt).then(subp => {
+            this.painters.push(subp);
+            subpad_painter.selectCurrentPad(prev_name);
+            return this.drawNextHisto(indx+1, pad_painter);
+         });
+      }
+
       // special handling of stacked histograms - set $baseh object for correct drawing
       // also used to provide tooltips
       if ((rindx > 0) && !this.options.nostack)
          hist.$baseh = hlst.arr[rindx - 1];
 
-      return JSROOT.draw(this.getDom(), hist, hopt).then(subp => {
+      return JSROOT.draw(this.getDom(), hist, hopt + " same nostat").then(subp => {
           this.painters.push(subp);
           return this.drawNextHisto(indx+1);
       });
@@ -7543,20 +7556,22 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       let stack = this.getObject(),
           hist = stack.fHistogram || (stack.fHists ? stack.fHists.arr[0] : null) || (stack.fStack ? stack.fStack.arr[0] : null);
 
-      const HasErrors = hist => {
+      const hasErrors = hist => {
          if (hist.fSumw2 && (hist.fSumw2.length > 0))
-            for (let n=0;n<hist.fSumw2.length;++n)
+            for (let n = 0;n < hist.fSumw2.length; ++n)
                if (hist.fSumw2[n] > 0) return true;
          return false;
       };
 
       if (hist && (hist._typename.indexOf("TH2")==0)) this.options.ndim = 2;
 
-      if ((this.options.ndim==2) && !opt) opt = "lego1";
+      if ((this.options.ndim == 2) && !opt) opt = "lego1";
 
       if (stack.fHists && !this.options.nostack)
          for (let k = 0; k < stack.fHists.arr.length; ++k)
-            this.options.has_errors = this.options.has_errors || HasErrors(stack.fHists.arr[k]);
+            this.options.has_errors = this.options.has_errors || hasErrors(stack.fHists.arr[k]);
+
+      this.options.nhist = stack.fHists ? stack.fHists.arr.length : 1;
 
       let d = new JSROOT.DrawOptions(opt);
 
@@ -7567,6 +7582,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       this.options._pfc = d.check("PFC");
       this.options._plc = d.check("PLC");
       this.options._pmc = d.check("PMC");
+
+      this.options.pads = d.check("PADS");
+      if (this.options.pads) this.options.nostack = true;
 
       this.options.hopt = d.remain(); // use remaining draw options for histogram draw
 
@@ -7689,11 +7707,17 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (!stack.fHists || !stack.fHists.arr)
          return null; // drawing not needed
 
-      let painter = new THStackPainter(dom, stack, opt);
+      let painter = new THStackPainter(dom, stack, opt), pad_painter = null;
+          
 
       return jsrp.ensureTCanvas(painter, false).then(() => {
 
          painter.decodeOptions(opt);
+         
+         if (painter.options.pads) {
+            pad_painter = painter.getPadPainter(); 
+            return pad_painter.divide(painter.options.nhist, painter);
+         } 
 
          if (!painter.options.nostack)
              painter.options.nostack = !painter.buildStack(stack);
@@ -7703,16 +7727,15 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          if (!stack.fHistogram)
              stack.fHistogram = painter.createHistogram(stack);
 
-         let mm = painter.getMinMax(painter.options.errors || painter.options.draw_errors);
+         let mm = painter.getMinMax(painter.options.errors || painter.options.draw_errors),
+             hopt = painter.options.hopt + " axis";
 
-         let hopt = painter.options.hopt + " axis";
-         // if (mm && (!this.options.nostack || (hist.fMinimum==-1111 && hist.fMaximum==-1111))) hopt += ";minimum:" + mm.min + ";maximum:" + mm.max;
          if (mm) hopt += ";minimum:" + mm.min + ";maximum:" + mm.max;
 
          return JSROOT.draw(dom, stack.fHistogram, hopt).then(subp => {
             painter.firstpainter = subp;
          });
-      }).then(() => painter.drawNextHisto(0));
+      }).then(() => painter.drawNextHisto(0, pad_painter));
    }
 
    // =================================================================================
