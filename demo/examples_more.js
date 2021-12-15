@@ -96,7 +96,8 @@ examples_more = {
    ],
    THStack : [
       { opt: "orig", file: "stacks.root", item: "stacks;1", title: "original example used for JSROOT testing since a while" },
-      { name: "json", json: "thstack.json.gz", title: "some special stack from JSON file" }
+      { name: "json", json: "thstack.json.gz", title: "some special stack from JSON file" },
+      { name: "pads", file: "tutorials_hist.root", item: 'multicolor', opt: "pads,col", title: "Demonstrate pads option, using TH2 and col" }
    ],
    TTree : [
       { name: "wjets", asurl: true, file: "WJets.root", item: "t;1/met", title: "Histogram data of branch with vectors" },
