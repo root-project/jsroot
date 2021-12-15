@@ -2495,12 +2495,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
      * @private */
    TPadPainter.prototype.forEachPainterInPad = function(userfunc, kind) {
       if (!kind) kind = "all";
-      if (kind!="objects") userfunc(this);
+      if (kind != "objects") userfunc(this);
       for (let k = 0; k < this.painters.length; ++k) {
          let sub = this.painters[k];
          if (typeof sub.forEachPainterInPad === 'function') {
-            if (kind!="objects") sub.forEachPainterInPad(userfunc, kind);
-         } else if (kind != "pads") userfunc(sub);
+            if (kind != "objects") sub.forEachPainterInPad(userfunc, kind);
+         } else if (kind != "pads") {
+            userfunc(sub);
+         }
       }
    }
 
@@ -3005,6 +3007,60 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return this.drawPrimitives(indx+1);
       });
    }
+
+   /** @summary Divide pad on subpads
+     * @returns {Promise} when finished
+     * @private */
+   TPadPainter.prototype.divide = function(ndiv, painter) {
+      this.cleanPrimitives(p => p !== painter);
+      
+      if (ndiv < 2) return Promise.resolve(this);
+      
+      let nx = Math.round(Math.sqrt(ndiv)), ny = nx;
+      if (nx*ny < ndiv) nx += 1;
+      
+      let xmargin = 0.01, ymargin = 0.01, 
+          dy = 1/ny, dx = 1/nx, n = 0, subpads = [];
+      for (let iy = 0; iy < ny; iy++) {
+         let y2 = 1 - iy*dy - ymargin,
+             y1 = y2 - dy + 2*ymargin;
+         if (y1 < 0) y1 = 0;
+         if (y1 > y2) continue;
+         for (let ix = 0; ix < nx; ix++) {
+            let x1 = ix*dx + xmargin,
+                x2 = x1 +dx -2*xmargin;
+            if (x1 > x2) continue;
+            n++;
+            let pad = JSROOT.create("TPad");
+            pad.fName = pad.fTitle = this.pad.fName + "_" + n;
+            pad.fNumber = n;
+            pad.fAbsWNDC = x2 - x1;
+            pad.fAbsHNDC = y2 - y1;
+            pad.fAbsXlowNDC = x1;
+            pad.fAbsYlowNDC = y1;
+            subpads.push(pad);
+         }
+      }
+      
+      const drawNext = () => {
+         if (subpads.length == 0) 
+            return Promise.resolve(this);
+         return JSROOT.draw(this.getDom(), subpads.shift()).then(drawNext); 
+      };
+
+      return drawNext();
+   }
+   
+   /** @summary Return sub-pads painter, only direct childs are checked
+     * @private */
+   TPadPainter.prototype.getSubPadPainter = function(n) {
+      for (let k = 0; k < this.painters.length; ++k) {
+         let sub = this.painters[k];
+         if (sub.pad && (typeof sub.forEachPainterInPad === 'function') && (sub.pad.fNumber === n)) return sub;
+      }
+      return null;
+   }
+
 
    /** @summary Process tooltip event in the pad
      * @private */
