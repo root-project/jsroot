@@ -1487,7 +1487,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    THistDrawOptions.prototype.decode = function(opt, hdim, histo, pad, painter) {
       this.orginal = opt; // will be overwritten by storeDrawOpt call
 
-      let d = new JSROOT.DrawOptions(opt), check3dbox = "";
+      const d = new JSROOT.DrawOptions(opt);
 
       if ((hdim === 1) && (histo.fSumw2.length > 0))
          for (let n = 0; n < histo.fSumw2.length; ++n)
@@ -1533,7 +1533,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (d.check('X3DSC', true)) this.x3dscale = d.partAsInt(0, 100) / 100;
       if (d.check('Y3DSC', true)) this.y3dscale = d.partAsInt(0, 100) / 100;
 
-      let lx = false, ly = false;
+      let lx = false, ly = false, check3dbox = "";
       if (d.check('LOGXY')) lx = ly = true;
       if (d.check('LOGX')) lx = true;
       if (d.check('LOGY')) ly = true;
@@ -1546,35 +1546,27 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (d.check('TICKXY') && pad) pad.fTickx = pad.fTicky = 1;
       if (d.check('TICKX') && pad) pad.fTickx = 1;
       if (d.check('TICKY') && pad) pad.fTicky = 1;
-
-      let getColor = () => {
-         if (d.partAsInt(1) > 0)
-            return d.partAsInt();
+      
+      d.getColor = function() {
+         this.color = this.partAsInt(1) - 1;
+         if (this.color >= 0) return true;
          for (let col = 0; col < 8; ++col)
-            if (jsrp.getColor(col).toUpperCase() === d.part)
-               return col;
-         return -1;
-      };
-
-      if (d.check('FILL_', true)) {
-         let col = getColor();
-         if (col >= 0) this.histoFillColor = col;
+            if (jsrp.getColor(col).toUpperCase() === this.part)
+               { this.color = col; return true; }
+         return false;
       }
 
-      if (d.check('LINE_', true)) {
-         let col = getColor();
-         if (col >= 0) this.histoLineColor = jsrp.root_colors[col];
-      }
+      if (d.check('FILL_', true) && d.getColor()) 
+         this.histoFillColor = d.color;
 
-      if (d.check('XAXIS_', true)) {
-         let col = getColor();
-         if (col >= 0) histo.fXaxis.fAxisColor = histo.fXaxis.fLabelColor = histo.fXaxis.fTitleColor = col;
-      }
+      if (d.check('LINE_', true) && d.getColor())
+         this.histoLineColor = jsrp.getColor(d.color);
 
-      if (d.check('YAXIS_', true)) {
-         let col = getColor();
-         if (col >= 0) histo.fYaxis.fAxisColor = histo.fYaxis.fLabelColor = histo.fYaxis.fTitleColor = col;
-      }
+      if (d.check('XAXIS_', true) && d.getColor())
+         histo.fXaxis.fAxisColor = histo.fXaxis.fLabelColor = histo.fXaxis.fTitleColor = d.color;
+
+      if (d.check('YAXIS_', true) && d.getColor())
+         histo.fYaxis.fAxisColor = histo.fYaxis.fLabelColor = histo.fYaxis.fTitleColor = d.color;
 
       let has_main = painter ? !!painter.getMainPainter() : false;
 
