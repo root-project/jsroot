@@ -7543,7 +7543,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       return JSROOT.draw(this.getDom(), hist, hopt + " same nostat").then(subp => {
           this.painters.push(subp);
-          return this.drawNextHisto(indx+1);
+          return this.drawNextHisto(indx+1, pad_painter);
       });
    }
 
@@ -7695,8 +7695,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    THStackPainter.prototype.redraw = function() {
       if (this.did_update) {
          delete this.did_update;
-         return this.drawNextHisto(0);
-       }
+         return this.drawNextHisto(0, this.options.pads ? this.getPadPainter() : null);
+      }
    }
 
    /** @summary draw THStack object
@@ -7710,7 +7710,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          return null; // drawing not needed
 
       let painter = new THStackPainter(dom, stack, opt), pad_painter = null;
-          
 
       return jsrp.ensureTCanvas(painter, false).then(() => {
 
