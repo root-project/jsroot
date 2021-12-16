@@ -17,9 +17,35 @@ JSROOT.define([], () =>  {
          kBig = 4.503599627370496e15,
          kBiginv =  2.22044604925031308085e-16;
 
+   /** @summary Polynomialeval function
+     * @desc calculates a value of a polynomial of the form:
+     * a[0]x^N+a[1]x^(N-1) + ... + a[N]
+     * @private */
+   function Polynomialeval(x, a, N) {
+      if (N==0) return a[0];
+
+      let pom = a[0];
+      for (let i=1; i <= N; ++i)
+         pom = pom *x + a[i];
+      return pom;
+   }
+
+   /** @summary Polynomial1eval function
+     * @desc calculates a value of a polynomial of the form:
+     * x^N+a[0]x^(N-1) + ... + a[N-1]
+     * @private */
+   function Polynomial1eval(x, a, N) {
+      if (N==0) return a[0];
+
+      let pom = x + a[0];
+      for (let i=1; i < N; ++i)
+         pom = pom *x + a[i];
+      return pom;
+   }
+
    /** @summary lgam function, logarithm from gamma
      * @private */
-   mth.lgam = function( x ) {
+   function lgam(x) {
       let p, q, u, w, z, sgngam = 1;
       const kMAXLGM = 2.556348e305,
             LS2PI = 0.91893853320467274178,
@@ -51,7 +77,7 @@ JSROOT.define([], () =>  {
 
       if ( x < -34.0 ) {
          q = -x;
-         w = mth.lgam(q);
+         w = lgam(q);
          p = Math.floor(q);
          if ( p==q )//_unur_FP_same(p,q)
             return Number.POSITIVE_INFINITY;
@@ -89,11 +115,11 @@ JSROOT.define([], () =>  {
             return Math.log(z);
          p -= 2.0;
          x = x + p;
-         p = x * mth.Polynomialeval(x, B, 5 ) / mth.Polynomial1eval( x, C, 6);
+         p = x * Polynomialeval(x, B, 5 ) / Polynomial1eval( x, C, 6);
          return Math.log(z) + p;
       }
       if ( x > kMAXLGM )
-         return( sgngam * Number.POSITIVE_INFINITY );
+         return sgngam * Number.POSITIVE_INFINITY;
 
       q = ( x - 0.5 ) * Math.log(x) - x + LS2PI;
       if ( x > 1.0e8 )
@@ -105,39 +131,13 @@ JSROOT.define([], () =>  {
                - 2.7777777777777777777778e-3) *p
                + 0.0833333333333333333333) / x;
       else
-         q += mth.Polynomialeval( p, A, 4 ) / x;
+         q += Polynomialeval( p, A, 4 ) / x;
       return q;
-   }
-
-   /** @summary Polynomialeval function
-     * @desc calculates a value of a polynomial of the form:
-     * a[0]x^N+a[1]x^(N-1) + ... + a[N]
-     * @private */
-   mth.Polynomialeval = function(x, a, N) {
-      if (N==0) return a[0];
-
-      let pom = a[0];
-      for (let i=1; i <= N; ++i)
-         pom = pom *x + a[i];
-      return pom;
-   }
-
-   /** @summary Polynomial1eval function
-     * @desc calculates a value of a polynomial of the form:
-     * x^N+a[0]x^(N-1) + ... + a[N-1]
-     * @private */
-   mth.Polynomial1eval = function(x, a, N) {
-      if (N==0) return a[0];
-
-      let pom = x + a[0];
-      for (let i=1; i < N; ++i)
-         pom = pom *x + a[i];
-      return pom;
    }
    
    /** @summary Stirling formula for the gamma function 
      * @private */
-   mth.stirf = function(x) {
+   function stirf(x) {
       let y, w, v;
       
       const STIR = [
@@ -149,7 +149,7 @@ JSROOT.define([], () =>  {
       ], SQTPI = Math.sqrt(2*Math.PI);
    
       w = 1.0/x;
-      w = 1.0 + w * mth.Polynomialeval( w, STIR, 4 );
+      w = 1.0 + w * Polynomialeval( w, STIR, 4 );
       y = Math.exp(x);
    
    /*   #define kMAXSTIR kMAXLOG/log(kMAXLOG)  */
@@ -169,9 +169,8 @@ JSROOT.define([], () =>  {
    
    /** @summary gamma calculation 
      * @private */
-   mth.gamma = function(x) {
-      let p, q, z;
-      let i;
+   function gamma(x) {
+      let p, q, z, i;
    
       let sgngam = 1;
    
@@ -204,11 +203,11 @@ JSROOT.define([], () =>  {
                return sgngam > 0 ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY;
             }
             z = Math.abs(z);
-            z = Math.PI / (z * mth.stirf(q) );
+            z = Math.PI / (z * stirf(q) );
          }
          else
          {
-            z = mth.stirf(x);
+            z = stirf(x);
          }
          return sgngam * z;
       }
@@ -271,15 +270,15 @@ JSROOT.define([], () =>  {
          1.00000000000000000320E0 ];
    
       x -= 2.0;
-      p = mth.Polynomialeval( x, P, 6 );
-      q = mth.Polynomialeval( x, Q, 7 );
+      p = Polynomialeval( x, P, 6 );
+      q = Polynomialeval( x, Q, 7 );
       return z * p / q;
    }
    
 
    /** @summary ndtri function
      * @private */
-   mth.ndtri = function( y0 ) {
+   function ndtri(y0) {
       if ( y0 <= 0.0 )
          return Number.NEGATIVE_INFINITY;
       if ( y0 >= 1.0 )
@@ -349,7 +348,7 @@ JSROOT.define([], () =>  {
       if ( y > dd ) {
          y = y - 0.5;
          y2 = y * y;
-         x = y + y * (y2 * mth.Polynomialeval( y2, P0, 4)/ mth.Polynomial1eval( y2, Q0, 8 ));
+         x = y + y * (y2 * Polynomialeval( y2, P0, 4)/ Polynomial1eval( y2, Q0, 8 ));
          x = x * s2pi;
          return x;
       }
@@ -357,9 +356,9 @@ JSROOT.define([], () =>  {
       x0 = x - Math.log(x)/x;
       z = 1.0/x;
       if ( x < 8.0 )
-         x1 = z * mth.Polynomialeval( z, P1, 8 )/ mth.Polynomial1eval( z, Q1, 8 );
+         x1 = z * Polynomialeval( z, P1, 8 )/ Polynomial1eval( z, Q1, 8 );
       else
-         x1 = z * mth.Polynomialeval( z, P2, 8 )/ mth.Polynomial1eval( z, Q2, 8 );
+         x1 = z * Polynomialeval( z, P2, 8 )/ Polynomial1eval( z, Q2, 8 );
       x = x0 - x1;
       if ( code != 0 )
          x = -x;
@@ -368,45 +367,13 @@ JSROOT.define([], () =>  {
 
    /** @summary normal_quantile function
      * @private */
-   mth.normal_quantile = function(z, sigma) {
-      return  sigma * mth.ndtri(z);
-   }
-
-   /** @summary igam function
-     * @private */
-   mth.igam = function(a,x) {
-
-      // LM: for negative values returns 1.0 instead of zero
-      // This is correct if a is a negative integer since Gamma(-n) = +/- inf
-      if (a <= 0)  return 1.0;
-
-      if (x <= 0)  return 0.0;
-
-      if( (x > 1.0) && (x > a ) )
-         return 1.0 - mth.igamc(a,x);
-
-      /* Compute  x**a * exp(-x) / gamma(a)  */
-      let ax = a * Math.log(x) - x - mth.lgam(a);
-      if( ax < -kMAXLOG )
-         return 0.0;
-
-      ax = Math.exp(ax);
-
-      /* power series */
-      let r = a, c = 1.0, ans = 1.0;
-
-      do {
-         r += 1.0;
-         c *= x/r;
-         ans += c;
-      } while( c/ans > kMACHEP );
-
-      return ans * ax/a;
+   function normal_quantile(z, sigma) {
+      return  sigma * ndtri(z);
    }
 
    /** @summary igamc function
      * @private */
-   mth.igamc = function(a,x) {
+   function igamc(a,x) {
       const kBig = 4.503599627370496e15,
             kBiginv =  2.22044604925031308085e-16;
 
@@ -417,9 +384,9 @@ JSROOT.define([], () =>  {
       if (x <= 0) return 1.0;
 
       if( (x < 1.0) || (x < a) )
-         return ( 1.0 - mth.igam(a,x) );
+         return ( 1.0 - mth.igam(a,x) ); // have to use mth.igam while defined later
 
-      let ax = a * Math.log(x) - x - mth.lgam(a);
+      let ax = a * Math.log(x) - x - lgam(a);
       if( ax < -kMAXLOG )
          return 0.0;
 
@@ -466,10 +433,43 @@ JSROOT.define([], () =>  {
 
       return ans * ax;
    }
+   
+   /** @summary igam function
+     * @private */
+   function igam(a,x) {
+
+      // LM: for negative values returns 1.0 instead of zero
+      // This is correct if a is a negative integer since Gamma(-n) = +/- inf
+      if (a <= 0)  return 1.0;
+
+      if (x <= 0)  return 0.0;
+
+      if( (x > 1.0) && (x > a ) )
+         return 1.0 - igamc(a,x);
+
+      /* Compute  x**a * exp(-x) / gamma(a)  */
+      let ax = a * Math.log(x) - x - lgam(a);
+      if( ax < -kMAXLOG )
+         return 0.0;
+
+      ax = Math.exp(ax);
+
+      /* power series */
+      let r = a, c = 1.0, ans = 1.0;
+
+      do {
+         r += 1.0;
+         c *= x/r;
+         ans += c;
+      } while( c/ans > kMACHEP );
+
+      return ans * ax/a;
+   }
+
 
    /** @summary igami function
      * @private */
-   mth.igami = function(a, y0) {
+   function igami(a, y0) {
       // check the domain
       if (a <= 0) {
          console.error("igami : Wrong domain for parameter a (must be > 0)");
@@ -486,15 +486,15 @@ JSROOT.define([], () =>  {
 
       /* approximation to inverse function */
       d = 1.0/(9.0*a);
-      y = ( 1.0 - d - mth.ndtri(y0) * Math.sqrt(d) );
+      y = ( 1.0 - d - ndtri(y0) * Math.sqrt(d) );
       x = a * y * y * y;
 
-      lgm = mth.lgam(a);
+      lgm = lgam(a);
 
       for( i=0; i<10; ++i ) {
          if ( x > x0 || x < x1 )
             break;
-         y = mth.igamc(a,x);
+         y = igamc(a,x);
          if ( y < yl || y > yh )
             break;
          if ( y < y0 ) {
@@ -523,7 +523,7 @@ JSROOT.define([], () =>  {
             x = 1.0;
          while ( x0 == kMAXNUM ) {
             x = (1.0 + d) * x;
-            y = mth.igamc( a, x );
+            y = igamc( a, x );
             if ( y < y0 ) {
                x0 = x;
                yl = y;
@@ -537,7 +537,7 @@ JSROOT.define([], () =>  {
 
       for( i=0; i<400; ++i ) {
          x = x1  +  d * (x0 - x1);
-         y = mth.igamc( a, x );
+         y = igamc( a, x );
          lgm = (x0 - x1)/(x1 + x0);
          if ( Math.abs(lgm) < dithresh )
             break;
@@ -579,13 +579,13 @@ JSROOT.define([], () =>  {
    /** @summary gamma_quantile_c function
      * @private */
    mth.gamma_quantile_c = function(z, alpha, theta) {
-      return theta * mth.igami( alpha, z);
+      return theta * igami( alpha, z);
    }
 
    /** @summary gamma_quantile function
      * @private */
    mth.gamma_quantile = function(z, alpha, theta) {
-      return theta * mth.igami( alpha, 1.- z);
+      return theta * igami( alpha, 1.- z);
    }
    
    /** @summary return log(1+x)
@@ -614,7 +614,7 @@ JSROOT.define([], () =>  {
    
    /** @summary Complement of the cumulative distribution function of the beta distribution.
      * @private */   
-   mth.beta_cdf_c = function(x,a,b) {
+   function beta_cdf_c(x,a,b) {
       return mth.inc_beta(1-x, b, a);
    }
 
@@ -622,7 +622,7 @@ JSROOT.define([], () =>  {
      * @desc LANDAU pdf : algorithm from CERNLIB G110 denlan
      *  same algorithm is used in GSL
      * @private */
-   mth.landau_pdf = function(x, xi, x0) {
+   function landau_pdf(x, xi, x0) {
       if (x0===undefined) x0 = 0;
       if (xi <= 0) return 0;
       const v = (x - x0)/xi;
@@ -680,61 +680,61 @@ JSROOT.define([], () =>  {
 
    /** @summary Landau function
      * @private */
-   mth.Landau = function(x, mpv, sigma, norm) {
+   function Landau(x, mpv, sigma, norm) {
       if (sigma <= 0) return 0;
-      const den = mth.landau_pdf((x - mpv) / sigma, 1, 0);
+      const den = landau_pdf((x - mpv) / sigma, 1, 0);
       if (!norm) return den;
       return den/sigma;
    }
 
    /** @summary inc_gamma_c
      * @private */
-   mth.inc_gamma_c = function(a,x) {
-      return mth.igamc(a,x);
+   function inc_gamma_c(a,x) {
+      return igamc(a,x);
    }
 
    /** @summary inc_gamma
      * @private */
-   mth.inc_gamma = function(a,x) {
-      return mth.igam(a,x);
+   function inc_gamma(a,x) {
+      return igam(a,x);
    }
 
    /** @summary lgamma
      * @private */
-   mth.lgamma = function(z) {
-      return mth.lgam(z);
+   function lgamma(z) {
+      return lgam(z);
    }
    
    /** @summary chisquared_cdf_c
      * @private */
-   mth.chisquared_cdf_c = function(x,r,x0) {
+   function chisquared_cdf_c(x,r,x0) {
       if (x0===undefined) x0 = 0;
-      return mth.inc_gamma_c ( 0.5 * r , 0.5*(x-x0) );
+      return inc_gamma_c ( 0.5 * r , 0.5*(x-x0) );
    }
 
    /** @summary chisquared_cdf
      * @private */
-   mth.chisquared_cdf = function(x,r,x0) {
+   function chisquared_cdf(x,r,x0) {
       if (x0===undefined) x0 = 0;
-      return mth.inc_gamma ( 0.5 * r , 0.5*(x-x0) );
+      return inc_gamma ( 0.5 * r , 0.5*(x-x0) );
    }
 
    /** @summary chisquared_pdf
      * @private */
-   mth.chisquared_pdf = function(x,r,x0) {
+   function chisquared_pdf(x,r,x0) {
       if (x0===undefined) x0 = 0;
       if ((x-x0) < 0) return 0.0;
       const a = r/2 -1.;
       // let return inf for case x  = x0 and treat special case of r = 2 otherwise will return nan
       if (x == x0 && a == 0) return 0.5;
 
-      return Math.exp ((r/2 - 1) * Math.log((x-x0)/2) - (x-x0)/2 - mth.lgamma(r/2))/2;
+      return Math.exp ((r/2 - 1) * Math.log((x-x0)/2) - (x-x0)/2 - lgamma(r/2))/2;
    }
    
    
    /** @summary Continued fraction expansion #1 for incomplete beta integral
      * @private */
-   mth.incbcf = function(a,b,x) {
+   function incbcf(a,b,x) {
       let xk, pk, pkm1, pkm2, qk, qkm1, qkm2,
           k1, k2, k3, k4, k5, k6, k7, k8,
           r, t, ans, thresh, n;
@@ -820,7 +820,7 @@ JSROOT.define([], () =>  {
 
   /** @summary Continued fraction expansion #2 for incomplete beta integral
     * @private */
-   mth.incbd = function(a,b,x) {
+   function incbd(a,b,x) {
       let xk, pk, pkm1, pkm2, qk, qkm1, qkm2,
           k1, k2, k3, k4, k5, k6, k7, k8,
           r, t, ans, z, thresh, n;
@@ -931,12 +931,12 @@ JSROOT.define([], () =>  {
       u = a * Math.log(x);
       if( (a+b) < kMAXSTIR && Math.abs(u) < kMAXLOG )
       {
-         t = mth.gamma(a+b)/(mth.gamma(a)*mth.gamma(b));
+         t = gamma(a+b) / (gamma(a)*gamma(b));
          s = s * t * Math.pow(x,a);
       }
       else
       {
-         t = mth.lgam(a+b) - mth.lgam(a) - mth.lgam(b) + u + Math.log(s);
+         t = lgam(a+b) - lgam(a) - lgam(b) + u + Math.log(s);
          if( t < kMINLOG )
             s = 0.0;
          else
@@ -998,9 +998,9 @@ JSROOT.define([], () =>  {
       /* Choose expansion for better convergence. */
          y = x * (a+b-2.0) - (a-1.0);
          if( y < 0.0 )
-            w = mth.incbcf( a, b, x );
+            w = incbcf( a, b, x );
          else
-            w = mth.incbd( a, b, x ) / xc;
+            w = incbd( a, b, x ) / xc;
       
       /* Multiply w by the factor
          a      b   _             _     _
@@ -1014,11 +1014,11 @@ JSROOT.define([], () =>  {
             t *= Math.pow(x,a);
             t /= a;
             t *= w;
-            t *= mth.gamma(a+b) / (mth.gamma(a) * mth.gamma(b));
+            t *= gamma(a+b) / (gamma(a) * gamma(b));
             // goto done;
          } else {
          /* Resort to logarithms.  */
-            y += t + mth.lgam(a+b) - mth.lgam(a) - mth.lgam(b);
+            y += t + lgam(a+b) - lgam(a) - lgam(b);
             y += Math.log(w/a);
             if( y < kMINLOG )
                t = 0.0;
@@ -1098,7 +1098,7 @@ JSROOT.define([], () =>  {
          dithresh = 1.0e-4;
    /* approximation to inverse function */
    
-         yp = -mth.ndtri(yy0);
+         yp = -ndtri(yy0);
       
          if( yy0 > 0.5 )
          {
@@ -1257,7 +1257,7 @@ JSROOT.define([], () =>  {
          if( nflg )
             return process_done(); //goto done;
          nflg = 1;
-         lgm = mth.lgam(a+b) - mth.lgam(a) - mth.lgam(b);
+         lgm = lgam(a+b) - lgam(a) - lgam(b);
       
          for( i=0; i<8; i++ )
          {
@@ -1327,7 +1327,7 @@ JSROOT.define([], () =>  {
    
    /** @summary ROOT::Math::beta_quantile
      * @private */
-   mth.beta_quantile = function(z,a,b) {
+   function beta_quantile(z,a,b) {
       return mth.incbi(a,b,z);
    }
 
@@ -1340,7 +1340,7 @@ JSROOT.define([], () =>  {
          else          return 1;
       }
 
-      return mth.chisquared_cdf_c(chi2,ndf,0);
+      return chisquared_cdf_c(chi2,ndf,0);
    }
 
    /** @summary Gaus function
@@ -1358,7 +1358,7 @@ JSROOT.define([], () =>  {
    /** @summary Calculates Beta-function Gamma(p)*Gamma(q)/Gamma(p+q).
      * @private */
    mth.Beta = function(x,y) {
-      return Math.exp(mth.lgamma(x) + mth.lgamma(y) - mth.lgamma(x+y));
+      return Math.exp(lgamma(x) + lgamma(y) - lgamma(x+y));
    }
 
    /** @summary Computes the probability density function of the Beta distribution
@@ -1395,12 +1395,12 @@ JSROOT.define([], () =>  {
 
    /** @summary landau function for TFormula */
    mth.landau = function(f, x, i) {
-      return mth.Landau(x, f.GetParValue(i+1),f.GetParValue(i+2), false);
+      return Landau(x, f.GetParValue(i+1),f.GetParValue(i+2), false);
    }
 
    /** @summary landaun function for TFormula */
    mth.landaun = function(f, x, i) {
-      return mth.Landau(x, f.GetParValue(i+1),f.GetParValue(i+2), true);
+      return Landau(x, f.GetParValue(i+1),f.GetParValue(i+2), true);
    }
 
    // =========================================================================
@@ -1408,9 +1408,9 @@ JSROOT.define([], () =>  {
    function eff_ClopperPearson(total,passed,level,bUpper) {
       let alpha = (1.0 - level) / 2;
       if(bUpper)
-         return ((passed == total) ? 1.0 : mth.beta_quantile(1 - alpha,passed + 1,total-passed));
+         return ((passed == total) ? 1.0 : beta_quantile(1 - alpha,passed + 1,total-passed));
          
-      return ((passed == 0) ? 0.0 : mth.beta_quantile(alpha,passed,total-passed+1.0));
+      return ((passed == 0) ? 0.0 : beta_quantile(alpha,passed,total-passed+1.0));
    }
 
    /** @summary Caluclate normal
@@ -1421,7 +1421,7 @@ JSROOT.define([], () =>  {
       let alpha = (1.0 - level)/2,
           average = passed / total,
           sigma = Math.sqrt(average * (1 - average) / total),
-          delta = mth.normal_quantile(1 - alpha, sigma);
+          delta = normal_quantile(1 - alpha, sigma);
 
       if(bUpper)
          return ((average + delta) > 1) ? 1.0 : (average + delta);
@@ -1435,7 +1435,7 @@ JSROOT.define([], () =>  {
       let alpha = (1.0 - level)/2;
       if (total == 0) return bUpper ? 1 : 0;
       let average = passed / total,
-          kappa = mth.normal_quantile(1 - alpha,1),
+          kappa = normal_quantile(1 - alpha,1),
           mode = (passed + 0.5 * kappa * kappa) / (total + kappa * kappa),
           delta = kappa / (total + kappa*kappa) * Math.sqrt(total * average * (1 - average) + kappa * kappa / 4);
    
@@ -1449,7 +1449,7 @@ JSROOT.define([], () =>  {
      * @private */
    function eff_AgrestiCoull(total,passed,level,bUpper) {
       let alpha = (1.0 - level)/2,
-          kappa = mth.normal_quantile(1 - alpha,1),
+          kappa = normal_quantile(1 - alpha,1),
           mode = (passed + 0.5 * kappa * kappa) / (total + kappa * kappa),
           delta = kappa * Math.sqrt(mode * (1 - mode) / (total + kappa * kappa));
 
@@ -1481,7 +1481,7 @@ JSROOT.define([], () =>  {
          let v = 0.5 * mth.beta_pdf(p, passed+1., total-passed+1)/(total+1);
          //if (passed > 0) v += ROOT::Math::binomial_cdf(int(passed - 1), p, int(total));
          // compute the binomial cdf at passed -1
-         if ( (passed-1) >= 0) v += mth.beta_cdf_c(p, passed, total-passed+1);
+         if ( (passed-1) >= 0) v += beta_cdf_c(p, passed, total-passed+1);
    
          let vmin = bUpper ? alpha_min : 1.- alpha_min;
          if (v > vmin)
@@ -1557,6 +1557,32 @@ JSROOT.define([], () =>  {
 
    JSROOT.Math = mth;
    if (JSROOT.nodejs) module.exports = mth;
+
+   mth.Polynomialeval = Polynomialeval;
+   mth.Polynomial1eval = Polynomial1eval;
+   mth.stirf = stirf;
+   mth.gamma = gamma;
+   mth.ndtri = ndtri;
+   mth.normal_quantile = normal_quantile;
+   mth.igami = igami;
+   mth.igamc = igamc;
+   mth.igam = igam;
+   // mth.
+   // mth.
+   // mth.
+   // mth.
+   // mth.
+   mth.lgam = lgam;   
+   mth.chisquared_cdf_c = chisquared_cdf_c;
+   mth.chisquared_cdf = chisquared_cdf;
+   mth.chisquared_pdf = chisquared_pdf;
+   mth.lgamma = lgamma;
+   mth.inc_gamma = inc_gamma;
+   mth.inc_gamma_c = inc_gamma_c;
+   mth.landau_pdf = landau_pdf;
+   mth.beta_cdf_c = beta_cdf_c;
+   
+   mth.Landau = Landau;
 
    return mth;
 });
