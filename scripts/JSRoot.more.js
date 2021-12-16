@@ -3306,8 +3306,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return total ? passed/total : 0;
    }
 
-/**  implementing of  beta_quantile requires huge number of functions in JSRoot.math.js
-
    TEfficiencyPainter.prototype.ClopperPearson = function(total,passed,level,bUpper) {
       let alpha = (1.0 - level) / 2;
       if(bUpper)
@@ -3315,7 +3313,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       else
          return ((passed == 0) ? 0.0 : JSROOT.Math.beta_quantile(alpha,passed,total-passed+1.0));
    }
-*/
 
    /** @summary Caluclate normal
      * @private */
@@ -3359,16 +3356,17 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
      * @private */
    TEfficiencyPainter.prototype.fillGraph = function(gr, opt) {
       let eff = this.getObject(),
-          npoints = eff.fTotalHistogram.fXaxis.fNbins,
+          xaxis = eff.fTotalHistogram.fXaxis,
+          npoints = xaxis.fNbins,
           option = opt.toLowerCase(),
           plot0Bins = false, j = 0;
       if (option.indexOf("e0") >= 0) plot0Bins = true;
-      for (let n=0;n<npoints;++n) {
+      for (let n = 0; n < npoints; ++n) {
          if (!plot0Bins && eff.fTotalHistogram.getBinContent(n+1) === 0) continue;
-         gr.fX[j] = eff.fTotalHistogram.fXaxis.GetBinCenter(n+1);
+         gr.fX[j] = xaxis.GetBinCenter(n+1);
          gr.fY[j] = this.getEfficiency(n+1);
-         gr.fEXlow[j] = eff.fTotalHistogram.fXaxis.GetBinCenter(n+1) - eff.fTotalHistogram.fXaxis.GetBinLowEdge(n+1);
-         gr.fEXhigh[j] = eff.fTotalHistogram.fXaxis.GetBinLowEdge(n+2) - eff.fTotalHistogram.fXaxis.GetBinCenter(n+1);
+         gr.fEXlow[j] = xaxis.GetBinCenter(n+1) - xaxis.GetBinLowEdge(n+1);
+         gr.fEXhigh[j] = xaxis.GetBinLowEdge(n+2) - xaxis.GetBinCenter(n+1);
          gr.fEYlow[j] = this.getEfficiencyErrorLow(n+1);
          gr.fEYhigh[j] = this.getEfficiencyErrorUp(n+1);
          ++j;

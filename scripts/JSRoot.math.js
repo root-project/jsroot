@@ -10,6 +10,10 @@ JSROOT.define([], () =>  {
      * @desc Shows available functions for TFormula */
    let mth = {};
 
+   const kMACHEP = 1.11022302462515654042363166809e-16,
+         kMINLOG = -708.396418532264078748994506896,
+         kMAXLOG = 709.782712893383973096206318587;
+
    /** @summary lgam function
      * @private */
    mth.lgam = function( x ) {
@@ -226,8 +230,6 @@ JSROOT.define([], () =>  {
    /** @summary igam function
      * @private */
    mth.igam = function(a,x) {
-      const kMACHEP = 1.11022302462515654042363166809e-16,
-            kMAXLOG = 709.782712893383973096206318587;
 
       // LM: for negative values returns 1.0 instead of zero
       // This is correct if a is a negative integer since Gamma(-n) = +/- inf
@@ -260,9 +262,7 @@ JSROOT.define([], () =>  {
    /** @summary igamc function
      * @private */
    mth.igamc = function(a,x) {
-      const kMACHEP = 1.11022302462515654042363166809e-16,
-            kMAXLOG = 709.782712893383973096206318587,
-            kBig = 4.503599627370496e15,
+      const kBig = 4.503599627370496e15,
             kBiginv =  2.22044604925031308085e-16;
 
       // LM: for negative values returns 0.0
@@ -336,8 +336,7 @@ JSROOT.define([], () =>  {
       if (y0 >= 1) {
          return 0;
       }
-      const kMACHEP = 1.11022302462515654042363166809e-16,
-            kMAXNUM = Number.MAX_VALUE;
+      const kMAXNUM = Number.MAX_VALUE;
       let x0 = kMAXNUM, x1 = 0, x, yl = 0, yh = 1, y, d, lgm, dithresh = 5.0 * kMACHEP, i, dir;
 
       /* approximation to inverse function */
@@ -557,8 +556,293 @@ JSROOT.define([], () =>  {
       return Math.exp ((r/2 - 1) * Math.log((x-x0)/2) - (x-x0)/2 - mth.lgamma(r/2))/2;
    }
 
-   /** @summary Prob function
+   /** @summary ROOT::Math::Cephes::incbi
      * @private */
+   mth.incbi = function(aa,bb,yy0) {
+      let a, b, y0, d, y, x, x0, x1, lgm, yp, di, dithresh, yl, yh, xt;
+      let i, rflg, dir, nflg, ihalve = true;
+
+      // check the domain
+      if (aa <= 0) {
+         // MATH_ERROR_MSG("Cephes::incbi","Wrong domain for parameter a (must be > 0)");
+         return 0;
+      }
+      if (bb <= 0) {
+         // MATH_ERROR_MSG("Cephes::incbi","Wrong domain for parameter b (must be > 0)");
+         return 0;
+      }
+      
+      const process_done = () => {
+         if( rflg ) {
+            if( x <= kMACHEP )
+               x = 1.0 - kMACHEP;
+            else
+               x = 1.0 - x;
+         }
+         return x;
+      };
+   
+      i = 0;
+      if( yy0 <= 0 )
+         return 0.0;
+      if( yy0 >= 1.0 )
+         return 1.0;
+      x0 = 0.0;
+      yl = 0.0;
+      x1 = 1.0;
+      yh = 1.0;
+      nflg = 0;
+   
+      if( aa <= 1.0 || bb <= 1.0 )
+      {
+         dithresh = 1.0e-6;
+         rflg = 0;
+         a = aa;
+         b = bb;
+         y0 = yy0;
+         x = a/(a+b);
+         y = incbet( a, b, x );
+         // goto ihalve; // will start 
+      }
+      else
+      {
+         dithresh = 1.0e-4;
+   /* approximation to inverse function */
+   
+         yp = -ndtri(yy0);
+      
+         if( yy0 > 0.5 )
+         {
+            rflg = 1;
+            a = bb;
+            b = aa;
+            y0 = 1.0 - yy0;
+            yp = -yp;
+         }
+         else
+         {
+            rflg = 0;
+            a = aa;
+            b = bb;
+            y0 = yy0;
+         }
+      
+         lgm = (yp * yp - 3.0)/6.0;
+         x = 2.0/( 1.0/(2.0*a-1.0)  +  1.0/(2.0*b-1.0) );
+         d = yp * Math.sqrt( x + lgm ) / x
+            - ( 1.0/(2.0*b-1.0) - 1.0/(2.0*a-1.0) )
+            * (lgm + 5.0/6.0 - 2.0/(3.0*x));
+         d = 2.0 * d;
+         if( d < kMINLOG )
+         {
+            // x = 1.0;
+            // goto under;
+            x = 0.0;
+            return process_done(); 
+         }
+         x = a/( a + b * Math.exp(d) );
+         y = incbet( a, b, x );
+         yp = (y - y0)/y0;
+         if( Math.abs(yp) < 0.2 )
+            ihalve = false; // instead goto newt; exclude ihalve for the first time
+      }
+   
+     let mainloop = 1000;
+   
+     // endless loop until coverage
+     while (mainloop-- > 0) {
+   
+      /* Resort to interval halving if not close enough. */
+      // ihalve:
+         while(ihalve) {
+      
+            dir = 0;
+            di = 0.5;
+            for( i=0; i<100; i++ )
+            {
+               if( i != 0 )
+               {
+                  x = x0  +  di * (x1 - x0);
+                  if( x == 1.0 )
+                     x = 1.0 - kMACHEP;
+                  if( x == 0.0 )
+                  {
+                     di = 0.5;
+                     x = x0  +  di * (x1 - x0);
+                     if( x == 0.0 )
+                        return process_done(); // goto under;
+                  }
+                  y = incbet( a, b, x );
+                  yp = (x1 - x0)/(x1 + x0);
+                  if( Math.abs(yp) < dithresh )
+                     break; // goto newt;
+                  yp = (y-y0)/y0;
+                  if( Math.abs(yp) < dithresh )
+                     break; // goto newt;
+               }
+               if( y < y0 )
+               {
+                  x0 = x;
+                  yl = y;
+                  if( dir < 0 )
+                  {
+                     dir = 0;
+                     di = 0.5;
+                  }
+                  else if( dir > 3 )
+                     di = 1.0 - (1.0 - di) * (1.0 - di);
+                  else if( dir > 1 )
+                     di = 0.5 * di + 0.5;
+                  else
+                     di = (y0 - y)/(yh - yl);
+                  dir += 1;
+                  if( x0 > 0.75 )
+                  {
+                     if( rflg == 1 )
+                     {
+                        rflg = 0;
+                        a = aa;
+                        b = bb;
+                        y0 = yy0;
+                     }
+                     else
+                     {
+                        rflg = 1;
+                        a = bb;
+                        b = aa;
+                        y0 = 1.0 - yy0;
+                     }
+                     x = 1.0 - x;
+                     y = incbet( a, b, x );
+                     x0 = 0.0;
+                     yl = 0.0;
+                     x1 = 1.0;
+                     yh = 1.0;
+                     continue; // goto ihalve;
+                  }
+               }
+               else
+               {
+                  x1 = x;
+                  if( rflg == 1 && x1 < kMACHEP )
+                  {
+                     x = 0.0;
+                     return process_done(); // goto done;
+                  }
+                  yh = y;
+                  if( dir > 0 )
+                  {
+                     dir = 0;
+                     di = 0.5;
+                  }
+                  else if( dir < -3 )
+                     di = di * di;
+                  else if( dir < -1 )
+                     di = 0.5 * di;
+                  else
+                     di = (y - y0)/(yh - yl);
+                  dir -= 1;
+               }
+            }
+            //mtherr( "incbi", PLOSS );
+            if( x0 >= 1.0 )
+            {
+               x = 1.0 - kMACHEP;
+               return process_done(); //goto done;
+            }
+            if( x <= 0.0 )
+            {
+            // under:
+               //mtherr( "incbi", UNDERFLOW );
+               x = 0.0;
+               return process_done(); //goto done;
+            }
+            break; // if here, break ihalve
+         
+         } // end of ihalve
+      
+         ihalve = true; // enter loop next time
+      
+      // newt:
+      
+         if( nflg )
+            return process_done(); //goto done;
+         nflg = 1;
+         lgm = lgam(a+b) - lgam(a) - lgam(b);
+      
+         for( i=0; i<8; i++ )
+         {
+            /* Compute the function at this point. */
+            if( i != 0 )
+               y = incbet(a,b,x);
+            if( y < yl )
+            {
+               x = x0;
+               y = yl;
+            }
+            else if( y > yh )
+            {
+               x = x1;
+               y = yh;
+            }
+            else if( y < y0 )
+            {
+               x0 = x;
+               yl = y;
+            }
+            else
+            {
+               x1 = x;
+               yh = y;
+            }
+            if( x == 1.0 || x == 0.0 )
+               break;
+            /* Compute the derivative of the function at this point. */
+            d = (a - 1.0) * Math.log(x) + (b - 1.0) * Math.log(1.0-x) + lgm;
+            if( d < kMINLOG )
+               return process_done(); // goto done;
+            if( d > kMAXLOG )
+               break;
+            d = Math.exp(d);
+            /* Compute the step to the next approximation of x. */
+            d = (y - y0)/d;
+            xt = x - d;
+            if( xt <= x0 )
+            {
+               y = (x - x0) / (x1 - x0);
+               xt = x0 + 0.5 * y * (x - x0);
+               if( xt <= 0.0 )
+                  break;
+            }
+            if( xt >= x1 )
+            {
+               y = (x1 - x) / (x1 - x0);
+               xt = x1 - 0.5 * y * (x1 - x);
+               if( xt >= 1.0 )
+                  break;
+            }
+            x = xt;
+            if( Math.abs(d/x) < 128.0 * kMACHEP )
+               return process_done(); // goto done;
+         }
+      /* Did not converge.  */
+         dithresh = 256.0 * kMACHEP;
+       
+      } // endless loop instead of // goto ihalve;
+   
+   // done:
+   
+      return process_done();
+   }
+   
+   
+   /** @summary ROOT::Math::beta_quantile
+     * @private */
+   mth.beta_quantile = function(z,a,b) {
+      return mth.incbi(a,b,z);
+   }
+
+   /** @summary Prob function */
    mth.Prob = function(chi2, ndf) {
       if (ndf <= 0) return 0; // Set CL to zero in case ndf<=0
 
