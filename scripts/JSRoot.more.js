@@ -3297,137 +3297,29 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    TEfficiencyPainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
 
    /** @summary Caluclate efficiency */
-   TEfficiencyPainter.prototype.getEfficiency = function(bin) {
-      let obj = this.getObject(),
-          total = obj.fTotalHistogram.fArray[bin], // should work for both 1-d and 2-d
+   TEfficiencyPainter.prototype.getEfficiency = function(obj, bin) {
+      let total = obj.fTotalHistogram.fArray[bin], // should work for both 1-d and 2-d
           passed = obj.fPassedHistogram.fArray[bin]; // should work for both 1-d and 2-d
 
       return total ? passed/total : 0;
    }
-
-   TEfficiencyPainter.prototype.ClopperPearson = function(total,passed,level,bUpper) {
-      let alpha = (1.0 - level) / 2;
-      if(bUpper)
-         return ((passed == total) ? 1.0 : JSROOT.Math.beta_quantile(1 - alpha,passed + 1,total-passed));
-         
-      return ((passed == 0) ? 0.0 : JSROOT.Math.beta_quantile(alpha,passed,total-passed+1.0));
-   }
-
-   /** @summary Caluclate normal
-     * @private */
-   TEfficiencyPainter.prototype.Normal = function(total,passed,level,bUpper) {
-      if (total == 0) return bUpper ? 1 : 0;
-
-      let alpha = (1.0 - level)/2,
-          average = passed / total,
-          sigma = Math.sqrt(average * (1 - average) / total),
-          delta = JSROOT.Math.normal_quantile(1 - alpha, sigma);
-
-      if(bUpper)
-         return ((average + delta) > 1) ? 1.0 : (average + delta);
-
-      return ((average - delta) < 0) ? 0.0 : (average - delta);
-   }
    
-   /** @summary Calculates the boundaries for the frequentist Wilson interval
-     * @private */
-   TEfficiencyPainter.prototype.Wilson = function(total,passed,level,bUpper) {
-      let alpha = (1.0 - level)/2;
-      if (total == 0) return bUpper ? 1 : 0;
-      let average = passed / total,
-          kappa = JSROOT.Math.normal_quantile(1 - alpha,1),
-          mode = (passed + 0.5 * kappa * kappa) / (total + kappa * kappa),
-          delta = kappa / (total + kappa*kappa) * Math.sqrt(total * average * (1 - average) + kappa * kappa / 4);
-   
-      if(bUpper)
-         return ((mode + delta) > 1) ? 1.0 : (mode + delta);
-
-      return ((mode - delta) < 0) ? 0.0 : (mode - delta);
-   }
-   
-   /** @summary Calculates the boundaries for the frequentist Agresti-Coull interval
-     * @private */
-   TEfficiencyPainter.prototype.AgrestiCoull = function(total,passed,level,bUpper) {
-      let alpha = (1.0 - level)/2,
-          kappa = JSROOT.Math.normal_quantile(1 - alpha,1),
-          mode = (passed + 0.5 * kappa * kappa) / (total + kappa * kappa),
-          delta = kappa * Math.sqrt(mode * (1 - mode) / (total + kappa * kappa));
-
-     if(bUpper)
-        return ((mode + delta) > 1) ? 1.0 : (mode + delta);
-        
-     return ((mode - delta) < 0) ? 0.0 : (mode - delta);
-   }
-   
-   /** @summary Calculates the boundaries using the  mid-P binomial
-     * @private */
-   TEfficiencyPainter.prototype.MidPInterval = function(total,passed,level,bUpper) {
-      const alpha = 1. - level, equal_tailed = true, alpha_min = equal_tailed ? alpha/2 : alpha, tol = 1e-9; // tolerance
-      let pmin = 0, pmax = 1, p = 0;
-
-      // treat special case for 0<passed<1
-      // do a linear interpolation of the upper limit values
-      if ( passed > 0 && passed < 1) {
-         let p0 =  this.MidPInterval(total,0.0,level,bUpper);
-         let p1 =  this.MidPInterval(total,1.0,level,bUpper);
-         p = (p1 - p0) * passed + p0;
-         return p;
-      }
-   
-      while (Math.abs(pmax - pmin) > tol) {
-         p = (pmin + pmax)/2;
-         //double v = 0.5 * ROOT::Math::binomial_pdf(int(passed), p, int(total));
-         // make it work for non integer using the binomial - beta relationship
-         let v = 0.5 * JSROOT.Math.beta_pdf(p, passed+1., total-passed+1)/(total+1);
-         //if (passed > 0) v += ROOT::Math::binomial_cdf(int(passed - 1), p, int(total));
-         // compute the binomial cdf at passed -1
-         if ( (passed-1) >= 0) v += JSROOT.Math.beta_cdf_c(p, passed, total-passed+1);
-   
-         let vmin = bUpper ? alpha_min : 1.- alpha_min;
-         if (v > vmin)
-            pmin = p;
-         else
-            pmax = p;
-      }
-   
-      return p;
-   }
-   
-   /** @summary Set statistic option
-     * @private */
-   TEfficiencyPainter.prototype.setStatisticOption = function(option) {
-      const  kFCP = 0,           ///< Clopper-Pearson interval (recommended by PDG)
-             kFNormal = 1,       ///< Normal approximation
-             kFWilson = 2,       ///< Wilson interval
-             kFAC = 3,           ///< Agresti-Coull interval
-             kMidP = 8;          ///< Mid-P Lancaster interval
-      
-      switch (option) {
-         case kFCP: this.fBoundary = this.ClopperPearson; break;
-         case kFNormal: this.fBoundary = this.Normal; break;
-         case kFWilson: this.fBoundary = this.Wilson; break;
-         case kFAC: this.fBoundary = this.AgrestiCoull; break;
-         case kMidP: this.fBoundary = this.MidPInterval; break;
-         default: this.fBoundary = this.ClopperPearson; console.log(`Not supported stat option ${option}, use kFCP`);
-      }
-   }
-
    /** @summary Caluclate efficiency error low
      * @private */
-   TEfficiencyPainter.prototype.getEfficiencyErrorLow = function(obj, bin, eff) {
-      let total = obj.fTotalHistogram.getBinContent(bin),
-          passed = obj.fPassedHistogram.getBinContent(bin);
+   TEfficiencyPainter.prototype.getEfficiencyErrorLow = function(obj, bin, value) {
+      let total = obj.fTotalHistogram.fArray[bin],
+          passed = obj.fPassedHistogram.fArray[bin];
 
-      return eff - this.fBoundary(total,passed, obj.fConfLevel, false);
+      return value - this.fBoundary(total, passed, obj.fConfLevel, false);
    }
 
    /** @summary Caluclate efficiency error low up
      * @private */
-   TEfficiencyPainter.prototype.getEfficiencyErrorUp = function(obj, bin, eff) {
-      let total = obj.fTotalHistogram.getBinContent(bin),
-          passed = obj.fPassedHistogram.getBinContent(bin);
+   TEfficiencyPainter.prototype.getEfficiencyErrorUp = function(obj, bin, value) {
+      let total = obj.fTotalHistogram.fArray[bin],
+          passed = obj.fPassedHistogram.fArray[bin];
 
-      return this.fBoundary(total, passed, obj.fConfLevel, true) - eff;
+      return this.fBoundary(total, passed, obj.fConfLevel, true) - value;
    }
    
    /** @summary Copy drawning attributes
@@ -3474,7 +3366,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       for (let n = 0, j = 0; n < npoints; ++n) {
          if (!plot0Bins && eff.fTotalHistogram.getBinContent(n+1) === 0) continue;
          
-         let value = this.getEfficiency(n+1);
+         let value = this.getEfficiency(eff, n+1);
          
          gr.fX[j] = xaxis.GetBinCenter(n+1);
          gr.fY[j] = value;
@@ -3485,7 +3377,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          
          gr.fNpoints = ++j;
       }
-      
 
       gr.fTitle = eff.fTitle;
       this.copyAttributes(gr, eff);
@@ -3502,7 +3393,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       for (let i = 0; i < nbinsx+2; ++i)
          for (let j = 0; j < nbinsy+2; ++j) {
             let bin = hist.getBin(i, j),
-                value = this.getEfficiency(bin);
+                value = this.getEfficiency(eff, bin);
             hist.fArray[bin] = value;
          }
          
@@ -3538,8 +3429,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       let painter = new TEfficiencyPainter(dom, eff);
       painter.ndim = ndim;
 
-      return JSROOT.require('math').then(() => {
-         painter.setStatisticOption(eff.fStatisticOption);
+      return JSROOT.require('math').then(mth => {
+         
+         painter.fBoundary = mth.getTEfficiencyBoundaryFunc(eff.fStatisticOption);
          
          if (ndim == 1) {
             if (!opt) opt = "ap";

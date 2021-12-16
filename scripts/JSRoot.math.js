@@ -1405,6 +1405,117 @@ JSROOT.define([], () =>  {
 
    // =========================================================================
 
+   function eff_ClopperPearson(total,passed,level,bUpper) {
+      let alpha = (1.0 - level) / 2;
+      if(bUpper)
+         return ((passed == total) ? 1.0 : mth.beta_quantile(1 - alpha,passed + 1,total-passed));
+         
+      return ((passed == 0) ? 0.0 : mth.beta_quantile(alpha,passed,total-passed+1.0));
+   }
+
+   /** @summary Caluclate normal
+     * @private */
+   function eff_Normal(total,passed,level,bUpper) {
+      if (total == 0) return bUpper ? 1 : 0;
+
+      let alpha = (1.0 - level)/2,
+          average = passed / total,
+          sigma = Math.sqrt(average * (1 - average) / total),
+          delta = mth.normal_quantile(1 - alpha, sigma);
+
+      if(bUpper)
+         return ((average + delta) > 1) ? 1.0 : (average + delta);
+
+      return ((average - delta) < 0) ? 0.0 : (average - delta);
+   }
+   
+   /** @summary Calculates the boundaries for the frequentist Wilson interval
+     * @private */
+   function eff_Wilson(total,passed,level,bUpper) {
+      let alpha = (1.0 - level)/2;
+      if (total == 0) return bUpper ? 1 : 0;
+      let average = passed / total,
+          kappa = mth.normal_quantile(1 - alpha,1),
+          mode = (passed + 0.5 * kappa * kappa) / (total + kappa * kappa),
+          delta = kappa / (total + kappa*kappa) * Math.sqrt(total * average * (1 - average) + kappa * kappa / 4);
+   
+      if(bUpper)
+         return ((mode + delta) > 1) ? 1.0 : (mode + delta);
+
+      return ((mode - delta) < 0) ? 0.0 : (mode - delta);
+   }
+   
+   /** @summary Calculates the boundaries for the frequentist Agresti-Coull interval
+     * @private */
+   function eff_AgrestiCoull(total,passed,level,bUpper) {
+      let alpha = (1.0 - level)/2,
+          kappa = mth.normal_quantile(1 - alpha,1),
+          mode = (passed + 0.5 * kappa * kappa) / (total + kappa * kappa),
+          delta = kappa * Math.sqrt(mode * (1 - mode) / (total + kappa * kappa));
+
+     if(bUpper)
+        return ((mode + delta) > 1) ? 1.0 : (mode + delta);
+        
+     return ((mode - delta) < 0) ? 0.0 : (mode - delta);
+   }
+   
+   /** @summary Calculates the boundaries using the  mid-P binomial
+     * @private */
+   function eff_MidPInterval(total,passed,level,bUpper) {
+      const alpha = 1. - level, equal_tailed = true, alpha_min = equal_tailed ? alpha/2 : alpha, tol = 1e-9; // tolerance
+      let pmin = 0, pmax = 1, p = 0;
+
+      // treat special case for 0<passed<1
+      // do a linear interpolation of the upper limit values
+      if ( passed > 0 && passed < 1) {
+         let p0 =  eff_MidPInterval(total,0.0,level,bUpper);
+         let p1 =  eff_MidPInterval(total,1.0,level,bUpper);
+         p = (p1 - p0) * passed + p0;
+         return p;
+      }
+   
+      while (Math.abs(pmax - pmin) > tol) {
+         p = (pmin + pmax)/2;
+         //double v = 0.5 * ROOT::Math::binomial_pdf(int(passed), p, int(total));
+         // make it work for non integer using the binomial - beta relationship
+         let v = 0.5 * mth.beta_pdf(p, passed+1., total-passed+1)/(total+1);
+         //if (passed > 0) v += ROOT::Math::binomial_cdf(int(passed - 1), p, int(total));
+         // compute the binomial cdf at passed -1
+         if ( (passed-1) >= 0) v += mth.beta_cdf_c(p, passed, total-passed+1);
+   
+         let vmin = bUpper ? alpha_min : 1.- alpha_min;
+         if (v > vmin)
+            pmin = p;
+         else
+            pmax = p;
+      }
+   
+      return p;
+   }
+   
+   /** @summary Return function to calculate boundary of TEfficiency
+     * @private */
+   mth.getTEfficiencyBoundaryFunc = function(option) {
+      const  kFCP = 0,           ///< Clopper-Pearson interval (recommended by PDG)
+             kFNormal = 1,       ///< Normal approximation
+             kFWilson = 2,       ///< Wilson interval
+             kFAC = 3,           ///< Agresti-Coull interval
+             kMidP = 8;          ///< Mid-P Lancaster interval
+      
+      switch (option) {
+         case kFCP: return eff_ClopperPearson;
+         case kFNormal: return eff_Normal;
+         case kFWilson: return eff_Wilson;
+         case kFAC: return eff_AgrestiCoull;
+         case kMidP: return eff_MidPInterval;
+      }
+      console.log(`Not supported stat option ${option}, use kFCP`);
+      return eff_ClopperPearson; 
+   }
+
+   // =========================================================================
+   
+
    /** @summary Appends more methods
      * @desc different methods which are typically used in TTree::Draw
      * @private */
