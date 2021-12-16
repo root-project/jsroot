@@ -3292,7 +3292,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    function TEfficiencyPainter(dom, eff) {
       JSROOT.ObjectPainter.call(this, dom, eff);
-      this.fBoundary = 'Normal';
    }
 
    TEfficiencyPainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
@@ -3310,8 +3309,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       let alpha = (1.0 - level) / 2;
       if(bUpper)
          return ((passed == total) ? 1.0 : JSROOT.Math.beta_quantile(1 - alpha,passed + 1,total-passed));
-      else
-         return ((passed == 0) ? 0.0 : JSROOT.Math.beta_quantile(alpha,passed,total-passed+1.0));
+         
+      return ((passed == 0) ? 0.0 : JSROOT.Math.beta_quantile(alpha,passed,total-passed+1.0));
    }
 
    /** @summary Caluclate normal
@@ -3322,7 +3321,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       let alpha = (1.0 - level)/2,
           average = passed / total,
           sigma = Math.sqrt(average * (1 - average) / total),
-          delta = JSROOT.Math.normal_quantile(1 - alpha,sigma);
+          delta = JSROOT.Math.normal_quantile(1 - alpha, sigma);
 
       if(bUpper)
          return ((average + delta) > 1) ? 1.0 : (average + delta);
@@ -3332,22 +3331,18 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    /** @summary Caluclate efficiency error low
      * @private */
-   TEfficiencyPainter.prototype.getEfficiencyErrorLow = function(bin) {
-      let obj = this.getObject(),
-          total = obj.fTotalHistogram.getBinContent(bin),
-          passed = obj.fPassedHistogram.getBinContent(bin),
-          eff = this.getEfficiency(bin);
+   TEfficiencyPainter.prototype.getEfficiencyErrorLow = function(obj, bin, eff) {
+      let total = obj.fTotalHistogram.getBinContent(bin),
+          passed = obj.fPassedHistogram.getBinContent(bin);
 
       return eff - this[this.fBoundary](total,passed, obj.fConfLevel, false);
    }
 
    /** @summary Caluclate efficiency error low up
      * @private */
-   TEfficiencyPainter.prototype.getEfficiencyErrorUp = function(bin) {
-      let obj = this.getObject(),
-          total = obj.fTotalHistogram.getBinContent(bin),
-          passed = obj.fPassedHistogram.getBinContent(bin),
-          eff = this.getEfficiency(bin);
+   TEfficiencyPainter.prototype.getEfficiencyErrorUp = function(obj, bin, eff) {
+      let total = obj.fTotalHistogram.getBinContent(bin),
+          passed = obj.fPassedHistogram.getBinContent(bin);
 
       return this[this.fBoundary](total, passed, obj.fConfLevel, true) - eff;
    }
@@ -3355,20 +3350,33 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    /** @summary Fill graph with points from efficiency object
      * @private */
    TEfficiencyPainter.prototype.fillGraph = function(gr, opt) {
+      const  kFCP = 0,           ///< Clopper-Pearson interval (recommended by PDG)
+             kFNormal = 1;       ///< Normal approximation
+      
       let eff = this.getObject(),
           xaxis = eff.fTotalHistogram.fXaxis,
           npoints = xaxis.fNbins,
           option = opt.toLowerCase(),
           plot0Bins = false, j = 0;
+
+      switch (eff.fStatisticOption) {
+         case kFCP: this.fBoundary = 'ClopperPearson'; break;
+         case kFNormal: this.fBoundary = 'Normal'; break;
+         default: this.fBoundary = 'ClopperPearson';
+      }            
+          
       if (option.indexOf("e0") >= 0) plot0Bins = true;
       for (let n = 0; n < npoints; ++n) {
          if (!plot0Bins && eff.fTotalHistogram.getBinContent(n+1) === 0) continue;
+         
+         let value = this.getEfficiency(n+1);
+         
          gr.fX[j] = xaxis.GetBinCenter(n+1);
-         gr.fY[j] = this.getEfficiency(n+1);
+         gr.fY[j] = value;
          gr.fEXlow[j] = xaxis.GetBinCenter(n+1) - xaxis.GetBinLowEdge(n+1);
          gr.fEXhigh[j] = xaxis.GetBinLowEdge(n+2) - xaxis.GetBinCenter(n+1);
-         gr.fEYlow[j] = this.getEfficiencyErrorLow(n+1);
-         gr.fEYhigh[j] = this.getEfficiencyErrorUp(n+1);
+         gr.fEYlow[j] = this.getEfficiencyErrorLow(eff, n+1, value);
+         gr.fEYhigh[j] = this.getEfficiencyErrorUp(eff, n+1, value);
          ++j;
       }
       gr.fNpoints = j;
