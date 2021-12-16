@@ -3329,16 +3329,32 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return ((average - delta) < 0) ? 0.0 : (average - delta);
    }
    
+   /** @summary Calculates the boundaries for the frequentist Agresti-Coull interval
+     * @private */
+   TEfficiencyPainter.prototype.AgrestiCoull = function(total,passed,level,bUpper) {
+      let alpha = (1.0 - level)/2,
+          kappa = JSROOT.Math.normal_quantile(1 - alpha,1),
+          mode = (passed + 0.5 * kappa * kappa) / (total + kappa * kappa),
+          delta = kappa * Math.sqrt(mode * (1 - mode) / (total + kappa * kappa));
+
+     if(bUpper)
+        return ((mode + delta) > 1) ? 1.0 : (mode + delta);
+        
+     return ((mode - delta) < 0) ? 0.0 : (mode - delta);
+   }
+   
    /** @summary Set statistic option
      * @private */
    TEfficiencyPainter.prototype.setStatisticOption = function(option) {
       const  kFCP = 0,           ///< Clopper-Pearson interval (recommended by PDG)
-             kFNormal = 1;       ///< Normal approximation
+             kFNormal = 1,       ///< Normal approximation
+             kFAC = 3;           ///< Agresti-Coull interval
       
       switch (option) {
-         case kFCP: this.fBoundary = 'ClopperPearson'; break;
-         case kFNormal: this.fBoundary = 'Normal'; break;
-         default: this.fBoundary = 'ClopperPearson'; console.log(`Not supported stat option ${option}`);
+         case kFCP: this.fBoundary = this.ClopperPearson; break;
+         case kFNormal: this.fBoundary = this.Normal; break;
+         case kFAC: this.fBoundary = this.AgrestiCoull; break;
+         default: this.fBoundary = this.ClopperPearson; console.log(`Not supported stat option ${option}, use kFCP`);
       }
    }
 
@@ -3348,7 +3364,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       let total = obj.fTotalHistogram.getBinContent(bin),
           passed = obj.fPassedHistogram.getBinContent(bin);
 
-      return eff - this[this.fBoundary](total,passed, obj.fConfLevel, false);
+      return eff - this.fBoundary(total,passed, obj.fConfLevel, false);
    }
 
    /** @summary Caluclate efficiency error low up
@@ -3357,7 +3373,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       let total = obj.fTotalHistogram.getBinContent(bin),
           passed = obj.fPassedHistogram.getBinContent(bin);
 
-      return this[this.fBoundary](total, passed, obj.fConfLevel, true) - eff;
+      return this.fBoundary(total, passed, obj.fConfLevel, true) - eff;
    }
    
    /** @summary Copy drawning attributes
