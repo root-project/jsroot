@@ -3375,6 +3375,17 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       }
       gr.fNpoints = j;
    }
+   
+   /** @summary Draw function 
+     * @private */
+   TEfficiencyPainter.prototype.drawFunction = function(indx) {
+      const eff = this.getObject();
+      
+      if (!eff || !eff.fFunctions || indx >= eff.fFunctions.arr.length) 
+         return this;
+         
+       return JSROOT.draw(this.getDom(), eff.fFunctions.arr[indx], eff.fFunctions.opt[indx]).then(() => this.drawFunction(indx+1)); 
+   }
 
    /** @summary Draw function for TEfficiency object
      * @private */
@@ -3401,7 +3412,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          return JSROOT.draw(dom, gr, opt);
       }).then(() => {
          painter.addToPadPrimitives();
-         return painter;
+         return painter.drawFunction(0);
       });
    }
 
