@@ -1908,7 +1908,6 @@
 
          m.evalPar = function(x, y) {
             if (! ('_func' in this) || (this._title !== this.fTitle)) {
-
               let _func = this.fTitle, isformula = false, pprefix = "[";
               if (_func === "gaus") _func = "gaus(0)";
               if (this.fFormula && typeof this.fFormula.fFormula == "string") {
@@ -1919,19 +1918,20 @@
                     _func = this.fFormula.fFormula;
                     pprefix = "[p";
                  }
-                 if (this.fFormula.fClingParameters && this.fFormula.fParams) {
-                    for (let i=0;i<this.fFormula.fParams.length;++i) {
-                       let regex = new RegExp('(\\[' + this.fFormula.fParams[i].first + '\\])', 'g'),
-                           parvalue = this.fFormula.fClingParameters[this.fFormula.fParams[i].second];
-                       _func = _func.replace(regex, (parvalue < 0) ? "(" + parvalue + ")" : parvalue);
-                    }
-                 }
+                 if (this.fFormula.fClingParameters && this.fFormula.fParams) 
+                    this.fFormula.fParams.forEach(pair => {
+                       let regex = new RegExp(`(\\[${pair.first}\\])`, 'g'),
+                           parvalue = this.fFormula.fClingParameters[pair.second];
+                       _func = _func.replace(regex, (parvalue < 0) ? `(${parvalue})` : parvalue);
+                    });
+                 
               }
 
               if ('formulas' in this)
-                 for (let i=0;i<this.formulas.length;++i)
-                    while (_func.indexOf(this.formulas[i].fName) >= 0)
-                       _func = _func.replace(this.formulas[i].fName, this.formulas[i].fTitle);
+                 this.formulas.forEach(entry => {
+                    while (_func.indexOf(entry.fName) >= 0)
+                       _func = _func.replace(entry.fName, entry.fTitle);
+                 });
               _func = _func.replace(/\b(abs)\b/g, 'TMath::Abs')
                            .replace(/TMath::Exp\(/g, 'Math.exp(')
                            .replace(/TMath::Abs\(/g, 'Math.abs(');
@@ -1948,10 +1948,10 @@
                               .replace(/landaun\(/g, 'this._math.landaun(this, x, ')
                               .replace(/ROOT::Math::/g, 'this._math.');
               }
-              for (let i=0;i<this.fNpar;++i) {
+              for (let i = 0; i < this.fNpar; ++i) {
                  let parname = pprefix + i + "]";
                  while(_func.indexOf(parname) != -1)
-                    _func = _func.replace(parname, '('+this.GetParValue(i)+')');
+                    _func = _func.replace(parname, `(${this.GetParValue(i)})`);
               }
               _func = _func.replace(/\b(sin)\b/gi, 'Math.sin')
                            .replace(/\b(cos)\b/gi, 'Math.cos')
@@ -1959,8 +1959,11 @@
                            .replace(/\b(exp)\b/gi, 'Math.exp')
                            .replace(/\b(pow)\b/gi, 'Math.pow')
                            .replace(/pi/g, 'Math.PI');
-              for (let n=2;n<10;++n)
-                 _func = _func.replace('x^'+n, 'Math.pow(x,'+n+')');
+              for (let n = 2; n < 10; ++n) {
+                 let name = 'x^'+n;
+                 while (_func.indexOf(name) >= 0) 
+                    _func = _func.replace(name, `Math.pow(x,${n}`);
+              }
 
               if (isformula) {
                  _func = _func.replace(/x\[0\]/g,"x");
@@ -1970,8 +1973,7 @@
                  } else {
                     this._func = new Function("x", _func).bind(this);
                  }
-              } else
-              if (this._typename==="TF2")
+              } else if (this._typename === "TF2")
                  this._func = new Function("x", "y", "return " + _func).bind(this);
               else
                  this._func = new Function("x", "return " + _func).bind(this);
