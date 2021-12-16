@@ -3329,6 +3329,22 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return ((average - delta) < 0) ? 0.0 : (average - delta);
    }
    
+   /** @summary Calculates the boundaries for the frequentist Wilson interval
+     * @private */
+   TEfficiencyPainter.prototype.Wilson = function(total,passed,level,bUpper) {
+      let alpha = (1.0 - level)/2;
+      if (total == 0) return bUpper ? 1 : 0;
+      let average = passed / total,
+          kappa = JSROOT.Math.normal_quantile(1 - alpha,1),
+          mode = (passed + 0.5 * kappa * kappa) / (total + kappa * kappa),
+          delta = kappa / (total + kappa*kappa) * Math.sqrt(total * average * (1 - average) + kappa * kappa / 4);
+   
+      if(bUpper)
+         return ((mode + delta) > 1) ? 1.0 : (mode + delta);
+
+      return ((mode - delta) < 0) ? 0.0 : (mode - delta);
+   }
+   
    /** @summary Calculates the boundaries for the frequentist Agresti-Coull interval
      * @private */
    TEfficiencyPainter.prototype.AgrestiCoull = function(total,passed,level,bUpper) {
@@ -3348,11 +3364,13 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    TEfficiencyPainter.prototype.setStatisticOption = function(option) {
       const  kFCP = 0,           ///< Clopper-Pearson interval (recommended by PDG)
              kFNormal = 1,       ///< Normal approximation
+             kFWilson = 2,       ///< Wilson interval
              kFAC = 3;           ///< Agresti-Coull interval
       
       switch (option) {
          case kFCP: this.fBoundary = this.ClopperPearson; break;
          case kFNormal: this.fBoundary = this.Normal; break;
+         case kFWilson: this.fBoundary = this.Wilson; break;
          case kFAC: this.fBoundary = this.AgrestiCoull; break;
          default: this.fBoundary = this.ClopperPearson; console.log(`Not supported stat option ${option}, use kFCP`);
       }
