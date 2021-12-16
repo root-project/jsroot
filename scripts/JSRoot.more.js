@@ -3298,8 +3298,55 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    /** @summary Caluclate efficiency */
    TEfficiencyPainter.prototype.getEfficiency = function(obj, bin) {
+      const kIsBayesian       = JSROOT.BIT(14),  ///< Bayesian statistics are used
+            kPosteriorMode    = JSROOT.BIT(15),  ///< Use posterior mean for best estimate (Bayesian statistics)
+     //       kShortestInterval = JSROOT.BIT(16),  ///< Use shortest interval
+            kUseBinPrior      = JSROOT.BIT(17),  ///< Use a different prior for each bin
+            kUseWeights       = JSROOT.BIT(18);   ///< Use weights
+            
+      const GetBetaAlpha = bin => obj.fBeta_bin_params.length > bin ? obj.fBeta_bin_params[bin].first : obj.fBeta_alpha;
+      const GetBetaBeta = bin => obj.fBeta_bin_params.length > bin ? obj.fBeta_bin_params[bin].second : fBeta_beta;
+      const BetaMean = (a,b) => (a <= 0 || b <= 0 ) ? 0 : a / (a + b); 
+      const BetaMode = (a,b) => {
+         if (a <= 0 || b <= 0 ) return 0;
+         if ( a <= 1 || b <= 1) {
+            if ( a < b) return 0;
+            if ( a > b) return 1;
+            if (a == b) return 0.5; // cannot do otherwise
+         }
+         return (a - 1.0) / (a + b -2.0);
+      }
+      
       let total = obj.fTotalHistogram.fArray[bin], // should work for both 1-d and 2-d
           passed = obj.fPassedHistogram.fArray[bin]; // should work for both 1-d and 2-d
+
+      if(obj.TestBit(kIsBayesian)) {
+         // parameters for the beta prior distribution
+         let alpha = obj.TestBit(kUseBinPrior) ? GetBetaAlpha(bin) : GetBetaAlpha(-1);
+         let beta  = obj.TestBit(kUseBinPrior) ? GetBetaBeta(bin)  : GetBetaBeta(-1);
+   
+         let aa,bb;
+         if(obj.TestBit(kUseWeights)) {
+            let tw =  total; // fTotalHistogram->GetBinContent(bin);
+            let tw2 = obj.fTotalHistogram.fSumw2 ? obj.fTotalHistogram.fSumw2[bin] : Math.abs(total);
+            let pw =  passed; // fPassedHistogram->GetBinContent(bin);
+   
+            if (tw2 <= 0 ) return pw/tw;
+   
+            // tw/tw2 renormalize the weights
+            let norm = tw/tw2;
+            aa =  pw * norm + alpha;
+            bb =  (tw - pw) * norm + beta;
+         } else {
+            aa = passed + alpha;
+            bb = total - passed + beta;
+         }
+   
+         if (!obj.TestBit(kPosteriorMode) )
+            return BetaMean(aa,bb);
+         else
+            return BetaMode(aa,bb);
+      }
 
       return total ? passed/total : 0;
    }
