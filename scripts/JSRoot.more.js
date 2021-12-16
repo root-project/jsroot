@@ -3299,8 +3299,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    /** @summary Caluclate efficiency */
    TEfficiencyPainter.prototype.getEfficiency = function(bin) {
       let obj = this.getObject(),
-          total = obj.fTotalHistogram.getBinContent(bin),
-          passed = obj.fPassedHistogram.getBinContent(bin);
+          total = obj.fTotalHistogram.fArray[bin], // should work for both 1-d and 2-d
+          passed = obj.fPassedHistogram.fArray[bin]; // should work for both 1-d and 2-d
 
       return total ? passed/total : 0;
    }
@@ -3328,6 +3328,19 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       return ((average - delta) < 0) ? 0.0 : (average - delta);
    }
+   
+   /** @summary Set statistic option
+     * @private */
+   TEfficiencyPainter.prototype.setStatisticOption = function(option) {
+      const  kFCP = 0,           ///< Clopper-Pearson interval (recommended by PDG)
+             kFNormal = 1;       ///< Normal approximation
+      
+      switch (option) {
+         case kFCP: this.fBoundary = 'ClopperPearson'; break;
+         case kFNormal: this.fBoundary = 'Normal'; break;
+         default: this.fBoundary = 'ClopperPearson'; console.log(`Not supported stat option ${option}`);
+      }
+   }
 
    /** @summary Caluclate efficiency error low
      * @private */
@@ -3346,27 +3359,49 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       return this[this.fBoundary](total, passed, obj.fConfLevel, true) - eff;
    }
+   
+   /** @summary Copy drawning attributes
+     * @private */
+   TEfficiencyPainter.prototype.copyAttributes = function(obj, eff) {
+      obj.fLineColor = eff.fLineColor;
+      obj.fLineStyle = eff.fLineStyle;
+      obj.fLineWidth = eff.fLineWidth;
+      obj.fFillColor = eff.fFillColor;
+      obj.fFillStyle = eff.fFillStyle;
+      obj.fMarkerColor = eff.fMarkerColor;
+      obj.fMarkerStyle = eff.fMarkerStyle;
+      obj.fMarkerSize = eff.fMarkerSize;
+   }
+   
+   /** @summary Create graph for the drawing of 1-dim TEfficiency
+     * @private */
+   TEfficiencyPainter.prototype.createGraph = function(eff) {
+      let gr = JSROOT.create('TGraphAsymmErrors');
+      gr.fName = "eff_graph";
+      return gr;
+   }
+   
+   /** @summary Create histogram for the drawing of 2-dim TEfficiency
+     * @private */
+   TEfficiencyPainter.prototype.createHisto = function(eff) {
+      const nbinsx = eff.fTotalHistogram.fXaxis.fNbins,
+            nbinsy = eff.fTotalHistogram.fYaxis.fNbins,
+            hist = JSROOT.createHistogram('TH2F', nbinsx, nbinsy);
+      JSROOT.extend(hist.fXaxis, eff.fTotalHistogram.fXaxis);
+      JSROOT.extend(hist.fYaxis, eff.fTotalHistogram.fYaxis);
+      hist.fName = "eff_histo";
+      return hist;
+   }
 
    /** @summary Fill graph with points from efficiency object
      * @private */
    TEfficiencyPainter.prototype.fillGraph = function(gr, opt) {
-      const  kFCP = 0,           ///< Clopper-Pearson interval (recommended by PDG)
-             kFNormal = 1;       ///< Normal approximation
-      
-      let eff = this.getObject(),
-          xaxis = eff.fTotalHistogram.fXaxis,
-          npoints = xaxis.fNbins,
-          option = opt.toLowerCase(),
-          plot0Bins = false, j = 0;
+      const eff = this.getObject(),
+            xaxis = eff.fTotalHistogram.fXaxis,
+            npoints = xaxis.fNbins,
+            plot0Bins = (opt.indexOf("e0") >= 0); 
 
-      switch (eff.fStatisticOption) {
-         case kFCP: this.fBoundary = 'ClopperPearson'; break;
-         case kFNormal: this.fBoundary = 'Normal'; break;
-         default: this.fBoundary = 'ClopperPearson';
-      }            
-          
-      if (option.indexOf("e0") >= 0) plot0Bins = true;
-      for (let n = 0; n < npoints; ++n) {
+      for (let n = 0, j = 0; n < npoints; ++n) {
          if (!plot0Bins && eff.fTotalHistogram.getBinContent(n+1) === 0) continue;
          
          let value = this.getEfficiency(n+1);
@@ -3380,6 +3415,27 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          ++j;
       }
       gr.fNpoints = j;
+
+      gr.fTitle = eff.fTitle;
+      this.copyAttributes(gr, eff);
+   }
+   
+   /** @summary Fill graph with points from efficiency object
+     * @private */
+   TEfficiencyPainter.prototype.fillHisto = function(hist) {
+      const eff = this.getObject(),
+            nbinsx = hist.fXaxis.fNbins,
+            nbinsy = hist.fYaxis.fNbins;
+      
+      for (let i = 0; i < nbinsx+2; ++i)
+         for (let j = 0; j < nbinsy+2; ++j) {
+            let bin = hist.getBin(i, j),
+                value = this.getEfficiency(bin);
+            hist.fArray[bin] = value;
+         }
+         
+      hist.fTitle = eff.fTitle;
+      this.copyAttributes(hist, eff);
    }
    
    /** @summary Draw function 
@@ -3397,25 +3453,34 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
      * @private */
    function drawEfficiency(dom, eff, opt) {
 
-      if (!eff || !eff.fTotalHistogram || (eff.fTotalHistogram._typename.indexOf("TH1")!=0)) return null;
+      if (!eff || !eff.fTotalHistogram) return null;
+      
+      if (!opt || (typeof opt != 'string')) opt = "";
+      opt = opt.toLowerCase();
+      
+      let ndim = 0;
+      if (eff.fTotalHistogram._typename.indexOf("TH1")==0) ndim = 1; else
+      if (eff.fTotalHistogram._typename.indexOf("TH2")==0) ndim = 2; else return null;
 
       let painter = new TEfficiencyPainter(dom, eff);
-      painter.options = opt;
+      painter.ndim = ndim;
 
       return JSROOT.require('math').then(() => {
-         let gr = JSROOT.create('TGraphAsymmErrors');
-         gr.fName = "eff_graph";
-         gr.fTitle = eff.fTitle;
-         gr.fLineColor = eff.fLineColor;
-         gr.fLineStyle = eff.fLineStyle;
-         gr.fLineWidth = eff.fLineWidth;
-         gr.fFillColor = eff.fFillColor;
-         gr.fFillStyle = eff.fFillStyle;
-         gr.fMarkerColor = eff.fMarkerColor;
-         gr.fMarkerStyle = eff.fMarkerStyle;
-         gr.fMarkerSize = eff.fMarkerSize;
-         painter.fillGraph(gr, opt);
-         return JSROOT.draw(dom, gr, opt);
+         painter.setStatisticOption(eff.fStatisticOption);
+         
+         if (ndim == 1) {
+            if (!opt) opt = "ap";
+            if ((opt.indexOf("same") < 0) && (opt.indexOf("a") < 0)) opt += "a";
+            if (opt.indexOf("p") < 0) opt += "p";
+            
+            let gr = painter.createGraph(eff);
+            painter.fillGraph(gr, opt);
+            return JSROOT.draw(dom, gr, opt);
+         }
+         if (!opt) opt = "col";
+         let hist = painter.createHisto(eff);
+         painter.fillHisto(hist, opt);
+         return JSROOT.draw(dom, hist, opt);
       }).then(() => {
          painter.addToPadPrimitives();
          return painter.drawFunction(0);
