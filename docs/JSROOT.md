@@ -179,12 +179,14 @@ List of supported classes and draw options:
 [2](https://root.cern/js/latest/examples.htm#tgrapherrors_2),
 [3](https://root.cern/js/latest/examples.htm#tgrapherrors_3),
 [4](https://root.cern/js/latest/examples.htm#tgrapherrors_4),
-[5](https://root.cern/js/latest/examples.htm#tgrapherrors_5),
+[5](https://root.cern/js/latest/examples.htm#tgrapherrors_5)
 - TGraphAsymmErrors : [dflt](https://root.cern/js/latest/examples.htm#tgraphasymmerrors),
+- TGraphMultiErrors : [docu](https://root.cern/js/latest/examples.htm#tgraphmultierrors_canv),
 [z](https://root.cern/js/latest/examples.htm#tgraphasymmerrors_z) and other from TGraphErrors
 - TGraphPolar : [example](https://root.cern/js/latest/examples.htm#tgraphpolar)
 - TMultiGraph : [example](https://root.cern/js/latest/examples.htm#tmultigraph_c3), [exclusion](https://root.cern/js/latest/examples.htm#tmultigraph_exclusion)
 - TGraph2D : [example](https://root.cern/js/latest/examples.htm#tgraph2d)
+- TEfficiency : [docu](https://root.cern/js/latest/examples.htm#tefficiency_docu2)
 - TLatex : [example](https://root.cern/js/latest/examples.htm#tlatex_latex)
 - TMathText : [example](https://root.cern/js/latest/examples.htm#tlatex_math)
 - TCanvas : [example](https://root.cern/js/latest/examples.htm#tcanvas_roofit)

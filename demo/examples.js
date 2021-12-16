@@ -257,6 +257,12 @@ examples_main = {
       { opt: "err",  item: "cerr", title: "example of TGraph2DErrors, errors drawing" },
       { opt: "line",  item: "line", title: "line drawing with TGraph2D" }
    ],
+   TEfficiency : [
+      { name: "docu1", file: "efficiency.root", item: "eff1", title: "TEfficiency example from documentation" },
+      { name: "docu2", file: "efficiency.root", item: "eff2", title: "TEfficiency example from documentation" },
+      { name: "docu3", file: "efficiency.root", item: "eff3", title: "using TMath::BetaDist" },
+      { name: "docu4", file: "efficiency.root", item: "eff4", title: "drawing functions from TEfficiency" }
+   ],
    TLatex : [
      { name: "latex", file: "latex.root", layout: "grid2x2", items: ['lva','ex1','ex2','ex3'], title: "Internal TLatex processor" },
      { name: "mathjax", file: "latex.root", layout: "grid2x2", latex: "mathjax", items: ['lva','ex1','ex2','ex3'], title: "Render TLatex with MathJax.js" },
