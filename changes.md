@@ -12,7 +12,7 @@
 9. Implement "cjust" draw option when drawing color palette
 10. Implement "colhz" draw option to plot horizontal color palette
 11. Implement "pads" draw option for THStack
-12. Improve drawing of TEfficiency
+12. Improve drawing of TEfficiency, support 2D case
 
 
 ## Changes in 6.3.2

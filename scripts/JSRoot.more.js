@@ -3412,9 +3412,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          gr.fEXhigh[j] = xaxis.GetBinLowEdge(n+2) - xaxis.GetBinCenter(n+1);
          gr.fEYlow[j] = this.getEfficiencyErrorLow(eff, n+1, value);
          gr.fEYhigh[j] = this.getEfficiencyErrorUp(eff, n+1, value);
-         ++j;
+         
+         gr.fNpoints = ++j;
       }
-      gr.fNpoints = j;
+      
 
       gr.fTitle = eff.fTitle;
       this.copyAttributes(gr, eff);
@@ -3425,7 +3426,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    TEfficiencyPainter.prototype.fillHisto = function(hist) {
       const eff = this.getObject(),
             nbinsx = hist.fXaxis.fNbins,
-            nbinsy = hist.fYaxis.fNbins;
+            nbinsy = hist.fYaxis.fNbins,
+            kNoStats = JSROOT.BIT(9);
       
       for (let i = 0; i < nbinsx+2; ++i)
          for (let j = 0; j < nbinsy+2; ++j) {
@@ -3435,6 +3437,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          }
          
       hist.fTitle = eff.fTitle;
+      hist.fBits = hist.fBits | kNoStats;
       this.copyAttributes(hist, eff);
    }
    
