@@ -3312,6 +3312,15 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       return JSROOT.require('math').then(() => {
          let gr = JSROOT.create('TGraphAsymmErrors');
          gr.fName = "eff_graph";
+         gr.fTitle = eff.fTitle;
+         gr.fLineColor = eff.fLineColor;
+         gr.fLineStyle = eff.fLineStyle;
+         gr.fLineWidth = eff.fLineWidth;
+         gr.fFillColor = eff.fFillColor;
+         gr.fFillStyle = eff.fFillStyle;
+         gr.fMarkerColor = eff.fMarkerColor;
+         gr.fMarkerStyle = eff.fMarkerStyle;
+         gr.fMarkerSize = eff.fMarkerSize;
          painter.fillGraph(gr, opt);
          return JSROOT.draw(divid, gr, opt); 
       }).then(() => {
