@@ -576,27 +576,9 @@ JSROOT.define([], () =>  {
       return x;
    }
 
-   /** @summary gamma_quantile_c function
-     * @private */
-   mth.gamma_quantile_c = function(z, alpha, theta) {
-      return theta * igami( alpha, z);
-   }
-
-   /** @summary gamma_quantile function
-     * @private */
-   mth.gamma_quantile = function(z, alpha, theta) {
-      return theta * igami( alpha, 1.- z);
-   }
-   
-   /** @summary return log(1+x)
-     * @private */   
-   mth.log1p = function(x) {
-      return Math.log(1+x);
-   }
-   
    /** @summary Probability density function of the beta distribution.
      * @private */   
-   mth.beta_pdf = function(x,a,b) {
+   function beta_pdf(x,a,b) {
      if (x < 0 || x > 1.0) return 0;
      if (x == 0 ) {
         if (a < 1) return Number.POSITIVE_INFINITY;
@@ -609,15 +591,9 @@ JSROOT.define([], () =>  {
          else if ( b == 1) return a; // to avoid a nan from log(0)*0
       }
       return Math.exp(mth.lgamma(a + b) - mth.lgamma(a) - mth.lgamma(b) +
-                       Math.log(x) * (a -1.) + mth.log1p(-x ) * (b - 1.) );
+                       Math.log(x) * (a -1.) + Math.log1p(-x) * (b - 1.) );
    }
    
-   /** @summary Complement of the cumulative distribution function of the beta distribution.
-     * @private */   
-   function beta_cdf_c(x,a,b) {
-      return mth.inc_beta(1-x, b, a);
-   }
-
    /** @summary landau_pdf function
      * @desc LANDAU pdf : algorithm from CERNLIB G110 denlan
      *  same algorithm is used in GSL
@@ -712,26 +688,6 @@ JSROOT.define([], () =>  {
       return inc_gamma_c ( 0.5 * r , 0.5*(x-x0) );
    }
 
-   /** @summary chisquared_cdf
-     * @private */
-   function chisquared_cdf(x,r,x0) {
-      if (x0===undefined) x0 = 0;
-      return inc_gamma ( 0.5 * r , 0.5*(x-x0) );
-   }
-
-   /** @summary chisquared_pdf
-     * @private */
-   function chisquared_pdf(x,r,x0) {
-      if (x0===undefined) x0 = 0;
-      if ((x-x0) < 0) return 0.0;
-      const a = r/2 -1.;
-      // let return inf for case x  = x0 and treat special case of r = 2 otherwise will return nan
-      if (x == x0 && a == 0) return 0.5;
-
-      return Math.exp ((r/2 - 1) * Math.log((x-x0)/2) - (x-x0)/2 - lgamma(r/2))/2;
-   }
-   
-   
    /** @summary Continued fraction expansion #1 for incomplete beta integral
      * @private */
    function incbcf(a,b,x) {
@@ -906,7 +862,7 @@ JSROOT.define([], () =>  {
    
    /** @summary ROOT::Math::Cephes::pseries
      * @private */
-   mth.pseries = function(a,b,x) {
+   function pseries(a,b,x) {
       let s, t, u, v, n, t1, z, ai;
    
       ai = 1.0 / a;
@@ -944,13 +900,11 @@ JSROOT.define([], () =>  {
       }
       return s;
    }
-
    
    /** @summary ROOT::Math::Cephes::incbet
      * @private */
-   mth.incbet = function(aa,bb,xx) {
-      let a, b, t, x, xc, w, y;
-      let flag;
+   function incbet(aa,bb,xx) {
+      let a, b, t, x, xc, w, y, flag;
    
       if( aa <= 0.0 || bb <= 0.0 )
          return 0.0;
@@ -991,7 +945,7 @@ JSROOT.define([], () =>  {
    
       if( flag == 1 && (b * x) <= 1.0 && x <= 0.95)
       {
-         t = mth.pseries(a, b, x);
+         t = pseries(a, b, x);
          // goto done;
       } else {
    
@@ -1039,15 +993,9 @@ JSROOT.define([], () =>  {
       return  t;
    }
 
-   /** @summary Calculates the normalized (regularized) incomplete beta function.
-     * @private */
-   mth.inc_beta = function(x,a,b) {
-      return mth.incbet(a,b,x);
-   }
-
    /** @summary ROOT::Math::Cephes::incbi
      * @private */
-   mth.incbi = function(aa,bb,yy0) {
+   function incbi(aa,bb,yy0) {
       let a, b, y0, d, y, x, x0, x1, lgm, yp, di, dithresh, yl, yh, xt;
       let i, rflg, dir, nflg, ihalve = true;
 
@@ -1090,7 +1038,7 @@ JSROOT.define([], () =>  {
          b = bb;
          y0 = yy0;
          x = a/(a+b);
-         y = mth.incbet( a, b, x );
+         y = incbet( a, b, x );
          // goto ihalve; // will start 
       }
       else
@@ -1130,7 +1078,7 @@ JSROOT.define([], () =>  {
             return process_done(); 
          }
          x = a/( a + b * Math.exp(d) );
-         y = mth.incbet( a, b, x );
+         y = incbet( a, b, x );
          yp = (y - y0)/y0;
          if( Math.abs(yp) < 0.2 )
             ihalve = false; // instead goto newt; exclude ihalve for the first time
@@ -1161,7 +1109,7 @@ JSROOT.define([], () =>  {
                      if( x == 0.0 )
                         return process_done(); // goto under;
                   }
-                  y = mth.incbet( a, b, x );
+                  y = incbet( a, b, x );
                   yp = (x1 - x0)/(x1 + x0);
                   if( Math.abs(yp) < dithresh )
                      break; // goto newt;
@@ -1202,7 +1150,7 @@ JSROOT.define([], () =>  {
                         y0 = 1.0 - yy0;
                      }
                      x = 1.0 - x;
-                     y = mth.incbet( a, b, x );
+                     y = incbet( a, b, x );
                      x0 = 0.0;
                      yl = 0.0;
                      x1 = 1.0;
@@ -1263,7 +1211,7 @@ JSROOT.define([], () =>  {
          {
             /* Compute the function at this point. */
             if( i != 0 )
-               y = mth.incbet(a,b,x);
+               y = incbet(a,b,x);
             if( y < yl )
             {
                x = x0;
@@ -1324,13 +1272,55 @@ JSROOT.define([], () =>  {
       return process_done();
    }
    
+   /** @summary Calculates the normalized (regularized) incomplete beta function.
+     * @private */
+   function inc_beta(x,a,b) {
+      return incbet(a,b,x);
+   }
    
    /** @summary ROOT::Math::beta_quantile
      * @private */
    function beta_quantile(z,a,b) {
-      return mth.incbi(a,b,z);
+      return incbi(a,b,z);
+   }
+   
+   /** @summary Complement of the cumulative distribution function of the beta distribution.
+     * @private */   
+   function beta_cdf_c(x,a,b) {
+      return inc_beta(1-x, b, a);
+   }
+   
+   /** @summary chisquared_cdf
+     * @private */
+   mth.chisquared_cdf = function(x,r,x0) {
+      if (x0===undefined) x0 = 0;
+      return inc_gamma ( 0.5 * r , 0.5*(x-x0) );
    }
 
+   /** @summary gamma_quantile_c function
+     * @private */
+   mth.gamma_quantile_c = function(z, alpha, theta) {
+      return theta * igami( alpha, z);
+   }
+
+   /** @summary gamma_quantile function
+     * @private */
+   mth.gamma_quantile = function(z, alpha, theta) {
+      return theta * igami( alpha, 1.- z);
+   }
+
+   /** @summary chisquared_pdf
+     * @private */
+   mth.chisquared_pdf = function(x,r,x0) {
+      if (x0===undefined) x0 = 0;
+      if ((x-x0) < 0) return 0.0;
+      const a = r/2 -1.;
+      // let return inf for case x  = x0 and treat special case of r = 2 otherwise will return nan
+      if (x == x0 && a == 0) return 0.5;
+
+      return Math.exp ((r/2 - 1) * Math.log((x-x0)/2) - (x-x0)/2 - lgamma(r/2))/2;
+   }
+ 
    /** @summary Prob function */
    mth.Prob = function(chi2, ndf) {
       if (ndf <= 0) return 0; // Set CL to zero in case ndf<=0
@@ -1478,7 +1468,7 @@ JSROOT.define([], () =>  {
          p = (pmin + pmax)/2;
          //double v = 0.5 * ROOT::Math::binomial_pdf(int(passed), p, int(total));
          // make it work for non integer using the binomial - beta relationship
-         let v = 0.5 * mth.beta_pdf(p, passed+1., total-passed+1)/(total+1);
+         let v = 0.5 * beta_pdf(p, passed+1., total-passed+1)/(total+1);
          //if (passed > 0) v += ROOT::Math::binomial_cdf(int(passed - 1), p, int(total));
          // compute the binomial cdf at passed -1
          if ( (passed-1) >= 0) v += beta_cdf_c(p, passed, total-passed+1);
@@ -1567,15 +1557,17 @@ JSROOT.define([], () =>  {
    mth.igami = igami;
    mth.igamc = igamc;
    mth.igam = igam;
+   mth.beta_pdf = beta_pdf;
+   mth.inc_beta = inc_beta;
+   mth.pseries = pseries;
+   mth.incbet = incbet;
    // mth.
-   // mth.
-   // mth.
+   mth.incbi = incbi;
+   mth.beta_quantile = beta_quantile;
    // mth.
    // mth.
    mth.lgam = lgam;   
    mth.chisquared_cdf_c = chisquared_cdf_c;
-   mth.chisquared_cdf = chisquared_cdf;
-   mth.chisquared_pdf = chisquared_pdf;
    mth.lgamma = lgamma;
    mth.inc_gamma = inc_gamma;
    mth.inc_gamma_c = inc_gamma_c;
