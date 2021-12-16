@@ -3309,15 +3309,15 @@ JSROOT.define(['d3', 'painter', 'math', 'gpad'], (d3, jsrp) => {
       let painter = new TEfficiencyPainter(divid, eff);
       painter.options = opt;
 
-      let gr = JSROOT.create('TGraphAsymmErrors');
-      gr.fName = "eff_graph";
-      painter.fillGraph(gr, opt);
-
-      return JSROOT.draw(divid, gr, opt)
-                   .then(() => {
-                       painter.addToPadPrimitives();
-                       return painter;
-                    });
+      return JSROOT.require('math').then(() => {
+         let gr = JSROOT.create('TGraphAsymmErrors');
+         gr.fName = "eff_graph";
+         painter.fillGraph(gr, opt);
+         return JSROOT.draw(divid, gr, opt); 
+      }).then(() => {
+         painter.addToPadPrimitives();
+         return painter;
+      });
    }
 
    // =============================================================
