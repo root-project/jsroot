@@ -1962,7 +1962,7 @@
               for (let n = 2; n < 10; ++n) {
                  let name = 'x^'+n;
                  while (_func.indexOf(name) >= 0) 
-                    _func = _func.replace(name, `Math.pow(x,${n}`);
+                    _func = _func.replace(name, `Math.pow(x,${n})`);
               }
 
               if (isformula) {
