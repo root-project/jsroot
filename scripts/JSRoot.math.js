@@ -530,7 +530,7 @@ JSROOT.define([], () =>  {
    mth.lgamma = function(z) {
       return mth.lgam(z);
    }
-
+   
    /** @summary chisquared_cdf_c
      * @private */
    mth.chisquared_cdf_c = function(x,r,x0) {
@@ -580,6 +580,23 @@ JSROOT.define([], () =>  {
      * @private */
    mth.BreitWigner = function(x, mean, gamma) {
       return gamma/((x-mean)*(x-mean) + gamma*gamma/4) / 2 / Math.PI;
+   }
+   
+   /** @summary Calculates Beta-function Gamma(p)*Gamma(q)/Gamma(p+q).
+     * @private */
+   mth.Beta = function(x,y) {
+      return Math.exp(mth.lgamma(x) + mth.lgamma(y) - mth.lgamma(x+y));
+   }
+
+   /** @summary Computes the probability density function of the Beta distribution
+     * @private */
+   mth.BetaDist = function(x, p, q) {
+      if ((x<0) || (x>1) || (p<=0) || (q<=0)){
+        // Error("TMath::BetaDist", "parameter value outside allowed range");
+        return 0;
+      }
+      let beta = mth.Beta(p, q);
+      return Math.pow(x, p-1) * Math.pow(1-x, q-1) / beta;
    }
 
    /** @summary gaus function for TFormula */

@@ -1940,6 +1940,8 @@
                  _func = _func.replace(/TMath::Prob\(/g, 'this._math.Prob(')
                               .replace(/TMath::Gaus\(/g, 'this._math.Gaus(')
                               .replace(/TMath::BreitWigner\(/g, 'this._math.BreitWigner(')
+                              .replace(/TMath::BetaDist\(/g, 'this._math.BetaDist(')
+                              .replace(/TMath::Beta\(/g, 'this._math.Beta(')
                               .replace(/xygaus\(/g, 'this._math.gausxy(this, x, y, ')
                               .replace(/gaus\(/g, 'this._math.gaus(this, x, ')
                               .replace(/gausn\(/g, 'this._math.gausn(this, x, ')
