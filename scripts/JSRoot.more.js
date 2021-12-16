@@ -3359,19 +3359,55 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
      return ((mode - delta) < 0) ? 0.0 : (mode - delta);
    }
    
+   /** @summary Calculates the boundaries using the  mid-P binomial
+     * @private */
+   TEfficiencyPainter.prototype.MidPInterval = function(total,passed,level,bUpper) {
+      const alpha = 1. - level, equal_tailed = true, alpha_min = equal_tailed ? alpha/2 : alpha, tol = 1e-9; // tolerance
+      let pmin = 0, pmax = 1, p = 0;
+
+      // treat special case for 0<passed<1
+      // do a linear interpolation of the upper limit values
+      if ( passed > 0 && passed < 1) {
+         let p0 =  this.MidPInterval(total,0.0,level,bUpper);
+         let p1 =  this.MidPInterval(total,1.0,level,bUpper);
+         p = (p1 - p0) * passed + p0;
+         return p;
+      }
+   
+      while (Math.abs(pmax - pmin) > tol) {
+         p = (pmin + pmax)/2;
+         //double v = 0.5 * ROOT::Math::binomial_pdf(int(passed), p, int(total));
+         // make it work for non integer using the binomial - beta relationship
+         let v = 0.5 * JSROOT.Math.beta_pdf(p, passed+1., total-passed+1)/(total+1);
+         //if (passed > 0) v += ROOT::Math::binomial_cdf(int(passed - 1), p, int(total));
+         // compute the binomial cdf at passed -1
+         if ( (passed-1) >= 0) v += JSROOT.Math.beta_cdf_c(p, passed, total-passed+1);
+   
+         let vmin = bUpper ? alpha_min : 1.- alpha_min;
+         if (v > vmin)
+            pmin = p;
+         else
+            pmax = p;
+      }
+   
+      return p;
+   }
+   
    /** @summary Set statistic option
      * @private */
    TEfficiencyPainter.prototype.setStatisticOption = function(option) {
       const  kFCP = 0,           ///< Clopper-Pearson interval (recommended by PDG)
              kFNormal = 1,       ///< Normal approximation
              kFWilson = 2,       ///< Wilson interval
-             kFAC = 3;           ///< Agresti-Coull interval
+             kFAC = 3,           ///< Agresti-Coull interval
+             kMidP = 8;          ///< Mid-P Lancaster interval
       
       switch (option) {
          case kFCP: this.fBoundary = this.ClopperPearson; break;
          case kFNormal: this.fBoundary = this.Normal; break;
          case kFWilson: this.fBoundary = this.Wilson; break;
          case kFAC: this.fBoundary = this.AgrestiCoull; break;
+         case kMidP: this.fBoundary = this.MidPInterval; break;
          default: this.fBoundary = this.ClopperPearson; console.log(`Not supported stat option ${option}, use kFCP`);
       }
    }

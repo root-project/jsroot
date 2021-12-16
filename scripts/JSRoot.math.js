@@ -587,6 +587,36 @@ JSROOT.define([], () =>  {
    mth.gamma_quantile = function(z, alpha, theta) {
       return theta * mth.igami( alpha, 1.- z);
    }
+   
+   /** @summary return log(1+x)
+     * @private */   
+   mth.log1p = function(x) {
+      return Math.log(1+x);
+   }
+   
+   /** @summary Probability density function of the beta distribution.
+     * @private */   
+   mth.beta_pdf = function(x,a,b) {
+     if (x < 0 || x > 1.0) return 0;
+     if (x == 0 ) {
+        if (a < 1) return Number.POSITIVE_INFINITY;
+        else if (a > 1) return  0;
+        else if ( a == 1) return b; // to avoid a nan from log(0)*0
+      }
+      if (x == 1 ) {
+         if (b < 1) return Number.POSITIVE_INFINITY;
+         else if (b > 1) return  0;
+         else if ( b == 1) return a; // to avoid a nan from log(0)*0
+      }
+      return Math.exp(mth.lgamma(a + b) - mth.lgamma(a) - mth.lgamma(b) +
+                       Math.log(x) * (a -1.) + mth.log1p(-x ) * (b - 1.) );
+   }
+   
+   /** @summary Complement of the cumulative distribution function of the beta distribution.
+     * @private */   
+   mth.beta_cdf_c = function(x,a,b) {
+      return mth.inc_beta(1-x, b, a);
+   }
 
    /** @summary landau_pdf function
      * @desc LANDAU pdf : algorithm from CERNLIB G110 denlan
@@ -1009,6 +1039,11 @@ JSROOT.define([], () =>  {
       return  t;
    }
 
+   /** @summary Calculates the normalized (regularized) incomplete beta function.
+     * @private */
+   mth.inc_beta = function(x,a,b) {
+      return mth.incbet(a,b,x);
+   }
 
    /** @summary ROOT::Math::Cephes::incbi
      * @private */
