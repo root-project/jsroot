@@ -12,9 +12,12 @@ JSROOT.define([], () =>  {
 
    const kMACHEP = 1.11022302462515654042363166809e-16,
          kMINLOG = -708.396418532264078748994506896,
-         kMAXLOG = 709.782712893383973096206318587;
+         kMAXLOG = 709.782712893383973096206318587,
+         kMAXSTIR = 108.116855767857671821730036754,
+         kBig = 4.503599627370496e15,
+         kBiginv =  2.22044604925031308085e-16;
 
-   /** @summary lgam function
+   /** @summary lgam function, logarithm from gamma
      * @private */
    mth.lgam = function( x ) {
       let p, q, u, w, z, sgngam = 1;
@@ -131,6 +134,148 @@ JSROOT.define([], () =>  {
          pom = pom *x + a[i];
       return pom;
    }
+   
+   /** @summary Stirling formula for the gamma function 
+     * @private */
+   mth.stirf = function(x) {
+      let y, w, v;
+      
+      const STIR = [
+         7.87311395793093628397E-4,
+         -2.29549961613378126380E-4,
+         -2.68132617805781232825E-3,
+         3.47222221605458667310E-3,
+         8.33333333333482257126E-2,
+      ], SQTPI = Math.sqrt(2*Math.PI);
+   
+      w = 1.0/x;
+      w = 1.0 + w * mth.Polynomialeval( w, STIR, 4 );
+      y = Math.exp(x);
+   
+   /*   #define kMAXSTIR kMAXLOG/log(kMAXLOG)  */
+   
+      if( x > kMAXSTIR )
+      { /* Avoid overflow in pow() */
+         v = Math.pow( x, 0.5 * x - 0.25 );
+         y = v * (v / y);
+      }
+      else
+      {
+         y = Math.pow( x, x - 0.5 ) / y;
+      }
+      y = SQTPI * y * w;
+      return y;
+   }
+   
+   /** @summary gamma calculation 
+     * @private */
+   mth.gamma = function(x) {
+      let p, q, z;
+      let i;
+   
+      let sgngam = 1;
+   
+      if (x >= Number.MAX_VALUE)
+         return x;
+   
+      q = Math.abs(x);
+   
+      if( q > 33.0 )
+      {
+         if( x < 0.0 )
+         {
+            p = Math.floor(q);
+            if( p == q )
+            {
+               return sgngam > 0 ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY;
+            }
+            i = Math.round(p);
+            if( (i & 1) == 0 )
+               sgngam = -1;
+            z = q - p;
+            if( z > 0.5 )
+            {
+               p += 1.0;
+               z = q - p;
+            }
+            z = q * Math.sin( Math.PI * z );
+            if( z == 0 )
+            {
+               return sgngam > 0 ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY;
+            }
+            z = Math.abs(z);
+            z = Math.PI / (z * mth.stirf(q) );
+         }
+         else
+         {
+            z = mth.stirf(x);
+         }
+         return sgngam * z;
+      }
+   
+      z = 1.0;
+      while( x >= 3.0 )
+      {
+         x -= 1.0;
+         z *= x;
+      }
+   
+     let small = false;
+   
+      while(( x < 0.0 ) && !small)
+      {
+         if( x > -1.E-9 )
+            small = true;
+         else {
+            z /= x;
+            x += 1.0;
+         }
+      }
+   
+      while(( x < 2.0 ) && !small)
+      {
+         if( x < 1.e-9 )
+            small = true;
+         else {
+            z /= x;
+            x += 1.0;
+         }
+      }
+      
+      if (small) {
+         if( x == 0 )
+            return Number.POSITIVE_INFINITY;
+         else
+            return z/((1.0 + 0.5772156649015329 * x) * x);
+      }
+   
+      if( x == 2.0 )
+         return z;
+         
+      const P = [
+         1.60119522476751861407E-4,
+         1.19135147006586384913E-3,
+         1.04213797561761569935E-2,
+         4.76367800457137231464E-2,
+         2.07448227648435975150E-1,
+         4.94214826801497100753E-1,
+         9.99999999999999996796E-1
+      ], Q = [
+         -2.31581873324120129819E-5,
+         5.39605580493303397842E-4,
+         -4.45641913851797240494E-3,
+         1.18139785222060435552E-2,
+         3.58236398605498653373E-2,
+         -2.34591795718243348568E-1,
+         7.14304917030273074085E-2,
+         1.00000000000000000320E0 ];
+   
+      x -= 2.0;
+      p = mth.Polynomialeval( x, P, 6 );
+      q = mth.Polynomialeval( x, Q, 7 );
+      return z * p / q;
+   }
+   
 
    /** @summary ndtri function
      * @private */
@@ -555,6 +700,315 @@ JSROOT.define([], () =>  {
 
       return Math.exp ((r/2 - 1) * Math.log((x-x0)/2) - (x-x0)/2 - mth.lgamma(r/2))/2;
    }
+   
+   
+   /** @summary Continued fraction expansion #1 for incomplete beta integral
+     * @private */
+   mth.incbcf = function(a,b,x) {
+      let xk, pk, pkm1, pkm2, qk, qkm1, qkm2,
+          k1, k2, k3, k4, k5, k6, k7, k8,
+          r, t, ans, thresh, n;
+   
+      k1 = a;
+      k2 = a + b;
+      k3 = a;
+      k4 = a + 1.0;
+      k5 = 1.0;
+      k6 = b - 1.0;
+      k7 = k4;
+      k8 = a + 2.0;
+   
+      pkm2 = 0.0;
+      qkm2 = 1.0;
+      pkm1 = 1.0;
+      qkm1 = 1.0;
+      ans = 1.0;
+      r = 1.0;
+      n = 0;
+      thresh = 3.0 * kMACHEP;
+      do
+      {
+   
+         xk = -( x * k1 * k2 )/( k3 * k4 );
+         pk = pkm1 +  pkm2 * xk;
+         qk = qkm1 +  qkm2 * xk;
+         pkm2 = pkm1;
+         pkm1 = pk;
+         qkm2 = qkm1;
+         qkm1 = qk;
+   
+         xk = ( x * k5 * k6 )/( k7 * k8 );
+         pk = pkm1 +  pkm2 * xk;
+         qk = qkm1 +  qkm2 * xk;
+         pkm2 = pkm1;
+         pkm1 = pk;
+         qkm2 = qkm1;
+         qkm1 = qk;
+   
+         if( qk !=0 )
+            r = pk/qk;
+         if( r != 0 )
+         {
+            t = Math.abs( (ans - r)/r );
+            ans = r;
+         }
+         else
+            t = 1.0;
+   
+         if( t < thresh )
+            break; // goto cdone;
+   
+         k1 += 1.0;
+         k2 += 1.0;
+         k3 += 2.0;
+         k4 += 2.0;
+         k5 += 1.0;
+         k6 -= 1.0;
+         k7 += 2.0;
+         k8 += 2.0;
+   
+         if( (Math.abs(qk) + Math.abs(pk)) > kBig )
+         {
+            pkm2 *= kBiginv;
+            pkm1 *= kBiginv;
+            qkm2 *= kBiginv;
+            qkm1 *= kBiginv;
+         }
+         if( (Math.abs(qk) < kBiginv) || (Math.abs(pk) < kBiginv) )
+         {
+            pkm2 *= kBig;
+            pkm1 *= kBig;
+            qkm2 *= kBig;
+            qkm1 *= kBig;
+         }
+      }
+      while( ++n < 300 );
+   
+   // cdone:
+      return ans;
+   }
+
+  /** @summary Continued fraction expansion #2 for incomplete beta integral
+    * @private */
+   mth.incbd = function(a,b,x) {
+      let xk, pk, pkm1, pkm2, qk, qkm1, qkm2,
+          k1, k2, k3, k4, k5, k6, k7, k8,
+          r, t, ans, z, thresh, n;
+   
+      k1 = a;
+      k2 = b - 1.0;
+      k3 = a;
+      k4 = a + 1.0;
+      k5 = 1.0;
+      k6 = a + b;
+      k7 = a + 1.0;;
+      k8 = a + 2.0;
+   
+      pkm2 = 0.0;
+      qkm2 = 1.0;
+      pkm1 = 1.0;
+      qkm1 = 1.0;
+      z = x / (1.0-x);
+      ans = 1.0;
+      r = 1.0;
+      n = 0;
+      thresh = 3.0 * kMACHEP;
+      do
+      {
+   
+         xk = -( z * k1 * k2 )/( k3 * k4 );
+         pk = pkm1 +  pkm2 * xk;
+         qk = qkm1 +  qkm2 * xk;
+         pkm2 = pkm1;
+         pkm1 = pk;
+         qkm2 = qkm1;
+         qkm1 = qk;
+   
+         xk = ( z * k5 * k6 )/( k7 * k8 );
+         pk = pkm1 +  pkm2 * xk;
+         qk = qkm1 +  qkm2 * xk;
+         pkm2 = pkm1;
+         pkm1 = pk;
+         qkm2 = qkm1;
+         qkm1 = qk;
+   
+         if( qk != 0 )
+            r = pk/qk;
+         if( r != 0 )
+         {
+            t = Math.abs( (ans - r)/r );
+            ans = r;
+         }
+         else
+            t = 1.0;
+   
+         if( t < thresh )
+            break; // goto cdone;
+   
+         k1 += 1.0;
+         k2 -= 1.0;
+         k3 += 2.0;
+         k4 += 2.0;
+         k5 += 1.0;
+         k6 += 1.0;
+         k7 += 2.0;
+         k8 += 2.0;
+   
+         if( (Math.abs(qk) + Math.abs(pk)) > kBig )
+         {
+            pkm2 *= kBiginv;
+            pkm1 *= kBiginv;
+            qkm2 *= kBiginv;
+            qkm1 *= kBiginv;
+         }
+         if( (Math.abs(qk) < kBiginv) || (Math.abs(pk) < kBiginv) )
+         {
+            pkm2 *= kBig;
+            pkm1 *= kBig;
+            qkm2 *= kBig;
+            qkm1 *= kBig;
+         }
+      }
+      while( ++n < 300 );
+   //cdone:
+      return ans;
+   }
+   
+   /** @summary ROOT::Math::Cephes::pseries
+     * @private */
+   mth.pseries = function(a,b,x) {
+      let s, t, u, v, n, t1, z, ai;
+   
+      ai = 1.0 / a;
+      u = (1.0 - b) * x;
+      v = u / (a + 1.0);
+      t1 = v;
+      t = u;
+      n = 2.0;
+      s = 0.0;
+      z = kMACHEP * ai;
+      while( Math.abs(v) > z )
+      {
+         u = (n - b) * x / n;
+         t *= u;
+         v = t / (a + n);
+         s += v;
+         n += 1.0;
+      }
+      s += t1;
+      s += ai;
+   
+      u = a * Math.log(x);
+      if( (a+b) < kMAXSTIR && Math.abs(u) < kMAXLOG )
+      {
+         t = mth.gamma(a+b)/(mth.gamma(a)*mth.gamma(b));
+         s = s * t * Math.pow(x,a);
+      }
+      else
+      {
+         t = mth.lgam(a+b) - mth.lgam(a) - mth.lgam(b) + u + Math.log(s);
+         if( t < kMINLOG )
+            s = 0.0;
+         else
+            s = Math.exp(t);
+      }
+      return s;
+   }
+
+   
+   /** @summary ROOT::Math::Cephes::incbet
+     * @private */
+   mth.incbet = function(aa,bb,xx) {
+      let a, b, t, x, xc, w, y;
+      let flag;
+   
+      if( aa <= 0.0 || bb <= 0.0 )
+         return 0.0;
+   
+      // LM: changed: for X > 1 return 1.
+      if  (xx <= 0.0)  return 0.0;
+      if ( xx >= 1.0)  return 1.0;
+   
+      flag = 0;
+   
+   /* - to test if that way is better for large b/  (comment out from Cephes version)
+      if( (bb * xx) <= 1.0 && xx <= 0.95)
+      {
+      t = pseries(aa, bb, xx);
+      goto done;
+      }
+   
+   **/
+      w = 1.0 - xx;
+   
+   /* Reverse a and b if x is greater than the mean. */
+   /* aa,bb > 1 -> sharp rise at x=aa/(aa+bb) */
+      if( xx > (aa/(aa+bb)) )
+      {
+         flag = 1;
+         a = bb;
+         b = aa;
+         xc = xx;
+         x = w;
+      }
+      else
+      {
+         a = aa;
+         b = bb;
+         xc = w;
+         x = xx;
+      }
+   
+      if( flag == 1 && (b * x) <= 1.0 && x <= 0.95)
+      {
+         t = mth.pseries(a, b, x);
+         // goto done;
+      } else {
+   
+      /* Choose expansion for better convergence. */
+         y = x * (a+b-2.0) - (a-1.0);
+         if( y < 0.0 )
+            w = mth.incbcf( a, b, x );
+         else
+            w = mth.incbd( a, b, x ) / xc;
+      
+      /* Multiply w by the factor
+         a      b   _             _     _
+         x  (1-x)   | (a+b) / ( a | (a) | (b) ) .   */
+      
+         y = a * Math.log(x);
+         t = b * Math.log(xc);
+         if( (a+b) < kMAXSTIR && Math.abs(y) < kMAXLOG && Math.abs(t) < kMAXLOG )
+         {
+            t = Math.pow(xc,b);
+            t *= Math.pow(x,a);
+            t /= a;
+            t *= w;
+            t *= mth.gamma(a+b) / (mth.gamma(a) * mth.gamma(b));
+            // goto done;
+         } else {
+         /* Resort to logarithms.  */
+            y += t + mth.lgam(a+b) - mth.lgam(a) - mth.lgam(b);
+            y += Math.log(w/a);
+            if( y < kMINLOG )
+               t = 0.0;
+            else
+               t = Math.exp(y);
+         }
+      }
+   
+   //done:
+   
+      if( flag == 1 )
+      {
+         if( t <= kMACHEP )
+            t = 1.0 - kMACHEP;
+         else
+            t = 1.0 - t;
+      }
+      return  t;
+   }
+
 
    /** @summary ROOT::Math::Cephes::incbi
      * @private */
@@ -601,7 +1055,7 @@ JSROOT.define([], () =>  {
          b = bb;
          y0 = yy0;
          x = a/(a+b);
-         y = incbet( a, b, x );
+         y = mth.incbet( a, b, x );
          // goto ihalve; // will start 
       }
       else
@@ -609,7 +1063,7 @@ JSROOT.define([], () =>  {
          dithresh = 1.0e-4;
    /* approximation to inverse function */
    
-         yp = -ndtri(yy0);
+         yp = -mth.ndtri(yy0);
       
          if( yy0 > 0.5 )
          {
@@ -641,7 +1095,7 @@ JSROOT.define([], () =>  {
             return process_done(); 
          }
          x = a/( a + b * Math.exp(d) );
-         y = incbet( a, b, x );
+         y = mth.incbet( a, b, x );
          yp = (y - y0)/y0;
          if( Math.abs(yp) < 0.2 )
             ihalve = false; // instead goto newt; exclude ihalve for the first time
@@ -672,7 +1126,7 @@ JSROOT.define([], () =>  {
                      if( x == 0.0 )
                         return process_done(); // goto under;
                   }
-                  y = incbet( a, b, x );
+                  y = mth.incbet( a, b, x );
                   yp = (x1 - x0)/(x1 + x0);
                   if( Math.abs(yp) < dithresh )
                      break; // goto newt;
@@ -713,7 +1167,7 @@ JSROOT.define([], () =>  {
                         y0 = 1.0 - yy0;
                      }
                      x = 1.0 - x;
-                     y = incbet( a, b, x );
+                     y = mth.incbet( a, b, x );
                      x0 = 0.0;
                      yl = 0.0;
                      x1 = 1.0;
@@ -768,13 +1222,13 @@ JSROOT.define([], () =>  {
          if( nflg )
             return process_done(); //goto done;
          nflg = 1;
-         lgm = lgam(a+b) - lgam(a) - lgam(b);
+         lgm = mth.lgam(a+b) - mth.lgam(a) - mth.lgam(b);
       
          for( i=0; i<8; i++ )
          {
             /* Compute the function at this point. */
             if( i != 0 )
-               y = incbet(a,b,x);
+               y = mth.incbet(a,b,x);
             if( y < yl )
             {
                x = x0;
