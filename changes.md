@@ -2,6 +2,7 @@
 
 ## Change in 6.3.x
 1. Fix TEfficiency drawing
+2. Provide TPadPainter.divide method 
 
 
 ## Changes in 6.3.2
