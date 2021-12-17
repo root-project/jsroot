@@ -72,7 +72,7 @@ JSROOT.define([], () =>  {
          -2.01889141433532773231E6
       ];
 
-      if ((x >= Number.MAX_VALUE) || (x == Number.POSITIVE_INFINITY)) 
+      if ((x >= Number.MAX_VALUE) || (x == Number.POSITIVE_INFINITY))
          return Number.POSITIVE_INFINITY;
 
       if ( x < -34.0 ) {
@@ -134,12 +134,12 @@ JSROOT.define([], () =>  {
          q += Polynomialeval( p, A, 4 ) / x;
       return q;
    }
-   
-   /** @summary Stirling formula for the gamma function 
+
+   /** @summary Stirling formula for the gamma function
      * @private */
    function stirf(x) {
       let y, w, v;
-      
+
       const STIR = [
          7.87311395793093628397E-4,
          -2.29549961613378126380E-4,
@@ -147,13 +147,13 @@ JSROOT.define([], () =>  {
          3.47222221605458667310E-3,
          8.33333333333482257126E-2,
       ], SQTPI = Math.sqrt(2*Math.PI);
-   
+
       w = 1.0/x;
       w = 1.0 + w * Polynomialeval( w, STIR, 4 );
       y = Math.exp(x);
-   
+
    /*   #define kMAXSTIR kMAXLOG/log(kMAXLOG)  */
-   
+
       if( x > kMAXSTIR )
       { /* Avoid overflow in pow() */
          v = Math.pow( x, 0.5 * x - 0.25 );
@@ -166,19 +166,19 @@ JSROOT.define([], () =>  {
       y = SQTPI * y * w;
       return y;
    }
-   
-   /** @summary gamma calculation 
+
+   /** @summary gamma calculation
      * @private */
    function gamma(x) {
       let p, q, z, i;
-   
+
       let sgngam = 1;
-   
+
       if (x >= Number.MAX_VALUE)
          return x;
-   
+
       q = Math.abs(x);
-   
+
       if( q > 33.0 )
       {
          if( x < 0.0 )
@@ -211,16 +211,16 @@ JSROOT.define([], () =>  {
          }
          return sgngam * z;
       }
-   
+
       z = 1.0;
       while( x >= 3.0 )
       {
          x -= 1.0;
          z *= x;
       }
-   
+
      let small = false;
-   
+
       while(( x < 0.0 ) && !small)
       {
          if( x > -1.E-9 )
@@ -230,7 +230,7 @@ JSROOT.define([], () =>  {
             x += 1.0;
          }
       }
-   
+
       while(( x < 2.0 ) && !small)
       {
          if( x < 1.e-9 )
@@ -240,17 +240,17 @@ JSROOT.define([], () =>  {
             x += 1.0;
          }
       }
-      
+
       if (small) {
          if( x == 0 )
             return Number.POSITIVE_INFINITY;
          else
             return z/((1.0 + 0.5772156649015329 * x) * x);
       }
-   
+
       if( x == 2.0 )
          return z;
-         
+
       const P = [
          1.60119522476751861407E-4,
          1.19135147006586384913E-3,
@@ -268,13 +268,13 @@ JSROOT.define([], () =>  {
          -2.34591795718243348568E-1,
          7.14304917030273074085E-2,
          1.00000000000000000320E0 ];
-   
+
       x -= 2.0;
       p = Polynomialeval( x, P, 6 );
       q = Polynomialeval( x, Q, 7 );
       return z * p / q;
    }
-   
+
 
    /** @summary ndtri function
      * @private */
@@ -430,7 +430,7 @@ JSROOT.define([], () =>  {
 
       return ans * ax;
    }
-   
+
    /** @summary igam function
      * @private */
    function igam(a,x) {
@@ -574,7 +574,7 @@ JSROOT.define([], () =>  {
    }
 
    /** @summary Probability density function of the beta distribution.
-     * @private */   
+     * @private */
    function beta_pdf(x,a,b) {
      if (x < 0 || x > 1.0) return 0;
      if (x == 0 ) {
@@ -590,7 +590,7 @@ JSROOT.define([], () =>  {
       return Math.exp(mth.lgamma(a + b) - mth.lgamma(a) - mth.lgamma(b) +
                        Math.log(x) * (a -1.) + Math.log1p(-x) * (b - 1.) );
    }
-   
+
    /** @summary landau_pdf function
      * @desc LANDAU pdf : algorithm from CERNLIB G110 denlan
      *  same algorithm is used in GSL
@@ -677,7 +677,7 @@ JSROOT.define([], () =>  {
    function lgamma(z) {
       return lgam(z);
    }
-   
+
    /** @summary chisquared_cdf_c
      * @private */
    function chisquared_cdf_c(x,r,x0) {
@@ -691,7 +691,7 @@ JSROOT.define([], () =>  {
       let xk, pk, pkm1, pkm2, qk, qkm1, qkm2,
           k1, k2, k3, k4, k5, k6, k7, k8,
           r, t, ans, thresh, n;
-   
+
       k1 = a;
       k2 = a + b;
       k3 = a;
@@ -700,7 +700,7 @@ JSROOT.define([], () =>  {
       k6 = b - 1.0;
       k7 = k4;
       k8 = a + 2.0;
-   
+
       pkm2 = 0.0;
       qkm2 = 1.0;
       pkm1 = 1.0;
@@ -711,7 +711,7 @@ JSROOT.define([], () =>  {
       thresh = 3.0 * kMACHEP;
       do
       {
-   
+
          xk = -( x * k1 * k2 )/( k3 * k4 );
          pk = pkm1 +  pkm2 * xk;
          qk = qkm1 +  qkm2 * xk;
@@ -719,7 +719,7 @@ JSROOT.define([], () =>  {
          pkm1 = pk;
          qkm2 = qkm1;
          qkm1 = qk;
-   
+
          xk = ( x * k5 * k6 )/( k7 * k8 );
          pk = pkm1 +  pkm2 * xk;
          qk = qkm1 +  qkm2 * xk;
@@ -727,7 +727,7 @@ JSROOT.define([], () =>  {
          pkm1 = pk;
          qkm2 = qkm1;
          qkm1 = qk;
-   
+
          if( qk !=0 )
             r = pk/qk;
          if( r != 0 )
@@ -737,10 +737,10 @@ JSROOT.define([], () =>  {
          }
          else
             t = 1.0;
-   
+
          if( t < thresh )
             break; // goto cdone;
-   
+
          k1 += 1.0;
          k2 += 1.0;
          k3 += 2.0;
@@ -749,7 +749,7 @@ JSROOT.define([], () =>  {
          k6 -= 1.0;
          k7 += 2.0;
          k8 += 2.0;
-   
+
          if( (Math.abs(qk) + Math.abs(pk)) > kBig )
          {
             pkm2 *= kBiginv;
@@ -766,7 +766,7 @@ JSROOT.define([], () =>  {
          }
       }
       while( ++n < 300 );
-   
+
    // cdone:
       return ans;
    }
@@ -777,7 +777,7 @@ JSROOT.define([], () =>  {
       let xk, pk, pkm1, pkm2, qk, qkm1, qkm2,
           k1, k2, k3, k4, k5, k6, k7, k8,
           r, t, ans, z, thresh, n;
-   
+
       k1 = a;
       k2 = b - 1.0;
       k3 = a;
@@ -786,7 +786,7 @@ JSROOT.define([], () =>  {
       k6 = a + b;
       k7 = a + 1.0;;
       k8 = a + 2.0;
-   
+
       pkm2 = 0.0;
       qkm2 = 1.0;
       pkm1 = 1.0;
@@ -798,7 +798,7 @@ JSROOT.define([], () =>  {
       thresh = 3.0 * kMACHEP;
       do
       {
-   
+
          xk = -( z * k1 * k2 )/( k3 * k4 );
          pk = pkm1 +  pkm2 * xk;
          qk = qkm1 +  qkm2 * xk;
@@ -806,7 +806,7 @@ JSROOT.define([], () =>  {
          pkm1 = pk;
          qkm2 = qkm1;
          qkm1 = qk;
-   
+
          xk = ( z * k5 * k6 )/( k7 * k8 );
          pk = pkm1 +  pkm2 * xk;
          qk = qkm1 +  qkm2 * xk;
@@ -814,7 +814,7 @@ JSROOT.define([], () =>  {
          pkm1 = pk;
          qkm2 = qkm1;
          qkm1 = qk;
-   
+
          if( qk != 0 )
             r = pk/qk;
          if( r != 0 )
@@ -824,10 +824,10 @@ JSROOT.define([], () =>  {
          }
          else
             t = 1.0;
-   
+
          if( t < thresh )
             break; // goto cdone;
-   
+
          k1 += 1.0;
          k2 -= 1.0;
          k3 += 2.0;
@@ -836,7 +836,7 @@ JSROOT.define([], () =>  {
          k6 += 1.0;
          k7 += 2.0;
          k8 += 2.0;
-   
+
          if( (Math.abs(qk) + Math.abs(pk)) > kBig )
          {
             pkm2 *= kBiginv;
@@ -856,12 +856,12 @@ JSROOT.define([], () =>  {
    //cdone:
       return ans;
    }
-   
+
    /** @summary ROOT::Math::Cephes::pseries
      * @private */
    function pseries(a,b,x) {
       let s, t, u, v, n, t1, z, ai;
-   
+
       ai = 1.0 / a;
       u = (1.0 - b) * x;
       v = u / (a + 1.0);
@@ -880,7 +880,7 @@ JSROOT.define([], () =>  {
       }
       s += t1;
       s += ai;
-   
+
       u = a * Math.log(x);
       if( (a+b) < kMAXSTIR && Math.abs(u) < kMAXLOG )
       {
@@ -897,31 +897,31 @@ JSROOT.define([], () =>  {
       }
       return s;
    }
-   
+
    /** @summary ROOT::Math::Cephes::incbet
      * @private */
    function incbet(aa,bb,xx) {
       let a, b, t, x, xc, w, y, flag;
-   
+
       if( aa <= 0.0 || bb <= 0.0 )
          return 0.0;
-   
+
       // LM: changed: for X > 1 return 1.
       if  (xx <= 0.0)  return 0.0;
       if ( xx >= 1.0)  return 1.0;
-   
+
       flag = 0;
-   
+
    /* - to test if that way is better for large b/  (comment out from Cephes version)
       if( (bb * xx) <= 1.0 && xx <= 0.95)
       {
       t = pseries(aa, bb, xx);
       goto done;
       }
-   
+
    **/
       w = 1.0 - xx;
-   
+
    /* Reverse a and b if x is greater than the mean. */
    /* aa,bb > 1 -> sharp rise at x=aa/(aa+bb) */
       if( xx > (aa/(aa+bb)) )
@@ -939,24 +939,24 @@ JSROOT.define([], () =>  {
          xc = w;
          x = xx;
       }
-   
+
       if( flag == 1 && (b * x) <= 1.0 && x <= 0.95)
       {
          t = pseries(a, b, x);
          // goto done;
       } else {
-   
+
       /* Choose expansion for better convergence. */
          y = x * (a+b-2.0) - (a-1.0);
          if( y < 0.0 )
             w = incbcf( a, b, x );
          else
             w = incbd( a, b, x ) / xc;
-      
+
       /* Multiply w by the factor
          a      b   _             _     _
          x  (1-x)   | (a+b) / ( a | (a) | (b) ) .   */
-      
+
          y = a * Math.log(x);
          t = b * Math.log(xc);
          if( (a+b) < kMAXSTIR && Math.abs(y) < kMAXLOG && Math.abs(t) < kMAXLOG )
@@ -977,9 +977,9 @@ JSROOT.define([], () =>  {
                t = Math.exp(y);
          }
       }
-   
+
    //done:
-   
+
       if( flag == 1 )
       {
          if( t <= kMACHEP )
@@ -1005,7 +1005,7 @@ JSROOT.define([], () =>  {
          // MATH_ERROR_MSG("Cephes::incbi","Wrong domain for parameter b (must be > 0)");
          return 0;
       }
-      
+
       const process_done = () => {
          if( rflg ) {
             if( x <= kMACHEP )
@@ -1015,7 +1015,7 @@ JSROOT.define([], () =>  {
          }
          return x;
       };
-   
+
       i = 0;
       if( yy0 <= 0 )
          return 0.0;
@@ -1026,7 +1026,7 @@ JSROOT.define([], () =>  {
       x1 = 1.0;
       yh = 1.0;
       nflg = 0;
-   
+
       if( aa <= 1.0 || bb <= 1.0 )
       {
          dithresh = 1.0e-6;
@@ -1036,15 +1036,15 @@ JSROOT.define([], () =>  {
          y0 = yy0;
          x = a/(a+b);
          y = incbet( a, b, x );
-         // goto ihalve; // will start 
+         // goto ihalve; // will start
       }
       else
       {
          dithresh = 1.0e-4;
    /* approximation to inverse function */
-   
+
          yp = -ndtri(yy0);
-      
+
          if( yy0 > 0.5 )
          {
             rflg = 1;
@@ -1060,7 +1060,7 @@ JSROOT.define([], () =>  {
             b = bb;
             y0 = yy0;
          }
-      
+
          lgm = (yp * yp - 3.0)/6.0;
          x = 2.0/( 1.0/(2.0*a-1.0)  +  1.0/(2.0*b-1.0) );
          d = yp * Math.sqrt( x + lgm ) / x
@@ -1072,7 +1072,7 @@ JSROOT.define([], () =>  {
             // x = 1.0;
             // goto under;
             x = 0.0;
-            return process_done(); 
+            return process_done();
          }
          x = a/( a + b * Math.exp(d) );
          y = incbet( a, b, x );
@@ -1080,16 +1080,16 @@ JSROOT.define([], () =>  {
          if( Math.abs(yp) < 0.2 )
             ihalve = false; // instead goto newt; exclude ihalve for the first time
       }
-   
+
      let mainloop = 1000;
-   
+
      // endless loop until coverage
      while (mainloop-- > 0) {
-   
+
       /* Resort to interval halving if not close enough. */
       // ihalve:
          while(ihalve) {
-      
+
             dir = 0;
             di = 0.5;
             for( i=0; i<100; i++ )
@@ -1192,18 +1192,18 @@ JSROOT.define([], () =>  {
                return process_done(); //goto done;
             }
             break; // if here, break ihalve
-         
+
          } // end of ihalve
-      
+
          ihalve = true; // enter loop next time
-      
+
       // newt:
-      
+
          if( nflg )
             return process_done(); //goto done;
          nflg = 1;
          lgm = lgam(a+b) - lgam(a) - lgam(b);
-      
+
          for( i=0; i<8; i++ )
          {
             /* Compute the function at this point. */
@@ -1261,32 +1261,32 @@ JSROOT.define([], () =>  {
          }
       /* Did not converge.  */
          dithresh = 256.0 * kMACHEP;
-       
+
       } // endless loop instead of // goto ihalve;
-   
+
    // done:
-   
+
       return process_done();
    }
-   
+
    /** @summary Calculates the normalized (regularized) incomplete beta function.
      * @private */
    function inc_beta(x,a,b) {
       return incbet(a,b,x);
    }
-   
+
    /** @summary ROOT::Math::beta_quantile
      * @private */
    function beta_quantile(z,a,b) {
       return incbi(a,b,z);
    }
-   
+
    /** @summary Complement of the cumulative distribution function of the beta distribution.
-     * @private */   
+     * @private */
    function beta_cdf_c(x,a,b) {
       return inc_beta(1-x, b, a);
    }
-   
+
    /** @summary chisquared_cdf
      * @private */
    mth.chisquared_cdf = function(x,r,x0) {
@@ -1317,7 +1317,7 @@ JSROOT.define([], () =>  {
 
       return Math.exp ((r/2 - 1) * Math.log((x-x0)/2) - (x-x0)/2 - lgamma(r/2))/2;
    }
- 
+
    /** @summary Prob function */
    mth.Prob = function(chi2, ndf) {
       if (ndf <= 0) return 0; // Set CL to zero in case ndf<=0
@@ -1341,7 +1341,7 @@ JSROOT.define([], () =>  {
    mth.BreitWigner = function(x, mean, gamma) {
       return gamma/((x-mean)*(x-mean) + gamma*gamma/4) / 2 / Math.PI;
    }
-   
+
    /** @summary Calculates Beta-function Gamma(p)*Gamma(q)/Gamma(p+q).
      * @private */
    mth.Beta = function(x,y) {
@@ -1396,7 +1396,7 @@ JSROOT.define([], () =>  {
       let alpha = (1.0 - level) / 2;
       if(bUpper)
          return ((passed == total) ? 1.0 : beta_quantile(1 - alpha,passed + 1,total-passed));
-         
+
       return ((passed == 0) ? 0.0 : beta_quantile(alpha,passed,total-passed+1.0));
    }
 
@@ -1415,7 +1415,7 @@ JSROOT.define([], () =>  {
 
       return ((average - delta) < 0) ? 0.0 : (average - delta);
    }
-   
+
    /** @summary Calculates the boundaries for the frequentist Wilson interval
      * @private */
    function eff_Wilson(total,passed,level,bUpper) {
@@ -1425,13 +1425,13 @@ JSROOT.define([], () =>  {
           kappa = normal_quantile(1 - alpha,1),
           mode = (passed + 0.5 * kappa * kappa) / (total + kappa * kappa),
           delta = kappa / (total + kappa*kappa) * Math.sqrt(total * average * (1 - average) + kappa * kappa / 4);
-   
+
       if(bUpper)
          return ((mode + delta) > 1) ? 1.0 : (mode + delta);
 
       return ((mode - delta) < 0) ? 0.0 : (mode - delta);
    }
-   
+
    /** @summary Calculates the boundaries for the frequentist Agresti-Coull interval
      * @private */
    function eff_AgrestiCoull(total,passed,level,bUpper) {
@@ -1442,10 +1442,10 @@ JSROOT.define([], () =>  {
 
      if(bUpper)
         return ((mode + delta) > 1) ? 1.0 : (mode + delta);
-        
+
      return ((mode - delta) < 0) ? 0.0 : (mode - delta);
    }
-   
+
    /** @summary Calculates the boundaries using the  mid-P binomial
      * @private */
    function eff_MidPInterval(total,passed,level,bUpper) {
@@ -1460,7 +1460,7 @@ JSROOT.define([], () =>  {
          p = (p1 - p0) * passed + p0;
          return p;
       }
-   
+
       while (Math.abs(pmax - pmin) > tol) {
          p = (pmin + pmax)/2;
          //double v = 0.5 * ROOT::Math::binomial_pdf(int(passed), p, int(total));
@@ -1469,17 +1469,17 @@ JSROOT.define([], () =>  {
          //if (passed > 0) v += ROOT::Math::binomial_cdf(int(passed - 1), p, int(total));
          // compute the binomial cdf at passed -1
          if ( (passed-1) >= 0) v += beta_cdf_c(p, passed, total-passed+1);
-   
+
          let vmin = bUpper ? alpha_min : 1.- alpha_min;
          if (v > vmin)
             pmin = p;
          else
             pmax = p;
       }
-   
+
       return p;
    }
-   
+
    /** @summary Return function to calculate boundary of TEfficiency
      * @private */
    mth.getTEfficiencyBoundaryFunc = function(option) {
@@ -1492,7 +1492,7 @@ JSROOT.define([], () =>  {
              kBUniform = 6,  ///< Prior ~ Uniform = Beta(1,1)
              kBBayesian = 7, ///< User specified Prior ~ Beta(fBeta_alpha,fBeta_beta)
              kMidP = 8;      ///< Mid-P Lancaster interval
-      
+
       switch (option) {
          case kFCP: return eff_ClopperPearson;
          case kFNormal: return eff_Normal;
@@ -1505,11 +1505,11 @@ JSROOT.define([], () =>  {
          case kBBayesian: return eff_ClopperPearson;
       }
       console.log(`Not recognized stat option ${option}, use kFCP`);
-      return eff_ClopperPearson; 
+      return eff_ClopperPearson;
    }
 
    // =========================================================================
-   
+
 
    /** @summary Appends more methods
      * @desc different methods which are typically used in TTree::Draw
@@ -1568,7 +1568,7 @@ JSROOT.define([], () =>  {
    mth.incbet = incbet;
    mth.incbi = incbi;
    mth.beta_quantile = beta_quantile;
-   mth.lgam = lgam;   
+   mth.lgam = lgam;
    mth.chisquared_cdf_c = chisquared_cdf_c;
    mth.lgamma = lgamma;
    mth.inc_gamma = inc_gamma;

@@ -1918,13 +1918,13 @@
                     _func = this.fFormula.fFormula;
                     pprefix = "[p";
                  }
-                 if (this.fFormula.fClingParameters && this.fFormula.fParams) 
+                 if (this.fFormula.fClingParameters && this.fFormula.fParams)
                     this.fFormula.fParams.forEach(pair => {
                        let regex = new RegExp(`(\\[${pair.first}\\])`, 'g'),
                            parvalue = this.fFormula.fClingParameters[pair.second];
                        _func = _func.replace(regex, (parvalue < 0) ? `(${parvalue})` : parvalue);
                     });
-                 
+
               }
 
               if ('formulas' in this)
@@ -1951,15 +1951,15 @@
               }
               for (let i = 0; i < this.fNpar; ++i)
                 _func = _func.replaceAll(pprefix + i + "]", `(${this.GetParValue(i)})`);
-                
+
               _func = _func.replace(/\b(sin)\b/gi, 'Math.sin')
                            .replace(/\b(cos)\b/gi, 'Math.cos')
                            .replace(/\b(tan)\b/gi, 'Math.tan')
                            .replace(/\b(exp)\b/gi, 'Math.exp')
                            .replace(/\b(pow)\b/gi, 'Math.pow')
                            .replace(/pi/g, 'Math.PI');
-              for (let n = 2; n < 10; ++n) 
-                 _func = _func.replaceAll(`x^${n}`, `Math.pow(x,${n})`); 
+              for (let n = 2; n < 10; ++n)
+                 _func = _func.replaceAll(`x^${n}`, `Math.pow(x,${n})`);
 
               if (isformula) {
                  _func = _func.replace(/x\[0\]/g,"x");

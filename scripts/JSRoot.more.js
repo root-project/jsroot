@@ -3302,10 +3302,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
      //       kShortestInterval = JSROOT.BIT(16),  ///< Use shortest interval
             kUseBinPrior      = JSROOT.BIT(17),  ///< Use a different prior for each bin
             kUseWeights       = JSROOT.BIT(18);   ///< Use weights
-            
+
       const GetBetaAlpha = bin => obj.fBeta_bin_params.length > bin ? obj.fBeta_bin_params[bin].first : obj.fBeta_alpha;
       const GetBetaBeta = bin => obj.fBeta_bin_params.length > bin ? obj.fBeta_bin_params[bin].second : fBeta_beta;
-      const BetaMean = (a,b) => (a <= 0 || b <= 0 ) ? 0 : a / (a + b); 
+      const BetaMean = (a,b) => (a <= 0 || b <= 0 ) ? 0 : a / (a + b);
       const BetaMode = (a,b) => {
          if (a <= 0 || b <= 0 ) return 0;
          if ( a <= 1 || b <= 1) {
@@ -3315,7 +3315,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          }
          return (a - 1.0) / (a + b -2.0);
       }
-      
+
       let total = obj.fTotalHistogram.fArray[bin], // should work for both 1-d and 2-d
           passed = obj.fPassedHistogram.fArray[bin]; // should work for both 1-d and 2-d
 
@@ -3323,15 +3323,15 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          // parameters for the beta prior distribution
          let alpha = obj.TestBit(kUseBinPrior) ? GetBetaAlpha(bin) : GetBetaAlpha(-1);
          let beta  = obj.TestBit(kUseBinPrior) ? GetBetaBeta(bin)  : GetBetaBeta(-1);
-   
+
          let aa,bb;
          if(obj.TestBit(kUseWeights)) {
             let tw =  total; // fTotalHistogram->GetBinContent(bin);
             let tw2 = obj.fTotalHistogram.fSumw2 ? obj.fTotalHistogram.fSumw2[bin] : Math.abs(total);
             let pw =  passed; // fPassedHistogram->GetBinContent(bin);
-   
+
             if (tw2 <= 0 ) return pw/tw;
-   
+
             // tw/tw2 renormalize the weights
             let norm = tw/tw2;
             aa =  pw * norm + alpha;
@@ -3340,7 +3340,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             aa = passed + alpha;
             bb = total - passed + beta;
          }
-   
+
          if (!obj.TestBit(kPosteriorMode) )
             return BetaMean(aa,bb);
          else
@@ -3349,7 +3349,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       return total ? passed/total : 0;
    }
-   
+
    /** @summary Caluclate efficiency error low
      * @private */
    TEfficiencyPainter.prototype.getEfficiencyErrorLow = function(obj, bin, value) {
@@ -3367,7 +3367,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       return this.fBoundary(total, passed, obj.fConfLevel, true) - value;
    }
-   
+
    /** @summary Copy drawning attributes
      * @private */
    TEfficiencyPainter.prototype.copyAttributes = function(obj, eff) {
@@ -3380,7 +3380,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       obj.fMarkerStyle = eff.fMarkerStyle;
       obj.fMarkerSize = eff.fMarkerSize;
    }
-   
+
    /** @summary Create graph for the drawing of 1-dim TEfficiency
      * @private */
    TEfficiencyPainter.prototype.createGraph = function(eff) {
@@ -3388,7 +3388,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       gr.fName = "eff_graph";
       return gr;
    }
-   
+
    /** @summary Create histogram for the drawing of 2-dim TEfficiency
      * @private */
    TEfficiencyPainter.prototype.createHisto = function(eff) {
@@ -3407,27 +3407,27 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       const eff = this.getObject(),
             xaxis = eff.fTotalHistogram.fXaxis,
             npoints = xaxis.fNbins,
-            plot0Bins = (opt.indexOf("e0") >= 0); 
+            plot0Bins = (opt.indexOf("e0") >= 0);
 
       for (let n = 0, j = 0; n < npoints; ++n) {
          if (!plot0Bins && eff.fTotalHistogram.getBinContent(n+1) === 0) continue;
-         
+
          let value = this.getEfficiency(eff, n+1);
-         
+
          gr.fX[j] = xaxis.GetBinCenter(n+1);
          gr.fY[j] = value;
          gr.fEXlow[j] = xaxis.GetBinCenter(n+1) - xaxis.GetBinLowEdge(n+1);
          gr.fEXhigh[j] = xaxis.GetBinLowEdge(n+2) - xaxis.GetBinCenter(n+1);
          gr.fEYlow[j] = this.getEfficiencyErrorLow(eff, n+1, value);
          gr.fEYhigh[j] = this.getEfficiencyErrorUp(eff, n+1, value);
-         
+
          gr.fNpoints = ++j;
       }
 
       gr.fTitle = eff.fTitle;
       this.copyAttributes(gr, eff);
    }
-   
+
    /** @summary Fill graph with points from efficiency object
      * @private */
    TEfficiencyPainter.prototype.fillHisto = function(hist) {
@@ -3435,28 +3435,28 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             nbinsx = hist.fXaxis.fNbins,
             nbinsy = hist.fYaxis.fNbins,
             kNoStats = JSROOT.BIT(9);
-      
+
       for (let i = 0; i < nbinsx+2; ++i)
          for (let j = 0; j < nbinsy+2; ++j) {
             let bin = hist.getBin(i, j),
                 value = this.getEfficiency(eff, bin);
             hist.fArray[bin] = value;
          }
-         
+
       hist.fTitle = eff.fTitle;
       hist.fBits = hist.fBits | kNoStats;
       this.copyAttributes(hist, eff);
    }
-   
-   /** @summary Draw function 
+
+   /** @summary Draw function
      * @private */
    TEfficiencyPainter.prototype.drawFunction = function(indx) {
       const eff = this.getObject();
-      
-      if (!eff || !eff.fFunctions || indx >= eff.fFunctions.arr.length) 
+
+      if (!eff || !eff.fFunctions || indx >= eff.fFunctions.arr.length)
          return this;
-         
-       return JSROOT.draw(this.getDom(), eff.fFunctions.arr[indx], eff.fFunctions.opt[indx]).then(() => this.drawFunction(indx+1)); 
+
+       return JSROOT.draw(this.getDom(), eff.fFunctions.arr[indx], eff.fFunctions.opt[indx]).then(() => this.drawFunction(indx+1));
    }
 
    /** @summary Draw function for TEfficiency object
@@ -3464,10 +3464,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    function drawEfficiency(dom, eff, opt) {
 
       if (!eff || !eff.fTotalHistogram) return null;
-      
+
       if (!opt || (typeof opt != 'string')) opt = "";
       opt = opt.toLowerCase();
-      
+
       let ndim = 0;
       if (eff.fTotalHistogram._typename.indexOf("TH1")==0) ndim = 1; else
       if (eff.fTotalHistogram._typename.indexOf("TH2")==0) ndim = 2; else return null;
@@ -3476,14 +3476,14 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       painter.ndim = ndim;
 
       return JSROOT.require('math').then(mth => {
-         
+
          painter.fBoundary = mth.getTEfficiencyBoundaryFunc(eff.fStatisticOption);
-         
+
          if (ndim == 1) {
             if (!opt) opt = "ap";
             if ((opt.indexOf("same") < 0) && (opt.indexOf("a") < 0)) opt += "a";
             if (opt.indexOf("p") < 0) opt += "p";
-            
+
             let gr = painter.createGraph(eff);
             painter.fillGraph(gr, opt);
             return JSROOT.draw(dom, gr, opt);

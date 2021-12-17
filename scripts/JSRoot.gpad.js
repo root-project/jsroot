@@ -3014,14 +3014,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    TPadPainter.prototype.divide = function(nx, ny) {
       if (!ny) {
          let ndiv = nx;
-         if (ndiv < 2) return Promise.resolve(this); 
+         if (ndiv < 2) return Promise.resolve(this);
          nx = ny = Math.round(Math.sqrt(ndiv));
          if (nx*ny < ndiv) nx += 1;
       }
-      
+
       if (nx*ny < 2) return Promise.resolve(this);
-      
-      let xmargin = 0.01, ymargin = 0.01, 
+
+      let xmargin = 0.01, ymargin = 0.01,
           dy = 1/ny, dx = 1/nx, n = 0, subpads = [];
       for (let iy = 0; iy < ny; iy++) {
          let y2 = 1 - iy*dy - ymargin,
@@ -3047,20 +3047,20 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                pad.fAbsXlowNDC = x1;
                pad.fAbsYlowNDC = y1;
             }
-            
+
             subpads.push(pad);
          }
       }
-      
+
       const drawNext = () => {
-         if (subpads.length == 0) 
+         if (subpads.length == 0)
             return Promise.resolve(this);
-         return JSROOT.draw(this.getDom(), subpads.shift()).then(drawNext); 
+         return JSROOT.draw(this.getDom(), subpads.shift()).then(drawNext);
       };
 
       return drawNext();
    }
-   
+
    /** @summary Return sub-pads painter, only direct childs are checked
      * @private */
    TPadPainter.prototype.getSubPadPainter = function(n) {

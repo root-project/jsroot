@@ -864,10 +864,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       }
 
       this.draw_g.selectAll("rect").style("fill", 'white');
-      
+
       if ((gzmin === undefined) || (gzmax === undefined) || (gzmin == gzmax)) {
          gzmin = zmin; gzmax = zmax;
-      } 
+      }
 
       if (this._palette_vertical) {
          this._swap_side = palette.fX2NDC < 0.5;
@@ -1546,7 +1546,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (d.check('TICKXY') && pad) pad.fTickx = pad.fTicky = 1;
       if (d.check('TICKX') && pad) pad.fTickx = 1;
       if (d.check('TICKY') && pad) pad.fTicky = 1;
-      
+
       d.getColor = function() {
          this.color = this.partAsInt(1) - 1;
          if (this.color >= 0) return true;
@@ -1556,7 +1556,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          return false;
       }
 
-      if (d.check('FILL_', true) && d.getColor()) 
+      if (d.check('FILL_', true) && d.getColor())
          this.histoFillColor = d.color;
 
       if (d.check('LINE_', true) && d.getColor())
@@ -3109,16 +3109,16 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             nlevels = histo.fContour.length;
 
       let cntr = this.createContour(nlevels, zmin, zmax, zminpos, custom_levels);
-      
+
       if ((this.getDimension() < 3) && fp) {
-         
+
          fp.zmin = gzmin;
          fp.zmax = gzmax;
-         
+
          fp.zoom_zmin = cntr.colzmin;
          fp.zoom_zmax = cntr.colzmax;
       }
-      
+
       return cntr;
    }
 
@@ -7514,12 +7514,12 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          }
       }
 
-      // handling of "pads" draw option       
+      // handling of "pads" draw option
       if (pad_painter) {
          let subpad_painter = pad_painter.getSubPadPainter(indx+1);
-         if (!subpad_painter) 
-            return Promise.resolve(this);  
-         
+         if (!subpad_painter)
+            return Promise.resolve(this);
+
          let prev_name = subpad_painter.selectCurrentPad(subpad_painter.this_pad_name);
          return JSROOT.draw(subpad_painter.getDom(), hist, hopt).then(subp => {
             this.painters.push(subp);
@@ -7570,7 +7570,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       this.options.nostack = d.check("NOSTACK");
       if (d.check("STACK")) this.options.nostack = false;
       this.options.same = d.check("SAME");
-      
+
       d.check("NOCLEAR"); // ignore noclear option
 
       this.options._pfc = d.check("PFC");
@@ -7706,12 +7706,12 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return jsrp.ensureTCanvas(painter, false).then(() => {
 
          painter.decodeOptions(opt);
-         
+
          if (painter.options.pads) {
-            pad_painter = painter.getPadPainter(); 
+            pad_painter = painter.getPadPainter();
             pad_painter.cleanPrimitives(p => p !== painter);
             return pad_painter.divide(painter.options.nhist);
-         } 
+         }
 
          if (!painter.options.nostack)
              painter.options.nostack = !painter.buildStack(stack);
