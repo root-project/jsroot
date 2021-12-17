@@ -3371,14 +3371,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    /** @summary Copy drawning attributes
      * @private */
    TEfficiencyPainter.prototype.copyAttributes = function(obj, eff) {
-      obj.fLineColor = eff.fLineColor;
-      obj.fLineStyle = eff.fLineStyle;
-      obj.fLineWidth = eff.fLineWidth;
-      obj.fFillColor = eff.fFillColor;
-      obj.fFillStyle = eff.fFillStyle;
-      obj.fMarkerColor = eff.fMarkerColor;
-      obj.fMarkerStyle = eff.fMarkerStyle;
-      obj.fMarkerSize = eff.fMarkerSize;
+      ['fLineColor', 'fLineStyle', 'fLineWidth', 'fFillColor', 'fFillStyle', 'fMarkerColor', 'fMarkerStyle', 'fMarkerSize'].forEach(name => obj[name] = eff[name]);
    }
 
    /** @summary Create graph for the drawing of 1-dim TEfficiency
