@@ -3036,10 +3036,18 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             let pad = JSROOT.create("TPad");
             pad.fName = pad.fTitle = this.pad.fName + "_" + n;
             pad.fNumber = n;
-            pad.fAbsWNDC = x2 - x1;
-            pad.fAbsHNDC = y2 - y1;
-            pad.fAbsXlowNDC = x1;
-            pad.fAbsYlowNDC = y1;
+            if (!this.iscan) {
+               pad.fAbsWNDC = (x2-x1) * this.pad.fAbsWNDC;
+               pad.fAbsHNDC = (y2-y1) * this.pad.fAbsHNDC;
+               pad.fAbsXlowNDC = this.pad.fAbsXlowNDC + x1 * this.pad.fAbsWNDC;
+               pad.fAbsYlowNDC = this.pad.fAbsYlowNDC + y1 * this.pad.fAbsWNDC;
+            } else {
+               pad.fAbsWNDC = x2 - x1;
+               pad.fAbsHNDC = y2 - y1;
+               pad.fAbsXlowNDC = x1;
+               pad.fAbsYlowNDC = y1;
+            }
+            
             subpads.push(pad);
          }
       }
