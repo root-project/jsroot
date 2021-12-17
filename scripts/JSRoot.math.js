@@ -1486,20 +1486,28 @@ JSROOT.define([], () =>  {
    /** @summary Return function to calculate boundary of TEfficiency
      * @private */
    mth.getTEfficiencyBoundaryFunc = function(option) {
-      const  kFCP = 0,           ///< Clopper-Pearson interval (recommended by PDG)
-             kFNormal = 1,       ///< Normal approximation
-             kFWilson = 2,       ///< Wilson interval
-             kFAC = 3,           ///< Agresti-Coull interval
-             kMidP = 8;          ///< Mid-P Lancaster interval
+      const  kFCP = 0,       ///< Clopper-Pearson interval (recommended by PDG)
+             kFNormal = 1,   ///< Normal approximation
+             kFWilson = 2,   ///< Wilson interval
+             kFAC = 3,       ///< Agresti-Coull interval
+             kFFC = 4,       ///< Feldman-Cousins interval, too complicated for JSROOT
+             kBJeffrey = 5,  ///< Jeffrey interval (Prior ~ Beta(0.5,0.5)
+             kBUniform = 6,  ///< Prior ~ Uniform = Beta(1,1)
+             kBBayesian = 7, ///< User specified Prior ~ Beta(fBeta_alpha,fBeta_beta)
+             kMidP = 8;      ///< Mid-P Lancaster interval
       
       switch (option) {
          case kFCP: return eff_ClopperPearson;
          case kFNormal: return eff_Normal;
          case kFWilson: return eff_Wilson;
          case kFAC: return eff_AgrestiCoull;
+         case kFFC: console.log(`Feldman-Cousins interval kFFC not supported, use kFCP`); return eff_ClopperPearson;
          case kMidP: return eff_MidPInterval;
+         case kBJeffrey:
+         case kBUniform:
+         case kBBayesian: return eff_ClopperPearson;
       }
-      console.log(`Not supported stat option ${option}, use kFCP`);
+      console.log(`Not recognized stat option ${option}, use kFCP`);
       return eff_ClopperPearson; 
    }
 
