@@ -72,7 +72,7 @@ JSROOT.define([], () =>  {
          -2.01889141433532773231E6
       ];
 
-      if (x >= Number.POSITIVE_INFINITY)
+      if ((x >= Number.MAX_VALUE) || (x == Number.POSITIVE_INFINITY)) 
          return Number.POSITIVE_INFINITY;
 
       if ( x < -34.0 ) {
@@ -119,7 +119,7 @@ JSROOT.define([], () =>  {
          return Math.log(z) + p;
       }
       if ( x > kMAXLGM )
-         return sgngam * Number.POSITIVE_INFINITY;
+         return sgngam > 0 ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY;
 
       q = ( x - 0.5 ) * Math.log(x) - x + LS2PI;
       if ( x > 1.0e8 )
