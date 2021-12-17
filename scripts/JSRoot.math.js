@@ -10,12 +10,12 @@ JSROOT.define([], () =>  {
      * @desc Shows available functions for TFormula */
    let mth = {};
 
-   const kMACHEP = 1.11022302462515654042363166809e-16,
-         kMINLOG = -708.396418532264078748994506896,
-         kMAXLOG = 709.782712893383973096206318587,
+   const kMACHEP  = 1.11022302462515654042363166809e-16,
+         kMINLOG  = -708.396418532264078748994506896,
+         kMAXLOG  = 709.782712893383973096206318587,
          kMAXSTIR = 108.116855767857671821730036754,
-         kBig = 4.503599627370496e15,
-         kBiginv =  2.22044604925031308085e-16;
+         kBig     = 4.503599627370496e15,
+         kBiginv  =  2.22044604925031308085e-16;
 
    /** @summary Polynomialeval function
      * @desc calculates a value of a polynomial of the form:
@@ -374,9 +374,6 @@ JSROOT.define([], () =>  {
    /** @summary igamc function
      * @private */
    function igamc(a,x) {
-      const kBig = 4.503599627370496e15,
-            kBiginv =  2.22044604925031308085e-16;
-
       // LM: for negative values returns 0.0
       // This is correct if a is a negative integer since Gamma(-n) = +/- inf
       if (a <= 0)  return 0.0;
@@ -1569,11 +1566,8 @@ JSROOT.define([], () =>  {
    mth.inc_beta = inc_beta;
    mth.pseries = pseries;
    mth.incbet = incbet;
-   // mth.
    mth.incbi = incbi;
    mth.beta_quantile = beta_quantile;
-   // mth.
-   // mth.
    mth.lgam = lgam;   
    mth.chisquared_cdf_c = chisquared_cdf_c;
    mth.lgamma = lgamma;
@@ -1581,7 +1575,6 @@ JSROOT.define([], () =>  {
    mth.inc_gamma_c = inc_gamma_c;
    mth.landau_pdf = landau_pdf;
    mth.beta_cdf_c = beta_cdf_c;
-   
    mth.Landau = Landau;
 
    return mth;
