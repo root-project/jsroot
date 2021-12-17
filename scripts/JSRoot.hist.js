@@ -7709,7 +7709,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          
          if (painter.options.pads) {
             pad_painter = painter.getPadPainter(); 
-            return pad_painter.divide(painter.options.nhist, painter);
+            return pad_painter.divide(painter.options.nhist, 0, painter);
          } 
 
          if (!painter.options.nostack)

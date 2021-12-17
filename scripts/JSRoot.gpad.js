@@ -3011,13 +3011,17 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Divide pad on subpads
      * @returns {Promise} when finished
      * @private */
-   TPadPainter.prototype.divide = function(ndiv, painter) {
+   TPadPainter.prototype.divide = function(nx, ny, painter) {
       this.cleanPrimitives(p => p !== painter);
       
-      if (ndiv < 2) return Promise.resolve(this);
+      if (!ny) {
+         let ndiv = nx;
+         if (ndiv < 2) return Promise.resolve(this); 
+         nx = ny = Math.round(Math.sqrt(ndiv));
+         if (nx*ny < ndiv) nx += 1;
+      }
       
-      let nx = Math.round(Math.sqrt(ndiv)), ny = nx;
-      if (nx*ny < ndiv) nx += 1;
+      if (nx*ny < 2) return Promise.resolve(this);
       
       let xmargin = 0.01, ymargin = 0.01, 
           dy = 1/ny, dx = 1/nx, n = 0, subpads = [];
