@@ -2592,19 +2592,19 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       let mpath = "", epath = "", lpath = "", bins = [];
 
-      for (let n=0;n<graph.fNpoints;++n) {
+      for (let n = 0; n < graph.fNpoints; ++n) {
 
          if (graph.fY[n] > main.scale_rmax) continue;
 
          if (this.options.err) {
             let pos1 = main.translate(graph.fX[n], graph.fY[n] - graph.fEY[n]),
                 pos2 = main.translate(graph.fX[n], graph.fY[n] + graph.fEY[n]);
-            epath += "M" + pos1.x + "," + pos1.y + "L" + pos2.x + "," + pos2.y;
+            epath += `M${pos1.x},${pos1.y}L${pos2.x},${pos2.y}`;
 
             pos1 = main.translate(graph.fX[n] + graph.fEX[n], graph.fY[n]);
             pos2 = main.translate(graph.fX[n] - graph.fEX[n], graph.fY[n]);
 
-            epath += "M" + pos1.x + "," + pos1.y + "A" + pos2.rx + "," + pos2.ry+ ",0,0,1," + pos2.x + "," + pos2.y;
+            epath += `M${pos1.x},${pos1.y}A${pos2.rx},${pos2.ry},0,0,1,${pos2.x},${pos2.y}`;
          }
 
          let pos = main.translate(graph.fX[n], graph.fY[n]);
@@ -2989,9 +2989,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       if (this.options.Line || this.options.Curve) {
 
-         let npx = Math.max(10, spline.fNpx);
-
-         let xmin = Math.max(pmain.scale_xmin, spline.fXmin),
+         let npx = Math.max(10, spline.fNpx),
+             xmin = Math.max(pmain.scale_xmin, spline.fXmin),
              xmax = Math.min(pmain.scale_xmax, spline.fXmax),
              indx = this.findX(xmin),
              bins = []; // index of current knot
@@ -3001,7 +3000,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             xmax = Math.log(xmax);
          }
 
-         for (let n=0;n<npx;++n) {
+         for (let n = 0; n < npx; ++n) {
             let xx = xmin + (xmax-xmin)/npx*(n-1);
             if (pmain.logx) xx = Math.exp(xx);
 
@@ -4048,10 +4047,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             getPaletteColor: function(pal, zval) {
                if (!this.arr || !this.rgba) return "white";
                let indx = Math.round((zval - this.arr[0]) / (this.arr[this.arr.length-1] - this.arr[0]) * (this.rgba.length-4)/4) * 4;
-               return "rgba(" + this.rgba[indx] + "," + this.rgba[indx+1] + "," + this.rgba[indx+2] + "," + this.rgba[indx+3] + ")";
+               return "#" + jsrp.toHex(this.rgba[indx],1) + jsrp.toHex(this.rgba[indx+1],1) + jsrp.toHex(this.rgba[indx+2],1) + jsrp.toHex(this.rgba[indx+3],1);
             }
          };
-         for (let k=0;k<200;k++)
+         for (let k = 0; k < 200; k++)
             this.fContour.arr[k] = min + (max-min)/(200-1)*k;
 
          if (min >= max) max = min + 1;
