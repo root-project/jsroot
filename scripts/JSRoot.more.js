@@ -3303,11 +3303,12 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          kUseBinPrior      = JSROOT.BIT(17),  ///< Use a different prior for each bin
          kUseWeights       = JSROOT.BIT(18);  ///< Use weights
 
+   const getBetaAlpha = (obj,bin) => (obj.fBeta_bin_params.length > bin) ? obj.fBeta_bin_params[bin].first : obj.fBeta_alpha;
+   const getBetaBeta = (obj,bin) => (obj.fBeta_bin_params.length > bin) ? obj.fBeta_bin_params[bin].second : obj.fBeta_beta;
+
    /** @summary Caluclate efficiency */
    TEfficiencyPainter.prototype.getEfficiency = function(obj, bin) {
 
-      const GetBetaAlpha = bin => obj.fBeta_bin_params.length > bin ? obj.fBeta_bin_params[bin].first : obj.fBeta_alpha;
-      const GetBetaBeta = bin => obj.fBeta_bin_params.length > bin ? obj.fBeta_bin_params[bin].second : fBeta_beta;
       const BetaMean = (a,b) => (a <= 0 || b <= 0 ) ? 0 : a / (a + b);
       const BetaMode = (a,b) => {
          if (a <= 0 || b <= 0 ) return 0;
@@ -3324,8 +3325,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       if(obj.TestBit(kIsBayesian)) {
          // parameters for the beta prior distribution
-         let alpha = obj.TestBit(kUseBinPrior) ? GetBetaAlpha(bin) : GetBetaAlpha(-1),
-             beta  = obj.TestBit(kUseBinPrior) ? GetBetaBeta(bin)  : GetBetaBeta(-1);
+         let alpha = obj.TestBit(kUseBinPrior) ? getBetaAlpha(obj, bin) : obj.fBeta_alpha,
+             beta  = obj.TestBit(kUseBinPrior) ? getBetaBeta(obj, bin)  : obj.fBeta_beta;
 
          let aa,bb;
          if(obj.TestBit(kUseWeights)) {
@@ -3360,8 +3361,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           passed = obj.fPassedHistogram.fArray[bin],
           alpha = 0, beta = 0;
       if (obj.TestBit(kIsBayesian)) {
-          alpha = obj.TestBit(kUseBinPrior) ? GetBetaAlpha(bin) : GetBetaAlpha(-1);
-          beta  = obj.TestBit(kUseBinPrior) ? GetBetaBeta(bin)  : GetBetaBeta(-1);
+         alpha = obj.TestBit(kUseBinPrior) ? getBetaAlpha(obj, bin) : obj.fBeta_alpha;
+         beta  = obj.TestBit(kUseBinPrior) ? getBetaBeta(obj, bin)  : obj.fBeta_beta;
       }
 
       return value - this.fBoundary(total, passed, obj.fConfLevel, false, alpha, beta);
@@ -3374,8 +3375,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           passed = obj.fPassedHistogram.fArray[bin],
           alpha = 0, beta = 0;
       if (obj.TestBit(kIsBayesian)) {
-          alpha = obj.TestBit(kUseBinPrior) ? GetBetaAlpha(bin) : GetBetaAlpha(-1);
-          beta  = obj.TestBit(kUseBinPrior) ? GetBetaBeta(bin)  : GetBetaBeta(-1);
+         alpha = obj.TestBit(kUseBinPrior) ? getBetaAlpha(obj, bin) : obj.fBeta_alpha;
+         beta  = obj.TestBit(kUseBinPrior) ? getBetaBeta(obj, bin)  : obj.fBeta_beta;
       }
 
       return this.fBoundary(total, passed, obj.fConfLevel, true, alpha, beta) - value;
