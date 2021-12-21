@@ -2646,24 +2646,12 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (stats) return stats;
 
       stats = JSROOT.create('TPaveStats');
-      JSROOT.extend(stats, { fName: 'stats',
-                             fOptStat: optstat,
-                             fOptFit: optfit,
-                             fBorderSize: 1 });
-
-      stats.fX1NDC = st.fStatX - st.fStatW;
-      stats.fY1NDC = st.fStatY - st.fStatH;
-      stats.fX2NDC = st.fStatX;
-      stats.fY2NDC = st.fStatY;
-
-      stats.fFillColor = st.fStatColor;
-      stats.fFillStyle = st.fStatStyle;
-
-      stats.fTextAngle = 0;
-      stats.fTextSize = st.fStatFontSize;
-      stats.fTextAlign = 12;
-      stats.fTextColor = st.fStatTextColor;
-      stats.fTextFont = st.fStatFont;
+      JSROOT.extend(stats, {
+         fName: 'stats', fOptStat: optstat, fOptFit: optfit, fBorderSize: 1,
+         fX1NDC: st.fStatX - st.fStatW, fY1NDC: st.fStatY - st.fStatH, fX2NDC: st.fStatX, fY2NDC: st.fStatY,
+         fFillColor: st.fStatColor, fFillStyle: st.fStatStyle,
+         fTextAngle: 0, fTextSize: st.fStatFontSize, fTextAlign: 12, fTextColor: st.fStatTextColor, fTextFont: st.fStatFont
+      });
 
       if (histo._typename.match(/^TProfile/) || histo._typename.match(/^TH2/))
          stats.fY1NDC = 0.67;
