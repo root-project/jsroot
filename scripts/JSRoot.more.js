@@ -1792,7 +1792,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       return res;
    }
-   
+
    const kNotEditable = JSROOT.BIT(18);   // bit set if graph is non editable
 
    /** @summary Check editable flag for TGraph
@@ -3297,13 +3297,14 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    TEfficiencyPainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
 
+   const kIsBayesian       = JSROOT.BIT(14),  ///< Bayesian statistics are used
+         kPosteriorMode    = JSROOT.BIT(15),  ///< Use posterior mean for best estimate (Bayesian statistics)
+    //   kShortestInterval = JSROOT.BIT(16),  ///< Use shortest interval, not implemented in JSROOT - too complicated
+         kUseBinPrior      = JSROOT.BIT(17),  ///< Use a different prior for each bin
+         kUseWeights       = JSROOT.BIT(18);  ///< Use weights
+
    /** @summary Caluclate efficiency */
    TEfficiencyPainter.prototype.getEfficiency = function(obj, bin) {
-      const kIsBayesian       = JSROOT.BIT(14),  ///< Bayesian statistics are used
-            kPosteriorMode    = JSROOT.BIT(15),  ///< Use posterior mean for best estimate (Bayesian statistics)
-     //       kShortestInterval = JSROOT.BIT(16),  ///< Use shortest interval
-            kUseBinPrior      = JSROOT.BIT(17),  ///< Use a different prior for each bin
-            kUseWeights       = JSROOT.BIT(18);   ///< Use weights
 
       const GetBetaAlpha = bin => obj.fBeta_bin_params.length > bin ? obj.fBeta_bin_params[bin].first : obj.fBeta_alpha;
       const GetBetaBeta = bin => obj.fBeta_bin_params.length > bin ? obj.fBeta_bin_params[bin].second : fBeta_beta;
@@ -3323,14 +3324,14 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       if(obj.TestBit(kIsBayesian)) {
          // parameters for the beta prior distribution
-         let alpha = obj.TestBit(kUseBinPrior) ? GetBetaAlpha(bin) : GetBetaAlpha(-1);
-         let beta  = obj.TestBit(kUseBinPrior) ? GetBetaBeta(bin)  : GetBetaBeta(-1);
+         let alpha = obj.TestBit(kUseBinPrior) ? GetBetaAlpha(bin) : GetBetaAlpha(-1),
+             beta  = obj.TestBit(kUseBinPrior) ? GetBetaBeta(bin)  : GetBetaBeta(-1);
 
          let aa,bb;
          if(obj.TestBit(kUseWeights)) {
-            let tw =  total; // fTotalHistogram->GetBinContent(bin);
-            let tw2 = obj.fTotalHistogram.fSumw2 ? obj.fTotalHistogram.fSumw2[bin] : Math.abs(total);
-            let pw =  passed; // fPassedHistogram->GetBinContent(bin);
+            let tw =  total, // fTotalHistogram->GetBinContent(bin);
+                tw2 = obj.fTotalHistogram.fSumw2 ? obj.fTotalHistogram.fSumw2[bin] : Math.abs(total),
+                pw = passed; // fPassedHistogram->GetBinContent(bin);
 
             if (tw2 <= 0 ) return pw/tw;
 
@@ -3356,18 +3357,28 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
      * @private */
    TEfficiencyPainter.prototype.getEfficiencyErrorLow = function(obj, bin, value) {
       let total = obj.fTotalHistogram.fArray[bin],
-          passed = obj.fPassedHistogram.fArray[bin];
+          passed = obj.fPassedHistogram.fArray[bin],
+          alpha = 0, beta = 0;
+      if (obj.TestBit(kIsBayesian)) {
+          alpha = obj.TestBit(kUseBinPrior) ? GetBetaAlpha(bin) : GetBetaAlpha(-1);
+          beta  = obj.TestBit(kUseBinPrior) ? GetBetaBeta(bin)  : GetBetaBeta(-1);
+      }
 
-      return value - this.fBoundary(total, passed, obj.fConfLevel, false);
+      return value - this.fBoundary(total, passed, obj.fConfLevel, false, alpha, beta);
    }
 
    /** @summary Caluclate efficiency error low up
      * @private */
    TEfficiencyPainter.prototype.getEfficiencyErrorUp = function(obj, bin, value) {
       let total = obj.fTotalHistogram.fArray[bin],
-          passed = obj.fPassedHistogram.fArray[bin];
+          passed = obj.fPassedHistogram.fArray[bin],
+          alpha = 0, beta = 0;
+      if (obj.TestBit(kIsBayesian)) {
+          alpha = obj.TestBit(kUseBinPrior) ? GetBetaAlpha(bin) : GetBetaAlpha(-1);
+          beta  = obj.TestBit(kUseBinPrior) ? GetBetaBeta(bin)  : GetBetaBeta(-1);
+      }
 
-      return this.fBoundary(total, passed, obj.fConfLevel, true) - value;
+      return this.fBoundary(total, passed, obj.fConfLevel, true, alpha, beta) - value;
    }
 
    /** @summary Copy drawning attributes
@@ -3472,7 +3483,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       return JSROOT.require('math').then(mth => {
 
-         painter.fBoundary = mth.getTEfficiencyBoundaryFunc(eff.fStatisticOption);
+         painter.fBoundary = mth.getTEfficiencyBoundaryFunc(eff.fStatisticOption, eff.TestBit(kIsBayesian));
 
          if (ndim == 1) {
             if (!opt) opt = "ap";
