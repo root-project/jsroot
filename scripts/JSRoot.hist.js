@@ -2435,28 +2435,28 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          fp.createXY2(opts);
 
          return fp.drawAxes2(opts.second_x, opts.second_y);
-      } else {
-         fp.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, 0, 0);
-
-         fp.createXY({ ndim: this.getDimension(),
-                       check_pad_range: this.check_pad_range,
-                       zoom_ymin: this.zoom_ymin,
-                       zoom_ymax: this.zoom_ymax,
-                       ymin_nz: this.ymin_nz,
-                       swap_xy: (this.options.BarStyle >= 20),
-                       reverse_x: this.options.RevX,
-                       reverse_y: this.options.RevY,
-                       symlog_x: this.options.SymlogX,
-                       symlog_y: this.options.SymlogY,
-                       Proj: this.options.Proj,
-                       extra_y_space: this.options.Text && (this.options.BarStyle > 0) });
-         delete this.check_pad_range;
-
-         if (this.options.Same) return Promise.resolve(false);
-
-         return fp.drawAxes(false, this.options.Axis < 0, (this.options.Axis < 0),
-                            this.options.AxisPos, this.options.Zscale && this.options.Zvert, this.options.Zscale && !this.options.Zvert);
       }
+
+      fp.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, 0, 0);
+
+      fp.createXY({ ndim: this.getDimension(),
+                    check_pad_range: this.check_pad_range,
+                    zoom_ymin: this.zoom_ymin,
+                    zoom_ymax: this.zoom_ymax,
+                    ymin_nz: this.ymin_nz,
+                    swap_xy: (this.options.BarStyle >= 20),
+                    reverse_x: this.options.RevX,
+                    reverse_y: this.options.RevY,
+                    symlog_x: this.options.SymlogX,
+                    symlog_y: this.options.SymlogY,
+                    Proj: this.options.Proj,
+                    extra_y_space: this.options.Text && (this.options.BarStyle > 0) });
+      delete this.check_pad_range;
+
+      if (this.options.Same) return Promise.resolve(false);
+
+      return fp.drawAxes(false, this.options.Axis < 0, (this.options.Axis < 0),
+                         this.options.AxisPos, this.options.Zscale && this.options.Zvert, this.options.Zscale && !this.options.Zvert);
    }
 
    /** @summary Toggle histogram title drawing
@@ -2487,9 +2487,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       if (!pt && pp && typeof pp.findInPrimitives == "function")
          pt = pp.findInPrimitives("title", "TPaveText");
-
-      // histo.fTitle = "#strike{testing} #overline{Title:} #overline{Title:_{X}} #underline{test}  #underline{test^{X}}";
-      // histo.fTitle = "X-Y-#overline{V}_{#Phi}";
 
       if (pt) {
          pt.Clear();
