@@ -2895,6 +2895,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       if (this.options.Axis <= 0)
          menu.addchk(this.toggleStat('only-check'), "Show statbox", () => this.toggleStat());
 
+      if (histo.fTitle && this.isMainPainter())
+         menu.addchk(this.toggleTitle('only-check'), "Show title", () => this.toggleTitle());
+
       if (this.draw_content) {
          if (this.getDimension() == 1) {
             menu.add("User range X", () => this.changeUserRange(menu, "X"));
