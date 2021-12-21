@@ -13,6 +13,7 @@
 10. Implement "colhz" draw option to plot horizontal color palette
 11. Implement "pads" draw option for THStack
 12. Improve drawing of TEfficiency, support 2D case
+13. Let disable TGraph dragging via JSROOT.settings.DragGraphs flag (#224)
 
 
 ## Changes in 6.3.2
