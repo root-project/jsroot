@@ -1792,13 +1792,13 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       return res;
    }
+   
+   const kNotEditable = JSROOT.BIT(18);   // bit set if graph is non editable
 
    /** @summary Check editable flag for TGraph
      * @desc if arg specified changes or toggles editable flag */
    TGraphPainter.prototype.testEditable = function(arg) {
-      let obj = this.getObject(),
-          kNotEditable = JSROOT.BIT(18);   // bit set if graph is non editable
-
+      let obj = this.getObject();
       if (!obj) return false;
       if ((arg == "toggle") || ((arg!==undefined) && (!arg != obj.TestBit(kNotEditable))))
          obj.InvertBit(kNotEditable);
@@ -2206,6 +2206,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       painter.decodeOptions(opt, true);
       painter.createBins();
       painter.createStat();
+      if (!JSROOT.settings.DragGraphs && !graph.TestBit(kNotEditable))
+         graph.InvertBit(kNotEditable);
 
       let promise = Promise.resolve();
 

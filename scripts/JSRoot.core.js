@@ -104,7 +104,7 @@
 
    /** @summary JSROOT version date
      * @desc Release date in format day/month/year like "19/11/2021"*/
-   JSROOT.version_date = "20/12/2021";
+   JSROOT.version_date = "21/12/2021";
 
    /** @summary JSROOT version id and date
      * @desc Produced by concatenation of {@link JSROOT.version_id} and {@link JSROOT.version_date}
@@ -368,7 +368,9 @@
        * @default false */
       NoCache: false,
       /** @summary Skip streamer infos from the GUI */
-      SkipStreamerInfos: false
+      SkipStreamerInfos: false,
+      /** @summary Interactive dragging of TGraph points */
+      DragGraphs: false
    };
 
    /** @namespace
