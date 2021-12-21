@@ -2352,34 +2352,38 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return true;
    }
 
+   /** @summary Assign several methods for TAxis
+     * @private */
+   function assignTAxisFuncs(axis) {
+      if (axis.fXbins.length >= axis.fNbins) {
+         axis.regular = false;
+         axis.GetBinCoord = function(bin) {
+            let indx = Math.round(bin);
+            if (indx <= 0) return this.fXmin;
+            if (indx > this.fNbins) return this.fXmax;
+            if (indx==bin) return this.fXbins[indx];
+            let indx2 = (bin < indx) ? indx - 1 : indx + 1;
+            return this.fXbins[indx] * Math.abs(bin-indx2) + this.fXbins[indx2] * Math.abs(bin-indx);
+         };
+         axis.FindBin = function(x,add) {
+            for (let k = 1; k < this.fXbins.length; ++k)
+               if (x < this.fXbins[k]) return Math.floor(k-1+add);
+            return this.fNbins;
+         };
+      } else {
+         axis.regular = true;
+         axis.binwidth = (axis.fXmax - axis.fXmin) / (axis.fNbins || 1);
+         axis.GetBinCoord = function(bin) { return this.fXmin + bin*this.binwidth; };
+         axis.FindBin = function(x,add) { return Math.floor((x - this.fXmin) / this.binwidth + add); };
+      }
+   }
+
+
    /** @summary Extract axes bins and ranges
      * @desc here functions are defined to convert index to axis value and back
      * was introduced to support non-equidistant bins
      * @private */
    THistPainter.prototype.extractAxesProperties = function(ndim) {
-      function AssignFuncs(axis) {
-         if (axis.fXbins.length >= axis.fNbins) {
-            axis.regular = false;
-            axis.GetBinCoord = function(bin) {
-               let indx = Math.round(bin);
-               if (indx <= 0) return this.fXmin;
-               if (indx > this.fNbins) return this.fXmax;
-               if (indx==bin) return this.fXbins[indx];
-               let indx2 = (bin < indx) ? indx - 1 : indx + 1;
-               return this.fXbins[indx] * Math.abs(bin-indx2) + this.fXbins[indx2] * Math.abs(bin-indx);
-            };
-            axis.FindBin = function(x,add) {
-               for (let k = 1; k < this.fXbins.length; ++k)
-                  if (x < this.fXbins[k]) return Math.floor(k-1+add);
-               return this.fNbins;
-            };
-         } else {
-            axis.regular = true;
-            axis.binwidth = (axis.fXmax - axis.fXmin) / (axis.fNbins || 1);
-            axis.GetBinCoord = function(bin) { return this.fXmin + bin*this.binwidth; };
-            axis.FindBin = function(x,add) { return Math.floor((x - this.fXmin) / this.binwidth + add); };
-         }
-      }
 
       this.nbinsx = this.nbinsy = this.nbinsz = 0;
 
@@ -2388,21 +2392,21 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       this.nbinsx = histo.fXaxis.fNbins;
       this.xmin = histo.fXaxis.fXmin;
       this.xmax = histo.fXaxis.fXmax;
-      AssignFuncs(histo.fXaxis);
+      assignTAxisFuncs(histo.fXaxis);
 
       this.ymin = histo.fYaxis.fXmin;
       this.ymax = histo.fYaxis.fXmax;
 
       if (ndim > 1) {
          this.nbinsy = histo.fYaxis.fNbins;
-         AssignFuncs(histo.fYaxis);
+         assignTAxisFuncs(histo.fYaxis);
       }
 
       if (ndim > 2) {
          this.nbinsz = histo.fZaxis.fNbins;
          this.zmin = histo.fZaxis.fXmin;
          this.zmax = histo.fZaxis.fXmax;
-         AssignFuncs(histo.fZaxis);
+         assignTAxisFuncs(histo.fZaxis);
        }
    }
 
