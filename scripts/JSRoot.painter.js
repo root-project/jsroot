@@ -208,6 +208,9 @@ JSROOT.define(['d3'], (d3) => {
 
       if (d.has("skipsi") || d.has("skipstreamerinfos"))
          s.SkipStreamerInfos = true;
+         
+      if (d.has("nodraggraphs"))
+         s.DragGraphs = false;
 
       if (d.has("palette")) {
          let palette = parseInt(d.get("palette"));
