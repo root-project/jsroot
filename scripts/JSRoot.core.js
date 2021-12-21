@@ -370,7 +370,7 @@
       /** @summary Skip streamer infos from the GUI */
       SkipStreamerInfos: false,
       /** @summary Interactive dragging of TGraph points */
-      DragGraphs: false
+      DragGraphs: true
    };
 
    /** @namespace
