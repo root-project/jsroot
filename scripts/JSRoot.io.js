@@ -1162,7 +1162,7 @@ JSROOT.define(['rawinflate'], () => {
    }
 
    /** @summary Retrieve a key by its name and cycle in the list of keys
-    * @desc callback used when keys must be read first from the directory
+    * @desc If only_direct not specified, returns Promise while key keys must be read first from the directory
     * @private */
    TFile.prototype.getKey = function(keyname, cycle, only_direct) {
 
