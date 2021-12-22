@@ -424,7 +424,7 @@ JSROOT.define(['rawinflate'], () => {
    TBuffer.prototype.ntou8 = function() {
       const high = this.arr.getUint32(this.o); this.o += 4;
       const low = this.arr.getUint32(this.o); this.o += 4;
-      return high * 0x100000000 + low;
+      return (high < 0x200000) ? (high << 32) + low : (BigInt(high) << 32n) + BigInt(low);
    }
 
    /** @summary read int8_t */
@@ -448,8 +448,9 @@ JSROOT.define(['rawinflate'], () => {
    TBuffer.prototype.ntoi8 = function() {
       const high = this.arr.getUint32(this.o); this.o += 4;
       const low = this.arr.getUint32(this.o); this.o += 4;
-      if (high < 0x80000000) return high * 0x100000000 + low;
-      return -1 - ((~high) * 0x100000000 + ~low);
+      if (high < 0x80000000) 
+         return (high < 0x200000) ? (high << 32) + low : (BigInt(high) << 32n) + BigInt(low);
+      return (~high < 0x200000) ? -1 - ((~high << 32) + ~low) :  -1n - ((BigInt(~high) << 32n) + BigInt(~low));
    }
 
    /** @summary read float */
@@ -481,13 +482,13 @@ JSROOT.define(['rawinflate'], () => {
             break;
          case jsrio.kLong:
          case jsrio.kLong64:
-            array = new Float64Array(n);
+            array = new Array(n);
             for (; i < n; ++i)
                array[i] = this.ntoi8();
             return array; // exit here to avoid conflicts
          case jsrio.kULong:
          case jsrio.kULong64:
-            array = new Float64Array(n);
+            array = new Array(n);
             for (; i < n; ++i)
                array[i] = this.ntou8();
             return array; // exit here to avoid conflicts

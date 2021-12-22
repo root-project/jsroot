@@ -14,6 +14,7 @@
 11. Implement "pads" draw option for THStack
 12. Improve drawing of TEfficiency, support 2D case
 13. Let disable TGraph dragging via JSROOT.settings.DragGraphs flag (#224)
+14. Use BigInt in I/O when 64bit integer can not be stored as plain Number
 
 
 ## Changes in 6.3.2
