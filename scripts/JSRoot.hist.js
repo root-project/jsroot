@@ -2494,15 +2494,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          if (tpainter) return tpainter.redraw().then(() => this);
       } else if (draw_title && !tpainter && histo.fTitle && !this.options.PadTitle) {
          pt = JSROOT.create("TPaveText");
-         pt.fName = "title";
-         pt.fTextFont = st.fTitleFont;
-         pt.fTextSize = st.fTitleFontSize;
-         pt.fTextColor = st.fTitleTextColor;
-         pt.fTextAlign = st.fTitleAlign;
-         pt.fFillColor = st.fTitleColor;
-         pt.fFillStyle = st.fTitleStyle;
-         pt.fBorderSize = st.fTitleBorderSize;
-
+         JSROOT.extend(pt, { fName: "title", fFillColor: st.fTitleColor, fFillStyle: st.fTitleStyle, fBorderSize: st.fTitleBorderSize,
+                             fTextFont: st.fTitleFont, fTextSize: st.fTitleFontSize, fTextColor: st.fTitleTextColor, fTextAlign: st.fTitleAlign});
          pt.AddText(histo.fTitle);
          return drawPave(this.getDom(), pt, "postitle").then(tp => {
             if (tp) tp.$secondary = true;
