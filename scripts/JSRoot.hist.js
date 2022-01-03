@@ -7222,49 +7222,59 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    // =================================================================================
 
    function createTF2Histogram(func, nosave, hist) {
-      let nsave = 0, npx = 0, npy = 0;
-      if (!nosave) {
-         nsave = func.fSave.length;
-         npx = Math.round(func.fSave[nsave-2]);
-         npy = Math.round(func.fSave[nsave-1]);
-         if (nsave !== (npx+1)*(npy+1) + 6) nsave = 0;
+      let nsave = func.fSave.length;
+      if ((nsave > 6) && (nsave !== (func.fSave[nsave-2]+1)*(func.fSave[nsave-1]+1) + 6)) nsave = 0;
+
+      let npx = Math.max(func.fNpx, 2),
+          npy = Math.max(func.fNpy, 2),
+          iserr = false, isany = false,
+          dx = (func.fXmax - func.fXmin) / (npx - 1),
+          dy = (func.fYmax - func.fYmin) / (npy - 1);
+
+      for (let j = 0; j < npy; ++j)
+        for (let i = 0; (i < npx) && !iserr; ++i) {
+            let x = func.fXmin + i * dx,
+                y = func.fYmin + j * dy,
+                z = 0;
+
+            try {
+               z = func.evalPar(x, y);
+            } catch {
+               iserr = true;
+            }
+
+            if (!iserr && Number.isFinite(z)) {
+               if (!hist) hist = JSROOT.createHistogram("TH2F", npx, npy);
+               isany = true;
+               hist.setBinContent(hist.getBin(i+1,j+1), z);
+            }
+         }
+
+      if (hist && !iserr && isany) {
+         hist.fXaxis.fXmin = func.fXmin - dx/2;
+         hist.fXaxis.fXmax = func.fXmax + dx/2;
+
+         hist.fYaxis.fXmin = func.fYmin - dy/2;
+         hist.fYaxis.fXmax = func.fYmax + dy/2;
       }
 
-      if (nsave > 6) {
-         let dx = (func.fSave[nsave-5] - func.fSave[nsave-6]) / npx / 2,
-             dy = (func.fSave[nsave-3] - func.fSave[nsave-4]) / npy / 2;
+      if ((iserr || !isany) && (nsave > 6)) {
+         npx = Math.round(func.fSave[nsave-2]);
+         npy = Math.round(func.fSave[nsave-1]);
+         dx = (func.fSave[nsave-5] - func.fSave[nsave-6]) / npx;
+         dy = (func.fSave[nsave-3] - func.fSave[nsave-4]) / npy;
 
          if (!hist) hist = JSROOT.createHistogram("TH2F", npx+1, npy+1);
 
-         hist.fXaxis.fXmin = func.fSave[nsave-6] - dx;
-         hist.fXaxis.fXmax = func.fSave[nsave-5] + dx;
+         hist.fXaxis.fXmin = func.fSave[nsave-6] - dx/2;
+         hist.fXaxis.fXmax = func.fSave[nsave-5] + dx/2;
 
-         hist.fYaxis.fXmin = func.fSave[nsave-4] - dy;
-         hist.fYaxis.fXmax = func.fSave[nsave-3] + dy;
+         hist.fYaxis.fXmin = func.fSave[nsave-4] - dy/2;
+         hist.fYaxis.fXmax = func.fSave[nsave-3] + dy/2;
 
-         for (let k=0,j=0;j<=npy;++j)
-            for (let i=0;i<=npx;++i)
+         for (let k=0,j=0; j <= npy; ++j)
+            for (let i = 0; i <= npx; ++i)
                hist.setBinContent(hist.getBin(i+1,j+1), func.fSave[k++]);
-
-      } else {
-         npx = Math.max(func.fNpx, 2);
-         npy = Math.max(func.fNpy, 2);
-
-         if (!hist) hist = JSROOT.createHistogram("TH2F", npx, npy);
-
-         hist.fXaxis.fXmin = func.fXmin;
-         hist.fXaxis.fXmax = func.fXmax;
-
-         hist.fYaxis.fXmin = func.fYmin;
-         hist.fYaxis.fXmax = func.fYmax;
-
-         for (let j=0;j<npy;++j)
-           for (let i=0;i<npx;++i) {
-               let x = func.fXmin + (i + 0.5) * (func.fXmax - func.fXmin) / npx,
-                   y = func.fYmin + (j + 0.5) * (func.fYmax - func.fYmin) / npy;
-
-               hist.setBinContent(hist.getBin(i+1,j+1), func.evalPar(x,y));
-            }
       }
 
       hist.fName = "Func";
