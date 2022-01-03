@@ -551,7 +551,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       // in the case there were points have saved and we cannot calculate function
       // if we don't have the user's function
-      if ((iserror || ignore_zoom) && (tf1.fSave.length > 3)) {
+      if ((iserror || ignore_zoom || !res.length) && (tf1.fSave.length > 3)) {
 
          np = tf1.fSave.length - 2;
          xmin = tf1.fSave[np];
