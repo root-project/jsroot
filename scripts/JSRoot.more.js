@@ -530,27 +530,28 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       let np = Math.max(tf1.fNpx, 101),
           dx = (xmax - xmin) / (np - 1),
-          res = [], iserror = false;
+          res = [], iserror = false,
+          force_use_save = (tf1.fSave.length > 3) && ignore_zoom;
 
-      for (let n = 0; n < np; n++) {
-         let xx = xmin + n*dx, yy = 0;
-         if (logx) xx = Math.exp(xx);
-         try {
-            yy = tf1.evalPar(xx);
-         } catch(err) {
-            iserror = true;
+      if (!force_use_save)
+         for (let n = 0; n < np; n++) {
+            let xx = xmin + n*dx, yy = 0;
+            if (logx) xx = Math.exp(xx);
+            try {
+               yy = tf1.evalPar(xx);
+            } catch(err) {
+               iserror = true;
+            }
+
+            if (iserror) break;
+
+            if (Number.isFinite(yy))
+               res.push({ x: xx, y: yy });
          }
-
-         if (iserror) break;
-
-         if (Number.isFinite(yy))
-            res.push({ x: xx, y: yy });
-      }
 
       // in the case there were points have saved and we cannot calculate function
       // if we don't have the user's function
-
-      if ((iserror || ignore_zoom) && (tf1.fSave.length > 0)) {
+      if ((iserror || ignore_zoom) && (tf1.fSave.length > 3)) {
 
          np = tf1.fSave.length - 2;
          xmin = tf1.fSave[np];
@@ -766,7 +767,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           has_main = !!painter.getMainPainter(),
           aopt = "AXIS";
       d.check('SAME'); // just ignore same
-      painter.nosave = d.check('NOSAVE');
       if (d.check('X+')) { aopt += "X+"; painter.second_x = has_main; }
       if (d.check('Y+')) { aopt += "Y+"; painter.second_y = has_main; }
       if (d.check('RX')) aopt += "RX";
