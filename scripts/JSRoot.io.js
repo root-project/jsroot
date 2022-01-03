@@ -424,7 +424,7 @@ JSROOT.define(['rawinflate'], () => {
    TBuffer.prototype.ntou8 = function() {
       const high = this.arr.getUint32(this.o); this.o += 4;
       const low = this.arr.getUint32(this.o); this.o += 4;
-      return (high < 0x200000) ? (high << 32) + low : (BigInt(high) << 32) + BigInt(low);
+      return (high < 0x200000) ? (high << 32) + low : (BigInt(high) << BigInt(32)) + BigInt(low);
    }
 
    /** @summary read int8_t */
@@ -449,8 +449,8 @@ JSROOT.define(['rawinflate'], () => {
       const high = this.arr.getUint32(this.o); this.o += 4;
       const low = this.arr.getUint32(this.o); this.o += 4;
       if (high < 0x80000000) 
-         return (high < 0x200000) ? (high << 32) + low : (BigInt(high) << 32) + BigInt(low);
-      return (~high < 0x200000) ? (-1 - ((~high << 32) + ~low)) : (BigInt(-1) - ((BigInt(~high) << 32) + BigInt(~low)));
+         return (high < 0x200000) ? (high << 32) + low : (BigInt(high) << BigInt(32)) + BigInt(low);
+      return (~high < 0x200000) ? (-1 - ((~high << 32) + ~low)) : (BigInt(-1) - ((BigInt(~high) << BigInt(32)) + BigInt(~low)));
    }
 
    /** @summary read float */
