@@ -140,7 +140,7 @@ examples_main = {
      { name: "ff3", file: "ff3.root", item: "c1Dia;1" }
    ],
    TF2 : [
-     { name: "tf2", json: "tf2.json.gz", opt: "nosave", title: "Example of TF2 drawing" },
+     { name: "tf2", json: "tf2.json.gz", opt: "", title: "Example of TF2 drawing" },
      { name: "3d", file: "tutorials_graphs.root", item: "annotation3d", title: "Output of tutorials/graphs/annotation3d.C" },
      { name: "pnt", file: "tutorials_graphs.root", item: "graph2derrorsfit", title: "Combination of TF2 and TGraph2DErrors, output of tutorials/graphs/graph2derrorsfit.C" },
    ],

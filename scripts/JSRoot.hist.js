@@ -7221,20 +7221,25 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    // =================================================================================
 
-   function createTF2Histogram(func, nosave, hist) {
-      let nsave = func.fSave.length;
+   function createTF2Histogram(func, hist) {
+      let nsave = func.fSave.length, use_middle = true;
       if ((nsave > 6) && (nsave !== (func.fSave[nsave-2]+1)*(func.fSave[nsave-1]+1) + 6)) nsave = 0;
+
+      // check if exact min/max range is used or created histogram has to be extended
+      if ((nsave > 6) && (func.fXmin < func.fXmax) && (func.fSave[nsave-6] < func.fSave[nsave-5]) &&
+         ((func.fSave[nsave-5] - func.fSave[nsave-6]) / (func.fXmax - func.fXmin) > 0.99999)) use_middle = false;
 
       let npx = Math.max(func.fNpx, 2),
           npy = Math.max(func.fNpy, 2),
           iserr = false, isany = false,
-          dx = (func.fXmax - func.fXmin) / (npx - 1),
-          dy = (func.fYmax - func.fYmin) / (npy - 1);
+          dx = (func.fXmax - func.fXmin) / (use_middle ? npx : (npx-1)),
+          dy = (func.fYmax - func.fYmin) / (use_middle ? npy : (npy-1)),
+          extra = use_middle ? 0.5 : 0;
 
       for (let j = 0; j < npy; ++j)
         for (let i = 0; (i < npx) && !iserr; ++i) {
-            let x = func.fXmin + i * dx,
-                y = func.fYmin + j * dy,
+            let x = func.fXmin + (i + extra) * dx,
+                y = func.fYmin + (j + extra) * dy,
                 z = 0;
 
             try {
@@ -7251,11 +7256,11 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          }
 
       if (hist && !iserr && isany) {
-         hist.fXaxis.fXmin = func.fXmin - dx/2;
-         hist.fXaxis.fXmax = func.fXmax + dx/2;
+         hist.fXaxis.fXmin = func.fXmin - (use_middle ? 0 : dx/2);
+         hist.fXaxis.fXmax = func.fXmax + (use_middle ? 0 : dx/2);
 
-         hist.fYaxis.fXmin = func.fYmin - dy/2;
-         hist.fYaxis.fXmax = func.fYmax + dy/2;
+         hist.fYaxis.fXmin = func.fYmin - (use_middle ? 0 : dy/2);
+         hist.fYaxis.fXmax = func.fYmax + (use_middle ? 0 : dy/2);
       }
 
       if ((iserr || !isany) && (nsave > 6)) {
@@ -7309,9 +7314,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    function drawTF2(dom, func, opt) {
 
-      let d = new JSROOT.DrawOptions(opt);
-
-      let hist = createTF2Histogram(func, d.check('NOSAVE'));
+      let d = new JSROOT.DrawOptions(opt),
+          hist = createTF2Histogram(func);
 
       if (d.empty())
          opt = "cont3";
@@ -7323,11 +7327,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return drawHistogram2D(dom, hist, opt).then(hpainter => {
 
          hpainter.tf2_typename = func._typename;
-         hpainter.tf2_nosave = d.check('NOSAVE');
 
          hpainter.updateObject = function(obj /*, opt*/) {
             if (!obj || (this.tf2_typename != obj._typename)) return false;
-            createTF2Histogram(obj, this.tf2_nosave, this.getHisto());
+            createTF2Histogram(obj, this.getHisto());
             return true;
          }
 
