@@ -517,8 +517,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       let xmin = tf1.fXmin, xmax = tf1.fXmax, logx = false;
 
-      console.log('tf1', tf1.fXmin, tf1.fXmax, 'func', tf1, 'zoom', ignore_zoom);
-
       if (gxmin !== gxmax) {
          if (gxmin > xmin) xmin = gxmin;
          if (gxmax < xmax) xmax = gxmax;
@@ -532,35 +530,25 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       let np = Math.max(tf1.fNpx, 101),
           dx = (xmax - xmin) / (np - 1),
-          res = [], iserror = false, xx, yy;
+          res = [], iserror = false;
 
       for (let n = 0; n < np; n++) {
-         xx = xmin + n*dx;
+         let xx = xmin + n*dx, yy = 0;
          if (logx) xx = Math.exp(xx);
          try {
             yy = tf1.evalPar(xx);
-            if (!Number.isFinite(yy)) {
-               iserror = true;
-               yy = 0;
-            }
          } catch(err) {
-            yy = 0;
             iserror = true;
          }
 
-         res.push({ x: xx, y: yy });
+         if (iserror) break;
+
+         if (Number.isFinite(yy))
+            res.push({ x: xx, y: yy });
       }
 
       // in the case there were points have saved and we cannot calculate function
       // if we don't have the user's function
-
-      if (tf1.fSave.length > 0) {
-         np = tf1.fSave.length - 2;
-         xmin = tf1.fSave[np];
-         xmax = tf1.fSave[np+1];
-         console.log('saved xmin,xmax', xmin, xmax);
-
-      }
 
       if ((iserror || ignore_zoom) && (tf1.fSave.length > 0)) {
 
