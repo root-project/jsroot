@@ -268,6 +268,7 @@ JSROOT.define([], () =>  {
 
    /** @summary lognormal_cdf_c function */
    mth.lognormal_cdf_c = function(x, m, s, x0) {
+      if (x0 === undefined) x0 = 0;
       let z = (Math.log((x-x0))-m)/(s*kSqrt2);
       if (z > 1.)  return 0.5*erfc(z);
       else         return 0.5*(1.0 - erf(z));
@@ -275,6 +276,7 @@ JSROOT.define([], () =>  {
 
    /** @summary lognormal_cdf_c function */
    mth.lognormal_cdf = function(x, m, s, x0) {
+      if (x0 === undefined) x0 = 0;
       let z = (Math.log((x-x0))-m)/(s*kSqrt2);
       if (z < -1.) return 0.5*erfc(-z);
       else         return 0.5*(1.0 + erf(z));
@@ -282,6 +284,7 @@ JSROOT.define([], () =>  {
 
    /** @summary normal_cdf_c function */
    mth.normal_cdf_c = function(x, sigma, x0) {
+      if (x0 === undefined) x0 = 0;
       let z = (x-x0)/(sigma*kSqrt2);
       if (z > 1.)  return 0.5*erfc(z);
       else         return 0.5*(1.-erf(z));
@@ -289,6 +292,7 @@ JSROOT.define([], () =>  {
 
    /** @summary normal_cdf function */
    mth.normal_cdf = function(x, sigma, x0) {
+      if (x0 === undefined) x0 = 0;
       let z = (x-x0)/(sigma*kSqrt2);
       if (z < -1.) return erfc(-z);
       else         return 0.5*(1.0 + erf(z));
