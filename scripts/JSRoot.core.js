@@ -1933,9 +1933,11 @@
                  this.formulas.forEach(entry => {
                    _func = _func.replaceAll(entry.fName, entry.fTitle);
                  });
+
               _func = _func.replace(/\b(abs)\b/g, 'TMath::Abs')
                            .replace(/TMath::Exp\(/g, 'Math.exp(')
                            .replace(/TMath::Abs\(/g, 'Math.abs(');
+
               if (typeof JSROOT.Math == 'object') {
                  this._math = JSROOT.Math;
                  _func = _func.replace(/TMath::Prob\(/g, 'this._math.Prob(')
@@ -1951,6 +1953,7 @@
                               .replace(/landaun\(/g, 'this._math.landaun(this, x, ')
                               .replace(/ROOT::Math::/g, 'this._math.');
               }
+
               for (let i = 0; i < this.fNpar; ++i)
                 _func = _func.replaceAll(pprefix + i + "]", `(${this.GetParValue(i)})`);
 
