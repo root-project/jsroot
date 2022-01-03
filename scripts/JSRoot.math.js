@@ -15,7 +15,8 @@ JSROOT.define([], () =>  {
          kMAXLOG  = 709.782712893383973096206318587,
          kMAXSTIR = 108.116855767857671821730036754,
          kBig     = 4.503599627370496e15,
-         kBiginv  =  2.22044604925031308085e-16;
+         kBiginv  =  2.22044604925031308085e-16,
+         kSqrt2   = 1.41421356237309515;
 
    /** @summary Polynomialeval function
      * @desc calculates a value of a polynomial of the form:
@@ -167,7 +168,6 @@ JSROOT.define([], () =>  {
       return y;
    }
 
-
    /** @summary complementary error function
      * @private */
    function erfc(a) {
@@ -264,6 +264,34 @@ JSROOT.define([], () =>  {
       let z = x * x;
       let y = x * Polynomialeval( z, erfT, 4 ) / Polynomial1eval( z, erfU, 5 );
       return y;
+   }
+
+   /** @summary lognormal_cdf_c function */
+   mth.lognormal_cdf_c = function(x, m, s, x0) {
+      let z = (Math.log((x-x0))-m)/(s*kSqrt2);
+      if (z > 1.)  return 0.5*erfc(z);
+      else         return 0.5*(1.0 - erf(z));
+   }
+
+   /** @summary lognormal_cdf_c function */
+   mth.lognormal_cdf = function(x, m, s, x0) {
+      let z = (Math.log((x-x0))-m)/(s*kSqrt2);
+      if (z < -1.) return 0.5*erfc(-z);
+      else         return 0.5*(1.0 + erf(z));
+   }
+
+   /** @summary normal_cdf_c function */
+   mth.normal_cdf_c = function(x, sigma, x0) {
+      let z = (x-x0)/(sigma*kSqrt2);
+      if (z > 1.)  return 0.5*erfc(z);
+      else         return 0.5*(1.-erf(z));
+   }
+
+   /** @summary normal_cdf function */
+   mth.normal_cdf = function(x, sigma, x0) {
+      let z = (x-x0)/(sigma*kSqrt2);
+      if (z < -1.) return erfc(-z);
+      else         return 0.5*(1.0 + erf(z));
    }
 
    /** @summary gamma calculation
