@@ -4360,7 +4360,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             kind = "";
          }
 
-         if (kind && kind.indexOf("_")>0) {
+         if (kind && kind.indexOf("_") > 0) {
             let arg = parseInt(kind.substr(kind.indexOf("_")+1), 10);
             if (Number.isInteger(arg) && (arg > 10)) {
                kind = kind.substr(0, kind.indexOf("_"));
@@ -4374,8 +4374,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          }
 
          kind = kind ? parseInt(kind.replace( /^\D+/g, ''), 10) : 0;
-         if (kind && (kind>1)) {
-            if (kind<10) {
+         if (Number.isInteger(kind) && (kind > 1)) {
+            if (kind < 10) {
                num = kind;
             } else {
                arr = [];
@@ -4702,7 +4702,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return svg;
       }
    } // class BatchDisplay
-
 
    // export all functions and classes
 
