@@ -471,16 +471,14 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    function drawRooPlot(dom, plot) {
 
-      let hpainter;
-
-      const DrawNextItem = cnt => {
-         if (cnt >= plot._items.arr.length) return hpainter;
-         return JSROOT.draw(dom, plot._items.arr[cnt], plot._items.opt[cnt]).then(() => DrawNextItem(cnt+1));
-      };
-
       return JSROOT.draw(dom, plot._hist, "hist").then(hp => {
-         hpainter = hp;
-         return DrawNextItem(0);
+
+         const drawNext = cnt => {
+            if (cnt >= plot._items.arr.length) return hp;
+            return JSROOT.draw(dom, plot._items.arr[cnt], plot._items.opt[cnt]).then(() => drawNext(cnt+1));
+         };
+
+         return drawNext(0);
       });
    }
 
