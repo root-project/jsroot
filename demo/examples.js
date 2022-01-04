@@ -287,6 +287,7 @@ examples_main = {
      { name: "archi", file: "tutorials_graphics.root", item: 'archi',  title: "Usage of TPavesText, tutorials/graphics/archi.C" },
      { name: "feynman", file: "tutorials_graphics.root", item: 'feynman',  title: "Usage of TCulyLine/Arc, tutorials/graphics/feynman.C" },
      { name: "pie", file: "tutorials_graphics.root", item: 'piechart',  title: "TPie, tutorials/graphics/piechart.C" },
-     { name: "fill", file: "fillpatterns.root", item: 'patterns',  title: "Different fill patterns" }
+     { name: "fill", file: "fillpatterns.root", item: 'patterns',  title: "Different fill patterns" },
+     { name: "mass_spectrum", file: "mass_spectrum.root", item: 'C',  title: "Output of graphics/mass_spectrum.C tutorial" }
    ]
  };
