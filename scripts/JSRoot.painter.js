@@ -139,6 +139,21 @@ JSROOT.define(['d3'], (d3) => {
          0.5664,0.5495,0.5748,0.5578]
    };
 
+   /** @summary Check if object is a Promise
+     * @memberof JSROOT.Painter
+     * @private */
+   function isPromise(obj) {
+      return obj && (typeof obj == 'object') && (typeof obj.then == 'function');
+   }
+
+   /** @summary Covert value between 0 and 1 into hex, used for colors coding
+     * @memberof JSROOT.Painter
+     * @private */
+   function toHex(num,scale) {
+      let s = Math.round(num*(scale || 255)).toString(16);
+      return s.length == 1 ? '0'+s : s;
+   }
+
    jsrp.createMenu = function(evnt, handler, menuname) {
       document.body.style.cursor = 'wait';
       let show_evnt;
@@ -156,10 +171,6 @@ JSROOT.define(['d3'], (d3) => {
       JSROOT.require(['menu']).then(() => {
          jsrp.closeMenu(menuname);
       });
-   }
-
-   jsrp.isPromise = function(obj) {
-      return obj && (typeof obj == 'object') && (typeof obj.then == 'function');
    }
 
    /** @summary Read style and settings from URL
@@ -294,21 +305,14 @@ JSROOT.define(['d3'], (d3) => {
       jsrp.root_colors = colorMap;
    }
 
-   /** @summary Covert value between 0 and 1 into hex, used for colors coding
-     * @private */
-   jsrp.toHex = function(num,scale) {
-      let s = Math.round(num*(scale || 255)).toString(16);
-      return s.length == 1 ? '0'+s : s;
-   }
-
    /** @summary Produces rgb code for TColor object
      * @private */
    jsrp.getRGBfromTColor = function(col) {
       if (!col || (col._typename != 'TColor')) return null;
 
-      let rgb = '#' + jsrp.toHex(col.fRed) + jsrp.toHex(col.fGreen) + jsrp.toHex(col.fBlue);
+      let rgb = '#' + toHex(col.fRed) + toHex(col.fGreen) + toHex(col.fBlue);
       if ((col.fAlpha !==undefined) && (col.fAlpha !== 1.))
-         rgb += jsrp.toHex(col.fAlpha);
+         rgb += toHex(col.fAlpha);
 
       switch (rgb) {
          case '#ffffff': return 'white';
@@ -2506,7 +2510,7 @@ JSROOT.define(['d3'], (d3) => {
       else if (arg !== false)
          res = this.redraw(reason);
 
-      if (!jsrp.isPromise(res)) res = Promise.resolve(false);
+      if (!isPromise(res)) res = Promise.resolve(false);
 
       return res.then(() => {
          // inform GED that something changes
@@ -4048,7 +4052,7 @@ JSROOT.define(['d3'], (d3) => {
          } else {
             promise = handle.func(dom, obj, opt);
 
-            if (!jsrp.isPromise(promise)) promise = Promise.resolve(promise);
+            if (!isPromise(promise)) promise = Promise.resolve(promise);
          }
 
          return promise.then(p => {
@@ -4429,6 +4433,8 @@ JSROOT.define(['d3'], (d3) => {
    jsrp.getDrawHandle = getDrawHandle;
    jsrp.getDrawSettings = getDrawSettings;
    jsrp.getElementRect = getElementRect;
+   jsrp.isPromise = isPromise;
+   jsrp.toHex = toHex;
 
    JSROOT.TRandom = TRandom;
    JSROOT.DrawOptions = DrawOptions;
