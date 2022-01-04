@@ -668,8 +668,8 @@ JSROOT.define(['d3'], (d3) => {
 
    /** @summary Apply marker styles to created element */
    TAttMarkerHandler.prototype.apply = function(selection) {
-      selection.style('stroke', this.stroke ? this.color : "none");
-      selection.style('fill', this.fill ? this.color : "none");
+      selection.style('stroke', this.stroke ? this.color : "none")
+               .style('fill', this.fill ? this.color : "none");
    }
 
    /** @summary Method used when color or pattern were changed with OpenUi5 widgets.
@@ -815,7 +815,7 @@ JSROOT.define(['d3'], (d3) => {
    /** @summary Create sample element inside primitive SVG - used in context menu */
    TAttLineHandler.prototype.createSample = function(svg, width, height) {
       svg.append("path")
-         .attr("d", "M0," + height / 2 + "h" + width)
+         .attr("d", `M0,${height/2}h${width}`)
          .call(this.func);
    }
 
@@ -1040,7 +1040,7 @@ JSROOT.define(['d3'], (d3) => {
 
             w = h = 6 * sz; // we use at least 6 steps
 
-            let produce = (dy, swap) => {
+            const produce = (dy, swap) => {
                pos = []; step = sz; y1 = 0; max = h;
 
                // reduce step for smaller angles to keep normal distance approx same
@@ -1072,13 +1072,13 @@ JSROOT.define(['d3'], (d3) => {
                for (let k = 0; k < pos.length; k += 4) {
                   if (swap) { x1 = pos[k+1]; y1 = pos[k]; x2 = pos[k+3]; y2 = pos[k+2]; }
                        else { x1 = pos[k]; y1 = pos[k+1]; x2 = pos[k+2]; y2 = pos[k+3]; }
-                   lines += "M"+x1+","+y1;
+                   lines += `M${x1},${y1}`;
                    if (y2 == y1)
-                      lines += "h"+(x2-x1);
+                      lines += `h${x2-x1}`;
                    else if (x2 == x1)
-                      lines += "v"+(y2-y1);
+                      lines += `v${y2-y1}`;
                    else
-                      lines += "L"+x2+","+y2;
+                      lines += `L${x2},${y2}`;
                }
             };
 
@@ -1111,8 +1111,9 @@ JSROOT.define(['d3'], (d3) => {
 
       if (!fills && !lines) return false;
 
-      let patt = defs.append('svg:pattern').attr("id", id).attr("class", id).attr("patternUnits", "userSpaceOnUse")
-         .attr("width", w).attr("height", h);
+      let patt = defs.append('svg:pattern')
+                     .attr("id", id).attr("class", id).attr("patternUnits", "userSpaceOnUse")
+                     .attr("width", w).attr("height", h);
 
       if (fills2) {
          let col = d3.rgb(this.color);
