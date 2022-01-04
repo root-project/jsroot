@@ -392,6 +392,7 @@ JSROOT.define(['d3'], (d3) => {
 
    class ColorPalette {
 
+      /** @summary constructor */
       constructor(arr) {
          this.palette = arr;
       }
@@ -420,12 +421,13 @@ JSROOT.define(['d3'], (d3) => {
      *
      * @class
      * @memberof JSROOT
-     * @param {object} args - different attributes, see {@link JSROOT.TAttMarkerHandler.setArgs} for details
      * @private
      */
 
    class TAttMarkerHandler {
 
+      /** @summary constructor
+        * @param {object} args - attributes, see {@link JSROOT.TAttMarkerHandler.setArgs} for details */
       constructor(args) {
          this.x0 = this.y0 = 0;
          this.color = 'black';
