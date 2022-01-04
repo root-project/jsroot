@@ -2927,9 +2927,9 @@ JSROOT.define(['d3'], (d3) => {
 
          arg.simple_latex = arg.latex && (JSROOT.settings.Latex == JSROOT.constants.Latex.Symbols);
 
-         if (!arg.plain || arg.simple_latex) {
+         if (!arg.plain || arg.simple_latex || (arg.font && arg.font.name == "Symbol")) {
             JSROOT.require(['latex']).then(ltx => {
-               if (arg.simple_latex || ltx.isPlainText(arg.text)) {
+               if (arg.simple_latex || ltx.isPlainText(arg.text) || arg.plain) {
                   arg.simple_latex = true;
                   ltx.producePlainText(this, arg.txt_node, arg);
                } else {

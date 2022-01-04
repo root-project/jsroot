@@ -271,6 +271,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          res += symbolsMap[symb] || symb;
       }
 
+      console.log('Translate symbols',s, 'result', res);
+
       return res;
    }
 
@@ -282,7 +284,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       arg.plain = true;
       if (arg.simple_latex)
          arg.text = translateLaTeX(arg.text); // replace latex symbols
-      txt_node.text(arg.text);
+      if (arg.font && arg.font.name == "Symbol")
+         txt_node.text(ltx.replaceSymbols(arg.text));
+      else
+         txt_node.text(arg.text);
    }
 
    /** @summary Check if plain text
