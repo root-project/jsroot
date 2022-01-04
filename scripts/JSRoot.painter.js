@@ -66,6 +66,36 @@ JSROOT.define(['d3'], (d3) => {
 
    // ============================================================================================
 
+   /** @summary Simple random generator with controlled seed
+     * @memberof JSROOT
+     * @private */
+   class TRandom {
+      constructor(i) {
+         if (i!==undefined) this.seed(i);
+      }
+      /** @summary Seed simple random generator */
+      seed(i) {
+         i = Math.abs(i);
+         if (i > 1e8)
+            i = Math.abs(1e8 * Math.sin(i));
+         else if (i < 1)
+            i *= 1e8;
+         this.m_w = Math.round(i);
+         this.m_z = 987654321;
+      }
+      /** @summary Produce random value between 0 and 1 */
+      random() {
+         if (this.m_z === undefined) return Math.random();
+         this.m_z = (36969 * (this.m_z & 65535) + (this.m_z >> 16)) & 0xffffffff;
+         this.m_w = (18000 * (this.m_w & 65535) + (this.m_w >> 16)) & 0xffffffff;
+         let result = ((this.m_z << 16) + this.m_w) & 0xffffffff;
+         result /= 4294967296;
+         return result + 0.5;
+      }
+   }
+
+   // ============================================================================================
+
    /** @namespace
      * @summary Collection of Painter-related methods and classes
      * @alias JSROOT.Painter */
@@ -208,7 +238,7 @@ JSROOT.define(['d3'], (d3) => {
 
       if (d.has("skipsi") || d.has("skipstreamerinfos"))
          s.SkipStreamerInfos = true;
-         
+
       if (d.has("nodraggraphs"))
          s.DragGraphs = false;
 
@@ -4382,6 +4412,7 @@ JSROOT.define(['d3'], (d3) => {
    jsrp.getDrawHandle = getDrawHandle;
    jsrp.getDrawSettings = getDrawSettings;
 
+   JSROOT.TRandom = TRandom;
    JSROOT.DrawOptions = DrawOptions;
    JSROOT.ColorPalette = ColorPalette;
    JSROOT.TAttLineHandler = TAttLineHandler;

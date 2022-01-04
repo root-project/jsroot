@@ -104,7 +104,7 @@
 
    /** @summary JSROOT version date
      * @desc Release date in format day/month/year like "19/11/2021"*/
-   JSROOT.version_date = "3/01/2022";
+   JSROOT.version_date = "4/01/2022";
 
    /** @summary JSROOT version id and date
      * @desc Produced by concatenation of {@link JSROOT.version_id} and {@link JSROOT.version_date}
@@ -806,42 +806,11 @@
      * @private */
    JSROOT.BIT = function(n) { return 1 << n; }
 
-
-   /** @summary Simple random generator with controlled seed
-     * @memberof JSROOT
-     * @private */
-   class TRandom {
-      constructor(i) {
-         if (i!==undefined) this.seed(i);
-      }
-      /** @summary Seed simple random generator */
-      seed(i) {
-         i = Math.abs(i);
-         if (i > 1e8)
-            i = Math.abs(1e8 * Math.sin(i));
-         else if (i < 1)
-            i *= 1e8;
-         this.m_w = Math.round(i);
-         this.m_z = 987654321;
-      }
-      /** @summary Produce random value between 0 and 1 */
-      random() {
-         if (this.m_z === undefined) return Math.random();
-         this.m_z = (36969 * (this.m_z & 65535) + (this.m_z >> 16)) & 0xffffffff;
-         this.m_w = (18000 * (this.m_w & 65535) + (this.m_w >> 16)) & 0xffffffff;
-         let result = ((this.m_z << 16) + this.m_w) & 0xffffffff;
-         result /= 4294967296;
-         return result + 0.5;
-      }
-   }
-
    /** @summary Seed simple random generator
      * @param {number} i seed value
      * @deprecated Please use JSROOT.TRandom class
      * @private */
-   JSROOT.seed = function(i) {
-      this.gRandom = new TRandom(i);
-   }
+   JSROOT.seed = function() {}
 
    /** @summary Simple random generator
      * @desc Works like Math.random(), but with configurable seed - see {@link JSROOT.seed}
@@ -849,7 +818,7 @@
      * @deprecated Please use JSROOT.TRandom class
      * @private */
    JSROOT.random = function() {
-      return this.gRandom ? this.gRandom.random() : Math.random();
+      return Math.random();
    }
 
    /** @summary Just copy (not clone) all fields from source to the target object
@@ -2252,7 +2221,6 @@
    JSROOT.create = create;
    JSROOT.extend = extend;
    JSROOT.addMethods = addMethods;
-   JSROOT.TRandom = TRandom;
 
    return JSROOT;
 
