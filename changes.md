@@ -16,7 +16,7 @@
 13. Let disable TGraph dragging via JSROOT.settings.DragGraphs flag (#224)
 14. Use BigInt in I/O when 64bit integer can not be stored as plain Number
 15. In TF1/TF2 always try to use formula, only when fail - apply saved buffer when exist
-
+16. Add proper support of "Symbols" font
 
 
 ## Changes in 6.3.2
