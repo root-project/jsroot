@@ -480,15 +480,15 @@ JSROOT.define(['d3'], (d3) => {
      * @returns {string} path string */
    TAttMarkerHandler.prototype.create = function(x, y) {
       if (!this.optimized)
-         return "M" + (x + this.x0).toFixed(this.ndig) + "," + (y + this.y0).toFixed(this.ndig) + this.marker;
+         return `M${(x + this.x0).toFixed(this.ndig)},${(y + this.y0).toFixed(this.ndig)}${this.marker}`;
 
       // use optimized handling with relative position
-      let xx = Math.round(x), yy = Math.round(y), mv = "M" + xx + "," + yy;
+      let xx = Math.round(x), yy = Math.round(y), mv = `M${xx},${yy}`;
       if (this.lastx !== null) {
          if ((xx == this.lastx) && (yy == this.lasty)) {
             mv = ""; // pathological case, but let exclude it
          } else {
-            let m2 = "m" + (xx - this.lastx) + "," + (yy - this.lasty);
+            let m2 = `m${xx-this.lastx},${yy - this.lasty}`;
             if (m2.length < mv.length) mv = m2;
          }
       }
