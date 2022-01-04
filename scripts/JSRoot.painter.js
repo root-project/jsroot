@@ -390,24 +390,28 @@ JSROOT.define(['d3'], (d3) => {
     * @private
     */
 
-   function ColorPalette(arr) {
-      this.palette = arr;
+   class ColorPalette {
+
+      constructor(arr) {
+         this.palette = arr;
+      }
+
+      /** @summary Returns color index which correspond to contour index of provided length */
+      calcColorIndex(i, len) {
+         let plen = this.palette.length, theColor = Math.floor((i + 0.99) * plen / (len - 1));
+         return (theColor > plen - 1) ? plen - 1 : theColor;
+       }
+
+      /** @summary Returns color with provided index */
+      getColor(indx) { return this.palette[indx]; }
+
+      /** @summary Returns number of colors in the palette */
+      getLength() { return this.palette.length; }
+
+      /** @summary Calculate color for given i and len */
+      calcColor(i, len) { return this.getColor(this.calcColorIndex(i, len)); }
+
    }
-
-   /** @summary Returns color index which correspond to contour index of provided length */
-   ColorPalette.prototype.calcColorIndex = function(i, len) {
-      let plen = this.palette.length, theColor = Math.floor((i + 0.99) * plen / (len - 1));
-      return (theColor > plen - 1) ? plen - 1 : theColor;
-    }
-
-   /** @summary Returns color with provided index */
-   ColorPalette.prototype.getColor = function(indx) { return this.palette[indx]; }
-
-   /** @summary Returns number of colors in the palette */
-   ColorPalette.prototype.getLength = function() { return this.palette.length; }
-
-   /** @summary Calculate color for given i and len */
-   ColorPalette.prototype.calcColor = function(i, len) { return this.getColor(this.calcColorIndex(i, len)); }
 
    // =============================================================================
 
