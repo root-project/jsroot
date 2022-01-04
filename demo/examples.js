@@ -267,7 +267,8 @@ examples_main = {
    TLatex : [
      { name: "latex", file: "latex.root", layout: "grid2x2", items: ['lva','ex1','ex2','ex3'], title: "Internal TLatex processor" },
      { name: "mathjax", file: "latex.root", layout: "grid2x2", latex: "mathjax", items: ['lva','ex1','ex2','ex3'], title: "Render TLatex with MathJax.js" },
-     { name: "math", file: "latex.root", item: "math", reset_mathjax: true, title: "TMathText drawn always with MathJax.js rendering" }
+     { name: "math", file: "latex.root", item: "math", reset_mathjax: true, title: "TMathText drawn always with MathJax.js rendering" },
+     { name: "fonts", file: "fonts.root", item: "Tf", title: "Output of fonts.C docu macro" }
    ],
    TASImage : [
       { name: "n4254", file: "image.root", item: "image", title: "TASImage with binary data, see tutorials/image/galaxy_image.C macro" },
