@@ -259,6 +259,20 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    ];
 
 
+   // recode table for old Symbols font,
+   // taken from: https://sites.math.washington.edu/~marshall/cxseminar/symbol.htm
+   const symbolsMap = { 'A': '\u0391', 'B': '\u0392', 'G': '\u0393', 'D': '\u0394', 'E': '\u0395', 'Z': '\u0396', 'H': '\u0397', 'Q': '\u0398' };
+
+   ltx.replaceSymbols = function(s) {
+      let res = "";
+
+      for (let k = 0; k < s.length; ++k) {
+         let symb = s[k];
+         res += symbolsMap[symb] || symb;
+      }
+
+      return res;
+   }
 
    ltx.translateLaTeX = translateLaTeX;
 
@@ -421,7 +435,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                if (curr.fisze !== curr.font.size)
                   elem.attr("font-size", Math.round(curr.fsize));
 
-               elem.text(s);
+               if (curr.font && curr.font.name == "Symbol")
+                  elem.text(ltx.replaceSymbols(s));
+               else
+                  elem.text(s);
 
                let rect = !JSROOT.nodejs && !JSROOT.settings.ApproxTextSize && !arg.fast ? jsrp.getElementRect(elem, 'nopadding') :
                              { height: curr.fsize * 1.2, width: approximateLabelWidth(s, curr.font, curr.fsize) }
