@@ -19,49 +19,51 @@ JSROOT.define(['d3'], (d3) => {
    /** @summary Draw options interpreter
      * @memberof JSROOT
      * @private */
-   function DrawOptions(opt) {
-      this.opt = opt && (typeof opt == "string") ? opt.toUpperCase().trim() : "";
-      this.part = "";
-   }
-
-   /** @summary Returns true if remaining options are empty or contain only seperators symbols. */
-   DrawOptions.prototype.empty = function() {
-      if (this.opt.length === 0) return true;
-      return this.opt.replace(/[ ;_,]/g,"").length == 0;
-   }
-
-   /** @summary Returns remaining part of the draw options. */
-   DrawOptions.prototype.remain = function() { return this.opt; }
-
-   /** @summary Checks if given option exists */
-   DrawOptions.prototype.check = function(name, postpart) {
-      let pos = this.opt.indexOf(name);
-      if (pos < 0) return false;
-      this.opt = this.opt.substr(0, pos) + this.opt.substr(pos + name.length);
-      this.part = "";
-      if (!postpart) return true;
-
-      let pos2 = pos;
-      while ((pos2 < this.opt.length) && (this.opt[pos2] !== ' ') && (this.opt[pos2] !== ',') && (this.opt[pos2] !== ';')) pos2++;
-      if (pos2 > pos) {
-         this.part = this.opt.substr(pos, pos2 - pos);
-         this.opt = this.opt.substr(0, pos) + this.opt.substr(pos2);
+   class DrawOptions {
+      constructor(opt) {
+         this.opt = opt && (typeof opt == "string") ? opt.toUpperCase().trim() : "";
+         this.part = "";
       }
-      return true;
-   }
 
-   /** @summary Returns remaining part of found option as integer. */
-   DrawOptions.prototype.partAsInt = function(offset, dflt) {
-      let val = this.part.replace(/^\D+/g, '');
-      val = val ? parseInt(val, 10) : Number.NaN;
-      return !Number.isInteger(val) ? (dflt || 0) : val + (offset || 0);
-   }
+      /** @summary Returns true if remaining options are empty or contain only seperators symbols. */
+      empty() {
+         if (this.opt.length === 0) return true;
+         return this.opt.replace(/[ ;_,]/g,"").length == 0;
+      }
 
-   /** @summary Returns remaining part of found option as float. */
-   DrawOptions.prototype.partAsFloat = function(offset, dflt) {
-      let val = this.part.replace(/^\D+/g, '');
-      val = val ? parseFloat(val) : Number.NaN;
-      return !Number.isFinite(val) ? (dflt || 0) : val + (offset || 0);
+      /** @summary Returns remaining part of the draw options. */
+      remain() { return this.opt; }
+
+      /** @summary Checks if given option exists */
+      check(name, postpart) {
+         let pos = this.opt.indexOf(name);
+         if (pos < 0) return false;
+         this.opt = this.opt.substr(0, pos) + this.opt.substr(pos + name.length);
+         this.part = "";
+         if (!postpart) return true;
+
+         let pos2 = pos;
+         while ((pos2 < this.opt.length) && (this.opt[pos2] !== ' ') && (this.opt[pos2] !== ',') && (this.opt[pos2] !== ';')) pos2++;
+         if (pos2 > pos) {
+            this.part = this.opt.substr(pos, pos2 - pos);
+            this.opt = this.opt.substr(0, pos) + this.opt.substr(pos2);
+         }
+         return true;
+      }
+
+      /** @summary Returns remaining part of found option as integer. */
+      partAsInt(offset, dflt) {
+         let val = this.part.replace(/^\D+/g, '');
+         val = val ? parseInt(val, 10) : Number.NaN;
+         return !Number.isInteger(val) ? (dflt || 0) : val + (offset || 0);
+      }
+
+      /** @summary Returns remaining part of found option as float. */
+      partAsFloat(offset, dflt) {
+         let val = this.part.replace(/^\D+/g, '');
+         val = val ? parseFloat(val) : Number.NaN;
+         return !Number.isFinite(val) ? (dflt || 0) : val + (offset || 0);
+      }
    }
 
    // ============================================================================================
