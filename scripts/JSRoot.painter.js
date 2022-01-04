@@ -705,7 +705,7 @@ JSROOT.define(['d3'], (d3) => {
      */
 
    class TAttLineHandler {
-      
+
       /** @summary constructor
         * @param {object} attr - attributes, see {@link JSROOT.TAttLineHandler#setArgs} */
       constructor(args) {
@@ -714,7 +714,7 @@ JSROOT.define(['d3'], (d3) => {
          if (args._typename && (args.fLineStyle !== undefined)) args = { attr: args };
          this.setArgs(args);
       }
-   
+
       /** @summary Set line attributes.
         * @param {object} args - specify attributes by different ways
         * @param {object} args.attr - TAttLine object with appropriate data members or
@@ -731,15 +731,15 @@ JSROOT.define(['d3'], (d3) => {
          } else if (typeof args.color == 'number') {
             args.color = args.painter ? args.painter.getColor(args.color) : jsrp.getColor(args.color);
          }
-   
+
          if (args.width === undefined)
             args.width = (args.color && args.color != 'none') ? 1 : 0;
-   
+
          this.color = (args.width === 0) ? 'none' : args.color;
          this.width = args.width;
          this.style = args.style;
          this.pattern = args.pattern || jsrp.root_line_styles[this.style] || null;
-   
+
          if (args.can_excl) {
             this.excl_side = this.excl_width = 0;
             if (Math.abs(this.width) > 99) {
@@ -749,12 +749,12 @@ JSROOT.define(['d3'], (d3) => {
                this.width = Math.abs(this.width % 100); // line width
             }
          }
-   
+
          // if custom color number used, use lightgrey color to show lines
          if (!this.color && (this.width > 0))
             this.color = 'lightgrey';
       }
-   
+
       /** @summary Change exclusion attributes */
       changeExcl(side, width) {
          if (width !== undefined)
@@ -765,17 +765,17 @@ JSROOT.define(['d3'], (d3) => {
          }
          this.changed = true;
       }
-   
+
       /** @summary returns true if line attribute is empty and will not be applied. */
       empty() { return this.color == 'none'; }
-   
+
       /** @summary set border parameters, used for rect drawing */
       setBorder(rx, ry) {
          this.rx = rx;
          this.ry = ry;
          this.func = this.applyBorder.bind(this);
       }
-   
+
       /** @summary Applies line attribute to selection.
         * @param {object} selection - d3.js selection */
       apply(selection) {
@@ -789,7 +789,7 @@ JSROOT.define(['d3'], (d3) => {
                      .style('stroke-width', this.width)
                      .style('stroke-dasharray', this.pattern);
       }
-   
+
       /** @summary Applies line and border attribute to selection.
         * @param {object} selection - d3.js selection */
       applyBorder(selection) {
@@ -805,7 +805,7 @@ JSROOT.define(['d3'], (d3) => {
                      .style('stroke-dasharray', this.pattern)
                      .attr("rx", this.rx || null).attr("ry", this.ry || null);
       }
-   
+
       /** @summary Change line attributes */
       change(color, width, style) {
          if (color !== undefined) this.color = color;
@@ -816,7 +816,7 @@ JSROOT.define(['d3'], (d3) => {
          }
          this.changed = true;
       }
-   
+
       /** @summary Create sample element inside primitive SVG - used in context menu */
       createSample(svg, width, height) {
          svg.append("path")
@@ -824,7 +824,7 @@ JSROOT.define(['d3'], (d3) => {
             .call(this.func);
       }
    }
- 
+
    // =======================================================================
 
    /**
@@ -850,7 +850,7 @@ JSROOT.define(['d3'], (d3) => {
          this.setArgs(args);
          this.changed = false; // unset change property that
       }
-   
+
       /** @summary Set fill style as arguments
         * @param {object} args - different arguments to set fill attributes
         * @param {object} [args.attr] - TAttFill object
@@ -863,45 +863,45 @@ JSROOT.define(['d3'], (d3) => {
             if ((args.pattern === undefined) && (args.attr.fFillStyle !== undefined)) args.pattern = args.attr.fFillStyle;
             if ((args.color === undefined) && (args.attr.fFillColor !== undefined)) args.color = args.attr.fFillColor;
          }
-   
+
          let was_changed = this.changed; // preserve changed state
          this.change(args.color, args.pattern, args.svg, args.color_as_svg, args.painter);
          this.changed = was_changed;
       }
-   
+
       /** @summary Apply fill style to selection */
       apply(selection) {
          this.used = true;
-   
+
          selection.style('fill', this.getFillColor());
-   
+
          if ('opacity' in this)
             selection.style('opacity', this.opacity);
-   
+
          if ('antialias' in this)
             selection.style('antialias', this.antialias);
       }
-   
+
       /** @summary Returns fill color (or pattern url) */
       getFillColor() { return this.pattern_url || this.color; }
-   
+
       /** @summary Returns fill color without pattern url.
         * @desc If empty, alternative color will be provided
         * @param {string} [altern] - alternative color which returned when fill color not exists
         * @private */
       getFillColorAlt(altern) { return this.color && (this.color != "none") ? this.color : altern; }
-   
+
       /** @summary Returns true if color not specified or fill style not specified */
       empty() {
          let fill = this.getFillColor();
          return !fill || (fill == 'none');
       }
-   
+
       /** @summary Returns true if fill attributes has real color */
       hasColor() {
          return this.color && (this.color != 'none');
       }
-   
+
       /** @summary Set solid fill color as fill pattern
         * @param {string} col - solid color */
       setSolidColor(col) {
@@ -909,24 +909,24 @@ JSROOT.define(['d3'], (d3) => {
          this.color = col;
          this.pattern = 1001;
       }
-   
+
       /** @summary Check if solid fill is used, also color can be checked
         * @param {string} [solid_color] - when specified, checks if fill color matches */
       isSolid(solid_color) {
          if (this.pattern !== 1001) return false;
          return !solid_color || (solid_color == this.color);
       }
-   
+
       /** @summary Method used when color or pattern were changed with OpenUi5 widgets
         * @private */
       verifyDirectChange(painter) {
          if (typeof this.pattern == 'string')
             this.pattern = parseInt(this.pattern);
          if (!Number.isInteger(this.pattern)) this.pattern = 0;
-   
+
          this.change(this.color, this.pattern, painter ? painter.getCanvSvg() : null, true, painter);
       }
-   
+
       /** @summary Method to change fill attributes.
         * @param {number} color - color index
         * @param {number} pattern - pattern index
@@ -936,68 +936,68 @@ JSROOT.define(['d3'], (d3) => {
       change(color, pattern, svg, color_as_svg, painter) {
          delete this.pattern_url;
          this.changed = true;
-   
+
          if ((color !== undefined) && Number.isInteger(parseInt(color)) && !color_as_svg)
             this.colorindx = parseInt(color);
-   
+
          if ((pattern !== undefined) && Number.isInteger(parseInt(pattern))) {
             this.pattern = parseInt(pattern);
             delete this.opacity;
             delete this.antialias;
          }
-   
+
          if ((this.pattern == 1000) && (this.colorindx === 0)) {
             this.pattern_url = 'white';
             return true;
          }
-   
+
          if (this.pattern == 1000) this.pattern = 1001;
-   
+
          if (this.pattern < 1001) {
             this.pattern_url = 'none';
             return true;
          }
-   
+
          if (this.isSolid() && (this.colorindx === 0) && (this.kind === 1) && !color_as_svg) {
             this.pattern_url = 'none';
             return true;
          }
-   
+
          let indx = this.colorindx;
-   
+
          if (color_as_svg) {
             this.color = color;
             if (color != "none") indx = d3.color(color).hex().substr(1); // fictional index produced from color code
          } else {
             this.color = painter ? painter.getColor(indx) : jsrp.getColor(indx);
          }
-   
+
          if (typeof this.color != 'string') this.color = "none";
-   
+
          if (this.isSolid()) return true;
-   
+
          if ((this.pattern >= 4000) && (this.pattern <= 4100)) {
             // special transparent colors (use for subpads)
             this.opacity = (this.pattern - 4000) / 100;
             return true;
          }
-   
+
          if (!svg || svg.empty() || (this.pattern < 3000) || (this.color == "none")) return false;
-   
+
          let id = "pat_" + this.pattern + "_" + indx,
             defs = svg.select('.canvas_defs');
-   
+
          if (defs.empty())
             defs = svg.insert("svg:defs", ":first-child").attr("class", "canvas_defs");
-   
+
          this.pattern_url = "url(#" + id + ")";
          this.antialias = false;
-   
+
          if (!defs.select("." + id).empty())
             return true;
-   
+
          let lines = "", lfill = null, fills = "", fills2 = "", w = 2, h = 2;
-   
+
          switch (this.pattern) {
             case 3001: w = h = 2; fills = "M0,0h1v1h-1zM1,1h1v1h-1z"; break;
             case 3002: w = 4; h = 2; fills = "M1,0h1v1h-1zM3,1h1v1h-1z"; break;
@@ -1038,20 +1038,20 @@ JSROOT.define(['d3'], (d3) => {
                   // same as 3002, see TGX11.cxx, line 2234
                   w = 4; h = 2; fills = "M1,0h1v1h-1zM3,1h1v1h-1z"; break;
                }
-   
+
                let code = this.pattern % 1000,
                   k = code % 10,
                   j = ((code - k) % 100) / 10,
                   i = (code - j * 10 - k) / 100;
                if (!i) break;
-   
+
                let sz = i * 12, pos, step, x1, x2, y1, y2, max;  // axis distance between lines
-   
+
                w = h = 6 * sz; // we use at least 6 steps
-   
+
                const produce = (dy, swap) => {
                   pos = []; step = sz; y1 = 0; max = h;
-   
+
                   // reduce step for smaller angles to keep normal distance approx same
                   if (Math.abs(dy) < 3) step = Math.round(sz / 12 * 9);
                   if (dy == 0) {
@@ -1062,7 +1062,7 @@ JSROOT.define(['d3'], (d3) => {
                   } else {
                      y1 = step;
                   }
-   
+
                   while (y1 <= max) {
                      y2 = y1 + dy * step;
                      if (y2 < 0) {
@@ -1090,7 +1090,7 @@ JSROOT.define(['d3'], (d3) => {
                          lines += `L${x2},${y2}`;
                   }
                };
-   
+
                switch (j) {
                   case 0: produce(0); break;
                   case 1: produce(1); break;
@@ -1102,7 +1102,7 @@ JSROOT.define(['d3'], (d3) => {
                   case 8: produce(1, true); break;
                   case 9: produce(0, true); break;
                }
-   
+
                switch (k) {
                   case 0: if (j) produce(0); break;
                   case 1: produce(-1); break;
@@ -1114,16 +1114,16 @@ JSROOT.define(['d3'], (d3) => {
                   case 8: produce(-1, true); break;
                   case 9: if (j != 9) produce(0, true); break;
                }
-   
+
                break;
          }
-   
+
          if (!fills && !lines) return false;
-   
+
          let patt = defs.append('svg:pattern')
                         .attr("id", id).attr("class", id).attr("patternUnits", "userSpaceOnUse")
                         .attr("width", w).attr("height", h);
-   
+
          if (fills2) {
             let col = d3.rgb(this.color);
             col.r = Math.round((col.r + 255) / 2); col.g = Math.round((col.g + 255) / 2); col.b = Math.round((col.b + 255) / 2);
@@ -1131,16 +1131,16 @@ JSROOT.define(['d3'], (d3) => {
          }
          if (fills) patt.append("svg:path").attr("d", fills).style("fill", this.color);
          if (lines) patt.append("svg:path").attr("d", lines).style('stroke', this.color).style("stroke-width", 1).style("fill", lfill);
-   
+
          return true;
       }
-   
+
       /** @summary Create sample of fill pattern inside SVG
        * @private */
       createSample(sample_svg, width, height) {
          // we need to create extra handle to change
          const sample = new TAttFillHandler({ svg: sample_svg, pattern: this.pattern, color: this.color, color_as_svg: true });
-   
+
          sample_svg.append("path")
             .attr("d", `M0,0h${width}v${height}h${-width}z`)
             .call(sample.func);
@@ -1163,20 +1163,20 @@ JSROOT.define(['d3'], (d3) => {
          this.name = "Arial";
          this.style = null;
          this.weight = null;
-   
+
          if (scale && (size < 1)) {
             size *= scale;
             this.scaled = true;
          }
-   
+
          this.size = Math.round(size || 11);
          this.scale = scale;
-   
+
          if (fontIndex !== null) {
-   
+
             let indx = Math.floor(fontIndex / 10),
                 fontName = jsrp.root_fonts[indx] || "Arial";
-   
+
             while (fontName.length > 0) {
                if (fontName[0] === 'b')
                   this.weight = "bold";
@@ -1188,10 +1188,10 @@ JSROOT.define(['d3'], (d3) => {
                   break;
                fontName = fontName.substr(1);
             }
-   
+
             if (fontName == 'Symbol')
                this.weight = this.style = null;
-   
+
             this.name = fontName;
             this.aver_width = jsrp.root_fonts_aver_width[indx] || 0.55;
          } else {
@@ -1200,10 +1200,10 @@ JSROOT.define(['d3'], (d3) => {
             this.weight = weight || null;
             this.aver_width = this.weight ? 0.58 : 0.55;
          }
-   
+
          this.func = this.setFont.bind(this);
       }
-   
+
       /** @summary Assigns font-related attributes */
       setFont(selection, arg) {
          selection.attr("font-family", this.name);
@@ -1215,27 +1215,27 @@ JSROOT.define(['d3'], (d3) => {
          if (this.style)
             selection.attr("font-style", this.style);
       }
-   
+
       /** @summary Set font size (optional) */
       setSize(size) {
          this.size = Math.round(size);
       }
-   
+
       /** @summary Set text color (optional) */
       setColor(color) {
          this.color = color;
       }
-   
+
       /** @summary Set text align (optional) */
       setAlign(align) {
          this.align = align;
       }
-   
+
       /** @summary Set text angle (optional) */
       setAngle(angle) {
          this.angle = angle;
       }
-   
+
       /** @summary Allign angle to step raster, add optional offset */
       roundAngle(step, offset) {
          this.angle = parseInt(this.angle || 0);
@@ -1246,7 +1246,7 @@ JSROOT.define(['d3'], (d3) => {
          else if (this.angle >= 360)
             this.angle -= 360;
       }
-   
+
       /** @summary Clears all font-related attributes */
       clearFont(selection) {
          selection.attr("font-family", null)
@@ -1255,14 +1255,14 @@ JSROOT.define(['d3'], (d3) => {
                   .attr("font-weight", null)
                   .attr("font-style", null);
       }
-   
+
       /** @summary Returns true in case of monospace font
         * @private */
       isMonospace() {
          let n = this.name.toLowerCase();
          return (n.indexOf("courier") == 0) || (n == "monospace") || (n == "monaco");
       }
-   
+
       /** @summary Return full font declaration which can be set as font property like "12pt Arial bold"
         * @private */
       getFontHtml() {
@@ -1508,7 +1508,7 @@ JSROOT.define(['d3'], (d3) => {
      * kind = 'nopadding' - excludes padding area
      * With node.js can use "width" and "height" attributes when provided in element
      * @private */
-   jsrp.getElementRect = (elem, sizearg) => {
+   function getElementRect(elem, sizearg) {
       if (JSROOT.nodejs && (sizearg != 'bbox'))
          return { x: 0, y: 0, width: parseInt(elem.attr("width")), height: parseInt(elem.attr("height")) };
 
@@ -1691,7 +1691,7 @@ JSROOT.define(['d3'], (d3) => {
                .style('height', new_size.height + "px");
       }
 
-      let rect_origin = jsrp.getElementRect(main_origin, true),
+      let rect_origin = getElementRect(main_origin, true),
          can_resize = main_origin.attr('can_resize'),
          do_resize = false;
 
@@ -1712,7 +1712,7 @@ JSROOT.define(['d3'], (d3) => {
          }
       }
 
-      let rect = jsrp.getElementRect(main),
+      let rect = getElementRect(main),
          old_h = main.property('draw_height'),
          old_w = main.property('draw_width');
 
@@ -1765,8 +1765,8 @@ JSROOT.define(['d3'], (d3) => {
             .append("div")
             .attr("id", "jsroot_enlarge_div");
 
-         let rect1 = jsrp.getElementRect(main),
-             rect2 = jsrp.getElementRect(enlarge);
+         let rect1 = getElementRect(main),
+             rect2 = getElementRect(enlarge);
 
          // if new enlarge area not big enough, do not do it
          if ((rect2.width <= rect1.width) || (rect2.height <= rect1.height))
@@ -2571,7 +2571,7 @@ JSROOT.define(['d3'], (d3) => {
      * @protected */
    ObjectPainter.prototype.showInspector = function(obj) {
       let main = this.selectDom(),
-         rect = jsrp.getElementRect(main),
+         rect = getElementRect(main),
          w = Math.round(rect.width * 0.05) + "px",
          h = Math.round(rect.height * 0.05) + "px",
          id = "root_inspector_" + JSROOT._.id_counter++;
@@ -2787,7 +2787,7 @@ JSROOT.define(['d3'], (d3) => {
                if (arg.scale && (f > 0)) { arg.box.width *= 1/f; arg.box.height *= 1/f; }
             } else if (!arg.plain && !arg.fast) {
                // exact box dimension only required when complex text was build
-               arg.box = jsrp.getElementRect(txt, 'bbox');
+               arg.box = getElementRect(txt, 'bbox');
             }
 
             if (arg.plain) {
@@ -2866,7 +2866,7 @@ JSROOT.define(['d3'], (d3) => {
      * @private */
    function _postprocessText(painter, txt_node, arg) {
       // complete rectangle with very rougth size estimations
-      arg.box = !JSROOT.nodejs && !JSROOT.settings.ApproxTextSize && !arg.fast ? jsrp.getElementRect(txt_node, 'bbox') :
+      arg.box = !JSROOT.nodejs && !JSROOT.settings.ApproxTextSize && !arg.fast ? getElementRect(txt_node, 'bbox') :
                (arg.text_rect || { height: arg.font_size * 1.2, width: arg.text.length * arg.font_size * arg.font.aver_width });
 
       txt_node.attr('visibility', 'hidden'); // hide elements until text drawing is finished
@@ -4428,6 +4428,7 @@ JSROOT.define(['d3'], (d3) => {
 
    jsrp.getDrawHandle = getDrawHandle;
    jsrp.getDrawSettings = getDrawSettings;
+   jsrp.getElementRect = getElementRect;
 
    JSROOT.TRandom = TRandom;
    JSROOT.DrawOptions = DrawOptions;
