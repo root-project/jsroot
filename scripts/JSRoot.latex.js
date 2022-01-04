@@ -262,13 +262,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    // recode table for old Symbols font,
    // taken from: https://sites.math.washington.edu/~marshall/cxseminar/symbol.htm
    const symbolsMap = {
+      '\xA6': '\u0192',
       'A': '\u0391', 'B': '\u0392', 'G': '\u0393', 'D': '\u0394', 'E': '\u0395', 'Z': '\u0396', 'H': '\u0397', 'Q': '\u0398',
       'I': '\u0399', 'K': '\u039A', 'L': '\u039B', 'M': '\u039C', 'N': '\u039D', 'X': '\u039E', 'O': '\u039F', 'P': '\u03A0',
       'R': '\u03A1', 'S': '\u03A3', 'T': '\u03A4', 'U': '\u03A5', 'F': '\u03A6', 'C': '\u03A7', 'Y': '\u03A8', 'W': '\u03A9',
       'a': '\u03B1', 'b': '\u03B2', 'g': '\u03B3', 'd': '\u03B4', 'e': '\u03B5', 'z': '\u03B6', 'h': '\u03B7', 'q': '\u03B8',
       'i': '\u03B9', 'k': '\u03BA', 'l': '\u03BB', 'm': '\u03BC', 'n': '\u03BD', 'x': '\u03BE', 'o': '\u03BF', 'p': '\u03C0',
       'r': '\u03C1', 's': '\u03C3', 't': '\u03C4', 'u': '\u03C5', 'f': '\u03C6', 'c': '\u03C7', 'y': '\u03C8', 'w': '\u03C9',
-      'V': '\u03C2', 'J': '\u03D1', 'j': '\u03D5', 'v': '\u03D6', 'i': '\u03D2'
+      'V': '\u03C2', 'J': '\u03D1', 'j': '\u03D5', 'v': '\u03D6', '\xA1': '\u03D2'
    };
 
    ltx.replaceSymbols = function(s) {
