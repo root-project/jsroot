@@ -1317,6 +1317,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return this.drawPave();
    }
 
+   /** @summary cleanup pave painter */
    TPavePainter.prototype.cleanup = function() {
       if (this.z_handle) {
          this.z_handle.cleanup();
@@ -1454,386 +1455,386 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
     * @private
     */
 
-   function THistDrawOptions() {
-      this.reset();
-   }
+   class THistDrawOptions {
+      constructor() { this.reset(); }
 
-   /** @summary Reset hist draw options */
-   THistDrawOptions.prototype.reset = function() {
-      JSROOT.extend(this,
-            { Axis: 0, RevX: false, RevY: false, SymlogX: 0, SymlogY: 0,
-              Bar: false, BarStyle: 0, Curve: false,
-              Hist: true, Line: false, Fill: false,
-              Error: false, ErrorKind: -1, errorX: JSROOT.gStyle.fErrorX,
-              Mark: false, Same: false, Scat: false, ScatCoef: 1., Func: true,
-              Arrow: false, Box: false, BoxStyle: 0,
-              Text: false, TextAngle: 0, TextKind: "", Char: 0, Color: false, Contour: 0, Cjust: false,
-              Lego: 0, Surf: 0, Off: 0, Tri: 0, Proj: 0, AxisPos: 0,
-              Spec: false, Pie: false, List: false, Zscale: false, Zvert: true, PadPalette: false,
-              Candle: "", Violin: "", Scaled: null,
-              GLBox: 0, GLColor: false, Project: "",
-              System: jsrp.Coord.kCARTESIAN,
-              AutoColor: false, NoStat: false, ForceStat: false, PadStats: false, PadTitle: false, AutoZoom: false,
-              HighRes: 0, Zero: true, Palette: 0, BaseLine: false,
-              Optimize: JSROOT.settings.OptimizeDraw,
-              Mode3D: false, x3dscale: 1, y3dscale: 1,
-              Render3D: JSROOT.constants.Render3D.Default,
-              FrontBox: true, BackBox: true,
-              _pmc: false, _plc: false, _pfc: false, need_fillcol: false,
-              minimum: -1111, maximum: -1111, ymin: 0, ymax: 0 });
-   }
-
-   /** @summary Decode histogram draw options */
-   THistDrawOptions.prototype.decode = function(opt, hdim, histo, pad, painter) {
-      this.orginal = opt; // will be overwritten by storeDrawOpt call
-
-      const d = new JSROOT.DrawOptions(opt);
-
-      if ((hdim === 1) && (histo.fSumw2.length > 0))
-         for (let n = 0; n < histo.fSumw2.length; ++n)
-            if (histo.fSumw2[n] > 0) { this.Error = true; this.Hist = false; this.Zero = false; break; }
-
-      this.ndim = hdim || 1; // keep dimensions, used for now in GED
-
-      this.PadStats = d.check("USE_PAD_STATS");
-      this.PadPalette = d.check("USE_PAD_PALETTE");
-      this.PadTitle = d.check("USE_PAD_TITLE");
-
-      if (d.check('PAL', true)) this.Palette = d.partAsInt();
-      // this is zooming of histo content
-      if (d.check('MINIMUM:', true)) { this.ominimum = true; this.minimum = parseFloat(d.part); }
-                                else { this.ominimum = false; this.minimum = histo.fMinimum; }
-      if (d.check('MAXIMUM:', true)) { this.omaximum = true; this.maximum = parseFloat(d.part); }
-                                else { this.omaximum = false; this.maximum = histo.fMaximum; }
-
-      // let configure histogram titles - only for debug purposes
-      if (d.check('HTITLE:', true)) histo.fTitle = decodeURIComponent(d.part.toLowerCase());
-      if (d.check('XTITLE:', true)) histo.fXaxis.fTitle = decodeURIComponent(d.part.toLowerCase());
-      if (d.check('YTITLE:', true)) histo.fYaxis.fTitle = decodeURIComponent(d.part.toLowerCase());
-      if (d.check('ZTITLE:', true)) histo.fZaxis.fTitle = decodeURIComponent(d.part.toLowerCase());
-
-      if (d.check('NOOPTIMIZE')) this.Optimize = 0;
-      if (d.check('OPTIMIZE')) this.Optimize = 2;
-
-      if (d.check('AUTOCOL')) this.AutoColor = true;
-      if (d.check('AUTOZOOM')) this.AutoZoom = true;
-
-      if (d.check('OPTSTAT',true)) this.optstat = d.partAsInt();
-      if (d.check('OPTFIT',true)) this.optfit = d.partAsInt();
-
-      if (d.check('NOSTAT')) this.NoStat = true;
-      if (d.check('STAT')) this.ForceStat = true;
-
-      if (d.check('NOTOOLTIP') && painter) painter.setTooltipAllowed(false);
-      if (d.check('TOOLTIP') && painter) painter.setTooltipAllowed(true);
-
-      if (d.check("SYMLOGX", true)) this.SymlogX = d.partAsInt(0, 3);
-      if (d.check("SYMLOGY", true)) this.SymlogY = d.partAsInt(0, 3);
-
-      if (d.check('X3DSC', true)) this.x3dscale = d.partAsInt(0, 100) / 100;
-      if (d.check('Y3DSC', true)) this.y3dscale = d.partAsInt(0, 100) / 100;
-
-      let lx = false, ly = false, check3dbox = "";
-      if (d.check('LOGXY')) lx = ly = true;
-      if (d.check('LOGX')) lx = true;
-      if (d.check('LOGY')) ly = true;
-      if (lx && pad) { pad.fLogx = 1; pad.fUxmin = 0; pad.fUxmax = 1; pad.fX1 = 0; pad.fX2 = 1; }
-      if (ly && pad) { pad.fLogy = 1; pad.fUymin = 0; pad.fUymax = 1; pad.fY1 = 0; pad.fY2 = 1; }
-      if (d.check('LOGZ') && pad) pad.fLogz = 1;
-      if (d.check('GRIDXY') && pad) pad.fGridx = pad.fGridy = 1;
-      if (d.check('GRIDX') && pad) pad.fGridx = 1;
-      if (d.check('GRIDY') && pad) pad.fGridy = 1;
-      if (d.check('TICKXY') && pad) pad.fTickx = pad.fTicky = 1;
-      if (d.check('TICKX') && pad) pad.fTickx = 1;
-      if (d.check('TICKY') && pad) pad.fTicky = 1;
-
-      d.getColor = function() {
-         this.color = this.partAsInt(1) - 1;
-         if (this.color >= 0) return true;
-         for (let col = 0; col < 8; ++col)
-            if (jsrp.getColor(col).toUpperCase() === this.part)
-               { this.color = col; return true; }
-         return false;
+      /** @summary Reset hist draw options */
+      reset() {
+         JSROOT.extend(this,
+               { Axis: 0, RevX: false, RevY: false, SymlogX: 0, SymlogY: 0,
+                 Bar: false, BarStyle: 0, Curve: false,
+                 Hist: true, Line: false, Fill: false,
+                 Error: false, ErrorKind: -1, errorX: JSROOT.gStyle.fErrorX,
+                 Mark: false, Same: false, Scat: false, ScatCoef: 1., Func: true,
+                 Arrow: false, Box: false, BoxStyle: 0,
+                 Text: false, TextAngle: 0, TextKind: "", Char: 0, Color: false, Contour: 0, Cjust: false,
+                 Lego: 0, Surf: 0, Off: 0, Tri: 0, Proj: 0, AxisPos: 0,
+                 Spec: false, Pie: false, List: false, Zscale: false, Zvert: true, PadPalette: false,
+                 Candle: "", Violin: "", Scaled: null,
+                 GLBox: 0, GLColor: false, Project: "",
+                 System: jsrp.Coord.kCARTESIAN,
+                 AutoColor: false, NoStat: false, ForceStat: false, PadStats: false, PadTitle: false, AutoZoom: false,
+                 HighRes: 0, Zero: true, Palette: 0, BaseLine: false,
+                 Optimize: JSROOT.settings.OptimizeDraw,
+                 Mode3D: false, x3dscale: 1, y3dscale: 1,
+                 Render3D: JSROOT.constants.Render3D.Default,
+                 FrontBox: true, BackBox: true,
+                 _pmc: false, _plc: false, _pfc: false, need_fillcol: false,
+                 minimum: -1111, maximum: -1111, ymin: 0, ymax: 0 });
       }
 
-      if (d.check('FILL_', true) && d.getColor())
-         this.histoFillColor = d.color;
+      /** @summary Decode histogram draw options */
+      decode(opt, hdim, histo, pad, painter) {
+         this.orginal = opt; // will be overwritten by storeDrawOpt call
 
-      if (d.check('LINE_', true) && d.getColor())
-         this.histoLineColor = jsrp.getColor(d.color);
+         const d = new JSROOT.DrawOptions(opt);
 
-      if (d.check('XAXIS_', true) && d.getColor())
-         histo.fXaxis.fAxisColor = histo.fXaxis.fLabelColor = histo.fXaxis.fTitleColor = d.color;
+         if ((hdim === 1) && (histo.fSumw2.length > 0))
+            for (let n = 0; n < histo.fSumw2.length; ++n)
+               if (histo.fSumw2[n] > 0) { this.Error = true; this.Hist = false; this.Zero = false; break; }
 
-      if (d.check('YAXIS_', true) && d.getColor())
-         histo.fYaxis.fAxisColor = histo.fYaxis.fLabelColor = histo.fYaxis.fTitleColor = d.color;
+         this.ndim = hdim || 1; // keep dimensions, used for now in GED
 
-      let has_main = painter ? !!painter.getMainPainter() : false;
+         this.PadStats = d.check("USE_PAD_STATS");
+         this.PadPalette = d.check("USE_PAD_PALETTE");
+         this.PadTitle = d.check("USE_PAD_TITLE");
 
-      if (d.check('X+')) { this.AxisPos = 10; this.second_x = has_main; }
-      if (d.check('Y+')) { this.AxisPos += 1; this.second_y = has_main; }
+         if (d.check('PAL', true)) this.Palette = d.partAsInt();
+         // this is zooming of histo content
+         if (d.check('MINIMUM:', true)) { this.ominimum = true; this.minimum = parseFloat(d.part); }
+                                   else { this.ominimum = false; this.minimum = histo.fMinimum; }
+         if (d.check('MAXIMUM:', true)) { this.omaximum = true; this.maximum = parseFloat(d.part); }
+                                   else { this.omaximum = false; this.maximum = histo.fMaximum; }
 
-      if (d.check('SAMES')) { this.Same = true; this.ForceStat = true; }
-      if (d.check('SAME')) { this.Same = true; this.Func = true; }
+         // let configure histogram titles - only for debug purposes
+         if (d.check('HTITLE:', true)) histo.fTitle = decodeURIComponent(d.part.toLowerCase());
+         if (d.check('XTITLE:', true)) histo.fXaxis.fTitle = decodeURIComponent(d.part.toLowerCase());
+         if (d.check('YTITLE:', true)) histo.fYaxis.fTitle = decodeURIComponent(d.part.toLowerCase());
+         if (d.check('ZTITLE:', true)) histo.fZaxis.fTitle = decodeURIComponent(d.part.toLowerCase());
 
-      if (d.check('SPEC')) this.Spec = true; // not used
+         if (d.check('NOOPTIMIZE')) this.Optimize = 0;
+         if (d.check('OPTIMIZE')) this.Optimize = 2;
 
-      if (d.check('BASE0') || d.check('MIN0')) this.BaseLine = 0; else
-      if (JSROOT.gStyle.fHistMinimumZero) this.BaseLine = 0;
+         if (d.check('AUTOCOL')) this.AutoColor = true;
+         if (d.check('AUTOZOOM')) this.AutoZoom = true;
 
-      if (d.check('PIE')) this.Pie = true; // not used
+         if (d.check('OPTSTAT',true)) this.optstat = d.partAsInt();
+         if (d.check('OPTFIT',true)) this.optfit = d.partAsInt();
 
-      if (d.check('CANDLE', true)) this.Candle = d.part;
-      if (d.check('VIOLIN', true)) { this.Violin = d.part; delete this.Candle; }
-      if (d.check('NOSCALED')) this.Scaled = false;
-      if (d.check('SCALED')) this.Scaled = true;
+         if (d.check('NOSTAT')) this.NoStat = true;
+         if (d.check('STAT')) this.ForceStat = true;
 
-      if (d.check('GLBOX',true)) this.GLBox = 10 + d.partAsInt();
-      if (d.check('GLCOL')) this.GLColor = true;
+         if (d.check('NOTOOLTIP') && painter) painter.setTooltipAllowed(false);
+         if (d.check('TOOLTIP') && painter) painter.setTooltipAllowed(true);
 
-      d.check('GL'); // suppress GL
+         if (d.check("SYMLOGX", true)) this.SymlogX = d.partAsInt(0, 3);
+         if (d.check("SYMLOGY", true)) this.SymlogY = d.partAsInt(0, 3);
 
-      if (d.check('LEGO', true)) {
-         this.Lego = 1;
-         if (d.part.indexOf('0') >= 0) this.Zero = false;
-         if (d.part.indexOf('1') >= 0) this.Lego = 11;
-         if (d.part.indexOf('2') >= 0) this.Lego = 12;
-         if (d.part.indexOf('3') >= 0) this.Lego = 13;
-         if (d.part.indexOf('4') >= 0) this.Lego = 14;
-         check3dbox = d.part;
-         if (d.part.indexOf('Z') >= 0) this.Zscale = true;
-      }
+         if (d.check('X3DSC', true)) this.x3dscale = d.partAsInt(0, 100) / 100;
+         if (d.check('Y3DSC', true)) this.y3dscale = d.partAsInt(0, 100) / 100;
 
-      if (d.check('R3D_', true))
-         this.Render3D = JSROOT.constants.Render3D.fromString(d.part.toLowerCase());
+         let lx = false, ly = false, check3dbox = "";
+         if (d.check('LOGXY')) lx = ly = true;
+         if (d.check('LOGX')) lx = true;
+         if (d.check('LOGY')) ly = true;
+         if (lx && pad) { pad.fLogx = 1; pad.fUxmin = 0; pad.fUxmax = 1; pad.fX1 = 0; pad.fX2 = 1; }
+         if (ly && pad) { pad.fLogy = 1; pad.fUymin = 0; pad.fUymax = 1; pad.fY1 = 0; pad.fY2 = 1; }
+         if (d.check('LOGZ') && pad) pad.fLogz = 1;
+         if (d.check('GRIDXY') && pad) pad.fGridx = pad.fGridy = 1;
+         if (d.check('GRIDX') && pad) pad.fGridx = 1;
+         if (d.check('GRIDY') && pad) pad.fGridy = 1;
+         if (d.check('TICKXY') && pad) pad.fTickx = pad.fTicky = 1;
+         if (d.check('TICKX') && pad) pad.fTickx = 1;
+         if (d.check('TICKY') && pad) pad.fTicky = 1;
 
-      if (d.check('SURF', true)) {
-         this.Surf = d.partAsInt(10, 1);
-         check3dbox = d.part;
-         if (d.part.indexOf('Z')>=0) this.Zscale = true;
-      }
+         d.getColor = function() {
+            this.color = this.partAsInt(1) - 1;
+            if (this.color >= 0) return true;
+            for (let col = 0; col < 8; ++col)
+               if (jsrp.getColor(col).toUpperCase() === this.part)
+                  { this.color = col; return true; }
+            return false;
+         }
 
-      if (d.check('TF3', true)) check3dbox = d.part;
+         if (d.check('FILL_', true) && d.getColor())
+            this.histoFillColor = d.color;
 
-      if (d.check('ISO', true)) check3dbox = d.part;
+         if (d.check('LINE_', true) && d.getColor())
+            this.histoLineColor = jsrp.getColor(d.color);
 
-      if (d.check('LIST')) this.List = true; // not used
+         if (d.check('XAXIS_', true) && d.getColor())
+            histo.fXaxis.fAxisColor = histo.fXaxis.fLabelColor = histo.fXaxis.fTitleColor = d.color;
 
-      if (d.check('CONT', true) && (hdim>1)) {
-         this.Contour = 1;
-         if (d.part.indexOf('Z') >= 0) this.Zscale = true;
-         if (d.part.indexOf('1') >= 0) this.Contour = 11; else
-         if (d.part.indexOf('2') >= 0) this.Contour = 12; else
-         if (d.part.indexOf('3') >= 0) this.Contour = 13; else
-         if (d.part.indexOf('4') >= 0) this.Contour = 14;
-      }
+         if (d.check('YAXIS_', true) && d.getColor())
+            histo.fYaxis.fAxisColor = histo.fYaxis.fLabelColor = histo.fYaxis.fTitleColor = d.color;
 
-      // decode bar/hbar option
-      if (d.check('HBAR', true)) this.BarStyle = 20; else
-      if (d.check('BAR', true)) this.BarStyle = 10;
-      if (this.BarStyle > 0) {
-         this.Hist = false;
-         this.need_fillcol = true;
-         this.BarStyle += d.partAsInt();
-      }
+         let has_main = painter ? !!painter.getMainPainter() : false;
 
-      if (d.check('ARR'))
-         this.Arrow = true;
+         if (d.check('X+')) { this.AxisPos = 10; this.second_x = has_main; }
+         if (d.check('Y+')) { this.AxisPos += 1; this.second_y = has_main; }
 
-      if (d.check('BOX',true))
-         this.BoxStyle = 10 + d.partAsInt();
+         if (d.check('SAMES')) { this.Same = true; this.ForceStat = true; }
+         if (d.check('SAME')) { this.Same = true; this.Func = true; }
 
-      this.Box = this.BoxStyle > 0;
+         if (d.check('SPEC')) this.Spec = true; // not used
 
-      if (d.check('CJUST')) this.Cjust = true;
-      if (d.check('COL')) this.Color = true;
-      if (d.check('CHAR')) this.Char = 1;
-      if (d.check('FUNC')) { this.Func = true; this.Hist = false; }
-      if (d.check('AXIS')) this.Axis = 1;
-      if (d.check('AXIG')) this.Axis = 2;
+         if (d.check('BASE0') || d.check('MIN0')) this.BaseLine = 0; else
+         if (JSROOT.gStyle.fHistMinimumZero) this.BaseLine = 0;
 
-      if (d.check('TEXT', true)) {
-         this.Text = true;
-         this.Hist = false;
-         this.TextAngle = Math.min(d.partAsInt(), 90);
-         if (d.part.indexOf('N') >= 0) this.TextKind = "N";
-         if (d.part.indexOf('E0') >= 0) this.TextLine = true;
-         if (d.part.indexOf('E') >= 0) this.TextKind = "E";
-      }
+         if (d.check('PIE')) this.Pie = true; // not used
 
-      if (d.check('SCAT=', true)) {
-         this.Scat = true;
-         this.ScatCoef = parseFloat(d.part);
-         if (!Number.isFinite(this.ScatCoef) || (this.ScatCoef<=0)) this.ScatCoef = 1.;
-      }
+         if (d.check('CANDLE', true)) this.Candle = d.part;
+         if (d.check('VIOLIN', true)) { this.Violin = d.part; delete this.Candle; }
+         if (d.check('NOSCALED')) this.Scaled = false;
+         if (d.check('SCALED')) this.Scaled = true;
 
-      if (d.check('SCAT')) this.Scat = true;
-      if (d.check('POL')) this.System = jsrp.Coord.kPOLAR;
-      if (d.check('CYL')) this.System = jsrp.Coord.kCYLINDRICAL;
-      if (d.check('SPH')) this.System = jsrp.Coord.kSPHERICAL;
-      if (d.check('PSR')) this.System = jsrp.Coord.kRAPIDITY;
+         if (d.check('GLBOX',true)) this.GLBox = 10 + d.partAsInt();
+         if (d.check('GLCOL')) this.GLColor = true;
 
-      if (d.check('TRI', true)) {
-         this.Color = false;
-         this.Tri = 1;
-         check3dbox = d.part;
-         if (d.part.indexOf('ERR') >= 0) this.Error = true;
-      }
+         d.check('GL'); // suppress GL
 
-      if (d.check('AITOFF')) this.Proj = 1;
-      if (d.check('MERCATOR')) this.Proj = 2;
-      if (d.check('SINUSOIDAL')) this.Proj = 3;
-      if (d.check('PARABOLIC')) this.Proj = 4;
-      if (this.Proj > 0) this.Contour = 14;
+         if (d.check('LEGO', true)) {
+            this.Lego = 1;
+            if (d.part.indexOf('0') >= 0) this.Zero = false;
+            if (d.part.indexOf('1') >= 0) this.Lego = 11;
+            if (d.part.indexOf('2') >= 0) this.Lego = 12;
+            if (d.part.indexOf('3') >= 0) this.Lego = 13;
+            if (d.part.indexOf('4') >= 0) this.Lego = 14;
+            check3dbox = d.part;
+            if (d.part.indexOf('Z') >= 0) this.Zscale = true;
+         }
 
-      if (d.check('PROJX',true)) this.Project = "X" + d.partAsInt(0,1);
-      if (d.check('PROJY',true)) this.Project = "Y" + d.partAsInt(0,1);
+         if (d.check('R3D_', true))
+            this.Render3D = JSROOT.constants.Render3D.fromString(d.part.toLowerCase());
 
-      if (check3dbox) {
-         if (check3dbox.indexOf('FB') >= 0) this.FrontBox = false;
-         if (check3dbox.indexOf('BB') >= 0) this.BackBox = false;
-      }
+         if (d.check('SURF', true)) {
+            this.Surf = d.partAsInt(10, 1);
+            check3dbox = d.part;
+            if (d.part.indexOf('Z')>=0) this.Zscale = true;
+         }
 
-      if ((hdim==3) && d.check('FB')) this.FrontBox = false;
-      if ((hdim==3) && d.check('BB')) this.BackBox = false;
+         if (d.check('TF3', true)) check3dbox = d.part;
 
-      this._pfc = d.check("PFC");
-      this._plc = d.check("PLC") || this.AutoColor;
-      this._pmc = d.check("PMC");
+         if (d.check('ISO', true)) check3dbox = d.part;
 
-      if (d.check('L')) { this.Line = true; this.Hist = false; this.Error = false; }
-      if (d.check('F')) { this.Fill = true; this.need_fillcol = true; }
+         if (d.check('LIST')) this.List = true; // not used
 
-      if (d.check('A')) this.Axis = -1;
+         if (d.check('CONT', true) && (hdim>1)) {
+            this.Contour = 1;
+            if (d.part.indexOf('Z') >= 0) this.Zscale = true;
+            if (d.part.indexOf('1') >= 0) this.Contour = 11; else
+            if (d.part.indexOf('2') >= 0) this.Contour = 12; else
+            if (d.part.indexOf('3') >= 0) this.Contour = 13; else
+            if (d.part.indexOf('4') >= 0) this.Contour = 14;
+         }
 
-      if (d.check("RX") || (pad && pad.$RX)) this.RevX = true;
-      if (d.check("RY") || (pad && pad.$RY)) this.RevY = true;
-      let check_axis_bit = (opt, axis, bit) => {
-         let flag = d.check(opt);
-         if (pad && pad['$'+opt]) { flag = true; pad['$'+opt] = undefined; }
-         if (flag && histo)
-             if (!histo[axis].TestBit(bit))
-                histo[axis].InvertBit(bit);
-      };
-      check_axis_bit("OTX", "fXaxis", JSROOT.EAxisBits.kOppositeTitle);
-      check_axis_bit("OTY", "fYaxis", JSROOT.EAxisBits.kOppositeTitle);
-      check_axis_bit("CTX", "fXaxis", JSROOT.EAxisBits.kCenterTitle);
-      check_axis_bit("CTY", "fYaxis", JSROOT.EAxisBits.kCenterTitle);
-
-      if (d.check('B1')) { this.BarStyle = 1; this.BaseLine = 0; this.Hist = false; this.need_fillcol = true; }
-      if (d.check('B')) { this.BarStyle = 1; this.Hist = false; this.need_fillcol = true; }
-      if (d.check('C')) { this.Curve = true; this.Hist = false; }
-      if (d.check('][')) { this.Off = 1; this.Hist = true; }
-
-      if (d.check('HIST')) { this.Hist = true; this.Func = true; this.Error = false; }
-
-      this.Bar = (this.BarStyle > 0);
-
-      delete this.MarkStyle; // remove mark style if any
-
-      if (d.check('P0')) { this.Mark = true; this.Hist = false; this.Zero = true; }
-      if (d.check('P')) { this.Mark = true; this.Hist = false; this.Zero = false; }
-      if (d.check('HZ')) { this.Zscale = true; this.Zvert = false; }
-      if (d.check('Z')) this.Zscale = true;
-      if (d.check('*')) { this.Mark = true; this.MarkStyle = 3; this.Hist = false; }
-      if (d.check('H')) this.Hist = true;
-
-      if (d.check('E', true)) {
-         this.Error = true;
-         if (hdim == 1) {
-            this.Zero = false; // do not draw empty bins with errors
+         // decode bar/hbar option
+         if (d.check('HBAR', true)) this.BarStyle = 20; else
+         if (d.check('BAR', true)) this.BarStyle = 10;
+         if (this.BarStyle > 0) {
             this.Hist = false;
-            if (Number.isInteger(parseInt(d.part[0]))) this.ErrorKind = parseInt(d.part[0]);
-            if ((this.ErrorKind === 3) || (this.ErrorKind === 4)) this.need_fillcol = true;
-            if (this.ErrorKind === 0) this.Zero = true; // enable drawing of empty bins
-            if (d.part.indexOf('X0')>=0) this.errorX = 0;
-         }
-      }
-      if (d.check('9')) this.HighRes = 1;
-      if (d.check('0')) this.Zero = false;
-      if (this.Color && d.check('1')) this.Zero = false;
-
-      // flag identifies 3D drawing mode for histogram
-      if ((this.Lego > 0) || (hdim == 3) ||
-          ((this.Surf > 0) || this.Error && (hdim == 2))) this.Mode3D = true;
-
-      //if (this.Surf == 15)
-      //   if (this.System == jsrp.Coord.kPOLAR || this.System == jsrp.Coord.kCARTESIAN)
-      //      this.Surf = 13;
-   }
-
-   /** @summary Tries to reconstruct string with hist draw options */
-   THistDrawOptions.prototype.asString = function(is_main_hist, pad) {
-      let res = "";
-      if (this.Mode3D) {
-
-         if (this.Lego) {
-            res = "LEGO";
-            if (!this.Zero) res += "0";
-            if (this.Lego > 10) res += (this.Lego-10);
-            if (this.Zscale) res+="Z";
-         } else if (this.Surf) {
-            res = "SURF" + (this.Surf-10);
-            if (this.Zscale) res+="Z";
-         }
-         if (!this.FrontBox) res+="FB";
-         if (!this.BackBox) res+="BB";
-
-         if (this.x3dscale !== 1) res += "_X3DSC" + Math.round(this.x3dscale * 100);
-         if (this.y3dscale !== 1) res += "_Y3DSC" + Math.round(this.y3dscale * 100);
-
-      } else {
-         if (this.Scat) {
-            res = "SCAT";
-         } else if (this.Color) {
-            res = "COL";
-            if (!this.Zero) res+="0";
-            if (this.Zscale) res += (!this.Zvert ? "HZ" : "Z");
-            if (this.Axis < 0) res+="A";
-         } else if (this.Contour) {
-            res = "CONT";
-            if (this.Contour > 10) res += (this.Contour-10);
-            if (this.Zscale) res+="Z";
-         } else if (this.Bar) {
-            res = (this.BaseLine === false) ? "B" : "B1";
-         } else if (this.Mark) {
-            res = this.Zero ? "P0" : "P"; // here invert logic with 0
-         } else if (this.Error) {
-            res = "E";
-            if (this.ErrorKind>=0) res += this.ErrorKind;
-         } else if (this.Line) {
-            res += "L";
-            if (this.Fill) res += "F";
+            this.need_fillcol = true;
+            this.BarStyle += d.partAsInt();
          }
 
-         if (this.Cjust) res += " CJUST";
+         if (d.check('ARR'))
+            this.Arrow = true;
 
-         if (this.Text) {
-            res += "TEXT";
-            if (this.TextAngle) res += this.TextAngle;
-            res += this.TextKind;
+         if (d.check('BOX',true))
+            this.BoxStyle = 10 + d.partAsInt();
+
+         this.Box = this.BoxStyle > 0;
+
+         if (d.check('CJUST')) this.Cjust = true;
+         if (d.check('COL')) this.Color = true;
+         if (d.check('CHAR')) this.Char = 1;
+         if (d.check('FUNC')) { this.Func = true; this.Hist = false; }
+         if (d.check('AXIS')) this.Axis = 1;
+         if (d.check('AXIG')) this.Axis = 2;
+
+         if (d.check('TEXT', true)) {
+            this.Text = true;
+            this.Hist = false;
+            this.TextAngle = Math.min(d.partAsInt(), 90);
+            if (d.part.indexOf('N') >= 0) this.TextKind = "N";
+            if (d.part.indexOf('E0') >= 0) this.TextLine = true;
+            if (d.part.indexOf('E') >= 0) this.TextKind = "E";
          }
+
+         if (d.check('SCAT=', true)) {
+            this.Scat = true;
+            this.ScatCoef = parseFloat(d.part);
+            if (!Number.isFinite(this.ScatCoef) || (this.ScatCoef<=0)) this.ScatCoef = 1.;
+         }
+
+         if (d.check('SCAT')) this.Scat = true;
+         if (d.check('POL')) this.System = jsrp.Coord.kPOLAR;
+         if (d.check('CYL')) this.System = jsrp.Coord.kCYLINDRICAL;
+         if (d.check('SPH')) this.System = jsrp.Coord.kSPHERICAL;
+         if (d.check('PSR')) this.System = jsrp.Coord.kRAPIDITY;
+
+         if (d.check('TRI', true)) {
+            this.Color = false;
+            this.Tri = 1;
+            check3dbox = d.part;
+            if (d.part.indexOf('ERR') >= 0) this.Error = true;
+         }
+
+         if (d.check('AITOFF')) this.Proj = 1;
+         if (d.check('MERCATOR')) this.Proj = 2;
+         if (d.check('SINUSOIDAL')) this.Proj = 3;
+         if (d.check('PARABOLIC')) this.Proj = 4;
+         if (this.Proj > 0) this.Contour = 14;
+
+         if (d.check('PROJX',true)) this.Project = "X" + d.partAsInt(0,1);
+         if (d.check('PROJY',true)) this.Project = "Y" + d.partAsInt(0,1);
+
+         if (check3dbox) {
+            if (check3dbox.indexOf('FB') >= 0) this.FrontBox = false;
+            if (check3dbox.indexOf('BB') >= 0) this.BackBox = false;
+         }
+
+         if ((hdim==3) && d.check('FB')) this.FrontBox = false;
+         if ((hdim==3) && d.check('BB')) this.BackBox = false;
+
+         this._pfc = d.check("PFC");
+         this._plc = d.check("PLC") || this.AutoColor;
+         this._pmc = d.check("PMC");
+
+         if (d.check('L')) { this.Line = true; this.Hist = false; this.Error = false; }
+         if (d.check('F')) { this.Fill = true; this.need_fillcol = true; }
+
+         if (d.check('A')) this.Axis = -1;
+
+         if (d.check("RX") || (pad && pad.$RX)) this.RevX = true;
+         if (d.check("RY") || (pad && pad.$RY)) this.RevY = true;
+         let check_axis_bit = (opt, axis, bit) => {
+            let flag = d.check(opt);
+            if (pad && pad['$'+opt]) { flag = true; pad['$'+opt] = undefined; }
+            if (flag && histo)
+                if (!histo[axis].TestBit(bit))
+                   histo[axis].InvertBit(bit);
+         };
+         check_axis_bit("OTX", "fXaxis", JSROOT.EAxisBits.kOppositeTitle);
+         check_axis_bit("OTY", "fYaxis", JSROOT.EAxisBits.kOppositeTitle);
+         check_axis_bit("CTX", "fXaxis", JSROOT.EAxisBits.kCenterTitle);
+         check_axis_bit("CTY", "fYaxis", JSROOT.EAxisBits.kCenterTitle);
+
+         if (d.check('B1')) { this.BarStyle = 1; this.BaseLine = 0; this.Hist = false; this.need_fillcol = true; }
+         if (d.check('B')) { this.BarStyle = 1; this.Hist = false; this.need_fillcol = true; }
+         if (d.check('C')) { this.Curve = true; this.Hist = false; }
+         if (d.check('][')) { this.Off = 1; this.Hist = true; }
+
+         if (d.check('HIST')) { this.Hist = true; this.Func = true; this.Error = false; }
+
+         this.Bar = (this.BarStyle > 0);
+
+         delete this.MarkStyle; // remove mark style if any
+
+         if (d.check('P0')) { this.Mark = true; this.Hist = false; this.Zero = true; }
+         if (d.check('P')) { this.Mark = true; this.Hist = false; this.Zero = false; }
+         if (d.check('HZ')) { this.Zscale = true; this.Zvert = false; }
+         if (d.check('Z')) this.Zscale = true;
+         if (d.check('*')) { this.Mark = true; this.MarkStyle = 3; this.Hist = false; }
+         if (d.check('H')) this.Hist = true;
+
+         if (d.check('E', true)) {
+            this.Error = true;
+            if (hdim == 1) {
+               this.Zero = false; // do not draw empty bins with errors
+               this.Hist = false;
+               if (Number.isInteger(parseInt(d.part[0]))) this.ErrorKind = parseInt(d.part[0]);
+               if ((this.ErrorKind === 3) || (this.ErrorKind === 4)) this.need_fillcol = true;
+               if (this.ErrorKind === 0) this.Zero = true; // enable drawing of empty bins
+               if (d.part.indexOf('X0')>=0) this.errorX = 0;
+            }
+         }
+         if (d.check('9')) this.HighRes = 1;
+         if (d.check('0')) this.Zero = false;
+         if (this.Color && d.check('1')) this.Zero = false;
+
+         // flag identifies 3D drawing mode for histogram
+         if ((this.Lego > 0) || (hdim == 3) ||
+             ((this.Surf > 0) || this.Error && (hdim == 2))) this.Mode3D = true;
+
+         //if (this.Surf == 15)
+         //   if (this.System == jsrp.Coord.kPOLAR || this.System == jsrp.Coord.kCARTESIAN)
+         //      this.Surf = 13;
       }
 
-      if (is_main_hist && res) {
+      /** @summary Tries to reconstruct string with hist draw options */
+      asString(is_main_hist, pad) {
+         let res = "";
+         if (this.Mode3D) {
 
-         if (this.ForceStat || (this.StatEnabled === true))
-            res += "_STAT";
-         else if (this.NoStat || (this.StatEnabled === false))
-            res += "_NOSTAT";
+            if (this.Lego) {
+               res = "LEGO";
+               if (!this.Zero) res += "0";
+               if (this.Lego > 10) res += (this.Lego-10);
+               if (this.Zscale) res+="Z";
+            } else if (this.Surf) {
+               res = "SURF" + (this.Surf-10);
+               if (this.Zscale) res+="Z";
+            }
+            if (!this.FrontBox) res+="FB";
+            if (!this.BackBox) res+="BB";
+
+            if (this.x3dscale !== 1) res += "_X3DSC" + Math.round(this.x3dscale * 100);
+            if (this.y3dscale !== 1) res += "_Y3DSC" + Math.round(this.y3dscale * 100);
+
+         } else {
+            if (this.Scat) {
+               res = "SCAT";
+            } else if (this.Color) {
+               res = "COL";
+               if (!this.Zero) res+="0";
+               if (this.Zscale) res += (!this.Zvert ? "HZ" : "Z");
+               if (this.Axis < 0) res+="A";
+            } else if (this.Contour) {
+               res = "CONT";
+               if (this.Contour > 10) res += (this.Contour-10);
+               if (this.Zscale) res+="Z";
+            } else if (this.Bar) {
+               res = (this.BaseLine === false) ? "B" : "B1";
+            } else if (this.Mark) {
+               res = this.Zero ? "P0" : "P"; // here invert logic with 0
+            } else if (this.Error) {
+               res = "E";
+               if (this.ErrorKind>=0) res += this.ErrorKind;
+            } else if (this.Line) {
+               res += "L";
+               if (this.Fill) res += "F";
+            }
+
+            if (this.Cjust) res += " CJUST";
+
+            if (this.Text) {
+               res += "TEXT";
+               if (this.TextAngle) res += this.TextAngle;
+               res += this.TextKind;
+            }
+         }
+
+         if (is_main_hist && res) {
+
+            if (this.ForceStat || (this.StatEnabled === true))
+               res += "_STAT";
+            else if (this.NoStat || (this.StatEnabled === false))
+               res += "_NOSTAT";
+         }
+
+         if (is_main_hist && pad && res) {
+            if (pad.fLogx) res += "_LOGX";
+            if (pad.fLogy) res += "_LOGY";
+            if (pad.fLogz) res += "_LOGZ";
+            if (pad.fGridx) res += "_GRIDX";
+            if (pad.fGridy) res += "_GRIDY";
+            if (pad.fTickx) res += "_TICKX";
+            if (pad.fTicky) res += "_TICKY";
+         }
+
+         return res;
       }
-
-      if (is_main_hist && pad && res) {
-         if (pad.fLogx) res += "_LOGX";
-         if (pad.fLogy) res += "_LOGY";
-         if (pad.fLogz) res += "_LOGZ";
-         if (pad.fGridx) res += "_GRIDX";
-         if (pad.fGridy) res += "_GRIDY";
-         if (pad.fTickx) res += "_TICKX";
-         if (pad.fTicky) res += "_TICKY";
-      }
-
-      return res;
    }
 
    // ==============================================================================
@@ -1846,102 +1847,104 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
     * @private
     */
 
-   function HistContour(zmin, zmax) {
-      this.arr = [];
-      this.colzmin = zmin;
-      this.colzmax = zmax;
-      this.below_min_indx = -1;
-      this.exact_min_indx = 0;
-   }
+   class HistContour {
 
-   /** @summary Returns contour levels */
-   HistContour.prototype.getLevels = function() { return this.arr; }
+      constructor(zmin, zmax) {
+         this.arr = [];
+         this.colzmin = zmin;
+         this.colzmax = zmax;
+         this.below_min_indx = -1;
+         this.exact_min_indx = 0;
+      }
 
-   /** @summary Create normal contour levels */
-   HistContour.prototype.createNormal = function(nlevels, log_scale, zminpositive) {
-      if (log_scale) {
-         if (this.colzmax <= 0)
-            this.colzmax = 1.;
-         if (this.colzmin <= 0)
-            if ((zminpositive===undefined) || (zminpositive <= 0))
-               this.colzmin = 0.0001*this.colzmax;
-            else
-               this.colzmin = ((zminpositive < 3) || (zminpositive > 100)) ? 0.3*zminpositive : 1;
-         if (this.colzmin >= this.colzmax) this.colzmin = 0.0001*this.colzmax;
+      /** @summary Returns contour levels */
+      getLevels() { return this.arr; }
 
-         let logmin = Math.log(this.colzmin)/Math.log(10),
-             logmax = Math.log(this.colzmax)/Math.log(10),
-             dz = (logmax-logmin)/nlevels;
-         this.arr.push(this.colzmin);
-         for (let level=1; level<nlevels; level++)
-            this.arr.push(Math.exp((logmin + dz*level)*Math.log(10)));
-         this.arr.push(this.colzmax);
-         this.custom = true;
-      } else {
-         if ((this.colzmin === this.colzmax) && (this.colzmin !== 0)) {
-            this.colzmax += 0.01*Math.abs(this.colzmax);
-            this.colzmin -= 0.01*Math.abs(this.colzmin);
+      /** @summary Create normal contour levels */
+      createNormal(nlevels, log_scale, zminpositive) {
+         if (log_scale) {
+            if (this.colzmax <= 0)
+               this.colzmax = 1.;
+            if (this.colzmin <= 0)
+               if ((zminpositive===undefined) || (zminpositive <= 0))
+                  this.colzmin = 0.0001*this.colzmax;
+               else
+                  this.colzmin = ((zminpositive < 3) || (zminpositive > 100)) ? 0.3*zminpositive : 1;
+            if (this.colzmin >= this.colzmax) this.colzmin = 0.0001*this.colzmax;
+
+            let logmin = Math.log(this.colzmin)/Math.log(10),
+                logmax = Math.log(this.colzmax)/Math.log(10),
+                dz = (logmax-logmin)/nlevels;
+            this.arr.push(this.colzmin);
+            for (let level=1; level<nlevels; level++)
+               this.arr.push(Math.exp((logmin + dz*level)*Math.log(10)));
+            this.arr.push(this.colzmax);
+            this.custom = true;
+         } else {
+            if ((this.colzmin === this.colzmax) && (this.colzmin !== 0)) {
+               this.colzmax += 0.01*Math.abs(this.colzmax);
+               this.colzmin -= 0.01*Math.abs(this.colzmin);
+            }
+            let dz = (this.colzmax-this.colzmin)/nlevels;
+            for (let level = 0; level <= nlevels; level++)
+               this.arr.push(this.colzmin + dz*level);
          }
-         let dz = (this.colzmax-this.colzmin)/nlevels;
-         for (let level=0; level<=nlevels; level++)
-            this.arr.push(this.colzmin + dz*level);
+      }
+
+      /** @summary Create custom contour levels */
+      createCustom(levels) {
+         this.custom = true;
+         for (let n = 0; n < levels.length; ++n)
+            this.arr.push(levels[n]);
+
+         if (this.colzmax > this.arr[this.arr.length-1])
+            this.arr.push(this.colzmax);
+      }
+
+      /** @summary Configure indicies */
+      configIndicies(below_min, exact_min) {
+         this.below_min_indx = below_min;
+         this.exact_min_indx = exact_min;
+      }
+
+      /** @summary Get index based on z value */
+      getContourIndex(zc) {
+         // bins less than zmin not drawn
+         if (zc < this.colzmin) return this.below_min_indx;
+
+         // if bin content exactly zmin, draw it when col0 specified or when content is positive
+         if (zc === this.colzmin) return this.exact_min_indx;
+
+         if (!this.custom)
+            return Math.floor(0.01+(zc-this.colzmin)*(this.arr.length-1)/(this.colzmax-this.colzmin));
+
+         let l = 0, r = this.arr.length-1;
+         if (zc < this.arr[0]) return -1;
+         if (zc >= this.arr[r]) return r;
+         while (l < r-1) {
+            let mid = Math.round((l+r)/2);
+            if (this.arr[mid] > zc) r = mid; else l = mid;
+         }
+         return l;
+      }
+
+      /** @summary Get palette color */
+      getPaletteColor(palette, zc) {
+         let zindx = this.getContourIndex(zc);
+         if (zindx < 0) return null;
+
+         let pindx = palette.calcColorIndex(zindx, this.arr.length);
+
+         return palette.getColor(pindx);
+      }
+
+      /** @summary Get palette index */
+      getPaletteIndex(palette, zc) {
+         let zindx = this.getContourIndex(zc);
+
+         return (zindx < 0) ? null : palette.calcColorIndex(zindx, this.arr.length);
       }
    }
-
-   /** @summary Create custom contour levels */
-   HistContour.prototype.createCustom = function(levels) {
-      this.custom = true;
-      for (let n = 0; n < levels.length; ++n)
-         this.arr.push(levels[n]);
-
-      if (this.colzmax > this.arr[this.arr.length-1])
-         this.arr.push(this.colzmax);
-   }
-
-   /** @summary Configure indicies */
-   HistContour.prototype.configIndicies = function(below_min, exact_min) {
-      this.below_min_indx = below_min;
-      this.exact_min_indx = exact_min;
-   }
-
-   /** @summary Get index based on z value */
-   HistContour.prototype.getContourIndex = function(zc) {
-      // bins less than zmin not drawn
-      if (zc < this.colzmin) return this.below_min_indx;
-
-      // if bin content exactly zmin, draw it when col0 specified or when content is positive
-      if (zc === this.colzmin) return this.exact_min_indx;
-
-      if (!this.custom)
-         return Math.floor(0.01+(zc-this.colzmin)*(this.arr.length-1)/(this.colzmax-this.colzmin));
-
-      let l = 0, r = this.arr.length-1;
-      if (zc < this.arr[0]) return -1;
-      if (zc >= this.arr[r]) return r;
-      while (l < r-1) {
-         let mid = Math.round((l+r)/2);
-         if (this.arr[mid] > zc) r = mid; else l = mid;
-      }
-      return l;
-   }
-
-   /** @summary Get palette color */
-   HistContour.prototype.getPaletteColor = function(palette, zc) {
-      let zindx = this.getContourIndex(zc);
-      if (zindx < 0) return null;
-
-      let pindx = palette.calcColorIndex(zindx, this.arr.length);
-
-      return palette.getColor(pindx);
-   }
-
-   /** @summary Get palette index */
-   HistContour.prototype.getPaletteIndex = function(palette, zc) {
-      let zindx = this.getContourIndex(zc);
-
-      return (zindx < 0) ? null : palette.calcColorIndex(zindx, this.arr.length);
-   }
-
 
    // ==============================================================================
 
@@ -2164,6 +2167,34 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
        }, "objects");
    }
 
+   /** @summary Copy TAxis members
+     * @private */
+   function copyAxisMembers(name, tgt, src, fp, copy_zoom) {
+      tgt.fTitle = src.fTitle;
+      tgt.fLabels = src.fLabels;
+      tgt.fXmin = src.fXmin;
+      tgt.fXmax = src.fXmax;
+      tgt.fTimeDisplay = src.fTimeDisplay;
+      tgt.fTimeFormat = src.fTimeFormat;
+      // copy attributes
+      tgt.fAxisColor = src.fAxisColor;
+      tgt.fLabelColor = src.fLabelColor;
+      tgt.fLabelFont = src.fLabelFont;
+      tgt.fLabelOffset = src.fLabelOffset;
+      tgt.fLabelSize = src.fLabelSize;
+      tgt.fNdivisions = src.fNdivisions;
+      tgt.fTickLength = src.fTickLength;
+      tgt.fTitleColor = src.fTitleColor;
+      tgt.fTitleFont = src.fTitleFont;
+      tgt.fTitleOffset = src.fTitleOffset;
+      tgt.fTitleSize = src.fTitleSize;
+      if (copy_zoom && (!fp || !fp.zoomChangedInteractive(name))) {
+         tgt.fFirst = src.fFirst;
+         tgt.fLast = src.fLast;
+         tgt.fBits = src.fBits;
+      }
+   }
+
    /** @summary Update histogram object
      * @param obj - new histogram instance
      * @param opt - new drawing option (optional)
@@ -2219,46 +2250,15 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             }
          }
 
+         copyAxisMembers("x", histo.fXaxis, obj.fXaxis, fp, this.snapid);
+         copyAxisMembers("y", histo.fYaxis, obj.fYaxis, fp, this.snapid);
+         copyAxisMembers("z", histo.fZaxis, obj.fZaxis, fp, this.snapid);
+
          histo.fArray = obj.fArray;
          histo.fNcells = obj.fNcells;
          histo.fTitle = obj.fTitle;
          histo.fMinimum = obj.fMinimum;
          histo.fMaximum = obj.fMaximum;
-         function CopyAxis(tgt, src) {
-            tgt.fTitle = src.fTitle;
-            tgt.fLabels = src.fLabels;
-            tgt.fXmin = src.fXmin;
-            tgt.fXmax = src.fXmax;
-            tgt.fTimeDisplay = src.fTimeDisplay;
-            tgt.fTimeFormat = src.fTimeFormat;
-            // copy attributes
-            tgt.fAxisColor = src.fAxisColor;
-            tgt.fLabelColor = src.fLabelColor;
-            tgt.fLabelFont = src.fLabelFont;
-            tgt.fLabelOffset = src.fLabelOffset;
-            tgt.fLabelSize = src.fLabelSize;
-            tgt.fNdivisions = src.fNdivisions;
-            tgt.fTickLength = src.fTickLength;
-            tgt.fTitleColor = src.fTitleColor;
-            tgt.fTitleFont = src.fTitleFont;
-            tgt.fTitleOffset = src.fTitleOffset;
-            tgt.fTitleSize = src.fTitleSize;
-         }
-         CopyAxis(histo.fXaxis, obj.fXaxis);
-         CopyAxis(histo.fYaxis, obj.fYaxis);
-         CopyAxis(histo.fZaxis, obj.fZaxis);
-
-         if (this.snapid) {
-            function CopyZoom(tgt,src,name) {
-               if (fp && fp.zoomChangedInteractive(name)) return;
-               tgt.fFirst = src.fFirst;
-               tgt.fLast = src.fLast;
-               tgt.fBits = src.fBits;
-            }
-            CopyZoom(histo.fXaxis, obj.fXaxis, "x");
-            CopyZoom(histo.fYaxis, obj.fYaxis, "y");
-            CopyZoom(histo.fZaxis, obj.fZaxis, "z");
-         }
          histo.fSumw2 = obj.fSumw2;
 
          if (this.isTProfile()) {
