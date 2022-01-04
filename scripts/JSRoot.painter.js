@@ -1157,120 +1157,121 @@ JSROOT.define(['d3'], (d3) => {
     * @private
     */
 
-   function FontHandler(fontIndex, size, scale, name, style, weight) {
-
-      this.name = "Arial";
-      this.style = null;
-      this.weight = null;
-
-      if (scale && (size < 1)) {
-         size *= scale;
-         this.scaled = true;
-      }
-
-      this.size = Math.round(size || 11);
-      this.scale = scale;
-
-      if (fontIndex !== null) {
-
-         let indx = Math.floor(fontIndex / 10),
-             fontName = jsrp.root_fonts[indx] || "Arial";
-
-         while (fontName.length > 0) {
-            if (fontName[0] === 'b')
-               this.weight = "bold";
-            else if (fontName[0] === 'i')
-               this.style = "italic";
-            else if (fontName[0] === 'o')
-               this.style = "oblique";
-            else
-               break;
-            fontName = fontName.substr(1);
+   class FontHandler {
+      /** @summary constructor */
+      constructor(fontIndex, size, scale, name, style, weight) {
+         this.name = "Arial";
+         this.style = null;
+         this.weight = null;
+   
+         if (scale && (size < 1)) {
+            size *= scale;
+            this.scaled = true;
          }
-
-         if (fontName == 'Symbol')
-            this.weight = this.style = null;
-
-         this.name = fontName;
-         this.aver_width = jsrp.root_fonts_aver_width[indx] || 0.55;
-      } else {
-         this.name = name;
-         this.style = style || null;
-         this.weight = weight || null;
-         this.aver_width = this.weight ? 0.58 : 0.55;
+   
+         this.size = Math.round(size || 11);
+         this.scale = scale;
+   
+         if (fontIndex !== null) {
+   
+            let indx = Math.floor(fontIndex / 10),
+                fontName = jsrp.root_fonts[indx] || "Arial";
+   
+            while (fontName.length > 0) {
+               if (fontName[0] === 'b')
+                  this.weight = "bold";
+               else if (fontName[0] === 'i')
+                  this.style = "italic";
+               else if (fontName[0] === 'o')
+                  this.style = "oblique";
+               else
+                  break;
+               fontName = fontName.substr(1);
+            }
+   
+            if (fontName == 'Symbol')
+               this.weight = this.style = null;
+   
+            this.name = fontName;
+            this.aver_width = jsrp.root_fonts_aver_width[indx] || 0.55;
+         } else {
+            this.name = name;
+            this.style = style || null;
+            this.weight = weight || null;
+            this.aver_width = this.weight ? 0.58 : 0.55;
+         }
+   
+         this.func = this.setFont.bind(this);
       }
-
-      this.func = this.setFont.bind(this);
+   
+      /** @summary Assigns font-related attributes */
+      setFont(selection, arg) {
+         selection.attr("font-family", this.name);
+         if (arg != 'without-size')
+            selection.attr("font-size", this.size)
+                     .attr("xml:space", "preserve");
+         if (this.weight)
+            selection.attr("font-weight", this.weight);
+         if (this.style)
+            selection.attr("font-style", this.style);
+      }
+   
+      /** @summary Set font size (optional) */
+      setSize(size) {
+         this.size = Math.round(size);
+      }
+   
+      /** @summary Set text color (optional) */
+      setColor(color) {
+         this.color = color;
+      }
+   
+      /** @summary Set text align (optional) */
+      setAlign(align) {
+         this.align = align;
+      }
+   
+      /** @summary Set text angle (optional) */
+      setAngle(angle) {
+         this.angle = angle;
+      }
+   
+      /** @summary Allign angle to step raster, add optional offset */
+      roundAngle(step, offset) {
+         this.angle = parseInt(this.angle || 0);
+         if (!Number.isInteger(this.angle)) this.angle = 0;
+         this.angle = Math.round(this.angle/step) * step + (offset || 0);
+         if (this.angle < 0)
+            this.angle += 360;
+         else if (this.angle >= 360)
+            this.angle -= 360;
+      }
+   
+      /** @summary Clears all font-related attributes */
+      clearFont(selection) {
+         selection.attr("font-family", null)
+                  .attr("font-size", null)
+                  .attr("xml:space", null)
+                  .attr("font-weight", null)
+                  .attr("font-style", null);
+      }
+   
+      /** @summary Returns true in case of monospace font
+        * @private */
+      isMonospace() {
+         let n = this.name.toLowerCase();
+         return (n.indexOf("courier") == 0) || (n == "monospace") || (n == "monaco");
+      }
+   
+      /** @summary Return full font declaration which can be set as font property like "12pt Arial bold"
+        * @private */
+      getFontHtml() {
+         let res = Math.round(this.size) + "pt " + this.name;
+         if (this.weight) res += " " + this.weight;
+         if (this.style) res += " " + this.style;
+         return res;
+      }
    }
-
-   /** @summary Assigns font-related attributes */
-   FontHandler.prototype.setFont = function(selection, arg) {
-      selection.attr("font-family", this.name);
-      if (arg != 'without-size')
-         selection.attr("font-size", this.size)
-                  .attr("xml:space", "preserve");
-      if (this.weight)
-         selection.attr("font-weight", this.weight);
-      if (this.style)
-         selection.attr("font-style", this.style);
-   }
-
-   /** @summary Set font size (optional) */
-   FontHandler.prototype.setSize = function(size) {
-      this.size = Math.round(size);
-   }
-
-   /** @summary Set text color (optional) */
-   FontHandler.prototype.setColor = function(color) {
-      this.color = color;
-   }
-
-   /** @summary Set text align (optional) */
-   FontHandler.prototype.setAlign = function(align) {
-      this.align = align;
-   }
-
-   /** @summary Set text angle (optional) */
-   FontHandler.prototype.setAngle = function(angle) {
-      this.angle = angle;
-   }
-
-   /** @summary Allign angle to step raster, add optional offset */
-   FontHandler.prototype.roundAngle = function(step, offset) {
-      this.angle = parseInt(this.angle || 0);
-      if (!Number.isInteger(this.angle)) this.angle = 0;
-      this.angle = Math.round(this.angle/step) * step + (offset || 0);
-      if (this.angle < 0)
-         this.angle += 360;
-      else if (this.angle >= 360)
-         this.angle -= 360;
-   }
-
-   /** @summary Clears all font-related attributes */
-   FontHandler.prototype.clearFont = function(selection) {
-      selection.attr("font-family", null)
-               .attr("font-size", null)
-               .attr("xml:space", null)
-               .attr("font-weight", null)
-               .attr("font-style", null);
-   }
-
-   /** @summary Returns true in case of monospace font
-     * @private */
-   FontHandler.prototype.isMonospace = function() {
-      let n = this.name.toLowerCase();
-      return (n.indexOf("courier") == 0) || (n == "monospace") || (n == "monaco");
-   }
-
-   /** @summary Return full font declaration which can be set as font property like "12pt Arial bold"
-     * @private */
-   FontHandler.prototype.getFontHtml = function() {
-      let res = Math.round(this.size) + "pt " + this.name;
-      if (this.weight) res += " " + this.weight;
-      if (this.style) res += " " + this.style;
-      return res;
-   }
-
 
   // ===========================================================================
 
