@@ -1292,65 +1292,6 @@ JSROOT.define(['d3'], (d3) => {
       return "%Y";
    }
 
-   /** @summary Returns time format
-     * @param {TAxis} axis - TAxis object
-     * @private */
-   jsrp.getTimeFormat = function(axis) {
-      let idF = axis.fTimeFormat.indexOf('%F');
-      return (idF >= 0) ? axis.fTimeFormat.substr(0, idF) : axis.fTimeFormat;
-   }
-
-   /** @summary Return time offset value for given TAxis object
-     * @private */
-   jsrp.getTimeOffset = function(axis) {
-      let dflt_time_offset = 788918400000;
-      if (!axis) return dflt_time_offset;
-      let idF = axis.fTimeFormat.indexOf('%F');
-      if (idF < 0) return JSROOT.gStyle.fTimeOffset * 1000;
-      let sof = axis.fTimeFormat.substr(idF + 2);
-      // default string in axis offset
-      if (sof.indexOf('1995-01-01 00:00:00s0') == 0) return dflt_time_offset;
-      // special case, used from DABC painters
-      if ((sof == "0") || (sof == "")) return 0;
-
-      // decode time from ROOT string
-      function next(separ, min, max) {
-         let pos = sof.indexOf(separ);
-         if (pos < 0) return min;
-         let val = parseInt(sof.substr(0, pos));
-         sof = sof.substr(pos + 1);
-         if (!Number.isInteger(val) || (val < min) || (val > max)) return min;
-         return val;
-      }
-
-      let year = next("-", 1970, 2300),
-         month = next("-", 1, 12) - 1,
-         day = next(" ", 1, 31),
-         hour = next(":", 0, 23),
-         min = next(":", 0, 59),
-         sec = next("s", 0, 59),
-         msec = next(" ", 0, 999);
-
-      let dt = new Date(Date.UTC(year, month, day, hour, min, sec, msec));
-
-      let offset = dt.getTime();
-
-      // now also handle suffix like GMT or GMT -0600
-      sof = sof.toUpperCase();
-
-      if (sof.indexOf('GMT') == 0) {
-         offset += dt.getTimezoneOffset() * 60000;
-         sof = sof.substr(4).trim();
-         if (sof.length > 3) {
-            let p = 0, sign = 1000;
-            if (sof[0] == '-') { p = 1; sign = -1000; }
-            offset -= sign * (parseInt(sof.substr(p, 2)) * 3600 + parseInt(sof.substr(p + 2, 2)) * 60);
-         }
-      }
-
-      return offset;
-   }
-
    /** @summary Function used to provide svg:path for the smoothed curves.
      * @desc reuse code from d3.js. Used in TH1, TF1 and TGraph painters
      * @param {string} kind  should contain "bezier" or "line".
