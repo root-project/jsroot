@@ -6,7 +6,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    "use strict";
 
-   function drawText() {
+   /** @summary Draw TText
+     * @private */
+   jsrp.drawText = function() {
       let text = this.getObject(),
           pp = this.getPadPainter(),
           w = pp.getPadWidth(),
@@ -82,9 +84,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       });
    }
 
-   // =====================================================================================
-
-   function drawLine() {
+   /** @summary Draw TLine
+     * @private */
+   jsrp.drawLine = function() {
 
       let line = this.getObject(),
           lineatt = new JSROOT.TAttLineHandler(line),
@@ -100,9 +102,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           .call(lineatt.func);
    }
 
-   // =============================================================================
-
-   function drawPolyLine() {
+   /** @summary Draw TPolyLine
+     * @private */
+   jsrp.drawPolyLine = function() {
 
       // create svg:g container for polyline drawing
       this.createG();
@@ -128,9 +130,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           .call(fillatt.func);
    }
 
-   // ==============================================================================
-
-   function drawEllipse() {
+   /** @summary Draw TEllipse
+     * @private */
+   jsrp.drawEllipse = function() {
 
       let ellipse = this.getObject();
 
@@ -215,9 +217,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          .call(this.lineatt.func).call(this.fillatt.func);
    }
 
-   // ==============================================================================
-
-   function drawPie() {
+   /** @summary Draw TPie
+     * @private */
+   jsrp.drawPie = function() {
       let pie = this.getObject();
 
       // create svg:g container for ellipse drawing
@@ -255,9 +257,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       }
    }
 
-   // =============================================================================
-
-   function drawBox() {
+   /** @summary Draw TBox
+     * @private */
+   jsrp.drawBox = function() {
 
       let box = this.getObject(),
           opt = this.getDrawOpt(),
@@ -303,8 +305,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       }
    }
 
-   // =============================================================================
-
+   /** @summary Draw TMarker
+     * @private */
    jsrp.drawMarker = function() {
       let marker = this.getObject(),
           att = new JSROOT.TAttMarkerHandler(marker),
@@ -324,8 +326,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
              .call(att.func);
    }
 
-   // =============================================================================
-
+   /** @summary Draw TPolyMarker
+     * @private */
    jsrp.drawPolyMarker = function() {
 
       // create svg:g container for box drawing
@@ -345,9 +347,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
              .call(att.func);
    }
 
-   // ======================================================================================
-
-   function drawArrow() {
+   /** @summary Draw TArrow
+     * @private */
+   jsrp.drawArrow = function() {
       let arrow = this.getObject(), kLineNDC = JSROOT.BIT(14),
           oo = arrow.fOption, rect = this.getPadPainter().getPadRect();
 
@@ -466,8 +468,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             inter.addMoveHandler(this);
          });
    }
-
-   // =================================================================================
 
    /** @summary Draw TRooPlot
      * @private */
@@ -761,7 +761,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return true;
    }
 
-   /** @summary draw of TF1 object
+   /** @summary draw TF1 object
      * @private */
    jsrp.drawFunction = function(dom, tf1, opt) {
       let painter = new TF1Painter(dom, tf1),
@@ -2213,8 +2213,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return JSROOT.draw(this.getDom(), func, opt).then(() => this.drawNextFunction(indx+1));
    }
 
-   function drawGraph(dom, graph, opt) {
-
+   /** @summary Draw TGraph
+     * @private */
+   jsrp.drawGraph = function(dom, graph, opt) {
       let painter = new TGraphPainter(dom, graph);
       painter.decodeOptions(opt, true);
       painter.createBins();
@@ -2532,6 +2533,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       });
    }
 
+   /** @summary Draw TGraphPolargram
+     * @private */
    jsrp.drawGraphPolargram = function(dom, polargram /*, opt*/) {
 
       let main = jsrp.getElementMainPainter(dom);
@@ -2766,7 +2769,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return hint;
    }
 
-   /** @summary Draw function for TGraphPolar
+   /** @summary Draw TGraphPolar
      * @private */
    jsrp.drawGraphPolar = function(dom, graph, opt) {
       let painter = new TGraphPolarPainter(dom, graph);
@@ -3108,7 +3111,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       this.storeDrawOpt(opt);
    }
 
-   /** @summary Draw function for TSpline
+   /** @summary Draw TSpline
      * @private */
    jsrp.drawSpline = function(dom, spline, opt) {
       let painter = new TSplinePainter(dom, spline);
@@ -3262,7 +3265,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       });
    }
 
-   /** @summary Draw function for TGraphTime object
+   /** @summary Draw TGraphTime object
      * @private */
    jsrp.drawGraphTime = function(dom, gr, opt) {
 
@@ -3478,7 +3481,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
        return JSROOT.draw(this.getDom(), eff.fFunctions.arr[indx], eff.fFunctions.opt[indx]).then(() => this.drawFunction(indx+1));
    }
 
-   /** @summary Draw function for TEfficiency object
+   /** @summary Draw TEfficiency object
      * @private */
    jsrp.drawEfficiency = function(dom, eff, opt) {
 
@@ -3972,7 +3975,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       let rgba = new Array((nlevels+1) * 4), indx = 1, pal = obj.fPalette; // precaclucated colors
 
-      for(let lvl=0;lvl<=nlevels;++lvl) {
+      for(let lvl = 0; lvl <= nlevels; ++lvl) {
          let l = 1.*lvl/nlevels;
          while ((pal.fPoints[indx] < l) && (indx < pal.fPoints.length-1)) indx++;
 
@@ -4287,6 +4290,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       }
    }
 
+   /** @summary Draw TASImage object
+     * @private */
    jsrp.drawASImage = function(dom, obj, opt) {
       let painter = new TASImagePainter(dom, obj, opt);
       painter.decodeOptions(opt);
@@ -4300,6 +4305,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    // ===================================================================================
 
+   /** @summary Draw JS image
+     * @private */
    jsrp.drawJSImage = function(dom, obj, opt) {
       let painter = new JSROOT.BasePainter(dom),
           main = painter.selectDom(),
@@ -4473,6 +4480,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       });
    }
 
+   /** @summary Draw TRatioPlot
+     * @private */
    jsrp.drawRatioPlot = function(dom, ratio, opt) {
       let painter = new TRatioPlotPainter(dom, ratio, opt);
 
@@ -4480,15 +4489,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    }
 
    // ==================================================================================================
-
-   jsrp.drawText = drawText;
-   jsrp.drawLine = drawLine;
-   jsrp.drawPolyLine = drawPolyLine;
-   jsrp.drawArrow = drawArrow;
-   jsrp.drawEllipse = drawEllipse;
-   jsrp.drawPie = drawPie;
-   jsrp.drawBox = drawBox;
-   jsrp.drawGraph = drawGraph;
 
    JSROOT.TF1Painter = TF1Painter;
    JSROOT.TGraphPainter = TGraphPainter;
