@@ -232,9 +232,8 @@ JSROOT.define(['d3'], (d3) => {
       if (d.has("notouch")) JSROOT.browser.touches = false;
       if (d.has("adjframe")) s.CanAdjustFrame = true;
 
-      let optstat = d.get("optstat");
+      let optstat = d.get("optstat"), optfit = d.get("optfit");
       if (optstat) g.fOptStat = parseInt(optstat);
-      let optfit = d.get("optfit");
       if (optfit) g.fOptFit = parseInt(optfit);
       g.fStatFormat = d.get("statfmt", g.fStatFormat);
       g.fFitFormat = d.get("fitfmt", g.fFitFormat);
@@ -260,17 +259,11 @@ JSROOT.define(['d3'], (d3) => {
          if (Number.isInteger(palette) && (palette > 0) && (palette < 113)) s.Palette = palette;
       }
 
-      let render3d = d.get("render3d");
-      if (render3d)
-         JSROOT.settings.Render3D = JSROOT.constants.Render3D.fromString(render3d);
-
-      let embed3d = d.get("embed3d");
-      if (embed3d)
-         JSROOT.settings.Embed3D = JSROOT.constants.Embed3D.fromString(embed3d);
-
-      let geosegm = d.get("geosegm");
+      let render3d = d.get("render3d"), embed3d = d.get("embed3d"),
+          geosegm = d.get("geosegm"), geocomp = d.get("geocomp");
+      if (render3d) s.Render3D = JSROOT.constants.Render3D.fromString(render3d);
+      if (embed3d) s.Embed3D = JSROOT.constants.Embed3D.fromString(embed3d);
       if (geosegm) s.GeoGradPerSegm = Math.max(2, parseInt(geosegm));
-      let geocomp = d.get("geocomp");
       if (geocomp) s.GeoCompressComp = (geocomp !== '0') && (geocomp !== 'false') && (geocomp !== 'off');
 
       if (d.has("hlimit")) s.HierarchyLimit = parseInt(d.get("hlimit"));
