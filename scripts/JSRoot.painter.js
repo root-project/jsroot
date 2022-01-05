@@ -3688,6 +3688,7 @@ JSROOT.define(['d3'], (d3) => {
       { name: "TCrown", sameas: 'TEllipse' },
       { name: "TPie", icon: 'img_graph', prereq: "more", func: ".drawPie", direct: true },
       { name: "TPieSlice", icon: 'img_graph', dummy: true },
+      { name: "TExec", icon: "img_graph", dummy: true },
       { name: "TLine", icon: 'img_graph', prereq: "more", func: ".drawLine", direct: true },
       { name: "TArrow", icon: 'img_graph', prereq: "more", func: ".drawArrow", direct: true },
       { name: "TPolyLine", icon: 'img_graph', prereq: "more", func: ".drawPolyLine", direct: true },
