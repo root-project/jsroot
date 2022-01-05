@@ -3694,6 +3694,7 @@ JSROOT.define(['d3'], (d3) => {
       { name: "TPolyLine", icon: 'img_graph', prereq: "more", func: ".drawPolyLine", direct: true },
       { name: "TCurlyLine", sameas: 'TPolyLine' },
       { name: "TCurlyArc", sameas: 'TPolyLine' },
+      { name: "TParallelCoord", icon: "img_graph", dummy: true },
       { name: "TGaxis", icon: "img_graph", prereq: "gpad", func: ".drawGaxis" },
       { name: "TLegend", icon: "img_pavelabel", prereq: "hist", func: ".drawPave" },
       { name: "TBox", icon: 'img_graph', prereq: "more", func: ".drawBox", direct: true },

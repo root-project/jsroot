@@ -305,7 +305,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    // =============================================================================
 
-   function drawMarker() {
+   jsrp.drawMarker = function() {
       let marker = this.getObject(),
           att = new JSROOT.TAttMarkerHandler(marker),
           kMarkerNDC = JSROOT.BIT(14),
@@ -326,7 +326,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    // =============================================================================
 
-   function drawPolyMarker() {
+   jsrp.drawPolyMarker = function() {
 
       // create svg:g container for box drawing
       this.createG();
@@ -469,7 +469,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    // =================================================================================
 
-   function drawRooPlot(dom, plot) {
+   /** @summary Draw TRooPlot
+     * @private */
+   jsrp.drawRooPlot = function(dom, plot) {
 
       return JSROOT.draw(dom, plot._hist, "hist").then(hp => {
 
@@ -759,7 +761,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return true;
    }
 
-   function drawFunction(dom, tf1, opt) {
+   /** @summary draw of TF1 object
+     * @private */
+   jsrp.drawFunction = function(dom, tf1, opt) {
       let painter = new TF1Painter(dom, tf1),
           d = new JSROOT.DrawOptions(opt),
           has_main = !!painter.getMainPainter(),
@@ -2764,7 +2768,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    /** @summary Draw function for TGraphPolar
      * @private */
-   function drawGraphPolar(dom, graph, opt) {
+   jsrp.drawGraphPolar = function(dom, graph, opt) {
       let painter = new TGraphPolarPainter(dom, graph);
       painter.decodeOptions(opt);
 
@@ -3260,8 +3264,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    /** @summary Draw function for TGraphTime object
      * @private */
-
-   function drawGraphTime(dom, gr, opt) {
+   jsrp.drawGraphTime = function(dom, gr, opt) {
 
       if (!gr.fFrame) {
          console.error('Frame histogram not exists');
@@ -3735,11 +3738,11 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    /** @summary Draw TMultiGraph object
      * @private */
-   function drawMultiGraph(dom, mgraph, opt) {
+   jsrp.drawMultiGraph = function(dom, mgraph, opt) {
 
-      let painter = new TMultiGraphPainter(dom, mgraph);
+      let painter = new TMultiGraphPainter(dom, mgraph),
+          d = new JSROOT.DrawOptions(opt);
 
-      let d = new JSROOT.DrawOptions(opt);
       d.check("3D"); d.check("FB"); // no 3D supported, FB not clear
 
       painter._pfc = d.check("PFC");
@@ -3767,7 +3770,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    /** @summary Draw direct TVirtualX commands into SVG
      * @private */
-   function drawWebPainting(dom, obj, opt) {
+   jsrp.drawWebPainting = function(dom, obj, opt) {
 
       let painter = new JSROOT.ObjectPainter(dom, obj, opt);
 
@@ -4297,17 +4300,14 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    // ===================================================================================
 
-   function drawJSImage(dom, obj, opt) {
-      let painter = new JSROOT.BasePainter(dom);
+   jsrp.drawJSImage = function(dom, obj, opt) {
+      let painter = new JSROOT.BasePainter(dom),
+          main = painter.selectDom(),
+          img = main.append("img").attr("src", obj.fName).attr("title", obj.fTitle || obj.fName);
 
-      let main = painter.selectDom();
-
-      // this is example how external image can be inserted
-      let img = main.append("img").attr("src", obj.fName).attr("title", obj.fTitle || obj.fName);
-
-      if (opt && opt.indexOf("scale")>=0) {
+      if (opt && opt.indexOf("scale") >= 0) {
          img.style("width","100%").style("height","100%");
-      } else if (opt && opt.indexOf("center")>=0) {
+      } else if (opt && opt.indexOf("center") >= 0) {
          main.style("position", "relative");
          img.attr("style", "margin: 0; position: absolute;  top: 50%; left: 50%; transform: translate(-50%, -50%);");
       }
@@ -4488,16 +4488,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    jsrp.drawEllipse = drawEllipse;
    jsrp.drawPie = drawPie;
    jsrp.drawBox = drawBox;
-   jsrp.drawMarker = drawMarker;
-   jsrp.drawPolyMarker = drawPolyMarker;
-   jsrp.drawWebPainting = drawWebPainting;
-   jsrp.drawRooPlot = drawRooPlot;
    jsrp.drawGraph = drawGraph;
-   jsrp.drawMultiGraph = drawMultiGraph;
-   jsrp.drawJSImage = drawJSImage;
-   jsrp.drawFunction = drawFunction;
-   jsrp.drawGraphTime = drawGraphTime;
-   jsrp.drawGraphPolar = drawGraphPolar;
 
    JSROOT.TF1Painter = TF1Painter;
    JSROOT.TGraphPainter = TGraphPainter;
