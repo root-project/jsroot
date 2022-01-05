@@ -5,7 +5,7 @@
 2. Provide bootstrap-based menu - optionally
 3. Make "col" default draw option for TH2 in default JSROOT GUI
 4. Upgrade d3.js to 7.1.1, take only used components: "d3-selection", "d3-drag", "d3-scale", "d3-time-format", "d3-color", "d3-transition"
-5. Upgrade three.js to r135, reduce number of components used in jsroot
+5. Upgrade three.js to r136, reduce number of components used in jsroot
 6. Implement proper drawing of TEllipse
 7. Support new TGraphMultiErrors class
 8. Implement all variants of CANDLE and VIOLIN draw options (#194)
