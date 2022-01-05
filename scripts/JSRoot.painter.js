@@ -135,7 +135,7 @@ JSROOT.define(['d3'], (d3) => {
          0.5809, 0.5540, 0.5778,
          0.5783,0.6034,0.6030,0.6003,
          0.6004,0.6003,0.6005,
-         0.5564,0.5521,0.5664,0.5564,
+         0.5521,0.5521,0.5664,0.5314,
          0.5664,0.5495,0.5748,0.5578]
    };
 
@@ -1186,9 +1186,6 @@ JSROOT.define(['d3'], (d3) => {
                fontName = fontName.substr(1);
             }
 
-            if (fontName == 'Symbol')
-               this.weight = this.style = null;
-
             this.name = fontName;
             this.aver_width = jsrp.root_fonts_aver_width[indx] || 0.55;
          } else {
@@ -1197,6 +1194,9 @@ JSROOT.define(['d3'], (d3) => {
             this.weight = weight || null;
             this.aver_width = this.weight ? 0.58 : 0.55;
          }
+
+         this.isSymbol = (this.name == 'Symbol');
+         if (this.isSymbol) this.name = "Times New Roman";
 
          this.func = this.setFont.bind(this);
       }
@@ -1214,24 +1214,16 @@ JSROOT.define(['d3'], (d3) => {
       }
 
       /** @summary Set font size (optional) */
-      setSize(size) {
-         this.size = Math.round(size);
-      }
+      setSize(size) { this.size = Math.round(size); }
 
       /** @summary Set text color (optional) */
-      setColor(color) {
-         this.color = color;
-      }
+      setColor(color) { this.color = color; }
 
       /** @summary Set text align (optional) */
-      setAlign(align) {
-         this.align = align;
-      }
+      setAlign(align) { this.align = align; }
 
       /** @summary Set text angle (optional) */
-      setAngle(angle) {
-         this.angle = angle;
-      }
+      setAngle(angle) { this.angle = angle; }
 
       /** @summary Allign angle to step raster, add optional offset */
       roundAngle(step, offset) {

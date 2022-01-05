@@ -293,7 +293,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       arg.plain = true;
       if (arg.simple_latex)
          arg.text = translateLaTeX(arg.text); // replace latex symbols
-      if (arg.font && arg.font.name == "Symbol")
+      if (arg.font && arg.font.isSymbol)
          txt_node.text(ltx.replaceSymbols(arg.text));
       else
          txt_node.text(arg.text);
@@ -449,7 +449,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                if (curr.fisze !== curr.font.size)
                   elem.attr("font-size", Math.round(curr.fsize));
 
-               if (curr.font && curr.font.name == "Symbol")
+               if (curr.font && curr.font.isSymbol)
                   elem.text(ltx.replaceSymbols(s));
                else
                   elem.text(s);
