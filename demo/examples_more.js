@@ -172,7 +172,8 @@ examples_more = {
    ],
    TLatex : [
       { name: "symbols", file: "latex.root", layout: "grid2x2", latex: "symbols", items: ['lva','ex1','ex2','ex3'], title: "Replace only known TLatex symbols" },
-      { name: "plain", file: "latex.root", layout: "grid2x2", latex: "off", items: ['lva','ex1','ex2','ex3'], title: "Disable TLatex processor completely" }
+      { name: "plain", file: "latex.root", layout: "grid2x2", latex: "off", items: ['lva','ex1','ex2','ex3'], title: "Disable TLatex processor completely" },
+      { name: "math2", file: "latex.root", item: "math2", reset_mathjax: true, title: "Output of graphics/tmathtext2.C macro with all special symbols" }
    ],
    TASImage : [
       { name: "n4254_json", json: "image.json.gz", title: "TASImage with binary data, see tutorials/image/galaxy_image.C macro" },
