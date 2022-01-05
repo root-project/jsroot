@@ -2471,7 +2471,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       lbls = (nmajor==8) ? ["0", "#frac{#pi}{4}", "#frac{#pi}{2}", "#frac{3#pi}{4}", "#pi", "#frac{5#pi}{4}", "#frac{3#pi}{2}", "#frac{7#pi}{4}"] : ["0", "#frac{2#pi}{3}", "#frac{4#pi}{3}"];
       let aligns = [12, 11, 21, 31, 32, 33, 23, 13];
 
-      for (let n=0;n<nmajor;++n) {
+      for (let n = 0; n < nmajor; ++n) {
          let angle = -n*2*Math.PI/nmajor - this.angle;
          this.draw_g.append("svg:path")
              .attr("d",`M0,0L${Math.round(this.szx*Math.cos(angle))},${Math.round(this.szy*Math.sin(angle))}`)
@@ -2491,7 +2491,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       nminor = Math.floor((polar.fNdivPol % 10000) / 100);
 
       if (nminor > 1)
-         for (let n=0;n<nmajor*nminor;++n) {
+         for (let n = 0; n < nmajor*nminor; ++n) {
             if (n % nminor === 0) continue;
             let angle = -n*2*Math.PI/nmajor/nminor - this.angle;
             this.draw_g.append("svg:path")
@@ -2528,7 +2528,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       });
    }
 
-   function drawGraphPolargram(dom, polargram /*, opt*/) {
+   jsrp.drawGraphPolargram = function(dom, polargram /*, opt*/) {
 
       let main = jsrp.getElementMainPainter(dom);
       if (main) {
@@ -3106,7 +3106,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    /** @summary Draw function for TSpline
      * @private */
-   function drawSpline(dom, spline, opt) {
+   jsrp.drawSpline = function(dom, spline, opt) {
       let painter = new TSplinePainter(dom, spline);
       painter.decodeOptions(opt);
 
@@ -3477,7 +3477,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    /** @summary Draw function for TEfficiency object
      * @private */
-   function drawEfficiency(dom, eff, opt) {
+   jsrp.drawEfficiency = function(dom, eff, opt) {
 
       if (!eff || !eff.fTotalHistogram) return null;
 
@@ -4284,7 +4284,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       }
    }
 
-   function drawASImage(dom, obj, opt) {
+   jsrp.drawASImage = function(dom, obj, opt) {
       let painter = new TASImagePainter(dom, obj, opt);
       painter.decodeOptions(opt);
       return jsrp.ensureTCanvas(painter, false)
@@ -4473,7 +4473,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       });
    }
 
-   let drawRatioPlot = (dom, ratio, opt) => {
+   jsrp.drawRatioPlot = function(dom, ratio, opt) {
       let painter = new TRatioPlotPainter(dom, ratio, opt);
 
       return jsrp.ensureTCanvas(painter, false).then(() => painter.redraw());
@@ -4498,11 +4498,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    jsrp.drawFunction = drawFunction;
    jsrp.drawGraphTime = drawGraphTime;
    jsrp.drawGraphPolar = drawGraphPolar;
-   jsrp.drawSpline = drawSpline;
-   jsrp.drawEfficiency = drawEfficiency;
-   jsrp.drawGraphPolargram = drawGraphPolargram;
-   jsrp.drawASImage = drawASImage;
-   jsrp.drawRatioPlot = drawRatioPlot;
 
    JSROOT.TF1Painter = TF1Painter;
    JSROOT.TGraphPainter = TGraphPainter;
