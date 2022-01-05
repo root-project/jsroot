@@ -1023,7 +1023,15 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       'notgeq': "ngeq",
       'notgr': "ngtr",
       'notless': "nless",
-      'notleq': "nleq"
+      'notleq': "nleq",
+      'notsucc': "nsucc",
+      'notprec': "nprec",
+      'notsubseteq': "nsubseteq",
+      'notsupseteq': "nsupseteq",
+      'openclubsuit': "clubsuit",
+      'openspadesuit': "spadesuit",
+      'dasharrow': "dashrightarrow",
+      'downuparrows': "updownarrow"
     };
 
    /** @summary Function translates ROOT TLatex into MathJax format
