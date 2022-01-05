@@ -1195,11 +1195,9 @@ JSROOT.define(['d3'], (d3) => {
             this.aver_width = this.weight ? 0.58 : 0.55;
          }
 
-         if (this.name == 'Symbol') {
+         if ((this.name == 'Symbol') || (this.name == 'Wingdings')) {
             this.isSymbol = this.name;
             this.name = "Times New Roman";
-         } else if (this.name == 'Wingdings') {
-            this.isSymbol = this.name;
          } else {
             this.isSymbol = "";
          }
