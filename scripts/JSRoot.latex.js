@@ -886,10 +886,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                enableMenu: false
             },
             loader: {
-               load: ['[tex]/color']
+               load: ['[tex]/color', '[tex]/upgreek', '[tex]/mathtools', '[tex]/physics']
             },
             tex: {
-               packages: {'[+]': ['color']}
+               packages: {'[+]': ['color', 'upgreek', 'mathtools', 'physics']}
             },
             svg: svg_config,
             startup: {
@@ -909,10 +909,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          // return Promise with mathjax loading
          mj.init({
             loader: {
-               load: ['input/tex', 'output/svg', '[tex]/color']
+               load: ['input/tex', 'output/svg', '[tex]/color', '[tex]/upgreek', '[tex]/mathtools', '[tex]/physics']
              },
              tex: {
-                packages: {'[+]': ['color']}
+                packages: {'[+]': ['color', 'upgreek', 'mathtools', 'physics']}
              },
              svg: svg_config,
              config: {
@@ -1008,8 +1008,25 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
     };
 
     const mathjax_unsupported = {
-      '\\\\^': "\\hat",
-      '\\\\bulletdashcirc': "\\bullet"
+//      '\\\\bulletdashcirc': "\\bullet",
+      '\\\\upDelta': "\\Updelta",
+//      '\\\\upDigamma': "\\Updigamma",
+      '\\\\upGamma': "\\Upgamma",
+//      '\\\\upKoppa': "\\Upkoppa",
+      '\\\\upLambda': "\\Uplambda",
+      '\\\\upOmega': "\\Upomega",
+      '\\\\upPhi': "\\Upphi",
+      '\\\\upPi': "\\Uppi",
+      '\\\\upPsi': "\\Uppsi",
+//      '\\\\upSampi': "\\Upsampi",
+//      '\\\\upSan': "\\Upsan",
+//      '\\\\upSho': "\\Upsho",
+      '\\\\upSigma': "\\Upsigma",
+//      '\\\\upStigma': "\\Upstigma",
+      '\\\\upTheta': "\\Uptheta",
+      '\\\\upUpsilon': "\\Upupsilon",
+      // '\\\\upVarKoppa': "\\Upvarkoppa",
+      '\\\\upXi': "\\Upxi"
     };
 
    /** @summary Function translates ROOT TLatex into MathJax format
@@ -1057,6 +1074,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          str = clean;
       } else {
+         str = str.replace(/\\\^/g, "\\hat");
          for (let x in mathjax_unsupported)
             str = str.replace(new RegExp(x, 'g'), mathjax_unsupported[x]);
       }
