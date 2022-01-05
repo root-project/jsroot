@@ -280,8 +280,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          res += symbolsMap[symb] || symb;
       }
 
-      console.log('Translate symbols',s, 'result', res);
-
       return res;
    }
 
