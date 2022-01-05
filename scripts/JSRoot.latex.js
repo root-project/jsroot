@@ -849,7 +849,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return parseLatex(node, arg, arg.text, pos);
    }
 
-
    /** @summary Load MathJax functionality,
      * @desc one need not only to load script but wait for initialization
      * @private */
@@ -1008,6 +1007,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          ' ': "\\;"
     };
 
+    const mathjax_unsupported = {
+      '\\\\^': "\\hat",
+      '\\\\bulletdashcirc': "\\bullet"
+    };
+
    /** @summary Function translates ROOT TLatex into MathJax format
      * @private */
    const translateMath = (str, kind, color, painter) => {
@@ -1053,7 +1057,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          str = clean;
       } else {
-         str = str.replace(/\\\^/g, "\\hat");
+         for (let x in mathjax_unsupported)
+            str = str.replace(new RegExp(x, 'g'), mathjax_unsupported[x]);
       }
 
       if (typeof color != 'string') return str;
