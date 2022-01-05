@@ -270,7 +270,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       for (let k = 0; k < s.length; ++k) {
          let code = s.charCodeAt(k),
              new_code = (code > 32) ? m[code-33] : 0;
-         res += String.fromCharCode(new_code || code);
+         res += String.fromCodePoint(new_code || code);
       }
       return res;
    }
