@@ -1007,26 +1007,23 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          ' ': "\\;"
     };
 
-    const mathjax_unsupported = {
-//      '\\\\bulletdashcirc': "\\bullet",
-      '\\\\upDelta': "\\Updelta",
-//      '\\\\upDigamma': "\\Updigamma",
-      '\\\\upGamma': "\\Upgamma",
-//      '\\\\upKoppa': "\\Upkoppa",
-      '\\\\upLambda': "\\Uplambda",
-      '\\\\upOmega': "\\Upomega",
-      '\\\\upPhi': "\\Upphi",
-      '\\\\upPi': "\\Uppi",
-      '\\\\upPsi': "\\Uppsi",
-//      '\\\\upSampi': "\\Upsampi",
-//      '\\\\upSan': "\\Upsan",
-//      '\\\\upSho': "\\Upsho",
-      '\\\\upSigma': "\\Upsigma",
-//      '\\\\upStigma': "\\Upstigma",
-      '\\\\upTheta': "\\Uptheta",
-      '\\\\upUpsilon': "\\Upupsilon",
-      // '\\\\upVarKoppa': "\\Upvarkoppa",
-      '\\\\upXi': "\\Upxi"
+    const mathjax_remap = {
+      'upDelta': "Updelta",
+      'upGamma': "Upgamma",
+      'upLambda': "Uplambda",
+      'upOmega': "Upomega",
+      'upPhi': "Upphi",
+      'upPi': "Uppi",
+      'upPsi': "Uppsi",
+      'upSigma': "Upsigma",
+      'upTheta': "Uptheta",
+      'upUpsilon': "Upupsilon",
+      'upXi': "Upxi",
+      'notcong': "ncong",
+      'notgeq': "ngeq",
+      'notgr': "ngtr",
+      'notless': "nless",
+      'notleq': "nleq"
     };
 
    /** @summary Function translates ROOT TLatex into MathJax format
@@ -1075,8 +1072,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          str = clean;
       } else {
          str = str.replace(/\\\^/g, "\\hat");
-         for (let x in mathjax_unsupported)
-            str = str.replace(new RegExp(x, 'g'), mathjax_unsupported[x]);
+         for (let x in mathjax_remap)
+            str = str.replace(new RegExp('\\\\' + x, 'g'), '\\' + mathjax_remap[x]);
       }
 
       if (typeof color != 'string') return str;
