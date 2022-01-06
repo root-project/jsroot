@@ -1006,11 +1006,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       this.createG();
 
-      return this.drawAxis(this.getG(), Math.abs(w), Math.abs(h), "translate(" + x1 + "," + y2 +")");
+      return this.drawAxis(this.getG(), Math.abs(w), Math.abs(h), `translate(${x1},${y2})`);
    }
 
-   let drawGaxis = (divid, obj, opt) => {
-      let painter = new TAxisPainter(divid, obj, false);
+   /** @summary draw TGaxis object
+     * @memberof JSROOT.Painter
+     * @private */
+   function drawGaxis(dom, obj, opt) {
+      let painter = new TAxisPainter(dom, obj, false);
       painter.disable_zooming = true;
 
       return jsrp.ensureTCanvas(painter, false)
@@ -2383,7 +2386,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    }
 
    /** @summary Add interactive functionality to the frame
-    * @private */
+     * @private */
    TFramePainter.prototype.addInteractivity = function(for_second_axes) {
       if (JSROOT.batch_mode || (!JSROOT.settings.Zooming && !JSROOT.settings.ContextMenu))
          return Promise.resolve(false);
@@ -2394,8 +2397,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       });
    }
 
-   let drawFrame = (divid, obj, opt) => {
-      let fp = new TFramePainter(divid, obj);
+   /** @summary draw TFrame object
+     * @memberof JSROOT.Painter
+     * @private */
+   function drawFrame(dom, obj, opt) {
+      let fp = new TFramePainter(dom, obj);
       return jsrp.ensureTCanvas(fp, false).then(() => {
          if (opt == "3d") fp.mode3d = true;
          fp.redraw();
@@ -2417,8 +2423,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
      * @private
      */
 
-   function TPadPainter(divid, pad, iscan) {
-      JSROOT.ObjectPainter.call(this, divid, pad);
+   function TPadPainter(dom, pad, iscan) {
+      JSROOT.ObjectPainter.call(this, dom, pad);
       this.pad = pad;
       this.iscan = iscan; // indicate if working with canvas
       this.this_pad_name = "";
@@ -4206,8 +4212,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.storeDrawOpt(opt);
    }
 
-   let drawPad = (divid, pad, opt) => {
-      let painter = new TPadPainter(divid, pad, false);
+   /** @summary draw TPad object
+     * @memberof JSROOT.Painter
+     * @private */
+   function drawPad(dom, pad, opt) {
+      let painter = new TPadPainter(dom, pad, false);
       painter.decodeOptions(opt);
 
       if (painter.getCanvSvg().empty()) {
@@ -4262,8 +4271,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
      * @private
      */
 
-   function TCanvasPainter(divid, canvas) {
-      TPadPainter.call(this, divid, canvas, true);
+   function TCanvasPainter(dom, canvas) {
+      TPadPainter.call(this, dom, canvas, true);
       this._websocket = null;
       this.tooltip_allowed = JSROOT.settings.Tooltip;
    }
@@ -4880,11 +4889,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             return JSROOT.draw(this.getDom(), lst.arr[0], lst.opt[0]); // return promise
    }
 
-   let drawCanvas = (divid, can, opt) => {
+   /** @summary draw TCanvas
+     * @memberof JSROOT.Painter
+     * @private */
+   function drawCanvas(dom, can, opt) {
       let nocanvas = !can;
       if (nocanvas) can = JSROOT.create("TCanvas");
 
-      let painter = new TCanvasPainter(divid, can);
+      let painter = new TCanvasPainter(dom, can);
       painter.checkSpecialsInPrimitives(can);
 
       if (!nocanvas && can.fCw && can.fCh && !JSROOT.batch_mode) {
@@ -4904,7 +4916,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       painter.addPadButtons();
 
-      let promise = (nocanvas && opt.indexOf("noframe") < 0) ? drawFrame(divid, null) : Promise.resolve(true);
+      let promise = (nocanvas && opt.indexOf("noframe") < 0) ? drawFrame(dom, null) : Promise.resolve(true);
       return promise.then(() => {
          // select global reference - required for keys handling
          jsrp.selectActivePad({ pp: painter, active: true });
@@ -4919,7 +4931,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
   /** @summary Ensure TCanvas and TFrame for the painter object
     * @param {Object} painter  - painter object to process
     * @param {string|boolean} frame_kind  - false for no frame or "3d" for special 3D mode
-    * @desc Assign divid, creates TCanvas if necessary, add to list of pad painters
+    * @desc Assign dom, creates TCanvas if necessary, add to list of pad painters
     * @memberof JSROOT.Painter */
    let ensureTCanvas = function(painter, frame_kind) {
       if (!painter) return Promise.reject('Painter not provided in ensureTCanvas');
@@ -4940,12 +4952,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       });
    }
 
-   let drawPadSnapshot = (divid, snap /*, opt*/) => {
-      // just for debugging without running web canvas
-
-      let can = JSROOT.create("TCanvas");
-
-      let painter = new TCanvasPainter(divid, can);
+   /** @summary draw TPad snapshot from TWebCanvas
+     * @memberof JSROOT.Painter
+     * @private */
+   function drawPadSnapshot(dom, snap /*, opt*/) {
+      let can = JSROOT.create("TCanvas"),
+          painter = new TCanvasPainter(dom, can);
       painter.normal_canvas = false;
       painter.addPadButtons();
 

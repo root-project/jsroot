@@ -1384,13 +1384,13 @@
    }
 
    // Draw object, defined in JSRoot.painter.js
-   JSROOT.draw = (divid, obj, opt) => {
-      return jsroot_require("painter").then(() => JSROOT.draw(divid, obj, opt));
+   JSROOT.draw = (dom, obj, opt) => {
+      return jsroot_require("painter").then(() => JSROOT.draw(dom, obj, opt));
    }
 
    // Redaraw object, defined in JSRoot.painter.js
-   JSROOT.redraw = (divid, obj, opt) => {
-      return jsroot_require("painter").then(() => JSROOT.redraw(divid, obj, opt));
+   JSROOT.redraw = (dom, obj, opt) => {
+      return jsroot_require("painter").then(() => JSROOT.redraw(dom, obj, opt));
    }
 
    // Dummy, when painter is not yet loaded, should happens nothing
