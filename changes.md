@@ -17,7 +17,8 @@
 14. Use BigInt in I/O when 64bit integer can not be stored as plain Number
 15. In TF1/TF2 always try to use formula, only when fail - apply saved buffer when exist
 16. Add proper support of "Symbols" and "Wingdings" fonts
-17. Add several functions to math like "crystalball_pdf"
+17. Add many standard functions to math like "crystalball_pdf", "gaussian_pdf", "tdistribution_pdf"
+18. Correctly display extra data from TGraphQQ
 
 
 ## Changes in 6.3.2
