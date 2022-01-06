@@ -1481,6 +1481,18 @@ JSROOT.define([], () =>  {
       return 0.5 + Math.atan( (x-x0) / b) / M_PI;
    }
 
+   /** @summary exponential_cdf_c function
+     * @private */
+   mth.exponential_cdf_c = function(x, lambda, x0 = 0) {
+      return ((x-x0) < 0) ? 1.0 : Math.exp(-lambda * (x-x0));
+   }
+
+   /** @summary exponential_cdf function
+     * @private */
+   mth.exponential_cdf = function(x, lambda, x0 = 0) {
+      return ((x-x0) < 0) ? 0.0 : -Math.expm1(-lambda * (x-x0));
+   }
+
    /** @summary chisquared_pdf
      * @private */
    mth.chisquared_pdf = function(x,r,x0) {
