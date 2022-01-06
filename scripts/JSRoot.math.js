@@ -296,6 +296,22 @@ JSROOT.define([], () =>  {
       else         return 0.5*(1.0 + erf(z));
    }
 
+   /** @summary log normal pdf
+     * @private */
+   function lognormal_pdf(x, m, s, x0 = 0) {
+      if ((x-x0) <= 0)
+         return 0.0;
+      let tmp = (Math.log((x-x0)) - m)/s;
+      return 1.0 / ((x-x0) * Math.abs(s) * Math.sqrt(2 * M_PI)) * Math.exp(-(tmp * tmp) /2);
+   }
+
+   /** @summary normal pdf
+     * @private */
+   function normal_pdf(x, sigma = 1, x0 = 0) {
+      let  tmp = (x-x0)/sigma;
+      return (1.0/(Math.sqrt(2 * M_PI) * Math.abs(sigma))) * Math.exp(-tmp*tmp/2);
+   }
+
    /** @summary gamma calculation
      * @private */
    function gamma(x) {
@@ -1819,6 +1835,8 @@ JSROOT.define([], () =>  {
    mth.Landau = Landau;
    mth.normal_cdf_c = mth.gaussian_cdf_c = normal_cdf_c;
    mth.gaussian_cdf = mth.normal_cdf = normal_cdf;
+   mth.lognormal_pdf = lognormal_pdf;
+   mth.normal_pdf = normal_pdf;
    mth.crystalball_function = crystalball_function;
    mth.crystalball_pdf = crystalball_pdf;
    mth.crystalball_cdf = crystalball_cdf;
