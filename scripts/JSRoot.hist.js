@@ -7280,6 +7280,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                hist.setBinContent(hist.getBin(i+1,j+1), func.fSave[k++]);
       }
 
+      if (!hist) return;
+
       hist.fName = "Func";
       hist.fTitle = func.fTitle;
       hist.fMinimum = func.fMinimum;
@@ -7316,6 +7318,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       let d = new JSROOT.DrawOptions(opt),
           hist = createTF2Histogram(func);
+
+      if (!hist) return;
 
       if (d.empty())
          opt = "cont3";
