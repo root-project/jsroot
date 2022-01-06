@@ -13,17 +13,14 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          if (t < 1 / 2) return q;
          if (t < 2 / 3) return p + (q - p) * (2/3 - t) * 6;
          return p;
-      };
-      const HLStoRGB = (h, l, s) => {
+      }, HLStoRGB = (h, l, s) => {
          const q = (l < 0.5) ? l * (1 + s) : l + s - l * s,
                p = 2 * l - q,
                r = hue2rgb(p, q, h + 1/3),
                g = hue2rgb(p, q, h),
                b = hue2rgb(p, q, h - 1/3);
          return '#' + jsrp.toHex(r) + jsrp.toHex(g) + jsrp.toHex(b);
-      };
-      const minHue = 0, maxHue = 280, maxPretty = 50;
-      let palette = [];
+      }, minHue = 0, maxHue = 280, maxPretty = 50, palette = [];
       for (let i = 0; i < maxPretty; ++i) {
          const hue = (maxHue - (i + 1) * ((maxHue - minHue) / maxPretty)) / 360;
          palette.push(HLStoRGB(hue, 0.5, 1));
@@ -179,8 +176,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          default: return createDefaultPalette();
       }
 
-      const NColors = 255, Red = rgb[0], Green = rgb[1], Blue = rgb[2];
-      let palette = [];
+      const NColors = 255, Red = rgb[0], Green = rgb[1], Blue = rgb[2], palette = [];
 
       for (let g = 1; g < stops.length; g++) {
           // create the colors...
@@ -553,8 +549,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
                   let lx = entry.fX, ly = entry.fY;
 
-                  if ((lx>0) && (lx<1)) lx = Math.round(lx*width); else lx = pt.fMargin * width;
-                  if ((ly>0) && (ly<1)) ly = Math.round((1-ly)*height); else ly = ytext;
+                  lx = ((lx > 0) && (lx < 1)) ? Math.round(lx*width) : pt.fMargin * width;
+                  ly = ((ly > 0) && (ly < 1)) ? Math.round((1-ly)*height) : ytext;
 
                   let jcolor = entry.fTextColor ? this.getColor(entry.fTextColor) : "";
                   if (!jcolor) {
@@ -5054,7 +5050,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          let len = histo.fBins.arr.length, i, bin, n, gr, ngr, numgraphs, numpoints;
 
-         for (i=0;i<len;++i) {
+         for (i = 0; i < len; ++i) {
             bin = histo.fBins.arr[i];
 
             xside = 1; yside = 1;
