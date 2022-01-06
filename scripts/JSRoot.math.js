@@ -1475,10 +1475,30 @@ JSROOT.define([], () =>  {
       return 0.5 - Math.atan( (x-x0) / b) / M_PI;
    }
 
+   /** @summary cauchy_pdf function
+     * @private */
+   mth.cauchy_pdf = function(x, b = 1, x0 = 0) {
+      return b/(M_PI * ((x-x0)*(x-x0) + b*b));
+   }
+
    /** @summary cauchy_cdf function
      * @private */
    mth.cauchy_cdf = function(x, b, x0 = 0) {
       return 0.5 + Math.atan( (x-x0) / b) / M_PI;
+   }
+
+   /** @summary gaussian_pdf function
+     * @private */
+   mth.gaussian_pdf = function(x, sigma = 1, x0 = 0) {
+      let tmp = (x-x0)/sigma;
+      return (1.0/(Math.sqrt(2 * M_PI) * Math.abs(sigma))) * Math.exp(-tmp*tmp/2);
+   }
+
+   /** @summary tdistribution_pdf function
+     * @private */
+   mth.tdistribution_pdf = function(x, r, x0 = 0) {
+      return (Math.exp (lgamma((r + 1.0)/2.0) - lgamma(r/2.0)) / Math.sqrt (M_PI * r))
+             * Math.pow ((1.0 + (x-x0)*(x-x0)/r), -(r + 1.0)/2.0);
    }
 
    /** @summary exponential_cdf_c function
