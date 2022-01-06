@@ -1459,16 +1459,26 @@ JSROOT.define([], () =>  {
 
    /** @summary breitwigner_cdf_c function
      * @private */
-   mth.breitwigner_cdf_c = function(x,gamma, x0 = 0)
-   {
+   mth.breitwigner_cdf_c = function(x,gamma, x0 = 0) {
       return 0.5 - Math.atan(2.0 * (x-x0) / gamma) / M_PI;
    }
 
    /** @summary breitwigner_cdf function
      * @private */
-   mth.breitwigner_cdf = function(x, gamma, x0 = 0)
-   {
+   mth.breitwigner_cdf = function(x, gamma, x0 = 0) {
       return 0.5 + Math.atan(2.0 * (x-x0) / gamma) / M_PI;
+   }
+
+   /** @summary cauchy_cdf_c function
+     * @private */
+   mth.cauchy_cdf_c = function(x, b, x0 = 0) {
+      return 0.5 - Math.atan( (x-x0) / b) / M_PI;
+   }
+
+   /** @summary cauchy_cdf function
+     * @private */
+   mth.cauchy_cdf = function(x, b, x0 = 0) {
+      return 0.5 + Math.atan( (x-x0) / b) / M_PI;
    }
 
    /** @summary chisquared_pdf
