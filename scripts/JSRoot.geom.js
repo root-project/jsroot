@@ -12,64 +12,64 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
    // ============================================================================================
 
    /**
-     * @summary toolbar for geometry painter
+     * @summary Toolbar for geometry painter
      *
      * @class
      * @memberof JSROOT.GEO
      * @private
      */
 
-   function Toolbar(container, bright) {
-      this.bright = bright;
-      this.element = container.append("div").attr('class','geo_toolbar_group');
-   }
+   class Toolbar {
+      constructor(container, bright) {
+         this.bright = bright;
+         this.element = container.append("div").attr('class','geo_toolbar_group');
+      }
 
-   /** @summary add buttons */
-   Toolbar.prototype.addButtons = function(buttons) {
-      this.buttonsNames = [];
+      /** @summary add buttons */
+      addButtons(buttons) {
+         this.buttonsNames = [];
 
-      JSROOT.require(["interactive"]).then(inter => {
-         buttons.forEach(buttonConfig => {
-            let buttonName = buttonConfig.name;
-            if (!buttonName) {
-               throw new Error('must provide button \'name\' in button config');
-            }
-            if (this.buttonsNames.indexOf(buttonName) !== -1) {
-               throw new Error('button name \'' + buttonName + '\' is taken');
-            }
+         JSROOT.require(["interactive"]).then(inter => {
+            buttons.forEach(buttonConfig => {
+               let buttonName = buttonConfig.name;
+               if (!buttonName)
+                  throw new Error(`must provide button ${name} in button config`);
+               if (this.buttonsNames.indexOf(buttonName) !== -1)
+                  throw new Error(`button name ${buttonName} is taken`);
 
-            this.buttonsNames.push(buttonName);
+               this.buttonsNames.push(buttonName);
 
-            let title = buttonConfig.title || buttonConfig.name;
+               let title = buttonConfig.title || buttonConfig.name;
 
-            if (typeof buttonConfig.click !== 'function')
-               throw new Error('must provide button \'click\' function in button config');
+               if (typeof buttonConfig.click !== 'function')
+                  throw new Error('must provide button "click" function in button config');
 
-            let button = this.element.append('a')
-                              .attr('class', this.bright ? 'geo_toolbar_btn_bright' : 'geo_toolbar_btn')
-                              .attr('rel', 'tooltip')
-                              .attr('data-title', title)
-                              .on('click', buttonConfig.click);
+               let button = this.element.append('a')
+                                 .attr('class', this.bright ? 'geo_toolbar_btn_bright' : 'geo_toolbar_btn')
+                                 .attr('rel', 'tooltip')
+                                 .attr('data-title', title)
+                                 .on('click', buttonConfig.click);
 
-            inter.ToolbarIcons.createSVG(button, inter.ToolbarIcons[buttonConfig.icon], 16, title);
+               inter.ToolbarIcons.createSVG(button, inter.ToolbarIcons[buttonConfig.icon], 16, title);
+            });
+
          });
+      }
 
-      });
-   }
+      /** @summary change brightness */
+      changeBrightness(bright) {
+         this.bright = bright;
+         if (this.element)
+            this.element.selectAll(bright ? '.geo_toolbar_btn' : ".geo_toolbar_btn_bright")
+                        .attr("class", !bright ? 'geo_toolbar_btn' : "geo_toolbar_btn_bright");
+      }
 
-   /** @summary change brightness */
-   Toolbar.prototype.changeBrightness = function(bright) {
-      this.bright = bright;
-      if (this.element)
-         this.element.selectAll(bright ? '.geo_toolbar_btn' : ".geo_toolbar_btn_bright")
-                     .attr("class", !bright ? 'geo_toolbar_btn' : "geo_toolbar_btn_bright");
-   }
-
-   /** @summary cleanup toolbar */
-   Toolbar.prototype.cleanup = function() {
-      if (this.element) {
-         this.element.remove();
-         delete this.element;
+      /** @summary cleanup toolbar */
+      cleanup() {
+         if (this.element) {
+            this.element.remove();
+            delete this.element;
+         }
       }
    }
 
@@ -4291,6 +4291,9 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       return painter;
    }
 
+   /** @summary draw TGeo object
+     * @memberof JSROOT.Painter
+     * @private */
    function drawGeoObject(dom, obj, opt) {
       if (!obj) return null;
 
