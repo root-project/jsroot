@@ -786,6 +786,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    // =======================================================================
 
+   const kNotEditable = JSROOT.BIT(18);   // bit set if graph is non editable
+
    /**
     * @summary Painter for TGraph object.
     *
@@ -1547,6 +1549,29 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       }
    }
 
+   /** @summary append TGraphQQ part */
+   TGraphPainter.prototype.appendQQ = function(funcs, graph) {
+      let xqmin = Math.max(funcs.scale_xmin, graph.fXq1),
+          xqmax = Math.min(funcs.scale_xmax, graph.fXq2),
+          yqmin = Math.max(funcs.scale_ymin, graph.fYq1),
+          yqmax = Math.min(funcs.scale_ymax, graph.fYq2),
+          path = "";
+
+      let yxmin = (graph.fYq2 - graph.fYq1)*(funcs.scale_xmin-graph.fXq1)/(graph.fXq2-graph.fXq1) + graph.fYq1;
+      if (yxmin < funcs.scale_ymin){
+         let xymin = (theXq2-theXq1)*(ymin-theYq1)/(theYq2-theYq1) + theXq1;
+         path = "M" + funcs.grx(xymin) + "," + funcs.gry(funcs.scale_ymin) +  "L" + funcs.grx(xqmin) + "," + funcs.gry(yqmin);
+      } else {
+         path = "M" + funcs.grx(funcs.scale_xmin) + "," + funcs.gry(yxmin) + "L" + funcs.grx(xqmin) + "," + funcs.gry(yqmin);
+      }
+
+      let latt = new JSROOT.TAttLineHandler({ style:2, width: 1, color: "black"});
+      this.draw_g.append("path")
+                 .attr("d", path)
+                 .call(latt.func)
+                 .style("fill","none");
+   }
+
    /** @summary draw TGraph */
    TGraphPainter.prototype.drawGraph = function() {
 
@@ -1582,6 +1607,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       let draw_g = is_gme ? this.draw_g.append("svg:g") : this.draw_g;
 
       this.drawBins(funcs, this.options, draw_g, w, h, this.lineatt, this.fillatt, true);
+
+      if (graph._typename == "TGraphQQ")
+         this.appendQQ(funcs, graph);
 
       if (is_gme) {
          for (let k = 0; k < graph.fNYErrors; ++k) {
@@ -1805,8 +1833,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       return res;
    }
-
-   const kNotEditable = JSROOT.BIT(18);   // bit set if graph is non editable
 
    /** @summary Check editable flag for TGraph
      * @desc if arg specified changes or toggles editable flag */
