@@ -131,7 +131,8 @@ examples_more = {
       { name: "landau", file: "cdist.root", item: "cdist;1", title: "TF1 as TFormula with C function inside" },
       { name: "cosmic", file: "cosmic.root", item: "cosmic;1", title: "TF1 inside histogram, use bins coordinates" },
       { name: "normal_pdf", file: "tutorials_math.root", item: "exampleTKDE;1", title: "TF1 with normal_pdf, output of tutorials/math/exampleTKDE.C macro" },
-      { name: "gamma", file: "tutorials_math.root", item: "GammeFun;1", title: "Different kinds of gamma functions, output of tutorials/math/GammaFun.C macro" }
+      { name: "gamma", file: "tutorials_math.root", item: "GammeFun;1", title: "Different kinds of gamma functions, output of tutorials/math/GammaFun.C macro" },
+      { name: "beta", file: "tutorials_math.root", item: "mathBeta;1", title: "BetaDist/BetaDistI functions, output of tutorials/math/mathBeta.C macro" }
    ],
    TF2 : [
      { name: "xygaus", file: "https://root.cern/files/StressIOPluginsTestFiles/stress_5.root", item: "f2form", title: "TF2 with xygaus" }

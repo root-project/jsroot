@@ -1499,15 +1499,26 @@ JSROOT.define([], () =>  {
       return Math.exp(lgamma(x) + lgamma(y) - lgamma(x+y));
    }
 
+   /** @summary Calculates the incomplete Beta-function.
+     * @private */
+   function BetaIncomplete(x, a, b) {
+      return inc_beta(x, a, b);
+   }
+
    /** @summary Computes the probability density function of the Beta distribution
      * @private */
    mth.BetaDist = function(x, p, q) {
-      if ((x<0) || (x>1) || (p<=0) || (q<=0)){
-        // Error("TMath::BetaDist", "parameter value outside allowed range");
+      if ((x < 0) || (x > 1) || (p <= 0) || (q <= 0))
         return 0;
-      }
       let beta = mth.Beta(p, q);
       return Math.pow(x, p-1) * Math.pow(1-x, q-1) / beta;
+   }
+
+   /** @summary Computes the distribution function of the Beta distribution.
+     * @private */
+   mth.BetaDistI = function(x, p, q) {
+      if ((x<0) || (x>1) || (p<=0) || (q<=0)) return 0;
+      return BetaIncomplete(x, p, q);
    }
 
    /** @summary gaus function for TFormula */
@@ -1840,6 +1851,7 @@ JSROOT.define([], () =>  {
    mth.landau_pdf = landau_pdf;
    mth.beta_cdf_c = beta_cdf_c;
    mth.Landau = Landau;
+   mth.BetaIncomplete = BetaIncomplete;
    mth.normal_cdf_c = mth.gaussian_cdf_c = normal_cdf_c;
    mth.gaussian_cdf = mth.normal_cdf = normal_cdf;
    mth.lognormal_pdf = lognormal_pdf;
