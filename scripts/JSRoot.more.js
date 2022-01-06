@@ -1555,20 +1555,36 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           xqmax = Math.min(funcs.scale_xmax, graph.fXq2),
           yqmin = Math.max(funcs.scale_ymin, graph.fYq1),
           yqmax = Math.min(funcs.scale_ymax, graph.fYq2),
-          path = "";
+          path2 = "",
+          makeLine = (x1,y1,x2,y2) => `M${funcs.grx(x1)},${funcs.gry(y1)}L${funcs.grx(x2)},${funcs.gry(y2)}`;
 
       let yxmin = (graph.fYq2 - graph.fYq1)*(funcs.scale_xmin-graph.fXq1)/(graph.fXq2-graph.fXq1) + graph.fYq1;
       if (yxmin < funcs.scale_ymin){
-         let xymin = (theXq2-theXq1)*(ymin-theYq1)/(theYq2-theYq1) + theXq1;
-         path = "M" + funcs.grx(xymin) + "," + funcs.gry(funcs.scale_ymin) +  "L" + funcs.grx(xqmin) + "," + funcs.gry(yqmin);
+         let xymin = (graph.fXq2 - graph.fXq1)*(funcs.scale_ymin-graph.fYq1)/(graph.fYq2-graph.fYq1) + graph.fXq1;
+         path2 = makeLine(xymin, funcs.scale_ymin, xqmin, yqmin);
       } else {
-         path = "M" + funcs.grx(funcs.scale_xmin) + "," + funcs.gry(yxmin) + "L" + funcs.grx(xqmin) + "," + funcs.gry(yqmin);
+         path2 = makeLine(funcs.scale_xmin, yxmin, xqmin, yqmin);
       }
 
-      let latt = new JSROOT.TAttLineHandler({ style:2, width: 1, color: "black"});
+      let yxmax = (graph.fYq2-graph.fYq1)*(funcs.scale_xmax-graph.fXq1)/(graph.fXq2-graph.fXq1) + graph.fYq1;
+      if (yxmax > funcs.scale_ymax){
+         let xymax = (graph.fXq2-graph.fXq1)*(funcs.scale_ymax-graph.fYq1)/(graph.fYq2-graph.fYq1) + graph.fXq1;
+         path2 += makeLine(xqmax, yqmax, xymax, funcs.scale_ymax);
+      } else {
+         path2 += makeLine(xqmax, yqmax, funcs.scale_xmax, yxmax);
+      }
+
+      let latt1 = new JSROOT.TAttLineHandler({ style: 1, width: 1, color: "black" }),
+          latt2 = new JSROOT.TAttLineHandler({ style: 2, width: 1, color: "black"});
+
       this.draw_g.append("path")
-                 .attr("d", path)
-                 .call(latt.func)
+                 .attr("d", makeLine(xqmin,yqmin,xqmax,yqmax))
+                 .call(latt1.func)
+                 .style("fill","none");
+
+      this.draw_g.append("path")
+                 .attr("d", path2)
+                 .call(latt2.func)
                  .style("fill","none");
    }
 
