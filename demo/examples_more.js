@@ -135,7 +135,8 @@ examples_more = {
       { name: "beta", file: "tutorials_math.root", item: "mathBeta;1", title: "BetaDist/BetaDistI functions, output of tutorials/math/mathBeta.C macro" }
    ],
    TF2 : [
-     { name: "xygaus", file: "https://root.cern/files/StressIOPluginsTestFiles/stress_5.root", item: "f2form", title: "TF2 with xygaus" }
+     { name: "xygaus", file: "https://root.cern/files/StressIOPluginsTestFiles/stress_5.root", item: "f2form", title: "TF2 with xygaus" },
+     { name: "cdf", file: "tutorials_math.root", item: "mathcoreCDF;1", title: "Several basic 2D functions, output of tutorials/math/mathcoreCDF.C macro" }
    ],
    TCanvas : [
      { name: "jpsi", file:"JPsi_evolution.root", item: "CutTrees/cut1/C_cut1 < 2.85714;1" },
