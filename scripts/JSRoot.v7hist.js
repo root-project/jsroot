@@ -1908,6 +1908,9 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       this.callDrawFunc(reason);
    }
 
+   /** @summary draw RH1 object
+     * @memberof JSROOT.v7
+     * @private */
    function drawHist1(dom, histo, opt) {
       // create painter and add it to canvas
       let painter = new RH1Painter(dom, histo);
@@ -3751,6 +3754,9 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       this.callDrawFunc(reason);
    }
 
+   /** @summary draw RH2 object
+     * @memberof JSROOT.v7
+     * @private */
    function drawHist2(dom, obj, opt) {
       // create painter and add it to canvas
       let painter = new RH2Painter(dom, obj);
@@ -3802,6 +3808,9 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
    // =================================================================================
 
+   /** @summary draw RHistDisplayItem  object
+     * @memberof JSROOT.v7
+     * @private */
    function drawHistDisplayItem(dom, obj, opt) {
       if (!obj)
          return null;
@@ -4029,6 +4038,9 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       this.drawPave();
    }
 
+   /** @summary draw RHistStats object
+     * @memberof JSROOT.v7
+     * @private */
    function drawHistStats(dom, stats, opt) {
       let painter = new RHistStatsPainter(dom, stats, opt);
 

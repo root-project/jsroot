@@ -5,6 +5,9 @@ JSROOT.define(['painter', 'v7gpad'], (jsrp) => {
 
    "use strict";
 
+   /** @summary draw RText object
+     * @memberof JSROOT.v7
+     * @private */
    function drawText() {
       let text      = this.getObject(),
           pp        = this.getPadPainter(),
@@ -22,8 +25,9 @@ JSROOT.define(['painter', 'v7gpad'], (jsrp) => {
       return this.finishTextDrawing();
    }
 
-   // =================================================================================
-
+   /** @summary draw RLine object
+     * @memberof JSROOT.v7
+     * @private */
    function drawLine() {
 
        let line         = this.getObject(),
@@ -43,8 +47,9 @@ JSROOT.define(['painter', 'v7gpad'], (jsrp) => {
            .call(this.lineatt.func);
    }
 
-   // =================================================================================
-
+   /** @summary draw RBox object
+     * @memberof JSROOT.v7
+     * @private */
    function drawBox() {
 
        let box          = this.getObject(),
@@ -67,8 +72,9 @@ JSROOT.define(['painter', 'v7gpad'], (jsrp) => {
         .call(this.fillatt.func);
    }
 
-   // =================================================================================
-
+   /** @summary draw RMarker object
+     * @memberof JSROOT.v7
+     * @private */
    function drawMarker() {
        let marker       = this.getObject(),
            pp           = this.getPadPainter(),
@@ -88,8 +94,8 @@ JSROOT.define(['painter', 'v7gpad'], (jsrp) => {
                      .call(this.markeratt.func);
    }
 
-   // =================================================================================
-
+   /** @summary draw RLegend content
+     * @private */
    function drawLegendContent() {
       let legend     = this.getObject(),
           textFont   = this.v7EvalFont("text", { size: 12, color: "black", align: 22 }),
@@ -155,6 +161,9 @@ JSROOT.define(['painter', 'v7gpad'], (jsrp) => {
       return this.finishTextDrawing();
    }
 
+   /** @summary draw RLegend object
+     * @memberof JSROOT.v7
+     * @private */
    function drawLegend(dom, legend, opt) {
       let painter = new JSROOT.v7.RPavePainter(dom, legend, opt, "legend");
 
@@ -163,8 +172,8 @@ JSROOT.define(['painter', 'v7gpad'], (jsrp) => {
      return jsrp.ensureRCanvas(painter, false).then(() => painter.drawPave());
    }
 
-   // =================================================================================
-
+   /** @summary draw RPaveText content
+     * @private */
    function drawPaveTextContent() {
       let pavetext  = this.getObject(),
           textFont  = this.v7EvalFont("text", { size: 12, color: "black", align: 22 }),
@@ -190,6 +199,9 @@ JSROOT.define(['painter', 'v7gpad'], (jsrp) => {
       return this.finishTextDrawing(undefined, true);
    }
 
+   /** @summary draw RPaveText object
+     * @memberof JSROOT.v7
+     * @private */
    function drawPaveText(dom, pave, opt) {
       let painter = new JSROOT.v7.RPavePainter(dom, pave, opt, "pavetext");
 

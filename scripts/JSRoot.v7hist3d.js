@@ -2166,7 +2166,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'latex', 'v7hist'], (d3, THREE, jsrp, 
                }
             }
 
-            if (z1>z0) {
+            if (z1 > z0) {
                for (let n=0;n<pnts.length;++n) {
                   let pnt1 = pnts[n],
                       pnt2 = pnts[(n>0) ? n-1 : pnts.length-1];
@@ -2973,8 +2973,10 @@ JSROOT.define(['d3', 'base3d', 'painter', 'latex', 'v7hist'], (d3, THREE, jsrp, 
       });
    }
 
+   /** @summary draw RH3 object
+     * @memberof JSROOT.v7
+     * @private */
    function drawHist3(dom, histo /*, opt*/) {
-      // create painter and add it to canvas
       let painter = new RH3Painter(dom, histo);
 
       return jsrp.ensureRCanvas(painter, "3d").then(() => {
