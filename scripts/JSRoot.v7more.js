@@ -155,8 +155,8 @@ JSROOT.define(['painter', 'v7gpad'], (jsrp) => {
       return this.finishTextDrawing();
    }
 
-   function drawLegend(divid, legend, opt) {
-      let painter = new JSROOT.v7.RPavePainter(divid, legend, opt, "legend");
+   function drawLegend(dom, legend, opt) {
+      let painter = new JSROOT.v7.RPavePainter(dom, legend, opt, "legend");
 
       painter.drawContent = drawLegendContent;
 
@@ -190,14 +190,13 @@ JSROOT.define(['painter', 'v7gpad'], (jsrp) => {
       return this.finishTextDrawing(undefined, true);
    }
 
-   function drawPaveText(divid, pave, opt) {
-      let painter = new JSROOT.v7.RPavePainter(divid, pave, opt, "pavetext");
+   function drawPaveText(dom, pave, opt) {
+      let painter = new JSROOT.v7.RPavePainter(dom, pave, opt, "pavetext");
 
       painter.drawContent = drawPaveTextContent;
 
       return jsrp.ensureRCanvas(painter, false).then(() => painter.drawPave());
    }
-
 
    // ================================================================================
 

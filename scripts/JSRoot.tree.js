@@ -2823,14 +2823,14 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
     * @desc just envelope for real TTree::Draw method which do the main job
     * Can be also used for the branch and leaf object
     * @private */
-   JSROOT.drawTree = function(divid, obj, opt) {
+   JSROOT.drawTree = function(dom, obj, opt) {
 
       if (!JSROOT.ObjectPainter) {
          console.error('JSROOT.drawTree called without loading of JSRoot.painter.js - how it can happen?');
          return null;
       }
 
-      let painter = new JSROOT.ObjectPainter(divid, obj),
+      let painter = new JSROOT.ObjectPainter(dom, obj),
           tree = obj, args = opt;
 
       if (obj._typename == "TBranchFunc") {
@@ -2879,7 +2879,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
          return null;
       }
 
-      JSROOT.cleanup(divid);
+      JSROOT.cleanup(dom);
 
       let create_player = 0, finalResolve;
 
@@ -2888,7 +2888,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
          let drawid;
 
          if (!args.player)
-            drawid = divid;
+            drawid = dom;
          else if (create_player === 2)
             drawid = painter.drawid;
 

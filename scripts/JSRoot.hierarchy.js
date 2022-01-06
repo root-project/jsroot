@@ -11,11 +11,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
      * @desc used to draw all items from TList or TObjArray inserted into the TCanvas list of primitives
      * @memberof JSROOT.Painter
      * @private */
-   function drawList(divid, lst, opt) {
+   function drawList(dom, lst, opt) {
       if (!lst || !lst.arr) return Promise.resolve(null);
 
       let obj = {
-        divid: divid,
+        divid: dom,
         lst: lst,
         opt: opt,
         indx: -1,
@@ -4060,10 +4060,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    /** @summary Display inspector
      * @private */
-   jsrp.drawInspector = function(divid, obj) {
+   jsrp.drawInspector = function(dom, obj) {
 
-      JSROOT.cleanup(divid);
-      let painter = new HierarchyPainter('inspector', divid, 'white');
+      JSROOT.cleanup(dom);
+      let painter = new HierarchyPainter('inspector', dom, 'white');
 
       // in batch mode HTML drawing is not possible, just keep object reference for a minute
       if (JSROOT.batch_mode) {
@@ -4085,15 +4085,15 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (sett.opts)
             menu.addDrawMenu("nosub:Draw", sett.opts, function(arg) {
                if (!hitem || !hitem._obj) return;
-               let obj = hitem._obj, dom = this.selectDom().node();
+               let obj = hitem._obj, ddom = this.selectDom().node();
                if (this.removeInspector) {
-                  dom = dom.parentNode;
+                  ddom = ddom.parentNode;
                   this.removeInspector();
                   if (arg == "inspect")
                      return this.showInspector(obj);
                }
-               JSROOT.cleanup(dom);
-               JSROOT.draw(dom, obj, arg);
+               JSROOT.cleanup(ddom);
+               JSROOT.draw(ddom, obj, arg);
             });
       }
 
