@@ -1521,6 +1521,32 @@ JSROOT.define([], () =>  {
       return Landau(x, f.GetParValue(i+1),f.GetParValue(i+2), true);
    }
 
+   /** @summary Crystal ball function */
+   function crystalball_function(x, alpha, n, sigma, mean = 0) {
+     if (sigma < 0.)     return 0.;
+     let z = (x - mean)/sigma;
+     if (alpha < 0) z = -z;
+     let abs_alpha = Math.abs(alpha);
+     if (z  > - abs_alpha)
+        return Math.exp(- 0.5 * z * z);
+     let nDivAlpha = n/abs_alpha,
+         AA =  Math.exp(-0.5*abs_alpha*abs_alpha),
+         B = nDivAlpha - abs_alpha,
+         arg = nDivAlpha/(B-z);
+     return AA * Math.pow(arg,n);
+   }
+
+   /** @summary pdf definition of the crystal_ball which is defined only for n > 1 otherwise integral is diverging */
+   function crystalball_pdf(x, alpha, n, sigma, mean = 0) {
+      if (sigma < 0.) return 0.;
+      if (n <= 1) return Number.NaN;  // pdf is not normalized for n <=1
+      let abs_alpha = Math.abs(alpha),
+          C = n/abs_alpha * 1./(n-1.) * Math.exp(-alpha*alpha/2.),
+          D = Math.sqrt(M_PI/2.)*(1.+erf(abs_alpha/Math.sqrt(2.))),
+          N = 1./(sigma*(C+D));
+      return N * crystalball_function(x,alpha,n,sigma,mean);
+   }
+
    // =========================================================================
 
    function eff_ClopperPearson(total,passed,level,bUpper) {
@@ -1730,6 +1756,8 @@ JSROOT.define([], () =>  {
    mth.landau_pdf = landau_pdf;
    mth.beta_cdf_c = beta_cdf_c;
    mth.Landau = Landau;
+   mth.crystalball_function = crystalball_function;
+   mth.crystalball_pdf = crystalball_pdf;
 
    return mth;
 });
