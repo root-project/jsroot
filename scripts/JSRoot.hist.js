@@ -7253,7 +7253,11 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             }
          }
 
-      if (hist && !iserr && isany) {
+      let use_saved_points = (iserr || !isany) && (nsave > 6);
+      if (!use_saved_points && !hist)
+         hist = JSROOT.createHistogram("TH2F", npx, npy);
+
+      if (!iserr && isany) {
          hist.fXaxis.fXmin = func.fXmin - (use_middle ? 0 : dx/2);
          hist.fXaxis.fXmax = func.fXmax + (use_middle ? 0 : dx/2);
 
@@ -7261,7 +7265,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          hist.fYaxis.fXmax = func.fYmax + (use_middle ? 0 : dy/2);
       }
 
-      if ((iserr || !isany) && (nsave > 6)) {
+      if (use_saved_points) {
          npx = Math.round(func.fSave[nsave-2]);
          npy = Math.round(func.fSave[nsave-1]);
          dx = (func.fSave[nsave-5] - func.fSave[nsave-6]) / npx;
@@ -7279,8 +7283,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             for (let i = 0; i <= npx; ++i)
                hist.setBinContent(hist.getBin(i+1,j+1), func.fSave[k++]);
       }
-
-      if (!hist) return;
 
       hist.fName = "Func";
       hist.fTitle = func.fTitle;
