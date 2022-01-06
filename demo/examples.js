@@ -137,7 +137,8 @@ examples_main = {
      { name: "canv", opt: "", file: "danilo6.root", item: "canvas;1" },
      { name: "sum", opt: "", file: "tf1new.root", item: "c1;1", title: "newest version of ROOT with new coding rules for the functions parameters" },
      { name: "ff2", file: "ff2.root", item: "c1Dia;1" },
-     { name: "ff3", file: "ff3.root", item: "c1Dia;1" }
+     { name: "ff3", file: "ff3.root", item: "c1Dia;1" },
+     { name: "cb", file: "tutorials_math.root", item: "crystallball", title: "Example of crystallball math function, output of tutorials/math/CrystalBall.C" }
    ],
    TF2 : [
      { name: "tf2", json: "tf2.json.gz", opt: "", title: "Example of TF2 drawing" },
@@ -207,6 +208,7 @@ examples_main = {
      { name: "plc", file: "tutorials_graphs.root", item: "graphpalettecolor", title: "Automatic set of graph colors, output of tutorials/graphs/graphpalettecolor.C" },
      { name: "shade", file: "tutorials_graphs.root", item: "graphShade", title: "output of tutorials/graphs/graphShade.C" },
      { name: "second_axis", url: "?nobrowser&file=$$$graph_twopad.root&item=[c1/pad1/[0],c1/pad2/[0]]&opt=[alp,ly+;yaxis_red]", title: "two overlayed graphs with second Y axis" },
+     { name: "qq", file: "tutorials_math.root", item: "chi2test", title: "Example of TGraphQQ, output of tutorials/math/chi2test.C" },
    ],
    TGraphErrors : [
      { opt:"", file: "graph.root", item: "GraphErrors;1" },
