@@ -4672,22 +4672,22 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return this.callDrawFunc(reason);
    }
 
+   /** @summary draw TH1 object
+     * @memberof JSROOT.Painter
+     * @private */
    function drawHistogram1D(dom, histo, opt) {
-      // create painter and add it to canvas
       let painter = new TH1Painter(dom, histo);
 
       return jsrp.ensureTCanvas(painter).then(() => {
-         // tend to be main painter - if first
          painter.setAsMainPainter();
 
-         // here we deciding how histogram will look like and how will be shown
          painter.decodeOptions(opt);
 
          painter.checkPadRange(!painter.options.Mode3D);
 
          painter.scanContent();
 
-         painter.createStat(); // only when required
+         painter.createStat();
 
          return painter.callDrawFunc();
       }).then(() => painter.drawNextFunction(0)).then(() => {
@@ -7174,15 +7174,16 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return this.callDrawFunc(reason);
    }
 
+   /** @summary draw TH2 object
+     * @memberof JSROOT.Painter
+     * @private */
    function drawHistogram2D(dom, histo, opt) {
-      // create painter and add it to canvas
       let painter = new JSROOT.TH2Painter(dom, histo);
 
       return jsrp.ensureTCanvas(painter).then(() => {
 
          painter.setAsMainPainter();
 
-         // here we deciding how histogram will look like and how will be shown
          painter.decodeOptions(opt);
 
          if (painter.isTH2Poly()) {
@@ -7306,9 +7307,11 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return hist;
    }
 
-   // TF2 always drawn via temporary TH2 object,
-   // therefore there is no special painter class
-
+   /** @summary draw TF2 object
+     * @desc TF2 always drawn via temporary TH2 object,
+     * therefore there is no special painter class
+     * @memberof JSROOT.Painter
+     * @private */
    function drawTF2(dom, func, opt) {
 
       let d = new JSROOT.DrawOptions(opt),
@@ -7689,8 +7692,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    /** @summary draw THStack object
      * @desc paint the list of histograms
      * By default, histograms are shown stacked.
-     *   the first histogram is paint
+     *  the first histogram is paint
      *  then the sum of the first and second, etc
+     * @memberof JSROOT.Painter
      * @private */
    function drawHStack(dom, stack, opt) {
       if (!stack.fHists || !stack.fHists.arr)
