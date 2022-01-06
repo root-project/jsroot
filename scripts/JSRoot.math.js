@@ -1457,6 +1457,20 @@ JSROOT.define([], () =>  {
       return theta * igami( alpha, 1.- z);
    }
 
+   /** @summary breitwigner_cdf_c function
+     * @private */
+   mth.breitwigner_cdf_c = function(x,gamma, x0 = 0)
+   {
+      return 0.5 - Math.atan(2.0 * (x-x0) / gamma) / M_PI;
+   }
+
+   /** @summary breitwigner_cdf function
+     * @private */
+   mth.breitwigner_cdf = function(x, gamma, x0 = 0)
+   {
+      return 0.5 + Math.atan(2.0 * (x-x0) / gamma) / M_PI;
+   }
+
    /** @summary chisquared_pdf
      * @private */
    mth.chisquared_pdf = function(x,r,x0) {
