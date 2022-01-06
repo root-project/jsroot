@@ -2394,10 +2394,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
 
       if (itemname == "$legend")
-         return JSROOT.require("hist").then(() => {
-            let legend_painter = jsrp.produceLegend(divid, opt);
-            return drop_complete(legend_painter);
-         });
+         return JSROOT.require("hist")
+                      .then(() => jsrp.produceLegend(divid, opt))
+                      .then(legend_painter => drop_complete(legend_painter));
 
       return this.getObject(itemname).then(res => {
 

@@ -1323,6 +1323,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       JSROOT.ObjectPainter.prototype.cleanup.call(this);
    }
 
+   /** @summary Draw TPave
+     * @memberof JSROOT.Painter
+     * @private */
    function drawPave(dom, pave, opt) {
       let painter = new JSROOT.TPavePainter(dom, pave);
 
@@ -1393,16 +1396,14 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    /** @summary Produce and draw TLegend object for the specified dom
      * @desc Should be called when all other objects are painted
      * Invoked when item "$legend" specified in JSROOT URL string
-     * @returns {Object} Legend painter
+     * @returns {Object} Promise with TLegend painter
      * @memberof JSROOT.Painter
      * @private */
    function produceLegend(dom, opt) {
-      let main_painter = jsrp.getElementMainPainter(dom);
-      if (!main_painter) return;
-
-      let pp = main_painter.getPadPainter(),
-          pad = pp.getRootPad(true);
-      if (!pp || !pad) return;
+      let main_painter = jsrp.getElementMainPainter(dom),
+          pp = main_painter ? main_painter.getPadPainter() : null,
+          pad = pp ? pp.getRootPad(true) : null;
+      if (!pad) return Promise.resolve(null);
 
       let leg = JSROOT.create("TLegend");
 
@@ -1429,7 +1430,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       // no entries - no need to draw legend
       let szx = 0.4, szy = leg.fPrimitives.arr.length;
       if (!szy) return;
-      if (szy>8) szy = 8;
+      if (szy > 8) szy = 8;
       szy *= 0.1;
 
       leg.fX1NDC = szx*pad.fLeftMargin + (1-szx)*(1-pad.fRightMargin);
