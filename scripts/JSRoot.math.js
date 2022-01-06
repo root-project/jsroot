@@ -16,7 +16,8 @@ JSROOT.define([], () =>  {
          kMAXSTIR = 108.116855767857671821730036754,
          kBig     = 4.503599627370496e15,
          kBiginv  =  2.22044604925031308085e-16,
-         kSqrt2   = 1.41421356237309515;
+         kSqrt2   = 1.41421356237309515,
+         M_PI    =  3.14159265358979323846264338328;
 
    /** @summary Polynomialeval function
      * @desc calculates a value of a polynomial of the form:
@@ -275,24 +276,21 @@ JSROOT.define([], () =>  {
    }
 
    /** @summary lognormal_cdf_c function */
-   mth.lognormal_cdf = function(x, m, s, x0) {
-      if (x0 === undefined) x0 = 0;
+   mth.lognormal_cdf = function(x, m, s, x0 = 0) {
       let z = (Math.log((x-x0))-m)/(s*kSqrt2);
       if (z < -1.) return 0.5*erfc(-z);
       else         return 0.5*(1.0 + erf(z));
    }
 
    /** @summary normal_cdf_c function */
-   mth.normal_cdf_c = function(x, sigma, x0) {
-      if (x0 === undefined) x0 = 0;
+   function normal_cdf_c(x, sigma, x0 = 0) {
       let z = (x-x0)/(sigma*kSqrt2);
       if (z > 1.)  return 0.5*erfc(z);
       else         return 0.5*(1.-erf(z));
    }
 
    /** @summary normal_cdf function */
-   mth.normal_cdf = function(x, sigma, x0) {
-      if (x0 === undefined) x0 = 0;
+   function normal_cdf(x, sigma, x0 = 0) {
       let z = (x-x0)/(sigma*kSqrt2);
       if (z < -1.) return erfc(-z);
       else         return 0.5*(1.0 + erf(z));
@@ -1547,6 +1545,69 @@ JSROOT.define([], () =>  {
       return N * crystalball_function(x,alpha,n,sigma,mean);
    }
 
+   /** @summary compute the integral of the crystal ball function */
+   function crystalball_integral(x, alpha, n, sigma, mean = 0) {
+      if (sigma == 0) return 0;
+      if (alpha==0) return 0.;
+      let useLog = (n == 1.0),
+          z = (x-mean)/sigma;
+      if (alpha < 0 ) z = -z;
+
+      let abs_alpha = Math.abs(alpha),
+          intgaus = 0., intpow  = 0.;
+
+      const sqrtpiover2 = Math.sqrt(M_PI/2.),
+            sqrt2pi = Math.sqrt( 2.*M_PI),
+            oneoversqrt2 = 1./Math.sqrt(2.);
+      if (z <= -abs_alpha) {
+         let A = Math.pow(n/abs_alpha,n) * Math.exp(-0.5 * alpha*alpha),
+             B = n/abs_alpha - abs_alpha;
+
+         if (!useLog) {
+            let C = (n/abs_alpha) * (1./(n-1)) * Math.exp(-alpha*alpha/2.);
+            intpow  = C - A /(n-1.) * Math.pow(B-z,-n+1) ;
+         }
+         else {
+            // for n=1 the primitive of 1/x is log(x)
+            intpow = -A * Math.log( n / abs_alpha ) + A * Math.log( B -z );
+         }
+         intgaus =  sqrtpiover2*(1. + erf(abs_alpha*oneoversqrt2));
+      }
+      else
+      {
+         intgaus = normal_cdf_c(z, 1);
+         intgaus *= sqrt2pi;
+         intpow  =  0;
+      }
+      return sigma * (intgaus + intpow);
+   }
+
+   function crystalball_cdf(x, alpha, n, sigma, mean = 0) {
+      if (n <= 1.)
+         return Number.NaN;
+
+      let abs_alpha = Math.abs(alpha),
+          C = n/abs_alpha * 1./(n-1.) * Math.exp(-alpha*alpha/2.),
+          D = Math.sqrt(M_PI/2.)*(1. + erf(abs_alpha/Math.sqrt(2.))),
+          totIntegral = sigma*(C+D),
+          integral = crystalball_integral(x,alpha,n,sigma,mean);
+
+      return (alpha > 0) ? 1. - integral/totIntegral : integral/totIntegral;
+   }
+
+   function crystalball_cdf_c(x, alpha, n, sigma, mean = 0) {
+      if (n <= 1.)
+         return Number.NaN;
+
+      let abs_alpha = Math.abs(alpha),
+          C = n/abs_alpha * 1./(n-1.) * Math.exp(-alpha*alpha/2.),
+          D = Math.sqrt(M_PI/2.)*(1. + erf(abs_alpha/Math.sqrt(2.))),
+          totIntegral = sigma*(C+D),
+          integral = crystalball_integral(x,alpha,n,sigma,mean);
+
+      return (alpha > 0) ? integral/totIntegral : 1. - (integral/totIntegral);
+   }
+
    // =========================================================================
 
    function eff_ClopperPearson(total,passed,level,bUpper) {
@@ -1756,8 +1817,12 @@ JSROOT.define([], () =>  {
    mth.landau_pdf = landau_pdf;
    mth.beta_cdf_c = beta_cdf_c;
    mth.Landau = Landau;
+   mth.normal_cdf_c = mth.gaussian_cdf_c = normal_cdf_c;
+   mth.gaussian_cdf = mth.normal_cdf = normal_cdf;
    mth.crystalball_function = crystalball_function;
    mth.crystalball_pdf = crystalball_pdf;
+   mth.crystalball_cdf = crystalball_cdf;
+   mth.crystalball_cdf_c = crystalball_cdf_c;
 
    return mth;
 });
