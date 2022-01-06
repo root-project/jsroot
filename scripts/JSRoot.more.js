@@ -4131,21 +4131,14 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          constRatio = obj.fConstRatio;
 
-         // console.log('url', url.length, url.substr(0,100), url.substr(url.length-20, 20));
-
       } else if (obj.fPngBuf) {
-         let pngbuf = "", btoa_func;
+         let pngbuf = "", btoa_func = JSROOT.nodejs ? require("btoa") : window.btoa;
          if (typeof obj.fPngBuf == "string") {
             pngbuf = obj.fPngBuf;
          } else {
-            for (let k=0;k<obj.fPngBuf.length;++k)
+            for (let k = 0; k < obj.fPngBuf.length; ++k)
                pngbuf += String.fromCharCode(obj.fPngBuf[k] < 0 ? 256 + obj.fPngBuf[k] : obj.fPngBuf[k]);
          }
-
-         if (JSROOT.nodejs)
-            btoa_func = require("btoa");
-         else
-            btoa_func = window.btoa;
 
          url = "data:image/png;base64," + btoa_func(pngbuf);
       }
