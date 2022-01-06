@@ -823,6 +823,12 @@ JSROOT.define([], () =>  {
       return lgam(z);
    }
 
+   /** @summary beta
+     * @private */
+   function beta(x,y) {
+      return Math.exp(lgamma(x)+lgamma(y)-lgamma(x+y));
+   }
+
    /** @summary chisquared_cdf_c
      * @private */
    function chisquared_cdf_c(x,r,x0) {
@@ -1811,7 +1817,7 @@ JSROOT.define([], () =>  {
    mth.Polynomialeval = Polynomialeval;
    mth.Polynomial1eval = Polynomial1eval;
    mth.stirf = stirf;
-   mth.gamma = gamma;
+   mth.gamma = mth.tgamma = gamma;
    mth.ndtri = ndtri;
    mth.normal_quantile = normal_quantile;
    mth.igami = igami;
@@ -1828,6 +1834,7 @@ JSROOT.define([], () =>  {
    mth.lgam = lgam;
    mth.chisquared_cdf_c = chisquared_cdf_c;
    mth.lgamma = lgamma;
+   mth.beta = beta;
    mth.inc_gamma = inc_gamma;
    mth.inc_gamma_c = inc_gamma_c;
    mth.landau_pdf = landau_pdf;
