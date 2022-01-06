@@ -5,6 +5,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    "use strict";
 
+   /** @namespace
+     * @summary Collection of v7-related methods and classes
+     * @alias JSROOT.v7 */
    JSROOT.v7 = {}; // placeholder for v7-relevant code
 
    /** @summary Evaluate v7 attributes using fAttr storage and configured RStyle
@@ -339,7 +342,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
     * @summary Axis painter for v7
     *
     * @class
-    * @memberof JSROOT
+    * @memberof JSROOT.v7
     * @extends JSROOT.AxisBasePainter
     * @param {object|string} dom - identifier or dom element
     * @private
@@ -5021,7 +5024,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           title_width  = fw,
           title_height = this.v7EvalLength("height", ph, 0.05),
           textFont     = this.v7EvalFont("text", { size: 0.07, color: "black", align: 22 });
-         
+
       if (reason == 'drag') {
          title_height = drag.height;
          title_margin = fy - drag.y - drag.height;
@@ -5041,8 +5044,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       this.drawText(arg);
 
-      return this.finishTextDrawing().then(() => { 
-         if (!JSROOT.batch_mode) 
+      return this.finishTextDrawing().then(() => {
+         if (!JSROOT.batch_mode)
          return JSROOT.require(['interactive'])
                .then(inter => inter.addDragHandler(this, { x: fx, y: Math.round(fy-title_margin-title_height), width: title_width, height: title_height,
                                                            minwidth: 20, minheight: 20, no_change_x: true, redraw: d => this.redraw('drag', d) }));
