@@ -2969,7 +2969,10 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
       });
    }
 
-   jsrp.drawHistogram3D = function(dom, histo, opt) {
+   /** @summary draw TH3 object
+     * @memberof JSROOT.Painter
+     * @private */
+   function drawHistogram3D(dom, histo, opt) {
       // create painter and add it to canvas
       let painter = new JSROOT.TH3Painter(dom, histo);
       return jsrp.ensureTCanvas(painter, "3d").then(() => {
@@ -3326,7 +3329,10 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
       });
    }
 
-   jsrp.drawGraph2D = function(dom, gr, opt) {
+   /** @summary draw TGraph2D object
+     * @memberof JSROOT.Painter
+     * @private */
+   function drawGraph2D(dom, gr, opt) {
       let painter = new JSROOT.TGraph2DPainter(dom, gr);
       painter.decodeOptions(opt);
 
@@ -3347,7 +3353,10 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
 
    // ===================================================================
 
-   jsrp.drawPolyMarker3D = function() {
+   /** @summary draw TPolyMarker3D object
+     * @memberof JSROOT.Painter
+     * @private */
+   function drawPolyMarker3D() {
 
       let fp = this.getFramePainter();
 
@@ -3438,6 +3447,10 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
 
       });
    }
+
+   jsrp.drawHistogram3D = drawHistogram3D;
+   jsrp.drawGraph2D = drawGraph2D;
+   jsrp.drawPolyMarker3D = drawPolyMarker3D;
 
    JSROOT.TH3Painter = TH3Painter;
    JSROOT.TGraph2DPainter = TGraph2DPainter;
