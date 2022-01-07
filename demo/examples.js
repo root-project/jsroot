@@ -138,7 +138,8 @@ examples_main = {
      { name: "sum", opt: "", file: "tf1new.root", item: "c1;1", title: "newest version of ROOT with new coding rules for the functions parameters" },
      { name: "ff2", file: "ff2.root", item: "c1Dia;1" },
      { name: "ff3", file: "ff3.root", item: "c1Dia;1" },
-     { name: "cb", file: "tutorials_math.root", item: "crystallball", title: "Example of crystallball math function, output of tutorials/math/CrystalBall.C" }
+     { name: "cb", file: "tutorials_math.root", item: "crystallball", title: "Example of crystallball math function, output of tutorials/math/CrystalBall.C" },
+     { name: "chebyshev", file: "tutorials_math.root", item: "chebyshev_pol", title: "Example of Chebyshev polynoms, output of tutorials/math/chebyshev_pol.C" }
    ],
    TF2 : [
      { name: "tf2", json: "tf2.json.gz", opt: "", title: "Example of TF2 drawing" },
