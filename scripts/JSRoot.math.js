@@ -1575,6 +1575,18 @@ JSROOT.define([], () =>  {
       return gamma_pdf(x, gamma, beta, mu);
    }
 
+   /** @summary probability density function of Laplace distribution
+     * @private */
+   mth.LaplaceDist = function(x, alpha, beta) {
+      return Math.exp(-Math.abs((x-alpha)/beta)) / (2.*beta);
+   }
+
+   /** @summary distribution function of Laplace distribution
+     * @private */
+   mth.LaplaceDistI = function(x, alpha, beta) {
+      return (x <= alpha) ? 0.5*Math.exp(-Math.abs((x-alpha)/beta)) : 1-0.5*Math.exp(-Math.abs((x-alpha)/beta));
+   }
+
    /** @summary LogNormal function
      * @private */
    mth.LogNormal = function(x, sigma, theta = 0, m = 1) {
