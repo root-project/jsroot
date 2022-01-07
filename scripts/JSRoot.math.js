@@ -1513,6 +1513,22 @@ JSROOT.define([], () =>  {
       return Math.exp((alpha - 1) * Math.log((x - x0) / theta) - (x - x0) / theta - lgamma(alpha)) / theta;
    }
 
+   /** @summary tdistribution_cdf_c function
+     * @private */
+   mth.tdistribution_cdf_c = function(x, r, x0 = 0) {
+      let p    = x - x0,
+          sign = (p > 0) ? 1. : -1;
+      return .5 - .5*inc_beta(p*p/(r + p*p), .5, .5*r)*sign;
+   }
+
+   /** @summary tdistribution_cdf function
+     * @private */
+   mth.tdistribution_cdf = function(x, r, x0 = 0) {
+      let p    = x - x0,
+          sign = (p > 0) ? 1. : -1;
+      return  .5 + .5*inc_beta(p*p/(r + p*p), .5, .5*r)*sign;
+   }
+
    /** @summary tdistribution_pdf function
      * @private */
    mth.tdistribution_pdf = function(x, r, x0 = 0) {
