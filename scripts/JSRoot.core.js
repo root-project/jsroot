@@ -1904,8 +1904,8 @@
                  });
 
               _func = _func.replace(/\b(abs)\b/g, 'TMath::Abs')
-                           .replace(/TMath::Exp\(/g, 'Math.exp(')
-                           .replace(/TMath::Abs\(/g, 'Math.abs(');
+                           .replace(/\b(TMath::Exp)/g, 'Math.exp')
+                           .replace(/\b(TMath::Abs)/g, 'Math.abs');
 
               if (typeof JSROOT.Math == 'object') {
                  this._math = JSROOT.Math;
