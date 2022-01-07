@@ -1832,6 +1832,38 @@ JSROOT.define([], () =>  {
       return c0 + c1*x + c2*(2.0*x*x - 1.0);
    }
 
+   mth.Chebyshev3 = function(x, ...args) {
+      return ChebyshevN(3, x, args);
+   }
+
+   mth.Chebyshev4 = function(x, ...args) {
+      return ChebyshevN(4, x, args);
+   }
+
+   mth.Chebyshev5 = function(x, ...args) {
+      return ChebyshevN(5, x, args);
+   }
+
+   mth.Chebyshev6 = function(x, ...args) {
+      return ChebyshevN(6, x, args);
+   }
+
+   mth.Chebyshev7 = function(x, ...args) {
+      return ChebyshevN(7, x, args);
+   }
+
+   mth.Chebyshev8 = function(x, ...args) {
+      return ChebyshevN(8, x, args);
+   }
+
+   mth.Chebyshev9 = function(x, ...args) {
+      return ChebyshevN(9, x, args);
+   }
+
+   mth.Chebyshev10 = function(x, ...args) {
+      return ChebyshevN(10, x, args);
+   }
+
    // =========================================================================
 
    function eff_ClopperPearson(total,passed,level,bUpper) {
@@ -2055,6 +2087,7 @@ JSROOT.define([], () =>  {
    mth.crystalball_pdf = crystalball_pdf;
    mth.crystalball_cdf = crystalball_cdf;
    mth.crystalball_cdf_c = crystalball_cdf_c;
+   mth.ChebyshevN = ChebyshevN;
 
    return mth;
 });
