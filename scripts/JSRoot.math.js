@@ -1538,6 +1538,18 @@ JSROOT.define([], () =>  {
       return Math.exp ((r/2 - 1) * Math.log((x-x0)/2) - (x-x0)/2 - lgamma(r/2))/2;
    }
 
+   /** @summary Probability density function of the F-distribution.
+     * @private */
+   function fdistribution_pdf(x, n, m, x0 = 0) {
+      if (n < 0 || m < 0)
+         return Number.NaN;
+      if ((x-x0) < 0)
+         return 0.0;
+
+      return Math.exp((n/2) * Math.log(n) + (m/2) * Math.log(m) + lgamma((n+m)/2) - lgamma(n/2) - lgamma(m/2)
+                    + (n/2 -1) * Math.log(x-x0) - ((n+m)/2) * Math.log(m +  n*(x-x0)) );
+   }
+
    /** @summary Prob function */
    mth.Prob = function(chi2, ndf) {
       if (ndf <= 0) return 0; // Set CL to zero in case ndf<=0
@@ -1962,6 +1974,7 @@ JSROOT.define([], () =>  {
    mth.landau_pdf = landau_pdf;
    mth.beta_cdf_c = beta_cdf_c;
    mth.Landau = Landau;
+   mth.FDist = mth.fdistribution_pdf = fdistribution_pdf;
    mth.normal_cdf_c = mth.gaussian_cdf_c = normal_cdf_c;
    mth.gaussian_cdf = mth.normal_cdf = normal_cdf;
    mth.lognormal_pdf = lognormal_pdf;
