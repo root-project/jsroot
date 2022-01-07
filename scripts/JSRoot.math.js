@@ -516,6 +516,12 @@ JSROOT.define([], () =>  {
       return  sigma * ndtri(z);
    }
 
+   /** @summary normal_quantile_c function
+     * @private */
+   function normal_quantile_c(z, sigma) {
+      return - sigma * ndtri(z);
+   }
+
    /** @summary igamc function
      * @private */
    function igamc(a,x) {
@@ -1980,6 +1986,7 @@ JSROOT.define([], () =>  {
    mth.gamma_pdf = gamma_pdf;
    mth.ndtri = ndtri;
    mth.normal_quantile = normal_quantile;
+   mth.normal_quantile_c = normal_quantile_c;
    mth.igami = igami;
    mth.igamc = igamc;
    mth.igam = igam;
