@@ -166,7 +166,7 @@ examples_more = {
      { name: "fit3", url: "?nobrowser&file=$$$tutorials_fit.root&layout=grid3x3&items=[FitHistoInFile,fitLinear,fitLinearRobust,fitNormSum,FittingDemo,langaus,line3Dfit,multifit,myfit]", title: "part3 macros from tutorials/fit directory" },
      { name: "fit4", url: "?nobrowser&file=$$$tutorials_fit.root&layout=grid2x2&items=[graph2dflt,minuit2FitBench,minuit2GausFit1,TestBinomial]", title: "part4 macros from tutorials/fit directory" },
      { name: "fit5", url: "?nobrowser&file=$$$tutorials_fit.root&layout=grid2x2&items=[TwoHistoFit2D,vectorizedFit,minuit2FitBench2D,fitMultiGraph]", title: "part5 macros from tutorials/fit directory" },
-     { name: "fit6", url: "?nobrowser&file=$$$tutorials_fit.root&layout=grid2x2&items=[fit2,fit2dHist]", title: "part6 macros from tutorials/fit directory" }
+     { name: "fit6", url: "?nobrowser&file=$$$tutorials_fit.root&layout=grid1x2&items=[fit2,fit2dHist]", title: "part6 macros from tutorials/fit directory" }
    ],
    TGeo : [
      { name: "atlas_cryo", asurl: true, file: "https://root.cern/files/atlas.root", item: "atlas;1", opt: "macro:https://root.cern/files/atlas_cryo.C" },
