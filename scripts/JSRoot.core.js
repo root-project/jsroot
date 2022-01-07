@@ -1909,20 +1909,13 @@
 
               if (typeof JSROOT.Math == 'object') {
                  this._math = JSROOT.Math;
-                 _func = _func.replace(/TMath::Prob\(/g, 'this._math.Prob(')
-                              .replace(/TMath::Gaus\(/g, 'this._math.Gaus(')
-                              .replace(/TMath::BreitWigner\(/g, 'this._math.BreitWigner(')
-                              .replace(/TMath::LogNormal\(/g, 'this._math.LogNormal(')
-                              .replace(/TMath::GammaDist\(/g, 'this._math.GammaDist(')
-                              .replace(/TMath::BetaDistI\(/g, 'this._math.BetaDistI(')
-                              .replace(/TMath::BetaDist\(/g, 'this._math.BetaDist(')
-                              .replace(/TMath::Beta\(/g, 'this._math.Beta(')
-                              .replace(/xygaus\(/g, 'this._math.gausxy(this, x, y, ')
+                 _func = _func.replace(/xygaus\(/g, 'this._math.gausxy(this, x, y, ')
                               .replace(/gaus\(/g, 'this._math.gaus(this, x, ')
                               .replace(/gausn\(/g, 'this._math.gausn(this, x, ')
                               .replace(/expo\(/g, 'this._math.expo(this, x, ')
                               .replace(/landau\(/g, 'this._math.landau(this, x, ')
                               .replace(/landaun\(/g, 'this._math.landaun(this, x, ')
+                              .replace(/TMath::/g, 'this._math.')
                               .replace(/ROOT::Math::/g, 'this._math.');
               }
 
