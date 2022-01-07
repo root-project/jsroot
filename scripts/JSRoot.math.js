@@ -1550,6 +1550,32 @@ JSROOT.define([], () =>  {
                     + (n/2 -1) * Math.log(x-x0) - ((n+m)/2) * Math.log(m +  n*(x-x0)) );
    }
 
+   /** @summary fdistribution_cdf_c function
+     * @private */
+   function fdistribution_cdf_c(x, n, m, x0 = 0) {
+      if (n < 0 || m < 0) return Number.NaN;
+
+      let z = m / (m + n * (x - x0));
+      // fox z->1 and large a and b IB looses precision use complement function
+      if (z > 0.9 && n > 1 && m > 1) return 1. - mth.fdistribution_cdf(x, n, m, x0);
+
+      // for the complement use the fact that IB(x,a,b) = 1. - IB(1-x,b,a)
+      return inc_beta(m / (m + n * (x - x0)), .5 * m, .5 * n);
+   }
+
+   /** @summary fdistribution_cdf function
+     * @private */
+   function fdistribution_cdf(x, n, m, x0 = 0) {
+      if (n < 0 || m < 0) return Number.NaN;
+
+      let z = n * (x - x0) / (m + n * (x - x0));
+      // fox z->1 and large a and b IB looses precision use complement function
+      if (z > 0.9 && n > 1 && m > 1)
+         return 1. - fdistribution_cdf_c(x, n, m, x0);
+
+      return inc_beta(z, .5 * n, .5 * m);
+   }
+
    /** @summary Prob function */
    mth.Prob = function(chi2, ndf) {
       if (ndf <= 0) return 0; // Set CL to zero in case ndf<=0
@@ -1975,6 +2001,8 @@ JSROOT.define([], () =>  {
    mth.beta_cdf_c = beta_cdf_c;
    mth.Landau = Landau;
    mth.FDist = mth.fdistribution_pdf = fdistribution_pdf;
+   mth.FDistI = mth.fdistribution_cdf = fdistribution_cdf;
+   mth.fdistribution_cdf_c = fdistribution_cdf_c;
    mth.normal_cdf_c = mth.gaussian_cdf_c = normal_cdf_c;
    mth.gaussian_cdf = mth.normal_cdf = normal_cdf;
    mth.lognormal_pdf = lognormal_pdf;

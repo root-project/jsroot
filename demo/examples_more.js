@@ -136,6 +136,7 @@ examples_more = {
       { name: "spec", file: "tutorials_math.root", item: "mathcoreSpecFunc;1", title: "output of tutorials/math/mathcoreSpecFunc.C macro" },
       { name: "gamma_normal", file: "tutorials_math.root", item: "mathGammaNormal;1", title: "TMath::LogNormal and TMath::GammaDist functions, output of tutorials/math/mathGammaNormal.C macro" },
       { name: "laplace", file: "tutorials_math.root", item: "mathLaplace;1", title: "TMath::LaplaceDist and TMath::LaplaceDistI functions, output of tutorials/math/mathLaplace.C macro" },
+      { name: "student", file: "tutorials_math.root", item: "mathStudent;1", title: "TMath::Student, TMath::FDist, TMath::FDistI functions, output of tutorials/math/mathStudent.C macro" }
    ],
    TF2 : [
      { name: "xygaus", file: "https://root.cern/files/StressIOPluginsTestFiles/stress_5.root", item: "f2form", title: "TF2 with xygaus" },
