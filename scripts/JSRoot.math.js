@@ -1811,6 +1811,27 @@ JSROOT.define([], () =>  {
       return (alpha > 0) ? integral/totIntegral : 1. - (integral/totIntegral);
    }
 
+
+   function ChebyshevN(n, x, c) {
+      let d1 = 0.0, d2 = 0.0, y2 = 2.0 * x;
+
+      for (let i = n; i >= 1; i--) {
+         let temp = d1;
+         d1 = y2 * d1 - d2 + c[i];
+         d2 = temp;
+      }
+
+      return x * d1 - d2 + c[0];
+   }
+
+   mth.Chebyshev1 = function(x, c0, c1) {
+      return c0 + c1*x;
+   }
+
+   mth.Chebyshev2 = function(x, c0, c1, c2) {
+      return c0 + c1*x + c2*(2.0*x*x - 1.0);
+   }
+
    // =========================================================================
 
    function eff_ClopperPearson(total,passed,level,bUpper) {
