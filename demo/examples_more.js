@@ -160,7 +160,12 @@ examples_more = {
      { name: "atlas", file: "AtlasExample.root", item: "c1", style: "style", title: "ATLAS style example, https://root-forum.cern.ch/t/27751" },
      { name: "swan", file: "swan.root", item: "c", title: "Mix of TH2 and TH1 on same pad with TGaxis and disabled y zoom" },
      { name: "unfold", file: "tutorials_math.root", item: "TSVDUnfoldExample;1", title: "output of tutorials/math/TSVDUnfoldExample.C macro" },
-     { name: "vavilov", file: "tutorials_math.root", item: "vavilov;1", title: "output of tutorials/math/vavilov.C macro" }
+     { name: "vavilov", file: "tutorials_math.root", item: "vavilov;1", title: "output of tutorials/math/vavilov.C macro" },
+     { name: "fit1", url: "?nobrowser&file=$$$tutorials_fit.root&layout=grid3x3&items=[fit1,fit2,fit2a,fitConvolution,fitcont,fitExclude,fitCircle,qa2,combinedFit]", title: "part1 macros from tutorials/fit directory" },
+     { name: "fit2", url: "?nobrowser&file=$$$tutorials_fit.root&layout=grid2x2&items=[ConfidenceIntervals,fit2dHist,fit2d,fitcont2]", title: "part2 macros from tutorials/fit directory" },
+     { name: "fit3", url: "?nobrowser&file=$$$tutorials_fit.root&layout=grid3x3&items=[FitHistoInFile,fitLinear,fitLinearRobust,fitNormSum,FittingDemo,langaus,line3Dfit,multifit,myfit]", title: "part3 macros from tutorials/fit directory" },
+     { name: "fit4", url: "?nobrowser&file=$$$tutorials_fit.root&layout=grid2x2&items=[graph2dflt,minuit2FitBench,minuit2GausFit1,TestBinomial]", title: "part4 macros from tutorials/fit directory" },
+     { name: "fit5", url: "?nobrowser&file=$$$tutorials_fit.root&layout=grid2x2&items=[TwoHistoFit2D,vectorizedFit,minuit2FitBench2D,fitMultiGraph]", title: "part4 macros from tutorials/fit directory" }
    ],
    TGeo : [
      { name: "atlas_cryo", asurl: true, file: "https://root.cern/files/atlas.root", item: "atlas;1", opt: "macro:https://root.cern/files/atlas_cryo.C" },
