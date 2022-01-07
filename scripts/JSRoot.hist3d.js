@@ -1386,44 +1386,6 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
       main.toplevel.add(line);
    }
 
-   // ===================================================================================
-
-   jsrp.drawAxis3D = function(dom, axis /*, opt*/) {
-
-      let painter = new JSROOT.ObjectPainter(dom, axis);
-
-      if (!('_main' in axis)) {
-         painter.addToPadPrimitives();
-      }
-
-      painter.Draw3DAxis = function() {
-         let main = this.getFramePainter();
-
-         if (!main || !main._toplevel)
-            return Promise.reject(Error('no 3D frame found for 3D axis drawing'));
-
-         let box = new THREE.Box3().setFromObject(main._toplevel);
-
-         this.xmin = box.min.x; this.xmax = box.max.x;
-         this.ymin = box.min.y; this.ymax = box.max.y;
-         this.zmin = box.min.z; this.zmax = box.max.z;
-
-         // use min/max values directly as graphical coordinates
-         this.size_x3d = this.size_y3d = this.size_z3d = 0;
-
-         this.drawXYZ = JSROOT.TFramePainter.prototype.drawXYZ; // just reuse axis drawing from frame painter
-
-         this.drawXYZ(main._toplevel);
-
-         main.adjustCameraPosition();
-
-         main.render3D();
-
-         return Promise.resolve(this);
-      }
-
-      return painter.Draw3DAxis();
-   }
 
    // ==========================================================================================
 
@@ -2990,6 +2952,46 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
       });
    }
 
+      /** @summary draw TAxis3D
+     * @memberof JSROOT.Painter
+     * @private */
+   function drawAxis3D(dom, axis /*, opt*/) {
+
+      let painter = new JSROOT.ObjectPainter(dom, axis);
+
+      if (!('_main' in axis)) {
+         painter.addToPadPrimitives();
+      }
+
+      painter.Draw3DAxis = function() {
+         let main = this.getFramePainter();
+
+         if (!main || !main._toplevel)
+            return Promise.reject(Error('no 3D frame found for 3D axis drawing'));
+
+         let box = new THREE.Box3().setFromObject(main._toplevel);
+
+         this.xmin = box.min.x; this.xmax = box.max.x;
+         this.ymin = box.min.y; this.ymax = box.max.y;
+         this.zmin = box.min.z; this.zmax = box.max.z;
+
+         // use min/max values directly as graphical coordinates
+         this.size_x3d = this.size_y3d = this.size_z3d = 0;
+
+         this.drawXYZ = JSROOT.TFramePainter.prototype.drawXYZ; // just reuse axis drawing from frame painter
+
+         this.drawXYZ(main._toplevel);
+
+         main.adjustCameraPosition();
+
+         main.render3D();
+
+         return Promise.resolve(this);
+      }
+
+      return painter.Draw3DAxis();
+   }
+
    // ===========================================================================================
 
    /**
@@ -3453,6 +3455,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
       });
    }
 
+   jsrp.drawAxis3D = drawAxis3D;
    jsrp.drawHistogram3D = drawHistogram3D;
    jsrp.drawGraph2D = drawGraph2D;
    jsrp.drawPolyMarker3D = drawPolyMarker3D;

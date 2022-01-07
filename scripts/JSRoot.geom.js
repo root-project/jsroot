@@ -2291,8 +2291,8 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       let roty = euler.y / Math.PI * 180,
           rotz = euler.z / Math.PI * 180;
 
-      if (roty<0) roty += 360;
-      if (rotz<0) rotz += 360;
+      if (roty < 0) roty += 360;
+      if (rotz < 0) rotz += 360;
 
       return "roty" + roty.toFixed(prec || 0) + ",rotz" + rotz.toFixed(prec || 0) + ",zoom" + zoom.toFixed(prec || 0);
    }
@@ -4743,27 +4743,27 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
      * @private */
    geo.getShapeIcon = function(shape) {
       switch (shape._typename) {
-         case "TGeoArb8" : return "img_geoarb8";
-         case "TGeoCone" : return "img_geocone";
-         case "TGeoConeSeg" : return "img_geoconeseg";
-         case "TGeoCompositeShape" : return "img_geocomposite";
-         case "TGeoTube" : return "img_geotube";
-         case "TGeoTubeSeg" : return "img_geotubeseg";
-         case "TGeoPara" : return "img_geopara";
-         case "TGeoParaboloid" : return "img_geoparab";
-         case "TGeoPcon" : return "img_geopcon";
-         case "TGeoPgon" : return "img_geopgon";
-         case "TGeoShapeAssembly" : return "img_geoassembly";
-         case "TGeoSphere" : return "img_geosphere";
-         case "TGeoTorus" : return "img_geotorus";
-         case "TGeoTrd1" : return "img_geotrd1";
-         case "TGeoTrd2" : return "img_geotrd2";
-         case "TGeoXtru" : return "img_geoxtru";
-         case "TGeoTrap" : return "img_geotrap";
-         case "TGeoGtra" : return "img_geogtra";
-         case "TGeoEltu" : return "img_geoeltu";
-         case "TGeoHype" : return "img_geohype";
-         case "TGeoCtub" : return "img_geoctub";
+         case "TGeoArb8": return "img_geoarb8";
+         case "TGeoCone": return "img_geocone";
+         case "TGeoConeSeg": return "img_geoconeseg";
+         case "TGeoCompositeShape": return "img_geocomposite";
+         case "TGeoTube": return "img_geotube";
+         case "TGeoTubeSeg": return "img_geotubeseg";
+         case "TGeoPara": return "img_geopara";
+         case "TGeoParaboloid": return "img_geoparab";
+         case "TGeoPcon": return "img_geopcon";
+         case "TGeoPgon": return "img_geopgon";
+         case "TGeoShapeAssembly": return "img_geoassembly";
+         case "TGeoSphere": return "img_geosphere";
+         case "TGeoTorus": return "img_geotorus";
+         case "TGeoTrd1": return "img_geotrd1";
+         case "TGeoTrd2": return "img_geotrd2";
+         case "TGeoXtru": return "img_geoxtru";
+         case "TGeoTrap": return "img_geotrap";
+         case "TGeoGtra": return "img_geogtra";
+         case "TGeoEltu": return "img_geoeltu";
+         case "TGeoHype": return "img_geohype";
+         case "TGeoCtub": return "img_geoctub";
       }
       return "img_geotube";
    }
@@ -4775,7 +4775,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       if (hitem._kind == 'ROOT.TEveTrack') icon = 'img_evetrack'; else
       if (hitem._kind == 'ROOT.TEvePointSet') icon = 'img_evepoints'; else
       if (hitem._kind == 'ROOT.TPolyMarker3D') icon = 'img_evepoints';
-      if (icon.length>0) {
+      if (icon.length > 0) {
          let drawitem = geo.findItemWithPainter(hitem);
          if (drawitem)
             if (drawitem._painter.extraObjectVisible(hpainter, hitem))
