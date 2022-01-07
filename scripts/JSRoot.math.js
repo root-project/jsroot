@@ -1577,14 +1577,26 @@ JSROOT.define([], () =>  {
 
    /** @summary probability density function of Laplace distribution
      * @private */
-   mth.LaplaceDist = function(x, alpha, beta) {
+   mth.LaplaceDist = function(x, alpha = 0, beta = 1) {
       return Math.exp(-Math.abs((x-alpha)/beta)) / (2.*beta);
    }
 
    /** @summary distribution function of Laplace distribution
      * @private */
-   mth.LaplaceDistI = function(x, alpha, beta) {
-      return (x <= alpha) ? 0.5*Math.exp(-Math.abs((x-alpha)/beta)) : 1-0.5*Math.exp(-Math.abs((x-alpha)/beta));
+   mth.LaplaceDistI = function(x, alpha = 0, beta = 1) {
+      return (x <= alpha) ? 0.5*Math.exp(-Math.abs((x-alpha)/beta)) : 1 - 0.5*Math.exp(-Math.abs((x-alpha)/beta));
+   }
+
+   /** @summary density function for Student's t- distribution
+     * @private */
+   mth.Student = function(T, ndf) {
+      if (ndf < 1) return 0;
+
+      let r   = ndf,
+          rh  = 0.5*r,
+          rh1 = rh + 0.5,
+          denom = Math.sqrt(r*Math.PI)*gamma(rh)*Math.pow(1+T*T/r, rh1);
+      return gamma(rh1)/denom;
    }
 
    /** @summary LogNormal function
@@ -1923,7 +1935,7 @@ JSROOT.define([], () =>  {
    mth.Polynomialeval = Polynomialeval;
    mth.Polynomial1eval = Polynomial1eval;
    mth.stirf = stirf;
-   mth.gamma = mth.tgamma = gamma;
+   mth.gamma = mth.tgamma = mth.Gamma = gamma;
    mth.gamma_pdf = gamma_pdf;
    mth.ndtri = ndtri;
    mth.normal_quantile = normal_quantile;
