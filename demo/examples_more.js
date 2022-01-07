@@ -133,7 +133,8 @@ examples_more = {
       { name: "normal_pdf", file: "tutorials_math.root", item: "exampleTKDE;1", title: "TF1 with normal_pdf, output of tutorials/math/exampleTKDE.C macro" },
       { name: "gamma", file: "tutorials_math.root", item: "GammeFun;1", title: "Different kinds of gamma functions, output of tutorials/math/GammaFun.C macro" },
       { name: "beta", file: "tutorials_math.root", item: "mathBeta;1", title: "BetaDist/BetaDistI functions, output of tutorials/math/mathBeta.C macro" },
-      { name: "spec", file: "tutorials_math.root", item: "mathcoreSpecFunc;1", title: "output of tutorials/math/mathcoreSpecFunc.C macro" }
+      { name: "spec", file: "tutorials_math.root", item: "mathcoreSpecFunc;1", title: "output of tutorials/math/mathcoreSpecFunc.C macro" },
+      { name: "normal", file: "tutorials_math.root", item: "mathGammaNormal;1", title: "TMath::LogNormal and TMath::GammaDist functions, output of tutorials/math/mathGammaNormal.C macro" },
    ],
    TF2 : [
      { name: "xygaus", file: "https://root.cern/files/StressIOPluginsTestFiles/stress_5.root", item: "f2form", title: "TF2 with xygaus" },
