@@ -104,7 +104,7 @@
 
    /** @summary JSROOT version date
      * @desc Release date in format day/month/year like "19/11/2021"*/
-   JSROOT.version_date = "6/01/2022";
+   JSROOT.version_date = "7/01/2022";
 
    /** @summary JSROOT version id and date
      * @desc Produced by concatenation of {@link JSROOT.version_id} and {@link JSROOT.version_date}
@@ -1912,6 +1912,8 @@
                  _func = _func.replace(/TMath::Prob\(/g, 'this._math.Prob(')
                               .replace(/TMath::Gaus\(/g, 'this._math.Gaus(')
                               .replace(/TMath::BreitWigner\(/g, 'this._math.BreitWigner(')
+                              .replace(/TMath::LogNormal\(/g, 'this._math.LogNormal(')
+                              .replace(/TMath::GammaDist\(/g, 'this._math.GammaDist(')
                               .replace(/TMath::BetaDistI\(/g, 'this._math.BetaDistI(')
                               .replace(/TMath::BetaDist\(/g, 'this._math.BetaDist(')
                               .replace(/TMath::Beta\(/g, 'this._math.Beta(')

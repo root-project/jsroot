@@ -1494,6 +1494,19 @@ JSROOT.define([], () =>  {
       return (1.0/(Math.sqrt(2 * M_PI) * Math.abs(sigma))) * Math.exp(-tmp*tmp/2);
    }
 
+   /** @summary gamma_pdf function
+     * @private */
+   function gamma_pdf(x, alpha, theta, x0 = 0) {
+      if ((x - x0) < 0) {
+         return 0.0;
+      } else if ((x - x0) == 0) {
+         return (alpha == 1) ? 1.0 / theta : 0;
+      } else if (alpha == 1) {
+         return Math.exp(-(x - x0) / theta) / theta;
+      }
+      return Math.exp((alpha - 1) * Math.log((x - x0) / theta) - (x - x0) / theta - lgamma(alpha)) / theta;
+   }
+
    /** @summary tdistribution_pdf function
      * @private */
    mth.tdistribution_pdf = function(x, r, x0 = 0) {
@@ -1553,6 +1566,20 @@ JSROOT.define([], () =>  {
      * @private */
    mth.Beta = function(x,y) {
       return Math.exp(lgamma(x) + lgamma(y) - lgamma(x+y));
+   }
+
+   /** @summary GammaDist function
+     * @private */
+   mth.GammaDist = function(x, gamma, mu = 0, beta = 1) {
+      if ((x < mu) || (gamma <= 0) || (beta <= 0)) return 0;
+      return gamma_pdf(x, gamma, beta, mu);
+   }
+
+   /** @summary LogNormal function
+     * @private */
+   mth.LogNormal = function(x, sigma, theta = 0, m = 1) {
+      if ((x < theta) || (sigma <= 0) || (m <= 0)) return 0;
+      return lognormal_pdf(x, Math.log(m), sigma, theta);
    }
 
    /** @summary Calculates the incomplete Beta-function.
@@ -1885,6 +1912,7 @@ JSROOT.define([], () =>  {
    mth.Polynomial1eval = Polynomial1eval;
    mth.stirf = stirf;
    mth.gamma = mth.tgamma = gamma;
+   mth.gamma_pdf = gamma_pdf;
    mth.ndtri = ndtri;
    mth.normal_quantile = normal_quantile;
    mth.igami = igami;
