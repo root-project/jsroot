@@ -3010,7 +3010,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
    TGraph2DPainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
 
    /** @summary Decode options string  */
-   TGraph2DPainter.prototype.decodeOptions = function(opt) {
+   TGraph2DPainter.prototype.decodeOptions = function(opt, gr) {
       let d = new JSROOT.DrawOptions(opt);
 
       if (!this.options)
@@ -3024,7 +3024,12 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
       res.Circles = d.check("P0");
       res.Markers = d.check("P");
 
-      if (!res.Markers && !res.Error && !res.Circles && !res.Line) res.Markers = true;
+      if (!res.Markers && !res.Error && !res.Circles && !res.Line) {
+         if ((gr.fMarkerSize == 1) && (gr.fMarkerStyle == 1))
+            res.Circles = true;
+         else
+            res.Markers = true;
+      }
       if (!res.Markers) res.Color = false;
 
       this.storeDrawOpt(opt);
@@ -3334,7 +3339,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
      * @private */
    function drawGraph2D(dom, gr, opt) {
       let painter = new JSROOT.TGraph2DPainter(dom, gr);
-      painter.decodeOptions(opt);
+      painter.decodeOptions(opt, gr);
 
       let promise = Promise.resolve(true);
 
