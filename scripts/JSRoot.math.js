@@ -1599,17 +1599,20 @@ JSROOT.define([], () =>  {
       return gamma(rh1)/denom;
    }
 
+   /** @summary cumulative distribution function of Student's
+     * @private */
+   mth.StudentI = function(T, ndf) {
+      let r = ndf;
+
+      return (T > 0) ? (1 - 0.5*mth.BetaIncomplete((r/(r + T*T)), r*0.5, 0.5))
+                     :  0.5*mth.BetaIncomplete((r/(r + T*T)), r*0.5, 0.5);
+   }
+
    /** @summary LogNormal function
      * @private */
    mth.LogNormal = function(x, sigma, theta = 0, m = 1) {
       if ((x < theta) || (sigma <= 0) || (m <= 0)) return 0;
       return lognormal_pdf(x, Math.log(m), sigma, theta);
-   }
-
-   /** @summary Calculates the incomplete Beta-function.
-     * @private */
-   function BetaIncomplete(x, a, b) {
-      return inc_beta(x, a, b);
    }
 
    /** @summary Computes the probability density function of the Beta distribution
@@ -1625,7 +1628,7 @@ JSROOT.define([], () =>  {
      * @private */
    mth.BetaDistI = function(x, p, q) {
       if ((x<0) || (x>1) || (p<=0) || (q<=0)) return 0;
-      return BetaIncomplete(x, p, q);
+      return mth.BetaIncomplete(x, p, q);
    }
 
    /** @summary gaus function for TFormula */
@@ -1945,7 +1948,7 @@ JSROOT.define([], () =>  {
    mth.erfc = erfc;
    mth.erf = erf;
    mth.beta_pdf = beta_pdf;
-   mth.inc_beta = inc_beta;
+   mth.BetaIncomplete = mth.inc_beta = inc_beta;
    mth.pseries = pseries;
    mth.incbet = incbet;
    mth.incbi = incbi;
@@ -1959,7 +1962,6 @@ JSROOT.define([], () =>  {
    mth.landau_pdf = landau_pdf;
    mth.beta_cdf_c = beta_cdf_c;
    mth.Landau = Landau;
-   mth.BetaIncomplete = BetaIncomplete;
    mth.normal_cdf_c = mth.gaussian_cdf_c = normal_cdf_c;
    mth.gaussian_cdf = mth.normal_cdf = normal_cdf;
    mth.lognormal_pdf = lognormal_pdf;
