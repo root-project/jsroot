@@ -3026,7 +3026,7 @@ JSROOT.define(['d3'], (d3) => {
              return execp.submitCanvExec(item.fExec, execp.args_menu_id);
 
          item.fClassName = execp.getClassName();
-         if ((execp.args_menu_id.indexOf("#x")>0) || (execp.args_menu_id.indexOf("#y")>0) || (execp.args_menu_id.indexOf("#z")>0)) item.fClassName = "TAxis";
+         if ((execp.args_menu_id.indexOf("#x") > 0) || (execp.args_menu_id.indexOf("#y") > 0) || (execp.args_menu_id.indexOf("#z") > 0)) item.fClassName = "TAxis";
 
           menu.showMethodArgsDialog(item).then(args => {
              if (!args) return;
@@ -3124,7 +3124,7 @@ JSROOT.define(['d3'], (d3) => {
       * @param {function} handler - function called when mouse click is done */
    ObjectPainter.prototype.configureUserClickHandler = function(handler) {
       let fp = this.getFramePainter();
-      if (fp && fp.configureUserClickHandler)
+      if (fp && typeof fp.configureUserClickHandler == "function")
          fp.configureUserClickHandler(handler);
    }
 
@@ -3135,7 +3135,7 @@ JSROOT.define(['d3'], (d3) => {
      * @param {function} handler - function called when mouse double click is done */
    ObjectPainter.prototype.configureUserDblclickHandler = function(handler) {
       let fp = this.getFramePainter();
-      if (fp && fp.configureUserDblclickHandler)
+      if (fp && typeof fp.configureUserDblclickHandler == "function")
          fp.configureUserDblclickHandler(handler);
    }
 
@@ -3307,7 +3307,7 @@ JSROOT.define(['d3'], (d3) => {
          if (!this.noexp && (asticks != 2))
             return this.formatExp(base, Math.floor(vlog+0.01), val);
 
-         return (vlog<0) ? val.toFixed(Math.round(-vlog+0.5)) : val.toFixed(0);
+         return vlog < 0 ? val.toFixed(Math.round(-vlog+0.5)) : val.toFixed(0);
       }
       return null;
    }
@@ -3318,7 +3318,7 @@ JSROOT.define(['d3'], (d3) => {
       if (asticks && this.order) val = val / Math.pow(10, this.order);
 
       if (val === Math.round(val))
-         return (Math.abs(val)<1e9) ? val.toFixed(0) : val.toExponential(4);
+         return Math.abs(val) < 1e9 ? val.toFixed(0) : val.toExponential(4);
 
       if (asticks) return (this.ndig>10) ? val.toExponential(this.ndig-11) : val.toFixed(this.ndig);
 
@@ -3360,20 +3360,20 @@ JSROOT.define(['d3'], (d3) => {
    /** @summary Produce ticks for d3.scaleLog
      * @desc Fixing following problem, described [here]{@link https://stackoverflow.com/questions/64649793} */
    AxisBasePainter.prototype.poduceLogTicks = function(func, number) {
-      function linearArray(arr) {
+      const linearArray = arr => {
          let sum1 = 0, sum2 = 0;
          for (let k = 1; k < arr.length; ++k) {
             let diff = (arr[k] - arr[k-1]);
             sum1 += diff;
             sum2 += diff*diff;
          }
-         let mean = sum1/(arr.length-1);
-         let dev = sum2/(arr.length-1) - mean*mean;
+         let mean = sum1/(arr.length-1),
+             dev = sum2/(arr.length-1) - mean*mean;
 
          if (dev <= 0) return true;
          if (Math.abs(mean) < 1e-100) return false;
          return Math.sqrt(dev)/mean < 1e-6;
-      }
+      };
 
       let arr = func.ticks(number);
 
