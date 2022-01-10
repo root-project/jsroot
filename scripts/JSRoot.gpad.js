@@ -1022,37 +1022,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    // ===============================================
 
-   let ProjectAitoff2xy = (l, b) => {
-      const DegToRad = Math.PI/180,
-            alpha2 = (l/2)*DegToRad,
-            delta  = b*DegToRad,
-            r2     = Math.sqrt(2),
-            f      = 2*r2/Math.PI,
-            cdec   = Math.cos(delta),
-            denom  = Math.sqrt(1. + cdec*Math.cos(alpha2));
-      return {
-         x: cdec*Math.sin(alpha2)*2.*r2/denom/f/DegToRad,
-         y: Math.sin(delta)*r2/denom/f/DegToRad
-      };
-   }
-
-   let ProjectMercator2xy = (l, b) => {
-      const aid = Math.tan((Math.PI/2 + b/180*Math.PI)/2);
-      return { x: l, y: Math.log(aid) };
-   }
-
-   let ProjectSinusoidal2xy = (l, b) => {
-      return { x: l*Math.cos(b/180*Math.PI), y: b };
-   }
-
-   let ProjectParabolic2xy = (l, b) => {
-      return {
-         x: l*(2.*Math.cos(2*b/180*Math.PI/3) - 1),
-         y: 180*Math.sin(b/180*Math.PI/3)
-      };
-   }
-
-
    /**
     * @summary Painter class for TFrame, main handler for interactivity
     *
@@ -1121,10 +1090,26 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Returns coordinates transformation func */
    TFramePainter.prototype.getProjectionFunc = function() {
       switch (this.projection) {
-         case 1: return ProjectAitoff2xy;
-         case 2: return ProjectMercator2xy;
-         case 3: return ProjectSinusoidal2xy;
-         case 4: return ProjectParabolic2xy;
+         // Aitoff2xy
+         case 1: return (l, b) => {
+            const DegToRad = Math.PI/180,
+                  alpha2 = (l/2)*DegToRad,
+                  delta  = b*DegToRad,
+                  r2     = Math.sqrt(2),
+                  f      = 2*r2/Math.PI,
+                  cdec   = Math.cos(delta),
+                  denom  = Math.sqrt(1. + cdec*Math.cos(alpha2));
+            return {
+               x: cdec*Math.sin(alpha2)*2.*r2/denom/f/DegToRad,
+               y: Math.sin(delta)*r2/denom/f/DegToRad
+            };
+         };
+         // mercator
+         case 2: return (l, b) => { return { x: l, y: Math.log(Math.tan((Math.PI/2 + b/180*Math.PI)/2)) }; };
+         // sinusoidal
+         case 3: return (l, b) => { return { x: l*Math.cos(b/180*Math.PI), y: b } };
+         // parabolic
+         case 4: return (l, b) => { return { x: l*(2.*Math.cos(2*b/180*Math.PI/3) - 1), y: 180*Math.sin(b/180*Math.PI/3) }; };
       }
    }
 
