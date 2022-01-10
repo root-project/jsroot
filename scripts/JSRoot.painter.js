@@ -1555,12 +1555,14 @@ JSROOT.define(['d3'], (d3) => {
       return res;
    }
 
-   function _accessTopPainter(painter, on) {
-      let main = painter.selectDom().node(),
+   /** @summary Access/change top painter
+     * @private */
+   BasePainter.prototype._accessTopPainter = function(on) {
+      let main = this.selectDom().node(),
           chld = main ? main.firstChild : null;
       if (!chld) return null;
       if (on === true) {
-         chld.painter = painter;
+         chld.painter = this;
       } else if (on === false)
          delete chld.painter;
       return chld.painter;
@@ -1570,19 +1572,19 @@ JSROOT.define(['d3'], (d3) => {
      * @desc Only make sense after first drawing is completed and any child element add to configured DOM
      * @protected */
    BasePainter.prototype.setTopPainter = function() {
-      _accessTopPainter(this, true);
+      this._accessTopPainter(true);
    }
 
    /** @summary Return top painter set for the selected dom element
      * @protected */
    BasePainter.prototype.getTopPainter = function() {
-      return _accessTopPainter(this);
+      return this._accessTopPainter();
    }
 
    /** @summary Clear reference on top painter
      * @protected */
    BasePainter.prototype.clearTopPainter = function() {
-      _accessTopPainter(this, false);
+      this._accessTopPainter(false);
    }
 
    /** @summary Generic method to cleanup painter
