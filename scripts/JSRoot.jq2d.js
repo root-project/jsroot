@@ -210,7 +210,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
 
    // ==================================================
 
-   class FlexibleDisplay extends JSROOT.MDIDisplay {
+   class FlexibleDisplayOld extends JSROOT.MDIDisplay {
 
       constructor(frameid) {
          super(frameid);
@@ -268,25 +268,23 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          let topid = this.frameid + '_flex';
 
          if (!document.getElementById(topid))
-            $("#" + this.frameid).append(`<div id="${topid}" class="jsroot" style="overflow:none; height:100%; width:100%"></div>`);
+            d3.select("#" + this.frameid).html(`<div id="${topid}" class="jsroot" style="overflow:none; height:100%; width:100%"></div>`);
 
          let mdi = this,
-             top = $("#" + topid),
-             w = top.width(),
-             h = top.height(),
+             top = d3.select("#" + topid),
+             w = top.node().clientWidth,
+             h = top.node().clientHeight,
              subid = topid + "_frame" + this.cnt;
 
-         let entry ='<div id="' + subid + '" class="flex_frame" style="position:absolute">' +
-                     '<div class="ui-widget-header flex_header">'+
-                       '<p>'+title+'</p>' +
-                       '<button type="button" style="float:right; width:1.4em"/>' +
-                       '<button type="button" style="float:right; width:1.4em"/>' +
-                       '<button type="button" style="float:right; width:1.4em"/>' +
-                      '</div>' +
-                     '<div id="' + subid + '_cont" class="flex_draw"></div>' +
-                    '</div>';
-
-         top.append(entry);
+         top.append('div').attr("id", subid).attr("class", "flex_frame").style("position", "absolute")
+            .html(`<div class="ui-widget-header flex_header">
+                     <p>${title}</p>
+                     <button type="button" style="float:right; width:1.4em"/>
+                     <button type="button" style="float:right; width:1.4em"/>
+                     <button type="button" style="float:right; width:1.4em"/>
+                    </div>
+                    <div id="${subid}_cont" class="flex_draw">
+                    </div>`);
 
          function ChangeWindowState(main, state) {
             let curr = main.prop('state');
@@ -336,14 +334,14 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
                mdi.activateFrame("first");
          }
 
-         $("#" + subid)
-            .css('left', parseInt(w * (this.cnt % 5)/10))
-            .css('top', parseInt(h * (this.cnt % 5)/10))
-            .width(Math.round(w * 0.58))
-            .height(Math.round(h * 0.58))
-            .resizable({
+         d3.select("#" + subid)
+            .style('left', Math.round(w * (this.cnt % 5)/10) + "px")
+            .style('top', Math.round(h * (this.cnt % 5)/10) + "px")
+            .style('width', Math.round(w * 0.58) + "px")
+            .style('height', Math.round(h * 0.58) + "px");
+/*            .resizable({
                helper: "jsroot-flex-resizable-helper",
-               start: function(/* event, ui */) {
+               start: function(event, ui) {
                   // bring element to front when start resizing
                   mdi.activateFrame(this);
                },
@@ -354,7 +352,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
              })
              .draggable({
                containment: "parent",
-               start: function(event /*, ui*/) {
+               start: function(event , ui) {
                   // bring element to front when start dragging
                   mdi.activateFrame(this);
                   // block dragging when mouse below header
@@ -406,18 +404,18 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
                  let minimize = $(this).find('.ui-icon').hasClass("ui-icon-triangle-1-s");
                  ChangeWindowState(main, minimize ? "minimal" : "normal");
               });
-
+*/
          // set default z-index to avoid overlap of these special elements
-         $("#" + subid).find(".ui-resizable-handle").css('z-index', '');
+         // $("#" + subid).find(".ui-resizable-handle").css('z-index', '');
 
          this.cnt++;
 
-         let frame = $("#" + subid + "_cont").attr('frame_title', title).get(0);
+         let frame = d3.select(`#${subid}_cont`).attr('frame_title', title).node();
 
          return this.afterCreateFrame(frame);
       }
 
-   } // class FlexibleDisplay
+   } // class FlexibleDisplayOld
 
    // ===================================================
 
@@ -430,7 +428,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
       if (kind.indexOf("coll") == 0)
          return new CollapsibleDisplay(frameid);
 
-      return new FlexibleDisplay(frameid);
+      return new FlexibleDisplayOld(frameid);
    }
 
 

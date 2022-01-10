@@ -3386,10 +3386,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       let promise;
 
-      if ((this.disp_kind == "tabs") || (this.disp_kind.indexOf("flex") == 0) || (this.disp_kind.indexOf("coll") == 0))
+      if ((this.disp_kind == "tabs") || (this.disp_kind.indexOf("coll") == 0))
          promise = JSROOT.require('jq2d').then(() => JSROOT.create_jq_mdi(this.disp_frameid, this.disp_kind));
+      else if (this.disp_kind.indexOf("flex") == 0)
+         promise = Promise.resolve(new JSROOT.FlexibleDisplay(this.disp_frameid));
       else
-         promise = Promise.resolve(new GridDisplay(this.disp_frameid, this.disp_kind));
+         promise = Promise.resolve(new JSROOT.GridDisplay(this.disp_frameid, this.disp_kind));
 
       return promise.then(disp => {
          this.disp = disp;
@@ -4611,6 +4613,105 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    } // class GridDisplay
 
+   // ================================================
+
+   /**
+    * @summary Generic flexible MDI display
+    *
+    * @class
+    * @memberof JSROOT
+    * @private
+    */
+
+   class FlexibleDisplay extends MDIDisplay {
+
+      constructor(frameid) {
+         super(frameid);
+         this.cnt = 0; // use to count newly created frames
+      }
+
+      forEachFrame(userfunc,  only_visible) {
+         if (typeof userfunc != 'function') return;
+
+         let main = d3.select(`#${this.frameid}_flex`);
+         if (main.empty()) return;
+
+         main.selectAll(".flex_draw").each(function() {
+            // check if only visible specified
+            if (only_visible && $(this).is(":hidden")) return;
+
+            userfunc(this);
+         });
+      }
+
+      getActiveFrame() {
+         let found = super.getActiveFrame();
+         if (found && !$(found).is(":hidden")) return found;
+
+         found = null;
+         this.forEachFrame(frame => { if (!found) found = frame; }, true);
+
+         return found;
+      }
+
+      activateFrame(frame) {
+         if (frame === 'first') {
+            frame = null;
+            d3.select(`#${topid}`).selectAll(".flex_frame").each(function() {
+               if (!frame) frame = this;
+               // if (!$(this).is(":hidden") && ($(this).prop('state') != "minimal") && !sel) sel = $(this);
+            });
+         }
+         if (frame.getAttribute("class") == "flex_draw") frame = frame.parentNode;
+
+         frame.parentNode.append(frame);
+
+         // if (sel.prop('state') == "minimal") return;
+         let draw_frame = frame.querySelector(".flex_draw");
+         jsrp.selectActivePad({ pp: jsrp.getElementCanvPainter(draw_frame), active: true });
+         JSROOT.resize(draw_frame);
+      }
+
+      createFrame(title) {
+
+         this.beforeCreateFrame(title);
+
+         let topid = this.frameid + '_flex';
+
+         if (!document.getElementById(topid))
+            d3.select("#" + this.frameid).html(`<div id="${topid}" class="jsroot" style="overflow:none; height:100%; width:100%"></div>`);
+
+         let mdi = this,
+             top = d3.select("#" + topid),
+             w = top.node().clientWidth,
+             h = top.node().clientHeight,
+             subid = topid + "_frame" + this.cnt;
+
+         top.append('div').attr("id", subid).attr("class", "flex_frame").style("position", "absolute")
+            .html(`<div class="ui-widget-header flex_header">
+                     <p>${title}</p>
+                     <button type="button" style="float:right; width:1.4em"/>
+                     <button type="button" style="float:right; width:1.4em"/>
+                     <button type="button" style="float:right; width:1.4em"/>
+                    </div>
+                    <div id="${subid}_cont" class="flex_draw">
+                    </div>`);
+
+         d3.select("#" + subid)
+            .style('left', Math.round(w * (this.cnt % 5)/10) + "px")
+            .style('top', Math.round(h * (this.cnt % 5)/10) + "px")
+            .style('width', Math.round(w * 0.58) + "px")
+            .style('height', Math.round(h * 0.58) + "px");
+
+         this.cnt++;
+
+         let frame = d3.select(`#${subid}_cont`).attr('frame_title', title).node();
+
+         return this.afterCreateFrame(frame);
+      }
+
+   } // class FlexibleDisplay
+
    // ==================================================
 
    /**
@@ -4718,6 +4819,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    JSROOT.MDIDisplay = MDIDisplay;
    JSROOT.CustomDisplay = CustomDisplay;
    JSROOT.GridDisplay = GridDisplay;
+   JSROOT.FlexibleDisplay = FlexibleDisplay;
    JSROOT.BatchDisplay = BatchDisplay;
 
    return JSROOT;
