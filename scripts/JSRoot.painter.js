@@ -2619,7 +2619,7 @@ JSROOT.define(['d3'], (d3) => {
 
    /** @summary Analyze if all text draw operations are completed
      * @private */
-   function _checkAllTextDrawing(painter, draw_g, resolveFunc, try_optimize) {
+   ObjectPainter.prototype._checkAllTextDrawing = function(draw_g, resolveFunc, try_optimize) {
 
       let all_args = draw_g.property('all_args'), missing = 0;
       if (!all_args) {
@@ -2659,7 +2659,7 @@ JSROOT.define(['d3'], (d3) => {
       all_args.forEach(arg => {
          if (arg.mj_node && arg.applyAttributesToMathJax) {
             let svg = arg.mj_node.select("svg"); // MathJax svg
-            arg.applyAttributesToMathJax(painter, arg.mj_node, svg, arg, font_size, f);
+            arg.applyAttributesToMathJax(this, arg.mj_node, svg, arg, font_size, f);
             delete arg.mj_node; // remove reference
             only_text = false;
          } else if (arg.txt_g) {
@@ -2792,13 +2792,13 @@ JSROOT.define(['d3'], (d3) => {
             }
          });
 
-      // if specified, call ready function
-      if (resolveFunc) resolveFunc(painter); // IMPORTANT - return painter, may use in draw methods
+      // if specified, call resolve function
+      if (resolveFunc) resolveFunc(this); // IMPORTANT - return painter, may use in draw methods
    }
 
-   /** @summary After normal SVG text is generated, check and recalculate some properties
+   /** @summary Post-process plain text drawing
      * @private */
-   function _postprocessText(painter, txt_node, arg) {
+   ObjectPainter.prototype._postprocessDrawText = function(arg, txt_node) {
       // complete rectangle with very rougth size estimations
       arg.box = !JSROOT.nodejs && !JSROOT.settings.ApproxTextSize && !arg.fast ? getElementRect(txt_node, 'bbox') :
                (arg.text_rect || { height: arg.font_size * 1.2, width: arg.text.length * arg.font_size * arg.font.aver_width });
@@ -2808,13 +2808,13 @@ JSROOT.define(['d3'], (d3) => {
       if (arg.box.width > arg.draw_g.property('max_text_width'))
          arg.draw_g.property('max_text_width', arg.box.width);
       if (arg.scale)
-         painter.scaleTextDrawing(Math.max(1.05 * arg.box.width / arg.width, 1. * arg.box.height / arg.height), arg.draw_g);
+         this.scaleTextDrawing(Math.max(1.05 * arg.box.width / arg.width, 1. * arg.box.height / arg.height), arg.draw_g);
 
       arg.result_width = arg.box.width;
       arg.result_height = arg.box.height;
 
       if (typeof arg.post_process == 'function')
-         arg.post_process(painter);
+         arg.post_process(this);
 
       return arg.box.width;
    }
@@ -2928,10 +2928,10 @@ JSROOT.define(['d3'], (d3) => {
                   ltx.produceLatex(this, arg.txt_g, arg);
                }
                arg.ready = true;
-               _postprocessText(this, arg.txt_g || arg.txt_node, arg);
+               this._postprocessDrawText(arg, arg.txt_g || arg.txt_node);
 
                if (arg.draw_g.property('draw_text_completed'))
-                  _checkAllTextDrawing(this, arg.draw_g); // check if all other elements are completed
+                  this._checkAllTextDrawing(arg.draw_g); // check if all other elements are completed
             });
             return 0;
          }
@@ -2940,7 +2940,7 @@ JSROOT.define(['d3'], (d3) => {
          arg.txt_node.text(arg.text);
          arg.ready = true;
 
-         return _postprocessText(this, arg.txt_node, arg);
+         return this._postprocessDrawText(arg, arg.txt_node);
       }
 
       arg.mj_node = arg.draw_g.append("svg:g")
@@ -2951,7 +2951,7 @@ JSROOT.define(['d3'], (d3) => {
             .then(() => {
                arg.ready = true;
                if (arg.draw_g.property('draw_text_completed'))
-                  _checkAllTextDrawing(this, arg.draw_g);
+                  this._checkAllTextDrawing(arg.draw_g);
             });
 
       return 0;
@@ -2970,7 +2970,7 @@ JSROOT.define(['d3'], (d3) => {
       draw_g.property('draw_text_completed', true); // mark that text drawing is completed
 
       return new Promise(resolveFunc => {
-         _checkAllTextDrawing(this, draw_g, resolveFunc, try_optimize);
+         this._checkAllTextDrawing(draw_g, resolveFunc, try_optimize);
       });
    }
 
