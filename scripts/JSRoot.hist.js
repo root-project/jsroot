@@ -6163,9 +6163,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          while (opt >= mult) mult *= 10;
          mult /= 10;
          return Math.floor(fOption/mult) % 10 === Math.floor(opt/mult);
-      }
 
-      const parseOption = (opt, is_candle) => {
+      }, parseOption = (opt, is_candle) => {
+
          let direction = '', preset = '',
              res = kNoOption, c0 = opt[0], c1 = opt[1];
 
@@ -6199,9 +6199,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          if ((direction == 'Y' || direction == 'H') && !isOption(kHorizontal))
             fOption += kHorizontal;
-      };
 
-      const extractQuantiles = (xx,proj,prob) => {
+      }, extractQuantiles = (xx,proj,prob) => {
 
          let integral = 0, cnt = 0, sum1 = 0,
              res = { max: 0, first: -1, last: -1, entries: 0 };
@@ -6285,29 +6284,25 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             switch(a[i]) {
                case 'Z': return res + "z";
                case 'V': if (yy != a[i+1]) { res += (swapXY ? 'h' : 'v') + (a[i+1] - yy); yy = a[i+1]; } break;
-               case 'H': if (xx != a[i+1]) { res += (swapXY ? 'v' : 'h') + (a[i+1] - xx); xx = a[i+1]; }  break;
+               case 'H': if (xx != a[i+1]) { res += (swapXY ? 'v' : 'h') + (a[i+1] - xx); xx = a[i+1]; } break;
                default: res += swapXY ? `l${a[i+1]-yy},${a[i]-xx}` : `l${a[i]-xx},${a[i+1]-yy}`; xx = a[i]; yy = a[i+1];
             }
             i += 2;
          }
          return res;
-      };
-
-      const make_marker = (x,y) => {
+      }, make_marker = (x,y) => {
          if (!markers) {
             this.createAttMarker({ attr: histo, style: isOption(kPointsAllScat) ? 0 : 5 });
             this.markeratt.resetPos();
          }
          markers += swapXY ? this.markeratt.create(y,x) : this.markeratt.create(x,y);
-      }
-
-      const make_cmarker = (x,y) => {
+      }, make_cmarker = (x,y) => {
          if (!attrcmarkers) {
             attrcmarkers = new JSROOT.TAttMarkerHandler({attr: histo, style: 24});
             attrcmarkers.resetPos();
          }
          cmarkers += swapXY ? attrcmarkers.create(y,x) : attrcmarkers.create(x,y);
-      }
+      };
 
       //if ((histo.fFillStyle == 0) && (histo.fFillColor > 0) && (!this.fillatt || this.fillatt.empty()))
       //     this.createAttFill({ color: this.getColor(histo.fFillColor), pattern: 1001 });
@@ -6451,16 +6446,36 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             xindx2 = Math.min(xindx2-1, res.last);
 
             if (isOption(kHistoRight) || isOption(kHistoViolin)) {
-               arr.push(center, Math.round(funcs[fname](xx[xindx1])));
-               for (let ii = xindx1; ii <= xindx2; ii++)
-                  arr.push("H", Math.round(center + scale*proj[ii]), "V", Math.round(funcs[fname](xx[ii+1])));
+               let prev_x = center, prev_y = Math.round(funcs[fname](xx[xindx1]));
+               arr.push(prev_x, prev_y);
+               for (let ii = xindx1; ii <= xindx2; ii++) {
+                  let curr_x = Math.round(center + scale*proj[ii]),
+                      curr_y = Math.round(funcs[fname](xx[ii+1]));
+                  if (curr_x != prev_x) {
+                     if (ii != xindx1) arr.push("V", prev_y);
+                     arr.push("H", curr_x);
+                  }
+                  prev_x = curr_x;
+                  prev_y = curr_y;
+               }
+               arr.push("V", prev_y);
             }
 
             if (isOption(kHistoLeft) || isOption(kHistoViolin)) {
+               let prev_x = center, prev_y = Math.round(funcs[fname](xx[xindx2+1]));
                if (arr.length == 0)
-                  arr.push(center, Math.round(funcs[fname](xx[xindx2+1])));
-               for (let ii = xindx2; ii >= xindx1; ii--)
-                  arr.push("H", Math.round(center - scale*proj[ii]), "V", Math.round(funcs[fname](xx[ii])));
+                  arr.push(prev_x, prev_y);
+               for (let ii = xindx2; ii >= xindx1; ii--) {
+                  let curr_x = Math.round(center - scale*proj[ii]),
+                      curr_y = Math.round(funcs[fname](xx[ii]));
+                  if (curr_x != prev_x) {
+                     if (ii != xindx2) arr.push("V", prev_y);
+                     arr.push("H", curr_x);
+                  }
+                  prev_x = curr_x;
+                  prev_y = curr_y;
+               }
+               arr.push("V", prev_y);
             }
 
             arr.push("H", center); // complete histogram
