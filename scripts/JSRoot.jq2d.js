@@ -241,6 +241,26 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          return found;
       }
 
+      activateFrame(frame) {
+         let sel;
+         if (frame === 'first') {
+            $(`#${topid}`).selectAll(".flex_frame").each(function() {
+               if (!$(this).is(":hidden") && ($(this).prop('state') != "minimal") && !sel) sel = $(this);
+            });
+         } else if (typeof frame == 'object') {
+            sel = $(frame);
+         }
+         if (!sel) return;
+         if (sel.hasClass("flex_draw")) sel = sel.parent();
+
+         sel.appendTo(sel.parent());
+
+         if (sel.prop('state') == "minimal") return;
+         let draw_frame = sel.find(".flex_draw").get(0);
+         jsrp.selectActivePad({ pp: jsrp.getElementCanvPainter(draw_frame), active: true });
+         JSROOT.resize(draw_frame);
+      }
+
       createFrame(title) {
 
          this.beforeCreateFrame(title);
@@ -267,26 +287,6 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
                     '</div>';
 
          top.append(entry);
-
-         function PopupWindow(arg) {
-            let sel;
-            if (arg === 'first') {
-               $('#' + topid + ' .flex_frame').each(function() {
-                  if (!$(this).is(":hidden") && ($(this).prop('state') != "minimal")) sel = $(this);
-               });
-            } else if (typeof arg == 'object') {
-               sel = arg;
-            }
-            if (!sel) return;
-
-            sel.appendTo(sel.parent());
-
-            if (sel.prop('state') == "minimal") return;
-
-            let frame = sel.find(".flex_draw").get(0);
-            jsrp.selectActivePad({ pp: jsrp.getElementCanvPainter(frame), active: true });
-            JSROOT.resize(frame);
-         }
 
          function ChangeWindowState(main, state) {
             let curr = main.prop('state');
@@ -331,9 +331,9 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
             }
 
             if (state !== "minimal")
-               PopupWindow(main);
+               mdi.activateFrame(main.get(0));
             else
-               PopupWindow("first");
+               mdi.activateFrame("first");
          }
 
          $("#" + subid)
@@ -345,7 +345,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
                helper: "jsroot-flex-resizable-helper",
                start: function(/* event, ui */) {
                   // bring element to front when start resizing
-                  PopupWindow($(this));
+                  mdi.activateFrame(this);
                },
                stop: function(event, ui) {
                   let rect = { width:  ui.size.width - 1, height: ui.size.height - $(this).find(".flex_header").height() - 1 };
@@ -356,7 +356,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
                containment: "parent",
                start: function(event /*, ui*/) {
                   // bring element to front when start dragging
-                  PopupWindow($(this));
+                  mdi.activateFrame(this);
                   // block dragging when mouse below header
                   let draw_area = $(this).find(".flex_draw"),
                       elementMouseIsOver = document.elementFromPoint(event.clientX, event.clientY),
@@ -365,11 +365,11 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
                   if (isparent) return false;
                }
             })
-          .click(function() { PopupWindow($(this)); })
+          .click(function() { mdi.activateFrame(this); })
           .find('.flex_header')
             // .hover(function() { $(this).toggleClass("ui-state-hover"); })
             .click(function() {
-               PopupWindow($(this).parent());
+               mdi.activateFrame(this.parentNode);
             })
             .dblclick(function() {
                let main = $(this).parent();
@@ -386,7 +386,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
                  let main = $(this).parent().parent();
                  mdi.cleanupFrame(main.find(".flex_draw").get(0));
                  main.remove();
-                 PopupWindow('first'); // set active as first window
+                 mdi.activateFrame('first'); // set active as first window
               })
               .next()
               .attr('title','maximize canvas')
