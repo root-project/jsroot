@@ -5554,7 +5554,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           palette = this.getHistPalette(),
           func = main.getProjectionFunc();
 
-      function BuildPath(xp,yp,iminus,iplus,do_close) {
+      const BuildPath = (xp,yp,iminus,iplus,do_close) => {
          let cmd = "", lastx, lasty, x0, y0, isany = false, matched, x, y;
          for (let i = iminus; i <= iplus; ++i) {
             if (func) {
@@ -5588,9 +5588,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             return "<failed>";
          if (do_close) cmd += "z";
          return cmd;
-      }
 
-      const get_segm_intersection = (segm1, segm2) => {
+      }, get_segm_intersection = (segm1, segm2) => {
+
           let s02_x, s02_y, s10_x, s10_y, s32_x, s32_y, s_numer, t_numer, denom, t;
           s10_x = segm1.x2 - segm1.x1;
           s10_y = segm1.y2 - segm1.y1;
@@ -5617,16 +5617,16 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           // Collision detected
           t = t_numer / denom;
           return { x: Math.round(segm1.x1 + (t * s10_x)), y: Math.round(segm1.y1 + (t * s10_y)) };
-      };
 
-      // try to build path which fills area to outside borders
-      function BuildPathOutside(xp,yp,iminus,iplus,side) {
+      }, BuildPathOutside = (xp,yp,iminus,iplus,side) => {
 
-         const points = [{ x:0, y:0 }, {x:frame_w, y:0}, {x:frame_w, y:frame_h}, {x:0, y:frame_h} ];
+         // try to build path which fills area to outside borders
+
+         const points = [{ x: 0, y: 0 }, { x: frame_w, y: 0 }, { x: frame_w, y: frame_h }, { x: 0, y: frame_h }];
 
          const get_intersect = (i,di) => {
             let segm = { x1: xp[i], y1: yp[i], x2: 2*xp[i] - xp[i+di], y2: 2*yp[i] - yp[i+di] };
-            for (let i=0;i<4;++i) {
+            for (let i = 0; i < 4; ++i) {
                let res = get_segm_intersection(segm, { x1: points[i].x, y1: points[i].y, x2: points[(i+1)%4].x, y2: points[(i+1)%4].y});
                if (res) {
                   res.indx = i + 0.5;
@@ -5645,9 +5645,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             pnt2 = get_intersect(--iplus, -1);
          if (!pnt1 || !pnt2) return "";
 
-         let dd = BuildPath(xp,yp,iminus,iplus);
          // TODO: now side is always same direction, could be that side should be checked more precise
-         let indx = pnt2.indx, step = side*0.5;
+
+         let dd = BuildPath(xp,yp,iminus,iplus),
+             indx = pnt2.indx, step = side*0.5;
 
          dd += `L${pnt2.x},${pnt2.y}`;
 
@@ -5658,13 +5659,13 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          }
 
          return dd + `L${pnt1.x},${pnt1.y}z`;
-      }
+      };
 
       if (this.options.Contour === 14) {
          let dd = `M0,0h${frame_w}v${frame_h}h${-frame_w}z`;
          if (this.options.Proj) {
             let sz = handle.j2 - handle.j1, xd = new Float32Array(sz*2), yd = new Float32Array(sz*2);
-            for (let i=0;i<sz;++i) {
+            for (let i = 0; i < sz; ++i) {
                xd[i] = handle.origx[handle.i1];
                yd[i] = (handle.origy[handle.j1]*(i+0.5) + handle.origy[handle.j2]*(sz-0.5-i))/sz;
                xd[i+sz] = handle.origx[handle.i2];
