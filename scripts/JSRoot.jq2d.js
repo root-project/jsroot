@@ -218,16 +218,16 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
       }
 
       forEachFrame(userfunc,  only_visible) {
-         let topid = this.frameid + '_flex';
-
-         if (!document.getElementById(topid)) return;
          if (typeof userfunc != 'function') return;
 
-         $('#' + topid + ' .flex_draw').each(function() {
+         let main = d3.select(`#${this.frameid}_flex`);
+         if (main.empty()) return;
+
+         main.selectAll(".flex_draw").each(function() {
             // check if only visible specified
             if (only_visible && $(this).is(":hidden")) return;
 
-            userfunc($(this).get(0));
+            userfunc(this);
          });
       }
 
@@ -248,7 +248,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          let topid = this.frameid + '_flex';
 
          if (!document.getElementById(topid))
-            $("#" + this.frameid).append('<div id="'+ topid  + '" class="jsroot" style="overflow:none; height:100%; width:100%"></div>');
+            $("#" + this.frameid).append(`<div id="${topid}" class="jsroot" style="overflow:none; height:100%; width:100%"></div>`);
 
          let mdi = this,
              top = $("#" + topid),
@@ -292,7 +292,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
             let curr = main.prop('state');
             if (!curr) curr = "normal";
             main.prop('state', state);
-            if (state==curr) return;
+            if (state == curr) return;
 
             if (curr == "normal") {
                main.prop('original_height', main.height());
