@@ -2623,7 +2623,7 @@ JSROOT.define(['d3'], (d3) => {
 
       let all_args = draw_g.property('all_args'), missing = 0;
       if (!all_args) {
-         console.log('Text drawing is finished - why?????');
+         console.log('Text drawing is finished - why calling _checkAllTextDrawing?????');
          all_args = [];
       }
 
@@ -2752,7 +2752,6 @@ JSROOT.define(['d3'], (d3) => {
                arg.dy = -box.y2*scale;
             else if (arg.align[1] == 'middle')
                arg.dy = -0.5*(box.y1 + box.y2)*scale;
-
          }
 
          if (!arg.rotate) { arg.x += arg.dx; arg.y += arg.dy; arg.dx = arg.dy = 0; }
@@ -2760,17 +2759,17 @@ JSROOT.define(['d3'], (d3) => {
          // use translate and then rotate to avoid complex sign calculations
          let trans = "";
          if (arg.y)
-            trans = "translate(" + Math.round(arg.x) + "," + Math.round(arg.y) + ")";
+            trans = `translate(${Math.round(arg.x)},${Math.round(arg.y)})`;
          else if (arg.x)
-            trans = "translate(" + Math.round(arg.x) + ")";
+            trans = `translate(${Math.round(arg.x)})`;
          if (arg.rotate)
-            trans += " rotate(" + Math.round(arg.rotate) + ")";
+            trans += ` rotate(${Math.round(arg.rotate)})`;
          if (scale !== 1)
-            trans += " scale(" + scale.toFixed(3) + ")";
+            trans += ` scale(${scale.toFixed(3)})`;
          if (arg.dy)
-            trans += " translate(" + Math.round(arg.dx) + "," + Math.round(arg.dy) + ")";
+            trans += ` translate(${Math.round(arg.dx)},${Math.round(arg.dy)})`;
          else if (arg.dx)
-            trans += " translate(" + Math.round(arg.dx) + ")";
+            trans += ` translate(${Math.round(arg.dx)})`;
          if (trans) txt.attr("transform", trans);
       });
 
