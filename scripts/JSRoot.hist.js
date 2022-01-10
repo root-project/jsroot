@@ -2164,34 +2164,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
        }, "objects");
    }
 
-   /** @summary Copy TAxis members
-     * @private */
-   function copyAxisMembers(name, tgt, src, fp, copy_zoom) {
-      tgt.fTitle = src.fTitle;
-      tgt.fLabels = src.fLabels;
-      tgt.fXmin = src.fXmin;
-      tgt.fXmax = src.fXmax;
-      tgt.fTimeDisplay = src.fTimeDisplay;
-      tgt.fTimeFormat = src.fTimeFormat;
-      // copy attributes
-      tgt.fAxisColor = src.fAxisColor;
-      tgt.fLabelColor = src.fLabelColor;
-      tgt.fLabelFont = src.fLabelFont;
-      tgt.fLabelOffset = src.fLabelOffset;
-      tgt.fLabelSize = src.fLabelSize;
-      tgt.fNdivisions = src.fNdivisions;
-      tgt.fTickLength = src.fTickLength;
-      tgt.fTitleColor = src.fTitleColor;
-      tgt.fTitleFont = src.fTitleFont;
-      tgt.fTitleOffset = src.fTitleOffset;
-      tgt.fTitleSize = src.fTitleSize;
-      if (copy_zoom && (!fp || !fp.zoomChangedInteractive(name))) {
-         tgt.fFirst = src.fFirst;
-         tgt.fLast = src.fLast;
-         tgt.fBits = src.fBits;
-      }
-   }
-
    /** @summary Update histogram object
      * @param obj - new histogram instance
      * @param opt - new drawing option (optional)
@@ -2247,9 +2219,34 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             }
          }
 
-         copyAxisMembers("x", histo.fXaxis, obj.fXaxis, fp, this.snapid);
-         copyAxisMembers("y", histo.fYaxis, obj.fYaxis, fp, this.snapid);
-         copyAxisMembers("z", histo.fZaxis, obj.fZaxis, fp, this.snapid);
+         const copyAxisMembers = (name, tgt, src) => {
+            tgt.fTitle = src.fTitle;
+            tgt.fLabels = src.fLabels;
+            tgt.fXmin = src.fXmin;
+            tgt.fXmax = src.fXmax;
+            tgt.fTimeDisplay = src.fTimeDisplay;
+            tgt.fTimeFormat = src.fTimeFormat;
+            tgt.fAxisColor = src.fAxisColor;
+            tgt.fLabelColor = src.fLabelColor;
+            tgt.fLabelFont = src.fLabelFont;
+            tgt.fLabelOffset = src.fLabelOffset;
+            tgt.fLabelSize = src.fLabelSize;
+            tgt.fNdivisions = src.fNdivisions;
+            tgt.fTickLength = src.fTickLength;
+            tgt.fTitleColor = src.fTitleColor;
+            tgt.fTitleFont = src.fTitleFont;
+            tgt.fTitleOffset = src.fTitleOffset;
+            tgt.fTitleSize = src.fTitleSize;
+            if (this.snapid && (!fp || !fp.zoomChangedInteractive(name))) {
+               tgt.fFirst = src.fFirst;
+               tgt.fLast = src.fLast;
+               tgt.fBits = src.fBits;
+            }
+         };
+
+         copyAxisMembers("x", histo.fXaxis, obj.fXaxis);
+         copyAxisMembers("y", histo.fYaxis, obj.fYaxis);
+         copyAxisMembers("z", histo.fZaxis, obj.fZaxis);
 
          histo.fArray = obj.fArray;
          histo.fNcells = obj.fNcells;
@@ -2349,42 +2346,39 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return true;
    }
 
-   /** @summary Assign several methods for TAxis
-     * @private */
-   function assignTAxisFuncs(axis) {
-      if (axis.fXbins.length >= axis.fNbins) {
-         axis.regular = false;
-         axis.GetBinCoord = function(bin) {
-            let indx = Math.round(bin);
-            if (indx <= 0) return this.fXmin;
-            if (indx > this.fNbins) return this.fXmax;
-            if (indx==bin) return this.fXbins[indx];
-            let indx2 = (bin < indx) ? indx - 1 : indx + 1;
-            return this.fXbins[indx] * Math.abs(bin-indx2) + this.fXbins[indx2] * Math.abs(bin-indx);
-         };
-         axis.FindBin = function(x,add) {
-            for (let k = 1; k < this.fXbins.length; ++k)
-               if (x < this.fXbins[k]) return Math.floor(k-1+add);
-            return this.fNbins;
-         };
-      } else {
-         axis.regular = true;
-         axis.binwidth = (axis.fXmax - axis.fXmin) / (axis.fNbins || 1);
-         axis.GetBinCoord = function(bin) { return this.fXmin + bin*this.binwidth; };
-         axis.FindBin = function(x,add) { return Math.floor((x - this.fXmin) / this.binwidth + add); };
-      }
-   }
-
-
    /** @summary Extract axes bins and ranges
      * @desc here functions are defined to convert index to axis value and back
      * was introduced to support non-equidistant bins
      * @private */
    THistPainter.prototype.extractAxesProperties = function(ndim) {
 
+      const assignTAxisFuncs = axis => {
+         if (axis.fXbins.length >= axis.fNbins) {
+            axis.regular = false;
+            axis.GetBinCoord = function(bin) {
+               let indx = Math.round(bin);
+               if (indx <= 0) return this.fXmin;
+               if (indx > this.fNbins) return this.fXmax;
+               if (indx==bin) return this.fXbins[indx];
+               let indx2 = (bin < indx) ? indx - 1 : indx + 1;
+               return this.fXbins[indx] * Math.abs(bin-indx2) + this.fXbins[indx2] * Math.abs(bin-indx);
+            };
+            axis.FindBin = function(x,add) {
+               for (let k = 1; k < this.fXbins.length; ++k)
+                  if (x < this.fXbins[k]) return Math.floor(k-1+add);
+               return this.fNbins;
+            };
+         } else {
+            axis.regular = true;
+            axis.binwidth = (axis.fXmax - axis.fXmin) / (axis.fNbins || 1);
+            axis.GetBinCoord = function(bin) { return this.fXmin + bin*this.binwidth; };
+            axis.FindBin = function(x,add) { return Math.floor((x - this.fXmin) / this.binwidth + add); };
+         }
+      };
+
       this.nbinsx = this.nbinsy = this.nbinsz = 0;
 
-      let histo = this.getHisto();
+      const histo = this.getHisto();
 
       this.nbinsx = histo.fXaxis.fNbins;
       this.xmin = histo.fXaxis.fXmin;
