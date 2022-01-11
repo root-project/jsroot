@@ -748,6 +748,239 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    } // class JQueryMenu
 
+
+   /**
+    * @summary Context menu class using plain HTML/JavaScript
+    *
+    * @class
+    * @memberof JSROOT.Painter
+    * @desc Use {@link JSROOT.Painter.createMenu} to create instance of the menu
+    * based on {@link https://github.com/L1quidH2O/ContextMenu.js}
+    * @private
+    */
+
+   class StandaloneMenu extends JSRootMenu {
+
+      constructor(painter, menuname, show_event) {
+         super(painter, menuname, show_event);
+
+         this.code = [];
+
+         this.stack = [ this.code ];
+
+         this.funcs = {};
+      }
+
+     load() { return Promise.resolve(this); }
+
+      /** @summary Add menu item
+        * @param {string} name - item name
+        * @param {function} func - func called when item is selected */
+      add(name, arg, func, title) {
+         let curr = this.stack[this.stack.length-1];
+
+         if (name == "separator")
+            return curr.push('divider');
+
+         if (name.indexOf("header:")==0)
+            return curr.push({ text: name.substr(7) }, "divider");
+
+         if (name=="endsub:") return this.stack.pop();
+
+         let elem = {};
+         curr.push(elem);
+
+         if (name.indexOf("sub:")==0) {
+            name = name.substr(4);
+            elem.sub = [];
+            this.stack.push(elem.sub);
+         }
+
+         if (name.indexOf("chk:")==0) { elem.checked = true; name = name.substr(4); } else
+         if (name.indexOf("unk:")==0) { elem.checked = false; name = name.substr(4); }
+
+         elem.text = name;
+         elem.title = title;
+         elem.func = func;
+      }
+
+      buildContextmenu(menu, left, top, loc) {
+
+         let outer = document.createElement('div');
+         outer.className = "contextmenu-container";
+
+         //if loc !== document.body then its a submenu, so it needs to have position: relative;
+         if (loc === document.body) {
+
+            //delete all elements with className contextmenu-container
+            var deleteElems = document.getElementsByClassName('contextmenu-container')
+            while (deleteElems.length > 0) {
+               deleteElems[0].parentNode.removeChild(deleteElems[0]);
+            }
+
+            outer.style.position = 'fixed'
+            outer.style.left = left + 'px'
+            outer.style.top = top + 'px'
+         }
+         else {
+            outer.style.left = -loc.offsetLeft + loc.offsetWidth + 'px'
+         }
+
+
+         menu.forEach(d => {
+
+            if (typeof d === 'object') {
+               let item = document.createElement('div')
+               item.style.position = 'relative'
+
+               let hovArea = document.createElement('div')
+               hovArea.style.width = '100%'
+               hovArea.style.height = '100%'
+               hovArea.className = "contextmenu-item"
+               hovArea.style.display = 'flex'
+               hovArea.style.justifyContent = 'space-between'
+               hovArea.style.cursor = 'pointer'
+
+               item.appendChild(hovArea)
+
+               let text = document.createElement('span')
+               text.className = "contextmenu-text"
+               text.textContent = d.text || 'text'
+
+
+               hovArea.addEventListener('mouseenter', () => {
+                  var focused = outer.childNodes
+                  focused.forEach(d => {
+                     if (d.classList.contains('contextmenu-focus')) {
+                        d.removeChild(d.getElementsByClassName('contextmenu-container')[0])
+                        d.classList.remove('contextmenu-focus')
+                     }
+                  })
+               })
+
+               if (d.hasOwnProperty('sub')) {
+                  text.textContent += " ->"
+
+                  hovArea.addEventListener('mouseenter', () => {
+                     item.classList.add('contextmenu-focus')
+                     this.buildContextmenu(d.sub, 0, 0, item)
+                  })
+               }
+
+               hovArea.appendChild(text)
+
+               if (d.hasOwnProperty('extraText')) {
+                  let extraText = document.createElement('span')
+                  extraText.className = "contextmenu-extraText contextmenu-text"
+                  extraText.textContent = d.extraText
+
+                  hovArea.appendChild(extraText)
+               }
+
+               outer.appendChild(item);
+
+               if (d.hasOwnProperty('onclick')) {
+                  item.addEventListener('click', e => d.onclick(e));
+               }
+            }
+            else {
+               if (d === 'divider') {
+                  let hr = document.createElement('hr');
+                  hr.className = "contextmenu-divider";
+                  outer.appendChild(hr);
+               }
+            }
+
+         })
+
+         loc.appendChild(outer);
+
+         let docWidth = document.documentElement.clientWidth, docHeight = document.documentElement.clientHeight;
+
+         //Now determine where the contextmenu will be
+         if (loc === document.body) {
+
+            if (left + outer.offsetWidth > docWidth) {
+               //Does sub-contextmenu overflow window width?
+
+               outer.style.left = docWidth - outer.offsetWidth + 'px';
+            }
+
+
+            if (outer.offsetHeight > docHeight) {
+               //is the contextmenu height larger than the window height?
+               outer.style.top = 0;
+               outer.style.overflowY = 'scroll';
+               outer.style.overflowX = 'hidden';
+               outer.style.height = docHeight + 'px';
+            }
+            else if (top + outer.offsetHeight > docHeight) {
+               //Does contextmenu overflow window height?
+
+               outer.style.top = docHeight - outer.offsetHeight + 'px';
+            }
+
+         } else {
+
+            //if its sub-contextmenu
+
+            var dimensionsLoc = loc.getBoundingClientRect(), dimensionsOuter = outer.getBoundingClientRect();
+
+            //Does sub-contextmenu overflow window width?
+            if (dimensionsOuter.left + dimensionsOuter.width > docWidth) {
+               outer.style.left = -loc.offsetLeft - dimensionsOuter.width + 'px'
+            }
+
+            if (dimensionsOuter.height > docHeight) {
+               //is the sub-contextmenu height larger than the window height?
+
+               outer.style.top = -dimensionsOuter.top + 'px'
+               outer.style.overflowY = 'scroll'
+               outer.style.overflowX = 'hidden'
+               outer.style.height = docHeight + 'px'
+            }
+            else if (dimensionsOuter.height < docHeight && dimensionsOuter.height > docHeight / 2) {
+               //is the sub-contextmenu height smaller than the window height AND larger than half of window height?
+
+               if (dimensionsOuter.top - docHeight / 2 >= 0) { //If sub-contextmenu is closer to bottom of the screen
+                  outer.style.top = -dimensionsOuter.top - dimensionsOuter.height + docHeight + 'px'
+               }
+               else { //If sub-contextmenu is closer to top of the screen
+                  outer.style.top = -dimensionsOuter.top + 'px'
+               }
+
+            }
+            else if (dimensionsOuter.top + dimensionsOuter.height > docHeight) {
+               //Does sub-contextmenu overflow window height?
+               outer.style.top = -dimensionsOuter.height + dimensionsLoc.height + 'px'
+            }
+
+         }
+         return outer;
+      }
+
+
+      /** @summary Show menu */
+      show(event) {
+         this.remove();
+
+         if (!event && this.show_evnt) event = this.show_evnt;
+
+         document.body.addEventListener('click', this.remove_handler);
+
+         let oldmenu = document.getElementById(this.menuname);
+         if (oldmenu) oldmenu.remove();
+
+         this.element = this.buildContextmenu(this.code, event.clientX + window.pageXOffset, event.clientY + window.pageYOffset, document.body);
+
+         this.element.setAttribute('id', this.menuname);
+
+         return Promise.resolve(this);
+      }
+
+
+   } // class StandaloneMenu
+
    /**
     * @summary Context menu class using Bootstrap
     *
@@ -995,7 +1228,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    function createMenu(evnt, handler, menuname) {
       let menu = JSROOT.settings.Bootstrap
                  ? new BootstrapMenu(handler, menuname || 'root_ctx_menu', evnt)
-                 : new JQueryMenu(handler, menuname || 'root_ctx_menu', evnt);
+                 : new StandaloneMenu(handler, menuname || 'root_ctx_menu', evnt);
 
       return menu.load();
    }
