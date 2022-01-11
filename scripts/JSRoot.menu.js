@@ -811,79 +811,74 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          //if loc !== document.body then its a submenu, so it needs to have position: relative;
          if (loc === document.body) {
-
             //delete all elements with className contextmenu-container
-            var deleteElems = document.getElementsByClassName('contextmenu-container')
-            while (deleteElems.length > 0) {
+            let deleteElems = document.getElementsByClassName('contextmenu-container');
+            while (deleteElems.length > 0)
                deleteElems[0].parentNode.removeChild(deleteElems[0]);
-            }
 
-            outer.style.position = 'fixed'
-            outer.style.left = left + 'px'
-            outer.style.top = top + 'px'
+            outer.style.position = 'fixed';
+            outer.style.left = left + 'px';
+            outer.style.top = top + 'px';
+         } else {
+            outer.style.left = -loc.offsetLeft + loc.offsetWidth + 'px';
          }
-         else {
-            outer.style.left = -loc.offsetLeft + loc.offsetWidth + 'px'
-         }
-
 
          menu.forEach(d => {
 
             if (typeof d === 'object') {
-               let item = document.createElement('div')
-               item.style.position = 'relative'
+               let item = document.createElement('div');
+               item.style.position = 'relative';
 
-               let hovArea = document.createElement('div')
-               hovArea.style.width = '100%'
-               hovArea.style.height = '100%'
-               hovArea.className = "contextmenu-item"
-               hovArea.style.display = 'flex'
-               hovArea.style.justifyContent = 'space-between'
-               hovArea.style.cursor = 'pointer'
+               let hovArea = document.createElement('div');
+               hovArea.style.width = '100%';
+               hovArea.style.height = '100%';
+               hovArea.className = "contextmenu-item";
+               hovArea.style.display = 'flex';
+               hovArea.style.justifyContent = 'space-between';
+               hovArea.style.cursor = 'pointer';
 
-               item.appendChild(hovArea)
+               item.appendChild(hovArea);
 
-               let text = document.createElement('span')
-               text.className = "contextmenu-text"
-               text.textContent = d.text || 'text'
+               let chk = document.createElement('span');
+               chk.className = "contextmenu-text";
+               chk.textContent = d.checked ? "\u2713" : "";
+               chk.style.width = "3el";
 
+               let text = document.createElement('span');
+               text.className = "contextmenu-text";
+               text.textContent = d.text || 'text';
 
                hovArea.addEventListener('mouseenter', () => {
-                  var focused = outer.childNodes
+                  let focused = outer.childNodes;
                   focused.forEach(d => {
                      if (d.classList.contains('contextmenu-focus')) {
                         d.removeChild(d.getElementsByClassName('contextmenu-container')[0])
                         d.classList.remove('contextmenu-focus')
                      }
                   })
-               })
+               });
 
-               if (d.hasOwnProperty('sub')) {
-                  text.textContent += " ->"
+               hovArea.appendChild(text);
 
+               if (d.hasOwnProperty('extraText') || d.sub) {
+                  let extraText = document.createElement('span');
+                  extraText.className = "contextmenu-extraText contextmenu-text";
+                  extraText.textContent = d.sub ? "\u25B6" : d.extraText;
+                  hovArea.appendChild(extraText);
+               }
+
+               if (d.sub)
                   hovArea.addEventListener('mouseenter', () => {
                      item.classList.add('contextmenu-focus')
                      this.buildContextmenu(d.sub, 0, 0, item)
-                  })
-               }
-
-               hovArea.appendChild(text)
-
-               if (d.hasOwnProperty('extraText')) {
-                  let extraText = document.createElement('span')
-                  extraText.className = "contextmenu-extraText contextmenu-text"
-                  extraText.textContent = d.extraText
-
-                  hovArea.appendChild(extraText)
-               }
+                  });
 
                outer.appendChild(item);
 
                if (d.hasOwnProperty('onclick')) {
                   item.addEventListener('click', e => d.onclick(e));
                }
-            }
-            else {
+            } else {
                if (d === 'divider') {
                   let hr = document.createElement('hr');
                   hr.className = "contextmenu-divider";
