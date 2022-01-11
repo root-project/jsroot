@@ -29,64 +29,57 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          this.local_tree = tree;
       }
 
-      player.KeyUp = function(e) {
-         if (e.keyCode == 13) this.PerformDraw();
-      }
+      player.showExtraButtons = function(args) {
+         let main = this.selectDom();
 
-      player.ShowExtraButtons = function(args) {
-         let main = $(this.selectDom().node());
+         let numentries = this.local_tree ? this.local_tree.fEntries : 0;
 
-          main.find(".treedraw_buttons")
-             .append(" Cut: <input class='treedraw_cut ui-corner-all ui-widget' style='width:8em;margin-left:5px' title='cut expression'></input>"+
-                     " Opt: <input class='treedraw_opt ui-corner-all ui-widget' style='width:5em;margin-left:5px' title='histogram draw options'></input>"+
-                     " Num: <input class='treedraw_number' style='width:7em;margin-left:5px' title='number of entries to process (default all)'></input>" +
-                     " First: <input class='treedraw_first' style='width:7em;margin-left:5px' title='first entry to process (default first)'></input>" +
-                     " <button class='treedraw_clear' title='Clear drawing'>Clear</button>");
+         main.select('.treedraw_more').remove(); // remove more button first
 
-          let numentries = this.local_tree ? this.local_tree.fEntries : 0;
+         main.select(".treedraw_buttons").append("div")
+             .html(` Cut: <input class="treedraw_cut ui-corner-all ui-widget" style="width:8em;margin-left:5px" title="cut expression"></input>
+                    Opt: <input class="treedraw_opt ui-corner-all ui-widget" style="width:5em;margin-left:5px" title="histogram draw options"></input>
+                    Num: <input class="treedraw_number" type="number" min="0" max="${numentries}" step="1000" style="width:7em;margin-left:5px" title="number of entries to process (default all)"></input>
+                    First: <input class="treedraw_first" type="number" min="0" max="${numentries}" step="1000" style="width:7em;margin-left:5px" title="first entry to process (default first)"></input>
+                    <button class="treedraw_clear" title="Clear drawing">Clear</button>`);
 
-          main.find(".treedraw_cut").val(args && args.parse_cut ? args.parse_cut : "").keyup(this.keyup);
-          main.find(".treedraw_opt").val(args && args.drawopt ? args.drawopt : "").keyup(this.keyup);
-          main.find(".treedraw_number").val(args && args.numentries ? args.numentries : "").spinner({ numberFormat: "n", min: 0, page: 1000, max: numentries || 0 }).keyup(this.keyup);
-          main.find(".treedraw_first").val(args && args.firstentry ? args.firstentry : "").spinner({ numberFormat: "n", min: 0, page: 1000, max: numentries || 0 }).keyup(this.keyup);
-          main.find(".treedraw_clear").button().click(() => JSROOT.cleanup(this.drawid));
+         main.select(".treedraw_cut").property("value", args && args.parse_cut ? args.parse_cut : "").on("change", () => this.performDraw());
+         main.select(".treedraw_opt").property("value", args && args.drawopt ? args.drawopt : "").on("change", () => this.performDraw());
+         main.select(".treedraw_number").attr("value", args && args.numentries ? args.numentries : "").on("change", () => this.performDraw());
+         main.select(".treedraw_first").attr("value", args && args.firstentry ? args.firstentry : "").on("change", () => this.performDraw());
+         main.select(".treedraw_clear").on("click", () => JSROOT.cleanup(this.drawid));
       }
 
       player.Show = function(args) {
 
-         let main = $(this.selectDom().node());
+         let main = this.selectDom();
 
          this.drawid = "jsroot_tree_player_" + JSROOT._.id_counter++ + "_draw";
 
-         this.keyup = this.KeyUp.bind(this);
-
          let show_extra = args && (args.parse_cut || args.numentries || args.firstentry);
 
-         main.html("<div class='treedraw_buttons' style='padding-left:0.5em'>" +
-               "<button class='treedraw_exe' title='Execute draw expression'>Draw</button>" +
-               " Expr:<input class='treedraw_varexp treedraw_varexp_info ui-corner-all ui-widget' style='width:12em;margin-left:5px' title='draw expression'></input> " +
-               "<label class='treedraw_varexp_info'>\u24D8</label>" +
-               (show_extra ? "" : "<button class='treedraw_more'>More</button>") +
-               "</div>" +
-               "<hr/>" +
-               "<div id='" + this.drawid + "' style='width:100%'></div>");
+         main.html(`<div class="treedraw_buttons" style="padding-left:0.5em">
+                   <button class="treedraw_exe" title="Execute draw expression">Draw</button>
+                   Expr:<input class="treedraw_varexp treedraw_varexp_info" style="width:12em;margin-left:5px" title="draw expression"></input>
+                   <label class="treedraw_varexp_info">\u24D8</label>
+                   ${show_extra ? '' : '<button class="treedraw_more">More</button>'}
+                   </div>
+                   <hr/>
+                   <div id="${this.drawid}" style="width:100%;height:100%"></div>`);
 
          // only when main html element created, one can painter
          // ObjectPainter allow such usage of methods from BasePainter
          this.setTopPainter();
 
-         let p = this;
-
          if (this.local_tree)
-            main.find('.treedraw_buttons')
-                .prop("title", "Tree draw player for: " + this.local_tree.fName);
-         main.find('.treedraw_exe')
-             .button().click(() => p.PerformDraw());
-         main.find('.treedraw_varexp')
-              .val(args && args.parse_expr ? args.parse_expr : (this.dflt_expr || "px:py"))
-              .keyup(this.keyup);
-         main.find('.treedraw_varexp_info')
-             .prop('title', "Example of valid draw expressions:\n" +
+            main.select('.treedraw_buttons')
+                .attr("title", "Tree draw player for: " + this.local_tree.fName);
+         main.select('.treedraw_exe').on("click", () => this.performDraw());
+         main.select('.treedraw_varexp')
+              .attr("value", args && args.parse_expr ? args.parse_expr : (this.dflt_expr || "px:py"))
+              .on("change", () => this.performDraw());
+         main.select('.treedraw_varexp_info')
+             .attr('title', "Example of valid draw expressions:\n" +
                           "  px  - 1-dim draw\n" +
                           "  px:py  - 2-dim draw\n" +
                           "  px:py:pz  - 3-dim draw\n" +
@@ -97,12 +90,9 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
                           "  px:py;hbins:100 - custom number of bins");
 
          if (show_extra) {
-            this.ShowExtraButtons(args);
+            this.showExtraButtons(args);
          } else {
-            main.find('.treedraw_more').button().click(function() {
-               $(this).remove();
-               p.ShowExtraButtons();
-            });
+            main.select('.treedraw_more').on("click", () => this.showExtraButtons());
          }
 
          this.checkResize();
@@ -140,7 +130,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          this.local_tree.Draw(args).then(process_result);
       }
 
-      player.PerformDraw = function() {
+      player.performDraw = function() {
 
          if (this.local_tree) return this.PerformLocalDraw();
 
