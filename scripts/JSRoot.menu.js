@@ -783,9 +783,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             return curr.push({ divider: true });
 
          if (name.indexOf("header:")==0)
-            return curr.push({ text: name.substr(7), header: true }, { divider: true });
+            return curr.push({ text: name.substr(7), header: true });
 
          if (name=="endsub:") return this.stack.pop();
+
+         if (typeof arg == 'function') { title = func; func = arg; arg = name; }
 
          let elem = {};
          curr.push(elem);
@@ -801,6 +803,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          elem.text = name;
          elem.title = title;
+         elem.arg = arg;
          elem.func = func;
       }
 
@@ -899,7 +902,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
 
             if (d.func)
-               item.addEventListener('click', () => d.func(!d.checked));
+               item.addEventListener('click', () => {
+                  let func = this.painter ? d.func.bind(this.painter) : d.func;
+                  func(d.arg);
+               });
          });
 
          loc.appendChild(outer);

@@ -473,6 +473,8 @@
 .contextmenu-header {
    background-color: lightblue;
    padding: 5px 10px;
+   font-weight: bold;
+   border-bottom: 1px;
 }
 
 .contextmenu-text {
