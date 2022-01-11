@@ -456,7 +456,7 @@
 	margin: 0;
 	padding: 0px;
 	width: auto;
-	min-width: 250px;
+	min-width: 100px;
 	box-shadow: 0px 0px 10px rgb(0, 0, 0, 0.2);
 	border: 3px solid rgb(215, 215, 215);
 	font-family: Arial, helvetica, sans-serif, serif;
@@ -468,6 +468,11 @@
 	width: 85%;
 	margin: 3px auto;
 	border: 1px solid rgb(0, 0, 0, 0.15);
+}
+
+.contextmenu-header {
+   background-color: lightblue;
+   padding: 5px 10px;
 }
 
 .contextmenu-text {

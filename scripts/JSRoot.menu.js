@@ -780,10 +780,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          let curr = this.stack[this.stack.length-1];
 
          if (name == "separator")
-            return curr.push('divider');
+            return curr.push({ divider: true });
 
          if (name.indexOf("header:")==0)
-            return curr.push({ text: name.substr(7) }, "divider");
+            return curr.push({ text: name.substr(7), header: true }, { divider: true });
 
          if (name=="endsub:") return this.stack.pop();
 
@@ -823,70 +823,84 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             outer.style.left = -loc.offsetLeft + loc.offsetWidth + 'px';
          }
 
+         let need_check_area = false;
+         menu.forEach(d => { if (d.checked !== undefined) need_check_area = true; });
+
          menu.forEach(d => {
-
-            if (typeof d === 'object') {
-               let item = document.createElement('div');
-               item.style.position = 'relative';
-
-               let hovArea = document.createElement('div');
-               hovArea.style.width = '100%';
-               hovArea.style.height = '100%';
-               hovArea.className = "contextmenu-item";
-               hovArea.style.display = 'flex';
-               hovArea.style.justifyContent = 'space-between';
-               hovArea.style.cursor = 'pointer';
-
-               item.appendChild(hovArea);
-
-               let chk = document.createElement('span');
-               chk.className = "contextmenu-text";
-               chk.textContent = d.checked ? "\u2713" : "";
-               chk.style.width = "3el";
-
-               let text = document.createElement('span');
-               text.className = "contextmenu-text";
-               text.textContent = d.text || 'text';
-
-               hovArea.addEventListener('mouseenter', () => {
-                  let focused = outer.childNodes;
-                  focused.forEach(d => {
-                     if (d.classList.contains('contextmenu-focus')) {
-                        d.removeChild(d.getElementsByClassName('contextmenu-container')[0])
-                        d.classList.remove('contextmenu-focus')
-                     }
-                  })
-               });
-
-               hovArea.appendChild(text);
-
-               if (d.hasOwnProperty('extraText') || d.sub) {
-                  let extraText = document.createElement('span');
-                  extraText.className = "contextmenu-extraText contextmenu-text";
-                  extraText.textContent = d.sub ? "\u25B6" : d.extraText;
-                  hovArea.appendChild(extraText);
-               }
-
-               if (d.sub)
-                  hovArea.addEventListener('mouseenter', () => {
-                     item.classList.add('contextmenu-focus')
-                     this.buildContextmenu(d.sub, 0, 0, item)
-                  });
-
-               outer.appendChild(item);
-
-               if (d.hasOwnProperty('onclick')) {
-                  item.addEventListener('click', e => d.onclick(e));
-               }
-            } else {
-               if (d === 'divider') {
-                  let hr = document.createElement('hr');
-                  hr.className = "contextmenu-divider";
-                  outer.appendChild(hr);
-               }
+            if (d.divider) {
+               let hr = document.createElement('hr');
+               hr.className = "contextmenu-divider";
+               outer.appendChild(hr);
+               return;
             }
 
-         })
+            let item = document.createElement('div');
+            item.style.position = 'relative';
+            outer.appendChild(item);
+
+            if (d.header) {
+               item.className = "contextmenu-header";
+               item.innerHTML = d.text;
+               return;
+            }
+
+            let hovArea = document.createElement('div');
+            hovArea.style.width = '100%';
+            hovArea.style.height = '100%';
+            hovArea.className = "contextmenu-item";
+            hovArea.style.display = 'flex';
+            hovArea.style.justifyContent = 'space-between';
+            hovArea.style.cursor = 'pointer';
+
+            item.appendChild(hovArea);
+
+            let text = document.createElement('div');
+            text.className = "contextmenu-text";
+            if (d.text && d.text.indexOf("<svg") >= 0) {
+               text.innerHTML = d.text;
+            } else {
+
+               if (need_check_area) {
+                  let chk = document.createElement('span');
+                  chk.innerHTML = d.checked ? "\u2713" : "";
+                  chk.style.display = "inline-block";
+                  chk.style.width = "1em";
+                  text.appendChild(chk);
+               }
+
+               let sub = document.createElement('span');
+               sub.textContent = d.text || 'text';
+               text.appendChild(sub);
+            }
+            hovArea.appendChild(text);
+
+            if (d.hasOwnProperty('extraText') || d.sub) {
+               let extraText = document.createElement('span');
+               extraText.className = "contextmenu-extraText contextmenu-text";
+               extraText.textContent = d.sub ? "\u25B6" : d.extraText;
+               hovArea.appendChild(extraText);
+            }
+
+            hovArea.addEventListener('mouseenter', () => {
+               let focused = outer.childNodes;
+               focused.forEach(d => {
+                  if (d.classList.contains('contextmenu-focus')) {
+                     d.removeChild(d.getElementsByClassName('contextmenu-container')[0]);
+                     d.classList.remove('contextmenu-focus');
+                  }
+               })
+            });
+
+            if (d.sub)
+               hovArea.addEventListener('mouseenter', () => {
+                  item.classList.add('contextmenu-focus');
+                  this.buildContextmenu(d.sub, 0, 0, item);
+               });
+
+
+            if (d.func)
+               item.addEventListener('click', () => d.func(!d.checked));
+         });
 
          loc.appendChild(outer);
 
