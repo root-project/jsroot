@@ -19,6 +19,8 @@
 16. Add proper support of "Symbols" and "Wingdings" fonts
 17. Add many standard functions to math like "crystalball_pdf", "gaussian_pdf", "tdistribution_pdf"
 18. Correctly display extra data from TGraphQQ
+19. Remove "collapsible" and "tabs" layouts which were implemented with jQuery,
+20. Flexible layout implemented now only with d3 functionality
 
 
 ## Changes in 6.3.2

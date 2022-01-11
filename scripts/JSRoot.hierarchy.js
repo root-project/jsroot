@@ -3856,7 +3856,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       let layout = main.select(".gui_layout");
       if (!layout.empty()) {
          let lst = ['simple', 'vert2', 'vert3', 'vert231', 'horiz2', 'horiz32', 'flex',
-                     'grid 2x2', 'grid 1x3', 'grid 2x3', 'grid 3x3', 'grid 4x4', 'collapsible',  'tabs'];
+                     'grid 2x2', 'grid 1x3', 'grid 2x3', 'grid 3x3', 'grid 4x4'];
 
          for (let k = 0; k < lst.length; ++k){
             let opt = document.createElement('option');
@@ -3865,7 +3865,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             layout.node().appendChild(opt);
          }
 
-         layout.on('change', ev => this.setDisplay(ev.target.value || 'collapsible', this.gui_div + "_drawing"));
+         layout.on('change', ev => this.setDisplay(ev.target.value || 'flex', this.gui_div + "_drawing"));
       }
 
       this.setDom(this.gui_div + '_browser_hierarchy');
