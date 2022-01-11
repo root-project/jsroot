@@ -499,13 +499,47 @@
 }
 
 /*--------------------------------------------------
+  Standalone dialog
+  --------------------------------------------------*/
+
+.jsroot_dialog {
+   z-index: 100001;
+   position: absolute;
+   left: 50%;
+   top: 50%;
+}
+
+.jsroot_dialog_body {
+	position: relative;
+	left: -50%;
+   top: -50%;
+	border: dotted red 3px;
+	padding: 5px;
+   display: flex;
+   flex-flow: column;
+   background-color: white;
+}
+
+.jsroot_dialog_header {
+   flex: 0 1 auto;
+}
+
+.jsroot_dialog_content {
+   flex: 1 1 auto;
+}
+
+.jsroot_dialog_footer {
+   flex: 0 1 auto;
+}
+
+/*--------------------------------------------------
   Flexible MDI display
   --------------------------------------------------*/
 .jsroot_flex_btn {
-	float:right;
-	padding:0;
-	width:1.4em;
-	text-align:center;
+	float: right;
+	padding: 0;
+	width: 1.4em;
+	text-align: center;
 	font-size: 10px;
 	margin-top: 2px;
 	margin-right: 4px;

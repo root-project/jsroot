@@ -4739,7 +4739,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             .data([{ n: '&#x274C;', t: "close" }, { n: '&#x25B5;', t: "maximize" }, { n: '&#x25BF;', t: "minimize" }])
             .enter()
             .append("button")
-            .attr("type","button")
+            .attr("type", "button")
             .attr("class", "jsroot_flex_btn")
             .attr("title", d => d.t)
             .html(d => d.n)

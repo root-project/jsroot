@@ -705,8 +705,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       /** @summary Run modal element with jquery-ui */
       runModal(title, main_content, args) {
          if (!args) args = {};
-         let dlg_id = this.menuname + "_dialog";
-         let old_dlg = document.getElementById(dlg_id);
+         let dlg_id = this.menuname + "_dialog",
+             old_dlg = document.getElementById(dlg_id);
          if (old_dlg) old_dlg.remove();
 
          let element = document.createElement('div');
@@ -731,7 +731,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                   title: title,
                   buttons: args.btns ? {
                      "Ok": pressEnter,
-                     "Cancel": () => dialog.dialog( "close" )
+                     "Cancel": () => dialog.dialog("close")
                   } : undefined,
                   close: () => dialog.remove()
                 });
@@ -974,8 +974,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return outer;
       }
 
-
-      /** @summary Show menu */
+      /** @summary Show standalone menu */
       show(event) {
          this.remove();
 
@@ -992,6 +991,38 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          return Promise.resolve(this);
       }
+
+      /** @summary Run modal elements with standalone code */
+      runModal(title, main_content, args) {
+         if (!args) args = {};
+         let dlg_id = this.menuname + "_dialog",
+             old_dlg = document.getElementById(dlg_id);
+         if (old_dlg) old_dlg.remove();
+
+         let element = document.createElement('div');
+         element.setAttribute('id', dlg_id);
+         element.className = "jsroot_dialog";
+         element.innerHTML =
+            `<div class="jsroot_dialog_body">
+               <div class="jsroot_dialog_header">${title}</div>
+               <div class="jsroot_dialog_content">${main_content}</div>
+               <div class="jsroot_dialog_footer">
+                  <button style="float: right; margin-right: 1em;" class="dialog_button">Ok</button>
+                  <button style="float: right; margin-right: 1em;" class="dialog_button">Cancel</button>
+              </div>
+             </div>`;
+         document.body.appendChild(element);
+
+         return new Promise(resolveFunc => {
+
+            d3.select(element).selectAll('.dialog_button').on("click", evnt => {
+               if (d3.select(evnt.target).text() == "Ok")
+                  resolveFunc(element);
+               element.remove();
+            });
+         });
+      }
+
 
 
    } // class StandaloneMenu
