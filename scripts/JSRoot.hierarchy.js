@@ -4638,7 +4638,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          main.selectAll(".flex_draw").each(function() {
             // check if only visible specified
-            if (only_visible && $(this).is(":hidden")) return;
+            if (only_visible && (d3.select(this.parentNode).property("state") == "min")) return;
 
             userfunc(this);
          });
@@ -4646,11 +4646,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       getActiveFrame() {
          let found = super.getActiveFrame();
-         if (found && !$(found).is(":hidden")) return found;
+         if (found && d3.select(found.parentNode).property("state") != "min") return found;
 
          found = null;
-         this.forEachFrame(frame => { if (!found) found = frame; }, true);
-
+         this.forEachFrame(frame => { found = frame; }, true);
          return found;
       }
 
@@ -4736,7 +4735,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          let main = top.append('div');
 
          main.html(`<div class="flex_header"><p>${title}</p></div>
-                   <div id="${subid}_cont" class="flex_draw"></div>`);
+                   <div id="${subid}_cont" class="flex_draw"></div>
+                   <div class="jsroot_flex_resize">&#x25FF;</div>`);
 
          main.attr("id", subid)
             .attr("class", "flex_frame")
@@ -4765,18 +4765,21 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             return false;
          };
 
-         let drag_move = d3.drag().subject(Object), moving_frame = null, moving_div = null;
-         drag_move.on("start", function(evnt) {
+         let moving_frame = null, moving_div = null, doing_move = false,
+             drag_object = d3.drag().subject(Object);
+         drag_object.on("start", function(evnt) {
             if (detectRightButton(evnt.sourceEvent)) return;
 
             let main = d3.select(this.parentNode);
             if(main.property("state") == "max") return;
 
+            doing_move = !d3.select(this).classed("jsroot_flex_resize");
+
             mdi.activateFrame(main.node());
 
             moving_div = top.append('div')
                             .attr("style", main.attr("style"))
-                            .classed("jsroot-flex-resizable-helper", true);
+                            .classed("jsroot_flex_resizable_helper", true);
 
             evnt.sourceEvent.preventDefault();
             evnt.sourceEvent.stopPropagation();
@@ -4792,20 +4795,32 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                v = parseInt(v.substr(0,v.length-2));
                moving_div.style(name, (v+dd)+"px");
             };
-            changeProp("left", evnt.dx);
-            changeProp("top", evnt.dy);
+            if (doing_move) {
+               changeProp("left", evnt.dx);
+               changeProp("top", evnt.dy);
+            } else {
+               changeProp("width", evnt.dx);
+               changeProp("height", evnt.dy);
+            }
          }).on("end", function(evnt) {
             if (!moving_div) return;
             evnt.sourceEvent.preventDefault();
             evnt.sourceEvent.stopPropagation();
-            moving_frame.style("left", moving_div.style("left"));
-            moving_frame.style("top", moving_div.style("top"));
+            if (doing_move) {
+               moving_frame.style("left", moving_div.style("left"));
+               moving_frame.style("top", moving_div.style("top"));
+            } else {
+               moving_frame.style("width", moving_div.style("width"));
+               moving_frame.style("height", moving_div.style("height"));
+            }
             moving_div.remove();
             moving_div = null;
+            if (!doing_move)
+               JSROOT.resize(moving_frame.select(".flex_draw").node());
          });
 
-         main.select(".flex_header").call(drag_move);
-
+         main.select(".flex_header").call(drag_object);
+         main.select(".jsroot_flex_resize").call(drag_object);
 
          this.cnt++;
 
