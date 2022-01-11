@@ -446,9 +446,20 @@
   Flexible MDI display
   --------------------------------------------------*/
 
+.jsroot_flex_btn {
+	float:right;
+	padding:0;
+	width:1.4em;
+	text-align:center;
+	font-size: 10px;
+	margin-top: 2px;
+	margin-right: 4px;
+}
+
 .jsroot .flex_header {
     height: 23px;
     overflow: hidden;
+    background-color: lightblue;
 }
 
 .jsroot .flex_header p {

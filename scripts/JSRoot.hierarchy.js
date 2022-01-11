@@ -4688,20 +4688,23 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
              subid = topid + "_frame" + this.cnt;
 
          top.append('div').attr("id", subid).attr("class", "flex_frame").style("position", "absolute")
-            .html(`<div class="ui-widget-header flex_header">
-                     <p>${title}</p>
-                     <button type="button" style="float:right; width:1.4em"/>
-                     <button type="button" style="float:right; width:1.4em"/>
-                     <button type="button" style="float:right; width:1.4em"/>
-                    </div>
-                    <div id="${subid}_cont" class="flex_draw">
-                    </div>`);
+            .html(`<div class="flex_header"><p>${title}</p></div>
+                   <div id="${subid}_cont" class="flex_draw"></div>`);
 
          d3.select("#" + subid)
             .style('left', Math.round(w * (this.cnt % 5)/10) + "px")
             .style('top', Math.round(h * (this.cnt % 5)/10) + "px")
             .style('width', Math.round(w * 0.58) + "px")
-            .style('height', Math.round(h * 0.58) + "px");
+            .style('height', Math.round(h * 0.58) + "px")
+            .select(".flex_header")
+            .selectAll("button")
+            .data([{ n: '&#x274C;', t: "close" }, { n: '&#x25B5;', t: "maximize" }, { n: '&#x25BF;', t: "minimize" }])
+            .enter()
+            .append("button")
+            .attr("type","button")
+            .attr("class", "jsroot_flex_btn")
+            .attr("title", d => d.t)
+            .html(d => d.n);
 
          this.cnt++;
 
