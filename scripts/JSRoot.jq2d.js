@@ -17,7 +17,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
 
       player.draw_first = true;
 
-      player.ConfigureOnline = function(itemname, url, askey, root_version, dflt_expr) {
+      player.configureOnline = function(itemname, url, askey, root_version, dflt_expr) {
          this.setItemName(itemname, "", this);
          this.url = url;
          this.root_version = root_version;
@@ -102,24 +102,33 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          jsrp.registerForResize(this);
       }
 
-      player.PerformLocalDraw = function() {
+      player.getValue = function(sel) {
+         let elem = this.selectDom().select(sel);
+         if (elem.empty()) return;
+         let val = elem.property("value");
+         if (val !== undefined) return val;
+         return elem.attr("value");
+      }
+
+      player.performLocalDraw = function() {
          if (!this.local_tree) return;
 
-         let frame = $(this.selectDom().node()),
-             args = { expr: frame.find('.treedraw_varexp').val() };
+         let frame = this.selectDom();
 
-         if (frame.find('.treedraw_more').length==0) {
-            args.cut = frame.find('.treedraw_cut').val();
+         let args = { expr: this.getValue('.treedraw_varexp') };
+
+         if (frame.select('.treedraw_more').empty()) {
+            args.cut = this.getValue('.treedraw_cut');
             if (!args.cut) delete args.cut;
 
-            args.drawopt = frame.find('.treedraw_opt').val();
+            args.drawopt = this.getValue('.treedraw_opt');
             if (args.drawopt === "dump") { args.dump = true; args.drawopt = ""; }
             if (!args.drawopt) delete args.drawopt;
 
-            args.numentries = parseInt(frame.find('.treedraw_number').val());
+            args.numentries = parseInt(this.getValue('.treedraw_number'));
             if (!Number.isInteger(args.numentries)) delete args.numentries;
 
-            args.firstentry = parseInt(frame.find('.treedraw_first').val());
+            args.firstentry = parseInt(this.getValue('.treedraw_first'));
             if (!Number.isInteger(args.firstentry)) delete args.firstentry;
          }
 
@@ -134,15 +143,16 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
 
       player.performDraw = function() {
 
-         if (this.local_tree) return this.PerformLocalDraw();
+         if (this.local_tree)
+            return this.performLocalDraw();
 
-         let frame = $(this.selectDom().node()),
+         let frame = this.selectDom(),
              url = this.url + '/exe.json.gz?compact=3&method=Draw',
              expr = frame.find('.treedraw_varexp').val(),
              hname = "h_tree_draw", option = "",
              pos = expr.indexOf(">>");
 
-         if (pos<0) {
+         if (pos < 0) {
             expr += ">>" + hname;
          } else {
             hname = expr.substr(pos+2);
@@ -151,21 +161,21 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
             if (pos2>0) hname = hname.substr(0, pos2);
          }
 
-         if (frame.find('.treedraw_more').length==0) {
-            let cut = frame.find('.treedraw_cut').val(),
-                nentries = frame.find('.treedraw_number').val(),
-                firstentry = frame.find('.treedraw_first').val();
+         if (frame.find('.treedraw_more').empty()) {
+            let cut = this.getValue('.treedraw_cut'),
+                nentries = this.getValue('.treedraw_number'),
+                firstentry = this.getValue('.treedraw_first');
 
-            option = frame.find('.treedraw_opt').val();
+            option = this.getValue('.treedraw_opt');
 
-            url += '&prototype="const char*,const char*,Option_t*,Long64_t,Long64_t"&varexp="' + expr + '"&selection="' + cut + '"';
+            url += `&prototype="const char*,const char*,Option_t*,Long64_t,Long64_t"&varexp="${expr}"&selection="${cut}"`;
 
             // provide all optional arguments - default value kMaxEntries not works properly in ROOT6
             if (nentries=="") nentries = (this.root_version >= 394499) ? "TTree::kMaxEntries": "1000000000"; // kMaxEntries available since ROOT 6.05/03
             if (firstentry=="") firstentry = "0";
-            url += '&option="' + option + '"&nentries=' + nentries + '&firstentry=' + firstentry;
+            url += `&option="${option}"&nentries=${nentries}&firstentry=${firstentry}`;
          } else {
-            url += '&prototype="Option_t*"&opt="' + expr + '"';
+            url += `&prototype="Option_t*"&opt="${expr}"`;
          }
          url += '&_ret_object_=' + hname;
 
@@ -232,7 +242,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
          }
 
       JSROOT.createTreePlayer(player);
-      player.ConfigureOnline(itemname, url, askey, root_version, draw_expr);
+      player.configureOnline(itemname, url, askey, root_version, draw_expr);
       player.Show();
 
       return player;
