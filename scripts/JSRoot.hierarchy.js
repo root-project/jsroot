@@ -4657,11 +4657,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       activateFrame(frame) {
          if (frame === 'first') {
             frame = null;
-            d3.select(`#${topid}`).selectAll(".flex_frame").each(function() {
-               if (!frame) frame = this;
-               // if (!$(this).is(":hidden") && ($(this).prop('state') != "minimal") && !sel) sel = $(this);
+            d3.select(`#${this.frameid}_flex`).selectAll(".flex_frame").each(function() {
+               if (!frame && (d3.select(this).property("state") != "min")) frame = this;
             });
          }
+         if (!frame) return;
          if (frame.getAttribute("class") == "flex_draw") frame = frame.parentNode;
 
          frame.parentNode.append(frame);
@@ -4670,6 +4670,52 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          let draw_frame = frame.querySelector(".flex_draw");
          jsrp.selectActivePad({ pp: jsrp.getElementCanvPainter(draw_frame), active: true });
          JSROOT.resize(draw_frame);
+      }
+
+      clickButton(btn) {
+         let kind = d3.select(btn).datum(),
+             main = d3.select(btn.parentNode.parentNode);
+
+         if (kind.t == "close") {
+            this.cleanupFrame(main.select(".flex_draw").node());
+            main.remove();
+            this.activateFrame('first'); // set active as first window
+            return;
+         }
+
+         let state = main.property("state"), newstate = state;
+         if (kind.t == "maximize")
+            newstate = (state == "max") ? "normal" : "max";
+         else
+            newstate = (state == "min") ? "normal" : "min";
+
+         if (state == newstate) return;
+
+         if (state == "normal")
+             main.property('original_style', main.attr('style'));
+
+         switch (newstate) {
+            case "min":
+               main.style("height","auto").style("width", "auto");
+               main.select(".flex_draw").style("display","none");
+               // deactiavte resizeable
+               break;
+            case "max":
+               main.style("height","100%").style("width", "100%").style('left','').style('top','');
+               main.select(".flex_draw").style("display", null);
+               // deactiavte resizeable
+               break;
+            default:
+               main.select(".flex_draw").style("display", null);
+               main.attr("style", main.property("original_style"));
+         }
+
+         main.property("state", newstate);
+
+         if (newstate !== "min")
+            this.activateFrame(main.node());
+         else
+            this.activateFrame("first");
       }
 
       createFrame(title) {
@@ -4696,6 +4742,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             .style('top', Math.round(h * (this.cnt % 5)/10) + "px")
             .style('width', Math.round(w * 0.58) + "px")
             .style('height', Math.round(h * 0.58) + "px")
+            .property("state","normal")
             .select(".flex_header")
             .selectAll("button")
             .data([{ n: '&#x274C;', t: "close" }, { n: '&#x25B5;', t: "maximize" }, { n: '&#x25BF;', t: "minimize" }])
@@ -4704,7 +4751,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             .attr("type","button")
             .attr("class", "jsroot_flex_btn")
             .attr("title", d => d.t)
-            .html(d => d.n);
+            .html(d => d.n)
+            .on("click", function() { mdi.clickButton(this); });
 
          this.cnt++;
 
