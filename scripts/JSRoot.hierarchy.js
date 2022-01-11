@@ -3384,24 +3384,16 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (!document.getElementById(this.disp_frameid))
          return Promise.resolve(null);
 
-      let promise;
-
-      if ((this.disp_kind == "tabs") || (this.disp_kind.indexOf("coll") == 0))
-         promise = JSROOT.require('jq2d').then(() => JSROOT.create_jq_mdi(this.disp_frameid, this.disp_kind));
-      else if (this.disp_kind.indexOf("flex") == 0)
-         promise = Promise.resolve(new JSROOT.FlexibleDisplay(this.disp_frameid));
+      if ((this.disp_kind.indexOf("flex") == 0) || (this.disp_kind == "tabs") || (this.disp_kind.indexOf("coll") == 0))
+         this.disp = new JSROOT.FlexibleDisplay(this.disp_frameid);
       else
-         promise = Promise.resolve(new JSROOT.GridDisplay(this.disp_frameid, this.disp_kind));
+         this.disp = new JSROOT.GridDisplay(this.disp_frameid, this.disp_kind);
 
-      return promise.then(disp => {
-         this.disp = disp;
-         if (this.disp) {
-            this.disp.cleanupFrame = this.cleanupFrame.bind(this);
-            if (JSROOT.settings.DragAndDrop)
-               this.disp.setInitFrame(this.enableDrop.bind(this));
-         }
-         return this.disp;
-      });
+      this.disp.cleanupFrame = this.cleanupFrame.bind(this);
+      if (JSROOT.settings.DragAndDrop)
+          this.disp.setInitFrame(this.enableDrop.bind(this));
+
+      return Promise.resolve(this.disp);
    }
 
    /** @summary If possible, creates custom JSROOT.MDIDisplay for given item
