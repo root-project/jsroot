@@ -334,7 +334,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    } // TooltipHandler
 
-   let setPainterTooltipEnabled = (painter,on) => {
+   function setPainterTooltipEnabled(painter,on) {
       if (!painter) return;
 
       let fp = painter.getFramePainter();
@@ -343,10 +343,16 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          fp.processFrameTooltipEvent(null);
       }
       // this is 3D control object
-      if (this.control && (typeof this.control.setTooltipEnabled == 'function'))
-         this.control.setTooltipEnabled(on);
+      if (painter.control && (typeof painter.control.setTooltipEnabled == 'function'))
+         painter.control.setTooltipEnabled(on);
    }
 
+   function detectRightButton(event) {
+      if ('buttons' in event) return event.buttons === 2;
+      if ('which' in event) return event.which === 3;
+      if ('button' in event) return event.button === 2;
+      return false;
+   }
 
    /** @summary Add drag for interactive rectangular elements for painter */
    function addDragHandler(_painter, arg) {
@@ -354,13 +360,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       let painter = _painter, drag_rect = null, pp = painter.getPadPainter();
       if (pp && pp._fast_drawing) return;
-
-      const detectRightButton = event => {
-         if ('buttons' in event) return event.buttons === 2;
-         else if ('which' in event) return event.which === 3;
-         else if ('button' in event) return event.button === 2;
-         return false;
-      };
 
       const makeResizeElements = (group, handler) => {
          const addElement = (cursor, d) => {
@@ -604,13 +603,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
 
       if (painter.draw_g.property("assigned_move")) return;
-
-      const detectRightButton = event => {
-         if ('buttons' in event) return event.buttons === 2;
-         else if ('which' in event) return event.which === 3;
-         else if ('button' in event) return event.button === 2;
-         return false;
-      };
 
       let drag_move = d3.drag().subject(Object),
          not_changed = true, move_disabled = false;
