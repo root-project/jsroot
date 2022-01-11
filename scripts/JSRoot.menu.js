@@ -627,7 +627,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          title = title ? " title='" + title + "'" : "";
          if (name.indexOf("sub:")==0) { name = name.substr(4); close_tag = "<ul>"; }
 
-         if (typeof arg == 'function') { func = arg; arg = name; }
+         if (typeof arg == 'function') { title = func; func = arg; arg = name; }
 
          if (name.indexOf("chk:")==0) { item = "<span class='ui-icon ui-icon-check' style='margin:1px'></span>"; name = name.substr(4); } else
          if (name.indexOf("unk:")==0) { item = "<span class='ui-icon ui-icon-blank' style='margin:1px'></span>"; name = name.substr(4); }
@@ -854,6 +854,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             hovArea.style.display = 'flex';
             hovArea.style.justifyContent = 'space-between';
             hovArea.style.cursor = 'pointer';
+            if (d.title) hovArea.setAttribute("title", d.title);
 
             item.appendChild(hovArea);
 
@@ -920,7 +921,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
                outer.style.left = docWidth - outer.offsetWidth + 'px';
             }
-
 
             if (outer.offsetHeight > docHeight) {
                //is the contextmenu height larger than the window height?
