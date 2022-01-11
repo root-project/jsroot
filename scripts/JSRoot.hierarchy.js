@@ -4733,17 +4733,21 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
              h = top.node().clientHeight,
              subid = topid + "_frame" + this.cnt;
 
-         top.append('div').attr("id", subid).attr("class", "flex_frame").style("position", "absolute")
-            .html(`<div class="flex_header"><p>${title}</p></div>
+         let main = top.append('div');
+
+         main.html(`<div class="flex_header"><p>${title}</p></div>
                    <div id="${subid}_cont" class="flex_draw"></div>`);
 
-         d3.select("#" + subid)
+         main.attr("id", subid)
+            .attr("class", "flex_frame")
+            .style("position", "absolute")
             .style('left', Math.round(w * (this.cnt % 5)/10) + "px")
             .style('top', Math.round(h * (this.cnt % 5)/10) + "px")
             .style('width', Math.round(w * 0.58) + "px")
             .style('height', Math.round(h * 0.58) + "px")
-            .property("state","normal")
+            .property("state", "normal")
             .select(".flex_header")
+            .on("click", function() { mdi.activateFrame(this.parentNode); })
             .selectAll("button")
             .data([{ n: '&#x274C;', t: "close" }, { n: '&#x25B5;', t: "maximize" }, { n: '&#x25BF;', t: "minimize" }])
             .enter()
@@ -4753,6 +4757,55 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             .attr("title", d => d.t)
             .html(d => d.n)
             .on("click", function() { mdi.clickButton(this); });
+
+         const detectRightButton = event => {
+            if ('buttons' in event) return event.buttons === 2;
+            if ('which' in event) return event.which === 3;
+            if ('button' in event) return event.button === 2;
+            return false;
+         };
+
+         let drag_move = d3.drag().subject(Object), moving_frame = null, moving_div = null;
+         drag_move.on("start", function(evnt) {
+            if (detectRightButton(evnt.sourceEvent)) return;
+
+            let main = d3.select(this.parentNode);
+            if(main.property("state") == "max") return;
+
+            mdi.activateFrame(main.node());
+
+            moving_div = top.append('div')
+                            .attr("style", main.attr("style"))
+                            .classed("jsroot-flex-resizable-helper", true);
+
+            evnt.sourceEvent.preventDefault();
+            evnt.sourceEvent.stopPropagation();
+
+            moving_frame = main;
+
+         }).on("drag", function(evnt) {
+            if (!moving_div) return;
+            evnt.sourceEvent.preventDefault();
+            evnt.sourceEvent.stopPropagation();
+            let changeProp = (name,dd) => {
+               let v = moving_div.style(name);
+               v = parseInt(v.substr(0,v.length-2));
+               moving_div.style(name, (v+dd)+"px");
+            };
+            changeProp("left", evnt.dx);
+            changeProp("top", evnt.dy);
+         }).on("end", function(evnt) {
+            if (!moving_div) return;
+            evnt.sourceEvent.preventDefault();
+            evnt.sourceEvent.stopPropagation();
+            moving_frame.style("left", moving_div.style("left"));
+            moving_frame.style("top", moving_div.style("top"));
+            moving_div.remove();
+            moving_div = null;
+         });
+
+         main.select(".flex_header").call(drag_move);
+
 
          this.cnt++;
 
