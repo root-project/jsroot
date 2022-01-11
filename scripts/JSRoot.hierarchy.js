@@ -4710,6 +4710,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          }
 
          main.property("state", newstate);
+         main.select(".jsroot_flex_resize").style("display", newstate == "normal" ? "" : "none");
 
          if (newstate !== "min")
             this.activateFrame(main.node());
@@ -4768,18 +4769,26 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          let moving_frame = null, moving_div = null, doing_move = false,
              drag_object = d3.drag().subject(Object);
          drag_object.on("start", function(evnt) {
+            if (evnt.sourceEvent.target.type == "button")
+               return mdi.clickButton(evnt.sourceEvent.target);
+
             if (detectRightButton(evnt.sourceEvent)) return;
 
             let main = d3.select(this.parentNode);
-            if(main.property("state") == "max") return;
+            if(!main.classed("flex_frame") || (main.property("state") == "max")) return;
 
             doing_move = !d3.select(this).classed("jsroot_flex_resize");
+            if (!doing_move && (main.property("state") == "min")) return;
 
             mdi.activateFrame(main.node());
 
-            moving_div = top.append('div')
-                            .attr("style", main.attr("style"))
-                            .classed("jsroot_flex_resizable_helper", true);
+            moving_div = top.append('div').classed("jsroot_flex_resizable_helper", true);
+
+            moving_div.attr("style", main.attr("style"));
+
+            if (main.property("state") == "min")
+               moving_div.style("width", main.node().clientWidth + "px")
+                         .style("height", main.node().clientHeight + "px");
 
             evnt.sourceEvent.preventDefault();
             evnt.sourceEvent.stopPropagation();
@@ -4824,9 +4833,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          this.cnt++;
 
-         let frame = d3.select(`#${subid}_cont`).attr('frame_title', title).node();
+         let draw_frame = main.select('.flex_draw').attr('frame_title', title).node();
 
-         return this.afterCreateFrame(frame);
+         return this.afterCreateFrame(draw_frame);
       }
 
    } // class FlexibleDisplay
