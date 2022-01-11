@@ -172,7 +172,7 @@
          'three'                : { src: 'three', libs: true, extract: "THREE" }
     };
 
-    ['core','base3d','csg','geobase','geom','geoworker','gpad','hierarchy','hist','hist3d','interactive','io','menu','jq2d','latex',
+    ['core','base3d','csg','geobase','geom','geoworker','gpad','hierarchy','hist','hist3d','interactive','io','menu','latex',
       'math','more','openui5','painter','tree','v7gpad','v7hist','v7hist3d','v7more','webwindow']
          .forEach(item => _.sources[item] = { src: "JSRoot." + item });
 
@@ -475,13 +475,11 @@
 
       if (typeof need == "string") need = need.split(";");
 
-      need = need.filter(elem => !!elem);
-
       need.forEach((name,indx) => {
          if ((name.indexOf("load:")==0) || (name.indexOf("user:")==0))
             need[indx] = name.substr(5);
-         else if (name == "jq")
-            need[indx] = "jq2d";
+         else if ((name == "jq") || (name == "jq2d")) // only for backward compatibility
+            need[indx] = "hierarchy";
          else if (name == "2d")
             need[indx] = "painter";
          else if (name == "v6")
@@ -489,6 +487,9 @@
          else if (name == "v7")
             need[indx] = "v7gpad";
       });
+
+      // remove duplicates
+      need = need.filter((name, pos) => name && (need.indexOf(name) == pos));
 
       // loading with require.js
 
@@ -783,7 +784,6 @@
      *    - 'v7more' ROOT v7 special classes
      *    - 'math'   some methods from TMath class
      *    - 'hierarchy' hierarchy browser
-     *    - 'jq2d'   jQuery-dependent part of hierarchy
      *    - 'openui5' OpenUI5 and related functionality
      * @param {Array|string} req - list of required components (as array or string separated by semicolon)
      * @returns {Promise} with array of requirements (or single element) */

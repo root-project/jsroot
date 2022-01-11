@@ -713,12 +713,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       return !line.empty();
    }
 
-   /** @summary Create status line */
-   BrowserLayout.prototype.createStatusLine = function(height, mode) {
-      if (!this.gui_div) return Promise.resolve('');
-      return JSROOT.require('jq2d').then(() => this.createStatusLine(height, mode));
-   }
-
    /** @summary Set browser title text
      * @desc Title also used for dragging of the float browser */
    BrowserLayout.prototype.setBrowserTitle = function(title) {

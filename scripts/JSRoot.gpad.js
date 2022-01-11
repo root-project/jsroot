@@ -4319,7 +4319,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return Promise.resolve(true);
       }
 
-      return JSROOT.require("jq2d").then(() => {
+      return JSROOT.require("hierarchy").then(() => {
 
          let grid = new JSROOT.GridDisplay(origin.node(), layout_kind);
 
