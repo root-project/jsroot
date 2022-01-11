@@ -2863,10 +2863,10 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
       } else {
 
          if ((args==='player') || !args) {
-            return JSROOT.require("jq2d").then(() => {
+            return JSROOT.require("hierarchy").then(() => {
                JSROOT.createTreePlayer(painter);
                painter.configureTree(tree);
-               painter.Show();
+               painter.showPlayer();
                return painter;
             });
          }
@@ -2901,10 +2901,10 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
          // redirect drawing to the player
          create_player = 1;
 
-         return JSROOT.require("jq2d").then(() => {
+         return JSROOT.require("hierarchy").then(() => {
             JSROOT.createTreePlayer(painter);
             painter.configureTree(tree);
-            painter.Show(args);
+            painter.showPlayer(args);
             create_player = 2;
             return JSROOT.redraw(painter.drawid, obj).then(objpainter => {
                painter.setItemName("TreePlayer"); // item name used by MDI when process resize
