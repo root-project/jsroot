@@ -5,7 +5,7 @@ JSROOT.define(['d3', 'jquery', 'painter', 'hierarchy', 'jquery-ui', 'jqueryui-mo
 
    "use strict";
 
-   JSROOT.loadScript('$$$style/jquery-ui');
+   JSROOT.loadScript('https://root.cern/js/6.3.2/style/jquery-ui.css');
 
    if (typeof jQuery === 'undefined') globalThis.jQuery = $;
 

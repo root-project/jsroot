@@ -603,7 +603,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       loadJQ() {
          return JSROOT.require(['jquery', 'jquery-ui']).then(arr => {
             if (typeof jQuery === 'undefined') globalThis.jQuery = arr[0];
-            return JSROOT.loadScript('$$$style/jquery-ui');
+            return JSROOT.loadScript('https://root.cern/js/6.3.2/style/jquery-ui.css');
          }).then(() => globalThis.jQuery);
       }
 
@@ -1278,10 +1278,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
      *          menu.show();
      *        }); */
    function createMenu(evnt, handler, menuname) {
-      let menu = JSROOT.settings.Bootstrap
-                 ? new BootstrapMenu(handler, menuname || 'root_ctx_menu', evnt)
-                 : new StandaloneMenu(handler, menuname || 'root_ctx_menu', evnt);
-
+      let menu;
+      if (JSROOT.settings.Bootstrap) menu = new BootstrapMenu(handler, menuname || 'root_ctx_menu', evnt);
+      if (!menu && JSROOT.settings.jQuery) menu = new JQueryMenu(handler, menuname || 'root_ctx_menu', evnt);
+      if (!menu) menu = new StandaloneMenu(handler, menuname || 'root_ctx_menu', evnt);
       return menu.load();
    }
 
