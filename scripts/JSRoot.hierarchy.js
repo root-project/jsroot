@@ -5056,7 +5056,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          let frame = this.selectDom(),
              url = this.url + '/exe.json.gz?compact=3&method=Draw',
-             expr = frame.find('.treedraw_varexp').val(),
+             expr = this.getValue('.treedraw_varexp'),
              hname = "h_tree_draw", option = "",
              pos = expr.indexOf(">>");
 
@@ -5066,10 +5066,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             hname = expr.substr(pos+2);
             if (hname[0]=='+') hname = hname.substr(1);
             let pos2 = hname.indexOf("(");
-            if (pos2>0) hname = hname.substr(0, pos2);
+            if (pos2 > 0) hname = hname.substr(0, pos2);
          }
 
-         if (frame.find('.treedraw_more').empty()) {
+         if (frame.select('.treedraw_more').empty()) {
             let cut = this.getValue('.treedraw_cut'),
                 nentries = this.getValue('.treedraw_number'),
                 firstentry = this.getValue('.treedraw_first');
