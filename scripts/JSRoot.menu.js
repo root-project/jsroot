@@ -857,13 +857,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if (d.title) hovArea.setAttribute("title", d.title);
 
             item.appendChild(hovArea);
+            if (!d.text) d.text = "item";
 
             let text = document.createElement('div');
             text.className = "contextmenu-text";
-            if (d.text && d.text.indexOf("<svg") >= 0) {
+            if (d.text.indexOf("<svg") >= 0) {
                text.innerHTML = d.text;
             } else {
-
                if (need_check_area) {
                   let chk = document.createElement('span');
                   chk.innerHTML = d.checked ? "\u2713" : "";
@@ -873,7 +873,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                }
 
                let sub = document.createElement('span');
-               sub.textContent = d.text || 'text';
+               if (d.text.indexOf("<nobr>") == 0)
+                  sub.textContent = d.text.substr(6, d.text.length-13);
+               else
+                  sub.textContent = d.text;
                text.appendChild(sub);
             }
             hovArea.appendChild(text);
