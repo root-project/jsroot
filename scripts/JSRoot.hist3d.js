@@ -10,7 +10,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
    function testAxisVisibility(camera, toplevel, fb, bb) {
       let top;
       if (toplevel && toplevel.children)
-         for (let n=0;n<toplevel.children.length;++n) {
+         for (let n = 0; n < toplevel.children.length; ++n) {
             top = toplevel.children[n];
             if (top.axis_draw) break;
             top = undefined;
@@ -607,7 +607,6 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
       };
 
       const createZoomMesh = (kind, size_3d, use_y_for_z) => {
-
          let positions, geom = new THREE.BufferGeometry();
          if (kind === "z")
             positions = new Float32Array([0,0,0, ticklen*4,0,2*size_3d, ticklen*4,0,0, 0,0,0, 0,0,2*size_3d, ticklen*4,0,2*size_3d]);
@@ -665,6 +664,8 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
                }
                return tgtmesh;
             }
+
+            if (!this.geometry) return false;
 
             if (!tgtmesh) {
                gg = this.geometry.clone();
