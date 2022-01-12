@@ -769,6 +769,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.stack = [ this.code ];
       }
 
+     /** @summary Load required modules, noop for that menu class */
      load() { return Promise.resolve(this); }
 
       /** @summary Add menu item
@@ -805,7 +806,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          elem.func = func;
       }
 
-      buildContextmenu(menu, left, top, loc) {
+      /** @summary Returns size of main menu */
+      size() { return this.code.length; }
+
+      /** @summary Build HTML elements of the menu
+        * @private */
+      _buildContextmenu(menu, left, top, loc) {
 
          let outer = document.createElement('div');
          outer.className = "contextmenu-container";
@@ -899,7 +905,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if (d.sub)
                hovArea.addEventListener('mouseenter', () => {
                   item.classList.add('contextmenu-focus');
-                  this.buildContextmenu(d.sub, 0, 0, item);
+                  this._buildContextmenu(d.sub, 0, 0, item);
                });
 
 
@@ -988,7 +994,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          let oldmenu = document.getElementById(this.menuname);
          if (oldmenu) oldmenu.remove();
 
-         this.element = this.buildContextmenu(this.code, event.clientX + window.pageXOffset, event.clientY + window.pageYOffset, document.body);
+         this.element = this._buildContextmenu(this.code, event.clientX + window.pageXOffset, event.clientY + window.pageYOffset, document.body);
 
          this.element.setAttribute('id', this.menuname);
 
@@ -1034,8 +1040,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          });
       }
 
-
-
    } // class StandaloneMenu
 
    /**
@@ -1069,6 +1073,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return promise.then(() => (!with_js || (typeof bootstrap != 'undefined')) ? true : JSROOT.loadScript(JSROOT._.bs_path + 'bootstrap.bundle.min.js'));
       }
 
+      /** @summary Load bootstrap functionality */
       load() { return this.loadBS().then(() => this); }
 
       /** @summary Add menu item
@@ -1157,7 +1162,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             let myItems = this.element.getElementsByClassName('dropdown-item');
 
-            for (let i=0; i<myItems.length; i++)
+            for (let i = 0; i < myItems.length; i++)
                myItems[i].addEventListener('click', function() {
                   let arg = this.getAttribute('arg'),
                       cnt = this.getAttribute('id').substr(menu.menuname.length),
