@@ -518,7 +518,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          return new Promise(resolveFunc => {
 
-            this.runModal(method.fClassName + '::' + method.fName, main_content, { btns: true, height: 100 + method.fArgs.length*60, width: 400, resizable: true}).then(element => {
+            this.runModal(method.fClassName + '::' + method.fName, main_content, { btns: true, height: 100 + method.fArgs.length*60, width: 400, resizable: true }).then(element => {
                if (!element) return;
                let args = "";
 
@@ -996,8 +996,15 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       runModal(title, main_content, args) {
          if (!args) args = {};
          let dlg_id = this.menuname + "_dialog",
-             old_dlg = document.getElementById(dlg_id);
+             old_dlg = document.getElementById(dlg_id),
+             old_blk = document.getElementById(dlg_id+"_block");
          if (old_dlg) old_dlg.remove();
+         if (old_blk) old_blk.remove();
+
+         let block = document.createElement('div');
+         block.setAttribute('id', dlg_id+"_block");
+         block.className = "jsroot_dialog_block";
+         document.body.appendChild(block);
 
          let element = document.createElement('div');
          element.setAttribute('id', dlg_id);
@@ -1007,18 +1014,19 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                <div class="jsroot_dialog_header">${title}</div>
                <div class="jsroot_dialog_content">${main_content}</div>
                <div class="jsroot_dialog_footer">
-                  <button style="float: right; margin-right: 1em;" class="dialog_button">Ok</button>
-                  <button style="float: right; margin-right: 1em;" class="dialog_button">Cancel</button>
+                  <button class="jsroot_dialog_button">Ok</button>
+                  ${args.btns ? '<button class="jsroot_dialog_button">Cancel</button>' : ''}
               </div>
              </div>`;
+         element.style.width = (args.width || 450) + "px";
          document.body.appendChild(element);
 
          return new Promise(resolveFunc => {
 
-            d3.select(element).selectAll('.dialog_button').on("click", evnt => {
-               if (d3.select(evnt.target).text() == "Ok")
-                  resolveFunc(element);
+            d3.select(element).selectAll('.jsroot_dialog_button').on("click", evnt => {
+               resolveFunc(args.btns && (d3.select(evnt.target).text() == "Ok") ? element : null);
                element.remove();
+               block.remove();
             });
          });
       }
@@ -1198,14 +1206,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          });
       }
 
-      /** @summary Create modal element
-        * @desc used as base for different components
-        * @private */
+      /** @summary Run modal elements with bootstrap code */
       runModal(title, main_content, args) {
          if (!args) args = {};
 
-         let dlg_id = this.menuname + "_dialog";
-         let old_dlg = document.getElementById(dlg_id);
+         let dlg_id = this.menuname + "_dialog",
+             old_dlg = document.getElementById(dlg_id);
          if (old_dlg) old_dlg.remove();
 
          return this.loadBS(true).then(() => {

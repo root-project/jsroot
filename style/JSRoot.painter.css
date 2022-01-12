@@ -502,6 +502,17 @@
   Standalone dialog
   --------------------------------------------------*/
 
+.jsroot_dialog_block {
+	z-index: 100000;
+   position: absolute;
+   top: 0;
+   left: 0;
+   right: 0;
+   bottom: 0;
+   opacity: 0.2;
+   background-color: white;
+}
+
 .jsroot_dialog {
    z-index: 100001;
    position: absolute;
@@ -513,7 +524,7 @@
 	position: relative;
 	left: -50%;
    top: -50%;
-	border: dotted red 3px;
+	border: solid green 3px;
 	padding: 5px;
    display: flex;
    flex-flow: column;
@@ -522,14 +533,22 @@
 
 .jsroot_dialog_header {
    flex: 0 1 auto;
+   padding: 5px;
 }
 
 .jsroot_dialog_content {
    flex: 1 1 auto;
+   padding: 5px;
 }
 
 .jsroot_dialog_footer {
    flex: 0 1 auto;
+   padding: 5px;
+}
+
+.jsroot_dialog_button {
+   float: right;
+   margin-right: 1em;
 }
 
 /*--------------------------------------------------
