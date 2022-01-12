@@ -1,11 +1,11 @@
-// https://d3js.org v7.1.1 Copyright 2010-2021 Mike Bostock
+// https://d3js.org v7.3.0 Copyright 2010-2021 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 typeof define === 'function' && define.amd ? define(['exports'], factory) :
 (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.d3 = global.d3 || {}));
 })(this, (function (exports) { 'use strict';
 
-var version = "7.1.1";
+var version = "7.3.0";
 
 function define(constructor, factory, prototype) {
   constructor.prototype = factory.prototype = prototype;
