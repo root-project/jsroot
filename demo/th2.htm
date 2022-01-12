@@ -1,31 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
    <meta charset="UTF-8">
-
-   <title>JSROOT drawing inside HTML page</title>
-
+   <title>Create, draw and update TH2 object</title>
    <script src="../scripts/JSRoot.core.js" type="text/javascript"></script>
-
 </head>
-
 <body>
-  <h3>Text Before </h3>
-
-  <div id="object_draw" style="width: 800px; height:600px"></div>
-
-  <h3>Text After</h3>
+   <div id="object_draw" style="width: 800px; height:600px"></div>
 
    <script type='text/javascript'>
-
-      var cnt = 0;
-
+      let cnt = 0;
       function updateGUI() {
-         // if getting histogram from THttpServer as JSON string, one should parse it like:
-         // var histo = JSROOT.parse(your_json_string);
-
-         // this is just generation of histogram
          let histo = JSROOT.createHistogram("TH2I", 20, 20);
          for (let iy = 0; iy < 20; iy++)
             for (let ix = 0; ix < 20; ix++) {
@@ -41,15 +26,10 @@
 
          histo.fName = "generated";
          histo.fTitle = "Drawing " + cnt++;
-
          JSROOT.redraw('object_draw', histo, "colz");
       }
-
       updateGUI();
       setInterval(updateGUI, 3000);
-
    </script>
-
 </body>
 </html>
-
