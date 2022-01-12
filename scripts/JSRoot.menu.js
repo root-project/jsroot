@@ -118,12 +118,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          if (!without_sub) this.add("sub:" + top_name, opts[0], call_back);
 
-         for (let i=0;i<opts.length;++i) {
+         for (let i = 0; i < opts.length; ++i) {
             let name = opts[i];
-            if (name=="") name = '&lt;dflt&gt;';
+            if (name=="") name = this._use_plain_text ? '<dflt>' : '&lt;dflt&gt;';
 
             let group = i+1;
-            if ((opts.length>5) && (name.length>0)) {
+            if ((opts.length > 5) && (name.length > 0)) {
                // check if there are similar options, which can be grouped once again
                while ((group<opts.length) && (opts[group].indexOf(name)==0)) group++;
             }
@@ -134,7 +134,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                this.add(name, opts[i], call_back);
             } else {
                this.add("sub:" + name, opts[i], call_back);
-               for (let k=i+1;k<group;++k)
+               for (let k = i+1; k < group; ++k)
                   this.add(opts[k], opts[k], call_back);
                this.add("endsub:");
                i = group-1;
@@ -765,10 +765,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          super(painter, menuname, show_event);
 
          this.code = [];
-
+         this._use_plain_text = true;
          this.stack = [ this.code ];
-
-         this.funcs = {};
       }
 
      load() { return Promise.resolve(this); }
@@ -906,9 +904,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
 
             if (d.func)
-               item.addEventListener('click', () => {
+               item.addEventListener('click', evnt => {
                   let func = this.painter ? d.func.bind(this.painter) : d.func;
                   func(d.arg);
+                  evnt.stopPropagation();
+                  this.remove();
                });
          });
 
@@ -942,7 +942,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             //if its sub-contextmenu
 
-            var dimensionsLoc = loc.getBoundingClientRect(), dimensionsOuter = outer.getBoundingClientRect();
+            let dimensionsLoc = loc.getBoundingClientRect(), dimensionsOuter = outer.getBoundingClientRect();
 
             //Does sub-contextmenu overflow window width?
             if (dimensionsOuter.left + dimensionsOuter.width > docWidth) {
