@@ -3091,8 +3091,12 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          fp.zmin = gzmin;
          fp.zmax = gzmax;
 
-         fp.zoom_zmin = cntr.colzmin;
-         fp.zoom_zmax = cntr.colzmax;
+         if ((gzmin != cntr.colzmin) || (gzmax != cntr.colzmax)) {
+            fp.zoom_zmin = cntr.colzmin;
+            fp.zoom_zmax = cntr.colzmax;
+         } else {
+            fp.zoom_zmin = fp.zoom_zmax = undefined;
+         }
       }
 
       return cntr;
