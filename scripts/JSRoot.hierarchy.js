@@ -4834,9 +4834,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          main.select(".jsroot_flex_header").call(drag_object);
          main.select(".jsroot_flex_resize").call(drag_object);
 
-         this.cnt++;
-
-         let draw_frame = main.select('.jsroot_flex_draw').attr('frame_title', title).node();
+         let draw_frame = main.select('.jsroot_flex_draw')
+                              .attr('frame_title', title)
+                              .property('frame_cnt', this.cnt++)
+                              .node();
 
          return this.afterCreateFrame(draw_frame);
       }
@@ -4911,6 +4912,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          let arr = [];
          this.forEachFrame(f => arr.push(f));
          let active = this.getActiveFrame();
+         arr.sort((f1,f2) => { return  d3.select(f1).property('frame_cnt') < d3.select(f2).property('frame_cnt') ? -1 : 1; });
 
          jsrp.createMenu(evnt, this).then(menu => {
             menu.add("header:Flex");
@@ -4920,7 +4922,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             menu.add("Close all", () => this.closeAllFrames());
             menu.add("separator");
 
-            arr.forEach((f,i) => menu.addchk((f===active), d3.select(f).attr("frame_title"), i, arg => this.activateFrame(arr[arg])));
+            arr.forEach((f,i) => menu.addchk((f===active), ((this.getFrameState(f) == "min") ? "[min] " : "") + d3.select(f).attr("frame_title"), i,
+                         arg => {
+                           if (this.getFrameState(arr[arg]) == "min")
+                              this.changeFrameState(arr[arg],"normal");
+                           this.activateFrame(arr[arg]);
+                         }));
 
             menu.show();
          });
