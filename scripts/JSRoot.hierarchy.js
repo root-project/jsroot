@@ -4661,6 +4661,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          JSROOT.resize(draw_frame);
       }
 
+      /** @summary get frame state */
+      getFrameState(frame) {
+         let main = d3.select(frame.parentNode);
+         return main.property("state");
+      }
+
       /** @summary change frame state */
       changeFrameState(frame, newstate) {
          let main = d3.select(frame.parentNode),
@@ -4859,6 +4865,34 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          });
       }
 
+      /** @summary cascade frames */
+      cascadeFrames() {
+         let arr = [];
+         this.forEachFrame(frame => {
+            let state = this.getFrameState(frame);
+            if (state=="min") return;
+            if (state == "max") this.changeFrameState(frame, "normal");
+            arr.push(frame);
+         });
+
+         if (arr.length == 0) return;
+
+         let top = this.selectDom(),
+             w = top.node().clientWidth,
+             h = top.node().clientHeight,
+             dx = Math.min(40, Math.round(w*0.4/arr.length)),
+             dy = Math.min(40, Math.round(h*0.4/arr.length));
+
+         arr.forEach((frame,i) => {
+            let main = d3.select(frame.parentNode);
+            main.style('left', (i*dx) + "px")
+                .style('top', (i*dy) + "px")
+                .style('width', Math.round(w * 0.58) + "px")
+                .style('height', Math.round(h * 0.58) + "px");
+            JSROOT.resize(frame);
+         });
+      }
+
       /** @summary context menu */
       showContextMenu(evnt) {
          if (this.numDraw() == 0) return;
@@ -4866,6 +4900,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          evnt.preventDefault();
          jsrp.createMenu(evnt, this).then(menu => {
             menu.add("header:Flex");
+            menu.add("Cascade", () => this.cascadeFrames());
             menu.add("Minimize all", () => this.minimizeAll());
 
             menu.add("Close all", () => this.closeAllFrames());
