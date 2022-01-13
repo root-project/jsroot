@@ -555,7 +555,7 @@
   --------------------------------------------------*/
 
 .jsroot_flex_top {
-   overflow: none;
+	overflow: none;
    height: 100%;
    width: 100%;
 }

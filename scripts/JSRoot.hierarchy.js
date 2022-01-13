@@ -4614,7 +4614,16 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       constructor(frameid) {
          super(frameid);
          this.cnt = 0; // use to count newly created frames
-         this.selectDom().on('contextmenu', evnt => this.showContextMenu(evnt));
+         this.selectDom().on('contextmenu', evnt => this.showContextMenu(evnt))
+                         .style('overflow', 'auto');
+      }
+
+      /** @summary Cleanup all drawings */
+      cleanup() {
+         this.selectDom().style('overflow', null)
+                         .on('contextmenu', null);
+         this.cnt = 0;
+         super.cleanup();
       }
 
       /** @summary call function for each frame */
@@ -4894,12 +4903,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                               .node();
 
          return this.afterCreateFrame(draw_frame);
-      }
-
-      /** @summary Cleanup all drawings */
-      cleanup() {
-         this.selectDom().on('contextmenu', null);
-         super.cleanup();
       }
 
       /** @summary minimize all frames */
