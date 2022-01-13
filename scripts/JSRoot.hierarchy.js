@@ -4616,6 +4616,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.cnt = 0; // use to count newly created frames
       }
 
+      /** @summary call function for each frame */
       forEachFrame(userfunc,  only_visible) {
          if (typeof userfunc != 'function') return;
 
@@ -4630,6 +4631,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          });
       }
 
+      /** @summary call return active frame */
       getActiveFrame() {
          let found = super.getActiveFrame();
          if (found && d3.select(found.parentNode).property("state") != "min") return found;
@@ -4639,6 +4641,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return found;
       }
 
+      /** @summary actiavte frame */
       activateFrame(frame) {
          if (frame === 'first') {
             frame = null;
@@ -4657,7 +4660,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          JSROOT.resize(draw_frame);
       }
 
-      clickButton(btn) {
+      /** @summary handle button click
+        * @private */
+      _clickButton(btn) {
          let kind = d3.select(btn).datum(),
              main = d3.select(btn.parentNode.parentNode);
 
@@ -4704,6 +4709,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             this.activateFrame("first");
       }
 
+      /** @summary create new frame */
       createFrame(title) {
 
          this.beforeCreateFrame(title);
@@ -4743,7 +4749,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             .attr("class", "jsroot_flex_btn")
             .attr("title", d => d.t)
             .html(d => d.n)
-            .on("click", function() { mdi.clickButton(this); });
+            .on("click", function() { mdi._clickButton(this); });
 
          const detectRightButton = event => {
             if ('buttons' in event) return event.buttons === 2;
@@ -4756,7 +4762,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
              drag_object = d3.drag().subject(Object);
          drag_object.on("start", function(evnt) {
             if (evnt.sourceEvent.target.type == "button")
-               return mdi.clickButton(evnt.sourceEvent.target);
+               return mdi._clickButton(evnt.sourceEvent.target);
 
             if (detectRightButton(evnt.sourceEvent)) return;
 
@@ -4823,6 +4829,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          return this.afterCreateFrame(draw_frame);
       }
+
+      /** @summary Cleanup all drawings */
+      cleanup() {
+         super.cleanup();
+      }
+
 
    } // class FlexibleDisplay
 
