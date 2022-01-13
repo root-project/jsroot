@@ -4614,6 +4614,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       constructor(frameid) {
          super(frameid);
          this.cnt = 0; // use to count newly created frames
+         this.selectDom().on('contextmenu', evnt => this.showContextMenu(evnt));
       }
 
       /** @summary call function for each frame */
@@ -4832,7 +4833,30 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       /** @summary Cleanup all drawings */
       cleanup() {
+         this.selectDom().on('contextmenu', null);
          super.cleanup();
+      }
+
+      /** @summary close all frames */
+      closeAllFrames() {
+         let arr = [];
+         this.forEachFrame(frame => arr.push(frame));
+         arr.forEach(frame => {
+            this.cleanupFrame(frame);
+            d3.select(frame.parentNode).remove();
+         });
+      }
+
+      /** @summary context menu */
+      showContextMenu(evnt) {
+         if (this.numDraw() == 0) return;
+
+         evnt.preventDefault();
+         jsrp.createMenu(evnt, this).then(menu => {
+            menu.add("header:Flex");
+            menu.add("Close all", () => this.closeAllFrames());
+            menu.show();
+         });
       }
 
 
