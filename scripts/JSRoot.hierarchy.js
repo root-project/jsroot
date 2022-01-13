@@ -4693,7 +4693,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
 
       /** @summary change frame state */
-      changeFrameState(frame, newstate) {
+      changeFrameState(frame, newstate,no_redraw) {
          let main = d3.select(frame.parentNode),
              state = main.property("state");
 
@@ -4757,6 +4757,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if (rect.y < 0) { rect.x = step; rect.y = hh - rect.h - step; }
 
             main.style("left", rect.x + "px").style("top", rect.y + "px");
+         } else if (!no_redraw) {
+            JSROOT.resize(frame)
          }
 
          return true;
@@ -4930,7 +4932,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          this.forEachFrame(frame => {
             let state = this.getFrameState(frame);
             if (state=="min") return;
-            if (state == "max") this.changeFrameState(frame, "normal");
+            if (state == "max") this.changeFrameState(frame, "normal", true);
             arr.push(frame);
          });
 
@@ -4985,9 +4987,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             arr.forEach((f,i) => menu.addchk((f===active), ((this.getFrameState(f) == "min") ? "[min] " : "") + d3.select(f).attr("frame_title"), i,
                          arg => {
-                           if (this.getFrameState(arr[arg]) == "min")
-                              this.changeFrameState(arr[arg],"normal");
-                           this.activateFrame(arr[arg]);
+                           let frame = arr[arg];
+                           if (this.getFrameState(frame) == "min")
+                              this.changeFrameState(frame, "normal");
+                           this.activateFrame(frame);
                          }));
 
             menu.show();
