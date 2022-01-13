@@ -554,6 +554,13 @@
 /*--------------------------------------------------
   Flexible MDI display
   --------------------------------------------------*/
+
+.jsroot_flex_top {
+  overflow: none;
+  height:100%;
+  width:100%";
+}
+
 .jsroot_flex_btn {
 	float: right;
 	padding: 0;
@@ -564,27 +571,27 @@
 	margin-right: 4px;
 }
 
-.jsroot .flex_header {
+.jsroot_flex_header {
     height: 23px;
     overflow: hidden;
     background-color: lightblue;
 }
 
-.jsroot .flex_header p {
+.jsroot_flex_header p {
     margin: 1px;
     float: left;
     font-size: 14px;
     padding-left: 5px;
 }
 
-.jsroot .flex_draw {
+.jsroot_flex_draw {
     overflow: hidden;
     width: 100%;
     height: calc(100% - 26px);
     background: white;
 }
 
-.jsroot .flex_frame {
+.jsroot_flex_frame {
     border: 1px solid black;
     box-shadow: 1px 1px 2px 2px #aaa;
 }

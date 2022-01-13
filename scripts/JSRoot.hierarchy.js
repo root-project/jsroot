@@ -4621,12 +4621,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       forEachFrame(userfunc,  only_visible) {
          if (typeof userfunc != 'function') return;
 
-         let main = d3.select(`#${this.frameid}_flex`);
-         if (main.empty()) return;
+         let mdi = this, top = this.selectDom().select('.jsroot_flex_top');
 
-         main.selectAll(".flex_draw").each(function() {
+         top.selectAll(".jsroot_flex_draw").each(function() {
             // check if only visible specified
-            if (only_visible && (d3.select(this.parentNode).property("state") == "min")) return;
+            if (only_visible && (mdi.getFrameState(this) == "min")) return;
 
             userfunc(this);
          });
@@ -4646,19 +4645,17 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       activateFrame(frame) {
          if (frame === 'first') {
             frame = null;
-            d3.select(`#${this.frameid}_flex`).selectAll(".flex_frame").each(function() {
-               if (!frame && (d3.select(this).property("state") != "min")) frame = this;
-            });
+            this.forEachFrame(f => { if (!frame) frame = f; }, true);
          }
          if (!frame) return;
-         if (frame.getAttribute("class") == "flex_draw") frame = frame.parentNode;
+         if (frame.getAttribute("class") != "jsroot_flex_draw") return;
 
-         frame.parentNode.append(frame);
+         let main = frame.parentNode;
+         main.parentNode.append(main);
 
          // if (sel.prop('state') == "minimal") return;
-         let draw_frame = frame.querySelector(".flex_draw");
-         jsrp.selectActivePad({ pp: jsrp.getElementCanvPainter(draw_frame), active: true });
-         JSROOT.resize(draw_frame);
+         jsrp.selectActivePad({ pp: jsrp.getElementCanvPainter(frame), active: true });
+         JSROOT.resize(frame);
       }
 
       /** @summary get frame state */
@@ -4681,16 +4678,16 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          switch (newstate) {
             case "min":
                main.style("height","auto").style("width", "auto");
-               main.select(".flex_draw").style("display","none");
+               main.select(".jsroot_flex_draw").style("display","none");
                // deactiavte resizeable
                break;
             case "max":
                main.style("height","100%").style("width", "100%").style('left','').style('top','');
-               main.select(".flex_draw").style("display", null);
+               main.select(".jsroot_flex_draw").style("display", null);
                // deactiavte resizeable
                break;
             default:
-               main.select(".flex_draw").style("display", null);
+               main.select(".jsroot_flex_draw").style("display", null);
                main.attr("style", main.property("original_style"));
          }
 
@@ -4704,7 +4701,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       _clickButton(btn) {
          let kind = d3.select(btn).datum(),
              main = d3.select(btn.parentNode.parentNode),
-             frame = main.select(".flex_draw").node();
+             frame = main.select(".jsroot_flex_draw").node();
 
          if (kind.t == "close") {
             this.cleanupFrame(frame);
@@ -4728,33 +4725,31 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          this.beforeCreateFrame(title);
 
-         let topid = this.frameid + '_flex';
-
-         if (!document.getElementById(topid))
-            d3.select("#" + this.frameid).html(`<div id="${topid}" class="jsroot" style="overflow:none; height:100%; width:100%"></div>`);
-
          let mdi = this,
-             top = d3.select("#" + topid),
-             w = top.node().clientWidth,
-             h = top.node().clientHeight,
-             subid = topid + "_frame" + this.cnt;
+             dom = this.selectDom(),
+             top = dom.select(".jsroot_flex_top");
+
+         if (top.empty())
+            top = dom.append("div").classed("jsroot_flex_top", true);
+
+         let w = top.node().clientWidth,
+             h = top.node().clientHeight;
 
          let main = top.append('div');
 
-         main.html(`<div class="flex_header"><p>${title}</p></div>
-                   <div id="${subid}_cont" class="flex_draw"></div>
-                   <div class="jsroot_flex_resize">&#x25FF;</div>`);
+         main.html(`<div class="jsroot_flex_header"><p>${title}</p></div>
+                    <div id="${this.frameid}_cont${this.cnt}" class="jsroot_flex_draw"></div>
+                    <div class="jsroot_flex_resize">&#x25FF;</div>`);
 
-         main.attr("id", subid)
-            .attr("class", "flex_frame")
+         main.attr("class", "jsroot_flex_frame")
             .style("position", "absolute")
             .style('left', Math.round(w * (this.cnt % 5)/10) + "px")
             .style('top', Math.round(h * (this.cnt % 5)/10) + "px")
             .style('width', Math.round(w * 0.58) + "px")
             .style('height', Math.round(h * 0.58) + "px")
             .property("state", "normal")
-            .select(".flex_header")
-            .on("click", function() { mdi.activateFrame(this.parentNode); })
+            .select(".jsroot_flex_header")
+            .on("click", function() { mdi.activateFrame(d3.select(this.parentNode).select(".jsroot_flex_draw").node()); })
             .selectAll("button")
             .data([{ n: '&#x274C;', t: "close" }, { n: '&#x25B5;', t: "maximize" }, { n: '&#x25BF;', t: "minimize" }])
             .enter()
@@ -4781,12 +4776,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if (detectRightButton(evnt.sourceEvent)) return;
 
             let main = d3.select(this.parentNode);
-            if(!main.classed("flex_frame") || (main.property("state") == "max")) return;
+            if(!main.classed("jsroot_flex_frame") || (main.property("state") == "max")) return;
 
             doing_move = !d3.select(this).classed("jsroot_flex_resize");
             if (!doing_move && (main.property("state") == "min")) return;
 
-            mdi.activateFrame(main.node());
+            mdi.activateFrame(main.select(".jsroot_flex_draw").node());
 
             moving_div = top.append('div').classed("jsroot_flex_resizable_helper", true);
 
@@ -4831,15 +4826,15 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             moving_div.remove();
             moving_div = null;
             if (!doing_move)
-               JSROOT.resize(moving_frame.select(".flex_draw").node());
+               JSROOT.resize(moving_frame.select(".jsroot_flex_draw").node());
          });
 
-         main.select(".flex_header").call(drag_object);
+         main.select(".jsroot_flex_header").call(drag_object);
          main.select(".jsroot_flex_resize").call(drag_object);
 
          this.cnt++;
 
-         let draw_frame = main.select('.flex_draw').attr('frame_title', title).node();
+         let draw_frame = main.select('.jsroot_flex_draw').attr('frame_title', title).node();
 
          return this.afterCreateFrame(draw_frame);
       }
@@ -4866,7 +4861,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
 
       /** @summary cascade frames */
-      cascadeFrames() {
+      sortFrames(kind) {
          let arr = [];
          this.forEachFrame(frame => {
             let state = this.getFrameState(frame);
@@ -4881,26 +4876,39 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
              w = top.node().clientWidth,
              h = top.node().clientHeight,
              dx = Math.min(40, Math.round(w*0.4/arr.length)),
-             dy = Math.min(40, Math.round(h*0.4/arr.length));
+             dy = Math.min(40, Math.round(h*0.4/arr.length)),
+             nx = Math.ceil(Math.sqrt(arr.length)), ny = nx;
+
+         // calculate number of divisions for "tile" sorting
+         if ((nx > 1) && (nx*(nx-1) >= arr.length))
+           if (w > h) ny--; else nx--;
 
          arr.forEach((frame,i) => {
             let main = d3.select(frame.parentNode);
-            main.style('left', (i*dx) + "px")
-                .style('top', (i*dy) + "px")
-                .style('width', Math.round(w * 0.58) + "px")
-                .style('height', Math.round(h * 0.58) + "px");
+            if (kind == "cascade")
+               main.style('left', (i*dx) + "px")
+                   .style('top', (i*dy) + "px")
+                   .style('width', Math.round(w * 0.58) + "px")
+                   .style('height', Math.round(h * 0.58) + "px");
+            else
+               main.style('left', Math.round(w/nx*(i%nx)) + "px")
+                   .style('top', Math.round(h/ny*((i-i%nx)/nx)) + "px")
+                   .style('width', Math.round(w/nx - 4) + "px")
+                   .style('height', Math.round(h/ny - 4) + "px");
             JSROOT.resize(frame);
          });
       }
 
       /** @summary context menu */
       showContextMenu(evnt) {
-         if (this.numDraw() == 0) return;
+         // handle context menu only for MDI area
+         if ((evnt.target.getAttribute("class") != "jsroot_flex_top") || (this.numDraw() == 0)) return;
 
          evnt.preventDefault();
          jsrp.createMenu(evnt, this).then(menu => {
             menu.add("header:Flex");
-            menu.add("Cascade", () => this.cascadeFrames());
+            menu.add("Cascade", () => this.sortFrames("cascade"));
+            menu.add("Tile", () => this.sortFrames("tile"));
             menu.add("Minimize all", () => this.minimizeAll());
 
             menu.add("Close all", () => this.closeAllFrames());
