@@ -4693,6 +4693,15 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                main.attr("style", main.property("original_style"));
          }
 
+         main.select(".jsroot_flex_header").selectAll("button").each(function(d) {
+            let btn = d3.select(this);
+            if (((d.t == "minimize") && (newstate == "min")) ||
+                ((d.t == "maximize") && (newstate == "max")))
+                  btn.html("&#x259E;").attr("title", "restore");
+            else
+               btn.html(d.n).attr("title", d.t);
+         });
+
          main.property("state", newstate);
          main.select(".jsroot_flex_resize").style("display", newstate == "normal" ? "" : "none");
          return true;
@@ -4735,9 +4744,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             top = dom.append("div").classed("jsroot_flex_top", true);
 
          let w = top.node().clientWidth,
-             h = top.node().clientHeight;
-
-         let main = top.append('div');
+             h = top.node().clientHeight,
+             main = top.append('div');
 
          main.html(`<div class="jsroot_flex_header"><p>${title}</p></div>
                     <div id="${this.frameid}_cont${this.cnt}" class="jsroot_flex_draw"></div>
@@ -4753,7 +4761,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             .select(".jsroot_flex_header")
             .on("click", function() { mdi.activateFrame(d3.select(this.parentNode).select(".jsroot_flex_draw").node()); })
             .selectAll("button")
-            .data([{ n: '&#x274C;', t: "close" }, { n: '&#x25B5;', t: "maximize" }, { n: '&#x25BF;', t: "minimize" }])
+            .data([{ n: '&#x2715;', t: "close" }, { n: '&#x2594;', t: "maximize" }, { n: '&#x2581;', t: "minimize" }])
             .enter()
             .append("button")
             .attr("type", "button")
