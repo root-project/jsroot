@@ -408,7 +408,7 @@
   standalone context menu
   --------------------------------------------------*/
 
-.contextmenu-container {
+.jsroot_ctxt_container {
    position: absolute;
    top: 0;
    user-select: none;
@@ -425,37 +425,37 @@
    color: rgb(0, 0, 0, 0.8);
 }
 
-.contextmenu-divider {
+.jsroot_ctxt_divider {
    width: 85%;
    margin: 3px auto;
    border: 1px solid rgb(0, 0, 0, 0.15);
 }
 
-.contextmenu-header {
+.jsroot_ctxt_header {
    background-color: lightblue;
    padding: 3px 7px;
    font-weight: bold;
    border-bottom: 1px;
 }
 
-.contextmenu-text {
+.jsroot_ctxt_text {
    margin: 0;
    padding: 3px 7px;
    pointer-events: none;
    white-space: nowrap;
 }
 
-.contextmenu-extraText {
+.jsroot_ctxt_extraText {
    margin: 0;
    padding: 3px 7px;
    color: rgb(0, 0, 0, 0.6);
 }
 
-.contextmenu-focus {
+.jsroot_ctxt_focus {
    background-color: rgb(220, 220, 220);
 }
 
-.contextmenu-item:hover {
+.jsroot_ctxt_item:hover {
    background-color: rgb(235, 235, 235);
 }
 

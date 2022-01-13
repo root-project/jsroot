@@ -641,12 +641,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       _buildContextmenu(menu, left, top, loc) {
 
          let outer = document.createElement('div');
-         outer.className = "contextmenu-container";
+         outer.className = "jsroot_ctxt_container";
 
          //if loc !== document.body then its a submenu, so it needs to have position: relative;
          if (loc === document.body) {
-            //delete all elements with className contextmenu-container
-            let deleteElems = document.getElementsByClassName('contextmenu-container');
+            //delete all elements with className jsroot_ctxt_container
+            let deleteElems = document.getElementsByClassName('jsroot_ctxt_container');
             while (deleteElems.length > 0)
                deleteElems[0].parentNode.removeChild(deleteElems[0]);
 
@@ -663,7 +663,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          menu.forEach(d => {
             if (d.divider) {
                let hr = document.createElement('hr');
-               hr.className = "contextmenu-divider";
+               hr.className = "jsroot_ctxt_divider";
                outer.appendChild(hr);
                return;
             }
@@ -673,7 +673,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             outer.appendChild(item);
 
             if (d.header) {
-               item.className = "contextmenu-header";
+               item.className = "jsroot_ctxt_header";
                item.innerHTML = d.text;
                return;
             }
@@ -681,7 +681,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             let hovArea = document.createElement('div');
             hovArea.style.width = '100%';
             hovArea.style.height = '100%';
-            hovArea.className = "contextmenu-item";
+            hovArea.className = "jsroot_ctxt_item";
             hovArea.style.display = 'flex';
             hovArea.style.justifyContent = 'space-between';
             hovArea.style.cursor = 'pointer';
@@ -691,7 +691,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if (!d.text) d.text = "item";
 
             let text = document.createElement('div');
-            text.className = "contextmenu-text";
+            text.className = "jsroot_ctxt_text";
             if (d.text.indexOf("<svg") >= 0) {
                text.innerHTML = d.text;
             } else {
@@ -714,7 +714,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             if (d.hasOwnProperty('extraText') || d.sub) {
                let extraText = document.createElement('span');
-               extraText.className = "contextmenu-extraText contextmenu-text";
+               extraText.className = "jsroot_ctxt_extraText jsroot_ctxt_text";
                extraText.textContent = d.sub ? "\u25B6" : d.extraText;
                hovArea.appendChild(extraText);
             }
@@ -722,16 +722,16 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             hovArea.addEventListener('mouseenter', () => {
                let focused = outer.childNodes;
                focused.forEach(d => {
-                  if (d.classList.contains('contextmenu-focus')) {
-                     d.removeChild(d.getElementsByClassName('contextmenu-container')[0]);
-                     d.classList.remove('contextmenu-focus');
+                  if (d.classList.contains('jsroot_ctxt_focus')) {
+                     d.removeChild(d.getElementsByClassName('jsroot_ctxt_container')[0]);
+                     d.classList.remove('jsroot_ctxt_focus');
                   }
                })
             });
 
             if (d.sub)
                hovArea.addEventListener('mouseenter', () => {
-                  item.classList.add('contextmenu-focus');
+                  item.classList.add('jsroot_ctxt_focus');
                   this._buildContextmenu(d.sub, 0, 0, item);
                });
 
@@ -754,7 +754,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             if (left + outer.offsetWidth > docWidth) {
                //Does sub-contextmenu overflow window width?
-
                outer.style.left = docWidth - outer.offsetWidth + 'px';
             }
 
@@ -767,7 +766,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             }
             else if (top + outer.offsetHeight > docHeight) {
                //Does contextmenu overflow window height?
-
                outer.style.top = docHeight - outer.offsetHeight + 'px';
             }
 
