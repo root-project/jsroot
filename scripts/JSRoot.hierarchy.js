@@ -4643,21 +4643,25 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       /** @summary actiavte frame */
       activateFrame(frame) {
-         if (frame === 'first') {
-            frame = null;
-            this.forEachFrame(f => { if (!frame) frame = f; }, true);
+         if ((frame === 'first') || (frame === 'last')) {
+            let res = null;
+            this.forEachFrame(f => { if (frame == 'last' || !res) res = f; }, true);
+            frame = res;
          }
          if (!frame) return;
          if (frame.getAttribute("class") != "jsroot_flex_draw") return;
+
+         if (this.getActiveFrame() === frame) return;
 
          super.activateFrame(frame);
 
          let main = frame.parentNode;
          main.parentNode.append(main);
 
-         // if (sel.prop('state') == "minimal") return;
-         jsrp.selectActivePad({ pp: jsrp.getElementCanvPainter(frame), active: true });
-         JSROOT.resize(frame);
+         if (this.getFrameState(frame) != "min") {
+            jsrp.selectActivePad({ pp: jsrp.getElementCanvPainter(frame), active: true });
+            JSROOT.resize(frame);
+         }
       }
 
       /** @summary get frame state */
@@ -4666,6 +4670,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return main.property("state");
       }
 
+      /** @summary returns frame rect */
       getFrameRect(frame) {
          if (this.getFrameState(frame) == "max") {
             let top = this.selectDom().select('.jsroot_flex_top');
@@ -4758,7 +4763,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (kind.t == "close") {
             this.cleanupFrame(frame);
             main.remove();
-            this.activateFrame('first'); // set active as first window
+            this.activateFrame('last'); // set active as last non-minfied window
             return;
          }
 
@@ -4769,7 +4774,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             newstate = (state == "min") ? "normal" : "min";
 
          if (this.changeFrameState(frame, newstate))
-            this.activateFrame(newstate != "min" ? frame : 'first');
+            this.activateFrame(newstate != "min" ? frame : 'last');
       }
 
       /** @summary create new frame */

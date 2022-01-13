@@ -586,13 +586,13 @@
 .jsroot_flex_draw {
    overflow: hidden;
    width: 100%;
-   height: calc(100% - 26px);
-   background: white;
+   height: calc(100% - 24px);
 }
 
 .jsroot_flex_frame {
    border: 1px solid black;
    box-shadow: 1px 1px 2px 2px #aaa;
+   background: white;
 }
 
 .jsroot_flex_resize {
