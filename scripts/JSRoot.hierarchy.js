@@ -4833,7 +4833,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          };
 
          let moving_frame = null, moving_div = null, doing_move = false,
-             drag_object = d3.drag().subject(Object);
+             drag_object = d3.drag().subject(Object), current = [];
          drag_object.on("start", function(evnt) {
             if (evnt.sourceEvent.target.type == "button")
                return mdi._clickButton(evnt.sourceEvent.target);
@@ -4860,22 +4860,26 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             evnt.sourceEvent.stopPropagation();
 
             moving_frame = main;
+            current = [];
 
          }).on("drag", function(evnt) {
             if (!moving_div) return;
             evnt.sourceEvent.preventDefault();
             evnt.sourceEvent.stopPropagation();
-            let changeProp = (name,dd) => {
-               let v = moving_div.style(name);
-               v = parseInt(v.substr(0,v.length-2));
-               moving_div.style(name, (v+dd)+"px");
+            let changeProp = (i,name,dd) => {
+               if (i >= current.length) {
+                  let v = moving_div.style(name);
+                  current[i] = parseInt(v.substr(0,v.length-2));
+               }
+               current[i] += dd;
+               moving_div.style(name, Math.max(0, current[i])+"px");
             };
             if (doing_move) {
-               changeProp("left", evnt.dx);
-               changeProp("top", evnt.dy);
+               changeProp(0, "left", evnt.dx);
+               changeProp(1, "top", evnt.dy);
             } else {
-               changeProp("width", evnt.dx);
-               changeProp("height", evnt.dy);
+               changeProp(0, "width", evnt.dx);
+               changeProp(1, "height", evnt.dy);
             }
          }).on("end", function(evnt) {
             if (!moving_div) return;
