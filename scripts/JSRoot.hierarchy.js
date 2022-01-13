@@ -4666,6 +4666,18 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return main.property("state");
       }
 
+      getFrameRect(frame) {
+         if (this.getFrameState(frame) == "max") {
+            let top = this.selectDom().select('.jsroot_flex_top');
+            return { x: 0, y: 0, w: top.node().clientWidth, h: top.node().clientHeight };
+         }
+
+         let main = d3.select(frame.parentNode), left = main.style('left'), top = main.style('top');
+
+         return { x: parseInt(left.substr(0, left.length-2)), y: parseInt(top.substr(0, top.length-2)),
+                  w: main.node().clientWidth, h: main.node().clientHeight };
+      }
+
       /** @summary change frame state */
       changeFrameState(frame, newstate) {
          let main = d3.select(frame.parentNode),
@@ -4681,12 +4693,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             case "min":
                main.style("height","auto").style("width", "auto");
                main.select(".jsroot_flex_draw").style("display","none");
-               // deactiavte resizeable
                break;
             case "max":
                main.style("height","100%").style("width", "100%").style('left','').style('top','');
                main.select(".jsroot_flex_draw").style("display", null);
-               // deactiavte resizeable
                break;
             default:
                main.select(".jsroot_flex_draw").style("display", null);
@@ -4703,7 +4713,38 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          });
 
          main.property("state", newstate);
-         main.select(".jsroot_flex_resize").style("display", newstate == "normal" ? "" : "none");
+         main.select(".jsroot_flex_resize").style("display", (newstate == "normal") ? null : "none");
+
+         // adjust position of new minified rect
+         if (newstate == "min") {
+            const rect = this.getFrameRect(frame),
+                  top = this.selectDom().select('.jsroot_flex_top'),
+                  ww = top.node().clientWidth,
+                  hh = top.node().clientHeight,
+                  arr = [], step = 4,
+                  crossX = (r1,r2) => ((r1.x <= r2.x) && (r1.x + r1.w >= r2.x)) || ((r2.x <= r1.x) && (r2.x + r2.w >= r1.x)),
+                  crossY = (r1,r2) => ((r1.y <= r2.y) && (r1.y + r1.h >= r2.y)) || ((r2.y <= r1.y) && (r2.y + r2.h >= r1.y));
+
+            this.forEachFrame(f => { if ((f!==frame) && (this.getFrameState(f) == "min")) arr.push(this.getFrameRect(f)); });
+
+            rect.y = hh;
+            do {
+               rect.x = step;
+               rect.y -= rect.h + step;
+               let maxx = step, iscrossed = false;
+               arr.forEach(r => {
+                  if (crossY(r,rect)) {
+                     maxx = Math.max(maxx, r.x + r.w + step);
+                     if (crossX(r,rect)) iscrossed = true;
+                  }
+               });
+               if (iscrossed) rect.x = maxx;
+            } while ((rect.x + rect.w > ww - step) && (rect.y > 0));
+            if (rect.y < 0) { rect.x = step; rect.y = hh - rect.h - step; }
+
+            main.style("left", rect.x + "px").style("top", rect.y + "px");
+         }
+
          return true;
       }
 
