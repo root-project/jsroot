@@ -4631,7 +4631,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          });
       }
 
-      /** @summary call return active frame */
+      /** @summary return active frame */
       getActiveFrame() {
          let found = super.getActiveFrame();
          if (found && d3.select(found.parentNode).property("state") != "min") return found;
@@ -4649,6 +4649,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          }
          if (!frame) return;
          if (frame.getAttribute("class") != "jsroot_flex_draw") return;
+
+         super.activateFrame(frame);
 
          let main = frame.parentNode;
          main.parentNode.append(main);
@@ -4905,13 +4907,21 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if ((evnt.target.getAttribute("class") != "jsroot_flex_top") || (this.numDraw() == 0)) return;
 
          evnt.preventDefault();
+
+         let arr = [];
+         this.forEachFrame(f => arr.push(f));
+         let active = this.getActiveFrame();
+
          jsrp.createMenu(evnt, this).then(menu => {
             menu.add("header:Flex");
             menu.add("Cascade", () => this.sortFrames("cascade"));
             menu.add("Tile", () => this.sortFrames("tile"));
             menu.add("Minimize all", () => this.minimizeAll());
-
             menu.add("Close all", () => this.closeAllFrames());
+            menu.add("separator");
+
+            arr.forEach((f,i) => menu.addchk((f===active), d3.select(f).attr("frame_title"), i, arg => this.activateFrame(arr[arg])));
+
             menu.show();
          });
       }
