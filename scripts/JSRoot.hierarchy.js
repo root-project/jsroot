@@ -4661,26 +4661,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          JSROOT.resize(draw_frame);
       }
 
-      /** @summary handle button click
-        * @private */
-      _clickButton(btn) {
-         let kind = d3.select(btn).datum(),
-             main = d3.select(btn.parentNode.parentNode);
+      /** @summary change frame state */
+      changeFrameState(frame, newstate) {
+         let main = d3.select(frame.parentNode),
+             state = main.property("state");
 
-         if (kind.t == "close") {
-            this.cleanupFrame(main.select(".flex_draw").node());
-            main.remove();
-            this.activateFrame('first'); // set active as first window
-            return;
-         }
-
-         let state = main.property("state"), newstate = state;
-         if (kind.t == "maximize")
-            newstate = (state == "max") ? "normal" : "max";
-         else
-            newstate = (state == "min") ? "normal" : "min";
-
-         if (state == newstate) return;
+         if (state == newstate)
+            return false;
 
          if (state == "normal")
              main.property('original_style', main.attr('style'));
@@ -4703,11 +4690,31 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          main.property("state", newstate);
          main.select(".jsroot_flex_resize").style("display", newstate == "normal" ? "" : "none");
+         return true;
+      }
 
-         if (newstate !== "min")
-            this.activateFrame(main.node());
+      /** @summary handle button click
+        * @private */
+      _clickButton(btn) {
+         let kind = d3.select(btn).datum(),
+             main = d3.select(btn.parentNode.parentNode),
+             frame = main.select(".flex_draw").node();
+
+         if (kind.t == "close") {
+            this.cleanupFrame(frame);
+            main.remove();
+            this.activateFrame('first'); // set active as first window
+            return;
+         }
+
+         let state = main.property("state"), newstate = state;
+         if (kind.t == "maximize")
+            newstate = (state == "max") ? "normal" : "max";
          else
-            this.activateFrame("first");
+            newstate = (state == "min") ? "normal" : "min";
+
+         if (this.changeFrameState(frame, newstate))
+            this.activateFrame(newstate != "min" ? frame : 'first');
       }
 
       /** @summary create new frame */
@@ -4837,6 +4844,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          super.cleanup();
       }
 
+      /** @summary minimize all frames */
+      minimizeAll() {
+         this.forEachFrame(frame => this.changeFrameState(frame, "min"));
+      }
+
       /** @summary close all frames */
       closeAllFrames() {
          let arr = [];
@@ -4854,6 +4866,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          evnt.preventDefault();
          jsrp.createMenu(evnt, this).then(menu => {
             menu.add("header:Flex");
+            menu.add("Minimize all", () => this.minimizeAll());
+
             menu.add("Close all", () => this.closeAllFrames());
             menu.show();
          });
