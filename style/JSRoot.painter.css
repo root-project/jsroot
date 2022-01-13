@@ -400,9 +400,8 @@
 }
 
 .jsroot svg:not(:root) {
-    overflow: hidden;
+   overflow: hidden;
 }
-
 
 /*--------------------------------------------------
   jquery context menu
@@ -430,16 +429,16 @@
 }
 
 .jsroot .fast_command {
-    width: 30px;
-    height: 30px;
-    margin: 2px;
-    padding: 2px;
-    border-width: 2px;
+   width: 30px;
+   height: 30px;
+   margin: 2px;
+   padding: 2px;
+   border-width: 2px;
 }
 
 .jsroot .fast_command img {
-    max-width: 100%;
-    max-height: 100%;
+   max-width: 100%;
+   max-height: 100%;
 }
 
 /*--------------------------------------------------
@@ -448,26 +447,26 @@
 
 
 .contextmenu-container {
-	position: absolute;
-	top: 0;
-	user-select: none;
-	z-index: 100000;
-	background-color: rgb(250, 250, 250);
-	margin: 0;
-	padding: 0px;
-	width: auto;
-	min-width: 100px;
-	box-shadow: 0px 0px 10px rgb(0, 0, 0, 0.2);
-	border: 3px solid rgb(215, 215, 215);
-	font-family: Arial, helvetica, sans-serif, serif;
-	font-size: 13px;
-	color: rgb(0, 0, 0, 0.8);
+   position: absolute;
+   top: 0;
+   user-select: none;
+   z-index: 100000;
+   background-color: rgb(250, 250, 250);
+   margin: 0;
+   padding: 0px;
+   width: auto;
+   min-width: 100px;
+   box-shadow: 0px 0px 10px rgb(0, 0, 0, 0.2);
+   border: 3px solid rgb(215, 215, 215);
+   font-family: Arial, helvetica, sans-serif, serif;
+   font-size: 13px;
+   color: rgb(0, 0, 0, 0.8);
 }
 
 .contextmenu-divider {
-	width: 85%;
-	margin: 3px auto;
-	border: 1px solid rgb(0, 0, 0, 0.15);
+   width: 85%;
+   margin: 3px auto;
+   border: 1px solid rgb(0, 0, 0, 0.15);
 }
 
 .contextmenu-header {
@@ -478,24 +477,24 @@
 }
 
 .contextmenu-text {
-	margin: 0;
-	padding: 3px 7px;
-	pointer-events: none;
-	white-space: nowrap;
+   margin: 0;
+   padding: 3px 7px;
+   pointer-events: none;
+   white-space: nowrap;
 }
 
 .contextmenu-extraText {
-	margin: 0;
-	padding: 3px 7px;
-	color: rgb(0, 0, 0, 0.6);
+   margin: 0;
+   padding: 3px 7px;
+   color: rgb(0, 0, 0, 0.6);
 }
 
 .contextmenu-focus {
-	background-color: rgb(220, 220, 220);
+   background-color: rgb(220, 220, 220);
 }
 
 .contextmenu-item:hover {
-	background-color: rgb(235, 235, 235);
+   background-color: rgb(235, 235, 235);
 }
 
 /*--------------------------------------------------
@@ -503,7 +502,7 @@
   --------------------------------------------------*/
 
 .jsroot_dialog_block {
-	z-index: 100000;
+   z-index: 100000;
    position: absolute;
    top: 0;
    left: 0;
@@ -521,11 +520,11 @@
 }
 
 .jsroot_dialog_body {
-	position: relative;
-	left: -50%;
+   position: relative;
+   left: -50%;
    top: -50%;
-	border: solid green 3px;
-	padding: 5px;
+   border: solid green 3px;
+   padding: 5px;
    display: flex;
    flex-flow: column;
    background-color: white;
@@ -719,12 +718,12 @@
 /* stylesheet for browser */
 
 .jsroot_browser {
-	pointer-events: none;
-	position: absolute;
-	left: 0;
-	top: 0;
-	bottom: 0;
-	right:0;
+   pointer-events: none;
+   position: absolute;
+   left: 0;
+   top: 0;
+   bottom: 0;
+   right:0;
    margin: 0;
    border: 0;
    overflow: hidden;
@@ -740,9 +739,9 @@
 
 .jsroot_browser_btns {
    pointer-events: all;
-	opacity: 0;
-	display:flex;
-	flex-direction: column;
+   opacity: 0;
+   display:flex;
+   flex-direction: column;
 }
 
 .jsroot_browser_btns:hover {
@@ -750,8 +749,8 @@
 }
 
 .jsroot_browser_hierarchy {
-	flex:1;
-	margin-top:2px;
+   flex:1;
+   margin-top:2px;
 }
 
 .jsroot_status_area {
@@ -784,7 +783,7 @@
 }
 
 .jsroot_float_browser {
-	border: solid 3px white;
+   border: solid 3px white;
 }
 
 .jsroot_draw_area {
@@ -833,12 +832,12 @@
 }
 
 .jsroot_h_separator {
-	cursor: ns-resize;
+   cursor: ns-resize;
    background-color: azure;
 }
 
 .jsroot_v_separator {
-	cursor: ew-resize;
+   cursor: ew-resize;
    background-color: azure;
 }
 
@@ -851,7 +850,7 @@
 }
 
 .jsroot .canvas_menu {
-	 float: left;
+    float: left;
     display: block;
     text-align: center;
     padding: 0px 5px;
