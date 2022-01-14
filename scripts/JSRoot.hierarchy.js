@@ -1422,8 +1422,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
           url = this.getOnlineItemUrl(hitem) + "/cmd.json",
           d3node = d3.select(elem),
           cmdargs = [];
-          
-      if ('_numargs' in hitem)    
+
+      if ('_numargs' in hitem)
          for (let n = 0; n < hitem._numargs; ++n)
             cmdargs.push((n+2 < arguments.length) ? arguments[n+2] : "");
 
@@ -1432,7 +1432,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       return promise.then(args => {
          if (args === null) return false;
-         
+
          let urlargs = "";
          for (let k = 0; k < args.length; ++k)
             urlargs += `${k > 0 ?  "&" : "?"}arg${k+1}=${args[k]}`;
@@ -2318,7 +2318,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                if (p.getItemName() != display_itemname) return;
                // verify that object was drawn with same option as specified now (if any)
                if (!updating && drawopt && (p.getItemDrawOpt() != drawopt)) return;
-               mdi.activateFrame(frame);
+
+               // do not actiavte frame when doing update
+               // mdi.activateFrame(frame);
 
                if ((typeof p.redrawObject == 'function') && p.redrawObject(obj, drawopt)) painter = p;
             });
@@ -3430,7 +3432,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       mdi.forEachPainter((p, frame) => {
          if ((p === painter) || (p.getItemName() != painter.getItemName())) return;
-         mdi.activateFrame(frame);
+
+         // do not actiavte frame when doing update
+         // mdi.activateFrame(frame);
          if ((typeof p.redrawObject == 'function') && p.redrawObject(obj)) isany = true;
       });
       return isany;
