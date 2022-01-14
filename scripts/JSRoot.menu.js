@@ -549,10 +549,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          let dlg_id = this.menuname + "_dialog",
              main_content = '<form> <fieldset style="padding:0; border:0">';
 
-         for (let n = 0; n < args.length; ++n) {
+         for (let n = 0; n < args.length; ++n) 
             main_content += `<label for="${dlg_id}_inp${n}">arg${n+1}</label>
                              <input type="text" tabindex="0" id="${dlg_id}_inp${n}" value="${args[n]}" style="width:100%;display:block"/>`;
-         }
 
          main_content += '</fieldset></form>';
 
@@ -562,14 +561,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                if (!element)
                   return resolveFunc(null);
 
-               let urlargs = "";
-               for (let k = 0; k < args.length; ++k) {
-                  let value = element.querySelector(`#${dlg_id}_inp${k}`).value;
-                  urlargs += k > 0 ?  "&" : "?";
-                  urlargs += `arg${k+1}=${value}`;
-               }
-
-               resolveFunc(urlargs);
+               let resargs = [];
+               for (let k = 0; k < args.length; ++k) 
+                  resargs.push(element.querySelector(`#${dlg_id}_inp${k}`).value);
+               resolveFunc(resargs);
             });
          });
       }
