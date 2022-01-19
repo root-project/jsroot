@@ -4703,13 +4703,17 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       /** @summary change frame state */
       changeFrameState(frame, newstate,no_redraw) {
          let main = d3.select(frame.parentNode),
-             state = main.property("state");
+             state = main.property("state"),
+             top = this.selectDom().select('.jsroot_flex_top');
 
          if (state == newstate)
             return false;
 
          if (state == "normal")
              main.property('original_style', main.attr('style'));
+
+         // clear any previous settings
+         top.style('overflow', null);
 
          switch (newstate) {
             case "min":
@@ -4719,6 +4723,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             case "max":
                main.style("height","100%").style("width", "100%").style('left','').style('top','');
                main.select(".jsroot_flex_draw").style("display", null);
+               top.style('overflow', 'hidden');
                break;
             default:
                main.select(".jsroot_flex_draw").style("display", null);
