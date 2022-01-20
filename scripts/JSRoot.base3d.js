@@ -920,7 +920,7 @@ JSROOT.define(['d3', 'three', 'painter'], (d3, THREE, jsrp) => {
          if (this.control_active && evnt.buttons && (evnt.buttons & 2))
             this.block_ctxt = true; // if right button in control was active, block next context menu
 
-         if (this.control_active || this.block_mousemove || !this.ProcessMouseMove) return;
+         if (this.control_active || this.block_mousemove || !this.processMouseMove) return;
 
          if (this.mouse_zoom_mesh) {
             // when working with zoom mesh, need special handling
@@ -967,7 +967,7 @@ JSROOT.define(['d3', 'three', 'painter'], (d3, THREE, jsrp) => {
 
          let mouse = this.tmout_mouse,
              intersects = this.getMouseIntersects(mouse),
-             tip = this.ProcessMouseMove(intersects);
+             tip = this.processMouseMove(intersects);
 
          if (tip) {
             let name = "", title = "", coord = "", info = "";
@@ -1007,8 +1007,8 @@ JSROOT.define(['d3', 'three', 'painter'], (d3, THREE, jsrp) => {
             delete this.tmout_handle;
          }
          this.tooltip.hide();
-         if (typeof this.ProcessMouseLeave === 'function')
-            this.ProcessMouseLeave();
+         if (typeof this.processMouseLeave === 'function')
+            this.processMouseLeave();
          if (this.cursor_changed) {
             document.body.style.cursor = 'auto';
             this.cursor_changed = false;
@@ -1039,9 +1039,9 @@ JSROOT.define(['d3', 'three', 'painter'], (d3, THREE, jsrp) => {
          }
 
          // method assigned in the Eve7 and used for object selection
-         if ((kind == 2) && (typeof this.ProcessSingleClick == 'function')) {
+         if ((kind == 2) && (typeof this.processSingleClick == 'function')) {
             let intersects = this.getMouseIntersects(mouse_pos);
-            this.ProcessSingleClick(intersects);
+            this.processSingleClick(intersects);
          }
       };
 
@@ -1057,7 +1057,7 @@ JSROOT.define(['d3', 'three', 'painter'], (d3, THREE, jsrp) => {
          let kind = 0, fp = this.painter ? this.painter.getFramePainter() : null;
          if (fp && typeof fp._click_handler == 'function')
             kind = 1; // user click handler
-         else if (this.ProcessSingleClick && this.painter && this.painter.options && this.painter.options.mouse_click)
+         else if (this.processSingleClick && this.painter && this.painter.options && this.painter.options.mouse_click)
             kind = 2;  // eve7 click handler
 
          // if normal event, set longer timeout waiting if double click not detected

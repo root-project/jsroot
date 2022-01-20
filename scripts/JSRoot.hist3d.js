@@ -207,7 +207,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
 
       let axis_painter = this, obj_painter = this.getMainPainter();
 
-      this.control.ProcessMouseMove = function(intersects) {
+      this.control.processMouseMove = function(intersects) {
 
          let tip = null, mesh = null, zoom_mesh = null;
 
@@ -255,7 +255,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
          return (tip && tip.lines) ? tip : "";
       };
 
-      this.control.ProcessMouseLeave = function() {
+      this.control.processMouseLeave = function() {
          axis_painter.highlightBin3D(null);
       };
 
