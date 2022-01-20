@@ -1771,17 +1771,20 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return Promise.resolve(this);
 
       if (factcmds.length) {
-         let fastbtns = d3elem.append("div").attr("class","jsroot");
+         let fastbtns = d3elem.append("div");
          for (let n = 0; n < factcmds.length; ++n) {
             let btn = fastbtns.append("button")
                        .text("")
-                       .attr("class",'fast_command')
+                       .attr("class",'jsroot_fastcmd_btn')
                        .attr("item", this.itemFullName(factcmds[n]))
                        .attr("title", factcmds[n]._title)
                        .on("click", function() { h.executeCommand(d3.select(this).attr("item"), this); } );
 
-            if ('_icon' in factcmds[n])
-               btn.append('img').attr("src", factcmds[n]._icon);
+            if (factcmds[n]._icon) {
+               console.log('set background image', factcmds[n]._icon);
+               btn.style("background-image", `url("${factcmds[n]._icon}")`);
+               console.log('style', btn.style("background-image"));
+            }
          }
       }
 
