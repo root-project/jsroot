@@ -3245,15 +3245,15 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
       this.createToolbar();
 
-      if (this._clones)
-         return new Promise(resolveFunc => {
-            this._resolveFunc = resolveFunc;
-            this.showDrawInfo("Drawing geometry");
-            this.startDrawGeometry(true);
-         });
+      // just draw extras and complete drawing if there are no main model
+      if (!this._clones)
+         return this.completeDraw();
 
-      this.completeDraw();
-      return Promise.resolve(this);
+      return new Promise(resolveFunc => {
+         this._resolveFunc = resolveFunc;
+         this.showDrawInfo("Drawing geometry");
+         this.startDrawGeometry(true);
+      });
    }
 
    /** @summary methods show info when first geometry drawing is performed */
