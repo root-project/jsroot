@@ -3036,7 +3036,7 @@ JSROOT.define(['d3'], (d3) => {
          });
       }
 
-      let DoFillMenu = (_menu, _reqid, _resolveFunc, reply) => {
+      const DoFillMenu = (_menu, _reqid, _resolveFunc, reply) => {
 
          // avoid multiple call of the callback after timeout
          if (this._got_menu) return;
@@ -3081,7 +3081,7 @@ JSROOT.define(['d3'], (d3) => {
          }
 
          _resolveFunc(_menu);
-      }
+      };
 
       let reqid = this.snapid;
       if (kind) reqid += "#" + kind; // use # to separate object id from member specifier like 'x' or 'z'
@@ -3207,18 +3207,15 @@ JSROOT.define(['d3'], (d3) => {
       let layer = frame.select(".main_layer");
       if (layer.empty()) return null;
 
-      let pos = d3.pointer(evnt, layer.node());
-      let pnt = { touch: false, x: pos[0], y: pos[1] };
+      let pos = d3.pointer(evnt, layer.node()),
+          pnt = { touch: false, x: pos[0], y: pos[1] };
 
       if (typeof this.extractToolTip == 'function')
          return this.extractToolTip(pnt);
 
       pnt.disabled = true;
 
-      let res = null;
-
-      if (typeof this.processTooltipEvent == 'function')
-         res = this.processTooltipEvent(pnt);
+      let res = (typeof this.processTooltipEvent == 'function') ? this.processTooltipEvent(pnt) : null;
 
       return res && res.user_info ? res.user_info : res;
    }
@@ -4134,9 +4131,8 @@ JSROOT.define(['d3'], (d3) => {
 
       function build(main) {
 
-         main.attr("width", args.width).attr("height", args.height);
-
-         main.style("width", args.width + "px").style("height", args.height + "px");
+         main.attr("width", args.width).attr("height", args.height)
+             .style("width", args.width + "px").style("height", args.height + "px");
 
          JSROOT._.svg_3ds = undefined;
 
