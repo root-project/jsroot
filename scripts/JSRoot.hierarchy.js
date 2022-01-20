@@ -1771,7 +1771,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return Promise.resolve(this);
 
       if (factcmds.length) {
-         let fastbtns = d3elem.append("div");
+         let fastbtns = d3elem.append("div").style("display", "inline").style("vertical-align", "middle");
          for (let n = 0; n < factcmds.length; ++n) {
             let btn = fastbtns.append("button")
                        .text("")
@@ -1780,11 +1780,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                        .attr("title", factcmds[n]._title)
                        .on("click", function() { h.executeCommand(d3.select(this).attr("item"), this); } );
 
-            if (factcmds[n]._icon) {
-               console.log('set background image', factcmds[n]._icon);
+            if (factcmds[n]._icon)
                btn.style("background-image", `url("${factcmds[n]._icon}")`);
-               console.log('style', btn.style("background-image"));
-            }
          }
       }
 
