@@ -1771,7 +1771,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return Promise.resolve(this);
 
       if (factcmds.length) {
-         let fastbtns = d3elem.append("div").style("display", "inline").style("vertical-align", "middle");
+         let fastbtns = d3elem.append("div").attr("style", "display: inline; vertical-align: middle; white-space: nowrap;");
          for (let n = 0; n < factcmds.length; ++n) {
             let btn = fastbtns.append("button")
                        .text("")
@@ -3760,9 +3760,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       if (this.is_online) {
          guiCode +='<p> Hierarchy in <a href="h.json">json</a> and <a href="h.xml">xml</a> format</p>'
-                 + '<div style="display:inline-block;">'
-                 + '<label style="margin-right:5px; vertical-align:middle;">'
-                 + '<input style="vertical-align:middle;" type="checkbox" name="monitoring" class="gui_monitoring"/>'
+                 + '<div style="display:inline; vertical-align:middle; white-space: nowrap;">'
+                 + '<label style="margin-right:5px">'
+                 + '<input type="checkbox" name="monitoring" class="gui_monitoring"/>'
                  + 'Monitoring</label>';
       } else if (!this.no_select) {
          let myDiv = d3.select("#"+this.gui_div),
@@ -3775,7 +3775,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             +'<div style="display:flex;flex-direction:row;padding-top:5px">'
             +'<select class="gui_selectFileName" style="flex:1;padding:2px;" title="select file name"'
             +'<option value="" selected="selected"></option>';
-         arrFiles.forEach(fname => { guiCode += '<option value = "' + path + fname + '">' + fname + '</option>'; });
+         arrFiles.forEach(fname => { guiCode += `<option value="${path + fname}">${fname}</option>`; });
          guiCode += '</select>'
             +'<input type="file" class="gui_localFile" accept=".root" style="display:none"/><output id="list" style="display:none"></output>'
             +'<input type="button" value="..." class="gui_fileBtn" style="min-width:3em;padding:3px;margin-left:5px;margin-right:5px;" title="select local file for reading"/><br/>'
