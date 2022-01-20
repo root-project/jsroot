@@ -1293,8 +1293,8 @@ JSROOT.define(['d3'], (d3) => {
       if (ndig === undefined) ndig = smooth ? 2 : 0;
       if (height === undefined) height = 0;
 
-      const jsroot_d3_svg_lineSlope = (p0, p1) => (p1.gry - p0.gry) / (p1.grx - p0.grx);
-      const jsroot_d3_svg_lineFiniteDifferences = points => {
+      const jsroot_d3_svg_lineSlope = (p0, p1) => (p1.gry - p0.gry) / (p1.grx - p0.grx),
+            jsroot_d3_svg_lineFiniteDifferences = points => {
          let i = 0, j = points.length - 1, m = [], p0 = points[0], p1 = points[1], d = m[0] = jsroot_d3_svg_lineSlope(p0, p1);
          while (++i < j) {
             p0 = p1; p1 = points[i + 1];
@@ -1302,8 +1302,7 @@ JSROOT.define(['d3'], (d3) => {
          }
          m[i] = d;
          return m;
-      };
-      const jsroot_d3_svg_lineMonotoneTangents = points => {
+      }, jsroot_d3_svg_lineMonotoneTangents = points => {
          let d, a, b, s, m = jsroot_d3_svg_lineFiniteDifferences(points), i = -1, j = points.length - 1;
          while (++i < j) {
             d = jsroot_d3_svg_lineSlope(points[i], points[i + 1]);
@@ -1351,12 +1350,12 @@ JSROOT.define(['d3'], (d3) => {
 
       if (smooth) {
          // build smoothed curve
-         res.path += "C" + conv(bin.grx+bin.dgrx) + "," + conv(bin.gry+bin.dgry) + ",";
+         res.path += `C${conv(bin.grx+bin.dgrx)},${conv(bin.gry+bin.dgry)},`;
          for (let n = 1; n < npnts; ++n) {
             let prev = bin;
             bin = bins[n];
             if (n > 1) res.path += "S";
-            res.path += conv(bin.grx - bin.dgrx) + "," + conv(bin.gry - bin.dgry) + "," + conv(bin.grx) + "," + conv(bin.gry);
+            res.path += `${conv(bin.grx - bin.dgrx)},${conv(bin.gry - bin.dgry)},${conv(bin.grx)},${conv(bin.gry)}`;
             maxy = Math.max(maxy, prev.gry);
          }
       } else if (npnts < 10000) {
@@ -1375,7 +1374,7 @@ JSROOT.define(['d3'], (d3) => {
             dy = Math.round(bin.gry) - curry;
             if (dx && dy) {
                flush();
-               res.path += "l" + dx + "," + dy;
+               res.path += `l${dx},${dy}`;
             } else if (!dx && dy) {
                if ((acc_y === 0) || ((dy < 0) !== (acc_y < 0))) flush();
                acc_y += dy;
@@ -1414,7 +1413,7 @@ JSROOT.define(['d3'], (d3) => {
             }
             dy = lasty - curry;
             if (dy)
-               res.path += "l" + dx + "," + dy;
+               res.path += `l${dx},${dy}`;
             else
                res.path += "h" + dx;
             currx = lastx; curry = lasty;
@@ -1429,7 +1428,7 @@ JSROOT.define(['d3'], (d3) => {
       }
 
       if (height > 0)
-         res.close = "L" + conv(bin.grx) + "," + conv(maxy) + "h" + conv(bins[0].grx - bin.grx) + "Z";
+         res.close = `L${conv(bin.grx)},${conv(maxy)}h${conv(bins[0].grx - bin.grx)}Z`;
 
       return res;
    }
