@@ -447,6 +447,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
 
       /** @summary Run modal dialog
+        * @returns {Promise} with html element inside dialg
         * @private */
       runModal() {
          throw Error('runModal() must be reimplemented');
@@ -458,6 +459,15 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
         * @protected */
       info(title, message) {
          return this.runModal(title,`<p tabindex="0">${message}</p>`, { height: 120, width: 400, resizable: true });
+      }
+
+      /** @summary Show confirm dialog
+        * @param {String} title - title
+        * @param {String} message - message
+        * @returns {Promise} with true when "Ok" pressed or false when "Cancel" pressed
+        * @protected */
+      confirm(title, message) {
+         return this.runModal(title, message, { btns: true, height: 120, width: 400 }).then(elem => { return !!elem; });
       }
 
       /** @summary Input value
@@ -549,7 +559,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          let dlg_id = this.menuname + "_dialog",
              main_content = '<form> <fieldset style="padding:0; border:0">';
 
-         for (let n = 0; n < args.length; ++n) 
+         for (let n = 0; n < args.length; ++n)
             main_content += `<label for="${dlg_id}_inp${n}">arg${n+1}</label>
                              <input type="text" tabindex="0" id="${dlg_id}_inp${n}" value="${args[n]}" style="width:100%;display:block"/>`;
 
@@ -562,7 +572,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                   return resolveFunc(null);
 
                let resargs = [];
-               for (let k = 0; k < args.length; ++k) 
+               for (let k = 0; k < args.length; ++k)
                   resargs.push(element.querySelector(`#${dlg_id}_inp${k}`).value);
                resolveFunc(resargs);
             });
