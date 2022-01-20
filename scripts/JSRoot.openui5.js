@@ -1,8 +1,7 @@
 /// @file JSRoot.openui5.js
 /// Bootstraping of OpenUI5 functionality in JSROOT
-/// Openui5 loaded directly in the script
 
-JSROOT.define(['jquery', 'jquery-ui'], () => {
+JSROOT.define([], () => {
 
    "use strict";
 
