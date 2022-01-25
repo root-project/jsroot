@@ -4760,16 +4760,18 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Handle highlight in canvas - delver information to server
      * @private */
    TCanvasPainter.prototype.processHighlightConnect = function(hints) {
-      if (!hints || hints.length == 0 || !this._highlight_connect || !this._websocket || this.doingDraw()) return;
+      if (!hints || hints.length == 0 || !this._highlight_connect || 
+           !this._websocket || this.doingDraw() || !this._websocket.canSend(2)) return;
 
       let hint = hints[0];
       if (!hint.painter || !hint.painter.snapid || !hint.user_info) return;
 
-      if (!this._websocket.canSend(2)) return;
+      let msg = JSON.stringify([this.snapid, hint.painter.snapid, hint.user_info.binx.toString(), hint.user_info.biny.toString()]);
 
-      let msg = [this.snapid, hint.painter.snapid, hint.user_info.binx.toString(), hint.user_info.biny.toString()];
-
-      this.sendWebsocket("HIGHLIGHT:" + JSON.stringify(msg));
+      if (this._last_highlight_msg != msg) {
+         this._last_highlight_msg = msg;
+         this.sendWebsocket("HIGHLIGHT:" + msg);
+      }
    }
 
    /** @summary Method informs that something was changed in the canvas
