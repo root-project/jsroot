@@ -3585,7 +3585,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             this.addPadButtons(true);
 
          if (typeof snap.fHighlightConnect !== 'undefined')
-            this.highlight_connect = snap.fHighlightConnect;
+            this._highlight_connect = snap.fHighlightConnect;
 
          if ((typeof snap.fScripts == "string") && snap.fScripts) {
             let arg = "";
@@ -4748,7 +4748,21 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.showSection("StatusBar", this.pad.TestBit(TCanvasStatusBits.kShowEventStatus));
       this.showSection("ToolBar", this.pad.TestBit(TCanvasStatusBits.kShowToolBar));
       this.showSection("Editor", this.pad.TestBit(TCanvasStatusBits.kShowEditor));
-      this.showSection("ToolTips", this.pad.TestBit(TCanvasStatusBits.kShowToolTips) || this.highlight_connect);
+      this.showSection("ToolTips", this.pad.TestBit(TCanvasStatusBits.kShowToolTips) || this._highlight_connect);
+   }
+
+   /** @summary Handle highlight in canvas - delver information to server
+     * @private */
+   TCanvasPainter.prototype.processHighlightConnect = function(hints) {
+      if (!hints || hints.length == 0 || !this._highlight_connect || !this._websocket) return;
+
+      let hint = hints[0];
+      if (!hint.painter || !hint.painter.snapid || !hint.user_info) return;
+
+      let msg = [this.snapid, hint.painter.snapid, hint.user_info.binx.toString(), hint.user_info.biny.toString()];
+
+      if (this._websocket.canSend())
+         this.sendWebsocket("HIGHLIGHT:" + JSON.stringify(msg));
    }
 
    /** @summary Method informs that something was changed in the canvas
