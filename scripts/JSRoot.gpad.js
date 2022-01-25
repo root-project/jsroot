@@ -3584,7 +3584,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (!this.batch_mode)
             this.addPadButtons(true);
 
-         if (snap.fScripts && (typeof snap.fScripts == "string")) {
+         if (typeof snap.fHighlightConnect !== 'undefined')
+            this.highlight_connect = snap.fHighlightConnect;
+
+         if ((typeof snap.fScripts == "string") && snap.fScripts) {
             let arg = "";
 
             if (snap.fScripts.indexOf("load:") == 0)
@@ -4745,7 +4748,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       this.showSection("StatusBar", this.pad.TestBit(TCanvasStatusBits.kShowEventStatus));
       this.showSection("ToolBar", this.pad.TestBit(TCanvasStatusBits.kShowToolBar));
       this.showSection("Editor", this.pad.TestBit(TCanvasStatusBits.kShowEditor));
-      this.showSection("ToolTips", this.pad.TestBit(TCanvasStatusBits.kShowToolTips));
+      this.showSection("ToolTips", this.pad.TestBit(TCanvasStatusBits.kShowToolTips) || this.highlight_connect);
    }
 
    /** @summary Method informs that something was changed in the canvas

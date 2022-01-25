@@ -334,7 +334,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    } // TooltipHandler
 
-   function setPainterTooltipEnabled(painter,on) {
+   function setPainterTooltipEnabled(painter, on) {
       if (!painter) return;
 
       let fp = painter.getFramePainter();
