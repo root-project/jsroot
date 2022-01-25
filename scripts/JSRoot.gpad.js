@@ -2998,6 +2998,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       });
    }
 
+   /** @summary indicates if painter performing objects draw
+     * @private */
+   TPadPainter.prototype.doingDraw = function() {
+      return this._doing_draw !== undefined;
+   }
+
    /** @summary confirms that drawing is completed, may trigger next drawing immediately
      * @private */
    TPadPainter.prototype.confirmDraw = function() {
@@ -4754,15 +4760,16 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary Handle highlight in canvas - delver information to server
      * @private */
    TCanvasPainter.prototype.processHighlightConnect = function(hints) {
-      if (!hints || hints.length == 0 || !this._highlight_connect || !this._websocket) return;
+      if (!hints || hints.length == 0 || !this._highlight_connect || !this._websocket || this.doingDraw()) return;
 
       let hint = hints[0];
       if (!hint.painter || !hint.painter.snapid || !hint.user_info) return;
 
+      if (!this._websocket.canSend(2)) return;
+
       let msg = [this.snapid, hint.painter.snapid, hint.user_info.binx.toString(), hint.user_info.biny.toString()];
 
-      if (this._websocket.canSend())
-         this.sendWebsocket("HIGHLIGHT:" + JSON.stringify(msg));
+      this.sendWebsocket("HIGHLIGHT:" + JSON.stringify(msg));
    }
 
    /** @summary Method informs that something was changed in the canvas
