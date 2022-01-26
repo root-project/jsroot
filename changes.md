@@ -24,6 +24,13 @@
 21. Starting from Chrome 96, allow embedding WebGL into SVG - solving problem with lego plots in canvas
 
 
+## Changes in 6.3.3
+1. Fix TEfficiency drawing
+2. Provide TPadPainter.divide method
+3. Fix browsing remote file via THttpServer
+4. Fix lego draw update while zooming
+
+
 ## Changes in 6.3.2
 1. Fix bug in TH1 drawing when minimum or/and maximum was configured for histogram
 
