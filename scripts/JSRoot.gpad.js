@@ -4768,7 +4768,16 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       let pp = hint.painter.getPadPainter() || this;
       if (!pp.snapid) return;
 
-      let msg = JSON.stringify([pp.snapid, hint.painter.snapid, hint.user_info.binx.toString(), hint.user_info.biny.toString()]);
+      let arr = [pp.snapid, hint.painter.snapid, "0", "0"];
+
+      if ((hint.user_info.binx !== undefined) && (hint.user_info.biny !== undefined)) {
+         arr[2] = hint.user_info.binx.toString();
+         arr[3] = hint.user_info.biny.toString();
+      }  else if (hint.user_info.bin !== undefined) {
+         arr[2] = hint.user_info.bin.toString();
+      }
+
+      let msg = JSON.stringify(arr);
 
       if (this._last_highlight_msg != msg) {
          this._last_highlight_msg = msg;
