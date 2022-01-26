@@ -4763,8 +4763,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (!hints || hints.length == 0 || !this._highlight_connect ||
            !this._websocket || this.doingDraw() || !this._websocket.canSend(2)) return;
 
-      let hint = hints[0];
-      if (!hint.painter || !hint.painter.snapid || !hint.user_info) return;
+      let hint = hints[0] || hints[1];
+      if (!hint || !hint.painter || !hint.painter.snapid || !hint.user_info) return;
       let pp = hint.painter.getPadPainter() || this;
       if (!pp.snapid) return;
 
