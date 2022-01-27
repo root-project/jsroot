@@ -485,7 +485,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          let main_content =
             `<form>
                 <fieldset style="padding:0; border:0">
-                   <input type="${inp_type}" tabindex="0" value="${value}" style="width:100%;display:block" class="jsroot_dlginp"/>
+                   <input type="${inp_type}" tabindex="0" value="${value}" style="width:98%;display:block" class="jsroot_dlginp"/>
                </fieldset>
              </form>`;
 
@@ -521,7 +521,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             arg.fValue = arg.fDefault;
             if (arg.fValue == '\"\"') arg.fValue = "";
             main_content += `<label for="${dlg_id}_inp${n}">${arg.fName}</label>
-                             <input type="text" tabindex="0" id="${dlg_id}_inp${n}" value="${arg.fValue}" style="width:100%;display:block"/>`;
+                             <input type="text" tabindex="${n}" id="${dlg_id}_inp${n}" value="${arg.fValue}" style="width:100%;display:block"/>`;
          }
 
          main_content += '</fieldset></form>';
@@ -852,9 +852,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          return new Promise(resolveFunc => {
             element.on("keyup", evnt => {
-               if ((evnt.keyCode === 13) || (evnt.keyCode === 27)) {
+               if ((evnt.keyCode == 13) || (evnt.keyCode == 27)) {
                   evnt.preventDefault();
-                  resolveFunc(evnt.keyCode === 13 ? element.node() : null);
+                  resolveFunc(evnt.keyCode == 13 ? element.node() : null);
                   element.remove();
                   block.remove();
                }
