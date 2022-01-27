@@ -2,9 +2,11 @@
 /// Part of JavaScript ROOT graphics with more classes like TEllipse, TLine, ...
 /// Such classes are rarely used and therefore loaded only on demand
 
+"use strict";
+
 JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
-   "use strict";
+   const ObjectPainter = JSROOT.ObjectPainter;
 
    /** @summary Draw TText
      * @private */
@@ -496,11 +498,11 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
     */
 
    function TF1Painter(dom, tf1) {
-      JSROOT.ObjectPainter.call(this, dom, tf1);
+      ObjectPainter.call(this, dom, tf1);
       this.bins = null;
    }
 
-   TF1Painter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
+   TF1Painter.prototype = Object.create(ObjectPainter.prototype);
 
    /** @summary Create bins for TF1 drawing
      * @private */
@@ -800,7 +802,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
     */
 
    function TGraphPainter(dom, graph) {
-      JSROOT.ObjectPainter.call(this, dom, graph);
+      ObjectPainter.call(this, dom, graph);
       this.axes_draw = false; // indicate if graph histogram was drawn for axes
       this.bins = null;
       this.xmin = this.ymin = this.xmax = this.ymax = 0;
@@ -812,7 +814,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                          this.is_bent || graph._typename.match(/^RooHist/);
    }
 
-   TGraphPainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
+   TGraphPainter.prototype = Object.create(ObjectPainter.prototype);
 
    /** @summary Redraw graph
      * @desc may redraw histogram which was used to draw axes
@@ -835,7 +837,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    TGraphPainter.prototype.cleanup = function() {
       delete this.interactive_bin; // break mouse handling
       delete this.bins;
-      JSROOT.ObjectPainter.prototype.cleanup.call(this);
+      ObjectPainter.prototype.cleanup.call(this);
    }
 
    /** @summary Returns object if this drawing TGraphMultiErrors object
@@ -2055,7 +2057,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    /** @summary Fill context menu
      * @private */
    TGraphPainter.prototype.fillContextMenu = function(menu) {
-      JSROOT.ObjectPainter.prototype.fillContextMenu.call(this, menu);
+      ObjectPainter.prototype.fillContextMenu.call(this, menu);
 
       if (!this.snapid)
          menu.addchk(this.testEditable(), "Editable", () => { this.testEditable("toggle"); this.drawGraph(); });
@@ -2066,7 +2068,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    /** @summary Execute menu command
      * @private */
    TGraphPainter.prototype.executeMenuCommand = function(method, args) {
-      if (JSROOT.ObjectPainter.prototype.executeMenuCommand.call(this,method,args)) return true;
+      if (ObjectPainter.prototype.executeMenuCommand.call(this,method,args)) return true;
 
       let canp = this.getCanvPainter(), pmain = this.getFramePainter();
 
@@ -2304,12 +2306,12 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
     */
 
    function TGraphPolargramPainter(dom, polargram) {
-      JSROOT.ObjectPainter.call(this, dom, polargram);
+      ObjectPainter.call(this, dom, polargram);
       this.$polargram = true; // indicate that this is polargram
       this.zoom_rmin = this.zoom_rmax = 0;
    }
 
-   TGraphPolargramPainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
+   TGraphPolargramPainter.prototype = Object.create(ObjectPainter.prototype);
 
    /** @summary Translate coordinates */
    TGraphPolargramPainter.prototype.translate = function(angle, radius, keep_float) {
@@ -2613,10 +2615,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
     */
 
    function TGraphPolarPainter(dom, graph) {
-      JSROOT.ObjectPainter.call(this, dom, graph);
+      ObjectPainter.call(this, dom, graph);
    }
 
-   TGraphPolarPainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
+   TGraphPolarPainter.prototype = Object.create(ObjectPainter.prototype);
 
    /** @summary Redraw TGraphPolar */
    TGraphPolarPainter.prototype.redraw = function() {
@@ -2853,7 +2855,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
     * @private
     */
 
-   class TSplinePainter extends JSROOT.ObjectPainter {
+   class TSplinePainter extends ObjectPainter {
 
       /** @summary Update TSpline object
         * @private */
@@ -3184,7 +3186,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
     * @private
     */
 
-   class TGraphTimePainter extends JSROOT.ObjectPainter {
+   class TGraphTimePainter extends ObjectPainter {
 
       /** @summary Redraw object */
       redraw() {
@@ -3338,7 +3340,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
     * @private
     */
 
-   class TEfficiencyPainter extends JSROOT.ObjectPainter {
+   class TEfficiencyPainter extends ObjectPainter {
 
       /** @summary Caluclate efficiency */
       getEfficiency(obj, bin) {
@@ -3549,18 +3551,18 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
     */
 
    function TMultiGraphPainter(dom, mgraph) {
-      JSROOT.ObjectPainter.call(this, dom, mgraph);
+      ObjectPainter.call(this, dom, mgraph);
       this.firstpainter = null;
       this.autorange = false;
       this.painters = []; // keep painters to be able update objects
    }
 
-   TMultiGraphPainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
+   TMultiGraphPainter.prototype = Object.create(ObjectPainter.prototype);
 
    /** @summary Cleanup multigraph painter */
    TMultiGraphPainter.prototype.cleanup = function() {
       this.painters = [];
-      JSROOT.ObjectPainter.prototype.cleanup.call(this);
+      ObjectPainter.prototype.cleanup.call(this);
    }
 
    /** @summary Update multigraph object */
@@ -3790,7 +3792,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
      * @private */
    jsrp.drawWebPainting = function(dom, obj, opt) {
 
-      let painter = new JSROOT.ObjectPainter(dom, obj, opt);
+      let painter = new ObjectPainter(dom, obj, opt);
 
       painter.updateObject = function(obj) {
          if (!this.matchObjectType(obj)) return false;
@@ -3968,11 +3970,11 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
     */
 
    function TASImagePainter(dom, obj, opt) {
-      JSROOT.ObjectPainter.call(this, dom, obj, opt);
+      ObjectPainter.call(this, dom, obj, opt);
       this.wheel_zoomy = true;
    }
 
-   TASImagePainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
+   TASImagePainter.prototype = Object.create(ObjectPainter.prototype);
 
    /** @summary Decode options string  */
    TASImagePainter.prototype.decodeOptions = function(opt) {
@@ -4347,10 +4349,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
     */
 
    function TRatioPlotPainter(dom, ratio, opt) {
-      JSROOT.ObjectPainter.call(this, dom, ratio, opt);
+      ObjectPainter.call(this, dom, ratio, opt);
    }
 
-   TRatioPlotPainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
+   TRatioPlotPainter.prototype = Object.create(ObjectPainter.prototype);
 
    /** @summary Set grids range */
    TRatioPlotPainter.prototype.setGridsRange = function(xmin, xmax) {
