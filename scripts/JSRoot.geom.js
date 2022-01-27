@@ -4263,6 +4263,64 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          return true;
       }
 
+     /** @summary draw TGeo object */
+      static draw(dom, obj, opt) {
+         if (!obj) return null;
+
+         let shape = null, extras = null, extras_path = "", is_eve = false;
+
+         if (('fShapeBits' in obj) && ('fShapeId' in obj)) {
+            shape = obj; obj = null;
+         } else if ((obj._typename === 'TGeoVolumeAssembly') || (obj._typename === 'TGeoVolume')) {
+            shape = obj.fShape;
+         } else if ((obj._typename === "TEveGeoShapeExtract") || (obj._typename === "ROOT::Experimental::REveGeoShapeExtract")) {
+            shape = obj.fShape; is_eve = true;
+         } else if (obj._typename === 'TGeoManager') {
+            shape = obj.fMasterVolume.fShape;
+         } else if (obj._typename === 'TGeoOverlap') {
+            extras = obj.fMarker; extras_path = "<prnt>/Marker";
+            obj = geo.buildOverlapVolume(obj);
+            if (!opt) opt = "wire";
+         } else if ('fVolume' in obj) {
+            if (obj.fVolume) shape = obj.fVolume.fShape;
+         } else {
+            obj = null;
+         }
+
+         if ((typeof opt == "string") && opt.indexOf("comp")==0 && shape && (shape._typename == 'TGeoCompositeShape') && shape.fNode) {
+            let maxlvl = 1;
+            opt = opt.substr(4);
+            if (opt[0] == "x") {  maxlvl = 999; opt = opt.substr(1) + "_vislvl999"; }
+            obj = geo.buildCompositeVolume(shape, maxlvl);
+         }
+
+         if (!obj && shape)
+            obj = JSROOT.extend(JSROOT.create("TEveGeoShapeExtract"),
+                      { fTrans: null, fShape: shape, fRGBA: [0, 1, 0, 1], fElements: null, fRnrSelf: true });
+
+         if (!obj) return null;
+
+         let painter = jsrp.createGeoPainter(dom, obj, opt);
+
+         if (painter.ctrl.is_main && !obj.$geo_painter)
+            obj.$geo_painter = painter;
+
+         if (!painter.ctrl.is_main && painter.ctrl.project && obj.$geo_painter) {
+            painter._main_painter = obj.$geo_painter;
+            painter._main_painter._slave_painters.push(painter);
+         }
+
+         if (is_eve && !painter.ctrl.vislevel || (painter.ctrl.vislevel < 9))
+            painter.ctrl.vislevel = 9;
+
+         if (extras) {
+            painter._splitColors = true;
+            painter.addExtra(extras, extras_path);
+         }
+
+         return painter.loadMacro(painter.ctrl.script_name).then(arg => painter.prepareObjectDraw(arg.obj, arg.prefix));
+      }
+
    } // TGeoPainter
 
    /** @summary Create geo painter
@@ -4293,67 +4351,6 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       painter.ctrl.clip[2].enabled = painter.options.clipz;
 
       return painter;
-   }
-
-
-   /** @summary draw TGeo object
-     * @memberof JSROOT.Painter
-     * @private */
-   function drawGeoObject(dom, obj, opt) {
-      if (!obj) return null;
-
-      let shape = null, extras = null, extras_path = "", is_eve = false;
-
-      if (('fShapeBits' in obj) && ('fShapeId' in obj)) {
-         shape = obj; obj = null;
-      } else if ((obj._typename === 'TGeoVolumeAssembly') || (obj._typename === 'TGeoVolume')) {
-         shape = obj.fShape;
-      } else if ((obj._typename === "TEveGeoShapeExtract") || (obj._typename === "ROOT::Experimental::REveGeoShapeExtract")) {
-         shape = obj.fShape; is_eve = true;
-      } else if (obj._typename === 'TGeoManager') {
-         shape = obj.fMasterVolume.fShape;
-      } else if (obj._typename === 'TGeoOverlap') {
-         extras = obj.fMarker; extras_path = "<prnt>/Marker";
-         obj = geo.buildOverlapVolume(obj);
-         if (!opt) opt = "wire";
-      } else if ('fVolume' in obj) {
-         if (obj.fVolume) shape = obj.fVolume.fShape;
-      } else {
-         obj = null;
-      }
-
-      if ((typeof opt == "string") && opt.indexOf("comp")==0 && shape && (shape._typename == 'TGeoCompositeShape') && shape.fNode) {
-         let maxlvl = 1;
-         opt = opt.substr(4);
-         if (opt[0] == "x") {  maxlvl = 999; opt = opt.substr(1) + "_vislvl999"; }
-         obj = geo.buildCompositeVolume(shape, maxlvl);
-      }
-
-      if (!obj && shape)
-         obj = JSROOT.extend(JSROOT.create("TEveGeoShapeExtract"),
-                   { fTrans: null, fShape: shape, fRGBA: [0, 1, 0, 1], fElements: null, fRnrSelf: true });
-
-      if (!obj) return null;
-
-      let painter = jsrp.createGeoPainter(dom, obj, opt);
-
-      if (painter.ctrl.is_main && !obj.$geo_painter)
-         obj.$geo_painter = painter;
-
-      if (!painter.ctrl.is_main && painter.ctrl.project && obj.$geo_painter) {
-         painter._main_painter = obj.$geo_painter;
-         painter._main_painter._slave_painters.push(painter);
-      }
-
-      if (is_eve && !painter.ctrl.vislevel || (painter.ctrl.vislevel < 9))
-         painter.ctrl.vislevel = 9;
-
-      if (extras) {
-         painter._splitColors = true;
-         painter.addExtra(extras, extras_path);
-      }
-
-      return painter.loadMacro(painter.ctrl.script_name).then(arg => painter.prepareObjectDraw(arg.obj, arg.prefix));
    }
 
    // ===============================================================================
@@ -4850,14 +4847,13 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       return true;
    }
 
-   jsrp.addDrawFunc({ name: "TGeoVolumeAssembly", icon: 'img_geoassembly', func: drawGeoObject, expand: geo.expandObject, opt: ";more;all;count" });
+   jsrp.addDrawFunc({ name: "TGeoVolumeAssembly", icon: 'img_geoassembly', func: TGeoPainter.draw, expand: geo.expandObject, opt: ";more;all;count" });
    jsrp.addDrawFunc({ name: "TEvePointSet", icon_get: geo.getBrowserIcon, icon_click: geo.browserIconClick });
    jsrp.addDrawFunc({ name: "TEveTrack", icon_get: geo.getBrowserIcon, icon_click: geo.browserIconClick });
 
    JSROOT.TGeoPainter = TGeoPainter;
 
    jsrp.GeoDrawingControl = GeoDrawingControl;
-   jsrp.drawGeoObject = drawGeoObject;
 
    return geo;
 
