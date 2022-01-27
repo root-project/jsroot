@@ -3355,16 +3355,15 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    /**
     * @summary Painter for TEfficiency object
     *
-    * @class
     * @memberof JSROOT
-    * @extends JSROOT.ObjectPainter
-    * @param {object|string} dom - DOM element for drawing or element id
-    * @param {object} eff - TEfficiency object to draw
     * @private
     */
 
    class TEfficiencyPainter extends JSROOT.ObjectPainter {
 
+      /** constructor
+        * @param {object|string} dom - DOM element for drawing or element id
+        * @param {object} eff - TEfficiency object to draw */
       constructor(dom, eff) {
          super(dom, eff);
       }
@@ -3417,8 +3416,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          return total ? passed/total : 0;
       }
 
-      /** @summary Caluclate efficiency error low
-        * @private */
+      /** @summary Caluclate efficiency error low */
       getEfficiencyErrorLow(obj, bin, value) {
          let total = obj.fTotalHistogram.fArray[bin],
              passed = obj.fPassedHistogram.fArray[bin],
@@ -3431,8 +3429,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          return value - this.fBoundary(total, passed, obj.fConfLevel, false, alpha, beta);
       }
 
-      /** @summary Caluclate efficiency error low up
-        * @private */
+      /** @summary Caluclate efficiency error low up */
       getEfficiencyErrorUp(obj, bin, value) {
          let total = obj.fTotalHistogram.fArray[bin],
              passed = obj.fPassedHistogram.fArray[bin],
@@ -3445,22 +3442,19 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          return this.fBoundary(total, passed, obj.fConfLevel, true, alpha, beta) - value;
       }
 
-      /** @summary Copy drawning attributes
-        * @private */
+      /** @summary Copy drawning attributes */
       copyAttributes(obj, eff) {
          ['fLineColor', 'fLineStyle', 'fLineWidth', 'fFillColor', 'fFillStyle', 'fMarkerColor', 'fMarkerStyle', 'fMarkerSize'].forEach(name => obj[name] = eff[name]);
       }
 
-      /** @summary Create graph for the drawing of 1-dim TEfficiency
-        * @private */
+      /** @summary Create graph for the drawing of 1-dim TEfficiency */
       createGraph(/*eff*/) {
          let gr = JSROOT.create('TGraphAsymmErrors');
          gr.fName = "eff_graph";
          return gr;
       }
 
-      /** @summary Create histogram for the drawing of 2-dim TEfficiency
-        * @private */
+      /** @summary Create histogram for the drawing of 2-dim TEfficiency */
       createHisto(eff) {
          const nbinsx = eff.fTotalHistogram.fXaxis.fNbins,
                nbinsy = eff.fTotalHistogram.fYaxis.fNbins,
@@ -3471,8 +3465,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          return hist;
       }
 
-      /** @summary Fill graph with points from efficiency object
-        * @private */
+      /** @summary Fill graph with points from efficiency object */
       fillGraph(gr, opt) {
          const eff = this.getObject(),
                xaxis = eff.fTotalHistogram.fXaxis,
@@ -3498,8 +3491,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          this.copyAttributes(gr, eff);
       }
 
-      /** @summary Fill graph with points from efficiency object
-        * @private */
+      /** @summary Fill graph with points from efficiency object */
       fillHisto(hist) {
          const eff = this.getObject(),
                nbinsx = hist.fXaxis.fNbins,
@@ -3518,8 +3510,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          this.copyAttributes(hist, eff);
       }
 
-      /** @summary Draw function
-        * @private */
+      /** @summary Draw function */
       drawFunction(indx) {
          const eff = this.getObject();
 
