@@ -3272,12 +3272,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return this._monitoring_interval || 3000;
       }
 
-      /** @summary Enable/disable monitoring
-        * @param {boolean} on - if monitoring enabled */
-      enableMonitoring(on) {
-         this.setMonitoring(undefined, on);
-      }
-
       /** @summary Returns true when monitoring is enabled */
       isMonitoring() {
          return this._monitoring_on;
