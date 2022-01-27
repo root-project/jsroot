@@ -3866,7 +3866,7 @@ JSROOT.define(['d3'], (d3) => {
          if (!res.handle) res.handle = h;
          if (h.noinspect) noinspect = true;
          if (h.expand || h.expand_item || h.can_expand) canexpand = true;
-         if (!('func' in h)) break;
+         if (!h.func && !h.class) break;
          isany = true;
          if (!('opt' in h)) continue;
          let opts = h.opt.split(';');
