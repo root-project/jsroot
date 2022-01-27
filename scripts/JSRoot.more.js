@@ -3297,37 +3297,35 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          return this.drawPrimitives().then(() => {
             this.continueDrawing();
-            return this; // used in drawGraphTime promise
+            return this;
          });
       }
-   }
 
-   /** @summary Draw TGraphTime object
-     * @private */
-   jsrp.drawGraphTime = function(dom, gr, opt) {
+      /** @summary Draw TGraphTime object */
+      static draw(dom, gr, opt) {
+         if (!gr.fFrame) {
+           console.error('Frame histogram not exists');
+           return null;
+         }
 
-      if (!gr.fFrame) {
-         console.error('Frame histogram not exists');
-         return null;
+         let painter = new TGraphTimePainter(dom, gr);
+
+         if (painter.getMainPainter()) {
+            console.error('Cannot draw graph time on top of other histograms');
+            return null;
+         }
+
+         painter.decodeOptions(opt);
+
+         if (!gr.fFrame.fTitle && gr.fTitle) gr.fFrame.fTitle = gr.fTitle;
+
+         painter.selfid = "grtime" + JSROOT._.id_counter++; // use to identify primitives which should be clean
+
+         return JSROOT.draw(dom, gr.fFrame, "AXIS").then(() => {
+            painter.addToPadPrimitives();
+            return painter.startDrawing();
+         });
       }
-
-      let painter = new TGraphTimePainter(dom, gr);
-
-      if (painter.getMainPainter()) {
-         console.error('Cannot draw graph time on top of other histograms');
-         return null;
-      }
-
-      painter.decodeOptions(opt);
-
-      if (!gr.fFrame.fTitle && gr.fTitle) gr.fFrame.fTitle = gr.fTitle;
-
-      painter.selfid = "grtime" + JSROOT._.id_counter++; // use to identify primitives which should be clean
-
-      return JSROOT.draw(dom, gr.fFrame, "AXIS").then(() => {
-         painter.addToPadPrimitives();
-         return painter.startDrawing();
-      });
    }
 
    // =============================================================
@@ -4512,6 +4510,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    JSROOT.TSplinePainter = TSplinePainter;
    JSROOT.TASImagePainter = TASImagePainter;
    JSROOT.TRatioPlotPainter = TRatioPlotPainter;
+   JSROOT.TGraphTimePainter = TGraphTimePainter;
 
    return JSROOT;
 
