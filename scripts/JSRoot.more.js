@@ -2225,36 +2225,36 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          return JSROOT.draw(this.getDom(), func, opt).then(() => this.drawNextFunction(indx+1));
       }
-   }
 
-   /** @summary Draw TGraph
-     * @private */
-   jsrp.drawGraph = function(dom, graph, opt) {
-      let painter = new TGraphPainter(dom, graph);
-      painter.decodeOptions(opt, true);
-      painter.createBins();
-      painter.createStat();
-      if (!JSROOT.settings.DragGraphs && !graph.TestBit(kNotEditable))
-         graph.InvertBit(kNotEditable);
+      /** @summary Draw TGraph */
+      static draw(dom, graph, opt) {
+         let painter = new TGraphPainter(dom, graph);
+         painter.decodeOptions(opt, true);
+         painter.createBins();
+         painter.createStat();
+         if (!JSROOT.settings.DragGraphs && !graph.TestBit(kNotEditable))
+            graph.InvertBit(kNotEditable);
 
-      let promise = Promise.resolve();
+         let promise = Promise.resolve();
 
-      if ((!painter.getMainPainter() || painter.options.second_x || painter.options.second_y) && painter.options.Axis) {
-         let histo = painter.createHistogram();
-         promise = JSROOT.draw(dom, histo, painter.options.Axis).then(hist_painter => {
-            if (hist_painter) {
-               painter.axes_draw = true;
-               if (!painter._own_histogram) painter.$primary = true;
-               hist_painter.$secondary = true;
-            }
-         });
+         if ((!painter.getMainPainter() || painter.options.second_x || painter.options.second_y) && painter.options.Axis) {
+            let histo = painter.createHistogram();
+            promise = JSROOT.draw(dom, histo, painter.options.Axis).then(hist_painter => {
+               if (hist_painter) {
+                  painter.axes_draw = true;
+                  if (!painter._own_histogram) painter.$primary = true;
+                  hist_painter.$secondary = true;
+               }
+            });
+         }
+
+         return promise.then(() => {
+            painter.addToPadPrimitives();
+            return painter.drawGraph();
+         }).then(() => painter.drawNextFunction(0));
       }
-
-      return promise.then(() => {
-         painter.addToPadPrimitives();
-         return painter.drawGraph();
-      }).then(() => painter.drawNextFunction(0));
    }
+
 
    // ==============================================================
 
