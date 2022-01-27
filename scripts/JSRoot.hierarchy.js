@@ -3026,9 +3026,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if (h_get) {
                req = 'h.json?compact=3';
                item._expand = onlineHierarchy; // use proper expand function
-            } else if ('_make_request' in item) {
+            } else if (item._make_request) {
                func = JSROOT.findFunction(item._make_request);
-            } else if ((draw_handle!=null) && ('make_request' in draw_handle)) {
+            } else if (draw_handle && draw_handle.make_request) {
                func = draw_handle.make_request;
             }
 
@@ -3043,7 +3043,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                   }
             }
 
-            if ((req.length==0) && (item._kind.indexOf("ROOT.")!=0))
+            if ((req.length == 0) && (item._kind.indexOf("ROOT.") != 0))
               req = 'item.json.gz?compact=3';
          }
 
