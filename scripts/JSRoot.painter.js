@@ -3668,7 +3668,7 @@ JSROOT.define(['d3'], (d3) => {
       { name: /^RooCurve/, sameas: "TGraph" },
       { name: "RooPlot", icon: "img_canvas", prereq: "more", func: ".drawRooPlot" },
       { name: "TRatioPlot", icon: "img_mgraph", prereq: "more", func: ".drawRatioPlot", opt: "" },
-      { name: "TMultiGraph", icon: "img_mgraph", prereq: "more", func: ".drawMultiGraph", expand_item: "fGraphs" },
+      { name: "TMultiGraph", icon: "img_mgraph", prereq: "more", class: "TMultiGraphPainter", expand_item: "fGraphs" },
       { name: "TStreamerInfoList", icon: 'img_question', prereq: "hierarchy", func: ".drawStreamerInfo" },
       { name: "TPaletteAxis", icon: "img_colz", prereq: "hist", func: ".drawPave" },
       { name: "TWebPainting", icon: "img_graph", prereq: "more", func: ".drawWebPainting" },

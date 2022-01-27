@@ -3493,248 +3493,246 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    /**
     * @summary Painter for TMultiGraph object.
     *
-    * @class
     * @memberof JSROOT
-    * @extends JSROOT.ObjectPainter
-    * @param {object|string} dom - DOM element for drawing or element id
-    * @param {object} obj - TMultiGraph object to draw
     * @private
     */
 
-   function TMultiGraphPainter(dom, mgraph) {
-      ObjectPainter.call(this, dom, mgraph);
-      this.firstpainter = null;
-      this.autorange = false;
-      this.painters = []; // keep painters to be able update objects
-   }
+   class TMultiGraphPainter extends ObjectPainter {
 
-   TMultiGraphPainter.prototype = Object.create(ObjectPainter.prototype);
-
-   /** @summary Cleanup multigraph painter */
-   TMultiGraphPainter.prototype.cleanup = function() {
-      this.painters = [];
-      ObjectPainter.prototype.cleanup.call(this);
-   }
-
-   /** @summary Update multigraph object */
-   TMultiGraphPainter.prototype.updateObject = function(obj) {
-      if (!this.matchObjectType(obj)) return false;
-
-      let mgraph = this.getObject(),
-          graphs = obj.fGraphs,
-          pp = this.getPadPainter();
-
-      mgraph.fTitle = obj.fTitle;
-
-      let isany = false;
-      if (this.firstpainter) {
-         let histo = obj.fHistogram;
-         if (this.autorange && !histo)
-            histo = this.scanGraphsRange(graphs);
-
-         if (this.firstpainter.updateObject(histo)) isany = true;
+      /** @summary Create painter
+        * @param {object|string} dom - DOM element for drawing or element id
+        * @param {object} obj - TMultiGraph object to draw */
+      constructor(dom, mgraph) {
+         super(dom, mgraph);
+         this.firstpainter = null;
+         this.autorange = false;
+         this.painters = []; // keep painters to be able update objects
       }
 
-      for (let i = 0; i < graphs.arr.length; ++i) {
-         if (i<this.painters.length)
-            if (this.painters[i].updateObject(graphs.arr[i])) isany = true;
+      /** @summary Cleanup multigraph painter */
+      cleanup() {
+         this.painters = [];
+         super.cleanup();
       }
 
-      if (obj.fFunctions)
-         for (let i = 0; i < obj.fFunctions.arr.length; ++i) {
-            let func = obj.fFunctions.arr[i];
-            if (!func || !func._typename || !func.fName) continue;
-            let funcpainter = pp ? pp.findPainterFor(null, func.fName, func._typename) : null;
-            if (funcpainter) funcpainter.updateObject(func);
+      /** @summary Update multigraph object */
+      updateObject(obj) {
+         if (!this.matchObjectType(obj)) return false;
+
+         let mgraph = this.getObject(),
+             graphs = obj.fGraphs,
+             pp = this.getPadPainter();
+
+         mgraph.fTitle = obj.fTitle;
+
+         let isany = false;
+         if (this.firstpainter) {
+            let histo = obj.fHistogram;
+            if (this.autorange && !histo)
+               histo = this.scanGraphsRange(graphs);
+
+            if (this.firstpainter.updateObject(histo)) isany = true;
          }
 
-      return isany;
-   }
+         for (let i = 0; i < graphs.arr.length; ++i) {
+            if (i<this.painters.length)
+               if (this.painters[i].updateObject(graphs.arr[i])) isany = true;
+         }
 
-   /** @summary Scan graphs range
-     * @returns {object} histogram for axes drawing
-     * @private */
-   TMultiGraphPainter.prototype.scanGraphsRange = function(graphs, histo, pad) {
-      let mgraph = this.getObject(),
-          maximum, minimum, dx, dy, uxmin = 0, uxmax = 0, logx = false, logy = false,
-          time_display = false, time_format = "",
-          rw = {  xmin: 0, xmax: 0, ymin: 0, ymax: 0, first: true };
+         if (obj.fFunctions)
+            for (let i = 0; i < obj.fFunctions.arr.length; ++i) {
+               let func = obj.fFunctions.arr[i];
+               if (!func || !func._typename || !func.fName) continue;
+               let funcpainter = pp ? pp.findPainterFor(null, func.fName, func._typename) : null;
+               if (funcpainter) funcpainter.updateObject(func);
+            }
 
-      if (pad) {
-         logx = pad.fLogx;
-         logy = pad.fLogy;
-         rw.xmin = pad.fUxmin;
-         rw.xmax = pad.fUxmax;
-         rw.ymin = pad.fUymin;
-         rw.ymax = pad.fUymax;
-         rw.first = false;
+         return isany;
       }
-      if (histo) {
-         minimum = histo.fYaxis.fXmin;
-         maximum = histo.fYaxis.fXmax;
+
+      /** @summary Scan graphs range
+        * @returns {object} histogram for axes drawing */
+      scanGraphsRange(graphs, histo, pad) {
+         let mgraph = this.getObject(),
+             maximum, minimum, dx, dy, uxmin = 0, uxmax = 0, logx = false, logy = false,
+             time_display = false, time_format = "",
+             rw = {  xmin: 0, xmax: 0, ymin: 0, ymax: 0, first: true };
+
          if (pad) {
-            const padtoX = x => (pad.fLogx && (x < 50)) ? Math.exp(2.302585092994 * x) : x;
-            uxmin = padtoX(rw.xmin);
-            uxmax = padtoX(rw.xmax);
+            logx = pad.fLogx;
+            logy = pad.fLogy;
+            rw.xmin = pad.fUxmin;
+            rw.xmax = pad.fUxmax;
+            rw.ymin = pad.fUymin;
+            rw.ymax = pad.fUymax;
+            rw.first = false;
          }
-      } else {
-         this.autorange = true;
-
-         graphs.arr.forEach(gr => {
-            if (gr.fNpoints == 0) return;
-            if (rw.first) {
-               rw.xmin = rw.xmax = gr.fX[0];
-               rw.ymin = rw.ymax = gr.fY[0];
-               rw.first = false;
+         if (histo) {
+            minimum = histo.fYaxis.fXmin;
+            maximum = histo.fYaxis.fXmax;
+            if (pad) {
+               const padtoX = x => (pad.fLogx && (x < 50)) ? Math.exp(2.302585092994 * x) : x;
+               uxmin = padtoX(rw.xmin);
+               uxmax = padtoX(rw.xmax);
             }
-            for (let i = 0; i < gr.fNpoints; ++i) {
-               rw.xmin = Math.min(rw.xmin, gr.fX[i]);
-               rw.xmax = Math.max(rw.xmax, gr.fX[i]);
-               rw.ymin = Math.min(rw.ymin, gr.fY[i]);
-               rw.ymax = Math.max(rw.ymax, gr.fY[i]);
-            }
-         });
-
-         if (graphs.arr[0] && graphs.arr[0].fHistogram && graphs.arr[0].fHistogram.fXaxis.fTimeDisplay) {
-            time_display = true;
-            time_format = graphs.arr[0].fHistogram.fXaxis.fTimeFormat;
-         }
-
-         if (rw.xmin == rw.xmax) rw.xmax += 1.;
-         if (rw.ymin == rw.ymax) rw.ymax += 1.;
-         dx = 0.05 * (rw.xmax - rw.xmin);
-         dy = 0.05 * (rw.ymax - rw.ymin);
-         uxmin = rw.xmin - dx;
-         uxmax = rw.xmax + dx;
-         if (logy) {
-            if (rw.ymin <= 0) rw.ymin = 0.001 * rw.ymax;
-            minimum = rw.ymin / (1 + 0.5 * Math.log10(rw.ymax / rw.ymin));
-            maximum = rw.ymax * (1 + 0.2 * Math.log10(rw.ymax / rw.ymin));
          } else {
-            minimum = rw.ymin - dy;
-            maximum = rw.ymax + dy;
+            this.autorange = true;
+
+            graphs.arr.forEach(gr => {
+               if (gr.fNpoints == 0) return;
+               if (rw.first) {
+                  rw.xmin = rw.xmax = gr.fX[0];
+                  rw.ymin = rw.ymax = gr.fY[0];
+                  rw.first = false;
+               }
+               for (let i = 0; i < gr.fNpoints; ++i) {
+                  rw.xmin = Math.min(rw.xmin, gr.fX[i]);
+                  rw.xmax = Math.max(rw.xmax, gr.fX[i]);
+                  rw.ymin = Math.min(rw.ymin, gr.fY[i]);
+                  rw.ymax = Math.max(rw.ymax, gr.fY[i]);
+               }
+            });
+
+            if (graphs.arr[0] && graphs.arr[0].fHistogram && graphs.arr[0].fHistogram.fXaxis.fTimeDisplay) {
+               time_display = true;
+               time_format = graphs.arr[0].fHistogram.fXaxis.fTimeFormat;
+            }
+
+            if (rw.xmin == rw.xmax) rw.xmax += 1.;
+            if (rw.ymin == rw.ymax) rw.ymax += 1.;
+            dx = 0.05 * (rw.xmax - rw.xmin);
+            dy = 0.05 * (rw.ymax - rw.ymin);
+            uxmin = rw.xmin - dx;
+            uxmax = rw.xmax + dx;
+            if (logy) {
+               if (rw.ymin <= 0) rw.ymin = 0.001 * rw.ymax;
+               minimum = rw.ymin / (1 + 0.5 * Math.log10(rw.ymax / rw.ymin));
+               maximum = rw.ymax * (1 + 0.2 * Math.log10(rw.ymax / rw.ymin));
+            } else {
+               minimum = rw.ymin - dy;
+               maximum = rw.ymax + dy;
+            }
+            if (minimum < 0 && rw.ymin >= 0)
+               minimum = 0;
+            if (maximum > 0 && rw.ymax <= 0)
+               maximum = 0;
          }
-         if (minimum < 0 && rw.ymin >= 0)
-            minimum = 0;
-         if (maximum > 0 && rw.ymax <= 0)
-            maximum = 0;
+
+         if (uxmin < 0 && rw.xmin >= 0)
+            uxmin = logx ? 0.9 * rw.xmin : 0;
+         if (uxmax > 0 && rw.xmax <= 0)
+            uxmax = logx? 1.1 * rw.xmax : 0;
+
+         if (mgraph.fMinimum != -1111)
+            rw.ymin = minimum = mgraph.fMinimum;
+         if (mgraph.fMaximum != -1111)
+            rw.ymax = maximum = mgraph.fMaximum;
+
+         if (minimum < 0 && rw.ymin >= 0 && logy) minimum = 0.9 * rw.ymin;
+         if (maximum > 0 && rw.ymax <= 0 && logy) maximum = 1.1 * rw.ymax;
+         if (minimum <= 0 && logy) minimum = 0.001 * maximum;
+         if (!logy && minimum > 0 && minimum < 0.05*maximum) minimum = 0;
+         if (uxmin <= 0 && logx)
+            uxmin = (uxmax > 1000) ? 1 : 0.001 * uxmax;
+
+         // Create a temporary histogram to draw the axis (if necessary)
+         if (!histo) {
+            histo = JSROOT.create("TH1I");
+            histo.fTitle = mgraph.fTitle;
+            histo.fXaxis.fXmin = uxmin;
+            histo.fXaxis.fXmax = uxmax;
+            histo.fXaxis.fTimeDisplay = time_display;
+            if (time_display) histo.fXaxis.fTimeFormat = time_format;
+        }
+
+         histo.fYaxis.fXmin = minimum;
+         histo.fYaxis.fXmax = maximum;
+
+         return histo;
       }
 
-      if (uxmin < 0 && rw.xmin >= 0)
-         uxmin = logx ? 0.9 * rw.xmin : 0;
-      if (uxmax > 0 && rw.xmax <= 0)
-         uxmax = logx? 1.1 * rw.xmax : 0;
+      /** @summary draw speical histogram for axis
+        * @returns {Promise} when ready */
+      drawAxis(hopt) {
 
-      if (mgraph.fMinimum != -1111)
-         rw.ymin = minimum = mgraph.fMinimum;
-      if (mgraph.fMaximum != -1111)
-         rw.ymax = maximum = mgraph.fMaximum;
+         let mgraph = this.getObject(),
+             pp = this.getPadPainter(),
+             histo = this.scanGraphsRange(mgraph.fGraphs, mgraph.fHistogram, pp ? pp.getRootPad(true) : null);
 
-      if (minimum < 0 && rw.ymin >= 0 && logy) minimum = 0.9 * rw.ymin;
-      if (maximum > 0 && rw.ymax <= 0 && logy) maximum = 1.1 * rw.ymax;
-      if (minimum <= 0 && logy) minimum = 0.001 * maximum;
-      if (!logy && minimum > 0 && minimum < 0.05*maximum) minimum = 0;
-      if (uxmin <= 0 && logx)
-         uxmin = (uxmax > 1000) ? 1 : 0.001 * uxmax;
-
-      // Create a temporary histogram to draw the axis (if necessary)
-      if (!histo) {
-         histo = JSROOT.create("TH1I");
-         histo.fTitle = mgraph.fTitle;
-         histo.fXaxis.fXmin = uxmin;
-         histo.fXaxis.fXmax = uxmax;
-         histo.fXaxis.fTimeDisplay = time_display;
-         if (time_display) histo.fXaxis.fTimeFormat = time_format;
-     }
-
-      histo.fYaxis.fXmin = minimum;
-      histo.fYaxis.fXmax = maximum;
-
-      return histo;
-   }
-
-   /** @summary draw speical histogram for axis
-     * @returns {Promise} when ready */
-   TMultiGraphPainter.prototype.drawAxis = function(hopt) {
-
-      let mgraph = this.getObject(),
-          pp = this.getPadPainter(),
-          histo = this.scanGraphsRange(mgraph.fGraphs, mgraph.fHistogram, pp ? pp.getRootPad(true) : null);
-
-      // histogram painter will be first in the pad, will define axis and
-      // interactive actions
-      return JSROOT.draw(this.getDom(), histo, "AXIS" + hopt);
-   }
-
-   /** @summary method draws next function from the functions list  */
-   TMultiGraphPainter.prototype.drawNextFunction = function(indx) {
-
-      let mgraph = this.getObject();
-
-      if (!mgraph.fFunctions || (indx >= mgraph.fFunctions.arr.length))
-         return Promise.resolve(this);
-
-      return JSROOT.draw(this.getDom(), mgraph.fFunctions.arr[indx], mgraph.fFunctions.opt[indx])
-                  .then(() => this.drawNextFunction(indx+1));
-   }
-
-   /** @summary method draws next graph  */
-   TMultiGraphPainter.prototype.drawNextGraph = function(indx, opt) {
-
-      let graphs = this.getObject().fGraphs;
-
-      // at the end of graphs drawing draw functions (if any)
-      if (indx >= graphs.arr.length) {
-         this._pfc = this._plc = this._pmc = false; // disable auto coloring at the end
-         return this.drawNextFunction(0);
+         // histogram painter will be first in the pad, will define axis and
+         // interactive actions
+         return JSROOT.draw(this.getDom(), histo, "AXIS" + hopt);
       }
 
-      // if there is auto colors assignment, try to provide it
-      if (this._pfc || this._plc || this._pmc) {
-         let mp = this.getMainPainter();
-         if (mp && mp.createAutoColor) {
-            let icolor = mp.createAutoColor(graphs.arr.length);
-            if (this._pfc) graphs.arr[indx].fFillColor = icolor;
-            if (this._plc) graphs.arr[indx].fLineColor = icolor;
-            if (this._pmc) graphs.arr[indx].fMarkerColor = icolor;
+      /** @summary method draws next function from the functions list  */
+      drawNextFunction(indx) {
+
+         let mgraph = this.getObject();
+
+         if (!mgraph.fFunctions || (indx >= mgraph.fFunctions.arr.length))
+            return Promise.resolve(this);
+
+         return JSROOT.draw(this.getDom(), mgraph.fFunctions.arr[indx], mgraph.fFunctions.opt[indx])
+                     .then(() => this.drawNextFunction(indx+1));
+      }
+
+      /** @summary method draws next graph  */
+      drawNextGraph(indx, opt) {
+
+         let graphs = this.getObject().fGraphs;
+
+         // at the end of graphs drawing draw functions (if any)
+         if (indx >= graphs.arr.length) {
+            this._pfc = this._plc = this._pmc = false; // disable auto coloring at the end
+            return this.drawNextFunction(0);
          }
-      }
 
-      return JSROOT.draw(this.getDom(), graphs.arr[indx], graphs.opt[indx] || opt).then(subp => {
-         if (subp) this.painters.push(subp);
+         // if there is auto colors assignment, try to provide it
+         if (this._pfc || this._plc || this._pmc) {
+            let mp = this.getMainPainter();
+            if (mp && mp.createAutoColor) {
+               let icolor = mp.createAutoColor(graphs.arr.length);
+               if (this._pfc) graphs.arr[indx].fFillColor = icolor;
+               if (this._plc) graphs.arr[indx].fLineColor = icolor;
+               if (this._pmc) graphs.arr[indx].fMarkerColor = icolor;
+            }
+         }
 
-         return this.drawNextGraph(indx+1, opt);
-      });
-   }
+         return JSROOT.draw(this.getDom(), graphs.arr[indx], graphs.opt[indx] || opt).then(subp => {
+            if (subp) this.painters.push(subp);
 
-   /** @summary Draw TMultiGraph object
-     * @private */
-   jsrp.drawMultiGraph = function(dom, mgraph, opt) {
-
-      let painter = new TMultiGraphPainter(dom, mgraph),
-          d = new JSROOT.DrawOptions(opt);
-
-      d.check("3D"); d.check("FB"); // no 3D supported, FB not clear
-
-      painter._pfc = d.check("PFC");
-      painter._plc = d.check("PLC");
-      painter._pmc = d.check("PMC");
-
-      let hopt = "", checkhopt = ["USE_PAD_TITLE", "LOGXY", "LOGX", "LOGY", "LOGZ", "GRIDXY", "GRIDX", "GRIDY", "TICKXY", "TICKX", "TICKY"];
-      checkhopt.forEach(name => { if (d.check(name)) hopt += ";" + name; });
-
-      let promise = Promise.resolve(painter);
-      if (d.check("A") || !painter.getMainPainter())
-         promise = painter.drawAxis(hopt).then(fp => {
-            painter.firstpainter = fp;
-            fp.$secondary = true; // mark histogram painter as secondary
-            return painter;
+            return this.drawNextGraph(indx+1, opt);
          });
+      }
 
-      return promise.then(() => {
-         painter.addToPadPrimitives();
-         return painter.drawNextGraph(0, d.remain());
-      });
+      /** @summary Draw TMultiGraph object */
+      static draw(dom, mgraph, opt) {
+
+         let painter = new TMultiGraphPainter(dom, mgraph),
+             d = new JSROOT.DrawOptions(opt);
+
+         d.check("3D"); d.check("FB"); // no 3D supported, FB not clear
+
+         painter._pfc = d.check("PFC");
+         painter._plc = d.check("PLC");
+         painter._pmc = d.check("PMC");
+
+         let hopt = "", checkhopt = ["USE_PAD_TITLE", "LOGXY", "LOGX", "LOGY", "LOGZ", "GRIDXY", "GRIDX", "GRIDY", "TICKXY", "TICKX", "TICKY"];
+         checkhopt.forEach(name => { if (d.check(name)) hopt += ";" + name; });
+
+         let promise = Promise.resolve(painter);
+         if (d.check("A") || !painter.getMainPainter())
+            promise = painter.drawAxis(hopt).then(fp => {
+               painter.firstpainter = fp;
+               fp.$secondary = true; // mark histogram painter as secondary
+               return painter;
+            });
+
+         return promise.then(() => {
+            painter.addToPadPrimitives();
+            return painter.drawNextGraph(0, d.remain());
+         });
+      }
    }
 
    // =========================================================================================
