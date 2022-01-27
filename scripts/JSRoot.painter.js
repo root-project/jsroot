@@ -3676,7 +3676,7 @@ JSROOT.define(['d3'], (d3) => {
       { name: "TPadWebSnapshot", sameas: "TCanvasWebSnapshot" },
       { name: "kind:Text", icon: "img_text", func: jsrp.drawRawText },
       { name: "TObjString", icon: "img_text", func: jsrp.drawRawText },
-      { name: "TF1", icon: "img_tf1", prereq: "math;more", func: ".drawFunction" },
+      { name: "TF1", icon: "img_tf1", prereq: "math;more", class: "TF1Painter" },
       { name: "TF2", icon: "img_tf2", prereq: "math;hist", func: ".drawTF2" },
       { name: "TSpline3", icon: "img_tf1", prereq: "more", class: "TSplinePainter" },
       { name: "TSpline5", icon: "img_tf1", prereq: "more", class: "TSplinePainter" },
