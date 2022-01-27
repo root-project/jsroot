@@ -2199,1062 +2199,1062 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
    /**
      * @summary class for working with cloned nodes
      *
-     * @class
      * @memberof JSROOT.GEO
      * @private
      */
 
-   function ClonedNodes(obj, clones) {
-      this.toplevel = true; // indicate if object creates top-level structure with Nodes and Volumes folder
-      this.name_prefix = ""; // name prefix used for nodes names
-      this.maxdepth = 1;  // maximal hierarchy depth, required for transparency
-      this.vislevel = 4;  // maximal depth of nodes visibility aka gGeoManager->SetVisLevel, same default
-      this.maxnodes = 10000; // maximal number of visisble nodes aka gGeoManager->fMaxVisNodes
+   class ClonedNodes {
 
-      if (obj) {
-         if (obj.$geoh) this.toplevel = false;
-         this.createClones(obj);
-      } else if (clones) {
-         this.nodes = clones;
-      }
-   }
+      /** @summary Constructor */
+      constructor(obj, clones) {
+         this.toplevel = true; // indicate if object creates top-level structure with Nodes and Volumes folder
+         this.name_prefix = ""; // name prefix used for nodes names
+         this.maxdepth = 1;  // maximal hierarchy depth, required for transparency
+         this.vislevel = 4;  // maximal depth of nodes visibility aka gGeoManager->SetVisLevel, same default
+         this.maxnodes = 10000; // maximal number of visisble nodes aka gGeoManager->fMaxVisNodes
 
-   /** @summary Set maximal depth for nodes visibility */
-   ClonedNodes.prototype.setVisLevel = function(lvl) {
-      this.vislevel = lvl && Number.isInteger(lvl) ? lvl : 4;
-   }
-
-   /** @summary Returns maximal depth for nodes visibility */
-   ClonedNodes.prototype.getVisLevel = function() {
-      return this.vislevel;
-   }
-
-   /** @summary Set maximal number of visible nodes */
-   ClonedNodes.prototype.setMaxVisNodes = function(v) {
-      this.maxnodes = Number.isFinite(v) ? v : 10000;
-   }
-
-   /** @summary Returns configured maximal number of visible nodes */
-   ClonedNodes.prototype.getMaxVisNodes = function() {
-      return this.maxnodes;
-   }
-
-   /** @summary Insert node into existing array */
-   ClonedNodes.prototype.updateNode = function(node) {
-      if (node && Number.isInteger(node.id) && (node.id < this.nodes.length))
-         this.nodes[node.id] = node;
-   }
-
-   /** @summary Returns TGeoShape for element with given indx */
-   ClonedNodes.prototype.getNodeShape = function(indx) {
-      if (!this.origin || !this.nodes) return null;
-      let obj = this.origin[indx], clone = this.nodes[indx];
-      if (!obj || !clone) return null;
-      if (clone.kind === kindGeo) {
-         if (obj.fVolume) return obj.fVolume.fShape;
-      } else {
-         return obj.fShape;
-      }
-      return null;
-   }
-
-   /** @summary function to cleanup as much as possible structures
-     * @desc Provided parameters drawnodes and drawshapes are arrays created during building of geometry */
-   ClonedNodes.prototype.cleanup = function(drawnodes, drawshapes) {
-
-      if (drawnodes) {
-         for (let n=0;n<drawnodes.length;++n) {
-            delete drawnodes[n].stack;
-            drawnodes[n] = undefined;
+         if (obj) {
+            if (obj.$geoh) this.toplevel = false;
+            this.createClones(obj);
+         } else if (clones) {
+            this.nodes = clones;
          }
       }
 
-      if (drawshapes) {
-         for (let n=0;n<drawshapes.length;++n) {
-            delete drawshapes[n].geom;
-            drawshapes[n] = undefined;
-         }
+      /** @summary Set maximal depth for nodes visibility */
+      setVisLevel(lvl) {
+         this.vislevel = lvl && Number.isInteger(lvl) ? lvl : 4;
       }
 
-      if (this.nodes) {
-         for (let n=0;n<this.nodes.length;++n) {
-            if (this.nodes[n])
-               delete this.nodes[n].chlds;
-         }
+      /** @summary Returns maximal depth for nodes visibility */
+      getVisLevel() {
+         return this.vislevel;
       }
 
-      delete this.nodes;
-      delete this.origin;
-
-      delete this.sortmap;
-   }
-
-   /** @summary Create complete description for provided Geo object
-     * @private */
-   ClonedNodes.prototype.createClones = function(obj, sublevel, kind) {
-      if (!sublevel) {
-
-         if (obj && obj._typename == "$$Shape$$")
-            return this.createClonesForShape(obj);
-
-         this.origin = [];
-         sublevel = 1;
-         kind = geo.getNodeKind(obj);
+      /** @summary Set maximal number of visible nodes */
+      setMaxVisNodes(v) {
+         this.maxnodes = Number.isFinite(v) ? v : 10000;
       }
 
-      if ((kind < 0) || !obj || ('_refid' in obj)) return;
-
-      obj._refid = this.origin.length;
-      this.origin.push(obj);
-      if (sublevel > this.maxdepth) this.maxdepth = sublevel;
-
-      let chlds = null;
-      if (kind === kindGeo)
-         chlds = (obj.fVolume && obj.fVolume.fNodes) ? obj.fVolume.fNodes.arr : null;
-      else
-         chlds = obj.fElements ? obj.fElements.arr : null;
-
-      if (chlds !== null) {
-         geo.checkDuplicates(obj, chlds);
-         for (let i = 0; i < chlds.length; ++i)
-            this.createClones(chlds[i], sublevel + 1, kind);
+      /** @summary Returns configured maximal number of visible nodes */
+      getMaxVisNodes() {
+         return this.maxnodes;
       }
 
-      if (sublevel > 1) return;
-
-      this.nodes = [];
-
-      let sortarr = [];
-
-      // first create nodes objects
-      for (let n = 0; n < this.origin.length; ++n) {
-         // let obj = this.origin[n];
-         let node = { id: n, kind: kind, vol: 0, nfaces: 0 };
-         this.nodes.push(node);
-         sortarr.push(node); // array use to produce sortmap
+      /** @summary Insert node into existing array */
+      updateNode(node) {
+         if (node && Number.isInteger(node.id) && (node.id < this.nodes.length))
+            this.nodes[node.id] = node;
       }
 
-      // than fill children lists
-      for (let n = 0; n < this.origin.length; ++n) {
-         let obj = this.origin[n], clone = this.nodes[n];
-
-         let chlds = null, shape = null;
-
-         if (kind === kindEve) {
-            shape = obj.fShape;
-            if (obj.fElements) chlds = obj.fElements.arr;
-         } else if (obj.fVolume) {
-            shape = obj.fVolume.fShape;
-            if (obj.fVolume.fNodes) chlds = obj.fVolume.fNodes.arr;
-         }
-
-         let matrix = geo.getNodeMatrix(kind, obj);
-         if (matrix) {
-            clone.matrix = matrix.elements; // take only matrix elements, matrix will be constructed in worker
-            if (clone.matrix[0] === 1) {
-               let issimple = true;
-               for (let k = 1; (k < clone.matrix.length) && issimple; ++k)
-                  issimple = (clone.matrix[k] === ((k === 5) || (k === 10) || (k === 15) ? 1 : 0));
-               if (issimple) delete clone.matrix;
-            }
-            if (clone.matrix && (kind == kindEve)) clone.abs_matrix = true;
-         }
-         if (shape) {
-            clone.fDX = shape.fDX;
-            clone.fDY = shape.fDY;
-            clone.fDZ = shape.fDZ;
-            clone.vol = shape.fDX * shape.fDY * shape.fDZ;
-            if (shape.$nfaces === undefined)
-               shape.$nfaces = createGeometry(shape, -1);
-            clone.nfaces = shape.$nfaces;
-            if (clone.nfaces <= 0) clone.vol = 0;
-         }
-
-         if (!chlds) continue;
-
-         // in cloned object children is only list of ids
-         clone.chlds = new Array(chlds.length);
-         for (let k = 0; k < chlds.length; ++k)
-            clone.chlds[k] = chlds[k]._refid;
-      }
-
-      // remove _refid identifiers from original objects
-      for (let n = 0; n < this.origin.length; ++n)
-         delete this.origin[n]._refid;
-
-      // do sorting once
-      sortarr.sort(function(a, b) { return b.vol - a.vol; });
-
-      // remember sort map and also sortid
-      this.sortmap = new Array(this.nodes.length);
-      for (let n = 0; n < this.nodes.length; ++n) {
-         this.sortmap[n] = sortarr[n].id;
-         sortarr[n].sortid = n;
-      }
-   }
-
-   /** @summary Create elementary item with single already existing shape
-     * @desc used by details view of geometry shape
-     * @private */
-   ClonedNodes.prototype.createClonesForShape = function(obj) {
-      this.origin = [];
-
-      // indicate that just plain shape is used
-      this.plain_shape = obj;
-
-      let node = {
-            id: 0, sortid: 0, kind: kindShape,
-            name: "Shape",
-            nfaces: obj.nfaces,
-            fDX: 1, fDY: 1, fDZ: 1, vol: 1,
-            vis: true
-         };
-
-      this.nodes = [ node ];
-   }
-
-   /** @summary Count all visisble nodes */
-   ClonedNodes.prototype.countVisibles = function() {
-      let cnt = 0;
-      if (this.nodes)
-         for (let k = 0; k < this.nodes.length; ++k)
-            if (this.nodes[k].vis)
-               cnt++;
-      return cnt;
-   }
-
-   /** @summary Mark visisble nodes.
-     * @desc Set only basic flags, actual visibility depends from hierarchy */
-   ClonedNodes.prototype.markVisibles = function(on_screen, copy_bits, hide_top_volume) {
-      if (this.plain_shape) return 1;
-      if (!this.origin || !this.nodes) return 0;
-
-      let res = 0;
-
-      for (let n=0;n<this.nodes.length;++n) {
-         let clone = this.nodes[n],
-             obj = this.origin[n];
-
-         clone.vis = 0; // 1 - only with last level
-         delete clone.nochlds;
-
+      /** @summary Returns TGeoShape for element with given indx */
+      getNodeShape(indx) {
+         if (!this.origin || !this.nodes) return null;
+         let obj = this.origin[indx], clone = this.nodes[indx];
+         if (!obj || !clone) return null;
          if (clone.kind === kindGeo) {
-            if (obj.fVolume) {
-               if (on_screen) {
-                  // on screen bits used always, childs always checked
-                  clone.vis = geo.TestBit(obj.fVolume, geo.BITS.kVisOnScreen) ? 99 : 0;
-
-                  if ((n==0) && clone.vis && hide_top_volume) clone.vis = 0;
-
-                  if (copy_bits) {
-                     geo.SetBit(obj.fVolume, geo.BITS.kVisNone, false);
-                     geo.SetBit(obj.fVolume, geo.BITS.kVisThis, (clone.vis > 0));
-                     geo.SetBit(obj.fVolume, geo.BITS.kVisDaughters, true);
-                  }
-               } else {
-                  clone.vis = !geo.TestBit(obj.fVolume, geo.BITS.kVisNone) &&
-                               geo.TestBit(obj.fVolume, geo.BITS.kVisThis) ? 99 : 0;
-
-                  if (!geo.TestBit(obj, geo.BITS.kVisDaughters) ||
-                      !geo.TestBit(obj.fVolume, geo.BITS.kVisDaughters)) clone.nochlds = true;
-
-                  // node with childs only shown in case if it is last level in hierarchy
-                  if ((clone.vis > 0) && clone.chlds && !clone.nochlds) clone.vis = 1;
-
-                  // special handling for top node
-                  if (n==0) {
-                     if (hide_top_volume) clone.vis = 0;
-                     delete clone.nochlds;
-                  }
-               }
-            }
+            if (obj.fVolume) return obj.fVolume.fShape;
          } else {
-            clone.vis = obj.fRnrSelf ? 99 : 0;
-
-            // when the only node is selected, draw it
-            if ((n===0) && (this.nodes.length===1)) clone.vis = 99;
-
-            this.vislevel = 9999; // automatically take all volumes
+            return obj.fShape;
          }
-
-         // shape with zero volume or without faces will not be observed
-         if ((clone.vol <= 0) || (clone.nfaces <= 0)) clone.vis = 0;
-
-         if (clone.vis) res++;
-      }
-
-      return res;
-   }
-
-   /** @summary After visibility flags is set, produce idshift for all nodes as it would be maximum level */
-   ClonedNodes.prototype.produceIdShifts = function() {
-      for (let k = 0; k < this.nodes.length; ++k)
-         this.nodes[k].idshift = -1;
-
-      function scan_func(nodes, node) {
-         if (node.idshift < 0) {
-            node.idshift = 0;
-            if (node.chlds)
-               for(let k = 0; k<node.chlds.length; ++k)
-                  node.idshift += scan_func(nodes, nodes[node.chlds[k]]);
-         }
-
-         return node.idshift + 1;
-      }
-
-      scan_func(this.nodes, this.nodes[0]);
-   }
-
-   /** @summary Extract only visibility flags
-     * @desc Used to transfer them to the worker */
-   ClonedNodes.prototype.getVisibleFlags = function() {
-      let res = new Array(this.nodes.length);
-      for (let n=0;n<this.nodes.length;++n)
-         res[n] = { vis: this.nodes[n].vis, nochlds: this.nodes[n].nochlds };
-      return res;
-   }
-
-   /** @summary Assign only visibility flags, extracted with getVisibleFlags */
-   ClonedNodes.prototype.setVisibleFlags = function(flags) {
-      if (!this.nodes || !flags || !flags.length != this.nodes.length)
-         return 0;
-
-      let res = 0;
-      for (let n=0;n<this.nodes.length;++n) {
-         let clone = this.nodes[n];
-
-         clone.vis = flags[n].vis;
-         clone.nochlds = flags[n].nochlds;
-         if (clone.vis) res++;
-      }
-
-      return res;
-   }
-
-   /** @summary Scan visible nodes in hierarchy, starting from nodeid
-     * @desc Each entry in hierarchy get its unique id, which is not changed with visibility flags */
-   ClonedNodes.prototype.scanVisible = function(arg, vislvl) {
-
-      if (!this.nodes) return 0;
-
-      if (vislvl === undefined) {
-         if (!arg) arg = {};
-
-         vislvl = arg.vislvl || this.vislevel || 4; // default 3 in ROOT
-         if (vislvl > 88) vislvl = 88;
-
-         arg.stack = new Array(100); // current stack
-         arg.nodeid = 0;
-         arg.counter = 0; // sequence ID of the node, used to identify it later
-         arg.last = 0;
-         arg.CopyStack = function(factor) {
-            let entry = { nodeid: this.nodeid, seqid: this.counter, stack: new Array(this.last) };
-            if (factor) entry.factor = factor; // factor used to indicate importance of entry, will be built as first
-            for (let n=0;n<this.last;++n) entry.stack[n] = this.stack[n+1]; // copy stack
-            return entry;
-         };
-
-         if (arg.domatrix) {
-            arg.matrices = [];
-            arg.mpool = [ new THREE.Matrix4() ]; // pool of Matrix objects to avoid permanent creation
-            arg.getmatrix = function() { return this.matrices[this.last]; };
-         }
-      }
-
-      let res = 0, node = this.nodes[arg.nodeid];
-
-      if (arg.domatrix) {
-         if (!arg.mpool[arg.last+1])
-            arg.mpool[arg.last+1] = new THREE.Matrix4();
-
-         let prnt = (arg.last > 0) ? arg.matrices[arg.last-1] : new THREE.Matrix4();
-         if (node.matrix) {
-            arg.matrices[arg.last] = arg.mpool[arg.last].fromArray(prnt.elements);
-            arg.matrices[arg.last].multiply(arg.mpool[arg.last+1].fromArray(node.matrix));
-         } else {
-            arg.matrices[arg.last] = prnt;
-         }
-      }
-
-      if (node.nochlds) vislvl = 0;
-
-      if (node.vis > vislvl) {
-         if (!arg.func || arg.func(node)) res++;
-      }
-
-      arg.counter++;
-
-      if ((vislvl > 0) && node.chlds) {
-         arg.last++;
-         for (let i = 0; i < node.chlds.length; ++i) {
-            arg.nodeid = node.chlds[i];
-            arg.stack[arg.last] = i; // in the stack one store index of child, it is path in the hierarchy
-            res += this.scanVisible(arg, vislvl-1);
-         }
-         arg.last--;
-      } else {
-         arg.counter += (node.idshift || 0);
-      }
-
-      if (arg.last === 0) {
-         delete arg.last;
-         delete arg.stack;
-         delete arg.CopyStack;
-         delete arg.counter;
-         delete arg.matrices;
-         delete arg.mpool;
-         delete arg.getmatrix;
-      }
-
-      return res;
-   }
-
-   /** @summary Return node name with given id.
-    * @desc Either original object or description is used */
-   ClonedNodes.prototype.getNodeName = function(nodeid) {
-      if (this.origin) {
-         let obj = this.origin[nodeid];
-         return obj ? geo.getObjectName(obj) : "";
-      }
-      let node = this.nodes[nodeid];
-      return node ? node.name : "";
-   }
-
-   /** @summary Returns description for provide stack */
-   ClonedNodes.prototype.resolveStack = function(stack, withmatrix) {
-
-      let res = { id: 0, obj: null, node: this.nodes[0], name: this.name_prefix };
-
-      // if (!this.toplevel || (this.nodes.length === 1) || (res.node.kind === 1)) res.name = "";
-
-      if (withmatrix) {
-         res.matrix = new THREE.Matrix4();
-         if (res.node.matrix) res.matrix.fromArray(res.node.matrix);
-      }
-
-      if (this.origin)
-         res.obj = this.origin[0];
-
-      //if (!res.name)
-      //   res.name = this.getNodeName(0);
-
-      if (stack)
-         for(let lvl=0;lvl<stack.length;++lvl) {
-            res.id = res.node.chlds[stack[lvl]];
-            res.node = this.nodes[res.id];
-
-            if (this.origin)
-               res.obj = this.origin[res.id];
-
-            let subname = this.getNodeName(res.id);
-            if (subname) {
-               if (res.name) res.name+="/";
-               res.name += subname;
-            }
-
-            if (withmatrix && res.node.matrix)
-               res.matrix.multiply(new THREE.Matrix4().fromArray(res.node.matrix));
-         }
-
-      return res;
-   }
-
-   /** @summary Create stack array based on nodes ids array.
-    * @desc Ids list should correspond to existing nodes hierarchy */
-   ClonedNodes.prototype.buildStackByIds = function(ids) {
-      if (!ids) return null;
-
-      if (ids[0] !== 0) {
-         console.error('wrong ids - first should be 0');
          return null;
       }
 
-      let node = this.nodes[0], stack = [];
+      /** @summary function to cleanup as much as possible structures
+        * @desc Provided parameters drawnodes and drawshapes are arrays created during building of geometry */
+      cleanup(drawnodes, drawshapes) {
 
-      for (let k=1;k<ids.length;++k) {
-         let nodeid = ids[k];
-         if (!node) return null;
-         let chindx = node.chlds.indexOf(nodeid);
-         if (chindx < 0) {
-            console.error('wrong nodes ids ' + ids[k] + ' is not child of ' + ids[k-1]);
-            return null;
+         if (drawnodes) {
+            for (let n=0;n<drawnodes.length;++n) {
+               delete drawnodes[n].stack;
+               drawnodes[n] = undefined;
+            }
          }
 
-         stack.push(chindx);
-         node = this.nodes[nodeid];
-      }
-
-      return stack;
-   }
-
-   /** @summary Retuns ids array which correspond to the stack */
-   ClonedNodes.prototype.buildIdsByStack = function(stack) {
-      if (!stack) return null;
-      let node = this.nodes[0], ids = [0];
-      for (let k=0;k<stack.length;++k) {
-         let id = node.chlds[stack[k]];
-         ids.push(id);
-         node = this.nodes[id];
-      }
-      return ids;
-   }
-
-   /** @summary Returns true if stack includes at any place provided nodeid */
-   ClonedNodes.prototype.isIdInStack = function(nodeid, stack) {
-
-      if (!nodeid) return true;
-
-      let node = this.nodes[0], id = 0;
-
-      for(let lvl = 0; lvl < stack.length; ++lvl) {
-         id = node.chlds[stack[lvl]];
-         if (id == nodeid) return true;
-         node = this.nodes[id];
-      }
-
-      return false;
-   }
-
-   /** @summary Find stack by name which include names of all parents */
-   ClonedNodes.prototype.findStackByName = function(fullname) {
-
-      let names = fullname.split('/'), currid = 0, stack = [];
-
-      if (this.getNodeName(currid) !== names[0]) return null;
-
-      for (let n = 1; n < names.length; ++n) {
-         let node = this.nodes[currid];
-         if (!node.chlds) return null;
-
-         for (let k=0;k<node.chlds.length;++k) {
-            let chldid = node.chlds[k];
-            if (this.getNodeName(chldid) === names[n]) { stack.push(k); currid = chldid; break; }
+         if (drawshapes) {
+            for (let n=0;n<drawshapes.length;++n) {
+               delete drawshapes[n].geom;
+               drawshapes[n] = undefined;
+            }
          }
 
-         // no new entry - not found stack
-         if (stack.length === n - 1) return null;
-      }
-
-      return stack;
-   }
-
-   /** @summary Set usage of default ROOT colors */
-   ClonedNodes.prototype.setDefaultColors = function(on) {
-      this.use_dflt_colors = on;
-      if (this.use_dflt_colors && !this.dflt_table) {
-
-         let dflt = { kWhite:0,  kBlack:1, kGray:920,
-               kRed:632, kGreen:416, kBlue:600, kYellow:400, kMagenta:616, kCyan:432,
-               kOrange:800, kSpring:820, kTeal:840, kAzure:860, kViolet:880, kPink:900 };
-
-         let nmax = 110, col = [];
-         for (let i=0;i<nmax;i++) col.push(dflt.kGray);
-
-         //  here we should create a new TColor with the same rgb as in the default
-         //  ROOT colors used below
-         col[ 3] = dflt.kYellow-10;
-         col[ 4] = col[ 5] = dflt.kGreen-10;
-         col[ 6] = col[ 7] = dflt.kBlue-7;
-         col[ 8] = col[ 9] = dflt.kMagenta-3;
-         col[10] = col[11] = dflt.kRed-10;
-         col[12] = dflt.kGray+1;
-         col[13] = dflt.kBlue-10;
-         col[14] = dflt.kOrange+7;
-         col[16] = dflt.kYellow+1;
-         col[20] = dflt.kYellow-10;
-         col[24] = col[25] = col[26] = dflt.kBlue-8;
-         col[29] = dflt.kOrange+9;
-         col[79] = dflt.kOrange-2;
-
-         this.dflt_table = col;
-      }
-   }
-
-   /** @summary Provide different properties of draw entry nodeid
-    * @desc Only if node visible, material will be created*/
-   ClonedNodes.prototype.getDrawEntryProperties = function(entry) {
-
-      let clone = this.nodes[entry.nodeid];
-      let visible = true;
-
-      if (clone.kind === kindShape) {
-         let prop = { name: clone.name, nname: clone.name, shape: null, material: null, chlds: null };
-         let _opacity = entry.opacity || 1;
-         prop.fillcolor = new THREE.Color( entry.color ? "rgb(" + entry.color + ")" : "blue" );
-         prop.material = new THREE.MeshLambertMaterial( { transparent: _opacity < 1,
-                          opacity: _opacity, wireframe: false, color: prop.fillcolor,
-                          side: THREE.FrontSide, vertexColors: false,
-                          depthWrite: _opacity == 1 } );
-         prop.material.inherentOpacity = _opacity;
-
-         return prop;
-      }
-
-      if (!this.origin) {
-         console.error('origin not there - kind', clone.kind, entry.nodeid, clone);
-         return null;
-      }
-
-      let node = this.origin[entry.nodeid];
-
-      if (clone.kind === kindEve) {
-         // special handling for EVE nodes
-
-         let prop = { name: geo.getObjectName(node), nname: geo.getObjectName(node), shape: node.fShape, material: null, chlds: null };
-
-         if (node.fElements !== null) prop.chlds = node.fElements.arr;
-
-         if (visible) {
-            let _opacity = Math.min(1, node.fRGBA[3]);
-            prop.fillcolor = new THREE.Color( node.fRGBA[0], node.fRGBA[1], node.fRGBA[2] );
-            prop.material = new THREE.MeshLambertMaterial( { transparent: _opacity < 1,
-                             opacity: _opacity, wireframe: false, color: prop.fillcolor,
-                             side: THREE.FrontSide, vertexColors: false,
-                             depthWrite: _opacity == 1 } );
-            prop.material.inherentOpacity = _opacity;
+         if (this.nodes) {
+            for (let n=0;n<this.nodes.length;++n) {
+               if (this.nodes[n])
+                  delete this.nodes[n].chlds;
+            }
          }
 
-         return prop;
+         delete this.nodes;
+         delete this.origin;
+
+         delete this.sortmap;
       }
 
-      let volume = node.fVolume;
+      /** @summary Create complete description for provided Geo object */
+      createClones(obj, sublevel, kind) {
+         if (!sublevel) {
 
-      let prop = { name: geo.getObjectName(volume), nname: geo.getObjectName(node), volume: node.fVolume, shape: volume.fShape, material: null, chlds: null };
+            if (obj && obj._typename == "$$Shape$$")
+               return this.createClonesForShape(obj);
 
-      if (node.fVolume.fNodes !== null) prop.chlds = node.fVolume.fNodes.arr;
+            this.origin = [];
+            sublevel = 1;
+            kind = geo.getNodeKind(obj);
+         }
 
-      if (volume) prop.linewidth = volume.fLineWidth;
+         if ((kind < 0) || !obj || ('_refid' in obj)) return;
 
-      if (visible) {
+         obj._refid = this.origin.length;
+         this.origin.push(obj);
+         if (sublevel > this.maxdepth) this.maxdepth = sublevel;
 
-         // TODO: maybe correctly extract ROOT colors here?
-         let _opacity = 1.0, jsrp = JSROOT.Painter,
-             root_colors = jsrp ? jsrp.root_colors : ['white', 'black', 'red', 'green', 'blue', 'yellow', 'magenta', 'cyan'];
+         let chlds = null;
+         if (kind === kindGeo)
+            chlds = (obj.fVolume && obj.fVolume.fNodes) ? obj.fVolume.fNodes.arr : null;
+         else
+            chlds = obj.fElements ? obj.fElements.arr : null;
 
-         if (entry.custom_color)
-            prop.fillcolor = entry.custom_color;
-         else if ((volume.fFillColor > 1) && (volume.fLineColor == 1))
-            prop.fillcolor = root_colors[volume.fFillColor];
-         else if (volume.fLineColor >= 0)
-            prop.fillcolor = root_colors[volume.fLineColor];
+         if (chlds !== null) {
+            geo.checkDuplicates(obj, chlds);
+            for (let i = 0; i < chlds.length; ++i)
+               this.createClones(chlds[i], sublevel + 1, kind);
+         }
 
-         if (volume.fMedium && volume.fMedium.fMaterial) {
-            let mat = volume.fMedium.fMaterial,
-                fillstyle = mat.fFillStyle,
-                transparency = (fillstyle < 3000 || fillstyle > 3100) ? 0 : fillstyle - 3000;
+         if (sublevel > 1) return;
 
-            if (this.use_dflt_colors) {
-               let matZ = Math.round(mat.fZ),
-                   icol = this.dflt_table[matZ];
-               prop.fillcolor = root_colors[icol];
-               if (mat.fDensity < 0.1) transparency = 60;
+         this.nodes = [];
+
+         let sortarr = [];
+
+         // first create nodes objects
+         for (let n = 0; n < this.origin.length; ++n) {
+            // let obj = this.origin[n];
+            let node = { id: n, kind: kind, vol: 0, nfaces: 0 };
+            this.nodes.push(node);
+            sortarr.push(node); // array use to produce sortmap
+         }
+
+         // than fill children lists
+         for (let n = 0; n < this.origin.length; ++n) {
+            let obj = this.origin[n], clone = this.nodes[n];
+
+            let chlds = null, shape = null;
+
+            if (kind === kindEve) {
+               shape = obj.fShape;
+               if (obj.fElements) chlds = obj.fElements.arr;
+            } else if (obj.fVolume) {
+               shape = obj.fVolume.fShape;
+               if (obj.fVolume.fNodes) chlds = obj.fVolume.fNodes.arr;
             }
 
-            if (transparency > 0)
-               _opacity = (100.0 - transparency) / 100.0;
-            if (prop.fillcolor === undefined)
-               prop.fillcolor = root_colors[mat.fFillColor];
-         }
-         if (prop.fillcolor === undefined)
-            prop.fillcolor = "lightgrey";
-
-         prop.material = new THREE.MeshLambertMaterial( { transparent: _opacity < 1,
-                              opacity: _opacity, wireframe: false, color: prop.fillcolor,
-                              side: THREE.FrontSide, vertexColors: false,
-                              depthWrite: _opacity == 1 } );
-         prop.material.inherentOpacity = _opacity;
-
-      }
-
-      return prop;
-   }
-
-   /** @summary Creates hierarchy of Object3D for given stack entry
-     * @desc Such hierarchy repeats hierarchy of TGeoNodes and set matrix for the objects drawing
-     * also set renderOrder, required to handle transparency */
-   ClonedNodes.prototype.createObject3D = function(stack, toplevel, options) {
-
-      let node = this.nodes[0], three_prnt = toplevel, draw_depth = 0,
-          force = (typeof options == 'object') || (options==='force');
-
-      for(let lvl=0; lvl<=stack.length; ++lvl) {
-         let nchld = (lvl > 0) ? stack[lvl-1] : 0;
-         // extract current node
-         if (lvl>0)  node = this.nodes[node.chlds[nchld]];
-
-         let obj3d = undefined;
-
-         if (three_prnt.children)
-            for (let i = 0; i < three_prnt.children.length; ++i) {
-               if (three_prnt.children[i].nchld === nchld) {
-                  obj3d = three_prnt.children[i];
-                  break;
+            let matrix = geo.getNodeMatrix(kind, obj);
+            if (matrix) {
+               clone.matrix = matrix.elements; // take only matrix elements, matrix will be constructed in worker
+               if (clone.matrix[0] === 1) {
+                  let issimple = true;
+                  for (let k = 1; (k < clone.matrix.length) && issimple; ++k)
+                     issimple = (clone.matrix[k] === ((k === 5) || (k === 10) || (k === 15) ? 1 : 0));
+                  if (issimple) delete clone.matrix;
                }
+               if (clone.matrix && (kind == kindEve)) clone.abs_matrix = true;
+            }
+            if (shape) {
+               clone.fDX = shape.fDX;
+               clone.fDY = shape.fDY;
+               clone.fDZ = shape.fDZ;
+               clone.vol = shape.fDX * shape.fDY * shape.fDZ;
+               if (shape.$nfaces === undefined)
+                  shape.$nfaces = createGeometry(shape, -1);
+               clone.nfaces = shape.$nfaces;
+               if (clone.nfaces <= 0) clone.vol = 0;
             }
 
-         if (obj3d) {
-            three_prnt = obj3d;
-            if (obj3d.$jsroot_drawable) draw_depth++;
-            continue;
+            if (!chlds) continue;
+
+            // in cloned object children is only list of ids
+            clone.chlds = new Array(chlds.length);
+            for (let k = 0; k < chlds.length; ++k)
+               clone.chlds[k] = chlds[k]._refid;
          }
 
-         if (!force) return null;
+         // remove _refid identifiers from original objects
+         for (let n = 0; n < this.origin.length; ++n)
+            delete this.origin[n]._refid;
 
-         obj3d = new THREE.Object3D();
+         // do sorting once
+         sortarr.sort(function(a, b) { return b.vol - a.vol; });
 
-         if (node.abs_matrix) {
-            obj3d.absMatrix = new THREE.Matrix4();
-            obj3d.absMatrix.fromArray(node.matrix);
-         } else if (node.matrix) {
-            obj3d.matrix.fromArray(node.matrix);
-            obj3d.matrix.decompose( obj3d.position, obj3d.quaternion, obj3d.scale );
+         // remember sort map and also sortid
+         this.sortmap = new Array(this.nodes.length);
+         for (let n = 0; n < this.nodes.length; ++n) {
+            this.sortmap[n] = sortarr[n].id;
+            sortarr[n].sortid = n;
          }
-
-         // this.accountNodes(obj3d);
-         obj3d.nchld = nchld; // mark index to find it again later
-
-         // add the mesh to the scene
-         three_prnt.add(obj3d);
-
-         // this is only for debugging - test inversion of whole geometry
-         if ((lvl==0) && (typeof options == 'object') && options.scale) {
-            if ((options.scale.x < 0) || (options.scale.y < 0) || (options.scale.z < 0)) {
-               obj3d.scale.copy(options.scale);
-               obj3d.updateMatrix();
-            }
-         }
-
-         obj3d.updateMatrixWorld();
-
-         three_prnt = obj3d;
       }
 
-      if ((options === 'mesh') || (options === 'delete_mesh')) {
-         let mesh = null;
-         if (three_prnt)
-            for (let n=0; (n<three_prnt.children.length) && !mesh;++n) {
-               let chld = three_prnt.children[n];
-               if ((chld.type === 'Mesh') && (chld.nchld === undefined)) mesh = chld;
+      /** @summary Create elementary item with single already existing shape
+        * @desc used by details view of geometry shape */
+      createClonesForShape(obj) {
+         this.origin = [];
+
+         // indicate that just plain shape is used
+         this.plain_shape = obj;
+
+         let node = {
+               id: 0, sortid: 0, kind: kindShape,
+               name: "Shape",
+               nfaces: obj.nfaces,
+               fDX: 1, fDY: 1, fDZ: 1, vol: 1,
+               vis: true
+            };
+
+         this.nodes = [ node ];
+      }
+
+      /** @summary Count all visisble nodes */
+      countVisibles() {
+         let cnt = 0;
+         if (this.nodes)
+            for (let k = 0; k < this.nodes.length; ++k)
+               if (this.nodes[k].vis)
+                  cnt++;
+         return cnt;
+      }
+
+      /** @summary Mark visisble nodes.
+        * @desc Set only basic flags, actual visibility depends from hierarchy */
+      markVisibles(on_screen, copy_bits, hide_top_volume) {
+         if (this.plain_shape) return 1;
+         if (!this.origin || !this.nodes) return 0;
+
+         let res = 0;
+
+         for (let n=0;n<this.nodes.length;++n) {
+            let clone = this.nodes[n],
+                obj = this.origin[n];
+
+            clone.vis = 0; // 1 - only with last level
+            delete clone.nochlds;
+
+            if (clone.kind === kindGeo) {
+               if (obj.fVolume) {
+                  if (on_screen) {
+                     // on screen bits used always, childs always checked
+                     clone.vis = geo.TestBit(obj.fVolume, geo.BITS.kVisOnScreen) ? 99 : 0;
+
+                     if ((n==0) && clone.vis && hide_top_volume) clone.vis = 0;
+
+                     if (copy_bits) {
+                        geo.SetBit(obj.fVolume, geo.BITS.kVisNone, false);
+                        geo.SetBit(obj.fVolume, geo.BITS.kVisThis, (clone.vis > 0));
+                        geo.SetBit(obj.fVolume, geo.BITS.kVisDaughters, true);
+                     }
+                  } else {
+                     clone.vis = !geo.TestBit(obj.fVolume, geo.BITS.kVisNone) &&
+                                  geo.TestBit(obj.fVolume, geo.BITS.kVisThis) ? 99 : 0;
+
+                     if (!geo.TestBit(obj, geo.BITS.kVisDaughters) ||
+                         !geo.TestBit(obj.fVolume, geo.BITS.kVisDaughters)) clone.nochlds = true;
+
+                     // node with childs only shown in case if it is last level in hierarchy
+                     if ((clone.vis > 0) && clone.chlds && !clone.nochlds) clone.vis = 1;
+
+                     // special handling for top node
+                     if (n==0) {
+                        if (hide_top_volume) clone.vis = 0;
+                        delete clone.nochlds;
+                     }
+                  }
+               }
+            } else {
+               clone.vis = obj.fRnrSelf ? 99 : 0;
+
+               // when the only node is selected, draw it
+               if ((n===0) && (this.nodes.length===1)) clone.vis = 99;
+
+               this.vislevel = 9999; // automatically take all volumes
             }
 
-         if ((options === 'mesh') || !mesh) return mesh;
+            // shape with zero volume or without faces will not be observed
+            if ((clone.vol <= 0) || (clone.nfaces <= 0)) clone.vis = 0;
 
-         let res = three_prnt;
-         while (mesh && (mesh !== toplevel)) {
-            three_prnt = mesh.parent;
-            three_prnt.remove(mesh);
-            mesh = (three_prnt.children.length == 0) ? three_prnt : null;
+            if (clone.vis) res++;
          }
 
          return res;
       }
 
-      if (three_prnt) {
-         three_prnt.$jsroot_drawable = true;
-         three_prnt.$jsroot_depth = draw_depth;
-      }
+      /** @summary After visibility flags is set, produce idshift for all nodes as it would be maximum level */
+      produceIdShifts() {
+         for (let k = 0; k < this.nodes.length; ++k)
+            this.nodes[k].idshift = -1;
 
-      return three_prnt;
-   }
+         function scan_func(nodes, node) {
+            if (node.idshift < 0) {
+               node.idshift = 0;
+               if (node.chlds)
+                  for(let k = 0; k<node.chlds.length; ++k)
+                     node.idshift += scan_func(nodes, nodes[node.chlds[k]]);
+            }
 
-   /** @summary Get volume boundary
-     * @private */
-   ClonedNodes.prototype.getVolumeBoundary = function(viscnt, facelimit, nodeslimit) {
-
-      let result = { min: 0, max: 1, sortidcut: 0 };
-
-      if (!this.sortmap) {
-         console.error('sorting map do not exist');
-         return result;
-      }
-
-      let maxNode, currNode, cnt=0, facecnt=0;
-
-      for (let n = 0; (n < this.sortmap.length) && (cnt < nodeslimit) && (facecnt < facelimit); ++n) {
-         let id = this.sortmap[n];
-         if (viscnt[id] === 0) continue;
-         currNode = this.nodes[id];
-         if (!maxNode) maxNode = currNode;
-         cnt += viscnt[id];
-         facecnt += viscnt[id] * currNode.nfaces;
-      }
-
-      if (!currNode) {
-         console.error('no volumes selected');
-         return result;
-      }
-
-      // console.log('Volume boundary ' + currNode.vol + '  cnt ' + cnt + '  faces ' + facecnt);
-      result.max = maxNode.vol;
-      result.min = currNode.vol;
-      result.sortidcut = currNode.sortid; // latest node is not included
-      return result;
-   }
-
-   /** @summary Collects visible nodes, using maxlimit
-     * @desc One can use map to define cut based on the volume or serious of cuts */
-   ClonedNodes.prototype.collectVisibles = function(maxnumfaces, frustum) {
-
-      // in simple case shape as it is
-      if (this.plain_shape)
-         return { lst: [ { nodeid: 0, seqid: 0, stack: [], factor: 1, shapeid: 0, server_shape: this.plain_shape } ], complete: true };
-
-      let arg = {
-         facecnt: 0,
-         viscnt: new Array(this.nodes.length), // counter for each node
-         vislvl: this.getVisLevel(),
-         reset: function() {
-            this.total = 0;
-            this.facecnt = 0;
-            for (let n=0;n<this.viscnt.length;++n) this.viscnt[n] = 0;
-         },
-         // nodes: this.nodes,
-         func: function(node) {
-            this.total++;
-            this.facecnt += node.nfaces;
-            this.viscnt[node.id]++;
-            return true;
-         }
-      };
-
-      arg.reset();
-
-      let total = this.scanVisible(arg),
-          maxnumnodes = this.getMaxVisNodes();
-
-      if (maxnumnodes > 0) {
-         while ((total > maxnumnodes) && (arg.vislvl > 1)) {
-            arg.vislvl--;
-            arg.reset();
-            total = this.scanVisible(arg);
-         }
-      }
-
-      this.actual_level = arg.vislvl; // not used, can be shown somewhere in the gui
-
-      let minVol = 0, maxVol = 0, camVol = -1, camFact = 10, sortidcut = this.nodes.length + 1;
-
-      console.log('Total visible nodes ' + total + ' numfaces ' + arg.facecnt);
-
-      if (arg.facecnt > maxnumfaces) {
-
-         let bignumfaces = maxnumfaces * (frustum ? 0.8 : 1.0),
-             bignumnodes = maxnumnodes * (frustum ? 0.8 : 1.0);
-
-         // define minimal volume, which always to shown
-         let boundary = this.getVolumeBoundary(arg.viscnt, bignumfaces, bignumnodes);
-
-         minVol = boundary.min;
-         maxVol = boundary.max;
-         sortidcut = boundary.sortidcut;
-
-         if (frustum) {
-             arg.domatrix = true;
-             arg.frustum = frustum;
-             arg.totalcam = 0;
-             arg.func = function(node) {
-                if (node.vol <= minVol) // only small volumes are interesting
-                   if (this.frustum.CheckShape(this.getmatrix(), node)) {
-                      this.viscnt[node.id]++;
-                      this.totalcam += node.nfaces;
-                   }
-
-                return true;
-             };
-
-             for (let n=0;n<arg.viscnt.length;++n) arg.viscnt[n] = 0;
-
-             this.scanVisible(arg);
-
-             if (arg.totalcam > maxnumfaces*0.2)
-                camVol = this.getVolumeBoundary(arg.viscnt, maxnumfaces*0.2, maxnumnodes*0.2).min;
-             else
-                camVol = 0;
-
-             camFact = maxVol / ((camVol>0) ? (camVol>0) : minVol);
-
-             // console.log('Limit for camera ' + camVol + '  faces in camera view ' + arg.totalcam);
-         }
-      }
-
-      arg.items = [];
-
-      arg.func = function(node) {
-         if (node.sortid < sortidcut) {
-            this.items.push(this.CopyStack());
-         } else if ((camVol >= 0) && (node.vol > camVol)) {
-            if (this.frustum.CheckShape(this.getmatrix(), node))
-               this.items.push(this.CopyStack(camFact));
-         }
-         return true;
-      };
-
-      this.scanVisible(arg);
-
-      return { lst: arg.items, complete: minVol === 0 };
-   }
-
-   /** @summary Merge list of drawn objects
-     * @desc In current list we should mark if object already exists
-     * from previous list we should collect objects which are not there */
-   ClonedNodes.prototype.mergeVisibles = function(current, prev) {
-
-      let indx2 = 0, del = [];
-      for (let indx1 = 0; (indx1 < current.length) && (indx2 < prev.length); ++indx1) {
-
-         while ((indx2 < prev.length) && (prev[indx2].seqid < current[indx1].seqid)) {
-            del.push(prev[indx2++]); // this entry should be removed
+            return node.idshift + 1;
          }
 
-         if ((indx2 < prev.length) && (prev[indx2].seqid === current[indx1].seqid)) {
-            if (prev[indx2].done) current[indx1].done = true; // copy ready flag
-            indx2++;
-         }
+         scan_func(this.nodes, this.nodes[0]);
       }
 
-      // remove rest
-      while (indx2 < prev.length)
-         del.push(prev[indx2++]);
+      /** @summary Extract only visibility flags
+        * @desc Used to transfer them to the worker */
+      getVisibleFlags() {
+         let res = new Array(this.nodes.length);
+         for (let n=0;n<this.nodes.length;++n)
+            res[n] = { vis: this.nodes[n].vis, nochlds: this.nodes[n].nochlds };
+         return res;
+      }
 
-      return del;
-   }
+      /** @summary Assign only visibility flags, extracted with getVisibleFlags */
+      setVisibleFlags(flags) {
+         if (!this.nodes || !flags || !flags.length != this.nodes.length)
+            return 0;
 
-   /** @summary Collect all uniques shapes which should be built
-    *  @desc Check if same shape used many times for drawing */
-   ClonedNodes.prototype.collectShapes = function(lst) {
+         let res = 0;
+         for (let n=0;n<this.nodes.length;++n) {
+            let clone = this.nodes[n];
 
-      // nothing else - just that single shape
-      if (this.plain_shape)
-         return [ this.plain_shape ];
+            clone.vis = flags[n].vis;
+            clone.nochlds = flags[n].nochlds;
+            if (clone.vis) res++;
+         }
 
-      let shapes = [];
+         return res;
+      }
 
-      for (let i=0;i<lst.length;++i) {
-         let entry = lst[i];
-         let shape = this.getNodeShape(entry.nodeid);
+      /** @summary Scan visible nodes in hierarchy, starting from nodeid
+        * @desc Each entry in hierarchy get its unique id, which is not changed with visibility flags */
+      scanVisible(arg, vislvl) {
 
-         if (!shape) continue; // strange, but avoid misleading
+         if (!this.nodes) return 0;
 
-         if (shape._id === undefined) {
-            shape._id = shapes.length;
+         if (vislvl === undefined) {
+            if (!arg) arg = {};
 
-            shapes.push({ id: shape._id, shape: shape, vol: this.nodes[entry.nodeid].vol, refcnt: 1, factor: 1, ready: false });
+            vislvl = arg.vislvl || this.vislevel || 4; // default 3 in ROOT
+            if (vislvl > 88) vislvl = 88;
 
-            // shapes.push( { obj: shape, vol: this.nodes[entry.nodeid].vol });
+            arg.stack = new Array(100); // current stack
+            arg.nodeid = 0;
+            arg.counter = 0; // sequence ID of the node, used to identify it later
+            arg.last = 0;
+            arg.CopyStack = function(factor) {
+               let entry = { nodeid: this.nodeid, seqid: this.counter, stack: new Array(this.last) };
+               if (factor) entry.factor = factor; // factor used to indicate importance of entry, will be built as first
+               for (let n=0;n<this.last;++n) entry.stack[n] = this.stack[n+1]; // copy stack
+               return entry;
+            };
+
+            if (arg.domatrix) {
+               arg.matrices = [];
+               arg.mpool = [ new THREE.Matrix4() ]; // pool of Matrix objects to avoid permanent creation
+               arg.getmatrix = function() { return this.matrices[this.last]; };
+            }
+         }
+
+         let res = 0, node = this.nodes[arg.nodeid];
+
+         if (arg.domatrix) {
+            if (!arg.mpool[arg.last+1])
+               arg.mpool[arg.last+1] = new THREE.Matrix4();
+
+            let prnt = (arg.last > 0) ? arg.matrices[arg.last-1] : new THREE.Matrix4();
+            if (node.matrix) {
+               arg.matrices[arg.last] = arg.mpool[arg.last].fromArray(prnt.elements);
+               arg.matrices[arg.last].multiply(arg.mpool[arg.last+1].fromArray(node.matrix));
+            } else {
+               arg.matrices[arg.last] = prnt;
+            }
+         }
+
+         if (node.nochlds) vislvl = 0;
+
+         if (node.vis > vislvl) {
+            if (!arg.func || arg.func(node)) res++;
+         }
+
+         arg.counter++;
+
+         if ((vislvl > 0) && node.chlds) {
+            arg.last++;
+            for (let i = 0; i < node.chlds.length; ++i) {
+               arg.nodeid = node.chlds[i];
+               arg.stack[arg.last] = i; // in the stack one store index of child, it is path in the hierarchy
+               res += this.scanVisible(arg, vislvl-1);
+            }
+            arg.last--;
          } else {
-            shapes[shape._id].refcnt++;
+            arg.counter += (node.idshift || 0);
          }
 
-         entry.shape = shapes[shape._id]; // remember shape used
+         if (arg.last === 0) {
+            delete arg.last;
+            delete arg.stack;
+            delete arg.CopyStack;
+            delete arg.counter;
+            delete arg.matrices;
+            delete arg.mpool;
+            delete arg.getmatrix;
+         }
 
-         // use maximal importance factor to push element to the front
-         if (entry.factor && (entry.factor>entry.shape.factor))
-            entry.shape.factor = entry.factor;
+         return res;
       }
 
-      // now sort shapes in volume decrease order
-      shapes.sort((a,b) => b.vol*b.factor - a.vol*a.factor);
-
-      // now set new shape ids according to the sorted order and delete temporary field
-      for (let n = 0; n < shapes.length; ++n) {
-         let item = shapes[n];
-         item.id = n; // set new ID
-         delete item.shape._id; // remove temporary field
+      /** @summary Return node name with given id.
+       * @desc Either original object or description is used */
+      getNodeName(nodeid) {
+         if (this.origin) {
+            let obj = this.origin[nodeid];
+            return obj ? geo.getObjectName(obj) : "";
+         }
+         let node = this.nodes[nodeid];
+         return node ? node.name : "";
       }
 
-      // as last action set current shape id to each entry
-      for (let i = 0; i < lst.length; ++i) {
-         let entry = lst[i];
-         if (entry.shape) {
-            entry.shapeid = entry.shape.id; // keep only id for the entry
-            delete entry.shape; // remove direct references
+      /** @summary Returns description for provide stack */
+      resolveStack(stack, withmatrix) {
+
+         let res = { id: 0, obj: null, node: this.nodes[0], name: this.name_prefix };
+
+         // if (!this.toplevel || (this.nodes.length === 1) || (res.node.kind === 1)) res.name = "";
+
+         if (withmatrix) {
+            res.matrix = new THREE.Matrix4();
+            if (res.node.matrix) res.matrix.fromArray(res.node.matrix);
+         }
+
+         if (this.origin)
+            res.obj = this.origin[0];
+
+         //if (!res.name)
+         //   res.name = this.getNodeName(0);
+
+         if (stack)
+            for(let lvl=0;lvl<stack.length;++lvl) {
+               res.id = res.node.chlds[stack[lvl]];
+               res.node = this.nodes[res.id];
+
+               if (this.origin)
+                  res.obj = this.origin[res.id];
+
+               let subname = this.getNodeName(res.id);
+               if (subname) {
+                  if (res.name) res.name+="/";
+                  res.name += subname;
+               }
+
+               if (withmatrix && res.node.matrix)
+                  res.matrix.multiply(new THREE.Matrix4().fromArray(res.node.matrix));
+            }
+
+         return res;
+      }
+
+      /** @summary Create stack array based on nodes ids array.
+       * @desc Ids list should correspond to existing nodes hierarchy */
+      buildStackByIds(ids) {
+         if (!ids) return null;
+
+         if (ids[0] !== 0) {
+            console.error('wrong ids - first should be 0');
+            return null;
+         }
+
+         let node = this.nodes[0], stack = [];
+
+         for (let k=1;k<ids.length;++k) {
+            let nodeid = ids[k];
+            if (!node) return null;
+            let chindx = node.chlds.indexOf(nodeid);
+            if (chindx < 0) {
+               console.error('wrong nodes ids ' + ids[k] + ' is not child of ' + ids[k-1]);
+               return null;
+            }
+
+            stack.push(chindx);
+            node = this.nodes[nodeid];
+         }
+
+         return stack;
+      }
+
+      /** @summary Retuns ids array which correspond to the stack */
+      buildIdsByStack(stack) {
+         if (!stack) return null;
+         let node = this.nodes[0], ids = [0];
+         for (let k=0;k<stack.length;++k) {
+            let id = node.chlds[stack[k]];
+            ids.push(id);
+            node = this.nodes[id];
+         }
+         return ids;
+      }
+
+      /** @summary Returns true if stack includes at any place provided nodeid */
+      isIdInStack(nodeid, stack) {
+
+         if (!nodeid) return true;
+
+         let node = this.nodes[0], id = 0;
+
+         for(let lvl = 0; lvl < stack.length; ++lvl) {
+            id = node.chlds[stack[lvl]];
+            if (id == nodeid) return true;
+            node = this.nodes[id];
+         }
+
+         return false;
+      }
+
+      /** @summary Find stack by name which include names of all parents */
+      findStackByName(fullname) {
+
+         let names = fullname.split('/'), currid = 0, stack = [];
+
+         if (this.getNodeName(currid) !== names[0]) return null;
+
+         for (let n = 1; n < names.length; ++n) {
+            let node = this.nodes[currid];
+            if (!node.chlds) return null;
+
+            for (let k=0;k<node.chlds.length;++k) {
+               let chldid = node.chlds[k];
+               if (this.getNodeName(chldid) === names[n]) { stack.push(k); currid = chldid; break; }
+            }
+
+            // no new entry - not found stack
+            if (stack.length === n - 1) return null;
+         }
+
+         return stack;
+      }
+
+      /** @summary Set usage of default ROOT colors */
+      setDefaultColors(on) {
+         this.use_dflt_colors = on;
+         if (this.use_dflt_colors && !this.dflt_table) {
+
+            let dflt = { kWhite:0,  kBlack:1, kGray:920,
+                  kRed:632, kGreen:416, kBlue:600, kYellow:400, kMagenta:616, kCyan:432,
+                  kOrange:800, kSpring:820, kTeal:840, kAzure:860, kViolet:880, kPink:900 };
+
+            let nmax = 110, col = [];
+            for (let i=0;i<nmax;i++) col.push(dflt.kGray);
+
+            //  here we should create a new TColor with the same rgb as in the default
+            //  ROOT colors used below
+            col[ 3] = dflt.kYellow-10;
+            col[ 4] = col[ 5] = dflt.kGreen-10;
+            col[ 6] = col[ 7] = dflt.kBlue-7;
+            col[ 8] = col[ 9] = dflt.kMagenta-3;
+            col[10] = col[11] = dflt.kRed-10;
+            col[12] = dflt.kGray+1;
+            col[13] = dflt.kBlue-10;
+            col[14] = dflt.kOrange+7;
+            col[16] = dflt.kYellow+1;
+            col[20] = dflt.kYellow-10;
+            col[24] = col[25] = col[26] = dflt.kBlue-8;
+            col[29] = dflt.kOrange+9;
+            col[79] = dflt.kOrange-2;
+
+            this.dflt_table = col;
          }
       }
 
-      return shapes;
-   }
+      /** @summary Provide different properties of draw entry nodeid
+       * @desc Only if node visible, material will be created*/
+      getDrawEntryProperties(entry) {
 
-   /** @summary Merge shape lists */
-   ClonedNodes.prototype.mergeShapesLists = function(oldlst, newlst) {
+         let clone = this.nodes[entry.nodeid];
+         let visible = true;
 
-      if (!oldlst) return newlst;
+         if (clone.kind === kindShape) {
+            let prop = { name: clone.name, nname: clone.name, shape: null, material: null, chlds: null };
+            let _opacity = entry.opacity || 1;
+            prop.fillcolor = new THREE.Color( entry.color ? "rgb(" + entry.color + ")" : "blue" );
+            prop.material = new THREE.MeshLambertMaterial( { transparent: _opacity < 1,
+                             opacity: _opacity, wireframe: false, color: prop.fillcolor,
+                             side: THREE.FrontSide, vertexColors: false,
+                             depthWrite: _opacity == 1 } );
+            prop.material.inherentOpacity = _opacity;
 
-      // set geometry to shape object itself
-      for (let n=0;n<oldlst.length;++n) {
-         let item = oldlst[n];
-
-         item.shape._geom = item.geom;
-         delete item.geom;
-
-         if (item.geomZ!==undefined) {
-            item.shape._geomZ = item.geomZ;
-            delete item.geomZ;
+            return prop;
          }
+
+         if (!this.origin) {
+            console.error('origin not there - kind', clone.kind, entry.nodeid, clone);
+            return null;
+         }
+
+         let node = this.origin[entry.nodeid];
+
+         if (clone.kind === kindEve) {
+            // special handling for EVE nodes
+
+            let prop = { name: geo.getObjectName(node), nname: geo.getObjectName(node), shape: node.fShape, material: null, chlds: null };
+
+            if (node.fElements !== null) prop.chlds = node.fElements.arr;
+
+            if (visible) {
+               let _opacity = Math.min(1, node.fRGBA[3]);
+               prop.fillcolor = new THREE.Color( node.fRGBA[0], node.fRGBA[1], node.fRGBA[2] );
+               prop.material = new THREE.MeshLambertMaterial( { transparent: _opacity < 1,
+                                opacity: _opacity, wireframe: false, color: prop.fillcolor,
+                                side: THREE.FrontSide, vertexColors: false,
+                                depthWrite: _opacity == 1 } );
+               prop.material.inherentOpacity = _opacity;
+            }
+
+            return prop;
+         }
+
+         let volume = node.fVolume;
+
+         let prop = { name: geo.getObjectName(volume), nname: geo.getObjectName(node), volume: node.fVolume, shape: volume.fShape, material: null, chlds: null };
+
+         if (node.fVolume.fNodes !== null) prop.chlds = node.fVolume.fNodes.arr;
+
+         if (volume) prop.linewidth = volume.fLineWidth;
+
+         if (visible) {
+
+            // TODO: maybe correctly extract ROOT colors here?
+            let _opacity = 1.0, jsrp = JSROOT.Painter,
+                root_colors = jsrp ? jsrp.root_colors : ['white', 'black', 'red', 'green', 'blue', 'yellow', 'magenta', 'cyan'];
+
+            if (entry.custom_color)
+               prop.fillcolor = entry.custom_color;
+            else if ((volume.fFillColor > 1) && (volume.fLineColor == 1))
+               prop.fillcolor = root_colors[volume.fFillColor];
+            else if (volume.fLineColor >= 0)
+               prop.fillcolor = root_colors[volume.fLineColor];
+
+            if (volume.fMedium && volume.fMedium.fMaterial) {
+               let mat = volume.fMedium.fMaterial,
+                   fillstyle = mat.fFillStyle,
+                   transparency = (fillstyle < 3000 || fillstyle > 3100) ? 0 : fillstyle - 3000;
+
+               if (this.use_dflt_colors) {
+                  let matZ = Math.round(mat.fZ),
+                      icol = this.dflt_table[matZ];
+                  prop.fillcolor = root_colors[icol];
+                  if (mat.fDensity < 0.1) transparency = 60;
+               }
+
+               if (transparency > 0)
+                  _opacity = (100.0 - transparency) / 100.0;
+               if (prop.fillcolor === undefined)
+                  prop.fillcolor = root_colors[mat.fFillColor];
+            }
+            if (prop.fillcolor === undefined)
+               prop.fillcolor = "lightgrey";
+
+            prop.material = new THREE.MeshLambertMaterial( { transparent: _opacity < 1,
+                                 opacity: _opacity, wireframe: false, color: prop.fillcolor,
+                                 side: THREE.FrontSide, vertexColors: false,
+                                 depthWrite: _opacity == 1 } );
+            prop.material.inherentOpacity = _opacity;
+
+         }
+
+         return prop;
       }
 
-      // take from shape (if match)
-      for (let n = 0; n < newlst.length; ++n) {
-         let item = newlst[n];
+      /** @summary Creates hierarchy of Object3D for given stack entry
+        * @desc Such hierarchy repeats hierarchy of TGeoNodes and set matrix for the objects drawing
+        * also set renderOrder, required to handle transparency */
+      createObject3D(stack, toplevel, options) {
 
-         if (item.shape._geom !== undefined) {
-            item.geom = item.shape._geom;
+         let node = this.nodes[0], three_prnt = toplevel, draw_depth = 0,
+             force = (typeof options == 'object') || (options==='force');
+
+         for(let lvl=0; lvl<=stack.length; ++lvl) {
+            let nchld = (lvl > 0) ? stack[lvl-1] : 0;
+            // extract current node
+            if (lvl>0)  node = this.nodes[node.chlds[nchld]];
+
+            let obj3d = undefined;
+
+            if (three_prnt.children)
+               for (let i = 0; i < three_prnt.children.length; ++i) {
+                  if (three_prnt.children[i].nchld === nchld) {
+                     obj3d = three_prnt.children[i];
+                     break;
+                  }
+               }
+
+            if (obj3d) {
+               three_prnt = obj3d;
+               if (obj3d.$jsroot_drawable) draw_depth++;
+               continue;
+            }
+
+            if (!force) return null;
+
+            obj3d = new THREE.Object3D();
+
+            if (node.abs_matrix) {
+               obj3d.absMatrix = new THREE.Matrix4();
+               obj3d.absMatrix.fromArray(node.matrix);
+            } else if (node.matrix) {
+               obj3d.matrix.fromArray(node.matrix);
+               obj3d.matrix.decompose( obj3d.position, obj3d.quaternion, obj3d.scale );
+            }
+
+            // this.accountNodes(obj3d);
+            obj3d.nchld = nchld; // mark index to find it again later
+
+            // add the mesh to the scene
+            three_prnt.add(obj3d);
+
+            // this is only for debugging - test inversion of whole geometry
+            if ((lvl==0) && (typeof options == 'object') && options.scale) {
+               if ((options.scale.x < 0) || (options.scale.y < 0) || (options.scale.z < 0)) {
+                  obj3d.scale.copy(options.scale);
+                  obj3d.updateMatrix();
+               }
+            }
+
+            obj3d.updateMatrixWorld();
+
+            three_prnt = obj3d;
+         }
+
+         if ((options === 'mesh') || (options === 'delete_mesh')) {
+            let mesh = null;
+            if (three_prnt)
+               for (let n=0; (n<three_prnt.children.length) && !mesh;++n) {
+                  let chld = three_prnt.children[n];
+                  if ((chld.type === 'Mesh') && (chld.nchld === undefined)) mesh = chld;
+               }
+
+            if ((options === 'mesh') || !mesh) return mesh;
+
+            let res = three_prnt;
+            while (mesh && (mesh !== toplevel)) {
+               three_prnt = mesh.parent;
+               three_prnt.remove(mesh);
+               mesh = (three_prnt.children.length == 0) ? three_prnt : null;
+            }
+
+            return res;
+         }
+
+         if (three_prnt) {
+            three_prnt.$jsroot_drawable = true;
+            three_prnt.$jsroot_depth = draw_depth;
+         }
+
+         return three_prnt;
+      }
+
+      /** @summary Get volume boundary */
+      getVolumeBoundary(viscnt, facelimit, nodeslimit) {
+
+         let result = { min: 0, max: 1, sortidcut: 0 };
+
+         if (!this.sortmap) {
+            console.error('sorting map do not exist');
+            return result;
+         }
+
+         let maxNode, currNode, cnt=0, facecnt=0;
+
+         for (let n = 0; (n < this.sortmap.length) && (cnt < nodeslimit) && (facecnt < facelimit); ++n) {
+            let id = this.sortmap[n];
+            if (viscnt[id] === 0) continue;
+            currNode = this.nodes[id];
+            if (!maxNode) maxNode = currNode;
+            cnt += viscnt[id];
+            facecnt += viscnt[id] * currNode.nfaces;
+         }
+
+         if (!currNode) {
+            console.error('no volumes selected');
+            return result;
+         }
+
+         // console.log('Volume boundary ' + currNode.vol + '  cnt ' + cnt + '  faces ' + facecnt);
+         result.max = maxNode.vol;
+         result.min = currNode.vol;
+         result.sortidcut = currNode.sortid; // latest node is not included
+         return result;
+      }
+
+      /** @summary Collects visible nodes, using maxlimit
+        * @desc One can use map to define cut based on the volume or serious of cuts */
+      collectVisibles(maxnumfaces, frustum) {
+
+         // in simple case shape as it is
+         if (this.plain_shape)
+            return { lst: [ { nodeid: 0, seqid: 0, stack: [], factor: 1, shapeid: 0, server_shape: this.plain_shape } ], complete: true };
+
+         let arg = {
+            facecnt: 0,
+            viscnt: new Array(this.nodes.length), // counter for each node
+            vislvl: this.getVisLevel(),
+            reset: function() {
+               this.total = 0;
+               this.facecnt = 0;
+               for (let n=0;n<this.viscnt.length;++n) this.viscnt[n] = 0;
+            },
+            // nodes: this.nodes,
+            func: function(node) {
+               this.total++;
+               this.facecnt += node.nfaces;
+               this.viscnt[node.id]++;
+               return true;
+            }
+         };
+
+         arg.reset();
+
+         let total = this.scanVisible(arg),
+             maxnumnodes = this.getMaxVisNodes();
+
+         if (maxnumnodes > 0) {
+            while ((total > maxnumnodes) && (arg.vislvl > 1)) {
+               arg.vislvl--;
+               arg.reset();
+               total = this.scanVisible(arg);
+            }
+         }
+
+         this.actual_level = arg.vislvl; // not used, can be shown somewhere in the gui
+
+         let minVol = 0, maxVol = 0, camVol = -1, camFact = 10, sortidcut = this.nodes.length + 1;
+
+         console.log('Total visible nodes ' + total + ' numfaces ' + arg.facecnt);
+
+         if (arg.facecnt > maxnumfaces) {
+
+            let bignumfaces = maxnumfaces * (frustum ? 0.8 : 1.0),
+                bignumnodes = maxnumnodes * (frustum ? 0.8 : 1.0);
+
+            // define minimal volume, which always to shown
+            let boundary = this.getVolumeBoundary(arg.viscnt, bignumfaces, bignumnodes);
+
+            minVol = boundary.min;
+            maxVol = boundary.max;
+            sortidcut = boundary.sortidcut;
+
+            if (frustum) {
+                arg.domatrix = true;
+                arg.frustum = frustum;
+                arg.totalcam = 0;
+                arg.func = function(node) {
+                   if (node.vol <= minVol) // only small volumes are interesting
+                      if (this.frustum.CheckShape(this.getmatrix(), node)) {
+                         this.viscnt[node.id]++;
+                         this.totalcam += node.nfaces;
+                      }
+
+                   return true;
+                };
+
+                for (let n=0;n<arg.viscnt.length;++n) arg.viscnt[n] = 0;
+
+                this.scanVisible(arg);
+
+                if (arg.totalcam > maxnumfaces*0.2)
+                   camVol = this.getVolumeBoundary(arg.viscnt, maxnumfaces*0.2, maxnumnodes*0.2).min;
+                else
+                   camVol = 0;
+
+                camFact = maxVol / ((camVol>0) ? (camVol>0) : minVol);
+
+                // console.log('Limit for camera ' + camVol + '  faces in camera view ' + arg.totalcam);
+            }
+         }
+
+         arg.items = [];
+
+         arg.func = function(node) {
+            if (node.sortid < sortidcut) {
+               this.items.push(this.CopyStack());
+            } else if ((camVol >= 0) && (node.vol > camVol)) {
+               if (this.frustum.CheckShape(this.getmatrix(), node))
+                  this.items.push(this.CopyStack(camFact));
+            }
+            return true;
+         };
+
+         this.scanVisible(arg);
+
+         return { lst: arg.items, complete: minVol === 0 };
+      }
+
+      /** @summary Merge list of drawn objects
+        * @desc In current list we should mark if object already exists
+        * from previous list we should collect objects which are not there */
+      mergeVisibles(current, prev) {
+
+         let indx2 = 0, del = [];
+         for (let indx1 = 0; (indx1 < current.length) && (indx2 < prev.length); ++indx1) {
+
+            while ((indx2 < prev.length) && (prev[indx2].seqid < current[indx1].seqid)) {
+               del.push(prev[indx2++]); // this entry should be removed
+            }
+
+            if ((indx2 < prev.length) && (prev[indx2].seqid === current[indx1].seqid)) {
+               if (prev[indx2].done) current[indx1].done = true; // copy ready flag
+               indx2++;
+            }
+         }
+
+         // remove rest
+         while (indx2 < prev.length)
+            del.push(prev[indx2++]);
+
+         return del;
+      }
+
+      /** @summary Collect all uniques shapes which should be built
+       *  @desc Check if same shape used many times for drawing */
+      collectShapes(lst) {
+
+         // nothing else - just that single shape
+         if (this.plain_shape)
+            return [ this.plain_shape ];
+
+         let shapes = [];
+
+         for (let i=0;i<lst.length;++i) {
+            let entry = lst[i];
+            let shape = this.getNodeShape(entry.nodeid);
+
+            if (!shape) continue; // strange, but avoid misleading
+
+            if (shape._id === undefined) {
+               shape._id = shapes.length;
+
+               shapes.push({ id: shape._id, shape: shape, vol: this.nodes[entry.nodeid].vol, refcnt: 1, factor: 1, ready: false });
+
+               // shapes.push( { obj: shape, vol: this.nodes[entry.nodeid].vol });
+            } else {
+               shapes[shape._id].refcnt++;
+            }
+
+            entry.shape = shapes[shape._id]; // remember shape used
+
+            // use maximal importance factor to push element to the front
+            if (entry.factor && (entry.factor>entry.shape.factor))
+               entry.shape.factor = entry.factor;
+         }
+
+         // now sort shapes in volume decrease order
+         shapes.sort((a,b) => b.vol*b.factor - a.vol*a.factor);
+
+         // now set new shape ids according to the sorted order and delete temporary field
+         for (let n = 0; n < shapes.length; ++n) {
+            let item = shapes[n];
+            item.id = n; // set new ID
+            delete item.shape._id; // remove temporary field
+         }
+
+         // as last action set current shape id to each entry
+         for (let i = 0; i < lst.length; ++i) {
+            let entry = lst[i];
+            if (entry.shape) {
+               entry.shapeid = entry.shape.id; // keep only id for the entry
+               delete entry.shape; // remove direct references
+            }
+         }
+
+         return shapes;
+      }
+
+      /** @summary Merge shape lists */
+      mergeShapesLists(oldlst, newlst) {
+
+         if (!oldlst) return newlst;
+
+         // set geometry to shape object itself
+         for (let n=0;n<oldlst.length;++n) {
+            let item = oldlst[n];
+
+            item.shape._geom = item.geom;
+            delete item.geom;
+
+            if (item.geomZ!==undefined) {
+               item.shape._geomZ = item.geomZ;
+               delete item.geomZ;
+            }
+         }
+
+         // take from shape (if match)
+         for (let n = 0; n < newlst.length; ++n) {
+            let item = newlst[n];
+
+            if (item.shape._geom !== undefined) {
+               item.geom = item.shape._geom;
+               delete item.shape._geom;
+            }
+
+            if (item.shape._geomZ !== undefined) {
+               item.geomZ = item.shape._geomZ;
+               delete item.shape._geomZ;
+            }
+         }
+
+         // now delete all unused geometries
+         for (let n = 0; n < oldlst.length; ++n) {
+            let item = oldlst[n];
             delete item.shape._geom;
-         }
-
-         if (item.shape._geomZ !== undefined) {
-            item.geomZ = item.shape._geomZ;
             delete item.shape._geomZ;
          }
+
+         return newlst;
       }
 
-      // now delete all unused geometries
-      for (let n = 0; n < oldlst.length; ++n) {
-         let item = oldlst[n];
-         delete item.shape._geom;
-         delete item.shape._geomZ;
-      }
+      /** @summary Build shapes */
+      buildShapes(lst, limit, timelimit) {
 
-      return newlst;
-   }
+         let created = 0,
+             tm1 = new Date().getTime(),
+             res = { done: false, shapes: 0, faces: 0, notusedshapes: 0 };
 
-   /** @summary Build shapes */
-   ClonedNodes.prototype.buildShapes = function(lst, limit, timelimit) {
+         for (let n=0;n<lst.length;++n) {
+            let item = lst[n];
 
-      let created = 0,
-          tm1 = new Date().getTime(),
-          res = { done: false, shapes: 0, faces: 0, notusedshapes: 0 };
+            // if enough faces are produced, nothing else is required
+            if (res.done) { item.ready = true; continue; }
 
-      for (let n=0;n<lst.length;++n) {
-         let item = lst[n];
-
-         // if enough faces are produced, nothing else is required
-         if (res.done) { item.ready = true; continue; }
-
-         if (!item.ready) {
-            item._typename = "$$Shape$$"; // let reuse item for direct drawing
-            item.ready = true;
-            if (item.geom === undefined) {
-               item.geom = createGeometry(item.shape);
-               if (item.geom) created++; // indicate that at least one shape was created
+            if (!item.ready) {
+               item._typename = "$$Shape$$"; // let reuse item for direct drawing
+               item.ready = true;
+               if (item.geom === undefined) {
+                  item.geom = createGeometry(item.shape);
+                  if (item.geom) created++; // indicate that at least one shape was created
+               }
+               item.nfaces = countGeometryFaces(item.geom);
             }
-            item.nfaces = countGeometryFaces(item.geom);
+
+            res.shapes++;
+            if (!item.used) res.notusedshapes++;
+            res.faces += item.nfaces*item.refcnt;
+
+            if (res.faces >= limit) {
+               res.done = true;
+            } else if ((created > 0.01*lst.length) && (timelimit!==undefined)) {
+               let tm2 = new Date().getTime();
+               if (tm2-tm1 > timelimit) return res;
+            }
          }
 
-         res.shapes++;
-         if (!item.used) res.notusedshapes++;
-         res.faces += item.nfaces*item.refcnt;
+         res.done = true;
 
-         if (res.faces >= limit) {
-            res.done = true;
-         } else if ((created > 0.01*lst.length) && (timelimit!==undefined)) {
-            let tm2 = new Date().getTime();
-            if (tm2-tm1 > timelimit) return res;
-         }
+         return res;
       }
-
-      res.done = true;
-
-      return res;
    }
 
    /// =====================================================================
