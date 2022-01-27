@@ -3187,130 +3187,119 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    /**
     * @summary Painter for TGraphTime object
     *
-    * @class
     * @memberof JSROOT
-    * @extends JSROOT.ObjectPainter
-    * @param {object|string} dom - DOM element for drawing or element id
-    * @param {object} gr - TGraphtime object to draw
     * @private
     */
 
-   function TGraphTimePainter(dom, gr) {
-      JSROOT.ObjectPainter.call(this, dom, gr);
-   }
+   class TGraphTimePainter extends JSROOT.ObjectPainter {
 
-   TGraphTimePainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
-
-   /** @summary Redraw object
-     * @private */
-   TGraphTimePainter.prototype.redraw = function() {
-      if (this.step === undefined) this.startDrawing();
-   }
-
-   /** @summary Decode drawing options
-     * @private */
-   TGraphTimePainter.prototype.decodeOptions = function(opt) {
-
-      let d = new JSROOT.DrawOptions(opt || "REPEAT");
-
-      if (!this.options) this.options = {};
-
-      JSROOT.extend(this.options, {
-          once: d.check("ONCE"),
-          repeat: d.check("REPEAT"),
-          first: d.check("FIRST")
-      });
-
-      this.storeDrawOpt(opt);
-   }
-
-   /** @summary Draw primitives
-     * @private */
-   TGraphTimePainter.prototype.drawPrimitives = function(indx) {
-
-      if (!indx) {
-         indx = 0;
-         this._doing_primitives = true;
+      /** @summary Redraw object */
+      redraw() {
+         if (this.step === undefined) this.startDrawing();
       }
 
-      let lst = this.getObject().fSteps.arr[this.step];
+      /** @summary Decode drawing options */
+      decodeOptions(opt) {
 
-      if (!lst || (indx >= lst.arr.length)) {
-         delete this._doing_primitives;
-         return Promise.resolve();
+         let d = new JSROOT.DrawOptions(opt || "REPEAT");
+
+         if (!this.options) this.options = {};
+
+         JSROOT.extend(this.options, {
+             once: d.check("ONCE"),
+             repeat: d.check("REPEAT"),
+             first: d.check("FIRST")
+         });
+
+         this.storeDrawOpt(opt);
       }
 
-      return JSROOT.draw(this.getDom(), lst.arr[indx], lst.opt[indx]).then(ppainter => {
+      /** @summary Draw primitives */
+      drawPrimitives(indx) {
 
-         if (ppainter) ppainter.$grtimeid = this.selfid; // indicator that painter created by ourself
-         return this.drawPrimitives(indx+1);
+         if (!indx) {
+            indx = 0;
+            this._doing_primitives = true;
+         }
 
-      });
-   }
+         let lst = this.getObject().fSteps.arr[this.step];
 
-   /** @summary Continue drawing
-     * @private */
-   TGraphTimePainter.prototype.continueDrawing = function() {
-      if (!this.options) return;
+         if (!lst || (indx >= lst.arr.length)) {
+            delete this._doing_primitives;
+            return Promise.resolve();
+         }
 
-      let gr = this.getObject();
+         return JSROOT.draw(this.getDom(), lst.arr[indx], lst.opt[indx]).then(ppainter => {
 
-      if (this.options.first) {
-         // draw only single frame, cancel all others
-         delete this.step;
-         return;
+            if (ppainter) ppainter.$grtimeid = this.selfid; // indicator that painter created by ourself
+            return this.drawPrimitives(indx+1);
+
+         });
       }
 
-      if (this.wait_animation_frame) {
-         delete this.wait_animation_frame;
+      /** @summary Continue drawing */
+      continueDrawing() {
+         if (!this.options) return;
 
-         // clear pad
-         let pp = this.getPadPainter();
-         if (!pp) {
-            // most probably, pad is cleared
+         let gr = this.getObject();
+
+         if (this.options.first) {
+            // draw only single frame, cancel all others
             delete this.step;
             return;
          }
 
-         // clear primitives produced by the TGraphTime
-         pp.cleanPrimitives(p => (p.$grtimeid === this.selfid));
+         if (this.wait_animation_frame) {
+            delete this.wait_animation_frame;
 
-         // draw ptrimitives again
-         this.drawPrimitives().then(() => this.continueDrawing());
-      } else if (this.running_timeout) {
-         clearTimeout(this.running_timeout);
-         delete this.running_timeout;
-
-         this.wait_animation_frame = true;
-         // use animation frame to disable update in inactive form
-         requestAnimationFrame(() => this.continueDrawing());
-      } else {
-
-         let sleeptime = gr.fSleepTime;
-         if (!sleeptime || (sleeptime<100)) sleeptime = 10;
-
-         if (++this.step > gr.fSteps.arr.length) {
-            if (this.options.repeat) {
-               this.step = 0; // start again
-               sleeptime = Math.max(5000, 5*sleeptime); // increase sleep time
-            } else {
-               delete this.step;    // clear indicator that animation running
+            // clear pad
+            let pp = this.getPadPainter();
+            if (!pp) {
+               // most probably, pad is cleared
+               delete this.step;
                return;
             }
+
+            // clear primitives produced by the TGraphTime
+            pp.cleanPrimitives(p => (p.$grtimeid === this.selfid));
+
+            // draw ptrimitives again
+            this.drawPrimitives().then(() => this.continueDrawing());
+         } else if (this.running_timeout) {
+            clearTimeout(this.running_timeout);
+            delete this.running_timeout;
+
+            this.wait_animation_frame = true;
+            // use animation frame to disable update in inactive form
+            requestAnimationFrame(() => this.continueDrawing());
+         } else {
+
+            let sleeptime = gr.fSleepTime;
+            if (!sleeptime || (sleeptime<100)) sleeptime = 10;
+
+            if (++this.step > gr.fSteps.arr.length) {
+               if (this.options.repeat) {
+                  this.step = 0; // start again
+                  sleeptime = Math.max(5000, 5*sleeptime); // increase sleep time
+               } else {
+                  delete this.step;    // clear indicator that animation running
+                  return;
+               }
+            }
+
+            this.running_timeout = setTimeout(() => this.continueDrawing(), sleeptime);
          }
-
-         this.running_timeout = setTimeout(() => this.continueDrawing(), sleeptime);
       }
-   }
 
-   /** @ummary Start drawing of graph time */
-   TGraphTimePainter.prototype.startDrawing = function() {
-      this.step = 0;
+      /** @ummary Start drawing of graph time */
+      startDrawing() {
+         this.step = 0;
 
-      return this.drawPrimitives().then(() => {
-         this.continueDrawing();
-         return this; // used in drawGraphTime promise
-      });
+         return this.drawPrimitives().then(() => {
+            this.continueDrawing();
+            return this; // used in drawGraphTime promise
+         });
+      }
    }
 
    /** @summary Draw TGraphTime object
@@ -3361,7 +3350,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    class TEfficiencyPainter extends JSROOT.ObjectPainter {
 
-      /** constructor
+      /** @summary Constructor
         * @param {object|string} dom - DOM element for drawing or element id
         * @param {object} eff - TEfficiency object to draw */
       constructor(dom, eff) {
