@@ -165,7 +165,7 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
         * @desc From four vertices one normally creates two faces (1,2,3) and (1,3,4)
         * if (reduce==1), first face is reduced
         * if (reduce==2), second face is reduced*/
-      addFace4 = function(x1,y1,z1, x2,y2,z2, x3,y3,z3, x4,y4,z4, reduce) {
+      addFace4(x1,y1,z1, x2,y2,z2, x3,y3,z3, x4,y4,z4, reduce) {
          let indx = this.indx, pos = this.pos;
 
          if (reduce !== 1) {
