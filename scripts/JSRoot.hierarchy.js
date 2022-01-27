@@ -2216,8 +2216,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (item._player) return true;
          if (item._can_draw !== undefined) return item._can_draw;
          if (drawopt == 'inspect') return true;
-         let handle = jsrp.getDrawHandle(item._kind, drawopt);
-         return handle && (('func' in handle) || ('draw_field' in handle));
+         const handle = jsrp.getDrawHandle(item._kind, drawopt);
+         return handle && (handle.func || handle.class || handle.draw_field);
       }
 
       /** @summary Returns true if given item displayed
