@@ -3336,10 +3336,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          kPosteriorMode    = JSROOT.BIT(15),  ///< Use posterior mean for best estimate (Bayesian statistics)
     //   kShortestInterval = JSROOT.BIT(16),  ///< Use shortest interval, not implemented in JSROOT - too complicated
          kUseBinPrior      = JSROOT.BIT(17),  ///< Use a different prior for each bin
-         kUseWeights       = JSROOT.BIT(18);  ///< Use weights
-
-   const getBetaAlpha = (obj,bin) => (obj.fBeta_bin_params.length > bin) ? obj.fBeta_bin_params[bin].first : obj.fBeta_alpha;
-   const getBetaBeta = (obj,bin) => (obj.fBeta_bin_params.length > bin) ? obj.fBeta_bin_params[bin].second : obj.fBeta_beta;
+         kUseWeights       = JSROOT.BIT(18),  ///< Use weights
+         getBetaAlpha      = (obj,bin) => (obj.fBeta_bin_params.length > bin) ? obj.fBeta_bin_params[bin].first : obj.fBeta_alpha,
+         getBetaBeta       = (obj,bin) => (obj.fBeta_bin_params.length > bin) ? obj.fBeta_bin_params[bin].second : obj.fBeta_beta;
 
    /**
     * @summary Painter for TEfficiency object
@@ -3350,18 +3349,11 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    class TEfficiencyPainter extends JSROOT.ObjectPainter {
 
-      /** @summary Constructor
-        * @param {object|string} dom - DOM element for drawing or element id
-        * @param {object} eff - TEfficiency object to draw */
-      constructor(dom, eff) {
-         super(dom, eff);
-      }
-
       /** @summary Caluclate efficiency */
       getEfficiency(obj, bin) {
 
-         const BetaMean = (a,b) => (a <= 0 || b <= 0 ) ? 0 : a / (a + b);
-         const BetaMode = (a,b) => {
+         const BetaMean = (a,b) => (a <= 0 || b <= 0 ) ? 0 : a / (a + b),
+               BetaMode = (a,b) => {
             if (a <= 0 || b <= 0 ) return 0;
             if ( a <= 1 || b <= 1) {
                if ( a < b) return 0;
