@@ -3656,7 +3656,7 @@ JSROOT.define(['d3'], (d3) => {
       { name: "TGraphStruct" },
       { name: "TGraphNode" },
       { name: "TGraphEdge" },
-      { name: "TGraphTime", icon: "img_graph", prereq: "more", func: "JSROOT.TGraphTimePainter.draw", opt: "once;repeat;first", theonly: true },
+      { name: "TGraphTime", icon: "img_graph", prereq: "more", class: "TGraphTimePainter", opt: "once;repeat;first", theonly: true },
       { name: "TGraph2D", icon: "img_graph", prereq: "hist3d", func: ".drawGraph2D", opt: ";P;PCOL", theonly: true },
       { name: "TGraph2DErrors", icon: "img_graph", prereq: "hist3d", func: ".drawGraph2D", opt: ";P;PCOL;ERR", theonly: true },
       { name: "TGraphPolargram", icon: "img_graph", prereq: "more", func: ".drawGraphPolargram", theonly: true },
@@ -3949,7 +3949,7 @@ JSROOT.define(['d3'], (d3) => {
       if (handle.draw_field && obj[handle.draw_field])
          return JSROOT.draw(dom, obj[handle.draw_field], opt || handle.draw_field_opt);
 
-      if (!handle.func && !handle.direct) {
+      if (!handle.func && !handle.direct && !handle.class) {
          if (opt && (opt.indexOf("same") >= 0)) {
 
             let main_painter = jsrp.getElementMainPainter(dom);
@@ -3978,10 +3978,11 @@ JSROOT.define(['d3'], (d3) => {
                painter.redraw();
                return painter;
             });
-         } else {
+         } else if (typeof handle.func == 'function') {
             promise = handle.func(dom, obj, opt);
-
             if (!isPromise(promise)) promise = Promise.resolve(promise);
+         } else {
+            promise = handle.class.draw(dom, obj, opt);
          }
 
          return promise.then(p => {
@@ -3995,12 +3996,16 @@ JSROOT.define(['d3'], (d3) => {
          });
       }
 
-      if (typeof handle.func == 'function')
+      if ((typeof handle.func == 'function') || (typeof handle.class == 'function'))
          return performDraw();
 
-      let funcname = handle.func;
-      if (typeof funcname != "string")
-         return Promise.reject(Error(`Draw function not specified to draw ${type_info}`));
+      let funcname, clname;
+      if (typeof handle.func == 'string')
+         funcname = handle.func;
+      else if (typeof handle.class == 'string')
+         clname = handle.class;
+      else
+         return Promise.reject(Error(`Draw function or class not specified to draw ${type_info}`));
 
       let prereq = handle.prereq || "";
       if (handle.direct == "v7")
@@ -4014,11 +4019,17 @@ JSROOT.define(['d3'], (d3) => {
          return Promise.reject(Error(`Prerequicities to load ${funcname} are not specified`));
 
       return JSROOT.require(prereq).then(() => {
-         let func = JSROOT.findFunction(funcname);
-         if (!func)
-            return Promise.reject(Error(`Fail to find function ${funcname} after loading ${prereq}`));
-
-         handle.func = func; // remember function once it found
+         if (funcname) {
+            let func = JSROOT.findFunction(funcname);
+            if (!func)
+               return Promise.reject(Error(`Fail to find function ${funcname} after loading ${prereq}`));
+            handle.func = func;
+         } else {
+            let cl = JSROOT[clname];
+            if (!cl)
+               return Promise.reject(Error(`Fail to find class JSROOT.${clname} after loading ${prereq}`));
+            handle.class = cl;
+         }
 
          return performDraw();
       });
