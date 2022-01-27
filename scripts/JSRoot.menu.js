@@ -458,7 +458,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
         * @param {String} message - message
         * @protected */
       info(title, message) {
-         return this.runModal(title,`<p tabindex="0">${message}</p>`, { height: 120, width: 400, resizable: true });
+         return this.runModal(title,`<p>${message}</p>`, { height: 120, width: 400, resizable: true });
       }
 
       /** @summary Show confirm dialog
@@ -485,7 +485,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          let main_content =
             `<form>
                 <fieldset style="padding:0; border:0">
-                   <input type="${inp_type}" tabindex="0" value="${value}" style="width:98%;display:block" class="jsroot_dlginp"/>
+                   <input type="${inp_type}" value="${value}" style="width:98%;display:block" class="jsroot_dlginp"/>
                </fieldset>
              </form>`;
 
@@ -521,7 +521,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             arg.fValue = arg.fDefault;
             if (arg.fValue == '\"\"') arg.fValue = "";
             main_content += `<label for="${dlg_id}_inp${n}">${arg.fName}</label>
-                             <input type="text" tabindex="${n}" id="${dlg_id}_inp${n}" value="${arg.fValue}" style="width:100%;display:block"/>`;
+                             <input type="text" tabindex="${n+1}" id="${dlg_id}_inp${n}" value="${arg.fValue}" style="width:100%;display:block"/>`;
          }
 
          main_content += '</fieldset></form>';
@@ -561,7 +561,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          for (let n = 0; n < args.length; ++n)
             main_content += `<label for="${dlg_id}_inp${n}">arg${n+1}</label>
-                             <input type="text" tabindex="0" id="${dlg_id}_inp${n}" value="${args[n]}" style="width:100%;display:block"/>`;
+                             <input type="text" id="${dlg_id}_inp${n}" value="${args[n]}" style="width:100%;display:block"/>`;
 
          main_content += '</fieldset></form>';
 
@@ -840,7 +840,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          let block = d3.select('body').append('div').attr('id', dlg_id+"_block").attr("class", "jsroot_dialog_block");
 
-         let element = d3.select('body').append('div').attr('id',dlg_id).attr("class","jsroot_dialog").style("width",(args.width || 450) + "px").html(
+         let element = d3.select('body')
+                         .append('div')
+                         .attr('id',dlg_id)
+                         .attr("class","jsroot_dialog").style("width",(args.width || 450) + "px")
+                         .attr("tabindex", "0")
+                         .html(
             `<div class="jsroot_dialog_body">
                <div class="jsroot_dialog_header">${title}</div>
                <div class="jsroot_dialog_content">${main_content}</div>
@@ -854,9 +859,16 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             element.on("keyup", evnt => {
                if ((evnt.keyCode == 13) || (evnt.keyCode == 27)) {
                   evnt.preventDefault();
+                  evnt.stopPropagation();
                   resolveFunc(evnt.keyCode == 13 ? element.node() : null);
                   element.remove();
                   block.remove();
+               }
+            });
+            element.on("keydown", evnt => {
+               if ((evnt.keyCode == 13) || (evnt.keyCode == 27)) {
+                  evnt.preventDefault();
+                  evnt.stopPropagation();
                }
             });
             element.selectAll('.jsroot_dialog_button').on("click", evnt => {
