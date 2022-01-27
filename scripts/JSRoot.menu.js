@@ -861,12 +861,20 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          document.body.appendChild(element);
 
          return new Promise(resolveFunc => {
-
-            d3.select(element).selectAll('.jsroot_dialog_button').on("click", evnt => {
+            d3.select(element).on("keyup", event => {
+               if ((event.keyCode === 13) || (event.keyCode === 27)) {
+                  event.preventDefault();
+                  resolveFunc(event.keyCode === 13 ? element : null);
+                  element.remove();
+                  block.remove();
+               }
+            }).selectAll('.jsroot_dialog_button').on("click", evnt => {
                resolveFunc(args.btns && (d3.select(evnt.target).text() == "Ok") ? element : null);
                element.remove();
                block.remove();
-            });
+            })
+
+            d3.select(element)
          });
       }
 
