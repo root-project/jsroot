@@ -3660,7 +3660,7 @@ JSROOT.define(['d3'], (d3) => {
       { name: "TGraph2D", icon: "img_graph", prereq: "hist3d", func: ".drawGraph2D", opt: ";P;PCOL", theonly: true },
       { name: "TGraph2DErrors", icon: "img_graph", prereq: "hist3d", func: ".drawGraph2D", opt: ";P;PCOL;ERR", theonly: true },
       { name: "TGraphPolargram", icon: "img_graph", prereq: "more", class: "TGraphPolargramPainter", theonly: true },
-      { name: "TGraphPolar", icon: "img_graph", prereq: "more", func: ".drawGraphPolar", opt: ";F;L;P;PE", theonly: true },
+      { name: "TGraphPolar", icon: "img_graph", prereq: "more", class: "TGraphPolarPainter", opt: ";F;L;P;PE", theonly: true },
       { name: /^TGraph/, icon: "img_graph", prereq: "more", class: "TGraphPainter", opt: ";L;P" },
       { name: "TEfficiency", icon: "img_graph", prereq: "more", class: "TEfficiencyPainter", opt: ";AP" },
       { name: "TCutG", sameas: "TGraph" },

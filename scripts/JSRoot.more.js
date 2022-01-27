@@ -2549,7 +2549,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          let main = jsrp.getElementMainPainter(dom);
          if (main) {
-            if (main.getObject() === polargram) return main;
+            if (main.getObject() === polargram)
+               return Promise.resolve(main);
             return Promise.reject(Error("Cannot superimpose TGraphPolargram with any other drawings"));
          }
 
@@ -2568,244 +2569,232 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    /**
     * @summary Painter for TGraphPolar objects.
     *
-    * @class
     * @memberof JSROOT
-    * @extends JSROOT.ObjectPainter
-    * @param {object|string} dom - DOM element for drawing or element id
-    * @param {object} graph - object to draw
     * @private
     */
 
-   function TGraphPolarPainter(dom, graph) {
-      ObjectPainter.call(this, dom, graph);
-   }
+   class TGraphPolarPainter extends ObjectPainter {
 
-   TGraphPolarPainter.prototype = Object.create(ObjectPainter.prototype);
+      /** @summary Redraw TGraphPolar */
+      redraw() {
+         this.drawGraphPolar();
+      }
 
-   /** @summary Redraw TGraphPolar */
-   TGraphPolarPainter.prototype.redraw = function() {
-      this.drawGraphPolar();
-   }
+      /** @summary Decode options for drawing TGraphPolar */
+      decodeOptions(opt) {
 
-   /** @summary Decode options for drawing TGraphPolar */
-   TGraphPolarPainter.prototype.decodeOptions = function(opt) {
+         let d = new JSROOT.DrawOptions(opt || "L");
 
-      let d = new JSROOT.DrawOptions(opt || "L");
+         if (!this.options) this.options = {};
 
-      if (!this.options) this.options = {};
+         JSROOT.extend(this.options, {
+             mark: d.check("P"),
+             err: d.check("E"),
+             fill: d.check("F"),
+             line: d.check("L"),
+             curve: d.check("C")
+         });
 
-      JSROOT.extend(this.options, {
-          mark: d.check("P"),
-          err: d.check("E"),
-          fill: d.check("F"),
-          line: d.check("L"),
-          curve: d.check("C")
-      });
+         this.storeDrawOpt(opt);
+      }
 
-      this.storeDrawOpt(opt);
-   }
+      /** @summary Drawing TGraphPolar */
+      drawGraphPolar() {
+         let graph = this.getObject(),
+             main = this.getMainPainter();
 
-   /** @summary Drawing TGraphPolar */
-   TGraphPolarPainter.prototype.drawGraphPolar = function() {
-      let graph = this.getObject(),
-          main = this.getMainPainter();
+         if (!graph || !main || !main.$polargram) return;
 
-      if (!graph || !main || !main.$polargram) return;
+         if (this.options.mark) this.createAttMarker({ attr: graph });
+         if (this.options.err || this.options.line || this.options.curve) this.createAttLine({ attr: graph });
+         if (this.options.fill) this.createAttFill({ attr: graph });
 
-      if (this.options.mark) this.createAttMarker({ attr: graph });
-      if (this.options.err || this.options.line || this.options.curve) this.createAttLine({ attr: graph });
-      if (this.options.fill) this.createAttFill({ attr: graph });
+         this.createG();
 
-      this.createG();
+         this.draw_g.attr("transform", main.draw_g.attr("transform"));
 
-      this.draw_g.attr("transform", main.draw_g.attr("transform"));
+         let mpath = "", epath = "", lpath = "", bins = [];
 
-      let mpath = "", epath = "", lpath = "", bins = [];
+         for (let n = 0; n < graph.fNpoints; ++n) {
 
-      for (let n = 0; n < graph.fNpoints; ++n) {
+            if (graph.fY[n] > main.scale_rmax) continue;
 
-         if (graph.fY[n] > main.scale_rmax) continue;
+            if (this.options.err) {
+               let pos1 = main.translate(graph.fX[n], graph.fY[n] - graph.fEY[n]),
+                   pos2 = main.translate(graph.fX[n], graph.fY[n] + graph.fEY[n]);
+               epath += `M${pos1.x},${pos1.y}L${pos2.x},${pos2.y}`;
 
-         if (this.options.err) {
-            let pos1 = main.translate(graph.fX[n], graph.fY[n] - graph.fEY[n]),
-                pos2 = main.translate(graph.fX[n], graph.fY[n] + graph.fEY[n]);
-            epath += `M${pos1.x},${pos1.y}L${pos2.x},${pos2.y}`;
+               pos1 = main.translate(graph.fX[n] + graph.fEX[n], graph.fY[n]);
+               pos2 = main.translate(graph.fX[n] - graph.fEX[n], graph.fY[n]);
 
-            pos1 = main.translate(graph.fX[n] + graph.fEX[n], graph.fY[n]);
-            pos2 = main.translate(graph.fX[n] - graph.fEX[n], graph.fY[n]);
+               epath += `M${pos1.x},${pos1.y}A${pos2.rx},${pos2.ry},0,0,1,${pos2.x},${pos2.y}`;
+            }
 
-            epath += `M${pos1.x},${pos1.y}A${pos2.rx},${pos2.ry},0,0,1,${pos2.x},${pos2.y}`;
+            let pos = main.translate(graph.fX[n], graph.fY[n]);
+
+            if (this.options.mark) {
+               mpath += this.markeratt.create(pos.x, pos.y);
+            }
+
+            if (this.options.line || this.options.fill) {
+               lpath += (lpath ? "L" : "M") + pos.x + "," + pos.y;
+            }
+
+            if (this.options.curve) {
+               pos.grx = pos.x;
+               pos.gry = pos.y;
+               bins.push(pos);
+            }
          }
 
-         let pos = main.translate(graph.fX[n], graph.fY[n]);
+         if (this.options.fill && lpath)
+            this.draw_g.append("svg:path")
+                .attr("d", lpath + "Z")
+                .call(this.fillatt.func);
 
-         if (this.options.mark) {
-            mpath += this.markeratt.create(pos.x, pos.y);
+         if (this.options.line && lpath)
+            this.draw_g.append("svg:path")
+                .attr("d", lpath)
+                .style("fill", "none")
+                .call(this.lineatt.func);
+
+         if (this.options.curve && bins.length)
+            this.draw_g.append("svg:path")
+                    .attr("d", jsrp.buildSvgPath("bezier", bins).path)
+                    .style("fill", "none")
+                    .call(this.lineatt.func);
+
+         if (epath)
+            this.draw_g.append("svg:path")
+                .attr("d", epath)
+                .style("fill","none")
+                .call(this.lineatt.func);
+
+         if (mpath)
+            this.draw_g.append("svg:path")
+                  .attr("d", mpath)
+                  .call(this.markeratt.func);
+      }
+
+      /** @summary Create polargram object */
+      createPolargram() {
+         let polargram = JSROOT.create("TGraphPolargram"),
+             gr = this.getObject();
+
+         let rmin = gr.fY[0] || 0, rmax = rmin;
+         for (let n = 0; n < gr.fNpoints; ++n) {
+            rmin = Math.min(rmin, gr.fY[n] - gr.fEY[n]);
+            rmax = Math.max(rmax, gr.fY[n] + gr.fEY[n]);
          }
 
-         if (this.options.line || this.options.fill) {
-            lpath += (lpath ? "L" : "M") + pos.x + "," + pos.y;
+         polargram.fRwrmin = rmin - (rmax-rmin)*0.1;
+         polargram.fRwrmax = rmax + (rmax-rmin)*0.1;
+
+         return polargram;
+      }
+
+      /** @summary Provide tooltip at specified point */
+      extractTooltip(pnt) {
+         if (!pnt) return null;
+
+         let graph = this.getObject(),
+             main = this.getMainPainter(),
+             best_dist2 = 1e10, bestindx = -1, bestpos = null;
+
+         for (let n = 0; n < graph.fNpoints; ++n) {
+            let pos = main.translate(graph.fX[n], graph.fY[n]),
+                dist2 = (pos.x-pnt.x)*(pos.x-pnt.x) + (pos.y-pnt.y)*(pos.y-pnt.y);
+            if (dist2 < best_dist2) { best_dist2 = dist2; bestindx = n; bestpos = pos; }
          }
 
-         if (this.options.curve) {
-            pos.grx = pos.x;
-            pos.gry = pos.y;
-            bins.push(pos);
+         let match_distance = 5;
+         if (this.markeratt && this.markeratt.used) match_distance = this.markeratt.getFullSize();
+
+         if (Math.sqrt(best_dist2) > match_distance) return null;
+
+         let res = { name: this.getObject().fName, title: this.getObject().fTitle,
+                     x: bestpos.x, y: bestpos.y,
+                     color1: this.markeratt && this.markeratt.used ? this.markeratt.color : this.lineatt.color,
+                     exact: Math.sqrt(best_dist2) < 4,
+                     lines: [ this.getObjectHint() ],
+                     binindx: bestindx,
+                     menu_dist: match_distance,
+                     radius: match_distance
+                   };
+
+         res.lines.push("r = " + main.axisAsText("r", graph.fY[bestindx]));
+         res.lines.push("phi = " + main.axisAsText("phi",graph.fX[bestindx]));
+
+         if (graph.fEY && graph.fEY[bestindx])
+            res.lines.push("error r = " + main.axisAsText("r", graph.fEY[bestindx]));
+
+         if (graph.fEX && graph.fEX[bestindx])
+            res.lines.push("error phi = " + main.axisAsText("phi", graph.fEX[bestindx]));
+
+         return res;
+      }
+
+      /** @summary Show tooltip */
+      showTooltip(hint) {
+
+         if (!this.draw_g) return;
+
+         let ttcircle = this.draw_g.select(".tooltip_bin");
+
+         if (!hint) {
+            ttcircle.remove();
+            return;
          }
+
+         if (ttcircle.empty())
+            ttcircle = this.draw_g.append("svg:ellipse")
+                                .attr("class","tooltip_bin")
+                                .style("pointer-events","none");
+
+         hint.changed = ttcircle.property("current_bin") !== hint.binindx;
+
+         if (hint.changed)
+            ttcircle.attr("cx", hint.x)
+                  .attr("cy", hint.y)
+                  .attr("rx", Math.round(hint.radius))
+                  .attr("ry", Math.round(hint.radius))
+                  .style("fill", "none")
+                  .style("stroke", hint.color1)
+                  .property("current_bin", hint.binindx);
       }
 
-      if (this.options.fill && lpath)
-         this.draw_g.append("svg:path")
-             .attr("d", lpath + "Z")
-             .call(this.fillatt.func);
-
-      if (this.options.line && lpath)
-         this.draw_g.append("svg:path")
-             .attr("d", lpath)
-             .style("fill", "none")
-             .call(this.lineatt.func);
-
-      if (this.options.curve && bins.length)
-         this.draw_g.append("svg:path")
-                 .attr("d", jsrp.buildSvgPath("bezier", bins).path)
-                 .style("fill", "none")
-                 .call(this.lineatt.func);
-
-      if (epath)
-         this.draw_g.append("svg:path")
-             .attr("d", epath)
-             .style("fill","none")
-             .call(this.lineatt.func);
-
-      if (mpath)
-         this.draw_g.append("svg:path")
-               .attr("d", mpath)
-               .call(this.markeratt.func);
-   }
-
-   /** @summary Create polargram object
-     * @private */
-   TGraphPolarPainter.prototype.createPolargram = function() {
-      let polargram = JSROOT.create("TGraphPolargram"),
-          gr = this.getObject();
-
-      let rmin = gr.fY[0] || 0, rmax = rmin;
-      for (let n = 0; n < gr.fNpoints; ++n) {
-         rmin = Math.min(rmin, gr.fY[n] - gr.fEY[n]);
-         rmax = Math.max(rmax, gr.fY[n] + gr.fEY[n]);
+      /** @summary Process tooltip event */
+      processTooltipEvent(pnt) {
+         let hint = this.extractTooltip(pnt);
+         if (!pnt || !pnt.disabled) this.showTooltip(hint);
+         return hint;
       }
 
-      polargram.fRwrmin = rmin - (rmax-rmin)*0.1;
-      polargram.fRwrmax = rmax + (rmax-rmin)*0.1;
+      /** @summary Draw TGraphPolar */
+      static draw(dom, graph, opt) {
+         let painter = new TGraphPolarPainter(dom, graph);
+         painter.decodeOptions(opt);
 
-      return polargram;
-   }
+         let main = painter.getMainPainter();
+         if (main && !main.$polargram) {
+            console.error('Cannot superimpose TGraphPolar with plain histograms');
+            return null;
+         }
 
-   /** @summary Provide tooltip at specified point
-     * @private */
-   TGraphPolarPainter.prototype.extractTooltip = function(pnt) {
-      if (!pnt) return null;
+         let ppromise = Promise.resolve(main);
 
-      let graph = this.getObject(),
-          main = this.getMainPainter(),
-          best_dist2 = 1e10, bestindx = -1, bestpos = null;
+         if (!main) {
+            if (!graph.fPolargram)
+               graph.fPolargram = painter.createPolargram();
+            ppromise = JSROOT.draw(dom, graph.fPolargram, "");
+         }
 
-      for (let n = 0; n < graph.fNpoints; ++n) {
-         let pos = main.translate(graph.fX[n], graph.fY[n]),
-             dist2 = (pos.x-pnt.x)*(pos.x-pnt.x) + (pos.y-pnt.y)*(pos.y-pnt.y);
-         if (dist2 < best_dist2) { best_dist2 = dist2; bestindx = n; bestpos = pos; }
+         return ppromise.then(() => {
+            painter.addToPadPrimitives();
+            painter.drawGraphPolar();
+            return painter;
+         })
       }
-
-      let match_distance = 5;
-      if (this.markeratt && this.markeratt.used) match_distance = this.markeratt.getFullSize();
-
-      if (Math.sqrt(best_dist2) > match_distance) return null;
-
-      let res = { name: this.getObject().fName, title: this.getObject().fTitle,
-                  x: bestpos.x, y: bestpos.y,
-                  color1: this.markeratt && this.markeratt.used ? this.markeratt.color : this.lineatt.color,
-                  exact: Math.sqrt(best_dist2) < 4,
-                  lines: [ this.getObjectHint() ],
-                  binindx: bestindx,
-                  menu_dist: match_distance,
-                  radius: match_distance
-                };
-
-      res.lines.push("r = " + main.axisAsText("r", graph.fY[bestindx]));
-      res.lines.push("phi = " + main.axisAsText("phi",graph.fX[bestindx]));
-
-      if (graph.fEY && graph.fEY[bestindx])
-         res.lines.push("error r = " + main.axisAsText("r", graph.fEY[bestindx]));
-
-      if (graph.fEX && graph.fEX[bestindx])
-         res.lines.push("error phi = " + main.axisAsText("phi", graph.fEX[bestindx]));
-
-      return res;
-   }
-
-   /** @summary Show tooltip
-     * @private */
-   TGraphPolarPainter.prototype.showTooltip = function(hint) {
-
-      if (!this.draw_g) return;
-
-      let ttcircle = this.draw_g.select(".tooltip_bin");
-
-      if (!hint) {
-         ttcircle.remove();
-         return;
-      }
-
-      if (ttcircle.empty())
-         ttcircle = this.draw_g.append("svg:ellipse")
-                             .attr("class","tooltip_bin")
-                             .style("pointer-events","none");
-
-      hint.changed = ttcircle.property("current_bin") !== hint.binindx;
-
-      if (hint.changed)
-         ttcircle.attr("cx", hint.x)
-               .attr("cy", hint.y)
-               .attr("rx", Math.round(hint.radius))
-               .attr("ry", Math.round(hint.radius))
-               .style("fill", "none")
-               .style("stroke", hint.color1)
-               .property("current_bin", hint.binindx);
-   }
-
-   /** @summary Process tooltip event
-     * @private */
-   TGraphPolarPainter.prototype.processTooltipEvent = function(pnt) {
-      let hint = this.extractTooltip(pnt);
-      if (!pnt || !pnt.disabled) this.showTooltip(hint);
-      return hint;
-   }
-
-   /** @summary Draw TGraphPolar
-     * @private */
-   jsrp.drawGraphPolar = function(dom, graph, opt) {
-      let painter = new TGraphPolarPainter(dom, graph);
-      painter.decodeOptions(opt);
-
-      let main = painter.getMainPainter();
-      if (main && !main.$polargram) {
-         console.error('Cannot superimpose TGraphPolar with plain histograms');
-         return null;
-      }
-
-      let ppromise = Promise.resolve(main);
-
-      if (!main) {
-         if (!graph.fPolargram)
-            graph.fPolargram = painter.createPolargram();
-         ppromise = JSROOT.draw(dom, graph.fPolargram, "");
-      }
-
-      return ppromise.then(() => {
-         painter.addToPadPrimitives();
-         painter.drawGraphPolar();
-         return painter;
-      })
    }
 
    // ==============================================================
