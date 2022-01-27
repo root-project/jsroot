@@ -3978,11 +3978,9 @@ JSROOT.define(['d3'], (d3) => {
                painter.redraw();
                return painter;
             });
-         } else if (typeof handle.func == 'function') {
+         } else {
             promise = handle.func(dom, obj, opt);
             if (!isPromise(promise)) promise = Promise.resolve(promise);
-         } else {
-            promise = handle.class.draw(dom, obj, opt);
          }
 
          return promise.then(p => {
@@ -3996,7 +3994,7 @@ JSROOT.define(['d3'], (d3) => {
          });
       }
 
-      if ((typeof handle.func == 'function') || (typeof handle.class == 'function'))
+      if (typeof handle.func == 'function')
          return performDraw();
 
       let funcname, clname;
@@ -4026,9 +4024,10 @@ JSROOT.define(['d3'], (d3) => {
             handle.func = func;
          } else {
             let cl = JSROOT[clname];
-            if (!cl)
+            if (!cl || typeof cl.draw != 'function')
                return Promise.reject(Error(`Fail to find class JSROOT.${clname} after loading ${prereq}`));
             handle.class = cl;
+            handle.func = cl.draw;
          }
 
          return performDraw();
