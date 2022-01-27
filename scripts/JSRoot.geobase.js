@@ -125,60 +125,23 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
    /**
      * @summary Helper class for geometry creation
      *
-     * @class
      * @memberof JSROOT.GEO
      * @private
      */
 
-   function GeometryCreator(numfaces) {
-      this.nfaces = numfaces;
-      this.indx = 0;
-      this.pos = new Float32Array(numfaces*9);
-      this.norm = new Float32Array(numfaces*9);
+   class GeometryCreator {
+      /** @summary Constructor
+        * @param numfaces - number of faces */
+      constructor(numfaces) {
+         this.nfaces = numfaces;
+         this.indx = 0;
+         this.pos = new Float32Array(numfaces*9);
+         this.norm = new Float32Array(numfaces*9);
+      }
 
-      return this;
-   }
-
-   /** @summary Add face with 3 vertices
-     * @private */
-   GeometryCreator.prototype.addFace3 = function(x1,y1,z1,
-                                                 x2,y2,z2,
-                                                 x3,y3,z3) {
-      let indx = this.indx, pos = this.pos;
-      pos[indx] = x1;
-      pos[indx+1] = y1;
-      pos[indx+2] = z1;
-      pos[indx+3] = x2;
-      pos[indx+4] = y2;
-      pos[indx+5] = z2;
-      pos[indx+6] = x3;
-      pos[indx+7] = y3;
-      pos[indx+8] = z3;
-      this.last4 = false;
-      this.indx = indx + 9;
-   }
-
-   /** @summary Start polygon
-     * @private */
-   GeometryCreator.prototype.startPolygon = function() {}
-
-   /** @summary Stop polygon
-     * @private */
-   GeometryCreator.prototype.stopPolygon = function() {}
-
-   /** @summary Add face with 4 vertices
-     * @desc From four vertices one normally creates two faces (1,2,3) and (1,3,4)
-     * if (reduce==1), first face is reduced
-     * if (reduce==2), second face is reduced
-     * @private */
-   GeometryCreator.prototype.addFace4 = function(x1,y1,z1,
-                                                 x2,y2,z2,
-                                                 x3,y3,z3,
-                                                 x4,y4,z4,
-                                                 reduce) {
-      let indx = this.indx, pos = this.pos;
-
-      if (reduce !== 1) {
+      /** @summary Add face with 3 vertices */
+      addFace3(x1,y1,z1, x2,y2,z2, x3,y3,z3) {
+         let indx = this.indx, pos = this.pos;
          pos[indx] = x1;
          pos[indx+1] = y1;
          pos[indx+2] = z1;
@@ -188,344 +151,347 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
          pos[indx+6] = x3;
          pos[indx+7] = y3;
          pos[indx+8] = z3;
-         indx+=9;
+         this.last4 = false;
+         this.indx = indx + 9;
       }
 
-      if (reduce !== 2) {
-         pos[indx] = x1;
-         pos[indx+1] = y1;
-         pos[indx+2] = z1;
-         pos[indx+3] = x3;
-         pos[indx+4] = y3;
-         pos[indx+5] = z3;
-         pos[indx+6] = x4;
-         pos[indx+7] = y4;
-         pos[indx+8] = z4;
-         indx+=9;
+      /** @summary Start polygon */
+      startPolygon() {}
+
+      /** @summary Stop polygon */
+      stopPolygon() {}
+
+      /** @summary Add face with 4 vertices
+        * @desc From four vertices one normally creates two faces (1,2,3) and (1,3,4)
+        * if (reduce==1), first face is reduced
+        * if (reduce==2), second face is reduced*/
+      addFace4 = function(x1,y1,z1, x2,y2,z2, x3,y3,z3, x4,y4,z4, reduce) {
+         let indx = this.indx, pos = this.pos;
+
+         if (reduce !== 1) {
+            pos[indx] = x1;
+            pos[indx+1] = y1;
+            pos[indx+2] = z1;
+            pos[indx+3] = x2;
+            pos[indx+4] = y2;
+            pos[indx+5] = z2;
+            pos[indx+6] = x3;
+            pos[indx+7] = y3;
+            pos[indx+8] = z3;
+            indx+=9;
+         }
+
+         if (reduce !== 2) {
+            pos[indx] = x1;
+            pos[indx+1] = y1;
+            pos[indx+2] = z1;
+            pos[indx+3] = x3;
+            pos[indx+4] = y3;
+            pos[indx+5] = z3;
+            pos[indx+6] = x4;
+            pos[indx+7] = y4;
+            pos[indx+8] = z4;
+            indx+=9;
+         }
+
+         this.last4 = (indx !== this.indx + 9);
+         this.indx = indx;
       }
 
-      this.last4 = (indx !== this.indx + 9);
-      this.indx = indx;
-   }
+      /** @summary Specify normal for face with 4 vertices
+        * @desc same as addFace4, assign normals for each individual vertex
+        * reduce has same meaning and should be the same */
+      setNormal4(nx1,ny1,nz1, nx2,ny2,nz2, nx3,ny3,nz3, nx4,ny4,nz4, reduce) {
+         if (this.last4 && reduce)
+            return console.error('missmatch between addFace4 and setNormal4 calls');
 
-   /** @summary Specify normal for face with 4 vertices
-     * @desc same as addFace4, assign normals for each individual vertex
-     * reduce has same meaning and should be the same
-     * @private */
-   GeometryCreator.prototype.setNormal4 = function(nx1,ny1,nz1,
-                                                   nx2,ny2,nz2,
-                                                   nx3,ny3,nz3,
-                                                   nx4,ny4,nz4,
-                                                   reduce) {
-      if (this.last4 && reduce)
-         return console.error('missmatch between addFace4 and setNormal4 calls');
+         let indx = this.indx - (this.last4 ? 18 : 9), norm = this.norm;
 
-      let indx = this.indx - (this.last4 ? 18 : 9), norm = this.norm;
+         if (reduce!==1) {
+            norm[indx] = nx1;
+            norm[indx+1] = ny1;
+            norm[indx+2] = nz1;
+            norm[indx+3] = nx2;
+            norm[indx+4] = ny2;
+            norm[indx+5] = nz2;
+            norm[indx+6] = nx3;
+            norm[indx+7] = ny3;
+            norm[indx+8] = nz3;
+            indx+=9;
+         }
 
-      if (reduce!==1) {
-         norm[indx] = nx1;
-         norm[indx+1] = ny1;
-         norm[indx+2] = nz1;
-         norm[indx+3] = nx2;
-         norm[indx+4] = ny2;
-         norm[indx+5] = nz2;
-         norm[indx+6] = nx3;
-         norm[indx+7] = ny3;
-         norm[indx+8] = nz3;
-         indx+=9;
+         if (reduce!==2) {
+            norm[indx] = nx1;
+            norm[indx+1] = ny1;
+            norm[indx+2] = nz1;
+            norm[indx+3] = nx3;
+            norm[indx+4] = ny3;
+            norm[indx+5] = nz3;
+            norm[indx+6] = nx4;
+            norm[indx+7] = ny4;
+            norm[indx+8] = nz4;
+         }
       }
 
-      if (reduce!==2) {
-         norm[indx] = nx1;
-         norm[indx+1] = ny1;
-         norm[indx+2] = nz1;
-         norm[indx+3] = nx3;
-         norm[indx+4] = ny3;
-         norm[indx+5] = nz3;
-         norm[indx+6] = nx4;
-         norm[indx+7] = ny4;
-         norm[indx+8] = nz4;
-      }
-   }
+      /** @summary Recalculate Z with provided func */
+      recalcZ(func) {
+         let pos = this.pos,
+             last = this.indx,
+             indx = last - (this.last4 ? 18 : 9);
 
-   /** @summary Recalculate Z with provided func
-     * @private */
-   GeometryCreator.prototype.recalcZ = function(func) {
-      let pos = this.pos,
-          last = this.indx,
-          indx = last - (this.last4 ? 18 : 9);
-
-      while (indx < last) {
-         pos[indx+2] = func(pos[indx], pos[indx+1], pos[indx+2]);
-         indx+=3;
-      }
-   }
-
-   /** @summary Caclualte normal
-     * @private */
-   GeometryCreator.prototype.calcNormal = function() {
-      if (!this.cb) {
-         this.pA = new THREE.Vector3();
-         this.pB = new THREE.Vector3();
-         this.pC = new THREE.Vector3();
-         this.cb = new THREE.Vector3();
-         this.ab = new THREE.Vector3();
+         while (indx < last) {
+            pos[indx+2] = func(pos[indx], pos[indx+1], pos[indx+2]);
+            indx+=3;
+         }
       }
 
-      this.pA.fromArray( this.pos, this.indx - 9 );
-      this.pB.fromArray( this.pos, this.indx - 6 );
-      this.pC.fromArray( this.pos, this.indx - 3 );
+      /** @summary Caclualte normal */
+      calcNormal() {
+         if (!this.cb) {
+            this.pA = new THREE.Vector3();
+            this.pB = new THREE.Vector3();
+            this.pC = new THREE.Vector3();
+            this.cb = new THREE.Vector3();
+            this.ab = new THREE.Vector3();
+         }
 
-      this.cb.subVectors( this.pC, this.pB );
-      this.ab.subVectors( this.pA, this.pB );
-      this.cb.cross( this.ab );
+         this.pA.fromArray( this.pos, this.indx - 9 );
+         this.pB.fromArray( this.pos, this.indx - 6 );
+         this.pC.fromArray( this.pos, this.indx - 3 );
 
-      this.setNormal(this.cb.x, this.cb.y, this.cb.z);
-   }
+         this.cb.subVectors( this.pC, this.pB );
+         this.ab.subVectors( this.pA, this.pB );
+         this.cb.cross( this.ab );
 
-   /** @summary Set normal
-     * @private */
-   GeometryCreator.prototype.setNormal = function(nx,ny,nz) {
-      let indx = this.indx - 9, norm = this.norm;
+         this.setNormal(this.cb.x, this.cb.y, this.cb.z);
+      }
 
-      norm[indx]   = norm[indx+3] = norm[indx+6] = nx;
-      norm[indx+1] = norm[indx+4] = norm[indx+7] = ny;
-      norm[indx+2] = norm[indx+5] = norm[indx+8] = nz;
+      /** @summary Set normal */
+      setNormal(nx,ny,nz) {
+         let indx = this.indx - 9, norm = this.norm;
 
-      if (this.last4) {
-         indx -= 9;
          norm[indx]   = norm[indx+3] = norm[indx+6] = nx;
          norm[indx+1] = norm[indx+4] = norm[indx+7] = ny;
          norm[indx+2] = norm[indx+5] = norm[indx+8] = nz;
-      }
-   }
 
-   /** @summary Set normal
-     * @desc special shortcut, when same normals can be applied for 1-2 point and 3-4 point
-     * @private */
-   GeometryCreator.prototype.setNormal_12_34 = function(nx12,ny12,nz12,nx34,ny34,nz34,reduce) {
-      if (reduce===undefined) reduce = 0;
-
-      let indx = this.indx - ((reduce>0) ? 9 : 18), norm = this.norm;
-
-      if (reduce!==1) {
-         norm[indx]   = nx12;
-         norm[indx+1] = ny12;
-         norm[indx+2] = nz12;
-         norm[indx+3] = nx12;
-         norm[indx+4] = ny12;
-         norm[indx+5] = nz12;
-         norm[indx+6] = nx34;
-         norm[indx+7] = ny34;
-         norm[indx+8] = nz34;
-         indx+=9;
+         if (this.last4) {
+            indx -= 9;
+            norm[indx]   = norm[indx+3] = norm[indx+6] = nx;
+            norm[indx+1] = norm[indx+4] = norm[indx+7] = ny;
+            norm[indx+2] = norm[indx+5] = norm[indx+8] = nz;
+         }
       }
 
-      if (reduce!==2) {
-         norm[indx]   = nx12;
-         norm[indx+1] = ny12;
-         norm[indx+2] = nz12;
-         norm[indx+3] = nx34;
-         norm[indx+4] = ny34;
-         norm[indx+5] = nz34;
-         norm[indx+6] = nx34;
-         norm[indx+7] = ny34;
-         norm[indx+8] = nz34;
-         indx+=9;
+      /** @summary Set normal
+        * @desc special shortcut, when same normals can be applied for 1-2 point and 3-4 point */
+      setNormal_12_34(nx12,ny12,nz12, nx34,ny34,nz34, reduce) {
+         if (reduce===undefined) reduce = 0;
+
+         let indx = this.indx - ((reduce>0) ? 9 : 18), norm = this.norm;
+
+         if (reduce!==1) {
+            norm[indx]   = nx12;
+            norm[indx+1] = ny12;
+            norm[indx+2] = nz12;
+            norm[indx+3] = nx12;
+            norm[indx+4] = ny12;
+            norm[indx+5] = nz12;
+            norm[indx+6] = nx34;
+            norm[indx+7] = ny34;
+            norm[indx+8] = nz34;
+            indx+=9;
+         }
+
+         if (reduce!==2) {
+            norm[indx]   = nx12;
+            norm[indx+1] = ny12;
+            norm[indx+2] = nz12;
+            norm[indx+3] = nx34;
+            norm[indx+4] = ny34;
+            norm[indx+5] = nz34;
+            norm[indx+6] = nx34;
+            norm[indx+7] = ny34;
+            norm[indx+8] = nz34;
+            indx+=9;
+         }
       }
-   }
 
-   /** @summary Create geometry
-     * @private */
-   GeometryCreator.prototype.create = function() {
-      if (this.nfaces !== this.indx/9)
-         console.error('Mismatch with created ' + this.nfaces + ' and filled ' + this.indx/9 + ' number of faces');
+      /** @summary Create geometry */
+      create() {
+         if (this.nfaces !== this.indx/9)
+            console.error('Mismatch with created ' + this.nfaces + ' and filled ' + this.indx/9 + ' number of faces');
 
-      let geometry = new THREE.BufferGeometry();
-      geometry.setAttribute( 'position', new THREE.BufferAttribute( this.pos, 3 ) );
-      geometry.setAttribute( 'normal', new THREE.BufferAttribute( this.norm, 3 ) );
-      return geometry;
+         let geometry = new THREE.BufferGeometry();
+         geometry.setAttribute( 'position', new THREE.BufferAttribute( this.pos, 3 ) );
+         geometry.setAttribute( 'normal', new THREE.BufferAttribute( this.norm, 3 ) );
+         return geometry;
+      }
    }
 
    // ================================================================================
 
    /** @summary Helper class for ThreeBSP geometry creation
      *
-     * @class
      * @memberof JSROOT.GEO
      * @private
      */
 
-   function PolygonsCreator() {
-      this.polygons = [];
-   }
+   class PolygonsCreator{
 
-   /** @summary Start polygon
-     * @private */
-   PolygonsCreator.prototype.startPolygon = function(normal) {
-      this.multi = 1;
-      this.mnormal = normal;
-   }
+      /** @summary constructor */
+      constructor() {
+         this.polygons = [];
+      }
 
-   /** @summary Stop polygon
-     * @private */
-   PolygonsCreator.prototype.stopPolygon = function() {
-      if (!this.multi) return;
-      this.multi = 0;
-      console.error('Polygon should be already closed at this moment');
-   }
+      /** @summary Start polygon */
+      startPolygon(normal) {
+         this.multi = 1;
+         this.mnormal = normal;
+      }
 
-   /** @summary Add face with 3 vertices
-     * @private */
-   PolygonsCreator.prototype.addFace3 = function(x1,y1,z1,
-                                                 x2,y2,z2,
-                                                 x3,y3,z3) {
-      this.addFace4(x1,y1,z1,x2,y2,z2,x3,y3,z3,x3,y3,z3,2);
-   }
+      /** @summary Stop polygon */
+      stopPolygon() {
+         if (!this.multi) return;
+         this.multi = 0;
+         console.error('Polygon should be already closed at this moment');
+      }
 
-   /** @summary Add face with 4 vertices
-     * @desc From four vertices one normally creates two faces (1,2,3) and (1,3,4)
-     * if (reduce==1), first face is reduced
-     * if (reduce==2), second face is reduced
-     * @private */
-   PolygonsCreator.prototype.addFace4 = function(x1,y1,z1,
-                                                 x2,y2,z2,
-                                                 x3,y3,z3,
-                                                 x4,y4,z4,
-                                                 reduce) {
-      if (reduce === undefined) reduce = 0;
+      /** @summary Add face with 3 vertices */
+      addFace3(x1,y1,z1, x2,y2,z2, x3,y3,z3) {
+         this.addFace4(x1,y1,z1,x2,y2,z2,x3,y3,z3,x3,y3,z3,2);
+      }
 
-      this.v1 = new ThreeBSP.Vertex( x1, y1, z1, 0, 0, 0 );
-      this.v2 = (reduce===1) ? null : new ThreeBSP.Vertex( x2, y2, z2, 0, 0, 0 );
-      this.v3 = new ThreeBSP.Vertex( x3, y3, z3, 0, 0, 0 );
-      this.v4 = (reduce===2) ? null : new ThreeBSP.Vertex( x4, y4, z4, 0, 0, 0 );
+      /** @summary Add face with 4 vertices
+        * @desc From four vertices one normally creates two faces (1,2,3) and (1,3,4)
+        * if (reduce==1), first face is reduced
+        * if (reduce==2), second face is reduced */
+      addFace4(x1,y1,z1, x2,y2,z2, x3,y3,z3, x4,y4,z4, reduce) {
+         if (reduce === undefined) reduce = 0;
 
-      this.reduce = reduce;
+         this.v1 = new ThreeBSP.Vertex( x1, y1, z1, 0, 0, 0 );
+         this.v2 = (reduce===1) ? null : new ThreeBSP.Vertex( x2, y2, z2, 0, 0, 0 );
+         this.v3 = new ThreeBSP.Vertex( x3, y3, z3, 0, 0, 0 );
+         this.v4 = (reduce===2) ? null : new ThreeBSP.Vertex( x4, y4, z4, 0, 0, 0 );
 
-      if (this.multi) {
+         this.reduce = reduce;
 
-         if (reduce!==2) console.error('polygon not supported for not-reduced faces');
+         if (this.multi) {
 
-         let polygon;
+            if (reduce!==2) console.error('polygon not supported for not-reduced faces');
 
-         if (this.multi++ === 1) {
-            polygon = new ThreeBSP.Polygon;
+            let polygon;
 
-            polygon.vertices.push(this.mnormal ? this.v2 : this.v3);
-            this.polygons.push(polygon);
-         } else {
-            polygon = this.polygons[this.polygons.length-1];
-            // check that last vertice equals to v2
-            let last = this.mnormal ? polygon.vertices[polygon.vertices.length-1] : polygon.vertices[0],
-                comp = this.mnormal ? this.v2 : this.v3;
+            if (this.multi++ === 1) {
+               polygon = new ThreeBSP.Polygon;
 
-            if (comp.diff(last) > 1e-12)
-               console.error('vertex missmatch when building polygon');
+               polygon.vertices.push(this.mnormal ? this.v2 : this.v3);
+               this.polygons.push(polygon);
+            } else {
+               polygon = this.polygons[this.polygons.length-1];
+               // check that last vertice equals to v2
+               let last = this.mnormal ? polygon.vertices[polygon.vertices.length-1] : polygon.vertices[0],
+                   comp = this.mnormal ? this.v2 : this.v3;
+
+               if (comp.diff(last) > 1e-12)
+                  console.error('vertex missmatch when building polygon');
+            }
+
+            let first = this.mnormal ? polygon.vertices[0] : polygon.vertices[polygon.vertices.length-1],
+                next = this.mnormal ? this.v3 : this.v2;
+
+            if (next.diff(first) < 1e-12) {
+               //console.log('polygon closed!!!', polygon.vertices.length);
+               this.multi = 0;
+            } else
+            if (this.mnormal) {
+               polygon.vertices.push(this.v3);
+            } else {
+               polygon.vertices.unshift(this.v2);
+            }
+
+            return;
+
          }
 
-         let first = this.mnormal ? polygon.vertices[0] : polygon.vertices[polygon.vertices.length-1],
-             next = this.mnormal ? this.v3 : this.v2;
+         let polygon = new ThreeBSP.Polygon;
 
-         if (next.diff(first) < 1e-12) {
-            //console.log('polygon closed!!!', polygon.vertices.length);
-            this.multi = 0;
-         } else
-         if (this.mnormal) {
-            polygon.vertices.push(this.v3);
-         } else {
-            polygon.vertices.unshift(this.v2);
+         switch (reduce) {
+            case 0: polygon.vertices.push(this.v1, this.v2, this.v3, this.v4); break;
+            case 1: polygon.vertices.push(this.v1, this.v3, this.v4); break;
+            case 2: polygon.vertices.push(this.v1, this.v2, this.v3); break;
          }
 
-         return;
-
+         this.polygons.push(polygon);
       }
 
-      let polygon = new ThreeBSP.Polygon;
-
-      switch (reduce) {
-         case 0: polygon.vertices.push(this.v1, this.v2, this.v3, this.v4); break;
-         case 1: polygon.vertices.push(this.v1, this.v3, this.v4); break;
-         case 2: polygon.vertices.push(this.v1, this.v2, this.v3); break;
+      /** @summary Specify normal for face with 4 vertices
+        * @desc same as addFace4, assign normals for each individual vertex
+        * reduce has same meaning and should be the same */
+      setNormal4(nx1,ny1,nz1, nx2,ny2,nz2, nx3,ny3,nz3, nx4,ny4,nz4) {
+         this.v1.setnormal(nx1,ny1,nz1);
+         if (this.v2) this.v2.setnormal(nx2,ny2,nz2);
+         this.v3.setnormal(nx3,ny3,nz3);
+         if (this.v4) this.v4.setnormal(nx4,ny4,nz4);
       }
 
-      this.polygons.push(polygon);
-   }
-
-   /** @summary Specify normal for face with 4 vertices
-     * @desc same as addFace4, assign normals for each individual vertex
-     * reduce has same meaning and should be the same
-     * @private */
-   PolygonsCreator.prototype.setNormal4 = function(nx1,ny1,nz1,
-                                                   nx2,ny2,nz2,
-                                                   nx3,ny3,nz3,
-                                                   nx4,ny4,nz4) {
-      this.v1.setnormal(nx1,ny1,nz1);
-      if (this.v2) this.v2.setnormal(nx2,ny2,nz2);
-      this.v3.setnormal(nx3,ny3,nz3);
-      if (this.v4) this.v4.setnormal(nx4,ny4,nz4);
-   }
-
-   /** @summary Set normal
-     * @desc special shortcut, when same normals can be applied for 1-2 point and 3-4 point
-     * @private */
-   PolygonsCreator.prototype.setNormal_12_34 = function(nx12,ny12,nz12,nx34,ny34,nz34) {
-      this.v1.setnormal(nx12,ny12,nz12);
-      if (this.v2) this.v2.setnormal(nx12,ny12,nz12);
-      this.v3.setnormal(nx34,ny34,nz34);
-      if (this.v4) this.v4.setnormal(nx34,ny34,nz34);
-   }
-
-   /** @summary Calculate normal
-     * @private */
-   PolygonsCreator.prototype.calcNormal = function() {
-
-      if (!this.cb) {
-         this.pA = new THREE.Vector3();
-         this.pB = new THREE.Vector3();
-         this.pC = new THREE.Vector3();
-         this.cb = new THREE.Vector3();
-         this.ab = new THREE.Vector3();
+      /** @summary Set normal
+        * @desc special shortcut, when same normals can be applied for 1-2 point and 3-4 point */
+      setNormal_12_34(nx12,ny12,nz12, nx34,ny34,nz34) {
+         this.v1.setnormal(nx12,ny12,nz12);
+         if (this.v2) this.v2.setnormal(nx12,ny12,nz12);
+         this.v3.setnormal(nx34,ny34,nz34);
+         if (this.v4) this.v4.setnormal(nx34,ny34,nz34);
       }
 
-      this.pA.set( this.v1.x, this.v1.y, this.v1.z);
+      /** @summary Calculate normal */
+      calcNormal() {
 
-      if (this.reduce!==1) {
-         this.pB.set( this.v2.x, this.v2.y, this.v2.z);
-         this.pC.set( this.v3.x, this.v3.y, this.v3.z);
-      } else {
-         this.pB.set( this.v3.x, this.v3.y, this.v3.z);
-         this.pC.set( this.v4.x, this.v4.y, this.v4.z);
+         if (!this.cb) {
+            this.pA = new THREE.Vector3();
+            this.pB = new THREE.Vector3();
+            this.pC = new THREE.Vector3();
+            this.cb = new THREE.Vector3();
+            this.ab = new THREE.Vector3();
+         }
+
+         this.pA.set( this.v1.x, this.v1.y, this.v1.z);
+
+         if (this.reduce!==1) {
+            this.pB.set( this.v2.x, this.v2.y, this.v2.z);
+            this.pC.set( this.v3.x, this.v3.y, this.v3.z);
+         } else {
+            this.pB.set( this.v3.x, this.v3.y, this.v3.z);
+            this.pC.set( this.v4.x, this.v4.y, this.v4.z);
+         }
+
+         this.cb.subVectors( this.pC, this.pB );
+         this.ab.subVectors( this.pA, this.pB );
+         this.cb.cross( this.ab );
+
+         this.setNormal(this.cb.x, this.cb.y, this.cb.z);
       }
 
-      this.cb.subVectors( this.pC, this.pB );
-      this.ab.subVectors( this.pA, this.pB );
-      this.cb.cross( this.ab );
+      /** @summary Set normal*/
+      setNormal(nx,ny,nz) {
+         this.v1.setnormal(nx,ny,nz);
+         if (this.v2) this.v2.setnormal(nx,ny,nz);
+         this.v3.setnormal(nx,ny,nz);
+         if (this.v4) this.v4.setnormal(nx,ny,nz);
+      }
 
-      this.setNormal(this.cb.x, this.cb.y, this.cb.z);
-   }
+      /** @summary Recalculate Z with provided func */
+      recalcZ(func) {
+         this.v1.z = func(this.v1.x, this.v1.y, this.v1.z);
+         if (this.v2) this.v2.z = func(this.v2.x, this.v2.y, this.v2.z);
+         this.v3.z = func(this.v3.x, this.v3.y, this.v3.z);
+         if (this.v4) this.v4.z = func(this.v4.x, this.v4.y, this.v4.z);
+      }
 
-   /** @summary Set normal
-     * @private */
-   PolygonsCreator.prototype.setNormal = function(nx,ny,nz) {
-      this.v1.setnormal(nx,ny,nz);
-      if (this.v2) this.v2.setnormal(nx,ny,nz);
-      this.v3.setnormal(nx,ny,nz);
-      if (this.v4) this.v4.setnormal(nx,ny,nz);
-   }
-
-   /** @summary Recalculate Z with provided func
-     * @private */
-   PolygonsCreator.prototype.recalcZ = function(func) {
-      this.v1.z = func(this.v1.x, this.v1.y, this.v1.z);
-      if (this.v2) this.v2.z = func(this.v2.x, this.v2.y, this.v2.z);
-      this.v3.z = func(this.v3.x, this.v3.y, this.v3.z);
-      if (this.v4) this.v4.z = func(this.v4.x, this.v4.y, this.v4.z);
-   }
-
-   /** @summary Create geometry
-     * @private */
-   PolygonsCreator.prototype.create = function() {
-      return { polygons: this.polygons };
+      /** @summary Create geometry
+        * @private */
+      create() {
+         return { polygons: this.polygons };
+      }
    }
 
    // ================= all functions to create geometry ===================================
