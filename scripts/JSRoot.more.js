@@ -3499,45 +3499,47 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
           return JSROOT.draw(this.getDom(), eff.fFunctions.arr[indx], eff.fFunctions.opt[indx]).then(() => this.drawFunction(indx+1));
       }
 
-   }
+      /** @summary Draw TEfficiency object */
+      static draw(dom, eff, opt) {
+         if (!eff || !eff.fTotalHistogram)
+            return Promise.resolve(null);
 
-   /** @summary Draw TEfficiency object
-     * @private */
-   jsrp.drawEfficiency = function(dom, eff, opt) {
+         if (!opt || (typeof opt != 'string')) opt = "";
+         opt = opt.toLowerCase();
 
-      if (!eff || !eff.fTotalHistogram) return null;
+         let ndim = 0;
+         if (eff.fTotalHistogram._typename.indexOf("TH1")==0)
+            ndim = 1;
+         else if (eff.fTotalHistogram._typename.indexOf("TH2")==0)
+            ndim = 2;
+         else
+            Promise.resolve(null);
 
-      if (!opt || (typeof opt != 'string')) opt = "";
-      opt = opt.toLowerCase();
+         let painter = new TEfficiencyPainter(dom, eff);
+         painter.ndim = ndim;
 
-      let ndim = 0;
-      if (eff.fTotalHistogram._typename.indexOf("TH1")==0) ndim = 1; else
-      if (eff.fTotalHistogram._typename.indexOf("TH2")==0) ndim = 2; else return null;
+         return JSROOT.require('math').then(mth => {
 
-      let painter = new TEfficiencyPainter(dom, eff);
-      painter.ndim = ndim;
+            painter.fBoundary = mth.getTEfficiencyBoundaryFunc(eff.fStatisticOption, eff.TestBit(kIsBayesian));
 
-      return JSROOT.require('math').then(mth => {
+            if (ndim == 1) {
+               if (!opt) opt = "ap";
+               if ((opt.indexOf("same") < 0) && (opt.indexOf("a") < 0)) opt += "a";
+               if (opt.indexOf("p") < 0) opt += "p";
 
-         painter.fBoundary = mth.getTEfficiencyBoundaryFunc(eff.fStatisticOption, eff.TestBit(kIsBayesian));
-
-         if (ndim == 1) {
-            if (!opt) opt = "ap";
-            if ((opt.indexOf("same") < 0) && (opt.indexOf("a") < 0)) opt += "a";
-            if (opt.indexOf("p") < 0) opt += "p";
-
-            let gr = painter.createGraph(eff);
-            painter.fillGraph(gr, opt);
-            return JSROOT.draw(dom, gr, opt);
-         }
-         if (!opt) opt = "col";
-         let hist = painter.createHisto(eff);
-         painter.fillHisto(hist, opt);
-         return JSROOT.draw(dom, hist, opt);
-      }).then(() => {
-         painter.addToPadPrimitives();
-         return painter.drawFunction(0);
-      });
+               let gr = painter.createGraph(eff);
+               painter.fillGraph(gr, opt);
+               return JSROOT.draw(dom, gr, opt);
+            }
+            if (!opt) opt = "col";
+            let hist = painter.createHisto(eff);
+            painter.fillHisto(hist, opt);
+            return JSROOT.draw(dom, hist, opt);
+         }).then(() => {
+            painter.addToPadPrimitives();
+            return painter.drawFunction(0);
+         });
+      }
    }
 
    // =============================================================
@@ -4511,6 +4513,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    JSROOT.TASImagePainter = TASImagePainter;
    JSROOT.TRatioPlotPainter = TRatioPlotPainter;
    JSROOT.TGraphTimePainter = TGraphTimePainter;
+   JSROOT.TEfficiencyPainter = TEfficiencyPainter;
 
    return JSROOT;
 

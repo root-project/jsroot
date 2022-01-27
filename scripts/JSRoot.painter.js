@@ -3662,7 +3662,7 @@ JSROOT.define(['d3'], (d3) => {
       { name: "TGraphPolargram", icon: "img_graph", prereq: "more", func: ".drawGraphPolargram", theonly: true },
       { name: "TGraphPolar", icon: "img_graph", prereq: "more", func: ".drawGraphPolar", opt: ";F;L;P;PE", theonly: true },
       { name: /^TGraph/, icon: "img_graph", prereq: "more", func: ".drawGraph", opt: ";L;P" },
-      { name: "TEfficiency", icon: "img_graph", prereq: "more", func: ".drawEfficiency", opt: ";AP" },
+      { name: "TEfficiency", icon: "img_graph", prereq: "more", class: "TEfficiencyPainter", opt: ";AP" },
       { name: "TCutG", sameas: "TGraph" },
       { name: /^RooHist/, sameas: "TGraph" },
       { name: /^RooCurve/, sameas: "TGraph" },
