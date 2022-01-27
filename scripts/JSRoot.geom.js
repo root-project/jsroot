@@ -78,64 +78,64 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
    /**
      * @summary geometry drawing control
      *
-     * @class
      * @memberof JSROOT.GEO
      * @private
      */
 
-   function GeoDrawingControl(mesh, bloom) {
-      jsrp.InteractiveControl.call(this);
-      this.mesh = (mesh && mesh.material) ? mesh : null;
-      this.bloom = bloom;
-   }
+   class GeoDrawingControl extends jsrp.InteractiveControl {
 
-   GeoDrawingControl.prototype = Object.create(jsrp.InteractiveControl.prototype);
+      constructor(mesh, bloom) {
+         super();
+         this.mesh = (mesh && mesh.material) ? mesh : null;
+         this.bloom = bloom;
+      }
 
-   /** @summary set highlight */
-   GeoDrawingControl.prototype.setHighlight = function(col, indx) {
-      return this.drawSpecial(col, indx);
-   }
+      /** @summary set highlight */
+      setHighlight(col, indx) {
+         return this.drawSpecial(col, indx);
+      }
 
-   /** @summary draw special */
-   GeoDrawingControl.prototype.drawSpecial = function(col /*, indx*/) {
-      let c = this.mesh;
-      if (!c || !c.material) return;
+      /** @summary draw special */
+      drawSpecial(col /*, indx*/) {
+         let c = this.mesh;
+         if (!c || !c.material) return;
 
-      if (col) {
-         if (!c.origin)
-            c.origin = {
-              color: c.material.color,
-              emissive: c.material.emissive,
-              opacity: c.material.opacity,
-              width: c.material.linewidth,
-              size: c.material.size
-           };
-         if (this.bloom) {
-            c.layers.enable(_BLOOM_SCENE);
-            c.material.emissive = new THREE.Color(0x00ff00);
-         } else {
-            c.material.color = new THREE.Color( col );
-            c.material.opacity = 1.;
+         if (col) {
+            if (!c.origin)
+               c.origin = {
+                 color: c.material.color,
+                 emissive: c.material.emissive,
+                 opacity: c.material.opacity,
+                 width: c.material.linewidth,
+                 size: c.material.size
+              };
+            if (this.bloom) {
+               c.layers.enable(_BLOOM_SCENE);
+               c.material.emissive = new THREE.Color(0x00ff00);
+            } else {
+               c.material.color = new THREE.Color( col );
+               c.material.opacity = 1.;
+            }
+
+            if (c.hightlightWidthScale && !JSROOT.browser.isWin)
+               c.material.linewidth = c.origin.width * c.hightlightWidthScale;
+            if (c.highlightScale)
+               c.material.size = c.origin.size * c.highlightScale;
+            return true;
+         } else if (c.origin) {
+            if (this.bloom) {
+               c.material.emissive = c.origin.emissive;
+               c.layers.enable(_ENTIRE_SCENE);
+            } else {
+               c.material.color = c.origin.color;
+               c.material.opacity = c.origin.opacity;
+            }
+            if (c.hightlightWidthScale)
+               c.material.linewidth = c.origin.width;
+            if (c.highlightScale)
+               c.material.size = c.origin.size;
+            return true;
          }
-
-         if (c.hightlightWidthScale && !JSROOT.browser.isWin)
-            c.material.linewidth = c.origin.width * c.hightlightWidthScale;
-         if (c.highlightScale)
-            c.material.size = c.origin.size * c.highlightScale;
-         return true;
-      } else if (c.origin) {
-         if (this.bloom) {
-            c.material.emissive = c.origin.emissive;
-            c.layers.enable(_ENTIRE_SCENE);
-         } else {
-            c.material.color = c.origin.color;
-            c.material.opacity = c.origin.opacity;
-         }
-         if (c.hightlightWidthScale)
-            c.material.linewidth = c.origin.width;
-         if (c.highlightScale)
-            c.material.size = c.origin.size;
-         return true;
       }
    }
 
@@ -144,67 +144,70 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
    /**
     * @summary Painter class for geometries drawing
     *
-    * @class
     * @memberof JSROOT
-    * @summary Painter for TGeo object.
-    * @param {object|string} dom - DOM element for drawing or element id
-    * @param {object} obj - supported TGeo object
     * @private
     */
 
-   function TGeoPainter(dom, obj) {
+   class TGeoPainter extends JSROOT.ObjectPainter {
 
-      if (obj && (obj._typename === "TGeoManager")) {
-         this.geo_manager = obj;
-         obj = obj.fMasterVolume;
+      /** @summary Constructor
+        * @param {object|string} dom - DOM element for drawing or element id
+        * @param {object} obj - supported TGeo object */
+      constructor (dom, obj) {
+
+         let gm;
+         if (obj && (obj._typename === "TGeoManager")) {
+            gm = obj;
+            obj = obj.fMasterVolume;
+         }
+
+         if (obj && (obj._typename.indexOf('TGeoVolume') === 0))
+            obj = { _typename:"TGeoNode", fVolume: obj, fName: obj.fName, $geoh: obj.$geoh, _proxy: true };
+
+         super(dom, obj);
+
+         if (gm) this.geo_manager = gm;
+
+         this.no_default_title = true; // do not set title to main DIV
+         this.mode3d = true; // indication of 3D mode
+         this.drawing_stage = 0; //
+         this.ctrl = {
+            clipIntersect: true,
+            clip: [{ name:"x", enabled: false, value: 0, min: -100, max: 100}, { name:"y", enabled: false, value: 0, min: -100, max: 100}, { name:"z", enabled: false, value: 0, min: -100, max: 100}],
+            ssao: { enabled: false, output: THREE.SSAOPass.OUTPUT.Default, kernelRadius: 0, minDistance: 0.001, maxDistance: 0.1 },
+            bloom: { enabled: true, strength: 1.5 },
+            info: { num_meshes: 0, num_faces: 0, num_shapes: 0 },
+            highlight: false,
+            highlight_scene: false,
+            depthTest: true,
+            depthMethod: "dflt",
+            select_in_view: false,
+            update_browser: true,
+            light: { kind: "points", top: false, bottom: false, left: false, right: false, front: false, specular: true, power: 1 },
+            trans_radial: 0,
+            trans_z: 0
+         };
+
+         this.ctrl.depthMethodItems = [
+            {name: 'Default', value: "dflt"},
+            {name: 'Raytraicing', value: "ray"},
+            {name: 'Boundary box', value: "box"},
+            {name: 'Mesh size', value: "size"},
+            {name: 'Central point', value: "pnt" }
+          ];
+
+         this.ctrl.ssao.outputItems = [
+            {name: 'Default', value: THREE.SSAOPass.OUTPUT.Default},
+            {name: 'SSAO Only', value: THREE.SSAOPass.OUTPUT.SSAO},
+            {name: 'SSAO Only + Blur', value: THREE.SSAOPass.OUTPUT.Blur},
+            {name: 'Beauty', value: THREE.SSAOPass.OUTPUT.Beauty},
+            {name: 'Depth', value: THREE.SSAOPass.OUTPUT.Depth},
+            {name: 'Normal', value: THREE.SSAOPass.OUTPUT.Normal}
+         ];
+
+         this.cleanup(true);
       }
-
-      if (obj && (obj._typename.indexOf('TGeoVolume') === 0))
-         obj = { _typename:"TGeoNode", fVolume: obj, fName: obj.fName, $geoh: obj.$geoh, _proxy: true };
-
-      JSROOT.ObjectPainter.call(this, dom, obj);
-
-      this.no_default_title = true; // do not set title to main DIV
-      this.mode3d = true; // indication of 3D mode
-      this.drawing_stage = 0; //
-      this.ctrl = {
-         clipIntersect: true,
-         clip: [{ name:"x", enabled: false, value: 0, min: -100, max: 100}, { name:"y", enabled: false, value: 0, min: -100, max: 100}, { name:"z", enabled: false, value: 0, min: -100, max: 100}],
-         ssao: { enabled: false, output: THREE.SSAOPass.OUTPUT.Default, kernelRadius: 0, minDistance: 0.001, maxDistance: 0.1 },
-         bloom: { enabled: true, strength: 1.5 },
-         info: { num_meshes: 0, num_faces: 0, num_shapes: 0 },
-         highlight: false,
-         highlight_scene: false,
-         depthTest: true,
-         depthMethod: "dflt",
-         select_in_view: false,
-         update_browser: true,
-         light: { kind: "points", top: false, bottom: false, left: false, right: false, front: false, specular: true, power: 1 },
-         trans_radial: 0,
-         trans_z: 0
-      };
-
-      this.ctrl.depthMethodItems = [
-         {name: 'Default', value: "dflt"},
-         {name: 'Raytraicing', value: "ray"},
-         {name: 'Boundary box', value: "box"},
-         {name: 'Mesh size', value: "size"},
-         {name: 'Central point', value: "pnt" }
-       ];
-
-      this.ctrl.ssao.outputItems = [
-         {name: 'Default', value: THREE.SSAOPass.OUTPUT.Default},
-         {name: 'SSAO Only', value: THREE.SSAOPass.OUTPUT.SSAO},
-         {name: 'SSAO Only + Blur', value: THREE.SSAOPass.OUTPUT.Blur},
-         {name: 'Beauty', value: THREE.SSAOPass.OUTPUT.Beauty},
-         {name: 'Depth', value: THREE.SSAOPass.OUTPUT.Depth},
-         {name: 'Normal', value: THREE.SSAOPass.OUTPUT.Normal}
-      ];
-
-      this.cleanup(true);
    }
-
-   TGeoPainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
 
    /** @summary Create toolbar */
    TGeoPainter.prototype.createToolbar = function() {
