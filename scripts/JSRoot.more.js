@@ -3909,357 +3909,344 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    /**
     * @summary Painter for TASImage object.
     *
-    * @class
     * @memberof JSROOT
-    * @extends JSROOT.ObjectPainter
-    * @param {object|string} dom - DOM element for drawing or element id
-    * @param {object} obj - TASImage object to draw
-    * @param {string} [opt] - string draw options
     * @private
     */
 
-   function TASImagePainter(dom, obj, opt) {
-      ObjectPainter.call(this, dom, obj, opt);
-      this.wheel_zoomy = true;
-   }
+   class TASImagePainter extends ObjectPainter {
 
-   TASImagePainter.prototype = Object.create(ObjectPainter.prototype);
+      /** @summary Decode options string  */
+      decodeOptions(opt) {
+         this.options = { Zscale: false };
 
-   /** @summary Decode options string  */
-   TASImagePainter.prototype.decodeOptions = function(opt) {
-      this.options = { Zscale: false };
-
-      if (opt && (opt.indexOf("z") >= 0)) this.options.Zscale = true;
-   }
-
-   /** @summary Create RGBA buffers
-     * @private */
-   TASImagePainter.prototype.createRGBA = function(nlevels) {
-      let obj = this.getObject();
-
-      if (!obj || !obj.fPalette) return null;
-
-      let rgba = new Array((nlevels+1) * 4), indx = 1, pal = obj.fPalette; // precaclucated colors
-
-      for(let lvl = 0; lvl <= nlevels; ++lvl) {
-         let l = 1.*lvl/nlevels;
-         while ((pal.fPoints[indx] < l) && (indx < pal.fPoints.length-1)) indx++;
-
-         let r1 = (pal.fPoints[indx] - l) / (pal.fPoints[indx] - pal.fPoints[indx-1]),
-             r2 = (l - pal.fPoints[indx-1]) / (pal.fPoints[indx] - pal.fPoints[indx-1]);
-
-         rgba[lvl*4]   = Math.min(255, Math.round((pal.fColorRed[indx-1] * r1 + pal.fColorRed[indx] * r2) / 256));
-         rgba[lvl*4+1] = Math.min(255, Math.round((pal.fColorGreen[indx-1] * r1 + pal.fColorGreen[indx] * r2) / 256));
-         rgba[lvl*4+2] = Math.min(255, Math.round((pal.fColorBlue[indx-1] * r1 + pal.fColorBlue[indx] * r2) / 256));
-         rgba[lvl*4+3] = Math.min(255, Math.round((pal.fColorAlpha[indx-1] * r1 + pal.fColorAlpha[indx] * r2) / 256));
+         if (opt && (opt.indexOf("z") >= 0)) this.options.Zscale = true;
       }
 
-      return rgba;
-   }
+      /** @summary Create RGBA buffers */
+      createRGBA(nlevels) {
+         let obj = this.getObject();
 
-   /** @summary Draw image
-     * @private */
-   TASImagePainter.prototype.drawImage = function() {
-      let obj = this.getObject(),
-          is_buf = false,
-          fp = this.getFramePainter(),
-          rect = fp ? fp.getFrameRect() : this.getPadPainter().getPadRect();
+         if (!obj || !obj.fPalette) return null;
 
-      if (obj._blob) {
-         // try to process blob data due to custom streamer
-         if ((obj._blob.length == 15) && !obj._blob[0]) {
-            obj.fImageQuality = obj._blob[1];
-            obj.fImageCompression = obj._blob[2];
-            obj.fConstRatio = obj._blob[3];
-            obj.fPalette = {
-                _typename: "TImagePalette",
-                fUniqueID: obj._blob[4],
-                fBits: obj._blob[5],
-                fNumPoints: obj._blob[6],
-                fPoints: obj._blob[7],
-                fColorRed: obj._blob[8],
-                fColorGreen: obj._blob[9],
-                fColorBlue: obj._blob[10],
-                fColorAlpha: obj._blob[11]
+         let rgba = new Array((nlevels+1) * 4), indx = 1, pal = obj.fPalette; // precaclucated colors
+
+         for(let lvl = 0; lvl <= nlevels; ++lvl) {
+            let l = 1.*lvl/nlevels;
+            while ((pal.fPoints[indx] < l) && (indx < pal.fPoints.length-1)) indx++;
+
+            let r1 = (pal.fPoints[indx] - l) / (pal.fPoints[indx] - pal.fPoints[indx-1]),
+                r2 = (l - pal.fPoints[indx-1]) / (pal.fPoints[indx] - pal.fPoints[indx-1]);
+
+            rgba[lvl*4]   = Math.min(255, Math.round((pal.fColorRed[indx-1] * r1 + pal.fColorRed[indx] * r2) / 256));
+            rgba[lvl*4+1] = Math.min(255, Math.round((pal.fColorGreen[indx-1] * r1 + pal.fColorGreen[indx] * r2) / 256));
+            rgba[lvl*4+2] = Math.min(255, Math.round((pal.fColorBlue[indx-1] * r1 + pal.fColorBlue[indx] * r2) / 256));
+            rgba[lvl*4+3] = Math.min(255, Math.round((pal.fColorAlpha[indx-1] * r1 + pal.fColorAlpha[indx] * r2) / 256));
+         }
+
+         return rgba;
+      }
+
+      /** @summary Draw image */
+      drawImage() {
+         let obj = this.getObject(),
+             is_buf = false,
+             fp = this.getFramePainter(),
+             rect = fp ? fp.getFrameRect() : this.getPadPainter().getPadRect();
+
+         this.wheel_zoomy = true;
+
+         if (obj._blob) {
+            // try to process blob data due to custom streamer
+            if ((obj._blob.length == 15) && !obj._blob[0]) {
+               obj.fImageQuality = obj._blob[1];
+               obj.fImageCompression = obj._blob[2];
+               obj.fConstRatio = obj._blob[3];
+               obj.fPalette = {
+                   _typename: "TImagePalette",
+                   fUniqueID: obj._blob[4],
+                   fBits: obj._blob[5],
+                   fNumPoints: obj._blob[6],
+                   fPoints: obj._blob[7],
+                   fColorRed: obj._blob[8],
+                   fColorGreen: obj._blob[9],
+                   fColorBlue: obj._blob[10],
+                   fColorAlpha: obj._blob[11]
+               };
+
+               obj.fWidth = obj._blob[12];
+               obj.fHeight = obj._blob[13];
+               obj.fImgBuf = obj._blob[14];
+
+               if ((obj.fWidth * obj.fHeight != obj.fImgBuf.length) ||
+                     (obj.fPalette.fNumPoints != obj.fPalette.fPoints.length)) {
+                  console.error('TASImage _blob decoding error', obj.fWidth * obj.fHeight, '!=', obj.fImgBuf.length, obj.fPalette.fNumPoints, "!=", obj.fPalette.fPoints.length);
+                  delete obj.fImgBuf;
+                  delete obj.fPalette;
+               }
+
+            } else if ((obj._blob.length == 3) && obj._blob[0]) {
+               obj.fPngBuf = obj._blob[2];
+               if (!obj.fPngBuf || (obj.fPngBuf.length != obj._blob[1])) {
+                  console.error('TASImage with png buffer _blob error', obj._blob[1], '!=', (obj.fPngBuf ? obj.fPngBuf.length : -1));
+                  delete obj.fPngBuf;
+               }
+            } else {
+               console.error('TASImage _blob len', obj._blob.length, 'not recognized');
+            }
+
+            delete obj._blob;
+         }
+
+         let url, constRatio = true;
+
+         if (obj.fImgBuf && obj.fPalette) {
+
+            is_buf = true;
+
+            let nlevels = 1000;
+            this.rgba = this.createRGBA(nlevels); // precaclucated colors
+
+            let min = obj.fImgBuf[0], max = obj.fImgBuf[0];
+            for (let k=1;k<obj.fImgBuf.length;++k) {
+               let v = obj.fImgBuf[k];
+               min = Math.min(v, min);
+               max = Math.max(v, max);
+            }
+
+            // does not work properly in Node.js, causes "Maximum call stack size exceeded" error
+            // min = Math.min.apply(null, obj.fImgBuf),
+            // max = Math.max.apply(null, obj.fImgBuf);
+
+            // create countor like in hist painter to allow palette drawing
+            this.fContour = {
+               arr: new Array(200),
+               rgba: this.rgba,
+               getLevels: function() { return this.arr; },
+               getPaletteColor: function(pal, zval) {
+                  if (!this.arr || !this.rgba) return "white";
+                  let indx = Math.round((zval - this.arr[0]) / (this.arr[this.arr.length-1] - this.arr[0]) * (this.rgba.length-4)/4) * 4;
+                  return "#" + jsrp.toHex(this.rgba[indx],1) + jsrp.toHex(this.rgba[indx+1],1) + jsrp.toHex(this.rgba[indx+2],1) + jsrp.toHex(this.rgba[indx+3],1);
+               }
             };
+            for (let k = 0; k < 200; k++)
+               this.fContour.arr[k] = min + (max-min)/(200-1)*k;
 
-            obj.fWidth = obj._blob[12];
-            obj.fHeight = obj._blob[13];
-            obj.fImgBuf = obj._blob[14];
+            if (min >= max) max = min + 1;
 
-            if ((obj.fWidth * obj.fHeight != obj.fImgBuf.length) ||
-                  (obj.fPalette.fNumPoints != obj.fPalette.fPoints.length)) {
-               console.error('TASImage _blob decoding error', obj.fWidth * obj.fHeight, '!=', obj.fImgBuf.length, obj.fPalette.fNumPoints, "!=", obj.fPalette.fPoints.length);
-               delete obj.fImgBuf;
-               delete obj.fPalette;
+            let xmin = 0, xmax = obj.fWidth, ymin = 0, ymax = obj.fHeight; // dimension in pixels
+
+            if (fp && (fp.zoom_xmin != fp.zoom_xmax)) {
+               xmin = Math.round(fp.zoom_xmin * obj.fWidth);
+               xmax = Math.round(fp.zoom_xmax * obj.fWidth);
             }
 
-         } else if ((obj._blob.length == 3) && obj._blob[0]) {
-            obj.fPngBuf = obj._blob[2];
-            if (!obj.fPngBuf || (obj.fPngBuf.length != obj._blob[1])) {
-               console.error('TASImage with png buffer _blob error', obj._blob[1], '!=', (obj.fPngBuf ? obj.fPngBuf.length : -1));
-               delete obj.fPngBuf;
+            if (fp && (fp.zoom_ymin != fp.zoom_ymax)) {
+               ymin = Math.round(fp.zoom_ymin * obj.fHeight);
+               ymax = Math.round(fp.zoom_ymax * obj.fHeight);
             }
-         } else {
-            console.error('TASImage _blob len', obj._blob.length, 'not recognized');
+
+            let canvas;
+
+            if (JSROOT.nodejs) {
+               try {
+                  const { createCanvas } = require('canvas');
+                  canvas = createCanvas(xmax - xmin, ymax - ymin);
+               } catch (err) {
+                  console.log('canvas is not installed');
+               }
+
+            } else {
+               canvas = document.createElement('canvas');
+               canvas.width = xmax - xmin;
+               canvas.height = ymax - ymin;
+            }
+
+            if (!canvas)
+               return Promise.resolve(null);
+
+            let context = canvas.getContext('2d'),
+                imageData = context.getImageData(0, 0, canvas.width, canvas.height),
+                arr = imageData.data;
+
+            for(let i = ymin; i < ymax; ++i) {
+               let dst = (ymax - i - 1) * (xmax - xmin) * 4,
+                   row = i * obj.fWidth;
+               for(let j = xmin; j < xmax; ++j) {
+                  let iii = Math.round((obj.fImgBuf[row + j] - min) / (max - min) * nlevels) * 4;
+                  // copy rgba value for specified point
+                  arr[dst++] = this.rgba[iii++];
+                  arr[dst++] = this.rgba[iii++];
+                  arr[dst++] = this.rgba[iii++];
+                  arr[dst++] = this.rgba[iii++];
+               }
+            }
+
+            context.putImageData(imageData, 0, 0);
+
+            url = canvas.toDataURL(); // create data url to insert into image
+
+            constRatio = obj.fConstRatio;
+
+         } else if (obj.fPngBuf) {
+            let pngbuf = "", btoa_func = JSROOT.nodejs ? require("btoa") : window.btoa;
+            if (typeof obj.fPngBuf == "string") {
+               pngbuf = obj.fPngBuf;
+            } else {
+               for (let k = 0; k < obj.fPngBuf.length; ++k)
+                  pngbuf += String.fromCharCode(obj.fPngBuf[k] < 0 ? 256 + obj.fPngBuf[k] : obj.fPngBuf[k]);
+            }
+
+            url = "data:image/png;base64," + btoa_func(pngbuf);
          }
 
-         delete obj._blob;
+         if (url)
+            this.createG(fp ? true : false)
+                .append("image")
+                .attr("href", url)
+                .attr("width", rect.width)
+                .attr("height", rect.height)
+                .attr("preserveAspectRatio", constRatio ? null : "none");
+
+         if (url && this.isMainPainter() && is_buf && fp)
+            return this.drawColorPalette(this.options.Zscale, true).then(() => {
+               fp.setAxesRanges(JSROOT.create("TAxis"), 0, 1, JSROOT.create("TAxis"), 0, 1, null, 0, 0);
+               fp.createXY({ ndim: 2, check_pad_range: false });
+               fp.addInteractivity();
+               return this;
+            });
+
+         return Promise.resolve(this);
       }
 
-      let url, constRatio = true;
+      /** @summary Checks if it makes sense to zoom inside specified axis range */
+      canZoomInside(axis,min,max) {
+         let obj = this.getObject();
 
-      if (obj.fImgBuf && obj.fPalette) {
+         if (!obj || !obj.fImgBuf)
+            return false;
 
-         is_buf = true;
+         if ((axis == "x") && ((max - min) * obj.fWidth > 3)) return true;
 
-         let nlevels = 1000;
-         this.rgba = this.createRGBA(nlevels); // precaclucated colors
+         if ((axis == "y") && ((max - min) * obj.fHeight > 3)) return true;
 
-         let min = obj.fImgBuf[0], max = obj.fImgBuf[0];
-         for (let k=1;k<obj.fImgBuf.length;++k) {
-            let v = obj.fImgBuf[k];
-            min = Math.min(v, min);
-            max = Math.max(v, max);
-         }
+         return false;
+      }
 
-         // does not work properly in Node.js, causes "Maximum call stack size exceeded" error
-         // min = Math.min.apply(null, obj.fImgBuf),
-         // max = Math.max.apply(null, obj.fImgBuf);
+      /** @summary Draw color palette
+        * @private */
+      drawColorPalette(enabled, can_move) {
 
-         // create countor like in hist painter to allow palette drawing
-         this.fContour = {
-            arr: new Array(200),
-            rgba: this.rgba,
-            getLevels: function() { return this.arr; },
-            getPaletteColor: function(pal, zval) {
-               if (!this.arr || !this.rgba) return "white";
-               let indx = Math.round((zval - this.arr[0]) / (this.arr[this.arr.length-1] - this.arr[0]) * (this.rgba.length-4)/4) * 4;
-               return "#" + jsrp.toHex(this.rgba[indx],1) + jsrp.toHex(this.rgba[indx+1],1) + jsrp.toHex(this.rgba[indx+2],1) + jsrp.toHex(this.rgba[indx+3],1);
-            }
-         };
-         for (let k = 0; k < 200; k++)
-            this.fContour.arr[k] = min + (max-min)/(200-1)*k;
-
-         if (min >= max) max = min + 1;
-
-         let xmin = 0, xmax = obj.fWidth, ymin = 0, ymax = obj.fHeight; // dimension in pixels
-
-         if (fp && (fp.zoom_xmin != fp.zoom_xmax)) {
-            xmin = Math.round(fp.zoom_xmin * obj.fWidth);
-            xmax = Math.round(fp.zoom_xmax * obj.fWidth);
-         }
-
-         if (fp && (fp.zoom_ymin != fp.zoom_ymax)) {
-            ymin = Math.round(fp.zoom_ymin * obj.fHeight);
-            ymax = Math.round(fp.zoom_ymax * obj.fHeight);
-         }
-
-         let canvas;
-
-         if (JSROOT.nodejs) {
-            try {
-               const { createCanvas } = require('canvas');
-               canvas = createCanvas(xmax - xmin, ymax - ymin);
-            } catch (err) {
-               console.log('canvas is not installed');
-            }
-
-         } else {
-            canvas = document.createElement('canvas');
-            canvas.width = xmax - xmin;
-            canvas.height = ymax - ymin;
-         }
-
-         if (!canvas)
+         if (!this.isMainPainter())
             return Promise.resolve(null);
 
-         let context = canvas.getContext('2d'),
-             imageData = context.getImageData(0, 0, canvas.width, canvas.height),
-             arr = imageData.data;
+         if (!this.draw_palette) {
+            let pal = JSROOT.create('TPave');
 
-         for(let i = ymin; i < ymax; ++i) {
-            let dst = (ymax - i - 1) * (xmax - xmin) * 4,
-                row = i * obj.fWidth;
-            for(let j = xmin; j < xmax; ++j) {
-               let iii = Math.round((obj.fImgBuf[row + j] - min) / (max - min) * nlevels) * 4;
-               // copy rgba value for specified point
-               arr[dst++] = this.rgba[iii++];
-               arr[dst++] = this.rgba[iii++];
-               arr[dst++] = this.rgba[iii++];
-               arr[dst++] = this.rgba[iii++];
+            JSROOT.extend(pal, { _typename: "TPaletteAxis", fName: "TPave", fH: null, fAxis: JSROOT.create('TGaxis'),
+                                  fX1NDC: 0.91, fX2NDC: 0.95, fY1NDC: 0.1, fY2NDC: 0.9, fInit: 1 } );
+
+            pal.fAxis.fChopt = "+";
+
+            this.draw_palette = pal;
+            this.fPalette = true; // to emulate behaviour of hist painter
+         }
+
+         let pal_painter = this.getPadPainter().findPainterFor(this.draw_palette);
+
+         if (!enabled) {
+            if (pal_painter) {
+               pal_painter.Enabled = false;
+               pal_painter.removeG(); // completely remove drawing without need to redraw complete pad
             }
+            return Promise.resolve(null);
          }
 
-         context.putImageData(imageData, 0, 0);
+         let frame_painter = this.getFramePainter();
 
-         url = canvas.toDataURL(); // create data url to insert into image
+         // keep palette width
+         if (can_move && frame_painter) {
+            let pal = this.draw_palette;
+            pal.fX2NDC = frame_painter.fX2NDC + 0.01 + (pal.fX2NDC - pal.fX1NDC);
+            pal.fX1NDC = frame_painter.fX2NDC + 0.01;
+            pal.fY1NDC = frame_painter.fY1NDC;
+            pal.fY2NDC = frame_painter.fY2NDC;
+         }
 
-         constRatio = obj.fConstRatio;
+         if (!pal_painter) {
+            let prev_name = this.selectCurrentPad(this.getPadName());
 
-      } else if (obj.fPngBuf) {
-         let pngbuf = "", btoa_func = JSROOT.nodejs ? require("btoa") : window.btoa;
-         if (typeof obj.fPngBuf == "string") {
-            pngbuf = obj.fPngBuf;
+            return JSROOT.draw(this.getDom(), this.draw_palette).then(pp => {
+               this.selectCurrentPad(prev_name);
+               // mark painter as secondary - not in list of TCanvas primitives
+               pp.$secondary = true;
+
+               // make dummy redraw, palette will be updated only from histogram painter
+               pp.redraw = function() {};
+
+               return this;
+            });
          } else {
-            for (let k = 0; k < obj.fPngBuf.length; ++k)
-               pngbuf += String.fromCharCode(obj.fPngBuf[k] < 0 ? 256 + obj.fPngBuf[k] : obj.fPngBuf[k]);
+            pal_painter.Enabled = true;
+            return pal_painter.drawPave("");
+         }
+      }
+
+      /** @summary Toggle colz draw option
+        * @private */
+      toggleColz() {
+         let obj = this.getObject(),
+             can_toggle = obj && obj.fPalette;
+
+         if (can_toggle) {
+            this.options.Zscale = !this.options.Zscale;
+            this.drawColorPalette(this.options.Zscale, true);
+         }
+      }
+
+      /** @summary Redraw image */
+      redraw(reason) {
+         let img = this.draw_g ? this.draw_g.select("image") : null,
+             fp = this.getFramePainter();
+
+         if (img && !img.empty() && (reason !== "zoom") && fp) {
+            img.attr("width", fp.getFrameWidth()).attr("height", fp.getFrameHeight());
+         } else {
+            this.drawImage();
+         }
+      }
+
+      /** @summary Process click on TASImage-defined buttons */
+      clickButton(funcname) {
+         if (!this.isMainPainter()) return false;
+
+         switch(funcname) {
+            case "ToggleColorZ": this.toggleColz(); break;
+            default: return false;
          }
 
-         url = "data:image/png;base64," + btoa_func(pngbuf);
+         return true;
       }
 
-      if (url)
-         this.createG(fp ? true : false)
-             .append("image")
-             .attr("href", url)
-             .attr("width", rect.width)
-             .attr("height", rect.height)
-             .attr("preserveAspectRatio", constRatio ? null : "none");
-
-      if (url && this.isMainPainter() && is_buf && fp)
-         return this.drawColorPalette(this.options.Zscale, true).then(() => {
-            fp.setAxesRanges(JSROOT.create("TAxis"), 0, 1, JSROOT.create("TAxis"), 0, 1, null, 0, 0);
-            fp.createXY({ ndim: 2, check_pad_range: false });
-            fp.addInteractivity();
-            return this;
-         });
-
-      return Promise.resolve(this);
-   }
-
-   /** @summary Checks if it makes sense to zoom inside specified axis range */
-   TASImagePainter.prototype.canZoomInside = function(axis,min,max) {
-      let obj = this.getObject();
-
-      if (!obj || !obj.fImgBuf)
-         return false;
-
-      if ((axis == "x") && ((max - min) * obj.fWidth > 3)) return true;
-
-      if ((axis == "y") && ((max - min) * obj.fHeight > 3)) return true;
-
-      return false;
-   }
-
-   /** @summary Draw color palette
-     * @private */
-   TASImagePainter.prototype.drawColorPalette = function(enabled, can_move) {
-
-      if (!this.isMainPainter())
-         return Promise.resolve(null);
-
-      if (!this.draw_palette) {
-         let pal = JSROOT.create('TPave');
-
-         JSROOT.extend(pal, { _typename: "TPaletteAxis", fName: "TPave", fH: null, fAxis: JSROOT.create('TGaxis'),
-                               fX1NDC: 0.91, fX2NDC: 0.95, fY1NDC: 0.1, fY2NDC: 0.9, fInit: 1 } );
-
-         pal.fAxis.fChopt = "+";
-
-         this.draw_palette = pal;
-         this.fPalette = true; // to emulate behaviour of hist painter
-      }
-
-      let pal_painter = this.getPadPainter().findPainterFor(this.draw_palette);
-
-      if (!enabled) {
-         if (pal_painter) {
-            pal_painter.Enabled = false;
-            pal_painter.removeG(); // completely remove drawing without need to redraw complete pad
+      /** @summary Fill pad toolbar for TASImage */
+      fillToolbar() {
+         let pp = this.getPadPainter(), obj = this.getObject();
+         if (pp && obj && obj.fPalette) {
+            pp.addPadButton("th2colorz", "Toggle color palette", "ToggleColorZ");
+            pp.showPadButtons();
          }
-         return Promise.resolve(null);
       }
 
-      let frame_painter = this.getFramePainter();
-
-      // keep palette width
-      if (can_move && frame_painter) {
-         let pal = this.draw_palette;
-         pal.fX2NDC = frame_painter.fX2NDC + 0.01 + (pal.fX2NDC - pal.fX1NDC);
-         pal.fX1NDC = frame_painter.fX2NDC + 0.01;
-         pal.fY1NDC = frame_painter.fY1NDC;
-         pal.fY2NDC = frame_painter.fY2NDC;
+      /** @summary Draw TASImage object */
+      static draw(dom, obj, opt) {
+         let painter = new TASImagePainter(dom, obj, opt);
+         painter.decodeOptions(opt);
+         return jsrp.ensureTCanvas(painter, false)
+                    .then(() => painter.drawImage())
+                    .then(() => {
+                        painter.fillToolbar();
+                        return painter;
+                    });
       }
-
-      if (!pal_painter) {
-         let prev_name = this.selectCurrentPad(this.getPadName());
-
-         return JSROOT.draw(this.getDom(), this.draw_palette).then(pp => {
-            this.selectCurrentPad(prev_name);
-            // mark painter as secondary - not in list of TCanvas primitives
-            pp.$secondary = true;
-
-            // make dummy redraw, palette will be updated only from histogram painter
-            pp.redraw = function() {};
-
-            return this;
-         });
-      } else {
-         pal_painter.Enabled = true;
-         return pal_painter.drawPave("");
-      }
-   }
-
-   /** @summary Toggle colz draw option
-     * @private */
-   TASImagePainter.prototype.toggleColz = function() {
-      let obj = this.getObject(),
-          can_toggle = obj && obj.fPalette;
-
-      if (can_toggle) {
-         this.options.Zscale = !this.options.Zscale;
-         this.drawColorPalette(this.options.Zscale, true);
-      }
-   }
-
-   /** @summary Redraw image
-     * @private */
-   TASImagePainter.prototype.redraw = function(reason) {
-      let img = this.draw_g ? this.draw_g.select("image") : null,
-          fp = this.getFramePainter();
-
-      if (img && !img.empty() && (reason !== "zoom") && fp) {
-         img.attr("width", fp.getFrameWidth()).attr("height", fp.getFrameHeight());
-      } else {
-         this.drawImage();
-      }
-   }
-
-   /** @summary Process click on TASImage-defined buttons
-     * @private */
-   TASImagePainter.prototype.clickButton = function(funcname) {
-      if (!this.isMainPainter()) return false;
-
-      switch(funcname) {
-         case "ToggleColorZ": this.toggleColz(); break;
-         default: return false;
-      }
-
-      return true;
-   }
-
-   /** @summary Fill pad toolbar for TASImage
-     * @private */
-   TASImagePainter.prototype.fillToolbar = function() {
-      let pp = this.getPadPainter(), obj = this.getObject();
-      if (pp && obj && obj.fPalette) {
-         pp.addPadButton("th2colorz", "Toggle color palette", "ToggleColorZ");
-         pp.showPadButtons();
-      }
-   }
-
-   /** @summary Draw TASImage object
-     * @private */
-   jsrp.drawASImage = function(dom, obj, opt) {
-      let painter = new TASImagePainter(dom, obj, opt);
-      painter.decodeOptions(opt);
-      return jsrp.ensureTCanvas(painter, false)
-                 .then(() => painter.drawImage())
-                 .then(() => {
-                     painter.fillToolbar();
-                     return painter;
-                 });
    }
 
    // ===================================================================================
@@ -4288,163 +4275,154 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    /**
     * @summary Painter class for TRatioPlot
     *
-    * @class
     * @memberof JSROOT
-    * @extends JSROOT.ObjectPainter
-    * @param {object|string} dom - DOM element for drawing or element id
-    * @param {object} ratio - TRatioPlot object
-    * @param {string} [opt] - draw options
     * @private
     */
 
-   function TRatioPlotPainter(dom, ratio, opt) {
-      ObjectPainter.call(this, dom, ratio, opt);
-   }
+   class TRatioPlotPainter extends ObjectPainter {
 
-   TRatioPlotPainter.prototype = Object.create(ObjectPainter.prototype);
+      /** @summary Set grids range */
+      setGridsRange(xmin, xmax) {
+         let ratio = this.getObject(),
+             pp = this.getPadPainter();
+         if (xmin === xmax) {
+            let low_p = pp.findPainterFor(ratio.fLowerPad, "lower_pad", "TPad"),
+                low_fp = low_p ? low_p.getFramePainter() : null;
+            if (!low_fp || !low_fp.x_handle) return;
+            xmin = low_fp.x_handle.full_min;
+            xmax = low_fp.x_handle.full_max;
+         }
 
-   /** @summary Set grids range */
-   TRatioPlotPainter.prototype.setGridsRange = function(xmin, xmax) {
-      let ratio = this.getObject(),
-          pp = this.getPadPainter();
-      if (xmin === xmax) {
-         let low_p = pp.findPainterFor(ratio.fLowerPad, "lower_pad", "TPad"),
-             low_fp = low_p ? low_p.getFramePainter() : null;
-         if (!low_fp || !low_fp.x_handle) return;
-         xmin = low_fp.x_handle.full_min;
-         xmax = low_fp.x_handle.full_max;
-      }
-
-      ratio.fGridlines.forEach(line => {
-         line.fX1 = xmin;
-         line.fX2 = xmax;
-      });
-   }
-
-   /** @summary Redraw TRatioPlot */
-   TRatioPlotPainter.prototype.redraw = function() {
-      let ratio = this.getObject(),
-          pp = this.getPadPainter();
-
-      let top_p = pp.findPainterFor(ratio.fTopPad, "top_pad", "TPad");
-      if (top_p) top_p.disablePadDrawing();
-
-      let up_p = pp.findPainterFor(ratio.fUpperPad, "upper_pad", "TPad"),
-          up_main = up_p ? up_p.getMainPainter() : null,
-          up_fp = up_p ? up_p.getFramePainter() : null,
-          low_p = pp.findPainterFor(ratio.fLowerPad, "lower_pad", "TPad"),
-          low_main = low_p ? low_p.getMainPainter() : null,
-          low_fp = low_p ? low_p.getFramePainter() : null,
-          lbl_size = 20, promise_up = Promise.resolve(true);
-
-      if (up_p && up_main && up_fp && low_fp && !up_p._ratio_configured) {
-         up_p._ratio_configured = true;
-         up_main.options.Axis = 0; // draw both axes
-
-         lbl_size = up_main.getHisto().fYaxis.fLabelSize;
-         if (lbl_size < 1) lbl_size = Math.round(lbl_size*Math.min(up_p.getPadWidth(), up_p.getPadHeight()));
-
-         let h = up_main.getHisto();
-         h.fXaxis.fLabelSize = 0; // do not draw X axis labels
-         h.fXaxis.fTitle = ""; // do not draw X axis title
-         h.fYaxis.fLabelSize = lbl_size;
-         h.fYaxis.fTitleSize = lbl_size;
-
-         up_p.getRootPad().fTicky = 1;
-
-         promise_up = up_p.redrawPad().then(() => {
-            up_fp.o_zoom = up_fp.zoom;
-            up_fp._ratio_low_fp = low_fp;
-            up_fp._ratio_painter = this;
-
-            up_fp.zoom = function(xmin,xmax,ymin,ymax,zmin,zmax) {
-               this._ratio_painter.setGridsRange(xmin, xmax);
-               this._ratio_low_fp.o_zoom(xmin,xmax);
-               return this.o_zoom(xmin,xmax,ymin,ymax,zmin,zmax);
-            }
-
-            up_fp.o_sizeChanged = up_fp.sizeChanged;
-            up_fp.sizeChanged = function() {
-               this.o_sizeChanged();
-               this._ratio_low_fp.fX1NDC = this.fX1NDC;
-               this._ratio_low_fp.fX2NDC = this.fX2NDC;
-               this._ratio_low_fp.o_sizeChanged();
-            }
-            return true;
+         ratio.fGridlines.forEach(line => {
+            line.fX1 = xmin;
+            line.fX2 = xmax;
          });
       }
 
-      return promise_up.then(() => {
+      /** @summary Redraw TRatioPlot */
+      redraw() {
+         let ratio = this.getObject(),
+             pp = this.getPadPainter();
 
-         if (!low_p || !low_main || !low_fp || !up_fp || low_p._ratio_configured)
-            return this;
+         let top_p = pp.findPainterFor(ratio.fTopPad, "top_pad", "TPad");
+         if (top_p) top_p.disablePadDrawing();
 
-         low_p._ratio_configured = true;
-         low_main.options.Axis = 0; // draw both axes
-         let h = low_main.getHisto();
-         h.fXaxis.fTitle = "x";
-         h.fXaxis.fLabelSize = lbl_size;
-         h.fXaxis.fTitleSize = lbl_size;
-         h.fYaxis.fLabelSize = lbl_size;
-         h.fYaxis.fTitleSize = lbl_size;
-         low_p.getRootPad().fTicky = 1;
+         let up_p = pp.findPainterFor(ratio.fUpperPad, "upper_pad", "TPad"),
+             up_main = up_p ? up_p.getMainPainter() : null,
+             up_fp = up_p ? up_p.getFramePainter() : null,
+             low_p = pp.findPainterFor(ratio.fLowerPad, "lower_pad", "TPad"),
+             low_main = low_p ? low_p.getMainPainter() : null,
+             low_fp = low_p ? low_p.getFramePainter() : null,
+             lbl_size = 20, promise_up = Promise.resolve(true);
 
-         low_p.forEachPainterInPad(objp => {
-            if (typeof objp.testEditable == 'function')
-               objp.testEditable(false);
-         });
+         if (up_p && up_main && up_fp && low_fp && !up_p._ratio_configured) {
+            up_p._ratio_configured = true;
+            up_main.options.Axis = 0; // draw both axes
 
-         let arr = [], currpad;
+            lbl_size = up_main.getHisto().fYaxis.fLabelSize;
+            if (lbl_size < 1) lbl_size = Math.round(lbl_size*Math.min(up_p.getPadWidth(), up_p.getPadHeight()));
 
-         if ((ratio.fGridlinePositions.length > 0) && (ratio.fGridlines.length < ratio.fGridlinePositions.length)) {
-            ratio.fGridlinePositions.forEach(gridy => {
-               let found = false;
-               ratio.fGridlines.forEach(line => {
-                  if ((line.fY1 == line.fY2) && (Math.abs(line.fY1 - gridy) < 1e-6)) found = true;
-               });
-               if (!found) {
-                  let line = JSROOT.create("TLine");
-                  line.fX1 = up_fp.scale_xmin;
-                  line.fX2 = up_fp.scale_xmax;
-                  line.fY1 = line.fY2 = gridy;
-                  line.fLineStyle = 2;
-                  ratio.fGridlines.push(line);
-                  if (currpad === undefined) currpad = this.selectCurrentPad(ratio.fLowerPad.fName);
-                  arr.push(JSROOT.draw(this.getDom(), line));
+            let h = up_main.getHisto();
+            h.fXaxis.fLabelSize = 0; // do not draw X axis labels
+            h.fXaxis.fTitle = ""; // do not draw X axis title
+            h.fYaxis.fLabelSize = lbl_size;
+            h.fYaxis.fTitleSize = lbl_size;
+
+            up_p.getRootPad().fTicky = 1;
+
+            promise_up = up_p.redrawPad().then(() => {
+               up_fp.o_zoom = up_fp.zoom;
+               up_fp._ratio_low_fp = low_fp;
+               up_fp._ratio_painter = this;
+
+               up_fp.zoom = function(xmin,xmax,ymin,ymax,zmin,zmax) {
+                  this._ratio_painter.setGridsRange(xmin, xmax);
+                  this._ratio_low_fp.o_zoom(xmin,xmax);
+                  return this.o_zoom(xmin,xmax,ymin,ymax,zmin,zmax);
                }
+
+               up_fp.o_sizeChanged = up_fp.sizeChanged;
+               up_fp.sizeChanged = function() {
+                  this.o_sizeChanged();
+                  this._ratio_low_fp.fX1NDC = this.fX1NDC;
+                  this._ratio_low_fp.fX2NDC = this.fX2NDC;
+                  this._ratio_low_fp.o_sizeChanged();
+               }
+               return true;
             });
          }
 
-         return Promise.all(arr).then(() => low_fp.zoom(up_fp.scale_xmin,  up_fp.scale_xmax)).then(() => {
+         return promise_up.then(() => {
 
-            low_fp.o_zoom = low_fp.zoom;
-            low_fp._ratio_up_fp = up_fp;
-            low_fp._ratio_painter = this;
+            if (!low_p || !low_main || !low_fp || !up_fp || low_p._ratio_configured)
+               return this;
 
-            low_fp.zoom = function(xmin,xmax,ymin,ymax,zmin,zmax) {
-               this._ratio_painter.setGridsRange(xmin, xmax);
-               this._ratio_up_fp.o_zoom(xmin,xmax);
-               return this.o_zoom(xmin,xmax,ymin,ymax,zmin,zmax);
+            low_p._ratio_configured = true;
+            low_main.options.Axis = 0; // draw both axes
+            let h = low_main.getHisto();
+            h.fXaxis.fTitle = "x";
+            h.fXaxis.fLabelSize = lbl_size;
+            h.fXaxis.fTitleSize = lbl_size;
+            h.fYaxis.fLabelSize = lbl_size;
+            h.fYaxis.fTitleSize = lbl_size;
+            low_p.getRootPad().fTicky = 1;
+
+            low_p.forEachPainterInPad(objp => {
+               if (typeof objp.testEditable == 'function')
+                  objp.testEditable(false);
+            });
+
+            let arr = [], currpad;
+
+            if ((ratio.fGridlinePositions.length > 0) && (ratio.fGridlines.length < ratio.fGridlinePositions.length)) {
+               ratio.fGridlinePositions.forEach(gridy => {
+                  let found = false;
+                  ratio.fGridlines.forEach(line => {
+                     if ((line.fY1 == line.fY2) && (Math.abs(line.fY1 - gridy) < 1e-6)) found = true;
+                  });
+                  if (!found) {
+                     let line = JSROOT.create("TLine");
+                     line.fX1 = up_fp.scale_xmin;
+                     line.fX2 = up_fp.scale_xmax;
+                     line.fY1 = line.fY2 = gridy;
+                     line.fLineStyle = 2;
+                     ratio.fGridlines.push(line);
+                     if (currpad === undefined) currpad = this.selectCurrentPad(ratio.fLowerPad.fName);
+                     arr.push(JSROOT.draw(this.getDom(), line));
+                  }
+               });
             }
 
-            low_fp.o_sizeChanged = low_fp.sizeChanged;
-            low_fp.sizeChanged = function() {
-               this.o_sizeChanged();
-               this._ratio_up_fp.fX1NDC = this.fX1NDC;
-               this._ratio_up_fp.fX2NDC = this.fX2NDC;
-               this._ratio_up_fp.o_sizeChanged();
-            }
-            return this;
+            return Promise.all(arr).then(() => low_fp.zoom(up_fp.scale_xmin,  up_fp.scale_xmax)).then(() => {
+
+               low_fp.o_zoom = low_fp.zoom;
+               low_fp._ratio_up_fp = up_fp;
+               low_fp._ratio_painter = this;
+
+               low_fp.zoom = function(xmin,xmax,ymin,ymax,zmin,zmax) {
+                  this._ratio_painter.setGridsRange(xmin, xmax);
+                  this._ratio_up_fp.o_zoom(xmin,xmax);
+                  return this.o_zoom(xmin,xmax,ymin,ymax,zmin,zmax);
+               }
+
+               low_fp.o_sizeChanged = low_fp.sizeChanged;
+               low_fp.sizeChanged = function() {
+                  this.o_sizeChanged();
+                  this._ratio_up_fp.fX1NDC = this.fX1NDC;
+                  this._ratio_up_fp.fX2NDC = this.fX2NDC;
+                  this._ratio_up_fp.o_sizeChanged();
+               }
+               return this;
+            });
          });
-      });
-   }
+      }
 
-   /** @summary Draw TRatioPlot
-     * @private */
-   jsrp.drawRatioPlot = function(dom, ratio, opt) {
-      let painter = new TRatioPlotPainter(dom, ratio, opt);
+      /** @summary Draw TRatioPlot */
+      static draw(dom, ratio, opt) {
+         let painter = new TRatioPlotPainter(dom, ratio, opt);
 
-      return jsrp.ensureTCanvas(painter, false).then(() => painter.redraw());
+         return jsrp.ensureTCanvas(painter, false).then(() => painter.redraw());
+      }
    }
 
    // ==================================================================================================
