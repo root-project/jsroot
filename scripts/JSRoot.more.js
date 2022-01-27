@@ -3343,6 +3343,15 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    // =============================================================
 
+   const kIsBayesian       = JSROOT.BIT(14),  ///< Bayesian statistics are used
+         kPosteriorMode    = JSROOT.BIT(15),  ///< Use posterior mean for best estimate (Bayesian statistics)
+    //   kShortestInterval = JSROOT.BIT(16),  ///< Use shortest interval, not implemented in JSROOT - too complicated
+         kUseBinPrior      = JSROOT.BIT(17),  ///< Use a different prior for each bin
+         kUseWeights       = JSROOT.BIT(18);  ///< Use weights
+
+   const getBetaAlpha = (obj,bin) => (obj.fBeta_bin_params.length > bin) ? obj.fBeta_bin_params[bin].first : obj.fBeta_alpha;
+   const getBetaBeta = (obj,bin) => (obj.fBeta_bin_params.length > bin) ? obj.fBeta_bin_params[bin].second : obj.fBeta_beta;
+
    /**
     * @summary Painter for TEfficiency object
     *
@@ -3354,179 +3363,172 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
     * @private
     */
 
-   function TEfficiencyPainter(dom, eff) {
-      JSROOT.ObjectPainter.call(this, dom, eff);
-   }
+   class TEfficiencyPainter extends JSROOT.ObjectPainter {
 
-   TEfficiencyPainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
-
-   const kIsBayesian       = JSROOT.BIT(14),  ///< Bayesian statistics are used
-         kPosteriorMode    = JSROOT.BIT(15),  ///< Use posterior mean for best estimate (Bayesian statistics)
-    //   kShortestInterval = JSROOT.BIT(16),  ///< Use shortest interval, not implemented in JSROOT - too complicated
-         kUseBinPrior      = JSROOT.BIT(17),  ///< Use a different prior for each bin
-         kUseWeights       = JSROOT.BIT(18);  ///< Use weights
-
-   const getBetaAlpha = (obj,bin) => (obj.fBeta_bin_params.length > bin) ? obj.fBeta_bin_params[bin].first : obj.fBeta_alpha;
-   const getBetaBeta = (obj,bin) => (obj.fBeta_bin_params.length > bin) ? obj.fBeta_bin_params[bin].second : obj.fBeta_beta;
-
-   /** @summary Caluclate efficiency */
-   TEfficiencyPainter.prototype.getEfficiency = function(obj, bin) {
-
-      const BetaMean = (a,b) => (a <= 0 || b <= 0 ) ? 0 : a / (a + b);
-      const BetaMode = (a,b) => {
-         if (a <= 0 || b <= 0 ) return 0;
-         if ( a <= 1 || b <= 1) {
-            if ( a < b) return 0;
-            if ( a > b) return 1;
-            if (a == b) return 0.5; // cannot do otherwise
-         }
-         return (a - 1.0) / (a + b -2.0);
+      constructor(dom, eff) {
+         super(dom, eff);
       }
 
-      let total = obj.fTotalHistogram.fArray[bin], // should work for both 1-d and 2-d
-          passed = obj.fPassedHistogram.fArray[bin]; // should work for both 1-d and 2-d
+      /** @summary Caluclate efficiency */
+      getEfficiency(obj, bin) {
 
-      if(obj.TestBit(kIsBayesian)) {
-         // parameters for the beta prior distribution
-         let alpha = obj.TestBit(kUseBinPrior) ? getBetaAlpha(obj, bin) : obj.fBeta_alpha,
-             beta  = obj.TestBit(kUseBinPrior) ? getBetaBeta(obj, bin)  : obj.fBeta_beta;
-
-         let aa,bb;
-         if(obj.TestBit(kUseWeights)) {
-            let tw =  total, // fTotalHistogram->GetBinContent(bin);
-                tw2 = obj.fTotalHistogram.fSumw2 ? obj.fTotalHistogram.fSumw2[bin] : Math.abs(total),
-                pw = passed; // fPassedHistogram->GetBinContent(bin);
-
-            if (tw2 <= 0 ) return pw/tw;
-
-            // tw/tw2 renormalize the weights
-            let norm = tw/tw2;
-            aa =  pw * norm + alpha;
-            bb =  (tw - pw) * norm + beta;
-         } else {
-            aa = passed + alpha;
-            bb = total - passed + beta;
+         const BetaMean = (a,b) => (a <= 0 || b <= 0 ) ? 0 : a / (a + b);
+         const BetaMode = (a,b) => {
+            if (a <= 0 || b <= 0 ) return 0;
+            if ( a <= 1 || b <= 1) {
+               if ( a < b) return 0;
+               if ( a > b) return 1;
+               if (a == b) return 0.5; // cannot do otherwise
+            }
+            return (a - 1.0) / (a + b -2.0);
          }
 
-         if (!obj.TestBit(kPosteriorMode) )
-            return BetaMean(aa,bb);
-         else
-            return BetaMode(aa,bb);
-      }
+         let total = obj.fTotalHistogram.fArray[bin], // should work for both 1-d and 2-d
+             passed = obj.fPassedHistogram.fArray[bin]; // should work for both 1-d and 2-d
 
-      return total ? passed/total : 0;
-   }
+         if(obj.TestBit(kIsBayesian)) {
+            // parameters for the beta prior distribution
+            let alpha = obj.TestBit(kUseBinPrior) ? getBetaAlpha(obj, bin) : obj.fBeta_alpha,
+                beta  = obj.TestBit(kUseBinPrior) ? getBetaBeta(obj, bin)  : obj.fBeta_beta;
 
-   /** @summary Caluclate efficiency error low
-     * @private */
-   TEfficiencyPainter.prototype.getEfficiencyErrorLow = function(obj, bin, value) {
-      let total = obj.fTotalHistogram.fArray[bin],
-          passed = obj.fPassedHistogram.fArray[bin],
-          alpha = 0, beta = 0;
-      if (obj.TestBit(kIsBayesian)) {
-         alpha = obj.TestBit(kUseBinPrior) ? getBetaAlpha(obj, bin) : obj.fBeta_alpha;
-         beta  = obj.TestBit(kUseBinPrior) ? getBetaBeta(obj, bin)  : obj.fBeta_beta;
-      }
+            let aa,bb;
+            if(obj.TestBit(kUseWeights)) {
+               let tw =  total, // fTotalHistogram->GetBinContent(bin);
+                   tw2 = obj.fTotalHistogram.fSumw2 ? obj.fTotalHistogram.fSumw2[bin] : Math.abs(total),
+                   pw = passed; // fPassedHistogram->GetBinContent(bin);
 
-      return value - this.fBoundary(total, passed, obj.fConfLevel, false, alpha, beta);
-   }
+               if (tw2 <= 0 ) return pw/tw;
 
-   /** @summary Caluclate efficiency error low up
-     * @private */
-   TEfficiencyPainter.prototype.getEfficiencyErrorUp = function(obj, bin, value) {
-      let total = obj.fTotalHistogram.fArray[bin],
-          passed = obj.fPassedHistogram.fArray[bin],
-          alpha = 0, beta = 0;
-      if (obj.TestBit(kIsBayesian)) {
-         alpha = obj.TestBit(kUseBinPrior) ? getBetaAlpha(obj, bin) : obj.fBeta_alpha;
-         beta  = obj.TestBit(kUseBinPrior) ? getBetaBeta(obj, bin)  : obj.fBeta_beta;
-      }
+               // tw/tw2 renormalize the weights
+               let norm = tw/tw2;
+               aa =  pw * norm + alpha;
+               bb =  (tw - pw) * norm + beta;
+            } else {
+               aa = passed + alpha;
+               bb = total - passed + beta;
+            }
 
-      return this.fBoundary(total, passed, obj.fConfLevel, true, alpha, beta) - value;
-   }
-
-   /** @summary Copy drawning attributes
-     * @private */
-   TEfficiencyPainter.prototype.copyAttributes = function(obj, eff) {
-      ['fLineColor', 'fLineStyle', 'fLineWidth', 'fFillColor', 'fFillStyle', 'fMarkerColor', 'fMarkerStyle', 'fMarkerSize'].forEach(name => obj[name] = eff[name]);
-   }
-
-   /** @summary Create graph for the drawing of 1-dim TEfficiency
-     * @private */
-   TEfficiencyPainter.prototype.createGraph = function(eff) {
-      let gr = JSROOT.create('TGraphAsymmErrors');
-      gr.fName = "eff_graph";
-      return gr;
-   }
-
-   /** @summary Create histogram for the drawing of 2-dim TEfficiency
-     * @private */
-   TEfficiencyPainter.prototype.createHisto = function(eff) {
-      const nbinsx = eff.fTotalHistogram.fXaxis.fNbins,
-            nbinsy = eff.fTotalHistogram.fYaxis.fNbins,
-            hist = JSROOT.createHistogram('TH2F', nbinsx, nbinsy);
-      JSROOT.extend(hist.fXaxis, eff.fTotalHistogram.fXaxis);
-      JSROOT.extend(hist.fYaxis, eff.fTotalHistogram.fYaxis);
-      hist.fName = "eff_histo";
-      return hist;
-   }
-
-   /** @summary Fill graph with points from efficiency object
-     * @private */
-   TEfficiencyPainter.prototype.fillGraph = function(gr, opt) {
-      const eff = this.getObject(),
-            xaxis = eff.fTotalHistogram.fXaxis,
-            npoints = xaxis.fNbins,
-            plot0Bins = (opt.indexOf("e0") >= 0);
-
-      for (let n = 0, j = 0; n < npoints; ++n) {
-         if (!plot0Bins && eff.fTotalHistogram.getBinContent(n+1) === 0) continue;
-
-         let value = this.getEfficiency(eff, n+1);
-
-         gr.fX[j] = xaxis.GetBinCenter(n+1);
-         gr.fY[j] = value;
-         gr.fEXlow[j] = xaxis.GetBinCenter(n+1) - xaxis.GetBinLowEdge(n+1);
-         gr.fEXhigh[j] = xaxis.GetBinLowEdge(n+2) - xaxis.GetBinCenter(n+1);
-         gr.fEYlow[j] = this.getEfficiencyErrorLow(eff, n+1, value);
-         gr.fEYhigh[j] = this.getEfficiencyErrorUp(eff, n+1, value);
-
-         gr.fNpoints = ++j;
-      }
-
-      gr.fTitle = eff.fTitle;
-      this.copyAttributes(gr, eff);
-   }
-
-   /** @summary Fill graph with points from efficiency object
-     * @private */
-   TEfficiencyPainter.prototype.fillHisto = function(hist) {
-      const eff = this.getObject(),
-            nbinsx = hist.fXaxis.fNbins,
-            nbinsy = hist.fYaxis.fNbins,
-            kNoStats = JSROOT.BIT(9);
-
-      for (let i = 0; i < nbinsx+2; ++i)
-         for (let j = 0; j < nbinsy+2; ++j) {
-            let bin = hist.getBin(i, j),
-                value = this.getEfficiency(eff, bin);
-            hist.fArray[bin] = value;
+            if (!obj.TestBit(kPosteriorMode) )
+               return BetaMean(aa,bb);
+            else
+               return BetaMode(aa,bb);
          }
 
-      hist.fTitle = eff.fTitle;
-      hist.fBits = hist.fBits | kNoStats;
-      this.copyAttributes(hist, eff);
-   }
+         return total ? passed/total : 0;
+      }
 
-   /** @summary Draw function
-     * @private */
-   TEfficiencyPainter.prototype.drawFunction = function(indx) {
-      const eff = this.getObject();
+      /** @summary Caluclate efficiency error low
+        * @private */
+      getEfficiencyErrorLow(obj, bin, value) {
+         let total = obj.fTotalHistogram.fArray[bin],
+             passed = obj.fPassedHistogram.fArray[bin],
+             alpha = 0, beta = 0;
+         if (obj.TestBit(kIsBayesian)) {
+            alpha = obj.TestBit(kUseBinPrior) ? getBetaAlpha(obj, bin) : obj.fBeta_alpha;
+            beta  = obj.TestBit(kUseBinPrior) ? getBetaBeta(obj, bin)  : obj.fBeta_beta;
+         }
 
-      if (!eff || !eff.fFunctions || indx >= eff.fFunctions.arr.length)
-         return this;
+         return value - this.fBoundary(total, passed, obj.fConfLevel, false, alpha, beta);
+      }
 
-       return JSROOT.draw(this.getDom(), eff.fFunctions.arr[indx], eff.fFunctions.opt[indx]).then(() => this.drawFunction(indx+1));
+      /** @summary Caluclate efficiency error low up
+        * @private */
+      getEfficiencyErrorUp(obj, bin, value) {
+         let total = obj.fTotalHistogram.fArray[bin],
+             passed = obj.fPassedHistogram.fArray[bin],
+             alpha = 0, beta = 0;
+         if (obj.TestBit(kIsBayesian)) {
+            alpha = obj.TestBit(kUseBinPrior) ? getBetaAlpha(obj, bin) : obj.fBeta_alpha;
+            beta  = obj.TestBit(kUseBinPrior) ? getBetaBeta(obj, bin)  : obj.fBeta_beta;
+         }
+
+         return this.fBoundary(total, passed, obj.fConfLevel, true, alpha, beta) - value;
+      }
+
+      /** @summary Copy drawning attributes
+        * @private */
+      copyAttributes(obj, eff) {
+         ['fLineColor', 'fLineStyle', 'fLineWidth', 'fFillColor', 'fFillStyle', 'fMarkerColor', 'fMarkerStyle', 'fMarkerSize'].forEach(name => obj[name] = eff[name]);
+      }
+
+      /** @summary Create graph for the drawing of 1-dim TEfficiency
+        * @private */
+      createGraph(/*eff*/) {
+         let gr = JSROOT.create('TGraphAsymmErrors');
+         gr.fName = "eff_graph";
+         return gr;
+      }
+
+      /** @summary Create histogram for the drawing of 2-dim TEfficiency
+        * @private */
+      createHisto(eff) {
+         const nbinsx = eff.fTotalHistogram.fXaxis.fNbins,
+               nbinsy = eff.fTotalHistogram.fYaxis.fNbins,
+               hist = JSROOT.createHistogram('TH2F', nbinsx, nbinsy);
+         JSROOT.extend(hist.fXaxis, eff.fTotalHistogram.fXaxis);
+         JSROOT.extend(hist.fYaxis, eff.fTotalHistogram.fYaxis);
+         hist.fName = "eff_histo";
+         return hist;
+      }
+
+      /** @summary Fill graph with points from efficiency object
+        * @private */
+      fillGraph(gr, opt) {
+         const eff = this.getObject(),
+               xaxis = eff.fTotalHistogram.fXaxis,
+               npoints = xaxis.fNbins,
+               plot0Bins = (opt.indexOf("e0") >= 0);
+
+         for (let n = 0, j = 0; n < npoints; ++n) {
+            if (!plot0Bins && eff.fTotalHistogram.getBinContent(n+1) === 0) continue;
+
+            let value = this.getEfficiency(eff, n+1);
+
+            gr.fX[j] = xaxis.GetBinCenter(n+1);
+            gr.fY[j] = value;
+            gr.fEXlow[j] = xaxis.GetBinCenter(n+1) - xaxis.GetBinLowEdge(n+1);
+            gr.fEXhigh[j] = xaxis.GetBinLowEdge(n+2) - xaxis.GetBinCenter(n+1);
+            gr.fEYlow[j] = this.getEfficiencyErrorLow(eff, n+1, value);
+            gr.fEYhigh[j] = this.getEfficiencyErrorUp(eff, n+1, value);
+
+            gr.fNpoints = ++j;
+         }
+
+         gr.fTitle = eff.fTitle;
+         this.copyAttributes(gr, eff);
+      }
+
+      /** @summary Fill graph with points from efficiency object
+        * @private */
+      fillHisto(hist) {
+         const eff = this.getObject(),
+               nbinsx = hist.fXaxis.fNbins,
+               nbinsy = hist.fYaxis.fNbins,
+               kNoStats = JSROOT.BIT(9);
+
+         for (let i = 0; i < nbinsx+2; ++i)
+            for (let j = 0; j < nbinsy+2; ++j) {
+               let bin = hist.getBin(i, j),
+                   value = this.getEfficiency(eff, bin);
+               hist.fArray[bin] = value;
+            }
+
+         hist.fTitle = eff.fTitle;
+         hist.fBits = hist.fBits | kNoStats;
+         this.copyAttributes(hist, eff);
+      }
+
+      /** @summary Draw function
+        * @private */
+      drawFunction(indx) {
+         const eff = this.getObject();
+
+         if (!eff || !eff.fFunctions || indx >= eff.fFunctions.arr.length)
+            return this;
+
+          return JSROOT.draw(this.getDom(), eff.fFunctions.arr[indx], eff.fFunctions.opt[indx]).then(() => this.drawFunction(indx+1));
+      }
+
    }
 
    /** @summary Draw TEfficiency object
