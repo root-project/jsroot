@@ -3618,8 +3618,8 @@ JSROOT.define(['d3'], (d3) => {
    // list of registered draw functions
    let drawFuncs = { lst: [
       { name: "TCanvas", icon: "img_canvas", prereq: "gpad", class: "TCanvasPainter", opt: ";grid;gridx;gridy;tick;tickx;ticky;log;logx;logy;logz", expand_item: "fPrimitives" },
-      { name: "TPad", icon: "img_canvas", prereq: "gpad", func: ".drawPad", opt: ";grid;gridx;gridy;tick;tickx;ticky;log;logx;logy;logz", expand_item: "fPrimitives" },
-      { name: "TSlider", icon: "img_canvas", prereq: "gpad", func: ".drawPad" },
+      { name: "TPad", icon: "img_canvas", prereq: "gpad", class: "TPadPainter", opt: ";grid;gridx;gridy;tick;tickx;ticky;log;logx;logy;logz", expand_item: "fPrimitives" },
+      { name: "TSlider", icon: "img_canvas", prereq: "gpad", class: "TPadPainter" },
       { name: "TFrame", icon: "img_frame", prereq: "gpad", func: ".drawFrame" },
       { name: "TPave", icon: "img_pavetext", prereq: "hist", class: "TPavePainter" },
       { name: "TPaveText", icon: "img_pavetext", prereq: "hist", class: "TPavePainter" },
