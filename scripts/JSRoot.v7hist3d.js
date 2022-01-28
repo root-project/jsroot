@@ -1398,7 +1398,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'latex', 'v7hist'], (d3, THREE, jsrp, 
 
    // ==========================================================================================
 
-   JSROOT.v7.RH2Painter.prototype.draw3D = function(reason) {
+   JSROOT.RH2Painter.prototype.draw3D = function(reason) {
 
       this.mode3d = true;
 
@@ -1442,9 +1442,8 @@ JSROOT.define(['d3', 'base3d', 'painter', 'latex', 'v7hist'], (d3, THREE, jsrp, 
       });
    }
 
-   /** Draw histogram bins in 3D, using provided draw options
-     * @private */
-   JSROOT.v7.RH2Painter.prototype.draw3DBins = function() {
+   /** Draw histogram bins in 3D, using provided draw options */
+   JSROOT.RH2Painter.prototype.draw3DBins = function() {
 
       if (!this.draw_content) return;
 
@@ -1487,9 +1486,8 @@ JSROOT.define(['d3', 'base3d', 'painter', 'latex', 'v7hist'], (d3, THREE, jsrp, 
       return material;
    }
 
-   /** @summary Draw RH2 as 3D contour plot
-     * @private */
-   JSROOT.v7.RH2Painter.prototype.drawContour3D = function(realz) {
+   /** @summary Draw RH2 as 3D contour plot */
+   JSROOT.RH2Painter.prototype.drawContour3D = function(realz) {
       // for contour plots one requires handle with full range
       let main = this.getFramePainter(),
           handle = this.prepareDraw({rounding: false, use3d: true, extra: 100, middle: 0.0 }),
@@ -1523,7 +1521,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'latex', 'v7hist'], (d3, THREE, jsrp, 
 
    /** @summary Draw RH2 histograms in surf mode
      * @private */
-   JSROOT.v7.RH2Painter.prototype.drawSurf = function() {
+   JSROOT.RH2Painter.prototype.drawSurf = function() {
       let histo = this.getHisto(),
           main = this.getFramePainter(),
           handle = this.prepareDraw({rounding: false, use3d: true, extra: 1, middle: 0.5 }),
@@ -1945,9 +1943,8 @@ JSROOT.define(['d3', 'base3d', 'painter', 'latex', 'v7hist'], (d3, THREE, jsrp, 
       this.updatePaletteDraw();
    }
 
-   /** @summary Draw RH2 histogram in error mode
-     * @private */
-   JSROOT.v7.RH2Painter.prototype.drawError = function() {
+   /** @summary Draw RH2 histogram in error mode */
+   JSROOT.RH2Painter.prototype.drawError = function() {
       let main = this.getFramePainter(),
           histo = this.getHisto(),
           handle = this.prepareDraw({ rounding: false, use3d: true, extra: 1 }),
@@ -2054,9 +2051,8 @@ JSROOT.define(['d3', 'base3d', 'painter', 'latex', 'v7hist'], (d3, THREE, jsrp, 
        main.toplevel.add(line);
    }
 
-   /** @summary Draw RH2Poly histogram as lego
-     * @private */
-   JSROOT.v7.RH2Painter.prototype.drawPolyLego = function() {
+   /** @summary Draw RH2Poly histogram as lego */
+   JSROOT.RH2Painter.prototype.drawPolyLego = function() {
       let histo = this.getHisto(),
           palette = this.getHistPalette(),
           pmain = this.getFramePainter(),
