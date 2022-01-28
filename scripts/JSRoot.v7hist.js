@@ -2020,7 +2020,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
       /** @summary Execute menu command */
       executeMenuCommand(method, args) {
-         if (RHistPainter.prototype.executeMenuCommand.call(this,method, args)) return true;
+         if (super.executeMenuCommand(method, args)) return true;
 
          if ((method.fName == 'SetShowProjectionX') || (method.fName == 'SetShowProjectionY')) {
             this.toggleProjection(method.fName[17], args && parseInt(args) ? parseInt(args) : 1);
@@ -2057,7 +2057,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
       /** @summary Process click on histogram-defined buttons */
       clickButton(funcname) {
-         if (RHistPainter.prototype.clickButton.call(this, funcname)) return true;
+         if (super.clickButton(funcname)) return true;
 
          switch(funcname) {
             case "ToggleColor": this.toggleColor(); break;
@@ -2072,7 +2072,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
       /** @summary Fill pad toolbar with RH2-related functions */
       fillToolbar() {
-         RHistPainter.prototype.fillToolbar.call(this, true);
+         super.fillToolbar(true);
 
          let pp = this.getPadPainter();
          if (!pp) return;
