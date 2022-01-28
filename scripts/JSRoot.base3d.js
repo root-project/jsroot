@@ -1205,98 +1205,96 @@ JSROOT.define(['d3', 'three', 'painter'], (d3, THREE, jsrp) => {
 
    // ==============================================================================
 
-   function InteractiveControl() {}
-
-   InteractiveControl.prototype.cleanup = function() {}
-
-   InteractiveControl.prototype.extractIndex = function(/*intersect*/) { return undefined; }
-
-   InteractiveControl.prototype.setSelected = function(/*col, indx*/) {}
-
-   InteractiveControl.prototype.setHighlight = function(/*col, indx*/) {}
-
-   InteractiveControl.prototype.checkHighlightIndex = function(/*indx*/) { return undefined; }
+   class InteractiveControl {
+      cleanup() {}
+      extractIndex(/*intersect*/) {}
+      setSelected(/*col, indx*/) {}
+      setHighlight(/*col, indx*/) {}
+      checkHighlightIndex(/*indx*/) {}
+   }
 
    // ==============================================================================
 
    /**
     * @summary Special class to control highliht and selection of single points, used in geo painter
     *
-    * @class
     * @memberof JSROOT
-    * @param {object} mesh - draw object
     * @private
     */
 
-   function PointsControl(mesh) {
-      InteractiveControl.call(this);
-      this.mesh = mesh;
-   }
+   class PointsControl extends InteractiveControl {
 
-   PointsControl.prototype = Object.create(InteractiveControl.prototype);
-
-   /** @summary cleanup object */
-   PointsControl.prototype.cleanup = function() {
-      if (!this.mesh) return;
-      delete this.mesh.is_selected;
-      this.createSpecial(null);
-      delete this.mesh;
-   }
-
-   /** @summary extract intersect index */
-   PointsControl.prototype.extractIndex = function(intersect) {
-      return intersect && intersect.index!==undefined ? intersect.index : undefined;
-   }
-
-   /** @summary set selection */
-   PointsControl.prototype.setSelected = function(col, indx) {
-      let m = this.mesh;
-      if ((m.select_col == col) && (m.select_indx == indx)) {
-         col = null; indx = undefined;
+      /** @summary constructor
+        * @param {object} mesh - draw object */
+      constructor(mesh) {
+         super();
+         this.mesh = mesh;
       }
-      m.select_col = col;
-      m.select_indx = indx;
-      this.createSpecial(col, indx);
-      return true;
-   }
 
-   /** @summary set highlight */
-   PointsControl.prototype.setHighlight = function(col, indx) {
-      let m = this.mesh;
-      m.h_index = indx;
-      if (col)
-         this.createSpecial(col, indx);
-      else
-         this.createSpecial(m.select_col, m.select_indx);
-      return true;
-   }
+      /** @summary cleanup object */
+      cleanup() {
+         if (!this.mesh) return;
+         delete this.mesh.is_selected;
+         this.createSpecial(null);
+         delete this.mesh;
+      }
 
-   /** @summary create special object */
-   PointsControl.prototype.createSpecial = function(color, index) {
-      let m = this.mesh;
-      if (!color) {
-         if (m.js_special) {
-            m.remove(m.js_special);
-            jsrp.disposeThreejsObject(m.js_special);
-            delete m.js_special;
+      /** @summary extract intersect index */
+      extractIndex(intersect) {
+         return intersect && intersect.index!==undefined ? intersect.index : undefined;
+      }
+
+      /** @summary set selection */
+      setSelected(col, indx) {
+         let m = this.mesh;
+         if ((m.select_col == col) && (m.select_indx == indx)) {
+            col = null; indx = undefined;
          }
-         return;
+         m.select_col = col;
+         m.select_indx = indx;
+         this.createSpecial(col, indx);
+         return true;
       }
 
-      if (!m.js_special) {
-         let geom = new THREE.BufferGeometry();
-         geom.setAttribute( 'position', m.geometry.getAttribute("position"));
-         let material = new THREE.PointsMaterial( { size: m.material.size*2, color: color } );
-         material.sizeAttenuation = m.material.sizeAttenuation;
-
-         m.js_special = new THREE.Points(geom, material);
-         m.js_special.jsroot_special = true; // special object, exclude from intersections
-         m.add(m.js_special);
+      /** @summary set highlight */
+      setHighlight(col, indx) {
+         let m = this.mesh;
+         m.h_index = indx;
+         if (col)
+            this.createSpecial(col, indx);
+         else
+            this.createSpecial(m.select_col, m.select_indx);
+         return true;
       }
 
-      m.js_special.material.color = new THREE.Color(color);
-      if (index !== undefined) m.js_special.geometry.setDrawRange(index, 1);
-   }
+      /** @summary create special object */
+      createSpecial(color, index) {
+         let m = this.mesh;
+         if (!color) {
+            if (m.js_special) {
+               m.remove(m.js_special);
+               jsrp.disposeThreejsObject(m.js_special);
+               delete m.js_special;
+            }
+            return;
+         }
+
+         if (!m.js_special) {
+            let geom = new THREE.BufferGeometry();
+            geom.setAttribute( 'position', m.geometry.getAttribute("position"));
+            let material = new THREE.PointsMaterial( { size: m.material.size*2, color: color } );
+            material.sizeAttenuation = m.material.sizeAttenuation;
+
+            m.js_special = new THREE.Points(geom, material);
+            m.js_special.jsroot_special = true; // special object, exclude from intersections
+            m.add(m.js_special);
+         }
+
+         m.js_special.material.color = new THREE.Color(color);
+         if (index !== undefined) m.js_special.geometry.setDrawRange(index, 1);
+      }
+
+   } // PointsControl
 
    // ==============================================================================
 
