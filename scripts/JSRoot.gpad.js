@@ -4941,7 +4941,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          painter.addPadButtons();
 
-         let promise = (nocanvas && opt.indexOf("noframe") < 0) ? TPadPainter.draw(dom, null) : Promise.resolve(true);
+         let promise = (nocanvas && opt.indexOf("noframe") < 0) ? TFramePainter.draw(dom, null) : Promise.resolve(true);
          return promise.then(() => {
             // select global reference - required for keys handling
             jsrp.selectActivePad({ pp: painter, active: true });
