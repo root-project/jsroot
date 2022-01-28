@@ -22,245 +22,248 @@ JSROOT.define(['d3', 'three', 'painter'], (d3, THREE, jsrp) => {
       return render3d;
    }
 
-   let Handling3DDrawings = {};
+   let Handling3DDrawings = {
 
-   /** @summary Access current 3d mode
-     * @param {string} [new_value] - when specified, set new 3d mode
-     * @returns current value
-     * @private*/
-   Handling3DDrawings.access3dKind = function(new_value) {
-      let svg = this.getPadSvg();
-      if (svg.empty()) return -1;
+      /** @summary Access current 3d mode
+        * @param {string} [new_value] - when specified, set new 3d mode
+        * @returns current value
+        * @private */
+      access3dKind(new_value) {
+         let svg = this.getPadSvg();
+         if (svg.empty()) return -1;
 
-      // returns kind of currently created 3d canvas
-      let kind = svg.property('can3d');
-      if (new_value !== undefined) svg.property('can3d', new_value);
-      return ((kind === null) || (kind === undefined)) ? -1 : kind;
-   }
+         // returns kind of currently created 3d canvas
+         let kind = svg.property('can3d');
+         if (new_value !== undefined) svg.property('can3d', new_value);
+         return ((kind === null) || (kind === undefined)) ? -1 : kind;
+      },
 
-   /** @summary Returns size which availble for 3D drawing.
-     * @desc One uses frame sizes for the 3D drawing - like TH2/TH3 objects
-     * @private */
-   Handling3DDrawings.getSizeFor3d = function(can3d, render3d) {
+      /** @summary Returns size which availble for 3D drawing.
+        * @desc One uses frame sizes for the 3D drawing - like TH2/TH3 objects
+        * @private */
+      getSizeFor3d(can3d, render3d) {
 
-      if (can3d === undefined) {
-         // analyze which render/embed mode can be used
-         can3d = jsrp.getRender3DKind();
-         // all non-webgl elements can be embedded into SVG as is
-         if (can3d !== JSROOT.constants.Render3D.WebGL)
-            can3d = JSROOT.constants.Embed3D.EmbedSVG;
-         else if (JSROOT.settings.Embed3D != JSROOT.constants.Embed3D.Default)
-            can3d = JSROOT.settings.Embed3D;
-         else if (JSROOT.browser.isFirefox)
-            can3d = JSROOT.constants.Embed3D.Embed;
-         else if (JSROOT.browser.chromeVersion > 95)
-         // version 96 works partially, 97 works fine
-            can3d = JSROOT.constants.Embed3D.Embed;
-         else
-            can3d = JSROOT.constants.Embed3D.Overlay;
-      }
-
-      let pad = this.getPadSvg(),
-          clname = "draw3d_" + (this.getPadName() || 'canvas');
-
-      if (pad.empty()) {
-         // this is a case when object drawn without canvas
-
-         let rect = jsrp.getElementRect(this.selectDom());
-
-         if ((rect.height < 10) && (rect.width > 10)) {
-            rect.height = Math.round(0.66 * rect.width);
-            this.selectDom().style('height', rect.height + "px");
+         if (can3d === undefined) {
+            // analyze which render/embed mode can be used
+            can3d = jsrp.getRender3DKind();
+            // all non-webgl elements can be embedded into SVG as is
+            if (can3d !== JSROOT.constants.Render3D.WebGL)
+               can3d = JSROOT.constants.Embed3D.EmbedSVG;
+            else if (JSROOT.settings.Embed3D != JSROOT.constants.Embed3D.Default)
+               can3d = JSROOT.settings.Embed3D;
+            else if (JSROOT.browser.isFirefox)
+               can3d = JSROOT.constants.Embed3D.Embed;
+            else if (JSROOT.browser.chromeVersion > 95)
+            // version 96 works partially, 97 works fine
+               can3d = JSROOT.constants.Embed3D.Embed;
+            else
+               can3d = JSROOT.constants.Embed3D.Overlay;
          }
-         rect.x = 0; rect.y = 0; rect.clname = clname; rect.can3d = -1;
-         return rect;
-      }
 
-      let fp = this.getFramePainter(), pp = this.getPadPainter(), size;
+         let pad = this.getPadSvg(),
+             clname = "draw3d_" + (this.getPadName() || 'canvas');
 
-      if (fp && fp.mode3d && (can3d > 0)) {
-         size = fp.getFrameRect();
-      } else {
-         let elem = (can3d > 0) ? pad : this.getCanvSvg();
-         size = { x: 0, y: 0, width: elem.property("draw_width"), height: elem.property("draw_height") };
-         if (fp && !fp.mode3d) {
-            elem = this.getFrameSvg();
-            size.x = elem.property("draw_x");
-            size.y = elem.property("draw_y");
+         if (pad.empty()) {
+            // this is a case when object drawn without canvas
+
+            let rect = jsrp.getElementRect(this.selectDom());
+
+            if ((rect.height < 10) && (rect.width > 10)) {
+               rect.height = Math.round(0.66 * rect.width);
+               this.selectDom().style('height', rect.height + "px");
+            }
+            rect.x = 0; rect.y = 0; rect.clname = clname; rect.can3d = -1;
+            return rect;
          }
-      }
 
-      size.clname = clname;
-      size.can3d = can3d;
+         let fp = this.getFramePainter(), pp = this.getPadPainter(), size;
 
-      let rect = pp ?  pp.getPadRect() : null;
-      if (rect) {
-         // while 3D canvas uses area also for the axis labels, extend area relative to normal frame
-         let dx = Math.round(size.width*0.07), dy = Math.round(size.height*0.05);
+         if (fp && fp.mode3d && (can3d > 0)) {
+            size = fp.getFrameRect();
+         } else {
+            let elem = (can3d > 0) ? pad : this.getCanvSvg();
+            size = { x: 0, y: 0, width: elem.property("draw_width"), height: elem.property("draw_height") };
+            if (fp && !fp.mode3d) {
+               elem = this.getFrameSvg();
+               size.x = elem.property("draw_x");
+               size.y = elem.property("draw_y");
+            }
+         }
 
-         size.x = Math.max(0, size.x-dx);
-         size.y = Math.max(0, size.y-dy);
-         size.width = Math.min(size.width + 2*dx, rect.width - size.x);
-         size.height = Math.min(size.height + 2*dy, rect.height - size.y);
-      }
+         size.clname = clname;
+         size.can3d = can3d;
 
-      if (can3d === 1)
-         size = jsrp.getAbsPosInCanvas(this.getPadSvg(), size);
+         let rect = pp ?  pp.getPadRect() : null;
+         if (rect) {
+            // while 3D canvas uses area also for the axis labels, extend area relative to normal frame
+            let dx = Math.round(size.width*0.07), dy = Math.round(size.height*0.05);
 
-      return size;
-   }
+            size.x = Math.max(0, size.x-dx);
+            size.y = Math.max(0, size.y-dy);
+            size.width = Math.min(size.width + 2*dx, rect.width - size.x);
+            size.height = Math.min(size.height + 2*dy, rect.height - size.y);
+         }
 
-   /** @summary Clear all 3D drawings
-     * @returns can3d value - how webgl canvas was placed
-     * @private */
-   Handling3DDrawings.clear3dCanvas = function() {
-      let can3d = this.access3dKind(null);
-      if (can3d < 0) {
-         // remove first child from main element - if it is canvas
-         let main = this.selectDom().node(),
-             chld = main ? main.firstChild : null;
+         if (can3d === 1)
+            size = jsrp.getAbsPosInCanvas(this.getPadSvg(), size);
 
-         if (chld && !chld.$jsroot)
-            chld = chld.nextSibling;
+         return size;
+      },
 
-         if (chld && chld.$jsroot) {
-            delete chld.painter;
-            main.removeChild(chld);
+      /** @summary Clear all 3D drawings
+        * @returns can3d value - how webgl canvas was placed
+        * @private */
+      clear3dCanvas() {
+         let can3d = this.access3dKind(null);
+         if (can3d < 0) {
+            // remove first child from main element - if it is canvas
+            let main = this.selectDom().node(),
+                chld = main ? main.firstChild : null;
+
+            if (chld && !chld.$jsroot)
+               chld = chld.nextSibling;
+
+            if (chld && chld.$jsroot) {
+               delete chld.painter;
+               main.removeChild(chld);
+            }
+            return can3d;
+         }
+
+         let size = this.getSizeFor3d(can3d);
+
+         if (size.can3d === 0) {
+            d3.select(this.getCanvSvg().node().nextSibling).remove(); // remove html5 canvas
+            this.getCanvSvg().style('display', null); // show SVG canvas
+         } else {
+            if (this.getPadSvg().empty()) return;
+
+            this.apply3dSize(size).remove();
+
+            this.getFrameSvg().style('display', null);  // clear display property
          }
          return can3d;
-      }
+      },
 
-      let size = this.getSizeFor3d(can3d);
+      /** @summary Add 3D canvas
+        * @private */
+      add3dCanvas(size, canv, webgl) {
 
-      if (size.can3d === 0) {
-         d3.select(this.getCanvSvg().node().nextSibling).remove(); // remove html5 canvas
-         this.getCanvSvg().style('display', null); // show SVG canvas
-      } else {
-         if (this.getPadSvg().empty()) return;
+         if (!canv || (size.can3d < -1)) return;
 
-         this.apply3dSize(size).remove();
+         if (size.can3d === -1) {
+            // case when 3D object drawn without canvas
 
-         this.getFrameSvg().style('display', null);  // clear display property
-      }
-      return can3d;
-   }
+            let main = this.selectDom().node();
+            if (main !== null) {
+               main.appendChild(canv);
+               canv.painter = this;
+               canv.$jsroot = true; // mark canvas as added by jsroot
+            }
 
-   /** @summary Add 3D canvas
-    * @private */
-   Handling3DDrawings.add3dCanvas = function(size, canv, webgl) {
-
-      if (!canv || (size.can3d < -1)) return;
-
-      if (size.can3d === -1) {
-         // case when 3D object drawn without canvas
-
-         let main = this.selectDom().node();
-         if (main !== null) {
-            main.appendChild(canv);
-            canv.painter = this;
-            canv.$jsroot = true; // mark canvas as added by jsroot
+            return;
          }
 
-         return;
-      }
+         if ((size.can3d > 0) && !webgl)
+            size.can3d = JSROOT.constants.Embed3D.EmbedSVG;
 
-      if ((size.can3d > 0) && !webgl)
-         size.can3d = JSROOT.constants.Embed3D.EmbedSVG;
+         this.access3dKind(size.can3d);
 
-      this.access3dKind(size.can3d);
+         if (size.can3d === 0) {
+            this.getCanvSvg().style('display', 'none'); // hide SVG canvas
 
-      if (size.can3d === 0) {
-         this.getCanvSvg().style('display', 'none'); // hide SVG canvas
+            this.getCanvSvg().node().parentNode.appendChild(canv); // add directly
+         } else {
+            if (this.getPadSvg().empty()) return;
 
-         this.getCanvSvg().node().parentNode.appendChild(canv); // add directly
-      } else {
-         if (this.getPadSvg().empty()) return;
+            // first hide normal frame
+            this.getFrameSvg().style('display', 'none');
 
-         // first hide normal frame
-         this.getFrameSvg().style('display', 'none');
+            let elem = this.apply3dSize(size);
 
-         let elem = this.apply3dSize(size);
+            elem.attr('title', '').node().appendChild(canv);
+         }
+      },
 
-         elem.attr('title', '').node().appendChild(canv);
-      }
-   }
+      /** @summary Apply size to 3D elements
+        * @private */
+      apply3dSize(size, onlyget) {
 
-   /** @summary Apply size to 3D elements
-    * @private */
-   Handling3DDrawings.apply3dSize = function(size, onlyget) {
+         if (size.can3d < 0) return d3.select(null);
 
-      if (size.can3d < 0) return d3.select(null);
+         let elem;
 
-      let elem;
+         if (size.can3d > 1) {
 
-      if (size.can3d > 1) {
+            elem = this.getLayerSvg(size.clname);
 
-         elem = this.getLayerSvg(size.clname);
+            // elem = layer.select("." + size.clname);
+            if (onlyget) return elem;
 
-         // elem = layer.select("." + size.clname);
-         if (onlyget) return elem;
+            let svg = this.getPadSvg();
 
-         let svg = this.getPadSvg();
+            if (size.can3d === JSROOT.constants.Embed3D.EmbedSVG) {
+               // this is SVG mode or image mode - just create group to hold element
 
-         if (size.can3d === JSROOT.constants.Embed3D.EmbedSVG) {
-            // this is SVG mode or image mode - just create group to hold element
+               if (elem.empty())
+                  elem = svg.insert("g", ".primitives_layer").attr("class", size.clname);
 
-            if (elem.empty())
-               elem = svg.insert("g", ".primitives_layer").attr("class", size.clname);
+               elem.attr("transform", "translate(" + size.x + "," + size.y + ")");
 
-            elem.attr("transform", "translate(" + size.x + "," + size.y + ")");
+            } else {
+
+               if (elem.empty())
+                  elem = svg.insert("foreignObject", ".primitives_layer").attr("class", size.clname);
+
+               elem.attr('x', size.x)
+                  .attr('y', size.y)
+                  .attr('width', size.width)
+                  .attr('height', size.height)
+                  .attr('viewBox', `0 0 ${size.width} ${size.height}`)
+                  .attr('preserveAspectRatio', 'xMidYMid');
+            }
 
          } else {
+            let prnt = this.getCanvSvg().node().parentNode;
+
+            elem = d3.select(prnt).select("." + size.clname);
+            if (onlyget) return elem;
+
+            // force redraw by resize
+            this.getCanvSvg().property('redraw_by_resize', true);
 
             if (elem.empty())
-               elem = svg.insert("foreignObject", ".primitives_layer").attr("class", size.clname);
+               elem = d3.select(prnt).append('div').attr("class", size.clname + " jsroot_noselect");
 
-            elem.attr('x', size.x)
-               .attr('y', size.y)
-               .attr('width', size.width)
-               .attr('height', size.height)
-               .attr('viewBox', `0 0 ${size.width} ${size.height}`)
-               .attr('preserveAspectRatio', 'xMidYMid');
-         }
+            // our position inside canvas, but to set 'absolute' position we should use
+            // canvas element offset relative to first parent with non-static position
+            // now try to use getBoundingClientRect - it should be more precise
 
-      } else {
-         let prnt = this.getCanvSvg().node().parentNode;
+            let pos0 = prnt.getBoundingClientRect();
 
-         elem = d3.select(prnt).select("." + size.clname);
-         if (onlyget) return elem;
-
-         // force redraw by resize
-         this.getCanvSvg().property('redraw_by_resize', true);
-
-         if (elem.empty())
-            elem = d3.select(prnt).append('div').attr("class", size.clname + " jsroot_noselect");
-
-         // our position inside canvas, but to set 'absolute' position we should use
-         // canvas element offset relative to first parent with non-static position
-         // now try to use getBoundingClientRect - it should be more precise
-
-         let pos0 = prnt.getBoundingClientRect();
-
-         while (prnt) {
-            if (prnt === document) { prnt = null; break; }
-            try {
-               if (getComputedStyle(prnt).position !== 'static') break;
-            } catch (err) {
-               break;
+            while (prnt) {
+               if (prnt === document) { prnt = null; break; }
+               try {
+                  if (getComputedStyle(prnt).position !== 'static') break;
+               } catch (err) {
+                  break;
+               }
+               prnt = prnt.parentNode;
             }
-            prnt = prnt.parentNode;
+
+            let pos1 = prnt ? prnt.getBoundingClientRect() : { top: 0, left: 0 };
+
+            let offx = Math.round(pos0.left - pos1.left),
+                offy = Math.round(pos0.top - pos1.top);
+
+            elem.style('position', 'absolute').style('left', (size.x + offx) + 'px').style('top', (size.y + offy) + 'px').style('width', size.width + 'px').style('height', size.height + 'px');
          }
 
-         let pos1 = prnt ? prnt.getBoundingClientRect() : { top: 0, left: 0 };
-
-         let offx = Math.round(pos0.left - pos1.left),
-             offy = Math.round(pos0.top - pos1.top);
-
-         elem.style('position', 'absolute').style('left', (size.x + offx) + 'px').style('top', (size.y + offy) + 'px').style('width', size.width + 'px').style('height', size.height + 'px');
+         return elem;
       }
 
-      return elem;
-   }
+   }; // Handling3DDrawings
+
 
    /** @summary Assigns method to handle 3D drawings inside SVG
      * @private */
