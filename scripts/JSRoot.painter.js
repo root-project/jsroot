@@ -3650,7 +3650,7 @@ JSROOT.define(['d3'], (d3) => {
       { name: /^TH2/, icon: "img_histo2d", prereq: "hist", class: "TH2Painter", dflt: "col", opt: ";COL;COLZ;COL0;COL1;COL0Z;COL1Z;COLA;BOX;BOX1;PROJ;PROJX1;PROJX2;PROJX3;PROJY1;PROJY2;PROJY3;SCAT;TEXT;TEXTE;TEXTE0;CANDLE;CANDLE1;CANDLE2;CANDLE3;CANDLE4;CANDLE5;CANDLE6;CANDLEY1;CANDLEY2;CANDLEY3;CANDLEY4;CANDLEY5;CANDLEY6;VIOLIN;VIOLIN1;VIOLIN2;VIOLINY1;VIOLINY2;CONT;CONT1;CONT2;CONT3;CONT4;ARR;SURF;SURF1;SURF2;SURF4;SURF6;E;A;LEGO;LEGO0;LEGO1;LEGO2;LEGO3;LEGO4;same", ctrl: "lego" },
       { name: "TProfile2D", sameas: "TH2" },
       { name: /^TH3/, icon: 'img_histo3d', prereq: "hist3d", class: "TH3Painter", opt: ";SCAT;BOX;BOX2;BOX3;GLBOX1;GLBOX2;GLCOL" },
-      { name: "THStack", icon: "img_histo1d", prereq: "hist", func: ".drawHStack", expand_item: "fHists", opt: "NOSTACK;HIST;E;PFC;PLC" },
+      { name: "THStack", icon: "img_histo1d", prereq: "hist", class: "THStackPainter", expand_item: "fHists", opt: "NOSTACK;HIST;E;PFC;PLC" },
       { name: "TPolyMarker3D", icon: 'img_histo3d', prereq: "hist3d", func: ".drawPolyMarker3D", direct: true, frame: "3d" },
       { name: "TPolyLine3D", icon: 'img_graph', prereq: "base3d", func: ".drawPolyLine3D", direct: true },
       { name: "TGraphStruct" },
