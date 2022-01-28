@@ -1301,89 +1301,93 @@ JSROOT.define(['d3', 'three', 'painter'], (d3, THREE, jsrp) => {
    /**
     * @summary Class for creation of 3D points
     *
-    * @class
     * @memberof JSROOT
-    * @param {number} size - number of points
-    * @param {booleand} [iswebgl=true] - if WebGL is used
-    * @param {number} [scale=1] - scale factor
     * @private
     */
 
-   function PointsCreator(size, iswebgl, scale) {
-      this.webgl = (iswebgl === undefined) ? true : iswebgl;
-      this.scale = scale || 1.;
+   class PointsCreator {
 
-      this.pos = new Float32Array(size*3);
-      this.geom = new THREE.BufferGeometry();
-      this.geom.setAttribute('position', new THREE.BufferAttribute(this.pos, 3));
-      this.indx = 0;
-   }
+      /** @summary constructor
+        * @param {number} size - number of points
+        * @param {booleand} [iswebgl=true] - if WebGL is used
+        * @param {number} [scale=1] - scale factor */
+      constructor(size, iswebgl, scale) {
+         this.webgl = (iswebgl === undefined) ? true : iswebgl;
+         this.scale = scale || 1.;
 
-   /** @summary Add point */
-   PointsCreator.prototype.addPoint = function(x,y,z) {
-      this.pos[this.indx]   = x;
-      this.pos[this.indx+1] = y;
-      this.pos[this.indx+2] = z;
-      this.indx += 3;
-   }
-
-   /** @summary Create points */
-   PointsCreator.prototype.createPoints = function(args) {
-
-      if (typeof args !== 'object')
-         args = { color: args };
-      if (!args.color)
-         args.color = 'black';
-
-      let k = 1;
-
-      // special dots
-      if (!args.style) k = 1.1; else
-      if (args.style === 1) k = 0.3; else
-      if (args.style === 6) k = 0.5; else
-      if (args.style === 7) k = 0.7;
-
-      const makePoints = (material, skip_promise) => {
-         let pnts = new THREE.Points(this.geom, material);
-         pnts.nvertex = 1;
-         return !args.promise || skip_promise ? pnts : Promise.resolve(pnts);
-      };
-
-      // this is plain creation of points, no need for texture loading
-      if ((k !== 1) || (JSROOT.nodejs && !args.promise))
-         return makePoints(new THREE.PointsMaterial({ size: 3*this.scale * k, color: args.color }));
-
-      let handler = new JSROOT.TAttMarkerHandler({ style: args.style, color: args.color, size: 7 }),
-          w = handler.fill ? 1 : 7,
-          imgdata = `<svg width="64" height="64" xmlns="http://www.w3.org/2000/svg">` +
-                    `<path d="${handler.create(32,32)}" style="stroke: ${handler.getStrokeColor()}; stroke-width: ${w}; fill: ${handler.getFillColor()}"></path>`+
-                    `</svg>`,
-          dataUrl = 'data:image/svg+xml;charset=utf8,' + (JSROOT.nodejs ? imgdata : encodeURIComponent(imgdata)),
-          loader = new THREE.TextureLoader();
-
-      if (args.promise) {
-         let texture_promise;
-         if (JSROOT.nodejs) {
-            const { createCanvas, loadImage } = require('canvas');
-
-            texture_promise = loadImage(dataUrl).then(img => {
-               const canvas = createCanvas(64, 64);
-               const ctx = canvas.getContext('2d');
-               ctx.drawImage(img, 0, 0, 64, 64);
-               return new THREE.CanvasTexture(canvas);
-             });
-
-         } else {
-            texture_promise = new Promise((resolveFunc, rejectFunc) => {
-               loader.load(dataUrl, texture => resolveFunc(texture), undefined, () => rejectFunc());
-            });
-         }
-
-         return texture_promise.then(texture => makePoints(new THREE.PointsMaterial({ size: 3*this.scale, map: texture, transparent: true }), true));
+         this.pos = new Float32Array(size*3);
+         this.geom = new THREE.BufferGeometry();
+         this.geom.setAttribute('position', new THREE.BufferAttribute(this.pos, 3));
+         this.indx = 0;
       }
 
-      return makePoints(new THREE.PointsMaterial({ size: 3*this.scale, map: loader.load(dataUrl), transparent: true }));
-   }
+      /** @summary Add point */
+      addPoint(x,y,z) {
+         this.pos[this.indx]   = x;
+         this.pos[this.indx+1] = y;
+         this.pos[this.indx+2] = z;
+         this.indx += 3;
+      }
+
+      /** @summary Create points */
+      createPoints(args) {
+
+         if (typeof args !== 'object')
+            args = { color: args };
+         if (!args.color)
+            args.color = 'black';
+
+         let k = 1;
+
+         // special dots
+         if (!args.style) k = 1.1; else
+         if (args.style === 1) k = 0.3; else
+         if (args.style === 6) k = 0.5; else
+         if (args.style === 7) k = 0.7;
+
+         const makePoints = (material, skip_promise) => {
+            let pnts = new THREE.Points(this.geom, material);
+            pnts.nvertex = 1;
+            return !args.promise || skip_promise ? pnts : Promise.resolve(pnts);
+         };
+
+         // this is plain creation of points, no need for texture loading
+         if ((k !== 1) || (JSROOT.nodejs && !args.promise))
+            return makePoints(new THREE.PointsMaterial({ size: 3*this.scale * k, color: args.color }));
+
+         let handler = new JSROOT.TAttMarkerHandler({ style: args.style, color: args.color, size: 7 }),
+             w = handler.fill ? 1 : 7,
+             imgdata = `<svg width="64" height="64" xmlns="http://www.w3.org/2000/svg">` +
+                       `<path d="${handler.create(32,32)}" style="stroke: ${handler.getStrokeColor()}; stroke-width: ${w}; fill: ${handler.getFillColor()}"></path>`+
+                       `</svg>`,
+             dataUrl = 'data:image/svg+xml;charset=utf8,' + (JSROOT.nodejs ? imgdata : encodeURIComponent(imgdata)),
+             loader = new THREE.TextureLoader();
+
+         if (args.promise) {
+            let texture_promise;
+            if (JSROOT.nodejs) {
+               const { createCanvas, loadImage } = require('canvas');
+
+               texture_promise = loadImage(dataUrl).then(img => {
+                  const canvas = createCanvas(64, 64);
+                  const ctx = canvas.getContext('2d');
+                  ctx.drawImage(img, 0, 0, 64, 64);
+                  return new THREE.CanvasTexture(canvas);
+                });
+
+            } else {
+               texture_promise = new Promise((resolveFunc, rejectFunc) => {
+                  loader.load(dataUrl, texture => resolveFunc(texture), undefined, () => rejectFunc());
+               });
+            }
+
+            return texture_promise.then(texture => makePoints(new THREE.PointsMaterial({ size: 3*this.scale, map: texture, transparent: true }), true));
+         }
+
+         return makePoints(new THREE.PointsMaterial({ size: 3*this.scale, map: loader.load(dataUrl), transparent: true }));
+      }
+
+   } // PointsCreator
 
    // ==============================================================================
 
