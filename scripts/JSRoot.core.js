@@ -842,7 +842,7 @@
      * @param {string} [typename] - optional typename, if not specified, obj._typename will be used
      * @memberof JSROOT
      * @private */
-   let addMethods = (obj, typename) => {
+   const addMethods = (obj, typename) => {
       extend(obj, JSROOT.getMethods(typename || obj._typename, obj));
    }
 
