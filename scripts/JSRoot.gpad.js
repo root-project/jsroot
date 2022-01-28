@@ -83,7 +83,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
     *
     * @class
     * @memberof JSROOT
-    * @extends JSROOT.AxisBasePainter
+    * @extends JSROOT.ObjectPainter
     * @param {object|string} dom - identifier or dom element
     * @param {object} axis - object to draw
     * @param {boolean} embedded - if true, painter used in other objects painters
@@ -91,17 +91,27 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
     */
 
    function TAxisPainter(dom, axis, embedded) {
-      JSROOT.AxisBasePainter.call(this, dom, axis);
+      JSROOT.ObjectPainter.call(this, dom, axis);
+
+      Object.assign(this, JSROOT.AxisPainterMethods);
+      this.initAxisPainter();
 
       this.embedded = embedded; // indicate that painter embedded into the histo painter
       this.invert_side = false;
       this.lbls_both_sides = false; // draw labels on both sides
    }
 
-   TAxisPainter.prototype = Object.create(JSROOT.AxisBasePainter.prototype);
+   TAxisPainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
+
+   /** @summary cleanup painter */
+   TAxisPainter.prototype.cleanup = function() {
+      this.cleanupAxisPainter();
+      JSROOT.ObjectPainter.prototype.cleanup.call(this);
+   }
 
    /** @summary Use in GED to identify kind of axis */
    TAxisPainter.prototype.getAxisType = function() { return "TAxis"; }
+
 
    /** @summary Configure axis painter
      * @desc Axis can be drawn inside frame <g> group with offset to 0 point for the frame

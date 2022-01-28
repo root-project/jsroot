@@ -76,9 +76,8 @@ JSROOT.define(['d3', 'base3d', 'painter', 'latex', 'v7hist'], (d3, THREE, jsrp, 
       fp.camera.lookAt(fp.lookat);
    }
 
-   /** @summary Create all necessary components for 3D drawings
-     * @private */
-   JSROOT.v7.RFramePainter.prototype.create3DScene = function(render3d) {
+   /** @summary Create all necessary components for 3D drawings */
+   JSROOT.RFramePainter.prototype.create3DScene = function(render3d) {
 
       if (render3d === -1) {
 
@@ -253,7 +252,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'latex', 'v7hist'], (d3, THREE, jsrp, 
      * If tmeout <= 0, rendering performed immediately
      * If (tmout == -1111), immediate rendering with SVG renderer is performed
      * @private */
-   JSROOT.v7.RFramePainter.prototype.render3D = function(tmout) {
+   JSROOT.RFramePainter.prototype.render3D = function(tmout) {
 
       if (tmout === -1111) {
          // special handling for direct SVG renderer
@@ -311,7 +310,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'latex', 'v7hist'], (d3, THREE, jsrp, 
 
    /** @summary Check is 3D drawing need to be resized
      * @private */
-   JSROOT.v7.RFramePainter.prototype.resize3D = function() {
+   JSROOT.RFramePainter.prototype.resize3D = function() {
 
       let sz = this.getSizeFor3d(this.access3dKind());
 
@@ -336,7 +335,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'latex', 'v7hist'], (d3, THREE, jsrp, 
 
    /** @summary Hilight bin in 3D drawing
      * @private */
-   JSROOT.v7.RFramePainter.prototype.highlightBin3D = function(tip, selfmesh) {
+   JSROOT.RFramePainter.prototype.highlightBin3D = function(tip, selfmesh) {
 
       let changed = false, tooltip_mesh = null, changed_self = true,
           want_remove = !tip || (tip.x1===undefined) || !this.enable_highlight,
@@ -429,13 +428,13 @@ JSROOT.define(['d3', 'base3d', 'painter', 'latex', 'v7hist'], (d3, THREE, jsrp, 
 
    /** @summary Set options used for 3D drawings
      * @private */
-   JSROOT.v7.RFramePainter.prototype.set3DOptions = function(hopt) {
+   JSROOT.RFramePainter.prototype.set3DOptions = function(hopt) {
       this.opt3d = hopt;
    }
 
    /** @summary Draw axes in 3D mode
      * @private */
-   JSROOT.v7.RFramePainter.prototype.drawXYZ = function(toplevel, opts) {
+   JSROOT.RFramePainter.prototype.drawXYZ = function(toplevel, opts) {
       if (!opts) opts = {};
 
       let grminx = -this.size_x3d, grmaxx = this.size_x3d,
@@ -477,13 +476,13 @@ JSROOT.define(['d3', 'base3d', 'painter', 'latex', 'v7hist'], (d3, THREE, jsrp, 
       // factor 1.1 used in ROOT for lego plots
       if ((opts.zmult !== undefined) && !z_zoomed) zmax *= opts.zmult;
 
-      this.x_handle = new JSROOT.v7.RAxisPainter(this.getDom(), this, this.xaxis, "x_");
+      this.x_handle = new JSROOT.RAxisPainter(this.getDom(), this, this.xaxis, "x_");
       this.x_handle.setPadName(this.getPadName());
       this.x_handle.snapid = this.snapid;
       this.x_handle.configureAxis("xaxis", this.xmin, this.xmax, xmin, xmax, false, [grminx, grmaxx]);
       this.x_handle.assignFrameMembers(this,"x");
 
-      this.y_handle = new JSROOT.v7.RAxisPainter(this.getDom(), this, this.yaxis, "y_");
+      this.y_handle = new JSROOT.RAxisPainter(this.getDom(), this, this.yaxis, "y_");
       this.y_handle.setPadName(this.getPadName());
       this.y_handle.snapid = this.snapid;
       this.y_handle.configureAxis("yaxis", this.ymin, this.ymax, ymin, ymax, false, [grminy, grmaxy]);
@@ -491,7 +490,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'latex', 'v7hist'], (d3, THREE, jsrp, 
 
       // this.setRootPadRange(pad, true); // set some coordinates typical for 3D projections in ROOT
 
-      this.z_handle = new JSROOT.v7.RAxisPainter(this.getDom(), this, this.zaxis, "z_");
+      this.z_handle = new JSROOT.RAxisPainter(this.getDom(), this, this.zaxis, "z_");
       this.z_handle.setPadName(this.getPadName());
       this.z_handle.snapid = this.snapid;
       this.z_handle.configureAxis("zaxis", this.zmin, this.zmax, zmin, zmax, false, [grminz, grmaxz]);

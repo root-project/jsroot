@@ -1,7 +1,7 @@
 /// @file JSRoot.v7more.js
 /// JavaScript ROOT v7 graphics for different classes
 
-JSROOT.define(['painter', 'v7gpad'], (jsrp) => {
+JSROOT.define(['painter', 'v7gpad'], jsrp => {
 
    "use strict";
 
@@ -134,7 +134,7 @@ JSROOT.define(['painter', 'v7gpad'], (jsrp) => {
             if (entry.fDrawableId != "custom") {
                objp = pp.findSnap(entry.fDrawableId, true);
             } else if (entry.fDrawable.fIO) {
-               objp = new JSROOT.ObjectPainter(this.getDom(), entry.fDrawable.fIO);
+               objp = new JSROOT.RObjectPainter(this.getDom(), entry.fDrawable.fIO);
                if (entry.fLine) objp.createv7AttLine();
                if (entry.fFill) objp.createv7AttFill();
                if (entry.fMarker) objp.createv7AttMarker();

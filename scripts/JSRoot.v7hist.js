@@ -60,7 +60,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
     * @private
     */
 
-   class RHistPainter extends JSROOT.ObjectPainter {
+   class RHistPainter extends JSROOT.RObjectPainter {
 
       /** @summary Constructor
         * @param {object|string} dom - DOM element for drawing or element id

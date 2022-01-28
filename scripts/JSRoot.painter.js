@@ -3223,289 +3223,277 @@ JSROOT.define(['d3'], (d3) => {
 
 
    /**
-     * @summary Base painter for axis objects in v6/v7
+     * @summary Base painter methods
      *
-     * @class
-     * @memberof JSROOT
-     * @param {object|string} dom - DOM element for drawing or element id
-     * @param {object} obj - axis object if any
      * @private
      */
 
-   function AxisBasePainter(dom, obj) {
-      ObjectPainter.call(this, dom, obj);
+   JSROOT.AxisPainterMethods = {
 
-      this.name = "yaxis";
-      this.kind = "normal";
-      this.func = null;
-      this.order = 0; // scaling order for axis labels
+      initAxisPainter() {
+         this.name = "yaxis";
+         this.kind = "normal";
+         this.func = null;
+         this.order = 0; // scaling order for axis labels
 
-      this.full_min = 0;
-      this.full_max = 1;
-      this.scale_min = 0;
-      this.scale_max = 1;
-      this.ticks = []; // list of major ticks
-   }
+         this.full_min = 0;
+         this.full_max = 1;
+         this.scale_min = 0;
+         this.scale_max = 1;
+         this.ticks = []; // list of major ticks
+      },
 
-   AxisBasePainter.prototype = Object.create(ObjectPainter.prototype);
+      /** @summary Cleanup axis painter */
+      cleanupAxisPainter() {
+         this.ticks = [];
+         delete this.format;
+         delete this.func;
+         delete this.tfunc1;
+         delete this.tfunc2;
+         delete this.gr;
+      },
 
-   /** @summary Cleanup axis painter
-     * @private */
-   AxisBasePainter.prototype.cleanup = function() {
-      this.ticks = [];
-      delete this.format;
-      delete this.func;
-      delete this.tfunc1;
-      delete this.tfunc2;
-      delete this.gr;
+      /** @summary Assign often used members of frame painter */
+      assignFrameMembers(fp, axis) {
+         fp["gr"+axis] = this.gr;                    // fp.grx
+         fp["log"+axis] = this.log;                  // fp.logx
+         fp["scale_"+axis+"min"] = this.scale_min;   // fp.scale_xmin
+         fp["scale_"+axis+"max"] = this.scale_max;   // fp.scale_xmax
+      },
 
-      // cleanup of v7 members
-      delete this.axis;
-      delete this.axis_g;
+      /** @summary Convert axis value into the Date object */
+      convertDate(v) {
+         return new Date(this.timeoffset + v*1000);
+      },
 
-      ObjectPainter.prototype.cleanup.call(this);
-   }
+      /** @summary Convert graphical point back into axis value */
+      revertPoint(pnt) {
+         let value = this.func.invert(pnt);
+         return (this.kind == "time") ?  (value - this.timeoffset) / 1000 : value;
+      },
 
-   /** @summary Assign often used members of frame painter
-     * @private */
-   AxisBasePainter.prototype.assignFrameMembers = function(fp, axis) {
-      fp["gr"+axis] = this.gr;                    // fp.grx
-      fp["log"+axis] = this.log;                  // fp.logx
-      fp["scale_"+axis+"min"] = this.scale_min;   // fp.scale_xmin
-      fp["scale_"+axis+"max"] = this.scale_max;   // fp.scale_xmax
-   }
+      /** @summary Provide label for time axis */
+      formatTime(d, asticks) {
+         return asticks ? this.tfunc1(d) : this.tfunc2(d);
+      },
 
-   /** @summary Convert axis value into the Date object */
-   AxisBasePainter.prototype.convertDate = function(v) {
-      return new Date(this.timeoffset + v*1000);
-   }
+      /** @summary Provide label for log axis */
+      formatLog(d, asticks, fmt) {
+         let val = parseFloat(d), rnd = Math.round(val);
+         if (!asticks)
+            return ((rnd === val) && (Math.abs(rnd)<1e9)) ? rnd.toString() : jsrp.floatToString(val, fmt || JSROOT.gStyle.fStatFormat);
+         if (val <= 0) return null;
+         let vlog = Math.log10(val), base = this.logbase;
+         if (base !== 10) vlog = vlog / Math.log10(base);
+         if (this.moreloglabels || (Math.abs(vlog - Math.round(vlog))<0.001)) {
+            if (!this.noexp && (asticks != 2))
+               return this.formatExp(base, Math.floor(vlog+0.01), val);
 
-   /** @summary Convert graphical point back into axis value */
-   AxisBasePainter.prototype.revertPoint = function(pnt) {
-      let value = this.func.invert(pnt);
-      return (this.kind == "time") ?  (value - this.timeoffset) / 1000 : value;
-   }
+            return vlog < 0 ? val.toFixed(Math.round(-vlog+0.5)) : val.toFixed(0);
+         }
+         return null;
+      },
 
-   /** @summary Provide label for time axis */
-   AxisBasePainter.prototype.formatTime = function(d, asticks) {
-      return asticks ? this.tfunc1(d) : this.tfunc2(d);
-   }
+      /** @summary Provide label for normal axis */
+      formatNormal(d, asticks, fmt) {
+         let val = parseFloat(d);
+         if (asticks && this.order) val = val / Math.pow(10, this.order);
 
-   /** @summary Provide label for log axis */
-   AxisBasePainter.prototype.formatLog = function(d, asticks, fmt) {
-      let val = parseFloat(d), rnd = Math.round(val);
-      if (!asticks)
-         return ((rnd === val) && (Math.abs(rnd)<1e9)) ? rnd.toString() : jsrp.floatToString(val, fmt || JSROOT.gStyle.fStatFormat);
-      if (val <= 0) return null;
-      let vlog = Math.log10(val), base = this.logbase;
-      if (base !== 10) vlog = vlog / Math.log10(base);
-      if (this.moreloglabels || (Math.abs(vlog - Math.round(vlog))<0.001)) {
-         if (!this.noexp && (asticks != 2))
-            return this.formatExp(base, Math.floor(vlog+0.01), val);
+         if (val === Math.round(val))
+            return Math.abs(val) < 1e9 ? val.toFixed(0) : val.toExponential(4);
 
-         return vlog < 0 ? val.toFixed(Math.round(-vlog+0.5)) : val.toFixed(0);
-      }
-      return null;
-   }
+         if (asticks) return (this.ndig>10) ? val.toExponential(this.ndig-11) : val.toFixed(this.ndig);
 
-   /** @summary Provide label for normal axis */
-   AxisBasePainter.prototype.formatNormal = function(d, asticks, fmt) {
-      let val = parseFloat(d);
-      if (asticks && this.order) val = val / Math.pow(10, this.order);
+         return jsrp.floatToString(val, fmt || JSROOT.gStyle.fStatFormat);
+      },
 
-      if (val === Math.round(val))
-         return Math.abs(val) < 1e9 ? val.toFixed(0) : val.toExponential(4);
+      /** @summary Provide label for exponential form */
+      formatExp(base, order, value) {
+         let res = "";
+         if (value) {
+            value = Math.round(value/Math.pow(base,order));
+            if ((value!=0) && (value!=1)) res = value.toString() + (JSROOT.settings.Latex ? "#times" : "x");
+         }
+         if (Math.abs(base-Math.exp(1)) < 0.001)
+            res += "e";
+         else
+            res += base.toString();
+         if (JSROOT.settings.Latex > JSROOT.constants.Latex.Symbols)
+            return res + "^{" + order + "}";
+         const superscript_symbols = {
+               '0': '\u2070', '1': '\xB9', '2': '\xB2', '3': '\xB3', '4': '\u2074', '5': '\u2075',
+               '6': '\u2076', '7': '\u2077', '8': '\u2078', '9': '\u2079', '-': '\u207B'
+            };
+         let str = order.toString();
+         for (let n = 0; n < str.length; ++n)
+            res += superscript_symbols[str[n]];
+         return res;
+      },
 
-      if (asticks) return (this.ndig>10) ? val.toExponential(this.ndig-11) : val.toFixed(this.ndig);
+      /** @summary Convert "raw" axis value into text */
+      axisAsText(value, fmt) {
+         if (this.kind == 'time')
+            value = this.convertDate(value);
+         if (this.format)
+            return this.format(value, false, fmt);
+         return value.toPrecision(4);
+      },
 
-      return jsrp.floatToString(val, fmt || JSROOT.gStyle.fStatFormat);
-   }
+      /** @summary Produce ticks for d3.scaleLog
+        * @desc Fixing following problem, described [here]{@link https://stackoverflow.com/questions/64649793} */
+      poduceLogTicks(func, number) {
+         const linearArray = arr => {
+            let sum1 = 0, sum2 = 0;
+            for (let k = 1; k < arr.length; ++k) {
+               let diff = (arr[k] - arr[k-1]);
+               sum1 += diff;
+               sum2 += diff*diff;
+            }
+            let mean = sum1/(arr.length-1),
+                dev = sum2/(arr.length-1) - mean*mean;
 
-   /** @summary Provide label for exponential form */
-   AxisBasePainter.prototype.formatExp = function(base, order, value) {
-      let res = "";
-      if (value) {
-         value = Math.round(value/Math.pow(base,order));
-         if ((value!=0) && (value!=1)) res = value.toString() + (JSROOT.settings.Latex ? "#times" : "x");
-      }
-      if (Math.abs(base-Math.exp(1)) < 0.001)
-         res += "e";
-      else
-         res += base.toString();
-      if (JSROOT.settings.Latex > JSROOT.constants.Latex.Symbols)
-         return res + "^{" + order + "}";
-      const superscript_symbols = {
-            '0': '\u2070', '1': '\xB9', '2': '\xB2', '3': '\xB3', '4': '\u2074', '5': '\u2075',
-            '6': '\u2076', '7': '\u2077', '8': '\u2078', '9': '\u2079', '-': '\u207B'
+            if (dev <= 0) return true;
+            if (Math.abs(mean) < 1e-100) return false;
+            return Math.sqrt(dev)/mean < 1e-6;
          };
-      let str = order.toString();
-      for (let n = 0; n < str.length; ++n)
-         res += superscript_symbols[str[n]];
-      return res;
-   }
 
-   /** @summary Convert "raw" axis value into text */
-   AxisBasePainter.prototype.axisAsText = function(value, fmt) {
-      if (this.kind == 'time')
-         value = this.convertDate(value);
-      if (this.format)
-         return this.format(value, false, fmt);
-      return value.toPrecision(4);
-   }
+         let arr = func.ticks(number);
 
-   /** @summary Produce ticks for d3.scaleLog
-     * @desc Fixing following problem, described [here]{@link https://stackoverflow.com/questions/64649793} */
-   AxisBasePainter.prototype.poduceLogTicks = function(func, number) {
-      const linearArray = arr => {
-         let sum1 = 0, sum2 = 0;
-         for (let k = 1; k < arr.length; ++k) {
-            let diff = (arr[k] - arr[k-1]);
-            sum1 += diff;
-            sum2 += diff*diff;
-         }
-         let mean = sum1/(arr.length-1),
-             dev = sum2/(arr.length-1) - mean*mean;
-
-         if (dev <= 0) return true;
-         if (Math.abs(mean) < 1e-100) return false;
-         return Math.sqrt(dev)/mean < 1e-6;
-      };
-
-      let arr = func.ticks(number);
-
-      while ((number > 4) && linearArray(arr)) {
-         number = Math.round(number*0.8);
-         arr = func.ticks(number);
-      }
-
-      // if still linear array, try to sort out "bad" ticks
-      if ((number < 5) && linearArray(arr) && this.logbase && (this.logbase != 10)) {
-         let arr2 = [];
-         arr.forEach(val => {
-            let pow = Math.log10(val) / Math.log10(this.logbase);
-            if (Math.abs(Math.round(pow) - pow) < 0.01) arr2.push(val);
-         });
-         if (arr2.length > 0) arr = arr2;
-      }
-
-      return arr;
-   }
-
-   /** @summary Produce axis ticks */
-   AxisBasePainter.prototype.produceTicks = function(ndiv, ndiv2) {
-      if (!this.noticksopt) {
-         let total = ndiv * (ndiv2 || 1);
-
-         if (this.log) return this.poduceLogTicks(this.func, total);
-
-         let dom = this.func.domain();
-
-         const check = ticks => {
-            if (ticks.length <= total) return true;
-            if (ticks.length > total + 1) return false;
-            return (ticks[0] === dom[0]) || (ticks[total] === dom[1]); // special case of N+1 ticks, but match any range
+         while ((number > 4) && linearArray(arr)) {
+            number = Math.round(number*0.8);
+            arr = func.ticks(number);
          }
 
-         let res1 = this.func.ticks(total);
-         if (ndiv2 || check(res1)) return res1;
+         // if still linear array, try to sort out "bad" ticks
+         if ((number < 5) && linearArray(arr) && this.logbase && (this.logbase != 10)) {
+            let arr2 = [];
+            arr.forEach(val => {
+               let pow = Math.log10(val) / Math.log10(this.logbase);
+               if (Math.abs(Math.round(pow) - pow) < 0.01) arr2.push(val);
+            });
+            if (arr2.length > 0) arr = arr2;
+         }
 
-         let res2 = this.func.ticks(Math.round(total * 0.7));
-         return (res2.length > 2) && check(res2) ? res2 : res1;
-      }
+         return arr;
+      },
 
-      let dom = this.func.domain(), ticks = [];
-      if (ndiv2) ndiv = (ndiv-1) * ndiv2;
-      for (let n = 0; n <= ndiv; ++n)
-         ticks.push((dom[0]*(ndiv-n) + dom[1]*n)/ndiv);
-      return ticks;
-   }
+      /** @summary Produce axis ticks */
+      produceTicks(ndiv, ndiv2) {
+         if (!this.noticksopt) {
+            let total = ndiv * (ndiv2 || 1);
 
-   /** @summary Method analyze mouse wheel event and returns item with suggested zooming range */
-   AxisBasePainter.prototype.analyzeWheelEvent = function(evnt, dmin, item, test_ignore) {
-      if (!item) item = {};
+            if (this.log) return this.poduceLogTicks(this.func, total);
 
-      let delta = 0, delta_left = 1, delta_right = 1;
+            let dom = this.func.domain();
 
-      if ('dleft' in item) { delta_left = item.dleft; delta = 1; }
-      if ('dright' in item) { delta_right = item.dright; delta = 1; }
-
-      if (item.delta) {
-         delta = item.delta;
-      } else if (evnt) {
-         delta = evnt.wheelDelta ? -evnt.wheelDelta : (evnt.deltaY || evnt.detail);
-      }
-
-      if (!delta || (test_ignore && item.ignore)) return;
-
-      delta = (delta < 0) ? -0.2 : 0.2;
-      delta_left *= delta;
-      delta_right *= delta;
-
-      let lmin = item.min = this.scale_min,
-          lmax = item.max = this.scale_max,
-          gmin = this.full_min,
-          gmax = this.full_max;
-
-      if ((item.min === item.max) && (delta < 0)) {
-         item.min = gmin;
-         item.max = gmax;
-      }
-
-      if (item.min >= item.max) return;
-
-      if (item.reverse) dmin = 1 - dmin;
-
-      if ((dmin > 0) && (dmin < 1)) {
-         if (this.log) {
-            let factor = (item.min>0) ? Math.log10(item.max/item.min) : 2;
-            if (factor>10) factor = 10; else if (factor<0.01) factor = 0.01;
-            item.min = item.min / Math.pow(10, factor*delta_left*dmin);
-            item.max = item.max * Math.pow(10, factor*delta_right*(1-dmin));
-         } else if ((delta_left === -delta_right) && !item.reverse) {
-            // shift left/right, try to keep range constant
-            let delta = (item.max - item.min) * delta_right * dmin;
-
-            if ((Math.round(item.max) === item.max) && (Math.round(item.min) === item.min) && (Math.abs(delta) > 1)) delta = Math.round(delta);
-
-            if (item.min + delta < gmin)
-               delta = gmin - item.min;
-            else if (item.max + delta > gmax)
-               delta = gmax - item.max;
-
-            if (delta != 0) {
-               item.min += delta;
-               item.max += delta;
-             } else {
-               delete item.min;
-               delete item.max;
+            const check = ticks => {
+               if (ticks.length <= total) return true;
+               if (ticks.length > total + 1) return false;
+               return (ticks[0] === dom[0]) || (ticks[total] === dom[1]); // special case of N+1 ticks, but match any range
             }
 
-         } else {
-            let rx_left = (item.max - item.min), rx_right = rx_left;
-            if (delta_left > 0) rx_left = 1.001 * rx_left / (1-delta_left);
-            item.min += -delta_left*dmin*rx_left;
-            if (delta_right > 0) rx_right = 1.001 * rx_right / (1-delta_right);
-            item.max -= -delta_right*(1-dmin)*rx_right;
+            let res1 = this.func.ticks(total);
+            if (ndiv2 || check(res1)) return res1;
+
+            let res2 = this.func.ticks(Math.round(total * 0.7));
+            return (res2.length > 2) && check(res2) ? res2 : res1;
          }
-         if (item.min >= item.max) {
+
+         let dom = this.func.domain(), ticks = [];
+         if (ndiv2) ndiv = (ndiv-1) * ndiv2;
+         for (let n = 0; n <= ndiv; ++n)
+            ticks.push((dom[0]*(ndiv-n) + dom[1]*n)/ndiv);
+         return ticks;
+      },
+
+      /** @summary Method analyze mouse wheel event and returns item with suggested zooming range */
+      analyzeWheelEvent(evnt, dmin, item, test_ignore) {
+         if (!item) item = {};
+
+         let delta = 0, delta_left = 1, delta_right = 1;
+
+         if ('dleft' in item) { delta_left = item.dleft; delta = 1; }
+         if ('dright' in item) { delta_right = item.dright; delta = 1; }
+
+         if (item.delta) {
+            delta = item.delta;
+         } else if (evnt) {
+            delta = evnt.wheelDelta ? -evnt.wheelDelta : (evnt.deltaY || evnt.detail);
+         }
+
+         if (!delta || (test_ignore && item.ignore)) return;
+
+         delta = (delta < 0) ? -0.2 : 0.2;
+         delta_left *= delta;
+         delta_right *= delta;
+
+         let lmin = item.min = this.scale_min,
+             lmax = item.max = this.scale_max,
+             gmin = this.full_min,
+             gmax = this.full_max;
+
+         if ((item.min === item.max) && (delta < 0)) {
+            item.min = gmin;
+            item.max = gmax;
+         }
+
+         if (item.min >= item.max) return;
+
+         if (item.reverse) dmin = 1 - dmin;
+
+         if ((dmin > 0) && (dmin < 1)) {
+            if (this.log) {
+               let factor = (item.min>0) ? Math.log10(item.max/item.min) : 2;
+               if (factor>10) factor = 10; else if (factor<0.01) factor = 0.01;
+               item.min = item.min / Math.pow(10, factor*delta_left*dmin);
+               item.max = item.max * Math.pow(10, factor*delta_right*(1-dmin));
+            } else if ((delta_left === -delta_right) && !item.reverse) {
+               // shift left/right, try to keep range constant
+               let delta = (item.max - item.min) * delta_right * dmin;
+
+               if ((Math.round(item.max) === item.max) && (Math.round(item.min) === item.min) && (Math.abs(delta) > 1)) delta = Math.round(delta);
+
+               if (item.min + delta < gmin)
+                  delta = gmin - item.min;
+               else if (item.max + delta > gmax)
+                  delta = gmax - item.max;
+
+               if (delta != 0) {
+                  item.min += delta;
+                  item.max += delta;
+                } else {
+                  delete item.min;
+                  delete item.max;
+               }
+
+            } else {
+               let rx_left = (item.max - item.min), rx_right = rx_left;
+               if (delta_left > 0) rx_left = 1.001 * rx_left / (1-delta_left);
+               item.min += -delta_left*dmin*rx_left;
+               if (delta_right > 0) rx_right = 1.001 * rx_right / (1-delta_right);
+               item.max -= -delta_right*(1-dmin)*rx_right;
+            }
+            if (item.min >= item.max) {
+               item.min = item.max = undefined;
+            } else if (delta_left !== delta_right) {
+               // extra check case when moving left or right
+               if (((item.min < gmin) && (lmin === gmin)) ||
+                   ((item.max > gmax) && (lmax === gmax)))
+                      item.min = item.max = undefined;
+            } else {
+               if (item.min < gmin) item.min = gmin;
+               if (item.max > gmax) item.max = gmax;
+            }
+         } else {
             item.min = item.max = undefined;
-         } else if (delta_left !== delta_right) {
-            // extra check case when moving left or right
-            if (((item.min < gmin) && (lmin === gmin)) ||
-                ((item.max > gmax) && (lmax === gmax)))
-                   item.min = item.max = undefined;
-         } else {
-            if (item.min < gmin) item.min = gmin;
-            if (item.max > gmax) item.max = gmax;
          }
-      } else {
-         item.min = item.max = undefined;
+
+         item.changed = ((item.min !== undefined) && (item.max !== undefined));
+
+         return item;
       }
 
-      item.changed = ((item.min !== undefined) && (item.max !== undefined));
-
-      return item;
-   }
+   }; // AxisPainterMethods
 
    // ===========================================================
 
@@ -3730,7 +3718,7 @@ JSROOT.define(['d3'], (d3) => {
       { name: "Session", icon: "img_globe" },
       { name: "kind:TopFolder", icon: "img_base" },
       { name: "kind:Folder", icon: "img_folder", icon2: "img_folderopen", noinspect: true },
-      { name: "ROOT::Experimental::RCanvas", icon: "img_canvas", prereq: "v7gpad", func: "JSROOT.v7.drawRCanvas", opt: "", expand_item: "fPrimitives" },
+      { name: "ROOT::Experimental::RCanvas", icon: "img_canvas", prereq: "v7gpad", class: "RCanvasPainter", opt: "", expand_item: "fPrimitives" },
       { name: "ROOT::Experimental::RCanvasDisplayItem", icon: "img_canvas", prereq: "v7gpad", func: "JSROOT.v7.drawPadSnapshot", opt: "", expand_item: "fPrimitives" }
    ], cache: {} };
 
@@ -3964,8 +3952,7 @@ JSROOT.define(['d3'], (d3) => {
       function performDraw() {
          let promise;
          if (handle.direct == "v7") {
-            let painter = new ObjectPainter(dom, obj, opt);
-            painter.csstype = handle.csstype;
+            let painter = new JSROOT.RObjectPainter(dom, obj, opt, handle.csstype);
             promise = jsrp.ensureRCanvas(painter, handle.frame || false).then(() => {
                painter.redraw = handle.func;
                painter.redraw();
@@ -4383,7 +4370,6 @@ JSROOT.define(['d3'], (d3) => {
    JSROOT.FontHandler = FontHandler;
    JSROOT.BasePainter = BasePainter;
    JSROOT.ObjectPainter = ObjectPainter;
-   JSROOT.AxisBasePainter = AxisBasePainter;
 
    JSROOT.Painter = jsrp;
    if (JSROOT.nodejs) module.exports = jsrp;
