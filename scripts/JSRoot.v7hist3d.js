@@ -1355,9 +1355,8 @@ JSROOT.define(['d3', 'base3d', 'painter', 'latex', 'v7hist'], (d3, THREE, jsrp, 
 
    // ==========================================================================================
 
-   /** @summary Draw 1-D histogram in 3D mode
-     * @private */
-   JSROOT.v7.RH1Painter.prototype.draw3D = function(reason) {
+   /** @summary Draw 1-D histogram in 3D mode */
+   JSROOT.RH1Painter.prototype.draw3D = function(reason) {
 
       this.mode3d = true;
 
