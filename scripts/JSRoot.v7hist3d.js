@@ -991,9 +991,8 @@ JSROOT.define(['d3', 'base3d', 'painter', 'latex', 'v7hist'], (d3, THREE, jsrp, 
       }
    }
 
-   /** @summary Draw 1D/2D histograms in Lego mode
-     * @private */
-   JSROOT.v7.RHistPainter.prototype.drawLego = function() {
+   /** @summary Draw 1D/2D histograms in Lego mode */
+   JSROOT.RHistPainter.prototype.drawLego = function() {
 
       if (!this.draw_content) return;
 
@@ -2250,7 +2249,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'latex', 'v7hist'], (d3, THREE, jsrp, 
     * @private
     */
 
-   class RH3Painter extends JSROOT.v7.RHistPainter {
+   class RH3Painter extends JSROOT.RHistPainter {
 
       /** @summary Returns histogram dimension */
       getDimension() { return 3; }
