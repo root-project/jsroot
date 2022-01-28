@@ -5,8 +5,6 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
 
    "use strict";
 
-   const TH2Painter = JSROOT.TH2Painter;
-
    /** @summary Text 3d axis visibility
      * @private */
    function testAxisVisibility(camera, toplevel, fb, bb) {
@@ -1439,7 +1437,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
 
    /** @summary Draw 2-D histogram in 3D
      * @private */
-   TH2Painter.prototype.draw3D = function(reason) {
+   JSROOT.TH2Painter.prototype.draw3D = function(reason) {
 
       this.mode3d = true;
 
@@ -1491,7 +1489,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
 
    /** @summary Draw TH2 as 3D contour plot
      * @private */
-   TH2Painter.prototype.drawContour3D = function(realz) {
+   JSROOT.TH2Painter.prototype.drawContour3D = function(realz) {
       // for contour plots one requires handle with full range
       let main = this.getFramePainter(),
           handle = this.prepareColorDraw({rounding: false, use3d: true, extra: 100, middle: 0.0 }),
@@ -1521,9 +1519,8 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
       main.toplevel.add(lines);
    }
 
-   /** @summary Draw TH2 histograms in surf mode
-     * @private */
-   TH2Painter.prototype.drawSurf = function() {
+   /** @summary Draw TH2 histograms in surf mode */
+   JSROOT.TH2Painter.prototype.drawSurf = function() {
       let histo = this.getHisto(),
           main = this.getFramePainter(),
           handle = this.prepareColorDraw({rounding: false, use3d: true, extra: 1, middle: 0.5 }),
@@ -1919,9 +1916,8 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
       }
    }
 
-   /** @summary Draw TH2 histogram in error mode
-     * @private */
-   TH2Painter.prototype.drawError = function() {
+   /** @summary Draw TH2 histogram in error mode */
+   JSROOT.TH2Painter.prototype.drawError = function() {
       const main = this.getFramePainter(),
             histo = this.getHisto(),
             handle = this.prepareColorDraw({ rounding: false, use3d: true, extra: 1 }),
@@ -2024,9 +2020,8 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
        main.toplevel.add(line);
    }
 
-   /** @summary Draw TH2Poly histogram as lego
-     * @private */
-   TH2Painter.prototype.drawPolyLego = function() {
+   /** @summary Draw TH2Poly histogram as lego */
+   JSROOT.TH2Painter.prototype.drawPolyLego = function() {
       let histo = this.getHisto(),
           pmain = this.getFramePainter(),
           axis_zmin = pmain.z_handle.getScaleMin(),
