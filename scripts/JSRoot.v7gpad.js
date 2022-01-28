@@ -4864,162 +4864,157 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /**
     * @summary Painter for RPave class
     *
-    * @class
-    * @memberof JSROOT.v7
-    * @extends JSROOT.ObjectPainter
-    * @param {object|string} dom - DOM element for drawing or element id
-    * @param {object} pave - object to draw
-    * @param {string} [opt] - object draw options
-    * @param {string} [csstype] - object css kind
+    * @memberof JSROOT
     * @private
     */
 
-   function RPavePainter(dom, pave, opt, csstype) {
-      JSROOT.ObjectPainter.call(this, dom, pave, opt);
-      this.csstype = csstype || "pave";
-   }
+   class RPavePainter extends JSROOT.ObjectPainter {
 
-   RPavePainter.prototype = Object.create(JSROOT.ObjectPainter.prototype);
-
-   /** @summary Draw pave content
-     * @desc assigned depending on pave class */
-   RPavePainter.prototype.drawContent = function() {
-      return Promise.resolve(this);
-   }
-
-   /** @summary Draw pave */
-   RPavePainter.prototype.drawPave = function() {
-
-      let rect = this.getPadPainter().getPadRect(),
-          fp = this.getFramePainter();
-
-      this.onFrame = fp && this.v7EvalAttr("onFrame", true);
-      this.corner = this.v7EvalAttr("corner", ECorner.kTopRight);
-
-      let visible      = this.v7EvalAttr("visible", true),
-          offsetx      = this.v7EvalLength("offsetX", rect.width, 0.02),
-          offsety      = this.v7EvalLength("offsetY", rect.height, 0.02),
-          pave_width   = this.v7EvalLength("width", rect.width, 0.3),
-          pave_height  = this.v7EvalLength("height", rect.height, 0.3);
-
-      this.createG();
-
-      this.draw_g.classed("most_upper_primitives", true); // this primitive will remain on top of list
-
-      if (!visible) return Promise.resolve(this);
-
-      this.createv7AttLine("border_");
-
-      this.createv7AttFill();
-
-      let pave_x = 0, pave_y = 0,
-          fr = this.onFrame ? fp.getFrameRect() : rect;
-      switch (this.corner) {
-         case ECorner.kTopLeft:
-            pave_x = fr.x + offsetx;
-            pave_y = fr.y + offsety;
-            break;
-         case ECorner.kBottomLeft:
-            pave_x = fr.x + offsetx;
-            pave_y = fr.y + fr.height - offsety - pave_height;
-            break;
-         case ECorner.kBottomRight:
-            pave_x = fr.x + fr.width - offsetx - pave_width;
-            pave_y = fr.y + fr.height - offsety - pave_height;
-            break;
-         case ECorner.kTopRight:
-         default:
-            pave_x = fr.x + fr.width - offsetx - pave_width;
-            pave_y = fr.y + offsety;
+      /** @summary constructor
+        * @param {object|string} dom - DOM element for drawing or element id
+        * @param {object} pave - object to draw
+        * @param {string} [opt] - object draw options
+        * @param {string} [csstype] - object css kind */
+      constructor(dom, pave, opt, csstype) {
+         super(dom, pave, opt);
+         this.csstype = csstype || "pave";
       }
 
-      this.draw_g.attr("transform", `translate(${pave_x},${pave_y})`);
+      /** @summary Draw pave content
+        * @desc assigned depending on pave class */
+      drawContent() { return Promise.resolve(this); }
 
-      this.draw_g.append("svg:rect")
-                 .attr("x", 0)
-                 .attr("width", pave_width)
-                 .attr("y", 0)
-                 .attr("height", pave_height)
-                 .call(this.lineatt.func)
-                 .call(this.fillatt.func);
+      /** @summary Draw pave */
+      drawPave() {
 
-      this.pave_width = pave_width;
-      this.pave_height = pave_height;
+         let rect = this.getPadPainter().getPadRect(),
+             fp = this.getFramePainter();
 
-      // here should be fill and draw of text
+         this.onFrame = fp && this.v7EvalAttr("onFrame", true);
+         this.corner = this.v7EvalAttr("corner", ECorner.kTopRight);
 
-      return this.drawContent().then(() => {
+         let visible      = this.v7EvalAttr("visible", true),
+             offsetx      = this.v7EvalLength("offsetX", rect.width, 0.02),
+             offsety      = this.v7EvalLength("offsetY", rect.height, 0.02),
+             pave_width   = this.v7EvalLength("width", rect.width, 0.3),
+             pave_height  = this.v7EvalLength("height", rect.height, 0.3);
 
-         if (JSROOT.batch_mode) return this;
+         this.createG();
 
-         return JSROOT.require(['interactive']).then(inter => {
-            // TODO: provide pave context menu as in v6
-            if (JSROOT.settings.ContextMenu && this.paveContextMenu)
-               this.draw_g.on("contextmenu", evnt => this.paveContextMenu(evnt));
+         this.draw_g.classed("most_upper_primitives", true); // this primitive will remain on top of list
 
-            inter.addDragHandler(this, { x: pave_x, y: pave_y, width: pave_width, height: pave_height,
-                                         minwidth: 20, minheight: 20, redraw: d => this.sizeChanged(d) });
+         if (!visible) return Promise.resolve(this);
 
-            return this;
+         this.createv7AttLine("border_");
+
+         this.createv7AttFill();
+
+         let pave_x = 0, pave_y = 0,
+             fr = this.onFrame ? fp.getFrameRect() : rect;
+         switch (this.corner) {
+            case ECorner.kTopLeft:
+               pave_x = fr.x + offsetx;
+               pave_y = fr.y + offsety;
+               break;
+            case ECorner.kBottomLeft:
+               pave_x = fr.x + offsetx;
+               pave_y = fr.y + fr.height - offsety - pave_height;
+               break;
+            case ECorner.kBottomRight:
+               pave_x = fr.x + fr.width - offsetx - pave_width;
+               pave_y = fr.y + fr.height - offsety - pave_height;
+               break;
+            case ECorner.kTopRight:
+            default:
+               pave_x = fr.x + fr.width - offsetx - pave_width;
+               pave_y = fr.y + offsety;
+         }
+
+         this.draw_g.attr("transform", `translate(${pave_x},${pave_y})`);
+
+         this.draw_g.append("svg:rect")
+                    .attr("x", 0)
+                    .attr("width", pave_width)
+                    .attr("y", 0)
+                    .attr("height", pave_height)
+                    .call(this.lineatt.func)
+                    .call(this.fillatt.func);
+
+         this.pave_width = pave_width;
+         this.pave_height = pave_height;
+
+         // here should be fill and draw of text
+
+         return this.drawContent().then(() => {
+
+            if (JSROOT.batch_mode) return this;
+
+            return JSROOT.require(['interactive']).then(inter => {
+               // TODO: provide pave context menu as in v6
+               if (JSROOT.settings.ContextMenu && this.paveContextMenu)
+                  this.draw_g.on("contextmenu", evnt => this.paveContextMenu(evnt));
+
+               inter.addDragHandler(this, { x: pave_x, y: pave_y, width: pave_width, height: pave_height,
+                                            minwidth: 20, minheight: 20, redraw: d => this.sizeChanged(d) });
+
+               return this;
+            });
          });
-      });
-   }
-
-   /** @summary Process interactive moving of the stats box */
-   RPavePainter.prototype.sizeChanged = function(drag) {
-      this.pave_width = drag.width;
-      this.pave_height = drag.height;
-
-      let pave_x = drag.x,
-          pave_y = drag.y,
-          rect = this.getPadPainter().getPadRect(),
-          fr = this.onFrame ? this.getFramePainter().getFrameRect() : rect,
-          offsetx = 0, offsety = 0, changes = {};
-
-      switch (this.corner) {
-         case ECorner.kTopLeft:
-            offsetx = pave_x - fr.x;
-            offsety = pave_y - fr.y;
-            break;
-         case ECorner.kBottomLeft:
-            offsetx = pave_x - fr.x;
-            offsety = fr.y + fr.height - pave_y - this.pave_height;
-            break;
-         case ECorner.kBottomRight:
-            offsetx = fr.x + fr.width - pave_x - this.pave_width;
-            offsety = fr.y + fr.height - pave_y - this.pave_height;
-            break;
-         case ECorner.kTopRight:
-         default:
-            offsetx = fr.x + fr.width - pave_x - this.pave_width;
-            offsety = pave_y - fr.y;
       }
 
-      this.v7AttrChange(changes, "offsetX", offsetx / rect.width);
-      this.v7AttrChange(changes, "offsetY", offsety / rect.height);
-      this.v7AttrChange(changes, "width", this.pave_width / rect.width);
-      this.v7AttrChange(changes, "height", this.pave_height / rect.height);
-      this.v7SendAttrChanges(changes, false); // do not invoke canvas update on the server
+      /** @summary Process interactive moving of the stats box */
+      sizeChanged(drag) {
+         this.pave_width = drag.width;
+         this.pave_height = drag.height;
 
-      this.draw_g.select("rect")
-                 .attr("width", this.pave_width)
-                 .attr("height", this.pave_height);
+         let pave_x = drag.x,
+             pave_y = drag.y,
+             rect = this.getPadPainter().getPadRect(),
+             fr = this.onFrame ? this.getFramePainter().getFrameRect() : rect,
+             offsetx = 0, offsety = 0, changes = {};
 
-      this.drawContent();
-   }
+         switch (this.corner) {
+            case ECorner.kTopLeft:
+               offsetx = pave_x - fr.x;
+               offsety = pave_y - fr.y;
+               break;
+            case ECorner.kBottomLeft:
+               offsetx = pave_x - fr.x;
+               offsety = fr.y + fr.height - pave_y - this.pave_height;
+               break;
+            case ECorner.kBottomRight:
+               offsetx = fr.x + fr.width - pave_x - this.pave_width;
+               offsety = fr.y + fr.height - pave_y - this.pave_height;
+               break;
+            case ECorner.kTopRight:
+            default:
+               offsetx = fr.x + fr.width - pave_x - this.pave_width;
+               offsety = pave_y - fr.y;
+         }
 
-   /** @summary Redraw RPave object */
-   RPavePainter.prototype.redraw = function(/*reason*/) {
-      this.drawPave();
-   }
+         this.v7AttrChange(changes, "offsetX", offsetx / rect.width);
+         this.v7AttrChange(changes, "offsetY", offsety / rect.height);
+         this.v7AttrChange(changes, "width", this.pave_width / rect.width);
+         this.v7AttrChange(changes, "height", this.pave_height / rect.height);
+         this.v7SendAttrChanges(changes, false); // do not invoke canvas update on the server
 
-   /** @summary draw RPave object
-     * @memberof JSROOT.v7
-     * @private */
-   function drawPave(dom, pave, opt) {
-      let painter = new RPavePainter(dom, pave, opt);
+         this.draw_g.select("rect")
+                    .attr("width", this.pave_width)
+                    .attr("height", this.pave_height);
 
-      return jsrp.ensureRCanvas(painter, false).then(() => painter.drawPave());
+         this.drawContent();
+      }
+
+      /** @summary Redraw RPave object */
+      redraw(/*reason*/) {
+         this.drawPave();
+      }
+
+      /** @summary draw RPave object */
+      static draw(dom, pave, opt) {
+         let painter = new RPavePainter(dom, pave, opt);
+         return jsrp.ensureRCanvas(painter, false).then(() => painter.drawPave());
+      }
    }
 
    // =======================================================================================
@@ -5525,13 +5520,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    jsrp.addDrawFunc({ name: "ROOT::Experimental::RText", icon: "img_text", prereq: "v7more", func: "JSROOT.v7.drawText", opt: "", direct: "v7", csstype: "text" });
    jsrp.addDrawFunc({ name: "ROOT::Experimental::RFrameTitle", icon: "img_text", func: drawRFrameTitle, opt: "", direct: "v7", csstype: "title" });
    jsrp.addDrawFunc({ name: "ROOT::Experimental::RPaletteDrawable", icon: "img_text", func: drawPalette, opt: "" });
-   jsrp.addDrawFunc({ name: "ROOT::Experimental::RDisplayHistStat", icon: "img_pavetext", prereq: "v7hist", func: "JSROOT.v7.drawHistStats", opt: "" });
+   jsrp.addDrawFunc({ name: "ROOT::Experimental::RDisplayHistStat", icon: "img_pavetext", prereq: "v7hist", class: "RHistStatsPainter", opt: "" });
    jsrp.addDrawFunc({ name: "ROOT::Experimental::RLine", icon: "img_graph", prereq: "v7more", func: "JSROOT.v7.drawLine", opt: "", direct: "v7", csstype: "line" });
    jsrp.addDrawFunc({ name: "ROOT::Experimental::RBox", icon: "img_graph", prereq: "v7more", func: "JSROOT.v7.drawBox", opt: "", direct: "v7", csstype: "box" });
    jsrp.addDrawFunc({ name: "ROOT::Experimental::RMarker", icon: "img_graph", prereq: "v7more", func: "JSROOT.v7.drawMarker", opt: "", direct: "v7", csstype: "marker" });
-   jsrp.addDrawFunc({ name: "ROOT::Experimental::RPave", icon: "img_pavetext", func: drawPave, opt: "" });
-   jsrp.addDrawFunc({ name: "ROOT::Experimental::RLegend", icon: "img_graph", prereq: "v7more", func: "JSROOT.v7.drawLegend", opt: "" });
-   jsrp.addDrawFunc({ name: "ROOT::Experimental::RPaveText", icon: "img_pavetext", prereq: "v7more", func: "JSROOT.v7.drawPaveText", opt: "" });
+   jsrp.addDrawFunc({ name: "ROOT::Experimental::RPave", icon: "img_pavetext", func: RPavePainter.draw, opt: "" });
+   jsrp.addDrawFunc({ name: "ROOT::Experimental::RLegend", icon: "img_graph", prereq: "v7more", class: "RLegendPainter", opt: "" });
+   jsrp.addDrawFunc({ name: "ROOT::Experimental::RPaveText", icon: "img_pavetext", prereq: "v7more", class: "RPaveTextPainter", opt: "" });
    jsrp.addDrawFunc({ name: "ROOT::Experimental::RFrame", icon: "img_frame", func: drawRFrame, opt: "" });
    jsrp.addDrawFunc({ name: "ROOT::Experimental::RFont", icon: "img_text", func: drawRFont, opt: "", direct: "v7", csstype: "font" });
    jsrp.addDrawFunc({ name: "ROOT::Experimental::RAxisDrawable", icon: "img_frame", func: drawRAxis, opt: "" });
@@ -5541,14 +5536,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    v7.RPalettePainter = RPalettePainter;
    v7.RPadPainter = RPadPainter;
    v7.RCanvasPainter = RCanvasPainter;
-   v7.RPavePainter = RPavePainter;
+   JSROOT.RPavePainter = RPavePainter;
    v7.drawRAxis = drawRAxis;
    v7.drawRFrame = drawRFrame;
    v7.drawRFont = drawRFont;
    v7.drawPad = drawPad;
    v7.drawRCanvas = drawRCanvas;
    v7.drawPadSnapshot = drawPadSnapshot;
-   v7.drawPave = drawPave;
    v7.drawRFrameTitle = drawRFrameTitle;
 
    jsrp.ensureRCanvas = ensureRCanvas;
