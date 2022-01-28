@@ -1443,16 +1443,15 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /**
     * @summary Painter class for RFrame, main handler for interactivity
     *
-    * @class
-    * @memberof JSROOT.v7
-    * @extends JSROOT.RObjectPainter
-    * @param {object|string} dom - DOM element for drawing or element id
-    * @param {object} tframe - RFrame object
+    * @memberof JSROOT
     * @private
     */
 
    class RFramePainter extends RObjectPainter {
 
+      /** @summary constructor
+        * @param {object|string} dom - DOM element for drawing or element id
+        * @param {object} tframe - RFrame object */
       constructor(dom, tframe) {
          super(dom, tframe, "", "frame");
          this.mode3d = false;
