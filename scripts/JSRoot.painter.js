@@ -3680,7 +3680,7 @@ JSROOT.define(['d3'], (d3) => {
       { name: "TCurlyLine", sameas: 'TPolyLine' },
       { name: "TCurlyArc", sameas: 'TPolyLine' },
       { name: "TParallelCoord", icon: "img_graph", dummy: true },
-      { name: "TGaxis", icon: "img_graph", prereq: "gpad", func: ".drawGaxis" },
+      { name: "TGaxis", icon: "img_graph", prereq: "gpad", class: "TAxisPainter" },
       { name: "TLegend", icon: "img_pavelabel", prereq: "hist", class: "TPavePainter" },
       { name: "TBox", icon: 'img_graph', prereq: "more", func: ".drawBox", direct: true },
       { name: "TWbox", icon: 'img_graph', prereq: "more", func: ".drawBox", direct: true },
