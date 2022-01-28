@@ -3660,7 +3660,7 @@ JSROOT.define(['d3'], (d3) => {
       { name: "TStreamerInfoList", icon: 'img_question', prereq: "hierarchy", func: ".drawStreamerInfo" },
       { name: "TPaletteAxis", icon: "img_colz", prereq: "hist", class: "TPavePainter" },
       { name: "TWebPainting", icon: "img_graph", prereq: "more", func: ".drawWebPainting" },
-      { name: "TCanvasWebSnapshot", icon: "img_canvas", prereq: "gpad", func: ".drawPadSnapshot" },
+      { name: "TCanvasWebSnapshot", icon: "img_canvas", prereq: "gpad", func: ".drawTPadSnapshot" },
       { name: "TPadWebSnapshot", sameas: "TCanvasWebSnapshot" },
       { name: "kind:Text", icon: "img_text", func: jsrp.drawRawText },
       { name: "TObjString", icon: "img_text", func: jsrp.drawRawText },
@@ -3719,7 +3719,7 @@ JSROOT.define(['d3'], (d3) => {
       { name: "kind:TopFolder", icon: "img_base" },
       { name: "kind:Folder", icon: "img_folder", icon2: "img_folderopen", noinspect: true },
       { name: "ROOT::Experimental::RCanvas", icon: "img_canvas", prereq: "v7gpad", class: "RCanvasPainter", opt: "", expand_item: "fPrimitives" },
-      { name: "ROOT::Experimental::RCanvasDisplayItem", icon: "img_canvas", prereq: "v7gpad", func: "JSROOT.v7.drawPadSnapshot", opt: "", expand_item: "fPrimitives" }
+      { name: "ROOT::Experimental::RCanvasDisplayItem", icon: "img_canvas", prereq: "v7gpad", func: ".drawRPadSnapshot", opt: "", expand_item: "fPrimitives" }
    ], cache: {} };
 
 

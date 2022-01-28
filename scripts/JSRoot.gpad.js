@@ -4987,7 +4987,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary draw TPad snapshot from TWebCanvas
      * @memberof JSROOT.Painter
      * @private */
-   function drawPadSnapshot(dom, snap /*, opt*/) {
+   function drawTPadSnapshot(dom, snap /*, opt*/) {
       let can = JSROOT.create("TCanvas"),
           painter = new TCanvasPainter(dom, can);
       painter.normal_canvas = false;
@@ -5008,7 +5008,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    jsrp.drawPad = drawPad;
    jsrp.drawCanvas = drawCanvas;
    jsrp.ensureTCanvas = ensureTCanvas;
-   jsrp.drawPadSnapshot = drawPadSnapshot;
+   jsrp.drawTPadSnapshot = drawTPadSnapshot;
 
    return JSROOT;
 });

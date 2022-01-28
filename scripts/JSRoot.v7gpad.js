@@ -4815,7 +4815,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /** @summary draw RPadSnapshot object
      * @memberof JSROOT.v7
      * @private */
-   function drawPadSnapshot(dom, snap /*, opt*/) {
+   function drawRPadSnapshot(dom, snap /*, opt*/) {
       let painter = new RCanvasPainter(dom, null);
       painter.normal_canvas = false;
       painter.batch_mode = JSROOT.batch_mode;
@@ -5514,10 +5514,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    JSROOT.RPadPainter = RPadPainter;
    JSROOT.RCanvasPainter = RCanvasPainter;
    JSROOT.RPavePainter = RPavePainter;
-   v7.drawRFont = drawRFont;
-   v7.drawPadSnapshot = drawPadSnapshot;
-   v7.drawRFrameTitle = drawRFrameTitle;
 
+   jsrp.drawRPadSnapshot = drawRPadSnapshot;
    jsrp.ensureRCanvas = ensureRCanvas;
 
    return JSROOT;
