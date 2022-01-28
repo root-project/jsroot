@@ -247,10 +247,8 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       JSROOT.ObjectPainter.prototype.cleanup.call(this);
    }
 
-   /** @summary Returns number of histogram dimensions */
-   RHistPainter.prototype.getDimension = function() {
-      return 1;
-   }
+   /** @summary Returns histogram dimension */
+   RHistPainter.prototype.getDimension = function() { return 1; }
 
    /** @summary Scan histogram content
      * @abstract */
@@ -1982,9 +1980,8 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
       RHistPainter.prototype.cleanup.call(this);
    }
 
-   RH2Painter.prototype.getDimension = function() {
-      return 2;
-   }
+   /** @summary Returns histogram dimension */
+   RH2Painter.prototype.getDimension = function() { return 2; }
 
    /** @summary Toggle projection */
    RH2Painter.prototype.toggleProjection = function(kind, width) {
@@ -3822,7 +3819,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
          return drawHist2(dom, obj, opt);
 
       if (obj.fAxes.length == 3)
-         return JSROOT.require("v7hist3d").then(() => JSROOT.v7.drawHist3(dom, obj, opt));
+         return JSROOT.require("v7hist3d").then(() => JSROOT.RH3Painter.draw(dom, obj, opt));
 
       return null;
    }
