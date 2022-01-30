@@ -55,16 +55,16 @@ JSROOT.define(['rawinflate'], () => {
       kHasUUID: JSROOT.BIT(5),
 
       /** @summary Returns true if type is integer */
-      IsInteger: function(typ) {
+      IsInteger(typ) {
          return ((typ >= this.kChar) && (typ <= this.kLong)) || (typ === this.kCounter) ||
             ((typ >= this.kLegacyChar) && (typ <= this.kBool));
       },
 
       /** @summary Returns true if numeric type */
-      IsNumeric: function(typ) { return (typ > 0) && (typ <= this.kBool) && (typ !== this.kCharStar); },
+      IsNumeric(typ) { return (typ > 0) && (typ <= this.kBool) && (typ !== this.kCharStar); },
 
       /** @summary Returns type by its name */
-      GetTypeId: function(typname, norecursion) {
+      GetTypeId(typname, norecursion) {
          switch (typname) {
             case "bool":
             case "Bool_t": return jsrio.kBool;
@@ -116,7 +116,7 @@ JSROOT.define(['rawinflate'], () => {
       },
 
       /** @summary Get bytes size of the type */
-      GetTypeSize: function(typname) {
+      GetTypeSize(typname) {
          switch (typname) {
             case jsrio.kBool:
             case jsrio.kChar:
@@ -137,7 +137,7 @@ JSROOT.define(['rawinflate'], () => {
 
       /** @summary Analyze and returns arrays kind
         * @desc 0 if TString (or equivalent), positive value - some basic type, -1 - any other kind */
-      GetArrayKind: function(type_name) {
+      GetArrayKind(type_name) {
          if ((type_name === "TString") || (type_name === "string") ||
             (jsrio.CustomStreamers[type_name] === 'TString')) return 0;
          if ((type_name.length < 7) || (type_name.indexOf("TArray") !== 0)) return -1;
@@ -153,6 +153,12 @@ JSROOT.define(['rawinflate'], () => {
             }
 
          return type_name == "TArrayL64" ? jsrio.kLong64 : -1;
+      },
+
+      /** @summary Add custom streamer
+        * @public */
+      addUserStreamer(type, user_streamer) {
+         jsrio.CustomStreamers[type] = user_streamer;
       }
    }
 
@@ -173,12 +179,6 @@ JSROOT.define(['rawinflate'], () => {
                });
 
       return streamer;
-   }
-
-   /** @summary Add custom streamer
-     * @public */
-   jsrio.addUserStreamer = function(type, user_streamer) {
-      jsrio.CustomStreamers[type] = user_streamer;
    }
 
    /** @summary Reads header envelope, determines zipped size and unzip content
