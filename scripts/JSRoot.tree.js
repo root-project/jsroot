@@ -1,4 +1,5 @@
-// Collect all TTree-relevant methods for reading, drawing and hierarchy browsing
+/// @file JSRoot.tree.js
+/// TTree-relevant methods for reading, drawing and hierarchy browsing
 
 JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
 
