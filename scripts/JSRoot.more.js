@@ -387,11 +387,11 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       this.rotate = function(angle, x0, y0) {
          let dx = this.wsize * Math.cos(angle), dy = this.wsize * Math.sin(angle), res = "";
          if ((x0 !== undefined) && (y0 !== undefined)) {
-            res =  "M" + Math.round(x0-dx) + "," + Math.round(y0-dy);
+            res =  `M${Math.round(x0-dx)},${Math.round(y0-dy)}`;
          } else {
             dx = -dx; dy = -dy;
          }
-         res += "l"+Math.round(dx)+","+Math.round(dy);
+         res += `l${Math.round(dx)},${Math.round(dy)}`;
          if (x0 && (y0===undefined)) res+="z";
          return res;
       };
@@ -418,11 +418,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             path += this.rotate(angle - this.angle2, this.x2, this.y2) +
                     this.rotate(angle + this.angle2, this.end > 10);
 
-         return "M" + Math.round(this.x1 + (this.beg > 10 ? dx : 0)) + "," +
-                      Math.round(this.y1 + (this.beg > 10 ? dy : 0)) +
-                "L" + Math.round(this.x2 - (this.end > 10 ? dx : 0)) + "," +
-                      Math.round(this.y2 - (this.end > 10 ? dy : 0)) +
-                path;
+         return `M${Math.round(this.x1 + (this.beg > 10 ? dx : 0))},${Math.round(this.y1 + (this.beg > 10 ? dy : 0))}` +
+                `L${Math.round(this.x2 - (this.end > 10 ? dx : 0))},${Math.round(this.y2 - (this.end > 10 ? dy : 0))}` +
+                 path;
       };
 
       let elem = this.draw_g.append("svg:path")
@@ -462,8 +460,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                   arrow.fX2 = this.svgToAxis("x", this.x2, this.isndc);
                   arrow.fY1 = this.svgToAxis("y", this.y1, this.isndc);
                   arrow.fY2 = this.svgToAxis("y", this.y2, this.isndc);
-                  if (this.side != 1) exec += "SetX1(" + arrow.fX1 + ");;SetY1(" + arrow.fY1 + ");;";
-                  if (this.side != -1) exec += "SetX2(" + arrow.fX2 + ");;SetY2(" + arrow.fY2 + ");;";
+                  if (this.side != 1) exec += `SetX1(${arrow.fX1});;SetY1(${arrow.fY1});;`;
+                  if (this.side != -1) exec += `SetX2(${arrow.fX2});;SetY2(${arrow.fY2});;`;
                   this.submitCanvExec(exec + "Notify();;");
                };
 
