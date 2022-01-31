@@ -1444,7 +1444,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    /**
     * @summary Class to decode histograms draw options
     *
-    * @class
     * @memberof JSROOT
     * @private
     */
@@ -1836,7 +1835,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    /**
     * @summary Handle for histogram contour
     *
-    * @class
     * @memberof JSROOT
     * @private
     */

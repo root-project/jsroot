@@ -382,7 +382,6 @@ JSROOT.define(['d3'], (d3) => {
    /**
     * @summary Color palette handle
     *
-    * @class
     * @memberof JSROOT
     * @private
     */
@@ -416,7 +415,6 @@ JSROOT.define(['d3'], (d3) => {
    /**
      * @summary Handle for marker attributes
      *
-     * @class
      * @memberof JSROOT
      * @private
      */
@@ -696,7 +694,6 @@ JSROOT.define(['d3'], (d3) => {
    /**
      * @summary Handle for line attributes
      *
-     * @class
      * @memberof JSROOT
      * @private
      */
@@ -827,7 +824,6 @@ JSROOT.define(['d3'], (d3) => {
    /**
      * @summary Handle for fill attributes
      *
-     * @class
      * @memberof JSROOT
      * @private
      */
@@ -1149,7 +1145,6 @@ JSROOT.define(['d3'], (d3) => {
    /**
     * @summary Helper class for font handling
     *
-    * @class
     * @memberof JSROOT
     * @private
     */

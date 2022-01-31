@@ -340,7 +340,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /**
     * @summary Axis painter for v7
     *
-    * @class
     * @memberof JSROOT
     * @private
     */

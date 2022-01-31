@@ -14,7 +14,6 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
    /**
      * @summary Toolbar for geometry painter
      *
-     * @class
      * @memberof JSROOT.GEO
      * @private
      */

@@ -289,7 +289,6 @@ JSROOT.define(['rawinflate'], () => {
    /**
      * @summary Buffer object to read data from TFile
      *
-     * @class
      * @memberof JSROOT
      * @private
      */

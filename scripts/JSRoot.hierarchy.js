@@ -605,11 +605,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    // =================================================================================================
 
    /**
-     * @summary special layout with three different areas for browser (left), status line (bottom) and central drawing
-     * Main application is normal browser in JSROOT, but later one should be able to use it in ROOT6 canvas
+     * @summary Special browser layout
      *
-     * @class
      * @memberof JSROOT
+     * @desc Contains three different areas for browser (left), status line (bottom) and central drawing
+     * Main application is normal browser in JSROOT, but also used in other applications like ROOT6 canvas
      * @private
      */
 
@@ -4105,12 +4105,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /**
     * @summary Base class to manage multiple document interface for drawings
     *
-    * @class
     * @memberof JSROOT
     * @private
     */
 
    class MDIDisplay extends JSROOT.BasePainter {
+      /** @summary constructor */
       constructor(frameid) {
          super();
          this.frameid = frameid;
@@ -4220,7 +4220,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /**
     * @summary Custom MDI display
     *
-    * @class
     * @memberof JSROOT
     * @desc All HTML frames should be created before and add via {@link CustomDisplay.addFrame} calls
     * @private
@@ -4271,7 +4270,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /**
     * @summary Generic grid MDI display
     *
-    * @class
     * @memberof JSROOT
     * @private
     */
@@ -4289,8 +4287,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       *    - v23_52 - create two vertical elements with 2 and 3 subitems, size ratio 5:2
       *    - gridNxM - normal grid layout without interactive separators
       *    - gridiNxM - grid layout with interactive separators
-      *    -  simple - no layout, full frame used for object drawings */
-
+      *    - simple - no layout, full frame used for object drawings */
       constructor(frameid, kind, kind2) {
 
          super(frameid);
@@ -4609,7 +4606,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /**
     * @summary Generic flexible MDI display
     *
-    * @class
     * @memberof JSROOT
     * @private
     */
@@ -5015,7 +5011,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /**
     * @summary Batch MDI display
     *
-    * @class
     * @memberof JSROOT
     * @desc Can be used together with hierarchy painter in node.js
     * @private

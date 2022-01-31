@@ -8,7 +8,6 @@ JSROOT.define([], () => {
    /**
     * @summary Class emulating web socket with long-poll http requests
     *
-    * @class
     * @memberof JSROOT
     * @private
     */
@@ -180,7 +179,6 @@ JSROOT.define([], () => {
    /**
     * @summary Class re-playing socket data from stored protocol
     *
-    * @class
     * @memberof JSROOT
     * @private
     */
@@ -238,7 +236,6 @@ JSROOT.define([], () => {
    /**
     * @summary Client communication handle for RWebWindow.
     *
-    * @class
     * @memberof JSROOT
     * @desc Should be created with {@link JSROOT.connectWebWindow} function
     */

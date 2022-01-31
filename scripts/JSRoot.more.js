@@ -486,9 +486,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    // ===================================================================================
 
-   /** @class
+   /**
+     * @summary Painter for TF1 object
+     *
      * @memberof JSROOT
-     * @summary Painter for TF1 object.
      * @private
      */
 

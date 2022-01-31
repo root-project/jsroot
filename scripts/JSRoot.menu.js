@@ -35,7 +35,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /**
     * @summary Abstract class for creating context menu
     *
-    * @class
     * @memberof JSROOT.Painter
     * @desc Use {@link JSROOT.Painter.createMenu} to create instance of the menu
     * @private
@@ -584,7 +583,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /**
     * @summary Context menu class using plain HTML/JavaScript
     *
-    * @class
     * @memberof JSROOT.Painter
     * @desc Use {@link JSROOT.Painter.createMenu} to create instance of the menu
     * based on {@link https://github.com/L1quidH2O/ContextMenu.js}
@@ -888,7 +886,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    /**
     * @summary Context menu class using Bootstrap
     *
-    * @class
     * @memberof JSROOT.Painter
     * @desc Use {@link JSROOT.Painter.createMenu} to create instance of the menu
     * @private

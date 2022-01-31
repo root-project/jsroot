@@ -79,9 +79,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
 
    /**
-    * @summary Painter for TAxis/TGaxis objects.
+    * @summary Painter for TAxis/TGaxis objects
     *
-    * @class
     * @memberof JSROOT
     * @private
     */
