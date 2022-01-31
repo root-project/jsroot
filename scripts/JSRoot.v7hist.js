@@ -699,41 +699,11 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
 
       /** @summary Fill menu entries for palette */
       fillPaletteMenu(menu) {
-
-         // TODO: rewrite for RPalette functionality
-         let curr = this.options.Palette, hpainter = this;
-         if ((curr===null) || (curr===0)) curr = JSROOT.settings.Palette;
-
-         function change(arg) {
-            hpainter.options.Palette = parseInt(arg);
-            hpainter.redraw(); // redraw histogram
-         };
-
-         function add(id, name, more) {
-            menu.addchk((id===curr) || more, '<nobr>' + name + '</nobr>', id, change);
-         };
-
-         menu.add("sub:Palette");
-
-         add(50, "ROOT 5", (curr>=10) && (curr<51));
-         add(51, "Deep Sea");
-         add(52, "Grayscale", (curr>0) && (curr<10));
-         add(53, "Dark body radiator");
-         add(54, "Two-color hue");
-         add(55, "Rainbow");
-         add(56, "Inverted dark body radiator");
-         add(57, "Bird", (curr>112));
-         add(58, "Cubehelix");
-         add(59, "Green Red Violet");
-         add(60, "Blue Red Yellow");
-         add(61, "Ocean");
-         add(62, "Color Printable On Grey");
-         add(63, "Alpine");
-         add(64, "Aquamarine");
-         add(65, "Army");
-         add(66, "Atlantic");
-
-         menu.add("endsub:");
+         menu.addPaletteMenu(this.options.Palette || JSROOT.settings.Palette, arg => {
+            // TODO: rewrite for RPalette functionality
+            this.options.Palette = parseInt(arg);
+            this.redraw(); // redraw histogram
+         });
       }
 
       /** @summary Toggle 3D drawing mode */

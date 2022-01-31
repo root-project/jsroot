@@ -26,10 +26,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (id >= 50) {
          // for higher color numbers ensure that such color exists
          let c = d3.color(col);
-         id = "TColor::GetColor(" + c.r + "," + c.g + "," + c.b + ")";
+         id = `TColor::GetColor(${c.r},${c.g},${c.b})`;
       }
 
-      return "exec:" + method + "(" + id + ")";
+      return `exec:${method}(${id})`;
    }
 
    /**
@@ -187,6 +187,34 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             this.addchk((Math.abs(size_value - sz) < step / 2), entry,
                         sz, res => set_func((step >= 1) ? parseInt(res) : parseFloat(res)));
          }
+         this.add("endsub:");
+      }
+
+      /** @summary Add palette menu entries
+        * @protected */
+      addPaletteMenu(curr, set_func) {
+         const add = (id, name, more) => this.addchk((id === curr) || more, '<nobr>' + name + '</nobr>', id, set_func);
+
+         this.add("sub:Palette");
+
+         add(50, "ROOT 5", (curr>=10) && (curr<51));
+         add(51, "Deep Sea");
+         add(52, "Grayscale", (curr>0) && (curr<10));
+         add(53, "Dark body radiator");
+         add(54, "Two-color hue");
+         add(55, "Rainbow");
+         add(56, "Inverted dark body radiator");
+         add(57, "Bird", (curr>113));
+         add(58, "Cubehelix");
+         add(59, "Green Red Violet");
+         add(60, "Blue Red Yellow");
+         add(61, "Ocean");
+         add(62, "Color Printable On Grey");
+         add(63, "Alpine");
+         add(64, "Aquamarine");
+         add(65, "Army");
+         add(66, "Atlantic");
+
          this.add("endsub:");
       }
 
