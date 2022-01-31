@@ -30,10 +30,10 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
 
       /** @summary constructor */
       constructor() {
-         this.branches = []; // list of branches to read
-         this.names = []; // list of member names for each branch in tgtobj
-         this.directs = []; // indication if only branch without any children should be read
-         this.break_execution = 0;
+         this._branches = []; // list of branches to read
+         this._names = []; // list of member names for each branch in tgtobj
+         this._directs = []; // indication if only branch without any children should be read
+         this._break = 0;
          this.tgtobj = {};
       }
 
@@ -46,23 +46,30 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
        * If branch object specified as first parameter and second parameter missing,
        * then member like "br0", "br1" and so on will be assigned
        * @param {string|Object} branch - name of branch (or branch object itself}
-       * @param {string} [name] - member name in tgtobj where data will be read */
+       * @param {string} [name] - member name in tgtobj where data will be read
+       * @param {boolean} [direct] - if only branch without any children should be read */
       addBranch(branch, name, direct) {
          if (!name)
-            name = (typeof branch === 'string') ? branch : ("br" + this.branches.length);
-         this.branches.push(branch);
-         this.names.push(name);
-         this.directs.push(direct);
-         return this.branches.length - 1;
+            name = (typeof branch === 'string') ? branch : ("br" + this._branches.length);
+         this._branches.push(branch);
+         this._names.push(name);
+         this._directs.push(direct);
+         return this._branches.length - 1;
       }
+
+      /** @summary returns number of branches used in selector */
+      numBranches() { return this._branches.length; }
+
+      /** @summary returns branch by index used in selector */
+      getBranch(indx) { return this._branches[indx]; }
 
       /** @summary returns index of branch
         * @private */
-      indexOfBranch(branch) { return this.branches.indexOf(branch); }
+      indexOfBranch(branch) { return this._branches.indexOf(branch); }
 
       /** @summary returns name of branch
         * @private */
-      nameOfBranch(indx) { return this.names[indx]; }
+      nameOfBranch(indx) { return this._names[indx]; }
 
       /** @summary function called during TTree processing
        * @abstract
@@ -70,7 +77,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
       ShowProgress(/* progress */) {}
 
       /** @summary call this function to abort processing */
-      Abort() { this.break_execution = -1111; }
+      Abort() { this._break = -1111; }
 
       /** @summary function called before start processing
        * @abstract
@@ -708,7 +715,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
          if (cut)
             if (!this.cut.parse(tree, this, cut)) return false;
 
-         if (!this.branches.length) {
+         if (!this.numBranches()) {
             console.warn('no any branch is selected');
             return false;
          }
@@ -804,7 +811,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
          main_box.title = "Click on element to break drawing";
 
          main_box.onclick = function() {
-            if (++selector.break_execution < 3) {
+            if (++selector._break < 3) {
                main_box.title = "Tree draw will break after next I/O operation";
                return text_node.nodeValue = "Breaking ... ";
             }
@@ -1427,7 +1434,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
       Process(selector, args) {
          if (!args) args = {};
 
-         if (!selector || !this.$file || !selector.branches) {
+         if (!selector || !this.$file || !selector.numBranches()) {
             if (selector) selector.Terminate(false);
             return Promise.reject(Error("required parameter missing for TTree::Process"));
          }
@@ -2018,13 +2025,13 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
          }
 
          // main loop to add all branches from selector for reading
-         for (let nn = 0; nn < selector.branches.length; ++nn) {
+         for (let nn = 0; nn < selector.numBranches(); ++nn) {
 
-            let item = AddBranchForReading(selector.branches[nn], undefined, selector.names[nn], selector.directs[nn]);
+            let item = AddBranchForReading(selector.getBranch(nn), undefined, selector.nameOfBranch(nn), selector._directs[nn]);
 
             if (!item) {
                selector.Terminate(false);
-               return Promise.reject(Error(`Fail to add branch ${selector.branches[nn]}`));
+               return Promise.reject(Error(`Fail to add branch ${selector.nameOfBranch(nn)}`));
             }
          }
 
@@ -2319,7 +2326,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
          function ProcessBaskets(bitems) {
             // this is call-back when next baskets are read
 
-            if ((handle.selector.break_execution !== 0) || (bitems === null)) {
+            if ((handle.selector._break !== 0) || (bitems === null)) {
                handle.selector.Terminate(false);
                return resolveFunc(handle.selector);
             }
