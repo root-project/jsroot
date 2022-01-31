@@ -17,49 +17,55 @@
 
    <script type='text/javascript'>
 
-      class TRealSelector extends JSROOT.TSelector {
-         /** constructor */
-         constructor() {
-            super();
-
-            this.cnt = 0;
-            this.sumpx = 0;
-            this.sumpy = 0;
-
-            this.addBranch("px");
-            this.addBranch("py");
-         }
-
-         /** function called before reading of TTree starts */
-         Begin() {
-            document.getElementById('p_start').innerHTML = "Start reading TTree";
-         }
-
-         /** function called for every entry */
-         Process() {
-            this.sumpx += this.tgtobj.px;
-            this.sumpy += this.tgtobj.py;
-            this.cnt++;
-            document.getElementById('p_process').innerHTML = `Process ${this.cnt} entries`;
-         }
-
-         /** function called when processing finishes */
-         Terminate(res) {
-            if (!res || !this.cnt) {
-               res = "Fail to process TTree";
-            } else {
-               let meanpx = this.sumpx/this.cnt, meanpy = this.sumpy/this.cnt;
-               res = `MeanPX = ${meanpx.toFixed(4)}  MeanPY = ${meanpy.toFixed(4)}`;
-            }
-
-            document.getElementById('p_ready').innerHTML = res;
-         }
-
-      }
-
       JSROOT.openFile("../../files/hsimple.root")
             .then(file => file.readObject("ntuple;1"))
-            .then(tree => tree.Process(new TRealSelector()));
+            .then(tree => {
+
+               // only here TTree classes, including TSelector are available
+               // one also can use JSROOT.require('tree', () => {}) to get tree functionality loaded
+
+               class TRealSelector extends JSROOT.TSelector {
+                  /** constructor */
+                  constructor() {
+                     super();
+
+                     this.cnt = 0;
+                     this.sumpx = 0;
+                     this.sumpy = 0;
+
+                     this.addBranch("px");
+                     this.addBranch("py");
+                  }
+
+                  /** function called before reading of TTree starts */
+                  Begin() {
+                     document.getElementById('p_start').innerHTML = "Start reading TTree";
+                  }
+
+                  /** function called for every entry */
+                  Process() {
+                     this.sumpx += this.tgtobj.px;
+                     this.sumpy += this.tgtobj.py;
+                     this.cnt++;
+                     document.getElementById('p_process').innerHTML = `Process ${this.cnt} entries`;
+                  }
+
+                  /** function called when processing finishes */
+                  Terminate(res) {
+                     if (!res || !this.cnt) {
+                        res = "Fail to process TTree";
+                     } else {
+                        let meanpx = this.sumpx/this.cnt, meanpy = this.sumpy/this.cnt;
+                        res = `MeanPX = ${meanpx.toFixed(4)}  MeanPY = ${meanpy.toFixed(4)}`;
+                     }
+
+                     document.getElementById('p_ready').innerHTML = res;
+                  }
+
+               }
+
+               tree.Process(new TRealSelector());
+            });
    </script>
 
 </body>
