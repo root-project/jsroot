@@ -148,7 +148,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (value === undefined) return;
          let useid = (typeof value !== 'string');
          this.add("sub:" + name, () => {
-            this.input("Enter color " + (useid ? "(only id number)" : "(name or id)"), value, useid ? "int" : "text").then(col => {
+            this.input("Enter color " + (useid ? "(only id number)" : "(name or id)"), value, useid ? "int" : "text", useid ? 0 : undefined, useid ? 9999 : undefined).then(col => {
                let id = parseInt(col);
                if (Number.isInteger(id) && jsrp.getColor(id)) {
                   col = jsrp.getColor(id);
@@ -195,7 +195,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       addPaletteMenu(curr, set_func) {
          const add = (id, name, more) => this.addchk((id === curr) || more, '<nobr>' + name + '</nobr>', id, set_func);
 
-         this.add("sub:Palette");
+         this.add("sub:Palette", () => this.input("Enter palette code [1..113]", curr, "int", 1, 113).then(set_func));
 
          add(50, "ROOT 5", (curr>=10) && (curr<51));
          add(51, "Deep Sea");
@@ -222,7 +222,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
         * @protected */
       addRebinMenu(rebin_func) {
         this.add("sub:Rebin", () => {
-            this.input("Enter rebin value", 2, "int").then(rebin_func);
+            this.input("Enter rebin value", 2, "int", 2).then(rebin_func);
          });
          for (let sz = 2; sz <= 7; sz++) {
             this.add(sz.toString(), sz, res => rebin_func(parseInt(res)));
@@ -337,7 +337,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             this.addColorMenu("color", painter.lineatt.color,
                arg => { painter.lineatt.change(arg); painter.interactiveRedraw(true, getColorExec(arg, "SetLineColor")); });
             this.add("sub:style", () => {
-               this.input("Enter line style id (1-solid)", painter.lineatt.style, "int").then(id => {
+               this.input("Enter line style id (1-solid)", painter.lineatt.style, "int", 1, 11).then(id => {
                   if (!jsrp.root_line_styles[id]) return;
                   painter.lineatt.change(undefined, undefined, id);
                   painter.interactiveRedraw(true, `exec:SetLineStyle(${id})`);
@@ -374,7 +374,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             this.addColorMenu("color", painter.fillatt.colorindx,
                arg => { painter.fillatt.change(arg, undefined, painter.getCanvSvg()); painter.interactiveRedraw(true, getColorExec(arg, "SetFillColor")); }, painter.fillatt.kind);
             this.add("sub:style", () => {
-               this.input("Enter fill style id (1001-solid, 3000..3010)", painter.fillatt.pattern, "int").then(id => {
+               this.input("Enter fill style id (1001-solid, 3000..3010)", painter.fillatt.pattern, "int", 0, 4000).then(id => {
                   if ((id < 0) || (id > 4000)) return;
                   painter.fillatt.change(undefined, id, painter.getCanvSvg());
                   painter.interactiveRedraw(true, "exec:SetFillStyle(" + id + ")");
@@ -421,7 +421,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       /** @summary Fill context menu for axis
         * @private */
       addTAxisMenu(painter, faxis, kind) {
-         this.add("Divisions", () => this.input("Set Ndivisions", faxis.fNdivisions, "int").then(val => {
+         this.add("Divisions", () => this.input("Set Ndivisions", faxis.fNdivisions, "int", 0).then(val => {
             faxis.fNdivisions = val;
             painter.interactiveRedraw("pad", `exec:SetNdivisions(${val})`, kind);
          }));
@@ -503,18 +503,20 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
         * @param value - initial value
         * @param {string} [kind] - use "text" (default), "number", "float" or "int"
         * @protected */
-      input(title, value, kind) {
+      input(title, value, kind, min, max) {
 
          if (!kind) kind = "text";
-         let inp_type = (kind == "int") ? "number" : "text";
+         let inp_type = (kind == "int") ? "number" : "text", ranges = "";
          if ((value === undefined) || (value === null)) value = "";
+         if (kind == "int") {
+             if (min !== undefined) ranges += ` min="${min}"`;
+             if (max !== undefined) ranges += ` max="${max}"`;
+          }
 
          let main_content =
-            `<form>
-                <fieldset style="padding:0; border:0">
-                   <input type="${inp_type}" value="${value}" style="width:98%;display:block" class="jsroot_dlginp"/>
-               </fieldset>
-             </form>`;
+            '<form><fieldset style="padding:0; border:0">'+
+               `<input type="${inp_type}" value="${value}" ${ranges} style="width:98%;display:block" class="jsroot_dlginp"/>`+
+            '</fieldset></form>';
 
          return new Promise(resolveFunc => {
 
