@@ -116,129 +116,132 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
    /**
     * @summary Class to iterate over array elements
     *
-    * @class
     * @private
     */
 
-   function ArrayIterator(arr, select, tgtobj) {
-      this.object = arr;
-      this.value = 0; // value always used in iterator
-      this.arr = []; // all arrays
-      this.indx = []; // all indexes
-      this.cnt = -1; // current index counter
-      this.tgtobj = tgtobj;
+   class ArrayIterator {
 
-      if (typeof select === 'object')
-         this.select = select; // remember indexes for selection
-      else
-         this.select = []; // empty array, undefined for each dimension means iterate over all indexes
-   }
+      /** @summary constructor */
+      constructor(arr, select, tgtobj) {
+         this.object = arr;
+         this.value = 0; // value always used in iterator
+         this.arr = []; // all arrays
+         this.indx = []; // all indexes
+         this.cnt = -1; // current index counter
+         this.tgtobj = tgtobj;
 
-   /** @summary next element */
-   ArrayIterator.prototype.next = function() {
-      let obj, typ, cnt = this.cnt;
-
-      if (cnt >= 0) {
-
-         if (++this.fastindx < this.fastlimit) {
-            this.value = this.fastarr[this.fastindx];
-            return true;
-         }
-
-         while (--cnt >= 0) {
-            if ((this.select[cnt] === undefined) && (++this.indx[cnt] < this.arr[cnt].length)) break;
-         }
-         if (cnt < 0) return false;
+         if (typeof select === 'object')
+            this.select = select; // remember indexes for selection
+         else
+            this.select = []; // empty array, undefined for each dimension means iterate over all indexes
       }
 
-      while (true) {
+      /** @summary next element */
+      next() {
+         let obj, typ, cnt = this.cnt;
 
-         obj = (cnt < 0) ? this.object : (this.arr[cnt])[this.indx[cnt]];
+         if (cnt >= 0) {
 
-         typ = obj ? typeof obj : "any";
-
-         if (typ === "object") {
-            if (obj._typename !== undefined) {
-               if (JSROOT.isRootCollection(obj)) { obj = obj.arr; typ = "array"; }
-               else typ = "any";
-            } else if (Number.isInteger(obj.length) && (checkArrayPrototype(obj) > 0)) {
-               typ = "array";
-            } else {
-               typ = "any";
+            if (++this.fastindx < this.fastlimit) {
+               this.value = this.fastarr[this.fastindx];
+               return true;
             }
-         }
 
-         if (this.select[cnt + 1] == "$self$") {
-            this.value = obj;
-            this.fastindx = this.fastlimit = 0;
-            this.cnt = cnt + 1;
-            return true;
-         }
-
-         if ((typ == "any") && (typeof this.select[cnt + 1] === "string")) {
-            // this is extraction of the member from arbitrary class
-            this.arr[++cnt] = obj;
-            this.indx[cnt] = this.select[cnt]; // use member name as index
-            continue;
-         }
-
-         if ((typ === "array") && ((obj.length > 0) || (this.select[cnt + 1] === "$size$"))) {
-            this.arr[++cnt] = obj;
-            switch (this.select[cnt]) {
-               case undefined: this.indx[cnt] = 0; break;
-               case "$last$": this.indx[cnt] = obj.length - 1; break;
-               case "$size$":
-                  this.value = obj.length;
-                  this.fastindx = this.fastlimit = 0;
-                  this.cnt = cnt;
-                  return true;
-               default:
-                  if (Number.isInteger(this.select[cnt])) {
-                     this.indx[cnt] = this.select[cnt];
-                     if (this.indx[cnt] < 0) this.indx[cnt] = obj.length - 1;
-                  } else {
-                     // this is compile variable as array index - can be any expression
-                     this.select[cnt].produce(this.tgtobj);
-                     this.indx[cnt] = Math.round(this.select[cnt].get(0));
-                  }
+            while (--cnt >= 0) {
+               if ((this.select[cnt] === undefined) && (++this.indx[cnt] < this.arr[cnt].length)) break;
             }
-         } else {
-
             if (cnt < 0) return false;
+         }
 
-            this.value = obj;
-            if (this.select[cnt] === undefined) {
-               this.fastarr = this.arr[cnt];
-               this.fastindx = this.indx[cnt];
-               this.fastlimit = this.fastarr.length;
-            } else {
-               this.fastindx = this.fastlimit = 0; // no any iteration on that level
+         while (true) {
+
+            obj = (cnt < 0) ? this.object : (this.arr[cnt])[this.indx[cnt]];
+
+            typ = obj ? typeof obj : "any";
+
+            if (typ === "object") {
+               if (obj._typename !== undefined) {
+                  if (JSROOT.isRootCollection(obj)) { obj = obj.arr; typ = "array"; }
+                  else typ = "any";
+               } else if (Number.isInteger(obj.length) && (checkArrayPrototype(obj) > 0)) {
+                  typ = "array";
+               } else {
+                  typ = "any";
+               }
             }
 
-            this.cnt = cnt;
-            return true;
+            if (this.select[cnt + 1] == "$self$") {
+               this.value = obj;
+               this.fastindx = this.fastlimit = 0;
+               this.cnt = cnt + 1;
+               return true;
+            }
+
+            if ((typ == "any") && (typeof this.select[cnt + 1] === "string")) {
+               // this is extraction of the member from arbitrary class
+               this.arr[++cnt] = obj;
+               this.indx[cnt] = this.select[cnt]; // use member name as index
+               continue;
+            }
+
+            if ((typ === "array") && ((obj.length > 0) || (this.select[cnt + 1] === "$size$"))) {
+               this.arr[++cnt] = obj;
+               switch (this.select[cnt]) {
+                  case undefined: this.indx[cnt] = 0; break;
+                  case "$last$": this.indx[cnt] = obj.length - 1; break;
+                  case "$size$":
+                     this.value = obj.length;
+                     this.fastindx = this.fastlimit = 0;
+                     this.cnt = cnt;
+                     return true;
+                  default:
+                     if (Number.isInteger(this.select[cnt])) {
+                        this.indx[cnt] = this.select[cnt];
+                        if (this.indx[cnt] < 0) this.indx[cnt] = obj.length - 1;
+                     } else {
+                        // this is compile variable as array index - can be any expression
+                        this.select[cnt].produce(this.tgtobj);
+                        this.indx[cnt] = Math.round(this.select[cnt].get(0));
+                     }
+               }
+            } else {
+
+               if (cnt < 0) return false;
+
+               this.value = obj;
+               if (this.select[cnt] === undefined) {
+                  this.fastarr = this.arr[cnt];
+                  this.fastindx = this.indx[cnt];
+                  this.fastlimit = this.fastarr.length;
+               } else {
+                  this.fastindx = this.fastlimit = 0; // no any iteration on that level
+               }
+
+               this.cnt = cnt;
+               return true;
+            }
          }
+
+         // unreachable code
+         // return false;
       }
 
-      // unreachable code
-      // return false;
-   }
+      /** @summary reset iterator */
+      reset() {
+         this.arr = [];
+         this.indx = [];
+         delete this.fastarr;
+         this.cnt = -1;
+         this.value = 0;
+      }
 
-   /** @summary reset iterator */
-   ArrayIterator.prototype.reset = function() {
-      this.arr = [];
-      this.indx = [];
-      delete this.fastarr;
-      this.cnt = -1;
-      this.value = 0;
-   }
+   } // class ArrayIterator
 
    // ============================================================================
 
    /**
     * @summary object with single variable in TTree::Draw expression
     *
-    * @class
     * @memberof JSROOT
     * @private
     */
