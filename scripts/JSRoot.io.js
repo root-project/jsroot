@@ -2348,55 +2348,52 @@ JSROOT.define(['rawinflate'], () => {
    /**
      * @summary Interface to read local file in the browser
      *
-     * @class
      * @memberof JSROOT
-     * @extends JSROOT.TFile
      * @hideconstructor
      * @desc Use {@link JSROOT.openFile} to create instance of the class
      * @private
      */
 
-   function TLocalFile(file) {
-      TFile.call(this, null);
-      this.fUseStampPar = false;
-      this.fLocalFile = file;
-      this.fEND = file.size;
-      this.fFullURL = file.name;
-      this.fURL = file.name;
-      this.fFileName = file.name;
-   }
+   class TLocalFile extends TFile {
 
-   TLocalFile.prototype = Object.create(TFile.prototype)
+      constructor(file) {
+         TFile.call(this, null);
+         this.fUseStampPar = false;
+         this.fLocalFile = file;
+         this.fEND = file.size;
+         this.fFullURL = file.name;
+         this.fURL = file.name;
+         this.fFileName = file.name;
+      }
 
-   /** @summary Open local file
-     * @returns {Promise} after file keys are read
-     * @private */
-   TLocalFile.prototype._open = function() { return this.readKeys(); }
+      /** @summary Open local file
+        * @returns {Promise} after file keys are read */
+      _open() { return this.readKeys(); }
 
-   /** @summary read buffer from local file
-     * @private */
-   TLocalFile.prototype.readBuffer = function(place, filename /*, progress_callback */) {
-      let file = this.fLocalFile;
+      /** @summary read buffer from local file */
+      readBuffer(place, filename /*, progress_callback */) {
+         let file = this.fLocalFile;
 
-      return new Promise((resolve, reject) => {
-         if (filename)
-            return reject(Error("Cannot access other local file " + filename));
+         return new Promise((resolve, reject) => {
+            if (filename)
+               return reject(Error("Cannot access other local file " + filename));
 
-         let reader = new FileReader(), cnt = 0, blobs = [];
+            let reader = new FileReader(), cnt = 0, blobs = [];
 
-         reader.onload = function(evnt) {
-            let res = new DataView(evnt.target.result);
-            if (place.length === 2) return resolve(res);
+            reader.onload = function(evnt) {
+               let res = new DataView(evnt.target.result);
+               if (place.length === 2) return resolve(res);
 
-            blobs.push(res);
-            cnt += 2;
-            if (cnt >= place.length) return resolve(blobs);
-            reader.readAsArrayBuffer(file.slice(place[cnt], place[cnt] + place[cnt + 1]));
-         }
+               blobs.push(res);
+               cnt += 2;
+               if (cnt >= place.length) return resolve(blobs);
+               reader.readAsArrayBuffer(file.slice(place[cnt], place[cnt] + place[cnt + 1]));
+            }
 
-         reader.readAsArrayBuffer(file.slice(place[0], place[0] + place[1]));
-      });
-   }
+            reader.readAsArrayBuffer(file.slice(place[0], place[0] + place[1]));
+         });
+      }
+   } // TLocalFile
 
    // =============================================================
 
