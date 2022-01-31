@@ -756,84 +756,87 @@ JSROOT.define(['rawinflate'], () => {
    /**
      * @summary A class that reads a TDirectory from a buffer.
      *
-     * @class
      * @memberof JSROOT
      * @private
      */
 
-   function TDirectory(file, dirname, cycle) {
-      this.fFile = file;
-      this._typename = "TDirectory";
-      this.dir_name = dirname;
-      this.dir_cycle = cycle;
-      this.fKeys = [];
-   }
-
-   /** @summary retrieve a key by its name and cycle in the list of keys */
-   TDirectory.prototype.getKey = function(keyname, cycle, only_direct) {
-
-      if (typeof cycle != 'number') cycle = -1;
-      let bestkey = null;
-      for (let i = 0; i < this.fKeys.length; ++i) {
-         const key = this.fKeys[i];
-         if (!key || (key.fName!==keyname)) continue;
-         if (key.fCycle == cycle) { bestkey = key; break; }
-         if ((cycle < 0) && (!bestkey || (key.fCycle > bestkey.fCycle))) bestkey = key;
-      }
-      if (bestkey)
-         return only_direct ? bestkey : Promise.resolve(bestkey);
-
-      let pos = keyname.lastIndexOf("/");
-      // try to handle situation when object name contains slashed (bad practice anyway)
-      while (pos > 0) {
-         let dirname = keyname.substr(0, pos),
-             subname = keyname.substr(pos+1),
-             dirkey = this.getKey(dirname, undefined, true);
-
-         if (dirkey && !only_direct && (dirkey.fClassName.indexOf("TDirectory")==0))
-            return this.fFile.readObject(this.dir_name + "/" + dirname, 1)
-                             .then(newdir => newdir.getKey(subname, cycle));
-
-         pos = keyname.lastIndexOf("/", pos-1);
+   class TDirectory {
+      /** @summary constructor */
+      constructor(file, dirname, cycle) {
+         this.fFile = file;
+         this._typename = "TDirectory";
+         this.dir_name = dirname;
+         this.dir_cycle = cycle;
+         this.fKeys = [];
       }
 
-      return only_direct ? null : Promise.reject(Error("Key not found " + keyname));
-   }
+      /** @summary retrieve a key by its name and cycle in the list of keys */
+      getKey(keyname, cycle, only_direct) {
 
-   /** @summary Read object from the directory
-     * @param {string} name - object name
-     * @param {number} [cycle] - cycle number
-     * @return {Promise} with read object */
-   TDirectory.prototype.readObject = function(obj_name, cycle) {
-      return this.fFile.readObject(this.dir_name + "/" + obj_name, cycle);
-   }
+         if (typeof cycle != 'number') cycle = -1;
+         let bestkey = null;
+         for (let i = 0; i < this.fKeys.length; ++i) {
+            const key = this.fKeys[i];
+            if (!key || (key.fName!==keyname)) continue;
+            if (key.fCycle == cycle) { bestkey = key; break; }
+            if ((cycle < 0) && (!bestkey || (key.fCycle > bestkey.fCycle))) bestkey = key;
+         }
+         if (bestkey)
+            return only_direct ? bestkey : Promise.resolve(bestkey);
 
-   /** @summary Read list of keys in directory  */
-   TDirectory.prototype.readKeys = function(objbuf) {
+         let pos = keyname.lastIndexOf("/");
+         // try to handle situation when object name contains slashed (bad practice anyway)
+         while (pos > 0) {
+            let dirname = keyname.substr(0, pos),
+                subname = keyname.substr(pos+1),
+                dirkey = this.getKey(dirname, undefined, true);
 
-      objbuf.classStreamer(this, 'TDirectory');
+            if (dirkey && !only_direct && (dirkey.fClassName.indexOf("TDirectory")==0))
+               return this.fFile.readObject(this.dir_name + "/" + dirname, 1)
+                                .then(newdir => newdir.getKey(subname, cycle));
 
-      if ((this.fSeekKeys <= 0) || (this.fNbytesKeys <= 0))
-         return Promise.resolve(this);
+            pos = keyname.lastIndexOf("/", pos-1);
+         }
 
-      let file = this.fFile;
+         return only_direct ? null : Promise.reject(Error("Key not found " + keyname));
+      }
 
-      return file.readBuffer([this.fSeekKeys, this.fNbytesKeys]).then(blob => {
-         // Read keys of the top directory
+      /** @summary Read object from the directory
+        * @param {string} name - object name
+        * @param {number} [cycle] - cycle number
+        * @return {Promise} with read object */
+      readObject(obj_name, cycle) {
+         return this.fFile.readObject(this.dir_name + "/" + obj_name, cycle);
+      }
 
-         const buf = new TBuffer(blob, 0, file);
+      /** @summary Read list of keys in directory  */
+      readKeys(objbuf) {
 
-         buf.readTKey();
-         const nkeys = buf.ntoi4();
+         objbuf.classStreamer(this, 'TDirectory');
 
-         for (let i = 0; i < nkeys; ++i)
-            this.fKeys.push(buf.readTKey());
+         if ((this.fSeekKeys <= 0) || (this.fNbytesKeys <= 0))
+            return Promise.resolve(this);
 
-         file.fDirectories.push(this);
+         let file = this.fFile;
 
-         return this;
-      });
-   }
+         return file.readBuffer([this.fSeekKeys, this.fNbytesKeys]).then(blob => {
+            // Read keys of the top directory
+
+            const buf = new TBuffer(blob, 0, file);
+
+            buf.readTKey();
+            const nkeys = buf.ntoi4();
+
+            for (let i = 0; i < nkeys; ++i)
+               this.fKeys.push(buf.readTKey());
+
+            file.fDirectories.push(this);
+
+            return this;
+         });
+      }
+
+   } // TDirectory
 
    /**
      * @summary Interface to read objects from ROOT files
