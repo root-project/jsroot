@@ -518,755 +518,756 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
    /**
     * @summary Selector class for TTree::Draw function
     *
-    * @class
     * @memberof JSROOT
-    * @extends JSROOT.TSelector
     * @private
     */
 
-   function TDrawSelector() {
-      TSelector.call(this);
+   class TDrawSelector extends TSelector {
 
-      this.ndim = 0;
-      this.vars = []; // array of expression variables
-      this.cut = null; // cut variable
-      this.hist = null;
-      this.histo_drawopt = "";
-      this.hist_name = "$htemp";
-      this.hist_title = "Result of TTree::Draw";
-      this.graph = false;
-      this.hist_args = []; // arguments for histogram creation
-      this.arr_limit = 1000;  // number of accumulated items before create histogram
-      this.htype = "F";
-      this.monitoring = 0;
-      this.globals = {}; // object with global parameters, which could be used in any draw expression
-      this.last_progress = 0;
-      this.aver_diff = 0;
-   }
+      /** @summary constructor */
+      constructor() {
+         super();
 
-   TDrawSelector.prototype = Object.create(TSelector.prototype);
-
-   /** @summary Set draw selector callbacks */
-   TDrawSelector.prototype.setCallback = function(result_callback, progress_callback) {
-      this.result_callback = result_callback;
-      this.progress_callback = progress_callback;
-   }
-
-   /** @summary Parse parameters */
-   TDrawSelector.prototype.parseParameters = function(tree, args, expr) {
-
-      if (!expr || (typeof expr !== "string")) return "";
-
-      // parse parameters which defined at the end as expression;par1name:par1value;par2name:par2value
-      let pos = expr.lastIndexOf(";");
-      while (pos >= 0) {
-         let parname = expr.substr(pos + 1), parvalue = undefined;
-         expr = expr.substr(0, pos);
-         pos = expr.lastIndexOf(";");
-
-         let separ = parname.indexOf(":");
-         if (separ > 0) { parvalue = parname.substr(separ + 1); parname = parname.substr(0, separ); }
-
-         let intvalue = parseInt(parvalue);
-         if (!parvalue || !Number.isInteger(intvalue)) intvalue = undefined;
-
-         switch (parname) {
-            case "num":
-            case "entries":
-            case "numentries":
-               if (parvalue === "all") args.numentries = tree.fEntries; else
-                  if (parvalue === "half") args.numentries = Math.round(tree.fEntries / 2); else
-                     if (intvalue !== undefined) args.numentries = intvalue;
-               break;
-            case "first":
-               if (intvalue !== undefined) args.firstentry = intvalue;
-               break;
-            case "mon":
-            case "monitor":
-               args.monitoring = (intvalue !== undefined) ? intvalue : 5000;
-               break;
-            case "player":
-               args.player = true;
-               break;
-            case "dump":
-               args.dump = true;
-               break;
-            case "maxseg":
-            case "maxrange":
-               if (intvalue) tree.$file.fMaxRanges = intvalue;
-               break;
-            case "accum":
-               if (intvalue) this.arr_limit = intvalue;
-               break;
-            case "htype":
-               if (parvalue && (parvalue.length === 1)) {
-                  this.htype = parvalue.toUpperCase();
-                  if ((this.htype !== "C") && (this.htype !== "S") && (this.htype !== "I")
-                     && (this.htype !== "F") && (this.htype !== "L") && (this.htype !== "D")) this.htype = "F";
-               }
-               break;
-            case "hbins":
-               this.hist_nbins = parseInt(parvalue);
-               if (!Number.isInteger(this.hist_nbins) || (this.hist_nbins <= 3)) delete this.hist_nbins;
-               break;
-            case "drawopt":
-               args.drawopt = parvalue;
-               break;
-            case "graph":
-               args.graph = intvalue || true;
-               break;
-         }
+         this.ndim = 0;
+         this.vars = []; // array of expression variables
+         this.cut = null; // cut variable
+         this.hist = null;
+         this.histo_drawopt = "";
+         this.hist_name = "$htemp";
+         this.hist_title = "Result of TTree::Draw";
+         this.graph = false;
+         this.hist_args = []; // arguments for histogram creation
+         this.arr_limit = 1000;  // number of accumulated items before create histogram
+         this.htype = "F";
+         this.monitoring = 0;
+         this.globals = {}; // object with global parameters, which could be used in any draw expression
+         this.last_progress = 0;
+         this.aver_diff = 0;
       }
 
-      pos = expr.lastIndexOf(">>");
-      if (pos >= 0) {
-         let harg = expr.substr(pos + 2).trim();
-         expr = expr.substr(0, pos).trim();
-         pos = harg.indexOf("(");
-         if (pos > 0) {
-            this.hist_name = harg.substr(0, pos);
-            harg = harg.substr(pos);
-         }
-         if (harg === "dump") {
-            args.dump = true;
-         } else if (harg.indexOf("Graph") == 0) {
-            args.graph = true;
-         } else if (pos < 0) {
-            this.hist_name = harg;
-         } else if ((harg[0] == "(") && (harg[harg.length - 1] == ")")) {
-            harg = harg.substr(1, harg.length - 2).split(",");
-            let isok = true;
-            for (let n = 0; n < harg.length; ++n) {
-               harg[n] = (n % 3 === 0) ? parseInt(harg[n]) : parseFloat(harg[n]);
-               if (!Number.isFinite(harg[n])) isok = false;
+      /** @summary Set draw selector callbacks */
+      setCallback(result_callback, progress_callback) {
+         this.result_callback = result_callback;
+         this.progress_callback = progress_callback;
+      }
+
+      /** @summary Parse parameters */
+      parseParameters(tree, args, expr) {
+
+         if (!expr || (typeof expr !== "string")) return "";
+
+         // parse parameters which defined at the end as expression;par1name:par1value;par2name:par2value
+         let pos = expr.lastIndexOf(";");
+         while (pos >= 0) {
+            let parname = expr.substr(pos + 1), parvalue = undefined;
+            expr = expr.substr(0, pos);
+            pos = expr.lastIndexOf(";");
+
+            let separ = parname.indexOf(":");
+            if (separ > 0) { parvalue = parname.substr(separ + 1); parname = parname.substr(0, separ); }
+
+            let intvalue = parseInt(parvalue);
+            if (!parvalue || !Number.isInteger(intvalue)) intvalue = undefined;
+
+            switch (parname) {
+               case "num":
+               case "entries":
+               case "numentries":
+                  if (parvalue === "all") args.numentries = tree.fEntries; else
+                     if (parvalue === "half") args.numentries = Math.round(tree.fEntries / 2); else
+                        if (intvalue !== undefined) args.numentries = intvalue;
+                  break;
+               case "first":
+                  if (intvalue !== undefined) args.firstentry = intvalue;
+                  break;
+               case "mon":
+               case "monitor":
+                  args.monitoring = (intvalue !== undefined) ? intvalue : 5000;
+                  break;
+               case "player":
+                  args.player = true;
+                  break;
+               case "dump":
+                  args.dump = true;
+                  break;
+               case "maxseg":
+               case "maxrange":
+                  if (intvalue) tree.$file.fMaxRanges = intvalue;
+                  break;
+               case "accum":
+                  if (intvalue) this.arr_limit = intvalue;
+                  break;
+               case "htype":
+                  if (parvalue && (parvalue.length === 1)) {
+                     this.htype = parvalue.toUpperCase();
+                     if ((this.htype !== "C") && (this.htype !== "S") && (this.htype !== "I")
+                        && (this.htype !== "F") && (this.htype !== "L") && (this.htype !== "D")) this.htype = "F";
+                  }
+                  break;
+               case "hbins":
+                  this.hist_nbins = parseInt(parvalue);
+                  if (!Number.isInteger(this.hist_nbins) || (this.hist_nbins <= 3)) delete this.hist_nbins;
+                  break;
+               case "drawopt":
+                  args.drawopt = parvalue;
+                  break;
+               case "graph":
+                  args.graph = intvalue || true;
+                  break;
             }
-            if (isok) this.hist_args = harg;
          }
-      }
 
-      if (args.dump) {
-         this.dump_values = true;
-         args.reallocate_objects = true;
-         if (args.numentries === undefined) args.numentries = 10;
-      }
-
-      return expr;
-   }
-
-   /** @summary Parse draw expression */
-   TDrawSelector.prototype.parseDrawExpression = function(tree, args) {
-
-      // parse complete expression
-      let expr = this.parseParameters(tree, args, args.expr), cut = "";
-
-      // parse option for histogram creation
-      this.hist_title = "drawing '" + expr + "' from " + tree.fName;
-
-      let pos = 0;
-      if (args.cut) {
-         cut = args.cut;
-      } else {
-         pos = expr.replace(/TMath::/g, 'TMath__').lastIndexOf("::"); // avoid confusion due-to :: in the namespace
-         if (pos > 0) {
-            cut = expr.substr(pos + 2).trim();
+         pos = expr.lastIndexOf(">>");
+         if (pos >= 0) {
+            let harg = expr.substr(pos + 2).trim();
             expr = expr.substr(0, pos).trim();
+            pos = harg.indexOf("(");
+            if (pos > 0) {
+               this.hist_name = harg.substr(0, pos);
+               harg = harg.substr(pos);
+            }
+            if (harg === "dump") {
+               args.dump = true;
+            } else if (harg.indexOf("Graph") == 0) {
+               args.graph = true;
+            } else if (pos < 0) {
+               this.hist_name = harg;
+            } else if ((harg[0] == "(") && (harg[harg.length - 1] == ")")) {
+               harg = harg.substr(1, harg.length - 2).split(",");
+               let isok = true;
+               for (let n = 0; n < harg.length; ++n) {
+                  harg[n] = (n % 3 === 0) ? parseInt(harg[n]) : parseFloat(harg[n]);
+                  if (!Number.isFinite(harg[n])) isok = false;
+               }
+               if (isok) this.hist_args = harg;
+            }
          }
-      }
 
-      args.parse_expr = expr;
-      args.parse_cut = cut;
-
-      // let names = expr.split(":"); // to allow usage of ? operator, we need to handle : as well
-      let names = [], nbr1 = 0, nbr2 = 0, prev = 0;
-      for (pos = 0; pos < expr.length; ++pos) {
-         switch (expr[pos]) {
-            case "(": nbr1++; break;
-            case ")": nbr1--; break;
-            case "[": nbr2++; break;
-            case "]": nbr2--; break;
-            case ":":
-               if (expr[pos + 1] == ":") { pos++; continue; }
-               if (!nbr1 && !nbr2 && (pos > prev)) names.push(expr.substr(prev, pos - prev));
-               prev = pos + 1;
-               break;
+         if (args.dump) {
+            this.dump_values = true;
+            args.reallocate_objects = true;
+            if (args.numentries === undefined) args.numentries = 10;
          }
-      }
-      if (!nbr1 && !nbr2 && (pos > prev)) names.push(expr.substr(prev, pos - prev));
 
-      if ((names.length < 1) || (names.length > 3)) return false;
-
-      this.ndim = names.length;
-
-      let is_direct = !cut;
-
-      for (let n = 0; n < this.ndim; ++n) {
-         this.vars[n] = new TDrawVariable(this.globals);
-         if (!this.vars[n].parse(tree, this, names[n])) return false;
-         if (!this.vars[n].direct_branch) is_direct = false;
+         return expr;
       }
 
-      this.cut = new TDrawVariable(this.globals);
-      if (cut)
-         if (!this.cut.parse(tree, this, cut)) return false;
+      /** @summary Parse draw expression */
+      parseDrawExpression(tree, args) {
 
-      if (!this.branches.length) {
-         console.warn('no any branch is selected');
-         return false;
-      }
+         // parse complete expression
+         let expr = this.parseParameters(tree, args, args.expr), cut = "";
 
-      if (is_direct) this.ProcessArrays = this.ProcessArraysFunc;
+         // parse option for histogram creation
+         this.hist_title = "drawing '" + expr + "' from " + tree.fName;
 
-      this.monitoring = args.monitoring;
+         let pos = 0;
+         if (args.cut) {
+            cut = args.cut;
+         } else {
+            pos = expr.replace(/TMath::/g, 'TMath__').lastIndexOf("::"); // avoid confusion due-to :: in the namespace
+            if (pos > 0) {
+               cut = expr.substr(pos + 2).trim();
+               expr = expr.substr(0, pos).trim();
+            }
+         }
 
-      this.graph = args.graph;
+         args.parse_expr = expr;
+         args.parse_cut = cut;
 
-      if (args.drawopt !== undefined)
-         this.histo_drawopt = args.drawopt;
-      else
-         this.histo_drawopt = (this.ndim === 2) ? "col" : "";
+         // let names = expr.split(":"); // to allow usage of ? operator, we need to handle : as well
+         let names = [], nbr1 = 0, nbr2 = 0, prev = 0;
+         for (pos = 0; pos < expr.length; ++pos) {
+            switch (expr[pos]) {
+               case "(": nbr1++; break;
+               case ")": nbr1--; break;
+               case "[": nbr2++; break;
+               case "]": nbr2--; break;
+               case ":":
+                  if (expr[pos + 1] == ":") { pos++; continue; }
+                  if (!nbr1 && !nbr2 && (pos > prev)) names.push(expr.substr(prev, pos - prev));
+                  prev = pos + 1;
+                  break;
+            }
+         }
+         if (!nbr1 && !nbr2 && (pos > prev)) names.push(expr.substr(prev, pos - prev));
 
-      return true;
-   }
+         if ((names.length < 1) || (names.length > 3)) return false;
 
-   /** @summary Draw only specified branch */
-   TDrawSelector.prototype.drawOnlyBranch = function(tree, branch, expr, args) {
-      this.ndim = 1;
+         this.ndim = names.length;
 
-      if (expr.indexOf("dump") == 0) expr = ";" + expr;
+         let is_direct = !cut;
 
-      expr = this.parseParameters(tree, args, expr);
+         for (let n = 0; n < this.ndim; ++n) {
+            this.vars[n] = new TDrawVariable(this.globals);
+            if (!this.vars[n].parse(tree, this, names[n])) return false;
+            if (!this.vars[n].direct_branch) is_direct = false;
+         }
 
-      this.monitoring = args.monitoring;
+         this.cut = new TDrawVariable(this.globals);
+         if (cut)
+            if (!this.cut.parse(tree, this, cut)) return false;
 
-      if (args.dump) {
-         this.dump_values = true;
-         args.reallocate_objects = true;
-      }
+         if (!this.branches.length) {
+            console.warn('no any branch is selected');
+            return false;
+         }
 
-      if (this.dump_values) {
+         if (is_direct) this.ProcessArrays = this.ProcessArraysFunc;
 
-         this.hist = []; // array of dump objects
+         this.monitoring = args.monitoring;
 
-         this.leaf = args.leaf;
+         this.graph = args.graph;
 
-         // branch object remains, therefore we need to copy fields to see them all
-         this.copy_fields = ((args.branch.fLeaves && (args.branch.fLeaves.arr.length > 1)) ||
-            (args.branch.fBranches && (args.branch.fBranches.arr.length > 0))) && !args.leaf;
-
-         this.addBranch(branch, "br0", args.direct_branch); // add branch
-
-         this.Process = this.ProcessDump;
+         if (args.drawopt !== undefined)
+            this.histo_drawopt = args.drawopt;
+         else
+            this.histo_drawopt = (this.ndim === 2) ? "col" : "";
 
          return true;
       }
 
-      this.vars[0] = new TDrawVariable(this.globals);
-      if (!this.vars[0].parse(tree, this, expr, branch, args.direct_branch)) return false;
-      this.hist_title = "drawing branch '" + branch.fName + (expr ? "' expr:'" + expr : "") + "'  from " + tree.fName;
+      /** @summary Draw only specified branch */
+      drawOnlyBranch(tree, branch, expr, args) {
+         this.ndim = 1;
 
-      this.cut = new TDrawVariable(this.globals);
+         if (expr.indexOf("dump") == 0) expr = ";" + expr;
 
-      if (this.vars[0].direct_branch) this.ProcessArrays = this.ProcessArraysFunc;
+         expr = this.parseParameters(tree, args, expr);
 
-      return true;
-   }
+         this.monitoring = args.monitoring;
 
-   /** @summary Begin processing */
-   TDrawSelector.prototype.Begin = function(tree) {
-      this.globals.entries = tree.fEntries;
-
-      if (this.monitoring)
-         this.lasttm = new Date().getTime();
-   }
-
-   /** @summary Show progress */
-   TDrawSelector.prototype.ShowProgress = function(value) {
-      if (typeof document == 'undefined' || !JSROOT.Painter) return;
-
-      if ((value === undefined) || !Number.isFinite(value)) return JSROOT.Painter.showProgress();
-
-      if (this.last_progress !== value) {
-         let diff = value - this.last_progress;
-         if (!this.aver_diff) this.aver_diff = diff;
-         this.aver_diff = diff * 0.3 + this.aver_diff * 0.7;
-      }
-
-      let ndig = 0;
-      if (this.aver_diff <= 0) ndig = 0; else
-         if (this.aver_diff < 0.0001) ndig = 3; else
-            if (this.aver_diff < 0.001) ndig = 2; else
-               if (this.aver_diff < 0.01) ndig = 1;
-
-      let main_box = document.createElement("p"),
-         text_node = document.createTextNode("TTree draw " + (value * 100).toFixed(ndig) + " %  "),
-         selector = this;
-
-      main_box.appendChild(text_node);
-      main_box.title = "Click on element to break drawing";
-
-      main_box.onclick = function() {
-         if (++selector.break_execution < 3) {
-            main_box.title = "Tree draw will break after next I/O operation";
-            return text_node.nodeValue = "Breaking ... ";
-         }
-         selector.Abort();
-         JSROOT.Painter.showProgress();
-      };
-
-      JSROOT.Painter.showProgress(main_box);
-      this.last_progress = value;
-   }
-
-   /** @summary Get bins for bits histogram */
-   TDrawSelector.prototype.getBitsBins = function(nbits, res) {
-      res.nbins = res.max = nbits;
-      res.fLabels = JSROOT.create("THashList");
-      for (let k = 0; k < nbits; ++k) {
-         let s = JSROOT.create("TObjString");
-         s.fString = k.toString();
-         s.fUniqueID = k + 1;
-         res.fLabels.Add(s);
-      }
-      return res;
-   }
-
-   /** @summary Get min.max bins */
-   TDrawSelector.prototype.getMinMaxBins = function(axisid, nbins) {
-
-      let res = { min: 0, max: 0, nbins: nbins, k: 1., fLabels: null, title: "" };
-
-      if (axisid >= this.ndim) return res;
-
-      let arr = this.vars[axisid].buf;
-
-      res.title = this.vars[axisid].code || "";
-
-      if (this.vars[axisid].kind === "object") {
-         // this is any object type
-         let typename, similar = true, maxbits = 8;
-         for (let k = 0; k < arr.length; ++k) {
-            if (!arr[k]) continue;
-            if (!typename) typename = arr[k]._typename;
-            if (typename !== arr[k]._typename) similar = false; // check all object types
-            if (arr[k].fNbits) maxbits = Math.max(maxbits, arr[k].fNbits + 1);
+         if (args.dump) {
+            this.dump_values = true;
+            args.reallocate_objects = true;
          }
 
-         if (typename && similar) {
-            if ((typename === "TBits") && (axisid === 0)) {
-               this.fill1DHistogram = this.fillTBitsHistogram;
-               if (maxbits % 8) maxbits = (maxbits & 0xfff0) + 8;
+         if (this.dump_values) {
 
-               if ((this.hist_name === "bits") && (this.hist_args.length == 1) && this.hist_args[0])
-                  maxbits = this.hist_args[0];
+            this.hist = []; // array of dump objects
 
-               return this.getBitsBins(maxbits, res);
+            this.leaf = args.leaf;
+
+            // branch object remains, therefore we need to copy fields to see them all
+            this.copy_fields = ((args.branch.fLeaves && (args.branch.fLeaves.arr.length > 1)) ||
+               (args.branch.fBranches && (args.branch.fBranches.arr.length > 0))) && !args.leaf;
+
+            this.addBranch(branch, "br0", args.direct_branch); // add branch
+
+            this.Process = this.ProcessDump;
+
+            return true;
+         }
+
+         this.vars[0] = new TDrawVariable(this.globals);
+         if (!this.vars[0].parse(tree, this, expr, branch, args.direct_branch)) return false;
+         this.hist_title = "drawing branch '" + branch.fName + (expr ? "' expr:'" + expr : "") + "'  from " + tree.fName;
+
+         this.cut = new TDrawVariable(this.globals);
+
+         if (this.vars[0].direct_branch) this.ProcessArrays = this.ProcessArraysFunc;
+
+         return true;
+      }
+
+      /** @summary Begin processing */
+      Begin(tree) {
+         this.globals.entries = tree.fEntries;
+
+         if (this.monitoring)
+            this.lasttm = new Date().getTime();
+      }
+
+      /** @summary Show progress */
+      ShowProgress(value) {
+         if (typeof document == 'undefined' || !JSROOT.Painter) return;
+
+         if ((value === undefined) || !Number.isFinite(value)) return JSROOT.Painter.showProgress();
+
+         if (this.last_progress !== value) {
+            let diff = value - this.last_progress;
+            if (!this.aver_diff) this.aver_diff = diff;
+            this.aver_diff = diff * 0.3 + this.aver_diff * 0.7;
+         }
+
+         let ndig = 0;
+         if (this.aver_diff <= 0) ndig = 0; else
+            if (this.aver_diff < 0.0001) ndig = 3; else
+               if (this.aver_diff < 0.001) ndig = 2; else
+                  if (this.aver_diff < 0.01) ndig = 1;
+
+         let main_box = document.createElement("p"),
+            text_node = document.createTextNode("TTree draw " + (value * 100).toFixed(ndig) + " %  "),
+            selector = this;
+
+         main_box.appendChild(text_node);
+         main_box.title = "Click on element to break drawing";
+
+         main_box.onclick = function() {
+            if (++selector.break_execution < 3) {
+               main_box.title = "Tree draw will break after next I/O operation";
+               return text_node.nodeValue = "Breaking ... ";
             }
-         }
+            selector.Abort();
+            JSROOT.Painter.showProgress();
+         };
+
+         JSROOT.Painter.showProgress(main_box);
+         this.last_progress = value;
       }
 
-      if (this.vars[axisid].kind === "string") {
-         res.lbls = []; // all labels
-
-         for (let k = 0; k < arr.length; ++k)
-            if (res.lbls.indexOf(arr[k]) < 0)
-               res.lbls.push(arr[k]);
-
-         res.lbls.sort();
-         res.max = res.nbins = res.lbls.length;
-
+      /** @summary Get bins for bits histogram */
+      getBitsBins(nbits, res) {
+         res.nbins = res.max = nbits;
          res.fLabels = JSROOT.create("THashList");
-         for (let k = 0; k < res.lbls.length; ++k) {
+         for (let k = 0; k < nbits; ++k) {
             let s = JSROOT.create("TObjString");
-            s.fString = res.lbls[k];
+            s.fString = k.toString();
             s.fUniqueID = k + 1;
-            if (s.fString === "") s.fString = "<empty>";
             res.fLabels.Add(s);
          }
-      } else if ((axisid === 0) && (this.hist_name === "bits") && (this.hist_args.length <= 1)) {
-         this.fill1DHistogram = this.FillBitsHistogram;
-         return this.getBitsBins(this.hist_args[0] || 32, res);
-      } else if (axisid * 3 + 2 < this.hist_args.length) {
-         res.nbins = this.hist_args[axisid * 3];
-         res.min = this.hist_args[axisid * 3 + 1];
-         res.max = this.hist_args[axisid * 3 + 2];
-      } else {
+         return res;
+      }
 
-         res.min = Math.min.apply(null, arr);
-         res.max = Math.max.apply(null, arr);
+      /** @summary Get min.max bins */
+      getMinMaxBins(axisid, nbins) {
 
-         if (this.hist_nbins)
-            nbins = res.nbins = this.hist_nbins;
+         let res = { min: 0, max: 0, nbins: nbins, k: 1., fLabels: null, title: "" };
 
-         res.isinteger = (Math.round(res.min) === res.min) && (Math.round(res.max) === res.max);
-         if (res.isinteger)
+         if (axisid >= this.ndim) return res;
+
+         let arr = this.vars[axisid].buf;
+
+         res.title = this.vars[axisid].code || "";
+
+         if (this.vars[axisid].kind === "object") {
+            // this is any object type
+            let typename, similar = true, maxbits = 8;
+            for (let k = 0; k < arr.length; ++k) {
+               if (!arr[k]) continue;
+               if (!typename) typename = arr[k]._typename;
+               if (typename !== arr[k]._typename) similar = false; // check all object types
+               if (arr[k].fNbits) maxbits = Math.max(maxbits, arr[k].fNbits + 1);
+            }
+
+            if (typename && similar) {
+               if ((typename === "TBits") && (axisid === 0)) {
+                  this.fill1DHistogram = this.fillTBitsHistogram;
+                  if (maxbits % 8) maxbits = (maxbits & 0xfff0) + 8;
+
+                  if ((this.hist_name === "bits") && (this.hist_args.length == 1) && this.hist_args[0])
+                     maxbits = this.hist_args[0];
+
+                  return this.getBitsBins(maxbits, res);
+               }
+            }
+         }
+
+         if (this.vars[axisid].kind === "string") {
+            res.lbls = []; // all labels
+
             for (let k = 0; k < arr.length; ++k)
-               if (arr[k] !== Math.round(arr[k])) { res.isinteger = false; break; }
+               if (res.lbls.indexOf(arr[k]) < 0)
+                  res.lbls.push(arr[k]);
 
-         if (res.isinteger) {
-            res.min = Math.round(res.min);
-            res.max = Math.round(res.max);
-            if (res.max - res.min < nbins * 5) {
-               res.min -= 1;
-               res.max += 2;
-               res.nbins = Math.round(res.max - res.min);
+            res.lbls.sort();
+            res.max = res.nbins = res.lbls.length;
+
+            res.fLabels = JSROOT.create("THashList");
+            for (let k = 0; k < res.lbls.length; ++k) {
+               let s = JSROOT.create("TObjString");
+               s.fString = res.lbls[k];
+               s.fUniqueID = k + 1;
+               if (s.fString === "") s.fString = "<empty>";
+               res.fLabels.Add(s);
+            }
+         } else if ((axisid === 0) && (this.hist_name === "bits") && (this.hist_args.length <= 1)) {
+            this.fill1DHistogram = this.FillBitsHistogram;
+            return this.getBitsBins(this.hist_args[0] || 32, res);
+         } else if (axisid * 3 + 2 < this.hist_args.length) {
+            res.nbins = this.hist_args[axisid * 3];
+            res.min = this.hist_args[axisid * 3 + 1];
+            res.max = this.hist_args[axisid * 3 + 2];
+         } else {
+
+            res.min = Math.min.apply(null, arr);
+            res.max = Math.max.apply(null, arr);
+
+            if (this.hist_nbins)
+               nbins = res.nbins = this.hist_nbins;
+
+            res.isinteger = (Math.round(res.min) === res.min) && (Math.round(res.max) === res.max);
+            if (res.isinteger)
+               for (let k = 0; k < arr.length; ++k)
+                  if (arr[k] !== Math.round(arr[k])) { res.isinteger = false; break; }
+
+            if (res.isinteger) {
+               res.min = Math.round(res.min);
+               res.max = Math.round(res.max);
+               if (res.max - res.min < nbins * 5) {
+                  res.min -= 1;
+                  res.max += 2;
+                  res.nbins = Math.round(res.max - res.min);
+               } else {
+                  let range = (res.max - res.min + 2), step = Math.floor(range / nbins);
+                  while (step * nbins < range) step++;
+                  res.max = res.min + nbins * step;
+               }
+            } else if (res.min >= res.max) {
+               res.max = res.min;
+               if (Math.abs(res.min) < 100) { res.min -= 1; res.max += 1; } else
+                  if (res.min > 0) { res.min *= 0.9; res.max *= 1.1; } else { res.min *= 1.1; res.max *= 0.9; }
             } else {
-               let range = (res.max - res.min + 2), step = Math.floor(range / nbins);
-               while (step * nbins < range) step++;
-               res.max = res.min + nbins * step;
+               res.max += (res.max - res.min) / res.nbins;
             }
-         } else if (res.min >= res.max) {
-            res.max = res.min;
-            if (Math.abs(res.min) < 100) { res.min -= 1; res.max += 1; } else
-               if (res.min > 0) { res.min *= 0.9; res.max *= 1.1; } else { res.min *= 1.1; res.max *= 0.9; }
-         } else {
-            res.max += (res.max - res.min) / res.nbins;
          }
+
+         res.k = res.nbins / (res.max - res.min);
+
+         res.GetBin = function(value) {
+            const bin = this.lbls ? this.lbls.indexOf(value) : Math.floor((value - this.min) * this.k);
+            return (bin < 0) ? 0 : ((bin > this.nbins) ? this.nbins + 1 : bin + 1);
+         };
+
+         return res;
       }
 
-      res.k = res.nbins / (res.max - res.min);
+      /** @summary Create histogram */
+      createHistogram() {
+         if (this.hist || !this.vars[0].buf) return;
 
-      res.GetBin = function(value) {
-         const bin = this.lbls ? this.lbls.indexOf(value) : Math.floor((value - this.min) * this.k);
-         return (bin < 0) ? 0 : ((bin > this.nbins) ? this.nbins + 1 : bin + 1);
-      };
+         if (this.dump_values) {
+            // just create array where dumped valus will be collected
+            this.hist = [];
 
-      return res;
-   }
+            // reassign fill method
+            this.fill1DHistogram = this.fill2DHistogram = this.fill3DHistogram = this.dumpValues;
+         } else if (this.graph) {
+            let N = this.vars[0].buf.length;
 
-   /** @summary Create histogram */
-   TDrawSelector.prototype.createHistogram = function() {
-      if (this.hist || !this.vars[0].buf) return;
-
-      if (this.dump_values) {
-         // just create array where dumped valus will be collected
-         this.hist = [];
-
-         // reassign fill method
-         this.fill1DHistogram = this.fill2DHistogram = this.fill3DHistogram = this.dumpValues;
-      } else if (this.graph) {
-         let N = this.vars[0].buf.length;
-
-         if (this.ndim == 1) {
-            // A 1-dimensional graph will just have the x axis as an index
-            this.hist = JSROOT.createTGraph(N, Array.from(Array(N).keys()), this.vars[0].buf);
-         } else if (this.ndim == 2) {
-            this.hist = JSROOT.createTGraph(N, this.vars[0].buf, this.vars[1].buf);
-            delete this.vars[1].buf;
-         }
-
-         this.hist.fTitle = this.hist_title;
-         this.hist.fName = "Graph";
-
-      } else {
-
-         this.x = this.getMinMaxBins(0, (this.ndim > 1) ? 50 : 200);
-
-         this.y = this.getMinMaxBins(1, 50);
-
-         this.z = this.getMinMaxBins(2, 50);
-
-         switch (this.ndim) {
-            case 1: this.hist = JSROOT.createHistogram("TH1" + this.htype, this.x.nbins); break;
-            case 2: this.hist = JSROOT.createHistogram("TH2" + this.htype, this.x.nbins, this.y.nbins); break;
-            case 3: this.hist = JSROOT.createHistogram("TH3" + this.htype, this.x.nbins, this.y.nbins, this.z.nbins); break;
-         }
-
-         this.hist.fXaxis.fTitle = this.x.title;
-         this.hist.fXaxis.fXmin = this.x.min;
-         this.hist.fXaxis.fXmax = this.x.max;
-         this.hist.fXaxis.fLabels = this.x.fLabels;
-
-         if (this.ndim > 1) this.hist.fYaxis.fTitle = this.y.title;
-         this.hist.fYaxis.fXmin = this.y.min;
-         this.hist.fYaxis.fXmax = this.y.max;
-         this.hist.fYaxis.fLabels = this.y.fLabels;
-
-         if (this.ndim > 2) this.hist.fZaxis.fTitle = this.z.title;
-         this.hist.fZaxis.fXmin = this.z.min;
-         this.hist.fZaxis.fXmax = this.z.max;
-         this.hist.fZaxis.fLabels = this.z.fLabels;
-
-         this.hist.fName = this.hist_name;
-         this.hist.fTitle = this.hist_title;
-         this.hist.fOption = this.histo_drawopt;
-         this.hist.$custom_stat = (this.hist_name == "$htemp") ? 111110 : 111111;
-      }
-
-      let var0 = this.vars[0].buf, cut = this.cut.buf, len = var0.length;
-
-      if (!this.graph) {
-         switch (this.ndim) {
-            case 1: {
-               for (let n = 0; n < len; ++n)
-                  this.fill1DHistogram(var0[n], cut ? cut[n] : 1.);
-               break;
-            }
-            case 2: {
-               let var1 = this.vars[1].buf;
-               for (let n = 0; n < len; ++n)
-                  this.fill2DHistogram(var0[n], var1[n], cut ? cut[n] : 1.);
+            if (this.ndim == 1) {
+               // A 1-dimensional graph will just have the x axis as an index
+               this.hist = JSROOT.createTGraph(N, Array.from(Array(N).keys()), this.vars[0].buf);
+            } else if (this.ndim == 2) {
+               this.hist = JSROOT.createTGraph(N, this.vars[0].buf, this.vars[1].buf);
                delete this.vars[1].buf;
-               break;
             }
-            case 3: {
-               let var1 = this.vars[1].buf, var2 = this.vars[2].buf;
-               for (let n = 0; n < len; ++n)
-                  this.fill3DHistogram(var0[n], var1[n], var2[n], cut ? cut[n] : 1.);
-               delete this.vars[1].buf;
-               delete this.vars[2].buf;
-               break;
-            }
-         }
-      }
 
-      delete this.vars[0].buf;
-      delete this.cut.buf;
-   }
+            this.hist.fTitle = this.hist_title;
+            this.hist.fName = "Graph";
 
-   /** @summary Fill TBits histogram */
-   TDrawSelector.prototype.fillTBitsHistogram = function(xvalue, weight) {
-      if (!weight || !xvalue || !xvalue.fNbits || !xvalue.fAllBits) return;
-
-      const sz = Math.min(xvalue.fNbits + 1, xvalue.fNbytes * 8);
-
-      for (let bit = 0, mask = 1, b = 0; bit < sz; ++bit) {
-         if (xvalue.fAllBits[b] && mask) {
-            if (bit <= this.x.nbins)
-               this.hist.fArray[bit + 1] += weight;
-            else
-               this.hist.fArray[this.x.nbins + 1] += weight;
-         }
-
-         mask *= 2;
-         if (mask >= 0x100) { mask = 1; ++b; }
-      }
-   }
-
-   /** @summary Fill bits histogram */
-   TDrawSelector.prototype.FillBitsHistogram = function(xvalue, weight) {
-      if (!weight) return;
-
-      for (let bit = 0, mask = 1; bit < this.x.nbins; ++bit) {
-         if (xvalue & mask) this.hist.fArray[bit + 1] += weight;
-         mask *= 2;
-      }
-   }
-
-   /** @summary Fill 1D histogram */
-   TDrawSelector.prototype.fill1DHistogram = function(xvalue, weight) {
-      let bin = this.x.GetBin(xvalue);
-      this.hist.fArray[bin] += weight;
-
-      if (!this.x.lbls) {
-         this.hist.fTsumw += weight;
-         this.hist.fTsumwx += weight * xvalue;
-         this.hist.fTsumwx2 += weight * xvalue * xvalue;
-      }
-   }
-
-   /** @summary Fill 2D histogram */
-   TDrawSelector.prototype.fill2DHistogram = function(xvalue, yvalue, weight) {
-      let xbin = this.x.GetBin(xvalue),
-         ybin = this.y.GetBin(yvalue);
-
-      this.hist.fArray[xbin + (this.x.nbins + 2) * ybin] += weight;
-      if (!this.x.lbls && !this.y.lbls) {
-         this.hist.fTsumw += weight;
-         this.hist.fTsumwx += weight * xvalue;
-         this.hist.fTsumwy += weight * yvalue;
-         this.hist.fTsumwx2 += weight * xvalue * xvalue;
-         this.hist.fTsumwxy += weight * xvalue * yvalue;
-         this.hist.fTsumwy2 += weight * yvalue * yvalue;
-      }
-   }
-
-   /** @summary Fill 3D histogram */
-   TDrawSelector.prototype.fill3DHistogram = function(xvalue, yvalue, zvalue, weight) {
-      let xbin = this.x.GetBin(xvalue),
-         ybin = this.y.GetBin(yvalue),
-         zbin = this.z.GetBin(zvalue);
-
-      this.hist.fArray[xbin + (this.x.nbins + 2) * (ybin + (this.y.nbins + 2) * zbin)] += weight;
-      if (!this.x.lbls && !this.y.lbls && !this.z.lbls) {
-         this.hist.fTsumw += weight;
-         this.hist.fTsumwx += weight * xvalue;
-         this.hist.fTsumwy += weight * yvalue;
-         this.hist.fTsumwz += weight * zvalue;
-         this.hist.fTsumwx2 += weight * xvalue * xvalue;
-         this.hist.fTsumwy2 += weight * yvalue * yvalue;
-         this.hist.fTsumwz2 += weight * zvalue * zvalue;
-         this.hist.fTsumwxy += weight * xvalue * yvalue;
-         this.hist.fTsumwxz += weight * xvalue * zvalue;
-         this.hist.fTsumwyz += weight * yvalue * zvalue;
-      }
-   }
-
-   /** @summary Dump values */
-   TDrawSelector.prototype.dumpValues = function(v1, v2, v3, v4) {
-      let obj;
-      switch (this.ndim) {
-         case 1: obj = { x: v1, weight: v2 }; break;
-         case 2: obj = { x: v1, y: v2, weight: v3 }; break;
-         case 3: obj = { x: v1, y: v2, z: v3, weight: v4 }; break;
-      }
-
-      if (this.cut.is_dummy()) {
-         if (this.ndim === 1) obj = v1; else delete obj.weight;
-      }
-
-      this.hist.push(obj);
-   }
-
-    /** @summary function used when all branches can be read as array
-      * @desc most typical usage - histogramming of single branch */
-   TDrawSelector.prototype.ProcessArraysFunc = function(/*entry*/) {
-
-      if (this.arr_limit || this.graph) {
-         let var0 = this.vars[0], len = this.tgtarr.br0.length,
-            var1 = this.vars[1], var2 = this.vars[2];
-         if ((var0.buf.length === 0) && (len >= this.arr_limit) && !this.graph) {
-            // special use case - first array large enough to create histogram directly base on it
-            var0.buf = this.tgtarr.br0;
-            if (var1) var1.buf = this.tgtarr.br1;
-            if (var2) var2.buf = this.tgtarr.br2;
          } else {
-            for (let k = 0; k < len; ++k) {
-               var0.buf.push(this.tgtarr.br0[k]);
-               if (var1) var1.buf.push(this.tgtarr.br1[k]);
-               if (var2) var2.buf.push(this.tgtarr.br2[k]);
+
+            this.x = this.getMinMaxBins(0, (this.ndim > 1) ? 50 : 200);
+
+            this.y = this.getMinMaxBins(1, 50);
+
+            this.z = this.getMinMaxBins(2, 50);
+
+            switch (this.ndim) {
+               case 1: this.hist = JSROOT.createHistogram("TH1" + this.htype, this.x.nbins); break;
+               case 2: this.hist = JSROOT.createHistogram("TH2" + this.htype, this.x.nbins, this.y.nbins); break;
+               case 3: this.hist = JSROOT.createHistogram("TH3" + this.htype, this.x.nbins, this.y.nbins, this.z.nbins); break;
+            }
+
+            this.hist.fXaxis.fTitle = this.x.title;
+            this.hist.fXaxis.fXmin = this.x.min;
+            this.hist.fXaxis.fXmax = this.x.max;
+            this.hist.fXaxis.fLabels = this.x.fLabels;
+
+            if (this.ndim > 1) this.hist.fYaxis.fTitle = this.y.title;
+            this.hist.fYaxis.fXmin = this.y.min;
+            this.hist.fYaxis.fXmax = this.y.max;
+            this.hist.fYaxis.fLabels = this.y.fLabels;
+
+            if (this.ndim > 2) this.hist.fZaxis.fTitle = this.z.title;
+            this.hist.fZaxis.fXmin = this.z.min;
+            this.hist.fZaxis.fXmax = this.z.max;
+            this.hist.fZaxis.fLabels = this.z.fLabels;
+
+            this.hist.fName = this.hist_name;
+            this.hist.fTitle = this.hist_title;
+            this.hist.fOption = this.histo_drawopt;
+            this.hist.$custom_stat = (this.hist_name == "$htemp") ? 111110 : 111111;
+         }
+
+         let var0 = this.vars[0].buf, cut = this.cut.buf, len = var0.length;
+
+         if (!this.graph) {
+            switch (this.ndim) {
+               case 1: {
+                  for (let n = 0; n < len; ++n)
+                     this.fill1DHistogram(var0[n], cut ? cut[n] : 1.);
+                  break;
+               }
+               case 2: {
+                  let var1 = this.vars[1].buf;
+                  for (let n = 0; n < len; ++n)
+                     this.fill2DHistogram(var0[n], var1[n], cut ? cut[n] : 1.);
+                  delete this.vars[1].buf;
+                  break;
+               }
+               case 3: {
+                  let var1 = this.vars[1].buf, var2 = this.vars[2].buf;
+                  for (let n = 0; n < len; ++n)
+                     this.fill3DHistogram(var0[n], var1[n], var2[n], cut ? cut[n] : 1.);
+                  delete this.vars[1].buf;
+                  delete this.vars[2].buf;
+                  break;
+               }
             }
          }
-         var0.kind = "number";
-         if (var1) var1.kind = "number";
-         if (var2) var2.kind = "number";
-         this.cut.buf = null; // do not create buffer for cuts
-         if (!this.graph && (var0.buf.length >= this.arr_limit)) {
-            this.createHistogram();
-            this.arr_limit = 0;
+
+         delete this.vars[0].buf;
+         delete this.cut.buf;
+      }
+
+      /** @summary Fill TBits histogram */
+      fillTBitsHistogram(xvalue, weight) {
+         if (!weight || !xvalue || !xvalue.fNbits || !xvalue.fAllBits) return;
+
+         const sz = Math.min(xvalue.fNbits + 1, xvalue.fNbytes * 8);
+
+         for (let bit = 0, mask = 1, b = 0; bit < sz; ++bit) {
+            if (xvalue.fAllBits[b] && mask) {
+               if (bit <= this.x.nbins)
+                  this.hist.fArray[bit + 1] += weight;
+               else
+                  this.hist.fArray[this.x.nbins + 1] += weight;
+            }
+
+            mask *= 2;
+            if (mask >= 0x100) { mask = 1; ++b; }
          }
-      } else {
-         let br0 = this.tgtarr.br0, len = br0.length;
+      }
+
+      /** @summary Fill bits histogram */
+      FillBitsHistogram(xvalue, weight) {
+         if (!weight) return;
+
+         for (let bit = 0, mask = 1; bit < this.x.nbins; ++bit) {
+            if (xvalue & mask) this.hist.fArray[bit + 1] += weight;
+            mask *= 2;
+         }
+      }
+
+      /** @summary Fill 1D histogram */
+      fill1DHistogram(xvalue, weight) {
+         let bin = this.x.GetBin(xvalue);
+         this.hist.fArray[bin] += weight;
+
+         if (!this.x.lbls) {
+            this.hist.fTsumw += weight;
+            this.hist.fTsumwx += weight * xvalue;
+            this.hist.fTsumwx2 += weight * xvalue * xvalue;
+         }
+      }
+
+      /** @summary Fill 2D histogram */
+      fill2DHistogram(xvalue, yvalue, weight) {
+         let xbin = this.x.GetBin(xvalue),
+            ybin = this.y.GetBin(yvalue);
+
+         this.hist.fArray[xbin + (this.x.nbins + 2) * ybin] += weight;
+         if (!this.x.lbls && !this.y.lbls) {
+            this.hist.fTsumw += weight;
+            this.hist.fTsumwx += weight * xvalue;
+            this.hist.fTsumwy += weight * yvalue;
+            this.hist.fTsumwx2 += weight * xvalue * xvalue;
+            this.hist.fTsumwxy += weight * xvalue * yvalue;
+            this.hist.fTsumwy2 += weight * yvalue * yvalue;
+         }
+      }
+
+      /** @summary Fill 3D histogram */
+      fill3DHistogram(xvalue, yvalue, zvalue, weight) {
+         let xbin = this.x.GetBin(xvalue),
+            ybin = this.y.GetBin(yvalue),
+            zbin = this.z.GetBin(zvalue);
+
+         this.hist.fArray[xbin + (this.x.nbins + 2) * (ybin + (this.y.nbins + 2) * zbin)] += weight;
+         if (!this.x.lbls && !this.y.lbls && !this.z.lbls) {
+            this.hist.fTsumw += weight;
+            this.hist.fTsumwx += weight * xvalue;
+            this.hist.fTsumwy += weight * yvalue;
+            this.hist.fTsumwz += weight * zvalue;
+            this.hist.fTsumwx2 += weight * xvalue * xvalue;
+            this.hist.fTsumwy2 += weight * yvalue * yvalue;
+            this.hist.fTsumwz2 += weight * zvalue * zvalue;
+            this.hist.fTsumwxy += weight * xvalue * yvalue;
+            this.hist.fTsumwxz += weight * xvalue * zvalue;
+            this.hist.fTsumwyz += weight * yvalue * zvalue;
+         }
+      }
+
+      /** @summary Dump values */
+      dumpValues(v1, v2, v3, v4) {
+         let obj;
          switch (this.ndim) {
-            case 1: {
-               for (let k = 0; k < len; ++k)
-                  this.fill1DHistogram(br0[k], 1.);
-               break;
+            case 1: obj = { x: v1, weight: v2 }; break;
+            case 2: obj = { x: v1, y: v2, weight: v3 }; break;
+            case 3: obj = { x: v1, y: v2, z: v3, weight: v4 }; break;
+         }
+
+         if (this.cut.is_dummy()) {
+            if (this.ndim === 1) obj = v1; else delete obj.weight;
+         }
+
+         this.hist.push(obj);
+      }
+
+       /** @summary function used when all branches can be read as array
+         * @desc most typical usage - histogramming of single branch */
+      ProcessArraysFunc(/*entry*/) {
+
+         if (this.arr_limit || this.graph) {
+            let var0 = this.vars[0], len = this.tgtarr.br0.length,
+               var1 = this.vars[1], var2 = this.vars[2];
+            if ((var0.buf.length === 0) && (len >= this.arr_limit) && !this.graph) {
+               // special use case - first array large enough to create histogram directly base on it
+               var0.buf = this.tgtarr.br0;
+               if (var1) var1.buf = this.tgtarr.br1;
+               if (var2) var2.buf = this.tgtarr.br2;
+            } else {
+               for (let k = 0; k < len; ++k) {
+                  var0.buf.push(this.tgtarr.br0[k]);
+                  if (var1) var1.buf.push(this.tgtarr.br1[k]);
+                  if (var2) var2.buf.push(this.tgtarr.br2[k]);
+               }
             }
-            case 2: {
-               let br1 = this.tgtarr.br1;
-               for (let k = 0; k < len; ++k)
-                  this.fill2DHistogram(br0[k], br1[k], 1.);
-               break;
+            var0.kind = "number";
+            if (var1) var1.kind = "number";
+            if (var2) var2.kind = "number";
+            this.cut.buf = null; // do not create buffer for cuts
+            if (!this.graph && (var0.buf.length >= this.arr_limit)) {
+               this.createHistogram();
+               this.arr_limit = 0;
             }
-            case 3: {
-               let br1 = this.tgtarr.br1, br2 = this.tgtarr.br2;
-               for (let k = 0; k < len; ++k)
-                  this.fill3DHistogram(br0[k], br1[k], br2[k], 1.);
-               break;
+         } else {
+            let br0 = this.tgtarr.br0, len = br0.length;
+            switch (this.ndim) {
+               case 1: {
+                  for (let k = 0; k < len; ++k)
+                     this.fill1DHistogram(br0[k], 1.);
+                  break;
+               }
+               case 2: {
+                  let br1 = this.tgtarr.br1;
+                  for (let k = 0; k < len; ++k)
+                     this.fill2DHistogram(br0[k], br1[k], 1.);
+                  break;
+               }
+               case 3: {
+                  let br1 = this.tgtarr.br1, br2 = this.tgtarr.br2;
+                  for (let k = 0; k < len; ++k)
+                     this.fill3DHistogram(br0[k], br1[k], br2[k], 1.);
+                  break;
+               }
             }
          }
       }
-   }
 
-   /** @summary simple dump of the branch - no need to analyze something */
-   TDrawSelector.prototype.ProcessDump = function(/* entry */) {
+      /** @summary simple dump of the branch - no need to analyze something */
+      ProcessDump(/* entry */) {
 
-      let res = this.leaf ? this.tgtobj.br0[this.leaf] : this.tgtobj.br0;
+         let res = this.leaf ? this.tgtobj.br0[this.leaf] : this.tgtobj.br0;
 
-      if (res && this.copy_fields) {
-         if (checkArrayPrototype(res) === 0) {
-            this.hist.push(JSROOT.extend({}, res));
+         if (res && this.copy_fields) {
+            if (checkArrayPrototype(res) === 0) {
+               this.hist.push(JSROOT.extend({}, res));
+            } else {
+               this.hist.push(res);
+            }
          } else {
             this.hist.push(res);
          }
-      } else {
-         this.hist.push(res);
       }
-   }
 
-   /** @summary Normal TSelector Process handler */
-   TDrawSelector.prototype.Process = function(entry) {
+      /** @summary Normal TSelector Process handler */
+      Process(entry) {
 
-      this.globals.entry = entry; // can be used in any expression
+         this.globals.entry = entry; // can be used in any expression
 
-      this.cut.produce(this.tgtobj);
-      if (!this.dump_values && !this.cut.value) return;
+         this.cut.produce(this.tgtobj);
+         if (!this.dump_values && !this.cut.value) return;
 
-      for (let n = 0; n < this.ndim; ++n)
-         this.vars[n].produce(this.tgtobj);
+         for (let n = 0; n < this.ndim; ++n)
+            this.vars[n].produce(this.tgtobj);
 
-      let var0 = this.vars[0], var1 = this.vars[1], var2 = this.vars[2], cut = this.cut;
+         let var0 = this.vars[0], var1 = this.vars[1], var2 = this.vars[2], cut = this.cut;
 
-      if (this.graph || this.arr_limit) {
-         switch (this.ndim) {
-            case 1:
-               for (let n0 = 0; n0 < var0.length; ++n0) {
-                  var0.buf.push(var0.get(n0));
-                  cut.buf.push(cut.value);
-               }
-               break;
-            case 2:
-               for (let n0 = 0; n0 < var0.length; ++n0)
-                  for (let n1 = 0; n1 < var1.length; ++n1) {
+         if (this.graph || this.arr_limit) {
+            switch (this.ndim) {
+               case 1:
+                  for (let n0 = 0; n0 < var0.length; ++n0) {
                      var0.buf.push(var0.get(n0));
-                     var1.buf.push(var1.get(n1));
                      cut.buf.push(cut.value);
                   }
-               break;
-            case 3:
-               for (let n0 = 0; n0 < var0.length; ++n0)
-                  for (let n1 = 0; n1 < var1.length; ++n1)
-                     for (let n2 = 0; n2 < var2.length; ++n2) {
+                  break;
+               case 2:
+                  for (let n0 = 0; n0 < var0.length; ++n0)
+                     for (let n1 = 0; n1 < var1.length; ++n1) {
                         var0.buf.push(var0.get(n0));
                         var1.buf.push(var1.get(n1));
-                        var2.buf.push(var2.get(n2));
                         cut.buf.push(cut.value);
                      }
-               break;
+                  break;
+               case 3:
+                  for (let n0 = 0; n0 < var0.length; ++n0)
+                     for (let n1 = 0; n1 < var1.length; ++n1)
+                        for (let n2 = 0; n2 < var2.length; ++n2) {
+                           var0.buf.push(var0.get(n0));
+                           var1.buf.push(var1.get(n1));
+                           var2.buf.push(var2.get(n2));
+                           cut.buf.push(cut.value);
+                        }
+                  break;
+            }
+            if (!this.graph && var0.buf.length >= this.arr_limit) {
+               this.createHistogram();
+               this.arr_limit = 0;
+            }
+         } else if (this.hist) {
+            switch (this.ndim) {
+               case 1:
+                  for (let n0 = 0; n0 < var0.length; ++n0)
+                     this.fill1DHistogram(var0.get(n0), cut.value);
+                  break;
+               case 2:
+                  for (let n0 = 0; n0 < var0.length; ++n0)
+                     for (let n1 = 0; n1 < var1.length; ++n1)
+                        this.fill2DHistogram(var0.get(n0), var1.get(n1), cut.value);
+                  break;
+               case 3:
+                  for (let n0 = 0; n0 < var0.length; ++n0)
+                     for (let n1 = 0; n1 < var1.length; ++n1)
+                        for (let n2 = 0; n2 < var2.length; ++n2)
+                           this.fill3DHistogram(var0.get(n0), var1.get(n1), var2.get(n2), cut.value);
+                  break;
+            }
          }
-         if (!this.graph && var0.buf.length >= this.arr_limit) {
-            this.createHistogram();
-            this.arr_limit = 0;
-         }
-      } else if (this.hist) {
-         switch (this.ndim) {
-            case 1:
-               for (let n0 = 0; n0 < var0.length; ++n0)
-                  this.fill1DHistogram(var0.get(n0), cut.value);
-               break;
-            case 2:
-               for (let n0 = 0; n0 < var0.length; ++n0)
-                  for (let n1 = 0; n1 < var1.length; ++n1)
-                     this.fill2DHistogram(var0.get(n0), var1.get(n1), cut.value);
-               break;
-            case 3:
-               for (let n0 = 0; n0 < var0.length; ++n0)
-                  for (let n1 = 0; n1 < var1.length; ++n1)
-                     for (let n2 = 0; n2 < var2.length; ++n2)
-                        this.fill3DHistogram(var0.get(n0), var1.get(n1), var2.get(n2), cut.value);
-               break;
+
+         if (this.monitoring && this.hist && !this.dump_values) {
+            let now = new Date().getTime();
+            if (now - this.lasttm > this.monitoring) {
+               this.lasttm = now;
+               if (this.progress_callback)
+                  this.progress_callback(this.hist);
+            }
          }
       }
 
-      if (this.monitoring && this.hist && !this.dump_values) {
-         let now = new Date().getTime();
-         if (now - this.lasttm > this.monitoring) {
-            this.lasttm = now;
-            if (this.progress_callback)
-               this.progress_callback(this.hist);
-         }
+      /** @summary Normal TSelector Terminate handler */
+      Terminate(res) {
+         if (res && !this.hist) this.createHistogram();
+
+         this.ShowProgress();
+
+         if (this.result_callback)
+            this.result_callback(this.hist);
       }
-   }
 
-   /** @summary Normal TSelector Terminate handler */
-   TDrawSelector.prototype.Terminate = function(res) {
-      if (res && !this.hist) this.createHistogram();
-
-      this.ShowProgress();
-
-      if (this.result_callback)
-         this.result_callback(this.hist);
-   }
+   } // class TDrawSelector
 
    // ======================================================================
 
