@@ -2080,17 +2080,15 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
              fileprop = this.getFileProp(itemname);
 
          function qualifyURL(url) {
-            function escapeHTML(s) {
-               return s.split('&').join('&amp;').split('<').join('&lt;').split('"').join('&quot;');
-            }
-            let el = document.createElement('div');
+            const escapeHTML = s => s.split('&').join('&amp;').split('<').join('&lt;').split('"').join('&quot;'),
+                  el = document.createElement('div');
             el.innerHTML = '<a href="' + escapeHTML(url) + '">x</a>';
             return el.firstChild.href;
          }
 
          jsrp.createMenu(evnt, this).then(menu => {
 
-            if (((itemname == "") || !hitem._parent) && !('_jsonfile' in hitem)) {
+            if ((!itemname || !hitem._parent) && !('_jsonfile' in hitem)) {
                let files = [], addr = "", cnt = 0,
                    separ = () => (cnt++ > 0) ? "&" : "?";
 
@@ -2124,7 +2122,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                if (items.length == 1) {
                   addr += separ() + "item=" + items[0] + separ() + "opt=" + opts[0];
                } else if (items.length > 1) {
-                  addr += separ() + "items=" + JSON.stringify(items) + separ() + "opt=" + JSON.stringify(opts);
+                  addr += separ() + "items=" + JSON.stringify(items) + separ() + "opts=" + JSON.stringify(opts);
                }
 
                menu.add("Direct link", () => window.open(addr));
