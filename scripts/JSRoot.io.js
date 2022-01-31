@@ -841,786 +841,789 @@ JSROOT.define(['rawinflate'], () => {
    /**
      * @summary Interface to read objects from ROOT files
      *
-     * @class
      * @memberof JSROOT
      * @hideconstructor
      * @desc Use {@link JSROOT.openFile} to create instance of the class
      */
 
-   function TFile(url) {
-      this._typename = "TFile";
-      this.fEND = 0;
-      this.fFullURL = url;
-      this.fURL = url;
-      this.fAcceptRanges = true; // when disabled ('+' at the end of file name), complete file content read with single operation
-      this.fUseStampPar = "stamp=" + (new Date).getTime(); // use additional time stamp parameter for file name to avoid browser caching problem
-      this.fFileContent = null; // this can be full or partial content of the file (if ranges are not supported or if 1K header read from file)
-      // stored as TBuffer instance
-      this.fMaxRanges = 200; // maximal number of file ranges requested at once
-      this.fDirectories = [];
-      this.fKeys = [];
-      this.fSeekInfo = 0;
-      this.fNbytesInfo = 0;
-      this.fTagOffset = 0;
-      this.fStreamers = 0;
-      this.fStreamerInfos = null;
-      this.fFileName = "";
-      this.fStreamers = [];
-      this.fBasicTypes = {}; // custom basic types, in most case enumerations
+   class TFile {
 
-      if (typeof this.fURL != 'string') return this;
+      constructor(url) {
+         this._typename = "TFile";
+         this.fEND = 0;
+         this.fFullURL = url;
+         this.fURL = url;
+         this.fAcceptRanges = true; // when disabled ('+' at the end of file name), complete file content read with single operation
+         this.fUseStampPar = "stamp=" + (new Date).getTime(); // use additional time stamp parameter for file name to avoid browser caching problem
+         this.fFileContent = null; // this can be full or partial content of the file (if ranges are not supported or if 1K header read from file)
+         // stored as TBuffer instance
+         this.fMaxRanges = 200; // maximal number of file ranges requested at once
+         this.fDirectories = [];
+         this.fKeys = [];
+         this.fSeekInfo = 0;
+         this.fNbytesInfo = 0;
+         this.fTagOffset = 0;
+         this.fStreamers = 0;
+         this.fStreamerInfos = null;
+         this.fFileName = "";
+         this.fStreamers = [];
+         this.fBasicTypes = {}; // custom basic types, in most case enumerations
 
-      if (this.fURL[this.fURL.length - 1] === "+") {
-         this.fURL = this.fURL.substr(0, this.fURL.length - 1);
+         if (typeof this.fURL != 'string') return this;
+
+         if (this.fURL[this.fURL.length - 1] === "+") {
+            this.fURL = this.fURL.substr(0, this.fURL.length - 1);
+            this.fAcceptRanges = false;
+         }
+
+         if (this.fURL[this.fURL.length - 1] === "^") {
+            this.fURL = this.fURL.substr(0, this.fURL.length - 1);
+            this.fSkipHeadRequest = true;
+         }
+
+         if (this.fURL[this.fURL.length - 1] === "-") {
+            this.fURL = this.fURL.substr(0, this.fURL.length - 1);
+            this.fUseStampPar = false;
+         }
+
+         if (this.fURL.indexOf("file://") == 0) {
+            this.fUseStampPar = false;
+            this.fAcceptRanges = false;
+         }
+
+         const pos = Math.max(this.fURL.lastIndexOf("/"), this.fURL.lastIndexOf("\\"));
+         this.fFileName = pos >= 0 ? this.fURL.substr(pos + 1) : this.fURL;
+      }
+
+      /** @summary Assign BufferArray with file contentOpen file
+       * @private */
+      assignFileContent(bufArray) {
+         this.fFileContent = new TBuffer(new DataView(bufArray));
          this.fAcceptRanges = false;
-      }
-
-      if (this.fURL[this.fURL.length - 1] === "^") {
-         this.fURL = this.fURL.substr(0, this.fURL.length - 1);
-         this.fSkipHeadRequest = true;
-      }
-
-      if (this.fURL[this.fURL.length - 1] === "-") {
-         this.fURL = this.fURL.substr(0, this.fURL.length - 1);
          this.fUseStampPar = false;
+         this.fEND = this.fFileContent.length;
       }
 
-      if (this.fURL.indexOf("file://") == 0) {
-         this.fUseStampPar = false;
-         this.fAcceptRanges = false;
+      /** @summary Open file
+       * @returns {Promise} after file keys are read
+       * @private */
+      _open() {
+         if (!this.fAcceptRanges || this.fSkipHeadRequest)
+            return this.readKeys();
+
+         return JSROOT.httpRequest(this.fURL, "head").then(res => {
+            const accept_ranges = res.getResponseHeader("Accept-Ranges");
+            if (!accept_ranges) this.fAcceptRanges = false;
+            const len = res.getResponseHeader("Content-Length");
+            if (len) this.fEND = parseInt(len);
+                else this.fAcceptRanges = false;
+            return this.readKeys();
+         });
       }
 
-      const pos = Math.max(this.fURL.lastIndexOf("/"), this.fURL.lastIndexOf("\\"));
-      this.fFileName = pos >= 0 ? this.fURL.substr(pos + 1) : this.fURL;
-   }
+      /** @summary read buffer(s) from the file
+       * @returns {Promise} with read buffers
+       * @private */
+      readBuffer(place, filename, progress_callback) {
 
-   /** @summary Assign BufferArray with file contentOpen file
-    * @private */
-   TFile.prototype.assignFileContent = function(bufArray) {
-      this.fFileContent = new TBuffer(new DataView(bufArray));
-      this.fAcceptRanges = false;
-      this.fUseStampPar = false;
-      this.fEND = this.fFileContent.length;
-   }
+         if ((this.fFileContent !== null) && !filename && (!this.fAcceptRanges || this.fFileContent.canExtract(place)))
+            return Promise.resolve(this.fFileContent.extract(place));
 
-   /** @summary Open file
-    * @returns {Promise} after file keys are read
-    * @private */
-   TFile.prototype._open = function() {
-      if (!this.fAcceptRanges || this.fSkipHeadRequest)
-         return this.readKeys();
+         let file = this, fileurl = file.fURL, resolveFunc, rejectFunc,
+             promise = new Promise((resolve,reject) => { resolveFunc = resolve; rejectFunc = reject; }),
+             first = 0, last = 0, blobs = [], read_callback; // array of requested segments
 
-      return JSROOT.httpRequest(this.fURL, "head").then(res => {
-         const accept_ranges = res.getResponseHeader("Accept-Ranges");
-         if (!accept_ranges) this.fAcceptRanges = false;
-         const len = res.getResponseHeader("Content-Length");
-         if (len) this.fEND = parseInt(len);
-             else this.fAcceptRanges = false;
-         return this.readKeys();
-      });
-   }
-
-   /** @summary read buffer(s) from the file
-    * @returns {Promise} with read buffers
-    * @private */
-   TFile.prototype.readBuffer = function(place, filename, progress_callback) {
-
-      if ((this.fFileContent !== null) && !filename && (!this.fAcceptRanges || this.fFileContent.canExtract(place)))
-         return Promise.resolve(this.fFileContent.extract(place));
-
-      let file = this, fileurl = file.fURL, resolveFunc, rejectFunc,
-          promise = new Promise((resolve,reject) => { resolveFunc = resolve; rejectFunc = reject; }),
-          first = 0, last = 0, blobs = [], read_callback; // array of requested segments
-
-      if (filename && (typeof filename === 'string') && (filename.length > 0)) {
-         const pos = fileurl.lastIndexOf("/");
-         fileurl = (pos < 0) ? filename : fileurl.substr(0, pos + 1) + filename;
-      }
-
-      function send_new_request(increment) {
-
-         if (increment) {
-            first = last;
-            last = Math.min(first + file.fMaxRanges * 2, place.length);
-            if (first >= place.length) return resolveFunc(blobs);
+         if (filename && (typeof filename === 'string') && (filename.length > 0)) {
+            const pos = fileurl.lastIndexOf("/");
+            fileurl = (pos < 0) ? filename : fileurl.substr(0, pos + 1) + filename;
          }
 
-         let fullurl = fileurl, ranges = "bytes", totalsz = 0;
-         // try to avoid browser caching by adding stamp parameter to URL
-         if (file.fUseStampPar) fullurl += ((fullurl.indexOf('?') < 0) ? "?" : "&") + file.fUseStampPar;
+         function send_new_request(increment) {
 
-         for (let n = first; n < last; n += 2) {
-            ranges += (n > first ? "," : "=") + (place[n] + "-" + (place[n] + place[n + 1] - 1));
-            totalsz += place[n + 1]; // accumulated total size
-         }
-         if (last - first > 2) totalsz += (last - first) * 60; // for multi-range ~100 bytes/per request
-
-         let xhr = JSROOT.NewHttpRequest(fullurl, "buf", read_callback);
-
-         if (file.fAcceptRanges) {
-            xhr.setRequestHeader("Range", ranges);
-            xhr.expected_size = Math.max(Math.round(1.1 * totalsz), totalsz + 200); // 200 if offset for the potential gzip
-         }
-
-         if (progress_callback && (typeof xhr.addEventListener === 'function')) {
-            let sum1 = 0, sum2 = 0, sum_total = 0;
-            for (let n = 1; n < place.length; n += 2) {
-               sum_total += place[n];
-               if (n < first) sum1 += place[n];
-               if (n < last) sum2 += place[n];
+            if (increment) {
+               first = last;
+               last = Math.min(first + file.fMaxRanges * 2, place.length);
+               if (first >= place.length) return resolveFunc(blobs);
             }
-            if (!sum_total) sum_total = 1;
 
-            let progress_offest = sum1 / sum_total, progress_this = (sum2 - sum1) / sum_total;
-            xhr.addEventListener("progress", function(oEvent) {
-               if (oEvent.lengthComputable)
-                  progress_callback(progress_offest + progress_this * oEvent.loaded / oEvent.total);
-            });
+            let fullurl = fileurl, ranges = "bytes", totalsz = 0;
+            // try to avoid browser caching by adding stamp parameter to URL
+            if (file.fUseStampPar) fullurl += ((fullurl.indexOf('?') < 0) ? "?" : "&") + file.fUseStampPar;
+
+            for (let n = first; n < last; n += 2) {
+               ranges += (n > first ? "," : "=") + (place[n] + "-" + (place[n] + place[n + 1] - 1));
+               totalsz += place[n + 1]; // accumulated total size
+            }
+            if (last - first > 2) totalsz += (last - first) * 60; // for multi-range ~100 bytes/per request
+
+            let xhr = JSROOT.NewHttpRequest(fullurl, "buf", read_callback);
+
+            if (file.fAcceptRanges) {
+               xhr.setRequestHeader("Range", ranges);
+               xhr.expected_size = Math.max(Math.round(1.1 * totalsz), totalsz + 200); // 200 if offset for the potential gzip
+            }
+
+            if (progress_callback && (typeof xhr.addEventListener === 'function')) {
+               let sum1 = 0, sum2 = 0, sum_total = 0;
+               for (let n = 1; n < place.length; n += 2) {
+                  sum_total += place[n];
+                  if (n < first) sum1 += place[n];
+                  if (n < last) sum2 += place[n];
+               }
+               if (!sum_total) sum_total = 1;
+
+               let progress_offest = sum1 / sum_total, progress_this = (sum2 - sum1) / sum_total;
+               xhr.addEventListener("progress", function(oEvent) {
+                  if (oEvent.lengthComputable)
+                     progress_callback(progress_offest + progress_this * oEvent.loaded / oEvent.total);
+               });
+            }
+
+            xhr.send(null);
          }
 
-         xhr.send(null);
-      }
+         read_callback = function(res) {
 
-      read_callback = function(res) {
-
-         if (!res && file.fUseStampPar && (place[0] === 0) && (place.length === 2)) {
-            // if fail to read file with stamp parameter, try once again without it
-            file.fUseStampPar = false;
-            return send_new_request();
-         }
-
-         if (res && (place[0] === 0) && (place.length === 2) && !file.fFileContent) {
-            // special case - keep content of first request (could be complete file) in memory
-
-            file.fFileContent = new TBuffer((typeof res == 'string') ? res : new DataView(res));
-
-            if (!file.fAcceptRanges)
-               file.fEND = file.fFileContent.length;
-
-            return resolveFunc(file.fFileContent.extract(place));
-         }
-
-         if (!res) {
-            if ((first === 0) && (last > 2) && (file.fMaxRanges > 1)) {
-               // server return no response with multi request - try to decrease ranges count or fail
-
-               if (last / 2 > 200) file.fMaxRanges = 200; else
-                  if (last / 2 > 50) file.fMaxRanges = 50; else
-                     if (last / 2 > 20) file.fMaxRanges = 20; else
-                        if (last / 2 > 5) file.fMaxRanges = 5; else file.fMaxRanges = 1;
-               last = Math.min(last, file.fMaxRanges * 2);
-               // console.log('Change maxranges to ', file.fMaxRanges, 'last', last);
+            if (!res && file.fUseStampPar && (place[0] === 0) && (place.length === 2)) {
+               // if fail to read file with stamp parameter, try once again without it
+               file.fUseStampPar = false;
                return send_new_request();
             }
 
-            return rejectFunc(Error("Fail to read with several ranges"));
-         }
+            if (res && (place[0] === 0) && (place.length === 2) && !file.fFileContent) {
+               // special case - keep content of first request (could be complete file) in memory
 
-         // if only single segment requested, return result as is
-         if (last - first === 2) {
-            let b = new DataView(res);
-            if (place.length === 2) return resolveFunc(b);
-            blobs.push(b);
-            return send_new_request(true);
-         }
+               file.fFileContent = new TBuffer((typeof res == 'string') ? res : new DataView(res));
 
-         // object to access response data
-         let hdr = this.getResponseHeader('Content-Type'),
-            ismulti = (typeof hdr === 'string') && (hdr.indexOf('multipart') >= 0),
-            view = new DataView(res);
+               if (!file.fAcceptRanges)
+                  file.fEND = file.fFileContent.length;
 
-         if (!ismulti) {
-            // server may returns simple buffer, which combines all segments together
-
-            let hdr_range = this.getResponseHeader('Content-Range'), segm_start = 0, segm_last = -1;
-
-            if (hdr_range && hdr_range.indexOf("bytes") >= 0) {
-               let parts = hdr_range.substr(hdr_range.indexOf("bytes") + 6).split(/[\s-\/]+/);
-               if (parts.length === 3) {
-                  segm_start = parseInt(parts[0]);
-                  segm_last = parseInt(parts[1]);
-                  if (!Number.isInteger(segm_start) || !Number.isInteger(segm_last) || (segm_start > segm_last)) {
-                     segm_start = 0; segm_last = -1;
-                  }
-               }
+               return resolveFunc(file.fFileContent.extract(place));
             }
 
-            let canbe_single_segment = (segm_start <= segm_last);
-            for (let n = first; n < last; n += 2)
-               if ((place[n] < segm_start) || (place[n] + place[n + 1] - 1 > segm_last))
-                  canbe_single_segment = false;
+            if (!res) {
+               if ((first === 0) && (last > 2) && (file.fMaxRanges > 1)) {
+                  // server return no response with multi request - try to decrease ranges count or fail
 
-            if (canbe_single_segment) {
-               for (let n = first; n < last; n += 2)
-                  blobs.push(new DataView(res, place[n] - segm_start, place[n + 1]));
+                  if (last / 2 > 200) file.fMaxRanges = 200; else
+                     if (last / 2 > 50) file.fMaxRanges = 50; else
+                        if (last / 2 > 20) file.fMaxRanges = 20; else
+                           if (last / 2 > 5) file.fMaxRanges = 5; else file.fMaxRanges = 1;
+                  last = Math.min(last, file.fMaxRanges * 2);
+                  // console.log('Change maxranges to ', file.fMaxRanges, 'last', last);
+                  return send_new_request();
+               }
+
+               return rejectFunc(Error("Fail to read with several ranges"));
+            }
+
+            // if only single segment requested, return result as is
+            if (last - first === 2) {
+               let b = new DataView(res);
+               if (place.length === 2) return resolveFunc(b);
+               blobs.push(b);
                return send_new_request(true);
             }
 
-            if ((file.fMaxRanges === 1) || (first !== 0))
-               return rejectFunc(Error('Server returns normal response when multipart was requested, disable multirange support'));
+            // object to access response data
+            let hdr = this.getResponseHeader('Content-Type'),
+               ismulti = (typeof hdr === 'string') && (hdr.indexOf('multipart') >= 0),
+               view = new DataView(res);
 
-            file.fMaxRanges = 1;
-            last = Math.min(last, file.fMaxRanges * 2);
+            if (!ismulti) {
+               // server may returns simple buffer, which combines all segments together
 
-            return send_new_request();
-         }
+               let hdr_range = this.getResponseHeader('Content-Range'), segm_start = 0, segm_last = -1;
 
-         // multipart messages requires special handling
-
-         let indx = hdr.indexOf("boundary="), boundary = "", n = first, o = 0;
-         if (indx > 0) {
-            boundary = hdr.substr(indx + 9);
-            if ((boundary[0] == '"') && (boundary[boundary.length - 1] == '"'))
-               boundary = boundary.substr(1, boundary.length - 2);
-            boundary = "--" + boundary;
-         } else console.error('Did not found boundary id in the response header');
-
-         while (n < last) {
-
-            let code1, code2 = view.getUint8(o), nline = 0, line = "",
-               finish_header = false, segm_start = 0, segm_last = -1;
-
-            while ((o < view.byteLength - 1) && !finish_header && (nline < 5)) {
-               code1 = code2;
-               code2 = view.getUint8(o + 1);
-
-               if ((code1 == 13) && (code2 == 10)) {
-                  if ((line.length > 2) && (line.substr(0, 2) == '--') && (line !== boundary))
-                     return rejectFunc(Error('Decode multipart message, expect boundary' + boundary + ' got ' + line));
-
-                  line = line.toLowerCase();
-
-                  if ((line.indexOf("content-range") >= 0) && (line.indexOf("bytes") > 0)) {
-                     let parts = line.substr(line.indexOf("bytes") + 6).split(/[\s-\/]+/);
-                     if (parts.length === 3) {
-                        segm_start = parseInt(parts[0]);
-                        segm_last = parseInt(parts[1]);
-                        if (!Number.isInteger(segm_start) || !Number.isInteger(segm_last) || (segm_start > segm_last)) {
-                           segm_start = 0; segm_last = -1;
-                        }
-                     } else {
-                        console.error('Fail to decode content-range', line, parts);
+               if (hdr_range && hdr_range.indexOf("bytes") >= 0) {
+                  let parts = hdr_range.substr(hdr_range.indexOf("bytes") + 6).split(/[\s-\/]+/);
+                  if (parts.length === 3) {
+                     segm_start = parseInt(parts[0]);
+                     segm_last = parseInt(parts[1]);
+                     if (!Number.isInteger(segm_start) || !Number.isInteger(segm_last) || (segm_start > segm_last)) {
+                        segm_start = 0; segm_last = -1;
                      }
                   }
+               }
 
-                  if ((nline > 1) && (line.length === 0)) finish_header = true;
+               let canbe_single_segment = (segm_start <= segm_last);
+               for (let n = first; n < last; n += 2)
+                  if ((place[n] < segm_start) || (place[n] + place[n + 1] - 1 > segm_last))
+                     canbe_single_segment = false;
 
-                  o++; nline++; line = "";
+               if (canbe_single_segment) {
+                  for (let n = first; n < last; n += 2)
+                     blobs.push(new DataView(res, place[n] - segm_start, place[n + 1]));
+                  return send_new_request(true);
+               }
+
+               if ((file.fMaxRanges === 1) || (first !== 0))
+                  return rejectFunc(Error('Server returns normal response when multipart was requested, disable multirange support'));
+
+               file.fMaxRanges = 1;
+               last = Math.min(last, file.fMaxRanges * 2);
+
+               return send_new_request();
+            }
+
+            // multipart messages requires special handling
+
+            let indx = hdr.indexOf("boundary="), boundary = "", n = first, o = 0;
+            if (indx > 0) {
+               boundary = hdr.substr(indx + 9);
+               if ((boundary[0] == '"') && (boundary[boundary.length - 1] == '"'))
+                  boundary = boundary.substr(1, boundary.length - 2);
+               boundary = "--" + boundary;
+            } else console.error('Did not found boundary id in the response header');
+
+            while (n < last) {
+
+               let code1, code2 = view.getUint8(o), nline = 0, line = "",
+                  finish_header = false, segm_start = 0, segm_last = -1;
+
+               while ((o < view.byteLength - 1) && !finish_header && (nline < 5)) {
+                  code1 = code2;
                   code2 = view.getUint8(o + 1);
-               } else {
-                  line += String.fromCharCode(code1);
+
+                  if ((code1 == 13) && (code2 == 10)) {
+                     if ((line.length > 2) && (line.substr(0, 2) == '--') && (line !== boundary))
+                        return rejectFunc(Error('Decode multipart message, expect boundary' + boundary + ' got ' + line));
+
+                     line = line.toLowerCase();
+
+                     if ((line.indexOf("content-range") >= 0) && (line.indexOf("bytes") > 0)) {
+                        let parts = line.substr(line.indexOf("bytes") + 6).split(/[\s-\/]+/);
+                        if (parts.length === 3) {
+                           segm_start = parseInt(parts[0]);
+                           segm_last = parseInt(parts[1]);
+                           if (!Number.isInteger(segm_start) || !Number.isInteger(segm_last) || (segm_start > segm_last)) {
+                              segm_start = 0; segm_last = -1;
+                           }
+                        } else {
+                           console.error('Fail to decode content-range', line, parts);
+                        }
+                     }
+
+                     if ((nline > 1) && (line.length === 0)) finish_header = true;
+
+                     o++; nline++; line = "";
+                     code2 = view.getUint8(o + 1);
+                  } else {
+                     line += String.fromCharCode(code1);
+                  }
+                  o++;
                }
-               o++;
-            }
 
-            if (!finish_header)
-               return rejectFunc(Error('Cannot decode header in multipart message'));
+               if (!finish_header)
+                  return rejectFunc(Error('Cannot decode header in multipart message'));
 
-            if (segm_start > segm_last) {
-               // fall-back solution, believe that segments same as requested
-               blobs.push(new DataView(res, o, place[n + 1]));
-               o += place[n + 1];
-               n += 2;
-            } else {
-               while ((n < last) && (place[n] >= segm_start) && (place[n] + place[n + 1] - 1 <= segm_last)) {
-                  blobs.push(new DataView(res, o + place[n] - segm_start, place[n + 1]));
+               if (segm_start > segm_last) {
+                  // fall-back solution, believe that segments same as requested
+                  blobs.push(new DataView(res, o, place[n + 1]));
+                  o += place[n + 1];
                   n += 2;
-               }
+               } else {
+                  while ((n < last) && (place[n] >= segm_start) && (place[n] + place[n + 1] - 1 <= segm_last)) {
+                     blobs.push(new DataView(res, o + place[n] - segm_start, place[n + 1]));
+                     n += 2;
+                  }
 
-               o += (segm_last - segm_start + 1);
+                  o += (segm_last - segm_start + 1);
+               }
             }
+
+            send_new_request(true);
          }
 
          send_new_request(true);
+
+         return promise;
       }
 
-      send_new_request(true);
+      /** @summary Returns file name */
+      getFileName() { return this.fFileName; }
 
-      return promise;
-   }
+      /** @summary Get directory with given name and cycle
+       * @desc Function only can be used for already read directories, which are preserved in the memory
+       * @private */
+      getDir(dirname, cycle) {
 
-   /** @summary Returns file name */
-   TFile.prototype.getFileName = function() { return this.fFileName; }
-
-   /** @summary Get directory with given name and cycle
-    * @desc Function only can be used for already read directories, which are preserved in the memory
-    * @private */
-   TFile.prototype.getDir = function(dirname, cycle) {
-
-      if ((cycle === undefined) && (typeof dirname == 'string')) {
-         const pos = dirname.lastIndexOf(';');
-         if (pos > 0) { cycle = parseInt(dirname.substr(pos + 1)); dirname = dirname.substr(0, pos); }
-      }
-
-      for (let j = 0; j < this.fDirectories.length; ++j) {
-         const dir = this.fDirectories[j];
-         if (dir.dir_name != dirname) continue;
-         if ((cycle !== undefined) && (dir.dir_cycle !== cycle)) continue;
-         return dir;
-      }
-      return null;
-   }
-
-   /** @summary Retrieve a key by its name and cycle in the list of keys
-    * @desc If only_direct not specified, returns Promise while key keys must be read first from the directory
-    * @private */
-   TFile.prototype.getKey = function(keyname, cycle, only_direct) {
-
-      if (typeof cycle != 'number') cycle = -1;
-      let bestkey = null;
-      for (let i = 0; i < this.fKeys.length; ++i) {
-         const key = this.fKeys[i];
-         if (!key || (key.fName !== keyname)) continue;
-         if (key.fCycle == cycle) { bestkey = key; break; }
-         if ((cycle < 0) && (!bestkey || (key.fCycle > bestkey.fCycle))) bestkey = key;
-      }
-      if (bestkey)
-         return only_direct ? bestkey : Promise.resolve(bestkey);
-
-      let pos = keyname.lastIndexOf("/");
-      // try to handle situation when object name contains slashes (bad practice anyway)
-      while (pos > 0) {
-         let dirname = keyname.substr(0, pos),
-            subname = keyname.substr(pos + 1),
-            dir = this.getDir(dirname);
-
-         if (dir) return dir.getKey(subname, cycle, only_direct);
-
-         let dirkey = this.getKey(dirname, undefined, true);
-         if (dirkey && !only_direct && (dirkey.fClassName.indexOf("TDirectory") == 0))
-            return this.readObject(dirname).then(newdir => newdir.getKey(subname, cycle));
-
-         pos = keyname.lastIndexOf("/", pos - 1);
-      }
-
-      return only_direct ? null : Promise.reject(Error("Key not found " + keyname));
-   }
-
-   /** @summary Read and inflate object buffer described by its key
-    * @private */
-   TFile.prototype.readObjBuffer = function(key) {
-
-      return this.readBuffer([key.fSeekKey + key.fKeylen, key.fNbytes - key.fKeylen]).then(blob1 => {
-
-         if (key.fObjlen <= key.fNbytes - key.fKeylen) {
-            let buf = new TBuffer(blob1, 0, this);
-            buf.fTagOffset = key.fKeylen;
-            return buf;
+         if ((cycle === undefined) && (typeof dirname == 'string')) {
+            const pos = dirname.lastIndexOf(';');
+            if (pos > 0) { cycle = parseInt(dirname.substr(pos + 1)); dirname = dirname.substr(0, pos); }
          }
 
-         return jsrio.R__unzip(blob1, key.fObjlen).then(objbuf => {
-            if (!objbuf) return Promise.reject(Error("Fail to UNZIP buffer"));
-            let buf = new TBuffer(objbuf, 0, this);
-            buf.fTagOffset = key.fKeylen;
-            return buf;
-
-         });
-      });
-   }
-
-   /** @summary Method called when TTree object is streamed
-    * @private */
-   TFile.prototype._addReadTree = function(obj) {
-
-      if (jsrio.TTreeMethods)
-         return JSROOT.extend(obj, jsrio.TTreeMethods);
-
-      if (this.readTrees === undefined) this.readTrees = [];
-
-      if (this.readTrees.indexOf(obj) < 0) this.readTrees.push(obj);
-   }
-
-   /** @summary Read any object from a root file
-     * @desc One could specify cycle number in the object name or as separate argument
-     * @param {string} obj_name - name of object, may include cycle number like "hpxpy;1"
-     * @param {number} [cycle] - cycle number, also can be included in obj_name
-     * @returns {Promise} promise with object read
-     * @example
-     *   JSROOT.openFile("https://root.cern/js/files/hsimple.root")
-     *         .then(f => f.readObject("hpxpy;1"))
-     *         .then(obj => console.log(`Read object of type ${obj._typename}`)); */
-   TFile.prototype.readObject = function(obj_name, cycle, only_dir) {
-
-      let pos = obj_name.lastIndexOf(";");
-      if (pos > 0) {
-         cycle = parseInt(obj_name.slice(pos + 1));
-         obj_name = obj_name.slice(0, pos);
-      }
-
-      if (typeof cycle != 'number') cycle = -1;
-      // remove leading slashes
-      while (obj_name.length && (obj_name[0] == "/")) obj_name = obj_name.substr(1);
-
-      let file = this, isdir, read_key;
-
-      // one uses Promises while in some cases we need to
-      // read sub-directory to get list of keys
-      // in such situation calls are asynchrone
-      return this.getKey(obj_name, cycle).then(key => {
-
-         if ((obj_name == "StreamerInfo") && (key.fClassName == "TList"))
-            return file.fStreamerInfos;
-
-         if ((key.fClassName == 'TDirectory' || key.fClassName == 'TDirectoryFile')) {
-            isdir = true;
-            let dir = file.getDir(obj_name, cycle);
-            if (dir) return dir;
+         for (let j = 0; j < this.fDirectories.length; ++j) {
+            const dir = this.fDirectories[j];
+            if (dir.dir_name != dirname) continue;
+            if ((cycle !== undefined) && (dir.dir_cycle !== cycle)) continue;
+            return dir;
          }
-
-         if (!isdir && only_dir)
-            return Promise.reject(Error(`Key ${obj_name} is not directory}`));
-
-         read_key = key;
-
-         return file.readObjBuffer(key);
-      }).then(buf => {
-         if (isdir) {
-            let dir = new TDirectory(file, obj_name, cycle);
-            dir.fTitle = read_key.fTitle;
-            return dir.readKeys(buf);
-         }
-
-         let obj = {};
-         buf.mapObject(1, obj); // tag object itself with id==1
-         buf.classStreamer(obj, read_key.fClassName);
-
-         if ((read_key.fClassName === 'TF1') || (read_key.fClassName === 'TF2'))
-            return file._readFormulas(obj);
-
-         if (!file.readTrees) return obj;
-
-         return JSROOT.require('tree').then(() => {
-            if (file.readTrees) {
-               file.readTrees.forEach(t => JSROOT.extend(t, jsrio.TTreeMethods))
-               delete file.readTrees;
-            }
-            return obj;
-         });
-      });
-   }
-
-   /** @summary read formulas from the file and add them to TF1/TF2 objects
-    * @private */
-   TFile.prototype._readFormulas = function(tf1) {
-
-      let arr = [];
-
-      for (let indx = 0; indx < this.fKeys.length; ++indx)
-         if (this.fKeys[indx].fClassName == 'TFormula')
-            arr.push(this.readObject(this.fKeys[indx].fName, this.fKeys[indx].fCycle));
-
-      return Promise.all(arr).then(formulas => {
-         formulas.forEach(obj => tf1.addFormula(obj));
-         return tf1;
-      });
-   }
-
-   /** @summary extract streamer infos from the buffer
-    * @private */
-   TFile.prototype.extractStreamerInfos = function(buf) {
-      if (!buf) return;
-
-      let lst = {};
-      buf.mapObject(1, lst);
-      buf.classStreamer(lst, 'TList');
-
-      lst._typename = "TStreamerInfoList";
-
-      this.fStreamerInfos = lst;
-
-      if (JSROOT.Painter && typeof JSROOT.Painter.addStreamerInfos === 'function')
-         JSROOT.Painter.addStreamerInfos(lst);
-
-      for (let k = 0; k < lst.arr.length; ++k) {
-         let si = lst.arr[k];
-         if (!si.fElements) continue;
-         for (let l = 0; l < si.fElements.arr.length; ++l) {
-            let elem = si.fElements.arr[l];
-
-            if (!elem.fTypeName || !elem.fType) continue;
-
-            let typ = elem.fType, typname = elem.fTypeName;
-
-            if (typ >= 60) {
-               if ((typ === jsrio.kStreamer) && (elem._typename == "TStreamerSTL") && elem.fSTLtype && elem.fCtype && (elem.fCtype < 20)) {
-                  let prefix = (jsrio.StlNames[elem.fSTLtype] || "undef") + "<";
-                  if ((typname.indexOf(prefix) === 0) && (typname[typname.length - 1] == ">")) {
-                     typ = elem.fCtype;
-                     typname = typname.substr(prefix.length, typname.length - prefix.length - 1).trim();
-
-                     if ((elem.fSTLtype === jsrio.kSTLmap) || (elem.fSTLtype === jsrio.kSTLmultimap))
-                        if (typname.indexOf(",") > 0) typname = typname.substr(0, typname.indexOf(",")).trim();
-                        else continue;
-                  }
-               }
-               if (typ >= 60) continue;
-            } else {
-               if ((typ > 20) && (typname[typname.length - 1] == "*")) typname = typname.substr(0, typname.length - 1);
-               typ = typ % 20;
-            }
-
-            const kind = jsrio.GetTypeId(typname);
-            if (kind === typ) continue;
-
-            if ((typ === jsrio.kBits) && (kind === jsrio.kUInt)) continue;
-            if ((typ === jsrio.kCounter) && (kind === jsrio.kInt)) continue;
-
-            if (typname && typ && (this.fBasicTypes[typname] !== typ))
-               this.fBasicTypes[typname] = typ;
-         }
-      }
-   }
-
-   /** @summary Read file keys
-    * @private */
-   TFile.prototype.readKeys = function() {
-
-      let file = this;
-
-      // with the first readbuffer we read bigger amount to create header cache
-      return this.readBuffer([0, 1024]).then(blob => {
-         let buf = new TBuffer(blob, 0, file);
-
-         if (buf.substring(0, 4) !== 'root')
-            return Promise.reject(Error(`Not a ROOT file ${file.fURL}`));
-
-         buf.shift(4);
-
-         file.fVersion = buf.ntou4();
-         file.fBEGIN = buf.ntou4();
-         if (file.fVersion < 1000000) { //small file
-            file.fEND = buf.ntou4();
-            file.fSeekFree = buf.ntou4();
-            file.fNbytesFree = buf.ntou4();
-            buf.shift(4); // const nfree = buf.ntoi4();
-            file.fNbytesName = buf.ntou4();
-            file.fUnits = buf.ntou1();
-            file.fCompress = buf.ntou4();
-            file.fSeekInfo = buf.ntou4();
-            file.fNbytesInfo = buf.ntou4();
-         } else { // new format to support large files
-            file.fEND = buf.ntou8();
-            file.fSeekFree = buf.ntou8();
-            file.fNbytesFree = buf.ntou4();
-            buf.shift(4); // const nfree = buf.ntou4();
-            file.fNbytesName = buf.ntou4();
-            file.fUnits = buf.ntou1();
-            file.fCompress = buf.ntou4();
-            file.fSeekInfo = buf.ntou8();
-            file.fNbytesInfo = buf.ntou4();
-         }
-
-         // empty file
-         if (!file.fSeekInfo || !file.fNbytesInfo)
-            return Promise.reject(Error(`File ${file.fURL} does not provide streamer infos`));
-
-         // extra check to prevent reading of corrupted data
-         if (!file.fNbytesName || file.fNbytesName > 100000)
-            return Promise.reject(Error(`Cannot read directory info of the file ${file.fURL}`));
-
-         //*-*-------------Read directory info
-         let nbytes = file.fNbytesName + 22;
-         nbytes += 4;  // fDatimeC.Sizeof();
-         nbytes += 4;  // fDatimeM.Sizeof();
-         nbytes += 18; // fUUID.Sizeof();
-         // assume that the file may be above 2 Gbytes if file version is > 4
-         if (file.fVersion >= 40000) nbytes += 12;
-
-         // this part typically read from the header, no need to optimize
-         return file.readBuffer([file.fBEGIN, Math.max(300, nbytes)]);
-      }).then(blob3 => {
-
-         let buf3 = new TBuffer(blob3, 0, file);
-
-         // keep only title from TKey data
-         file.fTitle = buf3.readTKey().fTitle;
-
-         buf3.locate(file.fNbytesName);
-
-         // we read TDirectory part of TFile
-         buf3.classStreamer(file, 'TDirectory');
-
-         if (!file.fSeekKeys)
-            return Promise.reject(Error(`Empty keys list in ${file.fURL}`));
-
-         // read with same request keys and streamer infos
-         return file.readBuffer([file.fSeekKeys, file.fNbytesKeys, file.fSeekInfo, file.fNbytesInfo]);
-      }).then(blobs => {
-
-         const buf4 = new TBuffer(blobs[0], 0, file);
-
-         buf4.readTKey(); //
-         const nkeys = buf4.ntoi4();
-         for (let i = 0; i < nkeys; ++i)
-            file.fKeys.push(buf4.readTKey());
-
-         const buf5 = new TBuffer(blobs[1], 0, file),
-               si_key = buf5.readTKey();
-         if (!si_key)
-            return Promise.reject(Error(`Fail to read StreamerInfo data in ${file.fURL}`));
-
-         file.fKeys.push(si_key);
-         return file.readObjBuffer(si_key);
-      }).then(blob6 => {
-          file.extractStreamerInfos(blob6);
-          return file;
-      });
-   }
-
-   /** @summary Read the directory content from  a root file
-     * @desc If directory was already read - return previously read object
-     * Same functionality as {@link JSROOT.TFile.readObject}
-     * @param {string} dir_name - directory name
-     * @param {number} [cycle] - directory cycle
-     * @returns {Promise} - promise with read directory */
-   TFile.prototype.readDirectory = function(dir_name, cycle) {
-      return this.readObject(dir_name, cycle, true);
-   }
-
-   /** @summary Search streamer info
-     * @param {string} clanme - class name
-     * @param {number} [clversion] - class version
-     * @param {number} [checksum] - streamer info checksum, have to match when specified
-     * @private */
-   TFile.prototype.findStreamerInfo = function(clname, clversion, checksum) {
-      if (!this.fStreamerInfos) return null;
-
-      const arr = this.fStreamerInfos.arr, len = arr.length;
-
-      if (checksum !== undefined) {
-         let cache = this.fStreamerInfos.cache;
-         if (!cache) cache = this.fStreamerInfos.cache = {};
-         let si = cache[checksum];
-         if (si !== undefined) return si;
-
-         for (let i = 0; i < len; ++i) {
-            si = arr[i];
-            if (si.fCheckSum === checksum)
-               return cache[checksum] = si;
-         }
-         cache[checksum] = null; // checksum didnot found, do not try again
-      } else {
-         for (let i = 0; i < len; ++i) {
-            let si = arr[i];
-            if ((si.fName === clname) && ((si.fClassVersion === clversion) || (clversion === undefined))) return si;
-         }
-      }
-
-      return null;
-   }
-
-   /** @summary Returns streamer for the class 'clname',
-    * @desc From the list of streamers or generate it from the streamer infos and add it to the list
-    * @private */
-   TFile.prototype.getStreamer = function(clname, ver, s_i) {
-
-      // these are special cases, which are handled separately
-      if (clname == 'TQObject' || clname == "TBasket") return null;
-
-      let streamer, fullname = clname;
-
-      if (ver) {
-         fullname += (ver.checksum ? ("$chksum" + ver.checksum) : ("$ver" + ver.val));
-         streamer = this.fStreamers[fullname];
-         if (streamer !== undefined) return streamer;
-      }
-
-      let custom = jsrio.CustomStreamers[clname];
-
-      // one can define in the user streamers just aliases
-      if (typeof custom === 'string')
-         return this.getStreamer(custom, ver, s_i);
-
-      // streamer is just separate function
-      if (typeof custom === 'function') {
-         streamer = [{ typename: clname, func: custom }];
-         return addClassMethods(clname, streamer);
-      }
-
-      streamer = [];
-
-      if (typeof custom === 'object') {
-         if (!custom.name && !custom.func) return custom;
-         streamer.push(custom); // special read entry, add in the beginning of streamer
-      }
-
-      // check element in streamer infos, one can have special cases
-      if (!s_i) s_i = this.findStreamerInfo(clname, ver.val, ver.checksum);
-
-      if (!s_i) {
-         delete this.fStreamers[fullname];
-         if (!ver.nowarning)
-            console.warn(`Not found streamer for ${clname} ver ${ver.val} checksum ${ver.checksum} full ${fullname}`);
          return null;
       }
 
-      // special handling for TStyle which has duplicated member name fLineStyle
-      if ((s_i.fName == "TStyle") && s_i.fElements)
-         s_i.fElements.arr.forEach(elem => {
-            if (elem.fName == "fLineStyle") elem.fName = "fLineStyles"; // like in ROOT JSON now
-         });
+      /** @summary Retrieve a key by its name and cycle in the list of keys
+       * @desc If only_direct not specified, returns Promise while key keys must be read first from the directory
+       * @private */
+      getKey(keyname, cycle, only_direct) {
 
-      // for each entry in streamer info produce member function
-      if (s_i.fElements)
-         for (let j = 0; j < s_i.fElements.arr.length; ++j)
-            streamer.push(jsrio.createMember(s_i.fElements.arr[j], this));
+         if (typeof cycle != 'number') cycle = -1;
+         let bestkey = null;
+         for (let i = 0; i < this.fKeys.length; ++i) {
+            const key = this.fKeys[i];
+            if (!key || (key.fName !== keyname)) continue;
+            if (key.fCycle == cycle) { bestkey = key; break; }
+            if ((cycle < 0) && (!bestkey || (key.fCycle > bestkey.fCycle))) bestkey = key;
+         }
+         if (bestkey)
+            return only_direct ? bestkey : Promise.resolve(bestkey);
 
-      this.fStreamers[fullname] = streamer;
+         let pos = keyname.lastIndexOf("/");
+         // try to handle situation when object name contains slashes (bad practice anyway)
+         while (pos > 0) {
+            let dirname = keyname.substr(0, pos),
+               subname = keyname.substr(pos + 1),
+               dir = this.getDir(dirname);
 
-      return addClassMethods(clname, streamer);
-   }
+            if (dir) return dir.getKey(subname, cycle, only_direct);
 
-   /** @summary Here we produce list of members, resolving all base classes
-    * @private */
-   TFile.prototype.getSplittedStreamer = function(streamer, tgt) {
-      if (!streamer) return tgt;
+            let dirkey = this.getKey(dirname, undefined, true);
+            if (dirkey && !only_direct && (dirkey.fClassName.indexOf("TDirectory") == 0))
+               return this.readObject(dirname).then(newdir => newdir.getKey(subname, cycle));
 
-      if (!tgt) tgt = [];
-
-      for (let n = 0; n < streamer.length; ++n) {
-         let elem = streamer[n];
-
-         if (elem.base === undefined) {
-            tgt.push(elem);
-            continue;
+            pos = keyname.lastIndexOf("/", pos - 1);
          }
 
-         if (elem.basename == 'TObject') {
-            tgt.push({
-               func: function(buf, obj) {
-                  buf.ntoi2(); // read version, why it here??
-                  obj.fUniqueID = buf.ntou4();
-                  obj.fBits = buf.ntou4();
-                  if (obj.fBits & jsrio.kIsReferenced) buf.ntou2(); // skip pid
-               }
-            });
-            continue;
-         }
-
-         let ver = { val: elem.base };
-
-         if (ver.val === 4294967295) {
-            // this is -1 and indicates foreign class, need more workarounds
-            ver.val = 1; // need to search version 1 - that happens when several versions of foreign class exists ???
-         }
-
-         let parent = this.getStreamer(elem.basename, ver);
-         if (parent) this.getSplittedStreamer(parent, tgt);
+         return only_direct ? null : Promise.reject(Error("Key not found " + keyname));
       }
 
-      return tgt;
-   }
+      /** @summary Read and inflate object buffer described by its key
+       * @private */
+      readObjBuffer(key) {
 
-   /** @summary Fully clenaup TFile data
-    * @private */
-   TFile.prototype.delete = function() {
-      this.fDirectories = null;
-      this.fKeys = null;
-      this.fStreamers = null;
-      this.fSeekInfo = 0;
-      this.fNbytesInfo = 0;
-      this.fTagOffset = 0;
-   }
+         return this.readBuffer([key.fSeekKey + key.fKeylen, key.fNbytes - key.fKeylen]).then(blob1 => {
+
+            if (key.fObjlen <= key.fNbytes - key.fKeylen) {
+               let buf = new TBuffer(blob1, 0, this);
+               buf.fTagOffset = key.fKeylen;
+               return buf;
+            }
+
+            return jsrio.R__unzip(blob1, key.fObjlen).then(objbuf => {
+               if (!objbuf) return Promise.reject(Error("Fail to UNZIP buffer"));
+               let buf = new TBuffer(objbuf, 0, this);
+               buf.fTagOffset = key.fKeylen;
+               return buf;
+
+            });
+         });
+      }
+
+      /** @summary Method called when TTree object is streamed
+       * @private */
+      _addReadTree(obj) {
+
+         if (jsrio.TTreeMethods)
+            return JSROOT.extend(obj, jsrio.TTreeMethods);
+
+         if (this.readTrees === undefined) this.readTrees = [];
+
+         if (this.readTrees.indexOf(obj) < 0) this.readTrees.push(obj);
+      }
+
+      /** @summary Read any object from a root file
+        * @desc One could specify cycle number in the object name or as separate argument
+        * @param {string} obj_name - name of object, may include cycle number like "hpxpy;1"
+        * @param {number} [cycle] - cycle number, also can be included in obj_name
+        * @returns {Promise} promise with object read
+        * @example
+        *   JSROOT.openFile("https://root.cern/js/files/hsimple.root")
+        *         .then(f => f.readObject("hpxpy;1"))
+        *         .then(obj => console.log(`Read object of type ${obj._typename}`)); */
+      readObject(obj_name, cycle, only_dir) {
+
+         let pos = obj_name.lastIndexOf(";");
+         if (pos > 0) {
+            cycle = parseInt(obj_name.slice(pos + 1));
+            obj_name = obj_name.slice(0, pos);
+         }
+
+         if (typeof cycle != 'number') cycle = -1;
+         // remove leading slashes
+         while (obj_name.length && (obj_name[0] == "/")) obj_name = obj_name.substr(1);
+
+         let file = this, isdir, read_key;
+
+         // one uses Promises while in some cases we need to
+         // read sub-directory to get list of keys
+         // in such situation calls are asynchrone
+         return this.getKey(obj_name, cycle).then(key => {
+
+            if ((obj_name == "StreamerInfo") && (key.fClassName == "TList"))
+               return file.fStreamerInfos;
+
+            if ((key.fClassName == 'TDirectory' || key.fClassName == 'TDirectoryFile')) {
+               isdir = true;
+               let dir = file.getDir(obj_name, cycle);
+               if (dir) return dir;
+            }
+
+            if (!isdir && only_dir)
+               return Promise.reject(Error(`Key ${obj_name} is not directory}`));
+
+            read_key = key;
+
+            return file.readObjBuffer(key);
+         }).then(buf => {
+            if (isdir) {
+               let dir = new TDirectory(file, obj_name, cycle);
+               dir.fTitle = read_key.fTitle;
+               return dir.readKeys(buf);
+            }
+
+            let obj = {};
+            buf.mapObject(1, obj); // tag object itself with id==1
+            buf.classStreamer(obj, read_key.fClassName);
+
+            if ((read_key.fClassName === 'TF1') || (read_key.fClassName === 'TF2'))
+               return file._readFormulas(obj);
+
+            if (!file.readTrees) return obj;
+
+            return JSROOT.require('tree').then(() => {
+               if (file.readTrees) {
+                  file.readTrees.forEach(t => JSROOT.extend(t, jsrio.TTreeMethods))
+                  delete file.readTrees;
+               }
+               return obj;
+            });
+         });
+      }
+
+      /** @summary read formulas from the file and add them to TF1/TF2 objects
+       * @private */
+      _readFormulas(tf1) {
+
+         let arr = [];
+
+         for (let indx = 0; indx < this.fKeys.length; ++indx)
+            if (this.fKeys[indx].fClassName == 'TFormula')
+               arr.push(this.readObject(this.fKeys[indx].fName, this.fKeys[indx].fCycle));
+
+         return Promise.all(arr).then(formulas => {
+            formulas.forEach(obj => tf1.addFormula(obj));
+            return tf1;
+         });
+      }
+
+      /** @summary extract streamer infos from the buffer
+       * @private */
+      extractStreamerInfos(buf) {
+         if (!buf) return;
+
+         let lst = {};
+         buf.mapObject(1, lst);
+         buf.classStreamer(lst, 'TList');
+
+         lst._typename = "TStreamerInfoList";
+
+         this.fStreamerInfos = lst;
+
+         if (JSROOT.Painter && typeof JSROOT.Painter.addStreamerInfos === 'function')
+            JSROOT.Painter.addStreamerInfos(lst);
+
+         for (let k = 0; k < lst.arr.length; ++k) {
+            let si = lst.arr[k];
+            if (!si.fElements) continue;
+            for (let l = 0; l < si.fElements.arr.length; ++l) {
+               let elem = si.fElements.arr[l];
+
+               if (!elem.fTypeName || !elem.fType) continue;
+
+               let typ = elem.fType, typname = elem.fTypeName;
+
+               if (typ >= 60) {
+                  if ((typ === jsrio.kStreamer) && (elem._typename == "TStreamerSTL") && elem.fSTLtype && elem.fCtype && (elem.fCtype < 20)) {
+                     let prefix = (jsrio.StlNames[elem.fSTLtype] || "undef") + "<";
+                     if ((typname.indexOf(prefix) === 0) && (typname[typname.length - 1] == ">")) {
+                        typ = elem.fCtype;
+                        typname = typname.substr(prefix.length, typname.length - prefix.length - 1).trim();
+
+                        if ((elem.fSTLtype === jsrio.kSTLmap) || (elem.fSTLtype === jsrio.kSTLmultimap))
+                           if (typname.indexOf(",") > 0) typname = typname.substr(0, typname.indexOf(",")).trim();
+                           else continue;
+                     }
+                  }
+                  if (typ >= 60) continue;
+               } else {
+                  if ((typ > 20) && (typname[typname.length - 1] == "*")) typname = typname.substr(0, typname.length - 1);
+                  typ = typ % 20;
+               }
+
+               const kind = jsrio.GetTypeId(typname);
+               if (kind === typ) continue;
+
+               if ((typ === jsrio.kBits) && (kind === jsrio.kUInt)) continue;
+               if ((typ === jsrio.kCounter) && (kind === jsrio.kInt)) continue;
+
+               if (typname && typ && (this.fBasicTypes[typname] !== typ))
+                  this.fBasicTypes[typname] = typ;
+            }
+         }
+      }
+
+      /** @summary Read file keys
+       * @private */
+      readKeys() {
+
+         let file = this;
+
+         // with the first readbuffer we read bigger amount to create header cache
+         return this.readBuffer([0, 1024]).then(blob => {
+            let buf = new TBuffer(blob, 0, file);
+
+            if (buf.substring(0, 4) !== 'root')
+               return Promise.reject(Error(`Not a ROOT file ${file.fURL}`));
+
+            buf.shift(4);
+
+            file.fVersion = buf.ntou4();
+            file.fBEGIN = buf.ntou4();
+            if (file.fVersion < 1000000) { //small file
+               file.fEND = buf.ntou4();
+               file.fSeekFree = buf.ntou4();
+               file.fNbytesFree = buf.ntou4();
+               buf.shift(4); // const nfree = buf.ntoi4();
+               file.fNbytesName = buf.ntou4();
+               file.fUnits = buf.ntou1();
+               file.fCompress = buf.ntou4();
+               file.fSeekInfo = buf.ntou4();
+               file.fNbytesInfo = buf.ntou4();
+            } else { // new format to support large files
+               file.fEND = buf.ntou8();
+               file.fSeekFree = buf.ntou8();
+               file.fNbytesFree = buf.ntou4();
+               buf.shift(4); // const nfree = buf.ntou4();
+               file.fNbytesName = buf.ntou4();
+               file.fUnits = buf.ntou1();
+               file.fCompress = buf.ntou4();
+               file.fSeekInfo = buf.ntou8();
+               file.fNbytesInfo = buf.ntou4();
+            }
+
+            // empty file
+            if (!file.fSeekInfo || !file.fNbytesInfo)
+               return Promise.reject(Error(`File ${file.fURL} does not provide streamer infos`));
+
+            // extra check to prevent reading of corrupted data
+            if (!file.fNbytesName || file.fNbytesName > 100000)
+               return Promise.reject(Error(`Cannot read directory info of the file ${file.fURL}`));
+
+            //*-*-------------Read directory info
+            let nbytes = file.fNbytesName + 22;
+            nbytes += 4;  // fDatimeC.Sizeof();
+            nbytes += 4;  // fDatimeM.Sizeof();
+            nbytes += 18; // fUUID.Sizeof();
+            // assume that the file may be above 2 Gbytes if file version is > 4
+            if (file.fVersion >= 40000) nbytes += 12;
+
+            // this part typically read from the header, no need to optimize
+            return file.readBuffer([file.fBEGIN, Math.max(300, nbytes)]);
+         }).then(blob3 => {
+
+            let buf3 = new TBuffer(blob3, 0, file);
+
+            // keep only title from TKey data
+            file.fTitle = buf3.readTKey().fTitle;
+
+            buf3.locate(file.fNbytesName);
+
+            // we read TDirectory part of TFile
+            buf3.classStreamer(file, 'TDirectory');
+
+            if (!file.fSeekKeys)
+               return Promise.reject(Error(`Empty keys list in ${file.fURL}`));
+
+            // read with same request keys and streamer infos
+            return file.readBuffer([file.fSeekKeys, file.fNbytesKeys, file.fSeekInfo, file.fNbytesInfo]);
+         }).then(blobs => {
+
+            const buf4 = new TBuffer(blobs[0], 0, file);
+
+            buf4.readTKey(); //
+            const nkeys = buf4.ntoi4();
+            for (let i = 0; i < nkeys; ++i)
+               file.fKeys.push(buf4.readTKey());
+
+            const buf5 = new TBuffer(blobs[1], 0, file),
+                  si_key = buf5.readTKey();
+            if (!si_key)
+               return Promise.reject(Error(`Fail to read StreamerInfo data in ${file.fURL}`));
+
+            file.fKeys.push(si_key);
+            return file.readObjBuffer(si_key);
+         }).then(blob6 => {
+             file.extractStreamerInfos(blob6);
+             return file;
+         });
+      }
+
+      /** @summary Read the directory content from  a root file
+        * @desc If directory was already read - return previously read object
+        * Same functionality as {@link JSROOT.TFile.readObject}
+        * @param {string} dir_name - directory name
+        * @param {number} [cycle] - directory cycle
+        * @returns {Promise} - promise with read directory */
+      readDirectory(dir_name, cycle) {
+         return this.readObject(dir_name, cycle, true);
+      }
+
+      /** @summary Search streamer info
+        * @param {string} clanme - class name
+        * @param {number} [clversion] - class version
+        * @param {number} [checksum] - streamer info checksum, have to match when specified
+        * @private */
+      findStreamerInfo(clname, clversion, checksum) {
+         if (!this.fStreamerInfos) return null;
+
+         const arr = this.fStreamerInfos.arr, len = arr.length;
+
+         if (checksum !== undefined) {
+            let cache = this.fStreamerInfos.cache;
+            if (!cache) cache = this.fStreamerInfos.cache = {};
+            let si = cache[checksum];
+            if (si !== undefined) return si;
+
+            for (let i = 0; i < len; ++i) {
+               si = arr[i];
+               if (si.fCheckSum === checksum)
+                  return cache[checksum] = si;
+            }
+            cache[checksum] = null; // checksum didnot found, do not try again
+         } else {
+            for (let i = 0; i < len; ++i) {
+               let si = arr[i];
+               if ((si.fName === clname) && ((si.fClassVersion === clversion) || (clversion === undefined))) return si;
+            }
+         }
+
+         return null;
+      }
+
+      /** @summary Returns streamer for the class 'clname',
+       * @desc From the list of streamers or generate it from the streamer infos and add it to the list
+       * @private */
+      getStreamer(clname, ver, s_i) {
+
+         // these are special cases, which are handled separately
+         if (clname == 'TQObject' || clname == "TBasket") return null;
+
+         let streamer, fullname = clname;
+
+         if (ver) {
+            fullname += (ver.checksum ? ("$chksum" + ver.checksum) : ("$ver" + ver.val));
+            streamer = this.fStreamers[fullname];
+            if (streamer !== undefined) return streamer;
+         }
+
+         let custom = jsrio.CustomStreamers[clname];
+
+         // one can define in the user streamers just aliases
+         if (typeof custom === 'string')
+            return this.getStreamer(custom, ver, s_i);
+
+         // streamer is just separate function
+         if (typeof custom === 'function') {
+            streamer = [{ typename: clname, func: custom }];
+            return addClassMethods(clname, streamer);
+         }
+
+         streamer = [];
+
+         if (typeof custom === 'object') {
+            if (!custom.name && !custom.func) return custom;
+            streamer.push(custom); // special read entry, add in the beginning of streamer
+         }
+
+         // check element in streamer infos, one can have special cases
+         if (!s_i) s_i = this.findStreamerInfo(clname, ver.val, ver.checksum);
+
+         if (!s_i) {
+            delete this.fStreamers[fullname];
+            if (!ver.nowarning)
+               console.warn(`Not found streamer for ${clname} ver ${ver.val} checksum ${ver.checksum} full ${fullname}`);
+            return null;
+         }
+
+         // special handling for TStyle which has duplicated member name fLineStyle
+         if ((s_i.fName == "TStyle") && s_i.fElements)
+            s_i.fElements.arr.forEach(elem => {
+               if (elem.fName == "fLineStyle") elem.fName = "fLineStyles"; // like in ROOT JSON now
+            });
+
+         // for each entry in streamer info produce member function
+         if (s_i.fElements)
+            for (let j = 0; j < s_i.fElements.arr.length; ++j)
+               streamer.push(jsrio.createMember(s_i.fElements.arr[j], this));
+
+         this.fStreamers[fullname] = streamer;
+
+         return addClassMethods(clname, streamer);
+      }
+
+      /** @summary Here we produce list of members, resolving all base classes
+       * @private */
+      getSplittedStreamer(streamer, tgt) {
+         if (!streamer) return tgt;
+
+         if (!tgt) tgt = [];
+
+         for (let n = 0; n < streamer.length; ++n) {
+            let elem = streamer[n];
+
+            if (elem.base === undefined) {
+               tgt.push(elem);
+               continue;
+            }
+
+            if (elem.basename == 'TObject') {
+               tgt.push({
+                  func: function(buf, obj) {
+                     buf.ntoi2(); // read version, why it here??
+                     obj.fUniqueID = buf.ntou4();
+                     obj.fBits = buf.ntou4();
+                     if (obj.fBits & jsrio.kIsReferenced) buf.ntou2(); // skip pid
+                  }
+               });
+               continue;
+            }
+
+            let ver = { val: elem.base };
+
+            if (ver.val === 4294967295) {
+               // this is -1 and indicates foreign class, need more workarounds
+               ver.val = 1; // need to search version 1 - that happens when several versions of foreign class exists ???
+            }
+
+            let parent = this.getStreamer(elem.basename, ver);
+            if (parent) this.getSplittedStreamer(parent, tgt);
+         }
+
+         return tgt;
+      }
+
+      /** @summary Fully clenaup TFile data
+       * @private */
+      delete() {
+         this.fDirectories = null;
+         this.fKeys = null;
+         this.fStreamers = null;
+         this.fSeekInfo = 0;
+         this.fNbytesInfo = 0;
+         this.fTagOffset = 0;
+      }
+
+   } // TFile
 
    // =======================================================================
 
