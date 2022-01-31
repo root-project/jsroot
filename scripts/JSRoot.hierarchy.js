@@ -79,7 +79,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
       for ( let i = 0; i < obj.fTasks.arr.length; ++i) {
          let chld = obj.fTasks.arr[i];
-         item._childs.push( {
+         item._childs.push({
             _name : chld.fName,
             _kind : "ROOT." + chld._typename,
             _obj : chld
@@ -123,25 +123,20 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
 
       folder._childs = [];
-      for ( let i = 0; i < lst.arr.length; ++i) {
-         let obj = ismap ? lst.arr[i].first : lst.arr[i];
-
-         let item;
-
-         if (!obj || !obj._typename) {
-            item = {
+      for (let i = 0; i < lst.arr.length; ++i) {
+         let obj = ismap ? lst.arr[i].first : lst.arr[i],
+             item = !obj || !obj._typename ?
+              {
                _name: i.toString(),
                _kind: "ROOT.NULL",
                _title: "NULL",
                _value: "null",
                _obj: null
-            };
-         } else {
-           item = {
-             _name: obj.fName || obj.name,
-             _kind: "ROOT." + obj._typename,
-             _title: (obj.fTitle || "") + " type:"  +  obj._typename,
-             _obj: obj
+             } : {
+               _name: obj.fName || obj.name,
+               _kind: "ROOT." + obj._typename,
+               _title: (obj.fTitle || "") + " type:"  +  obj._typename,
+               _obj: obj
            };
 
            switch(obj._typename) {
@@ -155,19 +150,18 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
            if (do_context && jsrp.canDraw(obj._typename)) item._direct_context = true;
 
            // if name is integer value, it should match array index
-           if (!item._name || (Number.isInteger(parseInt(item._name)) && (parseInt(item._name)!==i))
+           if (!item._name || (Number.isInteger(parseInt(item._name)) && (parseInt(item._name) !== i))
                || (lst.arr.indexOf(obj) < i)) {
               item._name = i.toString();
            } else {
               // if there are several such names, add cycle number to the item name
               let indx = names.indexOf(obj.fName);
-              if ((indx>=0) && (cnt[indx]>1)) {
+              if ((indx >= 0) && (cnt[indx] > 1)) {
                  item._cycle = cycle[indx]++;
                  item._keyname = item._name;
                  item._name = item._keyname + ";" + item._cycle;
               }
            }
-         }
 
          folder._childs.push(item);
       }
@@ -184,9 +178,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       folder._childs = [];
 
       for (let i = 0; i < keys.length; ++i) {
-         let key = keys[i];
-
-         let item = {
+         let key = keys[i],
+             item = {
             _name: key.fName + ";" + key.fCycle,
             _cycle: key.fCycle,
             _kind: "ROOT." + key.fClassName,
@@ -251,7 +244,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          top._childs.push(item);
          let namelen = (obj.byteLength < 10) ? 1 : Math.log10(obj.byteLength);
 
-         for (let k=0;k<obj.byteLength;++k) {
+         for (let k = 0; k < obj.byteLength; ++k) {
             if (k % 16 === 0) {
                item = {
                  _parent: top,
@@ -308,7 +301,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
 
       if (arrcompress) {
-         for (let k=0;k<obj.length;) {
+         for (let k = 0; k < obj.length;) {
 
             let nextk = Math.min(k+10,obj.length), allsame = true, prevk = k;
 
@@ -508,16 +501,16 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if (elem.fArrayDim===1)
                info += "[" + elem.fArrayLength + "]";
             else
-               for (let dim=0;dim<elem.fArrayDim;++dim)
-                  info+="[" + elem.fMaxIndex[dim] + "]";
-            if (elem.fBaseVersion===4294967295) info += ":-1"; else
-            if (elem.fBaseVersion!==undefined) info += ":" + elem.fBaseVersion;
+               for (let dim = 0; dim < elem.fArrayDim; ++dim)
+                  info += "[" + elem.fMaxIndex[dim] + "]";
+            if (elem.fBaseVersion === 4294967295) info += ":-1"; else
+            if (elem.fBaseVersion !== undefined) info += ":" + elem.fBaseVersion;
             info += ";";
-            if (elem.fTitle != '') info += " // " + elem.fTitle;
+            if (elem.fTitle) info += " // " + elem.fTitle;
 
             item._childs.push({ _name : info, _title: title, _kind: elem.fTypeName, _icon: (elem.fTypeName == 'BASE') ? "img_class" : "img_member" });
          }
-         if (item._childs.length == 0) delete item._childs;
+         if (!item._childs.length) delete item._childs;
       }
 
       return h;
@@ -563,7 +556,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       if (val=="") return res;
 
       // return as array with single element
-      if ((val.length<2) || (val[0]!='[') || (val[val.length-1]!=']')) {
+      if ((val.length < 2) || (val[0] != '[') || (val[val.length-1] != ']')) {
          res.push(val); return res;
       }
 
@@ -586,8 +579,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             case "]": if (indx < val.length - 1) { nbr--; break; }
             case ",":
                if (nbr === 0) {
-                  let sub =  val.substring(last, indx).trim();
-                  if ((sub.length>1) && (sub[0]==sub[sub.length-1]) && ((sub[0]=='"') || (sub[0]=="'")))
+                  let sub = val.substring(last, indx).trim();
+                  if ((sub.length > 1) && (sub[0] == sub[sub.length-1]) && ((sub[0] == '"') || (sub[0] == "'")))
                      sub = sub.substr(1, sub.length-2);
                   res.push(sub);
                   last = indx+1;
@@ -1116,7 +1109,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          return Promise.resolve(this);
       }
-   }
+   } // class BrowserLayout
 
    // ==============================================================================
 
@@ -1126,7 +1119,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    function onlineHierarchy(node, obj) {
       if (obj && node && ('_childs' in obj)) {
 
-         for (let n=0;n<obj._childs.length;++n)
+         for (let n = 0; n < obj._childs.length; ++n)
             if (obj._childs[n]._more || obj._childs[n]._childs)
                obj._childs[n]._expand = onlineHierarchy;
 
@@ -3930,7 +3923,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (!chkbox.empty() && (chkbox.property('checked') !== on))
             chkbox.property('checked', on);
       }
-   }
+
+   } // class HierarchyPainter
 
    // ======================================================================================
 
@@ -5003,7 +4997,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          });
       }
 
-
    } // class FlexibleDisplay
 
    // ==================================================
@@ -5017,6 +5010,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
     */
 
    class BatchDisplay extends MDIDisplay {
+
       constructor(width, height) {
          super("$batch$");
          this.frames = []; // array of configured frames
@@ -5094,6 +5088,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          main.remove();
          return svg;
       }
+
    } // class BatchDisplay
 
    // ===========================================================================================================
@@ -5165,8 +5160,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                 .attr("title", "Tree draw player for: " + this.local_tree.fName);
          main.select('.treedraw_exe').on("click", () => this.performDraw());
          main.select('.treedraw_varexp')
-              .attr("value", args && args.parse_expr ? args.parse_expr : (this.dflt_expr || "px:py"))
-              .on("change", () => this.performDraw());
+             .attr("value", args && args.parse_expr ? args.parse_expr : (this.dflt_expr || "px:py"))
+             .on("change", () => this.performDraw());
          main.select('.treedraw_varexp_info')
              .attr('title', "Example of valid draw expressions:\n" +
                             "   px  - 1-dim draw\n" +
@@ -5200,9 +5195,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       player.performLocalDraw = function() {
          if (!this.local_tree) return;
 
-         let frame = this.selectDom();
-
-         let args = { expr: this.getValue('.treedraw_varexp') };
+         let frame = this.selectDom(),
+             args = { expr: this.getValue('.treedraw_varexp') };
 
          if (frame.select('.treedraw_more').empty()) {
             args.cut = this.getValue('.treedraw_cut');
@@ -5359,7 +5353,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    JSROOT.BrowserLayout = BrowserLayout;
    JSROOT.HierarchyPainter = HierarchyPainter;
-
    JSROOT.MDIDisplay = MDIDisplay;
    JSROOT.CustomDisplay = CustomDisplay;
    JSROOT.GridDisplay = GridDisplay;
