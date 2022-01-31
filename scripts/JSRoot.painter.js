@@ -1764,7 +1764,7 @@ JSROOT.define(['d3'], (d3) => {
 
    class ObjectPainter extends BasePainter {
 
-      /** @constructor
+      /** @summary constructor
         * @param {object|string} dom - dom element or identifier
         * @param {object} obj - object to draw
         * @param {string} [opt] - object draw options */
