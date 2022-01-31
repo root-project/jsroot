@@ -2357,7 +2357,7 @@ JSROOT.define(['rawinflate'], () => {
    class TLocalFile extends TFile {
 
       constructor(file) {
-         TFile.call(this, null);
+         super(null);
          this.fUseStampPar = false;
          this.fLocalFile = file;
          this.fEND = file.size;
@@ -2376,7 +2376,7 @@ JSROOT.define(['rawinflate'], () => {
 
          return new Promise((resolve, reject) => {
             if (filename)
-               return reject(Error("Cannot access other local file " + filename));
+               return reject(Error(`Cannot access other local file ${filename}`));
 
             let reader = new FileReader(), cnt = 0, blobs = [];
 
@@ -2393,6 +2393,7 @@ JSROOT.define(['rawinflate'], () => {
             reader.readAsArrayBuffer(file.slice(place[0], place[0] + place[1]));
          });
       }
+
    } // TLocalFile
 
    // =============================================================
@@ -2400,76 +2401,73 @@ JSROOT.define(['rawinflate'], () => {
    /**
      * @summary Interface to read file in node.js
      *
-     * @class
      * @memberof JSROOT
-     * @extends JSROOT.TFile
      * @hideconstructor
      * @desc Use {@link JSROOT.openFile} to create instance of the class
      * @private
      */
 
-   function TNodejsFile(filename) {
-      TFile.call(this, null);
-      this.fUseStampPar = false;
-      this.fEND = 0;
-      this.fFullURL = filename;
-      this.fURL = filename;
-      this.fFileName = filename;
-   }
+   class TNodejsFile extends TFile {
+      constructor(filename) {
+         super(null);
+         this.fUseStampPar = false;
+         this.fEND = 0;
+         this.fFullURL = filename;
+         this.fURL = filename;
+         this.fFileName = filename;
+      }
 
-   TNodejsFile.prototype = Object.create(TFile.prototype)
+      /** @summary Open file in node.js
+        * @returns {Promise} after file keys are read */
+      _open() {
+         this.fs = require('fs');
 
-   /** @summary Open file in node.js
-     * @returns {Promise} after file keys are read
-     * @private */
-   TNodejsFile.prototype._open = function() {
-      this.fs = require('fs');
+         return new Promise((resolve,reject) =>
 
-      return new Promise((resolve,reject) =>
+            this.fs.open(this.fFileName, 'r', (status, fd) => {
+               if (status) {
+                  console.log(status.message);
+                  return reject(Error(`Not possible to open ${this.fFileName} inside node.js`));
+               }
+               let stats = this.fs.fstatSync(fd);
 
-         this.fs.open(this.fFileName, 'r', (status, fd) => {
-            if (status) {
-               console.log(status.message);
-               return reject(Error(`Not possible to open ${this.fFileName} inside node.js`));
+               this.fEND = stats.size;
+
+               this.fd = fd;
+
+               this.readKeys().then(resolve).catch(reject);
+            })
+         );
+      }
+
+      /** @summary Read buffer from node.js file
+        * @returns {Promise} with requested blocks */
+      readBuffer(place, filename /*, progress_callback */) {
+         return new Promise((resolve, reject) => {
+            if (filename)
+               return reject(Error(`Cannot access other local file ${filename}`));
+
+            if (!this.fs || !this.fd)
+               return reject(Error(`File is not opened ${this.fFileName}`));
+
+            let cnt = 0, blobs = [];
+
+            let readfunc = (err, bytesRead, buf) => {
+
+               let res = new DataView(buf.buffer, buf.byteOffset, place[cnt + 1]);
+               if (place.length === 2) return resolve(res);
+
+               blobs.push(res);
+               cnt += 2;
+               if (cnt >= place.length) return resolve(blobs);
+               this.fs.read(this.fd, Buffer.alloc(place[cnt + 1]), 0, place[cnt + 1], place[cnt], readfunc);
             }
-            let stats = this.fs.fstatSync(fd);
 
-            this.fEND = stats.size;
+            this.fs.read(this.fd, Buffer.alloc(place[1]), 0, place[1], place[0], readfunc);
+         });
+      }
 
-            this.fd = fd;
-
-            this.readKeys().then(resolve).catch(reject);
-         })
-      );
-   }
-
-   /** @summary Read buffer from node.js file
-     * @returns {Promise} with required blocks
-     * @private */
-   TNodejsFile.prototype.readBuffer = function(place, filename /*, progress_callback */) {
-      return new Promise((resolve, reject) => {
-         if (filename)
-            return reject(Error(`Cannot access other local file ${filename}`));
-
-         if (!this.fs || !this.fd)
-            return reject(Error(`File is not opened ${this.fFileName}`));
-
-         let cnt = 0, blobs = [];
-
-         let readfunc = (err, bytesRead, buf) => {
-
-            let res = new DataView(buf.buffer, buf.byteOffset, place[cnt + 1]);
-            if (place.length === 2) return resolve(res);
-
-            blobs.push(res);
-            cnt += 2;
-            if (cnt >= place.length) return resolve(blobs);
-            this.fs.read(this.fd, Buffer.alloc(place[cnt + 1]), 0, place[cnt + 1], place[cnt], readfunc);
-         }
-
-         this.fs.read(this.fd, Buffer.alloc(place[1]), 0, place[1], place[0], readfunc);
-      });
-   }
+   } // TNodejsFile
 
    /** @summary Add custom streamers for basic ROOT classes
      * @private */
