@@ -14,6 +14,7 @@
    <p id="p_start">...</p>
    <p id="p_process">...</p>
    <p id="p_ready">...</p>
+   <p id="p_process">...</p>
 
    <script type='text/javascript'>
 
@@ -65,7 +66,8 @@
                }
 
                tree.Process(new TRealSelector());
-            });
+            }).then(() =>  document.getElementById('p_process').innerHTML = "TTree processed")
+              .catch(err =>  document.getElementById('p_process').innerHTML = `TTree processing failed ${err}`);
    </script>
 
 </body>

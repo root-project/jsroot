@@ -1440,7 +1440,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
          }
 
          // central handle with all information required for reading
-         let handle = {
+         const handle = {
             tree: this, // keep tree reference
             file: this.$file, // keep file reference
             selector: selector, // reference on selector
@@ -1451,9 +1451,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
             process_arrays: true // one can process all branches as arrays
          };
 
-         let namecnt = 0;
-
-         function CreateLeafElem(leaf, name) {
+         const createLeafElem = (leaf, name) => {
             // function creates TStreamerElement which corresponds to the elementary leaf
             let datakind = 0;
             switch (leaf._typename) {
@@ -1464,17 +1462,19 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
                case 'TLeafS': datakind = leaf.fIsUnsigned ? jsrio.kUShort : jsrio.kShort; break;
                case 'TLeafI': datakind = leaf.fIsUnsigned ? jsrio.kUInt : jsrio.kInt; break;
                case 'TLeafL': datakind = leaf.fIsUnsigned ? jsrio.kULong64 : jsrio.kLong64; break;
-               case 'TLeafC': datakind = jsrio.kTString; break; // datakind = leaf.fIsUnsigned ? jsrio.kUChar : jsrio.kChar; break;
+               case 'TLeafC': datakind = jsrio.kTString; break;
                default: return null;
             }
             return jsrio.createStreamerElement(name || leaf.fName, datakind);
-         }
 
-         function FindInHandle(branch) {
+         }, findInHandle = branch => {
             for (let k = 0; k < handle.arr.length; ++k)
-               if (handle.arr[k].branch === branch) return handle.arr[k];
+               if (handle.arr[k].branch === branch)
+                   return handle.arr[k];
             return null;
-         }
+         };
+
+         let namecnt = 0;
 
          function AddBranchForReading(branch, target_object, target_name, read_mode) {
             // central method to add branch for reading
@@ -1488,7 +1488,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
 
             if (!branch) { console.error('Did not found branch'); return null; }
 
-            let item = FindInHandle(branch);
+            let item = findInHandle(branch);
 
             if (item) {
                console.error('Branch already configured for reading', branch.fName);
@@ -1575,7 +1575,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
 
             if (branch.fBranchCount) {
 
-               item_cnt = FindInHandle(branch.fBranchCount);
+               item_cnt = findInHandle(branch.fBranchCount);
 
                if (!item_cnt)
                   item_cnt = AddBranchForReading(branch.fBranchCount, target_object, "$counter" + namecnt++, true);
@@ -1601,7 +1601,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
                }
 
                if (BranchCount2) {
-                  item_cnt2 = FindInHandle(BranchCount2);
+                  item_cnt2 = findInHandle(BranchCount2);
 
                   if (!item_cnt2) item_cnt2 = AddBranchForReading(BranchCount2, target_object, "$counter" + namecnt++, true);
 
@@ -1612,7 +1612,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
                   let br_cnt = handle.tree.FindBranch(leaf.fLeafCount.fName);
 
                   if (br_cnt) {
-                     item_cnt = FindInHandle(br_cnt);
+                     item_cnt = findInHandle(br_cnt);
 
                      if (!item_cnt) item_cnt = AddBranchForReading(br_cnt, target_object, "$counter" + namecnt++, true);
 
@@ -1710,7 +1710,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
                      if ((typeof read_mode === "string") && (read_mode[0] === ".")) {
                         member.conttype = detectBranchMemberClass(branch.fBranches, branch.fName + read_mode);
                         if (!member.conttype) {
-                           console.error('Cannot select object', read_mode, "in the branch", branch.fName);
+                           console.error(`Cannot select object ${read_mode} in the branch ${branch.fName}`);
                            return null;
                         }
                      }
@@ -1724,7 +1724,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
                   if ((object_class = getBranchObjectClass(branch, handle.tree))) {
 
                      if (read_mode === true) {
-                        console.warn('Object branch ' + object_class + ' can not have data to be read directly');
+                        console.warn(`Object branch ${object_class} can not have data to be read directly`);
                         return null;
                      }
 
@@ -1774,14 +1774,14 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
                   } else if (nb_leaves === 1) {
                      // no special constrains for the leaf names
 
-                     elem = CreateLeafElem(leaf, target_name);
+                     elem = createLeafElem(leaf, target_name);
 
                   } else if ((branch._typename === "TBranch") && (nb_leaves > 1)) {
                      // branch with many elementary leaves
 
                      let arr = new Array(nb_leaves), isok = true;
                      for (let l = 0; l < nb_leaves; ++l) {
-                        arr[l] = CreateLeafElem(branch.fLeaves.arr[l]);
+                        arr[l] = createLeafElem(branch.fLeaves.arr[l]);
                         arr[l] = jsrio.createMember(arr[l], handle.file);
                         if (!arr[l]) isok = false;
                      }
@@ -1826,7 +1826,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
                   // no point in the name - just plain array of objects
                   member.get = (arr, n) => arr[n];
                } else if (read_mode === "$child$") {
-                  console.error('target name contains point, but suppose to be direct child', target_name);
+                  console.error(`target name ${target_name} contains point, but suppose to be direct child`);
                   return null;
                } else if (snames.length === 2) {
                   target_name = member.name = snames[1];
@@ -1844,7 +1844,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
                   // while classname is not enough - there can be different versions
 
                   if (!branch.fParentName) {
-                     console.error('Not possible to provide more than 2 parts in the target name', target_name);
+                     console.error(`Not possible to provide more than 2 parts in the target name ${target_name}`);
                      return null;
                   }
 
