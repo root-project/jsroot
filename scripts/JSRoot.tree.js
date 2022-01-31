@@ -246,275 +246,272 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
     * @private
     */
 
-   function TDrawVariable(globals) {
-      this.globals = globals;
+   class TDrawVariable {
 
-      this.code = "";
-      this.brindex = []; // index of used branches from selector
-      this.branches = []; // names of branches in target object
-      this.brarray = []; // array specifier for each branch
-      this.func = null; // generic function for variable calculation
+      /** @summary constructor */
+      constructor (globals) {
+         this.globals = globals;
 
-      this.kind = undefined;
-      this.buf = []; // buffer accumulates temporary values
-   }
+         this.code = "";
+         this.brindex = []; // index of used branches from selector
+         this.branches = []; // names of branches in target object
+         this.brarray = []; // array specifier for each branch
+         this.func = null; // generic function for variable calculation
 
-   /** @summary Parse variable
-     * @desc when only_branch specified, its placed in the front of the expression */
-   TDrawVariable.prototype.parse = function(tree, selector, code, only_branch, branch_mode) {
-
-      function is_start_symbol(symb) {
-         if ((symb >= "A") && (symb <= "Z")) return true;
-         if ((symb >= "a") && (symb <= "z")) return true;
-         return (symb === "_");
+         this.kind = undefined;
+         this.buf = []; // buffer accumulates temporary values
       }
 
-      function is_next_symbol(symb) {
-         if (is_start_symbol(symb)) return true;
-         if ((symb >= "0") && (symb <= "9")) return true;
-         return false;
-      }
+      /** @summary Parse variable
+        * @desc when only_branch specified, its placed in the front of the expression */
+      parse(tree, selector, code, only_branch, branch_mode) {
 
-      if (!code) code = ""; // should be empty string at least
+         const is_start_symbol = symb => {
+            if ((symb >= "A") && (symb <= "Z")) return true;
+            if ((symb >= "a") && (symb <= "z")) return true;
+            return (symb === "_");
+         }, is_next_symbol = symb => {
+            if (is_start_symbol(symb)) return true;
+            if ((symb >= "0") && (symb <= "9")) return true;
+            return false;
+         };
 
-      this.code = (only_branch ? only_branch.fName : "") + code;
+         if (!code) code = ""; // should be empty string at least
 
-      let pos = 0, pos2 = 0, br = null;
-      while ((pos < code.length) || only_branch) {
+         this.code = (only_branch ? only_branch.fName : "") + code;
 
-         let arriter = [];
+         let pos = 0, pos2 = 0, br = null;
+         while ((pos < code.length) || only_branch) {
 
-         if (only_branch) {
-            br = only_branch;
-            only_branch = undefined;
-         } else {
-            // first try to find branch
-            pos2 = pos;
-            while ((pos2 < code.length) && (is_next_symbol(code[pos2]) || code[pos2] === ".")) pos2++;
-            if (code[pos2] == "$") {
-               let repl = "";
-               switch (code.substr(pos, pos2 - pos)) {
-                  case "LocalEntry":
-                  case "Entry": repl = "arg.$globals.entry"; break;
-                  case "Entries": repl = "arg.$globals.entries"; break;
+            let arriter = [];
+
+            if (only_branch) {
+               br = only_branch;
+               only_branch = undefined;
+            } else {
+               // first try to find branch
+               pos2 = pos;
+               while ((pos2 < code.length) && (is_next_symbol(code[pos2]) || code[pos2] === ".")) pos2++;
+               if (code[pos2] == "$") {
+                  let repl = "";
+                  switch (code.substr(pos, pos2 - pos)) {
+                     case "LocalEntry":
+                     case "Entry": repl = "arg.$globals.entry"; break;
+                     case "Entries": repl = "arg.$globals.entries"; break;
+                  }
+                  if (repl) {
+                     code = code.substr(0, pos) + repl + code.substr(pos2 + 1);
+                     pos = pos + repl.length;
+                     continue;
+                  }
                }
-               if (repl) {
-                  code = code.substr(0, pos) + repl + code.substr(pos2 + 1);
-                  pos = pos + repl.length;
+
+               br = tree.FindBranchComplex(code.substr(pos, pos2 - pos));
+               if (!br) { pos = pos2 + 1; continue; }
+
+               // when full id includes branch name, replace only part of extracted expression
+               if (br.branch && (br.rest !== undefined)) {
+                  pos2 -= br.rest.length;
+                  branch_mode = undefined; // maybe selection of the sub-object done
+                  br = br.branch;
+               }
+
+               // when code ends with the point - means object itself will be accessed
+               // sometime branch name itself ends with the point
+               if ((pos2 >= code.length - 1) && (code[code.length - 1] === ".")) {
+                  arriter.push("$self$");
+                  pos2 = code.length;
+               }
+            }
+
+            // now extract all levels of iterators
+            while (pos2 < code.length) {
+
+               if ((code[pos2] === "@") && (code.substr(pos2, 5) == "@size") && (arriter.length == 0)) {
+                  pos2 += 5;
+                  branch_mode = true;
+                  break;
+               }
+
+               if (code[pos2] === ".") {
+                  // this is object member
+                  let prev = ++pos2;
+
+                  if ((code[prev] === "@") && (code.substr(prev, 5) === "@size")) {
+                     arriter.push("$size$");
+                     pos2 += 5;
+                     break;
+                  }
+
+                  if (!is_start_symbol(code[prev])) {
+                     arriter.push("$self$"); // last point means extraction of object itself
+                     break;
+                  }
+
+                  while ((pos2 < code.length) && is_next_symbol(code[pos2])) pos2++;
+
+                  // this is looks like function call - do not need to extract member with
+                  if (code[pos2] == "(") { pos2 = prev - 1; break; }
+
+                  // this is selection of member, but probably we need to activate iterator for ROOT collection
+                  if ((arriter.length === 0) && br) {
+                     // TODO: if selected member is simple data type - no need to make other checks - just break here
+                     if ((br.fType === JSROOT.BranchType.kClonesNode) || (br.fType === JSROOT.BranchType.kSTLNode)) {
+                        arriter.push(undefined);
+                     } else {
+                        let objclass = getBranchObjectClass(br, tree, false, true);
+                        if (objclass && JSROOT.isRootCollection(null, objclass)) arriter.push(undefined);
+                     }
+                  }
+                  arriter.push(code.substr(prev, pos2 - prev));
                   continue;
                }
-            }
 
-            br = tree.FindBranchComplex(code.substr(pos, pos2 - pos));
-            if (!br) { pos = pos2 + 1; continue; }
+               if (code[pos2] !== "[") break;
 
-            // when full id includes branch name, replace only part of extracted expression
-            if (br.branch && (br.rest !== undefined)) {
-               pos2 -= br.rest.length;
-               branch_mode = undefined; // maybe selection of the sub-object done
-               br = br.branch;
-            }
+               // simple []
+               if (code[pos2 + 1] == "]") { arriter.push(undefined); pos2 += 2; continue; }
 
-            // when code ends with the point - means object itself will be accessed
-            // sometime branch name itself ends with the point
-            if ((pos2 >= code.length - 1) && (code[code.length - 1] === ".")) {
-               arriter.push("$self$");
-               pos2 = code.length;
-            }
-         }
-
-         // now extract all levels of iterators
-         while (pos2 < code.length) {
-
-            if ((code[pos2] === "@") && (code.substr(pos2, 5) == "@size") && (arriter.length == 0)) {
-               pos2 += 5;
-               branch_mode = true;
-               break;
-            }
-
-            if (code[pos2] === ".") {
-               // this is object member
-               let prev = ++pos2;
-
-               if ((code[prev] === "@") && (code.substr(prev, 5) === "@size")) {
-                  arriter.push("$size$");
-                  pos2 += 5;
-                  break;
+               let prev = pos2++, cnt = 0;
+               while ((pos2 < code.length) && ((code[pos2] != "]") || (cnt > 0))) {
+                  if (code[pos2] == '[') cnt++; else if (code[pos2] == ']') cnt--;
+                  pos2++;
                }
-
-               if (!is_start_symbol(code[prev])) {
-                  arriter.push("$self$"); // last point means extraction of object itself
-                  break;
+               let sub = code.substr(prev + 1, pos2 - prev - 1);
+               switch (sub) {
+                  case "":
+                  case "$all$": arriter.push(undefined); break;
+                  case "$last$": arriter.push("$last$"); break;
+                  case "$size$": arriter.push("$size$"); break;
+                  case "$first$": arriter.push(0); break;
+                  default:
+                     if (Number.isInteger(parseInt(sub))) {
+                        arriter.push(parseInt(sub));
+                     } else {
+                        // try to compile code as draw variable
+                        let subvar = new TDrawVariable(this.globals);
+                        if (!subvar.parse(tree, selector, sub)) return false;
+                        arriter.push(subvar);
+                     }
                }
-
-               while ((pos2 < code.length) && is_next_symbol(code[pos2])) pos2++;
-
-               // this is looks like function call - do not need to extract member with
-               if (code[pos2] == "(") { pos2 = prev - 1; break; }
-
-               // this is selection of member, but probably we need to activate iterator for ROOT collection
-               if ((arriter.length === 0) && br) {
-                  // TODO: if selected member is simple data type - no need to make other checks - just break here
-                  if ((br.fType === JSROOT.BranchType.kClonesNode) || (br.fType === JSROOT.BranchType.kSTLNode)) {
-                     arriter.push(undefined);
-                  } else {
-                     let objclass = getBranchObjectClass(br, tree, false, true);
-                     if (objclass && JSROOT.isRootCollection(null, objclass)) arriter.push(undefined);
-                  }
-               }
-               arriter.push(code.substr(prev, pos2 - prev));
-               continue;
-            }
-
-            if (code[pos2] !== "[") break;
-
-            // simple []
-            if (code[pos2 + 1] == "]") { arriter.push(undefined); pos2 += 2; continue; }
-
-            let prev = pos2++, cnt = 0;
-            while ((pos2 < code.length) && ((code[pos2] != "]") || (cnt > 0))) {
-               if (code[pos2] == '[') cnt++; else if (code[pos2] == ']') cnt--;
                pos2++;
             }
-            let sub = code.substr(prev + 1, pos2 - prev - 1);
-            switch (sub) {
-               case "":
-               case "$all$": arriter.push(undefined); break;
-               case "$last$": arriter.push("$last$"); break;
-               case "$size$": arriter.push("$size$"); break;
-               case "$first$": arriter.push(0); break;
-               default:
-                  if (Number.isInteger(parseInt(sub))) {
-                     arriter.push(parseInt(sub));
-                  } else {
-                     // try to compile code as draw variable
-                     let subvar = new TDrawVariable(this.globals);
-                     if (!subvar.parse(tree, selector, sub)) return false;
-                     arriter.push(subvar);
-                  }
+
+            if (arriter.length === 0) arriter = undefined; else
+               if ((arriter.length === 1) && (arriter[0] === undefined)) arriter = true;
+
+            let indx = selector.indexOfBranch(br);
+            if (indx < 0) indx = selector.addBranch(br, undefined, branch_mode);
+
+            branch_mode = undefined;
+
+            this.brindex.push(indx);
+            this.branches.push(selector.nameOfBranch(indx));
+            this.brarray.push(arriter);
+
+            // this is simple case of direct usage of the branch
+            if ((pos === 0) && (pos2 === code.length) && (this.branches.length === 1)) {
+               this.direct_branch = true; // remember that branch read as is
+               return true;
             }
-            pos2++;
+
+            let replace = "arg.var" + (this.branches.length - 1);
+
+            code = code.substr(0, pos) + replace + code.substr(pos2);
+
+            pos = pos + replace.length;
          }
 
-         if (arriter.length === 0) arriter = undefined; else
-            if ((arriter.length === 1) && (arriter[0] === undefined)) arriter = true;
+         // support usage of some standard TMath functions
+         code = code.replace(/TMath::Exp\(/g, 'Math.exp(')
+                    .replace(/TMath::Abs\(/g, 'Math.abs(')
+                    .replace(/TMath::Prob\(/g, 'arg.$math.Prob(')
+                    .replace(/TMath::Gaus\(/g, 'arg.$math.Gaus(');
 
-         let indx = selector.indexOfBranch(br);
-         if (indx < 0) indx = selector.addBranch(br, undefined, branch_mode);
+         this.func = new Function("arg", "return (" + code + ")");
 
-         branch_mode = undefined;
+         return true;
+      }
 
-         this.brindex.push(indx);
-         this.branches.push(selector.nameOfBranch(indx));
-         this.brarray.push(arriter);
+      /** @summary Check if it is dummy variable */
+      is_dummy() { return (this.branches.length === 0) && !this.func; }
 
-         // this is simple case of direct usage of the branch
-         if ((pos === 0) && (pos2 === code.length) && (this.branches.length === 1)) {
-            this.direct_branch = true; // remember that branch read as is
-            return true;
+      /** @summary Produce variable
+        * @desc after reading tree braches into the object, calculate variable value */
+      produce(obj) {
+
+         this.length = 1;
+         this.isarray = false;
+
+         if (this.is_dummy()) {
+            this.value = 1.; // used as dummy weight variable
+            this.kind = "number";
+            return;
          }
 
-         let replace = "arg.var" + (this.branches.length - 1);
+         let arg = { $globals: this.globals, $math: jsrmath }, usearrlen = -1, arrs = [];
+         for (let n = 0; n < this.branches.length; ++n) {
+            let name = "var" + n;
+            arg[name] = obj[this.branches[n]];
 
-         code = code.substr(0, pos) + replace + code.substr(pos2);
+            // try to check if branch is array and need to be iterated
+            if (this.brarray[n] === undefined)
+               this.brarray[n] = (checkArrayPrototype(arg[name]) > 0) || JSROOT.isRootCollection(arg[name]);
 
-         pos = pos + replace.length;
-      }
+            // no array - no pain
+            if (this.brarray[n] === false) continue;
 
-      // support usage of some standard TMath functions
-      code = code.replace(/TMath::Exp\(/g, 'Math.exp(')
-                 .replace(/TMath::Abs\(/g, 'Math.abs(')
-                 .replace(/TMath::Prob\(/g, 'arg.$math.Prob(')
-                 .replace(/TMath::Gaus\(/g, 'arg.$math.Gaus(');
+            // check if array can be used as is - one dimension and normal values
+            if ((this.brarray[n] === true) && (checkArrayPrototype(arg[name], true) === 2)) {
+               // plain array, can be used as is
+               arrs[n] = arg[name];
+            } else {
+               let iter = new ArrayIterator(arg[name], this.brarray[n], obj);
+               arrs[n] = [];
+               while (iter.next()) arrs[n].push(iter.value);
+            }
+            if ((usearrlen < 0) || (usearrlen < arrs[n].length)) usearrlen = arrs[n].length;
+         }
 
-      this.func = new Function("arg", "return (" + code + ")");
+         if (usearrlen < 0) {
+            this.value = this.direct_branch ? arg.var0 : this.func(arg);
+            if (!this.kind) this.kind = typeof this.value;
+            return;
+         }
 
-      return true;
-   }
+         if (usearrlen == 0) {
+            // empty array - no any histogram should be filled
+            this.length = 0;
+            this.value = 0;
+            return;
+         }
 
-   /** @summary Check if it is dummy variable */
-   TDrawVariable.prototype.is_dummy = function() {
-      return (this.branches.length === 0) && !this.func;
-   }
+         this.length = usearrlen;
+         this.isarray = true;
 
-   /** @summary Produce variable
-     * @desc after reading tree braches into the object, calculate variable value */
-   TDrawVariable.prototype.produce = function(obj) {
-
-      this.length = 1;
-      this.isarray = false;
-
-      if (this.is_dummy()) {
-         this.value = 1.; // used as dummy weight variable
-         this.kind = "number";
-         return;
-      }
-
-      let arg = { $globals: this.globals, $math: jsrmath }, usearrlen = -1, arrs = [];
-      for (let n = 0; n < this.branches.length; ++n) {
-         let name = "var" + n;
-         arg[name] = obj[this.branches[n]];
-
-         // try to check if branch is array and need to be iterated
-         if (this.brarray[n] === undefined)
-            this.brarray[n] = (checkArrayPrototype(arg[name]) > 0) || JSROOT.isRootCollection(arg[name]);
-
-         // no array - no pain
-         if (this.brarray[n] === false) continue;
-
-         // check if array can be used as is - one dimension and normal values
-         if ((this.brarray[n] === true) && (checkArrayPrototype(arg[name], true) === 2)) {
-            // plain array, can be used as is
-            arrs[n] = arg[name];
+         if (this.direct_branch) {
+            this.value = arrs[0]; // just use array
          } else {
-            let iter = new ArrayIterator(arg[name], this.brarray[n], obj);
-            arrs[n] = [];
-            while (iter.next()) arrs[n].push(iter.value);
-         }
-         if ((usearrlen < 0) || (usearrlen < arrs[n].length)) usearrlen = arrs[n].length;
-      }
+            this.value = new Array(usearrlen);
 
-      if (usearrlen < 0) {
-         this.value = this.direct_branch ? arg.var0 : this.func(arg);
-         if (!this.kind) this.kind = typeof this.value;
-         return;
-      }
-
-      if (usearrlen == 0) {
-         // empty array - no any histogram should be filled
-         this.length = 0;
-         this.value = 0;
-         return;
-      }
-
-      this.length = usearrlen;
-      this.isarray = true;
-
-      if (this.direct_branch) {
-         this.value = arrs[0]; // just use array
-      } else {
-         this.value = new Array(usearrlen);
-
-         for (let k = 0; k < usearrlen; ++k) {
-            for (let n = 0; n < this.branches.length; ++n) {
-               if (arrs[n]) arg["var" + n] = arrs[n][k];
+            for (let k = 0; k < usearrlen; ++k) {
+               for (let n = 0; n < this.branches.length; ++n) {
+                  if (arrs[n]) arg["var" + n] = arrs[n][k];
+               }
+               this.value[k] = this.func(arg);
             }
-            this.value[k] = this.func(arg);
          }
+
+         if (!this.kind) this.kind = typeof this.value[0];
       }
 
-      if (!this.kind) this.kind = typeof this.value[0];
-   }
+      /** @summary Get variable */
+      get(indx) { return this.isarray ? this.value[indx] : this.value; }
 
-   /** @summary Get variable */
-   TDrawVariable.prototype.get = function(indx) {
-      return this.isarray ? this.value[indx] : this.value;
-   }
+      /** @summary Append array to the buffer */
+      appendArray(tgtarr) { this.buf = this.buf.concat(tgtarr[this.branches[0]]); }
 
-   /** @summary Append array to the buffer */
-   TDrawVariable.prototype.appendArray = function(tgtarr) {
-      this.buf = this.buf.concat(tgtarr[this.branches[0]]);
-   }
+   } // class TDrawVariable
 
    // =============================================================================
 
