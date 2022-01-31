@@ -364,20 +364,17 @@ JSROOT.define(['rawinflate'], () => {
    /** @summary Check bytecount after object streaming */
    TBuffer.prototype.checkByteCount = function(ver, where) {
       if ((ver.bytecnt !== undefined) && (ver.off + ver.bytecnt !== this.o)) {
-         if (where) {
-            // alert("Missmatch in " + where + " bytecount expected = " + ver.bytecnt + "  got = " + (this.o-ver.off));
-            console.log("Missmatch in " + where + " bytecount expected = " + ver.bytecnt + "  got = " + (this.o - ver.off));
-         }
+         if (where)
+            console.log(`Missmatch in ${where} bytecount expected = ${ver.bytecnt}  got = ${this.o - ver.off}`);
          this.o = ver.off + ver.bytecnt;
          return false;
       }
       return true;
    }
 
-   /** @summary Read TString object (or equivalent) */
+   /** @summary Read TString object (or equivalent)
+     * @desc std::string uses similar binary format */
    TBuffer.prototype.readTString = function() {
-      // stream a TString object from buffer
-      // std::string uses similar binary format
       let len = this.ntou1();
       // large strings
       if (len == 255) len = this.ntou4();
@@ -392,7 +389,6 @@ JSROOT.define(['rawinflate'], () => {
     /** @summary read Char_t array as string
       * @desc string either contains all symbols or until 0 symbol */
    TBuffer.prototype.readFastString = function(n) {
-
       let res = "", code, closed = false;
       for (let i = 0; (n < 0) || (i < n); ++i) {
          code = this.ntou1();
@@ -1551,7 +1547,7 @@ JSROOT.define(['rawinflate'], () => {
       if (!s_i) {
          delete this.fStreamers[fullname];
          if (!ver.nowarning)
-            console.warn("Not found streamer for", clname, "ver", ver.val, "checksum", ver.checksum, fullname);
+            console.warn(`Not found streamer for ${clname} ver ${ver.val} checksum ${ver.checksum} full ${fullname}`);
          return null;
       }
 
@@ -3057,12 +3053,10 @@ JSROOT.define(['rawinflate'], () => {
          return elem;
       }
 
-      let isptr = false;
+      const isptr = (typename.lastIndexOf("*") === typename.length - 1);
 
-      if (typename.lastIndexOf("*") === typename.length - 1) {
-         isptr = true;
+      if (isptr)
          elem.fTypeName = typename = typename.substr(0, typename.length - 1);
-      }
 
       const arrkind = jsrio.GetArrayKind(typename);
 
