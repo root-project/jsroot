@@ -2733,7 +2733,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          jsrp.selectActivePad({ pp: this, active: false });
 
-         RObjectPainter.prototype.cleanup.call(this);
+         super.cleanup();
       }
 
       /** @summary Returns frame painter inside the pad

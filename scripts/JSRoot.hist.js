@@ -2023,7 +2023,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          delete this.fContour;
          delete this.options;
 
-         JSROOT.ObjectPainter.prototype.cleanup.call(this);
+         super.cleanup();
       }
 
       /** @summary Returns number of histogram dimensions */
