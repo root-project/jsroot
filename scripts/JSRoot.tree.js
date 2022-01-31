@@ -22,78 +22,72 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
    /**
     * @summary Class to read data from TTree
     *
-    * @class
     * @memberof JSROOT
     * @desc Instance of TSelector can be used to access TTree data
     */
 
-   function TSelector() {
-      this.branches = []; // list of branches to read
-      this.names = []; // list of member names for each branch in tgtobj
-      this.directs = []; // indication if only branch without any children should be read
-      this.break_execution = 0;
-      this.tgtobj = {};
-   }
+   class TSelector {
 
-   /** @summary Add branch to the selector
-    * @desc Either branch name or branch itself should be specified
-    * Second parameter defines member name in the tgtobj
-    * If selector.addBranch("px", "read_px") is called,
-    * branch will be read into selector.tgtobj.read_px member
-    * If second parameter not specified, branch name (here "px") will be used
-    * If branch object specified as first parameter and second parameter missing,
-    * then member like "br0", "br1" and so on will be assigned
-    * @param {string|Object} branch - name of branch (or branch object itself}
-    * @param {string} [name] - member name in tgtobj where data will be read */
-   TSelector.prototype.addBranch = function(branch, name, direct) {
-      if (!name)
-         name = (typeof branch === 'string') ? branch : ("br" + this.branches.length);
-      this.branches.push(branch);
-      this.names.push(name);
-      this.directs.push(direct);
-      return this.branches.length - 1;
-   }
+      /** @summary constructor */
+      constructor() {
+         this.branches = []; // list of branches to read
+         this.names = []; // list of member names for each branch in tgtobj
+         this.directs = []; // indication if only branch without any children should be read
+         this.break_execution = 0;
+         this.tgtobj = {};
+      }
 
-   /** @summary returns index of branch
-     * @private */
-   TSelector.prototype.indexOfBranch = function(branch) {
-      return this.branches.indexOf(branch);
-   }
+      /** @summary Add branch to the selector
+       * @desc Either branch name or branch itself should be specified
+       * Second parameter defines member name in the tgtobj
+       * If selector.addBranch("px", "read_px") is called,
+       * branch will be read into selector.tgtobj.read_px member
+       * If second parameter not specified, branch name (here "px") will be used
+       * If branch object specified as first parameter and second parameter missing,
+       * then member like "br0", "br1" and so on will be assigned
+       * @param {string|Object} branch - name of branch (or branch object itself}
+       * @param {string} [name] - member name in tgtobj where data will be read */
+      addBranch(branch, name, direct) {
+         if (!name)
+            name = (typeof branch === 'string') ? branch : ("br" + this.branches.length);
+         this.branches.push(branch);
+         this.names.push(name);
+         this.directs.push(direct);
+         return this.branches.length - 1;
+      }
 
-   /** @summary returns name of branch
-     * @private */
-   TSelector.prototype.nameOfBranch = function(indx) {
-      return this.names[indx];
-   }
+      /** @summary returns index of branch
+        * @private */
+      indexOfBranch(branch) { return this.branches.indexOf(branch); }
 
-   /** @summary function called during TTree processing
-    * @abstract
-    * @param {number} progress - current value between 0 and 1 */
-   TSelector.prototype.ShowProgress = function(/* progress */) {
-   }
+      /** @summary returns name of branch
+        * @private */
+      nameOfBranch(indx) { return this.names[indx]; }
 
-   /** @summary call this function to abort processing */
-   TSelector.prototype.Abort = function() {
-      this.break_execution = -1111;
-   }
+      /** @summary function called during TTree processing
+       * @abstract
+       * @param {number} progress - current value between 0 and 1 */
+      ShowProgress(/* progress */) {}
 
-   /** @summary function called before start processing
-    * @abstract
-    * @param {object} tree - tree object */
-   TSelector.prototype.Begin = function(/* tree */) {
-   }
+      /** @summary call this function to abort processing */
+      Abort() { this.break_execution = -1111; }
 
-   /** @summary function called when next entry extracted from the tree
-    * @abstract
-    * @param {number} entry - read entry number */
-   TSelector.prototype.Process = function(/* entry */) {
-   }
+      /** @summary function called before start processing
+       * @abstract
+       * @param {object} tree - tree object */
+      Begin(/* tree */) {}
 
-   /** @summary function called at the very end of processing
-    * @abstract
-    * @param {boolean} res - true if all data were correctly processed */
-   TSelector.prototype.Terminate = function(/* res */) {
-   }
+      /** @summary function called when next entry extracted from the tree
+       * @abstract
+       * @param {number} entry - read entry number */
+      Process(/* entry */) {}
+
+      /** @summary function called at the very end of processing
+       * @abstract
+       * @param {boolean} res - true if all data were correctly processed */
+      Terminate(/* res */) {}
+
+   } // class TSelector
 
    // =================================================================
 
