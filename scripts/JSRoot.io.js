@@ -263,8 +263,24 @@ JSROOT.define([], () => {
           zip_inflate_datalen = arr.byteLength,
           zip_inflate_pos = 0;
 
-      /* objects (inflate) */
+      function zip_NEEDBITS(n) {
+         while (zip_bit_len < n) {
+            if (zip_inflate_pos < zip_inflate_datalen)
+               zip_bit_buf |= zip_inflate_data[zip_inflate_pos++] << zip_bit_len;
+            zip_bit_len += 8;
+         }
+      }
 
+      function zip_GETBITS(n) {
+         return zip_bit_buf & zip_MASK_BITS[n];
+      }
+
+      function zip_DUMPBITS(n) {
+         zip_bit_buf >>= n;
+         zip_bit_len -= n;
+      }
+
+      /* objects (inflate) */
       function zip_HuftBuild(b,     // code lengths in bits (all assumed <= BMAX)
                              n,     // number of codes (assumed <= N_MAX)
                              s,     // number of simple-valued codes (0..s-1)
@@ -287,38 +303,32 @@ JSROOT.define([], () => {
 
          const BMAX = 16,      // maximum bit length of any code
                N_MAX = 288;    // maximum number of codes in any set
-         let c = new Array(BMAX+1),  // bit length count table
-             lx = new Array(BMAX+1), // stack of bits per table
-             u = new Array(BMAX), // zip_HuftNode[BMAX][]  table stack
-             v = new Array(N_MAX), // values in order of bit length
-             x = new Array(BMAX+1),// bit offsets, then code stack
+         let c = Array(BMAX+1).fill(0),  // bit length count table
+             lx = Array(BMAX+1).fill(0), // stack of bits per table
+             u = Array(BMAX).fill(null), // zip_HuftNode[BMAX][]  table stack
+             v = Array(N_MAX).fill(0), // values in order of bit length
+             x = Array(BMAX+1).fill(0),// bit offsets, then code stack
              r = { e: 0, b: 0, n: 0, t: null }, // new zip_HuftNode(), // table entry for structure assignment
              rr = null, // temporary variable, use in assignment
+             el = (n > 256) ? b[256] : BMAX, // set length of EOB code, if any
              a,         // counter for codes of length k
-             el,        // length of EOB code (value 256)
              f,         // i repeats in table every f entries
              g,         // maximum code length
              h,         // table level
-             i,         // counter, current code
              j,         // counter
              k,         // number of bits in current code
-             p,         // pointer into c[], b[], or v[]
-             pidx,      // index of p
+             p = b,     // pointer into c[], b[], or v[]
+             pidx = 0,  // index of p
              q,         // (zip_HuftNode) points to current table
              w,
              xp,        // pointer into x or c
              y,         // number of dummy codes added
              z,         // number of entries in current table
              o,
-             tail = this.root = null;      // (zip_HuftList)
-
-         for (i=0; i<=BMAX; ++i) c[i] = lx[i] = x[i] = 0;
-         for (i=0; i<BMAX; ++i) u[i] = null;
-         for (i=0; i<N_MAX; ++i) v[i] = 0;
+             tail = this.root = null, // (zip_HuftList)
+             i = n;         // counter, current code
 
          // Generate counts for each bit length
-         el = (n > 256) ? b[256] : BMAX; // set length of EOB code, if any
-         p = b; pidx = 0; i = n;
          do {
             c[p[pidx++]]++; // assume all entries <= BMAX
          } while (--i > 0);
@@ -483,23 +493,6 @@ JSROOT.define([], () => {
       }
 
       /* routines (inflate) */
-
-      function zip_NEEDBITS(n) {
-         while (zip_bit_len < n) {
-            if (zip_inflate_pos < zip_inflate_datalen)
-               zip_bit_buf |= zip_inflate_data[zip_inflate_pos++] << zip_bit_len;
-            zip_bit_len += 8;
-         }
-      }
-
-      function zip_GETBITS(n) {
-         return zip_bit_buf & zip_MASK_BITS[n];
-      }
-
-      function zip_DUMPBITS(n) {
-         zip_bit_buf >>= n;
-         zip_bit_len -= n;
-      }
 
       function zip_inflate_codes(buff, off, size) {
          if (size == 0) return 0;
