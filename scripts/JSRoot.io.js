@@ -2654,19 +2654,13 @@ JSROOT.define([], () => {
          case kOffsetP + kFloat:
             member.cntname = element.fCountName;
             member.func = function(buf, obj) {
-               if (buf.ntou1() === 1)
-                  obj[this.name] = buf.readFastArray(obj[this.cntname], this.type - kOffsetP);
-               else
-                  obj[this.name] = [];
+               obj[this.name] = (buf.ntou1() === 1) ? buf.readFastArray(obj[this.cntname], this.type - kOffsetP) : [];
             };
             break;
          case kOffsetP + kChar:
             member.cntname = element.fCountName;
             member.func = function(buf, obj) {
-               if (buf.ntou1() === 1)
-                  obj[this.name] = buf.readFastString(obj[this.cntname]);
-               else
-                  obj[this.name] = null;
+               obj[this.name] = (buf.ntou1() === 1) ? buf.readFastString(obj[this.cntname]) : null;
             };
             break;
          case kDouble32:
@@ -2706,11 +2700,7 @@ JSROOT.define([], () => {
                if (member.type > kOffsetP) {
                   member.cntname = element.fCountName;
                   member.func = function(buf, obj) {
-                     if (buf.ntou1() === 1) {
-                        obj[this.name] = this.readarr(buf, obj[this.cntname]);
-                     } else {
-                        obj[this.name] = null;
-                     }
+                     obj[this.name] = (buf.ntou1() === 1) ? this.readarr(buf, obj[this.cntname]) : null;
                   };
                } else
                   if (element.fArrayDim < 2) {
@@ -2887,7 +2877,7 @@ JSROOT.define([], () => {
                member.func = function(buf, obj) {
                   const ver = buf.readVersion();
                   buf.checkByteCount(ver);
-                  obj[this.name] = ull;
+                  obj[this.name] = null;
                };
             }
 
