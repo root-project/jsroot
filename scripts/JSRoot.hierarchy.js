@@ -3755,44 +3755,39 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             return Promise.resolve(true);
          }
 
-         let guiCode = `<p class='jsroot_browser_version'><a href='https://root.cern/js/'>JSROOT</a> version <span style='color:green'><b>${JSROOT.version}</b></span></p>`;
+         let guiCode = `<p class="jsroot_browser_version"><a href="https://root.cern/js/">JSROOT</a> version <span style="color:green"><b>${JSROOT.version}</b></span></p>`;
 
          if (this.is_online) {
-            guiCode +='<p> Hierarchy in <a href="h.json">json</a> and <a href="h.xml">xml</a> format</p>'
-                    + '<div style="display:inline; vertical-align:middle; white-space: nowrap;">'
-                    + '<label style="margin-right:5px">'
-                    + '<input type="checkbox" name="monitoring" class="gui_monitoring"/>'
-                    + 'Monitoring</label>';
+            guiCode += '<p> Hierarchy in <a href="h.json">json</a> and <a href="h.xml">xml</a> format</p>' +
+                       '<div style="display:inline; vertical-align:middle; white-space: nowrap;">' +
+                       '<label style="margin-right:5px"><input type="checkbox" name="monitoring" class="gui_monitoring"/>Monitoring</label>';
          } else if (!this.no_select) {
             let myDiv = d3.select("#"+this.gui_div),
                 files = myDiv.attr("files") || "../files/hsimple.root",
                 path = JSROOT.decodeUrl().get("path") || myDiv.attr("path") || "",
                 arrFiles = files.split(';');
 
-            guiCode +=
-               '<input type="text" value="" style="width:95%; margin:5px;border:2px;" class="gui_urlToLoad" title="input file name"/>'
-               +'<div style="display:flex;flex-direction:row;padding-top:5px">'
-               +'<select class="gui_selectFileName" style="flex:1;padding:2px;" title="select file name"'
-               +'<option value="" selected="selected"></option>';
+            guiCode += '<input type="text" value="" style="width:95%; margin:5px;border:2px;" class="gui_urlToLoad" title="input file name"/>' +
+                       '<div style="display:flex;flex-direction:row;padding-top:5px">' +
+                       '<select class="gui_selectFileName" style="flex:1;padding:2px;" title="select file name"' +
+                       '<option value="" selected="selected"></option>';
             arrFiles.forEach(fname => { guiCode += `<option value="${path + fname}">${fname}</option>`; });
-            guiCode += '</select>'
-               +'<input type="file" class="gui_localFile" accept=".root" style="display:none"/><output id="list" style="display:none"></output>'
-               +'<input type="button" value="..." class="gui_fileBtn" style="min-width:3em;padding:3px;margin-left:5px;margin-right:5px;" title="select local file for reading"/><br/>'
-               +'</div>'
-               +'<p id="gui_fileCORS"><small><a href="https://github.com/root-project/jsroot/blob/master/docs/JSROOT.md#reading-root-files-from-other-servers">Read docu</a>'
-               +' how to open files from other servers.</small></p>'
-               +'<div style="display:flex;flex-direction:row">'
-               +'<input style="padding:3px;margin-right:5px;"'
-               +'       class="gui_ReadFileBtn" type="button" title="Read the Selected File" value="Load"/>'
-               +'<input style="padding:3px;margin-right:5px;"'
-               +'       class="gui_ResetUIBtn" type="button" title="Close all opened files and clear drawings" value="Reset"/>';
+            guiCode += '</select>' +
+                       '<input type="file" class="gui_localFile" accept=".root" style="display:none"/><output id="list" style="display:none"></output>' +
+                       '<input type="button" value="..." class="gui_fileBtn" style="min-width:3em;padding:3px;margin-left:5px;margin-right:5px;" title="select local file for reading"/><br/>' +
+                       '</div>' +
+                       '<p id="gui_fileCORS"><small><a href="https://github.com/root-project/jsroot/blob/master/docs/JSROOT.md#reading-root-files-from-other-servers">Read docu</a>' +
+                       ' how to open files from other servers.</small></p>' +
+                       '<div style="display:flex;flex-direction:row">' +
+                       '<input style="padding:3px;margin-right:5px" class="gui_ReadFileBtn" type="button" title="Read the Selected File" value="Load"/>' +
+                       '<input style="padding:3px;margin-right:5px" class="gui_ResetUIBtn" type="button" title="Close all opened files and clear drawings" value="Reset"/>';
          } else if (this.no_select == "file") {
             guiCode += '<div style="display:flex;flex-direction:row">';
          }
 
          if (this.is_online || !this.no_select || this.no_select=="file")
-            guiCode += '<select style="padding:2px;margin-right:5px;" title="layout kind" class="gui_layout"></select>'
-                     + '</div>';
+            guiCode += '<select style="padding:2px;margin-right:5px;" title="layout kind" class="gui_layout"></select>' +
+                       '</div>';
 
          guiCode += `<div id="${this.gui_div}_browser_hierarchy" class="jsroot_browser_hierarchy"></div>`;
 
@@ -3856,8 +3851,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          let layout = main.select(".gui_layout");
          if (!layout.empty()) {
-            let lst = ['simple', 'vert2', 'vert3', 'vert231', 'horiz2', 'horiz32', 'flex',
-                        'grid 2x2', 'grid 1x3', 'grid 2x3', 'grid 3x3', 'grid 4x4'];
+            const lst = ['simple', 'vert2', 'vert3', 'vert231', 'horiz2', 'horiz32', 'flex',
+                          'grid 2x2', 'grid 1x3', 'grid 2x3', 'grid 3x3', 'grid 4x4'];
 
             for (let k = 0; k < lst.length; ++k){
                let opt = document.createElement('option');
@@ -5148,16 +5143,16 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          let show_extra = args && (args.parse_cut || args.numentries || args.firstentry);
 
-         main.html(`<div style="display:flex; flex-flow:column; height:100%; width:100%;">
-                      <div class="treedraw_buttons" style="flex: 0 1 auto;margin-top:0.2em;">
-                         <button class="treedraw_exe" title="Execute draw expression" style="margin-left:0.5em">Draw</button>
-                         Expr:<input class="treedraw_varexp treedraw_varexp_info" style="width:12em;margin-left:5px" title="draw expression"></input>
-                         <label class="treedraw_varexp_info">\u24D8</label>
-                        <button class="treedraw_more">More</button>
-                      </div>
-                      <div style="flex: 0 1 auto"> <hr/> </div>
-                      <div id="${this.drawid}" style="flex: 1 1 auto; overflow:hidden;"></div>
-                   </div>`);
+         main.html('<div style="display:flex; flex-flow:column; height:100%; width:100%;">'+
+                      '<div class="treedraw_buttons" style="flex: 0 1 auto;margin-top:0.2em;">' +
+                         '<button class="treedraw_exe" title="Execute draw expression" style="margin-left:0.5em">Draw</button>' +
+                         'Expr:<input class="treedraw_varexp treedraw_varexp_info" style="width:12em;margin-left:5px" title="draw expression"></input>'+
+                         '<label class="treedraw_varexp_info">\u24D8</label>' +
+                        '<button class="treedraw_more">More</button>' +
+                      '</div>' +
+                      '<div style="flex: 0 1 auto"><hr/></div>' +
+                      `<div id="${this.drawid}" style="flex: 1 1 auto; overflow:hidden;"></div>` +
+                   '</div>');
 
          // only when main html element created, one can set painter
          // ObjectPainter allow such usage of methods from BasePainter
@@ -5172,20 +5167,19 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
              .on("change", () => this.performDraw());
          main.select('.treedraw_varexp_info')
              .attr('title', "Example of valid draw expressions:\n" +
-                            "   px  - 1-dim draw\n" +
-                            "  px:py  - 2-dim draw\n" +
-                            "  px:py:pz  - 3-dim draw\n" +
+                            "  px - 1-dim draw\n" +
+                            "  px:py - 2-dim draw\n" +
+                            "  px:py:pz - 3-dim draw\n" +
                             "  px+py:px-py - use any expressions\n" +
                             "  px:py>>Graph - create and draw TGraph\n" +
                             "  px:py>>dump - dump extracted variables\n" +
                             "  px:py>>h(50,-5,5,50,-5,5) - custom histogram\n" +
                             "  px:py;hbins:100 - custom number of bins");
 
-         if (show_extra) {
+         if (show_extra)
             this.showExtraButtons(args);
-         } else {
+         else
             main.select('.treedraw_more').on("click", () => this.showExtraButtons(args));
-         }
 
          this.checkResize();
 
