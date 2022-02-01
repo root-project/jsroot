@@ -135,31 +135,33 @@ JSROOT.define(['rawinflate'], () => {
          return -1;
       },
 
-      /** @summary Analyze and returns arrays kind
-        * @return 0 if TString (or equivalent), positive value - some basic type, -1 - any other kind */
-      GetArrayKind(type_name) {
-         if ((type_name === "TString") || (type_name === "string") ||
-            (jsrio.CustomStreamers[type_name] === 'TString')) return 0;
-         if ((type_name.length < 7) || (type_name.indexOf("TArray") !== 0)) return -1;
-         if (type_name.length == 7)
-            switch (type_name[6]) {
-               case 'I': return jsrio.kInt;
-               case 'D': return jsrio.kDouble;
-               case 'F': return jsrio.kFloat;
-               case 'S': return jsrio.kShort;
-               case 'C': return jsrio.kChar;
-               case 'L': return jsrio.kLong;
-               default: return -1;
-            }
-
-         return type_name == "TArrayL64" ? jsrio.kLong64 : -1;
-      },
-
       /** @summary Add custom streamer
         * @public */
       addUserStreamer(type, user_streamer) {
          jsrio.CustomStreamers[type] = user_streamer;
       }
+
+   } // namespace jsrio
+
+   /** @summary Analyze and returns arrays kind
+     * @return 0 if TString (or equivalent), positive value - some basic type, -1 - any other kind
+     * @private */
+   function getArrayKind(type_name) {
+      if ((type_name === "TString") || (type_name === "string") ||
+         (jsrio.CustomStreamers[type_name] === 'TString')) return 0;
+      if ((type_name.length < 7) || (type_name.indexOf("TArray") !== 0)) return -1;
+      if (type_name.length == 7)
+         switch (type_name[6]) {
+            case 'I': return jsrio.kInt;
+            case 'D': return jsrio.kDouble;
+            case 'F': return jsrio.kFloat;
+            case 'S': return jsrio.kShort;
+            case 'C': return jsrio.kChar;
+            case 'L': return jsrio.kLong;
+            default: return -1;
+         }
+
+      return type_name == "TArrayL64" ? jsrio.kLong64 : -1;
    }
 
    /** @summary Let directly assign methods when doing I/O
@@ -693,7 +695,7 @@ JSROOT.define(['rawinflate'], () => {
 
          if (clRef.name === -1) return null;
 
-         const arrkind = jsrio.GetArrayKind(clRef.name);
+         const arrkind = getArrayKind(clRef.name);
          let obj;
 
          if (arrkind === 0) {
@@ -1834,7 +1836,7 @@ JSROOT.define(['rawinflate'], () => {
       };
 
       if (element.fTypeName === 'BASE') {
-         if (jsrio.GetArrayKind(member.name) > 0) {
+         if (getArrayKind(member.name) > 0) {
             // this is workaround for arrays as base class
             // we create 'fArray' member, which read as any other data member
             member.name = 'fArray';
@@ -2021,7 +2023,7 @@ JSROOT.define(['rawinflate'], () => {
             if (classname[classname.length - 1] == "*")
                classname = classname.substr(0, classname.length - 1);
 
-            const arrkind = jsrio.GetArrayKind(classname);
+            const arrkind = getArrayKind(classname);
 
             if (arrkind > 0) {
                member.arrkind = arrkind;
@@ -2051,7 +2053,7 @@ JSROOT.define(['rawinflate'], () => {
             if (classname[classname.length - 1] == "*")
                classname = classname.substr(0, classname.length - 1);
 
-            member.arrkind = jsrio.GetArrayKind(classname);
+            member.arrkind = getArrayKind(classname);
             if (member.arrkind < 0) member.classname = classname;
             member.func = function(buf, obj) {
                obj[this.name] = buf.readNdimArray(this, (buf, handle) => {
@@ -2108,7 +2110,7 @@ JSROOT.define(['rawinflate'], () => {
             if (member.isptrptr) {
                member.readitem = function(buf) { return buf.readObjectAny(); }
             } else {
-               member.arrkind = jsrio.GetArrayKind(member.typename);
+               member.arrkind = getArrayKind(member.typename);
                if (member.arrkind > 0)
                   member.readitem = function(buf) { return buf.readFastArray(buf.ntou4(), this.arrkind); }
                else if (member.arrkind === 0)
@@ -2217,7 +2219,7 @@ JSROOT.define(['rawinflate'], () => {
 
                      if (element.fCtype === jsrio.kObjectp) member.isptr = true;
 
-                     member.arrkind = jsrio.GetArrayKind(member.conttype);
+                     member.arrkind = getArrayKind(member.conttype);
 
                      member.readelem = readVectorElement;
 
@@ -3055,7 +3057,7 @@ JSROOT.define(['rawinflate'], () => {
       if (isptr)
          elem.fTypeName = typename = typename.substr(0, typename.length - 1);
 
-      if (jsrio.GetArrayKind(typename) == 0) {
+      if (getArrayKind(typename) == 0) {
          elem.fType = jsrio.kTString;
          return elem;
       }
