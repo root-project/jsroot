@@ -2857,8 +2857,8 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
          // this is drawing of the branch
 
          // if generic object tried to be drawn without specifying any options, it will be just dump
-         if (!opt && obj.fStreamerType && (obj.fStreamerType !== JSROOT.IO.kTString) &&
-             (obj.fStreamerType >= JSROOT.IO.kObject) && (obj.fStreamerType <= JSROOT.IO.kAnyP)) opt = "dump";
+         if (!opt && obj.fStreamerType && (obj.fStreamerType !== jsrio.kTString) &&
+             (obj.fStreamerType >= jsrio.kObject) && (obj.fStreamerType <= jsrio.kAnyP)) opt = "dump";
 
          args = { expr: opt, branch: obj };
          tree = obj.$tree;

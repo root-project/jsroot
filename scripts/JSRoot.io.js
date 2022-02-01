@@ -10,7 +10,11 @@ JSROOT.define(['rawinflate'], () => {
          kCharStar = 7, kDouble = 8, kDouble32 = 9, kLegacyChar = 10,
          kUChar = 11, kUShort = 12, kUInt = 13, kULong = 14, kBits = 15,
          kLong64 = 16, kULong64 = 17, kBool = 18, kFloat16 = 19,
+
          kBase = 0, kOffsetL = 20, kOffsetP = 40,
+         kObject = 61, kAny = 62, kObjectp = 63, kObjectP = 64, kTString = 65,
+         kTObject = 66, kTNamed = 67, kAnyp = 68, kAnyP = 69,
+
          kStreamer = 500, kStreamLoop = 501,
 
          kMapOffset = 2, kByteCountMask = 0x40000000, kNewClassTag = 0xFFFFFFFF, kClassMask = 0x80000000,
@@ -43,9 +47,8 @@ JSROOT.define(['rawinflate'], () => {
    let jsrio = {
       // here constants which are used by tree
 
-      kObject: 61, kAny: 62, kObjectp: 63, kObjectP: 64, kTString: 65,
-      kTObject: 66, kTNamed: 67, kAnyp: 68, kAnyP: 69, kAnyPnoVT: 70, kSTLp: 71,
-      kSkip: 100, kSkipL: 120, kSkipP: 140, kConv: 200, kConvL: 220, kConvP: 240,
+      /* kAnyPnoVT: 70, */ kSTLp: 71,
+      /* kSkip: 100, kSkipL: 120, kSkipP: 140, kConv: 200, kConvL: 220, kConvP: 240, */
 
       kSTL: 300, /* kSTLstring: 365, */
 
@@ -520,7 +523,7 @@ JSROOT.define(['rawinflate'], () => {
                for (; i < n; ++i)
                   array[i] = view.getUint8(o++);
                break;
-            case jsrio.kTString:
+            case kTString:
                array = new Array(n);
                for (; i < n; ++i)
                   array[i] = this.readTString();
@@ -1848,7 +1851,7 @@ JSROOT.define(['rawinflate'], () => {
             // this is workaround for arrays as base class
             // we create 'fArray' member, which read as any other data member
             member.name = 'fArray';
-            member.type = jsrio.kAny;
+            member.type = kAny;
          } else {
             // create streamer for base class
             member.type = kBase;
@@ -2016,17 +2019,17 @@ JSROOT.define(['rawinflate'], () => {
                   }
             break;
 
-         case jsrio.kAnyP:
-         case jsrio.kObjectP:
+         case kAnyP:
+         case kObjectP:
             member.func = function(buf, obj) {
                obj[this.name] = buf.readNdimArray(this, buf => buf.readObjectAny());
             };
             break;
 
-         case jsrio.kAny:
-         case jsrio.kAnyp:
-         case jsrio.kObjectp:
-         case jsrio.kObject: {
+         case kAny:
+         case kAnyp:
+         case kObjectp:
+         case kObject: {
             let classname = (element.fTypeName === 'BASE') ? element.fName : element.fTypeName;
             if (classname[classname.length - 1] == "*")
                classname = classname.substr(0, classname.length - 1);
@@ -2053,10 +2056,10 @@ JSROOT.define(['rawinflate'], () => {
             }
             break;
          }
-         case kOffsetL + jsrio.kObject:
-         case kOffsetL + jsrio.kAny:
-         case kOffsetL + jsrio.kAnyp:
-         case kOffsetL + jsrio.kObjectp: {
+         case kOffsetL + kObject:
+         case kOffsetL + kAny:
+         case kOffsetL + kAnyp:
+         case kOffsetL + kObjectp: {
             let classname = element.fTypeName;
             if (classname[classname.length - 1] == "*")
                classname = classname.substr(0, classname.length - 1);
@@ -2081,17 +2084,17 @@ JSROOT.define(['rawinflate'], () => {
                buf.o += len;
             };
             break;
-         case jsrio.kTString:
+         case kTString:
             member.func = function(buf, obj) { obj[this.name] = buf.readTString(); };
             break;
-         case jsrio.kTObject:
-         case jsrio.kTNamed:
+         case kTObject:
+         case kTNamed:
             member.typename = element.fTypeName;
             member.func = function(buf, obj) { obj[this.name] = buf.classStreamer({}, this.typename); };
             break;
-         case kOffsetL + jsrio.kTString:
-         case kOffsetL + jsrio.kTObject:
-         case kOffsetL + jsrio.kTNamed:
+         case kOffsetL + kTString:
+         case kOffsetL + kTObject:
+         case kOffsetL + kTNamed:
             member.typename = element.fTypeName;
             member.func = function(buf, obj) {
                const ver = buf.readVersion();
@@ -2223,7 +2226,7 @@ JSROOT.define(['rawinflate'], () => {
                      member.conttype = member.conttype.substr(0, member.conttype.length - 1);
                   }
 
-                  if (element.fCtype === jsrio.kObjectp) member.isptr = true;
+                  if (element.fCtype === kObjectp) member.isptr = true;
 
                   member.arrkind = getArrayKind(member.conttype);
 
@@ -3055,11 +3058,11 @@ JSROOT.define(['rawinflate'], () => {
          elem.fTypeName = typename = typename.substr(0, typename.length - 1);
 
       if (getArrayKind(typename) == 0) {
-         elem.fType = jsrio.kTString;
+         elem.fType = kTString;
          return elem;
       }
 
-      elem.fType = isptr ? jsrio.kAnyP : jsrio.kAny;
+      elem.fType = isptr ? kAnyP : kAny;
 
       return elem;
    }
@@ -3125,6 +3128,16 @@ JSROOT.define(['rawinflate'], () => {
    jsrio.kBase = kBase;
    jsrio.kOffsetL = kOffsetL;
    jsrio.kOffsetP = kOffsetP;
+
+   jsrio.kObject = kObject;
+   jsrio.kAny = kAny;
+   jsrio.kObjectp = kObjectp;
+   jsrio.kObjectP = kObjectP;
+   jsrio.kTString = kTString;
+   //jsrio.kTObject = kTObject;
+   //jsrio.kTNamed = kTNamed;
+   //jsrio.kAnyp = kAnyp;
+   jsrio.kAnyP = kAnyP;
 
    jsrio.kStreamer = kStreamer;
    jsrio.kStreamLoop = kStreamLoop;
