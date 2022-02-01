@@ -1737,7 +1737,7 @@ JSROOT.define(['d3'], (d3) => {
             this._hitemname = name;
          else
             delete this._hitemname;
-         // only upate draw option, never delete. null specified when update drawing
+         // only upate draw option, never delete.
          if (typeof opt === 'string') this._hdrawopt = opt;
 
          this._hpainter = hpainter;
@@ -1751,7 +1751,7 @@ JSROOT.define(['d3'], (d3) => {
         * @desc Used with {@link JSROOT.HierarchyPainter} to identify drawn item option */
       getItemDrawOpt() { return this._hdrawopt || ""; }
 
-   } // BasePainter
+   } // class BasePainter
 
    // ==============================================================================
 
@@ -4208,16 +4208,14 @@ JSROOT.define(['d3'], (d3) => {
      * @param {string|object} dom - id or DOM element
      * @private */
    jsrp.getElementCanvPainter = function(dom) {
-      let dummy = new ObjectPainter(dom);
-      return dummy.getCanvPainter();
+      return new ObjectPainter(dom).getCanvPainter();
    }
 
    /** @summary Returns main painter (if any) for specified HTML element - typically histogram painter
      * @param {string|object} dom - id or DOM element
      * @private */
    jsrp.getElementMainPainter = function(dom) {
-      let dummy = new ObjectPainter(dom);
-      return dummy.getMainPainter(true);
+      return new ObjectPainter(dom).getMainPainter(true);
    }
 
    /** @summary Safely remove all JSROOT drawings from specified element
