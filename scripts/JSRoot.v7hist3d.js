@@ -1491,7 +1491,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'latex', 'v7hist'], (d3, THREE, jsrp, 
          }
       )
 
-      let lines = jsrp.createLineSegments(pnts, jsrp.create3DLineMaterialv7(this, "line_"));
+      let lines = jsrp.createLineSegments(pnts, jsrp.create3DLineMaterial(this, "line_"));
       main.toplevel.add(lines);
    }
 
