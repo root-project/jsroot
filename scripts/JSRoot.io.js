@@ -15,14 +15,25 @@ JSROOT.define(['rawinflate'], () => {
 
          kMapOffset = 2, kByteCountMask = 0x40000000, kNewClassTag = 0xFFFFFFFF, kClassMask = 0x80000000,
 
+         // constants of bits in version
+         kStreamedMemberWise = JSROOT.BIT(14),
+
          // constants used for coding type of STL container
          kNotSTL = 0, kSTLvector = 1, kSTLlist = 2, kSTLdeque = 3, kSTLmap = 4, kSTLmultimap = 5,
          kSTLset = 6, kSTLmultiset = 7, kSTLbitset = 8,
          // kSTLforwardlist = 9, kSTLunorderedset = 10, kSTLunorderedmultiset = 11, kSTLunorderedmap = 12,
          // kSTLunorderedmultimap = 13, kSTLend = 14
 
+         // name of base IO types
+         BasicTypeNames = ["BASE", "char", "short", "int", "long", "float", "int", "const char*", "double", "Double32_t",
+                           "char", "unsigned  char", "unsigned short", "unsigned", "unsigned long", "unsigned", "Long64_t", "ULong64_t", "bool", "Float16_t"],
+
          // names of STL containers
-         StlNames = ["", "vector", "list", "deque", "map", "multimap", "set", "multiset", "bitset"];
+         StlNames = ["", "vector", "list", "deque", "map", "multimap", "set", "multiset", "bitset"],
+
+         // TObject bits
+         kIsReferenced = JSROOT.BIT(4), kHasUUID = JSROOT.BIT(5);
+
 
    /** @summary Holder of IO functionality
      * @alias JSROOT.IO
@@ -40,15 +51,7 @@ JSROOT.define(['rawinflate'], () => {
 
       Mode: "array", // could be string or array, enable usage of ArrayBuffer in http requests
 
-      TypeNames: ["BASE", "char", "short", "int", "long", "float", "int", "const char*", "double", "Double32_t",
-         "char", "unsigned  char", "unsigned short", "unsigned", "unsigned long", "unsigned", "Long64_t", "ULong64_t", "bool", "Float16_t"],
-
-
-
-      // constants of bits in version
-      kStreamedMemberWise: JSROOT.BIT(14),
-
-      kSplitCollectionOfPointers: 100,
+      // kSplitCollectionOfPointers: 100,
 
       // map of user-streamer function like func(buf,obj)
       // or alias (classname) which can be used to read that function
@@ -58,10 +61,6 @@ JSROOT.define(['rawinflate'], () => {
       // these are streamers which do not handle version regularly
       // used for special classes like TRef or TBasket
       DirectStreamers: {},
-
-      // TObject bits
-      kIsReferenced: JSROOT.BIT(4),
-      kHasUUID: JSROOT.BIT(5),
 
       /** @summary Returns true if type is integer */
       IsInteger(typ) {
@@ -1600,7 +1599,7 @@ JSROOT.define(['rawinflate'], () => {
                      buf.ntoi2(); // read version, why it here??
                      obj.fUniqueID = buf.ntou4();
                      obj.fBits = buf.ntou4();
-                     if (obj.fBits & jsrio.kIsReferenced) buf.ntou2(); // skip pid
+                     if (obj.fBits & kIsReferenced) buf.ntou2(); // skip pid
                   }
                });
                continue;
@@ -1813,7 +1812,7 @@ JSROOT.define(['rawinflate'], () => {
       const n = buf.ntoi4();
       let i, res = new Array(n);
       if (this.member_wise && (buf.remain() >= 6)) {
-         if (buf.ntoi2() == jsrio.kStreamedMemberWise)
+         if (buf.ntoi2() == kStreamedMemberWise)
             buf.shift(4);
          else
             buf.shift(-2); // rewind
@@ -2275,11 +2274,11 @@ JSROOT.define(['rawinflate'], () => {
                   member.read_version = function(buf, cnt) {
                      if (cnt === 0) return null;
                      const ver = buf.readVersion();
-                     this.member_wise = ((ver.val & jsrio.kStreamedMemberWise) !== 0);
+                     this.member_wise = ((ver.val & kStreamedMemberWise) !== 0);
 
                      this.stl_version = undefined;
                      if (this.member_wise) {
-                        ver.val = ver.val & ~jsrio.kStreamedMemberWise;
+                        ver.val = ver.val & ~kStreamedMemberWise;
                         this.stl_version = { val: buf.ntoi2() };
                         if (this.stl_version.val <= 0) this.stl_version.checksum = buf.ntou4();
                      }
@@ -2478,7 +2477,7 @@ JSROOT.define(['rawinflate'], () => {
       cs[clTObject] = cs['TMethodCall'] = function(buf, obj) {
          obj.fUniqueID = buf.ntou4();
          obj.fBits = buf.ntou4();
-         if (obj.fBits & jsrio.kIsReferenced) buf.ntou2(); // skip pid
+         if (obj.fBits & kIsReferenced) buf.ntou2(); // skip pid
       };
 
       cs[clTNamed] = [
@@ -2988,7 +2987,7 @@ JSROOT.define(['rawinflate'], () => {
 
       ds.TRef = (buf, obj) => {
          buf.classStreamer(obj, clTObject);
-         if (obj.fBits & jsrio.kHasUUID)
+         if (obj.fBits & kHasUUID)
             obj.fUUID = buf.readTString();
          else
             obj.fPID = buf.ntou2();
@@ -3029,7 +3028,7 @@ JSROOT.define(['rawinflate'], () => {
             elem.fType = file.fBasicTypes[typename];
       } else {
          elem.fType = typename;
-         typename = elem.fTypeName = jsrio.TypeNames[elem.fType] || "int";
+         typename = elem.fTypeName = BasicTypeNames[elem.fType] || "int";
       }
 
       if (elem.fType > 0) return elem; // basic type
