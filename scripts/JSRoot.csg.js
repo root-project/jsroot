@@ -135,9 +135,8 @@ JSROOT.define(['three'], function(THREE) {
          return this;
       }
 
-   } // Vertex
+   } // class Vertex
 
-   // =======================================================================================
 
    class Polygon {
 
@@ -280,9 +279,9 @@ JSROOT.define(['three'], function(THREE) {
             if ( b.length >= 3 ) back.push( new Polygon( b ).copyProperties(polygon, true) );
          }
       }
-   }
 
-   // ========================================================================================
+   } // class Polygon
+
 
    class Node {
       constructor(polygons, nodeid) {
@@ -415,11 +414,50 @@ JSROOT.define(['three'], function(THREE) {
          if ( this.back ) this.back.clipTo( node );
       }
 
-    } // Node
+    } // class Node
 
-   // ========================================================================================
 
-   class  Geometry {
+   function createBufferGeometry(polygons) {
+      let i, j, polygon_count = polygons.length, buf_size = 0;
+
+      for ( i = 0; i < polygon_count; ++i )
+         buf_size += (polygons[i].vertices.length - 2) * 9;
+
+      let positions_buf = new Float32Array(buf_size),
+          normals_buf = new Float32Array(buf_size),
+          iii = 0, polygon;
+
+      function CopyVertex(vertex) {
+
+         positions_buf[iii] = vertex.x;
+         positions_buf[iii+1] = vertex.y;
+         positions_buf[iii+2] = vertex.z;
+
+         normals_buf[iii] = polygon.nsign * vertex.nx;
+         normals_buf[iii+1] = polygon.nsign * vertex.ny;
+         normals_buf[iii+2] = polygon.nsign * vertex.nz;
+         iii+=3;
+      }
+
+      for ( i = 0; i < polygon_count; ++i ) {
+         polygon = polygons[i];
+         for ( j = 2; j < polygon.vertices.length; ++j ) {
+            CopyVertex(polygon.vertices[0]);
+            CopyVertex(polygon.vertices[j-1]);
+            CopyVertex(polygon.vertices[j]);
+         }
+      }
+
+      let geometry = new THREE.BufferGeometry();
+      geometry.setAttribute( 'position', new THREE.BufferAttribute( positions_buf, 3 ) );
+      geometry.setAttribute( 'normal', new THREE.BufferAttribute( normals_buf, 3 ) );
+
+      // geometry.computeVertexNormals();
+      return geometry;
+   }
+
+
+   class Geometry {
 
       constructor(geometry, transfer_matrix, nodeid, flippedMesh) {
          // Convert THREE.BufferGeometry to ThreeBSP
@@ -717,7 +755,7 @@ JSROOT.define(['three'], function(THREE) {
       }
 
       toBufferGeometry() {
-         return CreateBufferGeometry(this.toPolygons());
+         return createBufferGeometry(this.toPolygons());
       }
 
       toMesh( material ) {
@@ -732,89 +770,52 @@ JSROOT.define(['three'], function(THREE) {
          return mesh;
       }
 
-   } // Geometry
+   } // class Geometry
 
    // ================================================================================================
 
-   let ThreeBSP = {};
+   let ThreeBSP = {
 
-   ThreeBSP.CreateNormal = function(axis_name, pos, size) {
-      // create geometry to make cut on specified axis
+      /** @summary create geometry to make cut on specified axis */
+      createNormal(axis_name, pos, size) {
+         let vert1, vert2, vert3;
 
-      let vert1, vert2, vert3;
+         console.log('create normal');
 
-      if (!size || (size<10000)) size = 10000;
+         if (!size || (size<10000)) size = 10000;
 
-      switch(axis_name) {
-         case "x":
-            vert1 = new Vertex(pos, -3*size,    size, 1, 0, 0),
-            vert3 = new Vertex(pos,    size,    size, 1, 0, 0),
-            vert2 = new Vertex(pos,    size, -3*size, 1, 0, 0);
-            break;
-         case "y":
-            vert1 = new Vertex(-3*size,  pos,    size, 0, 1, 0),
-            vert2 = new Vertex(   size,  pos,    size, 0, 1, 0),
-            vert3 = new Vertex(   size,  pos, -3*size, 0, 1, 0);
-            break;
-         case "z":
-            vert1 = new Vertex(-3*size,    size, pos, 0, 0, 1),
-            vert3 = new Vertex(   size,    size, pos, 0, 0, 1),
-            vert2 = new Vertex(   size, -3*size, pos, 0, 0, 1);
-            break;
-      }
-
-      let polygon = new Polygon([vert1, vert2, vert3]);
-      polygon.calculateProperties();
-
-      let node = new Node([polygon]);
-
-      return new Geometry(node);
-   }
-
-   function CreateBufferGeometry(polygons) {
-      let i, j, polygon_count = polygons.length, buf_size = 0;
-
-      for ( i = 0; i < polygon_count; ++i )
-         buf_size += (polygons[i].vertices.length - 2) * 9;
-
-      let positions_buf = new Float32Array(buf_size),
-          normals_buf = new Float32Array(buf_size),
-          iii = 0, polygon;
-
-      function CopyVertex(vertex) {
-
-         positions_buf[iii] = vertex.x;
-         positions_buf[iii+1] = vertex.y;
-         positions_buf[iii+2] = vertex.z;
-
-         normals_buf[iii] = polygon.nsign * vertex.nx;
-         normals_buf[iii+1] = polygon.nsign * vertex.ny;
-         normals_buf[iii+2] = polygon.nsign * vertex.nz;
-         iii+=3;
-      }
-
-      for ( i = 0; i < polygon_count; ++i ) {
-         polygon = polygons[i];
-         for ( j = 2; j < polygon.vertices.length; ++j ) {
-            CopyVertex(polygon.vertices[0]);
-            CopyVertex(polygon.vertices[j-1]);
-            CopyVertex(polygon.vertices[j]);
+         switch(axis_name) {
+            case "x":
+               vert1 = new Vertex(pos, -3*size,    size, 1, 0, 0),
+               vert3 = new Vertex(pos,    size,    size, 1, 0, 0),
+               vert2 = new Vertex(pos,    size, -3*size, 1, 0, 0);
+               break;
+            case "y":
+               vert1 = new Vertex(-3*size,  pos,    size, 0, 1, 0),
+               vert2 = new Vertex(   size,  pos,    size, 0, 1, 0),
+               vert3 = new Vertex(   size,  pos, -3*size, 0, 1, 0);
+               break;
+            case "z":
+               vert1 = new Vertex(-3*size,    size, pos, 0, 0, 1),
+               vert3 = new Vertex(   size,    size, pos, 0, 0, 1),
+               vert2 = new Vertex(   size, -3*size, pos, 0, 0, 1);
+               break;
          }
+
+         let polygon = new Polygon([vert1, vert2, vert3]);
+         polygon.calculateProperties();
+
+         let node = new Node([polygon]);
+
+         return new Geometry(node);
       }
-
-      let geometry = new THREE.BufferGeometry();
-      geometry.setAttribute( 'position', new THREE.BufferAttribute( positions_buf, 3 ) );
-      geometry.setAttribute( 'normal', new THREE.BufferAttribute( normals_buf, 3 ) );
-
-      // geometry.computeVertexNormals();
-      return geometry;
    }
 
    ThreeBSP.Vertex = Vertex;
    ThreeBSP.Geometry = Geometry;
    ThreeBSP.Polygon = Polygon;
 
-   ThreeBSP.CreateBufferGeometry = CreateBufferGeometry;
+   ThreeBSP.createBufferGeometry = createBufferGeometry;
 
    if (JSROOT.nodejs) module.exports = ThreeBSP;
    return ThreeBSP;

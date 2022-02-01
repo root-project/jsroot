@@ -172,7 +172,7 @@ JSROOT.define([], () => {
       /** @summary Close connection */
       close() { this.nextRequest("", "close"); }
 
-   }
+   } // class LongPollSocket
 
    // ========================================================================================
 
@@ -229,7 +229,8 @@ JSROOT.define([], () => {
             setTimeout(() => this.nextOperation(), 10);
          });
       }
-   }
+
+   } // class FileDumpSocket
 
    // ========================================================================================
 
@@ -629,7 +630,7 @@ JSROOT.define([], () => {
          retry_open(true); // call for the first time
       }
 
-   }
+   } // class WebWindowHandle
 
 
    /** @summary Method used to initialize connection to web window.

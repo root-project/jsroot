@@ -19,6 +19,8 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
      */
 
    class Toolbar {
+
+      /** @summary constructor */
       constructor(container, bright) {
          this.bright = bright;
          this.element = container.append("div").attr('class','geo_toolbar_group');

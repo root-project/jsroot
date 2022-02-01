@@ -1882,7 +1882,7 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
 
       if ((n1 + n2 >= faces_limit) || !geom2) {
          if (geom1.polygons)
-            geom1 = ThreeBSP.CreateBufferGeometry(geom1.polygons);
+            geom1 = ThreeBSP.createBufferGeometry(geom1.polygons);
          if (matrix1) geom1.applyMatrix4(matrix1);
          geom1._exceed_limit = true;
          return geom1;
@@ -1944,7 +1944,7 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
          case "z": size = Math.max(sizex,sizey); break;
       }
 
-      let bsp2 = ThreeBSP.CreateNormal(projection, position, size);
+      let bsp2 = ThreeBSP.createNormal(projection, position, size);
 
       bsp1.cut_from_plane(bsp2);
 
