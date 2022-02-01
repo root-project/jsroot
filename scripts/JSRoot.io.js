@@ -644,7 +644,7 @@ JSROOT.define([], () => {
 
          let h = new zip_HuftBuild(l, 288, 257, zip_cplens, zip_cplext, zip_fixed_bl);
          if (h.status != 0)
-            throw new Error("HufBuild error: "+h.status,"rawinflate.js");
+            throw new Error("HufBuild error: " + h.status);
          zip_fixed_tl = h.root;
          zip_fixed_bl = h.m;
 
@@ -655,7 +655,7 @@ JSROOT.define([], () => {
          h = new zip_HuftBuild(l, 30, 0, zip_cpdist, zip_cpdext, zip_fixed_bd);
          if (h.status > 1) {
             zip_fixed_tl = null;
-            throw new Error("HufBuild error: "+h.status,"rawinflate.js");
+            throw new Error("HufBuild error: "+h.status);
          }
          zip_fixed_td = h.root;
          zip_fixed_bd = h.m;

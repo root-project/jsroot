@@ -166,7 +166,6 @@
          'jquery-ui'            : { src: 'https://root.cern/js/6.3.2/scripts/jquery-ui.min', onlymin: true, extract: "$", dep: 'jquery' },
          'jqueryui-mousewheel'  : { src: 'https://root.cern/js/6.3.2/scripts/jquery.mousewheel.min', onlymin: true, extract: "$", dep: 'jquery-ui' },
          'jqueryui-touch-punch' : { src: 'https://root.cern/js/6.3.2/scripts/touch-punch.min', onlymin: true, extract: "$", dep: 'jquery-ui' },
-         'rawinflate'           : { src: 'rawinflate', libs: true },
          'zstd-codec'           : { src: '../../zstd/zstd-codec', onlymin: true, alt: "https://root.cern/js/zstd/zstd-codec.min.js", extract: "ZstdCodec", node: "zstd-codec" },
          'mathjax'              : { src: '../../mathjax/3.2.0/es5/tex-svg', nomin: true,  alt: 'https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-svg.js', extract: "MathJax", node: "mathjax" },
          'dat.gui'              : { src: 'dat.gui', libs: true, extract: "dat" },
