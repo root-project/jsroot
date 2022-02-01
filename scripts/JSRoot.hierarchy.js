@@ -2111,21 +2111,33 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                let items = [], opts = [];
 
                if (this.disp)
-                  this.disp.forEachFrame(f => {
-                     let dummy = new JSROOT.ObjectPainter(f),
-                         top = dummy.getTopPainter();
+                  this.disp.forEachFrame(frame => {
+                     let dummy = new JSROOT.ObjectPainter(frame),
+                         top = dummy.getTopPainter(),
+                         item = top ? top.getItemName() : null, opt;
 
-                     if (!top || !top.getItemName()) {
+                     if (item) {
+                        opt  = top.getDrawOpt() || top.getItemDrawOpt();
+                     } else {
                         top = null;
                         dummy.forEachPainter(p => {
-                           if (!top && p.getItemName()) top = p;
+                           let _item = p.getItemName();
+                           if (!_item) return;
+                           let _opt = p.getDrawOpt() || p.getItemDrawOpt() || "";
+                           if (!top) {
+                              top = p;
+                              item = _item;
+                              opt = _opt;
+                           } else if (top.getPadPainter() === p.getPadPainter()) {
+                              item += "+" + _item;
+                              opt += "+" + _opt;
+                           }
                         });
                      }
 
-                     let item = top ? top.getItemName() : null;
                      if (item) {
                         items.push(item);
-                        opts.push(top.getDrawOpt() || top.getItemDrawOpt() || "");
+                        opts.push(opt || "");
                      }
                   });
 
