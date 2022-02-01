@@ -776,46 +776,44 @@ JSROOT.define(['three'], function(THREE) {
 
    let ThreeBSP = {
 
+      Vertex: Vertex,
+      Geometry: Geometry,
+      Polygon: Polygon,
+      createBufferGeometry: createBufferGeometry,
+
       /** @summary create geometry to make cut on specified axis */
       createNormal(axis_name, pos, size) {
-         let vert1, vert2, vert3;
+         if (!size || (size < 10000)) size = 10000;
 
-         console.log('create normal');
-
-         if (!size || (size<10000)) size = 10000;
+         let vert;
 
          switch(axis_name) {
             case "x":
-               vert1 = new Vertex(pos, -3*size,    size, 1, 0, 0),
-               vert3 = new Vertex(pos,    size,    size, 1, 0, 0),
-               vert2 = new Vertex(pos,    size, -3*size, 1, 0, 0);
+               vert = [ new Vertex(pos, -3*size,    size, 1, 0, 0),
+                        new Vertex(pos,    size, -3*size, 1, 0, 0),
+                        new Vertex(pos,    size,    size, 1, 0, 0) ];
                break;
             case "y":
-               vert1 = new Vertex(-3*size,  pos,    size, 0, 1, 0),
-               vert2 = new Vertex(   size,  pos,    size, 0, 1, 0),
-               vert3 = new Vertex(   size,  pos, -3*size, 0, 1, 0);
+               vert = [ new Vertex(-3*size,  pos,    size, 0, 1, 0),
+                        new Vertex(   size,  pos,    size, 0, 1, 0),
+                        new Vertex(   size,  pos, -3*size, 0, 1, 0) ];
                break;
-            case "z":
-               vert1 = new Vertex(-3*size,    size, pos, 0, 0, 1),
-               vert3 = new Vertex(   size,    size, pos, 0, 0, 1),
-               vert2 = new Vertex(   size, -3*size, pos, 0, 0, 1);
-               break;
+            // case "z":
+            default:
+               vert = [ new Vertex(-3*size,    size, pos, 0, 0, 1),
+                        new Vertex(   size, -3*size, pos, 0, 0, 1),
+                        new Vertex(   size,    size, pos, 0, 0, 1) ];
          }
 
-         let polygon = new Polygon([vert1, vert2, vert3]);
+         let polygon = new Polygon(vert);
          polygon.calculateProperties();
 
          let node = new Node([polygon]);
 
          return new Geometry(node);
       }
+
    }
-
-   ThreeBSP.Vertex = Vertex;
-   ThreeBSP.Geometry = Geometry;
-   ThreeBSP.Polygon = Polygon;
-
-   ThreeBSP.createBufferGeometry = createBufferGeometry;
 
    if (JSROOT.nodejs) module.exports = ThreeBSP;
    return ThreeBSP;
