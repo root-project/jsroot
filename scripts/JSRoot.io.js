@@ -614,14 +614,10 @@ JSROOT.define([], () => {
 
          // if first time, set up tables for fixed blocks
          if (zip_fixed_tl == null) {
-            let i = 0,      // temporary variable
-                l = new Array(288); // length list for huft_build
 
             // literal table
-            while (i < 144) l[i++] = 8;
-            while (i < 256) l[i++] = 9;
-            while (i < 280) l[i++] = 7;
-            while (i < 288) l[i++] = 8; // make a complete, but wrong code set
+            let l = Array(288).fill(8, 0, 144).fill(9, 144, 256).fill(7, 256, 280).fill(8, 280, 288);
+            // make a complete, but wrong code set
             zip_fixed_bl = 7;
 
             let h = new zip_HuftBuild(l, 288, 257, zip_cplens, zip_cplext, zip_fixed_bl);
@@ -631,7 +627,7 @@ JSROOT.define([], () => {
             zip_fixed_bl = h.m;
 
             // distance table
-            for (i = 0; i<30; ++i) l[i] = 5;// make an incomplete code set
+            l.fill(5, 0, 30); // make an incomplete code set
             zip_fixed_bd = 5;
 
             h = new zip_HuftBuild(l, 30, 0, zip_cpdist, zip_cpdext, zip_fixed_bd);
