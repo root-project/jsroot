@@ -1970,7 +1970,7 @@
                member.func = function(buf,obj) {
                   var ver = buf.ReadVersion();
                   buf.CheckBytecount(ver);
-                  obj[this.name] = ull;
+                  obj[this.name] = null;
                };
             }
 
