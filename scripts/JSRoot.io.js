@@ -5,6 +5,8 @@ JSROOT.define(['rawinflate'], () => {
 
    "use strict";
 
+   const clTObject = 'TObject', clTNamed = 'TNamed';
+
    /** @summary Holder of IO functionality
      * @alias JSROOT.IO
      * @namespace
@@ -1585,7 +1587,7 @@ JSROOT.define(['rawinflate'], () => {
                continue;
             }
 
-            if (elem.basename == 'TObject') {
+            if (elem.basename == clTObject) {
                tgt.push({
                   func: function(buf, obj) {
                      buf.ntoi2(); // read version, why it here??
@@ -2473,29 +2475,29 @@ JSROOT.define(['rawinflate'], () => {
    function produceCustomStreamers() {
       let cs = jsrio.CustomStreamers;
 
-      cs['TObject'] = cs['TMethodCall'] = function(buf, obj) {
+      cs[clTObject] = cs['TMethodCall'] = function(buf, obj) {
          obj.fUniqueID = buf.ntou4();
          obj.fBits = buf.ntou4();
          if (obj.fBits & jsrio.kIsReferenced) buf.ntou2(); // skip pid
       };
 
-      cs['TNamed'] = [
+      cs[clTNamed] = [
          {
-            basename: 'TObject', base: 1, func: function(buf, obj) {
-               if (!obj._typename) obj._typename = 'TNamed';
-               buf.classStreamer(obj, "TObject");
+            basename: clTObject, base: 1, func: function(buf, obj) {
+               if (!obj._typename) obj._typename = clTNamed;
+               buf.classStreamer(obj, clTObject);
             }
          },
          { name: 'fName', func: function(buf, obj) { obj.fName = buf.readTString(); } },
          { name: 'fTitle', func: function(buf, obj) { obj.fTitle = buf.readTString(); } }
       ];
-      addClassMethods('TNamed', cs['TNamed']);
+      addClassMethods(clTNamed, cs[clTNamed]);
 
       cs['TObjString'] = [
          {
-            basename: 'TObject', base: 1, func: function(buf, obj) {
+            basename: clTObject, base: 1, func: function(buf, obj) {
                if (!obj._typename) obj._typename = 'TObjString';
-               buf.classStreamer(obj, "TObject");
+               buf.classStreamer(obj, clTObject);
             }
          },
          { name: 'fString', func: function(buf, obj) { obj.fString = buf.readTString(); } }
@@ -2508,7 +2510,7 @@ JSROOT.define(['rawinflate'], () => {
          if (!obj._typename) obj._typename = this.typename;
          obj.$kind = "TList"; // all derived classes will be marked as well
          if (buf.last_read_version > 3) {
-            buf.classStreamer(obj, "TObject");
+            buf.classStreamer(obj, clTObject);
             obj.name = buf.readTString();
             const nobjects = buf.ntou4();
             obj.arr = new Array(nobjects);
@@ -2529,7 +2531,7 @@ JSROOT.define(['rawinflate'], () => {
          list.$kind = "TClonesArray";
          list.name = "";
          const ver = buf.last_read_version;
-         if (ver > 2) buf.classStreamer(list, "TObject");
+         if (ver > 2) buf.classStreamer(list, clTObject);
          if (ver > 1) list.name = buf.readTString();
          let classv = buf.readTString(), clv = 0,
             pos = classv.lastIndexOf(";");
@@ -2568,7 +2570,7 @@ JSROOT.define(['rawinflate'], () => {
          map.name = "";
          map.arr = [];
          const ver = buf.last_read_version;
-         if (ver > 2) buf.classStreamer(map, "TObject");
+         if (ver > 2) buf.classStreamer(map, clTObject);
          if (ver > 1) map.name = buf.readTString();
 
          const nobjects = buf.ntou4();
@@ -2595,7 +2597,7 @@ JSROOT.define(['rawinflate'], () => {
 
       cs['TRefArray'] = function(buf, obj) {
          obj._typename = "TRefArray";
-         buf.classStreamer(obj, "TObject");
+         buf.classStreamer(obj, clTObject);
          obj.name = buf.readTString();
          const nobj = buf.ntoi4();
          obj.fLast = nobj - 1;
@@ -2636,7 +2638,7 @@ JSROOT.define(['rawinflate'], () => {
          list.name = "";
          const ver = buf.last_read_version;
          if (ver > 2)
-            buf.classStreamer(list, "TObject");
+            buf.classStreamer(list, clTObject);
          if (ver > 1)
             list.name = buf.readTString();
          const nobjects = buf.ntou4();
@@ -2650,7 +2652,7 @@ JSROOT.define(['rawinflate'], () => {
 
       cs['TPolyMarker3D'] = function(buf, marker) {
          const ver = buf.last_read_version;
-         buf.classStreamer(marker, "TObject");
+         buf.classStreamer(marker, clTObject);
          buf.classStreamer(marker, "TAttMarker");
          marker.fN = buf.ntoi4();
          marker.fP = buf.readFastArray(marker.fN * 3, jsrio.kFloat);
@@ -2659,26 +2661,23 @@ JSROOT.define(['rawinflate'], () => {
       }
 
       cs['TPolyLine3D'] = function(buf, obj) {
-         buf.classStreamer(obj, "TObject");
+         buf.classStreamer(obj, clTObject);
          buf.classStreamer(obj, "TAttLine");
          obj.fN = buf.ntoi4();
          obj.fP = buf.readFastArray(obj.fN * 3, jsrio.kFloat);
          obj.fOption = buf.readTString();
       }
 
-      cs['TStreamerInfo'] = function(buf, obj) {
-         // stream an object of class TStreamerInfo from the I/O buffer
-         buf.classStreamer(obj, "TNamed");
+      cs['TStreamerInfo'] = (buf, obj) => {
+         buf.classStreamer(obj, clTNamed);
          obj.fCheckSum = buf.ntou4();
          obj.fClassVersion = buf.ntou4();
          obj.fElements = buf.readObjectAny();
       }
 
-      cs['TStreamerElement'] = function(buf, element) {
-         // stream an object of class TStreamerElement
-
+      cs['TStreamerElement'] = (buf, element) => {
          const ver = buf.last_read_version;
-         buf.classStreamer(element, "TNamed");
+         buf.classStreamer(element, clTNamed);
          element.fType = buf.ntou4();
          element.fSize = buf.ntou4();
          element.fArrayLength = buf.ntou4();
@@ -2788,7 +2787,7 @@ JSROOT.define(['rawinflate'], () => {
          func: function(buf, obj) { obj.$kind = "TTree"; obj.$file = buf.fFile; buf.fFile._addReadTree(obj); }
       }
 
-      cs['TVirtualPerfStats'] = "TObject"; // use directly TObject streamer
+      cs['TVirtualPerfStats'] = clTObject; // use directly TObject streamer
 
       cs['RooRealVar'] = function(buf, obj) {
          const v = buf.last_read_version;
@@ -2803,7 +2802,7 @@ JSROOT.define(['rawinflate'], () => {
       };
 
       cs['RooAbsBinning'] = function(buf, obj) {
-         buf.classStreamer(obj, (buf.last_read_version == 1) ? "TObject" : "TNamed");
+         buf.classStreamer(obj, (buf.last_read_version == 1) ? clTObject : clTNamed);
          buf.classStreamer(obj, "RooPrintable");
       }
 
@@ -2823,7 +2822,7 @@ JSROOT.define(['rawinflate'], () => {
 
       cs['RooLinkedList'] = function(buf, obj) {
          const v = buf.last_read_version;
-         buf.classStreamer(obj, "TObject");
+         buf.classStreamer(obj, clTObject);
          let size = buf.ntoi4();
          obj.arr = JSROOT.create("TList");
          while (size--)
@@ -2833,9 +2832,9 @@ JSROOT.define(['rawinflate'], () => {
 
       cs['TImagePalette'] = [
          {
-            basename: 'TObject', base: 1, func: function(buf, obj) {
+            basename: clTObject, base: 1, func: (buf, obj) => {
                if (!obj._typename) obj._typename = 'TImagePalette';
-               buf.classStreamer(obj, "TObject");
+               buf.classStreamer(obj, clTObject);
             }
          },
          { name: 'fNumPoints', func: function(buf, obj) { obj.fNumPoints = buf.ntou4(); } },
@@ -2858,7 +2857,7 @@ JSROOT.define(['rawinflate'], () => {
             return console.warn("old TASImage version - not yet supported");
          }
 
-         buf.classStreamer(obj, "TNamed");
+         buf.classStreamer(obj, clTNamed);
 
          if (buf.ntou1() != 0) {
             const size = buf.ntoi4();
@@ -2873,7 +2872,7 @@ JSROOT.define(['rawinflate'], () => {
 
       cs['TMaterial'] = function(buf, obj) {
          const v = buf.last_read_version;
-         buf.classStreamer(obj, "TNamed");
+         buf.classStreamer(obj, clTNamed);
          obj.fNumber = buf.ntoi4();
          obj.fA = buf.ntof();
          obj.fZ = buf.ntof();
@@ -2989,7 +2988,7 @@ JSROOT.define(['rawinflate'], () => {
       }
 
       ds.TRef = (buf, obj) => {
-         buf.classStreamer(obj, "TObject");
+         buf.classStreamer(obj, clTObject);
          if (obj.fBits & jsrio.kHasUUID)
             obj.fUUID = buf.readTString();
          else
