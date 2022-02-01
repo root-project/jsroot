@@ -10,7 +10,9 @@ JSROOT.define(['rawinflate'], () => {
          kCharStar = 7, kDouble = 8, kDouble32 = 9, kLegacyChar = 10,
          kUChar = 11, kUShort = 12, kUInt = 13, kULong = 14, kBits = 15,
          kLong64 = 16, kULong64 = 17, kBool = 18, kFloat16 = 19,
-         kBase = 0, kOffsetL = 20, kOffsetP = 40;
+         kBase = 0, kOffsetL = 20, kOffsetP = 40,
+
+         kMapOffset = 2, kByteCountMask = 0x40000000, kNewClassTag = 0xFFFFFFFF, kClassMask = 0x80000000;
 
    /** @summary Holder of IO functionality
      * @alias JSROOT.IO
@@ -22,10 +24,6 @@ JSROOT.define(['rawinflate'], () => {
       kTObject: 66, kTNamed: 67, kAnyp: 68, kAnyP: 69, kAnyPnoVT: 70, kSTLp: 71,
       kSkip: 100, kSkipL: 120, kSkipP: 140, kConv: 200, kConvL: 220, kConvP: 240,
       kSTL: 300, kSTLstring: 365, kStreamer: 500, kStreamLoop: 501,
-      kMapOffset: 2,
-      kByteCountMask: 0x40000000,
-      kNewClassTag: 0xFFFFFFFF,
-      kClassMask: 0x80000000,
       Mode: "array", // could be string or array, enable usage of ArrayBuffer in http requests
 
       TypeNames: ["BASE", "char", "short", "int", "long", "float", "int", "const char*", "double", "Double32_t",
@@ -344,8 +342,8 @@ JSROOT.define(['rawinflate'], () => {
       readVersion() {
          let ver = {}, bytecnt = this.ntou4(); // byte count
 
-         if (bytecnt & jsrio.kByteCountMask)
-            ver.bytecnt = bytecnt - jsrio.kByteCountMask - 2; // one can check between Read version and end of streamer
+         if (bytecnt & kByteCountMask)
+            ver.bytecnt = bytecnt - kByteCountMask - 2; // one can check between Read version and end of streamer
          else
             this.o -= 4; // rollback read bytes, this is old buffer without byte count
 
@@ -660,25 +658,25 @@ JSROOT.define(['rawinflate'], () => {
          const classInfo = { name: -1 }, bcnt = this.ntou4(), startpos = this.o;
          let tag;
 
-         if (!(bcnt & jsrio.kByteCountMask) || (bcnt == jsrio.kNewClassTag)) {
+         if (!(bcnt & kByteCountMask) || (bcnt == kNewClassTag)) {
             tag = bcnt;
             // bcnt = 0;
          } else {
             tag = this.ntou4();
          }
-         if (!(tag & jsrio.kClassMask)) {
+         if (!(tag & kClassMask)) {
             classInfo.objtag = tag + this.fDisplacement; // indicate that we have deal with objects tag
             return classInfo;
          }
-         if (tag == jsrio.kNewClassTag) {
+         if (tag == kNewClassTag) {
             // got a new class description followed by a new object
             classInfo.name = this.readFastString(-1);
 
-            if (this.getMappedClass(this.fTagOffset + startpos + jsrio.kMapOffset) === -1)
-               this.mapClass(this.fTagOffset + startpos + jsrio.kMapOffset, classInfo.name);
+            if (this.getMappedClass(this.fTagOffset + startpos + kMapOffset) === -1)
+               this.mapClass(this.fTagOffset + startpos + kMapOffset, classInfo.name);
          } else {
             // got a tag to an already seen class
-            const clTag = (tag & ~jsrio.kClassMask) + this.fDisplacement;
+            const clTag = (tag & ~kClassMask) + this.fDisplacement;
             classInfo.name = this.getMappedClass(clTag);
 
             if (classInfo.name === -1)
@@ -690,7 +688,7 @@ JSROOT.define(['rawinflate'], () => {
 
       /** @summary Read any object from buffer data */
       readObjectAny() {
-         const objtag = this.fTagOffset + this.o + jsrio.kMapOffset,
+         const objtag = this.fTagOffset + this.o + kMapOffset,
                clRef = this.readClass();
 
          // class identified as object and should be handled so
