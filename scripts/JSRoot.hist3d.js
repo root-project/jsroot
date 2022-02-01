@@ -1753,11 +1753,9 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
          }
       }
 
-      if (donormals) {
+      if (donormals)
          // for each bin maximal 8 points reserved
-         normindx = new Int32Array((handle.i2-handle.i1)*(handle.j2-handle.j1)*8);
-         for (let n=0;n<normindx.length;++n) normindx[n] = -1;
-      }
+         normindx = new Int32Array((handle.i2-handle.i1)*(handle.j2-handle.j1)*8).fill(-1);
 
       for (loop = 0; loop < 2; ++loop) {
          if (loop) {

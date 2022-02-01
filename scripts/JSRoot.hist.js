@@ -3457,9 +3457,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          let arr = histo.fArray, entries = histo.fEntries; // array of values
          histo.fNcells = histo.fXaxis.fNbins + 2;
-         histo.fArray = new Float64Array(histo.fNcells);
-         for (let n=0;n<histo.fNcells;++n) histo.fArray[n] = 0;
-         for (let n=0;n<histo.fNIn;++n) histo.Fill(arr[n]);
+         histo.fArray = new Float64Array(histo.fNcells).fill(0);
+         for (let n = 0; n < histo.fNIn; ++n)
+            histo.Fill(arr[n]);
          histo.fReady = true;
          histo.fEntries = entries;
       }

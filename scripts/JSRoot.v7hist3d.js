@@ -1769,13 +1769,11 @@ JSROOT.define(['d3', 'base3d', 'painter', 'latex', 'v7hist'], (d3, THREE, jsrp, 
          }
       }
 
-      if (donormals) {
-         // for each bin maximal 8 points reserved
-         normindx = new Int32Array(numstepi * numstepj * 8);
-         for (let n=0;n<normindx.length;++n) normindx[n] = -1;
-      }
+      // for each bin maximal 8 points reserved
+      if (donormals)
+         normindx = new Int32Array(numstepi * numstepj * 8).fill(-1);
 
-      for (loop=0;loop<2;++loop) {
+      for (loop = 0; loop < 2; ++loop) {
          if (loop) {
             for (let lvl=1;lvl<levels.length;++lvl)
                if (nfaces[lvl]) {
