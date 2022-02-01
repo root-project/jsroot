@@ -29,14 +29,7 @@
                delete paths[p];
 
          // configure all dependencies
-         requirejs.config({
-            paths: paths,
-            shim: {
-               'jquery-ui': { deps: ['jquery'] },
-               'jqueryui-mousewheel': { deps: ['jquery-ui'] },
-               'jqueryui-touch-punch': { deps: ['jquery-ui'] }
-            }
-         });
+         requirejs.config({ paths: paths });
       }
 
       define( jsroot );
@@ -87,8 +80,6 @@
             }
          });
 
-         if (globalThis.jQuery)
-            jsroot._.modules['jquery'] = { module: globalThis.jQuery };
       }
 
       jsroot._.init();
@@ -162,10 +153,6 @@
 
    _.sources = {
          'd3'                   : { src: 'd3', libs: true, extract: "d3" },
-         'jquery'               : { src: 'https://root.cern/js/6.3.2/scripts/jquery.min', onlymin: true, extract: "$" },
-         'jquery-ui'            : { src: 'https://root.cern/js/6.3.2/scripts/jquery-ui.min', onlymin: true, extract: "$", dep: 'jquery' },
-         'jqueryui-mousewheel'  : { src: 'https://root.cern/js/6.3.2/scripts/jquery.mousewheel.min', onlymin: true, extract: "$", dep: 'jquery-ui' },
-         'jqueryui-touch-punch' : { src: 'https://root.cern/js/6.3.2/scripts/touch-punch.min', onlymin: true, extract: "$", dep: 'jquery-ui' },
          'zstd-codec'           : { src: '../../zstd/zstd-codec', onlymin: true, alt: "https://root.cern/js/zstd/zstd-codec.min.js", extract: "ZstdCodec", node: "zstd-codec" },
          'mathjax'              : { src: '../../mathjax/3.2.0/es5/tex-svg', nomin: true,  alt: 'https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-svg.js', extract: "MathJax", node: "mathjax" },
          'dat.gui'              : { src: 'dat.gui', libs: true, extract: "dat" },
@@ -478,8 +465,6 @@
       need.forEach((name,indx) => {
          if ((name.indexOf("load:")==0) || (name.indexOf("user:")==0))
             need[indx] = name.substr(5);
-         else if ((name == "jq") || (name == "jq2d")) // only for backward compatibility
-            need[indx] = "hierarchy";
          else if (name == "2d")
             need[indx] = "painter";
          else if (name == "v6")

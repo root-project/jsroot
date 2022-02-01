@@ -3934,8 +3934,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          obj._typename = 'TStreamerInfoList';
    }
 
-   /** @summary Build gui without visisble hierarchy browser
-     * @desc avoid loading of jquery part
+   /** @summary Build gui without visible hierarchy browser
      * @private */
    JSROOT.buildNobrowserGUI = function(gui_element, gui_kind) {
 
@@ -3985,7 +3984,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          let opt = d.get("opt", "");
 
          if (d.has("websocket")) opt+=";websocket";
-         console.log('try to draw first object');
 
          return hpainter.display("", opt).then(() => hpainter);
       });
