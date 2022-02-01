@@ -2493,19 +2493,19 @@ JSROOT.define(['rawinflate'], () => {
       ];
       addClassMethods(clTNamed, cs[clTNamed]);
 
-      cs['TObjString'] = [
+      cs.TObjString = [
          {
-            basename: clTObject, base: 1, func: function(buf, obj) {
+            basename: clTObject, base: 1, func: (buf, obj) => {
                if (!obj._typename) obj._typename = 'TObjString';
                buf.classStreamer(obj, clTObject);
             }
          },
-         { name: 'fString', func: function(buf, obj) { obj.fString = buf.readTString(); } }
+         { name: 'fString', func: (buf, obj) => { obj.fString = buf.readTString(); } }
       ];
 
       addClassMethods('TObjString', cs['TObjString']);
 
-      cs['TList'] = cs['THashList'] = function(buf, obj) {
+      cs.TList = cs.THashList = function(buf, obj) {
          // stream all objects in the list from the I/O buffer
          if (!obj._typename) obj._typename = this.typename;
          obj.$kind = "TList"; // all derived classes will be marked as well
@@ -2526,7 +2526,7 @@ JSROOT.define(['rawinflate'], () => {
          }
       }
 
-      cs['TClonesArray'] = function(buf, list) {
+      cs.TClonesArray = (buf, list) => {
          if (!list._typename) list._typename = "TClonesArray";
          list.$kind = "TClonesArray";
          list.name = "";
@@ -2534,7 +2534,7 @@ JSROOT.define(['rawinflate'], () => {
          if (ver > 2) buf.classStreamer(list, clTObject);
          if (ver > 1) list.name = buf.readTString();
          let classv = buf.readTString(), clv = 0,
-            pos = classv.lastIndexOf(";");
+             pos = classv.lastIndexOf(";");
 
          if (pos > 0) {
             clv = parseInt(classv.substr(pos + 1));
@@ -2565,7 +2565,7 @@ JSROOT.define(['rawinflate'], () => {
          }
       }
 
-      cs['TMap'] = function(buf, map) {
+      cs.TMap = (buf, map) => {
          if (!map._typename) map._typename = "TMap";
          map.name = "";
          map.arr = [];
@@ -2583,7 +2583,7 @@ JSROOT.define(['rawinflate'], () => {
          }
       }
 
-      cs['TTreeIndex'] = function(buf, obj) {
+      cs.TTreeIndex = (buf, obj) => {
          const ver = buf.last_read_version;
          obj._typename = "TTreeIndex";
          buf.classStreamer(obj, "TVirtualIndex");
@@ -2595,7 +2595,7 @@ JSROOT.define(['rawinflate'], () => {
          obj.fIndex = buf.readFastArray(obj.fN, jsrio.kLong64);
       }
 
-      cs['TRefArray'] = function(buf, obj) {
+      cs.TRefArray = (buf, obj) => {
          obj._typename = "TRefArray";
          buf.classStreamer(obj, clTObject);
          obj.name = buf.readTString();
@@ -2606,7 +2606,7 @@ JSROOT.define(['rawinflate'], () => {
          obj.fUIDs = buf.readFastArray(nobj, jsrio.kUInt);
       }
 
-      cs['TCanvas'] = function(buf, obj) {
+      cs.TCanvas = (buf, obj) => {
          obj._typename = "TCanvas";
          buf.classStreamer(obj, "TPad");
          obj.fDISPLAY = buf.readTString();
@@ -2632,7 +2632,7 @@ JSROOT.define(['rawinflate'], () => {
          buf.ntou1();   // ignore b << TestBit(kMenuBar);
       }
 
-      cs['TObjArray'] = function(buf, list) {
+      cs.TObjArray = (buf, list) => {
          if (!list._typename) list._typename = "TObjArray";
          list.$kind = "TObjArray";
          list.name = "";
@@ -2650,7 +2650,7 @@ JSROOT.define(['rawinflate'], () => {
             list.arr[i++] = buf.readObjectAny();
       }
 
-      cs['TPolyMarker3D'] = function(buf, marker) {
+      cs.TPolyMarker3D = (buf, marker) => {
          const ver = buf.last_read_version;
          buf.classStreamer(marker, clTObject);
          buf.classStreamer(marker, "TAttMarker");
@@ -2660,7 +2660,7 @@ JSROOT.define(['rawinflate'], () => {
          marker.fName = (ver > 1) ? buf.readTString() : "TPolyMarker3D";
       }
 
-      cs['TPolyLine3D'] = function(buf, obj) {
+      cs.TPolyLine3D = (buf, obj) => {
          buf.classStreamer(obj, clTObject);
          buf.classStreamer(obj, "TAttLine");
          obj.fN = buf.ntoi4();
@@ -2668,14 +2668,14 @@ JSROOT.define(['rawinflate'], () => {
          obj.fOption = buf.readTString();
       }
 
-      cs['TStreamerInfo'] = (buf, obj) => {
+      cs.TStreamerInfo = (buf, obj) => {
          buf.classStreamer(obj, clTNamed);
          obj.fCheckSum = buf.ntou4();
          obj.fClassVersion = buf.ntou4();
          obj.fElements = buf.readObjectAny();
       }
 
-      cs['TStreamerElement'] = (buf, element) => {
+      cs.TStreamerElement = (buf, element) => {
          const ver = buf.last_read_version;
          buf.classStreamer(element, clTNamed);
          element.fType = buf.ntou4();
@@ -2737,13 +2737,13 @@ JSROOT.define(['rawinflate'], () => {
          }
       }
 
-      cs['TStreamerBase'] = function(buf, elem) {
+      cs.TStreamerBase = (buf, elem) => {
          const ver = buf.last_read_version;
          buf.classStreamer(elem, "TStreamerElement");
          if (ver > 2) elem.fBaseVersion = buf.ntou4();
       }
 
-      cs['TStreamerBasicPointer'] = cs['TStreamerLoop'] = function(buf, elem) {
+      cs.TStreamerBasicPointer = cs.TStreamerLoop = (buf, elem) => {
          if (buf.last_read_version > 1) {
             buf.classStreamer(elem, "TStreamerElement");
             elem.fCountVersion = buf.ntou4();
@@ -2752,7 +2752,7 @@ JSROOT.define(['rawinflate'], () => {
          }
       }
 
-      cs['TStreamerSTL'] = function(buf, elem) {
+      cs.TStreamerSTL = (buf, elem) => {
          buf.classStreamer(elem, "TStreamerElement");
          elem.fSTLtype = buf.ntou4();
          elem.fCtype = buf.ntou4();
@@ -2766,30 +2766,30 @@ JSROOT.define(['rawinflate'], () => {
                (elem.fTypeName.indexOf("multimap") === 0))) elem.fSTLtype = jsrio.kSTLmultimap;
       }
 
-      cs['TStreamerSTLstring'] = function(buf, elem) {
+      cs.TStreamerSTLstring = (buf, elem) => {
          if (buf.last_read_version > 0)
             buf.classStreamer(elem, "TStreamerSTL");
       }
 
-      cs['TStreamerObject'] = cs['TStreamerBasicType'] = cs['TStreamerObjectAny'] =
-         cs['TStreamerString'] = cs['TStreamerObjectPointer'] = function(buf, elem) {
+      cs.TStreamerObject = cs.TStreamerBasicType = cs.TStreamerObjectAny =
+         cs.TStreamerString = cs.TStreamerObjectPointer = (buf, elem) => {
             if (buf.last_read_version > 1)
                buf.classStreamer(elem, "TStreamerElement");
          }
 
-      cs['TStreamerObjectAnyPointer'] = function(buf, elem) {
+      cs.TStreamerObjectAnyPointer = (buf, elem) => {
          if (buf.last_read_version > 0)
             buf.classStreamer(elem, "TStreamerElement");
       }
 
-      cs['TTree'] = {
+      cs.TTree = {
          name: '$file',
-         func: function(buf, obj) { obj.$kind = "TTree"; obj.$file = buf.fFile; buf.fFile._addReadTree(obj); }
+         func: (buf, obj) => { obj.$kind = "TTree"; obj.$file = buf.fFile; buf.fFile._addReadTree(obj); }
       }
 
-      cs['TVirtualPerfStats'] = clTObject; // use directly TObject streamer
+      cs.TVirtualPerfStats = clTObject; // use directly TObject streamer
 
-      cs['RooRealVar'] = function(buf, obj) {
+      cs.RooRealVar = (buf, obj) => {
          const v = buf.last_read_version;
          buf.classStreamer(obj, "RooAbsRealLValue");
          if (v == 1) { buf.ntod(); buf.ntod(); buf.ntoi4(); } // skip fitMin, fitMax, fitBins
@@ -2799,20 +2799,20 @@ JSROOT.define(['rawinflate'], () => {
          if (v >= 2) obj._binning = buf.readObjectAny();
          if (v == 3) obj._sharedProp = buf.readObjectAny();
          if (v >= 4) obj._sharedProp = buf.classStreamer({}, "RooRealVarSharedProperties");
-      };
+      }
 
-      cs['RooAbsBinning'] = function(buf, obj) {
+      cs.RooAbsBinning = (buf, obj) => {
          buf.classStreamer(obj, (buf.last_read_version == 1) ? clTObject : clTNamed);
          buf.classStreamer(obj, "RooPrintable");
       }
 
-      cs['RooCategory'] = function(buf, obj) {
+      cs.RooCategory = (buf, obj) => {
          const v = buf.last_read_version;
          buf.classStreamer(obj, "RooAbsCategoryLValue");
          obj._sharedProp = (v === 1) ? buf.readObjectAny() : buf.classStreamer({}, "RooCategorySharedProperties");
       }
 
-      cs['RooWorkspace::CodeRepo'] = function(buf /*, obj*/) {
+      cs['RooWorkspace::CodeRepo'] = (buf /*, obj*/) => {
          const sz = (buf.last_read_version == 2) ? 3 : 2;
          for (let i = 0; i < sz; ++i) {
             let cnt = buf.ntoi4() * ((i == 0) ? 4 : 3);
@@ -2820,7 +2820,7 @@ JSROOT.define(['rawinflate'], () => {
          }
       }
 
-      cs['RooLinkedList'] = function(buf, obj) {
+      cs.RooLinkedList = (buf, obj) => {
          const v = buf.last_read_version;
          buf.classStreamer(obj, clTObject);
          let size = buf.ntoi4();
@@ -2830,32 +2830,31 @@ JSROOT.define(['rawinflate'], () => {
          if (v > 1) obj._name = buf.readTString();
       }
 
-      cs['TImagePalette'] = [
+      cs.TImagePalette = [
          {
             basename: clTObject, base: 1, func: (buf, obj) => {
                if (!obj._typename) obj._typename = 'TImagePalette';
                buf.classStreamer(obj, clTObject);
             }
          },
-         { name: 'fNumPoints', func: function(buf, obj) { obj.fNumPoints = buf.ntou4(); } },
-         { name: 'fPoints', func: function(buf, obj) { obj.fPoints = buf.readFastArray(obj.fNumPoints, jsrio.kDouble); } },
-         { name: 'fColorRed', func: function(buf, obj) { obj.fColorRed = buf.readFastArray(obj.fNumPoints, jsrio.kUShort); } },
-         { name: 'fColorGreen', func: function(buf, obj) { obj.fColorGreen = buf.readFastArray(obj.fNumPoints, jsrio.kUShort); } },
-         { name: 'fColorBlue', func: function(buf, obj) { obj.fColorBlue = buf.readFastArray(obj.fNumPoints, jsrio.kUShort); } },
-         { name: 'fColorAlpha', func: function(buf, obj) { obj.fColorAlpha = buf.readFastArray(obj.fNumPoints, jsrio.kUShort); } }
+         { name: 'fNumPoints', func: (buf, obj) => { obj.fNumPoints = buf.ntou4(); } },
+         { name: 'fPoints', func: (buf, obj) => { obj.fPoints = buf.readFastArray(obj.fNumPoints, jsrio.kDouble); } },
+         { name: 'fColorRed', func: (buf, obj) => { obj.fColorRed = buf.readFastArray(obj.fNumPoints, jsrio.kUShort); } },
+         { name: 'fColorGreen', func: (buf, obj) => { obj.fColorGreen = buf.readFastArray(obj.fNumPoints, jsrio.kUShort); } },
+         { name: 'fColorBlue', func: (buf, obj) => { obj.fColorBlue = buf.readFastArray(obj.fNumPoints, jsrio.kUShort); } },
+         { name: 'fColorAlpha', func: (buf, obj) => { obj.fColorAlpha = buf.readFastArray(obj.fNumPoints, jsrio.kUShort); } }
       ];
 
-      cs['TAttImage'] = [
-         { name: 'fImageQuality', func: function(buf, obj) { obj.fImageQuality = buf.ntoi4(); } },
-         { name: 'fImageCompression', func: function(buf, obj) { obj.fImageCompression = buf.ntou4(); } },
-         { name: 'fConstRatio', func: function(buf, obj) { obj.fConstRatio = (buf.ntou1() != 0); } },
-         { name: 'fPalette', func: function(buf, obj) { obj.fPalette = buf.classStreamer({}, "TImagePalette"); } }
+      cs.TAttImage = [
+         { name: 'fImageQuality', func: (buf, obj) => { obj.fImageQuality = buf.ntoi4(); } },
+         { name: 'fImageCompression', func: (buf, obj) => { obj.fImageCompression = buf.ntou4(); } },
+         { name: 'fConstRatio', func: (buf, obj) => { obj.fConstRatio = (buf.ntou1() != 0); } },
+         { name: 'fPalette', func: (buf, obj) => { obj.fPalette = buf.classStreamer({}, "TImagePalette"); } }
       ]
 
-      cs['TASImage'] = function(buf, obj) {
-         if ((buf.last_read_version == 1) && (buf.fFile.fVersion > 0) && (buf.fFile.fVersion < 50000)) {
+      cs.TASImage = (buf, obj) => {
+         if ((buf.last_read_version == 1) && (buf.fFile.fVersion > 0) && (buf.fFile.fVersion < 50000))
             return console.warn("old TASImage version - not yet supported");
-         }
 
          buf.classStreamer(obj, clTNamed);
 
@@ -2870,7 +2869,7 @@ JSROOT.define(['rawinflate'], () => {
          }
       }
 
-      cs['TMaterial'] = function(buf, obj) {
+      cs.TMaterial = (buf, obj) => {
          const v = buf.last_read_version;
          buf.classStreamer(obj, clTNamed);
          obj.fNumber = buf.ntoi4();
@@ -2886,7 +2885,7 @@ JSROOT.define(['rawinflate'], () => {
          }
       }
 
-      cs['TMixture'] = function(buf, obj) {
+      cs.TMixture = (buf, obj) => {
          buf.classStreamer(obj, "TMaterial");
          obj.fNmixt = buf.ntoi4();
          obj.fAmixt = buf.readFastArray(buf.ntoi4(), jsrio.kFloat);
