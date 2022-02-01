@@ -3851,15 +3851,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          let layout = main.select(".gui_layout");
          if (!layout.empty()) {
-            const lst = ['simple', 'vert2', 'vert3', 'vert231', 'horiz2', 'horiz32', 'flex',
-                          'grid 2x2', 'grid 1x3', 'grid 2x3', 'grid 3x3', 'grid 4x4'];
-
-            for (let k = 0; k < lst.length; ++k){
-               let opt = document.createElement('option');
-               opt.value = lst[k];
-               opt.innerHTML = lst[k];
-               layout.node().appendChild(opt);
-            }
+            ['simple', 'vert2', 'vert3', 'vert231', 'horiz2', 'horiz32', 'flex',
+             'grid 2x2', 'grid 1x3', 'grid 2x3', 'grid 3x3', 'grid 4x4'].forEach(kind => layout.append("option").attr("value", kind).html(kind));
 
             layout.on('change', ev => this.setDisplay(ev.target.value || 'flex', this.gui_div + "_drawing"));
          }
