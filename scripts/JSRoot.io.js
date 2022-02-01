@@ -11,8 +11,18 @@ JSROOT.define(['rawinflate'], () => {
          kUChar = 11, kUShort = 12, kUInt = 13, kULong = 14, kBits = 15,
          kLong64 = 16, kULong64 = 17, kBool = 18, kFloat16 = 19,
          kBase = 0, kOffsetL = 20, kOffsetP = 40,
+         kStreamer = 500, kStreamLoop = 501,
 
-         kMapOffset = 2, kByteCountMask = 0x40000000, kNewClassTag = 0xFFFFFFFF, kClassMask = 0x80000000;
+         kMapOffset = 2, kByteCountMask = 0x40000000, kNewClassTag = 0xFFFFFFFF, kClassMask = 0x80000000,
+
+         // constants used for coding type of STL container
+         kNotSTL = 0, kSTLvector = 1, kSTLlist = 2, kSTLdeque = 3, kSTLmap = 4, kSTLmultimap = 5,
+         kSTLset = 6, kSTLmultiset = 7, kSTLbitset = 8,
+         // kSTLforwardlist = 9, kSTLunorderedset = 10, kSTLunorderedmultiset = 11, kSTLunorderedmap = 12,
+         // kSTLunorderedmultimap = 13, kSTLend = 14
+
+         // names of STL containers
+         StlNames = ["", "vector", "list", "deque", "map", "multimap", "set", "multiset", "bitset"];
 
    /** @summary Holder of IO functionality
      * @alias JSROOT.IO
@@ -20,23 +30,20 @@ JSROOT.define(['rawinflate'], () => {
      * @private */
 
    let jsrio = {
+      // here constants which are used by tree
+
       kObject: 61, kAny: 62, kObjectp: 63, kObjectP: 64, kTString: 65,
       kTObject: 66, kTNamed: 67, kAnyp: 68, kAnyP: 69, kAnyPnoVT: 70, kSTLp: 71,
       kSkip: 100, kSkipL: 120, kSkipP: 140, kConv: 200, kConvL: 220, kConvP: 240,
-      kSTL: 300, kSTLstring: 365, kStreamer: 500, kStreamLoop: 501,
+
+      kSTL: 300, /* kSTLstring: 365, */
+
       Mode: "array", // could be string or array, enable usage of ArrayBuffer in http requests
 
       TypeNames: ["BASE", "char", "short", "int", "long", "float", "int", "const char*", "double", "Double32_t",
          "char", "unsigned  char", "unsigned short", "unsigned", "unsigned long", "unsigned", "Long64_t", "ULong64_t", "bool", "Float16_t"],
 
-      // constants used for coding type of STL container
-      kNotSTL: 0, kSTLvector: 1, kSTLlist: 2, kSTLdeque: 3, kSTLmap: 4, kSTLmultimap: 5,
-      kSTLset: 6, kSTLmultiset: 7, kSTLbitset: 8, kSTLforwardlist: 9,
-      kSTLunorderedset: 10, kSTLunorderedmultiset: 11, kSTLunorderedmap: 12,
-      kSTLunorderedmultimap: 13, kSTLend: 14,
 
-      // names of STL containers
-      StlNames: ["", "vector", "list", "deque", "map", "multimap", "set", "multiset", "bitset"],
 
       // constants of bits in version
       kStreamedMemberWise: JSROOT.BIT(14),
@@ -1344,13 +1351,13 @@ JSROOT.define(['rawinflate'], () => {
                let typ = elem.fType, typname = elem.fTypeName;
 
                if (typ >= 60) {
-                  if ((typ === jsrio.kStreamer) && (elem._typename == "TStreamerSTL") && elem.fSTLtype && elem.fCtype && (elem.fCtype < 20)) {
-                     let prefix = (jsrio.StlNames[elem.fSTLtype] || "undef") + "<";
+                  if ((typ === kStreamer) && (elem._typename == "TStreamerSTL") && elem.fSTLtype && elem.fCtype && (elem.fCtype < 20)) {
+                     let prefix = (StlNames[elem.fSTLtype] || "undef") + "<";
                      if ((typname.indexOf(prefix) === 0) && (typname[typname.length - 1] == ">")) {
                         typ = elem.fCtype;
                         typname = typname.substr(prefix.length, typname.length - prefix.length - 1).trim();
 
-                        if ((elem.fSTLtype === jsrio.kSTLmap) || (elem.fSTLtype === jsrio.kSTLmultimap))
+                        if ((elem.fSTLtype === kSTLmap) || (elem.fSTLtype === kSTLmultimap))
                            if (typname.indexOf(",") > 0) typname = typname.substr(0, typname.indexOf(",")).trim();
                            else continue;
                      }
@@ -2096,8 +2103,8 @@ JSROOT.define(['rawinflate'], () => {
                buf.checkByteCount(ver, this.typename + "[]");
             };
             break;
-         case jsrio.kStreamLoop:
-         case kOffsetL + jsrio.kStreamLoop:
+         case kStreamLoop:
+         case kOffsetL + kStreamLoop:
             member.typename = element.fTypeName;
             member.cntname = element.fCountName;
 
@@ -2178,89 +2185,82 @@ JSROOT.define(['rawinflate'], () => {
 
             break;
 
-         case jsrio.kStreamer: {
+         case kStreamer: {
             member.typename = element.fTypeName;
 
             let stl = (element.fSTLtype || 0) % 40;
 
             if ((element._typename === 'TStreamerSTLstring') ||
                (member.typename == "string") || (member.typename == "string*")) {
-               member.readelem = function(buf) { return buf.readTString(); };
-            } else
-               if ((stl === jsrio.kSTLvector) || (stl === jsrio.kSTLlist) ||
-                  (stl === jsrio.kSTLdeque) || (stl === jsrio.kSTLset) ||
-                  (stl === jsrio.kSTLmultiset)) {
-                  let p1 = member.typename.indexOf("<"),
+               member.readelem = buf => buf.readTString();
+            } else if ((stl === kSTLvector) || (stl === kSTLlist) ||
+                       (stl === kSTLdeque) || (stl === kSTLset) || (stl === kSTLmultiset)) {
+               let p1 = member.typename.indexOf("<"),
+                  p2 = member.typename.lastIndexOf(">");
+
+               member.conttype = member.typename.substr(p1 + 1, p2 - p1 - 1).trim();
+
+               member.typeid = jsrio.GetTypeId(member.conttype);
+               if ((member.typeid < 0) && file.fBasicTypes[member.conttype]) {
+                  member.typeid = file.fBasicTypes[member.conttype];
+                  console.log('!!! Reuse basic type', member.conttype, 'from file streamer infos');
+               }
+
+               // check
+               if (element.fCtype && (element.fCtype < 20) && (element.fCtype !== member.typeid)) {
+                  console.warn('Contained type', member.conttype, 'not recognized as basic type', element.fCtype, 'FORCE');
+                  member.typeid = element.fCtype;
+               }
+
+               if (member.typeid > 0) {
+                  member.readelem = function(buf) {
+                     return buf.readFastArray(buf.ntoi4(), this.typeid);
+                  };
+               } else {
+                  member.isptr = false;
+
+                  if (member.conttype.lastIndexOf("*") === member.conttype.length - 1) {
+                     member.isptr = true;
+                     member.conttype = member.conttype.substr(0, member.conttype.length - 1);
+                  }
+
+                  if (element.fCtype === jsrio.kObjectp) member.isptr = true;
+
+                  member.arrkind = getArrayKind(member.conttype);
+
+                  member.readelem = readVectorElement;
+
+                  if (!member.isptr && (member.arrkind < 0)) {
+
+                     let subelem = jsrio.createStreamerElement("temp", member.conttype);
+
+                     if (subelem.fType === kStreamer) {
+                        subelem.$fictional = true;
+                        member.submember = jsrio.createMember(subelem, file);
+                     }
+                  }
+               }
+            } else if ((stl === kSTLmap) || (stl === kSTLmultimap)) {
+               const p1 = member.typename.indexOf("<"),
                      p2 = member.typename.lastIndexOf(">");
 
-                  member.conttype = member.typename.substr(p1 + 1, p2 - p1 - 1).trim();
+               member.pairtype = "pair<" + member.typename.substr(p1 + 1, p2 - p1 - 1) + ">";
 
-                  member.typeid = jsrio.GetTypeId(member.conttype);
-                  if ((member.typeid < 0) && file.fBasicTypes[member.conttype]) {
-                     member.typeid = file.fBasicTypes[member.conttype];
-                     console.log('!!! Reuse basic type', member.conttype, 'from file streamer infos');
-                  }
+               // remember found streamer info from the file -
+               // most probably it is the only one which should be used
+               member.si = file.findStreamerInfo(member.pairtype);
 
-                  // check
-                  if (element.fCtype && (element.fCtype < 20) && (element.fCtype !== member.typeid)) {
-                     console.warn('Contained type', member.conttype, 'not recognized as basic type', element.fCtype, 'FORCE');
-                     member.typeid = element.fCtype;
-                  }
+               member.streamer = getPairStreamer(member.si, member.pairtype, file);
 
-                  if (member.typeid > 0) {
-                     member.readelem = function(buf) {
-                        return buf.readFastArray(buf.ntoi4(), this.typeid);
-                     };
-                  } else {
-                     member.isptr = false;
+               if (!member.streamer || (member.streamer.length !== 2)) {
+                  console.error(`Fail to build streamer for pair ${member.pairtype}`);
+                  delete member.streamer;
+               }
 
-                     if (member.conttype.lastIndexOf("*") === member.conttype.length - 1) {
-                        member.isptr = true;
-                        member.conttype = member.conttype.substr(0, member.conttype.length - 1);
-                     }
-
-                     if (element.fCtype === jsrio.kObjectp) member.isptr = true;
-
-                     member.arrkind = getArrayKind(member.conttype);
-
-                     member.readelem = readVectorElement;
-
-                     if (!member.isptr && (member.arrkind < 0)) {
-
-                        let subelem = jsrio.createStreamerElement("temp", member.conttype);
-
-                        if (subelem.fType === jsrio.kStreamer) {
-                           subelem.$fictional = true;
-                           member.submember = jsrio.createMember(subelem, file);
-                        }
-                     }
-                  }
-               } else
-                  if ((stl === jsrio.kSTLmap) || (stl === jsrio.kSTLmultimap)) {
-
-                     const p1 = member.typename.indexOf("<"),
-                           p2 = member.typename.lastIndexOf(">");
-
-                     member.pairtype = "pair<" + member.typename.substr(p1 + 1, p2 - p1 - 1) + ">";
-
-                     // remember found streamer info from the file -
-                     // most probably it is the only one which should be used
-                     member.si = file.findStreamerInfo(member.pairtype);
-
-                     member.streamer = getPairStreamer(member.si, member.pairtype, file);
-
-                     if (!member.streamer || (member.streamer.length !== 2)) {
-                        console.error(`Fail to build streamer for pair ${member.pairtype}`);
-                        delete member.streamer;
-                     }
-
-                     if (member.streamer) member.readelem = readMapElement;
-                  } else
-                     if (stl === jsrio.kSTLbitset) {
-                        member.readelem = function(buf/*, obj*/) {
-                           return buf.readFastArray(buf.ntou4(), kBool);
-                        }
-                     }
+               if (member.streamer) member.readelem = readMapElement;
+            } else if (stl === kSTLbitset) {
+               member.readelem = (buf/*, obj*/) => buf.readFastArray(buf.ntou4(), kBool);
+            }
 
             if (!member.readelem) {
                console.error(`'failed to create streamer for element ${member.typename} ${member.name} element ${element._typename} STL type ${element.fSTLtype}`);
@@ -2757,13 +2757,13 @@ JSROOT.define(['rawinflate'], () => {
          elem.fSTLtype = buf.ntou4();
          elem.fCtype = buf.ntou4();
 
-         if ((elem.fSTLtype === jsrio.kSTLmultimap) &&
+         if ((elem.fSTLtype === kSTLmultimap) &&
             ((elem.fTypeName.indexOf("std::set") === 0) ||
-               (elem.fTypeName.indexOf("set") === 0))) elem.fSTLtype = jsrio.kSTLset;
+               (elem.fTypeName.indexOf("set") === 0))) elem.fSTLtype = kSTLset;
 
-         if ((elem.fSTLtype === jsrio.kSTLset) &&
+         if ((elem.fSTLtype === kSTLset) &&
             ((elem.fTypeName.indexOf("std::multimap") === 0) ||
-               (elem.fTypeName.indexOf("multimap") === 0))) elem.fSTLtype = jsrio.kSTLmultimap;
+               (elem.fTypeName.indexOf("multimap") === 0))) elem.fSTLtype = kSTLmultimap;
       }
 
       cs.TStreamerSTLstring = (buf, elem) => {
@@ -3035,16 +3035,16 @@ JSROOT.define(['rawinflate'], () => {
       if (elem.fType > 0) return elem; // basic type
 
       // check if there are STL containers
-      let stltype = jsrio.kNotSTL, pos = typename.indexOf("<");
+      let stltype = kNotSTL, pos = typename.indexOf("<");
       if ((pos > 0) && (typename.indexOf(">") > pos + 2))
-         for (let stl = 1; stl < jsrio.StlNames.length; ++stl)
-            if (typename.substr(0, pos) === jsrio.StlNames[stl]) {
+         for (let stl = 1; stl < StlNames.length; ++stl)
+            if (typename.substr(0, pos) === StlNames[stl]) {
                stltype = stl; break;
             }
 
-      if (stltype !== jsrio.kNotSTL) {
+      if (stltype !== kNotSTL) {
          elem._typename = 'TStreamerSTL';
-         elem.fType = jsrio.kStreamer;
+         elem.fType = kStreamer;
          elem.fSTLtype = stltype;
          elem.fCtype = 0;
          return elem;
@@ -3126,6 +3126,9 @@ JSROOT.define(['rawinflate'], () => {
    jsrio.kBase = kBase;
    jsrio.kOffsetL = kOffsetL;
    jsrio.kOffsetP = kOffsetP;
+
+   jsrio.kStreamer = kStreamer;
+   jsrio.kStreamLoop = kStreamLoop;
 
    JSROOT.TBuffer = TBuffer;
    JSROOT.TDirectory = TDirectory;
