@@ -265,20 +265,6 @@ JSROOT.define([], () => {
 
       /* objects (inflate) */
 
-      function zip_HuftList() {
-         this.next = null;
-         this.list = null;
-      }
-
-      function zip_HuftNode() {
-         this.e = 0; // number of extra bits or operation
-         this.b = 0; // number of bits in this code or subcode
-
-         // union
-         this.n = 0; // literal, length base, or distance base
-         this.t = null; // (zip_HuftNode) pointer to next level of table
-      }
-
       function zip_HuftBuild(b,     // code lengths in bits (all assumed <= BMAX)
                              n,     // number of codes (assumed <= N_MAX)
                              s,     // number of simple-valued codes (0..s-1)
@@ -306,7 +292,7 @@ JSROOT.define([], () => {
              u = new Array(BMAX), // zip_HuftNode[BMAX][]  table stack
              v = new Array(N_MAX), // values in order of bit length
              x = new Array(BMAX+1),// bit offsets, then code stack
-             r = new zip_HuftNode(), // table entry for structure assignment
+             r = { e: 0, b: 0, n: 0, t: null }, // new zip_HuftNode(), // table entry for structure assignment
              rr = null, // temporary variable, use in assignment
              a,         // counter for codes of length k
              el,        // length of EOB code (value 256)
@@ -426,14 +412,13 @@ JSROOT.define([], () => {
 
                   // allocate and link in new table
                   q = new Array(z);
-                  for (o = 0; o < z; ++o) {
-                     q[o] = new zip_HuftNode();
-                  }
+                  for (o = 0; o < z; ++o)
+                     q[o] = { e: 0, b: 0, n: 0, t: null }; // new zip_HuftNode
 
                   if (tail == null)
-                     tail = this.root = new zip_HuftList();
+                     tail = this.root = { next: null, list: null }; // new zip_HuftList();
                   else
-                     tail = tail.next = new zip_HuftList();
+                     tail = tail.next = { next: null, list: null }; // new zip_HuftList();
                   tail.next = null;
                   tail.list = q;
                   u[h] = q;  // table starts after link
