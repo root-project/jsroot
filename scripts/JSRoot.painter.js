@@ -3535,11 +3535,11 @@ JSROOT.define(['d3'], (d3) => {
 
       painter.redrawObject = function(obj) {
          this.txt = obj;
-         this.Draw();
+         this.drawText();
          return true;
       }
 
-      painter.Draw = function() {
+      painter.drawText = function() {
          let txt = (this.txt._typename && (this.txt._typename == "TObjString")) ? this.txt.fString : this.txt.value;
          if (typeof txt != 'string') txt = "<undefined>";
 
@@ -3554,7 +3554,7 @@ JSROOT.define(['d3'], (d3) => {
          let frame = this.selectDom(),
             main = frame.select("div");
          if (main.empty())
-            main = frame.append("div").style('max-width', '100%').style('max-height', '100%').style('overflow', 'auto');
+            main = frame.append("div").attr('style', 'max-width:100%;max-height:100%;overflow:auto');
          main.html(txt);
 
          // (re) set painter to first child element, base painter not requires canvas
@@ -3566,7 +3566,7 @@ JSROOT.define(['d3'], (d3) => {
          return Promise.resolve(this);
       }
 
-      return painter.Draw();
+      return painter.drawText();
    }
 
    /** @summary Register handle to react on window resize
@@ -3593,8 +3593,7 @@ JSROOT.define(['d3'], (d3) => {
          else if (handle && (typeof handle == 'object') && (typeof handle.checkResize == 'function')) {
             handle.checkResize();
          } else {
-            let dummy = new BasePainter(handle);
-            let node = dummy.selectDom();
+            let node = new BasePainter(handle).selectDom();
             if (!node.empty()) {
                let mdi = node.property('mdi');
                if (mdi && typeof mdi.checkMDIResize == 'function') {
@@ -3607,12 +3606,10 @@ JSROOT.define(['d3'], (d3) => {
          document.body.style.cursor = 'auto';
       }
 
-      function ProcessResize() {
+      window.addEventListener('resize', () => {
          if (myInterval !== null) clearTimeout(myInterval);
          myInterval = setTimeout(ResizeTimer, myDelay);
-      }
-
-      window.addEventListener('resize', ProcessResize);
+      });
    }
 
    // list of registered draw functions
@@ -4057,8 +4054,7 @@ JSROOT.define(['d3'], (d3) => {
             }
          }
       } else {
-         let dummy = new ObjectPainter(dom),
-             top = dummy.getTopPainter();
+         let top = new BasePainter(dom).getTopPainter();
          // base painter do not have this method, if it there use it
          // it can be object painter here or can be specially introduce method to handling redraw!
          if (top && typeof top.redrawObject == 'function') {
@@ -4194,10 +4190,12 @@ JSROOT.define(['d3'], (d3) => {
      * JSROOT.resize("drawing", { width: 500, height: 200 } );
      * JSROOT.resize(document.querySelector("#drawing"), true); */
    JSROOT.resize = function(dom, arg) {
-      if (arg === true) arg = { force: true }; else
-         if (typeof arg !== 'object') arg = null;
-      let done = false, dummy = new ObjectPainter(dom);
-      dummy.forEachPainter(painter => {
+      if (arg === true)
+         arg = { force: true };
+      else if (typeof arg !== 'object')
+         arg = null;
+      let done = false;
+      new ObjectPainter(dom).forEachPainter(painter => {
          if (!done && (typeof painter.checkResize == 'function'))
             done = painter.checkResize(arg);
       });

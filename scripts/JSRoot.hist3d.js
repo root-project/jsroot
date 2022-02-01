@@ -2936,9 +2936,8 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
 
       let painter = new JSROOT.ObjectPainter(dom, axis);
 
-      if (!('_main' in axis)) {
+      if (!('_main' in axis))
          painter.addToPadPrimitives();
-      }
 
       painter.Draw3DAxis = function() {
          let main = this.getFramePainter();
