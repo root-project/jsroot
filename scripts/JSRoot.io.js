@@ -136,7 +136,7 @@ JSROOT.define(['rawinflate'], () => {
       },
 
       /** @summary Analyze and returns arrays kind
-        * @desc 0 if TString (or equivalent), positive value - some basic type, -1 - any other kind */
+        * @return 0 if TString (or equivalent), positive value - some basic type, -1 - any other kind */
       GetArrayKind(type_name) {
          if ((type_name === "TString") || (type_name === "string") ||
             (jsrio.CustomStreamers[type_name] === 'TString')) return 0;
@@ -2897,11 +2897,10 @@ JSROOT.define(['rawinflate'], () => {
 
       let ds = jsrio.DirectStreamers;
 
-      ds['TQObject'] = ds['TGraphStruct'] = ds['TGraphNode'] = ds['TGraphEdge'] = function() {
-         // do nothing
-      }
+      // do nothing
+      ds.TQObject = ds.TGraphStruct = ds.TGraphNode = ds.TGraphEdge = () => {};
 
-      ds['TDatime'] = function(buf, obj) {
+      ds.TDatime = (buf, obj) => {
          obj.fDatime = buf.ntou4();
          //  obj.GetDate = function() {
          //  let res = new Date();
@@ -2914,9 +2913,9 @@ JSROOT.define(['rawinflate'], () => {
          //  res.setMilliseconds(0);
          //  return res;
          //  }
-      }
+      };
 
-      ds['TKey'] = function(buf, key) {
+      ds.TKey = (buf, key) => {
          key.fNbytes = buf.ntoi4();
          key.fVersion = buf.ntoi2();
          key.fObjlen = buf.ntou4();
@@ -2933,9 +2932,9 @@ JSROOT.define(['rawinflate'], () => {
          key.fClassName = buf.readTString();
          key.fName = buf.readTString();
          key.fTitle = buf.readTString();
-      }
+      };
 
-      ds['TDirectory'] = function(buf, dir) {
+      ds.TDirectory = (buf, dir) => {
          const version = buf.ntou2();
          dir.fDatimeC = buf.classStreamer({}, 'TDatime');
          dir.fDatimeM = buf.classStreamer({}, 'TDatime');
@@ -2947,7 +2946,7 @@ JSROOT.define(['rawinflate'], () => {
          // if ((version % 1000) > 2) buf.shift(18); // skip fUUID
       }
 
-      ds['TBasket'] = function(buf, obj) {
+      ds.TBasket = (buf, obj) => {
          buf.classStreamer(obj, 'TKey');
          const ver = buf.readVersion();
          obj.fBufferSize = buf.ntoi4();
@@ -2987,7 +2986,7 @@ JSROOT.define(['rawinflate'], () => {
          }
       }
 
-      ds['TRef'] = function(buf, obj) {
+      ds.TRef = (buf, obj) => {
          buf.classStreamer(obj, "TObject");
          if (obj.fBits & jsrio.kHasUUID)
             obj.fUUID = buf.readTString();
@@ -2995,7 +2994,7 @@ JSROOT.define(['rawinflate'], () => {
             obj.fPID = buf.ntou2();
       }
 
-      ds['TMatrixTSym<float>'] = function(buf, obj) {
+      ds['TMatrixTSym<float>'] = (buf, obj) => {
          buf.classStreamer(obj, "TMatrixTBase<float>");
          obj.fElements = new Float32Array(obj.fNelems);
          let arr = buf.readFastArray((obj.fNrows * (obj.fNcols + 1)) / 2, jsrio.kFloat), cnt = 0;
@@ -3004,7 +3003,7 @@ JSROOT.define(['rawinflate'], () => {
                obj.fElements[j * obj.fNcols + i] = obj.fElements[i * obj.fNcols + j] = arr[cnt++];
       }
 
-      ds['TMatrixTSym<double>'] = function(buf, obj) {
+      ds['TMatrixTSym<double>'] = (buf, obj) => {
          buf.classStreamer(obj, "TMatrixTBase<double>");
          obj.fElements = new Float64Array(obj.fNelems);
          let arr = buf.readFastArray((obj.fNrows * (obj.fNcols + 1)) / 2, jsrio.kDouble), cnt = 0;
@@ -3018,7 +3017,7 @@ JSROOT.define(['rawinflate'], () => {
    /** @summary create element of the streamer
      * @private  */
    jsrio.createStreamerElement = function(name, typename, file) {
-      let elem = {
+      const elem = {
          _typename: 'TStreamerElement', fName: name, fTypeName: typename,
          fType: 0, fSize: 0, fArrayLength: 0, fArrayDim: 0, fMaxIndex: [0, 0, 0, 0, 0],
          fXmin: 0, fXmax: 0, fFactor: 0
@@ -3056,9 +3055,7 @@ JSROOT.define(['rawinflate'], () => {
       if (isptr)
          elem.fTypeName = typename = typename.substr(0, typename.length - 1);
 
-      const arrkind = jsrio.GetArrayKind(typename);
-
-      if (arrkind == 0) {
+      if (jsrio.GetArrayKind(typename) == 0) {
          elem.fType = jsrio.kTString;
          return elem;
       }
