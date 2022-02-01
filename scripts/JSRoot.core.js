@@ -878,19 +878,18 @@
             // this is ROOT-coded array
             let arr = null, dflt = (value.$arr==="Bool") ? false : 0;
             switch (value.$arr) {
-               case "Int8": arr = new Int8Array(value.len); break;
-               case "Uint8": arr = new Uint8Array(value.len); break;
-               case "Int16": arr = new Int16Array(value.len); break;
-               case "Uint16": arr = new Uint16Array(value.len); break;
-               case "Int32": arr = new Int32Array(value.len); break;
-               case "Uint32": arr = new Uint32Array(value.len); break;
-               case "Float32": arr = new Float32Array(value.len); break;
+               case "Int8": arr = new Int8Array(value.len).fill(dflt); break;
+               case "Uint8": arr = new Uint8Array(value.len).fill(dflt); break;
+               case "Int16": arr = new Int16Array(value.len).fill(dflt); break;
+               case "Uint16": arr = new Uint16Array(value.len).fill(dflt); break;
+               case "Int32": arr = new Int32Array(value.len).fill(dflt); break;
+               case "Uint32": arr = new Uint32Array(value.len).fill(dflt); break;
+               case "Float32": arr = new Float32Array(value.len).fill(dflt); break;
                case "Int64":
                case "Uint64":
-               case "Float64": arr = new Float64Array(value.len); break;
-               default: arr = new Array(value.len); break;
+               case "Float64": arr = new Float64Array(value.len).fill(dflt); break;
+               default: arr = new Array(value.len).fill(dflt); break;
             }
-            for (let k = 0; k < value.len; ++k) arr[k] = dflt;
 
             if (value.b !== undefined) {
                // base64 coding
