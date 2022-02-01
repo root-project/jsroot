@@ -2129,6 +2129,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                               item = _item;
                               opt = _opt;
                            } else if (top.getPadPainter() === p.getPadPainter()) {
+                              if (_opt.indexOf("same ")==0) _opt = _opt.substr(5);
                               item += "+" + _item;
                               opt += "+" + _opt;
                            }
