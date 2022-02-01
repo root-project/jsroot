@@ -2863,15 +2863,15 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
          args = { expr: opt, branch: obj };
          tree = obj.$tree;
       } else {
+         if (!args) args = 'player';
 
-         if ((args==='player') || !args) {
+         if ((typeof args == 'string') && (args.indexOf('player') == 0))
             return JSROOT.require("hierarchy").then(() => {
                JSROOT.createTreePlayer(painter);
                painter.configureTree(tree);
-               painter.showPlayer();
+               painter.showPlayer((args[6] ==':') ? { parse_expr: args.substr(7) } : null);
                return painter;
             });
-         }
 
          if (typeof args === 'string') args = { expr: args };
       }

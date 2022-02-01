@@ -2111,11 +2111,21 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                let items = [], opts = [];
 
                if (this.disp)
-                  this.disp.forEachPainter(p => {
-                     let item = p.getItemName();
+                  this.disp.forEachFrame(f => {
+                     let dummy = new JSROOT.ObjectPainter(f),
+                         top = dummy.getTopPainter();
+
+                     if (!top || !top.getItemName()) {
+                        top = null;
+                        dummy.forEachPainter(p => {
+                           if (!top && p.getItemName()) top = p;
+                        });
+                     }
+
+                     let item = top ? top.getItemName() : null;
                      if (item) {
                         items.push(item);
-                        opts.push(p.getDrawOpt() || p.getItemDrawOpt());
+                        opts.push(top.getDrawOpt() || top.getItemDrawOpt() || "");
                      }
                   });
 
@@ -5116,11 +5126,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          main.select('.treedraw_more').remove(); // remove more button first
 
          main.select(".treedraw_buttons").node().innerHTML +=
-             ` Cut: <input class="treedraw_cut ui-corner-all ui-widget" style="width:8em;margin-left:5px" title="cut expression"></input>
-               Opt: <input class="treedraw_opt ui-corner-all ui-widget" style="width:5em;margin-left:5px" title="histogram draw options"></input>
-               Num: <input class="treedraw_number" type="number" min="0" max="${numentries}" step="1000" style="width:7em;margin-left:5px" title="number of entries to process (default all)"></input>
-               First: <input class="treedraw_first" type="number" min="0" max="${numentries}" step="1000" style="width:7em;margin-left:5px" title="first entry to process (default first)"></input>
-               <button class="treedraw_clear" title="Clear drawing">Clear</button>`;
+             'Cut: <input class="treedraw_cut ui-corner-all ui-widget" style="width:8em;margin-left:5px" title="cut expression"></input>'+
+             'Opt: <input class="treedraw_opt ui-corner-all ui-widget" style="width:5em;margin-left:5px" title="histogram draw options"></input>'+
+             `Num: <input class="treedraw_number" type="number" min="0" max="${numentries}" step="1000" style="width:7em;margin-left:5px" title="number of entries to process (default all)"></input>`+
+             `First: <input class="treedraw_first" type="number" min="0" max="${numentries}" step="1000" style="width:7em;margin-left:5px" title="first entry to process (default first)"></input>`+
+             '<button class="treedraw_clear" title="Clear drawing">Clear</button>';
 
          main.select('.treedraw_exe').on("click", () => this.performDraw());
          main.select(".treedraw_cut").property("value", args && args.parse_cut ? args.parse_cut : "").on("change", () => this.performDraw());
@@ -5149,7 +5159,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                       <div id="${this.drawid}" style="flex: 1 1 auto; overflow:hidden;"></div>
                    </div>`);
 
-         // only when main html element created, one can painter
+         // only when main html element created, one can set painter
          // ObjectPainter allow such usage of methods from BasePainter
          this.setTopPainter();
 
@@ -5183,9 +5193,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       }
 
       player.getValue = function(sel) {
-         let elem = this.selectDom().select(sel);
+         const elem = this.selectDom().select(sel);
          if (elem.empty()) return;
-         let val = elem.property("value");
+         const val = elem.property("value");
          if (val !== undefined) return val;
          return elem.attr("value");
       }
@@ -5193,8 +5203,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       player.performLocalDraw = function() {
          if (!this.local_tree) return;
 
-         let frame = this.selectDom(),
-             args = { expr: this.getValue('.treedraw_varexp') };
+         const frame = this.selectDom(),
+               args = { expr: this.getValue('.treedraw_varexp') };
 
          if (frame.select('.treedraw_more').empty()) {
             args.cut = this.getValue('.treedraw_cut');
@@ -5213,11 +5223,18 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          if (args.drawopt) JSROOT.cleanup(this.drawid);
 
-         let process_result = obj => JSROOT.redraw(this.drawid, obj);
+         const process_result = obj => JSROOT.redraw(this.drawid, obj);
 
          args.progress = process_result;
 
          this.local_tree.Draw(args).then(process_result);
+      }
+
+      player.getDrawOpt = function() {
+         let res = "player",
+             expr = this.getValue('.treedraw_varexp')
+         if (expr) res += ":" + expr;
+         return res;
       }
 
       player.performDraw = function() {
