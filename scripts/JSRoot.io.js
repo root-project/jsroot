@@ -47,7 +47,6 @@ JSROOT.define([], () => {
    let jsrio = {
 
       // here constants which are used outside
-
       kChar: kChar, kShort: kShort, kInt: kInt, kLong: kLong, kFloat: kFloat, kCounter: kCounter,
       kCharStar: kCharStar, kDouble: kDouble, kDouble32: kDouble32, kLegacyChar: kLegacyChar,
       kUChar: kUChar, kUShort: kUShort, kUInt: kUInt, kULong: kULong, kBits: kBits,
@@ -77,94 +76,66 @@ JSROOT.define([], () => {
       // used for special classes like TRef or TBasket
       DirectStreamers: {},
 
-      /** @summary Returns true if type is integer */
-      IsInteger(typ) {
-         return ((typ >= kChar) && (typ <= kLong)) || (typ === kCounter) ||
-            ((typ >= kLegacyChar) && (typ <= kBool));
-      },
-
-      /** @summary Returns true if numeric type */
-      IsNumeric(typ) { return (typ > 0) && (typ <= kBool) && (typ !== kCharStar); },
-
-      /** @summary Returns type by its name */
-      GetTypeId(typname, norecursion) {
-         switch (typname) {
-            case "bool":
-            case "Bool_t": return kBool;
-            case "char":
-            case "signed char":
-            case "Char_t": return kChar;
-            case "Color_t":
-            case "Style_t":
-            case "Width_t":
-            case "short":
-            case "Short_t": return kShort;
-            case "int":
-            case "EErrorType":
-            case "Int_t": return kInt;
-            case "long":
-            case "Long_t": return kLong;
-            case "float":
-            case "Float_t": return kFloat;
-            case "double":
-            case "Double_t": return kDouble;
-            case "unsigned char":
-            case "UChar_t": return kUChar;
-            case "unsigned short":
-            case "UShort_t": return kUShort;
-            case "unsigned":
-            case "unsigned int":
-            case "UInt_t": return kUInt;
-            case "unsigned long":
-            case "ULong_t": return kULong;
-            case "int64_t":
-            case "long long":
-            case "Long64_t": return kLong64;
-            case "uint64_t":
-            case "unsigned long long":
-            case "ULong64_t": return kULong64;
-            case "Double32_t": return kDouble32;
-            case "Float16_t": return kFloat16;
-            case "char*":
-            case "const char*":
-            case "const Char_t*": return kCharStar;
-         }
-
-         if (!norecursion) {
-            let replace = jsrio.CustomStreamers[typname];
-            if (typeof replace === "string") return jsrio.GetTypeId(replace, true);
-         }
-
-         return -1;
-      },
-
-      /** @summary Get bytes size of the type */
-      GetTypeSize(typname) {
-         switch (typname) {
-            case kBool:
-            case kChar:
-            case kUChar: return 1;
-            case kShort:
-            case kUShort: return 2;
-            case kInt:
-            case kFloat:
-            case kUInt: return 4;
-            case kLong:
-            case kDouble:
-            case kULong:
-            case kLong64:
-            case kULong64: return 8;
-         }
-         return -1;
-      },
-
       /** @summary Add custom streamer
         * @public */
       addUserStreamer(type, user_streamer) {
-         jsrio.CustomStreamers[type] = user_streamer;
+         this.CustomStreamers[type] = user_streamer;
       }
 
    } // namespace jsrio
+
+   /** @summary Returns type id by its name
+     * @private */
+   function getTypeId(typname, norecursion) {
+      switch (typname) {
+         case "bool":
+         case "Bool_t": return kBool;
+         case "char":
+         case "signed char":
+         case "Char_t": return kChar;
+         case "Color_t":
+         case "Style_t":
+         case "Width_t":
+         case "short":
+         case "Short_t": return kShort;
+         case "int":
+         case "EErrorType":
+         case "Int_t": return kInt;
+         case "long":
+         case "Long_t": return kLong;
+         case "float":
+         case "Float_t": return kFloat;
+         case "double":
+         case "Double_t": return kDouble;
+         case "unsigned char":
+         case "UChar_t": return kUChar;
+         case "unsigned short":
+         case "UShort_t": return kUShort;
+         case "unsigned":
+         case "unsigned int":
+         case "UInt_t": return kUInt;
+         case "unsigned long":
+         case "ULong_t": return kULong;
+         case "int64_t":
+         case "long long":
+         case "Long64_t": return kLong64;
+         case "uint64_t":
+         case "unsigned long long":
+         case "ULong64_t": return kULong64;
+         case "Double32_t": return kDouble32;
+         case "Float16_t": return kFloat16;
+         case "char*":
+         case "const char*":
+         case "const Char_t*": return kCharStar;
+      }
+
+      if (!norecursion) {
+         let replace = jsrio.CustomStreamers[typname];
+         if (typeof replace === "string") return getTypeId(replace, true);
+      }
+
+      return -1;
+   }
 
    /** @summary Analyze and returns arrays kind
      * @return 0 if TString (or equivalent), positive value - some basic type, -1 - any other kind
@@ -2105,7 +2076,7 @@ JSROOT.define([], () => {
                   typ = typ % 20;
                }
 
-               const kind = jsrio.GetTypeId(typname);
+               const kind = getTypeId(typname);
                if (kind === typ) continue;
 
                if ((typ === kBits) && (kind === kUInt)) continue;
@@ -2937,7 +2908,7 @@ JSROOT.define([], () => {
 
                member.conttype = member.typename.substr(p1 + 1, p2 - p1 - 1).trim();
 
-               member.typeid = jsrio.GetTypeId(member.conttype);
+               member.typeid = getTypeId(member.conttype);
                if ((member.typeid < 0) && file.fBasicTypes[member.conttype]) {
                   member.typeid = file.fBasicTypes[member.conttype];
                   console.log('!!! Reuse basic type', member.conttype, 'from file streamer infos');
@@ -3761,7 +3732,7 @@ JSROOT.define([], () => {
       };
 
       if (typeof typename === "string") {
-         elem.fType = jsrio.GetTypeId(typename);
+         elem.fType = getTypeId(typename);
          if ((elem.fType < 0) && file && file.fBasicTypes[typename])
             elem.fType = file.fBasicTypes[typename];
       } else {
