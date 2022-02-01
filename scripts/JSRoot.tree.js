@@ -5,19 +5,16 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
 
    "use strict";
 
-   JSROOT.BranchType = {
-      kLeafNode: 0, kBaseClassNode: 1, kObjectNode: 2, kClonesNode: 3,
-      kSTLNode: 4, kClonesMemberNode: 31, kSTLMemberNode: 41
-   };
-
-   jsrio.BranchBits = {
-      kDoNotProcess: JSROOT.BIT(10), // Active bit for branches
-      kIsClone: JSROOT.BIT(11), // to indicate a TBranchClones
-      kBranchObject: JSROOT.BIT(12), // branch is a TObject*
-      kBranchAny: JSROOT.BIT(17), // branch is an object*
-      kAutoDelete: JSROOT.BIT(15),
-      kDoNotUseBufferMap: JSROOT.BIT(22) // If set, at least one of the entry in the branch will use the buffer's map of classname and objects.
-   }
+   // branch types
+   const kLeafNode = 0, kBaseClassNode = 1, kObjectNode = 2, kClonesNode = 3,
+         kSTLNode = 4, kClonesMemberNode = 31, kSTLMemberNode = 41,
+         // branch bits
+         // kDoNotProcess = JSROOT.BIT(10), // Active bit for branches
+         // kIsClone = JSROOT.BIT(11), // to indicate a TBranchClones
+         // kBranchObject = JSROOT.BIT(12), // branch is a TObject*
+         // kBranchAny = JSROOT.BIT(17), // branch is an object*
+         // kAutoDelete = JSROOT.BIT(15),
+         kDoNotUseBufferMap = JSROOT.BIT(22); // If set, at least one of the entry in the branch will use the buffer's map of classname and objects.
 
    /**
     * @summary Class to read data from TTree
@@ -363,7 +360,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
                   // this is selection of member, but probably we need to activate iterator for ROOT collection
                   if ((arriter.length === 0) && br) {
                      // TODO: if selected member is simple data type - no need to make other checks - just break here
-                     if ((br.fType === JSROOT.BranchType.kClonesNode) || (br.fType === JSROOT.BranchType.kSTLNode)) {
+                     if ((br.fType === kClonesNode) || (br.fType === kSTLNode)) {
                         arriter.push(undefined);
                      } else {
                         let objclass = getBranchObjectClass(br, tree, false, true);
@@ -1349,26 +1346,26 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
 
       if (!branch || (branch._typename !== "TBranchElement")) return "";
 
-      if ((branch.fType === JSROOT.BranchType.kLeafNode) && (branch.fID === -2) && (branch.fStreamerType === -1)) {
+      if ((branch.fType === kLeafNode) && (branch.fID === -2) && (branch.fStreamerType === -1)) {
          // object where all sub-branches will be collected
          return branch.fClassName;
       }
 
-      if (with_clones && branch.fClonesName && ((branch.fType === JSROOT.BranchType.kClonesNode) || (branch.fType === JSROOT.BranchType.kSTLNode)))
+      if (with_clones && branch.fClonesName && ((branch.fType === kClonesNode) || (branch.fType === kSTLNode)))
          return branch.fClonesName;
 
       let s_elem = findBrachStreamerElement(branch, tree.$file);
 
-      if ((branch.fType === JSROOT.BranchType.kBaseClassNode) && s_elem && (s_elem.fTypeName === "BASE"))
+      if ((branch.fType === kBaseClassNode) && s_elem && (s_elem.fTypeName === "BASE"))
          return s_elem.fName;
 
-      if (branch.fType === JSROOT.BranchType.kObjectNode) {
+      if (branch.fType === kObjectNode) {
          if (s_elem && ((s_elem.fType === jsrio.kObject) || (s_elem.fType === jsrio.kAny)))
             return s_elem.fTypeName;
          return "TObject";
       }
 
-      if ((branch.fType === JSROOT.BranchType.kLeafNode) && s_elem && with_leafs) {
+      if ((branch.fType === kLeafNode) && s_elem && with_leafs) {
          if ((s_elem.fType === jsrio.kObject) || (s_elem.fType === jsrio.kAny)) return s_elem.fTypeName;
          if (s_elem.fType === jsrio.kObjectp) return s_elem.fTypeName.substr(0, s_elem.fTypeName.length - 1);
       }
@@ -1546,7 +1543,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
                GetEntry: function(entry) {
                   // This should be equivalent to TBranch::GetEntry() method
                   let shift = entry - this.first_entry, off;
-                  if (!this.branch.TestBit(jsrio.BranchBits.kDoNotUseBufferMap))
+                  if (!this.branch.TestBit(kDoNotUseBufferMap))
                      this.raw.clearObjectMap();
                   if (this.basket.fEntryOffset) {
                      off = this.basket.fEntryOffset[shift];
@@ -1632,7 +1629,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
                   let br = lst.arr[k];
                   if ((chld_kind > 0) && (br.fType !== chld_kind)) continue;
 
-                  if (br.fType === JSROOT.BranchType.kBaseClassNode) {
+                  if (br.fType === kBaseClassNode) {
                      if (!ScanBranches(br.fBranches, master_target, chld_kind)) return false;
                      continue;
                   }
@@ -1683,7 +1680,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
                };
             } else
 
-               if ((branch.fType === JSROOT.BranchType.kClonesNode) || (branch.fType === JSROOT.BranchType.kSTLNode)) {
+               if ((branch.fType === kClonesNode) || (branch.fType === kSTLNode)) {
 
                   elem = jsrio.createStreamerElement(target_name, jsrio.kInt);
 
@@ -1717,7 +1714,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
 
                      member.methods = makeMethodsList(member.conttype);
 
-                     child_scan = (branch.fType === JSROOT.BranchType.kClonesNode) ? JSROOT.BranchType.kClonesMemberNode : JSROOT.BranchType.kSTLMemberNode;
+                     child_scan = (branch.fType === kClonesNode) ? kClonesMemberNode : kSTLMemberNode;
                   }
                } else
 
@@ -2757,7 +2754,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
                if (!bnode._childs) bnode._childs = [];
 
                if (bobj.fLeaves && (bobj.fLeaves.arr.length === 1) &&
-                   ((bobj.fType === JSROOT.BranchType.kClonesNode) || (bobj.fType === JSROOT.BranchType.kSTLNode))) {
+                   ((bobj.fType === kClonesNode) || (bobj.fType === kSTLNode))) {
                     bobj.fLeaves.arr[0].$branch = bobj;
                     bnode._childs.push({
                        _name: "@size",
@@ -2846,7 +2843,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
       } else if (obj.$branch) {
          // this is drawing of the single leaf from the branch
          args = { expr: "." + obj.fName + (opt || ""), branch: obj.$branch };
-         if ((args.branch.fType === JSROOT.BranchType.kClonesNode) || (args.branch.fType === JSROOT.BranchType.kSTLNode)) {
+         if ((args.branch.fType === kClonesNode) || (args.branch.fType === kSTLNode)) {
             // special case of size
             args.expr = opt;
             args.direct_branch = true;
