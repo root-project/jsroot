@@ -5,7 +5,8 @@ JSROOT.define(['rawinflate'], () => {
 
    "use strict";
 
-   const clTObject = 'TObject', clTNamed = 'TNamed';
+   const clTObject = 'TObject', clTNamed = 'TNamed',
+         kChar = 1, kShort = 2, kInt = 3;
 
    /** @summary Holder of IO functionality
      * @alias JSROOT.IO
@@ -14,7 +15,7 @@ JSROOT.define(['rawinflate'], () => {
 
    let jsrio = {
       kBase: 0, kOffsetL: 20, kOffsetP: 40,
-      kChar: 1, kShort: 2, kInt: 3, kLong: 4, kFloat: 5, kCounter: 6, kCharStar: 7, kDouble: 8, kDouble32: 9, kLegacyChar: 10,
+      kLong: 4, kFloat: 5, kCounter: 6, kCharStar: 7, kDouble: 8, kDouble32: 9, kLegacyChar: 10,
       kUChar: 11, kUShort: 12, kUInt: 13, kULong: 14, kBits: 15, kLong64: 16, kULong64: 17, kBool: 18, kFloat16: 19,
       kObject: 61, kAny: 62, kObjectp: 63, kObjectP: 64, kTString: 65,
       kTObject: 66, kTNamed: 67, kAnyp: 68, kAnyP: 69, kAnyPnoVT: 70, kSTLp: 71,
@@ -72,15 +73,15 @@ JSROOT.define(['rawinflate'], () => {
             case "Bool_t": return jsrio.kBool;
             case "char":
             case "signed char":
-            case "Char_t": return jsrio.kChar;
+            case "Char_t": return kChar;
             case "Color_t":
             case "Style_t":
             case "Width_t":
             case "short":
-            case "Short_t": return jsrio.kShort;
+            case "Short_t": return kShort;
             case "int":
             case "EErrorType":
-            case "Int_t": return jsrio.kInt;
+            case "Int_t": return kInt;
             case "long":
             case "Long_t": return jsrio.kLong;
             case "float":
@@ -121,11 +122,11 @@ JSROOT.define(['rawinflate'], () => {
       GetTypeSize(typname) {
          switch (typname) {
             case jsrio.kBool:
-            case jsrio.kChar:
+            case kChar:
             case jsrio.kUChar: return 1;
-            case jsrio.kShort:
+            case kShort:
             case jsrio.kUShort: return 2;
-            case jsrio.kInt:
+            case kInt:
             case jsrio.kFloat:
             case jsrio.kUInt: return 4;
             case jsrio.kLong:
@@ -154,11 +155,11 @@ JSROOT.define(['rawinflate'], () => {
       if ((type_name.length < 7) || (type_name.indexOf("TArray") !== 0)) return -1;
       if (type_name.length == 7)
          switch (type_name[6]) {
-            case 'I': return jsrio.kInt;
+            case 'I': return kInt;
             case 'D': return jsrio.kDouble;
             case 'F': return jsrio.kFloat;
-            case 'S': return jsrio.kShort;
-            case 'C': return jsrio.kChar;
+            case 'S': return kShort;
+            case 'C': return kChar;
             case 'L': return jsrio.kLong;
             default: return -1;
          }
@@ -487,13 +488,13 @@ JSROOT.define(['rawinflate'], () => {
                for (; i < n; ++i)
                   array[i] = this.ntou8();
                return array; // exit here to avoid conflicts
-            case jsrio.kInt:
+            case kInt:
             case jsrio.kCounter:
                array = new Int32Array(n);
                for (; i < n; ++i, o += 4)
                   array[i] = view.getInt32(o);
                break;
-            case jsrio.kShort:
+            case kShort:
                array = new Int16Array(n);
                for (; i < n; ++i, o += 2)
                   array[i] = view.getInt16(o);
@@ -503,7 +504,7 @@ JSROOT.define(['rawinflate'], () => {
                for (; i < n; ++i, o += 2)
                   array[i] = view.getUint16(o);
                break;
-            case jsrio.kChar:
+            case kChar:
                array = new Int8Array(n);
                for (; i < n; ++i)
                   array[i] = view.getInt8(o++);
@@ -644,11 +645,11 @@ JSROOT.define(['rawinflate'], () => {
             return;
          }
 
-         basket.fEntryOffset = this.readFastArray(nentries, jsrio.kInt);
+         basket.fEntryOffset = this.readFastArray(nentries, kInt);
          if (!basket.fEntryOffset) basket.fEntryOffset = [basket.fKeylen];
 
          if (this.remain() > 0)
-            basket.fDisplacement = this.readFastArray(this.ntoi4(), jsrio.kInt);
+            basket.fDisplacement = this.readFastArray(this.ntoi4(), kInt);
          else
             basket.fDisplacement = undefined;
       }
@@ -1365,7 +1366,7 @@ JSROOT.define(['rawinflate'], () => {
                if (kind === typ) continue;
 
                if ((typ === jsrio.kBits) && (kind === jsrio.kUInt)) continue;
-               if ((typ === jsrio.kCounter) && (kind === jsrio.kInt)) continue;
+               if ((typ === jsrio.kCounter) && (kind === kInt)) continue;
 
                if (typname && typ && (this.fBasicTypes[typname] !== typ))
                   this.fBasicTypes[typname] = typ;
@@ -1856,9 +1857,9 @@ JSROOT.define(['rawinflate'], () => {
             member.basename = element.fName; // keep class name
             member.func = function(buf, obj) { buf.classStreamer(obj, this.basename); };
             break;
-         case jsrio.kShort:
+         case kShort:
             member.func = function(buf, obj) { obj[this.name] = buf.ntoi2(); }; break;
-         case jsrio.kInt:
+         case kInt:
          case jsrio.kCounter:
             member.func = function(buf, obj) { obj[this.name] = buf.ntoi4(); }; break;
          case jsrio.kLong:
@@ -1882,11 +1883,11 @@ JSROOT.define(['rawinflate'], () => {
          case jsrio.kBool:
             member.func = function(buf, obj) { obj[this.name] = buf.ntou1() != 0; }; break;
          case jsrio.kOffsetL + jsrio.kBool:
-         case jsrio.kOffsetL + jsrio.kInt:
+         case jsrio.kOffsetL + kInt:
          case jsrio.kOffsetL + jsrio.kCounter:
          case jsrio.kOffsetL + jsrio.kDouble:
          case jsrio.kOffsetL + jsrio.kUChar:
-         case jsrio.kOffsetL + jsrio.kShort:
+         case jsrio.kOffsetL + kShort:
          case jsrio.kOffsetL + jsrio.kUShort:
          case jsrio.kOffsetL + jsrio.kBits:
          case jsrio.kOffsetL + jsrio.kUInt:
@@ -1909,7 +1910,7 @@ JSROOT.define(['rawinflate'], () => {
                };
             }
             break;
-         case jsrio.kOffsetL + jsrio.kChar:
+         case jsrio.kOffsetL + kChar:
             if (element.fArrayDim < 2) {
                member.arrlength = element.fArrayLength;
                member.func = function(buf, obj) {
@@ -1925,10 +1926,10 @@ JSROOT.define(['rawinflate'], () => {
             }
             break;
          case jsrio.kOffsetP + jsrio.kBool:
-         case jsrio.kOffsetP + jsrio.kInt:
+         case jsrio.kOffsetP + kInt:
          case jsrio.kOffsetP + jsrio.kDouble:
          case jsrio.kOffsetP + jsrio.kUChar:
-         case jsrio.kOffsetP + jsrio.kShort:
+         case jsrio.kOffsetP + kShort:
          case jsrio.kOffsetP + jsrio.kUShort:
          case jsrio.kOffsetP + jsrio.kBits:
          case jsrio.kOffsetP + jsrio.kUInt:
@@ -1945,7 +1946,7 @@ JSROOT.define(['rawinflate'], () => {
                   obj[this.name] = [];
             };
             break;
-         case jsrio.kOffsetP + jsrio.kChar:
+         case jsrio.kOffsetP + kChar:
             member.cntname = element.fCountName;
             member.func = function(buf, obj) {
                if (buf.ntou1() === 1)
@@ -2066,7 +2067,7 @@ JSROOT.define(['rawinflate'], () => {
             }
             break;
          }
-         case jsrio.kChar:
+         case kChar:
             member.func = function(buf, obj) { obj[this.name] = buf.ntoi1(); }; break;
          case jsrio.kCharStar:
             member.func = function(buf, obj) {
@@ -2960,14 +2961,14 @@ JSROOT.define(['rawinflate'], () => {
 
          if ((flag % 10) != 2) {
             if (obj.fNevBuf) {
-               obj.fEntryOffset = buf.readFastArray(buf.ntoi4(), jsrio.kInt);
+               obj.fEntryOffset = buf.readFastArray(buf.ntoi4(), kInt);
                if ((20 < flag) && (flag < 40))
                   for (let i = 0, kDisplacementMask = 0xFF000000; i < obj.fNevBuf; ++i)
                      obj.fEntryOffset[i] &= ~kDisplacementMask;
             }
 
             if (flag > 40)
-               obj.fDisplacement = buf.readFastArray(buf.ntoi4(), jsrio.kInt);
+               obj.fDisplacement = buf.readFastArray(buf.ntoi4(), kInt);
          }
 
          if ((flag === 1) || (flag > 10)) {
@@ -3102,6 +3103,10 @@ JSROOT.define(['rawinflate'], () => {
    }
 
    produceCustomStreamers();
+
+   jsrio.kInt = kInt;
+   jsrio.kChar = kChar;
+   jsrio.kShort = kShort;
 
    JSROOT.TBuffer = TBuffer;
    JSROOT.TDirectory = TDirectory;
