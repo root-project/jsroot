@@ -45,9 +45,21 @@ JSROOT.define([], () => {
      * @private */
 
    let jsrio = {
-      // here constants which are used by tree
 
-      /* kAnyPnoVT: 70, */ kSTLp: 71,
+      // here constants which are used outside
+
+      kChar: kChar, kShort: kShort, kInt: kInt, kLong: kLong, kFloat: kFloat, kCounter: kCounter,
+      kCharStar: kCharStar, kDouble: kDouble, kDouble32: kDouble32, kLegacyChar: kLegacyChar,
+      kUChar: kUChar, kUShort: kUShort, kUInt: kUInt, kULong: kULong, kBits: kBits,
+      kLong64: kLong64, kULong64: kULong64, kBool: kBool, kFloat16: kFloat16,
+
+      kBase: kBase, kOffsetL: kOffsetL, kOffsetP: kOffsetP,
+      kObject: kObject, kAny: kAny, kObjectp: kObjectp, kObjectP: kObjectP, kTString: kTString,
+   //   kTObject: kTObject, kTNamed: kTNamed, kAnyp: kAnyp,
+      kAnyP: kAnyP, kStreamer: kStreamer, kStreamLoop: kStreamLoop,
+
+      /* kAnyPnoVT: 70, */
+      kSTLp: 71,
       /* kSkip: 100, kSkipL: 120, kSkipP: 140, kConv: 200, kConvL: 220, kConvP: 240, */
 
       kSTL: 300, /* kSTLstring: 365, */
@@ -3827,43 +3839,6 @@ JSROOT.define([], () => {
    }
 
    produceCustomStreamers();
-
-   jsrio.kChar = kChar;
-   jsrio.kShort = kShort;
-   jsrio.kInt = kInt;
-   jsrio.kLong = kLong;
-   jsrio.kFloat = kFloat;
-   jsrio.kCounter = kCounter;
-   jsrio.kCharStar = kCharStar;
-   jsrio.kDouble = kDouble;
-   jsrio.kDouble32 = kDouble32;
-   jsrio.kLegacyChar = kLegacyChar;
-   jsrio.kUChar = kUChar;
-   jsrio.kUShort = kUShort;
-   jsrio.kUInt = kUInt;
-   jsrio.kULong = kULong;
-   jsrio.kBits = kBits;
-   jsrio.kLong64 = kLong64;
-   jsrio.kULong64 = kULong64;
-   jsrio.kBool = kBool;
-   jsrio.kFloat16 = kFloat16;
-
-   jsrio.kBase = kBase;
-   jsrio.kOffsetL = kOffsetL;
-   jsrio.kOffsetP = kOffsetP;
-
-   jsrio.kObject = kObject;
-   jsrio.kAny = kAny;
-   jsrio.kObjectp = kObjectp;
-   jsrio.kObjectP = kObjectP;
-   jsrio.kTString = kTString;
-   //jsrio.kTObject = kTObject;
-   //jsrio.kTNamed = kTNamed;
-   //jsrio.kAnyp = kAnyp;
-   jsrio.kAnyP = kAnyP;
-
-   jsrio.kStreamer = kStreamer;
-   jsrio.kStreamLoop = kStreamLoop;
 
    JSROOT.TBuffer = TBuffer;
    JSROOT.TDirectory = TDirectory;
