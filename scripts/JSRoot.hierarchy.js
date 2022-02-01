@@ -2500,7 +2500,9 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             });
          }
 
-         let dropitems = new Array(items.length), dropopts = new Array(items.length), images = new Array(items.length);
+         let dropitems = new Array(items.length),
+             dropopts = new Array(items.length),
+             images = new Array(items.length);
 
          // First of all check that items are exists, look for cycle extension and plus sign
          for (let i = 0; i < items.length; ++i) {
@@ -4324,10 +4326,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if (sizey > 1) {
                this.vertical = true;
                num = sizey;
-               if (sizex>1) {
-                  arr = new Array(num);
-                  for (let k = 0; k < num; ++k) arr[k] = sizex;
-               }
+               if (sizex > 1)
+                  arr = new Array(num).fill(sizex);
             } else if (sizex > 1) {
                this.vertical = false;
                num = sizex;

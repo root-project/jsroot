@@ -3002,13 +3002,13 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
             facecnt: 0,
             viscnt: new Array(this.nodes.length), // counter for each node
             vislvl: this.getVisLevel(),
-            reset: function() {
+            reset() {
                this.total = 0;
                this.facecnt = 0;
-               for (let n=0;n<this.viscnt.length;++n) this.viscnt[n] = 0;
+               this.viscnt.fill(0);
             },
             // nodes: this.nodes,
-            func: function(node) {
+            func(node) {
                this.total++;
                this.facecnt += node.nfaces;
                this.viscnt[node.id]++;
@@ -3524,17 +3524,17 @@ JSROOT.define(['three', 'csg'], (THREE, ThreeBSP) => {
             mesh.$jsroot_distance = dist;
          }
 
-         arr.sort(function(a,b) { return a.$jsroot_distance - b.$jsroot_distance; });
+         arr.sort((a,b) => a.$jsroot_distance - b.$jsroot_distance);
 
          let resort = new Array(arr.length);
 
-         for (let i=0;i<arr.length;++i) {
+         for (let i = 0; i < arr.length; ++i) {
             arr[i].$jsroot_index = i;
             resort[i] = arr[i];
          }
 
          if (method==="ray")
-         for (let i=arr.length-1;i>=0;--i) {
+         for (let i=arr.length - 1; i >= 0; --i) {
             let mesh = arr[i],
                 box3 = mesh.$jsroot_box3,
                 direction = box3.getCenter(tmp_vect);

@@ -6218,13 +6218,12 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          handle.candle = []; // array of drawn points
 
          // Determining the quantiles
-         const fWhiskerRange = 1.0, fBoxRange = 0.5; // for now constants, later can be made configurable
-         let prob = new Array(5);
-         prob[0] = (fWhiskerRange >= 1) ? 1e-15 : 0.5 - fWhiskerRange/2.;
-         prob[1] = (fBoxRange >= 1) ? 1E-14 : 0.5 - fBoxRange/2.;
-         prob[2] = 0.5;
-         prob[3] = (fBoxRange >= 1) ? 1-1E-14 : 0.5 + fBoxRange/2.;
-         prob[4] = (fWhiskerRange >= 1) ? 1-1e-15 : 0.5 + fWhiskerRange/2.;
+         const fWhiskerRange = 1.0, fBoxRange = 0.5, // for now constants, later can be made configurable
+               prob = [ (fWhiskerRange >= 1) ? 1e-15 : 0.5 - fWhiskerRange/2.,
+                       (fBoxRange >= 1) ? 1E-14 : 0.5 - fBoxRange/2.,
+                       0.5,
+                       (fBoxRange >= 1) ? 1-1E-14 : 0.5 + fBoxRange/2.,
+                       (fWhiskerRange >= 1) ? 1-1e-15 : 0.5 + fWhiskerRange/2.];
 
          const produceCandlePoint = (bin_indx, grx_left, grx_right, xindx1, xindx2) => {
             let res = extractQuantiles(xx, proj, prob);

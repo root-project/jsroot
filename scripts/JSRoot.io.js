@@ -657,10 +657,7 @@ JSROOT.define([], () => {
              n,     // number of lengths to get
              t,     // (zip_HuftNode) literal/length code table
              h,     // (zip_HuftBuild)
-             ll = new Array(286+30); // literal/length and distance code lengths
-
-         for (i = 0; i < ll.length; ++i)
-            ll[i] = 0;
+             ll = new Array(286+30).fill(0); // literal/length and distance code lengths
 
          // read in table lengths
          zip_NEEDBITS(5);

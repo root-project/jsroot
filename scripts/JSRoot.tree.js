@@ -1728,7 +1728,8 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
                      handle.process_arrays = false;
 
                      let newtgt = new Array(target_object ? (target_object.length + 1) : 1);
-                     for (let l = 0; l < newtgt.length - 1; ++l) newtgt[l] = target_object[l];
+                     for (let l = 0; l < newtgt.length - 1; ++l)
+                        newtgt[l] = target_object[l];
                      newtgt[newtgt.length - 1] = { name: target_name, lst: makeMethodsList(object_class) };
 
                      if (!ScanBranches(branch.fBranches, newtgt, 0)) return null;
@@ -1778,8 +1779,7 @@ JSROOT.define(['io', 'math'], (jsrio, jsrmath) => {
 
                      let arr = new Array(nb_leaves), isok = true;
                      for (let l = 0; l < nb_leaves; ++l) {
-                        arr[l] = createLeafElem(branch.fLeaves.arr[l]);
-                        arr[l] = jsrio.createMember(arr[l], handle.file);
+                        arr[l] = jsrio.createMember(createLeafElem(branch.fLeaves.arr[l]), handle.file);
                         if (!arr[l]) isok = false;
                      }
 

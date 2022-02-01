@@ -2623,9 +2623,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
             nbins = cols_size[ncol]; // how many bins with specified color
             let nseq = cols_sequence[ncol];
 
-            cols_nbins[nseq] = 0; // counter for the filled bins
-
-            helper_kind[nseq] = 0;
+            cols_nbins[nseq] = helper_kind[nseq] = 0; // counter for the filled bins
 
             // 1 - use same vertices to create helper, one can use maximal 64K vertices
             // 2 - all vertices copied into separate buffer
@@ -2636,10 +2634,10 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
             bin_norms[nseq] = new Float32Array(nbins * buffer_size);
             bin_tooltips[nseq] = new Int32Array(nbins);
 
-            if (helper_kind[nseq]===1)
+            if (helper_kind[nseq] === 1)
                helper_indexes[nseq] = new Uint16Array(nbins * jsrp.Box3D.MeshSegments.length);
 
-            if (helper_kind[nseq]===2)
+            if (helper_kind[nseq] === 2)
                helper_positions[nseq] = new Float32Array(nbins * jsrp.Box3D.Segments.length * 3);
          }
 
