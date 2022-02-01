@@ -6,7 +6,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    "use strict";
 
    // identifier used in TWebCanvas painter
-   let webSnapIds = { kNone: 0,  kObject: 1, kSVG: 2, kSubPad: 3, kColors: 4, kStyle: 5 };
+   const webSnapIds = { kNone: 0,  kObject: 1, kSVG: 2, kSubPad: 3, kColors: 4, kStyle: 5 };
 
    // =======================================================================
 

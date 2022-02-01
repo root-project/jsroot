@@ -561,8 +561,8 @@
 
          function decode_sap_results(args) {
             for (let i = 0; i < reqindx.length; ++i) {
-               let k = reqindx[i]; // index in original request
-               let src = _.sources[need[k]];
+               let k = reqindx[i], // index in original request
+                   src = _.sources[need[k]];
                if (src && src.extract) {
                   let m = _.modules[need[k]];
                   if (!m) m = _.modules[need[k]] = { module: globalThis[src.extract] };
@@ -806,21 +806,6 @@
      * @returns {Number} produced mask
      * @private */
    JSROOT.BIT = function(n) { return 1 << n; }
-
-   /** @summary Seed simple random generator
-     * @param {number} i seed value
-     * @deprecated Please use JSROOT.TRandom class
-     * @private */
-   JSROOT.seed = function() {}
-
-   /** @summary Simple random generator
-     * @desc Works like Math.random(), but with configurable seed - see {@link JSROOT.seed}
-     * @returns {number} random value between 0 (inclusive) and 1.0 (exclusive)
-     * @deprecated Please use JSROOT.TRandom class
-     * @private */
-   JSROOT.random = function() {
-      return Math.random();
-   }
 
    /** @summary Just copy (not clone) all fields from source to the target object
      * @desc Simple replacement of jQuery.extend method
