@@ -1462,27 +1462,6 @@ JSROOT.define(['d3', 'base3d', 'painter', 'latex', 'v7hist'], (d3, THREE, jsrp, 
 
    // ==============================================================================
 
-   function create3DLineMaterialv7(painter, prefix) {
-      if (!painter) return null;
-      if (!prefix) prefix = "line_"
-
-      let lcolor = painter.v7EvalColor(prefix+"color", "black"),
-          lstyle = painter.v7EvalAttr(prefix+"style", 0),
-          lwidth = painter.v7EvalAttr(prefix+"width", 1),
-          material = null,
-          style = lstyle ? jsrp.root_line_styles[parseInt(lstyle)] : "",
-          dash = style ? style.split(",") : [];
-
-      if (dash && dash.length>=2)
-         material = new THREE.LineDashedMaterial({ color: lcolor, dashSize: parseInt(dash[0]), gapSize: parseInt(dash[1]) });
-      else
-         material = new THREE.LineBasicMaterial({ color: lcolor });
-
-      if ((lwidth !== undefined) && (lwidth > 1)) material.linewidth = parseInt(lwidth);
-
-      return material;
-   }
-
    /** @summary Draw RH2 as 3D contour plot */
    JSROOT.RH2Painter.prototype.drawContour3D = function(realz) {
       // for contour plots one requires handle with full range
@@ -1512,7 +1491,7 @@ JSROOT.define(['d3', 'base3d', 'painter', 'latex', 'v7hist'], (d3, THREE, jsrp, 
          }
       )
 
-      let lines = jsrp.createLineSegments(pnts, create3DLineMaterialv7(this));
+      let lines = jsrp.createLineSegments(pnts, jsrp.create3DLineMaterialv7(this, "line_"));
       main.toplevel.add(lines);
    }
 

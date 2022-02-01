@@ -462,7 +462,6 @@ JSROOT.define(['d3', 'three', 'painter'], (d3, THREE, jsrp) => {
       /** @summary constructor
         * @param {object} dom - DOM element
         * @param {object} canvas - canvas for 3D rendering */
-
       constructor(prnt, canvas) {
          this.tt = null;
          this.cont = null;
@@ -580,7 +579,7 @@ JSROOT.define(['d3', 'three', 'painter'], (d3, THREE, jsrp) => {
          this.lastlbl = "";
       }
 
-   } // TooltipFor3D
+   } // class TooltipFor3D
 
    /** @summary Create THREE.OrbitControl for painter
      * @private */
@@ -708,7 +707,7 @@ JSROOT.define(['d3', 'three', 'painter'], (d3, THREE, jsrp) => {
       // assign own handler before creating OrbitControl
 
       if (JSROOT.settings.Zooming && JSROOT.settings.ZoomWheel)
-         renderer.domElement.addEventListener( 'wheel', control_mousewheel);
+         renderer.domElement.addEventListener('wheel', control_mousewheel);
 
       if (enable_zoom || enable_select) {
          renderer.domElement.addEventListener('pointerdown', control_mousedown);
@@ -1203,7 +1202,14 @@ JSROOT.define(['d3', 'three', 'painter'], (d3, THREE, jsrp) => {
       return arr;
    })();
 
-   // ==============================================================================
+
+   /**
+    * @summary Abstract interactive control interface for 3D objects
+    *
+    * @memberof JSROOT
+    * @abstract
+    * @private
+    */
 
    class InteractiveControl {
       cleanup() {}
@@ -1211,9 +1217,8 @@ JSROOT.define(['d3', 'three', 'painter'], (d3, THREE, jsrp) => {
       setSelected(/*col, indx*/) {}
       setHighlight(/*col, indx*/) {}
       checkHighlightIndex(/*indx*/) {}
-   }
+   } // class InteractiveControl
 
-   // ==============================================================================
 
    /**
     * @summary Special class to control highliht and selection of single points, used in geo painter
@@ -1294,9 +1299,8 @@ JSROOT.define(['d3', 'three', 'painter'], (d3, THREE, jsrp) => {
          if (index !== undefined) m.js_special.geometry.setDrawRange(index, 1);
       }
 
-   } // PointsControl
+   } // class PointsControl
 
-   // ==============================================================================
 
    /**
     * @summary Class for creation of 3D points
@@ -1387,39 +1391,45 @@ JSROOT.define(['d3', 'three', 'painter'], (d3, THREE, jsrp) => {
          return makePoints(new THREE.PointsMaterial({ size: 3*this.scale, map: loader.load(dataUrl), transparent: true }));
       }
 
-   } // PointsCreator
+   } // class PointsCreator
 
-   // ==============================================================================
 
    /** @summary Create material for 3D line
      * @desc Takes into account dashed properties
      * @private
      * @memberof JSROOT.Painter */
-   function create3DLineMaterial(painter, obj) {
-      if (!painter || !obj) return null;
+   function create3DLineMaterial(painter, arg) {
+      if (!painter || !arg) return null;
 
-      let lcolor = painter.getColor(obj.fLineColor),
-          material = null,
-          style = obj.fLineStyle ? jsrp.root_line_styles[obj.fLineStyle] : "",
-          dash = style ? style.split(",") : [];
+      let lcolor, lstyle, lwidth;
+      if (typeof arg == 'string') {
+         lcolor = painter.v7EvalColor(arg+"color", "black");
+         lstyle = parseInt(painter.v7EvalAttr(arg+"style", 0));
+         lwidth = parseInt(painter.v7EvalAttr(arg+"width", 1));
+      } else {
+         lcolor = painter.getColor(arg.fLineColor);
+         lstyle = arg.fLineStyle;
+         lwidth = arg.fLineWidth;
+      }
 
-      if (dash && dash.length>=2)
-         material = new THREE.LineDashedMaterial( { color: lcolor, dashSize: parseInt(dash[0]), gapSize: parseInt(dash[1]) } );
+      let style = lstyle ? jsrp.root_line_styles[lstyle] : "",
+          dash = style ? style.split(",") : [], material;
+
+      if (dash && dash.length >= 2)
+         material = new THREE.LineDashedMaterial({ color: lcolor, dashSize: parseInt(dash[0]), gapSize: parseInt(dash[1]) });
       else
          material = new THREE.LineBasicMaterial({ color: lcolor });
 
-      if ((obj.fLineWidth !== undefined) && (obj.fLineWidth > 1)) material.linewidth = obj.fLineWidth;
+      if (lwidth && (lwidth > 1)) material.linewidth = lwidth;
 
       return material;
    }
 
-   // ============================================================================================================
 
    /** @summary Draw TPolyLine3D object
      * @desc Takes into account dashed properties
-     * @private
-     * @memberof JSROOT.Painter */
-   function drawPolyLine3D() {
+     * @private */
+   jsrp.drawPolyLine3D = function() {
       let line = this.getObject(),
           main = this.getFramePainter();
 
@@ -1452,12 +1462,10 @@ JSROOT.define(['d3', 'three', 'painter'], (d3, THREE, jsrp) => {
 
    // ==============================================================================================
 
-
    jsrp.PointsCreator = PointsCreator;
    jsrp.InteractiveControl = InteractiveControl;
    jsrp.PointsControl = PointsControl;
 
-   jsrp.drawPolyLine3D = drawPolyLine3D;
    jsrp.create3DLineMaterial = create3DLineMaterial;
 
    if (JSROOT.nodejs) module.exports = THREE;
