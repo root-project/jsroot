@@ -5052,15 +5052,15 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    JSROOT.registerMethods("ROOT::Experimental::RPalette", {
 
-      extractRColor = function(rcolor) {
+      extractRColor(rcolor) {
         return rcolor.fColor || "black";
       },
 
-      getColor: function(indx) {
+      getColor(indx) {
          return this.palette[indx];
       },
 
-      getContourIndex: function(zc) {
+      getContourIndex(zc) {
          let cntr = this.fContour, l = 0, r = cntr.length-1, mid;
 
          if (zc < cntr[0]) return -1;
@@ -5078,20 +5078,20 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return Math.floor((zc-cntr[0]) / (cntr[r-1] - cntr[0]) * (r-1));
       },
 
-      getContourColor: function(zc) {
+      getContourColor(zc) {
          let zindx = this.getContourIndex(zc);
          return (zindx < 0) ? "" : this.getColor(zindx);
       },
 
-      getContour: function() {
+      getContour() {
          return this.fContour && (this.fContour.length > 1) ? this.fContour : null;
       },
 
-      deleteContour: function() {
+      deleteContour() {
          delete this.fContour;
       },
 
-      calcColor: function(value, entry1, entry2) {
+      calcColor(value, entry1, entry2) {
          let dist = entry2.fOrdinal - entry1.fOrdinal,
              r1 = entry2.fOrdinal - value,
              r2 = value - entry1.fOrdinal;
@@ -5109,7 +5109,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return color.toString();
       },
 
-      createPaletteColors: function(len) {
+      createPaletteColors(len) {
          let arr = [], indx = 0;
 
          while (arr.length < len) {
@@ -5133,7 +5133,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       },
 
       /** @summary extract color with ordinal value between 0 and 1 */
-      getColorOrdinal : function(value) {
+      getColorOrdinal(value) {
          if (!this.fColors)
             return "black";
          if ((typeof value != "number") || (value < 0))
@@ -5159,12 +5159,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
       },
 
       /** @summary set full z scale range, used in zooming */
-      setFullRange: function(min, max) {
+      setFullRange(min, max) {
           this.full_min = min;
           this.full_max = max;
       },
 
-      createContour: function(logz, nlevels, zmin, zmax, zminpositive) {
+      createContour(logz, nlevels, zmin, zmax, zminpositive) {
          this.fContour = [];
          delete this.fCustomContour;
          this.colzmin = zmin;
