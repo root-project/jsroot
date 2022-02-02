@@ -2521,33 +2521,7 @@ JSROOT.define([], () => {
    function produceCustomStreamers() {
       let cs = jsrio.CustomStreamers;
 
-      cs[clTObject] = cs['TMethodCall'] = function(buf, obj) {
-         obj.fUniqueID = buf.ntou4();
-         obj.fBits = buf.ntou4();
-         if (obj.fBits & kIsReferenced) buf.ntou2(); // skip pid
-      };
-
-      cs[clTNamed] = [
-         {
-            basename: clTObject, base: 1, func: function(buf, obj) {
-               if (!obj._typename) obj._typename = clTNamed;
-               buf.classStreamer(obj, clTObject);
-            }
-         },
-         { name: 'fName', func: function(buf, obj) { obj.fName = buf.readTString(); } },
-         { name: 'fTitle', func: function(buf, obj) { obj.fTitle = buf.readTString(); } }
-      ];
       addClassMethods(clTNamed, cs[clTNamed]);
-
-      cs.TObjString = [
-         {
-            basename: clTObject, base: 1, func: (buf, obj) => {
-               if (!obj._typename) obj._typename = 'TObjString';
-               buf.classStreamer(obj, clTObject);
-            }
-         },
-         { name: 'fString', func: (buf, obj) => { obj.fString = buf.readTString(); } }
-      ];
 
       addClassMethods('TObjString', cs['TObjString']);
 
@@ -2572,222 +2546,6 @@ JSROOT.define([], () => {
          }
       }
 
-      cs.TClonesArray = (buf, list) => {
-         if (!list._typename) list._typename = "TClonesArray";
-         list.$kind = "TClonesArray";
-         list.name = "";
-         const ver = buf.last_read_version;
-         if (ver > 2) buf.classStreamer(list, clTObject);
-         if (ver > 1) list.name = buf.readTString();
-         let classv = buf.readTString(), clv = 0,
-             pos = classv.lastIndexOf(";");
-
-         if (pos > 0) {
-            clv = parseInt(classv.substr(pos + 1));
-            classv = classv.substr(0, pos);
-         }
-
-         let nobjects = buf.ntou4();
-         if (nobjects < 0) nobjects = -nobjects;  // for backward compatibility
-
-         list.arr = new Array(nobjects);
-         list.fLast = nobjects - 1;
-         list.fLowerBound = buf.ntou4();
-
-         let streamer = buf.fFile.getStreamer(classv, { val: clv });
-         streamer = buf.fFile.getSplittedStreamer(streamer);
-
-         if (!streamer) {
-            console.log('Cannot get member-wise streamer for', classv, clv);
-         } else {
-            // create objects
-            for (let n = 0; n < nobjects; ++n)
-               list.arr[n] = { _typename: classv };
-
-            // call streamer for all objects member-wise
-            for (let k = 0; k < streamer.length; ++k)
-               for (let n = 0; n < nobjects; ++n)
-                  streamer[k].func(buf, list.arr[n]);
-         }
-      }
-
-      cs.TMap = (buf, map) => {
-         if (!map._typename) map._typename = "TMap";
-         map.name = "";
-         map.arr = [];
-         const ver = buf.last_read_version;
-         if (ver > 2) buf.classStreamer(map, clTObject);
-         if (ver > 1) map.name = buf.readTString();
-
-         const nobjects = buf.ntou4();
-         // create objects
-         for (let n = 0; n < nobjects; ++n) {
-            let obj = { _typename: "TPair" };
-            obj.first = buf.readObjectAny();
-            obj.second = buf.readObjectAny();
-            if (obj.first) map.arr.push(obj);
-         }
-      }
-
-      cs.TTreeIndex = (buf, obj) => {
-         const ver = buf.last_read_version;
-         obj._typename = "TTreeIndex";
-         buf.classStreamer(obj, "TVirtualIndex");
-         obj.fMajorName = buf.readTString();
-         obj.fMinorName = buf.readTString();
-         obj.fN = buf.ntoi8();
-         obj.fIndexValues = buf.readFastArray(obj.fN, kLong64);
-         if (ver > 1) obj.fIndexValuesMinor = buf.readFastArray(obj.fN, kLong64);
-         obj.fIndex = buf.readFastArray(obj.fN, kLong64);
-      }
-
-      cs.TRefArray = (buf, obj) => {
-         obj._typename = "TRefArray";
-         buf.classStreamer(obj, clTObject);
-         obj.name = buf.readTString();
-         const nobj = buf.ntoi4();
-         obj.fLast = nobj - 1;
-         obj.fLowerBound = buf.ntoi4();
-         /*const pidf = */ buf.ntou2();
-         obj.fUIDs = buf.readFastArray(nobj, kUInt);
-      }
-
-      cs.TCanvas = (buf, obj) => {
-         obj._typename = "TCanvas";
-         buf.classStreamer(obj, "TPad");
-         obj.fDISPLAY = buf.readTString();
-         obj.fDoubleBuffer = buf.ntoi4();
-         obj.fRetained = (buf.ntou1() !== 0);
-         obj.fXsizeUser = buf.ntoi4();
-         obj.fYsizeUser = buf.ntoi4();
-         obj.fXsizeReal = buf.ntoi4();
-         obj.fYsizeReal = buf.ntoi4();
-         obj.fWindowTopX = buf.ntoi4();
-         obj.fWindowTopY = buf.ntoi4();
-         obj.fWindowWidth = buf.ntoi4();
-         obj.fWindowHeight = buf.ntoi4();
-         obj.fCw = buf.ntou4();
-         obj.fCh = buf.ntou4();
-         obj.fCatt = buf.classStreamer({}, "TAttCanvas");
-         buf.ntou1(); // ignore b << TestBit(kMoveOpaque);
-         buf.ntou1(); // ignore b << TestBit(kResizeOpaque);
-         obj.fHighLightColor = buf.ntoi2();
-         obj.fBatch = (buf.ntou1() !== 0);
-         buf.ntou1();   // ignore b << TestBit(kShowEventStatus);
-         buf.ntou1();   // ignore b << TestBit(kAutoExec);
-         buf.ntou1();   // ignore b << TestBit(kMenuBar);
-      }
-
-      cs.TObjArray = (buf, list) => {
-         if (!list._typename) list._typename = "TObjArray";
-         list.$kind = "TObjArray";
-         list.name = "";
-         const ver = buf.last_read_version;
-         if (ver > 2)
-            buf.classStreamer(list, clTObject);
-         if (ver > 1)
-            list.name = buf.readTString();
-         const nobjects = buf.ntou4();
-         let i = 0;
-         list.arr = new Array(nobjects);
-         list.fLast = nobjects - 1;
-         list.fLowerBound = buf.ntou4();
-         while (i < nobjects)
-            list.arr[i++] = buf.readObjectAny();
-      }
-
-      cs.TPolyMarker3D = (buf, marker) => {
-         const ver = buf.last_read_version;
-         buf.classStreamer(marker, clTObject);
-         buf.classStreamer(marker, "TAttMarker");
-         marker.fN = buf.ntoi4();
-         marker.fP = buf.readFastArray(marker.fN * 3, kFloat);
-         marker.fOption = buf.readTString();
-         marker.fName = (ver > 1) ? buf.readTString() : "TPolyMarker3D";
-      }
-
-      cs.TPolyLine3D = (buf, obj) => {
-         buf.classStreamer(obj, clTObject);
-         buf.classStreamer(obj, "TAttLine");
-         obj.fN = buf.ntoi4();
-         obj.fP = buf.readFastArray(obj.fN * 3, kFloat);
-         obj.fOption = buf.readTString();
-      }
-
-      cs.TStreamerInfo = (buf, obj) => {
-         buf.classStreamer(obj, clTNamed);
-         obj.fCheckSum = buf.ntou4();
-         obj.fClassVersion = buf.ntou4();
-         obj.fElements = buf.readObjectAny();
-      }
-
-      cs.TStreamerElement = (buf, element) => {
-         const ver = buf.last_read_version;
-         buf.classStreamer(element, clTNamed);
-         element.fType = buf.ntou4();
-         element.fSize = buf.ntou4();
-         element.fArrayLength = buf.ntou4();
-         element.fArrayDim = buf.ntou4();
-         element.fMaxIndex = buf.readFastArray((ver == 1) ? buf.ntou4() : 5, kUInt);
-         element.fTypeName = buf.readTString();
-
-         if ((element.fType === kUChar) && ((element.fTypeName == "Bool_t") || (element.fTypeName == "bool")))
-            element.fType = kBool;
-
-         element.fXmin = element.fXmax = element.fFactor = 0;
-         if (ver === 3) {
-            element.fXmin = buf.ntod();
-            element.fXmax = buf.ntod();
-            element.fFactor = buf.ntod();
-         } else if ((ver > 3) && (element.fBits & JSROOT.BIT(6))) { // kHasRange
-
-            let p1 = element.fTitle.indexOf("[");
-            if ((p1 >= 0) && (element.fType > kOffsetP)) p1 = element.fTitle.indexOf("[", p1 + 1);
-            let p2 = element.fTitle.indexOf("]", p1 + 1);
-
-            if ((p1 >= 0) && (p2 >= p1 + 2)) {
-
-               let arr = element.fTitle.substr(p1+1, p2 - p1 - 1).split(","), nbits = 32;
-               if (!arr || arr.length < 2)
-                  throw new Error(`Problem to decode range setting from streamer element title ${element.fTitle}`);
-
-               if (arr.length === 3) nbits = parseInt(arr[2]);
-               if (!Number.isInteger(nbits) || (nbits < 2) || (nbits > 32)) nbits = 32;
-
-               let parse_range = val => {
-                  if (!val) return 0;
-                  if (val.indexOf("pi") < 0) return parseFloat(val);
-                  val = val.trim();
-                  let sign = 1.;
-                  if (val[0] == "-") { sign = -1; val = val.substr(1); }
-                  switch (val) {
-                     case "2pi":
-                     case "2*pi":
-                     case "twopi": return sign * 2 * Math.PI;
-                     case "pi/2": return sign * Math.PI / 2;
-                     case "pi/4": return sign * Math.PI / 4;
-                  }
-                  return sign * Math.PI;
-               };
-
-               element.fXmin = parse_range(arr[0]);
-               element.fXmax = parse_range(arr[1]);
-
-               // avoid usage of 1 << nbits, while only works up to 32 bits
-               let bigint = ((nbits >= 0) && (nbits < 32)) ? Math.pow(2, nbits) : 0xffffffff;
-               if (element.fXmin < element.fXmax)
-                  element.fFactor = bigint / (element.fXmax - element.fXmin);
-               else if (nbits < 15)
-                  element.fXmin = nbits;
-            }
-         }
-      }
-
-      cs.TStreamerBase = (buf, elem) => {
-         const ver = buf.last_read_version;
-         buf.classStreamer(elem, "TStreamerElement");
-         if (ver > 2) elem.fBaseVersion = buf.ntou4();
-      }
 
       cs.TStreamerBasicPointer = cs.TStreamerLoop = (buf, elem) => {
          if (buf.last_read_version > 1) {
@@ -2796,25 +2554,6 @@ JSROOT.define([], () => {
             elem.fCountName = buf.readTString();
             elem.fCountClass = buf.readTString();
          }
-      }
-
-      cs.TStreamerSTL = (buf, elem) => {
-         buf.classStreamer(elem, "TStreamerElement");
-         elem.fSTLtype = buf.ntou4();
-         elem.fCtype = buf.ntou4();
-
-         if ((elem.fSTLtype === kSTLmultimap) &&
-            ((elem.fTypeName.indexOf("std::set") === 0) ||
-               (elem.fTypeName.indexOf("set") === 0))) elem.fSTLtype = kSTLset;
-
-         if ((elem.fSTLtype === kSTLset) &&
-            ((elem.fTypeName.indexOf("std::multimap") === 0) ||
-               (elem.fTypeName.indexOf("multimap") === 0))) elem.fSTLtype = kSTLmultimap;
-      }
-
-      cs.TStreamerSTLstring = (buf, elem) => {
-         if (buf.last_read_version > 0)
-            buf.classStreamer(elem, "TStreamerSTL");
       }
 
       cs.TStreamerObject = cs.TStreamerBasicType = cs.TStreamerObjectAny =
@@ -2832,8 +2571,6 @@ JSROOT.define([], () => {
          name: '$file',
          func: (buf, obj) => { obj.$kind = "TTree"; obj.$file = buf.fFile; buf.fFile._addReadTree(obj); }
       }
-
-      cs.TVirtualPerfStats = clTObject; // use directly TObject streamer
 
       cs.RooRealVar = (buf, obj) => {
          const v = buf.last_read_version;
@@ -2941,105 +2678,6 @@ JSROOT.define([], () => {
 
       // these are direct streamers - not follow version/checksum logic
 
-      let ds = jsrio.DirectStreamers;
-
-      // do nothing
-      ds.TKey = (buf, key) => {
-         key.fNbytes = buf.ntoi4();
-         key.fVersion = buf.ntoi2();
-         key.fObjlen = buf.ntou4();
-         key.fDatime = buf.classStreamer({}, 'TDatime');
-         key.fKeylen = buf.ntou2();
-         key.fCycle = buf.ntou2();
-         if (key.fVersion > 1000) {
-            key.fSeekKey = buf.ntou8();
-            buf.shift(8); // skip seekPdir
-         } else {
-            key.fSeekKey = buf.ntou4();
-            buf.shift(4); // skip seekPdir
-         }
-         key.fClassName = buf.readTString();
-         key.fName = buf.readTString();
-         key.fTitle = buf.readTString();
-      };
-
-      ds.TDirectory = (buf, dir) => {
-         const version = buf.ntou2();
-         dir.fDatimeC = buf.classStreamer({}, 'TDatime');
-         dir.fDatimeM = buf.classStreamer({}, 'TDatime');
-         dir.fNbytesKeys = buf.ntou4();
-         dir.fNbytesName = buf.ntou4();
-         dir.fSeekDir = (version > 1000) ? buf.ntou8() : buf.ntou4();
-         dir.fSeekParent = (version > 1000) ? buf.ntou8() : buf.ntou4();
-         dir.fSeekKeys = (version > 1000) ? buf.ntou8() : buf.ntou4();
-         // if ((version % 1000) > 2) buf.shift(18); // skip fUUID
-      }
-
-      ds.TBasket = (buf, obj) => {
-         buf.classStreamer(obj, 'TKey');
-         const ver = buf.readVersion();
-         obj.fBufferSize = buf.ntoi4();
-         obj.fNevBufSize = buf.ntoi4();
-         obj.fNevBuf = buf.ntoi4();
-         obj.fLast = buf.ntoi4();
-         if (obj.fLast > obj.fBufferSize) obj.fBufferSize = obj.fLast;
-         const flag = buf.ntoi1();
-
-         if (flag === 0) return;
-
-         if ((flag % 10) != 2) {
-            if (obj.fNevBuf) {
-               obj.fEntryOffset = buf.readFastArray(buf.ntoi4(), kInt);
-               if ((20 < flag) && (flag < 40))
-                  for (let i = 0, kDisplacementMask = 0xFF000000; i < obj.fNevBuf; ++i)
-                     obj.fEntryOffset[i] &= ~kDisplacementMask;
-            }
-
-            if (flag > 40)
-               obj.fDisplacement = buf.readFastArray(buf.ntoi4(), kInt);
-         }
-
-         if ((flag === 1) || (flag > 10)) {
-            // here is reading of raw data
-            const sz = (ver.val <= 1) ? buf.ntoi4() : obj.fLast;
-
-            if (sz > obj.fKeylen) {
-               // buffer includes again complete TKey data - exclude it
-               let blob = buf.extract([buf.o + obj.fKeylen, sz - obj.fKeylen]);
-
-               obj.fBufferRef = new TBuffer(blob, 0, buf.fFile, sz - obj.fKeylen);
-               obj.fBufferRef.fTagOffset = obj.fKeylen;
-            }
-
-            buf.shift(sz);
-         }
-      }
-
-      ds.TRef = (buf, obj) => {
-         buf.classStreamer(obj, clTObject);
-         if (obj.fBits & kHasUUID)
-            obj.fUUID = buf.readTString();
-         else
-            obj.fPID = buf.ntou2();
-      }
-
-      ds['TMatrixTSym<float>'] = (buf, obj) => {
-         buf.classStreamer(obj, "TMatrixTBase<float>");
-         obj.fElements = new Float32Array(obj.fNelems);
-         let arr = buf.readFastArray((obj.fNrows * (obj.fNcols + 1)) / 2, kFloat), cnt = 0;
-         for (let i = 0; i < obj.fNrows; ++i)
-            for (let j = i; j < obj.fNcols; ++j)
-               obj.fElements[j * obj.fNcols + i] = obj.fElements[i * obj.fNcols + j] = arr[cnt++];
-      }
-
-      ds['TMatrixTSym<double>'] = (buf, obj) => {
-         buf.classStreamer(obj, "TMatrixTBase<double>");
-         obj.fElements = new Float64Array(obj.fNelems);
-         let arr = buf.readFastArray((obj.fNrows * (obj.fNcols + 1)) / 2, kDouble), cnt = 0;
-         for (let i = 0; i < obj.fNrows; ++i)
-            for (let j = i; j < obj.fNcols; ++j)
-               obj.fElements[j * obj.fNcols + i] = obj.fElements[i * obj.fNcols + j] = arr[cnt++];
-      }
 
    }
 
@@ -3103,17 +2741,14 @@ JSROOT.define([], () => {
 
       kSTL: 300, /* kSTLstring: 365, */
 
-      Mode: "array", // could be string or array, enable usage of ArrayBuffer in http requests
+      /** @summary I/O mode for http requests
+        * @desc could be "string" or "array", enable usage of ArrayBuffer in http requests */
+      Mode: "array",
 
       // kSplitCollectionOfPointers: 100,
 
-      // map of user-streamer function like func(buf,obj)
-      // or alias (classname) which can be used to read that function
-      // or list of read functions
-      CustomStreamers: {},
-
-      // these are streamers which do not handle version regularly
-      // used for special classes like TRef or TBasket
+      /** @summary these are streamers which do not handle version regularly
+        * @desc used for special classes like TRef or TBasket */
       DirectStreamers: {
          // do nothing for these classes
          TQObject() {},
@@ -3134,7 +2769,375 @@ JSROOT.define([], () => {
             //  res.setMilliseconds(0);
             //  return res;
             //  }
+         },
+
+         TKey(buf, key) {
+            key.fNbytes = buf.ntoi4();
+            key.fVersion = buf.ntoi2();
+            key.fObjlen = buf.ntou4();
+            key.fDatime = buf.classStreamer({}, 'TDatime');
+            key.fKeylen = buf.ntou2();
+            key.fCycle = buf.ntou2();
+            if (key.fVersion > 1000) {
+               key.fSeekKey = buf.ntou8();
+               buf.shift(8); // skip seekPdir
+            } else {
+               key.fSeekKey = buf.ntou4();
+               buf.shift(4); // skip seekPdir
+            }
+            key.fClassName = buf.readTString();
+            key.fName = buf.readTString();
+            key.fTitle = buf.readTString();
+         },
+
+         TDirectory(buf, dir) {
+            const version = buf.ntou2();
+            dir.fDatimeC = buf.classStreamer({}, 'TDatime');
+            dir.fDatimeM = buf.classStreamer({}, 'TDatime');
+            dir.fNbytesKeys = buf.ntou4();
+            dir.fNbytesName = buf.ntou4();
+            dir.fSeekDir = (version > 1000) ? buf.ntou8() : buf.ntou4();
+            dir.fSeekParent = (version > 1000) ? buf.ntou8() : buf.ntou4();
+            dir.fSeekKeys = (version > 1000) ? buf.ntou8() : buf.ntou4();
+            // if ((version % 1000) > 2) buf.shift(18); // skip fUUID
+         },
+
+         TBasket(buf, obj) {
+            buf.classStreamer(obj, 'TKey');
+            const ver = buf.readVersion();
+            obj.fBufferSize = buf.ntoi4();
+            obj.fNevBufSize = buf.ntoi4();
+            obj.fNevBuf = buf.ntoi4();
+            obj.fLast = buf.ntoi4();
+            if (obj.fLast > obj.fBufferSize) obj.fBufferSize = obj.fLast;
+            const flag = buf.ntoi1();
+
+            if (flag === 0) return;
+
+            if ((flag % 10) != 2) {
+               if (obj.fNevBuf) {
+                  obj.fEntryOffset = buf.readFastArray(buf.ntoi4(), kInt);
+                  if ((20 < flag) && (flag < 40))
+                     for (let i = 0, kDisplacementMask = 0xFF000000; i < obj.fNevBuf; ++i)
+                        obj.fEntryOffset[i] &= ~kDisplacementMask;
+               }
+
+               if (flag > 40)
+                  obj.fDisplacement = buf.readFastArray(buf.ntoi4(), kInt);
+            }
+
+            if ((flag === 1) || (flag > 10)) {
+               // here is reading of raw data
+               const sz = (ver.val <= 1) ? buf.ntoi4() : obj.fLast;
+
+               if (sz > obj.fKeylen) {
+                  // buffer includes again complete TKey data - exclude it
+                  let blob = buf.extract([buf.o + obj.fKeylen, sz - obj.fKeylen]);
+
+                  obj.fBufferRef = new TBuffer(blob, 0, buf.fFile, sz - obj.fKeylen);
+                  obj.fBufferRef.fTagOffset = obj.fKeylen;
+               }
+
+               buf.shift(sz);
+            }
+         },
+
+         TRef(buf, obj) {
+            buf.classStreamer(obj, clTObject);
+            if (obj.fBits & kHasUUID)
+               obj.fUUID = buf.readTString();
+            else
+               obj.fPID = buf.ntou2();
+         },
+
+         'TMatrixTSym<float>': (buf, obj) => {
+            buf.classStreamer(obj, "TMatrixTBase<float>");
+            obj.fElements = new Float32Array(obj.fNelems);
+            let arr = buf.readFastArray((obj.fNrows * (obj.fNcols + 1)) / 2, kFloat), cnt = 0;
+            for (let i = 0; i < obj.fNrows; ++i)
+               for (let j = i; j < obj.fNcols; ++j)
+                  obj.fElements[j * obj.fNcols + i] = obj.fElements[i * obj.fNcols + j] = arr[cnt++];
+         },
+
+         'TMatrixTSym<double>': (buf, obj) => {
+            buf.classStreamer(obj, "TMatrixTBase<double>");
+            obj.fElements = new Float64Array(obj.fNelems);
+            let arr = buf.readFastArray((obj.fNrows * (obj.fNcols + 1)) / 2, kDouble), cnt = 0;
+            for (let i = 0; i < obj.fNrows; ++i)
+               for (let j = i; j < obj.fNcols; ++j)
+                  obj.fElements[j * obj.fNcols + i] = obj.fElements[i * obj.fNcols + j] = arr[cnt++];
          }
+
+      },
+
+      /** @summary Custom streamers for root classes
+        * @desc map of user-streamer function like func(buf,obj)
+        * or alias (classname) which can be used to read that function
+        * or list of read functions */
+      CustomStreamers: {
+         TObject(buf, obj) {
+            obj.fUniqueID = buf.ntou4();
+            obj.fBits = buf.ntou4();
+            if (obj.fBits & kIsReferenced) buf.ntou2(); // skip pid
+         },
+
+         TNamed: [ {
+            basename: clTObject, base: 1, func: (buf, obj) => {
+               if (!obj._typename) obj._typename = clTNamed;
+               buf.classStreamer(obj, clTObject);
+            }
+           },
+           { name: 'fName', func: (buf, obj) => { obj.fName = buf.readTString(); } },
+           { name: 'fTitle', func: (buf, obj) => { obj.fTitle = buf.readTString(); } }
+         ],
+
+         TObjString: [ {
+            basename: clTObject, base: 1, func: (buf, obj) => {
+               if (!obj._typename) obj._typename = 'TObjString';
+               buf.classStreamer(obj, clTObject);
+            }
+           },
+           { name: 'fString', func: (buf, obj) => { obj.fString = buf.readTString(); } }
+         ],
+
+         TClonesArray(buf, list) {
+            if (!list._typename) list._typename = "TClonesArray";
+            list.$kind = "TClonesArray";
+            list.name = "";
+            const ver = buf.last_read_version;
+            if (ver > 2) buf.classStreamer(list, clTObject);
+            if (ver > 1) list.name = buf.readTString();
+            let classv = buf.readTString(), clv = 0,
+                pos = classv.lastIndexOf(";");
+
+            if (pos > 0) {
+               clv = parseInt(classv.substr(pos + 1));
+               classv = classv.substr(0, pos);
+            }
+
+            let nobjects = buf.ntou4();
+            if (nobjects < 0) nobjects = -nobjects;  // for backward compatibility
+
+            list.arr = new Array(nobjects);
+            list.fLast = nobjects - 1;
+            list.fLowerBound = buf.ntou4();
+
+            let streamer = buf.fFile.getStreamer(classv, { val: clv });
+            streamer = buf.fFile.getSplittedStreamer(streamer);
+
+            if (!streamer) {
+               console.log('Cannot get member-wise streamer for', classv, clv);
+            } else {
+               // create objects
+               for (let n = 0; n < nobjects; ++n)
+                  list.arr[n] = { _typename: classv };
+
+               // call streamer for all objects member-wise
+               for (let k = 0; k < streamer.length; ++k)
+                  for (let n = 0; n < nobjects; ++n)
+                     streamer[k].func(buf, list.arr[n]);
+            }
+         },
+
+         TMap(buf, map) {
+            if (!map._typename) map._typename = "TMap";
+            map.name = "";
+            map.arr = [];
+            const ver = buf.last_read_version;
+            if (ver > 2) buf.classStreamer(map, clTObject);
+            if (ver > 1) map.name = buf.readTString();
+
+            const nobjects = buf.ntou4();
+            // create objects
+            for (let n = 0; n < nobjects; ++n) {
+               let obj = { _typename: "TPair" };
+               obj.first = buf.readObjectAny();
+               obj.second = buf.readObjectAny();
+               if (obj.first) map.arr.push(obj);
+            }
+         },
+
+         TTreeIndex(buf, obj) {
+            const ver = buf.last_read_version;
+            obj._typename = "TTreeIndex";
+            buf.classStreamer(obj, "TVirtualIndex");
+            obj.fMajorName = buf.readTString();
+            obj.fMinorName = buf.readTString();
+            obj.fN = buf.ntoi8();
+            obj.fIndexValues = buf.readFastArray(obj.fN, kLong64);
+            if (ver > 1) obj.fIndexValuesMinor = buf.readFastArray(obj.fN, kLong64);
+            obj.fIndex = buf.readFastArray(obj.fN, kLong64);
+         },
+
+         TRefArray(buf, obj) {
+            obj._typename = "TRefArray";
+            buf.classStreamer(obj, clTObject);
+            obj.name = buf.readTString();
+            const nobj = buf.ntoi4();
+            obj.fLast = nobj - 1;
+            obj.fLowerBound = buf.ntoi4();
+            /*const pidf = */ buf.ntou2();
+            obj.fUIDs = buf.readFastArray(nobj, kUInt);
+         },
+
+         TCanvas(buf, obj) {
+            obj._typename = "TCanvas";
+            buf.classStreamer(obj, "TPad");
+            obj.fDISPLAY = buf.readTString();
+            obj.fDoubleBuffer = buf.ntoi4();
+            obj.fRetained = (buf.ntou1() !== 0);
+            obj.fXsizeUser = buf.ntoi4();
+            obj.fYsizeUser = buf.ntoi4();
+            obj.fXsizeReal = buf.ntoi4();
+            obj.fYsizeReal = buf.ntoi4();
+            obj.fWindowTopX = buf.ntoi4();
+            obj.fWindowTopY = buf.ntoi4();
+            obj.fWindowWidth = buf.ntoi4();
+            obj.fWindowHeight = buf.ntoi4();
+            obj.fCw = buf.ntou4();
+            obj.fCh = buf.ntou4();
+            obj.fCatt = buf.classStreamer({}, "TAttCanvas");
+            buf.ntou1(); // ignore b << TestBit(kMoveOpaque);
+            buf.ntou1(); // ignore b << TestBit(kResizeOpaque);
+            obj.fHighLightColor = buf.ntoi2();
+            obj.fBatch = (buf.ntou1() !== 0);
+            buf.ntou1();   // ignore b << TestBit(kShowEventStatus);
+            buf.ntou1();   // ignore b << TestBit(kAutoExec);
+            buf.ntou1();   // ignore b << TestBit(kMenuBar);
+         },
+
+         TObjArray(buf, list) {
+            if (!list._typename) list._typename = "TObjArray";
+            list.$kind = "TObjArray";
+            list.name = "";
+            const ver = buf.last_read_version;
+            if (ver > 2)
+               buf.classStreamer(list, clTObject);
+            if (ver > 1)
+               list.name = buf.readTString();
+            const nobjects = buf.ntou4();
+            let i = 0;
+            list.arr = new Array(nobjects);
+            list.fLast = nobjects - 1;
+            list.fLowerBound = buf.ntou4();
+            while (i < nobjects)
+               list.arr[i++] = buf.readObjectAny();
+         },
+
+         TPolyMarker3D(buf, marker) {
+            const ver = buf.last_read_version;
+            buf.classStreamer(marker, clTObject);
+            buf.classStreamer(marker, "TAttMarker");
+            marker.fN = buf.ntoi4();
+            marker.fP = buf.readFastArray(marker.fN * 3, kFloat);
+            marker.fOption = buf.readTString();
+            marker.fName = (ver > 1) ? buf.readTString() : "TPolyMarker3D";
+         },
+
+         TPolyLine3D(buf, obj) {
+            buf.classStreamer(obj, clTObject);
+            buf.classStreamer(obj, "TAttLine");
+            obj.fN = buf.ntoi4();
+            obj.fP = buf.readFastArray(obj.fN * 3, kFloat);
+            obj.fOption = buf.readTString();
+         },
+
+         TStreamerInfo(buf, obj) {
+            buf.classStreamer(obj, clTNamed);
+            obj.fCheckSum = buf.ntou4();
+            obj.fClassVersion = buf.ntou4();
+            obj.fElements = buf.readObjectAny();
+         },
+
+         TStreamerElement(buf, element) {
+            const ver = buf.last_read_version;
+            buf.classStreamer(element, clTNamed);
+            element.fType = buf.ntou4();
+            element.fSize = buf.ntou4();
+            element.fArrayLength = buf.ntou4();
+            element.fArrayDim = buf.ntou4();
+            element.fMaxIndex = buf.readFastArray((ver == 1) ? buf.ntou4() : 5, kUInt);
+            element.fTypeName = buf.readTString();
+
+            if ((element.fType === kUChar) && ((element.fTypeName == "Bool_t") || (element.fTypeName == "bool")))
+               element.fType = kBool;
+
+            element.fXmin = element.fXmax = element.fFactor = 0;
+            if (ver === 3) {
+               element.fXmin = buf.ntod();
+               element.fXmax = buf.ntod();
+               element.fFactor = buf.ntod();
+            } else if ((ver > 3) && (element.fBits & JSROOT.BIT(6))) { // kHasRange
+
+               let p1 = element.fTitle.indexOf("[");
+               if ((p1 >= 0) && (element.fType > kOffsetP)) p1 = element.fTitle.indexOf("[", p1 + 1);
+               let p2 = element.fTitle.indexOf("]", p1 + 1);
+
+               if ((p1 >= 0) && (p2 >= p1 + 2)) {
+
+                  let arr = element.fTitle.substr(p1+1, p2 - p1 - 1).split(","), nbits = 32;
+                  if (!arr || arr.length < 2)
+                     throw new Error(`Problem to decode range setting from streamer element title ${element.fTitle}`);
+
+                  if (arr.length === 3) nbits = parseInt(arr[2]);
+                  if (!Number.isInteger(nbits) || (nbits < 2) || (nbits > 32)) nbits = 32;
+
+                  let parse_range = val => {
+                     if (!val) return 0;
+                     if (val.indexOf("pi") < 0) return parseFloat(val);
+                     val = val.trim();
+                     let sign = 1.;
+                     if (val[0] == "-") { sign = -1; val = val.substr(1); }
+                     switch (val) {
+                        case "2pi":
+                        case "2*pi":
+                        case "twopi": return sign * 2 * Math.PI;
+                        case "pi/2": return sign * Math.PI / 2;
+                        case "pi/4": return sign * Math.PI / 4;
+                     }
+                     return sign * Math.PI;
+                  };
+
+                  element.fXmin = parse_range(arr[0]);
+                  element.fXmax = parse_range(arr[1]);
+
+                  // avoid usage of 1 << nbits, while only works up to 32 bits
+                  let bigint = ((nbits >= 0) && (nbits < 32)) ? Math.pow(2, nbits) : 0xffffffff;
+                  if (element.fXmin < element.fXmax)
+                     element.fFactor = bigint / (element.fXmax - element.fXmin);
+                  else if (nbits < 15)
+                     element.fXmin = nbits;
+               }
+            }
+         },
+
+         TStreamerBase(buf, elem) {
+            const ver = buf.last_read_version;
+            buf.classStreamer(elem, "TStreamerElement");
+            if (ver > 2) elem.fBaseVersion = buf.ntou4();
+         },
+
+         TStreamerSTL(buf, elem) {
+            buf.classStreamer(elem, "TStreamerElement");
+            elem.fSTLtype = buf.ntou4();
+            elem.fCtype = buf.ntou4();
+
+            if ((elem.fSTLtype === kSTLmultimap) &&
+               ((elem.fTypeName.indexOf("std::set") === 0) ||
+                  (elem.fTypeName.indexOf("set") === 0))) elem.fSTLtype = kSTLset;
+
+            if ((elem.fSTLtype === kSTLset) &&
+               ((elem.fTypeName.indexOf("std::multimap") === 0) ||
+                  (elem.fTypeName.indexOf("multimap") === 0))) elem.fSTLtype = kSTLmultimap;
+         },
+
+         TStreamerSTLstring(buf, elem) {
+            if (buf.last_read_version > 0)
+               buf.classStreamer(elem, "TStreamerSTL");
+         },
+
+         TVirtualPerfStats: clTObject, // use directly TObject streamer
+         TMethodCall: clTObject
 
       },
 
