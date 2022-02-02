@@ -314,8 +314,8 @@
 
          function MakeShortName(name1, name2) {
             return name1.toLowerCase().replace(/[ .]/g,"_") + "_" +
-                   name2.toLowerCase().replace(/ (3)/g,"_3").replace(/ (2)/g,"_2").replace(/ (1)/g,"_1")
-                                      .replace(/[\(\)]/g,"").replace(/[. ]/,"_");
+                   name2.toLowerCase().replace(/ \(3\)/g,"_3").replace(/ \(2\)/g,"_2").replace(/ \(1\)/g,"_1")
+                                      .replace(/[\(\)]/g,"").replace(/[. ]/g,"_");
          }
 
          for (let key in examples) {
