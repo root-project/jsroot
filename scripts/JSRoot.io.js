@@ -6,6 +6,8 @@ JSROOT.define([], () => {
    "use strict";
 
    const clTObject = 'TObject', clTNamed = 'TNamed',
+         clTStreamerElement = "TStreamerElement", clTObjString = 'TObjString',
+
          kChar = 1, kShort = 2, kInt = 3, kLong = 4, kFloat = 5, kCounter = 6,
          kCharStar = 7, kDouble = 8, kDouble32 = 9, kLegacyChar = 10,
          kUChar = 11, kUShort = 12, kUInt = 13, kULong = 14, kBits = 15,
@@ -2516,171 +2518,6 @@ JSROOT.define([], () => {
 
    } // class TNodejsFile
 
-   /** @summary Add custom streamers for basic ROOT classes
-     * @private */
-   function produceCustomStreamers() {
-      let cs = jsrio.CustomStreamers;
-
-      addClassMethods(clTNamed, cs[clTNamed]);
-
-      addClassMethods('TObjString', cs['TObjString']);
-
-      cs.TList = cs.THashList = function(buf, obj) {
-         // stream all objects in the list from the I/O buffer
-         if (!obj._typename) obj._typename = this.typename;
-         obj.$kind = "TList"; // all derived classes will be marked as well
-         if (buf.last_read_version > 3) {
-            buf.classStreamer(obj, clTObject);
-            obj.name = buf.readTString();
-            const nobjects = buf.ntou4();
-            obj.arr = new Array(nobjects);
-            obj.opt = new Array(nobjects);
-            for (let i = 0; i < nobjects; ++i) {
-               obj.arr[i] = buf.readObjectAny();
-               obj.opt[i] = buf.readTString();
-            }
-         } else {
-            obj.name = "";
-            obj.arr = [];
-            obj.opt = [];
-         }
-      }
-
-
-      cs.TStreamerBasicPointer = cs.TStreamerLoop = (buf, elem) => {
-         if (buf.last_read_version > 1) {
-            buf.classStreamer(elem, "TStreamerElement");
-            elem.fCountVersion = buf.ntou4();
-            elem.fCountName = buf.readTString();
-            elem.fCountClass = buf.readTString();
-         }
-      }
-
-      cs.TStreamerObject = cs.TStreamerBasicType = cs.TStreamerObjectAny =
-         cs.TStreamerString = cs.TStreamerObjectPointer = (buf, elem) => {
-            if (buf.last_read_version > 1)
-               buf.classStreamer(elem, "TStreamerElement");
-         }
-
-      cs.TStreamerObjectAnyPointer = (buf, elem) => {
-         if (buf.last_read_version > 0)
-            buf.classStreamer(elem, "TStreamerElement");
-      }
-
-      cs.TTree = {
-         name: '$file',
-         func: (buf, obj) => { obj.$kind = "TTree"; obj.$file = buf.fFile; buf.fFile._addReadTree(obj); }
-      }
-
-      cs.RooRealVar = (buf, obj) => {
-         const v = buf.last_read_version;
-         buf.classStreamer(obj, "RooAbsRealLValue");
-         if (v == 1) { buf.ntod(); buf.ntod(); buf.ntoi4(); } // skip fitMin, fitMax, fitBins
-         obj._error = buf.ntod();
-         obj._asymErrLo = buf.ntod();
-         obj._asymErrHi = buf.ntod();
-         if (v >= 2) obj._binning = buf.readObjectAny();
-         if (v == 3) obj._sharedProp = buf.readObjectAny();
-         if (v >= 4) obj._sharedProp = buf.classStreamer({}, "RooRealVarSharedProperties");
-      }
-
-      cs.RooAbsBinning = (buf, obj) => {
-         buf.classStreamer(obj, (buf.last_read_version == 1) ? clTObject : clTNamed);
-         buf.classStreamer(obj, "RooPrintable");
-      }
-
-      cs.RooCategory = (buf, obj) => {
-         const v = buf.last_read_version;
-         buf.classStreamer(obj, "RooAbsCategoryLValue");
-         obj._sharedProp = (v === 1) ? buf.readObjectAny() : buf.classStreamer({}, "RooCategorySharedProperties");
-      }
-
-      cs['RooWorkspace::CodeRepo'] = (buf /*, obj*/) => {
-         const sz = (buf.last_read_version == 2) ? 3 : 2;
-         for (let i = 0; i < sz; ++i) {
-            let cnt = buf.ntoi4() * ((i == 0) ? 4 : 3);
-            while (cnt--) buf.readTString();
-         }
-      }
-
-      cs.RooLinkedList = (buf, obj) => {
-         const v = buf.last_read_version;
-         buf.classStreamer(obj, clTObject);
-         let size = buf.ntoi4();
-         obj.arr = JSROOT.create("TList");
-         while (size--)
-            obj.arr.Add(buf.readObjectAny());
-         if (v > 1) obj._name = buf.readTString();
-      }
-
-      cs.TImagePalette = [
-         {
-            basename: clTObject, base: 1, func: (buf, obj) => {
-               if (!obj._typename) obj._typename = 'TImagePalette';
-               buf.classStreamer(obj, clTObject);
-            }
-         },
-         { name: 'fNumPoints', func: (buf, obj) => { obj.fNumPoints = buf.ntou4(); } },
-         { name: 'fPoints', func: (buf, obj) => { obj.fPoints = buf.readFastArray(obj.fNumPoints, kDouble); } },
-         { name: 'fColorRed', func: (buf, obj) => { obj.fColorRed = buf.readFastArray(obj.fNumPoints, kUShort); } },
-         { name: 'fColorGreen', func: (buf, obj) => { obj.fColorGreen = buf.readFastArray(obj.fNumPoints, kUShort); } },
-         { name: 'fColorBlue', func: (buf, obj) => { obj.fColorBlue = buf.readFastArray(obj.fNumPoints, kUShort); } },
-         { name: 'fColorAlpha', func: (buf, obj) => { obj.fColorAlpha = buf.readFastArray(obj.fNumPoints, kUShort); } }
-      ];
-
-      cs.TAttImage = [
-         { name: 'fImageQuality', func: (buf, obj) => { obj.fImageQuality = buf.ntoi4(); } },
-         { name: 'fImageCompression', func: (buf, obj) => { obj.fImageCompression = buf.ntou4(); } },
-         { name: 'fConstRatio', func: (buf, obj) => { obj.fConstRatio = (buf.ntou1() != 0); } },
-         { name: 'fPalette', func: (buf, obj) => { obj.fPalette = buf.classStreamer({}, "TImagePalette"); } }
-      ]
-
-      cs.TASImage = (buf, obj) => {
-         if ((buf.last_read_version == 1) && (buf.fFile.fVersion > 0) && (buf.fFile.fVersion < 50000))
-            return console.warn("old TASImage version - not yet supported");
-
-         buf.classStreamer(obj, clTNamed);
-
-         if (buf.ntou1() != 0) {
-            const size = buf.ntoi4();
-            obj.fPngBuf = buf.readFastArray(size, kUChar);
-         } else {
-            buf.classStreamer(obj, "TAttImage");
-            obj.fWidth = buf.ntoi4();
-            obj.fHeight = buf.ntoi4();
-            obj.fImgBuf = buf.readFastArray(obj.fWidth * obj.fHeight, kDouble);
-         }
-      }
-
-      cs.TMaterial = (buf, obj) => {
-         const v = buf.last_read_version;
-         buf.classStreamer(obj, clTNamed);
-         obj.fNumber = buf.ntoi4();
-         obj.fA = buf.ntof();
-         obj.fZ = buf.ntof();
-         obj.fDensity = buf.ntof();
-         if (v > 2) {
-            buf.classStreamer(obj, "TAttFill");
-            obj.fRadLength = buf.ntof();
-            obj.fInterLength = buf.ntof();
-         } else {
-            obj.fRadLength = obj.fInterLength = 0;
-         }
-      }
-
-      cs.TMixture = (buf, obj) => {
-         buf.classStreamer(obj, "TMaterial");
-         obj.fNmixt = buf.ntoi4();
-         obj.fAmixt = buf.readFastArray(buf.ntoi4(), kFloat);
-         obj.fZmixt = buf.readFastArray(buf.ntoi4(), kFloat);
-         obj.fWmixt = buf.readFastArray(buf.ntoi4(), kFloat);
-      }
-
-      // these are direct streamers - not follow version/checksum logic
-
-
-   }
-
    /** @summary Open ROOT file for reading
      * @desc Generic method to open ROOT file for reading
      * Following kind of arguments can be provided:
@@ -2893,7 +2730,7 @@ JSROOT.define([], () => {
 
          TObjString: [ {
             basename: clTObject, base: 1, func: (buf, obj) => {
-               if (!obj._typename) obj._typename = 'TObjString';
+               if (!obj._typename) obj._typename = clTObjString;
                buf.classStreamer(obj, clTObject);
             }
            },
@@ -3113,12 +2950,12 @@ JSROOT.define([], () => {
 
          TStreamerBase(buf, elem) {
             const ver = buf.last_read_version;
-            buf.classStreamer(elem, "TStreamerElement");
+            buf.classStreamer(elem, clTStreamerElement);
             if (ver > 2) elem.fBaseVersion = buf.ntou4();
          },
 
          TStreamerSTL(buf, elem) {
-            buf.classStreamer(elem, "TStreamerElement");
+            buf.classStreamer(elem, clTStreamerElement);
             elem.fSTLtype = buf.ntou4();
             elem.fCtype = buf.ntou4();
 
@@ -3134,6 +2971,155 @@ JSROOT.define([], () => {
          TStreamerSTLstring(buf, elem) {
             if (buf.last_read_version > 0)
                buf.classStreamer(elem, "TStreamerSTL");
+         },
+
+         TList(buf, obj) {
+            // stream all objects in the list from the I/O buffer
+            if (!obj._typename) obj._typename = this.typename;
+            obj.$kind = "TList"; // all derived classes will be marked as well
+            if (buf.last_read_version > 3) {
+               buf.classStreamer(obj, clTObject);
+               obj.name = buf.readTString();
+               const nobjects = buf.ntou4();
+               obj.arr = new Array(nobjects);
+               obj.opt = new Array(nobjects);
+               for (let i = 0; i < nobjects; ++i) {
+                  obj.arr[i] = buf.readObjectAny();
+                  obj.opt[i] = buf.readTString();
+               }
+            } else {
+               obj.name = "";
+               obj.arr = [];
+               obj.opt = [];
+            }
+         },
+
+         TStreamerLoop(buf, elem)  {
+            if (buf.last_read_version > 1) {
+               buf.classStreamer(elem, clTStreamerElement);
+               elem.fCountVersion = buf.ntou4();
+               elem.fCountName = buf.readTString();
+               elem.fCountClass = buf.readTString();
+            }
+         },
+
+         TStreamerObjectPointer(buf, elem) {
+             if (buf.last_read_version > 1)
+                buf.classStreamer(elem, clTStreamerElement);
+          },
+
+         TStreamerObjectAnyPointer(buf, elem) {
+            if (buf.last_read_version > 0)
+               buf.classStreamer(elem, clTStreamerElement);
+         },
+
+         TTree: {
+            name: '$file',
+            func: (buf, obj) => { obj.$kind = "TTree"; obj.$file = buf.fFile; buf.fFile._addReadTree(obj); }
+         },
+
+         RooRealVar(buf, obj) {
+            const v = buf.last_read_version;
+            buf.classStreamer(obj, "RooAbsRealLValue");
+            if (v == 1) { buf.ntod(); buf.ntod(); buf.ntoi4(); } // skip fitMin, fitMax, fitBins
+            obj._error = buf.ntod();
+            obj._asymErrLo = buf.ntod();
+            obj._asymErrHi = buf.ntod();
+            if (v >= 2) obj._binning = buf.readObjectAny();
+            if (v == 3) obj._sharedProp = buf.readObjectAny();
+            if (v >= 4) obj._sharedProp = buf.classStreamer({}, "RooRealVarSharedProperties");
+         },
+
+         RooAbsBinning(buf, obj) {
+            buf.classStreamer(obj, (buf.last_read_version == 1) ? clTObject : clTNamed);
+            buf.classStreamer(obj, "RooPrintable");
+         },
+
+         RooCategory(buf, obj) {
+            const v = buf.last_read_version;
+            buf.classStreamer(obj, "RooAbsCategoryLValue");
+            obj._sharedProp = (v === 1) ? buf.readObjectAny() : buf.classStreamer({}, "RooCategorySharedProperties");
+         },
+
+         'RooWorkspace::CodeRepo': (buf /*, obj*/) => {
+            const sz = (buf.last_read_version == 2) ? 3 : 2;
+            for (let i = 0; i < sz; ++i) {
+               let cnt = buf.ntoi4() * ((i == 0) ? 4 : 3);
+               while (cnt--) buf.readTString();
+            }
+         },
+
+         RooLinkedList(buf, obj) {
+            const v = buf.last_read_version;
+            buf.classStreamer(obj, clTObject);
+            let size = buf.ntoi4();
+            obj.arr = JSROOT.create("TList");
+            while (size--)
+               obj.arr.Add(buf.readObjectAny());
+            if (v > 1) obj._name = buf.readTString();
+         },
+
+         TImagePalette: [
+            {
+               basename: clTObject, base: 1, func: (buf, obj) => {
+                  if (!obj._typename) obj._typename = 'TImagePalette';
+                  buf.classStreamer(obj, clTObject);
+               }
+            },
+            { name: 'fNumPoints', func: (buf, obj) => { obj.fNumPoints = buf.ntou4(); } },
+            { name: 'fPoints', func: (buf, obj) => { obj.fPoints = buf.readFastArray(obj.fNumPoints, kDouble); } },
+            { name: 'fColorRed', func: (buf, obj) => { obj.fColorRed = buf.readFastArray(obj.fNumPoints, kUShort); } },
+            { name: 'fColorGreen', func: (buf, obj) => { obj.fColorGreen = buf.readFastArray(obj.fNumPoints, kUShort); } },
+            { name: 'fColorBlue', func: (buf, obj) => { obj.fColorBlue = buf.readFastArray(obj.fNumPoints, kUShort); } },
+            { name: 'fColorAlpha', func: (buf, obj) => { obj.fColorAlpha = buf.readFastArray(obj.fNumPoints, kUShort); } }
+         ],
+
+         TAttImage: [
+            { name: 'fImageQuality', func: (buf, obj) => { obj.fImageQuality = buf.ntoi4(); } },
+            { name: 'fImageCompression', func: (buf, obj) => { obj.fImageCompression = buf.ntou4(); } },
+            { name: 'fConstRatio', func: (buf, obj) => { obj.fConstRatio = (buf.ntou1() != 0); } },
+            { name: 'fPalette', func: (buf, obj) => { obj.fPalette = buf.classStreamer({}, "TImagePalette"); } }
+         ],
+
+         TASImage(buf, obj) {
+            if ((buf.last_read_version == 1) && (buf.fFile.fVersion > 0) && (buf.fFile.fVersion < 50000))
+               return console.warn("old TASImage version - not yet supported");
+
+            buf.classStreamer(obj, clTNamed);
+
+            if (buf.ntou1() != 0) {
+               const size = buf.ntoi4();
+               obj.fPngBuf = buf.readFastArray(size, kUChar);
+            } else {
+               buf.classStreamer(obj, "TAttImage");
+               obj.fWidth = buf.ntoi4();
+               obj.fHeight = buf.ntoi4();
+               obj.fImgBuf = buf.readFastArray(obj.fWidth * obj.fHeight, kDouble);
+            }
+         },
+
+         TMaterial(buf, obj) {
+            const v = buf.last_read_version;
+            buf.classStreamer(obj, clTNamed);
+            obj.fNumber = buf.ntoi4();
+            obj.fA = buf.ntof();
+            obj.fZ = buf.ntof();
+            obj.fDensity = buf.ntof();
+            if (v > 2) {
+               buf.classStreamer(obj, "TAttFill");
+               obj.fRadLength = buf.ntof();
+               obj.fInterLength = buf.ntof();
+            } else {
+               obj.fRadLength = obj.fInterLength = 0;
+            }
+         },
+
+         TMixture(buf, obj) {
+            buf.classStreamer(obj, "TMaterial");
+            obj.fNmixt = buf.ntoi4();
+            obj.fAmixt = buf.readFastArray(buf.ntoi4(), kFloat);
+            obj.fZmixt = buf.readFastArray(buf.ntoi4(), kFloat);
+            obj.fWmixt = buf.readFastArray(buf.ntoi4(), kFloat);
          },
 
          TVirtualPerfStats: clTObject, // use directly TObject streamer
@@ -3804,7 +3790,14 @@ JSROOT.define([], () => {
 
    } // namespace jsrio
 
-   produceCustomStreamers();
+   // configure custom streamers
+   let cs = jsrio.CustomStreamers;
+
+   addClassMethods(clTNamed, cs[clTNamed]);
+   addClassMethods(clTObjString, cs[clTObjString]);
+   cs.THashList = cs.TList;
+   cs.TStreamerBasicPointer = cs.TStreamerLoop;
+   cs.TStreamerObject = cs.TStreamerBasicType = cs.TStreamerObjectAny = cs.TStreamerString = cs.TStreamerObjectPointer;
 
    JSROOT.TBuffer = TBuffer;
    JSROOT.TDirectory = TDirectory;
