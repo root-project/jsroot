@@ -196,8 +196,8 @@ function CreateSVGRenderer(as_is, precision, doc) {
       return rndr;
    }
 
-   let excl_style1 = ";stroke-opacity:1;stroke-width:1;stroke-linecap:round";
-   let excl_style2 = ";fill-opacity:1";
+   const excl_style1 = ";stroke-opacity:1;stroke-width:1;stroke-linecap:round",
+         excl_style2 = ";fill-opacity:1";
 
    let doc_wrapper = {
      svg_attr: {},
@@ -211,10 +211,12 @@ function CreateSVGRenderer(as_is, precision, doc) {
               setAttribute: function(name, value) {
                  // cut useless fill-opacity:1 at the end of many SVG attributes
                  if ((name=="style") && value) {
-                    if (value.indexOf(excl_style1) == value.length - excl_style1.length)
-                       value = value.substr(0,value.length - excl_style1.length);
-                    if (value.indexOf(excl_style2) == value.length - excl_style2.length)
-                       value = value.substr(0,value.length - excl_style2.length);
+                    let pos1 = value.indexOf(excl_style1);
+                    if ((pos1 >= 0) && (pos1 == value.length - excl_style1.length))
+                       value = value.substr(0, value.length - excl_style1.length);
+                    let pos2 = value.indexOf(excl_style2);
+                    if ((pos2 >= 0) && (pos2 == value.length - excl_style2.length))
+                       value = value.substr(0, value.length - excl_style2.length);
                  }
                  this._wrapper.path_attr[name] = value;
               }
