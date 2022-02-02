@@ -2944,8 +2944,6 @@ JSROOT.define([], () => {
       let ds = jsrio.DirectStreamers;
 
       // do nothing
-      ds.TQObject = ds.TGraphStruct = ds.TGraphNode = ds.TGraphEdge = () => {};
-
       ds.TKey = (buf, key) => {
          key.fNbytes = buf.ntoi4();
          key.fVersion = buf.ntoi2();
@@ -3117,6 +3115,12 @@ JSROOT.define([], () => {
       // these are streamers which do not handle version regularly
       // used for special classes like TRef or TBasket
       DirectStreamers: {
+         // do nothing for these classes
+         TQObject() {},
+         TGraphStruct() {},
+         TGraphNode() {},
+         TGraphEdge() {},
+
          TDatime(buf, obj) {
             obj.fDatime = buf.ntou4();
             //  obj.GetDate = function() {
