@@ -687,8 +687,7 @@
 
          if (req.factoryFunc && req.thisModule) {
             if (!(_.modules[req.thisModule])) {
-               console.log('Introducing module', req.thisModule, 'need', need)
-
+               console.log('Introducing module', req.thisModule, 'need', need);
                _.modules[req.thisModule] = { jsroot: true, src: thisSrc, loading: true };
             }
          }
