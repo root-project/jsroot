@@ -5,8 +5,8 @@ JSROOT.define([], () => {
 
    "use strict";
 
-   const clTObject = 'TObject', clTNamed = 'TNamed',
-         clTStreamerElement = "TStreamerElement", clTObjString = 'TObjString',
+   const clTObject = 'TObject', clTNamed = 'TNamed', clTObjString = 'TObjString',
+         clTList = 'TList', clTStreamerElement = "TStreamerElement", clTStreamerObject = 'TStreamerObject',
 
          kChar = 1, kShort = 2, kInt = 3, kLong = 4, kFloat = 5, kCounter = 6,
          kCharStar = 7, kDouble = 8, kDouble32 = 9, kLegacyChar = 10,
@@ -1828,7 +1828,7 @@ JSROOT.define([], () => {
          // in such situation calls are asynchrone
          return this.getKey(obj_name, cycle).then(key => {
 
-            if ((obj_name == "StreamerInfo") && (key.fClassName == "TList"))
+            if ((obj_name == "StreamerInfo") && (key.fClassName == clTList))
                return file.fStreamerInfos;
 
             if ((key.fClassName == 'TDirectory' || key.fClassName == 'TDirectoryFile')) {
@@ -1892,7 +1892,7 @@ JSROOT.define([], () => {
 
          let lst = {};
          buf.mapObject(1, lst);
-         buf.classStreamer(lst, 'TList');
+         buf.classStreamer(lst, clTList);
 
          lst._typename = "TStreamerInfoList";
 
@@ -2322,7 +2322,7 @@ JSROOT.define([], () => {
                p1 = p - 1;
                return res.trim();
             }
-            si = { _typename: 'TStreamerInfo', fVersion: 1, fName: typname, fElements: JSROOT.create("TList") };
+            si = { _typename: 'TStreamerInfo', fVersion: 1, fName: typname, fElements: JSROOT.create(clTList) };
             si.fElements.Add(jsrio.createStreamerElement("first", GetNextName(), file));
             si.fElements.Add(jsrio.createStreamerElement("second", GetNextName(), file));
          }
@@ -2973,10 +2973,10 @@ JSROOT.define([], () => {
                buf.classStreamer(elem, "TStreamerSTL");
          },
 
-         TList(buf, obj) {
+         TList: function(buf, obj) {
             // stream all objects in the list from the I/O buffer
             if (!obj._typename) obj._typename = this.typename;
-            obj.$kind = "TList"; // all derived classes will be marked as well
+            obj.$kind = clTList; // all derived classes will be marked as well
             if (buf.last_read_version > 3) {
                buf.classStreamer(obj, clTObject);
                obj.name = buf.readTString();
@@ -2994,6 +2994,8 @@ JSROOT.define([], () => {
             }
          },
 
+         THashList: clTList,
+
          TStreamerLoop(buf, elem)  {
             if (buf.last_read_version > 1) {
                buf.classStreamer(elem, clTStreamerElement);
@@ -3003,10 +3005,17 @@ JSROOT.define([], () => {
             }
          },
 
-         TStreamerObjectPointer(buf, elem) {
-             if (buf.last_read_version > 1)
-                buf.classStreamer(elem, clTStreamerElement);
-          },
+         TStreamerBasicPointer: 'TStreamerLoop',
+
+         TStreamerObject(buf, elem) {
+            if (buf.last_read_version > 1)
+               buf.classStreamer(elem, clTStreamerElement);
+         },
+
+         TStreamerBasicType: clTStreamerObject,
+         TStreamerObjectAny: clTStreamerObject,
+         TStreamerString: clTStreamerObject,
+         TStreamerObjectPointer: clTStreamerObject,
 
          TStreamerObjectAnyPointer(buf, elem) {
             if (buf.last_read_version > 0)
@@ -3053,7 +3062,7 @@ JSROOT.define([], () => {
             const v = buf.last_read_version;
             buf.classStreamer(obj, clTObject);
             let size = buf.ntoi4();
-            obj.arr = JSROOT.create("TList");
+            obj.arr = JSROOT.create(clTList);
             while (size--)
                obj.arr.Add(buf.readObjectAny());
             if (v > 1) obj._name = buf.readTString();
@@ -3790,14 +3799,9 @@ JSROOT.define([], () => {
 
    } // namespace jsrio
 
-   // configure custom streamers
-   let cs = jsrio.CustomStreamers;
-
-   addClassMethods(clTNamed, cs[clTNamed]);
-   addClassMethods(clTObjString, cs[clTObjString]);
-   cs.THashList = cs.TList;
-   cs.TStreamerBasicPointer = cs.TStreamerLoop;
-   cs.TStreamerObject = cs.TStreamerBasicType = cs.TStreamerObjectAny = cs.TStreamerString = cs.TStreamerObjectPointer;
+   // special way to assign methods when streaming objects
+   addClassMethods(clTNamed, jsrio.CustomStreamers[clTNamed]);
+   addClassMethods(clTObjString, jsrio.CustomStreamers[clTObjString]);
 
    JSROOT.TBuffer = TBuffer;
    JSROOT.TDirectory = TDirectory;
