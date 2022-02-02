@@ -3579,19 +3579,17 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             // case of ROOT7 with always dummy TPad as first entry
             if (!first.fCw || !first.fCh) this._fixed_size = false;
 
-            let layout_promise = Promise.resolve(true);
+            let layout_promise = Promise.resolve(true),
+                mainid = this.selectDom().attr("id");
 
-            if (!this.batch_mode && !this.use_openui && !this.brlayout) {
-               let mainid = this.selectDom().attr("id");
-               if (mainid && (typeof mainid == "string"))
-                  layout_promise = JSROOT.require('hierarchy').then(() => {
-                     this.brlayout = new JSROOT.BrowserLayout(mainid, null, this);
-                     this.brlayout.create(mainid, true);
-                     // this.brlayout.toggleBrowserKind("float");
-                     this.setDom(this.brlayout.drawing_divid()); // need to create canvas
-                     jsrp.registerForResize(this.brlayout);
-                 });
-            }
+            if (!this.batch_mode && !this.use_openui && !this.brlayout && mainid && (typeof mainid == "string"))
+               layout_promise = JSROOT.require('hierarchy').then(() => {
+                  this.brlayout = new JSROOT.BrowserLayout(mainid, null, this);
+                  this.brlayout.create(mainid, true);
+                  // this.brlayout.toggleBrowserKind("float");
+                  this.setDom(this.brlayout.drawing_divid()); // need to create canvas
+                  jsrp.registerForResize(this.brlayout);
+              });
 
             return layout_promise.then(() => {
 
