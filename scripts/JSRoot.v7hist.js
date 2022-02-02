@@ -1439,7 +1439,7 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
                let gry0 = Math.round(funcs.gry(0));
                if (gry0 <= 0) h0 = -3; else if (gry0 < height) h0 = gry0;
             }
-            close_path = `L${currx},${h0}H{startx}Z`;
+            close_path = `L${currx},${h0}H${startx}Z`;
             if (res.length > 0) res += close_path;
          }
 
