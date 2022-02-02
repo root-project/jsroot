@@ -2135,6 +2135,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          this._renderer = jsrp.createRender3D(w, h, this.options.Render3D, { antialias: true, logarithmicDepthBuffer: false, preserveDrawingBuffer: true });
 
          this._webgl = (this._renderer.jsroot_render3d === JSROOT.constants.Render3D.WebGL);
+         this._svg = (this._renderer.jsroot_render3d === JSROOT.constants.Render3D.SVG);
 
          if (this._renderer.setPixelRatio && !JSROOT.nodejs)
             this._renderer.setPixelRatio(window.devicePixelRatio);
@@ -3814,7 +3815,8 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
       /** @summary Assign clipping attributes to the meshes - supported only for webgl */
       updateClipping(without_render, force_traverse) {
-         if (!this._webgl) return;
+
+         if (this._svg) return; // do not try clipping with SVG renderer
 
          let clip = this.ctrl.clip, panels = [], changed = false,
              constants = [ clip[0].value, -1 * clip[1].value, (this.ctrl._yup ? -1 : 1) * clip[2].value ],
