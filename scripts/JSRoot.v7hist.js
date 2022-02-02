@@ -2983,28 +2983,27 @@ JSROOT.define(['d3', 'painter', 'v7gpad'], (d3, jsrp) => {
                ww = Math.max(Math.round(ww - 2*dgrx), 1);
                hh = Math.max(Math.round(hh - 2*dgry), 1);
 
-               res += "M"+xx+","+yy + "v"+hh + "h"+ww + "v-"+hh + "z";
+               res += `M${xx},${yy}v${hh}h${ww}v${-hh}z`;
 
-               if ((binz<0) && (this.options.BoxStyle === 10))
-                  cross += "M"+xx+","+yy + "l"+ww+","+hh + "M"+(xx+ww)+","+yy + "l-"+ww+","+hh;
+               if ((binz < 0) && (this.options.BoxStyle === 10))
+                  cross += `M${xx},${yy}l${ww},${hh}M${xx+ww},${yy}l${-ww},${hh}`;
 
                if ((this.options.BoxStyle === 11) && (ww>5) && (hh>5)) {
                   let pww = Math.round(ww*0.1),
                       phh = Math.round(hh*0.1),
-                      side1 = "M"+xx+","+yy + "h"+ww + "l"+(-pww)+","+phh + "h"+(2*pww-ww) +
-                              "v"+(hh-2*phh)+ "l"+(-pww)+","+phh + "z",
-                      side2 = "M"+(xx+ww)+","+(yy+hh) + "v"+(-hh) + "l"+(-pww)+","+phh + "v"+(hh-2*phh)+
-                              "h"+(2*pww-ww) + "l"+(-pww)+","+phh + "z";
-                  if (binz<0) { btn2+=side1; btn1+=side2; }
-                         else { btn1+=side1; btn2+=side2; }
+                      side1 = `M${xx},${yy}h${ww}l${-pww},${phh}h${2*pww-ww}v${hh-2*phh}l${-pww},${phh}z`,
+                      side2 = `M${xx+ww},${yy+hh}v${-hh}l${-pww},${phh}v${hh-2*phh}h${2*pww-ww}l${-pww},${phh}z`;
+                  if (binz < 0) { btn2 += side1; btn1 += side2; }
+                           else { btn1 += side1; btn2 += side2; }
                }
             }
          }
 
          if (res.length > 0) {
-            let elem = this.draw_g.append("svg:path")
-                                  .attr("d", res)
-                                  .call(this.fillatt.func);
+            let elem = this.draw_g
+                           .append("svg:path")
+                           .attr("d", res)
+                           .call(this.fillatt.func);
             if ((this.options.BoxStyle !== 11) && this.fillatt.empty())
                elem.call(this.lineatt.func);
          }
