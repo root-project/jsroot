@@ -12,7 +12,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    JSROOT.v7 = v7;
 
-   v7.CommMode = { kNormal: 1, kLessTraffic: 2, kOffline: 3 }
+   v7.CommMode = { kNormal: 1, kLessTraffic: 2, kOffline: 3 };
 
    class RObjectPainter extends JSROOT.ObjectPainter {
 
@@ -3430,10 +3430,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
          snap.fOption = pattr.v7EvalAttr("options", "");
 
-         let extract_color = (member_name, attr_name) => {
+         const extract_color = (member_name, attr_name) => {
             let col = pattr.v7EvalColor(attr_name, "");
             if (col) obj[member_name] = jsrp.addColor(col, this.root_colors);
-         }
+         };
 
          // handle TAttLine
          if ((obj.fLineColor !== undefined) && (obj.fLineWidth !== undefined) && (obj.fLineStyle !== undefined)) {
@@ -4829,7 +4829,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
      * @param {string|boolean} frame_kind  - false for no frame or "3d" for special 3D mode
      * @desc Assigns DOM, creates and draw RCanvas and RFrame if necessary, add painter to pad list of painters
      * @returns {Promise} for ready */
-   let ensureRCanvas = (painter, frame_kind) => {
+   function ensureRCanvas(painter, frame_kind) {
       if (!painter) return Promise.reject('Painter not provided in ensureRCanvas');
 
       // simple check - if canvas there, can use painter
@@ -5050,11 +5050,11 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
    ////////////////////////////////////////////////////////////////////////////////////////////
 
-   v7.extractRColor = function(rcolor) {
-      return rcolor.fColor || "black";
-   }
-
    JSROOT.registerMethods("ROOT::Experimental::RPalette", {
+
+      extractRColor = function(rcolor) {
+        return rcolor.fColor || "black";
+      },
 
       getColor: function(indx) {
          return this.palette[indx];
@@ -5100,8 +5100,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             return (r1 < r2) ? entry2.fColor : entry1.fColor;
 
          // interpolate
-         let col1 = d3.rgb(v7.extractRColor(entry1.fColor)),
-             col2 = d3.rgb(v7.extractRColor(entry2.fColor)),
+         let col1 = d3.rgb(this.extractRColor(entry1.fColor)),
+             col2 = d3.rgb(this.extractRColor(entry2.fColor)),
              color = d3.rgb(Math.round((col1.r*r1 + col2.r*r2)/dist),
                             Math.round((col1.g*r1 + col2.g*r2)/dist),
                             Math.round((col1.b*r1 + col2.b*r2)/dist));
@@ -5118,7 +5118,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             let entry = this.fColors[indx];
 
             if ((Math.abs(entry.fOrdinal - value)<0.0001) || (indx == this.fColors.length - 1)) {
-               arr.push(v7.extractRColor(entry.fColor));
+               arr.push(this.extractRColor(entry.fColor));
                continue;
             }
 
@@ -5148,14 +5148,14 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             entry = next;
 
             if (Math.abs(entry.fOrdinal - value) < 0.0001)
-               return v7.extractRColor(entry.fColor);
+               return this.extractRColor(entry.fColor);
 
             next = this.fColors[indx+1];
             if (next.fOrdinal > value)
                return this.calcColor(value, entry, next);
          }
 
-         return v7.extractRColor(next.fColor);
+         return this.extractRColor(next.fColor);
       },
 
       /** @summary set full z scale range, used in zooming */
