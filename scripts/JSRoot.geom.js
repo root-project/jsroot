@@ -4857,6 +4857,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
    jsrp.GeoDrawingControl = GeoDrawingControl;
 
+   if (JSROOT.nodejs) module.exports = geo;
    return geo;
 
 });
