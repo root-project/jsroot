@@ -3533,7 +3533,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
             return this._main_painter.testGeomChanges();
          }
          this.startDrawGeometry();
-         for (let k=0;k<this._slave_painters.length;++k)
+         for (let k = 0; k < this._slave_painters.length; ++k)
             this._slave_painters[k].startDrawGeometry();
       }
 
@@ -3544,11 +3544,9 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          if (!this.ctrl._axis)
             return norender ? null : this.render3D();
 
-         let box = this.getGeomBoundingBox(this._toplevel);
-
-         let container = this.getExtrasContainer('create', 'axis');
-
-         let text_size = 0.02 * Math.max( (box.max.x - box.min.x), (box.max.y - box.min.y), (box.max.z - box.min.z)),
+         let box = this.getGeomBoundingBox(this._toplevel),
+             container = this.getExtrasContainer('create', 'axis'),
+             text_size = 0.02 * Math.max( (box.max.x - box.min.x), (box.max.y - box.min.y), (box.max.z - box.min.z)),
              center = [0,0,0],
              names = ['x','y','z'],
              labels = ['X','Y','Z'],
@@ -3558,7 +3556,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
              numaxis = 3;
 
          if (this.ctrl._axis == 2)
-            for (let naxis=0;naxis<3;++naxis) {
+            for (let naxis = 0; naxis < 3; ++naxis) {
                let name = names[naxis];
                if ((box.min[name]<=0) && (box.max[name]>=0)) continue;
                center[naxis] = (box.min[name] + box.max[name])/2;
@@ -3573,16 +3571,17 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
             ortho = true;
          }
 
-         for (let naxis=0;naxis<numaxis;++naxis) {
+         for (let naxis = 0; naxis < numaxis; ++naxis) {
 
-            let buf = new Float32Array(6), axiscol = colors[naxis], name = names[naxis];
+            let buf = new Float32Array(6),
+                axiscol = colors[naxis],
+                name = names[naxis];
 
-            function Convert(value) {
+            const Convert = value => {
                let range = box.max[name] - box.min[name];
-               if (range<2) return value.toFixed(3);
-               if (Math.abs(value)>1e5) return value.toExponential(3);
-               return Math.round(value).toString();
-            }
+               if (range < 2) return value.toFixed(3);
+               return (Math.abs(value) > 1e5) ? value.toExponential(3) : Math.round(value).toString();
+            };
 
             let lbl = Convert(box.max[name]);
 
@@ -3800,7 +3799,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
              constants = [ clip[0].value, -1 * clip[1].value, (this.ctrl._yup ? -1 : 1) * clip[2].value ],
              clip_cfg = this.ctrl.clipIntersect ? 16 : 0;
 
-         for (let k=0;k<3;++k) {
+         for (let k = 0; k < 3; ++k) {
             if (clip[k].enabled) clip_cfg += 2 << k;
             if (this._clipPlanes[k].constant != constants[k]) {
                changed = true;
@@ -4037,7 +4036,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
             if (this._main_painter) {
                let pos = this._main_painter._slave_painters.indexOf(this);
-               if (pos>=0) this._main_painter._slave_painters.splice(pos,1);
+               if (pos >= 0) this._main_painter._slave_painters.splice(pos,1);
             }
 
             for (let k = 0; k < this._slave_painters.length;++k) {
@@ -4129,7 +4128,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          let sz = this.getSizeFor3d();
 
          if ((this._scene_width === sz.width) && (this._scene_height === sz.height)) return false;
-         if ((sz.width<10) || (sz.height<10)) return false;
+         if ((sz.width < 10) || (sz.height < 10)) return false;
 
          this._scene_width = sz.width;
          this._scene_height = sz.height;
@@ -4160,9 +4159,8 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
         * @private */
       ownedByTransformControls(child) {
          let obj = child.parent;
-         while (obj && !(obj instanceof THREE.TransformControls) ) {
+         while (obj && !(obj instanceof THREE.TransformControls) )
             obj = obj.parent;
-         }
          return (obj && (obj instanceof THREE.TransformControls));
       }
 
@@ -4302,7 +4300,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          return painter.loadMacro(painter.ctrl.script_name).then(arg => painter.prepareObjectDraw(arg.obj, arg.prefix));
       }
 
-   } // TGeoPainter
+   } // class TGeoPainter
 
    /** @summary Create geo painter
      * @private */
@@ -4445,9 +4443,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
              if (item._geoobj) item._geoobj.$geoh = true;
              return Promise.resolve(item._geoobj);
          }
-      };
-
-      let volume, shape, subnodes, iseve = false;
+      }, volume, shape, subnodes, iseve = false;
 
       if (obj._typename == "TGeoMaterial") sub._icon = "img_geomaterial"; else
       if (obj._typename == "TGeoMedium") sub._icon = "img_geomedium"; else
@@ -4579,22 +4575,27 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
       menu.add("separator");
 
-      function ScanEveVisible(obj, arg, skip_this) {
+      const ScanEveVisible = (obj, arg, skip_this) => {
+         
          if (!arg) arg = { visible: 0, hidden: 0 };
 
          if (!skip_this) {
-            if (arg.assign!==undefined) obj.fRnrSelf = arg.assign; else
-            if (obj.fRnrSelf) arg.vis++; else arg.hidden++;
+            if (arg.assign!==undefined) 
+               obj.fRnrSelf = arg.assign; 
+            else if (obj.fRnrSelf) 
+               arg.vis++; 
+            else 
+               arg.hidden++;
          }
 
          if (obj.fElements)
-            for (let n=0;n<obj.fElements.arr.length;++n)
+            for (let n = 0; n < obj.fElements.arr.length; ++n)
                ScanEveVisible(obj.fElements.arr[n], arg, false);
 
          return arg;
-      }
-
-      function ToggleEveVisibility(arg) {
+         
+      }, ToggleEveVisibility = arg => {
+         
          if (arg === 'self') {
             obj.fRnrSelf = !obj.fRnrSelf;
             item._icon = item._icon.split(" ")[0] + geo.provideVisStyle(obj);
@@ -4611,9 +4612,9 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          }
 
          geo.findItemWithPainter(item, 'testGeomChanges');
-      }
-
-      function ToggleMenuBit(arg) {
+         
+      }, ToggleMenuBit = arg => {
+         
          geo.ToggleBit(vol, arg);
          let newname = item._icon.split(" ")[0] + geo.provideVisStyle(vol);
          hpainter.forEachItem(m => {
@@ -4626,7 +4627,8 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
          hpainter.updateTreeNode(item);
          geo.findItemWithPainter(item, 'testGeomChanges');
-      }
+         
+      };
 
       if ((item._geoobj._typename.indexOf("TGeoNode")===0) && geo.findItemWithPainter(item))
          menu.add("Focus", function() {
