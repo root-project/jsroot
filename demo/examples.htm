@@ -251,6 +251,10 @@
          function SetListener(elem, shortname, durl, filename, itemname, opt, jsonname) {
              elem.addEventListener( 'click', function (event) {
                 event.preventDefault();
+
+                if (event.ctrlKey)
+                   return window.open(elem.href.replace("?nobrowser&","?"), '_blank');
+
                 window.location.hash = shortname;
                 if (elem.title) SetPageTitle(elem.title);
                 ProcessClick(durl, filename, itemname, opt, jsonname);

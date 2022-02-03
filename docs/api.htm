@@ -272,6 +272,10 @@
          function SetListener(elem, shortname, durl) {
              elem.addEventListener( 'click', function (event) {
                 event.preventDefault();
+
+                if (event.ctrlKey)
+                   return window.open(durl, '_blank');
+
                 window.location.hash = shortname;
                 if (elem.title) SetPageTitle(elem.title);
                 ProcessClick(durl);
