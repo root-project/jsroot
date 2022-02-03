@@ -274,7 +274,7 @@
                 event.preventDefault();
 
                 if (event.ctrlKey)
-                   return window.open(durl, '_blank');
+                   return window.open(elem.href.replace("?nobrowser&","?"), '_blank');
 
                 window.location.hash = shortname;
                 if (elem.title) SetPageTitle(elem.title);
