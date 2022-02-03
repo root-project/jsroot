@@ -3422,11 +3422,9 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          this._worker_ready = false;
          this._worker_jobs = 0; // counter how many requests send to worker
 
-         let painter = this;
-
          this._worker = new Worker(JSROOT.source_dir + "scripts/JSRoot.geoworker.js");
 
-         this._worker.onmessage = function(e) {
+         this._worker.onmessage = e => {
 
             if (typeof e.data !== 'object') return;
 
@@ -3439,10 +3437,10 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
             e.data.tm3 = new Date().getTime();
 
             if ('init' in e.data) {
-               painter._worker_ready = true;
+               this._worker_ready = true;
                console.log(`Worker ready: ${e.data.tm3 - e.data.tm0}`);
             } else {
-               painter.processWorkerReply(e.data);
+               this.processWorkerReply(e.data);
             }
          };
 
@@ -3797,7 +3795,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       /** @summary Assign clipping attributes to the meshes - supported only for webgl */
       updateClipping(without_render, force_traverse) {
          // do not try clipping with SVG renderer
-         if (this._svg) retunr;
+         if (this._svg) return;
 
          let clip = this.ctrl.clip, panels = [], changed = false,
              constants = [ clip[0].value, -1 * clip[1].value, (this.ctrl._yup ? -1 : 1) * clip[2].value ],
