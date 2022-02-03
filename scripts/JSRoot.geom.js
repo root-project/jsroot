@@ -3809,9 +3809,10 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          this.highlightMesh(null);
    }
 
-   /** @summary Assign clipping attributes to the meshes - supported only for webgl */
+   /** @summary Assign clipping attributes to the meshes - do not supported with SVG rendering */
    TGeoPainter.prototype.updateClipping = function(without_render, force_traverse) {
-      if (!this._webgl) return;
+      // do not try clipping with SVG renderer
+      if (this._renderer && this._renderer.jsroot_render3d === JSROOT.constants.Render3D.SVG) return;
 
       let clip = this.ctrl.clip, panels = [], changed = false,
           constants = [ clip[0].value, -1 * clip[1].value, (this.ctrl._yup ? -1 : 1) * clip[2].value ],

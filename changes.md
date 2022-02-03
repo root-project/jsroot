@@ -2,6 +2,7 @@
 
 ## Changes in 6.3.x
 1. Fix bug in handling superimposing items via URL syntax
+2. Enable geometry clipping in node.js
 
 
 ## Changes in 6.3.3
