@@ -200,7 +200,7 @@
         * @namespace
         * @private */
       Render3D: {
-         /** @summary Default 3D rendering, normally WebGL, if not supported - SVG*/
+         /** @summary Default 3D rendering, normally WebGL, if not supported - SVG */
          Default: 0,
          /** @summary Use normal WebGL rendering and place as interactive Canvas element on HTML page */
          WebGL: 1,

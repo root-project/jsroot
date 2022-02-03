@@ -1249,7 +1249,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
             if (obj.jsroot_special) unique = false;
 
-            for (let k=0;(k<n) && unique;++k)
+            for (let k = 0; (k<n) && unique;++k)
                if (intersects[k].object === obj) unique = false;
 
             if (!unique) intersects.splice(n,1);
@@ -1897,9 +1897,9 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
          // delete old nodes
          if (this._more_nodes)
-            for (let n=0;n<this._more_nodes.length;++n) {
-               let entry = this._more_nodes[n];
-               let obj3d = this._clones.createObject3D(entry.stack, this._toplevel, 'delete_mesh');
+            for (let n = 0; n < this._more_nodes.length; ++n) {
+               let entry = this._more_nodes[n],
+                   obj3d = this._clones.createObject3D(entry.stack, this._toplevel, 'delete_mesh');
                jsrp.disposeThreejsObject(obj3d);
                geo.cleanupShape(entry.server_shape);
                delete entry.server_shape;
@@ -1911,9 +1911,9 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
          let real_nodes = [];
 
-         for (let k=0;k<nodes.length;++k) {
-            let entry = nodes[k];
-            let shape = entry.server_shape;
+         for (let k = 0; k < nodes.length; ++k) {
+            let entry = nodes[k],
+                shape = entry.server_shape;
             if (!shape || !shape.ready) continue;
 
             entry.done = true;
@@ -1958,7 +1958,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
          box3.makeEmpty();
 
-         topitem.traverse(function(mesh) {
+         topitem.traverse(mesh => {
             if (check_any || (mesh.stack && (mesh instanceof THREE.Mesh)) ||
                 (mesh.main_track && (mesh instanceof THREE.LineSegments)))
                geo.getBoundingBox(mesh, box3);
@@ -1985,7 +1985,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
                 min = bound.min[this.ctrl.project], max = bound.max[this.ctrl.project],
                 mean = (min+max)/2;
 
-            if ((min<0) && (max>0) && (Math.abs(mean) < 0.2*Math.max(-min,max))) mean = 0; // if middle is around 0, use 0
+            if ((min < 0) && (max > 0) && (Math.abs(mean) < 0.2*Math.max(-min,max))) mean = 0; // if middle is around 0, use 0
 
             this.ctrl.projectPos = mean;
          }
@@ -2130,6 +2130,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          this._renderer = jsrp.createRender3D(w, h, this.options.Render3D, { antialias: true, logarithmicDepthBuffer: false, preserveDrawingBuffer: true });
 
          this._webgl = (this._renderer.jsroot_render3d === JSROOT.constants.Render3D.WebGL);
+         this._svg = (this._renderer.jsroot_render3d === JSROOT.constants.Render3D.SVG);
 
          if (this._renderer.setPixelRatio && !JSROOT.nodejs)
             this._renderer.setPixelRatio(window.devicePixelRatio);
@@ -2157,10 +2158,10 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
          this.createSpecialEffects();
 
-         if (this._fit_main_area && !this._webgl) {
+         if (this._fit_main_area && this._svg) {
             // create top-most SVG for geomtery drawings
-            let doc = JSROOT._.get_document();
-            let svg = doc.createElementNS("http://www.w3.org/2000/svg", "svg");
+            let doc = JSROOT._.get_document(),
+                svg = doc.createElementNS("http://www.w3.org/2000/svg", "svg");
             d3.select(svg).attr("width",w).attr("height",h);
             svg.appendChild(this._renderer.jsroot_dom);
             return svg;
@@ -2250,10 +2251,10 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          if (!this._renderer) return;
          this.render3D(0);
          let dataUrl = this._renderer.domElement.toDataURL("image/png");
-         if (filename==="asis") return dataUrl;
+         if (filename === "asis") return dataUrl;
          dataUrl.replace("image/png", "image/octet-stream");
-         let doc = JSROOT._.get_document();
-         let link = doc.createElement('a');
+         let doc = JSROOT._.get_document(),
+             link = doc.createElement('a');
          if (typeof link.download === 'string') {
             doc.body.appendChild(link); //Firefox requires the link to be in the body
             link.download = filename || "geometry.png";
@@ -2280,10 +2281,10 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          pos1.normalize();
          pos2.normalize();
 
-         let quat = new THREE.Quaternion();
-         quat.setFromUnitVectors(pos1, pos2);
+         let quat = new THREE.Quaternion(),
+             euler = new THREE.Euler();
 
-         let euler = new THREE.Euler();
+         quat.setFromUnitVectors(pos1, pos2);
          euler.setFromQuaternion(quat, "YZX");
 
          let roty = euler.y / Math.PI * 180,
@@ -2469,18 +2470,14 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          else
             position = new THREE.Vector3(midx-2*Math.max(sizex,sizey), midy-2*Math.max(sizex,sizey), midz+2*sizez);
 
-         let target = new THREE.Vector3(midx, midy, midz);
-
-         // Find to points to animate "lookAt" between
-         // let dist = this._camera.position.distanceTo(target);
-         let oldTarget = this._controls.target;
-
-         // probably, reduce number of frames
-         let frames = 50, step = 0,
-            // Amount to change camera position at each step
-            posIncrement = position.sub(this._camera.position).divideScalar(frames),
-            // Amount to change "lookAt" so it will end pointed at target
-            targetIncrement = target.sub(oldTarget).divideScalar(frames);
+         let target = new THREE.Vector3(midx, midy, midz),
+             oldTarget = this._controls.target,
+             // probably, reduce number of frames
+             frames = 50, step = 0,
+             // Amount to change camera position at each step
+             posIncrement = position.sub(this._camera.position).divideScalar(frames),
+             // Amount to change "lookAt" so it will end pointed at target
+             targetIncrement = target.sub(oldTarget).divideScalar(frames);
 
          autoClip = autoClip && this._webgl;
 
@@ -2539,7 +2536,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          let rotSpeed = (speed === undefined) ? 2.0 : speed,
              last = new Date();
 
-         let animate = () => {
+         const animate = () => {
             if (!this._renderer || !this.ctrl) return;
 
             let current = new Date();
@@ -2553,7 +2550,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
             }
             last = new Date();
             this.render3D(0);
-         }
+         };
 
          if (this._webgl) animate();
       }
@@ -2581,9 +2578,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
         * @returns {Promise} with object drawing ready */
       drawCount(unqievis, clonetm) {
 
-         function makeTime(tm) {
-            return JSROOT.batch_mode ? "anytime ms" : tm.toString() + " ms";
-         }
+         const makeTime = tm => (JSROOT.batch_mode ? "anytime" : tm.toString()) + " ms";
 
          let res = [ 'Unique nodes: ' + this._clones.nodes.length,
                      'Unique visible: ' + unqievis,
@@ -2592,9 +2587,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          // need to fill cached value line numvischld
          this._clones.scanVisible();
 
-         let nshapes = 0;
-
-         let arg = {
+         let nshapes = 0, arg = {
             clones: this._clones,
             cnt: [],
             func: function(node) {
@@ -3049,8 +3042,6 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          let result = { obj: this.getGeometry(), prefix: "" };
 
          if (this.geo_manager) result.prefix = result.obj.fName;
-
-         // let result = { obj: draw_obj, prefix: name_prefix };
 
          if (!script_name || (script_name.length < 3) || (geo.getNodeKind(result.obj)!==0))
             return Promise.resolve(result);
@@ -3785,7 +3776,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       changedDepthTest() {
          if (!this._toplevel) return;
          let flag = this.ctrl.depthTest;
-         this._toplevel.traverse( function (node) {
+         this._toplevel.traverse(node => {
             if (node instanceof THREE.Mesh) {
                node.material.depthTest = flag;
             }
@@ -3810,7 +3801,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       /** @summary Assign clipping attributes to the meshes - supported only for webgl */
       updateClipping(without_render, force_traverse) {
          // do not try clipping with SVG renderer
-         if (this._renderer && this._renderer.jsroot_render3d === JSROOT.constants.Render3D.SVG) return;
+         if (this._svg) retunr;
 
          let clip = this.ctrl.clip, panels = [], changed = false,
              constants = [ clip[0].value, -1 * clip[1].value, (this.ctrl._yup ? -1 : 1) * clip[2].value ],
@@ -3840,23 +3831,23 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
              material_side = any_clipping ? THREE.DoubleSide : THREE.FrontSide;
 
          if (force_traverse || changed)
-         this._scene.traverse( function (node) {
-            if (node.hasOwnProperty("material") && node.material && (node.material.clippingPlanes !== undefined)) {
+            this._scene.traverse(node => {
+               if (node.hasOwnProperty("material") && node.material && (node.material.clippingPlanes !== undefined)) {
 
-               if (node.material.clippingPlanes !== panels) {
-                  node.material.clipIntersection = ci;
-                  node.material.clippingPlanes = panels;
-                  node.material.needsUpdate = true;
-               }
-
-               if (node.material.emissive !== undefined) {
-                  if (node.material.side != material_side) {
-                     node.material.side = material_side;
+                  if (node.material.clippingPlanes !== panels) {
+                     node.material.clipIntersection = ci;
+                     node.material.clippingPlanes = panels;
                      node.material.needsUpdate = true;
                   }
+
+                  if (node.material.emissive !== undefined) {
+                     if (node.material.side != material_side) {
+                        node.material.side = material_side;
+                        node.material.needsUpdate = true;
+                     }
+                  }
                }
-            }
-         });
+            });
 
          this.ctrl.bothSides = any_clipping;
 
