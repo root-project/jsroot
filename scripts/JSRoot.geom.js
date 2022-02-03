@@ -3046,12 +3046,10 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          if (!script_name || (script_name.length < 3) || (geo.getNodeKind(result.obj)!==0))
             return Promise.resolve(result);
 
-         let painter = this;
-
          let mgr = {
                GetVolume: name => {
-                  let regexp = new RegExp("^"+name+"$");
-                  let currnode = painter.findNodeWithVolume(regexp, arg => arg);
+                  let regexp = new RegExp("^"+name+"$"),
+                      currnode = this.findNodeWithVolume(regexp, arg => arg);
 
                   if (!currnode) console.log('Did not found '+name + ' volume');
 
@@ -3079,17 +3077,17 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
                },
 
                DefaultColors: () => {
-                  painter.ctrl.dflt_colors = true;
+                  this.ctrl.dflt_colors = true;
                },
 
                SetMaxVisNodes: limit => {
-                  if (!painter.ctrl.maxnodes)
-                     painter.ctrl.maxnodes = pasrseInt(limit) || 0;
+                  if (!this.ctrl.maxnodes)
+                     this.ctrl.maxnodes = pasrseInt(limit) || 0;
                },
 
                SetVisLevel: limit => {
-                  if (!painter.ctrl.vislevel)
-                     painter.ctrl.vislevel = parseInt(limit) || 0;
+                  if (!this.ctrl.vislevel)
+                     this.ctrl.vislevel = parseInt(limit) || 0;
                }
              };
 
@@ -3188,9 +3186,8 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
             this._clones.name_prefix = name_prefix;
 
-            let hide_top_volume = !!this.geo_manager && !this.ctrl.showtop;
-
-            let uniquevis = this.ctrl.no_screen ? 0 : this._clones.markVisibles(true, false, hide_top_volume);
+            let hide_top_volume = !!this.geo_manager && !this.ctrl.showtop,
+                uniquevis = this.ctrl.no_screen ? 0 : this._clones.markVisibles(true, false, hide_top_volume);
 
             if (uniquevis <= 0)
                uniquevis = this._clones.markVisibles(false, false, hide_top_volume);
@@ -3415,7 +3412,6 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
             this._render_resolveFuncs.forEach(func => func(this));
             delete this._render_resolveFuncs;
          }
-
       }
 
       /** @summary Start geo worker */
