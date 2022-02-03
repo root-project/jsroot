@@ -2084,5 +2084,6 @@ JSROOT.define([], () =>  {
    mth.crystalball_cdf_c = crystalball_cdf_c;
    mth.ChebyshevN = ChebyshevN;
 
+   if (JSROOT.nodejs) module.exports = mth;
    return mth;
 });

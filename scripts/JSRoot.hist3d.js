@@ -2927,7 +2927,8 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
          });
       }
 
-   }
+   } // class TH3Painter
+   
 
    /** @summary draw TAxis3D
      * @memberof JSROOT.Painter
@@ -2968,7 +2969,6 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
       return painter.Draw3DAxis();
    }
 
-   // ===========================================================================================
 
    /**
     * @summary Painter for TGraph2D classes
@@ -3320,9 +3320,9 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
             return painter.redraw();
          });
       }
-   }
 
-   // ===================================================================
+   } // class TGraph2DPainter
+
 
    /** @summary draw TPolyMarker3D object
      * @memberof JSROOT.Painter
@@ -3425,5 +3425,6 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
    JSROOT.TH3Painter = TH3Painter;
    JSROOT.TGraph2DPainter = TGraph2DPainter;
 
+   if (JSROOT.nodejs) module.exports = JSROOT;
    return JSROOT;
 })

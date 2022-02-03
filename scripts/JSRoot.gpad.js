@@ -5004,5 +5004,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
    jsrp.ensureTCanvas = ensureTCanvas;
    jsrp.drawTPadSnapshot = drawTPadSnapshot;
 
+   if (JSROOT.nodejs) module.exports = JSROOT;
    return JSROOT;
 });
