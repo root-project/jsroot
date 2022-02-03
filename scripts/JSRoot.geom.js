@@ -293,14 +293,14 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       /** @summary Init VR controllers geometry
         * @private */
       initVRControllersGeometry() {
-         let geometry = new THREE.SphereGeometry(0.025, 18, 36);
-         let material = new THREE.MeshBasicMaterial({ color: 'grey', vertexColors: false });
-         let rayMaterial = new THREE.MeshBasicMaterial({ color: 'fuchsia', vertexColors: false });
-         let rayGeometry = new THREE.BoxBufferGeometry(0.001, 0.001, 2);
-         let ray1Mesh = new THREE.Mesh(rayGeometry, rayMaterial);
-         let ray2Mesh = new THREE.Mesh(rayGeometry, rayMaterial);
-         let sphere1 = new THREE.Mesh(geometry, material);
-         let sphere2 = new THREE.Mesh(geometry, material);
+         let geometry = new THREE.SphereGeometry(0.025, 18, 36),
+             material = new THREE.MeshBasicMaterial({ color: 'grey', vertexColors: false }),
+             rayMaterial = new THREE.MeshBasicMaterial({ color: 'fuchsia', vertexColors: false }),
+             rayGeometry = new THREE.BoxBufferGeometry(0.001, 0.001, 2),
+             ray1Mesh = new THREE.Mesh(rayGeometry, rayMaterial),
+             ray2Mesh = new THREE.Mesh(rayGeometry, rayMaterial),
+             sphere1 = new THREE.Mesh(geometry, material),
+             sphere2 = new THREE.Mesh(geometry, material);
 
          this._controllersMeshes = [];
          this._controllersMeshes.push(sphere1);
@@ -340,9 +340,9 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       processVRControllerIntersections() {
          let intersects = []
          for (let i = 0; i < this._vrControllers.length; ++i) {
-            let controller = this._vrControllers[i].mesh;
-            let end = controller.localToWorld(this._raycasterEnd.set(0, 0, -1));
-            let origin = controller.localToWorld(this._raycasterOrigin.set(0, 0, 0));
+            let controller = this._vrControllers[i].mesh,
+                end = controller.localToWorld(this._raycasterEnd.set(0, 0, -1)),
+                origin = controller.localToWorld(this._raycasterOrigin.set(0, 0, 0));
             end.sub(origin).normalize();
             intersects = intersects.concat(this._controls.getOriginDirectionIntersects(origin, end));
          }
@@ -357,10 +357,10 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          this.updateVRControllersList();
          // Update pose.
          for (let i = 0; i < this._vrControllers.length; ++i) {
-            let controller = this._vrControllers[i];
-            let orientation = controller.gamepad.pose.orientation;
-            let position = controller.gamepad.pose.position;
-            let controllerMesh = controller.mesh;
+            let controller = this._vrControllers[i],
+                orientation = controller.gamepad.pose.orientation,
+                position = controller.gamepad.pose.position,
+                controllerMesh = controller.mesh;
             if (orientation) { controllerMesh.quaternion.fromArray(orientation); }
             if (position) { controllerMesh.position.fromArray(position); }
             controllerMesh.updateMatrix();
@@ -652,7 +652,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
                   }
 
                   let max = 0;
-                  for (let k=0;k<16;++k)
+                  for (let k = 0; k < 16; ++k)
                      max = Math.max(max, Math.abs(m1.elements[k] - m2.elements[k]));
 
                   totalmax = Math.max(max, totalmax);
@@ -674,7 +674,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
          let tm2 = new Date().getTime();
 
-         console.log('Compare matrixes total', totalcnt, 'errors', errcnt, 'takes', tm2-tm1, 'maxdiff', totalmax);
+         console.log(`Compare matrixes total ${totalcnt} errors ${errcnt} takes ${tm2-tm1} maxdiff ${totalmax}`);
       }
 
       /** @summary Fills context menu */
@@ -714,8 +714,8 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       }
 
       /** @summary Method used to set transparency for all geometrical shapes
-       * @param {number|Function} transparency - one could provide function
-       * @param {boolean} [skip_render] - if specified, do not perform rendering */
+        * @param {number|Function} transparency - one could provide function
+        * @param {boolean} [skip_render] - if specified, do not perform rendering */
       changedGlobalTransparency(transparency, skip_render) {
          let func = (typeof transparency == 'function') ? transparency : null;
          if (func || (transparency === undefined)) transparency = this.ctrl.transparency;
@@ -748,7 +748,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          if (arg == "reset")
             ctrl.trans_z = ctrl.trans_radial = 0;
 
-         this._toplevel.traverse(function(mesh) {
+         this._toplevel.traverse(mesh => {
             if (mesh.stack === undefined) return;
 
             let node = mesh.parent;
@@ -890,9 +890,8 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
          if (this.ctrl.project) {
 
-            let bound = this.getGeomBoundingBox(this.getProjectionSource(), 0.01);
-
-            let axis = this.ctrl.project;
+            let bound = this.getGeomBoundingBox(this.getProjectionSource(), 0.01),
+                axis = this.ctrl.project;
 
             if (this.ctrl.projectPos === undefined)
                this.ctrl.projectPos = (bound.min[axis] + bound.max[axis])/2;
@@ -907,7 +906,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
             let clipFolder = this._datgui.addFolder('Clipping'),
                 clip_handler = this.changedClipping.bind(this, -1);
 
-            for (let naxis=0;naxis<3;++naxis) {
+            for (let naxis = 0; naxis < 3; ++naxis) {
                let cc = this.ctrl.clip[naxis],
                    axisC = cc.name.toUpperCase();
 
@@ -1009,8 +1008,8 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          ssaofolder.add( this.ctrl.ssao, 'maxDistance', 0.01, 0.3)
                    .listen().onChange(ssao_handler);
 
-         let blooming = this._datgui.addFolder('Unreal Bloom');
-         let bloom_handler = this.changedBloomSettings.bind(this);
+         let blooming = this._datgui.addFolder('Unreal Bloom'),
+             bloom_handler = this.changedBloomSettings.bind(this);
 
          blooming.add(this.ctrl.bloom, 'enabled').name('Enable Blooming')
                    .listen().onChange(bloom_handler);
@@ -1115,7 +1114,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          jsrp.createMenu(evnt, this).then(menu => {
             let numitems = 0, numnodes = 0, cnt = 0;
             if (intersects)
-               for (let n=0;n<intersects.length;++n) {
+               for (let n = 0; n < intersects.length; ++n) {
                   if (intersects[n].object.stack) numnodes++;
                   if (intersects[n].object.geo_name) numitems++;
                }
@@ -1127,7 +1126,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
                if (many) menu.add("header:" + ((numitems > 0) ? "Items" : "Nodes"));
 
-               for (let n=0;n<intersects.length;++n) {
+               for (let n = 0; n < intersects.length; ++n) {
                   let obj = intersects[n].object,
                       name, itemname, hdr;
 
@@ -1234,7 +1233,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          if (!intersects.length) return intersects;
 
          // check redirections
-         for (let n=0;n<intersects.length;++n)
+         for (let n = 0; n < intersects.length; ++n)
             if (intersects[n].object.geo_highlight)
                intersects[n].object = intersects[n].object.geo_highlight;
 
@@ -1242,9 +1241,8 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          // also remove all objects which are mostly transparent
          for (let n = intersects.length - 1; n >= 0; --n) {
 
-            let obj = intersects[n].object;
-
-            let unique = (obj.stack !== undefined) || (obj.geo_name !== undefined);
+            let obj = intersects[n].object,
+               unique = (obj.stack !== undefined) || (obj.geo_name !== undefined);
 
             if (unique && obj.material && (obj.material.opacity !== undefined))
                unique = (obj.material.opacity >= 0.1);
@@ -1285,9 +1283,8 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
          if (!this.ctrl.select_in_view || this._draw_all_nodes) return;
 
-         let matrix = geo.createProjectionMatrix(this._camera);
-
-         let frustum = geo.createFrustum(matrix);
+         let matrix = geo.createProjectionMatrix(this._camera),
+             frustum = geo.createFrustum(matrix);
 
          // check if overall bounding box seen
          if (!frustum.CheckBox(this.getGeomBoundingBox(this._toplevel)))
@@ -1356,22 +1353,21 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
             let lst = this._highlight_handlers || (!this._main_painter ? this._slave_painters : this._main_painter._slave_painters.concat([this._main_painter]));
 
-            for (let k=0;k<lst.length;++k)
-               if (lst[k] !== this) lst[k].highlightMesh(null, color, geo_object, geo_index, geo_stack, true);
+            for (let k = 0; k < lst.length; ++k)
+               if (lst[k] !== this)
+                  lst[k].highlightMesh(null, color, geo_object, geo_index, geo_stack, true);
          }
 
-         let curr_mesh = this._selected_mesh;
+         let curr_mesh = this._selected_mesh, same = false;
 
-         let get_ctrl = mesh => {
-            return mesh.get_ctrl ? mesh.get_ctrl() : new GeoDrawingControl(mesh, this.ctrl.bloom.enabled);
-         };
+         if (!curr_mesh && !active_mesh) return false;
+
+         const get_ctrl = mesh => mesh.get_ctrl ? mesh.get_ctrl() : new GeoDrawingControl(mesh, this.ctrl.bloom.enabled);
 
          // check if selections are the same
-         if (!curr_mesh && !active_mesh) return false;
-         let same = false;
          if (curr_mesh && active_mesh && (curr_mesh.length == active_mesh.length)) {
             same = true;
-            for (let k=0;(k<curr_mesh.length) && same;++k) {
+            for (let k = 0;( k < curr_mesh.length) && same; ++k) {
                if ((curr_mesh[k] !== active_mesh[k]) || get_ctrl(curr_mesh[k]).checkHighlightIndex(geo_index)) same = false;
             }
          }
@@ -1399,9 +1395,8 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          let mesh = intersects[0].object;
          if (!mesh.get_ctrl) return;
 
-         let ctrl = mesh.get_ctrl();
-
-         let click_indx = ctrl.extractIndex(intersects[0]);
+         let ctrl = mesh.get_ctrl(),
+             click_indx = ctrl.extractIndex(intersects[0]);
 
          ctrl.evnt = evnt;
 
