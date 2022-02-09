@@ -4,6 +4,7 @@
 1. Fix bug in handling superimposing items via URL syntax
 2. Enable geometry clipping in node.js
 3. Upgrade node.js packages
+4. Let draw TGeo object inside TCanvas
 
 
 ## Changes in 6.3.3

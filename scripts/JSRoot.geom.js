@@ -3219,6 +3219,8 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
             return this.drawCount(uniquevis, spent);
       }
 
+      let promise = Promise.resolve(true);
+
       if (!this._scene) {
 
          // this is limit for the visible faces, number of volumes does not matter
@@ -3226,34 +3228,56 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
          this._first_drawing = true;
 
-         // activate worker
-         if (this.ctrl.use_worker > 0) this.startWorker();
+         this._on_pad = !!this.getPadPainter();
 
-         jsrp.assign3DHandler(this);
+         if (this._on_pad) {
+            promise = jsrp.ensureTCanvas(this,"3d").then(() => {
 
-         let size = this.getSizeFor3d(this._webgl ? undefined : 3);
+               let fp = this.getFramePainter(),
+                   render3d = jsrp.getRender3DKind();
+               jsrp.assign3DHandler(fp);
 
-         this._fit_main_area = (size.can3d === -1);
+               let size = fp.getSizeFor3d(undefined, render3d);
 
-         let dom = this.createScene(size.width, size.height);
+               this._fit_main_area = (size.can3d === -1);
 
-         this.add3dCanvas(size, dom, this._webgl);
+               let dom = this.createScene(size.width, size.height);
 
-         // set top painter only when first child exists
-         this.setAsMainPainter();
+               fp.add3dCanvas(size, dom, render3d === JSROOT.constants.Render3D.WebGL);
+            });
+
+         } else {
+            // activate worker
+            if (this.ctrl.use_worker > 0) this.startWorker();
+
+            jsrp.assign3DHandler(this);
+
+            let size = this.getSizeFor3d(this._webgl ? undefined : 3);
+
+            this._fit_main_area = (size.can3d === -1);
+
+            let dom = this.createScene(size.width, size.height);
+
+            this.add3dCanvas(size, dom, this._webgl);
+
+            // set top painter only when first child exists
+            this.setAsMainPainter();
+         }
       }
 
-      this.createToolbar();
+      return promise.then(() => {
+         this.createToolbar();
 
-      if (this._clones)
-         return new Promise(resolveFunc => {
-            this._resolveFunc = resolveFunc;
-            this.showDrawInfo("Drawing geometry");
-            this.startDrawGeometry(true);
-         });
+         if (this._clones)
+            return new Promise(resolveFunc => {
+               this._resolveFunc = resolveFunc;
+               this.showDrawInfo("Drawing geometry");
+               this.startDrawGeometry(true);
+            });
 
-      this.completeDraw();
-      return Promise.resolve(this);
+         this.completeDraw();
+         return this;
+      });
    }
 
    /** @summary methods show info when first geometry drawing is performed */
@@ -4021,7 +4045,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
          this.clearTopPainter(); // remove as pointer
 
-         let can3d = this.clear3dCanvas(); // remove 3d canvas from main HTML element
+         let can3d = this._on_pad ? 0 : this.clear3dCanvas(); // remove 3d canvas from main HTML element
 
          if (this._toolbar) this._toolbar.cleanup(); // remove toolbar
 
