@@ -3289,6 +3289,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
                let fp = this.getFramePainter(),
                    render3d = jsrp.getRender3DKind();
                jsrp.assign3DHandler(fp);
+               fp.mode3d = true;
 
                let size = fp.getSizeFor3d(undefined, render3d);
 
@@ -4098,7 +4099,16 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
          this.clearTopPainter(); // remove as pointer
 
-         let can3d = this._on_pad ? 0 : this.clear3dCanvas(); // remove 3d canvas from main HTML element
+         let can3d = 0;
+         if (this._on_pad) {
+            let fp = this.getFramePainter();
+            if (fp && fp.mode3d) {
+               fp.clear3dCanvas();
+               fp.mode3d = false;
+            }
+         } else {
+            can3d = this.clear3dCanvas(); // remove 3d canvas from main HTML element
+         }
 
          if (this._toolbar) this._toolbar.cleanup(); // remove toolbar
 
