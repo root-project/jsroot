@@ -1525,7 +1525,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
                break;
             case 17: // Ctrl
                this._tcontrols.setTranslationSnap( Math.ceil( this._overall_size ) / 50 );
-               this._tcontrols.setRotationSnap( THREE.Math.degToRad( 15 ) );
+               this._tcontrols.setRotationSnap( THREE.MathUtils.degToRad( 15 ) );
                break;
             case 84: // T (Translate)
                this._tcontrols.setMode( "translate" );
@@ -4576,15 +4576,15 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       menu.add("separator");
 
       const ScanEveVisible = (obj, arg, skip_this) => {
-         
+
          if (!arg) arg = { visible: 0, hidden: 0 };
 
          if (!skip_this) {
-            if (arg.assign!==undefined) 
-               obj.fRnrSelf = arg.assign; 
-            else if (obj.fRnrSelf) 
-               arg.vis++; 
-            else 
+            if (arg.assign!==undefined)
+               obj.fRnrSelf = arg.assign;
+            else if (obj.fRnrSelf)
+               arg.vis++;
+            else
                arg.hidden++;
          }
 
@@ -4593,9 +4593,9 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
                ScanEveVisible(obj.fElements.arr[n], arg, false);
 
          return arg;
-         
+
       }, ToggleEveVisibility = arg => {
-         
+
          if (arg === 'self') {
             obj.fRnrSelf = !obj.fRnrSelf;
             item._icon = item._icon.split(" ")[0] + geo.provideVisStyle(obj);
@@ -4612,9 +4612,9 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          }
 
          geo.findItemWithPainter(item, 'testGeomChanges');
-         
+
       }, ToggleMenuBit = arg => {
-         
+
          geo.ToggleBit(vol, arg);
          let newname = item._icon.split(" ")[0] + geo.provideVisStyle(vol);
          hpainter.forEachItem(m => {
@@ -4627,7 +4627,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
          hpainter.updateTreeNode(item);
          geo.findItemWithPainter(item, 'testGeomChanges');
-         
+
       };
 
       if ((item._geoobj._typename.indexOf("TGeoNode")===0) && geo.findItemWithPainter(item))
