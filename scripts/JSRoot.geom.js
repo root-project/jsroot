@@ -154,7 +154,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       /** @summary Constructor
         * @param {object|string} dom - DOM element for drawing or element id
         * @param {object} obj - supported TGeo object */
-      constructor (dom, obj) {
+      constructor(dom, obj) {
 
          let gm;
          if (obj && (obj._typename === "TGeoManager")) {
@@ -3135,7 +3135,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
       /** @summary Prepare drawings
         * @desc Return value used as promise for painter */
-      prepareObjectDraw(draw_obj, name_prefix) {
+      prepareObjectDraw(draw_obj, name_prefix, first_time) {
 
          // if did cleanup - ignore all kind of activity
          if (this.did_cleanup)
@@ -3204,6 +3204,8 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
                return this.drawCount(uniquevis, spent);
          }
 
+         let promise = Promise.resolve(true);
+
          if (!this._scene) {
 
             // this is limit for the visible faces, number of volumes does not matter
@@ -3211,33 +3213,55 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
             this._first_drawing = true;
 
-            // activate worker
-            if (this.ctrl.use_worker > 0) this.startWorker();
+            if (this.getPadPainter()) {
+               promise = jsrp.ensureTCanvas(this,"3d").then(() => {
 
-            jsrp.assign3DHandler(this);
+                  let fp = this.getFramePainter();
 
-            let size = this.getSizeFor3d(this._webgl ? undefined : 3);
+                  let render3d = jsrp.getRender3DKind();
+                  jsrp.assign3DHandler(fp);
 
-            this._fit_main_area = (size.can3d === -1);
+                  let size = fp.getSizeFor3d(undefined, render3d);
 
-            let dom = this.createScene(size.width, size.height);
+                  this._fit_main_area = (size.can3d === -1);
 
-            this.add3dCanvas(size, dom, this._webgl);
+                  let dom = this.createScene(size.width, size.height);
 
-            // set top painter only when first child exists
-            this.setAsMainPainter();
+                  fp.add3dCanvas(size, dom, render3d === JSROOT.constants.Render3D.WebGL);
+               });
+
+            } else {
+               // activate worker
+               if (this.ctrl.use_worker > 0) this.startWorker();
+
+               jsrp.assign3DHandler(this);
+
+               let size = this.getSizeFor3d(this._webgl ? undefined : 3);
+
+               this._fit_main_area = (size.can3d === -1);
+
+               let dom = this.createScene(size.width, size.height);
+
+               this.add3dCanvas(size, dom, this._webgl);
+
+               // set top painter only when first child exists
+               this.setAsMainPainter();
+            }
          }
 
-         this.createToolbar();
+         return promise.then(() => {
 
-         // just draw extras and complete drawing if there are no main model
-         if (!this._clones)
-            return this.completeDraw();
+            this.createToolbar();
 
-         return new Promise(resolveFunc => {
-            this._resolveFunc = resolveFunc;
-            this.showDrawInfo("Drawing geometry");
-            this.startDrawGeometry(true);
+            // just draw extras and complete drawing if there are no main model
+            if (!this._clones)
+               return this.completeDraw();
+
+            return new Promise(resolveFunc => {
+               this._resolveFunc = resolveFunc;
+               this.showDrawInfo("Drawing geometry");
+               this.startDrawGeometry(true);
+            });
          });
       }
 
@@ -4297,7 +4321,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
             painter.addExtra(extras, extras_path);
          }
 
-         return painter.loadMacro(painter.ctrl.script_name).then(arg => painter.prepareObjectDraw(arg.obj, arg.prefix));
+         return painter.loadMacro(painter.ctrl.script_name).then(arg => painter.prepareObjectDraw(arg.obj, arg.prefix, true));
       }
 
    } // class TGeoPainter
