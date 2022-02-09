@@ -4142,21 +4142,13 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          jsrp.showProgress(msg);
       }
 
-      /** @summary Check if HTML element was resized and drawing need to be adjusted */
-      checkResize(arg) {
-         let cp = this.getCanvPainter();
+      /** @summary perform resize */
+      performResize(width, height) {
+         if ((this._scene_width === width) && (this._scene_height === height)) return false;
+         if ((width < 10) || (height < 10)) return false;
 
-         // firefox is the only browser which correctly supports resize of embedded canvas,
-         // for others we should force canvas redrawing at every step
-         if (cp && !cp.checkCanvasResize(arg)) return false;
-
-         let sz = this.getSizeFor3d();
-
-         if ((this._scene_width === sz.width) && (this._scene_height === sz.height)) return false;
-         if ((sz.width < 10) || (sz.height < 10)) return false;
-
-         this._scene_width = sz.width;
-         this._scene_height = sz.height;
+         this._scene_width = width;
+         this._scene_height = height;
 
          if (this._camera && this._renderer) {
             if (this._camera.type == "PerspectiveCamera")
@@ -4168,10 +4160,24 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
             if (this._bloomComposer)
                this._bloomComposer.setSize( this._scene_width, this._scene_height );
 
-            if (!this.drawing_stage) this.render3D();
+            if (!this.drawing_stage)
+               this.render3D();
          }
 
          return true;
+      }
+
+      /** @summary Check if HTML element was resized and drawing need to be adjusted */
+      checkResize(arg) {
+         let cp = this.getCanvPainter();
+
+         // firefox is the only browser which correctly supports resize of embedded canvas,
+         // for others we should force canvas redrawing at every step
+         if (cp && !cp.checkCanvasResize(arg)) return false;
+
+         let sz = this.getSizeFor3d();
+
+         return this.performResize(sz.width, sz.height);
       }
 
       /** @summary Toggle enlarge state */
@@ -4252,8 +4258,22 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          this._full_redrawing = true;
       }
 
+       /** @summary Redraw TGeo object inside TPad */
+      redraw(reason) {
+         if (!this._on_pad || (reason != "resize")) return;
+
+         let main = this.getFramePainter();
+         if (!main) return;
+
+         let sz = main.getSizeFor3d(main.access3dKind());
+
+         main.apply3dSize(sz);
+
+         return this.performResize(sz.width, sz.height);
+      }
+
       /** @summary Redraw TGeo object */
-      redrawObject(obj) {
+      redrawObject(obj, opt) {
          if (!this.updateObject(obj))
             return false;
 
