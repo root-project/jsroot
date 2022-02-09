@@ -83,7 +83,10 @@ JSROOT.define(['d3', 'three', 'painter'], (d3, THREE, jsrp) => {
          } else {
             let elem = (can3d > 0) ? pad : this.getCanvSvg();
             size = { x: 0, y: 0, width: elem.property("draw_width"), height: elem.property("draw_height") };
-            if (fp && !fp.mode3d) {
+            if (isNaN(size.width) || isNaN(size.height)) {
+               size.width = pp.getPadWidth();
+               size.height = pp.getPadHeight();
+            } else if (fp && !fp.mode3d) {
                elem = this.getFrameSvg();
                size.x = elem.property("draw_x");
                size.y = elem.property("draw_y");
