@@ -3213,12 +3213,13 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
             this._first_drawing = true;
 
-            if (this.getPadPainter()) {
+            this._on_pad = !!this.getPadPainter();
+
+            if (this._on_pad) {
                promise = jsrp.ensureTCanvas(this,"3d").then(() => {
 
-                  let fp = this.getFramePainter();
-
-                  let render3d = jsrp.getRender3DKind();
+                  let fp = this.getFramePainter(),
+                      render3d = jsrp.getRender3DKind();
                   jsrp.assign3DHandler(fp);
 
                   let size = fp.getSizeFor3d(undefined, render3d);
@@ -4026,7 +4027,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
             this.clearTopPainter(); // remove as pointer
 
-            let can3d = this.clear3dCanvas(); // remove 3d canvas from main HTML element
+            let can3d = this._on_pad ? 0 : this.clear3dCanvas(); // remove 3d canvas from main HTML element
 
             if (this._toolbar) this._toolbar.cleanup(); // remove toolbar
 
