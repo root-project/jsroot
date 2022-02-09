@@ -3274,6 +3274,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
                   let fp = this.getFramePainter(),
                       render3d = jsrp.getRender3DKind();
                   jsrp.assign3DHandler(fp);
+                  fp.mode3d = true;
 
                   let size = fp.getSizeFor3d(undefined, render3d);
 
