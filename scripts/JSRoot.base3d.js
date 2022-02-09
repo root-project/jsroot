@@ -1433,20 +1433,25 @@ JSROOT.define(['d3', 'three', 'painter'], (d3, THREE, jsrp) => {
       let line = this.getObject(),
           main = this.getFramePainter();
 
-      if (!main || !main.mode3d || !main.toplevel || !line)
+      if (!main || !main.mode3d || !line)
          return null;
+
+      if (!main.toplevel) {
+         let main = this.getMainPainter();
+         if (main && typeof main.drawExtras == 'function')
+            return main.drawExtras(line);
+         return null;
+      }
 
       let fN, fP, pnts = [];
 
-      if (line._blob && (line._blob.length==4)) {
+      if (line._blob && (line._blob.length == 4)) {
          // workaround for custom streamer for JSON, should be resolved
          fN = line._blob[1];
          fP = line._blob[2];
-         // fOption = line._blob[3];
       } else {
          fN = line.fN;
          fP = line.fP;
-         // fOption = line.fOption;
       }
 
       for (let n = 3; n < 3*fN; n += 3)

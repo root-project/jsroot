@@ -2797,6 +2797,9 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          } else if (obj._typename === 'TGeoTrack') {
             if (!add_objects || this.addExtra(obj, itemname))
                promise = this.drawGeoTrack(obj, itemname);
+         } else if (obj._typename === 'TPolyLine3D') {
+            if (!add_objects || this.addExtra(obj, itemname))
+               promise = this.drawPolyLine(obj, itemname);
          } else if ((obj._typename === 'TEveTrack') || (obj._typename === 'ROOT::Experimental::TEveTrack')) {
             if (!add_objects || this.addExtra(obj, itemname))
                promise = this.drawEveTrack(obj, itemname);
@@ -2906,6 +2909,56 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
             line.main_track = true;
 
          this.addToExtrasContainer(line);
+
+         return true;
+      }
+
+      /** @summary drawing TPolyLine3D */
+      drawPolyLine(line, itemname) {
+         if (!line) return false;
+
+         let track_width = line.fLineWidth || 1,
+             track_color = jsrp.getColor(line.fLineColor) || "#ff00ff";
+
+         if (JSROOT.browser.isWin) track_width = 1; // not supported on windows
+
+         let fN, fP;
+
+         if (line._blob && (line._blob.length == 4)) {
+            // workaround for custom streamer for JSON, should be resolved
+            fN = line._blob[1];
+            fP = line._blob[2];
+         } else {
+            fN = line.fN;
+            fP = line.fP;
+         }
+
+         let npoints = fN,
+             buf = new Float32Array((npoints-1)*6),
+             pos = 0, projv = this.ctrl.projectPos,
+             projx = (this.ctrl.project === "x"),
+             projy = (this.ctrl.project === "y"),
+             projz = (this.ctrl.project === "z");
+
+         for (let k = 0; k < npoints-1; ++k) {
+            buf[pos]   = projx ? projv : fP[k*3];
+            buf[pos+1] = projy ? projv : fP[k*3+1];
+            buf[pos+2] = projz ? projv : fP[k*3+2];
+            buf[pos+3] = projx ? projv : fP[k*3+3];
+            buf[pos+4] = projy ? projv : fP[k*3+4];
+            buf[pos+5] = projz ? projv : fP[k*3+5];
+            pos+=6;
+         }
+
+         let lineMaterial = new THREE.LineBasicMaterial({ color: track_color, linewidth: track_width }),
+             line3d = jsrp.createLineSegments(buf, lineMaterial);
+
+         line3d.renderOrder = 1000000; // to bring line to the front
+         line3d.geo_name = itemname;
+         line3d.geo_object = line;
+         line3d.hightlightWidthScale = 2;
+
+         this.addToExtrasContainer(line3d);
 
          return true;
       }
