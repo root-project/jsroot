@@ -2716,7 +2716,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          if (this._extraObjects === undefined)
             this._extraObjects = JSROOT.create("TList");
 
-         if (this._extraObjects.arr.indexOf(obj)>=0) return false;
+         if (this._extraObjects.arr.indexOf(obj) >= 0) return false;
 
          this._extraObjects.Add(obj, itemname);
 
@@ -3244,13 +3244,13 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
                let dom = this.createScene(size.width, size.height);
 
                this.add3dCanvas(size, dom, this._webgl);
-
-               // set top painter only when first child exists
-               this.setAsMainPainter();
             }
          }
 
          return promise.then(() => {
+
+            // set top painter only when first child exists
+            this.setAsMainPainter();
 
             this.createToolbar();
 
