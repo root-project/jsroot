@@ -3374,10 +3374,18 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
 
       let fp = this.getFramePainter();
 
-      if (!fp || !fp.mode3d || !fp.toplevel)
+      let step = 1, sizelimit = 50000, numselect = 0, poly = this.getObject();
+
+
+      if (!fp || !fp.mode3d)
          return Promise.reject(Error("Fail to draw poly markers without 3D mode"));
 
-      let step = 1, sizelimit = 50000, numselect = 0, poly = this.getObject();
+      if (!fp.toplevel) {
+         let main = this.getMainPainter();
+         if (main && typeof main.drawExtras == 'function')
+            return main.drawExtras(poly);
+         return Promise.resolve(this);
+      }
 
       for (let i = 0; i < poly.fP.length; i += 3) {
          if ((poly.fP[i] < fp.scale_xmin) || (poly.fP[i] > fp.scale_xmax) ||

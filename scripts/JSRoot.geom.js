@@ -3259,13 +3259,13 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
             let dom = this.createScene(size.width, size.height);
 
             this.add3dCanvas(size, dom, this._webgl);
-
-            // set top painter only when first child exists
-            this.setAsMainPainter();
          }
       }
 
       return promise.then(() => {
+         // set top painter only when first child exists
+         this.setAsMainPainter();
+
          this.createToolbar();
 
          if (this._clones)
