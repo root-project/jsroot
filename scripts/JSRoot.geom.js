@@ -1527,7 +1527,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
             break;
          case 17: // Ctrl
             this._tcontrols.setTranslationSnap( Math.ceil( this._overall_size ) / 50 );
-            this._tcontrols.setRotationSnap( THREE.Math.degToRad( 15 ) );
+            this._tcontrols.setRotationSnap( THREE.MathUtils.degToRad( 15 ) );
             break;
          case 84: // T (Translate)
             this._tcontrols.setMode( "translate" );
