@@ -1551,8 +1551,8 @@ JSROOT.define(['d3', 'three', 'painter'], (d3, THREE, jsrp) => {
       let limit = 3*line.fN, p = line.fP, pnts = [];
 
       for (let n = 3; n < limit; n += 3)
-         pnts.push(main.grx(p[n-3]), main.gry(p[n-2]), main.grz(p[n-1]),
-                   main.grx(p[n]), main.gry(p[n+1]), main.grz(p[n+2]));
+         pnts.push(fp.grx(p[n-3]), fp.gry(p[n-2]), fp.grz(p[n-1]),
+                   fp.grx(p[n]), fp.gry(p[n+1]), fp.grz(p[n+2]));
 
       let lines = jsrp.createLineSegments(pnts, create3DLineMaterial(this, line));
 
