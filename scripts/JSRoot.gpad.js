@@ -2538,6 +2538,10 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          return cp ? cp.custom_palette : null;
       }
 
+      /** @summary Returns number of painters
+        * @private */
+      getNumPainters() { return this.painters.length; }
+
       /** @summary Call function for each painter in pad
         * @param {function} userfunc - function to call
         * @param {string} kind - "all" for all objects (default), "pads" only pads and subpads, "objects" only for object in current pad
