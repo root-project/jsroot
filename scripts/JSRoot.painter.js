@@ -3952,15 +3952,19 @@ JSROOT.define(['d3'], (d3) => {
             let painter = new JSROOT.RObjectPainter(dom, obj, opt, handle.csstype);
             promise = jsrp.ensureRCanvas(painter, handle.frame || false).then(() => {
                painter.redraw = handle.func;
-               painter.redraw();
-               return painter;
+               let res = painter.redraw();
+               if (!isPromise(res))
+                  return painter;
+               return res.then(() => painter);
             })
          } else if (handle.direct) {
             let painter = new ObjectPainter(dom, obj, opt);
             promise = jsrp.ensureTCanvas(painter, handle.frame || false).then(() => {
                painter.redraw = handle.func;
-               painter.redraw();
-               return painter;
+               let res = painter.redraw();
+               if (!isPromise(res))
+                  return painter;
+               return res.then(() => painter);
             });
          } else {
             promise = handle.func(dom, obj, opt);
