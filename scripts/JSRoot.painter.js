@@ -3636,7 +3636,7 @@ JSROOT.define(['d3'], (d3) => {
       { name: "TProfile2D", sameas: "TH2" },
       { name: /^TH3/, icon: 'img_histo3d', prereq: "hist3d", class: "TH3Painter", opt: ";SCAT;BOX;BOX2;BOX3;GLBOX1;GLBOX2;GLCOL" },
       { name: "THStack", icon: "img_histo1d", prereq: "hist", class: "THStackPainter", expand_item: "fHists", opt: "NOSTACK;HIST;E;PFC;PLC" },
-      { name: "TPolyMarker3D", icon: 'img_histo3d', prereq: "hist3d", func: ".drawPolyMarker3D", direct: true, frame: "3d" },
+      { name: "TPolyMarker3D", icon: 'img_histo3d', prereq: "base3d", func: ".drawPolyMarker3D", direct: true, frame: "3d" },
       { name: "TPolyLine3D", icon: 'img_graph', prereq: "base3d", func: ".drawPolyLine3D", direct: true },
       { name: "TGraphStruct" },
       { name: "TGraphNode" },
