@@ -1428,23 +1428,32 @@ JSROOT.define(['d3', 'three', 'painter'], (d3, THREE, jsrp) => {
       return material;
    }
 
+   function before3DDraw(painter, obj) {
+      let fp = painter.getFramePainter();
+
+      if (!fp || !fp.mode3d || !obj)
+         return null;
+
+      if (fp.toplevel)
+         return fp;
+
+      let geop = painter.getMainPainter();
+      if (geop && typeof geop.drawExtras == 'function')
+         return geop.drawExtras(obj);
+
+      return null;
+   }
+
    /** @summary direct draw function for TPolyMarker3D object
      * @memberof JSROOT.Painter
      * @private */
    jsrp.drawPolyMarker3D = function() {
 
-      let fp = this.getFramePainter(),
-          poly = this.getObject();
+      let poly = this.getObject(),
+          fp = before3DDraw(this, poly);
 
-      if (!fp || !fp.mode3d || !poly)
-         return null;
-
-      if (!fp.toplevel) {
-         let geop = this.getMainPainter();
-         if (geop && typeof geop.drawExtras == 'function')
-            return geop.drawExtras(poly);
-         return null;
-      }
+      if (!fp || (typeof fp !== 'object') || !fp.grx || !fp.gry || !fp.grz)
+         return fp;
 
       let step = 1, sizelimit = 50000, numselect = 0;
 
@@ -1536,17 +1545,10 @@ JSROOT.define(['d3', 'three', 'painter'], (d3, THREE, jsrp) => {
      * @private */
    jsrp.drawPolyLine3D = function() {
       let line = this.getObject(),
-          fp = this.getFramePainter();
+          fp = before3DDraw(this, line);
 
-      if (!fp || !fp.mode3d || !line)
-         return null;
-
-      if (!fp.toplevel) {
-         let geop = this.getMainPainter();
-         if (geop && typeof geop.drawExtras == 'function')
-            return geop.drawExtras(line);
-         return null;
-      }
+      if (!fp || (typeof fp !== 'object') || !fp.grx || !fp.gry || !fp.grz)
+         return fp;
 
       let limit = 3*line.fN, p = line.fP, pnts = [];
 
