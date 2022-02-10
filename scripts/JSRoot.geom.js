@@ -528,7 +528,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
             if (d.partAsInt(1) > 0) {
               bckgr = jsrp.getColor(d.partAsInt());
             } else {
-               for (let col=0;col<8;++col)
+               for (let col = 0; col < 8; ++col)
                   if (jsrp.getColor(col).toUpperCase() === d.part)
                      bckgr = jsrp.getColor(col);
             }
@@ -4932,19 +4932,38 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
      * @private */
    geo.drawDummy3DGeom = function(painter) {
 
+      let extra = painter.getObject(),
+          min = [-1, -1, -1], max = [1, 1, 1];
+
+      if (extra.fP && extra.fP.length)
+         for(let k = 0; k < extra.fP.length; k +=3)
+            for (let i = 0; i < 3; ++i) {
+               min[i] = Math.min(min[i], extra.fP[k+i]);
+               max[i] = Math.max(max[i], extra.fP[k+i]);
+            }
+
+
       let shape = JSROOT.create('TNamed');
       shape._typename = "TGeoBBox";
-      shape.fDX = shape.fDY = shape.fDZ = 20;
+      shape.fDX = max[0] - min[0];
+      shape.fDY = max[1] - min[1];
+      shape.fDZ = max[2] - min[2];
       shape.fShapeId = 1;
       shape.fShapeBits = 0;
       shape.fOrigin= [0,0,0];
 
       let obj = JSROOT.create("TEveGeoShapeExtract");
 
-      JSROOT.extend(obj, { fTrans: null, fShape: shape, fRGBA: [0, 0, 0, 0], fElements: null, fRnrSelf: false });
+      JSROOT.extend(obj, { fTrans: [1,0,0,0, 0,1,0,0, 0,0,1,0, (min[0]+max[0])/2, (min[1]+max[1])/2, (min[2]+max[2])/2, 0],
+                           fShape: shape, fRGBA: [0, 0, 0, 0], fElements: null, fRnrSelf: false });
 
-      return TGeoPainter.draw(painter.getDom(), obj)
-                        .then(geop => geop.drawExtras(painter.getObject()));
+      let opt = "", pp = painter.getPadPainter();
+
+      if (pp && pp.pad && pp.pad.fFillColor && pp.pad.fFillStyle > 1000)
+         opt = "bkgr_" +  pp.pad.fFillColor;
+
+      return TGeoPainter.draw(painter.getDom(), obj, opt)
+                        .then(geop => geop.drawExtras(extra));
    }
 
    jsrp.addDrawFunc({ name: "TGeoVolumeAssembly", icon: 'img_geoassembly', func: TGeoPainter.draw, expand: geo.expandObject, opt: ";more;all;count" });
