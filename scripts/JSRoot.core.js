@@ -1659,11 +1659,11 @@
             create("TNamed", obj);
             create("TAttLine", obj);
             create("TAttFill", obj);
-            extend(obj, { fGeoAtt:0, fFinder: null, fMedium: null, fNodes: null, fNtotal: 0, fNumber: 0, fRefCount: 0, fShape: null, fVoxels: null });
+            extend(obj, { fGeoAtt: 0, fFinder: null, fMedium: null, fNodes: null, fNtotal: 0, fNumber: 0, fRefCount: 0, fShape: null, fVoxels: null });
             break;
          case 'TGeoNode':
             create("TNamed", obj);
-            extend(obj, { fGeoAtt:0, fMother: null, fNovlp: 0, fNumber: 0, fOverlaps: null, fVolume: null });
+            extend(obj, { fGeoAtt: 0, fMother: null, fNovlp: 0, fNumber: 0, fOverlaps: null, fVolume: null });
             break;
          case 'TGeoNodeMatrix':
             create("TGeoNode", obj);

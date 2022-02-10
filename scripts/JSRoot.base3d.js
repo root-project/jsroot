@@ -1438,7 +1438,9 @@ JSROOT.define(['d3', 'three', 'painter'], (d3, THREE, jsrp) => {
          return fp;
 
       let geop = painter.getMainPainter();
-      if (geop && typeof geop.drawExtras == 'function')
+      if(!geop)
+         return JSROOT.require("geom").then(geo => geo.drawDummy3DGeom(painter));
+      else if (typeof geop.drawExtras == 'function')
          return geop.drawExtras(obj);
 
       return null;

@@ -4928,6 +4928,25 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       return true;
    }
 
+   /** @summary Draw dummy geometry
+     * @private */
+   geo.drawDummy3DGeom = function(painter) {
+
+      let shape = JSROOT.create('TNamed');
+      shape._typename = "TGeoBBox";
+      shape.fDX = shape.fDY = shape.fDZ = 20;
+      shape.fShapeId = 1;
+      shape.fShapeBits = 0;
+      shape.fOrigin= [0,0,0];
+
+      let obj = JSROOT.create("TEveGeoShapeExtract");
+
+      JSROOT.extend(obj, { fTrans: null, fShape: shape, fRGBA: [0, 0, 0, 0], fElements: null, fRnrSelf: false });
+
+      return TGeoPainter.draw(painter.getDom(), obj)
+                        .then(geop => geop.drawExtras(painter.getObject()));
+   }
+
    jsrp.addDrawFunc({ name: "TGeoVolumeAssembly", icon: 'img_geoassembly', func: TGeoPainter.draw, expand: geo.expandObject, opt: ";more;all;count" });
    jsrp.addDrawFunc({ name: "TEvePointSet", icon_get: geo.getBrowserIcon, icon_click: geo.browserIconClick });
    jsrp.addDrawFunc({ name: "TEveTrack", icon_get: geo.getBrowserIcon, icon_click: geo.browserIconClick });
