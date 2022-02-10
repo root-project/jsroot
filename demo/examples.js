@@ -286,6 +286,7 @@ examples_main = {
      { name: "profile2d", file: "profile2d.root", item: "c1;1", title: "TProfile2D class" },
      { name: "spline", file: "tutorials_graphs.root", item: 'splines_test',  title: "TSpline3 and TSpline5 classes, tutorials/graphs/splines_test.C" },
      { name: "polyline", file: "polyline.root", item: "can;1", title: "TPolyLine class (produced with graphics/triangles.C)" },
+     { name: "basic3d", file: "tutorials_graphics.root", item: "basic3d",  title: "TPolyLine3D and TPolyMarker3D, output of graphics/basic3d.C tutorial" },
      { name: "class", json: "draw_class.json.gz", title: "Canvas, produced with DrawClass() call" },
      { name: "archi", file: "tutorials_graphics.root", item: 'archi',  title: "Usage of TPavesText, tutorials/graphics/archi.C" },
      { name: "feynman", file: "tutorials_graphics.root", item: 'feynman',  title: "Usage of TCulyLine/Arc, tutorials/graphics/feynman.C" },
