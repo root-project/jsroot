@@ -1440,10 +1440,9 @@ JSROOT.define(['d3', 'three', 'painter'], (d3, THREE, jsrp) => {
          return null;
 
       if (!fp.toplevel) {
-         let main = this.getMainPainter();
-         // recognize geom painter
-         if (main && typeof main.drawExtras == 'function')
-            return main.drawExtras(poly);
+         let geop = this.getMainPainter();
+         if (geop && typeof geop.drawExtras == 'function')
+            return geop.drawExtras(poly);
          return null;
       }
 
@@ -1537,27 +1536,27 @@ JSROOT.define(['d3', 'three', 'painter'], (d3, THREE, jsrp) => {
      * @private */
    jsrp.drawPolyLine3D = function() {
       let line = this.getObject(),
-          main = this.getFramePainter();
+          fp = this.getFramePainter();
 
-      if (!main || !main.mode3d || !line)
+      if (!fp || !fp.mode3d || !line)
          return null;
 
-      if (!main.toplevel) {
-         let main = this.getMainPainter();
-         if (main && typeof main.drawExtras == 'function')
-            return main.drawExtras(line);
+      if (!fp.toplevel) {
+         let geop = this.getMainPainter();
+         if (geop && typeof geop.drawExtras == 'function')
+            return geop.drawExtras(line);
          return null;
       }
 
-      let fN = line.fN, fP = line.fP, pnts = [];
+      let limit = 3*line.fN, p = line.fP, pnts = [];
 
-      for (let n = 3; n < 3*fN; n += 3)
-         pnts.push(main.grx(fP[n-3]), main.gry(fP[n-2]), main.grz(fP[n-1]),
-                   main.grx(fP[n]), main.gry(fP[n+1]), main.grz(fP[n+2]));
+      for (let n = 3; n < limit; n += 3)
+         pnts.push(main.grx(p[n-3]), main.gry(p[n-2]), main.grz(p[n-1]),
+                   main.grx(p[n]), main.gry(p[n+1]), main.grz(p[n+2]));
 
       let lines = jsrp.createLineSegments(pnts, create3DLineMaterial(this, line));
 
-      main.toplevel.add(lines);
+      fp.toplevel.add(lines);
 
       return true;
    }
