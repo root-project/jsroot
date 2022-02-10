@@ -1549,16 +1549,7 @@ JSROOT.define(['d3', 'three', 'painter'], (d3, THREE, jsrp) => {
          return null;
       }
 
-      let fN, fP, pnts = [];
-
-      if (line._blob && (line._blob.length == 4)) {
-         // workaround for custom streamer for JSON, should be resolved
-         fN = line._blob[1];
-         fP = line._blob[2];
-      } else {
-         fN = line.fN;
-         fP = line.fP;
-      }
+      let fN = line.fN, fP = line.fP, pnts = [];
 
       for (let n = 3; n < 3*fN; n += 3)
          pnts.push(main.grx(fP[n-3]), main.gry(fP[n-2]), main.grz(fP[n-1]),

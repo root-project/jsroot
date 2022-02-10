@@ -2922,18 +2922,8 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
          if (JSROOT.browser.isWin) track_width = 1; // not supported on windows
 
-         let fN, fP;
-
-         if (line._blob && (line._blob.length == 4)) {
-            // workaround for custom streamer for JSON, should be resolved
-            fN = line._blob[1];
-            fP = line._blob[2];
-         } else {
-            fN = line.fN;
-            fP = line.fP;
-         }
-
-         let npoints = fN,
+         let npoints = line.fN,
+             fP = line.fP,
              buf = new Float32Array((npoints-1)*6),
              pos = 0, projv = this.ctrl.projectPos,
              projx = (this.ctrl.project === "x"),
@@ -2947,7 +2937,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
             buf[pos+3] = projx ? projv : fP[k*3+3];
             buf[pos+4] = projy ? projv : fP[k*3+4];
             buf[pos+5] = projz ? projv : fP[k*3+5];
-            pos+=6;
+            pos += 6;
          }
 
          let lineMaterial = new THREE.LineBasicMaterial({ color: track_color, linewidth: track_width }),
