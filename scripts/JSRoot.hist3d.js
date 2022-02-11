@@ -984,7 +984,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
       zcont[3].position.set(grminx,grminy,0);
       zcont[3].rotation.z = -3/4*Math.PI;
 
-      if (opts.not_frame) return;
+      // if (opts.not_frame) return;
 
       let linex_geom = jsrp.createLineSegments([grminx,0,0, grmaxx,0,0], lineMaterial, null, true);
       for(let n = 0; n < 2; ++n) {
@@ -2935,8 +2935,10 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
       let main = this.getMainPainter(),
           axis3d = this.getObject();
 
-      if (!main || !main._toplevel)
-         return Promise.reject(Error('no 3D frame found for 3D axis drawing'));
+      if (!main || !main._toplevel) {
+         console.error('no 3D frame found for TAxis3D drawing');
+         return null;
+      }
 
       let box = new THREE.Box3().setFromObject(main._toplevel),
           szx = box.max.x - box.min.x,
