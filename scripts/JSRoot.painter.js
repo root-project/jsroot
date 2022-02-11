@@ -1773,10 +1773,9 @@ JSROOT.define(['d3'], (d3) => {
          // this.draw_g = undefined; // container for all drawn objects
          // this._main_painter = undefined;  // main painter in the correspondent pad
          this.pad_name = dom ? this.selectCurrentPad() : ""; // name of pad where object is drawn
-         if (obj !== undefined) {
-            this.assignObject(obj);
-            if (typeof opt == "string") this.options = { original: opt };
-         }
+         this.assignObject(obj);
+         if (typeof opt == "string")
+            this.options = { original: opt };
       }
 
       /** @summary Assign object to the painter
