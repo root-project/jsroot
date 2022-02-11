@@ -526,8 +526,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
                                        { log: pad ? pad.fLogz : 0 });
       this.z_handle.assignFrameMembers(this,"z");
 
-      if (!opts.not_frame)
-         this.setRootPadRange(pad, true); // set some coordinates typical for 3D projections in ROOT
+      this.setRootPadRange(pad, true); // set some coordinates typical for 3D projections in ROOT
 
       this.x_handle.debug = true;
 
@@ -983,8 +982,6 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
 
       zcont[3].position.set(grminx,grminy,0);
       zcont[3].rotation.z = -3/4*Math.PI;
-
-      // if (opts.not_frame) return;
 
       let linex_geom = jsrp.createLineSegments([grminx,0,0, grmaxx,0,0], lineMaterial, null, true);
       for(let n = 0; n < 2; ++n) {
@@ -2927,52 +2924,6 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
       }
 
    } // class TH3Painter
-
-
-   /** @summary Direct draw function for draw TAxis3D
-     * @private */
-   jsrp.drawAxis3D = function() {
-      let main = this.getMainPainter(),
-          axis3d = this.getObject();
-
-      if (!main || !main._toplevel) {
-         console.error('no 3D frame found for TAxis3D drawing');
-         return null;
-      }
-
-      let box = new THREE.Box3().setFromObject(main._toplevel),
-          szx = box.max.x - box.min.x,
-          szy = box.max.y - box.min.y,
-          szz = box.max.y - box.min.y,
-          conv = (value, sz, dir) => {
-            value += sz*dir;
-            if (sz > 1e5)
-               return Math.round(value / 1000) * 1000;
-            if (sz > 1e3)
-               return Math.round(value / 10) * 10;
-            return (sz > 10) ? Math.round(value) : value;
-         }
-
-
-      this.xmin = conv(box.min.x, szx, -0.1); this.xmax = conv(box.max.x, szx, 0.1);
-      this.ymin = conv(box.min.y, szy, -0.1); this.ymax = conv(box.max.y, szy, 0.1);
-      this.zmin = conv(box.min.z, szz, -0.1); this.zmax = conv(box.max.z, szz, 0.1);
-
-      this.xaxis = axis3d.fAxis[0];
-      this.yaxis = axis3d.fAxis[1];
-      this.zaxis = axis3d.fAxis[2];
-
-      // use min/max values directly as graphical coordinates
-      this.size_x3d = this.size_y3d = this.size_z3d = 0;
-
-      this.drawXYZ = JSROOT.TFramePainter.prototype.drawXYZ; // just reuse axis drawing from frame painter
-
-      this.drawXYZ(main._toplevel, { not_frame: true });
-
-      main.adjustCameraPosition();
-
-      return main.render3D();
-   }
 
 
    /**

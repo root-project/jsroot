@@ -3682,7 +3682,6 @@ JSROOT.define(['d3'], (d3) => {
       { name: "TBox", icon: 'img_graph', prereq: "more", func: ".drawBox", direct: true },
       { name: "TWbox", icon: 'img_graph', prereq: "more", func: ".drawBox", direct: true },
       { name: "TSliderBox", icon: 'img_graph', prereq: "more", func: ".drawBox", direct: true },
-      { name: "TAxis3D", icon: 'img_graph', prereq: "hist3d", func: ".drawAxis3D", direct: true },
       { name: "TMarker", icon: 'img_graph', prereq: "more", func: ".drawMarker", direct: true },
       { name: "TPolyMarker", icon: 'img_graph', prereq: "more", func: ".drawPolyMarker", direct: true },
       { name: "TASImage", icon: 'img_mgraph', prereq: "more", class: "TASImagePainter", opt: ";z" },
@@ -3693,6 +3692,7 @@ JSROOT.define(['d3'], (d3) => {
       { name: "TGeoOverlap", icon: 'img_histo3d', prereq: "geom", expand: "JSROOT.GEO.expandObject", class: "TGeoPainter", opt: ";more;all;count;projx;projz;wire;dflt", dflt: "dflt", ctrl: "expand" },
       { name: "TGeoManager", icon: 'img_histo3d', prereq: "geom", expand: "JSROOT.GEO.expandObject", class: "TGeoPainter", opt: ";more;all;count;projx;projz;wire;tracks;no_screen;dflt", dflt: "expand", ctrl: "dflt" },
       { name: /^TGeo/, icon: 'img_histo3d', prereq: "geom", class: "TGeoPainter", expand: "JSROOT.GEO.expandObject", opt: ";more;all;axis;compa;count;projx;projz;wire;no_screen;dflt", dflt: "dflt", ctrl: "expand" },
+      { name: "TAxis3D", icon: 'img_graph', prereq: "geom", func: ".drawAxis3D", direct: true },
       // these are not draw functions, but provide extra info about correspondent classes
       { name: "kind:Command", icon: "img_execute", execute: true },
       { name: "TFolder", icon: "img_folder", icon2: "img_folderopen", noinspect: true, prereq: "hierarchy", expand: ".folderHierarchy" },

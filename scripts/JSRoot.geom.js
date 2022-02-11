@@ -3606,7 +3606,8 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
             this._slave_painters[k].startDrawGeometry();
       }
 
-      /** @summary Draw axes if configured, otherwise just remove completely */
+      /** @summary Draw axes if configured, otherwise just remove completely
+        * @returns {Promise} when norender not specified */
       drawSimpleAxis(norender) {
          this.getExtrasContainer('delete', 'axis');
 
@@ -3775,12 +3776,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
          }
 
          // after creating axes trigger rendering and recalculation of depth
-         this.changedDepthMethod(norender ? "norender" : undefined);
-      }
-
-      /** @summary  Toggle axes visibility */
-      toggleAxesDraw() {
-         this.setAxesDraw("toggle");
+         return this.changedDepthMethod(norender ? "norender" : undefined);
       }
 
       /** @summary Set axes visibility 0 - off, 1 - on, 2 - centered */
@@ -3789,7 +3785,7 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
             this.ctrl._axis = this.ctrl._axis ? 0 : 1;
          else
             this.ctrl._axis = (typeof on == 'number') ? on : (on ? 1 : 0);
-         this.drawSimpleAxis();
+         return this.drawSimpleAxis();
       }
 
       /** @summary Set auto rotate mode */
@@ -3850,7 +3846,8 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       changedDepthMethod(arg) {
          // force recalculatiion of render order
          delete this._last_camera_position;
-         if (arg !== "norender") this.render3D();
+         if (arg !== "norender")
+            return this.render3D();
       }
 
       /** @summary Should be called when configuration of highlight is changed */
@@ -4964,6 +4961,17 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
 
       return TGeoPainter.draw(painter.getDom(), obj, opt)
                         .then(geop => geop.drawExtras(extra));
+   }
+
+   /** @summary Direct draw function for TAxis3D
+     * @private */
+   jsrp.drawAxis3D = function() {
+      let main = this.getMainPainter();
+
+      if (main && (typeof main.setAxesDraw == 'function'))
+         return main.setAxesDraw(true);
+
+      console.error('no geometry painter found to toggle TAxis3D drawing');
    }
 
    jsrp.addDrawFunc({ name: "TGeoVolumeAssembly", icon: 'img_geoassembly', func: TGeoPainter.draw, expand: geo.expandObject, opt: ";more;all;count" });
