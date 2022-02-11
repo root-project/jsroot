@@ -145,6 +145,7 @@ examples_main = {
      { name: "tf2", json: "tf2.json.gz", opt: "", title: "Example of TF2 drawing" },
      { name: "3d", file: "tutorials_graphs.root", item: "annotation3d", title: "Output of tutorials/graphs/annotation3d.C" },
      { name: "pnt", file: "tutorials_graphs.root", item: "graph2derrorsfit", title: "Combination of TF2 and TGraph2DErrors, output of tutorials/graphs/graph2derrorsfit.C" },
+     { name: "waves", file: "tutorials_graphs.root", item: "waves", title: "Draw several TF2 with col options, output of tutorials/graphs/waves.C" }
    ],
    TCanvas : [
      { name:"roofit", file: "rf107.root", item: "rf107_plotstyles;1" },
