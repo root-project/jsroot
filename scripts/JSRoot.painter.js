@@ -1772,8 +1772,8 @@ JSROOT.define(['d3'], (d3) => {
          super(dom);
          // this.draw_g = undefined; // container for all drawn objects
          // this._main_painter = undefined;  // main painter in the correspondent pad
+         this.pad_name = dom ? this.selectCurrentPad() : ""; // name of pad where object is drawn
          if (obj !== undefined) {
-            this.pad_name = dom ? this.selectCurrentPad() : ""; // name of pad where object is drawn
             this.assignObject(obj);
             if (typeof opt == "string") this.options = { original: opt };
          }
@@ -4217,7 +4217,7 @@ JSROOT.define(['d3'], (d3) => {
      * @param {string|object} dom - id or DOM element
      * @private */
    jsrp.getElementMainPainter = function(dom) {
-      return new ObjectPainter(dom, {}).getMainPainter(true);
+      return new ObjectPainter(dom).getMainPainter(true);
    }
 
    /** @summary Safely remove all JSROOT drawings from specified element
