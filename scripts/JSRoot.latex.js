@@ -613,17 +613,15 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (found.special) {
             // this is sum and integral, now make fix height, later can adjust to right-content size
 
-            let subs = extractLowUp(found.low_up);
+            let subs = extractLowUp();
 
-            if (!subs || (!subs.low && !subs.up)) {
+            if (!subs || (!subs.low && !subs.up && !label)) {
                label = found.special + label;
                nelements--;
                continue;
             }
 
-            let gg = createGG();
-
-            let path = createPath(gg), h = Math.round(curr.fsize*2), w = Math.round(curr.fsize), r = Math.round(h*0.1), x_up, x_low;
+            let gg = createGG(), path = createPath(gg), h = Math.round(curr.fsize*2), w = Math.round(curr.fsize), r = Math.round(h*0.1), x_up, x_low;
 
             if (found.name == "#sum") {
                x_up = x_low = w/2;
