@@ -1592,7 +1592,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          }
 
          this.createAttLine({ attr: graph, can_excl: true });
-         this.createAttFill({ attr: graph, kind: 1 });
+         this.createAttFill({ attr: graph });
 
          this.fillatt.used = false; // mark used only when really used
 
