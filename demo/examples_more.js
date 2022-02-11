@@ -169,6 +169,7 @@ examples_more = {
      { name: "fit6", url: "?nobrowser&file=$$$tutorials_fit.root&layout=grid1x2&items=[fit2,fit2dHist]", title: "part6 macros from tutorials/fit directory" }
    ],
    TGeo : [
+     { name: "prim_can", file: "geom/geodemo.root", layout: "vert333", items: ['box_can','para_can','arb8_can','trap_can','gtra_can','trd1_can','trd2_can','xtru_can'], title: "Basic TGeo primitives in TCanvas from tutorials/geom/geodemo.C, group 1" },
      { name: "atlas_cryo", asurl: true, file: "https://root.cern/files/atlas.root", item: "atlas;1", opt: "macro:https://root.cern/files/atlas_cryo.C" },
      { name: "atlas_simple", asurl: true, json: "geom/simple_atlas.json.gz", opt: "ac" },
      { name: "star", asurl: true, json: "geom/star_svtt.json.gz" },
