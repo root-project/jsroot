@@ -1468,7 +1468,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                  System: jsrp.Coord.kCARTESIAN,
                  AutoColor: false, NoStat: false, ForceStat: false, PadStats: false, PadTitle: false, AutoZoom: false,
                  HighRes: 0, Zero: true, Palette: 0, BaseLine: false,
-                 Optimize: JSROOT.settings.OptimizeDraw,
+                 Optimize: JSROOT.settings.OptimizeDraw, adjustFrame: false,
                  Mode3D: false, x3dscale: 1, y3dscale: 1,
                  Render3D: JSROOT.constants.Render3D.Default,
                  FrontBox: true, BackBox: true,
@@ -1504,6 +1504,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          if (d.check('XTITLE:', true)) histo.fXaxis.fTitle = decodeURIComponent(d.part.toLowerCase());
          if (d.check('YTITLE:', true)) histo.fYaxis.fTitle = decodeURIComponent(d.part.toLowerCase());
          if (d.check('ZTITLE:', true)) histo.fZaxis.fTitle = decodeURIComponent(d.part.toLowerCase());
+
+         if (d.check('_ADJUST_FRAME_')) this.adjustFrame = true;
 
          if (d.check('NOOPTIMIZE')) this.Optimize = 0;
          if (d.check('OPTIMIZE')) this.Optimize = 2;
@@ -2414,6 +2416,23 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             fp.createXY2(opts);
 
             return fp.drawAxes2(opts.second_x, opts.second_y);
+         }
+
+         if (this.options.adjustFrame) {
+            let pad = this.getPadPainter().getRootPad();
+            if (pad) {
+               if (pad.fUxmin < pad.fUxmax) {
+                  fp.fX1NDC = (this.xmin - pad.fUxmin) / (pad.fUxmax - pad.fUxmin);
+                  fp.fX2NDC = (this.xmax - pad.fUxmin) / (pad.fUxmax - pad.fUxmin);
+               }
+               if (pad.fUymin < pad.fUymax) {
+                  fp.fY1NDC = (this.ymin - pad.fUymin) / (pad.fUymax - pad.fUymin);
+                  fp.fY2NDC = (this.ymax - pad.fUymin) / (pad.fUymax - pad.fUymin);
+               }
+               fp.redraw();
+            }
+
+            this.options.adjustFrame = false;
          }
 
          fp.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, 0, 0);
@@ -7203,9 +7222,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
    /** @summary draw TF2 object
      * @desc TF2 always drawn via temporary TH2 object,
      * therefore there is no special painter class
-     * @memberof JSROOT.Painter
      * @private */
-   function drawTF2(dom, func, opt) {
+   jsrp.drawTF2 = function(dom, func, opt) {
 
       let d = new JSROOT.DrawOptions(opt),
           hist = createTF2Histogram(func);
@@ -7219,6 +7237,14 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       else
          opt = d.opt;
 
+      // workaround for old waves.C
+      if (opt == "SAMECOLORZ" || opt == "SAMECOLOR" || opt == "SAMECOLZ") opt = "SAMECOL";
+
+      if (opt.indexOf("SAME") == 0)
+         if (!jsrp.getElementMainPainter(dom))
+            opt = "A_ADJUST_FRAME_" + opt.substr(4);
+
+      console.log('draw hist', opt);
       return TH2Painter.draw(dom, hist, opt).then(hpainter => {
 
          hpainter.tf2_typename = func._typename;
@@ -7618,7 +7644,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
    jsrp.getColorPalette = getColorPalette;
    jsrp.produceLegend = produceLegend;
-   jsrp.drawTF2 = drawTF2;
 
    JSROOT.TPavePainter = TPavePainter;
    JSROOT.THistPainter = THistPainter;
