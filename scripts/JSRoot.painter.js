@@ -2399,8 +2399,10 @@ JSROOT.define(['d3'], (d3) => {
         * @returns created handle
         * @protected */
       createAttFill(args) {
-         if (!args || (typeof args !== 'object')) args = { std: true }; else
-            if (args._typename && args.fFillColor !== undefined && args.fFillStyle !== undefined) args = { attr: args, std: false };
+         if (!args || (typeof args !== 'object'))
+            args = { std: true };
+         else if (args._typename && args.fFillColor !== undefined && args.fFillStyle !== undefined)
+            args = { attr: args, std: false };
 
          if (args.std === undefined) args.std = true;
 

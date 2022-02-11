@@ -1746,7 +1746,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                this.fillatt.setSolidColor('white');
          }
 
-         if (!tframe && pad && (pad.fFrameLineColor!==undefined))
+         if (!tframe && pad && (pad.fFrameLineColor !== undefined))
             this.createAttLine({ color: pad.fFrameLineColor, width: pad.fFrameLineWidth, style: pad.fFrameLineStyle });
          else
             this.createAttLine({ attr: tframe, color: 'black' });

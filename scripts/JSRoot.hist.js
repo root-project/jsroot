@@ -2434,7 +2434,11 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                pad.fRightMargin = 1 - fp.fX2NDC;
                pad.fBottomMargin = fp.fY1NDC;
                pad.fTopMargin = 1 - fp.fY2NDC;
+               pad.fFrameLineColor = 0;
+               pad.fFrameLineWidth = 0;
                fp.setRootPadRange(pad);
+
+               fp.fillatt.setSolidColor('none');
 
                fp.redraw();
             }
@@ -7093,7 +7097,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       static draw(dom, histo, opt) {
          let painter = new TH2Painter(dom, histo);
 
-         console.log('drawing th2 with opt', opt);
          return jsrp.ensureTCanvas(painter).then(() => {
 
             painter.setAsMainPainter();
@@ -7252,7 +7255,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          if (!jsrp.getElementMainPainter(dom))
             opt = "A_ADJUST_FRAME_" + opt.substr(4);
 
-      console.log('draw hist', opt);
       return TH2Painter.draw(dom, hist, opt).then(hpainter => {
 
          hpainter.tf2_typename = func._typename;
