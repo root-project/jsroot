@@ -170,6 +170,9 @@ examples_more = {
    ],
    TGeo : [
      { name: "prim_can", file: "geom/geodemo.root", layout: "vert333", items: ['box_can','para_can','arb8_can','trap_can','gtra_can','trd1_can','trd2_can','xtru_can'], title: "Basic TGeo primitives in TCanvas from tutorials/geom/geodemo.C, group 1" },
+     { name: "prim2_can", file: "geom/geodemo.root", layout: "vert333", items: ['cone_can','coneseg_can','tube_can','tubeseg_can','ctub_can','eltu_can','pcon_can','pgon_can'], title: "Basic TGeo primitives in TCanvas from tutorials/geom/geodemo.C, group 2" },
+     { name: "prim3_can", file: "geom/geodemo.root", layout: "grid3x2", items: ['sphere_can','torus_can','parab_can','hype_can','comp_can'], title: "Basic TGeo primitives in TCanvas from tutorials/geom/geodemo.C, group 3" },
+     { name: "align", file: "geom/geodemo.root", layout: "vert22_12", items: ['ideal','align','ideal_can','align_can'], opts: ['z','z','',''], title: "Align examples from tutorials/geom/geodemo.C" },
      { name: "atlas_cryo", asurl: true, file: "https://root.cern/files/atlas.root", item: "atlas;1", opt: "macro:https://root.cern/files/atlas_cryo.C" },
      { name: "atlas_simple", asurl: true, json: "geom/simple_atlas.json.gz", opt: "ac" },
      { name: "star", asurl: true, json: "geom/star_svtt.json.gz" },
