@@ -2429,6 +2429,13 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                   fp.fY1NDC = (this.ymin - pad.fUymin) / (pad.fUymax - pad.fUymin);
                   fp.fY2NDC = (this.ymax - pad.fUymin) / (pad.fUymax - pad.fUymin);
                }
+
+               pad.fLeftMargin = fp.fX1NDC;
+               pad.fRightMargin = 1 - fp.fX2NDC;
+               pad.fBottomMargin = fp.fY1NDC;
+               pad.fTopMargin = 1 - fp.fY2NDC;
+               fp.setRootPadRange(pad);
+
                fp.redraw();
             }
 
@@ -7086,6 +7093,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       static draw(dom, histo, opt) {
          let painter = new TH2Painter(dom, histo);
 
+         console.log('drawing th2 with opt', opt);
          return jsrp.ensureTCanvas(painter).then(() => {
 
             painter.setAsMainPainter();
