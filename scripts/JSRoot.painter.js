@@ -3682,7 +3682,7 @@ JSROOT.define(['d3'], (d3) => {
       { name: "TBox", icon: 'img_graph', prereq: "more", func: ".drawBox", direct: true },
       { name: "TWbox", icon: 'img_graph', prereq: "more", func: ".drawBox", direct: true },
       { name: "TSliderBox", icon: 'img_graph', prereq: "more", func: ".drawBox", direct: true },
-      { name: "TAxis3D", prereq: "hist3d", func: ".drawAxis3D" },
+      { name: "TAxis3D", icon: 'img_graph', prereq: "hist3d", func: ".drawAxis3D", direct: true },
       { name: "TMarker", icon: 'img_graph', prereq: "more", func: ".drawMarker", direct: true },
       { name: "TPolyMarker", icon: 'img_graph', prereq: "more", func: ".drawPolyMarker", direct: true },
       { name: "TASImage", icon: 'img_mgraph', prereq: "more", class: "TASImagePainter", opt: ";z" },
