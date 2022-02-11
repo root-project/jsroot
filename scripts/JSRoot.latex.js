@@ -614,7 +614,12 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             // this is sum and integral, now make fix height, later can adjust to right-content size
 
             let subs = extractLowUp(found.low_up);
-            if (!subs) return false;
+
+            if (!subs || (!subs.low && !subs.up)) {
+               label = found.special + label;
+               nelements--;
+               continue;
+            }
 
             let gg = createGG();
 
