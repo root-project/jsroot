@@ -1926,14 +1926,13 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          if (this.mode3d) return; // no need to create any elements in 3d mode
 
          // this is svg:g object - container for every other items belonging to frame
-         this.draw_g = this.getLayerSvg("primitives_layer").select(".root_frame");
+         this.draw_g = this.getFrameSvg();
 
          let top_rect, main_svg;
 
          if (this.draw_g.empty()) {
-            let layer = this.getLayerSvg("primitives_layer");
 
-            this.draw_g = layer.append("svg:g").attr("class", "root_frame");
+            this.draw_g = this.getLayerSvg("primitives_layer").append("svg:g").attr("class", "root_frame");
 
             // empty title on the frame required to suppress title of the canvas
             if (!JSROOT.batch_mode)

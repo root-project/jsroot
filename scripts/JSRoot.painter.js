@@ -2243,7 +2243,17 @@ JSROOT.define(['d3'], (d3) => {
 
       /** @summary Returns svg element for the frame in current pad
         * @protected */
-      getFrameSvg() { return this.getLayerSvg("primitives_layer").select(".root_frame"); }
+      getFrameSvg() {
+         let layer = this.getLayerSvg("primitives_layer");
+         if (layer.empty()) return layer;
+         let node = layer.node().firstChild;
+         while (node) {
+            let elem = d3.select(node);
+            if (elem.classed("root_frame")) return elem;
+            node = node.nextSibling;
+         }
+         return d3.select(null);
+      }
 
       /** @summary Returns frame painter for current pad
         * @desc Pad has direct reference on frame if any
