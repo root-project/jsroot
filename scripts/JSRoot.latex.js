@@ -629,6 +629,8 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                // path.attr('transform','skewX(-3)'); could use skewX for italic-like style
             }
 
+            extendPosition(curr.x, curr.y - 0.75*h, curr.x + w, curr.y + 0.25*h);
+
             if (subs.low) {
                let subpos1 = createSubPos(0.6);
                parseLatex(gg, arg, subs.low, subpos1);
