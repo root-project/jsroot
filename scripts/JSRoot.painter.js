@@ -2747,7 +2747,7 @@ JSROOT.define(['d3'], (d3) => {
                   arg.dy = ((arg.align[1] == 'top') ? (arg.top_shift || 1) : (arg.align[1] == 'middle') ? (arg.mid_shift || 0.5) : 0) * arg.box.height;
                }
 
-            } else {
+            } else if (arg.text_rect) {
 
                // handle latext drawing
                let box = arg.text_rect;
@@ -2762,6 +2762,8 @@ JSROOT.define(['d3'], (d3) => {
                   arg.dy = -box.y2*scale;
                else if (arg.align[1] == 'middle')
                   arg.dy = -0.5*(box.y1 + box.y2)*scale;
+            } else {
+               console.error('text rect not calcualted - please check code');
             }
 
             if (!arg.rotate) { arg.x += arg.dx; arg.y += arg.dy; arg.dx = arg.dy = 0; }
