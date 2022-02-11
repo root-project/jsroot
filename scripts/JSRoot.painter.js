@@ -4217,7 +4217,7 @@ JSROOT.define(['d3'], (d3) => {
      * @param {string|object} dom - id or DOM element
      * @private */
    jsrp.getElementMainPainter = function(dom) {
-      return new ObjectPainter(dom).getMainPainter(true);
+      return new ObjectPainter(dom, {}).getMainPainter(true);
    }
 
    /** @summary Safely remove all JSROOT drawings from specified element
