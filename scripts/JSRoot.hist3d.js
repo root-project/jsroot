@@ -984,9 +984,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
       zcont[3].position.set(grminx,grminy,0);
       zcont[3].rotation.z = -3/4*Math.PI;
 
-
-      // for TAxis3D do not show final cube
-      if (this.size_z3d === 0) return;
+      if (opts.not_frame) return;
 
       let linex_geom = jsrp.createLineSegments([grminx,0,0, grmaxx,0,0], lineMaterial, null, true);
       for(let n = 0; n < 2; ++n) {
@@ -2940,11 +2938,23 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
       if (!main || !main._toplevel)
          return Promise.reject(Error('no 3D frame found for 3D axis drawing'));
 
-      let box = new THREE.Box3().setFromObject(main._toplevel);
+      let box = new THREE.Box3().setFromObject(main._toplevel),
+          szx = box.max.x - box.min.x,
+          szy = box.max.y - box.min.y,
+          szz = box.max.y - box.min.y,
+          conv = (value, sz, dir) => {
+            value += sz*dir;
+            if (sz > 1e5)
+               return Math.round(value / 1000) * 1000;
+            if (sz > 1e3)
+               return Math.round(value / 10) * 10;
+            return (sz > 10) ? Math.round(value) : value;
+         }
 
-      this.xmin = box.min.x; this.xmax = box.max.x;
-      this.ymin = box.min.y; this.ymax = box.max.y;
-      this.zmin = box.min.z; this.zmax = box.max.z;
+
+      this.xmin = conv(box.min.x, szx, -0.1); this.xmax = conv(box.max.x, szx, 0.1);
+      this.ymin = conv(box.min.y, szy, -0.1); this.ymax = conv(box.max.y, szy, 0.1);
+      this.zmin = conv(box.min.z, szz, -0.1); this.zmax = conv(box.max.z, szz, 0.1);
 
       this.xaxis = axis3d.fAxis[0];
       this.yaxis = axis3d.fAxis[1];
