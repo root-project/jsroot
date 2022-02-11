@@ -22,7 +22,8 @@
 19. Remove "collapsible" and "tabs" layouts which were implemented with jQuery - use "flex" instead
 20. Improve flexible layout, provide context menu with cascading, tiling, selecting frames
 21. Starting from Chrome 96, allow embedding WebGL into SVG - solving problem with lego plots in canvas
-22. All internal JSROOT code rewritten as classes. One have to use class syntax to derive from it.
+22. All internal JSROOT code rewritten as classes; one have to use class syntax to derive from it
+23. Support drawing of TGeo and TAxis3D objects inside TPad
 
 
 ## Changes in 6.3.3
