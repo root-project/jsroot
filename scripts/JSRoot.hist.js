@@ -6688,8 +6688,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       }
 
       /** @summary Draw TH2 in circular mode */
-      drawCircular() {
-
+      drawBinsCircular() {
 
          this.getFrameSvg().style('display', 'none');
 
@@ -6701,12 +6700,12 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
              circle_size = 16,
              axis = hist.fXaxis,
              getBinLabel = indx => {
-               if (!axis.fLabels) return indx.toString();
-               for (let i = 0; i < axis.fLabels.arr.length; ++i) {
-                  let tstr = a.fLabels.arr[i];
-                  if (tstr.fUniqueID === indx+1) return tstr.fString;
-               }
-               return "";
+               if (axis.fLabels)
+                  for (let i = 0; i < axis.fLabels.arr.length; ++i) {
+                     const tstr = axis.fLabels.arr[i];
+                     if (tstr.fUniqueID === indx+1) return tstr.fString;
+                  }
+               return indx.toString();
              };
 
          this.createG();
@@ -6715,7 +6714,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          let nbins = Math.min(this.nbinsx, this.nbinsy);
 
-         this.startTextDrawing(42, 20, this.draw_g);
+         this.startTextDrawing(42, text_size, this.draw_g);
+
+         let pnts = [];
 
          for (let n = 0; n < nbins; n++) {
             let angle = (0.5-n/nbins) *Math.PI*2,
@@ -6724,6 +6725,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                 tx = Math.round(0.9*rect.width/2 * Math.cos(angle)),
                 ty = Math.round(0.9*rect.height/2 * Math.sin(angle)),
                 tangle = Math.round(angle / Math.PI * 180), talign = 12;
+
+            pnts.push({x: cx, y: cy, a: angle }); // remember points coordinates
 
             if ((tangle<-90) || (tangle > 90)) { tangle += 180; talign = 32; }
 
@@ -6736,6 +6739,25 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
             this.drawText({ align: talign, rotate: tangle, text: getBinLabel(n), x: tx, y: ty });
          }
+
+         let path = "";
+
+         for (let i = 0; i < nbins; ++i)
+            for (let j = i+1; j < nbins; ++j) {
+               let cont = hist.getBinContent(i+1, j+1);
+               if (cont <= 0) continue;
+
+               let pi = pnts[i],
+                   pj = pnts[j],
+                   a = (pi.a + pj.a)/2,
+                   qr = 0.7*(1-Math.abs(pi.a - pj.a)/Math.PI), // how far Q point will be away from center
+                   qx = Math.round(qr*rect.width/2 * Math.cos(a)),
+                   qy = Math.round(qr*rect.height/2 * Math.sin(a));
+
+               path += `M${pi.x},${pi.y}Q${qx},${qy},${pj.x},${pj.y}`;
+            }
+
+         this.draw_g.append("path").attr("d", path).style("stroke", "blue").style('fill','none');
 
          return this.finishTextDrawing();
       }
@@ -7122,7 +7144,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          return this.drawColorPalette(need_palette, true).then(pp => {
 
             if (this.options.Circular && this.isMainPainter())
-               return this.drawCircular().then(() => this.completePalette(pp));
+               return this.drawBinsCircular().then(() => this.completePalette(pp));
 
             return this.drawAxes().then(() => {
                this.draw2DBins();
