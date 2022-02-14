@@ -484,7 +484,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       });
    }
 
-   // ===================================================================================
 
    /**
      * @summary Painter for TF1 object
@@ -770,12 +769,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             painter.redraw();
             return painter;
          });
-       }
+      }
 
-   }
+   } // class TF1Painter
 
-
-   // =======================================================================
 
    const kNotEditable = JSROOT.BIT(18);   // bit set if graph is non editable
 
@@ -2252,10 +2249,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             return painter.drawGraph();
          }).then(() => painter.drawNextFunction(0));
       }
-   }
 
+   } // class TGraphPainter
 
-   // ==============================================================
 
    /**
     * @summary Painter for TGraphPolargram objects.
@@ -2561,7 +2557,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          });
       }
 
-   }
+   } // class TGraphPolargramPainter
 
    // ==============================================================
 
@@ -2794,7 +2790,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             return painter;
          })
       }
-   }
+
+   } // class TGraphPolarPainter
 
    // ==============================================================
 
@@ -3124,10 +3121,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          });
       }
 
-   }
+   } // class TSplinePainter
 
-
-   // =============================================================
 
    /**
     * @summary Painter for TGraphTime object
@@ -3271,9 +3266,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             return painter.startDrawing();
          });
       }
-   }
 
-   // =============================================================
+   } // class TGraphTimePainter
+
 
    const kIsBayesian       = JSROOT.BIT(14),  ///< Bayesian statistics are used
          kPosteriorMode    = JSROOT.BIT(15),  ///< Use posterior mean for best estimate (Bayesian statistics)
@@ -3485,9 +3480,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             return painter.drawFunction(0);
          });
       }
-   }
 
-   // =============================================================
+   } // class TEfficiencyPainter
+
 
    /**
     * @summary Painter for TMultiGraph object.
@@ -3732,9 +3727,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             return painter.drawNextGraph(0, d.remain());
          });
       }
-   }
 
-   // =========================================================================================
+   } // class TMultiGraphPainter
+
 
    /** @summary Draw direct TVirtualX commands into SVG
      * @private */
@@ -3902,8 +3897,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       return Promise.resolve(painter);
    }
 
-
-   // ===================================================================================
 
    /**
     * @summary Painter for TASImage object.
@@ -4246,9 +4239,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                         return painter;
                     });
       }
-   }
 
-   // ===================================================================================
+   } // class TASImagePainter
+
 
    /** @summary Draw JS image
      * @private */
