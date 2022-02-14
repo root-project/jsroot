@@ -1588,8 +1588,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          d.check('GL'); // suppress GL
 
-         if (d.check('CIRCULAR', true))
-            this.Circular = d.partAsInt(1);
+         if (d.check('CIRCULAR', true)) {
+            this.Circular = 1;
+            if (d.part.indexOf('2') >= 0) this.Circular = 2;
+         }
 
          if (d.check('LEGO', true)) {
             this.Lego = 1;
@@ -6644,6 +6646,11 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       /** @summary Draw TH2 bins in 2D mode */
       draw2DBins() {
 
+         if (this._hide_frame && this.isMainPainter()) {
+            this.getFrameSvg().style('display', null);
+            delete this._hide_frame;
+         }
+
          if (!this.draw_content)
             return this.removeG();
 
@@ -6678,6 +6685,35 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          }
 
          this.tt_handle = handle;
+      }
+
+      /** @summary Draw TH2 in circular mode */
+      drawCircular() {
+
+         this.getFrameSvg().style('display', 'none');
+
+         this._hide_frame = true;
+
+         let rect = this.getPadPainter().getFrameRect();
+
+         this.createG();
+
+         this.draw_g.attr('transform', `translate(${Math.round(rect.x + rect.width/2)},${Math.round(rect.y + rect.height/2)})`);
+
+         for (let k = 0; k < 10; k++) {
+            let angle = k*Math.PI*2 / 10,
+                x = Math.round(rect.width/2 * Math.sin(angle)),
+                y = Math.round(rect.height/2 * Math.cos(angle));
+
+            let s1 = 10, s2 = 5;
+
+            this.draw_g.append("path")
+                       .attr("d",`M${x-s2},${y} a${s2},${s2},0,1,0,${s1},0a${s2},${s2},0,1,0,${-s1},0z`)
+                       .style('stroke','blue')
+                       .style('fill','none');
+         }
+
+         return Promise.resolve(true);
       }
 
       /** @summary Provide text information (tooltips) for histogram bin */
@@ -7040,6 +7076,17 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          return !obj || (obj.FindBin(max,0.5) - obj.FindBin(min,0) > 1);
       }
 
+      /** @summary Complete paletted drawing */
+      completePalette(pp) {
+         if (!pp) return true;
+
+         pp.$main_painter = this;
+         this.options.Zvert = pp._palette_vertical;
+
+         // redraw palette till the end when contours are available
+         return pp.drawPave(this.options.Cjust ? "cjust" : "");
+      }
+
       /** @summary Performs 2D drawing of histogram
         * @returns {Promise} when ready */
       draw2D(/* reason */) {
@@ -7050,17 +7097,12 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          // draw new palette, resize frame if required
          return this.drawColorPalette(need_palette, true).then(pp => {
 
+            if (this.options.Circular && this.isMainPainter())
+               return this.drawCircular().then(() => this.completePalette(pp));
+
             return this.drawAxes().then(() => {
-
                this.draw2DBins();
-
-               if (!pp) return true;
-
-               pp.$main_painter = this;
-               this.options.Zvert = pp._palette_vertical;
-
-               // redraw palette till the end when contours are available
-               return pp.drawPave(this.options.Cjust ? "cjust" : "");
+               return this.completePalette(pp);
             });
          }).then(() => this.drawHistTitle()).then(() => {
 
