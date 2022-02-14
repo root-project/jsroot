@@ -2511,6 +2511,34 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
          }
       }
 
+      /** @summary Returns frame coordiantes - also when frame is not drawn */
+      getFrameRect() {
+         let fp = this.getFramePainter();
+         if (fp) return fp.getFrameRect();
+
+         let w = this.getPadWidth(),
+             h = this.getPadHeight(),
+             rect = {};
+
+         if (this.pad) {
+            rect.szx = Math.round(Math.max(0.0, 0.5 - Math.max(this.pad.fLeftMargin, this.pad.fRightMargin))*w);
+            rect.szy = Math.round(Math.max(0.0, 0.5 - Math.max(this.pad.fBottomMargin, this.pad.fTopMargin))*h);
+         } else {
+            rect.szx = Math.round(0.5*w);
+            rect.szy = Math.round(0.5*h);
+         }
+
+         rect.width = 2*rect.szx;
+         rect.height = 2*rect.szy;
+         rect.x = Math.round(w/2 - rect.szx);
+         rect.y = Math.round(h/2 - rect.szy);
+         rect.hint_delta_x = rect.szx;
+         rect.hint_delta_y = rect.szy;
+         rect.transform = `translate(${rect.x},${rect.y})`;
+
+         return rect;
+      }
+
       /** @summary return RPad object */
       getRootPad(is_root6) {
          return (is_root6 === undefined) || is_root6 ? this.pad : null;

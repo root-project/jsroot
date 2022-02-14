@@ -2391,7 +2391,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          if (!this.isMainPainter()) return;
 
          let polar = this.getObject(),
-             rect = this.getFrameRect();
+             rect = this.getPadPainter().getFrameRect();
 
          this.createG();
 
