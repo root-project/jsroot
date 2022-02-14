@@ -1463,7 +1463,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                  Text: false, TextAngle: 0, TextKind: "", Char: 0, Color: false, Contour: 0, Cjust: false,
                  Lego: 0, Surf: 0, Off: 0, Tri: 0, Proj: 0, AxisPos: 0,
                  Spec: false, Pie: false, List: false, Zscale: false, Zvert: true, PadPalette: false,
-                 Candle: "", Violin: "", Scaled: null,
+                 Candle: "", Violin: "", Scaled: null, Circular: 0,
                  GLBox: 0, GLColor: false, Project: "",
                  System: jsrp.Coord.kCARTESIAN,
                  AutoColor: false, NoStat: false, ForceStat: false, PadStats: false, PadTitle: false, AutoZoom: false,
@@ -1587,6 +1587,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          if (d.check('GLCOL')) this.GLColor = true;
 
          d.check('GL'); // suppress GL
+
+         if (d.check('CIRCULAR', true))
+            this.Circular = d.partAsInt(1);
 
          if (d.check('LEGO', true)) {
             this.Lego = 1;
@@ -4648,9 +4651,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          });
       }
 
-   } // TH1Painter
+   } // class TH1Painter
 
-   // ========================================================================
 
    /**
     * @summary Painter for TH2 classes
