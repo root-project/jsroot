@@ -2329,10 +2329,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          rect.width = 2*rect.szx;
          rect.height = 2*rect.szy;
-         rect.midx = Math.round(w/2);
-         rect.midy = Math.round(h/2);
-         rect.x = rect.midx - rect.szx;
-         rect.y = rect.midy - rect.szy;
+         rect.x = Math.round(w/2 - rect.szx);
+         rect.y = Math.round(h/2 - rect.szy);
 
          rect.hint_delta_x = rect.szx;
          rect.hint_delta_y = rect.szy;
@@ -2397,7 +2395,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          this.createG();
 
-         this.draw_g.attr("transform", `translate(${rect.midx},${rect.midy})`);
+         this.draw_g.attr("transform", `translate(${Math.round(rect.x + rect.width/2)},${Math.round(rect.y + rect.height/2)})`);
          this.szx = rect.szx;
          this.szy = rect.szy;
 
