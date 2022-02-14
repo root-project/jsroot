@@ -7,6 +7,7 @@
 4. Let draw TGeo object inside TCanvas
 5. Let superimpose TPolyLine3D and TPolyMarker3D with TGeo drawing
 6. Fix plain #sum and #int parsing in TLatex
+7. Fix ticks position for axes with labels
 
 
 ## Changes in 6.3.3
