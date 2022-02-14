@@ -292,6 +292,17 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             this.fixed_ticks.forEach(v => {
                if ((v >= this.scale_min) && (v <= this.scale_max)) ticks.push(v);
             });
+         } else if ((this.kind == 'labels') && !this.regular_labels) {
+            ticks = [];
+            handle.lbl_pos = [];
+            let axis = this.getObject();
+            for (let n = 0; n < axis.fNbins; ++n) {
+               let x = axis.fXmin + n / axis.fNbins * (axis.fXmax - axis.fXmin);
+               if ((x >= this.scale_min) && (x < this.scale_max)) {
+                  handle.lbl_pos.push(x);
+                  ticks.push(x);
+               }
+            }
          } else {
             ticks = this.produceTicks(this.nticks);
          }
@@ -303,15 +314,6 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
             if (res[0] > this.scale_min + delta) res.unshift(this.scale_min);
             if (res[res.length-1] < this.scale_max - delta) res.push(this.scale_max);
             return res;
-         }
-
-         if ((this.kind == 'labels') && !this.regular_labels) {
-            handle.lbl_pos = [];
-            let axis = this.getObject();
-            for (let n = 0; n < axis.fNbins; ++n) {
-               let x = axis.fXmin + n / axis.fNbins * (axis.fXmax - axis.fXmin);
-               if ((x >= this.scale_min) && (x < this.scale_max)) handle.lbl_pos.push(x);
-            }
          }
 
          if ((this.nticks2 > 1) && (!this.log || (this.logbase === 10)) && !this.fixed_ticks) {
