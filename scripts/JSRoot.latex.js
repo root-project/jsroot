@@ -615,13 +615,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
 
             let subs = extractLowUp();
 
-            if (!subs || (!subs.low && !subs.up && !label)) {
-               label = found.special + label;
-               nelements--;
-               continue;
-            }
-
-            let gg = createGG(), path = createPath(gg), h = Math.round(curr.fsize*2), w = Math.round(curr.fsize), r = Math.round(h*0.1), x_up, x_low;
+            let gg = createGG(), path = createPath(gg), h = Math.round(curr.fsize*1.7), w = Math.round(curr.fsize), r = Math.round(h*0.1), x_up, x_low;
 
             if (found.name == "#sum") {
                x_up = x_low = w/2;
@@ -632,7 +626,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                // path.attr('transform','skewX(-3)'); could use skewX for italic-like style
             }
 
-            extendPosition(curr.x, curr.y - 0.75*h, curr.x + w, curr.y + 0.25*h);
+            extendPosition(curr.x, curr.y - 0.6*h, curr.x + w, curr.y + 0.4*h);
 
             if (subs.low) {
                let subpos1 = createSubPos(0.6);
