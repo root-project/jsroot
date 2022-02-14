@@ -300,7 +300,7 @@ JSROOT.define(['d3', 'painter'], (d3, jsrp) => {
                let x = axis.fXmin + n / axis.fNbins * (axis.fXmax - axis.fXmin);
                if ((x >= this.scale_min) && (x < this.scale_max)) {
                   handle.lbl_pos.push(x);
-                  ticks.push(x);
+                  if (x > this.scale_min) ticks.push(x);
                }
             }
          } else {
