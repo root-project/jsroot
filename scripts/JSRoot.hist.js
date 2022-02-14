@@ -1590,7 +1590,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          d.check('GL'); // suppress GL
 
-         if (d.check('CIRCULAR', true)) {
+         if (d.check('CIRCULAR', true) || d.check('CIRC', true)) {
             this.Circular = 1;
             if (d.part.indexOf('2') >= 0) this.Circular = 2;
          }
@@ -6698,6 +6698,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          let rect = this.getPadPainter().getFrameRect(),
              hist = this.getHisto(),
+             palette = this.getHistPalette(),
              text_size = 20,
              circle_size = 16,
              axis = hist.fXaxis,
@@ -6726,9 +6727,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                 cy = Math.round((0.9*rect.height/2 - 2*circle_size) * Math.sin(angle)),
                 tx = Math.round(0.9*rect.width/2 * Math.cos(angle)),
                 ty = Math.round(0.9*rect.height/2 * Math.sin(angle)),
-                tangle = Math.round(angle / Math.PI * 180), talign = 12;
+                tangle = Math.round(angle / Math.PI * 180), talign = 12,
+                color = palette.calcColor(n, nbins);
 
-            pnts.push({x: cx, y: cy, a: angle }); // remember points coordinates
+            pnts.push({x: cx, y: cy, a: angle, color: color }); // remember points coordinates
 
             if ((tangle<-90) || (tangle > 90)) { tangle += 180; talign = 32; }
 
@@ -6736,30 +6738,30 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
             this.draw_g.append("path")
                        .attr("d",`M${cx-s2},${cy} a${s2},${s2},0,1,0,${s1},0a${s2},${s2},0,1,0,${-s1},0z`)
-                       .style('stroke','blue')
+                       .style('stroke', color)
                        .style('fill','none');
 
             this.drawText({ align: talign, rotate: tangle, text: getBinLabel(n), x: tx, y: ty });
          }
 
-         let path = "";
+         for (let i = 0; i < nbins; ++i) {
+            let path = "", pi = pnts[i];
 
-         for (let i = 0; i < nbins; ++i)
             for (let j = i+1; j < nbins; ++j) {
                let cont = hist.getBinContent(i+1, j+1);
                if (cont <= 0) continue;
 
-               let pi = pnts[i],
-                   pj = pnts[j],
+               let pj = pnts[j],
                    a = (pi.a + pj.a)/2,
-                   qr = 0.7*(1-Math.abs(pi.a - pj.a)/Math.PI), // how far Q point will be away from center
+                   qr = 0.5*(1-Math.abs(pi.a - pj.a)/Math.PI), // how far Q point will be away from center
                    qx = Math.round(qr*rect.width/2 * Math.cos(a)),
                    qy = Math.round(qr*rect.height/2 * Math.sin(a));
 
                path += `M${pi.x},${pi.y}Q${qx},${qy},${pj.x},${pj.y}`;
             }
-
-         this.draw_g.append("path").attr("d", path).style("stroke", "blue").style('fill','none');
+            if (path)
+               this.draw_g.append("path").attr("d", path).style("stroke", pi.color).style('fill','none');
+         }
 
          return this.finishTextDrawing();
       }

@@ -67,6 +67,7 @@ examples_main = {
      { opt: "texte", title: "draw bins bins content as text and error in new line - using #splitline syntax" },
      { opt: "texte0", title: "draw errors in the same line" },
      { opt: "scat", title: "scatter plot (used as default draw option)" },
+     { opt: "circ", title: "Circular plot" },
      { name: "box", json: "hbox.json.gz", opt: "box", title: "boxes, area proportional to bin content" },
      { name: "box1", json: "hbox.json.gz", opt: "box1", title: "boxes, area proportional to bin content" },
      { name: "ctx_cty", opt: "col_ctx_cty", file: "QAresults.root", item: "PIDqa/PIDqa1/ITS/hNsigmaP_ITS_helium-3;1", title: "center title x (ctx) and center title y (cty)" },
