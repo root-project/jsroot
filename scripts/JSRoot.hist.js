@@ -886,6 +886,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
                if (this._palette_vertical) {
                   if ((z1 >= s_height) || (z0 < 0)) continue;
+                  z0 += 1; // ensure correct gap filling between colors
 
                   if (z0 > s_height) {
                      z0 = s_height;
@@ -897,6 +898,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                   d = `M0,${z1}H${s_width}V${z0}H0Z`;
                } else {
                   if ((z0 >= s_width) || (z1 < 0)) continue;
+                  z1 += 1; // ensure correct gap filling between colors
 
                   if (z1 > s_width) {
                      z1 = s_width;
