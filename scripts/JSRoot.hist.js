@@ -6690,30 +6690,54 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       /** @summary Draw TH2 in circular mode */
       drawCircular() {
 
+
          this.getFrameSvg().style('display', 'none');
 
          this._hide_frame = true;
 
-         let rect = this.getPadPainter().getFrameRect();
+         let rect = this.getPadPainter().getFrameRect(),
+             hist = this.getHisto(),
+             text_size = 20,
+             circle_size = 16,
+             axis = hist.fXaxis,
+             getBinLabel = indx => {
+               if (!axis.fLabels) return indx.toString();
+               for (let i = 0; i < axis.fLabels.arr.length; ++i) {
+                  let tstr = a.fLabels.arr[i];
+                  if (tstr.fUniqueID === indx+1) return tstr.fString;
+               }
+               return "";
+             };
 
          this.createG();
 
          this.draw_g.attr('transform', `translate(${Math.round(rect.x + rect.width/2)},${Math.round(rect.y + rect.height/2)})`);
 
-         for (let k = 0; k < 10; k++) {
-            let angle = k*Math.PI*2 / 10,
-                x = Math.round(rect.width/2 * Math.sin(angle)),
-                y = Math.round(rect.height/2 * Math.cos(angle));
+         let nbins = Math.min(this.nbinsx, this.nbinsy);
 
-            let s1 = 10, s2 = 5;
+         this.startTextDrawing(42, 20, this.draw_g);
+
+         for (let n = 0; n < nbins; n++) {
+            let angle = (0.5-n/nbins) *Math.PI*2,
+                cx = Math.round((0.9*rect.width/2 - 2*circle_size) * Math.cos(angle)),
+                cy = Math.round((0.9*rect.height/2 - 2*circle_size) * Math.sin(angle)),
+                tx = Math.round(0.9*rect.width/2 * Math.cos(angle)),
+                ty = Math.round(0.9*rect.height/2 * Math.sin(angle)),
+                tangle = Math.round(angle / Math.PI * 180), talign = 12;
+
+            if ((tangle<-90) || (tangle > 90)) { tangle += 180; talign = 32; }
+
+            let s2 = Math.round(text_size/2), s1 = 2*s2;
 
             this.draw_g.append("path")
-                       .attr("d",`M${x-s2},${y} a${s2},${s2},0,1,0,${s1},0a${s2},${s2},0,1,0,${-s1},0z`)
+                       .attr("d",`M${cx-s2},${cy} a${s2},${s2},0,1,0,${s1},0a${s2},${s2},0,1,0,${-s1},0z`)
                        .style('stroke','blue')
                        .style('fill','none');
+
+            this.drawText({ align: talign, rotate: tangle, text: getBinLabel(n), x: tx, y: ty });
          }
 
-         return Promise.resolve(true);
+         return this.finishTextDrawing();
       }
 
       /** @summary Provide text information (tooltips) for histogram bin */
