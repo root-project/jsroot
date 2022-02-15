@@ -1597,6 +1597,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             if (d.part.indexOf('2') >= 0) this.Circular = 12; // color and width
          }
 
+         this.Chord = d.check('CHORD');
+
          if (d.check('LEGO', true)) {
             this.Lego = 1;
             if (d.part.indexOf('0') >= 0) this.Zero = false;
@@ -6695,7 +6697,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       drawBinsCircular() {
 
          this.getFrameSvg().style('display', 'none');
-
          this._hide_frame = true;
 
          let rect = this.getPadPainter().getFrameRect(),
@@ -6784,6 +6785,108 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          }
 
          return this.finishTextDrawing();
+      }
+
+      /** @summary Draw histogram bins as chord diagram */
+      drawBinsChord() {
+         this.getFrameSvg().style('display', 'none');
+         this._hide_frame = true;
+
+         let rect = this.getPadPainter().getFrameRect(),
+             hist = this.getHisto(),
+             palette = this.getHistPalette(),
+             outerRadius = Math.min(rect.width, rect.height) * 0.5 - 60,
+             innerRadius = outerRadius - 10;
+
+         this.createG();
+
+         this.draw_g.attr('transform', `translate(${Math.round(rect.x + rect.width/2)},${Math.round(rect.y + rect.height/2)})`);
+
+         let data = [
+           [.096899, .008859, .000554, .004430, .025471, .024363, .005537, .025471],
+           [.001107, .018272, .000000, .004983, .011074, .010520, .002215, .004983],
+           [.000554, .002769, .002215, .002215, .003876, .008306, .000554, .003322],
+           [.000554, .001107, .000554, .012182, .011628, .006645, .004983, .010520],
+           [.002215, .004430, .000000, .002769, .104097, .012182, .004983, .028239],
+           [.011628, .026024, .000000, .013843, .087486, .168328, .017165, .055925],
+           [.000554, .004983, .000000, .003322, .004430, .008859, .017719, .004430],
+           [.002215, .007198, .000000, .003322, .016611, .014950, .001107, .054264]
+         ],
+         names = ["Apple", "HTC", "Huawei", "LG", "Nokia", "Samsung", "Sony", "Other"],
+         colors = ["#c4c4c4", "#69b40f", "#ec1d25", "#c8125c", "#008fc8", "#10218b", "#134b24", "#737373"];
+
+         const chord = d3.chord()
+            .padAngle(10 / innerRadius)
+            .sortSubgroups(d3.descending)
+            .sortChords(d3.descending);
+
+         const chords = chord(data);
+
+         const group = this.draw_g.append("g")
+            .attr("font-size", 10)
+            .attr("font-family", "sans-serif")
+            .selectAll("g")
+            .data(chords.groups)
+            .join("g");
+
+         const arc = d3.arc().innerRadius(innerRadius).outerRadius(outerRadius);
+
+         const ribbon = d3.ribbon().radius(innerRadius - 1).padAngle(1 / innerRadius);
+
+         const formatValue = v => (v * 100).toFixed(0) + "%";
+
+         const tickStep = 0.01;
+
+         function ticks({ startAngle, endAngle, value }) {
+            const k = (endAngle - startAngle) / value;
+            let arr = [];
+            for (let z = 0; z <= value; z += tickStep)
+               arr.push({ value: z, angle: z * k + startAngle });
+            return arr;
+         }
+
+         group.append("path")
+            .attr("fill", d => colors[d.index])
+            .attr("d", arc);
+
+         group.append("title").text(d => `${names[d.index]} ${formatValue(d.value)}`);
+
+         const groupTick = group.append("g")
+            .selectAll("g")
+            .data(ticks)
+            .join("g")
+            .attr("transform", d => `rotate(${d.angle * 180 / Math.PI - 90}) translate(${outerRadius},0)`);
+         groupTick.append("line")
+            .attr("stroke", "currentColor")
+            .attr("x2", 6);
+
+         groupTick.append("text")
+            .attr("x", 8)
+            .attr("dy", "0.35em")
+            .attr("transform", d => d.angle > Math.PI ? "rotate(180) translate(-16)" : null)
+            .attr("text-anchor", d => d.angle > Math.PI ? "end" : null)
+            .text(d => formatValue(d.value));
+
+         group.select("text")
+            .attr("font-weight", "bold")
+            .text(function(d) {
+               return this.getAttribute("text-anchor") === "end"
+                  ? `↑ ${names[d.index]}` : `${names[d.index]} ↓`;
+            });
+
+         this.draw_g.append("g")
+            .attr("fill-opacity", 0.8)
+            .selectAll("path")
+            .data(chords)
+            .join("path")
+            .style("mix-blend-mode", "multiply")
+            .attr("fill", d => colors[d.source.index])
+            .attr("d", ribbon)
+            .append("title")
+            .text(d => `${formatValue(d.source.value)} ${names[d.target.index]} → ${names[d.source.index]}${d.source.index === d.target.index ? "" : `\n${formatValue(d.target.value)} ${names[d.source.index]} → ${names[d.target.index]}`}`);
+
+         return Promise.resolve(true);
+
       }
 
       /** @summary Provide text information (tooltips) for histogram bin */
@@ -7169,6 +7272,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
             if (this.options.Circular && this.isMainPainter())
                return this.drawBinsCircular().then(() => this.completePalette(pp));
+
+            if (this.options.Chord && this.isMainPainter())
+               return this.drawBinsChord().then(() => this.completePalette(pp));
 
             return this.drawAxes().then(() => {
                this.draw2DBins();
