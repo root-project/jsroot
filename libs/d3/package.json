@@ -34,9 +34,11 @@
   },
   "dependencies": {
     "d3-color": "3",
+    "d3-chord": "3",
     "d3-drag": "3",
     "d3-scale": "4",
     "d3-selection": "3",
+    "d3-shape": "3",
     "d3-transition": "3",
     "d3-time-format": "4"
   },
