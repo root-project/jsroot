@@ -1385,7 +1385,14 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                   drawbins[drawbins.length-1].width = drawbins[drawbins.length-2].width;
             }
 
-            let yy0 = Math.round(funcs.gry(0));
+            let yy0 = Math.round(funcs.gry(0)), usefill = fillatt;
+
+            if (main_block) {
+               let fp = this.getFramePainter(),
+                   fpcol = fp && fp.fillatt && !fp.fillatt.empty() ? fp.fillatt.getFillColor() : -1;
+               if (fpcol === fillatt.getFillColor())
+                  usefill = new JSROOT.TAttFillHandler({ color: fpcol == "white" ? 1 : 0, pattern: 1001 });
+            }
 
             nodes.append("svg:path")
                  .attr("d", d => {
@@ -1396,7 +1403,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                         dh = (options.Bar!==1) ? (h > d.gry1 ? h - d.gry1 : 0) : Math.abs(yy0 - d.gry1);
                     return `M${dx},${dy}h${dw}v${dh}h${-dw}z`;
                  })
-               .call(fillatt.func);
+               .call(usefill.func);
          }
 
          if (options.Rect) {
