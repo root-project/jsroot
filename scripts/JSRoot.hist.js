@@ -6819,7 +6819,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
              data = [], labels = [],
              getColor = indx => palette.calcColor(indx, used.length),
              ndig = 0, tickStep = 1,
-             formatValue = v => v.toString();
+             formatValue = v => v.toString(),
+             formatTicks = v => ndig > 3 ? v.toExponential(0) : v.toFixed(ndig);
 
          if (!isint && fullsum < 10) {
             let lstep = Math.round(Math.log10(fullsum) - 2.3);
@@ -6839,7 +6840,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             data[i] = [];
             for (let j = 0; j < used.length; ++j)
                data[i].push(hist.getBinContent(used[i]+1, used[j]+1));
-            let axis = hist.fXaxis, lbl = "indx " + used[i].toString();
+            let axis = hist.fXaxis, lbl = "indx_" + used[i].toString();
             if (axis.fLabels)
                for (let k = 0; k < axis.fLabels.arr.length; ++k) {
                   const tstr = axis.fLabels.arr[k];
@@ -6898,7 +6899,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             .attr("dy", "0.35em")
             .attr("transform", d => d.angle > Math.PI ? "rotate(180) translate(-16)" : null)
             .attr("text-anchor", d => d.angle > Math.PI ? "end" : null)
-            .text(d => d.value.toFixed(ndig));
+            .text(d => formatTicks(d.value));
 
          group.select("text")
             .attr("font-weight", "bold")
