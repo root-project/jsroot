@@ -6789,31 +6789,63 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       /** @summary Draw histogram bins as chord diagram */
       drawBinsChord() {
+
          this.getFrameSvg().style('display', 'none');
          this._hide_frame = true;
 
+         let fullsum = 0, used = [], isint = true,
+             nbins = Math.min(this.nbinsx, this.nbinsy),
+             hist = this.getHisto();
+         for (let i = 0; i < nbins; ++i) {
+            let sum = 0;
+            for (let j = 0; j < nbins; ++j) {
+               let cont = hist.getBinContent(i+1, j+1);
+               if (cont > 0) {
+                  sum += cont;
+                  if (isint && (Math.round(cont) !== cont)) isint = false;
+               }
+            }
+            if (sum > 0) used.push(i);
+            fullsum += sum;
+         }
+
+         // do not show less than 2 elements
+         if (used.length < 2) return Promise.resolve(true);
+
          let rect = this.getPadPainter().getFrameRect(),
-             hist = this.getHisto(),
              palette = this.getHistPalette(),
              outerRadius = Math.min(rect.width, rect.height) * 0.5 - 60,
              innerRadius = outerRadius - 10,
-             nbins = Math.min(this.nbinsx, this.nbinsy),
-             getLabel = (indx, istgt) => {
-               let axis = istgt ? hist.fYaxis : hist.fXaxis;
-               if (axis.fLabels)
-                  for (let i = 0; i < axis.fLabels.arr.length; ++i) {
-                     const tstr = axis.fLabels.arr[i];
-                     if (tstr.fUniqueID === indx+1) return tstr.fString;
-                  }
-               return indx.toString();
-             },
-             getColor = indx => palette.calcColor(indx, nbins),
-             data = [];
+             data = [], labels = [],
+             getColor = indx => palette.calcColor(indx, used.length),
+             ndig = 0, tickStep = 1,
+             formatValue = v => v.toString();
 
-         for (let i = 0; i < nbins; ++i) {
+         if (!isint && fullsum < 10) {
+            let lstep = Math.round(Math.log10(fullsum) - 2.3);
+            ndig = -lstep;
+            tickStep = Math.pow(10, lstep);
+         } else if (fullsum > 200) {
+            let lstep = Math.round(Math.log10(fullsum) - 2.3);
+            tickStep = Math.pow(10, lstep);
+         }
+
+         if (tickStep * 250 < fullsum)
+            tickStep *= 5;
+         else if (tickStep * 100 < fullsum)
+            tickStep *= 2;
+
+         for (let i = 0; i < used.length; ++i) {
             data[i] = [];
-            for (let j = 0; j < nbins; ++j)
-               data[i].push(hist.getBinContent(i+1, j+1));
+            for (let j = 0; j < used.length; ++j)
+               data[i].push(hist.getBinContent(used[i]+1, used[j]+1));
+            let axis = hist.fXaxis, lbl = "indx " + used[i].toString();
+            if (axis.fLabels)
+               for (let k = 0; k < axis.fLabels.arr.length; ++k) {
+                  const tstr = axis.fLabels.arr[k];
+                  if (tstr.fUniqueID === used[i]+1) { lbl = tstr.fString; break; }
+               }
+            labels.push(lbl);
          }
 
          this.createG();
@@ -6838,10 +6870,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          const ribbon = d3.ribbon().radius(innerRadius - 1).padAngle(1 / innerRadius);
 
-         const formatValue = v => v.toFixed(0);
-
-         const tickStep = 1;
-
          function ticks({ startAngle, endAngle, value }) {
             const k = (endAngle - startAngle) / value;
             let arr = [];
@@ -6854,7 +6882,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             .attr("fill", d => getColor(d.index))
             .attr("d", arc);
 
-         group.append("title").text(d => `${getLabel(d.index)} ${formatValue(d.value)}`);
+         group.append("title").text(d => `${labels[d.index]} ${formatValue(d.value)}`);
 
          const groupTick = group.append("g")
             .selectAll("g")
@@ -6870,13 +6898,13 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             .attr("dy", "0.35em")
             .attr("transform", d => d.angle > Math.PI ? "rotate(180) translate(-16)" : null)
             .attr("text-anchor", d => d.angle > Math.PI ? "end" : null)
-            .text(d => formatValue(d.value));
+            .text(d => d.value.toFixed(ndig));
 
          group.select("text")
             .attr("font-weight", "bold")
             .text(function(d) {
                return this.getAttribute("text-anchor") === "end"
-                  ? `↑ ${getLabel(d.index)}` : `${getLabel(d.index)} ↓`;
+                  ? `↑ ${labels[d.index]}` : `${labels[d.index]} ↓`;
             });
 
          this.draw_g.append("g")
@@ -6888,7 +6916,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             .attr("fill", d => getColor(d.source.index))
             .attr("d", ribbon)
             .append("title")
-            .text(d => `${formatValue(d.source.value)} ${getLabel(d.target.index)} → ${getLabel(d.source.index)}${d.source.index === d.target.index ? "" : `\n${formatValue(d.target.value)} ${getLabel(d.source.index)} → ${getLabel(d.target.index)}`}`);
+            .text(d => `${formatValue(d.source.value)} ${labels[d.target.index]} → ${labels[d.source.index]}${d.source.index === d.target.index ? "" : `\n${formatValue(d.target.value)} ${labels[d.source.index]} → ${labels[d.target.index]}`}`);
 
          return Promise.resolve(true);
 
