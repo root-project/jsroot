@@ -1591,8 +1591,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          d.check('GL'); // suppress GL
 
          if (d.check('CIRCULAR', true) || d.check('CIRC', true)) {
-            this.Circular = 1;
-            if (d.part.indexOf('2') >= 0) this.Circular = 2;
+            this.Circular = 11;
+            if (d.part.indexOf('0') >= 0) this.Circular = 10; // black and white
+            if (d.part.indexOf('1') >= 0) this.Circular = 11; // color
+            if (d.part.indexOf('2') >= 0) this.Circular = 12; // color and width
          }
 
          if (d.check('LEGO', true)) {
@@ -6698,7 +6700,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          let rect = this.getPadPainter().getFrameRect(),
              hist = this.getHisto(),
-             palette = this.getHistPalette(),
+             palette = this.options.Circular > 10 ? this.getHistPalette() : null,
              text_size = 20,
              circle_size = 16,
              axis = hist.fXaxis,
@@ -6728,11 +6730,11 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                 tx = Math.round(0.9*rect.width/2 * Math.cos(angle)),
                 ty = Math.round(0.9*rect.height/2 * Math.sin(angle)),
                 tangle = Math.round(angle / Math.PI * 180), talign = 12,
-                color = palette.calcColor(n, nbins);
+                color = palette ? palette.calcColor(n, nbins) : 'black';
 
             pnts.push({x: cx, y: cy, a: angle, color: color }); // remember points coordinates
 
-            if ((tangle<-90) || (tangle > 90)) { tangle += 180; talign = 32; }
+            if ((tangle < -90) || (tangle > 90)) { tangle += 180; talign = 32; }
 
             let s2 = Math.round(text_size/2), s1 = 2*s2;
 
@@ -6744,7 +6746,19 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             this.drawText({ align: talign, rotate: tangle, text: getBinLabel(n), x: tx, y: ty });
          }
 
-         for (let i = 0; i < nbins; ++i) {
+         let max_width = circle_size/2, max_value = 0, min_value = 0;
+         if (this.options.Circular > 11) {
+            for (let i = 0; i < nbins - 1; ++i)
+              for (let j = i+1; j < nbins; ++j) {
+                 let cont = hist.getBinContent(i+1, j+1);
+                 if (cont > 0) {
+                    max_value = Math.max(max_value, cont);
+                    if (!min_value || (cont < min_value)) min_value = cont;
+                 }
+              }
+         }
+
+         for (let i = 0; i < nbins-1; ++i) {
             let path = "", pi = pnts[i];
 
             for (let j = i+1; j < nbins; ++j) {
@@ -6758,6 +6772,12 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                    qy = Math.round(qr*rect.height/2 * Math.sin(a));
 
                path += `M${pi.x},${pi.y}Q${qx},${qy},${pj.x},${pj.y}`;
+
+               if ((this.options.Circular > 11) && (max_value > min_value)) {
+                  let width = Math.round((cont - min_value) / (max_value - min_value) * (max_width - 1) + 1);
+                  this.draw_g.append("path").attr("d", path).style("stroke", pi.color).style("stroke-width", width).style('fill','none');
+                  path = "";
+               }
             }
             if (path)
                this.draw_g.append("path").attr("d", path).style("stroke", pi.color).style('fill','none');
