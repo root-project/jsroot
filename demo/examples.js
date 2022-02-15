@@ -70,6 +70,7 @@ examples_main = {
      { opt: "circ", title: "Circular plot, default with color and line width 1" },
      { opt: "circ0", title: "Black and white circular plot" },
      { opt: "circ2", title: "Circular plot with line width depending from content" },
+     { opt: "chord", title: "Chord diagram as it is implemented by d3.js, see https://observablehq.com/@d3/chord-diagram" },
      { name: "box", json: "hbox.json.gz", opt: "box", title: "boxes, area proportional to bin content" },
      { name: "box1", json: "hbox.json.gz", opt: "box1", title: "boxes, area proportional to bin content" },
      { name: "ctx_cty", opt: "col_ctx_cty", file: "QAresults.root", item: "PIDqa/PIDqa1/ITS/hNsigmaP_ITS_helium-3;1", title: "center title x (ctx) and center title y (cty)" },
