@@ -6796,24 +6796,29 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
              hist = this.getHisto(),
              palette = this.getHistPalette(),
              outerRadius = Math.min(rect.width, rect.height) * 0.5 - 60,
-             innerRadius = outerRadius - 10;
+             innerRadius = outerRadius - 10,
+             nbins = Math.min(this.nbinsx, this.nbinsy),
+             getLabel = (indx, istgt) => {
+               let axis = istgt ? hist.fYaxis : hist.fXaxis;
+               if (axis.fLabels)
+                  for (let i = 0; i < axis.fLabels.arr.length; ++i) {
+                     const tstr = axis.fLabels.arr[i];
+                     if (tstr.fUniqueID === indx+1) return tstr.fString;
+                  }
+               return indx.toString();
+             },
+             getColor = indx => palette.calcColor(indx, nbins),
+             data = [];
+
+         for (let i = 0; i < nbins; ++i) {
+            data[i] = [];
+            for (let j = 0; j < nbins; ++j)
+               data[i].push(hist.getBinContent(i+1, j+1));
+         }
 
          this.createG();
 
          this.draw_g.attr('transform', `translate(${Math.round(rect.x + rect.width/2)},${Math.round(rect.y + rect.height/2)})`);
-
-         let data = [
-           [.096899, .008859, .000554, .004430, .025471, .024363, .005537, .025471],
-           [.001107, .018272, .000000, .004983, .011074, .010520, .002215, .004983],
-           [.000554, .002769, .002215, .002215, .003876, .008306, .000554, .003322],
-           [.000554, .001107, .000554, .012182, .011628, .006645, .004983, .010520],
-           [.002215, .004430, .000000, .002769, .104097, .012182, .004983, .028239],
-           [.011628, .026024, .000000, .013843, .087486, .168328, .017165, .055925],
-           [.000554, .004983, .000000, .003322, .004430, .008859, .017719, .004430],
-           [.002215, .007198, .000000, .003322, .016611, .014950, .001107, .054264]
-         ],
-         names = ["Apple", "HTC", "Huawei", "LG", "Nokia", "Samsung", "Sony", "Other"],
-         colors = ["#c4c4c4", "#69b40f", "#ec1d25", "#c8125c", "#008fc8", "#10218b", "#134b24", "#737373"];
 
          const chord = d3.chord()
             .padAngle(10 / innerRadius)
@@ -6833,9 +6838,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          const ribbon = d3.ribbon().radius(innerRadius - 1).padAngle(1 / innerRadius);
 
-         const formatValue = v => (v * 100).toFixed(0) + "%";
+         const formatValue = v => v.toFixed(0);
 
-         const tickStep = 0.01;
+         const tickStep = 1;
 
          function ticks({ startAngle, endAngle, value }) {
             const k = (endAngle - startAngle) / value;
@@ -6846,10 +6851,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          }
 
          group.append("path")
-            .attr("fill", d => colors[d.index])
+            .attr("fill", d => getColor(d.index))
             .attr("d", arc);
 
-         group.append("title").text(d => `${names[d.index]} ${formatValue(d.value)}`);
+         group.append("title").text(d => `${getLabel(d.index)} ${formatValue(d.value)}`);
 
          const groupTick = group.append("g")
             .selectAll("g")
@@ -6871,7 +6876,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             .attr("font-weight", "bold")
             .text(function(d) {
                return this.getAttribute("text-anchor") === "end"
-                  ? `↑ ${names[d.index]}` : `${names[d.index]} ↓`;
+                  ? `↑ ${getLabel(d.index)}` : `${getLabel(d.index)} ↓`;
             });
 
          this.draw_g.append("g")
@@ -6880,10 +6885,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             .data(chords)
             .join("path")
             .style("mix-blend-mode", "multiply")
-            .attr("fill", d => colors[d.source.index])
+            .attr("fill", d => getColor(d.source.index))
             .attr("d", ribbon)
             .append("title")
-            .text(d => `${formatValue(d.source.value)} ${names[d.target.index]} → ${names[d.source.index]}${d.source.index === d.target.index ? "" : `\n${formatValue(d.target.value)} ${names[d.source.index]} → ${names[d.target.index]}`}`);
+            .text(d => `${formatValue(d.source.value)} ${getLabel(d.target.index)} → ${getLabel(d.source.index)}${d.source.index === d.target.index ? "" : `\n${formatValue(d.target.value)} ${getLabel(d.source.index)} → ${getLabel(d.target.index)}`}`);
 
          return Promise.resolve(true);
 
