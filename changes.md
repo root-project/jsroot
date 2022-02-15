@@ -1,6 +1,6 @@
 # JSROOT changelog
 
-## Changes in 6.3.x
+## Changes in 6.3.4
 1. Fix bug in handling superimposing items via URL syntax
 2. Enable geometry clipping in node.js
 3. Upgrade node.js packages
