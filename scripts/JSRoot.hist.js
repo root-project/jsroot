@@ -7873,7 +7873,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          if (!stack.fHists || !stack.fHists.arr)
             return null; // drawing not needed
 
-         let painter = new THStackPainter(dom, stack, opt), pad_painter = null;
+         let painter = new THStackPainter(dom, stack, opt), pad_painter = null, skip_drawing = false;
 
          return jsrp.ensureTCanvas(painter, false).then(() => {
 
@@ -7883,8 +7883,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                pad_painter = painter.getPadPainter();
                if (pad_painter.doingDraw() && pad_painter.pad && pad_painter.pad.fPrimitives &&
                    pad_painter.pad.fPrimitives.arr.length > 1 && (pad_painter.pad.fPrimitives.arr.indexOf(stack)==0)) {
+                  skip_drawing = true;
                   console.log('special case with THStack with is already rendered - do nothing');
-                  return this;
+                  return;
                }
 
                pad_painter.cleanPrimitives(p => p !== painter);
@@ -7907,7 +7908,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             return JSROOT.draw(dom, stack.fHistogram, hopt).then(subp => {
                painter.firstpainter = subp;
             });
-         }).then(() => painter.drawNextHisto(0, pad_painter));
+         }).then(() => skip_drawing ? painter : painter.drawNextHisto(0, pad_painter));
       }
 
    } // class THStackPainter
