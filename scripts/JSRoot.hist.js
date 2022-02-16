@@ -7881,6 +7881,12 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
             if (painter.options.pads) {
                pad_painter = painter.getPadPainter();
+               if (pad_painter.doingDraw() && pad_painter.pad && pad_painter.pad.fPrimitives &&
+                   pad_painter.pad.fPrimitives.arr.length > 1 && (pad_painter.pad.fPrimitives.arr.indexOf(stack)==0)) {
+                  console.log('special case with THStack with is already rendered - do nothing');
+                  return this;
+               }
+
                pad_painter.cleanPrimitives(p => p !== painter);
                return pad_painter.divide(painter.options.nhist);
             }
