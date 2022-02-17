@@ -897,6 +897,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          if (d.check('NOOPT')) res.NoOpt = 1;
 
+         if (d.check("POS3D_", true)) res.pos3d = d.partAsInt() + 0.5;
+
          res._pfc = d.check("PFC");
          res._plc = d.check("PLC");
          res._pmc = d.check("PMC");
@@ -1571,20 +1573,24 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       }
 
       drawGraph3D(fp, graph) {
-         if (!fp.mode3d)
-            return console.log('Frame painter is not in 3d mode');
 
-         if (!fp.grx || !fp.gry || !fp.grz || !fp.toplevel)
+         if (!fp.mode3d || !fp.grx || !fp.gry || !fp.grz || !fp.toplevel)
             return console.log('Frame painter missing base 3d elements');
 
+         if (!jsrp.createLineSegments || !jsrp.create3DLineMaterial)
+            return console.log('Missing base3d functionality');
+
+         if (fp.zoom_ymin != fp.zoom_ymax)
+           if ((this.options.pos3d < fp.zoom_ymin) || (this.options.pos3d > fp.zoom_ymax)) return;
+
          let drawbins = this.optimizeBins(1000),
-             pnts = [],
+             pnts = [], gry = fp.gry(this.options.pos3d),
              p0 = drawbins[0];
 
          for (let n = 1; n < drawbins.length; ++n) {
             let p1 = drawbins[n];
-            pnts.push(fp.grx(p0.x), fp.gry(graph._3d_pos), fp.grz(p0.y),
-                      fp.grx(p1.x), fp.gry(graph._3d_pos), fp.grz(p1.y));
+            pnts.push(fp.grx(p0.x), gry, fp.grz(p0.y),
+                      fp.grx(p1.x), gry, fp.grz(p1.y));
             p0 = p1;
          }
 
@@ -1603,7 +1609,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          if (!pmain) return;
 
          // special mode for TMultiGraph 3d drawing
-         if (graph._3d_pos !== undefined)
+         if (this.options.pos3d)
             return this.drawGraph3D(pmain, graph);
 
          let is_gme = !!this.get_gme(),
@@ -3744,10 +3750,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             }
          }
 
-         let gr = graphs.arr[indx];
-         if (this._3d) gr._3d_pos = indx + 0.5;
+         let o = graphs.opt[indx] || opt || "";
+         if (this._3d) o += "pos3d_"+indx;
 
-         return JSROOT.draw(this.getDom(), gr, graphs.opt[indx] || opt).then(subp => {
+         return JSROOT.draw(this.getDom(), graphs.arr[indx], o).then(subp => {
             if (subp) this.painters.push(subp);
 
             return this.drawNextGraph(indx+1, opt);
