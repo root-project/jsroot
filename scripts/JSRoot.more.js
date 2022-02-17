@@ -2148,7 +2148,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
         * @desc allow to zoom TGraph only when at least one point in the range */
       canZoomInside(axis,min,max) {
          let gr = this.getObject();
-         if (!gr || (axis !== "x")) return false;
+         if (!gr || (axis !== (this.options.pos3d ? "y" : "x"))) return false;
 
          for (let n = 0; n < gr.fNpoints; ++n)
             if ((min < gr.fX[n]) && (gr.fX[n] < max)) return true;
@@ -2158,13 +2158,12 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       /** @summary Process click on graph-defined buttons */
       clickButton(funcname) {
-
          if (funcname !== "ToggleZoom") return false;
 
          let main = this.getFramePainter();
          if (!main) return false;
 
-         if ((this.xmin===this.xmax) && (this.ymin===this.ymax)) return false;
+         if ((this.xmin === this.xmax) && (this.ymin === this.ymax)) return false;
 
          main.zoom(this.xmin, this.xmax, this.ymin, this.ymax);
 
