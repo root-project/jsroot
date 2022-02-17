@@ -12,7 +12,7 @@ examples_main = {
      { opt: "E1" },
      { opt: "E1X0", title: "draw error markers, without horizontal part" },
      { opt: "P", title: "draw as markers" },
-     { name: "P0", title: "draw as markers, suppress empty bins" },
+     { opt: "P0", title: "draw as markers, suppress empty bins" },
      { name: "pE2", opt: "pE2_fill_11", title: "draw as marker, fill error area with grey color" },
      { name: "E3", item: "hpx;1", opt: "e3,fill_red" },
      { name: "E4", item: "hpx;1", opt: "e4,fill_blue" },
