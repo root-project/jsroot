@@ -525,8 +525,6 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
 
       this.setRootPadRange(pad, true); // set some coordinates typical for 3D projections in ROOT
 
-      if (opts.not_draw) return;
-
       let textMaterial = new THREE.MeshBasicMaterial({ color: 0x000000, vertexColors: false }),
           lineMaterial = new THREE.LineBasicMaterial({ color: 0x000000, vertexColors: false }),
           ticklen = textsize*0.5, lbls = [], text_scale = 1,
@@ -552,7 +550,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
             is_major = false; lbl = "";
          }
 
-         if (is_major && lbl && (lbl.length > 0)) {
+         if (is_major && lbl && (lbl.length > 0) && opts.draw) {
             let text3d = new THREE.TextGeometry(lbl, { font: JSROOT.HelveticerRegularFont, size: textsize, height: 0, curveSegments: 5 });
             text3d.computeBoundingBox();
             let draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
@@ -577,7 +575,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
          ticks.push(grx, 0, 0, grx, (is_major ? -ticklen : -ticklen * 0.6), 0);
       }
 
-      if (xaxis && xaxis.fTitle) {
+      if (xaxis && xaxis.fTitle && opts.draw) {
          const text3d = new THREE.TextGeometry(ltx.translateLaTeX(xaxis.fTitle), { font: JSROOT.HelveticerRegularFont, size: textsize, height: 0, curveSegments: 5 });
          text3d.computeBoundingBox();
          text3d.center = xaxis.TestBit(JSROOT.EAxisBits.kCenterTitle);
@@ -697,12 +695,15 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
          return mesh;
       };
 
-      let xcont = new THREE.Object3D();
+      let xcont = new THREE.Object3D(), xtickslines;
       xcont.position.set(0, grminy, grminz);
       xcont.rotation.x = 1/4*Math.PI;
       xcont.xyid = 2;
-      let xtickslines = jsrp.createLineSegments( ticks, lineMaterial );
-      xcont.add(xtickslines);
+
+      if (opts.draw) {
+         xtickslines = jsrp.createLineSegments( ticks, lineMaterial );
+         xcont.add(xtickslines);
+       }
 
       lbls.forEach(lbl => {
          let w = lbl.boundingBox.max.x - lbl.boundingBox.min.x,
@@ -725,9 +726,11 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
       xcont = new THREE.Object3D();
       xcont.position.set(0, grmaxy, grminz);
       xcont.rotation.x = 3/4*Math.PI;
-      xcont.add(new THREE.LineSegments(xtickslines.geometry, lineMaterial));
-      lbls.forEach(lbl => {
 
+      if (opts.draw)
+         xcont.add(new THREE.LineSegments(xtickslines.geometry, lineMaterial));
+
+      lbls.forEach(lbl => {
          let w = lbl.boundingBox.max.x - lbl.boundingBox.min.x,
              posx = lbl.center ? lbl.grx + w/2 : grmaxx,
              m = new THREE.Matrix4();
@@ -761,7 +764,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
             is_major = false; lbl = "";
          }
 
-         if (is_major) {
+         if (is_major && opts.draw) {
             const text3d = new THREE.TextGeometry(lbl, { font: JSROOT.HelveticerRegularFont, size: textsize, height: 0, curveSegments: 5 });
             text3d.computeBoundingBox();
             let draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
@@ -784,7 +787,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
          ticks.push(0,gry,0, (is_major ? -ticklen : -ticklen*0.6), gry, 0);
       }
 
-      if (yaxis && yaxis.fTitle) {
+      if (yaxis && yaxis.fTitle && opts.draw) {
          const text3d = new THREE.TextGeometry(ltx.translateLaTeX(yaxis.fTitle), { font: JSROOT.HelveticerRegularFont, size: textsize, height: 0, curveSegments: 5 });
          text3d.computeBoundingBox();
          text3d.center = yaxis.TestBit(JSROOT.EAxisBits.kCenterTitle);
@@ -794,12 +797,13 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
       }
 
       if (!opts.use_y_for_z) {
-         let yticksline = jsrp.createLineSegments(ticks, lineMaterial),
-             ycont = new THREE.Object3D();
+         let yticksline, ycont = new THREE.Object3D();
          ycont.position.set(grminx, 0, grminz);
          ycont.rotation.y = -1/4*Math.PI;
-         ycont.add(yticksline);
-         //ycont.add(new THREE.Mesh(ggg1, textMaterial));
+         if (opts.draw) {
+            yticksline = jsrp.createLineSegments(ticks, lineMaterial);
+            ycont.add(yticksline);
+         }
 
          lbls.forEach(lbl => {
 
@@ -824,8 +828,9 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
          ycont = new THREE.Object3D();
          ycont.position.set(grmaxx, 0, grminz);
          ycont.rotation.y = -3/4*Math.PI;
-         ycont.add(new THREE.LineSegments(yticksline.geometry, lineMaterial));
-         //ycont.add(new THREE.Mesh(ggg2, textMaterial));
+         if (opts.draw)
+            ycont.add(new THREE.LineSegments(yticksline.geometry, lineMaterial));
+
          lbls.forEach(lbl => {
             let w = lbl.boundingBox.max.x - lbl.boundingBox.min.x,
                 posy = lbl.center ? lbl.gry - w/2 : grmaxy - w,
@@ -863,7 +868,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
 
          if (lbl === null) { is_major = false; lbl = ""; }
 
-         if (is_major && lbl) {
+         if (is_major && lbl && opts.draw) {
             let text3d = new THREE.TextGeometry(lbl, { font: JSROOT.HelveticerRegularFont, size: textsize, height: 0, curveSegments: 5 });
             text3d.computeBoundingBox();
             let draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
@@ -924,7 +929,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
          top.add(lines2);
       }
 
-      let zcont = [], zticksline = jsrp.createLineSegments( ticks, lineMaterial );
+      let zcont = [], zticksline = opts.draw ? jsrp.createLineSegments( ticks, lineMaterial ) : null;
       for (let n = 0; n < 4; ++n) {
          zcont.push(new THREE.Object3D());
 
@@ -939,7 +944,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
             zcont[n].add(mesh);
          });
 
-         if (zaxis && zaxis.fTitle) {
+         if (zaxis && zaxis.fTitle && opts.draw) {
             let text3d = new THREE.TextGeometry(ltx.translateLaTeX(zaxis.fTitle), { font: JSROOT.HelveticerRegularFont, size: textsize, height: 0, curveSegments: 5 });
             text3d.computeBoundingBox();
             let draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
@@ -957,7 +962,8 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
             zcont[n].add(mesh);
          }
 
-         zcont[n].add(n==0 ? zticksline : new THREE.LineSegments(zticksline.geometry, lineMaterial));
+         if (opts.draw && zticksline)
+            zcont[n].add(n==0 ? zticksline : new THREE.LineSegments(zticksline.geometry, lineMaterial));
          if (opts.zoom) zcont[n].add(createZoomMesh("z", this.size_z3d, opts.use_y_for_z));
 
          zcont[n].zid = n + 2;
@@ -1403,7 +1409,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
             main.create3DScene(this.options.Render3D, this.options.x3dscale, this.options.y3dscale);
             main.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, 0, 0);
             main.set3DOptions(this.options);
-            main.drawXYZ(main.toplevel, { use_y_for_z: true, zmult: 1.1, zoom: JSROOT.settings.Zooming, ndim: 1, not_draw: this.options.Axis === -1 });
+            main.drawXYZ(main.toplevel, { use_y_for_z: true, zmult: 1.1, zoom: JSROOT.settings.Zooming, ndim: 1, draw: this.options.Axis !== -1 });
          }
 
          if (main.mode3d) {
@@ -1456,7 +1462,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
             main.create3DScene(this.options.Render3D, this.options.x3dscale, this.options.y3dscale);
             main.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, this.zmin, this.zmax);
             main.set3DOptions(this.options);
-            main.drawXYZ(main.toplevel, { zmult: zmult, zoom: JSROOT.settings.Zooming, ndim: 2, not_draw: this.options.Axis === -1 });
+            main.drawXYZ(main.toplevel, { zmult: zmult, zoom: JSROOT.settings.Zooming, ndim: 2, draw: this.options.Axis !== -1 });
          }
 
          if (main.mode3d) {
@@ -2788,7 +2794,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
             main.create3DScene(this.options.Render3D, this.options.x3dscale, this.options.y3dscale);
             main.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, this.zmin, this.zmax);
             main.set3DOptions(this.options);
-            main.drawXYZ(main.toplevel, { zoom: JSROOT.settings.Zooming, ndim: 3, not_draw: this.options.Axis === -1 });
+            main.drawXYZ(main.toplevel, { zoom: JSROOT.settings.Zooming, ndim: 3, draw: this.options.Axis !== -1 });
             promise = this.draw3DBins().then(() => {
                main.render3D();
                this.updateStatWebCanvas();
