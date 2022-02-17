@@ -26,6 +26,7 @@
 23. Support drawing of TGeo and TAxis3D objects inside TPad
 24. Implement "circular" and "chord" draw options for TH2
 25. Implement "3d" draw options for TMultiGraph
+26. Support "A" hist option (do not draw axis) with 3D plots
 
 
 ## Changes in 6.3.4

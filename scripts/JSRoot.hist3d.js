@@ -525,7 +525,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
 
       this.setRootPadRange(pad, true); // set some coordinates typical for 3D projections in ROOT
 
-      this.x_handle.debug = true;
+      if (opts.not_draw) return;
 
       let textMaterial = new THREE.MeshBasicMaterial({ color: 0x000000, vertexColors: false }),
           lineMaterial = new THREE.LineBasicMaterial({ color: 0x000000, vertexColors: false }),
@@ -1403,7 +1403,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
             main.create3DScene(this.options.Render3D, this.options.x3dscale, this.options.y3dscale);
             main.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, 0, 0);
             main.set3DOptions(this.options);
-            main.drawXYZ(main.toplevel, { use_y_for_z: true, zmult: 1.1, zoom: JSROOT.settings.Zooming, ndim: 1 });
+            main.drawXYZ(main.toplevel, { use_y_for_z: true, zmult: 1.1, zoom: JSROOT.settings.Zooming, ndim: 1, not_draw: this.options.Axis === -1 });
          }
 
          if (main.mode3d) {
@@ -1456,7 +1456,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
             main.create3DScene(this.options.Render3D, this.options.x3dscale, this.options.y3dscale);
             main.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, this.zmin, this.zmax);
             main.set3DOptions(this.options);
-            main.drawXYZ(main.toplevel, { zmult: zmult, zoom: JSROOT.settings.Zooming, ndim: 2 });
+            main.drawXYZ(main.toplevel, { zmult: zmult, zoom: JSROOT.settings.Zooming, ndim: 2, not_draw: this.options.Axis === -1 });
          }
 
          if (main.mode3d) {
@@ -2788,7 +2788,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
             main.create3DScene(this.options.Render3D, this.options.x3dscale, this.options.y3dscale);
             main.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, this.zmin, this.zmax);
             main.set3DOptions(this.options);
-            main.drawXYZ(main.toplevel, { zoom: JSROOT.settings.Zooming, ndim: 3 });
+            main.drawXYZ(main.toplevel, { zoom: JSROOT.settings.Zooming, ndim: 3, not_draw: this.options.Axis === -1 });
             promise = this.draw3DBins().then(() => {
                main.render3D();
                this.updateStatWebCanvas();
