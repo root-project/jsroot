@@ -25,6 +25,7 @@
 22. All internal JSROOT code rewritten as classes; one have to use class syntax to derive from it
 23. Support drawing of TGeo and TAxis3D objects inside TPad
 24. Implement "circular" and "chord" draw options for TH2
+25. Implement "3d" draw options for TMultiGraph
 
 
 ## Changes in 6.3.4
