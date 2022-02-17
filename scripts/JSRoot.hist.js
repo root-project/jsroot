@@ -1655,7 +1655,11 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          if (d.check('COL')) this.Color = true;
          if (d.check('CHAR')) this.Char = 1;
          if (d.check('FUNC')) { this.Func = true; this.Hist = false; }
-         if (d.check('AXIS3D')) { this.Axis = 1; this.Lego = 1; }
+         if (d.check('AXIS3D',true)) {
+            this.Axis = 1;
+            this.Lego = 1;
+            check3dbox = d.part;
+         }
          if (d.check('AXIS')) this.Axis = 1;
          if (d.check('AXIG')) this.Axis = 2;
 
