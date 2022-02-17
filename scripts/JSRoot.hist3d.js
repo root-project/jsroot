@@ -616,12 +616,8 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
          geom.setAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
          geom.computeVertexNormals();
 
-         let material = new THREE.MeshBasicMaterial({ transparent: true,
-                                   vertexColors: false,
-                                   side: THREE.DoubleSide,
-                                   opacity: 0 });
-
-         let mesh = new THREE.Mesh(geom, material);
+         let material = new THREE.MeshBasicMaterial({ transparent: true, vertexColors: false, side: THREE.DoubleSide, opacity: 0 }),
+             mesh = new THREE.Mesh(geom, material);
          mesh.zoom = kind;
          mesh.size_3d = size_3d;
          mesh.use_y_for_z = use_y_for_z;
@@ -739,10 +735,10 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
              posx = lbl.center ? lbl.grx + w/2 : grmaxx,
              m = new THREE.Matrix4();
          // matrix to swap y and z scales and shift along z to its position
-         m.set(-text_scale, 0,           0, posx,
-               0,           text_scale,  0, (-maxtextheight*text_scale - 1.5*ticklen) * (lbl.gry || 1),
-               0,           0,           -1, 0,
-               0,            0,           0, 1);
+         m.set(-text_scale, 0,          0, posx,
+               0,           text_scale, 0, (-maxtextheight*text_scale - 1.5*ticklen) * (lbl.gry || 1),
+               0,           0,         -1, 0,
+               0,           0,          0, 1);
          let mesh = new THREE.Mesh(lbl, textMaterial);
          mesh.applyMatrix4(m);
          xcont.add(mesh);

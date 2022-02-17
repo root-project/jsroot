@@ -629,11 +629,9 @@ JSROOT.define(['d3', 'three', 'painter'], (d3, THREE, jsrp) => {
                 pos1 = control.painter.get3dZoomCoord(control.mouse_zoom_mesh.point, kind),
                 pos2 = control.painter.get3dZoomCoord(control.mouse_zoom_mesh.point2, kind);
 
-            if (pos1>pos2) { let v = pos1; pos1 = pos2; pos2 = v; }
+            if (pos1 > pos2) { let v = pos1; pos1 = pos2; pos2 = v; }
 
-            if ((kind==="z") && control.mouse_zoom_mesh.object.use_y_for_z) kind="y";
-
-            if ((kind==="z") && control.mouse_zoom_mesh.object.use_y_for_z) kind="y";
+            if ((kind === "z") && control.mouse_zoom_mesh.object.use_y_for_z) kind = "y";
 
             // try to zoom
             if (pos1 < pos2)
