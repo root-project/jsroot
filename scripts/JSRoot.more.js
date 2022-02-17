@@ -3793,7 +3793,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          painter._plc = d.check("PLC");
          painter._pmc = d.check("PMC");
 
-         let hopt = "", checkhopt = ["USE_PAD_TITLE", "FB", "LOGXY", "LOGX", "LOGY", "LOGZ", "GRIDXY", "GRIDX", "GRIDY", "TICKXY", "TICKX", "TICKY"];
+         let hopt = "", checkhopt = ["USE_PAD_TITLE", "LOGXY", "LOGX", "LOGY", "LOGZ", "GRIDXY", "GRIDX", "GRIDY", "TICKXY", "TICKX", "TICKY", "FB"];
          checkhopt.forEach(name => { if (d.check(name)) hopt += ";" + name; });
 
          let promise = Promise.resolve(painter);

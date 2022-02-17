@@ -1530,7 +1530,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          if (d.check('X3DSC', true)) this.x3dscale = d.partAsInt(0, 100) / 100;
          if (d.check('Y3DSC', true)) this.y3dscale = d.partAsInt(0, 100) / 100;
 
-         let lx = false, ly = false, check3dbox = "";
+         let lx = false, ly = false, check3dbox = "", check3d = (hdim == 3);
          if (d.check('LOGXY')) lx = ly = true;
          if (d.check('LOGX')) lx = true;
          if (d.check('LOGY')) ly = true;
@@ -1635,8 +1635,10 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          }
 
          // decode bar/hbar option
-         if (d.check('HBAR', true)) this.BarStyle = 20; else
-         if (d.check('BAR', true)) this.BarStyle = 10;
+         if (d.check('HBAR', true))
+            this.BarStyle = 20;
+         else if (d.check('BAR', true))
+            this.BarStyle = 10;
          if (this.BarStyle > 0) {
             this.Hist = false;
             this.need_fillcol = true;
@@ -1655,11 +1657,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          if (d.check('COL')) this.Color = true;
          if (d.check('CHAR')) this.Char = 1;
          if (d.check('FUNC')) { this.Func = true; this.Hist = false; }
-         if (d.check('AXIS3D',true)) {
-            this.Axis = 1;
-            this.Lego = 1;
-            check3dbox = d.part;
-         }
+         if (d.check('AXIS3D')) { this.Axis = 1; this.Lego = 1; check3d = true; }
          if (d.check('AXIS')) this.Axis = 1;
          if (d.check('AXIG')) this.Axis = 2;
 
@@ -1705,8 +1703,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             if (check3dbox.indexOf('BB') >= 0) this.BackBox = false;
          }
 
-         if ((hdim==3) && d.check('FB')) this.FrontBox = false;
-         if ((hdim==3) && d.check('BB')) this.BackBox = false;
+         if (check3d && d.check('FB')) this.FrontBox = false;
+         if (check3d && d.check('BB')) this.BackBox = false;
 
          this._pfc = d.check("PFC");
          this._plc = d.check("PLC") || this.AutoColor;
