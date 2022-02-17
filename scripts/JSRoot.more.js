@@ -3597,7 +3597,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       scanGraphsRange(graphs, histo, pad) {
          let mgraph = this.getObject(),
              maximum, minimum, dx, dy, uxmin = 0, uxmax = 0, logx = false, logy = false,
-             time_display = false, time_format = "",
+             time_display = false, time_format = "", xtitle = "", ytitle = "",
              rw = {  xmin: 0, xmax: 0, ymin: 0, ymax: 0, first: true };
 
          if (pad) {
@@ -3609,6 +3609,13 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             rw.ymax = pad.fUymax;
             rw.first = false;
          }
+
+         if (this._3d && histo && !histo.fXaxis.fLabels) {
+            xtitle = histo.fXaxis.fTitle;
+            ytitle = histo.fYaxis.fTitle;
+            histo = null;
+         }
+
          if (histo) {
             minimum = histo.fYaxis.fXmin;
             maximum = histo.fYaxis.fXmax;
@@ -3693,7 +3700,9 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                   lbl.fUniqueID = graphs.arr.length - i; // graphs drawn in reverse order
                   xaxis.fLabels.Add(lbl, "");
                }
+               histo.fZaxis.fTitle = ytitle;
                xaxis = histo.fYaxis;
+               xaxis.fTitle = xtitle;
             } else {
                histo = JSROOT.create("TH1I");
                xaxis = histo.fXaxis;
