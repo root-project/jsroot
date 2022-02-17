@@ -1,5 +1,6 @@
 examples_more = {
    TH1: [
+     { opt: "axis", file: "hsimple.root", item: "hpx;1", title: "draw only histogram axis" },
      { name: "docu_zero", file: "histpainter6.root", layout: "vert21", style: "style_zero", items: ['draw_bar','draw_zero2','draw_zero1'], title: "show gStyle->SetHistMinimumZero(); functionality from THistPainter documentation page" },
      { name: "varbins", file: "hbins.root", item: "SpectraPions;1", title: "variable bins" },
      { name: "labels", opt: "hist", file: "hitmap.root", item: "EnergyMeanAsyLo;1", title: "custom text labels for hist bins" },
@@ -12,6 +13,8 @@ examples_more = {
      { name: "tut4", file: "tutorials_hist.root", layout: "grid2x2", items: ['thstackpalettecolor', 'statsEditing', 'testSmooth',  'xyplot'], opts: ['pfc nostack'], title: "Macro outputs from $ROOTSYS/tutorials/hist" }
    ],
    TH2: [
+     { opt: "axis", file: "hsimple.root", item: "hpxpy;1", title: "Draw only axis histogram" },
+     { opt: "axis3d", title: "Draw only axis histogram in 3D mode" },
      { name: "hitmap", file: "hitmap.root", item: "HitMap;1" },
      { name: "atlas", opt: "col", file: "atlas.root", item: "LEDShapeHeightCorr_Gain0;1" },
      { name: "logx", opt: "colz", file: "QAresults.root", item: "PIDqa/PIDqa1/ITS/hNsigmaP_ITS_electron;1" },

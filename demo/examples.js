@@ -1,8 +1,6 @@
 examples_main = {
    TH1 : [
      { opt: "", file: "hsimple.root", item: "hpx;1" },
-     { opt: "P" },
-     { opt: "P0" },
      { name: "star", opt:"*", title: "draw stars on histogram bins" },
      { name: "*H", opt:"*H", title: "draw stars and histogram itself" },
      { opt: "L", title: "draw histogram as line" },
@@ -13,7 +11,9 @@ examples_main = {
      { opt: "E0", title: "draw errors, also for empty bins" },
      { opt: "E1" },
      { opt: "E1X0", title: "draw error markers, without horizontal part" },
-     { opt: "pE2" },
+     { opt: "P", title: "draw as markers" },
+     { name: "P0", title: "draw as markers, suppress empty bins" },
+     { name: "pE2", opt: "pE2_fill_11", title: "draw as marker, fill error area with grey color" },
      { name: "E3", opt: "e3,fill_red" },
      { name: "E4", opt: "e4,fill_blue" },
      { name: "text", opt: "hist,text" },
