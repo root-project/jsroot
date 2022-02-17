@@ -897,7 +897,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          if (d.check('NOOPT')) res.NoOpt = 1;
 
-         if (d.check("POS3D_", true)) res.pos3d = d.partAsInt() + 0.5;
+         if (d.check("POS3D_", true)) res.pos3d = d.partAsInt() - 0.5;
 
          res._pfc = d.check("PFC");
          res._plc = d.check("PLC");
@@ -1580,26 +1580,26 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          if (!jsrp.createLineSegments || !jsrp.create3DLineMaterial)
             return console.log('Missing base3d functionality');
 
-         if (fp.zoom_ymin != fp.zoom_ymax)
-           if ((this.options.pos3d < fp.zoom_ymin) || (this.options.pos3d > fp.zoom_ymax)) return;
+         if (fp.zoom_xmin != fp.zoom_xmax)
+           if ((this.options.pos3d < fp.zoom_xmin) || (this.options.pos3d > fp.zoom_xmax)) return;
 
          let drawbins = this.optimizeBins(1000),
              first = 0, last = drawbins.length-1;
 
-         if (fp.zoom_xmin != fp.zoom_xmax) {
-            while ((first < last) && (drawbins[first].x < fp.zoom_xmin)) first++;
-            while ((first < last) && (drawbins[last].x > fp.zoom_xmax)) last--;
+         if (fp.zoom_ymin != fp.zoom_ymax) {
+            while ((first < last) && (drawbins[first].x < fp.zoom_ymin)) first++;
+            while ((first < last) && (drawbins[last].x > fp.zoom_ymax)) last--;
          }
 
          if (first == last) return;
 
-         let pnts = [], gry = fp.gry(this.options.pos3d),
+         let pnts = [], grx = fp.grx(this.options.pos3d),
              p0 = drawbins[first];
 
          for (let n = first + 1; n <= last; ++n) {
             let p1 = drawbins[n];
-            pnts.push(fp.grx(p0.x), gry, fp.grz(p0.y),
-                      fp.grx(p1.x), gry, fp.grz(p1.y));
+            pnts.push(grx, fp.gry(p0.x), fp.grz(p0.y),
+                      grx, fp.gry(p1.x), fp.grz(p1.y));
             p0 = p1;
          }
 
@@ -2148,7 +2148,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
         * @desc allow to zoom TGraph only when at least one point in the range */
       canZoomInside(axis,min,max) {
          let gr = this.getObject();
-         if (!gr || (axis !== "x")) return false;
+         if (!gr || (axis !== (this.options.pos3d ? "y" : "x"))) return false;
 
          for (let n = 0; n < gr.fNpoints; ++n)
             if ((min < gr.fX[n]) && (gr.fX[n] < max)) return true;
@@ -3609,10 +3609,6 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             rw.ymax = pad.fUymax;
             rw.first = false;
          }
-
-         // cannot use histogram from standard ROOT painter
-         if (this._3d && histo && histo._typename.indexOf("TH1") == 0) histo = null;
-
          if (histo) {
             minimum = histo.fYaxis.fXmin;
             maximum = histo.fYaxis.fXmax;
@@ -3683,26 +3679,30 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          // Create a temporary histogram to draw the axis (if necessary)
          if (!histo) {
+            let xaxis;
             if (this._3d) {
                histo = JSROOT.create("TH2I");
-               histo.fYaxis.fXmin = 0;
-               histo.fYaxis.fXmax = graphs.arr.length;
-               histo.fYaxis.fNbins = graphs.arr.length;
-               histo.fYaxis.fLabels = JSROOT.create("THashList");
+               xaxis = histo.fXaxis;
+               xaxis.fXmin = 0;
+               xaxis.fXmax = graphs.arr.length;
+               xaxis.fNbins = graphs.arr.length;
+               xaxis.fLabels = JSROOT.create("THashList");
                for (let i = 0; i < graphs.arr.length; i++) {
                   let lbl = JSROOT.create("TObjString");
-                  lbl.fString = graphs.arr[i].fTitle || `#${i}`;
-                  lbl.fUniqueID = i+1; // graphs drawn in reverse order
-                  histo.fYaxis.fLabels.Add(lbl, "");
+                  lbl.fString = graphs.arr[i].fTitle || `gr${i}`;
+                  lbl.fUniqueID = graphs.arr.length - i; // graphs drawn in reverse order
+                  xaxis.fLabels.Add(lbl, "");
                }
+               xaxis = histo.fYaxis;
             } else {
                histo = JSROOT.create("TH1I");
+               xaxis = histo.fXaxis;
             }
             histo.fTitle = mgraph.fTitle;
-            histo.fXaxis.fXmin = uxmin;
-            histo.fXaxis.fXmax = uxmax;
-            histo.fXaxis.fTimeDisplay = time_display;
-            if (time_display) histo.fXaxis.fTimeFormat = time_format;
+            xaxis.fXmin = uxmin;
+            xaxis.fXmax = uxmax;
+            xaxis.fTimeDisplay = time_display;
+            if (time_display) xaxis.fTimeFormat = time_format;
          }
 
          if (this._3d) {
@@ -3764,7 +3764,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          }
 
          let o = graphs.opt[indx] || opt || "";
-         if (this._3d) o += "pos3d_"+indx;
+         if (this._3d) o += "pos3d_"+(graphs.arr.length - indx);
 
          return JSROOT.draw(this.getDom(), graphs.arr[indx], o).then(subp => {
             if (subp) this.painters.push(subp);
