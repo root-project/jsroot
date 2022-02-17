@@ -1572,7 +1572,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                     .style("fill","none");
       }
 
-      drawGraph3D(fp, graph) {
+      drawBins3D(fp, graph) {
 
          if (!fp.mode3d || !fp.grx || !fp.gry || !fp.grz || !fp.toplevel)
             return console.log('Frame painter missing base 3d elements');
@@ -1584,10 +1584,19 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
            if ((this.options.pos3d < fp.zoom_xmin) || (this.options.pos3d > fp.zoom_xmax)) return;
 
          let drawbins = this.optimizeBins(1000),
-             pnts = [], grx = fp.grx(this.options.pos3d),
-             p0 = drawbins[0];
+             first = 0, last = drawbins.length-1;
 
-         for (let n = 1; n < drawbins.length; ++n) {
+         if (fp.zoom_ymin != fp.zoom_ymax) {
+            while ((first < last) && (drawbins[first].x < fp.zoom_ymin)) first++;
+            while ((first < last) && (drawbins[last].x > fp.zoom_ymax)) last--;
+         }
+
+         if (first == last) return;
+
+         let pnts = [], grx = fp.grx(this.options.pos3d),
+             p0 = drawbins[first];
+
+         for (let n = first + 1; n <= last; ++n) {
             let p1 = drawbins[n];
             pnts.push(grx, fp.gry(p0.x), fp.grz(p0.y),
                       grx, fp.gry(p1.x), fp.grz(p1.y));
@@ -1610,7 +1619,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          // special mode for TMultiGraph 3d drawing
          if (this.options.pos3d)
-            return this.drawGraph3D(pmain, graph);
+            return this.drawBins3D(pmain, graph);
 
          let is_gme = !!this.get_gme(),
              funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),

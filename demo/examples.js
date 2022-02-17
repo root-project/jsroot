@@ -252,7 +252,7 @@ examples_main = {
    ],
    TMultiGraph : [
      { name: "exclusion", file: "graph.root", item: "exclusion;1" },
-     { name: "c1", file: "multigraph.root", item: "c1;1" },
+     { name: "3d", file: "multigraph.root", item: "c1;1", title: "3d mode, see https://root.cern/doc/master/classTMultiGraph.html" },
      { name: "c2", item: "c2;1" },
      { name: "c3", item: "c3;1" },
      { name: "c4", item: "c4;1" },
