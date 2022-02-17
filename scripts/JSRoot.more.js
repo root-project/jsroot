@@ -3636,16 +3636,34 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          // Create a temporary histogram to draw the axis (if necessary)
          if (!histo) {
-            histo = JSROOT.create("TH1I");
+            histo = this._3d ? JSROOT.create("TH2I") : JSROOT.create("TH1I");
             histo.fTitle = mgraph.fTitle;
             histo.fXaxis.fXmin = uxmin;
             histo.fXaxis.fXmax = uxmax;
             histo.fXaxis.fTimeDisplay = time_display;
             if (time_display) histo.fXaxis.fTimeFormat = time_format;
-        }
 
-         histo.fYaxis.fXmin = minimum;
-         histo.fYaxis.fXmax = maximum;
+            if (this._3d) {
+               histo.fYaxis.fXmin = 0;
+               histo.fYaxis.fXmax = graphs.arr.length;
+               histo.fYaxis.fNbins = graphs.arr.length;
+               histo.fYaxis.fLabels = JSROOT.create("THashList");
+               for (let i = 0; i < graphs.arr.length; i++) {
+                  let lbl = JSROOT.create("TObjString");
+                  lbl.fString = graphs.arr[i].fTitle || `gr${i}`;
+                  lbl.fUniqueID = i+1;
+                  histo.fYaxis.fLabels.Add(lbl, "");
+               }
+            }
+         }
+
+         if (this._3d) {
+            histo.fMinimum = minimum;
+            histo.fMaximum = maximum;
+         } else {
+            histo.fYaxis.fXmin = minimum;
+            histo.fYaxis.fXmax = maximum;
+         }
 
          return histo;
       }
@@ -3660,7 +3678,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          // histogram painter will be first in the pad, will define axis and
          // interactive actions
-         return JSROOT.draw(this.getDom(), histo, "AXIS" + hopt);
+         return JSROOT.draw(this.getDom(), histo, (this._3d ? "AXIS3D" : "AXIS") + hopt);
       }
 
       /** @summary method draws next function from the functions list  */
@@ -3677,6 +3695,8 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
       /** @summary method draws next graph  */
       drawNextGraph(indx, opt) {
+
+         if (this._3d) return this;
 
          let graphs = this.getObject().fGraphs;
 
@@ -3710,13 +3730,12 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
          let painter = new TMultiGraphPainter(dom, mgraph),
              d = new JSROOT.DrawOptions(opt);
 
-         d.check("3D"); d.check("FB"); // no 3D supported, FB not clear
-
+         painter._3d = d.check("3D");
          painter._pfc = d.check("PFC");
          painter._plc = d.check("PLC");
          painter._pmc = d.check("PMC");
 
-         let hopt = "", checkhopt = ["USE_PAD_TITLE", "LOGXY", "LOGX", "LOGY", "LOGZ", "GRIDXY", "GRIDX", "GRIDY", "TICKXY", "TICKX", "TICKY"];
+         let hopt = "", checkhopt = ["USE_PAD_TITLE", "FB", "LOGXY", "LOGX", "LOGY", "LOGZ", "GRIDXY", "GRIDX", "GRIDY", "TICKXY", "TICKX", "TICKY"];
          checkhopt.forEach(name => { if (d.check(name)) hopt += ";" + name; });
 
          let promise = Promise.resolve(painter);
