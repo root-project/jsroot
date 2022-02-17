@@ -1,6 +1,5 @@
 examples_more = {
    TH1: [
-     { opt: "axis", file: "hsimple.root", item: "hpx;1", title: "draw only histogram axis" },
      { name: "docu_zero", file: "histpainter6.root", layout: "vert21", style: "style_zero", items: ['draw_bar','draw_zero2','draw_zero1'], title: "show gStyle->SetHistMinimumZero(); functionality from THistPainter documentation page" },
      { name: "varbins", file: "hbins.root", item: "SpectraPions;1", title: "variable bins" },
      { name: "labels", opt: "hist", file: "hitmap.root", item: "EnergyMeanAsyLo;1", title: "custom text labels for hist bins" },
