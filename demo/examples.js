@@ -252,12 +252,12 @@ examples_main = {
    ],
    TMultiGraph : [
      { name: "exclusion", file: "graph.root", item: "exclusion;1" },
-     { name: "3d", file: "multigraph.root", item: "c1;1", title: "3d mode, see https://root.cern/doc/master/classTMultiGraph.html" },
+     { name: "c1", file: "multigraph.root", item: "c1;1", title: "3d mode, see https://root.cern/doc/master/classTMultiGraph.html" },
      { name: "c2", item: "c2;1" },
      { name: "c3", item: "c3;1" },
      { name: "c4", item: "c4;1" },
      { name: "c5", item: "c5;1" },
-     { name: "all", url: "?nobrowser&file=$$$multigraph.root&layout=grid3x2&items=[c1,c2,c3,c4,c5]" }
+     { name: "3d", file: "multigraph_3d.root", item: "c2_514;1", title: "3d mode with extra TPolyLine3D" }
    ],
    TGraph2D : [
       { opt: "", file: "graph2d.root", item: "Graph2D", title: "example of TGraph2D" },

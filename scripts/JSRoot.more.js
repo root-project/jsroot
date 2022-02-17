@@ -3597,7 +3597,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
       scanGraphsRange(graphs, histo, pad) {
          let mgraph = this.getObject(),
              maximum, minimum, dx, dy, uxmin = 0, uxmax = 0, logx = false, logy = false,
-             time_display = false, time_format = "", xtitle = "", ytitle = "",
+             time_display = false, time_format = "",
              rw = {  xmin: 0, xmax: 0, ymin: 0, ymax: 0, first: true };
 
          if (pad) {
@@ -3610,11 +3610,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
             rw.first = false;
          }
 
-         if (this._3d && histo && !histo.fXaxis.fLabels) {
-            xtitle = histo.fXaxis.fTitle;
-            ytitle = histo.fYaxis.fTitle;
-            histo = null;
-         }
+         if (this._3d && histo && !histo.fXaxis.fLabels) histo = null;
 
          if (histo) {
             minimum = histo.fYaxis.fXmin;
@@ -3686,7 +3682,7 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
 
          // Create a temporary histogram to draw the axis (if necessary)
          if (!histo) {
-            let xaxis;
+            let xaxis, yaxis;
             if (this._3d) {
                histo = JSROOT.create("TH2I");
                xaxis = histo.fXaxis;
@@ -3700,14 +3696,21 @@ JSROOT.define(['d3', 'painter', 'gpad'], (d3, jsrp) => {
                   lbl.fUniqueID = graphs.arr.length - i; // graphs drawn in reverse order
                   xaxis.fLabels.Add(lbl, "");
                }
-               histo.fZaxis.fTitle = ytitle;
                xaxis = histo.fYaxis;
-               xaxis.fTitle = xtitle;
+               yaxis = histo.fZaxis;
             } else {
                histo = JSROOT.create("TH1I");
                xaxis = histo.fXaxis;
+               yaxis = histo.fYaxis;
             }
             histo.fTitle = mgraph.fTitle;
+            if (histo.fTitle.indexOf(";") >= 0) {
+               let t = histo.fTitle.split(";");
+               histo.fTitle = t[0];
+               if (t[1]) xaxis.fTitle = t[1];
+               if (t[2]) yaxis.fTitle = t[2];
+            }
+
             xaxis.fXmin = uxmin;
             xaxis.fXmax = uxmax;
             xaxis.fTimeDisplay = time_display;

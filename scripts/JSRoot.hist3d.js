@@ -82,7 +82,7 @@ JSROOT.define(['d3', 'painter', 'base3d', 'latex', 'hist'], (d3, jsrp, THREE, lt
             fp.camera_Theta = pad.fTheta;
             max3dx = 3*Math.max(fp.size_x3d, fp.size_z3d);
             max3dy = 3*Math.max(fp.size_y3d, fp.size_z3d);
-            let phi = (270-pad.fPhi)/180*Math.PI, theta = (pad.fTheta-15)/180*Math.PI;
+            let phi = (270-pad.fPhi)/180*Math.PI, theta = (pad.fTheta-10)/180*Math.PI;
             fp.camera.position.set(max3dx*Math.cos(phi)*Math.cos(theta),
                                    max3dy*Math.sin(phi)*Math.cos(theta),
                                    fp.size_z3d + (max3dx+max3dy)*0.5*Math.sin(theta));
