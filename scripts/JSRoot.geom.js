@@ -4309,8 +4309,8 @@ JSROOT.define(['d3', 'three', 'geobase', 'painter', 'base3d'], (d3, THREE, geo, 
       }
 
        /** @summary Redraw TGeo object inside TPad */
-      redraw(reason) {
-         if (!this._on_pad || (reason != "resize")) return;
+      redraw() {
+         if (!this._on_pad) return;
 
          let main = this.getFramePainter();
          if (!main) return;
