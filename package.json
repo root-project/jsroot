@@ -6,7 +6,8 @@
   },
   "description": "JavaScript ROOT",
   "homepage": "https://root.cern/js/",
-  "main": "./scripts/JSRoot.core.js",
+  "module": "scripts/JSRoot.core.js",
+  "main": "scripts/JSRoot.core.js",
   "contributors": [
     {
       "name": "Bertrand Bellenot",

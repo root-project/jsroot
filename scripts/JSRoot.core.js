@@ -1,7 +1,7 @@
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, 'node') :
 typeof define === 'function' && define.amd ? define(['exports'], factory) :
-(global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.JSROOT = global.JSROOT || {}), 'plain');
+(global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.JSROOT = global.JSROOT || {}, 'plain'));
 })(this, (function (exports, export_kind) { 'use strict';
 
 /** @summary JSROOT version id
@@ -244,7 +244,7 @@ let settings = {
    /** @summary Default color palette id  */
    Palette: 57,
    /** @summary Configures Latex usage, see {@link JSROOT.constants.Latex} for possible values */
-   Latex: JSROOT.constants.Latex.Normal,
+   Latex: constants.Latex.Normal,
    /** @summary Grads per segment in TGeo spherical shapes like tube */
    GeoGradPerSegm: 6,
    /** @summary Enables faces compression after creation of composite shape  */
