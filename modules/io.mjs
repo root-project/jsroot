@@ -1848,23 +1848,23 @@ class TFile {
 
          read_key = key;
 
-         return this.readObjBuffer(key);
-      }).then(buf => {
+         return this.readObjBuffer(key).then(buf => {
 
-         if (isdir) {
-            let dir = new TDirectory(this, obj_name, cycle);
-            dir.fTitle = read_key.fTitle;
-            return dir.readKeys(buf);
-         }
+            if (isdir) {
+               let dir = new TDirectory(this, obj_name, cycle);
+               dir.fTitle = read_key.fTitle;
+               return dir.readKeys(buf);
+            }
 
-         let obj = {};
-         buf.mapObject(1, obj); // tag object itself with id==1
-         buf.classStreamer(obj, read_key.fClassName);
+            let obj = {};
+            buf.mapObject(1, obj); // tag object itself with id==1
+            buf.classStreamer(obj, read_key.fClassName);
 
-         if ((read_key.fClassName === 'TF1') || (read_key.fClassName === 'TF2'))
-            return this._readFormulas(obj);
+            if ((read_key.fClassName === 'TF1') || (read_key.fClassName === 'TF2'))
+               return this._readFormulas(obj);
 
-         return this._postProcessRead(obj);
+            return this._postProcessRead(obj);
+         });
       });
    }
 
