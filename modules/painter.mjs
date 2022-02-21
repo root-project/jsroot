@@ -1,10 +1,9 @@
-JSROOT.loadScript('$$$style/JSRoot.painter');
 
 import * as d3 from './d3.mjs';
 
-console.log('d3.select', typeof d3.select)
 
-// import('./d3.min.js').then(handle => console.log('d3 handle', handle));
+// TODO: load it in deifferent time
+JSROOT.loadScript('$$$style/JSRoot.painter');
 
 // ==========================================================================================
 
