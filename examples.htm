@@ -527,7 +527,7 @@
 
          }; // FillContent
 
-         JSROOT.httpRequest(demo_path + 'examples.js','text').then(txt => {
+         JSROOT.httpRequest(demo_path + 'examples.json','text').then(txt => {
             examples_main = JSON.parse(txt);
             if (window.location.search.indexOf("?more") != 0)
                return FillContent();
