@@ -375,7 +375,116 @@ _.get_document = function() {
    return udefined;
 }
 
-async function jsroot_require(need, factoryFunc) {
+/** @summary Load script or CSS file into the browser
+  * @param {String} url - script or css file URL (or array, in this case they all loaded secuentially)
+  * @returns {Promise} */
+function loadScript(url) {
+   if (!url)
+      return Promise.resolve(true);
+
+   if (typeof url != 'string') {
+      let scripts = url, loadNext = () => {
+         if (!scripts.length) return Promise.resolve(true);
+         return JSROOT.loadScript(scripts.shift()).then(loadNext, loadNext);
+      };
+      return loadNext();
+   }
+
+   if (url.indexOf("$$$")===0) {
+      url = url.slice(3);
+      if ((url.indexOf("style/")==0) && (url.indexOf('.css') < 0))
+         url += _.source_min ? '.min.css' : ".css";
+      url = JSROOT.source_dir + url;
+   }
+
+   let element, isstyle = url.indexOf(".css") > 0;
+
+   if (JSROOT.nodejs) {
+      let res = null;
+      if (!isstyle) {
+         if ((url.indexOf("http:") == 0) || (url.indexOf("https:") == 0))
+            return JSROOT.httpRequest(url,"text").then(txt => eval(txt));
+         res = require(url);
+      }
+
+      return Promise.resolve(res);
+   }
+
+   const match_url = src => {
+      if (src == url) return true;
+      let indx = src.indexOf(url);
+      return (indx > 0) && (indx + url.length == src.length) && (src[indx-1] == "/");
+   };
+
+   if (isstyle) {
+      let styles = document.getElementsByTagName('link');
+      for (let n = 0; n < styles.length; ++n) {
+         if (!styles[n].href || (styles[n].type !== 'text/css') || (styles[n].rel !== 'stylesheet')) continue;
+         if (match_url(styles[n].href))
+            return Promise.resolve();
+      }
+
+   } else {
+      let scripts = document.getElementsByTagName('script');
+      for (let n = 0; n < scripts.length; ++n)
+         if (match_url(scripts[n].src))
+            return Promise.resolve();
+   }
+
+   if (isstyle) {
+      element = document.createElement("link");
+      element.setAttribute("rel", "stylesheet");
+      element.setAttribute("type", "text/css");
+      element.setAttribute("href", url);
+   } else {
+      element = document.createElement("script");
+      element.setAttribute("type", "text/javascript");
+      element.setAttribute("src", url);
+   }
+
+   return new Promise((resolve, reject) => {
+      element.onload = () => resolve(true);
+      element.onerror = () => { element.remove(); reject(Error(`Fail to load ${url}`)); };
+      document.getElementsByTagName("head")[0].appendChild(element);
+   });
+}
+
+async function jsroot_require(need) {
+   if (!need)
+      return Promise.resolve(null);
+
+   if (typeof need == "string") need = need.split(";");
+
+   need.forEach((name,indx) => {
+      if ((name.indexOf("load:")==0) || (name.indexOf("user:")==0))
+         need[indx] = name.substr(5);
+      else if (name == "2d")
+         need[indx] = "painter";
+      else if ((name == "jq2d") || (name == "jq"))
+         need[indx] = "hierarchy";
+      else if (name == "v6")
+         need[indx] = "gpad";
+      else if (name == "v7")
+         need[indx] = "v7gpad";
+   });
+
+   let arr = [];
+
+   need.forEach(name => {
+      if (name == "hist")
+         arr.push(import("../modules/hist.mjs"));
+      else if (name == "latex")
+         arr.push(import("../modules/latex.mjs").then(handle => handle.ltx));
+   });
+
+   if (arr.length == 1)
+      return arr[0];
+
+   return Promise.all(arr);
+}
+
+
+async function jsroot_require_old(need, factoryFunc) {
 
    if (!need && !factoryFunc)
       return Promise.resolve(null);
@@ -397,6 +506,9 @@ async function jsroot_require(need, factoryFunc) {
 
    // remove duplicates
    need = need.filter((name, pos) => name && (need.indexOf(name) == pos));
+
+
+   console.log('need', need);
 
    // loading with require.js
 
@@ -1197,81 +1309,6 @@ function httpRequest(url, kind, post_data) {
    });
 }
 
-/** @summary Load script or CSS file into the browser
-  * @desc Normal JSROOT functionality should be loaded via {@link JSROOT.require} method
-  * @param {String} url - script or css file URL (or array, in this case they all loaded secuentially)
-  * @returns {Promise} */
-function loadScript(url) {
-   if (!url)
-      return Promise.resolve(true);
-
-   if (typeof url != 'string') {
-      let scripts = url, loadNext = () => {
-         if (!scripts.length) return Promise.resolve(true);
-         return JSROOT.loadScript(scripts.shift()).then(loadNext, loadNext);
-      };
-      return loadNext();
-   }
-
-   if (url.indexOf("$$$")===0) {
-      url = url.slice(3);
-      if ((url.indexOf("style/")==0) && (url.indexOf('.css') < 0))
-         url += _.source_min ? '.min.css' : ".css";
-      url = JSROOT.source_dir + url;
-   }
-
-   let element, isstyle = url.indexOf(".css") > 0;
-
-   if (JSROOT.nodejs) {
-      let res = null;
-      if (!isstyle) {
-         if ((url.indexOf("http:") == 0) || (url.indexOf("https:") == 0))
-            return JSROOT.httpRequest(url,"text").then(txt => eval(txt));
-         res = require(url);
-      }
-
-      return Promise.resolve(res);
-   }
-
-   const match_url = src => {
-      if (src == url) return true;
-      let indx = src.indexOf(url);
-      return (indx > 0) && (indx + url.length == src.length) && (src[indx-1] == "/");
-   };
-
-   if (isstyle) {
-      let styles = document.getElementsByTagName('link');
-      for (let n = 0; n < styles.length; ++n) {
-         if (!styles[n].href || (styles[n].type !== 'text/css') || (styles[n].rel !== 'stylesheet')) continue;
-         if (match_url(styles[n].href))
-            return Promise.resolve();
-      }
-
-   } else {
-      let scripts = document.getElementsByTagName('script');
-      for (let n = 0; n < scripts.length; ++n)
-         if (match_url(scripts[n].src))
-            return Promise.resolve();
-   }
-
-   if (isstyle) {
-      element = document.createElement("link");
-      element.setAttribute("rel", "stylesheet");
-      element.setAttribute("type", "text/css");
-      element.setAttribute("href", url);
-   } else {
-      element = document.createElement("script");
-      element.setAttribute("type", "text/javascript");
-      element.setAttribute("src", url);
-   }
-
-   return new Promise((resolve, reject) => {
-      element.onload = () => resolve(true);
-      element.onerror = () => { element.remove(); reject(Error(`Fail to load ${url}`)); };
-      document.getElementsByTagName("head")[0].appendChild(element);
-   });
-}
-
 // Open ROOT file, defined in io.mjs
 function openFile(filename) {
    return import("../modules/io.mjs").then(handle => handle.openFile(filename));
@@ -1279,7 +1316,7 @@ function openFile(filename) {
 
 // Draw object, defined in JSRoot.painter.js
 function draw(dom, obj, opt) {
-   return jsroot_require("painter").then(() => JSROOT.draw(dom, obj, opt));
+   return import("../modules/painter.mjs").then(handle => handle.draw(dom, obj, opt));
 }
 
 // Redaraw object, defined in JSRoot.painter.js
@@ -1292,7 +1329,7 @@ function cleanup() {}
 
 // Create SVG, defined in JSRoot.painter.js
 function makeSVG(args) {
-   return jsroot_require("painter").then(() => JSROOT.makeSVG(args));
+   return import("../modules/painter.mjs").then(handle => handle.makeSVG(args));
 }
 
 /** @summary Method to build main JSROOT GUI
