@@ -1,4 +1,4 @@
-examples_more = {
+{
    TH1: [
      { name: "docu_zero", file: "histpainter6.root", layout: "vert21", style: "style_zero", items: ['draw_bar','draw_zero2','draw_zero1'], title: "show gStyle->SetHistMinimumZero(); functionality from THistPainter documentation page" },
      { name: "varbins", file: "hbins.root", item: "SpectraPions;1", title: "variable bins" },
@@ -224,4 +224,4 @@ examples_more = {
      { name: "crown", file: "tutorials_graphics.root", item: 'crown',  title: "TCrown, tutorials/graphics/crown.C" },
      { name: "zstd", file: "zstd.root", item: 'ccdb_object', zstd: true, title: "File with ZSTD compression, required zstd-codec.js script" }
    ]
-};
+}

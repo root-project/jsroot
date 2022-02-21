@@ -475,6 +475,8 @@ async function jsroot_require(need) {
          arr.push(import("../modules/hist.mjs"));
       else if (name == "latex")
          arr.push(import("../modules/latex.mjs").then(handle => handle.ltx));
+      else if (name == "painter")
+         arr.push(import("../modules/painter.mjs").then(handle => handle.jsrp));
    });
 
    if (arr.length == 1)
@@ -1121,7 +1123,7 @@ function decodeUrl(url) {
    };
 
    if (!url || (typeof url !== 'string')) {
-      if (JSROOT.settings.IgnoreUrlOptions || (typeof document === 'undefined')) return res;
+      if (settings.IgnoreUrlOptions || (typeof document === 'undefined')) return res;
       url = document.URL;
    }
    res.url = url;

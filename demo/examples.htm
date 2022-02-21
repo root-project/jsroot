@@ -4,7 +4,8 @@
       <!-- As template three.js web site was used -->
       <meta charset="UTF-8">
       <title>JavaScript ROOT examples</title>
-      <!-- link rel="shortcut icon" href="img/RootIcon.ico" -->
+      <link rel="shortcut icon" href="img/RootIcon.ico"/>
+      <script type="text/javascript" src="scripts/JSRoot.core.js"></script>
       <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
       <meta property="og:title" content="JSROOT examples"/>
       <meta property="og:type" content="website"/>
@@ -107,32 +108,18 @@
       <script type="text/javascript" src="../demo/examples.js"> </script-->
 
       <script type="text/javascript" >
-         let scripts = "scripts/",
-             jsroot_path = "./",
+         let jsroot_path = "./",
              demo_path = "demo/",
-             filepath = "../files/",
-             use_requirejs = false,
-             use_openui5 = false,
+             filepath = "./files/",
              extra_opts = "", // extra options like webgl=no or interactive=0
              select_key = null, // select the only key like ?select=TH2
              no_interactive = false, // disable interactivity
-             use_zstd = true;
+             use_zstd = true,
+             examples_main = [];
 
          let icon = document.createElement("link");
          icon.setAttribute('src', "img/RootIcon.ico");
          icon.setAttribute('rel', "shortcut icon");
-
-         if (window.location.search.indexOf("requirejs") > 0) {
-            jsroot_path = "./indexr.htm";
-            use_requirejs = true;
-            document.title += ' (with require.js)';
-         }
-
-         if ((window.location.search.indexOf("sap") > 0) || (window.location.search.indexOf("openui") > 0)) {
-            jsroot_path = "./indexsap.htm";
-            use_openui5 = true;
-            document.title += ' (with openui5)';
-         }
 
          if (window.location.search.indexOf("nowebgl") > 0)
             extra_opts = "&webgl=0";
@@ -142,48 +129,24 @@
             extra_opts += "&interactive=0";
          }
 
-         if ((window.location.host.indexOf('jsroot.gsi.de') < 0) &&
-             (window.location.host.indexOf('root.cern') < 0)) {
-                filepath = "https://root.cern/js/files/";
-                use_zstd = false;
+         let host = window.location.host;
+
+         if (host.indexOf("localhost") >= 0) {
+            filepath = "https://jsroot.gsi.de/files/";
+            use_zstd = false;
+         } else if ((host.indexOf('jsroot.gsi.de') < 0) && (host.indexOf('root.cern') < 0)) {
+            filepath = "https://root.cern/js/files/";
+            use_zstd = false;
          }
 
          if (window.location.protocol == "file:") {
-            scripts = "../scripts/";
             jsroot_path = "../index.htm";
             demo_path = "../demo/",
             filepath = "https://jsroot.gsi.de/files/";
-            use_requirejs = false;
             icon.setAttribute('src', "../img/RootIcon.ico");
          }
 
          document.getElementsByTagName("head")[0].appendChild(icon);
-
-         function loadScript(name) {
-            let element = document.createElement("script");
-            element.setAttribute('type', "text/javascript");
-            element.setAttribute('src', name);
-
-            return new Promise(resolveFunc => {
-               element.onload = function() {
-                  element.onload = null;
-                  resolveFunc(element);
-               }
-               document.getElementsByTagName("head")[0].appendChild(element);
-            });
-         }
-
-         if (use_requirejs) {
-            loadScript("//cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js").then(() => {
-               require([scripts + 'JSRoot.core.js'], FillContent);
-            });
-         } else if (use_openui5) {
-            loadScript("//openui5.hana.ondemand.com/1.72.0/resources/sap-ui-core.js")
-              .then(() => loadScript(scripts + 'JSRoot.core.js')).then(FillContent);
-
-         } else {
-            loadScript(scripts + 'JSRoot.core.js').then(FillContent);
-         }
 
          let keyid = null, optid, testfile, testobj, testinterval = 10, hpainter = null;
 
@@ -387,23 +350,6 @@
 
          function FillContent() {
 
-            if (typeof examples_main == 'undefined')
-               return loadScript(demo_path + 'examples.js').then(FillContent);
-
-            if (window.location.search.indexOf("?more")==0) {
-               if (typeof examples_more == 'undefined')
-                  return loadScript(demo_path + 'examples_more.js').then(FillContent);
-
-               for (let key in examples_more) {
-                  if (key in examples_main) {
-                     for (let n in examples_more[key])
-                        examples_main[key].push(examples_more[key][n]);
-                  } else {
-                     examples_main[key] = examples_more[key];
-                  }
-               }
-            }
-
             // all painter assigned to viewer element will be automatically informed about resize
             JSROOT.require(["painter"]).then(jsrp => jsrp.registerForResize('viewer'));
 
@@ -571,11 +517,33 @@
                     keyid = null;
                 });
             }
-            if (window.location.hash == "#run") RunBigTest(100,true);
-            if (window.location.hash == "#fast") RunBigTest(1,true);
-            if (window.location.hash == "#slow") RunBigTest(5000,true);
+
+            if (window.location.hash == "#run")
+               RunBigTest(100,true);
+            else if (window.location.hash == "#fast")
+               RunBigTest(1,true);
+            else if (window.location.hash == "#slow")
+               RunBigTest(5000,true);
 
          }; // FillContent
+
+         JSROOT.httpRequest(demo_path + 'examples.js').then(src => {
+            examples_main = JSON.parse(src);
+            if (window.location.search.indexOf("?more")!=0)
+               return FillContent();
+            JSROOT.httpRequest(demo_path + 'examples_more.js').then(src => {
+               let examples_more = JSON.parse(src);
+               for (let key in examples_more) {
+                  if (key in examples_main) {
+                     for (let n in examples_more[key])
+                        examples_main[key].push(examples_more[key][n]);
+                  } else {
+                     examples_main[key] = examples_more[key];
+                  }
+               }
+               FillContent(examples);
+            });
+         });
 
       </script>
    </body>

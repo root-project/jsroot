@@ -1,4 +1,4 @@
-examples_main = {
+{
    TH1 : [
      { opt: "", file: "hsimple.root", item: "hpx;1" },
      { name: "star", opt:"*", title: "draw stars on histogram bins" },
@@ -300,4 +300,4 @@ examples_main = {
      { name: "fill", file: "fillpatterns.root", item: 'patterns',  title: "Different fill patterns" },
      { name: "mass_spectrum", file: "mass_spectrum.root", item: 'C',  title: "Output of graphics/mass_spectrum.C tutorial" }
    ]
- };
+}
