@@ -473,6 +473,8 @@ async function jsroot_require(need) {
    need.forEach(name => {
       if (name == "hist")
          arr.push(import("../modules/hist.mjs"));
+      else if (name == "hist3d")
+         arr.push(import("../modules/hist3d.mjs"));
       else if (name == "latex")
          arr.push(import("../modules/latex.mjs").then(handle => handle.ltx));
       else if (name == "painter")
