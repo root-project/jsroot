@@ -531,9 +531,8 @@
             examples_main = JSON.parse(txt);
             if (window.location.search.indexOf("?more") != 0)
                return FillContent();
-            console.log('here???');
             JSROOT.httpRequest(demo_path + 'examples_more.json', 'text').then(txt_more => {
-               let examples_mpre = eval(txt_more);
+               let examples_more = JSON.parse(txt_more);
                for (let key in examples_more) {
                   if (key in examples_main) {
                      for (let n in examples_more[key])
