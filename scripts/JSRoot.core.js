@@ -1,8 +1,9 @@
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, 'node') :
-typeof define === 'function' && define.amd ? define(['exports'], factory) :
-(global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.JSROOT = global.JSROOT || {}, 'plain'));
+typeof define === 'function' && define.amd ? define(['exports'], factory) : factory({}, 'plain');
+
 })(this, (function (exports, export_kind) { 'use strict';
+
 
 /** @summary JSROOT version id
   * @desc For the JSROOT release the string in format "major.minor.patch" like "6.3.0"
@@ -1273,7 +1274,7 @@ function loadScript(url) {
 
 // Open ROOT file, defined in JSRoot.io.js
 function openFile(filename) {
-   return jsroot_require("io").then(() => JSROOT.openFile(filename));
+   return import("../modules/io.mjs").then(handle => handle.openFile(filename));
 }
 
 // Draw object, defined in JSRoot.painter.js
@@ -2157,6 +2158,9 @@ exports.registerMethods = registerMethods;
 exports.isRootCollection = isRootCollection;
 exports.connectWebWindow = connectWebWindow;
 
+// try to define global JSROOT
+if (typeof globalThis !== "undefined")
+   globalThis.JSROOT = exports;
 
 
 
