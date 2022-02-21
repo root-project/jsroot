@@ -195,7 +195,7 @@ function addons() {
 
 			if ( /\/examples\/jsm\//.test( id ) === false ) return;
 
-			code = code.replace( 'build/three.module.js', 'src/Three_jsroot.js' );
+			code = code.replace( '../three.mjs', '../../../threejs/src/Three_jsroot.js' ).replace( 'three', '../../../src/Three_jsroot.js' );
 
 			return {
 				code: code,
@@ -298,9 +298,9 @@ let builds = [
 		],
 		output: [
 			{
-				format: 'umd',
+				format: 'es',
 				name: 'THREE',
-				file: '../three.js',
+				file: '../three.mjs',
 				indent: '\t'
 			}
 		]
@@ -323,9 +323,9 @@ let builds = [
 		],
 		output: [
 			{
-				format: 'umd',
+				format: 'es',
 				name: 'THREE',
-				file: '../../scripts/three.min.js'
+				file: '../../modules/three.mjs'
 			}
 		]
 	}
