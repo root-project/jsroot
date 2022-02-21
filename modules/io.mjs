@@ -1786,13 +1786,24 @@ class TFile {
    /** @summary Method called when TTree object is streamed
     * @private */
    _addReadTree(obj) {
+      if (!this.readTrees)
+         this.readTrees = [obj];
+      else if (this.readTrees.indexOf(obj) < 0)
+         this.readTrees.push(obj);
+   }
 
-      if (jsrio.TTreeMethods)
-         return JSROOT.extend(obj, jsrio.TTreeMethods);
+   /** @summary Handle object after it completly read
+    * @private */
+   _postProcessRead(obj) {
+      if (!this.readTrees) return obj;
 
-      if (this.readTrees === undefined) this.readTrees = [];
-
-      if (this.readTrees.indexOf(obj) < 0) this.readTrees.push(obj);
+      return import('./tree.mjs').then(handle => {
+         if (this.readTrees) {
+            this.readTrees.forEach(t => JSROOT.extend(t, handle.TTreeMethods))
+            delete this.readTrees;
+         }
+         return obj;
+      });
    }
 
    /** @summary Read any object from a root file
@@ -1816,7 +1827,7 @@ class TFile {
       // remove leading slashes
       while (obj_name.length && (obj_name[0] == "/")) obj_name = obj_name.substr(1);
 
-      let file = this, isdir, read_key;
+      let isdir, read_key;
 
       // one uses Promises while in some cases we need to
       // read sub-directory to get list of keys
@@ -1824,12 +1835,12 @@ class TFile {
       return this.getKey(obj_name, cycle).then(key => {
 
          if ((obj_name == "StreamerInfo") && (key.fClassName == clTList))
-            return file.fStreamerInfos;
+            return this.fStreamerInfos;
 
          if ((key.fClassName == 'TDirectory' || key.fClassName == 'TDirectoryFile')) {
-            isdir = true;
-            let dir = file.getDir(obj_name, cycle);
+            let dir = this.getDir(obj_name, cycle);
             if (dir) return dir;
+            isdir = true;
          }
 
          if (!isdir && only_dir)
@@ -1837,11 +1848,11 @@ class TFile {
 
          read_key = key;
 
-         return file.readObjBuffer(key);
+         return this.readObjBuffer(key);
       }).then(buf => {
 
          if (isdir) {
-            let dir = new TDirectory(file, obj_name, cycle);
+            let dir = new TDirectory(this, obj_name, cycle);
             dir.fTitle = read_key.fTitle;
             return dir.readKeys(buf);
          }
@@ -1851,19 +1862,9 @@ class TFile {
          buf.classStreamer(obj, read_key.fClassName);
 
          if ((read_key.fClassName === 'TF1') || (read_key.fClassName === 'TF2'))
-            return file._readFormulas(obj);
+            return this._readFormulas(obj);
 
-         if (!file.readTrees) return obj;
-
-         console.log('reading trees!!!');
-
-         return JSROOT.require('tree').then(() => {
-            if (file.readTrees) {
-               file.readTrees.forEach(t => JSROOT.extend(t, jsrio.TTreeMethods))
-               delete file.readTrees;
-            }
-            return obj;
-         });
+         return this._postProcessRead(obj);
       });
    }
 
@@ -3801,12 +3802,13 @@ jsrio = {
 addClassMethods(clTNamed, jsrio.CustomStreamers[clTNamed]);
 addClassMethods(clTObjString, jsrio.CustomStreamers[clTObjString]);
 
+// FIXME: to be removed from global space
+
 JSROOT.TBuffer = TBuffer;
 JSROOT.TDirectory = TDirectory;
 JSROOT.TFile = TFile;
 JSROOT.TLocalFile = TLocalFile;
 JSROOT.TNodejsFile = TNodejsFile;
-
-// JSROOT.openFile = openFile;
+JSROOT.IO = jsrio;
 
 export { openFile };
