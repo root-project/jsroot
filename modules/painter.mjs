@@ -1,10 +1,3 @@
-/// @file JSRoot.painter.js
-/// Baisc JavaScript ROOT painter classes
-
-JSROOT.define(['d3'], (d3) => {
-
-   "use strict";
-
    JSROOT.loadScript('$$$style/JSRoot.painter');
 
    if ((typeof d3 !== 'object') || !d3.version)
@@ -3230,1163 +3223,1157 @@ JSROOT.define(['d3'], (d3) => {
          return res && res.user_info ? res.user_info : res;
       }
 
-   } // ObjectPainter
-
-   // ===========================================================
+   } // clObjectPainter
 
 
-   /**
-     * @summary Base painter methods
-     *
-     * @private
-     */
+/**
+  * @summary Base painter methods
+  *
+  * @private
+  */
 
-   JSROOT.AxisPainterMethods = {
+JSROOT.AxisPainterMethods = {
 
-      initAxisPainter() {
-         this.name = "yaxis";
-         this.kind = "normal";
-         this.func = null;
-         this.order = 0; // scaling order for axis labels
+   initAxisPainter() {
+      this.name = "yaxis";
+      this.kind = "normal";
+      this.func = null;
+      this.order = 0; // scaling order for axis labels
 
-         this.full_min = 0;
-         this.full_max = 1;
-         this.scale_min = 0;
-         this.scale_max = 1;
-         this.ticks = []; // list of major ticks
-      },
+      this.full_min = 0;
+      this.full_max = 1;
+      this.scale_min = 0;
+      this.scale_max = 1;
+      this.ticks = []; // list of major ticks
+   },
 
-      /** @summary Cleanup axis painter */
-      cleanupAxisPainter() {
-         this.ticks = [];
-         delete this.format;
-         delete this.func;
-         delete this.tfunc1;
-         delete this.tfunc2;
-         delete this.gr;
-      },
+   /** @summary Cleanup axis painter */
+   cleanupAxisPainter() {
+      this.ticks = [];
+      delete this.format;
+      delete this.func;
+      delete this.tfunc1;
+      delete this.tfunc2;
+      delete this.gr;
+   },
 
-      /** @summary Assign often used members of frame painter */
-      assignFrameMembers(fp, axis) {
-         fp["gr"+axis] = this.gr;                    // fp.grx
-         fp["log"+axis] = this.log;                  // fp.logx
-         fp["scale_"+axis+"min"] = this.scale_min;   // fp.scale_xmin
-         fp["scale_"+axis+"max"] = this.scale_max;   // fp.scale_xmax
-      },
+   /** @summary Assign often used members of frame painter */
+   assignFrameMembers(fp, axis) {
+      fp["gr"+axis] = this.gr;                    // fp.grx
+      fp["log"+axis] = this.log;                  // fp.logx
+      fp["scale_"+axis+"min"] = this.scale_min;   // fp.scale_xmin
+      fp["scale_"+axis+"max"] = this.scale_max;   // fp.scale_xmax
+   },
 
-      /** @summary Convert axis value into the Date object */
-      convertDate(v) {
-         return new Date(this.timeoffset + v*1000);
-      },
+   /** @summary Convert axis value into the Date object */
+   convertDate(v) {
+      return new Date(this.timeoffset + v*1000);
+   },
 
-      /** @summary Convert graphical point back into axis value */
-      revertPoint(pnt) {
-         let value = this.func.invert(pnt);
-         return (this.kind == "time") ?  (value - this.timeoffset) / 1000 : value;
-      },
+   /** @summary Convert graphical point back into axis value */
+   revertPoint(pnt) {
+      let value = this.func.invert(pnt);
+      return (this.kind == "time") ?  (value - this.timeoffset) / 1000 : value;
+   },
 
-      /** @summary Provide label for time axis */
-      formatTime(d, asticks) {
-         return asticks ? this.tfunc1(d) : this.tfunc2(d);
-      },
+   /** @summary Provide label for time axis */
+   formatTime(d, asticks) {
+      return asticks ? this.tfunc1(d) : this.tfunc2(d);
+   },
 
-      /** @summary Provide label for log axis */
-      formatLog(d, asticks, fmt) {
-         let val = parseFloat(d), rnd = Math.round(val);
-         if (!asticks)
-            return ((rnd === val) && (Math.abs(rnd)<1e9)) ? rnd.toString() : jsrp.floatToString(val, fmt || JSROOT.gStyle.fStatFormat);
-         if (val <= 0) return null;
-         let vlog = Math.log10(val), base = this.logbase;
-         if (base !== 10) vlog = vlog / Math.log10(base);
-         if (this.moreloglabels || (Math.abs(vlog - Math.round(vlog))<0.001)) {
-            if (!this.noexp && (asticks != 2))
-               return this.formatExp(base, Math.floor(vlog+0.01), val);
+   /** @summary Provide label for log axis */
+   formatLog(d, asticks, fmt) {
+      let val = parseFloat(d), rnd = Math.round(val);
+      if (!asticks)
+         return ((rnd === val) && (Math.abs(rnd)<1e9)) ? rnd.toString() : jsrp.floatToString(val, fmt || JSROOT.gStyle.fStatFormat);
+      if (val <= 0) return null;
+      let vlog = Math.log10(val), base = this.logbase;
+      if (base !== 10) vlog = vlog / Math.log10(base);
+      if (this.moreloglabels || (Math.abs(vlog - Math.round(vlog))<0.001)) {
+         if (!this.noexp && (asticks != 2))
+            return this.formatExp(base, Math.floor(vlog+0.01), val);
 
-            return vlog < 0 ? val.toFixed(Math.round(-vlog+0.5)) : val.toFixed(0);
+         return vlog < 0 ? val.toFixed(Math.round(-vlog+0.5)) : val.toFixed(0);
+      }
+      return null;
+   },
+
+   /** @summary Provide label for normal axis */
+   formatNormal(d, asticks, fmt) {
+      let val = parseFloat(d);
+      if (asticks && this.order) val = val / Math.pow(10, this.order);
+
+      if (val === Math.round(val))
+         return Math.abs(val) < 1e9 ? val.toFixed(0) : val.toExponential(4);
+
+      if (asticks) return (this.ndig>10) ? val.toExponential(this.ndig-11) : val.toFixed(this.ndig);
+
+      return jsrp.floatToString(val, fmt || JSROOT.gStyle.fStatFormat);
+   },
+
+   /** @summary Provide label for exponential form */
+   formatExp(base, order, value) {
+      let res = "";
+      if (value) {
+         value = Math.round(value/Math.pow(base,order));
+         if ((value!=0) && (value!=1)) res = value.toString() + (JSROOT.settings.Latex ? "#times" : "x");
+      }
+      if (Math.abs(base-Math.exp(1)) < 0.001)
+         res += "e";
+      else
+         res += base.toString();
+      if (JSROOT.settings.Latex > JSROOT.constants.Latex.Symbols)
+         return res + "^{" + order + "}";
+      const superscript_symbols = {
+            '0': '\u2070', '1': '\xB9', '2': '\xB2', '3': '\xB3', '4': '\u2074', '5': '\u2075',
+            '6': '\u2076', '7': '\u2077', '8': '\u2078', '9': '\u2079', '-': '\u207B'
+         };
+      let str = order.toString();
+      for (let n = 0; n < str.length; ++n)
+         res += superscript_symbols[str[n]];
+      return res;
+   },
+
+   /** @summary Convert "raw" axis value into text */
+   axisAsText(value, fmt) {
+      if (this.kind == 'time')
+         value = this.convertDate(value);
+      if (this.format)
+         return this.format(value, false, fmt);
+      return value.toPrecision(4);
+   },
+
+   /** @summary Produce ticks for d3.scaleLog
+     * @desc Fixing following problem, described [here]{@link https://stackoverflow.com/questions/64649793} */
+   poduceLogTicks(func, number) {
+      const linearArray = arr => {
+         let sum1 = 0, sum2 = 0;
+         for (let k = 1; k < arr.length; ++k) {
+            let diff = (arr[k] - arr[k-1]);
+            sum1 += diff;
+            sum2 += diff*diff;
          }
-         return null;
-      },
+         let mean = sum1/(arr.length-1),
+             dev = sum2/(arr.length-1) - mean*mean;
 
-      /** @summary Provide label for normal axis */
-      formatNormal(d, asticks, fmt) {
-         let val = parseFloat(d);
-         if (asticks && this.order) val = val / Math.pow(10, this.order);
+         if (dev <= 0) return true;
+         if (Math.abs(mean) < 1e-100) return false;
+         return Math.sqrt(dev)/mean < 1e-6;
+      };
 
-         if (val === Math.round(val))
-            return Math.abs(val) < 1e9 ? val.toFixed(0) : val.toExponential(4);
+      let arr = func.ticks(number);
 
-         if (asticks) return (this.ndig>10) ? val.toExponential(this.ndig-11) : val.toFixed(this.ndig);
+      while ((number > 4) && linearArray(arr)) {
+         number = Math.round(number*0.8);
+         arr = func.ticks(number);
+      }
 
-         return jsrp.floatToString(val, fmt || JSROOT.gStyle.fStatFormat);
-      },
+      // if still linear array, try to sort out "bad" ticks
+      if ((number < 5) && linearArray(arr) && this.logbase && (this.logbase != 10)) {
+         let arr2 = [];
+         arr.forEach(val => {
+            let pow = Math.log10(val) / Math.log10(this.logbase);
+            if (Math.abs(Math.round(pow) - pow) < 0.01) arr2.push(val);
+         });
+         if (arr2.length > 0) arr = arr2;
+      }
 
-      /** @summary Provide label for exponential form */
-      formatExp(base, order, value) {
-         let res = "";
-         if (value) {
-            value = Math.round(value/Math.pow(base,order));
-            if ((value!=0) && (value!=1)) res = value.toString() + (JSROOT.settings.Latex ? "#times" : "x");
-         }
-         if (Math.abs(base-Math.exp(1)) < 0.001)
-            res += "e";
-         else
-            res += base.toString();
-         if (JSROOT.settings.Latex > JSROOT.constants.Latex.Symbols)
-            return res + "^{" + order + "}";
-         const superscript_symbols = {
-               '0': '\u2070', '1': '\xB9', '2': '\xB2', '3': '\xB3', '4': '\u2074', '5': '\u2075',
-               '6': '\u2076', '7': '\u2077', '8': '\u2078', '9': '\u2079', '-': '\u207B'
-            };
-         let str = order.toString();
-         for (let n = 0; n < str.length; ++n)
-            res += superscript_symbols[str[n]];
-         return res;
-      },
+      return arr;
+   },
 
-      /** @summary Convert "raw" axis value into text */
-      axisAsText(value, fmt) {
-         if (this.kind == 'time')
-            value = this.convertDate(value);
-         if (this.format)
-            return this.format(value, false, fmt);
-         return value.toPrecision(4);
-      },
+   /** @summary Produce axis ticks */
+   produceTicks(ndiv, ndiv2) {
+      if (!this.noticksopt) {
+         let total = ndiv * (ndiv2 || 1);
 
-      /** @summary Produce ticks for d3.scaleLog
-        * @desc Fixing following problem, described [here]{@link https://stackoverflow.com/questions/64649793} */
-      poduceLogTicks(func, number) {
-         const linearArray = arr => {
-            let sum1 = 0, sum2 = 0;
-            for (let k = 1; k < arr.length; ++k) {
-               let diff = (arr[k] - arr[k-1]);
-               sum1 += diff;
-               sum2 += diff*diff;
-            }
-            let mean = sum1/(arr.length-1),
-                dev = sum2/(arr.length-1) - mean*mean;
+         if (this.log) return this.poduceLogTicks(this.func, total);
 
-            if (dev <= 0) return true;
-            if (Math.abs(mean) < 1e-100) return false;
-            return Math.sqrt(dev)/mean < 1e-6;
+         let dom = this.func.domain();
+
+         const check = ticks => {
+            if (ticks.length <= total) return true;
+            if (ticks.length > total + 1) return false;
+            return (ticks[0] === dom[0]) || (ticks[total] === dom[1]); // special case of N+1 ticks, but match any range
          };
 
-         let arr = func.ticks(number);
+         let res1 = this.func.ticks(total);
+         if (ndiv2 || check(res1)) return res1;
 
-         while ((number > 4) && linearArray(arr)) {
-            number = Math.round(number*0.8);
-            arr = func.ticks(number);
-         }
+         let res2 = this.func.ticks(Math.round(total * 0.7));
+         return (res2.length > 2) && check(res2) ? res2 : res1;
+      }
 
-         // if still linear array, try to sort out "bad" ticks
-         if ((number < 5) && linearArray(arr) && this.logbase && (this.logbase != 10)) {
-            let arr2 = [];
-            arr.forEach(val => {
-               let pow = Math.log10(val) / Math.log10(this.logbase);
-               if (Math.abs(Math.round(pow) - pow) < 0.01) arr2.push(val);
-            });
-            if (arr2.length > 0) arr = arr2;
-         }
+      let dom = this.func.domain(), ticks = [];
+      if (ndiv2) ndiv = (ndiv-1) * ndiv2;
+      for (let n = 0; n <= ndiv; ++n)
+         ticks.push((dom[0]*(ndiv-n) + dom[1]*n)/ndiv);
+      return ticks;
+   },
 
-         return arr;
-      },
+   /** @summary Method analyze mouse wheel event and returns item with suggested zooming range */
+   analyzeWheelEvent(evnt, dmin, item, test_ignore) {
+      if (!item) item = {};
 
-      /** @summary Produce axis ticks */
-      produceTicks(ndiv, ndiv2) {
-         if (!this.noticksopt) {
-            let total = ndiv * (ndiv2 || 1);
+      let delta = 0, delta_left = 1, delta_right = 1;
 
-            if (this.log) return this.poduceLogTicks(this.func, total);
+      if ('dleft' in item) { delta_left = item.dleft; delta = 1; }
+      if ('dright' in item) { delta_right = item.dright; delta = 1; }
 
-            let dom = this.func.domain();
+      if (item.delta) {
+         delta = item.delta;
+      } else if (evnt) {
+         delta = evnt.wheelDelta ? -evnt.wheelDelta : (evnt.deltaY || evnt.detail);
+      }
 
-            const check = ticks => {
-               if (ticks.length <= total) return true;
-               if (ticks.length > total + 1) return false;
-               return (ticks[0] === dom[0]) || (ticks[total] === dom[1]); // special case of N+1 ticks, but match any range
-            };
+      if (!delta || (test_ignore && item.ignore)) return;
 
-            let res1 = this.func.ticks(total);
-            if (ndiv2 || check(res1)) return res1;
+      delta = (delta < 0) ? -0.2 : 0.2;
+      delta_left *= delta;
+      delta_right *= delta;
 
-            let res2 = this.func.ticks(Math.round(total * 0.7));
-            return (res2.length > 2) && check(res2) ? res2 : res1;
-         }
+      let lmin = item.min = this.scale_min,
+          lmax = item.max = this.scale_max,
+          gmin = this.full_min,
+          gmax = this.full_max;
 
-         let dom = this.func.domain(), ticks = [];
-         if (ndiv2) ndiv = (ndiv-1) * ndiv2;
-         for (let n = 0; n <= ndiv; ++n)
-            ticks.push((dom[0]*(ndiv-n) + dom[1]*n)/ndiv);
-         return ticks;
-      },
+      if ((item.min === item.max) && (delta < 0)) {
+         item.min = gmin;
+         item.max = gmax;
+      }
 
-      /** @summary Method analyze mouse wheel event and returns item with suggested zooming range */
-      analyzeWheelEvent(evnt, dmin, item, test_ignore) {
-         if (!item) item = {};
+      if (item.min >= item.max) return;
 
-         let delta = 0, delta_left = 1, delta_right = 1;
+      if (item.reverse) dmin = 1 - dmin;
 
-         if ('dleft' in item) { delta_left = item.dleft; delta = 1; }
-         if ('dright' in item) { delta_right = item.dright; delta = 1; }
+      if ((dmin > 0) && (dmin < 1)) {
+         if (this.log) {
+            let factor = (item.min>0) ? Math.log10(item.max/item.min) : 2;
+            if (factor>10) factor = 10; else if (factor<0.01) factor = 0.01;
+            item.min = item.min / Math.pow(10, factor*delta_left*dmin);
+            item.max = item.max * Math.pow(10, factor*delta_right*(1-dmin));
+         } else if ((delta_left === -delta_right) && !item.reverse) {
+            // shift left/right, try to keep range constant
+            let delta = (item.max - item.min) * delta_right * dmin;
 
-         if (item.delta) {
-            delta = item.delta;
-         } else if (evnt) {
-            delta = evnt.wheelDelta ? -evnt.wheelDelta : (evnt.deltaY || evnt.detail);
-         }
+            if ((Math.round(item.max) === item.max) && (Math.round(item.min) === item.min) && (Math.abs(delta) > 1)) delta = Math.round(delta);
 
-         if (!delta || (test_ignore && item.ignore)) return;
+            if (item.min + delta < gmin)
+               delta = gmin - item.min;
+            else if (item.max + delta > gmax)
+               delta = gmax - item.max;
 
-         delta = (delta < 0) ? -0.2 : 0.2;
-         delta_left *= delta;
-         delta_right *= delta;
-
-         let lmin = item.min = this.scale_min,
-             lmax = item.max = this.scale_max,
-             gmin = this.full_min,
-             gmax = this.full_max;
-
-         if ((item.min === item.max) && (delta < 0)) {
-            item.min = gmin;
-            item.max = gmax;
-         }
-
-         if (item.min >= item.max) return;
-
-         if (item.reverse) dmin = 1 - dmin;
-
-         if ((dmin > 0) && (dmin < 1)) {
-            if (this.log) {
-               let factor = (item.min>0) ? Math.log10(item.max/item.min) : 2;
-               if (factor>10) factor = 10; else if (factor<0.01) factor = 0.01;
-               item.min = item.min / Math.pow(10, factor*delta_left*dmin);
-               item.max = item.max * Math.pow(10, factor*delta_right*(1-dmin));
-            } else if ((delta_left === -delta_right) && !item.reverse) {
-               // shift left/right, try to keep range constant
-               let delta = (item.max - item.min) * delta_right * dmin;
-
-               if ((Math.round(item.max) === item.max) && (Math.round(item.min) === item.min) && (Math.abs(delta) > 1)) delta = Math.round(delta);
-
-               if (item.min + delta < gmin)
-                  delta = gmin - item.min;
-               else if (item.max + delta > gmax)
-                  delta = gmax - item.max;
-
-               if (delta != 0) {
-                  item.min += delta;
-                  item.max += delta;
-                } else {
-                  delete item.min;
-                  delete item.max;
-               }
-
-            } else {
-               let rx_left = (item.max - item.min), rx_right = rx_left;
-               if (delta_left > 0) rx_left = 1.001 * rx_left / (1-delta_left);
-               item.min += -delta_left*dmin*rx_left;
-               if (delta_right > 0) rx_right = 1.001 * rx_right / (1-delta_right);
-               item.max -= -delta_right*(1-dmin)*rx_right;
+            if (delta != 0) {
+               item.min += delta;
+               item.max += delta;
+             } else {
+               delete item.min;
+               delete item.max;
             }
-            if (item.min >= item.max) {
-               item.min = item.max = undefined;
-            } else if (delta_left !== delta_right) {
-               // extra check case when moving left or right
-               if (((item.min < gmin) && (lmin === gmin)) ||
-                   ((item.max > gmax) && (lmax === gmax)))
-                      item.min = item.max = undefined;
-            } else {
-               if (item.min < gmin) item.min = gmin;
-               if (item.max > gmax) item.max = gmax;
-            }
+
          } else {
+            let rx_left = (item.max - item.min), rx_right = rx_left;
+            if (delta_left > 0) rx_left = 1.001 * rx_left / (1-delta_left);
+            item.min += -delta_left*dmin*rx_left;
+            if (delta_right > 0) rx_right = 1.001 * rx_right / (1-delta_right);
+            item.max -= -delta_right*(1-dmin)*rx_right;
+         }
+         if (item.min >= item.max) {
             item.min = item.max = undefined;
-         }
-
-         item.changed = ((item.min !== undefined) && (item.max !== undefined));
-
-         return item;
-      }
-
-   }; // AxisPainterMethods
-
-   // ===========================================================
-
-   /** @summary Set active pad painter
-     * @desc Normally be used to handle key press events, which are global in the web browser
-     * @param {object} args - functions arguments
-     * @param {object} args.pp - pad painter
-     * @param {boolean} [args.active] - is pad activated or not
-     * @private */
-   jsrp.selectActivePad = function(args) {
-      if (args.active) {
-         let fp = this.$active_pp ? this.$active_pp.getFramePainter() : null;
-         if (fp) fp.setFrameActive(false);
-
-         this.$active_pp = args.pp;
-
-         fp = this.$active_pp ? this.$active_pp.getFramePainter() : null;
-         if (fp) fp.setFrameActive(true);
-      } else if (this.$active_pp === args.pp) {
-         delete this.$active_pp;
-      }
-   }
-
-   /** @summary Returns current active pad
-     * @desc Should be used only for keyboard handling
-     * @private */
-   jsrp.getActivePad = function() {
-      return this.$active_pp;
-   }
-
-   // ================= painter of raw text ========================================
-
-   /** @summary Generic text drawing
-     * @private */
-   jsrp.drawRawText = function(dom, txt /*, opt*/) {
-
-      let painter = new BasePainter(dom);
-      painter.txt = txt;
-
-      painter.redrawObject = function(obj) {
-         this.txt = obj;
-         this.drawText();
-         return true;
-      }
-
-      painter.drawText = function() {
-         let txt = (this.txt._typename && (this.txt._typename == "TObjString")) ? this.txt.fString : this.txt.value;
-         if (typeof txt != 'string') txt = "<undefined>";
-
-         let mathjax = this.txt.mathjax || (JSROOT.settings.Latex == JSROOT.constants.Latex.AlwaysMathJax);
-
-         if (!mathjax && !('as_is' in this.txt)) {
-            let arr = txt.split("\n"); txt = "";
-            for (let i = 0; i < arr.length; ++i)
-               txt += "<pre style='margin:0'>" + arr[i] + "</pre>";
-         }
-
-         let frame = this.selectDom(),
-            main = frame.select("div");
-         if (main.empty())
-            main = frame.append("div").attr('style', 'max-width:100%;max-height:100%;overflow:auto');
-         main.html(txt);
-
-         // (re) set painter to first child element, base painter not requires canvas
-         this.setTopPainter();
-
-         if (mathjax)
-            return JSROOT.require('latex').then(ltx => { ltx.typesetMathjax(frame.node()); return this; });
-
-         return Promise.resolve(this);
-      }
-
-      return painter.drawText();
-   }
-
-   /** @summary Register handle to react on window resize
-     * @desc function used to react on browser window resize event
-     * While many resize events could come in short time,
-     * resize will be handled with delay after last resize event
-     * @param {object|string} handle can be function or object with checkResize function or dom where painting was done
-     * @param {number} [delay] - one could specify delay after which resize event will be handled
-     * @protected */
-   jsrp.registerForResize = function(handle, delay) {
-
-      if (!handle || JSROOT.batch_mode || (typeof window == 'undefined')) return;
-
-      let myInterval = null, myDelay = delay ? delay : 300;
-
-      if (myDelay < 20) myDelay = 20;
-
-      function ResizeTimer() {
-         myInterval = null;
-
-         document.body.style.cursor = 'wait';
-         if (typeof handle == 'function')
-            handle();
-         else if (handle && (typeof handle == 'object') && (typeof handle.checkResize == 'function')) {
-            handle.checkResize();
+         } else if (delta_left !== delta_right) {
+            // extra check case when moving left or right
+            if (((item.min < gmin) && (lmin === gmin)) ||
+                ((item.max > gmax) && (lmax === gmax)))
+                   item.min = item.max = undefined;
          } else {
-            let node = new BasePainter(handle).selectDom();
-            if (!node.empty()) {
-               let mdi = node.property('mdi');
-               if (mdi && typeof mdi.checkMDIResize == 'function') {
-                  mdi.checkMDIResize();
-               } else {
-                  JSROOT.resize(node.node());
+            if (item.min < gmin) item.min = gmin;
+            if (item.max > gmax) item.max = gmax;
+         }
+      } else {
+         item.min = item.max = undefined;
+      }
+
+      item.changed = ((item.min !== undefined) && (item.max !== undefined));
+
+      return item;
+   }
+
+}; // AxisPainterMethods
+
+// ===========================================================
+
+/** @summary Set active pad painter
+  * @desc Normally be used to handle key press events, which are global in the web browser
+  * @param {object} args - functions arguments
+  * @param {object} args.pp - pad painter
+  * @param {boolean} [args.active] - is pad activated or not
+  * @private */
+jsrp.selectActivePad = function(args) {
+   if (args.active) {
+      let fp = this.$active_pp ? this.$active_pp.getFramePainter() : null;
+      if (fp) fp.setFrameActive(false);
+
+      this.$active_pp = args.pp;
+
+      fp = this.$active_pp ? this.$active_pp.getFramePainter() : null;
+      if (fp) fp.setFrameActive(true);
+   } else if (this.$active_pp === args.pp) {
+      delete this.$active_pp;
+   }
+}
+
+/** @summary Returns current active pad
+  * @desc Should be used only for keyboard handling
+  * @private */
+jsrp.getActivePad = function() {
+   return this.$active_pp;
+}
+
+// ================= painter of raw text ========================================
+
+/** @summary Generic text drawing
+  * @private */
+jsrp.drawRawText = function(dom, txt /*, opt*/) {
+
+   let painter = new BasePainter(dom);
+   painter.txt = txt;
+
+   painter.redrawObject = function(obj) {
+      this.txt = obj;
+      this.drawText();
+      return true;
+   }
+
+   painter.drawText = function() {
+      let txt = (this.txt._typename && (this.txt._typename == "TObjString")) ? this.txt.fString : this.txt.value;
+      if (typeof txt != 'string') txt = "<undefined>";
+
+      let mathjax = this.txt.mathjax || (JSROOT.settings.Latex == JSROOT.constants.Latex.AlwaysMathJax);
+
+      if (!mathjax && !('as_is' in this.txt)) {
+         let arr = txt.split("\n"); txt = "";
+         for (let i = 0; i < arr.length; ++i)
+            txt += "<pre style='margin:0'>" + arr[i] + "</pre>";
+      }
+
+      let frame = this.selectDom(),
+         main = frame.select("div");
+      if (main.empty())
+         main = frame.append("div").attr('style', 'max-width:100%;max-height:100%;overflow:auto');
+      main.html(txt);
+
+      // (re) set painter to first child element, base painter not requires canvas
+      this.setTopPainter();
+
+      if (mathjax)
+         return JSROOT.require('latex').then(ltx => { ltx.typesetMathjax(frame.node()); return this; });
+
+      return Promise.resolve(this);
+   }
+
+   return painter.drawText();
+}
+
+/** @summary Register handle to react on window resize
+  * @desc function used to react on browser window resize event
+  * While many resize events could come in short time,
+  * resize will be handled with delay after last resize event
+  * @param {object|string} handle can be function or object with checkResize function or dom where painting was done
+  * @param {number} [delay] - one could specify delay after which resize event will be handled
+  * @protected */
+jsrp.registerForResize = function(handle, delay) {
+
+   if (!handle || JSROOT.batch_mode || (typeof window == 'undefined')) return;
+
+   let myInterval = null, myDelay = delay ? delay : 300;
+
+   if (myDelay < 20) myDelay = 20;
+
+   function ResizeTimer() {
+      myInterval = null;
+
+      document.body.style.cursor = 'wait';
+      if (typeof handle == 'function')
+         handle();
+      else if (handle && (typeof handle == 'object') && (typeof handle.checkResize == 'function')) {
+         handle.checkResize();
+      } else {
+         let node = new BasePainter(handle).selectDom();
+         if (!node.empty()) {
+            let mdi = node.property('mdi');
+            if (mdi && typeof mdi.checkMDIResize == 'function') {
+               mdi.checkMDIResize();
+            } else {
+               JSROOT.resize(node.node());
+            }
+         }
+      }
+      document.body.style.cursor = 'auto';
+   }
+
+   window.addEventListener('resize', () => {
+      if (myInterval !== null) clearTimeout(myInterval);
+      myInterval = setTimeout(ResizeTimer, myDelay);
+   });
+}
+
+// list of registered draw functions
+let drawFuncs = { lst: [
+   { name: "TCanvas", icon: "img_canvas", prereq: "gpad", class: "TCanvasPainter", opt: ";grid;gridx;gridy;tick;tickx;ticky;log;logx;logy;logz", expand_item: "fPrimitives" },
+   { name: "TPad", icon: "img_canvas", prereq: "gpad", class: "TPadPainter", opt: ";grid;gridx;gridy;tick;tickx;ticky;log;logx;logy;logz", expand_item: "fPrimitives" },
+   { name: "TSlider", icon: "img_canvas", prereq: "gpad", class: "TPadPainter" },
+   { name: "TFrame", icon: "img_frame", prereq: "gpad", class: "TFramePainter" },
+   { name: "TPave", icon: "img_pavetext", prereq: "hist", class: "TPavePainter" },
+   { name: "TPaveText", icon: "img_pavetext", prereq: "hist", class: "TPavePainter" },
+   { name: "TPavesText", icon: "img_pavetext", prereq: "hist", class: "TPavePainter" },
+   { name: "TPaveStats", icon: "img_pavetext", prereq: "hist", class: "TPavePainter" },
+   { name: "TPaveLabel", icon: "img_pavelabel", prereq: "hist", class: "TPavePainter" },
+   { name: "TDiamond", icon: "img_pavelabel", prereq: "hist", class: "TPavePainter" },
+   { name: "TLatex", icon: "img_text", prereq: "more", func: ".drawText", direct: true },
+   { name: "TMathText", icon: "img_text", prereq: "more", func: ".drawText", direct: true },
+   { name: "TText", icon: "img_text", prereq: "more", func: ".drawText", direct: true },
+   { name: /^TH1/, icon: "img_histo1d", prereq: "hist", class: "TH1Painter", opt: ";hist;P;P0;E;E1;E2;E3;E4;E1X0;L;LF2;B;B1;A;TEXT;LEGO;same", ctrl: "l" },
+   { name: "TProfile", icon: "img_profile", prereq: "hist", class: "TH1Painter", opt: ";E0;E1;E2;p;AH;hist" },
+   { name: "TH2Poly", icon: "img_histo2d", prereq: "hist", class: "TH2Painter", opt: ";COL;COL0;COLZ;LCOL;LCOL0;LCOLZ;LEGO;TEXT;same", expand_item: "fBins", theonly: true },
+   { name: "TProfile2Poly", sameas: "TH2Poly" },
+   { name: "TH2PolyBin", icon: "img_histo2d", draw_field: "fPoly", draw_field_opt: "L" },
+   { name: /^TH2/, icon: "img_histo2d", prereq: "hist", class: "TH2Painter", dflt: "col", opt: ";COL;COLZ;COL0;COL1;COL0Z;COL1Z;COLA;BOX;BOX1;PROJ;PROJX1;PROJX2;PROJX3;PROJY1;PROJY2;PROJY3;SCAT;TEXT;TEXTE;TEXTE0;CANDLE;CANDLE1;CANDLE2;CANDLE3;CANDLE4;CANDLE5;CANDLE6;CANDLEY1;CANDLEY2;CANDLEY3;CANDLEY4;CANDLEY5;CANDLEY6;VIOLIN;VIOLIN1;VIOLIN2;VIOLINY1;VIOLINY2;CONT;CONT1;CONT2;CONT3;CONT4;ARR;SURF;SURF1;SURF2;SURF4;SURF6;E;A;LEGO;LEGO0;LEGO1;LEGO2;LEGO3;LEGO4;same", ctrl: "lego" },
+   { name: "TProfile2D", sameas: "TH2" },
+   { name: /^TH3/, icon: 'img_histo3d', prereq: "hist3d", class: "TH3Painter", opt: ";SCAT;BOX;BOX2;BOX3;GLBOX1;GLBOX2;GLCOL" },
+   { name: "THStack", icon: "img_histo1d", prereq: "hist", class: "THStackPainter", expand_item: "fHists", opt: "NOSTACK;HIST;E;PFC;PLC" },
+   { name: "TPolyMarker3D", icon: 'img_histo3d', prereq: "base3d", func: ".drawPolyMarker3D", direct: true, frame: "3d" },
+   { name: "TPolyLine3D", icon: 'img_graph', prereq: "base3d", func: ".drawPolyLine3D", direct: true, frame: "3d" },
+   { name: "TGraphStruct" },
+   { name: "TGraphNode" },
+   { name: "TGraphEdge" },
+   { name: "TGraphTime", icon: "img_graph", prereq: "more", class: "TGraphTimePainter", opt: "once;repeat;first", theonly: true },
+   { name: "TGraph2D", icon: "img_graph", prereq: "hist3d", class: "TGraph2DPainter", opt: ";P;PCOL", theonly: true },
+   { name: "TGraph2DErrors", icon: "img_graph", prereq: "hist3d", class: "TGraph2DPainter", opt: ";P;PCOL;ERR", theonly: true },
+   { name: "TGraphPolargram", icon: "img_graph", prereq: "more", class: "TGraphPolargramPainter", theonly: true },
+   { name: "TGraphPolar", icon: "img_graph", prereq: "more", class: "TGraphPolarPainter", opt: ";F;L;P;PE", theonly: true },
+   { name: /^TGraph/, icon: "img_graph", prereq: "more", class: "TGraphPainter", opt: ";L;P" },
+   { name: "TEfficiency", icon: "img_graph", prereq: "more", class: "TEfficiencyPainter", opt: ";AP" },
+   { name: "TCutG", sameas: "TGraph" },
+   { name: /^RooHist/, sameas: "TGraph" },
+   { name: /^RooCurve/, sameas: "TGraph" },
+   { name: "RooPlot", icon: "img_canvas", prereq: "more", func: ".drawRooPlot" },
+   { name: "TRatioPlot", icon: "img_mgraph", prereq: "more", class: "TRatioPlotPainter", opt: "" },
+   { name: "TMultiGraph", icon: "img_mgraph", prereq: "more", class: "TMultiGraphPainter", opt: ";l;p;3d", expand_item: "fGraphs" },
+   { name: "TStreamerInfoList", icon: "img_question", prereq: "hierarchy", func: ".drawStreamerInfo" },
+   { name: "TPaletteAxis", icon: "img_colz", prereq: "hist", class: "TPavePainter" },
+   { name: "TWebPainting", icon: "img_graph", prereq: "more", func: ".drawWebPainting" },
+   { name: "TCanvasWebSnapshot", icon: "img_canvas", prereq: "gpad", func: ".drawTPadSnapshot" },
+   { name: "TPadWebSnapshot", sameas: "TCanvasWebSnapshot" },
+   { name: "kind:Text", icon: "img_text", func: jsrp.drawRawText },
+   { name: "TObjString", icon: "img_text", func: jsrp.drawRawText },
+   { name: "TF1", icon: "img_tf1", prereq: "math;more", class: "TF1Painter" },
+   { name: "TF2", icon: "img_tf2", prereq: "math;hist", func: ".drawTF2" },
+   { name: "TSpline3", icon: "img_tf1", prereq: "more", class: "TSplinePainter" },
+   { name: "TSpline5", icon: "img_tf1", prereq: "more", class: "TSplinePainter" },
+   { name: "TEllipse", icon: 'img_graph', prereq: "more", func: ".drawEllipse", direct: true },
+   { name: "TArc", sameas: 'TEllipse' },
+   { name: "TCrown", sameas: 'TEllipse' },
+   { name: "TPie", icon: 'img_graph', prereq: "more", func: ".drawPie", direct: true },
+   { name: "TPieSlice", icon: 'img_graph', dummy: true },
+   { name: "TExec", icon: "img_graph", dummy: true },
+   { name: "TLine", icon: 'img_graph', prereq: "more", func: ".drawLine", direct: true },
+   { name: "TArrow", icon: 'img_graph', prereq: "more", func: ".drawArrow", direct: true },
+   { name: "TPolyLine", icon: 'img_graph', prereq: "more", func: ".drawPolyLine", direct: true },
+   { name: "TCurlyLine", sameas: 'TPolyLine' },
+   { name: "TCurlyArc", sameas: 'TPolyLine' },
+   { name: "TParallelCoord", icon: "img_graph", dummy: true },
+   { name: "TGaxis", icon: "img_graph", prereq: "gpad", class: "TAxisPainter" },
+   { name: "TLegend", icon: "img_pavelabel", prereq: "hist", class: "TPavePainter" },
+   { name: "TBox", icon: 'img_graph', prereq: "more", func: ".drawBox", direct: true },
+   { name: "TWbox", icon: 'img_graph', prereq: "more", func: ".drawBox", direct: true },
+   { name: "TSliderBox", icon: 'img_graph', prereq: "more", func: ".drawBox", direct: true },
+   { name: "TMarker", icon: 'img_graph', prereq: "more", func: ".drawMarker", direct: true },
+   { name: "TPolyMarker", icon: 'img_graph', prereq: "more", func: ".drawPolyMarker", direct: true },
+   { name: "TASImage", icon: 'img_mgraph', prereq: "more", class: "TASImagePainter", opt: ";z" },
+   { name: "TJSImage", icon: 'img_mgraph', prereq: "more", func: ".drawJSImage", opt: ";scale;center" },
+   { name: "TGeoVolume", icon: 'img_histo3d', prereq: "geom", class: "TGeoPainter", expand: "JSROOT.GEO.expandObject", opt: ";more;all;count;projx;projz;wire;no_screen;dflt", ctrl: "dflt" },
+   { name: "TEveGeoShapeExtract", icon: 'img_histo3d', prereq: "geom", class: "TGeoPainter", expand: "JSROOT.GEO.expandObject", opt: ";more;all;count;projx;projz;wire;dflt", ctrl: "dflt" },
+   { name: "ROOT::Experimental::REveGeoShapeExtract", icon: 'img_histo3d', prereq: "geom", class: "TGeoPainter", expand: "JSROOT.GEO.expandObject", opt: ";more;all;count;projx;projz;wire;dflt", ctrl: "dflt" },
+   { name: "TGeoOverlap", icon: 'img_histo3d', prereq: "geom", expand: "JSROOT.GEO.expandObject", class: "TGeoPainter", opt: ";more;all;count;projx;projz;wire;dflt", dflt: "dflt", ctrl: "expand" },
+   { name: "TGeoManager", icon: 'img_histo3d', prereq: "geom", expand: "JSROOT.GEO.expandObject", class: "TGeoPainter", opt: ";more;all;count;projx;projz;wire;tracks;no_screen;dflt", dflt: "expand", ctrl: "dflt" },
+   { name: /^TGeo/, icon: 'img_histo3d', prereq: "geom", class: "TGeoPainter", expand: "JSROOT.GEO.expandObject", opt: ";more;all;axis;compa;count;projx;projz;wire;no_screen;dflt", dflt: "dflt", ctrl: "expand" },
+   { name: "TAxis3D", icon: 'img_graph', prereq: "geom", func: ".drawAxis3D", direct: true },
+   // these are not draw functions, but provide extra info about correspondent classes
+   { name: "kind:Command", icon: "img_execute", execute: true },
+   { name: "TFolder", icon: "img_folder", icon2: "img_folderopen", noinspect: true, prereq: "hierarchy", expand: ".folderHierarchy" },
+   { name: "TTask", icon: "img_task", prereq: "hierarchy", expand: ".taskHierarchy", for_derived: true },
+   { name: "TTree", icon: "img_tree", prereq: "tree", expand: 'JSROOT.treeHierarchy', func: 'JSROOT.drawTree', dflt: "expand", opt: "player;testio", shift: "inspect" },
+   { name: "TNtuple", icon: "img_tree", prereq: "tree", expand: 'JSROOT.treeHierarchy', func: 'JSROOT.drawTree', dflt: "expand", opt: "player;testio", shift: "inspect" },
+   { name: "TNtupleD", icon: "img_tree", prereq: "tree", expand: 'JSROOT.treeHierarchy', func: 'JSROOT.drawTree', dflt: "expand", opt: "player;testio", shift: "inspect" },
+   { name: "TBranchFunc", icon: "img_leaf_method", prereq: "tree", func: 'JSROOT.drawTree', opt: ";dump", noinspect: true },
+   { name: /^TBranch/, icon: "img_branch", prereq: "tree", func: 'JSROOT.drawTree', dflt: "expand", opt: ";dump", ctrl: "dump", shift: "inspect", ignore_online: true },
+   { name: /^TLeaf/, icon: "img_leaf", prereq: "tree", noexpand: true, func: 'JSROOT.drawTree', opt: ";dump", ctrl: "dump", ignore_online: true },
+   { name: "TList", icon: "img_list", prereq: "hierarchy", func: ".drawList", expand: ".listHierarchy", dflt: "expand" },
+   { name: "THashList", sameas: "TList" },
+   { name: "TObjArray", sameas: "TList" },
+   { name: "TClonesArray", sameas: "TList" },
+   { name: "TMap", sameas: "TList" },
+   { name: "TColor", icon: "img_color" },
+   { name: "TFile", icon: "img_file", noinspect: true },
+   { name: "TMemFile", icon: "img_file", noinspect: true },
+   { name: "TStyle", icon: "img_question", noexpand: true },
+   { name: "Session", icon: "img_globe" },
+   { name: "kind:TopFolder", icon: "img_base" },
+   { name: "kind:Folder", icon: "img_folder", icon2: "img_folderopen", noinspect: true },
+   { name: "ROOT::Experimental::RCanvas", icon: "img_canvas", prereq: "v7gpad", class: "RCanvasPainter", opt: "", expand_item: "fPrimitives" },
+   { name: "ROOT::Experimental::RCanvasDisplayItem", icon: "img_canvas", prereq: "v7gpad", func: ".drawRPadSnapshot", opt: "", expand_item: "fPrimitives" }
+], cache: {} };
+
+
+/** @summary Register draw function for the class
+  * @desc List of supported draw options could be provided, separated  with ';'
+  * @param {object} args - arguments
+  * @param {string|regexp} args.name - class name or regexp pattern
+  * @param {string} [args.prereq] - prerequicities to load before search for the draw function
+  * @param {string} args.func - draw function name or just a function
+  * @param {boolean} [args.direct] - if true, function is just Redraw() method of ObjectPainter
+  * @param {string} [args.opt] - list of supported draw options (separated with semicolon) like "col;scat;"
+  * @param {string} [args.icon] - icon name shown for the class in hierarchy browser
+  * @param {string} [args.draw_field] - draw only data member from object, like fHistogram
+  * @protected */
+jsrp.addDrawFunc = function(args) {
+   drawFuncs.lst.push(args);
+   return args;
+}
+
+/** @summary return draw handle for specified item kind
+  * @desc kind could be ROOT.TH1I for ROOT classes or just
+  * kind string like "Command" or "Text"
+  * selector can be used to search for draw handle with specified option (string)
+  * or just sequence id
+  * @memberof JSROOT.Painter
+  * @private */
+function getDrawHandle(kind, selector) {
+
+   if (typeof kind != 'string') return null;
+   if (selector === "") selector = null;
+
+   let first = null;
+
+   if ((selector === null) && (kind in drawFuncs.cache))
+      return drawFuncs.cache[kind];
+
+   let search = (kind.indexOf("ROOT.") == 0) ? kind.substr(5) : "kind:" + kind, counter = 0;
+   for (let i = 0; i < drawFuncs.lst.length; ++i) {
+      let h = drawFuncs.lst[i];
+      if (typeof h.name == "string") {
+         if (h.name != search) continue;
+      } else {
+         if (!search.match(h.name)) continue;
+      }
+
+      if (h.sameas !== undefined)
+         return getDrawHandle("ROOT." + h.sameas, selector);
+
+      if ((selector === null) || (selector === undefined)) {
+         // store found handle in cache, can reuse later
+         if (!(kind in drawFuncs.cache)) drawFuncs.cache[kind] = h;
+         return h;
+      } else if (typeof selector == 'string') {
+         if (!first) first = h;
+         // if drawoption specified, check it present in the list
+
+         if (selector == "::expand") {
+            if (('expand' in h) || ('expand_item' in h)) return h;
+         } else
+            if ('opt' in h) {
+               let opts = h.opt.split(';');
+               for (let j = 0; j < opts.length; ++j) opts[j] = opts[j].toLowerCase();
+               if (opts.indexOf(selector.toLowerCase()) >= 0) return h;
+            }
+      } else if (selector === counter) {
+         return h;
+      }
+      ++counter;
+   }
+
+   return first;
+}
+
+/** @summary Scan streamer infos for derived classes
+  * @desc Assign draw functions for such derived classes
+  * @private */
+jsrp.addStreamerInfos = function(lst) {
+   if (!lst) return;
+
+   function CheckBaseClasses(si, lvl) {
+      if (!si.fElements) return null;
+      if (lvl > 10) return null; // protect against recursion
+
+      for (let j = 0; j < si.fElements.arr.length; ++j) {
+         // extract streamer info for each class member
+         let element = si.fElements.arr[j];
+         if (element.fTypeName !== 'BASE') continue;
+
+         let handle = getDrawHandle("ROOT." + element.fName);
+         if (handle && !handle.for_derived) handle = null;
+
+         // now try find that base class of base in the list
+         if (handle === null)
+            for (let k = 0; k < lst.arr.length; ++k)
+               if (lst.arr[k].fName === element.fName) {
+                  handle = CheckBaseClasses(lst.arr[k], lvl + 1);
+                  break;
+               }
+
+         if (handle && handle.for_derived) return handle;
+      }
+      return null;
+   }
+
+   for (let n = 0; n < lst.arr.length; ++n) {
+      let si = lst.arr[n];
+      if (getDrawHandle("ROOT." + si.fName) !== null) continue;
+
+      let handle = CheckBaseClasses(si, 0);
+
+      if (!handle) continue;
+
+      let newhandle = JSROOT.extend({}, handle);
+      // delete newhandle.for_derived; // should we disable?
+      newhandle.name = si.fName;
+      drawFuncs.lst.push(newhandle);
+   }
+}
+
+/** @summary Provide draw settings for specified class or kind
+  * @memberof JSROOT.Painter
+  * @private */
+function getDrawSettings(kind, selector) {
+   let res = { opts: null, inspect: false, expand: false, draw: false, handle: null };
+   if (typeof kind != 'string') return res;
+   let isany = false, noinspect = false, canexpand = false;
+   if (typeof selector !== 'string') selector = "";
+
+   for (let cnt = 0; cnt < 1000; ++cnt) {
+      let h = getDrawHandle(kind, cnt);
+      if (!h) break;
+      if (!res.handle) res.handle = h;
+      if (h.noinspect) noinspect = true;
+      if (h.expand || h.expand_item || h.can_expand) canexpand = true;
+      if (!h.func && !h.class) break;
+      isany = true;
+      if (!('opt' in h)) continue;
+      let opts = h.opt.split(';');
+      for (let i = 0; i < opts.length; ++i) {
+         opts[i] = opts[i].toLowerCase();
+         if ((selector.indexOf('nosame') >= 0) && (opts[i].indexOf('same') == 0)) continue;
+
+         if (res.opts === null) res.opts = [];
+         if (res.opts.indexOf(opts[i]) < 0) res.opts.push(opts[i]);
+      }
+      if (h.theonly) break;
+   }
+
+   if (selector.indexOf('noinspect') >= 0) noinspect = true;
+
+   if (isany && (res.opts === null)) res.opts = [""];
+
+   // if no any handle found, let inspect ROOT-based objects
+   if (!isany && (kind.indexOf("ROOT.") == 0) && !noinspect) res.opts = [];
+
+   if (!noinspect && res.opts)
+      res.opts.push("inspect");
+
+   res.inspect = !noinspect;
+   res.expand = canexpand;
+   res.draw = res.opts && (res.opts.length > 0);
+
+   return res;
+}
+
+/** @summary Returns true if provided object class can be drawn
+  * @param {string} classname - name of class to be tested
+  * @private */
+jsrp.canDraw = function(classname) {
+   return getDrawSettings("ROOT." + classname).opts !== null;
+}
+
+/** @summary Set default draw option for provided class */
+jsrp.setDefaultDrawOpt = function(classname, opt) {
+   let handle = getDrawHandle("ROOT." + classname, 0);
+   if (handle)
+      handle.dflt = opt;
+}
+
+/** @summary Draw object in specified HTML element with given draw options.
+  * @param {string|object} dom - id of div element to draw or directly DOMElement
+  * @param {object} obj - object to draw, object type should be registered before in JSROOT
+  * @param {string} opt - draw options separated by space, comma or semicolon
+  * @returns {Promise} with painter object
+  * @requires painter
+  * @desc An extensive list of support draw options can be found on [JSROOT examples page]{@link https://root.cern/js/latest/examples.htm}
+  * @example
+  * JSROOT.openFile("https://root.cern/js/files/hsimple.root")
+  *       .then(file => file.readObject("hpxpy;1"))
+  *       .then(obj => JSROOT.draw("drawing", obj, "colz;logx;gridx;gridy")); */
+JSROOT.draw = function(dom, obj, opt) {
+   if (!obj || (typeof obj !== 'object'))
+      return Promise.reject(Error('not an object in JSROOT.draw'));
+
+   if (opt == 'inspect')
+      return JSROOT.require("hierarchy").then(() => jsrp.drawInspector(dom, obj));
+
+   let handle, type_info;
+   if ('_typename' in obj) {
+      type_info = "type " + obj._typename;
+      handle = getDrawHandle("ROOT." + obj._typename, opt);
+   } else if ('_kind' in obj) {
+      type_info = "kind " + obj._kind;
+      handle = getDrawHandle(obj._kind, opt);
+   } else
+      return JSROOT.require("hierarchy").then(() => jsrp.drawInspector(dom, obj));
+
+   // this is case of unsupported class, close it normally
+   if (!handle)
+      return Promise.reject(Error(`Object of ${type_info} cannot be shown with JSROOT.draw`));
+
+   if (handle.dummy)
+      return Promise.resolve(null);
+
+   if (handle.draw_field && obj[handle.draw_field])
+      return JSROOT.draw(dom, obj[handle.draw_field], opt || handle.draw_field_opt);
+
+   if (!handle.func && !handle.direct && !handle.class) {
+      if (opt && (opt.indexOf("same") >= 0)) {
+
+         let main_painter = jsrp.getElementMainPainter(dom);
+
+         if (main_painter && (typeof main_painter.performDrop === 'function'))
+            return main_painter.performDrop(obj, "", null, opt);
+      }
+
+      return Promise.reject(Error(`Function not specified to draw object ${type_info}`));
+   }
+
+   function performDraw() {
+      let promise;
+      if (handle.direct == "v7") {
+         let painter = new JSROOT.RObjectPainter(dom, obj, opt, handle.csstype);
+         promise = jsrp.ensureRCanvas(painter, handle.frame || false).then(() => {
+            painter.redraw = handle.func;
+            let res = painter.redraw();
+            if (!isPromise(res))
+               return painter;
+            return res.then(() => painter);
+         })
+      } else if (handle.direct) {
+         let painter = new ObjectPainter(dom, obj, opt);
+         promise = jsrp.ensureTCanvas(painter, handle.frame || false).then(() => {
+            painter.redraw = handle.func;
+            let res = painter.redraw();
+            if (!isPromise(res))
+               return painter;
+            return res.then(() => painter);
+         });
+      } else {
+         promise = handle.func(dom, obj, opt);
+         if (!isPromise(promise)) promise = Promise.resolve(promise);
+      }
+
+      return promise.then(p => {
+         if (!p)
+            return Promise.reject(Error(`Fail to draw object ${type_info}`));
+
+         if ((typeof p == 'object') && !p.options)
+            p.options = { original: opt || "" }; // keep original draw options
+
+          return p;
+      });
+   }
+
+   if (typeof handle.func == 'function')
+      return performDraw();
+
+   let funcname, clname;
+   if (typeof handle.func == 'string')
+      funcname = handle.func;
+   else if (typeof handle.class == 'string')
+      clname = handle.class;
+   else
+      return Promise.reject(Error(`Draw function or class not specified to draw ${type_info}`));
+
+   let prereq = handle.prereq || "";
+   if (handle.direct == "v7")
+      prereq += ";v7gpad";
+   else if (handle.direct)
+      prereq += ";gpad";
+   if (handle.script)
+      prereq += ";" + handle.script;
+
+   if (!prereq)
+      return Promise.reject(Error(`Prerequicities to load ${funcname} are not specified`));
+
+   return JSROOT.require(prereq).then(() => {
+      if (funcname) {
+         let func = JSROOT.findFunction(funcname);
+         if (!func)
+            return Promise.reject(Error(`Fail to find function ${funcname} after loading ${prereq}`));
+         handle.func = func;
+      } else {
+         let cl = JSROOT[clname];
+         if (!cl || typeof cl.draw != 'function')
+            return Promise.reject(Error(`Fail to find class JSROOT.${clname} after loading ${prereq}`));
+         handle.class = cl;
+         handle.func = cl.draw;
+      }
+
+      return performDraw();
+   });
+}
+
+/** @summary Redraw object in specified HTML element with given draw options.
+  * @param {string|object} dom - id of div element to draw or directly DOMElement
+  * @param {object} obj - object to draw, object type should be registered before in JSROOT
+  * @param {string} opt - draw options
+  * @returns {Promise} with painter object
+  * @requires painter
+  * @desc If drawing was not done before, it will be performed with {@link JSROOT.draw}.
+  * Otherwise drawing content will be updated */
+JSROOT.redraw = function(dom, obj, opt) {
+
+   if (!obj || (typeof obj !== 'object'))
+      return Promise.reject(Error('not an object in JSROOT.redraw'));
+
+   let can_painter = jsrp.getElementCanvPainter(dom), handle, res_painter = null, redraw_res;
+   if (obj._typename)
+      handle = getDrawHandle("ROOT." + obj._typename);
+   if (handle && handle.draw_field && obj[handle.draw_field])
+      obj = obj[handle.draw_field];
+
+   if (can_painter) {
+      if (can_painter.matchObjectType(obj._typename)) {
+         redraw_res = can_painter.redrawObject(obj, opt);
+         if (redraw_res) res_painter = can_painter;
+      } else {
+         for (let i = 0; i < can_painter.painters.length; ++i) {
+            let painter = can_painter.painters[i];
+            if (painter.matchObjectType(obj._typename)) {
+               redraw_res = painter.redrawObject(obj, opt);
+               if (redraw_res) {
+                  res_painter = painter;
+                  break;
                }
             }
          }
-         document.body.style.cursor = 'auto';
       }
+   } else {
+      let top = new BasePainter(dom).getTopPainter();
+      // base painter do not have this method, if it there use it
+      // it can be object painter here or can be specially introduce method to handling redraw!
+      if (top && typeof top.redrawObject == 'function') {
+         redraw_res = top.redrawObject(obj, opt);
+         if (redraw_res) res_painter = top;
+      }
+   }
 
-      window.addEventListener('resize', () => {
-         if (myInterval !== null) clearTimeout(myInterval);
-         myInterval = setTimeout(ResizeTimer, myDelay);
+   if (res_painter) {
+      if (!redraw_res || (typeof redraw_res != 'object') || !redraw_res.then)
+         redraw_res = Promise.resolve(true);
+      return redraw_res.then(() => res_painter);
+   }
+
+   JSROOT.cleanup(dom);
+
+   return JSROOT.draw(dom, obj, opt);
+}
+
+/** @summary Save object, drawn in specified element, as JSON.
+  * @desc Normally it is TCanvas object with list of primitives
+  * @param {string|object} dom - id of top div element or directly DOMElement
+  * @returns {string} produced JSON string */
+JSROOT.drawingJSON = function(dom) {
+   let canp = jsrp.getElementCanvPainter(dom);
+   return canp ? canp.produceJSON() : "";
+}
+
+/** @summary Compress SVG code, produced from JSROOT drawing
+  * @desc removes extra info or empty elements
+  * @private */
+jsrp.compressSVG = function(svg) {
+
+   svg = svg.replace(/url\(\&quot\;\#(\w+)\&quot\;\)/g, "url(#$1)")        // decode all URL
+            .replace(/ class=\"\w*\"/g, "")                                // remove all classes
+            .replace(/ pad=\"\w*\"/g, "")                                  // remove all pad ids
+            .replace(/ title=\"\"/g, "")                                   // remove all empty titles
+            .replace(/<g objname=\"\w*\" objtype=\"\w*\"/g, "<g")          // remove object ids
+            .replace(/<g transform=\"translate\(\d+\,\d+\)\"><\/g>/g, "")  // remove all empty groups with transform
+            .replace(/<g><\/g>/g, "");                                     // remove all empty groups
+
+   // remove all empty frame svgs, typically appears in 3D drawings, maybe should be improved in frame painter itself
+   svg = svg.replace(/<svg x=\"0\" y=\"0\" overflow=\"hidden\" width=\"\d+\" height=\"\d+\" viewBox=\"0 0 \d+ \d+\"><\/svg>/g, "")
+
+   if (svg.indexOf("xlink:href") < 0)
+      svg = svg.replace(/ xmlns:xlink=\"http:\/\/www.w3.org\/1999\/xlink\"/g, "");
+
+   return svg;
+}
+
+/** @summary Create SVG image for provided object.
+  * @desc Function especially useful in Node.js environment to generate images for
+  * supported ROOT classes
+  * @param {object} args - contains different settings
+  * @param {object} args.object - object for the drawing
+  * @param {string} [args.option] - draw options
+  * @param {number} [args.width = 1200] - image width
+  * @param {number} [args.height = 800] - image height
+  * @returns {Promise} with svg code */
+JSROOT.makeSVG = function(args) {
+
+   if (!args) args = {};
+   if (!args.object) return Promise.reject(Error("No object specified to generate SVG"));
+   if (!args.width) args.width = 1200;
+   if (!args.height) args.height = 800;
+
+   function build(main) {
+
+      main.attr("width", args.width).attr("height", args.height)
+          .style("width", args.width + "px").style("height", args.height + "px");
+
+      JSROOT._.svg_3ds = undefined;
+
+      return JSROOT.draw(main.node(), args.object, args.option || "").then(() => {
+
+         let has_workarounds = JSROOT._.svg_3ds && jsrp.processSvgWorkarounds;
+
+         main.select('svg')
+             .attr("xmlns", "http://www.w3.org/2000/svg")
+             .attr("xmlns:xlink", "http://www.w3.org/1999/xlink")
+             .attr("width", args.width)
+             .attr("height", args.height)
+             .attr("style", null).attr("class", null).attr("x", null).attr("y", null);
+
+         function clear_element() {
+            const elem = d3.select(this);
+            if (elem.style('display')=="none") elem.remove();
+         };
+
+         // remove containers with display: none
+         if (has_workarounds)
+            main.selectAll('g.root_frame').each(clear_element);
+
+         main.selectAll('svg').each(clear_element);
+
+         let svg = main.html();
+
+         if (has_workarounds)
+            svg = jsrp.processSvgWorkarounds(svg);
+
+         svg = jsrp.compressSVG(svg);
+
+         JSROOT.cleanup(main.node());
+
+         main.remove();
+
+         return svg;
       });
    }
 
-   // list of registered draw functions
-   let drawFuncs = { lst: [
-      { name: "TCanvas", icon: "img_canvas", prereq: "gpad", class: "TCanvasPainter", opt: ";grid;gridx;gridy;tick;tickx;ticky;log;logx;logy;logz", expand_item: "fPrimitives" },
-      { name: "TPad", icon: "img_canvas", prereq: "gpad", class: "TPadPainter", opt: ";grid;gridx;gridy;tick;tickx;ticky;log;logx;logy;logz", expand_item: "fPrimitives" },
-      { name: "TSlider", icon: "img_canvas", prereq: "gpad", class: "TPadPainter" },
-      { name: "TFrame", icon: "img_frame", prereq: "gpad", class: "TFramePainter" },
-      { name: "TPave", icon: "img_pavetext", prereq: "hist", class: "TPavePainter" },
-      { name: "TPaveText", icon: "img_pavetext", prereq: "hist", class: "TPavePainter" },
-      { name: "TPavesText", icon: "img_pavetext", prereq: "hist", class: "TPavePainter" },
-      { name: "TPaveStats", icon: "img_pavetext", prereq: "hist", class: "TPavePainter" },
-      { name: "TPaveLabel", icon: "img_pavelabel", prereq: "hist", class: "TPavePainter" },
-      { name: "TDiamond", icon: "img_pavelabel", prereq: "hist", class: "TPavePainter" },
-      { name: "TLatex", icon: "img_text", prereq: "more", func: ".drawText", direct: true },
-      { name: "TMathText", icon: "img_text", prereq: "more", func: ".drawText", direct: true },
-      { name: "TText", icon: "img_text", prereq: "more", func: ".drawText", direct: true },
-      { name: /^TH1/, icon: "img_histo1d", prereq: "hist", class: "TH1Painter", opt: ";hist;P;P0;E;E1;E2;E3;E4;E1X0;L;LF2;B;B1;A;TEXT;LEGO;same", ctrl: "l" },
-      { name: "TProfile", icon: "img_profile", prereq: "hist", class: "TH1Painter", opt: ";E0;E1;E2;p;AH;hist" },
-      { name: "TH2Poly", icon: "img_histo2d", prereq: "hist", class: "TH2Painter", opt: ";COL;COL0;COLZ;LCOL;LCOL0;LCOLZ;LEGO;TEXT;same", expand_item: "fBins", theonly: true },
-      { name: "TProfile2Poly", sameas: "TH2Poly" },
-      { name: "TH2PolyBin", icon: "img_histo2d", draw_field: "fPoly", draw_field_opt: "L" },
-      { name: /^TH2/, icon: "img_histo2d", prereq: "hist", class: "TH2Painter", dflt: "col", opt: ";COL;COLZ;COL0;COL1;COL0Z;COL1Z;COLA;BOX;BOX1;PROJ;PROJX1;PROJX2;PROJX3;PROJY1;PROJY2;PROJY3;SCAT;TEXT;TEXTE;TEXTE0;CANDLE;CANDLE1;CANDLE2;CANDLE3;CANDLE4;CANDLE5;CANDLE6;CANDLEY1;CANDLEY2;CANDLEY3;CANDLEY4;CANDLEY5;CANDLEY6;VIOLIN;VIOLIN1;VIOLIN2;VIOLINY1;VIOLINY2;CONT;CONT1;CONT2;CONT3;CONT4;ARR;SURF;SURF1;SURF2;SURF4;SURF6;E;A;LEGO;LEGO0;LEGO1;LEGO2;LEGO3;LEGO4;same", ctrl: "lego" },
-      { name: "TProfile2D", sameas: "TH2" },
-      { name: /^TH3/, icon: 'img_histo3d', prereq: "hist3d", class: "TH3Painter", opt: ";SCAT;BOX;BOX2;BOX3;GLBOX1;GLBOX2;GLCOL" },
-      { name: "THStack", icon: "img_histo1d", prereq: "hist", class: "THStackPainter", expand_item: "fHists", opt: "NOSTACK;HIST;E;PFC;PLC" },
-      { name: "TPolyMarker3D", icon: 'img_histo3d', prereq: "base3d", func: ".drawPolyMarker3D", direct: true, frame: "3d" },
-      { name: "TPolyLine3D", icon: 'img_graph', prereq: "base3d", func: ".drawPolyLine3D", direct: true, frame: "3d" },
-      { name: "TGraphStruct" },
-      { name: "TGraphNode" },
-      { name: "TGraphEdge" },
-      { name: "TGraphTime", icon: "img_graph", prereq: "more", class: "TGraphTimePainter", opt: "once;repeat;first", theonly: true },
-      { name: "TGraph2D", icon: "img_graph", prereq: "hist3d", class: "TGraph2DPainter", opt: ";P;PCOL", theonly: true },
-      { name: "TGraph2DErrors", icon: "img_graph", prereq: "hist3d", class: "TGraph2DPainter", opt: ";P;PCOL;ERR", theonly: true },
-      { name: "TGraphPolargram", icon: "img_graph", prereq: "more", class: "TGraphPolargramPainter", theonly: true },
-      { name: "TGraphPolar", icon: "img_graph", prereq: "more", class: "TGraphPolarPainter", opt: ";F;L;P;PE", theonly: true },
-      { name: /^TGraph/, icon: "img_graph", prereq: "more", class: "TGraphPainter", opt: ";L;P" },
-      { name: "TEfficiency", icon: "img_graph", prereq: "more", class: "TEfficiencyPainter", opt: ";AP" },
-      { name: "TCutG", sameas: "TGraph" },
-      { name: /^RooHist/, sameas: "TGraph" },
-      { name: /^RooCurve/, sameas: "TGraph" },
-      { name: "RooPlot", icon: "img_canvas", prereq: "more", func: ".drawRooPlot" },
-      { name: "TRatioPlot", icon: "img_mgraph", prereq: "more", class: "TRatioPlotPainter", opt: "" },
-      { name: "TMultiGraph", icon: "img_mgraph", prereq: "more", class: "TMultiGraphPainter", opt: ";l;p;3d", expand_item: "fGraphs" },
-      { name: "TStreamerInfoList", icon: "img_question", prereq: "hierarchy", func: ".drawStreamerInfo" },
-      { name: "TPaletteAxis", icon: "img_colz", prereq: "hist", class: "TPavePainter" },
-      { name: "TWebPainting", icon: "img_graph", prereq: "more", func: ".drawWebPainting" },
-      { name: "TCanvasWebSnapshot", icon: "img_canvas", prereq: "gpad", func: ".drawTPadSnapshot" },
-      { name: "TPadWebSnapshot", sameas: "TCanvasWebSnapshot" },
-      { name: "kind:Text", icon: "img_text", func: jsrp.drawRawText },
-      { name: "TObjString", icon: "img_text", func: jsrp.drawRawText },
-      { name: "TF1", icon: "img_tf1", prereq: "math;more", class: "TF1Painter" },
-      { name: "TF2", icon: "img_tf2", prereq: "math;hist", func: ".drawTF2" },
-      { name: "TSpline3", icon: "img_tf1", prereq: "more", class: "TSplinePainter" },
-      { name: "TSpline5", icon: "img_tf1", prereq: "more", class: "TSplinePainter" },
-      { name: "TEllipse", icon: 'img_graph', prereq: "more", func: ".drawEllipse", direct: true },
-      { name: "TArc", sameas: 'TEllipse' },
-      { name: "TCrown", sameas: 'TEllipse' },
-      { name: "TPie", icon: 'img_graph', prereq: "more", func: ".drawPie", direct: true },
-      { name: "TPieSlice", icon: 'img_graph', dummy: true },
-      { name: "TExec", icon: "img_graph", dummy: true },
-      { name: "TLine", icon: 'img_graph', prereq: "more", func: ".drawLine", direct: true },
-      { name: "TArrow", icon: 'img_graph', prereq: "more", func: ".drawArrow", direct: true },
-      { name: "TPolyLine", icon: 'img_graph', prereq: "more", func: ".drawPolyLine", direct: true },
-      { name: "TCurlyLine", sameas: 'TPolyLine' },
-      { name: "TCurlyArc", sameas: 'TPolyLine' },
-      { name: "TParallelCoord", icon: "img_graph", dummy: true },
-      { name: "TGaxis", icon: "img_graph", prereq: "gpad", class: "TAxisPainter" },
-      { name: "TLegend", icon: "img_pavelabel", prereq: "hist", class: "TPavePainter" },
-      { name: "TBox", icon: 'img_graph', prereq: "more", func: ".drawBox", direct: true },
-      { name: "TWbox", icon: 'img_graph', prereq: "more", func: ".drawBox", direct: true },
-      { name: "TSliderBox", icon: 'img_graph', prereq: "more", func: ".drawBox", direct: true },
-      { name: "TMarker", icon: 'img_graph', prereq: "more", func: ".drawMarker", direct: true },
-      { name: "TPolyMarker", icon: 'img_graph', prereq: "more", func: ".drawPolyMarker", direct: true },
-      { name: "TASImage", icon: 'img_mgraph', prereq: "more", class: "TASImagePainter", opt: ";z" },
-      { name: "TJSImage", icon: 'img_mgraph', prereq: "more", func: ".drawJSImage", opt: ";scale;center" },
-      { name: "TGeoVolume", icon: 'img_histo3d', prereq: "geom", class: "TGeoPainter", expand: "JSROOT.GEO.expandObject", opt: ";more;all;count;projx;projz;wire;no_screen;dflt", ctrl: "dflt" },
-      { name: "TEveGeoShapeExtract", icon: 'img_histo3d', prereq: "geom", class: "TGeoPainter", expand: "JSROOT.GEO.expandObject", opt: ";more;all;count;projx;projz;wire;dflt", ctrl: "dflt" },
-      { name: "ROOT::Experimental::REveGeoShapeExtract", icon: 'img_histo3d', prereq: "geom", class: "TGeoPainter", expand: "JSROOT.GEO.expandObject", opt: ";more;all;count;projx;projz;wire;dflt", ctrl: "dflt" },
-      { name: "TGeoOverlap", icon: 'img_histo3d', prereq: "geom", expand: "JSROOT.GEO.expandObject", class: "TGeoPainter", opt: ";more;all;count;projx;projz;wire;dflt", dflt: "dflt", ctrl: "expand" },
-      { name: "TGeoManager", icon: 'img_histo3d', prereq: "geom", expand: "JSROOT.GEO.expandObject", class: "TGeoPainter", opt: ";more;all;count;projx;projz;wire;tracks;no_screen;dflt", dflt: "expand", ctrl: "dflt" },
-      { name: /^TGeo/, icon: 'img_histo3d', prereq: "geom", class: "TGeoPainter", expand: "JSROOT.GEO.expandObject", opt: ";more;all;axis;compa;count;projx;projz;wire;no_screen;dflt", dflt: "dflt", ctrl: "expand" },
-      { name: "TAxis3D", icon: 'img_graph', prereq: "geom", func: ".drawAxis3D", direct: true },
-      // these are not draw functions, but provide extra info about correspondent classes
-      { name: "kind:Command", icon: "img_execute", execute: true },
-      { name: "TFolder", icon: "img_folder", icon2: "img_folderopen", noinspect: true, prereq: "hierarchy", expand: ".folderHierarchy" },
-      { name: "TTask", icon: "img_task", prereq: "hierarchy", expand: ".taskHierarchy", for_derived: true },
-      { name: "TTree", icon: "img_tree", prereq: "tree", expand: 'JSROOT.treeHierarchy', func: 'JSROOT.drawTree', dflt: "expand", opt: "player;testio", shift: "inspect" },
-      { name: "TNtuple", icon: "img_tree", prereq: "tree", expand: 'JSROOT.treeHierarchy', func: 'JSROOT.drawTree', dflt: "expand", opt: "player;testio", shift: "inspect" },
-      { name: "TNtupleD", icon: "img_tree", prereq: "tree", expand: 'JSROOT.treeHierarchy', func: 'JSROOT.drawTree', dflt: "expand", opt: "player;testio", shift: "inspect" },
-      { name: "TBranchFunc", icon: "img_leaf_method", prereq: "tree", func: 'JSROOT.drawTree', opt: ";dump", noinspect: true },
-      { name: /^TBranch/, icon: "img_branch", prereq: "tree", func: 'JSROOT.drawTree', dflt: "expand", opt: ";dump", ctrl: "dump", shift: "inspect", ignore_online: true },
-      { name: /^TLeaf/, icon: "img_leaf", prereq: "tree", noexpand: true, func: 'JSROOT.drawTree', opt: ";dump", ctrl: "dump", ignore_online: true },
-      { name: "TList", icon: "img_list", prereq: "hierarchy", func: ".drawList", expand: ".listHierarchy", dflt: "expand" },
-      { name: "THashList", sameas: "TList" },
-      { name: "TObjArray", sameas: "TList" },
-      { name: "TClonesArray", sameas: "TList" },
-      { name: "TMap", sameas: "TList" },
-      { name: "TColor", icon: "img_color" },
-      { name: "TFile", icon: "img_file", noinspect: true },
-      { name: "TMemFile", icon: "img_file", noinspect: true },
-      { name: "TStyle", icon: "img_question", noexpand: true },
-      { name: "Session", icon: "img_globe" },
-      { name: "kind:TopFolder", icon: "img_base" },
-      { name: "kind:Folder", icon: "img_folder", icon2: "img_folderopen", noinspect: true },
-      { name: "ROOT::Experimental::RCanvas", icon: "img_canvas", prereq: "v7gpad", class: "RCanvasPainter", opt: "", expand_item: "fPrimitives" },
-      { name: "ROOT::Experimental::RCanvasDisplayItem", icon: "img_canvas", prereq: "v7gpad", func: ".drawRPadSnapshot", opt: "", expand_item: "fPrimitives" }
-   ], cache: {} };
+   if (!JSROOT.nodejs)
+      return build(d3.select('body').append("div").style("visible", "hidden"));
 
-
-   /** @summary Register draw function for the class
-     * @desc List of supported draw options could be provided, separated  with ';'
-     * @param {object} args - arguments
-     * @param {string|regexp} args.name - class name or regexp pattern
-     * @param {string} [args.prereq] - prerequicities to load before search for the draw function
-     * @param {string} args.func - draw function name or just a function
-     * @param {boolean} [args.direct] - if true, function is just Redraw() method of ObjectPainter
-     * @param {string} [args.opt] - list of supported draw options (separated with semicolon) like "col;scat;"
-     * @param {string} [args.icon] - icon name shown for the class in hierarchy browser
-     * @param {string} [args.draw_field] - draw only data member from object, like fHistogram
-     * @protected */
-   jsrp.addDrawFunc = function(args) {
-      drawFuncs.lst.push(args);
-      return args;
+   if (!JSROOT._.nodejs_document) {
+      // use eval while old minifier is not able to parse newest Node.js syntax
+      const { JSDOM } = require("jsdom");
+      JSROOT._.nodejs_window = (new JSDOM("<!DOCTYPE html>hello")).window;
+      JSROOT._.nodejs_document = JSROOT._.nodejs_window.document; // used with three.js
+      JSROOT._.nodejs_window.d3 = d3.select(JSROOT._.nodejs_document); //get d3 into the dom
    }
 
-   /** @summary return draw handle for specified item kind
-     * @desc kind could be ROOT.TH1I for ROOT classes or just
-     * kind string like "Command" or "Text"
-     * selector can be used to search for draw handle with specified option (string)
-     * or just sequence id
-     * @memberof JSROOT.Painter
-     * @private */
-   function getDrawHandle(kind, selector) {
+   return build(JSROOT._.nodejs_window.d3.select('body').append('div'));
+}
 
-      if (typeof kind != 'string') return null;
-      if (selector === "") selector = null;
+/** @summary Check resize of drawn element
+  * @param {string|object} dom - id or DOM element
+  * @param {boolean|object} arg - options on how to resize
+  * @desc As first argument dom one should use same argument as for the drawing
+  * As second argument, one could specify "true" value to force redrawing of
+  * the element even after minimal resize
+  * Or one just supply object with exact sizes like { width:300, height:200, force:true };
+  * @example
+  * JSROOT.resize("drawing", { width: 500, height: 200 } );
+  * JSROOT.resize(document.querySelector("#drawing"), true); */
+JSROOT.resize = function(dom, arg) {
+   if (arg === true)
+      arg = { force: true };
+   else if (typeof arg !== 'object')
+      arg = null;
+   let done = false;
+   new ObjectPainter(dom).forEachPainter(painter => {
+      if (!done && (typeof painter.checkResize == 'function'))
+         done = painter.checkResize(arg);
+   });
+   return done;
+}
 
-      let first = null;
+/** @summary Returns canvas painter (if any) for specified HTML element
+  * @param {string|object} dom - id or DOM element
+  * @private */
+jsrp.getElementCanvPainter = function(dom) {
+   return new ObjectPainter(dom).getCanvPainter();
+}
 
-      if ((selector === null) && (kind in drawFuncs.cache))
-         return drawFuncs.cache[kind];
+/** @summary Returns main painter (if any) for specified HTML element - typically histogram painter
+  * @param {string|object} dom - id or DOM element
+  * @private */
+jsrp.getElementMainPainter = function(dom) {
+   return new ObjectPainter(dom).getMainPainter(true);
+}
 
-      let search = (kind.indexOf("ROOT.") == 0) ? kind.substr(5) : "kind:" + kind, counter = 0;
-      for (let i = 0; i < drawFuncs.lst.length; ++i) {
-         let h = drawFuncs.lst[i];
-         if (typeof h.name == "string") {
-            if (h.name != search) continue;
-         } else {
-            if (!search.match(h.name)) continue;
-         }
+/** @summary Safely remove all JSROOT drawings from specified element
+  * @param {string|object} dom - id or DOM element
+  * @requires painter
+  * @example
+  * JSROOT.cleanup("drawing");
+  * JSROOT.cleanup(document.querySelector("#drawing")); */
+JSROOT.cleanup = function(dom) {
+   let dummy = new ObjectPainter(dom), lst = [];
+   dummy.forEachPainter(p => { if (lst.indexOf(p) < 0) lst.push(p); });
+   lst.forEach(p => p.cleanup());
+   dummy.selectDom().html("");
+   return lst;
+}
 
-         if (h.sameas !== undefined)
-            return getDrawHandle("ROOT." + h.sameas, selector);
+/** @summary Display progress message in the left bottom corner.
+  * @desc Previous message will be overwritten
+  * if no argument specified, any shown messages will be removed
+  * @param {string} msg - message to display
+  * @param {number} tmout - optional timeout in milliseconds, after message will disappear
+  * @private */
+jsrp.showProgress = function(msg, tmout) {
+   if (JSROOT.batch_mode || (typeof document === 'undefined')) return;
+   let id = "jsroot_progressbox",
+       box = d3.select("#" + id);
 
-         if ((selector === null) || (selector === undefined)) {
-            // store found handle in cache, can reuse later
-            if (!(kind in drawFuncs.cache)) drawFuncs.cache[kind] = h;
-            return h;
-         } else if (typeof selector == 'string') {
-            if (!first) first = h;
-            // if drawoption specified, check it present in the list
+   if (!JSROOT.settings.ProgressBox) return box.remove();
 
-            if (selector == "::expand") {
-               if (('expand' in h) || ('expand_item' in h)) return h;
-            } else
-               if ('opt' in h) {
-                  let opts = h.opt.split(';');
-                  for (let j = 0; j < opts.length; ++j) opts[j] = opts[j].toLowerCase();
-                  if (opts.indexOf(selector.toLowerCase()) >= 0) return h;
-               }
-         } else if (selector === counter) {
-            return h;
-         }
-         ++counter;
-      }
-
-      return first;
+   if ((arguments.length == 0) || !msg) {
+      if ((tmout !== -1) || (!box.empty() && box.property("with_timeout"))) box.remove();
+      return;
    }
 
-   /** @summary Scan streamer infos for derived classes
-     * @desc Assign draw functions for such derived classes
-     * @private */
-   jsrp.addStreamerInfos = function(lst) {
-      if (!lst) return;
+   if (box.empty()) {
+      box = d3.select(document.body).append("div").attr("id", id);
+      box.append("p");
+   }
 
-      function CheckBaseClasses(si, lvl) {
-         if (!si.fElements) return null;
-         if (lvl > 10) return null; // protect against recursion
+   box.property("with_timeout", false);
 
-         for (let j = 0; j < si.fElements.arr.length; ++j) {
-            // extract streamer info for each class member
-            let element = si.fElements.arr[j];
-            if (element.fTypeName !== 'BASE') continue;
+   if (typeof msg === "string") {
+      box.select("p").html(msg);
+   } else {
+      box.html("");
+      box.node().appendChild(msg);
+   }
 
-            let handle = getDrawHandle("ROOT." + element.fName);
-            if (handle && !handle.for_derived) handle = null;
+   if (Number.isFinite(tmout) && (tmout > 0)) {
+      box.property("with_timeout", true);
+      setTimeout(() => jsrp.showProgress('', -1), tmout);
+   }
+}
 
-            // now try find that base class of base in the list
-            if (handle === null)
-               for (let k = 0; k < lst.arr.length; ++k)
-                  if (lst.arr[k].fName === element.fName) {
-                     handle = CheckBaseClasses(lst.arr[k], lvl + 1);
-                     break;
-                  }
+/** @summary Converts numeric value to string according to specified format.
+  * @param {number} value - value to convert
+  * @param {string} [fmt="6.4g"] - format can be like 5.4g or 4.2e or 6.4f
+  * @param {boolean} [ret_fmt] - when true returns array with value and actual format like ["0.1","6.4f"]
+  * @returns {string|Array} - converted value or array with value and actual format */
+jsrp.floatToString = function(value, fmt, ret_fmt) {
+   if (!fmt) fmt = "6.4g";
 
-            if (handle && handle.for_derived) return handle;
-         }
-         return null;
+   fmt = fmt.trim();
+   let len = fmt.length;
+   if (len<2)
+      return ret_fmt ? [value.toFixed(4), "6.4f"] : value.toFixed(4);
+   let last = fmt[len-1];
+   fmt = fmt.slice(0,len-1);
+   let isexp, prec = fmt.indexOf(".");
+   prec = (prec<0) ? 4 : parseInt(fmt.slice(prec+1));
+   if (!Number.isInteger(prec) || (prec <=0)) prec = 4;
+
+   let significance = false;
+   if ((last=='e') || (last=='E')) { isexp = true; } else
+   if (last=='Q') { isexp = true; significance = true; } else
+   if ((last=='f') || (last=='F')) { isexp = false; } else
+   if (last=='W') { isexp = false; significance = true; } else
+   if ((last=='g') || (last=='G')) {
+      let se = jsrp.floatToString(value, fmt+'Q', true),
+          sg = jsrp.floatToString(value, fmt+'W', true);
+
+      if (se[0].length < sg[0].length) sg = se;
+      return ret_fmt ? sg : sg[0];
+   } else {
+      isexp = false;
+      prec = 4;
+   }
+
+   if (isexp) {
+      // for exponential representation only one significant digit befor point
+      if (significance) prec--;
+      if (prec < 0) prec = 0;
+
+      let se = value.toExponential(prec);
+
+      return ret_fmt ? [se, '5.'+prec+'e'] : se;
+   }
+
+   let sg = value.toFixed(prec);
+
+   if (significance) {
+
+      // when using fixed representation, one could get 0.0
+      if ((value!=0) && (Number(sg)==0.) && (prec>0)) {
+         prec = 20; sg = value.toFixed(prec);
       }
 
-      for (let n = 0; n < lst.arr.length; ++n) {
-         let si = lst.arr[n];
-         if (getDrawHandle("ROOT." + si.fName) !== null) continue;
+      let l = 0;
+      while ((l<sg.length) && (sg[l] == '0' || sg[l] == '-' || sg[l] == '.')) l++;
 
-         let handle = CheckBaseClasses(si, 0);
+      let diff = sg.length - l - prec;
+      if (sg.indexOf(".")>l) diff--;
 
-         if (!handle) continue;
-
-         let newhandle = JSROOT.extend({}, handle);
-         // delete newhandle.for_derived; // should we disable?
-         newhandle.name = si.fName;
-         drawFuncs.lst.push(newhandle);
+      if (diff != 0) {
+         prec-=diff;
+         if (prec<0) prec = 0; else if (prec>20) prec = 20;
+         sg = value.toFixed(prec);
       }
    }
 
-   /** @summary Provide draw settings for specified class or kind
-     * @memberof JSROOT.Painter
-     * @private */
-   function getDrawSettings(kind, selector) {
-      let res = { opts: null, inspect: false, expand: false, draw: false, handle: null };
-      if (typeof kind != 'string') return res;
-      let isany = false, noinspect = false, canexpand = false;
-      if (typeof selector !== 'string') selector = "";
-
-      for (let cnt = 0; cnt < 1000; ++cnt) {
-         let h = getDrawHandle(kind, cnt);
-         if (!h) break;
-         if (!res.handle) res.handle = h;
-         if (h.noinspect) noinspect = true;
-         if (h.expand || h.expand_item || h.can_expand) canexpand = true;
-         if (!h.func && !h.class) break;
-         isany = true;
-         if (!('opt' in h)) continue;
-         let opts = h.opt.split(';');
-         for (let i = 0; i < opts.length; ++i) {
-            opts[i] = opts[i].toLowerCase();
-            if ((selector.indexOf('nosame') >= 0) && (opts[i].indexOf('same') == 0)) continue;
-
-            if (res.opts === null) res.opts = [];
-            if (res.opts.indexOf(opts[i]) < 0) res.opts.push(opts[i]);
-         }
-         if (h.theonly) break;
-      }
-
-      if (selector.indexOf('noinspect') >= 0) noinspect = true;
-
-      if (isany && (res.opts === null)) res.opts = [""];
-
-      // if no any handle found, let inspect ROOT-based objects
-      if (!isany && (kind.indexOf("ROOT.") == 0) && !noinspect) res.opts = [];
-
-      if (!noinspect && res.opts)
-         res.opts.push("inspect");
-
-      res.inspect = !noinspect;
-      res.expand = canexpand;
-      res.draw = res.opts && (res.opts.length > 0);
-
-      return res;
-   }
-
-   /** @summary Returns true if provided object class can be drawn
-     * @param {string} classname - name of class to be tested
-     * @private */
-   jsrp.canDraw = function(classname) {
-      return getDrawSettings("ROOT." + classname).opts !== null;
-   }
-
-   /** @summary Set default draw option for provided class */
-   jsrp.setDefaultDrawOpt = function(classname, opt) {
-      let handle = getDrawHandle("ROOT." + classname, 0);
-      if (handle)
-         handle.dflt = opt;
-   }
-
-   /** @summary Draw object in specified HTML element with given draw options.
-     * @param {string|object} dom - id of div element to draw or directly DOMElement
-     * @param {object} obj - object to draw, object type should be registered before in JSROOT
-     * @param {string} opt - draw options separated by space, comma or semicolon
-     * @returns {Promise} with painter object
-     * @requires painter
-     * @desc An extensive list of support draw options can be found on [JSROOT examples page]{@link https://root.cern/js/latest/examples.htm}
-     * @example
-     * JSROOT.openFile("https://root.cern/js/files/hsimple.root")
-     *       .then(file => file.readObject("hpxpy;1"))
-     *       .then(obj => JSROOT.draw("drawing", obj, "colz;logx;gridx;gridy")); */
-   JSROOT.draw = function(dom, obj, opt) {
-      if (!obj || (typeof obj !== 'object'))
-         return Promise.reject(Error('not an object in JSROOT.draw'));
-
-      if (opt == 'inspect')
-         return JSROOT.require("hierarchy").then(() => jsrp.drawInspector(dom, obj));
-
-      let handle, type_info;
-      if ('_typename' in obj) {
-         type_info = "type " + obj._typename;
-         handle = getDrawHandle("ROOT." + obj._typename, opt);
-      } else if ('_kind' in obj) {
-         type_info = "kind " + obj._kind;
-         handle = getDrawHandle(obj._kind, opt);
-      } else
-         return JSROOT.require("hierarchy").then(() => jsrp.drawInspector(dom, obj));
-
-      // this is case of unsupported class, close it normally
-      if (!handle)
-         return Promise.reject(Error(`Object of ${type_info} cannot be shown with JSROOT.draw`));
-
-      if (handle.dummy)
-         return Promise.resolve(null);
-
-      if (handle.draw_field && obj[handle.draw_field])
-         return JSROOT.draw(dom, obj[handle.draw_field], opt || handle.draw_field_opt);
-
-      if (!handle.func && !handle.direct && !handle.class) {
-         if (opt && (opt.indexOf("same") >= 0)) {
-
-            let main_painter = jsrp.getElementMainPainter(dom);
-
-            if (main_painter && (typeof main_painter.performDrop === 'function'))
-               return main_painter.performDrop(obj, "", null, opt);
-         }
-
-         return Promise.reject(Error(`Function not specified to draw object ${type_info}`));
-      }
-
-      function performDraw() {
-         let promise;
-         if (handle.direct == "v7") {
-            let painter = new JSROOT.RObjectPainter(dom, obj, opt, handle.csstype);
-            promise = jsrp.ensureRCanvas(painter, handle.frame || false).then(() => {
-               painter.redraw = handle.func;
-               let res = painter.redraw();
-               if (!isPromise(res))
-                  return painter;
-               return res.then(() => painter);
-            })
-         } else if (handle.direct) {
-            let painter = new ObjectPainter(dom, obj, opt);
-            promise = jsrp.ensureTCanvas(painter, handle.frame || false).then(() => {
-               painter.redraw = handle.func;
-               let res = painter.redraw();
-               if (!isPromise(res))
-                  return painter;
-               return res.then(() => painter);
-            });
-         } else {
-            promise = handle.func(dom, obj, opt);
-            if (!isPromise(promise)) promise = Promise.resolve(promise);
-         }
-
-         return promise.then(p => {
-            if (!p)
-               return Promise.reject(Error(`Fail to draw object ${type_info}`));
-
-            if ((typeof p == 'object') && !p.options)
-               p.options = { original: opt || "" }; // keep original draw options
-
-             return p;
-         });
-      }
-
-      if (typeof handle.func == 'function')
-         return performDraw();
-
-      let funcname, clname;
-      if (typeof handle.func == 'string')
-         funcname = handle.func;
-      else if (typeof handle.class == 'string')
-         clname = handle.class;
-      else
-         return Promise.reject(Error(`Draw function or class not specified to draw ${type_info}`));
-
-      let prereq = handle.prereq || "";
-      if (handle.direct == "v7")
-         prereq += ";v7gpad";
-      else if (handle.direct)
-         prereq += ";gpad";
-      if (handle.script)
-         prereq += ";" + handle.script;
-
-      if (!prereq)
-         return Promise.reject(Error(`Prerequicities to load ${funcname} are not specified`));
-
-      return JSROOT.require(prereq).then(() => {
-         if (funcname) {
-            let func = JSROOT.findFunction(funcname);
-            if (!func)
-               return Promise.reject(Error(`Fail to find function ${funcname} after loading ${prereq}`));
-            handle.func = func;
-         } else {
-            let cl = JSROOT[clname];
-            if (!cl || typeof cl.draw != 'function')
-               return Promise.reject(Error(`Fail to find class JSROOT.${clname} after loading ${prereq}`));
-            handle.class = cl;
-            handle.func = cl.draw;
-         }
-
-         return performDraw();
-      });
-   }
-
-   /** @summary Redraw object in specified HTML element with given draw options.
-     * @param {string|object} dom - id of div element to draw or directly DOMElement
-     * @param {object} obj - object to draw, object type should be registered before in JSROOT
-     * @param {string} opt - draw options
-     * @returns {Promise} with painter object
-     * @requires painter
-     * @desc If drawing was not done before, it will be performed with {@link JSROOT.draw}.
-     * Otherwise drawing content will be updated */
-   JSROOT.redraw = function(dom, obj, opt) {
-
-      if (!obj || (typeof obj !== 'object'))
-         return Promise.reject(Error('not an object in JSROOT.redraw'));
-
-      let can_painter = jsrp.getElementCanvPainter(dom), handle, res_painter = null, redraw_res;
-      if (obj._typename)
-         handle = getDrawHandle("ROOT." + obj._typename);
-      if (handle && handle.draw_field && obj[handle.draw_field])
-         obj = obj[handle.draw_field];
-
-      if (can_painter) {
-         if (can_painter.matchObjectType(obj._typename)) {
-            redraw_res = can_painter.redrawObject(obj, opt);
-            if (redraw_res) res_painter = can_painter;
-         } else {
-            for (let i = 0; i < can_painter.painters.length; ++i) {
-               let painter = can_painter.painters[i];
-               if (painter.matchObjectType(obj._typename)) {
-                  redraw_res = painter.redrawObject(obj, opt);
-                  if (redraw_res) {
-                     res_painter = painter;
-                     break;
-                  }
-               }
-            }
-         }
-      } else {
-         let top = new BasePainter(dom).getTopPainter();
-         // base painter do not have this method, if it there use it
-         // it can be object painter here or can be specially introduce method to handling redraw!
-         if (top && typeof top.redrawObject == 'function') {
-            redraw_res = top.redrawObject(obj, opt);
-            if (redraw_res) res_painter = top;
-         }
-      }
-
-      if (res_painter) {
-         if (!redraw_res || (typeof redraw_res != 'object') || !redraw_res.then)
-            redraw_res = Promise.resolve(true);
-         return redraw_res.then(() => res_painter);
-      }
-
-      JSROOT.cleanup(dom);
-
-      return JSROOT.draw(dom, obj, opt);
-   }
-
-   /** @summary Save object, drawn in specified element, as JSON.
-     * @desc Normally it is TCanvas object with list of primitives
-     * @param {string|object} dom - id of top div element or directly DOMElement
-     * @returns {string} produced JSON string */
-   JSROOT.drawingJSON = function(dom) {
-      let canp = jsrp.getElementCanvPainter(dom);
-      return canp ? canp.produceJSON() : "";
-   }
-
-   /** @summary Compress SVG code, produced from JSROOT drawing
-     * @desc removes extra info or empty elements
-     * @private */
-   jsrp.compressSVG = function(svg) {
-
-      svg = svg.replace(/url\(\&quot\;\#(\w+)\&quot\;\)/g, "url(#$1)")        // decode all URL
-               .replace(/ class=\"\w*\"/g, "")                                // remove all classes
-               .replace(/ pad=\"\w*\"/g, "")                                  // remove all pad ids
-               .replace(/ title=\"\"/g, "")                                   // remove all empty titles
-               .replace(/<g objname=\"\w*\" objtype=\"\w*\"/g, "<g")          // remove object ids
-               .replace(/<g transform=\"translate\(\d+\,\d+\)\"><\/g>/g, "")  // remove all empty groups with transform
-               .replace(/<g><\/g>/g, "");                                     // remove all empty groups
-
-      // remove all empty frame svgs, typically appears in 3D drawings, maybe should be improved in frame painter itself
-      svg = svg.replace(/<svg x=\"0\" y=\"0\" overflow=\"hidden\" width=\"\d+\" height=\"\d+\" viewBox=\"0 0 \d+ \d+\"><\/svg>/g, "")
-
-      if (svg.indexOf("xlink:href") < 0)
-         svg = svg.replace(/ xmlns:xlink=\"http:\/\/www.w3.org\/1999\/xlink\"/g, "");
-
-      return svg;
-   }
-
-   /** @summary Create SVG image for provided object.
-     * @desc Function especially useful in Node.js environment to generate images for
-     * supported ROOT classes
-     * @param {object} args - contains different settings
-     * @param {object} args.object - object for the drawing
-     * @param {string} [args.option] - draw options
-     * @param {number} [args.width = 1200] - image width
-     * @param {number} [args.height = 800] - image height
-     * @returns {Promise} with svg code */
-   JSROOT.makeSVG = function(args) {
-
-      if (!args) args = {};
-      if (!args.object) return Promise.reject(Error("No object specified to generate SVG"));
-      if (!args.width) args.width = 1200;
-      if (!args.height) args.height = 800;
-
-      function build(main) {
-
-         main.attr("width", args.width).attr("height", args.height)
-             .style("width", args.width + "px").style("height", args.height + "px");
-
-         JSROOT._.svg_3ds = undefined;
-
-         return JSROOT.draw(main.node(), args.object, args.option || "").then(() => {
-
-            let has_workarounds = JSROOT._.svg_3ds && jsrp.processSvgWorkarounds;
-
-            main.select('svg')
-                .attr("xmlns", "http://www.w3.org/2000/svg")
-                .attr("xmlns:xlink", "http://www.w3.org/1999/xlink")
-                .attr("width", args.width)
-                .attr("height", args.height)
-                .attr("style", null).attr("class", null).attr("x", null).attr("y", null);
-
-            function clear_element() {
-               const elem = d3.select(this);
-               if (elem.style('display')=="none") elem.remove();
-            };
-
-            // remove containers with display: none
-            if (has_workarounds)
-               main.selectAll('g.root_frame').each(clear_element);
-
-            main.selectAll('svg').each(clear_element);
-
-            let svg = main.html();
-
-            if (has_workarounds)
-               svg = jsrp.processSvgWorkarounds(svg);
-
-            svg = jsrp.compressSVG(svg);
-
-            JSROOT.cleanup(main.node());
-
-            main.remove();
-
-            return svg;
-         });
-      }
-
-      if (!JSROOT.nodejs)
-         return build(d3.select('body').append("div").style("visible", "hidden"));
-
-      if (!JSROOT._.nodejs_document) {
-         // use eval while old minifier is not able to parse newest Node.js syntax
-         const { JSDOM } = require("jsdom");
-         JSROOT._.nodejs_window = (new JSDOM("<!DOCTYPE html>hello")).window;
-         JSROOT._.nodejs_document = JSROOT._.nodejs_window.document; // used with three.js
-         JSROOT._.nodejs_window.d3 = d3.select(JSROOT._.nodejs_document); //get d3 into the dom
-      }
-
-      return build(JSROOT._.nodejs_window.d3.select('body').append('div'));
-   }
-
-   /** @summary Check resize of drawn element
-     * @param {string|object} dom - id or DOM element
-     * @param {boolean|object} arg - options on how to resize
-     * @desc As first argument dom one should use same argument as for the drawing
-     * As second argument, one could specify "true" value to force redrawing of
-     * the element even after minimal resize
-     * Or one just supply object with exact sizes like { width:300, height:200, force:true };
-     * @example
-     * JSROOT.resize("drawing", { width: 500, height: 200 } );
-     * JSROOT.resize(document.querySelector("#drawing"), true); */
-   JSROOT.resize = function(dom, arg) {
-      if (arg === true)
-         arg = { force: true };
-      else if (typeof arg !== 'object')
-         arg = null;
-      let done = false;
-      new ObjectPainter(dom).forEachPainter(painter => {
-         if (!done && (typeof painter.checkResize == 'function'))
-            done = painter.checkResize(arg);
-      });
-      return done;
-   }
-
-   /** @summary Returns canvas painter (if any) for specified HTML element
-     * @param {string|object} dom - id or DOM element
-     * @private */
-   jsrp.getElementCanvPainter = function(dom) {
-      return new ObjectPainter(dom).getCanvPainter();
-   }
-
-   /** @summary Returns main painter (if any) for specified HTML element - typically histogram painter
-     * @param {string|object} dom - id or DOM element
-     * @private */
-   jsrp.getElementMainPainter = function(dom) {
-      return new ObjectPainter(dom).getMainPainter(true);
-   }
-
-   /** @summary Safely remove all JSROOT drawings from specified element
-     * @param {string|object} dom - id or DOM element
-     * @requires painter
-     * @example
-     * JSROOT.cleanup("drawing");
-     * JSROOT.cleanup(document.querySelector("#drawing")); */
-   JSROOT.cleanup = function(dom) {
-      let dummy = new ObjectPainter(dom), lst = [];
-      dummy.forEachPainter(p => { if (lst.indexOf(p) < 0) lst.push(p); });
-      lst.forEach(p => p.cleanup());
-      dummy.selectDom().html("");
-      return lst;
-   }
-
-   /** @summary Display progress message in the left bottom corner.
-     * @desc Previous message will be overwritten
-     * if no argument specified, any shown messages will be removed
-     * @param {string} msg - message to display
-     * @param {number} tmout - optional timeout in milliseconds, after message will disappear
-     * @private */
-   jsrp.showProgress = function(msg, tmout) {
-      if (JSROOT.batch_mode || (typeof document === 'undefined')) return;
-      let id = "jsroot_progressbox",
-          box = d3.select("#" + id);
-
-      if (!JSROOT.settings.ProgressBox) return box.remove();
-
-      if ((arguments.length == 0) || !msg) {
-         if ((tmout !== -1) || (!box.empty() && box.property("with_timeout"))) box.remove();
-         return;
-      }
-
-      if (box.empty()) {
-         box = d3.select(document.body).append("div").attr("id", id);
-         box.append("p");
-      }
-
-      box.property("with_timeout", false);
-
-      if (typeof msg === "string") {
-         box.select("p").html(msg);
-      } else {
-         box.html("");
-         box.node().appendChild(msg);
-      }
-
-      if (Number.isFinite(tmout) && (tmout > 0)) {
-         box.property("with_timeout", true);
-         setTimeout(() => jsrp.showProgress('', -1), tmout);
-      }
-   }
-
-   /** @summary Converts numeric value to string according to specified format.
-     * @param {number} value - value to convert
-     * @param {string} [fmt="6.4g"] - format can be like 5.4g or 4.2e or 6.4f
-     * @param {boolean} [ret_fmt] - when true returns array with value and actual format like ["0.1","6.4f"]
-     * @returns {string|Array} - converted value or array with value and actual format */
-   jsrp.floatToString = function(value, fmt, ret_fmt) {
-      if (!fmt) fmt = "6.4g";
-
-      fmt = fmt.trim();
-      let len = fmt.length;
-      if (len<2)
-         return ret_fmt ? [value.toFixed(4), "6.4f"] : value.toFixed(4);
-      let last = fmt[len-1];
-      fmt = fmt.slice(0,len-1);
-      let isexp, prec = fmt.indexOf(".");
-      prec = (prec<0) ? 4 : parseInt(fmt.slice(prec+1));
-      if (!Number.isInteger(prec) || (prec <=0)) prec = 4;
-
-      let significance = false;
-      if ((last=='e') || (last=='E')) { isexp = true; } else
-      if (last=='Q') { isexp = true; significance = true; } else
-      if ((last=='f') || (last=='F')) { isexp = false; } else
-      if (last=='W') { isexp = false; significance = true; } else
-      if ((last=='g') || (last=='G')) {
-         let se = jsrp.floatToString(value, fmt+'Q', true),
-             sg = jsrp.floatToString(value, fmt+'W', true);
-
-         if (se[0].length < sg[0].length) sg = se;
-         return ret_fmt ? sg : sg[0];
-      } else {
-         isexp = false;
-         prec = 4;
-      }
-
-      if (isexp) {
-         // for exponential representation only one significant digit befor point
-         if (significance) prec--;
-         if (prec < 0) prec = 0;
-
-         let se = value.toExponential(prec);
-
-         return ret_fmt ? [se, '5.'+prec+'e'] : se;
-      }
-
-      let sg = value.toFixed(prec);
-
-      if (significance) {
-
-         // when using fixed representation, one could get 0.0
-         if ((value!=0) && (Number(sg)==0.) && (prec>0)) {
-            prec = 20; sg = value.toFixed(prec);
-         }
-
-         let l = 0;
-         while ((l<sg.length) && (sg[l] == '0' || sg[l] == '-' || sg[l] == '.')) l++;
-
-         let diff = sg.length - l - prec;
-         if (sg.indexOf(".")>l) diff--;
-
-         if (diff != 0) {
-            prec-=diff;
-            if (prec<0) prec = 0; else if (prec>20) prec = 20;
-            sg = value.toFixed(prec);
-         }
-      }
-
-      return ret_fmt ? [sg, '5.'+prec+'f'] : sg;
-   }
-
-   /** @summary Tries to close current browser tab
-     * @desc Many browsers do not allow simple window.close() call,
-     * therefore try several workarounds
-     * @private */
-   jsrp.closeCurrentWindow = function() {
-      if (!window) return;
-      window.close();
-      window.open('', '_self').close();
-   }
-
-   jsrp.createRootColors();
-
-   if (JSROOT.nodejs) jsrp.readStyleFromURL("?interactive=0&tooltip=0&nomenu&noprogress&notouch&toolbar=0&webgl=0");
-
-   jsrp.getDrawHandle = getDrawHandle;
-   jsrp.getDrawSettings = getDrawSettings;
-   jsrp.getElementRect = getElementRect;
-   jsrp.isPromise = isPromise;
-   jsrp.toHex = toHex;
-
-   JSROOT.TRandom = TRandom;
-   JSROOT.DrawOptions = DrawOptions;
-   JSROOT.ColorPalette = ColorPalette;
-   JSROOT.TAttLineHandler = TAttLineHandler;
-   JSROOT.TAttFillHandler = TAttFillHandler;
-   JSROOT.TAttMarkerHandler = TAttMarkerHandler;
-   JSROOT.FontHandler = FontHandler;
-   JSROOT.BasePainter = BasePainter;
-   JSROOT.ObjectPainter = ObjectPainter;
-
-   JSROOT.Painter = jsrp;
-   if (JSROOT.nodejs) module.exports = jsrp;
-
-   return jsrp;
-
-});
+   return ret_fmt ? [sg, '5.'+prec+'f'] : sg;
+}
+
+/** @summary Tries to close current browser tab
+  * @desc Many browsers do not allow simple window.close() call,
+  * therefore try several workarounds
+  * @private */
+jsrp.closeCurrentWindow = function() {
+   if (!window) return;
+   window.close();
+   window.open('', '_self').close();
+}
+
+jsrp.createRootColors();
+
+if (JSROOT.nodejs) jsrp.readStyleFromURL("?interactive=0&tooltip=0&nomenu&noprogress&notouch&toolbar=0&webgl=0");
+
+jsrp.getDrawHandle = getDrawHandle;
+jsrp.getDrawSettings = getDrawSettings;
+jsrp.getElementRect = getElementRect;
+jsrp.isPromise = isPromise;
+jsrp.toHex = toHex;
+
+JSROOT.TRandom = TRandom;
+JSROOT.DrawOptions = DrawOptions;
+JSROOT.ColorPalette = ColorPalette;
+JSROOT.TAttLineHandler = TAttLineHandler;
+JSROOT.TAttFillHandler = TAttFillHandler;
+JSROOT.TAttMarkerHandler = TAttMarkerHandler;
+JSROOT.FontHandler = FontHandler;
+JSROOT.BasePainter = BasePainter;
+JSROOT.ObjectPainter = ObjectPainter;
+
+// FIXME: should be eliminated
+JSROOT.Painter = jsrp;
