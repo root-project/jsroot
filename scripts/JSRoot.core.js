@@ -2201,6 +2201,7 @@ exports.connectWebWindow = connectWebWindow;
 if (typeof globalThis !== "undefined")
    globalThis.JSROOT = exports;
 
+console.log('JSROOT.source_dir', JSROOT.source_dir);
 
 
 }));

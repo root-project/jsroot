@@ -1,6 +1,10 @@
 JSROOT.loadScript('$$$style/JSRoot.painter');
 
-import d3 from './d3.min.js';
+import * as d3 from './d3.mjs';
+
+console.log('d3.select', typeof d3.select)
+
+// import('./d3.min.js').then(handle => console.log('d3 handle', handle));
 
 // ==========================================================================================
 

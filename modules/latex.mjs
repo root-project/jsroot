@@ -1,5 +1,5 @@
 
-import d3 from './d3.min.js';
+import * as d3 from './d3.mjs';
 
 import { getElementRect } from './painter.mjs';
 
