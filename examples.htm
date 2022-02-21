@@ -527,12 +527,13 @@
 
          }; // FillContent
 
-         JSROOT.httpRequest(demo_path + 'examples.js').then(src => {
-            examples_main = JSON.parse(src);
-            if (window.location.search.indexOf("?more")!=0)
+         JSROOT.httpRequest(demo_path + 'examples.js','text').then(txt => {
+            examples_main = JSON.parse(txt);
+            if (window.location.search.indexOf("?more") != 0)
                return FillContent();
-            JSROOT.httpRequest(demo_path + 'examples_more.js').then(src => {
-               let examples_more = JSON.parse(src);
+            console.log('here???');
+            JSROOT.httpRequest(demo_path + 'examples_more.js', 'text').then(txt_more => {
+               let examples_mpre = eval(txt_more);
                for (let key in examples_more) {
                   if (key in examples_main) {
                      for (let n in examples_more[key])
@@ -541,7 +542,7 @@
                      examples_main[key] = examples_more[key];
                   }
                }
-               FillContent(examples);
+               FillContent();
             });
          });
 
