@@ -532,7 +532,7 @@
             if (window.location.search.indexOf("?more") != 0)
                return FillContent();
             console.log('here???');
-            JSROOT.httpRequest(demo_path + 'examples_more.js', 'text').then(txt_more => {
+            JSROOT.httpRequest(demo_path + 'examples_more.json', 'text').then(txt_more => {
                let examples_mpre = eval(txt_more);
                for (let key in examples_more) {
                   if (key in examples_main) {
