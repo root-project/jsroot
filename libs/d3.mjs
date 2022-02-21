@@ -1,10 +1,4 @@
 // https://d3js.org v7.3.0 Copyright 2010-2021 Mike Bostock
-(function (global, factory) {
-typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
-typeof define === 'function' && define.amd ? define(['exports'], factory) :
-(global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.d3 = global.d3 || {}));
-})(this, (function (exports) { 'use strict';
-
 var version = "7.3.0";
 
 function define(constructor, factory, prototype) {
@@ -5138,10 +5132,10 @@ function formatUnixTimestampSeconds(d) {
 }
 
 var locale;
-exports.timeFormat = void 0;
-exports.timeParse = void 0;
-exports.utcFormat = void 0;
-exports.utcParse = void 0;
+var timeFormat;
+var timeParse;
+var utcFormat;
+var utcParse;
 
 defaultLocale({
   dateTime: "%x, %X",
@@ -5156,10 +5150,10 @@ defaultLocale({
 
 function defaultLocale(definition) {
   locale = formatLocale(definition);
-  exports.timeFormat = locale.format;
-  exports.timeParse = locale.parse;
-  exports.utcFormat = locale.utcFormat;
-  exports.utcParse = locale.utcParse;
+  timeFormat = locale.format;
+  timeParse = locale.parse;
+  utcFormat = locale.utcFormat;
+  utcParse = locale.utcParse;
   return locale;
 }
 
@@ -5171,7 +5165,7 @@ function formatIsoNative(date) {
 
 var formatIso = Date.prototype.toISOString
     ? formatIsoNative
-    : exports.utcFormat(isoSpecifier);
+    : utcFormat(isoSpecifier);
 
 var formatIso$1 = formatIso;
 
@@ -5182,7 +5176,7 @@ function parseIsoNative(string) {
 
 var parseIso = +new Date("2000-01-01T00:00:00.000Z")
     ? parseIsoNative
-    : exports.utcParse(isoSpecifier);
+    : utcParse(isoSpecifier);
 
 var parseIso$1 = parseIso;
 
@@ -5249,11 +5243,11 @@ function calendar(ticks, tickInterval, year, month, week, day, hour, minute, sec
 }
 
 function time() {
-  return initRange.apply(calendar(timeTicks, timeTickInterval, timeYear, timeMonth, sunday, timeDay, timeHour, timeMinute, utcSecond, exports.timeFormat).domain([new Date(2000, 0, 1), new Date(2000, 0, 2)]), arguments);
+  return initRange.apply(calendar(timeTicks, timeTickInterval, timeYear, timeMonth, sunday, timeDay, timeHour, timeMinute, utcSecond, timeFormat).domain([new Date(2000, 0, 1), new Date(2000, 0, 2)]), arguments);
 }
 
 function utcTime() {
-  return initRange.apply(calendar(utcTicks, utcTickInterval, utcYear$1, utcMonth$1, utcSunday, utcDay$1, utcHour$1, utcMinute$1, utcSecond, exports.utcFormat).domain([Date.UTC(2000, 0, 1), Date.UTC(2000, 0, 2)]), arguments);
+  return initRange.apply(calendar(utcTicks, utcTickInterval, utcYear$1, utcMonth$1, utcSunday, utcDay$1, utcHour$1, utcMinute$1, utcSecond, utcFormat).domain([Date.UTC(2000, 0, 1), Date.UTC(2000, 0, 2)]), arguments);
 }
 
 function transformer$1() {
@@ -6783,75 +6777,4 @@ function active(node, name) {
   return null;
 }
 
-exports.active = active;
-exports.arc = arc;
-exports.chord = chord;
-exports.chordDirected = chordDirected;
-exports.chordTranspose = chordTranspose;
-exports.color = color;
-exports.create = create$1;
-exports.creator = creator;
-exports.cubehelix = cubehelix;
-exports.drag = drag;
-exports.dragDisable = nodrag;
-exports.dragEnable = yesdrag;
-exports.gray = gray;
-exports.hcl = hcl;
-exports.hsl = hsl;
-exports.interrupt = interrupt;
-exports.isoFormat = formatIso$1;
-exports.isoParse = parseIso$1;
-exports.lab = lab;
-exports.lch = lch;
-exports.local = local;
-exports.matcher = matcher;
-exports.namespace = namespace;
-exports.namespaces = namespaces;
-exports.pointer = pointer;
-exports.pointers = pointers;
-exports.rgb = rgb;
-exports.ribbon = ribbon$1;
-exports.ribbonArrow = ribbonArrow;
-exports.scaleBand = band;
-exports.scaleDiverging = diverging;
-exports.scaleDivergingLog = divergingLog;
-exports.scaleDivergingPow = divergingPow;
-exports.scaleDivergingSqrt = divergingSqrt;
-exports.scaleDivergingSymlog = divergingSymlog;
-exports.scaleIdentity = identity;
-exports.scaleImplicit = implicit;
-exports.scaleLinear = linear;
-exports.scaleLog = log;
-exports.scaleOrdinal = ordinal;
-exports.scalePoint = point;
-exports.scalePow = pow;
-exports.scaleQuantile = quantile;
-exports.scaleQuantize = quantize;
-exports.scaleRadial = radial;
-exports.scaleSequential = sequential;
-exports.scaleSequentialLog = sequentialLog;
-exports.scaleSequentialPow = sequentialPow;
-exports.scaleSequentialQuantile = sequentialQuantile;
-exports.scaleSequentialSqrt = sequentialSqrt;
-exports.scaleSequentialSymlog = sequentialSymlog;
-exports.scaleSqrt = sqrt$1;
-exports.scaleSymlog = symlog;
-exports.scaleThreshold = threshold;
-exports.scaleTime = time;
-exports.scaleUtc = utcTime;
-exports.select = select;
-exports.selectAll = selectAll;
-exports.selection = selection;
-exports.selector = selector;
-exports.selectorAll = selectorAll;
-exports.style = styleValue;
-exports.tickFormat = tickFormat;
-exports.timeFormatDefaultLocale = defaultLocale;
-exports.timeFormatLocale = formatLocale;
-exports.transition = transition;
-exports.version = version;
-exports.window = defaultView;
-
-Object.defineProperty(exports, '__esModule', { value: true });
-
-}));
+export { active, arc, chord, chordDirected, chordTranspose, color, create$1 as create, creator, cubehelix, drag, nodrag as dragDisable, yesdrag as dragEnable, gray, hcl, hsl, interrupt, formatIso$1 as isoFormat, parseIso$1 as isoParse, lab, lch, local, matcher, namespace, namespaces, pointer, pointers, rgb, ribbon$1 as ribbon, ribbonArrow, band as scaleBand, diverging as scaleDiverging, divergingLog as scaleDivergingLog, divergingPow as scaleDivergingPow, divergingSqrt as scaleDivergingSqrt, divergingSymlog as scaleDivergingSymlog, identity as scaleIdentity, implicit as scaleImplicit, linear as scaleLinear, log as scaleLog, ordinal as scaleOrdinal, point as scalePoint, pow as scalePow, quantile as scaleQuantile, quantize as scaleQuantize, radial as scaleRadial, sequential as scaleSequential, sequentialLog as scaleSequentialLog, sequentialPow as scaleSequentialPow, sequentialQuantile as scaleSequentialQuantile, sequentialSqrt as scaleSequentialSqrt, sequentialSymlog as scaleSequentialSymlog, sqrt$1 as scaleSqrt, symlog as scaleSymlog, threshold as scaleThreshold, time as scaleTime, utcTime as scaleUtc, select, selectAll, selection, selector, selectorAll, styleValue as style, tickFormat, timeFormat, defaultLocale as timeFormatDefaultLocale, formatLocale as timeFormatLocale, timeParse, transition, utcFormat, utcParse, version, defaultView as window };
