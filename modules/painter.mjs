@@ -153,15 +153,15 @@ jsrp.createMenu = function(evnt, handler, menuname) {
    if (evnt && (typeof evnt == "object"))
       if ((evnt.clientX !== undefined) && (evnt.clientY !== undefined))
          show_evnt = { clientX: evnt.clientX, clientY: evnt.clientY };
-   return JSROOT.require(['menu']).then(() => {
+   return import('./menu.mjs').then(handle => {
       document.body.style.cursor = 'auto';
-      return jsrp.createMenu(show_evnt, handler, menuname);
+      return handle.createMenu(show_evnt, handler, menuname);
    });
 }
 
 jsrp.closeMenu = function(menuname) {
-   JSROOT.require(['menu']).then(() => {
-      jsrp.closeMenu(menuname);
+   return import('./menu.mjs').then(handle => {
+      return handle.closeMenu(menuname);
    });
 }
 
