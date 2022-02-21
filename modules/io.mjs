@@ -1839,6 +1839,7 @@ class TFile {
 
          return file.readObjBuffer(key);
       }).then(buf => {
+
          if (isdir) {
             let dir = new TDirectory(file, obj_name, cycle);
             dir.fTitle = read_key.fTitle;
@@ -1853,6 +1854,8 @@ class TFile {
             return file._readFormulas(obj);
 
          if (!file.readTrees) return obj;
+
+         console.log('reading trees!!!');
 
          return JSROOT.require('tree').then(() => {
             if (file.readTrees) {
@@ -3804,6 +3807,6 @@ JSROOT.TFile = TFile;
 JSROOT.TLocalFile = TLocalFile;
 JSROOT.TNodejsFile = TNodejsFile;
 
-JSROOT.openFile = openFile;
+// JSROOT.openFile = openFile;
 
 export { openFile };

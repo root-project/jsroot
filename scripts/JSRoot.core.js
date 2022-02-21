@@ -693,18 +693,18 @@ async function jsroot_require(need, factoryFunc) {
   *    - 'openui5' OpenUI5 and related functionality
   * @param {Array|string} req - list of required components (as array or string separated by semicolon)
   * @returns {Promise} with array of requirements (or single element) */
-function require(req) {
-   return jsroot_require(req);
-}
+//function require(req) {
+//   return jsroot_require(req);
+//}
 
 /** @summary Define JSROOT module
   * @desc Should be only used for JSROOT modules
   * @param {Array|string} req - requirements, see {@link JSROOT.require} for more details
   * @param {Function} factoryFunc - called when requirements are fulfilled, with requested modules
   * @private */
-function define(req, factoryFunc) {
-   jsroot_require(req, factoryFunc);
-}
+//function define(req, factoryFunc) {
+//   jsroot_require(req, factoryFunc);
+//}
 
 /** @summary Generate mask for given bit
   * @param {number} n bit number
@@ -1272,7 +1272,7 @@ function loadScript(url) {
    });
 }
 
-// Open ROOT file, defined in JSRoot.io.js
+// Open ROOT file, defined in io.mjs
 function openFile(filename) {
    return import("../modules/io.mjs").then(handle => handle.openFile(filename));
 }
@@ -2127,8 +2127,8 @@ exports._ = _;
 exports.constants = constants;
 exports.settings = settings;
 exports.gStyle = gStyle;
-exports.define = define;
-exports.require = require;
+exports.define = jsroot_require; //
+exports.require = jsroot_require;
 exports.BIT = BIT;
 exports.extend = extend;
 exports.addMethods = addMethods;
