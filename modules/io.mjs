@@ -2468,9 +2468,9 @@ class TNodejsFile extends TFile {
    /** @summary Open file in node.js
      * @returns {Promise} after file keys are read */
    _open() {
-      return import('fs').then(handle => {
+      return import('fs').then(fs => {
 
-         this.fs = handle.fs;
+         this.fs = fs;
 
          return new Promise((resolve,reject) =>
 
