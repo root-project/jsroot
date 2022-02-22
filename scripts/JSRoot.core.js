@@ -1815,7 +1815,8 @@ function connectWebWindow(arg) {
          delete arg.prereq_logdiv;
       }
       if (arg && arg.prereq) delete arg.prereq;
-      return JSROOT.connectWebWindow(arg);
+
+      return import('../modules/webwindow.mjs').then(handle => handle.connectWebWindow(arg));
    });
 }
 
