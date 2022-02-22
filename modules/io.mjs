@@ -2468,24 +2468,27 @@ class TNodejsFile extends TFile {
    /** @summary Open file in node.js
      * @returns {Promise} after file keys are read */
    _open() {
-      this.fs = require('fs');
+      return import('fs').then(handle => {
 
-      return new Promise((resolve,reject) =>
+         this.fs = handle.fs;
 
-         this.fs.open(this.fFileName, 'r', (status, fd) => {
-            if (status) {
-               console.log(status.message);
-               return reject(Error(`Not possible to open ${this.fFileName} inside node.js`));
-            }
-            let stats = this.fs.fstatSync(fd);
+         return new Promise((resolve,reject) =>
 
-            this.fEND = stats.size;
+            this.fs.open(this.fFileName, 'r', (status, fd) => {
+               if (status) {
+                  console.log(status.message);
+                  return reject(Error(`Not possible to open ${this.fFileName} inside node.js`));
+               }
+               let stats = this.fs.fstatSync(fd);
 
-            this.fd = fd;
+               this.fEND = stats.size;
 
-            this.readKeys().then(resolve).catch(reject);
-         })
-      );
+               this.fd = fd;
+
+               this.readKeys().then(resolve).catch(reject);
+            })
+         );
+      });
    }
 
    /** @summary Read buffer from node.js file
