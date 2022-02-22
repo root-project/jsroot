@@ -3392,11 +3392,12 @@ class HierarchyPainter extends BasePainter {
          delete this.disp;
       }
 
-      if (this.disp_kind == 'batch')
-         return loadJSDOM().then(handle => {
-            this.disp = new JSROOT.BatchDisplay(1200, 800, handle.d3);
+      if (this.disp_kind == 'batch') {
+         return (JSROOT.nodejs ? loadJSDOM() : Promise.resolve(null)).then(handle => {
+            this.disp = new JSROOT.BatchDisplay(1200, 800, handle?.d3);
             return this.disp;
          });
+      }
 
       // check that we can found frame where drawing should be done
       if (!document.getElementById(this.disp_frameid))
@@ -5026,7 +5027,7 @@ class BatchDisplay extends MDIDisplay {
       this.frames = []; // array of configured frames
       this.width = width || 1200;
       this.height = height || 800;
-      this.jsdom_d3 = jsdom_d3; // d3 handle associated with central JSDOM
+      this.jsdom_d3 = jsdom_d3 || d3; // d3 handle associated with central JSDOM
    }
 
    forEachFrame(userfunc) {
@@ -5036,19 +5037,18 @@ class BatchDisplay extends MDIDisplay {
    createFrame(title) {
       this.beforeCreateFrame(title);
 
-      let frame;
-      if (this.jsdom_d3)
-         frame = this.jsdom_d3.select('body').append('div');
-      else
-         frame = d3.select('body').append("div").style("visible", "hidden");
+      let frame =
+         this.jsdom_d3.select('body')
+             .append('div')
+             .style("visible", "hidden")
+             .attr("width", this.width).attr("height", this.height)
+             .style("width", this.width + "px").style("height", this.height + "px")
+             .attr("id","jsroot_batch_" + this.frames.length)
+             .attr("frame_title", title);
 
       if (this.frames.length == 0)
          JSROOT._.svg_3ds = undefined;
 
-      frame.attr("width", this.width).attr("height", this.height);
-      frame.style("width", this.width + "px").style("height", this.height + "px");
-      frame.attr("id","jsroot_batch_" + this.frames.length);
-      frame.attr("frame_title", title);
       this.frames.push(frame.node());
 
       return this.afterCreateFrame(frame.node());
