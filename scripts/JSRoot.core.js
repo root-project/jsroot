@@ -462,6 +462,15 @@ async function jsroot_require(need) {
          arr.push(import("../modules/interactive.mjs"));
       else if (name == "hierarchy")
          arr.push(import("../modules/hierarchy.mjs"));
+      else if (name == "v7hist")
+         arr.push(import("../modules/v7hist.mjs"));
+      else if (name == "v7hist3d")
+         arr.push(import("../modules/v7hist3d.mjs"));
+      else if (name == "v7more")
+         arr.push(import("../modules/v7more.mjs"));
+      else if (name == "v7gpad")
+         arr.push(import("../modules/v7gpad.mjs"));
+
    });
 
    if (arr.length == 1)
