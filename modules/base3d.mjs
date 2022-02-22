@@ -1339,7 +1339,7 @@ class PointsCreator {
    }
 
    /** @summary Create points */
-   createPoints(args) {
+   async createPoints(args) {
 
       if (typeof args !== 'object')
          args = { color: args };
@@ -1354,14 +1354,14 @@ class PointsCreator {
       if (args.style === 6) k = 0.5; else
       if (args.style === 7) k = 0.7;
 
-      const makePoints = (material, skip_promise) => {
+      const makePoints = (material) => {
          let pnts = new THREE.Points(this.geom, material);
          pnts.nvertex = 1;
-         return !args.promise || skip_promise ? pnts : Promise.resolve(pnts);
+         return pnts;
       };
 
       // this is plain creation of points, no need for texture loading
-      if ((k !== 1) || (JSROOT.nodejs && !args.promise))
+      if (k !== 1)
          return makePoints(new THREE.PointsMaterial({ size: 3*this.scale * k, color: args.color }));
 
       let handler = new JSROOT.TAttMarkerHandler({ style: args.style, color: args.color, size: 7 }),
@@ -1370,30 +1370,26 @@ class PointsCreator {
                     `<path d="${handler.create(32,32)}" style="stroke: ${handler.getStrokeColor()}; stroke-width: ${w}; fill: ${handler.getFillColor()}"></path>`+
                     `</svg>`,
           dataUrl = 'data:image/svg+xml;charset=utf8,' + (JSROOT.nodejs ? imgdata : encodeURIComponent(imgdata)),
-          loader = new THREE.TextureLoader();
+          texture;
 
-      if (args.promise) {
-         let texture_promise;
-         if (JSROOT.nodejs) {
-            const { createCanvas, loadImage } = require('canvas');
+      if (JSROOT.nodejs) {
+         let handle = await import('canvas');
 
-            texture_promise = loadImage(dataUrl).then(img => {
-               const canvas = createCanvas(64, 64);
-               const ctx = canvas.getContext('2d');
-               ctx.drawImage(img, 0, 0, 64, 64);
-               return new THREE.CanvasTexture(canvas);
-             });
+         let img = await handle.default.loadImage(dataUrl);
 
-         } else {
-            texture_promise = new Promise((resolveFunc, rejectFunc) => {
-               loader.load(dataUrl, texture => resolveFunc(texture), undefined, () => rejectFunc());
-            });
-         }
+         const canvas = handle.default.createCanvas(64, 64);
+         const ctx = canvas.getContext('2d');
 
-         return texture_promise.then(texture => makePoints(new THREE.PointsMaterial({ size: 3*this.scale, map: texture, transparent: true }), true));
+         ctx.drawImage(img, 0, 0, 64, 64);
+         texture = new THREE.CanvasTexture(canvas);
+      } else {
+         texture = await new Promise((resolveFunc, rejectFunc) => {
+            let loader = new THREE.TextureLoader();
+            loader.load(dataUrl, res => resolveFunc(res), undefined, () => rejectFunc());
+         });
       }
 
-      return makePoints(new THREE.PointsMaterial({ size: 3*this.scale, map: loader.load(dataUrl), transparent: true }));
+      return makePoints(new THREE.PointsMaterial({ size: 3*this.scale, map: texture, transparent: true }));
    }
 
 } // class PointsCreator
@@ -1494,7 +1490,7 @@ jsrp.drawPolyMarker3D = function() {
       pnts.addPoint(fp.grx(poly.fP[i]), fp.gry(poly.fP[i+1]), fp.grz(poly.fP[i+2]));
    }
 
-   return pnts.createPoints({ color: this.getColor(poly.fMarkerColor), style: poly.fMarkerStyle, promise: true }).then(mesh => {
+   return pnts.createPoints({ color: this.getColor(poly.fMarkerColor), style: poly.fMarkerStyle }).then(mesh => {
 
       mesh.tip_color = (poly.fMarkerColor === 3) ? 0xFF0000 : 0x00FF00;
       mesh.tip_name = poly.fName || "Poly3D";

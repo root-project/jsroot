@@ -2465,7 +2465,7 @@ class RH3Painter extends RHistPainter {
          }
       }
 
-      return pnts.createPoints({ color: this.v7EvalColor("fill_color", "red"), promise: true }).then(mesh => {
+      return pnts.createPoints({ color: this.v7EvalColor("fill_color", "red") }).then(mesh => {
          main.toplevel.add(mesh);
 
          mesh.bins = bins;

@@ -2445,7 +2445,7 @@ class TH3Painter extends THistPainter {
          }
       }
 
-      return pnts.createPoints({ color: this.getColor(histo.fMarkerColor), promise: true }).then(mesh => {
+      return pnts.createPoints({ color: this.getColor(histo.fMarkerColor) }).then(mesh => {
          main.toplevel.add(mesh);
 
          mesh.bins = bins;
@@ -3241,7 +3241,7 @@ class TGraph2DPainter extends JSROOT.ObjectPainter {
                fcolor = palette ? palette.calcColor(lvl, levels.length)
                                 : this.getColor(graph.fMarkerColor);
 
-            let pr = pnts.createPoints({ color: fcolor, style: this.options.Circles ? 4 : graph.fMarkerStyle, promise: true }).then(mesh => {
+            let pr = pnts.createPoints({ color: fcolor, style: this.options.Circles ? 4 : graph.fMarkerStyle }).then(mesh => {
                mesh.graph = graph;
                mesh.painter = fp;
                mesh.tip_color = (graph.fMarkerColor === 3) ? 0xFF0000 : 0x00FF00;

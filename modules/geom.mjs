@@ -3027,7 +3027,7 @@ class TGeoPainter extends ObjectPainter {
                        projy ? projv : hit.fP[i*3+1],
                        projz ? projv : hit.fP[i*3+2]);
 
-      return pnts.createPoints({ color: jsrp.getColor(hit.fMarkerColor) || "#0000ff", style: hit_style, promise:true }).then(mesh => {
+      return pnts.createPoints({ color: jsrp.getColor(hit.fMarkerColor) || "#0000ff", style: hit_style }).then(mesh => {
          mesh.renderOrder = 1000000; // to bring points to the front
          mesh.highlightScale = 2;
          mesh.geo_name = itemname;
