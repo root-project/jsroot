@@ -2410,7 +2410,7 @@ class RH3Painter extends RHistPainter {
 
    /** @summary Try to draw 3D histogram as scatter plot
      * @desc If there are too many points, box will be displayed */
-   draw3DScatter(handle) {
+   async draw3DScatter(handle) {
 
       let histo = this.getHisto(),
           main = this.getFramePainter(),
@@ -2465,40 +2465,39 @@ class RH3Painter extends RHistPainter {
          }
       }
 
-      return pnts.createPoints({ color: this.v7EvalColor("fill_color", "red") }).then(mesh => {
-         main.toplevel.add(mesh);
+      let mesh = await pnts.createPoints({ color: this.v7EvalColor("fill_color", "red") });
+      main.toplevel.add(mesh);
 
-         mesh.bins = bins;
-         mesh.painter = this;
-         mesh.tip_color = 0x00FF00;
+      mesh.bins = bins;
+      mesh.painter = this;
+      mesh.tip_color = 0x00FF00;
 
-         mesh.tooltip = function(intersect) {
-            if (!Number.isInteger(intersect.index)) {
-               console.error(`intersect.index not provided, three.js version ${THREE.REVISION}, expected 136`);
-               return null;
-            }
+      mesh.tooltip = function(intersect) {
+         if (!Number.isInteger(intersect.index)) {
+            console.error(`intersect.index not provided, three.js version ${THREE.REVISION}, expected 136`);
+            return null;
+         }
 
-            let indx = Math.floor(intersect.index / this.nvertex);
-            if ((indx < 0) || (indx >= this.bins.length)) return null;
+         let indx = Math.floor(intersect.index / this.nvertex);
+         if ((indx < 0) || (indx >= this.bins.length)) return null;
 
-            let p = this.painter,
-                main = p.getFramePainter(),
-                tip = p.get3DToolTip(this.bins[indx]);
+         let p = this.painter,
+             main = p.getFramePainter(),
+             tip = p.get3DToolTip(this.bins[indx]);
 
-            tip.x1 = main.grx(p.getAxis("x").GetBinLowEdge(tip.ix));
-            tip.x2 = main.grx(p.getAxis("x").GetBinLowEdge(tip.ix+di));
-            tip.y1 = main.gry(p.getAxis("y").GetBinLowEdge(tip.iy));
-            tip.y2 = main.gry(p.getAxis("y").GetBinLowEdge(tip.iy+dj));
-            tip.z1 = main.grz(p.getAxis("z").GetBinLowEdge(tip.iz));
-            tip.z2 = main.grz(p.getAxis("z").GetBinLowEdge(tip.iz+dk));
-            tip.color = this.tip_color;
-            tip.opacity = 0.3;
+         tip.x1 = main.grx(p.getAxis("x").GetBinLowEdge(tip.ix));
+         tip.x2 = main.grx(p.getAxis("x").GetBinLowEdge(tip.ix+di));
+         tip.y1 = main.gry(p.getAxis("y").GetBinLowEdge(tip.iy));
+         tip.y2 = main.gry(p.getAxis("y").GetBinLowEdge(tip.iy+dj));
+         tip.z1 = main.grz(p.getAxis("z").GetBinLowEdge(tip.iz));
+         tip.z2 = main.grz(p.getAxis("z").GetBinLowEdge(tip.iz+dk));
+         tip.color = this.tip_color;
+         tip.opacity = 0.3;
 
-            return tip;
-         };
+         return tip;
+      };
 
-         return true;
-      });
+      return true;
    }
 
    /** @summary Drawing of 3D histogram */
