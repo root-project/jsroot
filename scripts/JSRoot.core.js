@@ -12,7 +12,7 @@ let version_id = "modules";
 
 /** @summary JSROOT version date
   * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "21/02/2022";
+let version_date = "22/02/2022";
 
 /** @summary JSROOT version id and date
   * @desc Produced by concatenation of {@link JSROOT.version_id} and {@link JSROOT.version_date}
@@ -475,6 +475,8 @@ async function jsroot_require(need) {
          arr.push(import("../modules/hist.mjs"));
       else if (name == "hist3d")
          arr.push(import("../modules/hist3d.mjs"));
+      else if (name == "more")
+         arr.push(import("../modules/more.mjs"));
       else if (name == "latex")
          arr.push(import("../modules/latex.mjs").then(handle => handle.ltx));
       else if (name == "painter")
