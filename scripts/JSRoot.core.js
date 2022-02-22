@@ -456,6 +456,8 @@ async function jsroot_require(need) {
          arr.push(import("../modules/painter.mjs").then(handle => handle.jsrp));
       else if (name == "interactive")
          arr.push(import("../modules/interactive.mjs"));
+      else if (name == "hierarchy")
+         arr.push(import("../modules/hierarchy.mjs"));
    });
 
    if (arr.length == 1)
