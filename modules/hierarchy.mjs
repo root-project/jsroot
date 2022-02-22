@@ -1,6 +1,6 @@
 import * as d3 from './d3.mjs';
 
-import { BasePainter, ObjectPainter } from './painter.mjs';
+import { BasePainter, ObjectPainter, loadJSDOM } from './painter.mjs';
 
 const jsrp = JSROOT.Painter; // FIXME - workaround
 
@@ -3304,7 +3304,7 @@ class HierarchyPainter extends BasePainter {
          this.disp_frameid = frameid;
       }
 
-      if (!this.register_resize) {
+      if (!this.register_resize && (this.disp_kind != 'batch')) {
          this.register_resize = true;
          jsrp.registerForResize(this);
       }
@@ -3391,6 +3391,12 @@ class HierarchyPainter extends BasePainter {
          this.disp.cleanup();
          delete this.disp;
       }
+
+      if (this.disp_kind == 'batch')
+         return loadJSDOM().then(handle => {
+            this.disp = new JSROOT.BatchDisplay(1200, 800, handle.d3);
+            return this.disp;
+         });
 
       // check that we can found frame where drawing should be done
       if (!document.getElementById(this.disp_frameid))
@@ -5015,11 +5021,12 @@ class FlexibleDisplay extends MDIDisplay {
 
 class BatchDisplay extends MDIDisplay {
 
-   constructor(width, height) {
+   constructor(width, height, jsdom_d3) {
       super("$batch$");
       this.frames = []; // array of configured frames
       this.width = width || 1200;
       this.height = height || 800;
+      this.jsdom_d3 = jsdom_d3; // d3 handle associated with central JSDOM
    }
 
    forEachFrame(userfunc) {
@@ -5030,18 +5037,10 @@ class BatchDisplay extends MDIDisplay {
       this.beforeCreateFrame(title);
 
       let frame;
-      if (!JSROOT.nodejs) {
+      if (this.jsdom_d3)
+         frame = this.jsdom_d3.select('body').append('div');
+      else
          frame = d3.select('body').append("div").style("visible", "hidden");
-      } else {
-         if (!JSROOT._.nodejs_document) {
-          // use eval while old minifier is not able to parse newest Node.js syntax
-           const { JSDOM } = require("jsdom");
-           JSROOT._.nodejs_window = (new JSDOM("<!DOCTYPE html>hello")).window;
-           JSROOT._.nodejs_document = JSROOT._.nodejs_window.document; // used with three.js
-           JSROOT._.nodejs_window.d3 = d3.select(JSROOT._.nodejs_document); //get d3 into the dom
-         }
-         frame = JSROOT._.nodejs_window.d3.select('body').append('div');
-      }
 
       if (this.frames.length == 0)
          JSROOT._.svg_3ds = undefined;
@@ -5049,7 +5048,7 @@ class BatchDisplay extends MDIDisplay {
       frame.attr("width", this.width).attr("height", this.height);
       frame.style("width", this.width + "px").style("height", this.height + "px");
       frame.attr("id","jsroot_batch_" + this.frames.length);
-      frame.attr('frame_title', title);
+      frame.attr("frame_title", title);
       this.frames.push(frame.node());
 
       return this.afterCreateFrame(frame.node());
@@ -5095,7 +5094,6 @@ class BatchDisplay extends MDIDisplay {
 
 } // class BatchDisplay
 
-// ===========================================================================================================
 
 /** @summary Create painter to perform tree drawing on server side
   * @private */
