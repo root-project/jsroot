@@ -4,7 +4,7 @@ import * as d3 from './d3.mjs';
 
 import * as THREE from './three.mjs';
 
-import { assign3DHandler, InteractiveControl } from './base3d.mjs';
+import { assign3DHandler, createRender3D, InteractiveControl } from './base3d.mjs';
 
 import { geo } from './geobase.mjs';
 
@@ -2136,7 +2136,7 @@ class TGeoPainter extends ObjectPainter {
 
       this._scene.add(this._toplevel);
 
-      this._renderer = jsrp.createRender3D(w, h, this.options.Render3D, { antialias: true, logarithmicDepthBuffer: false, preserveDrawingBuffer: true });
+      this._renderer = createRender3D(w, h, this.options.Render3D, { antialias: true, logarithmicDepthBuffer: false, preserveDrawingBuffer: true });
 
       this._webgl = (this._renderer.jsroot_render3d === JSROOT.constants.Render3D.WebGL);
 

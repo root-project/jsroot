@@ -4,7 +4,7 @@ import * as d3 from './d3.mjs';
 
 import * as THREE from './three.mjs';
 
-import { assign3DHandler } from './base3d.mjs';
+import { assign3DHandler, createRender3D } from './base3d.mjs';
 
 import { RFramePainter, ensureRCanvas } from './v7gpad.mjs';
 
@@ -175,7 +175,7 @@ JSROOT.RFramePainter.prototype.create3DScene = function(render3d) {
 
    setCameraPosition(this);
 
-   this.renderer = jsrp.createRender3D(this.scene_width, this.scene_height, render3d);
+   this.renderer = createRender3D(this.scene_width, this.scene_height, render3d);
 
    this.webgl = (render3d === JSROOT.constants.Render3D.WebGL);
    this.add3dCanvas(sz, this.renderer.jsroot_dom, this.webgl);

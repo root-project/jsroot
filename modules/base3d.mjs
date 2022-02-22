@@ -281,7 +281,7 @@ function assign3DHandler(painter) {
   * @param {value} render3d - render type, see {@link JSROOT.constants.Render3D}
   * @param {object} args - different arguments for creating 3D renderer
   * @private */
-jsrp.createRender3D = function(width, height, render3d, args) {
+function createRender3D(width, height, render3d, args) {
 
    let rc = JSROOT.constants.Render3D;
 
@@ -308,7 +308,7 @@ jsrp.createRender3D = function(width, height, render3d, args) {
       }
    } else if (JSROOT.nodejs) {
       // try to use WebGL inside node.js - need to create headless context
-      const { createCanvas } = require('canvas');
+      const { createCanvas } = await import('canvas');
       args.canvas = createCanvas(width, height);
       args.canvas.addEventListener = function() { }; // dummy
       args.canvas.removeEventListener = function() { }; // dummy
@@ -1570,4 +1570,4 @@ jsrp.PointsControl = PointsControl;
 
 jsrp.create3DLineMaterial = create3DLineMaterial;
 
-export { assign3DHandler, InteractiveControl, PointsControl, PointsCreator };
+export { assign3DHandler, createRender3D, InteractiveControl, PointsControl, PointsCreator };
