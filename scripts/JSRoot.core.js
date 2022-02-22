@@ -70,35 +70,6 @@ if ((typeof document !== "undefined") && (typeof window !== "undefined")) {
    browser.touches = ('ontouchend' in document); // identify if touch events are supported
 }
 
-_.sources = {
-      'd3'                   : { src: 'd3', libs: true, extract: "d3" },
-      'zstd-codec'           : { src: '../../zstd/zstd-codec', onlymin: true, alt: "https://root.cern/js/zstd/zstd-codec.min.js", extract: "ZstdCodec", node: "zstd-codec" },
-      'mathjax'              : { src: '../../mathjax/3.2.0/es5/tex-svg', nomin: true,  alt: 'https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-svg.js', extract: "MathJax", node: "mathjax" },
-      'dat.gui'              : { src: 'dat.gui', libs: true, extract: "dat" },
-      'three'                : { src: 'three', libs: true, extract: "THREE" }
- };
-
- ['core','base3d','csg','geobase','geom','geoworker','gpad','hierarchy','hist','hist3d','interactive','io','menu','latex',
-   'math','more','openui5','painter','tree','v7gpad','v7hist','v7hist3d','v7more','webwindow']
-      .forEach(item => _.sources[item] = { src: "JSRoot." + item });
-
-_.get_module_src = function(entry, fullyQualified) {
-   if (entry.src.indexOf('http') == 0)
-      return _.amd ? entry.src : entry.src + ".js";
-
-   // WARNING, with sap mathjax and zstd-codec loaded directly from alternative location
-   if (_.sap)
-      return entry.alt || "jsroot/scripts/" + entry.src + ((_.source_min || entry.libs || entry.onlymin) && !entry.nomin ? ".min" : "");
-
-   let dir = (entry.libs && _.use_full_libs && !_.source_min) ? JSROOT.source_dir + "libs/" : JSROOT.source_dir + "scripts/",
-       ext = (_.source_min || (entry.libs && !_.use_full_libs) || entry.onlymin) && !entry.nomin ? ".min" : "";
-   if (_.amd) return dir + entry.src + ext;
-   let res = dir + entry.src + ext + ".js";
-
-   if (fullyQualified && JSROOT.settings.NoCache) res += "?stamp=" + JSROOT.settings.NoCache;
-   return res;
-}
-
 /** @summary Check if prototype string match to array (typed on untyped)
   * @returns {Number} 0 - not array, 1 - regular array, 2 - typed array */
 function is_array_proto(proto) {
@@ -478,7 +449,7 @@ async function jsroot_require(need) {
       else if (name == "more")
          arr.push(import("../modules/more.mjs"));
       else if (name == "math")
-         arr.push(import("../modules/math.mjs"));
+         arr.push(import("../modules/math.mjs").then(handle => handle.mth));
       else if (name == "latex")
          arr.push(import("../modules/latex.mjs").then(handle => handle.ltx));
       else if (name == "painter")

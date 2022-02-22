@@ -1,7 +1,9 @@
 
 import * as d3 from './d3.mjs';
 
-import { ColorPalette, ObjectPainter } from './painter.mjs';
+import { ObjectPainter } from './painter.mjs';
+
+// import { mth } from './math.mjs';
 
 import { ensureTCanvas } from './gpad.mjs';
 
