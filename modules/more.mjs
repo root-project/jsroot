@@ -2599,7 +2599,7 @@ class TGraphPolargramPainter extends ObjectPainter {
       }
 
       let painter = new TGraphPolargramPainter(dom, polargram);
-      return jsrp.ensureTCanvas(painter, false).then(() => {
+      return ensureTCanvas(painter, false).then(() => {
          painter.setAsMainPainter();
          painter.redraw();
          return painter;
@@ -4316,7 +4316,7 @@ class TASImagePainter extends ObjectPainter {
    static draw(dom, obj, opt) {
       let painter = new TASImagePainter(dom, obj, opt);
       painter.decodeOptions(opt);
-      return jsrp.ensureTCanvas(painter, false)
+      return ensureTCanvas(painter, false)
                  .then(() => painter.drawImage())
                  .then(() => {
                      painter.fillToolbar();
@@ -4496,7 +4496,7 @@ class TRatioPlotPainter extends ObjectPainter {
    static draw(dom, ratio, opt) {
       let painter = new TRatioPlotPainter(dom, ratio, opt);
 
-      return jsrp.ensureTCanvas(painter, false).then(() => painter.redraw());
+      return ensureTCanvas(painter, false).then(() => painter.redraw());
    }
 
 } // class TRatioPlotPainter

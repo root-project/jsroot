@@ -448,6 +448,8 @@ async function jsroot_require(need) {
          arr.push(import("../modules/hist3d.mjs"));
       else if (name == "more")
          arr.push(import("../modules/more.mjs"));
+      else if (name == "gpad")
+         arr.push(import("../modules/gpad.mjs"));
       else if (name == "math")
          arr.push(import("../modules/math.mjs").then(handle => handle.mth));
       else if (name == "latex")
