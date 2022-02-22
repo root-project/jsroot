@@ -5543,4 +5543,4 @@ JSROOT.RPavePainter = RPavePainter;
 jsrp.drawRPadSnapshot = drawRPadSnapshot;
 jsrp.ensureRCanvas = ensureRCanvas;
 
-export { ensureRCanvas, RObjectPainter, RPavePainter };
+export { ensureRCanvas, RObjectPainter, RPavePainter, RFramePainter };
