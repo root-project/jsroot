@@ -39,7 +39,6 @@ exports.batch_mode = nodejs;
 let _ = {
    modules: {},            ///< list of modules
    source_min: false,      ///< is minified sources are used
-   use_full_libs: false,   ///< is full libraries are used
    id_counter: 1,          ///< unique id contner, starts from 1,
    amd: (export_kind !== 'node') && (export_kind !== 'plain')       ///< is AMD
 };
@@ -1044,8 +1043,6 @@ function buildGUI(gui_element, gui_kind) {
       return Promise.resolve(false);
    }
 
-   if (d.has('libs')) _.use_full_libs = true;
-
    if (gui_kind == "nobrowser") {
        gui_kind = "gui"; nobrowser = true;
    } else if (gui_kind == "draw") {
@@ -1794,30 +1791,7 @@ function isRootCollection(lst, typename) {
 
 // Connects web window
 function connectWebWindow(arg) {
-   if (typeof arg == 'function') arg = { callback: arg };
-
-   if (arg.openui5src) JSROOT.openui5src = arg.openui5src;
-   if (arg.openui5libs) JSROOT.openui5libs = arg.openui5libs;
-   if (arg.openui5theme) JSROOT.openui5theme = arg.openui5theme;
-   if (!arg.ignoreUrl) {
-      let url = JSROOT.decodeUrl();
-      if (url.has('nogl')) JSROOT.settings.Render3D = JSROOT.constants.Render3D.SVG;
-      if (url.has('libs')) JSROOT._.use_full_libs = true;
-   }
-
-   let prereq = "webwindow;";
-   if (arg && arg.prereq) prereq += arg.prereq;
-
-   return jsroot_require(prereq).then(() => {
-      if (arg && arg.prereq_logdiv && document) {
-         let elem = document.getElementById(arg.prereq_logdiv);
-         if (elem) elem.innerHTML = '';
-         delete arg.prereq_logdiv;
-      }
-      if (arg && arg.prereq) delete arg.prereq;
-
-      return import('../modules/webwindow.mjs').then(handle => handle.connectWebWindow(arg));
-   });
+   return import('../modules/webwindow.mjs').then(handle => handle.connectWebWindow(arg));
 }
 
 /** @summary Initialize JSROOT
