@@ -1566,9 +1566,8 @@ jsrp.drawPolyLine3D = function() {
 // ==============================================================================================
 
 jsrp.PointsCreator = PointsCreator;
-jsrp.InteractiveControl = InteractiveControl;
 jsrp.PointsControl = PointsControl;
 
 jsrp.create3DLineMaterial = create3DLineMaterial;
 
-export { assign3DHandler };
+export { assign3DHandler, InteractiveControl, PointsControl, PointsCreator };

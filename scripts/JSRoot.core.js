@@ -451,7 +451,7 @@ async function jsroot_require(need) {
       else if (name == "gpad")
          arr.push(import("../modules/gpad.mjs"));
       else if (name == "geom")
-         arr.push(import("../modules/geom.mjs"));
+         arr.push(import("../modules/geom.mjs").then(handle => handle.geo));
       else if (name == "math")
          arr.push(import("../modules/math.mjs").then(handle => handle.mth));
       else if (name == "latex")
