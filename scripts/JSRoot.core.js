@@ -477,6 +477,8 @@ async function jsroot_require(need) {
          arr.push(import("../modules/hist3d.mjs"));
       else if (name == "more")
          arr.push(import("../modules/more.mjs"));
+      else if (name == "math")
+         arr.push(import("../modules/math.mjs"));
       else if (name == "latex")
          arr.push(import("../modules/latex.mjs").then(handle => handle.ltx));
       else if (name == "painter")
