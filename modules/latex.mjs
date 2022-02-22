@@ -1,7 +1,7 @@
 
 import * as d3 from './d3.mjs';
 
-import { getElementRect } from './painter.mjs';
+import { getElementRect, loadJSDOM } from './painter.mjs';
 
 
 let symbols_map = {
@@ -851,12 +851,12 @@ ltx.produceLatex = function(painter, node, arg) {
 ltx.loadMathjax = () => {
    let loading = (ltx._mj_loading !== undefined);
 
-   if (!loading && (typeof MathJax != "undefined"))
-      return Promise.resolve(MathJax);
+   if (!loading && (typeof globalThis.MathJax != "undefined"))
+      return Promise.resolve(globalThis.MathJax);
 
    if (!loading) ltx._mj_loading = [];
 
-   let promise = new Promise(resolve => { ltx._mj_loading ? ltx._mj_loading.push(resolve) : resolve(MathJax); });
+   let promise = new Promise(resolve => { ltx._mj_loading ? ltx._mj_loading.push(resolve) : resolve(globalThis.MathJax); });
 
    if (loading) return promise;
 
@@ -876,7 +876,7 @@ ltx.loadMathjax = () => {
        titleID: 0                     // initial id number to use for aria-labeledby titles
    };
 
-   if (!JSROOT.nodejs)
+   if (!JSROOT.nodejs) {
       window.MathJax = {
          options: {
             enableMenu: false
@@ -893,14 +893,19 @@ ltx.loadMathjax = () => {
                MathJax.startup.defaultReady();
                let arr = ltx._mj_loading;
                delete ltx._mj_loading;
-               arr.forEach(func => func(MathJax));
+               arr.forEach(func => func(globalThis.MathJax));
             }
          }
       };
 
-   JSROOT.require('mathjax').then(mj => {
+      return JSROOT.loadScript('../../mathjax/3.2.0/es5/tex-svg.js')
+                   .catch(() => JSROOT.loadScript('https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-svg.js'))
+                   .then(() => promise);
+   }
 
-      if (!JSROOT.nodejs) return; // no need for something else, handled with ready
+   let myJSDOM;
+
+   return loadJSDOM().then(handle => { myJSDOM = handle.JSDOM; return import('mathjax'); }).then(mj => {
 
       // return Promise with mathjax loading
       mj.init({
@@ -912,7 +917,7 @@ ltx.loadMathjax = () => {
           },
           svg: svg_config,
           config: {
-             JSDOM: require('jsdom').JSDOM
+             JSDOM: myJSDOM
           },
           startup: {
              typeset: false,
@@ -928,9 +933,10 @@ ltx.loadMathjax = () => {
              }
           }
       });
+
+      return promise;
    });
 
-   return promise;
 }
 
 const math_symbols_map = {

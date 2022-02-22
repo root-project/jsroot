@@ -4101,6 +4101,21 @@ jsrp.compressSVG = function(svg) {
    return svg;
 }
 
+/** @summary Load and initialize JSDOM from nodes
+  * @returns {Promise} with d3 selection for d3_body */
+function loadJSDOM() {
+   return import("jsdom").then(handle => {
+
+      if (!JSROOT._.nodejs_window) {
+         JSROOT._.nodejs_window = (new handle.JSDOM("<!DOCTYPE html>hello")).window;
+         JSROOT._.nodejs_document = JSROOT._.nodejs_window.document; // used with three.js
+         JSROOT._.nodejs_window.d3 = d3.select(JSROOT._.nodejs_document); //get d3 into the dom
+      }
+
+      return { JSDOM: handle.JSDOM, doc: JSROOT._.nodejs_document, d3: JSROOT._.nodejs_window.d3 };
+   });
+}
+
 /** @summary Create SVG image for provided object.
   * @desc Function especially useful in Node.js environment to generate images for
   * supported ROOT classes
@@ -4167,17 +4182,7 @@ function makeSVG(args) {
    if (JSROOT._.nodejs_document)
       return build(JSROOT._.nodejs_window.d3.select('body').append('div'));
 
-   return import("jsdom").then(handle => {
-
-      // use eval while old minifier is not able to parse newest Node.js syntax
-      // const { JSDOM } = require("jsdom");
-      JSROOT._.nodejs_window = (new handle.JSDOM("<!DOCTYPE html>hello")).window;
-      JSROOT._.nodejs_document = JSROOT._.nodejs_window.document; // used with three.js
-      JSROOT._.nodejs_window.d3 = d3.select(JSROOT._.nodejs_document); //get d3 into the dom
-
-      return build(JSROOT._.nodejs_window.d3.select('body').append('div'));
-   });
-
+   return loadJSDOM().then(handle => build(handle.d3.select('body').append('div')));
 }
 
 /** @summary Check resize of drawn element
@@ -4376,4 +4381,4 @@ JSROOT.makeSVG = makeSVG;
 // FIXME: should be eliminated
 JSROOT.Painter = jsrp;
 
-export { ColorPalette, BasePainter, ObjectPainter, getElementRect, draw, redraw, makeSVG, jsrp };
+export { ColorPalette, BasePainter, ObjectPainter, getElementRect, draw, redraw, makeSVG, jsrp, loadJSDOM };
