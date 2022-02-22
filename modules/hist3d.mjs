@@ -103,7 +103,7 @@ function setCameraPosition(fp, first_time) {
 
 /** @summary Create all necessary components for 3D drawings
   * @private */
-TFramePainter.prototype.create3DScene = function(render3d, x3dscale, y3dscale) {
+TFramePainter.prototype.create3DScene = async function(render3d, x3dscale, y3dscale) {
 
    if (render3d === -1) {
 
@@ -161,7 +161,7 @@ TFramePainter.prototype.create3DScene = function(render3d, x3dscale, y3dscale) {
 
       setCameraPosition(this, false);
 
-      return;
+      return Promise.resolve(true);
    }
 
    render3d = jsrp.getRender3DKind(render3d);
@@ -198,7 +198,7 @@ TFramePainter.prototype.create3DScene = function(render3d, x3dscale, y3dscale) {
 
    setCameraPosition(this, true);
 
-   this.renderer = createRender3D(this.scene_width, this.scene_height, render3d);
+   this.renderer = await createRender3D(this.scene_width, this.scene_height, render3d);
 
    this.webgl = (render3d === JSROOT.constants.Render3D.WebGL);
    this.add3dCanvas(sz, this.renderer.jsroot_dom, this.webgl);
@@ -1393,7 +1393,7 @@ THistPainter.prototype.draw3DBins = function() {
 
 /** @summary Draw 1-D histogram in 3D
   * @private */
-TH1Painter.prototype.draw3D = function(reason) {
+TH1Painter.prototype.draw3D = async function(reason) {
 
    this.mode3d = true;
 
@@ -1412,7 +1412,7 @@ TH1Painter.prototype.draw3D = function(reason) {
       this.scanContent(true); // may be required for axis drawings
 
       if (is_main) {
-         main.create3DScene(this.options.Render3D, this.options.x3dscale, this.options.y3dscale);
+         await main.create3DScene(this.options.Render3D, this.options.x3dscale, this.options.y3dscale);
          main.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, 0, 0);
          main.set3DOptions(this.options);
          main.drawXYZ(main.toplevel, { use_y_for_z: true, zmult: 1.1, zoom: JSROOT.settings.Zooming, ndim: 1, draw: this.options.Axis !== -1 });
@@ -1426,19 +1426,20 @@ TH1Painter.prototype.draw3D = function(reason) {
       }
    }
 
-   if (is_main)
+   if (is_main) {
       // (re)draw palette by resize while canvas may change dimension
-      return this.drawColorPalette(this.options.Zscale && ((this.options.Lego===12) || (this.options.Lego===14)))
-                 .then(() => this.drawHistTitle());
+      await this.drawColorPalette(this.options.Zscale && ((this.options.Lego===12) || (this.options.Lego===14)));
+      await this.drawHistTitle();
+   }
 
-   return Promise.resolve(this);
+   return this;
 }
 
 // ==========================================================================================
 
 /** @summary Draw 2-D histogram in 3D
   * @private */
-TH2Painter.prototype.draw3D = function(reason) {
+TH2Painter.prototype.draw3D = async function(reason) {
 
    this.mode3d = true;
 
@@ -1465,7 +1466,7 @@ TH2Painter.prototype.draw3D = function(reason) {
       this.deleteAttr();
 
       if (is_main) {
-         main.create3DScene(this.options.Render3D, this.options.x3dscale, this.options.y3dscale);
+         await main.create3DScene(this.options.Render3D, this.options.x3dscale, this.options.y3dscale);
          main.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, this.zmin, this.zmax);
          main.set3DOptions(this.options);
          main.drawXYZ(main.toplevel, { zmult: zmult, zoom: JSROOT.settings.Zooming, ndim: 2, draw: this.options.Axis !== -1 });
@@ -1479,13 +1480,14 @@ TH2Painter.prototype.draw3D = function(reason) {
       }
    }
 
-   if (is_main)
+   if (is_main) {
       //  (re)draw palette by resize while canvas may change dimension
-      return this.drawColorPalette(this.options.Zscale && ((this.options.Lego===12) || (this.options.Lego===14) ||
-                                   (this.options.Surf===11) || (this.options.Surf===12)))
-                 .then(() => this.drawHistTitle());
+      await this.drawColorPalette(this.options.Zscale && ((this.options.Lego===12) || (this.options.Lego===14) ||
+                                   (this.options.Surf===11) || (this.options.Surf===12)));
+      await this.drawHistTitle();
+   }
 
-   return Promise.resolve(this);
+   return this;
 }
 
 /** @summary Draw TH2 as 3D contour plot
@@ -2784,11 +2786,10 @@ class TH3Painter extends THistPainter {
    }
 
    /** @summary Redraw TH3 histogram */
-   redraw(reason) {
+   async redraw(reason) {
 
       let main = this.getFramePainter(), // who makes axis and 3D drawing
-          histo = this.getHisto(),
-          promise = Promise.resolve(true);
+          histo = this.getHisto();
 
       if (reason == "resize") {
 
@@ -2796,18 +2797,19 @@ class TH3Painter extends THistPainter {
 
       } else {
 
-         main.create3DScene(this.options.Render3D, this.options.x3dscale, this.options.y3dscale);
+         await main.create3DScene(this.options.Render3D, this.options.x3dscale, this.options.y3dscale);
          main.setAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, this.zmin, this.zmax);
          main.set3DOptions(this.options);
          main.drawXYZ(main.toplevel, { zoom: JSROOT.settings.Zooming, ndim: 3, draw: this.options.Axis !== -1 });
-         promise = this.draw3DBins().then(() => {
-            main.render3D();
-            this.updateStatWebCanvas();
-            main.addKeysHandler();
-         });
+         await this.draw3DBins();
+
+         main.render3D();
+         this.updateStatWebCanvas();
+         main.addKeysHandler();
       }
 
-      return promise.then(() => this.drawHistTitle());
+      await this.drawHistTitle();
+      return this;
    }
 
    /** @summary Fill pad toolbar with TH3-related functions */
