@@ -470,7 +470,7 @@ async function jsroot_require(need) {
       else if (name == "v7gpad")
          arr.push(import("../modules/v7gpad.mjs"))
       else if (name == "openui5")
-         arr.push(import("../modules/openui5.mjs").then(handle => handle.completeUi5Loading()));
+         arr.push(import("../modules/openui5.mjs").then(handle => handle.doUi5Loading()));
 
    });
 
