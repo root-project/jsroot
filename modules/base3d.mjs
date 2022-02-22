@@ -309,15 +309,16 @@ async function createRender3D(width, height, render3d, args) {
       }
    } else if (JSROOT.nodejs) {
       // try to use WebGL inside node.js - need to create headless context
-      let { createCanvas } = await import('canvas');
-      args.canvas = createCanvas(width, height);
+      let canvas_handle = await import('canvas');
+
+      args.canvas = canvas_handle.default.createCanvas(width, height);
       args.canvas.addEventListener = function() { }; // dummy
       args.canvas.removeEventListener = function() { }; // dummy
       args.canvas.style = {};
 
-      let func = await import('gl');
+      let glfunc = await import('gl');
 
-      let gl = func(width, height, { preserveDrawingBuffer: true });
+      let gl = glfunc.default(width, height, { preserveDrawingBuffer: true });
       if (!gl) throw(Error("Fail to create headless-gl"));
       args.context = gl;
       gl.canvas = args.canvas;
