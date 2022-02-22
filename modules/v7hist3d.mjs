@@ -86,7 +86,7 @@ function setCameraPosition(fp) {
 }
 
 /** @summary Create all necessary components for 3D drawings */
-JSROOT.RFramePainter.prototype.create3DScene = function(render3d) {
+JSROOT.RFramePainter.prototype.create3DScene = async function(render3d) {
 
    if (render3d === -1) {
 
@@ -175,7 +175,7 @@ JSROOT.RFramePainter.prototype.create3DScene = function(render3d) {
 
    setCameraPosition(this);
 
-   this.renderer = createRender3D(this.scene_width, this.scene_height, render3d);
+   this.renderer = await createRender3D(this.scene_width, this.scene_height, render3d);
 
    this.webgl = (render3d === JSROOT.constants.Render3D.WebGL);
    this.add3dCanvas(sz, this.renderer.jsroot_dom, this.webgl);
@@ -1359,7 +1359,7 @@ RHistPainter.prototype.drawLego = function() {
 // ==========================================================================================
 
 /** @summary Draw 1-D histogram in 3D mode */
-RH1Painter.prototype.draw3D = function(reason) {
+RH1Painter.prototype.draw3D = async function(reason) {
 
    this.mode3d = true;
 
@@ -1368,7 +1368,7 @@ RH1Painter.prototype.draw3D = function(reason) {
 
    if (reason == "resize")  {
       if (is_main && main.resize3D()) main.render3D();
-      return Promise.resolve(this);
+      return this;
    }
 
    this.deleteAttr();
@@ -1376,16 +1376,15 @@ RH1Painter.prototype.draw3D = function(reason) {
    this.scanContent(true); // may be required for axis drawings
 
    if (is_main) {
-      main.create3DScene(this.options.Render3D);
+      await main.create3DScene(this.options.Render3D);
       main.setAxesRanges(this.getAxis("x"), this.xmin, this.xmax, null, this.ymin, this.ymax, null, 0, 0);
       main.set3DOptions(this.options);
       main.drawXYZ(main.toplevel, { use_y_for_z: true, zmult: 1.1, zoom: JSROOT.settings.Zooming, ndim: 1 });
    }
 
-   if (!main.mode3d)
-      return Promise.resolve(this);
+   if (main.mode3d) {
+      await this.drawingBins(reason);
 
-   return this.drawingBins(reason).then(() => {
       // called when bins received from server, must be reentrant
       let main = this.getFramePainter();
 
@@ -1393,14 +1392,14 @@ RH1Painter.prototype.draw3D = function(reason) {
       this.updatePaletteDraw();
       main.render3D();
       main.addKeysHandler();
-      return this;
-   });
+   }
 
+   return this;
 }
 
 // ==========================================================================================
 
-RH2Painter.prototype.draw3D = function(reason) {
+RH2Painter.prototype.draw3D = async function(reason) {
 
    this.mode3d = true;
 
@@ -1410,7 +1409,7 @@ RH2Painter.prototype.draw3D = function(reason) {
    if (reason == "resize") {
       if (is_main && main.resize3D()) main.render3D();
 
-      return Promise.resolve(this);
+      return this;
    }
 
    let zmult = 1.1;
@@ -1424,24 +1423,23 @@ RH2Painter.prototype.draw3D = function(reason) {
    this.deleteAttr();
 
    if (is_main) {
-      main.create3DScene(this.options.Render3D);
+      await main.create3DScene(this.options.Render3D);
       main.setAxesRanges(this.getAxis("x"), this.xmin, this.xmax, this.getAxis("y"), this.ymin, this.ymax, null, this.zmin, this.zmax);
       main.set3DOptions(this.options);
       main.drawXYZ(main.toplevel, { zmult: zmult, zoom: JSROOT.settings.Zooming, ndim: 2 });
    }
 
-   if (!main.mode3d)
-      return Promise.resolve(this);
-
-   return this.drawingBins(reason).then(() => {
+   if (main.mode3d) {
+      await this.drawingBins(reason);
       // called when bins received from server, must be reentrant
       let main = this.getFramePainter();
 
       this.draw3DBins();
       main.render3D();
       main.addKeysHandler();
-      return this;
-   });
+   }
+
+   return this;
 }
 
 /** Draw histogram bins in 3D, using provided draw options */
@@ -2817,7 +2815,7 @@ class RH3Painter extends RHistPainter {
    }
 
    /** @summary Redraw histogram*/
-   redraw(reason) {
+   async redraw(reason) {
 
       let main = this.getFramePainter(); // who makes axis and 3D drawing
 
@@ -2826,17 +2824,16 @@ class RH3Painter extends RHistPainter {
          return;
       }
 
-      main.create3DScene(this.options.Render3D);
+      await main.create3DScene(this.options.Render3D);
       main.setAxesRanges(this.getAxis("x"), this.xmin, this.xmax, this.getAxis("y"), this.ymin, this.ymax, this.getAxis("z"), this.zmin, this.zmax);
       main.set3DOptions(this.options);
       main.drawXYZ(main.toplevel, { zoom: JSROOT.settings.Zooming, ndim: 3 });
 
-      this.drawingBins(reason)
-          .then(() => this.draw3DBins()) // called when bins received from server, must be reentrant
-          .then(() => {
-             main.render3D();
-             main.addKeysHandler();
-          });
+      await this.drawingBins(reason);
+      await this.draw3DBins(); // called when bins received from server, must be reentrant
+
+      main.render3D();
+      main.addKeysHandler();
    }
 
    /** @summary Fill pad toolbar with RH3-related functions */
