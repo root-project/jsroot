@@ -2136,46 +2136,48 @@ class TGeoPainter extends ObjectPainter {
 
       this._scene.add(this._toplevel);
 
-      this._renderer = createRender3D(w, h, this.options.Render3D, { antialias: true, logarithmicDepthBuffer: false, preserveDrawingBuffer: true });
+      return createRender3D(w, h, this.options.Render3D, { antialias: true, logarithmicDepthBuffer: false, preserveDrawingBuffer: true }).then(rdr => {
 
-      this._webgl = (this._renderer.jsroot_render3d === JSROOT.constants.Render3D.WebGL);
+         this._renderer = rdr;
 
-      if (this._renderer.setPixelRatio && !JSROOT.nodejs)
-         this._renderer.setPixelRatio(window.devicePixelRatio);
-      this._renderer.setSize(w, h, !this._fit_main_area);
-      this._renderer.localClippingEnabled = true;
+         this._webgl = (this._renderer.jsroot_render3d === JSROOT.constants.Render3D.WebGL);
 
-      this._renderer.setClearColor(this.ctrl.background, 1);
+         if (this._renderer.setPixelRatio && !JSROOT.nodejs)
+            this._renderer.setPixelRatio(window.devicePixelRatio);
+         this._renderer.setSize(w, h, !this._fit_main_area);
+         this._renderer.localClippingEnabled = true;
 
-      if (this._fit_main_area && this._webgl) {
-         this._renderer.domElement.style.width = "100%";
-         this._renderer.domElement.style.height = "100%";
-         let main = this.selectDom();
-         if (main.style('position')=='static') main.style('position','relative');
-      }
+         this._renderer.setClearColor(this.ctrl.background, 1);
 
-      this._animating = false;
+         if (this._fit_main_area && this._webgl) {
+            this._renderer.domElement.style.width = "100%";
+            this._renderer.domElement.style.height = "100%";
+            let main = this.selectDom();
+            if (main.style('position')=='static') main.style('position','relative');
+         }
 
-      // Clipping Planes
+         this._animating = false;
 
-      this.ctrl.bothSides = false; // which material kind should be used
-      this._clipPlanes = [ new THREE.Plane(new THREE.Vector3(1, 0, 0), 0),
-                           new THREE.Plane(new THREE.Vector3(0, this.ctrl._yup ? -1 : 1, 0), 0),
-                           new THREE.Plane(new THREE.Vector3(0, 0, this.ctrl._yup ? 1 : -1), 0) ];
+         // Clipping Planes
 
+         this.ctrl.bothSides = false; // which material kind should be used
+         this._clipPlanes = [ new THREE.Plane(new THREE.Vector3(1, 0, 0), 0),
+                              new THREE.Plane(new THREE.Vector3(0, this.ctrl._yup ? -1 : 1, 0), 0),
+                              new THREE.Plane(new THREE.Vector3(0, 0, this.ctrl._yup ? 1 : -1), 0) ];
 
-      this.createSpecialEffects();
+         this.createSpecialEffects();
 
-      if (this._fit_main_area && !this._webgl) {
-         // create top-most SVG for geomtery drawings
-         let doc = JSROOT._.get_document(),
-             svg = doc.createElementNS("http://www.w3.org/2000/svg", "svg");
-         d3.select(svg).attr("width",w).attr("height",h);
-         svg.appendChild(this._renderer.jsroot_dom);
-         return svg;
-      }
+         if (this._fit_main_area && !this._webgl) {
+            // create top-most SVG for geomtery drawings
+            let doc = JSROOT._.get_document(),
+                svg = doc.createElementNS("http://www.w3.org/2000/svg", "svg");
+            d3.select(svg).attr("width",w).attr("height",h);
+            svg.appendChild(this._renderer.jsroot_dom);
+            return svg;
+         }
 
-      return this._renderer.jsroot_dom;
+         return this._renderer.jsroot_dom;
+      });
    }
 
    /** @summary Start geometry drawing */
@@ -3268,21 +3270,21 @@ class TGeoPainter extends ObjectPainter {
          this._on_pad = !!this.getPadPainter();
 
          if (this._on_pad) {
+            let size, render3d, fp;
             promise = ensureTCanvas(this,"3d").then(() => {
 
-               let fp = this.getFramePainter(),
-                   render3d = jsrp.getRender3DKind();
+               fp = this.getFramePainter();
+
+               render3d = jsrp.getRender3DKind();
                assign3DHandler(fp);
                fp.mode3d = true;
 
-               let size = fp.getSizeFor3d(undefined, render3d);
+               size = fp.getSizeFor3d(undefined, render3d);
 
                this._fit_main_area = (size.can3d === -1);
 
-               let dom = this.createScene(size.width, size.height);
-
-               fp.add3dCanvas(size, dom, render3d === JSROOT.constants.Render3D.WebGL);
-            });
+               return this.createScene(size.width, size.height);
+             }).then(dom => fp.add3dCanvas(size, dom, render3d === JSROOT.constants.Render3D.WebGL));
 
          } else {
             // activate worker
@@ -3294,9 +3296,8 @@ class TGeoPainter extends ObjectPainter {
 
             this._fit_main_area = (size.can3d === -1);
 
-            let dom = this.createScene(size.width, size.height);
-
-            this.add3dCanvas(size, dom, this._webgl);
+            promise = this.createScene(size.width, size.height)
+                          .then(dom => this.add3dCanvas(size, dom, this._webgl));
          }
       }
 

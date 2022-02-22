@@ -281,7 +281,8 @@ function assign3DHandler(painter) {
   * @param {value} render3d - render type, see {@link JSROOT.constants.Render3D}
   * @param {object} args - different arguments for creating 3D renderer
   * @private */
-function createRender3D(width, height, render3d, args) {
+
+async function createRender3D(width, height, render3d, args) {
 
    let rc = JSROOT.constants.Render3D;
 
@@ -308,20 +309,18 @@ function createRender3D(width, height, render3d, args) {
       }
    } else if (JSROOT.nodejs) {
       // try to use WebGL inside node.js - need to create headless context
-      const { createCanvas } = await import('canvas');
+      let { createCanvas } = await import('canvas');
       args.canvas = createCanvas(width, height);
       args.canvas.addEventListener = function() { }; // dummy
       args.canvas.removeEventListener = function() { }; // dummy
       args.canvas.style = {};
 
-      let gl = require('gl')(width, height, { preserveDrawingBuffer: true });
+      let func = await import('gl');
 
-      if (!gl) {
-         console.error("Fail to create headless-gl");
-      } else {
-         args.context = gl;
-         gl.canvas = args.canvas;
-      }
+      let gl = func(width, height, { preserveDrawingBuffer: true });
+      if (!gl) throw(Error("Fail to create headless-gl"));
+      args.context = gl;
+      gl.canvas = args.canvas;
 
       renderer = new THREE.WebGLRenderer(args);
 
@@ -330,6 +329,7 @@ function createRender3D(width, height, render3d, args) {
       renderer.setRenderTarget(renderer.jsroot_output);
 
       need_workaround = true;
+
    } else {
       // rendering with WebGL directly into svg image
       renderer = new THREE.WebGLRenderer(args);
@@ -362,6 +362,9 @@ function createRender3D(width, height, render3d, args) {
 
    return renderer;
 }
+
+
+
 
 /** @summary Cleanup created renderer object
   * @private */
