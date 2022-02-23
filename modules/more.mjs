@@ -4023,7 +4023,7 @@ class TASImagePainter extends ObjectPainter {
    }
 
    /** @summary Draw image */
-   drawImage() {
+   async drawImage() {
       let obj = this.getObject(),
           is_buf = false,
           fp = this.getFramePainter(),
@@ -4125,8 +4125,8 @@ class TASImagePainter extends ObjectPainter {
 
          if (JSROOT.nodejs) {
             try {
-               const { createCanvas } = require('canvas');
-               canvas = createCanvas(xmax - xmin, ymax - ymin);
+               let handle = await import('canvas');
+               canvas = handle.default.createCanvas(xmax - xmin, ymax - ymin);
             } catch (err) {
                console.log('canvas is not installed');
             }
@@ -4138,7 +4138,7 @@ class TASImagePainter extends ObjectPainter {
          }
 
          if (!canvas)
-            return Promise.resolve(null);
+            return null;
 
          let context = canvas.getContext('2d'),
              imageData = context.getImageData(0, 0, canvas.width, canvas.height),
@@ -4164,7 +4164,7 @@ class TASImagePainter extends ObjectPainter {
          constRatio = obj.fConstRatio;
 
       } else if (obj.fPngBuf) {
-         let pngbuf = "", btoa_func = JSROOT.nodejs ? require("btoa") : window.btoa;
+         let pngbuf = "", btoa_func = JSROOT.nodejs ? await import("btoa") : window.btoa;
          if (typeof obj.fPngBuf == "string") {
             pngbuf = obj.fPngBuf;
          } else {
@@ -4183,15 +4183,14 @@ class TASImagePainter extends ObjectPainter {
              .attr("height", rect.height)
              .attr("preserveAspectRatio", constRatio ? null : "none");
 
-      if (url && this.isMainPainter() && is_buf && fp)
-         return this.drawColorPalette(this.options.Zscale, true).then(() => {
-            fp.setAxesRanges(JSROOT.create("TAxis"), 0, 1, JSROOT.create("TAxis"), 0, 1, null, 0, 0);
-            fp.createXY({ ndim: 2, check_pad_range: false });
-            fp.addInteractivity();
-            return this;
-         });
+      if (url && this.isMainPainter() && is_buf && fp) {
+         await this.drawColorPalette(this.options.Zscale, true);
+         fp.setAxesRanges(JSROOT.create("TAxis"), 0, 1, JSROOT.create("TAxis"), 0, 1, null, 0, 0);
+         fp.createXY({ ndim: 2, check_pad_range: false });
+         fp.addInteractivity();
+      }
 
-      return Promise.resolve(this);
+      return this;
    }
 
    /** @summary Checks if it makes sense to zoom inside specified axis range */
