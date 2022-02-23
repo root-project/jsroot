@@ -4212,10 +4212,10 @@ class TASImagePainter extends ObjectPainter {
 
    /** @summary Draw color palette
      * @private */
-   drawColorPalette(enabled, can_move) {
+   async drawColorPalette(enabled, can_move) {
 
       if (!this.isMainPainter())
-         return Promise.resolve(null);
+         return null;
 
       if (!this.draw_palette) {
          let pal = JSROOT.create('TPave');
@@ -4236,7 +4236,7 @@ class TASImagePainter extends ObjectPainter {
             pal_painter.Enabled = false;
             pal_painter.removeG(); // completely remove drawing without need to redraw complete pad
          }
-         return Promise.resolve(null);
+         return null;
       }
 
       let frame_painter = this.getFramePainter();
@@ -4253,19 +4253,18 @@ class TASImagePainter extends ObjectPainter {
       if (!pal_painter) {
          let prev_name = this.selectCurrentPad(this.getPadName());
 
-         return JSROOT.draw(this.getDom(), this.draw_palette).then(pp => {
-            this.selectCurrentPad(prev_name);
-            // mark painter as secondary - not in list of TCanvas primitives
-            pp.$secondary = true;
+         pal_painter = await JSROOT.draw(this.getDom(), this.draw_palette);
 
-            // make dummy redraw, palette will be updated only from histogram painter
-            pp.redraw = function() {};
+         this.selectCurrentPad(prev_name);
+         // mark painter as secondary - not in list of TCanvas primitives
+         pal_painter.$secondary = true;
 
-            return this;
-         });
+         // make dummy redraw, palette will be updated only from histogram painter
+         pal_painter.redraw = function() {};
+
       } else {
          pal_painter.Enabled = true;
-         return pal_painter.drawPave("");
+         await pal_painter.drawPave("");
       }
    }
 

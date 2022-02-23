@@ -3251,8 +3251,8 @@ class THistPainter extends ObjectPainter {
       } else {
          pal_painter.Enabled = true;
          // real drawing will be perform at the end
-         // await pal_painter.drawPave(arg);
-         return pal_painter;
+         if (postpone_draw) return pal_painter;
+         await pal_painter.drawPave(arg);
       }
 
       // mark painter as secondary - not in list of TCanvas primitives
@@ -3311,8 +3311,7 @@ class THistPainter extends ObjectPainter {
 
       if (can_toggle) {
          this.options.Zscale = !this.options.Zscale;
-         let pp = await this.drawColorPalette(this.options.Zscale, false, true);
-         this.completePalette(pp);
+         await this.drawColorPalette(this.options.Zscale, false, true);
       }
    }
 
