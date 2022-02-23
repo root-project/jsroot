@@ -4164,7 +4164,8 @@ class TASImagePainter extends ObjectPainter {
          constRatio = obj.fConstRatio;
 
       } else if (obj.fPngBuf) {
-         let pngbuf = "", btoa_func = JSROOT.nodejs ? await import("btoa") : window.btoa;
+         let pngbuf = "", btoa_func = JSROOT.nodejs ? (await import("btoa"))?.default : window.btoa;
+
          if (typeof obj.fPngBuf == "string") {
             pngbuf = obj.fPngBuf;
          } else {
