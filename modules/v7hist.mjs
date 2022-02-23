@@ -264,17 +264,17 @@ class RHistPainter extends RObjectPainter {
    }
 
    /** @summary Draw axes */
-   drawFrameAxes() {
+   async drawFrameAxes() {
       // return true when axes was drawn
       let main = this.getFramePainter();
-      if (!main) return Promise.resolve(false);
+      if (!main) return false;
 
       if (!this.draw_content)
-         return Promise.resolve(true);
+         return true;
 
       if (!this.isMainPainter()) {
          if (!this.options.second_x && !this.options.second_y)
-            return Promise.resolve(true);
+            return true;
 
          main.setAxes2Ranges(this.options.second_x, this.getAxis("x"), this.xmin, this.xmax, this.options.second_y, this.getAxis("y"), this.ymin, this.ymax);
          return main.drawAxes2(this.options.second_x, this.options.second_y);
@@ -1859,53 +1859,54 @@ class RH1Painter extends RHistPainter {
 
    /** @summary Readraw histogram */
    redraw(reason) {
-      this.callDrawFunc(reason);
+      return this.callDrawFunc(reason);
    }
 
    /** @summary draw RH1 object */
-   static draw(dom, histo, opt) {
+   static async draw(dom, histo, opt) {
       // create painter and add it to canvas
       let painter = new RH1Painter(dom, histo);
 
-      return ensureRCanvas(painter).then(() => {
+      await ensureRCanvas(painter);
 
-         painter.setAsMainPainter();
+      painter.setAsMainPainter();
 
-         painter.options = { Hist: false, Bar: false, BarStyle: 0,
-                             Error: false, ErrorKind: -1, errorX: JSROOT.gStyle.fErrorX,
-                             Zero: false, Mark: false,
-                             Line: false, Fill: false, Lego: 0, Surf: 0,
-                             Text: false, TextAngle: 0, TextKind: "", AutoColor: 0,
-                             BarOffset: 0., BarWidth: 1., BaseLine: false, Mode3D: false };
+      painter.options = { Hist: false, Bar: false, BarStyle: 0,
+                          Error: false, ErrorKind: -1, errorX: JSROOT.gStyle.fErrorX,
+                          Zero: false, Mark: false,
+                          Line: false, Fill: false, Lego: 0, Surf: 0,
+                          Text: false, TextAngle: 0, TextKind: "", AutoColor: 0,
+                          BarOffset: 0., BarWidth: 1., BaseLine: false, Mode3D: false };
 
-         let d = new JSROOT.DrawOptions(opt);
-         if (d.check('R3D_', true))
-            painter.options.Render3D = JSROOT.constants.Render3D.fromString(d.part.toLowerCase());
+      let d = new JSROOT.DrawOptions(opt);
+      if (d.check('R3D_', true))
+         painter.options.Render3D = JSROOT.constants.Render3D.fromString(d.part.toLowerCase());
 
-         let kind = painter.v7EvalAttr("kind", "hist"),
-             sub = painter.v7EvalAttr("sub", 0),
-             has_main = !!painter.getMainPainter(),
-             o = painter.options;
+      let kind = painter.v7EvalAttr("kind", "hist"),
+          sub = painter.v7EvalAttr("sub", 0),
+          has_main = !!painter.getMainPainter(),
+          o = painter.options;
 
-         o.Text = painter.v7EvalAttr("drawtext", false);
-         o.BarOffset = painter.v7EvalAttr("baroffset", 0.);
-         o.BarWidth = painter.v7EvalAttr("barwidth", 1.);
-         o.second_x = has_main && painter.v7EvalAttr("secondx", false);
-         o.second_y = has_main && painter.v7EvalAttr("secondy", false);
+      o.Text = painter.v7EvalAttr("drawtext", false);
+      o.BarOffset = painter.v7EvalAttr("baroffset", 0.);
+      o.BarWidth = painter.v7EvalAttr("barwidth", 1.);
+      o.second_x = has_main && painter.v7EvalAttr("secondx", false);
+      o.second_y = has_main && painter.v7EvalAttr("secondy", false);
 
-         switch(kind) {
-            case "bar": o.Bar = true; o.BarStyle = sub; break;
-            case "err": o.Error = true; o.ErrorKind = sub; break;
-            case "p": o.Mark = true; break;
-            case "l": o.Line = true; break;
-            case "lego": o.Lego = sub > 0 ? 10+sub : 12; o.Mode3D = true; break;
-            default: o.Hist = true;
-         }
+      switch(kind) {
+         case "bar": o.Bar = true; o.BarStyle = sub; break;
+         case "err": o.Error = true; o.ErrorKind = sub; break;
+         case "p": o.Mark = true; break;
+         case "l": o.Line = true; break;
+         case "lego": o.Lego = sub > 0 ? 10+sub : 12; o.Mode3D = true; break;
+         default: o.Hist = true;
+      }
 
-         painter.scanContent();
+      painter.scanContent();
 
-         return painter.callDrawFunc();
-      });
+      await painter.callDrawFunc();
+
+      return painter;
    }
 
 } // class RH1Painter

@@ -1945,6 +1945,7 @@ class RFramePainter extends RObjectPainter {
          await this.y2_handle.drawAxis(layer, `translate(${w},${h})`, -1);
       }
 
+      return true;
    }
 
    /** @summary Return functions to create x/y points based on coordinates
