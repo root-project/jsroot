@@ -1,11 +1,78 @@
 
 import * as d3 from './d3.mjs';
 
-
 // TODO: load it in deifferent time
 JSROOT.loadScript('$$$style/JSRoot.painter');
 
-// ==========================================================================================
+/** @summary Converts numeric value to string according to specified format.
+  * @param {number} value - value to convert
+  * @param {string} [fmt="6.4g"] - format can be like 5.4g or 4.2e or 6.4f
+  * @param {boolean} [ret_fmt] - when true returns array with value and actual format like ["0.1","6.4f"]
+  * @returns {string|Array} - converted value or array with value and actual format */
+function floatToString(value, fmt, ret_fmt) {
+   if (!fmt) fmt = "6.4g";
+
+   fmt = fmt.trim();
+   let len = fmt.length;
+   if (len<2)
+      return ret_fmt ? [value.toFixed(4), "6.4f"] : value.toFixed(4);
+   let last = fmt[len-1];
+   fmt = fmt.slice(0,len-1);
+   let isexp, prec = fmt.indexOf(".");
+   prec = (prec<0) ? 4 : parseInt(fmt.slice(prec+1));
+   if (!Number.isInteger(prec) || (prec <=0)) prec = 4;
+
+   let significance = false;
+   if ((last=='e') || (last=='E')) { isexp = true; } else
+   if (last=='Q') { isexp = true; significance = true; } else
+   if ((last=='f') || (last=='F')) { isexp = false; } else
+   if (last=='W') { isexp = false; significance = true; } else
+   if ((last=='g') || (last=='G')) {
+      let se = floatToString(value, fmt+'Q', true),
+          sg = floatToString(value, fmt+'W', true);
+
+      if (se[0].length < sg[0].length) sg = se;
+      return ret_fmt ? sg : sg[0];
+   } else {
+      isexp = false;
+      prec = 4;
+   }
+
+   if (isexp) {
+      // for exponential representation only one significant digit befor point
+      if (significance) prec--;
+      if (prec < 0) prec = 0;
+
+      let se = value.toExponential(prec);
+
+      return ret_fmt ? [se, '5.'+prec+'e'] : se;
+   }
+
+   let sg = value.toFixed(prec);
+
+   if (significance) {
+
+      // when using fixed representation, one could get 0.0
+      if ((value!=0) && (Number(sg)==0.) && (prec>0)) {
+         prec = 20; sg = value.toFixed(prec);
+      }
+
+      let l = 0;
+      while ((l<sg.length) && (sg[l] == '0' || sg[l] == '-' || sg[l] == '.')) l++;
+
+      let diff = sg.length - l - prec;
+      if (sg.indexOf(".")>l) diff--;
+
+      if (diff != 0) {
+         prec-=diff;
+         if (prec<0) prec = 0; else if (prec>20) prec = 20;
+         sg = value.toFixed(prec);
+      }
+   }
+
+   return ret_fmt ? [sg, '5.'+prec+'f'] : sg;
+}
+
 
 /** @summary Draw options interpreter
   * @memberof JSROOT
@@ -3273,7 +3340,7 @@ const AxisPainterMethods = {
    formatLog(d, asticks, fmt) {
       let val = parseFloat(d), rnd = Math.round(val);
       if (!asticks)
-         return ((rnd === val) && (Math.abs(rnd)<1e9)) ? rnd.toString() : jsrp.floatToString(val, fmt || JSROOT.gStyle.fStatFormat);
+         return ((rnd === val) && (Math.abs(rnd) < 1e9)) ? rnd.toString() : floatToString(val, fmt || JSROOT.gStyle.fStatFormat);
       if (val <= 0) return null;
       let vlog = Math.log10(val), base = this.logbase;
       if (base !== 10) vlog = vlog / Math.log10(base);
@@ -3296,7 +3363,7 @@ const AxisPainterMethods = {
 
       if (asticks) return (this.ndig>10) ? val.toExponential(this.ndig-11) : val.toFixed(this.ndig);
 
-      return jsrp.floatToString(val, fmt || JSROOT.gStyle.fStatFormat);
+      return floatToString(val, fmt || JSROOT.gStyle.fStatFormat);
    },
 
    /** @summary Provide label for exponential form */
@@ -4263,74 +4330,6 @@ jsrp.showProgress = function(msg, tmout) {
    }
 }
 
-/** @summary Converts numeric value to string according to specified format.
-  * @param {number} value - value to convert
-  * @param {string} [fmt="6.4g"] - format can be like 5.4g or 4.2e or 6.4f
-  * @param {boolean} [ret_fmt] - when true returns array with value and actual format like ["0.1","6.4f"]
-  * @returns {string|Array} - converted value or array with value and actual format */
-jsrp.floatToString = function(value, fmt, ret_fmt) {
-   if (!fmt) fmt = "6.4g";
-
-   fmt = fmt.trim();
-   let len = fmt.length;
-   if (len<2)
-      return ret_fmt ? [value.toFixed(4), "6.4f"] : value.toFixed(4);
-   let last = fmt[len-1];
-   fmt = fmt.slice(0,len-1);
-   let isexp, prec = fmt.indexOf(".");
-   prec = (prec<0) ? 4 : parseInt(fmt.slice(prec+1));
-   if (!Number.isInteger(prec) || (prec <=0)) prec = 4;
-
-   let significance = false;
-   if ((last=='e') || (last=='E')) { isexp = true; } else
-   if (last=='Q') { isexp = true; significance = true; } else
-   if ((last=='f') || (last=='F')) { isexp = false; } else
-   if (last=='W') { isexp = false; significance = true; } else
-   if ((last=='g') || (last=='G')) {
-      let se = jsrp.floatToString(value, fmt+'Q', true),
-          sg = jsrp.floatToString(value, fmt+'W', true);
-
-      if (se[0].length < sg[0].length) sg = se;
-      return ret_fmt ? sg : sg[0];
-   } else {
-      isexp = false;
-      prec = 4;
-   }
-
-   if (isexp) {
-      // for exponential representation only one significant digit befor point
-      if (significance) prec--;
-      if (prec < 0) prec = 0;
-
-      let se = value.toExponential(prec);
-
-      return ret_fmt ? [se, '5.'+prec+'e'] : se;
-   }
-
-   let sg = value.toFixed(prec);
-
-   if (significance) {
-
-      // when using fixed representation, one could get 0.0
-      if ((value!=0) && (Number(sg)==0.) && (prec>0)) {
-         prec = 20; sg = value.toFixed(prec);
-      }
-
-      let l = 0;
-      while ((l<sg.length) && (sg[l] == '0' || sg[l] == '-' || sg[l] == '.')) l++;
-
-      let diff = sg.length - l - prec;
-      if (sg.indexOf(".")>l) diff--;
-
-      if (diff != 0) {
-         prec-=diff;
-         if (prec<0) prec = 0; else if (prec>20) prec = 20;
-         sg = value.toFixed(prec);
-      }
-   }
-
-   return ret_fmt ? [sg, '5.'+prec+'f'] : sg;
-}
 
 /** @summary Tries to close current browser tab
   * @desc Many browsers do not allow simple window.close() call,
@@ -4351,6 +4350,7 @@ jsrp.getDrawSettings = getDrawSettings;
 jsrp.getElementRect = getElementRect;
 jsrp.isPromise = isPromise;
 jsrp.toHex = toHex;
+jsrp.floatToString = floatToString;
 
 // FIXME: should be eliminated
 JSROOT.TRandom = TRandom;
@@ -4370,4 +4370,4 @@ JSROOT.makeSVG = makeSVG;
 // FIXME: should be eliminated
 JSROOT.Painter = jsrp;
 
-export { ColorPalette, BasePainter, ObjectPainter, getElementRect, draw, redraw, makeSVG, jsrp, loadJSDOM };
+export { ColorPalette, BasePainter, ObjectPainter, getElementRect, draw, redraw, makeSVG, jsrp, loadJSDOM, floatToString };

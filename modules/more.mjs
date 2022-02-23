@@ -1,7 +1,7 @@
 
 import * as d3 from './d3.mjs';
 
-import { ObjectPainter } from './painter.mjs';
+import { ObjectPainter, floatToString } from './painter.mjs';
 
 // import { mth } from './math.mjs';
 
@@ -3010,12 +3010,12 @@ class TSplinePainter extends ObjectPainter {
       res.lines.push("y = " + funcs.axisAsText("y", yy));
       if (knot !== null) {
          res.lines.push("knot = " + indx);
-         res.lines.push("B = " + jsrp.floatToString(knot.fB, JSROOT.gStyle.fStatFormat));
-         res.lines.push("C = " + jsrp.floatToString(knot.fC, JSROOT.gStyle.fStatFormat));
-         res.lines.push("D = " + jsrp.floatToString(knot.fD, JSROOT.gStyle.fStatFormat));
+         res.lines.push("B = " + floatToString(knot.fB, JSROOT.gStyle.fStatFormat));
+         res.lines.push("C = " + floatToString(knot.fC, JSROOT.gStyle.fStatFormat));
+         res.lines.push("D = " + floatToString(knot.fD, JSROOT.gStyle.fStatFormat));
          if ((knot.fE!==undefined) && (knot.fF!==undefined)) {
-            res.lines.push("E = " + jsrp.floatToString(knot.fE, JSROOT.gStyle.fStatFormat));
-            res.lines.push("F = " + jsrp.floatToString(knot.fF, JSROOT.gStyle.fStatFormat));
+            res.lines.push("E = " + floatToString(knot.fE, JSROOT.gStyle.fStatFormat));
+            res.lines.push("F = " + floatToString(knot.fF, JSROOT.gStyle.fStatFormat));
          }
       }
 

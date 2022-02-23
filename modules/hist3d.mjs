@@ -3,6 +3,8 @@ import * as d3 from './d3.mjs';
 
 import * as THREE from './three.mjs';
 
+import { floatToString } from './painter.mjs';
+
 import { assign3DHandler, createRender3D } from './base3d.mjs';
 
 import { TFramePainter, ensureTCanvas } from './gpad.mjs';
@@ -2379,7 +2381,7 @@ class TH3Painter extends THistPainter {
       if (binz === Math.round(binz))
          lines.push("entries = " + binz);
       else
-         lines.push("entries = " + jsrp.floatToString(binz, JSROOT.gStyle.fStatFormat));
+         lines.push("entries = " + floatToString(binz, JSROOT.gStyle.fStatFormat));
 
       return lines;
    }

@@ -1,7 +1,7 @@
 
 import * as d3 from './d3.mjs';
 
-import { ColorPalette, ObjectPainter } from './painter.mjs';
+import { ColorPalette, ObjectPainter, floatToString } from './painter.mjs';
 
 import { ensureTCanvas } from './gpad.mjs';
 
@@ -667,7 +667,7 @@ class TPavePainter extends ObjectPainter {
          case "last": fmt = this.lastformat; break;
       }
 
-      let res = jsrp.floatToString(value, fmt || "6.4g", true);
+      let res = floatToString(value, fmt || "6.4g", true);
 
       this.lastformat = res[1];
 
@@ -3818,7 +3818,7 @@ class TH1Painter extends THistPainter {
          }
 
          if (show_text && y) {
-            let lbl = (y === Math.round(y)) ? y.toString() : jsrp.floatToString(y, JSROOT.gStyle.fPaintTextFormat);
+            let lbl = (y === Math.round(y)) ? y.toString() : floatToString(y, JSROOT.gStyle.fPaintTextFormat);
 
             if (pmain.swap_xy)
                this.drawText({ align: 12, x: Math.round(gry1 + text_size/2), y: Math.round(grx1+0.1), height: Math.round(w*0.8), text: lbl, color: text_col, latex: 0 });
@@ -4032,7 +4032,7 @@ class TH1Painter extends THistPainter {
                let cont = text_profile ? histo.fBinEntries[bin+1] : bincont;
 
                if (cont!==0) {
-                  let lbl = (cont === Math.round(cont)) ? cont.toString() : jsrp.floatToString(cont, JSROOT.gStyle.fPaintTextFormat);
+                  let lbl = (cont === Math.round(cont)) ? cont.toString() : floatToString(cont, JSROOT.gStyle.fPaintTextFormat);
 
                   if (text_angle)
                      this.drawText({ align: 12, x: midx, y: Math.round(my - 2 - text_size/5), width: 0, height: 0, rotate: text_angle, text: lbl, color: text_col, latex: 0 });
@@ -4246,7 +4246,7 @@ class TH1Painter extends THistPainter {
          if (cont === Math.round(cont))
             tips.push("entries = " + cont);
          else
-            tips.push("entries = " + jsrp.floatToString(cont, JSROOT.gStyle.fStatFormat));
+            tips.push("entries = " + floatToString(cont, JSROOT.gStyle.fStatFormat));
       }
 
       return tips;
@@ -5801,7 +5801,7 @@ class TH2Painter extends THistPainter {
 
             if (!this.options.TextKind) {
                lbl = (Math.round(bin.fContent) === bin.fContent) ? bin.fContent.toString() :
-                          jsrp.floatToString(bin.fContent, JSROOT.gStyle.fPaintTextFormat);
+                          floatToString(bin.fContent, JSROOT.gStyle.fPaintTextFormat);
             } else {
                if (bin.fPoly) lbl = bin.fPoly.fName;
                if (lbl === "Graph") lbl = "";
@@ -5850,12 +5850,12 @@ class TH2Painter extends THistPainter {
                binz = histo.getBinEntries(i+1, j+1);
 
             lbl = (binz === Math.round(binz)) ? binz.toString() :
-                      jsrp.floatToString(binz, JSROOT.gStyle.fPaintTextFormat);
+                      floatToString(binz, JSROOT.gStyle.fPaintTextFormat);
 
             if (show_err) {
                errz = histo.getBinError(histo.getBin(i+1,j+1));
                lble = (errz === Math.round(errz)) ? errz.toString() :
-                            jsrp.floatToString(errz, JSROOT.gStyle.fPaintTextFormat);
+                            floatToString(errz, JSROOT.gStyle.fPaintTextFormat);
                if (this.options.TextLine)
                   lbl += '\xB1' + lble;
                else
@@ -6940,11 +6940,11 @@ class TH2Painter extends THistPainter {
 
       if (histo.$baseh) binz -= histo.$baseh.getBinContent(i+1,j+1);
 
-      lines.push("entries = " + ((binz === Math.round(binz)) ? binz : jsrp.floatToString(binz, JSROOT.gStyle.fStatFormat)));
+      lines.push("entries = " + ((binz === Math.round(binz)) ? binz : floatToString(binz, JSROOT.gStyle.fStatFormat)));
 
       if ((this.options.TextKind == "E") || this.matchObjectType('TProfile2D')) {
          let errz = histo.getBinError(histo.getBin(i+1,j+1));
-         lines.push("error = " + ((errz === Math.round(errz)) ? errz.toString() : jsrp.floatToString(errz, JSROOT.gStyle.fPaintTextFormat)));
+         lines.push("error = " + ((errz === Math.round(errz)) ? errz.toString() : floatToString(errz, JSROOT.gStyle.fPaintTextFormat)));
       }
 
       return lines;
@@ -6963,9 +6963,9 @@ class TH2Painter extends THistPainter {
       else
          lines.push("x = " + funcs.axisAsText("x", histo.fXaxis.GetBinLowEdge(p.bin+1)));
 
-      lines.push('m-25%  = ' + jsrp.floatToString(p.fBoxDown, JSROOT.gStyle.fStatFormat))
-      lines.push('median = ' + jsrp.floatToString(p.fMedian, JSROOT.gStyle.fStatFormat))
-      lines.push('m+25%  = ' + jsrp.floatToString(p.fBoxUp, JSROOT.gStyle.fStatFormat))
+      lines.push('m-25%  = ' + floatToString(p.fBoxDown, JSROOT.gStyle.fStatFormat))
+      lines.push('median = ' + floatToString(p.fMedian, JSROOT.gStyle.fStatFormat))
+      lines.push('m+25%  = ' + floatToString(p.fBoxUp, JSROOT.gStyle.fStatFormat))
 
       return lines;
    }
@@ -7012,7 +7012,7 @@ class TH2Painter extends THistPainter {
       if (bin.fContent === Math.round(bin.fContent))
          lines.push("content = " + bin.fContent);
       else
-         lines.push("content = " + jsrp.floatToString(bin.fContent, JSROOT.gStyle.fStatFormat));
+         lines.push("content = " + floatToString(bin.fContent, JSROOT.gStyle.fStatFormat));
       return lines;
    }
 

@@ -4,6 +4,8 @@ import * as d3 from './d3.mjs';
 
 import * as THREE from './three.mjs';
 
+import { floatToString } from './painter.mjs';
+
 import { assign3DHandler, createRender3D } from './base3d.mjs';
 
 import { RFramePainter, ensureRCanvas } from './v7gpad.mjs';
@@ -2403,7 +2405,7 @@ class RH3Painter extends RHistPainter {
       if (binz === Math.round(binz))
          lines.push(lbl + binz);
       else
-         lines.push(lbl + jsrp.floatToString(binz, JSROOT.gStyle.fStatFormat));
+         lines.push(lbl + floatToString(binz, JSROOT.gStyle.fStatFormat));
 
       return lines;
    }
