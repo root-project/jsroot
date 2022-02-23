@@ -5818,7 +5818,7 @@ class TH2Painter extends THistPainter {
    }
 
    /** @summary Draw TH2 bins as text */
-   drawBinsText(handle) {
+   async drawBinsText(handle) {
       let histo = this.getObject(),
           i,j,binz,errz,binw,binh,lbl,lble,posx,posy,sizex,sizey,
           text_col = this.getColor(histo.fMarkerColor),
@@ -5877,7 +5877,7 @@ class TH2Painter extends THistPainter {
             this.drawText({ align: 22, x: posx, y: posy, width: sizex, height: sizey, rotate: text_angle, text: lbl, color: text_col, latex: use_latex, draw_g: text_g });
          }
 
-      this.finishTextDrawing(text_g, true);
+      await this.finishTextDrawing(text_g, true);
 
       handle.hide_only_zeros = true; // text drawing suppress only zeros
 
@@ -6686,7 +6686,7 @@ class TH2Painter extends THistPainter {
             handle = this.drawBinsCandle();
 
          if (this.options.Text)
-            handle = this.drawBinsText(handle);
+            handle = await this.drawBinsText(handle);
 
          if (!handle)
             handle = this.drawBinsScatter();

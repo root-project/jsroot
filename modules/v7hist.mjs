@@ -1223,7 +1223,7 @@ class RH1Painter extends RHistPainter {
    }
 
    /** @summary Draw histogram bins */
-   drawHistBins(handle, funcs, width, height) {
+   async drawHistBins(handle, funcs, width, height) {
       this.createG(true);
 
       let options = this.options,
@@ -1490,7 +1490,7 @@ class RH1Painter extends RHistPainter {
       }
 
       if (show_text)
-         this.finishTextDrawing();
+         await this.finishTextDrawing();
    }
 
    /** @summary Provide text information (tooltips) for histogram bin */
@@ -1836,17 +1836,17 @@ class RH1Painter extends RHistPainter {
    }
 
    /** @summary Draw in 2d */
-   draw2D(reason) {
+   async draw2D(reason) {
       this.clear3DScene();
 
-      return this.drawFrameAxes()
-                 .then(res1 => res1 ? this.drawingBins(reason) : false)
-                 .then(res2 => {
-                     if (!res2) return false;
-                     // called when bins received from server, must be reentrant
-                     this.draw1DBins();
-                     return this.addInteractivity();
-                 }).then(res3 => res3 ? this : null);
+      let res = await this.drawFrameAxes();
+      if (res)
+         res = await this.drawingBins(reason);
+      if (res) {
+         await this.draw1DBins();
+         res = await this.addInteractivity();
+      }
+      return res ? this : false;
    }
 
    /** @summary Draw in 3d */
@@ -2796,9 +2796,9 @@ class RH2Painter extends RHistPainter {
    }
 
    /** @summary Draw RH2 bins as text */
-   drawBinsText(handle) {
+   async drawBinsText(handle) {
       let histo = this.getHisto(),
-          i,j,binz,binw,binh,lbl,posx,posy,sizex,sizey;
+          i, j, binz, binw, binh, lbl, posx, posy, sizex, sizey;
 
       if (handle===null) handle = this.prepareDraw({ rounding: false });
 
@@ -2842,7 +2842,7 @@ class RH2Painter extends RHistPainter {
             this.drawText({ align: 22, x: posx, y: posy, width: sizex, height: sizey, text: lbl, latex: 0, draw_g: text_g });
          }
 
-      this.finishTextDrawing(text_g, true);
+      await this.finishTextDrawing(text_g, true);
 
       handle.hide_only_zeros = true; // text drawing suppress only zeros
 
@@ -3281,7 +3281,7 @@ class RH2Painter extends RHistPainter {
    }
 
    /** @summary Draw RH2 bins in 2D mode */
-   draw2DBins() {
+   async draw2DBins() {
 
       if (!this.draw_content)
          return this.removeG();
@@ -3314,7 +3314,7 @@ class RH2Painter extends RHistPainter {
             handle = this.drawBinsCandle(funcs, rect.width);
 
          if (this.options.Text)
-            handle = this.drawBinsText(handle);
+            handle = await this.drawBinsText(handle);
 
          if (!handle)
             handle = this.drawBinsColor();
@@ -3648,17 +3648,16 @@ class RH2Painter extends RHistPainter {
 
    /** @summary Performs 2D drawing of histogram
      * @returns {Promise} when ready */
-   draw2D(reason) {
+   async draw2D(reason) {
       this.clear3DScene();
 
-      return this.drawFrameAxes()
-                 .then(res => res ? this.drawingBins(reason) : false)
-                 .then(res2 => {
-                    // called when bins received from server, must be reentrant
-                    if (!res2) return false;
-                    this.draw2DBins();
-                    return this.addInteractivity();
-                 }).then(res3 => res3 ? this : null);;
+      let res = await this.drawFrameAxes();
+      if (res) res = await this.drawingBins(reason);
+      if (res) {
+         await this.draw2DBins();
+         res = await this.addInteractivity();
+      }
+      return res ? this : null;
    }
 
    /** @summary Performs 3D drawing of histogram
