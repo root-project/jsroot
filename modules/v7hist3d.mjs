@@ -2823,7 +2823,7 @@ class RH3Painter extends RHistPainter {
 
       if (reason == "resize") {
          if (main.resize3D()) main.render3D();
-         return;
+         return this;
       }
 
       await main.create3DScene(this.options.Render3D);
@@ -2836,6 +2836,8 @@ class RH3Painter extends RHistPainter {
 
       main.render3D();
       main.addKeysHandler();
+
+      return this;
    }
 
    /** @summary Fill pad toolbar with RH3-related functions */
@@ -2934,33 +2936,31 @@ class RH3Painter extends RHistPainter {
    }
 
    /** @summary draw RH3 object */
-  static draw(dom, histo /*, opt*/) {
-
+  static async draw(dom, histo /*, opt*/) {
       let painter = new RH3Painter(dom, histo);
       painter.mode3d = true;
 
-      return ensureRCanvas(painter, "3d").then(() => {
+      await ensureRCanvas(painter, "3d");
 
-         painter.setAsMainPainter();
+      painter.setAsMainPainter();
 
-         painter.options = { Box: 0, Scatter: false, Sphere: 0, Color: false, minimum: -1111, maximum: -1111 };
+      painter.options = { Box: 0, Scatter: false, Sphere: 0, Color: false, minimum: -1111, maximum: -1111 };
 
-         let kind = painter.v7EvalAttr("kind", ""),
-             sub = painter.v7EvalAttr("sub", 0),
-             o = painter.options;
+      let kind = painter.v7EvalAttr("kind", ""),
+          sub = painter.v7EvalAttr("sub", 0),
+          o = painter.options;
 
-         switch(kind) {
-            case "box": o.Box = 10 + sub; break;
-            case "sphere": o.Sphere = 10 + sub; break;
-            case "col": o.Color = true; break;
-            case "scat": o.Scatter = true;  break;
-            default: o.Box = 10;
-         }
+      switch(kind) {
+         case "box": o.Box = 10 + sub; break;
+         case "sphere": o.Sphere = 10 + sub; break;
+         case "col": o.Color = true; break;
+         case "scat": o.Scatter = true;  break;
+         default: o.Box = 10;
+      }
 
-         painter.scanContent();
-         painter.redraw();
-         return painter;
-      });
+      painter.scanContent();
+      await painter.redraw();
+      return painter;
    }
 
 } // class RH3Painter
