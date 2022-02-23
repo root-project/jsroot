@@ -86,7 +86,7 @@ function setCameraPosition(fp) {
 }
 
 /** @summary Create all necessary components for 3D drawings */
-JSROOT.RFramePainter.prototype.create3DScene = async function(render3d) {
+RFramePainter.prototype.create3DScene = async function(render3d) {
 
    if (render3d === -1) {
 
@@ -261,7 +261,7 @@ JSROOT.RFramePainter.prototype.create3DScene = async function(render3d) {
   * If tmeout <= 0, rendering performed immediately
   * If (tmout == -1111), immediate rendering with SVG renderer is performed
   * @private */
-JSROOT.RFramePainter.prototype.render3D = function(tmout) {
+RFramePainter.prototype.render3D = function(tmout) {
 
    if (tmout === -1111) {
       // special handling for direct SVG renderer
@@ -319,7 +319,7 @@ JSROOT.RFramePainter.prototype.render3D = function(tmout) {
 
 /** @summary Check is 3D drawing need to be resized
   * @private */
-JSROOT.RFramePainter.prototype.resize3D = function() {
+RFramePainter.prototype.resize3D = function() {
 
    let sz = this.getSizeFor3d(this.access3dKind());
 
@@ -344,7 +344,7 @@ JSROOT.RFramePainter.prototype.resize3D = function() {
 
 /** @summary Hilight bin in 3D drawing
   * @private */
-JSROOT.RFramePainter.prototype.highlightBin3D = function(tip, selfmesh) {
+RFramePainter.prototype.highlightBin3D = function(tip, selfmesh) {
 
    let changed = false, tooltip_mesh = null, changed_self = true,
        want_remove = !tip || (tip.x1===undefined) || !this.enable_highlight,
@@ -437,13 +437,13 @@ JSROOT.RFramePainter.prototype.highlightBin3D = function(tip, selfmesh) {
 
 /** @summary Set options used for 3D drawings
   * @private */
-JSROOT.RFramePainter.prototype.set3DOptions = function(hopt) {
+RFramePainter.prototype.set3DOptions = function(hopt) {
    this.opt3d = hopt;
 }
 
 /** @summary Draw axes in 3D mode
   * @private */
-JSROOT.RFramePainter.prototype.drawXYZ = function(toplevel, opts) {
+RFramePainter.prototype.drawXYZ = function(toplevel, opts) {
    if (!opts) opts = {};
 
    let grminx = -this.size_x3d, grmaxx = this.size_x3d,
