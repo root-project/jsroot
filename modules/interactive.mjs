@@ -693,7 +693,7 @@ let FrameInteractive = {
    },
 
    /** @summary Add interactive handlers */
-   addInteractivity(for_second_axes) {
+   addFrameInteractivity(for_second_axes) {
 
       let pp = this.getPadPainter(),
           svg = this.getFrameSvg();

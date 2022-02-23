@@ -1579,14 +1579,13 @@ class TFramePainter extends ObjectPainter {
    }
 
    /** @summary draw axes, return Promise which ready when drawing is completed  */
-   drawAxes(shrink_forbidden,
-                                               disable_x_draw, disable_y_draw,
-                                               AxisPos, has_x_obstacle, has_y_obstacle) {
+   async drawAxes(shrink_forbidden, disable_x_draw, disable_y_draw,
+                  AxisPos, has_x_obstacle, has_y_obstacle) {
 
       this.cleanAxesDrawings();
 
       if ((this.xmin == this.xmax) || (this.ymin == this.ymax))
-         return Promise.resolve(false);
+         return false;
 
       if (AxisPos === undefined) AxisPos = 0;
 
@@ -1605,63 +1604,56 @@ class TFramePainter extends ObjectPainter {
       this.y_handle.has_obstacle = has_y_obstacle;
 
       let draw_horiz = this.swap_xy ? this.y_handle : this.x_handle,
-          draw_vertical = this.swap_xy ? this.x_handle : this.y_handle,
-          draw_promise;
+          draw_vertical = this.swap_xy ? this.x_handle : this.y_handle;
 
       if (!disable_x_draw || !disable_y_draw) {
          let pp = this.getPadPainter();
          if (pp && pp._fast_drawing) disable_x_draw = disable_y_draw = true;
       }
 
-      if (disable_x_draw && disable_y_draw) {
-         draw_promise = Promise.resolve(true);
-      } else {
+      if (!disable_x_draw || !disable_y_draw) {
 
          let can_adjust_frame = !shrink_forbidden && JSROOT.settings.CanAdjustFrame;
 
-         let promise1 = draw_horiz.drawAxis(layer, w, h,
-                                            draw_horiz.invert_side ? undefined : `translate(0,${h})`,
-                                            pad && pad.fTickx ? -h : 0, disable_x_draw,
-                                            undefined, false);
+         await draw_horiz.drawAxis(layer, w, h,
+                                   draw_horiz.invert_side ? undefined : `translate(0,${h})`,
+                                   pad && pad.fTickx ? -h : 0, disable_x_draw,
+                                   undefined, false);
 
-         let promise2 = draw_vertical.drawAxis(layer, w, h,
-                                               draw_vertical.invert_side ? `translate(${w})` : undefined,
-                                               pad && pad.fTicky ? w : 0, disable_y_draw,
-                                               draw_vertical.invert_side ? 0 : this._frame_x, can_adjust_frame);
+         await draw_vertical.drawAxis(layer, w, h,
+                                      draw_vertical.invert_side ? `translate(${w})` : undefined,
+                                      pad && pad.fTicky ? w : 0, disable_y_draw,
+                                      draw_vertical.invert_side ? 0 : this._frame_x, can_adjust_frame);
 
-         draw_promise = Promise.all([promise1, promise2]).then(() => {
+         this.drawGrids();
 
-            this.drawGrids();
+         if (can_adjust_frame) {
+            let shrink = 0., ypos = draw_vertical.position;
 
-            if (can_adjust_frame) {
-               let shrink = 0., ypos = draw_vertical.position;
-
-               if ((-0.2*w < ypos) && (ypos < 0)) {
-                  shrink = -ypos/w + 0.001;
-                  this.shrink_frame_left += shrink;
-               } else if ((ypos>0) && (ypos<0.3*w) && (this.shrink_frame_left > 0) && (ypos/w > this.shrink_frame_left)) {
-                  shrink = -this.shrink_frame_left;
-                  this.shrink_frame_left = 0.;
-               }
-
-               if (shrink != 0) {
-                  this.shrinkFrame(shrink, 0);
-                  this.redraw();
-                  return this.drawAxes(true);
-               }
+            if ((-0.2 * w < ypos) && (ypos < 0)) {
+               shrink = -ypos / w + 0.001;
+               this.shrink_frame_left += shrink;
+            } else if ((ypos > 0) && (ypos < 0.3 * w) && (this.shrink_frame_left > 0) && (ypos / w > this.shrink_frame_left)) {
+               shrink = -this.shrink_frame_left;
+               this.shrink_frame_left = 0.;
             }
-         });
+
+            if (shrink != 0) {
+               this.shrinkFrame(shrink, 0);
+               await this.redraw();
+               await this.drawAxes(true);
+            }
+         }
       }
 
-      return draw_promise.then(() => {
-         if (!shrink_forbidden)
-            this.axes_drawn = true;
-         return true;
-      });
+     if (!shrink_forbidden)
+        this.axes_drawn = true;
+
+     return true;
    }
 
    /** @summary draw second axes (if any)  */
-   drawAxes2(second_x, second_y) {
+   async drawAxes2(second_x, second_y) {
 
       let layer = this.getFrameSvg().select(".axis_layer"),
           w = this.getFrameWidth(),
@@ -1688,21 +1680,17 @@ class TFramePainter extends ObjectPainter {
          if (pp && pp._fast_drawing) draw_horiz = draw_vertical = null;
       }
 
-      let promise1 = true, promise2 = true;
-
       if (draw_horiz)
-         promise1 = draw_horiz.drawAxis(layer, w, h,
-                                        draw_horiz.invert_side ? undefined : `translate(0,${h})`,
-                                        pad && pad.fTickx ? -h : 0, false,
-                                        undefined, false);
+         await draw_horiz.drawAxis(layer, w, h,
+                                   draw_horiz.invert_side ? undefined : `translate(0,${h})`,
+                                   pad && pad.fTickx ? -h : 0, false,
+                                   undefined, false);
 
       if (draw_vertical)
-         promise2 = draw_vertical.drawAxis(layer, w, h,
-                                            draw_vertical.invert_side ? `translate(${w})` : undefined,
-                                            pad && pad.fTicky ? w : 0, false,
-                                            draw_vertical.invert_side ? 0 : this._frame_x, false);
-
-      return Promise.all([promise1, promise2]);
+         await draw_vertical.drawAxis(layer, w, h,
+                                      draw_vertical.invert_side ? `translate(${w})` : undefined,
+                                      pad && pad.fTicky ? w : 0, false,
+                                      draw_vertical.invert_side ? 0 : this._frame_x, false);
    }
 
 
@@ -2375,14 +2363,15 @@ class TFramePainter extends ObjectPainter {
 
    /** @summary Add interactive functionality to the frame
      * @private */
-   addInteractivity(for_second_axes) {
+   async addInteractivity(for_second_axes) {
       if (JSROOT.batch_mode || (!JSROOT.settings.Zooming && !JSROOT.settings.ContextMenu))
-         return Promise.resolve(false);
+         return false;
 
-      return JSROOT.require(['interactive']).then(inter => {
+      if (!this.addFrameInteractivity) {
+         let inter = await JSROOT.require(['interactive']);
          inter.FrameInteractive.assign(this);
-         return this.addInteractivity(for_second_axes);
-      });
+      }
+      return this.addFrameInteractivity(for_second_axes);
    }
 
    /** @summary draw TFrame object */

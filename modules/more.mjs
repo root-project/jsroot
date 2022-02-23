@@ -4190,7 +4190,7 @@ class TASImagePainter extends ObjectPainter {
          await this.drawColorPalette(this.options.Zscale, true);
          fp.setAxesRanges(JSROOT.create("TAxis"), 0, 1, JSROOT.create("TAxis"), 0, 1, null, 0, 0);
          fp.createXY({ ndim: 2, check_pad_range: false });
-         fp.addInteractivity();
+         await fp.addInteractivity();
       }
 
       return this;

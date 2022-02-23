@@ -1787,7 +1787,7 @@ class RFramePainter extends RObjectPainter {
 
    /** @summary Draw configured axes on the frame
      * @desc axes can be drawn only for main histogram  */
-   drawAxes() {
+   async drawAxes() {
 
       if (this.axes_drawn || (this.xmin == this.xmax) || (this.ymin == this.ymax))
          return Promise.resolve(this.axes_drawn);
@@ -1858,10 +1858,10 @@ class RFramePainter extends RObjectPainter {
 
       let draw_horiz = this.swap_xy ? this.y_handle : this.x_handle,
           draw_vertical = this.swap_xy ? this.x_handle : this.y_handle,
-          pp = this.getPadPainter(), draw_promise;
+          pp = this.getPadPainter();
 
       if (pp && pp._fast_drawing) {
-         draw_promise = Promise.resolve(true);
+         // do nothing
       } else if (this.v6axes) {
 
          // in v7 ticksx/y values shifted by 1 relative to v6
@@ -1872,46 +1872,41 @@ class RFramePainter extends RObjectPainter {
          draw_horiz.disable_ticks = (ticksx <= 0);
          draw_vertical.disable_ticks = (ticksy <= 0);
 
-         let promise1 = draw_horiz.drawAxis(layer, w, h,
-                                            draw_horiz.invert_side ? undefined : `translate(0,${h})`,
-                                            (ticksx > 1) ? -h : 0, disable_x_draw,
-                                            undefined, false);
+         await draw_horiz.drawAxis(layer, w, h,
+                                   draw_horiz.invert_side ? undefined : `translate(0,${h})`,
+                                   (ticksx > 1) ? -h : 0, disable_x_draw,
+                                   undefined, false);
 
-         let promise2 = draw_vertical.drawAxis(layer, w, h,
-                                               draw_vertical.invert_side ? `translate(${w})` : undefined,
-                                               (ticksy > 1) ? w : 0, disable_y_draw,
-                                               draw_vertical.invert_side ? 0 : this._frame_x, can_adjust_frame);
-         draw_promise = Promise.all([promise1, promise2]).then(() => this.drawGrids());
+         await draw_vertical.drawAxis(layer, w, h,
+                                      draw_vertical.invert_side ? `translate(${w})` : undefined,
+                                      (ticksy > 1) ? w : 0, disable_y_draw,
+                                      draw_vertical.invert_side ? 0 : this._frame_x, can_adjust_frame);
+         this.drawGrids();
 
       } else {
-         let promise1 = (ticksx > 0) ? draw_horiz.drawAxis(layer, (sidex > 0) ? `translate(0,${h})` : "", sidex) : true;
+         if (ticksx > 0)
+            await draw_horiz.drawAxis(layer, (sidex > 0) ? `translate(0,${h})` : "", sidex);
 
-         let promise2 = (ticksy > 0) ? draw_vertical.drawAxis(layer, (sidey > 0) ? `translate(0,${h})` : `translate(${w},${h})`, sidey) : true;
+         if (ticksy > 0)
+            await draw_vertical.drawAxis(layer, (sidey > 0) ? `translate(0,${h})` : `translate(${w},${h})`, sidey);
 
-         draw_promise = Promise.all([promise1, promise2]).then(() => {
+         if (ticksx > 1)
+            await draw_horiz.drawAxisOtherPlace(layer, (sidex < 0) ? `translate(0,${h})` : "", -sidex, ticksx == 2);
 
-            let again = [];
-            if (ticksx > 1)
-               again.push(draw_horiz.drawAxisOtherPlace(layer, (sidex < 0) ? `translate(0,${h})` : "", -sidex, ticksx == 2));
+         if (ticksy > 1)
+            await draw_vertical.drawAxisOtherPlace(layer, (sidey < 0) ? `translate(0,${h})` : `translate(${w},${h})`, -sidey, ticksy == 2);
 
-            if (ticksy > 1)
-               again.push(draw_vertical.drawAxisOtherPlace(layer, (sidey < 0) ? `translate(0,${h})` : `translate(${w},${h})`, -sidey, ticksy == 2));
-
-             return Promise.all(again);
-         }).then(() => this.drawGrids());
+         this.drawGrids();
       }
 
-      return draw_promise.then(() => {
-         this.axes_drawn = true;
-         return true;
-      });
+      this.axes_drawn = true;
+      return true;
    }
 
    /** @summary Draw secondary configuread axes */
-   drawAxes2(second_x, second_y) {
+   async drawAxes2(second_x, second_y) {
       let w = this.getFrameWidth(), h = this.getFrameHeight(),
-          layer = this.getFrameSvg().select(".axis_layer"),
-          promise1 = true, promise2 = true;
+          layer = this.getFrameSvg().select(".axis_layer");
 
       if (second_x) {
          if (this.zoom_x2min != this.zoom_x2max) {
@@ -1928,7 +1923,7 @@ class RFramePainter extends RObjectPainter {
          this.x2_handle.configureAxis("x2axis", this.x2min, this.x2max, this.scale_x2min, this.scale_x2max, false, [0,w], w, { reverse: false });
          this.x2_handle.assignFrameMembers(this,"x2");
 
-         promise1 = this.x2_handle.drawAxis(layer, "", -1);
+         await this.x2_handle.drawAxis(layer, "", -1);
       }
 
       if (second_y) {
@@ -1947,10 +1942,9 @@ class RFramePainter extends RObjectPainter {
          this.y2_handle.configureAxis("y2axis", this.y2min, this.y2max, this.scale_y2min, this.scale_y2max, true, [h,0], -h, { reverse: false });
          this.y2_handle.assignFrameMembers(this,"y2");
 
-         promise2 = this.y2_handle.drawAxis(layer, `translate(${w},${h})`, -1);
+         await this.y2_handle.drawAxis(layer, `translate(${w},${h})`, -1);
       }
 
-      return Promise.all([promise1, promise2]);
    }
 
    /** @summary Return functions to create x/y points based on coordinates
@@ -2106,7 +2100,7 @@ class RFramePainter extends RObjectPainter {
 
    /** @summary Redraw frame
      * @private */
-   redraw() {
+   async redraw() {
 
       let pp = this.getPadPainter();
       if (pp) pp.frame_painter_ref = this;
@@ -2190,22 +2184,20 @@ class RFramePainter extends RObjectPainter {
               .attr("height", h)
               .attr("viewBox", `0 0 ${w} ${h}`);
 
-      let promise = Promise.resolve(true);
-
       if (this.v7EvalAttr("drawAxes")) {
          this.self_drawaxes = true;
          this.setAxesRanges();
-         promise = this.drawAxes().then(() => this.addInteractivity());
+         await this.drawAxes();
+         await this.addInteractivity();
       }
 
-      if (JSROOT.batch_mode) return promise;
+      if (JSROOT.batch_mode) return;
 
       top_rect.style("pointer-events", "visibleFill");  // let process mouse events inside frame
 
-      return promise.then(() => JSROOT.require(['interactive'])).then(inter => {
-         inter.FrameInteractive.assign(this);
-         this.addBasicInteractivity();
-      });
+      let inter = await JSROOT.require(['interactive']));
+      inter.FrameInteractive.assign(this);
+      this.addBasicInteractivity();
    }
 
    /** @summary Returns frame width */
@@ -2613,15 +2605,16 @@ class RFramePainter extends RObjectPainter {
 
    /** @summary Add interactive functionality to the frame
     * @private */
-   addInteractivity(for_second_axes) {
+   async addInteractivity(for_second_axes) {
 
       if (JSROOT.batch_mode || (!JSROOT.settings.Zooming && !JSROOT.settings.ContextMenu))
-         return Promise.resolve(true);
+         return true;
 
-      return JSROOT.require(['interactive']).then(inter => {
+      if (!this.addFrameInteractivity) {
+         let inter = JSROOT.require(['interactive']);
          inter.FrameInteractive.assign(this);
-         return this.addInteractivity(for_second_axes);
-      });
+      }
+      return this.addFrameInteractivity(for_second_axes);
    }
 
    /** @summary Set selected range back to pad object - to be implemented

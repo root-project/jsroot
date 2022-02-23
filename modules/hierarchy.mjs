@@ -2260,7 +2260,7 @@ class HierarchyPainter extends BasePainter {
       }
 
       function complete(respainter, err) {
-         if (err) console.log('When display ', itemname, err);
+         if (err) console.log('When display ', itemname, 'got', err);
 
          if (updating && item) delete item._doing_update;
          if (!updating) jsrp.showProgress();
