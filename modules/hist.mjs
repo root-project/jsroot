@@ -216,15 +216,13 @@ class TPavePainter extends ObjectPainter {
    }
 
    /** @summary Draw pave and content */
-   drawPave(arg) {
+   async drawPave(arg) {
 
       this.UseTextColor = false;
 
-      let promise = Promise.resolve(this);
-
       if (!this.Enabled) {
          this.removeG();
-         return promise;
+         return this;
       }
 
       let pt = this.getObject(), opt = pt.fOption.toUpperCase(), fp = this.getFramePainter();
@@ -360,12 +358,10 @@ class TPavePainter extends ObjectPainter {
                       .call(this.lineatt.func);
 
       if (typeof this.paveDrawFunc == 'function')
-         promise = this.paveDrawFunc(width, height, arg);
+         await this.paveDrawFunc(width, height, arg);
 
-      if (JSROOT.batch_mode || (pt._typename == "TPave"))
-         return promise;
-
-      return promise.then(() => JSROOT.require(['interactive'])).then(inter => {
+      if (!JSROOT.batch_mode && (pt._typename !== "TPave")) {
+         let inter = await JSROOT.require(['interactive']);
 
          // here all kind of interactive settings
          rect.style("pointer-events", "visibleFill")
@@ -381,9 +377,9 @@ class TPavePainter extends ObjectPainter {
 
          if (pt._typename == "TPaletteAxis")
             this.interactivePaletteAxis(width, height);
+      }
 
-         return this;
-      });
+      return this;
    }
 
    /** @summary Fill option object used in TWebCanvas */
@@ -3151,12 +3147,12 @@ class THistPainter extends ObjectPainter {
 
    /** @summary draw color palette
      * @returns {Promise} when done */
-   drawColorPalette(enabled, postpone_draw, can_move) {
+   async drawColorPalette(enabled, postpone_draw, can_move) {
       // only when create new palette, one could change frame size
       let mp = this.getMainPainter();
       if (mp !== this) {
          if (mp && (mp.draw_content !== false))
-            return Promise.resolve(null);
+            return null;
       }
 
       let pal = this.findFunction('TPaletteAxis'),
@@ -3181,12 +3177,12 @@ class THistPainter extends ObjectPainter {
             pal_painter.removeG(); // completely remove drawing without need to redraw complete pad
          }
 
-         return Promise.resolve(null);
+         return null;
       }
 
       if (!pal) {
 
-         if (this.options.PadPalette) return Promise.resolve(null);
+         if (this.options.PadPalette) return null;
 
          pal = JSROOT.create('TPave');
 
@@ -3247,78 +3243,76 @@ class THistPainter extends ObjectPainter {
       if (can_move && !this.do_redraw_palette) arg+=";can_move";
       if (this.options.Cjust) arg+=";cjust";
 
-      let promise;
-
       if (!pal_painter) {
          // when histogram drawn on sub pad, let draw new axis object on the same pad
          let prev = this.selectCurrentPad(this.getPadName());
-         promise = TPavePainter.draw(this.getDom(), pal, arg).then(pp => {
-            this.selectCurrentPad(prev);
-            return pp;
-         });
+         pal_painter = await TPavePainter.draw(this.getDom(), pal, arg);
+         this.selectCurrentPad(prev);
       } else {
          pal_painter.Enabled = true;
-         promise = pal_painter.drawPave(arg);
+         // real drawing will be perform at the end
+         // await pal_painter.drawPave(arg);
+         return pal_painter;
       }
 
-      return promise.then(pp => {
-         // mark painter as secondary - not in list of TCanvas primitives
-         pp.$secondary = true;
-         this.options.Zvert = pp._palette_vertical;
+      // mark painter as secondary - not in list of TCanvas primitives
+      pal_painter.$secondary = true;
+      this.options.Zvert = pal_painter._palette_vertical;
 
-         // make dummy redraw, palette will be updated only from histogram painter
-         pp.redraw = function() {};
+      // make dummy redraw, palette will be updated only from histogram painter
+      pal_painter.redraw = function() {};
 
-         let need_redraw = false;
+      let need_redraw = false;
 
-         // special code to adjust frame position to actual position of palette
-         if (can_move && fp && !this.do_redraw_palette) {
+      // special code to adjust frame position to actual position of palette
+      if (can_move && fp && !this.do_redraw_palette) {
 
-            if (this.options.Zvert) {
-               if ((pal.fX1NDC > 0.5) && (fp.fX2NDC > pal.fX1NDC)) {
-                  need_redraw = true;
-                  fp.fX2NDC = pal.fX1NDC - 0.01;
-                  if (fp.fX1NDC > fp.fX2NDC-0.1) fp.fX1NDC = Math.max(0, fp.fX2NDC-0.1);
-                } else if ((pal.fX2NDC < 0.5) && (fp.fX1NDC < pal.fX2NDC)) {
-                  need_redraw = true;
-                  fp.fX1NDC = pal.fX2NDC + 0.05;
-                  if (fp.fX2NDC < fp.fX1NDC + 0.1) fp.fX2NDC = Math.min(1., fp.fX1NDC + 0.1);
-                }
-            } else {
-               if ((pal.fY1NDC > 0.5) && (fp.fY2NDC > pal.fY1NDC)) {
-                  need_redraw = true;
-                  fp.fY2NDC = pal.fY1NDC - 0.01;
-                  if (fp.fY1NDC > fp.fY2NDC-0.1) fp.fY1NDC = Math.max(0, fp.fXYNDC-0.1);
-               } else if ((pal.fY2NDC < 0.5) && (fp.fY1NDC < pal.fY2NDC)) {
-                  need_redraw = true;
-                  fp.fY1NDC = pal.fY2NDC + 0.05;
-                  if (fp.fXYNDC < fp.fY1NDC + 0.1) fp.fY2NDC = Math.min(1., fp.fY1NDC + 0.1);
-
-               }
-            }
-
-            if (need_redraw) {
-               this.do_redraw_palette = true;
-               fp.redraw();
-               // here we should redraw main object
-               if (!postpone_draw) this.redraw();
+         if (this.options.Zvert) {
+            if ((pal.fX1NDC > 0.5) && (fp.fX2NDC > pal.fX1NDC)) {
+               need_redraw = true;
+               fp.fX2NDC = pal.fX1NDC - 0.01;
+               if (fp.fX1NDC > fp.fX2NDC-0.1) fp.fX1NDC = Math.max(0, fp.fX2NDC-0.1);
+             } else if ((pal.fX2NDC < 0.5) && (fp.fX1NDC < pal.fX2NDC)) {
+               need_redraw = true;
+               fp.fX1NDC = pal.fX2NDC + 0.05;
+               if (fp.fX2NDC < fp.fX1NDC + 0.1) fp.fX2NDC = Math.min(1., fp.fX1NDC + 0.1);
              }
+         } else {
+            if ((pal.fY1NDC > 0.5) && (fp.fY2NDC > pal.fY1NDC)) {
+               need_redraw = true;
+               fp.fY2NDC = pal.fY1NDC - 0.01;
+               if (fp.fY1NDC > fp.fY2NDC-0.1) fp.fY1NDC = Math.max(0, fp.fXYNDC-0.1);
+            } else if ((pal.fY2NDC < 0.5) && (fp.fY1NDC < pal.fY2NDC)) {
+               need_redraw = true;
+               fp.fY1NDC = pal.fY2NDC + 0.05;
+               if (fp.fXYNDC < fp.fY1NDC + 0.1) fp.fY2NDC = Math.min(1., fp.fY1NDC + 0.1);
 
-            delete this.do_redraw_palette;
+            }
          }
 
-         return pp;
-      });
+         if (need_redraw) {
+            this.do_redraw_palette = true;
+            await fp.redraw();
+            // here we should redraw main object
+            if (!postpone_draw)
+               await this.redraw();
+          }
+
+         delete this.do_redraw_palette;
+      }
+
+      return pal_painter;
    }
 
    /** @summary Toggle color z palette drawing */
-   toggleColz() {
+   async toggleColz() {
       let can_toggle = this.options.Mode3D ? (this.options.Lego === 12 || this.options.Lego === 14 || this.options.Surf === 11 || this.options.Surf === 12) :
                        this.options.Color || this.options.Contour;
 
       if (can_toggle) {
          this.options.Zscale = !this.options.Zscale;
-         this.drawColorPalette(this.options.Zscale, false, true);
+         let pp = await this.drawColorPalette(this.options.Zscale, false, true);
+         this.completePalette(pp);
       }
    }
 
