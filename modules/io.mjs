@@ -3219,8 +3219,10 @@ jsrio = {
                   });
                };
 
-               let promise = JSROOT.nodejs ? handleZsdt(require('zstd-codec').ZstdCodec)
-                                           : JSROOT.require('zstd-codec').then(codec => handleZsdt(codec));
+               let promise = JSROOT.nodejs ? import('zstd-codec').then(handle => handleZsdt(handle.ZstdCodec))
+                                           : JSROOT.loadScript('../../zstd/zstd-codec.min.js')
+                                                   .catch(() => JSROOT.loadScript('https://root.cern/js/zstd/zstd-codec.min.js'))
+                                                   .then(() => handleZsdt(ZstdCodec));
                return promise.then(() => nextPortion());
             }
 
