@@ -3899,9 +3899,9 @@ jsrp.setDefaultDrawOpt = function(classname, opt) {
   * JSROOT.openFile("https://root.cern/js/files/hsimple.root")
   *       .then(file => file.readObject("hpxpy;1"))
   *       .then(obj => JSROOT.draw("drawing", obj, "colz;logx;gridx;gridy")); */
-function draw(dom, obj, opt) {
+async function draw(dom, obj, opt) {
    if (!obj || (typeof obj !== 'object'))
-      return Promise.reject(Error('not an object in JSROOT.draw'));
+      throw Error('not an object in JSROOT.draw');
 
    if (opt == 'inspect')
       return JSROOT.require("hierarchy").then(() => jsrp.drawInspector(dom, obj));
@@ -3918,13 +3918,13 @@ function draw(dom, obj, opt) {
 
    // this is case of unsupported class, close it normally
    if (!handle)
-      return Promise.reject(Error(`Object of ${type_info} cannot be shown with JSROOT.draw`));
+      throw Error(`Object of ${type_info} cannot be shown with JSROOT.draw`);
 
    if (handle.dummy)
-      return Promise.resolve(null);
+      return null;
 
    if (handle.draw_field && obj[handle.draw_field])
-      return JSROOT.draw(dom, obj[handle.draw_field], opt || handle.draw_field_opt);
+      return draw(dom, obj[handle.draw_field], opt || handle.draw_field_opt);
 
    if (!handle.func && !handle.direct && !handle.class) {
       if (opt && (opt.indexOf("same") >= 0)) {
@@ -3935,43 +3935,32 @@ function draw(dom, obj, opt) {
             return main_painter.performDrop(obj, "", null, opt);
       }
 
-      return Promise.reject(Error(`Function not specified to draw object ${type_info}`));
+      throw Error(`Function not specified to draw object ${type_info}`);
    }
 
-   function performDraw() {
-      let promise;
+   async function performDraw() {
+      let painter;
       if (handle.direct == "v7") {
-         let painter = new JSROOT.RObjectPainter(dom, obj, opt, handle.csstype);
-         promise = jsrp.ensureRCanvas(painter, handle.frame || false).then(() => {
-            painter.redraw = handle.func;
-            let res = painter.redraw();
-            if (!isPromise(res))
-               return painter;
-            return res.then(() => painter);
-         })
+         painter = new JSROOT.RObjectPainter(dom, obj, opt, handle.csstype);
+         await jsrp.ensureRCanvas(painter, handle.frame || false);
+         painter.redraw = handle.func;
+         await painter.redraw();
       } else if (handle.direct) {
-         let painter = new ObjectPainter(dom, obj, opt);
-         promise = jsrp.ensureTCanvas(painter, handle.frame || false).then(() => {
-            painter.redraw = handle.func;
-            let res = painter.redraw();
-            if (!isPromise(res))
-               return painter;
-            return res.then(() => painter);
-         });
+         painter = new ObjectPainter(dom, obj, opt);
+         await jsrp.ensureTCanvas(painter, handle.frame || false);
+         painter.redraw = handle.func;
+         await painter.redraw();
       } else {
-         promise = handle.func(dom, obj, opt);
-         if (!isPromise(promise)) promise = Promise.resolve(promise);
+         painter = await handle.func(dom, obj, opt);
       }
 
-      return promise.then(p => {
-         if (!p)
-            return Promise.reject(Error(`Fail to draw object ${type_info}`));
+      if (!painter)
+          throw Error(`Fail to draw object ${type_info}`);
 
-         if ((typeof p == 'object') && !p.options)
-            p.options = { original: opt || "" }; // keep original draw options
+      if ((typeof painter == 'object') && !painter.options)
+         painter.options = { original: opt || "" }; // keep original draw options
 
-          return p;
-      });
+       return painter;
    }
 
    if (typeof handle.func == 'function')
@@ -3983,7 +3972,7 @@ function draw(dom, obj, opt) {
    else if (typeof handle.class == 'string')
       clname = handle.class;
    else
-      return Promise.reject(Error(`Draw function or class not specified to draw ${type_info}`));
+      throw Error(`Draw function or class not specified to draw ${type_info}`);
 
    let prereq = handle.prereq || "";
    if (handle.direct == "v7")
@@ -3994,24 +3983,24 @@ function draw(dom, obj, opt) {
       prereq += ";" + handle.script;
 
    if (!prereq)
-      return Promise.reject(Error(`Prerequicities to load ${funcname} are not specified`));
+      throw Error(`Prerequicities to load ${funcname} are not specified`);
 
-   return JSROOT.require(prereq).then(() => {
-      if (funcname) {
-         let func = JSROOT.findFunction(funcname);
-         if (!func)
-            return Promise.reject(Error(`Fail to find function ${funcname} after loading ${prereq}`));
-         handle.func = func;
-      } else {
-         let cl = JSROOT[clname];
-         if (!cl || typeof cl.draw != 'function')
-            return Promise.reject(Error(`Fail to find class JSROOT.${clname} after loading ${prereq}`));
-         handle.class = cl;
-         handle.func = cl.draw;
-      }
+   await JSROOT.require(prereq);
 
-      return performDraw();
-   });
+   if (funcname) {
+      let func = JSROOT.findFunction(funcname);
+      if (!func)
+         return Promise.reject(Error(`Fail to find function ${funcname} after loading ${prereq}`));
+      handle.func = func;
+   } else {
+      let cl = JSROOT[clname];
+      if (!cl || typeof cl.draw != 'function')
+         return Promise.reject(Error(`Fail to find class JSROOT.${clname} after loading ${prereq}`));
+      handle.class = cl;
+      handle.func = cl.draw;
+   }
+
+   return performDraw();
 }
 
 /** @summary Redraw object in specified HTML element with given draw options.
