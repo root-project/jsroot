@@ -15,7 +15,7 @@ const copyright = readFileSync("./node_modules/d3-selection/LICENSE", "utf-8")
 const config = {
   input: "d3_jsroot.js",
   output: {
-    file: `../d3.mjs`,
+    file: `../../modules/d3.mjs`,
     name: "d3",
     format: "es",
     indent: false,
@@ -39,7 +39,7 @@ export default [
     ...config,
     output: {
       ...config.output,
-      file: `../../modules/d3.mjs`
+      file: `../d3.mjs`
     },
     plugins: [
       ...config.plugins,

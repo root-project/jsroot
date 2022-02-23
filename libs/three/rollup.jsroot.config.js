@@ -187,7 +187,7 @@ export function glconstants() {
 
 }
 
-function addons() {
+function addons(output_file) {
 
 	return {
 
@@ -195,7 +195,7 @@ function addons() {
 
 			if ( /\/examples\/jsm\//.test( id ) === false ) return;
 
-			code = code.replace( '../three.mjs', '../../../threejs/src/Three_jsroot.js' ).replace( 'three', '../../../src/Three_jsroot.js' );
+			code = code.replace(output_file, '../../../threejs/src/Three_jsroot.js' ).replace( 'three', '../../../src/Three_jsroot.js' );
 
 			return {
 				code: code,
@@ -284,7 +284,7 @@ let builds = [
 	{
 		input: '../../../threejs/src/Three_jsroot.js',
 		plugins: [
-			addons(),
+			addons('../../modules/three.mjs'),
 			glsl(),
 			json({ compact: true, indent: "" }),
 			babel( {
@@ -300,7 +300,7 @@ let builds = [
 			{
 				format: 'es',
 				name: 'THREE',
-				file: '../three.mjs',
+				file: '../../modules/three.mjs',
 				indent: '\t'
 			}
 		]
@@ -308,7 +308,7 @@ let builds = [
 	{
 		input: '../../../threejs/src/Three_jsroot.js',
 		plugins: [
-			addons(),
+			addons('../three.mjs'),
 			glconstants(),
 			glsl(),
 			json({ compact: true, indent: "" }),
@@ -325,7 +325,7 @@ let builds = [
 			{
 				format: 'es',
 				name: 'THREE',
-				file: '../../modules/three.mjs'
+				file: '../three.mjs'
 			}
 		]
 	}

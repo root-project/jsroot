@@ -871,7 +871,7 @@ class TGeoPainter extends ObjectPainter {
       }
 
       if (on)
-         JSROOT.loadScript(JSROOT.source_dir + 'scripts/dat.gui.min.js')
+         JSROOT.loadScript(JSROOT.source_dir + 'scripts/dat.gui.js')
                .then(() => this.buildDatGui(globalThis.dat));
    }
 
