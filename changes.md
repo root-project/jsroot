@@ -2,6 +2,7 @@
 
 ## Changes in 6.3.x
 1. Ignore "pads" draw option for THStack
+2. Fix error in TGraphPolar labels drawing
 
 
 ## Changes in 6.3.4
