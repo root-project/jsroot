@@ -3648,7 +3648,7 @@ let drawFuncs = { lst: [
    { name: "TMultiGraph", icon: "img_mgraph", prereq: "more", class: "TMultiGraphPainter", opt: ";l;p;3d", expand_item: "fGraphs" },
    { name: "TStreamerInfoList", icon: "img_question", prereq: "hierarchy", func: ".drawStreamerInfo" },
    { name: "TPaletteAxis", icon: "img_colz", prereq: "hist", class: "TPavePainter" },
-   { name: "TWebPainting", icon: "img_graph", prereq: "more", func: ".drawWebPainting" },
+   { name: "TWebPainting", icon: "img_graph", prereq: "more", class: "TWebPaintingPainter" },
    { name: "TCanvasWebSnapshot", icon: "img_canvas", prereq: "gpad", func: ".drawTPadSnapshot" },
    { name: "TPadWebSnapshot", sameas: "TCanvasWebSnapshot" },
    { name: "kind:Text", icon: "img_text", func: jsrp.drawRawText },

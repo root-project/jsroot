@@ -3815,17 +3815,16 @@ class TMultiGraphPainter extends ObjectPainter {
 
 /** @summary Draw direct TVirtualX commands into SVG
   * @private */
-jsrp.drawWebPainting = function(dom, obj, opt) {
 
-   let painter = new ObjectPainter(dom, obj, opt);
+class TWebPaintingPainter extends ObjectPainter {
 
-   painter.updateObject = function(obj) {
+   updateObject(obj) {
       if (!this.matchObjectType(obj)) return false;
-      this.draw_object = obj;
+      this.assignObject(obj);
       return true;
    }
 
-   painter.redraw = function() {
+   async redraw() {
 
       const obj = this.getObject(), func = this.getAxisToSvgFunc();
 
@@ -3959,7 +3958,7 @@ jsrp.drawWebPainting = function(dom, obj, opt) {
                                   color: jsrp.getColor(attr.fTextColor),
                                   latex: 0, draw_g: group });
 
-                  this.finishTextDrawing(group);
+                  await this.finishTextDrawing(group);
                }
                continue;
             }
@@ -3970,13 +3969,18 @@ jsrp.drawWebPainting = function(dom, obj, opt) {
       }
 
       check_attributes();
+
+      return this;
    }
 
-   painter.addToPadPrimitives();
+   static async draw(dom, obj) {
 
-   painter.redraw();
+      let painter = new TWebPaintingPainter(dom, obj);
+      painter.addToPadPrimitives();
 
-   return Promise.resolve(painter);
+      return painter.redraw();
+   }
+
 }
 
 
@@ -4510,5 +4514,6 @@ JSROOT.TASImagePainter = TASImagePainter;
 JSROOT.TRatioPlotPainter = TRatioPlotPainter;
 JSROOT.TGraphTimePainter = TGraphTimePainter;
 JSROOT.TEfficiencyPainter = TEfficiencyPainter;
+JSROOT.TWebPaintingPainter = TWebPaintingPainter;
 
 export { TGraphPainter };
