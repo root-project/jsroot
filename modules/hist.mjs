@@ -3886,7 +3886,7 @@ class TH1Painter extends THistPainter {
    }
 
    /** @summary Draw TH1 bins in SVG element */
-   draw1DBins() {
+   async draw1DBins() {
 
       this.createHistDrawAttributes();
 
@@ -4215,8 +4215,7 @@ class TH1Painter extends THistPainter {
                     .call(this.fillatt.func);
 
       if (show_text)
-         this.finishTextDrawing();
-
+         await this.finishTextDrawing();
    }
 
    /** @summary Provide text information (tooltips) for histogram bin */
@@ -4608,7 +4607,7 @@ class TH1Painter extends THistPainter {
 
    /** @summary Performs 2D drawing of histogram
      * @returns {Promise} when ready */
-   draw2D(/* reason */) {
+   async draw2D(/* reason */) {
       this.clear3DScene();
 
       this.scanContent(true);
@@ -4616,13 +4615,12 @@ class TH1Painter extends THistPainter {
       if ((typeof this.drawColorPalette === 'function') && this.isMainPainter())
          this.drawColorPalette(false);
 
-      return this.drawAxes().then(() => {
-         this.draw1DBins();
-         return this.drawHistTitle();
-      }).then(() => {
-         this.updateStatWebCanvas();
-         return this.addInteractivity();
-      });
+      await this.drawAxes();
+      await this.draw1DBins();
+      await this.drawHistTitle();
+      this.updateStatWebCanvas();
+
+      return this.addInteractivity();
    }
 
    /** @summary Performs 3D drawing of histogram
@@ -5735,7 +5733,7 @@ class TH2Painter extends THistPainter {
    }
 
    /** @summary draw TH2Poly as color */
-   drawPolyBinsColor() {
+   async drawPolyBinsColor() {
       let histo = this.getObject(),
           pmain = this.getFramePainter(),
           funcs = pmain.getGrFuncs(this.options.second_x, this.options.second_y),
@@ -5813,7 +5811,7 @@ class TH2Painter extends THistPainter {
             this.drawText({ align: 22, x: bin._midx, y: bin._midy, rotate: text_angle, text: lbl, color: text_col, latex: 0, draw_g: text_g });
          }
 
-         this.finishTextDrawing(text_g, true);
+         await this.finishTextDrawing(text_g, true);
       }
 
       return { poly: true };
@@ -6654,7 +6652,7 @@ class TH2Painter extends THistPainter {
    }
 
    /** @summary Draw TH2 bins in 2D mode */
-   draw2DBins() {
+   async draw2DBins() {
 
       if (this._hide_frame && this.isMainPainter()) {
          this.getFrameSvg().style('display', null);
@@ -6671,7 +6669,7 @@ class TH2Painter extends THistPainter {
       let handle = null;
 
       if (this.isTH2Poly()) {
-         handle = this.drawPolyBinsColor();
+         handle = await this.drawPolyBinsColor();
       } else {
          if (this.options.Scat)
             handle = this.drawBinsScatter();
@@ -7300,30 +7298,30 @@ class TH2Painter extends THistPainter {
 
    /** @summary Performs 2D drawing of histogram
      * @returns {Promise} when ready */
-   draw2D(/* reason */) {
+   async draw2D(/* reason */) {
 
       this.clear3DScene();
 
       let need_palette = this.options.Zscale && (this.options.Color || this.options.Contour);
       // draw new palette, resize frame if required
-      return this.drawColorPalette(need_palette, true).then(pp => {
+      let pp = await this.drawColorPalette(need_palette, true);
 
-         if (this.options.Circular && this.isMainPainter())
-            return this.drawBinsCircular().then(() => this.completePalette(pp));
+      if (this.options.Circular && this.isMainPainter()) {
+         await this.drawBinsCircular();
+      } else if (this.options.Chord && this.isMainPainter()) {
+         await this.drawBinsChord();
+      } else {
+         await this.drawAxes();
+         await this.draw2DBins();
+      }
 
-         if (this.options.Chord && this.isMainPainter())
-            return this.drawBinsChord().then(() => this.completePalette(pp));
+      await this.completePalette(pp);
 
-         return this.drawAxes().then(() => {
-            this.draw2DBins();
-            return this.completePalette(pp);
-         });
-      }).then(() => this.drawHistTitle()).then(() => {
+      await this.drawHistTitle();
 
-         this.updateStatWebCanvas();
+      this.updateStatWebCanvas();
 
-         return this.addInteractivity();
-      });
+      return this.addInteractivity();
    }
 
    /** @summary Performs 3D drawing of histogram
@@ -7352,47 +7350,46 @@ class TH2Painter extends THistPainter {
    }
 
    /** @summary draw TH2 object */
-   static draw(dom, histo, opt) {
+   static async draw(dom, histo, opt) {
       let painter = new TH2Painter(dom, histo);
 
-      return ensureTCanvas(painter).then(() => {
+      await ensureTCanvas(painter);
 
-         painter.setAsMainPainter();
+      painter.setAsMainPainter();
 
-         painter.decodeOptions(opt);
+      painter.decodeOptions(opt);
 
-         if (painter.isTH2Poly()) {
-            if (painter.options.Mode3D)
-               painter.options.Lego = 12; // lego always 12
-            else if (!painter.options.Color)
-               painter.options.Color = true; // default is color
-         }
+      if (painter.isTH2Poly()) {
+         if (painter.options.Mode3D)
+            painter.options.Lego = 12; // lego always 12
+         else if (!painter.options.Color)
+            painter.options.Color = true; // default is color
+      }
 
-         painter._show_empty_bins = false;
+      painter._show_empty_bins = false;
 
-         // special case for root 3D drawings - pad range is wired
-         painter.checkPadRange(!painter.options.Mode3D && (painter.options.Contour != 14));
+      // special case for root 3D drawings - pad range is wired
+      painter.checkPadRange(!painter.options.Mode3D && (painter.options.Contour != 14));
 
-         painter.scanContent();
+      painter.scanContent();
 
-         painter.createStat(); // only when required
+      painter.createStat(); // only when required
 
-         return painter.callDrawFunc();
+      await painter.callDrawFunc();
 
-      }).then(() => painter.drawNextFunction(0)).then(()=> {
+      await painter.drawNextFunction(0);
 
-         if (!painter.Mode3D && painter.options.AutoZoom)
-            painter.autoZoom();
+      if (!painter.Mode3D && painter.options.AutoZoom)
+         painter.autoZoom();
 
-         painter.fillToolbar();
-         if (painter.options.Project && !painter.mode3d)
-              painter.toggleProjection(painter.options.Project);
+      painter.fillToolbar();
+      if (painter.options.Project && !painter.mode3d)
+           painter.toggleProjection(painter.options.Project);
 
-          return painter;
-      });
+       return painter;
    }
 
-} // TH2Painter
+} // class TH2Painter
 
 // =================================================================================
 
