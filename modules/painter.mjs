@@ -4354,7 +4354,6 @@ jsrp.floatToString = floatToString;
 
 // FIXME: should be eliminated
 JSROOT.TRandom = TRandom;
-JSROOT.DrawOptions = DrawOptions;
 JSROOT.ColorPalette = ColorPalette;
 JSROOT.TAttLineHandler = TAttLineHandler;
 JSROOT.TAttFillHandler = TAttFillHandler;
@@ -4370,4 +4369,4 @@ JSROOT.makeSVG = makeSVG;
 // FIXME: should be eliminated
 JSROOT.Painter = jsrp;
 
-export { ColorPalette, BasePainter, ObjectPainter, getElementRect, draw, redraw, makeSVG, jsrp, loadJSDOM, floatToString };
+export { ColorPalette, BasePainter, ObjectPainter, getElementRect, draw, redraw, makeSVG, jsrp, loadJSDOM, floatToString, DrawOptions };

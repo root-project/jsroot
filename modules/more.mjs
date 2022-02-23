@@ -1,7 +1,7 @@
 
 import * as d3 from './d3.mjs';
 
-import { ObjectPainter, floatToString } from './painter.mjs';
+import { ObjectPainter, floatToString, DrawOptions } from './painter.mjs';
 
 // import { mth } from './math.mjs';
 
@@ -753,7 +753,7 @@ class TF1Painter extends ObjectPainter {
    /** @summary draw TF1 object */
    static draw(dom, tf1, opt) {
       let painter = new TF1Painter(dom, tf1, opt),
-          d = new JSROOT.DrawOptions(opt),
+          d = new DrawOptions(opt),
           has_main = !!painter.getMainPainter(),
           aopt = "AXIS";
       d.check('SAME'); // just ignore same
@@ -882,7 +882,7 @@ class TGraphPainter extends ObjectPainter {
       }
 
       let res = this.options,
-          d = new JSROOT.DrawOptions(opt);
+          d = new DrawOptions(opt);
 
       // check pad options first
       res.PadStats = d.check("USE_PAD_STATS");
@@ -893,7 +893,7 @@ class TGraphPainter extends ObjectPainter {
 
       if (d.empty()) {
          res.original = has_main ? "lp" : "alp";
-         d = new JSROOT.DrawOptions(res.original);
+         d = new DrawOptions(res.original);
       }
 
       if (d.check('NOOPT')) res.NoOpt = 1;
@@ -958,7 +958,7 @@ class TGraphPainter extends ObjectPainter {
       res.Axis += hopt;
 
       for (let bl = 0; bl < blocks_gme.length; ++bl) {
-         let subd = new JSROOT.DrawOptions(blocks_gme[bl]), subres = {};
+         let subd = new DrawOptions(blocks_gme[bl]), subres = {};
          decodeBlock(subd, subres);
          subres.skip_errors_x0 = res.skip_errors_x0;
          subres.skip_errors_y0 = res.skip_errors_y0;
@@ -2628,7 +2628,7 @@ class TGraphPolarPainter extends ObjectPainter {
    /** @summary Decode options for drawing TGraphPolar */
    decodeOptions(opt) {
 
-      let d = new JSROOT.DrawOptions(opt || "L");
+      let d = new DrawOptions(opt || "L");
 
       if (!this.options) this.options = {};
 
@@ -3119,7 +3119,7 @@ class TSplinePainter extends ObjectPainter {
 
    /** @summary Decode options for TSpline drawing */
    decodeOptions(opt) {
-      let d = new JSROOT.DrawOptions(opt);
+      let d = new DrawOptions(opt);
 
       if (!this.options) this.options = {};
 
@@ -3186,7 +3186,7 @@ class TGraphTimePainter extends ObjectPainter {
    /** @summary Decode drawing options */
    decodeOptions(opt) {
 
-      let d = new JSROOT.DrawOptions(opt || "REPEAT");
+      let d = new DrawOptions(opt || "REPEAT");
 
       if (!this.options) this.options = {};
 
@@ -3786,7 +3786,7 @@ class TMultiGraphPainter extends ObjectPainter {
    static draw(dom, mgraph, opt) {
 
       let painter = new TMultiGraphPainter(dom, mgraph),
-          d = new JSROOT.DrawOptions(opt);
+          d = new DrawOptions(opt);
 
       painter._3d = d.check("3D");
       painter._pfc = d.check("PFC");

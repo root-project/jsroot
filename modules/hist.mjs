@@ -1,7 +1,7 @@
 
 import * as d3 from './d3.mjs';
 
-import { ColorPalette, ObjectPainter, floatToString } from './painter.mjs';
+import { ColorPalette, ObjectPainter, floatToString, DrawOptions } from './painter.mjs';
 
 import { ensureTCanvas } from './gpad.mjs';
 
@@ -1479,7 +1479,7 @@ class THistDrawOptions {
    decode(opt, hdim, histo, pad, painter) {
       this.orginal = opt; // will be overwritten by storeDrawOpt call
 
-      const d = new JSROOT.DrawOptions(opt);
+      const d = new DrawOptions(opt);
 
       if ((hdim === 1) && (histo.fSumw2.length > 0))
          for (let n = 0; n < histo.fSumw2.length; ++n)
@@ -7484,7 +7484,7 @@ function createTF2Histogram(func, hist) {
   * @private */
 jsrp.drawTF2 = function(dom, func, opt) {
 
-   let d = new JSROOT.DrawOptions(opt),
+   let d = new DrawOptions(opt),
        hist = createTF2Histogram(func);
 
    if (!hist) return;
@@ -7736,7 +7736,7 @@ class THStackPainter extends ObjectPainter {
 
       this.options.nhist = stack.fHists ? stack.fHists.arr.length : 1;
 
-      let d = new JSROOT.DrawOptions(opt);
+      let d = new DrawOptions(opt);
 
       this.options.nostack = d.check("NOSTACK");
       if (d.check("STACK")) this.options.nostack = false;

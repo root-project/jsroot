@@ -2,7 +2,7 @@
 
 import * as d3 from './d3.mjs';
 
-import { ObjectPainter } from './painter.mjs';
+import { ObjectPainter, DrawOptions } from './painter.mjs';
 
 const jsrp = JSROOT.Painter; // FIXME - workaround
 
@@ -4149,7 +4149,7 @@ class RPadPainter extends RObjectPainter {
       let pad = this.getObject();
       if (!pad) return;
 
-      let d = new JSROOT.DrawOptions(opt);
+      let d = new DrawOptions(opt);
 
       if (d.check('WEBSOCKET') && this.openWebsocket) this.openWebsocket();
       if (!this.options) this.options = {};

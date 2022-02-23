@@ -3,7 +3,7 @@
 
 import * as d3 from './d3.mjs';
 
-import { floatToString } from './painter.mjs';
+import { floatToString, DrawOptions } from './painter.mjs';
 
 import { RObjectPainter, RPavePainter, ensureRCanvas } from './v7gpad.mjs';
 
@@ -1878,7 +1878,7 @@ class RH1Painter extends RHistPainter {
                           Text: false, TextAngle: 0, TextKind: "", AutoColor: 0,
                           BarOffset: 0., BarWidth: 1., BaseLine: false, Mode3D: false };
 
-      let d = new JSROOT.DrawOptions(opt);
+      let d = new DrawOptions(opt);
       if (d.check('R3D_', true))
          painter.options.Render3D = JSROOT.constants.Render3D.fromString(d.part.toLowerCase());
 

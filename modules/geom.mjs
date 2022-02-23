@@ -8,7 +8,7 @@ import { assign3DHandler, createRender3D, InteractiveControl } from './base3d.mj
 
 import { geo } from './geobase.mjs';
 
-import { ObjectPainter } from './painter.mjs';
+import { ObjectPainter, DrawOptions } from './painter.mjs';
 
 import { ensureTCanvas } from './gpad.mjs';
 
@@ -506,7 +506,7 @@ class TGeoPainter extends ObjectPainter {
          this.modifyVisisbility(name, sign);
       }
 
-      let d = new JSROOT.DrawOptions(opt);
+      let d = new DrawOptions(opt);
 
       if (d.check("MAIN")) res.is_main = true;
 
