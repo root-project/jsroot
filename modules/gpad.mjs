@@ -4966,23 +4966,22 @@ class TCanvasPainter extends TPadPainter {
  * @param {string|boolean} frame_kind  - false for no frame or "3d" for special 3D mode
  * @desc Assign dom, creates TCanvas if necessary, add to list of pad painters
  * @memberof JSROOT.Painter */
-function ensureTCanvas(painter, frame_kind) {
-   if (!painter) return Promise.reject('Painter not provided in ensureTCanvas');
+async function ensureTCanvas(painter, frame_kind) {
+   if (!painter)
+      throw Error('Painter not provided in ensureTCanvas');
 
    // simple check - if canvas there, can use painter
    let svg_c = painter.getCanvSvg(),
-       noframe = (frame_kind === false) || (frame_kind == "3d") ? "noframe" : "",
-       promise = !svg_c.empty() ? Promise.resolve(true) : TCanvasPainter.draw(painter.getDom(), null, noframe);
+       noframe = (frame_kind === false) || (frame_kind == "3d") ? "noframe" : "";
 
-   return promise.then(() => {
-      if (frame_kind === false) return;
+   if (svg_c.empty())
+      await TCanvasPainter.draw(painter.getDom(), null, noframe);
 
-      if (painter.getFrameSvg().select(".main_layer").empty() && !painter.getFramePainter())
-         return TFramePainter.draw(painter.getDom(), null, (typeof frame_kind === "string") ? frame_kind : "");
-   }).then(() => {
-      painter.addToPadPrimitives();
-      return painter;
-   });
+   if ((frame_kind !== false) &&  painter.getFrameSvg().select(".main_layer").empty() && !painter.getFramePainter())
+       await TFramePainter.draw(painter.getDom(), null, (typeof frame_kind === "string") ? frame_kind : "");
+
+   painter.addToPadPrimitives();
+   return painter;
 }
 
 /** @summary draw TPad snapshot from TWebCanvas

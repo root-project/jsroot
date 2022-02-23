@@ -5,7 +5,7 @@ import * as THREE from './three.mjs';
 
 import { assign3DHandler, createRender3D } from './base3d.mjs';
 
-import { TFramePainter } from './gpad.mjs';
+import { TFramePainter, ensureTCanvas } from './gpad.mjs';
 
 import { THistPainter, TH1Painter, TH2Painter } from './hist.mjs';
 
@@ -2908,24 +2908,22 @@ class TH3Painter extends THistPainter {
    }
 
    /** @summary draw TH3 object */
-   static draw(dom, histo, opt) {
+   static async draw(dom, histo, opt) {
 
       let painter = new TH3Painter(dom, histo);
       painter.mode3d = true;
 
-      return jsrp.ensureTCanvas(painter, "3d").then(() => {
-         painter.setAsMainPainter();
-         painter.decodeOptions(opt);
-         painter.checkPadRange();
-         painter.scanContent();
-         return painter.redraw();
-      }).then(() => {
-         let stats = painter.createStat(); // only when required
-         if (stats) return JSROOT.draw(dom, stats, "");
-      }).then(() => {
-         painter.fillToolbar();
-         return painter;
-      });
+      await ensureTCanvas(painter, "3d");
+      painter.setAsMainPainter();
+      painter.decodeOptions(opt);
+      painter.checkPadRange();
+      painter.scanContent();
+      await  painter.redraw();
+      let stats = painter.createStat(); // only when required
+      if (stats)
+         await JSROOT.draw(dom, stats, "");
+      painter.fillToolbar();
+      return painter;
    }
 
 } // class TH3Painter
