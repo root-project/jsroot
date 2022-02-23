@@ -2419,7 +2419,7 @@ class RH3Painter extends RHistPainter {
           k1 = handle.k1, k2 = handle.k2, dk = handle.stepk,
           i, j, k, bin_content;
 
-      if ((i2<=i1) || (j2<=j1) || (k2<=k1)) return true;
+      if ((i2 <= i1) || (j2 <= j1) || (k2 <= k1)) return true;
 
       // scale down factor if too large values
       let coef = (this.gmaxbin > 1000) ? 1000/this.gmaxbin : 1,
@@ -2501,15 +2501,18 @@ class RH3Painter extends RHistPainter {
    }
 
    /** @summary Drawing of 3D histogram */
-   draw3DBins() {
+   async draw3DBins() {
 
       if (!this.draw_content)
          return false;
 
+      //this.options.Scatter = false;
+      //this.options.Box = true;
+
       let handle = this.prepareDraw({ only_indexes: true, extra: -0.5, right_extra: -1 });
 
       if (this.options.Scatter) {
-         let res = this.draw3DScatter(handle);
+         let res = await this.draw3DScatter(handle);
          if (res !== false) return res;
       }
 
@@ -2932,6 +2935,7 @@ class RH3Painter extends RHistPainter {
 
    /** @summary draw RH3 object */
   static draw(dom, histo /*, opt*/) {
+
       let painter = new RH3Painter(dom, histo);
       painter.mode3d = true;
 
