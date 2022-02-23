@@ -12,7 +12,7 @@ let version_id = "modules";
 
 /** @summary JSROOT version date
   * @desc Release date in format day/month/year like "19/11/2021" */
-let version_date = "22/02/2022";
+let version_date = "23/02/2022";
 
 /** @summary JSROOT version id and date
   * @desc Produced by concatenation of {@link JSROOT.version_id} and {@link JSROOT.version_date}
@@ -449,6 +449,8 @@ async function jsroot_require(need) {
          arr.push(import("../modules/more.mjs"));
       else if (name == "gpad")
          arr.push(import("../modules/gpad.mjs"));
+      else if (name == "io")
+         arr.push(import("../modules/io.mjs").then(handle => handle.jsrio));
       else if (name == "geom")
          arr.push(import("../modules/geom.mjs").then(handle => handle.geo));
       else if (name == "math")

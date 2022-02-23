@@ -3814,4 +3814,4 @@ JSROOT.TLocalFile = TLocalFile;
 JSROOT.TNodejsFile = TNodejsFile;
 JSROOT.IO = jsrio;
 
-export { openFile };
+export { openFile, jsrio };
