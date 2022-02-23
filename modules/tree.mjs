@@ -1,5 +1,5 @@
 
-import { jsrio } from './io.mjs';
+import { jsrio, TBuffer } from './io.mjs';
 
 import { mth as jsroot_math } from './math.mjs';
 
@@ -2160,7 +2160,7 @@ const TTreeMethods = {
                   bitems[k].done = true;
 
                   let blob = blobs.shift(),
-                     buf = new JSROOT.TBuffer(blob, 0, handle.file),
+                     buf = new TBuffer(blob, 0, handle.file),
                      basket = buf.classStreamer({}, "TBasket");
 
                   if (basket.fNbytes !== bitems[k].branch.fBasketBytes[bitems[k].basket])
@@ -2186,7 +2186,7 @@ const TTreeMethods = {
                   return jsrio.R__unzip(blob, basket.fObjlen, false, buf.o).then(objblob => {
 
                      if (objblob) {
-                        buf = new JSROOT.TBuffer(objblob, 0, handle.file);
+                        buf = new TBuffer(objblob, 0, handle.file);
                         buf.raw_shift = basket.fKeylen;
                         buf.fTagOffset = basket.fKeylen;
                      } else {
@@ -2272,7 +2272,7 @@ const TTreeMethods = {
                      if (bitem.raw)
                         bitem.raw.locate(0); // reset pointer - same branch may be read several times
                      else
-                        bitem.raw = new JSROOT.TBuffer(null, 0, handle.file); // create dummy buffer - basket has no data
+                        bitem.raw = new TBuffer(null, 0, handle.file); // create dummy buffer - basket has no data
                      bitem.raw.raw_shift = bskt.fKeylen;
 
                      if (bskt.fBufferRef && (elem.branch.fEntryOffsetLen > 0))
