@@ -3754,7 +3754,7 @@ class TH1Painter extends THistPainter {
    }
 
    /** @summary Draw histogram as bars */
-   drawBars(height, pmain, funcs) {
+   async drawBars(height, pmain, funcs) {
 
       this.createG(true);
 
@@ -3847,7 +3847,7 @@ class TH1Painter extends THistPainter {
                .style("fill", d3.rgb(this.fillatt.color).darker(0.5).formatHex());
 
       if (show_text)
-         this.finishTextDrawing();
+         await this.finishTextDrawing();
    }
 
    /** @summary Draw histogram as filled errors */
