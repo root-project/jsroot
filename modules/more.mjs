@@ -2438,7 +2438,7 @@ class TGraphPolargramPainter extends ObjectPainter {
    }
 
    /** @summary Redraw polargram */
-   redraw() {
+   async redraw() {
       if (!this.isMainPainter()) return;
 
       let polar = this.getObject(),
@@ -2521,7 +2521,7 @@ class TGraphPolargramPainter extends ObjectPainter {
          }
       }
 
-      this.finishTextDrawing();
+      await this.finishTextDrawing();
 
       let fontsize = Math.round(polar.fPolarTextSize * this.szy * 2);
       this.startTextDrawing(polar.fPolarLabelFont, fontsize);
@@ -2547,7 +2547,7 @@ class TGraphPolargramPainter extends ObjectPainter {
                          color: this.getColor(polar.fPolarLabelColor), latex: 1 });
       }
 
-      this.finishTextDrawing();
+      await this.finishTextDrawing();
 
       nminor = Math.floor((polar.fNdivPol % 10000) / 100);
 
@@ -2560,50 +2560,52 @@ class TGraphPolargramPainter extends ObjectPainter {
                 .call(this.gridatt.func);
          }
 
-      if (!JSROOT.batch_mode)
-      return JSROOT.require(['interactive']).then(inter => {
-         inter.TooltipHandler.assign(this);
+      if (!JSROOT.batch_mode) return;
 
-         let layer = this.getLayerSvg("primitives_layer"),
-             interactive = layer.select(".interactive_ellipse");
+      let inter = await JSROOT.require(['interactive']);
 
-         if (interactive.empty())
-            interactive = layer.append("g")
-                               .classed("most_upper_primitives", true)
-                               .append("ellipse")
-                               .classed("interactive_ellipse", true)
-                               .attr("cx",0)
-                               .attr("cy",0)
-                               .style("fill", "none")
-                               .style("pointer-events","visibleFill")
-                               .on('mouseenter', evnt => this.mouseEvent('enter', evnt))
-                               .on('mousemove', evnt => this.mouseEvent('move', evnt))
-                               .on('mouseleave', evnt => this.mouseEvent('leave', evnt));
+      inter.TooltipHandler.assign(this);
 
-         interactive.attr("rx", this.szx).attr("ry", this.szy);
+      let layer = this.getLayerSvg("primitives_layer"),
+          interactive = layer.select(".interactive_ellipse");
 
-         d3.select(interactive.node().parentNode).attr("transform", this.draw_g.attr("transform"));
+      if (interactive.empty())
+         interactive = layer.append("g")
+                            .classed("most_upper_primitives", true)
+                            .append("ellipse")
+                            .classed("interactive_ellipse", true)
+                            .attr("cx",0)
+                            .attr("cy",0)
+                            .style("fill", "none")
+                            .style("pointer-events","visibleFill")
+                            .on('mouseenter', evnt => this.mouseEvent('enter', evnt))
+                            .on('mousemove', evnt => this.mouseEvent('move', evnt))
+                            .on('mouseleave', evnt => this.mouseEvent('leave', evnt));
 
-         if (JSROOT.settings.Zooming && JSROOT.settings.ZoomWheel)
-            interactive.on("wheel", evnt => this.mouseWheel(evnt));
-      });
+      interactive.attr("rx", this.szx).attr("ry", this.szy);
+
+      d3.select(interactive.node().parentNode).attr("transform", this.draw_g.attr("transform"));
+
+      if (JSROOT.settings.Zooming && JSROOT.settings.ZoomWheel)
+         interactive.on("wheel", evnt => this.mouseWheel(evnt));
    }
+
    /** @summary Draw TGraphPolargram */
-   static draw(dom, polargram /*, opt*/) {
+   static async draw(dom, polargram /*, opt*/) {
 
       let main = jsrp.getElementMainPainter(dom);
       if (main) {
          if (main.getObject() === polargram)
-            return Promise.resolve(main);
-         return Promise.reject(Error("Cannot superimpose TGraphPolargram with any other drawings"));
+            return main;
+         throw Error("Cannot superimpose TGraphPolargram with any other drawings");
       }
 
       let painter = new TGraphPolargramPainter(dom, polargram);
-      return ensureTCanvas(painter, false).then(() => {
-         painter.setAsMainPainter();
-         painter.redraw();
-         return painter;
-      });
+      await ensureTCanvas(painter, false);
+
+      painter.setAsMainPainter();
+      await painter.redraw();
+      return painter;
    }
 
 } // class TGraphPolargramPainter
@@ -2814,7 +2816,7 @@ class TGraphPolarPainter extends ObjectPainter {
    }
 
    /** @summary Draw TGraphPolar */
-   static draw(dom, graph, opt) {
+   static async draw(dom, graph, opt) {
       let painter = new TGraphPolarPainter(dom, graph);
       painter.decodeOptions(opt);
 
@@ -2824,19 +2826,15 @@ class TGraphPolarPainter extends ObjectPainter {
          return null;
       }
 
-      let ppromise = Promise.resolve(main);
-
       if (!main) {
          if (!graph.fPolargram)
             graph.fPolargram = painter.createPolargram();
-         ppromise = JSROOT.draw(dom, graph.fPolargram, "");
+         await TGraphPolargramPainter.draw(dom, graph.fPolargram);
       }
 
-      return ppromise.then(() => {
-         painter.addToPadPrimitives();
-         painter.drawGraphPolar();
-         return painter;
-      })
+      painter.addToPadPrimitives();
+      painter.drawGraphPolar();
+      return painter;
    }
 
 } // class TGraphPolarPainter
