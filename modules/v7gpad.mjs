@@ -2195,7 +2195,7 @@ class RFramePainter extends RObjectPainter {
 
       top_rect.style("pointer-events", "visibleFill");  // let process mouse events inside frame
 
-      let inter = await JSROOT.require(['interactive']));
+      let inter = await JSROOT.require('interactive');
       inter.FrameInteractive.assign(this);
       this.addBasicInteractivity();
    }
