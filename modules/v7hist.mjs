@@ -2717,7 +2717,7 @@ class RH2Painter extends RHistPainter {
    }
 
    /** @summary draw TH2Poly as color */
-   drawPolyBinsColor() {
+   async drawPolyBinsColor() {
       let histo = this.getHisto(),
           pmain = this.getFramePainter(),
           colPaths = [], textbins = [],
@@ -2789,7 +2789,7 @@ class RH2Painter extends RHistPainter {
             this.drawText({ x: bin._midx, y: bin._midy, text: lbl, latex: 0, draw_g: text_g });
          }
 
-         this.finishTextDrawing(text_g, true);
+         await this.finishTextDrawing(text_g, true);
       }
 
       return { poly: true };
@@ -3298,7 +3298,7 @@ class RH2Painter extends RHistPainter {
       // if (this.lineatt.empty()) this.lineatt.color = 'cyan';
 
       if (this.isRH2Poly()) {
-         handle = this.drawPolyBinsColor();
+         handle = await this.drawPolyBinsColor();
       } else {
          if (this.options.Scat)
             handle = this.drawBinsScatter();

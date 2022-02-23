@@ -215,10 +215,10 @@ class RPaveTextPainter extends RPavePainter {
    }
 
    /** @summary draw RPaveText object */
-   static draw(dom, pave, opt) {
+   static async draw(dom, pave, opt) {
       let painter = new RPaveTextPainter(dom, pave, opt, "pavetext");
-
-      return ensureRCanvas(painter, false).then(() => painter.drawPave());
+      await ensureRCanvas(painter, false);
+      return painter.drawPave();
    }
 
 } // class RPaveTextPainter
