@@ -1,5 +1,8 @@
-// FIXME: hope, temporary workaround
-let jsrio = JSROOT.IO;
+
+import { jsrio } from './io.mjs';
+
+import { mth as jsroot_math } from './math.mjs';
+
 
 // branch types
 const kLeafNode = 0, kBaseClassNode = 1, kObjectNode = 2, kClonesNode = 3,
@@ -449,7 +452,7 @@ class TDrawVariable {
          return;
       }
 
-      let arg = { $globals: this.globals, $math: jsrmath }, usearrlen = -1, arrs = [];
+      let arg = { $globals: this.globals, $math: jsroot_math }, usearrlen = -1, arrs = [];
       for (let n = 0; n < this.branches.length; ++n) {
          let name = "var" + n;
          arg[name] = obj[this.branches[n]];
