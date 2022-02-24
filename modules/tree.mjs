@@ -2821,15 +2821,13 @@ JSROOT.treeHierarchy = function(node, obj) {
  * @desc just envelope for real TTree::Draw method which do the main job
  * Can be also used for the branch and leaf object
  * @private */
-JSROOT.drawTree = function(dom, obj, opt) {
+JSROOT.drawTree = async function() {
 
-   if (!JSROOT.ObjectPainter) {
-      console.error('JSROOT.drawTree called without loading of JSRoot.painter.js - how it can happen?');
-      return null;
-   }
-
-   let painter = new JSROOT.ObjectPainter(dom, obj),
-       tree = obj, args = opt;
+   let painter = this,
+       obj = this.getObject(),
+       opt = this.getDrawOpt(),
+       tree = obj,
+       args = opt;
 
    if (obj._typename == "TBranchFunc") {
       // fictional object, created only in browser
@@ -2872,12 +2870,8 @@ JSROOT.drawTree = function(dom, obj, opt) {
       if (typeof args === 'string') args = { expr: args };
    }
 
-   if (!tree) {
-      console.error('No TTree object available for TTree::Draw');
-      return null;
-   }
-
-   JSROOT.cleanup(dom);
+   if (!tree)
+      throw Error('No TTree object available for TTree::Draw');
 
    let create_player = 0, finalResolve;
 
@@ -2886,7 +2880,7 @@ JSROOT.drawTree = function(dom, obj, opt) {
       let drawid;
 
       if (!args.player)
-         drawid = dom;
+         drawid = painter.getDom();
       else if (create_player === 2)
          drawid = painter.drawid;
 
