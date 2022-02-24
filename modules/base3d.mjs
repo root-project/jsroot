@@ -1144,7 +1144,7 @@ jsrp.disposeThreejsObject = function(obj, only_childs) {
 /** @summary Create THREE.LineSegments mesh (or only geometry)
   * @desc If required, calculates lineDistance attribute for dashed geometries
   * @private */
-jsrp.createLineSegments = function(arr, material, index, only_geometry) {
+function createLineSegments(arr, material, index, only_geometry) {
 
    let geom = new THREE.BufferGeometry();
 
@@ -1556,7 +1556,7 @@ jsrp.drawPolyLine3D = function() {
       pnts.push(fp.grx(p[n-3]), fp.gry(p[n-2]), fp.grz(p[n-1]),
                 fp.grx(p[n]), fp.gry(p[n+1]), fp.grz(p[n+2]));
 
-   let lines = jsrp.createLineSegments(pnts, create3DLineMaterial(this, line));
+   let lines = createLineSegments(pnts, create3DLineMaterial(this, line));
 
    fp.toplevel.add(lines);
 
@@ -1568,6 +1568,5 @@ jsrp.drawPolyLine3D = function() {
 jsrp.PointsCreator = PointsCreator;
 jsrp.PointsControl = PointsControl;
 
-jsrp.create3DLineMaterial = create3DLineMaterial;
-
-export { assign3DHandler, createRender3D, InteractiveControl, PointsControl, PointsCreator };
+export { assign3DHandler, createRender3D, createLineSegments, create3DLineMaterial,
+         InteractiveControl, PointsControl, PointsCreator };

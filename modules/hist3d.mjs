@@ -5,7 +5,7 @@ import * as THREE from './three.mjs';
 
 import { ObjectPainter, TAttMarkerHandler, floatToString, DrawOptions, getDrawSettings } from './painter.mjs';
 
-import { assign3DHandler, createRender3D } from './base3d.mjs';
+import { assign3DHandler, createRender3D, createLineSegments, create3DLineMaterial } from './base3d.mjs';
 
 import { TFramePainter, ensureTCanvas } from './gpad.mjs';
 
@@ -711,7 +711,7 @@ TFramePainter.prototype.drawXYZ = function(toplevel, opts) {
    xcont.xyid = 2;
 
    if (opts.draw) {
-      xtickslines = jsrp.createLineSegments( ticks, lineMaterial );
+      xtickslines = createLineSegments(ticks, lineMaterial);
       xcont.add(xtickslines);
     }
 
@@ -811,7 +811,7 @@ TFramePainter.prototype.drawXYZ = function(toplevel, opts) {
       ycont.position.set(grminx, 0, grminz);
       ycont.rotation.y = -1/4*Math.PI;
       if (opts.draw) {
-         yticksline = jsrp.createLineSegments(ticks, lineMaterial);
+         yticksline = createLineSegments(ticks, lineMaterial);
          ycont.add(yticksline);
       }
 
@@ -908,7 +908,7 @@ TFramePainter.prototype.drawXYZ = function(toplevel, opts) {
    if (zgridx && (zgridx.length > 0)) {
 
       const material = new THREE.LineDashedMaterial({ color: 0x0, dashSize: 2, gapSize: 2 }),
-            lines1 = jsrp.createLineSegments(zgridx, material);
+            lines1 = createLineSegments(zgridx, material);
 
       lines1.position.set(0,grmaxy,0);
       lines1.grid = 2; // mark as grid
@@ -925,7 +925,7 @@ TFramePainter.prototype.drawXYZ = function(toplevel, opts) {
    if (zgridy && (zgridy.length > 0)) {
 
       const material = new THREE.LineDashedMaterial({ color: 0x0, dashSize: 2, gapSize: 2 }),
-            lines1 = jsrp.createLineSegments(zgridy, material);
+            lines1 = createLineSegments(zgridy, material);
 
       lines1.position.set(grmaxx,0, 0);
       lines1.grid = 3; // mark as grid
@@ -939,7 +939,7 @@ TFramePainter.prototype.drawXYZ = function(toplevel, opts) {
       top.add(lines2);
    }
 
-   let zcont = [], zticksline = opts.draw ? jsrp.createLineSegments( ticks, lineMaterial ) : null;
+   let zcont = [], zticksline = opts.draw ? createLineSegments(ticks, lineMaterial) : null;
    for (let n = 0; n < 4; ++n) {
       zcont.push(new THREE.Object3D());
 
@@ -992,7 +992,7 @@ TFramePainter.prototype.drawXYZ = function(toplevel, opts) {
    zcont[3].position.set(grminx,grminy,0);
    zcont[3].rotation.z = -3/4*Math.PI;
 
-   let linex_geom = jsrp.createLineSegments([grminx,0,0, grmaxx,0,0], lineMaterial, null, true);
+   let linex_geom = createLineSegments([grminx,0,0, grmaxx,0,0], lineMaterial, null, true);
    for(let n = 0; n < 2; ++n) {
       let line = new THREE.LineSegments(linex_geom, lineMaterial);
       line.position.set(0, grminy, (n===0) ? grminz : grmaxz);
@@ -1005,7 +1005,7 @@ TFramePainter.prototype.drawXYZ = function(toplevel, opts) {
       top.add(line);
    }
 
-   let liney_geom = jsrp.createLineSegments([0,grminy,0, 0,grmaxy,0], lineMaterial, null, true);
+   let liney_geom = createLineSegments([0,grminy,0, 0,grmaxy,0], lineMaterial, null, true);
    for(let n = 0; n < 2; ++n) {
       let line = new THREE.LineSegments(liney_geom, lineMaterial);
       line.position.set(grminx, 0, (n===0) ? grminz : grmaxz);
@@ -1018,7 +1018,7 @@ TFramePainter.prototype.drawXYZ = function(toplevel, opts) {
       top.add(line);
    }
 
-   let linez_geom = jsrp.createLineSegments([0,0,grminz, 0,0,grmaxz], lineMaterial, null, true);
+   let linez_geom = createLineSegments([0,0,grminz, 0,0,grmaxz], lineMaterial, null, true);
    for(let n = 0; n < 4; ++n) {
       let line = new THREE.LineSegments(linez_geom, lineMaterial);
       line.zboxid = zcont[n].zid;
@@ -1378,7 +1378,7 @@ THistPainter.prototype.draw3DBins = function() {
    // create boxes
    const lcolor = this.getColor(histo.fLineColor),
          material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor), linewidth: histo.fLineWidth }),
-         line = jsrp.createLineSegments(lpositions, material, uselineindx ? lindicies : null );
+         line = createLineSegments(lpositions, material, uselineindx ? lindicies : null );
 
    /*
    line.painter = this;
@@ -1520,7 +1520,7 @@ TH2Painter.prototype.drawContour3D = function(realz) {
       }
    );
 
-   let lines = jsrp.createLineSegments(pnts, jsrp.create3DLineMaterial(this, histo));
+   let lines = createLineSegments(pnts, create3DLineMaterial(this, histo));
    main.toplevel.add(lines);
 }
 
@@ -1833,7 +1833,7 @@ TH2Painter.prototype.drawSurf = function() {
 
       const lcolor = this.getColor(histo.fLineColor),
             material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor), linewidth: histo.fLineWidth }),
-            line = jsrp.createLineSegments(lpos, material);
+            line = createLineSegments(lpos, material);
       line.painter = this;
       main.toplevel.add(line);
    }
@@ -1845,7 +1845,7 @@ TH2Painter.prototype.drawSurf = function() {
       const material = (this.options.Surf === 1)
                       ? new THREE.LineDashedMaterial( { color: 0x0, dashSize: 2, gapSize: 2 } )
                       : new THREE.LineBasicMaterial({ color: new THREE.Color(this.getColor(histo.fLineColor)) }),
-           line = jsrp.createLineSegments(grid, material);
+           line = createLineSegments(grid, material);
       line.painter = this;
       main.toplevel.add(line);
    }
@@ -1986,7 +1986,7 @@ TH2Painter.prototype.drawError = function() {
     // create lines
     const lcolor = this.getColor(histo.fLineColor),
           material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor), linewidth: histo.fLineWidth }),
-          line = jsrp.createLineSegments(lpos, material);
+          line = createLineSegments(lpos, material);
 
     line.painter = this;
     line.intersect_index = binindx;
@@ -2769,14 +2769,14 @@ class TH3Painter extends THistPainter {
 
          if (helper_kind[nseq] > 0) {
             let lcolor = this.getColor(histo.fLineColor),
-                helper_material = new THREE.LineBasicMaterial( { color: lcolor } ),
+                helper_material = new THREE.LineBasicMaterial({ color: lcolor }),
                 lines = null;
 
             if (helper_kind[nseq] === 1) {
                // reuse positions from the mesh - only special index was created
-               lines = jsrp.createLineSegments( bin_verts[nseq], helper_material, helper_indexes[nseq] );
+               lines = createLineSegments(bin_verts[nseq], helper_material, helper_indexes[nseq]);
             } else {
-               lines = jsrp.createLineSegments( helper_positions[nseq], helper_material );
+               lines = createLineSegments(helper_positions[nseq], helper_material);
             }
 
             main.toplevel.add(lines);
@@ -3201,7 +3201,7 @@ class TGraph2DPainter extends ObjectPainter {
          if (line && (iline > 3) && (line.length == iline)) {
             let lcolor = this.getColor(graph.fLineColor),
                 material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor), linewidth: graph.fLineWidth }),
-                linemesh = jsrp.createLineSegments(line, material);
+                linemesh = createLineSegments(line, material);
             fp.toplevel.add(linemesh);
 
             linemesh.graph = graph;
@@ -3219,7 +3219,7 @@ class TGraph2DPainter extends ObjectPainter {
          if (err) {
             let lcolor = this.getColor(graph.fLineColor),
                 material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor), linewidth: graph.fLineWidth }),
-                errmesh = jsrp.createLineSegments(err, material);
+                errmesh = createLineSegments(err, material);
             fp.toplevel.add(errmesh);
 
             errmesh.graph = graph;

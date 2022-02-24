@@ -6,7 +6,7 @@ import * as THREE from './three.mjs';
 
 import { floatToString, getDrawSettings } from './painter.mjs';
 
-import { assign3DHandler, createRender3D } from './base3d.mjs';
+import { assign3DHandler, createRender3D, createLineSegments, create3DLineMaterial } from './base3d.mjs';
 
 import { RFramePainter, ensureRCanvas } from './v7gpad.mjs';
 
@@ -686,7 +686,7 @@ RFramePainter.prototype.drawXYZ = function(toplevel, opts) {
    xcont.position.set(0, grminy, grminz);
    xcont.rotation.x = 1/4*Math.PI;
    xcont.xyid = 2;
-   let xtickslines = jsrp.createLineSegments( ticks, lineMaterial );
+   let xtickslines = createLineSegments(ticks, lineMaterial);
    xcont.add(xtickslines);
 
    lbls.forEach(lbl => {
@@ -779,7 +779,7 @@ RFramePainter.prototype.drawXYZ = function(toplevel, opts) {
    }
 
    if (!opts.use_y_for_z) {
-      let yticksline = jsrp.createLineSegments(ticks, lineMaterial),
+      let yticksline = createLineSegments(ticks, lineMaterial),
           ycont = new THREE.Object3D();
       ycont.position.set(grminx, 0, grminz);
       ycont.rotation.y = -1/4*Math.PI;
@@ -879,7 +879,7 @@ RFramePainter.prototype.drawXYZ = function(toplevel, opts) {
 
       let material = new THREE.LineDashedMaterial({ color: 0x0, dashSize: 2, gapSize: 2 });
 
-      let lines1 = jsrp.createLineSegments(zgridx, material);
+      let lines1 = createLineSegments(zgridx, material);
       lines1.position.set(0,grmaxy,0);
       lines1.grid = 2; // mark as grid
       lines1.visible = false;
@@ -896,7 +896,7 @@ RFramePainter.prototype.drawXYZ = function(toplevel, opts) {
 
       let material = new THREE.LineDashedMaterial({ color: 0x0, dashSize: 2, gapSize: 2 });
 
-      let lines1 = jsrp.createLineSegments(zgridy, material);
+      let lines1 = createLineSegments(zgridy, material);
       lines1.position.set(grmaxx,0, 0);
       lines1.grid = 3; // mark as grid
       lines1.visible = false;
@@ -909,7 +909,7 @@ RFramePainter.prototype.drawXYZ = function(toplevel, opts) {
       top.add(lines2);
    }
 
-   let zcont = [], zticksline = jsrp.createLineSegments( ticks, lineMaterial );
+   let zcont = [], zticksline = createLineSegments(ticks, lineMaterial);
    for (let n=0;n<4;++n) {
       zcont.push(new THREE.Object3D());
 
@@ -962,7 +962,7 @@ RFramePainter.prototype.drawXYZ = function(toplevel, opts) {
    zcont[3].position.set(grminx,grminy,0);
    zcont[3].rotation.z = -3/4*Math.PI;
 
-   let linex_geom = jsrp.createLineSegments([grminx,0,0, grmaxx,0,0], lineMaterial, null, true);
+   let linex_geom = createLineSegments([grminx,0,0, grmaxx,0,0], lineMaterial, null, true);
    for(let n=0;n<2;++n) {
       let line = new THREE.LineSegments(linex_geom, lineMaterial);
       line.position.set(0, grminy, (n===0) ? grminz : grmaxz);
@@ -975,7 +975,7 @@ RFramePainter.prototype.drawXYZ = function(toplevel, opts) {
       top.add(line);
    }
 
-   let liney_geom = jsrp.createLineSegments([0,grminy,0, 0,grmaxy,0], lineMaterial, null, true);
+   let liney_geom = createLineSegments([0,grminy,0, 0,grmaxy,0], lineMaterial, null, true);
    for(let n=0;n<2;++n) {
       let line = new THREE.LineSegments(liney_geom, lineMaterial);
       line.position.set(grminx, 0, (n===0) ? grminz : grmaxz);
@@ -988,7 +988,7 @@ RFramePainter.prototype.drawXYZ = function(toplevel, opts) {
       top.add(line);
    }
 
-   let linez_geom = jsrp.createLineSegments([0,0,grminz, 0,0,grmaxz], lineMaterial, null, true);
+   let linez_geom = createLineSegments([0,0,grminz, 0,0,grmaxz], lineMaterial, null, true);
    for(let n=0;n<4;++n) {
       let line = new THREE.LineSegments(linez_geom, lineMaterial);
       line.zboxid = zcont[n].zid;
@@ -1344,7 +1344,7 @@ RHistPainter.prototype.drawLego = function() {
    let lcolor = this.v7EvalColor("line_color", "lightblue");
    let material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor), linewidth: this.v7EvalAttr("line_width", 1) });
 
-   let line = jsrp.createLineSegments(lpositions, material, uselineindx ? lindicies : null );
+   let line = createLineSegments(lpositions, material, uselineindx ? lindicies : null );
 
    /*
    line.painter = this;
@@ -1496,7 +1496,7 @@ RH2Painter.prototype.drawContour3D = function(realz) {
       }
    )
 
-   let lines = jsrp.createLineSegments(pnts, jsrp.create3DLineMaterial(this, "line_"));
+   let lines = createLineSegments(pnts, create3DLineMaterial(this, "line_"));
    main.toplevel.add(lines);
 }
 
@@ -1829,7 +1829,7 @@ RH2Painter.prototype.drawSurf = function() {
 
       let lcolor = this.getColor(7),
           material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor), linewidth: this.v7EvalAttr("line_width", 1) }),
-          line = jsrp.createLineSegments(lpos, material);
+          line = createLineSegments(lpos, material);
       line.painter = this;
       main.toplevel.add(line);
    }
@@ -1845,7 +1845,7 @@ RH2Painter.prototype.drawSurf = function() {
       else
          material = new THREE.LineBasicMaterial({ color: new THREE.Color(this.v7EvalColor("line_color", "lightblue")) });
 
-      let line = jsrp.createLineSegments(grid, material);
+      let line = createLineSegments(grid, material);
       line.painter = this;
       main.toplevel.add(line);
    }
@@ -1989,7 +1989,7 @@ RH2Painter.prototype.drawError = function() {
     // create lines
     let lcolor = new THREE.Color(this.v7EvalColor("line_color", "lightblue")),
         material = new THREE.LineBasicMaterial({ color: lcolor, linewidth: this.v7EvalAttr("line_width", 1) }),
-        line = jsrp.createLineSegments(lpos, material);
+        line = createLineSegments(lpos, material);
 
     line.painter = this;
     line.intersect_index = binindx;
@@ -2800,14 +2800,14 @@ class RH3Painter extends RHistPainter {
 
          if (helper_kind[nseq] > 0) {
             let lcolor = this.v7EvalColor("line_color", "lightblue"),
-                helper_material = new THREE.LineBasicMaterial( { color: lcolor } ),
+                helper_material = new THREE.LineBasicMaterial({ color: lcolor }),
                 lines = null;
 
             if (helper_kind[nseq] === 1) {
                // reuse positions from the mesh - only special index was created
-               lines = jsrp.createLineSegments( bin_verts[nseq], helper_material, helper_indexes[nseq] );
+               lines = createLineSegments(bin_verts[nseq], helper_material, helper_indexes[nseq]);
             } else {
-               lines = jsrp.createLineSegments( helper_positions[nseq], helper_material );
+               lines = createLineSegments(helper_positions[nseq], helper_material);
             }
 
             main.toplevel.add(lines);

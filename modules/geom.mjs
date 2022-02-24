@@ -4,7 +4,7 @@ import * as d3 from './d3.mjs';
 
 import * as THREE from './three.mjs';
 
-import { assign3DHandler, createRender3D, InteractiveControl } from './base3d.mjs';
+import { assign3DHandler, createRender3D, createLineSegments, InteractiveControl } from './base3d.mjs';
 
 import { geo } from './geobase.mjs';
 
@@ -2909,7 +2909,7 @@ class TGeoPainter extends ObjectPainter {
       }
 
       let lineMaterial = new THREE.LineBasicMaterial({ color: track_color, linewidth: track_width }),
-          line = jsrp.createLineSegments(buf, lineMaterial);
+          line = createLineSegments(buf, lineMaterial);
 
       line.renderOrder = 1000000; // to bring line to the front
       line.geo_name = itemname;
@@ -2952,7 +2952,7 @@ class TGeoPainter extends ObjectPainter {
       }
 
       let lineMaterial = new THREE.LineBasicMaterial({ color: track_color, linewidth: track_width }),
-          line3d = jsrp.createLineSegments(buf, lineMaterial);
+          line3d = createLineSegments(buf, lineMaterial);
 
       line3d.renderOrder = 1000000; // to bring line to the front
       line3d.geo_name = itemname;
@@ -2990,7 +2990,7 @@ class TGeoPainter extends ObjectPainter {
       }
 
       let lineMaterial = new THREE.LineBasicMaterial({ color: track_color, linewidth: track_width }),
-          line = jsrp.createLineSegments(buf, lineMaterial);
+          line = createLineSegments(buf, lineMaterial);
 
       line.renderOrder = 1000000; // to bring line to the front
       line.geo_name = itemname;
@@ -3683,7 +3683,7 @@ class TGeoPainter extends ObjectPainter {
                if ((k % 3) !== naxis) buf[k] = center[k%3];
 
          let lineMaterial = new THREE.LineBasicMaterial({ color: axiscol }),
-             mesh = jsrp.createLineSegments(buf, lineMaterial);
+             mesh = createLineSegments(buf, lineMaterial);
 
          container.add(mesh);
 
