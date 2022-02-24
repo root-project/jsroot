@@ -2,7 +2,7 @@
 
 import * as d3 from './d3.mjs';
 
-import { ObjectPainter, DrawOptions } from './painter.mjs';
+import { ObjectPainter, DrawOptions, createMenu, closeMenu } from './painter.mjs';
 
 const jsrp = JSROOT.Painter; // FIXME - workaround
 
@@ -1308,7 +1308,7 @@ class RAxisPainter extends RObjectPainter {
             this.draw_g.on("contextmenu", evnt => {
                evnt.stopPropagation(); // disable main context menu
                evnt.preventDefault();  // disable browser context menu
-               jsrp.createMenu(evnt, this).then(menu => {
+               createMenu(evnt, this).then(menu => {
                  menu.add("header:RAxisDrawable");
                  menu.add("Unzoom", () => this.zoomStandalone());
                  this.fillAxisContextMenu(menu, "");
@@ -3299,7 +3299,7 @@ class RPadPainter extends RObjectPainter {
          if (fp) fp.setLastEventPos();
       }
 
-      jsrp.createMenu(evnt, this).then(menu => {
+      createMenu(evnt, this).then(menu => {
          this.fillContextMenu(menu);
          return this.fillObjectExecMenu(menu);
       }).then(menu => menu.show());
@@ -3810,7 +3810,7 @@ class RPadPainter extends RObjectPainter {
 
        if (!selp || (typeof selp.fillContextMenu !== 'function')) return;
 
-       jsrp.createMenu(evnt, selp).then(menu => {
+       createMenu(evnt, selp).then(menu => {
           if (selp.fillContextMenu(menu, selkind))
              setTimeout(() => menu.show(), 50);
        });
@@ -3993,9 +3993,9 @@ class RPadPainter extends RObjectPainter {
             evnt.stopPropagation();
          }
 
-         if (jsrp.closeMenu && jsrp.closeMenu()) return;
+         if (closeMenu()) return;
 
-         jsrp.createMenu(evnt, this).then(menu => {
+         createMenu(evnt, this).then(menu => {
             menu.add("header:Menus");
 
             if (this.iscan)
@@ -5358,7 +5358,7 @@ class RPalettePainter extends RObjectPainter {
             this.draw_g.on("contextmenu", evnt => {
                evnt.stopPropagation(); // disable main context menu
                evnt.preventDefault();  // disable browser context menu
-               jsrp.createMenu(evnt, this).then(menu => {
+               createMenu(evnt, this).then(menu => {
                   menu.add("header:Palette");
                   menu.addchk(vertical, "Vertical", flag => { this.v7SetAttr("vertical", flag); this.redrawPad(); });
                   framep.z_handle.fillAxisContextMenu(menu, "z");

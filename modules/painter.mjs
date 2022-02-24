@@ -206,7 +206,9 @@ function toHex(num,scale) {
    return s.length == 1 ? '0'+s : s;
 }
 
-jsrp.createMenu = function(evnt, handler, menuname) {
+let _localCloseMenu = null;
+
+function createMenu(evnt, handler, menuname) {
    document.body.style.cursor = 'wait';
    let show_evnt;
    // copy event values, otherwise they will gone after scripts loading
@@ -214,15 +216,14 @@ jsrp.createMenu = function(evnt, handler, menuname) {
       if ((evnt.clientX !== undefined) && (evnt.clientY !== undefined))
          show_evnt = { clientX: evnt.clientX, clientY: evnt.clientY };
    return import('./menu.mjs').then(handle => {
+      _localCloseMenu = handle.closeMenu; // keep ref
       document.body.style.cursor = 'auto';
       return handle.createMenu(show_evnt, handler, menuname);
    });
 }
 
-jsrp.closeMenu = function(menuname) {
-   return import('./menu.mjs').then(handle => {
-      return handle.closeMenu(menuname);
-   });
+function closeMenu(menuname) {
+   return _localCloseMenu ? _localCloseMenu(menuname) : false;
 }
 
 /** @summary Read style and settings from URL
@@ -3948,6 +3949,21 @@ jsrp.setDefaultDrawOpt = function(classname, opt) {
       handle.dflt = opt;
 }
 
+/** @summary Returns canvas painter (if any) for specified HTML element
+  * @param {string|object} dom - id or DOM element
+  * @private */
+function getElementCanvPainter(dom) {
+   return new ObjectPainter(dom).getCanvPainter();
+}
+
+/** @summary Returns main painter (if any) for specified HTML element - typically histogram painter
+  * @param {string|object} dom - id or DOM element
+  * @private */
+function getElementMainPainter(dom) {
+   return new ObjectPainter(dom).getMainPainter(true);
+}
+
+
 /** @summary Draw object in specified HTML element with given draw options.
   * @param {string|object} dom - id of div element to draw or directly DOMElement
   * @param {object} obj - object to draw, object type should be registered before in JSROOT
@@ -3989,7 +4005,7 @@ async function draw(dom, obj, opt) {
    if (!handle.func && !handle.direct && !handle.class) {
       if (opt && (opt.indexOf("same") >= 0)) {
 
-         let main_painter = jsrp.getElementMainPainter(dom);
+         let main_painter = getElementMainPainter(dom);
 
          if (main_painter && (typeof main_painter.performDrop === 'function'))
             return main_painter.performDrop(obj, "", null, opt);
@@ -4076,7 +4092,7 @@ function redraw(dom, obj, opt) {
    if (!obj || (typeof obj !== 'object'))
       return Promise.reject(Error('not an object in JSROOT.redraw'));
 
-   let can_painter = jsrp.getElementCanvPainter(dom), handle, res_painter = null, redraw_res;
+   let can_painter = getElementCanvPainter(dom), handle, res_painter = null, redraw_res;
    if (obj._typename)
       handle = getDrawHandle("ROOT." + obj._typename);
    if (handle && handle.draw_field && obj[handle.draw_field])
@@ -4124,7 +4140,7 @@ function redraw(dom, obj, opt) {
   * @param {string|object} dom - id of top div element or directly DOMElement
   * @returns {string} produced JSON string */
 JSROOT.drawingJSON = function(dom) {
-   let canp = jsrp.getElementCanvPainter(dom);
+   let canp = getElementCanvPainter(dom);
    return canp ? canp.produceJSON() : "";
 }
 
@@ -4257,20 +4273,6 @@ JSROOT.resize = function(dom, arg) {
    return done;
 }
 
-/** @summary Returns canvas painter (if any) for specified HTML element
-  * @param {string|object} dom - id or DOM element
-  * @private */
-jsrp.getElementCanvPainter = function(dom) {
-   return new ObjectPainter(dom).getCanvPainter();
-}
-
-/** @summary Returns main painter (if any) for specified HTML element - typically histogram painter
-  * @param {string|object} dom - id or DOM element
-  * @private */
-jsrp.getElementMainPainter = function(dom) {
-   return new ObjectPainter(dom).getMainPainter(true);
-}
-
 /** @summary Safely remove all JSROOT drawings from specified element
   * @param {string|object} dom - id or DOM element
   * @requires painter
@@ -4363,4 +4365,5 @@ JSROOT.makeSVG = makeSVG;
 JSROOT.Painter = jsrp;
 
 export { ColorPalette, BasePainter, ObjectPainter, DrawOptions, TAttLineHandler, TAttFillHandler, TAttMarkerHandler, FontHandler,
-         getElementRect, draw, redraw, makeSVG, jsrp, loadJSDOM, floatToString,  buildSvgPath, toHex, getDrawSettings };
+         getElementRect, draw, redraw, makeSVG, jsrp, loadJSDOM, floatToString,  buildSvgPath, toHex, getDrawSettings,
+         getElementCanvPainter, getElementMainPainter, createMenu, closeMenu };

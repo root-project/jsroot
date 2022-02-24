@@ -1,7 +1,8 @@
 
 import * as d3 from './d3.mjs';
 
-import { ObjectPainter, TAttLineHandler, TAttFillHandler, TAttMarkerHandler, DrawOptions, floatToString, buildSvgPath, toHex } from './painter.mjs';
+import { ObjectPainter, TAttLineHandler, TAttFillHandler, TAttMarkerHandler, DrawOptions,
+         floatToString, buildSvgPath, toHex, getElementMainPainter } from './painter.mjs';
 
 // import { mth } from './math.mjs';
 
@@ -2593,7 +2594,7 @@ class TGraphPolargramPainter extends ObjectPainter {
    /** @summary Draw TGraphPolargram */
    static async draw(dom, polargram /*, opt*/) {
 
-      let main = jsrp.getElementMainPainter(dom);
+      let main = getElementMainPainter(dom);
       if (main) {
          if (main.getObject() === polargram)
             return main;

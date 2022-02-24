@@ -1,7 +1,7 @@
 
 import * as d3 from './d3.mjs';
 
-import { ObjectPainter, DrawOptions } from './painter.mjs';
+import { ObjectPainter, DrawOptions, createMenu, closeMenu } from './painter.mjs';
 
 const jsrp = JSROOT.Painter; // FIXME - workaround
 
@@ -3232,7 +3232,7 @@ class TPadPainter extends ObjectPainter {
          if (fp) fp.setLastEventPos();
       }
 
-      jsrp.createMenu(evnt, this).then(menu => {
+      createMenu(evnt, this).then(menu => {
          this.fillContextMenu(menu);
          return this.fillObjectExecMenu(menu, "");
       }).then(menu => menu.show());
@@ -3883,7 +3883,7 @@ class TPadPainter extends ObjectPainter {
 
        if (!selp || (typeof selp.fillContextMenu !== 'function')) return;
 
-       jsrp.createMenu(evnt, selp).then(menu => {
+       createMenu(evnt, selp).then(menu => {
           if (selp.fillContextMenu(menu, selkind))
              setTimeout(() => menu.show(), 50);
        });
@@ -4073,9 +4073,9 @@ class TPadPainter extends ObjectPainter {
             evnt.stopPropagation();
          }
 
-         if (jsrp.closeMenu && jsrp.closeMenu()) return;
+         if (closeMenu()) return;
 
-         jsrp.createMenu(evnt, this).then(menu => {
+         createMenu(evnt, this).then(menu => {
             menu.add("header:Menus");
 
             if (this.iscan)

@@ -2,7 +2,7 @@
 
 import * as d3 from './d3.mjs';
 
-import { floatToString, DrawOptions, TAttLineHandler, buildSvgPath, getDrawSettings } from './painter.mjs';
+import { floatToString, DrawOptions, TAttLineHandler, buildSvgPath, getDrawSettings, createMenu } from './painter.mjs';
 
 import { RObjectPainter, RPavePainter, ensureRCanvas } from './v7gpad.mjs';
 
@@ -3851,7 +3851,7 @@ class RHistStatsPainter extends RPavePainter {
       evnt.preventDefault();
       evnt.stopPropagation(); // disable main context menu
 
-      jsrp.createMenu(evnt, this).then(menu => {
+      createMenu(evnt, this).then(menu => {
          let obj = this.getObject(),
              action = this.changeMask.bind(this);
 

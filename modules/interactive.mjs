@@ -1,5 +1,7 @@
 import * as d3 from './d3.mjs';
 
+import { createMenu, closeMenu } from './painter.mjs';
+
 const jsrp = JSROOT.Painter; // FIXME - workaround
 
 let TooltipHandler = {
@@ -440,7 +442,7 @@ function addDragHandler(_painter, arg) {
       .on("start", function(evnt) {
          if (detectRightButton(evnt.sourceEvent)) return;
 
-         if (jsrp.closeMenu) jsrp.closeMenu(); // close menu
+         closeMenu(); // close menu
 
          setPainterTooltipEnabled(painter, false); // disable tooltip
 
@@ -1400,7 +1402,7 @@ let FrameInteractive = {
 
       this.clearInteractiveElements();
 
-      jsrp.createMenu(evnt, menu_painter).then(menu => {
+      createMenu(evnt, menu_painter).then(menu => {
          let domenu = menu.painter.fillContextMenu(menu, kind, obj);
 
          // fill frame menu by default - or append frame elements when activated in the frame corner
@@ -1464,7 +1466,7 @@ let FrameInteractive = {
 
    /** @summary Clear frame interactive elements */
    clearInteractiveElements() {
-      if (jsrp.closeMenu) jsrp.closeMenu();
+      closeMenu();
       this.zoom_kind = 0;
       if (this.zoom_rect) { this.zoom_rect.remove(); delete this.zoom_rect; }
       delete this.zoom_curr;

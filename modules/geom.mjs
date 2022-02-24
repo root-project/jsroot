@@ -8,7 +8,7 @@ import { assign3DHandler, createRender3D, InteractiveControl } from './base3d.mj
 
 import { geo } from './geobase.mjs';
 
-import { ObjectPainter, DrawOptions } from './painter.mjs';
+import { ObjectPainter, DrawOptions, createMenu, closeMenu } from './painter.mjs';
 
 import { ensureTCanvas } from './gpad.mjs';
 
@@ -259,9 +259,9 @@ class TGeoPainter extends ObjectPainter {
             evnt.preventDefault();
             evnt.stopPropagation();
 
-            if (jsrp.closeMenu && jsrp.closeMenu()) return;
+            if (closeMenu()) return;
 
-            jsrp.createMenu(evnt, this).then(menu => {
+            createMenu(evnt, this).then(menu => {
                 menu.painter.fillContextMenu(menu);
                 menu.show();
             });
@@ -1120,7 +1120,7 @@ class TGeoPainter extends ObjectPainter {
      * @private */
    orbitContext(evnt, intersects) {
 
-      jsrp.createMenu(evnt, this).then(menu => {
+      createMenu(evnt, this).then(menu => {
          let numitems = 0, numnodes = 0, cnt = 0;
          if (intersects)
             for (let n = 0; n < intersects.length; ++n) {

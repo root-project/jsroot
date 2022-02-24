@@ -1,6 +1,8 @@
 import * as d3 from './d3.mjs';
 
-import { BasePainter, ObjectPainter, loadJSDOM, getDrawSettings } from './painter.mjs';
+import { BasePainter, ObjectPainter, loadJSDOM, getDrawSettings, getElementMainPainter, getElementCanvPainter, createMenu } from './painter.mjs';
+
+import { produceLegend } from './hist.mjs';
 
 const jsrp = JSROOT.Painter; // FIXME - workaround
 
@@ -1424,7 +1426,7 @@ class HierarchyPainter extends BasePainter {
             cmdargs.push((n+2 < arguments.length) ? arguments[n+2] : "");
 
       let promise = (cmdargs.length == 0) || !elem ? Promise.resolve(cmdargs) :
-                     jsrp.createMenu().then(menu => menu.showCommandArgsDialog(hitem._name, cmdargs));
+                     createMenu().then(menu => menu.showCommandArgsDialog(hitem._name, cmdargs));
 
       return promise.then(args => {
          if (args === null) return false;
@@ -2058,7 +2060,7 @@ class HierarchyPainter extends BasePainter {
       if (!hitem) return;
 
       if (typeof this.fill_context == 'function')
-         jsrp.createMenu(evnt, this).then(menu => {
+         createMenu(evnt, this).then(menu => {
             this.fill_context(menu, hitem);
             if (menu.size() > 0) {
                menu.tree_node = elem.parentNode;
@@ -2085,7 +2087,7 @@ class HierarchyPainter extends BasePainter {
          return el.firstChild.href;
       }
 
-      jsrp.createMenu(evnt, this).then(menu => {
+      createMenu(evnt, this).then(menu => {
 
          if ((!itemname || !hitem._parent) && !('_jsonfile' in hitem)) {
             let files = [], addr = "", cnt = 0,
@@ -2412,14 +2414,14 @@ class HierarchyPainter extends BasePainter {
 
       if (itemname == "$legend")
          return JSROOT.require("hist")
-                      .then(() => jsrp.produceLegend(divid, opt))
+                      .then(() => produceLegend(divid, opt))
                       .then(legend_painter => drop_complete(legend_painter));
 
       return this.getObject(itemname).then(res => {
 
          if (!res.obj) return null;
 
-         let main_painter = jsrp.getElementMainPainter(divid);
+         let main_painter = getElementMainPainter(divid);
 
          if (main_painter && (typeof main_painter.performDrop === 'function'))
             return main_painter.performDrop(res.obj, itemname, res.item, opt).then(p => drop_complete(p, main_painter === p));
@@ -4674,7 +4676,7 @@ class FlexibleDisplay extends MDIDisplay {
       main.parentNode.append(main);
 
       if (this.getFrameState(frame) != "min") {
-         jsrp.selectActivePad({ pp: jsrp.getElementCanvPainter(frame), active: true });
+         jsrp.selectActivePad({ pp: getElementCanvPainter(frame), active: true });
          JSROOT.resize(frame);
       }
    }
@@ -4988,7 +4990,7 @@ class FlexibleDisplay extends MDIDisplay {
       let active = this.getActiveFrame();
       arr.sort((f1,f2) => { return  d3.select(f1).property('frame_cnt') < d3.select(f2).property('frame_cnt') ? -1 : 1; });
 
-      jsrp.createMenu(evnt, this).then(menu => {
+      createMenu(evnt, this).then(menu => {
          menu.add("header:Flex");
          menu.add("Cascade", () => this.sortFrames("cascade"));
          menu.add("Tile", () => this.sortFrames("tile"));

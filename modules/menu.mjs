@@ -35,8 +35,7 @@ function getColorExec(col, method) {
 /**
  * @summary Abstract class for creating context menu
  *
- * @memberof JSROOT.Painter
- * @desc Use {@link JSROOT.Painter.createMenu} to create instance of the menu
+ * @desc Use {@link createMenu} to create instance of the menu
  * @private
  */
 
@@ -613,8 +612,7 @@ class JSRootMenu {
 /**
  * @summary Context menu class using plain HTML/JavaScript
  *
- * @memberof JSROOT.Painter
- * @desc Use {@link JSROOT.Painter.createMenu} to create instance of the menu
+ * @desc Use {@link createMenu} to create instance of the menu
  * based on {@link https://github.com/L1quidH2O/ContextMenu.js}
  * @private
  */
@@ -917,7 +915,7 @@ class StandaloneMenu extends JSRootMenu {
  * @summary Context menu class using Bootstrap
  *
  * @memberof JSROOT.Painter
- * @desc Use {@link JSROOT.Painter.createMenu} to create instance of the menu
+ * @desc Use {@link createMenu} to create instance of the menu
  * @private
  */
 
@@ -1141,14 +1139,13 @@ class BootstrapMenu extends JSRootMenu {
 
 
 /** @summary Create JSROOT menu
-  * @desc See {@link JSROOT.Painter.jQueryMenu} class for detailed list of methods
-  * @memberof JSROOT.Painter
+  * @desc See {@link JSRootMenu} class for detailed list of methods
   * @param {object} [evnt] - event object like mouse context menu event
   * @param {object} [handler] - object with handling function, in this case one not need to bind function
   * @param {string} [menuname] - optional menu name
   * @example
-  * JSROOT.require("painter")
-  *       .then(jsrp => jsrp.createMenu())
+  * JSROOT.require("menu")
+  *       .then(handle => handle.createMenu())
   *       .then(menu => {
   *          menu.add("First", () => console.log("Click first"));
   *          let flag = true;
@@ -1156,7 +1153,7 @@ class BootstrapMenu extends JSRootMenu {
   *          menu.show();
   *        }); */
 function createMenu(evnt, handler, menuname) {
-   let menu = JSROOT.settings.Bootstrap ?  new BootstrapMenu(handler, menuname || 'root_ctx_menu', evnt)
+   let menu = JSROOT.settings.Bootstrap ? new BootstrapMenu(handler, menuname || 'root_ctx_menu', evnt)
                                         : new StandaloneMenu(handler, menuname || 'root_ctx_menu', evnt);
    return menu.load();
 }

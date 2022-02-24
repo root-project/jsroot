@@ -1,7 +1,8 @@
 
 import * as d3 from './d3.mjs';
 
-import { ColorPalette, ObjectPainter, TAttLineHandler, TAttMarkerHandler, DrawOptions, floatToString, buildSvgPath, toHex, getDrawSettings } from './painter.mjs';
+import { ColorPalette, ObjectPainter, TAttLineHandler, TAttMarkerHandler, DrawOptions,
+         floatToString, buildSvgPath, toHex, getDrawSettings, getElementMainPainter, createMenu } from './painter.mjs';
 
 import { ensureTCanvas } from './gpad.mjs';
 
@@ -44,7 +45,7 @@ const createGrayPalette = () => {
 /** @summary Create color palette
   * @memberof JSROOT.Painter
   * @private */
-const getColorPalette = id => {
+function getColorPalette(id) {
    id = id || JSROOT.settings.Palette;
    if ((id > 0) && (id < 10)) return createGrayPalette();
    if (id < 51) return createDefaultPalette();
@@ -1146,7 +1147,7 @@ class TPavePainter extends ObjectPainter {
       evnt.stopPropagation(); // disable main context menu
       evnt.preventDefault();  // disable browser context menu
 
-      jsrp.createMenu(evnt, this).then(menu => {
+      createMenu(evnt, this).then(menu => {
          this.fillContextMenu(menu);
          return this.fillObjectExecMenu(menu, "title");
        }).then(menu => menu.show());
@@ -1398,7 +1399,7 @@ class TPavePainter extends ObjectPainter {
   * @memberof JSROOT.Painter
   * @private */
 function produceLegend(dom, opt) {
-   let main_painter = jsrp.getElementMainPainter(dom),
+   let main_painter = getElementMainPainter(dom),
        pp = main_painter ? main_painter.getPadPainter() : null,
        pad = pp ? pp.getRootPad(true) : null;
    if (!pad) return Promise.resolve(null);
@@ -7502,7 +7503,7 @@ jsrp.drawTF2 = function(dom, func, opt) {
    if (opt == "SAMECOLORZ" || opt == "SAMECOLOR" || opt == "SAMECOLZ") opt = "SAMECOL";
 
    if (opt.indexOf("SAME") == 0)
-      if (!jsrp.getElementMainPainter(dom))
+      if (!getElementMainPainter(dom))
          opt = "A_ADJUST_FRAME_" + opt.substr(4);
 
    return TH2Painter.draw(dom, hist, opt).then(hpainter => {
@@ -7908,13 +7909,10 @@ class THStackPainter extends ObjectPainter {
 
 } // class THStackPainter
 
-jsrp.getColorPalette = getColorPalette;
-jsrp.produceLegend = produceLegend;
-
 JSROOT.TPavePainter = TPavePainter;
 JSROOT.THistPainter = THistPainter;
 JSROOT.TH1Painter = TH1Painter;
 JSROOT.TH2Painter = TH2Painter;
 JSROOT.THStackPainter = THStackPainter;
 
-export { TPavePainter, THistPainter, TH1Painter, TH2Painter, THStackPainter };
+export { TPavePainter, THistPainter, TH1Painter, TH2Painter, THStackPainter, produceLegend };
