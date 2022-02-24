@@ -1,9 +1,3 @@
-(function (global, factory) {
-typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, 'node') :
-typeof define === 'function' && define.amd ? define(['exports'], factory) : factory({}, 'plain');
-
-})(this, (function (exports, export_kind) { 'use strict';
-
 
 /** @summary JSROOT version id
   * @desc For the JSROOT release the string in format "major.minor.patch" like "6.3.0"
@@ -1822,51 +1816,46 @@ _init();
 
 // exports, available via JSROOT global
 
-exports.version_id = version_id;
-exports.version_date = version_date;
-exports.version = version;
-exports.source_dir = source_dir;
-exports.nodejs = nodejs;
-exports.browser = browser;
-exports._ = _;
-exports.constants = constants;
-exports.settings = settings;
-exports.gStyle = gStyle;
-exports.define = jsroot_require; //
-exports.require = jsroot_require;
-exports.BIT = BIT;
-exports.extend = extend;
-exports.addMethods = addMethods;
-exports.parse = parse
-exports.clone = clone;
-exports.parseMulti = parseMulti;
-exports.toJSON = toJSON;
-exports.decodeUrl = decodeUrl;
-exports.findFunction = findFunction;
-exports.NewHttpRequest = NewHttpRequest;
-exports.httpRequest = httpRequest;
-exports.loadScript = loadScript;
-exports.openFile = openFile;
-exports.makeSVG = makeSVG;
-exports.cleanup = cleanup;
-exports.redraw = redraw;
-exports.draw = draw;
-exports.buildGUI = buildGUI;
-exports.create = create;
-exports.createHistogram = createHistogram;
-exports.createTPolyLine = createTPolyLine;
-exports.createTGraph = createTGraph;
-exports.createTHStack = createTHStack;
-exports.createTMultiGraph = createTMultiGraph;
-exports.getMethods = getMethods;
-exports.registerMethods = registerMethods;
-exports.isRootCollection = isRootCollection;
-exports.connectWebWindow = connectWebWindow;
+export {
 
-// try to define global JSROOT
-if (typeof globalThis !== "undefined")
-   globalThis.JSROOT = exports;
+version_id,
+version_date,
+version,
+source_dir,
+nodejs,
+browser,
+_,
+constants,
+settings,
+gStyle,
+jsroot_require as define,
+jsroot_require as require,
+BIT,
+extend,
+addMethods,
+parse,
+clone,
+parseMulti,
+toJSON,
+decodeUrl,
+findFunction,
+NewHttpRequest,
+httpRequest,
+loadScript,
+openFile,
+makeSVG,
+cleanup,
+redraw,
+draw,
+buildGUI,
+create,
+createHistogram,
+createTPolyLine,
+createTGraph,
+createTHStack,
+createTMultiGraph,
+getMethods,
+registerMethods,
+isRootCollection,
+connectWebWindow };
 
-//openuicfg // DO NOT DELETE, used to configure openui5 usage like JSROOT.openui5src = "nojsroot";
-
-}));
