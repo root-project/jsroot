@@ -14,7 +14,7 @@ JSROOT.HelveticerRegularFont = new THREE.Font ( THREE.HelveticerRegularJson );
  * @param {value} [render3d] - preconfigured value, will be used if applicable
  * @returns {value} - rendering kind, see JSROOT.constants.Render3D
  * @private */
-jsrp.getRender3DKind = function(render3d) {
+function getRender3DKind(render3d) {
    if (!render3d) render3d = JSROOT.batch_mode ? JSROOT.settings.Render3DBatch : JSROOT.settings.Render3D;
    let rc = JSROOT.constants.Render3D;
 
@@ -47,7 +47,7 @@ let Handling3DDrawings = {
 
       if (can3d === undefined) {
          // analyze which render/embed mode can be used
-         can3d = jsrp.getRender3DKind();
+         can3d = getRender3DKind();
          // all non-webgl elements can be embedded into SVG as is
          if (can3d !== JSROOT.constants.Render3D.WebGL)
             can3d = JSROOT.constants.Embed3D.EmbedSVG;
@@ -213,7 +213,7 @@ let Handling3DDrawings = {
             if (elem.empty())
                elem = svg.insert("g", ".primitives_layer").attr("class", size.clname);
 
-            elem.attr("transform", "translate(" + size.x + "," + size.y + ")");
+            elem.attr("transform", `translate(${size.x},${size.y})`);
 
          } else {
 
@@ -221,11 +221,11 @@ let Handling3DDrawings = {
                elem = svg.insert("foreignObject", ".primitives_layer").attr("class", size.clname);
 
             elem.attr('x', size.x)
-               .attr('y', size.y)
-               .attr('width', size.width)
-               .attr('height', size.height)
-               .attr('viewBox', `0 0 ${size.width} ${size.height}`)
-               .attr('preserveAspectRatio', 'xMidYMid');
+                .attr('y', size.y)
+                .attr('width', size.width)
+                .attr('height', size.height)
+                .attr('viewBox', `0 0 ${size.width} ${size.height}`)
+                .attr('preserveAspectRatio', 'xMidYMid');
          }
 
       } else {
@@ -288,7 +288,7 @@ async function createRender3D(width, height, render3d, args) {
 
    let rc = JSROOT.constants.Render3D;
 
-   render3d = jsrp.getRender3DKind(render3d);
+   render3d = getRender3DKind(render3d);
 
    if (!args) args = { antialias: true, alpha: true };
 
@@ -367,11 +367,9 @@ async function createRender3D(width, height, render3d, args) {
 }
 
 
-
-
 /** @summary Cleanup created renderer object
   * @private */
-jsrp.cleanupRender3D = function(renderer) {
+function cleanupRender3D(renderer) {
    if (!renderer) return;
 
    if (JSROOT.nodejs) {
@@ -592,7 +590,7 @@ class TooltipFor3D {
 
 /** @summary Create THREE.OrbitControl for painter
   * @private */
-jsrp.createOrbitControl = function(painter, camera, scene, renderer, lookat) {
+function createOrbitControl(painter, camera, scene, renderer, lookat) {
 
    let control = null,
        enable_zoom = JSROOT.settings.Zooming && JSROOT.settings.ZoomMouse,
@@ -1102,12 +1100,12 @@ jsrp.createOrbitControl = function(painter, camera, scene, renderer, lookat) {
 /** @summary Method cleanup three.js object as much as possible.
   * @desc Simplify JS engine to remove it from memory
   * @private */
-jsrp.disposeThreejsObject = function(obj, only_childs) {
+function disposeThreejsObject(obj, only_childs) {
    if (!obj) return;
 
    if (obj.children) {
       for (let i = 0; i < obj.children.length; i++)
-         jsrp.disposeThreejsObject(obj.children[i]);
+         disposeThreejsObject(obj.children[i]);
    }
 
    if (only_childs) {
@@ -1185,19 +1183,19 @@ function createLineSegments(arr, material, index, only_geometry) {
 
 /** @summary Help structures for calculating Box mesh
   * @private */
-jsrp.Box3D = {
+const Box3D = {
     Vertices: [ new THREE.Vector3(1, 1, 1), new THREE.Vector3(1, 1, 0),
                 new THREE.Vector3(1, 0, 1), new THREE.Vector3(1, 0, 0),
                 new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 1, 1),
                 new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 1) ],
     Indexes: [ 0,2,1, 2,3,1, 4,6,5, 6,7,5, 4,5,1, 5,0,1, 7,6,2, 6,3,2, 5,7,0, 7,2,0, 1,3,4, 3,6,4 ],
     Normals: [ 1,0,0, -1,0,0, 0,1,0, 0,-1,0, 0,0,1, 0,0,-1 ],
-    Segments: [0, 2, 2, 7, 7, 5, 5, 0, 1, 3, 3, 6, 6, 4, 4, 1, 1, 0, 3, 2, 6, 7, 4, 5],  // segments addresses Vertices
+    Segments: [0, 2, 2, 7, 7, 5, 5, 0, 1, 3, 3, 6, 6, 4, 4, 1, 1, 0, 3, 2, 6, 7, 4, 5]  // segments addresses Vertices
 };
 
 // these segments address vertices from the mesh, we can use positions from box mesh
-jsrp.Box3D.MeshSegments = (function() {
-   let box3d = jsrp.Box3D,
+Box3D.MeshSegments = (function() {
+   let box3d = Box3D,
        arr = new Int32Array(box3d.Segments.length);
 
    for (let n=0;n<arr.length;++n) {
@@ -1285,7 +1283,7 @@ class PointsControl extends InteractiveControl {
       if (!color) {
          if (m.js_special) {
             m.remove(m.js_special);
-            jsrp.disposeThreejsObject(m.js_special);
+            disposeThreejsObject(m.js_special);
             delete m.js_special;
          }
          return;
@@ -1472,7 +1470,7 @@ jsrp.drawPolyMarker3D = async function() {
    }
 
    let size = Math.floor(numselect/step),
-       pnts = new jsrp.PointsCreator(size, fp.webgl, fp.size_x3d/100),
+       pnts = new PointsCreator(size, fp.webgl, fp.size_x3d/100),
        index = new Int32Array(size),
        select = 0, icnt = 0;
 
@@ -1563,11 +1561,8 @@ jsrp.drawPolyLine3D = function() {
    return true;
 }
 
-// ==============================================================================================
 
-jsrp.PointsCreator = PointsCreator;
-jsrp.PointsControl = PointsControl;
-
-export { assign3DHandler, createRender3D, createLineSegments, create3DLineMaterial,
-         beforeRender3D, afterRender3D,
+export { assign3DHandler, disposeThreejsObject, createOrbitControl,
+         createLineSegments, create3DLineMaterial, Box3D,
+         createRender3D, beforeRender3D, afterRender3D, getRender3DKind, cleanupRender3D,
          InteractiveControl, PointsControl, PointsCreator };

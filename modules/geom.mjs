@@ -6,8 +6,9 @@ import * as THREE from './three.mjs';
 
 import { showProgress } from './utils.mjs';
 
-import { assign3DHandler, createRender3D, createLineSegments, InteractiveControl,
-         beforeRender3D, afterRender3D } from './base3d.mjs';
+import { assign3DHandler, disposeThreejsObject, createOrbitControl,
+         createLineSegments, InteractiveControl, PointsCreator,
+         createRender3D, beforeRender3D, afterRender3D, getRender3DKind, cleanupRender3D } from './base3d.mjs';
 
 import { geo } from './geobase.mjs';
 
@@ -1444,7 +1445,7 @@ class TGeoPainter extends ObjectPainter {
 
       this.setTooltipAllowed(JSROOT.settings.Tooltip);
 
-      this._controls = jsrp.createOrbitControl(this, this._camera, this._scene, this._renderer, this._lookat);
+      this._controls = createOrbitControl(this, this._camera, this._scene, this._renderer, this._lookat);
 
       this._controls.mouse_tmout = this.ctrl.mouse_tmout; // set larger timeout for geometry processing
 
@@ -1913,7 +1914,7 @@ class TGeoPainter extends ObjectPainter {
          for (let n = 0; n < this._more_nodes.length; ++n) {
             let entry = this._more_nodes[n],
                 obj3d = this._clones.createObject3D(entry.stack, this._toplevel, 'delete_mesh');
-            jsrp.disposeThreejsObject(obj3d);
+            disposeThreejsObject(obj3d);
             geo.cleanupShape(entry.server_shape);
             delete entry.server_shape;
          }
@@ -1988,7 +1989,7 @@ class TGeoPainter extends ObjectPainter {
 
       if (!toplevel) return false;
 
-      jsrp.disposeThreejsObject(this._toplevel, true);
+      disposeThreejsObject(this._toplevel, true);
 
       // let axis = this.ctrl.project;
 
@@ -2037,7 +2038,7 @@ class TGeoPainter extends ObjectPainter {
 
       if (this._camera._lights != this.ctrl.light.kind) {
          // remove all childs and recreate only necessary lights
-         jsrp.disposeThreejsObject(this._camera, true);
+         disposeThreejsObject(this._camera, true);
 
          this._camera._lights = this.ctrl.light.kind;
 
@@ -2081,7 +2082,7 @@ class TGeoPainter extends ObjectPainter {
 
       if (this._camera) {
           this._scene.remove(this._camera);
-          jsrp.disposeThreejsObject(this._camera);
+          disposeThreejsObject(this._camera);
           delete this._camera;
        }
 
@@ -2861,7 +2862,7 @@ class TGeoPainter extends ObjectPainter {
 
       if (action==="delete") {
          if (extras) this._toplevel.remove(extras);
-         jsrp.disposeThreejsObject(extras);
+         disposeThreejsObject(extras);
          return null;
       }
 
@@ -2882,7 +2883,7 @@ class TGeoPainter extends ObjectPainter {
          container.add(obj);
       } else {
          console.warn('Fail to add object to extras');
-         jsrp.disposeThreejsObject(obj);
+         disposeThreejsObject(obj);
       }
    }
 
@@ -3024,7 +3025,7 @@ class TGeoPainter extends ObjectPainter {
           projx = (this.ctrl.project === "x"),
           projy = (this.ctrl.project === "y"),
           projz = (this.ctrl.project === "z"),
-          pnts = new jsrp.PointsCreator(size, this._webgl, hit_size);
+          pnts = new PointsCreator(size, this._webgl, hit_size);
 
       for (let i = 0; i < size; i++)
          pnts.addPoint(projx ? projv : hit.fP[i*3],
@@ -3278,7 +3279,7 @@ class TGeoPainter extends ObjectPainter {
 
                fp = this.getFramePainter();
 
-               render3d = jsrp.getRender3DKind();
+               render3d = getRender3DKind();
                assign3DHandler(fp);
                fp.mode3d = true;
 
@@ -4096,9 +4097,9 @@ class TGeoPainter extends ObjectPainter {
 
          this.helpText();
 
-         jsrp.disposeThreejsObject(this._scene);
+         disposeThreejsObject(this._scene);
 
-         jsrp.disposeThreejsObject(this._full_geom);
+         disposeThreejsObject(this._full_geom);
 
          if (this._tcontrols)
             this._tcontrols.dispose();
@@ -4160,7 +4161,7 @@ class TGeoPainter extends ObjectPainter {
          delete this._render_resolveFuncs;
       }
 
-      jsrp.cleanupRender3D(this._renderer);
+      cleanupRender3D(this._renderer);
 
       delete this._scene;
       this._scene_width = 0;
@@ -4316,7 +4317,7 @@ class TGeoPainter extends ObjectPainter {
       delete this._clipCfg;
 
       // only remove all childs from top level object
-      jsrp.disposeThreejsObject(this._toplevel, true);
+      disposeThreejsObject(this._toplevel, true);
 
       this._full_redrawing = true;
    }

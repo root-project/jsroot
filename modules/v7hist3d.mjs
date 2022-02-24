@@ -6,8 +6,9 @@ import * as THREE from './three.mjs';
 
 import { floatToString, getDrawSettings } from './painter.mjs';
 
-import { assign3DHandler, createRender3D, createLineSegments, create3DLineMaterial,
-         beforeRender3D, afterRender3D } from './base3d.mjs';
+import { assign3DHandler, disposeThreejsObject, createOrbitControl,
+         createLineSegments, create3DLineMaterial, PointsCreator, Box3D,
+         createRender3D, beforeRender3D, afterRender3D, getRender3DKind, cleanupRender3D } from './base3d.mjs';
 
 import { RFramePainter, ensureRCanvas } from './v7gpad.mjs';
 
@@ -104,10 +105,10 @@ RFramePainter.prototype.create3DScene = async function(render3d) {
 
       this.clear3dCanvas();
 
-      jsrp.disposeThreejsObject(this.scene);
+      disposeThreejsObject(this.scene);
       if (this.control) this.control.cleanup();
 
-      jsrp.cleanupRender3D(this.renderer);
+      cleanupRender3D(this.renderer);
 
       delete this.size_x3d;
       delete this.size_y3d;
@@ -134,7 +135,7 @@ RFramePainter.prototype.create3DScene = async function(render3d) {
    if ('toplevel' in this) {
       // it is indication that all 3D object created, just replace it with empty
       this.scene.remove(this.toplevel);
-      jsrp.disposeThreejsObject(this.toplevel);
+      disposeThreejsObject(this.toplevel);
       delete this.tooltip_mesh;
       delete this.toplevel;
       if (this.control) this.control.HideTooltip();
@@ -149,7 +150,7 @@ RFramePainter.prototype.create3DScene = async function(render3d) {
 
    assign3DHandler(this);
 
-   render3d = jsrp.getRender3DKind(render3d);
+   render3d = getRender3DKind(render3d);
    let sz = this.getSizeFor3d(undefined, render3d);
 
    this.size_z3d = 100;
@@ -188,7 +189,7 @@ RFramePainter.prototype.create3DScene = async function(render3d) {
 
    if (JSROOT.batch_mode || !this.webgl) return;
 
-   this.control = jsrp.createOrbitControl(this, this.camera, this.scene, this.renderer, this.lookat);
+   this.control = createOrbitControl(this, this.camera, this.scene, this.renderer, this.lookat);
 
    let axis_painter = this, obj_painter = this.getMainPainter();
 
@@ -383,9 +384,9 @@ RFramePainter.prototype.highlightBin3D = function(tip, selfmesh) {
    } else {
       changed = true;
 
-      let indicies = jsrp.Box3D.Indexes,
-          normals = jsrp.Box3D.Normals,
-          vertices = jsrp.Box3D.Vertices,
+      let indicies = Box3D.Indexes,
+          normals = Box3D.Normals,
+          vertices = Box3D.Vertices,
           pos, norm,
           color = new THREE.Color(tip.color ? tip.color : 0xFF0000),
           opacity = tip.opacity || 1;
@@ -639,7 +640,7 @@ RFramePainter.prototype.drawXYZ = function(toplevel, opts) {
          if (!pnt1 || !pnt2) {
             if (tgtmesh) {
                this.remove(tgtmesh);
-               jsrp.disposeThreejsObject(tgtmesh);
+               disposeThreejsObject(tgtmesh);
             }
             return tgtmesh;
          }
@@ -1005,10 +1006,10 @@ RHistPainter.prototype.drawLego = function() {
 
    // Perform RH1/RH2 lego plot with BufferGeometry
 
-   let vertices = jsrp.Box3D.Vertices,
-       indicies = jsrp.Box3D.Indexes,
-       vnormals = jsrp.Box3D.Normals,
-       segments = jsrp.Box3D.Segments,
+   let vertices = Box3D.Vertices,
+       indicies = Box3D.Indexes,
+       vnormals = Box3D.Normals,
+       segments = Box3D.Segments,
        // reduced line segments
        rsegments = [0, 1, 1, 2, 2, 3, 3, 0],
        // reduced vertices
@@ -2442,7 +2443,7 @@ class RH3Painter extends RHistPainter {
       // too many pixels - use box drawing
       if (numpixels > (main.webgl ? 100000 : 30000)) return false;
 
-      let pnts = new jsrp.PointsCreator(numpixels, main.webgl, main.size_x3d/200),
+      let pnts = new PointsCreator(numpixels, main.webgl, main.size_x3d/200),
           bins = new Int32Array(numpixels), nbin = 0,
           xaxis = this.getAxis("x"), yaxis = this.getAxis("y"), zaxis = this.getAxis("z"),
           rnd = new JSROOT.TRandom(sumz);
@@ -2557,9 +2558,9 @@ class RH3Painter extends RHistPainter {
 
       } else {
 
-         let indicies = jsrp.Box3D.Indexes,
-             normals = jsrp.Box3D.Normals,
-             vertices = jsrp.Box3D.Vertices;
+         let indicies = Box3D.Indexes,
+             normals = Box3D.Normals,
+             vertices = Box3D.Vertices;
 
          buffer_size = indicies.length*3;
          single_bin_verts = new Float32Array(buffer_size);
@@ -2667,10 +2668,10 @@ class RH3Painter extends RHistPainter {
          bin_tooltips[nseq] = new Int32Array(nbins);
 
          if (helper_kind[nseq]===1)
-            helper_indexes[nseq] = new Uint16Array(nbins * jsrp.Box3D.MeshSegments.length);
+            helper_indexes[nseq] = new Uint16Array(nbins * Box3D.MeshSegments.length);
 
          if (helper_kind[nseq]===2)
-            helper_positions[nseq] = new Float32Array(nbins * jsrp.Box3D.Segments.length * 3);
+            helper_positions[nseq] = new Float32Array(nbins * Box3D.Segments.length * 3);
       }
 
       let binx, grx, biny, gry, binz, grz;
@@ -2718,7 +2719,7 @@ class RH3Painter extends RHistPainter {
 
                if (helper_kind[nseq]===1) {
                   // reuse vertices created for the mesh
-                  let helper_segments = jsrp.Box3D.MeshSegments;
+                  let helper_segments = Box3D.MeshSegments;
                   vvv = nbins * helper_segments.length;
                   let shift = Math.round(nbins * buffer_size/3),
                       helper_i = helper_indexes[nseq];
@@ -2727,11 +2728,11 @@ class RH3Painter extends RHistPainter {
                }
 
                if (helper_kind[nseq]===2) {
-                  let helper_segments = jsrp.Box3D.Segments,
+                  let helper_segments = Box3D.Segments,
                       helper_p = helper_positions[nseq];
                   vvv = nbins * helper_segments.length * 3;
                   for (let n=0;n<helper_segments.length;++n, vvv+=3) {
-                     let vert = jsrp.Box3D.Vertices[helper_segments[n]];
+                     let vert = Box3D.Vertices[helper_segments[n]];
                      helper_p[vvv]   = grx + (vert.x-0.5)*scalex*wei;
                      helper_p[vvv+1] = gry + (vert.y-0.5)*scaley*wei;
                      helper_p[vvv+2] = grz + (vert.z-0.5)*scalez*wei;
