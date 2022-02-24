@@ -4991,24 +4991,19 @@ ensureTCanvas = async function(painter, frame_kind) {
 /** @summary draw TPad snapshot from TWebCanvas
   * @memberof JSROOT.Painter
   * @private */
-function drawTPadSnapshot(dom, snap /*, opt*/) {
+async function drawTPadSnapshot(dom, snap /*, opt*/) {
    let can = JSROOT.create("TCanvas"),
        painter = new TCanvasPainter(dom, can);
    painter.normal_canvas = false;
    painter.addPadButtons();
 
-   return painter.syncDraw(true)
-                 .then(() => painter.redrawPadSnap(snap))
-                 .then(() => { painter.confirmDraw(); painter.showPadButtons(); return painter; });
+   await painter.syncDraw(true);
+   await painter.redrawPadSnap(snap);
+   painter.confirmDraw();
+   painter.showPadButtons();
+   return painter;
 }
 
-JSROOT.TAxisPainter = TAxisPainter;
-JSROOT.TFramePainter = TFramePainter;
-JSROOT.TPadPainter = TPadPainter;
-JSROOT.TCanvasPainter = TCanvasPainter;
 
-const jsrp = JSROOT.Painter; // FIXME - workaround
-jsrp.drawTPadSnapshot = drawTPadSnapshot;
-
-export { TAxisPainter, TFramePainter, TPadPainter, TCanvasPainter, ensureTCanvas };
+export { TAxisPainter, TFramePainter, TPadPainter, TCanvasPainter, ensureTCanvas, drawTPadSnapshot };
 

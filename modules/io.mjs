@@ -3502,7 +3502,7 @@ class TFile {
   * // request same data via root.json request
   * JSROOT.httpRequest("http://localhost:8080/Files/job1.root/hpx/root.json", "object")
   *       .then(histo => console.log(`Get histogram with title = ${histo.fTitle}`)); */
-JSROOT.reconstructObject = function(class_name, obj_rawdata, sinfo_rawdata) {
+function reconstructObject(class_name, obj_rawdata, sinfo_rawdata) {
 
    let file = new TFile;
    let buf = new TBuffer(sinfo_rawdata, 0, file);
@@ -3787,43 +3787,9 @@ function openFile(arg) {
    return file._open();
 }
 
-/** @summary Holder of IO functionality
-  * @alias JSROOT.IO
-  * @namespace
-  * @private */
-
-jsrio = {
-
-   // here constants which are used outside
-   kChar: kChar, kShort: kShort, kInt: kInt, kLong: kLong, kFloat: kFloat, kCounter: kCounter,
-   kCharStar: kCharStar, kDouble: kDouble, kDouble32: kDouble32, kLegacyChar: kLegacyChar,
-   kUChar: kUChar, kUShort: kUShort, kUInt: kUInt, kULong: kULong, kBits: kBits,
-   kLong64: kLong64, kULong64: kULong64, kBool: kBool, kFloat16: kFloat16,
-
-   kBase: kBase, kOffsetL: kOffsetL, kOffsetP: kOffsetP,
-   kObject: kObject, kAny: kAny, kObjectp: kObjectp, kObjectP: kObjectP, kTString: kTString,
-//   kTObject: kTObject, kTNamed: kTNamed, kAnyp: kAnyp,
-   kAnyP: kAnyP, kStreamer: kStreamer, kStreamLoop: kStreamLoop,
-
-   /* kAnyPnoVT: 70, */
-   kSTLp: 71,
-   /* kSkip: 100, kSkipL: 120, kSkipP: 140, kConv: 200, kConvL: 220, kConvP: 240, */
-
-   kSTL: 300, /* kSTLstring: 365, */
-
-} // namespace jsrio
-
 // special way to assign methods when streaming objects
 addClassMethods(clTNamed, CustomStreamers[clTNamed]);
 addClassMethods(clTObjString, CustomStreamers[clTObjString]);
-
-// FIXME: to be removed from global space
-
-JSROOT.TBuffer = TBuffer;
-JSROOT.TDirectory = TDirectory;
-JSROOT.TFile = TFile;
-JSROOT.TLocalFile = TLocalFile;
-JSROOT.TNodejsFile = TNodejsFile;
 
 export {
    kChar, kShort, kInt, kLong, kFloat, kCounter,
@@ -3832,4 +3798,7 @@ export {
    kLong64, kULong64, kBool, kFloat16,
    kBase, kOffsetL, kOffsetP, kObject, kAny, kObjectp, kObjectP, kTString,
    kAnyP, kStreamer, kStreamLoop, kSTLp, kSTL,
-   openFile, TBuffer, R__unzip, addUserStreamer, createStreamerElement, createMemberStreamer };
+   R__unzip, addUserStreamer, createStreamerElement, createMemberStreamer,
+   openFile, reconstructObject,
+   TBuffer /*, TDirectory, TFile, TLocalFile, TNodejsFile */
+};

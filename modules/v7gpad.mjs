@@ -4840,15 +4840,15 @@ class RCanvasPainter extends RPadPainter {
 /** @summary draw RPadSnapshot object
   * @memberof JSROOT.v7
   * @private */
-function drawRPadSnapshot(dom, snap /*, opt*/) {
+async function drawRPadSnapshot(dom, snap /*, opt*/) {
    let painter = new RCanvasPainter(dom, null);
    painter.normal_canvas = false;
    painter.batch_mode = JSROOT.batch_mode;
-   return painter.syncDraw(true).then(() => painter.redrawPadSnap(snap)).then(() => {
-      painter.confirmDraw();
-      painter.showPadButtons();
-      return painter;
-   });
+   await painter.syncDraw(true);
+   await painter.redrawPadSnap(snap);
+   painter.confirmDraw();
+   painter.showPadButtons();
+   return painter;
 }
 
 /** @summary Ensure RCanvas and RFrame for the painter object
