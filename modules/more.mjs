@@ -1574,13 +1574,10 @@ class TGraphPainter extends ObjectPainter {
                  .style("fill","none");
    }
 
-   drawBins3D(fp, graph) {
+   async drawBins3D(fp, graph) {
 
       if (!fp.mode3d || !fp.grx || !fp.gry || !fp.grz || !fp.toplevel)
          return console.log('Frame painter missing base 3d elements');
-
-      if (!jsrp.createLineSegments || !jsrp.create3DLineMaterial)
-         return console.log('Missing base3d functionality');
 
       if (fp.zoom_xmin != fp.zoom_xmax)
         if ((this.options.pos3d < fp.zoom_xmin) || (this.options.pos3d > fp.zoom_xmax)) return;
@@ -1605,7 +1602,8 @@ class TGraphPainter extends ObjectPainter {
          p0 = p1;
       }
 
-      let lines = jsrp.createLineSegments(pnts, jsrp.create3DLineMaterial(this, graph));
+      let handle = await import('./base3d.mjs'),
+          lines = handle.createLineSegments(pnts, handle.create3DLineMaterial(this, graph));
 
       fp.toplevel.add(lines);
 
