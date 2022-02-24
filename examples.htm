@@ -338,12 +338,13 @@
             }
          }
 
-         function FillContent() {
+         async function FillContent() {
 
             // all painter assigned to viewer element will be automatically informed about resize
-            JSROOT.require("painter").then(handle => handle.registerForResize('viewer'));
+            let handle = await JSROOT.require("painter");
+            handle.registerForResize('viewer');
 
-            let d = JSROOT.decodeUrl();
+            let d = await JSROOT.decodeUrl();
 
             select_key = d.get("select");
             if (!select_key && d.has("geom")) select_key = "TGeo";

@@ -1,5 +1,7 @@
 /// I/O methods of JavaScript ROOT
 
+import * as JSROOT from './core.mjs';
+
 const clTObject = 'TObject', clTNamed = 'TNamed', clTObjString = 'TObjString', clTString = 'TString',
       clTList = 'TList', clTStreamerElement = "TStreamerElement", clTStreamerObject = 'TStreamerObject',
 

@@ -1,6 +1,9 @@
 
 import * as d3 from './d3.mjs';
 
+import * as JSROOT from './core.mjs';
+
+
 // TODO: load it in deifferent time
 JSROOT.loadScript('$$$style/JSRoot.painter');
 
@@ -4151,7 +4154,7 @@ function redraw(dom, obj, opt) {
   * @desc Normally it is TCanvas object with list of primitives
   * @param {string|object} dom - id of top div element or directly DOMElement
   * @returns {string} produced JSON string */
-JSROOT.drawingJSON = function(dom) {
+function drawingJSON(dom) {
    let canp = getElementCanvPainter(dom);
    return canp ? canp.produceJSON() : "";
 }
@@ -4310,7 +4313,6 @@ jsrp.floatToString = floatToString;
 jsrp.addDrawFunc = addDrawFunc;
 
 // FIXME: should be eliminated
-JSROOT.TRandom = TRandom;
 JSROOT.TAttLineHandler = TAttLineHandler;
 JSROOT.TAttFillHandler = TAttFillHandler;
 JSROOT.TAttMarkerHandler = TAttMarkerHandler;
@@ -4324,11 +4326,13 @@ JSROOT.makeSVG = makeSVG;
 // FIXME: should be eliminated
 JSROOT.Painter = jsrp;
 
-export { ColorPalette, BasePainter, ObjectPainter, DrawOptions, AxisPainterMethods,
-         TAttLineHandler, TAttFillHandler, TAttMarkerHandler, FontHandler,
+export {
+
+         ColorPalette, BasePainter, ObjectPainter, DrawOptions, AxisPainterMethods,
+         TRandom, TAttLineHandler, TAttFillHandler, TAttMarkerHandler, FontHandler,
          getElementRect, draw, redraw, makeSVG, jsrp, loadJSDOM, floatToString, buildSvgPath, toHex, isPromise,
          getDrawSettings, getDrawHandle, canDraw, addDrawFunc,
          getElementCanvPainter, getElementMainPainter, createMenu, closeMenu, registerForResize,
          getColor, addColor, adoptRootColors, extendRootColors, getRGBfromTColor,
-         getSvgLineStyle, compressSVG, readStyleFromURL,
+         getSvgLineStyle, compressSVG, drawingJSON, readStyleFromURL,
          chooseTimeFormat, selectActivePad, getActivePad, getAbsPosInCanvas };

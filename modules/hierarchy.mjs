@@ -3961,7 +3961,7 @@ JSROOT.markAsStreamerInfo = function(h,item,obj) {
 
 /** @summary Build gui without visible hierarchy browser
   * @private */
-JSROOT.buildNobrowserGUI = function(gui_element, gui_kind) {
+function buildNobrowserGUI(gui_element, gui_kind) {
 
    let myDiv = (typeof gui_element == 'string') ? d3.select('#' + gui_element) : d3.select(gui_element);
    if (myDiv.empty()) {
@@ -4017,7 +4017,7 @@ JSROOT.buildNobrowserGUI = function(gui_element, gui_kind) {
 /** @summary Build main JSROOT GUI
   * @returns {Promise} when completed
   * @private  */
-JSROOT.buildGUI = function(gui_element, gui_kind) {
+function buildGUI(gui_element, gui_kind) {
    let myDiv = (typeof gui_element == 'string') ? d3.select('#' + gui_element) : d3.select(gui_element);
    if (myDiv.empty()) return alert('no div for gui found');
 
@@ -4028,7 +4028,7 @@ JSROOT.buildGUI = function(gui_element, gui_kind) {
       JSROOT.settings.IgnoreUrlOptions = true;
 
    if (JSROOT.decodeUrl().has("nobrowser") || (myDiv.attr("nobrowser") && myDiv.attr("nobrowser")!=="false") || (gui_kind == "draw") || (gui_kind == "nobrowser"))
-      return JSROOT.buildNobrowserGUI(gui_element, gui_kind);
+      return buildNobrowserGUI(gui_element, gui_kind);
 
    readStyleFromURL();
 
@@ -5373,4 +5373,4 @@ JSROOT.GridDisplay = GridDisplay;
 JSROOT.FlexibleDisplay = FlexibleDisplay;
 JSROOT.BatchDisplay = BatchDisplay;
 
-export { HierarchyPainter, BrowserLayout, BatchDisplay };
+export { HierarchyPainter, BrowserLayout, BatchDisplay, buildNobrowserGUI, buildGUI };

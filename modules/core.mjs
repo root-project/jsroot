@@ -19,18 +19,17 @@ let source_dir = "";
 
 /** @summary Indicates if JSROOT runs inside Node.js
   * @memberof JSROOT */
-let nodejs = (export_kind === 'node');
+let nodejs = (typeof exports === 'object') && typeof module !== 'undefined';
 
 /** @summary Indicates if JSROOT runs in batch mode, can be changed if required
   * @alias JSROOT.batch_mode */
-exports.batch_mode = nodejs;
+let batch_mode = nodejs;
 
 /** @summary internal data
   * @memberof JSROOT
   * @private */
 let _ = {
-   id_counter: 1,          ///< unique id contner, starts from 1,
-   amd: (export_kind !== 'node') && (export_kind !== 'plain')       ///< is AMD
+   id_counter: 1          ///< unique id contner, starts from 1,
 };
 
 let source_fullpath = "";
@@ -38,11 +37,12 @@ let source_fullpath = "";
 let browser = { isOpera: false, isFirefox: true, isSafari: false, isChrome: false, isWin: false, touches: false  };
 
 if ((typeof document !== "undefined") && (typeof window !== "undefined")) {
-   const script = document.currentScript;
-   if (script && (typeof script.src == "string")) {
-      const pos = script.src.indexOf("scripts/JSRoot.core.js");
+   const src = import.meta.url;
+   console.log('src', src);
+   if (src && (typeof src == "string")) {
+      const pos = src.indexOf("modules/core.mjs");
       if (pos >= 0) {
-         source_fullpath = script.src;
+         source_fullpath = src;
          source_dir = source_fullpath.substr(0, pos);
          console.log(`Set JSROOT.source_dir to ${source_dir}, ${version}`);
       }
@@ -325,7 +325,7 @@ let gStyle = {
 /** @summary Method returns current document in use
   * @private */
 _.get_document = function() {
-   if (JSROOT.nodejs)
+   if (nodejs)
       return _.nodejs_document;
    if (typeof document !== 'undefined')
       return document;
@@ -344,7 +344,7 @@ function loadScript(url) {
    if (typeof url != 'string') {
       let scripts = url, loadNext = () => {
          if (!scripts.length) return Promise.resolve(true);
-         return JSROOT.loadScript(scripts.shift()).then(loadNext, loadNext);
+         return loadScript(scripts.shift()).then(loadNext, loadNext);
       };
       return loadNext();
    }
@@ -353,16 +353,16 @@ function loadScript(url) {
       url = url.slice(3);
       if ((url.indexOf("style/") == 0) && (url.indexOf('.css') < 0))
          url += ".css";
-      url = JSROOT.source_dir + url;
+      url = source_dir + url;
    }
 
    let element, isstyle = url.indexOf(".css") > 0;
 
-   if (JSROOT.nodejs) {
+   if (nodejs) {
       let res = null;
       if (!isstyle) {
          if ((url.indexOf("http:") == 0) || (url.indexOf("https:") == 0))
-            return JSROOT.httpRequest(url,"text").then(txt => eval(txt));
+            return httpRequest(url, "text").then(txt => eval(txt));
          res = require(url);
       }
 
@@ -431,37 +431,37 @@ async function jsroot_require(need) {
 
    need.forEach(name => {
       if (name == "hist")
-         arr.push(import("../modules/hist.mjs"));
+         arr.push(import("./hist.mjs"));
       else if (name == "hist3d")
-         arr.push(import("../modules/hist3d.mjs"));
+         arr.push(import("./hist3d.mjs"));
       else if (name == "more")
-         arr.push(import("../modules/more.mjs"));
+         arr.push(import("./more.mjs"));
       else if (name == "gpad")
-         arr.push(import("../modules/gpad.mjs"));
+         arr.push(import("./gpad.mjs"));
       else if (name == "io")
-         arr.push(import("../modules/io.mjs"));
+         arr.push(import("./io.mjs"));
       else if (name == "geom")
-         arr.push(import("../modules/geom.mjs").then(handle => handle.geo));
+         arr.push(import("./geom.mjs"));
       else if (name == "math")
-         arr.push(import("../modules/math.mjs").then(handle => handle.mth));
+         arr.push(import("./math.mjs"));
       else if (name == "latex")
-         arr.push(import("../modules/latex.mjs").then(handle => handle.ltx));
+         arr.push(import("./latex.mjs"));
       else if (name == "painter")
-         arr.push(import("../modules/painter.mjs"));
+         arr.push(import("./painter.mjs"));
       else if (name == "interactive")
-         arr.push(import("../modules/interactive.mjs"));
+         arr.push(import("./interactive.mjs"));
       else if (name == "hierarchy")
-         arr.push(import("../modules/hierarchy.mjs"));
+         arr.push(import("./hierarchy.mjs"));
       else if (name == "v7hist")
-         arr.push(import("../modules/v7hist.mjs"));
+         arr.push(import("./v7hist.mjs"));
       else if (name == "v7hist3d")
-         arr.push(import("../modules/v7hist3d.mjs"));
+         arr.push(import("./v7hist3d.mjs"));
       else if (name == "v7more")
-         arr.push(import("../modules/v7more.mjs"));
+         arr.push(import("./v7more.mjs"));
       else if (name == "v7gpad")
-         arr.push(import("../modules/v7gpad.mjs"))
+         arr.push(import("./v7gpad.mjs"))
       else if (name == "openui5")
-         arr.push(import("../modules/openui5.mjs").then(handle => handle.doUi5Loading()));
+         arr.push(import("./openui5.mjs").then(handle => handle.doUi5Loading()));
 
    });
 
@@ -524,7 +524,6 @@ function extend(tgt, src) {
    return tgt;
 }
 
-
 /** @summary Adds specific methods to the object.
   * @desc JSROOT implements some basic methods for different ROOT classes.
   * @param {object} obj - object where methods are assigned
@@ -532,7 +531,7 @@ function extend(tgt, src) {
   * @memberof JSROOT
   * @private */
 function addMethods(obj, typename) {
-   extend(obj, JSROOT.getMethods(typename || obj._typename, obj));
+   extend(obj, getMethods(typename || obj._typename, obj));
 }
 
 /** @summary Should be used to parse JSON string produced with TBufferJSON class
@@ -601,7 +600,8 @@ function parse(json) {
          if (value.b !== undefined) {
             // base64 coding
 
-            let atob_func = JSROOT.nodejs ? require('atob') : window.atob;
+            // FIXME: TODO: need async methods here
+            let atob_func = nodejs ? require('atob') : window.atob;
 
             let buf = atob_func(value.b);
 
@@ -690,7 +690,7 @@ function clone(src, map, nofunc) {
       map.clones.push(tgt);
       for (let i = 0; i < src.length; ++i)
          if (typeof src[i] === 'object')
-            tgt.push(JSROOT.clone(src[i], map));
+            tgt.push(clone(src[i], map));
          else
             tgt.push(src[i]);
 
@@ -714,7 +714,7 @@ function clone(src, map, nofunc) {
 
    for (let k in src) {
       if (typeof src[k] === 'object')
-         tgt[k] = JSROOT.clone(src[k], map);
+         tgt[k] = clone(src[k], map);
       else if (!map.nofunc || (typeof src[k]!=='function'))
          tgt[k] = src[k];
    }
@@ -876,7 +876,8 @@ function findFunction(name) {
   * @private */
 function NewHttpRequest(url, kind, user_accept_callback, user_reject_callback) {
 
-   let xhr = JSROOT.nodejs ? new (require("xhr2"))() : new XMLHttpRequest();
+   // FIXME: need async version for node
+   let xhr = nodejs ? new (require("xhr2"))() : new XMLHttpRequest();
 
    xhr.http_callback = (typeof user_accept_callback == 'function') ? user_accept_callback.bind(xhr) : function() {};
    xhr.error_callback = (typeof user_reject_callback == 'function') ? user_reject_callback.bind(xhr) : function(err) { console.warn(err.message); this.http_callback(null); }.bind(xhr);
@@ -895,7 +896,7 @@ function NewHttpRequest(url, kind, user_accept_callback, user_reject_callback) {
 
    xhr.kind = kind;
 
-   if (JSROOT.settings.HandleWrongHttpResponse && (method == "GET") && (typeof xhr.addEventListener === 'function'))
+   if (settings.HandleWrongHttpResponse && (method == "GET") && (typeof xhr.addEventListener === 'function'))
       xhr.addEventListener("progress", function(oEvent) {
          if (oEvent.lengthComputable && this.expected_size && (oEvent.loaded > this.expected_size)) {
             this.did_abort = true;
@@ -910,7 +911,7 @@ function NewHttpRequest(url, kind, user_accept_callback, user_reject_callback) {
 
       if ((this.readyState === 2) && this.expected_size) {
          let len = parseInt(this.getResponseHeader("Content-Length"));
-         if (Number.isInteger(len) && (len > this.expected_size) && !JSROOT.settings.HandleWrongHttpResponse) {
+         if (Number.isInteger(len) && (len > this.expected_size) && !settings.HandleWrongHttpResponse) {
             this.did_abort = true;
             this.abort();
             return this.error_callback(Error('Server response size ' + len + ' larger than expected ' + this.expected_size + '. Abort I/O operation'), 599);
@@ -925,19 +926,19 @@ function NewHttpRequest(url, kind, user_accept_callback, user_reject_callback) {
             return this.error_callback(Error('Fail to load url ' + url), this.status);
       }
 
-      if (this.nodejs_checkzip && (this.getResponseHeader("content-encoding") == "gzip")) {
+      if (this.nodejs_checkzip && (this.getResponseHeader("content-encoding") == "gzip"))
          // special handling of gzipped JSON objects in Node.js
-         let zlib = require('zlib'),
-             res = zlib.unzipSync(Buffer.from(this.response)),
-             obj = JSON.parse(res); // zlib returns Buffer, use JSON to parse it
-         return this.http_callback(JSROOT.parse(obj));
-      }
+         return import('zlib').then(handle => {
+             let res = handle.unzipSync(Buffer.from(this.response)),
+                 obj = JSON.parse(res); // zlib returns Buffer, use JSON to parse it
+            return this.http_callback(parse(obj));
+         });
 
       switch(this.kind) {
          case "xml": return this.http_callback(this.responseXML);
          case "text": return this.http_callback(this.responseText);
-         case "object": return this.http_callback(JSROOT.parse(this.responseText));
-         case "multi": return this.http_callback(JSROOT.parseMulti(this.responseText));
+         case "object": return this.http_callback(parse(this.responseText));
+         case "multi": return this.http_callback(parseMulti(this.responseText));
          case "head": return this.http_callback(this);
       }
 
@@ -962,7 +963,7 @@ function NewHttpRequest(url, kind, user_accept_callback, user_reject_callback) {
 
    if ((kind == "bin") || (kind == "buf")) xhr.responseType = 'arraybuffer';
 
-   if (JSROOT.nodejs && (method == "GET") && (kind === "object") && (url.indexOf('.json.gz')>0)) {
+   if (nodejs && (method == "GET") && (kind === "object") && (url.indexOf('.json.gz')>0)) {
       xhr.nodejs_checkzip = true;
       xhr.responseType = 'arraybuffer';
    }
@@ -997,17 +998,17 @@ function httpRequest(url, kind, post_data) {
 
 // Open ROOT file, defined in io.mjs
 function openFile(filename) {
-   return import("../modules/io.mjs").then(handle => handle.openFile(filename));
+   return import("./io.mjs").then(handle => handle.openFile(filename));
 }
 
 // Draw object, defined in JSRoot.painter.js
 function draw(dom, obj, opt) {
-   return import("../modules/painter.mjs").then(handle => handle.draw(dom, obj, opt));
+   return import("./painter.mjs").then(handle => handle.draw(dom, obj, opt));
 }
 
 // Redaraw object, defined in JSRoot.painter.js
 function redraw(dom, obj, opt) {
-   return jsroot_require("painter").then(() => JSROOT.redraw(dom, obj, opt));
+   return import("./painter.mjs").then(handle => handle.redraw(dom, obj, opt));
 }
 
 // Dummy, when painter is not yet loaded, should happens nothing
@@ -1015,7 +1016,7 @@ function cleanup() {}
 
 // Create SVG, defined in JSRoot.painter.js
 function makeSVG(args) {
-   return import("../modules/painter.mjs").then(handle => handle.makeSVG(args));
+   return import("./painter.mjs").then(handle => handle.makeSVG(args));
 }
 
 /** @summary Method to build main JSROOT GUI
@@ -1023,17 +1024,16 @@ function makeSVG(args) {
   * @param {string} [gui_kind = "gui"] - kind of the gui: "gui", "online", "draw"
   * @returns {Promise} when ready
   * @private */
-function buildGUI(gui_element, gui_kind) {
-   let d = JSROOT.decodeUrl(),
-       nobrowser = d.has('nobrowser'),
-       requirements = ["hierarchy"];
+async function buildGUI(gui_element, gui_kind) {
+   let d = decodeUrl(),
+       nobrowser = d.has('nobrowser');
 
    if (typeof gui_element == 'string')
       gui_element = document.getElementById(gui_element);
 
    if (!gui_element) {
       console.log('Fail to find element for GUI drawing');
-      return Promise.resolve(false);
+      return false;
    }
 
    if (gui_kind == "nobrowser") {
@@ -1046,15 +1046,19 @@ function buildGUI(gui_element, gui_kind) {
 
    let user_scripts = d.get("autoload") || d.get("load");
 
-   if (user_scripts) requirements.push("painter");
-
    _.debug_output = gui_element;
 
-   return jsroot_require(requirements).then(() => JSROOT.loadScript(user_scripts)).then(() => {
-      gui_element.innerHTML = "";
-      delete _.debug_output;
-      return nobrowser ? JSROOT.buildNobrowserGUI(gui_element, gui_kind) : JSROOT.buildGUI(gui_element, gui_kind);
-   });
+   if (user_scripts) {
+      await jsroot_require("painter");
+      await loadScript(user_scripts);
+   }
+
+   gui_element.innerHTML = "";
+   delete _.debug_output;
+
+   let handle = await jsroot_require("hierarchy");
+
+   return nobrowser ? handle.buildNobrowserGUI(gui_element, gui_kind) : handle.buildGUI(gui_element, gui_kind);
 }
 
 /** @summary Create some ROOT classes
@@ -1823,6 +1827,7 @@ version_date,
 version,
 source_dir,
 nodejs,
+batch_mode,
 browser,
 _,
 constants,

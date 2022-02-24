@@ -2,7 +2,8 @@
 
 import * as d3 from './d3.mjs';
 
-import { floatToString, DrawOptions, TAttLineHandler, buildSvgPath, getDrawSettings, createMenu } from './painter.mjs';
+import { floatToString, DrawOptions, TAttLineHandler, TRandom,
+         buildSvgPath, getDrawSettings, createMenu } from './painter.mjs';
 
 import { RObjectPainter, RPavePainter, ensureRCanvas } from './v7gpad.mjs';
 
@@ -3151,7 +3152,7 @@ class RH2Painter extends RHistPainter {
           scale = this.options.ScatCoef * ((this.gmaxbin) > 2000 ? 2000. / this.gmaxbin : 1.),
           di = handle.stepi, dj = handle.stepj;
 
-      let rnd = new JSROOT.TRandom(handle.sumz);
+      let rnd = new TRandom(handle.sumz);
 
       if (scale*handle.sumz < 1e5) {
          // one can use direct drawing of scatter plot without any patterns

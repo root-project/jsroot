@@ -4,7 +4,7 @@ import * as d3 from './d3.mjs';
 
 import * as THREE from './three.mjs';
 
-import { floatToString, getDrawSettings } from './painter.mjs';
+import { floatToString, getDrawSettings, TRandom } from './painter.mjs';
 
 import { assign3DHandler, disposeThreejsObject, createOrbitControl,
          createLineSegments, create3DLineMaterial, PointsCreator, Box3D,
@@ -2446,7 +2446,7 @@ class RH3Painter extends RHistPainter {
       let pnts = new PointsCreator(numpixels, main.webgl, main.size_x3d/200),
           bins = new Int32Array(numpixels), nbin = 0,
           xaxis = this.getAxis("x"), yaxis = this.getAxis("y"), zaxis = this.getAxis("z"),
-          rnd = new JSROOT.TRandom(sumz);
+          rnd = new TRandom(sumz);
 
       for (i = i1; i < i2; i += di) {
          for (j = j1; j < j2; j += dj) {

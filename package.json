@@ -6,7 +6,8 @@
   },
   "description": "JavaScript ROOT",
   "homepage": "https://root.cern/js/",
-  "module": "scripts/JSRoot.core.js",
+  "type" : "module",
+  "module": "modules/core.mjs",
   "main": "scripts/JSRoot.core.js",
   "contributors": [
     {

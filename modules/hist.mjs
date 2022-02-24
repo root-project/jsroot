@@ -1,7 +1,7 @@
 
 import * as d3 from './d3.mjs';
 
-import { ColorPalette, ObjectPainter, TAttLineHandler, TAttMarkerHandler, DrawOptions,
+import { ColorPalette, ObjectPainter, TAttLineHandler, TAttMarkerHandler, DrawOptions, TRandom,
          floatToString, buildSvgPath, toHex, getDrawSettings, getElementMainPainter, createMenu, getColor } from './painter.mjs';
 
 import { ensureTCanvas } from './gpad.mjs';
@@ -6343,7 +6343,7 @@ class TH2Painter extends THistPainter {
          if (isOption(kPointsOutliers) || isOption(kPointsAll) || isOption(kPointsAllScat)) {
 
             // reset seed for each projection to have always same pixels
-            let rnd = new JSROOT.TRandom(bin_indx*7521 + Math.round(res.integral));
+            let rnd = new TRandom(bin_indx*7521 + Math.round(res.integral));
 
             let show_all = !isOption(kPointsOutliers), show_scat = isOption(kPointsAllScat);
             for (let ii = 0; ii < proj.length; ++ii) {
@@ -6515,7 +6515,7 @@ class TH2Painter extends THistPainter {
           colPaths = [], currx = [], curry = [], cell_w = [], cell_h = [],
           colindx, cmd1, cmd2, i, j, binz, cw, ch, factor = 1.,
           scale = this.options.ScatCoef * ((this.gmaxbin) > 2000 ? 2000. / this.gmaxbin : 1.),
-          rnd = new JSROOT.TRandom(handle.sumz);
+          rnd = new TRandom(handle.sumz);
 
       if (scale*handle.sumz < 1e5) {
          // one can use direct drawing of scatter plot without any patterns

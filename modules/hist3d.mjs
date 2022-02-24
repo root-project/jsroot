@@ -3,7 +3,8 @@ import * as d3 from './d3.mjs';
 
 import * as THREE from './three.mjs';
 
-import { ObjectPainter, TAttMarkerHandler, floatToString, DrawOptions, getDrawSettings } from './painter.mjs';
+import { ObjectPainter, TAttMarkerHandler, DrawOptions, TRandom,
+         floatToString, getDrawSettings } from './painter.mjs';
 
 import { assign3DHandler, disposeThreejsObject, createOrbitControl,
          createLineSegments, create3DLineMaterial, PointsCreator, Box3D,
@@ -2426,7 +2427,7 @@ class TH3Painter extends THistPainter {
 
       let pnts = new PointsCreator(numpixels, main.webgl, main.size_x3d/200),
           bins = new Int32Array(numpixels), nbin = 0,
-          rnd = new JSROOT.TRandom(sumz);
+          rnd = new TRandom(sumz);
 
       for (i = i1; i < i2; ++i) {
          for (j = j1; j < j2; ++j) {
