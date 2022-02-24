@@ -228,7 +228,7 @@ function closeMenu(menuname) {
 
 /** @summary Read style and settings from URL
   * @private */
-jsrp.readStyleFromURL = function(url) {
+function readStyleFromURL(url) {
    let d = JSROOT.decodeUrl(url), g = JSROOT.gStyle, s = JSROOT.settings;
 
    if (d.has("optimize")) {
@@ -2612,7 +2612,7 @@ class ObjectPainter extends BasePainter {
 
       if (cp && (typeof cp.showCanvasStatus !== 'function')) cp = null;
 
-      if (!cp && (typeof jsrp.showStatus !== 'function')) return false;
+      if (!cp && (typeof JSROOT._.showStatus !== 'function')) return false;
 
       if (this.enlargeMain('state') === 'on') return false;
 
@@ -2627,7 +2627,7 @@ class ObjectPainter extends BasePainter {
       if (cp)
          cp.showCanvasStatus(name, title, info, info2);
       else
-         jsrp.showStatus(name, title, info, info2);
+         JSROOT._.showStatus(name, title, info, info2);
    }
 
    /** @summary Redraw object
@@ -3794,7 +3794,7 @@ let drawFuncs = { lst: [
   * @param {string} [args.icon] - icon name shown for the class in hierarchy browser
   * @param {string} [args.draw_field] - draw only data member from object, like fHistogram
   * @protected */
-jsrp.addDrawFunc = function(args) {
+function addDrawFunc(args) {
    drawFuncs.lst.push(args);
    return args;
 }
@@ -3948,7 +3948,7 @@ function getDrawSettings(kind, selector) {
 /** @summary Returns true if provided object class can be drawn
   * @param {string} classname - name of class to be tested
   * @private */
-jsrp.canDraw = function(classname) {
+function canDraw(classname) {
    return getDrawSettings("ROOT." + classname).opts !== null;
 }
 
@@ -4301,13 +4301,13 @@ JSROOT.cleanup = function(dom) {
 
 jsrp.createRootColors();
 
-if (JSROOT.nodejs) jsrp.readStyleFromURL("?interactive=0&tooltip=0&nomenu&noprogress&notouch&toolbar=0&webgl=0");
+if (JSROOT.nodejs) readStyleFromURL("?interactive=0&tooltip=0&nomenu&noprogress&notouch&toolbar=0&webgl=0");
 
 jsrp.getColor = getColor;
-jsrp.getDrawHandle = getDrawHandle;
 jsrp.getDrawSettings = getDrawSettings;
 jsrp.toHex = toHex;
 jsrp.floatToString = floatToString;
+jsrp.addDrawFunc = addDrawFunc;
 
 // FIXME: should be eliminated
 JSROOT.TRandom = TRandom;
@@ -4326,8 +4326,9 @@ JSROOT.Painter = jsrp;
 
 export { ColorPalette, BasePainter, ObjectPainter, DrawOptions, AxisPainterMethods,
          TAttLineHandler, TAttFillHandler, TAttMarkerHandler, FontHandler,
-         getElementRect, draw, redraw, makeSVG, jsrp, loadJSDOM, floatToString, buildSvgPath, toHex, isPromise, getDrawSettings,
+         getElementRect, draw, redraw, makeSVG, jsrp, loadJSDOM, floatToString, buildSvgPath, toHex, isPromise,
+         getDrawSettings, getDrawHandle, canDraw, addDrawFunc,
          getElementCanvPainter, getElementMainPainter, createMenu, closeMenu, registerForResize,
          getColor, addColor, adoptRootColors, extendRootColors, getRGBfromTColor,
-         getSvgLineStyle, compressSVG,
+         getSvgLineStyle, compressSVG, readStyleFromURL,
          chooseTimeFormat, selectActivePad, getActivePad, getAbsPosInCanvas };

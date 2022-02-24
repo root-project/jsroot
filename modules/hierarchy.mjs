@@ -2,10 +2,11 @@ import * as d3 from './d3.mjs';
 
 import { showProgress } from './utils.mjs';
 
-import { BasePainter, ObjectPainter, loadJSDOM, getDrawSettings,
+import { BasePainter, ObjectPainter, loadJSDOM,
+         getDrawSettings, getDrawHandle, canDraw, addDrawFunc,
          getElementMainPainter, getElementCanvPainter,
          createMenu, registerForResize, selectActivePad, getRGBfromTColor,
-         compressSVG } from './painter.mjs';
+         compressSVG, readStyleFromURL } from './painter.mjs';
 
 import { produceLegend } from './hist.mjs';
 
@@ -153,7 +154,7 @@ function listHierarchy(folder, lst) {
            default: if (lst.opt && lst.opt[i] && lst.opt[i].length) item._value = lst.opt[i];
         }
 
-        if (do_context && jsrp.canDraw(obj._typename)) item._direct_context = true;
+        if (do_context && canDraw(obj._typename)) item._direct_context = true;
 
         // if name is integer value, it should match array index
         if (!item._name || (Number.isInteger(parseInt(item._name)) && (parseInt(item._name) !== i))
@@ -405,7 +406,7 @@ function objectHierarchy(top, obj, args) {
 
             if (fld._typename) {
                item._title = fld._typename;
-               if (do_context && jsrp.canDraw(fld._typename)) item._direct_context = true;
+               if (do_context && canDraw(fld._typename)) item._direct_context = true;
             }
 
             // check if object already shown in hierarchy (circular dependency)
@@ -759,8 +760,8 @@ class BrowserLayout {
          if (this.status_layout !== "app")
             delete this.status_layout;
 
-         if (this.status_handler && (jsrp.showStatus === this.status_handler)) {
-            delete jsrp.showStatus;
+         if (this.status_handler && (JSROOT._.showStatus === this.status_handler)) {
+            delete JSROOT._.showStatus;
             delete this.status_handler;
          }
 
@@ -816,9 +817,7 @@ class BrowserLayout {
            .attr('title', frame_titles[k]).style('overflow','hidden')
            .append("label").attr("class","jsroot_status_label");
 
-      this.status_handler = this.showStatus.bind(this);
-
-      jsrp.showStatus = this.status_handler;
+      JSROOT._.showStatus = this.status_handler = this.showStatus.bind(this);
 
       return Promise.resolve(id);
    }
@@ -1552,7 +1551,7 @@ class HierarchyPainter extends BasePainter {
 
       let isroot = (hitem === this.h),
           has_childs = ('_childs' in hitem),
-          handle = jsrp.getDrawHandle(hitem._kind),
+          handle = getDrawHandle(hitem._kind),
           img1 = "", img2 = "", can_click = false, break_list = false,
           d3cont, itemname = this.itemFullName(hitem);
 
@@ -2236,7 +2235,7 @@ class HierarchyPainter extends BasePainter {
       if (item._player) return true;
       if (item._can_draw !== undefined) return item._can_draw;
       if (drawopt == 'inspect') return true;
-      const handle = jsrp.getDrawHandle(item._kind, drawopt);
+      const handle = getDrawHandle(item._kind, drawopt);
       return handle && (handle.func || handle.class || handle.draw_field);
    }
 
@@ -2322,12 +2321,12 @@ class HierarchyPainter extends BasePainter {
 
             if (!updating) showProgress("Drawing " + display_itemname);
 
-            let handle = obj._typename ? jsrp.getDrawHandle("ROOT." + obj._typename) : null;
+            let handle = obj._typename ? getDrawHandle("ROOT." + obj._typename) : null;
 
             if (handle && handle.draw_field && obj[handle.draw_field]) {
                obj = obj[handle.draw_field];
                if (!drawopt) drawopt = handle.draw_field_opt || "";
-               handle = obj._typename ? jsrp.getDrawHandle("ROOT." + obj._typename) : null;
+               handle = obj._typename ? getDrawHandle("ROOT." + obj._typename) : null;
             }
 
             if (use_dflt_opt && handle && handle.dflt && !drawopt && (handle.dflt != 'expand'))
@@ -2468,7 +2467,7 @@ class HierarchyPainter extends BasePainter {
             let item = this.findItem(itemname);
             if (!item || ('_not_monitor' in item) || ('_player' in item)) return;
             if (!('_always_monitor' in item)) {
-               let forced = false, handle = jsrp.getDrawHandle(item._kind);
+               let forced = false, handle = getDrawHandle(item._kind);
                if (handle && ('monitor' in handle)) {
                   if ((handle.monitor === false) || (handle.monitor == 'never')) return;
                   if (handle.monitor == 'always') forced = true;
@@ -2756,7 +2755,7 @@ class HierarchyPainter extends BasePainter {
    canExpandItem(item) {
       if (!item) return false;
       if (item._expand) return true;
-      let handle = jsrp.getDrawHandle(item._kind, "::expand");
+      let handle = getDrawHandle(item._kind, "::expand");
       return handle && (handle.expand_item || handle.expand);
    }
 
@@ -2775,12 +2774,12 @@ class HierarchyPainter extends BasePainter {
             _item._expand = JSROOT.findFunction(item._expand);
 
          if (typeof _item._expand !== 'function') {
-            let handle = jsrp.getDrawHandle(_item._kind, "::expand");
+            let handle = getDrawHandle(_item._kind, "::expand");
 
             if (handle && handle.expand_item) {
                _obj = _obj[handle.expand_item];
               if (_obj && _obj._typename)
-                 handle = jsrp.getDrawHandle("ROOT."+_obj._typename, "::expand");
+                 handle = getDrawHandle("ROOT."+_obj._typename, "::expand");
             }
 
             if (handle && handle.expand) {
@@ -3042,7 +3041,7 @@ class HierarchyPainter extends BasePainter {
       if (item) {
          url = this.getOnlineItemUrl(item);
          let func = null;
-         if ('_kind' in item) draw_handle = jsrp.getDrawHandle(item._kind);
+         if ('_kind' in item) draw_handle = getDrawHandle(item._kind);
 
          if (h_get) {
             req = 'h.json?compact=3';
@@ -3151,8 +3150,8 @@ class HierarchyPainter extends BasePainter {
                      let typename = "kind:" + item._kind;
                      if (item._kind.indexOf('ROOT.')==0) typename = item._kind.slice(5);
                      let drawopt = item._drawopt;
-                     if (!jsrp.canDraw(typename) || drawopt)
-                        jsrp.addDrawFunc({ name: typename, func: item._drawfunc, script: item._drawscript, opt: drawopt });
+                     if (!canDraw(typename) || drawopt)
+                        addDrawFunc({ name: typename, func: item._drawfunc, script: item._drawscript, opt: drawopt });
                   });
 
                   return this;
@@ -3199,7 +3198,7 @@ class HierarchyPainter extends BasePainter {
 
       let node = this.findItem(itemname),
           sett = getDrawSettings(node._kind, 'nosame;noinspect'),
-          handle = jsrp.getDrawHandle(node._kind),
+          handle = getDrawHandle(node._kind),
           root_type = (typeof node._kind == 'string') ? node._kind.indexOf("ROOT.") == 0 : false;
 
       if (sett.opts && (node._can_draw !== false)) {
@@ -3452,7 +3451,7 @@ class HierarchyPainter extends BasePainter {
       let mdi = this.disp, handle = null, isany = false;
       if (!mdi) return false;
 
-      if (obj._typename) handle = jsrp.getDrawHandle("ROOT." + obj._typename);
+      if (obj._typename) handle = getDrawHandle("ROOT." + obj._typename);
       if (handle && handle.draw_field && obj[handle.draw_field])
          obj = obj[handle.draw_field];
 
@@ -3979,7 +3978,7 @@ JSROOT.buildNobrowserGUI = function(gui_element, gui_kind) {
    if (myDiv.attr("ignoreurl") === "true")
       JSROOT.settings.IgnoreUrlOptions = true;
 
-   jsrp.readStyleFromURL();
+   readStyleFromURL();
 
    let d = JSROOT.decodeUrl(), guisize = d.get("divsize");
    if (guisize) {
@@ -4031,9 +4030,9 @@ JSROOT.buildGUI = function(gui_element, gui_kind) {
    if (JSROOT.decodeUrl().has("nobrowser") || (myDiv.attr("nobrowser") && myDiv.attr("nobrowser")!=="false") || (gui_kind == "draw") || (gui_kind == "nobrowser"))
       return JSROOT.buildNobrowserGUI(gui_element, gui_kind);
 
-   jsrp.readStyleFromURL();
+   readStyleFromURL();
 
-   let hpainter = new JSROOT.HierarchyPainter('root', null);
+   let hpainter = new HierarchyPainter('root', null);
 
    hpainter.is_online = online;
 

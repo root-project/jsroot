@@ -11,7 +11,8 @@ import { assign3DHandler, createRender3D, createLineSegments, InteractiveControl
 
 import { geo } from './geobase.mjs';
 
-import { ObjectPainter, DrawOptions, createMenu, closeMenu, getColor, isPromise } from './painter.mjs';
+import { ObjectPainter, DrawOptions, createMenu, closeMenu,
+         getColor, isPromise, addDrawFunc } from './painter.mjs';
 
 import { ensureTCanvas } from './gpad.mjs';
 
@@ -4986,9 +4987,9 @@ jsrp.drawAxis3D = function() {
    console.error('no geometry painter found to toggle TAxis3D drawing');
 }
 
-jsrp.addDrawFunc({ name: "TGeoVolumeAssembly", icon: 'img_geoassembly', func: TGeoPainter.draw, expand: geo.expandObject, opt: ";more;all;count" });
-jsrp.addDrawFunc({ name: "TEvePointSet", icon_get: geo.getBrowserIcon, icon_click: geo.browserIconClick });
-jsrp.addDrawFunc({ name: "TEveTrack", icon_get: geo.getBrowserIcon, icon_click: geo.browserIconClick });
+addDrawFunc({ name: "TGeoVolumeAssembly", icon: 'img_geoassembly', func: TGeoPainter.draw, expand: geo.expandObject, opt: ";more;all;count" });
+addDrawFunc({ name: "TEvePointSet", icon_get: geo.getBrowserIcon, icon_click: geo.browserIconClick });
+addDrawFunc({ name: "TEveTrack", icon_get: geo.getBrowserIcon, icon_click: geo.browserIconClick });
 
 JSROOT.TGeoPainter = TGeoPainter;
 
