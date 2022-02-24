@@ -160,7 +160,7 @@
               { name: "Inspector", url: "?file=" + filepath + "hsimple.root&item=hpx;1&opt=inspect", title: "Show objects data memebers" },
               { name: "Projection", url: "?nobrowser&file=" + filepath + "hsimple.root&item=hpxpy;1&opt=col,projx3", title: "Enable X projection with 3 bins" },
               { name: "Images", url: "?path=" + filepath + "&layout=grid2x2&file=hsimple.root&items=[hpx;1,hpxpy;1,img:../files/img/ALICE.png,img:../files/img/ATLAS.png]&opts=[hist,colz,scale,center]", title: "Example of adding images from the web server" },
-              { name: "Use JSON", url: "?nobrowser&json=" + filepath + "danilo6.json", title: "Read and display data from JSON file, produced with TBufferJSON class"  },
+              { name: "Use JSON", url: "?nobrowser&json=https://jsroot.gsi.de/files/danilo6.json", title: "Read and display data from JSON file, produced with TBufferJSON class"  },
               { name: "Superimpose", url: "?file=" + filepath + "fillrandom.root&item=h1f;1+sqroot;1", title: "Superimpose histogram and function" },
               { name: "Several files", url: "?layout=grid2x2&path=" + filepath + "&files=[hsimple.root,graph.root,ct.root]&items=[hsimple.root/[1],graph.root/[11],graph.root/[3],ct.root/[0]]&opts=[lego]", title: "Open several files simultaneusely"  },
               { name: "Superimpose 2 files", url: "?files=[" + filepath + "hsimple.root," + filepath + "graph.root]&item=graph.root/Graph;1+hsimple.root/hprof;1", title: "Superimpose items from two different files"  },
