@@ -445,7 +445,7 @@ async function jsroot_require(need) {
       else if (name == "gpad")
          arr.push(import("../modules/gpad.mjs"));
       else if (name == "io")
-         arr.push(import("../modules/io.mjs").then(handle => handle.jsrio));
+         arr.push(import("../modules/io.mjs"));
       else if (name == "geom")
          arr.push(import("../modules/geom.mjs").then(handle => handle.geo));
       else if (name == "math")

@@ -1,5 +1,5 @@
 
-import { jsrio, TBuffer } from './io.mjs';
+import { jsrio, R__unzip, TBuffer, createStreamerElement, createMemberStreamer } from './io.mjs';
 
 import { mth as jsroot_math } from './math.mjs';
 
@@ -1464,7 +1464,7 @@ const TTreeMethods = {
             case 'TLeafC': datakind = jsrio.kTString; break;
             default: return null;
          }
-         return jsrio.createStreamerElement(name || leaf.fName, datakind);
+         return createStreamerElement(name || leaf.fName, datakind);
 
       }, findInHandle = branch => {
          for (let k = 0; k < handle.arr.length; ++k)
@@ -1684,7 +1684,7 @@ const TTreeMethods = {
 
             if ((branch.fType === kClonesNode) || (branch.fType === kSTLNode)) {
 
-               elem = jsrio.createStreamerElement(target_name, jsrio.kInt);
+               elem = createStreamerElement(target_name, jsrio.kInt);
 
                if (!read_mode || ((typeof read_mode === "string") && (read_mode[0] === ".")) || (read_mode === 1)) {
                   handle.process_arrays = false;
@@ -1740,7 +1740,7 @@ const TTreeMethods = {
 
                } else if (is_brelem && (nb_leaves === 1) && (leaf.fName === branch.fName) && (branch.fID == -1)) {
 
-                  elem = jsrio.createStreamerElement(target_name, branch.fClassName);
+                  elem = createStreamerElement(target_name, branch.fClassName);
 
                   if (elem.fType === jsrio.kAny) {
 
@@ -1769,7 +1769,7 @@ const TTreeMethods = {
 
                   // this is basic type - can try to solve problem differently
                   if (!elem && branch.fStreamerType && (branch.fStreamerType < 20))
-                     elem = jsrio.createStreamerElement(target_name, branch.fStreamerType);
+                     elem = createStreamerElement(target_name, branch.fStreamerType);
 
                } else if (nb_leaves === 1) {
                   // no special constrains for the leaf names
@@ -1781,7 +1781,7 @@ const TTreeMethods = {
 
                   let arr = new Array(nb_leaves), isok = true;
                   for (let l = 0; l < nb_leaves; ++l) {
-                     arr[l] = jsrio.createMember(createLeafElem(branch.fLeaves.arr[l]), handle.file);
+                     arr[l] = createMemberStreamer(createLeafElem(branch.fLeaves.arr[l]), handle.file);
                      if (!arr[l]) isok = false;
                   }
 
@@ -1804,7 +1804,7 @@ const TTreeMethods = {
          }
 
          if (!member) {
-            member = jsrio.createMember(elem, handle.file);
+            member = createMemberStreamer(elem, handle.file);
 
             if ((member.base !== undefined) && member.basename) {
                // when element represent base class, we need handling which differ from normal IO
@@ -2091,14 +2091,14 @@ const TTreeMethods = {
 
             for (let nn = 0; nn < handle.arr.length; ++nn) {
                let item = handle.arr[nn],
-                  elem = jsrio.createStreamerElement(item.name, item.type);
+                  elem = createStreamerElement(item.name, item.type);
 
                elem.fType = item.type + jsrio.kOffsetL;
                elem.fArrayLength = 10;
                elem.fArrayDim = 1;
                elem.fMaxIndex[0] = 10; // 10 if artificial number, will be replaced during reading
 
-               item.arrmember = jsrio.createMember(elem, handle.file);
+               item.arrmember = createMemberStreamer(elem, handle.file);
             }
          }
       } else {
@@ -2186,7 +2186,7 @@ const TTreeMethods = {
                   }
 
                   // unpack data and create new blob
-                  return jsrio.R__unzip(blob, basket.fObjlen, false, buf.o).then(objblob => {
+                  return R__unzip(blob, basket.fObjlen, false, buf.o).then(objblob => {
 
                      if (objblob) {
                         buf = new TBuffer(objblob, 0, handle.file);
