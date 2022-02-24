@@ -15,7 +15,9 @@ JSROOT.v7 = v7;
 
 v7.CommMode = { kNormal: 1, kLessTraffic: 2, kOffline: 3 };
 
-class RObjectPainter extends JSROOT.ObjectPainter {
+let ensureRCanvas;
+
+class RObjectPainter extends ObjectPainter {
 
    constructor(dom, obj, opt, csstype) {
       super(dom,obj,opt);
@@ -1428,15 +1430,15 @@ class RAxisPainter extends RObjectPainter {
    }
 
    /** @summary draw RAxis object */
-   static draw(dom, obj, opt) {
+   static async draw(dom, obj, opt) {
       let painter = new RAxisPainter(dom, obj, opt);
       painter.disable_zooming = true;
-      return jsrp.ensureRCanvas(painter, false)
-                 .then(() => painter.redraw())
-                 .then(() => painter);
+      await ensureRCanvas(painter, false);
+      await painter.redraw();
+      return painter;
    }
 
-} // RAxisPainter
+} // class RAxisPainter
 
 // ==========================================================================================
 
@@ -2631,16 +2633,15 @@ class RFramePainter extends RObjectPainter {
    }
 
    /** @summary draw RFrame object */
-   static draw(dom, obj, opt) {
+   static async draw(dom, obj, opt) {
       let p = new RFramePainter(dom, obj);
       if (opt == "3d") p.mode3d = true;
-      return jsrp.ensureRCanvas(p, false).then(() => {
-         p.redraw();
-         return p;
-      });
+      await ensureRCanvas(p, false);
+      await p.redraw();
+      return p;
    }
 
-} // RFramePainter
+} // class RFramePainter
 
 // ===========================================================================
 
@@ -4850,23 +4851,19 @@ function drawRPadSnapshot(dom, snap /*, opt*/) {
   * @param {string|boolean} frame_kind  - false for no frame or "3d" for special 3D mode
   * @desc Assigns DOM, creates and draw RCanvas and RFrame if necessary, add painter to pad list of painters
   * @returns {Promise} for ready */
-function ensureRCanvas(painter, frame_kind) {
-   if (!painter) return Promise.reject('Painter not provided in ensureRCanvas');
+ensureRCanvas = async function(painter, frame_kind) {
+   if (!painter)
+      throw Error('Painter not provided in ensureRCanvas');
 
    // simple check - if canvas there, can use painter
-   let svg_c = painter.getCanvSvg();
-   // let noframe = (frame_kind === false) || (frame_kind == "3d") ? "noframe" : "";
+   if (painter.getCanvSvg().empty())
+      await RCanvasPainter.draw(painter.getDom(), null /* , noframe */);
 
-   let promise = !svg_c.empty() ? Promise.resolve(true) : RCanvasPainter.draw(painter.getDom(), null /* , noframe */);
+   if ((frame_kind !== false) && painter.getFrameSvg().select(".main_layer").empty())
+      await RFramePainter.draw(painter.getDom(), null, (typeof frame_kind === "string") ? frame_kind : "");
 
-   return promise.then(() => {
-      if (frame_kind === false) return;
-      if (painter.getFrameSvg().select(".main_layer").empty())
-         return RFramePainter.draw(painter.getDom(), null, (typeof frame_kind === "string") ? frame_kind : "");
-   }).then(() => {
-      painter.addToPadPrimitives();
-      return painter;
-   });
+   painter.addToPadPrimitives();
+   return painter;
 }
 
 
@@ -5010,13 +5007,15 @@ class RPavePainter extends RObjectPainter {
 
    /** @summary Redraw RPave object */
    redraw(/*reason*/) {
-      this.drawPave();
+      return this.drawPave();
    }
 
    /** @summary draw RPave object */
-   static draw(dom, pave, opt) {
+   static async draw(dom, pave, opt) {
       let painter = new RPavePainter(dom, pave, opt, "pave");
-      return jsrp.ensureRCanvas(painter, false).then(() => painter.drawPave());
+      await ensureRCanvas(painter, false);
+      await painter.drawPave();
+      return painter;
    }
 }
 
@@ -5470,16 +5469,15 @@ class RPalettePainter extends RObjectPainter {
    }
 
    /** @summary draw RPalette object */
-   static draw(dom, palette, opt) {
+   static async draw(dom, palette, opt) {
       let painter = new RPalettePainter(dom, palette, opt, "palette");
-
-      return jsrp.ensureRCanvas(painter, false).then(() => {
-         painter.createG(); // just create container, real drawing will be done by histogram
-         return painter;
-      });
+      await ensureRCanvas(painter, false);
+      painter.createG(); // just create container, real drawing will be done by histogram
+      return painter;
    }
 
-} // RPalettePainter
+} // class RPalettePainter
+
 
 /** @summary draw RFont object
   * @memberof JSROOT.v7
@@ -5535,6 +5533,5 @@ JSROOT.RCanvasPainter = RCanvasPainter;
 JSROOT.RPavePainter = RPavePainter;
 
 jsrp.drawRPadSnapshot = drawRPadSnapshot;
-jsrp.ensureRCanvas = ensureRCanvas;
 
 export { ensureRCanvas, RObjectPainter, RPavePainter, RFramePainter };

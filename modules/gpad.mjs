@@ -10,6 +10,8 @@ const webSnapIds = { kNone: 0,  kObject: 1, kSVG: 2, kSubPad: 3, kColors: 4, kSt
 
 // =======================================================================
 
+let ensureTCanvas; // will be set later
+
 JSROOT.EAxisBits = {
    kDecimals: JSROOT.BIT(7),
    kTickPlus: JSROOT.BIT(9),
@@ -1014,15 +1016,16 @@ class TAxisPainter extends ObjectPainter {
    }
 
    /** @summary draw TGaxis object */
-   static draw(dom, obj, opt) {
+   static async draw(dom, obj, opt) {
       let painter = new TAxisPainter(dom, obj, false);
       painter.disable_zooming = true;
-
-      return jsrp.ensureTCanvas(painter, false)
-             .then(() => { if (opt) painter.convertTo(opt); return painter.redraw(); });
+      await ensureTCanvas(painter, false);
+      if (opt) painter.convertTo(opt);
+      await painter.redraw();
+      return painter;
    }
 
-} // TAxisPainter
+} // class TAxisPainter
 
 // ===============================================
 
@@ -2375,13 +2378,12 @@ class TFramePainter extends ObjectPainter {
    }
 
    /** @summary draw TFrame object */
-   static draw(dom, obj, opt) {
+   static async draw(dom, obj, opt) {
       let fp = new TFramePainter(dom, obj);
-      return jsrp.ensureTCanvas(fp, false).then(() => {
-         if (opt == "3d") fp.mode3d = true;
-         fp.redraw();
-         return fp;
-      })
+      await ensureTCanvas(fp, false);
+      if (opt == "3d") fp.mode3d = true;
+      await fp.redraw();
+      return fp;
    }
 
 } // class TFramePainter
@@ -4966,7 +4968,7 @@ class TCanvasPainter extends TPadPainter {
  * @param {string|boolean} frame_kind  - false for no frame or "3d" for special 3D mode
  * @desc Assign dom, creates TCanvas if necessary, add to list of pad painters
  * @memberof JSROOT.Painter */
-async function ensureTCanvas(painter, frame_kind) {
+ensureTCanvas = async function(painter, frame_kind) {
    if (!painter)
       throw Error('Painter not provided in ensureTCanvas');
 
@@ -5003,7 +5005,6 @@ JSROOT.TFramePainter = TFramePainter;
 JSROOT.TPadPainter = TPadPainter;
 JSROOT.TCanvasPainter = TCanvasPainter;
 
-jsrp.ensureTCanvas = ensureTCanvas;
 jsrp.drawTPadSnapshot = drawTPadSnapshot;
 
 export { TAxisPainter, TFramePainter, TPadPainter, TCanvasPainter, ensureTCanvas };

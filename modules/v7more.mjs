@@ -172,8 +172,9 @@ class RLegendPainter extends RPavePainter {
    /** @summary draw RLegend object */
    static draw(dom, legend, opt) {
       let painter = new RLegendPainter(dom, legend, opt, "legend");
-
-     return ensureRCanvas(painter, false).then(() => painter.drawPave());
+      await ensureRCanvas(painter, false);
+      await painter.drawPave();
+      return painter;
    }
 
 } // class RLegendPainter

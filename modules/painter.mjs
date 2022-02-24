@@ -2343,7 +2343,7 @@ class ObjectPainter extends BasePainter {
 
    /** @summary Add painter to pad list of painters
      * @param {string} [pad_name] - optional pad name where painter should be add
-     * @desc Normally one should use {@link JSROOT.Painter.ensureTCanvas} to add painter to pad list of primitives
+     * @desc Normally one should use {@link ensureTCanvas} to add painter to pad list of primitives
      * @protected */
    addToPadPrimitives(pad_name) {
       if (pad_name !== undefined) this.setPadName(pad_name);
@@ -4018,12 +4018,14 @@ async function draw(dom, obj, opt) {
       let painter;
       if (handle.direct == "v7") {
          painter = new JSROOT.RObjectPainter(dom, obj, opt, handle.csstype);
-         await jsrp.ensureRCanvas(painter, handle.frame || false);
+         let padhandle = await import('./v7gpad.mjs');
+         await padhandle.ensureRCanvas(painter, handle.frame || false);
          painter.redraw = handle.func;
          await painter.redraw();
       } else if (handle.direct) {
          painter = new ObjectPainter(dom, obj, opt);
-         await jsrp.ensureTCanvas(painter, handle.frame || false);
+         let padhandle = await import('./gpad.mjs');
+         await padhandle.ensureTCanvas(painter, handle.frame || false);
          painter.redraw = handle.func;
          await painter.redraw();
       } else {

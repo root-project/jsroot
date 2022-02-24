@@ -3687,53 +3687,54 @@ class RH2Painter extends RHistPainter {
    }
 
    /** @summary draw RH2 object */
-   static draw(dom, obj, opt) {
+   static async draw(dom, obj, opt) {
       // create painter and add it to canvas
       let painter = new RH2Painter(dom, obj);
 
-      return ensureRCanvas(painter).then(() => {
+      await ensureRCanvas(painter);
 
-         painter.setAsMainPainter();
+      painter.setAsMainPainter();
 
-         painter.options = { Hist: false, Error: false, Zero: false, Mark: false,
-                             Line: false, Fill: false, Lego: 0, Surf: 0,
-                             Text: true, TextAngle: 0, TextKind: "",
-                             BaseLine: false, Mode3D: false, AutoColor: 0,
-                             Color: false, Scat: false, ScatCoef: 1, Candle: "", Box: false, BoxStyle: 0, Arrow: false, Contour: 0, Proj: 0,
-                             BarOffset: 0., BarWidth: 1., minimum: -1111, maximum: -1111 };
+      painter.options = { Hist: false, Error: false, Zero: false, Mark: false,
+                          Line: false, Fill: false, Lego: 0, Surf: 0,
+                          Text: true, TextAngle: 0, TextKind: "",
+                          BaseLine: false, Mode3D: false, AutoColor: 0,
+                          Color: false, Scat: false, ScatCoef: 1, Candle: "", Box: false, BoxStyle: 0, Arrow: false, Contour: 0, Proj: 0,
+                          BarOffset: 0., BarWidth: 1., minimum: -1111, maximum: -1111 };
 
-         let kind = painter.v7EvalAttr("kind", ""),
-             sub = painter.v7EvalAttr("sub", 0),
-             o = painter.options;
+      let kind = painter.v7EvalAttr("kind", ""),
+          sub = painter.v7EvalAttr("sub", 0),
+          o = painter.options;
 
-         o.Text = painter.v7EvalAttr("drawtext", false);
+      o.Text = painter.v7EvalAttr("drawtext", false);
 
-         switch(kind) {
-            case "lego": o.Lego = sub > 0 ? 10+sub : 12; o.Mode3D = true; break;
-            case "surf": o.Surf = sub > 0 ? 10+sub : 1; o.Mode3D = true; break;
-            case "box": o.Box = true; o.BoxStyle = 10 + sub; break;
-            case "err": o.Error = true; o.Mode3D = true; break;
-            case "cont": o.Contour = sub > 0 ? 10+sub : 1; break;
-            case "arr": o.Arrow = true; break;
-            case "scat": o.Scat = true; break;
-            case "col": o.Color = true; break;
-            default: if (!o.Text) o.Color = true;
-         }
+      switch(kind) {
+         case "lego": o.Lego = sub > 0 ? 10+sub : 12; o.Mode3D = true; break;
+         case "surf": o.Surf = sub > 0 ? 10+sub : 1; o.Mode3D = true; break;
+         case "box": o.Box = true; o.BoxStyle = 10 + sub; break;
+         case "err": o.Error = true; o.Mode3D = true; break;
+         case "cont": o.Contour = sub > 0 ? 10+sub : 1; break;
+         case "arr": o.Arrow = true; break;
+         case "scat": o.Scat = true; break;
+         case "col": o.Color = true; break;
+         default: if (!o.Text) o.Color = true;
+      }
 
-         // here we deciding how histogram will look like and how will be shown
-         // painter.decodeOptions(opt);
+      // here we deciding how histogram will look like and how will be shown
+      // painter.decodeOptions(opt);
 
-         if (painter.isRH2Poly()) {
-            if (o.Mode3D) o.Lego = 12;
-                     else o.Color = true;
-         }
+      if (painter.isRH2Poly()) {
+         if (o.Mode3D) o.Lego = 12;
+                  else o.Color = true;
+      }
 
-         painter._show_empty_bins = false;
+      painter._show_empty_bins = false;
 
-         painter.scanContent();
+      painter.scanContent();
 
-         return painter.callDrawFunc();
-      });
+      await painter.callDrawFunc();
+
+      return painter;
    }
 
 } //  class RH2Painter
@@ -3972,10 +3973,11 @@ class RHistStatsPainter extends RPavePainter {
    }
 
    /** @summary draw RHistStats object */
-   static draw(dom, stats, opt) {
+   static async draw(dom, stats, opt) {
       let painter = new RHistStatsPainter(dom, stats, opt, stats);
-
-      return ensureRCanvas(painter, false).then(() => painter.drawPave());
+      await ensureRCanvas(painter, false);
+      await painter.drawPave();
+      return painter;
    }
 
 } // class RHistStatsPainter
