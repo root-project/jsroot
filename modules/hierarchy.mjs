@@ -1,6 +1,6 @@
 import * as d3 from './d3.mjs';
 
-import { BasePainter, ObjectPainter, loadJSDOM } from './painter.mjs';
+import { BasePainter, ObjectPainter, loadJSDOM, getDrawSettings } from './painter.mjs';
 
 const jsrp = JSROOT.Painter; // FIXME - workaround
 
@@ -1943,7 +1943,7 @@ class HierarchyPainter extends BasePainter {
 
       if (!place || (place=="")) place = "item";
       let selector = (hitem._kind == "ROOT.TKey" && hitem._more) ? "noinspect" : "",
-          sett = jsrp.getDrawSettings(hitem._kind, selector), handle = sett.handle;
+          sett = getDrawSettings(hitem._kind, selector), handle = sett.handle;
 
       if (place == "icon") {
          let func = null;
@@ -2152,7 +2152,7 @@ class HierarchyPainter extends BasePainter {
          } else if (onlineprop) {
             this.fillOnlineMenu(menu, onlineprop, itemname);
          } else {
-            let sett = jsrp.getDrawSettings(hitem._kind, 'nosame');
+            let sett = getDrawSettings(hitem._kind, 'nosame');
 
             // allow to draw item even if draw function is not defined
             if (hitem._can_draw) {
@@ -3191,7 +3191,7 @@ class HierarchyPainter extends BasePainter {
    fillOnlineMenu(menu, onlineprop, itemname) {
 
       let node = this.findItem(itemname),
-          sett = jsrp.getDrawSettings(node._kind, 'nosame;noinspect'),
+          sett = getDrawSettings(node._kind, 'nosame;noinspect'),
           handle = jsrp.getDrawHandle(node._kind),
           root_type = (typeof node._kind == 'string') ? node._kind.indexOf("ROOT.") == 0 : false;
 
@@ -4084,7 +4084,7 @@ jsrp.drawInspector = function(dom, obj) {
       }
 
    painter.fill_context = function(menu, hitem) {
-      let sett = jsrp.getDrawSettings(hitem._kind, 'nosame');
+      let sett = getDrawSettings(hitem._kind, 'nosame');
       if (sett.opts)
          menu.addDrawMenu("nosub:Draw", sett.opts, function(arg) {
             if (!hitem || !hitem._obj) return;

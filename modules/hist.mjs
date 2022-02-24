@@ -1,11 +1,13 @@
 
 import * as d3 from './d3.mjs';
 
-import { ColorPalette, ObjectPainter, floatToString, DrawOptions } from './painter.mjs';
+import { ColorPalette, ObjectPainter, floatToString, DrawOptions, buildSvgPath, toHex, getDrawSettings } from './painter.mjs';
 
 import { ensureTCanvas } from './gpad.mjs';
 
 const jsrp = JSROOT.Painter; // FIXME - workaround
+
+const CoordSystem = { kCARTESIAN: 1, kPOLAR: 2, kCYLINDRICAL: 3, kSPHERICAL: 4, kRAPIDITY: 5 };
 
 const createDefaultPalette = () => {
    const hue2rgb = (p, q, t) => {
@@ -21,7 +23,7 @@ const createDefaultPalette = () => {
             r = hue2rgb(p, q, h + 1/3),
             g = hue2rgb(p, q, h),
             b = hue2rgb(p, q, h - 1/3);
-      return '#' + jsrp.toHex(r) + jsrp.toHex(g) + jsrp.toHex(b);
+      return '#' + toHex(r) + toHex(g) + toHex(b);
    }, minHue = 0, maxHue = 280, maxPretty = 50, palette = [];
    for (let i = 0; i < maxPretty; ++i) {
       const hue = (maxHue - (i + 1) * ((maxHue - minHue) / maxPretty)) / 360;
@@ -33,7 +35,7 @@ const createDefaultPalette = () => {
 const createGrayPalette = () => {
    let palette = [];
    for (let i = 0; i < 50; ++i) {
-      const code = jsrp.toHex((i+2)/60);
+      const code = toHex((i+2)/60);
       palette.push('#'+code+code+code);
    }
    return new ColorPalette(palette);
@@ -184,9 +186,9 @@ const getColorPalette = id => {
        // create the colors...
        const nColorsGradient = Math.round(Math.floor(NColors*stops[g]) - Math.floor(NColors*stops[g-1]));
        for (let c = 0; c < nColorsGradient; c++) {
-          const col = '#' + jsrp.toHex(Red[g-1] + c * (Red[g] - Red[g-1]) / nColorsGradient, 1)
-                          + jsrp.toHex(Green[g-1] + c * (Green[g] - Green[g-1]) / nColorsGradient, 1)
-                          + jsrp.toHex(Blue[g-1] + c * (Blue[g] - Blue[g-1]) / nColorsGradient, 1);
+          const col = '#' + toHex(Red[g-1] + c * (Red[g] - Red[g-1]) / nColorsGradient, 1)
+                          + toHex(Green[g-1] + c * (Green[g] - Green[g-1]) / nColorsGradient, 1)
+                          + toHex(Blue[g-1] + c * (Blue[g] - Blue[g-1]) / nColorsGradient, 1);
           palette.push(col);
        }
     }
@@ -1464,7 +1466,7 @@ class THistDrawOptions {
               Spec: false, Pie: false, List: false, Zscale: false, Zvert: true, PadPalette: false,
               Candle: "", Violin: "", Scaled: null, Circular: 0,
               GLBox: 0, GLColor: false, Project: "",
-              System: jsrp.Coord.kCARTESIAN,
+              System: CoordSystem.kCARTESIAN,
               AutoColor: false, NoStat: false, ForceStat: false, PadStats: false, PadTitle: false, AutoZoom: false,
               HighRes: 0, Zero: true, Palette: 0, BaseLine: false,
               Optimize: JSROOT.settings.OptimizeDraw, adjustFrame: false,
@@ -1674,10 +1676,10 @@ class THistDrawOptions {
       }
 
       if (d.check('SCAT')) this.Scat = true;
-      if (d.check('POL')) this.System = jsrp.Coord.kPOLAR;
-      if (d.check('CYL')) this.System = jsrp.Coord.kCYLINDRICAL;
-      if (d.check('SPH')) this.System = jsrp.Coord.kSPHERICAL;
-      if (d.check('PSR')) this.System = jsrp.Coord.kRAPIDITY;
+      if (d.check('POL')) this.System = CoordSystem.kPOLAR;
+      if (d.check('CYL')) this.System = CoordSystem.kCYLINDRICAL;
+      if (d.check('SPH')) this.System = CoordSystem.kSPHERICAL;
+      if (d.check('PSR')) this.System = CoordSystem.kRAPIDITY;
 
       if (d.check('TRI', true)) {
          this.Color = false;
@@ -1764,7 +1766,7 @@ class THistDrawOptions {
           ((this.Surf > 0) || this.Error && (hdim == 2))) this.Mode3D = true;
 
       //if (this.Surf == 15)
-      //   if (this.System == jsrp.Coord.kPOLAR || this.System == jsrp.Coord.kCARTESIAN)
+      //   if (this.System == CoordSystem.kPOLAR || this.System == CoordSystem.kCARTESIAN)
       //      this.Surf = 13;
    }
 
@@ -3870,8 +3872,8 @@ class TH1Painter extends THistPainter {
       }
 
       let kind = (this.options.ErrorKind === 4) ? "bezier" : "line",
-          path1 = jsrp.buildSvgPath(kind, bins1),
-          path2 = jsrp.buildSvgPath("L"+kind, bins2);
+          path1 = buildSvgPath(kind, bins1),
+          path2 = buildSvgPath("L"+kind, bins2);
 
       this.draw_g.append("svg:path")
                  .attr("d", path1.path + path2.path + "Z")
@@ -4480,7 +4482,7 @@ class TH1Painter extends THistPainter {
 
       menu.add("Auto zoom-in", () => this.autoZoom());
 
-      let sett = jsrp.getDrawSettings("ROOT." + this.getObject()._typename, 'nosame');
+      let sett = getDrawSettings("ROOT." + this.getObject()._typename, 'nosame');
 
       menu.addDrawMenu("Draw with", sett.opts, arg => {
          if (arg==='inspect')
@@ -4813,7 +4815,7 @@ class TH2Painter extends THistPainter {
          menu.add("Auto zoom-in", () => this.autoZoom());
       }
 
-      let sett = jsrp.getDrawSettings("ROOT." + this.getObject()._typename, 'nosame');
+      let sett = getDrawSettings("ROOT." + this.getObject()._typename, 'nosame');
 
       menu.addDrawMenu("Draw with", sett.opts, arg => {
          if (arg == 'inspect')

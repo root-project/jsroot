@@ -1,7 +1,7 @@
 
 import * as d3 from './d3.mjs';
 
-import { ObjectPainter, floatToString, DrawOptions } from './painter.mjs';
+import { ObjectPainter, floatToString, DrawOptions, buildSvgPath, toHex } from './painter.mjs';
 
 // import { mth } from './math.mjs';
 
@@ -713,7 +713,7 @@ class TF1Painter extends ObjectPainter {
             if ((h0 > h) || (h0 < 0)) h0 = h;
          }
 
-         let path = jsrp.buildSvgPath("bezier", this.bins, h0, 2);
+         let path = buildSvgPath("bezier", this.bins, h0, 2);
 
          if (!this.lineatt.empty())
             this.draw_g.append("svg:path")
@@ -1203,15 +1203,15 @@ class TGraphPainter extends ObjectPainter {
    appendExclusion(is_curve, path, drawbins, excl_width) {
       let extrabins = [];
       for (let n = drawbins.length-1; n >= 0; --n) {
-         let bin = drawbins[n];
-         let dlen = Math.sqrt(bin.dgrx*bin.dgrx + bin.dgry*bin.dgry);
+         let bin = drawbins[n],
+             dlen = Math.sqrt(bin.dgrx*bin.dgrx + bin.dgry*bin.dgry);
          // shift point, using
          bin.grx += excl_width*bin.dgry/dlen;
          bin.gry -= excl_width*bin.dgrx/dlen;
          extrabins.push(bin);
       }
 
-      let path2 = jsrp.buildSvgPath("L" + (is_curve ? "bezier" : "line"), extrabins);
+      let path2 = buildSvgPath("L" + (is_curve ? "bezier" : "line"), extrabins);
 
       this.draw_g.append("svg:path")
                  .attr("d", path.path + path2.path + "Z")
@@ -1240,7 +1240,7 @@ class TGraphPainter extends ObjectPainter {
             bin.gry = funcs.gry(bin.y - bin.eylow);
          }
 
-         let path1 = jsrp.buildSvgPath((options.EF > 1) ? "bezier" : "line", drawbins),
+         let path1 = buildSvgPath((options.EF > 1) ? "bezier" : "line", drawbins),
              bins2 = [];
 
          for (let n = drawbins.length-1; n >= 0; --n) {
@@ -1250,7 +1250,7 @@ class TGraphPainter extends ObjectPainter {
          }
 
          // build upper part (in reverse direction)
-         let path2 = jsrp.buildSvgPath((options.EF > 1) ? "Lbezier" : "Lline", bins2);
+         let path2 = buildSvgPath((options.EF > 1) ? "Lbezier" : "Lline", bins2);
 
          draw_g.append("svg:path")
                .attr("d", path1.path + path2.path + "Z")
@@ -1280,7 +1280,7 @@ class TGraphPainter extends ObjectPainter {
          let kind = "line"; // simple line
          if (excl_width) kind += "calc"; // we need to calculated deltas to build exclusion points
 
-         let path = jsrp.buildSvgPath(kind, drawbins);
+         let path = buildSvgPath(kind, drawbins);
 
          if (excl_width)
              this.appendExclusion(false, path, drawbins, excl_width);
@@ -1312,7 +1312,7 @@ class TGraphPainter extends ObjectPainter {
          let kind = "bezier";
          if (excl_width) kind += "calc"; // we need to calculated deltas to build exclusion points
 
-         let path = jsrp.buildSvgPath(kind, curvebins);
+         let path = buildSvgPath(kind, curvebins);
 
          if (excl_width)
              this.appendExclusion(true, path, curvebins, excl_width);
@@ -2705,7 +2705,7 @@ class TGraphPolarPainter extends ObjectPainter {
 
       if (this.options.curve && bins.length)
          this.draw_g.append("svg:path")
-                 .attr("d", jsrp.buildSvgPath("bezier", bins).path)
+                 .attr("d", buildSvgPath("bezier", bins).path)
                  .style("fill", "none")
                  .call(this.lineatt.func);
 
@@ -3068,7 +3068,7 @@ class TSplinePainter extends ObjectPainter {
             if ((h0 > h) || (h0 < 0)) h0 = h;
          }
 
-         let path = jsrp.buildSvgPath("bezier", bins, h0, 2);
+         let path = buildSvgPath("bezier", bins, h0, 2);
 
          this.draw_g.append("svg:path")
              .attr("class", "line")
@@ -4103,7 +4103,7 @@ class TASImagePainter extends ObjectPainter {
             getPaletteColor: function(pal, zval) {
                if (!this.arr || !this.rgba) return "white";
                let indx = Math.round((zval - this.arr[0]) / (this.arr[this.arr.length-1] - this.arr[0]) * (this.rgba.length-4)/4) * 4;
-               return "#" + jsrp.toHex(this.rgba[indx],1) + jsrp.toHex(this.rgba[indx+1],1) + jsrp.toHex(this.rgba[indx+2],1) + jsrp.toHex(this.rgba[indx+3],1);
+               return "#" + toHex(this.rgba[indx],1) + toHex(this.rgba[indx+1],1) + toHex(this.rgba[indx+2],1) + toHex(this.rgba[indx+3],1);
             }
          };
          for (let k = 0; k < 200; k++)

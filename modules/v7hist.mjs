@@ -1,9 +1,8 @@
-/// @file JSRoot.v7hist.js
 /// JavaScript ROOT v7 graphics for histogram classes
 
 import * as d3 from './d3.mjs';
 
-import { floatToString, DrawOptions } from './painter.mjs';
+import { floatToString, DrawOptions, buildSvgPath, getDrawSettings } from './painter.mjs';
 
 import { RObjectPainter, RPavePainter, ensureRCanvas } from './v7gpad.mjs';
 
@@ -1186,13 +1185,13 @@ class RH1Painter extends RHistPainter {
          gry1 = Math.round(funcs.gry(y + yerr));
          gry2 = Math.round(funcs.gry(y - yerr));
 
-         bins1.push({grx:grx, gry: gry1});
-         bins2.unshift({grx:grx, gry: gry2});
+         bins1.push({grx: grx, gry: gry1});
+         bins2.unshift({grx: grx, gry: gry2});
       }
 
       let kind = (this.options.ErrorKind === 4) ? "bezier" : "line",
-          path1 = jsrp.buildSvgPath(kind, bins1),
-          path2 = jsrp.buildSvgPath("L"+kind, bins2);
+          path1 = buildSvgPath(kind, bins1),
+          path2 = buildSvgPath("L"+kind, bins2);
 
       if (this.fillatt.empty()) this.fillatt.setSolidColor("blue");
 
@@ -1771,7 +1770,7 @@ class RH1Painter extends RHistPainter {
 
       menu.add("Auto zoom-in", () => this.autoZoom());
 
-      let sett = jsrp.getDrawSettings("ROOT." + this.getObject()._typename, 'nosame');
+      let sett = getDrawSettings("ROOT." + this.getObject()._typename, 'nosame');
 
       menu.addDrawMenu("Draw with", sett.opts, arg => {
          if (arg==='inspect')
@@ -1999,7 +1998,7 @@ class RH2Painter extends RHistPainter {
 
       menu.add("Auto zoom-in", () => this.autoZoom());
 
-      let sett = jsrp.getDrawSettings("ROOT." + this.getObject()._typename, 'nosame');
+      let sett = getDrawSettings("ROOT." + this.getObject()._typename, 'nosame');
 
       menu.addDrawMenu("Draw with", sett.opts, arg => {
          if (arg==='inspect')

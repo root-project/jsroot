@@ -161,13 +161,6 @@ class TRandom {
   * @summary Collection of Painter-related methods and classes
   * @alias JSROOT.Painter */
 let jsrp = {
-   Coord: {
-      kCARTESIAN: 1,
-      kPOLAR: 2,
-      kCYLINDRICAL: 3,
-      kSPHERICAL: 4,
-      kRAPIDITY: 5
-   },
    root_colors: [],
    root_line_styles: ["", "", "3,3", "1,2",
       "3,4,1,4", "5,3,1,3", "5,3,1,3,1,3,1,3", "5,5",
@@ -1334,7 +1327,7 @@ jsrp.chooseTimeFormat = function(awidth, ticks) {
   * @param {string} kind  should contain "bezier" or "line".
   * If first symbol "L", then it used to continue drawing
   * @private */
-jsrp.buildSvgPath = function(kind, bins, height, ndig) {
+function buildSvgPath(kind, bins, height, ndig) {
 
    const smooth = kind.indexOf("bezier") >= 0;
 
@@ -4369,4 +4362,4 @@ JSROOT.makeSVG = makeSVG;
 // FIXME: should be eliminated
 JSROOT.Painter = jsrp;
 
-export { ColorPalette, BasePainter, ObjectPainter, getElementRect, draw, redraw, makeSVG, jsrp, loadJSDOM, floatToString, DrawOptions };
+export { ColorPalette, BasePainter, ObjectPainter, getElementRect, draw, redraw, makeSVG, jsrp, loadJSDOM, floatToString, DrawOptions, buildSvgPath, toHex, getDrawSettings };

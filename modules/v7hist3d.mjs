@@ -4,7 +4,7 @@ import * as d3 from './d3.mjs';
 
 import * as THREE from './three.mjs';
 
-import { floatToString } from './painter.mjs';
+import { floatToString, getDrawSettings } from './painter.mjs';
 
 import { assign3DHandler, createRender3D } from './base3d.mjs';
 
@@ -2925,7 +2925,7 @@ class RH3Painter extends RHistPainter {
    /** @summary Fill histogram context menu */
    fillHistContextMenu(menu) {
 
-      let sett = jsrp.getDrawSettings("ROOT." + this.getObject()._typename, 'nosame');
+      let sett = getDrawSettings("ROOT." + this.getObject()._typename, 'nosame');
 
       menu.addDrawMenu("Draw with", sett.opts, arg => {
          if (arg==='inspect')
