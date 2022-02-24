@@ -239,6 +239,10 @@ let settings = {
    DragGraphs: true
 };
 
+function changeSettings(args) {
+   Object.assign(settings, args);
+}
+
 /** @namespace
   * @alias JSROOT.gStyle
   * @summary Insiance of TStyle object like in ROOT
@@ -1832,6 +1836,7 @@ browser,
 _,
 constants,
 settings,
+changeSettings,
 gStyle,
 jsroot_require as define,
 jsroot_require as require,

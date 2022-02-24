@@ -7,7 +7,7 @@ import { closeCurrentWindow, showProgress } from './utils.mjs';
 import { ColorPalette, ObjectPainter, DrawOptions, AxisPainterMethods,
          createMenu, closeMenu, isPromise, addColor, registerForResize,
          getElementRect, chooseTimeFormat, selectActivePad, addDrawFunc,
-         getActivePad, getAbsPosInCanvas, compressSVG } from './painter.mjs';
+         getActivePad, getAbsPosInCanvas, compressSVG, cleanup, resize } from './painter.mjs';
 
 const jsrp = JSROOT.Painter; // FIXME - workaround
 
@@ -4279,7 +4279,7 @@ class RCanvasPainter extends RPadPainter {
       while (main.node().firstChild)
          lst.push(main.node().removeChild(main.node().firstChild));
 
-      if (!sidebar.empty()) JSROOT.cleanup(sidebar.node());
+      if (!sidebar.empty()) cleanup(sidebar.node());
 
       this.setLayoutKind("simple"); // restore defaults
       origin.html(""); // cleanup origin
@@ -4289,7 +4289,7 @@ class RCanvasPainter extends RPadPainter {
          for (let k=0;k<lst.length;++k)
             main.node().appendChild(lst[k]);
          this.setLayoutKind(layout_kind);
-         JSROOT.resize(main.node());
+         resize(main.node());
          return Promise.resolve(true);
       }
 
@@ -4316,7 +4316,7 @@ class RCanvasPainter extends RPadPainter {
          origin.property('mdi', null);
 
          // resize main drawing and let draw extras
-         JSROOT.resize(main.node());
+         resize(main.node());
 
          return true;
       });

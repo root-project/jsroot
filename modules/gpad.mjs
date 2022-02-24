@@ -7,7 +7,7 @@ import { ColorPalette, ObjectPainter, DrawOptions, AxisPainterMethods,
          createMenu, closeMenu, registerForResize, getElementRect, isPromise,
          chooseTimeFormat, selectActivePad, getActivePad, getAbsPosInCanvas,
          adoptRootColors, extendRootColors, getRGBfromTColor, getSvgLineStyle,
-         compressSVG } from './painter.mjs';
+         compressSVG, cleanup, resize } from './painter.mjs';
 
 // identifier used in TWebCanvas painter
 const webSnapIds = { kNone: 0,  kObject: 1, kSVG: 2, kSubPad: 3, kColors: 4, kStyle: 5 };
@@ -4340,7 +4340,7 @@ class TCanvasPainter extends TPadPainter {
       while (main.node().firstChild)
          lst.push(main.node().removeChild(main.node().firstChild));
 
-      if (!sidebar.empty()) JSROOT.cleanup(sidebar.node());
+      if (!sidebar.empty()) cleanup(sidebar.node());
 
       this.setLayoutKind("simple"); // restore defaults
       origin.html(""); // cleanup origin
@@ -4350,7 +4350,7 @@ class TCanvasPainter extends TPadPainter {
          for (let k = 0; k < lst.length; ++k)
             main.node().appendChild(lst[k]);
          this.setLayoutKind(layout_kind);
-         JSROOT.resize(main.node());
+         resize(main.node());
          return Promise.resolve(true);
       }
 
@@ -4377,7 +4377,7 @@ class TCanvasPainter extends TPadPainter {
          origin.property('mdi', null);
 
          // resize main drawing and let draw extras
-         JSROOT.resize(main.node());
+         resize(main.node());
 
          return true;
       });

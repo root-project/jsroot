@@ -140,7 +140,7 @@
 
          let keyid = null, optid, testfile, testobj, testinterval = 10, hpainter = null;
 
-         function ProcessClick(durl, filename, itemname, opt, jsonname) {
+         async function ProcessClick(durl, filename, itemname, opt, jsonname) {
 
             keyid = null; // stop execution of running test loop (if any)
 
@@ -155,16 +155,11 @@
             if (JSROOT.hpainter)
                JSROOT.hpainter.cleanup();
 
-            if (typeof JSROOT.cleanup === 'function')
-               JSROOT.cleanup('viewer');
+            let ph = await JSROOT.require('painter');
+            ph.cleanup('viewer');
 
-            if (no_interactive && JSROOT.settings) {
-               JSROOT.settings.Tooltip = 0;
-               JSROOT.settings.ContextMenu = false;
-               JSROOT.settings.Zooming = false;
-               JSROOT.settings.MoveResize = false;
-               JSROOT.settings.DragAndDrop = false;
-            }
+            if (no_interactive)
+               await JSROOT.changeSettings({ Tooltip: 0, ContextMenu: false, Zooming: false, MoveResize: false, DragAndDrop: false });
 
             if (durl.length > 0) {
                let viewer = document.getElementById( 'viewer_frame' );
@@ -214,7 +209,7 @@
             });
          };
 
-         function RunBigTest(interval, doinit) {
+         async function RunBigTest(interval, doinit) {
             if (doinit) {
                let running = (keyid != null); // indication that test running - no need to relaunch events
                keyid = select_key || 'TH1'; optid = -1;
@@ -291,7 +286,8 @@
             // if ((url.length==0) || (keyid != 'Misc')) return RunBigTest(0);
 
             if (hpainter) { hpainter.cleanup(); hpainter = null; }
-            JSROOT.cleanup("viewer");
+            let ph = await JSROOT.require('painter');
+            ph.cleanup('viewer');
 
             if (url.length > 0) {
                if (no_interactive) url += "&interactive=0";

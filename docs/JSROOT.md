@@ -694,17 +694,17 @@ One is also able to update the drawing with a new version of the object:
 The JSROOT.redraw() function will call JSROOT.draw if the drawing was not performed before.
 
 In the case when changing of HTML layout leads to resize of element with JSROOT drawing,
-one should call JSROOT.resize() to let JSROOT adjust drawing size. One should do:
+one should call `resize()` to let JSROOT adjust drawing size. One should do:
 
-    JSROOT.resize("drawing");
+    resize("drawing");
 
  As second argument one could specify exact size for draw elements like:
 
-    JSROOT.resize("drawing", { width: 500, height: 200 } );
+    resize("drawing", { width: 500, height: 200 } );
 
 To correctly cleanup JSROOT drawings from HTML element, one should call:
 
-    JSROOT.cleanup("drawing");
+    cleanup("drawing");
 
 
 ### File API

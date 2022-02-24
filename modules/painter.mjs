@@ -327,7 +327,7 @@ function readStyleFromURL(url) {
 
 /** @summary Generates all root colors, used also in jstests to reset colors
   * @private */
-jsrp.createRootColors = function() {
+function createRootColors() {
    let colorMap = ['white', 'black', 'red', 'green', 'blue', 'yellow', 'magenta', 'cyan', '#59d454', '#5954d9', 'white'];
    colorMap[110] = 'white';
 
@@ -3635,6 +3635,30 @@ jsrp.drawRawText = function(dom, txt /*, opt*/) {
    return painter.drawText();
 }
 
+/** @summary Check resize of drawn element
+  * @param {string|object} dom - id or DOM element
+  * @param {boolean|object} arg - options on how to resize
+  * @desc As first argument dom one should use same argument as for the drawing
+  * As second argument, one could specify "true" value to force redrawing of
+  * the element even after minimal resize
+  * Or one just supply object with exact sizes like { width:300, height:200, force:true };
+  * @example
+  * resize("drawing", { width: 500, height: 200 } );
+  * resize(document.querySelector("#drawing"), true); */
+function resize(dom, arg) {
+   if (arg === true)
+      arg = { force: true };
+   else if (typeof arg !== 'object')
+      arg = null;
+   let done = false;
+   new ObjectPainter(dom).forEachPainter(painter => {
+      if (!done && (typeof painter.checkResize == 'function'))
+         done = painter.checkResize(arg);
+   });
+   return done;
+}
+
+
 /** @summary Register handle to react on window resize
   * @desc function used to react on browser window resize event
   * While many resize events could come in short time,
@@ -3665,7 +3689,7 @@ function registerForResize(handle, delay) {
             if (mdi && typeof mdi.checkMDIResize == 'function') {
                mdi.checkMDIResize();
             } else {
-               JSROOT.resize(node.node());
+               resize(node.node());
             }
          }
       }
@@ -3976,6 +4000,20 @@ function getElementMainPainter(dom) {
    return new ObjectPainter(dom).getMainPainter(true);
 }
 
+/** @summary Safely remove all JSROOT drawings from specified element
+  * @param {string|object} dom - id or DOM element
+  * @requires painter
+  * @example
+  * JSROOT.cleanup("drawing");
+  * JSROOT.cleanup(document.querySelector("#drawing")); */
+function cleanup(dom) {
+   let dummy = new ObjectPainter(dom), lst = [];
+   dummy.forEachPainter(p => { if (lst.indexOf(p) < 0) lst.push(p); });
+   lst.forEach(p => p.cleanup());
+   dummy.selectDom().html("");
+   return lst;
+}
+
 
 /** @summary Draw object in specified HTML element with given draw options.
   * @param {string|object} dom - id of div element to draw or directly DOMElement
@@ -4145,9 +4183,9 @@ function redraw(dom, obj, opt) {
       return redraw_res.then(() => res_painter);
    }
 
-   JSROOT.cleanup(dom);
+   cleanup(dom);
 
-   return JSROOT.draw(dom, obj, opt);
+   return draw(dom, obj, opt);
 }
 
 /** @summary Save object, drawn in specified element, as JSON.
@@ -4248,7 +4286,7 @@ function makeSVG(args) {
 
          svg = compressSVG(svg);
 
-         JSROOT.cleanup(main.node());
+         cleanup(main.node());
 
          main.remove();
 
@@ -4265,44 +4303,7 @@ function makeSVG(args) {
    return loadJSDOM().then(handle => build(handle.d3.select('body').append('div')));
 }
 
-/** @summary Check resize of drawn element
-  * @param {string|object} dom - id or DOM element
-  * @param {boolean|object} arg - options on how to resize
-  * @desc As first argument dom one should use same argument as for the drawing
-  * As second argument, one could specify "true" value to force redrawing of
-  * the element even after minimal resize
-  * Or one just supply object with exact sizes like { width:300, height:200, force:true };
-  * @example
-  * JSROOT.resize("drawing", { width: 500, height: 200 } );
-  * JSROOT.resize(document.querySelector("#drawing"), true); */
-JSROOT.resize = function(dom, arg) {
-   if (arg === true)
-      arg = { force: true };
-   else if (typeof arg !== 'object')
-      arg = null;
-   let done = false;
-   new ObjectPainter(dom).forEachPainter(painter => {
-      if (!done && (typeof painter.checkResize == 'function'))
-         done = painter.checkResize(arg);
-   });
-   return done;
-}
-
-/** @summary Safely remove all JSROOT drawings from specified element
-  * @param {string|object} dom - id or DOM element
-  * @requires painter
-  * @example
-  * JSROOT.cleanup("drawing");
-  * JSROOT.cleanup(document.querySelector("#drawing")); */
-JSROOT.cleanup = function(dom) {
-   let dummy = new ObjectPainter(dom), lst = [];
-   dummy.forEachPainter(p => { if (lst.indexOf(p) < 0) lst.push(p); });
-   lst.forEach(p => p.cleanup());
-   dummy.selectDom().html("");
-   return lst;
-}
-
-jsrp.createRootColors();
+createRootColors();
 
 if (JSROOT.nodejs) readStyleFromURL("?interactive=0&tooltip=0&nomenu&noprogress&notouch&toolbar=0&webgl=0");
 
@@ -4312,27 +4313,15 @@ jsrp.toHex = toHex;
 jsrp.floatToString = floatToString;
 jsrp.addDrawFunc = addDrawFunc;
 
-// FIXME: should be eliminated
-JSROOT.TAttLineHandler = TAttLineHandler;
-JSROOT.TAttFillHandler = TAttFillHandler;
-JSROOT.TAttMarkerHandler = TAttMarkerHandler;
-JSROOT.FontHandler = FontHandler;
-JSROOT.BasePainter = BasePainter;
-JSROOT.ObjectPainter = ObjectPainter;
-JSROOT.draw = draw;
-JSROOT.redraw = redraw;
-JSROOT.makeSVG = makeSVG;
-
-// FIXME: should be eliminated
-JSROOT.Painter = jsrp;
-
 export {
 
          ColorPalette, BasePainter, ObjectPainter, DrawOptions, AxisPainterMethods,
          TRandom, TAttLineHandler, TAttFillHandler, TAttMarkerHandler, FontHandler,
-         getElementRect, draw, redraw, makeSVG, jsrp, loadJSDOM, floatToString, buildSvgPath, toHex, isPromise,
+         getElementRect,
+         draw, redraw, cleanup, resize,
+         makeSVG, jsrp, loadJSDOM, floatToString, buildSvgPath, toHex, isPromise,
          getDrawSettings, getDrawHandle, canDraw, addDrawFunc,
          getElementCanvPainter, getElementMainPainter, createMenu, closeMenu, registerForResize,
-         getColor, addColor, adoptRootColors, extendRootColors, getRGBfromTColor,
+         getColor, addColor, adoptRootColors, extendRootColors, getRGBfromTColor, createRootColors,
          getSvgLineStyle, compressSVG, drawingJSON, readStyleFromURL,
          chooseTimeFormat, selectActivePad, getActivePad, getAbsPosInCanvas };

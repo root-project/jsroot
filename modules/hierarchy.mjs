@@ -6,7 +6,7 @@ import { BasePainter, ObjectPainter, loadJSDOM,
          getDrawSettings, getDrawHandle, canDraw, addDrawFunc,
          getElementMainPainter, getElementCanvPainter,
          createMenu, registerForResize, selectActivePad, getRGBfromTColor,
-         compressSVG, readStyleFromURL } from './painter.mjs';
+         compressSVG, readStyleFromURL, cleanup, resize } from './painter.mjs';
 
 import { produceLegend } from './hist.mjs';
 
@@ -3376,7 +3376,7 @@ class HierarchyPainter extends BasePainter {
 
       this.clearDrop(frame);
 
-      let lst = JSROOT.cleanup(frame);
+      let lst = cleanup(frame);
 
       // we remove all painters references from items
       if (lst && (lst.length > 0))
@@ -4071,7 +4071,7 @@ jsrp.drawStreamerInfo = function(dom, lst) {
   * @private */
 jsrp.drawInspector = function(dom, obj) {
 
-   JSROOT.cleanup(dom);
+   cleanup(dom);
    let painter = new HierarchyPainter('inspector', dom, 'white');
 
    // in batch mode HTML drawing is not possible, just keep object reference for a minute
@@ -4101,7 +4101,7 @@ jsrp.drawInspector = function(dom, obj) {
                if (arg == "inspect")
                   return this.showInspector(obj);
             }
-            JSROOT.cleanup(ddom);
+            cleanup(ddom);
             JSROOT.draw(ddom, obj, arg);
          });
    }
@@ -4132,7 +4132,7 @@ class MDIDisplay extends JSROOT.BasePainter {
          this.setDom(frameid);
          this.selectDom().property('mdi', this);
       }
-      this.cleanupFrame = JSROOT.cleanup; // use standard cleanup function by default
+      this.cleanupFrame = cleanup; // use standard cleanup function by default
       this.active_frame_title = ""; // keep title of active frame
    }
 
@@ -4472,7 +4472,7 @@ class GridDisplay extends MDIDisplay {
        }, resizeGroup = grid => {
           let sel = findGroup(grid);
           if (!sel.classed('jsroot_newgrid')) sel = sel.select(".jsroot_newgrid");
-          sel.each(function() { JSROOT.resize(this); });
+          sel.each(function() { resize(this); });
        };
 
       if (action == "start") {
@@ -4681,7 +4681,7 @@ class FlexibleDisplay extends MDIDisplay {
 
       if (this.getFrameState(frame) != "min") {
          selectActivePad({ pp: getElementCanvPainter(frame), active: true });
-         JSROOT.resize(frame);
+         resize(frame);
       }
    }
 
@@ -4775,7 +4775,7 @@ class FlexibleDisplay extends MDIDisplay {
 
          main.style("left", rect.x + "px").style("top", rect.y + "px");
       } else if (!no_redraw) {
-         JSROOT.resize(frame);
+         resize(frame);
       }
 
       return true;
@@ -4914,7 +4914,7 @@ class FlexibleDisplay extends MDIDisplay {
          moving_div.remove();
          moving_div = null;
          if (!doing_move)
-            JSROOT.resize(moving_frame.select(".jsroot_flex_draw").node());
+            resize(moving_frame.select(".jsroot_flex_draw").node());
       });
 
       main.select(".jsroot_flex_header").call(drag_object);
@@ -4978,7 +4978,7 @@ class FlexibleDisplay extends MDIDisplay {
                 .style('top', Math.round(h/ny*((i-i%nx)/nx)) + "px")
                 .style('width', Math.round(w/nx - 4) + "px")
                 .style('height', Math.round(h/ny - 4) + "px");
-         JSROOT.resize(frame);
+         resize(frame);
       });
    }
 
@@ -5137,7 +5137,7 @@ JSROOT.createTreePlayer = function(player) {
       main.select(".treedraw_opt").property("value", args && args.drawopt ? args.drawopt : "").on("change", () => this.performDraw());
       main.select(".treedraw_number").attr("value", args && args.numentries ? args.numentries : ""); // .on("change", () => this.performDraw());
       main.select(".treedraw_first").attr("value", args && args.firstentry ? args.firstentry : ""); // .on("change", () => this.performDraw());
-      main.select(".treedraw_clear").on("click", () => JSROOT.cleanup(this.drawid));
+      main.select(".treedraw_clear").on("click", () => cleanup(this.drawid));
    }
 
    player.showPlayer = function(args) {
@@ -5220,7 +5220,7 @@ JSROOT.createTreePlayer = function(player) {
          if (!Number.isInteger(args.firstentry)) delete args.firstentry;
       }
 
-      if (args.drawopt) JSROOT.cleanup(this.drawid);
+      if (args.drawopt) cleanup(this.drawid);
 
       const process_result = obj => JSROOT.redraw(this.drawid, obj);
 
@@ -5276,7 +5276,7 @@ JSROOT.createTreePlayer = function(player) {
 
       const submitDrawRequest = () => {
          JSROOT.httpRequest(url, 'object').then(res => {
-            JSROOT.cleanup(this.drawid);
+            cleanup(this.drawid);
             JSROOT.draw(this.drawid, res, option);
          });
       };
@@ -5291,7 +5291,7 @@ JSROOT.createTreePlayer = function(player) {
    }
 
    player.checkResize = function(/*arg*/) {
-      JSROOT.resize(this.drawid);
+      resize(this.drawid);
    }
 
    return player;
