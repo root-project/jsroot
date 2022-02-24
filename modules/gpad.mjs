@@ -9,8 +9,6 @@ import { ColorPalette, ObjectPainter, DrawOptions, AxisPainterMethods,
          adoptRootColors, extendRootColors, getRGBfromTColor, getSvgLineStyle,
          compressSVG } from './painter.mjs';
 
-const jsrp = JSROOT.Painter; // FIXME - workaround
-
 // identifier used in TWebCanvas painter
 const webSnapIds = { kNone: 0,  kObject: 1, kSVG: 2, kSubPad: 3, kColors: 4, kStyle: 5 };
 
@@ -4027,8 +4025,8 @@ class TPadPainter extends ObjectPainter {
                  elem.node().innerHTML +
                  '</svg>';
 
-      if (jsrp.processSvgWorkarounds)
-         svg = jsrp.processSvgWorkarounds(svg);
+      if (JSROOT._.processSvgWorkarounds)
+         svg = JSROOT._.processSvgWorkarounds(svg);
 
       svg = compressSVG(svg);
 
@@ -5009,6 +5007,7 @@ JSROOT.TFramePainter = TFramePainter;
 JSROOT.TPadPainter = TPadPainter;
 JSROOT.TCanvasPainter = TCanvasPainter;
 
+const jsrp = JSROOT.Painter; // FIXME - workaround
 jsrp.drawTPadSnapshot = drawTPadSnapshot;
 
 export { TAxisPainter, TFramePainter, TPadPainter, TCanvasPainter, ensureTCanvas };

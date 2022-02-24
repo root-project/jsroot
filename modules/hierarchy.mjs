@@ -5081,7 +5081,7 @@ class BatchDisplay extends MDIDisplay {
       let frame = this.frames[id];
       if (!frame) return;
       let main = d3.select(frame);
-      let has_workarounds = JSROOT._.svg_3ds && jsrp.processSvgWorkarounds;
+      let has_workarounds = JSROOT._.svg_3ds && JSROOT._.processSvgWorkarounds;
       main.select('svg')
           .attr("xmlns", "http://www.w3.org/2000/svg")
           .attr("xmlns:xlink", "http://www.w3.org/1999/xlink")
@@ -5091,7 +5091,7 @@ class BatchDisplay extends MDIDisplay {
 
       let svg = main.html();
       if (has_workarounds)
-         svg = jsrp.processSvgWorkarounds(svg, id != this.frames.length-1);
+         svg = JSROOT._.processSvgWorkarounds(svg, id != this.frames.length-1);
 
       svg = compressSVG(svg);
 

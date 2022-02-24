@@ -4218,7 +4218,7 @@ function makeSVG(args) {
 
       return JSROOT.draw(main.node(), args.object, args.option || "").then(() => {
 
-         let has_workarounds = JSROOT._.svg_3ds && jsrp.processSvgWorkarounds;
+         let has_workarounds = JSROOT._.svg_3ds && JSROOT._.processSvgWorkarounds;
 
          main.select('svg')
              .attr("xmlns", "http://www.w3.org/2000/svg")
@@ -4241,7 +4241,7 @@ function makeSVG(args) {
          let svg = main.html();
 
          if (has_workarounds)
-            svg = jsrp.processSvgWorkarounds(svg);
+            svg = JSROOT._.processSvgWorkarounds(svg);
 
          svg = compressSVG(svg);
 

@@ -3946,8 +3946,8 @@ class RPadPainter extends RObjectPainter {
                  elem.node().innerHTML +
                  '</svg>';
 
-      if (jsrp.processSvgWorkarounds)
-         svg = jsrp.processSvgWorkarounds(svg);
+      if (JSROOT._.processSvgWorkarounds)
+         svg = JSROOT._.processSvgWorkarounds(svg);
 
       svg = compressSVG(svg);
 

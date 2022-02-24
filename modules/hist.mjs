@@ -6,8 +6,6 @@ import { ColorPalette, ObjectPainter, TAttLineHandler, TAttMarkerHandler, DrawOp
 
 import { ensureTCanvas } from './gpad.mjs';
 
-const jsrp = JSROOT.Painter; // FIXME - workaround
-
 const CoordSystem = { kCARTESIAN: 1, kPOLAR: 2, kCYLINDRICAL: 3, kSPHERICAL: 4, kRAPIDITY: 5 };
 
 const createDefaultPalette = () => {
@@ -7485,7 +7483,7 @@ function createTF2Histogram(func, hist) {
   * @desc TF2 always drawn via temporary TH2 object,
   * therefore there is no special painter class
   * @private */
-jsrp.drawTF2 = function(dom, func, opt) {
+function drawTF2(dom, func, opt) {
 
    let d = new DrawOptions(opt),
        hist = createTF2Histogram(func);
@@ -7914,5 +7912,9 @@ JSROOT.THistPainter = THistPainter;
 JSROOT.TH1Painter = TH1Painter;
 JSROOT.TH2Painter = TH2Painter;
 JSROOT.THStackPainter = THStackPainter;
+
+const jsrp = JSROOT.Painter; // FIXME - workaround
+jsrp.drawTF2 = drawTF2;
+
 
 export { TPavePainter, THistPainter, TH1Painter, TH2Painter, THStackPainter, produceLegend };
