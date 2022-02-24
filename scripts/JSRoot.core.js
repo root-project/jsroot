@@ -35,8 +35,6 @@ exports.batch_mode = nodejs;
   * @memberof JSROOT
   * @private */
 let _ = {
-   modules: {},            ///< list of modules
-   source_min: false,      ///< is minified sources are used
    id_counter: 1,          ///< unique id contner, starts from 1,
    amd: (export_kind !== 'node') && (export_kind !== 'plain')       ///< is AMD
 };
@@ -48,11 +46,10 @@ let browser = { isOpera: false, isFirefox: true, isSafari: false, isChrome: fals
 if ((typeof document !== "undefined") && (typeof window !== "undefined")) {
    const script = document.currentScript;
    if (script && (typeof script.src == "string")) {
-      const pos = script.src.indexOf("scripts/JSRoot.core.");
+      const pos = script.src.indexOf("scripts/JSRoot.core.js");
       if (pos >= 0) {
          source_fullpath = script.src;
          source_dir = source_fullpath.substr(0, pos);
-         _.source_min = source_fullpath.indexOf("scripts/JSRoot.core.min.js") >= 0;
          console.log(`Set JSROOT.source_dir to ${source_dir}, ${version}`);
       }
    }
@@ -360,8 +357,8 @@ function loadScript(url) {
 
    if (url.indexOf("$$$")===0) {
       url = url.slice(3);
-      if ((url.indexOf("style/")==0) && (url.indexOf('.css') < 0))
-         url += _.source_min ? '.min.css' : ".css";
+      if ((url.indexOf("style/") == 0) && (url.indexOf('.css') < 0))
+         url += ".css";
       url = JSROOT.source_dir + url;
    }
 
