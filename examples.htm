@@ -104,9 +104,6 @@
       <div id="viewer">
       </div>
 
-      <!-- script type="text/javascript" src="demo/examples.js"> </script>
-      <script type="text/javascript" src="../demo/examples.js"> </script-->
-
       <script type="text/javascript" >
          let jsroot_path = "./",
              demo_path = "demo/",
@@ -116,10 +113,6 @@
              no_interactive = false, // disable interactivity
              use_zstd = true,
              examples_main = [];
-
-         let icon = document.createElement("link");
-         icon.setAttribute('src', "img/RootIcon.ico");
-         icon.setAttribute('rel', "shortcut icon");
 
          if (window.location.search.indexOf("nowebgl") > 0)
             extra_opts = "&webgl=0";
@@ -143,10 +136,7 @@
             jsroot_path = "../index.htm";
             demo_path = "../demo/",
             filepath = "https://jsroot.gsi.de/files/";
-            icon.setAttribute('src', "../img/RootIcon.ico");
          }
-
-         document.getElementsByTagName("head")[0].appendChild(icon);
 
          let keyid = null, optid, testfile, testobj, testinterval = 10, hpainter = null;
 
