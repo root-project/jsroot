@@ -1312,7 +1312,7 @@ class FontHandler {
 
 /** @summary Tries to choose time format for provided time interval
   * @private */
-jsrp.chooseTimeFormat = function(awidth, ticks) {
+function chooseTimeFormat(awidth, ticks) {
    if (awidth < .5) return ticks ? "%S.%L" : "%H:%M:%S.%L";
    if (awidth < 30) return ticks ? "%Mm%S" : "%H:%M:%S";
    awidth /= 60; if (awidth < 30) return ticks ? "%Hh%M" : "%d/%m %H:%M";
@@ -3550,31 +3550,33 @@ const AxisPainterMethods = {
 
 // ===========================================================
 
+let $active_pp = null;
+
 /** @summary Set active pad painter
   * @desc Normally be used to handle key press events, which are global in the web browser
   * @param {object} args - functions arguments
   * @param {object} args.pp - pad painter
   * @param {boolean} [args.active] - is pad activated or not
   * @private */
-jsrp.selectActivePad = function(args) {
+function selectActivePad(args) {
    if (args.active) {
-      let fp = this.$active_pp ? this.$active_pp.getFramePainter() : null;
+      let fp = $active_pp ? $active_pp.getFramePainter() : null;
       if (fp) fp.setFrameActive(false);
 
-      this.$active_pp = args.pp;
+      $active_pp = args.pp;
 
-      fp = this.$active_pp ? this.$active_pp.getFramePainter() : null;
+      fp = $active_pp ? $active_pp.getFramePainter() : null;
       if (fp) fp.setFrameActive(true);
-   } else if (this.$active_pp === args.pp) {
-      delete this.$active_pp;
+   } else if ($active_pp === args.pp) {
+      $active_pp = null;
    }
 }
 
 /** @summary Returns current active pad
   * @desc Should be used only for keyboard handling
   * @private */
-jsrp.getActivePad = function() {
-   return this.$active_pp;
+function getActivePad() {
+   return $active_pp;
 }
 
 // ================= painter of raw text ========================================
@@ -4345,7 +4347,6 @@ if (JSROOT.nodejs) jsrp.readStyleFromURL("?interactive=0&tooltip=0&nomenu&noprog
 jsrp.getColor = getColor;
 jsrp.getDrawHandle = getDrawHandle;
 jsrp.getDrawSettings = getDrawSettings;
-jsrp.getElementRect = getElementRect;
 jsrp.isPromise = isPromise;
 jsrp.toHex = toHex;
 jsrp.floatToString = floatToString;
@@ -4359,7 +4360,6 @@ JSROOT.TAttMarkerHandler = TAttMarkerHandler;
 JSROOT.FontHandler = FontHandler;
 JSROOT.BasePainter = BasePainter;
 JSROOT.ObjectPainter = ObjectPainter;
-JSROOT.AxisPainterMethods = AxisPainterMethods;
 JSROOT.draw = draw;
 JSROOT.redraw = redraw;
 JSROOT.makeSVG = makeSVG;
@@ -4367,6 +4367,7 @@ JSROOT.makeSVG = makeSVG;
 // FIXME: should be eliminated
 JSROOT.Painter = jsrp;
 
-export { ColorPalette, BasePainter, ObjectPainter, DrawOptions, TAttLineHandler, TAttFillHandler, TAttMarkerHandler, FontHandler,
+export { ColorPalette, BasePainter, ObjectPainter, DrawOptions, AxisPainterMethods,
+         TAttLineHandler, TAttFillHandler, TAttMarkerHandler, FontHandler,
          getElementRect, draw, redraw, makeSVG, jsrp, loadJSDOM, floatToString,  buildSvgPath, toHex, getDrawSettings,
-         getElementCanvPainter, getElementMainPainter, createMenu, closeMenu, getColor };
+         getElementCanvPainter, getElementMainPainter, createMenu, closeMenu, getColor, chooseTimeFormat, selectActivePad, getActivePad };

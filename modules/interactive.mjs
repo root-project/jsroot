@@ -1,6 +1,6 @@
 import * as d3 from './d3.mjs';
 
-import { createMenu, closeMenu } from './painter.mjs';
+import { createMenu, closeMenu, getElementRect, getActivePad } from './painter.mjs';
 
 const jsrp = JSROOT.Painter; // FIXME - workaround
 
@@ -270,7 +270,7 @@ let TooltipHandler = {
                   .call(font.func)
                   .text(hint.lines[l]);
 
-               let box = jsrp.getElementRect(txt, 'bbox');
+               let box = getElementRect(txt, 'bbox');
 
                actualw = Math.max(actualw, box.width);
             }
@@ -795,7 +795,7 @@ let FrameInteractive = {
       }
 
       let pp = this.getPadPainter();
-      if (jsrp.getActivePad() !== pp) return;
+      if (getActivePad() !== pp) return;
 
       if (evnt.shiftKey) key = "Shift " + key;
       if (evnt.altKey) key = "Alt " + key;

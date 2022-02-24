@@ -1,7 +1,9 @@
 
 import * as d3 from './d3.mjs';
 
-import { ObjectPainter, DrawOptions, createMenu, closeMenu } from './painter.mjs';
+import { ObjectPainter, DrawOptions, AxisPainterMethods,
+         createMenu, closeMenu, getElementRect,
+         chooseTimeFormat, selectActivePad, getActivePad } from './painter.mjs';
 
 const jsrp = JSROOT.Painter; // FIXME - workaround
 
@@ -96,7 +98,7 @@ class TAxisPainter extends ObjectPainter {
    constructor(dom, axis, embedded) {
       super(dom, axis);
 
-      Object.assign(this, JSROOT.AxisPainterMethods);
+      Object.assign(this, AxisPainterMethods);
       this.initAxisPainter();
 
       this.embedded = embedded; // indicate that painter embedded into the histo painter
@@ -211,10 +213,10 @@ class TAxisPainter extends ObjectPainter {
          let scale_range = this.scale_max - this.scale_min,
              idF = axis.fTimeFormat.indexOf('%F'),
              tf1 = (idF >= 0) ? axis.fTimeFormat.substr(0, idF) : axis.fTimeFormat,
-             tf2 = jsrp.chooseTimeFormat(scale_range / gr_range, false);
+             tf2 = chooseTimeFormat(scale_range / gr_range, false);
 
          if ((tf1.length == 0) || (scale_range < 0.1 * (this.full_max - this.full_min)))
-            tf1 = jsrp.chooseTimeFormat(scale_range / this.nticks, true);
+            tf1 = chooseTimeFormat(scale_range / this.nticks, true);
 
          this.tfunc1 = this.tfunc2 = d3.timeFormat(tf1);
          if (tf2!==tf1)
@@ -2471,7 +2473,7 @@ class TPadPainter extends ObjectPainter {
       this.this_pad_name = undefined;
       this.has_canvas = false;
 
-      jsrp.selectActivePad({ pp: this, active: false });
+      selectActivePad({ pp: this, active: false });
 
       super.cleanup();
    }
@@ -2599,7 +2601,7 @@ class TPadPainter extends ObjectPainter {
       if (pos && !istoppad)
          pos = jsrp.getAbsPosInCanvas(this.svg_this_pad(), pos);
 
-      jsrp.selectActivePad({ pp: this, active: true });
+      selectActivePad({ pp: this, active: true });
 
       if (canp) canp.producePadEvent("select", this, _painter, pos, _place);
    }
@@ -2699,7 +2701,7 @@ class TPadPainter extends ObjectPainter {
             render_to.style("overflow","auto");
             rect = { width: this.pad.fCw, height: this.pad.fCh };
             if (!rect.width || !rect.height)
-               rect = jsrp.getElementRect(render_to);
+               rect = getElementRect(render_to);
          } else {
             rect = this.testMainResize(2, new_size, factor);
          }
@@ -3272,7 +3274,7 @@ class TPadPainter extends ObjectPainter {
          return redrawNext(0);
       }).then(() => {
          this.confirmDraw();
-         if (jsrp.getActivePad() === this) {
+         if (getActivePad() === this) {
             let canp = this.getCanvPainter();
             if (canp) canp.producePadEvent("padredraw", this);
          }
@@ -3725,7 +3727,7 @@ class TPadPainter extends ObjectPainter {
          return Promise.all(promises);
       }).then(() => {
          this.selectCurrentPad(prev_name);
-         if (jsrp.getActivePad() === this) {
+         if (getActivePad() === this) {
             let canp = this.getCanvPainter();
             if (canp) canp.producePadEvent("padredraw", this);
          }
@@ -4255,7 +4257,7 @@ class TPadPainter extends ObjectPainter {
       let prev_name = painter.has_canvas ? painter.selectCurrentPad(painter.this_pad_name) : undefined;
 
       // set active pad
-      jsrp.selectActivePad({ pp: painter, active: true });
+      selectActivePad({ pp: painter, active: true });
 
       // flag used to prevent immediate pad redraw during first draw
       return painter.drawPrimitives().then(() => {
@@ -4951,7 +4953,7 @@ class TCanvasPainter extends TPadPainter {
       let promise = (nocanvas && opt.indexOf("noframe") < 0) ? TFramePainter.draw(dom, null) : Promise.resolve(true);
       return promise.then(() => {
          // select global reference - required for keys handling
-         jsrp.selectActivePad({ pp: painter, active: true });
+         selectActivePad({ pp: painter, active: true });
 
          return painter.drawPrimitives();
       }).then(() => {

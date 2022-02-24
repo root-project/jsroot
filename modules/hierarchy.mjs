@@ -1,6 +1,7 @@
 import * as d3 from './d3.mjs';
 
-import { BasePainter, ObjectPainter, loadJSDOM, getDrawSettings, getElementMainPainter, getElementCanvPainter, createMenu } from './painter.mjs';
+import { BasePainter, ObjectPainter, loadJSDOM, getDrawSettings,
+         getElementMainPainter, getElementCanvPainter, createMenu, selectActivePad } from './painter.mjs';
 
 import { produceLegend } from './hist.mjs';
 
@@ -4676,7 +4677,7 @@ class FlexibleDisplay extends MDIDisplay {
       main.parentNode.append(main);
 
       if (this.getFrameState(frame) != "min") {
-         jsrp.selectActivePad({ pp: getElementCanvPainter(frame), active: true });
+         selectActivePad({ pp: getElementCanvPainter(frame), active: true });
          JSROOT.resize(frame);
       }
    }

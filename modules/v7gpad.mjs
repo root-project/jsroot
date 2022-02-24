@@ -2,7 +2,9 @@
 
 import * as d3 from './d3.mjs';
 
-import { ObjectPainter, DrawOptions, createMenu, closeMenu } from './painter.mjs';
+import { ObjectPainter, DrawOptions, AxisPainterMethods,
+         createMenu, closeMenu,
+         getElementRect, chooseTimeFormat, selectActivePad, getActivePad } from './painter.mjs';
 
 const jsrp = JSROOT.Painter; // FIXME - workaround
 
@@ -353,7 +355,7 @@ class RAxisPainter extends RObjectPainter {
    constructor(dom, arg1, axis, cssprefix) {
       let drawable = cssprefix ? arg1.getObject() : arg1;
       super(dom, drawable, "", cssprefix ? arg1.csstype : "axis");
-      Object.assign(this, JSROOT.AxisPainterMethods);
+      Object.assign(this, AxisPainterMethods);
       this.initAxisPainter();
 
       this.axis = axis;
@@ -487,10 +489,10 @@ class RAxisPainter extends RObjectPainter {
 
          let scale_range = this.scale_max - this.scale_min,
              tf1 = this.v7EvalAttr("timeFormat", ""),
-             tf2 = jsrp.chooseTimeFormat(scale_range / gr_range, false);
+             tf2 = chooseTimeFormat(scale_range / gr_range, false);
 
          if (!tf1 || (scale_range < 0.1 * (this.full_max - this.full_min)))
-            tf1 = jsrp.chooseTimeFormat(scale_range / this.nticks, true);
+            tf1 = chooseTimeFormat(scale_range / this.nticks, true);
 
          this.tfunc1 = this.tfunc2 = d3.timeFormat(tf1);
          if (tf2!==tf1)
@@ -2725,7 +2727,7 @@ class RPadPainter extends RObjectPainter {
       this.this_pad_name = undefined;
       this.has_canvas = false;
 
-      jsrp.selectActivePad({ pp: this, active: false });
+      selectActivePad({ pp: this, active: false });
 
       super.cleanup();
    }
@@ -2881,7 +2883,7 @@ class RPadPainter extends RObjectPainter {
       if (pos && !istoppad)
          pos = jsrp.getAbsPosInCanvas(this.svg_this_pad(), pos);
 
-      jsrp.selectActivePad({ pp: this, active: true });
+      selectActivePad({ pp: this, active: true });
 
       canp.producePadEvent("select", this, _painter, pos, _place);
    }
@@ -2954,7 +2956,7 @@ class RPadPainter extends RObjectPainter {
             render_to.style("overflow","auto");
             rect = { width: this.pad.fWinSize[0], height: this.pad.fWinSize[1] };
             if (!rect.width || !rect.height)
-               rect = jsrp.getElementRect(render_to);
+               rect = getElementRect(render_to);
          } else {
             rect = this.testMainResize(2, new_size, factor);
          }
@@ -3337,7 +3339,7 @@ class RPadPainter extends RObjectPainter {
          }
          return redrawNext(0);
       }).then(() => {
-         if (jsrp.getActivePad() === this) {
+         if (getActivePad() === this) {
             let canp = this.getCanvPainter();
             if (canp) canp.producePadEvent("padredraw", this);
          }
@@ -3753,7 +3755,7 @@ class RPadPainter extends RObjectPainter {
       return this.drawNextSnap(snap.fPrimitives).then(() => {
          this.selectCurrentPad(prev_name);
 
-         if (jsrp.getActivePad() === this) {
+         if (getActivePad() === this) {
             let canp = this.getCanvPainter();
             if (canp) canp.producePadEvent("padredraw", this);
          }
@@ -4198,7 +4200,7 @@ class RPadPainter extends RObjectPainter {
       // we select current pad, where all drawing is performed
       let prev_name = painter.has_canvas ? painter.selectCurrentPad(painter.this_pad_name) : undefined;
 
-      jsrp.selectActivePad({ pp: painter, active: false });
+      selectActivePad({ pp: painter, active: false });
 
       // flag used to prevent immediate pad redraw during first draw
       return painter.drawPrimitives().then(() => {
@@ -4821,7 +4823,7 @@ class RCanvasPainter extends RPadPainter {
       painter.normal_canvas = !nocanvas;
       painter.createCanvasSvg(0);
 
-      jsrp.selectActivePad({ pp: painter, active: false });
+      selectActivePad({ pp: painter, active: false });
 
       return painter.drawPrimitives().then(() => {
          painter.addPadButtons();

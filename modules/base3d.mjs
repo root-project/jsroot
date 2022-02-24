@@ -2,7 +2,7 @@ import * as d3 from './d3.mjs';
 
 import * as THREE from './three.mjs';
 
-import { TAttMarkerHandler } from './painter.mjs';
+import { TAttMarkerHandler, getElementRect } from './painter.mjs';
 
 const jsrp = JSROOT.Painter; // FIXME - workaround
 
@@ -68,7 +68,7 @@ let Handling3DDrawings = {
       if (pad.empty()) {
          // this is a case when object drawn without canvas
 
-         let rect = jsrp.getElementRect(this.selectDom());
+         let rect = getElementRect(this.selectDom());
 
          if ((rect.height < 10) && (rect.width > 10)) {
             rect.height = Math.round(0.66 * rect.width);
