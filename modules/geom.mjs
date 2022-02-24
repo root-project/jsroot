@@ -8,7 +8,7 @@ import { assign3DHandler, createRender3D, createLineSegments, InteractiveControl
 
 import { geo } from './geobase.mjs';
 
-import { ObjectPainter, DrawOptions, createMenu, closeMenu, getColor } from './painter.mjs';
+import { ObjectPainter, DrawOptions, createMenu, closeMenu, getColor, isPromise } from './painter.mjs';
 
 import { ensureTCanvas } from './gpad.mjs';
 
@@ -2822,7 +2822,7 @@ class TGeoPainter extends ObjectPainter {
             promise = this.drawExtraShape(obj, itemname);
       }
 
-      if (!jsrp.isPromise(promise))
+      if (!isPromise(promise))
          promise = Promise.resolve(promise);
 
       if (!do_render)

@@ -353,7 +353,7 @@ jsrp.createRootColors = function() {
 
 /** @summary Produces rgb code for TColor object
   * @private */
-jsrp.getRGBfromTColor = function(col) {
+function getRGBfromTColor(col) {
    if (!col || (col._typename != 'TColor')) return null;
 
    let rgb = '#' + toHex(col.fRed) + toHex(col.fGreen) + toHex(col.fBlue);
@@ -375,7 +375,7 @@ jsrp.getRGBfromTColor = function(col) {
 
 /** @summary Add new colors from object array
   * @private */
-jsrp.extendRootColors = function(jsarr, objarr) {
+function extendRootColors(jsarr, objarr) {
    if (!jsarr) {
       jsarr = [];
       for (let n = 0; n < jsrp.root_colors.length; ++n)
@@ -392,7 +392,7 @@ jsrp.extendRootColors = function(jsarr, objarr) {
          if (!col || (col._typename != 'TColor')) continue;
 
          if ((col.fNumber >= 0) && (col.fNumber <= 10000))
-            rgb_array[col.fNumber] = jsrp.getRGBfromTColor(col);
+            rgb_array[col.fNumber] = getRGBfromTColor(col);
       }
    }
 
@@ -407,8 +407,8 @@ jsrp.extendRootColors = function(jsarr, objarr) {
   * @desc Either TObjArray of TColor instances or just plain array with rgb() code.
   * List of colors typically stored together with TCanvas primitives
   * @private */
-jsrp.adoptRootColors = function(objarr) {
-   jsrp.extendRootColors(jsrp.root_colors, objarr);
+function adoptRootColors(objarr) {
+   extendRootColors(jsrp.root_colors, objarr);
 }
 
 /** @summary Return ROOT color by index
@@ -422,13 +422,21 @@ function getColor(indx) {
   * @param {string} rgb - color name or just string with rgb value
   * @param {array} [lst] - optional colors list, to which add colors
   * @returns {number} index of new color */
-jsrp.addColor = function(rgb, lst) {
+function addColor(rgb, lst) {
    if (!lst) lst = jsrp.root_colors;
    let indx = lst.indexOf(rgb);
    if (indx >= 0) return indx;
    lst.push(rgb);
    return lst.length-1;
 }
+
+/** @summary Get svg string for specified line style
+  * @private */
+function getSvgLineStyle(indx) {
+   if ((indx < 0) || (indx >= jsrp.root_line_styles.length)) indx = 11;
+   return jsrp.root_line_styles[indx];
+}
+
 
 /**
  * @summary Color palette handle
@@ -1518,7 +1526,7 @@ function getElementRect(elem, sizearg) {
 
 /** @summary Calculate absolute position of provided element in canvas
   * @private */
-jsrp.getAbsPosInCanvas = (sel, pos) => {
+function getAbsPosInCanvas(sel, pos) {
    while (!sel.empty() && !sel.classed('root_canvas') && pos) {
       let cl = sel.attr("class");
       if (cl && ((cl.indexOf("root_frame") >= 0) || (cl.indexOf("__root_pad_") >= 0))) {
@@ -3631,7 +3639,7 @@ jsrp.drawRawText = function(dom, txt /*, opt*/) {
   * @param {object|string} handle can be function or object with checkResize function or dom where painting was done
   * @param {number} [delay] - one could specify delay after which resize event will be handled
   * @protected */
-jsrp.registerForResize = function(handle, delay) {
+function registerForResize(handle, delay) {
 
    if (!handle || JSROOT.batch_mode || (typeof window == 'undefined')) return;
 
@@ -4151,7 +4159,7 @@ JSROOT.drawingJSON = function(dom) {
 /** @summary Compress SVG code, produced from JSROOT drawing
   * @desc removes extra info or empty elements
   * @private */
-jsrp.compressSVG = function(svg) {
+function compressSVG(svg) {
 
    svg = svg.replace(/url\(\&quot\;\#(\w+)\&quot\;\)/g, "url(#$1)")        // decode all URL
             .replace(/ class=\"\w*\"/g, "")                                // remove all classes
@@ -4235,7 +4243,7 @@ function makeSVG(args) {
          if (has_workarounds)
             svg = jsrp.processSvgWorkarounds(svg);
 
-         svg = jsrp.compressSVG(svg);
+         svg = compressSVG(svg);
 
          JSROOT.cleanup(main.node());
 
@@ -4347,13 +4355,11 @@ if (JSROOT.nodejs) jsrp.readStyleFromURL("?interactive=0&tooltip=0&nomenu&noprog
 jsrp.getColor = getColor;
 jsrp.getDrawHandle = getDrawHandle;
 jsrp.getDrawSettings = getDrawSettings;
-jsrp.isPromise = isPromise;
 jsrp.toHex = toHex;
 jsrp.floatToString = floatToString;
 
 // FIXME: should be eliminated
 JSROOT.TRandom = TRandom;
-JSROOT.ColorPalette = ColorPalette;
 JSROOT.TAttLineHandler = TAttLineHandler;
 JSROOT.TAttFillHandler = TAttFillHandler;
 JSROOT.TAttMarkerHandler = TAttMarkerHandler;
@@ -4369,5 +4375,8 @@ JSROOT.Painter = jsrp;
 
 export { ColorPalette, BasePainter, ObjectPainter, DrawOptions, AxisPainterMethods,
          TAttLineHandler, TAttFillHandler, TAttMarkerHandler, FontHandler,
-         getElementRect, draw, redraw, makeSVG, jsrp, loadJSDOM, floatToString,  buildSvgPath, toHex, getDrawSettings,
-         getElementCanvPainter, getElementMainPainter, createMenu, closeMenu, getColor, chooseTimeFormat, selectActivePad, getActivePad };
+         getElementRect, draw, redraw, makeSVG, jsrp, loadJSDOM, floatToString, buildSvgPath, toHex, isPromise, getDrawSettings,
+         getElementCanvPainter, getElementMainPainter, createMenu, closeMenu, registerForResize,
+         getColor, addColor, adoptRootColors, extendRootColors, getRGBfromTColor,
+         getSvgLineStyle, compressSVG,
+         chooseTimeFormat, selectActivePad, getActivePad, getAbsPosInCanvas };

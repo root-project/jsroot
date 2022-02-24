@@ -1,7 +1,9 @@
 import * as d3 from './d3.mjs';
 
 import { BasePainter, ObjectPainter, loadJSDOM, getDrawSettings,
-         getElementMainPainter, getElementCanvPainter, createMenu, selectActivePad } from './painter.mjs';
+         getElementMainPainter, getElementCanvPainter,
+         createMenu, registerForResize, selectActivePad, getRGBfromTColor,
+         compressSVG } from './painter.mjs';
 
 import { produceLegend } from './hist.mjs';
 
@@ -142,7 +144,7 @@ function listHierarchy(folder, lst) {
         };
 
         switch(obj._typename) {
-           case 'TColor': item._value = jsrp.getRGBfromTColor(obj); break;
+           case 'TColor': item._value = getRGBfromTColor(obj); break;
            case 'TText':
            case 'TLatex': item._value = obj.fTitle; break;
            case 'TObjString': item._value = obj.fString; break;
@@ -421,7 +423,7 @@ function objectHierarchy(top, obj, args) {
                item._more = false;
 
                switch(fld._typename) {
-                  case 'TColor': item._value = jsrp.getRGBfromTColor(fld); break;
+                  case 'TColor': item._value = getRGBfromTColor(fld); break;
                   case 'TText':
                   case 'TLatex': item._value = fld.fTitle; break;
                   case 'TObjString': item._value = fld.fString; break;
@@ -3309,7 +3311,7 @@ class HierarchyPainter extends BasePainter {
 
       if (!this.register_resize && (this.disp_kind != 'batch')) {
          this.register_resize = true;
-         jsrp.registerForResize(this);
+         registerForResize(this);
       }
    }
 
@@ -5089,7 +5091,7 @@ class BatchDisplay extends MDIDisplay {
       if (has_workarounds)
          svg = jsrp.processSvgWorkarounds(svg, id != this.frames.length-1);
 
-      svg = jsrp.compressSVG(svg);
+      svg = compressSVG(svg);
 
       main.remove();
       return svg;
@@ -5185,7 +5187,7 @@ JSROOT.createTreePlayer = function(player) {
 
       this.checkResize();
 
-      jsrp.registerForResize(this);
+      registerForResize(this);
    }
 
    player.getValue = function(sel) {

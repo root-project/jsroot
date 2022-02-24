@@ -2,7 +2,7 @@ import * as d3 from './d3.mjs';
 
 import * as THREE from './three.mjs';
 
-import { TAttMarkerHandler, getElementRect } from './painter.mjs';
+import { TAttMarkerHandler, getElementRect, getAbsPosInCanvas } from './painter.mjs';
 
 const jsrp = JSROOT.Painter; // FIXME - workaround
 
@@ -110,7 +110,7 @@ let Handling3DDrawings = {
       }
 
       if (can3d === 1)
-         size = jsrp.getAbsPosInCanvas(this.getPadSvg(), size);
+         size = getAbsPosInCanvas(this.getPadSvg(), size);
 
       return size;
    },

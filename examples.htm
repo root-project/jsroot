@@ -351,7 +351,7 @@
          function FillContent() {
 
             // all painter assigned to viewer element will be automatically informed about resize
-            JSROOT.require(["painter"]).then(jsrp => jsrp.registerForResize('viewer'));
+            JSROOT.require("painter").then(handle => handle.registerForResize('viewer'));
 
             let d = JSROOT.decodeUrl();
 

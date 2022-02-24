@@ -1,9 +1,11 @@
 
 import * as d3 from './d3.mjs';
 
-import { ObjectPainter, DrawOptions, AxisPainterMethods,
-         createMenu, closeMenu, getElementRect,
-         chooseTimeFormat, selectActivePad, getActivePad } from './painter.mjs';
+import { ColorPalette, ObjectPainter, DrawOptions, AxisPainterMethods,
+         createMenu, closeMenu, registerForResize, getElementRect, isPromise,
+         chooseTimeFormat, selectActivePad, getActivePad, getAbsPosInCanvas,
+         adoptRootColors, extendRootColors, getRGBfromTColor, getSvgLineStyle,
+         compressSVG } from './painter.mjs';
 
 const jsrp = JSROOT.Painter; // FIXME - workaround
 
@@ -1522,8 +1524,6 @@ class TFramePainter extends ObjectPainter {
           w = this.getFrameWidth(),
           grid_style = JSROOT.gStyle.fGridStyle;
 
-      if ((grid_style < 0) || (grid_style >= jsrp.root_line_styles.length)) grid_style = 11;
-
       // add a grid on x axis, if the option is set
       if (pad && pad.fGridx && this.x_handle) {
          let gridx = "";
@@ -1542,7 +1542,7 @@ class TFramePainter extends ObjectPainter {
                 .attr("d", gridx)
                 .style("stroke", grid_color)
                 .style("stroke-width", JSROOT.gStyle.fGridWidth)
-                .style("stroke-dasharray", jsrp.root_line_styles[grid_style]);
+                .style("stroke-dasharray", getSvgLineStyle(grid_style));
       }
 
       // add a grid on y axis, if the option is set
@@ -1563,7 +1563,7 @@ class TFramePainter extends ObjectPainter {
                 .attr("d", gridy)
                 .style("stroke", grid_color)
                 .style("stroke-width",JSROOT.gStyle.fGridWidth)
-                .style("stroke-dasharray", jsrp.root_line_styles[grid_style]);
+                .style("stroke-dasharray", getSvgLineStyle(grid_style));
       }
    }
 
@@ -2599,7 +2599,7 @@ class TPadPainter extends ObjectPainter {
       if (_painter === undefined) _painter = this;
 
       if (pos && !istoppad)
-         pos = jsrp.getAbsPosInCanvas(this.svg_this_pad(), pos);
+         pos = getAbsPosInCanvas(this.svg_this_pad(), pos);
 
       selectActivePad({ pp: this, active: true });
 
@@ -2918,19 +2918,19 @@ class TPadPainter extends ObjectPainter {
          if (this.options && this.options.CreatePalette) {
             let arr = [];
             for (let n = obj.arr.length - this.options.CreatePalette; n<obj.arr.length; ++n) {
-               let col = jsrp.getRGBfromTColor(obj.arr[n]);
+               let col = getRGBfromTColor(obj.arr[n]);
                if (!col) { console.log('Fail to create color for palette'); arr = null; break; }
                arr.push(col);
             }
-            if (arr) this.custom_palette = new JSROOT.ColorPalette(arr);
+            if (arr) this.custom_palette = new ColorPalette(arr);
          }
 
          if (!this.options || this.options.GlobalColors) // set global list of colors
-            jsrp.adoptRootColors(obj);
+            adoptRootColors(obj);
 
          // copy existing colors and extend with new values
          if (this.options && this.options.LocalColors)
-            this.root_colors = jsrp.extendRootColors(null, obj);
+            this.root_colors = extendRootColors(null, obj);
          return true;
       }
 
@@ -2939,13 +2939,13 @@ class TPadPainter extends ObjectPainter {
          for (let n = 0; n < obj.arr.length; ++n) {
             let col = obj.arr[n];
             if (col && (col._typename == 'TColor')) {
-               arr[n] = jsrp.getRGBfromTColor(col);
+               arr[n] = getRGBfromTColor(col);
             } else {
                console.log('Missing color with index ' + n); missing = true;
             }
          }
          if (!this.options || (!missing && !this.options.IgnorePalette))
-            this.custom_palette = new JSROOT.ColorPalette(arr);
+            this.custom_palette = new ColorPalette(arr);
          return true;
       }
 
@@ -3259,7 +3259,7 @@ class TPadPainter extends ObjectPainter {
             if (showsubitems || sub.this_pad_name)
                res = sub.redraw(reason);
 
-            if (jsrp.isPromise(res))
+            if (isPromise(res))
                return res.then(() => redrawNext(indx));
          }
          return Promise.resolve(true);
@@ -3323,7 +3323,7 @@ class TPadPainter extends ObjectPainter {
              }
 
              let res = this.painters[indx].redraw(force ? "redraw" : "resize");
-             if (!jsrp.isPromise(res)) res = Promise.resolve();
+             if (!isPromise(res)) res = Promise.resolve();
              return res.then(() => redrawNext(indx+1));
           };
 
@@ -3464,7 +3464,7 @@ class TPadPainter extends ObjectPainter {
                promise = objpainter.redraw();
          }
 
-         if (!jsrp.isPromise(promise)) promise = Promise.resolve(true);
+         if (!isPromise(promise)) promise = Promise.resolve(true);
 
          return promise.then(() => this.drawNextSnap(lst, indx)); // call next
       }
@@ -3491,11 +3491,11 @@ class TPadPainter extends ObjectPainter {
 
          // set global list of colors
          if (!this.options || this.options.GlobalColors)
-            jsrp.adoptRootColors(ListOfColors);
+            adoptRootColors(ListOfColors);
 
          // copy existing colors and extend with new values
          if (this.options && this.options.LocalColors)
-            this.root_colors = jsrp.extendRootColors(null, ListOfColors);
+            this.root_colors = extendRootColors(null, ListOfColors);
 
          // set palette
          if (snap.fSnapshot.fBuf && (!this.options || !this.options.IgnorePalette)) {
@@ -3503,7 +3503,7 @@ class TPadPainter extends ObjectPainter {
             for (let n = 0; n < snap.fSnapshot.fBuf.length; ++n)
                palette[n] = ListOfColors[Math.round(snap.fSnapshot.fBuf[n])];
 
-            this.custom_palette = new JSROOT.ColorPalette(palette);
+            this.custom_palette = new ColorPalette(palette);
          }
 
          return this.drawNextSnap(lst, indx); // call next
@@ -3606,7 +3606,7 @@ class TPadPainter extends ObjectPainter {
                this.brlayout.create(mainid, true);
                // this.brlayout.toggleBrowserKind("float");
                this.setDom(this.brlayout.drawing_divid()); // need to create canvas
-               jsrp.registerForResize(this.brlayout);
+               registerForResize(this.brlayout);
            });
 
          return layout_promise.then(() => {
@@ -3721,7 +3721,7 @@ class TPadPainter extends ObjectPainter {
          this.painters.forEach(sub => {
             if ((sub.snapid===undefined) || sub.$secondary) {
                let res = sub.redraw();
-               if (jsrp.isPromise(res)) promises.push(res);
+               if (isPromise(res)) promises.push(res);
             }
          });
          return Promise.all(promises);
@@ -4028,7 +4028,7 @@ class TPadPainter extends ObjectPainter {
       if (jsrp.processSvgWorkarounds)
          svg = jsrp.processSvgWorkarounds(svg);
 
-      svg = jsrp.compressSVG(svg);
+      svg = compressSVG(svg);
 
       if (file_format == "svg") {
          reconstruct();

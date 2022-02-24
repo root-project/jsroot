@@ -2,9 +2,10 @@
 
 import * as d3 from './d3.mjs';
 
-import { ObjectPainter, DrawOptions, AxisPainterMethods,
-         createMenu, closeMenu,
-         getElementRect, chooseTimeFormat, selectActivePad, getActivePad } from './painter.mjs';
+import { ColorPalette, ObjectPainter, DrawOptions, AxisPainterMethods,
+         createMenu, closeMenu, isPromise, addColor, registerForResize,
+         getElementRect, chooseTimeFormat, selectActivePad,
+         getActivePad, getAbsPosInCanvas, compressSVG } from './painter.mjs';
 
 const jsrp = JSROOT.Painter; // FIXME - workaround
 
@@ -2881,7 +2882,7 @@ class RPadPainter extends RObjectPainter {
       if (_painter === undefined) _painter = this;
 
       if (pos && !istoppad)
-         pos = jsrp.getAbsPosInCanvas(this.svg_this_pad(), pos);
+         pos = getAbsPosInCanvas(this.svg_this_pad(), pos);
 
       selectActivePad({ pp: this, active: true });
 
@@ -3325,7 +3326,7 @@ class RPadPainter extends RObjectPainter {
             if (showsubitems || sub.this_pad_name)
                res = sub.redraw(reason);
 
-            if (jsrp.isPromise(res))
+            if (isPromise(res))
                return res.then(() => redrawNext(indx));
          }
          return Promise.resolve(true);
@@ -3389,8 +3390,8 @@ class RPadPainter extends RObjectPainter {
              }
 
              let res = this.painters[indx].redraw(force ? "redraw" : "resize");
-             if (!jsrp.isPromise(res)) res = Promise.resolve();
-              return res.then(() => redrawNext(indx+1));
+             if (!isPromise(res)) res = Promise.resolve();
+             return res.then(() => redrawNext(indx+1));
           };
 
       return sync_promise.then(() => {
@@ -3453,7 +3454,7 @@ class RPadPainter extends RObjectPainter {
 
       const extract_color = (member_name, attr_name) => {
          let col = pattr.v7EvalColor(attr_name, "");
-         if (col) obj[member_name] = jsrp.addColor(col, this.root_colors);
+         if (col) obj[member_name] = addColor(col, this.root_colors);
       };
 
       // handle TAttLine
@@ -3543,7 +3544,7 @@ class RPadPainter extends RObjectPainter {
          if (objpainter.updateObject(snap.fDrawable || snap.fObject || snap, snap.fOption || ""))
             promise = objpainter.redraw();
 
-         if (!jsrp.isPromise(promise)) promise = Promise.resolve(true);
+         if (!isPromise(promise)) promise = Promise.resolve(true);
 
          return promise.then(() => this.drawNextSnap(lst, indx)); // call next
       }
@@ -3595,7 +3596,7 @@ class RPadPainter extends RObjectPainter {
 
             this.root_colors = ListOfColors;
             // set global list of colors
-            // jsrp.adoptRootColors(ListOfColors);
+            // adoptRootColors(ListOfColors);
             return this.drawNextSnap(lst, indx);
          }
 
@@ -3603,7 +3604,7 @@ class RPadPainter extends RObjectPainter {
             let arr = snap.fObject.arr, palette = [];
             for (let n = 0; n < arr.length; ++n)
                palette[n] =  arr[n].fString;
-            this.custom_palette = new JSROOT.ColorPalette(palette);
+            this.custom_palette = new ColorPalette(palette);
             return this.drawNextSnap(lst, indx);
          }
 
@@ -3686,7 +3687,7 @@ class RPadPainter extends RObjectPainter {
                this.brlayout = new JSROOT.BrowserLayout(mainid, null, this);
                this.brlayout.create(mainid, true);
                this.setDom(this.brlayout.drawing_divid()); // need to create canvas
-               jsrp.registerForResize(this.brlayout);
+               registerForResize(this.brlayout);
             });
 
          return layout_promise.then(() => {
@@ -3946,7 +3947,7 @@ class RPadPainter extends RObjectPainter {
       if (jsrp.processSvgWorkarounds)
          svg = jsrp.processSvgWorkarounds(svg);
 
-      svg = jsrp.compressSVG(svg);
+      svg = compressSVG(svg);
 
       if (file_format == "svg") {
          reconstruct();
