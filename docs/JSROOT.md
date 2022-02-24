@@ -919,3 +919,10 @@ Many function names where adjusted to naming conventions. Like:
    - `JSROOT.CreateHistogram` -> `JSROOT.createHistogram`
    - `JSROOT.CreateTGraph` -> `JSROOT.createTGraph`
    - `JSROOT.Create` -> `JSROOT.create`
+
+
+### Migration v6 -> v7
+
+Remove direct support of require.js, probably loading of JSRoot.core.js will be possible but will not be guaranteed
+
+Remove minified scripts from distribution, one should load JSRoot.core.js. Deployed code will be minified automatically.
