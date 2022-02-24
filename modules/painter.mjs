@@ -4299,55 +4299,6 @@ JSROOT.cleanup = function(dom) {
    return lst;
 }
 
-/** @summary Display progress message in the left bottom corner.
-  * @desc Previous message will be overwritten
-  * if no argument specified, any shown messages will be removed
-  * @param {string} msg - message to display
-  * @param {number} tmout - optional timeout in milliseconds, after message will disappear
-  * @private */
-jsrp.showProgress = function(msg, tmout) {
-   if (JSROOT.batch_mode || (typeof document === 'undefined')) return;
-   let id = "jsroot_progressbox",
-       box = d3.select("#" + id);
-
-   if (!JSROOT.settings.ProgressBox) return box.remove();
-
-   if ((arguments.length == 0) || !msg) {
-      if ((tmout !== -1) || (!box.empty() && box.property("with_timeout"))) box.remove();
-      return;
-   }
-
-   if (box.empty()) {
-      box = d3.select(document.body).append("div").attr("id", id);
-      box.append("p");
-   }
-
-   box.property("with_timeout", false);
-
-   if (typeof msg === "string") {
-      box.select("p").html(msg);
-   } else {
-      box.html("");
-      box.node().appendChild(msg);
-   }
-
-   if (Number.isFinite(tmout) && (tmout > 0)) {
-      box.property("with_timeout", true);
-      setTimeout(() => jsrp.showProgress('', -1), tmout);
-   }
-}
-
-
-/** @summary Tries to close current browser tab
-  * @desc Many browsers do not allow simple window.close() call,
-  * therefore try several workarounds
-  * @private */
-jsrp.closeCurrentWindow = function() {
-   if (!window) return;
-   window.close();
-   window.open('', '_self').close();
-}
-
 jsrp.createRootColors();
 
 if (JSROOT.nodejs) jsrp.readStyleFromURL("?interactive=0&tooltip=0&nomenu&noprogress&notouch&toolbar=0&webgl=0");

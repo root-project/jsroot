@@ -391,14 +391,14 @@ jsrp.cleanupRender3D = function(renderer) {
 /** @summary Cleanup previous renderings before doing next one
   * @desc used together with SVG
   * @private */
-jsrp.beforeRender3D = function(renderer) {
+function beforeRender3D(renderer) {
    if (renderer.clearHTML) renderer.clearHTML();
 }
 
 /** @summary Post-process result of rendering
   * @desc used together with SVG or node.js image rendering
   * @private */
-jsrp.afterRender3D = function(renderer) {
+function afterRender3D(renderer) {
 
    let rc = JSROOT.constants.Render3D;
    if (renderer.jsroot_render3d == rc.WebGL) return;
@@ -451,7 +451,7 @@ jsrp.afterRender3D = function(renderer) {
 jsrp.processSvgWorkarounds = function(svg, keep_workarounds) {
    if (!JSROOT._.svg_3ds) return svg;
    for (let k = 0;  k < JSROOT._.svg_3ds.length; ++k)
-      svg = svg.replace('<path jsroot_svg_workaround="' + k + '"></path>', JSROOT._.svg_3ds[k]);
+      svg = svg.replace(`<path jsroot_svg_workaround="${k}"></path>`, JSROOT._.svg_3ds[k]);
    if (!keep_workarounds)
       JSROOT._.svg_3ds = undefined;
    return svg;
@@ -1569,4 +1569,5 @@ jsrp.PointsCreator = PointsCreator;
 jsrp.PointsControl = PointsControl;
 
 export { assign3DHandler, createRender3D, createLineSegments, create3DLineMaterial,
+         beforeRender3D, afterRender3D,
          InteractiveControl, PointsControl, PointsCreator };

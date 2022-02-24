@@ -1,5 +1,7 @@
 import * as d3 from './d3.mjs';
 
+import { showProgress } from './utils.mjs';
+
 import { BasePainter, ObjectPainter, loadJSDOM, getDrawSettings,
          getElementMainPainter, getElementCanvPainter,
          createMenu, registerForResize, selectActivePad, getRGBfromTColor,
@@ -2268,7 +2270,7 @@ class HierarchyPainter extends BasePainter {
          if (err) console.log('When display ', itemname, 'got', err);
 
          if (updating && item) delete item._doing_update;
-         if (!updating) jsrp.showProgress();
+         if (!updating) showProgress();
          if (respainter && (typeof respainter === 'object') && (typeof respainter.setItemName === 'function')) {
             respainter.setItemName(display_itemname, updating ? null : drawopt, h); // mark painter as created from hierarchy
             if (item && !item._painter) item._painter = respainter;
@@ -2308,17 +2310,17 @@ class HierarchyPainter extends BasePainter {
             drawopt = "";
          }
 
-         if (!updating) jsrp.showProgress("Loading " + display_itemname);
+         if (!updating) showProgress("Loading " + display_itemname);
 
          return h.getObject(display_itemname, drawopt).then(result => {
-            if (!updating) jsrp.showProgress();
+            if (!updating) showProgress();
 
             if (!item) item = result.item;
             let obj = result.obj;
 
             if (!obj) return complete();
 
-            if (!updating) jsrp.showProgress("Drawing " + display_itemname);
+            if (!updating) showProgress("Drawing " + display_itemname);
 
             let handle = obj._typename ? jsrp.getDrawHandle("ROOT." + obj._typename) : null;
 
@@ -2838,11 +2840,11 @@ class HierarchyPainter extends BasePainter {
       return promise.then(res => {
          if (res !== -1) return res; // done
 
-         jsrp.showProgress("Loading " + itemname);
+         showProgress("Loading " + itemname);
 
          return this.getObject(itemname, silent ? "hierarchy_expand" : "hierarchy_expand_verbose").then(res => {
 
-            jsrp.showProgress();
+            showProgress();
 
             if (res.obj) return DoExpandItem(res.item, res.obj).then(res => { return (res !== -1) ? res : undefined; });
          });
@@ -2932,7 +2934,7 @@ class HierarchyPainter extends BasePainter {
       this.forEachRootFile(item => { if (item._fullurl===filepath) isfileopened = true; });
       if (isfileopened) return Promise.resolve();
 
-      jsrp.showProgress("Opening " + filepath + " ...");
+      showProgress("Opening " + filepath + " ...");
 
       return JSROOT.openFile(filepath).then(file => {
 
@@ -2956,7 +2958,7 @@ class HierarchyPainter extends BasePainter {
          else if (!d3.select("#gui_fileCORS").style("background","red").empty())
             setTimeout(() => d3.select("#gui_fileCORS").style("background",''), 5000);
          return false;
-      }).finally(() => jsrp.showProgress());
+      }).finally(() => showProgress());
    }
 
    /** @summary Apply loaded TStyle object

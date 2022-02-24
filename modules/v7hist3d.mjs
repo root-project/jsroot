@@ -6,7 +6,8 @@ import * as THREE from './three.mjs';
 
 import { floatToString, getDrawSettings } from './painter.mjs';
 
-import { assign3DHandler, createRender3D, createLineSegments, create3DLineMaterial } from './base3d.mjs';
+import { assign3DHandler, createRender3D, createLineSegments, create3DLineMaterial,
+         beforeRender3D, afterRender3D } from './base3d.mjs';
 
 import { RFramePainter, ensureRCanvas } from './v7gpad.mjs';
 
@@ -297,7 +298,7 @@ RFramePainter.prototype.render3D = function(tmout) {
 
    if (!this.renderer) return;
 
-   jsrp.beforeRender3D(this.renderer);
+   beforeRender3D(this.renderer);
 
    let tm1 = new Date();
 
@@ -308,7 +309,7 @@ RFramePainter.prototype.render3D = function(tmout) {
    // do rendering, most consuming time
    this.renderer.render(this.scene, this.camera);
 
-   jsrp.afterRender3D(this.renderer);
+   afterRender3D(this.renderer);
 
    let tm2 = new Date();
 

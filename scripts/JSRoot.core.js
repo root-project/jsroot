@@ -453,7 +453,7 @@ async function jsroot_require(need) {
       else if (name == "latex")
          arr.push(import("../modules/latex.mjs").then(handle => handle.ltx));
       else if (name == "painter")
-         arr.push(import("../modules/painter.mjs").then(handle => handle.jsrp));
+         arr.push(import("../modules/painter.mjs"));
       else if (name == "interactive")
          arr.push(import("../modules/interactive.mjs"));
       else if (name == "hierarchy")

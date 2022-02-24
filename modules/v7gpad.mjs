@@ -2,6 +2,8 @@
 
 import * as d3 from './d3.mjs';
 
+import { closeCurrentWindow, showProgress } from './utils.mjs';
+
 import { ColorPalette, ObjectPainter, DrawOptions, AxisPainterMethods,
          createMenu, closeMenu, isPromise, addColor, registerForResize,
          getElementRect, chooseTimeFormat, selectActivePad,
@@ -4373,7 +4375,7 @@ class RCanvasPainter extends RPadPainter {
      * @private */
    showMessage(msg) {
       if (!this.testUI5())
-         jsrp.showProgress(msg, 7000);
+         showProgress(msg, 7000);
    }
 
    /** @summary Function called when canvas menu item Save is called */
@@ -4436,7 +4438,7 @@ class RCanvasPainter extends RPadPainter {
      * @private */
    onWebsocketClosed(/*handle*/) {
       if (!this.embed_canvas)
-         jsrp.closeCurrentWindow();
+         closeCurrentWindow();
    }
 
    /** @summary Hanler for websocket message

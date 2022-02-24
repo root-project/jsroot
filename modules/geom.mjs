@@ -4,7 +4,10 @@ import * as d3 from './d3.mjs';
 
 import * as THREE from './three.mjs';
 
-import { assign3DHandler, createRender3D, createLineSegments, InteractiveControl } from './base3d.mjs';
+import { showProgress } from './utils.mjs';
+
+import { assign3DHandler, createRender3D, createLineSegments, InteractiveControl,
+         beforeRender3D, afterRender3D } from './base3d.mjs';
 
 import { geo } from './geobase.mjs';
 
@@ -3143,7 +3146,7 @@ class TGeoPainter extends ObjectPainter {
             }
           };
 
-      jsrp.showProgress('Loading macro ' + script_name);
+      showProgress('Loading macro ' + script_name);
 
       return JSROOT.httpRequest(script_name, "text").then(script => {
          let lines = script.split('\n'), indx = 0;
@@ -3364,7 +3367,7 @@ class TGeoPainter extends ObjectPainter {
 
          if ((now - tm0 > interval) || (res === 1) || (res === 2)) {
 
-            jsrp.showProgress(this.drawing_log);
+            showProgress(this.drawing_log);
 
             this.showDrawInfo(this.drawing_log);
 
@@ -3385,7 +3388,7 @@ class TGeoPainter extends ObjectPainter {
          console.log(`Create tm = ${take_time} meshes ${this.ctrl.info.num_meshes} faces ${this.ctrl.info.num_faces}`);
 
       if (take_time > 300) {
-         jsrp.showProgress('Rendering geometry');
+         showProgress('Rendering geometry');
          this.showDrawInfo("Rendering");
          return setTimeout(() => this.completeDraw(true), 10);
       }
@@ -3453,7 +3456,7 @@ class TGeoPainter extends ObjectPainter {
          delete this.render_tmout;
       }
 
-      jsrp.beforeRender3D(this._renderer);
+      beforeRender3D(this._renderer);
 
       let tm1 = new Date();
 
@@ -3483,7 +3486,7 @@ class TGeoPainter extends ObjectPainter {
          console.log(`three.js r${THREE.REVISION}, first render tm = ${this.first_render_tm}`);
       }
 
-      jsrp.afterRender3D(this._renderer);
+      afterRender3D(this._renderer);
 
       if (this._render_resolveFuncs) {
          this._render_resolveFuncs.forEach(func => func(this));
@@ -3509,7 +3512,7 @@ class TGeoPainter extends ObjectPainter {
             return console.log(`geo: ${e.data.log}`);
 
          if ('progress' in e.data)
-            return jsrp.showProgress(e.data.progress);
+            return showProgress(e.data.progress);
 
          e.data.tm3 = new Date().getTime();
 
@@ -4002,7 +4005,7 @@ class TGeoPainter extends ObjectPainter {
 
          this.render3D(0, true);
 
-         if (close_progress) jsrp.showProgress();
+         if (close_progress) showProgress();
 
          this.addOrbitControls();
 
@@ -4198,7 +4201,7 @@ class TGeoPainter extends ObjectPainter {
    /** @summary show message in progress area
      * @private */
    helpText(msg) {
-      jsrp.showProgress(msg);
+      showProgress(msg);
    }
 
    /** @summary perform resize */

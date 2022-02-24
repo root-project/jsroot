@@ -1,5 +1,7 @@
 /// Connections handling to RWebWindow
 
+import { closeCurrentWindow, showProgress } from './utils.mjs';
+
 /**
  * @summary Class emulating web socket with long-poll http requests
  *
@@ -512,7 +514,7 @@ class WebWindowHandle {
 
          if (first_time) console.log('Opening web socket at ' + href);
 
-         if ((ntry > 2) && JSROOT.Painter) JSROOT.Painter.showProgress("Trying to connect " + href);
+         if (ntry > 2) showProgress("Trying to connect " + href);
 
          let path = href;
 
@@ -534,7 +536,7 @@ class WebWindowHandle {
          if (!this._websocket) return;
 
          this._websocket.onopen = () => {
-            if ((ntry > 2) && JSROOT.Painter) JSROOT.Painter.showProgress();
+            if (ntry > 2) showProgress();
             this.state = 1;
 
             let key = this.key || "";
@@ -721,7 +723,7 @@ function connectWebWindow(arg) {
                if (!arg.prereq2) resolveFunc(handle);
             },
 
-            onWebsocketClosed: () => { if (JSROOT.Painter) JSROOT.Painter.closeCurrentWindow(); } // when connection closed, close panel as well
+            onWebsocketClosed: () => closeCurrentWindow() // when connection closed, close panel as well
          };
       }
 

@@ -3,7 +3,6 @@ import { jsrio, TBuffer } from './io.mjs';
 
 import { mth as jsroot_math } from './math.mjs';
 
-
 // branch types
 const kLeafNode = 0, kBaseClassNode = 1, kObjectNode = 2, kClonesNode = 3,
       kSTLNode = 4, kClonesMemberNode = 31, kSTLMemberNode = 41,
@@ -783,40 +782,44 @@ class TDrawSelector extends TSelector {
 
    /** @summary Show progress */
    ShowProgress(value) {
-      if (typeof document == 'undefined' || !JSROOT.Painter) return;
+      if (typeof document == 'undefined' || JSROOT.batch_mode) return;
 
-      if ((value === undefined) || !Number.isFinite(value)) return JSROOT.Painter.showProgress();
+      import('./utils.mjs').then(utils => {
 
-      if (this.last_progress !== value) {
-         let diff = value - this.last_progress;
-         if (!this.aver_diff) this.aver_diff = diff;
-         this.aver_diff = diff * 0.3 + this.aver_diff * 0.7;
-      }
+         if ((value === undefined) || !Number.isFinite(value))
+            return utils.showProgress();
 
-      let ndig = 0;
-      if (this.aver_diff <= 0) ndig = 0; else
-         if (this.aver_diff < 0.0001) ndig = 3; else
-            if (this.aver_diff < 0.001) ndig = 2; else
-               if (this.aver_diff < 0.01) ndig = 1;
-
-      let main_box = document.createElement("p"),
-         text_node = document.createTextNode("TTree draw " + (value * 100).toFixed(ndig) + " %  "),
-         selector = this;
-
-      main_box.appendChild(text_node);
-      main_box.title = "Click on element to break drawing";
-
-      main_box.onclick = function() {
-         if (++selector._break < 3) {
-            main_box.title = "Tree draw will break after next I/O operation";
-            return text_node.nodeValue = "Breaking ... ";
+         if (this.last_progress !== value) {
+            let diff = value - this.last_progress;
+            if (!this.aver_diff) this.aver_diff = diff;
+            this.aver_diff = diff * 0.3 + this.aver_diff * 0.7;
          }
-         selector.Abort();
-         JSROOT.Painter.showProgress();
-      };
 
-      JSROOT.Painter.showProgress(main_box);
-      this.last_progress = value;
+         let ndig = 0;
+         if (this.aver_diff <= 0) ndig = 0; else
+            if (this.aver_diff < 0.0001) ndig = 3; else
+               if (this.aver_diff < 0.001) ndig = 2; else
+                  if (this.aver_diff < 0.01) ndig = 1;
+
+         let main_box = document.createElement("p"),
+            text_node = document.createTextNode("TTree draw " + (value * 100).toFixed(ndig) + " %  "),
+            selector = this;
+
+         main_box.appendChild(text_node);
+         main_box.title = "Click on element to break drawing";
+
+         main_box.onclick = function() {
+            if (++selector._break < 3) {
+               main_box.title = "Tree draw will break after next I/O operation";
+               return text_node.nodeValue = "Breaking ... ";
+            }
+            selector.Abort();
+            utils.showProgress();
+         };
+
+         utils.showProgress(main_box);
+         this.last_progress = value;
+      });
    }
 
    /** @summary Get bins for bits histogram */
@@ -2649,7 +2652,7 @@ const TTreeMethods = {
             args.nbr++;
 
             if (args.nbr >= args.branches.length) {
-               if (JSROOT.Painter) JSROOT.Painter.showProgress();
+               import('./utils.mjs').then(utils => utils.showProgress());
                return args.resolveFunc(args.names);
             }
 
@@ -2663,8 +2666,7 @@ const TTreeMethods = {
                TestNextBranch();
          }
 
-         if (JSROOT.Painter)
-            JSROOT.Painter.showProgress(`br ${args.nbr}/${args.branches.length} ${args.names[args.nbr]}`);
+         import('./utils.mjs').then(utils => utils.showProgress(`br ${args.nbr}/${args.branches.length} ${args.names[args.nbr]}`));
 
          let br = args.branches[args.nbr],
             object_class = getBranchObjectClass(br, this),

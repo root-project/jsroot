@@ -1,6 +1,8 @@
 
 import * as d3 from './d3.mjs';
 
+import { closeCurrentWindow, showProgress } from './utils.mjs';
+
 import { ColorPalette, ObjectPainter, DrawOptions, AxisPainterMethods,
          createMenu, closeMenu, registerForResize, getElementRect, isPromise,
          chooseTimeFormat, selectActivePad, getActivePad, getAbsPosInCanvas,
@@ -4474,7 +4476,7 @@ class TCanvasPainter extends TPadPainter {
      * @private */
    showMessage(msg) {
       if (!this.testUI5())
-         jsrp.showProgress(msg, 7000);
+         showProgress(msg, 7000);
    }
 
    /** @summary Function called when canvas menu item Save is called */
@@ -4563,7 +4565,7 @@ class TCanvasPainter extends TPadPainter {
      * @private */
    onWebsocketClosed(/*handle*/) {
       if (!this.embed_canvas)
-         jsrp.closeCurrentWindow();
+         closeCurrentWindow();
    }
 
    /** @summary Handle websocket messages

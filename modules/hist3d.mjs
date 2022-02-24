@@ -5,7 +5,8 @@ import * as THREE from './three.mjs';
 
 import { ObjectPainter, TAttMarkerHandler, floatToString, DrawOptions, getDrawSettings } from './painter.mjs';
 
-import { assign3DHandler, createRender3D, createLineSegments, create3DLineMaterial } from './base3d.mjs';
+import { assign3DHandler, createRender3D, createLineSegments, create3DLineMaterial,
+         beforeRender3D, afterRender3D } from './base3d.mjs';
 
 import { TFramePainter, ensureTCanvas } from './gpad.mjs';
 
@@ -325,7 +326,7 @@ TFramePainter.prototype.render3D = function(tmout) {
 
    if (!this.renderer) return;
 
-   jsrp.beforeRender3D(this.renderer);
+   beforeRender3D(this.renderer);
 
    let tm1 = new Date();
 
@@ -336,7 +337,7 @@ TFramePainter.prototype.render3D = function(tmout) {
    // do rendering, most consuming time
    this.renderer.render(this.scene, this.camera);
 
-   jsrp.afterRender3D(this.renderer);
+   afterRender3D(this.renderer);
 
    let tm2 = new Date();
 
