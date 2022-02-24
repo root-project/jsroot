@@ -1,7 +1,7 @@
 
 import * as d3 from './d3.mjs';
 
-import { ObjectPainter, floatToString, DrawOptions, buildSvgPath, toHex } from './painter.mjs';
+import { ObjectPainter, TAttLineHandler, TAttFillHandler, TAttMarkerHandler, DrawOptions, floatToString, buildSvgPath, toHex } from './painter.mjs';
 
 // import { mth } from './math.mjs';
 
@@ -92,7 +92,7 @@ jsrp.drawText = function() {
 jsrp.drawLine = function() {
 
    let line = this.getObject(),
-       lineatt = new JSROOT.TAttLineHandler(line),
+       lineatt = new TAttLineHandler(line),
        kLineNDC = JSROOT.BIT(14),
        isndc = line.TestBit(kLineNDC);
 
@@ -113,7 +113,7 @@ jsrp.drawPolyLine = function() {
    this.createG();
 
    let polyline = this.getObject(),
-       lineatt = new JSROOT.TAttLineHandler(polyline),
+       lineatt = new TAttLineHandler(polyline),
        fillatt = this.createAttFill(polyline),
        kPolyLineNDC = JSROOT.BIT(14),
        isndc = polyline.TestBit(kPolyLineNDC),
@@ -245,7 +245,7 @@ jsrp.drawPie = function() {
 
    for (let n = 0; n < nb; n++) {
       let slice = pie.fPieSlices[n],
-          lineatt = new JSROOT.TAttLineHandler({attr: slice}),
+          lineatt = new TAttLineHandler({attr: slice}),
           fillatt = this.createAttFill(slice);
 
       af += slice.fValue/total*2*Math.PI;
@@ -312,7 +312,7 @@ jsrp.drawBox = function() {
   * @private */
 jsrp.drawMarker = function() {
    let marker = this.getObject(),
-       att = new JSROOT.TAttMarkerHandler(marker),
+       att = new TAttMarkerHandler(marker),
        kMarkerNDC = JSROOT.BIT(14),
        isndc = marker.TestBit(kMarkerNDC);
 
@@ -337,7 +337,7 @@ jsrp.drawPolyMarker = function() {
    this.createG();
 
    let poly = this.getObject(),
-       att = new JSROOT.TAttMarkerHandler(poly),
+       att = new TAttMarkerHandler(poly),
        path = "",
        func = this.getAxisToSvgFunc();
 
@@ -1394,7 +1394,7 @@ class TGraphPainter extends ObjectPainter {
             let fp = this.getFramePainter(),
                 fpcol = fp && fp.fillatt && !fp.fillatt.empty() ? fp.fillatt.getFillColor() : -1;
             if (fpcol === fillatt.getFillColor())
-               usefill = new JSROOT.TAttFillHandler({ color: fpcol == "white" ? 1 : 0, pattern: 1001 });
+               usefill = new TAttFillHandler({ color: fpcol == "white" ? 1 : 0, pattern: 1001 });
          }
 
          nodes.append("svg:path")
@@ -1559,8 +1559,8 @@ class TGraphPainter extends ObjectPainter {
          path2 += makeLine(xqmax, yqmax, funcs.scale_xmax, yxmax);
       }
 
-      let latt1 = new JSROOT.TAttLineHandler({ style: 1, width: 1, color: "black" }),
-          latt2 = new JSROOT.TAttLineHandler({ style: 2, width: 1, color: "black"});
+      let latt1 = new TAttLineHandler({ style: 1, width: 1, color: "black" }),
+          latt2 = new TAttLineHandler({ style: 2, width: 1, color: "black" });
 
       this.draw_g.append("path")
                  .attr("d", makeLine(xqmin,yqmin,xqmax,yqmax))
@@ -1658,8 +1658,8 @@ class TGraphPainter extends ObjectPainter {
          for (let k = 0; k < graph.fNYErrors; ++k) {
             let lineatt = this.lineatt, fillatt = this.fillatt;
             if (this.options.individual_styles) {
-               lineatt = new JSROOT.TAttLineHandler({ attr: graph.fAttLine[k], std: false });
-               fillatt = new JSROOT.TAttFillHandler({ attr: graph.fAttFill[k], std: false, svg: this.getCanvSvg() });
+               lineatt = new TAttLineHandler({ attr: graph.fAttLine[k], std: false });
+               fillatt = new TAttFillHandler({ attr: graph.fAttFill[k], std: false, svg: this.getCanvSvg() });
             }
             let sub_g = this.draw_g.append("svg:g");
             let options = k < this.options.blocks.length ? this.options.blocks[k] : this.options;
@@ -2464,7 +2464,7 @@ class TGraphPolargramPainter extends ObjectPainter {
           nminor = Math.floor((polar.fNdivRad % 10000) / 100);
 
       this.createAttLine({ attr: polar });
-      if (!this.gridatt) this.gridatt = new JSROOT.TAttLineHandler({ color: polar.fLineColor, style: 2, width: 1 });
+      if (!this.gridatt) this.gridatt = new TAttLineHandler({ color: polar.fLineColor, style: 2, width: 1 });
 
       let range = Math.abs(polar.fRwrmax - polar.fRwrmin);
       this.ndig = (range <= 0) ? -3 : Math.round(Math.log10(ticks.length / range));

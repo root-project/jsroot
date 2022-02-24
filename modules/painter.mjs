@@ -4362,4 +4362,5 @@ JSROOT.makeSVG = makeSVG;
 // FIXME: should be eliminated
 JSROOT.Painter = jsrp;
 
-export { ColorPalette, BasePainter, ObjectPainter, getElementRect, draw, redraw, makeSVG, jsrp, loadJSDOM, floatToString, DrawOptions, buildSvgPath, toHex, getDrawSettings };
+export { ColorPalette, BasePainter, ObjectPainter, DrawOptions, TAttLineHandler, TAttFillHandler, TAttMarkerHandler, FontHandler,
+         getElementRect, draw, redraw, makeSVG, jsrp, loadJSDOM, floatToString,  buildSvgPath, toHex, getDrawSettings };

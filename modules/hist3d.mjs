@@ -3,7 +3,7 @@ import * as d3 from './d3.mjs';
 
 import * as THREE from './three.mjs';
 
-import { ObjectPainter, floatToString, DrawOptions, getDrawSettings } from './painter.mjs';
+import { ObjectPainter, TAttMarkerHandler, floatToString, DrawOptions, getDrawSettings } from './painter.mjs';
 
 import { assign3DHandler, createRender3D } from './base3d.mjs';
 
@@ -3106,7 +3106,7 @@ class TGraph2DPainter extends ObjectPainter {
          }
       }
 
-      let markeratt = new JSROOT.TAttMarkerHandler(graph),
+      let markeratt = new TAttMarkerHandler(graph),
           palette = null,
           levels = [fp.scale_zmin, fp.scale_zmax],
           scale = fp.size_x3d / 100 * markeratt.getFullSize(),

@@ -1,7 +1,7 @@
 
 import * as d3 from './d3.mjs';
 
-import { ColorPalette, ObjectPainter, floatToString, DrawOptions, buildSvgPath, toHex, getDrawSettings } from './painter.mjs';
+import { ColorPalette, ObjectPainter, TAttLineHandler, TAttMarkerHandler, DrawOptions, floatToString, buildSvgPath, toHex, getDrawSettings } from './painter.mjs';
 
 import { ensureTCanvas } from './gpad.mjs';
 
@@ -298,7 +298,7 @@ class TPavePainter extends ObjectPainter {
       this.draw_g.attr("transform", `translate(${this._pave_x},${this._pave_y})`);
 
       //if (!this.lineatt)
-      //   this.lineatt = new JSROOT.TAttLineHandler(pt, brd>0 ? 1 : 0);
+      //   this.lineatt = new TAttLineHandler(pt, brd>0 ? 1 : 0);
 
       this.createAttLine({ attr: pt, width: (brd > 0) ? pt.fLineWidth : 0 });
 
@@ -578,7 +578,7 @@ class TPavePainter extends ObjectPainter {
                ly2 = ly2 ? Math.round((1-ly2)*height) : ytext;
 
                if (entry._typename == "TLine") {
-                  let lineatt = new JSROOT.TAttLineHandler(entry);
+                  let lineatt = new TAttLineHandler(entry);
                   text_g.append("svg:path")
                         .attr("d", `M${lx1},${ly1}L${lx2},${ly2}`)
                         .call(lineatt.func);
@@ -764,7 +764,7 @@ class TPavePainter extends ObjectPainter {
 
          // Draw line and error (when specified)
          if (draw_line || draw_error) {
-            let lineatt = (painter && painter.lineatt) ? painter.lineatt : new JSROOT.TAttLineHandler(o_line);
+            let lineatt = (painter && painter.lineatt) ? painter.lineatt : new TAttLineHandler(o_line);
             if (!lineatt.empty()) {
 
                isany = true;
@@ -782,7 +782,7 @@ class TPavePainter extends ObjectPainter {
 
          // Draw Polymarker
          if (draw_marker) {
-            let marker = (painter && painter.markeratt) ? painter.markeratt : new JSROOT.TAttMarkerHandler(o_marker);
+            let marker = (painter && painter.markeratt) ? painter.markeratt : new TAttMarkerHandler(o_marker);
             if (!marker.empty()) {
                isany = true;
                this.draw_g
@@ -5621,8 +5621,8 @@ class TH2Painter extends THistPainter {
 
          switch (this.options.Contour) {
             case 1: break;
-            case 11: fillcolor = 'none'; lineatt = new JSROOT.TAttLineHandler({ color: icol } ); break;
-            case 12: fillcolor = 'none'; lineatt = new JSROOT.TAttLineHandler({ color: 1, style: (ipoly%5 + 1), width: 1 }); break;
+            case 11: fillcolor = 'none'; lineatt = new TAttLineHandler({ color: icol } ); break;
+            case 12: fillcolor = 'none'; lineatt = new TAttLineHandler({ color: 1, style: (ipoly%5 + 1), width: 1 }); break;
             case 13: fillcolor = 'none'; lineatt = this.lineatt; break;
             case 14: break;
          }
@@ -6228,7 +6228,7 @@ class TH2Painter extends THistPainter {
          markers += swapXY ? this.markeratt.create(y,x) : this.markeratt.create(x,y);
       }, make_cmarker = (x,y) => {
          if (!attrcmarkers) {
-            attrcmarkers = new JSROOT.TAttMarkerHandler({attr: histo, style: 24});
+            attrcmarkers = new TAttMarkerHandler({attr: histo, style: 24});
             attrcmarkers.resetPos();
          }
          cmarkers += swapXY ? attrcmarkers.create(y,x) : attrcmarkers.create(x,y);
@@ -6489,7 +6489,7 @@ class TH2Painter extends THistPainter {
              .style('fill','none');
 
       if (dashed_lines.length > 0) {
-         let dashed = new JSROOT.TAttLineHandler({ attr: histo, style: 2 });
+         let dashed = new TAttLineHandler({ attr: histo, style: 2 });
          this.draw_g.append("svg:path")
              .attr("d", dashed_lines)
              .call(dashed.func)

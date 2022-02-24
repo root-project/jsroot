@@ -1,6 +1,8 @@
 
 import * as d3 from './d3.mjs';
 
+import { TAttMarkerHandler } from './painter.mjs';
+
 const jsrp = JSROOT.Painter; // FIXME - workaround
 
 /** @summary Produce exec string for WebCanas to set color value
@@ -405,7 +407,7 @@ class JSRootMenu {
 
          for (let n = 0; n < supported.length; ++n) {
 
-            let clone = new JSROOT.TAttMarkerHandler({ style: supported[n], color: painter.markeratt.color, size: 1.7 }),
+            let clone = new TAttMarkerHandler({ style: supported[n], color: painter.markeratt.color, size: 1.7 }),
                 svg = "<svg width='60' height='18'><text x='1' y='12' style='font-size:12px'>" + supported[n].toString() + "</text><path stroke='black' fill='" + (clone.fill ? "black" : "none") + "' d='" + clone.create(40, 8) + "'></path></svg>";
 
             this.addchk(painter.markeratt.style == supported[n], svg, supported[n],

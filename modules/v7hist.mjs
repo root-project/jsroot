@@ -2,7 +2,7 @@
 
 import * as d3 from './d3.mjs';
 
-import { floatToString, DrawOptions, buildSvgPath, getDrawSettings } from './painter.mjs';
+import { floatToString, DrawOptions, TAttLineHandler, buildSvgPath, getDrawSettings } from './painter.mjs';
 
 import { RObjectPainter, RPavePainter, ensureRCanvas } from './v7gpad.mjs';
 
@@ -2628,8 +2628,8 @@ class RH2Painter extends RHistPainter {
 
             switch (this.options.Contour) {
                case 1: break;
-               case 11: fillcolor = 'none'; lineatt = new JSROOT.TAttLineHandler({ color: icol }); break;
-               case 12: fillcolor = 'none'; lineatt = new JSROOT.TAttLineHandler({ color:1, style: (colindx%5 + 1), width: 1 }); break;
+               case 11: fillcolor = 'none'; lineatt = new TAttLineHandler({ color: icol }); break;
+               case 12: fillcolor = 'none'; lineatt = new TAttLineHandler({ color:1, style: (colindx%5 + 1), width: 1 }); break;
                case 13: fillcolor = 'none'; lineatt = this.lineatt; break;
                case 14: break;
             }

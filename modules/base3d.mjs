@@ -2,6 +2,8 @@ import * as d3 from './d3.mjs';
 
 import * as THREE from './three.mjs';
 
+import { TAttMarkerHandler } from './painter.mjs';
+
 const jsrp = JSROOT.Painter; // FIXME - workaround
 
 
@@ -1364,7 +1366,7 @@ class PointsCreator {
       if (k !== 1)
          return makePoints(new THREE.PointsMaterial({ size: 3*this.scale * k, color: args.color }));
 
-      let handler = new JSROOT.TAttMarkerHandler({ style: args.style, color: args.color, size: 7 }),
+      let handler = new TAttMarkerHandler({ style: args.style, color: args.color, size: 7 }),
           w = handler.fill ? 1 : 7,
           imgdata = `<svg width="64" height="64" xmlns="http://www.w3.org/2000/svg">` +
                     `<path d="${handler.create(32,32)}" style="stroke: ${handler.getStrokeColor()}; stroke-width: ${w}; fill: ${handler.getFillColor()}"></path>`+
