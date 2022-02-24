@@ -1,6 +1,6 @@
 import * as d3 from './d3.mjs';
 
-import { createMenu, closeMenu, getElementRect, getActivePad, getAbsPosInCanvas } from './painter.mjs';
+import { createMenu, closeMenu, getElementRect, getActivePad, getAbsPosInCanvas, FontHandler } from './painter.mjs';
 
 const jsrp = JSROOT.Painter; // FIXME - workaround
 
@@ -45,7 +45,7 @@ let TooltipHandler = {
          frame_rect = this.getFrameRect(),
          pp = this.getPadPainter(),
          pad_width = pp.getPadWidth(),
-         font = new JSROOT.FontHandler(160, textheight),
+         font = new FontHandler(160, textheight),
          disable_tootlips = !this.isTooltipAllowed() || !this.tooltip_enabled;
 
       if (pnt && disable_tootlips) pnt.disabled = true; // indicate that highlighting is not required

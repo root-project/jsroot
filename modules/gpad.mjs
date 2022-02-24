@@ -1,9 +1,11 @@
 
 import * as d3 from './d3.mjs';
 
+import * as JSROOT from './core.mjs';
+
 import { closeCurrentWindow, showProgress } from './utils.mjs';
 
-import { ColorPalette, ObjectPainter, DrawOptions, AxisPainterMethods,
+import { ColorPalette, ObjectPainter, DrawOptions, AxisPainterMethods, FontHandler,
          createMenu, closeMenu, registerForResize, getElementRect, isPromise,
          chooseTimeFormat, selectActivePad, getActivePad, getAbsPosInCanvas,
          adoptRootColors, extendRootColors, getRGBfromTColor, getSvgLineStyle,
@@ -16,7 +18,7 @@ const webSnapIds = { kNone: 0,  kObject: 1, kSVG: 2, kSubPad: 3, kColors: 4, kSt
 
 let ensureTCanvas; // will be set later
 
-JSROOT.EAxisBits = {
+const EAxisBits = {
    kDecimals: JSROOT.BIT(7),
    kTickPlus: JSROOT.BIT(9),
    kTickMinus: JSROOT.BIT(10),
@@ -231,9 +233,9 @@ class TAxisPainter extends ObjectPainter {
             this.nticks *= this.nticks2; // all log ticks (major or minor) created centrally
             this.nticks2 = 1;
          }
-         this.noexp = axis ? axis.TestBit(JSROOT.EAxisBits.kNoExponent) : false;
+         this.noexp = axis ? axis.TestBit(EAxisBits.kNoExponent) : false;
          if ((this.scale_max < 300) && (this.scale_min > 0.3)) this.noexp = true;
-         this.moreloglabels = axis ? axis.TestBit(JSROOT.EAxisBits.kMoreLogLabels) : false;
+         this.moreloglabels = axis ? axis.TestBit(EAxisBits.kMoreLogLabels) : false;
 
          this.format = this.formatLog;
 
@@ -442,7 +444,7 @@ class TAxisPainter extends ObjectPainter {
       if (this.kind === 'labels') return true;
       if (this.log) return false;
       let axis = this.getObject();
-      return axis && axis.TestBit(JSROOT.EAxisBits.kCenterLabels);
+      return axis && axis.TestBit(EAxisBits.kCenterLabels);
    }
 
    /** @summary Add interactive elements to draw axes title */
@@ -462,7 +464,7 @@ class TAxisPainter extends ObjectPainter {
             let box = title_g.node().getBBox(), // check that elements visible, request precise value
                 axis = this.getObject(),
                 title_length = vertical ? box.height : box.width,
-                opposite = axis.TestBit(JSROOT.EAxisBits.kOppositeTitle);
+                opposite = axis.TestBit(EAxisBits.kOppositeTitle);
 
             new_x = acc_x = title_g.property('shift_x');
             new_y = acc_y = title_g.property('shift_y');
@@ -482,7 +484,7 @@ class TAxisPainter extends ObjectPainter {
                alt_pos[1] += off;
             }
 
-            if (axis.TestBit(JSROOT.EAxisBits.kCenterTitle))
+            if (axis.TestBit(EAxisBits.kCenterTitle))
                curr_indx = 1;
             else if (reverse ^ opposite)
                curr_indx = 0;
@@ -536,7 +538,7 @@ class TAxisPainter extends ObjectPainter {
                title_g.property('shift_x', new_x)
                       .property('shift_y', new_y);
 
-               let axis = this.getObject(), abits = JSROOT.EAxisBits;
+               let axis = this.getObject(), abits = EAxisBits;
 
                const set_bit = (bit, on) => { if (axis.TestBit(bit) != on) axis.InvertBit(bit); };
 
@@ -620,7 +622,7 @@ class TAxisPainter extends ObjectPainter {
    async drawLabels(axis_g, axis, w, h, handle, side, labelSize, labeloffset, tickSize, ticksPlusMinus, max_text_width) {
       let label_color = this.getColor(axis.fLabelColor),
           center_lbls = this.isCenteredLabels(),
-          rotate_lbls = axis.TestBit(JSROOT.EAxisBits.kLabelsVert),
+          rotate_lbls = axis.TestBit(EAxisBits.kLabelsVert),
           textscale = 1, maxtextlen = 0, applied_scale = 0,
           label_g = [ axis_g.append("svg:g").attr("class","axis_labels") ],
           lbl_pos = handle.lbl_pos || handle.major, lbl_tilt = false, max_textwidth = 0;
@@ -654,7 +656,7 @@ class TAxisPainter extends ObjectPainter {
          }
       }
 
-      const labelfont = new JSROOT.FontHandler(axis.fLabelFont, labelSize);
+      const labelfont = new FontHandler(axis.fLabelFont, labelSize);
 
       for (let lcnt = 0; lcnt < label_g.length; ++lcnt) {
 
@@ -811,12 +813,12 @@ class TAxisPainter extends ObjectPainter {
           optionUnlab = (chOpt.indexOf("U")>=0) || this.optionUnlab,  // no labels
           optionNoopt = (chOpt.indexOf("N")>=0),  // no ticks position optimization
           optionInt = (chOpt.indexOf("I")>=0),    // integer labels
-          optionNoexp = axis.TestBit(JSROOT.EAxisBits.kNoExponent);
+          optionNoexp = axis.TestBit(EAxisBits.kNoExponent);
 
       if (text_scaling_size <= 0) text_scaling_size = 0.0001;
 
-      if (is_gaxis && axis.TestBit(JSROOT.EAxisBits.kTickPlus)) optionPlus = true;
-      if (is_gaxis && axis.TestBit(JSROOT.EAxisBits.kTickMinus)) optionMinus = true;
+      if (is_gaxis && axis.TestBit(EAxisBits.kTickPlus)) optionPlus = true;
+      if (is_gaxis && axis.TestBit(EAxisBits.kTickMinus)) optionMinus = true;
 
       if (optionPlus && optionMinus) { side = 1; ticksPlusMinus = 1; } else
       if (optionMinus) { side = (swap_side ^ vertical) ? 1 : -1; } else
@@ -888,9 +890,9 @@ class TAxisPainter extends ObjectPainter {
       title_fontsize = (axis.fTitleSize >= 1) ? axis.fTitleSize : Math.round(axis.fTitleSize * text_scaling_size);
 
       let title_offest_k = 1.6*((axis.fTitleSize < 1) ? axis.fTitleSize : axis.fTitleSize/(text_scaling_size || 10)),
-          center = axis.TestBit(JSROOT.EAxisBits.kCenterTitle),
-          opposite = axis.TestBit(JSROOT.EAxisBits.kOppositeTitle),
-          rotate = axis.TestBit(JSROOT.EAxisBits.kRotateTitle) ? -1 : 1,
+          center = axis.TestBit(EAxisBits.kCenterTitle),
+          opposite = axis.TestBit(EAxisBits.kOppositeTitle),
+          rotate = axis.TestBit(EAxisBits.kRotateTitle) ? -1 : 1,
           title_color = this.getColor(is_gaxis ? axis.fTextColor : axis.fTitleColor);
 
       this.startTextDrawing(axis.fTitleFont, title_fontsize, title_g);
@@ -1298,12 +1300,12 @@ class TFramePainter extends ObjectPainter {
 
             const axis = this.getAxis(name);
 
-            if (axis && axis.TestBit(JSROOT.EAxisBits.kAxisRange)) {
+            if (axis && axis.TestBit(EAxisBits.kAxisRange)) {
                if ((axis.fFirst !== axis.fLast) && ((axis.fFirst > 1) || (axis.fLast < axis.fNbins))) {
                   this[`zoom_${name}min`] = axis.fFirst > 1 ? axis.GetBinLowEdge(axis.fFirst) : axis.fXmin;
                   this[`zoom_${name}max`] = axis.fLast < axis.fNbins ? axis.GetBinLowEdge(axis.fLast + 1) : axis.fXmax;
                   // reset user range for main painter
-                  axis.InvertBit(JSROOT.EAxisBits.kAxisRange);
+                  axis.InvertBit(EAxisBits.kAxisRange);
                   axis.fFirst = 1; axis.fLast = axis.fNbins;
                }
             }
@@ -2017,10 +2019,10 @@ class TFramePainter extends ObjectPainter {
             menu.addchk(pad["fLog" + kind[0]] == 2, "log2", () => this.changeAxisLog(kind[0], 2));
             menu.add("endsub:");
          }
-         menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kMoreLogLabels), "More log",
-               () => { faxis.InvertBit(JSROOT.EAxisBits.kMoreLogLabels); this.redrawPad(); });
-         menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kNoExponent), "No exponent",
-               () => { faxis.InvertBit(JSROOT.EAxisBits.kNoExponent); this.redrawPad(); });
+         menu.addchk(faxis.TestBit(EAxisBits.kMoreLogLabels), "More log",
+               () => { faxis.InvertBit(EAxisBits.kMoreLogLabels); this.redrawPad(); });
+         menu.addchk(faxis.TestBit(EAxisBits.kNoExponent), "No exponent",
+               () => { faxis.InvertBit(EAxisBits.kNoExponent); this.redrawPad(); });
 
          if ((kind === "z") && main && main.options && main.options.Zscale)
             if (typeof main.fillPaletteMenu == 'function')
@@ -2039,7 +2041,7 @@ class TFramePainter extends ObjectPainter {
                    }
                }));
 
-            menu.addTAxisMenu(main || this, faxis, kind);
+            menu.addTAxisMenu(EAxisBits, main || this, faxis, kind);
          }
          return true;
       }
@@ -5005,5 +5007,5 @@ async function drawTPadSnapshot(dom, snap /*, opt*/) {
 }
 
 
-export { TAxisPainter, TFramePainter, TPadPainter, TCanvasPainter, ensureTCanvas, drawTPadSnapshot };
+export { EAxisBits, TAxisPainter, TFramePainter, TPadPainter, TCanvasPainter, ensureTCanvas, drawTPadSnapshot };
 

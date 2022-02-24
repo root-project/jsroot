@@ -1,10 +1,12 @@
 
 import * as d3 from './d3.mjs';
 
+import * as JSROOT from './core.mjs';
+
 import { ColorPalette, ObjectPainter, TAttLineHandler, TAttMarkerHandler, DrawOptions, TRandom,
          floatToString, buildSvgPath, toHex, getDrawSettings, getElementMainPainter, createMenu, getColor } from './painter.mjs';
 
-import { ensureTCanvas } from './gpad.mjs';
+import { EAxisBits, ensureTCanvas, TAxisPainter } from './gpad.mjs';
 
 const CoordSystem = { kCARTESIAN: 1, kPOLAR: 2, kCYLINDRICAL: 3, kSPHERICAL: 4, kRAPIDITY: 5 };
 
@@ -1357,7 +1359,7 @@ class TPavePainter extends ObjectPainter {
                if (!pave.fAxis.fLabelOffset) pave.fAxis.fLabelOffset = 0.005;
             }
 
-            painter.z_handle = new JSROOT.TAxisPainter(dom, pave.fAxis, true);
+            painter.z_handle = new TAxisPainter(dom, pave.fAxis, true);
             painter.z_handle.setPadName(painter.getPadName());
 
             painter.UseContextMenu = true;
@@ -1722,10 +1724,10 @@ class THistDrawOptions {
              if (!histo[axis].TestBit(bit))
                 histo[axis].InvertBit(bit);
       };
-      check_axis_bit("OTX", "fXaxis", JSROOT.EAxisBits.kOppositeTitle);
-      check_axis_bit("OTY", "fYaxis", JSROOT.EAxisBits.kOppositeTitle);
-      check_axis_bit("CTX", "fXaxis", JSROOT.EAxisBits.kCenterTitle);
-      check_axis_bit("CTY", "fYaxis", JSROOT.EAxisBits.kCenterTitle);
+      check_axis_bit("OTX", "fXaxis", EAxisBits.kOppositeTitle);
+      check_axis_bit("OTY", "fYaxis", EAxisBits.kOppositeTitle);
+      check_axis_bit("CTX", "fXaxis", EAxisBits.kCenterTitle);
+      check_axis_bit("CTY", "fYaxis", EAxisBits.kCenterTitle);
 
       if (d.check('B1')) { this.BarStyle = 1; this.BaseLine = 0; this.Hist = false; this.need_fillcol = true; }
       if (d.check('B')) { this.BarStyle = 1; this.Hist = false; this.need_fillcol = true; }
@@ -2770,7 +2772,7 @@ class THistPainter extends ObjectPainter {
 
       // TAxis object of histogram, where user range can be stored
       if (taxis) {
-         if ((taxis.fFirst === taxis.fLast) || !taxis.TestBit(JSROOT.EAxisBits.kAxisRange) ||
+         if ((taxis.fFirst === taxis.fLast) || !taxis.TestBit(EAxisBits.kAxisRange) ||
              ((taxis.fFirst <= 1) && (taxis.fLast >= nbin))) taxis = undefined;
       }
 
@@ -2793,10 +2795,10 @@ class THistPainter extends ObjectPainter {
       if (!histo) return false;
 
       let unzoomTAxis = obj => {
-         if (!obj || !obj.TestBit(JSROOT.EAxisBits.kAxisRange)) return false;
+         if (!obj || !obj.TestBit(EAxisBits.kAxisRange)) return false;
          if (obj.fFirst === obj.fLast) return false;
          if ((obj.fFirst <= 1) && (obj.fLast >= obj.fNbins)) return false;
-         obj.InvertBit(JSROOT.EAxisBits.kAxisRange);
+         obj.InvertBit(EAxisBits.kAxisRange);
          return true;
       };
 
@@ -2834,7 +2836,7 @@ class THistPainter extends ObjectPainter {
       if (!taxis) return;
 
       let curr = "[1," + taxis.fNbins + "]";
-      if (taxis.TestBit(JSROOT.EAxisBits.kAxisRange))
+      if (taxis.TestBit(EAxisBits.kAxisRange))
           curr = "[" + taxis.fFirst +"," + taxis.fLast +"]";
 
       menu.input(`Enter user range for axis ${arg} like [1,${taxis.fNbins}]`, curr).then(res => {
@@ -2848,8 +2850,8 @@ class THistPainter extends ObjectPainter {
 
          let newflag = (taxis.fFirst < taxis.fLast) && (taxis.fFirst >= 1) && (taxis.fLast <= taxis.fNbins);
 
-         if (newflag != taxis.TestBit(JSROOT.EAxisBits.kAxisRange))
-            taxis.InvertBit(JSROOT.EAxisBits.kAxisRange);
+         if (newflag != taxis.TestBit(EAxisBits.kAxisRange))
+            taxis.InvertBit(EAxisBits.kAxisRange);
 
          this.interactiveRedraw();
       });
@@ -4775,8 +4777,8 @@ class TH2Painter extends THistPainter {
          axis.fFirst = first;
          axis.fLast = last;
 
-         if (((axis.fFirst == 1) && (axis.fLast == axis.fNbins)) == axis.TestBit(JSROOT.EAxisBits.kAxisRange))
-            axis.InvertBit(JSROOT.EAxisBits.kAxisRange);
+         if (((axis.fFirst == 1) && (axis.fLast == axis.fNbins)) == axis.TestBit(EAxisBits.kAxisRange))
+            axis.InvertBit(EAxisBits.kAxisRange);
       }
 
       // reset statistic before display
@@ -7470,11 +7472,11 @@ function createTF2Histogram(func, hist) {
 
    // only for testing - unfortunately, axis settings are not stored with TF2
    // hist.fXaxis.fTitle = "axis X";
-   // hist.fXaxis.InvertBit(JSROOT.EAxisBits.kCenterTitle);
+   // hist.fXaxis.InvertBit(EAxisBits.kCenterTitle);
    // hist.fYaxis.fTitle = "axis Y";
-   // hist.fYaxis.InvertBit(JSROOT.EAxisBits.kCenterTitle);
+   // hist.fYaxis.InvertBit(EAxisBits.kCenterTitle);
    // hist.fZaxis.fTitle = "axis Z";
-   // hist.fZaxis.InvertBit(JSROOT.EAxisBits.kCenterTitle);
+   // hist.fZaxis.InvertBit(EAxisBits.kCenterTitle);
 
    return hist;
 }
@@ -7601,14 +7603,14 @@ class THStackPainter extends ObjectPainter {
 
          let i1 = 1, i2 = hist.fXaxis.fNbins, j1 = 1, j2 = 1, first = true;
 
-         if (hist.fXaxis.TestBit(JSROOT.EAxisBits.kAxisRange)) {
+         if (hist.fXaxis.TestBit(EAxisBits.kAxisRange)) {
             i1 = hist.fXaxis.fFirst;
             i2 = hist.fXaxis.fLast;
          }
 
          if (hist._typename.indexOf("TH2")===0) {
             j2 = hist.fYaxis.fNbins;
-            if (hist.fYaxis.TestBit(JSROOT.EAxisBits.kAxisRange)) {
+            if (hist.fYaxis.TestBit(EAxisBits.kAxisRange)) {
                j1 = hist.fYaxis.fFirst;
                j2 = hist.fYaxis.fLast;
             }
@@ -7907,14 +7909,5 @@ class THStackPainter extends ObjectPainter {
 
 } // class THStackPainter
 
-JSROOT.TPavePainter = TPavePainter;
-JSROOT.THistPainter = THistPainter;
-JSROOT.TH1Painter = TH1Painter;
-JSROOT.TH2Painter = TH2Painter;
-JSROOT.THStackPainter = THStackPainter;
 
-const jsrp = JSROOT.Painter; // FIXME - workaround
-jsrp.drawTF2 = drawTF2;
-
-
-export { TPavePainter, THistPainter, TH1Painter, TH2Painter, THStackPainter, produceLegend };
+export { TPavePainter, THistPainter, TH1Painter, TH2Painter, THStackPainter, produceLegend, drawTF2 };

@@ -4031,7 +4031,7 @@ async function draw(dom, obj, opt) {
       throw Error('not an object in JSROOT.draw');
 
    if (opt == 'inspect')
-      return JSROOT.require("hierarchy").then(() => jsrp.drawInspector(dom, obj));
+      return JSROOT.require("hierarchy").then(hh => hh.drawInspector(dom, obj));
 
    let handle, type_info;
    if ('_typename' in obj) {
@@ -4041,7 +4041,7 @@ async function draw(dom, obj, opt) {
       type_info = "kind " + obj._kind;
       handle = getDrawHandle(obj._kind, opt);
    } else
-      return JSROOT.require("hierarchy").then(() => jsrp.drawInspector(dom, obj));
+      return JSROOT.require("hierarchy").then(hh => hh.drawInspector(dom, obj));
 
    // this is case of unsupported class, close it normally
    if (!handle)
@@ -4068,15 +4068,15 @@ async function draw(dom, obj, opt) {
    async function performDraw() {
       let painter;
       if (handle.direct == "v7") {
-         painter = new JSROOT.RObjectPainter(dom, obj, opt, handle.csstype);
-         let padhandle = await import('./v7gpad.mjs');
-         await padhandle.ensureRCanvas(painter, handle.frame || false);
+         let v7h = await JSROOT.require('v7gpad');
+         painter = new v7h.RObjectPainter(dom, obj, opt, handle.csstype);
+         await v7h.ensureRCanvas(painter, handle.frame || false);
          painter.redraw = handle.func;
          await painter.redraw();
       } else if (handle.direct) {
          painter = new ObjectPainter(dom, obj, opt);
-         let padhandle = await import('./gpad.mjs');
-         await padhandle.ensureTCanvas(painter, handle.frame || false);
+         let v6h = await  JSROOT.require('gpad');
+         await v6h.ensureTCanvas(painter, handle.frame || false);
          painter.redraw = handle.func;
          await painter.redraw();
       } else {
@@ -4103,18 +4103,13 @@ async function draw(dom, obj, opt) {
    else
       throw Error(`Draw function or class not specified to draw ${type_info}`);
 
-   let prereq = handle.prereq || "";
-   if (handle.direct == "v7")
-      prereq += ";v7gpad";
-   else if (handle.direct)
-      prereq += ";gpad";
-   if (handle.script)
-      prereq += ";" + handle.script;
-
-   if (!prereq)
+   if (!handle.prereq && !handle.script)
       throw Error(`Prerequicities to load ${funcname} are not specified`);
 
-   await JSROOT.require(prereq);
+   let hh = await JSROOT.require(handle.prereq);
+
+   if (handle.script)
+      await JSROOT.loadScript(handle.script);
 
    if (funcname) {
       let func = JSROOT.findFunction(funcname);
@@ -4122,7 +4117,7 @@ async function draw(dom, obj, opt) {
          return Promise.reject(Error(`Fail to find function ${funcname} after loading ${prereq}`));
       handle.func = func;
    } else {
-      let cl = JSROOT[clname];
+      let cl = hh ? hh[clname] : null;
       if (!cl || typeof cl.draw != 'function')
          return Promise.reject(Error(`Fail to find class JSROOT.${clname} after loading ${prereq}`));
       handle.class = cl;
@@ -4313,9 +4308,7 @@ jsrp.toHex = toHex;
 jsrp.floatToString = floatToString;
 jsrp.addDrawFunc = addDrawFunc;
 
-export {
-
-         ColorPalette, BasePainter, ObjectPainter, DrawOptions, AxisPainterMethods,
+export { ColorPalette, BasePainter, ObjectPainter, DrawOptions, AxisPainterMethods,
          TRandom, TAttLineHandler, TAttFillHandler, TAttMarkerHandler, FontHandler,
          getElementRect,
          draw, redraw, cleanup, resize,

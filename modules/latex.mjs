@@ -1,7 +1,7 @@
 
 import * as d3 from './d3.mjs';
 
-import { getElementRect, loadJSDOM } from './painter.mjs';
+import { getElementRect, loadJSDOM, FontHandler } from './painter.mjs';
 
 
 let symbols_map = {
@@ -780,7 +780,7 @@ const parseLatex = (node, arg, label, curr) => {
          if (found.name == "#color[")
             subpos.color = curr.painter.getColor(foundarg);
          else if (found.name == "#font[") {
-            subpos.font = new JSROOT.FontHandler(foundarg);
+            subpos.font = new FontHandler(foundarg);
             subpos.ufont = true; // mark that custom font is applied
          } else
             subpos.fsize *= foundarg;

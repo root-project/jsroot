@@ -1,5 +1,7 @@
 import * as d3 from './d3.mjs';
 
+import * as JSROOT from './core.mjs';
+
 import { showProgress } from './utils.mjs';
 
 import { BasePainter, ObjectPainter, loadJSDOM,
@@ -4069,7 +4071,7 @@ jsrp.drawStreamerInfo = function(dom, lst) {
 
 /** @summary Display inspector
   * @private */
-jsrp.drawInspector = function(dom, obj) {
+function drawInspector(dom, obj) {
 
    cleanup(dom);
    let painter = new HierarchyPainter('inspector', dom, 'white');
@@ -5365,12 +5367,6 @@ jsrp.listHierarchy = listHierarchy;
 jsrp.objectHierarchy = objectHierarchy;
 jsrp.keysHierarchy = keysHierarchy;
 
-JSROOT.BrowserLayout = BrowserLayout;
-JSROOT.HierarchyPainter = HierarchyPainter;
-JSROOT.MDIDisplay = MDIDisplay;
-JSROOT.CustomDisplay = CustomDisplay;
-JSROOT.GridDisplay = GridDisplay;
-JSROOT.FlexibleDisplay = FlexibleDisplay;
-JSROOT.BatchDisplay = BatchDisplay;
-
-export { HierarchyPainter, BrowserLayout, BatchDisplay, buildNobrowserGUI, buildGUI };
+export { HierarchyPainter, BrowserLayout, BatchDisplay,
+         MDIDisplay, CustomDisplay, GridDisplay, FlexibleDisplay,
+         buildNobrowserGUI, buildGUI, drawInspector };

@@ -562,7 +562,7 @@ RFramePainter.prototype.drawXYZ = function(toplevel, opts) {
    if (xaxis && xaxis.fTitle) {
       let text3d = new THREE.TextGeometry(ltx.translateLaTeX(xaxis.fTitle), { font: JSROOT.HelveticerRegularFont, size: textsize, height: 0, curveSegments: 5 });
       text3d.computeBoundingBox();
-      text3d.center = false; // xaxis.TestBit(JSROOT.EAxisBits.kCenterTitle);
+      text3d.center = false; // xaxis.TestBit(EAxisBits.kCenterTitle);
       text3d.gry = 2; // factor 2 shift
       text3d.grx = (grminx + grmaxx)/2; // default position for centered title
       lbls.push(text3d);
@@ -774,7 +774,7 @@ RFramePainter.prototype.drawXYZ = function(toplevel, opts) {
    if (yaxis && yaxis.fTitle) {
       let text3d = new THREE.TextGeometry(ltx.translateLaTeX(yaxis.fTitle), { font: JSROOT.HelveticerRegularFont, size: textsize, height: 0, curveSegments: 5 });
       text3d.computeBoundingBox();
-      text3d.center = false; // yaxis.TestBit(JSROOT.EAxisBits.kCenterTitle);
+      text3d.center = false; // yaxis.TestBit(EAxisBits.kCenterTitle);
       text3d.grx = 2; // factor 2 shift
       text3d.gry = (grminy + grmaxy)/2; // default position for centered title
       lbls.push(text3d);
@@ -931,7 +931,7 @@ RFramePainter.prototype.drawXYZ = function(toplevel, opts) {
          text3d.computeBoundingBox();
          let draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
              // draw_height = text3d.boundingBox.max.y - text3d.boundingBox.min.y,
-             center_title = false, // zaxis.TestBit(JSROOT.EAxisBits.kCenterTitle)
+             center_title = false, // zaxis.TestBit(EAxisBits.kCenterTitle)
              posz = center_title ? (grmaxz + grminz - draw_width)/2 : grmaxz - draw_width;
 
          text3d.rotateZ(Math.PI/2);

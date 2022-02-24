@@ -4,7 +4,7 @@ import * as d3 from './d3.mjs';
 
 import { closeCurrentWindow, showProgress } from './utils.mjs';
 
-import { ColorPalette, ObjectPainter, DrawOptions, AxisPainterMethods,
+import { ColorPalette, ObjectPainter, DrawOptions, AxisPainterMethods, FontHandler,
          createMenu, closeMenu, isPromise, addColor, registerForResize,
          getElementRect, chooseTimeFormat, selectActivePad, addDrawFunc,
          getActivePad, getAbsPosInCanvas, compressSVG, cleanup, resize } from './painter.mjs';
@@ -197,7 +197,7 @@ class RObjectPainter extends ObjectPainter {
        if (!Number.isFinite(text_size) || (text_size <= 0)) text_size = 12;
        if (!fontScale) fontScale = pp.getPadHeight() || 100;
 
-       let handler = new JSROOT.FontHandler(null, text_size, fontScale, font_family, font_style, font_weight);
+       let handler = new FontHandler(null, text_size, fontScale, font_family, font_style, font_weight);
 
        if (text_angle) handler.setAngle(360 - text_angle);
        if (text_align !== "none") handler.setAlign(text_align);

@@ -10,7 +10,7 @@ import { assign3DHandler, disposeThreejsObject, createOrbitControl,
          createLineSegments, create3DLineMaterial, PointsCreator, Box3D,
          createRender3D, beforeRender3D, afterRender3D, getRender3DKind, cleanupRender3D } from './base3d.mjs';
 
-import { TFramePainter, ensureTCanvas } from './gpad.mjs';
+import { TFramePainter, EAxisBits, ensureTCanvas } from './gpad.mjs';
 
 import { THistPainter, TH1Painter, TH2Painter } from './hist.mjs';
 
@@ -591,7 +591,7 @@ TFramePainter.prototype.drawXYZ = function(toplevel, opts) {
    if (xaxis && xaxis.fTitle && opts.draw) {
       const text3d = new THREE.TextGeometry(ltx.translateLaTeX(xaxis.fTitle), { font: JSROOT.HelveticerRegularFont, size: textsize, height: 0, curveSegments: 5 });
       text3d.computeBoundingBox();
-      text3d.center = xaxis.TestBit(JSROOT.EAxisBits.kCenterTitle);
+      text3d.center = xaxis.TestBit(EAxisBits.kCenterTitle);
       text3d.gry = 2; // factor 2 shift
       text3d.grx = (grminx + grmaxx)/2; // default position for centered title
       lbls.push(text3d);
@@ -803,7 +803,7 @@ TFramePainter.prototype.drawXYZ = function(toplevel, opts) {
    if (yaxis && yaxis.fTitle && opts.draw) {
       const text3d = new THREE.TextGeometry(ltx.translateLaTeX(yaxis.fTitle), { font: JSROOT.HelveticerRegularFont, size: textsize, height: 0, curveSegments: 5 });
       text3d.computeBoundingBox();
-      text3d.center = yaxis.TestBit(JSROOT.EAxisBits.kCenterTitle);
+      text3d.center = yaxis.TestBit(EAxisBits.kCenterTitle);
       text3d.grx = 2; // factor 2 shift
       text3d.gry = (grminy + grmaxy)/2; // default position for centered title
       lbls.push(text3d);
@@ -962,7 +962,7 @@ TFramePainter.prototype.drawXYZ = function(toplevel, opts) {
          text3d.computeBoundingBox();
          let draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
              // draw_height = text3d.boundingBox.max.y - text3d.boundingBox.min.y,
-             posz = zaxis.TestBit(JSROOT.EAxisBits.kCenterTitle) ? (grmaxz + grminz - draw_width)/2 : grmaxz - draw_width;
+             posz = zaxis.TestBit(EAxisBits.kCenterTitle) ? (grmaxz + grminz - draw_width)/2 : grmaxz - draw_width;
 
          text3d.rotateZ(Math.PI/2);
 
