@@ -2,7 +2,7 @@
 import * as d3 from './d3.mjs';
 
 import { ColorPalette, ObjectPainter, TAttLineHandler, TAttMarkerHandler, DrawOptions,
-         floatToString, buildSvgPath, toHex, getDrawSettings, getElementMainPainter, createMenu } from './painter.mjs';
+         floatToString, buildSvgPath, toHex, getDrawSettings, getElementMainPainter, createMenu, getColor } from './painter.mjs';
 
 import { ensureTCanvas } from './gpad.mjs';
 
@@ -1548,7 +1548,7 @@ class THistDrawOptions {
          this.color = this.partAsInt(1) - 1;
          if (this.color >= 0) return true;
          for (let col = 0; col < 8; ++col)
-            if (jsrp.getColor(col).toUpperCase() === this.part)
+            if (getColor(col).toUpperCase() === this.part)
                { this.color = col; return true; }
          return false;
       };
@@ -1557,7 +1557,7 @@ class THistDrawOptions {
          this.histoFillColor = d.color;
 
       if (d.check('LINE_', true) && d.getColor())
-         this.histoLineColor = jsrp.getColor(d.color);
+         this.histoLineColor = getColor(d.color);
 
       if (d.check('XAXIS_', true) && d.getColor())
          histo.fXaxis.fAxisColor = histo.fXaxis.fLabelColor = histo.fXaxis.fTitleColor = d.color;

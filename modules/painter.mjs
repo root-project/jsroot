@@ -414,7 +414,7 @@ jsrp.adoptRootColors = function(objarr) {
 /** @summary Return ROOT color by index
   * @desc Color numbering corresponds typical ROOT colors
   * @returns {String} with RGB color code or existing color name like 'cyan' */
-jsrp.getColor = function(indx) {
+function getColor(indx) {
    return jsrp.root_colors[indx];
 }
 
@@ -501,7 +501,7 @@ class TAttMarkerHandler {
 
       if (args.attr) {
          if (args.color === undefined)
-            args.color = args.painter ? args.painter.getColor(args.attr.fMarkerColor) : jsrp.getColor(args.attr.fMarkerColor);
+            args.color = args.painter ? args.painter.getColor(args.attr.fMarkerColor) : getColor(args.attr.fMarkerColor);
          if (!args.style || (args.style < 0)) args.style = args.attr.fMarkerStyle;
          if (!args.size) args.size = args.attr.fMarkerSize;
       }
@@ -764,13 +764,13 @@ class TAttLineHandler {
      * @param {number} args.width - line width */
    setArgs(args) {
       if (args.attr) {
-         args.color = args.color0 || (args.painter ? args.painter.getColor(args.attr.fLineColor) : jsrp.getColor(args.attr.fLineColor));
+         args.color = args.color0 || (args.painter ? args.painter.getColor(args.attr.fLineColor) : getColor(args.attr.fLineColor));
          if (args.width === undefined) args.width = args.attr.fLineWidth;
          if (args.style === undefined) args.style = args.attr.fLineStyle;
       } else if (typeof args.color == 'string') {
          if ((args.color !== 'none') && !args.width) args.width = 1;
       } else if (typeof args.color == 'number') {
-         args.color = args.painter ? args.painter.getColor(args.color) : jsrp.getColor(args.color);
+         args.color = args.painter ? args.painter.getColor(args.color) : getColor(args.color);
       }
 
       if (args.width === undefined)
@@ -1009,7 +1009,7 @@ class TAttFillHandler {
          this.color = color;
          if (color != "none") indx = d3.color(color).hex().substr(1); // fictional index produced from color code
       } else {
-         this.color = painter ? painter.getColor(indx) : jsrp.getColor(indx);
+         this.color = painter ? painter.getColor(indx) : getColor(indx);
       }
 
       if (typeof this.color != 'string') this.color = "none";
@@ -4340,6 +4340,7 @@ jsrp.createRootColors();
 
 if (JSROOT.nodejs) jsrp.readStyleFromURL("?interactive=0&tooltip=0&nomenu&noprogress&notouch&toolbar=0&webgl=0");
 
+jsrp.getColor = getColor;
 jsrp.getDrawHandle = getDrawHandle;
 jsrp.getDrawSettings = getDrawSettings;
 jsrp.getElementRect = getElementRect;
@@ -4366,4 +4367,4 @@ JSROOT.Painter = jsrp;
 
 export { ColorPalette, BasePainter, ObjectPainter, DrawOptions, TAttLineHandler, TAttFillHandler, TAttMarkerHandler, FontHandler,
          getElementRect, draw, redraw, makeSVG, jsrp, loadJSDOM, floatToString,  buildSvgPath, toHex, getDrawSettings,
-         getElementCanvPainter, getElementMainPainter, createMenu, closeMenu };
+         getElementCanvPainter, getElementMainPainter, createMenu, closeMenu, getColor };

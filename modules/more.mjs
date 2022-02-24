@@ -2,7 +2,7 @@
 import * as d3 from './d3.mjs';
 
 import { ObjectPainter, TAttLineHandler, TAttFillHandler, TAttMarkerHandler, DrawOptions,
-         floatToString, buildSvgPath, toHex, getElementMainPainter } from './painter.mjs';
+         floatToString, buildSvgPath, toHex, getElementMainPainter, getColor } from './painter.mjs';
 
 // import { mth } from './math.mjs';
 
@@ -3956,7 +3956,7 @@ class TWebPaintingPainter extends ObjectPainter {
                                   y: func.y(obj.fBuf[indx++]),
                                   rotate: -angle,
                                   text: txt,
-                                  color: jsrp.getColor(attr.fTextColor),
+                                  color: getColor(attr.fTextColor),
                                   latex: 0, draw_g: group });
 
                   await this.finishTextDrawing(group);

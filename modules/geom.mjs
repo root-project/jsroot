@@ -8,7 +8,7 @@ import { assign3DHandler, createRender3D, InteractiveControl } from './base3d.mj
 
 import { geo } from './geobase.mjs';
 
-import { ObjectPainter, DrawOptions, createMenu, closeMenu } from './painter.mjs';
+import { ObjectPainter, DrawOptions, createMenu, closeMenu, getColor } from './painter.mjs';
 
 import { ensureTCanvas } from './gpad.mjs';
 
@@ -535,11 +535,11 @@ class TGeoPainter extends ObjectPainter {
       if (d.check('BKGR_', true)) {
          let bckgr = null;
          if (d.partAsInt(1) > 0) {
-           bckgr = jsrp.getColor(d.partAsInt());
+           bckgr = getColor(d.partAsInt());
          } else {
             for (let col = 0; col < 8; ++col)
-               if (jsrp.getColor(col).toUpperCase() === d.part)
-                  bckgr = jsrp.getColor(col);
+               if (getColor(col).toUpperCase() === d.part)
+                  bckgr = getColor(col);
          }
          if (bckgr) res.background = "#" + new THREE.Color(bckgr).getHexString();
       }
@@ -2887,7 +2887,7 @@ class TGeoPainter extends ObjectPainter {
       if (!track || !track.fNpoints) return false;
 
       let track_width = track.fLineWidth || 1,
-          track_color = jsrp.getColor(track.fLineColor) || "#ff00ff";
+          track_color = getColor(track.fLineColor) || "#ff00ff";
 
       if (JSROOT.browser.isWin) track_width = 1; // not supported on windows
 
@@ -2929,7 +2929,7 @@ class TGeoPainter extends ObjectPainter {
       if (!line) return false;
 
       let track_width = line.fLineWidth || 1,
-          track_color = jsrp.getColor(line.fLineColor) || "#ff00ff";
+          track_color = getColor(line.fLineColor) || "#ff00ff";
 
       if (JSROOT.browser.isWin) track_width = 1; // not supported on windows
 
@@ -2969,7 +2969,7 @@ class TGeoPainter extends ObjectPainter {
       if (!track || (track.fN <= 0)) return false;
 
       let track_width = track.fLineWidth || 1,
-          track_color = jsrp.getColor(track.fLineColor) || "#ff00ff";
+          track_color = getColor(track.fLineColor) || "#ff00ff";
 
       if (JSROOT.browser.isWin) track_width = 1; // not supported on windows
 
@@ -3027,7 +3027,7 @@ class TGeoPainter extends ObjectPainter {
                        projy ? projv : hit.fP[i*3+1],
                        projz ? projv : hit.fP[i*3+2]);
 
-      let mesh = await pnts.createPoints({ color: jsrp.getColor(hit.fMarkerColor) || "#0000ff", style: hit_style });
+      let mesh = await pnts.createPoints({ color: getColor(hit.fMarkerColor) || "#0000ff", style: hit_style });
       mesh.renderOrder = 1000000; // to bring points to the front
       mesh.highlightScale = 2;
       mesh.geo_name = itemname;

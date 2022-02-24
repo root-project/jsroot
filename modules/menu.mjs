@@ -1,7 +1,7 @@
 
 import * as d3 from './d3.mjs';
 
-import { TAttMarkerHandler } from './painter.mjs';
+import { TAttMarkerHandler, getColor } from './painter.mjs';
 
 const jsrp = JSROOT.Painter; // FIXME - workaround
 
@@ -149,8 +149,8 @@ class JSRootMenu {
       this.add("sub:" + name, () => {
          this.input("Enter color " + (useid ? "(only id number)" : "(name or id)"), value, useid ? "int" : "text", useid ? 0 : undefined, useid ? 9999 : undefined).then(col => {
             let id = parseInt(col);
-            if (Number.isInteger(id) && jsrp.getColor(id)) {
-               col = jsrp.getColor(id);
+            if (Number.isInteger(id) && getColor(id)) {
+               col = getColor(id);
             } else {
                if (useid) return;
             }
@@ -160,7 +160,7 @@ class JSRootMenu {
       for (let n = -1; n < 11; ++n) {
          if ((n < 0) && useid) continue;
          if ((n == 10) && (fill_kind !== 1)) continue;
-         let col = (n < 0) ? 'none' : jsrp.getColor(n);
+         let col = (n < 0) ? 'none' : getColor(n);
          if ((n == 0) && (fill_kind == 1)) col = 'none';
          let svg = "<svg width='100' height='18' style='margin:0px;background-color:" + col + "'><text x='4' y='12' style='font-size:12px' fill='" + (n == 1 ? "white" : "black") + "'>" + col + "</text></svg>";
          this.addchk((value == (useid ? n : col)), svg, (useid ? n : col), res => set_func(useid ? parseInt(res) : res));
