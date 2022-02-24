@@ -12,6 +12,12 @@ const clTObject = 'TObject', clTNamed = 'TNamed', clTObjString = 'TObjString', c
       kObject = 61, kAny = 62, kObjectp = 63, kObjectP = 64, kTString = 65,
       kTObject = 66, kTNamed = 67, kAnyp = 68, kAnyP = 69,
 
+      /* kAnyPnoVT: 70, */
+      kSTLp = 71,
+      /* kSkip = 100, kSkipL = 120, kSkipP = 140, kConv = 200, kConvL = 220, kConvP = 240, */
+
+      kSTL = 300, /* kSTLstring = 365, */
+
       kStreamer = 500, kStreamLoop = 501,
 
       kMapOffset = 2, kByteCountMask = 0x40000000, kNewClassTag = 0xFFFFFFFF, kClassMask = 0x80000000,
@@ -3803,13 +3809,6 @@ jsrio = {
 
    kSTL: 300, /* kSTLstring: 365, */
 
-   /** @summary I/O mode for http requests
-     * @desc could be "string" or "array", enable usage of ArrayBuffer in http requests */
-   Mode: "array"
-
-   // kSplitCollectionOfPointers: 100,
-
-
 } // namespace jsrio
 
 // special way to assign methods when streaming objects
@@ -3823,6 +3822,12 @@ JSROOT.TDirectory = TDirectory;
 JSROOT.TFile = TFile;
 JSROOT.TLocalFile = TLocalFile;
 JSROOT.TNodejsFile = TNodejsFile;
-JSROOT.IO = jsrio;
 
-export { openFile, TBuffer, jsrio, R__unzip, addUserStreamer, createStreamerElement, createMemberStreamer };
+export {
+   kChar, kShort, kInt, kLong, kFloat, kCounter,
+   kCharStar, kDouble, kDouble32, kLegacyChar,
+   kUChar, kUShort, kUInt, kULong, kBits,
+   kLong64, kULong64, kBool, kFloat16,
+   kBase, kOffsetL, kOffsetP, kObject, kAny, kObjectp, kObjectP, kTString,
+   kAnyP, kStreamer, kStreamLoop, kSTLp, kSTL,
+   openFile, TBuffer, R__unzip, addUserStreamer, createStreamerElement, createMemberStreamer };

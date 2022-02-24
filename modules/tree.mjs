@@ -1,5 +1,11 @@
 
-import { jsrio, R__unzip, TBuffer, createStreamerElement, createMemberStreamer } from './io.mjs';
+import { kChar, kShort, kInt, kLong, kFloat, kCounter,
+         kCharStar, kDouble, kDouble32, kLegacyChar,
+         kUChar, kUShort, kUInt, kULong, kBits,
+         kLong64, kULong64, kBool, kFloat16,
+         kBase, kOffsetL, kOffsetP, kObject, kAny, kObjectp, kObjectP, kTString,
+         kAnyP, kStreamer, kStreamLoop, kSTLp, kSTL,
+         R__unzip, TBuffer, createStreamerElement, createMemberStreamer } from './io.mjs';
 
 import { mth as jsroot_math } from './math.mjs';
 
@@ -1297,11 +1303,11 @@ function findBrachStreamerElement(branch, file) {
       if (!elem) return false;
       if (elem.fName !== match_name) return false;
       if (elem.fType === branch.fStreamerType) return true;
-      if ((elem.fType === jsrio.kBool) && (branch.fStreamerType === jsrio.kUChar)) return true;
-      if (((branch.fStreamerType === jsrio.kSTL) || (branch.fStreamerType === jsrio.kSTL + jsrio.kOffsetL) ||
-         (branch.fStreamerType === jsrio.kSTLp) || (branch.fStreamerType === jsrio.kSTLp + jsrio.kOffsetL))
-         && (elem.fType === jsrio.kStreamer)) return true;
-      console.warn('Should match element', elem.fType, 'with branch', branch.fStreamerType);
+      if ((elem.fType === kBool) && (branch.fStreamerType === kUChar)) return true;
+      if (((branch.fStreamerType === kSTL) || (branch.fStreamerType === kSTL + kOffsetL) ||
+         (branch.fStreamerType === kSTLp) || (branch.fStreamerType === kSTLp + kOffsetL))
+         && (elem.fType === kStreamer)) return true;
+      console.warn(`Should match element ${elem.fType} with branch ${branch.fStreamerType}`);
       return false;
    }
 
@@ -1362,14 +1368,14 @@ function getBranchObjectClass(branch, tree, with_clones, with_leafs) {
       return s_elem.fName;
 
    if (branch.fType === kObjectNode) {
-      if (s_elem && ((s_elem.fType === jsrio.kObject) || (s_elem.fType === jsrio.kAny)))
+      if (s_elem && ((s_elem.fType === kObject) || (s_elem.fType === kAny)))
          return s_elem.fTypeName;
       return "TObject";
    }
 
    if ((branch.fType === kLeafNode) && s_elem && with_leafs) {
-      if ((s_elem.fType === jsrio.kObject) || (s_elem.fType === jsrio.kAny)) return s_elem.fTypeName;
-      if (s_elem.fType === jsrio.kObjectp) return s_elem.fTypeName.substr(0, s_elem.fTypeName.length - 1);
+      if ((s_elem.fType === kObject) || (s_elem.fType === kAny)) return s_elem.fTypeName;
+      if (s_elem.fType === kObjectp) return s_elem.fTypeName.substr(0, s_elem.fTypeName.length - 1);
    }
 
    return "";
@@ -1454,14 +1460,14 @@ const TTreeMethods = {
          // function creates TStreamerElement which corresponds to the elementary leaf
          let datakind = 0;
          switch (leaf._typename) {
-            case 'TLeafF': datakind = jsrio.kFloat; break;
-            case 'TLeafD': datakind = jsrio.kDouble; break;
-            case 'TLeafO': datakind = jsrio.kBool; break;
-            case 'TLeafB': datakind = leaf.fIsUnsigned ? jsrio.kUChar : jsrio.kChar; break;
-            case 'TLeafS': datakind = leaf.fIsUnsigned ? jsrio.kUShort : jsrio.kShort; break;
-            case 'TLeafI': datakind = leaf.fIsUnsigned ? jsrio.kUInt : jsrio.kInt; break;
-            case 'TLeafL': datakind = leaf.fIsUnsigned ? jsrio.kULong64 : jsrio.kLong64; break;
-            case 'TLeafC': datakind = jsrio.kTString; break;
+            case 'TLeafF': datakind = kFloat; break;
+            case 'TLeafD': datakind = kDouble; break;
+            case 'TLeafO': datakind = kBool; break;
+            case 'TLeafB': datakind = leaf.fIsUnsigned ? kUChar : kChar; break;
+            case 'TLeafS': datakind = leaf.fIsUnsigned ? kUShort : kShort; break;
+            case 'TLeafI': datakind = leaf.fIsUnsigned ? kUInt : kInt; break;
+            case 'TLeafL': datakind = leaf.fIsUnsigned ? kULong64 : kLong64; break;
+            case 'TLeafC': datakind = kTString; break;
             default: return null;
          }
          return createStreamerElement(name || leaf.fName, datakind);
@@ -1583,8 +1589,8 @@ const TTreeMethods = {
 
             let BranchCount2 = branch.fBranchCount2;
 
-            if (!BranchCount2 && (branch.fBranchCount.fStreamerType === jsrio.kSTL) &&
-               ((branch.fStreamerType === jsrio.kStreamLoop) || (branch.fStreamerType === jsrio.kOffsetL + jsrio.kStreamLoop))) {
+            if (!BranchCount2 && (branch.fBranchCount.fStreamerType === kSTL) &&
+               ((branch.fStreamerType === kStreamLoop) || (branch.fStreamerType === kOffsetL + kStreamLoop))) {
                // special case when count member from kStreamLoop not assigned as fBranchCount2
                let elemd = findBrachStreamerElement(branch, handle.file),
                   arrd = branch.fBranchCount.fBranches.arr;
@@ -1684,7 +1690,7 @@ const TTreeMethods = {
 
             if ((branch.fType === kClonesNode) || (branch.fType === kSTLNode)) {
 
-               elem = createStreamerElement(target_name, jsrio.kInt);
+               elem = createStreamerElement(target_name, kInt);
 
                if (!read_mode || ((typeof read_mode === "string") && (read_mode[0] === ".")) || (read_mode === 1)) {
                   handle.process_arrays = false;
@@ -1742,7 +1748,7 @@ const TTreeMethods = {
 
                   elem = createStreamerElement(target_name, branch.fClassName);
 
-                  if (elem.fType === jsrio.kAny) {
+                  if (elem.fType === kAny) {
 
                      let streamer = handle.file.getStreamer(branch.fClassName, { val: branch.fClassVersion, checksum: branch.fCheckSum });
                      if (!streamer) { elem = null; console.warn('not found streamer!'); } else
@@ -1759,7 +1765,7 @@ const TTreeMethods = {
                         };
                   }
 
-                  // elem.fType = jsrio.kAnyP;
+                  // elem.fType = kAnyP;
 
                   // only STL containers here
                   // if (!elem.fSTLtype) elem = null;
@@ -1890,7 +1896,7 @@ const TTreeMethods = {
 
             handle.process_arrays = false;
 
-            if ((elem.fType === jsrio.kDouble32) || (elem.fType === jsrio.kFloat16)) {
+            if ((elem.fType === kDouble32) || (elem.fType === kFloat16)) {
                // special handling for compressed floats
 
                member.stl_size = item_cnt.name;
@@ -1899,7 +1905,7 @@ const TTreeMethods = {
                };
 
             } else
-               if (((elem.fType === jsrio.kOffsetP + jsrio.kDouble32) || (elem.fType === jsrio.kOffsetP + jsrio.kFloat16)) && branch.fBranchCount2) {
+               if (((elem.fType === kOffsetP + kDouble32) || (elem.fType === kOffsetP + kFloat16)) && branch.fBranchCount2) {
                   // special handling for variable arrays of compressed floats in branch - not tested
 
                   member.stl_size = item_cnt.name;
@@ -1913,8 +1919,8 @@ const TTreeMethods = {
 
                } else
                   // special handling of simple arrays
-                  if (((elem.fType > 0) && (elem.fType < jsrio.kOffsetL)) || (elem.fType === jsrio.kTString) ||
-                     (((elem.fType > jsrio.kOffsetP) && (elem.fType < jsrio.kOffsetP + jsrio.kOffsetL)) && branch.fBranchCount2)) {
+                  if (((elem.fType > 0) && (elem.fType < kOffsetL)) || (elem.fType === kTString) ||
+                     (((elem.fType > kOffsetP) && (elem.fType < kOffsetP + kOffsetL)) && branch.fBranchCount2)) {
 
                      member = {
                         name: target_name,
@@ -1926,7 +1932,7 @@ const TTreeMethods = {
                      };
 
                      if (branch.fBranchCount2) {
-                        member.type -= jsrio.kOffsetP;
+                        member.type -= kOffsetP;
                         member.arr_size = item_cnt2.name;
                         member.func = function(buf, obj) {
                            let sz0 = obj[this.stl_size], sz1 = obj[this.arr_size], arr = new Array(sz0);
@@ -1937,21 +1943,21 @@ const TTreeMethods = {
                      }
 
                   } else
-                     if ((elem.fType > jsrio.kOffsetP) && (elem.fType < jsrio.kOffsetP + jsrio.kOffsetL) && member.cntname) {
+                     if ((elem.fType > kOffsetP) && (elem.fType < kOffsetP + kOffsetL) && member.cntname) {
 
                         member.cntname = item_cnt.name;
                      } else
-                        if (elem.fType == jsrio.kStreamer) {
+                        if (elem.fType == kStreamer) {
                            // with streamers one need to extend existing array
 
                            if (item_cnt2)
-                              throw new Error('Second branch counter not supported yet with jsrio.kStreamer');
+                              throw new Error('Second branch counter not supported yet with kStreamer');
 
                            // function provided by normal I/O
                            member.func = member.branch_func;
                            member.stl_size = item_cnt.name;
                         } else
-                           if ((elem.fType === jsrio.kStreamLoop) || (elem.fType === jsrio.kOffsetL + jsrio.kStreamLoop)) {
+                           if ((elem.fType === kStreamLoop) || (elem.fType === kOffsetL + kStreamLoop)) {
                               if (item_cnt2) {
                                  // special solution for kStreamLoop
                                  member.stl_size = item_cnt.name;
@@ -2081,7 +2087,7 @@ const TTreeMethods = {
 
          for (let k = 0; k < handle.arr.length; ++k) {
             let elem = handle.arr[k];
-            if ((elem.type <= 0) || (elem.type >= jsrio.kOffsetL) || (elem.type === jsrio.kCharStar)) handle.process_arrays = false;
+            if ((elem.type <= 0) || (elem.type >= kOffsetL) || (elem.type === kCharStar)) handle.process_arrays = false;
          }
 
          if (handle.process_arrays) {
@@ -2093,7 +2099,7 @@ const TTreeMethods = {
                let item = handle.arr[nn],
                   elem = createStreamerElement(item.name, item.type);
 
-               elem.fType = item.type + jsrio.kOffsetL;
+               elem.fType = item.type + kOffsetL;
                elem.fArrayLength = 10;
                elem.fArrayDim = 1;
                elem.fMaxIndex[0] = 10; // 10 if artificial number, will be replaced during reading
@@ -2853,8 +2859,8 @@ JSROOT.drawTree = async function() {
       // this is drawing of the branch
 
       // if generic object tried to be drawn without specifying any options, it will be just dump
-      if (!opt && obj.fStreamerType && (obj.fStreamerType !== jsrio.kTString) &&
-          (obj.fStreamerType >= jsrio.kObject) && (obj.fStreamerType <= jsrio.kAnyP)) opt = "dump";
+      if (!opt && obj.fStreamerType && (obj.fStreamerType !== kTString) &&
+          (obj.fStreamerType >= kObject) && (obj.fStreamerType <= kAnyP)) opt = "dump";
 
       args = { expr: opt, branch: obj };
       tree = obj.$tree;
