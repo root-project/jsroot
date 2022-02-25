@@ -8,7 +8,8 @@ import { showProgress } from './utils.mjs';
 
 import { assign3DHandler, disposeThreejsObject, createOrbitControl,
          createLineSegments, InteractiveControl, PointsCreator,
-         createRender3D, beforeRender3D, afterRender3D, getRender3DKind, cleanupRender3D } from './base3d.mjs';
+         createRender3D, beforeRender3D, afterRender3D, getRender3DKind, cleanupRender3D,
+         HelveticerRegularFont } from './base3d.mjs';
 
 import { geo } from './geobase.mjs';
 
@@ -3767,7 +3768,7 @@ class TGeoPainter extends ObjectPainter {
                container.add(mesh);
            }
 
-         let text3d = new THREE.TextGeometry(lbl, { font: JSROOT.HelveticerRegularFont, size: text_size, height: 0, curveSegments: 5 });
+         let text3d = new THREE.TextGeometry(lbl, { font: HelveticerRegularFont, size: text_size, height: 0, curveSegments: 5 });
          mesh = new THREE.Mesh(text3d, textMaterial);
          let textbox = new THREE.Box3().setFromObject(mesh);
 
@@ -3808,7 +3809,7 @@ class TGeoPainter extends ObjectPainter {
 
          container.add(mesh);
 
-         text3d = new THREE.TextGeometry(Convert(box.min[name]), { font: JSROOT.HelveticerRegularFont, size: text_size, height: 0, curveSegments: 5 });
+         text3d = new THREE.TextGeometry(Convert(box.min[name]), { font: HelveticerRegularFont, size: text_size, height: 0, curveSegments: 5 });
 
          mesh = new THREE.Mesh(text3d, textMaterial);
          textbox = new THREE.Box3().setFromObject(mesh);

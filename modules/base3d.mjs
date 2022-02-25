@@ -2,12 +2,12 @@ import * as d3 from './d3.mjs';
 
 import * as THREE from './three.mjs';
 
-import { TAttMarkerHandler, getElementRect, getAbsPosInCanvas } from './painter.mjs';
+import * as JSROOT from './core.mjs';
 
-const jsrp = JSROOT.Painter; // FIXME - workaround
+import { TAttMarkerHandler, getElementRect, getAbsPosInCanvas, getSvgLineStyle } from './painter.mjs';
 
 
-JSROOT.HelveticerRegularFont = new THREE.Font ( THREE.HelveticerRegularJson );
+const HelveticerRegularFont = new THREE.Font ( THREE.HelveticerRegularJson );
 
 /** @ummary Define rendering kind which will be used for rendering of 3D elements
  * @memberOf JSROOT.Painter
@@ -1198,8 +1198,8 @@ Box3D.MeshSegments = (function() {
    let box3d = Box3D,
        arr = new Int32Array(box3d.Segments.length);
 
-   for (let n=0;n<arr.length;++n) {
-      for (let k=0;k<box3d.Indexes.length;++k)
+   for (let n = 0; n < arr.length; ++n) {
+      for (let k = 0; k < box3d.Indexes.length; ++k)
          if (box3d.Segments[n] === box3d.Indexes[k]) {
             arr[n] = k; break;
          }
@@ -1413,7 +1413,7 @@ function create3DLineMaterial(painter, arg) {
       lwidth = arg.fLineWidth;
    }
 
-   let style = lstyle ? jsrp.root_line_styles[lstyle] : "",
+   let style = lstyle ? getSvgLineStyle(lstyle) : "",
        dash = style ? style.split(",") : [], material;
 
    if (dash && dash.length >= 2)
@@ -1447,7 +1447,7 @@ function before3DDraw(painter, obj) {
 /** @summary direct draw function for TPolyMarker3D object
   * @memberof JSROOT.Painter
   * @private */
-jsrp.drawPolyMarker3D = async function() {
+async function drawPolyMarker3D() {
 
    let poly = this.getObject(),
        fp = before3DDraw(this, poly);
@@ -1541,7 +1541,7 @@ jsrp.drawPolyMarker3D = async function() {
 /** @summary Direct draw function for TPolyLine3D object
   * @desc Takes into account dashed properties
   * @private */
-jsrp.drawPolyLine3D = function() {
+function drawPolyLine3D() {
    let line = this.getObject(),
        fp = before3DDraw(this, line);
 
@@ -1565,4 +1565,5 @@ jsrp.drawPolyLine3D = function() {
 export { assign3DHandler, disposeThreejsObject, createOrbitControl,
          createLineSegments, create3DLineMaterial, Box3D,
          createRender3D, beforeRender3D, afterRender3D, getRender3DKind, cleanupRender3D,
+         HelveticerRegularFont, drawPolyMarker3D, drawPolyLine3D,
          InteractiveControl, PointsControl, PointsCreator };

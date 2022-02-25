@@ -7,7 +7,9 @@ import { closeCurrentWindow, showProgress } from './utils.mjs';
 import { ColorPalette, ObjectPainter, DrawOptions, AxisPainterMethods, FontHandler,
          createMenu, closeMenu, isPromise, addColor, registerForResize,
          getElementRect, chooseTimeFormat, selectActivePad, addDrawFunc,
-         getActivePad, getAbsPosInCanvas, compressSVG, cleanup, resize } from './painter.mjs';
+         getActivePad, getAbsPosInCanvas, compressSVG, cleanup, resize, getSvgLineStyle } from './painter.mjs';
+
+import { TAxisPainter } from './gpad.mjs';
 
 const jsrp = JSROOT.Painter; // FIXME - workaround
 
@@ -1593,10 +1595,8 @@ class RFramePainter extends RObjectPainter {
           w = this.getFrameWidth(),
           gridx = this.v7EvalAttr("gridX", false),
           gridy = this.v7EvalAttr("gridY", false),
-          grid_style = JSROOT.gStyle.fGridStyle,
+          grid_style = getSvgLineStyle(JSROOT.gStyle.fGridStyle),
           grid_color = (JSROOT.gStyle.fGridColor > 0) ? this.getColor(JSROOT.gStyle.fGridColor) : "black";
-
-      if ((grid_style < 0) || (grid_style >= jsrp.root_line_styles.length)) grid_style = 11;
 
       if (this.x_handle)
          this.x_handle.draw_grid = gridx;
@@ -1614,8 +1614,9 @@ class RFramePainter extends RObjectPainter {
             layer.append("svg:path")
                  .attr("class", "xgrid")
                  .attr("d", grid)
-                 .style('stroke',grid_color).style("stroke-width",JSROOT.gStyle.fGridWidth)
-                 .style("stroke-dasharray", jsrp.root_line_styles[grid_style]);
+                 .style('stroke',grid_color)
+                 .style("stroke-width", JSROOT.gStyle.fGridWidth)
+                 .style("stroke-dasharray", grid_style);
       }
 
       if (this.y_handle)
@@ -1634,8 +1635,9 @@ class RFramePainter extends RObjectPainter {
           layer.append("svg:path")
                .attr("class", "ygrid")
                .attr("d", grid)
-               .style('stroke',grid_color).style("stroke-width",JSROOT.gStyle.fGridWidth)
-               .style("stroke-dasharray", jsrp.root_line_styles[grid_style]);
+               .style('stroke', grid_color)
+               .style("stroke-width", JSROOT.gStyle.fGridWidth)
+               .style("stroke-dasharray", grid_style);
       }
    }
 
@@ -1758,7 +1760,7 @@ class RFramePainter extends RObjectPainter {
       if (!xaxis || xaxis._typename != "TAxis") xaxis = JSROOT.create("TAxis");
       if (!yaxis || yaxis._typename != "TAxis") yaxis = JSROOT.create("TAxis");
 
-      this.x_handle = new JSROOT.TAxisPainter(this.getDom(), xaxis, true);
+      this.x_handle = new TAxisPainter(this.getDom(), xaxis, true);
       this.x_handle.setPadName(this.getPadName());
       this.x_handle.optionUnlab = this.v7EvalAttr("x_labels_hide", false);
 
@@ -1771,7 +1773,7 @@ class RFramePainter extends RObjectPainter {
 
       this.x_handle.assignFrameMembers(this,"x");
 
-      this.y_handle = new JSROOT.TAxisPainter(this.getDom(), yaxis, true);
+      this.y_handle = new TAxisPainter(this.getDom(), yaxis, true);
       this.y_handle.setPadName(this.getPadName());
       this.y_handle.optionUnlab = this.v7EvalAttr("y_labels_hide", false);
 

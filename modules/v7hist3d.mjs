@@ -4,19 +4,20 @@ import * as d3 from './d3.mjs';
 
 import * as THREE from './three.mjs';
 
-import { floatToString, getDrawSettings, TRandom } from './painter.mjs';
+import * as JSROOT from './core.mjs';
 
-import { assign3DHandler, disposeThreejsObject, createOrbitControl,
-         createLineSegments, create3DLineMaterial, PointsCreator, Box3D,
-         createRender3D, beforeRender3D, afterRender3D, getRender3DKind, cleanupRender3D } from './base3d.mjs';
+import { floatToString, getDrawSettings, TRandom } from './painter.mjs';
 
 import { RFramePainter, ensureRCanvas } from './v7gpad.mjs';
 
 import { RHistPainter, RH1Painter, RH2Painter } from './v7hist.mjs';
 
-import { ltx } from './latex.mjs';
+import { assign3DHandler, disposeThreejsObject, createOrbitControl,
+         createLineSegments, create3DLineMaterial, PointsCreator, Box3D,
+         createRender3D, beforeRender3D, afterRender3D, getRender3DKind,
+         cleanupRender3D, HelveticerRegularFont } from './base3d.mjs';
 
-const jsrp = JSROOT.Painter; // FIXME - workaround
+import { translateLaTeX } from './latex.mjs';
 
 /** @summary Text 3d axis visibility
   * @private */
@@ -535,7 +536,7 @@ RFramePainter.prototype.drawXYZ = function(toplevel, opts) {
       }
 
       if (is_major && lbl && (lbl.length>0)) {
-         let text3d = new THREE.TextGeometry(lbl, { font: JSROOT.HelveticerRegularFont, size: textsize, height: 0, curveSegments: 5 });
+         let text3d = new THREE.TextGeometry(lbl, { font: HelveticerRegularFont, size: textsize, height: 0, curveSegments: 5 });
          text3d.computeBoundingBox();
          let draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
              draw_height = text3d.boundingBox.max.y - text3d.boundingBox.min.y;
@@ -560,7 +561,7 @@ RFramePainter.prototype.drawXYZ = function(toplevel, opts) {
    }
 
    if (xaxis && xaxis.fTitle) {
-      let text3d = new THREE.TextGeometry(ltx.translateLaTeX(xaxis.fTitle), { font: JSROOT.HelveticerRegularFont, size: textsize, height: 0, curveSegments: 5 });
+      let text3d = new THREE.TextGeometry(translateLaTeX(xaxis.fTitle), { font: HelveticerRegularFont, size: textsize, height: 0, curveSegments: 5 });
       text3d.computeBoundingBox();
       text3d.center = false; // xaxis.TestBit(EAxisBits.kCenterTitle);
       text3d.gry = 2; // factor 2 shift
@@ -749,7 +750,7 @@ RFramePainter.prototype.drawXYZ = function(toplevel, opts) {
       }
 
       if (is_major) {
-         let text3d = new THREE.TextGeometry(lbl, { font: JSROOT.HelveticerRegularFont, size: textsize, height: 0, curveSegments: 5 });
+         let text3d = new THREE.TextGeometry(lbl, { font: HelveticerRegularFont, size: textsize, height: 0, curveSegments: 5 });
          text3d.computeBoundingBox();
          let draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
              draw_height = text3d.boundingBox.max.y - text3d.boundingBox.min.y;
@@ -772,7 +773,7 @@ RFramePainter.prototype.drawXYZ = function(toplevel, opts) {
    }
 
    if (yaxis && yaxis.fTitle) {
-      let text3d = new THREE.TextGeometry(ltx.translateLaTeX(yaxis.fTitle), { font: JSROOT.HelveticerRegularFont, size: textsize, height: 0, curveSegments: 5 });
+      let text3d = new THREE.TextGeometry(translateLaTeX(yaxis.fTitle), { font: HelveticerRegularFont, size: textsize, height: 0, curveSegments: 5 });
       text3d.computeBoundingBox();
       text3d.center = false; // yaxis.TestBit(EAxisBits.kCenterTitle);
       text3d.grx = 2; // factor 2 shift
@@ -851,7 +852,7 @@ RFramePainter.prototype.drawXYZ = function(toplevel, opts) {
       if (lbl === null) { is_major = false; lbl = ""; }
 
       if (is_major && lbl) {
-         let text3d = new THREE.TextGeometry(lbl, { font: JSROOT.HelveticerRegularFont, size: textsize, height: 0, curveSegments: 5 });
+         let text3d = new THREE.TextGeometry(lbl, { font: HelveticerRegularFont, size: textsize, height: 0, curveSegments: 5 });
          text3d.computeBoundingBox();
          let draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
              draw_height = text3d.boundingBox.max.y - text3d.boundingBox.min.y;
@@ -927,7 +928,7 @@ RFramePainter.prototype.drawXYZ = function(toplevel, opts) {
       });
 
       if (zaxis && zaxis.fTitle) {
-         let text3d = new THREE.TextGeometry(ltx.translateLaTeX(zaxis.fTitle), { font: JSROOT.HelveticerRegularFont, size: textsize, height: 0, curveSegments: 5 });
+         let text3d = new THREE.TextGeometry(translateLaTeX(zaxis.fTitle), { font: HelveticerRegularFont, size: textsize, height: 0, curveSegments: 5 });
          text3d.computeBoundingBox();
          let draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
              // draw_height = text3d.boundingBox.max.y - text3d.boundingBox.min.y,

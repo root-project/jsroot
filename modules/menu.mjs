@@ -1,7 +1,7 @@
 
 import * as d3 from './d3.mjs';
 
-import { TAttMarkerHandler, getColor } from './painter.mjs';
+import { TAttMarkerHandler, getColor, getSvgLineStyle } from './painter.mjs';
 
 const jsrp = JSROOT.Painter; // FIXME - workaround
 
@@ -337,13 +337,13 @@ class JSRootMenu {
             arg => { painter.lineatt.change(arg); painter.interactiveRedraw(true, getColorExec(arg, "SetLineColor")); });
          this.add("sub:style", () => {
             this.input("Enter line style id (1-solid)", painter.lineatt.style, "int", 1, 11).then(id => {
-               if (!jsrp.root_line_styles[id]) return;
+               if (!getSvgLineStyle(id)) return;
                painter.lineatt.change(undefined, undefined, id);
                painter.interactiveRedraw(true, `exec:SetLineStyle(${id})`);
             });
          });
          for (let n = 1; n < 11; ++n) {
-            let dash = jsrp.root_line_styles[n],
+            let dash = getSvgLineStyle(n),
                 svg = "<svg width='100' height='18'><text x='1' y='12' style='font-size:12px'>" + n + "</text><line x1='30' y1='8' x2='100' y2='8' stroke='black' stroke-width='3' stroke-dasharray='" + dash + "'></line></svg>";
 
             this.addchk((painter.lineatt.style == n), svg, n, arg => { painter.lineatt.change(undefined, undefined, parseInt(arg)); painter.interactiveRedraw(true, `exec:SetLineStyle(${arg})`); });

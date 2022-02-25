@@ -3,20 +3,21 @@ import * as d3 from './d3.mjs';
 
 import * as THREE from './three.mjs';
 
+import * as JSROOT from './core.mjs';
+
 import { ObjectPainter, TAttMarkerHandler, DrawOptions, TRandom,
          floatToString, getDrawSettings } from './painter.mjs';
 
-import { assign3DHandler, disposeThreejsObject, createOrbitControl,
-         createLineSegments, create3DLineMaterial, PointsCreator, Box3D,
-         createRender3D, beforeRender3D, afterRender3D, getRender3DKind, cleanupRender3D } from './base3d.mjs';
-
-import { TFramePainter, EAxisBits, ensureTCanvas } from './gpad.mjs';
+import { TAxisPainter, TFramePainter, EAxisBits, ensureTCanvas } from './gpad.mjs';
 
 import { THistPainter, TH1Painter, TH2Painter } from './hist.mjs';
 
-import { ltx } from './latex.mjs';
+import { assign3DHandler, disposeThreejsObject, createOrbitControl,
+         createLineSegments, create3DLineMaterial, PointsCreator, Box3D,
+         createRender3D, beforeRender3D, afterRender3D, getRender3DKind,
+         cleanupRender3D, HelveticerRegularFont } from './base3d.mjs';
 
-const jsrp = JSROOT.Painter; // FIXME - workaround
+import { translateLaTeX } from './latex.mjs';
 
 /** @summary Text 3d axis visibility
   * @private */
@@ -521,17 +522,17 @@ TFramePainter.prototype.drawXYZ = function(toplevel, opts) {
    // factor 1.1 used in ROOT for lego plots
    if ((opts.zmult !== undefined) && !z_zoomed) zmax *= opts.zmult;
 
-   this.x_handle = new JSROOT.TAxisPainter(null, this.xaxis);
+   this.x_handle = new TAxisPainter(null, this.xaxis);
    this.x_handle.configureAxis("xaxis", this.xmin, this.xmax, xmin, xmax, false, [grminx, grmaxx],
                                     { log: pad ? pad.fLogx : 0 });
    this.x_handle.assignFrameMembers(this,"x");
 
-   this.y_handle = new JSROOT.TAxisPainter(null, this.yaxis);
+   this.y_handle = new TAxisPainter(null, this.yaxis);
    this.y_handle.configureAxis("yaxis", this.ymin, this.ymax, ymin, ymax, false, [grminy, grmaxy],
                                    { log: pad && !opts.use_y_for_z ? pad.fLogy : 0 });
    this.y_handle.assignFrameMembers(this,"y");
 
-   this.z_handle = new JSROOT.TAxisPainter(null, this.zaxis);
+   this.z_handle = new TAxisPainter(null, this.zaxis);
    this.z_handle.configureAxis("zaxis", this.zmin, this.zmax, zmin, zmax, false, [grminz, grmaxz],
                                     { log: pad ? pad.fLogz : 0 });
    this.z_handle.assignFrameMembers(this,"z");
@@ -564,7 +565,7 @@ TFramePainter.prototype.drawXYZ = function(toplevel, opts) {
       }
 
       if (is_major && lbl && (lbl.length > 0) && opts.draw) {
-         let text3d = new THREE.TextGeometry(lbl, { font: JSROOT.HelveticerRegularFont, size: textsize, height: 0, curveSegments: 5 });
+         let text3d = new THREE.TextGeometry(lbl, { font: HelveticerRegularFont, size: textsize, height: 0, curveSegments: 5 });
          text3d.computeBoundingBox();
          let draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
              draw_height = text3d.boundingBox.max.y - text3d.boundingBox.min.y;
@@ -589,7 +590,7 @@ TFramePainter.prototype.drawXYZ = function(toplevel, opts) {
    }
 
    if (xaxis && xaxis.fTitle && opts.draw) {
-      const text3d = new THREE.TextGeometry(ltx.translateLaTeX(xaxis.fTitle), { font: JSROOT.HelveticerRegularFont, size: textsize, height: 0, curveSegments: 5 });
+      const text3d = new THREE.TextGeometry(translateLaTeX(xaxis.fTitle), { font: HelveticerRegularFont, size: textsize, height: 0, curveSegments: 5 });
       text3d.computeBoundingBox();
       text3d.center = xaxis.TestBit(EAxisBits.kCenterTitle);
       text3d.gry = 2; // factor 2 shift
@@ -778,7 +779,7 @@ TFramePainter.prototype.drawXYZ = function(toplevel, opts) {
       }
 
       if (is_major && opts.draw) {
-         const text3d = new THREE.TextGeometry(lbl, { font: JSROOT.HelveticerRegularFont, size: textsize, height: 0, curveSegments: 5 });
+         const text3d = new THREE.TextGeometry(lbl, { font: HelveticerRegularFont, size: textsize, height: 0, curveSegments: 5 });
          text3d.computeBoundingBox();
          let draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
              draw_height = text3d.boundingBox.max.y - text3d.boundingBox.min.y;
@@ -801,7 +802,7 @@ TFramePainter.prototype.drawXYZ = function(toplevel, opts) {
    }
 
    if (yaxis && yaxis.fTitle && opts.draw) {
-      const text3d = new THREE.TextGeometry(ltx.translateLaTeX(yaxis.fTitle), { font: JSROOT.HelveticerRegularFont, size: textsize, height: 0, curveSegments: 5 });
+      const text3d = new THREE.TextGeometry(translateLaTeX(yaxis.fTitle), { font: HelveticerRegularFont, size: textsize, height: 0, curveSegments: 5 });
       text3d.computeBoundingBox();
       text3d.center = yaxis.TestBit(EAxisBits.kCenterTitle);
       text3d.grx = 2; // factor 2 shift
@@ -882,7 +883,7 @@ TFramePainter.prototype.drawXYZ = function(toplevel, opts) {
       if (lbl === null) { is_major = false; lbl = ""; }
 
       if (is_major && lbl && opts.draw) {
-         let text3d = new THREE.TextGeometry(lbl, { font: JSROOT.HelveticerRegularFont, size: textsize, height: 0, curveSegments: 5 });
+         let text3d = new THREE.TextGeometry(lbl, { font: HelveticerRegularFont, size: textsize, height: 0, curveSegments: 5 });
          text3d.computeBoundingBox();
          let draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
              draw_height = text3d.boundingBox.max.y - text3d.boundingBox.min.y;
@@ -958,7 +959,7 @@ TFramePainter.prototype.drawXYZ = function(toplevel, opts) {
       });
 
       if (zaxis && zaxis.fTitle && opts.draw) {
-         let text3d = new THREE.TextGeometry(ltx.translateLaTeX(zaxis.fTitle), { font: JSROOT.HelveticerRegularFont, size: textsize, height: 0, curveSegments: 5 });
+         let text3d = new THREE.TextGeometry(translateLaTeX(zaxis.fTitle), { font: HelveticerRegularFont, size: textsize, height: 0, curveSegments: 5 });
          text3d.computeBoundingBox();
          let draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
              // draw_height = text3d.boundingBox.max.y - text3d.boundingBox.min.y,
@@ -3286,9 +3287,5 @@ class TGraph2DPainter extends ObjectPainter {
    }
 
 } // class TGraph2DPainter
-
-JSROOT.TH3Painter = TH3Painter;
-JSROOT.TGraph2DPainter = TGraph2DPainter;
-
 
 export { TH3Painter, TGraph2DPainter };
