@@ -3764,8 +3764,8 @@ class HierarchyPainter extends BasePainter {
 
             if (handle && handle.expand) {
                if (typeof handle.expand == 'string')
-                  return JSROOT.require(handle.prereq).then(() => {
-                     _item._expand = handle.expand = JSROOT.findFunction(handle.expand);
+                  return JSROOT.require(handle.prereq).then(hh => {
+                     _item._expand = handle.expand = hh?.[handle.expand] || JSROOT.findFunction(handle.expand);
                      return _item._expand ? DoExpandItem(_item, _obj) : true;
                   });
                _item._expand = handle.expand;

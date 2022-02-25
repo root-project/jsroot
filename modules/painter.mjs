@@ -3791,11 +3791,11 @@ let drawFuncs = { lst: [
    { name: "TAxis3D", icon: 'img_graph', prereq: "geom", func: "drawAxis3D", direct: true },
    // these are not draw functions, but provide extra info about correspondent classes
    { name: "kind:Command", icon: "img_execute", execute: true },
-   { name: "TFolder", icon: "img_folder", icon2: "img_folderopen", noinspect: true, prereq: "hierarchy", expand: ".folderHierarchy" },
-   { name: "TTask", icon: "img_task", prereq: "hierarchy", expand: ".taskHierarchy", for_derived: true },
-   { name: "TTree", icon: "img_tree", prereq: "tree", expand: 'JSROOT.treeHierarchy', func: 'drawTree', dflt: "expand", opt: "player;testio", shift: "inspect", direct: true },
-   { name: "TNtuple", icon: "img_tree", prereq: "tree", expand: 'JSROOT.treeHierarchy', func: 'drawTree', dflt: "expand", opt: "player;testio", shift: "inspect", direct: true },
-   { name: "TNtupleD", icon: "img_tree", prereq: "tree", expand: 'JSROOT.treeHierarchy', func: 'drawTree', dflt: "expand", opt: "player;testio", shift: "inspect", direct: true },
+   { name: "TFolder", icon: "img_folder", icon2: "img_folderopen", noinspect: true, prereq: "hierarchy", expand: "folderHierarchy" },
+   { name: "TTask", icon: "img_task", prereq: "hierarchy", expand: "taskHierarchy", for_derived: true },
+   { name: "TTree", icon: "img_tree", prereq: "tree", expand: 'treeHierarchy', func: 'drawTree', dflt: "expand", opt: "player;testio", shift: "inspect", direct: true },
+   { name: "TNtuple", icon: "img_tree", prereq: "tree", expand: 'treeHierarchy', func: 'drawTree', dflt: "expand", opt: "player;testio", shift: "inspect", direct: true },
+   { name: "TNtupleD", icon: "img_tree", prereq: "tree", expand: 'treeHierarchy', func: 'drawTree', dflt: "expand", opt: "player;testio", shift: "inspect", direct: true },
    { name: "TBranchFunc", icon: "img_leaf_method", prereq: "tree", func: 'drawTree', opt: ";dump", noinspect: true, direct: true },
    { name: /^TBranch/, icon: "img_branch", prereq: "tree", func: 'drawTree', dflt: "expand", opt: ";dump", ctrl: "dump", shift: "inspect", ignore_online: true, direct: true },
    { name: /^TLeaf/, icon: "img_leaf", prereq: "tree", noexpand: true, func: 'drawTree', opt: ";dump", ctrl: "dump", ignore_online: true, direct: true },
@@ -4118,13 +4118,12 @@ async function draw(dom, obj, opt) {
       await JSROOT.loadScript(handle.script);
 
    if (funcname) {
-      let func = hh ? hh[funcname] : null;
-      if (!func) func = JSROOT.findFunction(funcname);
+      let func = hh?.[funcname] || JSROOT.findFunction(funcname);
       if (!func)
-         throw Error(`Fail to find function ${funcname} after loading ${handle.prereq}`);
+         throw Error(`Fail to find function ${funcname} after loading ${handle.prereq || handle.script}`);
       handle.func = func;
    } else {
-      let cl = hh ? hh[clname] : null;
+      let cl = hh?.[clname];
       if (!cl || typeof cl.draw != 'function')
          throw Error(`Fail to find class ${clname} after loading ${handle.prereq}`);
       handle.class = cl;

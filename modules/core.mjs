@@ -443,6 +443,8 @@ async function jsroot_require(need) {
          arr.push(import("./gpad.mjs"));
       else if (name == "io")
          arr.push(import("./io.mjs"));
+      else if (name == "tree")
+         arr.push(import("./tree.mjs"));
       else if (name == "geom")
          arr.push(import("./geom.mjs"));
       else if (name == "math")
@@ -802,19 +804,7 @@ function decodeUrl(url) {
 function findFunction(name) {
    if (typeof name === 'function') return name;
    if (typeof name !== 'string') return null;
-   let names, elem;
-   if (name[0] == ".") { // special shortcut for JSROOT.Painter.
-      names = name.substr(1).split('.');
-      elem = globalThis.JSROOT.Painter;
-   } else {
-      names = name.split('.');
-      if (names[0] === 'JSROOT') {
-         elem = globalThis.JSROOT;
-         names.shift();
-      } else {
-         elem = globalThis;
-      }
-   }
+   let names = name.split('.'), elem = globalThis;
 
    for (let n = 0; elem && (n < names.length); ++n)
       elem = elem[names[n]];
@@ -1635,8 +1625,38 @@ function getMethods(typename, obj) {
       }
    }
 
-   if (typeof JSROOT.getMoreMethods == "function")
-      JSROOT.getMoreMethods(m, typename, obj);
+   if (typename.indexOf("ROOT::Math::LorentzVector") === 0) {
+      m.Px = m.X = function() { return this.fCoordinates.Px(); }
+      m.Py = m.Y = function() { return this.fCoordinates.Py(); }
+      m.Pz = m.Z = function() { return this.fCoordinates.Pz(); }
+      m.E = m.T = function() { return this.fCoordinates.E(); }
+      m.M2 = function() { return this.fCoordinates.M2(); }
+      m.M = function() { return this.fCoordinates.M(); }
+      m.R = m.P = function() { return this.fCoordinates.R(); }
+      m.P2 = function() { return this.P() * this.P(); }
+      m.Pt = m.pt = function() { return Math.sqrt(this.P2()); }
+      m.Phi = m.phi = function() { return Math.atan2(this.fCoordinates.Py(), this.fCoordinates.Px()); }
+      m.Eta = m.eta = function() { return Math.atanh(this.Pz()/this.P()); }
+   }
+
+   if (typename.indexOf("ROOT::Math::PxPyPzE4D") === 0) {
+      m.Px = m.X = function() { return this.fX; }
+      m.Py = m.Y = function() { return this.fY; }
+      m.Pz = m.Z = function() { return this.fZ; }
+      m.E = m.T = function() { return this.fT; }
+      m.P2 = function() { return this.fX*this.fX + this.fY*this.fY + this.fZ*this.fZ; }
+      m.R = m.P = function() { return Math.sqrt(this.P2()); }
+      m.Mag2 = m.M2 = function() { return this.fT*this.fT - this.fX*this.fX - this.fY*this.fY - this.fZ*this.fZ; }
+      m.Mag = m.M = function() {
+         let mm = this.M2();
+         if (mm >= 0) return Math.sqrt(mm);
+         return -Math.sqrt(-mm);
+      }
+      m.Perp2 = m.Pt2 = function() { return this.fX*this.fX + this.fY*this.fY;}
+      m.Pt = m.pt = function() { return Math.sqrt(this.P2()); }
+      m.Phi = m.phi = function() { return Math.atan2(this.fY, this.fX); }
+      m.Eta = m.eta = function() { return Math.atanh(this.Pz/this.P()); }
+   }
 
    methodsCache[typename] = m;
    return m;

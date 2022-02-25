@@ -2718,7 +2718,7 @@ const TTreeMethods = {
 
 /** @summary Create hierarchy of TTree object
   * @private */
-JSROOT.treeHierarchy = function(node, obj) {
+function treeHierarchy(node, obj) {
    if (obj._typename != 'TTree' && obj._typename != 'TNtuple' && obj._typename != 'TNtupleD' ) return false;
 
    function CreateBranchItem(node, branch, tree, parent_branch) {
@@ -2884,7 +2884,7 @@ async function drawTree() {
 
    let create_player = 0, finalResolve;
 
-   const process_result = function(obj, intermediate) {
+   async function process_result(obj, intermediate) {
 
       let drawid;
 
@@ -2917,6 +2917,6 @@ async function drawTree() {
 
    // use in result handling same function as for progress handling
    return tree.Draw(args).then(obj => process_result(obj));
-};
+}
 
-export { TSelector, TDrawVariable, TDrawSelector, TTreeMethods, drawTree };
+export { TSelector, TDrawVariable, TDrawSelector, TTreeMethods, drawTree, treeHierarchy };
