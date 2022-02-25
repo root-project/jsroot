@@ -4444,6 +4444,15 @@ class HierarchyPainter extends BasePainter {
       if (this.disp) this.disp.checkMDIResize(null, size);
    }
 
+   /** @summary Load and execute scripts
+     * @private */
+   async loadScripts(arr) {
+      for (let k = 0; k < arr.length; ++k) {
+         let txt = await JSROOT.httpRequest(arr[k], 'text');
+         if (txt) eval(txt);
+      }
+   }
+
    /** @summary Start GUI
      * @returns {Promise} when ready
      * @private */
@@ -4603,7 +4612,7 @@ class HierarchyPainter extends BasePainter {
          if (prereq) {
             promise = JSROOT.require(prereq); prereq = "";
          } else if (load) {
-            promise = JSROOT.loadScript(load.split(";")); load = "";
+            promise = this.loadScripts(load.split(";")); load = "";
          } else if (browser_kind) {
             promise = this.createBrowser(browser_kind); browser_kind = "";
          } else if (status !== null) {
