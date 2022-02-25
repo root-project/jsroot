@@ -60,13 +60,15 @@ function buildOverlapVolume(overlap) {
 }
 
 
+let $comp_col_cnt = 0;
+
 /** @summary Function used to build hierarchy of elements of composite shapes
   * @private */
 function buildCompositeVolume(comp, maxlvl, side) {
 
    if (maxlvl === undefined) maxlvl = 1;
    if (!side) {
-      this.$comp_col_cnt = 0;
+      $comp_col_cnt = 0;
       side = "";
    }
 
@@ -76,7 +78,7 @@ function buildCompositeVolume(comp, maxlvl, side) {
 
    if ((side && (comp._typename!=='TGeoCompositeShape')) || (maxlvl<=0)) {
       vol.fName = side;
-      vol.fLineColor = (this.$comp_col_cnt++ % 8) + 2;
+      vol.fLineColor = ($comp_col_cnt++ % 8) + 2;
       vol.fShape = comp;
       return vol;
    }
@@ -103,7 +105,7 @@ function buildCompositeVolume(comp, maxlvl, side) {
    vol.fNodes.Add(node1);
    vol.fNodes.Add(node2);
 
-   if (!side) delete this.$comp_col_cnt;
+   if (!side) $comp_col_cnt = 0;
 
    return vol;
 }
