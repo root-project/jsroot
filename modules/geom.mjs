@@ -19,9 +19,12 @@ import { ObjectPainter, DrawOptions, createMenu, closeMenu,
 import { ensureTCanvas } from './gpad.mjs';
 
 import { geo, geoBITS, ClonedNodes, testGeoBit, setGeoBit, toggleGeoBit, setInvisibleAll,
-         countNumShapes, getNodeKind, produceRenderOrder, createFlippedMesh } from './geobase.mjs';
+         countNumShapes, getNodeKind, produceRenderOrder, createFlippedMesh,
+         projectGeometry, countGeometryFaces, createFrustum, createProjectionMatrix,
+         getBoundingBox, provideObjectInfo } from './geobase.mjs';
 
-JSROOT.loadScript('$$$style/JSRoot.geom');
+if (!JSROOT.batch_mode)
+   await JSROOT.loadScript('$$$style/JSRoot.geom');
 
 const _ENTIRE_SCENE = 0, _BLOOM_SCENE = 1;
 
@@ -926,7 +929,7 @@ class TGeoPainter extends ObjectPainter {
             node.matrix0 = node.matrix.clone();
             node.minvert = new THREE.Matrix4().copy(node.matrixWorld).invert();
 
-            let box3 = geo.getBoundingBox(mesh, null, true),
+            let box3 = getBoundingBox(mesh, null, true),
                 signz = mesh._flippedMesh ? -1 : 1;
 
             // real center of mesh in local coordinates
@@ -1439,8 +1442,8 @@ class TGeoPainter extends ObjectPainter {
 
       if (!this.ctrl.select_in_view || this._draw_all_nodes) return;
 
-      let matrix = geo.createProjectionMatrix(this._camera),
-          frustum = geo.createFrustum(matrix);
+      let matrix = createProjectionMatrix(this._camera),
+          frustum = createFrustum(matrix);
 
       // check if overall bounding box seen
       if (!frustum.CheckBox(this.getGeomBoundingBox(this._toplevel)))
@@ -1636,7 +1639,7 @@ class TGeoPainter extends ObjectPainter {
 
          if (!resolve || !resolve.obj) return tooltip;
 
-         let lines = geo.provideObjectInfo(resolve.obj);
+         let lines = provideObjectInfo(resolve.obj);
          lines.unshift(tooltip);
 
          return { name: resolve.obj.fName, title: resolve.obj.fTitle || resolve.obj._typename, lines: lines };
@@ -1745,9 +1748,9 @@ class TGeoPainter extends ObjectPainter {
          if (this.ctrl.select_in_view && !this._first_drawing) {
             // extract camera projection matrix for selection
 
-            matrix = geo.createProjectionMatrix(this._camera);
+            matrix = createProjectionMatrix(this._camera);
 
-            frustum = geo.createFrustum(matrix);
+            frustum = createFrustum(matrix);
 
             // check if overall bounding box seen
             if (frustum.CheckBox(this.getGeomBoundingBox(this._toplevel))) {
@@ -1865,7 +1868,7 @@ class TGeoPainter extends ObjectPainter {
                // only submit not-done items
                if (item.ready || item.geom) {
                   // this is place holder for existing geometry
-                  clone = { id: item.id, ready: true, nfaces: geo.countGeometryFaces(item.geom), refcnt: item.refcnt };
+                  clone = { id: item.id, ready: true, nfaces: countGeometryFaces(item.geom), refcnt: item.refcnt };
                } else {
                   clone = JSROOT.clone(item, null, true);
                   cnt++;
@@ -2116,7 +2119,7 @@ class TGeoPainter extends ObjectPainter {
       topitem.traverse(mesh => {
          if (check_any || (mesh.stack && (mesh instanceof THREE.Mesh)) ||
              (mesh.main_track && (mesh instanceof THREE.LineSegments)))
-            geo.getBoundingBox(mesh, box3);
+            getBoundingBox(mesh, box3);
       });
 
       if (scalar !== undefined) box3.expandByVector(box3.getSize(new THREE.Vector3()).multiplyScalar(scalar));
@@ -2148,7 +2151,7 @@ class TGeoPainter extends ObjectPainter {
       toplevel.traverse(mesh => {
          if (!(mesh instanceof THREE.Mesh) || !mesh.stack) return;
 
-         let geom2 = geo.projectGeometry(mesh.geometry, mesh.parent.absMatrix || mesh.parent.matrixWorld, this.ctrl.project, this.ctrl.projectPos, mesh._flippedMesh);
+         let geom2 = projectGeometry(mesh.geometry, mesh.parent.absMatrix || mesh.parent.matrixWorld, this.ctrl.project, this.ctrl.projectPos, mesh._flippedMesh);
 
          if (!geom2) return;
 

@@ -1,12 +1,15 @@
 
-let THREE,  ClonedNodes;
+let THREE,  ClonedNodes, createFrustum;
 
 import('../modules/three.mjs').then(handle => {
    THREE = handle;
    if (console) console.log(`geoworker started three.js r${THREE.REVISION}`);
 });
 
-import('../modules/geobase.mjs').then(handle => { ClonedNodes = handle.ClonedNodes; });
+import('../modules/geobase.mjs').then(handle => {
+   ClonedNodes = handle.ClonedNodes;
+   createFrustum = handle.createFrustum;
+});
 
 // importScripts("three.min.js", "JSRoot.csg.js", "JSRoot.geobase.js");
 
@@ -103,7 +106,7 @@ onmessage = function(e) {
          matrix = new THREE.Matrix4().fromArray(e.data.matrix);
       delete e.data.matrix;
 
-      let res = clones.collectVisibles(e.data.collect, JSROOT.GEO.createFrustum(matrix));
+      let res = clones.collectVisibles(e.data.collect, createFrustum(matrix));
 
       e.data.new_nodes = res.lst;
       e.data.complete = res.complete; // inform if all nodes are selected

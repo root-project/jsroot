@@ -3,9 +3,8 @@ import * as d3 from './d3.mjs';
 
 import * as JSROOT from './core.mjs';
 
-
-// TODO: load it in deifferent time
-JSROOT.loadScript('$$$style/JSRoot.painter');
+if (!JSROOT.batch_mode)
+   await JSROOT.loadScript('$$$style/JSRoot.painter');
 
 /** @summary Converts numeric value to string according to specified format.
   * @param {number} value - value to convert

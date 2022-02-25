@@ -3625,14 +3625,6 @@ function produceRenderOrder(toplevel, origin, method, clones) {
       process(toplevel, 0, 1, 1000000);
 }
 
-
-geo.projectGeometry = projectGeometry;
-geo.countGeometryFaces = countGeometryFaces;
-geo.createGeometry = createGeometry;
-geo.createProjectionMatrix = createProjectionMatrix;
-geo.createFrustum = createFrustum;
-geo.getBoundingBox = getBoundingBox;
-geo.provideObjectInfo = provideObjectInfo;
-
 export { geo, geoBITS, ClonedNodes, testGeoBit, setGeoBit, toggleGeoBit,
-         setInvisibleAll, countNumShapes, getNodeKind, produceRenderOrder, createFlippedMesh };
+         setInvisibleAll, countNumShapes, getNodeKind, produceRenderOrder, createFlippedMesh,
+         projectGeometry, countGeometryFaces, createFrustum, createProjectionMatrix, getBoundingBox, provideObjectInfo };
