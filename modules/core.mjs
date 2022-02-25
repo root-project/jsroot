@@ -451,6 +451,8 @@ async function jsroot_require(need) {
          arr.push(import("./latex.mjs"));
       else if (name == "painter")
          arr.push(import("./painter.mjs"));
+      else if (name == "base3d")
+         arr.push(import("./base3d.mjs"));
       else if (name == "interactive")
          arr.push(import("./interactive.mjs"));
       else if (name == "hierarchy")
@@ -668,61 +670,6 @@ function parse(json) {
    unref_value(obj);
 
    return obj;
-}
-
-/** @summary Make deep clone of the object, including all sub-objects
-  * @returns {object} cloned object
-  * @deprecated Need to be removed in v7
-  * @private */
-function clone(src, map, nofunc) {
-   if (!src) return null;
-
-   if (!map) {
-      map = { obj: [], clones: [], nofunc: nofunc };
-   } else {
-      const i = map.obj.indexOf(src);
-      if (i >= 0) return map.clones[i];
-   }
-
-   let arr_kind = is_array_proto(Object.prototype.toString.apply(src));
-
-   // process normal array
-   if (arr_kind == 1) {
-      let tgt = [];
-      map.obj.push(src);
-      map.clones.push(tgt);
-      for (let i = 0; i < src.length; ++i)
-         if (typeof src[i] === 'object')
-            tgt.push(clone(src[i], map));
-         else
-            tgt.push(src[i]);
-
-      return tgt;
-   }
-
-   // process typed array
-   if (arr_kind == 2) {
-      let tgt = [];
-      map.obj.push(src);
-      map.clones.push(tgt);
-      for (let i = 0; i < src.length; ++i)
-         tgt.push(src[i]);
-
-      return tgt;
-   }
-
-   let tgt = {};
-   map.obj.push(src);
-   map.clones.push(tgt);
-
-   for (let k in src) {
-      if (typeof src[k] === 'object')
-         tgt[k] = clone(src[k], map);
-      else if (!map.nofunc || (typeof src[k]!=='function'))
-         tgt[k] = src[k];
-   }
-
-   return tgt;
 }
 
 /** @summary Parse response from multi.json request
@@ -1501,78 +1448,6 @@ function getMethods(typename, obj) {
          this.formulas.push(obj);
       }
 
-      m.evalPar = function(x, y) {
-         if (! ('_func' in this) || (this._title !== this.fTitle)) {
-           let _func = this.fTitle, isformula = false, pprefix = "[";
-           if (_func === "gaus") _func = "gaus(0)";
-           if (this.fFormula && typeof this.fFormula.fFormula == "string") {
-              if (this.fFormula.fFormula.indexOf("[](double*x,double*p)")==0) {
-                 isformula = true; pprefix = "p[";
-                 _func = this.fFormula.fFormula.substr(21);
-              } else {
-                 _func = this.fFormula.fFormula;
-                 pprefix = "[p";
-              }
-              if (this.fFormula.fClingParameters && this.fFormula.fParams)
-                 this.fFormula.fParams.forEach(pair => {
-                    let regex = new RegExp(`(\\[${pair.first}\\])`, 'g'),
-                        parvalue = this.fFormula.fClingParameters[pair.second];
-                    _func = _func.replace(regex, (parvalue < 0) ? `(${parvalue})` : parvalue);
-                 });
-
-           }
-
-           if ('formulas' in this)
-              this.formulas.forEach(entry => {
-                _func = _func.replaceAll(entry.fName, entry.fTitle);
-              });
-
-           _func = _func.replace(/\b(abs)\b/g, 'TMath::Abs')
-                        .replace(/\b(TMath::Exp)/g, 'Math.exp')
-                        .replace(/\b(TMath::Abs)/g, 'Math.abs');
-
-           if (typeof JSROOT.Math == 'object') {
-              this._math = JSROOT.Math;
-              _func = _func.replace(/xygaus\(/g, 'this._math.gausxy(this, x, y, ')
-                           .replace(/gaus\(/g, 'this._math.gaus(this, x, ')
-                           .replace(/gausn\(/g, 'this._math.gausn(this, x, ')
-                           .replace(/expo\(/g, 'this._math.expo(this, x, ')
-                           .replace(/landau\(/g, 'this._math.landau(this, x, ')
-                           .replace(/landaun\(/g, 'this._math.landaun(this, x, ')
-                           .replace(/TMath::/g, 'this._math.')
-                           .replace(/ROOT::Math::/g, 'this._math.');
-           }
-
-           for (let i = 0; i < this.fNpar; ++i)
-             _func = _func.replaceAll(pprefix + i + "]", `(${this.GetParValue(i)})`);
-
-           _func = _func.replace(/\b(sin)\b/gi, 'Math.sin')
-                        .replace(/\b(cos)\b/gi, 'Math.cos')
-                        .replace(/\b(tan)\b/gi, 'Math.tan')
-                        .replace(/\b(exp)\b/gi, 'Math.exp')
-                        .replace(/\b(pow)\b/gi, 'Math.pow')
-                        .replace(/pi/g, 'Math.PI');
-           for (let n = 2; n < 10; ++n)
-              _func = _func.replaceAll(`x^${n}`, `Math.pow(x,${n})`);
-
-           if (isformula) {
-              _func = _func.replace(/x\[0\]/g,"x");
-              if (this._typename==="TF2") {
-                 _func = _func.replace(/x\[1\]/g,"y");
-                 this._func = new Function("x", "y", _func).bind(this);
-              } else {
-                 this._func = new Function("x", _func).bind(this);
-              }
-           } else if (this._typename === "TF2")
-              this._func = new Function("x", "y", "return " + _func).bind(this);
-           else
-              this._func = new Function("x", "return " + _func).bind(this);
-
-           this._title = this.fTitle;
-         }
-
-         return this._func(x, y);
-      }
       m.GetParName = function(n) {
          if (this.fParams && this.fParams.fParNames) return this.fParams.fParNames[n];
          if (this.fFormula && this.fFormula.fParams) {
@@ -1853,7 +1728,6 @@ BIT,
 extend,
 addMethods,
 parse,
-clone,
 parseMulti,
 toJSON,
 decodeUrl,

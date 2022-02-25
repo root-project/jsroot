@@ -487,10 +487,86 @@ function drawRooPlot(dom, plot) {
 }
 
 
+function proivdeEvalPar(func, jsroot_math) {
+
+   func._math = jsroot_math;
+
+   func.evalPar = function(x, y) {
+      if (! ('_func' in this) || (this._title !== this.fTitle)) {
+        let _func = this.fTitle, isformula = false, pprefix = "[";
+        if (_func === "gaus") _func = "gaus(0)";
+        if (this.fFormula && typeof this.fFormula.fFormula == "string") {
+           if (this.fFormula.fFormula.indexOf("[](double*x,double*p)")==0) {
+              isformula = true; pprefix = "p[";
+              _func = this.fFormula.fFormula.substr(21);
+           } else {
+              _func = this.fFormula.fFormula;
+              pprefix = "[p";
+           }
+           if (this.fFormula.fClingParameters && this.fFormula.fParams)
+              this.fFormula.fParams.forEach(pair => {
+                 let regex = new RegExp(`(\\[${pair.first}\\])`, 'g'),
+                     parvalue = this.fFormula.fClingParameters[pair.second];
+                 _func = _func.replace(regex, (parvalue < 0) ? `(${parvalue})` : parvalue);
+              });
+
+        }
+
+        if ('formulas' in this)
+           this.formulas.forEach(entry => {
+             _func = _func.replaceAll(entry.fName, entry.fTitle);
+           });
+
+        _func = _func.replace(/\b(abs)\b/g, 'TMath::Abs')
+                     .replace(/\b(TMath::Exp)/g, 'Math.exp')
+                     .replace(/\b(TMath::Abs)/g, 'Math.abs')
+
+        if (this._math)
+           _func = _func.replace(/xygaus\(/g, 'this._math.gausxy(this, x, y, ')
+                        .replace(/gaus\(/g, 'this._math.gaus(this, x, ')
+                        .replace(/gausn\(/g, 'this._math.gausn(this, x, ')
+                        .replace(/expo\(/g, 'this._math.expo(this, x, ')
+                        .replace(/landau\(/g, 'this._math.landau(this, x, ')
+                        .replace(/landaun\(/g, 'this._math.landaun(this, x, ')
+                        .replace(/TMath::/g, 'this._math.')
+                        .replace(/ROOT::Math::/g, 'this._math.');
+
+        for (let i = 0; i < this.fNpar; ++i)
+          _func = _func.replaceAll(pprefix + i + "]", `(${this.GetParValue(i)})`);
+
+        _func = _func.replace(/\b(sin)\b/gi, 'Math.sin')
+                     .replace(/\b(cos)\b/gi, 'Math.cos')
+                     .replace(/\b(tan)\b/gi, 'Math.tan')
+                     .replace(/\b(exp)\b/gi, 'Math.exp')
+                     .replace(/\b(pow)\b/gi, 'Math.pow')
+                     .replace(/pi/g, 'Math.PI');
+        for (let n = 2; n < 10; ++n)
+           _func = _func.replaceAll(`x^${n}`, `Math.pow(x,${n})`);
+
+        if (isformula) {
+           _func = _func.replace(/x\[0\]/g,"x");
+           if (this._typename === "TF2") {
+              _func = _func.replace(/x\[1\]/g,"y");
+              this._func = new Function("x", "y", _func).bind(this);
+           } else {
+              this._func = new Function("x", _func).bind(this);
+           }
+        } else if (this._typename === "TF2")
+           this._func = new Function("x", "y", "return " + _func).bind(this);
+        else
+           this._func = new Function("x", "return " + _func).bind(this);
+
+        this._title = this.fTitle;
+      }
+
+      return this._func(x, y);
+   }
+}
+
+
 /**
   * @summary Painter for TF1 object
   *
-  * @memberof JSROOT
   * @private
   */
 
@@ -709,7 +785,7 @@ class TF1Painter extends ObjectPainter {
       if (this.bins.length > 2) {
 
          let h0 = h;  // use maximal frame height for filling
-         if ((pmain.hmin!==undefined) && (pmain.hmin>=0)) {
+         if (pmain.hmin && (pmain.hmin >= 0)) {
             h0 = Math.round(funcs.gry(0));
             if ((h0 > h) || (h0 < 0)) h0 = h;
          }
@@ -752,7 +828,7 @@ class TF1Painter extends ObjectPainter {
    }
 
    /** @summary draw TF1 object */
-   static draw(dom, tf1, opt) {
+   static async draw(dom, tf1, opt) {
       let painter = new TF1Painter(dom, tf1, opt),
           d = new DrawOptions(opt),
           has_main = !!painter.getMainPainter(),
@@ -763,17 +839,146 @@ class TF1Painter extends ObjectPainter {
       if (d.check('RX')) aopt += "RX";
       if (d.check('RY')) aopt += "RY";
 
-      return JSROOT.require("math").then(() => {
-         if (!has_main || painter.second_x || painter.second_y)
-            return JSROOT.draw(dom, painter.createDummyHisto(), aopt);
-      }).then(() => {
-         painter.addToPadPrimitives();
-         painter.redraw();
-         return painter;
-      });
+      let math = await JSROOT.require("math");
+
+      proivdeEvalPar(tf1, math.mth);
+
+      if (!has_main || painter.second_x || painter.second_y)
+         await JSROOT.draw(dom, painter.createDummyHisto(), aopt);
+
+      painter.addToPadPrimitives();
+      await painter.redraw();
+      return painter;
    }
 
 } // class TF1Painter
+
+
+function createTF2Histogram(func, hist) {
+   let nsave = func.fSave.length, use_middle = true;
+   if ((nsave > 6) && (nsave !== (func.fSave[nsave-2]+1)*(func.fSave[nsave-1]+1) + 6)) nsave = 0;
+
+   // check if exact min/max range is used or created histogram has to be extended
+   if ((nsave > 6) && (func.fXmin < func.fXmax) && (func.fSave[nsave-6] < func.fSave[nsave-5]) &&
+      ((func.fSave[nsave-5] - func.fSave[nsave-6]) / (func.fXmax - func.fXmin) > 0.99999)) use_middle = false;
+
+   let npx = Math.max(func.fNpx, 2),
+       npy = Math.max(func.fNpy, 2),
+       iserr = false, isany = false,
+       dx = (func.fXmax - func.fXmin) / (use_middle ? npx : (npx-1)),
+       dy = (func.fYmax - func.fYmin) / (use_middle ? npy : (npy-1)),
+       extra = use_middle ? 0.5 : 0;
+
+   for (let j = 0; j < npy; ++j)
+     for (let i = 0; (i < npx) && !iserr; ++i) {
+         let x = func.fXmin + (i + extra) * dx,
+             y = func.fYmin + (j + extra) * dy,
+             z = 0;
+
+         try {
+            z = func.evalPar(x, y);
+         } catch {
+            iserr = true;
+         }
+
+         if (!iserr && Number.isFinite(z)) {
+            if (!hist) hist = JSROOT.createHistogram("TH2F", npx, npy);
+            isany = true;
+            hist.setBinContent(hist.getBin(i+1,j+1), z);
+         }
+      }
+
+   let use_saved_points = (iserr || !isany) && (nsave > 6);
+   if (!use_saved_points && !hist)
+      hist = JSROOT.createHistogram("TH2F", npx, npy);
+
+   if (!iserr && isany) {
+      hist.fXaxis.fXmin = func.fXmin - (use_middle ? 0 : dx/2);
+      hist.fXaxis.fXmax = func.fXmax + (use_middle ? 0 : dx/2);
+
+      hist.fYaxis.fXmin = func.fYmin - (use_middle ? 0 : dy/2);
+      hist.fYaxis.fXmax = func.fYmax + (use_middle ? 0 : dy/2);
+   }
+
+   if (use_saved_points) {
+      npx = Math.round(func.fSave[nsave-2]);
+      npy = Math.round(func.fSave[nsave-1]);
+      dx = (func.fSave[nsave-5] - func.fSave[nsave-6]) / npx;
+      dy = (func.fSave[nsave-3] - func.fSave[nsave-4]) / npy;
+
+      if (!hist) hist = JSROOT.createHistogram("TH2F", npx+1, npy+1);
+
+      hist.fXaxis.fXmin = func.fSave[nsave-6] - dx/2;
+      hist.fXaxis.fXmax = func.fSave[nsave-5] + dx/2;
+
+      hist.fYaxis.fXmin = func.fSave[nsave-4] - dy/2;
+      hist.fYaxis.fXmax = func.fSave[nsave-3] + dy/2;
+
+      for (let k = 0, j = 0; j <= npy; ++j)
+         for (let i = 0; i <= npx; ++i)
+            hist.setBinContent(hist.getBin(i+1,j+1), func.fSave[k++]);
+   }
+
+   hist.fName = "Func";
+   hist.fTitle = func.fTitle;
+   hist.fMinimum = func.fMinimum;
+   hist.fMaximum = func.fMaximum;
+   //fHistogram->SetContour(fContour.fN, levels);
+   hist.fLineColor = func.fLineColor;
+   hist.fLineStyle = func.fLineStyle;
+   hist.fLineWidth = func.fLineWidth;
+   hist.fFillColor = func.fFillColor;
+   hist.fFillStyle = func.fFillStyle;
+   hist.fMarkerColor = func.fMarkerColor;
+   hist.fMarkerStyle = func.fMarkerStyle;
+   hist.fMarkerSize = func.fMarkerSize;
+   const kNoStats = JSROOT.BIT(9);
+   hist.fBits |= kNoStats;
+
+   return hist;
+}
+
+/** @summary draw TF2 object
+  * @desc TF2 always drawn via temporary TH2 object,
+  * therefore there is no special painter class
+  * @private */
+async function drawTF2(dom, func, opt) {
+
+   let d = new DrawOptions(opt),
+       math = await JSROOT.require("math");
+
+   proivdeEvalPar(func, math.mth);
+
+   let hist = createTF2Histogram(func);
+   if (!hist) return;
+
+   if (d.empty())
+      opt = "cont3";
+   else if (d.opt === "SAME")
+      opt = "cont2 same";
+   else
+      opt = d.opt;
+
+   // workaround for old waves.C
+   if (opt == "SAMECOLORZ" || opt == "SAMECOLOR" || opt == "SAMECOLZ") opt = "SAMECOL";
+
+   if (opt.indexOf("SAME") == 0)
+      if (!getElementMainPainter(dom))
+         opt = "A_ADJUST_FRAME_" + opt.substr(4);
+
+   let hpainter = await JSROOT.draw(dom, hist, opt);
+
+   hpainter.tf2_typename = func._typename;
+
+   hpainter.updateObject = function(obj /*, opt*/) {
+      if (!obj || (this.tf2_typename != obj._typename)) return false;
+      proivdeEvalPar(obj, math.mth);
+      createTF2Histogram(obj, this.getHisto());
+      return true;
+   }
+
+   return hpainter;
+}
 
 
 const kNotEditable = JSROOT.BIT(18);   // bit set if graph is non editable
@@ -3484,45 +3689,46 @@ class TEfficiencyPainter extends ObjectPainter {
    }
 
    /** @summary Draw TEfficiency object */
-   static draw(dom, eff, opt) {
+   static async draw(dom, eff, opt) {
       if (!eff || !eff.fTotalHistogram)
-         return Promise.resolve(null);
+         return null;
 
       if (!opt || (typeof opt != 'string')) opt = "";
       opt = opt.toLowerCase();
 
       let ndim = 0;
-      if (eff.fTotalHistogram._typename.indexOf("TH1")==0)
+      if (eff.fTotalHistogram._typename.indexOf("TH1") == 0)
          ndim = 1;
-      else if (eff.fTotalHistogram._typename.indexOf("TH2")==0)
+      else if (eff.fTotalHistogram._typename.indexOf("TH2") == 0)
          ndim = 2;
       else
-         Promise.resolve(null);
+         return null;
 
       let painter = new TEfficiencyPainter(dom, eff);
       painter.ndim = ndim;
 
-      return JSROOT.require('math').then(mth => {
+      let math = await JSROOT.require('math');
 
-         painter.fBoundary = mth.getTEfficiencyBoundaryFunc(eff.fStatisticOption, eff.TestBit(kIsBayesian));
+      painter.fBoundary = math.mth.getTEfficiencyBoundaryFunc(eff.fStatisticOption, eff.TestBit(kIsBayesian));
 
-         if (ndim == 1) {
-            if (!opt) opt = "ap";
-            if ((opt.indexOf("same") < 0) && (opt.indexOf("a") < 0)) opt += "a";
-            if (opt.indexOf("p") < 0) opt += "p";
+      if (ndim == 1) {
+         if (!opt) opt = "ap";
+         if ((opt.indexOf("same") < 0) && (opt.indexOf("a") < 0)) opt += "a";
+         if (opt.indexOf("p") < 0) opt += "p";
 
-            let gr = painter.createGraph(eff);
-            painter.fillGraph(gr, opt);
-            return JSROOT.draw(dom, gr, opt);
-         }
+         let gr = painter.createGraph(eff);
+         painter.fillGraph(gr, opt);
+         await JSROOT.draw(dom, gr, opt);
+      } else {
          if (!opt) opt = "col";
          let hist = painter.createHisto(eff);
          painter.fillHisto(hist, opt);
-         return JSROOT.draw(dom, hist, opt);
-      }).then(() => {
-         painter.addToPadPrimitives();
-         return painter.drawFunction(0);
-      });
+         await JSROOT.draw(dom, hist, opt);
+      }
+
+      painter.addToPadPrimitives();
+      await painter.drawFunction(0);
+      return painter;
    }
 
 } // class TEfficiencyPainter
@@ -4350,7 +4556,6 @@ function drawJSImage(dom, obj, opt) {
 /**
  * @summary Painter class for TRatioPlot
  *
- * @memberof JSROOT
  * @private
  */
 
@@ -4503,4 +4708,5 @@ class TRatioPlotPainter extends ObjectPainter {
 
 export { TF1Painter, TGraphPainter, TGraphPolargramPainter, TGraphPolarPainter, TMultiGraphPainter,
          TSplinePainter, TASImagePainter, TRatioPlotPainter, TGraphTimePainter, TEfficiencyPainter, TWebPaintingPainter,
-         drawText, drawLine, drawPolyLine, drawEllipse, drawPie, drawBox, drawMarker, drawPolyMarker, drawArrow, drawRooPlot, drawJSImage };
+         drawText, drawLine, drawPolyLine, drawEllipse, drawPie, drawBox,
+         drawMarker, drawPolyMarker, drawArrow, drawRooPlot, drawJSImage, drawTF2 };

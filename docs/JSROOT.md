@@ -928,3 +928,5 @@ Remove direct support of require.js, probably loading of JSRoot.core.js will be 
 Remove minified scripts from distribution, one should load JSRoot.core.js. Deployed code will be minified automatically.
 
 JSROOT.hpainter -> JSROOT.require('hierarchy').then(hh => hh.getHPainter())
+
+JSROOT.Math -> math = await JSROOT.require('math')

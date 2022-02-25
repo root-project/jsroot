@@ -3758,7 +3758,7 @@ let drawFuncs = { lst: [
    { name: "kind:Text", icon: "img_text", func: jsrp.drawRawText },
    { name: "TObjString", icon: "img_text", func: jsrp.drawRawText },
    { name: "TF1", icon: "img_tf1", prereq: "more", class: "TF1Painter" },
-   { name: "TF2", icon: "img_tf2", prereq: "hist", func: "drawTF2" },
+   { name: "TF2", icon: "img_tf2", prereq: "more", func: "drawTF2" },
    { name: "TSpline3", icon: "img_tf1", prereq: "more", class: "TSplinePainter" },
    { name: "TSpline5", icon: "img_tf1", prereq: "more", class: "TSplinePainter" },
    { name: "TEllipse", icon: 'img_graph', prereq: "more", func: "drawEllipse", direct: true },

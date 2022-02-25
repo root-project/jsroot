@@ -3754,7 +3754,7 @@ function drawHistDisplayItem(dom, obj, opt) {
       return RH2Painter.draw(dom, obj, opt);
 
    if (obj.fAxes.length == 3)
-      return JSROOT.require("v7hist3d").then(() => JSROOT.RH3Painter.draw(dom, obj, opt));
+      return JSROOT.require("v7hist3d").then(hh => hh.RH3Painter.draw(dom, obj, opt));
 
    return null;
 }
